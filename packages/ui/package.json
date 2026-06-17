@@ -1,0 +1,16 @@
+{
+  "name": "@edevs/ui",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "peerDependencies": {
+    "antd": "^5.26.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  }
+}

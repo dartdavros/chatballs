@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+::-webkit-scrollbar{width:10px;height:10px;}
+::-webkit-scrollbar-thumb{background:#dcdcdc;border-radius:8px;border:2px solid #f0f2f5;background-clip:content-box;}
+::-webkit-scrollbar-thumb:hover{background:#bfbfbf;background-clip:content-box;}
+</style>
+</helmet>
+
+<div style="display:flex;height:100vh;overflow:hidden;background:#f0f2f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;color:#262626;-webkit-font-smoothing:antialiased;min-width:1180px;">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside style="width:240px;flex:none;background:#ffffff;border-right:1px solid #f0f0f0;display:flex;flex-direction:column;height:100vh;">
+    <div style="height:56px;flex:none;display:flex;align-items:center;padding:0 14px;border-bottom:1px solid #f5f5f5;">
+      <a href="Командный центр.dc.html" style="display:flex;align-items:center;gap:9px;height:36px;padding:0 12px;border-radius:8px;text-decoration:none;color:#595959;font-size:13px;font-weight:500;border:1px solid #f0f0f0;width:100%;" style-hover="background:#f5f5f5;color:#1677ff;border-color:#d9d9d9;">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        Назад в Hub
+      </a>
+    </div>
+    <div style="padding:16px 16px 8px;">
+      <div style="display:flex;align-items:center;gap:11px;">
+        <div style="width:34px;height:34px;border-radius:9px;background:#e6f4ff;display:flex;align-items:center;justify-content:center;flex:none;"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="#1677ff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></div>
+        <div style="display:flex;flex-direction:column;line-height:1.15;"><span style="font-size:15px;font-weight:700;color:#1f1f1f;">Продажи</span><span style="font-size:11px;color:#8c8c8c;">Рабочее пространство</span></div>
+      </div>
+    </div>
+    <nav style="flex:1;overflow-y:auto;padding:8px 12px;">
+      <a href="Продажи · Обзор.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;color:#595959;font-size:13.5px;font-weight:500;text-decoration:none;margin-bottom:2px;" style-hover="background:#f5f5f5;color:#262626;"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13h8V3H3zM13 21h8V11h-8zM13 3v6h8V3zM3 17h8v4H3z"/></svg>Обзор</a>
+      <a href="Продажи · Диалоги.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;color:#595959;font-size:13.5px;font-weight:500;text-decoration:none;margin-bottom:2px;" style-hover="background:#f5f5f5;color:#262626;"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Диалоги<span style="margin-left:auto;min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:#faad14;color:#fff;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;">2</span></a>
+      <a href="Продажи · Клиенты.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;background:#e6f4ff;color:#0958d9;font-size:13.5px;font-weight:600;text-decoration:none;margin-bottom:2px;position:relative;"><span style="position:absolute;left:0;top:8px;bottom:8px;width:3px;border-radius:0 3px 3px 0;background:#1677ff;"></span><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Клиенты</a>
+      <a href="Продажи · Продажи.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;color:#595959;font-size:13.5px;font-weight:500;text-decoration:none;margin-bottom:2px;" style-hover="background:#f5f5f5;color:#262626;"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h2l2.6 12.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></svg>Продажи</a>
+    </nav>
+    <div style="flex:none;border-top:1px solid #f5f5f5;padding:10px 12px;">
+      <a href="#" style="display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:8px;text-decoration:none;" style-hover="background:#f5f5f5;"><div style="width:32px;height:32px;border-radius:50%;background:#1677ff;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex:none;">ИП</div><div style="display:flex;flex-direction:column;line-height:1.2;"><span style="font-size:13px;font-weight:600;color:#262626;">Иван Петров</span><span style="font-size:11px;color:#8c8c8c;">OWNER</span></div></a>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <div style="flex:1;min-width:0;display:flex;flex-direction:column;height:100vh;">
+    <header style="height:56px;flex:none;background:#ffffff;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;padding:0 24px;">
+      <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#8c8c8c;"><span style="font-weight:500;color:#595959;">Edevs</span><span style="color:#d9d9d9;">/</span><span style="font-weight:500;color:#595959;">Продажи</span><span style="color:#d9d9d9;">/</span><a href="Продажи · Клиенты.dc.html" style="font-weight:500;color:#595959;text-decoration:none;" style-hover="color:#1677ff;">Клиенты</a><span style="color:#d9d9d9;">/</span><span style="font-weight:600;color:#262626;">Елена Кузнецова</span></div>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:6px;background:#f5f5f5;font-size:12px;font-weight:600;color:#595959;"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#8c8c8c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 10 4.6-1.5 8-5 8-10V5Z"/></svg>OWNER</span>
+        <button style="position:relative;width:36px;height:36px;border-radius:8px;border:1px solid #f0f0f0;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#595959;" style-hover="background:#f5f5f5;color:#262626;"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span style="position:absolute;top:6px;right:7px;width:8px;height:8px;border-radius:50%;background:#ff4d4f;border:1.5px solid #fff;"></span></button>
+        <div style="width:1px;height:24px;background:#f0f0f0;"></div>
+        <div style="width:28px;height:28px;border-radius:50%;background:#1677ff;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;">ИП</div>
+      </div>
+    </header>
+
+    <main style="flex:1;overflow-y:auto;padding:24px 28px 40px;">
+      <div style="max-width:1180px;margin:0 auto;">
+
+        <sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ false }}">
+          <div onClick="{{ onCloseMenu }}" style="position:fixed;inset:0;z-index:20;"></div>
+        </sc-if>
+
+        <!-- HEADER CARD -->
+        <div style="background:#fff;border:1px solid #f0f0f0;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04);padding:20px 22px;margin-bottom:18px;">
+          <div style="display:flex;align-items:flex-start;gap:16px;">
+            <div style="width:56px;height:56px;border-radius:50%;background:#9254de;color:#fff;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:600;flex:none;">ЕК</div>
+            <div style="flex:1;min-width:0;">
+              <div style="display:flex;align-items:center;gap:11px;flex-wrap:wrap;">
+                <h1 style="margin:0;font-size:21px;font-weight:700;letter-spacing:-0.01em;color:#1f1f1f;">Елена Кузнецова</h1>
+                <span style="display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:14px;background:#f6ffed;border:1px solid #b7eb8f;font-size:11.5px;font-weight:600;color:#389e0d;"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Согласие получено</span>
+                <span style="font-size:12px;color:#bfbfbf;font-family:'SF Mono',ui-monospace,Menlo,monospace;">CUS-4702</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:14px;margin-top:9px;flex-wrap:wrap;font-size:12.5px;color:#595959;">
+                <span style="display:inline-flex;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#8c8c8c" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 5L2 7"/></svg><span style="font-family:'SF Mono',ui-monospace,Menlo,monospace;">e.kuznetsova@corp.ru</span></span>
+                <span style="display:inline-flex;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#8c8c8c" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"/></svg><span style="font-family:'SF Mono',ui-monospace,Menlo,monospace;color:#8c8c8c;">+7 ··· ·· 88</span></span>
+                <span style="display:inline-flex;align-items:center;gap:6px;"><span style="display:inline-flex;align-items:center;gap:4px;padding:1px 8px;border-radius:5px;background:#f2f0ff;"><span style="width:5px;height:5px;border-radius:50%;background:#6b5be0;"></span><span style="font-size:10.5px;font-weight:600;color:#6b5be0;">MAX</span></span><span style="display:inline-flex;align-items:center;gap:4px;padding:1px 8px;border-radius:5px;background:#e8f7f4;"><span style="width:5px;height:5px;border-radius:50%;background:#0f9b8e;"></span><span style="font-size:10.5px;font-weight:600;color:#0f9b8e;">Web</span></span></span>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:9px;flex:none;position:relative;">
+              <a href="Продажи · Диалоги.dc.html" style="display:flex;align-items:center;gap:7px;height:38px;padding:0 16px;border-radius:9px;border:none;background:#1677ff;color:#fff;font-size:13.5px;font-weight:600;cursor:pointer;text-decoration:none;box-shadow:0 1px 2px rgba(22,119,255,0.3);" style-hover="background:#0958d9;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Открыть диалог</a>
+              <button onClick="{{ onToggleMenu }}" style="{{ menuBtn }}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button>
+              <sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ false }}">
+                <div style="position:absolute;right:0;top:46px;z-index:30;width:236px;background:#fff;border:1px solid #f0f0f0;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,0.12);padding:5px;">
+                  <a href="#" style="display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:7px;text-decoration:none;color:#262626;font-size:13px;font-weight:500;" style-hover="background:#f5f5f5;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h10M8 12h10M8 18h10"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg>Объединить контакты</a>
+                  <a href="#" style="display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:7px;text-decoration:none;color:#262626;font-size:13px;font-weight:500;" style-hover="background:#f5f5f5;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h7m11 0h-7M7 8l-4 4 4 4m10-8 4 4-4 4"/></svg>Разъединить контакты</a>
+                  <a href="#" style="display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:7px;text-decoration:none;color:#262626;font-size:13px;font-weight:500;" style-hover="background:#f5f5f5;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>Исправить данные</a>
+                  <div style="height:1px;background:#f5f5f5;margin:4px 8px;"></div>
+                  <a href="#" style="display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:7px;text-decoration:none;color:#cf1322;font-size:13px;font-weight:500;" style-hover="background:#fff2f0;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.5 13.5 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/></svg>Обезличить данные</a>
+                </div>
+              </sc-if>
+            </div>
+          </div>
+        </div>
+
+        <!-- TABS -->
+        <div style="display:flex;align-items:center;gap:2px;border-bottom:1px solid #e8e8e8;margin-bottom:18px;overflow-x:auto;">
+          <button onClick="{{ onTabOverview }}" style="{{ tOverview }}">Обзор</button>
+          <button onClick="{{ onTabDialogs }}" style="{{ tDialogs }}">Диалоги</button>
+          <button onClick="{{ onTabOrders }}" style="{{ tOrders }}">Заказы</button>
+          <button onClick="{{ onTabIds }}" style="{{ tIds }}">Идентификаторы каналов</button>
+          <button onClick="{{ onTabConsent }}" style="{{ tConsent }}">Consent</button>
+          <button onClick="{{ onTabAudit }}" style="{{ tAudit }}">Аудит</button>
+        </div>
+
+        <!-- ===== ОБЗОР ===== -->
+        <sc-if value="{{ isOverview }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;gap:18px;align-items:flex-start;">
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:16px;">
+              <!-- summary -->
+              <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#f0f0f0;border:1px solid #f0f0f0;border-radius:11px;overflow:hidden;">
+                <div style="background:#fff;padding:15px 16px;"><div style="font-size:12px;color:#8c8c8c;">Заказы</div><div style="font-size:22px;font-weight:700;color:#262626;margin-top:6px;">3</div></div>
+                <div style="background:#fff;padding:15px 16px;"><div style="font-size:12px;color:#8c8c8c;">Сумма покупок</div><div style="font-size:22px;font-weight:700;color:#389e0d;margin-top:6px;">₽12 470</div></div>
+                <div style="background:#fff;padding:15px 16px;"><div style="font-size:12px;color:#8c8c8c;">Диалоги</div><div style="font-size:22px;font-weight:700;color:#262626;margin-top:6px;">4</div></div>
+                <div style="background:#fff;padding:15px 16px;"><div style="font-size:12px;color:#8c8c8c;">Первый контакт</div><div style="font-size:14px;font-weight:600;color:#262626;margin-top:9px;">28 мая 2026</div></div>
+              </div>
+              <!-- note -->
+              <div style="background:#fff;border:1px solid #f0f0f0;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04);padding:16px 18px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;"><h3 style="margin:0;font-size:14px;font-weight:700;color:#1f1f1f;">Потребность и заметка</h3><button style="font-size:12px;color:#1677ff;background:none;border:none;cursor:pointer;font-weight:500;">Изменить</button></div>
+                <div style="background:#fafafa;border:1px solid #f0f0f0;border-radius:9px;padding:12px 14px;font-size:13px;line-height:1.55;color:#595959;">Команда дизайна, 5 рабочих мест. Пользуется <b style="color:#262626;">Foxray Team</b>, рассматривает FirePage для лендингов. Платит по счёту, ЛПР — сама Елена.</div>
+              </div>
+              <!-- activity -->
+              <div style="background:#fff;border:1px solid #f0f0f0;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04);padding:16px 18px;">
+                <h3 style="margin:0 0 14px;font-size:14px;font-weight:700;color:#1f1f1f;">Последняя активность</h3>
+                <div style="display:flex;flex-direction:column;gap:0;">
+                  <div style="display:flex;gap:12px;"><div style="display:flex;flex-direction:column;align-items:center;"><span style="width:9px;height:9px;border-radius:50%;background:#1677ff;margin-top:4px;"></span><span style="flex:1;width:2px;background:#f0f0f0;"></span></div><div style="padding-bottom:16px;"><div style="font-size:13px;color:#262626;font-weight:500;">Создан заказ <span style="font-family:'SF Mono',ui-monospace,Menlo,monospace;color:#1677ff;">ORD-10512</span> · Foxray Team</div><div style="font-size:11.5px;color:#bfbfbf;margin-top:2px;">сегодня 11:05</div></div></div>
+                  <div style="display:flex;gap:12px;"><div style="display:flex;flex-direction:column;align-items:center;"><span style="width:9px;height:9px;border-radius:50%;background:#52c41a;margin-top:4px;"></span><span style="flex:1;width:2px;background:#f0f0f0;"></span></div><div style="padding-bottom:16px;"><div style="font-size:13px;color:#262626;font-weight:500;">Оплата ₽6 500 · <span style="font-family:'SF Mono',ui-monospace,Menlo,monospace;color:#595959;">ORD-10455</span></div><div style="font-size:11.5px;color:#bfbfbf;margin-top:2px;">02 июня 18:22</div></div></div>
+                  <div style="display:flex;gap:12px;"><div style="display:flex;flex-direction:column;align-items:center;"><span style="width:9px;height:9px;border-radius:50%;background:#722ed1;margin-top:4px;"></span><span style="flex:1;width:2px;background:#f0f0f0;"></span></div><div style="padding-bottom:16px;"><div style="font-size:13px;color:#262626;font-weight:500;">Диалог закрыт · продажа Foxray Pro</div><div style="font-size:11.5px;color:#bfbfbf;margin-top:2px;">02 июня 14:00</div></div></div>
+                  <div style="display:flex;gap:12px;"><div style="display:flex;flex-direction:column;align-items:center;"><span style="width:9px;height:9px;border-radius:50%;background:#bfbfbf;margin-top:4px;"></span></div><div><div style="font-size:13px;color:#262626;font-weight:500;">Первый контакт · канал MAX</div><div style="font-size:11.5px;color:#bfbfbf;margin-top:2px;">28 мая 2026</div></div></div>
+                </div>
+              </div>
+            </div>
+
+            <div style="width:330px;flex:none;display:flex;flex-direction:column;gap:16px;">
+              <!-- current dialog -->
+              <div style="background:#fff;border:1px solid #f0f0f0;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04);padding:16px 18px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:11px;"><h3 style="margin:0;font-size:14px;font-weight:700;color:#1f1f1f;">Текущий диалог</h3><span style="display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:14px;background:#e6f4ff;border:1px solid #91caff;font-size:11px;font-weight:600;color:#0958d9;"><span style="width:6px;height:6px;border-radius:50%;background:#1677ff;"></span>Оператор</span></div>
+                <div style="font-size:12.5px;color:#595959;line-height:1.5;">Foxray · Web Chat · ведёт <b style="color:#262626;">Иван Петров</b>.<br/>«Помогу с настройкой рабочих мест.»</div>
+                <a href="Продажи · Диалоги.dc.html" style="display:flex;align-items:center;justify-content:center;gap:7px;height:36px;margin-top:13px;border-radius:8px;border:1px solid #d9d9d9;background:#fff;color:#262626;font-size:13px;font-weight:500;text-decoration:none;" style-hover="border-color:#1677ff;color:#1677ff;">Открыть диалог</a>
+              </div>
+              <!-- products -->
+              <div style="background:#fff;border:1px solid #f0f0f0;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04);padding:16px 18px;">
+                <h3 style="margin:0 0 13px;font-size:14px;font-weight:700;color:#1f1f1f;">Связанные продукты</h3>
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid #f5f5f5;"><span style="display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:#262626;"><span style="width:8px;height:8px;border-radius:2px;background:#722ed1;"></span>Foxray</span><span style="font-size:12px;color:#8c8c8c;">Team · активна</span></div>
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;"><span style="display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:#262626;"><span style="width:8px;height:8px;border-radius:2px;background:#1677ff;"></span>FirePage</span><span style="font-size:12px;color:#8c8c8c;">Pro · разовая</span></div>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- ===== ДИАЛОГИ ===== -->
+        <sc-if value="{{ isDialogs }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#fff;border:1px solid #f0f0f0;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04);overflow:hidden;">
+            <a href="Продажи · Диалоги.dc.html" style="display:flex;align-items:center;gap:13px;padding:14px 18px;text-decoration:none;border-bottom:1px solid #f5f5f5;" style-hover="background:#fafbfc;">
+              <span style="width:8px;height:8px;border-radius:50%;background:#1677ff;flex:none;"></span>
+              <div style="flex:1;"><div style="font-size:13.5px;font-weight:600;color:#262626;">Настройка рабочих мест · Foxray</div><div style="font-size:12px;color:#8c8c8c;margin-top:2px;">Web Chat · ведёт Иван Петров</div></div>
+              <span style="font-size:12px;color:#0958d9;font-weight:500;">Оператор</span><span style="font-size:11.5px;color:#bfbfbf;width:74px;text-align:right;">18 мин назад</span>
+            </a>
+            <a href="Продажи · Диалоги.dc.html" style="display:flex;align-items:center;gap:13px;padding:14px 18px;text-decoration:none;border-bottom:1px solid #f5f5f5;" style-hover="background:#fafbfc;">
+              <span style="width:8px;height:8px;border-radius:50%;background:#bfbfbf;flex:none;"></span>
+              <div style="flex:1;"><div style="font-size:13.5px;font-weight:600;color:#262626;">Покупка Foxray Pro</div><div style="font-size:12px;color:#8c8c8c;margin-top:2px;">MAX · закрыт · продажа</div></div>
+              <span style="font-size:12px;color:#8c8c8c;font-weight:500;">Закрыт</span><span style="font-size:11.5px;color:#bfbfbf;width:74px;text-align:right;">02 июня</span>
+            </a>
+            <a href="Продажи · Диалоги.dc.html" style="display:flex;align-items:center;gap:13px;padding:14px 18px;text-decoration:none;border-bottom:1px solid #f5f5f5;" style-hover="background:#fafbfc;">
+              <span style="width:8px;height:8px;border-radius:50%;background:#bfbfbf;flex:none;"></span>
+              <div style="flex:1;"><div style="font-size:13.5px;font-weight:600;color:#262626;">Консультация по тарифам</div><div style="font-size:12px;color:#8c8c8c;margin-top:2px;">MAX · закрыт</div></div>
+              <span style="font-size:12px;color:#8c8c8c;font-weight:500;">Закрыт</span><span style="font-size:11.5px;color:#bfbfbf;width:74px;text-align:right;">28 мая</span>
+            </a>
+            <a href="Продажи · Диалоги.dc.html" style="display:flex;align-items:center;gap:13px;padding:14px 18px;text-decoration:none;" style-hover="background:#fafbfc;">
+              <span style="width:8px;height:8px;border-radius:50%;background:#bfbfbf;flex:none;"></span>
+              <div style="flex:1;"><div style="font-size:13.5px;font-weight:600;color:#262626;">Первичный вопрос о продукте</div><div style="font-size:12px;color:#8c8c8c;margin-top:2px;">MAX · закрыт</div></div>
+              <span style="font-size:12px;color:#8c8c8c;font-weight:500;">Закрыт</span><span style="font-size:11.5px;color:#bfbfbf;width:74px;text-align:right;">28 мая</span>
+            </a>
+          </div>
+        </sc-if>
+
+        <!-- ===== ЗАКАЗЫ ===== -->
+        <sc-if value="{{ isOrders }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#fff;border:1px solid #f0f0f0;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04);overflow:hidden;">
+            <table style="width:100%;border-collapse:collapse;font-size:13px;">
+              <thead><tr style="background:#fafafa;">
+                <th style="text-align:left;padding:11px 18px;font-size:11px;font-weight:600;color:#8c8c8c;border-bottom:1px solid #f0f0f0;">ЗАКАЗ</th>
+                <th style="text-align:left;padding:11px 12px;font-size:11px;font-weight:600;color:#8c8c8c;border-bottom:1px solid #f0f0f0;">ДАТА</th>
+                <th style="text-align:left;padding:11px 12px;font-size:11px;font-weight:600;color:#8c8c8c;border-bottom:1px solid #f0f0f0;">ПРОДУКТ / OFFER</th>
+                <th style="text-align:right;padding:11px 12px;font-size:11px;font-weight:600;color:#8c8c8c;border-bottom:1px solid #f0f0f0;">СУММА</th>
+                <th style="text-align:left;padding:11px 12px;font-size:11px;font-weight:600;color:#8c8c8c;border-bottom:1px solid #f0f0f0;">ОПЛАТА</th>
+                <th style="text-align:left;padding:11px 18px;font-size:11px;font-weight:600;color:#8c8c8c;border-bottom:1px solid #f0f0f0;">ИСПОЛНЕНИЕ</th>
+              </tr></thead>
+              <tbody>
+                <tr style="border-bottom:1px solid #f5f5f5;" style-hover="background:#fafbfc;"><td style="padding:12px 18px;"><a href="#" style="font-weight:600;color:#1677ff;text-decoration:none;font-family:'SF Mono',ui-monospace,Menlo,monospace;font-size:12.5px;">ORD-10512</a></td><td style="padding:12px 12px;color:#595959;">сегодня 11:05</td><td style="padding:12px 12px;color:#595959;">Foxray · Team</td><td style="padding:12px 12px;text-align:right;font-weight:600;">₽4 980</td><td style="padding:12px 12px;"><span style="padding:2px 9px;border-radius:6px;background:#f6ffed;color:#389e0d;font-size:11.5px;font-weight:600;">Оплачен</span></td><td style="padding:12px 18px;"><span style="padding:2px 9px;border-radius:6px;background:#f6ffed;color:#389e0d;font-size:11.5px;font-weight:600;">Исполнен</span></td></tr>
+                <tr style="border-bottom:1px solid #f5f5f5;" style-hover="background:#fafbfc;"><td style="padding:12px 18px;"><a href="#" style="font-weight:600;color:#1677ff;text-decoration:none;font-family:'SF Mono',ui-monospace,Menlo,monospace;font-size:12.5px;">ORD-10455</a></td><td style="padding:12px 12px;color:#595959;">02 июня</td><td style="padding:12px 12px;color:#595959;">Foxray · Pro</td><td style="padding:12px 12px;text-align:right;font-weight:600;">₽6 500</td><td style="padding:12px 12px;"><span style="padding:2px 9px;border-radius:6px;background:#f6ffed;color:#389e0d;font-size:11.5px;font-weight:600;">Оплачен</span></td><td style="padding:12px 18px;"><span style="padding:2px 9px;border-radius:6px;background:#f6ffed;color:#389e0d;font-size:11.5px;font-weight:600;">Исполнен</span></td></tr>
+                <tr style="border-bottom:1px solid #f5f5f5;" style-hover="background:#fafbfc;"><td style="padding:12px 18px;"><a href="#" style="font-weight:600;color:#1677ff;text-decoration:none;font-family:'SF Mono',ui-monospace,Menlo,monospace;font-size:12.5px;">ORD-10390</a></td><td style="padding:12px 12px;color:#595959;">28 мая</td><td style="padding:12px 12px;color:#595959;">FirePage · Pro</td><td style="padding:12px 12px;text-align:right;font-weight:600;">₽990</td><td style="padding:12px 12px;"><span style="padding:2px 9px;border-radius:6px;background:#f6ffed;color:#389e0d;font-size:11.5px;font-weight:600;">Оплачен</span></td><td style="padding:12px 18px;"><span style="padding:2px 9px;border-radius:6px;background:#f6ffed;color:#389e0d;font-size:11.5px;font-weight:600;">Исполнен</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </sc-if>
+
+        <!-- ===== ИДЕНТИФИКАТОРЫ КАНАЛОВ ===== -->
+        <sc-if value="{{ isIds }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#fff;border:1px solid #f0f0f0;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04);overflow:hidden;">
+            <div style="display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid #f5f5f5;"><span style="width:30px;height:30px;border-radius:8px;background:#f2f0ff;display:flex;align-items:center;justify-content:center;flex:none;"><span style="width:9px;height:9px;border-radius:50%;background:#6b5be0;"></span></span><div style="flex:1;"><div style="font-size:13px;font-weight:600;color:#262626;">MAX</div><div style="font-size:12px;color:#8c8c8c;font-family:'SF Mono',ui-monospace,Menlo,monospace;">@elena.kuz</div></div><span style="font-size:11.5px;color:#389e0d;font-weight:500;">основной · подтверждён</span><button style="margin-left:14px;font-size:12px;color:#1677ff;background:none;border:none;cursor:pointer;font-weight:500;">Исправить</button></div>
+            <div style="display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid #f5f5f5;"><span style="width:30px;height:30px;border-radius:8px;background:#e8f7f4;display:flex;align-items:center;justify-content:center;flex:none;"><span style="width:9px;height:9px;border-radius:50%;background:#0f9b8e;"></span></span><div style="flex:1;"><div style="font-size:13px;font-weight:600;color:#262626;">Web Chat</div><div style="font-size:12px;color:#8c8c8c;font-family:'SF Mono',ui-monospace,Menlo,monospace;">session 9f2a··· </div></div><span style="font-size:11.5px;color:#389e0d;font-weight:500;">активна</span><button style="margin-left:14px;font-size:12px;color:#1677ff;background:none;border:none;cursor:pointer;font-weight:500;">Исправить</button></div>
+            <div style="display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid #f5f5f5;"><span style="width:30px;height:30px;border-radius:8px;background:#f5f5f5;display:flex;align-items:center;justify-content:center;flex:none;color:#8c8c8c;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 5L2 7"/></svg></span><div style="flex:1;"><div style="font-size:13px;font-weight:600;color:#262626;">Email</div><div style="font-size:12px;color:#8c8c8c;font-family:'SF Mono',ui-monospace,Menlo,monospace;">e.kuznetsova@corp.ru</div></div><span style="font-size:11.5px;color:#389e0d;font-weight:500;">подтверждён</span><button style="margin-left:14px;font-size:12px;color:#1677ff;background:none;border:none;cursor:pointer;font-weight:500;">Исправить</button></div>
+            <div style="display:flex;align-items:center;gap:12px;padding:14px 18px;"><span style="width:30px;height:30px;border-radius:8px;background:#f5f5f5;display:flex;align-items:center;justify-content:center;flex:none;color:#8c8c8c;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"/></svg></span><div style="flex:1;"><div style="font-size:13px;font-weight:600;color:#262626;">Телефон</div><div style="font-size:12px;color:#bfbfbf;font-family:'SF Mono',ui-monospace,Menlo,monospace;">+7 ··· ·· 88 · скрыт</div></div><span style="font-size:11.5px;color:#8c8c8c;font-weight:500;">не подтверждён</span><button style="margin-left:14px;font-size:12px;color:#1677ff;background:none;border:none;cursor:pointer;font-weight:500;">Исправить</button></div>
+          </div>
+        </sc-if>
+
+        <!-- ===== CONSENT ===== -->
+        <sc-if value="{{ isConsent }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#fff;border:1px solid #f0f0f0;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04);padding:18px 20px;">
+            <h3 style="margin:0 0 16px;font-size:14px;font-weight:700;color:#1f1f1f;">История согласий</h3>
+            <div style="display:flex;gap:13px;"><div style="display:flex;flex-direction:column;align-items:center;"><span style="width:11px;height:11px;border-radius:50%;background:#52c41a;margin-top:3px;"></span><span style="flex:1;width:2px;background:#f0f0f0;"></span></div><div style="padding-bottom:18px;"><div style="font-size:13px;font-weight:600;color:#262626;">Согласие на обработку данных · получено</div><div style="font-size:12px;color:#8c8c8c;margin-top:3px;">Канал MAX · подтверждено пользователем</div><div style="font-size:11.5px;color:#bfbfbf;margin-top:2px;">04 июня 2026, 14:20</div></div></div>
+            <div style="display:flex;gap:13px;"><div style="display:flex;flex-direction:column;align-items:center;"><span style="width:11px;height:11px;border-radius:50%;background:#52c41a;margin-top:3px;"></span><span style="flex:1;width:2px;background:#f0f0f0;"></span></div><div style="padding-bottom:18px;"><div style="font-size:13px;font-weight:600;color:#262626;">Согласие на маркетинговые сообщения · получено</div><div style="font-size:12px;color:#8c8c8c;margin-top:3px;">Канал MAX</div><div style="font-size:11.5px;color:#bfbfbf;margin-top:2px;">04 июня 2026, 14:20</div></div></div>
+            <div style="display:flex;gap:13px;"><div style="display:flex;flex-direction:column;align-items:center;"><span style="width:11px;height:11px;border-radius:50%;background:#bfbfbf;margin-top:3px;"></span></div><div><div style="font-size:13px;font-weight:600;color:#262626;">Первичный контакт · согласие ещё не получено</div><div style="font-size:12px;color:#8c8c8c;margin-top:3px;">Канал MAX · обработка по законному интересу</div><div style="font-size:11.5px;color:#bfbfbf;margin-top:2px;">28 мая 2026</div></div></div>
+          </div>
+        </sc-if>
+
+        <!-- ===== АУДИТ ===== -->
+        <sc-if value="{{ isAudit }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#fff;border:1px solid #f0f0f0;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04);overflow:hidden;">
+            <table style="width:100%;border-collapse:collapse;font-size:13px;">
+              <thead><tr style="background:#fafafa;">
+                <th style="text-align:left;padding:11px 18px;font-size:11px;font-weight:600;color:#8c8c8c;border-bottom:1px solid #f0f0f0;">ВРЕМЯ</th>
+                <th style="text-align:left;padding:11px 12px;font-size:11px;font-weight:600;color:#8c8c8c;border-bottom:1px solid #f0f0f0;">ДЕЙСТВИЕ</th>
+                <th style="text-align:left;padding:11px 12px;font-size:11px;font-weight:600;color:#8c8c8c;border-bottom:1px solid #f0f0f0;">ОБЪЕКТ</th>
+                <th style="text-align:left;padding:11px 12px;font-size:11px;font-weight:600;color:#8c8c8c;border-bottom:1px solid #f0f0f0;">АКТОР</th>
+                <th style="text-align:left;padding:11px 18px;font-size:11px;font-weight:600;color:#8c8c8c;border-bottom:1px solid #f0f0f0;">РЕЗУЛЬТАТ</th>
+              </tr></thead>
+              <tbody>
+                <tr style="border-bottom:1px solid #f5f5f5;"><td style="padding:12px 18px;color:#595959;white-space:nowrap;">сегодня 11:05</td><td style="padding:12px 12px;color:#262626;">Создан заказ</td><td style="padding:12px 12px;color:#595959;font-family:'SF Mono',ui-monospace,Menlo,monospace;font-size:12px;">ORD-10512</td><td style="padding:12px 12px;color:#722ed1;font-weight:500;">AI-агент</td><td style="padding:12px 18px;"><span style="font-size:12px;color:#389e0d;font-weight:500;">успешно</span></td></tr>
+                <tr style="border-bottom:1px solid #f5f5f5;"><td style="padding:12px 18px;color:#595959;white-space:nowrap;">02 июня 18:22</td><td style="padding:12px 12px;color:#262626;">Объединение контактов</td><td style="padding:12px 12px;color:#595959;font-family:'SF Mono',ui-monospace,Menlo,monospace;font-size:12px;">CUS-4702 ← CUS-4810</td><td style="padding:12px 12px;color:#262626;font-weight:500;">Иван Петров</td><td style="padding:12px 18px;"><span style="font-size:12px;color:#389e0d;font-weight:500;">успешно</span></td></tr>
+                <tr style="border-bottom:1px solid #f5f5f5;"><td style="padding:12px 18px;color:#595959;white-space:nowrap;">02 июня 14:00</td><td style="padding:12px 12px;color:#262626;">Изменены контактные данные</td><td style="padding:12px 12px;color:#595959;">email</td><td style="padding:12px 12px;color:#262626;font-weight:500;">Иван Петров</td><td style="padding:12px 18px;"><span style="font-size:12px;color:#389e0d;font-weight:500;">успешно</span></td></tr>
+                <tr style="border-bottom:1px solid #f5f5f5;"><td style="padding:12px 18px;color:#595959;white-space:nowrap;">28 мая 2026</td><td style="padding:12px 12px;color:#262626;">Контакт создан</td><td style="padding:12px 12px;color:#595959;font-family:'SF Mono',ui-monospace,Menlo,monospace;font-size:12px;">CUS-4702</td><td style="padding:12px 12px;color:#8c8c8c;font-weight:500;">система</td><td style="padding:12px 18px;"><span style="font-size:12px;color:#389e0d;font-weight:500;">успешно</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </sc-if>
+
+      </div>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;$preview&quot;: { &quot;width&quot;: 1440, &quot;height&quot;: 940 }
+}">
+class Component extends DCLogic {
+  state = { tab: 'overview', menuOpen: false };
+
+  renderVals() {
+    const { tab, menuOpen } = this.state;
+    const base = 'padding:11px 15px;border:none;background:transparent;border-bottom:2px solid transparent;font-size:14px;font-weight:500;color:#595959;cursor:pointer;margin-bottom:-1px;white-space:nowrap;';
+    const act = 'padding:11px 15px;border:none;background:transparent;border-bottom:2px solid #1677ff;font-size:14px;font-weight:600;color:#1677ff;cursor:pointer;margin-bottom:-1px;white-space:nowrap;';
+    const A = (t) => tab === t ? act : base;
+    const set = (t) => this.setState({ tab: t, menuOpen: false });
+    const menuBtnBase = 'width:38px;height:38px;border-radius:9px;border:1px solid #d9d9d9;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#595959;';
+    const menuBtnOn = 'width:38px;height:38px;border-radius:9px;border:1px solid #1677ff;background:#e6f4ff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#0958d9;';
+
+    return {
+      menuOpen, menuBtn: menuOpen ? menuBtnOn : menuBtnBase,
+      onToggleMenu: () => this.setState((s) => ({ menuOpen: !s.menuOpen })),
+      onCloseMenu: () => this.setState({ menuOpen: false }),
+      isOverview: tab === 'overview', isDialogs: tab === 'dialogs', isOrders: tab === 'orders',
+      isIds: tab === 'ids', isConsent: tab === 'consent', isAudit: tab === 'audit',
+      tOverview: A('overview'), tDialogs: A('dialogs'), tOrders: A('orders'),
+      tIds: A('ids'), tConsent: A('consent'), tAudit: A('audit'),
+      onTabOverview: () => set('overview'), onTabDialogs: () => set('dialogs'), onTabOrders: () => set('orders'),
+      onTabIds: () => set('ids'), onTabConsent: () => set('consent'), onTabAudit: () => set('audit'),
+    };
+  }
+}
+</script>
+</body>
+</html>

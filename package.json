@@ -1,0 +1,30 @@
+{
+  "name": "@edevs/hub-workspace",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "npm@10.0.0",
+  "workspaces": [
+    "apps/internal-ui",
+    "apps/checkout",
+    "apps/web-chat",
+    "packages/ui",
+    "packages/contracts",
+    "packages/shared"
+  ],
+  "scripts": {
+    "dev:internal-ui": "npm --workspace @edevs/internal-ui run dev",
+    "dev:checkout": "npm --workspace @edevs/checkout run dev",
+    "dev:web-chat": "npm --workspace @edevs/web-chat run dev",
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.54.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "typescript": "^5.8.0",
+    "vite": "^7.0.0",
+    "vitest": "^3.2.0"
+  }
+}

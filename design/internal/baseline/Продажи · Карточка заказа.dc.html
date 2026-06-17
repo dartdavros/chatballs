@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+::-webkit-scrollbar{width:10px;height:10px;}
+::-webkit-scrollbar-thumb{background:#dcdcdc;border-radius:8px;border:2px solid #f0f2f5;background-clip:content-box;}
+::-webkit-scrollbar-thumb:hover{background:#bfbfbf;background-clip:content-box;}
+</style>
+</helmet>
+
+<div style="display:flex;height:100vh;overflow:hidden;background:#f0f2f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;color:#262626;-webkit-font-smoothing:antialiased;min-width:1180px;">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside style="width:240px;flex:none;background:#ffffff;border-right:1px solid #f0f0f0;display:flex;flex-direction:column;height:100vh;">
+    <div style="height:56px;flex:none;display:flex;align-items:center;padding:0 14px;border-bottom:1px solid #f5f5f5;">
+      <a href="Командный центр.dc.html" style="display:flex;align-items:center;gap:9px;height:36px;padding:0 12px;border-radius:8px;text-decoration:none;color:#595959;font-size:13px;font-weight:500;border:1px solid #f0f0f0;width:100%;" style-hover="background:#f5f5f5;color:#1677ff;border-color:#d9d9d9;">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        Назад в Hub
+      </a>
+    </div>
+    <div style="padding:16px 16px 8px;">
+      <div style="display:flex;align-items:center;gap:11px;">
+        <div style="width:34px;height:34px;border-radius:9px;background:#e6f4ff;display:flex;align-items:center;justify-content:center;flex:none;"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="#1677ff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></div>
+        <div style="display:flex;flex-direction:column;line-height:1.15;"><span style="font-size:15px;font-weight:700;color:#1f1f1f;">Продажи</span><span style="font-size:11px;color:#8c8c8c;">Рабочее пространство</span></div>
+      </div>
+    </div>
+    <nav style="flex:1;overflow-y:auto;padding:8px 12px;">
+      <a href="Продажи · Обзор.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;color:#595959;font-size:13.5px;font-weight:500;text-decoration:none;margin-bottom:2px;" style-hover="background:#f5f5f5;color:#262626;"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13h8V3H3zM13 21h8V11h-8zM13 3v6h8V3zM3 17h8v4H3z"/></svg>Обзор</a>
+      <a href="Продажи · Диалоги.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;color:#595959;font-size:13.5px;font-weight:500;text-decoration:none;margin-bottom:2px;" style-hover="background:#f5f5f5;color:#262626;"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Диалоги<span style="margin-left:auto;min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:#faad14;color:#fff;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;">2</span></a>
+      <a href="Продажи · Клиенты.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;color:#595959;font-size:13.5px;font-weight:500;text-decoration:none;margin-bottom:2px;" style-hover="background:#f5f5f5;color:#262626;"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Клиенты</a>
+      <a href="Продажи · Продажи.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;background:#e6f4ff;color:#0958d9;font-size:13.5px;font-weight:600;text-decoration:none;margin-bottom:2px;position:relative;"><span style="position:absolute;left:0;top:8px;bottom:8px;width:3px;border-radius:0 3px 3px 0;background:#1677ff;"></span><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h2l2.6 12.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></svg>Продажи</a>
+    </nav>
+    <div style="flex:none;border-top:1px solid #f5f5f5;padding:10px 12px;">
+      <a href="#" style="display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:8px;text-decoration:none;" style-hover="background:#f5f5f5;"><div style="width:32px;height:32px;border-radius:50%;background:#1677ff;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex:none;">ИП</div><div style="display:flex;flex-direction:column;line-height:1.2;"><span style="font-size:13px;font-weight:600;color:#262626;">Иван Петров</span><span style="font-size:11px;color:#8c8c8c;">OWNER</span></div></a>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <div style="flex:1;min-width:0;display:flex;flex-direction:column;height:100vh;">
+    <header style="height:56px;flex:none;background:#ffffff;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;padding:0 24px;">
+      <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#8c8c8c;"><span style="font-weight:500;color:#595959;">Edevs</span><span style="color:#d9d9d9;">/</span><span style="font-weight:500;color:#595959;">Продажи</span><span style="color:#d9d9d9;">/</span><a href="Продажи · Продажи.dc.html" style="font-weight:500;color:#595959;text-decoration:none;" style-hover="color:#1677ff;">Продажи</a><span style="color:#d9d9d9;">/</span><span style="font-weight:600;color:#262626;font-family:'SF Mono',ui-monospace,Menlo,monospace;">ORD-10519</span></div>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:6px;background:#f5f5f5;font-size:12px;font-weight:600;color:#595959;"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#8c8c8c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 10 4.6-1.5 8-5 8-10V5Z"/></svg>OWNER</span>
+        <button style="position:relative;width:36px;height:36px;border-radius:8px;border:1px solid #f0f0f0;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#595959;" style-hover="background:#f5f5f5;color:#262626;"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span style="position:absolute;top:6px;right:7px;width:8px;height:8px;border-radius:50%;background:#ff4d4f;border:1.5px solid #fff;"></span></button>
+        <div style="width:1px;height:24px;background:#f0f0f0;"></div>
+        <div style="width:28px;height:28px;border-radius:50%;background:#1677ff;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;">ИП</div>
+      </div>
+    </header>
+
+    <main style="flex:1;overflow-y:auto;padding:24px 28px 40px;">
+      <div style="max-width:1180px;margin:0 auto;">
+
+        <sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ false }}">
+          <div onClick="{{ onCloseMenu }}" style="position:fixed;inset:0;z-index:20;"></div>
+        </sc-if>
+
+        <!-- HEADER CARD -->
+        <div style="background:#fff;border:1px solid #f0f0f0;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04);padding:20px 22px;margin-bottom:16px;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:20px;">
+            <div style="min-width:0;">
+              <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                <h1 style="margin:0;font-size:21px;font-weight:700;letter-spacing:-0.01em;color:#1f1f1f;font-family:'SF Mono',ui-monospace,Menlo,monospace;">ORD-10519</h1>
+                <span style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:16px;background:#f6ffed;border:1px solid #b7eb8f;font-size:12.5px;font-weight:600;color:#389e0d;"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Выполнен · подписка активна</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:0;margin-top:14px;flex-wrap:wrap;">
+                <div style="padding-right:20px;border-right:1px solid #f0f0f0;margin-right:20px;"><div style="font-size:11.5px;color:#8c8c8c;">Сумма</div><div style="font-size:16px;font-weight:700;color:#1f1f1f;margin-top:2px;">₽2 490 <span style="font-size:11px;font-weight:500;color:#8c8c8c;">/ мес</span></div></div>
+                <div style="padding-right:20px;border-right:1px solid #f0f0f0;margin-right:20px;"><div style="font-size:11.5px;color:#8c8c8c;">Клиент</div><a href="Продажи · Карточка клиента.dc.html" style="font-size:14px;font-weight:600;color:#1677ff;text-decoration:none;margin-top:2px;display:block;">Татьяна Лебедева</a></div>
+                <div style="padding-right:20px;border-right:1px solid #f0f0f0;margin-right:20px;"><div style="font-size:11.5px;color:#8c8c8c;">Продукт / Offer</div><div style="font-size:14px;font-weight:600;color:#262626;margin-top:2px;">FirePage · Business</div></div>
+                <div style="padding-right:20px;border-right:1px solid #f0f0f0;margin-right:20px;"><div style="font-size:11.5px;color:#8c8c8c;">Дата</div><div style="font-size:14px;font-weight:600;color:#262626;margin-top:2px;">16 июня 2026</div></div>
+                <div style="padding-right:20px;border-right:1px solid #f0f0f0;margin-right:20px;"><div style="font-size:11.5px;color:#8c8c8c;">Источник</div><div style="font-size:14px;font-weight:600;color:#262626;margin-top:2px;display:inline-flex;align-items:center;gap:6px;"><span style="width:7px;height:7px;border-radius:50%;background:#6b5be0;"></span>MAX</div></div>
+                <div><div style="font-size:11.5px;color:#8c8c8c;">Оформление</div><div style="font-size:14px;font-weight:600;color:#722ed1;margin-top:2px;display:inline-flex;align-items:center;gap:6px;"><span style="width:7px;height:7px;border-radius:50%;background:#722ed1;"></span>AI-агент</div></div>
+              </div>
+            </div>
+            <div style="position:relative;flex:none;">
+              <button onClick="{{ onToggleMenu }}" style="{{ menuBtn }}">Действия<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ menuRot }};"><polyline points="6 9 12 15 18 9"/></svg></button>
+              <sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ false }}">
+                <div style="position:absolute;right:0;top:46px;z-index:30;width:256px;background:#fff;border:1px solid #f0f0f0;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,0.12);padding:5px;">
+                  <a href="#" style="display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:7px;text-decoration:none;color:#262626;font-size:13px;font-weight:500;" style-hover="background:#f5f5f5;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg>Повторить fulfillment</a>
+                  <a href="#" style="display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:7px;text-decoration:none;color:#262626;font-size:13px;font-weight:500;" style-hover="background:#f5f5f5;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-15-6.7L3 13"/></svg>Запустить reconciliation</a>
+                  <div style="height:1px;background:#f5f5f5;margin:4px 8px;"></div>
+                  <a href="#" style="display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:7px;text-decoration:none;color:#cf1322;font-size:13px;font-weight:500;" style-hover="background:#fff2f0;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-15-6.7L3 13"/></svg>Выполнить возврат</a>
+                  <a href="#" style="display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:7px;text-decoration:none;color:#cf1322;font-size:13px;font-weight:500;" style-hover="background:#fff2f0;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-15-6.7L3 13"/></svg>Возврат подписки</a>
+                  <a href="#" style="display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:7px;text-decoration:none;color:#cf1322;font-size:13px;font-weight:500;" style-hover="background:#fff2f0;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></svg>Отменить подписку</a>
+                </div>
+              </sc-if>
+            </div>
+          </div>
+        </div>
+
+        <!-- COMMERCE TIMELINE -->
+        <div style="background:#fff;border:1px solid #f0f0f0;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04);padding:18px 22px 16px;margin-bottom:16px;">
+          <h3 style="margin:0 0 18px;font-size:14px;font-weight:700;color:#1f1f1f;">Commerce timeline</h3>
+          <div style="display:flex;align-items:flex-start;overflow-x:auto;padding-bottom:4px;">
+            <div style="flex:none;width:108px;text-align:center;"><div style="width:30px;height:30px;border-radius:50%;background:#52c41a;display:flex;align-items:center;justify-content:center;margin:0 auto;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div><div style="font-size:12.5px;font-weight:600;color:#262626;margin-top:8px;">Checkout</div><div style="font-size:11px;color:#bfbfbf;margin-top:2px;">14:00</div></div>
+            <div style="flex:1;height:2px;background:#b7eb8f;margin-top:14px;border-radius:2px;min-width:18px;"></div>
+            <div style="flex:none;width:108px;text-align:center;"><div style="width:30px;height:30px;border-radius:50%;background:#52c41a;display:flex;align-items:center;justify-content:center;margin:0 auto;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div><div style="font-size:12.5px;font-weight:600;color:#262626;margin-top:8px;">Order</div><div style="font-size:11px;color:#bfbfbf;margin-top:2px;">14:01</div></div>
+            <div style="flex:1;height:2px;background:#b7eb8f;margin-top:14px;border-radius:2px;min-width:18px;"></div>
+            <div style="flex:none;width:108px;text-align:center;"><div style="width:30px;height:30px;border-radius:50%;background:#52c41a;display:flex;align-items:center;justify-content:center;margin:0 auto;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div><div style="font-size:12.5px;font-weight:600;color:#262626;margin-top:8px;">Payment</div><div style="font-size:11px;color:#bfbfbf;margin-top:2px;">14:02</div></div>
+            <div style="flex:1;height:2px;background:#b7eb8f;margin-top:14px;border-radius:2px;min-width:18px;"></div>
+            <div style="flex:none;width:108px;text-align:center;"><div style="width:30px;height:30px;border-radius:50%;background:#52c41a;display:flex;align-items:center;justify-content:center;margin:0 auto;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div><div style="font-size:12.5px;font-weight:600;color:#262626;margin-top:8px;">Receipt</div><div style="font-size:11px;color:#bfbfbf;margin-top:2px;">14:02</div></div>
+            <div style="flex:1;height:2px;background:#b7eb8f;margin-top:14px;border-radius:2px;min-width:18px;"></div>
+            <div style="flex:none;width:108px;text-align:center;"><div style="width:30px;height:30px;border-radius:50%;background:#52c41a;display:flex;align-items:center;justify-content:center;margin:0 auto;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div><div style="font-size:12.5px;font-weight:600;color:#262626;margin-top:8px;">Fulfillment</div><div style="font-size:11px;color:#bfbfbf;margin-top:2px;">14:03</div></div>
+            <div style="flex:1;height:2px;background:#b7eb8f;margin-top:14px;border-radius:2px;min-width:18px;"></div>
+            <div style="flex:none;width:108px;text-align:center;"><div style="width:30px;height:30px;border-radius:50%;background:#52c41a;display:flex;align-items:center;justify-content:center;margin:0 auto;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div><div style="font-size:12.5px;font-weight:600;color:#262626;margin-top:8px;">Entitlement</div><div style="font-size:11px;color:#389e0d;margin-top:2px;font-weight:500;">активен</div></div>
+            <div style="flex:1;height:2px;background:#f0f0f0;margin-top:14px;border-radius:2px;min-width:18px;"></div>
+            <div style="flex:none;width:108px;text-align:center;opacity:0.65;"><div style="width:30px;height:30px;border-radius:50%;background:#f5f5f5;border:1.5px solid #e8e8e8;display:flex;align-items:center;justify-content:center;margin:0 auto;"><span style="width:8px;height:2px;background:#bfbfbf;border-radius:2px;"></span></div><div style="font-size:12.5px;font-weight:600;color:#8c8c8c;margin-top:8px;">Refund</div><div style="font-size:11px;color:#bfbfbf;margin-top:2px;">нет</div></div>
+          </div>
+        </div>
+
+        <!-- TABS -->
+        <div style="display:flex;align-items:center;gap:2px;border-bottom:1px solid #e8e8e8;margin-bottom:18px;overflow-x:auto;">
+          <button onClick="{{ onTabSummary }}" style="{{ tSummary }}">Состав</button>
+          <button onClick="{{ onTabPays }}" style="{{ tPays }}">Платежи</button>
+          <button onClick="{{ onTabReceipts }}" style="{{ tReceipts }}">Чеки</button>
+          <button onClick="{{ onTabFul }}" style="{{ tFul }}">Исполнение</button>
+          <button onClick="{{ onTabSub }}" style="{{ tSub }}">Подписка</button>
+          <button onClick="{{ onTabAudit }}" style="{{ tAudit }}">Аудит</button>
+        </div>
+
+        <!-- ===== СОСТАВ ===== -->
+        <sc-if value="{{ isSummary }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;gap:18px;align-items:flex-start;">
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:16px;">
+              <div style="background:#fff;border:1px solid #f0f0f0;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04);overflow:hidden;">
+                <div style="padding:15px 18px 12px;border-bottom:1px solid #f5f5f5;"><h3 style="margin:0;font-size:14px;font-weight:700;color:#1f1f1f;">Позиции заказа</h3><div style="font-size:11.5px;color:#bfbfbf;margin-top:3px;">Снимок на момент оформления · цена зафиксирована</div></div>
+                <table style="width:100%;border-collapse:collapse;font-size:13px;">
+                  <thead><tr style="background:#fafafa;"><th style="text-align:left;padding:10px 18px;font-size:11px;font-weight:600;color:#8c8c8c;">OFFER</th><th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;color:#8c8c8c;">ТИП</th><th style="text-align:right;padding:10px 12px;font-size:11px;font-weight:600;color:#8c8c8c;">ЦЕНА</th><th style="text-align:right;padding:10px 12px;font-size:11px;font-weight:600;color:#8c8c8c;">КОЛ-ВО</th><th style="text-align:right;padding:10px 18px;font-size:11px;font-weight:600;color:#8c8c8c;">ИТОГО</th></tr></thead>
+                  <tbody>
+                    <tr style="border-top:1px solid #f5f5f5;"><td style="padding:13px 18px;"><div style="font-weight:600;color:#262626;">FirePage · Business</div><div style="font-size:11.5px;color:#bfbfbf;font-family:'SF Mono',ui-monospace,Menlo,monospace;">OFR-FP-BUS · price v4</div></td><td style="padding:13px 12px;color:#595959;">Подписка · мес</td><td style="padding:13px 12px;text-align:right;color:#595959;">₽2 490</td><td style="padding:13px 12px;text-align:right;color:#595959;">1</td><td style="padding:13px 18px;text-align:right;font-weight:600;color:#262626;">₽2 490</td></tr>
+                  </tbody>
+                  <tfoot><tr style="border-top:1px solid #f0f0f0;background:#fafafa;"><td colspan="4" style="padding:12px 18px;text-align:right;font-size:13px;font-weight:600;color:#595959;">Итого к оплате</td><td style="padding:12px 18px;text-align:right;font-size:15px;font-weight:700;color:#1f1f1f;">₽2 490</td></tr></tfoot>
+                </table>
+              </div>
+              <div style="background:#fff;border:1px solid #f0f0f0;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04);padding:16px 18px;">
+                <h3 style="margin:0 0 13px;font-size:14px;font-weight:700;color:#1f1f1f;">Принятые документы</h3>
+                <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f5f5f5;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#389e0d" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span style="flex:1;font-size:13px;color:#262626;">Публичная оферта <span style="color:#bfbfbf;font-family:'SF Mono',ui-monospace,Menlo,monospace;font-size:11.5px;">v3.1</span></span><span style="font-size:11.5px;color:#bfbfbf;">принято 16 июня 14:00</span></div>
+                <div style="display:flex;align-items:center;gap:10px;padding:8px 0;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#389e0d" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span style="flex:1;font-size:13px;color:#262626;">Политика обработки персональных данных</span><span style="font-size:11.5px;color:#bfbfbf;">принято 16 июня 14:00</span></div>
+              </div>
+            </div>
+            <div style="width:330px;flex:none;display:flex;flex-direction:column;gap:16px;">
+              <div style="background:#fff;border:1px solid #f0f0f0;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04);padding:16px 18px;">
+                <h3 style="margin:0 0 13px;font-size:14px;font-weight:700;color:#1f1f1f;">Данные покупателя</h3>
+                <div style="font-size:13px;color:#262626;font-weight:600;">Татьяна Лебедева</div>
+                <div style="font-size:12.5px;color:#595959;margin-top:6px;font-family:'SF Mono',ui-monospace,Menlo,monospace;">t.lebedeva@agency.ru</div>
+                <div style="font-size:12.5px;color:#8c8c8c;margin-top:3px;">ООО «Агентство Лебедева» · ИНН 7701234567</div>
+              </div>
+              <div style="background:#fff;border:1px solid #f0f0f0;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04);padding:16px 18px;">
+                <h3 style="margin:0 0 13px;font-size:14px;font-weight:700;color:#1f1f1f;">Источник оформления</h3>
+                <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#262626;"><span style="width:8px;height:8px;border-radius:50%;background:#6b5be0;"></span>Канал MAX · диалог с AI-агентом</div>
+                <a href="Продажи · Диалоги.dc.html" style="font-size:12.5px;color:#1677ff;text-decoration:none;font-family:'SF Mono',ui-monospace,Menlo,monospace;display:block;margin-top:8px;" style-hover="text-decoration:underline;">checkout CHK-77120 →</a>
+                <div style="font-size:11.5px;color:#bfbfbf;margin-top:4px;">создан 16 июня 14:00</div>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- ===== ПЛАТЕЖИ ===== -->
+        <sc-if value="{{ isPays }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:16px;">
+            <div style="background:#fff;border:1px solid #f0f0f0;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04);overflow:hidden;">
+              <div style="padding:15px 18px 12px;border-bottom:1px solid #f5f5f5;"><h3 style="margin:0;font-size:14px;font-weight:700;color:#1f1f1f;">Платежи и попытки</h3></div>
+              <table style="width:100%;border-collapse:collapse;font-size:13px;">
+                <thead><tr style="background:#fafafa;"><th style="text-align:left;padding:10px 18px;font-size:11px;font-weight:600;color:#8c8c8c;">ПЛАТЁЖ</th><th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;color:#8c8c8c;">ПРОВАЙДЕР</th><th style="text-align:right;padding:10px 12px;font-size:11px;font-weight:600;color:#8c8c8c;">СУММА</th><th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;color:#8c8c8c;">МЕТОД</th><th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:600;color:#8c8c8c;">СТАТУС</th><th style="text-align:left;padding:10px 18px;font-size:11px;font-weight:600;color:#8c8c8c;">СВЕРКА</th></tr></thead>
+                <tbody><tr style="border-top:1px solid #f5f5f5;"><td style="padding:13px 18px;font-family:'SF Mono',ui-monospace,Menlo,monospace;font-weight:600;color:#262626;font-size:12.5px;">PAY-88231</td><td style="padding:13px 12px;color:#595959;">Точка</td><td style="padding:13px 12px;text-align:right;font-weight:600;">₽2 490</td><td style="padding:13px 12px;color:#595959;font-family:'SF Mono',ui-monospace,Menlo,monospace;font-size:12px;">Карта ···4242</td><td style="padding:13px 12px;"><span style="padding:2px 9px;border-radius:6px;background:#f6ffed;color:#389e0d;font-size:11.5px;font-weight:600;">Успешно</span></td><td style="padding:13px 18px;font-size:12px;color:#389e0d;">Сверено</td></tr></tbody>
+              </table>
+            </div>
+            <div style="background:#fff;border:1px solid #f0f0f0;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04);padding:16px 18px;">
+              <h3 style="margin:0 0 13px;font-size:14px;font-weight:700;color:#1f1f1f;">События провайдера</h3>
+              <div style="display:flex;flex-direction:column;gap:0;font-size:12.5px;">
+                <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #f7f7f7;"><span style="width:6px;height:6px;border-radius:50%;background:#52c41a;"></span><span style="flex:1;color:#262626;">payment.authorized</span><span style="color:#bfbfbf;font-family:'SF Mono',ui-monospace,Menlo,monospace;">evt_8831a</span><span style="color:#bfbfbf;width:64px;text-align:right;">14:02:03</span></div>
+                <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #f7f7f7;"><span style="width:6px;height:6px;border-radius:50%;background:#52c41a;"></span><span style="flex:1;color:#262626;">payment.captured</span><span style="color:#bfbfbf;font-family:'SF Mono',ui-monospace,Menlo,monospace;">evt_8831b</span><span style="color:#bfbfbf;width:64px;text-align:right;">14:02:05</span></div>
+                <div style="display:flex;align-items:center;gap:10px;padding:7px 0;"><span style="width:6px;height:6px;border-radius:50%;background:#52c41a;"></span><span style="flex:1;color:#262626;">payment.settled</span><span style="color:#bfbfbf;font-family:'SF Mono',ui-monospace,Menlo,monospace;">evt_8832c</span><span style="color:#bfbfbf;width:64px;text-align:right;">02:10</span></div>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- ===== ЧЕКИ ===== -->
+        <sc-if value="{{ isReceipts }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#fff;border:1px solid #f0f0f0;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04);padding:18px 20px;">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;"><h3 style="margin:0;font-size:14px;font-weight:700;color:#1f1f1f;">Фискальный чек</h3><span style="padding:3px 11px;border-radius:14px;background:#f6ffed;border:1px solid #b7eb8f;font-size:11.5px;font-weight:600;color:#389e0d;">Отправлен в ОФД</span></div>
+            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px 32px;">
+              <div><div style="font-size:11.5px;color:#8c8c8c;">Чек</div><div style="font-size:13px;font-weight:600;color:#262626;margin-top:3px;font-family:'SF Mono',ui-monospace,Menlo,monospace;">RCP-44021</div></div>
+              <div><div style="font-size:11.5px;color:#8c8c8c;">Тип</div><div style="font-size:13px;font-weight:600;color:#262626;margin-top:3px;">Приход</div></div>
+              <div><div style="font-size:11.5px;color:#8c8c8c;">Фискальный признак (ФПД)</div><div style="font-size:13px;font-weight:600;color:#262626;margin-top:3px;font-family:'SF Mono',ui-monospace,Menlo,monospace;">3920··· 7741</div></div>
+              <div><div style="font-size:11.5px;color:#8c8c8c;">Сумма</div><div style="font-size:13px;font-weight:600;color:#262626;margin-top:3px;">₽2 490 · НДС 20%</div></div>
+              <div><div style="font-size:11.5px;color:#8c8c8c;">ОФД</div><div style="font-size:13px;font-weight:600;color:#262626;margin-top:3px;">Принят · 16 июня 14:02</div></div>
+              <div><div style="font-size:11.5px;color:#8c8c8c;">Отправлен клиенту</div><div style="font-size:13px;font-weight:600;color:#262626;margin-top:3px;">Email · доставлен</div></div>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- ===== ИСПОЛНЕНИЕ ===== -->
+        <sc-if value="{{ isFul }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#fff;border:1px solid #f0f0f0;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04);padding:18px 20px;">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;"><div><h3 style="margin:0;font-size:14px;font-weight:700;color:#1f1f1f;">Product fulfillment</h3><div style="font-size:11.5px;color:#bfbfbf;margin-top:3px;font-family:'SF Mono',ui-monospace,Menlo,monospace;">OP-55120 · FirePage</div></div><div style="display:flex;align-items:center;gap:10px;"><span style="padding:3px 11px;border-radius:14px;background:#f6ffed;border:1px solid #b7eb8f;font-size:11.5px;font-weight:600;color:#389e0d;">Исполнен</span><button style="display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:7px;border:1px solid #d9d9d9;background:#fff;color:#595959;font-size:12.5px;font-weight:500;cursor:pointer;" style-hover="border-color:#1677ff;color:#1677ff;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg>Повторить</button></div></div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px 24px;margin-bottom:16px;">
+              <div><div style="font-size:11.5px;color:#8c8c8c;">Попытки</div><div style="font-size:15px;font-weight:700;color:#262626;margin-top:3px;">1</div></div>
+              <div><div style="font-size:11.5px;color:#8c8c8c;">Результат</div><div style="font-size:13px;font-weight:600;color:#389e0d;margin-top:5px;">Успешно</div></div>
+              <div><div style="font-size:11.5px;color:#8c8c8c;">Обновлено</div><div style="font-size:13px;font-weight:600;color:#262626;margin-top:5px;">16 июня 14:03</div></div>
+            </div>
+            <div style="font-size:11.5px;color:#8c8c8c;margin-bottom:7px;">PAYLOAD (SUMMARY)</div>
+            <div style="background:#fafafa;border:1px solid #f0f0f0;border-radius:9px;padding:12px 14px;font-size:12px;color:#595959;font-family:'SF Mono',ui-monospace,Menlo,monospace;line-height:1.6;">{ "product": "firepage", "plan": "business", "seats": 10, "account": "agency-lebedeva", "activate_at": "2026-06-16T14:03Z" }</div>
+          </div>
+        </sc-if>
+
+        <!-- ===== ПОДПИСКА ===== -->
+        <sc-if value="{{ isSub }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#fff;border:1px solid #f0f0f0;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04);padding:18px 20px;">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;"><div><h3 style="margin:0;font-size:14px;font-weight:700;color:#1f1f1f;">Подписка</h3><div style="font-size:11.5px;color:#bfbfbf;margin-top:3px;font-family:'SF Mono',ui-monospace,Menlo,monospace;">SUB-2041 · FirePage Business</div></div><span style="padding:3px 11px;border-radius:14px;background:#f6ffed;border:1px solid #b7eb8f;font-size:11.5px;font-weight:600;color:#389e0d;">Активна</span></div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px 24px;">
+              <div><div style="font-size:11.5px;color:#8c8c8c;">Текущий период</div><div style="font-size:13px;font-weight:600;color:#262626;margin-top:5px;">16 июн — 16 июл 2026</div></div>
+              <div><div style="font-size:11.5px;color:#8c8c8c;">Следующее списание</div><div style="font-size:13px;font-weight:600;color:#262626;margin-top:5px;">16 июля 2026 · ₽2 490</div></div>
+              <div><div style="font-size:11.5px;color:#8c8c8c;">Entitlement</div><div style="font-size:13px;font-weight:600;color:#262626;margin-top:5px;">10 рабочих мест</div></div>
+            </div>
+            <div style="display:flex;gap:9px;margin-top:18px;padding-top:16px;border-top:1px solid #f5f5f5;">
+              <button style="height:36px;padding:0 14px;border-radius:8px;border:1px solid #ffccc7;background:#fff;color:#cf1322;font-size:13px;font-weight:500;cursor:pointer;" style-hover="background:#fff2f0;">Возврат подписки</button>
+              <button style="height:36px;padding:0 14px;border-radius:8px;border:1px solid #ffccc7;background:#fff;color:#cf1322;font-size:13px;font-weight:500;cursor:pointer;" style-hover="background:#fff2f0;">Отменить подписку</button>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- ===== АУДИТ ===== -->
+        <sc-if value="{{ isAudit }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#fff;border:1px solid #f0f0f0;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04);overflow:hidden;">
+            <table style="width:100%;border-collapse:collapse;font-size:13px;">
+              <thead><tr style="background:#fafafa;"><th style="text-align:left;padding:11px 18px;font-size:11px;font-weight:600;color:#8c8c8c;">ВРЕМЯ</th><th style="text-align:left;padding:11px 12px;font-size:11px;font-weight:600;color:#8c8c8c;">ДЕЙСТВИЕ</th><th style="text-align:left;padding:11px 12px;font-size:11px;font-weight:600;color:#8c8c8c;">АКТОР</th><th style="text-align:left;padding:11px 18px;font-size:11px;font-weight:600;color:#8c8c8c;">РЕЗУЛЬТАТ</th></tr></thead>
+              <tbody>
+                <tr style="border-top:1px solid #f5f5f5;"><td style="padding:12px 18px;color:#595959;white-space:nowrap;">16 июня 14:03</td><td style="padding:12px 12px;color:#262626;">Fulfillment выполнен · OP-55120</td><td style="padding:12px 12px;color:#8c8c8c;font-weight:500;">система</td><td style="padding:12px 18px;"><span style="font-size:12px;color:#389e0d;font-weight:500;">успешно</span></td></tr>
+                <tr style="border-top:1px solid #f5f5f5;"><td style="padding:12px 18px;color:#595959;white-space:nowrap;">16 июня 14:02</td><td style="padding:12px 12px;color:#262626;">Чек отправлен в ОФД · RCP-44021</td><td style="padding:12px 12px;color:#8c8c8c;font-weight:500;">система</td><td style="padding:12px 18px;"><span style="font-size:12px;color:#389e0d;font-weight:500;">успешно</span></td></tr>
+                <tr style="border-top:1px solid #f5f5f5;"><td style="padding:12px 18px;color:#595959;white-space:nowrap;">16 июня 14:02</td><td style="padding:12px 12px;color:#262626;">Платёж получен · PAY-88231</td><td style="padding:12px 12px;color:#595959;font-weight:500;">Точка</td><td style="padding:12px 18px;"><span style="font-size:12px;color:#389e0d;font-weight:500;">успешно</span></td></tr>
+                <tr style="border-top:1px solid #f5f5f5;"><td style="padding:12px 18px;color:#595959;white-space:nowrap;">16 июня 14:01</td><td style="padding:12px 12px;color:#262626;">Заказ создан · ORD-10519</td><td style="padding:12px 12px;color:#722ed1;font-weight:500;">AI-агент</td><td style="padding:12px 18px;"><span style="font-size:12px;color:#389e0d;font-weight:500;">успешно</span></td></tr>
+                <tr style="border-top:1px solid #f5f5f5;"><td style="padding:12px 18px;color:#595959;white-space:nowrap;">16 июня 14:00</td><td style="padding:12px 12px;color:#262626;">Checkout оформлен · CHK-77120</td><td style="padding:12px 12px;color:#722ed1;font-weight:500;">AI-агент</td><td style="padding:12px 18px;"><span style="font-size:12px;color:#389e0d;font-weight:500;">успешно</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </sc-if>
+
+      </div>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;$preview&quot;: { &quot;width&quot;: 1440, &quot;height&quot;: 940 }
+}">
+class Component extends DCLogic {
+  state = { tab: 'summary', menuOpen: false };
+
+  renderVals() {
+    const { tab, menuOpen } = this.state;
+    const base = 'padding:11px 15px;border:none;background:transparent;border-bottom:2px solid transparent;font-size:14px;font-weight:500;color:#595959;cursor:pointer;margin-bottom:-1px;white-space:nowrap;';
+    const act = 'padding:11px 15px;border:none;background:transparent;border-bottom:2px solid #1677ff;font-size:14px;font-weight:600;color:#1677ff;cursor:pointer;margin-bottom:-1px;white-space:nowrap;';
+    const A = (t) => tab === t ? act : base;
+    const set = (t) => this.setState({ tab: t, menuOpen: false });
+    const mBase = 'display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 16px;border-radius:9px;border:1px solid #d9d9d9;background:#fff;color:#262626;font-size:13.5px;font-weight:600;cursor:pointer;';
+    const mOn = 'display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 16px;border-radius:9px;border:1px solid #1677ff;background:#e6f4ff;color:#0958d9;font-size:13.5px;font-weight:600;cursor:pointer;';
+
+    return {
+      menuOpen, menuBtn: menuOpen ? mOn : mBase, menuRot: menuOpen ? 'rotate(180deg)' : 'none',
+      onToggleMenu: () => this.setState((s) => ({ menuOpen: !s.menuOpen })),
+      onCloseMenu: () => this.setState({ menuOpen: false }),
+      isSummary: tab === 'summary', isPays: tab === 'pays', isReceipts: tab === 'receipts',
+      isFul: tab === 'ful', isSub: tab === 'sub', isAudit: tab === 'audit',
+      tSummary: A('summary'), tPays: A('pays'), tReceipts: A('receipts'), tFul: A('ful'), tSub: A('sub'), tAudit: A('audit'),
+      onTabSummary: () => set('summary'), onTabPays: () => set('pays'), onTabReceipts: () => set('receipts'),
+      onTabFul: () => set('ful'), onTabSub: () => set('sub'), onTabAudit: () => set('audit'),
+    };
+  }
+}
+</script>
+</body>
+</html>

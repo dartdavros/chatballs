@@ -1,0 +1,25 @@
+{
+  "name": "@edevs/internal-ui",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -p tsconfig.json && vite build",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@ant-design/icons": "^6.0.0",
+    "@edevs/contracts": "0.1.0",
+    "@edevs/shared": "0.1.0",
+    "@edevs/ui": "0.1.0",
+    "antd": "^5.26.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0"
+  }
+}

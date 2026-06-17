@@ -1,0 +1,22 @@
+html,
+body,
+#root {
+  min-height: 100%;
+  margin: 0;
+}
+
+.web-chat-demo {
+  min-height: 100vh;
+  padding: 24px;
+  background: #f6f8fb;
+}
+
+.chat-panel {
+  width: min(420px, calc(100vw - 32px));
+  margin-left: auto;
+  padding: 20px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgb(15 23 42 / 10%);
+}

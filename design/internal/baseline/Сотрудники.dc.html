@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+::-webkit-scrollbar{width:10px;height:10px;}
+::-webkit-scrollbar-thumb{background:#dcdcdc;border-radius:8px;border:2px solid #f0f2f5;background-clip:content-box;}
+::-webkit-scrollbar-thumb:hover{background:#bfbfbf;background-clip:content-box;}
+</style>
+</helmet>
+
+<div style="display:flex;height:100vh;overflow:hidden;background:#f0f2f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;color:#262626;-webkit-font-smoothing:antialiased;min-width:1080px;">
+
+  <!-- ============ SIDEBAR (уровень компании) ============ -->
+  <aside style="width:248px;flex:none;background:#ffffff;border-right:1px solid #f0f0f0;display:flex;flex-direction:column;height:100vh;">
+    <div style="height:56px;flex:none;display:flex;align-items:center;gap:11px;padding:0 20px;border-bottom:1px solid #f5f5f5;">
+      <div style="width:30px;height:30px;border-radius:8px;background:#1677ff;display:flex;align-items:center;justify-content:center;flex:none;"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2 6 4-14 2 8h6"/></svg></div>
+      <div style="display:flex;flex-direction:column;line-height:1.15;"><span style="font-size:14px;font-weight:600;color:#1f1f1f;letter-spacing:-0.01em;">Edevs Hub</span><span style="font-size:11px;color:#8c8c8c;">Уровень компании</span></div>
+    </div>
+    <nav style="flex:1;overflow-y:auto;padding:12px 12px 8px;">
+      <a href="Командный центр.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;color:#595959;font-size:13.5px;font-weight:500;text-decoration:none;margin-bottom:2px;" style-hover="background:#f5f5f5;color:#262626;"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.4"/><rect x="14" y="3" width="7" height="5" rx="1.4"/><rect x="14" y="12" width="7" height="9" rx="1.4"/><rect x="3" y="16" width="7" height="5" rx="1.4"/></svg>Командный центр</a>
+      <div style="font-size:11px;font-weight:600;letter-spacing:0.06em;color:#bfbfbf;padding:14px 12px 6px;">КОМПАНИЯ</div>
+      <a href="Отделы.dc.html" style="display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;color:#595959;font-size:13.5px;font-weight:500;text-decoration:none;margin-bottom:2px;" style-hover="background:#f5f5f5;color:#262626;"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"/><path d="M9 8h1.5M13.5 8H15M9 12h1.5M13.5 12H15M9 16h1.5M13.5 16H15"/></svg>Отделы</a>
+      <a href="#" style="display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;background:#e6f4ff;color:#0958d9;font-size:13.5px;font-weight:600;text-decoration:none;margin-bottom:2px;position:relative;"><span style="position:absolute;left:0;top:8px;bottom:8px;width:3px;border-radius:0 3px 3px 0;background:#1677ff;"></span><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Сотрудники</a>
+      <a href="#" style="display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;color:#595959;font-size:13.5px;font-weight:500;text-decoration:none;margin-bottom:2px;" style-hover="background:#f5f5f5;color:#262626;"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>Продукты</a>
+      <div style="font-size:11px;font-weight:600;letter-spacing:0.06em;color:#bfbfbf;padding:14px 12px 6px;">ПЛАТФОРМА</div>
+      <a href="#" style="display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;color:#595959;font-size:13.5px;font-weight:500;text-decoration:none;margin-bottom:2px;" style-hover="background:#f5f5f5;color:#262626;"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="12" rx="2.5"/><path d="M12 8V4.5"/><circle cx="12" cy="3.5" r="1.2"/><circle cx="9" cy="13.5" r="1"/><circle cx="15" cy="13.5" r="1"/><path d="M2 13.5h2M20 13.5h2"/></svg>AI</a>
+      <a href="#" style="display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;color:#595959;font-size:13.5px;font-weight:500;text-decoration:none;margin-bottom:2px;" style-hover="background:#f5f5f5;color:#262626;"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 8V2.5M15 8V2.5M18 8v5.5a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V8Z"/><path d="M12 17.5V22"/></svg>Интеграции</a>
+      <div style="height:1px;background:#f5f5f5;margin:14px 12px 10px;"></div>
+      <a href="#" style="display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;color:#595959;font-size:13.5px;font-weight:500;text-decoration:none;margin-bottom:2px;" style-hover="background:#f5f5f5;color:#262626;"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="6" x2="9" y2="6"/><line x1="3" y1="6" x2="5" y2="6"/><circle cx="7" cy="6" r="2"/><line x1="21" y1="12" x2="13" y2="12"/><line x1="3" y1="12" x2="9" y2="12"/><circle cx="11" cy="12" r="2"/><line x1="21" y1="18" x2="15" y2="18"/><line x1="3" y1="18" x2="11" y2="18"/><circle cx="13" cy="18" r="2"/></svg>Настройки</a>
+    </nav>
+    <div style="flex:none;border-top:1px solid #f5f5f5;padding:10px 12px;">
+      <a href="#" style="display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:8px;text-decoration:none;" style-hover="background:#f5f5f5;"><div style="width:32px;height:32px;border-radius:50%;background:#1677ff;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex:none;">ИП</div><div style="display:flex;flex-direction:column;line-height:1.2;"><span style="font-size:13px;font-weight:600;color:#262626;">Иван Петров</span><span style="font-size:11px;color:#8c8c8c;">OWNER</span></div></a>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <div style="flex:1;min-width:0;display:flex;flex-direction:column;height:100vh;">
+    <header style="height:56px;flex:none;background:#ffffff;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;padding:0 24px;">
+      <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#8c8c8c;"><span style="font-weight:500;color:#595959;">Edevs</span><span style="color:#d9d9d9;">/</span><span style="font-weight:600;color:#262626;">Сотрудники</span></div>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <button style="position:relative;width:36px;height:36px;border-radius:8px;border:1px solid #f0f0f0;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#595959;" style-hover="background:#f5f5f5;color:#262626;"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span style="position:absolute;top:6px;right:7px;width:8px;height:8px;border-radius:50%;background:#ff4d4f;border:1.5px solid #fff;"></span></button>
+        <div style="width:1px;height:24px;background:#f0f0f0;"></div>
+        <div style="width:28px;height:28px;border-radius:50%;background:#1677ff;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;">ИП</div>
+      </div>
+    </header>
+
+    <main style="flex:1;overflow-y:auto;padding:24px 28px 40px;">
+      <div style="max-width:1240px;margin:0 auto;">
+
+        <sc-if value="{{ menuId }}" hint-placeholder-val="{{ false }}">
+          <div onClick="{{ onCloseMenu }}" style="position:fixed;inset:0;z-index:20;"></div>
+        </sc-if>
+
+        <!-- PAGE HEADER -->
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:24px;margin-bottom:18px;">
+          <div>
+            <h1 style="margin:0;font-size:24px;font-weight:700;letter-spacing:-0.02em;color:#1f1f1f;line-height:1.2;">Сотрудники</h1>
+            <p style="margin:6px 0 0;font-size:13.5px;color:#8c8c8c;">Доступ к Hub · показано <b style="color:#595959;">{{ shownCount }}</b> из 6</p>
+          </div>
+          <button style="display:flex;align-items:center;gap:8px;height:38px;padding:0 16px;border-radius:9px;border:none;background:#1677ff;color:#fff;font-size:13.5px;font-weight:600;cursor:pointer;flex:none;box-shadow:0 1px 2px rgba(22,119,255,0.3);" style-hover="background:#0958d9;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>Добавить оператора</button>
+        </div>
+
+        <!-- FILTER BAR -->
+        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:#fff;border:1px solid #f0f0f0;border-radius:11px;padding:11px 14px;margin-bottom:16px;box-shadow:0 1px 2px rgba(0,0,0,0.03);">
+          <div style="display:flex;align-items:center;gap:8px;height:34px;padding:0 11px;border:1px solid #e8e8e8;border-radius:8px;background:#fafafa;width:260px;" style-focus="border-color:#1677ff;">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#bfbfbf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input value="{{ q }}" onInput="{{ onSearch }}" placeholder="Поиск по имени или email…" style="border:none;outline:none;background:transparent;font-size:13px;color:#262626;width:100%;font-family:inherit;" />
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:12px;color:#8c8c8c;font-weight:500;">Роль</span>
+            <div style="display:flex;align-items:center;gap:3px;padding:3px;border-radius:8px;background:#f0f2f5;">
+              <button onClick="{{ onRoleAll }}" style="{{ roleAll }}">Все</button>
+              <button onClick="{{ onRoleOwner }}" style="{{ roleOwner }}">OWNER</button>
+              <button onClick="{{ onRoleOp }}" style="{{ roleOp }}">OPERATOR</button>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:12px;color:#8c8c8c;font-weight:500;">Статус</span>
+            <div style="display:flex;align-items:center;gap:3px;padding:3px;border-radius:8px;background:#f0f2f5;">
+              <button onClick="{{ onStAll }}" style="{{ stAll }}">Все</button>
+              <button onClick="{{ onStActive }}" style="{{ stActive }}">Активные</button>
+              <button onClick="{{ onStInvited }}" style="{{ stInvited }}">Приглашённые</button>
+              <button onClick="{{ onStBlocked }}" style="{{ stBlocked }}">Заблокированные</button>
+            </div>
+          </div>
+          <div style="flex:1;"></div>
+          <button onClick="{{ onReset }}" style="height:34px;padding:0 12px;border:none;background:transparent;color:#8c8c8c;font-size:13px;font-weight:500;cursor:pointer;border-radius:8px;" style-hover="color:#1677ff;background:#f5f5f5;">Сбросить</button>
+        </div>
+
+        <!-- TABLE -->
+        <div style="background:#fff;border:1px solid #f0f0f0;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04);overflow:hidden;">
+          <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:1000px;">
+              <thead><tr style="background:#fafafa;">
+                <th style="text-align:left;padding:11px 16px;font-size:11px;font-weight:600;color:#8c8c8c;letter-spacing:0.03em;position:sticky;top:0;background:#fafafa;border-bottom:1px solid #f0f0f0;">СОТРУДНИК</th>
+                <th style="text-align:left;padding:11px 12px;font-size:11px;font-weight:600;color:#8c8c8c;position:sticky;top:0;background:#fafafa;border-bottom:1px solid #f0f0f0;">РОЛЬ</th>
+                <th style="text-align:left;padding:11px 12px;font-size:11px;font-weight:600;color:#8c8c8c;position:sticky;top:0;background:#fafafa;border-bottom:1px solid #f0f0f0;">ОТДЕЛ</th>
+                <th style="text-align:left;padding:11px 12px;font-size:11px;font-weight:600;color:#8c8c8c;position:sticky;top:0;background:#fafafa;border-bottom:1px solid #f0f0f0;">СТАТУС</th>
+                <th style="text-align:left;padding:11px 12px;font-size:11px;font-weight:600;color:#8c8c8c;position:sticky;top:0;background:#fafafa;border-bottom:1px solid #f0f0f0;">ПОСЛЕДНИЙ ВХОД</th>
+                <th style="text-align:right;padding:11px 12px;font-size:11px;font-weight:600;color:#8c8c8c;position:sticky;top:0;background:#fafafa;border-bottom:1px solid #f0f0f0;">ДИАЛОГИ</th>
+                <th style="width:48px;position:sticky;top:0;background:#fafafa;border-bottom:1px solid #f0f0f0;"></th>
+              </tr></thead>
+              <tbody>
+                <sc-for list="{{ rows }}" as="r" hint-placeholder-count="6">
+                  <tr style="border-bottom:1px solid #f5f5f5;" style-hover="background:#fafbfc;">
+                    <td style="padding:12px 16px;">
+                      <div style="display:flex;align-items:center;gap:11px;">
+                        <div style="width:34px;height:34px;border-radius:50%;background:{{ r.avatarBg }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex:none;">{{ r.initials }}</div>
+                        <div style="min-width:0;"><a href="#" style="font-weight:600;color:#1677ff;text-decoration:none;font-size:13.5px;">{{ r.name }}</a><div style="font-size:11.5px;color:#bfbfbf;font-family:'SF Mono',ui-monospace,Menlo,monospace;">{{ r.email }}</div></div>
+                      </div>
+                    </td>
+                    <td style="padding:12px 12px;"><span style="padding:2px 9px;border-radius:6px;background:{{ r.roleBg }};color:{{ r.roleColor }};font-size:11px;font-weight:600;letter-spacing:0.02em;">{{ r.role }}</span></td>
+                    <td style="padding:12px 12px;color:#595959;">{{ r.dept }}</td>
+                    <td style="padding:12px 12px;"><span style="display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:500;color:{{ r.stColor }};"><span style="width:7px;height:7px;border-radius:50%;background:{{ r.stDot }};"></span>{{ r.stLabel }}</span></td>
+                    <td style="padding:12px 12px;color:#595959;white-space:nowrap;">{{ r.lastLogin }}</td>
+                    <td style="padding:12px 12px;text-align:right;font-weight:600;color:{{ r.dlgColor }};">{{ r.dialogs }}</td>
+                    <td style="padding:12px 12px;text-align:center;position:relative;">
+                      <button onClick="{{ r.onMenu }}" style="width:30px;height:30px;border-radius:7px;border:none;background:transparent;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:#8c8c8c;" style-hover="background:#f0f0f0;color:#262626;"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button>
+                      <sc-if value="{{ r.menuOpen }}" hint-placeholder-val="{{ false }}">
+                        <div style="position:absolute;right:12px;top:42px;z-index:30;width:206px;background:#fff;border:1px solid #f0f0f0;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,0.12);padding:5px;text-align:left;">
+                          <a href="#" style="display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:7px;text-decoration:none;color:#262626;font-size:13px;font-weight:500;" style-hover="background:#f5f5f5;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>Открыть карточку</a>
+                          <a href="#" style="display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:7px;text-decoration:none;color:#262626;font-size:13px;font-weight:500;" style-hover="background:#f5f5f5;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Завершить сессии</a>
+                          <a href="#" style="display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:7px;text-decoration:none;color:#262626;font-size:13px;font-weight:500;" style-hover="background:#f5f5f5;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Сбросить пароль</a>
+                          <div style="height:1px;background:#f5f5f5;margin:4px 8px;"></div>
+                          <a href="#" style="display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:7px;text-decoration:none;color:{{ r.blockColor }};font-size:13px;font-weight:500;" style-hover="background:#fafafa;">{{ r.blockLabel }}</a>
+                        </div>
+                      </sc-if>
+                    </td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+
+          <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:54px 20px;text-align:center;">
+              <div style="width:48px;height:48px;border-radius:50%;background:#f5f5f5;display:inline-flex;align-items:center;justify-content:center;margin-bottom:14px;"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#bfbfbf" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+              <div style="font-size:14px;font-weight:600;color:#595959;">Сотрудники не найдены</div>
+              <div style="font-size:12.5px;color:#bfbfbf;margin-top:4px;">Измените условия фильтра.</div>
+            </div>
+          </sc-if>
+
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-top:1px solid #f5f5f5;">
+            <div style="font-size:12.5px;color:#8c8c8c;">Показано {{ shownCount }} из 6</div>
+            <div style="font-size:12.5px;color:#bfbfbf;">Сессии и пароли управляются в карточке сотрудника</div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;$preview&quot;: { &quot;width&quot;: 1440, &quot;height&quot;: 900 }
+}">
+class Component extends DCLogic {
+  state = { q: '', role: 'all', status: 'all', menuId: null };
+
+  renderVals() {
+    const ST = {
+      active:  { stLabel: 'Активен', stColor: '#389e0d', stDot: '#52c41a' },
+      invited: { stLabel: 'Приглашён', stColor: '#0958d9', stDot: '#1677ff' },
+      blocked: { stLabel: 'Заблокирован', stColor: '#cf1322', stDot: '#ff4d4f' },
+    };
+    const ROLE = {
+      OWNER:    { roleColor: '#595959', roleBg: '#f0f0f0' },
+      OPERATOR: { roleColor: '#0958d9', roleBg: '#e6f4ff' },
+    };
+
+    const data = [
+      { id: 'u1', name: 'Иван Петров', initials: 'ИП', avatarBg: '#1677ff', email: 'i.petrov@edevs.tech', role: 'OWNER', dept: '—', st: 'active', lastLogin: 'сейчас · онлайн', dialogs: 0 },
+      { id: 'u2', name: 'Анна Котова', initials: 'АК', avatarBg: '#9254de', email: 'a.kotova@edevs.tech', role: 'OPERATOR', dept: 'Продажи', st: 'active', lastLogin: '5 мин назад', dialogs: 3 },
+      { id: 'u3', name: 'Дмитрий Соколов', initials: 'ДС', avatarBg: '#3b82c4', email: 'd.sokolov@edevs.tech', role: 'OPERATOR', dept: 'Продажи', st: 'active', lastLogin: '18 мин назад', dialogs: 2 },
+      { id: 'u4', name: 'Мария Орлова', initials: 'МО', avatarBg: '#13a8a8', email: 'm.orlova@edevs.tech', role: 'OPERATOR', dept: 'Продажи', st: 'active', lastLogin: '1 ч назад', dialogs: 1 },
+      { id: 'u5', name: 'Сергей Лебедев', initials: 'СЛ', avatarBg: '#bfbfbf', email: 's.lebedev@edevs.tech', role: 'OPERATOR', dept: 'Продажи', st: 'invited', lastLogin: 'не входил', dialogs: 0 },
+      { id: 'u6', name: 'Ольга Зайцева', initials: 'ОЗ', avatarBg: '#c4456b', email: 'o.zaytseva@edevs.tech', role: 'OPERATOR', dept: 'Продажи', st: 'blocked', lastLogin: '3 дня назад', dialogs: 0 },
+    ];
+
+    const { q, role, status, menuId } = this.state;
+    const ql = q.trim().toLowerCase();
+    const filtered = data.filter((d) =>
+      (!ql || d.name.toLowerCase().includes(ql) || d.email.toLowerCase().includes(ql)) &&
+      (role === 'all' || d.role === role) &&
+      (status === 'all' || d.st === status));
+
+    const rows = filtered.map((d) => ({
+      name: d.name, initials: d.initials, avatarBg: d.avatarBg, email: d.email,
+      role: d.role, ...ROLE[d.role], dept: d.dept, ...ST[d.st],
+      lastLogin: d.lastLogin, dialogs: String(d.dialogs), dlgColor: d.dialogs > 0 ? '#262626' : '#bfbfbf',
+      blockLabel: d.st === 'blocked' ? 'Разблокировать' : 'Заблокировать',
+      blockColor: d.st === 'blocked' ? '#389e0d' : '#cf1322',
+      menuOpen: menuId === d.id,
+      onMenu: () => this.setState((s) => ({ menuId: s.menuId === d.id ? null : d.id })),
+    }));
+
+    const segBase = 'padding:6px 13px;border:none;border-radius:6px;font-size:12.5px;font-weight:500;cursor:pointer;background:transparent;color:#595959;white-space:nowrap;';
+    const segAct = 'padding:6px 13px;border:none;border-radius:6px;font-size:12.5px;font-weight:600;cursor:pointer;background:#fff;color:#1f1f1f;box-shadow:0 1px 2px rgba(0,0,0,0.1);white-space:nowrap;';
+    const setRole = (r) => this.setState({ role: r, menuId: null });
+    const setSt = (s) => this.setState({ status: s, menuId: null });
+
+    return {
+      rows, q, shownCount: String(rows.length), isEmpty: rows.length === 0, menuId,
+      roleAll: role === 'all' ? segAct : segBase, roleOwner: role === 'OWNER' ? segAct : segBase, roleOp: role === 'OPERATOR' ? segAct : segBase,
+      stAll: status === 'all' ? segAct : segBase, stActive: status === 'active' ? segAct : segBase, stInvited: status === 'invited' ? segAct : segBase, stBlocked: status === 'blocked' ? segAct : segBase,
+      onRoleAll: () => setRole('all'), onRoleOwner: () => setRole('OWNER'), onRoleOp: () => setRole('OPERATOR'),
+      onStAll: () => setSt('all'), onStActive: () => setSt('active'), onStInvited: () => setSt('invited'), onStBlocked: () => setSt('blocked'),
+      onSearch: (e) => this.setState({ q: e.target.value, menuId: null }),
+      onReset: () => this.setState({ q: '', role: 'all', status: 'all', menuId: null }),
+      onCloseMenu: () => this.setState({ menuId: null }),
+    };
+  }
+}
+</script>
+</body>
+</html>

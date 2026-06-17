@@ -1,0 +1,1 @@
+export { edevsHubTheme } from "./theme";

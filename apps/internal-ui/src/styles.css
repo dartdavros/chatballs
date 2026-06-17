@@ -1,0 +1,52 @@
+html,
+body,
+#root {
+  min-width: 1024px;
+  min-height: 100%;
+  margin: 0;
+}
+
+.hub-shell {
+  min-height: 100vh;
+}
+
+.hub-sidebar {
+  border-right: 1px solid #e5e7eb;
+}
+
+.hub-logo {
+  height: 56px;
+  padding: 18px 24px;
+  font-weight: 700;
+}
+
+.hub-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  padding: 0 24px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.hub-content {
+  padding: 24px;
+}
+
+.page-header {
+  margin-bottom: 24px;
+}
+
+.department-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 16px;
+}
+
+.department-card {
+  min-height: 180px;
+  padding: 20px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
