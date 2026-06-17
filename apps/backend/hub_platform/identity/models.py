@@ -131,6 +131,7 @@ class EmployeeProfile(models.Model):
     must_change_password = models.BooleanField(default=False)
     totp_required = models.BooleanField(default=False)
     totp_enabled = models.BooleanField(default=False)
+    totp_secret = models.CharField(max_length=64, blank=True)
     blocked_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

@@ -3,6 +3,7 @@ import json
 from django.test import Client, TestCase
 
 from hub_platform.identity.bootstrap import bootstrap_edevs_owner
+from hub_platform.identity.auth_views import _totp_code
 from hub_platform.identity.models import (
     AuditEvent,
     Department,
@@ -95,7 +96,14 @@ class AuthEndpointTests(TestCase):
         self.assertEqual(response.status_code, 200)
         payload = response.json()
         self.assertTrue(payload["authenticated"])
+        self.assertEqual(payload["user"]["organizationName"], "Edevs")
         self.assertEqual(payload["user"]["role"], EmployeeRole.OWNER)
+
+    def test_session_sets_csrf_cookie_for_spa(self) -> None:
+        response = self.client.get("/api/v1/auth/session/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("csrftoken", response.cookies)
 
     def test_login_rejects_invalid_password(self) -> None:
         response = self.client.post(
@@ -128,6 +136,52 @@ class AuthEndpointTests(TestCase):
         self.assertEqual(response.status_code, 200)
         profile.refresh_from_db()
         self.assertFalse(profile.must_change_password)
+
+    def test_totp_setup_and_confirm_enables_profile_totp(self) -> None:
+        self.client.login(username="owner@edevs.tech", password="temporary-password")
+
+        setup_response = self.client.get("/api/v1/auth/totp/setup/")
+
+        self.assertEqual(setup_response.status_code, 200)
+        secret = setup_response.json()["secret"]
+        self.assertTrue(secret)
+        self.assertIn("otpauth://totp/", setup_response.json()["otpauthUrl"])
+
+        confirm_response = self.client.post(
+            "/api/v1/auth/totp/confirm/",
+            data=json.dumps({"code": _totp_code(secret)}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(confirm_response.status_code, 200)
+        owner = HumanUser.objects.get(email="owner@edevs.tech")
+        self.assertTrue(owner.employee_profile.totp_enabled)
+
+    def test_enabled_totp_requires_second_factor_before_session(self) -> None:
+        owner = HumanUser.objects.get(email="owner@edevs.tech")
+        profile = owner.employee_profile
+        profile.totp_secret = "JBSWY3DPEHPK3PXP"
+        profile.totp_enabled = True
+        profile.save(update_fields=["totp_secret", "totp_enabled"])
+
+        login_response = self.client.post(
+            "/api/v1/auth/login/",
+            data=json.dumps({"email": "owner@edevs.tech", "password": "temporary-password"}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(login_response.status_code, 200)
+        self.assertFalse(login_response.json()["authenticated"])
+        self.assertTrue(login_response.json()["totpRequired"])
+
+        verify_response = self.client.post(
+            "/api/v1/auth/totp/verify/",
+            data=json.dumps({"code": _totp_code(profile.totp_secret)}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(verify_response.status_code, 200)
+        self.assertTrue(verify_response.json()["authenticated"])
 
 
 class DjangoAdminTests(TestCase):
@@ -210,3 +264,60 @@ class EmployeeEndpointTests(TestCase):
         self.assertFalse(operator.is_active)
         self.assertTrue(operator.employee_profile.is_blocked)
         self.assertTrue(AuditEvent.objects.filter(action="identity.operator_blocked").exists())
+
+
+class CompanyEndpointTests(TestCase):
+    def setUp(self) -> None:
+        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
+        self.organization = Organization.objects.get(slug="edevs")
+        self.sales = Department.objects.get(code="sales")
+        self.client = Client()
+        self.client.login(username="owner@edevs.tech", password="temporary-password")
+
+    def test_owner_reads_departments_and_products(self) -> None:
+        departments_response = self.client.get("/api/v1/company/departments/")
+        products_response = self.client.get("/api/v1/company/products/")
+
+        self.assertEqual(departments_response.status_code, 200)
+        self.assertEqual(products_response.status_code, 200)
+        self.assertEqual(departments_response.json()["items"][0]["code"], "sales")
+        self.assertEqual(
+            set(product["code"] for product in products_response.json()["items"]),
+            {"firepage", "foxray"},
+        )
+
+    def test_owner_creates_and_deactivates_product(self) -> None:
+        create_response = self.client.post(
+            "/api/v1/company/products/create/",
+            data=json.dumps({"code": "academy", "name": "Academy"}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(create_response.status_code, 201)
+        product_id = create_response.json()["product"]["id"]
+
+        deactivate_response = self.client.post(f"/api/v1/company/products/{product_id}/deactivate/")
+
+        self.assertEqual(deactivate_response.status_code, 200)
+        self.assertEqual(deactivate_response.json()["product"]["status"], "DISABLED")
+        self.assertTrue(AuditEvent.objects.filter(action="identity.product_created").exists())
+        self.assertTrue(AuditEvent.objects.filter(action="identity.product_deactivated").exists())
+
+    def test_operator_cannot_create_product(self) -> None:
+        operator = HumanUser.objects.create_user(email="operator@edevs.tech", password="operator-password")
+        EmployeeProfile.objects.create(
+            user=operator,
+            organization=self.organization,
+            role=EmployeeRole.OPERATOR,
+            department=self.sales,
+        )
+        self.client.logout()
+        self.client.login(username="operator@edevs.tech", password="operator-password")
+
+        response = self.client.post(
+            "/api/v1/company/products/create/",
+            data=json.dumps({"code": "academy", "name": "Academy"}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 403)

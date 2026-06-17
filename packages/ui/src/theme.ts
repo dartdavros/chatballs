@@ -2,12 +2,17 @@ import type { ThemeConfig } from "antd";
 
 export const edevsHubTheme: ThemeConfig = {
   token: {
-    colorPrimary: "#2563eb",
-    colorSuccess: "#059669",
-    colorWarning: "#d97706",
-    colorError: "#dc2626",
-    colorInfo: "#2563eb",
+    colorPrimary: "#1677ff",
+    colorSuccess: "#52c41a",
+    colorWarning: "#faad14",
+    colorError: "#ff4d4f",
+    colorInfo: "#1677ff",
     borderRadius: 8,
+    colorBgLayout: "#f0f2f5",
+    colorBgContainer: "#ffffff",
+    colorBorder: "#f0f0f0",
+    colorText: "#262626",
+    colorTextSecondary: "#8c8c8c",
     fontFamily:
       '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
   },
@@ -15,13 +20,19 @@ export const edevsHubTheme: ThemeConfig = {
     Layout: {
       headerBg: "#ffffff",
       siderBg: "#ffffff",
-      bodyBg: "#f6f8fb",
+      bodyBg: "#f0f2f5",
     },
     Card: {
       borderRadiusLG: 8,
     },
     Table: {
-      headerBg: "#f8fafc",
+      headerBg: "#fafafa",
+      headerColor: "#8c8c8c",
+      rowHoverBg: "#fafbfc",
+    },
+    Button: {
+      borderRadius: 8,
+      primaryShadow: "0 1px 2px rgba(22,119,255,0.3)",
     },
   },
 };

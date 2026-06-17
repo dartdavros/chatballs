@@ -32,5 +32,5 @@ Default local URLs:
 Create or refresh the local OWNER account:
 
 ```powershell
-docker compose run --rm backend python manage.py bootstrap_owner --email owner@edevs.tech --password local-owner-password --name "Edevs Owner"
+docker compose run --rm backend python manage.py bootstrap_owner --email owner@edevs.tech --password local-owner-password --name "Иван Петров"
 ```

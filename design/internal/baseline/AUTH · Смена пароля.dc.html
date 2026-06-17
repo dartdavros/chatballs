@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+</style>
+</helmet>
+
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f0f2f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;color:#262626;-webkit-font-smoothing:antialiased;padding:24px;">
+  <div style="width:420px;max-width:100%;">
+
+    <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:24px;">
+      <div style="width:48px;height:48px;border-radius:13px;background:#1677ff;display:flex;align-items:center;justify-content:center;margin-bottom:14px;box-shadow:0 4px 12px rgba(22,119,255,0.3);"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2 6 4-14 2 8h6"/></svg></div>
+      <h1 style="margin:0;font-size:20px;font-weight:700;letter-spacing:-0.01em;color:#1f1f1f;">Смена временного пароля</h1>
+      <p style="margin:5px 0 0;font-size:13px;color:#8c8c8c;text-align:center;max-width:320px;line-height:1.45;">Вы вошли по временному паролю. Задайте постоянный пароль, чтобы продолжить.</p>
+    </div>
+
+    <div style="background:#fff;border:1px solid #f0f0f0;border-radius:14px;box-shadow:0 2px 12px rgba(0,0,0,0.05);padding:26px;">
+
+      <label style="display:block;font-size:12.5px;color:#595959;margin-bottom:7px;font-weight:500;">Новый пароль</label>
+      <div style="display:flex;align-items:center;gap:9px;height:42px;padding:0 13px;border:1px solid #e8e8e8;border-radius:9px;background:#fff;margin-bottom:14px;">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#bfbfbf" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <input type="{{ pwdType }}" value="{{ pwd }}" onInput="{{ onPwd }}" placeholder="Минимум 10 символов" style="border:none;outline:none;background:transparent;font-size:14px;color:#262626;width:100%;font-family:inherit;" />
+        <button onClick="{{ onToggle }}" style="border:none;background:transparent;cursor:pointer;color:#bfbfbf;display:flex;flex:none;padding:0;" style-hover="color:#595959;">{{ eyeIcon }}</button>
+      </div>
+
+      <!-- strength -->
+      <div style="display:flex;gap:5px;margin-bottom:7px;">
+        <div style="flex:1;height:4px;border-radius:3px;background:{{ bar1 }};"></div>
+        <div style="flex:1;height:4px;border-radius:3px;background:{{ bar2 }};"></div>
+        <div style="flex:1;height:4px;border-radius:3px;background:{{ bar3 }};"></div>
+        <div style="flex:1;height:4px;border-radius:3px;background:{{ bar4 }};"></div>
+      </div>
+      <div style="font-size:11.5px;color:{{ strengthColor }};margin-bottom:18px;font-weight:500;">{{ strengthLabel }}</div>
+
+      <label style="display:block;font-size:12.5px;color:#595959;margin-bottom:7px;font-weight:500;">Повторите пароль</label>
+      <div style="display:flex;align-items:center;gap:9px;height:42px;padding:0 13px;border:1px solid {{ confirmBorder }};border-radius:9px;background:#fff;margin-bottom:8px;">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#bfbfbf" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <input type="{{ pwdType }}" value="{{ confirm }}" onInput="{{ onConfirm }}" placeholder="Повторите новый пароль" style="border:none;outline:none;background:transparent;font-size:14px;color:#262626;width:100%;font-family:inherit;" />
+      </div>
+      <sc-if value="{{ mismatch }}" hint-placeholder-val="{{ false }}"><div style="font-size:11.5px;color:#cf1322;margin-bottom:14px;">Пароли не совпадают</div></sc-if>
+
+      <!-- requirements -->
+      <div style="background:#fafafa;border:1px solid #f0f0f0;border-radius:9px;padding:13px 15px;margin:14px 0 20px;">
+        <div style="font-size:11.5px;font-weight:600;color:#8c8c8c;margin-bottom:9px;">ТРЕБОВАНИЯ К ПАРОЛЮ</div>
+        <sc-for list="{{ reqs }}" as="r" hint-placeholder-count="3">
+          <div style="display:flex;align-items:center;gap:9px;padding:3px 0;"><span style="flex:none;">{{ r.icon }}</span><span style="font-size:12.5px;color:{{ r.color }};">{{ r.label }}</span></div>
+        </sc-for>
+      </div>
+
+      <button onClick="{{ onSubmit }}" style="{{ submitStyle }}">Сохранить и войти</button>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;$preview&quot;: { &quot;width&quot;: 1440, &quot;height&quot;: 900 }
+}">
+class Component extends DCLogic {
+  state = { pwd: '', confirm: '', show: false };
+
+  renderVals() {
+    const eye = (open) => open
+      ? React.createElement('svg', { viewBox: '0 0 24 24', width: 16, height: 16, fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' }, React.createElement('path', { key: 1, d: 'M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z' }), React.createElement('circle', { key: 2, cx: 12, cy: 12, r: 3 }))
+      : React.createElement('svg', { viewBox: '0 0 24 24', width: 16, height: 16, fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' }, React.createElement('path', { key: 1, d: 'M9.9 4.2A9.1 9.1 0 0 1 12 4c7 0 10 8 10 8a13 13 0 0 1-1.7 2.7M6.6 6.6A13 13 0 0 0 2 12s3 8 10 8a9 9 0 0 0 3.4-.6' }), React.createElement('path', { key: 2, d: 'M9.9 9.9a3 3 0 0 0 4.2 4.2' }), React.createElement('line', { key: 3, x1: 2, y1: 2, x2: 22, y2: 22 }));
+    const okIcon = React.createElement('svg', { viewBox: '0 0 24 24', width: 14, height: 14, fill: 'none', stroke: '#389e0d', strokeWidth: 2.4, strokeLinecap: 'round', strokeLinejoin: 'round' }, React.createElement('path', { d: 'M20 6 9 17l-5-5' }));
+    const dotIcon = React.createElement('svg', { viewBox: '0 0 24 24', width: 14, height: 14, fill: 'none', stroke: '#bfbfbf', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }, React.createElement('circle', { cx: 12, cy: 12, r: 9 }));
+
+    const pwd = this.state.pwd, confirm = this.state.confirm;
+    const hasLen = pwd.length >= 10;
+    const hasNum = /\d/.test(pwd);
+    const hasSpecial = /[^A-Za-z0-9]/.test(pwd) && /[A-Za-z]/.test(pwd);
+    const score = [hasLen, hasNum, hasSpecial].filter(Boolean).length + (pwd.length >= 14 ? 1 : 0);
+
+    const reqs = [
+      { ok: hasLen, label: 'Не менее 10 символов' },
+      { ok: hasNum, label: 'Содержит цифру' },
+      { ok: hasSpecial, label: 'Буквы и спецсимвол' },
+    ].map((r) => ({ label: r.label, icon: r.ok ? okIcon : dotIcon, color: r.ok ? '#389e0d' : '#8c8c8c' }));
+
+    const palette = ['#f0f0f0', '#ff4d4f', '#faad14', '#52c41a', '#389e0d'];
+    const bar = (i) => score >= i ? (score <= 1 ? '#ff4d4f' : score === 2 ? '#faad14' : '#52c41a') : '#f0f0f0';
+    const strengthLabel = pwd.length === 0 ? 'Введите новый пароль' : score <= 1 ? 'Слабый пароль' : score === 2 ? 'Средний пароль' : score === 3 ? 'Хороший пароль' : 'Надёжный пароль';
+    const strengthColor = pwd.length === 0 ? '#bfbfbf' : score <= 1 ? '#cf1322' : score === 2 ? '#d48806' : '#389e0d';
+
+    const valid = hasLen && hasNum && hasSpecial && confirm.length > 0 && pwd === confirm;
+    const mismatch = confirm.length > 0 && pwd !== confirm;
+    const submitStyle = valid
+      ? 'width:100%;height:44px;border-radius:9px;border:none;background:#1677ff;color:#fff;font-size:14.5px;font-weight:600;cursor:pointer;box-shadow:0 1px 2px rgba(22,119,255,0.3);'
+      : 'width:100%;height:44px;border-radius:9px;border:none;background:#f0f0f0;color:#bfbfbf;font-size:14.5px;font-weight:600;cursor:not-allowed;';
+
+    return {
+      pwd, confirm, pwdType: this.state.show ? 'text' : 'password', eyeIcon: eye(this.state.show),
+      bar1: bar(1), bar2: bar(2), bar3: bar(3), bar4: bar(4), strengthLabel, strengthColor,
+      reqs, mismatch, confirmBorder: mismatch ? '#ffccc7' : '#e8e8e8', submitStyle,
+      onPwd: (e) => this.setState({ pwd: e.target.value }),
+      onConfirm: (e) => this.setState({ confirm: e.target.value }),
+      onToggle: () => this.setState((s) => ({ show: !s.show })),
+      onSubmit: () => {},
+    };
+  }
+}
+</script>
+</body>
+</html>

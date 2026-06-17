@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+@keyframes hubBlink{0%,100%{opacity:1;}50%{opacity:0;}}
+</style>
+</helmet>
+
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f0f2f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;color:#262626;-webkit-font-smoothing:antialiased;padding:24px;">
+  <div style="width:400px;max-width:100%;">
+
+    <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:24px;">
+      <div style="width:48px;height:48px;border-radius:13px;background:#1677ff;display:flex;align-items:center;justify-content:center;margin-bottom:14px;box-shadow:0 4px 12px rgba(22,119,255,0.3);"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 10 4.6-1.5 8-5 8-10V5Z"/><path d="m9 12 2 2 4-4"/></svg></div>
+      <h1 style="margin:0;font-size:20px;font-weight:700;letter-spacing:-0.01em;color:#1f1f1f;">Двухфакторная проверка</h1>
+      <p style="margin:5px 0 0;font-size:13px;color:#8c8c8c;text-align:center;line-height:1.5;">Введите 6-значный код из приложения-аутентификатора</p>
+    </div>
+
+    <div style="background:#fff;border:1px solid #f0f0f0;border-radius:14px;box-shadow:0 2px 12px rgba(0,0,0,0.05);padding:26px;">
+      <div style="display:flex;align-items:center;gap:9px;padding:10px 13px;background:#f5f5f5;border-radius:9px;margin-bottom:22px;">
+        <div style="width:28px;height:28px;border-radius:50%;background:#1677ff;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex:none;">ИП</div>
+        <span style="font-size:12.5px;color:#595959;">Вход как <b style="color:#262626;">ivan@edevs.tech</b> · OWNER</span>
+      </div>
+
+      <!-- code inputs -->
+      <div style="display:flex;justify-content:space-between;gap:9px;margin-bottom:14px;">
+        <sc-for list="{{ cells }}" as="c" hint-placeholder-count="6">
+          <div style="{{ c.style }}">{{ c.char }}<sc-if value="{{ c.cursor }}" hint-placeholder-val="{{ false }}"><span style="width:2px;height:22px;background:#1677ff;animation:hubBlink 1s step-end infinite;"></span></sc-if></div>
+        </sc-for>
+      </div>
+
+      <sc-if value="{{ hasError }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#cf1322" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span style="font-size:12px;color:#cf1322;">Неверный код. Осталось попыток: 4</span></div>
+      </sc-if>
+
+      <!-- hidden real input for typing -->
+      <input value="{{ code }}" onInput="{{ onInput }}" inputmode="numeric" maxlength="6" placeholder="Нажмите и введите код" style="width:100%;height:40px;padding:0 13px;border:1px solid #e8e8e8;border-radius:9px;font-size:13px;color:#595959;font-family:inherit;outline:none;text-align:center;letter-spacing:1px;margin-bottom:18px;" style-focus="border-color:#1677ff;" />
+
+      <button onClick="{{ onSubmit }}" style="{{ submitStyle }}">Подтвердить</button>
+
+      <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:16px;font-size:12px;color:#8c8c8c;">
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#bfbfbf" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Код обновляется в приложении каждые 30 секунд
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-top:18px;"><a href="#" style="font-size:12.5px;color:#1677ff;text-decoration:none;font-weight:500;" style-hover="text-decoration:underline;">Использовать резервный код</a></div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;$preview&quot;: { &quot;width&quot;: 1440, &quot;height&quot;: 900 }
+}">
+class Component extends DCLogic {
+  state = { code: '', error: false };
+
+  renderVals() {
+    const code = this.state.code;
+    const cells = Array.from({ length: 6 }).map((_, i) => {
+      const char = code[i] || '';
+      const filled = !!char;
+      const active = i === code.length;
+      const base = 'flex:1;height:54px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#1f1f1f;';
+      const style = this.state.error
+        ? base + 'border:1.5px solid #ffccc7;background:#fff8f7;'
+        : filled
+          ? base + 'border:1.5px solid #1677ff;background:#f7fbff;'
+          : active
+            ? base + 'border:1.5px solid #1677ff;background:#fff;'
+            : base + 'border:1.5px solid #e8e8e8;background:#fafafa;';
+      return { char, cursor: active && char === '', style };
+    });
+
+    const complete = code.length === 6;
+    const submitStyle = complete
+      ? 'width:100%;height:44px;border-radius:9px;border:none;background:#1677ff;color:#fff;font-size:14.5px;font-weight:600;cursor:pointer;box-shadow:0 1px 2px rgba(22,119,255,0.3);'
+      : 'width:100%;height:44px;border-radius:9px;border:none;background:#f0f0f0;color:#bfbfbf;font-size:14.5px;font-weight:600;cursor:not-allowed;';
+
+    return {
+      code, cells, hasError: this.state.error, submitStyle,
+      onInput: (e) => this.setState({ code: e.target.value.replace(/[^0-9]/g, '').slice(0, 6), error: false }),
+      onSubmit: () => { if (complete) this.setState({ error: true }); },
+    };
+  }
+}
+</script>
+</body>
+</html>
