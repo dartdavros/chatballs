@@ -29,6 +29,8 @@ class BootstrapOwnerTests(TestCase):
         self.assertEqual(set(Product.objects.values_list("code", flat=True)), {"firepage", "foxray"})
         self.assertEqual(result.owner.employee_profile.role, EmployeeRole.OWNER)
         self.assertTrue(result.owner.employee_profile.totp_required)
+        self.assertTrue(result.owner.is_staff)
+        self.assertTrue(result.owner.is_superuser)
         self.assertTrue(AuditEvent.objects.filter(action="identity.owner_bootstrapped").exists())
 
     def test_bootstrap_is_idempotent_for_owner(self) -> None:
@@ -40,6 +42,16 @@ class BootstrapOwnerTests(TestCase):
         self.assertEqual(HumanUser.objects.count(), 1)
         self.assertEqual(Organization.objects.count(), 1)
         self.assertEqual(Product.objects.count(), 2)
+
+    def test_bootstrap_promotes_existing_owner_to_django_admin_access(self) -> None:
+        user = HumanUser.objects.create_user(email="owner@edevs.tech", password="temporary-password")
+
+        result = bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
+
+        user.refresh_from_db()
+        self.assertFalse(result.created_owner)
+        self.assertTrue(user.is_staff)
+        self.assertTrue(user.is_superuser)
 
 
 class PermissionTests(TestCase):
@@ -116,6 +128,17 @@ class AuthEndpointTests(TestCase):
         self.assertEqual(response.status_code, 200)
         profile.refresh_from_db()
         self.assertFalse(profile.must_change_password)
+
+
+class DjangoAdminTests(TestCase):
+    def test_bootstrapped_owner_can_access_django_admin(self) -> None:
+        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
+        client = Client()
+        self.assertTrue(client.login(username="owner@edevs.tech", password="temporary-password"))
+
+        response = client.get("/admin/")
+
+        self.assertEqual(response.status_code, 200)
 
 
 class EmployeeEndpointTests(TestCase):

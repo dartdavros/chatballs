@@ -44,12 +44,16 @@ def bootstrap_edevs_owner(*, email: str, password: str, full_name: str = "") -> 
         defaults={
             "full_name": full_name,
             "is_staff": True,
-            "is_superuser": False,
+            "is_superuser": True,
         },
     )
     if created_owner:
         owner.set_password(password)
         owner.save(update_fields=["password"])
+    elif not owner.is_staff or not owner.is_superuser:
+        owner.is_staff = True
+        owner.is_superuser = True
+        owner.save(update_fields=["is_staff", "is_superuser"])
 
     EmployeeProfile.objects.get_or_create(
         user=owner,

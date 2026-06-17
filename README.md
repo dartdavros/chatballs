@@ -24,6 +24,13 @@ No production secrets are stored in the repository.
 Default local URLs:
 
 - Internal Hub UI: `http://localhost:5173`
+- Django admin: `http://localhost:8010/admin/`
 - Checkout: `http://localhost:5174`
 - Web Chat: `http://localhost:5175`
 - Backend API: `http://localhost:8010/api/v1`
+
+Create or refresh the local OWNER account:
+
+```powershell
+docker compose run --rm backend python manage.py bootstrap_owner --email owner@edevs.tech --password local-owner-password --name "Edevs Owner"
+```
