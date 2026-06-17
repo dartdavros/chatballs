@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "hub_platform.identity",
     "hub_platform.health",
     "hub_platform.events",
 ]
@@ -66,6 +67,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "hub_backend.wsgi.application"
 ASGI_APPLICATION = "hub_backend.asgi.application"
+
+AUTH_USER_MODEL = "identity.HumanUser"
 
 DATABASES = {
     "default": {
