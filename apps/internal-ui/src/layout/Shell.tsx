@@ -73,7 +73,7 @@ function TopBar({ route, user, currentEmployee, onLogout }: { route: RouteKey; u
   );
 }
 
-export function Shell({ route, setRoute, user, data, reload, onLogout }: { route: RouteKey; setRoute: (route: RouteKey) => void; user: SessionUser; data: AppData; reload: () => void; onLogout: () => void }) {
+export function Shell({ route, setRoute, user, data, reload, onUserUpdated, onLogout }: { route: RouteKey; setRoute: (route: RouteKey) => void; user: SessionUser; data: AppData; reload: () => void; onUserUpdated: (user: SessionUser) => void; onLogout: () => void }) {
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<number | null>(null);
   const currentEmployee = data.employees.find((employee) => employee.id === selectedEmployeeId) ?? data.employees.find((employee) => employee.email === "a.kotova@edevs.tech") ?? data.employees[0] ?? null;
   function openEmployee(employee: Employee) {
@@ -92,7 +92,7 @@ export function Shell({ route, setRoute, user, data, reload, onLogout }: { route
             {route === "employees" && <EmployeesPage employees={data.employees} reload={reload} openEmployee={openEmployee} />}
             {route === "employeeDetail" && currentEmployee && <EmployeeDetailPage employee={currentEmployee} reload={reload} setRoute={setRoute} />}
             {route === "products" && <ProductsPage products={data.products} reload={reload} />}
-            {route === "profile" && <ProfilePage user={user} onLogout={onLogout} />}
+            {route === "profile" && <ProfilePage user={user} onUserUpdated={onUserUpdated} reload={reload} onLogout={onLogout} />}
           </div>
         </main>
       </div>

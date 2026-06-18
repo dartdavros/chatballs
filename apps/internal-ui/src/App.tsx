@@ -68,7 +68,7 @@ export function App() {
       ) : dataError ? (
         <ErrorScreen retry={loadData} />
       ) : (
-        <Shell route={route} setRoute={setRoute} user={user} data={data} reload={loadData} onLogout={logout} />
+        <Shell route={route} setRoute={setRoute} user={user} data={data} reload={loadData} onUserUpdated={setUser} onLogout={logout} />
       )}
     </ConfigProvider>
   );

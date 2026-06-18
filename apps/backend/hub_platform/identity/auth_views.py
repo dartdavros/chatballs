@@ -8,6 +8,7 @@ import time
 from urllib.parse import quote
 
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.sessions.models import Session
 from django.http import HttpRequest, JsonResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.csrf import csrf_protect
@@ -90,6 +91,20 @@ def _ensure_totp_secret(user: HumanUser) -> str:
     return profile.totp_secret
 
 
+def _revoke_other_user_sessions(request: HttpRequest) -> int:
+    current_key = request.session.session_key
+    user_id = str(request.user.id)
+    revoked = 0
+    for session in Session.objects.all():
+        if session.session_key == current_key:
+            continue
+        data = session.get_decoded()
+        if str(data.get("_auth_user_id")) == user_id:
+            session.delete()
+            revoked += 1
+    return revoked
+
+
 @ensure_csrf_cookie
 @require_GET
 def session_view(request: HttpRequest) -> JsonResponse:
@@ -149,6 +164,131 @@ def logout_view(request: HttpRequest) -> JsonResponse:
     logout(request)
     record_audit_event(action="identity.logout", actor=user, organization=organization, request=request)
     return JsonResponse({"authenticated": False})
+
+
+@csrf_protect
+@require_POST
+def profile_update_view(request: HttpRequest) -> JsonResponse:
+    if not request.user.is_authenticated:
+        return JsonResponse({"detail": "Authentication required"}, status=401)
+
+    body = _json_body(request)
+    full_name = str(body.get("fullName", "")).strip()
+    email = HumanUser.objects.normalize_email(str(body.get("email", "")).strip())
+    if not full_name:
+        return JsonResponse({"detail": "Full name is required"}, status=400)
+    if not email:
+        return JsonResponse({"detail": "Email is required"}, status=400)
+    if HumanUser.objects.exclude(id=request.user.id).filter(email=email).exists():
+        return JsonResponse({"detail": "Email is already used"}, status=400)
+
+    request.user.full_name = full_name
+    request.user.email = email
+    request.user.save(update_fields=["full_name", "email"])
+    profile = request.user.employee_profile
+    record_audit_event(
+        action="identity.profile_updated",
+        actor=request.user,
+        organization=profile.organization,
+        object_type="HumanUser",
+        object_id=str(request.user.id),
+        request=request,
+    )
+    return JsonResponse({"authenticated": True, "user": _user_payload(request.user)})
+
+
+@csrf_protect
+@require_POST
+def profile_password_view(request: HttpRequest) -> JsonResponse:
+    if not request.user.is_authenticated:
+        return JsonResponse({"detail": "Authentication required"}, status=401)
+
+    body = _json_body(request)
+    current_password = str(body.get("currentPassword", ""))
+    new_password = str(body.get("newPassword", ""))
+    if not request.user.check_password(current_password):
+        return JsonResponse({"detail": "Current password is invalid"}, status=400)
+    if len(new_password) < 10:
+        return JsonResponse({"detail": "Password is too short"}, status=400)
+
+    request.user.set_password(new_password)
+    request.user.save(update_fields=["password"])
+    login(request, request.user)
+    profile = request.user.employee_profile
+    revoked = _revoke_other_user_sessions(request)
+    record_audit_event(
+        action="identity.profile_password_changed",
+        actor=request.user,
+        organization=profile.organization,
+        payload={"revoked": revoked},
+        request=request,
+    )
+    return JsonResponse({"authenticated": True, "user": _user_payload(request.user), "revoked": revoked})
+
+
+@csrf_protect
+@require_POST
+def profile_totp_start_view(request: HttpRequest) -> JsonResponse:
+    if not request.user.is_authenticated:
+        return JsonResponse({"detail": "Authentication required"}, status=401)
+
+    profile = request.user.employee_profile
+    profile.totp_required = True
+    profile.totp_enabled = False
+    profile.totp_secret = ""
+    profile.save(update_fields=["totp_required", "totp_enabled", "totp_secret"])
+    record_audit_event(
+        action="identity.profile_totp_setup_started",
+        actor=request.user,
+        organization=profile.organization,
+        request=request,
+    )
+    return JsonResponse({"authenticated": True, "user": _user_payload(request.user)})
+
+
+@csrf_protect
+@require_POST
+def profile_totp_disable_view(request: HttpRequest) -> JsonResponse:
+    if not request.user.is_authenticated:
+        return JsonResponse({"detail": "Authentication required"}, status=401)
+
+    body = _json_body(request)
+    current_password = str(body.get("currentPassword", ""))
+    if not request.user.check_password(current_password):
+        return JsonResponse({"detail": "Current password is invalid"}, status=400)
+
+    profile = request.user.employee_profile
+    profile.totp_required = False
+    profile.totp_enabled = False
+    profile.totp_secret = ""
+    profile.save(update_fields=["totp_required", "totp_enabled", "totp_secret"])
+    revoked = _revoke_other_user_sessions(request)
+    record_audit_event(
+        action="identity.profile_totp_disabled",
+        actor=request.user,
+        organization=profile.organization,
+        payload={"revoked": revoked},
+        request=request,
+    )
+    return JsonResponse({"authenticated": True, "user": _user_payload(request.user), "revoked": revoked})
+
+
+@csrf_protect
+@require_POST
+def profile_revoke_other_sessions_view(request: HttpRequest) -> JsonResponse:
+    if not request.user.is_authenticated:
+        return JsonResponse({"detail": "Authentication required"}, status=401)
+
+    revoked = _revoke_other_user_sessions(request)
+    profile = request.user.employee_profile
+    record_audit_event(
+        action="identity.profile_sessions_revoked",
+        actor=request.user,
+        organization=profile.organization,
+        payload={"revoked": revoked},
+        request=request,
+    )
+    return JsonResponse({"revoked": revoked})
 
 
 @csrf_protect

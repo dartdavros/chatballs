@@ -1,6 +1,7 @@
 import json
 
 from django.test import Client, TestCase
+from django.contrib.sessions.backends.db import SessionStore
 
 from hub_platform.identity.bootstrap import bootstrap_edevs_owner
 from hub_platform.identity.auth_views import _totp_code
@@ -140,6 +141,78 @@ class AuthEndpointTests(TestCase):
         self.assertEqual(response.status_code, 200)
         profile.refresh_from_db()
         self.assertFalse(profile.must_change_password)
+
+    def test_profile_update_changes_current_user_identity(self) -> None:
+        self.client.login(username="owner@edevs.tech", password="temporary-password")
+
+        response = self.client.post(
+            "/api/v1/auth/profile/update/",
+            data=json.dumps({"fullName": "Иван Петров", "email": "ivan@edevs.tech"}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        owner = HumanUser.objects.get(id=response.json()["user"]["id"])
+        self.assertEqual(owner.full_name, "Иван Петров")
+        self.assertEqual(owner.email, "ivan@edevs.tech")
+        self.assertTrue(AuditEvent.objects.filter(action="identity.profile_updated").exists())
+
+    def test_profile_password_changes_current_user_password(self) -> None:
+        self.client.login(username="owner@edevs.tech", password="temporary-password")
+
+        response = self.client.post(
+            "/api/v1/auth/profile/password/",
+            data=json.dumps({"currentPassword": "temporary-password", "newPassword": "new-profile-password"}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        owner = HumanUser.objects.get(email="owner@edevs.tech")
+        self.assertTrue(owner.check_password("new-profile-password"))
+        self.assertTrue(AuditEvent.objects.filter(action="identity.profile_password_changed").exists())
+
+    def test_profile_totp_start_marks_setup_required(self) -> None:
+        owner = HumanUser.objects.get(email="owner@edevs.tech")
+        profile = owner.employee_profile
+        profile.totp_required = False
+        profile.totp_enabled = False
+        profile.totp_secret = "JBSWY3DPEHPK3PXP"
+        profile.save(update_fields=["totp_required", "totp_enabled", "totp_secret"])
+        self.client.login(username="owner@edevs.tech", password="temporary-password")
+
+        response = self.client.post("/api/v1/auth/profile/totp/start/")
+
+        self.assertEqual(response.status_code, 200)
+        profile.refresh_from_db()
+        self.assertTrue(profile.totp_required)
+        self.assertFalse(profile.totp_enabled)
+        self.assertEqual(profile.totp_secret, "")
+
+    def test_profile_totp_disable_requires_password_and_revokes_other_sessions(self) -> None:
+        owner = HumanUser.objects.get(email="owner@edevs.tech")
+        profile = owner.employee_profile
+        profile.totp_enabled = True
+        profile.totp_secret = "JBSWY3DPEHPK3PXP"
+        profile.save(update_fields=["totp_enabled", "totp_secret"])
+        self.client.login(username="owner@edevs.tech", password="temporary-password")
+        other_session = SessionStore()
+        other_session["_auth_user_id"] = str(owner.id)
+        other_session["_auth_user_backend"] = "django.contrib.auth.backends.ModelBackend"
+        other_session["_auth_user_hash"] = owner.get_session_auth_hash()
+        other_session.save()
+
+        response = self.client.post(
+            "/api/v1/auth/profile/totp/disable/",
+            data=json.dumps({"currentPassword": "temporary-password"}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["revoked"], 1)
+        profile.refresh_from_db()
+        self.assertFalse(profile.totp_required)
+        self.assertFalse(profile.totp_enabled)
+        self.assertEqual(profile.totp_secret, "")
 
     def test_totp_setup_and_confirm_enables_profile_totp(self) -> None:
         self.client.login(username="owner@edevs.tech", password="temporary-password")
