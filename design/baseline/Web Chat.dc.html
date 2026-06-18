@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="#1677ff"/><path d="M68 38a4 4 0 0 1-4 4H40l-9 9V31a4 4 0 0 1 4-4h29a4 4 0 0 1 4 4z" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg></template>
+<helmet>
+<style>
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+::-webkit-scrollbar{width:10px;height:10px;}
+::-webkit-scrollbar-thumb{background:#cfcfcf;border-radius:8px;border:2px solid #e7e5df;background-clip:content-box;}
+</style>
+</helmet>
+
+<div style="width:max-content;min-width:100%;min-height:100vh;box-sizing:border-box;padding:40px 48px 56px;background:#e7e5df;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;color:#1f1f1f;-webkit-font-smoothing:antialiased;">
+
+  <!-- title + state switcher -->
+  <div style="margin-bottom:28px;">
+    <h1 style="margin:0;font-size:20px;font-weight:700;letter-spacing:-0.01em;color:#1f1f1f;">Web Chat · виджет на сайте Foxray</h1>
+    <p style="margin:6px 0 16px;font-size:13px;color:#6b6b6b;">Клиентский виджет (SPEC-HUB-0003) · desktop и mobile · переключите состояние</p>
+    <div style="display:inline-flex;align-items:center;gap:3px;padding:4px;border-radius:11px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+      <button onClick="{{ onWelcome }}" style="{{ swWelcome }}">Приветствие + согласие</button>
+      <button onClick="{{ onAI }}" style="{{ swAI }}">Диалог с AI</button>
+      <button onClick="{{ onOperator }}" style="{{ swOperator }}">Оператор</button>
+      <button onClick="{{ onCheckout }}" style="{{ swCheckout }}">Checkout</button>
+      <button onClick="{{ onUnavailable }}" style="{{ swUnavailable }}">Недоступность</button>
+      <button onClick="{{ onLauncher }}" style="{{ swLauncher }}">Launcher</button>
+    </div>
+  </div>
+
+  <!-- frames row -->
+  <div style="display:flex;gap:48px;align-items:flex-start;">
+
+    <!-- ===== DESKTOP FRAME ===== -->
+    <div style="flex:none;width:1040px;">
+      <div style="font-size:12px;font-weight:600;letter-spacing:0.04em;color:#8c8c8c;margin-bottom:10px;">DESKTOP · 1040×720</div>
+      <div style="width:1040px;height:720px;background:#fff;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,0.08);overflow:hidden;position:relative;">
+
+        <!-- browser chrome -->
+        <div style="height:40px;background:#f3f3f4;border-bottom:1px solid #e8e8e8;display:flex;align-items:center;gap:8px;padding:0 14px;">
+          <span style="width:11px;height:11px;border-radius:50%;background:#ff5f57;"></span><span style="width:11px;height:11px;border-radius:50%;background:#febc2e;"></span><span style="width:11px;height:11px;border-radius:50%;background:#28c840;"></span>
+          <div style="margin-left:12px;flex:1;max-width:420px;height:24px;border-radius:7px;background:#fff;border:1px solid #e8e8e8;display:flex;align-items:center;gap:7px;padding:0 11px;"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#bfbfbf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span style="font-size:12px;color:#8c8c8c;">foxray.pro</span></div>
+        </div>
+
+        <!-- product page bg -->
+        <div style="position:absolute;top:40px;left:0;right:0;bottom:0;overflow:hidden;background:#fbfbfc;">
+          <!-- site nav -->
+          <div style="height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 40px;border-bottom:1px solid #f0f0f0;background:#fff;">
+            <div style="display:flex;align-items:center;gap:9px;"><div style="width:28px;height:28px;border-radius:8px;background:#1f1f1f;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700;">F</div><span style="font-size:16px;font-weight:700;color:#1f1f1f;">Foxray</span></div>
+            <div style="display:flex;align-items:center;gap:26px;"><span style="font-size:13px;color:#595959;">Возможности</span><span style="font-size:13px;color:#595959;">Тарифы</span><span style="font-size:13px;color:#595959;">Документация</span><span style="font-size:13px;font-weight:600;color:#fff;background:#1f1f1f;padding:7px 15px;border-radius:8px;">Начать</span></div>
+          </div>
+          <!-- hero -->
+          <div style="padding:64px 40px 0;max-width:680px;">
+            <div style="display:inline-block;padding:5px 12px;border-radius:20px;background:#f0f0f0;font-size:12px;font-weight:500;color:#595959;margin-bottom:20px;">SaaS для команд · Pro и Max</div>
+            <h2 style="margin:0;font-size:42px;font-weight:800;letter-spacing:-0.03em;line-height:1.08;color:#1f1f1f;">Аналитика трафика<br/>без лишних настроек</h2>
+            <p style="margin:20px 0 0;font-size:16px;color:#6b6b6b;line-height:1.55;max-width:480px;">Foxray собирает поведение пользователей и показывает, что улучшить. Подключение за 5 минут, без кода.</p>
+            <div style="display:flex;gap:12px;margin-top:28px;"><span style="font-size:14px;font-weight:600;color:#fff;background:#1677ff;padding:12px 22px;border-radius:10px;">Попробовать Pro</span><span style="font-size:14px;font-weight:600;color:#1f1f1f;background:#fff;border:1px solid #d9d9d9;padding:12px 22px;border-radius:10px;">Сравнить тарифы</span></div>
+          </div>
+          <div style="position:absolute;right:-60px;top:120px;width:360px;height:360px;border-radius:50%;background:radial-gradient(circle,#e6f0ff 0%,rgba(230,240,255,0) 70%);"></div>
+        </div>
+
+        <!-- widget docked bottom-right -->
+        <sc-if value="{{ panelOpen }}" hint-placeholder-val="{{ true }}">
+          <div style="position:absolute;right:24px;bottom:24px;width:384px;height:600px;border-radius:16px;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,0.18);border:1px solid rgba(0,0,0,0.06);">
+            <dc-import name="ChatPanel" state="{{ chatState }}" hint-size="100%,100%"></dc-import>
+          </div>
+        </sc-if>
+        <sc-if value="{{ launcherOnly }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;right:24px;bottom:24px;">
+            <div style="position:relative;width:60px;height:60px;border-radius:50%;background:#1677ff;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(22,119,255,0.4);cursor:pointer;">
+              <svg viewBox="0 0 24 24" width="27" height="27" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              <span style="position:absolute;top:-3px;right:-3px;min-width:22px;height:22px;padding:0 6px;border-radius:11px;background:#ff4d4f;color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2.5px solid #fbfbfc;">1</span>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+
+    <!-- ===== MOBILE FRAME ===== -->
+    <div style="flex:none;width:390px;">
+      <div style="font-size:12px;font-weight:600;letter-spacing:0.04em;color:#8c8c8c;margin-bottom:10px;">MOBILE · 390×800</div>
+      <div style="width:390px;height:800px;background:#000;border-radius:44px;padding:11px;box-shadow:0 1px 3px rgba(0,0,0,0.12);">
+        <div style="width:100%;height:100%;background:#fbfbfc;border-radius:34px;overflow:hidden;position:relative;">
+          <!-- status bar -->
+          <div style="height:46px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 24px 6px;background:#fff;"><span style="font-size:13px;font-weight:600;color:#1f1f1f;">9:41</span><div style="position:absolute;left:50%;top:8px;transform:translateX(-50%);width:96px;height:26px;background:#000;border-radius:14px;"></div><div style="display:flex;align-items:center;gap:5px;"><svg viewBox="0 0 24 24" width="15" height="15" fill="#1f1f1f"><path d="M2 17h2v3H2zm4-3h2v6H6zm4-3h2v9h-2zm4-3h2v12h-2z"/></svg><svg viewBox="0 0 24 24" width="15" height="15" fill="#1f1f1f"><rect x="2" y="8" width="18" height="8" rx="2"/><rect x="21" y="10" width="1.5" height="4"/></svg></div></div>
+
+          <!-- launcher-only mobile -->
+          <sc-if value="{{ launcherOnly }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;top:46px;left:0;right:0;bottom:0;background:#fbfbfc;">
+              <div style="height:52px;display:flex;align-items:center;gap:8px;padding:0 18px;border-bottom:1px solid #f0f0f0;background:#fff;"><div style="width:24px;height:24px;border-radius:7px;background:#1f1f1f;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;">F</div><span style="font-size:15px;font-weight:700;">Foxray</span></div>
+              <div style="padding:28px 22px;"><div style="display:inline-block;padding:4px 11px;border-radius:16px;background:#f0f0f0;font-size:11px;font-weight:500;color:#595959;margin-bottom:16px;">SaaS для команд</div><h2 style="margin:0;font-size:27px;font-weight:800;letter-spacing:-0.02em;line-height:1.12;color:#1f1f1f;">Аналитика трафика без лишних настроек</h2><p style="margin:14px 0 0;font-size:14px;color:#6b6b6b;line-height:1.5;">Подключение за 5 минут, без кода.</p><div style="margin-top:22px;font-size:14px;font-weight:600;color:#fff;background:#1677ff;padding:12px;border-radius:10px;text-align:center;">Попробовать Pro</div></div>
+            </div>
+            <div style="position:absolute;right:18px;bottom:24px;"><div style="position:relative;width:58px;height:58px;border-radius:50%;background:#1677ff;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(22,119,255,0.4);"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span style="position:absolute;top:-3px;right:-3px;min-width:21px;height:21px;padding:0 6px;border-radius:11px;background:#ff4d4f;color:#fff;font-size:11.5px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2.5px solid #fbfbfc;">1</span></div></div>
+          </sc-if>
+
+          <!-- panel near-fullscreen mobile -->
+          <sc-if value="{{ panelOpen }}" hint-placeholder-val="{{ true }}">
+            <div style="position:absolute;top:46px;left:0;right:0;bottom:0;">
+              <dc-import name="ChatPanel" state="{{ chatState }}" hint-size="100%,100%"></dc-import>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;$preview&quot;: { &quot;width&quot;: 1560, &quot;height&quot;: 920 }
+}">
+class Component extends DCLogic {
+  state = { chatState: 'ai' };
+
+  renderVals() {
+    const s = this.state.chatState;
+    const launcherOnly = s === 'launcher';
+    const panelOpen = !launcherOnly;
+
+    const base = 'padding:7px 13px;border:none;border-radius:8px;font-size:12.5px;font-weight:500;cursor:pointer;background:transparent;color:#595959;white-space:nowrap;';
+    const act = 'padding:7px 13px;border:none;border-radius:8px;font-size:12.5px;font-weight:600;cursor:pointer;background:#1677ff;color:#fff;white-space:nowrap;';
+    const A = (k) => s === k ? act : base;
+    const set = (k) => this.setState({ chatState: k });
+
+    return {
+      chatState: s, panelOpen, launcherOnly,
+      swWelcome: A('welcome'), swAI: A('ai'), swOperator: A('operator'),
+      swCheckout: A('checkout'), swUnavailable: A('unavailable'), swLauncher: A('launcher'),
+      onWelcome: () => set('welcome'), onAI: () => set('ai'), onOperator: () => set('operator'),
+      onCheckout: () => set('checkout'), onUnavailable: () => set('unavailable'), onLauncher: () => set('launcher'),
+    };
+  }
+}
+</script>
+</body>
+</html>

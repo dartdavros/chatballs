@@ -25,11 +25,14 @@ html,body{margin:0;padding:0;}
 
     <div style="background:#fff;border:1px solid #f0f0f0;border-radius:14px;box-shadow:0 2px 12px rgba(0,0,0,0.05);padding:28px 26px 24px;">
 
-      <!-- 6 code cells -->
-      <div style="display:flex;gap:9px;justify-content:center;margin-bottom:18px;">
-        <sc-for list="{{ cells }}" as="c" hint-placeholder-count="6">
-          <div style="width:48px;height:56px;border:1.5px solid {{ c.border }};border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:#1f1f1f;background:{{ c.bg }};font-family:'SF Mono',ui-monospace,Menlo,monospace;">{{ c.val }}</div>
-        </sc-for>
+      <!-- 6 code cells (cells themselves are the input via transparent overlay) -->
+      <div style="position:relative;margin-bottom:18px;">
+        <div style="display:flex;gap:9px;justify-content:center;">
+          <sc-for list="{{ cells }}" as="c" hint-placeholder-count="6">
+            <div style="width:48px;height:56px;border:1.5px solid {{ c.border }};border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:#1f1f1f;background:{{ c.bg }};font-family:'SF Mono',ui-monospace,Menlo,monospace;">{{ c.val }}</div>
+          </sc-for>
+        </div>
+        <input value="{{ code }}" onInput="{{ onInput }}" inputmode="numeric" maxlength="6" autofocus style="position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:text;border:none;font-size:16px;" />
       </div>
 
       <sc-if value="{{ hasError }}" hint-placeholder-val="{{ false }}">
@@ -40,8 +43,6 @@ html,body{margin:0;padding:0;}
       </sc-if>
 
       <!-- numpad-style helper input -->
-      <input value="{{ code }}" onInput="{{ onInput }}" inputmode="numeric" maxlength="6" placeholder="Введите код" style="width:100%;height:42px;padding:0 13px;border:1px solid #e8e8e8;border-radius:9px;font-size:15px;letter-spacing:3px;color:#262626;font-family:'SF Mono',ui-monospace,Menlo,monospace;outline:none;text-align:center;margin-bottom:18px;" style-focus="border-color:#1677ff;" />
-
       <button onClick="{{ onSubmit }}" style="{{ submitStyle }}">Подтвердить</button>
 
       <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:16px;font-size:12.5px;color:#8c8c8c;">
