@@ -7,7 +7,6 @@ import { ProductsPage } from "../features/products/ProductsPage";
 import { ProfilePage } from "../features/profile/ProfilePage";
 import { Avatar } from "../shared/ui";
 import { Icon, PulseIcon } from "../shared/icons";
-import { initials } from "../shared/utils";
 
 function Sidebar({ route, user, setRoute }: { route: RouteKey; user: SessionUser; setRoute: (route: RouteKey) => void }) {
   const nav = [
@@ -24,10 +23,10 @@ function Sidebar({ route, user, setRoute }: { route: RouteKey; user: SessionUser
   ];
   return (
     <aside className="hub-sidebar">
-      <div className="hub-brand">
+      <button className="hub-brand" type="button" onClick={() => setRoute("command")}>
         <div className="hub-brand-mark"><PulseIcon /></div>
         <div><strong>Edevs Hub</strong><span>Уровень компании</span></div>
-      </div>
+      </button>
       <nav className="hub-nav">
         {nav.map((item, index) => {
           if ("group" in item) return <div className="hub-nav-group" key={item.label}>{item.label}</div>;
@@ -51,21 +50,19 @@ function Sidebar({ route, user, setRoute }: { route: RouteKey; user: SessionUser
   );
 }
 
-function TopBar({ route, user, currentEmployee, onLogout }: { route: RouteKey; user: SessionUser; currentEmployee?: Employee | null; onLogout: () => void }) {
+function TopBar({ route, user, currentEmployee, setRoute }: { route: RouteKey; user: SessionUser; currentEmployee?: Employee | null; setRoute: (route: RouteKey) => void }) {
   const st = commandCenterModel("today").st;
   const isCommand = route === "command";
   return (
     <header className="hub-topbar">
       <div className="breadcrumbs">
-        <span>{user.organizationName}</span>
+        <button type="button" onClick={() => setRoute("command")}>{user.organizationName}</button>
         <i>/</i>
-        {route === "employeeDetail" ? <><span>Сотрудники</span><i>/</i><strong>{currentEmployee?.fullName || currentEmployee?.email || routes[route]}</strong></> : <strong>{routes[route]}</strong>}
+        {route === "employeeDetail" ? <><button type="button" onClick={() => setRoute("employees")}>Сотрудники</button><i>/</i><strong>{currentEmployee?.fullName || currentEmployee?.email || routes[route]}</strong></> : <strong>{routes[route]}</strong>}
       </div>
       <div className="topbar-actions">
         {isCommand && <span className="topbar-status" style={{ background: st.bg, borderColor: st.border, color: st.color }}><span style={{ background: st.dot }} />{st.label}</span>}
         <button className="icon-button" aria-label="Уведомления"><Icon name="bell" size={18} /><b className={isCommand ? "" : "is-dot"}>{isCommand ? "2" : ""}</b></button>
-        <span className="topbar-divider" />
-        <button className="user-button" type="button"><span className="topbar-avatar">{initials(user.fullName, user.email)}</span><Icon name="chevron" size={14} /></button>
       </div>
     </header>
   );
@@ -82,7 +79,7 @@ export function Shell({ route, setRoute, selectedEmployeeId, openEmployeeRoute, 
     <div className="hub-shell">
       <Sidebar route={route} user={user} setRoute={setRoute} />
       <div className="hub-main">
-        <TopBar route={route} user={user} currentEmployee={currentEmployee} onLogout={onLogout} />
+        <TopBar route={route} user={user} currentEmployee={currentEmployee} setRoute={setRoute} />
         <main className="hub-scroll">
           <div className="hub-page">
             {route === "command" && <CommandCenter data={data} setRoute={setRoute} />}
