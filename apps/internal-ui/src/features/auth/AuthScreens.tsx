@@ -3,9 +3,9 @@ import { type FormEvent, type ReactNode, useEffect, useState } from "react";
 import { api } from "../../api/client";
 import type { AuthChallenge, LoginPayload, SessionUser } from "../../types";
 import { Icon, PulseIcon, ShieldIcon } from "../../shared/icons";
-import { initials } from "../../shared/utils";
+import { createQrMatrix } from "./qr";
 
-function AuthFrame({ title, subtitle, logo, width = 400, children, note }: { title: string; subtitle: string; logo: "pulse" | "shield"; width?: number; children: ReactNode; note?: ReactNode }) {
+function AuthFrame({ title, subtitle, logo, width = 400, children, note }: { title: string; subtitle: ReactNode; logo: "pulse" | "shield"; width?: number; children: ReactNode; note?: ReactNode }) {
   return (
     <main className="auth-screen">
       <div className="auth-box" style={{ width }}>
@@ -21,9 +21,44 @@ function AuthFrame({ title, subtitle, logo, width = 400, children, note }: { tit
   );
 }
 
-function AuthCodeCells({ value }: { value: string }) {
+function AuthCodeInput({ value, onChange, error = false, autoFocus = false }: { value: string; onChange: (value: string) => void; error?: boolean; autoFocus?: boolean }) {
+  const activeIndex = Math.min(value.length, 5);
   const digits = value.padEnd(6, " ").slice(0, 6).split("");
-  return <div className="auth-code-cells">{digits.map((digit, index) => <span className={digit.trim() ? "filled" : ""} key={index}>{digit}</span>)}</div>;
+  return (
+    <div className="auth-code-input-wrap">
+      <div className="auth-code-cells">
+        {digits.map((digit, index) => {
+          const filled = digit.trim().length > 0;
+          const active = !error && index === activeIndex && value.length < 6;
+          return <span className={`${filled ? "filled" : ""} ${active ? "active" : ""} ${error ? "error" : ""}`} key={index}>{digit}</span>;
+        })}
+      </div>
+      <input
+        className="auth-code-input-hidden"
+        value={value}
+        onChange={(event) => onChange(event.target.value.replace(/\D/g, "").slice(0, 6))}
+        inputMode="numeric"
+        maxLength={6}
+        autoFocus={autoFocus}
+        aria-label="Код из приложения-аутентификатора"
+      />
+    </div>
+  );
+}
+
+function TotpQr({ value }: { value: string }) {
+  const qr = createQrMatrix(value);
+  return (
+    <div className="auth-qr-shell">
+      <div className="auth-qr-grid" style={{ gridTemplateColumns: `repeat(${qr.size}, 1fr)` }} aria-label="QR-код для подключения TOTP">
+        {qr.modules.map((active, index) => <span className={active ? "active" : ""} key={index} />)}
+      </div>
+    </div>
+  );
+}
+
+function formatCountdown(seconds: number): string {
+  return `0:${seconds.toString().padStart(2, "0")}`;
 }
 
 export function AuthLogin({ onLogin, onTotpChallenge }: { onLogin: (user: SessionUser) => void; onTotpChallenge: (challenge: AuthChallenge) => void }) {
@@ -153,15 +188,20 @@ export function AuthChangePassword({ onChanged }: { user: SessionUser; onChanged
   );
 }
 
-export function AuthTotpSetup({ user, onConfirmed }: { user: SessionUser; onConfirmed: (user: SessionUser) => void }) {
+export function AuthTotpSetup({ user: _user, onConfirmed }: { user: SessionUser; onConfirmed: (user: SessionUser) => void }) {
   const [secret, setSecret] = useState("");
+  const [otpauthUrl, setOtpauthUrl] = useState("");
   const [code, setCode] = useState("");
   const [error, setError] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    api<{ secret: string }>("/api/v1/auth/totp/setup/")
-      .then((payload) => setSecret(payload.secret))
+    api<{ secret: string; otpauthUrl: string }>("/api/v1/auth/totp/setup/")
+      .then((payload) => {
+        setSecret(payload.secret);
+        setOtpauthUrl(payload.otpauthUrl);
+      })
       .catch(() => setError(true));
   }, []);
 
@@ -182,21 +222,42 @@ export function AuthTotpSetup({ user, onConfirmed }: { user: SessionUser; onConf
     }
   }
 
+  async function copySecret() {
+    if (!secret) return;
+    try {
+      await navigator.clipboard.writeText(secret);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1600);
+    } catch {
+      setCopied(false);
+    }
+  }
+
   return (
-    <AuthFrame title="Двухфакторная проверка" subtitle="Введите 6-значный код из приложения-аутентификатора" logo="shield">
-      <form className="auth-card" onSubmit={submit}>
-        <div className="auth-account-strip">
-          <span>{initials(user.fullName, user.email)}</span>
-          <p>Вход как <strong>{user.email}</strong> · {user.role}</p>
+    <AuthFrame title="Подключение двухфакторной аутентификации" subtitle="Отсканируйте QR-код в приложении-аутентификаторе, затем подтвердите кодом" logo="shield" width={440}>
+      <form className="auth-card auth-totp-setup-card" onSubmit={submit}>
+        <div className="auth-totp-step">
+          <span>1</span>
+          <strong>Отсканируйте QR-код</strong>
         </div>
-        {!user.totpEnabled && secret && <div className="auth-secret"><strong>Ключ настройки</strong><code>{secret}</code></div>}
-        <AuthCodeCells value={code} />
-        {error && <div className="auth-inline-error">Неверный код. Осталось попыток: 4</div>}
-        <input className="auth-code-input" value={code} onChange={(event) => { setCode(event.target.value.replace(/\D/g, "").slice(0, 6)); setError(false); }} placeholder="Нажмите и введите код" inputMode="numeric" autoFocus />
-        <button className="primary-button auth-submit" type="submit" disabled={code.length !== 6 || submitting}>Подтвердить</button>
-        <div className="auth-hint">Код обновляется в приложении каждые 30 секунд</div>
-        <button className="auth-link-button" type="button">Использовать резервный код</button>
+        <TotpQr value={otpauthUrl || secret} />
+        <p className="auth-secret-caption">Не получается отсканировать? Введите ключ вручную:</p>
+        <div className="auth-secret-row">
+          <code>{secret || "Загрузка ключа"}</code>
+          <button type="button" onClick={copySecret} title="Скопировать" disabled={!secret}>
+            <Icon name={copied ? "check" : "copy"} size={15} />
+          </button>
+        </div>
+        <div className="auth-totp-divider" />
+        <div className="auth-totp-step second">
+          <span>2</span>
+          <strong>Введите код из приложения</strong>
+        </div>
+        <AuthCodeInput value={code} onChange={(nextCode) => { setCode(nextCode); setError(false); }} error={error} autoFocus />
+        {error && <div className="auth-inline-error setup-error"><Icon name="warning" size={14} />Код не совпал. Попробуйте ещё раз</div>}
+        <button className="primary-button auth-submit" type="submit" disabled={code.length !== 6 || submitting}>Активировать</button>
       </form>
+      <div className="auth-cancel-link"><a href="#" onClick={(event) => event.preventDefault()}>Отмена</a></div>
     </AuthFrame>
   );
 }
@@ -205,6 +266,12 @@ export function AuthTotpCode({ challenge, onVerified }: { challenge: AuthChallen
   const [code, setCode] = useState("");
   const [error, setError] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [countdown, setCountdown] = useState(30 - (Math.floor(Date.now() / 1000) % 30));
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setCountdown(30 - (Math.floor(Date.now() / 1000) % 30)), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -224,15 +291,14 @@ export function AuthTotpCode({ challenge, onVerified }: { challenge: AuthChallen
   }
 
   return (
-    <AuthFrame title="Подтверждение входа" subtitle={`Введите 6-значный код из приложения-аутентификатора для ${challenge.email}`} logo="shield">
-      <form className="auth-card" onSubmit={submit}>
-        {error && <div className="auth-error"><span className="auth-error-dot">!</span><span>Неверный код. Осталось попыток: 2</span></div>}
-        <AuthCodeCells value={code} />
-        <input className="auth-code-input spaced" value={code} onChange={(event) => { setCode(event.target.value.replace(/\D/g, "").slice(0, 6)); setError(false); }} placeholder="Введите код" inputMode="numeric" autoFocus />
+    <AuthFrame title="Подтверждение входа" subtitle={<>Введите 6-значный код из приложения-аутентификатора для <b>{challenge.email}</b></>} logo="shield">
+      <form className="auth-card auth-totp-code-card" onSubmit={submit}>
+        <AuthCodeInput value={code} onChange={(nextCode) => { setCode(nextCode); setError(false); }} error={error} autoFocus />
+        {error && <div className="auth-error totp-code-error"><Icon name="warning" size={15} /><span>Неверный код. Осталось попыток: 2</span></div>}
         <button className="primary-button auth-submit" type="submit" disabled={code.length !== 6 || submitting}>Подтвердить</button>
-        <div className="auth-hint">Код обновится через 0:24</div>
-        <button className="auth-link-button" type="button">Нет доступа к коду? Связаться с поддержкой</button>
+        <div className="auth-countdown"><Icon name="clock" size={14} />Код обновится через <span>{formatCountdown(countdown)}</span></div>
       </form>
+      <p className="auth-support-link">Нет доступа к коду? <a href="#" onClick={(event) => event.preventDefault()}>Связаться с поддержкой</a></p>
     </AuthFrame>
   );
 }
