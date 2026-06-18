@@ -6,7 +6,7 @@ import { Icon } from "../shared/icons";
 export function TopBar({ route, user, currentEmployee, setRoute }: { route: RouteKey; user: SessionUser; currentEmployee?: Employee | null; setRoute: (route: RouteKey) => void }) {
   const st = commandCenterModel("today").st;
   const isCommand = route === "command";
-  const isSalesWorkspace = route === "salesOverview" || route === "salesClientDetail" || route === "salesClients" || route === "salesDialogs";
+  const isSalesWorkspace = route === "salesOverview" || route === "salesClientDetail" || route === "salesClients" || route === "salesDialogs" || route === "salesOrders";
   return (
     <header className="hub-topbar">
       <div className="breadcrumbs">

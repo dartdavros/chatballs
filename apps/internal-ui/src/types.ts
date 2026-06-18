@@ -58,7 +58,7 @@ export type Product = {
   createdAt: string;
 };
 
-export type RouteKey = "command" | "departments" | "employeeDetail" | "employees" | "products" | "profile" | "salesClientDetail" | "salesClients" | "salesDialogs" | "salesOverview";
+export type RouteKey = "command" | "departments" | "employeeDetail" | "employees" | "products" | "profile" | "salesClientDetail" | "salesClients" | "salesDialogs" | "salesOrders" | "salesOverview";
 
 export type AppData = {
   employees: Employee[];

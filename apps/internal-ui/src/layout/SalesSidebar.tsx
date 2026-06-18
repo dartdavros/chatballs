@@ -7,7 +7,7 @@ export function SalesSidebar({ route, user, setRoute }: { route: RouteKey; user:
     { key: "salesOverview" as const, label: "Обзор", icon: "grid" as const },
     { key: "salesDialogs" as const, label: "Диалоги", icon: "message" as const, badge: "2" },
     { key: "salesClients" as const, label: "Клиенты", icon: "team" as const },
-    { label: "Продажи", icon: "cart" as const },
+    { key: "salesOrders" as const, label: "Продажи", icon: "cart" as const },
   ];
   return (
     <aside className="hub-sidebar sales-workspace-sidebar">

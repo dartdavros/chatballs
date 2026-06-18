@@ -6,6 +6,7 @@ import { ProfilePage } from "../features/profile/ProfilePage";
 import { SalesClientDetailPage } from "../features/sales/client-detail/SalesClientDetailPage";
 import { SalesClientsPage } from "../features/sales/SalesClientsPage";
 import { SalesDialogsPage } from "../features/sales/SalesDialogsPage";
+import { SalesOrdersPage } from "../features/sales/orders/SalesOrdersPage";
 import { SalesOverviewPage } from "../features/sales/SalesOverviewPage";
 import type { AppData, Employee, RouteKey, SessionUser } from "../types";
 
@@ -23,6 +24,7 @@ export function ShellRouteContent({ route, data, currentEmployee, openEmployee, 
       {route === "salesClientDetail" && <SalesClientDetailPage setRoute={setRoute} />}
       {route === "salesOverview" && <SalesOverviewPage products={data.products} />}
       {route === "salesDialogs" && <SalesDialogsPage />}
+      {route === "salesOrders" && <SalesOrdersPage />}
     </>
   );
 }
