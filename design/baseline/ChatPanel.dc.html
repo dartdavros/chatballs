@@ -62,7 +62,7 @@
       <div style="display:flex;justify-content:flex-end;margin-bottom:10px;"><div style="max-width:78%;"><div style="background:#1677ff;color:#fff;border-radius:14px 14px 4px 14px;padding:9px 13px;font-size:13.5px;line-height:1.45;">Здравствуйте! Чем Max отличается от Pro?</div><div style="font-size:10.5px;color:#bfbfbf;margin:3px 4px 0 0;text-align:right;">14:01 · доставлено</div></div></div>
 
       <!-- AI -->
-      <div style="display:flex;gap:8px;margin-bottom:10px;"><div style="width:28px;height:28px;border-radius:50%;background:#f9f0ff;border:1px solid #efdbff;display:flex;align-items:center;justify-content:center;flex:none;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#722ed1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="12" rx="2.5"/><path d="M12 8V4.5"/><circle cx="12" cy="3.5" r="1.2"/></svg></div><div style="max-width:78%;"><div style="background:#fff;border:1px solid #eee;border-radius:14px 14px 14px 4px;padding:9px 13px;font-size:13.5px;line-height:1.45;color:#262626;">Pro — для одного пользователя (₽4 900/мес), Max — командный с расширенными лимитами и приоритетной поддержкой (₽9 900/мес). При оплате за год — скидка 20%.</div><div style="font-size:10.5px;color:#bfbfbf;margin:3px 0 0 4px;">Виртуальный помощник Foxray · 14:01</div></div></div>
+      <div style="display:flex;gap:8px;margin-bottom:10px;"><div style="width:28px;height:28px;border-radius:50%;background:#eef0f2;border:1px solid #e3e6ea;display:flex;align-items:center;justify-content:center;flex:none;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#8c8c8c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.2"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/></svg></div><div style="max-width:78%;"><div style="background:#fff;border:1px solid #eee;border-radius:14px 14px 14px 4px;padding:9px 13px;font-size:13.5px;line-height:1.45;color:#262626;">Pro — для одного пользователя (₽4 900/мес), Max — командный с расширенными лимитами и приоритетной поддержкой (₽9 900/мес). При оплате за год — скидка 20%.</div><div style="font-size:10.5px;color:#bfbfbf;margin:3px 0 0 4px;">Оператор · 14:01</div></div></div>
 
       <!-- client -->
       <div style="display:flex;justify-content:flex-end;margin-bottom:10px;"><div style="max-width:78%;"><div style="background:#1677ff;color:#fff;border-radius:14px 14px 4px 14px;padding:9px 13px;font-size:13.5px;line-height:1.45;">Нас 6 человек, берём Max на год.</div><div style="font-size:10.5px;color:#bfbfbf;margin:3px 4px 0 0;text-align:right;">14:02 · доставлено</div></div></div>
@@ -75,7 +75,7 @@
 
       <!-- AI typing (ai-only) -->
       <sc-if value="{{ isAI }}" hint-placeholder-val="{{ false }}">
-        <div style="display:flex;gap:8px;margin-bottom:4px;"><div style="width:28px;height:28px;border-radius:50%;background:#f9f0ff;border:1px solid #efdbff;display:flex;align-items:center;justify-content:center;flex:none;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#722ed1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="12" rx="2.5"/><path d="M12 8V4.5"/><circle cx="12" cy="3.5" r="1.2"/></svg></div><div style="background:#fff;border:1px solid #eee;border-radius:14px 14px 14px 4px;padding:12px 14px;display:flex;align-items:center;gap:5px;"><span style="width:6px;height:6px;border-radius:50%;background:#b37feb;animation:wcTyping 1.2s infinite ease-in-out;"></span><span style="width:6px;height:6px;border-radius:50%;background:#b37feb;animation:wcTyping 1.2s infinite ease-in-out .2s;"></span><span style="width:6px;height:6px;border-radius:50%;background:#b37feb;animation:wcTyping 1.2s infinite ease-in-out .4s;"></span></div></div>
+        <div style="display:flex;gap:8px;margin-bottom:4px;"><div style="width:28px;height:28px;border-radius:50%;background:#eef0f2;border:1px solid #e3e6ea;display:flex;align-items:center;justify-content:center;flex:none;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#8c8c8c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.2"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/></svg></div><div style="background:#fff;border:1px solid #eee;border-radius:14px 14px 14px 4px;padding:12px 14px;display:flex;align-items:center;gap:5px;"><span style="width:6px;height:6px;border-radius:50%;background:#b37feb;animation:wcTyping 1.2s infinite ease-in-out;"></span><span style="width:6px;height:6px;border-radius:50%;background:#b37feb;animation:wcTyping 1.2s infinite ease-in-out .2s;"></span><span style="width:6px;height:6px;border-radius:50%;background:#b37feb;animation:wcTyping 1.2s infinite ease-in-out .4s;"></span></div></div>
       </sc-if>
 
       <!-- CHECKOUT card -->
@@ -143,7 +143,7 @@ class Component extends DCLogic {
         ? { statusLabel: 'Временно недоступен', statusDot: '#faad14' }
         : isWelcome
           ? { statusLabel: 'Обычно отвечаем за пару минут', statusDot: '#52c41a' }
-          : { statusLabel: 'Виртуальный помощник · на связи', statusDot: '#52c41a' };
+          : { statusLabel: 'Оператор · на связи', statusDot: '#52c41a' };
 
     return {
       isWelcome, isAI, isOperator, isCheckout, isUnavailable, isConversation,

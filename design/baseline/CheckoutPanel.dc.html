@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+*{box-sizing:border-box;}
+@keyframes coSpin{to{transform:rotate(360deg);}}
+@keyframes coPulse{0%,100%{opacity:1;}50%{opacity:.5;}}
+.co-body::-webkit-scrollbar{width:8px;}
+.co-body::-webkit-scrollbar-thumb{background:#dcdcdc;border-radius:6px;}
+</style>
+</helmet>
+
+<div style="display:flex;flex-direction:column;height:100%;width:100%;background:#f4f5f7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;color:#1f1f1f;-webkit-font-smoothing:antialiased;overflow:hidden;">
+
+  <!-- SELLER HEADER -->
+  <sc-if value="{{ showHeader }}" hint-placeholder-val="{{ true }}">
+    <div style="flex:none;background:#fff;border-bottom:1px solid #ececec;padding:13px 18px;display:flex;align-items:center;gap:10px;">
+      <div style="width:30px;height:30px;border-radius:8px;background:#1f1f1f;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:800;flex:none;">F</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:14px;font-weight:700;color:#1f1f1f;line-height:1.1;">Foxray</div>
+        <div style="font-size:11px;color:#9a9a9a;margin-top:1px;">Оформление покупки</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:5px;padding:4px 9px;border-radius:7px;background:#f1f6ec;border:1px solid #d7ead0;flex:none;"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#3f8f3f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span style="font-size:10.5px;font-weight:600;color:#3f8f3f;">Защищено</span></div>
+    </div>
+  </sc-if>
+
+  <div class="co-body" style="flex:1;min-height:0;overflow-y:auto;">
+
+    <!-- ===== CHECKOUT-01 LOADING ===== -->
+    <sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}">
+      <div style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 28px;">
+        <div style="width:38px;height:38px;border-radius:50%;border:3px solid #e6e6e6;border-top-color:#1677ff;animation:coSpin .8s linear infinite;margin-bottom:20px;"></div>
+        <div style="font-size:15px;font-weight:700;color:#1f1f1f;margin-bottom:5px;">Edevs Hub</div>
+        <div style="font-size:13px;color:#8c8c8c;">Проверяем сессию оформления…</div>
+      </div>
+    </sc-if>
+
+    <!-- ===== CHECKOUT-09 SESSION UNAVAILABLE ===== -->
+    <sc-if value="{{ isExpired }}" hint-placeholder-val="{{ false }}">
+      <div style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 28px;">
+        <div style="width:54px;height:54px;border-radius:50%;background:#f4f5f7;display:flex;align-items:center;justify-content:center;margin-bottom:18px;"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#8c8c8c" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+        <h3 style="margin:0;font-size:16px;font-weight:700;color:#1f1f1f;">Ссылка больше не действует</h3>
+        <p style="margin:9px 0 0;font-size:13px;color:#6b6b6b;line-height:1.55;max-width:300px;">Сессия оформления истекла или была отменена. Вернитесь на сайт продукта и начните покупку заново — данные заказа не показываются для недействительной ссылки.</p>
+        <a href="#" style="display:inline-flex;align-items:center;justify-content:center;height:44px;padding:0 22px;margin-top:22px;border-radius:10px;background:#1f1f1f;color:#fff;font-size:13.5px;font-weight:600;text-decoration:none;">Вернуться на foxray.pro</a>
+        <div style="font-size:11px;color:#bfbfbf;margin-top:14px;">Обращение: <span style="font-family:ui-monospace,Menlo,monospace;">CHK-9F2A-7C10</span></div>
+      </div>
+    </sc-if>
+
+    <!-- ===== CHECKOUT-03 PREPARING ===== -->
+    <sc-if value="{{ isPreparing }}" hint-placeholder-val="{{ false }}">
+      <div style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 28px;">
+        <div style="width:38px;height:38px;border-radius:50%;border:3px solid #e6e6e6;border-top-color:#1677ff;animation:coSpin .8s linear infinite;margin-bottom:20px;"></div>
+        <h3 style="margin:0;font-size:15px;font-weight:700;color:#1f1f1f;">Готовим оплату</h3>
+        <p style="margin:8px 0 0;font-size:13px;color:#8c8c8c;line-height:1.5;max-width:280px;">Перенаправляем на защищённую страницу Банка Точка. Не закрывайте окно и не нажимайте «назад».</p>
+        <div style="display:flex;align-items:center;gap:7px;margin-top:20px;padding:7px 13px;border-radius:8px;background:#fff;border:1px solid #ececec;"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#bfbfbf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span style="font-size:11.5px;color:#8c8c8c;">Повторная отправка заблокирована</span></div>
+      </div>
+    </sc-if>
+
+    <!-- ===== CHECKOUT-04 PENDING ===== -->
+    <sc-if value="{{ isPending }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:32px 18px;display:flex;flex-direction:column;align-items:center;text-align:center;">
+        <div style="width:54px;height:54px;border-radius:50%;background:#fff7e6;display:flex;align-items:center;justify-content:center;margin-bottom:18px;animation:coPulse 1.6s ease-in-out infinite;"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#d48806" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+        <h3 style="margin:0;font-size:16px;font-weight:700;color:#1f1f1f;">Проверяем оплату</h3>
+        <p style="margin:9px 0 0;font-size:13px;color:#6b6b6b;line-height:1.55;max-width:300px;">Банк ещё подтверждает операцию. Это занимает до минуты. Мы не создаём новый заказ автоматически — деньги списываются только один раз.</p>
+        <button style="display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:0 22px;margin-top:22px;border-radius:10px;background:#1677ff;color:#fff;font-size:13.5px;font-weight:600;border:none;cursor:pointer;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><polyline points="21 3 21 9 15 9"/></svg>Проверить ещё раз</button>
+        <a href="#" style="font-size:12.5px;color:#8c8c8c;text-decoration:none;margin-top:16px;">Вернуться к продукту</a>
+      </div>
+    </sc-if>
+
+    <!-- ===== CHECKOUT-05 PAID ===== -->
+    <sc-if value="{{ isPaid }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:26px 16px 20px;">
+        <div style="display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:18px;">
+          <div style="width:56px;height:56px;border-radius:50%;background:#f1f9ec;display:flex;align-items:center;justify-content:center;margin-bottom:14px;"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#3f8f3f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+          <h3 style="margin:0;font-size:17px;font-weight:700;color:#1f1f1f;">Оплата получена</h3>
+          <p style="margin:7px 0 0;font-size:13px;color:#6b6b6b;line-height:1.5;max-width:290px;">Чек отправлен на <b style="color:#262626;">a.kovalenko@northwind.ru</b></p>
+        </div>
+        <div style="background:#fff;border:1px solid #ececec;border-radius:13px;overflow:hidden;">
+          <div style="padding:14px 16px;display:flex;flex-direction:column;gap:9px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:12.5px;color:#8c8c8c;">Заказ</span><span style="font-size:12.5px;font-weight:600;color:#262626;font-family:ui-monospace,Menlo,monospace;">HUB-2026-004187</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:12.5px;color:#8c8c8c;">Продукт</span><span style="font-size:12.5px;font-weight:600;color:#262626;">Foxray Max · 6 мест</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:12.5px;color:#8c8c8c;">Сумма</span><span style="font-size:14px;font-weight:700;color:#1f1f1f;">₽95 040</span></div>
+          </div>
+          <div style="border-top:1px solid #f2f2f2;padding:13px 16px;display:flex;align-items:center;gap:11px;background:#fcfcfd;">
+            <div style="width:30px;height:30px;border-radius:8px;background:#fff7e6;display:flex;align-items:center;justify-content:center;flex:none;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#d48806" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4"/></svg></div>
+            <div style="flex:1;"><div style="font-size:12.5px;font-weight:600;color:#262626;">Выдача продукта</div><div style="font-size:11.5px;color:#9a9a9a;margin-top:1px;">Готовим доступ — обычно меньше минуты</div></div>
+          </div>
+        </div>
+        <a href="#" style="display:flex;align-items:center;justify-content:center;height:44px;margin-top:16px;border-radius:10px;background:#fff;border:1px solid #d9d9d9;color:#1f1f1f;font-size:13.5px;font-weight:600;text-decoration:none;">Вернуться на foxray.pro</a>
+      </div>
+    </sc-if>
+
+    <!-- ===== CHECKOUT-06 DELIVERING ===== -->
+    <sc-if value="{{ isDelivering }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:26px 16px 20px;">
+        <div style="display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:16px;">
+          <div style="width:56px;height:56px;border-radius:50%;background:#eaf2ff;display:flex;align-items:center;justify-content:center;margin-bottom:14px;"><svg viewBox="0 0 24 24" width="27" height="27" fill="none" stroke="#1677ff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 9.4 7.55 4.24M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg></div>
+          <h3 style="margin:0;font-size:16px;font-weight:700;color:#1f1f1f;">Готовим доступ к продукту</h3>
+          <p style="margin:8px 0 0;font-size:13px;color:#6b6b6b;line-height:1.55;max-width:300px;">Оплата прошла, деньги получены. Платить повторно не нужно. Доступ и инструкции придут на <b style="color:#262626;">a.kovalenko@northwind.ru</b>.</p>
+        </div>
+        <div style="background:#fff;border:1px solid #ececec;border-radius:13px;padding:14px 16px;display:flex;flex-direction:column;gap:11px;">
+          <div style="display:flex;align-items:center;gap:11px;"><div style="width:22px;height:22px;border-radius:50%;background:#f1f9ec;display:flex;align-items:center;justify-content:center;flex:none;"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#3f8f3f" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div><span style="font-size:12.5px;color:#595959;">Оплата подтверждена · ₽95 040</span></div>
+          <div style="display:flex;align-items:center;gap:11px;"><div style="width:22px;height:22px;border-radius:50%;border:2px solid #1677ff;display:flex;align-items:center;justify-content:center;flex:none;animation:coPulse 1.6s ease-in-out infinite;"><span style="width:7px;height:7px;border-radius:50%;background:#1677ff;"></span></div><span style="font-size:12.5px;color:#262626;font-weight:600;">Подготовка рабочих мест</span></div>
+        </div>
+        <button style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:44px;margin-top:16px;border-radius:10px;background:#fff;border:1px solid #d9d9d9;color:#1f1f1f;font-size:13.5px;font-weight:600;cursor:pointer;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><polyline points="21 3 21 9 15 9"/></svg>Проверить состояние</button>
+      </div>
+    </sc-if>
+
+    <!-- ===== CHECKOUT-07 DONE ===== -->
+    <sc-if value="{{ isDone }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:26px 16px 20px;">
+        <div style="display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:18px;">
+          <div style="width:56px;height:56px;border-radius:50%;background:#f1f9ec;display:flex;align-items:center;justify-content:center;margin-bottom:14px;"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#3f8f3f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg></div>
+          <h3 style="margin:0;font-size:17px;font-weight:700;color:#1f1f1f;">Готово — доступ открыт</h3>
+          <p style="margin:7px 0 0;font-size:13px;color:#6b6b6b;line-height:1.5;max-width:290px;">Foxray Max активирован на 6 мест. Заказ <span style="font-family:ui-monospace,Menlo,monospace;color:#262626;">HUB-2026-004187</span>.</p>
+        </div>
+        <a href="#" style="display:flex;align-items:center;justify-content:center;gap:8px;height:46px;border-radius:10px;background:#1677ff;color:#fff;font-size:14px;font-weight:600;text-decoration:none;">Перейти в Foxray<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><polyline points="12 5 19 12 12 19"/></svg></a>
+        <div style="background:#fff;border:1px solid #ececec;border-radius:13px;padding:6px;margin-top:14px;">
+          <a href="#" style="display:flex;align-items:center;gap:11px;padding:11px 11px;text-decoration:none;border-radius:9px;" style-hover="background:#f7f8fa;"><div style="width:30px;height:30px;border-radius:8px;background:#eaf2ff;display:flex;align-items:center;justify-content:center;flex:none;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#1677ff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div><span style="flex:1;font-size:13px;font-weight:500;color:#262626;">Инструкция по подключению команды</span><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#bfbfbf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></a>
+          <a href="#" style="display:flex;align-items:center;gap:11px;padding:11px 11px;text-decoration:none;border-radius:9px;border-top:1px solid #f4f4f4;" style-hover="background:#f7f8fa;"><div style="width:30px;height:30px;border-radius:8px;background:#f1f9ec;display:flex;align-items:center;justify-content:center;flex:none;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#3f8f3f" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="m3 8 9 5 9-5"/></svg></div><span style="flex:1;font-size:13px;font-weight:500;color:#262626;">Чек и счёт отправлены на почту</span><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#bfbfbf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></a>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ===== CHECKOUT-08 ERROR ===== -->
+    <sc-if value="{{ isError }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:30px 16px 20px;display:flex;flex-direction:column;align-items:center;text-align:center;">
+        <div style="width:54px;height:54px;border-radius:50%;background:#fff1f0;display:flex;align-items:center;justify-content:center;margin-bottom:16px;"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#cf1322" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div>
+        <h3 style="margin:0;font-size:16px;font-weight:700;color:#1f1f1f;">Платёж не прошёл</h3>
+        <p style="margin:9px 0 0;font-size:13px;color:#6b6b6b;line-height:1.55;max-width:300px;">Банк отклонил операцию. Деньги не списаны. Можно повторить оплату того же заказа — новый заказ не создаётся.</p>
+        <div style="width:100%;display:flex;flex-direction:column;gap:9px;margin-top:22px;">
+          <button style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:46px;border-radius:10px;background:#1677ff;color:#fff;font-size:14px;font-weight:600;border:none;cursor:pointer;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><polyline points="21 3 21 9 15 9"/></svg>Повторить оплату</button>
+          <a href="#" style="display:flex;align-items:center;justify-content:center;height:42px;border-radius:10px;background:#fff;border:1px solid #d9d9d9;color:#1f1f1f;font-size:13.5px;font-weight:600;text-decoration:none;">Вернуться к продукту</a>
+        </div>
+        <div style="font-size:11.5px;color:#bfbfbf;margin-top:16px;">Нужна помощь? <a href="#" style="color:#1677ff;text-decoration:none;">Поддержка</a> · обращение <span style="font-family:ui-monospace,Menlo,monospace;">CHK-3B71-0E44</span></div>
+      </div>
+    </sc-if>
+
+    <!-- ===== CHECKOUT-02 MAIN FORM ===== -->
+    <sc-if value="{{ isCheckout }}" hint-placeholder-val="{{ true }}">
+      <div style="padding:16px 16px 120px;max-width:520px;margin:0 auto;">
+
+        <!-- product identity -->
+        <div style="margin-bottom:14px;">
+          <div style="font-size:11px;font-weight:600;letter-spacing:0.06em;color:#9a9a9a;text-transform:uppercase;margin-bottom:6px;">Оформление подписки</div>
+          <div style="font-size:19px;font-weight:800;letter-spacing:-0.01em;color:#1f1f1f;line-height:1.15;">Foxray Max</div>
+          <div style="font-size:13px;color:#6b6b6b;margin-top:3px;">Годовая подписка · 6 рабочих мест</div>
+        </div>
+
+        <!-- order summary -->
+        <div style="background:#fff;border:1px solid #ececec;border-radius:13px;overflow:hidden;margin-bottom:14px;">
+          <div style="padding:14px 16px 4px;">
+            <div style="display:flex;justify-content:space-between;gap:12px;margin-bottom:10px;"><div><div style="font-size:13px;font-weight:600;color:#262626;">Foxray Max</div><div style="font-size:11.5px;color:#9a9a9a;margin-top:2px;">6 мест × ₽1 320 / мес · 12 мес</div></div><div style="font-size:13px;font-weight:600;color:#262626;white-space:nowrap;">₽118 800</div></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><span style="font-size:12.5px;color:#3f8f3f;">Скидка за годовую оплату · −20%</span><span style="font-size:12.5px;font-weight:600;color:#3f8f3f;">−₽23 760</span></div>
+          </div>
+          <div style="border-top:1px dashed #e8e8e8;padding:12px 16px;display:flex;justify-content:space-between;align-items:flex-end;">
+            <div><div style="font-size:13px;font-weight:700;color:#1f1f1f;">Первый платёж</div><div style="font-size:11px;color:#9a9a9a;margin-top:2px;">Без НДС · валюта ₽ (RUB)</div></div>
+            <div style="font-size:22px;font-weight:800;letter-spacing:-0.01em;color:#1f1f1f;">₽95 040</div>
+          </div>
+        </div>
+
+        <!-- subscription terms -->
+        <div style="background:#f7f9fc;border:1px solid #e4ebf5;border-radius:12px;padding:12px 14px;margin-bottom:14px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:9px;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#1677ff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg><span style="font-size:12.5px;font-weight:700;color:#1f1f1f;">Подписка с автопродлением</span></div>
+          <div style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:#595959;line-height:1.4;">
+            <div style="display:flex;justify-content:space-between;gap:10px;"><span>Период списания</span><span style="font-weight:600;color:#262626;">Раз в год</span></div>
+            <div style="display:flex;justify-content:space-between;gap:10px;"><span>Следующее списание</span><span style="font-weight:600;color:#262626;">18 июня 2027 · ₽95 040</span></div>
+            <div style="display:flex;justify-content:space-between;gap:10px;"><span>Отмена автопродления</span><span style="font-weight:600;color:#262626;">В любой момент</span></div>
+          </div>
+          <a href="#" style="display:inline-block;font-size:12px;color:#1677ff;text-decoration:none;margin-top:9px;">Условия подписки →</a>
+        </div>
+
+        <!-- buyer type -->
+        <div style="font-size:12.5px;font-weight:700;color:#1f1f1f;margin:0 2px 9px;">Покупатель</div>
+        <div style="display:flex;gap:6px;background:#fff;border:1px solid #ececec;border-radius:11px;padding:4px;margin-bottom:12px;">
+          <button onClick="{{ onPerson }}" style="{{ segPerson }}">Физлицо</button>
+          <button onClick="{{ onIp }}" style="{{ segIp }}">ИП</button>
+          <button onClick="{{ onCompany }}" style="{{ segCompany }}">Юрлицо</button>
+        </div>
+
+        <!-- buyer fields -->
+        <div style="background:#fff;border:1px solid #ececec;border-radius:13px;padding:14px 16px;margin-bottom:14px;display:flex;flex-direction:column;gap:13px;">
+          <div>
+            <label style="display:block;font-size:11.5px;font-weight:600;color:#595959;margin-bottom:5px;">Email <span style="color:#cf1322;">*</span></label>
+            <input value="a.kovalenko@northwind.ru" style="width:100%;height:42px;padding:0 13px;border:1px solid #e0e0e0;border-radius:9px;font-size:13.5px;color:#262626;outline:none;font-family:inherit;" style-focus="border-color:#1677ff;" />
+            <div style="font-size:11px;color:#9a9a9a;margin-top:5px;">На этот адрес придёт чек и доступ к продукту</div>
+          </div>
+          <div>
+            <label style="display:block;font-size:11.5px;font-weight:600;color:#595959;margin-bottom:5px;">Телефон</label>
+            <input value="+7 921 480-12-04" style="width:100%;height:42px;padding:0 13px;border:1px solid #e0e0e0;border-radius:9px;font-size:13.5px;color:#262626;outline:none;font-family:inherit;" style-focus="border-color:#1677ff;" />
+          </div>
+
+          <sc-if value="{{ showIp }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;gap:11px;">
+              <div style="flex:1;"><label style="display:block;font-size:11.5px;font-weight:600;color:#595959;margin-bottom:5px;">ИНН <span style="color:#cf1322;">*</span></label><input placeholder="12 цифр" style="width:100%;height:42px;padding:0 13px;border:1px solid #e0e0e0;border-radius:9px;font-size:13.5px;color:#262626;outline:none;font-family:inherit;" style-focus="border-color:#1677ff;" /></div>
+            </div>
+            <div><label style="display:block;font-size:11.5px;font-weight:600;color:#595959;margin-bottom:5px;">Наименование ИП <span style="color:#cf1322;">*</span></label><input placeholder="ИП Коваленко А. С." style="width:100%;height:42px;padding:0 13px;border:1px solid #e0e0e0;border-radius:9px;font-size:13.5px;color:#262626;outline:none;font-family:inherit;" style-focus="border-color:#1677ff;" /></div>
+          </sc-if>
+
+          <sc-if value="{{ showCompany }}" hint-placeholder-val="{{ false }}">
+            <div><label style="display:block;font-size:11.5px;font-weight:600;color:#595959;margin-bottom:5px;">Название организации <span style="color:#cf1322;">*</span></label><input placeholder="ООО «Норт-Винд»" style="width:100%;height:42px;padding:0 13px;border:1px solid #e0e0e0;border-radius:9px;font-size:13.5px;color:#262626;outline:none;font-family:inherit;" style-focus="border-color:#1677ff;" /></div>
+            <div style="display:flex;gap:11px;">
+              <div style="flex:1;"><label style="display:block;font-size:11.5px;font-weight:600;color:#595959;margin-bottom:5px;">ИНН <span style="color:#cf1322;">*</span></label><input placeholder="10 цифр" style="width:100%;height:42px;padding:0 13px;border:1px solid #e0e0e0;border-radius:9px;font-size:13.5px;color:#262626;outline:none;font-family:inherit;" style-focus="border-color:#1677ff;" /></div>
+              <div style="flex:1;"><label style="display:block;font-size:11.5px;font-weight:600;color:#595959;margin-bottom:5px;">КПП <span style="color:#cf1322;">*</span></label><input placeholder="9 цифр" style="width:100%;height:42px;padding:0 13px;border:1px solid #e0e0e0;border-radius:9px;font-size:13.5px;color:#262626;outline:none;font-family:inherit;" style-focus="border-color:#1677ff;" /></div>
+            </div>
+          </sc-if>
+        </div>
+
+        <!-- payment method -->
+        <div style="font-size:12.5px;font-weight:700;color:#1f1f1f;margin:0 2px 9px;">Способ оплаты</div>
+        <div style="display:flex;flex-direction:column;gap:9px;margin-bottom:14px;">
+          <button onClick="{{ onPayCard }}" style="{{ payCardStyle }}">
+            <div style="width:38px;height:38px;border-radius:9px;background:#eaf2ff;display:flex;align-items:center;justify-content:center;flex:none;"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="#1677ff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2.5"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
+            <div style="flex:1;text-align:left;"><div style="font-size:13.5px;font-weight:600;color:#262626;">Банковская карта</div><div style="font-size:11.5px;color:#9a9a9a;margin-top:1px;">Автопродление подписки</div></div>
+            <span style="{{ payCardDot }}"></span>
+          </button>
+          <button onClick="{{ onPaySbp }}" style="{{ paySbpStyle }}">
+            <div style="width:38px;height:38px;border-radius:9px;background:#f3effc;display:flex;align-items:center;justify-content:center;flex:none;"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="#722ed1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M12 2 5 9M12 2l7 7M12 22l-7-7M12 22l7-7"/></svg></div>
+            <div style="flex:1;text-align:left;"><div style="font-size:13.5px;font-weight:600;color:#262626;">СБП</div><div style="font-size:11.5px;color:#9a9a9a;margin-top:1px;">Система быстрых платежей · автопродление</div></div>
+            <span style="{{ paySbpDot }}"></span>
+          </button>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:7px;padding:0 2px;margin-bottom:16px;"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#bfbfbf" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px;"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span style="font-size:11px;color:#9a9a9a;line-height:1.4;">Реквизиты карты вводятся на защищённой странице Банка Точка. Hub их не получает и не хранит.</span></div>
+
+        <!-- legal consents -->
+        <div style="background:#fff;border:1px solid #ececec;border-radius:13px;padding:14px 16px;display:flex;flex-direction:column;gap:13px;">
+          <button onClick="{{ onAgree1 }}" style="display:flex;align-items:flex-start;gap:11px;background:none;border:none;padding:0;cursor:pointer;text-align:left;">
+            <span style="{{ chk1Style }}"><sc-if value="{{ agree1 }}" hint-placeholder-val="{{ false }}"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></sc-if></span>
+            <span style="font-size:12px;color:#595959;line-height:1.45;">Принимаю <a href="#" style="color:#1677ff;text-decoration:none;">условия покупки</a> и <a href="#" style="color:#1677ff;text-decoration:none;">оферту</a>, согласен с <a href="#" style="color:#1677ff;text-decoration:none;">политикой обработки данных</a></span>
+          </button>
+          <button onClick="{{ onAgree2 }}" style="display:flex;align-items:flex-start;gap:11px;background:none;border:none;padding:0;cursor:pointer;text-align:left;">
+            <span style="{{ chk2Style }}"><sc-if value="{{ agree2 }}" hint-placeholder-val="{{ false }}"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></sc-if></span>
+            <span style="font-size:12px;color:#595959;line-height:1.45;">Согласен на регулярные списания <b style="color:#262626;">₽95 040 / год</b> с автопродлением до отмены</span>
+          </button>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+
+  <!-- STICKY PAY ACTION (checkout only) -->
+  <sc-if value="{{ isCheckout }}" hint-placeholder-val="{{ true }}">
+    <div style="flex:none;background:#fff;border-top:1px solid #ececec;padding:11px 16px 14px;box-shadow:0 -4px 16px rgba(0,0,0,0.04);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;"><span style="font-size:12.5px;color:#8c8c8c;">К оплате сегодня</span><span style="font-size:17px;font-weight:800;color:#1f1f1f;">₽95 040</span></div>
+      <button onClick="{{ onPay }}" style="{{ payBtnStyle }}">{{ payBtnLabel }}<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><polyline points="12 5 19 12 12 19"/></svg></button>
+      <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:9px;"><span style="font-size:11px;color:#bfbfbf;">Оплата через</span><span style="font-size:11.5px;font-weight:700;color:#8c8c8c;">Банк Точка</span><span style="width:3px;height:3px;border-radius:50%;background:#d9d9d9;"></span><a href="#" style="font-size:11px;color:#bfbfbf;text-decoration:none;">Поддержка</a></div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;$preview&quot;: { &quot;width&quot;: 400, &quot;height&quot;: 720 },
+  &quot;state&quot;: { &quot;editor&quot;: &quot;enum&quot;, &quot;options&quot;: [&quot;loading&quot;, &quot;checkout&quot;, &quot;preparing&quot;, &quot;pending&quot;, &quot;paid&quot;, &quot;delivering&quot;, &quot;done&quot;, &quot;error&quot;, &quot;expired&quot;], &quot;default&quot;: &quot;checkout&quot;, &quot;tsType&quot;: &quot;string&quot; },
+  &quot;buyer&quot;: { &quot;editor&quot;: &quot;enum&quot;, &quot;options&quot;: [&quot;person&quot;, &quot;ip&quot;, &quot;company&quot;], &quot;default&quot;: &quot;person&quot;, &quot;tsType&quot;: &quot;string&quot; }
+}">
+class Component extends DCLogic {
+  state = { buyer: null, pay: 'card', a1: false, a2: false };
+
+  renderVals() {
+    const st = this.props.state ?? 'checkout';
+    const isLoading = st === 'loading';
+    const isExpired = st === 'expired';
+    const isPreparing = st === 'preparing';
+    const isPending = st === 'pending';
+    const isPaid = st === 'paid';
+    const isDelivering = st === 'delivering';
+    const isDone = st === 'done';
+    const isError = st === 'error';
+    const isCheckout = st === 'checkout';
+
+    const buyer = this.state.buyer ?? (this.props.buyer ?? 'person');
+
+    const segBase = 'flex:1;height:36px;border-radius:8px;border:none;font-size:12.5px;font-weight:600;cursor:pointer;background:transparent;color:#8c8c8c;';
+    const segAct = 'flex:1;height:36px;border-radius:8px;border:none;font-size:12.5px;font-weight:600;cursor:pointer;background:#1f1f1f;color:#fff;';
+    const seg = (k) => buyer === k ? segAct : segBase;
+
+    const pay = this.state.pay;
+    const payCardSel = pay === 'card';
+    const cardBox = (sel) => 'display:flex;align-items:center;gap:12px;width:100%;padding:11px 13px;border-radius:12px;background:#fff;cursor:pointer;text-align:left;border:1.5px solid ' + (sel ? '#1677ff' : '#ececec') + ';' + (sel ? 'box-shadow:0 0 0 3px rgba(22,119,255,0.08);' : '');
+    const dot = (sel) => 'width:18px;height:18px;border-radius:50%;flex:none;border:' + (sel ? '5px solid #1677ff' : '2px solid #d9d9d9') + ';background:#fff;';
+
+    const a1 = this.state.a1, a2 = this.state.a2;
+    const chk = (on) => 'width:20px;height:20px;border-radius:6px;flex:none;display:flex;align-items:center;justify-content:center;border:' + (on ? 'none' : '1.5px solid #d0d0d0') + ';background:' + (on ? '#1677ff' : '#fff') + ';';
+
+    const ready = a1 && a2;
+    const payBtnStyle = 'display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:48px;border-radius:11px;border:none;font-size:14.5px;font-weight:700;cursor:' + (ready ? 'pointer' : 'not-allowed') + ';background:' + (ready ? '#1677ff' : '#e6e6e6') + ';color:' + (ready ? '#fff' : '#bfbfbf') + ';';
+
+    return {
+      isLoading, isExpired, isPreparing, isPending, isPaid, isDelivering, isDone, isError, isCheckout,
+      showHeader: !isLoading,
+      segPerson: seg('person'), segIp: seg('ip'), segCompany: seg('company'),
+      showIp: buyer === 'ip', showCompany: buyer === 'company',
+      onPerson: () => this.setState({ buyer: 'person' }),
+      onIp: () => this.setState({ buyer: 'ip' }),
+      onCompany: () => this.setState({ buyer: 'company' }),
+      payCardStyle: cardBox(payCardSel), paySbpStyle: cardBox(!payCardSel),
+      payCardDot: dot(payCardSel), paySbpDot: dot(!payCardSel),
+      onPayCard: () => this.setState({ pay: 'card' }),
+      onPaySbp: () => this.setState({ pay: 'sbp' }),
+      agree1: a1, agree2: a2, chk1Style: chk(a1), chk2Style: chk(a2),
+      onAgree1: () => this.setState(s => ({ a1: !s.a1 })),
+      onAgree2: () => this.setState(s => ({ a2: !s.a2 })),
+      payBtnStyle, payBtnLabel: ready ? 'Перейти к оплате' : 'Примите условия выше',
+      onPay: () => {},
+    };
+  }
+}
+</script>
+</body>
+</html>
