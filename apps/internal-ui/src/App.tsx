@@ -1,21 +1,39 @@
 import { ConfigProvider } from "antd";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { edevsHubTheme } from "@edevs/ui";
 
 import { api } from "./api/client";
 import { AuthChangePassword, AuthLogin, AuthTotpCode, AuthTotpSetup } from "./features/auth/AuthScreens";
 import { Shell } from "./layout/Shell";
+import { pathFromRoute, routeFromPath } from "./router";
 import { ErrorScreen, LoadingScreen } from "./shared/ui";
 import type { AppData, AuthChallenge, Department, Employee, Product, RouteKey, SessionUser } from "./types";
 
 export function App() {
+  const initialRoute = useMemo(() => routeFromPath(window.location.pathname), []);
   const [sessionLoading, setSessionLoading] = useState(true);
   const [user, setUser] = useState<SessionUser | null>(null);
   const [totpChallenge, setTotpChallenge] = useState<AuthChallenge | null>(null);
-  const [route, setRoute] = useState<RouteKey>("command");
+  const [route, setRoute] = useState<RouteKey>(initialRoute.route);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState<number | null>(initialRoute.employeeId);
   const [data, setData] = useState<AppData>({ employees: [], departments: [], products: [] });
   const [dataError, setDataError] = useState(false);
+
+  const navigate = useCallback((nextRoute: RouteKey, employeeId: number | null = null, replace = false) => {
+    const nextEmployeeId = nextRoute === "employeeDetail" ? employeeId : null;
+    const nextPath = pathFromRoute(nextRoute, nextEmployeeId);
+    setRoute(nextRoute);
+    setSelectedEmployeeId(nextEmployeeId);
+    if (window.location.pathname !== nextPath) {
+      const state = { route: nextRoute, employeeId: nextEmployeeId };
+      if (replace) {
+        window.history.replaceState(state, "", nextPath);
+      } else {
+        window.history.pushState(state, "", nextPath);
+      }
+    }
+  }, []);
 
   const loadData = useMemo(() => async () => {
     setDataError(false);
@@ -42,6 +60,16 @@ export function App() {
   }, []);
 
   useEffect(() => {
+    const onPopState = () => {
+      const nextRoute = routeFromPath(window.location.pathname);
+      setRoute(nextRoute.route);
+      setSelectedEmployeeId(nextRoute.employeeId);
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
+
+  useEffect(() => {
     if (user) void loadData();
   }, [loadData, user]);
 
@@ -49,7 +77,7 @@ export function App() {
     await api("/api/v1/auth/logout/", { method: "POST" }).catch(() => undefined);
     setUser(null);
     setTotpChallenge(null);
-    setRoute("command");
+    navigate("command", null, true);
     setData({ employees: [], departments: [], products: [] });
   }
 
@@ -68,7 +96,7 @@ export function App() {
       ) : dataError ? (
         <ErrorScreen retry={loadData} />
       ) : (
-        <Shell route={route} setRoute={setRoute} user={user} data={data} reload={loadData} onUserUpdated={setUser} onLogout={logout} />
+        <Shell route={route} setRoute={(nextRoute) => navigate(nextRoute)} selectedEmployeeId={selectedEmployeeId} openEmployeeRoute={(employeeId) => navigate("employeeDetail", employeeId)} user={user} data={data} reload={loadData} onUserUpdated={setUser} onLogout={logout} />
       )}
     </ConfigProvider>
   );

@@ -1,5 +1,3 @@
-import { useState } from "react";
-
 import { routes } from "../routes";
 import type { AppData, Employee, RouteKey, SessionUser } from "../types";
 import { CommandCenter, commandCenterModel } from "../features/command/CommandCenter";
@@ -73,12 +71,12 @@ function TopBar({ route, user, currentEmployee, onLogout }: { route: RouteKey; u
   );
 }
 
-export function Shell({ route, setRoute, user, data, reload, onUserUpdated, onLogout }: { route: RouteKey; setRoute: (route: RouteKey) => void; user: SessionUser; data: AppData; reload: () => void; onUserUpdated: (user: SessionUser) => void; onLogout: () => void }) {
-  const [selectedEmployeeId, setSelectedEmployeeId] = useState<number | null>(null);
-  const currentEmployee = data.employees.find((employee) => employee.id === selectedEmployeeId) ?? data.employees.find((employee) => employee.email === "a.kotova@edevs.tech") ?? data.employees[0] ?? null;
+export function Shell({ route, setRoute, selectedEmployeeId, openEmployeeRoute, user, data, reload, onUserUpdated, onLogout }: { route: RouteKey; setRoute: (route: RouteKey) => void; selectedEmployeeId: number | null; openEmployeeRoute: (employeeId: number) => void; user: SessionUser; data: AppData; reload: () => void; onUserUpdated: (user: SessionUser) => void; onLogout: () => void }) {
+  const currentEmployee = route === "employeeDetail"
+    ? data.employees.find((employee) => employee.id === selectedEmployeeId) ?? null
+    : data.employees.find((employee) => employee.email === "a.kotova@edevs.tech") ?? data.employees[0] ?? null;
   function openEmployee(employee: Employee) {
-    setSelectedEmployeeId(employee.id);
-    setRoute("employeeDetail");
+    openEmployeeRoute(employee.id);
   }
   return (
     <div className="hub-shell">
@@ -91,6 +89,7 @@ export function Shell({ route, setRoute, user, data, reload, onUserUpdated, onLo
             {route === "departments" && <DepartmentsPage data={data} setRoute={setRoute} />}
             {route === "employees" && <EmployeesPage employees={data.employees} reload={reload} openEmployee={openEmployee} />}
             {route === "employeeDetail" && currentEmployee && <EmployeeDetailPage employee={currentEmployee} reload={reload} setRoute={setRoute} />}
+            {route === "employeeDetail" && !currentEmployee && <EmployeesPage employees={data.employees} reload={reload} openEmployee={openEmployee} />}
             {route === "products" && <ProductsPage products={data.products} reload={reload} />}
             {route === "profile" && <ProfilePage user={user} onUserUpdated={onUserUpdated} reload={reload} onLogout={onLogout} />}
           </div>
