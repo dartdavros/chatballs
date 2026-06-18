@@ -1,0 +1,282 @@
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.metric-card,
+.department-card,
+.department-large-card,
+.table-card,
+.profile-card,
+.profile-header-card,
+.sessions-card,
+.state-card {
+  background: #ffffff;
+  border: 1px solid #f0f0f0;
+  border-radius: 12px;
+}
+
+.metric-card {
+  min-height: 102px;
+  padding: 18px 20px;
+}
+
+.metric-card.is-compact {
+  min-height: auto;
+  padding: 14px 16px;
+  border-radius: 0;
+  border-top: none;
+  border-bottom: none;
+  border-left: none;
+}
+
+.metric-card span,
+.metric-card small {
+  display: block;
+  color: #8c8c8c;
+  font-size: 12.5px;
+}
+
+.metric-card strong {
+  display: block;
+  margin-top: 7px;
+  color: #262626;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.metric-card small {
+  margin-top: 4px;
+}
+
+.departments-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 460px));
+  gap: 18px;
+}
+
+.department-card {
+  overflow: hidden;
+  border-radius: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.department-card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 20px 22px 16px;
+}
+
+.dept-icon {
+  width: 48px;
+  height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  color: #1677ff;
+  background: #e6f4ff;
+  border-radius: 12px;
+}
+
+.department-card-title {
+  min-width: 0;
+  flex: 1;
+}
+
+.department-card-title > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.department-card h2 {
+  margin: 0;
+  color: #1f1f1f;
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.department-card .command-status-label {
+  height: auto;
+  padding: 3px 10px;
+  border-radius: 16px;
+  font-size: 11.5px;
+}
+
+.department-card .command-status-label span {
+  width: 6px;
+  height: 6px;
+}
+
+.department-card-title p {
+  margin: 5px 0 0;
+  color: #8c8c8c;
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+.department-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  padding: 0 22px 16px;
+}
+
+.department-meta div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.department-meta span {
+  color: #8c8c8c;
+  font-size: 12.5px;
+}
+
+.department-meta strong {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  color: #262626;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.owner-person i {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  color: #ffffff;
+  background: #9254de;
+  border-radius: 50%;
+  font-size: 10.5px;
+  font-style: normal;
+  font-weight: 600;
+}
+
+.department-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-top: 1px solid #f5f5f5;
+}
+
+.department-stats div {
+  min-height: 76px;
+  padding: 14px 16px;
+  border-right: 1px solid #f5f5f5;
+}
+
+.department-stats div:last-child {
+  border-right: 0;
+}
+
+.department-stats span {
+  display: block;
+  color: #8c8c8c;
+  font-size: 11.5px;
+}
+
+.department-stats strong {
+  display: block;
+  margin-top: 5px;
+  color: #262626;
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.department-stats strong.success {
+  color: #389e0d;
+}
+
+.department-action {
+  padding: 14px 22px 18px;
+  border-top: 1px solid #f5f5f5;
+}
+
+.department-action button {
+  width: 100%;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #ffffff;
+  background: #1677ff;
+  border: none;
+  border-radius: 9px;
+  box-shadow: 0 1px 2px rgba(22, 119, 255, 0.3);
+  font-size: 13.5px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.department-action button:hover {
+  background: #0958d9;
+}
+
+.product-icon {
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  color: #1677ff;
+  background: #e6f4ff;
+  border-radius: 9px;
+}
+
+.detail-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px 20px;
+  margin-top: 18px;
+}
+
+.detail-list div {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.detail-list span,
+.muted-note,
+.table-footer {
+  color: #8c8c8c;
+  font-size: 12.5px;
+}
+
+.detail-list strong {
+  color: #262626;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.product-tags {
+  display: flex;
+  gap: 6px;
+}
+
+.product-tags span {
+  padding: 2px 9px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.muted-note {
+  margin: 18px 0 0;
+  color: #bfbfbf;
+}
+

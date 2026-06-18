@@ -1,0 +1,343 @@
+.sales-conversation {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  background: #f7f8fa;
+}
+
+.sales-conversation-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: none;
+  gap: 16px;
+  padding: 11px 20px;
+  background: #ffffff;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.sales-conversation-person {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sales-conversation-person > span {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  color: #ffffff;
+  border-radius: 50%;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.sales-conversation-person > div {
+  min-width: 0;
+}
+
+.sales-conversation-person div div {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.sales-conversation-person strong {
+  color: #1f1f1f;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.sales-conversation-person p {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 2px 0 0;
+  color: #8c8c8c;
+  font-size: 12px;
+}
+
+.sales-conversation-person p i {
+  width: 1px;
+  height: 1px;
+  background: #d9d9d9;
+  border-radius: 50%;
+}
+
+.sales-conversation-person p em {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+
+.sales-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 9px;
+  border: 1px solid;
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.sales-status-badge i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.sales-conversation-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+}
+
+.sales-claim-button,
+.sales-ai-button,
+.sales-secondary-action,
+.sales-more-button {
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.sales-claim-button {
+  padding: 0 16px;
+  color: #ffffff;
+  background: #1677ff;
+  border: none;
+  box-shadow: 0 1px 2px rgba(22, 119, 255, 0.3);
+}
+
+.sales-claim-button:hover {
+  background: #0958d9;
+}
+
+.sales-ai-button {
+  padding: 0 16px;
+  color: #722ed1;
+  background: #ffffff;
+  border: 1px solid #d3adf7;
+}
+
+.sales-ai-button:hover {
+  background: #f9f0ff;
+}
+
+.sales-secondary-action {
+  padding: 0 14px;
+  color: #595959;
+  background: #ffffff;
+  border: 1px solid #d9d9d9;
+  font-weight: 500;
+}
+
+.sales-more-button {
+  width: 36px;
+  padding: 0;
+  color: #595959;
+  background: #ffffff;
+  border: 1px solid #f0f0f0;
+}
+
+.sales-timeline {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 18px 24px 8px;
+}
+
+.sales-timeline-inner {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.sales-day-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 4px 0 16px;
+  color: #bfbfbf;
+  font-size: 11.5px;
+  font-weight: 500;
+}
+
+.sales-day-divider span {
+  height: 1px;
+  flex: 1;
+  background: #ececec;
+}
+
+.sales-event-chip {
+  width: fit-content;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 auto 16px;
+  padding: 4px 12px;
+  color: #8c8c8c;
+  background: #eef0f2;
+  border-radius: 20px;
+  font-size: 11.5px;
+}
+
+.sales-event-chip.warning {
+  color: #d48806;
+  background: #fff7e6;
+  border: 1px solid #ffe58f;
+}
+
+.sales-event-chip.claimed {
+  color: #0958d9;
+  background: #e6f4ff;
+  border: 1px solid #91caff;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.sales-wait-note {
+  margin: -8px 0 8px;
+  color: #bfbfbf;
+  font-size: 11.5px;
+  text-align: center;
+}
+
+.sales-message {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.sales-message.ai,
+.sales-message.operator {
+  flex-direction: row-reverse;
+}
+
+.sales-message-avatar {
+  flex: none;
+}
+
+.sales-message-avatar > span {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.sales-message.ai .sales-message-avatar {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #722ed1;
+  background: #f9f0ff;
+  border: 1px solid #efdbff;
+  border-radius: 50%;
+}
+
+.sales-message.ai .sales-message-avatar svg {
+  width: 16px;
+  height: 16px;
+}
+
+.sales-message-content {
+  max-width: 74%;
+}
+
+.sales-message.ai .sales-message-content,
+.sales-message.operator .sales-message-content {
+  text-align: right;
+}
+
+.sales-message-content > strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #722ed1;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.sales-message.operator .sales-message-content > strong {
+  color: #0958d9;
+}
+
+.sales-message-content > div {
+  padding: 10px 14px;
+  color: #262626;
+  background: #ffffff;
+  border: 1px solid #eeeeee;
+  border-radius: 4px 14px 14px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  text-align: left;
+}
+
+.sales-message.ai .sales-message-content > div {
+  background: #f9f0ff;
+  border-color: #efdbff;
+  border-radius: 14px 4px 14px 14px;
+}
+
+.sales-message.operator .sales-message-content > div {
+  background: #e6f4ff;
+  border-color: #91caff;
+  border-radius: 14px 4px 14px 14px;
+}
+
+.sales-message-content small {
+  display: block;
+  margin: 4px 0 0 4px;
+  color: #bfbfbf;
+  font-size: 11px;
+}
+
+.sales-message.ai .sales-message-content small,
+.sales-message.operator .sales-message-content small {
+  margin-right: 4px;
+  text-align: right;
+}
+
+.sales-typing-bubble {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 13px 16px;
+  background: #f9f0ff;
+  border: 1px solid #efdbff;
+  border-radius: 14px 4px 14px 14px;
+}
+
+.sales-typing-bubble span {
+  width: 7px;
+  height: 7px;
+  background: #b37feb;
+  border-radius: 50%;
+  animation: hubTyping 1.2s infinite ease-in-out;
+}
+
+.sales-typing-bubble span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.sales-typing-bubble span:nth-child(3) {
+  animation-delay: 0.4s;
+}

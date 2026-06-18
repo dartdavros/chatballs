@@ -1,0 +1,386 @@
+.filter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  background: #ffffff;
+  border: 1px solid #f0f0f0;
+  border-radius: 10px;
+}
+
+.employees-filter {
+  justify-content: flex-start;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 11px 14px;
+  margin-bottom: 16px;
+  border-radius: 11px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.employee-search {
+  width: 260px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 11px;
+  color: #bfbfbf;
+  background: #fafafa;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+}
+
+.employee-search:focus-within {
+  border-color: #1677ff;
+}
+
+.employee-search input {
+  width: 100%;
+  min-width: 0;
+  color: #262626;
+  background: transparent;
+  border: 0;
+  outline: none;
+  font: inherit;
+  font-size: 13px;
+}
+
+.employee-search input::placeholder {
+  color: #bfbfbf;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-group > span {
+  color: #8c8c8c;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.reset-filter {
+  height: 34px;
+  margin-left: auto;
+  padding: 0 12px;
+  color: #8c8c8c;
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.reset-filter:hover {
+  color: #1677ff;
+  background: #f5f5f5;
+}
+
+.segmented {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px;
+  background: #f0f2f5;
+  border-radius: 8px;
+}
+
+.segmented button {
+  height: 30px;
+  padding: 0 13px;
+  color: #595959;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.segmented button.active {
+  color: #1f1f1f;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  font-weight: 600;
+}
+
+.table-card {
+  overflow-x: auto;
+  border-radius: 10px;
+}
+
+.employees-card {
+  position: relative;
+  overflow: visible;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.table-scroll {
+  overflow: visible;
+  border-radius: 12px 12px 0 0;
+}
+
+.baseline-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.employees-table {
+  min-width: 1000px;
+}
+
+.products-table {
+  min-width: 1080px;
+}
+
+.baseline-table th {
+  padding: 11px 12px;
+  color: #8c8c8c;
+  background: #fafafa;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 11px;
+  font-weight: 600;
+  text-align: left;
+}
+
+.baseline-table thead th:first-child {
+  border-top-left-radius: 12px;
+}
+
+.baseline-table thead th:last-child {
+  border-top-right-radius: 12px;
+}
+
+.baseline-table th:first-child,
+.baseline-table td:first-child {
+  padding-left: 16px;
+}
+
+.baseline-table td {
+  padding: 12px;
+  border-bottom: 1px solid #f5f5f5;
+  color: #262626;
+  vertical-align: middle;
+}
+
+.baseline-table tbody tr:hover {
+  background: #fafbfc;
+}
+
+.person-cell,
+.product-cell {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.person-cell strong {
+  display: block;
+  color: #1677ff;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.person-link {
+  display: block;
+  min-width: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  text-align: left;
+}
+
+.person-link:hover strong {
+  color: #0958d9;
+}
+
+.product-cell strong {
+  display: block;
+  color: #262626;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.person-cell small,
+.product-cell small {
+  display: block;
+  margin-top: 3px;
+  color: #bfbfbf;
+  font-family: "SF Mono", ui-monospace, Menlo, monospace;
+  font-size: 11.5px;
+}
+
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.role-badge.owner {
+  color: #595959;
+  background: #f0f0f0;
+}
+
+.role-badge.operator {
+  color: #0958d9;
+  background: #e6f4ff;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+.status-pill span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.row-actions {
+  position: relative;
+  text-align: center;
+}
+
+.row-menu-button {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #8c8c8c;
+  background: transparent;
+  border: none;
+  border-radius: 7px;
+}
+
+.row-menu-button:hover {
+  color: #262626;
+  background: #f0f0f0;
+}
+
+.row-menu {
+  position: absolute;
+  top: 42px;
+  right: 12px;
+  z-index: 30;
+  width: 206px;
+  padding: 5px;
+  text-align: left;
+  background: #ffffff;
+  border: 1px solid #f0f0f0;
+  border-radius: 10px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+.row-menu a,
+.row-menu button {
+  width: 100%;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 10px;
+  color: #262626;
+  background: transparent;
+  border: 0;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: left;
+  text-decoration: none;
+}
+
+.row-menu a:hover,
+.row-menu button:hover {
+  background: #f5f5f5;
+}
+
+.row-menu span {
+  display: block;
+  height: 1px;
+  margin: 4px 8px;
+  background: #f5f5f5;
+}
+
+.row-menu button.danger {
+  color: #cf1322;
+}
+
+.row-menu button.success {
+  color: #389e0d;
+}
+
+.row-menu button.warning {
+  color: #d48806;
+}
+
+.row-menu button:disabled {
+  color: #bfbfbf;
+  cursor: not-allowed;
+}
+
+.row-menu button:disabled:hover {
+  background: transparent;
+}
+
+.numeric {
+  text-align: right;
+}
+
+.muted-number {
+  color: #bfbfbf !important;
+}
+
+.table-footer {
+  margin-top: 10px;
+  color: #bfbfbf;
+}
+
+.employees-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 12px 18px;
+  color: #8c8c8c;
+  border-top: 1px solid #f5f5f5;
+  font-size: 12.5px;
+}
+
+.employees-footer span:last-child {
+  color: #bfbfbf;
+}
+
+.menu-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  background: transparent;
+  border: 0;
+}
+
+.empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 160px;
+  color: #595959;
+}
+

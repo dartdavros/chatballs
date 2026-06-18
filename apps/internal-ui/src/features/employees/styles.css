@@ -1,0 +1,388 @@
+.employee-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 20px 22px;
+  margin-bottom: 18px;
+  background: #ffffff;
+  border: 1px solid #f0f0f0;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.employee-detail-main {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.employee-detail-header .avatar {
+  width: 56px;
+  height: 56px;
+  flex: none;
+  background: #9254de;
+  font-size: 19px;
+}
+
+.employee-title {
+  min-width: 0;
+}
+
+.employee-title > div {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  flex-wrap: wrap;
+}
+
+.employee-title h1 {
+  margin: 0;
+  color: #1f1f1f;
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.employee-title p {
+  margin: 6px 0 0;
+  color: #8c8c8c;
+  font-family: "SF Mono", ui-monospace, Menlo, monospace;
+  font-size: 12.5px;
+}
+
+.employee-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex: none;
+}
+
+.employee-action-message {
+  margin: -8px 0 14px;
+  padding: 9px 12px;
+  color: #0958d9;
+  background: #e6f4ff;
+  border: 1px solid #91caff;
+  border-radius: 9px;
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+.employee-detail-grid {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+.employee-detail-left {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.employee-detail-rail {
+  width: 320px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.employee-detail-card,
+.employee-danger-card {
+  padding: 18px 20px;
+  background: #ffffff;
+  border: 1px solid #f0f0f0;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.employee-detail-card.compact {
+  padding: 16px 18px;
+}
+
+.employee-detail-card h3,
+.employee-danger-card h3 {
+  margin: 0 0 16px;
+  color: #1f1f1f;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.employee-detail-card.compact h3 {
+  margin-bottom: 13px;
+}
+
+.employee-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.readonly-field.wide {
+  grid-column: span 2;
+}
+
+.select-like {
+  position: relative;
+}
+
+.select-like input,
+.select-like select {
+  width: 100%;
+  height: 38px;
+  padding-right: 32px;
+  cursor: pointer;
+}
+
+.select-like select {
+  padding-left: 12px;
+  color: #262626;
+  background: #ffffff;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  outline: none;
+  appearance: none;
+  font-size: 13px;
+}
+
+.select-like svg {
+  position: absolute;
+  right: 11px;
+  bottom: 12px;
+  color: #8c8c8c;
+  pointer-events: none;
+}
+
+.employee-access-label {
+  display: block;
+  margin: 16px 0 8px;
+  color: #8c8c8c;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.employee-access-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.employee-access-list span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  color: #bfbfbf;
+  background: #fafafa;
+  border: 1px solid #f0f0f0;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.employee-access-list span.allowed {
+  color: #389e0d;
+  background: #f6ffed;
+  border-color: #d9f7be;
+}
+
+.security-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.security-row.last {
+  padding-bottom: 4px;
+  border-bottom: 0;
+}
+
+.security-row strong {
+  display: block;
+  color: #262626;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.security-row span {
+  display: block;
+  margin-top: 2px;
+  color: #8c8c8c;
+  font-size: 11.5px;
+}
+
+.security-row .secondary-button {
+  height: 34px;
+  padding: 0 13px;
+  border-radius: 8px;
+  font-size: 12.5px;
+}
+
+.detail-totp-switch {
+  width: 42px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex: none;
+  padding: 2px;
+  background: #d9d9d9;
+  border: 0;
+  border-radius: 14px;
+}
+
+.detail-totp-switch.on {
+  justify-content: flex-end;
+  background: #1677ff;
+}
+
+.detail-totp-switch i {
+  width: 20px;
+  height: 20px;
+  display: block;
+  background: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.employee-danger-card {
+  border-color: #ffccc7;
+}
+
+.employee-danger-card h3 {
+  margin-bottom: 4px;
+  color: #cf1322;
+}
+
+.employee-danger-card > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.employee-danger-card p {
+  margin: 0;
+  color: #595959;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.employee-danger-card button {
+  height: 38px;
+  flex: none;
+  padding: 0 16px;
+  color: #cf1322;
+  background: #ffffff;
+  border: 1px solid #ffccc7;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.employee-danger-card button:hover {
+  background: #fff2f0;
+}
+
+.key-value {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 7px 0;
+}
+
+.key-value span {
+  color: #8c8c8c;
+  font-size: 12.5px;
+}
+
+.key-value strong {
+  color: #262626;
+  font-size: 12.5px;
+  font-weight: 500;
+  text-align: right;
+}
+
+.workload-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  overflow: hidden;
+  background: #f0f0f0;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+}
+
+.workload-grid div {
+  padding: 11px 13px;
+  background: #ffffff;
+}
+
+.workload-grid span {
+  display: block;
+  color: #8c8c8c;
+  font-size: 11.5px;
+}
+
+.workload-grid strong {
+  display: block;
+  margin-top: 3px;
+  color: #262626;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.employee-activity-list {
+  display: flex;
+  flex-direction: column;
+  font-size: 12.5px;
+}
+
+.employee-activity-list > div {
+  display: flex;
+  gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px solid #f7f7f7;
+}
+
+.employee-activity-list > div:last-child {
+  border-bottom: 0;
+}
+
+.employee-activity-list > div > span {
+  width: 6px;
+  height: 6px;
+  flex: none;
+  margin-top: 5px;
+  border-radius: 50%;
+}
+
+.employee-activity-list p {
+  flex: 1;
+  margin: 0;
+}
+
+.employee-activity-list strong {
+  display: block;
+  color: #262626;
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+.employee-activity-list small {
+  display: block;
+  margin-top: 1px;
+  color: #bfbfbf;
+  font-size: 11px;
+}
+

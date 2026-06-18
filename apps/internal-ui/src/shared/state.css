@@ -1,0 +1,17 @@
+.state-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0f2f5;
+}
+
+.state-card {
+  min-width: 260px;
+  display: grid;
+  justify-items: center;
+  gap: 16px;
+  padding: 24px;
+  color: #595959;
+  font-size: 13px;
+}

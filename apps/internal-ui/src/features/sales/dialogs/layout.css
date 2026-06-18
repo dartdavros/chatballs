@@ -1,0 +1,20 @@
+.sales-dialogs-scroll {
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.sales-dialogs-page {
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  margin: 0;
+}
+
+.sales-dialogs {
+  height: 100%;
+  min-width: 1160px;
+  min-height: 0;
+  display: flex;
+  overflow: hidden;
+}
