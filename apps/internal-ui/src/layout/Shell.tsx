@@ -5,6 +5,7 @@ import { DepartmentsPage } from "../features/departments/DepartmentsPage";
 import { EmployeeDetailPage, EmployeesPage } from "../features/employees/EmployeesPage";
 import { ProductsPage } from "../features/products/ProductsPage";
 import { ProfilePage } from "../features/profile/ProfilePage";
+import { SalesDialogsPage } from "../features/sales/SalesDialogsPage";
 import { SalesOverviewPage } from "../features/sales/SalesOverviewPage";
 import { Avatar } from "../shared/ui";
 import { Icon, PulseIcon } from "../shared/icons";
@@ -51,10 +52,10 @@ function Sidebar({ route, user, setRoute }: { route: RouteKey; user: SessionUser
   );
 }
 
-function SalesSidebar({ user, setRoute }: { user: SessionUser; setRoute: (route: RouteKey) => void }) {
+function SalesSidebar({ route, user, setRoute }: { route: RouteKey; user: SessionUser; setRoute: (route: RouteKey) => void }) {
   const nav = [
-    { label: "Обзор", icon: "grid" as const, active: true },
-    { label: "Диалоги", icon: "bell" as const, badge: "2" },
+    { key: "salesOverview" as const, label: "Обзор", icon: "grid" as const },
+    { key: "salesDialogs" as const, label: "Диалоги", icon: "bell" as const, badge: "2" },
     { label: "Клиенты", icon: "team" as const },
     { label: "Продажи", icon: "box" as const },
   ];
@@ -68,14 +69,18 @@ function SalesSidebar({ user, setRoute }: { user: SessionUser; setRoute: (route:
         <div><strong>Продажи</strong><span>Рабочее пространство</span></div>
       </div>
       <nav className="hub-nav sales-workspace-nav">
-        {nav.map((item) => (
-          <button className={`hub-nav-item ${item.active ? "is-active" : ""}`} type="button" onClick={() => item.active && setRoute("salesOverview")} key={item.label}>
-            {item.active && <span className="active-bar" />}
+        {nav.map((item) => {
+          const nextRoute = "key" in item ? item.key : null;
+          const active = nextRoute === route;
+          return (
+          <button className={`hub-nav-item ${active ? "is-active" : ""}`} type="button" onClick={() => nextRoute && setRoute(nextRoute)} key={item.label}>
+            {active && <span className="active-bar" />}
             <Icon name={item.icon} />
             {item.label}
             {item.badge && <b>{item.badge}</b>}
           </button>
-        ))}
+          );
+        })}
       </nav>
       <button className="profile-link" onClick={() => setRoute("profile")}>
         <Avatar user={user} />
@@ -88,15 +93,15 @@ function SalesSidebar({ user, setRoute }: { user: SessionUser; setRoute: (route:
 function TopBar({ route, user, currentEmployee, setRoute }: { route: RouteKey; user: SessionUser; currentEmployee?: Employee | null; setRoute: (route: RouteKey) => void }) {
   const st = commandCenterModel("today").st;
   const isCommand = route === "command";
-  const isSalesOverview = route === "salesOverview";
+  const isSalesWorkspace = route === "salesOverview" || route === "salesDialogs";
   return (
     <header className="hub-topbar">
       <div className="breadcrumbs">
         <button type="button" onClick={() => setRoute("command")}>{user.organizationName}</button>
         <i>/</i>
         {route === "employeeDetail" && <><button type="button" onClick={() => setRoute("employees")}>Сотрудники</button><i>/</i><strong>{currentEmployee?.fullName || currentEmployee?.email || routes[route]}</strong></>}
-        {isSalesOverview && <><button type="button" onClick={() => setRoute("salesOverview")}>Продажи</button><i>/</i><strong>Обзор</strong></>}
-        {route !== "employeeDetail" && !isSalesOverview && <strong>{routes[route]}</strong>}
+        {isSalesWorkspace && <><button type="button" onClick={() => setRoute("salesOverview")}>Продажи</button><i>/</i><strong>{routes[route]}</strong></>}
+        {route !== "employeeDetail" && !isSalesWorkspace && <strong>{routes[route]}</strong>}
       </div>
       <div className="topbar-actions">
         {isCommand && <span className="topbar-status" style={{ background: st.bg, borderColor: st.border, color: st.color }}><span style={{ background: st.dot }} />{st.label}</span>}
@@ -113,14 +118,15 @@ export function Shell({ route, setRoute, selectedEmployeeId, openEmployeeRoute, 
   function openEmployee(employee: Employee) {
     openEmployeeRoute(employee.id);
   }
-  const isSalesWorkspace = route === "salesOverview";
+  const isSalesWorkspace = route === "salesOverview" || route === "salesDialogs";
+  const isSalesDialogs = route === "salesDialogs";
   return (
     <div className="hub-shell">
-      {isSalesWorkspace ? <SalesSidebar user={user} setRoute={setRoute} /> : <Sidebar route={route} user={user} setRoute={setRoute} />}
+      {isSalesWorkspace ? <SalesSidebar route={route} user={user} setRoute={setRoute} /> : <Sidebar route={route} user={user} setRoute={setRoute} />}
       <div className="hub-main">
         <TopBar route={route} user={user} currentEmployee={currentEmployee} setRoute={setRoute} />
-        <main className="hub-scroll">
-          <div className={`hub-page ${isSalesWorkspace ? "sales-workspace-page" : ""}`}>
+        <main className={`hub-scroll ${isSalesDialogs ? "sales-dialogs-scroll" : ""}`}>
+          <div className={`hub-page ${isSalesWorkspace ? "sales-workspace-page" : ""} ${isSalesDialogs ? "sales-dialogs-page" : ""}`}>
             {route === "command" && <CommandCenter data={data} setRoute={setRoute} />}
             {route === "departments" && <DepartmentsPage data={data} setRoute={setRoute} />}
             {route === "employees" && <EmployeesPage employees={data.employees} reload={reload} openEmployee={openEmployee} />}
@@ -129,6 +135,7 @@ export function Shell({ route, setRoute, selectedEmployeeId, openEmployeeRoute, 
             {route === "products" && <ProductsPage products={data.products} reload={reload} />}
             {route === "profile" && <ProfilePage user={user} onUserUpdated={onUserUpdated} reload={reload} onLogout={onLogout} />}
             {route === "salesOverview" && <SalesOverviewPage products={data.products} />}
+            {route === "salesDialogs" && <SalesDialogsPage />}
           </div>
         </main>
       </div>

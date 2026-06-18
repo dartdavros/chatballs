@@ -7,5 +7,6 @@ export const routes: Record<RouteKey, string> = {
   employees: "Сотрудники",
   products: "Продукты",
   profile: "Профиль",
+  salesDialogs: "Диалоги",
   salesOverview: "Обзор",
 };

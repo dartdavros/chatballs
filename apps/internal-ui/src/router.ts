@@ -10,6 +10,7 @@ export function routeFromPath(pathname: string): RouteState {
   if (path === "/" || path === "/command") return { route: "command", employeeId: null };
   if (path === "/departments") return { route: "departments", employeeId: null };
   if (path === "/departments/sales") return { route: "salesOverview", employeeId: null };
+  if (path === "/departments/sales/dialogs") return { route: "salesDialogs", employeeId: null };
   if (path === "/employees") return { route: "employees", employeeId: null };
   if (path.startsWith("/employees/")) {
     const id = Number(path.split("/")[2]);
@@ -24,6 +25,7 @@ export function pathFromRoute(route: RouteKey, employeeId: number | null = null)
   if (route === "command") return "/";
   if (route === "departments") return "/departments";
   if (route === "salesOverview") return "/departments/sales";
+  if (route === "salesDialogs") return "/departments/sales/dialogs";
   if (route === "employees") return "/employees";
   if (route === "employeeDetail") return employeeId ? `/employees/${employeeId}` : "/employees";
   if (route === "products") return "/products";
