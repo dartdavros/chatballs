@@ -21,7 +21,7 @@ export function SalesSidebar({ route, user, setRoute }: { route: RouteKey; user:
       <nav className="hub-nav sales-workspace-nav">
         {nav.map((item) => {
           const nextRoute = "key" in item ? item.key : null;
-          const active = nextRoute === route;
+          const active = nextRoute === route || (nextRoute === "salesClients" && route === "salesClientDetail");
           return (
           <button className={`hub-nav-item ${active ? "is-active" : ""}`} type="button" onClick={() => nextRoute && setRoute(nextRoute)} key={item.label}>
             {active && <span className="active-bar" />}

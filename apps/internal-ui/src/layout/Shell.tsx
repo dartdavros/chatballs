@@ -11,16 +11,17 @@ export function Shell({ route, setRoute, selectedEmployeeId, openEmployeeRoute, 
   function openEmployee(employee: Employee) {
     openEmployeeRoute(employee.id);
   }
-  const isSalesWorkspace = route === "salesOverview" || route === "salesClients" || route === "salesDialogs";
+  const isSalesWorkspace = route === "salesOverview" || route === "salesClientDetail" || route === "salesClients" || route === "salesDialogs";
   const isSalesDialogs = route === "salesDialogs";
   const isSalesClients = route === "salesClients";
+  const isSalesClientDetail = route === "salesClientDetail";
   return (
     <div className="hub-shell">
       {isSalesWorkspace ? <SalesSidebar route={route} user={user} setRoute={setRoute} /> : <Sidebar route={route} user={user} setRoute={setRoute} />}
       <div className="hub-main">
         <TopBar route={route} user={user} currentEmployee={currentEmployee} setRoute={setRoute} />
         <main className={`hub-scroll ${isSalesDialogs ? "sales-dialogs-scroll" : ""}`}>
-          <div className={`hub-page ${isSalesWorkspace ? "sales-workspace-page" : ""} ${isSalesDialogs ? "sales-dialogs-page" : ""} ${isSalesClients ? "sales-clients-page" : ""}`}>
+          <div className={`hub-page ${isSalesWorkspace ? "sales-workspace-page" : ""} ${isSalesDialogs ? "sales-dialogs-page" : ""} ${isSalesClients ? "sales-clients-page" : ""} ${isSalesClientDetail ? "sales-client-detail-page" : ""}`}>
             <ShellRouteContent route={route} data={data} currentEmployee={currentEmployee} openEmployee={openEmployee} reload={reload} setRoute={setRoute} user={user} onUserUpdated={onUserUpdated} onLogout={onLogout} />
           </div>
         </main>

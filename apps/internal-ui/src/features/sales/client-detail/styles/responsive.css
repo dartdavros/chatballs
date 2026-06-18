@@ -1,0 +1,27 @@
+@media (max-width: 1100px) {
+  .sales-client-overview {
+    flex-direction: column;
+  }
+
+  .sales-client-overview-rail {
+    width: 100%;
+  }
+}
+
+@media (max-width: 820px) {
+  .sales-client-detail-header {
+    flex-wrap: wrap;
+  }
+
+  .sales-client-detail-actions {
+    width: 100%;
+  }
+
+  .sales-client-primary {
+    flex: 1;
+  }
+
+  .sales-client-summary {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

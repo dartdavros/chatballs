@@ -4,7 +4,7 @@ import { SalesClientsPagination } from "./SalesClientsPagination";
 import type { ClientSortKey } from "./model";
 import type { SalesClientsState } from "./useSalesClients";
 
-export function SalesClientsTable({ clients }: { clients: SalesClientsState }) {
+export function SalesClientsTable({ clients, openClient }: { clients: SalesClientsState; openClient: () => void }) {
   return (
     <>
       {clients.menu && <button className="sales-clients-menu-scrim" type="button" aria-label="Закрыть меню" onClick={() => clients.setMenu(null)} />}
@@ -25,7 +25,7 @@ export function SalesClientsTable({ clients }: { clients: SalesClientsState }) {
               </tr>
             </thead>
             <tbody>
-              {clients.rows.map((client) => <SalesClientRow client={client} menu={clients.menu} setMenu={clients.setMenu} key={client.cid} />)}
+              {clients.rows.map((client) => <SalesClientRow client={client} menu={clients.menu} openClient={openClient} setMenu={clients.setMenu} key={client.cid} />)}
             </tbody>
           </table>
         </div>

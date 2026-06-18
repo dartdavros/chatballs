@@ -4,6 +4,7 @@
 @import "./features/command/center/styles.css";
 @import "./features/sales/overview/styles.css";
 @import "./features/sales/clients/styles.css";
+@import "./features/sales/client-detail/styles.css";
 @import "./features/sales/dialogs/styles.css";
 @import "./features/departments/styles.css";
 @import "./shared/table-controls.css";

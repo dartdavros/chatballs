@@ -427,7 +427,7 @@
   text-align: right;
 }
 
-.sales-client-row-menu {
+.row-menu.sales-client-row-menu {
   z-index: 40;
   width: 212px;
 }

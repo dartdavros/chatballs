@@ -3,6 +3,7 @@ import { DepartmentsPage } from "../features/departments/DepartmentsPage";
 import { EmployeeDetailPage, EmployeesPage } from "../features/employees/EmployeesPage";
 import { ProductsPage } from "../features/products/ProductsPage";
 import { ProfilePage } from "../features/profile/ProfilePage";
+import { SalesClientDetailPage } from "../features/sales/client-detail/SalesClientDetailPage";
 import { SalesClientsPage } from "../features/sales/SalesClientsPage";
 import { SalesDialogsPage } from "../features/sales/SalesDialogsPage";
 import { SalesOverviewPage } from "../features/sales/SalesOverviewPage";
@@ -18,7 +19,8 @@ export function ShellRouteContent({ route, data, currentEmployee, openEmployee, 
       {route === "employeeDetail" && !currentEmployee && <EmployeesPage employees={data.employees} reload={reload} openEmployee={openEmployee} />}
       {route === "products" && <ProductsPage products={data.products} reload={reload} />}
       {route === "profile" && <ProfilePage user={user} onUserUpdated={onUserUpdated} reload={reload} onLogout={onLogout} />}
-      {route === "salesClients" && <SalesClientsPage />}
+      {route === "salesClients" && <SalesClientsPage openClient={() => setRoute("salesClientDetail")} />}
+      {route === "salesClientDetail" && <SalesClientDetailPage setRoute={setRoute} />}
       {route === "salesOverview" && <SalesOverviewPage products={data.products} />}
       {route === "salesDialogs" && <SalesDialogsPage />}
     </>

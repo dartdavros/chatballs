@@ -1,0 +1,39 @@
+.sales-client-detail-tabs {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-bottom: 18px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.sales-client-detail-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.sales-client-detail-tabs button {
+  position: relative;
+  padding: 11px 15px;
+  color: #595959;
+  background: transparent;
+  border: 0;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.sales-client-detail-tabs button.active {
+  color: #1677ff;
+  font-weight: 600;
+}
+
+.sales-client-detail-tabs button.active::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  background: #1677ff;
+  content: "";
+}
