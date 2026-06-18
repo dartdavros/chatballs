@@ -17,7 +17,7 @@ export function ShieldIcon() {
   );
 }
 
-export function Icon({ name, size = 17 }: { name: "grid" | "building" | "team" | "box" | "robot" | "plug" | "settings" | "bell" | "chevron" | "plus" | "arrow" | "paperclip" | "send" | "phone" | "lock" | "mail" | "eye" | "eyeOff" | "logout" | "user" | "refresh" | "warning" | "bolt" | "shop" | "search" | "more" | "external" | "key" | "pause" | "percent" | "save" | "check" | "copy" | "clock"; size?: number }) {
+export function Icon({ name, size = 17 }: { name: "grid" | "building" | "team" | "box" | "robot" | "plug" | "settings" | "bell" | "chevron" | "plus" | "arrow" | "paperclip" | "send" | "phone" | "lock" | "mail" | "eye" | "eyeOff" | "logout" | "user" | "refresh" | "warning" | "bolt" | "shop" | "search" | "more" | "external" | "key" | "pause" | "percent" | "save" | "check" | "copy" | "clock" | "message" | "cart" | "columns" | "download" | "list"; size?: number }) {
   const common = { width: size, height: size, fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round", strokeLinejoin: "round" } as const;
   const paths: Record<typeof name, ReactNode> = {
     grid: <><rect x="3" y="3" width="7" height="9" rx="1.4" /><rect x="14" y="3" width="7" height="5" rx="1.4" /><rect x="14" y="12" width="7" height="9" rx="1.4" /><rect x="3" y="16" width="7" height="5" rx="1.4" /></>,
@@ -28,6 +28,11 @@ export function Icon({ name, size = 17 }: { name: "grid" | "building" | "team" |
     plug: <><path d="M9 8V2.5M15 8V2.5M18 8v5.5a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V8Z" /><path d="M12 17.5V22" /></>,
     settings: <><line x1="21" y1="6" x2="9" y2="6" /><line x1="3" y1="6" x2="5" y2="6" /><circle cx="7" cy="6" r="2" /><line x1="21" y1="12" x2="13" y2="12" /><line x1="3" y1="12" x2="9" y2="12" /><circle cx="11" cy="12" r="2" /><line x1="21" y1="18" x2="15" y2="18" /><line x1="3" y1="18" x2="11" y2="18" /><circle cx="13" cy="18" r="2" /></>,
     bell: <><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></>,
+    message: <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z" />,
+    cart: <><path d="M2 3h2l2.6 12.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6" /><circle cx="9" cy="20" r="1" /><circle cx="18" cy="20" r="1" /></>,
+    columns: <><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /></>,
+    download: <><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></>,
+    list: <><path d="M8 6h10M8 12h10M8 18h10" /><circle cx="4" cy="6" r="1" /><circle cx="4" cy="12" r="1" /><circle cx="4" cy="18" r="1" /></>,
     chevron: <polyline points="6 9 12 15 18 9" />,
     plus: <><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></>,
     arrow: <><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></>,
