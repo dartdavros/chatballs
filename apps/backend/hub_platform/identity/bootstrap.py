@@ -77,14 +77,18 @@ def bootstrap_edevs_owner(*, email: str, password: str, full_name: str = "") -> 
         operator.set_password("local-operator-password")
         operator.save(update_fields=["password"])
 
-    EmployeeProfile.objects.get_or_create(
+    operator_profile, _ = EmployeeProfile.objects.get_or_create(
         user=operator,
         defaults={
             "organization": organization,
             "role": EmployeeRole.OPERATOR,
+            "phone": "+7 916 245 14 02",
             "department": sales_department,
         },
     )
+    if not operator_profile.phone:
+        operator_profile.phone = "+7 916 245 14 02"
+        operator_profile.save(update_fields=["phone"])
 
     record_audit_event(
         organization=organization,

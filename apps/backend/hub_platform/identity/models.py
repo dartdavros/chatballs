@@ -121,6 +121,7 @@ class EmployeeProfile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="employee_profile")
     organization = models.ForeignKey(Organization, on_delete=models.PROTECT, related_name="employees")
     role = models.CharField(max_length=32, choices=EmployeeRole.choices)
+    phone = models.CharField(max_length=32, blank=True)
     department = models.ForeignKey(
         Department,
         on_delete=models.PROTECT,

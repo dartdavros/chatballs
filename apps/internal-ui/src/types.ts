@@ -29,6 +29,7 @@ export type Employee = {
   email: string;
   fullName: string;
   role: Role;
+  phone: string;
   department: string | null;
   isActive: boolean;
   isBlocked: boolean;

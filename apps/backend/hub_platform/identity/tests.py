@@ -35,6 +35,7 @@ class BootstrapOwnerTests(TestCase):
         operator = HumanUser.objects.get(email="a.kotova@edevs.tech")
         self.assertEqual(operator.full_name, "Анна Котова")
         self.assertEqual(operator.employee_profile.role, EmployeeRole.OPERATOR)
+        self.assertEqual(operator.employee_profile.phone, "+7 916 245 14 02")
         self.assertTrue(AuditEvent.objects.filter(action="identity.owner_bootstrapped").exists())
 
     def test_bootstrap_is_idempotent_for_owner(self) -> None:
@@ -267,6 +268,55 @@ class EmployeeEndpointTests(TestCase):
         self.assertFalse(operator.is_active)
         self.assertTrue(operator.employee_profile.is_blocked)
         self.assertTrue(AuditEvent.objects.filter(action="identity.operator_blocked").exists())
+
+    def test_owner_updates_operator_card_fields(self) -> None:
+        operator = HumanUser.objects.get(email="a.kotova@edevs.tech")
+
+        response = self.client.post(
+            f"/api/v1/employees/{operator.id}/update/",
+            data=json.dumps(
+                {
+                    "fullName": "Анна Котова",
+                    "email": "anna.kotova@edevs.tech",
+                    "phone": "+7 916 245 14 03",
+                    "role": EmployeeRole.OPERATOR,
+                    "department": "sales",
+                    "totpEnabled": True,
+                }
+            ),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        operator.refresh_from_db()
+        operator.employee_profile.refresh_from_db()
+        self.assertEqual(operator.email, "anna.kotova@edevs.tech")
+        self.assertEqual(operator.employee_profile.phone, "+7 916 245 14 03")
+        self.assertTrue(operator.employee_profile.totp_enabled)
+
+    def test_owner_resets_operator_password(self) -> None:
+        operator = HumanUser.objects.get(email="a.kotova@edevs.tech")
+
+        response = self.client.post(f"/api/v1/employees/{operator.id}/reset-password/")
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        operator.refresh_from_db()
+        operator.employee_profile.refresh_from_db()
+        self.assertTrue(operator.check_password(payload["temporaryPassword"]))
+        self.assertTrue(operator.employee_profile.must_change_password)
+
+    def test_owner_unblocks_operator(self) -> None:
+        operator = HumanUser.objects.get(email="a.kotova@edevs.tech")
+        operator.employee_profile.block()
+
+        response = self.client.post(f"/api/v1/employees/{operator.id}/unblock/")
+
+        self.assertEqual(response.status_code, 200)
+        operator.refresh_from_db()
+        operator.employee_profile.refresh_from_db()
+        self.assertTrue(operator.is_active)
+        self.assertFalse(operator.employee_profile.is_blocked)
 
 
 class CompanyEndpointTests(TestCase):

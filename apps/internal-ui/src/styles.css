@@ -2035,6 +2035,17 @@ button:disabled {
   flex: none;
 }
 
+.employee-action-message {
+  margin: -8px 0 14px;
+  padding: 9px 12px;
+  color: #0958d9;
+  background: #e6f4ff;
+  border: 1px solid #91caff;
+  border-radius: 9px;
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
 .employee-detail-grid {
   display: flex;
   align-items: flex-start;
@@ -2096,9 +2107,23 @@ button:disabled {
   position: relative;
 }
 
-.select-like input {
+.select-like input,
+.select-like select {
+  width: 100%;
+  height: 38px;
   padding-right: 32px;
   cursor: pointer;
+}
+
+.select-like select {
+  padding-left: 12px;
+  color: #262626;
+  background: #ffffff;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  outline: none;
+  appearance: none;
+  font-size: 13px;
 }
 
 .select-like svg {

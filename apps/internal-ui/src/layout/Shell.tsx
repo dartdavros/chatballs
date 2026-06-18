@@ -90,7 +90,7 @@ export function Shell({ route, setRoute, user, data, reload, onLogout }: { route
             {route === "command" && <CommandCenter data={data} setRoute={setRoute} />}
             {route === "departments" && <DepartmentsPage data={data} setRoute={setRoute} />}
             {route === "employees" && <EmployeesPage employees={data.employees} reload={reload} openEmployee={openEmployee} />}
-            {route === "employeeDetail" && currentEmployee && <EmployeeDetailPage employee={currentEmployee} setRoute={setRoute} />}
+            {route === "employeeDetail" && currentEmployee && <EmployeeDetailPage employee={currentEmployee} reload={reload} setRoute={setRoute} />}
             {route === "products" && <ProductsPage products={data.products} reload={reload} />}
             {route === "profile" && <ProfilePage user={user} onLogout={onLogout} />}
           </div>
