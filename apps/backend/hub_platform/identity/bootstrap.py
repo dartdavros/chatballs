@@ -65,6 +65,27 @@ def bootstrap_edevs_owner(*, email: str, password: str, full_name: str = "") -> 
         },
     )
 
+    operator, created_operator = HumanUser.objects.get_or_create(
+        email=HumanUser.objects.normalize_email("a.kotova@edevs.tech"),
+        defaults={
+            "full_name": "Анна Котова",
+            "is_staff": False,
+            "is_superuser": False,
+        },
+    )
+    if created_operator:
+        operator.set_password("local-operator-password")
+        operator.save(update_fields=["password"])
+
+    EmployeeProfile.objects.get_or_create(
+        user=operator,
+        defaults={
+            "organization": organization,
+            "role": EmployeeRole.OPERATOR,
+            "department": sales_department,
+        },
+    )
+
     record_audit_event(
         organization=organization,
         actor=owner,

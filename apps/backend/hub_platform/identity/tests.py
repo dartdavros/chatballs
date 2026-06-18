@@ -32,6 +32,9 @@ class BootstrapOwnerTests(TestCase):
         self.assertTrue(result.owner.employee_profile.totp_required)
         self.assertTrue(result.owner.is_staff)
         self.assertTrue(result.owner.is_superuser)
+        operator = HumanUser.objects.get(email="a.kotova@edevs.tech")
+        self.assertEqual(operator.full_name, "Анна Котова")
+        self.assertEqual(operator.employee_profile.role, EmployeeRole.OPERATOR)
         self.assertTrue(AuditEvent.objects.filter(action="identity.owner_bootstrapped").exists())
 
     def test_bootstrap_is_idempotent_for_owner(self) -> None:
@@ -40,7 +43,7 @@ class BootstrapOwnerTests(TestCase):
 
         self.assertTrue(first.created_owner)
         self.assertFalse(second.created_owner)
-        self.assertEqual(HumanUser.objects.count(), 1)
+        self.assertEqual(HumanUser.objects.count(), 2)
         self.assertEqual(Organization.objects.count(), 1)
         self.assertEqual(Product.objects.count(), 2)
 
