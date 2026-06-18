@@ -50,7 +50,7 @@ export function CommandCenter({ data, setRoute }: { data: AppData; setRoute: (ro
                 </div>
                 <p>Ответственный: Анна Котова · 4 сотрудника · 1 AI-агент</p>
               </div>
-              <button className="primary-button sales-open" onClick={() => setRoute("departments")}>Открыть отдел<Icon name="arrow" size={16} /></button>
+              <button className="primary-button sales-open" onClick={() => setRoute("salesOverview")}>Открыть отдел<Icon name="arrow" size={16} /></button>
             </div>
             <div className="dept-summary">{vm.deptSummary}</div>
             <MetricGroup title="ДИАЛОГИ — СЕЙЧАС" columns={5} items={[

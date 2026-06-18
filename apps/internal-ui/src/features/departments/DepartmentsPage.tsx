@@ -44,7 +44,7 @@ export function DepartmentsPage({ data, setRoute }: { data: AppData; setRoute: (
             </div>
 
             <div className="department-action">
-              <a href="#" onClick={(event) => event.preventDefault()}>Открыть отдел<Icon name="arrow" size={16} /></a>
+              <button type="button" onClick={() => setRoute("salesOverview")}>Открыть отдел<Icon name="arrow" size={16} /></button>
             </div>
           </section>
         </div>

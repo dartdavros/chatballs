@@ -9,6 +9,7 @@ export function routeFromPath(pathname: string): RouteState {
   const path = pathname.replace(/\/+$/, "") || "/";
   if (path === "/" || path === "/command") return { route: "command", employeeId: null };
   if (path === "/departments") return { route: "departments", employeeId: null };
+  if (path === "/departments/sales") return { route: "salesOverview", employeeId: null };
   if (path === "/employees") return { route: "employees", employeeId: null };
   if (path.startsWith("/employees/")) {
     const id = Number(path.split("/")[2]);
@@ -22,6 +23,7 @@ export function routeFromPath(pathname: string): RouteState {
 export function pathFromRoute(route: RouteKey, employeeId: number | null = null): string {
   if (route === "command") return "/";
   if (route === "departments") return "/departments";
+  if (route === "salesOverview") return "/departments/sales";
   if (route === "employees") return "/employees";
   if (route === "employeeDetail") return employeeId ? `/employees/${employeeId}` : "/employees";
   if (route === "products") return "/products";
