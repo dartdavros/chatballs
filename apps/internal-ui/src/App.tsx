@@ -4,10 +4,11 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { edevsHubTheme } from "@edevs/ui";
 
 import { api } from "./api/client";
+import { canAccess, defaultRoute } from "./auth/access";
 import { AuthChangePassword, AuthLogin, AuthTotpCode, AuthTotpSetup } from "./features/auth/AuthScreens";
 import { Shell } from "./layout/Shell";
 import { pathFromRoute, routeFromPath } from "./router";
-import { ErrorScreen, LoadingScreen } from "./shared/ui";
+import { ErrorScreen, LoadingScreen, PermissionScreen } from "./shared/ui";
 import type { AppData, AuthChallenge, Department, Employee, Product, RouteKey, SessionUser } from "./types";
 
 export function App() {
@@ -77,6 +78,11 @@ export function App() {
     if (user) void loadData();
   }, [loadData, user]);
 
+  const landAfterAuth = useCallback((nextUser: SessionUser) => {
+    setUser(nextUser);
+    navigate(defaultRoute(nextUser.role), null, true);
+  }, [navigate]);
+
   async function logout() {
     await api("/api/v1/auth/logout/", { method: "POST" }).catch(() => undefined);
     setUser(null);
@@ -90,15 +96,17 @@ export function App() {
   return (
     <ConfigProvider theme={edevsHubTheme}>
       {totpChallenge ? (
-        <AuthTotpCode challenge={totpChallenge} onVerified={(nextUser) => { setTotpChallenge(null); setUser(nextUser); }} />
+        <AuthTotpCode challenge={totpChallenge} onVerified={(nextUser) => { setTotpChallenge(null); landAfterAuth(nextUser); }} />
       ) : !user ? (
-        <AuthLogin onLogin={(nextUser) => { setUser(nextUser); void loadData(); }} onTotpChallenge={setTotpChallenge} />
+        <AuthLogin onLogin={landAfterAuth} onTotpChallenge={setTotpChallenge} />
       ) : user.mustChangePassword ? (
         <AuthChangePassword user={user} onChanged={setUser} />
       ) : user.totpRequired && !user.totpEnabled ? (
         <AuthTotpSetup user={user} onConfirmed={setUser} />
       ) : dataError ? (
         <ErrorScreen retry={loadData} />
+      ) : !canAccess(user.role, route) ? (
+        <PermissionScreen onReturn={() => navigate(defaultRoute(user.role), null, true)} />
       ) : (
         <Shell route={route} setRoute={(nextRoute) => navigate(nextRoute)} selectedEmployeeId={selectedEmployeeId} selectedProductId={selectedProductId} openEmployeeRoute={(employeeId) => navigate("employeeDetail", employeeId)} openProductRoute={(productId) => navigate("productDetail", productId)} user={user} data={data} reload={loadData} onUserUpdated={setUser} onLogout={logout} />
       )}

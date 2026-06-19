@@ -21,9 +21,11 @@ export function Shell({ route, setRoute, selectedEmployeeId, selectedProductId, 
   const isSalesClientDetail = route === "salesClientDetail";
   const isSalesOrderDetail = route === "salesOrderDetail";
   const isSalesOrders = route === "salesOrderDetail" || route === "salesOrders";
+  // OPERATOR работает только в пространстве продаж, поэтому всегда видит sales-sidebar (SPEC-HUB-0004 §9).
+  const showSalesSidebar = isSalesWorkspace || user.role === "OPERATOR";
   return (
     <div className="hub-shell">
-      {isSalesWorkspace ? <SalesSidebar route={route} user={user} setRoute={setRoute} /> : <Sidebar route={route} user={user} setRoute={setRoute} />}
+      {showSalesSidebar ? <SalesSidebar route={route} user={user} setRoute={setRoute} /> : <Sidebar route={route} user={user} setRoute={setRoute} />}
       <div className="hub-main">
         <TopBar route={route} user={user} currentEmployee={currentEmployee} currentProduct={currentProduct} setRoute={setRoute} />
         <main className={`hub-scroll ${isSalesDialogs ? "sales-dialogs-scroll" : ""}`}>

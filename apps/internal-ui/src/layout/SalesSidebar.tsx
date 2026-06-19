@@ -11,9 +11,11 @@ export function SalesSidebar({ route, user, setRoute }: { route: RouteKey; user:
   ];
   return (
     <aside className="hub-sidebar sales-workspace-sidebar">
-      <div className="sales-sidebar-back-wrap">
-        <button className="sales-sidebar-back" type="button" onClick={() => setRoute("command")}><Icon name="arrow" size={16} />Назад в Hub</button>
-      </div>
+      {user.role === "OWNER" && (
+        <div className="sales-sidebar-back-wrap">
+          <button className="sales-sidebar-back" type="button" onClick={() => setRoute("command")}><Icon name="arrow" size={16} />Назад в Hub</button>
+        </div>
+      )}
       <div className="sales-sidebar-title">
         <div className="sales-sidebar-icon"><Icon name="shop" size={19} /></div>
         <div><strong>Продажи</strong><span>Рабочее пространство</span></div>

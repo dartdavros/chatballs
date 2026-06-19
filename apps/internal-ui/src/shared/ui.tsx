@@ -64,3 +64,15 @@ export function LoadingScreen() {
 export function ErrorScreen({ retry }: { retry: () => void }) {
   return <main className="state-screen"><div className="state-card"><strong>Ошибка загрузки</strong><Button variant="primary" onClick={retry}>Повторить</Button></div></main>;
 }
+
+export function PermissionScreen({ onReturn }: { onReturn: () => void }) {
+  return (
+    <main className="state-screen">
+      <div className="state-card">
+        <strong>403 · Доступ запрещён</strong>
+        <span>У вашей роли нет доступа к этому разделу.</span>
+        <Button variant="primary" onClick={onReturn}>Вернуться</Button>
+      </div>
+    </main>
+  );
+}
