@@ -7,9 +7,14 @@ import struct
 import time
 from urllib.parse import quote
 
+from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sessions.models import Session
+from django.core.mail import send_mail
 from django.http import HttpRequest, JsonResponse
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_GET, require_POST
@@ -164,6 +169,51 @@ def logout_view(request: HttpRequest) -> JsonResponse:
     logout(request)
     record_audit_event(action="identity.logout", actor=user, organization=organization, request=request)
     return JsonResponse({"authenticated": False})
+
+
+def _send_password_reset_email(user: HumanUser) -> None:
+    uid = urlsafe_base64_encode(force_bytes(user.pk))
+    token = default_token_generator.make_token(user)
+    reset_url = f"{settings.INTERNAL_UI_BASE_URL.rstrip('/')}/reset-password?uid={uid}&token={token}"
+    send_mail(
+        subject="Восстановление доступа к Edevs Hub",
+        message=(
+            f"Здравствуйте, {user.full_name or user.email}.\n\n"
+            "Вы запросили сброс пароля для Edevs Hub. Чтобы задать новый пароль, перейдите по ссылке:\n"
+            f"{reset_url}\n\n"
+            "Ссылка действует 30 минут. Если вы не запрашивали сброс, просто проигнорируйте это письмо."
+        ),
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[user.email],
+    )
+
+
+@csrf_protect
+@require_POST
+def password_reset_request_view(request: HttpRequest) -> JsonResponse:
+    body = _json_body(request)
+    email = HumanUser.objects.normalize_email(str(body.get("email", "")).strip())
+    if email:
+        user = HumanUser.objects.filter(email__iexact=email, is_active=True).first()
+        profile = getattr(user, "employee_profile", None) if user is not None else None
+        if user is not None and profile is not None and not profile.is_blocked:
+            _send_password_reset_email(user)
+            record_audit_event(
+                action="identity.password_reset_requested",
+                actor=user,
+                organization=profile.organization,
+                request=request,
+            )
+        else:
+            record_audit_event(
+                action="identity.password_reset_requested",
+                result=AuditResult.DENIED,
+                object_type="email",
+                object_id=email,
+                request=request,
+            )
+    # Ответ не зависит от наличия аккаунта — защита от перебора адресов.
+    return JsonResponse({"ok": True})
 
 
 @csrf_protect

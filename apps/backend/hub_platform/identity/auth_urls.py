@@ -6,6 +6,7 @@ urlpatterns = [
     path("session/", auth_views.session_view, name="auth-session"),
     path("login/", auth_views.login_view, name="auth-login"),
     path("logout/", auth_views.logout_view, name="auth-logout"),
+    path("password-reset/request/", auth_views.password_reset_request_view, name="auth-password-reset-request"),
     path("profile/update/", auth_views.profile_update_view, name="auth-profile-update"),
     path("profile/password/", auth_views.profile_password_view, name="auth-profile-password"),
     path("profile/totp/start/", auth_views.profile_totp_start_view, name="auth-profile-totp-start"),

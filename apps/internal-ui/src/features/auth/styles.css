@@ -479,3 +479,97 @@
   text-decoration: none;
 }
 
+.auth-recovery-hint {
+  margin: 0 2px 20px;
+  color: #9a9a9a;
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+
+.auth-recovery-sent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.auth-recovery-sent-icon {
+  width: 54px;
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  color: #1677ff;
+  background: #eaf2ff;
+  border-radius: 50%;
+}
+
+.auth-recovery-sent h3 {
+  margin: 0;
+  color: #1f1f1f;
+  font-size: 15.5px;
+  font-weight: 700;
+}
+
+.auth-recovery-sent p {
+  margin: 8px 0 0;
+  color: #6b6b6b;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.auth-recovery-sent p b {
+  color: #262626;
+}
+
+.auth-recovery-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin: 20px 0;
+  padding: 12px 14px;
+  background: #fafafa;
+  border: 1px solid #f0f0f0;
+  border-radius: 9px;
+}
+
+.auth-recovery-info svg {
+  flex: none;
+  margin-top: 1px;
+  color: #bfbfbf;
+}
+
+.auth-recovery-info span {
+  color: #8c8c8c;
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+
+.auth-recovery-secondary {
+  width: 100%;
+  height: 42px;
+  margin-top: 9px;
+  color: #595959;
+  border-color: #e0e0e0;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.auth-back-login {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  color: #8c8c8c;
+  background: transparent;
+  border: none;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.auth-back-login:hover {
+  color: #595959;
+}
+

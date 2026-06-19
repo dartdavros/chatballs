@@ -5,7 +5,7 @@ import { edevsHubTheme } from "@edevs/ui";
 
 import { api } from "./api/client";
 import { canAccess, defaultRoute } from "./auth/access";
-import { AuthChangePassword, AuthLogin, AuthTotpCode, AuthTotpSetup } from "./features/auth/AuthScreens";
+import { AuthChangePassword, AuthLogin, AuthPasswordRecovery, AuthTotpCode, AuthTotpSetup } from "./features/auth/AuthScreens";
 import { Shell } from "./layout/Shell";
 import { pathFromRoute, routeFromPath } from "./router";
 import { ErrorScreen, LoadingScreen, PermissionScreen } from "./shared/ui";
@@ -16,6 +16,7 @@ export function App() {
   const [sessionLoading, setSessionLoading] = useState(true);
   const [user, setUser] = useState<SessionUser | null>(null);
   const [totpChallenge, setTotpChallenge] = useState<AuthChallenge | null>(null);
+  const [recovering, setRecovering] = useState(false);
   const [route, setRoute] = useState<RouteKey>(initialRoute.route);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<number | null>(initialRoute.employeeId);
   const [selectedProductId, setSelectedProductId] = useState<number | null>(initialRoute.productId);
@@ -98,7 +99,11 @@ export function App() {
       {totpChallenge ? (
         <AuthTotpCode challenge={totpChallenge} onVerified={(nextUser) => { setTotpChallenge(null); landAfterAuth(nextUser); }} />
       ) : !user ? (
-        <AuthLogin onLogin={landAfterAuth} onTotpChallenge={setTotpChallenge} />
+        recovering ? (
+          <AuthPasswordRecovery onBackToLogin={() => setRecovering(false)} />
+        ) : (
+          <AuthLogin onLogin={landAfterAuth} onTotpChallenge={setTotpChallenge} onRecover={() => setRecovering(true)} />
+        )
       ) : user.mustChangePassword ? (
         <AuthChangePassword user={user} onChanged={setUser} />
       ) : user.totpRequired && !user.totpEnabled ? (

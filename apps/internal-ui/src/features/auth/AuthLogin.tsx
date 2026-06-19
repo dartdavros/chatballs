@@ -7,7 +7,7 @@ import { Button } from "../../shared/ui-controls";
 import { AuthField } from "./AuthField";
 import { AuthFrame } from "./AuthFrame";
 
-export function AuthLogin({ onLogin, onTotpChallenge }: { onLogin: (user: SessionUser) => void; onTotpChallenge: (challenge: AuthChallenge) => void }) {
+export function AuthLogin({ onLogin, onTotpChallenge, onRecover }: { onLogin: (user: SessionUser) => void; onTotpChallenge: (challenge: AuthChallenge) => void; onRecover: () => void }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
@@ -43,7 +43,7 @@ export function AuthLogin({ onLogin, onTotpChallenge }: { onLogin: (user: Sessio
         <AuthField icon="mail" value={email} onChange={(nextEmail) => { setEmail(nextEmail); setError(false); }} placeholder="you@edevs.tech" error={error} />
         <div className="password-row">
           <label className="field-label">Пароль</label>
-          <a href="#" onClick={(event) => event.preventDefault()}>Восстановить доступ</a>
+          <a href="#" onClick={(event) => { event.preventDefault(); onRecover(); }}>Восстановить доступ</a>
         </div>
         <AuthField icon="lock" value={password} onChange={(nextPassword) => { setPassword(nextPassword); setError(false); }} placeholder="Пароль" type={show ? "text" : "password"} variant="auth-password" error={error}>
           <button type="button" onClick={() => setShow((value) => !value)} aria-label={show ? "Скрыть пароль" : "Показать пароль"}>

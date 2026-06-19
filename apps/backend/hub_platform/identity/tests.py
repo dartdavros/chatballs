@@ -1,5 +1,6 @@
 import json
 
+from django.core import mail
 from django.test import Client, TestCase
 from django.contrib.sessions.backends.db import SessionStore
 
@@ -119,6 +120,31 @@ class AuthEndpointTests(TestCase):
 
         self.assertEqual(response.status_code, 401)
         self.assertTrue(AuditEvent.objects.filter(action="identity.login_failed").exists())
+
+    def test_password_reset_request_sends_email_for_existing_user(self) -> None:
+        response = self.client.post(
+            "/api/v1/auth/password-reset/request/",
+            data=json.dumps({"email": "owner@edevs.tech"}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()["ok"])
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ["owner@edevs.tech"])
+        self.assertIn("reset-password", mail.outbox[0].body)
+        self.assertTrue(AuditEvent.objects.filter(action="identity.password_reset_requested").exists())
+
+    def test_password_reset_request_does_not_reveal_unknown_email(self) -> None:
+        response = self.client.post(
+            "/api/v1/auth/password-reset/request/",
+            data=json.dumps({"email": "nobody@edevs.tech"}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()["ok"])
+        self.assertEqual(len(mail.outbox), 0)
 
     def test_change_temporary_password_clears_profile_flag(self) -> None:
         owner = HumanUser.objects.get(email="owner@edevs.tech")
