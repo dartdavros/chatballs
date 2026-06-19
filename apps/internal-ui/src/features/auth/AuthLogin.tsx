@@ -3,6 +3,7 @@ import { type FormEvent, useState } from "react";
 import { api } from "../../api/client";
 import type { AuthChallenge, LoginPayload, SessionUser } from "../../types";
 import { Icon } from "../../shared/icons";
+import { Button } from "../../shared/ui-controls";
 import { AuthField } from "./AuthField";
 import { AuthFrame } from "./AuthFrame";
 
@@ -49,7 +50,7 @@ export function AuthLogin({ onLogin, onTotpChallenge }: { onLogin: (user: Sessio
             <Icon name={show ? "eyeOff" : "eye"} size={17} />
           </button>
         </AuthField>
-        <button className="primary-button auth-submit" type="submit" disabled={submitting}>Войти<Icon name="arrow" size={16} /></button>
+        <Button className="auth-submit" icon="arrow" iconSize={16} type="submit" variant="primary" disabled={submitting}>Войти</Button>
       </form>
     </AuthFrame>
   );

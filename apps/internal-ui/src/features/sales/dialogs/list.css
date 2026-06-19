@@ -35,9 +35,6 @@
 
 .sales-dialog-search {
   height: 34px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
   padding: 0 11px;
   color: #bfbfbf;
   background: #fafafa;
@@ -50,10 +47,6 @@
 }
 
 .sales-dialog-search input {
-  width: 100%;
-  border: none;
-  outline: none;
-  background: transparent;
   color: #262626;
   font-size: 13px;
 }

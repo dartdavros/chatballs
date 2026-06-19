@@ -2,8 +2,8 @@ import { useState } from "react";
 
 import { api } from "../../api/client";
 import type { Employee, Role } from "../../types";
-import { Icon } from "../../shared/icons";
 import { PageHeader } from "../../shared/ui";
+import { Button } from "../../shared/ui-controls";
 import { EmployeeTable } from "./EmployeeTable";
 import { EmployeesFilters } from "./EmployeesFilters";
 import { filterEmployees, type EmployeeStatusFilter } from "./model";
@@ -35,7 +35,7 @@ export function EmployeesPage({ employees, reload, openEmployee }: { employees: 
       <PageHeader
         title="Сотрудники"
         text={<>Доступ к Hub · показано <b>{filtered.length}</b> из {employees.length}</>}
-        action={<button className="primary-button" type="button"><Icon name="team" size={16} />Добавить оператора</button>}
+        action={<Button icon="team" iconSize={16} type="button" variant="primary">Добавить оператора</Button>}
       />
       <EmployeesFilters
         query={query}

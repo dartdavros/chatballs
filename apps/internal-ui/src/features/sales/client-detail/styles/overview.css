@@ -107,21 +107,9 @@
 .sales-client-outline-action {
   width: 100%;
   height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   margin-top: 13px;
-  color: #262626;
-  background: #ffffff;
-  border: 1px solid #d9d9d9;
   border-radius: 8px;
   font-size: 13px;
-  font-weight: 500;
-}
-
-.sales-client-outline-action:hover {
-  color: #1677ff;
-  border-color: #1677ff;
 }
 
 .sales-client-related-row {

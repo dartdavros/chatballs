@@ -1,3 +1,4 @@
+import { Button } from "../../../shared/ui-controls";
 import type { RouteKey } from "../../../types";
 import type { salesClientDetail } from "./model";
 
@@ -73,7 +74,7 @@ function CurrentDialog({ setRoute }: { setRoute: (route: RouteKey) => void }) {
         <span className="sales-client-status-blue"><i />Оператор</span>
       </div>
       <p className="sales-client-current-dialog">Foxray · Web Chat · ведёт <b>Иван Петров</b>.<br />«Помогу с настройкой рабочих мест.»</p>
-      <button className="sales-client-outline-action" type="button" onClick={() => setRoute("salesDialogs")}>Открыть диалог</button>
+      <Button className="sales-client-outline-action" variant="secondary" onClick={() => setRoute("salesDialogs")}>Открыть диалог</Button>
     </section>
   );
 }

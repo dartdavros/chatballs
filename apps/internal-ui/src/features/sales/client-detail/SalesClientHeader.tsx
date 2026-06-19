@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { Icon } from "../../../shared/icons";
+import { Button } from "../../../shared/ui-controls";
 import type { RouteKey } from "../../../types";
 import type { salesClientDetail } from "./model";
 
@@ -31,7 +32,7 @@ export function SalesClientHeader({ client, setRoute }: { client: Client; setRou
           </div>
         </div>
         <div className="sales-client-detail-actions">
-          <button className="sales-client-primary" type="button" onClick={() => setRoute("salesDialogs")}><Icon name="message" size={15} />Открыть диалог</button>
+          <Button className="sales-client-primary" icon="message" variant="primary" onClick={() => setRoute("salesDialogs")}>Открыть диалог</Button>
           <button className={`sales-client-more ${menuOpen ? "active" : ""}`} type="button" aria-label="Действия клиента" onClick={() => setMenuOpen((value) => !value)}><Icon name="more" size={18} /></button>
           {menuOpen && <SalesClientMenu />}
         </div>

@@ -1,4 +1,6 @@
 @import "./styles/base.css";
+@import "./shared/ui-controls.css";
+@import "./shared/form-controls.css";
 @import "./features/auth/styles.css";
 @import "./layout/styles.css";
 @import "./features/command/center/styles.css";

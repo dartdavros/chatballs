@@ -23,9 +23,6 @@
 .employee-search {
   width: 260px;
   height: 34px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
   padding: 0 11px;
   color: #bfbfbf;
   background: #fafafa;
@@ -38,13 +35,7 @@
 }
 
 .employee-search input {
-  width: 100%;
-  min-width: 0;
   color: #262626;
-  background: transparent;
-  border: 0;
-  outline: none;
-  font: inherit;
   font-size: 13px;
 }
 

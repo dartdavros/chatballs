@@ -3,6 +3,7 @@ import { type FormEvent, useEffect, useState } from "react";
 import { api } from "../../api/client";
 import type { AuthChallenge, SessionUser } from "../../types";
 import { Icon } from "../../shared/icons";
+import { Button } from "../../shared/ui-controls";
 import { AuthCodeInput } from "./AuthCodeInput";
 import { AuthFrame } from "./AuthFrame";
 import { formatCountdown } from "./time";
@@ -40,7 +41,7 @@ export function AuthTotpCode({ challenge, onVerified }: { challenge: AuthChallen
       <form className="auth-card auth-totp-code-card" onSubmit={submit}>
         <AuthCodeInput value={code} onChange={(nextCode) => { setCode(nextCode); setError(false); }} error={error} autoFocus />
         {error && <div className="auth-error totp-code-error"><Icon name="warning" size={15} /><span>Неверный код. Осталось попыток: 2</span></div>}
-        <button className="primary-button auth-submit" type="submit" disabled={code.length !== 6 || submitting}>Подтвердить</button>
+        <Button className="auth-submit" type="submit" variant="primary" disabled={code.length !== 6 || submitting}>Подтвердить</Button>
         <div className="auth-countdown"><Icon name="clock" size={14} />Код обновится через <span>{formatCountdown(countdown)}</span></div>
       </form>
       <p className="auth-support-link">Нет доступа к коду? <a href="#" onClick={(event) => event.preventDefault()}>Связаться с поддержкой</a></p>

@@ -36,9 +36,6 @@
 .sales-orders-search {
   width: 240px;
   height: 36px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
   padding: 0 12px;
   color: #bfbfbf;
   background: #ffffff;
@@ -51,30 +48,6 @@
 }
 
 .sales-orders-search input {
-  width: 100%;
   color: #262626;
-  background: transparent;
-  border: 0;
-  outline: 0;
-  font: inherit;
   font-size: 13px;
-}
-
-.sales-orders-header-actions button {
-  height: 36px;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 0 14px;
-  color: #262626;
-  background: #ffffff;
-  border: 1px solid #d9d9d9;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.sales-orders-header-actions button:hover {
-  color: #1677ff;
-  border-color: #1677ff;
 }

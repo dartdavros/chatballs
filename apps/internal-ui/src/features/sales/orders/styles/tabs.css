@@ -1,20 +1,13 @@
 .sales-orders-tabs {
-  display: flex;
-  align-items: center;
   gap: 4px;
   margin-bottom: 18px;
   border-bottom: 1px solid #e8e8e8;
 }
 
 .sales-orders-tabs button {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
   gap: 8px;
   padding: 11px 16px;
   color: #595959;
-  background: transparent;
-  border: 0;
   font-size: 14px;
   font-weight: 500;
 }
@@ -24,22 +17,9 @@
   font-weight: 600;
 }
 
-.sales-orders-tabs button.active::after {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  height: 2px;
-  background: #1677ff;
-  content: "";
-}
-
 .sales-orders-tabs span {
   min-width: 20px;
   height: 20px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   padding: 0 6px;
   color: #8c8c8c;
   background: #f0f0f0;

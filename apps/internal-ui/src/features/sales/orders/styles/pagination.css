@@ -1,53 +1,7 @@
 .sales-orders-pagination {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   padding: 12px 18px;
   background: #ffffff;
   border: 1px solid #f0f0f0;
   border-top: 0;
   border-radius: 0 0 12px 12px;
-}
-
-.sales-orders-pagination > div:first-child,
-.sales-orders-pagination b {
-  color: #8c8c8c;
-  font-size: 12.5px;
-  font-weight: 400;
-}
-
-.sales-orders-pagination > div:last-child {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.sales-orders-pagination button {
-  min-width: 30px;
-  height: 30px;
-  padding: 0 9px;
-  color: #595959;
-  background: #ffffff;
-  border: 1px solid #e8e8e8;
-  border-radius: 7px;
-  font-size: 13px;
-}
-
-.sales-orders-pagination button.active {
-  color: #ffffff;
-  background: #1677ff;
-  border-color: #1677ff;
-  font-weight: 600;
-}
-
-.sales-orders-pagination button:disabled {
-  color: #bfbfbf;
-  cursor: not-allowed;
-}
-
-.sales-orders-pagination span {
-  width: 1px;
-  height: 20px;
-  margin: 0 4px;
-  background: #f0f0f0;
 }

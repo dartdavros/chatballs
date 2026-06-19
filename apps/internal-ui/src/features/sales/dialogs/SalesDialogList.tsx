@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import type { ListTab, SalesDialog } from "./types";
 import { channelMeta, modeDots } from "./data";
-import { Icon } from "../../../shared/icons";
+import { SearchInput } from "../../../shared/ui-controls";
 
 export function SalesDialogList({ dialogs, filtered, listTab, selectedId, setListTab, setSelectedId }: {
   dialogs: SalesDialog[];
@@ -15,7 +15,7 @@ export function SalesDialogList({ dialogs, filtered, listTab, selectedId, setLis
     <section className="sales-dialog-list">
       <div className="sales-dialog-list-head">
         <div><h2>Диалоги</h2><span>{dialogs.length} всего</span></div>
-        <label className="sales-dialog-search"><Icon name="search" size={15} /><input placeholder="Поиск по клиенту, продукту…" /></label>
+        <SearchInput className="sales-dialog-search" placeholder="Поиск по клиенту, продукту…" />
       </div>
       <div className="sales-dialog-tabs">
         <DialogTab active={listTab === "all"} onClick={() => setListTab("all")}>Все</DialogTab>

@@ -2,29 +2,40 @@ import type { ReactNode } from "react";
 
 import { Icon } from "./icons";
 
-export function FormField({
-  label,
-  value,
-  onChange,
-  placeholder = "",
-  type = "text",
-  mono = false,
-  wide = false,
-  disabled = false,
-}: {
+type FormFieldProps = {
+  disabled?: boolean;
   label: string;
-  value: string;
+  mono?: boolean;
   onChange?: (value: string) => void;
   placeholder?: string;
   type?: "password" | "text";
-  mono?: boolean;
+  value: string;
   wide?: boolean;
-  disabled?: boolean;
-}) {
+};
+
+export function FormField({
+  disabled = false,
+  label,
+  mono = false,
+  onChange,
+  placeholder = "",
+  type = "text",
+  value,
+  wide = false,
+}: FormFieldProps) {
+  const editable = Boolean(onChange) && !disabled;
+  const className = [
+    "readonly-field",
+    "form-field",
+    editable ? "is-editable" : "is-readonly",
+    disabled ? "is-disabled" : "",
+    wide ? "wide" : "",
+  ].filter(Boolean).join(" ");
+
   return (
-    <label className={`readonly-field ${wide ? "wide" : ""}`}>
+    <label className={className}>
       <span>{label}</span>
-      <input className={mono ? "mono" : ""} type={type} value={value} placeholder={placeholder} disabled={disabled} readOnly={!onChange} onChange={(event) => onChange?.(event.target.value)} />
+      <input className={mono ? "mono" : ""} type={type} value={value} placeholder={placeholder} disabled={disabled} readOnly={!editable} onChange={(event) => onChange?.(event.target.value)} />
     </label>
   );
 }

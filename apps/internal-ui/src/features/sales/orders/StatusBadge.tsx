@@ -1,9 +1,10 @@
+import { MonoLink as SharedMonoLink, ToneBadge } from "../../../shared/ui-controls";
 import type { StatusBadge as StatusBadgeValue } from "./types";
 
 export function StatusBadge({ value }: { value: StatusBadgeValue }) {
-  return <span className="sales-orders-status" style={{ background: value.bg, color: value.color }}>{value.label}</span>;
+  return <ToneBadge className="sales-orders-status" bg={value.bg} color={value.color}>{value.label}</ToneBadge>;
 }
 
 export function MonoLink({ children }: { children: string }) {
-  return <a className="sales-orders-mono-link" href="#" onClick={(event) => event.preventDefault()}>{children}</a>;
+  return <SharedMonoLink className="sales-orders-mono-link">{children}</SharedMonoLink>;
 }

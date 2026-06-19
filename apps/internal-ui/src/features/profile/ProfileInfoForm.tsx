@@ -1,6 +1,7 @@
 import type { Dispatch, FormEvent, SetStateAction } from "react";
 
 import type { SessionUser } from "../../types";
+import { Button } from "../../shared/ui-controls";
 import { ProfileField } from "./ProfileField";
 import type { ProfileFormState } from "./types";
 
@@ -14,7 +15,7 @@ export function ProfileInfoForm({ profile, user, message, saving, setProfile, on
         <ProfileField label="Роль" value={user.role} disabled />
       </div>
       {message && <div className="profile-message">{message}</div>}
-      <div className="profile-actions"><button className="primary-button" type="submit" disabled={saving}>{saving ? "Сохранение" : "Сохранить"}</button></div>
+      <div className="profile-actions"><Button type="submit" variant="primary" disabled={saving}>{saving ? "Сохранение" : "Сохранить"}</Button></div>
     </form>
   );
 }

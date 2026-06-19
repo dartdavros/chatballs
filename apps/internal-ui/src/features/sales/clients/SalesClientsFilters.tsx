@@ -1,14 +1,12 @@
 import { Icon } from "../../../shared/icons";
+import { SearchInput } from "../../../shared/ui-controls";
 import { channelOptions, productOptions } from "./model";
 import type { SalesClientsState } from "./useSalesClients";
 
 export function SalesClientsFilters({ clients }: { clients: SalesClientsState }) {
   return (
     <div className="sales-clients-filterbar">
-      <label className="sales-clients-search">
-        <Icon name="search" size={15} />
-        <input value={clients.query} onChange={(event) => clients.setQuery(event.target.value)} placeholder="Поиск по имени или email…" />
-      </label>
+      <SearchInput className="sales-clients-search" value={clients.query} onChange={clients.setQuery} placeholder="Поиск по имени или email…" />
       {clients.dropdown !== null && <button className="sales-clients-dd-scrim" type="button" aria-label="Закрыть фильтр" onClick={clients.closeDropdown} />}
       <SalesFilterDropdown
         active={clients.productFilter.length > 0 || clients.dropdown === "products"}

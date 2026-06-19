@@ -1,0 +1,80 @@
+.readonly-field {
+  display: block;
+}
+
+.readonly-field.wide {
+  grid-column: span 2;
+}
+
+.readonly-field span {
+  display: block;
+  margin-bottom: 6px;
+  color: #8c8c8c;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.readonly-field input {
+  width: 100%;
+  height: 38px;
+  padding: 0 12px;
+  color: #262626;
+  background: #ffffff;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  outline: none;
+  font-size: 13px;
+}
+
+.form-field.is-editable:focus-within input,
+.form-field.is-editable input:focus,
+.select-like:focus-within select,
+.select-like select:focus {
+  border-color: #1677ff;
+}
+
+.readonly-field input.mono {
+  font-family: "SF Mono", ui-monospace, Menlo, monospace;
+}
+
+.form-field.is-readonly input,
+.readonly-field input:disabled {
+  color: #8c8c8c;
+  background: #fafafa;
+  border-color: #f0f0f0;
+}
+
+.form-field.is-editable input {
+  background: #ffffff;
+}
+
+.select-like {
+  position: relative;
+}
+
+.select-like input,
+.select-like select {
+  width: 100%;
+  height: 38px;
+  padding-right: 32px;
+  cursor: pointer;
+}
+
+.select-like select {
+  padding-left: 12px;
+  color: #262626;
+  background: #ffffff;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  outline: none;
+  appearance: none;
+  font-size: 13px;
+}
+
+.select-like svg {
+  position: absolute;
+  right: 11px;
+  bottom: 12px;
+  color: #8c8c8c;
+  pointer-events: none;
+}

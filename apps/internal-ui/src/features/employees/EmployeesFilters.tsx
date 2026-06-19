@@ -1,5 +1,5 @@
 import type { Role } from "../../types";
-import { Icon } from "../../shared/icons";
+import { SearchInput } from "../../shared/ui-controls";
 import { Segmented } from "../../shared/ui";
 import type { EmployeeStatusFilter } from "./model";
 
@@ -22,10 +22,7 @@ export function EmployeesFilters({
 }) {
   return (
     <div className="filter-bar employees-filter">
-      <label className="employee-search">
-        <Icon name="search" size={15} />
-        <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Поиск по имени или email…" />
-      </label>
+      <SearchInput className="employee-search" value={query} onChange={setQuery} placeholder="Поиск по имени или email…" />
       <div className="filter-group">
         <span>Роль</span>
         <Segmented value={role} setValue={setRole} items={[["all", "Все"], ["OWNER", "OWNER"], ["OPERATOR", "OPERATOR"]]} />

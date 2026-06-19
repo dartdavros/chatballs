@@ -1,6 +1,7 @@
 import type { Employee } from "../../types";
 import { Icon } from "../../shared/icons";
 import { FormField, SelectField, SwitchButton } from "../../shared/form-controls";
+import { Button } from "../../shared/ui-controls";
 import type { EmployeeForm } from "./model";
 
 export function EmployeeDetailSections({
@@ -53,7 +54,7 @@ export function EmployeeDetailSections({
         <h3>Безопасность</h3>
         <div className="security-row">
           <div><strong>Пароль</strong><span>Последняя смена: {details.security.passwordChangedAt}</span></div>
-          <button className="secondary-button" type="button" onClick={resetPassword}>Сбросить пароль</button>
+          <Button type="button" variant="secondary" onClick={resetPassword}>Сбросить пароль</Button>
         </div>
         <div className="security-row">
           <div><strong>Двухфакторная аутентификация (TOTP)</strong><span>{form.totpEnabled ? "Включена · требуется при каждом входе" : "Отключена для этого сотрудника"}</span></div>
@@ -61,7 +62,7 @@ export function EmployeeDetailSections({
         </div>
         <div className="security-row last">
           <div><strong>Активные сессии</strong><span>{details.security.sessions}</span></div>
-          <button className="secondary-button" type="button" onClick={revokeSessions}>Завершить все</button>
+          <Button type="button" variant="secondary" onClick={revokeSessions}>Завершить все</Button>
         </div>
       </section>
 
@@ -69,7 +70,7 @@ export function EmployeeDetailSections({
         <h3>Опасная зона</h3>
         <div>
           <p>{blocked ? "Сотрудник заблокирован и не может войти. Разблокировка восстановит доступ к разделам отдела." : "Блокировка немедленно завершит все сессии и закроет доступ. Активные диалоги вернутся в очередь. Действие требует подтверждения."}</p>
-          <button type="button" onClick={toggleBlocked} disabled={currentEmployee.role === "OWNER"}>{blocked ? "Разблокировать сотрудника" : "Заблокировать сотрудника"}</button>
+          <Button className="employee-danger-action" type="button" variant="danger-outline" onClick={toggleBlocked} disabled={currentEmployee.role === "OWNER"}>{blocked ? "Разблокировать сотрудника" : "Заблокировать сотрудника"}</Button>
         </div>
       </section>
     </div>

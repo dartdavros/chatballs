@@ -3,6 +3,7 @@ import { type FormEvent, useEffect, useState } from "react";
 import { api } from "../../api/client";
 import type { SessionUser } from "../../types";
 import { Icon } from "../../shared/icons";
+import { Button } from "../../shared/ui-controls";
 import { AuthCodeInput } from "./AuthCodeInput";
 import { AuthFrame } from "./AuthFrame";
 import { TotpQr } from "./TotpQr";
@@ -66,7 +67,7 @@ export function AuthTotpSetup({ user: _user, onConfirmed }: { user: SessionUser;
         <div className="auth-totp-step second"><span>2</span><strong>Введите код из приложения</strong></div>
         <AuthCodeInput value={code} onChange={(nextCode) => { setCode(nextCode); setError(false); }} error={error} autoFocus />
         {error && <div className="auth-inline-error setup-error"><Icon name="warning" size={14} />Код не совпал. Попробуйте ещё раз</div>}
-        <button className="primary-button auth-submit" type="submit" disabled={code.length !== 6 || submitting}>Активировать</button>
+        <Button className="auth-submit" type="submit" variant="primary" disabled={code.length !== 6 || submitting}>Активировать</Button>
       </form>
       <div className="auth-cancel-link"><a href="#" onClick={(event) => event.preventDefault()}>Отмена</a></div>
     </AuthFrame>

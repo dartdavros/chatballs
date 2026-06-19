@@ -1,5 +1,5 @@
-import { Icon } from "../../../shared/icons";
 import { Segmented } from "../../../shared/ui";
+import { Button } from "../../../shared/ui-controls";
 import type { CommandPeriod } from "./types";
 
 export function CommandHeader({ period, setPeriod }: { period: CommandPeriod; setPeriod: (period: CommandPeriod) => void }) {
@@ -11,7 +11,7 @@ export function CommandHeader({ period, setPeriod }: { period: CommandPeriod; se
       </div>
       <div className="command-header-actions">
         <Segmented value={period} setValue={setPeriod} items={[["today", "Сегодня"], ["d7", "7 дней"], ["d30", "30 дней"]]} />
-        <button className="refresh-button"><Icon name="refresh" size={15} />Обновить</button>
+        <Button className="refresh-button" icon="refresh" variant="secondary">Обновить</Button>
       </div>
     </div>
   );

@@ -1,7 +1,9 @@
 import type { ReactNode } from "react";
 
 import type { Employee, Product, Role, SessionUser } from "../types";
+import { FormField } from "./form-controls";
 import { Icon } from "./icons";
+import { Button } from "./ui-controls";
 import { initials, productAccent } from "./utils";
 
 export function Avatar({ user, employee }: { user?: SessionUser; employee?: Employee }) {
@@ -40,11 +42,11 @@ export function ProductTag({ product }: { product: Product }) {
 }
 
 export function ReadOnlyField({ label, value, editable = false, mono = false, wide = false }: { label: string; value: string; editable?: boolean; mono?: boolean; wide?: boolean }) {
-  return <label className={`readonly-field ${wide ? "wide" : ""}`}><span>{label}</span><input className={mono ? "mono" : ""} value={value} disabled={!editable} readOnly /></label>;
+  return <FormField label={label} value={value} mono={mono} wide={wide} disabled={!editable} />;
 }
 
 export function PasswordField({ label, value = "", placeholder = "" }: { label: string; value?: string; placeholder?: string }) {
-  return <label className="readonly-field"><span>{label}</span><input type="password" value={value} placeholder={placeholder} readOnly /></label>;
+  return <FormField label={label} value={value} placeholder={placeholder} type="password" />;
 }
 
 export function Segmented<T extends string>({ value, setValue, items }: { value: T; setValue: (value: T) => void; items: Array<[T, string]> }) {
@@ -60,5 +62,5 @@ export function LoadingScreen() {
 }
 
 export function ErrorScreen({ retry }: { retry: () => void }) {
-  return <main className="state-screen"><div className="state-card"><strong>Ошибка загрузки</strong><button className="primary-button" onClick={retry}>Повторить</button></div></main>;
+  return <main className="state-screen"><div className="state-card"><strong>Ошибка загрузки</strong><Button variant="primary" onClick={retry}>Повторить</Button></div></main>;
 }

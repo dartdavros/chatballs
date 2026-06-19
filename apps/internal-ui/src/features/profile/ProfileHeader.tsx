@@ -1,6 +1,6 @@
 import type { SessionUser } from "../../types";
-import { Icon } from "../../shared/icons";
 import { Avatar, RoleBadge } from "../../shared/ui";
+import { Button } from "../../shared/ui-controls";
 import type { ProfileFormState } from "./types";
 
 export function ProfileHeader({ profile, user, onLogout }: { profile: ProfileFormState; user: SessionUser; onLogout: () => void }) {
@@ -11,7 +11,7 @@ export function ProfileHeader({ profile, user, onLogout }: { profile: ProfileFor
         <div><h1>{profile.fullName || profile.email}</h1><RoleBadge role={user.role} /></div>
         <p>{profile.email}</p>
       </div>
-      <button className="danger-outline" type="button" onClick={onLogout}><Icon name="logout" size={15} />Выйти</button>
+      <Button icon="logout" type="button" variant="danger-outline" onClick={onLogout}>Выйти</Button>
     </section>
   );
 }

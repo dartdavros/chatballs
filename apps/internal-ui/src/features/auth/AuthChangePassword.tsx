@@ -3,6 +3,7 @@ import { type FormEvent, useState } from "react";
 import { api } from "../../api/client";
 import type { SessionUser } from "../../types";
 import { Icon } from "../../shared/icons";
+import { Button } from "../../shared/ui-controls";
 import { AuthField } from "./AuthField";
 import { AuthFrame } from "./AuthFrame";
 import { passwordIsValid, passwordLabels, passwordScore } from "./password";
@@ -53,7 +54,7 @@ export function AuthChangePassword({ onChanged }: { user: SessionUser; onChanged
           <span className={/\d/.test(password) ? "done" : ""}>Содержит цифру</span>
           <span className={/[A-Za-zА-Яа-я]/.test(password) && /[^A-Za-zА-Яа-я0-9]/.test(password) ? "done" : ""}>Буквы и спецсимвол</span>
         </div>
-        <button className="primary-button auth-submit" type="submit" disabled={!valid || submitting}>Сохранить и войти</button>
+        <Button className="auth-submit" type="submit" variant="primary" disabled={!valid || submitting}>Сохранить и войти</Button>
       </form>
     </AuthFrame>
   );

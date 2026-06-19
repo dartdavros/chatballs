@@ -1,6 +1,6 @@
 import type { Employee, RouteKey } from "../../types";
-import { Icon } from "../../shared/icons";
 import { Avatar, RoleBadge, StatusPill } from "../../shared/ui";
+import { Button } from "../../shared/ui-controls";
 import type { EmployeeForm, EmployeeStatus } from "./model";
 
 export function EmployeeDetailHeader({
@@ -34,8 +34,8 @@ export function EmployeeDetailHeader({
         </div>
       </div>
       <div className="employee-header-actions">
-        <button className="secondary-button" type="button" onClick={() => setRoute("employees")}>Отмена</button>
-        <button className="primary-button" type="button" onClick={saveEmployee} disabled={saving}><Icon name="save" size={15} />{saving ? "Сохранение" : "Сохранить"}</button>
+        <Button type="button" variant="secondary" onClick={() => setRoute("employees")}>Отмена</Button>
+        <Button icon="save" type="button" variant="primary" onClick={saveEmployee} disabled={saving}>{saving ? "Сохранение" : "Сохранить"}</Button>
       </div>
     </section>
   );

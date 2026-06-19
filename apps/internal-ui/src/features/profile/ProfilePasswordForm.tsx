@@ -1,6 +1,7 @@
 import type { Dispatch, FormEvent, SetStateAction } from "react";
 
 import { ProfileField } from "./ProfileField";
+import { Button } from "../../shared/ui-controls";
 import type { PasswordFormState } from "./types";
 
 export function ProfilePasswordForm({ passwords, message, mismatch, ready, saving, setPasswords, onSubmit }: { passwords: PasswordFormState; message: string; mismatch: boolean; ready: boolean; saving: boolean; setPasswords: Dispatch<SetStateAction<PasswordFormState>>; onSubmit: (event: FormEvent) => void }) {
@@ -14,7 +15,7 @@ export function ProfilePasswordForm({ passwords, message, mismatch, ready, savin
       </div>
       {mismatch && <div className="profile-message error">Пароли не совпадают</div>}
       {message && <div className="profile-message">{message}</div>}
-      <div className="profile-actions"><button className="secondary-button" type="submit" disabled={!ready || saving}>{saving ? "Обновление" : "Обновить пароль"}</button></div>
+      <div className="profile-actions"><Button type="submit" variant="secondary" disabled={!ready || saving}>{saving ? "Обновление" : "Обновить пароль"}</Button></div>
     </form>
   );
 }

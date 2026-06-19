@@ -123,41 +123,6 @@
   gap: 14px;
 }
 
-.readonly-field.wide {
-  grid-column: span 2;
-}
-
-.select-like {
-  position: relative;
-}
-
-.select-like input,
-.select-like select {
-  width: 100%;
-  height: 38px;
-  padding-right: 32px;
-  cursor: pointer;
-}
-
-.select-like select {
-  padding-left: 12px;
-  color: #262626;
-  background: #ffffff;
-  border: 1px solid #e8e8e8;
-  border-radius: 8px;
-  outline: none;
-  appearance: none;
-  font-size: 13px;
-}
-
-.select-like svg {
-  position: absolute;
-  right: 11px;
-  bottom: 12px;
-  color: #8c8c8c;
-  pointer-events: none;
-}
-
 .employee-access-label {
   display: block;
   margin: 16px 0 8px;
@@ -277,20 +242,10 @@
   line-height: 1.5;
 }
 
-.employee-danger-card button {
+.employee-danger-action {
   height: 38px;
   flex: none;
-  padding: 0 16px;
-  color: #cf1322;
-  background: #ffffff;
-  border: 1px solid #ffccc7;
-  border-radius: 9px;
-  font-size: 13px;
   font-weight: 600;
-}
-
-.employee-danger-card button:hover {
-  background: #fff2f0;
 }
 
 .key-value {

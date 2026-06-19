@@ -1,5 +1,6 @@
 import type { RouteKey } from "../../../types";
 import { Icon } from "../../../shared/icons";
+import { Button } from "../../../shared/ui-controls";
 import type { CommandVm } from "./model";
 import { MetricGroup } from "./MetricGroup";
 import { StatusLabel } from "./StatusLabel";
@@ -21,7 +22,7 @@ export function SalesDepartmentCard({ setRoute, vm }: { setRoute: (route: RouteK
             </div>
             <p>Ответственный: Анна Котова · 4 сотрудника · 1 AI-агент</p>
           </div>
-          <button className="primary-button sales-open" onClick={() => setRoute("salesOverview")}>Открыть отдел<Icon name="arrow" size={16} /></button>
+          <Button className="sales-open" icon="arrow" iconSize={16} variant="primary" onClick={() => setRoute("salesOverview")}>Открыть отдел</Button>
         </div>
         <div className="dept-summary">{vm.deptSummary}</div>
         <MetricGroup title="ДИАЛОГИ — СЕЙЧАС" columns={5} items={[
