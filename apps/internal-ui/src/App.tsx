@@ -5,7 +5,7 @@ import { edevsHubTheme } from "@edevs/ui";
 
 import { api } from "./api/client";
 import { canAccess, defaultRoute } from "./auth/access";
-import { AuthChangePassword, AuthLogin, AuthPasswordRecovery, AuthTotpCode, AuthTotpSetup } from "./features/auth/AuthScreens";
+import { AuthChangePassword, AuthLogin, AuthPasswordRecovery, AuthResetPassword, AuthTotpCode, AuthTotpSetup } from "./features/auth/AuthScreens";
 import { Shell } from "./layout/Shell";
 import { pathFromRoute, routeFromPath } from "./router";
 import { ErrorScreen, LoadingScreen, PermissionScreen } from "./shared/ui";
@@ -17,6 +17,7 @@ export function App() {
   const [user, setUser] = useState<SessionUser | null>(null);
   const [totpChallenge, setTotpChallenge] = useState<AuthChallenge | null>(null);
   const [recovering, setRecovering] = useState(false);
+  const [resetting, setResetting] = useState(() => window.location.pathname === "/reset-password");
   const [route, setRoute] = useState<RouteKey>(initialRoute.route);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<number | null>(initialRoute.employeeId);
   const [selectedProductId, setSelectedProductId] = useState<number | null>(initialRoute.productId);
@@ -90,6 +91,14 @@ export function App() {
     setTotpChallenge(null);
     navigate("command", null, true);
     setData({ employees: [], departments: [], products: [] });
+  }
+
+  if (resetting) {
+    return (
+      <ConfigProvider theme={edevsHubTheme}>
+        <AuthResetPassword onDone={() => { setResetting(false); window.history.replaceState({}, "", pathFromRoute("command")); }} />
+      </ConfigProvider>
+    );
   }
 
   if (sessionLoading) return <ConfigProvider theme={edevsHubTheme}><LoadingScreen /></ConfigProvider>;

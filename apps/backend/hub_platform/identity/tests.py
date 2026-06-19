@@ -1,8 +1,11 @@
 import json
 
+from django.contrib.auth.tokens import default_token_generator
 from django.core import mail
 from django.test import Client, TestCase
 from django.contrib.sessions.backends.db import SessionStore
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 
 from hub_platform.identity.bootstrap import bootstrap_edevs_owner
 from hub_platform.identity.auth_views import _totp_code
@@ -145,6 +148,45 @@ class AuthEndpointTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.json()["ok"])
         self.assertEqual(len(mail.outbox), 0)
+
+    def _reset_link(self, email: str) -> tuple[str, str]:
+        user = HumanUser.objects.get(email=email)
+        return urlsafe_base64_encode(force_bytes(user.pk)), default_token_generator.make_token(user)
+
+    def test_password_reset_confirm_sets_new_password(self) -> None:
+        uid, token = self._reset_link("owner@edevs.tech")
+
+        response = self.client.post(
+            "/api/v1/auth/password-reset/confirm/",
+            data=json.dumps({"uid": uid, "token": token, "newPassword": "Fresh-Pass-99"}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()["ok"])
+        self.assertTrue(HumanUser.objects.get(email="owner@edevs.tech").check_password("Fresh-Pass-99"))
+        self.assertTrue(AuditEvent.objects.filter(action="identity.password_reset_completed").exists())
+
+    def test_password_reset_confirm_rejects_invalid_token(self) -> None:
+        uid, _ = self._reset_link("owner@edevs.tech")
+
+        response = self.client.post(
+            "/api/v1/auth/password-reset/confirm/",
+            data=json.dumps({"uid": uid, "token": "bad-token", "newPassword": "Fresh-Pass-99"}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(HumanUser.objects.get(email="owner@edevs.tech").check_password("Fresh-Pass-99"))
+
+    def test_password_reset_validate_reflects_token_state(self) -> None:
+        uid, token = self._reset_link("owner@edevs.tech")
+
+        valid = self.client.get(f"/api/v1/auth/password-reset/validate/?uid={uid}&token={token}")
+        invalid = self.client.get(f"/api/v1/auth/password-reset/validate/?uid={uid}&token=bad-token")
+
+        self.assertTrue(valid.json()["valid"])
+        self.assertFalse(invalid.json()["valid"])
 
     def test_change_temporary_password_clears_profile_flag(self) -> None:
         owner = HumanUser.objects.get(email="owner@edevs.tech")

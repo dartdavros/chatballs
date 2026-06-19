@@ -9,12 +9,14 @@ from urllib.parse import quote
 
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sessions.models import Session
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core.mail import send_mail
 from django.http import HttpRequest, JsonResponse
-from django.utils.encoding import force_bytes
-from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes, force_str
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_GET, require_POST
@@ -213,6 +215,52 @@ def password_reset_request_view(request: HttpRequest) -> JsonResponse:
                 request=request,
             )
     # Ответ не зависит от наличия аккаунта — защита от перебора адресов.
+    return JsonResponse({"ok": True})
+
+
+def _user_from_reset_link(uid: str, token: str) -> HumanUser | None:
+    try:
+        user = HumanUser.objects.get(pk=force_str(urlsafe_base64_decode(uid)))
+    except (TypeError, ValueError, OverflowError, HumanUser.DoesNotExist):
+        return None
+    if not user.is_active or not default_token_generator.check_token(user, token):
+        return None
+    return user
+
+
+@require_GET
+def password_reset_validate_view(request: HttpRequest) -> JsonResponse:
+    user = _user_from_reset_link(request.GET.get("uid", ""), request.GET.get("token", ""))
+    return JsonResponse({"valid": user is not None})
+
+
+@csrf_protect
+@require_POST
+def password_reset_confirm_view(request: HttpRequest) -> JsonResponse:
+    body = _json_body(request)
+    user = _user_from_reset_link(str(body.get("uid", "")), str(body.get("token", "")))
+    if user is None:
+        record_audit_event(action="identity.password_reset_failed", result=AuditResult.DENIED, request=request)
+        return JsonResponse({"detail": "Ссылка недействительна или истекла"}, status=400)
+
+    new_password = str(body.get("newPassword", ""))
+    try:
+        validate_password(new_password, user=user)
+    except DjangoValidationError as error:
+        return JsonResponse({"detail": " ".join(error.messages)}, status=400)
+
+    user.set_password(new_password)
+    user.save(update_fields=["password"])
+    profile = getattr(user, "employee_profile", None)
+    if profile is not None and profile.must_change_password:
+        profile.must_change_password = False
+        profile.save(update_fields=["must_change_password"])
+    record_audit_event(
+        action="identity.password_reset_completed",
+        actor=user,
+        organization=profile.organization if profile is not None else None,
+        request=request,
+    )
     return JsonResponse({"ok": True})
 
 

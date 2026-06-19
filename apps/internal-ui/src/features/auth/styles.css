@@ -505,6 +505,16 @@
   border-radius: 50%;
 }
 
+.auth-recovery-sent-icon.success {
+  color: #389e0d;
+  background: #f6ffed;
+}
+
+.auth-recovery-sent-icon.warning {
+  color: #d48806;
+  background: #fffbe6;
+}
+
 .auth-recovery-sent h3 {
   margin: 0;
   color: #1f1f1f;
