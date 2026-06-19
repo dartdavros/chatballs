@@ -92,26 +92,6 @@ class Department(models.Model):
         return f"{self.organization.slug}/{self.code}"
 
 
-class ProductStatus(models.TextChoices):
-    ACTIVE = "ACTIVE", "Active"
-    DISABLED = "DISABLED", "Disabled"
-
-
-class Product(models.Model):
-    organization = models.ForeignKey(Organization, on_delete=models.PROTECT, related_name="products")
-    code = models.SlugField(max_length=64)
-    name = models.CharField(max_length=255)
-    status = models.CharField(max_length=32, choices=ProductStatus.choices, default=ProductStatus.ACTIVE)
-    site_url = models.URLField(blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        constraints = [models.UniqueConstraint(fields=["organization", "code"], name="uniq_product_org_code")]
-
-    def __str__(self) -> str:
-        return f"{self.organization.slug}/{self.code}"
-
-
 class EmployeeRole(models.TextChoices):
     OWNER = "OWNER", "Owner"
     OPERATOR = "OPERATOR", "Operator"

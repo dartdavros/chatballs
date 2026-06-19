@@ -12,9 +12,9 @@ from hub_platform.identity.models import (
     EmployeeRole,
     HumanUser,
     Organization,
-    Product,
 )
 from hub_platform.identity.permissions import can_access_global_settings, can_access_sales_workspace
+from hub_platform.products.models import Product
 
 
 class BootstrapOwnerTests(TestCase):
@@ -426,8 +426,8 @@ class CompanyEndpointTests(TestCase):
 
         self.assertEqual(deactivate_response.status_code, 200)
         self.assertEqual(deactivate_response.json()["product"]["status"], "DISABLED")
-        self.assertTrue(AuditEvent.objects.filter(action="identity.product_created").exists())
-        self.assertTrue(AuditEvent.objects.filter(action="identity.product_deactivated").exists())
+        self.assertTrue(AuditEvent.objects.filter(action="products.product_created").exists())
+        self.assertTrue(AuditEvent.objects.filter(action="products.product_disabled").exists())
 
     def test_operator_cannot_create_product(self) -> None:
         operator = HumanUser.objects.create_user(email="operator@edevs.tech", password="operator-password")

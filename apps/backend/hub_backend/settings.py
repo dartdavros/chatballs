@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "hub_platform.identity",
+    "hub_platform.products",
     "hub_platform.health",
     "hub_platform.events",
 ]

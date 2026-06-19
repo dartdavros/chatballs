@@ -1,0 +1,23 @@
+.order-detail-tabs {
+  gap: 2px;
+  margin-bottom: 18px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.order-detail-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.order-detail-tabs button {
+  padding: 11px 15px;
+  color: #595959;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.order-detail-tabs button.active {
+  color: #1677ff;
+  font-weight: 600;
+}

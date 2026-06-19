@@ -26,7 +26,7 @@ export function Sidebar({ route, user, setRoute }: { route: RouteKey; user: Sess
           if ("group" in item) return <div className="hub-nav-group" key={item.label}>{item.label}</div>;
           if ("divider" in item) return <div className="hub-nav-divider" key={index} />;
           const nextRoute = "key" in item ? item.key : null;
-          const active = nextRoute === route || (nextRoute === "employees" && route === "employeeDetail");
+          const active = nextRoute === route || (nextRoute === "employees" && route === "employeeDetail") || (nextRoute === "products" && route === "productDetail");
           return (
             <button className={`hub-nav-item ${active ? "is-active" : ""}`} disabled={item.disabled} key={item.label} onClick={() => nextRoute && setRoute(nextRoute)}>
               {active && <span className="active-bar" />}

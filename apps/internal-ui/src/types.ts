@@ -55,10 +55,39 @@ export type Product = {
   name: string;
   status: ProductStatus;
   siteUrl: string;
+  summary: string;
+  salesDescription: string;
+  departments: Array<{ id: number; code: string; name: string }>;
+  offers: ProductOffer[];
   createdAt: string;
+  updatedAt: string;
 };
 
-export type RouteKey = "command" | "departments" | "employeeDetail" | "employees" | "products" | "profile" | "salesClientDetail" | "salesClients" | "salesDialogs" | "salesOrders" | "salesOverview";
+export type ProductPrice = {
+  id: number;
+  version: number;
+  amountMinor: number;
+  currency: string;
+  billingPeriod: "ONE_TIME" | "MONTH" | "YEAR";
+  validFrom: string;
+  validUntil: string | null;
+  isActive: boolean;
+};
+
+export type ProductOffer = {
+  id: number;
+  code: string;
+  name: string;
+  description: string;
+  fulfillmentType: "SAAS_ACCESS" | "BOX_LICENSE" | "SUPPORT_EXTENSION";
+  paymentType: "ONE_TIME" | "SUBSCRIPTION";
+  primaryBoxOfferId: number | null;
+  isActive: boolean;
+  aiOfferable: boolean;
+  prices: ProductPrice[];
+};
+
+export type RouteKey = "command" | "departments" | "employeeDetail" | "employees" | "productDetail" | "products" | "profile" | "salesClientDetail" | "salesClients" | "salesDialogs" | "salesOrderDetail" | "salesOrders" | "salesOverview";
 
 export type AppData = {
   employees: Employee[];

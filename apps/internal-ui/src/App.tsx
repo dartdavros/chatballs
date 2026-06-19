@@ -17,16 +17,19 @@ export function App() {
   const [totpChallenge, setTotpChallenge] = useState<AuthChallenge | null>(null);
   const [route, setRoute] = useState<RouteKey>(initialRoute.route);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<number | null>(initialRoute.employeeId);
+  const [selectedProductId, setSelectedProductId] = useState<number | null>(initialRoute.productId);
   const [data, setData] = useState<AppData>({ employees: [], departments: [], products: [] });
   const [dataError, setDataError] = useState(false);
 
-  const navigate = useCallback((nextRoute: RouteKey, employeeId: number | null = null, replace = false) => {
-    const nextEmployeeId = nextRoute === "employeeDetail" ? employeeId : null;
-    const nextPath = pathFromRoute(nextRoute, nextEmployeeId);
+  const navigate = useCallback((nextRoute: RouteKey, entityId: number | null = null, replace = false) => {
+    const nextEmployeeId = nextRoute === "employeeDetail" ? entityId : null;
+    const nextProductId = nextRoute === "productDetail" ? entityId : null;
+    const nextPath = pathFromRoute(nextRoute, entityId);
     setRoute(nextRoute);
     setSelectedEmployeeId(nextEmployeeId);
+    setSelectedProductId(nextProductId);
     if (window.location.pathname !== nextPath) {
-      const state = { route: nextRoute, employeeId: nextEmployeeId };
+      const state = { route: nextRoute, employeeId: nextEmployeeId, productId: nextProductId };
       if (replace) {
         window.history.replaceState(state, "", nextPath);
       } else {
@@ -64,6 +67,7 @@ export function App() {
       const nextRoute = routeFromPath(window.location.pathname);
       setRoute(nextRoute.route);
       setSelectedEmployeeId(nextRoute.employeeId);
+      setSelectedProductId(nextRoute.productId);
     };
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
@@ -96,7 +100,7 @@ export function App() {
       ) : dataError ? (
         <ErrorScreen retry={loadData} />
       ) : (
-        <Shell route={route} setRoute={(nextRoute) => navigate(nextRoute)} selectedEmployeeId={selectedEmployeeId} openEmployeeRoute={(employeeId) => navigate("employeeDetail", employeeId)} user={user} data={data} reload={loadData} onUserUpdated={setUser} onLogout={logout} />
+        <Shell route={route} setRoute={(nextRoute) => navigate(nextRoute)} selectedEmployeeId={selectedEmployeeId} selectedProductId={selectedProductId} openEmployeeRoute={(employeeId) => navigate("employeeDetail", employeeId)} openProductRoute={(productId) => navigate("productDetail", productId)} user={user} data={data} reload={loadData} onUserUpdated={setUser} onLogout={logout} />
       )}
     </ConfigProvider>
   );

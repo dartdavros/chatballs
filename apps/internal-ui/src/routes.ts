@@ -5,11 +5,13 @@ export const routes: Record<RouteKey, string> = {
   departments: "Отделы",
   employeeDetail: "Сотрудники",
   employees: "Сотрудники",
+  productDetail: "Продукты",
   products: "Продукты",
   profile: "Профиль",
   salesClientDetail: "Елена Кузнецова",
   salesClients: "Клиенты",
   salesDialogs: "Диалоги",
+  salesOrderDetail: "ORD-10519",
   salesOrders: "Продажи",
   salesOverview: "Обзор",
 };

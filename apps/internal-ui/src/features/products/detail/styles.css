@@ -1,0 +1,146 @@
+@import "./content.css";
+
+.product-detail-header,
+.product-detail-card,
+.product-offer-card,
+.product-price-history {
+  background: #ffffff;
+  border: 1px solid #f0f0f0;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.product-detail-header {
+  padding: 20px 22px;
+  margin-bottom: 16px;
+}
+
+.product-detail-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.product-detail-icon {
+  width: 52px;
+  height: 52px;
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 13px;
+}
+
+.product-detail-title {
+  flex: 1;
+  min-width: 0;
+}
+
+.product-detail-title > div {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  flex-wrap: wrap;
+}
+
+.product-detail-title h1 {
+  margin: 0;
+  color: #1f1f1f;
+  font-size: 21px;
+  line-height: 1.2;
+}
+
+.product-detail-title p {
+  max-width: 640px;
+  margin: 6px 0 0;
+  color: #595959;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.product-detail-title b {
+  padding: 2px 9px;
+  border-radius: 6px;
+  font-size: 11px;
+}
+
+.product-detail-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  color: #389e0d;
+  background: #f6ffed;
+  border: 1px solid #b7eb8f;
+  border-radius: 14px;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.product-detail-status i {
+  width: 6px;
+  height: 6px;
+  background: #52c41a;
+  border-radius: 50%;
+}
+
+.product-detail-status.disabled {
+  color: #d48806;
+  background: #fffbe6;
+  border-color: #ffe58f;
+}
+
+.product-detail-status.disabled i {
+  background: #faad14;
+}
+
+.product-detail-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  margin-top: 18px;
+  background: #f0f0f0;
+  border: 1px solid #f0f0f0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.product-detail-stats div {
+  padding: 13px 16px;
+  background: #ffffff;
+}
+
+.product-detail-stats span {
+  display: block;
+  color: #8c8c8c;
+  font-size: 11.5px;
+}
+
+.product-detail-stats strong {
+  display: block;
+  margin-top: 4px;
+  color: #262626;
+  font-size: 18px;
+}
+
+.product-detail-stats strong.positive {
+  color: #389e0d;
+}
+
+.product-detail-tabs {
+  gap: 2px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.product-detail-tabs button {
+  padding: 11px 15px;
+  color: #595959;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.product-detail-tabs button.active {
+  color: #1677ff;
+  font-weight: 600;
+}

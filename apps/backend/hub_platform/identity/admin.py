@@ -7,7 +7,6 @@ from hub_platform.identity.models import (
     EmployeeProfile,
     HumanUser,
     Organization,
-    Product,
 )
 
 
@@ -42,13 +41,6 @@ class OrganizationAdmin(admin.ModelAdmin):
 @admin.register(Department)
 class DepartmentAdmin(admin.ModelAdmin):
     list_display = ["code", "name", "organization", "status"]
-    list_filter = ["organization", "status"]
-    search_fields = ["code", "name"]
-
-
-@admin.register(Product)
-class ProductAdmin(admin.ModelAdmin):
-    list_display = ["code", "name", "organization", "status", "site_url"]
     list_filter = ["organization", "status"]
     search_fields = ["code", "name"]
 

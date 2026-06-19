@@ -2,7 +2,7 @@ import { Icon } from "../../../../shared/icons";
 import { MonoLink, StatusBadge } from "../StatusBadge";
 import type { SalesOrder } from "../types";
 
-export function OrdersTable({ rows }: { rows: SalesOrder[] }) {
+export function OrdersTable({ rows, openOrder }: { rows: SalesOrder[]; openOrder: () => void }) {
   if (rows.length === 0) return null;
   return (
     <table className="sales-orders-table orders">
@@ -15,7 +15,7 @@ export function OrdersTable({ rows }: { rows: SalesOrder[] }) {
       <tbody>
         {rows.map((row) => (
           <tr key={row.id}>
-            <td><MonoLink>{row.id}</MonoLink></td>
+            <td><MonoLink onClick={openOrder}>{row.id}</MonoLink></td>
             <td className="nowrap">{row.date}</td>
             <td className="strong-text">{row.client}</td>
             <td>{row.offer}</td>
@@ -24,7 +24,7 @@ export function OrdersTable({ rows }: { rows: SalesOrder[] }) {
             <td><StatusBadge value={row.fulfillment} /></td>
             <td><span className="sales-orders-source"><i style={{ background: row.source.color }} />{row.source.label}</span></td>
             <td><span className={row.sellerAI ? "seller-ai" : "seller"}>{row.seller}</span></td>
-            <td className="row-actions"><button type="button" aria-label="Действия заказа"><Icon name="more" size={17} /></button></td>
+            <td className="row-actions"><button type="button" aria-label="Открыть карточку заказа" onClick={openOrder}><Icon name="more" size={17} /></button></td>
           </tr>
         ))}
       </tbody>

@@ -1,3 +1,6 @@
+@import "./detail/styles.css";
+@import "./form.css";
+
 .products-header-actions {
   display: flex;
   align-items: center;
@@ -11,8 +14,13 @@
 }
 
 .product-table-scroll {
-  overflow: visible;
+  overflow-x: auto;
+  overflow-y: hidden;
   border-radius: 12px 12px 0 0;
+}
+
+.products-table {
+  min-width: 1120px;
 }
 
 .products-table th:first-child,
@@ -36,10 +44,17 @@
   border-radius: 10px;
 }
 
-.products-table .product-cell strong {
+.product-name-link {
+  padding: 0;
   color: #1677ff;
+  background: transparent;
+  border: 0;
   font-size: 14px;
   font-weight: 700;
+}
+
+.product-name-link:hover {
+  color: #0958d9;
 }
 
 .products-table .product-cell small {
@@ -177,5 +192,38 @@
 
 .products-footer span:last-child {
   color: #bfbfbf;
+}
+
+.product-empty-value {
+  color: #bfbfbf;
+}
+
+.product-actions-dropdown .ant-dropdown-menu {
+  width: 200px;
+  padding: 5px;
+  border: 1px solid #f0f0f0;
+  border-radius: 10px;
+}
+
+.product-actions-dropdown .ant-dropdown-menu-item {
+  padding: 0 !important;
+}
+
+.product-actions-dropdown .ant-dropdown-menu-item button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 10px;
+  color: #262626;
+  background: transparent;
+  border: 0;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: left;
+}
+
+.product-actions-dropdown .ant-dropdown-menu-item button.warning {
+  color: #d48806;
 }
 

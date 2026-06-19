@@ -3,28 +3,35 @@ import type { RouteKey } from "./types";
 export type RouteState = {
   route: RouteKey;
   employeeId: number | null;
+  productId: number | null;
 };
 
 export function routeFromPath(pathname: string): RouteState {
   const path = pathname.replace(/\/+$/, "") || "/";
-  if (path === "/" || path === "/command") return { route: "command", employeeId: null };
-  if (path === "/departments") return { route: "departments", employeeId: null };
-  if (path === "/departments/sales") return { route: "salesOverview", employeeId: null };
-  if (path === "/departments/sales/clients") return { route: "salesClients", employeeId: null };
-  if (path === "/departments/sales/clients/CUS-4702") return { route: "salesClientDetail", employeeId: null };
-  if (path === "/departments/sales/dialogs") return { route: "salesDialogs", employeeId: null };
-  if (path === "/departments/sales/orders") return { route: "salesOrders", employeeId: null };
-  if (path === "/employees") return { route: "employees", employeeId: null };
+  const base = { employeeId: null, productId: null };
+  if (path === "/" || path === "/command") return { route: "command", ...base };
+  if (path === "/departments") return { route: "departments", ...base };
+  if (path === "/departments/sales") return { route: "salesOverview", ...base };
+  if (path === "/departments/sales/clients") return { route: "salesClients", ...base };
+  if (path === "/departments/sales/clients/CUS-4702") return { route: "salesClientDetail", ...base };
+  if (path === "/departments/sales/dialogs") return { route: "salesDialogs", ...base };
+  if (path === "/departments/sales/orders") return { route: "salesOrders", ...base };
+  if (path === "/departments/sales/orders/ORD-10519") return { route: "salesOrderDetail", ...base };
+  if (path === "/employees") return { route: "employees", ...base };
   if (path.startsWith("/employees/")) {
     const id = Number(path.split("/")[2]);
-    return Number.isInteger(id) && id > 0 ? { route: "employeeDetail", employeeId: id } : { route: "employees", employeeId: null };
+    return Number.isInteger(id) && id > 0 ? { route: "employeeDetail", employeeId: id, productId: null } : { route: "employees", ...base };
   }
-  if (path === "/products") return { route: "products", employeeId: null };
-  if (path === "/profile") return { route: "profile", employeeId: null };
-  return { route: "command", employeeId: null };
+  if (path === "/products") return { route: "products", ...base };
+  if (path.startsWith("/products/")) {
+    const id = Number(path.split("/")[2]);
+    return Number.isInteger(id) && id > 0 ? { route: "productDetail", employeeId: null, productId: id } : { route: "products", ...base };
+  }
+  if (path === "/profile") return { route: "profile", ...base };
+  return { route: "command", ...base };
 }
 
-export function pathFromRoute(route: RouteKey, employeeId: number | null = null): string {
+export function pathFromRoute(route: RouteKey, entityId: number | null = null): string {
   if (route === "command") return "/";
   if (route === "departments") return "/departments";
   if (route === "salesOverview") return "/departments/sales";
@@ -32,8 +39,10 @@ export function pathFromRoute(route: RouteKey, employeeId: number | null = null)
   if (route === "salesClientDetail") return "/departments/sales/clients/CUS-4702";
   if (route === "salesDialogs") return "/departments/sales/dialogs";
   if (route === "salesOrders") return "/departments/sales/orders";
+  if (route === "salesOrderDetail") return "/departments/sales/orders/ORD-10519";
   if (route === "employees") return "/employees";
-  if (route === "employeeDetail") return employeeId ? `/employees/${employeeId}` : "/employees";
+  if (route === "employeeDetail") return entityId ? `/employees/${entityId}` : "/employees";
   if (route === "products") return "/products";
+  if (route === "productDetail") return entityId ? `/products/${entityId}` : "/products";
   return "/profile";
 }

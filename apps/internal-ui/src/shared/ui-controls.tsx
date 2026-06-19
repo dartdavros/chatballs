@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ReactNode } from "react";
+import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "react";
 
 import { Icon } from "./icons";
 
@@ -90,8 +90,20 @@ export function ToneBadge({ bg, className = "", color, children }: ToneBadgeProp
   return <span className={`ui-tone-badge ${className}`.trim()} style={{ background: bg, color }}>{children}</span>;
 }
 
-export function MonoLink({ children, className = "" }: { children: string; className?: string }) {
-  return <a className={`ui-mono-link ${className}`.trim()} href="#" onClick={(event) => event.preventDefault()}>{children}</a>;
+export function MonoLink({ children, className = "", href = "#", onClick, ...linkProps }: AnchorHTMLAttributes<HTMLAnchorElement> & { children: string }) {
+  return (
+    <a
+      className={`ui-mono-link ${className}`.trim()}
+      href={href}
+      onClick={(event) => {
+        if (href === "#") event.preventDefault();
+        onClick?.(event);
+      }}
+      {...linkProps}
+    >
+      {children}
+    </a>
+  );
 }
 
 export function TablePagination({ className = "", pageSizeLabel, pages, shown, total }: TablePaginationProps) {

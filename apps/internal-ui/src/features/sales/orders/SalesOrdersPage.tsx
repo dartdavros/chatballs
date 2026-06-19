@@ -6,8 +6,9 @@ import { SalesOrdersPagination } from "./SalesOrdersPagination";
 import { SalesOrdersTableCard } from "./SalesOrdersTableCard";
 import { SalesOrdersTabs } from "./SalesOrdersTabs";
 import type { SalesOrdersTab } from "./types";
+import type { RouteKey } from "../../../types";
 
-export function SalesOrdersPage() {
+export function SalesOrdersPage({ setRoute }: { setRoute: (route: RouteKey) => void }) {
   const [tab, setTab] = useState<SalesOrdersTab>("orders");
   const [query, setQuery] = useState("");
   const rows = useMemo(() => {
@@ -25,7 +26,7 @@ export function SalesOrdersPage() {
     <>
       <SalesOrdersHeader query={query} setQuery={setQuery} />
       <SalesOrdersTabs activeTab={tab} setActiveTab={selectTab} />
-      <SalesOrdersTableCard activeTab={tab} rows={rows} />
+      <SalesOrdersTableCard activeTab={tab} rows={rows} openOrder={() => setRoute("salesOrderDetail")} />
       <SalesOrdersPagination shown={rows.length} total={total} />
     </>
   );

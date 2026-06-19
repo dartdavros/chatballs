@@ -28,9 +28,26 @@
 
 .form-field.is-editable:focus-within input,
 .form-field.is-editable input:focus,
+.form-field.is-editable:focus-within textarea,
+.form-field.is-editable textarea:focus,
 .select-like:focus-within select,
 .select-like select:focus {
   border-color: #1677ff;
+}
+
+.readonly-field textarea {
+  width: 100%;
+  min-height: 92px;
+  padding: 10px 12px;
+  resize: vertical;
+  color: #262626;
+  background: #ffffff;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  outline: none;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 .readonly-field input.mono {

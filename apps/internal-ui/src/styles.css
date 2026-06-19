@@ -8,6 +8,7 @@
 @import "./features/sales/clients/styles.css";
 @import "./features/sales/client-detail/styles.css";
 @import "./features/sales/dialogs/styles.css";
+@import "./features/sales/order-detail/styles.css";
 @import "./features/sales/orders/styles.css";
 @import "./features/departments/styles.css";
 @import "./shared/table-controls.css";

@@ -52,6 +52,15 @@ export function SelectField({ label, value, onChange, options }: { label: string
   );
 }
 
+export function TextAreaField({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
+  return (
+    <label className="readonly-field form-field is-editable wide">
+      <span>{label}</span>
+      <textarea value={value} onChange={(event) => onChange(event.target.value)} />
+    </label>
+  );
+}
+
 export function SwitchButton({ checked, onClick, className, label, disabled = false }: { checked: boolean; onClick: () => void; className: string; label: string; disabled?: boolean }) {
   return <button className={`${className}${checked ? " on" : ""}`} type="button" role="switch" aria-checked={checked} aria-label={label} onClick={onClick} disabled={disabled}><i /></button>;
 }

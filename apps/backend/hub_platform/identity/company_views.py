@@ -1,25 +1,7 @@
-import json
-
-from django.db import transaction
 from django.http import HttpRequest, JsonResponse
-from django.views.decorators.csrf import csrf_protect
-from django.views.decorators.http import require_GET, require_POST
+from django.views.decorators.http import require_GET
 
-from hub_platform.identity.audit import record_audit_event
-from hub_platform.identity.employee_views import owner_required
-from hub_platform.identity.models import (
-    AuditResult,
-    Department,
-    EmployeeRole,
-    Product,
-    ProductStatus,
-)
-
-
-def _json_body(request: HttpRequest) -> dict[str, object]:
-    if not request.body:
-        return {}
-    return json.loads(request.body.decode("utf-8"))
+from hub_platform.identity.models import Department, EmployeeRole
 
 
 def _require_authenticated_profile(request: HttpRequest):
@@ -31,7 +13,7 @@ def _require_authenticated_profile(request: HttpRequest):
 def _department_payload(department: Department) -> dict[str, object]:
     employees = list(department.employees.select_related("user").all())
     operators = [employee for employee in employees if employee.role == EmployeeRole.OPERATOR]
-    products = list(department.organization.products.order_by("name"))
+    products = [link.product for link in department.product_links.select_related("product").order_by("product__name")]
     return {
         "id": department.id,
         "code": department.code,
@@ -46,17 +28,6 @@ def _department_payload(department: Department) -> dict[str, object]:
     }
 
 
-def _product_payload(product: Product) -> dict[str, object]:
-    return {
-        "id": product.id,
-        "code": product.code,
-        "name": product.name,
-        "status": product.status,
-        "siteUrl": product.site_url,
-        "createdAt": product.created_at.isoformat(),
-    }
-
-
 @require_GET
 def department_list_view(request: HttpRequest) -> JsonResponse:
     profile, error = _require_authenticated_profile(request)
@@ -66,67 +37,3 @@ def department_list_view(request: HttpRequest) -> JsonResponse:
     if profile.role == EmployeeRole.OPERATOR:
         departments = departments.filter(id=profile.department_id)
     return JsonResponse({"items": [_department_payload(department) for department in departments]})
-
-
-@require_GET
-def product_list_view(request: HttpRequest) -> JsonResponse:
-    profile, error = _require_authenticated_profile(request)
-    if error is not None:
-        return error
-    products = Product.objects.filter(organization=profile.organization).order_by("name")
-    return JsonResponse({"items": [_product_payload(product) for product in products]})
-
-
-@csrf_protect
-@require_POST
-@owner_required
-@transaction.atomic
-def create_product_view(request: HttpRequest) -> JsonResponse:
-    owner_profile = request.user.employee_profile
-    body = _json_body(request)
-    code = str(body.get("code", "")).strip().lower()
-    name = str(body.get("name", "")).strip()
-    site_url = str(body.get("siteUrl", "")).strip()
-    if not code:
-        return JsonResponse({"detail": "Product code is required"}, status=400)
-    if not name:
-        return JsonResponse({"detail": "Product name is required"}, status=400)
-    product = Product.objects.create(
-        organization=owner_profile.organization,
-        code=code,
-        name=name,
-        site_url=site_url,
-    )
-    record_audit_event(
-        action="identity.product_created",
-        actor=request.user,
-        organization=owner_profile.organization,
-        object_type="Product",
-        object_id=str(product.id),
-        request=request,
-    )
-    return JsonResponse({"product": _product_payload(product)}, status=201)
-
-
-@csrf_protect
-@require_POST
-@owner_required
-@transaction.atomic
-def deactivate_product_view(request: HttpRequest, product_id: int) -> JsonResponse:
-    owner_profile = request.user.employee_profile
-    try:
-        product = Product.objects.get(id=product_id, organization=owner_profile.organization)
-    except Product.DoesNotExist:
-        return JsonResponse({"detail": "Product not found"}, status=404)
-    product.status = ProductStatus.DISABLED
-    product.save(update_fields=["status"])
-    record_audit_event(
-        action="identity.product_deactivated",
-        actor=request.user,
-        organization=owner_profile.organization,
-        object_type="Product",
-        object_id=str(product.id),
-        result=AuditResult.SUCCESS,
-        request=request,
-    )
-    return JsonResponse({"product": _product_payload(product)})

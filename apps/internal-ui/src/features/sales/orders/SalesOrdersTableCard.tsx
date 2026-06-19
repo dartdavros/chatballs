@@ -6,11 +6,11 @@ import { RefundsTable } from "./tables/RefundsTable";
 import { SubscriptionsTable } from "./tables/SubscriptionsTable";
 import type { SalesFulfillment, SalesOrder, SalesOrdersTab, SalesPayment, SalesRefund, SalesSubscription } from "./types";
 
-export function SalesOrdersTableCard({ activeTab, rows }: { activeTab: SalesOrdersTab; rows: Array<{ search: string }> }) {
+export function SalesOrdersTableCard({ activeTab, openOrder, rows }: { activeTab: SalesOrdersTab; openOrder: () => void; rows: Array<{ search: string }> }) {
   return (
     <div className="sales-orders-card">
       <div className="sales-orders-table-scroll">
-        {activeTab === "orders" && <OrdersTable rows={rows as SalesOrder[]} />}
+        {activeTab === "orders" && <OrdersTable rows={rows as SalesOrder[]} openOrder={openOrder} />}
         {activeTab === "subs" && <SubscriptionsTable rows={rows as SalesSubscription[]} />}
         {activeTab === "pays" && <PaymentsTable rows={rows as SalesPayment[]} />}
         {activeTab === "refunds" && <RefundsTable rows={rows as SalesRefund[]} />}

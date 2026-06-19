@@ -9,8 +9,8 @@ from hub_platform.identity.models import (
     EmployeeRole,
     HumanUser,
     Organization,
-    Product,
 )
+from hub_platform.products.models import Product, ProductDepartment
 
 
 @dataclass(frozen=True)
@@ -37,7 +37,8 @@ def bootstrap_edevs_owner(*, email: str, password: str, full_name: str = "") -> 
         defaults={"name": "Продажи"},
     )
     for code, name in (("firepage", "FirePage"), ("foxray", "Foxray")):
-        Product.objects.get_or_create(organization=organization, code=code, defaults={"name": name})
+        product, _ = Product.objects.get_or_create(organization=organization, code=code, defaults={"name": name})
+        ProductDepartment.objects.get_or_create(product=product, department=sales_department)
 
     owner, created_owner = HumanUser.objects.get_or_create(
         email=HumanUser.objects.normalize_email(email),
