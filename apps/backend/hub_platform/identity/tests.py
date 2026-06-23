@@ -13,7 +13,7 @@ from rest_framework.throttling import ScopedRateThrottle
 _LOCMEM_CACHE = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
 
 from hub_platform.identity.bootstrap import bootstrap_edevs_owner
-from hub_platform.identity.auth_views import _totp_code
+from hub_platform.identity.auth.totp_utils import _totp_code
 from hub_platform.identity.models import (
     AuditEvent,
     Department,

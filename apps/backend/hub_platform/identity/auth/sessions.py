@@ -1,0 +1,82 @@
+from django.contrib.auth import authenticate, login, logout
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle
+from rest_framework.views import APIView
+
+from hub_platform.identity.audit import record_audit_event
+from hub_platform.identity.auth.common import _challenge_payload, _user_payload
+from hub_platform.identity.auth.totp_utils import TOTP_SESSION_KEY
+from hub_platform.identity.models import AuditResult
+
+
+@method_decorator(ensure_csrf_cookie, name="dispatch")
+class SessionView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request: Request) -> Response:
+        if not request.user.is_authenticated:
+            return Response({"authenticated": False})
+        return Response({"authenticated": True, "user": _user_payload(request.user)})
+
+
+@method_decorator(csrf_protect, name="dispatch")
+class LoginView(APIView):
+    authentication_classes: list = []
+    permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "login"
+
+    def post(self, request: Request) -> Response:
+        body = request.data
+        email = str(body.get("email", ""))
+        password = str(body.get("password", ""))
+        request.session.pop(TOTP_SESSION_KEY, None)
+        user = authenticate(request, username=email, password=password)
+        if user is None:
+            record_audit_event(action="identity.login_failed", result=AuditResult.DENIED, request=request)
+            return Response({"detail": "Invalid credentials"}, status=401)
+        if not hasattr(user, "employee_profile") or user.employee_profile.is_blocked:
+            record_audit_event(action="identity.login_blocked", actor=user, result=AuditResult.DENIED, request=request)
+            return Response({"detail": "Account is blocked"}, status=403)
+
+        profile = user.employee_profile
+        if profile.totp_enabled:
+            request.session[TOTP_SESSION_KEY] = user.id
+            record_audit_event(
+                action="identity.login_totp_required",
+                actor=user,
+                organization=profile.organization,
+                request=request,
+            )
+            return Response(
+                {
+                    "authenticated": False,
+                    "totpRequired": True,
+                    "totpEnabled": True,
+                    "challenge": _challenge_payload(user),
+                }
+            )
+
+        login(request, user)
+        record_audit_event(
+            action="identity.login_succeeded",
+            actor=user,
+            organization=profile.organization,
+            request=request,
+        )
+        return Response({"authenticated": True, "user": _user_payload(user)})
+
+
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request: Request) -> Response:
+        user = request.user
+        organization = getattr(getattr(user, "employee_profile", None), "organization", None)
+        logout(request)
+        record_audit_event(action="identity.logout", actor=user, organization=organization, request=request)
+        return Response({"authenticated": False})
