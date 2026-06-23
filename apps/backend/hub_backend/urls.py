@@ -9,5 +9,6 @@ urlpatterns = [
     path("api/v1/company/", include("hub_platform.identity.company_urls")),
     path("api/v1/company/", include("hub_platform.products.urls")),
     path("api/v1/employees/", include("hub_platform.identity.employee_urls")),
+    path("api/v1/ai/", include("hub_platform.ai.urls")),
     path("api/v1/health/", include("hub_platform.health.urls")),
 ]
