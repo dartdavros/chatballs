@@ -1,7 +1,11 @@
 import os
 from pathlib import Path
 
+from django.core.exceptions import ImproperlyConfigured
+
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+INSECURE_SECRET_KEY = "local-development-only"
 
 
 def env_bool(name: str, default: bool = False) -> bool:
@@ -18,10 +22,14 @@ def env_list(name: str, default: list[str]) -> list[str]:
     return [item.strip() for item in value.split(",") if item.strip()]
 
 
-SECRET_KEY = os.environ.get("HUB_SECRET_KEY", "local-development-only")
+SECRET_KEY = os.environ.get("HUB_SECRET_KEY", INSECURE_SECRET_KEY)
 DEBUG = env_bool("HUB_DEBUG")
 ALLOWED_HOSTS = env_list("HUB_ALLOWED_HOSTS", ["localhost", "127.0.0.1"])
 CSRF_TRUSTED_ORIGINS = env_list("HUB_CSRF_TRUSTED_ORIGINS", [])
+
+# Запрещаем запуск в production с дефолтным/пустым ключом подписи.
+if not DEBUG and SECRET_KEY in {"", INSECURE_SECRET_KEY}:
+    raise ImproperlyConfigured("HUB_SECRET_KEY must be set to a strong value when HUB_DEBUG is disabled")
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -117,6 +125,19 @@ INTERNAL_UI_BASE_URL = os.environ.get("INTERNAL_UI_BASE_URL", "http://localhost:
 
 # Password reset link lifetime. UI обещает 30 минут (default_token_generator uses this setting).
 PASSWORD_RESET_TIMEOUT = int(os.environ.get("PASSWORD_RESET_TIMEOUT", str(30 * 60)))
+
+# Транспорт и cookie. По умолчанию безопасно вне DEBUG; локальная разработка не ломается.
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = os.environ.get("HUB_COOKIE_SAMESITE", "Lax")
+CSRF_COOKIE_SAMESITE = SESSION_COOKIE_SAMESITE
+SESSION_COOKIE_SECURE = env_bool("HUB_COOKIE_SECURE", not DEBUG)
+CSRF_COOKIE_SECURE = env_bool("HUB_COOKIE_SECURE", not DEBUG)
+SECURE_SSL_REDIRECT = env_bool("HUB_SSL_REDIRECT", not DEBUG)
+SECURE_HSTS_SECONDS = int(os.environ.get("HUB_HSTS_SECONDS", "0" if DEBUG else str(60 * 60 * 24 * 365)))
+SECURE_HSTS_INCLUDE_SUBDOMAINS = SECURE_HSTS_SECONDS > 0
+SECURE_HSTS_PRELOAD = SECURE_HSTS_SECONDS > 0
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
