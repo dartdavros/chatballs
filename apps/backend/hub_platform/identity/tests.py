@@ -129,7 +129,10 @@ class AuthEndpointTests(TestCase):
         self.assertEqual(response.status_code, 401)
         self.assertTrue(AuditEvent.objects.filter(action="identity.login_failed").exists())
 
-    def test_password_reset_request_sends_email_for_existing_user(self) -> None:
+    def test_password_reset_request_enqueues_outbox_event(self) -> None:
+        from hub_platform.events.models import OutboxEvent
+
+        owner = HumanUser.objects.get(email="owner@edevs.tech")
         response = self.client.post(
             "/api/v1/auth/password-reset/request/",
             data=json.dumps({"email": "owner@edevs.tech"}),
@@ -138,12 +141,15 @@ class AuthEndpointTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.json()["ok"])
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].to, ["owner@edevs.tech"])
-        self.assertIn("reset-password", mail.outbox[0].body)
+        # Письмо отправляется воркером асинхронно, не в запросе.
+        self.assertEqual(len(mail.outbox), 0)
+        event = OutboxEvent.objects.get(event_type="identity.password_reset_requested")
+        self.assertEqual(event.payload, {"userId": owner.id})
         self.assertTrue(AuditEvent.objects.filter(action="identity.password_reset_requested").exists())
 
     def test_password_reset_request_does_not_reveal_unknown_email(self) -> None:
+        from hub_platform.events.models import OutboxEvent
+
         response = self.client.post(
             "/api/v1/auth/password-reset/request/",
             data=json.dumps({"email": "nobody@edevs.tech"}),
@@ -153,6 +159,17 @@ class AuthEndpointTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.json()["ok"])
         self.assertEqual(len(mail.outbox), 0)
+        self.assertFalse(OutboxEvent.objects.filter(event_type="identity.password_reset_requested").exists())
+
+    def test_password_reset_handler_sends_email(self) -> None:
+        from hub_platform.events.handlers import dispatch
+
+        owner = HumanUser.objects.get(email="owner@edevs.tech")
+        dispatch("identity.password_reset_requested", {"userId": owner.id})
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ["owner@edevs.tech"])
+        self.assertIn("reset-password", mail.outbox[0].body)
 
     def _reset_link(self, email: str) -> tuple[str, str]:
         user = HumanUser.objects.get(email=email)

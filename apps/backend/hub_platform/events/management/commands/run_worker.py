@@ -4,6 +4,7 @@ import time
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
+from hub_platform.events.handlers import dispatch
 from hub_platform.events.models import OutboxStatus
 from hub_platform.events.services import claim_next_outbox_event, mark_retry
 
@@ -23,6 +24,7 @@ class Command(BaseCommand):
 
             try:
                 logger.info("Processing outbox event %s", event.id)
+                dispatch(event.event_type, event.payload)
                 event.status = OutboxStatus.PROCESSED
                 event.processed_at = timezone.now()
                 event.save(update_fields=["status", "processed_at"])

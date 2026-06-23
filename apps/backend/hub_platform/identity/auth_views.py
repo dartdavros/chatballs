@@ -6,16 +6,14 @@ import struct
 import time
 from urllib.parse import quote
 
-from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sessions.models import Session
 from django.core.exceptions import ValidationError as DjangoValidationError
-from django.core.mail import send_mail
 from django.utils.decorators import method_decorator
-from django.utils.encoding import force_bytes, force_str
-from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.utils.encoding import force_str
+from django.utils.http import urlsafe_base64_decode
 from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
@@ -23,7 +21,9 @@ from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
+from hub_platform.events.services import DomainEvent, enqueue_event
 from hub_platform.identity.audit import record_audit_event
+from hub_platform.identity.event_handlers import PASSWORD_RESET_REQUESTED
 from hub_platform.identity.models import AuditResult, HumanUser
 
 TOTP_SESSION_KEY = "identity_pending_totp_user_id"
@@ -106,23 +106,6 @@ def _revoke_other_user_sessions(request: Request) -> int:
             session.delete()
             revoked += 1
     return revoked
-
-
-def _send_password_reset_email(user: HumanUser) -> None:
-    uid = urlsafe_base64_encode(force_bytes(user.pk))
-    token = default_token_generator.make_token(user)
-    reset_url = f"{settings.INTERNAL_UI_BASE_URL.rstrip('/')}/reset-password?uid={uid}&token={token}"
-    send_mail(
-        subject="Восстановление доступа к Edevs Hub",
-        message=(
-            f"Здравствуйте, {user.full_name or user.email}.\n\n"
-            "Вы запросили сброс пароля для Edevs Hub. Чтобы задать новый пароль, перейдите по ссылке:\n"
-            f"{reset_url}\n\n"
-            "Ссылка действует 30 минут. Если вы не запрашивали сброс, просто проигнорируйте это письмо."
-        ),
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[user.email],
-    )
 
 
 def _user_from_reset_link(uid: str, token: str) -> HumanUser | None:
@@ -217,7 +200,14 @@ class PasswordResetRequestView(APIView):
             user = HumanUser.objects.filter(email__iexact=email, is_active=True).first()
             profile = getattr(user, "employee_profile", None) if user is not None else None
             if user is not None and profile is not None and not profile.is_blocked:
-                _send_password_reset_email(user)
+                enqueue_event(
+                    DomainEvent(
+                        aggregate_type="HumanUser",
+                        aggregate_id=str(user.id),
+                        event_type=PASSWORD_RESET_REQUESTED,
+                        payload={"userId": user.id},
+                    )
+                )
                 record_audit_event(
                     action="identity.password_reset_requested",
                     actor=user,
