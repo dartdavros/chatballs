@@ -346,7 +346,7 @@ class EmployeeEndpointTests(TestCase):
         bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
         self.organization = Organization.objects.get(slug="edevs")
         self.sales = Department.objects.get(code="sales")
-        self.client = Client()
+        self.client = APIClient()
         self.client.login(username="owner@edevs.tech", password="temporary-password")
 
     def test_owner_creates_operator_with_temporary_password(self) -> None:

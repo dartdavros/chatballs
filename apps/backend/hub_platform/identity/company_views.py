@@ -1,13 +1,9 @@
-from django.http import HttpRequest, JsonResponse
-from django.views.decorators.http import require_GET
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from hub_platform.identity.models import Department, EmployeeRole
-
-
-def _require_authenticated_profile(request: HttpRequest):
-    if not request.user.is_authenticated:
-        return None, JsonResponse({"detail": "Authentication required"}, status=401)
-    return request.user.employee_profile, None
 
 
 def _department_payload(department: Department) -> dict[str, object]:
@@ -28,12 +24,12 @@ def _department_payload(department: Department) -> dict[str, object]:
     }
 
 
-@require_GET
-def department_list_view(request: HttpRequest) -> JsonResponse:
-    profile, error = _require_authenticated_profile(request)
-    if error is not None:
-        return error
-    departments = Department.objects.filter(organization=profile.organization).order_by("name")
-    if profile.role == EmployeeRole.OPERATOR:
-        departments = departments.filter(id=profile.department_id)
-    return JsonResponse({"items": [_department_payload(department) for department in departments]})
+class DepartmentListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request) -> Response:
+        profile = request.user.employee_profile
+        departments = Department.objects.filter(organization=profile.organization).order_by("name")
+        if profile.role == EmployeeRole.OPERATOR:
+            departments = departments.filter(id=profile.department_id)
+        return Response({"items": [_department_payload(department) for department in departments]})
