@@ -3,8 +3,9 @@ from datetime import timedelta
 
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
-from django.test import Client, TestCase
+from django.test import TestCase
 from django.utils import timezone
+from rest_framework.test import APIClient
 
 from hub_platform.identity.bootstrap import bootstrap_edevs_owner
 from hub_platform.identity.models import Department, Organization
@@ -25,7 +26,7 @@ class ProductApiTests(TestCase):
         bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
         self.organization = Organization.objects.get(slug="edevs")
         self.sales = Department.objects.get(organization=self.organization, code="sales")
-        self.client = Client()
+        self.client = APIClient()
         self.client.login(username="owner@edevs.tech", password="temporary-password")
 
     def test_create_product_is_active_and_assigned_to_department(self) -> None:

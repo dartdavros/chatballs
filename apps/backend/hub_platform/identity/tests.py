@@ -6,6 +6,7 @@ from django.test import Client, TestCase
 from django.contrib.sessions.backends.db import SessionStore
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
+from rest_framework.test import APIClient
 
 from hub_platform.identity.bootstrap import bootstrap_edevs_owner
 from hub_platform.identity.auth_views import _totp_code
@@ -465,7 +466,7 @@ class CompanyEndpointTests(TestCase):
         bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
         self.organization = Organization.objects.get(slug="edevs")
         self.sales = Department.objects.get(code="sales")
-        self.client = Client()
+        self.client = APIClient()
         self.client.login(username="owner@edevs.tech", password="temporary-password")
 
     def test_owner_reads_departments_and_products(self) -> None:
