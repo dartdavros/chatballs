@@ -1,12 +1,16 @@
 import json
+from unittest import mock
 
 from django.contrib.auth.tokens import default_token_generator
 from django.core import mail
-from django.test import Client, TestCase
+from django.test import Client, TestCase, override_settings
 from django.contrib.sessions.backends.db import SessionStore
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from rest_framework.test import APIClient
+from rest_framework.throttling import ScopedRateThrottle
+
+_LOCMEM_CACHE = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
 
 from hub_platform.identity.bootstrap import bootstrap_edevs_owner
 from hub_platform.identity.auth_views import _totp_code
@@ -557,3 +561,26 @@ class TotpSecretEncryptionTests(TestCase):
 
         profile.refresh_from_db()
         self.assertEqual(profile.totp_secret, "JBSWY3DPEHPK3PXP")
+
+
+@override_settings(CACHES=_LOCMEM_CACHE)
+class ThrottlingTests(TestCase):
+    def setUp(self) -> None:
+        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
+        self.client = Client()
+
+    def _login(self):
+        return self.client.post(
+            "/api/v1/auth/login/",
+            data=json.dumps({"email": "owner@edevs.tech", "password": "wrong"}),
+            content_type="application/json",
+        )
+
+    def test_login_endpoint_is_rate_limited(self) -> None:
+        # DRF биндит THROTTLE_RATES на импорте, поэтому ставим лимит напрямую.
+        with mock.patch.dict(ScopedRateThrottle.THROTTLE_RATES, {"login": "1/min"}):
+            first = self._login()
+            second = self._login()
+
+        self.assertEqual(first.status_code, 401)
+        self.assertEqual(second.status_code, 429)

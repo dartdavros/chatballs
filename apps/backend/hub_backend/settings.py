@@ -162,12 +162,18 @@ STORAGES = {
 }
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# Лимиты на чувствительные эндпоинты (брутфорс/злоупотребление). В тестах отключены.
+_THROTTLE_RATES = {"login": "10/min", "password_reset": "5/min", "totp": "10/min"}
+if TESTING:
+    _THROTTLE_RATES = {scope: None for scope in _THROTTLE_RATES}
+
 REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
     "DEFAULT_PARSER_CLASSES": ["rest_framework.parsers.JSONParser"],
     "DEFAULT_AUTHENTICATION_CLASSES": ["rest_framework.authentication.SessionAuthentication"],
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
     "EXCEPTION_HANDLER": "hub_platform.api.exceptions.api_exception_handler",
+    "DEFAULT_THROTTLE_RATES": _THROTTLE_RATES,
 }
 
 CORS_ALLOWED_ORIGINS = env_list(

@@ -20,6 +20,7 @@ from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
 from hub_platform.identity.audit import record_audit_event
@@ -148,6 +149,8 @@ class SessionView(APIView):
 class LoginView(APIView):
     authentication_classes: list = []
     permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "login"
 
     def post(self, request: Request) -> Response:
         body = request.data
@@ -205,6 +208,8 @@ class LogoutView(APIView):
 class PasswordResetRequestView(APIView):
     authentication_classes: list = []
     permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "password_reset"
 
     def post(self, request: Request) -> Response:
         email = HumanUser.objects.normalize_email(str(request.data.get("email", "")).strip())
@@ -244,6 +249,8 @@ class PasswordResetValidateView(APIView):
 class PasswordResetConfirmView(APIView):
     authentication_classes: list = []
     permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "password_reset"
 
     def post(self, request: Request) -> Response:
         body = request.data
@@ -479,6 +486,8 @@ class TotpConfirmView(APIView):
 class TotpVerifyView(APIView):
     authentication_classes: list = []
     permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "totp"
 
     def post(self, request: Request) -> Response:
         pending_user_id = request.session.get(TOTP_SESSION_KEY)
