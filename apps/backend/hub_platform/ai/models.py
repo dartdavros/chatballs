@@ -180,3 +180,36 @@ class ReleasePromptVersion(models.Model):
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=["release", "prompt_version"], name="uniq_release_prompt_version")]
+
+
+# --- LLM usage accounting (tokens, cost) ---
+
+
+class LlmInvocationStatus(models.TextChoices):
+    SUCCESS = "SUCCESS", "Успех"
+    ERROR = "ERROR", "Ошибка"
+    BLOCKED = "BLOCKED", "Заблокировано лимитом"
+
+
+class LlmInvocation(models.Model):
+    product = models.ForeignKey("products.Product", on_delete=models.PROTECT, related_name="ai_invocations")
+    release = models.ForeignKey(ProductAIRelease, on_delete=models.SET_NULL, null=True, blank=True, related_name="invocations")
+    purpose = models.CharField(max_length=64)
+    operation = models.CharField(max_length=16)  # chat | embedding
+    model = models.CharField(max_length=128, blank=True)
+    prompt_tokens = models.PositiveIntegerField(default=0)
+    completion_tokens = models.PositiveIntegerField(default=0)
+    total_tokens = models.PositiveIntegerField(default=0)
+    cost_micros = models.PositiveBigIntegerField(default=0)
+    currency = models.CharField(max_length=3, default="USD")
+    latency_ms = models.PositiveIntegerField(default=0)
+    status = models.CharField(max_length=16, choices=LlmInvocationStatus.choices, default=LlmInvocationStatus.SUCCESS)
+    error = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [models.Index(fields=["product", "created_at"])]
+
+    def __str__(self) -> str:
+        return f"llm:{self.product_id}/{self.operation}/{self.status}"

@@ -1,6 +1,6 @@
 import json
 
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from rest_framework.test import APIClient
 
 from hub_platform.ai.models import AIAgent
@@ -260,3 +260,130 @@ class ProductAIReleaseApiTests(TestCase):
         release.model = "anthropic/claude-3.5"
         with self.assertRaises(ValidationError):
             release.save()
+
+
+class PiiRedactionTests(TestCase):
+    def test_redacts_email_phone_and_long_numbers(self) -> None:
+        from hub_platform.ai.pii import redact
+
+        cleaned = redact("Пишите a.kotova@edevs.tech, тел +7 916 245 14 02, карта 4111 1111 1111 1111")
+        self.assertNotIn("a.kotova@edevs.tech", cleaned)
+        self.assertNotIn("4111", cleaned)
+        self.assertNotIn("916 245", cleaned)
+        self.assertIn("[email]", cleaned)
+
+
+class ResilienceTests(TestCase):
+    def test_retries_then_succeeds(self) -> None:
+        from hub_platform.ai.provider.base import ProviderError
+        from hub_platform.ai.provider.resilience import call_with_resilience
+
+        calls = {"n": 0}
+
+        def flaky():
+            calls["n"] += 1
+            if calls["n"] < 2:
+                raise ProviderError("temporary")
+            return "ok"
+
+        result = call_with_resilience(flaky, retries=2, sleep=lambda _seconds: None)
+        self.assertEqual(result, "ok")
+        self.assertEqual(calls["n"], 2)
+
+    def test_circuit_breaker_opens_after_threshold(self) -> None:
+        from hub_platform.ai.provider.base import ProviderError
+        from hub_platform.ai.provider.resilience import CircuitBreaker, CircuitBreakerOpen, call_with_resilience
+
+        breaker = CircuitBreaker(failure_threshold=2, reset_timeout=999)
+
+        def always_fail():
+            raise ProviderError("down")
+
+        for _ in range(2):
+            with self.assertRaises(ProviderError):
+                call_with_resilience(always_fail, retries=0, breaker=breaker, sleep=lambda _s: None)
+        with self.assertRaises(CircuitBreakerOpen):
+            call_with_resilience(always_fail, retries=0, breaker=breaker, sleep=lambda _s: None)
+
+
+class ProviderFactoryTests(TestCase):
+    def test_local_provider_in_tests(self) -> None:
+        from hub_platform.ai.provider.factory import get_provider
+        from hub_platform.ai.provider.local import LocalProvider
+
+        self.assertIsInstance(get_provider(), LocalProvider)
+
+    @override_settings(DEBUG=False, TESTING=False, HUB_AI_PROVIDER="test")
+    def test_local_provider_forbidden_in_production(self) -> None:
+        from django.core.exceptions import ImproperlyConfigured
+
+        from hub_platform.ai.provider.factory import get_provider
+
+        with self.assertRaises(ImproperlyConfigured):
+            get_provider()
+
+
+class ChatInvocationTests(TestCase):
+    def setUp(self) -> None:
+        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
+        self.product = Product.objects.get(code="firepage")
+
+    def test_chat_records_invocation_with_cost(self) -> None:
+        from hub_platform.ai.invocation import invoke_chat
+        from hub_platform.ai.models import LlmInvocation, LlmInvocationStatus
+        from hub_platform.ai.provider.base import ChatMessage
+
+        result = invoke_chat(
+            product=self.product,
+            messages=[ChatMessage(role="user", content="hello there")],
+            purpose="test_chat",
+        )
+
+        self.assertTrue(result.text)
+        invocation = LlmInvocation.objects.get(product=self.product, operation="chat")
+        self.assertEqual(invocation.status, LlmInvocationStatus.SUCCESS)
+        self.assertGreater(invocation.total_tokens, 0)
+        self.assertGreater(invocation.cost_micros, 0)
+
+    def test_pii_is_redacted_before_reaching_provider(self) -> None:
+        from unittest import mock
+
+        from hub_platform.ai.invocation import invoke_chat
+        from hub_platform.ai.provider.base import ChatMessage, ChatResult
+
+        captured = {}
+
+        class _Capturing:
+            def chat(self, *, messages, model, params=None):
+                captured["messages"] = messages
+                return ChatResult(text="ok", model=model, prompt_tokens=1, completion_tokens=1)
+
+            def embed(self, *, texts, model):  # pragma: no cover
+                return []
+
+        with mock.patch("hub_platform.ai.invocation.get_provider", return_value=_Capturing()):
+            invoke_chat(
+                product=self.product,
+                messages=[ChatMessage(role="user", content="email me a@b.com")],
+                purpose="test_chat",
+            )
+
+        self.assertNotIn("a@b.com", captured["messages"][0].content)
+
+    def test_limit_blocks_and_records(self) -> None:
+        from hub_platform.ai import limits as ai_limits
+        from hub_platform.ai.invocation import invoke_chat
+        from hub_platform.ai.models import LlmInvocation, LlmInvocationStatus
+        from hub_platform.ai.provider.base import ChatMessage
+
+        agent = self.product.ai_agent
+        agent.limits = {"dailyCostMicros": 1}
+        agent.save(update_fields=["limits"])
+        LlmInvocation.objects.create(
+            product=self.product, purpose="seed", operation="chat", model="x", cost_micros=10,
+            status=LlmInvocationStatus.SUCCESS,
+        )
+
+        with self.assertRaises(ai_limits.LimitExceeded):
+            invoke_chat(product=self.product, messages=[ChatMessage(role="user", content="hi")], purpose="test_chat")
+        self.assertTrue(LlmInvocation.objects.filter(product=self.product, status=LlmInvocationStatus.BLOCKED).exists())

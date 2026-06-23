@@ -134,6 +134,16 @@ INTERNAL_UI_BASE_URL = os.environ.get("INTERNAL_UI_BASE_URL", "http://localhost:
 # детерминированно выводится из SECRET_KEY (см. hub_platform.identity.crypto).
 HUB_FIELD_ENCRYPTION_KEY = os.environ.get("HUB_FIELD_ENCRYPTION_KEY", "")
 
+# AI-провайдер (chat + embeddings). По умолчанию тестовый адаптер локально;
+# в production требуется реальный провайдер (см. hub_platform.ai.provider.factory).
+HUB_AI_PROVIDER = os.environ.get("HUB_AI_PROVIDER", "")  # "" -> auto ("openrouter" если есть ключ, иначе "test")
+HUB_OPENROUTER_API_KEY = os.environ.get("HUB_OPENROUTER_API_KEY", "")
+HUB_OPENROUTER_BASE_URL = os.environ.get("HUB_OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
+HUB_AI_REQUEST_TIMEOUT = float(os.environ.get("HUB_AI_REQUEST_TIMEOUT", "30"))
+HUB_AI_MAX_RETRIES = int(os.environ.get("HUB_AI_MAX_RETRIES", "2"))
+HUB_AI_GLOBAL_DAILY_COST_LIMIT_MICROS = int(os.environ.get("HUB_AI_GLOBAL_DAILY_COST_LIMIT_MICROS", "0"))  # 0 = без лимита
+HUB_AI_PRICING: dict = {}  # переопределение цен micro-USD/токен по модели
+
 # Password reset link lifetime. UI обещает 30 минут (default_token_generator uses this setting).
 PASSWORD_RESET_TIMEOUT = int(os.environ.get("PASSWORD_RESET_TIMEOUT", str(30 * 60)))
 
