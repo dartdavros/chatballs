@@ -34,3 +34,32 @@ Create or refresh the local OWNER account:
 ```powershell
 docker compose run --rm backend python manage.py bootstrap_owner --email owner@edevs.tech --password local-owner-password --name "Иван Петров"
 ```
+
+## Tests
+
+All suites run in Docker, so no manual environment is required — the test
+runners auto-detect themselves and relax production hardening (secret-key
+fail-fast, SSL redirect, throttling) for the duration of the run.
+
+Run everything (backend tests, frontend unit tests, typechecks):
+
+```powershell
+.\scripts\check.ps1
+```
+
+Individual suites:
+
+```powershell
+# Backend (pytest + pytest-django)
+docker compose run --rm backend pytest
+
+# Frontend unit tests (vitest)
+docker compose run --rm internal-ui npm run test
+
+# End-to-end (Playwright, internal-ui) — auto-starts the dev server
+npx playwright install chromium   # one-time
+npx playwright test --project=internal-ui
+```
+
+Backend pytest configuration lives in `apps/backend/pytest.ini` (it must sit
+next to `manage.py` so it is also visible inside the backend container).

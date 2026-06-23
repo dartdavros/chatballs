@@ -7,11 +7,8 @@ src = ["apps/backend"]
 select = ["E", "F", "I", "UP", "B", "DJ"]
 ignore = ["DJ001"]
 
-[tool.pytest.ini_options]
-DJANGO_SETTINGS_MODULE = "hub_backend.settings"
-pythonpath = ["apps/backend"]
-testpaths = ["apps/backend"]
-python_files = ["test_*.py", "*_tests.py"]
+# pytest config lives in apps/backend/pytest.ini so it is also picked up inside
+# the backend container (workdir /app/apps/backend, which does not mount this file).
 
 [tool.mypy]
 python_version = "3.12"
