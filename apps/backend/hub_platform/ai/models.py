@@ -116,3 +116,67 @@ class PromptDocumentVersion(_BaseDocumentVersion):
 
     class Meta(_BaseDocumentVersion.Meta):
         constraints = [models.UniqueConstraint(fields=["document", "version"], name="uniq_prompt_version")]
+
+
+# --- ProductAIRelease: атомарный immutable-снимок конфигурации (ADR-HUB-0007) ---
+
+
+class ReleaseStatus(models.TextChoices):
+    DRAFT = "DRAFT", "Черновик"
+    PUBLISHED = "PUBLISHED", "Опубликован"
+    ARCHIVED = "ARCHIVED", "Архив"
+
+
+class ProductAIRelease(models.Model):
+    product = models.ForeignKey("products.Product", on_delete=models.PROTECT, related_name="ai_releases")
+    version = models.PositiveIntegerField()
+    status = models.CharField(max_length=16, choices=ReleaseStatus.choices, default=ReleaseStatus.DRAFT)
+    # immutable snapshot of the working configuration
+    model = models.CharField(max_length=128)
+    model_params = models.JSONField(default=dict, blank=True)
+    allowed_tools = models.JSONField(default=list, blank=True)
+    limits = models.JSONField(default=dict, blank=True)
+    retrieval_index_version = models.CharField(max_length=64, blank=True)
+    notes = models.TextField(blank=True)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
+    created_at = models.DateTimeField(auto_now_add=True)
+    published_at = models.DateTimeField(null=True, blank=True)
+
+    _SNAPSHOT_FIELDS = ("product_id", "version", "model", "model_params", "allowed_tools", "limits", "retrieval_index_version")
+
+    class Meta:
+        ordering = ["product_id", "-version"]
+        constraints = [
+            models.UniqueConstraint(fields=["product", "version"], name="uniq_release_product_version"),
+            models.UniqueConstraint(
+                fields=["product"],
+                condition=models.Q(status="PUBLISHED"),
+                name="uniq_active_release_per_product",
+            ),
+        ]
+
+    def save(self, *args: object, **kwargs: object) -> None:
+        if self.pk:
+            current = ProductAIRelease.objects.get(pk=self.pk)
+            if any(getattr(current, field) != getattr(self, field) for field in self._SNAPSHOT_FIELDS):
+                raise ValidationError("Published release configuration is immutable")
+        super().save(*args, **kwargs)
+
+    def __str__(self) -> str:
+        return f"release:{self.product_id}/v{self.version}"
+
+
+class ReleaseKnowledgeVersion(models.Model):
+    release = models.ForeignKey(ProductAIRelease, on_delete=models.CASCADE, related_name="knowledge_versions")
+    knowledge_version = models.ForeignKey(KnowledgeDocumentVersion, on_delete=models.PROTECT, related_name="+")
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["release", "knowledge_version"], name="uniq_release_knowledge_version")]
+
+
+class ReleasePromptVersion(models.Model):
+    release = models.ForeignKey(ProductAIRelease, on_delete=models.CASCADE, related_name="prompt_versions")
+    prompt_version = models.ForeignKey(PromptDocumentVersion, on_delete=models.PROTECT, related_name="+")
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["release", "prompt_version"], name="uniq_release_prompt_version")]

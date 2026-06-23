@@ -1,4 +1,4 @@
-from hub_platform.ai.models import AIAgent, KnowledgeDocument, PromptDocument
+from hub_platform.ai.models import AIAgent, KnowledgeDocument, ProductAIRelease, PromptDocument
 
 
 def _version_payload(version) -> dict[str, object]:
@@ -33,6 +33,31 @@ def knowledge_payload(document: KnowledgeDocument) -> dict[str, object]:
 
 def prompt_payload(document: PromptDocument) -> dict[str, object]:
     return _document_payload(document, {})
+
+
+def release_payload(release: ProductAIRelease) -> dict[str, object]:
+    return {
+        "id": release.id,
+        "product": {"code": release.product.code, "name": release.product.name},
+        "version": release.version,
+        "status": release.status,
+        "model": release.model,
+        "modelParams": release.model_params,
+        "allowedTools": release.allowed_tools,
+        "limits": release.limits,
+        "retrievalIndexVersion": release.retrieval_index_version,
+        "notes": release.notes,
+        "knowledgeVersions": [
+            {"document": link.knowledge_version.document.code, "version": link.knowledge_version.version}
+            for link in release.knowledge_versions.all()
+        ],
+        "promptVersions": [
+            {"document": link.prompt_version.document.code, "version": link.prompt_version.version}
+            for link in release.prompt_versions.all()
+        ],
+        "createdAt": release.created_at.isoformat(),
+        "publishedAt": release.published_at.isoformat() if release.published_at else None,
+    }
 
 
 def agent_payload(agent: AIAgent) -> dict[str, object]:

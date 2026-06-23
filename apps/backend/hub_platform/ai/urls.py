@@ -1,6 +1,7 @@
 from django.urls import path
 
 from hub_platform.ai import doc_views as docs
+from hub_platform.ai import release_views as releases
 from hub_platform.ai import views
 
 
@@ -26,6 +27,10 @@ urlpatterns = [
     path("agents/<int:agent_id>/update/", views.AIAgentUpdateView.as_view(), name="ai-agent-update"),
     path("agents/<int:agent_id>/activate/", views.AIAgentActivateView.as_view(), name="ai-agent-activate"),
     path("agents/<int:agent_id>/deactivate/", views.AIAgentDeactivateView.as_view(), name="ai-agent-deactivate"),
+    path("releases/", releases.ReleaseListCreateView.as_view(), name="ai-release-list"),
+    path("releases/<int:release_id>/", releases.ReleaseDetailView.as_view(), name="ai-release-detail"),
+    path("releases/<int:release_id>/publish/", releases.ReleasePublishView.as_view(), name="ai-release-publish"),
+    path("releases/<int:release_id>/rollback/", releases.ReleaseRollbackView.as_view(), name="ai-release-rollback"),
 ]
 
 urlpatterns += _document_routes(

@@ -196,3 +196,67 @@ class PromptDocumentApiTests(TestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
+
+
+class ProductAIReleaseApiTests(TestCase):
+    def setUp(self) -> None:
+        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
+        self.client = APIClient()
+        self.client.login(username="owner@edevs.tech", password="temporary-password")
+        document_id = self.client.post(
+            "/api/v1/ai/knowledge/",
+            data=json.dumps({"product": "firepage", "code": "faq", "title": "FAQ", "category": "FAQ", "content": "v1"}),
+            content_type="application/json",
+        ).json()["document"]["id"]
+        self.client.post(f"/api/v1/ai/knowledge/{document_id}/versions/1/publish/")
+
+    def _create_release(self):
+        return self.client.post(
+            "/api/v1/ai/releases/",
+            data=json.dumps({"product": "firepage"}),
+            content_type="application/json",
+        )
+
+    def test_draft_release_snapshots_published_knowledge_and_agent_config(self) -> None:
+        response = self._create_release()
+
+        self.assertEqual(response.status_code, 201)
+        release = response.json()["release"]
+        self.assertEqual(release["status"], "DRAFT")
+        self.assertEqual(release["version"], 1)
+        self.assertEqual(release["model"], "openai/gpt-4o-mini")
+        self.assertIn({"document": "faq", "version": 1}, release["knowledgeVersions"])
+
+    def test_publishing_a_release_archives_the_previous_active_one(self) -> None:
+        first = self._create_release().json()["release"]
+        self.client.post(f"/api/v1/ai/releases/{first['id']}/publish/")
+        second = self._create_release().json()["release"]
+        self.client.post(f"/api/v1/ai/releases/{second['id']}/publish/")
+
+        first_detail = self.client.get(f"/api/v1/ai/releases/{first['id']}/").json()["release"]
+        second_detail = self.client.get(f"/api/v1/ai/releases/{second['id']}/").json()["release"]
+        self.assertEqual(first_detail["status"], "ARCHIVED")
+        self.assertEqual(second_detail["status"], "PUBLISHED")
+
+    def test_rollback_creates_new_draft_from_snapshot(self) -> None:
+        first = self._create_release().json()["release"]
+        self.client.post(f"/api/v1/ai/releases/{first['id']}/publish/")
+
+        response = self.client.post(f"/api/v1/ai/releases/{first['id']}/rollback/")
+
+        self.assertEqual(response.status_code, 201)
+        rolled = response.json()["release"]
+        self.assertEqual(rolled["status"], "DRAFT")
+        self.assertGreater(rolled["version"], first["version"])
+        self.assertEqual(rolled["knowledgeVersions"], first["knowledgeVersions"])
+
+    def test_release_snapshot_is_immutable(self) -> None:
+        from django.core.exceptions import ValidationError
+
+        from hub_platform.ai.models import ProductAIRelease
+
+        release_id = self._create_release().json()["release"]["id"]
+        release = ProductAIRelease.objects.get(id=release_id)
+        release.model = "anthropic/claude-3.5"
+        with self.assertRaises(ValidationError):
+            release.save()

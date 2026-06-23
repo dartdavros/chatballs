@@ -1,6 +1,6 @@
 from django.db.models import QuerySet
 
-from hub_platform.ai.models import AIAgent
+from hub_platform.ai.models import AIAgent, ProductAIRelease
 
 
 def agents_for_organization(organization_id: int) -> QuerySet[AIAgent]:
@@ -28,3 +28,21 @@ def documents_for_organization(document_model, organization_id: int, product_cod
 
 def document_for_organization(document_model, *, organization_id: int, document_id: int):
     return documents_for_organization(document_model, organization_id).get(id=document_id)
+
+
+def releases_for_organization(organization_id: int, product_code: str | None = None) -> QuerySet[ProductAIRelease]:
+    queryset = (
+        ProductAIRelease.objects.select_related("product")
+        .prefetch_related(
+            "knowledge_versions__knowledge_version__document",
+            "prompt_versions__prompt_version__document",
+        )
+        .filter(product__organization_id=organization_id)
+    )
+    if product_code:
+        queryset = queryset.filter(product__code=product_code)
+    return queryset.order_by("product__name", "-version")
+
+
+def release_for_organization(*, organization_id: int, release_id: int) -> ProductAIRelease:
+    return releases_for_organization(organization_id).get(id=release_id)
