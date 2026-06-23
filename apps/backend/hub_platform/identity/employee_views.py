@@ -1,7 +1,3 @@
-import secrets
-import string
-
-from django.contrib.sessions.models import Session
 from django.db import transaction
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -10,49 +6,9 @@ from rest_framework.views import APIView
 
 from hub_platform.api.permissions import IsOwner
 from hub_platform.identity.audit import record_audit_event
+from hub_platform.identity.employee_support import employee_payload, get_owned_profile, temporary_password
 from hub_platform.identity.models import Department, EmployeeProfile, EmployeeRole, HumanUser
-
-
-def _employee_payload(profile: EmployeeProfile) -> dict[str, object]:
-    return {
-        "id": profile.user_id,
-        "email": profile.user.email,
-        "fullName": profile.user.full_name,
-        "role": profile.role,
-        "phone": profile.phone,
-        "department": profile.department.code if profile.department else None,
-        "isActive": profile.user.is_active,
-        "isBlocked": profile.is_blocked,
-        "mustChangePassword": profile.must_change_password,
-        "totpRequired": profile.totp_required,
-        "totpEnabled": profile.totp_enabled,
-    }
-
-
-def _get_owned_profile(request: Request, user_id: int) -> EmployeeProfile | None:
-    owner_profile = request.user.employee_profile
-    try:
-        return EmployeeProfile.objects.select_related("user", "department").get(
-            user_id=user_id,
-            organization=owner_profile.organization,
-        )
-    except EmployeeProfile.DoesNotExist:
-        return None
-
-
-def _temporary_password() -> str:
-    alphabet = string.ascii_letters + string.digits
-    return "Temp-" + "".join(secrets.choice(alphabet) for _ in range(14)) + "!"
-
-
-def _revoke_user_sessions(user_id: int) -> int:
-    revoked = 0
-    for session in Session.objects.all():
-        data = session.get_decoded()
-        if str(data.get("_auth_user_id")) == str(user_id):
-            session.delete()
-            revoked += 1
-    return revoked
+from hub_platform.identity.sessions import revoke_user_sessions
 
 
 class EmployeeListView(APIView):
@@ -65,7 +21,7 @@ class EmployeeListView(APIView):
         )
         if profile.role == EmployeeRole.OPERATOR:
             employees = employees.filter(department=profile.department)
-        return Response({"items": [_employee_payload(employee) for employee in employees.order_by("user__email")]})
+        return Response({"items": [employee_payload(employee) for employee in employees.order_by("user__email")]})
 
 
 class OperatorCreateView(APIView):
@@ -77,16 +33,16 @@ class OperatorCreateView(APIView):
         body = request.data
         email = HumanUser.objects.normalize_email(str(body.get("email", "")))
         full_name = str(body.get("fullName", ""))
-        temporary_password = str(body.get("temporaryPassword", ""))
+        provided_password = str(body.get("temporaryPassword", ""))
         if not email:
             return Response({"detail": "Email is required"}, status=400)
-        if len(temporary_password) < 12:
+        if len(provided_password) < 12:
             return Response({"detail": "Temporary password must contain at least 12 characters"}, status=400)
 
         sales_department = Department.objects.get(organization=owner_profile.organization, code="sales")
         user = HumanUser.objects.create_user(
             email=email,
-            password=temporary_password,
+            password=provided_password,
             full_name=full_name,
             is_staff=False,
             is_superuser=False,
@@ -106,7 +62,7 @@ class OperatorCreateView(APIView):
             object_id=str(user.id),
             request=request,
         )
-        return Response({"employee": _employee_payload(profile)}, status=201)
+        return Response({"employee": employee_payload(profile)}, status=201)
 
 
 class EmployeeUpdateView(APIView):
@@ -114,7 +70,7 @@ class EmployeeUpdateView(APIView):
 
     @transaction.atomic
     def post(self, request: Request, user_id: int) -> Response:
-        profile = _get_owned_profile(request, user_id)
+        profile = get_owned_profile(request, user_id)
         if profile is None:
             return Response({"detail": "Employee not found"}, status=404)
 
@@ -161,7 +117,7 @@ class EmployeeUpdateView(APIView):
             object_id=str(profile.user_id),
             request=request,
         )
-        return Response({"employee": _employee_payload(profile)})
+        return Response({"employee": employee_payload(profile)})
 
 
 class EmployeeResetPasswordView(APIView):
@@ -169,15 +125,15 @@ class EmployeeResetPasswordView(APIView):
 
     @transaction.atomic
     def post(self, request: Request, user_id: int) -> Response:
-        profile = _get_owned_profile(request, user_id)
+        profile = get_owned_profile(request, user_id)
         if profile is None:
             return Response({"detail": "Employee not found"}, status=404)
-        temporary_password = _temporary_password()
-        profile.user.set_password(temporary_password)
+        password = temporary_password()
+        profile.user.set_password(password)
         profile.user.save(update_fields=["password"])
         profile.must_change_password = True
         profile.save(update_fields=["must_change_password"])
-        _revoke_user_sessions(profile.user_id)
+        revoke_user_sessions(profile.user_id)
         record_audit_event(
             action="identity.employee_password_reset",
             actor=request.user,
@@ -186,17 +142,17 @@ class EmployeeResetPasswordView(APIView):
             object_id=str(profile.user_id),
             request=request,
         )
-        return Response({"employee": _employee_payload(profile), "temporaryPassword": temporary_password})
+        return Response({"employee": employee_payload(profile), "temporaryPassword": password})
 
 
 class EmployeeRevokeSessionsView(APIView):
     permission_classes = [IsOwner]
 
     def post(self, request: Request, user_id: int) -> Response:
-        profile = _get_owned_profile(request, user_id)
+        profile = get_owned_profile(request, user_id)
         if profile is None:
             return Response({"detail": "Employee not found"}, status=404)
-        revoked = _revoke_user_sessions(profile.user_id)
+        revoked = revoke_user_sessions(profile.user_id)
         record_audit_event(
             action="identity.employee_sessions_revoked",
             actor=request.user,
@@ -206,7 +162,7 @@ class EmployeeRevokeSessionsView(APIView):
             payload={"revoked": revoked},
             request=request,
         )
-        return Response({"employee": _employee_payload(profile), "revoked": revoked})
+        return Response({"employee": employee_payload(profile), "revoked": revoked})
 
 
 class EmployeeBlockView(APIView):
@@ -214,13 +170,13 @@ class EmployeeBlockView(APIView):
 
     @transaction.atomic
     def post(self, request: Request, user_id: int) -> Response:
-        profile = _get_owned_profile(request, user_id)
+        profile = get_owned_profile(request, user_id)
         if profile is None:
             return Response({"detail": "Employee not found"}, status=404)
         if profile.role == EmployeeRole.OWNER:
             return Response({"detail": "Owner cannot be blocked by this operation"}, status=400)
         profile.block()
-        _revoke_user_sessions(profile.user_id)
+        revoke_user_sessions(profile.user_id)
         record_audit_event(
             action="identity.operator_blocked",
             actor=request.user,
@@ -229,7 +185,7 @@ class EmployeeBlockView(APIView):
             object_id=str(profile.user_id),
             request=request,
         )
-        return Response({"employee": _employee_payload(profile)})
+        return Response({"employee": employee_payload(profile)})
 
 
 class EmployeeUnblockView(APIView):
@@ -237,7 +193,7 @@ class EmployeeUnblockView(APIView):
 
     @transaction.atomic
     def post(self, request: Request, user_id: int) -> Response:
-        profile = _get_owned_profile(request, user_id)
+        profile = get_owned_profile(request, user_id)
         if profile is None:
             return Response({"detail": "Employee not found"}, status=404)
         profile.blocked_at = None
@@ -252,4 +208,4 @@ class EmployeeUnblockView(APIView):
             object_id=str(profile.user_id),
             request=request,
         )
-        return Response({"employee": _employee_payload(profile)})
+        return Response({"employee": employee_payload(profile)})

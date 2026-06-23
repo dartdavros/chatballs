@@ -1,7 +1,7 @@
-from django.contrib.sessions.models import Session
 from rest_framework.request import Request
 
 from hub_platform.identity.models import HumanUser
+from hub_platform.identity.sessions import revoke_user_sessions
 
 
 def _user_payload(user: HumanUser) -> dict[str, object]:
@@ -30,14 +30,4 @@ def _challenge_payload(user: HumanUser) -> dict[str, object]:
 
 
 def _revoke_other_user_sessions(request: Request) -> int:
-    current_key = request.session.session_key
-    user_id = str(request.user.id)
-    revoked = 0
-    for session in Session.objects.all():
-        if session.session_key == current_key:
-            continue
-        data = session.get_decoded()
-        if str(data.get("_auth_user_id")) == user_id:
-            session.delete()
-            revoked += 1
-    return revoked
+    return revoke_user_sessions(request.user.id, except_session_key=request.session.session_key)
