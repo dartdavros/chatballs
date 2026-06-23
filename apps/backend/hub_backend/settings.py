@@ -129,6 +129,10 @@ DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "Edevs Hub <no-reply@e
 # Base URL of the internal UI, used to build links inside transactional emails.
 INTERNAL_UI_BASE_URL = os.environ.get("INTERNAL_UI_BASE_URL", "http://localhost:5173")
 
+# Ключ шифрования секретов в БД (Fernet). В production задаётся явно; иначе
+# детерминированно выводится из SECRET_KEY (см. hub_platform.identity.crypto).
+HUB_FIELD_ENCRYPTION_KEY = os.environ.get("HUB_FIELD_ENCRYPTION_KEY", "")
+
 # Password reset link lifetime. UI обещает 30 минут (default_token_generator uses this setting).
 PASSWORD_RESET_TIMEOUT = int(os.environ.get("PASSWORD_RESET_TIMEOUT", str(30 * 60)))
 

@@ -5,6 +5,8 @@ from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
 from django.utils import timezone
 
+from hub_platform.identity.crypto import EncryptedCharField
+
 
 class HumanUserManager(UserManager):
     use_in_migrations = True
@@ -112,7 +114,7 @@ class EmployeeProfile(models.Model):
     must_change_password = models.BooleanField(default=False)
     totp_required = models.BooleanField(default=False)
     totp_enabled = models.BooleanField(default=False)
-    totp_secret = models.CharField(max_length=64, blank=True)
+    totp_secret = EncryptedCharField(max_length=255, blank=True)
     blocked_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

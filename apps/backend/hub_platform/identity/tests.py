@@ -532,3 +532,28 @@ class CompanyEndpointTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 403)
+
+
+class TotpSecretEncryptionTests(TestCase):
+    def setUp(self) -> None:
+        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
+
+    def test_totp_secret_is_encrypted_at_rest_and_decrypted_on_load(self) -> None:
+        from django.db import connection
+
+        from hub_platform.identity.crypto import decrypt_secret
+
+        owner = HumanUser.objects.get(email="owner@edevs.tech")
+        profile = owner.employee_profile
+        profile.totp_secret = "JBSWY3DPEHPK3PXP"
+        profile.save(update_fields=["totp_secret"])
+
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT totp_secret FROM identity_employeeprofile WHERE user_id = %s", [owner.id])
+            stored = cursor.fetchone()[0]
+
+        self.assertNotEqual(stored, "JBSWY3DPEHPK3PXP")
+        self.assertEqual(decrypt_secret(stored), "JBSWY3DPEHPK3PXP")
+
+        profile.refresh_from_db()
+        self.assertEqual(profile.totp_secret, "JBSWY3DPEHPK3PXP")

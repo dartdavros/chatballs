@@ -1,5 +1,6 @@
 Django>=5.2,<5.3
 djangorestframework>=3.16,<3.17
+cryptography>=43,<45
 psycopg[binary]>=3.2,<3.3
 redis>=5.2,<5.3
 uvicorn[standard]>=0.34,<0.35
