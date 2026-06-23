@@ -201,7 +201,7 @@ class AuthEndpointTests(TestCase):
             data=json.dumps(
                 {
                     "currentPassword": "temporary-password",
-                    "newPassword": "new-temporary-password",
+                    "newPassword": "New-Temporary-99",
                 }
             ),
             content_type="application/json",
@@ -210,6 +210,22 @@ class AuthEndpointTests(TestCase):
         self.assertEqual(response.status_code, 200)
         profile.refresh_from_db()
         self.assertFalse(profile.must_change_password)
+
+    def test_change_temporary_password_rejects_weak_password(self) -> None:
+        owner = HumanUser.objects.get(email="owner@edevs.tech")
+        owner.employee_profile.must_change_password = True
+        owner.employee_profile.save(update_fields=["must_change_password"])
+        self.client.login(username="owner@edevs.tech", password="temporary-password")
+
+        response = self.client.post(
+            "/api/v1/auth/change-temporary-password/",
+            data=json.dumps({"currentPassword": "temporary-password", "newPassword": "onlyletters"}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 400)
+        owner.employee_profile.refresh_from_db()
+        self.assertTrue(owner.employee_profile.must_change_password)
 
     def test_profile_update_changes_current_user_identity(self) -> None:
         self.client.login(username="owner@edevs.tech", password="temporary-password")
@@ -231,13 +247,13 @@ class AuthEndpointTests(TestCase):
 
         response = self.client.post(
             "/api/v1/auth/profile/password/",
-            data=json.dumps({"currentPassword": "temporary-password", "newPassword": "new-profile-password"}),
+            data=json.dumps({"currentPassword": "temporary-password", "newPassword": "New-Profile-99"}),
             content_type="application/json",
         )
 
         self.assertEqual(response.status_code, 200)
         owner = HumanUser.objects.get(email="owner@edevs.tech")
-        self.assertTrue(owner.check_password("new-profile-password"))
+        self.assertTrue(owner.check_password("New-Profile-99"))
         self.assertTrue(AuditEvent.objects.filter(action="identity.profile_password_changed").exists())
 
     def test_profile_totp_start_marks_setup_required(self) -> None:

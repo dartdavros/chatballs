@@ -1,6 +1,7 @@
 import { type FormEvent, useEffect, useState } from "react";
 
 import { api } from "../../api/client";
+import { passwordIsValid } from "../auth/password";
 import type { SessionUser } from "../../types";
 
 type UserPayload = { authenticated: true; user: SessionUser };
@@ -17,7 +18,7 @@ export function useProfilePage({ user, onUserUpdated, reload }: { user: SessionU
   const [savingTotp, setSavingTotp] = useState(false);
   const [revokingSessions, setRevokingSessions] = useState(false);
   const passwordMismatch = passwords.repeat.length > 0 && passwords.next !== passwords.repeat;
-  const passwordReady = passwords.current.length > 0 && passwords.next.length >= 10 && !passwordMismatch;
+  const passwordReady = passwords.current.length > 0 && passwordIsValid(passwords.next, passwordMismatch);
 
   useEffect(() => {
     setProfile({ fullName: user.fullName || user.email, email: user.email });

@@ -311,8 +311,10 @@ class ProfilePasswordView(APIView):
         new_password = str(body.get("newPassword", ""))
         if not request.user.check_password(current_password):
             return Response({"detail": "Current password is invalid"}, status=400)
-        if len(new_password) < 10:
-            return Response({"detail": "Password is too short"}, status=400)
+        try:
+            validate_password(new_password, user=request.user)
+        except DjangoValidationError as error:
+            return Response({"detail": " ".join(error.messages)}, status=400)
 
         request.user.set_password(new_password)
         request.user.save(update_fields=["password"])
@@ -397,8 +399,10 @@ class ChangeTemporaryPasswordView(APIView):
         profile = request.user.employee_profile
         if not profile.must_change_password and not request.user.check_password(current_password):
             return Response({"detail": "Current password is invalid"}, status=400)
-        if len(new_password) < 10:
-            return Response({"detail": "Password is too short"}, status=400)
+        try:
+            validate_password(new_password, user=request.user)
+        except DjangoValidationError as error:
+            return Response({"detail": " ".join(error.messages)}, status=400)
 
         request.user.set_password(new_password)
         request.user.save(update_fields=["password"])
