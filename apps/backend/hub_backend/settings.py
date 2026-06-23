@@ -170,11 +170,10 @@ REST_FRAMEWORK = {
     "EXCEPTION_HANDLER": "hub_platform.api.exceptions.api_exception_handler",
 }
 
-CORS_ALLOWED_ORIGINS = {
-    "http://localhost:5173",
-    "http://localhost:5174",
-    "http://localhost:5175",
-}
+CORS_ALLOWED_ORIGINS = env_list(
+    "HUB_CORS_ALLOWED_ORIGINS",
+    ["http://localhost:5173", "http://localhost:5174", "http://localhost:5175"],
+)
 
 LOGGING = {
     "version": 1,
