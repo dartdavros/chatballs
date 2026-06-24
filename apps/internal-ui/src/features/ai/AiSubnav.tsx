@@ -8,5 +8,9 @@ const ITEMS: Array<{ key: RouteKey; label: string; disabled?: boolean }> = [
 ];
 
 export function AiSubnav({ route, setRoute }: { route: RouteKey; setRoute: (route: RouteKey) => void }) {
-  return <UnderlineTabs className="ai-subnav" items={ITEMS} value={route} onChange={setRoute} />;
+  return (
+    <div className="ai-subnav">
+      <UnderlineTabs className="ai-subnav-tabs" items={ITEMS} value={route} onChange={setRoute} />
+    </div>
+  );
 }

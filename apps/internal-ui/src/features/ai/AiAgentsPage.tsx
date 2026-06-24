@@ -5,11 +5,10 @@ import type { RouteKey } from "../../types";
 import { EmptyState, PageHeader } from "../../shared/ui";
 import { AgentsKpiStrip } from "./AgentsKpiStrip";
 import { AgentsTable } from "./AgentsTable";
-import { AiSubnav } from "./AiSubnav";
 import type { AiAgent } from "./model";
 import { useAiAgents } from "./useAiAgents";
 
-export function AiAgentsPage({ route, setRoute }: { route: RouteKey; setRoute: (route: RouteKey) => void }) {
+export function AiAgentsPage({ setRoute }: { setRoute: (route: RouteKey) => void }) {
   const { agents, releases, loading, error, reload } = useAiAgents();
   const [menuId, setMenuId] = useState<number | null>(null);
 
@@ -21,21 +20,18 @@ export function AiAgentsPage({ route, setRoute }: { route: RouteKey; setRoute: (
   }
 
   return (
-    <>
-      <AiSubnav route={route} setRoute={setRoute} />
-      <div className="ai-page">
-        <PageHeader title="AI-агенты" text="Sales-агенты продуктов · один агент на продукт" />
-        {loading ? (
-          <EmptyState title="Загрузка…" />
-        ) : error ? (
-          <EmptyState title="Не удалось загрузить агентов" />
-        ) : (
-          <>
-            <AgentsKpiStrip agents={agents} />
-            <AgentsTable agents={agents} releases={releases} menuId={menuId} setMenuId={setMenuId} toggleActive={toggleActive} />
-          </>
-        )}
-      </div>
-    </>
+    <div className="ai-page">
+      <PageHeader title="AI-агенты" text="Sales-агенты продуктов · один агент на продукт" />
+      {loading ? (
+        <EmptyState title="Загрузка…" />
+      ) : error ? (
+        <EmptyState title="Не удалось загрузить агентов" />
+      ) : (
+        <>
+          <AgentsKpiStrip agents={agents} />
+          <AgentsTable agents={agents} releases={releases} menuId={menuId} setMenuId={setMenuId} toggleActive={toggleActive} setRoute={setRoute} />
+        </>
+      )}
+    </div>
   );
 }

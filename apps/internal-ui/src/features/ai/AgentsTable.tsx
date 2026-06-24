@@ -1,8 +1,9 @@
 import { Dropdown } from "antd";
 
+import type { RouteKey } from "../../types";
 import { Icon } from "../../shared/icons";
 import { StatusPill } from "../../shared/ui";
-import { MonoLink, ToneBadge } from "../../shared/ui-controls";
+import { Button, MonoLink, ToneBadge } from "../../shared/ui-controls";
 import { productAccent } from "../../shared/utils";
 import { publishedRelease, type AiAgent, type AiRelease } from "./model";
 
@@ -12,12 +13,14 @@ export function AgentsTable({
   menuId,
   setMenuId,
   toggleActive,
+  setRoute,
 }: {
   agents: AiAgent[];
   releases: AiRelease[];
   menuId: number | null;
   setMenuId: (id: number | null) => void;
   toggleActive: (agent: AiAgent) => void;
+  setRoute: (route: RouteKey) => void;
 }) {
   return (
     <div className="table-card">
@@ -41,6 +44,7 @@ export function AgentsTable({
               const release = publishedRelease(releases, agent.product.code);
               const menuItems = [
                 { key: "open", disabled: true, label: <button type="button"><Icon name="external" size={15} />Открыть агента</button> },
+                { key: "release", disabled: true, label: <button type="button"><Icon name="plus" size={15} />Создать release candidate</button> },
                 { type: "divider" as const },
                 {
                   key: "toggle",
@@ -73,15 +77,18 @@ export function AgentsTable({
                   <td className="numeric"><span className="product-empty-value">—</span></td>
                   <td className="numeric"><span className="product-empty-value">—</span></td>
                   <td className="row-actions">
-                    <Dropdown
-                      menu={{ items: menuItems }}
-                      open={menuId === agent.id}
-                      onOpenChange={(open) => setMenuId(open ? agent.id : null)}
-                      trigger={["click"]}
-                      overlayClassName="product-actions-dropdown"
-                    >
-                      <button className="row-menu-button" aria-label="Действия агента"><Icon name="more" /></button>
-                    </Dropdown>
+                    <div className="ai-row-actions">
+                      <Button variant="secondary" className="ai-test-chat-btn" icon="message" iconSize={14} disabled onClick={() => setRoute("aiTestChat")}>Test chat</Button>
+                      <Dropdown
+                        menu={{ items: menuItems }}
+                        open={menuId === agent.id}
+                        onOpenChange={(open) => setMenuId(open ? agent.id : null)}
+                        trigger={["click"]}
+                        overlayClassName="product-actions-dropdown"
+                      >
+                        <button className="row-menu-button" aria-label="Действия агента"><Icon name="more" /></button>
+                      </Dropdown>
+                    </div>
                   </td>
                 </tr>
               );
@@ -91,7 +98,6 @@ export function AgentsTable({
       </div>
       <div className="ai-table-footer">
         <span>{agents.length} агента</span>
-        <span className="product-empty-value">В первой итерации — один sales-agent на продукт</span>
       </div>
     </div>
   );

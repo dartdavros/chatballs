@@ -1,4 +1,5 @@
 import type { AppData, Employee, Product, RouteKey, SessionUser } from "../types";
+import { AiSubnav } from "../features/ai/AiSubnav";
 import { Sidebar } from "./Sidebar";
 import { SalesSidebar } from "./SalesSidebar";
 import { ShellRouteContent } from "./ShellRouteContent";
@@ -28,6 +29,7 @@ export function Shell({ route, setRoute, selectedEmployeeId, selectedProductId, 
       {showSalesSidebar ? <SalesSidebar route={route} user={user} setRoute={setRoute} /> : <Sidebar route={route} user={user} setRoute={setRoute} />}
       <div className="hub-main">
         <TopBar route={route} user={user} currentEmployee={currentEmployee} currentProduct={currentProduct} setRoute={setRoute} />
+        {route.startsWith("ai") && <AiSubnav route={route} setRoute={setRoute} />}
         <main className={`hub-scroll ${isSalesDialogs ? "sales-dialogs-scroll" : ""}`}>
           <div className={`hub-page ${isSalesWorkspace ? "sales-workspace-page" : ""} ${isSalesDialogs ? "sales-dialogs-page" : ""} ${isSalesClients ? "sales-clients-page" : ""} ${isSalesClientDetail ? "sales-client-detail-page" : ""} ${isSalesOrderDetail ? "sales-order-detail-page" : ""} ${isSalesOrders ? "sales-orders-page" : ""}`}>
             <ShellRouteContent route={route} data={data} currentEmployee={currentEmployee} currentProduct={currentProduct} openEmployee={openEmployee} openProduct={openProduct} reload={reload} setRoute={setRoute} user={user} onUserUpdated={onUserUpdated} onLogout={onLogout} />

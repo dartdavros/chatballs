@@ -31,7 +31,7 @@ export function ShellRouteContent({ route, data, currentEmployee, currentProduct
       {route === "salesDialogs" && <SalesDialogsPage />}
       {route === "salesOrderDetail" && <SalesOrderDetailPage setRoute={setRoute} />}
       {route === "salesOrders" && <SalesOrdersPage setRoute={setRoute} />}
-      {route === "aiAgents" && <AiAgentsPage route={route} setRoute={setRoute} />}
+      {route === "aiAgents" && <AiAgentsPage setRoute={setRoute} />}
     </>
   );
 }

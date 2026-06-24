@@ -1,10 +1,18 @@
 /* AI section: per-usage styling on top of shared components (UnderlineTabs, baseline-table). */
 
+/* Full-width bar under the top bar (sibling of TopBar): background spans 100%,
+   while the tabs inside align to the same width as the page content (.hub-page). */
 .ai-subnav {
-  margin: -24px -28px 20px;
+  flex: none;
   padding: 0 28px;
   background: #fff;
   border-bottom: 1px solid #f0f0f0;
+}
+
+.ai-subnav-tabs {
+  width: min(1200px, 100%);
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .ai-subnav button {
@@ -71,6 +79,19 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
+}
+
+.ai-row-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+}
+
+.ai-test-chat-btn {
+  height: 32px;
+  padding: 0 12px;
+  font-size: 12.5px;
 }
 
 .ai-table-footer {
