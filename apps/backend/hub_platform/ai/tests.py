@@ -458,3 +458,65 @@ class KnowledgeRetrievalTests(TestCase):
 
         results = lexical_search(self.release, "Delivery", limit=5)
         self.assertTrue(any("delivery" in fragment.content.lower() for fragment in results))
+
+
+class TestChatRuntimeTests(TestCase):
+    def setUp(self) -> None:
+        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
+        self.client = APIClient()
+        self.client.login(username="owner@edevs.tech", password="temporary-password")
+        document_id = self.client.post(
+            "/api/v1/ai/knowledge/",
+            data=json.dumps(
+                {"product": "firepage", "code": "faq", "title": "FAQ", "category": "FAQ", "content": "Refund policy details here."}
+            ),
+            content_type="application/json",
+        ).json()["document"]["id"]
+        self.client.post(f"/api/v1/ai/knowledge/{document_id}/versions/1/publish/")
+
+        from hub_platform.ai import releases
+
+        owner = HumanUser.objects.get(email="owner@edevs.tech")
+        self.release = releases.create_draft_release(product=Product.objects.get(code="firepage"), author=owner)
+
+    def test_test_chat_returns_reply_and_records_used_knowledge(self) -> None:
+        from hub_platform.ai.models import LlmInvocation
+
+        response = self.client.post(
+            f"/api/v1/ai/releases/{self.release.id}/test-chat/",
+            data=json.dumps({"message": "refund"}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        body = response.json()
+        self.assertTrue(body["reply"])
+        self.assertGreater(body["totalTokens"], 0)
+        self.assertFalse(body["handoffSuggested"])
+        self.assertGreaterEqual(len(body["usedKnowledge"]), 1)
+        invocation = LlmInvocation.objects.get(release=self.release, purpose="test_chat", operation="chat")
+        self.assertTrue(invocation.used_fragment_ids)
+
+    def test_test_chat_suggests_handoff_without_knowledge(self) -> None:
+        from hub_platform.ai import releases
+
+        owner = HumanUser.objects.get(email="owner@edevs.tech")
+        empty_release = releases.create_draft_release(product=Product.objects.get(code="foxray"), author=owner)
+
+        response = self.client.post(
+            f"/api/v1/ai/releases/{empty_release.id}/test-chat/",
+            data=json.dumps({"message": "anything"}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()["handoffSuggested"])
+        self.assertEqual(response.json()["usedKnowledge"], [])
+
+    def test_test_chat_requires_message(self) -> None:
+        response = self.client.post(
+            f"/api/v1/ai/releases/{self.release.id}/test-chat/",
+            data=json.dumps({"message": "  "}),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 400)

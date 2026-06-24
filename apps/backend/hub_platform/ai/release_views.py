@@ -2,8 +2,11 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from hub_platform.ai import limits, pricing
 from hub_platform.ai import releases as release_service
 from hub_platform.ai.models import ProductAIRelease, ReleaseStatus
+from hub_platform.ai.provider.base import ProviderError
+from hub_platform.ai.runtime import run_test_chat
 from hub_platform.ai.selectors import release_for_organization, releases_for_organization
 from hub_platform.ai.serializers import release_payload
 from hub_platform.api.permissions import IsOwner
@@ -84,3 +87,43 @@ class ReleaseRollbackView(_ReleaseBase):
         draft = self._release(request, draft.id)
         self._audit(request, "rolled_back", draft)
         return Response({"release": release_payload(draft)}, status=201)
+
+
+class ReleaseTestChatView(_ReleaseBase):
+    def post(self, request: Request, release_id: int) -> Response:
+        try:
+            release = self._release(request, release_id)
+        except ProductAIRelease.DoesNotExist:
+            return Response({"detail": "Release not found"}, status=404)
+        message = str(request.data.get("message", "")).strip()
+        if not message:
+            return Response({"detail": "Message is required"}, status=400)
+        history = request.data.get("history") or []
+        try:
+            outcome = run_test_chat(release=release, message=message, history=history)
+        except limits.LimitExceeded as error:
+            return Response({"detail": str(error)}, status=429)
+        except ProviderError as error:
+            return Response({"detail": str(error)}, status=502)
+        result = outcome.result
+        return Response(
+            {
+                "reply": result.text,
+                "model": result.model,
+                "promptTokens": result.prompt_tokens,
+                "completionTokens": result.completion_tokens,
+                "totalTokens": result.total_tokens,
+                "costMicros": pricing.cost_micros(result.model, result.prompt_tokens, result.completion_tokens),
+                "handoffSuggested": outcome.handoff_suggested,
+                "usedKnowledge": [
+                    {
+                        "document": fragment.version.document.code,
+                        "version": fragment.version.version,
+                        "chunkIndex": fragment.chunk_index,
+                        "snippet": fragment.content[:200],
+                    }
+                    for fragment in outcome.fragments
+                ],
+                "release": {"id": release.id, "version": release.version, "status": release.status},
+            }
+        )

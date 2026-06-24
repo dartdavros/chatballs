@@ -31,6 +31,7 @@ urlpatterns = [
     path("releases/<int:release_id>/", releases.ReleaseDetailView.as_view(), name="ai-release-detail"),
     path("releases/<int:release_id>/publish/", releases.ReleasePublishView.as_view(), name="ai-release-publish"),
     path("releases/<int:release_id>/rollback/", releases.ReleaseRollbackView.as_view(), name="ai-release-rollback"),
+    path("releases/<int:release_id>/test-chat/", releases.ReleaseTestChatView.as_view(), name="ai-release-test-chat"),
 ]
 
 urlpatterns += _document_routes(
