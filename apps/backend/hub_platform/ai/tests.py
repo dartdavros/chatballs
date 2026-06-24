@@ -387,3 +387,74 @@ class ChatInvocationTests(TestCase):
         with self.assertRaises(ai_limits.LimitExceeded):
             invoke_chat(product=self.product, messages=[ChatMessage(role="user", content="hi")], purpose="test_chat")
         self.assertTrue(LlmInvocation.objects.filter(product=self.product, status=LlmInvocationStatus.BLOCKED).exists())
+
+    def test_invocation_records_used_fragment_ids(self) -> None:
+        from hub_platform.ai.invocation import invoke_chat
+        from hub_platform.ai.models import LlmInvocation
+        from hub_platform.ai.provider.base import ChatMessage
+
+        invoke_chat(
+            product=self.product,
+            messages=[ChatMessage(role="user", content="hi")],
+            purpose="test_chat",
+            used_fragment_ids=[11, 22],
+        )
+        invocation = LlmInvocation.objects.get(product=self.product, operation="chat")
+        self.assertEqual(invocation.used_fragment_ids, [11, 22])
+
+
+class ChunkingTests(TestCase):
+    def test_packs_paragraphs_into_chunks(self) -> None:
+        from hub_platform.ai.chunking import chunk_text
+
+        text = "\n\n".join(["paragraph " + str(i) + " " + "x" * 200 for i in range(10)])
+        chunks = chunk_text(text, max_chars=500)
+        self.assertGreater(len(chunks), 1)
+        self.assertTrue(all(len(chunk) <= 700 for chunk in chunks))
+
+
+class KnowledgeRetrievalTests(TestCase):
+    def setUp(self) -> None:
+        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
+        self.client = APIClient()
+        self.client.login(username="owner@edevs.tech", password="temporary-password")
+        document_id = self.client.post(
+            "/api/v1/ai/knowledge/",
+            data=json.dumps(
+                {
+                    "product": "firepage",
+                    "code": "faq",
+                    "title": "FAQ",
+                    "category": "FAQ",
+                    "content": "Refund policy details here.\n\nDelivery and shipping information.",
+                }
+            ),
+            content_type="application/json",
+        ).json()["document"]["id"]
+        self.client.post(f"/api/v1/ai/knowledge/{document_id}/versions/1/publish/")
+
+        from hub_platform.ai import releases
+
+        self.product = Product.objects.get(code="firepage")
+        owner = HumanUser.objects.get(email="owner@edevs.tech")
+        self.release = releases.create_draft_release(product=self.product, author=owner)
+
+    def test_publish_builds_fragments_with_embeddings(self) -> None:
+        from hub_platform.ai.models import KnowledgeFragment
+
+        fragments = KnowledgeFragment.objects.filter(version__document__code="faq")
+        self.assertGreaterEqual(fragments.count(), 1)
+        self.assertTrue(all(fragment.embedding is not None for fragment in fragments))
+
+    def test_retriever_returns_release_scoped_fragments(self) -> None:
+        from hub_platform.ai.retrieval import KnowledgeRetriever
+
+        results = KnowledgeRetriever().retrieve(release=self.release, query="refund", limit=5)
+        self.assertGreaterEqual(len(results), 1)
+        self.assertLessEqual(len(results), 5)
+
+    def test_lexical_search_matches_content(self) -> None:
+        from hub_platform.ai.retrieval import lexical_search
+
+        results = lexical_search(self.release, "Delivery", limit=5)
+        self.assertTrue(any("delivery" in fragment.content.lower() for fragment in results))

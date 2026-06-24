@@ -143,6 +143,7 @@ HUB_AI_REQUEST_TIMEOUT = float(os.environ.get("HUB_AI_REQUEST_TIMEOUT", "30"))
 HUB_AI_MAX_RETRIES = int(os.environ.get("HUB_AI_MAX_RETRIES", "2"))
 HUB_AI_GLOBAL_DAILY_COST_LIMIT_MICROS = int(os.environ.get("HUB_AI_GLOBAL_DAILY_COST_LIMIT_MICROS", "0"))  # 0 = без лимита
 HUB_AI_PRICING: dict = {}  # переопределение цен micro-USD/токен по модели
+HUB_AI_EMBEDDING_MODEL = os.environ.get("HUB_AI_EMBEDDING_MODEL", "openai/text-embedding-3-small")
 
 # Password reset link lifetime. UI обещает 30 минут (default_token_generator uses this setting).
 PASSWORD_RESET_TIMEOUT = int(os.environ.get("PASSWORD_RESET_TIMEOUT", str(30 * 60)))

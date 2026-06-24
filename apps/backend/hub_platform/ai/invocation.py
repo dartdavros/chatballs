@@ -12,7 +12,7 @@ from hub_platform.ai.provider.resilience import CircuitBreaker, call_with_resili
 _breaker = CircuitBreaker()
 
 
-def invoke_chat(*, product, messages: list[ChatMessage], purpose: str, release=None, model: str | None = None, params: dict | None = None) -> ChatResult:
+def invoke_chat(*, product, messages: list[ChatMessage], purpose: str, release=None, model: str | None = None, params: dict | None = None, used_fragment_ids: list | None = None) -> ChatResult:
     agent = product.ai_agent
     model = model or agent.model
 
@@ -48,6 +48,7 @@ def invoke_chat(*, product, messages: list[ChatMessage], purpose: str, release=N
         prompt_tokens=result.prompt_tokens, completion_tokens=result.completion_tokens, total_tokens=result.total_tokens,
         cost_micros=pricing.cost_micros(result.model, result.prompt_tokens, result.completion_tokens),
         latency_ms=int((time.monotonic() - started) * 1000), status=LlmInvocationStatus.SUCCESS,
+        used_fragment_ids=used_fragment_ids or [],
     )
     return result
 

@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
+from pgvector.django import VectorField
 
 # Один основной sales-агент на продукт (ADR-HUB-0007).
 DEFAULT_AI_MODEL = "openai/gpt-4o-mini"
@@ -111,6 +112,23 @@ class KnowledgeDocumentVersion(_BaseDocumentVersion):
         constraints = [models.UniqueConstraint(fields=["document", "version"], name="uniq_knowledge_version")]
 
 
+class KnowledgeFragment(models.Model):
+    # Чанк опубликованной версии знания + его эмбеддинг (pgvector). ADR-HUB-0016.
+    version = models.ForeignKey(KnowledgeDocumentVersion, on_delete=models.CASCADE, related_name="fragments")
+    chunk_index = models.PositiveIntegerField()
+    content = models.TextField()
+    # Размерность не фиксируется: совместимость локального и production embedding-провайдера.
+    embedding = VectorField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["version_id", "chunk_index"]
+        constraints = [models.UniqueConstraint(fields=["version", "chunk_index"], name="uniq_fragment_version_chunk")]
+
+    def __str__(self) -> str:
+        return f"fragment:{self.version_id}/{self.chunk_index}"
+
+
 class PromptDocumentVersion(_BaseDocumentVersion):
     document = models.ForeignKey(PromptDocument, on_delete=models.CASCADE, related_name="versions")
 
@@ -205,6 +223,7 @@ class LlmInvocation(models.Model):
     latency_ms = models.PositiveIntegerField(default=0)
     status = models.CharField(max_length=16, choices=LlmInvocationStatus.choices, default=LlmInvocationStatus.SUCCESS)
     error = models.TextField(blank=True)
+    used_fragment_ids = models.JSONField(default=list, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
     class Meta:

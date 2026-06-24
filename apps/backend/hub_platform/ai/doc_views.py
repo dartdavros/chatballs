@@ -46,6 +46,10 @@ class _DocConfig(APIView):
             request=request,
         )
 
+    def after_publish(self, version) -> None:
+        # Хук для типоспецифичного действия после публикации версии.
+        pass
+
 
 class DocumentListCreateView(_DocConfig):
     def get(self, request: Request) -> Response:
@@ -128,6 +132,7 @@ class DocumentPublishVersionView(_DocConfig):
         except self.version_model.DoesNotExist:
             return Response({"detail": "Version not found"}, status=404)
         doc_service.publish_version(version=target)
+        self.after_publish(target)
         document = self._document(request, document_id)
         self._audit(request, "version_published", document)
         return Response({"document": self.payload(document)})
@@ -183,6 +188,11 @@ class _KnowledgeConfig:
     valid_categories = set(KnowledgeCategory.values)
     supports_inclusion = True
     audit_prefix = "ai.knowledge"
+
+    def after_publish(self, version) -> None:
+        from hub_platform.ai.indexing import reindex_knowledge_version
+
+        reindex_knowledge_version(version)
 
 
 class _PromptConfig:
