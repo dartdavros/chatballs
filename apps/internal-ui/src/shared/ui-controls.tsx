@@ -31,7 +31,7 @@ type SearchInputProps = {
 
 type UnderlineTabsProps<T extends string> = {
   className?: string;
-  items: Array<{ key: T; label: string; count?: number }>;
+  items: Array<{ key: T; label: string; count?: number; disabled?: boolean }>;
   value: T;
   onChange: (value: T) => void;
 };
@@ -77,7 +77,7 @@ export function UnderlineTabs<T extends string>({ className = "", items, value, 
   return (
     <div className={`ui-underline-tabs ${className}`.trim()}>
       {items.map((item) => (
-        <button className={value === item.key ? "active" : ""} type="button" onClick={() => onChange(item.key)} key={item.key}>
+        <button className={value === item.key ? "active" : ""} type="button" disabled={item.disabled} onClick={() => onChange(item.key)} key={item.key}>
           {item.label}
           {item.count !== undefined && <span>{item.count}</span>}
         </button>

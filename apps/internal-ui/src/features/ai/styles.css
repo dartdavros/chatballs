@@ -1,45 +1,33 @@
+/* AI section: per-usage styling on top of shared components (UnderlineTabs, baseline-table). */
+
 .ai-subnav {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  margin: -24px -24px 20px;
+  margin: -24px -28px 20px;
   padding: 0 28px;
   background: #fff;
   border-bottom: 1px solid #f0f0f0;
 }
 
-.ai-subnav-tab {
+.ai-subnav button {
   padding: 13px 14px;
-  border: none;
-  border-bottom: 2px solid transparent;
   margin-bottom: -1px;
-  background: transparent;
   color: #595959;
   font-size: 13.5px;
   font-weight: 500;
   cursor: pointer;
 }
 
-.ai-subnav-tab.is-active {
+.ai-subnav button.active {
   color: #1677ff;
   font-weight: 600;
-  border-bottom-color: #1677ff;
 }
 
-.ai-subnav-tab:disabled {
+.ai-subnav button:disabled {
   color: #bfbfbf;
   cursor: not-allowed;
 }
 
 .ai-page {
   max-width: 1280px;
-}
-
-.ai-state {
-  padding: 48px;
-  text-align: center;
-  color: #8c8c8c;
-  font-size: 13px;
 }
 
 .ai-kpi-strip {
@@ -69,106 +57,14 @@
   color: #262626;
 }
 
-.ai-agents-card {
-  background: #fff;
-  border: 1px solid #f0f0f0;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-  overflow: hidden;
-}
-
 .ai-agents-scroll {
   overflow-x: auto;
 }
 
-.ai-agents-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-  min-width: 1100px;
-}
-
-.ai-agents-table th {
-  padding: 11px 12px;
-  background: #fafafa;
-  border-bottom: 1px solid #f0f0f0;
-  text-align: left;
-  font-size: 11px;
-  font-weight: 600;
-  color: #8c8c8c;
-  letter-spacing: 0.03em;
-}
-
-.ai-agents-table th:first-child,
-.ai-agents-table td:first-child {
-  padding-left: 18px;
-}
-
-.ai-agents-table th.num,
-.ai-agents-table td.num {
-  text-align: right;
-}
-
-.ai-agents-table th.actions-col {
-  width: 80px;
-}
-
-.ai-agents-table td {
-  padding: 14px 12px;
-  border-bottom: 1px solid #f5f5f5;
-  color: #262626;
-}
-
-.ai-agents-table tr:hover td {
-  background: #fafbfc;
-}
-
-.ai-agent-name-cell {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.ai-agent-icon {
-  width: 38px;
-  height: 38px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: none;
-  color: #722ed1;
-  background: #f9f0ff;
-  border-radius: 10px;
-}
-
-.ai-agent-name-cell strong {
-  display: block;
-  font-size: 13.5px;
-  font-weight: 600;
-  color: #262626;
-}
-
-.ai-agent-code {
-  font-size: 11.5px;
-  color: #bfbfbf;
-  font-family: "SF Mono", ui-monospace, Menlo, monospace;
-}
-
-.ai-product-tag {
-  padding: 2px 9px;
-  border-radius: 6px;
-  font-size: 11.5px;
-  font-weight: 600;
-}
-
-.ai-agents-table .mono {
+.ai-mono {
   font-family: "SF Mono", ui-monospace, Menlo, monospace;
   font-size: 12px;
   color: #595959;
-}
-
-.ai-agents-table .muted {
-  color: #bfbfbf;
 }
 
 .ai-release-cell {
@@ -177,85 +73,7 @@
   gap: 7px;
 }
 
-.ai-badge-published {
-  padding: 1px 7px;
-  border-radius: 5px;
-  background: #f6ffed;
-  color: #389e0d;
-  font-size: 10.5px;
-  font-weight: 600;
-}
-
-.ai-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12.5px;
-  font-weight: 600;
-}
-
-.ai-status span {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-}
-
-.ai-row-actions {
-  position: relative;
-  display: flex;
-  justify-content: flex-end;
-}
-
-.ai-row-menu-button {
-  width: 32px;
-  height: 32px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid #f0f0f0;
-  border-radius: 7px;
-  background: #fff;
-  color: #8c8c8c;
-  cursor: pointer;
-}
-
-.ai-row-menu-button:hover {
-  background: #f5f5f5;
-  color: #262626;
-}
-
-.ai-row-menu {
-  position: absolute;
-  right: 0;
-  top: 38px;
-  z-index: 30;
-  min-width: 200px;
-  padding: 5px;
-  background: #fff;
-  border: 1px solid #f0f0f0;
-  border-radius: 10px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
-}
-
-.ai-row-menu button {
-  display: block;
-  width: 100%;
-  padding: 8px 10px;
-  border: none;
-  border-radius: 7px;
-  background: transparent;
-  text-align: left;
-  font-size: 13px;
-  font-weight: 500;
-  color: #262626;
-  cursor: pointer;
-}
-
-.ai-row-menu button:hover {
-  background: #f5f5f5;
-}
-
-.ai-agents-footer {
+.ai-table-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -263,8 +81,4 @@
   border-top: 1px solid #f5f5f5;
   font-size: 12.5px;
   color: #595959;
-}
-
-.ai-agents-footer .muted {
-  color: #bfbfbf;
 }
