@@ -14,4 +14,9 @@ export const routes: Record<RouteKey, string> = {
   salesOrderDetail: "ORD-10519",
   salesOrders: "Продажи",
   salesOverview: "Обзор",
+  aiAgents: "AI-агенты",
+  aiAgentDetail: "Карточка агента",
+  aiRelease: "ProductAIRelease",
+  aiTestChat: "Тестовый чат",
+  aiUsage: "Использование AI",
 };

@@ -87,7 +87,7 @@ export type ProductOffer = {
   prices: ProductPrice[];
 };
 
-export type RouteKey = "command" | "departments" | "employeeDetail" | "employees" | "productDetail" | "products" | "profile" | "salesClientDetail" | "salesClients" | "salesDialogs" | "salesOrderDetail" | "salesOrders" | "salesOverview";
+export type RouteKey = "command" | "departments" | "employeeDetail" | "employees" | "productDetail" | "products" | "profile" | "salesClientDetail" | "salesClients" | "salesDialogs" | "salesOrderDetail" | "salesOrders" | "salesOverview" | "aiAgents" | "aiAgentDetail" | "aiRelease" | "aiTestChat" | "aiUsage";
 
 export type AppData = {
   employees: Employee[];

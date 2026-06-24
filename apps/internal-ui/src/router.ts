@@ -27,6 +27,9 @@ export function routeFromPath(pathname: string): RouteState {
     const id = Number(path.split("/")[2]);
     return Number.isInteger(id) && id > 0 ? { route: "productDetail", employeeId: null, productId: id } : { route: "products", ...base };
   }
+  if (path === "/ai" || path === "/ai/agents") return { route: "aiAgents", ...base };
+  if (path === "/ai/test-chat") return { route: "aiTestChat", ...base };
+  if (path === "/ai/usage") return { route: "aiUsage", ...base };
   if (path === "/profile") return { route: "profile", ...base };
   return { route: "command", ...base };
 }
@@ -44,5 +47,11 @@ export function pathFromRoute(route: RouteKey, entityId: number | null = null): 
   if (route === "employeeDetail") return entityId ? `/employees/${entityId}` : "/employees";
   if (route === "products") return "/products";
   if (route === "productDetail") return entityId ? `/products/${entityId}` : "/products";
+  if (route === "aiAgents") return "/ai/agents";
+  if (route === "aiTestChat") return "/ai/test-chat";
+  if (route === "aiUsage") return "/ai/usage";
+  if (route === "aiAgentDetail") return entityId ? `/ai/agents/${entityId}` : "/ai/agents";
+  if (route === "aiRelease") return entityId ? `/ai/releases/${entityId}` : "/ai/agents";
+  if (route === "profile") return "/profile";
   return "/profile";
 }

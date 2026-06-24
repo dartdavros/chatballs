@@ -1,3 +1,4 @@
+import { AiAgentsPage } from "../features/ai/AiAgentsPage";
 import { CommandCenter } from "../features/command/CommandCenter";
 import { DepartmentsPage } from "../features/departments/DepartmentsPage";
 import { EmployeeDetailPage, EmployeesPage } from "../features/employees/EmployeesPage";
@@ -30,6 +31,7 @@ export function ShellRouteContent({ route, data, currentEmployee, currentProduct
       {route === "salesDialogs" && <SalesDialogsPage />}
       {route === "salesOrderDetail" && <SalesOrderDetailPage setRoute={setRoute} />}
       {route === "salesOrders" && <SalesOrdersPage setRoute={setRoute} />}
+      {route === "aiAgents" && <AiAgentsPage route={route} setRoute={setRoute} />}
     </>
   );
 }
