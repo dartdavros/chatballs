@@ -21,18 +21,21 @@ export function App() {
   const [route, setRoute] = useState<RouteKey>(initialRoute.route);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<number | null>(initialRoute.employeeId);
   const [selectedProductId, setSelectedProductId] = useState<number | null>(initialRoute.productId);
+  const [selectedAgentId, setSelectedAgentId] = useState<number | null>(initialRoute.agentId);
   const [data, setData] = useState<AppData>({ employees: [], departments: [], products: [] });
   const [dataError, setDataError] = useState(false);
 
   const navigate = useCallback((nextRoute: RouteKey, entityId: number | null = null, replace = false) => {
     const nextEmployeeId = nextRoute === "employeeDetail" ? entityId : null;
     const nextProductId = nextRoute === "productDetail" ? entityId : null;
+    const nextAgentId = nextRoute === "aiAgentDetail" ? entityId : null;
     const nextPath = pathFromRoute(nextRoute, entityId);
     setRoute(nextRoute);
     setSelectedEmployeeId(nextEmployeeId);
     setSelectedProductId(nextProductId);
+    setSelectedAgentId(nextAgentId);
     if (window.location.pathname !== nextPath) {
-      const state = { route: nextRoute, employeeId: nextEmployeeId, productId: nextProductId };
+      const state = { route: nextRoute, employeeId: nextEmployeeId, productId: nextProductId, agentId: nextAgentId };
       if (replace) {
         window.history.replaceState(state, "", nextPath);
       } else {
@@ -71,6 +74,7 @@ export function App() {
       setRoute(nextRoute.route);
       setSelectedEmployeeId(nextRoute.employeeId);
       setSelectedProductId(nextRoute.productId);
+      setSelectedAgentId(nextRoute.agentId);
     };
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
@@ -122,7 +126,7 @@ export function App() {
       ) : !canAccess(user.role, route) ? (
         <PermissionScreen onReturn={() => navigate(defaultRoute(user.role), null, true)} />
       ) : (
-        <Shell route={route} setRoute={(nextRoute) => navigate(nextRoute)} selectedEmployeeId={selectedEmployeeId} selectedProductId={selectedProductId} openEmployeeRoute={(employeeId) => navigate("employeeDetail", employeeId)} openProductRoute={(productId) => navigate("productDetail", productId)} user={user} data={data} reload={loadData} onUserUpdated={setUser} onLogout={logout} />
+        <Shell route={route} setRoute={(nextRoute) => navigate(nextRoute)} selectedEmployeeId={selectedEmployeeId} selectedProductId={selectedProductId} selectedAgentId={selectedAgentId} openEmployeeRoute={(employeeId) => navigate("employeeDetail", employeeId)} openProductRoute={(productId) => navigate("productDetail", productId)} openAgentRoute={(agentId) => navigate("aiAgentDetail", agentId)} user={user} data={data} reload={loadData} onUserUpdated={setUser} onLogout={logout} />
       )}
     </ConfigProvider>
   );

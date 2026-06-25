@@ -8,7 +8,7 @@ import { AgentsTable } from "./AgentsTable";
 import type { AiAgent } from "./model";
 import { useAiAgents } from "./useAiAgents";
 
-export function AiAgentsPage({ setRoute }: { setRoute: (route: RouteKey) => void }) {
+export function AiAgentsPage({ setRoute, openAgent }: { setRoute: (route: RouteKey) => void; openAgent: (agentId: number) => void }) {
   const { agents, releases, loading, error, reload } = useAiAgents();
   const [menuId, setMenuId] = useState<number | null>(null);
 
@@ -29,7 +29,7 @@ export function AiAgentsPage({ setRoute }: { setRoute: (route: RouteKey) => void
       ) : (
         <>
           <AgentsKpiStrip agents={agents} />
-          <AgentsTable agents={agents} releases={releases} menuId={menuId} setMenuId={setMenuId} toggleActive={toggleActive} setRoute={setRoute} />
+          <AgentsTable agents={agents} releases={releases} menuId={menuId} setMenuId={setMenuId} toggleActive={toggleActive} setRoute={setRoute} openAgent={openAgent} />
         </>
       )}
     </div>

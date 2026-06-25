@@ -16,4 +16,5 @@
 @import "./features/employees/styles.css";
 @import "./features/profile/styles.css";
 @import "./features/ai/styles.css";
+@import "./features/ai/detail/styles.css";
 @import "./shared/state.css";

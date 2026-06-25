@@ -9,3 +9,7 @@ export function productAccent(code: string): { bg: string; color: string } {
   if (code === "foxray") return { bg: "#f9f0ff", color: "#722ed1" };
   return { bg: "#e6f4ff", color: "#0958d9" };
 }
+
+export function formatDate(value: string): string {
+  return new Intl.DateTimeFormat("ru-RU", { day: "2-digit", month: "long", year: "numeric" }).format(new Date(value));
+}

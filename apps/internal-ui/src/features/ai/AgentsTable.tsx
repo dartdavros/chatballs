@@ -14,6 +14,7 @@ export function AgentsTable({
   setMenuId,
   toggleActive,
   setRoute,
+  openAgent,
 }: {
   agents: AiAgent[];
   releases: AiRelease[];
@@ -21,6 +22,7 @@ export function AgentsTable({
   setMenuId: (id: number | null) => void;
   toggleActive: (agent: AiAgent) => void;
   setRoute: (route: RouteKey) => void;
+  openAgent: (agentId: number) => void;
 }) {
   return (
     <div className="table-card">
@@ -43,7 +45,7 @@ export function AgentsTable({
               const accent = productAccent(agent.product.code);
               const release = publishedRelease(releases, agent.product.code);
               const menuItems = [
-                { key: "open", disabled: true, label: <button type="button"><Icon name="external" size={15} />Открыть агента</button> },
+                { key: "open", label: <button type="button" onClick={() => { setMenuId(null); openAgent(agent.id); }}><Icon name="external" size={15} />Открыть агента</button> },
                 { key: "release", disabled: true, label: <button type="button"><Icon name="plus" size={15} />Создать release candidate</button> },
                 { type: "divider" as const },
                 {

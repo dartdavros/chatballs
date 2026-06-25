@@ -1,4 +1,5 @@
 import { AiAgentsPage } from "../features/ai/AiAgentsPage";
+import { AiAgentDetailPage } from "../features/ai/detail/AiAgentDetailPage";
 import { CommandCenter } from "../features/command/CommandCenter";
 import { DepartmentsPage } from "../features/departments/DepartmentsPage";
 import { EmployeeDetailPage, EmployeesPage } from "../features/employees/EmployeesPage";
@@ -13,7 +14,7 @@ import { SalesOrdersPage } from "../features/sales/orders/SalesOrdersPage";
 import { SalesOverviewPage } from "../features/sales/SalesOverviewPage";
 import type { AppData, Employee, Product, RouteKey, SessionUser } from "../types";
 
-export function ShellRouteContent({ route, data, currentEmployee, currentProduct, openEmployee, openProduct, reload, setRoute, user, onUserUpdated, onLogout }: { route: RouteKey; data: AppData; currentEmployee: Employee | null; currentProduct: Product | null; openEmployee: (employee: Employee) => void; openProduct: (product: Product) => void; reload: () => void; setRoute: (route: RouteKey) => void; user: SessionUser; onUserUpdated: (user: SessionUser) => void; onLogout: () => void }) {
+export function ShellRouteContent({ route, data, currentEmployee, currentProduct, selectedAgentId, openEmployee, openProduct, openAgent, onAgentLoaded, reload, setRoute, user, onUserUpdated, onLogout }: { route: RouteKey; data: AppData; currentEmployee: Employee | null; currentProduct: Product | null; selectedAgentId: number | null; openEmployee: (employee: Employee) => void; openProduct: (product: Product) => void; openAgent: (agentId: number) => void; onAgentLoaded: (name: string | null) => void; reload: () => void; setRoute: (route: RouteKey) => void; user: SessionUser; onUserUpdated: (user: SessionUser) => void; onLogout: () => void }) {
   return (
     <>
       {route === "command" && <CommandCenter data={data} setRoute={setRoute} />}
@@ -31,7 +32,8 @@ export function ShellRouteContent({ route, data, currentEmployee, currentProduct
       {route === "salesDialogs" && <SalesDialogsPage />}
       {route === "salesOrderDetail" && <SalesOrderDetailPage setRoute={setRoute} />}
       {route === "salesOrders" && <SalesOrdersPage setRoute={setRoute} />}
-      {route === "aiAgents" && <AiAgentsPage setRoute={setRoute} />}
+      {route === "aiAgents" && <AiAgentsPage setRoute={setRoute} openAgent={openAgent} />}
+      {route === "aiAgentDetail" && <AiAgentDetailPage agentId={selectedAgentId} setRoute={setRoute} onAgentLoaded={onAgentLoaded} />}
     </>
   );
 }
