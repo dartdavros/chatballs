@@ -4,7 +4,7 @@ import { pathFromRoute, routeFromPath } from "./router";
 
 describe("product routes", () => {
   it("parses a product detail URL", () => {
-    expect(routeFromPath("/products/42")).toEqual({ route: "productDetail", employeeId: null, productId: 42, agentId: null });
+    expect(routeFromPath("/products/42")).toEqual({ route: "productDetail", employeeId: null, productId: 42, agentId: null, releaseId: null });
   });
 
   it("creates a product detail URL", () => {
@@ -14,10 +14,20 @@ describe("product routes", () => {
 
 describe("ai agent routes", () => {
   it("parses an AI agent detail URL", () => {
-    expect(routeFromPath("/ai/agents/7")).toEqual({ route: "aiAgentDetail", employeeId: null, productId: null, agentId: 7 });
+    expect(routeFromPath("/ai/agents/7")).toEqual({ route: "aiAgentDetail", employeeId: null, productId: null, agentId: 7, releaseId: null });
   });
 
   it("creates an AI agent detail URL", () => {
     expect(pathFromRoute("aiAgentDetail", 7)).toBe("/ai/agents/7");
+  });
+});
+
+describe("ai release routes", () => {
+  it("parses a release URL", () => {
+    expect(routeFromPath("/ai/releases/12")).toEqual({ route: "aiRelease", employeeId: null, productId: null, agentId: null, releaseId: 12 });
+  });
+
+  it("creates a release URL", () => {
+    expect(pathFromRoute("aiRelease", 12)).toBe("/ai/releases/12");
   });
 });

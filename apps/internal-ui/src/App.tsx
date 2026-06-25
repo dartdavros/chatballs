@@ -22,6 +22,7 @@ export function App() {
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<number | null>(initialRoute.employeeId);
   const [selectedProductId, setSelectedProductId] = useState<number | null>(initialRoute.productId);
   const [selectedAgentId, setSelectedAgentId] = useState<number | null>(initialRoute.agentId);
+  const [selectedReleaseId, setSelectedReleaseId] = useState<number | null>(initialRoute.releaseId);
   const [data, setData] = useState<AppData>({ employees: [], departments: [], products: [] });
   const [dataError, setDataError] = useState(false);
 
@@ -29,13 +30,15 @@ export function App() {
     const nextEmployeeId = nextRoute === "employeeDetail" ? entityId : null;
     const nextProductId = nextRoute === "productDetail" ? entityId : null;
     const nextAgentId = nextRoute === "aiAgentDetail" ? entityId : null;
+    const nextReleaseId = nextRoute === "aiRelease" ? entityId : null;
     const nextPath = pathFromRoute(nextRoute, entityId);
     setRoute(nextRoute);
     setSelectedEmployeeId(nextEmployeeId);
     setSelectedProductId(nextProductId);
     setSelectedAgentId(nextAgentId);
+    setSelectedReleaseId(nextReleaseId);
     if (window.location.pathname !== nextPath) {
-      const state = { route: nextRoute, employeeId: nextEmployeeId, productId: nextProductId, agentId: nextAgentId };
+      const state = { route: nextRoute, employeeId: nextEmployeeId, productId: nextProductId, agentId: nextAgentId, releaseId: nextReleaseId };
       if (replace) {
         window.history.replaceState(state, "", nextPath);
       } else {
@@ -75,6 +78,7 @@ export function App() {
       setSelectedEmployeeId(nextRoute.employeeId);
       setSelectedProductId(nextRoute.productId);
       setSelectedAgentId(nextRoute.agentId);
+      setSelectedReleaseId(nextRoute.releaseId);
     };
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
@@ -126,7 +130,7 @@ export function App() {
       ) : !canAccess(user.role, route) ? (
         <PermissionScreen onReturn={() => navigate(defaultRoute(user.role), null, true)} />
       ) : (
-        <Shell route={route} setRoute={(nextRoute) => navigate(nextRoute)} selectedEmployeeId={selectedEmployeeId} selectedProductId={selectedProductId} selectedAgentId={selectedAgentId} openEmployeeRoute={(employeeId) => navigate("employeeDetail", employeeId)} openProductRoute={(productId) => navigate("productDetail", productId)} openAgentRoute={(agentId) => navigate("aiAgentDetail", agentId)} user={user} data={data} reload={loadData} onUserUpdated={setUser} onLogout={logout} />
+        <Shell route={route} setRoute={(nextRoute) => navigate(nextRoute)} selectedEmployeeId={selectedEmployeeId} selectedProductId={selectedProductId} selectedAgentId={selectedAgentId} selectedReleaseId={selectedReleaseId} openEmployeeRoute={(employeeId) => navigate("employeeDetail", employeeId)} openProductRoute={(productId) => navigate("productDetail", productId)} openAgentRoute={(agentId) => navigate("aiAgentDetail", agentId)} openReleaseRoute={(releaseId) => navigate("aiRelease", releaseId)} user={user} data={data} reload={loadData} onUserUpdated={setUser} onLogout={logout} />
       )}
     </ConfigProvider>
   );

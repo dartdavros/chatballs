@@ -1,5 +1,7 @@
 import { AiAgentsPage } from "../features/ai/AiAgentsPage";
 import { AiAgentDetailPage } from "../features/ai/detail/AiAgentDetailPage";
+import { ProductAIReleasePage } from "../features/ai/release/ProductAIReleasePage";
+import { AiTestChatPage } from "../features/ai/test-chat/AiTestChatPage";
 import { CommandCenter } from "../features/command/CommandCenter";
 import { DepartmentsPage } from "../features/departments/DepartmentsPage";
 import { EmployeeDetailPage, EmployeesPage } from "../features/employees/EmployeesPage";
@@ -14,7 +16,7 @@ import { SalesOrdersPage } from "../features/sales/orders/SalesOrdersPage";
 import { SalesOverviewPage } from "../features/sales/SalesOverviewPage";
 import type { AppData, Employee, Product, RouteKey, SessionUser } from "../types";
 
-export function ShellRouteContent({ route, data, currentEmployee, currentProduct, selectedAgentId, openEmployee, openProduct, openAgent, onAgentLoaded, reload, setRoute, user, onUserUpdated, onLogout }: { route: RouteKey; data: AppData; currentEmployee: Employee | null; currentProduct: Product | null; selectedAgentId: number | null; openEmployee: (employee: Employee) => void; openProduct: (product: Product) => void; openAgent: (agentId: number) => void; onAgentLoaded: (name: string | null) => void; reload: () => void; setRoute: (route: RouteKey) => void; user: SessionUser; onUserUpdated: (user: SessionUser) => void; onLogout: () => void }) {
+export function ShellRouteContent({ route, data, currentEmployee, currentProduct, selectedAgentId, selectedReleaseId, openEmployee, openProduct, openAgent, openRelease, onAgentLoaded, reload, setRoute, user, onUserUpdated, onLogout }: { route: RouteKey; data: AppData; currentEmployee: Employee | null; currentProduct: Product | null; selectedAgentId: number | null; selectedReleaseId: number | null; openEmployee: (employee: Employee) => void; openProduct: (product: Product) => void; openAgent: (agentId: number) => void; openRelease: (releaseId: number) => void; onAgentLoaded: (name: string | null) => void; reload: () => void; setRoute: (route: RouteKey) => void; user: SessionUser; onUserUpdated: (user: SessionUser) => void; onLogout: () => void }) {
   return (
     <>
       {route === "command" && <CommandCenter data={data} setRoute={setRoute} />}
@@ -32,8 +34,10 @@ export function ShellRouteContent({ route, data, currentEmployee, currentProduct
       {route === "salesDialogs" && <SalesDialogsPage />}
       {route === "salesOrderDetail" && <SalesOrderDetailPage setRoute={setRoute} />}
       {route === "salesOrders" && <SalesOrdersPage setRoute={setRoute} />}
-      {route === "aiAgents" && <AiAgentsPage setRoute={setRoute} openAgent={openAgent} />}
-      {route === "aiAgentDetail" && <AiAgentDetailPage agentId={selectedAgentId} setRoute={setRoute} onAgentLoaded={onAgentLoaded} />}
+      {route === "aiAgents" && <AiAgentsPage setRoute={setRoute} openAgent={openAgent} openRelease={openRelease} />}
+      {route === "aiAgentDetail" && <AiAgentDetailPage agentId={selectedAgentId} setRoute={setRoute} openRelease={openRelease} onAgentLoaded={onAgentLoaded} />}
+      {route === "aiRelease" && <ProductAIReleasePage releaseId={selectedReleaseId} setRoute={setRoute} onReleaseLoaded={onAgentLoaded} />}
+      {route === "aiTestChat" && <AiTestChatPage />}
     </>
   );
 }

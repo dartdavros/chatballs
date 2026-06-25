@@ -1,0 +1,176 @@
+.ai-release-page {
+  min-height: 100%;
+}
+
+.ai-release-state {
+  padding: 24px 28px;
+}
+
+.release-status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 14px 28px;
+  background: #fff;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.ai-release-body {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 20px 28px 40px;
+}
+
+.release-title-group {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-width: 0;
+}
+
+.release-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  background: #f9f0ff;
+  color: #722ed1;
+}
+
+.release-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.release-title-row h1 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: #1f1f1f;
+  font-family: "SF Mono", ui-monospace, Menlo, monospace;
+}
+
+.release-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 11px;
+  border: 1px solid;
+  border-radius: 14px;
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.release-status-badge span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.release-status-badge.ready-publish,
+.release-status-badge.published {
+  color: #389e0d;
+  background: #f6ffed;
+  border-color: #b7eb8f;
+}
+
+.release-status-badge.ready-publish span,
+.release-status-badge.published span {
+  background: #52c41a;
+}
+
+.release-status-badge.ready-test {
+  color: #0958d9;
+  background: #e6f4ff;
+  border-color: #91caff;
+}
+
+.release-status-badge.ready-test span {
+  background: #1677ff;
+}
+
+.release-status-badge.incomplete {
+  color: #8c8c8c;
+  background: #f5f5f5;
+  border-color: #e8e8e8;
+}
+
+.release-status-badge.incomplete span {
+  background: #bfbfbf;
+}
+
+.release-status-badge.errors {
+  color: #cf1322;
+  background: #fff2f0;
+  border-color: #ffccc7;
+}
+
+.release-status-badge.errors span {
+  background: #ff4d4f;
+}
+
+.release-subtitle {
+  margin-top: 2px;
+  font-size: 12px;
+  color: #8c8c8c;
+}
+
+.release-actions {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex: none;
+}
+
+.release-validation {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  margin-bottom: 18px;
+  border: 1px solid;
+}
+
+.release-validation > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.release-validation strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.release-validation p {
+  margin: 1px 0 0;
+  font-size: 12px;
+  color: #595959;
+}
+
+.release-validation button {
+  height: 32px;
+  padding: 0 13px;
+  border-radius: 8px;
+  border: 1px solid #d9d9d9;
+  background: #fff;
+  color: #262626;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.release-layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 18px;
+  align-items: start;
+}

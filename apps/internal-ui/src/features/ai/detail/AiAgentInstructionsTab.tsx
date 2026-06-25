@@ -10,7 +10,7 @@ export function AiAgentInstructionsTab({ prompts }: { prompts: PromptDoc[] }) {
     <div className="ai-instructions">
       <div className="ai-notice">
         <Icon name="warning" size={17} />
-        <span>Инструкции редактируются в составе release candidate. Активный release published и доступен только для чтения — изменения применяются после публикации новой версии.</span>
+        <span>Инструкции редактируются в составе черновика версии. Опубликованная версия доступна только для чтения — изменения применяются после публикации новой версии.</span>
       </div>
       {prompts.map((prompt, index) => {
         const version = publishedVersion(prompt.versions);

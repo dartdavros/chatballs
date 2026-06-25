@@ -1,11 +1,11 @@
 import { EmptyState } from "../../../shared/ui";
-import { ToneBadge } from "../../../shared/ui-controls";
+import { MonoLink, ToneBadge } from "../../../shared/ui-controls";
 import { formatDate } from "../../../shared/utils";
-import { releaseTone, type AiReleaseFull } from "./model";
+import { releaseDisplayName, releaseTone, type AiReleaseFull } from "./model";
 
-export function AiAgentReleasesTab({ releases }: { releases: AiReleaseFull[] }) {
+export function AiAgentReleasesTab({ openRelease, releases }: { openRelease: (releaseId: number) => void; releases: AiReleaseFull[] }) {
   if (releases.length === 0) {
-    return <EmptyState title="Releases ещё не создавались" />;
+    return <EmptyState title="Версии ещё не создавались" />;
   }
   return (
     <div className="table-card">
@@ -13,7 +13,7 @@ export function AiAgentReleasesTab({ releases }: { releases: AiReleaseFull[] }) 
         <table className="baseline-table">
           <thead>
             <tr>
-              <th>RELEASE</th>
+              <th>ВЕРСИЯ</th>
               <th>СТАТУС</th>
               <th>ДАТА</th>
               <th>АВТОР</th>
@@ -26,7 +26,7 @@ export function AiAgentReleasesTab({ releases }: { releases: AiReleaseFull[] }) 
               const tone = releaseTone(release.status);
               return (
                 <tr key={release.id}>
-                  <td><code className="ai-mono">{`v${release.version}`}</code></td>
+                  <td><MonoLink onClick={() => openRelease(release.id)}>{releaseDisplayName(release)}</MonoLink></td>
                   <td><ToneBadge bg={tone.bg} color={tone.color}>{tone.label}</ToneBadge></td>
                   <td>{formatDate(release.publishedAt ?? release.createdAt)}</td>
                   <td><span className="product-empty-value">—</span></td>

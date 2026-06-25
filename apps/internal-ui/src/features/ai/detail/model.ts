@@ -51,6 +51,9 @@ export type AiReleaseFull = {
   version: number;
   status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
   model: string;
+  modelParams: Record<string, unknown>;
+  allowedTools: unknown[];
+  limits: Record<string, unknown>;
   notes: string;
   retrievalIndexVersion: string;
   knowledgeVersions: Array<{ document: string; version: number }>;
@@ -65,14 +68,14 @@ export const agentTabs: Array<{ key: AgentTab; label: string }> = [
   { key: "overview", label: "Обзор" },
   { key: "instructions", label: "Инструкции" },
   { key: "knowledge", label: "Знания" },
-  { key: "releases", label: "История releases" },
+  { key: "releases", label: "История версий" },
   { key: "metrics", label: "Метрики" },
 ];
 
 const RELEASE_TONE: Record<AiReleaseFull["status"], { bg: string; color: string; label: string }> = {
-  PUBLISHED: { bg: "#f6ffed", color: "#389e0d", label: "Published" },
-  DRAFT: { bg: "#fff7e6", color: "#d48806", label: "Candidate" },
-  ARCHIVED: { bg: "#f5f5f5", color: "#8c8c8c", label: "Archived" },
+  PUBLISHED: { bg: "#f6ffed", color: "#389e0d", label: "Опубликована" },
+  DRAFT: { bg: "#fff7e6", color: "#d48806", label: "Черновик версии" },
+  ARCHIVED: { bg: "#f5f5f5", color: "#8c8c8c", label: "Архив" },
 };
 
 export function releaseTone(status: AiReleaseFull["status"]) {
@@ -110,6 +113,12 @@ export function publishedVersion(versions: DocVersion[]): DocVersion | undefined
 
 export function publishedRelease(releases: AiReleaseFull[]): AiReleaseFull | undefined {
   return releases.find((release) => release.status === "PUBLISHED");
+}
+
+export function releaseDisplayName(release: AiReleaseFull): string {
+  const letters = release.product.name.match(/[A-ZА-ЯЁ]/g)?.join("");
+  const prefix = letters && letters.length >= 2 ? letters.slice(0, 2) : release.product.code.slice(0, 2);
+  return `REL-${prefix.toUpperCase()}-v${release.version}`;
 }
 
 // agent.limits — свободный JSON; пока бэкенд хранит только дневной лимит стоимости (micro-USD).

@@ -39,11 +39,19 @@
   background: #0958d9;
 }
 
+.primary-button:disabled {
+  color: #bfbfbf;
+  background: #f0f0f0;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
 .secondary-button {
   height: 38px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 7px;
   padding: 0 16px;
   color: #262626;
   background: #ffffff;
@@ -56,6 +64,13 @@
 .secondary-button:hover {
   color: #1677ff;
   border-color: #1677ff;
+}
+
+.secondary-button:disabled {
+  color: #bfbfbf;
+  background: #f5f5f5;
+  border-color: #e8e8e8;
+  cursor: not-allowed;
 }
 
 .danger-outline {

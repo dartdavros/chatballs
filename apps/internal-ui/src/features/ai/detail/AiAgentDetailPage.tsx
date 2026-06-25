@@ -10,10 +10,10 @@ import { AiAgentKnowledgeTab } from "./AiAgentKnowledgeTab";
 import { AiAgentMetricsTab } from "./AiAgentMetricsTab";
 import { AiAgentOverviewTab } from "./AiAgentOverviewTab";
 import { AiAgentReleasesTab } from "./AiAgentReleasesTab";
-import { agentTabs, type AgentTab } from "./model";
+import { agentTabs, type AgentTab, type AiReleaseFull } from "./model";
 import { useAiAgentDetail } from "./useAiAgentDetail";
 
-export function AiAgentDetailPage({ agentId, setRoute, onAgentLoaded }: { agentId: number | null; setRoute: (route: RouteKey) => void; onAgentLoaded: (name: string | null) => void }) {
+export function AiAgentDetailPage({ agentId, setRoute, openRelease, onAgentLoaded }: { agentId: number | null; setRoute: (route: RouteKey) => void; openRelease: (releaseId: number) => void; onAgentLoaded: (name: string | null) => void }) {
   const { agent, releases, knowledge, prompts, loading, error, reload } = useAiAgentDetail(agentId);
   const [tab, setTab] = useState<AgentTab>("overview");
 
@@ -29,17 +29,28 @@ export function AiAgentDetailPage({ agentId, setRoute, onAgentLoaded }: { agentI
     reload();
   }
 
+  async function createRelease() {
+    if (!agent) return;
+    try {
+      const { release } = await api<{ release: AiReleaseFull }>("/api/v1/ai/releases/", { method: "POST", body: JSON.stringify({ product: agent.product.code }) });
+      reload();
+      openRelease(release.id);
+    } catch {
+      reload();
+    }
+  }
+
   if (loading) return <div className="ai-page"><EmptyState title="Загрузка…" /></div>;
   if (error || !agent) return <div className="ai-page"><EmptyState title="Не удалось загрузить агента" /></div>;
 
   return (
     <div className="ai-agent-page">
-      <AiAgentDetailHeader agent={agent} releases={releases} setRoute={setRoute} />
+      <AiAgentDetailHeader agent={agent} releases={releases} setRoute={setRoute} openRelease={openRelease} createRelease={createRelease} />
       <UnderlineTabs className="ai-agent-tabs" items={agentTabs} value={tab} onChange={setTab} />
       {tab === "overview" && <AiAgentOverviewTab agent={agent} toggleActive={toggleActive} />}
       {tab === "instructions" && <AiAgentInstructionsTab prompts={prompts} />}
       {tab === "knowledge" && <AiAgentKnowledgeTab knowledge={knowledge} productName={agent.product.name} />}
-      {tab === "releases" && <AiAgentReleasesTab releases={releases} />}
+      {tab === "releases" && <AiAgentReleasesTab openRelease={openRelease} releases={releases} />}
       {tab === "metrics" && <AiAgentMetricsTab />}
     </div>
   );

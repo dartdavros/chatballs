@@ -1,0 +1,158 @@
+.hub-topbar {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: none;
+  padding: 0 24px;
+  background: #ffffff;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #8c8c8c;
+  font-size: 13px;
+}
+
+.breadcrumbs button {
+  padding: 0;
+  color: #595959;
+  background: transparent;
+  border: none;
+  font-weight: 500;
+}
+
+.breadcrumbs button:hover {
+  color: #1677ff;
+}
+
+.breadcrumbs i {
+  color: #d9d9d9;
+  font-style: normal;
+}
+
+.breadcrumbs strong {
+  color: #262626;
+  font-weight: 600;
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.topbar-sandbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 11px;
+  color: #d48806;
+  background: #fff7e6;
+  border: 1px solid #ffe58f;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.topbar-divider {
+  width: 1px;
+  height: 24px;
+  background: #f0f0f0;
+}
+
+.topbar-avatar {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  color: #fff;
+  background: #1677ff;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.topbar-status {
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  border: 1px solid;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 22px;
+}
+
+.topbar-status span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.contour {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 11px;
+  color: #389e0d;
+  background: #f6ffed;
+  border: 1px solid #b7eb8f;
+  border-radius: 7px;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.contour span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #52c41a;
+}
+
+.icon-button {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #595959;
+  background: #ffffff;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+}
+
+.icon-button b {
+  position: absolute;
+  top: 6px;
+  right: 7px;
+  min-width: 15px;
+  height: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  color: #ffffff;
+  background: #ff4d4f;
+  border: 1.5px solid #ffffff;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.icon-button b.is-dot {
+  min-width: 8px;
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 0;
+}

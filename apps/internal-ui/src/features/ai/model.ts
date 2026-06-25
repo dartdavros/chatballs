@@ -19,3 +19,9 @@ export type AiRelease = {
 export function publishedRelease(releases: AiRelease[], productCode: string): AiRelease | undefined {
   return releases.find((release) => release.product.code === productCode && release.status === "PUBLISHED");
 }
+
+export function releaseName(release: AiRelease): string {
+  const letters = release.product.name.match(/[A-ZА-ЯЁ]/g)?.join("");
+  const prefix = letters && letters.length >= 2 ? letters.slice(0, 2) : release.product.code.slice(0, 2);
+  return `REL-${prefix.toUpperCase()}-v${release.version}`;
+}

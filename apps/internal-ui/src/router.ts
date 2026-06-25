@@ -5,11 +5,12 @@ export type RouteState = {
   employeeId: number | null;
   productId: number | null;
   agentId: number | null;
+  releaseId: number | null;
 };
 
 export function routeFromPath(pathname: string): RouteState {
   const path = pathname.replace(/\/+$/, "") || "/";
-  const base = { employeeId: null, productId: null, agentId: null };
+  const base = { employeeId: null, productId: null, agentId: null, releaseId: null };
   if (path === "/" || path === "/command") return { route: "command", ...base };
   if (path === "/departments") return { route: "departments", ...base };
   if (path === "/departments/sales") return { route: "salesOverview", ...base };
@@ -32,6 +33,10 @@ export function routeFromPath(pathname: string): RouteState {
   if (path.startsWith("/ai/agents/")) {
     const id = Number(path.split("/")[3]);
     return Number.isInteger(id) && id > 0 ? { ...base, route: "aiAgentDetail", agentId: id } : { route: "aiAgents", ...base };
+  }
+  if (path.startsWith("/ai/releases/")) {
+    const id = Number(path.split("/")[3]);
+    return Number.isInteger(id) && id > 0 ? { ...base, route: "aiRelease", releaseId: id } : { route: "aiAgents", ...base };
   }
   if (path === "/ai/test-chat") return { route: "aiTestChat", ...base };
   if (path === "/ai/usage") return { route: "aiUsage", ...base };

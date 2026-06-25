@@ -11,7 +11,7 @@ export function AiAgentKnowledgeTab({ knowledge, productName }: { knowledge: Kno
     <section className="ai-card ai-card--flush">
       <div className="ai-knowledge-head">
         <h3>Обязательные знания release</h3>
-        <div className="ai-knowledge-sub">Retrieval index · {productName} KB · {knowledge.length} материалов</div>
+        <div className="ai-knowledge-sub">Индекс поиска знаний · {productName} · {knowledge.length} материалов</div>
       </div>
       {knowledge.map((doc) => {
         const version = publishedVersion(doc.versions);

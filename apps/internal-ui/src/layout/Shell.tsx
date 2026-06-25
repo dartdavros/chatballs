@@ -7,7 +7,7 @@ import { SalesSidebar } from "./SalesSidebar";
 import { ShellRouteContent } from "./ShellRouteContent";
 import { TopBar } from "./TopBar";
 
-export function Shell({ route, setRoute, selectedEmployeeId, selectedProductId, selectedAgentId, openEmployeeRoute, openProductRoute, openAgentRoute, user, data, reload, onUserUpdated, onLogout }: { route: RouteKey; setRoute: (route: RouteKey) => void; selectedEmployeeId: number | null; selectedProductId: number | null; selectedAgentId: number | null; openEmployeeRoute: (employeeId: number) => void; openProductRoute: (productId: number) => void; openAgentRoute: (agentId: number) => void; user: SessionUser; data: AppData; reload: () => void; onUserUpdated: (user: SessionUser) => void; onLogout: () => void }) {
+export function Shell({ route, setRoute, selectedEmployeeId, selectedProductId, selectedAgentId, selectedReleaseId, openEmployeeRoute, openProductRoute, openAgentRoute, openReleaseRoute, user, data, reload, onUserUpdated, onLogout }: { route: RouteKey; setRoute: (route: RouteKey) => void; selectedEmployeeId: number | null; selectedProductId: number | null; selectedAgentId: number | null; selectedReleaseId: number | null; openEmployeeRoute: (employeeId: number) => void; openProductRoute: (productId: number) => void; openAgentRoute: (agentId: number) => void; openReleaseRoute: (releaseId: number) => void; user: SessionUser; data: AppData; reload: () => void; onUserUpdated: (user: SessionUser) => void; onLogout: () => void }) {
   const [agentName, setAgentName] = useState<string | null>(null);
   const currentEmployee = route === "employeeDetail"
     ? data.employees.find((employee) => employee.id === selectedEmployeeId) ?? null
@@ -25,8 +25,9 @@ export function Shell({ route, setRoute, selectedEmployeeId, selectedProductId, 
   const isSalesClientDetail = route === "salesClientDetail";
   const isSalesOrderDetail = route === "salesOrderDetail";
   const isSalesOrders = route === "salesOrderDetail" || route === "salesOrders";
-  // Подменю AI показываем только на разделах AI-секции, не на карточке агента.
-  const isAiSection = route === "aiAgents" || route === "aiTestChat" || route === "aiUsage";
+  // Подменю AI показываем только там, где оно есть в baseline.
+  const isAiSection = route === "aiAgents" || route === "aiUsage";
+  const isAiFullWidth = route === "aiRelease" || route === "aiTestChat";
   // OPERATOR работает только в пространстве продаж, поэтому всегда видит sales-sidebar (SPEC-HUB-0004 §9).
   const showSalesSidebar = isSalesWorkspace || user.role === "OPERATOR";
   return (
@@ -35,9 +36,9 @@ export function Shell({ route, setRoute, selectedEmployeeId, selectedProductId, 
       <div className="hub-main">
         <TopBar route={route} user={user} currentEmployee={currentEmployee} currentProduct={currentProduct} currentAgentName={agentName} setRoute={setRoute} />
         {isAiSection && <AiSubnav route={route} setRoute={setRoute} />}
-        <main className={`hub-scroll ${isSalesDialogs ? "sales-dialogs-scroll" : ""}`}>
-          <div className={`hub-page ${isSalesWorkspace ? "sales-workspace-page" : ""} ${isSalesDialogs ? "sales-dialogs-page" : ""} ${isSalesClients ? "sales-clients-page" : ""} ${isSalesClientDetail ? "sales-client-detail-page" : ""} ${isSalesOrderDetail ? "sales-order-detail-page" : ""} ${isSalesOrders ? "sales-orders-page" : ""}`}>
-            <ShellRouteContent route={route} data={data} currentEmployee={currentEmployee} currentProduct={currentProduct} selectedAgentId={selectedAgentId} openEmployee={openEmployee} openProduct={openProduct} openAgent={openAgentRoute} onAgentLoaded={setAgentName} reload={reload} setRoute={setRoute} user={user} onUserUpdated={onUserUpdated} onLogout={onLogout} />
+        <main className={`hub-scroll ${isSalesDialogs ? "sales-dialogs-scroll" : ""} ${isAiFullWidth ? "ai-fullwidth-scroll" : ""}`}>
+          <div className={`hub-page ${isSalesWorkspace ? "sales-workspace-page" : ""} ${isSalesDialogs ? "sales-dialogs-page" : ""} ${isSalesClients ? "sales-clients-page" : ""} ${isSalesClientDetail ? "sales-client-detail-page" : ""} ${isSalesOrderDetail ? "sales-order-detail-page" : ""} ${isSalesOrders ? "sales-orders-page" : ""} ${isAiFullWidth ? "ai-fullwidth-page" : ""}`}>
+            <ShellRouteContent route={route} data={data} currentEmployee={currentEmployee} currentProduct={currentProduct} selectedAgentId={selectedAgentId} selectedReleaseId={selectedReleaseId} openEmployee={openEmployee} openProduct={openProduct} openAgent={openAgentRoute} openRelease={openReleaseRoute} onAgentLoaded={setAgentName} reload={reload} setRoute={setRoute} user={user} onUserUpdated={onUserUpdated} onLogout={onLogout} />
           </div>
         </main>
       </div>
