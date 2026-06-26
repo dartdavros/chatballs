@@ -2,14 +2,12 @@ import { commandCenterModel } from "../features/command/CommandCenter";
 import { routes } from "../routes";
 import type { Employee, Product, RouteKey, SessionUser } from "../types";
 import { Icon } from "../shared/icons";
-import { initials } from "../shared/utils";
 
 export function TopBar({ route, user, currentEmployee, currentProduct, currentAgentName, setRoute }: { route: RouteKey; user: SessionUser; currentEmployee?: Employee | null; currentProduct?: Product | null; currentAgentName?: string | null; setRoute: (route: RouteKey) => void }) {
   const st = commandCenterModel("today").st;
   const isCommand = route === "command";
   const isAiDetail = route === "aiAgentDetail" || route === "aiRelease";
   const isAi = route.startsWith("ai") && !isAiDetail && route !== "aiAgentCreate";
-  const isAiTestChat = route === "aiTestChat";
   const [releaseAgentName, releaseName] = route === "aiRelease" && currentAgentName?.includes("|") ? currentAgentName.split("|") : [currentAgentName, null];
   const isSalesWorkspace = route === "salesOverview" || route === "salesClientDetail" || route === "salesClients" || route === "salesDialogs" || route === "salesOrderDetail" || route === "salesOrders";
   return (
@@ -30,15 +28,7 @@ export function TopBar({ route, user, currentEmployee, currentProduct, currentAg
       </div>
       <div className="topbar-actions">
         {isCommand && <span className="topbar-status" style={{ background: st.bg, borderColor: st.border, color: st.color }}><span style={{ background: st.dot }} />{st.label}</span>}
-        {isAiTestChat ? (
-          <>
-            <span className="topbar-sandbox"><Icon name="wrench" size={13} />Тестовая песочница</span>
-            <span className="topbar-divider" />
-            <span className="topbar-avatar">{initials(user.fullName, user.email)}</span>
-          </>
-        ) : (
-          <button className="icon-button" aria-label="Уведомления"><Icon name="bell" size={18} /><b className={isCommand ? "" : "is-dot"}>{isCommand ? "2" : ""}</b></button>
-        )}
+        <button className="icon-button" aria-label="Уведомления"><Icon name="bell" size={18} /><b className={isCommand ? "" : "is-dot"}>{isCommand ? "2" : ""}</b></button>
       </div>
     </header>
   );

@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useLayoutEffect, useRef, useState, type ChangeEvent, type ReactNode } from "react";
 
 import { Icon } from "../../../shared/icons";
 import type { TestChannel } from "./model";
@@ -10,6 +10,32 @@ const channelLabel: Record<TestChannel, string> = {
 };
 
 export function TestConversation({ channel }: { channel: TestChannel }) {
+  const [message, setMessage] = useState("");
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  const resizeMessageInput = () => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    const styles = window.getComputedStyle(textarea);
+    const lineHeight = Number.parseFloat(styles.lineHeight);
+    const paddingTop = Number.parseFloat(styles.paddingTop);
+    const paddingBottom = Number.parseFloat(styles.paddingBottom);
+    const maxHeight = lineHeight * 12 + paddingTop + paddingBottom;
+
+    textarea.style.height = "auto";
+    const nextHeight = Math.min(textarea.scrollHeight, maxHeight);
+    textarea.style.height = `${nextHeight}px`;
+    textarea.style.overflowY = textarea.scrollHeight > maxHeight ? "auto" : "hidden";
+  };
+
+  useLayoutEffect(() => {
+    resizeMessageInput();
+  }, [message]);
+
+  const handleMessageChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
+    setMessage(event.target.value);
+  };
+
   return (
     <section className="test-conversation">
       <div className="test-conversation-head">
@@ -37,7 +63,7 @@ export function TestConversation({ channel }: { channel: TestChannel }) {
 
       <div className="test-composer">
         <div>
-          <textarea rows={1} placeholder="Сообщение от лица тестового клиента…" />
+          <textarea ref={textareaRef} rows={1} value={message} placeholder="Сообщение от лица тестового клиента…" onChange={handleMessageChange} />
           <button type="button">Отправить<Icon name="send" size={15} /></button>
         </div>
       </div>

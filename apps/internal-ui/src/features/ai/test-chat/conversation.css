@@ -172,9 +172,10 @@
 
 .test-composer textarea {
   flex: 1;
-  max-height: 120px;
+  min-height: 38px;
   min-width: 0;
-  padding: 7px 0;
+  padding: 9px 0;
+  overflow-y: hidden;
   resize: none;
   border: 0;
   outline: 0;
