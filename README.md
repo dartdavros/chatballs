@@ -15,7 +15,6 @@ The local compose stack contains:
 - PostgreSQL;
 - Redis;
 - Internal Hub UI;
-- Checkout UI;
 - Web Chat UI;
 - local Nginx reverse proxy.
 
@@ -25,7 +24,6 @@ Default local URLs:
 
 - Internal Hub UI: `http://localhost:5173`
 - Django admin: `http://localhost:8010/admin/`
-- Checkout: `http://localhost:5174`
 - Web Chat: `http://localhost:5175`
 - Backend API: `http://localhost:8010/api/v1`
 
