@@ -6,7 +6,7 @@ export function ProductOffersTab({ product }: { product: Product }) {
   const prices = product.offers.flatMap((offer) => offer.prices.map((price) => ({ offer, price })));
   return (
     <div className="product-offers-tab">
-      <p className="product-offers-note">Активные Offer привязаны к версии цены. Изменение цены создаёт новую версию — прошлые заказы не затрагиваются.</p>
+      <p className="product-offers-note">Активные предложения привязаны к версии цены. Изменение цены создаёт новую версию — прошлые версии не редактируются.</p>
       <div className="product-offer-grid">
         {product.offers.length ? product.offers.map((offer) => (
           <section className="product-offer-card" key={offer.id}>
