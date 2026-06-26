@@ -57,8 +57,12 @@ export function EmptyState({ title }: { title: string }) {
   return <div className="empty-state"><strong>{title}</strong></div>;
 }
 
+export function LoadingState({ variant = "page" }: { variant?: "page" | "inline" }) {
+  return <div className={`loading-state ${variant}`}><strong>Загрузка…</strong></div>;
+}
+
 export function LoadingScreen() {
-  return <main className="state-screen"><div className="state-card">Загрузка</div></main>;
+  return <main className="state-screen"><div className="state-card"><LoadingState variant="inline" /></div></main>;
 }
 
 export function ErrorScreen({ retry }: { retry: () => void }) {

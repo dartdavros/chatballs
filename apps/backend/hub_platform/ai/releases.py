@@ -63,6 +63,21 @@ def create_draft_release(*, product, author, notes: str = "") -> ProductAIReleas
     )
 
 
+def create_initial_draft_release(*, product, author, model, model_params, allowed_tools, limits, knowledge_versions, prompt_versions) -> ProductAIRelease:
+    return _create_release(
+        product=product,
+        author=author,
+        model=model,
+        model_params=model_params,
+        allowed_tools=allowed_tools,
+        limits=limits,
+        retrieval_index_version="",
+        notes="Первая версия агента",
+        knowledge_versions=knowledge_versions,
+        prompt_versions=prompt_versions,
+    )
+
+
 @transaction.atomic
 def publish_release(*, release: ProductAIRelease) -> ProductAIRelease:
     ProductAIRelease.objects.filter(product=release.product, status=ReleaseStatus.PUBLISHED).exclude(

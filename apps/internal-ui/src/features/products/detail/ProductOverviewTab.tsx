@@ -1,7 +1,8 @@
 import type { Product } from "../../../types";
 import { formatProductDate, productKind } from "./model";
+import { ProductAgentCard } from "./ProductAgentCard";
 
-export function ProductOverviewTab({ product }: { product: Product }) {
+export function ProductOverviewTab({ product, openAgentCreate, openAgent }: { product: Product; openAgentCreate: (productCode: string | null) => void; openAgent: (agentId: number) => void }) {
   return (
     <div className="product-overview-grid">
       <div className="product-overview-main">
@@ -16,7 +17,7 @@ export function ProductOverviewTab({ product }: { product: Product }) {
           <div><span>Sales-agent</span><strong>—</strong></div>
           <div><span>Создан</span><strong>{formatProductDate(product.createdAt)}</strong></div>
         </section>
-        <section className="product-detail-card"><h3>Sales-agent</h3><p className="product-detail-empty">—</p></section>
+        <ProductAgentCard product={product} openAgentCreate={openAgentCreate} openAgent={openAgent} />
       </aside>
     </div>
   );

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { api } from "../../../api/client";
-import { EmptyState } from "../../../shared/ui";
+import { EmptyState, LoadingState } from "../../../shared/ui";
 import { UnderlineTabs } from "../../../shared/ui-controls";
 import type { RouteKey } from "../../../types";
 import { AiAgentDetailHeader } from "./AiAgentDetailHeader";
@@ -40,7 +40,7 @@ export function AiAgentDetailPage({ agentId, setRoute, openRelease, onAgentLoade
     }
   }
 
-  if (loading) return <div className="ai-page"><EmptyState title="Загрузка…" /></div>;
+  if (loading) return <div className="ai-page"><LoadingState /></div>;
   if (error || !agent) return <div className="ai-page"><EmptyState title="Не удалось загрузить агента" /></div>;
 
   return (

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { api } from "../../../api/client";
-import { EmptyState } from "../../../shared/ui";
+import { EmptyState, LoadingState } from "../../../shared/ui";
 import type { RouteKey } from "../../../types";
 import { ProductAIReleaseHeader } from "./ProductAIReleaseHeader";
 import { PublishReleaseModal } from "./PublishReleaseModal";
@@ -49,7 +49,7 @@ export function ProductAIReleasePage({
     }
   }
 
-  if (loading) return <div className="ai-release-state"><EmptyState title="Загрузка…" /></div>;
+  if (loading) return <div className="ai-release-state"><LoadingState /></div>;
   if (error || !release) return <div className="ai-release-state"><EmptyState title="Не удалось загрузить версию" /></div>;
 
   return (

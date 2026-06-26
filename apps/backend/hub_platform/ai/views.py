@@ -5,8 +5,8 @@ from rest_framework.views import APIView
 
 from hub_platform.ai.models import AIAgent
 from hub_platform.ai.selectors import agent_for_organization, agents_for_organization
-from hub_platform.ai.serializers import agent_payload
-from hub_platform.ai.services import AgentInput, set_agent_active, update_agent
+from hub_platform.ai.serializers import agent_payload, release_payload
+from hub_platform.ai.services import AgentCreateInput, AgentInput, create_agent, set_agent_active, update_agent
 from hub_platform.api.permissions import IsOwner
 from hub_platform.identity.audit import record_audit_event
 
@@ -41,6 +41,33 @@ class AIAgentListView(APIView):
     def get(self, request: Request) -> Response:
         agents = agents_for_organization(request.user.employee_profile.organization_id)
         return Response({"items": [agent_payload(agent) for agent in agents]})
+
+    def post(self, request: Request) -> Response:
+        knowledge_ids = request.data.get("knowledgeDocumentIds", [])
+        if not isinstance(knowledge_ids, list) or not all(isinstance(item, int) for item in knowledge_ids):
+            return Response({"detail": "knowledgeDocumentIds must be a list of ids"}, status=400)
+        try:
+            agent, release = create_agent(
+                organization=request.user.employee_profile.organization,
+                author=request.user,
+                data=AgentCreateInput(
+                    product_code=str(request.data.get("product", "")).strip(),
+                    model=str(request.data.get("model", "")).strip(),
+                    system_prompt=str(request.data.get("systemPrompt", "")).strip(),
+                    knowledge_document_ids=knowledge_ids,
+                ),
+            )
+        except ValidationError as error:
+            return _validation_error(error)
+        record_audit_event(
+            action="ai.agent_created",
+            actor=request.user,
+            organization=request.user.employee_profile.organization,
+            object_type="AIAgent",
+            object_id=str(agent.id),
+            request=request,
+        )
+        return Response({"agent": agent_payload(agent), "release": release_payload(release)}, status=201)
 
 
 class AIAgentDetailView(APIView):

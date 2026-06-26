@@ -1,0 +1,141 @@
+.ai-create-field-offset {
+  padding-left: 34px;
+}
+
+.ai-create-model {
+  width: 100%;
+  max-width: 380px;
+  height: 42px;
+  padding: 0 12px;
+  color: #262626;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 9px;
+  font-family: "SF Mono", ui-monospace, Menlo, monospace;
+  font-size: 13.5px;
+}
+
+.ai-create-help {
+  margin-top: 8px;
+  color: #9a9a9a;
+  font-size: 11.5px;
+}
+
+.ai-create-label {
+  display: block;
+  margin-bottom: 6px;
+  color: #595959;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.ai-create-field-offset textarea {
+  width: 100%;
+  padding: 12px 14px;
+  color: #262626;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 9px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+.ai-create-field-offset textarea:focus,
+.ai-create-model:focus {
+  border-color: #1677ff;
+  outline: none;
+}
+
+.ai-create-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 11px;
+}
+
+.ai-create-chips span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  color: #595959;
+  background: #f5f5f5;
+  border-radius: 7px;
+  font-size: 11.5px;
+}
+
+.ai-create-chips svg {
+  color: #389e0d;
+  stroke-width: 2.4;
+}
+
+.ai-create-chips small {
+  align-self: center;
+  color: #bfbfbf;
+  font-size: 11.5px;
+}
+
+.ai-create-knowledge button {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  padding: 11px 13px;
+  color: #262626;
+  background: #fff;
+  border: 1px solid #ececec;
+  border-radius: 9px;
+}
+
+.ai-create-knowledge button.is-selected {
+  background: #f7fbff;
+  border-color: #bae0ff;
+}
+
+.ai-create-knowledge button > span {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border: 1.5px solid #d0d0d0;
+  border-radius: 6px;
+}
+
+.ai-create-knowledge button.is-selected > span {
+  background: #1677ff;
+  border: none;
+}
+
+.ai-create-knowledge button > span svg {
+  color: #fff;
+  stroke-width: 3;
+}
+
+.ai-create-knowledge strong {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 400;
+  text-align: left;
+}
+
+.ai-create-knowledge small {
+  color: #bfbfbf;
+  font-size: 11px;
+}
+
+.ai-create-knowledge .ai-create-knowledge-new {
+  width: auto;
+  height: 34px;
+  align-self: flex-start;
+  margin-top: 3px;
+  padding: 0 13px;
+  color: #595959;
+  border: 1px dashed #d9d9d9;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 500;
+}

@@ -13,7 +13,6 @@ export function AgentsTable({
   menuId,
   setMenuId,
   toggleActive,
-  createRelease,
   setRoute,
   openAgent,
   openRelease,
@@ -23,7 +22,6 @@ export function AgentsTable({
   menuId: number | null;
   setMenuId: (id: number | null) => void;
   toggleActive: (agent: AiAgent) => void;
-  createRelease: (agent: AiAgent) => void;
   setRoute: (route: RouteKey) => void;
   openAgent: (agentId: number) => void;
   openRelease: (releaseId: number) => void;
@@ -50,7 +48,6 @@ export function AgentsTable({
               const release = publishedRelease(releases, agent.product.code);
               const menuItems = [
                 { key: "open", label: <button type="button" onClick={() => { setMenuId(null); openAgent(agent.id); }}><Icon name="external" size={15} />Открыть агента</button> },
-                { key: "release", label: <button type="button" onClick={() => createRelease(agent)}><Icon name="plus" size={15} />Создать черновик версии</button> },
                 { type: "divider" as const },
                 {
                   key: "toggle",

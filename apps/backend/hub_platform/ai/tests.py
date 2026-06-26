@@ -13,16 +13,14 @@ class AIAgentInvariantTests(TestCase):
     def setUp(self) -> None:
         bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
 
-    def test_each_product_has_exactly_one_agent(self) -> None:
-        product_codes = set(Product.objects.values_list("code", flat=True))
-        agent_codes = set(AIAgent.objects.values_list("product__code", flat=True))
-        self.assertEqual(agent_codes, product_codes)
-        self.assertEqual(AIAgent.objects.count(), Product.objects.count())
+    def test_each_product_has_no_more_than_one_agent(self) -> None:
+        agent_codes = list(AIAgent.objects.values_list("product__code", flat=True))
+        self.assertEqual(len(agent_codes), len(set(agent_codes)))
 
-    def test_new_product_gets_an_agent(self) -> None:
+    def test_new_product_does_not_get_an_agent_automatically(self) -> None:
         org = Organization.objects.get(slug="edevs")
         product = Product.objects.create(organization=org, code="academy", name="Academy")
-        self.assertTrue(AIAgent.objects.filter(product=product).exists())
+        self.assertFalse(AIAgent.objects.filter(product=product).exists())
 
 
 class AIAgentApiTests(TestCase):
@@ -37,6 +35,43 @@ class AIAgentApiTests(TestCase):
         self.assertEqual(response.status_code, 200)
         codes = {item["product"]["code"] for item in response.json()["items"]}
         self.assertEqual(codes, {"firepage", "foxray"})
+
+    def test_owner_creates_agent_for_product_without_agent(self) -> None:
+        org = Organization.objects.get(slug="edevs")
+        product = Product.objects.create(organization=org, code="academy", name="Academy")
+        knowledge_response = self.client.post(
+            "/api/v1/ai/knowledge/",
+            data=json.dumps({"product": product.code, "code": "faq", "title": "FAQ", "category": "FAQ", "content": "v1"}),
+            content_type="application/json",
+        )
+
+        response = self.client.post(
+            "/api/v1/ai/agents/",
+            data=json.dumps(
+                {
+                    "product": product.code,
+                    "model": "gpt-4o-mini",
+                    "systemPrompt": "Отвечай по делу.",
+                    "knowledgeDocumentIds": [knowledge_response.json()["document"]["id"]],
+                }
+            ),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 201)
+        body = response.json()
+        self.assertEqual(body["agent"]["product"]["code"], product.code)
+        self.assertFalse(body["agent"]["isActive"])
+        self.assertEqual(body["release"]["status"], "DRAFT")
+
+    def test_owner_cannot_create_second_agent_for_product(self) -> None:
+        response = self.client.post(
+            "/api/v1/ai/agents/",
+            data=json.dumps({"product": "firepage", "model": "gpt-4o-mini", "knowledgeDocumentIds": [1]}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 400)
 
     def test_owner_updates_agent_model(self) -> None:
         agent = AIAgent.objects.get(product__code="firepage")

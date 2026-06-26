@@ -58,6 +58,54 @@
   text-align: right;
 }
 
+.product-agent-card {
+  padding: 16px 18px;
+}
+
+.product-agent-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+}
+
+.product-agent-heading h3 {
+  margin: 0;
+}
+
+.product-agent-heading p {
+  margin-top: 4px;
+  color: #8c8c8c;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.product-agent-icon {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+}
+
+.product-agent-icon.is-empty {
+  color: #bfbfbf;
+  background: #f5f5f5;
+}
+
+.product-agent-action {
+  width: 100%;
+  height: 36px;
+  margin-top: 12px;
+  font-size: 13px;
+}
+
+.product-agent-open {
+  color: #722ed1;
+  border-color: #d3adf7;
+}
+
 .product-offers-note {
   margin: 0;
   color: #8c8c8c;

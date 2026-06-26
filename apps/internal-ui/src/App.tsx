@@ -12,7 +12,7 @@ import { ErrorScreen, LoadingScreen, PermissionScreen } from "./shared/ui";
 import type { AppData, AuthChallenge, Department, Employee, Product, RouteKey, SessionUser } from "./types";
 
 export function App() {
-  const initialRoute = useMemo(() => routeFromPath(window.location.pathname), []);
+  const initialRoute = useMemo(() => routeFromPath(window.location.pathname, window.location.search), []);
   const [sessionLoading, setSessionLoading] = useState(true);
   const [user, setUser] = useState<SessionUser | null>(null);
   const [totpChallenge, setTotpChallenge] = useState<AuthChallenge | null>(null);
@@ -21,24 +21,27 @@ export function App() {
   const [route, setRoute] = useState<RouteKey>(initialRoute.route);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<number | null>(initialRoute.employeeId);
   const [selectedProductId, setSelectedProductId] = useState<number | null>(initialRoute.productId);
+  const [selectedProductCode, setSelectedProductCode] = useState<string | null>(initialRoute.productCode);
   const [selectedAgentId, setSelectedAgentId] = useState<number | null>(initialRoute.agentId);
   const [selectedReleaseId, setSelectedReleaseId] = useState<number | null>(initialRoute.releaseId);
   const [data, setData] = useState<AppData>({ employees: [], departments: [], products: [] });
   const [dataError, setDataError] = useState(false);
 
-  const navigate = useCallback((nextRoute: RouteKey, entityId: number | null = null, replace = false) => {
+  const navigate = useCallback((nextRoute: RouteKey, entityId: number | null = null, replace = false, productCode: string | null = null) => {
     const nextEmployeeId = nextRoute === "employeeDetail" ? entityId : null;
     const nextProductId = nextRoute === "productDetail" ? entityId : null;
+    const nextProductCode = nextRoute === "aiAgentCreate" ? productCode : null;
     const nextAgentId = nextRoute === "aiAgentDetail" ? entityId : null;
     const nextReleaseId = nextRoute === "aiRelease" ? entityId : null;
-    const nextPath = pathFromRoute(nextRoute, entityId);
+    const nextPath = pathFromRoute(nextRoute, entityId, nextProductCode);
     setRoute(nextRoute);
     setSelectedEmployeeId(nextEmployeeId);
     setSelectedProductId(nextProductId);
+    setSelectedProductCode(nextProductCode);
     setSelectedAgentId(nextAgentId);
     setSelectedReleaseId(nextReleaseId);
-    if (window.location.pathname !== nextPath) {
-      const state = { route: nextRoute, employeeId: nextEmployeeId, productId: nextProductId, agentId: nextAgentId, releaseId: nextReleaseId };
+    if (`${window.location.pathname}${window.location.search}` !== nextPath) {
+      const state = { route: nextRoute, employeeId: nextEmployeeId, productId: nextProductId, productCode: nextProductCode, agentId: nextAgentId, releaseId: nextReleaseId };
       if (replace) {
         window.history.replaceState(state, "", nextPath);
       } else {
@@ -73,10 +76,11 @@ export function App() {
 
   useEffect(() => {
     const onPopState = () => {
-      const nextRoute = routeFromPath(window.location.pathname);
+      const nextRoute = routeFromPath(window.location.pathname, window.location.search);
       setRoute(nextRoute.route);
       setSelectedEmployeeId(nextRoute.employeeId);
       setSelectedProductId(nextRoute.productId);
+      setSelectedProductCode(nextRoute.productCode);
       setSelectedAgentId(nextRoute.agentId);
       setSelectedReleaseId(nextRoute.releaseId);
     };
@@ -130,7 +134,7 @@ export function App() {
       ) : !canAccess(user.role, route) ? (
         <PermissionScreen onReturn={() => navigate(defaultRoute(user.role), null, true)} />
       ) : (
-        <Shell route={route} setRoute={(nextRoute) => navigate(nextRoute)} selectedEmployeeId={selectedEmployeeId} selectedProductId={selectedProductId} selectedAgentId={selectedAgentId} selectedReleaseId={selectedReleaseId} openEmployeeRoute={(employeeId) => navigate("employeeDetail", employeeId)} openProductRoute={(productId) => navigate("productDetail", productId)} openAgentRoute={(agentId) => navigate("aiAgentDetail", agentId)} openReleaseRoute={(releaseId) => navigate("aiRelease", releaseId)} user={user} data={data} reload={loadData} onUserUpdated={setUser} onLogout={logout} />
+        <Shell route={route} setRoute={(nextRoute) => navigate(nextRoute)} selectedEmployeeId={selectedEmployeeId} selectedProductId={selectedProductId} selectedProductCode={selectedProductCode} selectedAgentId={selectedAgentId} selectedReleaseId={selectedReleaseId} openEmployeeRoute={(employeeId) => navigate("employeeDetail", employeeId)} openProductRoute={(productId) => navigate("productDetail", productId)} openAgentCreateRoute={(productCode) => navigate("aiAgentCreate", null, false, productCode)} openAgentRoute={(agentId) => navigate("aiAgentDetail", agentId)} openReleaseRoute={(releaseId) => navigate("aiRelease", releaseId)} user={user} data={data} reload={loadData} onUserUpdated={setUser} onLogout={logout} />
       )}
     </ConfigProvider>
   );

@@ -375,3 +375,23 @@
   color: #595959;
 }
 
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #595959;
+}
+
+.loading-state.page {
+  min-height: 160px;
+}
+
+.loading-state.inline {
+  min-height: 34px;
+}
+
+.loading-state strong {
+  font-size: 13px;
+  font-weight: 600;
+}
+

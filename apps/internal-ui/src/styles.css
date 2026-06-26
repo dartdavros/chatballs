@@ -18,6 +18,7 @@
 @import "./features/employees/styles.css";
 @import "./features/profile/styles.css";
 @import "./features/ai/styles.css";
+@import "./features/ai/create/styles.css";
 @import "./features/ai/detail/styles.css";
 @import "./features/ai/release/styles.css";
 @import "./features/ai/release/composition.css";
