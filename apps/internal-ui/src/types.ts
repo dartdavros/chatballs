@@ -1,3 +1,5 @@
+import type { AiAgent, AiRelease } from "./features/ai/model";
+
 export type Role = "OWNER" | "OPERATOR";
 export type ProductStatus = "ACTIVE" | "DISABLED";
 
@@ -93,4 +95,6 @@ export type AppData = {
   employees: Employee[];
   departments: Department[];
   products: Product[];
+  agents: AiAgent[];
+  releases: AiRelease[];
 };

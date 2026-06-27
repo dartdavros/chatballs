@@ -66,7 +66,7 @@ export function salesOverviewModel(period: SalesPeriod, products: Product[]) {
     ],
     payments: [
       { dot: "#faad14", title: "Незавершённый платёж · ORD-10482", meta: "Точка · ₽2 490 · FirePage", time: "6 мин" },
-      { dot: "#1677ff", title: "Подписка: продление через 2 дня", meta: "Foxray Pro · ORD-10311", time: "—" },
+      { dot: "#1677ff", title: "Подписка: продление через 2 дня", meta: "Foxray Про · ORD-10311", time: "—" },
     ],
   };
 }

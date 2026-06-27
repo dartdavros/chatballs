@@ -27,7 +27,7 @@ export function SalesComposer({ mode, setMode }: { mode: ControlMode; setMode: (
     <div className="sales-composer">
       <div className="sales-human-tools">
         <button>Шаблоны ответов</button>
-        <button>Создать checkout</button>
+        <button>Создать ссылку покупки</button>
         <span />
         <button className="ai" onClick={() => setMode("ai")}>Вернуть AI</button>
         <button>Закрыть</button>

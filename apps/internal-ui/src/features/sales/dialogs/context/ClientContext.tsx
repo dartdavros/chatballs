@@ -12,7 +12,7 @@ export function ClientContext() {
         <ContactRow icon="phone" title="+7 ··· ·· 14" text="Телефон · скрыт" muted />
       </ContextSection>
       <ContextSection title="РАБОЧАЯ ЗАМЕТКА" action="Изменить">
-        <div className="sales-note">Команда ~8 человек, интересует <b>FirePage Business</b> помесячно. Открытый вопрос — интеграция с их CRM (amoCRM).</div>
+        <div className="sales-note">Студия красоты, интересует готовый сайт <b>FirePage</b> (BeautySoft) по разовой лицензии. Открытый вопрос — перенос текущего контента и онлайн-записи.</div>
       </ContextSection>
       <ContextSection title="СВОДКА">
         <div className="sales-summary-grid"><div><span>Заказы</span><b>0</b></div><div><span>Диалоги</span><b>2</b></div><div><span>Покупки</span><b>₽0</b></div></div>

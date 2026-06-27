@@ -34,11 +34,11 @@ function SummaryGrid({ client }: { client: Client }) {
 }
 
 function NeedNote({ note }: { note: string }) {
-  const [beforeProduct, afterProduct] = note.split("Foxray Team");
+  const [beforeProduct, afterProduct] = note.split("Foxray Про");
   return (
     <section className="sales-client-section-card">
       <div className="sales-client-section-head"><h3>Потребность и заметка</h3><button type="button">Изменить</button></div>
-      <div className="sales-client-note">{beforeProduct}<b>Foxray Team</b>{afterProduct}</div>
+      <div className="sales-client-note">{beforeProduct}<b>Foxray Про</b>{afterProduct}</div>
     </section>
   );
 }
@@ -73,7 +73,7 @@ function CurrentDialog({ setRoute }: { setRoute: (route: RouteKey) => void }) {
         <h3>Текущий диалог</h3>
         <span className="sales-client-status-blue"><i />Оператор</span>
       </div>
-      <p className="sales-client-current-dialog">Foxray · Web Chat · ведёт <b>Иван Петров</b>.<br />«Помогу с настройкой рабочих мест.»</p>
+      <p className="sales-client-current-dialog">Foxray · Web Chat · ведёт <b>Иван Петров</b>.<br />«Помогу с настройкой доступа.»</p>
       <Button className="sales-client-outline-action" variant="secondary" onClick={() => setRoute("salesDialogs")}>Открыть диалог</Button>
     </section>
   );

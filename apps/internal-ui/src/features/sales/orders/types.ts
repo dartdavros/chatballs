@@ -64,6 +64,6 @@ export type SalesFulfillment = {
   attempts: string;
   error: string;
   updated: string;
-  canRetry: boolean;
+  attention: boolean;
   search: string;
 };

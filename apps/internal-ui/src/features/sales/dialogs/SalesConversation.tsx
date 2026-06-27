@@ -27,14 +27,14 @@ export function SalesConversation({ controlMode, selected, setControlMode }: { c
         <div className="sales-timeline-inner">
           <div className="sales-day-divider"><span />Сегодня<span /></div>
           <div className="sales-event-chip"><Icon name="clock" size={12} />Диалог начат · канал MAX · 14:02</div>
-          <Message side="client" initials="МС" avatarBg="#eb6f4b" time="14:02">Здравствуйте! Смотрю FirePage для лендингов. Есть тариф на команду?</Message>
-          <Message side="ai" actor="AI-агент FirePage" time="14:03">Да! Для команд есть тариф <b>Business</b>: до 10 пользователей, общие проекты и приоритетная поддержка. Помесячная оплата доступна.</Message>
-          <Message side="client" initials="МС" avatarBg="#eb6f4b" time="14:06">А интеграция с amoCRM есть? Лучше бы поговорить с менеджером.</Message>
-          <div className="sales-event-chip warning"><Icon name="team" size={12} />AI передал диалог оператору · причина: запрос человека (CRM-интеграция)</div>
+          <Message side="client" initials="МС" avatarBg="#eb6f4b" time="14:02">Здравствуйте! Смотрю готовые сайты FirePage для студии красоты. Как это работает?</Message>
+          <Message side="ai" actor="AI-агент FirePage" time="14:03">Здравствуйте! FirePage — это готовый сайт под нишу: выбираете вариант, например <b>BeautySoft</b>, оплачиваете разовую лицензию 4 900 ₽ — и сайт ваш, без подписки.</Message>
+          <Message side="client" initials="МС" avatarBg="#eb6f4b" time="14:06">А мой текущий контент перенесёте? Лучше бы уточнить у менеджера.</Message>
+          <div className="sales-event-chip warning"><Icon name="team" size={12} />AI передал диалог оператору · причина: запрос человека (перенос контента)</div>
           {controlMode === "waiting" && <div className="sales-wait-note">Ожидает оператора · 4 мин</div>}
           {controlMode === "ai" && <TypingMessage />}
           {controlMode === "human" && <div className="sales-event-chip claimed"><Icon name="check" size={13} />Иван Петров забрал диалог · 14:09</div>}
-          {controlMode === "human" && <Message side="operator" initials="ИП" avatarBg="#1677ff" actor="Иван · оператор" time="14:10">Здравствуйте, Мария! Я подключился. По amoCRM — у FirePage Business есть готовая двусторонняя интеграция, лиды и сделки синхронизируются автоматически. Расскажу подробнее?</Message>}
+          {controlMode === "human" && <Message side="operator" initials="ИП" avatarBg="#1677ff" actor="Иван · оператор" time="14:10">Здравствуйте, Мария! Я подключился. По переносу — поможем перенести ваши тексты, фото и онлайн-запись на выбранный сайт. Подобрать вариант под вашу нишу?</Message>}
         </div>
       </div>
     </>

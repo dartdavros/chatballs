@@ -4,10 +4,10 @@ export type ProductTab = "overview" | "offers" | "knowledge" | "channels" | "ful
 
 export const productTabs: Array<{ key: ProductTab; label: string }> = [
   { key: "overview", label: "Обзор" },
-  { key: "offers", label: "Offer и цены" },
+  { key: "offers", label: "Предложения и цены" },
   { key: "knowledge", label: "База знаний" },
   { key: "channels", label: "Каналы" },
-  { key: "fulfillment", label: "Исполнение" },
+  { key: "fulfillment", label: "Доступ продукта" },
 ];
 
 export function productKind(product: Product) {

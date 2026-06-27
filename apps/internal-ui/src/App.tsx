@@ -9,6 +9,7 @@ import { AuthChangePassword, AuthLogin, AuthPasswordRecovery, AuthResetPassword,
 import { Shell } from "./layout/Shell";
 import { pathFromRoute, routeFromPath } from "./router";
 import { ErrorScreen, LoadingScreen, PermissionScreen } from "./shared/ui";
+import type { AiAgent, AiRelease } from "./features/ai/model";
 import type { AppData, AuthChallenge, Department, Employee, Product, RouteKey, SessionUser } from "./types";
 
 export function App() {
@@ -24,7 +25,7 @@ export function App() {
   const [selectedProductCode, setSelectedProductCode] = useState<string | null>(initialRoute.productCode);
   const [selectedAgentId, setSelectedAgentId] = useState<number | null>(initialRoute.agentId);
   const [selectedReleaseId, setSelectedReleaseId] = useState<number | null>(initialRoute.releaseId);
-  const [data, setData] = useState<AppData>({ employees: [], departments: [], products: [] });
+  const [data, setData] = useState<AppData>({ employees: [], departments: [], products: [], agents: [], releases: [] });
   const [dataError, setDataError] = useState(false);
 
   const navigate = useCallback((nextRoute: RouteKey, entityId: number | null = null, replace = false, productCode: string | null = null) => {
@@ -50,7 +51,7 @@ export function App() {
     }
   }, []);
 
-  const loadData = useMemo(() => async () => {
+  const loadData = useCallback(async () => {
     setDataError(false);
     try {
       const [employees, departments, products] = await Promise.all([
@@ -58,11 +59,21 @@ export function App() {
         api<{ items: Department[] }>("/api/v1/company/departments/"),
         api<{ items: Product[] }>("/api/v1/company/products/"),
       ]);
-      setData({ employees: employees.items, departments: departments.items, products: products.items });
+      let agents: AiAgent[] = [];
+      let releases: AiRelease[] = [];
+      if (user?.role === "OWNER") {
+        const [agentsResponse, releasesResponse] = await Promise.all([
+          api<{ items: AiAgent[] }>("/api/v1/ai/agents/"),
+          api<{ items: AiRelease[] }>("/api/v1/ai/releases/"),
+        ]);
+        agents = agentsResponse.items;
+        releases = releasesResponse.items;
+      }
+      setData({ employees: employees.items, departments: departments.items, products: products.items, agents, releases });
     } catch {
       setDataError(true);
     }
-  }, []);
+  }, [user?.role]);
 
   useEffect(() => {
     api<{ authenticated: boolean; user?: SessionUser }>("/api/v1/auth/session/")
@@ -102,7 +113,7 @@ export function App() {
     setUser(null);
     setTotpChallenge(null);
     navigate("command", null, true);
-    setData({ employees: [], departments: [], products: [] });
+    setData({ employees: [], departments: [], products: [], agents: [], releases: [] });
   }
 
   if (resetting) {
