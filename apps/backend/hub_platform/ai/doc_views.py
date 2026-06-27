@@ -1,3 +1,4 @@
+from django.db.models import Q
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -16,6 +17,7 @@ from hub_platform.ai.models import (
 from hub_platform.ai.selectors import document_for_organization, documents_for_organization
 from hub_platform.ai.serializers import knowledge_payload, prompt_payload
 from hub_platform.api.permissions import IsOwner
+from hub_platform.channels.models import Channel
 from hub_platform.identity.audit import record_audit_event
 from hub_platform.products.models import Product
 
@@ -54,9 +56,19 @@ class _DocConfig(APIView):
 
 class DocumentListCreateView(_DocConfig):
     def get(self, request: Request) -> Response:
-        documents = documents_for_organization(
-            self.document_model, self._org(request).id, request.query_params.get("product")
-        )
+        org = self._org(request)
+        documents = documents_for_organization(self.document_model, org.id, request.query_params.get("product"))
+        channel_code = request.query_params.get("channel")
+        if channel_code:
+            channel = Channel.objects.filter(organization=org, code=channel_code).first()
+            if channel is None:
+                documents = documents.none()
+            elif self.document_model is PromptDocument:
+                # Промпты — поведение конкретного канала: точное совпадение продукта канала.
+                documents = documents.filter(product=channel.product)
+            else:
+                # Знания — библиотека: глобальные + продукт канала.
+                documents = documents.filter(Q(scope=DocumentScope.GLOBAL) | Q(product=channel.product))
         return Response({"items": [self.payload(document) for document in documents]})
 
     def post(self, request: Request) -> Response:

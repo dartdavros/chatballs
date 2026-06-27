@@ -28,8 +28,8 @@ export function useAiAgentDetail(agentId: number | null) {
       const channel = encodeURIComponent(agent.channel.code);
       const [releases, knowledge, prompts] = await Promise.all([
         api<{ items: AiReleaseFull[] }>(`/api/v1/ai/releases/?channel=${channel}`),
-        api<{ items: KnowledgeDoc[] }>("/api/v1/ai/knowledge/"),
-        api<{ items: PromptDoc[] }>("/api/v1/ai/prompts/"),
+        api<{ items: KnowledgeDoc[] }>(`/api/v1/ai/knowledge/?channel=${channel}`),
+        api<{ items: PromptDoc[] }>(`/api/v1/ai/prompts/?channel=${channel}`),
       ]);
       setData({ agent, releases: releases.items, knowledge: knowledge.items, prompts: prompts.items });
     } catch {
