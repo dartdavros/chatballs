@@ -4,6 +4,7 @@ from rest_framework.views import APIView
 
 from hub_platform.ai import documents as doc_service
 from hub_platform.ai.models import (
+    DocumentScope,
     InclusionMode,
     KnowledgeCategory,
     KnowledgeDocument,
@@ -61,10 +62,15 @@ class DocumentListCreateView(_DocConfig):
     def post(self, request: Request) -> Response:
         body = request.data
         org = self._org(request)
-        try:
-            product = Product.objects.get(organization=org, code=str(body.get("product", "")))
-        except Product.DoesNotExist:
-            return Response({"detail": "Product not found"}, status=400)
+        scope = str(body.get("scope", DocumentScope.GLOBAL))
+        if scope not in DocumentScope.values:
+            return Response({"detail": "Unknown scope"}, status=400)
+        product = None
+        if scope == DocumentScope.PRODUCT:
+            try:
+                product = Product.objects.get(organization=org, code=str(body.get("product", "")))
+            except Product.DoesNotExist:
+                return Response({"detail": "Product not found"}, status=400)
 
         code = str(body.get("code", "")).strip()
         title = str(body.get("title", "")).strip()
@@ -73,10 +79,10 @@ class DocumentListCreateView(_DocConfig):
             return Response({"detail": "Code and title are required"}, status=400)
         if category not in self.valid_categories:
             return Response({"detail": "Unknown category"}, status=400)
-        if self.document_model.objects.filter(product=product, code=code).exists():
+        if self.document_model.objects.filter(organization=org, product=product, code=code).exists():
             return Response({"detail": "Document code already exists"}, status=400)
 
-        fields = {"product": product, "code": code, "title": title, "category": category}
+        fields = {"organization": org, "scope": scope, "product": product, "code": code, "title": title, "category": category}
         if self.supports_inclusion:
             inclusion = str(body.get("inclusionMode", InclusionMode.RETRIEVAL))
             if inclusion not in InclusionMode.values:

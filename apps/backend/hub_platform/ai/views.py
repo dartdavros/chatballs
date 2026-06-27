@@ -51,7 +51,7 @@ class AIAgentListView(APIView):
                 organization=request.user.employee_profile.organization,
                 author=request.user,
                 data=AgentCreateInput(
-                    product_code=str(request.data.get("product", "")).strip(),
+                    channel_code=str(request.data.get("channel", "")).strip(),
                     model=str(request.data.get("model", "")).strip(),
                     system_prompt=str(request.data.get("systemPrompt", "")).strip(),
                     knowledge_document_ids=knowledge_ids,

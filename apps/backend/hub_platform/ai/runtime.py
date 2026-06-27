@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from hub_platform.ai.invocation import invoke_chat
-from hub_platform.ai.models import KnowledgeFragment, ProductAIRelease, PromptCategory
+from hub_platform.ai.models import KnowledgeFragment, ChannelAIRelease, PromptCategory
 from hub_platform.ai.provider.base import ChatMessage, ChatResult
 from hub_platform.ai.retrieval import KnowledgeRetriever
 
@@ -20,7 +20,7 @@ class TestChatResult:
     handoff_suggested: bool
 
 
-def _release_system_prompt(release: ProductAIRelease) -> str:
+def _release_system_prompt(release: ChannelAIRelease) -> str:
     by_category = {
         link.prompt_version.document.category: link.prompt_version
         for link in release.prompt_versions.select_related("prompt_version__document")
@@ -33,7 +33,7 @@ def _release_system_prompt(release: ProductAIRelease) -> str:
     return "\n\n".join(parts)
 
 
-def run_test_chat(*, release: ProductAIRelease, message: str, history: list[dict] | None = None) -> TestChatResult:
+def run_test_chat(*, release: ChannelAIRelease, message: str, history: list[dict] | None = None) -> TestChatResult:
     fragments = KnowledgeRetriever().retrieve(release=release, query=message, limit=5)
 
     messages: list[ChatMessage] = []
@@ -50,7 +50,7 @@ def run_test_chat(*, release: ProductAIRelease, message: str, history: list[dict
     messages.append(ChatMessage(role="user", content=message))
 
     result = invoke_chat(
-        product=release.product,
+        channel=release.channel,
         messages=messages,
         purpose="test_chat",
         release=release,

@@ -3,12 +3,12 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from pgvector.django import VectorField
 
-# Один основной sales-агент на продукт (ADR-HUB-0007).
-DEFAULT_AI_MODEL = "openai/gpt-4o-mini"
+# Один основной агент на канал обработки (ADR-HUB-0007/0019).
+DEFAULT_AI_MODEL = "anthropic/claude-sonnet-4.6"
 
 
 class AIAgent(models.Model):
-    product = models.OneToOneField("products.Product", on_delete=models.PROTECT, related_name="ai_agent")
+    channel = models.OneToOneField("channels.Channel", on_delete=models.CASCADE, related_name="ai_agent")
     name = models.CharField(max_length=255)
     is_active = models.BooleanField(default=True)
     model = models.CharField(max_length=128, default=DEFAULT_AI_MODEL)
@@ -19,7 +19,7 @@ class AIAgent(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self) -> str:
-        return f"{self.product.code}:agent"
+        return f"{self.channel.code}:agent"
 
 
 # --- Knowledge & prompt documents (ADR-HUB-0005) ---
@@ -29,6 +29,11 @@ class DocumentStatus(models.TextChoices):
     DRAFT = "DRAFT", "Черновик"
     PUBLISHED = "PUBLISHED", "Опубликован"
     ARCHIVED = "ARCHIVED", "Архив"
+
+
+class DocumentScope(models.TextChoices):
+    GLOBAL = "GLOBAL", "Глобальное"
+    PRODUCT = "PRODUCT", "Продуктовое"
 
 
 class KnowledgeCategory(models.TextChoices):
@@ -54,7 +59,10 @@ class InclusionMode(models.TextChoices):
 
 
 class _BaseDocument(models.Model):
-    product = models.ForeignKey("products.Product", on_delete=models.PROTECT, related_name="%(class)ss")
+    # Библиотека со scope: GLOBAL или PRODUCT (ADR-HUB-0005/0019).
+    organization = models.ForeignKey("identity.Organization", on_delete=models.PROTECT, related_name="%(class)ss")
+    scope = models.CharField(max_length=16, choices=DocumentScope.choices, default=DocumentScope.GLOBAL)
+    product = models.ForeignKey("products.Product", on_delete=models.PROTECT, related_name="%(class)ss", null=True, blank=True)
     code = models.SlugField(max_length=64)
     title = models.CharField(max_length=255)
     is_enabled = models.BooleanField(default=True)
@@ -70,20 +78,20 @@ class KnowledgeDocument(_BaseDocument):
     inclusion_mode = models.CharField(max_length=16, choices=InclusionMode.choices, default=InclusionMode.RETRIEVAL)
 
     class Meta:
-        constraints = [models.UniqueConstraint(fields=["product", "code"], name="uniq_knowledge_doc_product_code")]
+        constraints = [models.UniqueConstraint(fields=["organization", "product", "code"], name="uniq_knowledge_doc_org_product_code")]
 
     def __str__(self) -> str:
-        return f"knowledge:{self.product_id}/{self.code}"
+        return f"knowledge:{self.organization_id}/{self.code}"
 
 
 class PromptDocument(_BaseDocument):
     category = models.CharField(max_length=32, choices=PromptCategory.choices)
 
     class Meta:
-        constraints = [models.UniqueConstraint(fields=["product", "code"], name="uniq_prompt_doc_product_code")]
+        constraints = [models.UniqueConstraint(fields=["organization", "product", "code"], name="uniq_prompt_doc_org_product_code")]
 
     def __str__(self) -> str:
-        return f"prompt:{self.product_id}/{self.code}"
+        return f"prompt:{self.organization_id}/{self.code}"
 
 
 class _BaseDocumentVersion(models.Model):
@@ -136,7 +144,7 @@ class PromptDocumentVersion(_BaseDocumentVersion):
         constraints = [models.UniqueConstraint(fields=["document", "version"], name="uniq_prompt_version")]
 
 
-# --- ProductAIRelease: атомарный immutable-снимок конфигурации (ADR-HUB-0007) ---
+# --- ChannelAIRelease: атомарный immutable-снимок конфигурации канала (ADR-HUB-0007/0019) ---
 
 
 class ReleaseStatus(models.TextChoices):
@@ -145,8 +153,8 @@ class ReleaseStatus(models.TextChoices):
     ARCHIVED = "ARCHIVED", "Архив"
 
 
-class ProductAIRelease(models.Model):
-    product = models.ForeignKey("products.Product", on_delete=models.PROTECT, related_name="ai_releases")
+class ChannelAIRelease(models.Model):
+    channel = models.ForeignKey("channels.Channel", on_delete=models.CASCADE, related_name="ai_releases")
     version = models.PositiveIntegerField()
     status = models.CharField(max_length=16, choices=ReleaseStatus.choices, default=ReleaseStatus.DRAFT)
     # immutable snapshot of the working configuration
@@ -160,32 +168,32 @@ class ProductAIRelease(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     published_at = models.DateTimeField(null=True, blank=True)
 
-    _SNAPSHOT_FIELDS = ("product_id", "version", "model", "model_params", "allowed_tools", "limits", "retrieval_index_version")
+    _SNAPSHOT_FIELDS = ("channel_id", "version", "model", "model_params", "allowed_tools", "limits", "retrieval_index_version")
 
     class Meta:
-        ordering = ["product_id", "-version"]
+        ordering = ["channel_id", "-version"]
         constraints = [
-            models.UniqueConstraint(fields=["product", "version"], name="uniq_release_product_version"),
+            models.UniqueConstraint(fields=["channel", "version"], name="uniq_release_channel_version"),
             models.UniqueConstraint(
-                fields=["product"],
+                fields=["channel"],
                 condition=models.Q(status="PUBLISHED"),
-                name="uniq_active_release_per_product",
+                name="uniq_active_release_per_channel",
             ),
         ]
 
     def save(self, *args: object, **kwargs: object) -> None:
         if self.pk:
-            current = ProductAIRelease.objects.get(pk=self.pk)
+            current = ChannelAIRelease.objects.get(pk=self.pk)
             if any(getattr(current, field) != getattr(self, field) for field in self._SNAPSHOT_FIELDS):
                 raise ValidationError("Published release configuration is immutable")
         super().save(*args, **kwargs)
 
     def __str__(self) -> str:
-        return f"release:{self.product_id}/v{self.version}"
+        return f"release:{self.channel_id}/v{self.version}"
 
 
 class ReleaseKnowledgeVersion(models.Model):
-    release = models.ForeignKey(ProductAIRelease, on_delete=models.CASCADE, related_name="knowledge_versions")
+    release = models.ForeignKey(ChannelAIRelease, on_delete=models.CASCADE, related_name="knowledge_versions")
     knowledge_version = models.ForeignKey(KnowledgeDocumentVersion, on_delete=models.PROTECT, related_name="+")
 
     class Meta:
@@ -193,7 +201,7 @@ class ReleaseKnowledgeVersion(models.Model):
 
 
 class ReleasePromptVersion(models.Model):
-    release = models.ForeignKey(ProductAIRelease, on_delete=models.CASCADE, related_name="prompt_versions")
+    release = models.ForeignKey(ChannelAIRelease, on_delete=models.CASCADE, related_name="prompt_versions")
     prompt_version = models.ForeignKey(PromptDocumentVersion, on_delete=models.PROTECT, related_name="+")
 
     class Meta:
@@ -210,10 +218,10 @@ class LlmInvocationStatus(models.TextChoices):
 
 
 class LlmInvocation(models.Model):
-    # Учёт по каналу (M1.2a) и/или продукту (исторический product-якорь).
+    # Учёт по каналу (ADR-HUB-0019) и/или продукту, если канал продуктовый.
     channel = models.ForeignKey("channels.Channel", on_delete=models.SET_NULL, null=True, blank=True, related_name="ai_invocations")
     product = models.ForeignKey("products.Product", on_delete=models.PROTECT, related_name="ai_invocations", null=True, blank=True)
-    release = models.ForeignKey(ProductAIRelease, on_delete=models.SET_NULL, null=True, blank=True, related_name="invocations")
+    release = models.ForeignKey(ChannelAIRelease, on_delete=models.SET_NULL, null=True, blank=True, related_name="invocations")
     purpose = models.CharField(max_length=64)
     operation = models.CharField(max_length=16)  # chat | embedding
     model = models.CharField(max_length=128, blank=True)
@@ -230,7 +238,7 @@ class LlmInvocation(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
-        indexes = [models.Index(fields=["product", "created_at"])]
+        indexes = [models.Index(fields=["channel", "created_at"])]
 
     def __str__(self) -> str:
-        return f"llm:{self.product_id}/{self.operation}/{self.status}"
+        return f"llm:{self.channel_id}/{self.operation}/{self.status}"

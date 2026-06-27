@@ -12,7 +12,7 @@ def reindex_knowledge_version(version: KnowledgeDocumentVersion) -> list[Knowled
     if not chunks:
         return []
     embeddings = embed_texts(
-        product=version.document.product,
+        channel=None,
         texts=chunks,
         model=settings.HUB_AI_EMBEDDING_MODEL,
         purpose="knowledge_index",

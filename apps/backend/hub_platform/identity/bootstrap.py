@@ -2,7 +2,6 @@ from dataclasses import dataclass
 
 from django.db import transaction
 
-from hub_platform.ai.models import AIAgent
 from hub_platform.identity.audit import record_audit_event
 from hub_platform.identity.models import (
     Department,
@@ -40,7 +39,7 @@ def bootstrap_edevs_owner(*, email: str, password: str, full_name: str = "") -> 
     for code, name in (("firepage", "FirePage"), ("foxray", "Foxray")):
         product, _ = Product.objects.get_or_create(organization=organization, code=code, defaults={"name": name})
         ProductDepartment.objects.get_or_create(product=product, department=sales_department)
-        AIAgent.objects.get_or_create(product=product, defaults={"name": f"{product.name} Sales"})
+    # AI-агенты теперь на уровне канала обработки (ADR-HUB-0019) — см. seed_channels.
 
     owner, created_owner = HumanUser.objects.get_or_create(
         email=HumanUser.objects.normalize_email(email),
