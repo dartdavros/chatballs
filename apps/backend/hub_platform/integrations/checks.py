@@ -21,7 +21,9 @@ import urllib.request
 from django.conf import settings
 
 DEFAULT_OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
-DEFAULT_MAX_BASE_URL = "https://platform-api2.max.ru"
+# platform-api2.max.ru отдаёт неполную цепочку сертификата (verify failed);
+# рабочий и с валидным сертификатом — platform-api.max.ru.
+DEFAULT_MAX_BASE_URL = "https://platform-api.max.ru"
 DEFAULT_TELEGRAM_BASE_URL = "https://api.telegram.org"
 
 CheckResult = tuple[bool, str, dict]
@@ -72,9 +74,11 @@ def check_max(*, secret: str, base_url: str) -> CheckResult:
         status, data = _get(f"{base}/me", headers={"Authorization": secret})
         if status != 200:
             return False, f"MAX ответил {status}", {}
+        bot_id = data.get("user_id")
         username = data.get("username") or ""
         name = data.get("name") or username or "бот подключён"
-        return True, f"MAX: {name}", {"bot_username": username or name}
+        meta = {"bot_id": str(bot_id) if bot_id else "", "bot_username": username, "bot_name": name}
+        return True, f"MAX: {name}", meta
 
     return _safe(run)
 
@@ -89,7 +93,12 @@ def check_telegram(*, secret: str, base_url: str) -> CheckResult:
         status, data = _get(f"{base}/bot{secret}/getMe")
         if status != 200 or not data.get("ok"):
             return False, f"Telegram ответил {status}", {}
-        username = (data.get("result") or {}).get("username") or ""
-        return True, f"Telegram: @{username}" if username else "Telegram: бот подключён", {"bot_username": username}
+        result = data.get("result") or {}
+        bot_id = result.get("id")
+        username = result.get("username") or ""
+        name = result.get("first_name") or username or "бот подключён"
+        meta = {"bot_id": str(bot_id) if bot_id else "", "bot_username": username, "bot_name": name}
+        detail = f"Telegram: @{username}" if username else "Telegram: бот подключён"
+        return True, detail, meta
 
     return _safe(run)

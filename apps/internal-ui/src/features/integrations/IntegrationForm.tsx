@@ -15,7 +15,6 @@ export function IntegrationForm({ initial, onClose, onSaved }: { initial: Integr
   const [provider, setProvider] = useState<IntegrationProvider>(initial?.provider ?? "OPENROUTER");
   const [name, setName] = useState(initial?.name ?? "");
   const [secret, setSecret] = useState("");
-  const [botUsername, setBotUsername] = useState(initial?.config.botUsername ?? "");
   const [baseUrl, setBaseUrl] = useState(initial?.config.baseUrl ?? "");
   const [defaultModel, setDefaultModel] = useState(initial?.config.defaultModel ?? "");
   const [submitting, setSubmitting] = useState(false);
@@ -28,7 +27,7 @@ export function IntegrationForm({ initial, onClose, onSaved }: { initial: Integr
     if (!ready) return;
     setSubmitting(true);
     setError(null);
-    const config = { baseUrl: baseUrl.trim(), defaultModel: defaultModel.trim(), botUsername: botUsername.trim() };
+    const config = { baseUrl: baseUrl.trim(), defaultModel: defaultModel.trim() };
     try {
       if (isEdit) {
         await api(`/api/v1/integrations/${initial.id}/`, {
@@ -71,8 +70,8 @@ export function IntegrationForm({ initial, onClose, onSaved }: { initial: Integr
         {meta.hasModel && (
           <FormField label="Модель по умолчанию" value={defaultModel} onChange={setDefaultModel} placeholder="anthropic/claude-sonnet-4.6" />
         )}
-        {meta.hasBotName && (
-          <FormField label="Имя бота" value={botUsername} onChange={setBotUsername} placeholder="@username · подставится при проверке" />
+        {isEdit && initial.config.botUsername && (
+          <FormField label="Бот" value={`${initial.config.botName || initial.config.botUsername}${initial.config.botUsername ? ` · @${initial.config.botUsername}` : ""}${initial.config.botId ? ` · id ${initial.config.botId}` : ""}`} />
         )}
         {error && <div className="integration-form-error">{error}</div>}
         <div className="integration-form-actions">

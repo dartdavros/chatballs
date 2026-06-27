@@ -12,7 +12,9 @@ def integration_payload(integration: Integration) -> dict[str, object]:
         "config": {
             "baseUrl": integration.config.get("base_url", ""),
             "defaultModel": integration.config.get("default_model", ""),
+            "botId": integration.config.get("bot_id", ""),
             "botUsername": integration.config.get("bot_username", ""),
+            "botName": integration.config.get("bot_name", ""),
         },
         "status": integration.status,
         "lastCheckedAt": integration.last_checked_at.isoformat() if integration.last_checked_at else None,

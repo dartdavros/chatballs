@@ -115,7 +115,7 @@ export function IntegrationsPage() {
                           <td>
                             <div className="product-cell">
                               <span className="product-icon"><Icon name={item.kind === "LLM_PROVIDER" ? "robot" : "plug"} size={20} /></span>
-                              <span><strong>{item.name}</strong><small>{meta.label}{item.config.botUsername ? ` · ${item.config.botUsername}` : ""}</small></span>
+                              <span><strong>{item.name}</strong><small>{meta.label}{item.config.botUsername ? ` · @${item.config.botUsername}` : item.config.botName ? ` · ${item.config.botName}` : ""}</small></span>
                             </div>
                           </td>
                           <td>{item.hasSecret ? <code className="ai-mono">••••••••</code> : <span className="product-empty-value">—</span>}</td>

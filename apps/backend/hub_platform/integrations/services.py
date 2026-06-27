@@ -103,10 +103,14 @@ def test_integration(*, integration: Integration) -> Integration:
     integration.last_error = "" if ok else detail
     integration.last_checked_at = timezone.now()
     update_fields = ["status", "last_error", "last_checked_at", "updated_at"]
-    # Реальное имя бота из ответа API — авторитетный источник, перезаписываем.
-    bot_username = meta.get("bot_username") if ok else None
-    if bot_username:
-        integration.config = {**integration.config, "bot_username": bot_username}
-        update_fields.append("config")
+    # Идентичность бота (id/username/имя) — из ответа API, авторитетный источник.
+    if ok and meta:
+        config = {**integration.config}
+        for key in ("bot_id", "bot_username", "bot_name"):
+            if meta.get(key):
+                config[key] = meta[key]
+        if config != integration.config:
+            integration.config = config
+            update_fields.append("config")
     integration.save(update_fields=update_fields)
     return integration
