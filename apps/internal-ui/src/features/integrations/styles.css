@@ -1,0 +1,75 @@
+.integrations-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.integration-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.integration-group > h2 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #8c8c8c;
+}
+
+.integrations-page .product-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: #f0f2f5;
+  color: #595959;
+}
+
+.integration-config {
+  font-size: 13px;
+  color: #595959;
+}
+
+.integration-config > small {
+  display: block;
+  margin-top: 2px;
+  color: #8c8c8c;
+  font-family: var(--mono-font, ui-monospace, monospace);
+}
+
+.integration-status {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+}
+
+.integration-status > small {
+  color: #8c8c8c;
+  font-size: 12px;
+  max-width: 280px;
+}
+
+.integration-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: 6px;
+}
+
+.integration-form-error {
+  color: #cf1322;
+  font-size: 13px;
+}
+
+.integration-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+}

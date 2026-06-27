@@ -20,4 +20,5 @@ export const routes: Record<RouteKey, string> = {
   aiRelease: "Версия продукта",
   aiTestChat: "Тестовый чат",
   aiUsage: "Использование AI",
+  integrations: "Интеграции",
 };

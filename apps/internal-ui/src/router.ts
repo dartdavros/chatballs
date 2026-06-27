@@ -45,6 +45,7 @@ export function routeFromPath(pathname: string, search = ""): RouteState {
   }
   if (path === "/ai/test-chat") return { route: "aiTestChat", ...base };
   if (path === "/ai/usage") return { route: "aiUsage", ...base };
+  if (path === "/integrations") return { route: "integrations", ...base };
   if (path === "/profile") return { route: "profile", ...base };
   return { route: "command", ...base };
 }
@@ -68,6 +69,7 @@ export function pathFromRoute(route: RouteKey, entityId: number | null = null, p
   if (route === "aiUsage") return "/ai/usage";
   if (route === "aiAgentDetail") return entityId ? `/ai/agents/${entityId}` : "/ai/agents";
   if (route === "aiRelease") return entityId ? `/ai/releases/${entityId}` : "/ai/agents";
+  if (route === "integrations") return "/integrations";
   if (route === "profile") return "/profile";
   return "/profile";
 }

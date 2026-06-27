@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "hub_platform.identity",
     "hub_platform.products",
     "hub_platform.ai",
+    "hub_platform.integrations",
     "hub_platform.health",
     "hub_platform.events",
 ]

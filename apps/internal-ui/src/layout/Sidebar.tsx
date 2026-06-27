@@ -11,7 +11,7 @@ export function Sidebar({ route, user, setRoute }: { route: RouteKey; user: Sess
     { key: "products" as const, label: "Продукты", icon: "box" as const },
     { label: "ПЛАТФОРМА", group: true },
     { key: "aiAgents" as const, label: "AI", icon: "robot" as const },
-    { label: "Интеграции", icon: "plug" as const, disabled: true },
+    { key: "integrations" as const, label: "Интеграции", icon: "plug" as const },
     { divider: true },
     { label: "Настройки", icon: "settings" as const, disabled: true },
   ];

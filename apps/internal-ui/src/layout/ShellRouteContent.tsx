@@ -4,6 +4,7 @@ import { AiAgentDetailPage } from "../features/ai/detail/AiAgentDetailPage";
 import { ProductAIReleasePage } from "../features/ai/release/ProductAIReleasePage";
 import { AiTestChatPage } from "../features/ai/test-chat/AiTestChatPage";
 import { CommandCenter } from "../features/command/CommandCenter";
+import { IntegrationsPage } from "../features/integrations/IntegrationsPage";
 import { DepartmentsPage } from "../features/departments/DepartmentsPage";
 import { EmployeeDetailPage, EmployeesPage } from "../features/employees/EmployeesPage";
 import { ProductsPage } from "../features/products/ProductsPage";
@@ -40,6 +41,7 @@ export function ShellRouteContent({ route, data, currentEmployee, currentProduct
       {route === "aiAgentDetail" && <AiAgentDetailPage agentId={selectedAgentId} setRoute={setRoute} openRelease={openRelease} onAgentLoaded={onAgentLoaded} />}
       {route === "aiRelease" && <ProductAIReleasePage releaseId={selectedReleaseId} setRoute={setRoute} onReleaseLoaded={onAgentLoaded} />}
       {route === "aiTestChat" && <AiTestChatPage />}
+      {route === "integrations" && <IntegrationsPage />}
     </>
   );
 }
