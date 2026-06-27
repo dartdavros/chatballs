@@ -210,7 +210,9 @@ class LlmInvocationStatus(models.TextChoices):
 
 
 class LlmInvocation(models.Model):
-    product = models.ForeignKey("products.Product", on_delete=models.PROTECT, related_name="ai_invocations")
+    # Учёт по каналу (M1.2a) и/или продукту (исторический product-якорь).
+    channel = models.ForeignKey("channels.Channel", on_delete=models.SET_NULL, null=True, blank=True, related_name="ai_invocations")
+    product = models.ForeignKey("products.Product", on_delete=models.PROTECT, related_name="ai_invocations", null=True, blank=True)
     release = models.ForeignKey(ProductAIRelease, on_delete=models.SET_NULL, null=True, blank=True, related_name="invocations")
     purpose = models.CharField(max_length=64)
     operation = models.CharField(max_length=16)  # chat | embedding

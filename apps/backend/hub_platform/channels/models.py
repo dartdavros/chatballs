@@ -20,6 +20,9 @@ class Channel(models.Model):
     provider_integration = models.ForeignKey("integrations.Integration", on_delete=models.PROTECT, related_name="channels", null=True, blank=True)
     model = models.CharField(max_length=128, default=DEFAULT_CHANNEL_MODEL)
     model_params = models.JSONField(default=dict, blank=True)
+    # Живой системный промпт канала (M1.2a). Полноценные релизы знаний/промптов
+    # на уровне канала придут в M1.2b (ADR-HUB-0007/0005).
+    system_prompt = models.TextField(blank=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
