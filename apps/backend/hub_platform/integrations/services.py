@@ -33,6 +33,11 @@ def _normalized_config(provider: str, config: dict) -> dict:
         default_model = str(config.get("defaultModel", config.get("default_model", ""))).strip()
         if default_model:
             result["default_model"] = default_model
+    else:
+        # Мессенджер-подключения (MAX/Telegram/Web): идентификатор бота.
+        bot_username = str(config.get("botUsername", config.get("bot_username", ""))).strip()
+        if bot_username:
+            result["bot_username"] = bot_username
     return result
 
 
@@ -91,11 +96,17 @@ _CHECKS = {
 def test_integration(*, integration: Integration) -> Integration:
     check = _CHECKS.get(integration.provider)
     if check is None:
-        ok, detail = False, "Проверка для этого типа подключения не поддерживается"
+        ok, detail, meta = False, "Проверка для этого типа подключения не поддерживается", {}
     else:
-        ok, detail = check(secret=integration.secret, base_url=str(integration.config.get("base_url", "")))
+        ok, detail, meta = check(secret=integration.secret, base_url=str(integration.config.get("base_url", "")))
     integration.status = IntegrationStatus.OK if ok else IntegrationStatus.ERROR
     integration.last_error = "" if ok else detail
     integration.last_checked_at = timezone.now()
-    integration.save(update_fields=["status", "last_error", "last_checked_at", "updated_at"])
+    update_fields = ["status", "last_error", "last_checked_at", "updated_at"]
+    # Реальное имя бота из ответа API — авторитетный источник, перезаписываем.
+    bot_username = meta.get("bot_username") if ok else None
+    if bot_username:
+        integration.config = {**integration.config, "bot_username": bot_username}
+        update_fields.append("config")
+    integration.save(update_fields=update_fields)
     return integration

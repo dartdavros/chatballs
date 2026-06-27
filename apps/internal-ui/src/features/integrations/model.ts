@@ -8,7 +8,7 @@ export type Integration = {
   provider: IntegrationProvider;
   name: string;
   hasSecret: boolean;
-  config: { baseUrl: string; defaultModel: string };
+  config: { baseUrl: string; defaultModel: string; botUsername: string };
   status: IntegrationStatus;
   lastCheckedAt: string | null;
   lastError: string;
@@ -22,14 +22,15 @@ type ProviderMeta = {
   secretLabel: string;
   defaultBaseUrl: string;
   hasModel: boolean;
+  hasBotName: boolean;
   testable: boolean;
 };
 
 export const PROVIDERS: Record<IntegrationProvider, ProviderMeta> = {
-  OPENROUTER: { label: "OpenRouter", kind: "LLM_PROVIDER", secretLabel: "API-ключ", defaultBaseUrl: "https://openrouter.ai/api/v1", hasModel: true, testable: true },
-  MAX: { label: "MAX", kind: "MESSENGER", secretLabel: "Токен бота", defaultBaseUrl: "https://botapi.max.ru", hasModel: false, testable: true },
-  TELEGRAM: { label: "Telegram", kind: "MESSENGER", secretLabel: "Токен бота", defaultBaseUrl: "https://api.telegram.org", hasModel: false, testable: true },
-  WEB: { label: "Web-виджет", kind: "MESSENGER", secretLabel: "", defaultBaseUrl: "", hasModel: false, testable: false },
+  OPENROUTER: { label: "OpenRouter", kind: "LLM_PROVIDER", secretLabel: "API-ключ", defaultBaseUrl: "https://openrouter.ai/api/v1", hasModel: true, hasBotName: false, testable: true },
+  MAX: { label: "MAX", kind: "MESSENGER", secretLabel: "Токен бота", defaultBaseUrl: "https://platform-api2.max.ru", hasModel: false, hasBotName: true, testable: true },
+  TELEGRAM: { label: "Telegram", kind: "MESSENGER", secretLabel: "Токен бота", defaultBaseUrl: "https://api.telegram.org", hasModel: false, hasBotName: true, testable: true },
+  WEB: { label: "Web-виджет", kind: "MESSENGER", secretLabel: "", defaultBaseUrl: "", hasModel: false, hasBotName: false, testable: false },
 };
 
 export const STATUS_META: Record<IntegrationStatus, { label: string; bg: string; color: string }> = {
