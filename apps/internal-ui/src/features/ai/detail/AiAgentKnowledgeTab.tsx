@@ -3,7 +3,7 @@ import { EmptyState } from "../../../shared/ui";
 import { formatDate } from "../../../shared/utils";
 import { knowledgeCategoryLabel, publishedVersion, type KnowledgeDoc } from "./model";
 
-export function AiAgentKnowledgeTab({ knowledge, productName }: { knowledge: KnowledgeDoc[]; productName: string }) {
+export function AiAgentKnowledgeTab({ knowledge, channelName }: { knowledge: KnowledgeDoc[]; channelName: string }) {
   if (knowledge.length === 0) {
     return <EmptyState title="Материалы знаний ещё не добавлены" />;
   }
@@ -11,7 +11,7 @@ export function AiAgentKnowledgeTab({ knowledge, productName }: { knowledge: Kno
     <section className="ai-card ai-card--flush">
       <div className="ai-knowledge-head">
         <h3>Обязательные знания release</h3>
-        <div className="ai-knowledge-sub">Индекс поиска знаний · {productName} · {knowledge.length} материалов</div>
+        <div className="ai-knowledge-sub">Индекс поиска знаний · {channelName} · {knowledge.length} материалов</div>
       </div>
       {knowledge.map((doc) => {
         const version = publishedVersion(doc.versions);

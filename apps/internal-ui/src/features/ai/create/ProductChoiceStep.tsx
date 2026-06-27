@@ -1,27 +1,26 @@
 import { productAccent } from "../../../shared/utils";
-import type { Product } from "../../../types";
-import { productDescription, productMark } from "./model";
+import { channelDescription, channelMark, type ChannelOption } from "./model";
 import { CreateAgentStepCard } from "./CreateAgentStepCard";
 
-export function ProductChoiceStep({ products, selectedProductCode, productsWithAgents, onSelect }: { products: Product[]; selectedProductCode: string | null; productsWithAgents: string[]; onSelect: (productCode: string) => void }) {
+export function ProductChoiceStep({ channels, selectedChannelCode, channelsWithAgents, onSelect }: { channels: ChannelOption[]; selectedChannelCode: string | null; channelsWithAgents: string[]; onSelect: (channelCode: string) => void }) {
   return (
-    <CreateAgentStepCard number={1} title="Продукт" text="Доступны только продукты без sales-агента. У продукта может быть не более одного агента.">
+    <CreateAgentStepCard number={1} title="Канал обработки" text="Доступны только каналы без агента. У канала может быть не более одного агента.">
       <div className="ai-create-product-list">
-        {products.map((product) => {
-          const selected = selectedProductCode === product.code;
-          const accent = productAccent(product.code);
+        {channels.map((channel) => {
+          const selected = selectedChannelCode === channel.code;
+          const accent = productAccent(channel.code);
           return (
-            <button className={selected ? "is-selected" : ""} type="button" onClick={() => onSelect(product.code)} key={product.code}>
-              <span className="ai-create-product-mark" style={{ background: accent.bg, color: accent.color }}>{productMark(product)}</span>
-              <span><strong>{product.name}</strong><small>{productDescription(product)}</small></span>
+            <button className={selected ? "is-selected" : ""} type="button" onClick={() => onSelect(channel.code)} key={channel.code}>
+              <span className="ai-create-product-mark" style={{ background: accent.bg, color: accent.color }}>{channelMark(channel)}</span>
+              <span><strong>{channel.name}</strong><small>{channelDescription(channel)}</small></span>
               <i />
             </button>
           );
         })}
       </div>
-      {productsWithAgents.length > 0 && (
+      {channelsWithAgents.length > 0 && (
         <div className="ai-create-note">
-          У продуктов <b>{productsWithAgents.join(", ")}</b> агент уже есть — для них доступен переход в существующую карточку, а не создание второго.
+          У каналов <b>{channelsWithAgents.join(", ")}</b> агент уже есть — для них доступен переход в существующую карточку, а не создание второго.
         </div>
       )}
     </CreateAgentStepCard>

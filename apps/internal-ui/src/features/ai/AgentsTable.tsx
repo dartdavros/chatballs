@@ -33,7 +33,7 @@ export function AgentsTable({
           <thead>
             <tr>
               <th>АГЕНТ</th>
-              <th>ПРОДУКТ</th>
+              <th>КАНАЛ</th>
               <th>МОДЕЛЬ</th>
               <th>АКТИВНАЯ ВЕРСИЯ</th>
               <th>СТАТУС</th>
@@ -44,8 +44,8 @@ export function AgentsTable({
           </thead>
           <tbody>
             {agents.map((agent) => {
-              const accent = productAccent(agent.product.code);
-              const release = publishedRelease(releases, agent.product.code);
+              const accent = productAccent(agent.channel.code);
+              const release = publishedRelease(releases, agent.channel.code);
               const menuItems = [
                 { key: "open", label: <button type="button" onClick={() => { setMenuId(null); openAgent(agent.id); }}><Icon name="external" size={15} />Открыть агента</button> },
                 { type: "divider" as const },
@@ -66,11 +66,11 @@ export function AgentsTable({
                       <span className="product-icon" style={{ background: accent.bg, color: accent.color }}><Icon name="robot" size={21} /></span>
                       <span>
                         <button className="ai-agent-name-link" type="button" onClick={() => openAgent(agent.id)}>{agent.name}</button>
-                        <small>{agent.product.code}</small>
+                        <small>{agent.channel.code}</small>
                       </span>
                     </div>
                   </td>
-                  <td><ToneBadge bg={accent.bg} color={accent.color}>{agent.product.name}</ToneBadge></td>
+                  <td><ToneBadge bg={accent.bg} color={accent.color}>{agent.channel.name}</ToneBadge></td>
                   <td><code className="ai-mono">{agent.model}</code></td>
                   <td>
                     {release ? (
@@ -104,7 +104,7 @@ export function AgentsTable({
       </div>
       <div className="ai-table-footer">
         <span>{agents.length} агента</span>
-        <span>В первой итерации — один sales-agent на продукт</span>
+        <span>В первой итерации — один агент на канал обработки</span>
       </div>
     </div>
   );

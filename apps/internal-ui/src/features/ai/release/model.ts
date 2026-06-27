@@ -17,13 +17,13 @@ export type ReleaseChange = {
 };
 
 export function releaseLabel(release: AiReleaseFull): string {
-  return `REL-${releasePrefix(release.product)}-v${release.version}`;
+  return `REL-${releasePrefix(release.channel)}-v${release.version}`;
 }
 
-function releasePrefix(product: AiReleaseFull["product"]): string {
-  const letters = product.name.match(/[A-ZА-ЯЁ]/g)?.join("");
+function releasePrefix(channel: AiReleaseFull["channel"]): string {
+  const letters = channel.name.match(/[A-ZА-ЯЁ]/g)?.join("");
   if (letters && letters.length >= 2) return letters.slice(0, 2).toUpperCase();
-  const code = product.code.replace(/[^a-zA-Zа-яА-ЯёЁ0-9]/g, "");
+  const code = channel.code.replace(/[^a-zA-Zа-яА-ЯёЁ0-9]/g, "");
   return (code.slice(0, 2) || "AI").toUpperCase();
 }
 
@@ -99,7 +99,7 @@ export function releaseState(checks: ReleaseCheck[], published: boolean, tested 
 }
 
 export function findPublishedPeer(release: AiReleaseFull, releases: AiReleaseFull[]): AiReleaseFull | undefined {
-  return releases.find((item) => item.product.code === release.product.code && item.status === "PUBLISHED" && item.id !== release.id);
+  return releases.find((item) => item.channel.code === release.channel.code && item.status === "PUBLISHED" && item.id !== release.id);
 }
 
 export function buildChanges(release: AiReleaseFull, published: AiReleaseFull | undefined): ReleaseChange[] {

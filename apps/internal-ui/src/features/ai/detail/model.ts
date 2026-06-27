@@ -1,6 +1,8 @@
+import type { ChannelRef } from "../model";
+
 export type AiAgentDetail = {
   id: number;
-  product: { code: string; name: string };
+  channel: ChannelRef;
   name: string;
   isActive: boolean;
   model: string;
@@ -22,7 +24,8 @@ export type DocVersion = {
 
 export type KnowledgeDoc = {
   id: number;
-  product: { code: string; name: string };
+  scope: "GLOBAL" | "PRODUCT";
+  product: { code: string; name: string } | null;
   code: string;
   title: string;
   category: string;
@@ -35,7 +38,8 @@ export type KnowledgeDoc = {
 
 export type PromptDoc = {
   id: number;
-  product: { code: string; name: string };
+  scope: "GLOBAL" | "PRODUCT";
+  product: { code: string; name: string } | null;
   code: string;
   title: string;
   category: string;
@@ -47,7 +51,7 @@ export type PromptDoc = {
 
 export type AiReleaseFull = {
   id: number;
-  product: { code: string; name: string };
+  channel: ChannelRef;
   version: number;
   status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
   model: string;
@@ -116,8 +120,8 @@ export function publishedRelease(releases: AiReleaseFull[]): AiReleaseFull | und
 }
 
 export function releaseDisplayName(release: AiReleaseFull): string {
-  const letters = release.product.name.match(/[A-ZА-ЯЁ]/g)?.join("");
-  const prefix = letters && letters.length >= 2 ? letters.slice(0, 2) : release.product.code.slice(0, 2);
+  const letters = release.channel.name.match(/[A-ZА-ЯЁ]/g)?.join("");
+  const prefix = letters && letters.length >= 2 ? letters.slice(0, 2) : release.channel.code.slice(0, 2);
   return `REL-${prefix.toUpperCase()}-v${release.version}`;
 }
 

@@ -18,7 +18,7 @@ export function AiAgentDetailHeader({
   openRelease: (releaseId: number) => void;
   createRelease: () => void;
 }) {
-  const accent = productAccent(agent.product.code);
+  const accent = productAccent(agent.channel.code);
   const release = publishedRelease(releases);
   return (
     <section className="ai-agent-header">
@@ -30,7 +30,7 @@ export function AiAgentDetailHeader({
             <StatusPill status={agent.isActive ? "active" : "disabled"} />
           </div>
           <div className="ai-agent-meta">
-            <div><span>Продукт</span><button type="button" className="ai-agent-meta-link" onClick={() => setRoute("products")}>{agent.product.name}</button></div>
+            <div><span>Канал</span><button type="button" className="ai-agent-meta-link" onClick={() => setRoute("integrations")}>{agent.channel.name}</button></div>
             <div><span>Модель</span><code className="ai-mono">{agent.model}</code></div>
             <div><span>Текущая версия</span>{release ? <button type="button" className="ai-agent-meta-link ai-mono" onClick={() => openRelease(release.id)}>{releaseDisplayName(release)}</button> : <b className="ai-agent-meta-empty">—</b>}</div>
             <div><span>Лимиты</span><b>{dailyBudget(agent.limits)}</b></div>

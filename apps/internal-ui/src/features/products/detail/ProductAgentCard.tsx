@@ -7,7 +7,7 @@ import type { Product } from "../../../types";
 
 export function ProductAgentCard({ product, openAgentCreate, openAgent }: { product: Product; openAgentCreate: (productCode: string | null) => void; openAgent: (agentId: number) => void }) {
   const { agents, loading } = useAiAgents();
-  const agent = agents.find((item) => item.product.code === product.code);
+  const agent = agents.find((item) => item.channel.product?.code === product.code);
   const accent = productAccent(product.code);
 
   if (loading) {

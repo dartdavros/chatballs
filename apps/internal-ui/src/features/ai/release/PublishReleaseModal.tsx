@@ -26,7 +26,7 @@ export function PublishReleaseModal({
             <span><Icon name="warning" size={22} /></span>
             <div>
               <h3>Опубликовать {releaseLabel(release)}?</h3>
-              <p>Атомарная публикация конфигурации {release.product.name} Sales</p>
+              <p>Атомарная публикация конфигурации канала {release.channel.name}</p>
             </div>
           </div>
           <div className="release-modal-warning">

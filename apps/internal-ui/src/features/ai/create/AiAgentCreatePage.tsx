@@ -3,19 +3,21 @@ import { useEffect, useMemo, useState } from "react";
 import { api } from "../../../api/client";
 import { Icon } from "../../../shared/icons";
 import { LoadingState } from "../../../shared/ui";
-import type { Product, RouteKey } from "../../../types";
+import type { RouteKey } from "../../../types";
 import { useAiAgents } from "../useAiAgents";
 import { CreateAgentFooter } from "./CreateAgentFooter";
 import { KnowledgeStep } from "./KnowledgeStep";
 import { ModelStep } from "./ModelStep";
 import { ProductChoiceStep } from "./ProductChoiceStep";
 import { PromptStep } from "./PromptStep";
-import { startSystemPrompt, type CreateAgentResponse, type KnowledgeDocument } from "./model";
+import { startSystemPrompt, type ChannelOption, type CreateAgentResponse, type KnowledgeDocument } from "./model";
 
-export function AiAgentCreatePage({ products, selectedProductCode, reload, setRoute, openAgent, openRelease }: { products: Product[]; selectedProductCode: string | null; reload: () => void; setRoute: (route: RouteKey) => void; openAgent: (agentId: number) => void; openRelease: (releaseId: number) => void }) {
+export function AiAgentCreatePage({ selectedProductCode, reload, setRoute, openAgent, openRelease }: { selectedProductCode: string | null; reload: () => void; setRoute: (route: RouteKey) => void; openAgent: (agentId: number) => void; openRelease: (releaseId: number) => void }) {
   const { agents, loading: agentsLoading, reload: reloadAgents } = useAiAgents();
-  const [productCode, setProductCode] = useState<string | null>(selectedProductCode);
-  const [model, setModel] = useState("gpt-4o-mini");
+  const [channels, setChannels] = useState<ChannelOption[]>([]);
+  const [channelsLoading, setChannelsLoading] = useState(true);
+  const [channelCode, setChannelCode] = useState<string | null>(selectedProductCode);
+  const [model, setModel] = useState("anthropic/claude-sonnet-4.6");
   const [systemPrompt, setSystemPrompt] = useState(startSystemPrompt);
   const [knowledge, setKnowledge] = useState<KnowledgeDocument[]>([]);
   const [selectedKnowledgeIds, setSelectedKnowledgeIds] = useState<number[]>([]);
@@ -23,41 +25,44 @@ export function AiAgentCreatePage({ products, selectedProductCode, reload, setRo
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(false);
 
-  const agentProductCodes = useMemo(() => new Set(agents.map((agent) => agent.product.code)), [agents]);
-  const availableProducts = products.filter((product) => !agentProductCodes.has(product.code));
-  const productsWithAgents = products.filter((product) => agentProductCodes.has(product.code)).map((product) => product.name);
-  const selectedProduct = availableProducts.find((product) => product.code === productCode) ?? null;
-  const ready = !!selectedProduct && selectedKnowledgeIds.length > 0;
-
   useEffect(() => {
-    if (!productCode || agentProductCodes.has(productCode)) setProductCode(availableProducts[0]?.code ?? null);
-  }, [agentProductCodes, availableProducts, productCode]);
+    api<{ items: ChannelOption[] }>("/api/v1/channels/")
+      .then((payload) => setChannels(payload.items))
+      .catch(() => setChannels([]))
+      .finally(() => setChannelsLoading(false));
+  }, []);
 
+  // Знания — общая библиотека организации (выбор опционален).
   useEffect(() => {
-    setSelectedKnowledgeIds([]);
-    if (!productCode) {
-      setKnowledge([]);
-      return;
-    }
     setKnowledgeLoading(true);
-    api<{ items: KnowledgeDocument[] }>(`/api/v1/ai/knowledge/?product=${encodeURIComponent(productCode)}`)
+    api<{ items: KnowledgeDocument[] }>("/api/v1/ai/knowledge/")
       .then((payload) => setKnowledge(payload.items.filter((document) => document.versions.length > 0)))
       .catch(() => setKnowledge([]))
       .finally(() => setKnowledgeLoading(false));
-  }, [productCode]);
+  }, []);
+
+  const agentChannelCodes = useMemo(() => new Set(agents.map((agent) => agent.channel.code)), [agents]);
+  const availableChannels = channels.filter((channel) => !agentChannelCodes.has(channel.code));
+  const channelsWithAgents = channels.filter((channel) => agentChannelCodes.has(channel.code)).map((channel) => channel.name);
+  const selectedChannel = availableChannels.find((channel) => channel.code === channelCode) ?? null;
+  const ready = !!selectedChannel;
+
+  useEffect(() => {
+    if (!channelCode || agentChannelCodes.has(channelCode)) setChannelCode(availableChannels[0]?.code ?? null);
+  }, [agentChannelCodes, availableChannels, channelCode]);
 
   function toggleKnowledge(id: number) {
     setSelectedKnowledgeIds((ids) => ids.includes(id) ? ids.filter((item) => item !== id) : [...ids, id]);
   }
 
   async function submit() {
-    if (!ready || !selectedProduct) return;
+    if (!ready || !selectedChannel) return;
     setSubmitting(true);
     setError(false);
     try {
       const response = await api<CreateAgentResponse>("/api/v1/ai/agents/", {
         method: "POST",
-        body: JSON.stringify({ product: selectedProduct.code, model, systemPrompt, knowledgeDocumentIds: selectedKnowledgeIds }),
+        body: JSON.stringify({ channel: selectedChannel.code, model, systemPrompt, knowledgeDocumentIds: selectedKnowledgeIds }),
       });
       reload();
       reloadAgents();
@@ -71,24 +76,22 @@ export function AiAgentCreatePage({ products, selectedProductCode, reload, setRo
     }
   }
 
-  const summary = ready && selectedProduct
-    ? `Будет создан агент для «${selectedProduct.name}» · модель ${model} · знаний: ${selectedKnowledgeIds.length}. Агент не начнёт отвечать, пока вы не опубликуете первую версию.`
-    : !selectedProduct
-      ? "Выберите продукт без агента, чтобы продолжить."
-      : "Выберите хотя бы один материал знаний для первой версии.";
+  const summary = ready && selectedChannel
+    ? `Будет создан агент для канала «${selectedChannel.name}» · модель ${model} · знаний: ${selectedKnowledgeIds.length}. Агент не начнёт отвечать, пока вы не опубликуете первую версию.`
+    : "Выберите канал без агента, чтобы продолжить.";
 
-  if (agentsLoading) return <div className="ai-create-page"><LoadingState /></div>;
+  if (agentsLoading || channelsLoading) return <div className="ai-create-page"><LoadingState /></div>;
 
   return (
     <div className="ai-create-page">
       <div className="ai-create-container">
         <div className="ai-create-header">
           <h1>Создание AI-агента</h1>
-          <p>Один основной sales-агент на продукт. Агент создаётся для продукта без агента и начинает работать только после публикации первой версии.</p>
+          <p>Один агент на канал обработки. Агент создаётся для канала без агента и начинает работать только после публикации первой версии.</p>
         </div>
-        <div className="ai-create-provider"><Icon name="check" size={16} />AI-провайдер OpenRouter подключён · модель по умолчанию <b>gpt-4o-mini</b></div>
-        {error && <div className="ai-create-error">Не удалось создать агента. Проверьте выбранный продукт и материалы знаний.</div>}
-        <ProductChoiceStep products={availableProducts} selectedProductCode={productCode} productsWithAgents={productsWithAgents} onSelect={setProductCode} />
+        <div className="ai-create-provider"><Icon name="check" size={16} />Модель по умолчанию <b>Sonnet 4.6</b> · провайдер OpenRouter (раздел «Интеграции»)</div>
+        {error && <div className="ai-create-error">Не удалось создать агента. Проверьте выбранный канал.</div>}
+        <ProductChoiceStep channels={availableChannels} selectedChannelCode={channelCode} channelsWithAgents={channelsWithAgents} onSelect={setChannelCode} />
         <ModelStep model={model} setModel={setModel} />
         <PromptStep systemPrompt={systemPrompt} setSystemPrompt={setSystemPrompt} />
         <KnowledgeStep documents={knowledge} selectedIds={selectedKnowledgeIds} loading={knowledgeLoading} toggle={toggleKnowledge} />

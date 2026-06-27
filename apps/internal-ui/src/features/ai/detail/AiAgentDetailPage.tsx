@@ -32,7 +32,7 @@ export function AiAgentDetailPage({ agentId, setRoute, openRelease, onAgentLoade
   async function createRelease() {
     if (!agent) return;
     try {
-      const { release } = await api<{ release: AiReleaseFull }>("/api/v1/ai/releases/", { method: "POST", body: JSON.stringify({ product: agent.product.code }) });
+      const { release } = await api<{ release: AiReleaseFull }>("/api/v1/ai/releases/", { method: "POST", body: JSON.stringify({ channel: agent.channel.code }) });
       reload();
       openRelease(release.id);
     } catch {
@@ -49,7 +49,7 @@ export function AiAgentDetailPage({ agentId, setRoute, openRelease, onAgentLoade
       <UnderlineTabs className="ai-agent-tabs" items={agentTabs} value={tab} onChange={setTab} />
       {tab === "overview" && <AiAgentOverviewTab agent={agent} toggleActive={toggleActive} />}
       {tab === "instructions" && <AiAgentInstructionsTab prompts={prompts} />}
-      {tab === "knowledge" && <AiAgentKnowledgeTab knowledge={knowledge} productName={agent.product.name} />}
+      {tab === "knowledge" && <AiAgentKnowledgeTab knowledge={knowledge} channelName={agent.channel.name} />}
       {tab === "releases" && <AiAgentReleasesTab openRelease={openRelease} releases={releases} />}
       {tab === "metrics" && <AiAgentMetricsTab />}
     </div>

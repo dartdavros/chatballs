@@ -25,11 +25,11 @@ export function useAiAgentDetail(agentId: number | null) {
     setError(false);
     try {
       const { agent } = await api<{ agent: AiAgentDetail }>(`/api/v1/ai/agents/${agentId}/`);
-      const product = encodeURIComponent(agent.product.code);
+      const channel = encodeURIComponent(agent.channel.code);
       const [releases, knowledge, prompts] = await Promise.all([
-        api<{ items: AiReleaseFull[] }>(`/api/v1/ai/releases/?product=${product}`),
-        api<{ items: KnowledgeDoc[] }>(`/api/v1/ai/knowledge/?product=${product}`),
-        api<{ items: PromptDoc[] }>(`/api/v1/ai/prompts/?product=${product}`),
+        api<{ items: AiReleaseFull[] }>(`/api/v1/ai/releases/?channel=${channel}`),
+        api<{ items: KnowledgeDoc[] }>("/api/v1/ai/knowledge/"),
+        api<{ items: PromptDoc[] }>("/api/v1/ai/prompts/"),
       ]);
       setData({ agent, releases: releases.items, knowledge: knowledge.items, prompts: prompts.items });
     } catch {

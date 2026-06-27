@@ -25,7 +25,7 @@ export function ProductAIReleasePage({
   const [publishing, setPublishing] = useState(false);
 
   useEffect(() => {
-    onReleaseLoaded(release ? `${release.product.name} Sales|${releaseLabel(release)}` : null);
+    onReleaseLoaded(release ? `${release.channel.name}|${releaseLabel(release)}` : null);
     return () => onReleaseLoaded(null);
   }, [onReleaseLoaded, release]);
 

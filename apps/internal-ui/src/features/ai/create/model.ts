@@ -1,5 +1,6 @@
-import type { Product } from "../../../types";
 import type { AiAgent, AiRelease } from "../model";
+
+export type ChannelOption = { id: number; code: string; name: string; product: { code: string; name: string } | null };
 
 export type KnowledgeDocument = {
   id: number;
@@ -14,20 +15,18 @@ export type CreateAgentResponse = {
 };
 
 export const modelOptions = [
-  { value: "gpt-4o-mini", label: "gpt-4o-mini · по умолчанию" },
-  { value: "gpt-4o", label: "gpt-4o · точнее, дороже" },
-  { value: "claude-3.5-sonnet", label: "claude-3.5-sonnet" },
-  { value: "claude-3.5-haiku", label: "claude-3.5-haiku" },
+  { value: "anthropic/claude-sonnet-4.6", label: "Sonnet 4.6 · по умолчанию" },
+  { value: "openai/gpt-4o-mini", label: "gpt-4o-mini · дешевле" },
 ];
 
-export const startSystemPrompt = "Ты — sales-агент продукта. Отвечай дружелюбно и по делу, на русском. Квалифицируй потребность клиента, предлагай подходящее предложение и оформляй покупку. Не обещай возможности вне базы знаний. При запросе человека или нестандартной ситуации — передавай диалог оператору.";
+export const startSystemPrompt = "Ты — агент канала обработки. Отвечай дружелюбно и по делу, на русском. Квалифицируй потребность клиента и помогай довести до результата. Не обещай возможности вне базы знаний. При запросе человека или нестандартной ситуации — передавай диалог оператору.";
 
-export function productDescription(product: Product): string {
-  return `Без sales-агента · ${product.offers.length} предложения`;
+export function channelDescription(channel: ChannelOption): string {
+  return channel.product ? `Без агента · продукт ${channel.product.name}` : "Без агента · без продукта";
 }
 
-export function productMark(product: Product): string {
-  return (product.name[0] || product.code[0] || "").toUpperCase();
+export function channelMark(channel: ChannelOption): string {
+  return (channel.name[0] || channel.code[0] || "").toUpperCase();
 }
 
 export function knowledgeMeta(document: KnowledgeDocument): string {

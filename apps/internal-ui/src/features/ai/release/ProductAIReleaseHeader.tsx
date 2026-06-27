@@ -32,7 +32,7 @@ export function ProductAIReleaseHeader({
             </span>
           </div>
           <div className="release-subtitle">
-            {release.product.name} Sales · черновик создан {formatDateTime(release.createdAt)}
+            {release.channel.name} · черновик создан {formatDateTime(release.createdAt)}
           </div>
         </div>
       </div>

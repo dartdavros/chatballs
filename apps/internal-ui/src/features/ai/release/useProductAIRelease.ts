@@ -25,11 +25,11 @@ export function useProductAIRelease(releaseId: number | null) {
     setError(false);
     try {
       const { release } = await api<{ release: AiReleaseFull }>(`/api/v1/ai/releases/${releaseId}/`);
-      const product = encodeURIComponent(release.product.code);
+      const channel = encodeURIComponent(release.channel.code);
       const [releases, knowledge, prompts] = await Promise.all([
-        api<{ items: AiReleaseFull[] }>(`/api/v1/ai/releases/?product=${product}`),
-        api<{ items: KnowledgeDoc[] }>(`/api/v1/ai/knowledge/?product=${product}`),
-        api<{ items: PromptDoc[] }>(`/api/v1/ai/prompts/?product=${product}`),
+        api<{ items: AiReleaseFull[] }>(`/api/v1/ai/releases/?channel=${channel}`),
+        api<{ items: KnowledgeDoc[] }>("/api/v1/ai/knowledge/"),
+        api<{ items: PromptDoc[] }>("/api/v1/ai/prompts/"),
       ]);
       setData({ release, releases: releases.items, knowledge: knowledge.items, prompts: prompts.items });
     } catch {
