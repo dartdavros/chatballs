@@ -27,10 +27,15 @@ Default local URLs:
 - Web Chat: `http://localhost:5175`
 - Backend API: `http://localhost:8010/api/v1`
 
-Create or refresh the local OWNER account:
+Local accounts (TOTP disabled). These credentials are fixed — do not change them:
+
+- OWNER — `owner@edevs.tech` / `Owner-Local-2026`
+- OPERATOR — `a.kotova@edevs.tech` / `Operator-Local-2026`
+
+Bootstrap the organization and both accounts:
 
 ```powershell
-docker compose run --rm backend python manage.py bootstrap_owner --email owner@edevs.tech --password local-owner-password --name "Иван Петров"
+docker compose run --rm backend python manage.py bootstrap_owner --email owner@edevs.tech --password Owner-Local-2026 --name "Иван Петров"
 ```
 
 ## Tests
