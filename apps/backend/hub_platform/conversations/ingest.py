@@ -24,8 +24,8 @@ from hub_platform.conversations.models import (
     Message,
     MessageAuthor,
 )
-from hub_platform.conversations.transports import max as max_transport
-from hub_platform.conversations.transports.max import InboundMessage
+from hub_platform.conversations import transports
+from hub_platform.conversations.transports.base import InboundMessage
 from hub_platform.events.models import InboxEvent
 
 logger = logging.getLogger(__name__)
@@ -59,7 +59,7 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
     if channel is None:
         logger.warning("Integration %s has no channel — inbound dropped", integration.id)
         return
-    source = f"max:{integration.id}"
+    source = f"{integration.provider.lower()}:{integration.id}"
     if _already_processed(source, inbound.external_id, inbound.text):
         return
 
@@ -115,6 +115,6 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
     conversation.expected_responder = ExpectedResponder.CUSTOMER
     conversation.save(update_fields=["last_activity_at", "expected_responder"])
 
-    max_transport.send_text(
+    transports.send_reply(
         integration, chat_id=conversation.external_chat_id, user_id=inbound.user_id, text=result.text
     )

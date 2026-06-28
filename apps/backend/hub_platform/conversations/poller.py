@@ -1,21 +1,21 @@
 import logging
 
+from hub_platform.conversations import transports
 from hub_platform.conversations.ingest import ingest_inbound
-from hub_platform.conversations.transports import max as max_transport
-from hub_platform.integrations.models import Integration, IntegrationProvider
+from hub_platform.integrations.models import Integration
 
 logger = logging.getLogger(__name__)
 
 
 def poll_all_messengers() -> int:
-    """Poll every MAX connection bound to a channel; ingest inbound. Returns count."""
+    """Poll every messenger connection bound to a channel; ingest inbound. Returns count."""
     integrations = (
-        Integration.objects.filter(provider=IntegrationProvider.MAX, channel__isnull=False)
+        Integration.objects.filter(provider__in=transports.SUPPORTED_PROVIDERS, channel__isnull=False)
         .exclude(secret="")
     )
     total = 0
     for integration in integrations:
-        messages, new_marker = max_transport.poll_updates(integration)
+        messages, new_marker = transports.poll(integration)
         for inbound in messages:
             try:
                 ingest_inbound(integration, inbound)
