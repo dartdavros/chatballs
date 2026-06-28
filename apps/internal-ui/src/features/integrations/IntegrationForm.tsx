@@ -1,10 +1,10 @@
 import { Modal } from "antd";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { api } from "../../api/client";
 import { FormField, SelectField } from "../../shared/form-controls";
 import { Button } from "../../shared/ui-controls";
-import { PROVIDERS, type Integration, type IntegrationProvider } from "./model";
+import { fetchChannels, PROVIDERS, type ChannelOption, type Integration, type IntegrationProvider } from "./model";
 
 const PROVIDER_OPTIONS: Array<[string, string]> = (Object.keys(PROVIDERS) as IntegrationProvider[]).map(
   (key) => [key, PROVIDERS[key].label],
@@ -17,10 +17,17 @@ export function IntegrationForm({ initial, onClose, onSaved }: { initial: Integr
   const [secret, setSecret] = useState("");
   const [baseUrl, setBaseUrl] = useState(initial?.config.baseUrl ?? "");
   const [defaultModel, setDefaultModel] = useState(initial?.config.defaultModel ?? "");
+  const [channelId, setChannelId] = useState(initial?.channel ? String(initial.channel.id) : "");
+  const [channels, setChannels] = useState<ChannelOption[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const meta = PROVIDERS[provider];
+  const isMessenger = meta.kind === "MESSENGER";
+
+  useEffect(() => {
+    if (isMessenger) fetchChannels().then(setChannels).catch(() => setChannels([]));
+  }, [isMessenger]);
   const ready = name.trim().length > 0 && (isEdit || !meta.testable || secret.trim().length > 0);
 
   async function submit() {
@@ -28,16 +35,17 @@ export function IntegrationForm({ initial, onClose, onSaved }: { initial: Integr
     setSubmitting(true);
     setError(null);
     const config = { baseUrl: baseUrl.trim(), defaultModel: defaultModel.trim() };
+    const channel = isMessenger ? { channelId: channelId ? Number(channelId) : null } : {};
     try {
       if (isEdit) {
         await api(`/api/v1/integrations/${initial.id}/`, {
           method: "PATCH",
-          body: JSON.stringify({ name, config, ...(secret.trim() ? { secret } : {}) }),
+          body: JSON.stringify({ name, config, ...channel, ...(secret.trim() ? { secret } : {}) }),
         });
       } else {
         await api("/api/v1/integrations/", {
           method: "POST",
-          body: JSON.stringify({ provider, name, secret, config }),
+          body: JSON.stringify({ provider, name, secret, config, ...channel }),
         });
       }
       onSaved();
@@ -72,6 +80,14 @@ export function IntegrationForm({ initial, onClose, onSaved }: { initial: Integr
         )}
         {isEdit && initial.config.botUsername && (
           <FormField label="Бот" value={`${initial.config.botName || initial.config.botUsername}${initial.config.botUsername ? ` · @${initial.config.botUsername}` : ""}${initial.config.botId ? ` · id ${initial.config.botId}` : ""}`} />
+        )}
+        {isMessenger && (
+          <SelectField
+            label="Канал обработки"
+            value={channelId}
+            onChange={setChannelId}
+            options={[["", "— не привязан —"], ...channels.map((c) => [String(c.id), c.name] as [string, string])]}
+          />
         )}
         {error && <div className="integration-form-error">{error}</div>}
         <div className="integration-form-actions">

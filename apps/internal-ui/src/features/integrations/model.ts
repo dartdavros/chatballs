@@ -1,3 +1,5 @@
+import { api } from "../../api/client";
+
 export type IntegrationProvider = "OPENROUTER" | "MAX" | "TELEGRAM" | "WEB";
 export type IntegrationKind = "LLM_PROVIDER" | "MESSENGER";
 export type IntegrationStatus = "UNCHECKED" | "OK" | "ERROR";
@@ -9,6 +11,7 @@ export type Integration = {
   name: string;
   hasSecret: boolean;
   config: { baseUrl: string; defaultModel: string; botId: string; botUsername: string; botName: string };
+  channel: { id: number; code: string; name: string } | null;
   status: IntegrationStatus;
   lastCheckedAt: string | null;
   lastError: string;
@@ -42,3 +45,7 @@ export const KIND_LABEL: Record<IntegrationKind, string> = {
   LLM_PROVIDER: "Провайдеры",
   MESSENGER: "Подключения",
 };
+
+export type ChannelOption = { id: number; code: string; name: string };
+
+export const fetchChannels = () => api<{ items: ChannelOption[] }>("/api/v1/channels/").then((r) => r.items);

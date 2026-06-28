@@ -13,6 +13,7 @@ from django.db import IntegrityError, transaction
 from django.utils import timezone
 
 from hub_platform.ai.provider.base import ProviderError
+from hub_platform.ai.runtime import HANDOFF_TOKEN
 from hub_platform.channels.runtime import run_channel_turn
 from hub_platform.conversations.models import (
     ConnectionIdentity,
@@ -141,11 +142,35 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
         logger.warning("AI turn failed for conversation %s: %s", conversation.id, error)
         return
 
-    Message.objects.create(conversation=conversation, author_type=MessageAuthor.AI, text=result.text)
-    conversation.last_activity_at = timezone.now()
-    conversation.expected_responder = ExpectedResponder.CUSTOMER
-    conversation.save(update_fields=["last_activity_at", "expected_responder"])
+    reply = result.text
+    handoff = HANDOFF_TOKEN in reply
+    if handoff:
+        reply = reply.replace(HANDOFF_TOKEN, "").strip()
 
-    transports.send_reply(
-        integration, chat_id=conversation.external_chat_id, user_id=inbound.user_id, text=result.text
-    )
+    Message.objects.create(conversation=conversation, author_type=MessageAuthor.AI, text=reply)
+    conversation.last_activity_at = timezone.now()
+    if handoff:
+        conversation.control_mode = ControlMode.PAUSED
+        conversation.expected_responder = ExpectedResponder.OPERATOR
+    else:
+        conversation.expected_responder = ExpectedResponder.CUSTOMER
+    conversation.save(update_fields=["control_mode", "last_activity_at", "expected_responder"])
+
+    if handoff:
+        Message.objects.create(conversation=conversation, author_type=MessageAuthor.SYSTEM, text="AI передал диалог оператору")
+        notify(
+            organization=channel.organization,
+            type=NotificationType.DIALOG_WAITING,
+            audience=NotificationAudience.OPERATORS,
+            title=f"AI передал диалог · {contact.name or 'Гость'}",
+            body=inbound.text[:120],
+            target_id=conversation.id,
+            source_type="Conversation",
+            source_id=conversation.id,
+            dedup_key=f"handoff:{conversation.id}",
+        )
+
+    if reply:
+        transports.send_reply(
+            integration, chat_id=conversation.external_chat_id, user_id=inbound.user_id, text=reply
+        )

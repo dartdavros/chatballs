@@ -21,6 +21,17 @@ MESSENGER_STYLE_GUARD = (
     "которых нет в знаниях; если данных нет — честно скажи и предложи оператора."
 )
 
+# Протокол передачи оператору: модель добавляет технический токен, система его
+# ловит, ставит диалог в очередь и уведомляет операторов (ADR-HUB-0003).
+HANDOFF_TOKEN = "<<HANDOFF>>"
+HANDOFF_PROTOCOL = (
+    "Если по правилам нужно подключить живого оператора (клиент просит человека; "
+    "вопрос вне базы знаний; индивидуальные условия, скидка, счёт, оплата от юрлица, "
+    "документы; жалоба, спор или проблема с оплатой/доступом), в самом конце ответа "
+    f"добавь отдельной строкой технический токен {HANDOFF_TOKEN}. Не упоминай этот "
+    "токен в тексте и не показывай его пользователю — просто заверши им сообщение."
+)
+
 
 @dataclass(frozen=True)
 class TestChatResult:
@@ -50,7 +61,7 @@ def run_test_chat(*, release: ChannelAIRelease, message: str, history: list[dict
     if system_prompt:
         messages.append(ChatMessage(role="system", content=system_prompt))
     if style_guard:
-        messages.append(ChatMessage(role="system", content=MESSENGER_STYLE_GUARD))
+        messages.append(ChatMessage(role="system", content=MESSENGER_STYLE_GUARD + "\n\n" + HANDOFF_PROTOCOL))
     if fragments:
         knowledge = "\n\n".join(
             f"[{fragment.version.document.code}#{fragment.chunk_index}] {fragment.content}" for fragment in fragments

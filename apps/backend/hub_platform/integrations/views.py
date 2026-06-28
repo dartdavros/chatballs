@@ -23,11 +23,14 @@ from hub_platform.integrations.services import (
 
 def _input(body: dict[str, object], *, current: Integration | None = None) -> IntegrationInput:
     config = body.get("config", current.config if current else {})
+    raw_channel = body.get("channelId", current.channel_id if current else None)
+    channel_id = int(raw_channel) if isinstance(raw_channel, int) or (isinstance(raw_channel, str) and raw_channel.isdigit()) else None
     return IntegrationInput(
         provider=str(body.get("provider", current.provider if current else "")),
         name=str(body.get("name", current.name if current else "")),
         secret=body.get("secret") if "secret" in body else None,
         config=config if isinstance(config, dict) else {},
+        channel_id=channel_id,
     )
 
 

@@ -20,6 +20,18 @@ class IntegrationInput:
     name: str
     secret: str | None = None  # None = не менять при update
     config: dict = field(default_factory=dict)
+    channel_id: int | None = None  # канал обработки для подключения (ADR-HUB-0019)
+
+
+def _resolve_channel(organization: Organization, channel_id: int | None):
+    if not channel_id:
+        return None
+    from hub_platform.channels.models import Channel
+
+    try:
+        return Channel.objects.get(organization=organization, id=channel_id)
+    except Channel.DoesNotExist as error:
+        raise ValidationError({"channel": "Channel not found"}) from error
 
 
 def _normalized_config(provider: str, config: dict) -> dict:
@@ -60,6 +72,7 @@ def create_integration(*, organization: Organization, data: IntegrationInput) ->
         name=name,
         secret=(data.secret or "").strip(),
         config=_normalized_config(provider, data.config),
+        channel=_resolve_channel(organization, data.channel_id),
         status=IntegrationStatus.UNCHECKED,
     )
     integration.full_clean(exclude=["secret"])
@@ -71,6 +84,7 @@ def create_integration(*, organization: Organization, data: IntegrationInput) ->
 def update_integration(*, integration: Integration, data: IntegrationInput) -> Integration:
     integration.name = data.name.strip() or integration.name
     integration.config = _normalized_config(integration.provider, data.config)
+    integration.channel = _resolve_channel(integration.organization, data.channel_id)
     # Пустой/отсутствующий секрет при обновлении не затирает существующий.
     if data.secret:
         integration.secret = data.secret.strip()

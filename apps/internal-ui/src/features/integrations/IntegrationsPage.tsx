@@ -122,6 +122,7 @@ export function IntegrationsPage() {
                           <td className="integration-config">
                             <span>{item.config.baseUrl || meta.defaultBaseUrl || "—"}</span>
                             {item.config.defaultModel && <small>{item.config.defaultModel}</small>}
+                            {item.kind === "MESSENGER" && <small>{item.channel ? `Канал: ${item.channel.name}` : "канал не привязан"}</small>}
                           </td>
                           <td>
                             <div className="integration-status">
