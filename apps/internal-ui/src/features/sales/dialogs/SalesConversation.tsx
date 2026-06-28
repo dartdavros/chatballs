@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 
 import { Icon } from "../../../shared/icons";
 import { channelMeta, statusFor } from "./data";
@@ -10,12 +10,21 @@ function fmtTime(value: string): string {
 }
 
 export function SalesConversation({ controlMode, dialog, detail, onClaim }: { controlMode: ControlMode; dialog: SalesDialog | null; detail: ApiConversation | null; onClaim: () => void }) {
+  const timelineRef = useRef<HTMLDivElement>(null);
+  const messages = detail?.messages ?? [];
+  const lastMessageId = messages.length ? messages[messages.length - 1].id : 0;
+
+  // Скролл к свежим сообщениям при открытии диалога и при новых сообщениях.
+  useEffect(() => {
+    const node = timelineRef.current;
+    if (node) node.scrollTop = node.scrollHeight;
+  }, [detail?.id, lastMessageId]);
+
   if (!dialog) {
     return <div className="sales-timeline"><div className="sales-timeline-inner"><div className="sales-wait-note">Выберите диалог</div></div></div>;
   }
   const status = statusFor(controlMode);
   const channel = channelMeta[dialog.channel];
-  const messages = detail?.messages ?? [];
   return (
     <>
       <div className="sales-conversation-head">
@@ -32,7 +41,7 @@ export function SalesConversation({ controlMode, dialog, detail, onClaim }: { co
           <button className="sales-more-button" aria-label="Действия диалога"><Icon name="more" size={18} /></button>
         </div>
       </div>
-      <div className="sales-timeline">
+      <div className="sales-timeline" ref={timelineRef}>
         <div className="sales-timeline-inner">
           {messages.length === 0 && <div className="sales-wait-note">Пока нет сообщений</div>}
           {messages.map((message) => (

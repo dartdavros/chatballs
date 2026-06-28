@@ -111,7 +111,7 @@ export function SalesDialogsPage() {
           onSent={() => selectedId != null && loadDetail(selectedId)}
         />
       </section>
-      <SalesContextPanel rightTab={rightTab} setRightTab={setRightTab} />
+      <SalesContextPanel rightTab={rightTab} setRightTab={setRightTab} dialog={selectedDialog} detail={detail} />
     </div>
   );
 }

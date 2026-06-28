@@ -11,6 +11,8 @@ export function SalesDialogList({ dialogs, filtered, listTab, selectedId, setLis
   setListTab: (tab: ListTab) => void;
   setSelectedId: (id: number) => void;
 }) {
+  const waitCount = dialogs.filter((dialog) => dialog.mode === "wait").length;
+  const unreadCount = dialogs.filter((dialog) => dialog.unread > 0).length;
   return (
     <section className="sales-dialog-list">
       <div className="sales-dialog-list-head">
@@ -19,10 +21,10 @@ export function SalesDialogList({ dialogs, filtered, listTab, selectedId, setLis
       </div>
       <div className="sales-dialog-tabs">
         <DialogTab active={listTab === "all"} onClick={() => setListTab("all")}>Все</DialogTab>
-        <DialogTab active={listTab === "wait"} onClick={() => setListTab("wait")}>Ждут оператора <b>2</b></DialogTab>
+        <DialogTab active={listTab === "wait"} onClick={() => setListTab("wait")}>Ждут оператора {waitCount > 0 && <b>{waitCount}</b>}</DialogTab>
         <DialogTab active={listTab === "ai"} onClick={() => setListTab("ai")}>AI</DialogTab>
         <DialogTab active={listTab === "operator"} onClick={() => setListTab("operator")}>Оператор</DialogTab>
-        <DialogTab active={listTab === "unread"} onClick={() => setListTab("unread")}>Непрочитанные</DialogTab>
+        <DialogTab active={listTab === "unread"} onClick={() => setListTab("unread")}>Непрочитанные {unreadCount > 0 && <b>{unreadCount}</b>}</DialogTab>
       </div>
       <div className="sales-dialog-list-body">
         {filtered.map((dialog) => <DialogListItem dialog={dialog} active={dialog.id === selectedId} setSelectedId={setSelectedId} key={dialog.id} />)}

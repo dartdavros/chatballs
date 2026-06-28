@@ -1,4 +1,4 @@
-from hub_platform.conversations.models import Conversation, Message
+from hub_platform.conversations.models import Conversation, Message, MessageAuthor
 
 
 def message_payload(message: Message) -> dict[str, object]:
@@ -13,6 +13,17 @@ def message_payload(message: Message) -> dict[str, object]:
 
 def _last_message(conversation: Conversation) -> Message | None:
     return conversation.messages.order_by("-created_at").first()
+
+
+def _pending_count(conversation: Conversation) -> int:
+    # Сообщения клиента, пришедшие после последнего ответа AI/оператора (ожидают ответа).
+    count = 0
+    for message in conversation.messages.order_by("-created_at")[:50]:
+        if message.author_type == MessageAuthor.CONTACT:
+            count += 1
+        else:
+            break
+    return count
 
 
 def conversation_payload(conversation: Conversation, *, with_messages: bool = False) -> dict[str, object]:
@@ -37,4 +48,5 @@ def conversation_payload(conversation: Conversation, *, with_messages: bool = Fa
         payload["messages"] = [message_payload(m) for m in conversation.messages.order_by("created_at")]
     else:
         payload["lastMessage"] = message_payload(last) if last else None
+        payload["pendingCount"] = _pending_count(conversation)
     return payload

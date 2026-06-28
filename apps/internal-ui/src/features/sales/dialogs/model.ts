@@ -15,6 +15,7 @@ export type ApiConversation = {
   lastActivityAt: string;
   createdAt: string;
   lastMessage: ApiMessage | null;
+  pendingCount?: number;
   messages?: ApiMessage[];
 };
 
@@ -52,7 +53,7 @@ export function toDialog(conversation: ApiConversation): SalesDialog {
     mode: dialogMode(conversation),
     preview: conversation.lastMessage?.text.replace(/\s+/g, " ").slice(0, 80) ?? "—",
     time: new Date(conversation.lastActivityAt).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }),
-    unread: 0,
+    unread: conversation.pendingCount ?? 0,
   };
 }
 
