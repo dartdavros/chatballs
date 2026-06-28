@@ -111,6 +111,9 @@ export function promptCategoryLabel(category: string): string {
   return PROMPT_CATEGORY[category] ?? category;
 }
 
+export const knowledgeCategoryOptions = Object.entries(KNOWLEDGE_CATEGORY).map(([value, label]) => ({ value, label }));
+export const promptCategoryOptions = Object.entries(PROMPT_CATEGORY).map(([value, label]) => ({ value, label }));
+
 export function publishedVersion(versions: DocVersion[]): DocVersion | undefined {
   return versions.find((version) => version.status === "PUBLISHED") ?? versions[0];
 }

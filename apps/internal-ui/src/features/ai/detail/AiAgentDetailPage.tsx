@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 
 import { api } from "../../../api/client";
+import { Icon } from "../../../shared/icons";
 import { EmptyState, LoadingState } from "../../../shared/ui";
-import { UnderlineTabs } from "../../../shared/ui-controls";
+import { Button, UnderlineTabs } from "../../../shared/ui-controls";
 import type { RouteKey } from "../../../types";
 import { AiAgentDetailHeader } from "./AiAgentDetailHeader";
 import { AiAgentInstructionsTab } from "./AiAgentInstructionsTab";
@@ -47,9 +48,16 @@ export function AiAgentDetailPage({ agentId, setRoute, openRelease, onAgentLoade
     <div className="ai-agent-page">
       <AiAgentDetailHeader agent={agent} releases={releases} setRoute={setRoute} openRelease={openRelease} createRelease={createRelease} />
       <UnderlineTabs className="ai-agent-tabs" items={agentTabs} value={tab} onChange={setTab} />
+      {(tab === "instructions" || tab === "knowledge") && (
+        <div className="ai-notice ai-golive-notice">
+          <Icon name="warning" size={17} />
+          <span>Изменения вступят в силу после публикации новой версии канала. Опубликуйте release, чтобы выкатить правки в работу.</span>
+          <Button variant="primary" icon="bolt" onClick={createRelease}>Создать версию канала</Button>
+        </div>
+      )}
       {tab === "overview" && <AiAgentOverviewTab agent={agent} toggleActive={toggleActive} />}
-      {tab === "instructions" && <AiAgentInstructionsTab prompts={prompts} />}
-      {tab === "knowledge" && <AiAgentKnowledgeTab knowledge={knowledge} channelName={agent.channel.name} />}
+      {tab === "instructions" && <AiAgentInstructionsTab prompts={prompts} product={agent.channel.product} onChanged={reload} />}
+      {tab === "knowledge" && <AiAgentKnowledgeTab knowledge={knowledge} channelName={agent.channel.name} product={agent.channel.product} onChanged={reload} />}
       {tab === "releases" && <AiAgentReleasesTab openRelease={openRelease} releases={releases} />}
       {tab === "metrics" && <AiAgentMetricsTab />}
     </div>
