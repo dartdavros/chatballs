@@ -7,6 +7,7 @@ from django.db import models
 
 class NotificationType(models.TextChoices):
     DIALOG_WAITING = "DIALOG_WAITING", "Диалог ждёт оператора"
+    DIALOG_NEW_MESSAGE = "DIALOG_NEW_MESSAGE", "Новое сообщение в диалоге"
     # Задел на будущее (добавляются записью в реестр notifications.services.TYPE_META):
     PAYMENT_RECEIVED = "PAYMENT_RECEIVED", "Платёж получен"
     PAYMENT_FAILED = "PAYMENT_FAILED", "Проблема с платежом"

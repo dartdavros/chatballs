@@ -54,6 +54,18 @@ def release_to_ai(*, conversation_id: int) -> Conversation:
     return conversation
 
 
+@transaction.atomic
+def return_to_queue(*, conversation_id: int) -> Conversation:
+    # Оператор возвращает диалог в общую очередь (ADR-HUB-0003): снят с себя, ждёт оператора.
+    conversation = Conversation.objects.select_for_update().get(id=conversation_id)
+    conversation.control_mode = ControlMode.PAUSED
+    conversation.assigned_operator = None
+    conversation.expected_responder = ExpectedResponder.OPERATOR
+    conversation.save(update_fields=["control_mode", "assigned_operator", "expected_responder"])
+    Message.objects.create(conversation=conversation, author_type=MessageAuthor.SYSTEM, text="Диалог возвращён в очередь")
+    return conversation
+
+
 def post_operator_message(*, conversation: Conversation, operator, text: str) -> Message:
     message = Message.objects.create(
         conversation=conversation, author_type=MessageAuthor.OPERATOR, author_user=operator, text=text

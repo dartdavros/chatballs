@@ -5,6 +5,7 @@ import type { AppData, Employee, Product, RouteKey, SessionUser } from "../types
 import { AiSubnav } from "../features/ai/AiSubnav";
 import { NotificationDrawer } from "../features/notifications/NotificationDrawer";
 import { fetchNotifications, markAllRead, markRead, type AppNotification } from "../features/notifications/model";
+import { fetchWaitingCount } from "../features/sales/dialogs/model";
 import { Sidebar } from "./Sidebar";
 import { SalesSidebar } from "./SalesSidebar";
 import { ShellRouteContent } from "./ShellRouteContent";
@@ -15,7 +16,16 @@ export function Shell({ route, setRoute, selectedEmployeeId, selectedProductId, 
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [waitingCount, setWaitingCount] = useState(0);
   const prevUnread = useRef<number | null>(null);
+
+  const loadWaitingCount = useCallback(async () => {
+    try {
+      setWaitingCount(await fetchWaitingCount());
+    } catch {
+      /* ignore */
+    }
+  }, []);
 
   const loadNotifications = useCallback(async () => {
     try {
@@ -34,10 +44,14 @@ export function Shell({ route, setRoute, selectedEmployeeId, selectedProductId, 
   }, []);
 
   useEffect(() => {
-    void loadNotifications();
-    const timer = setInterval(loadNotifications, 15000);
+    const tick = () => {
+      void loadNotifications();
+      void loadWaitingCount();
+    };
+    tick();
+    const timer = setInterval(tick, 15000);
     return () => clearInterval(timer);
-  }, [loadNotifications]);
+  }, [loadNotifications, loadWaitingCount]);
 
   async function onNotificationClick(notification: AppNotification) {
     setNotifOpen(false);
@@ -80,7 +94,7 @@ export function Shell({ route, setRoute, selectedEmployeeId, selectedProductId, 
   const showSalesSidebar = isSalesWorkspace || user.role === "OPERATOR";
   return (
     <div className="hub-shell">
-      {showSalesSidebar ? <SalesSidebar route={route} user={user} setRoute={setRoute} /> : <Sidebar route={route} user={user} setRoute={setRoute} />}
+      {showSalesSidebar ? <SalesSidebar route={route} user={user} setRoute={setRoute} waitingCount={waitingCount} /> : <Sidebar route={route} user={user} setRoute={setRoute} />}
       <div className="hub-main">
         <TopBar route={route} user={user} currentEmployee={currentEmployee} currentProduct={currentProduct} currentAgentName={agentName} setRoute={setRoute} unreadCount={unreadCount} onOpenNotifications={() => { setNotifOpen(true); void loadNotifications(); }} />
         {isAiSection && <AiSubnav route={route} setRoute={setRoute} />}

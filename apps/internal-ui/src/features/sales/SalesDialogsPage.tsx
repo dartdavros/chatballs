@@ -6,10 +6,12 @@ import { SalesConversation } from "./dialogs/SalesConversation";
 import { SalesDialogList } from "./dialogs/SalesDialogList";
 import {
   claimConversation,
+  closeConversation,
   controlModeOf,
   fetchConversation,
   fetchConversations,
   releaseConversation,
+  returnToQueue,
   toDialog,
   type ApiConversation,
 } from "./dialogs/model";
@@ -18,6 +20,7 @@ import type { ListTab, RightTab } from "./dialogs/types";
 export function SalesDialogsPage({ initialConversationId }: { initialConversationId?: number | null }) {
   const [listTab, setListTab] = useState<ListTab>("all");
   const [rightTab, setRightTab] = useState<RightTab>("client");
+  const [search, setSearch] = useState("");
   const [conversations, setConversations] = useState<ApiConversation[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(initialConversationId ?? null);
   const [detail, setDetail] = useState<ApiConversation | null>(null);
@@ -58,17 +61,17 @@ export function SalesDialogsPage({ initialConversationId }: { initialConversatio
   }, [selectedId, loadDetail]);
 
   const dialogs = useMemo(() => conversations.map(toDialog), [conversations]);
-  const filtered = useMemo(
-    () =>
-      dialogs.filter((dialog) => {
-        if (listTab === "wait") return dialog.mode === "wait";
-        if (listTab === "ai") return dialog.mode === "ai";
-        if (listTab === "operator") return dialog.mode === "operator";
-        if (listTab === "unread") return dialog.unread > 0;
-        return true;
-      }),
-    [dialogs, listTab],
-  );
+  const filtered = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    return dialogs.filter((dialog) => {
+      if (query && !`${dialog.name} ${dialog.product} ${dialog.preview}`.toLowerCase().includes(query)) return false;
+      if (listTab === "wait") return dialog.mode === "wait";
+      if (listTab === "ai") return dialog.mode === "ai";
+      if (listTab === "operator") return dialog.mode === "operator";
+      if (listTab === "unread") return dialog.unread > 0;
+      return true;
+    });
+  }, [dialogs, listTab, search]);
 
   const selectedDialog = dialogs.find((dialog) => dialog.id === selectedId) ?? null;
   const controlMode = detail ? controlModeOf(detail) : "ai";
@@ -94,6 +97,22 @@ export function SalesDialogsPage({ initialConversationId }: { initialConversatio
       /* ignore */
     }
   };
+  const onReturnQueue = async () => {
+    if (selectedId == null) return;
+    try {
+      applyUpdated(await returnToQueue(selectedId));
+    } catch {
+      /* ignore */
+    }
+  };
+  const onClose = async () => {
+    if (selectedId == null) return;
+    try {
+      applyUpdated(await closeConversation(selectedId));
+    } catch {
+      /* ignore */
+    }
+  };
 
   return (
     <div className="sales-dialogs">
@@ -102,6 +121,8 @@ export function SalesDialogsPage({ initialConversationId }: { initialConversatio
         filtered={filtered}
         listTab={listTab}
         selectedId={selectedId ?? -1}
+        search={search}
+        setSearch={setSearch}
         setListTab={setListTab}
         setSelectedId={setSelectedId}
       />
@@ -112,6 +133,8 @@ export function SalesDialogsPage({ initialConversationId }: { initialConversatio
           conversationId={selectedId}
           onClaim={onClaim}
           onRelease={onRelease}
+          onReturnQueue={onReturnQueue}
+          onClose={onClose}
           onSent={() => selectedId != null && loadDetail(selectedId)}
         />
       </section>

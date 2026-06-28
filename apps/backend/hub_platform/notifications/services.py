@@ -14,6 +14,7 @@ from hub_platform.notifications.selectors import unread_for
 # одна запись здесь + вызов notify(...) из доменного сервиса.
 TYPE_META: dict[str, dict] = {
     NotificationType.DIALOG_WAITING: {"level": NotificationLevel.WARNING, "route": "salesDialogs"},
+    NotificationType.DIALOG_NEW_MESSAGE: {"level": NotificationLevel.INFO, "route": "salesDialogs"},
     NotificationType.PAYMENT_RECEIVED: {"level": NotificationLevel.SUCCESS, "route": "salesOrders"},
     NotificationType.PAYMENT_FAILED: {"level": NotificationLevel.CRITICAL, "route": "salesOrders"},
     NotificationType.RELEASE_PUBLISHED: {"level": NotificationLevel.SUCCESS, "route": "aiAgents"},

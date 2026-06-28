@@ -4,7 +4,7 @@ import { Icon } from "../../../shared/icons";
 import { sendOperatorMessage } from "./model";
 import type { ControlMode } from "./types";
 
-export function SalesComposer({ mode, conversationId, onClaim, onRelease, onSent }: { mode: ControlMode; conversationId: number | null; onClaim: () => void; onRelease: () => void; onSent: () => void }) {
+export function SalesComposer({ mode, conversationId, onClaim, onRelease, onReturnQueue, onClose, onSent }: { mode: ControlMode; conversationId: number | null; onClaim: () => void; onRelease: () => void; onReturnQueue: () => void; onClose: () => void; onSent: () => void }) {
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
 
@@ -44,8 +44,10 @@ export function SalesComposer({ mode, conversationId, onClaim, onRelease, onSent
   return (
     <div className="sales-composer">
       <div className="sales-human-tools">
+        <button onClick={onReturnQueue}>Вернуть в очередь</button>
         <span />
         <button className="ai" onClick={onRelease}>Вернуть AI</button>
+        <button onClick={onClose}>Закрыть</button>
       </div>
       <div className="sales-message-input">
         <button aria-label="Прикрепить файл"><Icon name="paperclip" size={19} /></button>

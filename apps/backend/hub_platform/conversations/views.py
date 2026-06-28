@@ -3,7 +3,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from hub_platform.conversations.models import Conversation, ControlMode
+from hub_platform.conversations.models import Conversation, ControlMode, LifecycleState, MessageAuthor
 from hub_platform.conversations.selectors import conversation_for_organization, conversations_for_organization
 from hub_platform.conversations.serializers import conversation_payload, message_payload
 from hub_platform.conversations.services import (
@@ -12,6 +12,7 @@ from hub_platform.conversations.services import (
     close_conversation,
     post_operator_message,
     release_to_ai,
+    return_to_queue,
 )
 from hub_platform.identity.audit import record_audit_event
 from hub_platform.identity.permissions import is_owner
@@ -78,6 +79,29 @@ class ConversationReleaseView(_Base):
         conversation = release_to_ai(conversation_id=conversation_id)
         self._audit(request, "released_to_ai", conversation)
         return Response({"conversation": conversation_payload(conversation, with_messages=True)})
+
+
+class ConversationReturnQueueView(_Base):
+    def post(self, request: Request, conversation_id: int) -> Response:
+        try:
+            self._conversation(request, conversation_id)
+        except Conversation.DoesNotExist:
+            return Response({"detail": "Диалог не найден"}, status=404)
+        conversation = return_to_queue(conversation_id=conversation_id)
+        self._audit(request, "returned_to_queue", conversation)
+        return Response({"conversation": conversation_payload(conversation, with_messages=True)})
+
+
+class ConversationStatsView(_Base):
+    def get(self, request: Request) -> Response:
+        # Очередь: открытые диалоги, где последнее сообщение — от клиента (ждут ответа).
+        conversations = conversations_for_organization(self._org(request).id).filter(lifecycle=LifecycleState.OPEN)
+        waiting = sum(
+            1
+            for conversation in conversations
+            if (last := conversation.messages.order_by("-created_at").first()) and last.author_type == MessageAuthor.CONTACT
+        )
+        return Response({"waiting": waiting})
 
 
 class ConversationMessageView(_Base):

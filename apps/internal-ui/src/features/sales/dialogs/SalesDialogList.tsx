@@ -3,11 +3,13 @@ import type { ListTab, SalesDialog } from "./types";
 import { channelMeta, modeDots } from "./data";
 import { SearchInput } from "../../../shared/ui-controls";
 
-export function SalesDialogList({ dialogs, filtered, listTab, selectedId, setListTab, setSelectedId }: {
+export function SalesDialogList({ dialogs, filtered, listTab, selectedId, search, setSearch, setListTab, setSelectedId }: {
   dialogs: SalesDialog[];
   filtered: SalesDialog[];
   listTab: ListTab;
   selectedId: number;
+  search: string;
+  setSearch: (value: string) => void;
   setListTab: (tab: ListTab) => void;
   setSelectedId: (id: number) => void;
 }) {
@@ -17,7 +19,7 @@ export function SalesDialogList({ dialogs, filtered, listTab, selectedId, setLis
     <section className="sales-dialog-list">
       <div className="sales-dialog-list-head">
         <div><h2>Диалоги</h2><span>{dialogs.length} всего</span></div>
-        <SearchInput className="sales-dialog-search" placeholder="Поиск по клиенту, продукту…" />
+        <SearchInput className="sales-dialog-search" placeholder="Поиск по клиенту, продукту…" value={search} onChange={setSearch} />
       </div>
       <div className="sales-dialog-tabs">
         <DialogTab active={listTab === "all"} onClick={() => setListTab("all")}>Все</DialogTab>

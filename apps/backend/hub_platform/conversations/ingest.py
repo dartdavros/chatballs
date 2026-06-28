@@ -115,6 +115,21 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
             source_id=conversation.id,
             dedup_key=f"dialog:{conversation.id}",
         )
+    elif conversation.control_mode != ControlMode.AI:
+        # Клиент написал в диалог, который ведёт оператор или который в очереди — пуш.
+        operator = conversation.assigned_operator
+        notify(
+            organization=channel.organization,
+            type=NotificationType.DIALOG_NEW_MESSAGE,
+            audience=NotificationAudience.USER if operator else NotificationAudience.OPERATORS,
+            recipient_user=operator,
+            title=f"Новое сообщение · {contact.name or 'Гость'}",
+            body=inbound.text[:120],
+            target_id=conversation.id,
+            source_type="Conversation",
+            source_id=conversation.id,
+            dedup_key=f"msg:{integration.id}:{inbound.external_id}",
+        )
 
     # AI отвечает только когда диалог ведёт AI (ADR-HUB-0003).
     if conversation.control_mode != ControlMode.AI:
