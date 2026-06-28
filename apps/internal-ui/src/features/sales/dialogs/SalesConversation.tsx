@@ -2,42 +2,58 @@ import type { ReactNode } from "react";
 
 import { Icon } from "../../../shared/icons";
 import { channelMeta, statusFor } from "./data";
+import type { ApiConversation, ApiMessage } from "./model";
 import type { ControlMode, SalesDialog, StatusInfo } from "./types";
 
-export function SalesConversation({ controlMode, selected, setControlMode }: { controlMode: ControlMode; selected: SalesDialog; setControlMode: (mode: ControlMode) => void }) {
+function fmtTime(value: string): string {
+  return new Date(value).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+}
+
+export function SalesConversation({ controlMode, dialog, detail, onClaim }: { controlMode: ControlMode; dialog: SalesDialog | null; detail: ApiConversation | null; onClaim: () => void }) {
+  if (!dialog) {
+    return <div className="sales-timeline"><div className="sales-timeline-inner"><div className="sales-wait-note">Выберите диалог</div></div></div>;
+  }
   const status = statusFor(controlMode);
-  const channel = channelMeta[selected.channel];
+  const channel = channelMeta[dialog.channel];
+  const messages = detail?.messages ?? [];
   return (
     <>
       <div className="sales-conversation-head">
         <div className="sales-conversation-person">
-          <span style={{ background: selected.avatarBg }}>{selected.initials}</span>
+          <span style={{ background: dialog.avatarBg }}>{dialog.initials}</span>
           <div>
-            <div><strong>{selected.name}</strong><StatusBadge status={status} /></div>
-            <p>{selected.product}<i /> <em style={{ background: channel.color }} />{channel.label}<i />{channel.handle}</p>
+            <div><strong>{dialog.name}</strong><StatusBadge status={status} /></div>
+            <p>{dialog.product}<i /> <em style={{ background: channel.color }} />{channel.label}</p>
           </div>
         </div>
         <div className="sales-conversation-actions">
-          {controlMode === "waiting" && <button className="sales-claim-button" onClick={() => setControlMode("human")}><Icon name="check" size={15} />Забрать</button>}
-          {controlMode === "ai" && <button className="sales-ai-button" onClick={() => setControlMode("human")}>Перехватить AI</button>}
+          {controlMode === "waiting" && <button className="sales-claim-button" onClick={onClaim}><Icon name="check" size={15} />Забрать</button>}
+          {controlMode === "ai" && <button className="sales-ai-button" onClick={onClaim}>Перехватить AI</button>}
           <button className="sales-more-button" aria-label="Действия диалога"><Icon name="more" size={18} /></button>
         </div>
       </div>
       <div className="sales-timeline">
         <div className="sales-timeline-inner">
-          <div className="sales-day-divider"><span />Сегодня<span /></div>
-          <div className="sales-event-chip"><Icon name="clock" size={12} />Диалог начат · канал MAX · 14:02</div>
-          <Message side="client" initials="МС" avatarBg="#eb6f4b" time="14:02">Здравствуйте! Смотрю готовые сайты FirePage для студии красоты. Как это работает?</Message>
-          <Message side="ai" actor="AI-агент FirePage" time="14:03">Здравствуйте! FirePage — это готовый сайт под нишу: выбираете вариант, например <b>BeautySoft</b>, оплачиваете разовую лицензию 4 900 ₽ — и сайт ваш, без подписки.</Message>
-          <Message side="client" initials="МС" avatarBg="#eb6f4b" time="14:06">А мой текущий контент перенесёте? Лучше бы уточнить у менеджера.</Message>
-          <div className="sales-event-chip warning"><Icon name="team" size={12} />AI передал диалог оператору · причина: запрос человека (перенос контента)</div>
-          {controlMode === "waiting" && <div className="sales-wait-note">Ожидает оператора · 4 мин</div>}
-          {controlMode === "ai" && <TypingMessage />}
-          {controlMode === "human" && <div className="sales-event-chip claimed"><Icon name="check" size={13} />Иван Петров забрал диалог · 14:09</div>}
-          {controlMode === "human" && <Message side="operator" initials="ИП" avatarBg="#1677ff" actor="Иван · оператор" time="14:10">Здравствуйте, Мария! Я подключился. По переносу — поможем перенести ваши тексты, фото и онлайн-запись на выбранный сайт. Подобрать вариант под вашу нишу?</Message>}
+          {messages.length === 0 && <div className="sales-wait-note">Пока нет сообщений</div>}
+          {messages.map((message) => (
+            <MessageRow key={message.id} message={message} dialog={dialog} />
+          ))}
         </div>
       </div>
     </>
+  );
+}
+
+function MessageRow({ message, dialog }: { message: ApiMessage; dialog: SalesDialog }) {
+  if (message.author === "SYSTEM") {
+    return <div className="sales-event-chip"><Icon name="clock" size={12} />{message.text} · {fmtTime(message.createdAt)}</div>;
+  }
+  const side = message.author === "CONTACT" ? "client" : message.author === "OPERATOR" ? "operator" : "ai";
+  const actor = message.author === "AI" ? "AI-агент" : message.author === "OPERATOR" ? "Оператор" : undefined;
+  return (
+    <Message side={side} initials={dialog.initials} avatarBg={dialog.avatarBg} actor={actor} time={fmtTime(message.createdAt)}>
+      {message.text}
+    </Message>
   );
 }
 
@@ -54,15 +70,6 @@ function Message({ side, initials, avatarBg, actor, time, children }: { side: "a
         <div>{children}</div>
         <small>{time}</small>
       </div>
-    </div>
-  );
-}
-
-function TypingMessage() {
-  return (
-    <div className="sales-message ai typing">
-      <div className="sales-message-avatar"><Icon name="robot" size={16} /></div>
-      <div className="sales-typing-bubble"><span /><span /><span /></div>
     </div>
   );
 }
