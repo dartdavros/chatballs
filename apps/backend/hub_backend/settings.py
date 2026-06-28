@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "hub_platform.ai",
     "hub_platform.integrations",
     "hub_platform.channels",
+    "hub_platform.conversations",
     "hub_platform.health",
     "hub_platform.events",
 ]

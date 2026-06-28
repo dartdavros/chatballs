@@ -43,6 +43,10 @@ class Integration(models.Model):
     # Несекретная конфигурация: base_url, модель по умолчанию и т.п.
     config = models.JSONField(default=dict, blank=True)
     status = models.CharField(max_length=16, choices=IntegrationStatus.choices, default=IntegrationStatus.UNCHECKED)
+    # Подключение (бот/виджет) привязано к каналу обработки (ADR-HUB-0019, M2).
+    channel = models.ForeignKey("channels.Channel", on_delete=models.SET_NULL, null=True, blank=True, related_name="connections")
+    # Курсор Long Polling (marker MAX / offset Telegram).
+    poll_marker = models.CharField(max_length=64, blank=True)
     last_checked_at = models.DateTimeField(null=True, blank=True)
     last_error = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

@@ -1,0 +1,95 @@
+from django.conf import settings
+from django.db import models
+
+# Минимальный домен диалогов (ADR-HUB-0001/0002/0003/0006). Состояние диалога
+# разделено на независимые оси; перехват оператором — атомарный.
+
+
+class Contact(models.Model):
+    organization = models.ForeignKey("identity.Organization", on_delete=models.PROTECT, related_name="contacts")
+    name = models.CharField(max_length=255, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return self.name or f"contact:{self.id}"
+
+
+class ConnectionIdentity(models.Model):
+    # Устойчивая идентичность контакта внутри конкретного подключения (ADR-HUB-0006).
+    contact = models.ForeignKey(Contact, on_delete=models.CASCADE, related_name="identities")
+    connection = models.ForeignKey("integrations.Integration", on_delete=models.PROTECT, related_name="identities")
+    external_user_id = models.CharField(max_length=128)
+    display_name = models.CharField(max_length=255, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["connection", "external_user_id"], name="uniq_identity_connection_user"),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.connection_id}:{self.external_user_id}"
+
+
+class LifecycleState(models.TextChoices):
+    OPEN = "OPEN", "Открыт"
+    CLOSED = "CLOSED", "Закрыт"
+    SPAM = "SPAM", "Спам"
+
+
+class ControlMode(models.TextChoices):
+    AI = "AI", "AI"
+    HUMAN = "HUMAN", "Оператор"
+    PAUSED = "PAUSED", "Пауза"
+
+
+class ExpectedResponder(models.TextChoices):
+    CUSTOMER = "CUSTOMER", "Клиент"
+    AI = "AI", "AI"
+    OPERATOR = "OPERATOR", "Оператор"
+    NOBODY = "NOBODY", "Никто"
+
+
+class Conversation(models.Model):
+    organization = models.ForeignKey("identity.Organization", on_delete=models.PROTECT, related_name="conversations")
+    channel = models.ForeignKey("channels.Channel", on_delete=models.PROTECT, related_name="conversations")
+    connection = models.ForeignKey("integrations.Integration", on_delete=models.PROTECT, related_name="conversations", null=True, blank=True)
+    contact = models.ForeignKey(Contact, on_delete=models.PROTECT, related_name="conversations")
+    # Внешний идентификатор чата (для отправки ответа в канал).
+    external_chat_id = models.CharField(max_length=128, blank=True)
+    lifecycle = models.CharField(max_length=16, choices=LifecycleState.choices, default=LifecycleState.OPEN)
+    control_mode = models.CharField(max_length=16, choices=ControlMode.choices, default=ControlMode.AI)
+    expected_responder = models.CharField(max_length=16, choices=ExpectedResponder.choices, default=ExpectedResponder.AI)
+    assigned_operator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="assigned_conversations")
+    previous_conversation = models.ForeignKey("self", on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_activity_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ["-last_activity_at"]
+        indexes = [models.Index(fields=["channel", "lifecycle"])]
+
+    def __str__(self) -> str:
+        return f"conv:{self.id}/{self.lifecycle}/{self.control_mode}"
+
+
+class MessageAuthor(models.TextChoices):
+    CONTACT = "CONTACT", "Клиент"
+    AI = "AI", "AI"
+    OPERATOR = "OPERATOR", "Оператор"
+    SYSTEM = "SYSTEM", "Система"
+
+
+class Message(models.Model):
+    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name="messages")
+    author_type = models.CharField(max_length=16, choices=MessageAuthor.choices)
+    author_user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
+    text = models.TextField(blank=True)
+    external_id = models.CharField(max_length=128, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ["created_at"]
+
+    def __str__(self) -> str:
+        return f"msg:{self.conversation_id}/{self.author_type}"
