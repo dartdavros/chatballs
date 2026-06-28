@@ -143,7 +143,28 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
     try:
         result = run_channel_turn(channel=channel, message=inbound.text, history=_history(conversation))
     except ProviderError as error:
+        # Сбой AI не должен «терять» сообщение: переводим диалог в очередь к
+        # оператору, уведомляем и отвечаем клиенту понятным fallback.
         logger.warning("AI turn failed for conversation %s: %s", conversation.id, error)
+        conversation.control_mode = ControlMode.PAUSED
+        conversation.expected_responder = ExpectedResponder.OPERATOR
+        conversation.last_activity_at = timezone.now()
+        conversation.save(update_fields=["control_mode", "expected_responder", "last_activity_at"])
+        Message.objects.create(conversation=conversation, author_type=MessageAuthor.SYSTEM, text="AI недоступен — диалог передан оператору")
+        fallback = "Извините, прямо сейчас не получается ответить. Я передал ваш вопрос специалисту — он скоро подключится."
+        Message.objects.create(conversation=conversation, author_type=MessageAuthor.AI, text=fallback)
+        notify(
+            organization=channel.organization,
+            type=NotificationType.DIALOG_WAITING,
+            audience=NotificationAudience.OPERATORS,
+            title=f"Нужен оператор · {contact.name or 'Гость'}",
+            body="AI временно недоступен, диалог ждёт ответа",
+            target_id=conversation.id,
+            source_type="Conversation",
+            source_id=conversation.id,
+            dedup_key=f"aifail:{conversation.id}",
+        )
+        transports.send_reply(integration, chat_id=conversation.external_chat_id, user_id=inbound.user_id, text=fallback)
         return
 
     reply = result.text
