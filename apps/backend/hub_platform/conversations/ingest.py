@@ -86,6 +86,9 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
         )
         is_new = conversation is None
         if conversation is None:
+            # ADR-HUB-0002: новое сообщение после закрытия создаёт новый диалог,
+            # связанный с предыдущим для навигации по истории.
+            previous = Conversation.objects.filter(channel=channel, contact=contact).order_by("-created_at").first()
             conversation = Conversation.objects.create(
                 organization=channel.organization,
                 channel=channel,
@@ -94,6 +97,7 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
                 external_chat_id=inbound.chat_id,
                 control_mode=ControlMode.AI,
                 expected_responder=ExpectedResponder.AI,
+                previous_conversation=previous,
             )
         elif inbound.chat_id and not conversation.external_chat_id:
             conversation.external_chat_id = inbound.chat_id

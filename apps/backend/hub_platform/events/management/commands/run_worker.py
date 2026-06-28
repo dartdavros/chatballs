@@ -4,6 +4,7 @@ import time
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
+from hub_platform.conversations.maintenance import close_stale_conversations
 from hub_platform.conversations.poller import poll_all_messengers
 from hub_platform.events.handlers import dispatch
 from hub_platform.events.models import OutboxStatus
@@ -12,6 +13,7 @@ from hub_platform.events.services import claim_next_outbox_event, mark_retry
 logger = logging.getLogger(__name__)
 
 MESSENGER_POLL_INTERVAL = 3.0  # seconds between messenger long-poll cycles
+MAINTENANCE_INTERVAL = 3600.0  # seconds between maintenance cycles (auto-close stale dialogs)
 
 
 class Command(BaseCommand):
@@ -20,6 +22,7 @@ class Command(BaseCommand):
     def handle(self, *args: object, **options: object) -> None:
         self.stdout.write("Hub worker started")
         last_poll = 0.0
+        last_maintenance = 0.0
         while True:
             event = claim_next_outbox_event()
             if event is not None:
@@ -41,4 +44,10 @@ class Command(BaseCommand):
                     poll_all_messengers()
                 except Exception:  # pragma: no cover
                     logger.exception("Messenger polling cycle failed")
+            if now - last_maintenance >= MAINTENANCE_INTERVAL:
+                last_maintenance = now
+                try:
+                    close_stale_conversations()
+                except Exception:  # pragma: no cover
+                    logger.exception("Maintenance cycle failed")
             time.sleep(1)
