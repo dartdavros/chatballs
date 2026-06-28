@@ -11,8 +11,8 @@ export function SalesContextPanel({ rightTab, setRightTab, dialog, detail }: { r
       <SalesContextTabs rightTab={rightTab} setRightTab={setRightTab} />
       <div className="sales-context-body">
         {rightTab === "client" && <ClientContext dialog={dialog} detail={detail} />}
-        {rightTab === "product" && <ProductContext />}
-        {rightTab === "history" && <HistoryContext />}
+        {rightTab === "product" && <ProductContext detail={detail} />}
+        {rightTab === "history" && <HistoryContext detail={detail} />}
       </div>
     </section>
   );

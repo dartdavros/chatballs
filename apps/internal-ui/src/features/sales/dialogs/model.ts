@@ -3,9 +3,19 @@ import type { ChannelKey, ControlMode, DialogMode, SalesDialog } from "./types";
 
 export type ApiMessage = { id: number; author: "CONTACT" | "AI" | "OPERATOR" | "SYSTEM"; text: string; createdAt: string };
 
+export type HistoryItem = {
+  id: number;
+  channelName: string;
+  provider: "MAX" | "TELEGRAM" | "WEB" | null;
+  lifecycle: "OPEN" | "CLOSED" | "SPAM";
+  createdAt: string;
+  lastActivityAt: string;
+  preview: string;
+};
+
 export type ApiConversation = {
   id: number;
-  channel: { code: string; name: string };
+  channel: { code: string; name: string; product: { code: string; name: string } | null };
   connection: { id: number; provider: "MAX" | "TELEGRAM" | "WEB"; name: string } | null;
   contact: { id: number; name: string };
   lifecycle: "OPEN" | "CLOSED" | "SPAM";
@@ -17,6 +27,7 @@ export type ApiConversation = {
   lastMessage: ApiMessage | null;
   pendingCount?: number;
   messages?: ApiMessage[];
+  history?: HistoryItem[];
 };
 
 const AVATAR_PALETTE = ["#eb6f4b", "#3b82c4", "#9254de", "#13a8a8", "#d4860b", "#52a838", "#c4413b", "#6b5be0"];

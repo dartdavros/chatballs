@@ -1,13 +1,55 @@
+import { useEffect, useState } from "react";
+
+import { api } from "../../../../api/client";
 import { Icon } from "../../../../shared/icons";
+import type { Product, ProductOffer } from "../../../../types";
+import type { ApiConversation } from "../model";
 import { ContextSection } from "./ContextSection";
 
-export function ProductContext() {
+const PERIOD: Record<string, string> = { ONE_TIME: "разово", MONTH: "/ мес", YEAR: "/ год" };
+
+function priceLabel(offer: ProductOffer): string {
+  const price = offer.prices.find((p) => p.isActive) ?? offer.prices[0];
+  if (!price) return "—";
+  const amount = (price.amountMinor / 100).toLocaleString("ru-RU");
+  return `₽${amount} ${PERIOD[price.billingPeriod] ?? ""}`.trim();
+}
+
+export function ProductContext({ detail }: { detail: ApiConversation | null }) {
+  const productRef = detail?.channel.product ?? null;
+  const [product, setProduct] = useState<Product | null>(null);
+
+  useEffect(() => {
+    if (!productRef) {
+      setProduct(null);
+      return;
+    }
+    api<{ items: Product[] }>("/api/v1/company/products/")
+      .then((r) => setProduct(r.items.find((p) => p.code === productRef.code) ?? null))
+      .catch(() => setProduct(null));
+  }, [productRef?.code]);
+
+  if (!productRef) {
+    return (
+      <div className="sales-product-context">
+        <div className="sales-product-head"><span><Icon name="box" size={20} /></span><div><strong>Без продукта</strong><small>Канал главного сайта</small></div></div>
+      </div>
+    );
+  }
+
+  const offers = product?.offers ?? [];
   return (
     <div className="sales-product-context">
-      <div className="sales-product-head"><span><Icon name="box" size={20} /></span><div><strong>FirePage</strong><small>Конструктор лендингов · активен</small></div></div>
+      <div className="sales-product-head"><span><Icon name="box" size={20} /></span><div><strong>{productRef.name}</strong><small>{offers.length} предложений</small></div></div>
       <ContextSection title="ПОДХОДЯЩИЕ OFFER">
-        <div className="sales-offer active"><div><strong>Business</strong><em>AI может предлагать</em></div><p><b>₽2 490</b><span>/ мес · помесячно</span></p><small>До 10 пользователей · общие проекты · amoCRM-интеграция · приоритетная поддержка.</small></div>
-        <div className="sales-offer"><div><strong>Pro</strong><em>для одного</em></div><p><b>₽990</b><span>/ мес</span></p><small>1 пользователь · все шаблоны · базовая поддержка.</small></div>
+        {offers.length === 0 && <p className="sales-context-muted">Предложения не настроены</p>}
+        {offers.map((offer) => (
+          <div className={`sales-offer ${offer.aiOfferable ? "active" : ""}`} key={offer.id}>
+            <div><strong>{offer.name}</strong>{offer.aiOfferable && <em>AI может предлагать</em>}</div>
+            <p><b>{priceLabel(offer)}</b></p>
+            {offer.description && <small>{offer.description}</small>}
+          </div>
+        ))}
       </ContextSection>
     </div>
   );
