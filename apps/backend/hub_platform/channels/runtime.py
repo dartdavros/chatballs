@@ -17,7 +17,7 @@ def run_channel_turn(*, channel, message: str, history: list[dict] | None = None
         .first()
     )
     if release is not None:
-        return run_test_chat(release=release, message=message, history=history).result
+        return run_test_chat(release=release, message=message, history=history, style_guard=True).result
 
     messages: list[ChatMessage] = []
     if channel.system_prompt.strip():

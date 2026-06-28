@@ -12,6 +12,15 @@ _PROMPT_ORDER = [
     PromptCategory.OPERATOR_HANDOFF,
 ]
 
+# Гард стиля для мессенджеров: гарантирует простой текст вне зависимости от
+# того, что написано в авторских промптах.
+MESSENGER_STYLE_GUARD = (
+    "Пиши ответ простым текстом для мессенджера: без markdown-разметки — "
+    "никаких **, ##, маркированных списков с -, таблиц, ссылок вида [текст](url). "
+    "Короткие абзацы. Не придумывай факты, контакты, ссылки, цены и условия, "
+    "которых нет в знаниях; если данных нет — честно скажи и предложи оператора."
+)
+
 
 @dataclass(frozen=True)
 class TestChatResult:
@@ -33,13 +42,15 @@ def _release_system_prompt(release: ChannelAIRelease) -> str:
     return "\n\n".join(parts)
 
 
-def run_test_chat(*, release: ChannelAIRelease, message: str, history: list[dict] | None = None) -> TestChatResult:
+def run_test_chat(*, release: ChannelAIRelease, message: str, history: list[dict] | None = None, style_guard: bool = False) -> TestChatResult:
     fragments = KnowledgeRetriever().retrieve(release=release, query=message, limit=5)
 
     messages: list[ChatMessage] = []
     system_prompt = _release_system_prompt(release)
     if system_prompt:
         messages.append(ChatMessage(role="system", content=system_prompt))
+    if style_guard:
+        messages.append(ChatMessage(role="system", content=MESSENGER_STYLE_GUARD))
     if fragments:
         knowledge = "\n\n".join(
             f"[{fragment.version.document.code}#{fragment.chunk_index}] {fragment.content}" for fragment in fragments
