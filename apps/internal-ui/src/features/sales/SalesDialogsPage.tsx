@@ -15,11 +15,11 @@ import {
 } from "./dialogs/model";
 import type { ListTab, RightTab } from "./dialogs/types";
 
-export function SalesDialogsPage() {
+export function SalesDialogsPage({ initialConversationId }: { initialConversationId?: number | null }) {
   const [listTab, setListTab] = useState<ListTab>("all");
   const [rightTab, setRightTab] = useState<RightTab>("client");
   const [conversations, setConversations] = useState<ApiConversation[]>([]);
-  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [selectedId, setSelectedId] = useState<number | null>(initialConversationId ?? null);
   const [detail, setDetail] = useState<ApiConversation | null>(null);
 
   const loadList = useCallback(async () => {
@@ -45,6 +45,10 @@ export function SalesDialogsPage() {
     const timer = setInterval(loadList, 4000);
     return () => clearInterval(timer);
   }, [loadList]);
+
+  useEffect(() => {
+    if (initialConversationId != null) setSelectedId(initialConversationId);
+  }, [initialConversationId]);
 
   useEffect(() => {
     if (selectedId == null) return;

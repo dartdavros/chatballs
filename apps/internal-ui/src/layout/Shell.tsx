@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
+import { notification as antToast } from "antd";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { AppData, Employee, Product, RouteKey, SessionUser } from "../types";
 import { AiSubnav } from "../features/ai/AiSubnav";
@@ -9,17 +10,24 @@ import { SalesSidebar } from "./SalesSidebar";
 import { ShellRouteContent } from "./ShellRouteContent";
 import { TopBar } from "./TopBar";
 
-export function Shell({ route, setRoute, selectedEmployeeId, selectedProductId, selectedProductCode, selectedAgentId, selectedReleaseId, openEmployeeRoute, openProductRoute, openAgentCreateRoute, openAgentRoute, openReleaseRoute, user, data, reload, onUserUpdated, onLogout }: { route: RouteKey; setRoute: (route: RouteKey) => void; selectedEmployeeId: number | null; selectedProductId: number | null; selectedProductCode: string | null; selectedAgentId: number | null; selectedReleaseId: number | null; openEmployeeRoute: (employeeId: number) => void; openProductRoute: (productId: number) => void; openAgentCreateRoute: (productCode: string | null) => void; openAgentRoute: (agentId: number) => void; openReleaseRoute: (releaseId: number) => void; user: SessionUser; data: AppData; reload: () => void; onUserUpdated: (user: SessionUser) => void; onLogout: () => void }) {
+export function Shell({ route, setRoute, selectedEmployeeId, selectedProductId, selectedProductCode, selectedAgentId, selectedReleaseId, selectedConversationId, openEmployeeRoute, openProductRoute, openAgentCreateRoute, openAgentRoute, openReleaseRoute, openConversationRoute, user, data, reload, onUserUpdated, onLogout }: { route: RouteKey; setRoute: (route: RouteKey) => void; selectedEmployeeId: number | null; selectedProductId: number | null; selectedProductCode: string | null; selectedAgentId: number | null; selectedReleaseId: number | null; selectedConversationId: number | null; openEmployeeRoute: (employeeId: number) => void; openProductRoute: (productId: number) => void; openAgentCreateRoute: (productCode: string | null) => void; openAgentRoute: (agentId: number) => void; openReleaseRoute: (releaseId: number) => void; openConversationRoute: (conversationId: number) => void; user: SessionUser; data: AppData; reload: () => void; onUserUpdated: (user: SessionUser) => void; onLogout: () => void }) {
   const [agentName, setAgentName] = useState<string | null>(null);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifOpen, setNotifOpen] = useState(false);
+  const prevUnread = useRef<number | null>(null);
 
   const loadNotifications = useCallback(async () => {
     try {
       const payload = await fetchNotifications();
       setNotifications(payload.items);
       setUnreadCount(payload.unreadCount);
+      // Тост при появлении новых непрочитанных (после первой загрузки).
+      if (prevUnread.current !== null && payload.unreadCount > prevUnread.current) {
+        const latest = payload.items.find((item) => item.unread);
+        if (latest) antToast.open({ message: latest.title, description: latest.body, placement: "bottomRight" });
+      }
+      prevUnread.current = payload.unreadCount;
     } catch {
       /* ignore transient errors */
     }
@@ -37,7 +45,11 @@ export function Shell({ route, setRoute, selectedEmployeeId, selectedProductId, 
       await markRead([notification.id]).catch(() => undefined);
       void loadNotifications();
     }
-    if (notification.targetRoute) setRoute(notification.targetRoute as RouteKey);
+    if (notification.targetRoute === "salesDialogs" && notification.targetId) {
+      openConversationRoute(Number(notification.targetId));
+    } else if (notification.targetRoute) {
+      setRoute(notification.targetRoute as RouteKey);
+    }
   }
 
   async function onMarkAll() {
@@ -74,7 +86,7 @@ export function Shell({ route, setRoute, selectedEmployeeId, selectedProductId, 
         {isAiSection && <AiSubnav route={route} setRoute={setRoute} />}
         <main className={`hub-scroll ${isSalesDialogs ? "sales-dialogs-scroll" : ""} ${isAiFullWidth ? "ai-fullwidth-scroll" : ""}`}>
           <div className={`hub-page ${isSalesWorkspace ? "sales-workspace-page" : ""} ${isSalesDialogs ? "sales-dialogs-page" : ""} ${isSalesClients ? "sales-clients-page" : ""} ${isSalesClientDetail ? "sales-client-detail-page" : ""} ${isSalesOrderDetail ? "sales-order-detail-page" : ""} ${isSalesOrders ? "sales-orders-page" : ""} ${isAiFullWidth ? "ai-fullwidth-page" : ""}`}>
-            <ShellRouteContent route={route} data={data} currentEmployee={currentEmployee} currentProduct={currentProduct} selectedProductCode={selectedProductCode} selectedAgentId={selectedAgentId} selectedReleaseId={selectedReleaseId} openEmployee={openEmployee} openProduct={openProduct} openAgentCreate={openAgentCreateRoute} openAgent={openAgentRoute} openRelease={openReleaseRoute} onAgentLoaded={setAgentName} reload={reload} setRoute={setRoute} user={user} onUserUpdated={onUserUpdated} onLogout={onLogout} />
+            <ShellRouteContent route={route} data={data} currentEmployee={currentEmployee} currentProduct={currentProduct} selectedProductCode={selectedProductCode} selectedAgentId={selectedAgentId} selectedReleaseId={selectedReleaseId} selectedConversationId={selectedConversationId} openEmployee={openEmployee} openProduct={openProduct} openAgentCreate={openAgentCreateRoute} openAgent={openAgentRoute} openRelease={openReleaseRoute} onAgentLoaded={setAgentName} reload={reload} setRoute={setRoute} user={user} onUserUpdated={onUserUpdated} onLogout={onLogout} />
           </div>
         </main>
       </div>
