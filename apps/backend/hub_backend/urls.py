@@ -12,5 +12,6 @@ urlpatterns = [
     path("api/v1/ai/", include("hub_platform.ai.urls")),
     path("api/v1/integrations/", include("hub_platform.integrations.urls")),
     path("api/v1/channels/", include("hub_platform.channels.urls")),
+    path("api/v1/conversations/", include("hub_platform.conversations.urls")),
     path("api/v1/health/", include("hub_platform.health.urls")),
 ]

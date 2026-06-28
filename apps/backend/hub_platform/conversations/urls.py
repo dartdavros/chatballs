@@ -1,0 +1,12 @@
+from django.urls import path
+
+from hub_platform.conversations import views
+
+urlpatterns = [
+    path("", views.ConversationListView.as_view(), name="conversation-list"),
+    path("<int:conversation_id>/", views.ConversationDetailView.as_view(), name="conversation-detail"),
+    path("<int:conversation_id>/claim/", views.ConversationClaimView.as_view(), name="conversation-claim"),
+    path("<int:conversation_id>/release/", views.ConversationReleaseView.as_view(), name="conversation-release"),
+    path("<int:conversation_id>/messages/", views.ConversationMessageView.as_view(), name="conversation-messages"),
+    path("<int:conversation_id>/close/", views.ConversationCloseView.as_view(), name="conversation-close"),
+]
