@@ -79,9 +79,10 @@ def issue_session(channel_code: str) -> dict | None:
     if integration is None or integration.channel_id is None:
         return None
     session_id = uuid.uuid4().hex
-    contact = Contact.objects.create(organization=integration.channel.organization, name="Веб-гость")
+    guest_name = f"Веб-гость · {session_id[:6]}"
+    contact = Contact.objects.create(organization=integration.channel.organization, name=guest_name)
     identity = ConnectionIdentity.objects.create(
-        contact=contact, connection=integration, external_user_id=session_id, display_name="Веб-гость"
+        contact=contact, connection=integration, external_user_id=session_id, display_name=guest_name
     )
     token = secrets.token_urlsafe(32)
     WebSession.objects.create(token_hash=_hash(token), connection=integration, identity=identity)
