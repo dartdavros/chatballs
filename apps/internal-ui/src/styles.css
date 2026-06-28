@@ -28,4 +28,5 @@
 @import "./features/ai/test-chat/conversation.css";
 @import "./features/ai/test-chat/diagnostics.css";
 @import "./features/integrations/styles.css";
+@import "./features/notifications/styles.css";
 @import "./shared/state.css";

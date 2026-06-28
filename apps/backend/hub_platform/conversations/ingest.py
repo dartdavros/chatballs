@@ -27,6 +27,8 @@ from hub_platform.conversations.models import (
 from hub_platform.conversations import transports
 from hub_platform.conversations.transports.base import InboundMessage
 from hub_platform.events.models import InboxEvent
+from hub_platform.notifications.models import NotificationAudience, NotificationType
+from hub_platform.notifications.services import notify
 
 logger = logging.getLogger(__name__)
 
@@ -81,6 +83,7 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
             .order_by("-last_activity_at")
             .first()
         )
+        is_new = conversation is None
         if conversation is None:
             conversation = Conversation.objects.create(
                 organization=channel.organization,
@@ -99,6 +102,19 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
         )
         conversation.last_activity_at = timezone.now()
         conversation.save(update_fields=["external_chat_id", "last_activity_at"])
+
+    if is_new:
+        notify(
+            organization=channel.organization,
+            type=NotificationType.DIALOG_WAITING,
+            audience=NotificationAudience.OPERATORS,
+            title=f"Новый диалог · {channel.name}",
+            body=f"{contact.name or 'Гость'} · {integration.provider}: {inbound.text[:80]}",
+            target_id=conversation.id,
+            source_type="Conversation",
+            source_id=conversation.id,
+            dedup_key=f"dialog:{conversation.id}",
+        )
 
     # AI отвечает только когда диалог ведёт AI (ADR-HUB-0003).
     if conversation.control_mode != ControlMode.AI:
