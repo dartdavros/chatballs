@@ -7,6 +7,7 @@ unreachable without one).
 
 from __future__ import annotations
 
+import http.client
 import json
 import logging
 import urllib.error
@@ -52,7 +53,7 @@ def poll_updates(integration) -> tuple[list[InboundMessage], str]:
         url += f"&offset={offset}"
     try:
         data = request_json(url, proxy_url=_proxy(integration))
-    except (urllib.error.URLError, TimeoutError, OSError, json.JSONDecodeError) as error:
+    except (urllib.error.URLError, TimeoutError, OSError, http.client.HTTPException, json.JSONDecodeError) as error:
         logger.warning("Telegram poll failed for integration %s: %s", integration.id, error)
         return [], integration.poll_marker
     if not data.get("ok"):
@@ -73,6 +74,6 @@ def send_text(integration, *, chat_id: str, user_id: str, text: str) -> bool:
     try:
         request_json(url, headers={"Content-Type": "application/json"}, method="POST", body={"chat_id": target, "text": text}, proxy_url=_proxy(integration))
         return True
-    except (urllib.error.URLError, TimeoutError, OSError, json.JSONDecodeError) as error:
+    except (urllib.error.URLError, TimeoutError, OSError, http.client.HTTPException, json.JSONDecodeError) as error:
         logger.warning("Telegram send failed for integration %s: %s", integration.id, error)
         return False

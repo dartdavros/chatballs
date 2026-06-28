@@ -1,3 +1,4 @@
+import http.client
 import json
 import urllib.error
 import urllib.request
@@ -25,8 +26,10 @@ class OpenRouterProvider(LLMProvider):
         try:
             with urllib.request.urlopen(request, timeout=self.timeout) as response:
                 return json.loads(response.read().decode("utf-8"))
-        except (urllib.error.URLError, TimeoutError, OSError, json.JSONDecodeError) as error:
-            raise ProviderError(str(error)) from error
+        # http.client.HTTPException покрывает IncompleteRead/BadStatusLine (оборванный ответ) —
+        # это не OSError, поэтому ловим отдельно, иначе исключение уходит мимо ProviderError.
+        except (urllib.error.URLError, TimeoutError, OSError, http.client.HTTPException, json.JSONDecodeError) as error:
+            raise ProviderError(f"{type(error).__name__}: {error}") from error
 
     def chat(self, *, messages: list[ChatMessage], model: str, params: dict | None = None) -> ChatResult:
         payload = {"model": model, "messages": [{"role": m.role, "content": m.content} for m in messages], **(params or {})}

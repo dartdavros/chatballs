@@ -7,6 +7,7 @@ update is logged so the live shape can be confirmed.
 
 from __future__ import annotations
 
+import http.client
 import json
 import logging
 import urllib.error
@@ -60,7 +61,7 @@ def poll_updates(integration) -> tuple[list[InboundMessage], str]:
     url = f"{_base(integration)}/updates?{urllib.parse.urlencode(params)}"
     try:
         data = request_json(url, headers={"Authorization": token, "Content-Type": "application/json"}, proxy_url=_proxy(integration))
-    except (urllib.error.URLError, TimeoutError, OSError, json.JSONDecodeError) as error:
+    except (urllib.error.URLError, TimeoutError, OSError, http.client.HTTPException, json.JSONDecodeError) as error:
         logger.warning("MAX poll failed for integration %s: %s", integration.id, error)
         return [], integration.poll_marker
     updates = data.get("updates") or []
@@ -82,6 +83,6 @@ def send_text(integration, *, chat_id: str, user_id: str, text: str) -> bool:
     try:
         request_json(url, headers={"Authorization": token, "Content-Type": "application/json"}, method="POST", body={"text": text}, proxy_url=_proxy(integration))
         return True
-    except (urllib.error.URLError, TimeoutError, OSError, json.JSONDecodeError) as error:
+    except (urllib.error.URLError, TimeoutError, OSError, http.client.HTTPException, json.JSONDecodeError) as error:
         logger.warning("MAX send failed for integration %s: %s", integration.id, error)
         return False
