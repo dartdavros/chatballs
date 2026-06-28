@@ -6,9 +6,15 @@ _POLL = {
     IntegrationProvider.MAX: _max.poll_updates,
     IntegrationProvider.TELEGRAM: _telegram.poll_updates,
 }
+def _web_noop(integration, *, chat_id: str, user_id: str, text: str) -> bool:
+    # Web Chat: ответ уже сохранён в БД, браузер забирает его поллингом — внешней отправки нет.
+    return True
+
+
 _SEND = {
     IntegrationProvider.MAX: _max.send_text,
     IntegrationProvider.TELEGRAM: _telegram.send_text,
+    IntegrationProvider.WEB: _web_noop,
 }
 
 # Провайдеры-мессенджеры, у которых есть транспорт приёма/отправки.

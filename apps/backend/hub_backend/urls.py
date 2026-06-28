@@ -2,8 +2,11 @@ from django.contrib import admin
 from django.urls import include, path
 from rest_framework.schemas import get_schema_view
 
+from hub_platform.webchat.views import WidgetLoaderView
+
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("chat-widget.js", WidgetLoaderView.as_view(), name="chat-widget-loader"),
     path("api/v1/schema/", get_schema_view(title="Edevs Hub API", version="0.1.0"), name="openapi-schema"),
     path("api/v1/auth/", include("hub_platform.identity.auth_urls")),
     path("api/v1/company/", include("hub_platform.identity.company_urls")),
@@ -14,5 +17,6 @@ urlpatterns = [
     path("api/v1/channels/", include("hub_platform.channels.urls")),
     path("api/v1/conversations/", include("hub_platform.conversations.urls")),
     path("api/v1/notifications/", include("hub_platform.notifications.urls")),
+    path("api/v1/webchat/", include("hub_platform.webchat.urls")),
     path("api/v1/health/", include("hub_platform.health.urls")),
 ]
