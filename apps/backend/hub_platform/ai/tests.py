@@ -4,28 +4,59 @@ from django.test import TestCase, override_settings
 from rest_framework.test import APIClient
 
 from hub_platform.ai.models import AIAgent
+from hub_platform.channels.models import Channel
 from hub_platform.identity.bootstrap import bootstrap_edevs_owner
 from hub_platform.identity.models import EmployeeProfile, EmployeeRole, HumanUser, Organization
 from hub_platform.products.models import Product
 
 
+def make_channel_with_agent(organization, *, code, name, product=None, model="openai/gpt-4o-mini"):
+    """Канал обработки + его агент (ADR-HUB-0019). Bootstrap больше не сидит
+    каналы/агентов — в проде это делает seed_channels, в тестах — этот helper."""
+    channel = Channel.objects.create(organization=organization, code=code, name=name, product=product, model=model)
+    agent = AIAgent.objects.create(channel=channel, name=f"{name} Agent", model=model)
+    return channel, agent
+
+
+def seed_sales_channels(organization):
+    firepage = Product.objects.get(organization=organization, code="firepage")
+    foxray = Product.objects.get(organization=organization, code="foxray")
+    make_channel_with_agent(organization, code="firepage-sales", name="FirePage — продажи", product=firepage)
+    make_channel_with_agent(organization, code="foxray-sales", name="FoxRay — продажи", product=foxray)
+
+
 class AIAgentInvariantTests(TestCase):
     def setUp(self) -> None:
         bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
+        self.organization = Organization.objects.get(slug="edevs")
 
-    def test_each_product_has_no_more_than_one_agent(self) -> None:
-        agent_codes = list(AIAgent.objects.values_list("product__code", flat=True))
-        self.assertEqual(len(agent_codes), len(set(agent_codes)))
+    def test_channel_has_at_most_one_agent(self) -> None:
+        from django.core.exceptions import ValidationError
+
+        from hub_platform.ai.services import AgentCreateInput, create_agent
+
+        channel, _ = make_channel_with_agent(
+            self.organization, code="firepage-sales", name="FirePage — продажи",
+            product=Product.objects.get(code="firepage"),
+        )
+        owner = HumanUser.objects.get(email="owner@edevs.tech")
+        with self.assertRaises(ValidationError):
+            create_agent(
+                organization=self.organization,
+                author=owner,
+                data=AgentCreateInput(channel_code=channel.code, model="gpt-4o-mini", system_prompt="", knowledge_document_ids=[]),
+            )
 
     def test_new_product_does_not_get_an_agent_automatically(self) -> None:
-        org = Organization.objects.get(slug="edevs")
-        product = Product.objects.create(organization=org, code="academy", name="Academy")
-        self.assertFalse(AIAgent.objects.filter(product=product).exists())
+        product = Product.objects.create(organization=self.organization, code="academy", name="Academy")
+        self.assertFalse(AIAgent.objects.filter(channel__product=product).exists())
 
 
 class AIAgentApiTests(TestCase):
     def setUp(self) -> None:
         bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
+        self.organization = Organization.objects.get(slug="edevs")
+        seed_sales_channels(self.organization)
         self.client = APIClient()
         self.client.login(username="owner@edevs.tech", password="temporary-password")
 
@@ -33,15 +64,15 @@ class AIAgentApiTests(TestCase):
         response = self.client.get("/api/v1/ai/agents/")
 
         self.assertEqual(response.status_code, 200)
-        codes = {item["product"]["code"] for item in response.json()["items"]}
+        codes = {item["channel"]["product"]["code"] for item in response.json()["items"]}
         self.assertEqual(codes, {"firepage", "foxray"})
 
-    def test_owner_creates_agent_for_product_without_agent(self) -> None:
-        org = Organization.objects.get(slug="edevs")
-        product = Product.objects.create(organization=org, code="academy", name="Academy")
+    def test_owner_creates_agent_for_channel_without_agent(self) -> None:
+        academy = Product.objects.create(organization=self.organization, code="academy", name="Academy")
+        Channel.objects.create(organization=self.organization, code="academy-sales", name="Academy", product=academy)
         knowledge_response = self.client.post(
             "/api/v1/ai/knowledge/",
-            data=json.dumps({"product": product.code, "code": "faq", "title": "FAQ", "category": "FAQ", "content": "v1"}),
+            data=json.dumps({"code": "faq", "title": "FAQ", "category": "FAQ", "content": "v1"}),
             content_type="application/json",
         )
 
@@ -49,7 +80,7 @@ class AIAgentApiTests(TestCase):
             "/api/v1/ai/agents/",
             data=json.dumps(
                 {
-                    "product": product.code,
+                    "channel": "academy-sales",
                     "model": "gpt-4o-mini",
                     "systemPrompt": "Отвечай по делу.",
                     "knowledgeDocumentIds": [knowledge_response.json()["document"]["id"]],
@@ -60,21 +91,21 @@ class AIAgentApiTests(TestCase):
 
         self.assertEqual(response.status_code, 201)
         body = response.json()
-        self.assertEqual(body["agent"]["product"]["code"], product.code)
+        self.assertEqual(body["agent"]["channel"]["code"], "academy-sales")
         self.assertFalse(body["agent"]["isActive"])
         self.assertEqual(body["release"]["status"], "DRAFT")
 
-    def test_owner_cannot_create_second_agent_for_product(self) -> None:
+    def test_owner_cannot_create_second_agent_for_channel(self) -> None:
         response = self.client.post(
             "/api/v1/ai/agents/",
-            data=json.dumps({"product": "firepage", "model": "gpt-4o-mini", "knowledgeDocumentIds": [1]}),
+            data=json.dumps({"channel": "firepage-sales", "model": "gpt-4o-mini", "knowledgeDocumentIds": []}),
             content_type="application/json",
         )
 
         self.assertEqual(response.status_code, 400)
 
     def test_owner_updates_agent_model(self) -> None:
-        agent = AIAgent.objects.get(product__code="firepage")
+        agent = AIAgent.objects.get(channel__code="firepage-sales")
 
         response = self.client.patch(
             f"/api/v1/ai/agents/{agent.id}/update/",
@@ -88,7 +119,7 @@ class AIAgentApiTests(TestCase):
         self.assertEqual(agent.model_params, {"temperature": 0.3})
 
     def test_owner_deactivates_and_activates_agent(self) -> None:
-        agent = AIAgent.objects.get(product__code="foxray")
+        agent = AIAgent.objects.get(channel__code="foxray-sales")
 
         deactivated = self.client.post(f"/api/v1/ai/agents/{agent.id}/deactivate/")
         self.assertEqual(deactivated.status_code, 200)
@@ -98,7 +129,7 @@ class AIAgentApiTests(TestCase):
         self.assertTrue(activated.json()["agent"]["isActive"])
 
     def test_update_rejects_invalid_model_params(self) -> None:
-        agent = AIAgent.objects.get(product__code="firepage")
+        agent = AIAgent.objects.get(channel__code="firepage-sales")
 
         response = self.client.patch(
             f"/api/v1/ai/agents/{agent.id}/update/",
@@ -138,7 +169,7 @@ class KnowledgeDocumentApiTests(TestCase):
         self.client.login(username="owner@edevs.tech", password="temporary-password")
 
     def _create(self, **overrides):
-        payload = {"product": "firepage", "code": "faq", "title": "FAQ", "category": "FAQ", "content": "v1"}
+        payload = {"code": "faq", "title": "FAQ", "category": "FAQ", "content": "v1"}
         payload.update(overrides)
         return self.client.post("/api/v1/ai/knowledge/", data=json.dumps(payload), content_type="application/json")
 
@@ -199,9 +230,8 @@ class KnowledgeDocumentApiTests(TestCase):
         self.assertTrue(enabled.json()["document"]["isEnabled"])
 
     def test_create_for_foreign_product_is_rejected(self) -> None:
-        Organization.objects.create(name="Other", slug="other")
-        # product code resolved within the owner's organization only
-        response = self._create(product="missing")
+        # scope=PRODUCT с несуществующим в организации продуктом → 400.
+        response = self._create(scope="PRODUCT", product="missing")
         self.assertEqual(response.status_code, 400)
 
 
@@ -214,7 +244,7 @@ class PromptDocumentApiTests(TestCase):
     def test_create_prompt_without_inclusion_mode(self) -> None:
         response = self.client.post(
             "/api/v1/ai/prompts/",
-            data=json.dumps({"product": "foxray", "code": "system", "title": "System", "category": "SYSTEM", "content": "be helpful"}),
+            data=json.dumps({"code": "system", "title": "System", "category": "SYSTEM", "content": "be helpful"}),
             content_type="application/json",
         )
 
@@ -227,20 +257,25 @@ class PromptDocumentApiTests(TestCase):
     def test_prompt_rejects_knowledge_category(self) -> None:
         response = self.client.post(
             "/api/v1/ai/prompts/",
-            data=json.dumps({"product": "foxray", "code": "x", "title": "X", "category": "FAQ", "content": ""}),
+            data=json.dumps({"code": "x", "title": "X", "category": "FAQ", "content": ""}),
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
 
 
-class ProductAIReleaseApiTests(TestCase):
+class ChannelAIReleaseApiTests(TestCase):
     def setUp(self) -> None:
         bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
+        self.organization = Organization.objects.get(slug="edevs")
+        self.channel, _ = make_channel_with_agent(
+            self.organization, code="firepage-sales", name="FirePage — продажи",
+            product=Product.objects.get(code="firepage"),
+        )
         self.client = APIClient()
         self.client.login(username="owner@edevs.tech", password="temporary-password")
         document_id = self.client.post(
             "/api/v1/ai/knowledge/",
-            data=json.dumps({"product": "firepage", "code": "faq", "title": "FAQ", "category": "FAQ", "content": "v1"}),
+            data=json.dumps({"scope": "PRODUCT", "product": "firepage", "code": "faq", "title": "FAQ", "category": "FAQ", "content": "v1"}),
             content_type="application/json",
         ).json()["document"]["id"]
         self.client.post(f"/api/v1/ai/knowledge/{document_id}/versions/1/publish/")
@@ -248,7 +283,7 @@ class ProductAIReleaseApiTests(TestCase):
     def _create_release(self):
         return self.client.post(
             "/api/v1/ai/releases/",
-            data=json.dumps({"product": "firepage"}),
+            data=json.dumps({"channel": "firepage-sales"}),
             content_type="application/json",
         )
 
@@ -288,10 +323,10 @@ class ProductAIReleaseApiTests(TestCase):
     def test_release_snapshot_is_immutable(self) -> None:
         from django.core.exceptions import ValidationError
 
-        from hub_platform.ai.models import ProductAIRelease
+        from hub_platform.ai.models import ChannelAIRelease
 
         release_id = self._create_release().json()["release"]["id"]
-        release = ProductAIRelease.objects.get(id=release_id)
+        release = ChannelAIRelease.objects.get(id=release_id)
         release.model = "anthropic/claude-3.5"
         with self.assertRaises(ValidationError):
             release.save()
@@ -361,7 +396,11 @@ class ProviderFactoryTests(TestCase):
 class ChatInvocationTests(TestCase):
     def setUp(self) -> None:
         bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
-        self.product = Product.objects.get(code="firepage")
+        self.organization = Organization.objects.get(slug="edevs")
+        self.channel, self.agent = make_channel_with_agent(
+            self.organization, code="firepage-sales", name="FirePage — продажи",
+            product=Product.objects.get(code="firepage"),
+        )
 
     def test_chat_records_invocation_with_cost(self) -> None:
         from hub_platform.ai.invocation import invoke_chat
@@ -369,13 +408,13 @@ class ChatInvocationTests(TestCase):
         from hub_platform.ai.provider.base import ChatMessage
 
         result = invoke_chat(
-            product=self.product,
+            channel=self.channel,
             messages=[ChatMessage(role="user", content="hello there")],
             purpose="test_chat",
         )
 
         self.assertTrue(result.text)
-        invocation = LlmInvocation.objects.get(product=self.product, operation="chat")
+        invocation = LlmInvocation.objects.get(channel=self.channel, operation="chat")
         self.assertEqual(invocation.status, LlmInvocationStatus.SUCCESS)
         self.assertGreater(invocation.total_tokens, 0)
         self.assertGreater(invocation.cost_micros, 0)
@@ -398,7 +437,7 @@ class ChatInvocationTests(TestCase):
 
         with mock.patch("hub_platform.ai.invocation.get_provider", return_value=_Capturing()):
             invoke_chat(
-                product=self.product,
+                channel=self.channel,
                 messages=[ChatMessage(role="user", content="email me a@b.com")],
                 purpose="test_chat",
             )
@@ -411,17 +450,16 @@ class ChatInvocationTests(TestCase):
         from hub_platform.ai.models import LlmInvocation, LlmInvocationStatus
         from hub_platform.ai.provider.base import ChatMessage
 
-        agent = self.product.ai_agent
-        agent.limits = {"dailyCostMicros": 1}
-        agent.save(update_fields=["limits"])
+        self.agent.limits = {"dailyCostMicros": 1}
+        self.agent.save(update_fields=["limits"])
         LlmInvocation.objects.create(
-            product=self.product, purpose="seed", operation="chat", model="x", cost_micros=10,
+            channel=self.channel, purpose="seed", operation="chat", model="x", cost_micros=10,
             status=LlmInvocationStatus.SUCCESS,
         )
 
         with self.assertRaises(ai_limits.LimitExceeded):
-            invoke_chat(product=self.product, messages=[ChatMessage(role="user", content="hi")], purpose="test_chat")
-        self.assertTrue(LlmInvocation.objects.filter(product=self.product, status=LlmInvocationStatus.BLOCKED).exists())
+            invoke_chat(channel=self.channel, messages=[ChatMessage(role="user", content="hi")], purpose="test_chat")
+        self.assertTrue(LlmInvocation.objects.filter(channel=self.channel, status=LlmInvocationStatus.BLOCKED).exists())
 
     def test_invocation_records_used_fragment_ids(self) -> None:
         from hub_platform.ai.invocation import invoke_chat
@@ -429,12 +467,12 @@ class ChatInvocationTests(TestCase):
         from hub_platform.ai.provider.base import ChatMessage
 
         invoke_chat(
-            product=self.product,
+            channel=self.channel,
             messages=[ChatMessage(role="user", content="hi")],
             purpose="test_chat",
             used_fragment_ids=[11, 22],
         )
-        invocation = LlmInvocation.objects.get(product=self.product, operation="chat")
+        invocation = LlmInvocation.objects.get(channel=self.channel, operation="chat")
         self.assertEqual(invocation.used_fragment_ids, [11, 22])
 
 
@@ -451,12 +489,18 @@ class ChunkingTests(TestCase):
 class KnowledgeRetrievalTests(TestCase):
     def setUp(self) -> None:
         bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
+        self.organization = Organization.objects.get(slug="edevs")
+        self.channel, _ = make_channel_with_agent(
+            self.organization, code="firepage-sales", name="FirePage — продажи",
+            product=Product.objects.get(code="firepage"),
+        )
         self.client = APIClient()
         self.client.login(username="owner@edevs.tech", password="temporary-password")
         document_id = self.client.post(
             "/api/v1/ai/knowledge/",
             data=json.dumps(
                 {
+                    "scope": "PRODUCT",
                     "product": "firepage",
                     "code": "faq",
                     "title": "FAQ",
@@ -470,9 +514,8 @@ class KnowledgeRetrievalTests(TestCase):
 
         from hub_platform.ai import releases
 
-        self.product = Product.objects.get(code="firepage")
         owner = HumanUser.objects.get(email="owner@edevs.tech")
-        self.release = releases.create_draft_release(product=self.product, author=owner)
+        self.release = releases.create_draft_release(channel=self.channel, author=owner)
 
     def test_publish_builds_fragments_with_embeddings(self) -> None:
         from hub_platform.ai.models import KnowledgeFragment
@@ -498,12 +541,17 @@ class KnowledgeRetrievalTests(TestCase):
 class TestChatRuntimeTests(TestCase):
     def setUp(self) -> None:
         bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
+        self.organization = Organization.objects.get(slug="edevs")
+        self.channel, _ = make_channel_with_agent(
+            self.organization, code="firepage-sales", name="FirePage — продажи",
+            product=Product.objects.get(code="firepage"),
+        )
         self.client = APIClient()
         self.client.login(username="owner@edevs.tech", password="temporary-password")
         document_id = self.client.post(
             "/api/v1/ai/knowledge/",
             data=json.dumps(
-                {"product": "firepage", "code": "faq", "title": "FAQ", "category": "FAQ", "content": "Refund policy details here."}
+                {"scope": "PRODUCT", "product": "firepage", "code": "faq", "title": "FAQ", "category": "FAQ", "content": "Refund policy details here."}
             ),
             content_type="application/json",
         ).json()["document"]["id"]
@@ -512,7 +560,7 @@ class TestChatRuntimeTests(TestCase):
         from hub_platform.ai import releases
 
         owner = HumanUser.objects.get(email="owner@edevs.tech")
-        self.release = releases.create_draft_release(product=Product.objects.get(code="firepage"), author=owner)
+        self.release = releases.create_draft_release(channel=self.channel, author=owner)
 
     def test_test_chat_returns_reply_and_records_used_knowledge(self) -> None:
         from hub_platform.ai.models import LlmInvocation
@@ -536,7 +584,11 @@ class TestChatRuntimeTests(TestCase):
         from hub_platform.ai import releases
 
         owner = HumanUser.objects.get(email="owner@edevs.tech")
-        empty_release = releases.create_draft_release(product=Product.objects.get(code="foxray"), author=owner)
+        empty_channel, _ = make_channel_with_agent(
+            self.organization, code="foxray-sales", name="FoxRay — продажи",
+            product=Product.objects.get(code="foxray"),
+        )
+        empty_release = releases.create_draft_release(channel=empty_channel, author=owner)
 
         response = self.client.post(
             f"/api/v1/ai/releases/{empty_release.id}/test-chat/",

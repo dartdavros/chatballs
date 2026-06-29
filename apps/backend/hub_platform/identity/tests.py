@@ -39,7 +39,8 @@ class BootstrapOwnerTests(TestCase):
         self.assertEqual(Department.objects.get().code, "sales")
         self.assertEqual(set(Product.objects.values_list("code", flat=True)), {"firepage", "foxray"})
         self.assertEqual(result.owner.employee_profile.role, EmployeeRole.OWNER)
-        self.assertTrue(result.owner.employee_profile.totp_required)
+        # TOTP выключен по умолчанию (намеренно, локальная разработка).
+        self.assertFalse(result.owner.employee_profile.totp_required)
         self.assertTrue(result.owner.is_staff)
         self.assertTrue(result.owner.is_superuser)
         operator = HumanUser.objects.get(email="a.kotova@edevs.tech")
@@ -321,6 +322,11 @@ class AuthEndpointTests(TestCase):
         self.assertEqual(profile.totp_secret, "")
 
     def test_totp_setup_and_confirm_enables_profile_totp(self) -> None:
+        # TOTP по умолчанию не требуется; включаем требование, чтобы пройти setup→confirm.
+        owner = HumanUser.objects.get(email="owner@edevs.tech")
+        profile = owner.employee_profile
+        profile.totp_required = True
+        profile.save(update_fields=["totp_required"])
         self.client.login(username="owner@edevs.tech", password="temporary-password")
 
         setup_response = self.client.get("/api/v1/auth/totp/setup/")
