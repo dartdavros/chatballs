@@ -17,8 +17,7 @@ export function ProductDetailPage({ product, departments, reload, openAgentCreat
       <ProductDetailHeader product={product} onEdit={() => setEditing(true)} />
       <UnderlineTabs className="product-detail-tabs" items={productTabs} value={tab} onChange={setTab} />
       {tab === "overview" && <ProductOverviewTab product={product} openAgentCreate={openAgentCreate} openAgent={openAgent} />}
-      {tab === "offers" && <ProductOffersTab product={product} />}
-      {tab === "knowledge" && <ProductEmptyTab title="База знаний продукта" subtitle="Используется AI-агентом для ответов" />}
+      {tab === "offers" && <ProductOffersTab product={product} reload={reload} />}
       {tab === "channels" && <ProductEmptyTab title="Каналы продаж" subtitle="Через какие каналы продукт доступен клиентам" />}
       {tab === "fulfillment" && <ProductEmptyTab title="Способ исполнения" />}
       <ProductFormModal departments={departments} open={editing} product={product} onClose={() => setEditing(false)} onSaved={reload} />
