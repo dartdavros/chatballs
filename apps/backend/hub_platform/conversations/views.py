@@ -3,6 +3,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from hub_platform.conversations.clients import clients_overview
 from hub_platform.conversations.models import Conversation, ControlMode
 from hub_platform.conversations.selectors import conversation_for_organization, conversations_for_organization
 from hub_platform.conversations.serializers import conversation_payload, message_payload
@@ -99,6 +100,11 @@ class ConversationStatsView(_Base):
         if period not in ("today", "d7", "d30"):
             period = "today"
         return Response(sales_overview_stats(self._org(request).id, period))
+
+
+class ClientsView(_Base):
+    def get(self, request: Request) -> Response:
+        return Response({"items": clients_overview(self._org(request).id)})
 
 
 class ConversationMessageView(_Base):

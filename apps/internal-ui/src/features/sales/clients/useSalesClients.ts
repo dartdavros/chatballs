@@ -1,11 +1,11 @@
 import { useMemo, useState } from "react";
 
-import type { ClientChannelCode, ClientDropdown, ClientProductCode, ClientSortKey } from "./model";
-import { salesClients, toSalesClientRow } from "./model";
+import type { ClientChannelCode, ClientDropdown, ClientProductCode, ClientSortKey, SalesClient } from "./model";
+import { toSalesClientRow } from "./model";
 
 export type SalesClientsState = ReturnType<typeof useSalesClients>;
 
-export function useSalesClients() {
+export function useSalesClients(salesClients: SalesClient[]) {
   const [query, setQueryState] = useState("");
   const [productFilter, setProductFilter] = useState<ClientProductCode[]>([]);
   const [channelFilter, setChannelFilter] = useState<ClientChannelCode[]>([]);
@@ -29,7 +29,7 @@ export function useSalesClients() {
     return [...filtered]
       .sort((left, right) => sortDir === "asc" ? Number(left[key[sortKey]]) - Number(right[key[sortKey]]) : Number(right[key[sortKey]]) - Number(left[key[sortKey]]))
       .map(toSalesClientRow);
-  }, [buyerOnly, channelFilter, openOnly, productFilter, query, sortDir, sortKey]);
+  }, [salesClients, buyerOnly, channelFilter, openOnly, productFilter, query, sortDir, sortKey]);
 
   function setQuery(value: string) {
     setQueryState(value);

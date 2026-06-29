@@ -59,18 +59,64 @@ const statusDot = {
   closed: "#bfbfbf",
 } satisfies Record<SalesClient["mode"], string>;
 
-export const salesClients: SalesClient[] = [
-  { name: "Мария Соколова", initials: "МС", avatarBg: "#eb6f4b", cid: "CUS-4821", email: "m.sokolova@workmail.ru", phone: "+7 ··· ·· 14", channels: ["MAX"], products: ["FP"], last: 5, lastLabel: "5 мин назад", mode: "wait", openDialogs: 1, orders: 0, total: 0 },
-  { name: "Дмитрий Орлов", initials: "ДО", avatarBg: "#3b82c4", cid: "CUS-4789", email: "d.orlov@gmail.com", phone: "+7 ··· ·· 03", channels: ["TG"], products: ["FX"], last: 8, lastLabel: "8 мин назад", mode: "ai", openDialogs: 1, orders: 2, total: 4980 },
-  { name: "Елена Кузнецова", initials: "ЕК", avatarBg: "#9254de", cid: "CUS-4702", email: "e.kuznetsova@corp.ru", phone: "+7 ··· ·· 88", channels: ["MAX", "WEB"], products: ["FX", "FP"], last: 18, lastLabel: "18 мин назад", mode: "operator", openDialogs: 1, orders: 3, total: 9800 },
-  { name: "Сергей Волков", initials: "СВ", avatarBg: "#13a8a8", cid: "CUS-4655", email: "s.volkov@mail.ru", phone: "+7 ··· ·· 21", channels: ["TG"], products: ["FP"], last: 26, lastLabel: "26 мин назад", mode: "ai", openDialogs: 1, orders: 1, total: 2490 },
-  { name: "Ольга Зайцева", initials: "ОЗ", avatarBg: "#d4860b", cid: "CUS-4590", email: "o.zaytseva@yandex.ru", phone: "+7 ··· ·· 47", channels: ["WEB"], products: ["FX"], last: 35, lastLabel: "35 мин назад", mode: "operator", openDialogs: 1, orders: 0, total: 0 },
-  { name: "Павел Новиков", initials: "ПН", avatarBg: "#52a838", cid: "CUS-4410", email: "p.novikov@firm.io", phone: "+7 ··· ·· 60", channels: ["MAX"], products: ["FP"], last: 60, lastLabel: "1 ч назад", mode: "closed", openDialogs: 0, orders: 4, total: 19600 },
-  { name: "Анна Морозова", initials: "АМ", avatarBg: "#c4456b", cid: "CUS-4322", email: "a.morozova@studio.com", phone: "+7 ··· ·· 12", channels: ["TG", "MAX"], products: ["FP", "FX"], last: 180, lastLabel: "3 ч назад", mode: "closed", openDialogs: 0, orders: 6, total: 31200 },
-  { name: "Гость 8842", initials: "Г8", avatarBg: "#8c8c8c", cid: "CUS-4901", email: "без контакта", phone: "идентификация по каналу", anon: true, channels: ["WEB"], products: ["FP"], last: 12, lastLabel: "12 мин назад", mode: "wait", openDialogs: 1, orders: 0, total: 0 },
-  { name: "Игорь Соколов", initials: "ИС", avatarBg: "#4c6ef0", cid: "CUS-4188", email: "i.sokolov@dev.team", phone: "+7 ··· ·· 35", channels: ["MAX"], products: ["FX"], last: 300, lastLabel: "5 ч назад", mode: "closed", openDialogs: 0, orders: 2, total: 6970 },
-  { name: "Татьяна Лебедева", initials: "ТЛ", avatarBg: "#7048b6", cid: "CUS-3980", email: "t.lebedeva@agency.ru", phone: "+7 ··· ·· 99", channels: ["TG", "MAX"], products: ["FP"], last: 1440, lastLabel: "1 д назад", mode: "closed", openDialogs: 0, orders: 8, total: 42800 },
-];
+// Реальный клиент с бэкенда (conversations/clients.py).
+export type ApiClient = {
+  id: number;
+  cid: string;
+  name: string;
+  channels: ClientChannelCode[];
+  products: ClientProductCode[];
+  openDialogs: number;
+  totalDialogs: number;
+  lastActivityAt: string;
+  mode: SalesClient["mode"];
+  orders: number;
+  total: number;
+};
+
+const AVATAR_COLORS = ["#eb6f4b", "#3b82c4", "#9254de", "#13a8a8", "#d4860b", "#52a838", "#c4456b", "#4c6ef0", "#7048b6"];
+
+function initialsOf(name: string): string {
+  const words = name.replace(/·.*/, "").trim().split(/\s+/).filter(Boolean);
+  const letters = words.slice(0, 2).map((word) => word[0]).join("");
+  return (letters || name.slice(0, 2)).toUpperCase();
+}
+
+function avatarColor(seed: string): string {
+  let hash = 0;
+  for (let index = 0; index < seed.length; index += 1) hash = (hash * 31 + seed.charCodeAt(index)) >>> 0;
+  return AVATAR_COLORS[hash % AVATAR_COLORS.length];
+}
+
+export function relativeTime(iso: string): { minutes: number; label: string } {
+  const minutes = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
+  if (minutes < 60) return { minutes, label: `${minutes} мин назад` };
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return { minutes, label: `${hours} ч назад` };
+  return { minutes, label: `${Math.floor(hours / 24)} д назад` };
+}
+
+export function toSalesClient(api: ApiClient): SalesClient {
+  const isGuest = /гость/i.test(api.name);
+  const { minutes, label } = relativeTime(api.lastActivityAt);
+  return {
+    name: api.name,
+    initials: initialsOf(api.name),
+    avatarBg: isGuest ? "#8c8c8c" : avatarColor(api.cid),
+    cid: api.cid,
+    email: isGuest ? "без контакта" : "—",
+    phone: "идентификация по каналу",
+    anon: isGuest,
+    channels: api.channels,
+    products: api.products,
+    last: minutes,
+    lastLabel: label,
+    mode: api.mode,
+    openDialogs: api.openDialogs,
+    orders: api.orders,
+    total: api.total,
+  };
+}
 
 export function toSalesClientRow(client: SalesClient): SalesClientRowVm {
   return {
