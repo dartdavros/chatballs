@@ -5,7 +5,7 @@ import { SalesClientsTable } from "./clients/SalesClientsTable";
 import { useClientsData } from "./clients/useClientsData";
 import { useSalesClients } from "./clients/useSalesClients";
 
-export function SalesClientsPage({ openClient }: { openClient: () => void }) {
+export function SalesClientsPage({ openClient }: { openClient: (id: number) => void }) {
   const { clients: data, loading, error } = useClientsData();
   const clients = useSalesClients(data);
 

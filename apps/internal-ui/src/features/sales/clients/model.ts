@@ -4,6 +4,7 @@ export type ClientSortKey = "last" | "open" | "orders" | "total";
 export type ClientDropdown = "products" | "channels";
 
 export type SalesClient = {
+  id: number;
   name: string;
   initials: string;
   avatarBg: string;
@@ -76,13 +77,13 @@ export type ApiClient = {
 
 const AVATAR_COLORS = ["#eb6f4b", "#3b82c4", "#9254de", "#13a8a8", "#d4860b", "#52a838", "#c4456b", "#4c6ef0", "#7048b6"];
 
-function initialsOf(name: string): string {
+export function initialsOf(name: string): string {
   const words = name.replace(/·.*/, "").trim().split(/\s+/).filter(Boolean);
   const letters = words.slice(0, 2).map((word) => word[0]).join("");
   return (letters || name.slice(0, 2)).toUpperCase();
 }
 
-function avatarColor(seed: string): string {
+export function avatarColor(seed: string): string {
   let hash = 0;
   for (let index = 0; index < seed.length; index += 1) hash = (hash * 31 + seed.charCodeAt(index)) >>> 0;
   return AVATAR_COLORS[hash % AVATAR_COLORS.length];
@@ -100,6 +101,7 @@ export function toSalesClient(api: ApiClient): SalesClient {
   const isGuest = /гость/i.test(api.name);
   const { minutes, label } = relativeTime(api.lastActivityAt);
   return {
+    id: api.id,
     name: api.name,
     initials: initialsOf(api.name),
     avatarBg: isGuest ? "#8c8c8c" : avatarColor(api.cid),

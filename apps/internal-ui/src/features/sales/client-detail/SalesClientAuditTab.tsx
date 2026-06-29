@@ -1,8 +1,8 @@
-import type { salesClientDetail } from "./model";
+import { EmptyState } from "../../../shared/ui";
+import type { ClientDetailVm } from "./model";
 
-type AuditItem = typeof salesClientDetail.audit[number];
-
-export function SalesClientAuditTab({ audit }: { audit: AuditItem[] }) {
+export function SalesClientAuditTab({ audit }: { audit: ClientDetailVm["audit"] }) {
+  if (audit.length === 0) return <EmptyState title="Аудит-событий пока нет" />;
   return (
     <div className="sales-client-table-card">
       <table className="sales-client-detail-table audit">
@@ -16,12 +16,12 @@ export function SalesClientAuditTab({ audit }: { audit: AuditItem[] }) {
           </tr>
         </thead>
         <tbody>
-          {audit.map((item) => (
-            <tr key={`${item.time}-${item.action}`}>
+          {audit.map((item, index) => (
+            <tr key={`${item.time}-${item.action}-${index}`}>
               <td>{item.time}</td>
               <td>{item.action}</td>
               <td><code>{item.object}</code></td>
-              <td className={`${item.ai ? "ai" : ""} ${item.muted ? "muted" : ""}`}>{item.actor}</td>
+              <td>{item.actor}</td>
               <td><span>{item.result}</span></td>
             </tr>
           ))}

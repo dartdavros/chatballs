@@ -18,7 +18,7 @@ import { SalesOrdersPage } from "../features/sales/orders/SalesOrdersPage";
 import { SalesOverviewPage } from "../features/sales/SalesOverviewPage";
 import type { AppData, Employee, Product, RouteKey, SessionUser } from "../types";
 
-export function ShellRouteContent({ route, data, currentEmployee, currentProduct, selectedProductCode, selectedAgentId, selectedReleaseId, selectedConversationId, openEmployee, openProduct, openAgentCreate, openAgent, openRelease, onAgentLoaded, reload, setRoute, user, onUserUpdated, onLogout }: { route: RouteKey; data: AppData; currentEmployee: Employee | null; currentProduct: Product | null; selectedProductCode: string | null; selectedAgentId: number | null; selectedReleaseId: number | null; selectedConversationId: number | null; openEmployee: (employee: Employee) => void; openProduct: (product: Product) => void; openAgentCreate: (productCode: string | null) => void; openAgent: (agentId: number) => void; openRelease: (releaseId: number) => void; onAgentLoaded: (name: string | null) => void; reload: () => void; setRoute: (route: RouteKey) => void; user: SessionUser; onUserUpdated: (user: SessionUser) => void; onLogout: () => void }) {
+export function ShellRouteContent({ route, data, currentEmployee, currentProduct, selectedProductCode, selectedAgentId, selectedReleaseId, selectedConversationId, selectedClientId, openClient, openEmployee, openProduct, openAgentCreate, openAgent, openRelease, onAgentLoaded, reload, setRoute, user, onUserUpdated, onLogout }: { route: RouteKey; data: AppData; currentEmployee: Employee | null; currentProduct: Product | null; selectedProductCode: string | null; selectedAgentId: number | null; selectedReleaseId: number | null; selectedConversationId: number | null; selectedClientId: number | null; openClient: (clientId: number) => void; openEmployee: (employee: Employee) => void; openProduct: (product: Product) => void; openAgentCreate: (productCode: string | null) => void; openAgent: (agentId: number) => void; openRelease: (releaseId: number) => void; onAgentLoaded: (name: string | null) => void; reload: () => void; setRoute: (route: RouteKey) => void; user: SessionUser; onUserUpdated: (user: SessionUser) => void; onLogout: () => void }) {
   return (
     <>
       {route === "command" && <CommandCenter data={data} setRoute={setRoute} />}
@@ -30,8 +30,8 @@ export function ShellRouteContent({ route, data, currentEmployee, currentProduct
       {route === "productDetail" && currentProduct && <ProductDetailPage product={currentProduct} departments={data.departments} reload={reload} openAgentCreate={openAgentCreate} openAgent={openAgent} />}
       {route === "productDetail" && !currentProduct && <ProductsPage departments={data.departments} products={data.products} reload={reload} openProduct={openProduct} />}
       {route === "profile" && <ProfilePage user={user} onUserUpdated={onUserUpdated} reload={reload} onLogout={onLogout} />}
-      {route === "salesClients" && <SalesClientsPage openClient={() => setRoute("salesClientDetail")} />}
-      {route === "salesClientDetail" && <SalesClientDetailPage setRoute={setRoute} />}
+      {route === "salesClients" && <SalesClientsPage openClient={openClient} />}
+      {route === "salesClientDetail" && <SalesClientDetailPage contactId={selectedClientId} setRoute={setRoute} />}
       {route === "salesOverview" && <SalesOverviewPage />}
       {route === "salesDialogs" && <SalesDialogsPage initialConversationId={selectedConversationId} />}
       {route === "salesOrderDetail" && <SalesOrderDetailPage setRoute={setRoute} />}

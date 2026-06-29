@@ -1,7 +1,8 @@
 import { useState } from "react";
 
+import { EmptyState, LoadingState } from "../../../shared/ui";
 import type { RouteKey } from "../../../types";
-import { salesClientDetail, type ClientDetailTab } from "./model";
+import { type ClientDetailTab } from "./model";
 import { SalesClientAuditTab } from "./SalesClientAuditTab";
 import { SalesClientConsentTab } from "./SalesClientConsentTab";
 import { SalesClientDialogsTab } from "./SalesClientDialogsTab";
@@ -10,10 +11,14 @@ import { SalesClientIdentitiesTab } from "./SalesClientIdentitiesTab";
 import { SalesClientOrdersTab } from "./SalesClientOrdersTab";
 import { SalesClientOverviewTab } from "./SalesClientOverviewTab";
 import { SalesClientTabs } from "./SalesClientTabs";
+import { useClientDetail } from "./useClientDetail";
 
-export function SalesClientDetailPage({ setRoute }: { setRoute: (route: RouteKey) => void }) {
+export function SalesClientDetailPage({ contactId, setRoute }: { contactId: number | null; setRoute: (route: RouteKey) => void }) {
   const [tab, setTab] = useState<ClientDetailTab>("overview");
-  const client = salesClientDetail;
+  const { client, loading, error } = useClientDetail(contactId);
+
+  if (loading) return <LoadingState />;
+  if (error || !client) return <EmptyState title="Не удалось загрузить клиента" />;
 
   return (
     <>
@@ -21,9 +26,9 @@ export function SalesClientDetailPage({ setRoute }: { setRoute: (route: RouteKey
       <SalesClientTabs activeTab={tab} setActiveTab={setTab} />
       {tab === "overview" && <SalesClientOverviewTab client={client} setRoute={setRoute} />}
       {tab === "dialogs" && <SalesClientDialogsTab dialogs={client.dialogs} setRoute={setRoute} />}
-      {tab === "orders" && <SalesClientOrdersTab orders={client.orders} />}
+      {tab === "orders" && <SalesClientOrdersTab />}
       {tab === "ids" && <SalesClientIdentitiesTab identities={client.identities} />}
-      {tab === "consent" && <SalesClientConsentTab consent={client.consent} />}
+      {tab === "consent" && <SalesClientConsentTab />}
       {tab === "audit" && <SalesClientAuditTab audit={client.audit} />}
     </>
   );

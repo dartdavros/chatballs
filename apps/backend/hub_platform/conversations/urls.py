@@ -6,6 +6,7 @@ urlpatterns = [
     path("", views.ConversationListView.as_view(), name="conversation-list"),
     path("stats/", views.ConversationStatsView.as_view(), name="conversation-stats"),
     path("clients/", views.ClientsView.as_view(), name="conversation-clients"),
+    path("clients/<int:contact_id>/", views.ClientDetailView.as_view(), name="conversation-client-detail"),
     path("<int:conversation_id>/", views.ConversationDetailView.as_view(), name="conversation-detail"),
     path("<int:conversation_id>/claim/", views.ConversationClaimView.as_view(), name="conversation-claim"),
     path("<int:conversation_id>/release/", views.ConversationReleaseView.as_view(), name="conversation-release"),

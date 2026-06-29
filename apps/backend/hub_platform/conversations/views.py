@@ -3,8 +3,8 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from hub_platform.conversations.clients import clients_overview
-from hub_platform.conversations.models import Conversation, ControlMode
+from hub_platform.conversations.clients import client_detail, clients_overview
+from hub_platform.conversations.models import Contact, Conversation, ControlMode
 from hub_platform.conversations.selectors import conversation_for_organization, conversations_for_organization
 from hub_platform.conversations.serializers import conversation_payload, message_payload
 from hub_platform.conversations.stats import sales_overview_stats
@@ -105,6 +105,14 @@ class ConversationStatsView(_Base):
 class ClientsView(_Base):
     def get(self, request: Request) -> Response:
         return Response({"items": clients_overview(self._org(request).id)})
+
+
+class ClientDetailView(_Base):
+    def get(self, request: Request, contact_id: int) -> Response:
+        try:
+            return Response({"client": client_detail(self._org(request).id, contact_id)})
+        except Contact.DoesNotExist:
+            return Response({"detail": "Клиент не найден"}, status=404)
 
 
 class ConversationMessageView(_Base):
