@@ -105,6 +105,7 @@
   height: 32px;
   padding: 0 12px;
   font-size: 12.5px;
+  white-space: nowrap;
 }
 
 .ai-table-footer {

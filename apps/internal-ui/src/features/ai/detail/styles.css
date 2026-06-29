@@ -421,6 +421,12 @@
   flex: none;
 }
 
+/* Значок-предупреждение баннера амберовый (.ai-notice svg), но иконка кнопки
+   должна наследовать белый цвет текста кнопки. */
+.ai-golive-notice .primary-button svg {
+  color: inherit;
+}
+
 .ai-knowledge-headline {
   font-size: 12px;
   font-weight: 600;
