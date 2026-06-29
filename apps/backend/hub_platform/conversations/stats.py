@@ -22,6 +22,7 @@ from hub_platform.conversations.models import (
     LifecycleState,
     Message,
 )
+from hub_platform.orders.models import Order, PaymentStatus
 
 _ACTIVE_WINDOW = timedelta(minutes=15)
 _WEEKDAYS = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"]
@@ -82,18 +83,31 @@ def sales_overview_stats(organization_id: int, period: str) -> dict:
     }
 
     period_qs = Conversation.objects.filter(organization_id=organization_id, created_at__gte=start)
+    dialogs = period_qs.count()
+    paid = Order.objects.filter(organization_id=organization_id, payment_status=PaymentStatus.PAID)
+    period_paid = paid.filter(paid_at__gte=start)
+    prev_paid = paid.filter(paid_at__gte=prev_start, paid_at__lt=start)
+    sales = period_paid.count()
+    revenue = period_paid.aggregate(total=Sum("amount_minor"))["total"] or 0
     period_block = {
-        "dialogs": period_qs.count(),
+        "dialogs": dialogs,
         "dialogsPrev": Conversation.objects.filter(
             organization_id=organization_id, created_at__gte=prev_start, created_at__lt=start
         ).count(),
         "messages": Message.objects.filter(conversation__organization_id=organization_id, created_at__gte=start).count(),
         "aiCostMicros": _ai_cost(organization_id, start),
         "aiCostPrevMicros": _ai_cost(organization_id, prev_start, start),
+        "sales": sales,
+        "salesPrev": prev_paid.count(),
+        "revenueMinor": revenue,
+        "revenuePrevMinor": prev_paid.aggregate(total=Sum("amount_minor"))["total"] or 0,
+        # Конверсия: оплаченные заказы к новым диалогам периода.
+        "conversion": round(sales / dialogs * 100, 1) if dialogs else 0.0,
     }
 
     open_by_channel = dict(open_qs.values_list("channel_id").annotate(c=Count("id")))
     period_by_channel = dict(period_qs.values_list("channel_id").annotate(c=Count("id")))
+    sales_by_product = {row["product_id"]: row for row in period_paid.values("product_id").annotate(n=Count("id"), revenue=Sum("amount_minor"))}
 
     by_channel: list[dict] = []
     by_product: dict[str, dict] = {}
@@ -104,10 +118,14 @@ def sales_overview_stats(organization_id: int, period: str) -> dict:
         if channel.product_id:
             bucket = by_product.setdefault(
                 channel.product.code,
-                {"code": channel.product.code, "name": channel.product.name, "openDialogs": 0, "dialogs": 0},
+                {"code": channel.product.code, "name": channel.product.name, "openDialogs": 0, "dialogs": 0, "sales": 0, "revenueMinor": 0},
             )
             bucket["openDialogs"] += open_count
             bucket["dialogs"] += period_count
+            row = sales_by_product.pop(channel.product_id, None)  # учитываем продажи продукта один раз
+            if row:
+                bucket["sales"] += row["n"]
+                bucket["revenueMinor"] += row["revenue"] or 0
 
     problems = []
     for conversation in (

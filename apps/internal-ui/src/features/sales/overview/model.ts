@@ -6,9 +6,13 @@ import type { KpiItem, SalesListItem, SalesPeriod } from "./types";
 export type SalesStats = {
   waiting: number;
   ops: { openDialogs: number; activeNow: number; onAI: number; onOperators: number; waiting: number };
-  period: { dialogs: number; dialogsPrev: number; messages: number; aiCostMicros: number; aiCostPrevMicros: number };
+  period: {
+    dialogs: number; dialogsPrev: number; messages: number;
+    aiCostMicros: number; aiCostPrevMicros: number;
+    sales: number; salesPrev: number; revenueMinor: number; revenuePrevMinor: number; conversion: number;
+  };
   byChannel: Array<{ code: string; name: string; openDialogs: number; dialogs: number }>;
-  byProduct: Array<{ code: string; name: string; openDialogs: number; dialogs: number }>;
+  byProduct: Array<{ code: string; name: string; openDialogs: number; dialogs: number; sales: number; revenueMinor: number }>;
   chart: { values: number[]; labels: string[] };
   problems: Array<{ title: string; meta: string; minutes: number }>;
 };
@@ -19,6 +23,7 @@ const DOWN = "#cf1322";
 const CHANNEL_COLORS = ["#6b5be0", "#2f8fd0", "#0f9b8e", "#d48806", "#cf1322"];
 
 const usd = (micros: number) => `$${(micros / 1_000_000).toLocaleString("ru-RU", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const rub = (minor: number) => `₽${Math.round(minor / 100).toLocaleString("ru-RU").replace(/ /g, " ")}`;
 
 function delta(current: number, previous: number): { deltaText: string; deltaColor: string; down: boolean } | null {
   if (previous <= 0) return null;
@@ -36,7 +41,7 @@ const share = (value: number, total: number) => (total > 0 ? Math.round((value /
 export function buildSalesOverviewVm(period: SalesPeriod, stats: SalesStats) {
   const periodLabel = { today: "Сегодня", d7: "7 дней", d30: "30 дней" }[period];
   const { ops } = stats;
-  const { dialogs, dialogsPrev, messages, aiCostMicros, aiCostPrevMicros } = stats.period;
+  const { dialogs, dialogsPrev, messages, aiCostMicros, aiCostPrevMicros, sales, salesPrev, revenueMinor, revenuePrevMinor, conversion } = stats.period;
 
   const opsKpi: KpiItem[] = [
     { label: "Открытые диалоги", value: String(ops.openDialogs), sub: "в работе" },
@@ -49,11 +54,11 @@ export function buildSalesOverviewVm(period: SalesPeriod, stats: SalesStats) {
   const dialogsDelta = delta(dialogs, dialogsPrev);
   const costDelta = delta(aiCostMicros, aiCostPrevMicros);
   const resKpi: KpiItem[] = [
-    { label: "Диалоги", value: String(dialogs), sub: "к пред.", ...(dialogsDelta ?? {}) },
-    { label: "Сообщения", value: String(messages), sub: "за период" },
+    { label: "Продажи", value: String(sales), sub: "к пред.", ...(delta(sales, salesPrev) ?? {}) },
+    { label: "Выручка", value: rub(revenueMinor), sub: "к пред.", ...(delta(revenueMinor, revenuePrevMinor) ?? {}) },
+    { label: "Конверсия", value: `${conversion.toLocaleString("ru-RU")}%`, sub: "оплат к диалогам" },
     { label: "Стоимость AI", value: usd(aiCostMicros), sub: "к пред.", ...(costDelta ?? {}) },
-    { label: "Продажи", value: DASH, sub: "нет данных" },
-    { label: "Выручка", value: DASH, sub: "нет данных" },
+    { label: "Диалоги", value: String(dialogs), sub: "к пред.", ...(dialogsDelta ?? {}) },
   ];
 
   const chart = chartPaths(stats.chart.values.length ? stats.chart.values : [0]);
@@ -69,9 +74,9 @@ export function buildSalesOverviewVm(period: SalesPeriod, stats: SalesStats) {
   const products = stats.byProduct.map((product) => ({
     name: product.name,
     status: "Активен",
-    sales: DASH,
-    rev: DASH,
-    conv: DASH,
+    sales: String(product.sales),
+    rev: product.revenueMinor > 0 ? rub(product.revenueMinor) : DASH,
+    conv: product.dialogs > 0 ? `${Math.round((product.sales / product.dialogs) * 100)}%` : DASH,
     dlg: String(product.dialogs),
   }));
 

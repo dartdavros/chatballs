@@ -116,7 +116,7 @@ export function toSalesClient(api: ApiClient): SalesClient {
     mode: api.mode,
     openDialogs: api.openDialogs,
     orders: api.orders,
-    total: api.total,
+    total: Math.round(api.total / 100), // бэкенд отдаёт сумму в копейках
   };
 }
 

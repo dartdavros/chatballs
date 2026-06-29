@@ -26,7 +26,7 @@ export function SalesClientDetailPage({ contactId, setRoute }: { contactId: numb
       <SalesClientTabs activeTab={tab} setActiveTab={setTab} />
       {tab === "overview" && <SalesClientOverviewTab client={client} setRoute={setRoute} />}
       {tab === "dialogs" && <SalesClientDialogsTab dialogs={client.dialogs} setRoute={setRoute} />}
-      {tab === "orders" && <SalesClientOrdersTab />}
+      {tab === "orders" && <SalesClientOrdersTab orders={client.orders} />}
       {tab === "ids" && <SalesClientIdentitiesTab identities={client.identities} />}
       {tab === "consent" && <SalesClientConsentTab />}
       {tab === "audit" && <SalesClientAuditTab audit={client.audit} />}

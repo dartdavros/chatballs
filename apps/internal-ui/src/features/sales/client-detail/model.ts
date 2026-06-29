@@ -13,6 +13,10 @@ export const clientDetailTabs: Array<{ key: ClientDetailTab; label: string }> = 
 
 const PROVIDER_TO_CHANNEL: Record<string, ClientChannelCode> = { MAX: "MAX", TELEGRAM: "TG", WEB: "WEB" };
 const PROVIDER_LABEL: Record<string, string> = { MAX: "MAX", TELEGRAM: "Telegram", WEB: "Web Chat" };
+const PAYMENT_LABEL: Record<string, string> = { PENDING: "Ожидает", PAID: "Оплачен", CANCELLED: "Отменён", REFUNDED: "Возврат" };
+const FULFILLMENT_LABEL: Record<string, string> = { NONE: "—", PENDING: "В процессе", DELIVERED: "Исполнен", FAILED: "Ошибка" };
+
+const rub = (minor: number) => `₽${Math.round(minor / 100).toLocaleString("ru-RU")}`;
 
 export type ApiClientDetail = {
   id: number;
@@ -22,10 +26,13 @@ export type ApiClientDetail = {
   products: ClientProductCode[];
   openDialogs: number;
   totalDialogs: number;
+  ordersCount: number;
+  purchasesMinor: number;
   firstContactAt: string;
   lastActivityAt: string;
   dialogs: Array<{ id: number; title: string; channelName: string; provider: string | null; status: string; active: boolean; lastActivityAt: string }>;
   identities: Array<{ provider: string; value: string; createdAt: string }>;
+  orders: Array<{ id: number; code: string; product: string; amountMinor: number; currency: string; paymentStatus: string; fulfillmentStatus: string; createdAt: string }>;
   activity: Array<{ type: "created" | "closed"; title: string; at: string }>;
   audit: Array<{ time: string; action: string; object: string; actor: string; result: string }>;
 };
@@ -43,6 +50,7 @@ export type ClientDetailVm = {
   summary: Array<{ label: string; value: string; accent?: boolean; compact?: boolean }>;
   dialogs: Array<{ id: number; title: string; meta: string; status: string; active: boolean; time: string }>;
   identities: Array<{ name: string; value: string; status: string; color: string; bg: string; ok: boolean }>;
+  orders: Array<{ id: number; code: string; product: string; amount: string; payment: string; fulfillment: string; date: string }>;
   activity: Array<{ title: string; time: string; color: string }>;
   audit: Array<{ time: string; action: string; object: string; actor: string; result: string }>;
 };
@@ -68,10 +76,10 @@ export function toClientDetailVm(api: ApiClientDetail): ClientDetailVm {
     channels: api.channels.map((code) => ({ label: channelMap[code].label, color: channelMap[code].color, bg: channelMap[code].bg })),
     products: api.products.map((code) => ({ name: productMap[code].name, color: productMap[code].color, bg: productMap[code].bg })),
     summary: [
+      { label: "Заказы", value: String(api.ordersCount) },
+      { label: "Сумма покупок", value: api.purchasesMinor > 0 ? rub(api.purchasesMinor) : "—", accent: api.purchasesMinor > 0 },
       { label: "Диалоги", value: String(api.totalDialogs) },
-      { label: "Открытые", value: String(api.openDialogs) },
       { label: "Первый контакт", value: formatDate(api.firstContactAt), compact: true },
-      { label: "Посл. активность", value: relativeTime(api.lastActivityAt).label, compact: true },
     ],
     dialogs: api.dialogs.map((dialog) => ({
       id: dialog.id,
@@ -93,6 +101,15 @@ export function toClientDetailVm(api: ApiClientDetail): ClientDetailVm {
         ok: true,
       };
     }),
+    orders: api.orders.map((order) => ({
+      id: order.id,
+      code: order.code,
+      product: order.product,
+      amount: rub(order.amountMinor),
+      payment: PAYMENT_LABEL[order.paymentStatus] ?? order.paymentStatus,
+      fulfillment: FULFILLMENT_LABEL[order.fulfillmentStatus] ?? order.fulfillmentStatus,
+      date: formatDateTime(order.createdAt),
+    })),
     activity: api.activity.map((event) => ({
       title: event.title,
       time: formatDateTime(event.at),
