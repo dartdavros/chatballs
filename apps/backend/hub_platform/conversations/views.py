@@ -3,9 +3,10 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from hub_platform.conversations.models import Conversation, ControlMode, LifecycleState, MessageAuthor
+from hub_platform.conversations.models import Conversation, ControlMode
 from hub_platform.conversations.selectors import conversation_for_organization, conversations_for_organization
 from hub_platform.conversations.serializers import conversation_payload, message_payload
+from hub_platform.conversations.stats import sales_overview_stats
 from hub_platform.conversations.services import (
     ClaimError,
     claim_conversation,
@@ -94,14 +95,10 @@ class ConversationReturnQueueView(_Base):
 
 class ConversationStatsView(_Base):
     def get(self, request: Request) -> Response:
-        # Очередь: открытые диалоги, где последнее сообщение — от клиента (ждут ответа).
-        conversations = conversations_for_organization(self._org(request).id).filter(lifecycle=LifecycleState.OPEN)
-        waiting = sum(
-            1
-            for conversation in conversations
-            if (last := conversation.messages.order_by("-created_at").first()) and last.author_type == MessageAuthor.CONTACT
-        )
-        return Response({"waiting": waiting})
+        period = request.query_params.get("period", "today")
+        if period not in ("today", "d7", "d30"):
+            period = "today"
+        return Response(sales_overview_stats(self._org(request).id, period))
 
 
 class ConversationMessageView(_Base):
