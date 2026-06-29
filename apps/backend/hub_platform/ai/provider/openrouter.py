@@ -32,18 +32,21 @@ class OpenRouterProvider(LLMProvider):
             raise ProviderError(f"{type(error).__name__}: {error}") from error
 
     def chat(self, *, messages: list[ChatMessage], model: str, params: dict | None = None) -> ChatResult:
-        payload = {"model": model, "messages": [{"role": m.role, "content": m.content} for m in messages], **(params or {})}
+        # usage.include=true — OpenRouter возвращает фактическую стоимость в usage.cost (USD).
+        payload = {"model": model, "messages": [{"role": m.role, "content": m.content} for m in messages], "usage": {"include": True}, **(params or {})}
         data = self._post("/chat/completions", payload)
         try:
             text = data["choices"][0]["message"]["content"]
         except (KeyError, IndexError, TypeError) as error:
             raise ProviderError(f"Unexpected OpenRouter response: {error}") from error
         usage = data.get("usage") or {}
+        cost = usage.get("cost")
         return ChatResult(
             text=text,
             model=data.get("model", model),
             prompt_tokens=int(usage.get("prompt_tokens", 0)),
             completion_tokens=int(usage.get("completion_tokens", 0)),
+            cost_micros=round(float(cost) * 1_000_000) if cost else 0,
         )
 
     def embed(self, *, texts: list[str], model: str) -> list[EmbeddingResult]:

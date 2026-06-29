@@ -46,7 +46,7 @@ def invoke_chat(*, channel, messages: list[ChatMessage], purpose: str, release=N
     LlmInvocation.objects.create(
         channel=channel, product=channel.product, release=release, purpose=purpose, operation="chat", model=result.model,
         prompt_tokens=result.prompt_tokens, completion_tokens=result.completion_tokens, total_tokens=result.total_tokens,
-        cost_micros=pricing.cost_micros(result.model, result.prompt_tokens, result.completion_tokens),
+        cost_micros=result.cost_micros or pricing.cost_micros(result.model, result.prompt_tokens, result.completion_tokens),
         latency_ms=int((time.monotonic() - started) * 1000), status=LlmInvocationStatus.SUCCESS,
         used_fragment_ids=used_fragment_ids or [],
     )
@@ -77,7 +77,7 @@ def channel_chat(*, channel, messages: list[ChatMessage], purpose: str, model: s
     LlmInvocation.objects.create(
         channel=channel, product=channel.product, purpose=purpose, operation="chat", model=result.model,
         prompt_tokens=result.prompt_tokens, completion_tokens=result.completion_tokens, total_tokens=result.total_tokens,
-        cost_micros=pricing.cost_micros(result.model, result.prompt_tokens, result.completion_tokens),
+        cost_micros=result.cost_micros or pricing.cost_micros(result.model, result.prompt_tokens, result.completion_tokens),
         latency_ms=int((time.monotonic() - started) * 1000), status=LlmInvocationStatus.SUCCESS,
     )
     return result
