@@ -7,19 +7,27 @@ export type RouteState = {
   productCode: string | null;
   agentId: number | null;
   releaseId: number | null;
+  clientId: number | null;
+  orderId: number | null;
 };
 
 export function routeFromPath(pathname: string, search = ""): RouteState {
   const path = pathname.replace(/\/+$/, "") || "/";
-  const base = { employeeId: null, productId: null, productCode: null, agentId: null, releaseId: null };
+  const base = { employeeId: null, productId: null, productCode: null, agentId: null, releaseId: null, clientId: null, orderId: null };
   if (path === "/" || path === "/command") return { route: "command", ...base };
   if (path === "/departments") return { route: "departments", ...base };
   if (path === "/departments/sales") return { route: "salesOverview", ...base };
   if (path === "/departments/sales/clients") return { route: "salesClients", ...base };
-  if (path === "/departments/sales/clients/CUS-4702") return { route: "salesClientDetail", ...base };
+  if (path.startsWith("/departments/sales/clients/")) {
+    const id = Number(path.split("/")[4]);
+    return Number.isInteger(id) && id > 0 ? { ...base, route: "salesClientDetail", clientId: id } : { route: "salesClients", ...base };
+  }
   if (path === "/departments/sales/dialogs") return { route: "salesDialogs", ...base };
   if (path === "/departments/sales/orders") return { route: "salesOrders", ...base };
-  if (path === "/departments/sales/orders/ORD-10519") return { route: "salesOrderDetail", ...base };
+  if (path.startsWith("/departments/sales/orders/")) {
+    const id = Number(path.split("/")[4]);
+    return Number.isInteger(id) && id > 0 ? { ...base, route: "salesOrderDetail", orderId: id } : { route: "salesOrders", ...base };
+  }
   if (path === "/employees") return { route: "employees", ...base };
   if (path.startsWith("/employees/")) {
     const id = Number(path.split("/")[2]);
@@ -55,10 +63,10 @@ export function pathFromRoute(route: RouteKey, entityId: number | null = null, p
   if (route === "departments") return "/departments";
   if (route === "salesOverview") return "/departments/sales";
   if (route === "salesClients") return "/departments/sales/clients";
-  if (route === "salesClientDetail") return "/departments/sales/clients/CUS-4702";
+  if (route === "salesClientDetail") return entityId ? `/departments/sales/clients/${entityId}` : "/departments/sales/clients";
   if (route === "salesDialogs") return "/departments/sales/dialogs";
   if (route === "salesOrders") return "/departments/sales/orders";
-  if (route === "salesOrderDetail") return "/departments/sales/orders/ORD-10519";
+  if (route === "salesOrderDetail") return entityId ? `/departments/sales/orders/${entityId}` : "/departments/sales/orders";
   if (route === "employees") return "/employees";
   if (route === "employeeDetail") return entityId ? `/employees/${entityId}` : "/employees";
   if (route === "products") return "/products";
