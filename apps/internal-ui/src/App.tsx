@@ -27,6 +27,7 @@ export function App() {
   const [selectedReleaseId, setSelectedReleaseId] = useState<number | null>(initialRoute.releaseId);
   const [selectedConversationId, setSelectedConversationId] = useState<number | null>(null);
   const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
+  const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
   const [data, setData] = useState<AppData>({ employees: [], departments: [], products: [], agents: [], releases: [] });
   const [dataError, setDataError] = useState(false);
 
@@ -38,6 +39,7 @@ export function App() {
     const nextReleaseId = nextRoute === "aiRelease" ? entityId : null;
     const nextConversationId = nextRoute === "salesDialogs" ? entityId : null;
     const nextClientId = nextRoute === "salesClientDetail" ? entityId : null;
+    const nextOrderId = nextRoute === "salesOrderDetail" ? entityId : null;
     const nextPath = pathFromRoute(nextRoute, entityId, nextProductCode);
     setRoute(nextRoute);
     setSelectedEmployeeId(nextEmployeeId);
@@ -47,6 +49,7 @@ export function App() {
     setSelectedReleaseId(nextReleaseId);
     setSelectedConversationId(nextConversationId);
     setSelectedClientId(nextClientId);
+    setSelectedOrderId(nextOrderId);
     if (`${window.location.pathname}${window.location.search}` !== nextPath) {
       const state = { route: nextRoute, employeeId: nextEmployeeId, productId: nextProductId, productCode: nextProductCode, agentId: nextAgentId, releaseId: nextReleaseId };
       if (replace) {
@@ -151,7 +154,7 @@ export function App() {
       ) : !canAccess(user.role, route) ? (
         <PermissionScreen onReturn={() => navigate(defaultRoute(user.role), null, true)} />
       ) : (
-        <Shell route={route} setRoute={(nextRoute) => navigate(nextRoute)} selectedEmployeeId={selectedEmployeeId} selectedProductId={selectedProductId} selectedProductCode={selectedProductCode} selectedAgentId={selectedAgentId} selectedReleaseId={selectedReleaseId} selectedConversationId={selectedConversationId} selectedClientId={selectedClientId} openClientRoute={(clientId) => navigate("salesClientDetail", clientId)} openEmployeeRoute={(employeeId) => navigate("employeeDetail", employeeId)} openProductRoute={(productId) => navigate("productDetail", productId)} openAgentCreateRoute={(productCode) => navigate("aiAgentCreate", null, false, productCode)} openAgentRoute={(agentId) => navigate("aiAgentDetail", agentId)} openReleaseRoute={(releaseId) => navigate("aiRelease", releaseId)} openConversationRoute={(conversationId) => navigate("salesDialogs", conversationId)} user={user} data={data} reload={loadData} onUserUpdated={setUser} onLogout={logout} />
+        <Shell route={route} setRoute={(nextRoute) => navigate(nextRoute)} selectedEmployeeId={selectedEmployeeId} selectedProductId={selectedProductId} selectedProductCode={selectedProductCode} selectedAgentId={selectedAgentId} selectedReleaseId={selectedReleaseId} selectedConversationId={selectedConversationId} selectedClientId={selectedClientId} openClientRoute={(clientId) => navigate("salesClientDetail", clientId)} selectedOrderId={selectedOrderId} openOrderRoute={(orderId) => navigate("salesOrderDetail", orderId)} openEmployeeRoute={(employeeId) => navigate("employeeDetail", employeeId)} openProductRoute={(productId) => navigate("productDetail", productId)} openAgentCreateRoute={(productCode) => navigate("aiAgentCreate", null, false, productCode)} openAgentRoute={(agentId) => navigate("aiAgentDetail", agentId)} openReleaseRoute={(releaseId) => navigate("aiRelease", releaseId)} openConversationRoute={(conversationId) => navigate("salesDialogs", conversationId)} user={user} data={data} reload={loadData} onUserUpdated={setUser} onLogout={logout} />
       )}
     </ConfigProvider>
   );
