@@ -29,6 +29,9 @@ class Order(models.Model):
     fulfillment_status = models.CharField(max_length=16, choices=FulfillmentStatus.choices, default=FulfillmentStatus.NONE)
     amount_minor = models.PositiveBigIntegerField(default=0)
     currency = models.CharField(max_length=3, default="RUB")
+    # Происхождение для вебхука из бэкенда продукта (идемпотентность).
+    source = models.CharField(max_length=64, blank=True)
+    external_id = models.CharField(max_length=128, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     paid_at = models.DateTimeField(null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -36,6 +39,13 @@ class Order(models.Model):
     class Meta:
         ordering = ["-created_at"]
         indexes = [models.Index(fields=["organization", "payment_status"])]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["organization", "source", "external_id"],
+                condition=~models.Q(external_id=""),
+                name="uniq_order_org_source_external",
+            )
+        ]
 
     @property
     def code(self) -> str:

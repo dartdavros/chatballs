@@ -1,3 +1,4 @@
+import hashlib
 from dataclasses import dataclass
 
 from django.core.exceptions import ValidationError
@@ -6,7 +7,11 @@ from django.utils import timezone
 
 from hub_platform.conversations.models import Contact, Conversation
 from hub_platform.orders.models import FulfillmentStatus, Order, OrderItem, PaymentStatus
-from hub_platform.products.models import Offer, Price
+from hub_platform.products.models import Offer, Price, Product
+
+
+def hash_ingest_token(token: str) -> str:
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()
 
 
 @dataclass(frozen=True)
@@ -90,3 +95,86 @@ def set_fulfillment(*, order: Order, status: str) -> Order:
     order.fulfillment_status = status
     order.save(update_fields=["fulfillment_status", "updated_at"])
     return order
+
+
+# --- Ingest from a product backend (webhook, ADR-HUB-0018) ---
+
+
+@dataclass(frozen=True)
+class IngestItemInput:
+    offer_code: str
+    quantity: int = 1
+
+
+def resolve_product_by_token(token: str) -> Product | None:
+    if not token:
+        return None
+    return Product.objects.filter(ingest_token_hash=hash_ingest_token(token)).first()
+
+
+@transaction.atomic
+def ingest_order(
+    *,
+    product: Product,
+    external_id: str,
+    items: list[IngestItemInput],
+    payment_status: str,
+    currency: str = "RUB",
+    amount_minor: int | None = None,
+    conversation: Conversation | None = None,
+    contact_name: str = "",
+) -> tuple[Order, bool]:
+    if payment_status not in PaymentStatus.values:
+        raise ValidationError({"paymentStatus": "Unknown status"})
+    if not items:
+        raise ValidationError({"items": "Order needs at least one item"})
+    organization = product.organization
+
+    # Идемпотентность по (организация, продукт, внешний id).
+    if external_id:
+        existing = Order.objects.filter(organization=organization, source=product.code, external_id=external_id).first()
+        if existing is not None:
+            return existing, False
+
+    resolved: list[tuple[Offer, Price | None, int, int]] = []
+    total = 0
+    for item in items:
+        try:
+            offer = Offer.objects.get(product=product, code=item.offer_code)
+        except Offer.DoesNotExist as error:
+            raise ValidationError({"items": f"Offer {item.offer_code} not found in {product.code}"}) from error
+        price = _active_price(offer)
+        quantity = max(1, int(item.quantity))
+        unit = price.amount_minor if price else 0
+        if price:
+            currency = price.currency
+        total += unit * quantity
+        resolved.append((offer, price, quantity, unit * quantity))
+
+    if conversation is not None:
+        contact = conversation.contact
+    else:
+        contact = Contact.objects.create(organization=organization, name=contact_name or "Клиент")
+
+    is_paid = payment_status == PaymentStatus.PAID
+    order = Order.objects.create(
+        organization=organization,
+        contact=contact,
+        conversation=conversation,
+        product=product,
+        channel=conversation.channel if conversation else None,
+        payment_status=payment_status,
+        fulfillment_status=FulfillmentStatus.PENDING if is_paid else FulfillmentStatus.NONE,
+        amount_minor=amount_minor if amount_minor is not None else total,
+        currency=currency,
+        source=product.code,
+        external_id=external_id,
+        paid_at=timezone.now() if is_paid else None,
+    )
+    OrderItem.objects.bulk_create(
+        [
+            OrderItem(order=order, offer=offer, price=price, title=offer.name, quantity=quantity, amount_minor=amount, currency=currency)
+            for offer, price, quantity, amount in resolved
+        ]
+    )
+    return order, True
