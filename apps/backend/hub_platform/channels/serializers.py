@@ -11,6 +11,7 @@ def channel_payload(channel: Channel) -> dict[str, object]:
         "model": channel.model,
         "systemPrompt": channel.system_prompt,
         "providerIntegrationId": channel.provider_integration_id,
+        "agentId": channel.ai_agent.id if hasattr(channel, "ai_agent") else None,
         "isActive": channel.is_active,
         "createdAt": channel.created_at.isoformat(),
         "updatedAt": channel.updated_at.isoformat(),

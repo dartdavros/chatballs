@@ -6,7 +6,7 @@ from hub_platform.channels.models import Channel
 def channels_for_organization(organization_id: int) -> QuerySet[Channel]:
     return (
         Channel.objects.filter(organization_id=organization_id)
-        .select_related("product", "department", "provider_integration")
+        .select_related("product", "department", "provider_integration", "ai_agent")
         .order_by("name")
     )
 

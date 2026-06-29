@@ -86,6 +86,8 @@ export type ProductOffer = {
   primaryBoxOfferId: number | null;
   isActive: boolean;
   aiOfferable: boolean;
+  fiscalName: string;
+  accessSchema: Record<string, unknown>;
   prices: ProductPrice[];
 };
 
