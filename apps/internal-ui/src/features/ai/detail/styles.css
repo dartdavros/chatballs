@@ -410,6 +410,7 @@
 /* --- Editable docs (instructions / knowledge) --- */
 .ai-golive-notice {
   gap: 12px;
+  margin-bottom: 16px;
 }
 
 .ai-golive-notice span {
