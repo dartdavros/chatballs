@@ -1,0 +1,48 @@
+from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from hub_platform.ai.provider.base import ProviderError
+from hub_platform.api.permissions import IsOwner
+from hub_platform.channels.models import Channel
+from hub_platform.channels.runtime import run_channel_turn
+from hub_platform.channels.selectors import channel_for_organization, channels_for_organization
+from hub_platform.channels.serializers import channel_payload
+
+
+class ChannelListView(APIView):
+    permission_classes = [IsOwner]
+
+    def get(self, request: Request) -> Response:
+        items = channels_for_organization(request.user.employee_profile.organization_id)
+        return Response({"items": [channel_payload(channel) for channel in items]})
+
+
+class ChannelTestChatView(APIView):
+    permission_classes = [IsOwner]
+
+    def post(self, request: Request, channel_id: int) -> Response:
+        try:
+            channel = channel_for_organization(
+                organization_id=request.user.employee_profile.organization_id, channel_id=channel_id
+            )
+        except Channel.DoesNotExist:
+            return Response({"detail": "Канал не найден"}, status=404)
+        message = str(request.data.get("message", "")).strip()
+        if not message:
+            return Response({"detail": "Пустое сообщение"}, status=400)
+        history = request.data.get("history") or []
+        if not isinstance(history, list):
+            return Response({"detail": "history must be a list"}, status=400)
+        try:
+            result = run_channel_turn(channel=channel, message=message, history=history)
+        except ProviderError as error:
+            return Response({"detail": f"Ошибка провайдера: {error}"}, status=502)
+        return Response(
+            {
+                "reply": result.text,
+                "model": result.model,
+                "promptTokens": result.prompt_tokens,
+                "completionTokens": result.completion_tokens,
+            }
+        )

@@ -2,7 +2,7 @@ import type { ChannelKey, ControlMode, DialogMode, SalesDialog, StatusInfo } fro
 
 export const dialogs: SalesDialog[] = [
   { id: 1, name: "Мария Соколова", initials: "МС", avatarBg: "#eb6f4b", product: "FirePage", channel: "MAX", mode: "wait", preview: "Вопрос по интеграции с CRM — можно с менеджером?", time: "14:08", unread: 2 },
-  { id: 2, name: "Дмитрий Орлов", initials: "ДО", avatarBg: "#3b82c4", product: "Foxray", channel: "TG", mode: "ai", preview: "AI: Подскажу по тарифам Foxray Pro…", time: "14:07", unread: 0 },
+  { id: 2, name: "Дмитрий Орлов", initials: "ДО", avatarBg: "#3b82c4", product: "Foxray", channel: "TG", mode: "ai", preview: "AI: Подскажу по тарифам Foxray Про…", time: "14:07", unread: 0 },
   { id: 3, name: "Гость 8842", initials: "Г8", avatarBg: "#8c8c8c", product: "FirePage", channel: "WEB", mode: "wait", preview: "Не приходит чек на почту после оплаты", time: "13:55", unread: 1 },
   { id: 4, name: "Елена Кузнецова", initials: "ЕК", avatarBg: "#9254de", product: "Foxray", channel: "MAX", mode: "operator", preview: "Вы: Отправила счёт, жду подтверждения", time: "13:50", unread: 0 },
   { id: 5, name: "Сергей Волков", initials: "СВ", avatarBg: "#13a8a8", product: "FirePage", channel: "TG", mode: "ai", preview: "Клиент: А пробный период есть?", time: "13:42", unread: 1 },

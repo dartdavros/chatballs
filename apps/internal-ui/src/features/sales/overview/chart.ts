@@ -7,7 +7,7 @@ export function chartPaths(values: number[]) {
   const padBottom = 26;
   const innerWidth = width - padLeft - padRight;
   const innerHeight = height - padTop - padBottom;
-  const max = Math.max(...values) * 1.12;
+  const max = Math.max(...values, 0) * 1.12 || 1;
   const x = (index: number) => padLeft + innerWidth * (values.length === 1 ? 0 : index / (values.length - 1));
   const y = (value: number) => padTop + innerHeight * (1 - value / max);
   const points = values.map((value, index) => ({ x: x(index), y: y(value) }));

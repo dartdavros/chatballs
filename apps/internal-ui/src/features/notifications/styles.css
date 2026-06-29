@@ -1,0 +1,91 @@
+.notif-mark-all {
+  border: none;
+  background: none;
+  color: #1677ff;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.notif-empty {
+  color: #8c8c8c;
+  text-align: center;
+  padding: 32px 0;
+}
+
+.notif-section + .notif-section {
+  margin-top: 18px;
+}
+
+.notif-section-title {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #8c8c8c;
+  margin-bottom: 8px;
+}
+
+.notif-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: none;
+  padding: 10px 8px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.notif-item:hover {
+  background: #f5f7fa;
+}
+
+.notif-item.unread {
+  background: #f0f7ff;
+}
+
+.notif-item-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  flex: none;
+}
+
+.notif-item-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.notif-item-title {
+  font-weight: 600;
+  font-size: 13px;
+  color: #1f1f1f;
+}
+
+.notif-item-text {
+  font-size: 12px;
+  color: #595959;
+}
+
+.notif-item-time {
+  font-size: 11px;
+  color: #8c8c8c;
+  margin-top: 2px;
+}
+
+.notif-item-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #1677ff;
+  flex: none;
+  margin-top: 6px;
+}

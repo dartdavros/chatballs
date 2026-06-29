@@ -25,6 +25,8 @@ const product: Product = {
       primaryBoxOfferId: null,
       isActive: true,
       aiOfferable: true,
+      fiscalName: "",
+      accessSchema: {},
       prices: [
         { id: 20, version: 1, amountMinor: 490_000, currency: "RUB", billingPeriod: "MONTH", validFrom: "2026-06-19T00:00:00Z", validUntil: null, isActive: true },
         { id: 21, version: 2, amountMinor: 4_704_000, currency: "RUB", billingPeriod: "YEAR", validFrom: "2026-06-19T00:00:00Z", validUntil: null, isActive: true },

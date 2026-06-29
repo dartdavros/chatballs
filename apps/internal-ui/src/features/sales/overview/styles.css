@@ -524,3 +524,9 @@
   font-style: normal;
 }
 
+.sales-empty-line {
+  padding: 14px 2px;
+  color: #bfbfbf;
+  font-size: 12.5px;
+}
+

@@ -4,7 +4,7 @@ import { SalesClientsPagination } from "./SalesClientsPagination";
 import type { ClientSortKey } from "./model";
 import type { SalesClientsState } from "./useSalesClients";
 
-export function SalesClientsTable({ clients, openClient }: { clients: SalesClientsState; openClient: () => void }) {
+export function SalesClientsTable({ clients, openClient }: { clients: SalesClientsState; openClient: (id: number) => void }) {
   return (
     <>
       {clients.menu && <button className="sales-clients-menu-scrim" type="button" aria-label="Закрыть меню" onClick={() => clients.setMenu(null)} />}

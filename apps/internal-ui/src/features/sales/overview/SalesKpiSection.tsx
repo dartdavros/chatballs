@@ -17,7 +17,7 @@ function SalesKpiCard({ item, result = false }: { item: KpiItem; result?: boolea
     <article className="sales-kpi-card">
       <span>{item.dot && <i style={{ background: item.dot }} />}{item.label}</span>
       <strong style={{ color: item.valueColor }}>{item.value}</strong>
-      {result ? (
+      {result && item.deltaText ? (
         <small className="sales-kpi-delta" style={{ color: item.deltaColor }}>
           <span className={item.down ? "is-down" : ""}><Icon name="chevron" size={13} /></span>
           {item.deltaText}<em>{item.sub}</em>

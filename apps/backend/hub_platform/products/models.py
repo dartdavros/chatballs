@@ -70,7 +70,7 @@ class Offer(models.Model):
         blank=True,
     )
     access_schema = models.JSONField(default=dict, blank=True)
-    fiscal_name = models.CharField(max_length=255)
+    fiscal_name = models.CharField(max_length=255, blank=True)
     fiscal_attributes = models.JSONField(default=dict, blank=True)
     subscription_rules = models.JSONField(default=dict, blank=True)
     is_active = models.BooleanField(default=True)
@@ -131,7 +131,7 @@ class Price(models.Model):
                 condition=Q(is_active=True),
                 name="uniq_active_price_offer_currency_period",
             ),
-            models.CheckConstraint(condition=Q(amount_minor__gt=0), name="price_amount_positive"),
+            models.CheckConstraint(condition=Q(amount_minor__gte=0), name="price_amount_non_negative"),
         ]
 
     def save(self, *args: object, **kwargs: object) -> None:

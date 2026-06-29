@@ -1,74 +1,111 @@
-import type { Product } from "../../../types";
 import { chartPaths } from "./chart";
-import type { KpiItem, SalesPeriod } from "./types";
+import type { KpiItem, SalesListItem, SalesPeriod } from "./types";
 
-export function salesOverviewModel(period: SalesPeriod, products: Product[]) {
-  const f = period === "d7" ? 7 : period === "d30" ? 30 : 1;
-  const fmt = (n: number) => `₽${Math.round(n).toLocaleString("ru-RU").replace(/\u00a0/g, " ")}`;
+// Реальная агрегация обзора (бэкенд: conversations/stats.py). Продажи/выручка/
+// конверсия отсутствуют как домен — показываем «—», не выдумываем числа.
+export type SalesStats = {
+  waiting: number;
+  ops: { openDialogs: number; activeNow: number; onAI: number; onOperators: number; waiting: number };
+  period: {
+    dialogs: number; dialogsPrev: number; messages: number;
+    aiCostMicros: number; aiCostPrevMicros: number;
+    sales: number; salesPrev: number; revenueMinor: number; revenuePrevMinor: number; conversion: number;
+  };
+  byChannel: Array<{ code: string; name: string; openDialogs: number; dialogs: number }>;
+  byProduct: Array<{ code: string; name: string; openDialogs: number; dialogs: number; sales: number; revenueMinor: number }>;
+  chart: { values: number[]; labels: string[] };
+  problems: Array<{ title: string; meta: string; minutes: number }>;
+};
+
+const DASH = "—";
+const UP = "#389e0d";
+const DOWN = "#cf1322";
+const CHANNEL_COLORS = ["#6b5be0", "#2f8fd0", "#0f9b8e", "#d48806", "#cf1322"];
+
+const usd = (micros: number) => `$${(micros / 1_000_000).toLocaleString("ru-RU", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const rub = (minor: number) => `₽${Math.round(minor / 100).toLocaleString("ru-RU").replace(/ /g, " ")}`;
+
+function delta(current: number, previous: number): { deltaText: string; deltaColor: string; down: boolean } | null {
+  if (previous <= 0) return null;
+  const pct = Math.round(((current - previous) / previous) * 100);
+  return { deltaText: `${pct >= 0 ? "+" : ""}${pct}%`, deltaColor: pct >= 0 ? UP : DOWN, down: pct < 0 };
+}
+
+function minutesLabel(minutes: number): string {
+  if (minutes < 60) return `${minutes} мин`;
+  return `${Math.floor(minutes / 60)} ч`;
+}
+
+const share = (value: number, total: number) => (total > 0 ? Math.round((value / total) * 100) : 0);
+
+export function buildSalesOverviewVm(period: SalesPeriod, stats: SalesStats) {
   const periodLabel = { today: "Сегодня", d7: "7 дней", d30: "30 дней" }[period];
-  const res = {
-    today: { sales: "18", rev: fmt(146200), conv: "14,2%", aiCost: fmt(1240), perSale: fmt(69) },
-    d7: { sales: "126", rev: fmt(1024600), conv: "13,6%", aiCost: fmt(8600), perSale: fmt(68) },
-    d30: { sales: "540", rev: fmt(4386000), conv: "13,1%", aiCost: fmt(36400), perSale: fmt(67) },
-  }[period];
-  const up = "#389e0d";
+  const { ops } = stats;
+  const { dialogs, dialogsPrev, messages, aiCostMicros, aiCostPrevMicros, sales, salesPrev, revenueMinor, revenuePrevMinor, conversion } = stats.period;
+
   const opsKpi: KpiItem[] = [
-    { label: "Открытые диалоги", value: "42", sub: "в работе" },
-    { label: "Активные сейчас", value: "9", sub: "за 15 минут" },
-    { label: "На AI", value: "35", sub: "83% диалогов", dot: "#722ed1" },
-    { label: "На операторах", value: "7", sub: "17% диалогов", dot: "#1677ff" },
-    { label: "Ожидают оператора", value: "0", valueColor: up, sub: "очередь пуста", subColor: up },
+    { label: "Открытые диалоги", value: String(ops.openDialogs), sub: "в работе" },
+    { label: "Активные сейчас", value: String(ops.activeNow), sub: "за 15 минут" },
+    { label: "На AI", value: String(ops.onAI), sub: `${share(ops.onAI, ops.openDialogs)}% диалогов`, dot: "#722ed1" },
+    { label: "На операторах", value: String(ops.onOperators), sub: `${share(ops.onOperators, ops.openDialogs)}% диалогов`, dot: "#1677ff" },
+    { label: "Ожидают оператора", value: String(ops.waiting), valueColor: ops.waiting === 0 ? UP : DOWN, sub: ops.waiting === 0 ? "очередь пуста" : "в очереди", subColor: ops.waiting === 0 ? UP : DOWN },
   ];
+
+  const dialogsDelta = delta(dialogs, dialogsPrev);
+  const costDelta = delta(aiCostMicros, aiCostPrevMicros);
   const resKpi: KpiItem[] = [
-    { label: "Продажи", value: res.sales, deltaText: "+12%", deltaColor: up, sub: "к пред." },
-    { label: "Чистая выручка", value: res.rev, deltaText: "+8%", deltaColor: up, sub: "к пред." },
-    { label: "Конверсия", value: res.conv, deltaText: "+1,3 пп", deltaColor: up, sub: "к пред." },
-    { label: "Стоимость AI", value: res.aiCost, deltaText: "+4%", deltaColor: "#8c8c8c", sub: "к пред." },
-    { label: "Стоимость AI / продажа", value: res.perSale, deltaText: "−3%", deltaColor: up, sub: "дешевле", down: true },
+    { label: "Продажи", value: String(sales), sub: "к пред.", ...(delta(sales, salesPrev) ?? {}) },
+    { label: "Выручка", value: rub(revenueMinor), sub: "к пред.", ...(delta(revenueMinor, revenuePrevMinor) ?? {}) },
+    { label: "Конверсия", value: `${conversion.toLocaleString("ru-RU")}%`, sub: "оплат к диалогам" },
+    { label: "Стоимость AI", value: usd(aiCostMicros), sub: "к пред.", ...(costDelta ?? {}) },
+    { label: "Диалоги", value: String(dialogs), sub: "к пред.", ...(dialogsDelta ?? {}) },
   ];
-  const series = {
-    today: { vals: [6, 9, 7, 14, 11, 18, 13, 16, 21, 19], labels: ["09", "10", "11", "12", "13", "14", "15", "16", "17", "18"] },
-    d7: { vals: [78, 92, 85, 140, 118, 164, 150], labels: ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"] },
-    d30: { vals: [120, 135, 128, 150, 142, 168, 175, 160, 182, 176, 190, 185, 205, 198, 220], labels: ["1", "5", "10", "15", "20", "25", "30"] },
-  }[period];
-  const chart = chartPaths(series.vals);
-  const productSource = products.length > 0 ? products : [{ id: 1, code: "firepage", name: "FirePage", status: "ACTIVE" as const, siteUrl: "", createdAt: "" }, { id: 2, code: "foxray", name: "Foxray", status: "ACTIVE" as const, siteUrl: "", createdAt: "" }];
-  const productBase = [
-    { code: "firepage", salesN: 12, revN: 98400, conv: "15,1%", dlg: "28" },
-    { code: "foxray", salesN: 6, revN: 47800, conv: "12,8%", dlg: "14" },
-  ];
-  const productRows = productSource.slice(0, 2).map((product, index) => {
-    const base = productBase.find((item) => item.code === product.code) ?? productBase[index] ?? productBase[0];
-    return { name: product.name, status: "Активен", conv: base.conv, dlg: base.dlg, sales: String(base.salesN * f), rev: fmt(base.revN * f) };
-  });
-  const channels = [
-    { name: "MAX", color: "#6b5be0", dlg: "18", salesN: 9, share: 50 },
-    { name: "Telegram", color: "#2f8fd0", dlg: "14", salesN: 6, share: 33 },
-    { name: "Web Chat", color: "#0f9b8e", dlg: "10", salesN: 3, share: 17 },
-  ].map((channel) => ({ ...channel, sales: String(channel.salesN * f) }));
+
+  const chart = chartPaths(stats.chart.values.length ? stats.chart.values : [0]);
+  const openTotal = stats.byChannel.reduce((sum, channel) => sum + channel.openDialogs, 0);
+  const channels = stats.byChannel.map((channel, index) => ({
+    name: channel.name,
+    color: CHANNEL_COLORS[index % CHANNEL_COLORS.length],
+    open: String(channel.openDialogs),
+    period: String(channel.dialogs),
+    share: share(channel.openDialogs, openTotal),
+  }));
+
+  const products = stats.byProduct.map((product) => ({
+    name: product.name,
+    status: "Активен",
+    sales: String(product.sales),
+    rev: product.revenueMinor > 0 ? rub(product.revenueMinor) : DASH,
+    conv: product.dialogs > 0 ? `${Math.round((product.sales / product.dialogs) * 100)}%` : DASH,
+    dlg: String(product.dialogs),
+  }));
+
+  const problems: SalesListItem[] = stats.problems.map((problem) => ({
+    dot: problem.minutes >= 30 ? DOWN : "#faad14",
+    title: problem.title,
+    meta: problem.meta,
+    time: minutesLabel(problem.minutes),
+  }));
 
   return {
     periodLabel,
-    res,
     opsKpi,
     resKpi,
-    products: productRows,
+    products,
     channels,
-    aiSales: String(11 * f),
-    opSales: String(7 * f),
-    chartTotal: res.rev,
-    xLabels: series.labels,
+    actors: {
+      aiDialogs: String(ops.onAI),
+      aiCost: usd(aiCostMicros),
+      operatorDialogs: String(ops.onOperators),
+      waiting: String(ops.waiting),
+    },
+    chartTotal: String(dialogs),
+    chartDelta: dialogsDelta,
+    xLabels: stats.chart.labels,
     ...chart,
-    problems: [
-      { dot: "#faad14", title: "Гость 8842 · нет ответа клиента 18 мин", meta: "FirePage · Web Chat", time: "18 мин" },
-      { dot: "#1677ff", title: "Длинный диалог · 24 сообщения без продажи", meta: "Foxray · Telegram", time: "32 мин" },
-      { dot: "#faad14", title: "Гость 5510 · повторное обращение", meta: "Foxray · Telegram", time: "1 ч" },
-    ],
-    payments: [
-      { dot: "#faad14", title: "Незавершённый платёж · ORD-10482", meta: "Точка · ₽2 490 · FirePage", time: "6 мин" },
-      { dot: "#1677ff", title: "Подписка: продление через 2 дня", meta: "Foxray Pro · ORD-10311", time: "—" },
-    ],
+    problems,
+    payments: [] as SalesListItem[],
   };
 }
 
-export type SalesOverviewVm = ReturnType<typeof salesOverviewModel>;
+export type SalesOverviewVm = ReturnType<typeof buildSalesOverviewVm>;

@@ -2,14 +2,13 @@ import { useState } from "react";
 
 import { api } from "../../api/client";
 import type { RouteKey } from "../../types";
-import { EmptyState, PageHeader } from "../../shared/ui";
+import { PageHeader } from "../../shared/ui";
+import { Button } from "../../shared/ui-controls";
 import { AgentsKpiStrip } from "./AgentsKpiStrip";
 import { AgentsTable } from "./AgentsTable";
-import type { AiAgent } from "./model";
-import { useAiAgents } from "./useAiAgents";
+import type { AiAgent, AiRelease } from "./model";
 
-export function AiAgentsPage({ setRoute }: { setRoute: (route: RouteKey) => void }) {
-  const { agents, releases, loading, error, reload } = useAiAgents();
+export function AiAgentsPage({ agents, releases, reload, setRoute, openAgentCreate, openAgent, openRelease }: { agents: AiAgent[]; releases: AiRelease[]; reload: () => void; setRoute: (route: RouteKey) => void; openAgentCreate: (productCode: string | null) => void; openAgent: (agentId: number) => void; openRelease: (releaseId: number) => void }) {
   const [menuId, setMenuId] = useState<number | null>(null);
 
   async function toggleActive(agent: AiAgent) {
@@ -21,17 +20,9 @@ export function AiAgentsPage({ setRoute }: { setRoute: (route: RouteKey) => void
 
   return (
     <div className="ai-page">
-      <PageHeader title="AI-агенты" text="Sales-агенты продуктов · один агент на продукт" />
-      {loading ? (
-        <EmptyState title="Загрузка…" />
-      ) : error ? (
-        <EmptyState title="Не удалось загрузить агентов" />
-      ) : (
-        <>
-          <AgentsKpiStrip agents={agents} />
-          <AgentsTable agents={agents} releases={releases} menuId={menuId} setMenuId={setMenuId} toggleActive={toggleActive} setRoute={setRoute} />
-        </>
-      )}
+      <PageHeader title="AI-агенты" text="Sales-агенты продуктов · один агент на продукт" action={<Button variant="primary" icon="plus" onClick={() => openAgentCreate(null)}>Создать агента</Button>} />
+      <AgentsKpiStrip agents={agents} />
+      <AgentsTable agents={agents} releases={releases} menuId={menuId} setMenuId={setMenuId} toggleActive={toggleActive} setRoute={setRoute} openAgent={openAgent} openRelease={openRelease} />
     </div>
   );
 }

@@ -39,6 +39,7 @@ def bootstrap_edevs_owner(*, email: str, password: str, full_name: str = "") -> 
     for code, name in (("firepage", "FirePage"), ("foxray", "Foxray")):
         product, _ = Product.objects.get_or_create(organization=organization, code=code, defaults={"name": name})
         ProductDepartment.objects.get_or_create(product=product, department=sales_department)
+    # AI-агенты теперь на уровне канала обработки (ADR-HUB-0019) — см. seed_channels.
 
     owner, created_owner = HumanUser.objects.get_or_create(
         email=HumanUser.objects.normalize_email(email),
@@ -62,7 +63,7 @@ def bootstrap_edevs_owner(*, email: str, password: str, full_name: str = "") -> 
             "organization": organization,
             "role": EmployeeRole.OWNER,
             "department": sales_department,
-            "totp_required": True,
+            "totp_required": False,
         },
     )
 
@@ -75,7 +76,7 @@ def bootstrap_edevs_owner(*, email: str, password: str, full_name: str = "") -> 
         },
     )
     if created_operator:
-        operator.set_password("local-operator-password")
+        operator.set_password("Operator-Local-2026")
         operator.save(update_fields=["password"])
 
     operator_profile, _ = EmployeeProfile.objects.get_or_create(

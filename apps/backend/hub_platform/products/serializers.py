@@ -25,6 +25,8 @@ def offer_payload(offer: Offer) -> dict[str, object]:
         "primaryBoxOfferId": offer.primary_box_offer_id,
         "isActive": offer.is_active,
         "aiOfferable": offer.ai_offerable,
+        "fiscalName": offer.fiscal_name,
+        "accessSchema": offer.access_schema,
         "prices": [price_payload(price) for price in offer.prices.all()],
     }
 

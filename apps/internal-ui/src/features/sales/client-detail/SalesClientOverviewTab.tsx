@@ -1,26 +1,42 @@
 import { Button } from "../../../shared/ui-controls";
 import type { RouteKey } from "../../../types";
-import type { salesClientDetail } from "./model";
+import type { ClientDetailVm } from "./model";
 
-type Client = typeof salesClientDetail;
-
-export function SalesClientOverviewTab({ client, setRoute }: { client: Client; setRoute: (route: RouteKey) => void }) {
+export function SalesClientOverviewTab({ client, setRoute }: { client: ClientDetailVm; setRoute: (route: RouteKey) => void }) {
+  const currentDialog = client.dialogs.find((dialog) => dialog.active);
   return (
     <div className="sales-client-overview">
       <div className="sales-client-overview-main">
         <SummaryGrid client={client} />
-        <NeedNote note={client.note} />
         <ActivityList activity={client.activity} />
       </div>
       <div className="sales-client-overview-rail">
-        <CurrentDialog setRoute={setRoute} />
-        <RelatedProducts />
+        {currentDialog && (
+          <section className="sales-client-section-card">
+            <div className="sales-client-section-head">
+              <h3>Текущий диалог</h3>
+              <span className="sales-client-status-blue"><i />{currentDialog.status}</span>
+            </div>
+            <p className="sales-client-current-dialog">{currentDialog.meta}<br />«{currentDialog.title}»</p>
+            <Button className="sales-client-outline-action" variant="secondary" onClick={() => setRoute("salesDialogs")}>Открыть диалог</Button>
+          </section>
+        )}
+        <section className="sales-client-section-card">
+          <h3>Связанные продукты</h3>
+          {client.products.length === 0 ? (
+            <div className="sales-client-related-empty">Нет привязанных продуктов</div>
+          ) : (
+            client.products.map((product) => (
+              <div className="sales-client-related-row" key={product.name}><span><i style={{ background: product.color }} />{product.name}</span></div>
+            ))
+          )}
+        </section>
       </div>
     </div>
   );
 }
 
-function SummaryGrid({ client }: { client: Client }) {
+function SummaryGrid({ client }: { client: ClientDetailVm }) {
   return (
     <div className="sales-client-summary">
       {client.summary.map((item) => (
@@ -33,58 +49,24 @@ function SummaryGrid({ client }: { client: Client }) {
   );
 }
 
-function NeedNote({ note }: { note: string }) {
-  const [beforeProduct, afterProduct] = note.split("Foxray Team");
-  return (
-    <section className="sales-client-section-card">
-      <div className="sales-client-section-head"><h3>Потребность и заметка</h3><button type="button">Изменить</button></div>
-      <div className="sales-client-note">{beforeProduct}<b>Foxray Team</b>{afterProduct}</div>
-    </section>
-  );
-}
-
-function ActivityList({ activity }: { activity: Client["activity"] }) {
+function ActivityList({ activity }: { activity: ClientDetailVm["activity"] }) {
+  if (activity.length === 0) {
+    return <section className="sales-client-section-card"><h3>Последняя активность</h3><div className="sales-client-related-empty">Нет событий</div></section>;
+  }
   return (
     <section className="sales-client-section-card">
       <h3>Последняя активность</h3>
       <div className="sales-client-timeline">
-        {activity.map((item, index) => <TimelineItem item={item} last={index === activity.length - 1} key={`${item.title}-${item.time}`} />)}
+        {activity.map((item, index) => (
+          <div className="sales-client-timeline-row" key={`${item.title}-${item.time}-${index}`}>
+            <div className="sales-client-timeline-mark"><span style={{ background: item.color }} />{index < activity.length - 1 && <i />}</div>
+            <div className="sales-client-timeline-text">
+              <div>{item.title}</div>
+              <time>{item.time}</time>
+            </div>
+          </div>
+        ))}
       </div>
-    </section>
-  );
-}
-
-function TimelineItem({ item, last }: { item: Client["activity"][number]; last: boolean }) {
-  return (
-    <div className="sales-client-timeline-row">
-      <div className="sales-client-timeline-mark"><span style={{ background: item.color }} />{!last && <i />}</div>
-      <div className="sales-client-timeline-text">
-        <div>{item.title} {item.code && <b>{item.code}</b>} {item.suffix}</div>
-        <time>{item.time}</time>
-      </div>
-    </div>
-  );
-}
-
-function CurrentDialog({ setRoute }: { setRoute: (route: RouteKey) => void }) {
-  return (
-    <section className="sales-client-section-card">
-      <div className="sales-client-section-head">
-        <h3>Текущий диалог</h3>
-        <span className="sales-client-status-blue"><i />Оператор</span>
-      </div>
-      <p className="sales-client-current-dialog">Foxray · Web Chat · ведёт <b>Иван Петров</b>.<br />«Помогу с настройкой рабочих мест.»</p>
-      <Button className="sales-client-outline-action" variant="secondary" onClick={() => setRoute("salesDialogs")}>Открыть диалог</Button>
-    </section>
-  );
-}
-
-function RelatedProducts() {
-  return (
-    <section className="sales-client-section-card">
-      <h3>Связанные продукты</h3>
-      <div className="sales-client-related-row"><span><i style={{ background: "#722ed1" }} />Foxray</span><b>Team · активна</b></div>
-      <div className="sales-client-related-row"><span><i style={{ background: "#1677ff" }} />FirePage</span><b>Pro · разовая</b></div>
     </section>
   );
 }

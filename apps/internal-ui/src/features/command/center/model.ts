@@ -25,15 +25,15 @@ export function commandCenterModel(period: CommandPeriod) {
   };
   const attention = [
     { dot: "#faad14", title: "Незавершённый платёж · заказ ORD-10482", meta: "Продажи · Точка", time: "6 мин" },
-    { dot: "#1677ff", title: "Подписка истекает через 2 дня · Foxray Pro", meta: "Продажи", time: "1 ч" },
+    { dot: "#1677ff", title: "Подписка истекает через 2 дня · Foxray Про", meta: "Продажи", time: "1 ч" },
   ];
   const integrations = [
     { name: "OpenRouter", group: "AI-провайдер", dot: "#52c41a", statusLabel: "Подключено", statusColor: "#52c41a" },
-    { name: "Точка", group: "Платежи и фискализация", dot: "#52c41a", statusLabel: "Подключено", statusColor: "#52c41a" },
     { name: "MAX", group: "Канал", dot: "#52c41a", statusLabel: "Подключено", statusColor: "#52c41a" },
     { name: "Telegram", group: "Канал", dot: "#52c41a", statusLabel: "Подключено", statusColor: "#52c41a" },
     { name: "Web Chat", group: "Канал", dot: "#52c41a", statusLabel: "Подключено", statusColor: "#52c41a" },
-    { name: "Fulfillment · FirePage", group: "Исполнение", dot: "#52c41a", statusLabel: "Подключено", statusColor: "#52c41a" },
+    { name: "FirePage", group: "Коммерческая интеграция", dot: "#52c41a", statusLabel: "Подключено", statusColor: "#52c41a" },
+    { name: "Foxray", group: "Коммерческая интеграция", dot: "#52c41a", statusLabel: "Подключено", statusColor: "#52c41a" },
   ];
   const aiPct = Math.round((com.aiSpend / com.budget) * 100);
   const aiBarColor = aiPct >= 85 ? "#ff4d4f" : aiPct >= 70 ? "#faad14" : "#1677ff";

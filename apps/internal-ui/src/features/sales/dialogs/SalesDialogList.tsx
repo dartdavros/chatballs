@@ -3,26 +3,30 @@ import type { ListTab, SalesDialog } from "./types";
 import { channelMeta, modeDots } from "./data";
 import { SearchInput } from "../../../shared/ui-controls";
 
-export function SalesDialogList({ dialogs, filtered, listTab, selectedId, setListTab, setSelectedId }: {
+export function SalesDialogList({ dialogs, filtered, listTab, selectedId, search, setSearch, setListTab, setSelectedId }: {
   dialogs: SalesDialog[];
   filtered: SalesDialog[];
   listTab: ListTab;
   selectedId: number;
+  search: string;
+  setSearch: (value: string) => void;
   setListTab: (tab: ListTab) => void;
   setSelectedId: (id: number) => void;
 }) {
+  const waitCount = dialogs.filter((dialog) => dialog.mode === "wait").length;
+  const unreadCount = dialogs.filter((dialog) => dialog.unread > 0).length;
   return (
     <section className="sales-dialog-list">
       <div className="sales-dialog-list-head">
         <div><h2>Диалоги</h2><span>{dialogs.length} всего</span></div>
-        <SearchInput className="sales-dialog-search" placeholder="Поиск по клиенту, продукту…" />
+        <SearchInput className="sales-dialog-search" placeholder="Поиск по клиенту, продукту…" value={search} onChange={setSearch} />
       </div>
       <div className="sales-dialog-tabs">
         <DialogTab active={listTab === "all"} onClick={() => setListTab("all")}>Все</DialogTab>
-        <DialogTab active={listTab === "wait"} onClick={() => setListTab("wait")}>Ждут оператора <b>2</b></DialogTab>
+        <DialogTab active={listTab === "wait"} onClick={() => setListTab("wait")}>Ждут оператора {waitCount > 0 && <b>{waitCount}</b>}</DialogTab>
         <DialogTab active={listTab === "ai"} onClick={() => setListTab("ai")}>AI</DialogTab>
         <DialogTab active={listTab === "operator"} onClick={() => setListTab("operator")}>Оператор</DialogTab>
-        <DialogTab active={listTab === "unread"} onClick={() => setListTab("unread")}>Непрочитанные</DialogTab>
+        <DialogTab active={listTab === "unread"} onClick={() => setListTab("unread")}>Непрочитанные {unreadCount > 0 && <b>{unreadCount}</b>}</DialogTab>
       </div>
       <div className="sales-dialog-list-body">
         {filtered.map((dialog) => <DialogListItem dialog={dialog} active={dialog.id === selectedId} setSelectedId={setSelectedId} key={dialog.id} />)}

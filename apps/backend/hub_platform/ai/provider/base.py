@@ -16,6 +16,9 @@ class ChatResult:
     model: str
     prompt_tokens: int
     completion_tokens: int
+    # Фактическая стоимость, сообщённая провайдером (micro-USD). 0 — провайдер не
+    # вернул цену, тогда считаем по прайс-таблице (ai/pricing.py).
+    cost_micros: int = 0
 
     @property
     def total_tokens(self) -> int:

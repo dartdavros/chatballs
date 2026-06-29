@@ -110,14 +110,23 @@ html,body{margin:0;padding:0;}
                 <h3 style="margin:0 0 13px;font-size:14px;font-weight:700;color:#1f1f1f;">Параметры</h3>
                 <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;"><span style="font-size:12.5px;color:#8c8c8c;">Тип</span><span style="font-size:12.5px;font-weight:500;color:#262626;">{{ p.kind }}</span></div>
                 <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;"><span style="font-size:12.5px;color:#8c8c8c;">Отдел</span><span style="font-size:12.5px;font-weight:500;color:#262626;">Продажи</span></div>
-                <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;"><span style="font-size:12.5px;color:#8c8c8c;">Sales-agent</span><span style="font-size:12.5px;font-weight:500;color:#722ed1;">{{ p.agent }}</span></div>
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;"><span style="font-size:12.5px;color:#8c8c8c;">Sales-agent</span><sc-if value="{{ hasAgent }}" hint-placeholder-val="{{ true }}"><span style="font-size:12.5px;font-weight:500;color:#722ed1;">{{ p.agent }}</span></sc-if><sc-if value="{{ noAgent }}" hint-placeholder-val="{{ false }}"><span style="font-size:12.5px;font-weight:500;color:#8c8c8c;">не создан</span></sc-if></div>
                 <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;"><span style="font-size:12.5px;color:#8c8c8c;">Создан</span><span style="font-size:12.5px;font-weight:500;color:#262626;">12 мая 2026</span></div>
               </div>
+              <sc-if value="{{ hasAgent }}" hint-placeholder-val="{{ true }}">
               <div style="background:#fff;border:1px solid #f0f0f0;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04);padding:16px 18px;">
                 <h3 style="margin:0 0 4px;font-size:14px;font-weight:700;color:#1f1f1f;">Sales-agent</h3>
                 <div style="font-size:12.5px;color:#595959;line-height:1.5;margin-top:6px;">{{ p.agentNote }}</div>
-                <a href="#" style="display:flex;align-items:center;justify-content:center;gap:7px;height:36px;margin-top:12px;border-radius:8px;border:1px solid #d3adf7;background:#fff;color:#722ed1;font-size:13px;font-weight:600;text-decoration:none;" style-hover="background:#f9f0ff;">Открыть конфигурацию AI</a>
+                <a href="Карточка AI-агента.dc.html" style="display:flex;align-items:center;justify-content:center;gap:7px;height:36px;margin-top:12px;border-radius:8px;border:1px solid #d3adf7;background:#fff;color:#722ed1;font-size:13px;font-weight:600;text-decoration:none;" style-hover="background:#f9f0ff;">Открыть карточку агента</a>
               </div>
+              </sc-if>
+              <sc-if value="{{ noAgent }}" hint-placeholder-val="{{ false }}">
+              <div style="background:#fff;border:1px solid #f0f0f0;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04);padding:16px 18px;">
+                <div style="display:flex;align-items:center;gap:9px;margin-bottom:8px;"><span style="width:30px;height:30px;border-radius:8px;background:#f5f5f5;display:flex;align-items:center;justify-content:center;flex:none;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#bfbfbf" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="12" rx="2.5"/><path d="M12 8V4.5"/><circle cx="12" cy="3.5" r="1.2"/><circle cx="9" cy="13.5" r="1"/><circle cx="15" cy="13.5" r="1"/></svg></span><h3 style="margin:0;font-size:14px;font-weight:700;color:#1f1f1f;">Sales-agent не создан</h3></div>
+                <div style="font-size:12.5px;color:#595959;line-height:1.5;">У продукта пока нет основного sales-агента. Создайте его, чтобы AI консультировал клиентов и оформлял покупки. Агент начнёт отвечать только после публикации первой версии.</div>
+                <a href="Создание агента.dc.html" style="display:flex;align-items:center;justify-content:center;gap:7px;height:36px;margin-top:12px;border-radius:8px;border:none;background:#1677ff;color:#fff;font-size:13px;font-weight:600;text-decoration:none;" style-hover="background:#0958d9;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Создать агента</a>
+              </div>
+              </sc-if>
             </div>
           </div>
         </sc-if>
@@ -216,7 +225,7 @@ html,body{margin:0;padding:0;}
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{
   &quot;$preview&quot;: { &quot;width&quot;: 1440, &quot;height&quot;: 940 },
-  &quot;product&quot;: { &quot;editor&quot;: &quot;enum&quot;, &quot;options&quot;: [&quot;firepage&quot;, &quot;foxray&quot;], &quot;default&quot;: &quot;firepage&quot;, &quot;tsType&quot;: &quot;string&quot; }
+  &quot;product&quot;: { &quot;editor&quot;: &quot;enum&quot;, &quot;options&quot;: [&quot;firepage&quot;, &quot;foxray&quot;, &quot;nimbus&quot;], &quot;default&quot;: &quot;firepage&quot;, &quot;tsType&quot;: &quot;string&quot; }
 }">
 class Component extends DCLogic {
   state = { tab: 'overview' };
@@ -284,7 +293,35 @@ class Component extends DCLogic {
       fulMethod: 'Автоматическая выдача доступа к SaaS', fulEndpoint: 'foxray.provision', fulTime: '30 сек', fulRate: '99,8%',
     };
 
-    const p = which === 'foxray' ? FX : FP;
+    const NM = {
+      name: 'Nimbus Analytics', iconBg: '#e6fffb', iconColor: '#08979c', kind: 'SaaS · подписка', tagBg: '#e6fffb', tagColor: '#08979c',
+      desc: 'Аналитика продуктовых метрик по подписке. Продукт подключён к Hub, но sales-агент ещё не создан.',
+      longDesc: 'Nimbus Analytics — SaaS-аналитика для продуктовых команд. Продукт заведён в Hub, у него есть предложения и база знаний, но основной sales-агент пока не создан.',
+      hasAgent: false,
+      bullets: [
+        { text: 'Старт ₽1 900/мес — базовые дашборды и отчёты.' },
+        { text: 'Команда ₽4 900/мес — расширенные сегменты и доступы.' },
+        { text: 'Для продуктовых и маркетинговых команд.' },
+      ],
+      sales30: '0', rev30: '₽0', metric3Label: 'Активные подписки', metric3: '0', conv: '—',
+      agent: 'не создан', agentNote: '',
+      offers: [
+        { name: 'Старт', type: 'подписка', tagBg: '#e6fffb', tagColor: '#08979c', price: '₽1 900', unit: '/ мес', secondary: '', detail: 'Базовый тариф аналитики. Помесячная оплата.', code: 'OFR-NM-START', priceVer: 'v1' },
+        { name: 'Команда', type: 'подписка', tagBg: '#e6fffb', tagColor: '#08979c', price: '₽4 900', unit: '/ мес', secondary: '', detail: 'Командный тариф. Расширенные сегменты и доступы.', code: 'OFR-NM-TEAM', priceVer: 'v1' },
+      ],
+      priceHistory: [
+        { ver: 'v1', offer: 'Старт', price: '₽1 900 / мес', from: '20 июня 2026', status: 'Активна', ...okBadge },
+        { ver: 'v1', offer: 'Команда', price: '₽4 900 / мес', from: '20 июня 2026', status: 'Активна', ...okBadge },
+      ],
+      kbCount: '2', kb: [
+        { title: 'Обзор тарифов Nimbus', meta: 'FAQ · обновлено 20 июня', status: 'Черновик' },
+        { title: 'Что показывает аналитика', meta: 'Документ · обновлено 20 июня', status: 'Черновик' },
+      ],
+      fulMethod: 'Автоматическая выдача доступа к SaaS', fulEndpoint: 'nimbus.provision', fulTime: '30 сек', fulRate: '—',
+    };
+
+    const p = which === 'foxray' ? FX : which === 'nimbus' ? NM : FP;
+    const hasAgent = p.hasAgent !== false;
 
     const CH = {
       MAX: { name: 'MAX', color: '#6b5be0', bg: '#f2f0ff', meta: 'Мессенджер · основной канал' },
@@ -300,7 +337,7 @@ class Component extends DCLogic {
     const set = (t) => this.setState({ tab: t });
 
     return {
-      p, channelRows,
+      p, channelRows, hasAgent, noAgent: !hasAgent,
       isOverview: tab === 'overview', isOffers: tab === 'offers', isKb: tab === 'kb', isChannels: tab === 'channels', isFul: tab === 'ful',
       tOverview: A('overview'), tOffers: A('offers'), tKb: A('kb'), tChannels: A('channels'), tFul: A('ful'),
       onTabOverview: () => set('overview'), onTabOffers: () => set('offers'), onTabKb: () => set('kb'),

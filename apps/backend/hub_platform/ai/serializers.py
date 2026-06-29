@@ -1,4 +1,13 @@
-from hub_platform.ai.models import AIAgent, KnowledgeDocument, ProductAIRelease, PromptDocument
+from hub_platform.ai.models import AIAgent, ChannelAIRelease, KnowledgeDocument, PromptDocument
+
+
+def _channel_ref(channel) -> dict[str, object]:
+    return {
+        "id": channel.id,
+        "code": channel.code,
+        "name": channel.name,
+        "product": {"code": channel.product.code, "name": channel.product.name} if channel.product_id else None,
+    }
 
 
 def _version_payload(version) -> dict[str, object]:
@@ -15,7 +24,8 @@ def _version_payload(version) -> dict[str, object]:
 def _document_payload(document, extra: dict[str, object]) -> dict[str, object]:
     return {
         "id": document.id,
-        "product": {"code": document.product.code, "name": document.product.name},
+        "scope": document.scope,
+        "product": {"code": document.product.code, "name": document.product.name} if document.product_id else None,
         "code": document.code,
         "title": document.title,
         "category": document.category,
@@ -35,10 +45,10 @@ def prompt_payload(document: PromptDocument) -> dict[str, object]:
     return _document_payload(document, {})
 
 
-def release_payload(release: ProductAIRelease) -> dict[str, object]:
+def release_payload(release: ChannelAIRelease) -> dict[str, object]:
     return {
         "id": release.id,
-        "product": {"code": release.product.code, "name": release.product.name},
+        "channel": _channel_ref(release.channel),
         "version": release.version,
         "status": release.status,
         "model": release.model,
@@ -63,7 +73,7 @@ def release_payload(release: ProductAIRelease) -> dict[str, object]:
 def agent_payload(agent: AIAgent) -> dict[str, object]:
     return {
         "id": agent.id,
-        "product": {"code": agent.product.code, "name": agent.product.name},
+        "channel": _channel_ref(agent.channel),
         "name": agent.name,
         "isActive": agent.is_active,
         "model": agent.model,

@@ -78,6 +78,57 @@ class ProductApiTests(TestCase):
 
         self.assertEqual(response.status_code, 404)
 
+    def test_create_offer_via_api(self) -> None:
+        product = Product.objects.get(code="firepage")
+        response = self.client.post(
+            f"/api/v1/company/products/{product.id}/offers/",
+            data=json.dumps(
+                {
+                    "code": "starter",
+                    "name": "Starter",
+                    "description": "Базовый пакет",
+                    "fulfillmentType": OfferFulfillmentType.BOX_LICENSE,
+                    "paymentType": OfferPaymentType.ONE_TIME,
+                    "isActive": True,
+                    "aiOfferable": True,
+                }
+            ),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 201)
+        offer = Offer.objects.get(product=product, code="starter")
+        self.assertTrue(offer.ai_offerable)
+        self.assertEqual(offer.fulfillment_type, OfferFulfillmentType.BOX_LICENSE)
+
+    def test_add_price_version_archives_previous_active(self) -> None:
+        product = Product.objects.get(code="firepage")
+        offer = Offer.objects.create(
+            product=product,
+            code="box",
+            name="Box",
+            fulfillment_type=OfferFulfillmentType.BOX_LICENSE,
+            payment_type=OfferPaymentType.ONE_TIME,
+        )
+        first = self.client.post(
+            f"/api/v1/company/products/{product.id}/offers/{offer.id}/prices/",
+            data=json.dumps({"amountMinor": 490_000, "billingPeriod": BillingPeriod.ONE_TIME}),
+            content_type="application/json",
+        )
+        second = self.client.post(
+            f"/api/v1/company/products/{product.id}/offers/{offer.id}/prices/",
+            data=json.dumps({"amountMinor": 590_000, "billingPeriod": BillingPeriod.ONE_TIME}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(first.status_code, 201)
+        self.assertEqual(second.status_code, 201)
+        prices = list(offer.prices.order_by("version"))
+        self.assertEqual([p.version for p in prices], [1, 2])
+        self.assertFalse(prices[0].is_active)
+        self.assertTrue(prices[1].is_active)
+        self.assertEqual(prices[0].valid_until, prices[1].valid_from)
+
 
 class ProductCatalogModelTests(TestCase):
     def setUp(self) -> None:

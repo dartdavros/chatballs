@@ -18,10 +18,10 @@ export function FulfillmentTable({ rows }: { rows: SalesFulfillment[] }) {
             <td>{row.product}</td>
             <td className="mono-muted">{row.operation}</td>
             <td><StatusBadge value={row.status} /></td>
-            <td className={`numeric attempts ${row.canRetry ? "danger" : ""}`}>{row.attempts}</td>
-            <td className={`mono-muted ${row.canRetry ? "error" : ""}`}>{row.error}</td>
+            <td className={`numeric attempts ${row.attention ? "danger" : ""}`}>{row.attempts}</td>
+            <td className={`mono-muted ${row.attention ? "error" : ""}`}>{row.error}</td>
             <td className="nowrap">{row.updated}</td>
-            <td className="numeric">{row.canRetry ? <button className="sales-orders-retry" type="button"><Icon name="refresh" size={14} />Повторить</button> : <span className="muted-dash">—</span>}</td>
+            <td className="numeric">{row.attention ? <button className="sales-orders-retry" type="button"><Icon name="refresh" size={14} />Сверка</button> : <span className="muted-dash">—</span>}</td>
           </tr>
         ))}
       </tbody>

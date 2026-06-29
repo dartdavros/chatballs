@@ -8,12 +8,12 @@ export function OrderFulfillmentTab({ order }: { order: OrderDetail }) {
     <OrderDetailCard className="order-detail-process">
       <div className="order-detail-section-head">
         <div>
-          <h3>Исполнение продукта</h3>
+          <h3>Доступ продукта</h3>
           <span>{order.fulfillment.id}</span>
         </div>
         <div className="order-detail-section-actions">
-          <OrderSuccessBadge>Исполнен</OrderSuccessBadge>
-          <Button variant="action" icon="refresh" iconSize={14}>Повторить</Button>
+          <OrderSuccessBadge>Активен</OrderSuccessBadge>
+          <Button variant="action" icon="refresh" iconSize={14}>Сверка</Button>
         </div>
       </div>
       <div className="order-detail-fields three">

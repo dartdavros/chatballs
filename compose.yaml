@@ -86,20 +86,6 @@ services:
       - /app/node_modules
       - /app/apps/internal-ui/node_modules
 
-  checkout:
-    build:
-      context: .
-      dockerfile: apps/checkout/Dockerfile
-    env_file: *hub-env
-    command: npm run dev -- --host 0.0.0.0 --port 5174
-    ports:
-      - "5174:5174"
-    volumes:
-      - ./apps/checkout:/app/apps/checkout
-      - ./packages:/app/packages
-      - /app/node_modules
-      - /app/apps/checkout/node_modules
-
   web-chat:
     build:
       context: .
@@ -124,8 +110,6 @@ services:
       backend:
         condition: service_healthy
       internal-ui:
-        condition: service_started
-      checkout:
         condition: service_started
       web-chat:
         condition: service_started

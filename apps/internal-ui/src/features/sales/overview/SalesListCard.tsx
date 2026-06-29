@@ -8,8 +8,9 @@ export function SalesListCard({ title, icon, items }: { title: string; icon: "wa
         <Icon name={icon} size={17} />
         <h3>{title}</h3>
       </div>
-      {items.map((item) => (
-        <a href="#" onClick={(event) => event.preventDefault()} key={item.title}>
+      {items.length === 0 && <div className="sales-empty-line">Нет данных</div>}
+      {items.map((item, index) => (
+        <a href="#" onClick={(event) => event.preventDefault()} key={index}>
           <span style={{ background: item.dot }} />
           <strong>{item.title}<small>{item.meta}</small></strong>
           <em>{item.time}</em>

@@ -1,8 +1,8 @@
-import type { salesClientDetail } from "./model";
+import { EmptyState } from "../../../shared/ui";
+import type { ClientDetailVm } from "./model";
 
-type Order = typeof salesClientDetail.orders[number];
-
-export function SalesClientOrdersTab({ orders }: { orders: Order[] }) {
+export function SalesClientOrdersTab({ orders }: { orders: ClientDetailVm["orders"] }) {
+  if (orders.length === 0) return <EmptyState title="У клиента ещё нет заказов" />;
   return (
     <div className="sales-client-table-card">
       <table className="sales-client-detail-table">
@@ -10,7 +10,7 @@ export function SalesClientOrdersTab({ orders }: { orders: Order[] }) {
           <tr>
             <th>ЗАКАЗ</th>
             <th>ДАТА</th>
-            <th>ПРОДУКТ / OFFER</th>
+            <th>ПРОДУКТ</th>
             <th className="numeric">СУММА</th>
             <th>ОПЛАТА</th>
             <th>ИСПОЛНЕНИЕ</th>
@@ -19,7 +19,7 @@ export function SalesClientOrdersTab({ orders }: { orders: Order[] }) {
         <tbody>
           {orders.map((order) => (
             <tr key={order.id}>
-              <td><a href="#" onClick={(event) => event.preventDefault()}>{order.id}</a></td>
+              <td><code>{order.code}</code></td>
               <td>{order.date}</td>
               <td>{order.product}</td>
               <td className="numeric"><strong>{order.amount}</strong></td>

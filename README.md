@@ -15,7 +15,6 @@ The local compose stack contains:
 - PostgreSQL;
 - Redis;
 - Internal Hub UI;
-- Checkout UI;
 - Web Chat UI;
 - local Nginx reverse proxy.
 
@@ -25,14 +24,18 @@ Default local URLs:
 
 - Internal Hub UI: `http://localhost:5173`
 - Django admin: `http://localhost:8010/admin/`
-- Checkout: `http://localhost:5174`
 - Web Chat: `http://localhost:5175`
 - Backend API: `http://localhost:8010/api/v1`
 
-Create or refresh the local OWNER account:
+Local accounts (TOTP disabled). These credentials are fixed — do not change them:
+
+- OWNER — `owner@edevs.tech` / `Owner-Local-2026`
+- OPERATOR — `a.kotova@edevs.tech` / `Operator-Local-2026`
+
+Bootstrap the organization and both accounts:
 
 ```powershell
-docker compose run --rm backend python manage.py bootstrap_owner --email owner@edevs.tech --password local-owner-password --name "Иван Петров"
+docker compose run --rm backend python manage.py bootstrap_owner --email owner@edevs.tech --password Owner-Local-2026 --name "Иван Петров"
 ```
 
 ## Tests

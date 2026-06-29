@@ -5,7 +5,7 @@ import { Icon } from "../../shared/icons";
 import { StatusPill } from "../../shared/ui";
 import { Button, MonoLink, ToneBadge } from "../../shared/ui-controls";
 import { productAccent } from "../../shared/utils";
-import { publishedRelease, type AiAgent, type AiRelease } from "./model";
+import { publishedRelease, releaseName, type AiAgent, type AiRelease } from "./model";
 
 export function AgentsTable({
   agents,
@@ -14,6 +14,8 @@ export function AgentsTable({
   setMenuId,
   toggleActive,
   setRoute,
+  openAgent,
+  openRelease,
 }: {
   agents: AiAgent[];
   releases: AiRelease[];
@@ -21,6 +23,8 @@ export function AgentsTable({
   setMenuId: (id: number | null) => void;
   toggleActive: (agent: AiAgent) => void;
   setRoute: (route: RouteKey) => void;
+  openAgent: (agentId: number) => void;
+  openRelease: (releaseId: number) => void;
 }) {
   return (
     <div className="table-card">
@@ -29,9 +33,9 @@ export function AgentsTable({
           <thead>
             <tr>
               <th>АГЕНТ</th>
-              <th>ПРОДУКТ</th>
+              <th>КАНАЛ</th>
               <th>МОДЕЛЬ</th>
-              <th>АКТИВНЫЙ RELEASE</th>
+              <th>АКТИВНАЯ ВЕРСИЯ</th>
               <th>СТАТУС</th>
               <th className="numeric">ДИАЛОГИ СЕЙЧАС</th>
               <th className="numeric">КОНВЕРСИЯ</th>
@@ -40,11 +44,10 @@ export function AgentsTable({
           </thead>
           <tbody>
             {agents.map((agent) => {
-              const accent = productAccent(agent.product.code);
-              const release = publishedRelease(releases, agent.product.code);
+              const accent = productAccent(agent.channel.code);
+              const release = publishedRelease(releases, agent.channel.code);
               const menuItems = [
-                { key: "open", disabled: true, label: <button type="button"><Icon name="external" size={15} />Открыть агента</button> },
-                { key: "release", disabled: true, label: <button type="button"><Icon name="plus" size={15} />Создать release candidate</button> },
+                { key: "open", label: <button type="button" onClick={() => { setMenuId(null); openAgent(agent.id); }}><Icon name="external" size={15} />Открыть агента</button> },
                 { type: "divider" as const },
                 {
                   key: "toggle",
@@ -61,14 +64,17 @@ export function AgentsTable({
                   <td>
                     <div className="product-cell">
                       <span className="product-icon" style={{ background: accent.bg, color: accent.color }}><Icon name="robot" size={21} /></span>
-                      <span><strong>{agent.name}</strong><small>{agent.product.code}</small></span>
+                      <span>
+                        <button className="ai-agent-name-link" type="button" onClick={() => openAgent(agent.id)}>{agent.name}</button>
+                        <small>{agent.channel.code}</small>
+                      </span>
                     </div>
                   </td>
-                  <td><ToneBadge bg={accent.bg} color={accent.color}>{agent.product.name}</ToneBadge></td>
+                  <td><ToneBadge bg={accent.bg} color={accent.color}>{agent.channel.name}</ToneBadge></td>
                   <td><code className="ai-mono">{agent.model}</code></td>
                   <td>
                     {release ? (
-                      <span className="ai-release-cell"><MonoLink>{`v${release.version}`}</MonoLink><ToneBadge bg="#f6ffed" color="#389e0d">Published</ToneBadge></span>
+                      <span className="ai-release-cell"><MonoLink onClick={() => openRelease(release.id)}>{releaseName(release)}</MonoLink><ToneBadge bg="#f6ffed" color="#389e0d">Опубликована</ToneBadge></span>
                     ) : (
                       <span className="product-empty-value">—</span>
                     )}
@@ -78,7 +84,7 @@ export function AgentsTable({
                   <td className="numeric"><span className="product-empty-value">—</span></td>
                   <td className="row-actions">
                     <div className="ai-row-actions">
-                      <Button variant="secondary" className="ai-test-chat-btn" icon="message" iconSize={14} disabled onClick={() => setRoute("aiTestChat")}>Test chat</Button>
+                      <Button variant="secondary" className="ai-test-chat-btn" icon="message" iconSize={14} onClick={() => setRoute("aiTestChat")}>Тест-чат</Button>
                       <Dropdown
                         menu={{ items: menuItems }}
                         open={menuId === agent.id}
@@ -98,6 +104,7 @@ export function AgentsTable({
       </div>
       <div className="ai-table-footer">
         <span>{agents.length} агента</span>
+        <span>В первой итерации — один агент на канал обработки</span>
       </div>
     </div>
   );

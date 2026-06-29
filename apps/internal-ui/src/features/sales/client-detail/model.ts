@@ -1,3 +1,5 @@
+import { avatarColor, channelMap, initialsOf, productMap, relativeTime, type ClientChannelCode, type ClientProductCode } from "../clients/model";
+
 export type ClientDetailTab = "overview" | "dialogs" | "orders" | "ids" | "consent" | "audit";
 
 export const clientDetailTabs: Array<{ key: ClientDetailTab; label: string }> = [
@@ -9,56 +11,116 @@ export const clientDetailTabs: Array<{ key: ClientDetailTab; label: string }> = 
   { key: "audit", label: "Аудит" },
 ];
 
-export const salesClientDetail = {
-  name: "Елена Кузнецова",
-  initials: "ЕК",
-  cid: "CUS-4702",
-  email: "e.kuznetsova@corp.ru",
-  phone: "+7 ··· ·· 88",
-  avatarBg: "#9254de",
-  channels: [
-    { label: "MAX", color: "#6b5be0", bg: "#f2f0ff" },
-    { label: "Web", color: "#0f9b8e", bg: "#e8f7f4" },
-  ],
-  summary: [
-    { label: "Заказы", value: "3" },
-    { label: "Сумма покупок", value: "₽12 470", accent: true },
-    { label: "Диалоги", value: "4" },
-    { label: "Первый контакт", value: "28 мая 2026", compact: true },
-  ],
-  note: "Команда дизайна, 5 рабочих мест. Пользуется Foxray Team, рассматривает FirePage для лендингов. Платит по счёту, ЛПР — сама Елена.",
-  activity: [
-    { title: "Создан заказ", code: "ORD-10512", suffix: "· Foxray Team", time: "сегодня 11:05", color: "#1677ff" },
-    { title: "Оплата ₽6 500 ·", code: "ORD-10455", time: "02 июня 18:22", color: "#52c41a" },
-    { title: "Диалог закрыт · продажа Foxray Pro", time: "02 июня 14:00", color: "#722ed1" },
-    { title: "Первый контакт · канал MAX", time: "28 мая 2026", color: "#bfbfbf" },
-  ],
-  dialogs: [
-    { title: "Настройка рабочих мест · Foxray", meta: "Web Chat · ведёт Иван Петров", status: "Оператор", time: "18 мин назад", active: true },
-    { title: "Покупка Foxray Pro", meta: "MAX · закрыт · продажа", status: "Закрыт", time: "02 июня" },
-    { title: "Консультация по тарифам", meta: "MAX · закрыт", status: "Закрыт", time: "28 мая" },
-    { title: "Первичный вопрос о продукте", meta: "MAX · закрыт", status: "Закрыт", time: "28 мая" },
-  ],
-  orders: [
-    { id: "ORD-10512", date: "сегодня 11:05", product: "Foxray · Team", amount: "₽4 980", payment: "Оплачен", fulfillment: "Исполнен" },
-    { id: "ORD-10455", date: "02 июня", product: "Foxray · Pro", amount: "₽6 500", payment: "Оплачен", fulfillment: "Исполнен" },
-    { id: "ORD-10390", date: "28 мая", product: "FirePage · Pro", amount: "₽990", payment: "Оплачен", fulfillment: "Исполнен" },
-  ],
-  identities: [
-    { name: "MAX", value: "@elena.kuz", status: "основной · подтверждён", color: "#6b5be0", bg: "#f2f0ff", ok: true },
-    { name: "Web Chat", value: "session 9f2a···", status: "активна", color: "#0f9b8e", bg: "#e8f7f4", ok: true },
-    { name: "Email", value: "e.kuznetsova@corp.ru", status: "подтверждён", icon: "mail" as const, ok: true },
-    { name: "Телефон", value: "+7 ··· ·· 88 · скрыт", status: "не подтверждён", icon: "phone" as const },
-  ],
-  consent: [
-    { title: "Согласие на обработку данных · получено", meta: "Канал MAX · подтверждено пользователем", time: "04 июня 2026, 14:20", ok: true },
-    { title: "Согласие на маркетинговые сообщения · получено", meta: "Канал MAX", time: "04 июня 2026, 14:20", ok: true },
-    { title: "Первичный контакт · согласие ещё не получено", meta: "Канал MAX · обработка по законному интересу", time: "28 мая 2026" },
-  ],
-  audit: [
-    { time: "сегодня 11:05", action: "Создан заказ", object: "ORD-10512", actor: "AI-агент", result: "успешно", ai: true },
-    { time: "02 июня 18:22", action: "Объединение контактов", object: "CUS-4702 ← CUS-4810", actor: "Иван Петров", result: "успешно" },
-    { time: "02 июня 14:00", action: "Изменены контактные данные", object: "email", actor: "Иван Петров", result: "успешно" },
-    { time: "28 мая 2026", action: "Контакт создан", object: "CUS-4702", actor: "система", result: "успешно", muted: true },
-  ],
+const PROVIDER_TO_CHANNEL: Record<string, ClientChannelCode> = { MAX: "MAX", TELEGRAM: "TG", WEB: "WEB" };
+const PROVIDER_LABEL: Record<string, string> = { MAX: "MAX", TELEGRAM: "Telegram", WEB: "Web Chat" };
+const PAYMENT_LABEL: Record<string, string> = { PENDING: "Ожидает", PAID: "Оплачен", CANCELLED: "Отменён", REFUNDED: "Возврат" };
+const FULFILLMENT_LABEL: Record<string, string> = { NONE: "—", PENDING: "В процессе", DELIVERED: "Исполнен", FAILED: "Ошибка" };
+
+const rub = (minor: number) => `₽${Math.round(minor / 100).toLocaleString("ru-RU")}`;
+
+export type ApiClientDetail = {
+  id: number;
+  cid: string;
+  name: string;
+  channels: ClientChannelCode[];
+  products: ClientProductCode[];
+  openDialogs: number;
+  totalDialogs: number;
+  ordersCount: number;
+  purchasesMinor: number;
+  firstContactAt: string;
+  lastActivityAt: string;
+  dialogs: Array<{ id: number; title: string; channelName: string; provider: string | null; status: string; active: boolean; lastActivityAt: string }>;
+  identities: Array<{ provider: string; value: string; createdAt: string }>;
+  orders: Array<{ id: number; code: string; product: string; amountMinor: number; currency: string; paymentStatus: string; fulfillmentStatus: string; createdAt: string }>;
+  activity: Array<{ type: "created" | "closed"; title: string; at: string }>;
+  audit: Array<{ time: string; action: string; object: string; actor: string; result: string }>;
 };
+
+export type ClientDetailVm = {
+  id: number;
+  cid: string;
+  name: string;
+  initials: string;
+  avatarBg: string;
+  email: string;
+  phone: string;
+  channels: Array<{ label: string; color: string; bg: string }>;
+  products: Array<{ name: string; color: string; bg: string }>;
+  summary: Array<{ label: string; value: string; accent?: boolean; compact?: boolean }>;
+  dialogs: Array<{ id: number; title: string; meta: string; status: string; active: boolean; time: string }>;
+  identities: Array<{ name: string; value: string; status: string; color: string; bg: string; ok: boolean }>;
+  orders: Array<{ id: number; code: string; product: string; amount: string; payment: string; fulfillment: string; date: string }>;
+  activity: Array<{ title: string; time: string; color: string }>;
+  audit: Array<{ time: string; action: string; object: string; actor: string; result: string }>;
+};
+
+function formatDate(iso: string): string {
+  return new Intl.DateTimeFormat("ru-RU", { day: "2-digit", month: "long", year: "numeric" }).format(new Date(iso));
+}
+
+function formatDateTime(iso: string): string {
+  return new Intl.DateTimeFormat("ru-RU", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }).format(new Date(iso));
+}
+
+export function toClientDetailVm(api: ApiClientDetail): ClientDetailVm {
+  const isGuest = /гость/i.test(api.name);
+  return {
+    id: api.id,
+    cid: api.cid,
+    name: api.name,
+    initials: initialsOf(api.name),
+    avatarBg: isGuest ? "#8c8c8c" : avatarColor(api.cid),
+    email: isGuest ? "без контакта" : "—",
+    phone: "идентификация по каналу",
+    channels: api.channels.map((code) => ({ label: channelMap[code].label, color: channelMap[code].color, bg: channelMap[code].bg })),
+    products: api.products.map((code) => ({ name: productMap[code].name, color: productMap[code].color, bg: productMap[code].bg })),
+    summary: [
+      { label: "Заказы", value: String(api.ordersCount) },
+      { label: "Сумма покупок", value: api.purchasesMinor > 0 ? rub(api.purchasesMinor) : "—", accent: api.purchasesMinor > 0 },
+      { label: "Диалоги", value: String(api.totalDialogs) },
+      { label: "Первый контакт", value: formatDate(api.firstContactAt), compact: true },
+    ],
+    dialogs: api.dialogs.map((dialog) => ({
+      id: dialog.id,
+      title: dialog.title,
+      meta: [dialog.channelName, dialog.provider ? PROVIDER_LABEL[dialog.provider] ?? dialog.provider : null].filter(Boolean).join(" · "),
+      status: dialog.status,
+      active: dialog.active,
+      time: relativeTime(dialog.lastActivityAt).label,
+    })),
+    identities: api.identities.map((identity) => {
+      const code = PROVIDER_TO_CHANNEL[identity.provider];
+      const meta = code ? channelMap[code] : { color: "#8c8c8c", bg: "#f5f5f5" };
+      return {
+        name: PROVIDER_LABEL[identity.provider] ?? identity.provider,
+        value: identity.value,
+        status: `с ${formatDate(identity.createdAt)}`,
+        color: meta.color,
+        bg: meta.bg,
+        ok: true,
+      };
+    }),
+    orders: api.orders.map((order) => ({
+      id: order.id,
+      code: order.code,
+      product: order.product,
+      amount: rub(order.amountMinor),
+      payment: PAYMENT_LABEL[order.paymentStatus] ?? order.paymentStatus,
+      fulfillment: FULFILLMENT_LABEL[order.fulfillmentStatus] ?? order.fulfillmentStatus,
+      date: formatDateTime(order.createdAt),
+    })),
+    activity: api.activity.map((event) => ({
+      title: event.title,
+      time: formatDateTime(event.at),
+      color: event.type === "closed" ? "#722ed1" : "#1677ff",
+    })),
+    audit: api.audit.map((event) => ({
+      time: formatDateTime(event.time),
+      action: event.action,
+      object: event.object,
+      actor: event.actor,
+      result: event.result,
+    })),
+  };
+}

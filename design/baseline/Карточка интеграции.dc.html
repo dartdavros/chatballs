@@ -106,10 +106,14 @@ html,body{margin:0;padding:0;}
 
               <!-- OpenRouter: модели -->
               <sc-if value="{{ isOpenRouter }}" hint-placeholder-val="{{ true }}">
-                <div style="margin-bottom:14px;"><div style="font-size:12px;color:#8c8c8c;margin-bottom:8px;">Модель по умолчанию</div><span style="display:inline-flex;align-items:center;gap:7px;padding:5px 12px;border-radius:8px;background:#f9f0ff;border:1px solid #efdbff;font-size:12.5px;font-weight:600;color:#722ed1;font-family:'SF Mono',ui-monospace,Menlo,monospace;">gpt-4o-mini</span></div>
-                <div style="font-size:12px;color:#8c8c8c;margin-bottom:8px;">Разрешённые модели</div>
-                <div style="display:flex;flex-wrap:wrap;gap:7px;">
+                <div style="margin-bottom:14px;"><div style="font-size:12px;color:#8c8c8c;margin-bottom:8px;">Модель по умолчанию <span style="color:#bfbfbf;">· для новых агентов и черновиков</span></div><span style="display:inline-flex;align-items:center;gap:7px;padding:5px 12px;border-radius:8px;background:#f9f0ff;border:1px solid #efdbff;font-size:12.5px;font-weight:600;color:#722ed1;font-family:'SF Mono',ui-monospace,Menlo,monospace;">gpt-4o-mini</span></div>
+                <div style="font-size:12px;color:#8c8c8c;margin-bottom:8px;">Разрешённые модели <span style="color:#bfbfbf;">· доступны для выбора в агентах</span></div>
+                <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px;">
                   <sc-for list="{{ models }}" as="m" hint-placeholder-count="4"><span style="padding:4px 10px;border-radius:7px;background:#f5f5f5;font-size:12px;color:#595959;font-family:'SF Mono',ui-monospace,Menlo,monospace;">{{ m.name }}</span></sc-for>
+                </div>
+                <div style="display:flex;align-items:flex-start;gap:9px;padding:11px 13px;background:#f7f9fc;border:1px solid #e4ebf5;border-radius:9px;">
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#1677ff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                  <span style="font-size:11.5px;color:#595959;line-height:1.5;">Это инфраструктура AI-провайдера: реквизиты, разрешённые модели и лимиты провайдера. Поведение конкретного агента (модель, параметры, инструкции, знания) настраивается в <a href="Карточка AI-агента.dc.html" style="color:#1677ff;text-decoration:none;font-weight:600;">карточке AI-агента</a>.</span>
                 </div>
               </sc-if>
 
@@ -212,7 +216,7 @@ class Component extends DCLogic {
     const cfg = {
       openrouter: {
         name: 'OpenRouter', mark: 'OR', iconBg: '#f9f0ff', iconColor: '#722ed1',
-        subtitle: 'AI-провайдер · модели для агентов', st: ST.connected,
+        subtitle: 'AI-провайдер · инфраструктура моделей', st: ST.connected,
         hc: { label: 'Healthy', color: '#389e0d', dot: '#52c41a' }, uptime: '99,98%', latency: '420 мс', lastCheck: '12 сек назад',
         params: [
           { label: 'Эндпоинт', value: 'api.openrouter.ai/v1', mono: true },
@@ -220,7 +224,7 @@ class Component extends DCLogic {
           { label: 'Организация', value: 'edevs-tech' },
           { label: 'Биллинг', value: 'prepaid · ₽12 400 остаток' },
         ],
-        specialTitle: 'Модели и лимиты', isOpenRouter: true, isTochka: false, isChannel: false,
+        specialTitle: 'Модели и лимиты провайдера', isOpenRouter: true, isTochka: false, isChannel: false,
         models: [{ name: 'gpt-4o-mini' }, { name: 'gpt-4o' }, { name: 'claude-3.5-sonnet' }, { name: 'claude-3.5-haiku' }, { name: 'llama-3.1-70b' }, { name: 'mistral-large' }],
         secretNote: 'API-ключ хранится в зашифрованном виде и не отображается.', secretMask: 'sk-or-····················f2a1', secretAge: '32 дня',
         hasErrors: false, noErrors: true, errors: [],

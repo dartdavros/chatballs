@@ -20,10 +20,6 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"], baseURL: "http://localhost:5173" },
     },
     {
-      name: "checkout",
-      use: { ...devices["Desktop Chrome"], baseURL: "http://localhost:5174" },
-    },
-    {
       name: "web-chat-mobile",
       use: { ...devices["Pixel 7"], baseURL: "http://localhost:5175" },
     },

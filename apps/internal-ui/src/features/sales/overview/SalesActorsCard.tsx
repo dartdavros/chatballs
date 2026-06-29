@@ -4,8 +4,8 @@ export function SalesActorsCard({ vm }: { vm: SalesOverviewVm }) {
   return (
     <section className="sales-panel-card sales-actors-card">
       <h3>AI и операторы</h3>
-      <SalesActor title="AI-агент" tone="ai" values={[["Диалоги", "35"], ["Продажи", vm.aiSales], ["Конверсия", "13,2%"], ["Стоимость", vm.res.aiCost]]} />
-      <SalesActor title="Операторы" tone="operator" values={[["Диалоги", "7"], ["Продажи", vm.opSales], ["Конверсия", "41%"], ["Передано AI→", "4"]]} />
+      <SalesActor title="AI-агент" tone="ai" values={[["Диалоги", vm.actors.aiDialogs], ["Стоимость", vm.actors.aiCost], ["Продажи", "—"], ["Конверсия", "—"]]} />
+      <SalesActor title="Операторы" tone="operator" values={[["Диалоги", vm.actors.operatorDialogs], ["Ожидают", vm.actors.waiting], ["Продажи", "—"], ["Конверсия", "—"]]} />
     </section>
   );
 }

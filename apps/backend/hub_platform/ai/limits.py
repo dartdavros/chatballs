@@ -14,17 +14,17 @@ def _day_start():
     return now.replace(hour=0, minute=0, second=0, microsecond=0)
 
 
-def daily_cost_micros(product=None) -> int:
+def daily_cost_micros(channel=None) -> int:
     queryset = LlmInvocation.objects.filter(created_at__gte=_day_start(), status=LlmInvocationStatus.SUCCESS)
-    if product is not None:
-        queryset = queryset.filter(product=product)
+    if channel is not None:
+        queryset = queryset.filter(channel=channel)
     return queryset.aggregate(total=Sum("cost_micros"))["total"] or 0
 
 
-def assert_within_limits(product, agent) -> None:
+def assert_within_limits(channel, agent) -> None:
     global_limit = settings.HUB_AI_GLOBAL_DAILY_COST_LIMIT_MICROS
     if global_limit and daily_cost_micros() >= global_limit:
         raise LimitExceeded("Global daily AI cost limit reached")
-    product_limit = (agent.limits or {}).get("dailyCostMicros")
-    if product_limit and daily_cost_micros(product) >= product_limit:
-        raise LimitExceeded("Product daily AI cost limit reached")
+    channel_limit = (agent.limits or {}).get("dailyCostMicros")
+    if channel_limit and daily_cost_micros(channel) >= channel_limit:
+        raise LimitExceeded("Channel daily AI cost limit reached")

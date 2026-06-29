@@ -1,13 +1,12 @@
 import type { Product, ProductOffer } from "../../../types";
 
-export type ProductTab = "overview" | "offers" | "knowledge" | "channels" | "fulfillment";
+export type ProductTab = "overview" | "offers" | "channels" | "fulfillment";
 
 export const productTabs: Array<{ key: ProductTab; label: string }> = [
   { key: "overview", label: "Обзор" },
-  { key: "offers", label: "Offer и цены" },
-  { key: "knowledge", label: "База знаний" },
+  { key: "offers", label: "Предложения и цены" },
   { key: "channels", label: "Каналы" },
-  { key: "fulfillment", label: "Исполнение" },
+  { key: "fulfillment", label: "Доступ продукта" },
 ];
 
 export function productKind(product: Product) {

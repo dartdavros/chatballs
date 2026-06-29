@@ -3,7 +3,7 @@ import type { MouseEvent } from "react";
 import { Icon } from "../../../shared/icons";
 import type { SalesClientRowVm } from "./model";
 
-export function SalesClientRow({ client, menu, openClient, setMenu }: { client: SalesClientRowVm; menu: { id: string; left: number; top: number } | null; openClient: () => void; setMenu: (menu: { id: string; left: number; top: number } | null) => void }) {
+export function SalesClientRow({ client, menu, openClient, setMenu }: { client: SalesClientRowVm; menu: { id: string; left: number; top: number } | null; openClient: (id: number) => void; setMenu: (menu: { id: string; left: number; top: number } | null) => void }) {
   const menuOpen = menu?.id === client.cid;
   function toggleMenu(event: MouseEvent<HTMLButtonElement>) {
     if (menuOpen) {
@@ -19,7 +19,7 @@ export function SalesClientRow({ client, menu, openClient, setMenu }: { client: 
         <div className="sales-client-person">
           <div style={{ background: client.avatarBg }}>{client.initials}</div>
           <span>
-            <a href="/departments/sales/clients/CUS-4702" onClick={(event) => { event.preventDefault(); openClient(); }}>{client.name}</a>
+            <a href="#" onClick={(event) => { event.preventDefault(); openClient(client.id); }}>{client.name}</a>
             <small>{client.cid}</small>
           </span>
         </div>
@@ -48,7 +48,7 @@ export function SalesClientRow({ client, menu, openClient, setMenu }: { client: 
         <button className="row-menu-button" type="button" aria-label="Действия клиента" onClick={toggleMenu}><Icon name="more" /></button>
         {menuOpen && (
           <div className="row-menu sales-client-row-menu" style={{ left: menu.left, position: "fixed", right: "auto", top: menu.top }}>
-            <a href="/departments/sales/clients/CUS-4702" onClick={(event) => { event.preventDefault(); setMenu(null); openClient(); }}><Icon name="external" size={15} />Открыть клиента</a>
+            <a href="#" onClick={(event) => { event.preventDefault(); setMenu(null); openClient(client.id); }}><Icon name="external" size={15} />Открыть клиента</a>
             <a href="#" onClick={(event) => event.preventDefault()}><Icon name="list" size={15} />Объединить контакты</a>
             <span />
             <a className="danger" href="#" onClick={(event) => event.preventDefault()}><Icon name="eyeOff" size={15} />Обезличить данные</a>

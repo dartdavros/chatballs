@@ -3,11 +3,9 @@ import { useState } from "react";
 import { Icon } from "../../../shared/icons";
 import { Button } from "../../../shared/ui-controls";
 import type { RouteKey } from "../../../types";
-import type { salesClientDetail } from "./model";
+import type { ClientDetailVm } from "./model";
 
-type Client = typeof salesClientDetail;
-
-export function SalesClientHeader({ client, setRoute }: { client: Client; setRoute: (route: RouteKey) => void }) {
+export function SalesClientHeader({ client, setRoute }: { client: ClientDetailVm; setRoute: (route: RouteKey) => void }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
@@ -18,7 +16,6 @@ export function SalesClientHeader({ client, setRoute }: { client: Client; setRou
         <div className="sales-client-detail-title">
           <div className="sales-client-detail-name-row">
             <h1>{client.name}</h1>
-            <span className="sales-client-consent"><Icon name="check" size={11} />Согласие получено</span>
             <span className="sales-client-cid">{client.cid}</span>
           </div>
           <div className="sales-client-detail-meta">

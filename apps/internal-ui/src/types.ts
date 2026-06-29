@@ -1,3 +1,5 @@
+import type { AiAgent, AiRelease } from "./features/ai/model";
+
 export type Role = "OWNER" | "OPERATOR";
 export type ProductStatus = "ACTIVE" | "DISABLED";
 
@@ -84,13 +86,17 @@ export type ProductOffer = {
   primaryBoxOfferId: number | null;
   isActive: boolean;
   aiOfferable: boolean;
+  fiscalName: string;
+  accessSchema: Record<string, unknown>;
   prices: ProductPrice[];
 };
 
-export type RouteKey = "command" | "departments" | "employeeDetail" | "employees" | "productDetail" | "products" | "profile" | "salesClientDetail" | "salesClients" | "salesDialogs" | "salesOrderDetail" | "salesOrders" | "salesOverview" | "aiAgents" | "aiAgentDetail" | "aiRelease" | "aiTestChat" | "aiUsage";
+export type RouteKey = "command" | "departments" | "employeeDetail" | "employees" | "productDetail" | "products" | "profile" | "salesClientDetail" | "salesClients" | "salesDialogs" | "salesOrderDetail" | "salesOrders" | "salesOverview" | "aiAgents" | "aiAgentCreate" | "aiAgentDetail" | "aiRelease" | "aiTestChat" | "aiUsage" | "integrations";
 
 export type AppData = {
   employees: Employee[];
   departments: Department[];
   products: Product[];
+  agents: AiAgent[];
+  releases: AiRelease[];
 };

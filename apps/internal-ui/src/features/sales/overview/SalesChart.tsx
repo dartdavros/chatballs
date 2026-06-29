@@ -6,14 +6,14 @@ export function SalesChart({ vm }: { vm: SalesOverviewVm }) {
     <section className="sales-chart-card">
       <div className="sales-chart-head">
         <div>
-          <h3>Динамика продаж</h3>
+          <h3>Динамика диалогов</h3>
           <div>
             <strong>{vm.chartTotal}</strong>
-            <span><Icon name="chevron" size={13} />+8%</span>
-            <small>чистая выручка · {vm.periodLabel}</small>
+            {vm.chartDelta && <span style={{ color: vm.chartDelta.deltaColor }}><Icon name="chevron" size={13} />{vm.chartDelta.deltaText}</span>}
+            <small>новых диалогов · {vm.periodLabel}</small>
           </div>
         </div>
-        <em><span />Выручка</em>
+        <em><span />Диалоги</em>
       </div>
       <div className="sales-chart-body">
         <svg viewBox="0 0 1000 260" preserveAspectRatio="none">
@@ -29,7 +29,7 @@ export function SalesChart({ vm }: { vm: SalesOverviewVm }) {
           <circle cx={vm.last.x} cy={vm.last.y} r="4.5" fill="#1677ff" stroke="#ffffff" strokeWidth="2.5" vectorEffect="non-scaling-stroke" />
         </svg>
         <div className="sales-chart-labels">
-          {vm.xLabels.map((label) => <span key={label}>{label}</span>)}
+          {vm.xLabels.map((label, index) => <span key={index}>{label}</span>)}
         </div>
       </div>
     </section>

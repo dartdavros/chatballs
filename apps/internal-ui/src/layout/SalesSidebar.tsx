@@ -2,10 +2,10 @@ import type { RouteKey, SessionUser } from "../types";
 import { Icon } from "../shared/icons";
 import { Avatar } from "../shared/ui";
 
-export function SalesSidebar({ route, user, setRoute }: { route: RouteKey; user: SessionUser; setRoute: (route: RouteKey) => void }) {
+export function SalesSidebar({ route, user, setRoute, waitingCount = 0 }: { route: RouteKey; user: SessionUser; setRoute: (route: RouteKey) => void; waitingCount?: number }) {
   const nav = [
     { key: "salesOverview" as const, label: "Обзор", icon: "grid" as const },
-    { key: "salesDialogs" as const, label: "Диалоги", icon: "message" as const, badge: "2" },
+    { key: "salesDialogs" as const, label: "Диалоги", icon: "message" as const, badge: waitingCount > 0 ? String(waitingCount) : undefined },
     { key: "salesClients" as const, label: "Клиенты", icon: "team" as const },
     { key: "salesOrders" as const, label: "Продажи", icon: "cart" as const },
   ];

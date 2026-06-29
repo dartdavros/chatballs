@@ -59,12 +59,12 @@ html,body{margin:0;padding:0;}
         <div style="width:40px;height:40px;border-radius:10px;background:#f9f0ff;display:flex;align-items:center;justify-content:center;flex:none;"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="#722ed1" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="12" rx="2.5"/><path d="M12 8V4.5"/><circle cx="12" cy="3.5" r="1.2"/><circle cx="9" cy="13.5" r="1"/><circle cx="15" cy="13.5" r="1"/></svg></div>
         <div style="min-width:0;">
           <div style="display:flex;align-items:center;gap:10px;"><h1 style="margin:0;font-size:17px;font-weight:700;color:#1f1f1f;font-family:'SF Mono',ui-monospace,Menlo,monospace;">REL-FP-v5</h1><span style="display:inline-flex;align-items:center;gap:6px;padding:3px 11px;border-radius:14px;background:{{ st.bg }};border:1px solid {{ st.border }};font-size:11.5px;font-weight:600;color:{{ st.color }};"><span style="width:6px;height:6px;border-radius:50%;background:{{ st.dot }};"></span>{{ st.label }}</span></div>
-          <div style="font-size:12px;color:#8c8c8c;margin-top:2px;">FirePage Sales · candidate создан сегодня 11:20 · автор Иван Петров</div>
+          <div style="font-size:12px;color:#8c8c8c;margin-top:2px;">Черновик версии агента · FirePage Sales · создан сегодня 11:20 · автор Иван Петров</div>
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:9px;flex:none;">
-        <button style="display:flex;align-items:center;gap:7px;height:38px;padding:0 14px;border-radius:9px;border:1px solid #d9d9d9;background:#fff;color:#262626;font-size:13px;font-weight:500;cursor:pointer;" style-hover="border-color:#1677ff;color:#1677ff;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M8 3H3v5"/><path d="M21 3l-7 7"/><path d="M3 3l7 7"/><path d="M16 21h5v-5"/><path d="M8 21H3v-5"/><path d="M21 21l-7-7"/><path d="M3 21l7-7"/></svg>Сравнить с published</button>
-        <a href="Тестовый чат.dc.html" style="display:flex;align-items:center;gap:7px;height:38px;padding:0 14px;border-radius:9px;border:1px solid #d9d9d9;background:#fff;color:#262626;font-size:13px;font-weight:500;cursor:pointer;text-decoration:none;" style-hover="border-color:#1677ff;color:#1677ff;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Test chat</a>
+        <button style="display:flex;align-items:center;gap:7px;height:38px;padding:0 14px;border-radius:9px;border:1px solid #d9d9d9;background:#fff;color:#262626;font-size:13px;font-weight:500;cursor:pointer;" style-hover="border-color:#1677ff;color:#1677ff;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M8 3H3v5"/><path d="M21 3l-7 7"/><path d="M3 3l7 7"/><path d="M16 21h5v-5"/><path d="M8 21H3v-5"/><path d="M21 21l-7-7"/><path d="M3 21l7-7"/></svg>Сравнить с опубликованной</button>
+        <a href="Тестовый чат.dc.html" style="display:flex;align-items:center;gap:7px;height:38px;padding:0 14px;border-radius:9px;border:1px solid #d9d9d9;background:#fff;color:#262626;font-size:13px;font-weight:500;cursor:pointer;text-decoration:none;" style-hover="border-color:#1677ff;color:#1677ff;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Тест-чат</a>
         <button onClick="{{ onPublish }}" style="{{ publishBtn }}"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7Z"/></svg>{{ publishLabel }}</button>
       </div>
     </div>
@@ -84,7 +84,7 @@ html,body{margin:0;padding:0;}
 
           <!-- LEFT: Состав release -->
           <div style="display:flex;flex-direction:column;gap:16px;">
-            <h2 style="margin:0;font-size:14px;font-weight:600;color:#595959;letter-spacing:0.01em;">Состав release</h2>
+            <h2 style="margin:0;font-size:14px;font-weight:600;color:#595959;letter-spacing:0.01em;">Состав версии</h2>
 
             <!-- модель и параметры -->
             <div style="background:#fff;border:1px solid #f0f0f0;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04);padding:16px 18px;">
@@ -99,7 +99,7 @@ html,body{margin:0;padding:0;}
 
             <!-- версии prompts -->
             <div style="background:#fff;border:1px solid #f0f0f0;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04);overflow:hidden;">
-              <div style="padding:14px 18px 11px;display:flex;align-items:center;gap:9px;"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="#595959" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><polyline points="14 2 14 8 20 8"/></svg><h3 style="margin:0;font-size:14px;font-weight:700;color:#1f1f1f;">Версии prompts</h3></div>
+              <div style="padding:14px 18px 11px;display:flex;align-items:center;gap:9px;"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="#595959" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><polyline points="14 2 14 8 20 8"/></svg><h3 style="margin:0;font-size:14px;font-weight:700;color:#1f1f1f;">Версии инструкций</h3></div>
               <sc-for list="{{ prompts }}" as="p" hint-placeholder-count="4">
                 <div style="display:flex;align-items:center;gap:12px;padding:11px 18px;border-top:1px solid #f5f5f5;">
                   <div style="flex:1;min-width:0;"><span style="font-size:13px;font-weight:500;color:#262626;">{{ p.name }}</span><span style="margin-left:8px;font-size:11px;color:#bfbfbf;font-family:'SF Mono',ui-monospace,Menlo,monospace;">{{ p.ver }}</span></div>
@@ -155,7 +155,7 @@ html,body{margin:0;padding:0;}
 
             <!-- Изменения -->
             <div style="background:#fff;border:1px solid #f0f0f0;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04);overflow:hidden;">
-              <div style="padding:14px 18px 11px;"><h3 style="margin:0;font-size:14px;font-weight:700;color:#1f1f1f;">Изменения</h3><div style="font-size:11.5px;color:#bfbfbf;margin-top:2px;">Относительно REL-FP-v4 (published)</div></div>
+              <div style="padding:14px 18px 11px;"><h3 style="margin:0;font-size:14px;font-weight:700;color:#1f1f1f;">Изменения</h3><div style="font-size:11.5px;color:#bfbfbf;margin-top:2px;">Относительно REL-FP-v4 (опубликована)</div></div>
               <sc-for list="{{ changes }}" as="ch" hint-placeholder-count="3">
                 <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 18px;border-top:1px solid #f5f5f5;">
                   <span style="width:18px;height:18px;border-radius:5px;background:{{ ch.bg }};color:{{ ch.color }};font-size:13px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex:none;line-height:1;">{{ ch.sign }}</span>
@@ -179,7 +179,7 @@ html,body{margin:0;padding:0;}
             <div style="width:42px;height:42px;border-radius:11px;background:#fff7e6;display:flex;align-items:center;justify-content:center;flex:none;"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#d48806" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m21.7 18-8-14a2 2 0 0 0-3.5 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.7-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
             <div><h3 style="margin:0;font-size:17px;font-weight:700;color:#1f1f1f;">Опубликовать REL-FP-v5?</h3><div style="font-size:12.5px;color:#8c8c8c;margin-top:2px;">Атомарная публикация конфигурации FirePage Sales</div></div>
           </div>
-          <div style="background:#fffbe6;border:1px solid #ffe58f;border-radius:10px;padding:13px 15px;font-size:13px;color:#7c5a00;line-height:1.55;">Новые ответы во <b>всех активных диалогах</b> сразу будут использовать этот release. Текущий REL-FP-v4 перейдёт в архив. Действие необратимо в части уже отправленных ответов.</div>
+          <div style="background:#fffbe6;border:1px solid #ffe58f;border-radius:10px;padding:13px 15px;font-size:13px;color:#7c5a00;line-height:1.55;">Новые ответы во <b>всех активных диалогах</b> сразу будут использовать эту версию. Текущая REL-FP-v4 перейдёт в архив. Действие необратимо в части уже отправленных ответов.</div>
           <div style="display:flex;align-items:center;gap:10px;margin-top:16px;padding:11px 13px;background:#fafafa;border:1px solid #f0f0f0;border-radius:9px;">
             <div role="checkbox" onClick="{{ onToggleConfirm }}" style="{{ confirmBox }}"><sc-if value="{{ confirmChecked }}" hint-placeholder-val="{{ false }}"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></sc-if></div>
             <span onClick="{{ onToggleConfirm }}" style="font-size:12.5px;color:#262626;cursor:pointer;user-select:none;">Понимаю, что активные диалоги переключатся на новый release</span>
@@ -187,7 +187,7 @@ html,body{margin:0;padding:0;}
         </div>
         <div style="display:flex;justify-content:flex-end;gap:10px;padding:14px 24px;border-top:1px solid #f5f5f5;background:#fafbfc;">
           <button onClick="{{ onCancelPublish }}" style="height:38px;padding:0 16px;border-radius:9px;border:1px solid #d9d9d9;background:#fff;color:#595959;font-size:13px;font-weight:500;cursor:pointer;" style-hover="border-color:#bfbfbf;color:#262626;">Отмена</button>
-          <button style="{{ confirmPublishBtn }}"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7Z"/></svg>Опубликовать release</button>
+          <button style="{{ confirmPublishBtn }}"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7Z"/></svg>Опубликовать версию</button>
         </div>
       </div>
     </div>
@@ -204,11 +204,11 @@ class Component extends DCLogic {
   renderVals() {
     const S = this.props.releaseState ?? 'ready_publish';
     const st = {
-      incomplete:   { label: 'Неполный candidate', color: '#8c8c8c', bg: '#f5f5f5', border: '#e8e8e8', dot: '#bfbfbf' },
+      incomplete:   { label: 'Неполный черновик', color: '#8c8c8c', bg: '#f5f5f5', border: '#e8e8e8', dot: '#bfbfbf' },
       errors:       { label: 'Ошибки валидации', color: '#cf1322', bg: '#fff2f0', border: '#ffccc7', dot: '#ff4d4f' },
       ready_test:   { label: 'Готов к тестированию', color: '#0958d9', bg: '#e6f4ff', border: '#91caff', dot: '#1677ff' },
       ready_publish:{ label: 'Готов к публикации', color: '#389e0d', bg: '#f6ffed', border: '#b7eb8f', dot: '#52c41a' },
-      published:    { label: 'Published', color: '#389e0d', bg: '#f6ffed', border: '#b7eb8f', dot: '#52c41a' },
+      published:    { label: 'Опубликована', color: '#389e0d', bg: '#f6ffed', border: '#b7eb8f', dot: '#52c41a' },
     }[S];
 
     const ok = (color) => React.createElement('svg', { viewBox: '0 0 24 24', width: 16, height: 16, fill: 'none', stroke: color || '#52c41a', strokeWidth: 2.2, strokeLinecap: 'round', strokeLinejoin: 'round' }, React.createElement('circle', { cx: 12, cy: 12, r: 10 }), React.createElement('path', { d: 'M8 12l3 3 5-6' }));
@@ -233,12 +233,12 @@ class Component extends DCLogic {
     const checksSummary = hasErrors ? '1 ошибка' : S === 'incomplete' ? '1 предупреждение' : 'Все пройдены';
 
     const vb = hasErrors
-      ? { bg: '#fff2f0', border: '#ffccc7', titleColor: '#cf1322', title: 'Найдены ошибки валидации', note: 'Исправьте отмеченные пункты в составе release, затем перезапустите проверку.', icon: err }
+      ? { bg: '#fff2f0', border: '#ffccc7', titleColor: '#cf1322', title: 'Найдены ошибки валидации', note: 'Исправьте отмеченные пункты в составе версии, затем перезапустите проверку.', icon: err }
       : S === 'incomplete'
-        ? { bg: '#fffbe6', border: '#ffe58f', titleColor: '#d48806', title: 'Candidate неполный', note: 'Заполните обязательные разделы, чтобы перейти к проверке.', icon: warn }
+        ? { bg: '#fffbe6', border: '#ffe58f', titleColor: '#d48806', title: 'Черновик неполный', note: 'Заполните обязательные разделы, чтобы перейти к проверке.', icon: warn }
         : S === 'ready_test'
-          ? { bg: '#e6f4ff', border: '#91caff', titleColor: '#0958d9', title: 'Готов к тестированию', note: 'Проверки пройдены. Запустите test chat перед публикацией.', icon: ok('#1677ff') }
-          : { bg: '#f6ffed', border: '#b7eb8f', titleColor: '#389e0d', title: 'Готов к публикации', note: 'Все проверки пройдены, протестировано в test chat. Можно публиковать.', icon: ok() };
+          ? { bg: '#e6f4ff', border: '#91caff', titleColor: '#0958d9', title: 'Готов к тестированию', note: 'Проверки пройдены. Запустите тест-чат перед публикацией.', icon: ok('#1677ff') }
+          : { bg: '#f6ffed', border: '#b7eb8f', titleColor: '#389e0d', title: 'Готов к публикации', note: 'Все проверки пройдены, протестировано в тест-чате. Можно публиковать.', icon: ok() };
 
     const prompts = [
       { name: 'Системный prompt', ver: 'v5', changed: true, updated: 'сегодня' },
@@ -261,7 +261,7 @@ class Component extends DCLogic {
     const publishBtn = canPublish
       ? 'display:flex;align-items:center;gap:7px;height:38px;padding:0 18px;border-radius:9px;border:none;background:#1677ff;color:#fff;font-size:13.5px;font-weight:600;cursor:pointer;box-shadow:0 1px 2px rgba(22,119,255,0.3);'
       : 'display:flex;align-items:center;gap:7px;height:38px;padding:0 18px;border-radius:9px;border:none;background:#f0f0f0;color:#bfbfbf;font-size:13.5px;font-weight:600;cursor:not-allowed;';
-    const publishLabel = S === 'published' ? 'Опубликован' : 'Опубликовать';
+    const publishLabel = S === 'published' ? 'Опубликована' : 'Опубликовать';
 
     const confirmChecked = this.state.confirmChecked;
     const confirmBox = confirmChecked

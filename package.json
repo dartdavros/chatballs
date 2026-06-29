@@ -5,7 +5,6 @@
   "packageManager": "npm@10.0.0",
   "workspaces": [
     "apps/internal-ui",
-    "apps/checkout",
     "apps/web-chat",
     "packages/ui",
     "packages/contracts",
@@ -13,7 +12,6 @@
   ],
   "scripts": {
     "dev:internal-ui": "npm --workspace @edevs/internal-ui run dev",
-    "dev:checkout": "npm --workspace @edevs/checkout run dev",
     "dev:web-chat": "npm --workspace @edevs/web-chat run dev",
     "build": "npm run build --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",

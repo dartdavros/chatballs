@@ -18,9 +18,9 @@ export function OrderSubscriptionTab({ order }: { order: OrderDetail }) {
         <div><span>Следующее списание</span><strong>{order.subscription.next}</strong></div>
         <div><span>Доступ</span><strong>{order.subscription.entitlement}</strong></div>
       </div>
-      <div className="order-detail-danger-actions">
-        <Button variant="danger-outline">Возврат подписки</Button>
-        <Button variant="danger-outline">Отменить подписку</Button>
+      <div className="order-detail-section-actions">
+        <Button variant="action" icon="refresh" iconSize={14}>Сверка</Button>
+        <Button variant="action" icon="external" iconSize={14}>Открыть в продукте</Button>
       </div>
     </OrderDetailCard>
   );
