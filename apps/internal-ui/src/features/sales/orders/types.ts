@@ -22,17 +22,6 @@ export type SalesOrder = {
   search: string;
 };
 
-export type SalesSubscription = {
-  id: string;
-  client: string;
-  offer: string;
-  status: StatusBadge;
-  period: string;
-  next: string;
-  entitlement: string;
-  search: string;
-};
-
 export type SalesPayment = {
   id: string;
   order: string;
@@ -42,17 +31,6 @@ export type SalesPayment = {
   method: string;
   date: string;
   reconcile: { color: string; label: string };
-  search: string;
-};
-
-export type SalesRefund = {
-  id: string;
-  reference: string;
-  amount: string;
-  reason: string;
-  status: StatusBadge;
-  actor: string;
-  date: string;
   search: string;
 };
 
