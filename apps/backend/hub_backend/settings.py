@@ -175,7 +175,11 @@ STORAGES = {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
     },
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        # В тестах manifest-хранилище требует прогнанного collectstatic,
+        # поэтому используем обычное хранилище без манифеста.
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"
+        if TESTING
+        else "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
