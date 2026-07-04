@@ -47,11 +47,12 @@ services:
           "CMD",
           "python",
           "-c",
-          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health/live/', timeout=3)",
+          "import os, urllib.request; req = urllib.request.Request('http://127.0.0.1:8000/api/v1/health/live/', headers={'Host': os.environ.get('HUB_HEALTHCHECK_HOST', 'hub.edevs.tech'), 'X-Forwarded-Proto': 'https'}); urllib.request.urlopen(req, timeout=3)",
         ]
       interval: 10s
       timeout: 5s
       retries: 10
+      start_period: 20s
 
   worker:
     image: ${HUB_BACKEND_IMAGE:?HUB_BACKEND_IMAGE is required}
