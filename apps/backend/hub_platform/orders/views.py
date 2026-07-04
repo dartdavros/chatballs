@@ -1,16 +1,25 @@
 from django.core.exceptions import ValidationError
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from hub_platform.api.permissions import IsOwner
-from hub_platform.conversations.models import Contact
+from hub_platform.conversations.models import Contact, Conversation
 from hub_platform.identity.audit import record_audit_event
 from hub_platform.orders.models import Order
 from hub_platform.orders.selectors import order_for_organization, orders_for_organization
 from hub_platform.orders.serializers import order_payload
-from hub_platform.orders.services import OrderItemInput, cancel_order, create_order, mark_paid, set_fulfillment
+from hub_platform.orders.services import (
+    IngestItemInput,
+    OrderItemInput,
+    cancel_order,
+    create_order,
+    ingest_order,
+    mark_paid,
+    resolve_product_by_token,
+    set_fulfillment,
+)
 
 
 def _validation_error(error: ValidationError) -> Response:
@@ -69,6 +78,62 @@ class OrderListCreateView(_Base):
         self._audit(request, "created", order)
         order = order_for_organization(organization_id=org.id, order_id=order.id)
         return Response({"order": order_payload(order, with_items=True)}, status=201)
+
+
+class OrderIngestView(APIView):
+    # Вебхук бэкенда продукта (ADR-HUB-0018). Аутентификация — токеном продукта,
+    # без пользовательской сессии. Идемпотентно по externalId.
+    permission_classes = [AllowAny]
+
+    def post(self, request: Request) -> Response:
+        token = request.headers.get("X-Product-Token", "")
+        product = resolve_product_by_token(token)
+        if product is None:
+            return Response({"detail": "Invalid product token"}, status=401)
+
+        raw_items = request.data.get("items")
+        if not isinstance(raw_items, list) or not raw_items:
+            return Response({"detail": "items must be a non-empty list"}, status=400)
+        try:
+            items = [IngestItemInput(offer_code=str(item["offerCode"]), quantity=int(item.get("quantity", 1))) for item in raw_items]
+        except (KeyError, TypeError, ValueError):
+            return Response({"detail": "Each item needs offerCode"}, status=400)
+
+        conversation = None
+        conversation_id = request.data.get("conversationId")
+        if conversation_id is not None:
+            conversation = Conversation.objects.filter(id=conversation_id, organization=product.organization).first()
+            if conversation is None:
+                return Response({"detail": "Conversation not found"}, status=400)
+
+        amount_raw = request.data.get("amountMinor")
+        try:
+            amount_minor = int(amount_raw) if amount_raw is not None else None
+        except (TypeError, ValueError):
+            return Response({"detail": "amountMinor must be an integer"}, status=400)
+
+        try:
+            order, created = ingest_order(
+                product=product,
+                external_id=str(request.data.get("externalId", "")).strip(),
+                items=items,
+                payment_status=str(request.data.get("paymentStatus", "PAID")),
+                currency=str(request.data.get("currency", "RUB")),
+                amount_minor=amount_minor,
+                conversation=conversation,
+                contact_name=str(request.data.get("contactName", "")).strip(),
+            )
+        except ValidationError as error:
+            return _validation_error(error)
+        record_audit_event(
+            action="orders.ingested" if created else "orders.ingest_duplicate",
+            actor=None,
+            organization=product.organization,
+            object_type="Order",
+            object_id=str(order.id),
+            request=request,
+        )
+        return Response({"order": order_payload(order, with_items=True)}, status=201 if created else 200)
 
 
 class OrderDetailView(_Base):

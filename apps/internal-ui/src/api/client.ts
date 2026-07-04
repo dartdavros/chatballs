@@ -1,4 +1,12 @@
-const API_BASE = "http://localhost:8010";
+const configuredApiBase = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/+$/, "");
+
+function resolveApiUrl(path: string): string {
+  if (!configuredApiBase) return path;
+  if (configuredApiBase.endsWith("/api/v1") && path.startsWith("/api/v1/")) {
+    return `${configuredApiBase}${path.slice("/api/v1".length)}`;
+  }
+  return `${configuredApiBase}${path}`;
+}
 
 function getCookie(name: string): string {
   const cookie = document.cookie
@@ -15,7 +23,7 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
     headers.set("Content-Type", "application/json");
     headers.set("X-CSRFToken", getCookie("csrftoken"));
   }
-  const response = await fetch(`${API_BASE}${path}`, {
+  const response = await fetch(resolveApiUrl(path), {
     ...init,
     credentials: "include",
     headers,

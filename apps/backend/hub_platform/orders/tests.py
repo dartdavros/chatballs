@@ -86,3 +86,43 @@ class OrderApiTests(OrdersTestBase):
 
         response = self.client.get(f"/api/v1/orders/{order.id}/")
         self.assertEqual(response.status_code, 404)
+
+
+class OrderIngestTests(OrdersTestBase):
+    def setUp(self) -> None:
+        super().setUp()
+        from hub_platform.orders.services import hash_ingest_token
+
+        self.token = "secret-product-token"
+        product = Product.objects.get(code="firepage")
+        product.ingest_token_hash = hash_ingest_token(self.token)
+        product.save(update_fields=["ingest_token_hash"])
+        # Вебхук без сессии.
+        self.webhook = APIClient()
+
+    def _post(self, body: dict, token: str | None = "secret-product-token"):
+        headers = {"HTTP_X_PRODUCT_TOKEN": token} if token is not None else {}
+        return self.webhook.post("/api/v1/orders/ingest/", data=json.dumps(body), content_type="application/json", **headers)
+
+    def test_ingest_creates_paid_order(self) -> None:
+        response = self._post({"externalId": "fp-1001", "paymentStatus": "PAID", "contactName": "Гость", "items": [{"offerCode": "box"}]})
+        self.assertEqual(response.status_code, 201)
+        order = Order.objects.get(source="firepage", external_id="fp-1001")
+        self.assertEqual(order.payment_status, PaymentStatus.PAID)
+        self.assertEqual(order.amount_minor, 490_000)
+        self.assertIsNotNone(order.paid_at)
+
+    def test_ingest_is_idempotent(self) -> None:
+        first = self._post({"externalId": "fp-1002", "paymentStatus": "PAID", "items": [{"offerCode": "box"}]})
+        second = self._post({"externalId": "fp-1002", "paymentStatus": "PAID", "items": [{"offerCode": "box"}]})
+        self.assertEqual(first.status_code, 201)
+        self.assertEqual(second.status_code, 200)
+        self.assertEqual(Order.objects.filter(external_id="fp-1002").count(), 1)
+
+    def test_ingest_rejects_bad_token(self) -> None:
+        response = self._post({"externalId": "x", "items": [{"offerCode": "box"}]}, token="nope")
+        self.assertEqual(response.status_code, 401)
+
+    def test_ingest_requires_token(self) -> None:
+        response = self._post({"externalId": "x", "items": [{"offerCode": "box"}]}, token=None)
+        self.assertEqual(response.status_code, 401)

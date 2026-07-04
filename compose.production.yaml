@@ -1,0 +1,73 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is required}
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - ./data/redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    image: ${HUB_BACKEND_IMAGE:?HUB_BACKEND_IMAGE is required}
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    command: >
+      sh -c "gunicorn hub_backend.wsgi:application
+      --bind 0.0.0.0:8000
+      --workers $${HUB_GUNICORN_WORKERS:-3}
+      --timeout $${HUB_GUNICORN_TIMEOUT:-60}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health/live/', timeout=3)",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  worker:
+    image: ${HUB_BACKEND_IMAGE:?HUB_BACKEND_IMAGE is required}
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    command: python manage.py run_worker
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  frontend:
+    image: ${HUB_FRONTEND_IMAGE:?HUB_FRONTEND_IMAGE is required}
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${HUB_FRONTEND_HOST_PORT:-8080}:80"
+    depends_on:
+      backend:
+        condition: service_healthy

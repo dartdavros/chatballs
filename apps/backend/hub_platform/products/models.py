@@ -18,6 +18,9 @@ class Product(models.Model):
     site_url = models.URLField(blank=True)
     summary = models.CharField(max_length=500, blank=True)
     sales_description = models.TextField(blank=True)
+    # SHA-256 токена бэкенда продукта для вебхука заказов (ADR-HUB-0018). Сам токен
+    # не хранится — выдаётся один раз командой issue_product_ingest_token.
+    ingest_token_hash = models.CharField(max_length=64, blank=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

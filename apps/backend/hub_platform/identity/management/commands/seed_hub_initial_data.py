@@ -1,0 +1,241 @@
+from __future__ import annotations
+
+import os
+from dataclasses import dataclass
+from pathlib import Path
+
+from django.contrib.auth.password_validation import validate_password
+from django.core.management import call_command
+from django.core.management.base import BaseCommand, CommandError
+from django.db import transaction
+from django.utils import timezone
+
+from hub_platform.ai.content_importer import ensure_channel_system_prompts, import_ai_content
+from hub_platform.ai.seed_releases import ensure_agents_and_releases
+from hub_platform.channels.models import DEFAULT_CHANNEL_MODEL, Channel
+from hub_platform.identity.audit import record_audit_event
+from hub_platform.identity.models import (
+    Department,
+    EmployeeProfile,
+    EmployeeRole,
+    HumanUser,
+    Organization,
+)
+from hub_platform.products.models import Product, ProductDepartment
+
+STYLE = (
+    " Пиши простым текстом для мессенджера: без markdown-разметки, короткими абзацами, "
+    "на русском, по делу. Не проводи оплату и не обещай условия вне базы знаний."
+)
+
+CHANNEL_SPECS = (
+    {
+        "code": "edevs",
+        "name": "Edevs — главный сайт",
+        "product_code": None,
+        "system_prompt": "Ты — AI-ассистент компании Edevs на её главном сайте." + STYLE,
+    },
+    {
+        "code": "foxray-sales",
+        "name": "FoxRay — продажи",
+        "product_code": "foxray",
+        "system_prompt": "Ты — AI sales-ассистент продукта FoxRay для ортодонтов." + STYLE,
+    },
+    {
+        "code": "firepage-sales",
+        "name": "FirePage — продажи",
+        "product_code": "firepage",
+        "system_prompt": "Ты — AI sales-ассистент продукта FirePage: готовые нишевые сайты."
+        + STYLE,
+    },
+)
+
+PRODUCT_SPECS = (
+    {
+        "code": "firepage",
+        "name": "FirePage",
+        "site_url": "https://firepage.ru",
+        "summary": "Готовые нишевые сайты на собственной CMS с разовой лицензией.",
+    },
+    {
+        "code": "foxray",
+        "name": "FoxRay",
+        "site_url": "https://foxray.pro",
+        "summary": "Онлайн-сервис для цефалометрического анализа ТРГ.",
+    },
+)
+
+
+@dataclass(frozen=True)
+class CoreSeedResult:
+    organization: Organization
+    sales_department: Department
+    owner: HumanUser | None
+    created_owner: bool
+
+
+def _option_or_env(options: dict, option_name: str, env_name: str) -> str:
+    return str(options.get(option_name) or os.environ.get(env_name, "")).strip()
+
+
+@transaction.atomic
+def _seed_core(*, owner_email: str, owner_password: str, owner_name: str) -> CoreSeedResult:
+    organization, _ = Organization.objects.update_or_create(
+        slug="edevs",
+        defaults={"name": "ООО «ЭДЕВС»", "timezone": "Europe/Moscow", "currency": "RUB"},
+    )
+    sales_department, _ = Department.objects.update_or_create(
+        organization=organization,
+        code="sales",
+        defaults={"name": "Продажи"},
+    )
+    for spec in PRODUCT_SPECS:
+        product, _ = Product.objects.update_or_create(
+            organization=organization,
+            code=spec["code"],
+            defaults={
+                "name": spec["name"],
+                "site_url": spec["site_url"],
+                "summary": spec["summary"],
+            },
+        )
+        ProductDepartment.objects.get_or_create(product=product, department=sales_department)
+
+    owner = None
+    created_owner = False
+    existing_owner = (
+        organization.employees.filter(role=EmployeeRole.OWNER).select_related("user").first()
+    )
+    if owner_email:
+        normalized_email = HumanUser.objects.normalize_email(owner_email)
+        owner, created_owner = HumanUser.objects.get_or_create(
+            email=normalized_email,
+            defaults={"full_name": owner_name, "is_staff": True, "is_superuser": True},
+        )
+        if created_owner:
+            validate_password(owner_password, user=owner)
+            owner.set_password(owner_password)
+            owner.save(update_fields=["password"])
+        changed_fields = []
+        if owner_name and owner.full_name != owner_name:
+            owner.full_name = owner_name
+            changed_fields.append("full_name")
+        if not owner.is_staff:
+            owner.is_staff = True
+            changed_fields.append("is_staff")
+        if not owner.is_superuser:
+            owner.is_superuser = True
+            changed_fields.append("is_superuser")
+        if changed_fields:
+            owner.save(update_fields=changed_fields)
+        EmployeeProfile.objects.update_or_create(
+            user=owner,
+            defaults={
+                "organization": organization,
+                "role": EmployeeRole.OWNER,
+                "department": sales_department,
+                "totp_required": False,
+            },
+        )
+    elif existing_owner:
+        owner = existing_owner.user
+    else:
+        raise CommandError(
+            "OWNER is required for the first production seed. Set HUB_SEED_OWNER_EMAIL and "
+            "HUB_SEED_OWNER_PASSWORD, or pass --owner-email and --owner-password."
+        )
+
+    record_audit_event(
+        organization=organization,
+        actor=owner,
+        action="identity.production_seed_applied",
+        object_type="Organization",
+        object_id=str(organization.id),
+        payload={"created_owner": created_owner, "applied_at": timezone.now().isoformat()},
+    )
+    return CoreSeedResult(organization, sales_department, owner, created_owner)
+
+
+def _seed_channels(*, organization: Organization, department: Department) -> int:
+    created = 0
+    for spec in CHANNEL_SPECS:
+        product = (
+            Product.objects.get(organization=organization, code=spec["product_code"])
+            if spec["product_code"]
+            else None
+        )
+        _, was_created = Channel.objects.update_or_create(
+            organization=organization,
+            code=spec["code"],
+            defaults={
+                "name": spec["name"],
+                "department": department,
+                "product": product,
+                "model": DEFAULT_CHANNEL_MODEL,
+                "system_prompt": spec["system_prompt"],
+                "is_active": True,
+            },
+        )
+        created += int(was_created)
+    return created
+
+
+class Command(BaseCommand):
+    help = "Seed production Hub reference data, AI content and channel releases. Idempotent."
+
+    def add_arguments(self, parser) -> None:
+        parser.add_argument("--owner-email", default="")
+        parser.add_argument("--owner-password", default="")
+        parser.add_argument("--owner-name", default="")
+
+    def handle(self, *args: object, **options: object) -> None:
+        owner_email = _option_or_env(options, "owner_email", "HUB_SEED_OWNER_EMAIL")
+        owner_password = _option_or_env(options, "owner_password", "HUB_SEED_OWNER_PASSWORD")
+        owner_name = _option_or_env(options, "owner_name", "HUB_SEED_OWNER_NAME")
+        if (
+            owner_email
+            and not owner_password
+            and not Organization.objects.filter(employees__role=EmployeeRole.OWNER).exists()
+        ):
+            raise CommandError("HUB_SEED_OWNER_PASSWORD is required when creating the first OWNER.")
+
+        core = _seed_core(
+            owner_email=owner_email, owner_password=owner_password, owner_name=owner_name
+        )
+        call_command("seed_catalog", verbosity=0)
+        channels_created = _seed_channels(
+            organization=core.organization, department=core.sales_department
+        )
+        content_result = import_ai_content(
+            base_dir=Path(__file__).resolve().parents[6],
+            organization=core.organization,
+            author=core.owner,
+        )
+        content_result = content_result.add(
+            ensure_channel_system_prompts(organization=core.organization, author=core.owner)
+        )
+        agents_created, releases_created = ensure_agents_and_releases(
+            organization=core.organization, author=core.owner
+        )
+
+        owner_state = "created" if core.created_owner else "ready"
+        prompt_stats = (
+            f"{content_result.prompts_created}/{content_result.prompt_versions_created} versions"
+        )
+        knowledge_stats = (
+            f"{content_result.knowledge_created}/"
+            f"{content_result.knowledge_versions_created} versions"
+        )
+        self.stdout.write(
+            self.style.SUCCESS(
+                "initial data seeded: "
+                f"owner={owner_state}, "
+                f"channels +{channels_created}, "
+                f"agents +{agents_created}, "
+                f"releases +{releases_created}, "
+                f"prompts +{prompt_stats}, "
+                f"knowledge +{knowledge_stats}, "
+                f"fragments +{content_result.fragments_created}, "
+                f"skipped {content_result.skipped_sections}"
+            )
+        )

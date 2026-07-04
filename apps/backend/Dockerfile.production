@@ -1,0 +1,24 @@
+FROM python:3.12-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
+
+WORKDIR /app
+
+RUN addgroup --system hub && adduser --system --ingroup hub hub
+
+COPY apps/backend/requirements.txt /app/apps/backend/requirements.txt
+RUN pip install --no-cache-dir -r /app/apps/backend/requirements.txt
+
+COPY apps/backend /app/apps/backend
+COPY content /app/content
+
+RUN chown -R hub:hub /app
+
+WORKDIR /app/apps/backend
+
+USER hub
+EXPOSE 8000
+
+CMD ["gunicorn", "hub_backend.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "60"]

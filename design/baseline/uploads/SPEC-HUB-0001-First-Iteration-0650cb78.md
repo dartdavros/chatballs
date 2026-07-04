@@ -59,7 +59,6 @@
 ```text
 hub.edevs.tech
 pay.hub.edevs.tech
-chat.hub.edevs.tech
 ```
 
 Локальная разработка предшествует серверному развёртыванию.

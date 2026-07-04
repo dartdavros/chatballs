@@ -26,8 +26,8 @@ export function App() {
   const [selectedAgentId, setSelectedAgentId] = useState<number | null>(initialRoute.agentId);
   const [selectedReleaseId, setSelectedReleaseId] = useState<number | null>(initialRoute.releaseId);
   const [selectedConversationId, setSelectedConversationId] = useState<number | null>(null);
-  const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
-  const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
+  const [selectedClientId, setSelectedClientId] = useState<number | null>(initialRoute.clientId);
+  const [selectedOrderId, setSelectedOrderId] = useState<number | null>(initialRoute.orderId);
   const [data, setData] = useState<AppData>({ employees: [], departments: [], products: [], agents: [], releases: [] });
   const [dataError, setDataError] = useState(false);
 
@@ -103,6 +103,8 @@ export function App() {
       setSelectedProductCode(nextRoute.productCode);
       setSelectedAgentId(nextRoute.agentId);
       setSelectedReleaseId(nextRoute.releaseId);
+      setSelectedClientId(nextRoute.clientId);
+      setSelectedOrderId(nextRoute.orderId);
     };
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);

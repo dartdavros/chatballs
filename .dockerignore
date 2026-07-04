@@ -1,4 +1,7 @@
 .env
+.env.*
+!.env.example
+!.env.production.example
 .git
 .venv
 __pycache__
@@ -8,5 +11,7 @@ dist
 coverage
 playwright-report
 test-results
+data
+backups
 design
 docs

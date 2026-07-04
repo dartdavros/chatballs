@@ -847,7 +847,8 @@ OpenRouter в разделе интеграций отвечает за инфр
 - продукт;
 - публичный ключ виджета;
 - разрешённые домены;
-- публичный домен `chat.hub.edevs.tech`;
+- публичный путь JS-лоадера `https://hub.edevs.tech/chat-widget.js`;
+- публичный путь iframe-панели `https://hub.edevs.tech/chat/`;
 - опубликованная конфигурация;
 - preview-link;
 - session/error metrics.

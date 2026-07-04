@@ -47,7 +47,7 @@ Web Chat не отвечает за:
 
 ```html
 <script
-  src="https://chat.hub.edevs.tech/widget.js"
+  src="https://hub.edevs.tech/chat-widget.js"
   data-product="firepage"
   data-widget-key="public-widget-key">
 </script>
