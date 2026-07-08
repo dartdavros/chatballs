@@ -23,53 +23,14 @@ from hub_platform.identity.models import (
 )
 from hub_platform.products.models import Product, ProductDepartment
 
-STYLE = (
-    " Пиши простым текстом для мессенджера: без markdown-разметки, короткими абзацами, "
-    "на русском, по делу. Не проводи оплату и не обещай условия вне базы знаний."
-)
-
-CHANNEL_SPECS = (
-    {
-        "code": "edevs",
-        "name": "Edevs — главный сайт",
-        "product_code": None,
-        "system_prompt": "Ты — AI-ассистент компании Edevs на её главном сайте." + STYLE,
-    },
-    {
-        "code": "foxray-sales",
-        "name": "FoxRay — продажи",
-        "product_code": "foxray",
-        "system_prompt": "Ты — AI sales-ассистент продукта FoxRay для ортодонтов." + STYLE,
-    },
-    {
-        "code": "firepage-sales",
-        "name": "FirePage — продажи",
-        "product_code": "firepage",
-        "system_prompt": "Ты — AI sales-ассистент продукта FirePage: готовые нишевые сайты."
-        + STYLE,
-    },
-)
-
-PRODUCT_SPECS = (
-    {
-        "code": "firepage",
-        "name": "FirePage",
-        "site_url": "https://firepage.ru",
-        "summary": "Готовые нишевые сайты на собственной CMS с разовой лицензией.",
-    },
-    {
-        "code": "foxray",
-        "name": "FoxRay",
-        "site_url": "https://foxray.pro",
-        "summary": "Онлайн-сервис для цефалометрического анализа ТРГ.",
-    },
-)
+from ._seed_specs import CHANNEL_SPECS, PRODUCT_SPECS
 
 
 @dataclass(frozen=True)
 class CoreSeedResult:
     organization: Organization
     sales_department: Department
+    support_department: Department
     owner: HumanUser | None
     created_owner: bool
 
@@ -88,6 +49,12 @@ def _seed_core(*, owner_email: str, owner_password: str, owner_name: str) -> Cor
         organization=organization,
         code="sales",
         defaults={"name": "Продажи"},
+    )
+    # Отдел поддержки (SPEC-HUB-0010 §4.1): authenticated in-product чат.
+    support_department, _ = Department.objects.update_or_create(
+        organization=organization,
+        code="support",
+        defaults={"name": "Поддержка"},
     )
     for spec in PRODUCT_SPECS:
         product, _ = Product.objects.update_or_create(
@@ -153,10 +120,16 @@ def _seed_core(*, owner_email: str, owner_password: str, owner_name: str) -> Cor
         object_id=str(organization.id),
         payload={"created_owner": created_owner, "applied_at": timezone.now().isoformat()},
     )
-    return CoreSeedResult(organization, sales_department, owner, created_owner)
+    return CoreSeedResult(
+        organization=organization,
+        sales_department=sales_department,
+        support_department=support_department,
+        owner=owner,
+        created_owner=created_owner,
+    )
 
 
-def _seed_channels(*, organization: Organization, department: Department) -> int:
+def _seed_channels(*, organization: Organization) -> int:
     created = 0
     for spec in CHANNEL_SPECS:
         product = (
@@ -164,6 +137,15 @@ def _seed_channels(*, organization: Organization, department: Department) -> int
             if spec["product_code"]
             else None
         )
+        department = Department.objects.get(organization=organization, code=spec["department"])
+        # Дефолтные sales-флаги (аноним/lead/sales/checkout разрешены), если policy не задан.
+        policy = spec["policy"] or {
+            "requires_authenticated_product_identity": False,
+            "allow_anonymous_sessions": True,
+            "allow_self_reported_contact": True,
+            "allow_sales_attribution": True,
+            "allow_checkout_actions": True,
+        }
         _, was_created = Channel.objects.update_or_create(
             organization=organization,
             code=spec["code"],
@@ -174,6 +156,7 @@ def _seed_channels(*, organization: Organization, department: Department) -> int
                 "model": DEFAULT_CHANNEL_MODEL,
                 "system_prompt": spec["system_prompt"],
                 "is_active": True,
+                **policy,
             },
         )
         created += int(was_created)
@@ -203,9 +186,10 @@ class Command(BaseCommand):
             owner_email=owner_email, owner_password=owner_password, owner_name=owner_name
         )
         call_command("seed_catalog", verbosity=0)
-        channels_created = _seed_channels(
-            organization=core.organization, department=core.sales_department
-        )
+        channels_created = _seed_channels(organization=core.organization)
+        from hub_platform.support.seed_support import seed_support_reference
+
+        support_stats = seed_support_reference(organization=core.organization)
         content_result = import_ai_content(
             base_dir=Path(__file__).resolve().parents[6],
             organization=core.organization,
@@ -231,6 +215,7 @@ class Command(BaseCommand):
                 "initial data seeded: "
                 f"owner={owner_state}, "
                 f"channels +{channels_created}, "
+                f"support {support_stats}, "
                 f"agents +{agents_created}, "
                 f"releases +{releases_created}, "
                 f"prompts +{prompt_stats}, "

@@ -36,7 +36,11 @@ class BootstrapOwnerTests(TestCase):
 
         self.assertTrue(result.created_owner)
         self.assertEqual(Organization.objects.get().slug, "edevs")
-        self.assertEqual(Department.objects.get().code, "sales")
+        # Seed создаёт отделы продаж и поддержки (SPEC-HUB-0010 §4.1).
+        self.assertEqual(
+            set(Department.objects.values_list("code", flat=True)), {"sales", "support"}
+        )
+        self.assertEqual(result.support_department.code, "support")
         self.assertEqual(set(Product.objects.values_list("code", flat=True)), {"firepage", "foxray"})
         self.assertEqual(result.owner.employee_profile.role, EmployeeRole.OWNER)
         # TOTP выключен по умолчанию (намеренно, локальная разработка).
@@ -518,7 +522,10 @@ class CompanyEndpointTests(TestCase):
 
         self.assertEqual(departments_response.status_code, 200)
         self.assertEqual(products_response.status_code, 200)
-        self.assertEqual(departments_response.json()["items"][0]["code"], "sales")
+        self.assertEqual(
+            set(d["code"] for d in departments_response.json()["items"]),
+            {"sales", "support"},
+        )
         self.assertEqual(
             set(product["code"] for product in products_response.json()["items"]),
             {"firepage", "foxray"},

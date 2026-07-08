@@ -17,6 +17,7 @@ from hub_platform.products.models import Product, ProductDepartment
 class BootstrapResult:
     organization: Organization
     sales_department: Department
+    support_department: Department
     owner: HumanUser
     created_owner: bool
 
@@ -35,6 +36,13 @@ def bootstrap_edevs_owner(*, email: str, password: str, full_name: str = "") -> 
         organization=organization,
         code="sales",
         defaults={"name": "Продажи"},
+    )
+    # Отдел поддержки (ADR-HUB-0022, SPEC-HUB-0010 §4.1): authenticated in-product
+    # чат существующих клиентов продуктов. Сосуществует с sales, identity разделены.
+    support_department, _ = Department.objects.get_or_create(
+        organization=organization,
+        code="support",
+        defaults={"name": "Поддержка"},
     )
     for code, name in (("firepage", "FirePage"), ("foxray", "Foxray")):
         product, _ = Product.objects.get_or_create(organization=organization, code=code, defaults={"name": name})
@@ -104,6 +112,7 @@ def bootstrap_edevs_owner(*, email: str, password: str, full_name: str = "") -> 
     return BootstrapResult(
         organization=organization,
         sales_department=sales_department,
+        support_department=support_department,
         owner=owner,
         created_owner=created_owner,
     )
