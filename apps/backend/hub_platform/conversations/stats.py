@@ -130,14 +130,22 @@ def sales_overview_stats(organization_id: int, period: str) -> dict:
     problems = []
     for conversation in (
         open_qs.filter(expected_responder=ExpectedResponder.OPERATOR)
-        .select_related("contact", "channel", "channel__product")
+        .select_related("contact", "support_identity_snapshot", "channel", "channel__product")
         .order_by("last_activity_at")[:5]
     ):
         minutes = int((now - conversation.last_activity_at).total_seconds() // 60)
         meta = conversation.channel.name
+        # Имя клиента: sales Contact.name либо display_name support-снапшота.
+        snapshot = conversation.support_identity_snapshot
+        if conversation.contact_id:
+            title = conversation.contact.name or "Гость"
+        elif snapshot is not None:
+            title = snapshot.display_name or f"client:{snapshot.subject_key[:8]}"
+        else:
+            title = "Гость"
         problems.append(
             {
-                "title": conversation.contact.name or "Гость",
+                "title": title,
                 "meta": meta,
                 "minutes": minutes,
             }

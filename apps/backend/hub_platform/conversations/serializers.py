@@ -39,6 +39,36 @@ def _history_item(conversation: Conversation) -> dict[str, object]:
     }
 
 
+def _support_identity_snapshot(conversation: Conversation) -> dict[str, object] | None:
+    snapshot = conversation.support_identity_snapshot
+    if snapshot is None:
+        return None
+    # Краткая карточка для списка диалогов; полный operator_context — в snapshot API.
+    return {
+        "id": snapshot.id,
+        "subjectKey": snapshot.subject_key,
+        "displayName": snapshot.display_name,
+        "displayEmail": snapshot.display_email,
+        "contractCode": snapshot.contract_code,
+    }
+
+
+def _conversation_history(conversation: Conversation) -> list[Conversation]:
+    # История по тому же источнику identity: для sales — по contact, для
+    # support — по snapshot (ADR-HUB-0002: цепочка прошлых обращений).
+    if conversation.support_identity_snapshot_id:
+        qs = Conversation.objects.filter(
+            support_identity_snapshot_id=conversation.support_identity_snapshot_id
+        )
+    else:
+        qs = Conversation.objects.filter(contact_id=conversation.contact_id)
+    return list(
+        qs.exclude(id=conversation.id)
+        .select_related("channel", "connection")
+        .order_by("-last_activity_at")[:10]
+    )
+
+
 def conversation_payload(conversation: Conversation, *, with_messages: bool = False) -> dict[str, object]:
     last = None if with_messages else _last_message(conversation)
     channel = conversation.channel
@@ -54,7 +84,14 @@ def conversation_payload(conversation: Conversation, *, with_messages: bool = Fa
             if conversation.connection_id
             else None
         ),
-        "contact": {"id": conversation.contact_id, "name": conversation.contact.name},
+        # Источник identity: sales Contact ИЛИ verified SupportIdentitySnapshot.
+        # Для support-диалогов contact=None, клиент представлен snapshot'ом.
+        "contact": (
+            {"id": conversation.contact_id, "name": conversation.contact.name}
+            if conversation.contact_id
+            else None
+        ),
+        "supportIdentitySnapshot": _support_identity_snapshot(conversation),
         "lifecycle": conversation.lifecycle,
         "controlMode": conversation.control_mode,
         "expectedResponder": conversation.expected_responder,
@@ -64,12 +101,7 @@ def conversation_payload(conversation: Conversation, *, with_messages: bool = Fa
     }
     if with_messages:
         payload["messages"] = [message_payload(m) for m in conversation.messages.order_by("created_at")]
-        history = (
-            Conversation.objects.filter(contact_id=conversation.contact_id)
-            .exclude(id=conversation.id)
-            .select_related("channel", "connection")
-            .order_by("-last_activity_at")[:10]
-        )
+        history = _conversation_history(conversation)
         payload["history"] = [_history_item(c) for c in history]
     else:
         payload["lastMessage"] = message_payload(last) if last else None

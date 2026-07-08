@@ -54,7 +54,17 @@ class Conversation(models.Model):
     organization = models.ForeignKey("identity.Organization", on_delete=models.PROTECT, related_name="conversations")
     channel = models.ForeignKey("channels.Channel", on_delete=models.PROTECT, related_name="conversations")
     connection = models.ForeignKey("integrations.Integration", on_delete=models.PROTECT, related_name="conversations", null=True, blank=True)
-    contact = models.ForeignKey(Contact, on_delete=models.PROTECT, related_name="conversations")
+    # Источник identity диалога: sales Contact (лид/аноним) ИЛИ verified
+    # SupportIdentitySnapshot (authenticated клиент продукта). ADR-HUB-0022:
+    # sales-identity и support-identity разделены, ровно один источник на диалог.
+    contact = models.ForeignKey(Contact, on_delete=models.PROTECT, related_name="conversations", null=True, blank=True)
+    support_identity_snapshot = models.ForeignKey(
+        "support.SupportIdentitySnapshot",
+        on_delete=models.PROTECT,
+        related_name="conversations",
+        null=True,
+        blank=True,
+    )
     # Внешний идентификатор чата (для отправки ответа в канал).
     external_chat_id = models.CharField(max_length=128, blank=True)
     lifecycle = models.CharField(max_length=16, choices=LifecycleState.choices, default=LifecycleState.OPEN)
@@ -68,6 +78,16 @@ class Conversation(models.Model):
     class Meta:
         ordering = ["-last_activity_at"]
         indexes = [models.Index(fields=["channel", "lifecycle"])]
+        constraints = [
+            # Ровно один источник identity: sales Contact XOR SupportIdentitySnapshot.
+            models.CheckConstraint(
+                condition=(
+                    models.Q(contact__isnull=True, support_identity_snapshot__isnull=False)
+                    | models.Q(contact__isnull=False, support_identity_snapshot__isnull=True)
+                ),
+                name="conversation_exactly_one_identity",
+            ),
+        ]
 
     def __str__(self) -> str:
         return f"conv:{self.id}/{self.lifecycle}/{self.control_mode}"
