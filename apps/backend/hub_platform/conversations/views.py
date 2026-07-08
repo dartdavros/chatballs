@@ -4,10 +4,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from hub_platform.conversations.clients import client_detail, clients_overview
-from hub_platform.conversations.models import Contact, Conversation, ControlMode
-from hub_platform.conversations.selectors import conversation_for_organization, conversations_for_organization
+from hub_platform.conversations.models import Contact, ControlMode, Conversation
+from hub_platform.conversations.selectors import (
+    conversation_for_organization,
+    conversations_for_organization,
+)
 from hub_platform.conversations.serializers import conversation_payload, message_payload
-from hub_platform.conversations.stats import sales_overview_stats
 from hub_platform.conversations.services import (
     ClaimError,
     claim_conversation,
@@ -16,8 +18,9 @@ from hub_platform.conversations.services import (
     release_to_ai,
     return_to_queue,
 )
+from hub_platform.conversations.stats import sales_overview_stats
 from hub_platform.identity.audit import record_audit_event
-from hub_platform.identity.permissions import is_owner
+from hub_platform.identity.permissions import _operator_department_code, is_operator, is_owner
 
 
 class _Base(APIView):
@@ -43,6 +46,16 @@ class _Base(APIView):
 class ConversationListView(_Base):
     def get(self, request: Request) -> Response:
         items = conversations_for_organization(self._org(request).id)
+        # Department-scoped inbox (SPEC-HUB-0010 §8.1/§10): OPERATOR видит только
+        # каналы своего отдела (sales ИЛИ support); OWNER — все. Явный выбор отдела
+        # через ?department= (для оператора с доступом к обоим — TODO §8.1).
+        department = request.query_params.get("department")
+        if department in ("sales", "support"):
+            items = items.filter(channel__department__code=department)
+        elif is_operator(request.user) and not is_owner(request.user):
+            dept = _operator_department_code(request.user)
+            if dept:
+                items = items.filter(channel__department__code=dept)
         lifecycle = request.query_params.get("lifecycle")
         if lifecycle:
             items = items.filter(lifecycle=lifecycle)
