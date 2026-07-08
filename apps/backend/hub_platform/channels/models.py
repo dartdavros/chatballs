@@ -24,6 +24,13 @@ class Channel(models.Model):
     # на уровне канала придут в M1.2b (ADR-HUB-0007/0005).
     system_prompt = models.TextField(blank=True)
     is_active = models.BooleanField(default=True)
+    # Политика канала (SPEC-HUB-0010 §4.2). Значения по умолчанию соответствуют
+    # поведению публичных sales-каналов; support-каналы переключают флаги при seed.
+    requires_authenticated_product_identity = models.BooleanField(default=False)
+    allow_anonymous_sessions = models.BooleanField(default=True)
+    allow_self_reported_contact = models.BooleanField(default=True)
+    allow_sales_attribution = models.BooleanField(default=True)
+    allow_checkout_actions = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -4,6 +4,8 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q
 
+from hub_platform.identity.crypto import EncryptedCharField
+
 
 class ProductStatus(models.TextChoices):
     ACTIVE = "ACTIVE", "Активен"
@@ -21,6 +23,10 @@ class Product(models.Model):
     # SHA-256 токена бэкенда продукта для вебхука заказов (ADR-HUB-0018). Сам токен
     # не хранится — выдаётся один раз командой issue_product_ingest_token.
     ingest_token_hash = models.CharField(max_length=64, blank=True, db_index=True)
+    # Секрет проверки Product Support Token (ADR-HUB-0022, SPEC-HUB-0011 §4.3).
+    # HS256-секрет для подписи токена поддержки; хранится зашифрованным (Fernet),
+    # в API не отдаётся. Продукт использует его для подписи in-product support token.
+    support_token_secret = EncryptedCharField(max_length=512, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
