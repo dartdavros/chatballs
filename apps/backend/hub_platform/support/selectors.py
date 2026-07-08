@@ -24,6 +24,17 @@ def contract_for_organization(
     return contracts_for_organization(organization_id).get(id=contract_id)
 
 
+def contract_by_code(*, organization_id: int, code: str) -> ProductSupportContract | None:
+    """Контракт по code (любой статус) — для различения CONTRACT_NOT_FOUND/DISABLED."""
+    return (
+        ProductSupportContract.objects.filter(
+            organization_id=organization_id, code=code
+        )
+        .select_related("product")
+        .first()
+    )
+
+
 def active_contract_for(*, organization_id: int, code: str) -> ProductSupportContract | None:
     """Контракт, принимающий production traffic: ACTIVE или DEPRECATED (migration window)."""
     return (

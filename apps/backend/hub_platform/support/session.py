@@ -21,13 +21,14 @@ from hub_platform.conversations.models import (
 )
 from hub_platform.identity.audit import record_audit_event
 from hub_platform.identity.models import AuditResult, Organization
-from hub_platform.support import errors, jsonpath
+from hub_platform.support import errors
+from hub_platform.support.extract import extract_context, validate_schema
 from hub_platform.support.models import (
     ContractStatus,
     ProductSupportContract,
     SupportIdentitySnapshot,
 )
-from hub_platform.support.selectors import active_contract_for
+from hub_platform.support.selectors import contract_by_code
 from hub_platform.support.token import TokenClaims, claims_datetimes, verify_support_token
 
 
@@ -61,105 +62,20 @@ def verify_and_resolve(
     if claims.iss != product.code:
         raise errors.SupportSessionError(errors.CHANNEL_PRODUCT_MISMATCH)
 
-    contract = active_contract_for(organization_id=channel.organization_id, code=claims.contract)
+    contract = contract_by_code(organization_id=channel.organization_id, code=claims.contract)
     if contract is None:
         raise errors.SupportSessionError(errors.CONTRACT_NOT_FOUND)
-    if contract.status == ContractStatus.DISABLED:
+    # DRAFT и DISABLED не принимают production traffic (SPEC-HUB-0011 §3).
+    if contract.status in {ContractStatus.DRAFT, ContractStatus.DISABLED}:
         raise errors.SupportSessionError(errors.CONTRACT_DISABLED)
     if not contract.allowed_channels.filter(id=channel.id).exists():
         raise errors.SupportSessionError(errors.CONTRACT_CHANNEL_NOT_ALLOWED)
 
-    _validate_schema(claims.data, contract.schema_json)
-    extracted = _extract_context(claims.data, contract)
+    validate_schema(claims.data, contract.schema_json)
+    extracted = extract_context(claims.data, contract)
     return claims, contract, extracted
 
 
-def _validate_schema(data: dict[str, Any], schema: dict[str, Any]) -> None:
-    """Ручная проверка required-полей по schema (нет jsonschema-зависимости).
-
-    Проверяет только object.required и наличие полей; глубокая type-проверка — TODO.
-    Соответствует pattern из orders/views.py (isinstance + required).
-    """
-    if not schema:
-        return
-    required = schema.get("required") or []
-    if isinstance(required, list):
-        for field in required:
-            if field not in data:
-                raise errors.SupportSessionError(errors.PAYLOAD_SCHEMA_INVALID)
-    # Рекурсивная проверка required во вложенных object-properties.
-    properties = schema.get("properties") or {}
-    if isinstance(properties, dict):
-        for field, subschema in properties.items():
-            if not isinstance(subschema, dict):
-                continue
-            sub_required = subschema.get("required")
-            value = data.get(field)
-            if isinstance(sub_required, list) and isinstance(value, dict):
-                for sub_field in sub_required:
-                    if sub_field not in value:
-                        raise errors.SupportSessionError(errors.PAYLOAD_SCHEMA_INVALID)
-
-
-def _extract_context(data: dict[str, Any], contract: ProductSupportContract) -> dict[str, Any]:
-    """Извлекает identity/operator_cards/ai_context/search по mapping'ам контракта."""
-    identity = contract.identity_mapping_json or {}
-    subject = jsonpath.resolve_path(data, identity.get("subject", ""))
-    if not subject:
-        raise errors.SupportSessionError(errors.SUBJECT_MAPPING_EMPTY)
-
-    account = jsonpath.resolve_path(data, identity.get("account", ""))
-    display_name = jsonpath.resolve_path(data, identity.get("display_name", "")) or ""
-    display_email = jsonpath.resolve_path(data, identity.get("display_email", "")) or ""
-
-    operator_cards = _build_operator_cards(data, contract.operator_ui_json or {})
-    ai_context = _build_ai_context(data, contract.ai_context_json or {})
-    search_text = _build_search_text(data, contract.search_mapping_json or {})
-
-    return {
-        "subject_key": str(subject),
-        "account_key": str(account) if account else "",
-        "display_name": str(display_name),
-        "display_email": str(display_email),
-        "operator_context": {"operator_cards": operator_cards},
-        "ai_context": ai_context,
-        "search_text": search_text,
-    }
-
-
-def _build_operator_cards(data: dict[str, Any], ui: dict[str, Any]) -> list[dict[str, Any]]:
-    cards: list[dict[str, Any]] = []
-    for card in ui.get("operator_cards", []) or []:
-        fields = []
-        for field in card.get("fields", []) or []:
-            value = jsonpath.resolve_path(data, field.get("path", ""))
-            fields.append(
-                {
-                    "label": field.get("label", ""),
-                    "value": value,
-                    "type": field.get("type", "text"),
-                    "visibility": field.get("visibility", "operator"),
-                }
-            )
-        cards.append({"title": card.get("title", ""), "fields": fields})
-    return cards
-
-
-def _build_ai_context(data: dict[str, Any], ai: dict[str, Any]) -> dict[str, Any]:
-    allowed = ai.get("allowed_paths", []) or []
-    values: dict[str, Any] = {}
-    for path in allowed:
-        values[path] = jsonpath.resolve_path(data, path)
-    return {"allowed_paths": values}
-
-
-def _build_search_text(data: dict[str, Any], search: dict[str, Any]) -> str:
-    paths = search.get("paths", []) or []
-    parts = [str(jsonpath.resolve_path(data, p)) for p in paths]
-    return " ".join(p for p in parts if p and p != "None")
-
-
-@transaction.atomic
 def start_support_session(
     *, channel, token: str, request: HttpRequest | None = None
 ) -> dict[str, Any]:
@@ -167,6 +83,9 @@ def start_support_session(
 
     При любой ошибке проверки пишет audit (DENIED) с машинным кодом и хэшем jti,
     затем поднимает SupportSessionError. Raw token не попадает в audit.
+
+    Audit-deny пишется вне write-транзакции: иначе откат при raise уничтожил бы
+    запись. Успешный путь (snapshot + conversation + audit-success) атомарен.
     """
     organization: Organization = channel.organization
     try:
@@ -178,6 +97,16 @@ def start_support_session(
         )
         raise
 
+    return _commit_session(
+        organization=organization, channel=channel, contract=contract,
+        claims=claims, extracted=extracted, request=request,
+    )
+
+
+@transaction.atomic
+def _commit_session(
+    *, organization, channel, contract, claims, extracted, request
+) -> dict[str, Any]:
     issued_at, expires_at = claims_datetimes(claims)
     snapshot = _upsert_snapshot(
         organization=organization,

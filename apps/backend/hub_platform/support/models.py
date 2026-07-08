@@ -41,7 +41,9 @@ class ProductSupportContract(models.Model):
         on_delete=models.PROTECT,
         related_name="support_contracts",
     )
-    code = models.SlugField(max_length=64)
+    # Формат <product_code>.support.v<major> содержит точки, поэтому CharField,
+    # а не SlugField (SlugField не допускает '.'). Формат проверяется в clean().
+    code = models.CharField(max_length=64)
     version = models.PositiveSmallIntegerField()
     status = models.CharField(
         max_length=16,

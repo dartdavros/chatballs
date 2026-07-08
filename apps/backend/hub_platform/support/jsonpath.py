@@ -52,7 +52,7 @@ def resolve_path(data: Any, path: str) -> Any:
             current = _step(current, segment)
             if current is _MISSING:
                 return None
-    return None
+    return None if current is _MISSING else current
 
 
 def _step(current: Any, name: str) -> Any:
