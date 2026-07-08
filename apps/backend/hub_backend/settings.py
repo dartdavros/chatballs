@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     "hub_platform.webchat",
     "hub_platform.health",
     "hub_platform.events",
+    "hub_platform.support",
 ]
 
 MIDDLEWARE = [
