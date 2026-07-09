@@ -42,7 +42,7 @@ export function DepartmentsPage({ data, setRoute }: { data: AppData; setRoute: (
               </div>
               <div>
                 <span>Состав</span>
-                <strong>{sales.memberCount} сотрудник(ов) · {sales.operatorCount} операторов</strong>
+                <strong>{sales.memberCount} сотрудник(ов) · {sales.operatorCount} операторов · {sales.agentCount} AI-агент(ов)</strong>
               </div>
               <div>
                 <span>Связанные продукты</span>
@@ -82,7 +82,7 @@ export function DepartmentsPage({ data, setRoute }: { data: AppData; setRoute: (
               </div>
               <div>
                 <span>Состав</span>
-                <strong>{support.memberCount} сотрудник(ов) · {support.operatorCount} операторов</strong>
+                <strong>{support.memberCount} сотрудник(ов) · {support.operatorCount} операторов · {support.agentCount} AI-агент(ов)</strong>
               </div>
               <div>
                 <span>Связанные продукты</span>

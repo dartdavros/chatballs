@@ -48,6 +48,7 @@ export type Department = {
   memberCount: number;
   operatorCount: number;
   activeOperatorCount: number;
+  agentCount: number;
   products: Array<{ code: string; name: string }>;
 };
 
