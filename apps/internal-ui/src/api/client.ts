@@ -32,5 +32,6 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
     const payload = await response.json().catch(() => ({ detail: "Ошибка запроса" }));
     throw new Error(payload.detail ?? "Ошибка запроса");
   }
+  if (response.status === 204 || response.status === 205) return undefined as T;
   return response.json() as Promise<T>;
 }
