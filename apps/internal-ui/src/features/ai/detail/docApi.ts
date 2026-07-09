@@ -59,6 +59,21 @@ export type CreateDocInput = {
   inclusionMode?: "MANDATORY" | "RETRIEVAL";
 };
 
+export type ImportDocInput = {
+  code: string;
+  title: string;
+  category: string;
+  content: string;
+  inclusionMode?: "MANDATORY" | "RETRIEVAL";
+};
+
+export type ImportResult = {
+  created: number;
+  updated: number;
+  unchanged: number;
+  failed: Array<{ code: string; detail: string }>;
+};
+
 function slugCode(title: string): string {
   // SlugField хранит ASCII; кириллица отбрасывается → fallback на "doc".
   const slug = title
@@ -73,5 +88,12 @@ export async function createDoc(kind: DocKind, input: CreateDocInput): Promise<v
   await api(`${base(kind)}/`, {
     method: "POST",
     body: JSON.stringify({ ...input, code: slugCode(input.title) }),
+  });
+}
+
+export async function importDocs(kind: DocKind, product: string | null, documents: ImportDocInput[]): Promise<ImportResult> {
+  return api<ImportResult>(`${base(kind)}/import/`, {
+    method: "POST",
+    body: JSON.stringify({ ...(product ? { product } : {}), documents }),
   });
 }

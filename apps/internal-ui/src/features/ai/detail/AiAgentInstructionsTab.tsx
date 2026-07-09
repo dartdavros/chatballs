@@ -1,6 +1,7 @@
 import { EmptyState } from "../../../shared/ui";
 import { DocCard } from "./DocCard";
 import { DocCreateForm } from "./DocCreateForm";
+import { DocImportForm } from "./DocImportForm";
 import { promptCategoryLabel, promptCategoryOptions, type PromptDoc } from "./model";
 
 export function AiAgentInstructionsTab({ prompts, product, onChanged }: { prompts: PromptDoc[]; product: { code: string; name: string } | null; onChanged: () => void }) {
@@ -21,6 +22,7 @@ export function AiAgentInstructionsTab({ prompts, product, onChanged }: { prompt
         />
       ))}
       <DocCreateForm kind="prompts" categories={promptCategoryOptions} product={product} onCreated={onChanged} />
+      <DocImportForm kind="prompts" onImported={onChanged} />
     </div>
   );
 }

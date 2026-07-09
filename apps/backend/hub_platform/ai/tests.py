@@ -607,3 +607,75 @@ class TestChatRuntimeTests(TestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
+
+
+class DocumentImportTests(TestCase):
+    def setUp(self) -> None:
+        from hub_platform.ai.models import KnowledgeDocument, KnowledgeDocumentVersion
+        self.KnowledgeDocument = KnowledgeDocument
+        self.KnowledgeDocumentVersion = KnowledgeDocumentVersion
+        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
+        self.organization = Organization.objects.get(slug="edevs")
+        self.client = APIClient()
+        self.client.login(username="owner@edevs.tech", password="temporary-password")
+
+    def _import(self, *, product=None, documents):
+        body = {**( {"product": product} if product else {}), "documents": documents}
+        return self.client.post("/api/v1/ai/knowledge/import/", data=json.dumps(body), content_type="application/json")
+
+    def test_creates_new_documents_and_publishes(self) -> None:
+        response = self._import(documents=[{"code": "overview", "title": "Обзор", "category": "OVERVIEW", "content": "Текст обзора"}])
+
+        self.assertEqual(response.status_code, 201)
+        body = response.json()
+        self.assertEqual(body["created"], 1)
+        self.assertEqual(body["updated"], 0)
+        self.assertEqual(body["unchanged"], 0)
+        doc = self.KnowledgeDocument.objects.get(organization=self.organization, code="overview")
+        self.assertEqual(doc.title, "Обзор")
+        published = doc.versions.filter(status="PUBLISHED").first()
+        self.assertIsNotNone(published)
+        self.assertEqual(published.content, "Текст обзора")
+
+    def test_reimport_same_content_is_unchanged(self) -> None:
+        self._import(documents=[{"code": "overview", "title": "Обзор", "category": "OVERVIEW", "content": "Текст"}])
+        versions_before = self.KnowledgeDocumentVersion.objects.filter(document__code="overview").count()
+
+        response = self._import(documents=[{"code": "overview", "title": "Обзор", "category": "OVERVIEW", "content": "Текст"}])
+
+        self.assertEqual(response.json()["unchanged"], 1)
+        versions_after = self.KnowledgeDocumentVersion.objects.filter(document__code="overview").count()
+        self.assertEqual(versions_after, versions_before)
+
+    def test_changed_content_creates_new_published_version(self) -> None:
+        self._import(documents=[{"code": "overview", "title": "Обзор", "category": "OVERVIEW", "content": "v1"}])
+
+        response = self._import(documents=[{"code": "overview", "title": "Обзор", "category": "OVERVIEW", "content": "v2"}])
+
+        self.assertEqual(response.json()["updated"], 1)
+        versions = list(self.KnowledgeDocumentVersion.objects.filter(document__code="overview").order_by("version"))
+        self.assertEqual(len(versions), 2)
+        self.assertEqual(versions[-1].content, "v2")
+        self.assertEqual(versions[-1].status, "PUBLISHED")
+
+    def test_invalid_category_goes_to_failed(self) -> None:
+        response = self._import(documents=[
+            {"code": "good", "title": "Хороший", "category": "OVERVIEW", "content": "ок"},
+            {"code": "bad", "title": "Плохой", "category": "NOPE", "content": "плохо"},
+        ])
+
+        self.assertEqual(response.status_code, 201)
+        body = response.json()
+        self.assertEqual(body["created"], 1)
+        self.assertEqual(len(body["failed"]), 1)
+        self.assertEqual(body["failed"][0]["code"], "bad")
+        self.assertTrue(self.KnowledgeDocument.objects.filter(code="good").exists())
+        self.assertFalse(self.KnowledgeDocument.objects.filter(code="bad").exists())
+
+    def test_missing_product_is_reported(self) -> None:
+        response = self._import(product="ghost", documents=[{"code": "overview", "title": "Обзор", "category": "OVERVIEW", "content": "текст"}])
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json()["created"], 0)
+        self.assertEqual(len(response.json()["failed"]), 1)
+

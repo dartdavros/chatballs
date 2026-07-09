@@ -611,3 +611,21 @@
   border-color: #cf1322;
 }
 
+/* --- Doc import (YAML) --- */
+.ai-doc-import-preview,
+.ai-doc-import-summary {
+  font-size: 13px;
+  color: #262626;
+}
+.ai-doc-import-report {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ai-doc-import-failed {
+  margin: 0;
+  padding-left: 18px;
+  color: #cf1322;
+  font-size: 12px;
+}
+
