@@ -1,7 +1,7 @@
 import { Icon } from "../../../shared/icons";
 import { dailyBudget, type AiAgentDetail } from "./model";
 
-export function AiAgentOverviewTab({ agent, toggleActive }: { agent: AiAgentDetail; toggleActive: () => void }) {
+export function AiAgentOverviewTab({ agent, toggleActive, onEdit }: { agent: AiAgentDetail; toggleActive: () => void; onEdit: () => void }) {
   return (
     <div className="ai-agent-overview">
       <div className="ai-agent-overview-main">
@@ -28,7 +28,7 @@ export function AiAgentOverviewTab({ agent, toggleActive }: { agent: AiAgentDeta
         </section>
         <section className="ai-card">
           <h3>Управление</h3>
-          <button type="button" className="ai-manage-btn" disabled><Icon name="edit" size={16} />Изменить лимиты</button>
+          <button type="button" className="ai-manage-btn" onClick={onEdit}><Icon name="edit" size={16} />Изменить агента</button>
           <button type="button" className="ai-manage-btn warning" onClick={toggleActive}>
             <Icon name={agent.isActive ? "pause" : "bolt"} size={16} />
             {agent.isActive ? "Остановить агента" : "Запустить агента"}

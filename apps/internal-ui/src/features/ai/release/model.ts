@@ -64,7 +64,6 @@ export function buildChecks(release: AiReleaseFull): ReleaseCheck[] {
     { label: "Обязательные знания в индексе", tone: release.knowledgeVersions.length > 0 ? "ok" : "warn", detail: release.knowledgeVersions.length > 0 ? undefined : "нет версий знаний", icon: checkIcon(release.knowledgeVersions.length > 0 ? "ok" : "warn") },
     { label: "Инструменты сконфигурированы", tone: release.allowedTools.length > 0 ? "ok" : "warn", detail: release.allowedTools.length > 0 ? undefined : "нет разрешённых инструментов", icon: checkIcon(release.allowedTools.length > 0 ? "ok" : "warn") },
     { label: "Лимиты в допустимых границах", tone: Object.keys(release.limits).length > 0 ? "ok" : "warn", detail: Object.keys(release.limits).length > 0 ? undefined : "лимиты не заданы", icon: checkIcon(Object.keys(release.limits).length > 0 ? "ok" : "warn") },
-    { label: "Sales behavior заполнен", tone: release.promptVersions.some((item) => item.document.toLowerCase().includes("sales")) ? "ok" : "warn", detail: release.promptVersions.some((item) => item.document.toLowerCase().includes("sales")) ? undefined : "раздел пуст", icon: checkIcon(release.promptVersions.some((item) => item.document.toLowerCase().includes("sales")) ? "ok" : "warn") },
   ];
 }
 

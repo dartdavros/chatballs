@@ -37,6 +37,14 @@ describe("release publish gate", () => {
     expect(canPublishRelease(release, checks)).toBe(true);
   });
 
+  it("publishes a draft without a sales prompt (sales-behavior gate removed)", () => {
+    const release = buildRelease({ promptVersions: [{ document: "system", version: 1 }] });
+    const checks = buildChecks(release);
+
+    expect(checks.some((check) => check.label.includes("Sales"))).toBe(false);
+    expect(canPublishRelease(release, checks)).toBe(true);
+  });
+
   it("stays blocked when the release is not a draft", () => {
     const release = buildRelease({ status: "PUBLISHED" });
     expect(canPublishRelease(release, buildChecks(release))).toBe(false);

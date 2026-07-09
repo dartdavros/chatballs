@@ -570,3 +570,44 @@
   flex-direction: column;
   gap: 16px;
 }
+
+/* --- Agent edit form (tools/limits) --- */
+.ai-edit-label {
+  font-size: 13px;
+  color: #595959;
+}
+.ai-edit-checks,
+.ai-edit-limit-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 6px;
+}
+.ai-edit-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #262626;
+}
+.ai-edit-limit-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1 1 140px;
+}
+.ai-edit-limit-field span {
+  font-size: 12px;
+  color: #8c8c8c;
+}
+.ai-edit-limit-field input {
+  height: 36px;
+  border: 1px solid #d9d9d9;
+  border-radius: 9px;
+  padding: 0 10px;
+  font-size: 13px;
+}
+.ai-edit-limit-field input.invalid {
+  border-color: #cf1322;
+}
+
