@@ -17,6 +17,9 @@ COPY packages ./packages
 ARG VITE_API_BASE_URL=
 ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
 
+ARG VITE_PUBLIC_HUB_URL=
+ENV VITE_PUBLIC_HUB_URL=${VITE_PUBLIC_HUB_URL}
+
 RUN npm --workspace @edevs/internal-ui run build
 RUN npm --workspace @edevs/web-chat run build
 
