@@ -49,3 +49,11 @@ export const KIND_LABEL: Record<IntegrationKind, string> = {
 export type ChannelOption = { id: number; code: string; name: string };
 
 export const fetchChannels = () => api<{ items: ChannelOption[] }>("/api/v1/channels/").then((r) => r.items);
+
+// Публичный домен Hub для встраивания Web-виджета (SPEC-HUB-0003 §3).
+// Подставляется в src сниппета: <hub>/chat-widget.js?data-channel=<code>.
+const PUBLIC_HUB_URL = (import.meta.env.VITE_PUBLIC_HUB_URL ?? "").replace(/\/+$/, "");
+
+export function webWidgetSnippet(channelCode: string): string {
+  return `<script src="${PUBLIC_HUB_URL}/chat-widget.js" data-channel="${channelCode}" async></script>`;
+}

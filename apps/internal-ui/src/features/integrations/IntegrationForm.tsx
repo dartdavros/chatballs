@@ -2,9 +2,10 @@ import { Modal } from "antd";
 import { useEffect, useState } from "react";
 
 import { api } from "../../api/client";
+import { Icon } from "../../shared/icons";
 import { FormField, SelectField } from "../../shared/form-controls";
 import { Button } from "../../shared/ui-controls";
-import { fetchChannels, PROVIDERS, type ChannelOption, type Integration, type IntegrationProvider } from "./model";
+import { fetchChannels, PROVIDERS, webWidgetSnippet, type ChannelOption, type Integration, type IntegrationProvider } from "./model";
 
 const PROVIDER_OPTIONS: Array<[string, string]> = (Object.keys(PROVIDERS) as IntegrationProvider[]).map(
   (key) => [key, PROVIDERS[key].label],
@@ -21,9 +22,23 @@ export function IntegrationForm({ initial, onClose, onSaved }: { initial: Integr
   const [channels, setChannels] = useState<ChannelOption[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const meta = PROVIDERS[provider];
   const isMessenger = meta.kind === "MESSENGER";
+  const isWeb = provider === "WEB";
+  const widgetChannel = channels.find((item) => String(item.id) === channelId) ?? null;
+  const widgetSnippet = isWeb && widgetChannel ? webWidgetSnippet(widgetChannel.code) : "";
+
+  async function copySnippet() {
+    try {
+      await navigator.clipboard.writeText(widgetSnippet);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setCopied(false);
+    }
+  }
 
   useEffect(() => {
     if (isMessenger) fetchChannels().then(setChannels).catch(() => setChannels([]));
@@ -88,6 +103,14 @@ export function IntegrationForm({ initial, onClose, onSaved }: { initial: Integr
             onChange={setChannelId}
             options={[["", "— не привязан —"], ...channels.map((c) => [String(c.id), c.name] as [string, string])]}
           />
+        )}
+        {widgetSnippet && (
+          <div className="integration-snippet">
+            <FormField label="Код вставки на сайт" mono value={widgetSnippet} />
+            <Button variant="secondary" icon={copied ? "check" : "copy"} iconSize={15} onClick={() => void copySnippet()}>
+              {copied ? "Скопировано" : "Копировать"}
+            </Button>
+          </div>
         )}
         {error && <div className="integration-form-error">{error}</div>}
         <div className="integration-form-actions">

@@ -73,3 +73,18 @@
   gap: 10px;
   margin-top: 4px;
 }
+
+.integration-snippet {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.integration-snippet .readonly-field {
+  width: 100%;
+}
+
+.integration-snippet .form-field input.mono {
+  font-size: 12px;
+}
