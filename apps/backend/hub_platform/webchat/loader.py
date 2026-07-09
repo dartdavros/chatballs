@@ -1,9 +1,15 @@
 # Публичный JS-лоадер виджета (SPEC-HUB-0003 §3, SPEC-HUB-0010 §7.1). Подключается
 # одним тегом:
-#   sales:    <script src=".../chat-widget.js" data-channel="edevs" async></script>
+#   sales:    <script src="https://hub.edevs.tech/chat-widget.js" data-channel="edevs" async></script>
 #   support:  <script src=".../chat-widget.js" data-channel="foxray-support"
 #                        data-mode="support" data-support-token="<token>" async></script>
 # Лоадер рисует launcher и открывает панель в изолированном iframe (/chat/).
+#
+# TODO (SPEC-HUB-0010 §7.3, security): для production настроить CSP
+# `frame-ancestors` для /chat/ (раздаётся vite/nginx, не Django — настраивается в
+# infra/deploy), разрешив домены продуктов Edevs (foxray.pro, firepage.ru и т.д.).
+# Только origin недостаточен — support-виджет дополнительно проверяется signed
+# Product Support Token. Домены — у владельца.
 
 LOADER_JS = r"""
 (function () {
