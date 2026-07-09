@@ -39,18 +39,25 @@ def _history_item(conversation: Conversation) -> dict[str, object]:
     }
 
 
-def _support_identity_snapshot(conversation: Conversation) -> dict[str, object] | None:
+def _support_identity_snapshot(
+    conversation: Conversation, *, detailed: bool = False
+) -> dict[str, object] | None:
     snapshot = conversation.support_identity_snapshot
     if snapshot is None:
         return None
-    # Краткая карточка для списка диалогов; полный operator_context — в snapshot API.
-    return {
+    # Краткая карточка для списка диалогов; в detail-режиме — operator_context_json
+    # + account_key для правой панели оператора (ADR-HUB-0022 §8.3: рендер по контракту).
+    payload: dict[str, object] = {
         "id": snapshot.id,
         "subjectKey": snapshot.subject_key,
         "displayName": snapshot.display_name,
         "displayEmail": snapshot.display_email,
         "contractCode": snapshot.contract_code,
     }
+    if detailed:
+        payload["accountKey"] = snapshot.account_key
+        payload["operatorContextJson"] = snapshot.operator_context_json
+    return payload
 
 
 def _conversation_history(conversation: Conversation) -> list[Conversation]:
@@ -91,7 +98,7 @@ def conversation_payload(conversation: Conversation, *, with_messages: bool = Fa
             if conversation.contact_id
             else None
         ),
-        "supportIdentitySnapshot": _support_identity_snapshot(conversation),
+        "supportIdentitySnapshot": _support_identity_snapshot(conversation, detailed=with_messages),
         "lifecycle": conversation.lifecycle,
         "controlMode": conversation.control_mode,
         "expectedResponder": conversation.expected_responder,
