@@ -17,6 +17,8 @@ export function routeFromPath(pathname: string, search = ""): RouteState {
   if (path === "/" || path === "/command") return { route: "command", ...base };
   if (path === "/departments") return { route: "departments", ...base };
   if (path === "/departments/sales") return { route: "salesOverview", ...base };
+  if (path === "/departments/support") return { route: "supportOverview", ...base };
+  if (path === "/departments/support/dialogs") return { route: "supportDialogs", ...base };
   if (path === "/departments/sales/clients") return { route: "salesClients", ...base };
   if (path.startsWith("/departments/sales/clients/")) {
     const id = Number(path.split("/")[4]);
@@ -62,6 +64,8 @@ export function pathFromRoute(route: RouteKey, entityId: number | null = null, p
   if (route === "command") return "/";
   if (route === "departments") return "/departments";
   if (route === "salesOverview") return "/departments/sales";
+  if (route === "supportOverview") return "/departments/support";
+  if (route === "supportDialogs") return "/departments/support/dialogs";
   if (route === "salesClients") return "/departments/sales/clients";
   if (route === "salesClientDetail") return entityId ? `/departments/sales/clients/${entityId}` : "/departments/sales/clients";
   if (route === "salesDialogs") return "/departments/sales/dialogs";

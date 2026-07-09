@@ -5,6 +5,8 @@ import { commandCenterModel, StatusLabel } from "../command/CommandCenter";
 
 export function DepartmentsPage({ data, setRoute }: { data: AppData; setRoute: (route: RouteKey) => void }) {
   const sales = data.departments.find((department) => department.code === "sales") ?? data.departments[0];
+  const support = data.departments.find((department) => department.code === "support");
+  const supportProducts = data.products.filter((product) => product.departments.some((department) => department.code === "support"));
   return (
     <>
       <PageHeader title="Отделы" text={`Существующие отделы компании · ${data.departments.length} активный`} />
@@ -50,6 +52,37 @@ export function DepartmentsPage({ data, setRoute }: { data: AppData; setRoute: (
         </div>
       )}
       <p className="muted-note">Новые отделы появятся здесь по мере их создания.</p>
+      {support && (
+        <div className="departments-grid">
+          <section className="department-card">
+            <div className="department-card-header">
+              <div className="dept-icon"><Icon name="wrench" size={24} /></div>
+              <div className="department-card-title">
+                <div>
+                  <h2>{support.name}</h2>
+                  <StatusLabel vm={commandCenterModel("today")} />
+                </div>
+                <p>Обслуживание существующих клиентов продуктов через авторизованный чат.</p>
+              </div>
+            </div>
+
+            <div className="department-meta">
+              <div>
+                <span>Состав</span>
+                <strong>{support.memberCount} сотрудник(ов) · {support.operatorCount} операторов</strong>
+              </div>
+              <div>
+                <span>Связанные продукты</span>
+                <strong className="product-tags">{supportProducts.map((product) => <ProductTag product={product} key={product.id} />)}</strong>
+              </div>
+            </div>
+
+            <div className="department-action">
+              <button type="button" onClick={() => setRoute("supportOverview")}>Открыть отдел<Icon name="arrow" size={16} /></button>
+            </div>
+          </section>
+        </div>
+      )}
     </>
   );
 }

@@ -8,6 +8,7 @@ import { fetchNotifications, markAllRead, markRead, type AppNotification } from 
 import { fetchWaitingCount } from "../features/sales/dialogs/model";
 import { Sidebar } from "./Sidebar";
 import { SalesSidebar } from "./SalesSidebar";
+import { SupportSidebar } from "./SupportSidebar";
 import { ShellRouteContent } from "./ShellRouteContent";
 import { TopBar } from "./TopBar";
 
@@ -82,6 +83,7 @@ export function Shell({ route, setRoute, selectedEmployeeId, selectedProductId, 
     openProductRoute(product.id);
   }
   const isSalesWorkspace = route === "salesOverview" || route === "salesClientDetail" || route === "salesClients" || route === "salesDialogs" || route === "salesOrderDetail" || route === "salesOrders";
+  const isSupportWorkspace = route === "supportOverview" || route === "supportDialogs";
   const isSalesDialogs = route === "salesDialogs";
   const isSalesClients = route === "salesClients";
   const isSalesClientDetail = route === "salesClientDetail";
@@ -90,11 +92,13 @@ export function Shell({ route, setRoute, selectedEmployeeId, selectedProductId, 
   // Подменю AI показываем только там, где оно есть в baseline.
   const isAiSection = route === "aiAgents" || route === "aiUsage";
   const isAiFullWidth = route === "aiAgentCreate" || route === "aiRelease" || route === "aiTestChat";
-  // OPERATOR работает только в пространстве продаж, поэтому всегда видит sales-sidebar (SPEC-HUB-0004 §9).
-  const showSalesSidebar = isSalesWorkspace || user.role === "OPERATOR";
+  // OPERATOR работает в пространстве своего отдела (SPEC-HUB-0004 §9 + §0010 §10):
+  // sales operator → sales-sidebar, support operator → support-sidebar.
+  const showSalesSidebar = isSalesWorkspace || (user.role === "OPERATOR" && user.department !== "support" && !isSupportWorkspace);
+  const showSupportSidebar = isSupportWorkspace || (user.role === "OPERATOR" && user.department === "support");
   return (
     <div className="hub-shell">
-      {showSalesSidebar ? <SalesSidebar route={route} user={user} setRoute={setRoute} waitingCount={waitingCount} /> : <Sidebar route={route} user={user} setRoute={setRoute} />}
+      {showSupportSidebar ? <SupportSidebar route={route} user={user} setRoute={setRoute} waitingCount={waitingCount} /> : showSalesSidebar ? <SalesSidebar route={route} user={user} setRoute={setRoute} waitingCount={waitingCount} /> : <Sidebar route={route} user={user} setRoute={setRoute} />}
       <div className="hub-main">
         <TopBar route={route} user={user} currentEmployee={currentEmployee} currentProduct={currentProduct} currentAgentName={agentName} setRoute={setRoute} unreadCount={unreadCount} onOpenNotifications={() => { setNotifOpen(true); void loadNotifications(); }} />
         {isAiSection && <AiSubnav route={route} setRoute={setRoute} />}

@@ -14,6 +14,8 @@ export const routes: Record<RouteKey, string> = {
   salesOrderDetail: "Заказ",
   salesOrders: "Продажи",
   salesOverview: "Обзор",
+  supportOverview: "Обзор",
+  supportDialogs: "Диалоги",
   aiAgents: "AI-агенты",
   aiAgentCreate: "Создание агента",
   aiAgentDetail: "Карточка агента",

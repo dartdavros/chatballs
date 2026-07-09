@@ -116,7 +116,7 @@ export function App() {
 
   const landAfterAuth = useCallback((nextUser: SessionUser) => {
     setUser(nextUser);
-    navigate(defaultRoute(nextUser.role), null, true);
+    navigate(defaultRoute(nextUser.role, nextUser.department), null, true);
   }, [navigate]);
 
   async function logout() {
@@ -153,8 +153,8 @@ export function App() {
         <AuthTotpSetup user={user} onConfirmed={setUser} />
       ) : dataError ? (
         <ErrorScreen retry={loadData} />
-      ) : !canAccess(user.role, route) ? (
-        <PermissionScreen onReturn={() => navigate(defaultRoute(user.role), null, true)} />
+      ) : !canAccess(user.role, route, user.department) ? (
+        <PermissionScreen onReturn={() => navigate(defaultRoute(user.role, user.department), null, true)} />
       ) : (
         <Shell route={route} setRoute={(nextRoute) => navigate(nextRoute)} selectedEmployeeId={selectedEmployeeId} selectedProductId={selectedProductId} selectedProductCode={selectedProductCode} selectedAgentId={selectedAgentId} selectedReleaseId={selectedReleaseId} selectedConversationId={selectedConversationId} selectedClientId={selectedClientId} openClientRoute={(clientId) => navigate("salesClientDetail", clientId)} selectedOrderId={selectedOrderId} openOrderRoute={(orderId) => navigate("salesOrderDetail", orderId)} openEmployeeRoute={(employeeId) => navigate("employeeDetail", employeeId)} openProductRoute={(productId) => navigate("productDetail", productId)} openAgentCreateRoute={(productCode) => navigate("aiAgentCreate", null, false, productCode)} openAgentRoute={(agentId) => navigate("aiAgentDetail", agentId)} openReleaseRoute={(releaseId) => navigate("aiRelease", releaseId)} openConversationRoute={(conversationId) => navigate("salesDialogs", conversationId)} user={user} data={data} reload={loadData} onUserUpdated={setUser} onLogout={logout} />
       )}

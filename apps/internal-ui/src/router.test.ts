@@ -54,3 +54,15 @@ describe("ai release routes", () => {
     expect(pathFromRoute("aiRelease", 12)).toBe("/ai/releases/12");
   });
 });
+
+describe("support routes", () => {
+  it("parses support overview and dialogs URLs", () => {
+    expect(routeFromPath("/departments/support")).toEqual({ route: "supportOverview", employeeId: null, productId: null, productCode: null, agentId: null, releaseId: null, clientId: null, orderId: null });
+    expect(routeFromPath("/departments/support/dialogs")).toEqual({ route: "supportDialogs", employeeId: null, productId: null, productCode: null, agentId: null, releaseId: null, clientId: null, orderId: null });
+  });
+
+  it("creates support overview and dialogs URLs", () => {
+    expect(pathFromRoute("supportOverview")).toBe("/departments/support");
+    expect(pathFromRoute("supportDialogs")).toBe("/departments/support/dialogs");
+  });
+});
