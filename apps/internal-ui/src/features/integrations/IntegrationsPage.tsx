@@ -22,6 +22,8 @@ export function IntegrationsPage() {
   const [form, setForm] = useState<Integration | "new" | null>(null);
   const [testingId, setTestingId] = useState<number | null>(null);
   const [menuId, setMenuId] = useState<number | null>(null);
+  const [deleting, setDeleting] = useState<Integration | null>(null);
+  const [deletingError, setDeletingError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -52,19 +54,21 @@ export function IntegrationsPage() {
     }
   }
 
-  function confirmDelete(integration: Integration) {
+  function startDelete(integration: Integration) {
     setMenuId(null);
-    Modal.confirm({
-      title: "Удалить интеграцию?",
-      content: `«${integration.name}» будет удалена. Действие необратимо.`,
-      okText: "Удалить",
-      okButtonProps: { danger: true },
-      cancelText: "Отмена",
-      onOk: async () => {
-        await api(`/api/v1/integrations/${integration.id}/`, { method: "DELETE" });
-        void load();
-      },
-    });
+    setDeletingError(null);
+    setDeleting(integration);
+  }
+
+  async function confirmDelete() {
+    if (!deleting) return;
+    try {
+      await api(`/api/v1/integrations/${deleting.id}/`, { method: "DELETE" });
+      setDeleting(null);
+      void load();
+    } catch (caught) {
+      setDeletingError(caught instanceof Error ? caught.message : "Не удалось удалить");
+    }
   }
 
   const header = (
@@ -108,7 +112,7 @@ export function IntegrationsPage() {
                       const menuItems = [
                         { key: "edit", label: <button type="button" onClick={() => { setMenuId(null); setForm(item); }}><Icon name="edit" size={15} />Изменить</button> },
                         { type: "divider" as const },
-                        { key: "delete", label: <button type="button" className="warning" onClick={() => confirmDelete(item)}><Icon name="trash" size={15} />Удалить</button> },
+                        { key: "delete", label: <button type="button" className="warning" onClick={() => startDelete(item)}><Icon name="trash" size={15} />Удалить</button> },
                       ];
                       return (
                         <tr key={item.id}>
@@ -157,6 +161,18 @@ export function IntegrationsPage() {
         })
       )}
       {form && <IntegrationForm initial={form === "new" ? null : form} onClose={() => setForm(null)} onSaved={() => { setForm(null); void load(); }} />}
+      {deleting && (
+        <Modal open title="Удалить интеграцию?" onCancel={() => setDeleting(null)} footer={null} destroyOnClose>
+          <div className="integration-form">
+            <p>{`«${deleting.name}» будет удалена. Действие необратимо.`}</p>
+            {deletingError && <div className="integration-form-error">{deletingError}</div>}
+            <div className="integration-form-actions">
+              <Button variant="secondary" onClick={() => setDeleting(null)}>Отмена</Button>
+              <Button variant="danger-outline" onClick={() => void confirmDelete()}>Удалить</Button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }
