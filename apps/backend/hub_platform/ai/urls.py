@@ -46,6 +46,7 @@ urlpatterns += _document_routes(
         "disable": docs.KnowledgeDisableView,
     },
 )
+urlpatterns.append(path("knowledge/import/", docs.KnowledgeImportView.as_view(), name="ai-knowledge-import"))
 
 urlpatterns += _document_routes(
     "prompts",
@@ -59,3 +60,4 @@ urlpatterns += _document_routes(
         "disable": docs.PromptDisableView,
     },
 )
+urlpatterns.append(path("prompts/import/", docs.PromptImportView.as_view(), name="ai-prompts-import"))

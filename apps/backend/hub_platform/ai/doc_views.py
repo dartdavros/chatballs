@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from hub_platform.ai import documents as doc_service
+from hub_platform.ai.document_import import ImportReport, import_documents
 from hub_platform.ai.models import (
     DocumentScope,
     InclusionMode,
@@ -196,8 +197,55 @@ class DocumentDisableView(_DocumentStatusView):
     target_enabled = False
 
 
-# --- Knowledge / prompt concrete configs ---
+class DocumentImportView(_DocConfig):
+    # POST {product?, documents:[{code,title,category,content,inclusionMode?}]}.
+    # Idempotent upsert + немедленная публикация. Ошибки per-doc копятся в failed[].
+    def post(self, request: Request) -> Response:
+        body = request.data
+        documents = body.get("documents")
+        if not isinstance(documents, list) or not documents:
+            return Response({"detail": "documents must be a non-empty list"}, status=400)
+        product_code = body.get("product")
+        if product_code is not None:
+            product_code = str(product_code).strip() or None
+        valid: list = []
+        pre_failed: list = []
+        for item in documents:
+            category = str(item.get("category", "")).strip() if isinstance(item, dict) else ""
+            if category in self.valid_categories:
+                valid.append(item)
+            else:
+                pre_failed.append({"code": str(item.get("code", "")) if isinstance(item, dict) else "", "detail": f"Неизвестная категория: {category}"})
+        if not valid:
+            return Response({"created": 0, "updated": 0, "unchanged": 0, "failed": pre_failed}, status=400)
+        report = import_documents(
+            organization=self._org(request),
+            author=request.user,
+            document_model=self.document_model,
+            version_model=self.version_model,
+            product_code=product_code,
+            documents=[dict(item) for item in valid],
+            supports_inclusion=self.supports_inclusion,
+            after_publish=self.after_publish,
+        )
+        if pre_failed:
+            report = ImportReport(created=report.created, updated=report.updated, unchanged=report.unchanged, failed=[*pre_failed, *report.failed])
+        self._audit_import(request, report)
+        return Response(report.as_payload(), status=201)
 
+    def _audit_import(self, request: Request, report) -> None:
+        record_audit_event(
+            action=f"{self.audit_prefix}_imported",
+            actor=request.user,
+            organization=self._org(request),
+            object_type=self.document_model.__name__,
+            object_id="",
+            payload=report.as_payload(),
+            request=request,
+        )
+
+
+# --- Knowledge / prompt concrete configs ---
 
 class _KnowledgeConfig:
     document_model = KnowledgeDocument
@@ -229,6 +277,7 @@ class KnowledgePublishVersionView(_KnowledgeConfig, DocumentPublishVersionView):
 class KnowledgeRollbackView(_KnowledgeConfig, DocumentRollbackView): pass
 class KnowledgeEnableView(_KnowledgeConfig, DocumentEnableView): pass
 class KnowledgeDisableView(_KnowledgeConfig, DocumentDisableView): pass
+class KnowledgeImportView(_KnowledgeConfig, DocumentImportView): pass
 
 class PromptListCreateView(_PromptConfig, DocumentListCreateView): pass
 class PromptDetailView(_PromptConfig, DocumentDetailView): pass
@@ -237,3 +286,4 @@ class PromptPublishVersionView(_PromptConfig, DocumentPublishVersionView): pass
 class PromptRollbackView(_PromptConfig, DocumentRollbackView): pass
 class PromptEnableView(_PromptConfig, DocumentEnableView): pass
 class PromptDisableView(_PromptConfig, DocumentDisableView): pass
+class PromptImportView(_PromptConfig, DocumentImportView): pass
