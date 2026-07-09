@@ -5,7 +5,7 @@ import type { AppData, Employee, Product, RouteKey, SessionUser } from "../types
 import { AiSubnav } from "../features/ai/AiSubnav";
 import { NotificationDrawer } from "../features/notifications/NotificationDrawer";
 import { fetchNotifications, markAllRead, markRead, type AppNotification } from "../features/notifications/model";
-import { fetchWaitingCount } from "../features/sales/dialogs/model";
+import { fetchWaitingCount } from "../features/conversations/model";
 import { Sidebar } from "./Sidebar";
 import { SalesSidebar } from "./SalesSidebar";
 import { SupportSidebar } from "./SupportSidebar";

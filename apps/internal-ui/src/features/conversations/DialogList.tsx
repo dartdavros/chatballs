@@ -1,11 +1,14 @@
 import type { ReactNode } from "react";
-import type { ListTab, SalesDialog } from "./types";
-import { channelMeta, modeDots } from "./data";
-import { SearchInput } from "../../../shared/ui-controls";
 
-export function SalesDialogList({ dialogs, filtered, listTab, selectedId, search, setSearch, setListTab, setSelectedId }: {
-  dialogs: SalesDialog[];
-  filtered: SalesDialog[];
+import { channelMeta, modeDots } from "./data";
+import type { ConversationListItem, ListTab } from "./types";
+import { SearchInput } from "../../shared/ui-controls";
+
+export function DialogList({ title = "Диалоги", searchPlaceholder = "Поиск по клиенту, продукту…", dialogs, filtered, listTab, selectedId, search, setSearch, setListTab, setSelectedId }: {
+  title?: string;
+  searchPlaceholder?: string;
+  dialogs: ConversationListItem[];
+  filtered: ConversationListItem[];
   listTab: ListTab;
   selectedId: number;
   search: string;
@@ -18,8 +21,8 @@ export function SalesDialogList({ dialogs, filtered, listTab, selectedId, search
   return (
     <section className="sales-dialog-list">
       <div className="sales-dialog-list-head">
-        <div><h2>Диалоги</h2><span>{dialogs.length} всего</span></div>
-        <SearchInput className="sales-dialog-search" placeholder="Поиск по клиенту, продукту…" value={search} onChange={setSearch} />
+        <div><h2>{title}</h2><span>{dialogs.length} всего</span></div>
+        <SearchInput className="sales-dialog-search" placeholder={searchPlaceholder} value={search} onChange={setSearch} />
       </div>
       <div className="sales-dialog-tabs">
         <DialogTab active={listTab === "all"} onClick={() => setListTab("all")}>Все</DialogTab>
@@ -39,7 +42,7 @@ function DialogTab({ active, onClick, children }: { active: boolean; onClick: ()
   return <button className={active ? "active" : ""} onClick={onClick}>{children}</button>;
 }
 
-function DialogListItem({ dialog, active, setSelectedId }: { dialog: SalesDialog; active: boolean; setSelectedId: (id: number) => void }) {
+function DialogListItem({ dialog, active, setSelectedId }: { dialog: ConversationListItem; active: boolean; setSelectedId: (id: number) => void }) {
   const channel = channelMeta[dialog.channel];
   return (
     <button className={`sales-dialog-row ${active ? "active" : ""}`} onClick={() => setSelectedId(dialog.id)}>

@@ -1,10 +1,13 @@
+// Общие типы workspace диалогов (sales + support). SPEC-HUB-0010 §8.2:
+// общий conversation workspace, не отдельная реализация под каждый отдел.
+
 export type DialogMode = "ai" | "closed" | "operator" | "wait";
 export type ControlMode = "ai" | "human" | "waiting";
 export type ListTab = "ai" | "all" | "operator" | "unread" | "wait";
-export type RightTab = "client" | "history" | "product";
 export type ChannelKey = "MAX" | "TG" | "WEB";
 
-export type SalesDialog = {
+// Элемент списка диалогов (бывш. SalesDialog). Полностью generic.
+export type ConversationListItem = {
   id: number;
   name: string;
   initials: string;

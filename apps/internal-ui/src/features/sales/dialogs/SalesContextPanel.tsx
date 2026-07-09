@@ -1,11 +1,11 @@
 import { ClientContext } from "./context/ClientContext";
 import { HistoryContext } from "./context/HistoryContext";
 import { ProductContext } from "./context/ProductContext";
-import { SalesContextTabs } from "./context/SalesContextTabs";
-import type { ApiConversation } from "./model";
-import type { RightTab, SalesDialog } from "./types";
+import { SalesContextTabs, type SalesRightTab } from "./context/SalesContextTabs";
+import type { ApiConversation } from "../../conversations/model";
+import type { ConversationListItem } from "../../conversations/types";
 
-export function SalesContextPanel({ rightTab, setRightTab, dialog, detail }: { rightTab: RightTab; setRightTab: (tab: RightTab) => void; dialog: SalesDialog | null; detail: ApiConversation | null }) {
+export function SalesContextPanel({ rightTab, setRightTab, dialog, detail }: { rightTab: SalesRightTab; setRightTab: (tab: SalesRightTab) => void; dialog: ConversationListItem | null; detail: ApiConversation | null }) {
   return (
     <section className="sales-context">
       <SalesContextTabs rightTab={rightTab} setRightTab={setRightTab} />

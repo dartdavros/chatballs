@@ -1,5 +1,5 @@
-import type { ApiConversation } from "../model";
-import { ContextSection } from "./ContextSection";
+import { ContextSection } from "../../../conversations/ContextSection";
+import type { ApiConversation } from "../../../conversations/model";
 
 const LIFECYCLE: Record<string, string> = { OPEN: "открыт", CLOSED: "закрыт", SPAM: "спам" };
 

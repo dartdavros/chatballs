@@ -1,5 +1,5 @@
-import { api } from "../../../api/client";
-import type { ChannelKey, ControlMode, DialogMode, SalesDialog } from "./types";
+import { api } from "../../api/client";
+import type { ChannelKey, ConversationListItem, ControlMode, DialogMode } from "./types";
 
 export type ApiMessage = { id: number; author: "CONTACT" | "AI" | "OPERATOR" | "SYSTEM"; text: string; createdAt: string };
 
@@ -13,11 +13,38 @@ export type HistoryItem = {
   preview: string;
 };
 
+// Краткая карточка support-снапшота в conversation_payload (list-режим).
+export type SupportIdentitySnapshotRef = {
+  id: number;
+  subjectKey: string;
+  displayName: string;
+  displayEmail: string;
+  contractCode: string;
+  // Расширяется в detail-режиме (operatorContextJson для правой панели оператора).
+  operatorContextJson?: { operator_cards: OperatorCard[] };
+  accountKey?: string | null;
+};
+
+export type OperatorCardField = {
+  label: string;
+  value: unknown;
+  type: string; // text|email|phone|url|code|badge|datetime|boolean|number; unknown→text
+  visibility?: string;
+};
+
+export type OperatorCard = {
+  title: string;
+  fields: OperatorCardField[];
+};
+
 export type ApiConversation = {
   id: number;
   channel: { code: string; name: string; product: { code: string; name: string } | null };
   connection: { id: number; provider: "MAX" | "TELEGRAM" | "WEB"; name: string } | null;
-  contact: { id: number; name: string };
+  // Источник identity: sales Contact (лид) ИЛИ verified SupportIdentitySnapshot.
+  // ADR-HUB-0022: ровно один заполнен.
+  contact: { id: number; name: string } | null;
+  supportIdentitySnapshot: SupportIdentitySnapshotRef | null;
   lifecycle: "OPEN" | "CLOSED" | "SPAM";
   controlMode: "AI" | "HUMAN" | "PAUSED";
   expectedResponder: string;
@@ -52,13 +79,23 @@ function initialsOf(name: string): string {
   return (parts[0][0] + (parts[1]?.[0] ?? "")).toUpperCase();
 }
 
-export function toDialog(conversation: ApiConversation): SalesDialog {
-  const name = conversation.contact.name || `Гость ${conversation.contact.id}`;
+// Имя клиента: sales contact ИЛИ snapshot displayName, fallback на subject_key.
+export function conversationName(conversation: ApiConversation): string {
+  if (conversation.contact) return conversation.contact.name || `Гость ${conversation.contact.id}`;
+  const snapshot = conversation.supportIdentitySnapshot;
+  if (snapshot) return snapshot.displayName || `client:${snapshot.subjectKey.slice(0, 8)}`;
+  return "Гость";
+}
+
+export function toConversationListItem(conversation: ApiConversation): ConversationListItem {
+  const name = conversationName(conversation);
+  // avatarBg: стабильно из id источника identity.
+  const seed = conversation.contact?.id ?? conversation.supportIdentitySnapshot?.id ?? conversation.id;
   return {
     id: conversation.id,
     name,
     initials: initialsOf(name),
-    avatarBg: AVATAR_PALETTE[conversation.contact.id % AVATAR_PALETTE.length],
+    avatarBg: AVATAR_PALETTE[seed % AVATAR_PALETTE.length],
     product: conversation.channel.name,
     channel: PROVIDER_CHANNEL[conversation.connection?.provider ?? "WEB"] ?? "WEB",
     mode: dialogMode(conversation),
@@ -68,11 +105,15 @@ export function toDialog(conversation: ApiConversation): SalesDialog {
   };
 }
 
-export const fetchConversations = () => api<{ items: ApiConversation[] }>("/api/v1/conversations/").then((r) => r.items);
+// department — изоляция inbox (§10): sales/support оператор видит только свой отдел.
+export const fetchConversations = (department: "sales" | "support") =>
+  api<{ items: ApiConversation[] }>(`/api/v1/conversations/?department=${department}`).then((r) => r.items);
 export const fetchConversation = (id: number) => api<{ conversation: ApiConversation }>(`/api/v1/conversations/${id}/`).then((r) => r.conversation);
 export const claimConversation = (id: number) => api<{ conversation: ApiConversation }>(`/api/v1/conversations/${id}/claim/`, { method: "POST" }).then((r) => r.conversation);
 export const releaseConversation = (id: number) => api<{ conversation: ApiConversation }>(`/api/v1/conversations/${id}/release/`, { method: "POST" }).then((r) => r.conversation);
 export const sendOperatorMessage = (id: number, text: string) => api(`/api/v1/conversations/${id}/messages/`, { method: "POST", body: JSON.stringify({ text }) });
 export const returnToQueue = (id: number) => api<{ conversation: ApiConversation }>(`/api/v1/conversations/${id}/return-queue/`, { method: "POST" }).then((r) => r.conversation);
 export const closeConversation = (id: number) => api<{ conversation: ApiConversation }>(`/api/v1/conversations/${id}/close/`, { method: "POST" }).then((r) => r.conversation);
+// Бейдж ожидающих диалогов. ConversationStatsView сейчас sales-only (SPEC §12:
+// support-метрики — отдельный endpoint); department-параметр backend не использует.
 export const fetchWaitingCount = () => api<{ waiting: number }>("/api/v1/conversations/stats/").then((r) => r.waiting);

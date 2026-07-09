@@ -1,10 +1,10 @@
 import { useState } from "react";
 
-import { Icon } from "../../../shared/icons";
+import { Icon } from "../../shared/icons";
 import { sendOperatorMessage } from "./model";
 import type { ControlMode } from "./types";
 
-export function SalesComposer({ mode, conversationId, onClaim, onRelease, onReturnQueue, onClose, onSent }: { mode: ControlMode; conversationId: number | null; onClaim: () => void; onRelease: () => void; onReturnQueue: () => void; onClose: () => void; onSent: () => void }) {
+export function Composer({ mode, conversationId, onClaim, onRelease, onReturnQueue, onClose, onSent }: { mode: ControlMode; conversationId: number | null; onClaim: () => void; onRelease: () => void; onReturnQueue: () => void; onClose: () => void; onSent: () => void }) {
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
 

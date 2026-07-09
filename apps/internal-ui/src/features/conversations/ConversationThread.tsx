@@ -1,15 +1,15 @@
 import { useEffect, useRef, type ReactNode } from "react";
 
-import { Icon } from "../../../shared/icons";
+import { Icon } from "../../shared/icons";
 import { channelMeta, statusFor } from "./data";
 import type { ApiConversation, ApiMessage } from "./model";
-import type { ControlMode, SalesDialog, StatusInfo } from "./types";
+import type { ConversationListItem, ControlMode, StatusInfo } from "./types";
 
 function fmtTime(value: string): string {
   return new Date(value).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
 }
 
-export function SalesConversation({ controlMode, dialog, detail, onClaim }: { controlMode: ControlMode; dialog: SalesDialog | null; detail: ApiConversation | null; onClaim: () => void }) {
+export function ConversationThread({ controlMode, dialog, detail, onClaim }: { controlMode: ControlMode; dialog: ConversationListItem | null; detail: ApiConversation | null; onClaim: () => void }) {
   const timelineRef = useRef<HTMLDivElement>(null);
   const messages = detail?.messages ?? [];
   const lastMessageId = messages.length ? messages[messages.length - 1].id : 0;
@@ -53,7 +53,7 @@ export function SalesConversation({ controlMode, dialog, detail, onClaim }: { co
   );
 }
 
-function MessageRow({ message, dialog }: { message: ApiMessage; dialog: SalesDialog }) {
+function MessageRow({ message, dialog }: { message: ApiMessage; dialog: ConversationListItem }) {
   if (message.author === "SYSTEM") {
     return <div className="sales-event-chip"><Icon name="clock" size={12} />{message.text} · {fmtTime(message.createdAt)}</div>;
   }

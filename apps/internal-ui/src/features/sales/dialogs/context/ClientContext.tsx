@@ -1,8 +1,8 @@
-import { channelMeta } from "../data";
-import type { ApiConversation } from "../model";
-import type { SalesDialog } from "../types";
-import { ContactRow } from "./ContactRow";
-import { ContextSection } from "./ContextSection";
+import { channelMeta } from "../../../conversations/data";
+import { FieldRow } from "../../../conversations/FieldRow";
+import { ContextSection } from "../../../conversations/ContextSection";
+import type { ApiConversation } from "../../../conversations/model";
+import type { ConversationListItem } from "../../../conversations/types";
 
 const LIFECYCLE_LABEL: Record<string, string> = { OPEN: "Открыт", CLOSED: "Закрыт", SPAM: "Спам" };
 const CONTROL_LABEL: Record<string, string> = { AI: "AI ведёт", HUMAN: "Оператор ведёт", PAUSED: "Пауза" };
@@ -12,7 +12,7 @@ function fmt(value?: string): string {
   return new Date(value).toLocaleString("ru-RU", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
 }
 
-export function ClientContext({ dialog, detail }: { dialog: SalesDialog | null; detail: ApiConversation | null }) {
+export function ClientContext({ dialog, detail }: { dialog: ConversationListItem | null; detail: ApiConversation | null }) {
   if (!dialog) {
     return <div className="sales-client-context"><p className="sales-context-muted">Выберите диалог</p></div>;
   }
@@ -23,7 +23,7 @@ export function ClientContext({ dialog, detail }: { dialog: SalesDialog | null; 
       <div className="sales-client-hero"><span style={{ background: dialog.avatarBg }}>{dialog.initials}</span><strong>{dialog.name}</strong></div>
 
       <ContextSection title="КАНАЛ">
-        <ContactRow dot={channel.color} title={channel.label} text={detail?.connection?.name ?? "—"} note={dialog.product} />
+        <FieldRow dot={channel.color} title={channel.label} text={detail?.connection?.name ?? "—"} note={dialog.product} />
       </ContextSection>
 
       <ContextSection title="ДИАЛОГ">

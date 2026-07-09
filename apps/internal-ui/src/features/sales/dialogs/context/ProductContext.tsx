@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 
 import { api } from "../../../../api/client";
 import { Icon } from "../../../../shared/icons";
+import { ContextSection } from "../../../conversations/ContextSection";
+import type { ApiConversation } from "../../../conversations/model";
 import type { Product, ProductOffer } from "../../../../types";
-import type { ApiConversation } from "../model";
-import { ContextSection } from "./ContextSection";
 
 const PERIOD: Record<string, string> = { ONE_TIME: "разово", MONTH: "/ мес", YEAR: "/ год" };
 

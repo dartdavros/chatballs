@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 
-import type { RightTab } from "../types";
+export type SalesRightTab = "client" | "product" | "history";
 
-export function SalesContextTabs({ rightTab, setRightTab }: { rightTab: RightTab; setRightTab: (tab: RightTab) => void }) {
+export function SalesContextTabs({ rightTab, setRightTab }: { rightTab: SalesRightTab; setRightTab: (tab: SalesRightTab) => void }) {
   return (
     <div className="sales-context-tabs">
       <RightTabButton active={rightTab === "client"} onClick={() => setRightTab("client")}>Клиент</RightTabButton>
