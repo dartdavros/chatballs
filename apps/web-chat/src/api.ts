@@ -43,3 +43,56 @@ export async function poll(token: string, since: number): Promise<Poll> {
   const r = await fetch(`${API}/messages/?since=${since}`, { headers: { Authorization: `Bearer ${token}` } });
   return r.json();
 }
+
+// --- Support mode (SPEC-HUB-0010 §7): authenticated in-product chat ---
+
+const SUPPORT_API = "/api/v1/support";
+
+export type SupportSession = {
+  conversation: { id: number; controlMode: string; messages: WebMessage[] };
+  snapshot: { displayName: string; displayEmail: string; subjectKey: string };
+  widgetCredential: string;
+};
+
+// Старт сессии: verify Product Support Token → conversation + widget-credential.
+// При ошибке (invalid/expired token) → null (виджет покажет unavailable).
+export async function startSupportSession(channel: string, token: string): Promise<SupportSession | null> {
+  const r = await fetch(`${SUPPORT_API}/sessions/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ channel, token }),
+  });
+  if (!r.ok) return null;
+  const data = await r.json();
+  // controlMode → виджет-стейт (AI→ai, HUMAN→operator, PAUSED→waiting).
+  const conv = data.conversation;
+  const stateMap: Record<string, "ai" | "operator" | "waiting"> = { AI: "ai", HUMAN: "operator", PAUSED: "waiting" };
+  return {
+    conversation: {
+      id: conv.id,
+      controlMode: conv.controlMode,
+      messages: (conv.messages ?? []).map((m: { id: number; author: string; text: string; createdAt: string }) => ({
+        id: m.id,
+        author: (m.author === "CONTACT" ? "client" : m.author === "OPERATOR" ? "operator" : m.author === "SYSTEM" ? "system" : "ai") as WebMessage["author"],
+        text: m.text,
+        createdAt: m.createdAt,
+      })),
+    },
+    snapshot: { displayName: data.snapshot?.displayName ?? "", displayEmail: data.snapshot?.displayEmail ?? "", subjectKey: data.snapshot?.subjectKey ?? "" },
+    widgetCredential: data.widgetCredential,
+  };
+}
+
+export async function pollSupport(credential: string, since: number): Promise<Poll> {
+  const r = await fetch(`${SUPPORT_API}/sessions/messages/?since=${since}`, { headers: { Authorization: `Bearer ${credential}` } });
+  return r.json();
+}
+
+export async function sendSupport(credential: string, text: string): Promise<boolean> {
+  const r = await fetch(`${SUPPORT_API}/sessions/messages/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${credential}` },
+    body: JSON.stringify({ text }),
+  });
+  return r.ok;
+}
