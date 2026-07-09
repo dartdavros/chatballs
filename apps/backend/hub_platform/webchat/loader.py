@@ -1,5 +1,8 @@
-# Публичный JS-лоадер виджета (SPEC-HUB-0003 §3). Подключается одним тегом:
-#   <script src="https://hub.edevs.tech/chat-widget.js" data-channel="edevs" async></script>
+# Публичный JS-лоадер виджета (SPEC-HUB-0003 §3, SPEC-HUB-0010 §7.1). Подключается
+# одним тегом:
+#   sales:    <script src=".../chat-widget.js" data-channel="edevs" async></script>
+#   support:  <script src=".../chat-widget.js" data-channel="foxray-support"
+#                        data-mode="support" data-support-token="<token>" async></script>
 # Лоадер рисует launcher и открывает панель в изолированном iframe (/chat/).
 
 LOADER_JS = r"""
@@ -7,8 +10,13 @@ LOADER_JS = r"""
   var script = document.currentScript;
   if (!script) return;
   var channel = script.getAttribute("data-channel") || "edevs";
+  var mode = script.getAttribute("data-mode") || "sales";
   var origin = new URL(script.src, location.href).origin;
   var panelUrl = origin + "/chat/?channel=" + encodeURIComponent(channel);
+  if (mode === "support") {
+    var token = script.getAttribute("data-support-token") || "";
+    panelUrl += "&mode=support&token=" + encodeURIComponent(token);
+  }
 
   var open = false, frame = null;
 
