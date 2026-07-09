@@ -6,6 +6,8 @@ import { EmptyState, LoadingState } from "../../../shared/ui";
 import { Button, UnderlineTabs } from "../../../shared/ui-controls";
 import type { RouteKey } from "../../../types";
 import { AiAgentDetailHeader } from "./AiAgentDetailHeader";
+import { AgentEditForm } from "./AgentEditForm";
+import { ChannelEditForm } from "./ChannelEditForm";
 import { AiAgentInstructionsTab } from "./AiAgentInstructionsTab";
 import { AiAgentKnowledgeTab } from "./AiAgentKnowledgeTab";
 import { AiAgentMetricsTab } from "./AiAgentMetricsTab";
@@ -17,6 +19,8 @@ import { useAiAgentDetail } from "./useAiAgentDetail";
 export function AiAgentDetailPage({ agentId, setRoute, openRelease, onAgentLoaded }: { agentId: number | null; setRoute: (route: RouteKey) => void; openRelease: (releaseId: number) => void; onAgentLoaded: (name: string | null) => void }) {
   const { agent, releases, knowledge, prompts, loading, error, reload } = useAiAgentDetail(agentId);
   const [tab, setTab] = useState<AgentTab>("overview");
+  const [editOpen, setEditOpen] = useState(false);
+  const [channelEdit, setChannelEdit] = useState(false);
 
   useEffect(() => {
     onAgentLoaded(agent?.name ?? null);
@@ -46,7 +50,7 @@ export function AiAgentDetailPage({ agentId, setRoute, openRelease, onAgentLoade
 
   return (
     <div className="ai-agent-page">
-      <AiAgentDetailHeader agent={agent} releases={releases} setRoute={setRoute} openRelease={openRelease} createRelease={createRelease} />
+      <AiAgentDetailHeader agent={agent} releases={releases} setRoute={setRoute} openRelease={openRelease} createRelease={createRelease} onEditChannel={() => setChannelEdit(true)} />
       <UnderlineTabs className="ai-agent-tabs" items={agentTabs} value={tab} onChange={setTab} />
       {(tab === "instructions" || tab === "knowledge") && (
         <div className="ai-notice ai-golive-notice">
@@ -55,11 +59,13 @@ export function AiAgentDetailPage({ agentId, setRoute, openRelease, onAgentLoade
           <Button variant="primary" icon="bolt" onClick={createRelease}>Создать версию канала</Button>
         </div>
       )}
-      {tab === "overview" && <AiAgentOverviewTab agent={agent} toggleActive={toggleActive} />}
+      {tab === "overview" && <AiAgentOverviewTab agent={agent} toggleActive={toggleActive} onEdit={() => setEditOpen(true)} />}
       {tab === "instructions" && <AiAgentInstructionsTab prompts={prompts} product={agent.channel.product} onChanged={reload} />}
       {tab === "knowledge" && <AiAgentKnowledgeTab knowledge={knowledge} channelName={agent.channel.name} product={agent.channel.product} onChanged={reload} />}
       {tab === "releases" && <AiAgentReleasesTab openRelease={openRelease} releases={releases} />}
       {tab === "metrics" && <AiAgentMetricsTab />}
+      {editOpen && <AgentEditForm agent={agent} onClose={() => setEditOpen(false)} onSaved={() => { setEditOpen(false); reload(); }} />}
+      {channelEdit && <ChannelEditForm channel={agent.channel} onClose={() => setChannelEdit(false)} onSaved={() => { setChannelEdit(false); reload(); }} />}
     </div>
   );
 }
