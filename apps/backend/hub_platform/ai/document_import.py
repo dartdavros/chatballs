@@ -152,9 +152,30 @@ def _import_one(
         code=doc.code,
         defaults=defaults,
     )
+    if created:
+        # Новый документ: первая версия будет создана ниже.
+        return _publish_version(
+            document=document,
+            version_model=version_model,
+            doc=doc,
+            author=author,
+            after_publish=after_publish,
+            report=ImportReport(created=1),
+        )
     latest = _latest_published(version_model, document)
     if latest and latest.content == doc.content:
-        return ImportReport(created=int(created))
+        return ImportReport(unchanged=1)
+    return _publish_version(
+        document=document,
+        version_model=version_model,
+        doc=doc,
+        author=author,
+        after_publish=after_publish,
+        report=ImportReport(updated=1),
+    )
+
+
+def _publish_version(*, document, version_model, doc, author, after_publish, report):
     version = version_model.objects.create(
         document=document,
         version=_next_version(version_model, document),
@@ -164,4 +185,4 @@ def _import_one(
     document_service.publish_version(version=version)
     if after_publish is not None:
         after_publish(version)
-    return ImportReport(created=int(created), updated=1)
+    return report
