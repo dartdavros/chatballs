@@ -37,7 +37,7 @@ export function App() {
     const nextProductCode = nextRoute === "aiAgentCreate" ? productCode : null;
     const nextAgentId = nextRoute === "aiAgentDetail" ? entityId : null;
     const nextReleaseId = nextRoute === "aiRelease" ? entityId : null;
-    const nextConversationId = nextRoute === "salesDialogs" ? entityId : null;
+    const nextConversationId = nextRoute === "salesDialogs" || nextRoute === "supportDialogs" ? entityId : null;
     const nextClientId = nextRoute === "salesClientDetail" ? entityId : null;
     const nextOrderId = nextRoute === "salesOrderDetail" ? entityId : null;
     const nextPath = pathFromRoute(nextRoute, entityId, nextProductCode);

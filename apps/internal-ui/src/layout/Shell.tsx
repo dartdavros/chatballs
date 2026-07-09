@@ -85,6 +85,8 @@ export function Shell({ route, setRoute, selectedEmployeeId, selectedProductId, 
   const isSalesWorkspace = route === "salesOverview" || route === "salesClientDetail" || route === "salesClients" || route === "salesDialogs" || route === "salesOrderDetail" || route === "salesOrders";
   const isSupportWorkspace = route === "supportOverview" || route === "supportDialogs";
   const isSalesDialogs = route === "salesDialogs";
+  const isSupportDialogs = route === "supportDialogs";
+  const isDialogsWorkspace = isSalesDialogs || isSupportDialogs;
   const isSalesClients = route === "salesClients";
   const isSalesClientDetail = route === "salesClientDetail";
   const isSalesOrderDetail = route === "salesOrderDetail";
@@ -102,8 +104,8 @@ export function Shell({ route, setRoute, selectedEmployeeId, selectedProductId, 
       <div className="hub-main">
         <TopBar route={route} user={user} currentEmployee={currentEmployee} currentProduct={currentProduct} currentAgentName={agentName} setRoute={setRoute} unreadCount={unreadCount} onOpenNotifications={() => { setNotifOpen(true); void loadNotifications(); }} />
         {isAiSection && <AiSubnav route={route} setRoute={setRoute} />}
-        <main className={`hub-scroll ${isSalesDialogs ? "sales-dialogs-scroll" : ""} ${isAiFullWidth ? "ai-fullwidth-scroll" : ""}`}>
-          <div className={`hub-page ${isSalesWorkspace ? "sales-workspace-page" : ""} ${isSalesDialogs ? "sales-dialogs-page" : ""} ${isSalesClients ? "sales-clients-page" : ""} ${isSalesClientDetail ? "sales-client-detail-page" : ""} ${isSalesOrderDetail ? "sales-order-detail-page" : ""} ${isSalesOrders ? "sales-orders-page" : ""} ${isAiFullWidth ? "ai-fullwidth-page" : ""}`}>
+        <main className={`hub-scroll ${isDialogsWorkspace ? "sales-dialogs-scroll" : ""} ${isAiFullWidth ? "ai-fullwidth-scroll" : ""}`}>
+          <div className={`hub-page ${isSalesWorkspace || isSupportWorkspace ? "sales-workspace-page" : ""} ${isDialogsWorkspace ? "sales-dialogs-page" : ""} ${isSalesClients ? "sales-clients-page" : ""} ${isSalesClientDetail ? "sales-client-detail-page" : ""} ${isSalesOrderDetail ? "sales-order-detail-page" : ""} ${isSalesOrders ? "sales-orders-page" : ""} ${isAiFullWidth ? "ai-fullwidth-page" : ""}`}>
             <ShellRouteContent route={route} data={data} currentEmployee={currentEmployee} currentProduct={currentProduct} selectedProductCode={selectedProductCode} selectedAgentId={selectedAgentId} selectedReleaseId={selectedReleaseId} selectedConversationId={selectedConversationId} selectedClientId={selectedClientId} openClient={openClientRoute} selectedOrderId={selectedOrderId} openOrder={openOrderRoute} openEmployee={openEmployee} openProduct={openProduct} openAgentCreate={openAgentCreateRoute} openAgent={openAgentRoute} openRelease={openReleaseRoute} onAgentLoaded={setAgentName} reload={reload} setRoute={setRoute} user={user} onUserUpdated={onUserUpdated} onLogout={onLogout} />
           </div>
         </main>
