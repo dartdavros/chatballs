@@ -1,6 +1,7 @@
 import { EmptyState } from "../../../shared/ui";
 import { DocCard } from "./DocCard";
 import { DocCreateForm } from "./DocCreateForm";
+import { DocImportForm } from "./DocImportForm";
 import { knowledgeCategoryLabel, knowledgeCategoryOptions, type KnowledgeDoc } from "./model";
 
 export function AiAgentKnowledgeTab({ knowledge, channelName, product, onChanged }: { knowledge: KnowledgeDoc[]; channelName: string; product: { code: string; name: string } | null; onChanged: () => void }) {
@@ -30,6 +31,7 @@ export function AiAgentKnowledgeTab({ knowledge, channelName, product, onChanged
         />
       ))}
       <DocCreateForm kind="knowledge" categories={knowledgeCategoryOptions} product={product} withInclusion onCreated={onChanged} />
+      <DocImportForm kind="knowledge" onImported={onChanged} />
     </div>
   );
 }
