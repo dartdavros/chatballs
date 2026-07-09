@@ -30,6 +30,7 @@ from hub_platform.support.models import (
 )
 from hub_platform.support.selectors import contract_by_code
 from hub_platform.support.token import TokenClaims, claims_datetimes, verify_support_token
+from hub_platform.support.widget_credential import issue_widget_credential
 
 
 def _deny_channel_policy(channel) -> errors.SupportSessionError | None:
@@ -133,7 +134,14 @@ def _commit_session(
         },
         request=request,
     )
-    return {"conversation": conversation, "snapshot": snapshot}
+    widget_credential = issue_widget_credential(
+        conversation_id=conversation.id, snapshot_id=snapshot.id
+    )
+    return {
+        "conversation": conversation,
+        "snapshot": snapshot,
+        "widget_credential": widget_credential,
+    }
 
 
 def _audit_denied(

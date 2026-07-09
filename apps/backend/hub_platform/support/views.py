@@ -6,9 +6,11 @@ from rest_framework.views import APIView
 
 from hub_platform.api.permissions import IsOwner
 from hub_platform.channels.models import Channel
+from hub_platform.conversations.models import Conversation
 from hub_platform.conversations.serializers import conversation_payload
 from hub_platform.identity.audit import record_audit_event
 from hub_platform.support import errors
+from hub_platform.support.messages import post_support_message, support_messages_since
 from hub_platform.support.models import ProductSupportContract
 from hub_platform.support.selectors import contract_for_organization, contracts_for_organization
 from hub_platform.support.serializers import (
@@ -17,6 +19,7 @@ from hub_platform.support.serializers import (
 )
 from hub_platform.support.services import ContractInput, register_contract, set_contract_status
 from hub_platform.support.session import start_support_session
+from hub_platform.support.widget_credential import verify_widget_credential
 
 
 def _validation_error(error: ValidationError) -> Response:
@@ -145,9 +148,50 @@ class SupportSessionStartView(_Public):
             {
                 "conversation": conversation_payload(result["conversation"], with_messages=True),
                 "snapshot": support_identity_snapshot_payload(result["snapshot"]),
+                "widgetCredential": result["widget_credential"],
             },
             status=201,
         )
+
+
+def _resolve_widget_conversation(request: Request) -> Conversation | None:
+    """Возвращает conversation по widget-credential (Authorization: Bearer) или None."""
+    auth = request.headers.get("Authorization", "")
+    if not auth.startswith("Bearer "):
+        return None
+    claims = verify_widget_credential(auth[7:])
+    if claims is None:
+        return None
+    conversation = (
+        Conversation.objects.select_related("channel", "support_identity_snapshot")
+        .filter(id=claims["conversation_id"], support_identity_snapshot_id=claims["snapshot_id"])
+        .first()
+    )
+    return conversation
+
+
+class SupportSessionMessagesView(_Public):
+    # Polling (GET) и отправка (POST) сообщений support-диалога виджетом.
+    # Авторизация — stateless widget-credential (Bearer), выданный при старте сессии.
+    def get(self, request: Request) -> Response:
+        conversation = _resolve_widget_conversation(request)
+        if conversation is None:
+            return Response({"detail": "Сессия не найдена"}, status=401)
+        try:
+            since = int(request.GET.get("since", "0") or 0)
+        except ValueError:
+            since = 0
+        return Response(support_messages_since(conversation, since))
+
+    def post(self, request: Request) -> Response:
+        conversation = _resolve_widget_conversation(request)
+        if conversation is None:
+            return Response({"detail": "Сессия не найдена"}, status=401)
+        text = str(request.data.get("text", "")).strip()
+        if not text:
+            return Response({"detail": "Пустое сообщение"}, status=400)
+        post_support_message(conversation=conversation, text=text[:4000])
+        return Response({"ok": True}, status=201)
 
 
 class SupportSnapshotsBySubjectView(APIView):
