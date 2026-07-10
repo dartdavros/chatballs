@@ -20,7 +20,6 @@ export const routes: Record<RouteKey, string> = {
   aiAgentCreate: "Создание агента",
   aiAgentDetail: "Карточка агента",
   aiRelease: "Версия продукта",
-  aiTestChat: "Тестовый чат",
   aiUsage: "Использование AI",
   integrations: "Интеграции",
 };

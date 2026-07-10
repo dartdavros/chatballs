@@ -79,20 +79,18 @@ export function canPublishRelease(release: AiReleaseFull, checks: ReleaseCheck[]
   return release.status === "DRAFT" && checks.every((check) => check.tone === "ok");
 }
 
-export function validationBanner(checks: ReleaseCheck[], tested = true) {
+export function validationBanner(checks: ReleaseCheck[]) {
   const summary = checksSummary(checks);
   if (summary.tone === "error") return { title: "Найдены ошибки валидации", note: "Исправьте отмеченные пункты в составе версии, затем перезапустите проверку.", tone: "error" as const };
   if (summary.tone === "warn") return { title: "Черновик версии неполный", note: "Заполните обязательные разделы, чтобы перейти к проверке.", tone: "warn" as const };
-  if (!tested) return { title: "Готово к тестированию", note: "Проверки пройдены. Запустите тест-чат перед публикацией.", tone: "ok" as const };
-  return { title: "Готово к публикации", note: "Все проверки пройдены, протестировано в тест-чате. Можно публиковать.", tone: "ok" as const };
+  return { title: "Готово к публикации", note: "Все проверки пройдены. Можно публиковать.", tone: "ok" as const };
 }
 
-export function releaseState(checks: ReleaseCheck[], published: boolean, tested = true): { className: string; label: string } {
+export function releaseState(checks: ReleaseCheck[], published: boolean): { className: string; label: string } {
   const summary = checksSummary(checks);
   if (published) return { className: "published", label: "Опубликован" };
   if (summary.tone === "error") return { className: "errors", label: "Ошибки валидации" };
   if (summary.tone === "warn") return { className: "incomplete", label: "Неполный черновик" };
-  if (!tested) return { className: "ready-test", label: "Готов к тестированию" };
   return { className: "ready-publish", label: "Готов к публикации" };
 }
 

@@ -1,9 +1,8 @@
 import { Dropdown } from "antd";
 
-import type { RouteKey } from "../../types";
 import { Icon } from "../../shared/icons";
 import { StatusPill } from "../../shared/ui";
-import { Button, MonoLink, ToneBadge } from "../../shared/ui-controls";
+import { MonoLink, ToneBadge } from "../../shared/ui-controls";
 import { productAccent } from "../../shared/utils";
 import { publishedRelease, releaseName, type AiAgent, type AiRelease } from "./model";
 
@@ -13,7 +12,6 @@ export function AgentsTable({
   menuId,
   setMenuId,
   toggleActive,
-  setRoute,
   openAgent,
   openRelease,
 }: {
@@ -22,7 +20,6 @@ export function AgentsTable({
   menuId: number | null;
   setMenuId: (id: number | null) => void;
   toggleActive: (agent: AiAgent) => void;
-  setRoute: (route: RouteKey) => void;
   openAgent: (agentId: number) => void;
   openRelease: (releaseId: number) => void;
 }) {
@@ -84,7 +81,6 @@ export function AgentsTable({
                   <td className="numeric"><span className="product-empty-value">—</span></td>
                   <td className="row-actions">
                     <div className="ai-row-actions">
-                      <Button variant="secondary" className="ai-test-chat-btn" icon="message" iconSize={14} onClick={() => setRoute("aiTestChat")}>Тест-чат</Button>
                       <Dropdown
                         menu={{ items: menuItems }}
                         open={menuId === agent.id}

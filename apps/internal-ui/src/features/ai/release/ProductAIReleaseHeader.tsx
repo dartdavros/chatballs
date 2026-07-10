@@ -1,6 +1,5 @@
 import { Icon } from "../../../shared/icons";
 import { Button } from "../../../shared/ui-controls";
-import type { RouteKey } from "../../../types";
 import type { AiReleaseFull } from "../detail/model";
 import { formatDateTime, releaseLabel, releaseState, type ReleaseCheck } from "./model";
 
@@ -8,13 +7,11 @@ export function ProductAIReleaseHeader({
   canPublish,
   checks,
   release,
-  setRoute,
   startPublish,
 }: {
   canPublish: boolean;
   checks: ReleaseCheck[];
   release: AiReleaseFull;
-  setRoute: (route: RouteKey) => void;
   startPublish: () => void;
 }) {
   const state = releaseState(checks, release.status === "PUBLISHED");
@@ -38,7 +35,6 @@ export function ProductAIReleaseHeader({
       </div>
       <div className="release-actions">
         <Button variant="secondary" icon="expand">Сравнить с опубликованной</Button>
-        <Button variant="secondary" icon="message" onClick={() => setRoute("aiTestChat")}>Тест-чат</Button>
         <Button variant="primary" icon="send" disabled={!canPublish} onClick={startPublish}>
           {release.status === "PUBLISHED" ? "Опубликована" : "Опубликовать"}
         </Button>

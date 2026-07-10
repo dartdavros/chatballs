@@ -2,7 +2,6 @@ import { AiAgentsPage } from "../features/ai/AiAgentsPage";
 import { AiAgentCreatePage } from "../features/ai/create/AiAgentCreatePage";
 import { AiAgentDetailPage } from "../features/ai/detail/AiAgentDetailPage";
 import { ProductAIReleasePage } from "../features/ai/release/ProductAIReleasePage";
-import { AiTestChatPage } from "../features/ai/test-chat/AiTestChatPage";
 import { CommandCenter } from "../features/command/CommandCenter";
 import { IntegrationsPage } from "../features/integrations/IntegrationsPage";
 import { DepartmentsPage } from "../features/departments/DepartmentsPage";
@@ -40,11 +39,10 @@ export function ShellRouteContent({ route, data, currentEmployee, currentProduct
       {route === "salesDialogs" && <SalesDialogsPage initialConversationId={selectedConversationId} />}
       {route === "salesOrderDetail" && <SalesOrderDetailPage orderId={selectedOrderId} setRoute={setRoute} />}
       {route === "salesOrders" && <SalesOrdersPage setRoute={setRoute} openOrder={openOrder} />}
-      {route === "aiAgents" && <AiAgentsPage agents={data.agents} releases={data.releases} reload={reload} setRoute={setRoute} openAgentCreate={openAgentCreate} openAgent={openAgent} openRelease={openRelease} />}
+      {route === "aiAgents" && <AiAgentsPage agents={data.agents} releases={data.releases} reload={reload} openAgentCreate={openAgentCreate} openAgent={openAgent} openRelease={openRelease} />}
       {route === "aiAgentCreate" && <AiAgentCreatePage selectedProductCode={selectedProductCode} reload={reload} setRoute={setRoute} openAgent={openAgent} openRelease={openRelease} />}
-      {route === "aiAgentDetail" && <AiAgentDetailPage agentId={selectedAgentId} setRoute={setRoute} openRelease={openRelease} onAgentLoaded={onAgentLoaded} />}
-      {route === "aiRelease" && <ProductAIReleasePage releaseId={selectedReleaseId} setRoute={setRoute} onReleaseLoaded={onAgentLoaded} />}
-      {route === "aiTestChat" && <AiTestChatPage />}
+      {route === "aiAgentDetail" && <AiAgentDetailPage agentId={selectedAgentId} openRelease={openRelease} onAgentLoaded={onAgentLoaded} />}
+      {route === "aiRelease" && <ProductAIReleasePage releaseId={selectedReleaseId} onReleaseLoaded={onAgentLoaded} />}
       {route === "integrations" && <IntegrationsPage />}
     </>
   );
