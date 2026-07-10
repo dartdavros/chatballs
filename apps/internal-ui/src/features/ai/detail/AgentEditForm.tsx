@@ -10,23 +10,25 @@ import type { AiAgentDetail } from "./model";
 // Известные инструменты системы (services.py: operator-handoff). Хранятся как string[].
 const TOOLS: Array<[string, string]> = [["operator-handoff", "Передача оператору"]];
 
-// Фиксированный набор лимитов (release/model.ts limitLabel). Числовые поля.
-const LIMIT_FIELDS: Array<[string, string]> = [
-  ["dailyDialogs", "Диалогов в день"],
-  ["maxMessagesPerDialog", "Макс. сообщений / диалог"],
-  ["dailyBudgetRub", "Бюджет в день, ₽"],
-  ["dailyCostMicros", "Бюджет в день, micros"],
-];
+// Дневной бюджет хранится в целых центах USD (dailyCostUsd); в поле вводим доллары.
+function budgetFromCents(limits: Record<string, unknown>): string {
+  const cents = limits?.dailyCostUsd;
+  if (typeof cents !== "number" || cents <= 0) return "";
+  return (cents / 100).toString();
+}
 
-function isNumber(value: string): boolean {
-  return value === "" || /^\d+$/.test(value.trim());
+// Допускаются неотрицательные доллары: до 2 знаков после запятой, разделитель «.» или «,».
+function isBudget(value: string): boolean {
+  const trimmed = value.trim();
+  if (trimmed === "") return true;
+  return /^\d+([.,]\d{1,2})?$/.test(trimmed);
 }
 
 export function AgentEditForm({ agent, onClose, onSaved }: { agent: AiAgentDetail; onClose: () => void; onSaved: () => void }) {
   const [name, setName] = useState(agent.name);
   const [model, setModel] = useState(agent.model);
   const [tools, setTools] = useState<string[]>(Array.isArray(agent.allowedTools) ? (agent.allowedTools as string[]) : []);
-  const [limits, setLimits] = useState<Record<string, number>>({ ...(agent.limits as Record<string, number>) });
+  const [budget, setBudget] = useState(budgetFromCents(agent.limits as Record<string, unknown>));
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,30 +36,18 @@ export function AgentEditForm({ agent, onClose, onSaved }: { agent: AiAgentDetai
     setTools((current) => (current.includes(code) ? current.filter((item) => item !== code) : [...current, code]));
   }
 
-  function setLimit(key: string, value: string) {
-    setLimits((current) => {
-      const next = { ...current };
-      const trimmed = value.trim();
-      next[key] = trimmed === "" ? Number.NaN : Number(trimmed);
-      return next;
-    });
-  }
-
-  const limitsValid = Object.values(limits).every((value) => Number.isFinite(value));
-  const ready = name.trim().length > 0 && limitsValid;
+  const ready = name.trim().length > 0 && isBudget(budget);
 
   async function submit() {
     if (!ready) return;
     setSubmitting(true);
     setError(null);
-    const cleanLimits: Record<string, number> = {};
-    for (const [key, value] of Object.entries(limits)) {
-      if (Number.isFinite(value)) cleanLimits[key] = value;
-    }
+    const dollars = parseFloat(budget.trim().replace(",", "."));
+    const limits: Record<string, number> = Number.isFinite(dollars) && dollars > 0 ? { dailyCostUsd: Math.round(dollars * 100) } : {};
     try {
       await api(`/api/v1/ai/agents/${agent.id}/update/`, {
         method: "PATCH",
-        body: JSON.stringify({ name: name.trim(), model, allowedTools: tools, limits: cleanLimits }),
+        body: JSON.stringify({ name: name.trim(), model, allowedTools: tools, limits }),
       });
       onSaved();
     } catch (caught) {
@@ -86,18 +76,17 @@ export function AgentEditForm({ agent, onClose, onSaved }: { agent: AiAgentDetai
         <div className="ai-edit-limits">
           <span className="ai-edit-label">Лимиты</span>
           <div className="ai-edit-limit-grid">
-            {LIMIT_FIELDS.map(([key, label]) => (
-              <label key={key} className="ai-edit-limit-field">
-                <span>{label}</span>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  className={isNumber(String(limits[key] ?? "")) ? "" : "invalid"}
-                  value={limits[key] === undefined || Number.isNaN(limits[key]) ? "" : String(limits[key])}
-                  onChange={(event) => setLimit(key, event.target.value)}
-                />
-              </label>
-            ))}
+            <label className="ai-edit-limit-field">
+              <span>Бюджет в день, $</span>
+              <input
+                type="text"
+                inputMode="decimal"
+                className={isBudget(budget) ? "" : "invalid"}
+                value={budget}
+                placeholder="0.00"
+                onChange={(event) => setBudget(event.target.value)}
+              />
+            </label>
           </div>
         </div>
         {error && <div className="integration-form-error">{error}</div>}

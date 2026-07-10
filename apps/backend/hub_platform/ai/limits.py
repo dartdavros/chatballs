@@ -25,6 +25,8 @@ def assert_within_limits(channel, agent) -> None:
     global_limit = settings.HUB_AI_GLOBAL_DAILY_COST_LIMIT_MICROS
     if global_limit and daily_cost_micros() >= global_limit:
         raise LimitExceeded("Global daily AI cost limit reached")
-    channel_limit = (agent.limits or {}).get("dailyCostMicros")
-    if channel_limit and daily_cost_micros(channel) >= channel_limit:
+    # Канальный лимит хранится в целых центах USD (dailyCostUsd); расход учитывается
+    # в micro-USD. 1 цент = 10 000 micro-USD.
+    channel_limit = (agent.limits or {}).get("dailyCostUsd")
+    if channel_limit and daily_cost_micros(channel) >= int(channel_limit) * 10_000:
         raise LimitExceeded("Channel daily AI cost limit reached")

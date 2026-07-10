@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 
 import { Icon } from "../../../shared/icons";
-import type { AiReleaseFull, KnowledgeDoc, PromptDoc } from "../detail/model";
-import { formatParam, isPromptChanged, knowledgeTitle, limitLabel, promptTitle, promptVersionDate, toolLabel } from "./model";
+import { dailyBudget, type AiReleaseFull, type KnowledgeDoc, type PromptDoc } from "../detail/model";
+import { formatParam, isPromptChanged, knowledgeTitle, promptTitle, promptVersionDate, toolLabel } from "./model";
 
 function ReleaseCard({ children, className = "", title, icon }: { children: ReactNode; className?: string; icon?: ReactNode; title: string }) {
   return (
@@ -30,7 +30,7 @@ function VersionRow({ changed, date, title, version }: { changed?: boolean; date
 export function ReleaseComposition({ knowledge, prompts, published, release }: { knowledge: KnowledgeDoc[]; prompts: PromptDoc[]; published?: AiReleaseFull; release: AiReleaseFull }) {
   const modelParams = release.modelParams ?? {};
   const tools = release.allowedTools.map(toolLabel).filter((tool) => tool !== "—");
-  const limitRows = Object.entries(release.limits ?? {});
+  const budget = dailyBudget(release.limits ?? {});
 
   return (
     <div className="release-composition">
@@ -86,15 +86,13 @@ export function ReleaseComposition({ knowledge, prompts, published, release }: {
           )}
         </ReleaseCard>
         <ReleaseCard title="Лимиты">
-          {limitRows.length === 0 ? (
+          {budget === "—" ? (
             <EmptyRow compact />
           ) : (
-            limitRows.map(([key, value]) => (
-              <div className="release-limit-line" key={key}>
-                <span>{limitLabel(key)}</span>
-                <b>{formatParam(value)}</b>
-              </div>
-            ))
+            <div className="release-limit-line">
+              <span>Бюджет в день</span>
+              <b>{budget}</b>
+            </div>
           )}
         </ReleaseCard>
       </div>

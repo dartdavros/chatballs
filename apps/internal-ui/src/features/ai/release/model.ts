@@ -131,13 +131,3 @@ export function isPromptChanged(published: AiReleaseFull | undefined, code: stri
 export function isKnowledgeChanged(published: AiReleaseFull | undefined, code: string, version: number): boolean {
   return published ? !published.knowledgeVersions.some((item) => item.document === code && item.version === version) : true;
 }
-
-export function limitLabel(key: string): string {
-  const labels: Record<string, string> = {
-    dailyBudgetRub: "Бюджет в день",
-    dailyCostMicros: "Бюджет в день",
-    dailyDialogs: "Диалогов в день",
-    maxMessagesPerDialog: "Макс. сообщений / диалог",
-  };
-  return labels[key] ?? key;
-}

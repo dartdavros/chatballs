@@ -34,6 +34,20 @@ class AgentCreateInput:
     knowledge_document_ids: list[int]
 
 
+# Единственный поддерживаемый лимит агента — дневной бюджет в целых центах USD
+# (dailyCostUsd). Прочие исторические ключи (dailyCostMicros, dailyBudgetRub,
+# dailyDialogs, maxMessagesPerDialog) бэкендом не используются и отбрасываются.
+def _normalize_limits(raw: dict | None) -> dict:
+    if not isinstance(raw, dict):
+        return {}
+    value = raw.get("dailyCostUsd")
+    try:
+        cents = int(value)
+    except (TypeError, ValueError):
+        return {}
+    return {"dailyCostUsd": cents} if cents > 0 else {}
+
+
 START_PROMPTS: tuple[tuple[str, str, str], ...] = (
     ("system", "Системный prompt", PromptCategory.SYSTEM),
     ("qualification", "Квалификация", PromptCategory.QUALIFICATION),
@@ -122,7 +136,7 @@ def update_agent(*, agent: AIAgent, data: AgentInput) -> AIAgent:
     agent.model = data.model
     agent.model_params = data.model_params
     agent.allowed_tools = data.allowed_tools
-    agent.limits = data.limits
+    agent.limits = _normalize_limits(data.limits)
     agent.save(update_fields=["name", "model", "model_params", "allowed_tools", "limits", "updated_at"])
     return agent
 
