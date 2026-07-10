@@ -93,7 +93,7 @@ export function Shell({ route, setRoute, selectedEmployeeId, selectedProductId, 
   const isSalesOrders = route === "salesOrderDetail" || route === "salesOrders";
   // Подменю AI показываем только там, где оно есть в baseline.
   const isAiSection = route === "aiAgents" || route === "aiUsage";
-  const isAiFullWidth = route === "aiAgentCreate" || route === "aiRelease" || route === "aiTestChat";
+  const isAiFullWidth = route === "aiAgentCreate" || route === "aiRelease";
   // OPERATOR работает в пространстве своего отдела (SPEC-HUB-0004 §9 + §0010 §10):
   // sales operator → sales-sidebar, support operator → support-sidebar.
   const showSalesSidebar = isSalesWorkspace || (user.role === "OPERATOR" && user.department !== "support" && !isSupportWorkspace);

@@ -14,7 +14,7 @@ function buildRelease(overrides: Partial<AiReleaseFull> = {}): AiReleaseFull {
     model: "anthropic/claude-sonnet-4.6",
     modelParams: {},
     allowedTools: [{ name: "handoff" }],
-    limits: { maxMessagesPerDialog: 12 },
+    limits: { dailyCostUsd: 500 },
     notes: "",
     retrievalIndexVersion: "",
     knowledgeVersions: [{ document: "overview", version: 1 }],

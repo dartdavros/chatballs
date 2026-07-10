@@ -128,9 +128,9 @@ export function releaseDisplayName(release: AiReleaseFull): string {
   return `REL-${prefix.toUpperCase()}-v${release.version}`;
 }
 
-// agent.limits — свободный JSON; пока бэкенд хранит только дневной лимит стоимости (micro-USD).
+// agent.limits — единый поддерживаемый лимит: дневной бюджет в целых центах USD (dailyCostUsd).
 export function dailyBudget(limits: Record<string, unknown>): string {
-  const micros = limits?.dailyCostMicros;
-  if (typeof micros !== "number" || micros <= 0) return "—";
-  return `$${(micros / 1_000_000).toLocaleString("ru-RU", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} / день`;
+  const cents = limits?.dailyCostUsd;
+  if (typeof cents !== "number" || cents <= 0) return "—";
+  return `$${(cents / 100).toLocaleString("ru-RU", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} / день`;
 }

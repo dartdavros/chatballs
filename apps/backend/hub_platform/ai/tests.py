@@ -450,10 +450,11 @@ class ChatInvocationTests(TestCase):
         from hub_platform.ai.models import LlmInvocation, LlmInvocationStatus
         from hub_platform.ai.provider.base import ChatMessage
 
-        self.agent.limits = {"dailyCostMicros": 1}
+        self.agent.limits = {"dailyCostUsd": 1}
         self.agent.save(update_fields=["limits"])
+        # 1 цент = 10 000 micro-USD; лимит превышен расходом в 10_001 micros.
         LlmInvocation.objects.create(
-            channel=self.channel, purpose="seed", operation="chat", model="x", cost_micros=10,
+            channel=self.channel, purpose="seed", operation="chat", model="x", cost_micros=10_001,
             status=LlmInvocationStatus.SUCCESS,
         )
 

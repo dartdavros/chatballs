@@ -2,20 +2,17 @@ import { Icon } from "../../../shared/icons";
 import { StatusPill } from "../../../shared/ui";
 import { Button } from "../../../shared/ui-controls";
 import { productAccent } from "../../../shared/utils";
-import type { RouteKey } from "../../../types";
 import { dailyBudget, publishedRelease, releaseDisplayName, type AiAgentDetail, type AiReleaseFull } from "./model";
 
 export function AiAgentDetailHeader({
   agent,
   releases,
-  setRoute,
   openRelease,
   createRelease,
   onEditChannel,
 }: {
   agent: AiAgentDetail;
   releases: AiReleaseFull[];
-  setRoute: (route: RouteKey) => void;
   openRelease: (releaseId: number) => void;
   createRelease: () => void;
   onEditChannel: () => void;
@@ -40,7 +37,6 @@ export function AiAgentDetailHeader({
         </div>
       </div>
       <div className="ai-agent-header-actions">
-        <Button variant="secondary" icon="message" onClick={() => setRoute("aiTestChat")}>Тест-чат</Button>
         <Button variant="primary" icon="plus" onClick={createRelease}>Создать черновик версии</Button>
       </div>
     </section>

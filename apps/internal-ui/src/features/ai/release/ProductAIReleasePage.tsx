@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 
 import { api } from "../../../api/client";
 import { EmptyState, LoadingState } from "../../../shared/ui";
-import type { RouteKey } from "../../../types";
 import { ProductAIReleaseHeader } from "./ProductAIReleaseHeader";
 import { PublishReleaseModal } from "./PublishReleaseModal";
 import { ReleaseComposition } from "./ReleaseComposition";
@@ -13,11 +12,9 @@ import { useProductAIRelease } from "./useProductAIRelease";
 export function ProductAIReleasePage({
   onReleaseLoaded,
   releaseId,
-  setRoute,
 }: {
   onReleaseLoaded: (name: string | null) => void;
   releaseId: number | null;
-  setRoute: (route: RouteKey) => void;
 }) {
   const { release, releases, knowledge, prompts, loading, error, reload } = useProductAIRelease(releaseId);
   const [modalOpen, setModalOpen] = useState(false);
@@ -54,7 +51,7 @@ export function ProductAIReleasePage({
 
   return (
     <div className="ai-release-page">
-      <ProductAIReleaseHeader canPublish={canPublish} checks={checks} release={release} setRoute={setRoute} startPublish={() => setModalOpen(true)} />
+      <ProductAIReleaseHeader canPublish={canPublish} checks={checks} release={release} startPublish={() => setModalOpen(true)} />
       <div className="ai-release-body">
         <ReleaseValidationBanner checks={checks} runChecks={reload} />
         <div className="release-layout">

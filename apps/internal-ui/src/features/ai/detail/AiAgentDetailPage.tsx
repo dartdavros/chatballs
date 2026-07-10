@@ -4,7 +4,6 @@ import { api } from "../../../api/client";
 import { Icon } from "../../../shared/icons";
 import { EmptyState, LoadingState } from "../../../shared/ui";
 import { Button, UnderlineTabs } from "../../../shared/ui-controls";
-import type { RouteKey } from "../../../types";
 import { AiAgentDetailHeader } from "./AiAgentDetailHeader";
 import { AgentEditForm } from "./AgentEditForm";
 import { ChannelEditForm } from "./ChannelEditForm";
@@ -16,7 +15,7 @@ import { AiAgentReleasesTab } from "./AiAgentReleasesTab";
 import { agentTabs, type AgentTab, type AiReleaseFull } from "./model";
 import { useAiAgentDetail } from "./useAiAgentDetail";
 
-export function AiAgentDetailPage({ agentId, setRoute, openRelease, onAgentLoaded }: { agentId: number | null; setRoute: (route: RouteKey) => void; openRelease: (releaseId: number) => void; onAgentLoaded: (name: string | null) => void }) {
+export function AiAgentDetailPage({ agentId, openRelease, onAgentLoaded }: { agentId: number | null; openRelease: (releaseId: number) => void; onAgentLoaded: (name: string | null) => void }) {
   const { agent, releases, knowledge, prompts, loading, error, reload } = useAiAgentDetail(agentId);
   const [tab, setTab] = useState<AgentTab>("overview");
   const [editOpen, setEditOpen] = useState(false);
@@ -50,7 +49,7 @@ export function AiAgentDetailPage({ agentId, setRoute, openRelease, onAgentLoade
 
   return (
     <div className="ai-agent-page">
-      <AiAgentDetailHeader agent={agent} releases={releases} setRoute={setRoute} openRelease={openRelease} createRelease={createRelease} onEditChannel={() => setChannelEdit(true)} />
+      <AiAgentDetailHeader agent={agent} releases={releases} openRelease={openRelease} createRelease={createRelease} onEditChannel={() => setChannelEdit(true)} />
       <UnderlineTabs className="ai-agent-tabs" items={agentTabs} value={tab} onChange={setTab} />
       {(tab === "instructions" || tab === "knowledge") && (
         <div className="ai-notice ai-golive-notice">
