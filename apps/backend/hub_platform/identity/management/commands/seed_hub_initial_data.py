@@ -172,6 +172,15 @@ class Command(BaseCommand):
         parser.add_argument("--owner-name", default="")
 
     def handle(self, *args: object, **options: object) -> None:
+        # Seed выполняется только при первичной установке: OWNER создаётся ровно
+        # однажды (см. _seed_core). На уже развёрнутой установке команда — no-op,
+        # чтобы не затирать данные, изменённые через UI/API (например цены офферов).
+        if EmployeeProfile.objects.filter(role=EmployeeRole.OWNER).exists():
+            self.stdout.write(self.style.WARNING(
+                "Installation already initialized (OWNER exists) — seed skipped."
+            ))
+            return
+
         owner_email = _option_or_env(options, "owner_email", "HUB_SEED_OWNER_EMAIL")
         owner_password = _option_or_env(options, "owner_password", "HUB_SEED_OWNER_PASSWORD")
         owner_name = _option_or_env(options, "owner_name", "HUB_SEED_OWNER_NAME")
