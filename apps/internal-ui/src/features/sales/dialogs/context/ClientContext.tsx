@@ -1,7 +1,9 @@
+import { useState } from "react";
+
 import { channelMeta } from "../../../conversations/data";
 import { FieldRow } from "../../../conversations/FieldRow";
 import { ContextSection } from "../../../conversations/ContextSection";
-import type { ApiConversation } from "../../../conversations/model";
+import { requestContact, type ApiConversation } from "../../../conversations/model";
 import type { ConversationListItem } from "../../../conversations/types";
 
 const LIFECYCLE_LABEL: Record<string, string> = { OPEN: "Открыт", CLOSED: "Закрыт", SPAM: "Спам" };
@@ -13,14 +15,53 @@ function fmt(value?: string): string {
 }
 
 export function ClientContext({ dialog, detail }: { dialog: ConversationListItem | null; detail: ApiConversation | null }) {
+  const [requesting, setRequesting] = useState(false);
+  const [justRequested, setJustRequested] = useState(false);
+  const [requestError, setRequestError] = useState(false);
+
   if (!dialog) {
     return <div className="sales-client-context"><p className="sales-context-muted">Выберите диалог</p></div>;
   }
   const channel = channelMeta[dialog.channel];
   const messageCount = detail?.messages?.length ?? 0;
+
+  const contact = detail?.contact ?? null;
+  const phone = contact?.phone ?? "";
+  const username = contact?.username ?? "";
+  // Запрос уже отправлен, если в диалоге есть сообщение kind=contact_request (detail поллится каждые 3 с).
+  const alreadyRequested = justRequested || (detail?.messages ?? []).some((m) => m.kind === "contact_request");
+  const canRequest = Boolean(detail && contact && detail.connection && !phone && detail.lifecycle === "OPEN");
+
+  async function onRequestContact() {
+    if (!detail || requesting) return;
+    setRequesting(true);
+    setRequestError(false);
+    try {
+      await requestContact(detail.id);
+      setJustRequested(true);
+    } catch {
+      setRequestError(true);
+    } finally {
+      setRequesting(false);
+    }
+  }
+
   return (
     <div className="sales-client-context">
       <div className="sales-client-hero"><span style={{ background: dialog.avatarBg }}>{dialog.initials}</span><strong>{dialog.name}</strong></div>
+
+      <ContextSection title="КОНТАКТ">
+        <FieldRow dot={channel.color} title={username ? `@${username}` : "—"} text={`Логин · ${channel.label}`} />
+        <FieldRow icon="phone" title={phone || "—"} text="Телефон" mono={Boolean(phone)} muted={!phone} />
+        {contact && !phone && (
+          <>
+            <button className="sales-secondary-action" style={{ width: "100%", marginTop: 8 }} onClick={() => void onRequestContact()} disabled={!canRequest || requesting || alreadyRequested}>
+              {requesting ? "Отправка…" : alreadyRequested ? "Контакт запрошен" : "Запросить контакт"}
+            </button>
+            {requestError && <p className="sales-context-muted" style={{ color: "#cf1322" }}>Не удалось отправить запрос — попробуйте ещё раз</p>}
+          </>
+        )}
+      </ContextSection>
 
       <ContextSection title="КАНАЛ">
         <FieldRow dot={channel.color} title={channel.label} text={detail?.connection?.name ?? "—"} note={dialog.product} />

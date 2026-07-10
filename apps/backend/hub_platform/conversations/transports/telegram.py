@@ -31,7 +31,9 @@ def _normalize(update: dict) -> InboundMessage | None:
     text = message.get("text") or ""
     sender = message.get("from") or {}
     chat = message.get("chat") or {}
-    if not text or "id" not in sender or "id" not in chat:
+    # Контакт приходит отдельным сообщением без текста (ответ на request_contact).
+    phone = str((message.get("contact") or {}).get("phone_number") or "")
+    if (not text and not phone) or "id" not in sender or "id" not in chat:
         return None
     name = " ".join(p for p in [sender.get("first_name"), sender.get("last_name")] if p) or sender.get("username") or ""
     return InboundMessage(
@@ -40,6 +42,8 @@ def _normalize(update: dict) -> InboundMessage | None:
         chat_id=str(chat["id"]),
         text=str(text),
         display_name=str(name),
+        username=str(sender.get("username") or ""),
+        phone=phone,
     )
 
 
@@ -65,15 +69,34 @@ def poll_updates(integration) -> tuple[list[InboundMessage], str]:
     return messages, new_marker
 
 
-def send_text(integration, *, chat_id: str, user_id: str, text: str) -> bool:
+def _send(integration, *, chat_id: str, user_id: str, body: dict) -> bool:
     token = integration.secret
     target = chat_id or user_id
     if not token or not target:
         return False
     url = f"{_base(integration)}/bot{token}/sendMessage"
     try:
-        request_json(url, headers={"Content-Type": "application/json"}, method="POST", body={"chat_id": target, "text": text}, proxy_url=_proxy(integration))
+        request_json(url, headers={"Content-Type": "application/json"}, method="POST", body={"chat_id": target, **body}, proxy_url=_proxy(integration))
         return True
     except (urllib.error.URLError, TimeoutError, OSError, http.client.HTTPException, json.JSONDecodeError) as error:
         logger.warning("Telegram send failed for integration %s: %s", integration.id, error)
         return False
+
+
+def send_text(integration, *, chat_id: str, user_id: str, text: str) -> bool:
+    return _send(integration, chat_id=chat_id, user_id=user_id, body={"text": text})
+
+
+def send_contact_request(integration, *, chat_id: str, user_id: str, text: str) -> bool:
+    # Reply-клавиатура с request_contact: телефон бот получает только так.
+    keyboard = {
+        "keyboard": [[{"text": "Поделиться контактом", "request_contact": True}]],
+        "one_time_keyboard": True,
+        "resize_keyboard": True,
+    }
+    return _send(integration, chat_id=chat_id, user_id=user_id, body={"text": text, "reply_markup": keyboard})
+
+
+def send_contact_ack(integration, *, chat_id: str, user_id: str, text: str) -> bool:
+    # Подтверждение + снятие reply-клавиатуры, чтобы кнопка не висела у клиента.
+    return _send(integration, chat_id=chat_id, user_id=user_id, body={"text": text, "reply_markup": {"remove_keyboard": True}})

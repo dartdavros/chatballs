@@ -1,7 +1,8 @@
 import { api } from "../../api/client";
 import type { ChannelKey, ConversationListItem, ControlMode, DialogMode } from "./types";
 
-export type ApiMessage = { id: number; author: "CONTACT" | "AI" | "OPERATOR" | "SYSTEM"; text: string; createdAt: string };
+// kind: "" — текст, "contact_request" — запрос контакта, "contact" — клиент поделился номером.
+export type ApiMessage = { id: number; author: "CONTACT" | "AI" | "OPERATOR" | "SYSTEM"; kind?: string; text: string; createdAt: string };
 
 export type HistoryItem = {
   id: number;
@@ -43,7 +44,8 @@ export type ApiConversation = {
   connection: { id: number; provider: "MAX" | "TELEGRAM" | "WEB"; name: string } | null;
   // Источник identity: sales Contact (лид) ИЛИ verified SupportIdentitySnapshot.
   // ADR-HUB-0022: ровно один заполнен.
-  contact: { id: number; name: string } | null;
+  // phone появляется после явного шаринга контакта; username (@логин TG/MAX) — только в detail-режиме.
+  contact: { id: number; name: string; phone?: string; username?: string } | null;
   supportIdentitySnapshot: SupportIdentitySnapshotRef | null;
   lifecycle: "OPEN" | "CLOSED" | "SPAM";
   controlMode: "AI" | "HUMAN" | "PAUSED";
@@ -113,6 +115,8 @@ export const claimConversation = (id: number) => api<{ conversation: ApiConversa
 export const releaseConversation = (id: number) => api<{ conversation: ApiConversation }>(`/api/v1/conversations/${id}/release/`, { method: "POST" }).then((r) => r.conversation);
 export const sendOperatorMessage = (id: number, text: string) => api(`/api/v1/conversations/${id}/messages/`, { method: "POST", body: JSON.stringify({ text }) });
 export const returnToQueue = (id: number) => api<{ conversation: ApiConversation }>(`/api/v1/conversations/${id}/return-queue/`, { method: "POST" }).then((r) => r.conversation);
+// Запрос контакта: в TG/MAX клиент видит кнопку «Поделиться контактом», в веб-чате — форму телефона.
+export const requestContact = (id: number) => api(`/api/v1/conversations/${id}/request-contact/`, { method: "POST" });
 export const closeConversation = (id: number) => api<{ conversation: ApiConversation }>(`/api/v1/conversations/${id}/close/`, { method: "POST" }).then((r) => r.conversation);
 // Бейдж ожидающих диалогов. ConversationStatsView сейчас sales-only (SPEC §12:
 // support-метрики — отдельный endpoint); department-параметр backend не использует.

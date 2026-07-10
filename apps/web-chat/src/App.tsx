@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-import { getConfig, poll, sendMessage, startSession, type WebConfig, type WebMessage } from "./api";
+import { getConfig, poll, sendContact, sendMessage, startSession, type WebConfig, type WebMessage } from "./api";
 
 const CHANNEL = new URLSearchParams(location.search).get("channel") || "edevs";
 const TOKEN_KEY = `edevs-chat-token:${CHANNEL}`;
@@ -19,6 +19,7 @@ export function App() {
   const [awaiting, setAwaiting] = useState(false);
   const [input, setInput] = useState("");
   const [starting, setStarting] = useState(false);
+  const [contactSent, setContactSent] = useState(false);
   const lastId = useRef(0);
   const bodyRef = useRef<HTMLDivElement>(null);
 
@@ -88,6 +89,26 @@ export function App() {
     setAwaiting(false);
   }
 
+  async function submitContact(phone: string): Promise<boolean> {
+    if (!token) return false;
+    const ok = await sendContact(token, phone).catch(() => false);
+    if (ok) {
+      setContactSent(true);
+      try {
+        ingestPoll(await poll(token, lastId.current));
+      } catch {
+        /* polling loop will retry */
+      }
+    }
+    return ok;
+  }
+
+  // Форма телефона показывается под последним запросом контакта, пока клиент
+  // не поделился номером (kind=contact) в этой сессии.
+  const lastContactRequestId = messages.reduce((acc, m) => (m.kind === "contact_request" ? m.id : acc), 0);
+  const contactShared = contactSent || messages.some((m) => m.kind === "contact");
+  const showPhoneForm = lastContactRequestId > 0 && !contactShared;
+
   const status = state === "operator"
     ? { label: "Отвечает специалист", dot: "#52c41a" }
     : state === "waiting"
@@ -143,7 +164,14 @@ export function App() {
             {config.greeting && <Bubble author="ai" text={config.greeting} accent={accent} />}
             {messages.map((m) => (m.author === "system"
               ? <div key={m.id} style={{ textAlign: "center", margin: "12px 0" }}><span style={{ display: "inline-block", padding: "4px 12px", borderRadius: 20, background: "#e6f4ff", border: "1px solid #91caff", fontSize: 11.5, color: "#0958d9" }}>{m.text}</span></div>
-              : <Bubble key={m.id} author={m.author} text={m.text} accent={accent} />))}
+              : (
+                <div key={m.id}>
+                  <Bubble author={m.author} text={m.text} accent={accent} />
+                  {m.kind === "contact_request" && m.id === lastContactRequestId && showPhoneForm && (
+                    <PhoneForm accent={accent} onSubmit={submitContact} />
+                  )}
+                </div>
+              )))}
             {pending.map((t, i) => <Bubble key={`p${i}`} author="client" text={t} accent={accent} pendingState />)}
             {awaiting && <Typing />}
           </>
@@ -206,6 +234,60 @@ function Bubble({ author, text, accent, pendingState }: { author: "client" | "ai
         <div style={{ background: "#fff", border: "1px solid #eee", borderRadius: "14px 14px 14px 4px", padding: "9px 13px", fontSize: 13.5, lineHeight: 1.45, color: "#262626", whiteSpace: "pre-wrap" }}>{text}</div>
         <div style={{ fontSize: 10.5, color: "#bfbfbf", margin: "3px 0 0 4px" }}>{isOperator ? "Специалист" : "Виртуальный помощник"}</div>
       </div>
+    </div>
+  );
+}
+
+// Маска +7 (999) 999-99-99: ввод сводится к цифрам, 8/7 в начале нормализуются.
+function formatPhone(raw: string): string {
+  let digits = raw.replace(/\D/g, "");
+  if (!digits) return "";
+  if (digits.startsWith("8")) digits = "7" + digits.slice(1);
+  if (!digits.startsWith("7")) digits = "7" + digits;
+  digits = digits.slice(0, 11);
+  let out = "+7";
+  if (digits.length > 1) out += ` (${digits.slice(1, 4)}`;
+  if (digits.length >= 4) out += ")";
+  if (digits.length > 4) out += ` ${digits.slice(4, 7)}`;
+  if (digits.length > 7) out += `-${digits.slice(7, 9)}`;
+  if (digits.length > 9) out += `-${digits.slice(9, 11)}`;
+  return out;
+}
+
+function PhoneForm({ accent, onSubmit }: { accent: string; onSubmit: (phone: string) => Promise<boolean> }) {
+  const [phone, setPhone] = useState("");
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState(false);
+  const valid = phone.replace(/\D/g, "").length === 11;
+
+  async function submit() {
+    if (!valid || sending) return;
+    setSending(true);
+    setError(false);
+    const ok = await onSubmit(phone);
+    setSending(false);
+    if (!ok) setError(true);
+  }
+
+  return (
+    <div style={{ margin: "2px 0 10px 36px", maxWidth: "78%", background: "#fff", border: "1px solid #eee", borderRadius: 12, padding: 12 }}>
+      <input
+        type="tel"
+        inputMode="tel"
+        value={phone}
+        onChange={(e) => setPhone(formatPhone(e.target.value))}
+        onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); void submit(); } }}
+        placeholder="+7 (___) ___-__-__"
+        style={{ width: "100%", boxSizing: "border-box", border: `1px solid ${error ? "#ff7875" : "#e0e0e0"}`, borderRadius: 8, padding: "9px 12px", fontSize: 13.5, outline: "none", color: "#262626", fontFamily: "inherit" }}
+      />
+      {error && <div style={{ fontSize: 11.5, color: "#cf1322", marginTop: 6 }}>Не получилось отправить — проверьте номер и попробуйте ещё раз.</div>}
+      <button
+        onClick={() => void submit()}
+        disabled={!valid || sending}
+        style={{ width: "100%", marginTop: 8, height: 36, borderRadius: 8, border: "none", background: valid && !sending ? accent : "#d9d9d9", color: "#fff", fontSize: 13, fontWeight: 600, cursor: valid && !sending ? "pointer" : "default" }}
+      >
+        {sending ? "Отправка…" : "Отправить контакт"}
+      </button>
     </div>
   );
 }

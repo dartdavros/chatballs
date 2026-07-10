@@ -25,6 +25,7 @@ from hub_platform.conversations.models import (
     LifecycleState,
     Message,
     MessageAuthor,
+    MessageKind,
 )
 from hub_platform.conversations import transports
 from hub_platform.conversations.transports.base import InboundMessage
@@ -67,6 +68,10 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
     if _already_processed(source, inbound.external_id, inbound.text):
         return
 
+    # Явный шаринг контакта: сообщение без текста, но с телефоном.
+    is_contact_share = bool(inbound.phone)
+    message_text = inbound.text or (f"Поделился контактом: {inbound.phone}" if is_contact_share else "")
+
     with transaction.atomic():
         identity = (
             ConnectionIdentity.objects.select_related("contact")
@@ -76,9 +81,19 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
         if identity is None:
             contact = Contact.objects.create(organization=channel.organization, name=inbound.display_name)
             identity = ConnectionIdentity.objects.create(
-                contact=contact, connection=integration, external_user_id=inbound.user_id, display_name=inbound.display_name
+                contact=contact,
+                connection=integration,
+                external_user_id=inbound.user_id,
+                display_name=inbound.display_name,
+                username=inbound.username,
             )
+        elif inbound.username and identity.username != inbound.username:
+            identity.username = inbound.username
+            identity.save(update_fields=["username"])
         contact = identity.contact
+        if is_contact_share and contact.phone != inbound.phone:
+            contact.phone = inbound.phone
+            contact.save(update_fields=["phone"])
 
         conversation = (
             Conversation.objects.filter(channel=channel, contact=contact, lifecycle=LifecycleState.OPEN)
@@ -104,7 +119,11 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
             conversation.external_chat_id = inbound.chat_id
 
         Message.objects.create(
-            conversation=conversation, author_type=MessageAuthor.CONTACT, text=inbound.text, external_id=inbound.external_id
+            conversation=conversation,
+            author_type=MessageAuthor.CONTACT,
+            kind=MessageKind.CONTACT if is_contact_share else MessageKind.TEXT,
+            text=message_text,
+            external_id=inbound.external_id,
         )
         conversation.last_activity_at = timezone.now()
         conversation.save(update_fields=["external_chat_id", "last_activity_at"])
@@ -115,7 +134,7 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
             type=NotificationType.DIALOG_WAITING,
             audience=NotificationAudience.OPERATORS,
             title=f"Новый диалог · {channel.name}",
-            body=f"{contact.name or 'Гость'} · {integration.provider}: {inbound.text[:80]}",
+            body=f"{contact.name or 'Гость'} · {integration.provider}: {message_text[:80]}",
             target_id=conversation.id,
             source_type="Conversation",
             source_id=conversation.id,
@@ -130,12 +149,22 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
             audience=NotificationAudience.USER if operator else NotificationAudience.OPERATORS,
             recipient_user=operator,
             title=f"Новое сообщение · {contact.name or 'Гость'}",
-            body=inbound.text[:120],
+            body=message_text[:120],
             target_id=conversation.id,
             source_type="Conversation",
             source_id=conversation.id,
             dedup_key=f"msg:{integration.id}:{inbound.external_id}",
         )
+
+    # Полученный контакт: телефон сохранён — подтверждаем (в TG заодно убираем
+    # reply-клавиатуру) и не запускаем AI-ход: отвечать не на что.
+    if is_contact_share:
+        ack = "Спасибо! Контакт получен."
+        Message.objects.create(conversation=conversation, author_type=MessageAuthor.AI, text=ack)
+        conversation.expected_responder = ExpectedResponder.CUSTOMER if conversation.control_mode == ControlMode.AI else conversation.expected_responder
+        conversation.save(update_fields=["expected_responder"])
+        transports.send_contact_ack(integration, chat_id=conversation.external_chat_id, user_id=inbound.user_id, text=ack)
+        return
 
     # AI отвечает только когда диалог ведёт AI (ADR-HUB-0003).
     if conversation.control_mode != ControlMode.AI:

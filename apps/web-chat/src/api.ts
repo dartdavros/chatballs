@@ -12,7 +12,8 @@ export type WebConfig = {
   fallback?: { label: string; url: string }[];
 };
 
-export type WebMessage = { id: number; author: "client" | "ai" | "operator" | "system"; text: string; createdAt: string };
+// kind: "" — текст, "contact_request" — виджет рисует форму телефона, "contact" — клиент поделился номером.
+export type WebMessage = { id: number; author: "client" | "ai" | "operator" | "system"; kind?: string; text: string; createdAt: string };
 export type Poll = { state: "ai" | "operator" | "waiting"; lifecycle: string; messages: WebMessage[] };
 
 export async function getConfig(channel: string): Promise<WebConfig> {
@@ -35,6 +36,15 @@ export async function sendMessage(token: string, text: string): Promise<boolean>
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
     body: JSON.stringify({ text }),
+  });
+  return r.ok;
+}
+
+export async function sendContact(token: string, phone: string): Promise<boolean> {
+  const r = await fetch(`${API}/contact/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ phone }),
   });
   return r.ok;
 }

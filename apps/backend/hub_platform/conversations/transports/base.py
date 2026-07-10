@@ -20,6 +20,10 @@ class InboundMessage:
     chat_id: str
     text: str
     display_name: str
+    # Публичный логин отправителя (@username), если задан.
+    username: str = ""
+    # Телефон из явного шаринга контакта (кнопка/форма); text при этом может быть пуст.
+    phone: str = ""
 
 
 def request_json(url: str, *, headers: dict | None = None, method: str = "GET", body: dict | None = None, proxy_url: str = "") -> dict:

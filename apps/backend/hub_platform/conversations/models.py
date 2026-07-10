@@ -8,6 +8,9 @@ from django.db import models
 class Contact(models.Model):
     organization = models.ForeignKey("identity.Organization", on_delete=models.PROTECT, related_name="contacts")
     name = models.CharField(max_length=255, blank=True)
+    # Телефон приходит только через явный шаринг контакта (кнопка в TG/MAX,
+    # форма в веб-чате) — автоматически мессенджеры его не отдают.
+    phone = models.CharField(max_length=32, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
@@ -20,6 +23,8 @@ class ConnectionIdentity(models.Model):
     connection = models.ForeignKey("integrations.Integration", on_delete=models.PROTECT, related_name="identities")
     external_user_id = models.CharField(max_length=128)
     display_name = models.CharField(max_length=255, blank=True)
+    # Публичный логин в мессенджере (@username в TG/MAX); пустой, если не задан.
+    username = models.CharField(max_length=128, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -100,10 +105,19 @@ class MessageAuthor(models.TextChoices):
     SYSTEM = "SYSTEM", "Система"
 
 
+class MessageKind(models.TextChoices):
+    TEXT = "", "Текст"
+    CONTACT_REQUEST = "contact_request", "Запрос контакта"
+    CONTACT = "contact", "Контакт"
+
+
 class Message(models.Model):
     conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name="messages")
     author_type = models.CharField(max_length=16, choices=MessageAuthor.choices)
     author_user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
+    # Тип сообщения: обычный текст, запрос контакта (веб-виджет рисует форму
+    # телефона), полученный контакт. Пустая строка = текст.
+    kind = models.CharField(max_length=32, choices=MessageKind.choices, default=MessageKind.TEXT, blank=True)
     text = models.TextField(blank=True)
     external_id = models.CharField(max_length=128, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)

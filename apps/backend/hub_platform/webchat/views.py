@@ -62,6 +62,18 @@ class WebchatMessagesView(_Public):
         return Response(services.messages_payload(session, since))
 
 
+class WebchatContactView(_Public):
+    def post(self, request: Request) -> Response:
+        session = services.resolve_session(_token(request))
+        if session is None:
+            return Response({"detail": "Сессия не найдена"}, status=401)
+        phone = services.normalize_phone(str(request.data.get("phone", "")))
+        if not phone:
+            return Response({"detail": "Некорректный номер телефона"}, status=400)
+        services.post_contact(session, phone)
+        return Response({"ok": True}, status=201)
+
+
 class WidgetLoaderView(View):
     def get(self, request) -> HttpResponse:
         response = HttpResponse(LOADER_JS, content_type="application/javascript; charset=utf-8")

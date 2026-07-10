@@ -16,6 +16,7 @@ from hub_platform.conversations.services import (
     close_conversation,
     post_operator_message,
     release_to_ai,
+    request_contact,
     return_to_queue,
 )
 from hub_platform.conversations.stats import sales_overview_stats
@@ -142,6 +143,21 @@ class ConversationMessageView(_Base):
         if conversation.assigned_operator_id != request.user.id and not is_owner(request.user):
             return Response({"detail": "Диалог ведёт другой оператор"}, status=409)
         message = post_operator_message(conversation=conversation, operator=request.user, text=text)
+        return Response({"message": message_payload(message)}, status=201)
+
+
+class ConversationRequestContactView(_Base):
+    def post(self, request: Request, conversation_id: int) -> Response:
+        try:
+            conversation = self._conversation(request, conversation_id)
+        except Conversation.DoesNotExist:
+            return Response({"detail": "Диалог не найден"}, status=404)
+        if not conversation.contact_id or not conversation.connection_id:
+            return Response({"detail": "У диалога нет канала для запроса контакта"}, status=409)
+        if conversation.contact.phone:
+            return Response({"detail": "Контакт уже получен"}, status=409)
+        message = request_contact(conversation=conversation, operator=request.user)
+        self._audit(request, "contact_requested", conversation)
         return Response({"message": message_payload(message)}, status=201)
 
 

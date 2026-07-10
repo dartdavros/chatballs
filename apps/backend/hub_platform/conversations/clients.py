@@ -134,6 +134,7 @@ def client_detail(organization_id: int, contact_id: int) -> dict:
         {
             "provider": identity.connection.provider,
             "value": identity.display_name or identity.external_user_id,
+            "username": identity.username,
             "createdAt": identity.created_at.isoformat(),
         }
         for identity in contact.identities.select_related("connection").order_by("created_at")
@@ -185,6 +186,7 @@ def client_detail(organization_id: int, contact_id: int) -> dict:
         "id": contact.id,
         "cid": f"CUS-{contact.id}",
         "name": contact.name or "Гость",
+        "phone": contact.phone,
         "channels": sorted(channels),
         "products": sorted(products),
         "openDialogs": open_dialogs,

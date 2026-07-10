@@ -17,6 +17,21 @@ _SEND = {
     IntegrationProvider.WEB: _web_noop,
 }
 
+# Запрос контакта: сообщение с кнопкой «Поделиться контактом» (TG/MAX);
+# для Web форму телефона рисует сам виджет по kind=contact_request.
+_CONTACT_REQUEST = {
+    IntegrationProvider.MAX: _max.send_contact_request,
+    IntegrationProvider.TELEGRAM: _telegram.send_contact_request,
+    IntegrationProvider.WEB: _web_noop,
+}
+
+# Подтверждение получения контакта: в TG заодно снимает reply-клавиатуру.
+_CONTACT_ACK = {
+    IntegrationProvider.MAX: _max.send_text,
+    IntegrationProvider.TELEGRAM: _telegram.send_contact_ack,
+    IntegrationProvider.WEB: _web_noop,
+}
+
 # Провайдеры-мессенджеры, у которых есть транспорт приёма/отправки.
 SUPPORTED_PROVIDERS = tuple(_POLL.keys())
 
@@ -27,3 +42,11 @@ def poll(integration):
 
 def send_reply(integration, *, chat_id: str, user_id: str, text: str) -> bool:
     return _SEND[integration.provider](integration, chat_id=chat_id, user_id=user_id, text=text)
+
+
+def send_contact_request(integration, *, chat_id: str, user_id: str, text: str) -> bool:
+    return _CONTACT_REQUEST[integration.provider](integration, chat_id=chat_id, user_id=user_id, text=text)
+
+
+def send_contact_ack(integration, *, chat_id: str, user_id: str, text: str) -> bool:
+    return _CONTACT_ACK[integration.provider](integration, chat_id=chat_id, user_id=user_id, text=text)

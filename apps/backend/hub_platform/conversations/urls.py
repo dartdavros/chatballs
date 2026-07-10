@@ -12,5 +12,6 @@ urlpatterns = [
     path("<int:conversation_id>/release/", views.ConversationReleaseView.as_view(), name="conversation-release"),
     path("<int:conversation_id>/return-queue/", views.ConversationReturnQueueView.as_view(), name="conversation-return-queue"),
     path("<int:conversation_id>/messages/", views.ConversationMessageView.as_view(), name="conversation-messages"),
+    path("<int:conversation_id>/request-contact/", views.ConversationRequestContactView.as_view(), name="conversation-request-contact"),
     path("<int:conversation_id>/close/", views.ConversationCloseView.as_view(), name="conversation-close"),
 ]

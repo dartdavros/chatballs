@@ -10,6 +10,7 @@ from __future__ import annotations
 import http.client
 import json
 import logging
+import re
 import urllib.error
 import urllib.parse
 
@@ -27,6 +28,24 @@ def _proxy(integration) -> str:
     return integration.config.get("proxy_url", "")
 
 
+def _contact_phone(inner: dict, msg: dict) -> str:
+    # Ответ на кнопку request_contact: attachment типа contact. Телефон либо
+    # прямым полем, либо внутри vCard (vcf_info) — парсим оба варианта.
+    attachments = inner.get("attachments") or msg.get("attachments") or []
+    for attachment in attachments:
+        if str(attachment.get("type") or "").lower() != "contact":
+            continue
+        payload = attachment.get("payload") or {}
+        phone = first(payload, "phone", "phone_number", "phoneNumber")
+        if phone:
+            return str(phone)
+        vcf = str(first(payload, "vcf_info", "vcfInfo", default=""))
+        match = re.search(r"TEL[^:]*:([+\d][\d\-\s().]{3,})", vcf, re.IGNORECASE)
+        if match:
+            return match.group(1).strip()
+    return ""
+
+
 def _normalize(update: dict) -> InboundMessage | None:
     logger.info("MAX raw update: %s", json.dumps(update, ensure_ascii=False))
     update_type = update.get("update_type") or update.get("updateType")
@@ -40,7 +59,8 @@ def _normalize(update: dict) -> InboundMessage | None:
     recipient = msg.get("recipient") or msg.get("chat") or {}
     chat_id = first(recipient, "chat_id", "chatId")
     external_id = first(inner, "mid", "msgId", "seq") or first(update, "update_id", "updateId", "timestamp")
-    if not text or user_id is None or external_id is None:
+    phone = _contact_phone(inner, msg)
+    if (not text and not phone) or user_id is None or external_id is None:
         return None
     return InboundMessage(
         external_id=str(external_id),
@@ -48,6 +68,8 @@ def _normalize(update: dict) -> InboundMessage | None:
         chat_id="" if chat_id is None else str(chat_id),
         text=str(text),
         display_name=str(first(sender, "name", "display_name", default="")),
+        username=str(first(sender, "username", "user_name", default="")),
+        phone=phone,
     )
 
 
@@ -70,7 +92,7 @@ def poll_updates(integration) -> tuple[list[InboundMessage], str]:
     return messages, ("" if new_marker is None else str(new_marker))
 
 
-def send_text(integration, *, chat_id: str, user_id: str, text: str) -> bool:
+def _send(integration, *, chat_id: str, user_id: str, body: dict) -> bool:
     token = integration.secret
     if not token:
         return False
@@ -81,8 +103,21 @@ def send_text(integration, *, chat_id: str, user_id: str, text: str) -> bool:
         query["user_id"] = user_id
     url = f"{_base(integration)}/messages?{urllib.parse.urlencode(query)}"
     try:
-        request_json(url, headers={"Authorization": token, "Content-Type": "application/json"}, method="POST", body={"text": text}, proxy_url=_proxy(integration))
+        request_json(url, headers={"Authorization": token, "Content-Type": "application/json"}, method="POST", body=body, proxy_url=_proxy(integration))
         return True
     except (urllib.error.URLError, TimeoutError, OSError, http.client.HTTPException, json.JSONDecodeError) as error:
         logger.warning("MAX send failed for integration %s: %s", integration.id, error)
         return False
+
+
+def send_text(integration, *, chat_id: str, user_id: str, text: str) -> bool:
+    return _send(integration, chat_id=chat_id, user_id=user_id, body={"text": text})
+
+
+def send_contact_request(integration, *, chat_id: str, user_id: str, text: str) -> bool:
+    # Inline-клавиатура с кнопкой request_contact (Bot API MAX/TamTam).
+    keyboard = {
+        "type": "inline_keyboard",
+        "payload": {"buttons": [[{"type": "request_contact", "text": "Поделиться контактом"}]]},
+    }
+    return _send(integration, chat_id=chat_id, user_id=user_id, body={"text": text, "attachments": [keyboard]})

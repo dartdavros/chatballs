@@ -1,4 +1,4 @@
-from hub_platform.conversations.models import Conversation, Message, MessageAuthor
+from hub_platform.conversations.models import ConnectionIdentity, Conversation, Message, MessageAuthor
 
 
 def message_payload(message: Message) -> dict[str, object]:
@@ -6,6 +6,7 @@ def message_payload(message: Message) -> dict[str, object]:
         "id": message.id,
         "author": message.author_type,
         "authorUserId": message.author_user_id,
+        "kind": message.kind,
         "text": message.text,
         "createdAt": message.created_at.isoformat(),
     }
@@ -60,6 +61,17 @@ def _support_identity_snapshot(
     return payload
 
 
+def _contact_username(conversation: Conversation) -> str:
+    # Username живёт на identity подключения (у контакта их может быть несколько).
+    # Только в detail-режиме — в списках это лишний запрос на каждый диалог.
+    if not conversation.connection_id:
+        return ""
+    identity = ConnectionIdentity.objects.filter(
+        connection_id=conversation.connection_id, contact_id=conversation.contact_id
+    ).first()
+    return identity.username if identity else ""
+
+
 def _conversation_history(conversation: Conversation) -> list[Conversation]:
     # История по тому же источнику identity: для sales — по contact, для
     # support — по snapshot (ADR-HUB-0002: цепочка прошлых обращений).
@@ -94,7 +106,12 @@ def conversation_payload(conversation: Conversation, *, with_messages: bool = Fa
         # Источник identity: sales Contact ИЛИ verified SupportIdentitySnapshot.
         # Для support-диалогов contact=None, клиент представлен snapshot'ом.
         "contact": (
-            {"id": conversation.contact_id, "name": conversation.contact.name}
+            {
+                "id": conversation.contact_id,
+                "name": conversation.contact.name,
+                "phone": conversation.contact.phone,
+                "username": _contact_username(conversation) if with_messages else "",
+            }
             if conversation.contact_id
             else None
         ),

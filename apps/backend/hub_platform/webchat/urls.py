@@ -6,4 +6,5 @@ urlpatterns = [
     path("config/", views.WebchatConfigView.as_view(), name="webchat-config"),
     path("session/", views.WebchatSessionView.as_view(), name="webchat-session"),
     path("messages/", views.WebchatMessagesView.as_view(), name="webchat-messages"),
+    path("contact/", views.WebchatContactView.as_view(), name="webchat-contact"),
 ]

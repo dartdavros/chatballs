@@ -112,6 +112,31 @@ def post_message(session: WebSession, text: str) -> None:
     ingest_inbound(session.connection, inbound)
 
 
+def normalize_phone(raw: str) -> str:
+    """Нормализация телефона из формы виджета: только + и цифры, 10–15 цифр."""
+    phone = "".join(ch for ch in raw if ch.isdigit() or ch == "+")
+    if phone.count("+") > 1 or (phone and "+" in phone[1:]):
+        return ""
+    digits = phone.lstrip("+")
+    if not (10 <= len(digits) <= 15):
+        return ""
+    return phone
+
+
+def post_contact(session: WebSession, phone: str) -> None:
+    # Ответ клиента на запрос контакта: сообщение без текста, с телефоном —
+    # ingest сохранит его в Contact.phone и подтвердит без AI-хода.
+    inbound = InboundMessage(
+        external_id=uuid.uuid4().hex,
+        user_id=session.identity.external_user_id,
+        chat_id="",
+        text="",
+        display_name=session.identity.display_name,
+        phone=phone,
+    )
+    ingest_inbound(session.connection, inbound)
+
+
 def messages_payload(session: WebSession, since: int) -> dict:
     conversation = (
         Conversation.objects.filter(
@@ -127,7 +152,7 @@ def messages_payload(session: WebSession, since: int) -> dict:
         "state": _STATE.get(conversation.control_mode, "ai"),
         "lifecycle": conversation.lifecycle,
         "messages": [
-            {"id": m.id, "author": _ROLE.get(m.author_type, "ai"), "text": m.text, "createdAt": m.created_at.isoformat()}
+            {"id": m.id, "author": _ROLE.get(m.author_type, "ai"), "kind": m.kind, "text": m.text, "createdAt": m.created_at.isoformat()}
             for m in items
         ],
     }

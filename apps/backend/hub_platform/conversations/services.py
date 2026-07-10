@@ -10,7 +10,12 @@ from hub_platform.conversations.models import (
     LifecycleState,
     Message,
     MessageAuthor,
+    MessageKind,
 )
+from hub_platform.integrations.models import IntegrationProvider
+
+CONTACT_REQUEST_TEXT = "Поделитесь, пожалуйста, контактом — нажмите кнопку ниже."
+CONTACT_REQUEST_TEXT_WEB = "Поделитесь, пожалуйста, номером телефона."
 
 
 class ClaimError(Exception):
@@ -79,6 +84,34 @@ def post_operator_message(*, conversation: Conversation, operator, text: str) ->
             connection=conversation.connection, contact=conversation.contact
         ).first()
         transports.send_reply(
+            conversation.connection,
+            chat_id=conversation.external_chat_id,
+            user_id=identity.external_user_id if identity else "",
+            text=text,
+        )
+    return message
+
+
+def request_contact(*, conversation: Conversation, operator) -> Message:
+    """Запрос контакта у клиента: TG/MAX — сообщение с кнопкой «Поделиться
+    контактом», Web — виджет рисует форму телефона по kind=contact_request."""
+    is_web = conversation.connection_id and conversation.connection.provider == IntegrationProvider.WEB
+    text = CONTACT_REQUEST_TEXT_WEB if is_web else CONTACT_REQUEST_TEXT
+    message = Message.objects.create(
+        conversation=conversation,
+        author_type=MessageAuthor.OPERATOR,
+        author_user=operator,
+        kind=MessageKind.CONTACT_REQUEST,
+        text=text,
+    )
+    conversation.last_activity_at = timezone.now()
+    conversation.expected_responder = ExpectedResponder.CUSTOMER
+    conversation.save(update_fields=["last_activity_at", "expected_responder"])
+    if conversation.connection_id:
+        identity = ConnectionIdentity.objects.filter(
+            connection=conversation.connection, contact=conversation.contact
+        ).first()
+        transports.send_contact_request(
             conversation.connection,
             chat_id=conversation.external_chat_id,
             user_id=identity.external_user_id if identity else "",
