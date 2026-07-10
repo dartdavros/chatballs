@@ -3,14 +3,17 @@ export type ClientChannelCode = "MAX" | "TG" | "WEB";
 export type ClientSortKey = "last" | "open" | "orders" | "total";
 export type ClientDropdown = "products" | "channels";
 
+export type ClientStatus = "lead" | "client";
+
 export type SalesClient = {
   id: number;
   name: string;
   initials: string;
   avatarBg: string;
   cid: string;
-  email: string;
   phone: string;
+  username: string;
+  status: ClientStatus;
   anon?: boolean;
   channels: ClientChannelCode[];
   products: ClientProductCode[];
@@ -27,9 +30,16 @@ export type SalesClientRowVm = Omit<SalesClient, "channels" | "products"> & {
   openColor: string;
   totalColor: string;
   totalLabel: string;
+  statusMeta: { label: string; color: string; bg: string };
   channels: Array<{ label: string; full: string; color: string; bg: string }>;
   products: Array<{ name: string; color: string; bg: string }>;
 };
+
+// Статус контакта: лид (писал, не покупал) / клиент (есть оплаченный заказ).
+export const statusMap = {
+  lead: { label: "Лид", color: "#d48806", bg: "#fff7e6" },
+  client: { label: "Клиент", color: "#389e0d", bg: "#f6ffed" },
+} satisfies Record<ClientStatus, { label: string; color: string; bg: string }>;
 
 export const channelMap = {
   MAX: { label: "MAX", full: "MAX", color: "#6b5be0", bg: "#f2f0ff" },
@@ -60,11 +70,14 @@ const statusDot = {
   closed: "#bfbfbf",
 } satisfies Record<SalesClient["mode"], string>;
 
-// Реальный клиент с бэкенда (conversations/clients.py).
+// Реальный контакт с бэкенда (conversations/clients.py).
 export type ApiClient = {
   id: number;
   cid: string;
   name: string;
+  phone: string;
+  username: string;
+  status: ClientStatus;
   channels: ClientChannelCode[];
   products: ClientProductCode[];
   openDialogs: number;
@@ -106,8 +119,9 @@ export function toSalesClient(api: ApiClient): SalesClient {
     initials: initialsOf(api.name),
     avatarBg: isGuest ? "#8c8c8c" : avatarColor(api.cid),
     cid: api.cid,
-    email: isGuest ? "без контакта" : "—",
-    phone: "идентификация по каналу",
+    phone: api.phone,
+    username: api.username,
+    status: api.status,
     anon: isGuest,
     channels: api.channels,
     products: api.products,
@@ -128,6 +142,7 @@ export function toSalesClientRow(client: SalesClient): SalesClientRowVm {
     lastDot: statusDot[client.mode],
     openColor: client.openDialogs > 0 ? "#d48806" : "#bfbfbf",
     totalColor: client.total > 0 ? "#262626" : "#bfbfbf",
+    statusMeta: statusMap[client.status],
     totalLabel: client.total === 0 ? "—" : `₽${client.total.toLocaleString("ru-RU").replace(/\u00a0/g, " ")}`,
   };
 }

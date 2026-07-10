@@ -1,12 +1,12 @@
 import { Icon } from "../../../shared/icons";
 import { SearchInput } from "../../../shared/ui-controls";
-import { channelOptions, productOptions } from "./model";
+import { channelOptions, productOptions, statusMap } from "./model";
 import type { SalesClientsState } from "./useSalesClients";
 
 export function SalesClientsFilters({ clients }: { clients: SalesClientsState }) {
   return (
     <div className="sales-clients-filterbar">
-      <SearchInput className="sales-clients-search" value={clients.query} onChange={clients.setQuery} placeholder="Поиск по имени или email…" />
+      <SearchInput className="sales-clients-search" value={clients.query} onChange={clients.setQuery} placeholder="Поиск по имени, телефону или логину…" />
       {clients.dropdown !== null && <button className="sales-clients-dd-scrim" type="button" aria-label="Закрыть фильтр" onClick={clients.closeDropdown} />}
       <SalesFilterDropdown
         active={clients.productFilter.length > 0 || clients.dropdown === "products"}
@@ -29,7 +29,8 @@ export function SalesClientsFilters({ clients }: { clients: SalesClientsState })
         onToggleOption={(code) => clients.toggleChannel(code)}
       />
       <button className={`sales-clients-chip ${clients.openOnly ? "active" : ""}`} type="button" onClick={clients.toggleOpenOnly}><span />С открытым диалогом</button>
-      <button className={`sales-clients-chip ${clients.buyerOnly ? "active" : ""}`} type="button" onClick={clients.toggleBuyerOnly}><Icon name="check" size={13} />Есть покупка</button>
+      <button className={`sales-clients-chip ${clients.statusFilter === "lead" ? "active" : ""}`} type="button" onClick={() => clients.toggleStatus("lead")}><span style={{ background: statusMap.lead.color }} />Лиды</button>
+      <button className={`sales-clients-chip ${clients.statusFilter === "client" ? "active" : ""}`} type="button" onClick={() => clients.toggleStatus("client")}><span style={{ background: statusMap.client.color }} />Клиенты</button>
       <div className="sales-clients-filter-spacer" />
       <button className="sales-clients-reset" type="button" onClick={clients.reset}>Сбросить</button>
     </div>

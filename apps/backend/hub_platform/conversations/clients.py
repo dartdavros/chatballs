@@ -47,7 +47,8 @@ def clients_overview(organization_id: int) -> list[dict]:
         Prefetch(
             "conversations",
             queryset=Conversation.objects.select_related("channel", "channel__product", "connection").order_by("-last_activity_at"),
-        )
+        ),
+        "identities",
     )
     paid_by_contact = {
         row["contact_id"]: row
@@ -78,6 +79,11 @@ def clients_overview(organization_id: int) -> list[dict]:
                 "id": contact.id,
                 "cid": f"CUS-{contact.id}",
                 "name": contact.name or "Гость",
+                "phone": contact.phone,
+                # Первый непустой @логин среди identity каналов (остальные — в карточке).
+                "username": next((identity.username for identity in contact.identities.all() if identity.username), ""),
+                # Статус выводится из данных: есть оплаченный заказ — клиент, иначе лид.
+                "status": "client" if paid else "lead",
                 "channels": sorted(channels),
                 "products": sorted(products),
                 "openDialogs": open_dialogs,

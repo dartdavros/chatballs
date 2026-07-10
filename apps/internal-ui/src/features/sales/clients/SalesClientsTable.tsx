@@ -4,7 +4,7 @@ import { SalesClientsPagination } from "./SalesClientsPagination";
 import type { ClientSortKey } from "./model";
 import type { SalesClientsState } from "./useSalesClients";
 
-export function SalesClientsTable({ clients, openClient }: { clients: SalesClientsState; openClient: (id: number) => void }) {
+export function SalesClientsTable({ clients, openClient, totalCount }: { clients: SalesClientsState; openClient: (id: number) => void; totalCount: number }) {
   return (
     <>
       {clients.menu && <button className="sales-clients-menu-scrim" type="button" aria-label="Закрыть меню" onClick={() => clients.setMenu(null)} />}
@@ -13,8 +13,9 @@ export function SalesClientsTable({ clients, openClient }: { clients: SalesClien
           <table className="sales-clients-table">
             <thead>
               <tr>
-                <th>КЛИЕНТ</th>
-                <th>КОНТАКТЫ</th>
+                <th>КОНТАКТ</th>
+                <th>СТАТУС</th>
+                <th>ТЕЛЕФОН / ЛОГИН</th>
                 <th>КАНАЛЫ</th>
                 <th>ПРОДУКТЫ</th>
                 <SortableTh label="ПОСЛ. ДИАЛОГ" sortKey="last" clients={clients} />
@@ -30,7 +31,7 @@ export function SalesClientsTable({ clients, openClient }: { clients: SalesClien
           </table>
         </div>
         {clients.rows.length === 0 && <SalesClientsEmpty />}
-        <SalesClientsPagination shownCount={clients.rows.length} />
+        <SalesClientsPagination shownCount={clients.rows.length} totalCount={totalCount} />
       </div>
     </>
   );
@@ -48,7 +49,7 @@ function SalesClientsEmpty() {
   return (
     <div className="sales-clients-empty">
       <div><Icon name="search" size={22} /></div>
-      <strong>Клиенты не найдены</strong>
+      <strong>Контакты не найдены</strong>
       <span>Измените условия фильтра или сбросьте их.</span>
     </div>
   );

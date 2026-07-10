@@ -30,7 +30,7 @@ export function SalesClientHeader({ client, setRoute }: { client: ClientDetailVm
         </div>
         <div className="sales-client-detail-actions">
           <Button className="sales-client-primary" icon="message" variant="primary" onClick={() => setRoute("salesDialogs")}>Открыть диалог</Button>
-          <button className={`sales-client-more ${menuOpen ? "active" : ""}`} type="button" aria-label="Действия клиента" onClick={() => setMenuOpen((value) => !value)}><Icon name="more" size={18} /></button>
+          <button className={`sales-client-more ${menuOpen ? "active" : ""}`} type="button" aria-label="Действия контакта" onClick={() => setMenuOpen((value) => !value)}><Icon name="more" size={18} /></button>
           {menuOpen && <SalesClientMenu />}
         </div>
       </div>

@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 
-import type { ClientChannelCode, ClientDropdown, ClientProductCode, ClientSortKey, SalesClient } from "./model";
+import type { ClientChannelCode, ClientDropdown, ClientProductCode, ClientSortKey, ClientStatus, SalesClient } from "./model";
 import { toSalesClientRow } from "./model";
 
 export type SalesClientsState = ReturnType<typeof useSalesClients>;
@@ -10,7 +10,8 @@ export function useSalesClients(salesClients: SalesClient[]) {
   const [productFilter, setProductFilter] = useState<ClientProductCode[]>([]);
   const [channelFilter, setChannelFilter] = useState<ClientChannelCode[]>([]);
   const [openOnly, setOpenOnly] = useState(false);
-  const [buyerOnly, setBuyerOnly] = useState(false);
+  // Фильтр по статусу контакта: null — все, иначе только лиды/клиенты.
+  const [statusFilter, setStatusFilter] = useState<ClientStatus | null>(null);
   const [sortKey, setSortKey] = useState<ClientSortKey>("last");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [menu, setMenu] = useState<{ id: string; left: number; top: number } | null>(null);
@@ -19,17 +20,17 @@ export function useSalesClients(salesClients: SalesClient[]) {
   const rows = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
     const filtered = salesClients.filter((client) => {
-      return (!normalizedQuery || client.name.toLowerCase().includes(normalizedQuery) || client.email.toLowerCase().includes(normalizedQuery))
+      return (!normalizedQuery || client.name.toLowerCase().includes(normalizedQuery) || client.phone.includes(normalizedQuery) || client.username.toLowerCase().includes(normalizedQuery))
         && (productFilter.length === 0 || client.products.some((product) => productFilter.includes(product)))
         && (channelFilter.length === 0 || client.channels.some((channel) => channelFilter.includes(channel)))
         && (!openOnly || client.openDialogs > 0)
-        && (!buyerOnly || client.orders > 0);
+        && (statusFilter === null || client.status === statusFilter);
     });
     const key = { last: "last", open: "openDialogs", orders: "orders", total: "total" } satisfies Record<ClientSortKey, keyof typeof salesClients[number]>;
     return [...filtered]
       .sort((left, right) => sortDir === "asc" ? Number(left[key[sortKey]]) - Number(right[key[sortKey]]) : Number(right[key[sortKey]]) - Number(left[key[sortKey]]))
       .map(toSalesClientRow);
-  }, [salesClients, buyerOnly, channelFilter, openOnly, productFilter, query, sortDir, sortKey]);
+  }, [salesClients, statusFilter, channelFilter, openOnly, productFilter, query, sortDir, sortKey]);
 
   function setQuery(value: string) {
     setQueryState(value);
@@ -60,7 +61,7 @@ export function useSalesClients(salesClients: SalesClient[]) {
     setProductFilter([]);
     setChannelFilter([]);
     setOpenOnly(false);
-    setBuyerOnly(false);
+    setStatusFilter(null);
     setMenu(null);
     setDropdown(null);
   }
@@ -71,7 +72,7 @@ export function useSalesClients(salesClients: SalesClient[]) {
     productFilter,
     channelFilter,
     openOnly,
-    buyerOnly,
+    statusFilter,
     dropdown,
     menu,
     setMenu,
@@ -81,7 +82,8 @@ export function useSalesClients(salesClients: SalesClient[]) {
     toggleDropdown,
     closeDropdown: () => setDropdown(null),
     toggleOpenOnly: () => { setOpenOnly((current) => !current); setMenu(null); setDropdown(null); },
-    toggleBuyerOnly: () => { setBuyerOnly((current) => !current); setMenu(null); setDropdown(null); },
+    // Повторный клик по активному статусу снимает фильтр (возврат к «все»).
+    toggleStatus: (status: ClientStatus) => { setStatusFilter((current) => (current === status ? null : status)); setMenu(null); setDropdown(null); },
     sortBy,
     sortArrow: (key: ClientSortKey) => sortKey === key ? (sortDir === "asc" ? "↑" : "↓") : "",
     reset,

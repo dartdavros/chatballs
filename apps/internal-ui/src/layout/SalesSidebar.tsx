@@ -6,7 +6,7 @@ export function SalesSidebar({ route, user, setRoute, waitingCount = 0 }: { rout
   const nav = [
     { key: "salesOverview" as const, label: "Обзор", icon: "grid" as const },
     { key: "salesDialogs" as const, label: "Диалоги", icon: "message" as const, badge: waitingCount > 0 ? String(waitingCount) : undefined },
-    { key: "salesClients" as const, label: "Клиенты", icon: "team" as const },
+    { key: "salesClients" as const, label: "Контакты", icon: "team" as const },
     { key: "salesOrders" as const, label: "Продажи", icon: "cart" as const },
   ];
   return (

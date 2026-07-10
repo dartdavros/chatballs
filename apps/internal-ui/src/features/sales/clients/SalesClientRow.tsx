@@ -25,8 +25,11 @@ export function SalesClientRow({ client, menu, openClient, setMenu }: { client: 
         </div>
       </td>
       <td>
-        <div className={`sales-client-contact ${client.anon ? "muted" : ""}`}>{client.email}</div>
-        <small className="sales-client-phone">{client.phone}</small>
+        <span className="sales-client-status" style={{ background: client.statusMeta.bg, color: client.statusMeta.color }}>{client.statusMeta.label}</span>
+      </td>
+      <td>
+        <div className={`sales-client-contact ${client.phone ? "" : "muted"}`}>{client.phone || "—"}</div>
+        <small className="sales-client-phone">{client.username ? `@${client.username}` : ""}</small>
       </td>
       <td>
         <div className="sales-client-tags">

@@ -2,7 +2,7 @@ import { EmptyState } from "../../../shared/ui";
 import type { ClientDetailVm } from "./model";
 
 export function SalesClientOrdersTab({ orders }: { orders: ClientDetailVm["orders"] }) {
-  if (orders.length === 0) return <EmptyState title="У клиента ещё нет заказов" />;
+  if (orders.length === 0) return <EmptyState title="У контакта ещё нет заказов" />;
   return (
     <div className="sales-client-table-card">
       <table className="sales-client-detail-table">

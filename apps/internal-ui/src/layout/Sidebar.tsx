@@ -9,6 +9,8 @@ export function Sidebar({ route, user, setRoute }: { route: RouteKey; user: Sess
     { key: "departments" as const, label: "Отделы", icon: "building" as const },
     { key: "employees" as const, label: "Сотрудники", icon: "team" as const },
     { key: "products" as const, label: "Продукты", icon: "box" as const },
+    { label: "ИНСТРУМЕНТЫ", group: true },
+    { label: "Доска", icon: "columns" as const, disabled: true },
     { label: "ПЛАТФОРМА", group: true },
     { key: "aiAgents" as const, label: "AI", icon: "robot" as const },
     { key: "integrations" as const, label: "Интеграции", icon: "plug" as const },

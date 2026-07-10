@@ -3,7 +3,7 @@ import type { RouteKey } from "../../../types";
 import type { ClientDetailVm } from "./model";
 
 export function SalesClientDialogsTab({ dialogs, setRoute }: { dialogs: ClientDetailVm["dialogs"]; setRoute: (route: RouteKey) => void }) {
-  if (dialogs.length === 0) return <EmptyState title="У клиента ещё нет диалогов" />;
+  if (dialogs.length === 0) return <EmptyState title="У контакта ещё нет диалогов" />;
   return (
     <div className="sales-client-list-card">
       {dialogs.map((dialog) => (

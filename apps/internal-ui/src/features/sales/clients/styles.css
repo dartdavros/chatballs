@@ -348,6 +348,16 @@
   font-size: 11.5px;
 }
 
+/* Статус контакта: Лид / Клиент (цвета — statusMap в model.ts). */
+.sales-client-status {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 .sales-client-tags,
 .sales-client-products {
   display: flex;

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { channelMeta } from "../../../conversations/data";
 import { FieldRow } from "../../../conversations/FieldRow";
@@ -18,6 +18,13 @@ export function ClientContext({ dialog, detail }: { dialog: ConversationListItem
   const [requesting, setRequesting] = useState(false);
   const [justRequested, setJustRequested] = useState(false);
   const [requestError, setRequestError] = useState(false);
+
+  // Локальное состояние кнопки принадлежит конкретному диалогу — при переключении сбрасываем.
+  useEffect(() => {
+    setRequesting(false);
+    setJustRequested(false);
+    setRequestError(false);
+  }, [detail?.id]);
 
   if (!dialog) {
     return <div className="sales-client-context"><p className="sales-context-muted">Выберите диалог</p></div>;

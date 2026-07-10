@@ -73,7 +73,10 @@ def sales_overview_stats(organization_id: int, period: str) -> dict:
 
     open_qs = Conversation.objects.filter(organization_id=organization_id, lifecycle=LifecycleState.OPEN)
     open_dialogs = open_qs.count()
-    waiting = open_qs.filter(expected_responder=ExpectedResponder.OPERATOR).count()
+    # «Ждут оператора» = очередь: диалоги, которые никто не взял (PAUSED).
+    # Взятые оператором (HUMAN), но ещё без ответа, очередью не считаются —
+    # иначе бейдж «Диалоги» показывает число при полностью разобранном inbox.
+    waiting = open_qs.filter(control_mode=ControlMode.PAUSED).count()
     ops = {
         "openDialogs": open_dialogs,
         "activeNow": open_qs.filter(last_activity_at__gte=now - _ACTIVE_WINDOW).count(),

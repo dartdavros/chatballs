@@ -18,7 +18,7 @@ export function SalesClientDetailPage({ contactId, setRoute }: { contactId: numb
   const { client, loading, error } = useClientDetail(contactId);
 
   if (loading) return <LoadingState />;
-  if (error || !client) return <EmptyState title="Не удалось загрузить клиента" />;
+  if (error || !client) return <EmptyState title="Не удалось загрузить контакт" />;
 
   return (
     <>

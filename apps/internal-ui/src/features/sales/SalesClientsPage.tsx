@@ -11,15 +11,15 @@ export function SalesClientsPage({ openClient }: { openClient: (id: number) => v
 
   return (
     <>
-      <SalesClientsHeader shownCount={clients.rows.length} />
+      <SalesClientsHeader shownCount={clients.rows.length} totalCount={data.length} />
       {loading ? (
         <LoadingState />
       ) : error ? (
-        <EmptyState title="Не удалось загрузить клиентов" />
+        <EmptyState title="Не удалось загрузить контакты" />
       ) : (
         <>
           <SalesClientsFilters clients={clients} />
-          <SalesClientsTable clients={clients} openClient={openClient} />
+          <SalesClientsTable clients={clients} openClient={openClient} totalCount={data.length} />
         </>
       )}
     </>
