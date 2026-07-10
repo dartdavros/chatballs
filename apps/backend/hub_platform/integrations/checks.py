@@ -29,9 +29,13 @@ DEFAULT_TELEGRAM_BASE_URL = "https://api.telegram.org"
 CheckResult = tuple[bool, str, dict]
 
 
-def _get(url: str, *, headers: dict[str, str] | None = None) -> tuple[int, dict]:
+def _get(url: str, *, headers: dict[str, str] | None = None, proxy_url: str = "") -> tuple[int, dict]:
+    handlers = []
+    if proxy_url:
+        handlers.append(urllib.request.ProxyHandler({"http": proxy_url, "https": proxy_url}))
+    opener = urllib.request.build_opener(*handlers)
     request = urllib.request.Request(url, headers=headers or {}, method="GET")
-    with urllib.request.urlopen(request, timeout=settings.HUB_AI_REQUEST_TIMEOUT) as response:
+    with opener.open(request, timeout=settings.HUB_AI_REQUEST_TIMEOUT) as response:
         body = response.read().decode("utf-8")
         try:
             data = json.loads(body) if body else {}
@@ -49,13 +53,13 @@ def _safe(fn) -> CheckResult:
         return False, f"Нет связи: {error}", {}
 
 
-def check_openrouter(*, secret: str, base_url: str) -> CheckResult:
+def check_openrouter(*, secret: str, base_url: str, proxy_url: str = "") -> CheckResult:
     if not secret:
         return False, "Не указан API-ключ", {}
     base = (base_url or DEFAULT_OPENROUTER_BASE_URL).rstrip("/")
 
     def run() -> CheckResult:
-        status, data = _get(f"{base}/key", headers={"Authorization": f"Bearer {secret}"})
+        status, data = _get(f"{base}/key", headers={"Authorization": f"Bearer {secret}"}, proxy_url=proxy_url)
         if status != 200:
             return False, f"OpenRouter ответил {status}", {}
         label = (data.get("data") or {}).get("label") or "ключ принят"
@@ -64,14 +68,14 @@ def check_openrouter(*, secret: str, base_url: str) -> CheckResult:
     return _safe(run)
 
 
-def check_max(*, secret: str, base_url: str) -> CheckResult:
+def check_max(*, secret: str, base_url: str, proxy_url: str = "") -> CheckResult:
     if not secret:
         return False, "Не указан токен бота", {}
     base = (base_url or DEFAULT_MAX_BASE_URL).rstrip("/")
 
     def run() -> CheckResult:
         # MAX: токен в заголовке Authorization (без Bearer), метод GET /me.
-        status, data = _get(f"{base}/me", headers={"Authorization": secret})
+        status, data = _get(f"{base}/me", headers={"Authorization": secret}, proxy_url=proxy_url)
         if status != 200:
             return False, f"MAX ответил {status}", {}
         bot_id = data.get("user_id")
@@ -83,14 +87,14 @@ def check_max(*, secret: str, base_url: str) -> CheckResult:
     return _safe(run)
 
 
-def check_telegram(*, secret: str, base_url: str) -> CheckResult:
+def check_telegram(*, secret: str, base_url: str, proxy_url: str = "") -> CheckResult:
     if not secret:
         return False, "Не указан токен бота", {}
     base = (base_url or DEFAULT_TELEGRAM_BASE_URL).rstrip("/")
 
     def run() -> CheckResult:
         # Telegram: токен в пути /bot<token>/getMe.
-        status, data = _get(f"{base}/bot{secret}/getMe")
+        status, data = _get(f"{base}/bot{secret}/getMe", proxy_url=proxy_url)
         if status != 200 or not data.get("ok"):
             return False, f"Telegram ответил {status}", {}
         result = data.get("result") or {}

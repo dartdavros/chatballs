@@ -11,10 +11,17 @@ class OpenRouterProvider(LLMProvider):
 
     name = "openrouter"
 
-    def __init__(self, *, api_key: str, base_url: str, timeout: float = 30.0):
+    def __init__(self, *, api_key: str, base_url: str, timeout: float = 30.0, proxy_url: str = ""):
         self.api_key = api_key
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
+        self.proxy_url = proxy_url or ""
+
+    def _opener(self):
+        handlers = []
+        if self.proxy_url:
+            handlers.append(urllib.request.ProxyHandler({"http": self.proxy_url, "https": self.proxy_url}))
+        return urllib.request.build_opener(*handlers)
 
     def _post(self, path: str, payload: dict) -> dict:
         request = urllib.request.Request(
@@ -24,7 +31,7 @@ class OpenRouterProvider(LLMProvider):
             method="POST",
         )
         try:
-            with urllib.request.urlopen(request, timeout=self.timeout) as response:
+            with self._opener().open(request, timeout=self.timeout) as response:
                 return json.loads(response.read().decode("utf-8"))
         # http.client.HTTPException покрывает IncompleteRead/BadStatusLine (оборванный ответ) —
         # это не OSError, поэтому ловим отдельно, иначе исключение уходит мимо ProviderError.
