@@ -6,9 +6,8 @@ import { Icon } from "../shared/icons";
 export function TopBar({ route, user, currentEmployee, currentProduct, currentAgentName, setRoute, unreadCount = 0, onOpenNotifications }: { route: RouteKey; user: SessionUser; currentEmployee?: Employee | null; currentProduct?: Product | null; currentAgentName?: string | null; setRoute: (route: RouteKey) => void; unreadCount?: number; onOpenNotifications?: () => void }) {
   const st = commandCenterModel("today").st;
   const isCommand = route === "command";
-  const isAiDetail = route === "aiAgentDetail" || route === "aiRelease";
+  const isAiDetail = route === "aiAgentDetail" || route === "aiKnowledgeDetail";
   const isAi = route.startsWith("ai") && !isAiDetail && route !== "aiAgentCreate";
-  const [releaseAgentName, releaseName] = route === "aiRelease" && currentAgentName?.includes("|") ? currentAgentName.split("|") : [currentAgentName, null];
   const isSalesWorkspace = route === "salesOverview" || route === "salesClientDetail" || route === "salesClients" || route === "salesDialogs" || route === "salesOrderDetail" || route === "salesOrders";
   const isSupportWorkspace = route === "supportOverview" || route === "supportDialogs";
   return (
@@ -25,7 +24,7 @@ export function TopBar({ route, user, currentEmployee, currentProduct, currentAg
         {isAi && <><button type="button" onClick={() => setRoute("aiAgents")}>AI</button><i>/</i><strong>{routes[route]}</strong></>}
         {route === "aiAgentCreate" && <><button type="button" onClick={() => setRoute("aiAgents")}>AI</button><i>/</i><button type="button" onClick={() => setRoute("aiAgents")}>AI-агенты</button><i>/</i><strong>{routes[route]}</strong></>}
         {route === "aiAgentDetail" && <><button type="button" onClick={() => setRoute("aiAgents")}>AI</button><i>/</i><button type="button" onClick={() => setRoute("aiAgents")}>AI-агенты</button><i>/</i><strong>{currentAgentName || routes[route]}</strong></>}
-        {route === "aiRelease" && <><button type="button" onClick={() => setRoute("aiAgents")}>AI</button><i>/</i><button type="button" onClick={() => setRoute("aiAgents")}>{releaseAgentName || "AI-агенты"}</button><i>/</i><strong className="topbar-mono">{releaseName || routes[route]}</strong></>}
+        {route === "aiKnowledgeDetail" && <><button type="button" onClick={() => setRoute("aiAgents")}>AI</button><i>/</i><button type="button" onClick={() => setRoute("aiKnowledge")}>Знания</button><i>/</i><strong>{currentAgentName || routes[route]}</strong></>}
         {route !== "employeeDetail" && route !== "productDetail" && route !== "aiAgentCreate" && !isSalesWorkspace && !isSupportWorkspace && !isAi && !isAiDetail && <strong>{routes[route]}</strong>}
       </div>
       <div className="topbar-actions">

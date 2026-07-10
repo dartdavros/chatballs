@@ -40,7 +40,7 @@ export function ProductAgentCard({ product, openAgentCreate, openAgent }: { prod
         <span className="product-agent-icon is-empty"><Icon name="robot" size={17} /></span>
         <div>
           <h3>Sales-agent не создан</h3>
-          <p>Создайте агента для этого продукта. Он начнёт работать только после публикации первой версии.</p>
+          <p>Создайте агента для этого продукта. Он начнёт отвечать после запуска из карточки агента.</p>
         </div>
       </div>
       <Button variant="primary" className="product-agent-action" icon="plus" onClick={() => openAgentCreate(product.code)}>Создать агента</Button>

@@ -1,10 +1,87 @@
-from django.conf import settings
-from django.core.exceptions import ValidationError
+import uuid
+
 from django.db import models
 from pgvector.django import VectorField
 
-# Один основной агент на канал обработки (ADR-HUB-0007/0019).
+# Один основной агент на канал обработки (ADR-HUB-0019, ADR-HUB-0023).
 DEFAULT_AI_MODEL = "anthropic/claude-sonnet-4.6"
+
+
+# --- Знания: плоская библиотека организации с вложениями (ADR-HUB-0023) ---
+
+
+class Knowledge(models.Model):
+    organization = models.ForeignKey("identity.Organization", on_delete=models.PROTECT, related_name="knowledge_items")
+    title = models.CharField(max_length=255)
+    description = models.CharField(max_length=500, blank=True)
+    content = models.TextField(blank=True)  # Markdown
+    is_enabled = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["title"]
+        verbose_name_plural = "knowledge"
+
+    def __str__(self) -> str:
+        return f"knowledge:{self.organization_id}/{self.title}"
+
+
+def attachment_upload_path(instance: "KnowledgeAttachment", filename: str) -> str:
+    return f"knowledge/{instance.knowledge_id}/{instance.public_id}/{filename}"
+
+
+class KnowledgeAttachment(models.Model):
+    knowledge = models.ForeignKey(Knowledge, on_delete=models.CASCADE, related_name="attachments")
+    # Непредсказуемый идентификатор публичной ссылки скачивания (ADR-HUB-0023):
+    # агент может отдать ссылку клиенту в мессенджер, где нет аутентификации Hub.
+    public_id = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    file = models.FileField(upload_to=attachment_upload_path, max_length=512)
+    # Оригинальное имя сохраняется и уникально в рамках знания: текст знания
+    # ссылается на вложение по имени.
+    original_name = models.CharField(max_length=255)
+    content_type = models.CharField(max_length=128, blank=True)
+    size = models.PositiveBigIntegerField(default=0)
+    # Текст, извлечённый из файла (md/txt/pdf/docx) для retrieval-индексации.
+    extracted_text = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["original_name"]
+        constraints = [models.UniqueConstraint(fields=["knowledge", "original_name"], name="uniq_attachment_knowledge_name")]
+
+    def __str__(self) -> str:
+        return f"attachment:{self.knowledge_id}/{self.original_name}"
+
+    def public_url(self) -> str:
+        # Абсолютная ссылка скачивания: уходит клиентам в мессенджеры, поэтому
+        # строится от публичного адреса Hub, а не от request.
+        from django.conf import settings
+        from django.urls import reverse
+
+        path = reverse("ai-attachment-download", kwargs={"public_id": self.public_id})
+        return settings.HUB_PUBLIC_BASE_URL.rstrip("/") + path
+
+
+class KnowledgeFragment(models.Model):
+    # Чанк знания + его эмбеддинг (pgvector). ADR-HUB-0016. Перестраивается при
+    # каждом изменении содержимого или вложений знания.
+    knowledge = models.ForeignKey(Knowledge, on_delete=models.CASCADE, related_name="fragments")
+    chunk_index = models.PositiveIntegerField()
+    content = models.TextField()
+    # Размерность не фиксируется: совместимость локального и production embedding-провайдера.
+    embedding = VectorField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["knowledge_id", "chunk_index"]
+        constraints = [models.UniqueConstraint(fields=["knowledge", "chunk_index"], name="uniq_fragment_knowledge_chunk")]
+
+    def __str__(self) -> str:
+        return f"fragment:{self.knowledge_id}/{self.chunk_index}"
+
+
+# --- Агент канала: одна сущность, без релизов (ADR-HUB-0023) ---
 
 
 class AIAgent(models.Model):
@@ -13,199 +90,20 @@ class AIAgent(models.Model):
     is_active = models.BooleanField(default=True)
     model = models.CharField(max_length=128, default=DEFAULT_AI_MODEL)
     model_params = models.JSONField(default=dict, blank=True)
+    # Инструкции из трёх частей; системный промпт собирается в этом порядке.
+    persona = models.TextField(blank=True)  # кто он и что он
+    tone = models.TextField(blank=True)  # как он должен говорить
+    instructions = models.TextField(blank=True)  # правила работы
+    # Выбор знаний из библиотеки организации.
+    knowledge_items = models.ManyToManyField(Knowledge, blank=True, related_name="agents")
     allowed_tools = models.JSONField(default=list, blank=True)
+    # Единственный поддерживаемый лимит — дневной бюджет dailyCostUsd (центы USD).
     limits = models.JSONField(default=dict, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self) -> str:
         return f"{self.channel.code}:agent"
-
-
-# --- Knowledge & prompt documents (ADR-HUB-0005) ---
-
-
-class DocumentStatus(models.TextChoices):
-    DRAFT = "DRAFT", "Черновик"
-    PUBLISHED = "PUBLISHED", "Опубликован"
-    ARCHIVED = "ARCHIVED", "Архив"
-
-
-class DocumentScope(models.TextChoices):
-    GLOBAL = "GLOBAL", "Глобальное"
-    PRODUCT = "PRODUCT", "Продуктовое"
-
-
-class KnowledgeCategory(models.TextChoices):
-    OVERVIEW = "OVERVIEW", "Обзор продукта"
-    AUDIENCE = "AUDIENCE", "Целевая аудитория"
-    COMMERCIAL = "COMMERCIAL", "Коммерческая модель"
-    TECHNICAL = "TECHNICAL", "Техническая информация"
-    FAQ = "FAQ", "FAQ"
-    OBJECTIONS = "OBJECTIONS", "Возражения"
-    LIMITATIONS = "LIMITATIONS", "Ограничения"
-
-
-class PromptCategory(models.TextChoices):
-    SYSTEM = "SYSTEM", "Системный промпт"
-    QUALIFICATION = "QUALIFICATION", "Квалификация"
-    SALES_BEHAVIOR = "SALES_BEHAVIOR", "Поведение в продаже"
-    OPERATOR_HANDOFF = "OPERATOR_HANDOFF", "Передача оператору"
-
-
-class InclusionMode(models.TextChoices):
-    MANDATORY = "MANDATORY", "Обязательное включение"
-    RETRIEVAL = "RETRIEVAL", "Доступно для retrieval"
-
-
-class _BaseDocument(models.Model):
-    # Библиотека со scope: GLOBAL или PRODUCT (ADR-HUB-0005/0019).
-    organization = models.ForeignKey("identity.Organization", on_delete=models.PROTECT, related_name="%(class)ss")
-    scope = models.CharField(max_length=16, choices=DocumentScope.choices, default=DocumentScope.GLOBAL)
-    product = models.ForeignKey("products.Product", on_delete=models.PROTECT, related_name="%(class)ss", null=True, blank=True)
-    code = models.SlugField(max_length=64)
-    title = models.CharField(max_length=255)
-    is_enabled = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        abstract = True
-
-
-class KnowledgeDocument(_BaseDocument):
-    category = models.CharField(max_length=32, choices=KnowledgeCategory.choices)
-    inclusion_mode = models.CharField(max_length=16, choices=InclusionMode.choices, default=InclusionMode.RETRIEVAL)
-
-    class Meta:
-        constraints = [models.UniqueConstraint(fields=["organization", "product", "code"], name="uniq_knowledge_doc_org_product_code")]
-
-    def __str__(self) -> str:
-        return f"knowledge:{self.organization_id}/{self.code}"
-
-
-class PromptDocument(_BaseDocument):
-    category = models.CharField(max_length=32, choices=PromptCategory.choices)
-
-    class Meta:
-        constraints = [models.UniqueConstraint(fields=["organization", "product", "code"], name="uniq_prompt_doc_org_product_code")]
-
-    def __str__(self) -> str:
-        return f"prompt:{self.organization_id}/{self.code}"
-
-
-class _BaseDocumentVersion(models.Model):
-    version = models.PositiveIntegerField()
-    content = models.TextField(blank=True)
-    status = models.CharField(max_length=16, choices=DocumentStatus.choices, default=DocumentStatus.DRAFT)
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        abstract = True
-        ordering = ["-version"]
-
-    def save(self, *args: object, **kwargs: object) -> None:
-        if self.pk:
-            current = type(self).objects.get(pk=self.pk)
-            if current.version != self.version or current.content != self.content:
-                raise ValidationError("Document version content is immutable")
-        super().save(*args, **kwargs)
-
-
-class KnowledgeDocumentVersion(_BaseDocumentVersion):
-    document = models.ForeignKey(KnowledgeDocument, on_delete=models.CASCADE, related_name="versions")
-
-    class Meta(_BaseDocumentVersion.Meta):
-        constraints = [models.UniqueConstraint(fields=["document", "version"], name="uniq_knowledge_version")]
-
-
-class KnowledgeFragment(models.Model):
-    # Чанк опубликованной версии знания + его эмбеддинг (pgvector). ADR-HUB-0016.
-    version = models.ForeignKey(KnowledgeDocumentVersion, on_delete=models.CASCADE, related_name="fragments")
-    chunk_index = models.PositiveIntegerField()
-    content = models.TextField()
-    # Размерность не фиксируется: совместимость локального и production embedding-провайдера.
-    embedding = VectorField(null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        ordering = ["version_id", "chunk_index"]
-        constraints = [models.UniqueConstraint(fields=["version", "chunk_index"], name="uniq_fragment_version_chunk")]
-
-    def __str__(self) -> str:
-        return f"fragment:{self.version_id}/{self.chunk_index}"
-
-
-class PromptDocumentVersion(_BaseDocumentVersion):
-    document = models.ForeignKey(PromptDocument, on_delete=models.CASCADE, related_name="versions")
-
-    class Meta(_BaseDocumentVersion.Meta):
-        constraints = [models.UniqueConstraint(fields=["document", "version"], name="uniq_prompt_version")]
-
-
-# --- ChannelAIRelease: атомарный immutable-снимок конфигурации канала (ADR-HUB-0007/0019) ---
-
-
-class ReleaseStatus(models.TextChoices):
-    DRAFT = "DRAFT", "Черновик"
-    PUBLISHED = "PUBLISHED", "Опубликован"
-    ARCHIVED = "ARCHIVED", "Архив"
-
-
-class ChannelAIRelease(models.Model):
-    channel = models.ForeignKey("channels.Channel", on_delete=models.CASCADE, related_name="ai_releases")
-    version = models.PositiveIntegerField()
-    status = models.CharField(max_length=16, choices=ReleaseStatus.choices, default=ReleaseStatus.DRAFT)
-    # immutable snapshot of the working configuration
-    model = models.CharField(max_length=128)
-    model_params = models.JSONField(default=dict, blank=True)
-    allowed_tools = models.JSONField(default=list, blank=True)
-    limits = models.JSONField(default=dict, blank=True)
-    retrieval_index_version = models.CharField(max_length=64, blank=True)
-    notes = models.TextField(blank=True)
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
-    created_at = models.DateTimeField(auto_now_add=True)
-    published_at = models.DateTimeField(null=True, blank=True)
-
-    _SNAPSHOT_FIELDS = ("channel_id", "version", "model", "model_params", "allowed_tools", "limits", "retrieval_index_version")
-
-    class Meta:
-        ordering = ["channel_id", "-version"]
-        constraints = [
-            models.UniqueConstraint(fields=["channel", "version"], name="uniq_release_channel_version"),
-            models.UniqueConstraint(
-                fields=["channel"],
-                condition=models.Q(status="PUBLISHED"),
-                name="uniq_active_release_per_channel",
-            ),
-        ]
-
-    def save(self, *args: object, **kwargs: object) -> None:
-        if self.pk:
-            current = ChannelAIRelease.objects.get(pk=self.pk)
-            if any(getattr(current, field) != getattr(self, field) for field in self._SNAPSHOT_FIELDS):
-                raise ValidationError("Published release configuration is immutable")
-        super().save(*args, **kwargs)
-
-    def __str__(self) -> str:
-        return f"release:{self.channel_id}/v{self.version}"
-
-
-class ReleaseKnowledgeVersion(models.Model):
-    release = models.ForeignKey(ChannelAIRelease, on_delete=models.CASCADE, related_name="knowledge_versions")
-    knowledge_version = models.ForeignKey(KnowledgeDocumentVersion, on_delete=models.PROTECT, related_name="+")
-
-    class Meta:
-        constraints = [models.UniqueConstraint(fields=["release", "knowledge_version"], name="uniq_release_knowledge_version")]
-
-
-class ReleasePromptVersion(models.Model):
-    release = models.ForeignKey(ChannelAIRelease, on_delete=models.CASCADE, related_name="prompt_versions")
-    prompt_version = models.ForeignKey(PromptDocumentVersion, on_delete=models.PROTECT, related_name="+")
-
-    class Meta:
-        constraints = [models.UniqueConstraint(fields=["release", "prompt_version"], name="uniq_release_prompt_version")]
 
 
 # --- LLM usage accounting (tokens, cost) ---
@@ -221,7 +119,6 @@ class LlmInvocation(models.Model):
     # Учёт по каналу (ADR-HUB-0019) и/или продукту, если канал продуктовый.
     channel = models.ForeignKey("channels.Channel", on_delete=models.SET_NULL, null=True, blank=True, related_name="ai_invocations")
     product = models.ForeignKey("products.Product", on_delete=models.PROTECT, related_name="ai_invocations", null=True, blank=True)
-    release = models.ForeignKey(ChannelAIRelease, on_delete=models.SET_NULL, null=True, blank=True, related_name="invocations")
     purpose = models.CharField(max_length=64)
     operation = models.CharField(max_length=16)  # chat | embedding
     model = models.CharField(max_length=128, blank=True)

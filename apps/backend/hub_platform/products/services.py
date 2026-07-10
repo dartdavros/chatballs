@@ -14,8 +14,6 @@ class ProductInput:
     code: str
     name: str
     site_url: str = ""
-    summary: str = ""
-    sales_description: str = ""
     department_ids: tuple[int, ...] = ()
 
 
@@ -36,8 +34,6 @@ def create_product(*, organization: Organization, data: ProductInput) -> Product
         name=data.name.strip(),
         status=ProductStatus.ACTIVE,
         site_url=data.site_url.strip(),
-        summary=data.summary.strip(),
-        sales_description=data.sales_description.strip(),
     )
     product.full_clean()
     product.save()
@@ -50,10 +46,8 @@ def create_product(*, organization: Organization, data: ProductInput) -> Product
 def update_product(*, product: Product, data: ProductInput) -> Product:
     product.name = data.name.strip()
     product.site_url = data.site_url.strip()
-    product.summary = data.summary.strip()
-    product.sales_description = data.sales_description.strip()
     product.full_clean(exclude=["code"])
-    product.save(update_fields=["name", "site_url", "summary", "sales_description", "updated_at"])
+    product.save(update_fields=["name", "site_url", "updated_at"])
     departments = _departments(product.organization, data.department_ids)
     product.department_links.exclude(department__in=departments).delete()
     for department in departments:

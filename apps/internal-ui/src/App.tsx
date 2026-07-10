@@ -9,7 +9,7 @@ import { AuthChangePassword, AuthLogin, AuthPasswordRecovery, AuthResetPassword,
 import { Shell } from "./layout/Shell";
 import { pathFromRoute, routeFromPath } from "./router";
 import { ErrorScreen, LoadingScreen, PermissionScreen } from "./shared/ui";
-import type { AiAgent, AiRelease } from "./features/ai/model";
+import type { AiAgent } from "./features/ai/model";
 import type { AppData, AuthChallenge, Department, Employee, Product, RouteKey, SessionUser } from "./types";
 
 export function App() {
@@ -24,11 +24,11 @@ export function App() {
   const [selectedProductId, setSelectedProductId] = useState<number | null>(initialRoute.productId);
   const [selectedProductCode, setSelectedProductCode] = useState<string | null>(initialRoute.productCode);
   const [selectedAgentId, setSelectedAgentId] = useState<number | null>(initialRoute.agentId);
-  const [selectedReleaseId, setSelectedReleaseId] = useState<number | null>(initialRoute.releaseId);
+  const [selectedKnowledgeId, setSelectedKnowledgeId] = useState<number | null>(initialRoute.knowledgeId);
   const [selectedConversationId, setSelectedConversationId] = useState<number | null>(null);
   const [selectedClientId, setSelectedClientId] = useState<number | null>(initialRoute.clientId);
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(initialRoute.orderId);
-  const [data, setData] = useState<AppData>({ employees: [], departments: [], products: [], agents: [], releases: [] });
+  const [data, setData] = useState<AppData>({ employees: [], departments: [], products: [], agents: [] });
   const [dataError, setDataError] = useState(false);
 
   const navigate = useCallback((nextRoute: RouteKey, entityId: number | null = null, replace = false, productCode: string | null = null) => {
@@ -36,7 +36,7 @@ export function App() {
     const nextProductId = nextRoute === "productDetail" ? entityId : null;
     const nextProductCode = nextRoute === "aiAgentCreate" ? productCode : null;
     const nextAgentId = nextRoute === "aiAgentDetail" ? entityId : null;
-    const nextReleaseId = nextRoute === "aiRelease" ? entityId : null;
+    const nextKnowledgeId = nextRoute === "aiKnowledgeDetail" ? entityId : null;
     const nextConversationId = nextRoute === "salesDialogs" || nextRoute === "supportDialogs" ? entityId : null;
     const nextClientId = nextRoute === "salesClientDetail" ? entityId : null;
     const nextOrderId = nextRoute === "salesOrderDetail" ? entityId : null;
@@ -46,12 +46,12 @@ export function App() {
     setSelectedProductId(nextProductId);
     setSelectedProductCode(nextProductCode);
     setSelectedAgentId(nextAgentId);
-    setSelectedReleaseId(nextReleaseId);
+    setSelectedKnowledgeId(nextKnowledgeId);
     setSelectedConversationId(nextConversationId);
     setSelectedClientId(nextClientId);
     setSelectedOrderId(nextOrderId);
     if (`${window.location.pathname}${window.location.search}` !== nextPath) {
-      const state = { route: nextRoute, employeeId: nextEmployeeId, productId: nextProductId, productCode: nextProductCode, agentId: nextAgentId, releaseId: nextReleaseId };
+      const state = { route: nextRoute, employeeId: nextEmployeeId, productId: nextProductId, productCode: nextProductCode, agentId: nextAgentId, knowledgeId: nextKnowledgeId };
       if (replace) {
         window.history.replaceState(state, "", nextPath);
       } else {
@@ -69,16 +69,11 @@ export function App() {
         api<{ items: Product[] }>("/api/v1/company/products/"),
       ]);
       let agents: AiAgent[] = [];
-      let releases: AiRelease[] = [];
       if (user?.role === "OWNER") {
-        const [agentsResponse, releasesResponse] = await Promise.all([
-          api<{ items: AiAgent[] }>("/api/v1/ai/agents/"),
-          api<{ items: AiRelease[] }>("/api/v1/ai/releases/"),
-        ]);
+        const agentsResponse = await api<{ items: AiAgent[] }>("/api/v1/ai/agents/");
         agents = agentsResponse.items;
-        releases = releasesResponse.items;
       }
-      setData({ employees: employees.items, departments: departments.items, products: products.items, agents, releases });
+      setData({ employees: employees.items, departments: departments.items, products: products.items, agents });
     } catch {
       setDataError(true);
     }
@@ -102,7 +97,7 @@ export function App() {
       setSelectedProductId(nextRoute.productId);
       setSelectedProductCode(nextRoute.productCode);
       setSelectedAgentId(nextRoute.agentId);
-      setSelectedReleaseId(nextRoute.releaseId);
+      setSelectedKnowledgeId(nextRoute.knowledgeId);
       setSelectedClientId(nextRoute.clientId);
       setSelectedOrderId(nextRoute.orderId);
     };
@@ -124,7 +119,7 @@ export function App() {
     setUser(null);
     setTotpChallenge(null);
     navigate("command", null, true);
-    setData({ employees: [], departments: [], products: [], agents: [], releases: [] });
+    setData({ employees: [], departments: [], products: [], agents: [] });
   }
 
   if (resetting) {
@@ -156,7 +151,7 @@ export function App() {
       ) : !canAccess(user.role, route, user.department) ? (
         <PermissionScreen onReturn={() => navigate(defaultRoute(user.role, user.department), null, true)} />
       ) : (
-        <Shell route={route} setRoute={(nextRoute) => navigate(nextRoute)} selectedEmployeeId={selectedEmployeeId} selectedProductId={selectedProductId} selectedProductCode={selectedProductCode} selectedAgentId={selectedAgentId} selectedReleaseId={selectedReleaseId} selectedConversationId={selectedConversationId} selectedClientId={selectedClientId} openClientRoute={(clientId) => navigate("salesClientDetail", clientId)} selectedOrderId={selectedOrderId} openOrderRoute={(orderId) => navigate("salesOrderDetail", orderId)} openEmployeeRoute={(employeeId) => navigate("employeeDetail", employeeId)} openProductRoute={(productId) => navigate("productDetail", productId)} openAgentCreateRoute={(productCode) => navigate("aiAgentCreate", null, false, productCode)} openAgentRoute={(agentId) => navigate("aiAgentDetail", agentId)} openReleaseRoute={(releaseId) => navigate("aiRelease", releaseId)} openConversationRoute={(conversationId) => navigate("salesDialogs", conversationId)} user={user} data={data} reload={loadData} onUserUpdated={setUser} onLogout={logout} />
+        <Shell route={route} setRoute={(nextRoute) => navigate(nextRoute)} selectedEmployeeId={selectedEmployeeId} selectedProductId={selectedProductId} selectedProductCode={selectedProductCode} selectedAgentId={selectedAgentId} selectedKnowledgeId={selectedKnowledgeId} selectedConversationId={selectedConversationId} selectedClientId={selectedClientId} openClientRoute={(clientId) => navigate("salesClientDetail", clientId)} selectedOrderId={selectedOrderId} openOrderRoute={(orderId) => navigate("salesOrderDetail", orderId)} openEmployeeRoute={(employeeId) => navigate("employeeDetail", employeeId)} openProductRoute={(productId) => navigate("productDetail", productId)} openAgentCreateRoute={(productCode) => navigate("aiAgentCreate", null, false, productCode)} openAgentRoute={(agentId) => navigate("aiAgentDetail", agentId)} openKnowledgeRoute={(knowledgeId) => navigate("aiKnowledgeDetail", knowledgeId)} openConversationRoute={(conversationId) => navigate("salesDialogs", conversationId)} user={user} data={data} reload={loadData} onUserUpdated={setUser} onLogout={logout} />
       )}
     </ConfigProvider>
   );

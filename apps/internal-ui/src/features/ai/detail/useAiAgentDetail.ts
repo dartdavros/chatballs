@@ -1,17 +1,16 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { api } from "../../../api/client";
-import type { AiAgentDetail, AiReleaseFull, KnowledgeDoc, PromptDoc } from "./model";
+import { fetchKnowledgeList, type KnowledgeItem } from "../knowledge/model";
+import type { AiAgentDetail } from "./model";
 
 type AgentDetailData = {
   agent: AiAgentDetail | null;
-  releases: AiReleaseFull[];
-  knowledge: KnowledgeDoc[];
-  prompts: PromptDoc[];
+  library: KnowledgeItem[];
 };
 
 export function useAiAgentDetail(agentId: number | null) {
-  const [data, setData] = useState<AgentDetailData>({ agent: null, releases: [], knowledge: [], prompts: [] });
+  const [data, setData] = useState<AgentDetailData>({ agent: null, library: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
@@ -24,14 +23,11 @@ export function useAiAgentDetail(agentId: number | null) {
     setLoading(true);
     setError(false);
     try {
-      const { agent } = await api<{ agent: AiAgentDetail }>(`/api/v1/ai/agents/${agentId}/`);
-      const channel = encodeURIComponent(agent.channel.code);
-      const [releases, knowledge, prompts] = await Promise.all([
-        api<{ items: AiReleaseFull[] }>(`/api/v1/ai/releases/?channel=${channel}`),
-        api<{ items: KnowledgeDoc[] }>(`/api/v1/ai/knowledge/?channel=${channel}`),
-        api<{ items: PromptDoc[] }>(`/api/v1/ai/prompts/?channel=${channel}`),
+      const [{ agent }, library] = await Promise.all([
+        api<{ agent: AiAgentDetail }>(`/api/v1/ai/agents/${agentId}/`),
+        fetchKnowledgeList(),
       ]);
-      setData({ agent, releases: releases.items, knowledge: knowledge.items, prompts: prompts.items });
+      setData({ agent, library: library.items });
     } catch {
       setError(true);
     } finally {

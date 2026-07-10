@@ -37,6 +37,9 @@ services:
       --bind 0.0.0.0:8000
       --workers $${HUB_GUNICORN_WORKERS:-3}
       --timeout $${HUB_GUNICORN_TIMEOUT:-60}"
+    volumes:
+      # Файловые вложения знаний (ADR-HUB-0023).
+      - ./data/media:/app/apps/backend/media
     depends_on:
       postgres:
         condition: service_healthy
@@ -61,6 +64,8 @@ services:
     env_file:
       - .env.production
     command: python manage.py run_worker
+    volumes:
+      - ./data/media:/app/apps/backend/media
     depends_on:
       backend:
         condition: service_healthy

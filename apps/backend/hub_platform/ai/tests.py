@@ -1,20 +1,24 @@
 import json
+import tempfile
 
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from rest_framework.test import APIClient
 
-from hub_platform.ai.models import AIAgent
+from hub_platform.ai.models import AIAgent, Knowledge, KnowledgeFragment
 from hub_platform.channels.models import Channel
 from hub_platform.identity.bootstrap import bootstrap_edevs_owner
 from hub_platform.identity.models import EmployeeProfile, EmployeeRole, HumanUser, Organization
 from hub_platform.products.models import Product
 
+_MEDIA_ROOT = tempfile.mkdtemp(prefix="hub-test-media-")
+
 
 def make_channel_with_agent(organization, *, code, name, product=None, model="openai/gpt-4o-mini"):
-    """Канал обработки + его агент (ADR-HUB-0019). Bootstrap больше не сидит
+    """Канал обработки + его агент (ADR-HUB-0019/0023). Bootstrap не сидит
     каналы/агентов — в проде это делает seed_channels, в тестах — этот helper."""
-    channel = Channel.objects.create(organization=organization, code=code, name=name, product=product, model=model)
-    agent = AIAgent.objects.create(channel=channel, name=f"{name} Agent", model=model)
+    channel = Channel.objects.create(organization=organization, code=code, name=name, product=product)
+    agent = AIAgent.objects.create(channel=channel, name=f"{name} Agent", model=model, is_active=True)
     return channel, agent
 
 
@@ -39,12 +43,10 @@ class AIAgentInvariantTests(TestCase):
             self.organization, code="firepage-sales", name="FirePage — продажи",
             product=Product.objects.get(code="firepage"),
         )
-        owner = HumanUser.objects.get(email="owner@edevs.tech")
         with self.assertRaises(ValidationError):
             create_agent(
                 organization=self.organization,
-                author=owner,
-                data=AgentCreateInput(channel_code=channel.code, model="gpt-4o-mini", system_prompt="", knowledge_document_ids=[]),
+                data=AgentCreateInput(channel_code=channel.code, model="gpt-4o-mini", persona="", tone="", instructions="", knowledge_ids=[]),
             )
 
     def test_new_product_does_not_get_an_agent_automatically(self) -> None:
@@ -67,14 +69,10 @@ class AIAgentApiTests(TestCase):
         codes = {item["channel"]["product"]["code"] for item in response.json()["items"]}
         self.assertEqual(codes, {"firepage", "foxray"})
 
-    def test_owner_creates_agent_for_channel_without_agent(self) -> None:
+    def test_owner_creates_agent_with_instructions_and_knowledge(self) -> None:
         academy = Product.objects.create(organization=self.organization, code="academy", name="Academy")
         Channel.objects.create(organization=self.organization, code="academy-sales", name="Academy", product=academy)
-        knowledge_response = self.client.post(
-            "/api/v1/ai/knowledge/",
-            data=json.dumps({"code": "faq", "title": "FAQ", "category": "FAQ", "content": "v1"}),
-            content_type="application/json",
-        )
+        knowledge = Knowledge.objects.create(organization=self.organization, title="FAQ", content="v1")
 
         response = self.client.post(
             "/api/v1/ai/agents/",
@@ -82,34 +80,37 @@ class AIAgentApiTests(TestCase):
                 {
                     "channel": "academy-sales",
                     "model": "gpt-4o-mini",
-                    "systemPrompt": "Отвечай по делу.",
-                    "knowledgeDocumentIds": [knowledge_response.json()["document"]["id"]],
+                    "persona": "Ты — ассистент Academy.",
+                    "tone": "Коротко и по делу.",
+                    "instructions": "Отвечай по делу.",
+                    "knowledgeIds": [knowledge.id],
                 }
             ),
             content_type="application/json",
         )
 
         self.assertEqual(response.status_code, 201)
-        body = response.json()
-        self.assertEqual(body["agent"]["channel"]["code"], "academy-sales")
-        self.assertFalse(body["agent"]["isActive"])
-        self.assertEqual(body["release"]["status"], "DRAFT")
+        body = response.json()["agent"]
+        self.assertEqual(body["channel"]["code"], "academy-sales")
+        self.assertFalse(body["isActive"])
+        self.assertEqual(body["persona"], "Ты — ассистент Academy.")
+        self.assertEqual([item["id"] for item in body["knowledge"]], [knowledge.id])
 
     def test_owner_cannot_create_second_agent_for_channel(self) -> None:
         response = self.client.post(
             "/api/v1/ai/agents/",
-            data=json.dumps({"channel": "firepage-sales", "model": "gpt-4o-mini", "knowledgeDocumentIds": []}),
+            data=json.dumps({"channel": "firepage-sales", "model": "gpt-4o-mini", "knowledgeIds": []}),
             content_type="application/json",
         )
 
         self.assertEqual(response.status_code, 400)
 
-    def test_owner_updates_agent_model(self) -> None:
+    def test_owner_updates_agent_model_and_instructions(self) -> None:
         agent = AIAgent.objects.get(channel__code="firepage-sales")
 
         response = self.client.patch(
             f"/api/v1/ai/agents/{agent.id}/update/",
-            data=json.dumps({"model": "anthropic/claude-3.5", "modelParams": {"temperature": 0.3}}),
+            data=json.dumps({"model": "anthropic/claude-3.5", "modelParams": {"temperature": 0.3}, "tone": "Дружелюбно."}),
             content_type="application/json",
         )
 
@@ -117,6 +118,34 @@ class AIAgentApiTests(TestCase):
         agent.refresh_from_db()
         self.assertEqual(agent.model, "anthropic/claude-3.5")
         self.assertEqual(agent.model_params, {"temperature": 0.3})
+        self.assertEqual(agent.tone, "Дружелюбно.")
+
+    def test_owner_updates_agent_knowledge_selection(self) -> None:
+        agent = AIAgent.objects.get(channel__code="firepage-sales")
+        knowledge = Knowledge.objects.create(organization=self.organization, title="FAQ", content="v1")
+
+        response = self.client.patch(
+            f"/api/v1/ai/agents/{agent.id}/update/",
+            data=json.dumps({"knowledgeIds": [knowledge.id]}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(list(agent.knowledge_items.values_list("id", flat=True)), [knowledge.id])
+
+        # Пустой список снимает выбор; отсутствие ключа — не трогает.
+        self.client.patch(
+            f"/api/v1/ai/agents/{agent.id}/update/",
+            data=json.dumps({"name": "Renamed"}),
+            content_type="application/json",
+        )
+        self.assertEqual(agent.knowledge_items.count(), 1)
+        self.client.patch(
+            f"/api/v1/ai/agents/{agent.id}/update/",
+            data=json.dumps({"knowledgeIds": []}),
+            content_type="application/json",
+        )
+        self.assertEqual(agent.knowledge_items.count(), 0)
 
     def test_owner_deactivates_and_activates_agent(self) -> None:
         agent = AIAgent.objects.get(channel__code="foxray-sales")
@@ -162,174 +191,174 @@ class AIAgentPermissionTests(TestCase):
         self.assertEqual(response.status_code, 403)
 
 
-class KnowledgeDocumentApiTests(TestCase):
+class KnowledgeApiTests(TestCase):
     def setUp(self) -> None:
         bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
+        self.organization = Organization.objects.get(slug="edevs")
         self.client = APIClient()
         self.client.login(username="owner@edevs.tech", password="temporary-password")
 
     def _create(self, **overrides):
-        payload = {"code": "faq", "title": "FAQ", "category": "FAQ", "content": "v1"}
+        payload = {"title": "FAQ", "description": "Ответы на вопросы", "content": "Refund policy details here."}
         payload.update(overrides)
         return self.client.post("/api/v1/ai/knowledge/", data=json.dumps(payload), content_type="application/json")
 
-    def test_create_makes_first_draft_version(self) -> None:
+    def test_create_builds_fragments_immediately(self) -> None:
         response = self._create()
 
         self.assertEqual(response.status_code, 201)
-        document = response.json()["document"]
-        self.assertEqual(document["category"], "FAQ")
-        self.assertEqual(document["inclusionMode"], "RETRIEVAL")
-        self.assertEqual(len(document["versions"]), 1)
-        self.assertEqual(document["versions"][0]["status"], "DRAFT")
-        self.assertEqual(document["versions"][0]["content"], "v1")
+        knowledge = response.json()["knowledge"]
+        self.assertEqual(knowledge["title"], "FAQ")
+        self.assertEqual(knowledge["description"], "Ответы на вопросы")
+        self.assertTrue(KnowledgeFragment.objects.filter(knowledge_id=knowledge["id"]).exists())
 
-    def test_add_version_then_publish_archives_previous(self) -> None:
-        document_id = self._create().json()["document"]["id"]
-        self.client.post(
-            f"/api/v1/ai/knowledge/{document_id}/versions/",
-            data=json.dumps({"content": "v2"}),
+    def test_create_requires_title(self) -> None:
+        self.assertEqual(self._create(title="  ").status_code, 400)
+
+    def test_update_content_reindexes_fragments(self) -> None:
+        knowledge_id = self._create().json()["knowledge"]["id"]
+        before = list(KnowledgeFragment.objects.filter(knowledge_id=knowledge_id).values_list("content", flat=True))
+
+        response = self.client.patch(
+            f"/api/v1/ai/knowledge/{knowledge_id}/",
+            data=json.dumps({"content": "Совсем другой текст про доставку."}),
             content_type="application/json",
         )
-        self.client.post(f"/api/v1/ai/knowledge/{document_id}/versions/1/publish/")
-        response = self.client.post(f"/api/v1/ai/knowledge/{document_id}/versions/2/publish/")
 
         self.assertEqual(response.status_code, 200)
-        versions = {v["version"]: v["status"] for v in response.json()["document"]["versions"]}
-        self.assertEqual(versions[2], "PUBLISHED")
-        self.assertEqual(versions[1], "ARCHIVED")
-
-    def test_rollback_creates_new_draft_from_old_content(self) -> None:
-        document_id = self._create().json()["document"]["id"]
-        self.client.post(
-            f"/api/v1/ai/knowledge/{document_id}/versions/",
-            data=json.dumps({"content": "v2"}),
-            content_type="application/json",
-        )
-        response = self.client.post(
-            f"/api/v1/ai/knowledge/{document_id}/rollback/",
-            data=json.dumps({"version": 1}),
-            content_type="application/json",
-        )
-
-        self.assertEqual(response.status_code, 201)
-        versions = response.json()["document"]["versions"]
-        latest = max(versions, key=lambda v: v["version"])
-        self.assertEqual(latest["version"], 3)
-        self.assertEqual(latest["status"], "DRAFT")
-        self.assertEqual(latest["content"], "v1")
-
-    def test_create_rejects_unknown_category(self) -> None:
-        self.assertEqual(self._create(category="NOPE").status_code, 400)
+        after = list(KnowledgeFragment.objects.filter(knowledge_id=knowledge_id).values_list("content", flat=True))
+        self.assertNotEqual(before, after)
 
     def test_disable_and_enable(self) -> None:
-        document_id = self._create().json()["document"]["id"]
-        disabled = self.client.post(f"/api/v1/ai/knowledge/{document_id}/disable/")
-        self.assertFalse(disabled.json()["document"]["isEnabled"])
-        enabled = self.client.post(f"/api/v1/ai/knowledge/{document_id}/enable/")
-        self.assertTrue(enabled.json()["document"]["isEnabled"])
-
-    def test_create_for_foreign_product_is_rejected(self) -> None:
-        # scope=PRODUCT с несуществующим в организации продуктом → 400.
-        response = self._create(scope="PRODUCT", product="missing")
-        self.assertEqual(response.status_code, 400)
-
-
-class PromptDocumentApiTests(TestCase):
-    def setUp(self) -> None:
-        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
-        self.client = APIClient()
-        self.client.login(username="owner@edevs.tech", password="temporary-password")
-
-    def test_create_prompt_without_inclusion_mode(self) -> None:
-        response = self.client.post(
-            "/api/v1/ai/prompts/",
-            data=json.dumps({"code": "system", "title": "System", "category": "SYSTEM", "content": "be helpful"}),
+        knowledge_id = self._create().json()["knowledge"]["id"]
+        disabled = self.client.patch(
+            f"/api/v1/ai/knowledge/{knowledge_id}/",
+            data=json.dumps({"isEnabled": False}),
             content_type="application/json",
         )
+        self.assertFalse(disabled.json()["knowledge"]["isEnabled"])
 
-        self.assertEqual(response.status_code, 201)
-        document = response.json()["document"]
-        self.assertEqual(document["category"], "SYSTEM")
-        self.assertNotIn("inclusionMode", document)
-        self.assertEqual(document["versions"][0]["content"], "be helpful")
+    def test_delete_removes_knowledge_and_fragments(self) -> None:
+        knowledge_id = self._create().json()["knowledge"]["id"]
 
-    def test_prompt_rejects_knowledge_category(self) -> None:
-        response = self.client.post(
-            "/api/v1/ai/prompts/",
-            data=json.dumps({"code": "x", "title": "X", "category": "FAQ", "content": ""}),
-            content_type="application/json",
-        )
-        self.assertEqual(response.status_code, 400)
+        response = self.client.delete(f"/api/v1/ai/knowledge/{knowledge_id}/")
+
+        self.assertEqual(response.status_code, 204)
+        self.assertFalse(Knowledge.objects.filter(id=knowledge_id).exists())
+        self.assertFalse(KnowledgeFragment.objects.filter(knowledge_id=knowledge_id).exists())
+
+    def test_list_omits_content(self) -> None:
+        self._create()
+        response = self.client.get("/api/v1/ai/knowledge/")
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn("content", response.json()["items"][0])
 
 
-class ChannelAIReleaseApiTests(TestCase):
+@override_settings(MEDIA_ROOT=_MEDIA_ROOT)
+class KnowledgeAttachmentTests(TestCase):
     def setUp(self) -> None:
         bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
         self.organization = Organization.objects.get(slug="edevs")
-        self.channel, _ = make_channel_with_agent(
-            self.organization, code="firepage-sales", name="FirePage — продажи",
-            product=Product.objects.get(code="firepage"),
-        )
         self.client = APIClient()
         self.client.login(username="owner@edevs.tech", password="temporary-password")
-        document_id = self.client.post(
-            "/api/v1/ai/knowledge/",
-            data=json.dumps({"scope": "PRODUCT", "product": "firepage", "code": "faq", "title": "FAQ", "category": "FAQ", "content": "v1"}),
-            content_type="application/json",
-        ).json()["document"]["id"]
-        self.client.post(f"/api/v1/ai/knowledge/{document_id}/versions/1/publish/")
+        self.knowledge = Knowledge.objects.create(organization=self.organization, title="FAQ", content="Основной текст.")
 
-    def _create_release(self):
+    def _upload(self, name="price.txt", data=b"Full price list contents", content_type="text/plain"):
         return self.client.post(
-            "/api/v1/ai/releases/",
-            data=json.dumps({"channel": "firepage-sales"}),
+            f"/api/v1/ai/knowledge/{self.knowledge.id}/attachments/",
+            data={"file": SimpleUploadedFile(name, data, content_type=content_type)},
+            format="multipart",
+        )
+
+    def test_upload_keeps_original_name_and_indexes_text(self) -> None:
+        response = self._upload()
+
+        self.assertEqual(response.status_code, 201)
+        attachment = response.json()["attachment"]
+        self.assertEqual(attachment["name"], "price.txt")
+        self.assertTrue(attachment["hasText"])
+        self.assertIn("/api/v1/ai/files/", attachment["url"])
+        contents = " ".join(KnowledgeFragment.objects.filter(knowledge=self.knowledge).values_list("content", flat=True))
+        self.assertIn("price list", contents)
+
+    def test_reupload_same_name_replaces_attachment(self) -> None:
+        self._upload()
+        response = self._upload(data=b"Updated price list")
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(self.knowledge.attachments.count(), 1)
+
+    def test_public_download_without_auth(self) -> None:
+        attachment_url = self._upload().json()["attachment"]["url"]
+        path = attachment_url.split("localhost:8000")[-1]
+
+        anonymous = APIClient()
+        response = anonymous.get(path)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(b"".join(response.streaming_content), b"Full price list contents")
+        self.assertIn("price.txt", response["Content-Disposition"])
+
+    def test_delete_attachment_reindexes(self) -> None:
+        attachment_id = self._upload().json()["attachment"]["id"]
+
+        response = self.client.delete(f"/api/v1/ai/knowledge/{self.knowledge.id}/attachments/{attachment_id}/")
+
+        self.assertEqual(response.status_code, 204)
+        contents = " ".join(KnowledgeFragment.objects.filter(knowledge=self.knowledge).values_list("content", flat=True))
+        self.assertNotIn("price list", contents)
+
+
+class KnowledgeImportTests(TestCase):
+    def setUp(self) -> None:
+        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
+        self.organization = Organization.objects.get(slug="edevs")
+        self.client = APIClient()
+        self.client.login(username="owner@edevs.tech", password="temporary-password")
+
+    def _import(self, documents):
+        return self.client.post(
+            "/api/v1/ai/knowledge/import/",
+            data=json.dumps({"documents": documents}),
             content_type="application/json",
         )
 
-    def test_draft_release_snapshots_published_knowledge_and_agent_config(self) -> None:
-        response = self._create_release()
+    def test_creates_new_knowledge(self) -> None:
+        response = self._import([{"title": "Обзор", "description": "Что это", "content": "Текст обзора"}])
 
         self.assertEqual(response.status_code, 201)
-        release = response.json()["release"]
-        self.assertEqual(release["status"], "DRAFT")
-        self.assertEqual(release["version"], 1)
-        self.assertEqual(release["model"], "openai/gpt-4o-mini")
-        self.assertIn({"document": "faq", "version": 1}, release["knowledgeVersions"])
+        body = response.json()
+        self.assertEqual(body["created"], 1)
+        knowledge = Knowledge.objects.get(organization=self.organization, title="Обзор")
+        self.assertEqual(knowledge.content, "Текст обзора")
+        self.assertTrue(knowledge.fragments.exists())
 
-    def test_publishing_a_release_archives_the_previous_active_one(self) -> None:
-        first = self._create_release().json()["release"]
-        self.client.post(f"/api/v1/ai/releases/{first['id']}/publish/")
-        second = self._create_release().json()["release"]
-        self.client.post(f"/api/v1/ai/releases/{second['id']}/publish/")
+    def test_reimport_same_content_is_unchanged(self) -> None:
+        self._import([{"title": "Обзор", "content": "Текст"}])
 
-        first_detail = self.client.get(f"/api/v1/ai/releases/{first['id']}/").json()["release"]
-        second_detail = self.client.get(f"/api/v1/ai/releases/{second['id']}/").json()["release"]
-        self.assertEqual(first_detail["status"], "ARCHIVED")
-        self.assertEqual(second_detail["status"], "PUBLISHED")
+        response = self._import([{"title": "Обзор", "content": "Текст"}])
 
-    def test_rollback_creates_new_draft_from_snapshot(self) -> None:
-        first = self._create_release().json()["release"]
-        self.client.post(f"/api/v1/ai/releases/{first['id']}/publish/")
+        self.assertEqual(response.json()["unchanged"], 1)
+        self.assertEqual(Knowledge.objects.filter(title="Обзор").count(), 1)
 
-        response = self.client.post(f"/api/v1/ai/releases/{first['id']}/rollback/")
+    def test_changed_content_updates_existing(self) -> None:
+        self._import([{"title": "Обзор", "content": "v1"}])
+
+        response = self._import([{"title": "Обзор", "content": "v2"}])
+
+        self.assertEqual(response.json()["updated"], 1)
+        self.assertEqual(Knowledge.objects.get(title="Обзор").content, "v2")
+
+    def test_missing_title_goes_to_failed(self) -> None:
+        response = self._import([
+            {"title": "Хороший", "content": "ок"},
+            {"title": " ", "content": "плохо"},
+        ])
 
         self.assertEqual(response.status_code, 201)
-        rolled = response.json()["release"]
-        self.assertEqual(rolled["status"], "DRAFT")
-        self.assertGreater(rolled["version"], first["version"])
-        self.assertEqual(rolled["knowledgeVersions"], first["knowledgeVersions"])
-
-    def test_release_snapshot_is_immutable(self) -> None:
-        from django.core.exceptions import ValidationError
-
-        from hub_platform.ai.models import ChannelAIRelease
-
-        release_id = self._create_release().json()["release"]["id"]
-        release = ChannelAIRelease.objects.get(id=release_id)
-        release.model = "anthropic/claude-3.5"
-        with self.assertRaises(ValidationError):
-            release.save()
+        body = response.json()
+        self.assertEqual(body["created"], 1)
+        self.assertEqual(len(body["failed"]), 1)
 
 
 class PiiRedactionTests(TestCase):
@@ -410,7 +439,7 @@ class ChatInvocationTests(TestCase):
         result = invoke_chat(
             channel=self.channel,
             messages=[ChatMessage(role="user", content="hello there")],
-            purpose="test_chat",
+            purpose="agent_chat",
         )
 
         self.assertTrue(result.text)
@@ -439,7 +468,7 @@ class ChatInvocationTests(TestCase):
             invoke_chat(
                 channel=self.channel,
                 messages=[ChatMessage(role="user", content="email me a@b.com")],
-                purpose="test_chat",
+                purpose="agent_chat",
             )
 
         self.assertNotIn("a@b.com", captured["messages"][0].content)
@@ -459,7 +488,7 @@ class ChatInvocationTests(TestCase):
         )
 
         with self.assertRaises(ai_limits.LimitExceeded):
-            invoke_chat(channel=self.channel, messages=[ChatMessage(role="user", content="hi")], purpose="test_chat")
+            invoke_chat(channel=self.channel, messages=[ChatMessage(role="user", content="hi")], purpose="agent_chat")
         self.assertTrue(LlmInvocation.objects.filter(channel=self.channel, status=LlmInvocationStatus.BLOCKED).exists())
 
     def test_invocation_records_used_fragment_ids(self) -> None:
@@ -470,7 +499,7 @@ class ChatInvocationTests(TestCase):
         invoke_chat(
             channel=self.channel,
             messages=[ChatMessage(role="user", content="hi")],
-            purpose="test_chat",
+            purpose="agent_chat",
             used_fragment_ids=[11, 22],
         )
         invocation = LlmInvocation.objects.get(channel=self.channel, operation="chat")
@@ -487,196 +516,134 @@ class ChunkingTests(TestCase):
         self.assertTrue(all(len(chunk) <= 700 for chunk in chunks))
 
 
+class TextExtractionTests(TestCase):
+    def test_extracts_plain_text(self) -> None:
+        from hub_platform.ai.extraction import extract_text
+
+        self.assertEqual(extract_text(filename="a.md", content_type="", data="# Заголовок".encode()), "# Заголовок")
+
+    def test_unknown_format_returns_empty(self) -> None:
+        from hub_platform.ai.extraction import extract_text
+
+        self.assertEqual(extract_text(filename="a.bin", content_type="application/octet-stream", data=b"\x00\x01"), "")
+
+    def test_broken_pdf_is_not_fatal(self) -> None:
+        from hub_platform.ai.extraction import extract_text
+
+        self.assertEqual(extract_text(filename="a.pdf", content_type="application/pdf", data=b"not a pdf"), "")
+
+
 class KnowledgeRetrievalTests(TestCase):
     def setUp(self) -> None:
         bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
         self.organization = Organization.objects.get(slug="edevs")
-        self.channel, _ = make_channel_with_agent(
+        self.channel, self.agent = make_channel_with_agent(
             self.organization, code="firepage-sales", name="FirePage — продажи",
             product=Product.objects.get(code="firepage"),
         )
-        self.client = APIClient()
-        self.client.login(username="owner@edevs.tech", password="temporary-password")
-        document_id = self.client.post(
-            "/api/v1/ai/knowledge/",
-            data=json.dumps(
-                {
-                    "scope": "PRODUCT",
-                    "product": "firepage",
-                    "code": "faq",
-                    "title": "FAQ",
-                    "category": "FAQ",
-                    "content": "Refund policy details here.\n\nDelivery and shipping information.",
-                }
+        from hub_platform.ai.services import KnowledgeInput, create_knowledge
+
+        self.knowledge = create_knowledge(
+            organization=self.organization,
+            data=KnowledgeInput(
+                title="FAQ",
+                description="Возвраты и доставка",
+                content="Refund policy details here.\n\nDelivery and shipping information.",
+                is_enabled=True,
             ),
-            content_type="application/json",
-        ).json()["document"]["id"]
-        self.client.post(f"/api/v1/ai/knowledge/{document_id}/versions/1/publish/")
+        )
+        self.agent.knowledge_items.add(self.knowledge)
 
-        from hub_platform.ai import releases
-
-        owner = HumanUser.objects.get(email="owner@edevs.tech")
-        self.release = releases.create_draft_release(channel=self.channel, author=owner)
-
-    def test_publish_builds_fragments_with_embeddings(self) -> None:
-        from hub_platform.ai.models import KnowledgeFragment
-
-        fragments = KnowledgeFragment.objects.filter(version__document__code="faq")
+    def test_create_builds_fragments_with_embeddings(self) -> None:
+        fragments = KnowledgeFragment.objects.filter(knowledge=self.knowledge)
         self.assertGreaterEqual(fragments.count(), 1)
         self.assertTrue(all(fragment.embedding is not None for fragment in fragments))
 
-    def test_retriever_returns_release_scoped_fragments(self) -> None:
+    def test_retriever_returns_agent_scoped_fragments(self) -> None:
         from hub_platform.ai.retrieval import KnowledgeRetriever
 
-        results = KnowledgeRetriever().retrieve(release=self.release, query="refund", limit=5)
+        results = KnowledgeRetriever().retrieve(agent=self.agent, query="refund", limit=5)
         self.assertGreaterEqual(len(results), 1)
         self.assertLessEqual(len(results), 5)
+
+    def test_retriever_skips_unselected_and_disabled_knowledge(self) -> None:
+        from hub_platform.ai.retrieval import lexical_search
+
+        self.knowledge.is_enabled = False
+        self.knowledge.save(update_fields=["is_enabled"])
+        self.assertEqual(lexical_search(self.agent, "refund", limit=5), [])
 
     def test_lexical_search_matches_content(self) -> None:
         from hub_platform.ai.retrieval import lexical_search
 
-        results = lexical_search(self.release, "Delivery", limit=5)
+        results = lexical_search(self.agent, "Delivery", limit=5)
         self.assertTrue(any("delivery" in fragment.content.lower() for fragment in results))
 
 
-class TestChatRuntimeTests(TestCase):
+class AgentRuntimeTests(TestCase):
     def setUp(self) -> None:
         bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
         self.organization = Organization.objects.get(slug="edevs")
-        self.channel, _ = make_channel_with_agent(
+        self.channel, self.agent = make_channel_with_agent(
             self.organization, code="firepage-sales", name="FirePage — продажи",
             product=Product.objects.get(code="firepage"),
         )
-        self.client = APIClient()
-        self.client.login(username="owner@edevs.tech", password="temporary-password")
-        document_id = self.client.post(
-            "/api/v1/ai/knowledge/",
-            data=json.dumps(
-                {"scope": "PRODUCT", "product": "firepage", "code": "faq", "title": "FAQ", "category": "FAQ", "content": "Refund policy details here."}
-            ),
-            content_type="application/json",
-        ).json()["document"]["id"]
-        self.client.post(f"/api/v1/ai/knowledge/{document_id}/versions/1/publish/")
+        self.agent.persona = "Ты — ассистент FirePage."
+        self.agent.tone = "Коротко."
+        self.agent.instructions = "Отвечай только по знаниям."
+        self.agent.save()
+        from hub_platform.ai.services import KnowledgeInput, create_knowledge
 
-        from hub_platform.ai import releases
+        self.knowledge = create_knowledge(
+            organization=self.organization,
+            data=KnowledgeInput(title="FAQ", description="Возвраты", content="Refund policy details here.", is_enabled=True),
+        )
+        self.agent.knowledge_items.add(self.knowledge)
 
-        owner = HumanUser.objects.get(email="owner@edevs.tech")
-        self.release = releases.create_draft_release(channel=self.channel, author=owner)
+    def test_system_prompt_joins_three_parts_in_order(self) -> None:
+        from hub_platform.ai.runtime import agent_system_prompt
 
-    def test_test_chat_returns_reply_and_records_used_knowledge(self) -> None:
+        prompt = agent_system_prompt(self.agent)
+        self.assertEqual(prompt.index("Ты — ассистент"), 0)
+        self.assertLess(prompt.index("Коротко."), prompt.index("Отвечай только"))
+
+    def test_knowledge_catalog_lists_titles_and_attachment_links(self) -> None:
+        from hub_platform.ai.runtime import knowledge_catalog
+
+        catalog = knowledge_catalog(self.agent)
+        self.assertIn("FAQ", catalog)
+        self.assertIn("Возвраты", catalog)
+
+    def test_agent_turn_returns_reply_and_fragments(self) -> None:
         from hub_platform.ai.models import LlmInvocation
+        from hub_platform.ai.runtime import run_agent_turn
 
-        response = self.client.post(
-            f"/api/v1/ai/releases/{self.release.id}/test-chat/",
+        result = run_agent_turn(agent=self.agent, message="refund")
+
+        self.assertTrue(result.result.text)
+        self.assertGreaterEqual(len(result.fragments), 1)
+        self.assertFalse(result.handoff_suggested)
+        invocation = LlmInvocation.objects.get(channel=self.channel, purpose="agent_chat", operation="chat")
+        self.assertTrue(invocation.used_fragment_ids)
+
+    def test_channel_turn_requires_active_agent(self) -> None:
+        from hub_platform.ai.provider.base import ProviderError
+        from hub_platform.channels.runtime import run_channel_turn
+
+        self.agent.is_active = False
+        self.agent.save(update_fields=["is_active"])
+        with self.assertRaises(ProviderError):
+            run_channel_turn(channel=self.channel, message="hi")
+
+    def test_channel_test_chat_endpoint(self) -> None:
+        client = APIClient()
+        client.login(username="owner@edevs.tech", password="temporary-password")
+
+        response = client.post(
+            f"/api/v1/channels/{self.channel.id}/test-chat/",
             data=json.dumps({"message": "refund"}),
             content_type="application/json",
         )
 
         self.assertEqual(response.status_code, 200)
-        body = response.json()
-        self.assertTrue(body["reply"])
-        self.assertGreater(body["totalTokens"], 0)
-        self.assertFalse(body["handoffSuggested"])
-        self.assertGreaterEqual(len(body["usedKnowledge"]), 1)
-        invocation = LlmInvocation.objects.get(release=self.release, purpose="test_chat", operation="chat")
-        self.assertTrue(invocation.used_fragment_ids)
-
-    def test_test_chat_suggests_handoff_without_knowledge(self) -> None:
-        from hub_platform.ai import releases
-
-        owner = HumanUser.objects.get(email="owner@edevs.tech")
-        empty_channel, _ = make_channel_with_agent(
-            self.organization, code="foxray-sales", name="FoxRay — продажи",
-            product=Product.objects.get(code="foxray"),
-        )
-        empty_release = releases.create_draft_release(channel=empty_channel, author=owner)
-
-        response = self.client.post(
-            f"/api/v1/ai/releases/{empty_release.id}/test-chat/",
-            data=json.dumps({"message": "anything"}),
-            content_type="application/json",
-        )
-
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue(response.json()["handoffSuggested"])
-        self.assertEqual(response.json()["usedKnowledge"], [])
-
-    def test_test_chat_requires_message(self) -> None:
-        response = self.client.post(
-            f"/api/v1/ai/releases/{self.release.id}/test-chat/",
-            data=json.dumps({"message": "  "}),
-            content_type="application/json",
-        )
-        self.assertEqual(response.status_code, 400)
-
-
-class DocumentImportTests(TestCase):
-    def setUp(self) -> None:
-        from hub_platform.ai.models import KnowledgeDocument, KnowledgeDocumentVersion
-        self.KnowledgeDocument = KnowledgeDocument
-        self.KnowledgeDocumentVersion = KnowledgeDocumentVersion
-        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
-        self.organization = Organization.objects.get(slug="edevs")
-        self.client = APIClient()
-        self.client.login(username="owner@edevs.tech", password="temporary-password")
-
-    def _import(self, *, product=None, documents):
-        body = {**( {"product": product} if product else {}), "documents": documents}
-        return self.client.post("/api/v1/ai/knowledge/import/", data=json.dumps(body), content_type="application/json")
-
-    def test_creates_new_documents_and_publishes(self) -> None:
-        response = self._import(documents=[{"code": "overview", "title": "Обзор", "category": "OVERVIEW", "content": "Текст обзора"}])
-
-        self.assertEqual(response.status_code, 201)
-        body = response.json()
-        self.assertEqual(body["created"], 1)
-        self.assertEqual(body["updated"], 0)
-        self.assertEqual(body["unchanged"], 0)
-        doc = self.KnowledgeDocument.objects.get(organization=self.organization, code="overview")
-        self.assertEqual(doc.title, "Обзор")
-        published = doc.versions.filter(status="PUBLISHED").first()
-        self.assertIsNotNone(published)
-        self.assertEqual(published.content, "Текст обзора")
-
-    def test_reimport_same_content_is_unchanged(self) -> None:
-        self._import(documents=[{"code": "overview", "title": "Обзор", "category": "OVERVIEW", "content": "Текст"}])
-        versions_before = self.KnowledgeDocumentVersion.objects.filter(document__code="overview").count()
-
-        response = self._import(documents=[{"code": "overview", "title": "Обзор", "category": "OVERVIEW", "content": "Текст"}])
-
-        self.assertEqual(response.json()["unchanged"], 1)
-        versions_after = self.KnowledgeDocumentVersion.objects.filter(document__code="overview").count()
-        self.assertEqual(versions_after, versions_before)
-
-    def test_changed_content_creates_new_published_version(self) -> None:
-        self._import(documents=[{"code": "overview", "title": "Обзор", "category": "OVERVIEW", "content": "v1"}])
-
-        response = self._import(documents=[{"code": "overview", "title": "Обзор", "category": "OVERVIEW", "content": "v2"}])
-
-        self.assertEqual(response.json()["updated"], 1)
-        versions = list(self.KnowledgeDocumentVersion.objects.filter(document__code="overview").order_by("version"))
-        self.assertEqual(len(versions), 2)
-        self.assertEqual(versions[-1].content, "v2")
-        self.assertEqual(versions[-1].status, "PUBLISHED")
-
-    def test_invalid_category_goes_to_failed(self) -> None:
-        response = self._import(documents=[
-            {"code": "good", "title": "Хороший", "category": "OVERVIEW", "content": "ок"},
-            {"code": "bad", "title": "Плохой", "category": "NOPE", "content": "плохо"},
-        ])
-
-        self.assertEqual(response.status_code, 201)
-        body = response.json()
-        self.assertEqual(body["created"], 1)
-        self.assertEqual(len(body["failed"]), 1)
-        self.assertEqual(body["failed"][0]["code"], "bad")
-        self.assertTrue(self.KnowledgeDocument.objects.filter(code="good").exists())
-        self.assertFalse(self.KnowledgeDocument.objects.filter(code="bad").exists())
-
-    def test_missing_product_is_reported(self) -> None:
-        response = self._import(product="ghost", documents=[{"code": "overview", "title": "Обзор", "category": "OVERVIEW", "content": "текст"}])
-
-        self.assertEqual(response.status_code, 201)
-        self.assertEqual(response.json()["created"], 0)
-        self.assertEqual(len(response.json()["failed"]), 1)
-
+        self.assertTrue(response.json()["reply"])

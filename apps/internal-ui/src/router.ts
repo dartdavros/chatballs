@@ -6,14 +6,14 @@ export type RouteState = {
   productId: number | null;
   productCode: string | null;
   agentId: number | null;
-  releaseId: number | null;
+  knowledgeId: number | null;
   clientId: number | null;
   orderId: number | null;
 };
 
 export function routeFromPath(pathname: string, search = ""): RouteState {
   const path = pathname.replace(/\/+$/, "") || "/";
-  const base = { employeeId: null, productId: null, productCode: null, agentId: null, releaseId: null, clientId: null, orderId: null };
+  const base = { employeeId: null, productId: null, productCode: null, agentId: null, knowledgeId: null, clientId: null, orderId: null };
   if (path === "/" || path === "/command") return { route: "command", ...base };
   if (path === "/departments") return { route: "departments", ...base };
   if (path === "/departments/sales") return { route: "salesOverview", ...base };
@@ -49,9 +49,10 @@ export function routeFromPath(pathname: string, search = ""): RouteState {
     const id = Number(path.split("/")[3]);
     return Number.isInteger(id) && id > 0 ? { ...base, route: "aiAgentDetail", agentId: id } : { route: "aiAgents", ...base };
   }
-  if (path.startsWith("/ai/releases/")) {
+  if (path === "/ai/knowledge") return { route: "aiKnowledge", ...base };
+  if (path.startsWith("/ai/knowledge/")) {
     const id = Number(path.split("/")[3]);
-    return Number.isInteger(id) && id > 0 ? { ...base, route: "aiRelease", releaseId: id } : { route: "aiAgents", ...base };
+    return Number.isInteger(id) && id > 0 ? { ...base, route: "aiKnowledgeDetail", knowledgeId: id } : { route: "aiKnowledge", ...base };
   }
   if (path === "/ai/usage") return { route: "aiUsage", ...base };
   if (path === "/integrations") return { route: "integrations", ...base };
@@ -78,7 +79,8 @@ export function pathFromRoute(route: RouteKey, entityId: number | null = null, p
   if (route === "aiAgentCreate") return productCode ? `/ai/agents/new?product=${encodeURIComponent(productCode)}` : "/ai/agents/new";
   if (route === "aiUsage") return "/ai/usage";
   if (route === "aiAgentDetail") return entityId ? `/ai/agents/${entityId}` : "/ai/agents";
-  if (route === "aiRelease") return entityId ? `/ai/releases/${entityId}` : "/ai/agents";
+  if (route === "aiKnowledge") return "/ai/knowledge";
+  if (route === "aiKnowledgeDetail") return entityId ? `/ai/knowledge/${entityId}` : "/ai/knowledge";
   if (route === "integrations") return "/integrations";
   if (route === "profile") return "/profile";
   return "/profile";

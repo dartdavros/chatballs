@@ -3,6 +3,7 @@ import { UnderlineTabs } from "../../shared/ui-controls";
 
 const ITEMS: Array<{ key: RouteKey; label: string; disabled?: boolean }> = [
   { key: "aiAgents", label: "AI-агенты" },
+  { key: "aiKnowledge", label: "Знания" },
   { key: "aiUsage", label: "Использование AI", disabled: true },
 ];
 

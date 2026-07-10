@@ -171,6 +171,14 @@ SECURE_HSTS_PRELOAD = SECURE_HSTS_SECONDS > 0
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# Файловые вложения знаний (ADR-HUB-0023). Файлы отдаются только через
+# download-endpoint (FileResponse), прямого статик-роутинга MEDIA нет.
+MEDIA_ROOT = Path(os.environ.get("HUB_MEDIA_ROOT", BASE_DIR / "media"))
+MEDIA_URL = "media/"
+
+# Публичный адрес Hub: абсолютные ссылки, уходящие клиентам (download вложений).
+HUB_PUBLIC_BASE_URL = os.environ.get("HUB_PUBLIC_BASE_URL", "http://localhost:8000")
 STORAGES = {
     "default": {
         "BACKEND": "django.core.files.storage.FileSystemStorage",

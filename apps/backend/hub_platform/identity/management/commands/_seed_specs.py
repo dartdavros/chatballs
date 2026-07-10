@@ -4,8 +4,9 @@
 спецификации каналов/продуктов — данные, логика наполнения — в команде.
 """
 
-STYLE = (
-    " Пиши простым текстом для мессенджера: без markdown-разметки, короткими абзацами, "
+# Тон общения (поле tone агента, ADR-HUB-0023): простой текст для мессенджера.
+TONE = (
+    "Пиши простым текстом для мессенджера: без markdown-разметки, короткими абзацами, "
     "на русском, по делу. Не проводи оплату и не обещай условия вне базы знаний."
 )
 
@@ -15,7 +16,8 @@ CHANNEL_SPECS = (
         "name": "Edevs — главный сайт",
         "product_code": None,
         "department": "sales",
-        "system_prompt": "Ты — AI-ассистент компании Edevs на её главном сайте." + STYLE,
+        "persona": "Ты — AI-ассистент компании Edevs на её главном сайте.",
+        "instructions": "",
         "policy": None,  # публичный канал: дефолтные sales-флаги
     },
     {
@@ -23,7 +25,8 @@ CHANNEL_SPECS = (
         "name": "FoxRay — продажи",
         "product_code": "foxray",
         "department": "sales",
-        "system_prompt": "Ты — AI sales-ассистент продукта FoxRay для ортодонтов." + STYLE,
+        "persona": "Ты — AI sales-ассистент продукта FoxRay для ортодонтов.",
+        "instructions": "",
         "policy": None,
     },
     {
@@ -31,9 +34,8 @@ CHANNEL_SPECS = (
         "name": "FirePage — продажи",
         "product_code": "firepage",
         "department": "sales",
-        "system_prompt": (
-            "Ты — AI sales-ассистент продукта FirePage: готовые нишевые сайты." + STYLE
-        ),
+        "persona": "Ты — AI sales-ассистент продукта FirePage: готовые нишевые сайты.",
+        "instructions": "",
         "policy": None,
     },
     # Support-каналы (SPEC-HUB-0010 §4.2): authenticated in-product чат,
@@ -43,10 +45,10 @@ CHANNEL_SPECS = (
         "name": "FoxRay — поддержка",
         "product_code": "foxray",
         "department": "support",
-        "system_prompt": (
-            "Ты — AI поддержки продукта FoxRay. Помогай по использованию, учитывай"
-            " verified product context. Не запрашивай имя/email, не продавай и не"
-            " обещай изменения аккаунта/оплаты без оператора." + STYLE
+        "persona": "Ты — AI поддержки продукта FoxRay.",
+        "instructions": (
+            "Помогай по использованию, учитывай verified product context. Не запрашивай"
+            " имя/email, не продавай и не обещай изменения аккаунта/оплаты без оператора."
         ),
         "policy": {
             "requires_authenticated_product_identity": True,
@@ -61,10 +63,10 @@ CHANNEL_SPECS = (
         "name": "FirePage — поддержка",
         "product_code": "firepage",
         "department": "support",
-        "system_prompt": (
-            "Ты — AI поддержки продукта FirePage. Помогай по использованию, учитывай"
-            " verified product context. Не запрашивай имя/email, не продавай и не"
-            " обещай изменения аккаунта/оплаты без оператора." + STYLE
+        "persona": "Ты — AI поддержки продукта FirePage.",
+        "instructions": (
+            "Помогай по использованию, учитывай verified product context. Не запрашивай"
+            " имя/email, не продавай и не обещай изменения аккаунта/оплаты без оператора."
         ),
         "policy": {
             "requires_authenticated_product_identity": True,
@@ -81,12 +83,10 @@ PRODUCT_SPECS = (
         "code": "firepage",
         "name": "FirePage",
         "site_url": "https://firepage.ru",
-        "summary": "Готовые нишевые сайты на собственной CMS с разовой лицензией.",
     },
     {
         "code": "foxray",
         "name": "FoxRay",
         "site_url": "https://foxray.pro",
-        "summary": "Онлайн-сервис для цефалометрического анализа ТРГ.",
     },
 )

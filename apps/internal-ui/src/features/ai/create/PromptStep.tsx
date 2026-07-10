@@ -1,18 +1,15 @@
-import { Icon } from "../../../shared/icons";
 import { CreateAgentStepCard } from "./CreateAgentStepCard";
 
-const chips = ["Квалификация", "Поведение в продаже", "Ограничения"];
-
-export function PromptStep({ systemPrompt, setSystemPrompt }: { systemPrompt: string; setSystemPrompt: (value: string) => void }) {
+export function PromptStep({ persona, tone, instructions, setPersona, setTone, setInstructions }: { persona: string; tone: string; instructions: string; setPersona: (value: string) => void; setTone: (value: string) => void; setInstructions: (value: string) => void }) {
   return (
-    <CreateAgentStepCard number={3} title="Стартовые инструкции" text="Создадим черновые prompt-документы. Доработать их можно в карточке агента до публикации.">
+    <CreateAgentStepCard number={3} title="Инструкции агента" text="Три части инструкций: кто он, как говорит и по каким правилам работает. Доработать можно в карточке агента.">
       <div className="ai-create-field-offset">
-        <label className="ai-create-label">Системный prompt</label>
-        <textarea value={systemPrompt} onChange={(event) => setSystemPrompt(event.target.value)} rows={4} />
-        <div className="ai-create-chips">
-          {chips.map((chip) => <span key={chip}><Icon name="check" size={12} />{chip}</span>)}
-          <small>— будут созданы как черновики</small>
-        </div>
+        <label className="ai-create-label">Персонализация — кто он и что он</label>
+        <textarea value={persona} onChange={(event) => setPersona(event.target.value)} rows={3} />
+        <label className="ai-create-label">Тон общения — как он должен говорить</label>
+        <textarea value={tone} onChange={(event) => setTone(event.target.value)} rows={3} />
+        <label className="ai-create-label">Инструкции — правила работы</label>
+        <textarea value={instructions} onChange={(event) => setInstructions(event.target.value)} rows={4} />
       </div>
     </CreateAgentStepCard>
   );

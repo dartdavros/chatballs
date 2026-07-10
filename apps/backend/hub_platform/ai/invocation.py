@@ -12,7 +12,7 @@ from hub_platform.ai.provider.resilience import CircuitBreaker, call_with_resili
 _breaker = CircuitBreaker()
 
 
-def invoke_chat(*, channel, messages: list[ChatMessage], purpose: str, release=None, model: str | None = None, params: dict | None = None, used_fragment_ids: list | None = None) -> ChatResult:
+def invoke_chat(*, channel, messages: list[ChatMessage], purpose: str, model: str | None = None, params: dict | None = None, used_fragment_ids: list | None = None) -> ChatResult:
     agent = channel.ai_agent
     model = model or agent.model
 
@@ -20,43 +20,12 @@ def invoke_chat(*, channel, messages: list[ChatMessage], purpose: str, release=N
         limits.assert_within_limits(channel, agent)
     except limits.LimitExceeded as error:
         LlmInvocation.objects.create(
-            channel=channel, product=channel.product, release=release, purpose=purpose, operation="chat", model=model,
+            channel=channel, product=channel.product, purpose=purpose, operation="chat", model=model,
             status=LlmInvocationStatus.BLOCKED, error=str(error),
         )
         raise
 
     # ADR-HUB-0011: отдельное очищенное представление сообщений для LLM.
-    safe_messages = [ChatMessage(role=m.role, content=redact(m.content)) for m in messages]
-    provider = get_provider()
-    started = time.monotonic()
-    try:
-        result: ChatResult = call_with_resilience(
-            lambda: provider.chat(messages=safe_messages, model=model, params=params),
-            retries=settings.HUB_AI_MAX_RETRIES,
-            breaker=_breaker,
-        )
-    except ProviderError as error:
-        LlmInvocation.objects.create(
-            channel=channel, product=channel.product, release=release, purpose=purpose, operation="chat", model=model,
-            status=LlmInvocationStatus.ERROR, error=str(error)[:1000],
-            latency_ms=int((time.monotonic() - started) * 1000),
-        )
-        raise
-
-    LlmInvocation.objects.create(
-        channel=channel, product=channel.product, release=release, purpose=purpose, operation="chat", model=result.model,
-        prompt_tokens=result.prompt_tokens, completion_tokens=result.completion_tokens, total_tokens=result.total_tokens,
-        cost_micros=result.cost_micros or pricing.cost_micros(result.model, result.prompt_tokens, result.completion_tokens),
-        latency_ms=int((time.monotonic() - started) * 1000), status=LlmInvocationStatus.SUCCESS,
-        used_fragment_ids=used_fragment_ids or [],
-    )
-    return result
-
-
-def channel_chat(*, channel, messages: list[ChatMessage], purpose: str, model: str | None = None, params: dict | None = None) -> ChatResult:
-    """Channel-anchored chat (M1.2a, ADR-HUB-0019): model from the channel, usage
-    accounted to the channel (and its product, if any)."""
-    model = model or channel.model
     safe_messages = [ChatMessage(role=m.role, content=redact(m.content)) for m in messages]
     provider = get_provider()
     started = time.monotonic()
@@ -79,6 +48,7 @@ def channel_chat(*, channel, messages: list[ChatMessage], purpose: str, model: s
         prompt_tokens=result.prompt_tokens, completion_tokens=result.completion_tokens, total_tokens=result.total_tokens,
         cost_micros=result.cost_micros or pricing.cost_micros(result.model, result.prompt_tokens, result.completion_tokens),
         latency_ms=int((time.monotonic() - started) * 1000), status=LlmInvocationStatus.SUCCESS,
+        used_fragment_ids=used_fragment_ids or [],
     )
     return result
 

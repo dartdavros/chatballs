@@ -2,7 +2,7 @@ import type { Product } from "../../types";
 
 export function productDetails(product: Product) {
   return {
-    sub: product.summary || product.siteUrl || product.code,
+    sub: product.siteUrl || product.code,
     offers: product.offers.filter((offer) => offer.isActive).map((offer) => ({
       name: offer.name,
       type: offer.fulfillmentType === "SUPPORT_EXTENSION" ? "продление" : offer.paymentType === "SUBSCRIPTION" ? "подписка" : "разовая",

@@ -18,8 +18,8 @@ class Product(models.Model):
     name = models.CharField(max_length=255)
     status = models.CharField(max_length=32, choices=ProductStatus.choices, default=ProductStatus.ACTIVE)
     site_url = models.URLField(blank=True)
-    summary = models.CharField(max_length=500, blank=True)
-    sales_description = models.TextField(blank=True)
+    # Содержательное описание продукта живёт в Знаниях (ADR-HUB-0023): продукт —
+    # техническая запись-якорь для заказов, поддержки и каталога offer/price.
     # SHA-256 токена бэкенда продукта для вебхука заказов (ADR-HUB-0018). Сам токен
     # не хранится — выдаётся один раз командой issue_product_ingest_token.
     ingest_token_hash = models.CharField(max_length=64, blank=True, db_index=True)

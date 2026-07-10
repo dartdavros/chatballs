@@ -1,99 +1,56 @@
+"""Импорт AI-контента из content/*.md в Знания и агентов (ADR-HUB-0023).
+
+Файлы контента размечены секциями `=== code ===` (SPEC-HUB-0012):
+- prompt-секции (system-*, qualify-*, sales-*, handoff-*) заполняют пустые поля
+  persona/instructions агента соответствующего канала — уже заполненные поля
+  не перезаписываются (владелец правит их через UI);
+- остальные секции становятся Знаниями (upsert по заголовку = коду секции)
+  и добавляются в выбор знаний агентов: глобальные — всем каналам,
+  продуктовые — каналам своего продукта.
+"""
+
 from __future__ import annotations
 
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal
 
-from django.core.management.base import CommandError
 from django.db import transaction
 
-from hub_platform.ai import documents as document_service
 from hub_platform.ai import indexing
-from hub_platform.ai.models import (
-    DocumentScope,
-    InclusionMode,
-    KnowledgeCategory,
-    KnowledgeDocument,
-    KnowledgeDocumentVersion,
-    PromptCategory,
-    PromptDocument,
-    PromptDocumentVersion,
-)
-from hub_platform.products.models import Product
+from hub_platform.ai.models import Knowledge
 
-DocumentKind = Literal["prompt", "knowledge"]
 _SECTION_RE = re.compile(r"^===\s*(?P<code>[a-z0-9-]+)\s*===\s*$", re.MULTILINE)
 
-
-@dataclass(frozen=True)
-class ContentSpec:
-    kind: DocumentKind
-    title: str
-    category: str
-    product_code: str | None = None
-    inclusion_mode: str = InclusionMode.RETRIEVAL
-
-
-@dataclass(frozen=True)
-class ImportResult:
-    prompts_created: int = 0
-    prompt_versions_created: int = 0
-    knowledge_created: int = 0
-    knowledge_versions_created: int = 0
-    fragments_created: int = 0
-    skipped_sections: int = 0
-
-    def add(self, other: ImportResult) -> ImportResult:
-        return ImportResult(
-            prompts_created=self.prompts_created + other.prompts_created,
-            prompt_versions_created=self.prompt_versions_created + other.prompt_versions_created,
-            knowledge_created=self.knowledge_created + other.knowledge_created,
-            knowledge_versions_created=self.knowledge_versions_created
-            + other.knowledge_versions_created,
-            fragments_created=self.fragments_created + other.fragments_created,
-            skipped_sections=self.skipped_sections + other.skipped_sections,
-        )
-
-
-PROMPT_CATEGORY_BY_PREFIX = {
-    "system": PromptCategory.SYSTEM,
-    "qualify": PromptCategory.QUALIFICATION,
-    "sales": PromptCategory.SALES_BEHAVIOR,
-    "handoff": PromptCategory.OPERATOR_HANDOFF,
-}
-
-KNOWLEDGE_CATEGORY_BY_SUFFIX = {
-    "overview": KnowledgeCategory.OVERVIEW,
-    "products": KnowledgeCategory.OVERVIEW,
-    "audience": KnowledgeCategory.AUDIENCE,
-    "tariffs": KnowledgeCategory.COMMERCIAL,
-    "catalog": KnowledgeCategory.COMMERCIAL,
-    "technical": KnowledgeCategory.TECHNICAL,
-    "faq": KnowledgeCategory.FAQ,
-    "objections": KnowledgeCategory.OBJECTIONS,
-    "limitations": KnowledgeCategory.LIMITATIONS,
-}
-
-MANDATORY_KNOWLEDGE_CODES = {
-    "company-overview",
-    "company-products",
-    "foxray-overview",
-    "foxray-tariffs",
-    "firepage-overview",
-    "firepage-catalog",
-}
-
-PRODUCT_CODE_BY_PREFIX = {
-    "foxray": "foxray",
-    "firepage": "firepage",
-}
+_PROMPT_PREFIXES = ("system", "qualify", "sales", "handoff")
+# Суффикс prompt-секции -> код продукта канала (None — непродуктовый канал edevs).
+_PRODUCT_BY_SUFFIX = {"edevs": None, "foxray": "foxray", "firepage": "firepage"}
+# Префикс knowledge-секции -> код продукта (нет префикса в карте — глобальное знание).
+_PRODUCT_BY_PREFIX = {"foxray": "foxray", "firepage": "firepage"}
 
 CONTENT_SOURCES = (
     "content/ai-content-company-filled.md",
     "content/ai-content-firepage-filled.md",
     "content/ai-content-foxray-filled.md",
 )
+
+
+@dataclass(frozen=True)
+class ImportResult:
+    knowledge_created: int = 0
+    knowledge_updated: int = 0
+    fragments_created: int = 0
+    agents_updated: int = 0
+    skipped_sections: int = 0
+
+    def add(self, other: "ImportResult") -> "ImportResult":
+        return ImportResult(
+            knowledge_created=self.knowledge_created + other.knowledge_created,
+            knowledge_updated=self.knowledge_updated + other.knowledge_updated,
+            fragments_created=self.fragments_created + other.fragments_created,
+            agents_updated=self.agents_updated + other.agents_updated,
+            skipped_sections=self.skipped_sections + other.skipped_sections,
+        )
 
 
 def parse_filled_content(text: str) -> dict[str, str]:
@@ -109,182 +66,97 @@ def parse_filled_content(text: str) -> dict[str, str]:
     return sections
 
 
-def infer_content_spec(code: str) -> ContentSpec | None:
-    parts = code.split("-")
-    if len(parts) < 2:
-        return None
-    prompt_category = PROMPT_CATEGORY_BY_PREFIX.get(parts[0])
-    product_code = PRODUCT_CODE_BY_PREFIX.get(parts[-1])
-    if prompt_category:
-        return ContentSpec(
-            kind="prompt",
-            title=code,
-            category=prompt_category,
-            product_code=product_code,
-        )
-    knowledge_category = KNOWLEDGE_CATEGORY_BY_SUFFIX.get(parts[-1])
-    if knowledge_category is None:
-        return None
-    return ContentSpec(
-        kind="knowledge",
-        title=code,
-        category=knowledge_category,
-        product_code=PRODUCT_CODE_BY_PREFIX.get(parts[0]),
-        inclusion_mode=InclusionMode.MANDATORY
-        if code in MANDATORY_KNOWLEDGE_CODES
-        else InclusionMode.RETRIEVAL,
-    )
+def _import_knowledge(*, organization, code: str, content: str) -> tuple[Knowledge, ImportResult]:
+    knowledge = Knowledge.objects.filter(organization=organization, title=code).first()
+    if knowledge is None:
+        knowledge = Knowledge.objects.create(organization=organization, title=code, content=content)
+        fragments = indexing.reindex_knowledge(knowledge)
+        return knowledge, ImportResult(knowledge_created=1, fragments_created=len(fragments))
+    if knowledge.content == content:
+        return knowledge, ImportResult()
+    knowledge.content = content
+    knowledge.save(update_fields=["content", "updated_at"])
+    fragments = indexing.reindex_knowledge(knowledge)
+    return knowledge, ImportResult(knowledge_updated=1, fragments_created=len(fragments))
 
 
-def _next_version(version_model, document) -> int:
-    latest = version_model.objects.filter(document=document).order_by("-version").first()
-    return latest.version + 1 if latest else 1
+def _agents_for_product(*, organization, product_code: str | None):
+    from hub_platform.ai.models import AIAgent
 
-
-def _latest_published(version_model, document):
-    return (
-        version_model.objects.filter(document=document, status="PUBLISHED")
-        .order_by("-version")
-        .first()
-    )
-
-
-def _resolve_product(*, organization, product_code: str | None) -> Product | None:
+    queryset = AIAgent.objects.select_related("channel").filter(channel__organization=organization)
     if product_code is None:
-        return None
-    try:
-        return Product.objects.get(organization=organization, code=product_code)
-    except Product.DoesNotExist as error:
-        raise CommandError(
-            f"Product '{product_code}' is required before importing AI content"
-        ) from error
+        return queryset.filter(channel__product__isnull=True)
+    return queryset.filter(channel__product__code=product_code)
+
+
+def _apply_prompts(*, organization, prompts: dict[tuple[str | None, str], str]) -> int:
+    """prompts: (product_code|None, kind) -> content. Заполняет только пустые поля."""
+    updated = 0
+    product_codes = {key[0] for key in prompts}
+    for product_code in product_codes:
+        persona = prompts.get((product_code, "system"), "")
+        instruction_parts = [
+            prompts[(product_code, kind)]
+            for kind in ("qualify", "sales", "handoff")
+            if (product_code, kind) in prompts
+        ]
+        instructions = "\n\n".join(instruction_parts)
+        for agent in _agents_for_product(organization=organization, product_code=product_code):
+            fields = []
+            if persona and not agent.persona.strip():
+                agent.persona = persona
+                fields.append("persona")
+            if instructions and not agent.instructions.strip():
+                agent.instructions = instructions
+                fields.append("instructions")
+            if fields:
+                agent.save(update_fields=[*fields, "updated_at"])
+                updated += 1
+    return updated
+
+
+def _assign_knowledge(*, organization, global_items: list[Knowledge], by_product: dict[str, list[Knowledge]]) -> None:
+    from hub_platform.ai.models import AIAgent
+
+    for agent in AIAgent.objects.select_related("channel__product").filter(channel__organization=organization):
+        items = list(global_items)
+        if agent.channel.product_id:
+            items += by_product.get(agent.channel.product.code, [])
+        if items:
+            agent.knowledge_items.add(*items)
 
 
 @transaction.atomic
-def _import_prompt(
-    *, organization, author, code: str, content: str, spec: ContentSpec
-) -> ImportResult:
-    product = _resolve_product(organization=organization, product_code=spec.product_code)
-    scope = DocumentScope.PRODUCT if product else DocumentScope.GLOBAL
-    document, created = PromptDocument.objects.update_or_create(
-        organization=organization,
-        product=product,
-        code=code,
-        defaults={
-            "title": spec.title,
-            "category": spec.category,
-            "scope": scope,
-            "is_enabled": True,
-        },
-    )
-    latest = _latest_published(PromptDocumentVersion, document)
-    if latest and latest.content == content:
-        return ImportResult(prompts_created=int(created))
-    version = PromptDocumentVersion.objects.create(
-        document=document,
-        version=_next_version(PromptDocumentVersion, document),
-        content=content,
-        created_by=author,
-    )
-    document_service.publish_version(version=version)
-    return ImportResult(prompts_created=int(created), prompt_versions_created=1)
-
-
-@transaction.atomic
-def _import_knowledge(
-    *, organization, author, code: str, content: str, spec: ContentSpec
-) -> ImportResult:
-    product = _resolve_product(organization=organization, product_code=spec.product_code)
-    scope = DocumentScope.PRODUCT if product else DocumentScope.GLOBAL
-    document, created = KnowledgeDocument.objects.update_or_create(
-        organization=organization,
-        product=product,
-        code=code,
-        defaults={
-            "title": spec.title,
-            "category": spec.category,
-            "scope": scope,
-            "is_enabled": True,
-            "inclusion_mode": spec.inclusion_mode,
-        },
-    )
-    latest = _latest_published(KnowledgeDocumentVersion, document)
-    if latest and latest.content == content:
-        return ImportResult(knowledge_created=int(created))
-    version = KnowledgeDocumentVersion.objects.create(
-        document=document,
-        version=_next_version(KnowledgeDocumentVersion, document),
-        content=content,
-        created_by=author,
-    )
-    document_service.publish_version(version=version)
-    fragments = indexing.reindex_knowledge_version(version)
-    return ImportResult(
-        knowledge_created=int(created),
-        knowledge_versions_created=1,
-        fragments_created=len(fragments),
-    )
-
-
-def ensure_channel_system_prompts(*, organization, author) -> ImportResult:
-    from hub_platform.channels.models import Channel
-
+def import_ai_content(*, base_dir: Path, organization) -> ImportResult:
     result = ImportResult()
-    for channel in Channel.objects.filter(organization=organization).select_related("product"):
-        if not channel.system_prompt.strip():
-            continue
-        code = f"system-{channel.product.code}" if channel.product_id else "system-edevs"
-        product = channel.product if channel.product_id else None
-        if PromptDocument.objects.filter(
-            organization=organization, product=product, code=code
-        ).exists():
-            continue
-        document = PromptDocument.objects.create(
-            organization=organization,
-            product=product,
-            code=code,
-            title=code,
-            category=PromptCategory.SYSTEM,
-            scope=DocumentScope.PRODUCT if product else DocumentScope.GLOBAL,
-            is_enabled=True,
-        )
-        version = PromptDocumentVersion.objects.create(
-            document=document,
-            version=1,
-            content=channel.system_prompt,
-            created_by=author,
-        )
-        document_service.publish_version(version=version)
-        result = result.add(ImportResult(prompts_created=1, prompt_versions_created=1))
-    return result
+    prompts: dict[tuple[str | None, str], str] = {}
+    global_items: list[Knowledge] = []
+    by_product: dict[str, list[Knowledge]] = {}
 
-
-def import_ai_content(*, base_dir: Path, organization, author) -> ImportResult:
-    result = ImportResult()
     for relative_path in CONTENT_SOURCES:
         path = base_dir / relative_path
         if not path.exists():
             continue
         for code, content in parse_filled_content(path.read_text(encoding="utf-8")).items():
-            spec = infer_content_spec(code)
-            if spec is None:
+            parts = code.split("-")
+            if len(parts) < 2:
                 result = result.add(ImportResult(skipped_sections=1))
                 continue
-            if spec.kind == "prompt":
-                section_result = _import_prompt(
-                    organization=organization,
-                    author=author,
-                    code=code,
-                    content=content,
-                    spec=spec,
-                )
-            else:
-                section_result = _import_knowledge(
-                    organization=organization,
-                    author=author,
-                    code=code,
-                    content=content,
-                    spec=spec,
-                )
+            if parts[0] in _PROMPT_PREFIXES:
+                suffix = parts[-1]
+                if suffix not in _PRODUCT_BY_SUFFIX:
+                    result = result.add(ImportResult(skipped_sections=1))
+                    continue
+                prompts[(_PRODUCT_BY_SUFFIX[suffix], parts[0])] = content
+                continue
+            knowledge, section_result = _import_knowledge(organization=organization, code=code, content=content)
             result = result.add(section_result)
-    return result
+            product_code = _PRODUCT_BY_PREFIX.get(parts[0])
+            if product_code is None:
+                global_items.append(knowledge)
+            else:
+                by_product.setdefault(product_code, []).append(knowledge)
+
+    agents_updated = _apply_prompts(organization=organization, prompts=prompts)
+    _assign_knowledge(organization=organization, global_items=global_items, by_product=by_product)
+    return result.add(ImportResult(agents_updated=agents_updated))

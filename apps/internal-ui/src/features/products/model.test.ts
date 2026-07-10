@@ -9,8 +9,6 @@ const product: Product = {
   name: "Foxray",
   status: "ACTIVE",
   siteUrl: "https://foxray.pro",
-  summary: "SaaS",
-  salesDescription: "",
   departments: [],
   createdAt: "2026-06-19T00:00:00Z",
   updatedAt: "2026-06-19T00:00:00Z",

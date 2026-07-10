@@ -1,4 +1,4 @@
-import type { AiAgent, AiRelease } from "./features/ai/model";
+import type { AiAgent } from "./features/ai/model";
 
 export type Role = "OWNER" | "OPERATOR";
 export type ProductStatus = "ACTIVE" | "DISABLED";
@@ -58,8 +58,6 @@ export type Product = {
   name: string;
   status: ProductStatus;
   siteUrl: string;
-  summary: string;
-  salesDescription: string;
   departments: Array<{ id: number; code: string; name: string }>;
   offers: ProductOffer[];
   createdAt: string;
@@ -92,12 +90,11 @@ export type ProductOffer = {
   prices: ProductPrice[];
 };
 
-export type RouteKey = "command" | "departments" | "employeeDetail" | "employees" | "productDetail" | "products" | "profile" | "salesClientDetail" | "salesClients" | "salesDialogs" | "salesOrderDetail" | "salesOrders" | "salesOverview" | "supportOverview" | "supportDialogs" | "aiAgents" | "aiAgentCreate" | "aiAgentDetail" | "aiRelease" | "aiUsage" | "integrations";
+export type RouteKey = "command" | "departments" | "employeeDetail" | "employees" | "productDetail" | "products" | "profile" | "salesClientDetail" | "salesClients" | "salesDialogs" | "salesOrderDetail" | "salesOrders" | "salesOverview" | "supportOverview" | "supportDialogs" | "aiAgents" | "aiAgentCreate" | "aiAgentDetail" | "aiKnowledge" | "aiKnowledgeDetail" | "aiUsage" | "integrations";
 
 export type AppData = {
   employees: Employee[];
   departments: Department[];
   products: Product[];
   agents: AiAgent[];
-  releases: AiRelease[];
 };

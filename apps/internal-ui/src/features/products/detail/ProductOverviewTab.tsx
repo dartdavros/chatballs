@@ -6,8 +6,10 @@ export function ProductOverviewTab({ product, openAgentCreate, openAgent }: { pr
   return (
     <div className="product-overview-grid">
       <div className="product-overview-main">
-        <section className="product-detail-card"><h3>Описание для продаж</h3><p>{product.salesDescription || "—"}</p></section>
-        <section className="product-detail-card"><h3>Ключевые тезисы для AI</h3><p className="product-detail-empty">—</p></section>
+        <section className="product-detail-card">
+          <h3>Описание и знания</h3>
+          <p className="product-detail-empty">Содержательная информация о продукте живёт в разделе AI → Знания и подключается к агентам каналов.</p>
+        </section>
       </div>
       <aside className="product-overview-side">
         <section className="product-detail-card product-parameters">

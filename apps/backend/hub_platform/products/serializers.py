@@ -38,8 +38,6 @@ def product_payload(product: Product) -> dict[str, object]:
         "name": product.name,
         "status": product.status,
         "siteUrl": product.site_url,
-        "summary": product.summary,
-        "salesDescription": product.sales_description,
         "departments": [
             {"id": link.department_id, "code": link.department.code, "name": link.department.name}
             for link in product.department_links.all()

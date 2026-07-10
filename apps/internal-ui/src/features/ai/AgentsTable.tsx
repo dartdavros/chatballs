@@ -2,26 +2,22 @@ import { Dropdown } from "antd";
 
 import { Icon } from "../../shared/icons";
 import { StatusPill } from "../../shared/ui";
-import { MonoLink, ToneBadge } from "../../shared/ui-controls";
+import { ToneBadge } from "../../shared/ui-controls";
 import { productAccent } from "../../shared/utils";
-import { publishedRelease, releaseName, type AiAgent, type AiRelease } from "./model";
+import type { AiAgent } from "./model";
 
 export function AgentsTable({
   agents,
-  releases,
   menuId,
   setMenuId,
   toggleActive,
   openAgent,
-  openRelease,
 }: {
   agents: AiAgent[];
-  releases: AiRelease[];
   menuId: number | null;
   setMenuId: (id: number | null) => void;
   toggleActive: (agent: AiAgent) => void;
   openAgent: (agentId: number) => void;
-  openRelease: (releaseId: number) => void;
 }) {
   return (
     <div className="table-card">
@@ -32,7 +28,7 @@ export function AgentsTable({
               <th>АГЕНТ</th>
               <th>КАНАЛ</th>
               <th>МОДЕЛЬ</th>
-              <th>АКТИВНАЯ ВЕРСИЯ</th>
+              <th className="numeric">ЗНАНИЯ</th>
               <th>СТАТУС</th>
               <th className="numeric">ДИАЛОГИ СЕЙЧАС</th>
               <th className="numeric">КОНВЕРСИЯ</th>
@@ -42,7 +38,6 @@ export function AgentsTable({
           <tbody>
             {agents.map((agent) => {
               const accent = productAccent(agent.channel.code);
-              const release = publishedRelease(releases, agent.channel.code);
               const menuItems = [
                 { key: "open", label: <button type="button" onClick={() => { setMenuId(null); openAgent(agent.id); }}><Icon name="external" size={15} />Открыть агента</button> },
                 { type: "divider" as const },
@@ -69,13 +64,7 @@ export function AgentsTable({
                   </td>
                   <td><ToneBadge bg={accent.bg} color={accent.color}>{agent.channel.name}</ToneBadge></td>
                   <td><code className="ai-mono">{agent.model}</code></td>
-                  <td>
-                    {release ? (
-                      <span className="ai-release-cell"><MonoLink onClick={() => openRelease(release.id)}>{releaseName(release)}</MonoLink><ToneBadge bg="#f6ffed" color="#389e0d">Опубликована</ToneBadge></span>
-                    ) : (
-                      <span className="product-empty-value">—</span>
-                    )}
-                  </td>
+                  <td className="numeric">{agent.knowledge.length > 0 ? agent.knowledge.length : <span className="product-empty-value">—</span>}</td>
                   <td><StatusPill status={agent.isActive ? "active" : "disabled"} /></td>
                   <td className="numeric"><span className="product-empty-value">—</span></td>
                   <td className="numeric"><span className="product-empty-value">—</span></td>
@@ -100,7 +89,7 @@ export function AgentsTable({
       </div>
       <div className="ai-table-footer">
         <span>{agents.length} агента</span>
-        <span>В первой итерации — один агент на канал обработки</span>
+        <span>Один агент на канал обработки</span>
       </div>
     </div>
   );

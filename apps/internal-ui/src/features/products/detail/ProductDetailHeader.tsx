@@ -13,7 +13,7 @@ export function ProductDetailHeader({ product, onEdit }: { product: Product; onE
         <span className="product-detail-icon" style={{ background: accent.bg, color: accent.color }}><Icon name="box" size={26} /></span>
         <div className="product-detail-title">
           <div><h1>{product.name}</h1><span className={`product-detail-status ${product.status.toLowerCase()}`}><i />{product.status === "ACTIVE" ? "Активен" : "Неактивен"}</span>{kind !== "—" && <b style={{ background: accent.bg, color: accent.color }}>{kind}</b>}</div>
-          <p>{product.summary || "—"}</p>
+          <p>{product.siteUrl || "—"}</p>
         </div>
         <Button variant="secondary" icon="edit" onClick={onEdit}>Редактировать</Button>
       </div>

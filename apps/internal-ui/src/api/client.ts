@@ -35,3 +35,14 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   if (response.status === 204 || response.status === 205) return undefined as T;
   return response.json() as Promise<T>;
 }
+
+// Multipart-загрузка (вложения знаний): Content-Type выставляет браузер (boundary).
+export async function apiUpload<T>(path: string, form: FormData): Promise<T> {
+  const headers = new Headers({ Accept: "application/json", "X-CSRFToken": getCookie("csrftoken") });
+  const response = await fetch(resolveApiUrl(path), { method: "POST", body: form, credentials: "include", headers });
+  if (!response.ok) {
+    const payload = await response.json().catch(() => ({ detail: "Ошибка запроса" }));
+    throw new Error(payload.detail ?? "Ошибка запроса");
+  }
+  return response.json() as Promise<T>;
+}

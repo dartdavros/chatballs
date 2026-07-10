@@ -37,8 +37,6 @@ class ProductApiTests(TestCase):
                     "code": "academy",
                     "name": "Academy",
                     "siteUrl": "https://academy.edevs.tech",
-                    "summary": "Обучающий продукт",
-                    "salesDescription": "Описание для продаж",
                     "departmentIds": [self.sales.id],
                 }
             ),

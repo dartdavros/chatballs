@@ -1,4 +1,4 @@
-from hub_platform.ai.models import AIAgent, ChannelAIRelease, KnowledgeDocument, PromptDocument
+from hub_platform.ai.models import AIAgent, Knowledge, KnowledgeAttachment
 
 
 def _channel_ref(channel) -> dict[str, object]:
@@ -10,64 +10,32 @@ def _channel_ref(channel) -> dict[str, object]:
     }
 
 
-def _version_payload(version) -> dict[str, object]:
+def attachment_payload(attachment: KnowledgeAttachment) -> dict[str, object]:
     return {
-        "id": version.id,
-        "version": version.version,
-        "status": version.status,
-        "content": version.content,
-        "createdBy": version.created_by_id,
-        "createdAt": version.created_at.isoformat(),
+        "id": attachment.id,
+        "name": attachment.original_name,
+        "contentType": attachment.content_type,
+        "size": attachment.size,
+        "hasText": bool(attachment.extracted_text),
+        "url": attachment.public_url(),
+        "createdAt": attachment.created_at.isoformat(),
     }
 
 
-def _document_payload(document, extra: dict[str, object]) -> dict[str, object]:
-    return {
-        "id": document.id,
-        "scope": document.scope,
-        "product": {"code": document.product.code, "name": document.product.name} if document.product_id else None,
-        "code": document.code,
-        "title": document.title,
-        "category": document.category,
-        "isEnabled": document.is_enabled,
-        "versions": [_version_payload(version) for version in document.versions.all()],
-        "createdAt": document.created_at.isoformat(),
-        "updatedAt": document.updated_at.isoformat(),
-        **extra,
+def knowledge_payload(knowledge: Knowledge, *, include_content: bool = True) -> dict[str, object]:
+    payload: dict[str, object] = {
+        "id": knowledge.id,
+        "title": knowledge.title,
+        "description": knowledge.description,
+        "isEnabled": knowledge.is_enabled,
+        "attachments": [attachment_payload(attachment) for attachment in knowledge.attachments.all()],
+        "agentsCount": getattr(knowledge, "agents_count", None),
+        "createdAt": knowledge.created_at.isoformat(),
+        "updatedAt": knowledge.updated_at.isoformat(),
     }
-
-
-def knowledge_payload(document: KnowledgeDocument) -> dict[str, object]:
-    return _document_payload(document, {"inclusionMode": document.inclusion_mode})
-
-
-def prompt_payload(document: PromptDocument) -> dict[str, object]:
-    return _document_payload(document, {})
-
-
-def release_payload(release: ChannelAIRelease) -> dict[str, object]:
-    return {
-        "id": release.id,
-        "channel": _channel_ref(release.channel),
-        "version": release.version,
-        "status": release.status,
-        "model": release.model,
-        "modelParams": release.model_params,
-        "allowedTools": release.allowed_tools,
-        "limits": release.limits,
-        "retrievalIndexVersion": release.retrieval_index_version,
-        "notes": release.notes,
-        "knowledgeVersions": [
-            {"document": link.knowledge_version.document.code, "version": link.knowledge_version.version}
-            for link in release.knowledge_versions.all()
-        ],
-        "promptVersions": [
-            {"document": link.prompt_version.document.code, "version": link.prompt_version.version}
-            for link in release.prompt_versions.all()
-        ],
-        "createdAt": release.created_at.isoformat(),
-        "publishedAt": release.published_at.isoformat() if release.published_at else None,
-    }
+    if include_content:
+        payload["content"] = knowledge.content
+    return payload
 
 
 def agent_payload(agent: AIAgent) -> dict[str, object]:
@@ -80,6 +48,13 @@ def agent_payload(agent: AIAgent) -> dict[str, object]:
         "modelParams": agent.model_params,
         "allowedTools": agent.allowed_tools,
         "limits": agent.limits,
+        "persona": agent.persona,
+        "tone": agent.tone,
+        "instructions": agent.instructions,
+        "knowledge": [
+            {"id": knowledge.id, "title": knowledge.title, "isEnabled": knowledge.is_enabled}
+            for knowledge in agent.knowledge_items.all()
+        ],
         "createdAt": agent.created_at.isoformat(),
         "updatedAt": agent.updated_at.isoformat(),
     }

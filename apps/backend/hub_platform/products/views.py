@@ -27,8 +27,6 @@ def _input(body: dict[str, object], *, current: Product | None = None) -> Produc
         code=str(body.get("code", current.code if current else "")),
         name=str(body.get("name", current.name if current else "")),
         site_url=str(body.get("siteUrl", current.site_url if current else "")),
-        summary=str(body.get("summary", current.summary if current else "")),
-        sales_description=str(body.get("salesDescription", current.sales_description if current else "")),
         department_ids=_department_ids(body.get("departmentIds", current_departments)),
     )
 

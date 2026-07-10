@@ -1,19 +1,12 @@
 from dataclasses import dataclass
 
 from django.core.exceptions import ValidationError
+from django.core.files.uploadedfile import UploadedFile
 from django.db import transaction
 
-from hub_platform.ai import releases as release_service
-from hub_platform.ai.models import (
-    AIAgent,
-    DocumentScope,
-    DocumentStatus,
-    KnowledgeDocument,
-    KnowledgeDocumentVersion,
-    PromptCategory,
-    PromptDocument,
-    PromptDocumentVersion,
-)
+from hub_platform.ai.extraction import extract_text
+from hub_platform.ai.indexing import reindex_knowledge
+from hub_platform.ai.models import AIAgent, Knowledge, KnowledgeAttachment
 from hub_platform.channels.models import Channel
 
 
@@ -24,14 +17,20 @@ class AgentInput:
     model_params: dict
     allowed_tools: list
     limits: dict
+    persona: str
+    tone: str
+    instructions: str
+    knowledge_ids: list[int] | None  # None -> выбор знаний не меняется
 
 
 @dataclass(frozen=True)
 class AgentCreateInput:
     channel_code: str
     model: str
-    system_prompt: str
-    knowledge_document_ids: list[int]
+    persona: str
+    tone: str
+    instructions: str
+    knowledge_ids: list[int]
 
 
 # Единственный поддерживаемый лимит агента — дневной бюджет в целых центах USD
@@ -48,57 +47,15 @@ def _normalize_limits(raw: dict | None) -> dict:
     return {"dailyCostUsd": cents} if cents > 0 else {}
 
 
-START_PROMPTS: tuple[tuple[str, str, str], ...] = (
-    ("system", "Системный prompt", PromptCategory.SYSTEM),
-    ("qualification", "Квалификация", PromptCategory.QUALIFICATION),
-    ("sales-behavior", "Поведение в продаже", PromptCategory.SALES_BEHAVIOR),
-    ("operator-handoff", "Передача оператору", PromptCategory.OPERATOR_HANDOFF),
-)
-
-
-def _next_prompt_version(document: PromptDocument) -> int:
-    latest = document.versions.order_by("-version").first()
-    return latest.version + 1 if latest else 1
-
-
-def _create_prompt_versions(*, channel: Channel, author, system_prompt: str) -> list[PromptDocumentVersion]:
-    scope = DocumentScope.PRODUCT if channel.product_id else DocumentScope.GLOBAL
-    versions = []
-    for code, title, category in START_PROMPTS:
-        document, _ = PromptDocument.objects.get_or_create(
-            organization=channel.organization,
-            product=channel.product,
-            code=code,
-            defaults={"title": title, "category": category, "scope": scope},
-        )
-        content = system_prompt if category == PromptCategory.SYSTEM else ""
-        versions.append(
-            PromptDocumentVersion.objects.create(
-                document=document,
-                version=_next_prompt_version(document),
-                content=content,
-                status=DocumentStatus.DRAFT,
-                created_by=author,
-            )
-        )
-    return versions
-
-
-def _selected_knowledge_versions(*, organization, document_ids: list[int]) -> list[KnowledgeDocumentVersion]:
-    documents = KnowledgeDocument.objects.filter(organization=organization, id__in=document_ids, is_enabled=True).prefetch_related("versions")
-    if documents.count() != len(set(document_ids)):
-        raise ValidationError({"knowledgeDocumentIds": "Unknown knowledge document"})
-    versions = []
-    for document in documents:
-        version = document.versions.order_by("-version").first()
-        if version is None:
-            raise ValidationError({"knowledgeDocumentIds": "Knowledge document has no versions"})
-        versions.append(version)
-    return versions
+def _knowledge_for_ids(*, organization, knowledge_ids: list[int]) -> list[Knowledge]:
+    items = list(Knowledge.objects.filter(organization=organization, id__in=knowledge_ids))
+    if len(items) != len(set(knowledge_ids)):
+        raise ValidationError({"knowledgeIds": "Unknown knowledge item"})
+    return items
 
 
 @transaction.atomic
-def create_agent(*, organization, author, data: AgentCreateInput) -> tuple[AIAgent, object]:
+def create_agent(*, organization, data: AgentCreateInput) -> AIAgent:
     if not data.channel_code:
         raise ValidationError({"channel": "Channel is required"})
     if not data.model:
@@ -115,29 +72,29 @@ def create_agent(*, organization, author, data: AgentCreateInput) -> tuple[AIAge
         name=f"{channel.name} Agent",
         is_active=False,
         model=data.model,
+        persona=data.persona,
+        tone=data.tone,
+        instructions=data.instructions,
     )
-    knowledge_versions = _selected_knowledge_versions(organization=organization, document_ids=data.knowledge_document_ids)
-    prompt_versions = _create_prompt_versions(channel=channel, author=author, system_prompt=data.system_prompt)
-    release = release_service.create_initial_draft_release(
-        channel=channel,
-        author=author,
-        model=agent.model,
-        model_params=agent.model_params,
-        allowed_tools=agent.allowed_tools,
-        limits=agent.limits,
-        knowledge_versions=knowledge_versions,
-        prompt_versions=prompt_versions,
-    )
-    return agent, release
+    agent.knowledge_items.set(_knowledge_for_ids(organization=organization, knowledge_ids=data.knowledge_ids))
+    return agent
 
 
+@transaction.atomic
 def update_agent(*, agent: AIAgent, data: AgentInput) -> AIAgent:
     agent.name = data.name
     agent.model = data.model
     agent.model_params = data.model_params
     agent.allowed_tools = data.allowed_tools
     agent.limits = _normalize_limits(data.limits)
-    agent.save(update_fields=["name", "model", "model_params", "allowed_tools", "limits", "updated_at"])
+    agent.persona = data.persona
+    agent.tone = data.tone
+    agent.instructions = data.instructions
+    agent.save(update_fields=["name", "model", "model_params", "allowed_tools", "limits", "persona", "tone", "instructions", "updated_at"])
+    if data.knowledge_ids is not None:
+        agent.knowledge_items.set(
+            _knowledge_for_ids(organization=agent.channel.organization, knowledge_ids=data.knowledge_ids)
+        )
     return agent
 
 
@@ -145,3 +102,87 @@ def set_agent_active(*, agent: AIAgent, is_active: bool) -> AIAgent:
     agent.is_active = is_active
     agent.save(update_fields=["is_active", "updated_at"])
     return agent
+
+
+# --- Знания (ADR-HUB-0023) ---
+
+
+@dataclass(frozen=True)
+class KnowledgeInput:
+    title: str
+    description: str
+    content: str
+    is_enabled: bool
+
+
+def create_knowledge(*, organization, data: KnowledgeInput) -> Knowledge:
+    if not data.title.strip():
+        raise ValidationError({"title": "Title is required"})
+    knowledge = Knowledge.objects.create(
+        organization=organization,
+        title=data.title.strip(),
+        description=data.description.strip(),
+        content=data.content,
+        is_enabled=data.is_enabled,
+    )
+    reindex_knowledge(knowledge)
+    return knowledge
+
+
+def update_knowledge(*, knowledge: Knowledge, data: KnowledgeInput) -> Knowledge:
+    if not data.title.strip():
+        raise ValidationError({"title": "Title is required"})
+    content_changed = knowledge.content != data.content
+    knowledge.title = data.title.strip()
+    knowledge.description = data.description.strip()
+    knowledge.content = data.content
+    knowledge.is_enabled = data.is_enabled
+    knowledge.save(update_fields=["title", "description", "content", "is_enabled", "updated_at"])
+    if content_changed:
+        reindex_knowledge(knowledge)
+    return knowledge
+
+
+def delete_knowledge(*, knowledge: Knowledge) -> None:
+    # Файлы вложений удаляются вместе со знанием: сначала с диска, потом запись.
+    for attachment in knowledge.attachments.all():
+        attachment.file.delete(save=False)
+    knowledge.delete()
+
+
+_MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024
+
+
+@transaction.atomic
+def add_attachment(*, knowledge: Knowledge, upload: UploadedFile) -> KnowledgeAttachment:
+    original_name = (upload.name or "").strip()
+    if not original_name:
+        raise ValidationError({"file": "File name is required"})
+    if upload.size and upload.size > _MAX_ATTACHMENT_BYTES:
+        raise ValidationError({"file": "File is too large (max 25 MB)"})
+    # Повторная загрузка с тем же именем заменяет файл (ADR-HUB-0023: без версий).
+    existing = knowledge.attachments.filter(original_name=original_name).first()
+    if existing is not None:
+        existing.file.delete(save=False)
+        existing.delete()
+    data = upload.read()
+    content_type = upload.content_type or ""
+    attachment = KnowledgeAttachment(
+        knowledge=knowledge,
+        original_name=original_name,
+        content_type=content_type,
+        size=len(data),
+        extracted_text=extract_text(filename=original_name, content_type=content_type, data=data),
+    )
+    from django.core.files.base import ContentFile
+
+    attachment.file.save(original_name, ContentFile(data), save=True)
+    reindex_knowledge(knowledge)
+    return attachment
+
+
+def delete_attachment(*, attachment: KnowledgeAttachment) -> None:
+    knowledge = attachment.knowledge
+    attachment.file.delete(save=False)
+    attachment.delete()
+    reindex_knowledge(knowledge)

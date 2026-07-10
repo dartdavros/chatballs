@@ -10,9 +10,9 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.utils import timezone
 
-from hub_platform.ai.content_importer import ensure_channel_system_prompts, import_ai_content
-from hub_platform.ai.seed_releases import ensure_agents_and_releases
-from hub_platform.channels.models import DEFAULT_CHANNEL_MODEL, Channel
+from hub_platform.ai.content_importer import import_ai_content
+from hub_platform.ai.models import DEFAULT_AI_MODEL, AIAgent
+from hub_platform.channels.models import Channel
 from hub_platform.identity.audit import record_audit_event
 from hub_platform.identity.models import (
     Department,
@@ -23,7 +23,7 @@ from hub_platform.identity.models import (
 )
 from hub_platform.products.models import Product, ProductDepartment
 
-from ._seed_specs import CHANNEL_SPECS, PRODUCT_SPECS
+from ._seed_specs import CHANNEL_SPECS, PRODUCT_SPECS, TONE
 
 
 @dataclass(frozen=True)
@@ -63,7 +63,6 @@ def _seed_core(*, owner_email: str, owner_password: str, owner_name: str) -> Cor
             defaults={
                 "name": spec["name"],
                 "site_url": spec["site_url"],
-                "summary": spec["summary"],
             },
         )
         ProductDepartment.objects.get_or_create(product=product, department=sales_department)
@@ -129,8 +128,9 @@ def _seed_core(*, owner_email: str, owner_password: str, owner_name: str) -> Cor
     )
 
 
-def _seed_channels(*, organization: Organization) -> int:
+def _seed_channels(*, organization: Organization) -> tuple[int, int]:
     created = 0
+    agents_created = 0
     for spec in CHANNEL_SPECS:
         product = (
             Product.objects.get(organization=organization, code=spec["product_code"])
@@ -146,21 +146,31 @@ def _seed_channels(*, organization: Organization) -> int:
             "allow_sales_attribution": True,
             "allow_checkout_actions": True,
         }
-        _, was_created = Channel.objects.update_or_create(
+        channel, was_created = Channel.objects.update_or_create(
             organization=organization,
             code=spec["code"],
             defaults={
                 "name": spec["name"],
                 "department": department,
                 "product": product,
-                "model": DEFAULT_CHANNEL_MODEL,
-                "system_prompt": spec["system_prompt"],
                 "is_active": True,
                 **policy,
             },
         )
         created += int(was_created)
-    return created
+        # Агент канала (ADR-HUB-0023): одна сущность, без релизов.
+        if not AIAgent.objects.filter(channel=channel).exists():
+            AIAgent.objects.create(
+                channel=channel,
+                name=f"{spec['name']} Agent",
+                is_active=True,
+                model=DEFAULT_AI_MODEL,
+                persona=spec["persona"],
+                tone=TONE,
+                instructions=spec["instructions"],
+            )
+            agents_created += 1
+    return created, agents_created
 
 
 class Command(BaseCommand):
@@ -195,41 +205,27 @@ class Command(BaseCommand):
             owner_email=owner_email, owner_password=owner_password, owner_name=owner_name
         )
         call_command("seed_catalog", verbosity=0)
-        channels_created = _seed_channels(organization=core.organization)
+        channels_created, agents_created = _seed_channels(organization=core.organization)
         from hub_platform.support.seed_support import seed_support_reference
 
         support_stats = seed_support_reference(organization=core.organization)
         content_result = import_ai_content(
             base_dir=Path(__file__).resolve().parents[6],
             organization=core.organization,
-            author=core.owner,
-        )
-        content_result = content_result.add(
-            ensure_channel_system_prompts(organization=core.organization, author=core.owner)
-        )
-        agents_created, releases_created = ensure_agents_and_releases(
-            organization=core.organization, author=core.owner
         )
 
         owner_state = "created" if core.created_owner else "ready"
-        prompt_stats = (
-            f"{content_result.prompts_created}/{content_result.prompt_versions_created} versions"
-        )
-        knowledge_stats = (
-            f"{content_result.knowledge_created}/"
-            f"{content_result.knowledge_versions_created} versions"
-        )
         self.stdout.write(
             self.style.SUCCESS(
                 "initial data seeded: "
                 f"owner={owner_state}, "
                 f"channels +{channels_created}, "
-                f"support {support_stats}, "
                 f"agents +{agents_created}, "
-                f"releases +{releases_created}, "
-                f"prompts +{prompt_stats}, "
-                f"knowledge +{knowledge_stats}, "
+                f"support {support_stats}, "
+                f"knowledge +{content_result.knowledge_created}"
+                f"/{content_result.knowledge_updated} updated, "
                 f"fragments +{content_result.fragments_created}, "
+                f"agents filled {content_result.agents_updated}, "
                 f"skipped {content_result.skipped_sections}"
             )
         )

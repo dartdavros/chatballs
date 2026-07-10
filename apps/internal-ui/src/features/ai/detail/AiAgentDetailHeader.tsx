@@ -1,24 +1,10 @@
 import { Icon } from "../../../shared/icons";
 import { StatusPill } from "../../../shared/ui";
-import { Button } from "../../../shared/ui-controls";
 import { productAccent } from "../../../shared/utils";
-import { dailyBudget, publishedRelease, releaseDisplayName, type AiAgentDetail, type AiReleaseFull } from "./model";
+import { dailyBudget, type AiAgentDetail } from "./model";
 
-export function AiAgentDetailHeader({
-  agent,
-  releases,
-  openRelease,
-  createRelease,
-  onEditChannel,
-}: {
-  agent: AiAgentDetail;
-  releases: AiReleaseFull[];
-  openRelease: (releaseId: number) => void;
-  createRelease: () => void;
-  onEditChannel: () => void;
-}) {
+export function AiAgentDetailHeader({ agent, onEditChannel }: { agent: AiAgentDetail; onEditChannel: () => void }) {
   const accent = productAccent(agent.channel.code);
-  const release = publishedRelease(releases);
   return (
     <section className="ai-agent-header">
       <div className="ai-agent-heading">
@@ -31,13 +17,10 @@ export function AiAgentDetailHeader({
           <div className="ai-agent-meta">
             <div><span>Канал</span><button type="button" className="ai-agent-meta-link" onClick={onEditChannel}>{agent.channel.name}</button></div>
             <div><span>Модель</span><code className="ai-mono">{agent.model}</code></div>
-            <div><span>Текущая версия</span>{release ? <button type="button" className="ai-agent-meta-link ai-mono" onClick={() => openRelease(release.id)}>{releaseDisplayName(release)}</button> : <b className="ai-agent-meta-empty">—</b>}</div>
+            <div><span>Знания</span><b>{agent.knowledge.length > 0 ? `${agent.knowledge.length} выбрано` : "—"}</b></div>
             <div><span>Лимиты</span><b>{dailyBudget(agent.limits)}</b></div>
           </div>
         </div>
-      </div>
-      <div className="ai-agent-header-actions">
-        <Button variant="primary" icon="plus" onClick={createRelease}>Создать черновик версии</Button>
       </div>
     </section>
   );

@@ -2,7 +2,7 @@ import { Modal } from "antd";
 import { useEffect, useState } from "react";
 
 import { api } from "../../api/client";
-import { FormField, SelectField, TextAreaField } from "../../shared/form-controls";
+import { FormField, SelectField } from "../../shared/form-controls";
 import { Button } from "../../shared/ui-controls";
 import type { Department, Product } from "../../types";
 
@@ -10,12 +10,10 @@ type ProductForm = {
   code: string;
   name: string;
   siteUrl: string;
-  summary: string;
-  salesDescription: string;
   departmentId: string;
 };
 
-const emptyForm: ProductForm = { code: "", name: "", siteUrl: "", summary: "", salesDescription: "", departmentId: "" };
+const emptyForm: ProductForm = { code: "", name: "", siteUrl: "", departmentId: "" };
 
 export function ProductFormModal({ departments, open, product, onClose, onSaved }: { departments: Department[]; open: boolean; product?: Product; onClose: () => void; onSaved: () => void }) {
   const [form, setForm] = useState<ProductForm>(emptyForm);
@@ -28,8 +26,6 @@ export function ProductFormModal({ departments, open, product, onClose, onSaved 
       code: product.code,
       name: product.name,
       siteUrl: product.siteUrl,
-      summary: product.summary,
-      salesDescription: product.salesDescription,
       departmentId: String(product.departments[0]?.id ?? departments[0]?.id ?? ""),
     } : { ...emptyForm, departmentId: String(departments[0]?.id ?? "") });
     setError("");
@@ -51,8 +47,6 @@ export function ProductFormModal({ departments, open, product, onClose, onSaved 
         code: form.code,
         name: form.name,
         siteUrl: form.siteUrl,
-        summary: form.summary,
-        salesDescription: form.salesDescription,
         departmentIds: form.departmentId ? [Number(form.departmentId)] : [],
       });
       await api(product ? `/api/v1/company/products/${product.id}/update/` : "/api/v1/company/products/create/", { method: product ? "PATCH" : "POST", body });
@@ -71,8 +65,6 @@ export function ProductFormModal({ departments, open, product, onClose, onSaved 
         <FormField label="Название" value={form.name} onChange={(value) => update("name", value)} />
         <FormField label="Код" value={form.code} onChange={product ? undefined : (value) => update("code", value)} disabled={Boolean(product)} mono />
         <FormField label="Сайт" value={form.siteUrl} onChange={(value) => update("siteUrl", value)} wide />
-        <FormField label="Краткое описание" value={form.summary} onChange={(value) => update("summary", value)} wide />
-        <TextAreaField label="Описание для продаж" value={form.salesDescription} onChange={(value) => update("salesDescription", value)} />
         <SelectField label="Отдел" value={form.departmentId} onChange={(value) => update("departmentId", value)} options={departments.map((department) => [String(department.id), department.name])} />
       </div>
       {error && <div className="product-form-error">{error}</div>}

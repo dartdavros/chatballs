@@ -6,8 +6,8 @@ export function AiAgentOverviewTab({ agent, toggleActive, onEdit }: { agent: AiA
     <div className="ai-agent-overview">
       <div className="ai-agent-overview-main">
         <section className="ai-card">
-          <h3>Назначение агента</h3>
-          <p className="ai-agent-purpose">—</p>
+          <h3>Персонализация</h3>
+          <p className="ai-agent-purpose">{agent.persona.trim() || "—"}</p>
         </section>
         <section className="ai-card">
           <h3>Runtime сейчас</h3>
@@ -21,8 +21,6 @@ export function AiAgentOverviewTab({ agent, toggleActive, onEdit }: { agent: AiA
       <div className="ai-agent-overview-side">
         <section className="ai-card">
           <h3>Лимиты</h3>
-          <div className="ai-limit-row"><span>Диалогов в день</span><b>—</b></div>
-          <div className="ai-limit-bar"><i style={{ width: "0%" }} /></div>
           <div className="ai-limit-row"><span>Бюджет в день</span><b>{dailyBudget(agent.limits)}</b></div>
           <div className="ai-limit-bar"><i style={{ width: "0%" }} /></div>
         </section>
