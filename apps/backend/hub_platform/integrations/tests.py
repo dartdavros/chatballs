@@ -1,4 +1,5 @@
 import json
+import urllib.request
 from unittest import mock
 
 from django.test import TestCase
@@ -65,41 +66,43 @@ class ProxyConfigTests(TestCase):
         self.assertEqual(integration_payload(integration)["config"]["proxyUrl"], "http://host:8080")
 
 
+def _patched_opener(captured: dict, body: dict):
+    def fake_build_opener(proxy_url):
+        captured["proxy_url"] = proxy_url
+        opener = mock.MagicMock()
+        ctx = mock.MagicMock()
+        ctx.__enter__.return_value = _fake_response(200, body)
+        opener.open.return_value = ctx
+        return opener
+
+    return fake_build_opener
+
+
 class CheckProxyTransportTests(TestCase):
-    """check_* должны прокидывать proxy_url в HTTP-слой (ProxyHandler)."""
+    """check_* должны прокидывать proxy_url в единый opener (build_opener)."""
 
     def test_check_openrouter_uses_proxy(self) -> None:
         captured = {}
-
-        def fake_build_opener(*handlers):
-            captured["handlers"] = handlers
-            opener = mock.MagicMock()
-            ctx = mock.MagicMock()
-            ctx.__enter__.return_value = _fake_response(200, {"data": {"label": "ok"}})
-            opener.open.return_value = ctx
-            return opener
-
-        with mock.patch("hub_platform.integrations.checks.urllib.request.build_opener", side_effect=fake_build_opener):
+        with mock.patch("hub_platform.integrations.checks.build_opener", side_effect=_patched_opener(captured, {"data": {"label": "ok"}})):
             ok, detail, meta = checks.check_openrouter(secret="sk-test", base_url="", proxy_url="http://proxy:8080")
 
         self.assertTrue(ok)
-        self.assertTrue(captured["handlers"], "ProxyHandler должен быть добавлен при заданном proxy_url")
+        self.assertEqual(captured["proxy_url"], "http://proxy:8080")
 
-    def test_check_openrouter_without_proxy_has_no_handler(self) -> None:
+    def test_check_openrouter_without_proxy_passes_empty(self) -> None:
         captured = {}
-
-        def fake_build_opener(*handlers):
-            captured["handlers"] = handlers
-            opener = mock.MagicMock()
-            ctx = mock.MagicMock()
-            ctx.__enter__.return_value = _fake_response(200, {"data": {"label": "ok"}})
-            opener.open.return_value = ctx
-            return opener
-
-        with mock.patch("hub_platform.integrations.checks.urllib.request.build_opener", side_effect=fake_build_opener):
+        with mock.patch("hub_platform.integrations.checks.build_opener", side_effect=_patched_opener(captured, {"data": {"label": "ok"}})):
             checks.check_openrouter(secret="sk-test", base_url="", proxy_url="")
 
-        self.assertEqual(captured["handlers"], (), "Без proxy_url ProxyHandler не добавляется")
+        self.assertEqual(captured["proxy_url"], "")
+
+    def test_check_openrouter_supports_socks_url(self) -> None:
+        captured = {}
+        with mock.patch("hub_platform.integrations.checks.build_opener", side_effect=_patched_opener(captured, {"data": {"label": "ok"}})):
+            ok, detail, meta = checks.check_openrouter(secret="sk-test", base_url="", proxy_url="socks5://proxy:1080")
+
+        self.assertTrue(ok)
+        self.assertEqual(captured["proxy_url"], "socks5://proxy:1080")
 
 
 class OpenRouterProviderProxyTests(TestCase):
@@ -107,18 +110,32 @@ class OpenRouterProviderProxyTests(TestCase):
         from hub_platform.ai.provider.openrouter import OpenRouterProvider
 
         captured = {}
-
-        def fake_build_opener(*handlers):
-            captured["handlers"] = handlers
-            opener = mock.MagicMock()
-            ctx = mock.MagicMock()
-            ctx.__enter__.return_value = _fake_response(200, {"choices": [{"message": {"content": "ok"}}]})
-            opener.open.return_value = ctx
-            return opener
-
         provider = OpenRouterProvider(api_key="sk-test", base_url="https://openrouter.ai/api/v1", proxy_url="http://proxy:8080")
-        with mock.patch("hub_platform.ai.provider.openrouter.urllib.request.build_opener", side_effect=fake_build_opener):
+        with mock.patch("hub_platform.ai.provider.openrouter.build_opener", side_effect=_patched_opener(captured, {"choices": [{"message": {"content": "ok"}}]})):
             result = provider.chat(messages=[], model="x")
 
         self.assertEqual(result.text, "ok")
-        self.assertTrue(captured["handlers"], "ProxyHandler должен быть добавлен")
+        self.assertEqual(captured["proxy_url"], "http://proxy:8080")
+
+
+class BuildOpenerSocksTests(TestCase):
+    def test_http_scheme_uses_proxy_handler(self) -> None:
+        from hub_platform.integrations.proxy import build_opener
+
+        opener = build_opener("http://proxy:8080")
+        self.assertTrue(any(isinstance(h, urllib.request.ProxyHandler) for h in opener.handlers))
+
+    def test_socks5_scheme_builds_socks_handler(self) -> None:
+        from hub_platform.integrations.proxy import build_opener
+
+        opener = build_opener("socks5://user:pass@host:1080")
+        # PySocks установлен → handler строится без ошибок и не является ProxyHandler.
+        self.assertFalse(any(isinstance(h, urllib.request.ProxyHandler) for h in opener.handlers))
+
+    def test_socks_without_pysocks_raises_value_error(self) -> None:
+        from hub_platform.integrations import proxy
+        from hub_platform.integrations.proxy import build_opener
+
+        with mock.patch.object(proxy, "_import_socks", side_effect=ValueError("no PySocks")):
+            with self.assertRaises(ValueError):
+                build_opener("socks5://host:1080")

@@ -92,7 +92,7 @@ export function IntegrationForm({ initial, onClose, onSaved }: { initial: Integr
         )}
         <FormField label="Base URL" value={baseUrl} onChange={setBaseUrl} placeholder={meta.defaultBaseUrl || "—"} />
         {!isWeb && (
-          <FormField label="Прокси" value={proxyUrl} onChange={setProxyUrl} placeholder="http://user:pass@host:port — пусто, если без прокси" />
+          <FormField label="Прокси" value={proxyUrl} onChange={setProxyUrl} placeholder="http://host:port или socks5://user:pass@host:port — пусто, если без прокси" />
         )}
         {meta.hasModel && (
           <FormField label="Модель по умолчанию" value={defaultModel} onChange={setDefaultModel} placeholder="anthropic/claude-sonnet-4.6" />

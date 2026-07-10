@@ -4,6 +4,7 @@ import urllib.error
 import urllib.request
 
 from hub_platform.ai.provider.base import ChatMessage, ChatResult, EmbeddingResult, LLMProvider, ProviderError
+from hub_platform.integrations.proxy import build_opener
 
 
 class OpenRouterProvider(LLMProvider):
@@ -17,12 +18,6 @@ class OpenRouterProvider(LLMProvider):
         self.timeout = timeout
         self.proxy_url = proxy_url or ""
 
-    def _opener(self):
-        handlers = []
-        if self.proxy_url:
-            handlers.append(urllib.request.ProxyHandler({"http": self.proxy_url, "https": self.proxy_url}))
-        return urllib.request.build_opener(*handlers)
-
     def _post(self, path: str, payload: dict) -> dict:
         request = urllib.request.Request(
             f"{self.base_url}{path}",
@@ -31,7 +26,7 @@ class OpenRouterProvider(LLMProvider):
             method="POST",
         )
         try:
-            with self._opener().open(request, timeout=self.timeout) as response:
+            with build_opener(self.proxy_url).open(request, timeout=self.timeout) as response:
                 return json.loads(response.read().decode("utf-8"))
         # http.client.HTTPException покрывает IncompleteRead/BadStatusLine (оборванный ответ) —
         # это не OSError, поэтому ловим отдельно, иначе исключение уходит мимо ProviderError.
