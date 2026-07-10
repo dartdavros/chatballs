@@ -20,6 +20,8 @@ import urllib.request
 
 from django.conf import settings
 
+from hub_platform.integrations.proxy import build_opener
+
 DEFAULT_OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 # platform-api2.max.ru отдаёт неполную цепочку сертификата (verify failed);
 # рабочий и с валидным сертификатом — platform-api.max.ru.
@@ -30,10 +32,7 @@ CheckResult = tuple[bool, str, dict]
 
 
 def _get(url: str, *, headers: dict[str, str] | None = None, proxy_url: str = "") -> tuple[int, dict]:
-    handlers = []
-    if proxy_url:
-        handlers.append(urllib.request.ProxyHandler({"http": proxy_url, "https": proxy_url}))
-    opener = urllib.request.build_opener(*handlers)
+    opener = build_opener(proxy_url)
     request = urllib.request.Request(url, headers=headers or {}, method="GET")
     with opener.open(request, timeout=settings.HUB_AI_REQUEST_TIMEOUT) as response:
         body = response.read().decode("utf-8")

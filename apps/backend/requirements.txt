@@ -7,6 +7,7 @@ redis>=5.2,<5.3
 uvicorn[standard]>=0.34,<0.35
 gunicorn>=23.0,<24.0
 whitenoise>=6.9,<6.10
+PySocks>=1.7,<1.8
 pytest>=8.4,<8.5
 pytest-django>=4.11,<4.12
 ruff>=0.12,<0.13
