@@ -10,7 +10,7 @@ export type Integration = {
   provider: IntegrationProvider;
   name: string;
   hasSecret: boolean;
-  config: { baseUrl: string; defaultModel: string; botId: string; botUsername: string; botName: string };
+  config: { baseUrl: string; defaultModel: string; proxyUrl: string; botId: string; botUsername: string; botName: string };
   channel: { id: number; code: string; name: string } | null;
   status: IntegrationStatus;
   lastCheckedAt: string | null;

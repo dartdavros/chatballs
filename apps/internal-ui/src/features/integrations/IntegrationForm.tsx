@@ -18,6 +18,7 @@ export function IntegrationForm({ initial, onClose, onSaved }: { initial: Integr
   const [secret, setSecret] = useState("");
   const [baseUrl, setBaseUrl] = useState(initial?.config.baseUrl ?? "");
   const [defaultModel, setDefaultModel] = useState(initial?.config.defaultModel ?? "");
+  const [proxyUrl, setProxyUrl] = useState(initial?.config.proxyUrl ?? "");
   const [channelId, setChannelId] = useState(initial?.channel ? String(initial.channel.id) : "");
   const [channels, setChannels] = useState<ChannelOption[]>([]);
   const [submitting, setSubmitting] = useState(false);
@@ -49,7 +50,7 @@ export function IntegrationForm({ initial, onClose, onSaved }: { initial: Integr
     if (!ready) return;
     setSubmitting(true);
     setError(null);
-    const config = { baseUrl: baseUrl.trim(), defaultModel: defaultModel.trim() };
+    const config = { baseUrl: baseUrl.trim(), defaultModel: defaultModel.trim(), proxyUrl: proxyUrl.trim() };
     const channel = isMessenger ? { channelId: channelId ? Number(channelId) : null } : {};
     try {
       if (isEdit) {
@@ -90,6 +91,9 @@ export function IntegrationForm({ initial, onClose, onSaved }: { initial: Integr
           />
         )}
         <FormField label="Base URL" value={baseUrl} onChange={setBaseUrl} placeholder={meta.defaultBaseUrl || "—"} />
+        {!isWeb && (
+          <FormField label="Прокси" value={proxyUrl} onChange={setProxyUrl} placeholder="http://user:pass@host:port — пусто, если без прокси" />
+        )}
         {meta.hasModel && (
           <FormField label="Модель по умолчанию" value={defaultModel} onChange={setDefaultModel} placeholder="anthropic/claude-sonnet-4.6" />
         )}
