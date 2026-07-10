@@ -29,6 +29,7 @@ def _openrouter_from_integration() -> OpenRouterProvider | None:
         api_key=integration.secret,
         base_url=integration.config.get("base_url") or settings.HUB_OPENROUTER_BASE_URL,
         timeout=settings.HUB_AI_REQUEST_TIMEOUT,
+        proxy_url=integration.config.get("proxy_url", ""),
     )
 
 

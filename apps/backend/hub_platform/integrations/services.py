@@ -41,6 +41,9 @@ def _normalized_config(provider: str, config: dict) -> dict:
     result: dict[str, str] = {}
     if base_url:
         result["base_url"] = base_url
+    proxy_url = str(config.get("proxyUrl", config.get("proxy_url", ""))).strip()
+    if proxy_url:
+        result["proxy_url"] = proxy_url
     if provider == IntegrationProvider.OPENROUTER:
         default_model = str(config.get("defaultModel", config.get("default_model", ""))).strip()
         if default_model:
@@ -112,7 +115,7 @@ def test_integration(*, integration: Integration) -> Integration:
     if check is None:
         ok, detail, meta = False, "Проверка для этого типа подключения не поддерживается", {}
     else:
-        ok, detail, meta = check(secret=integration.secret, base_url=str(integration.config.get("base_url", "")))
+        ok, detail, meta = check(secret=integration.secret, base_url=str(integration.config.get("base_url", "")), proxy_url=str(integration.config.get("proxy_url", "")))
     integration.status = IntegrationStatus.OK if ok else IntegrationStatus.ERROR
     integration.last_error = "" if ok else detail
     integration.last_checked_at = timezone.now()
