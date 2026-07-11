@@ -7,7 +7,10 @@ from hub_platform.identity.models import EmployeeProfile, EmployeeRole, HumanUse
 from hub_platform.integrations.models import Integration, IntegrationKind, IntegrationProvider
 
 
-class CallTestCase(TestCase):
+class CallDomainMixin:
+    """Общий домен тестов звонков. Отдельно от TestCase, чтобы signaling-тесты
+    могли использовать TransactionTestCase (consumer работает в потоках)."""
+
     def setUp(self) -> None:
         bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
         self.organization = Organization.objects.get(slug="edevs")
@@ -69,3 +72,7 @@ class CallTestCase(TestCase):
             connection=self.connection,
             contact=contact,
         )
+
+
+class CallTestCase(CallDomainMixin, TestCase):
+    pass

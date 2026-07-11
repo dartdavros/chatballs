@@ -77,7 +77,7 @@ class WebchatContactView(_Public):
 class WebchatCallOpenView(_Public):
     def post(self, request: Request) -> Response:
         from hub_platform.calls.errors import CallTokenError
-        from hub_platform.calls.serializers import public_invite_payload
+        from hub_platform.calls.serializers import ice_servers_payload, public_invite_payload
         from hub_platform.calls.services import open_call_for_identity
 
         session = services.resolve_session(_token(request))
@@ -91,6 +91,7 @@ class WebchatCallOpenView(_Public):
             {
                 "call": public_invite_payload(resolved.invite.call_session, resolved.invite.expires_at),
                 "accessToken": resolved.customer_access_token,
+                "iceServers": ice_servers_payload(),
             }
         )
         response["Cache-Control"] = "no-store"

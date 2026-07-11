@@ -1,142 +1,157 @@
+import { CallView, type CallViewMode, type CallViewStatus, useCallRtcSession } from "@edevs/ui";
 import { Modal } from "antd";
+import { useEffect, useMemo, useState } from "react";
 
 import { channelMeta } from "./data";
-import type { ApiCall } from "./model";
+import type { ApiCall, CallAccess } from "./model";
 import type { ConversationListItem } from "./types";
 import "./call.css";
 
-// Экран звонка оператора (SPEC-HUB-0013 §6, DG-07): ожидание ответа, отмена
-// приглашения и терминальные состояния по baseline «Экран звонка.dc.html».
-// Медиасостояния (pre-call, active) подключаются на этапе WebRTC-signaling.
-
-type StatusView = {
-  icon: "spinner" | "alert" | "declined" | "missed" | "clock";
-  tone: "neutral" | "error" | "warn";
-  title: string;
-  caption: (name: string) => string;
-  retry?: string;
+const TERMINAL: Record<string, { icon: CallViewStatus["icon"]; title: string; caption: (name: string) => string; tone: "neutral" | "error" | "warn"; retry?: string }> = {
+  DECLINED: { icon: "declined", title: "Звонок отклонён", caption: (name) => `${name} отклонил(а) вызов.`, tone: "neutral", retry: "Позвонить снова" },
+  MISSED: { icon: "missed", title: "Пропущенный звонок", caption: (name) => `${name} не ответил(а) на вызов.`, tone: "warn", retry: "Перезвонить" },
+  EXPIRED: { icon: "clock", title: "Время ожидания истекло", caption: () => "Никто не ответил вовремя. Попробуйте позвонить снова.", tone: "warn", retry: "Позвонить снова" },
+  CANCELLED: { icon: "declined", title: "Звонок отменён", caption: () => "Приглашение отменено.", tone: "neutral" },
+  FAILED: { icon: "alert", title: "Не удалось соединиться", caption: () => "Проверьте интернет-соединение и попробуйте снова.", tone: "error", retry: "Повторить" },
+  ENDED: { icon: "declined", title: "Звонок завершён", caption: () => "Разговор завершён.", tone: "neutral" },
 };
 
-const STATUS_VIEW: Partial<Record<ApiCall["status"], StatusView>> = {
-  ACCEPTED: { icon: "spinner", tone: "neutral", title: "Соединяем звонок", caption: () => "Клиент принял приглашение. Устанавливаем защищённое соединение…" },
-  CONNECTING: { icon: "spinner", tone: "neutral", title: "Соединяем звонок", caption: () => "Устанавливаем защищённое соединение…" },
-  DECLINED: { icon: "declined", tone: "neutral", title: "Звонок отклонён", caption: (name) => `${name} отклонил(а) вызов.`, retry: "Позвонить снова" },
-  MISSED: { icon: "missed", tone: "warn", title: "Пропущенный звонок", caption: (name) => `${name} не ответил(а) на вызов.`, retry: "Перезвонить" },
-  EXPIRED: { icon: "clock", tone: "warn", title: "Время ожидания истекло", caption: () => "Никто не ответил вовремя. Попробуйте позвонить снова.", retry: "Позвонить снова" },
-  CANCELLED: { icon: "declined", tone: "neutral", title: "Звонок отменён", caption: () => "Приглашение отменено." },
-  FAILED: { icon: "alert", tone: "error", title: "Не удалось соединиться", caption: () => "Проверьте интернет-соединение и попробуйте снова.", retry: "Повторить" },
-  ENDED: { icon: "declined", tone: "neutral", title: "Звонок завершён", caption: () => "Разговор завершён." },
-};
-
-const SUBTITLES: Partial<Record<ApiCall["status"], string>> = {
-  REQUESTED: "Отправляем приглашение",
-  RINGING: "Ожидание ответа",
-  ACCEPTED: "Соединение",
-  CONNECTING: "Соединение",
-};
-
-export function CallOverlay({ open, dialog, call, errorText, onCancel, onRetry, onClose }: {
+type Props = {
   open: boolean;
   dialog: ConversationListItem | null;
   call: ApiCall | null;
+  access: CallAccess | null;
   errorText: string;
+  onCallChange: (call: ApiCall) => void;
   onCancel: () => void;
   onRetry: () => void;
   onClose: () => void;
-}) {
-  if (!dialog) return null;
-  const channel = channelMeta[dialog.channel];
-  const isWaiting = call != null && (call.status === "REQUESTED" || call.status === "RINGING");
-  const status = errorText
-    ? { icon: "alert" as const, tone: "error" as const, title: "Не удалось запросить звонок", caption: () => errorText, retry: undefined }
-    : call
-      ? STATUS_VIEW[call.status]
-      : undefined;
-  const subtitle = errorText ? "Ошибка" : (call && (SUBTITLES[call.status] ?? status?.title)) || "";
-  const caption = call?.status === "ENDED" && call.durationSeconds != null
-    ? `Длительность ${fmtDuration(call.durationSeconds)}.`
-    : status?.caption(dialog.name);
-  // Действий нет только у промежуточного «Соединяем звонок» — его закроет
-  // grace period сервера или переход в активный звонок.
-  const connectingPhase = !errorText && (call?.status === "ACCEPTED" || call?.status === "CONNECTING");
-  const showActions = status != null && !connectingPhase;
+};
+
+export function CallOverlay(props: Props) {
+  const call = props.call;
+  const rtc = useCallRtcSession({
+    resetKey: call?.id ?? "",
+    previewEnabled: props.open && call?.status === "ACCEPTED",
+    accessToken: props.access?.accessToken ?? "",
+    side: "STAFF",
+    iceServers: props.access?.iceServers ?? [],
+    onCallState: (state) => {
+      if (call) props.onCallChange({ ...call, status: state.status as ApiCall["status"], endedBy: state.endedBy ?? null, durationSeconds: state.durationSeconds ?? null });
+    },
+  });
+  const elapsed = useElapsed(call?.connectedAt ?? null, call?.status === "ACTIVE");
+  const mode = resolveMode(call, props.errorText, rtc.connectionPhase, rtc.mediaIssue);
+  const status = useMemo(
+    () => buildStatus(props, rtc.connectionPhase, rtc.mediaIssue, rtc.restart, rtc.prepare, rtc.start),
+    [props, rtc.connectionPhase, rtc.mediaIssue, rtc.restart, rtc.prepare, rtc.start],
+  );
+
+  if (!props.dialog) return null;
+  const channel = channelMeta[props.dialog.channel];
+  const subtitle = subtitleFor(mode, call, status);
+  const mediaCaption = rtc.mediaIssue === "devices" ? "Нет доступа к камере и микрофону" : rtc.mediaIssue === "video" ? "Камера недоступна" : "Камера выключена";
+  const endAndClose = () => {
+    if (mode === "active" || mode === "reconnecting" || mode === "connecting") rtc.end();
+    props.onClose();
+  };
 
   return (
-    <Modal open={open} onCancel={onClose} footer={null} closable={false} width={428} className="call-modal" destroyOnHidden>
-      <div className="call-head">
-        <span className="call-head-avatar" style={{ background: dialog.avatarBg }}>{dialog.initials}</span>
-        <div className="call-head-info">
-          <div className="call-head-name">
-            {dialog.name}
-            <em style={{ background: channel.bg, color: channel.color }}>{channel.label}</em>
-          </div>
-          <span className="call-head-subtitle">{subtitle}</span>
-        </div>
-        <button className="call-head-close" onClick={onClose} aria-label="Закрыть">
-          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
-        </button>
-      </div>
-
-      <div className="call-media">
-        {isWaiting && !status && (
-          <div className="call-media-center">
-            <div className="call-rings">
-              <i /><i />
-              <span className="call-big-avatar" style={{ background: dialog.avatarBg }}>{dialog.initials}</span>
-            </div>
-            <div className="call-media-name">
-              <strong>{dialog.name}</strong>
-              <span>Вызываем…</span>
-            </div>
-          </div>
-        )}
-        {status && (
-          <div className="call-status">
-            <span className={`call-status-icon ${status.tone}`}><StatusIcon name={status.icon} /></span>
-            <div>
-              <div className="call-status-title">{status.title}</div>
-              <div className="call-status-caption">{caption}</div>
-            </div>
-            {showActions && (
-              <div className="call-status-actions">
-                {status.retry && <button className="primary" onClick={onRetry}>{status.retry}</button>}
-                <button className="secondary" onClick={onClose}>Закрыть</button>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {isWaiting && (
-        <div className="call-bar-ringing">
-          <button className="call-hangup" onClick={onCancel} aria-label="Отменить вызов">
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" style={{ transform: "rotate(135deg)" }}><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.81.36 1.6.7 2.34a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.74-1.27a2 2 0 0 1 2.11-.45c.74.34 1.53.57 2.34.7A2 2 0 0 1 22 16.92z" /></svg>
-          </button>
-          <span>Отменить</span>
-        </div>
-      )}
+    <Modal open={props.open} onCancel={endAndClose} footer={null} closable={false} width={428} className="call-modal" destroyOnHidden>
+      <CallView
+        mode={mode}
+        peerName={props.dialog.name}
+        peerInitials={props.dialog.initials}
+        peerAvatarColor={props.dialog.avatarBg}
+        subtitle={subtitle}
+        channelBadge={<em className="call-channel" style={{ background: channel.bg, color: channel.color }}>{channel.label}</em>}
+        localStream={rtc.localStream}
+        remoteStream={rtc.remoteStream}
+        micOn={rtc.micOn}
+        camOn={rtc.camOn}
+        remoteMicOn={rtc.remoteMicOn}
+        remoteCamOn={rtc.remoteCamOn}
+        mediaCaption={mediaCaption}
+        elapsedSeconds={elapsed}
+        status={status}
+        joining={rtc.preparing || rtc.connectionPhase === "connecting"}
+        onToggleMic={rtc.toggleMic}
+        onToggleCam={rtc.toggleCam}
+        onJoin={rtc.start}
+        onCancel={mode === "ringing" ? props.onCancel : endAndClose}
+        onEnd={rtc.end}
+        onClose={endAndClose}
+      />
     </Modal>
   );
 }
 
-function fmtDuration(seconds: number): string {
-  const mm = String(Math.floor(seconds / 60)).padStart(2, "0");
-  const ss = String(seconds % 60).padStart(2, "0");
-  return `${mm}:${ss}`;
+function resolveMode(call: ApiCall | null, errorText: string, connection: string, mediaIssue: string): CallViewMode {
+  if (errorText || !call || TERMINAL[call.status] || connection === "failed" || mediaIssue === "devices" || mediaIssue === "unsupported") return "status";
+  if (call.status === "REQUESTED" || call.status === "RINGING") return "ringing";
+  if (call.status === "ACCEPTED" && connection === "idle") return "precall";
+  if (connection === "reconnecting") return "reconnecting";
+  if (call.status === "ACTIVE" || connection === "connected") return "active";
+  return "connecting";
 }
 
-function StatusIcon({ name }: { name: "spinner" | "alert" | "declined" | "missed" | "clock" }) {
-  const common = { viewBox: "0 0 24 24", width: 26, height: 26, fill: "none", stroke: "currentColor", strokeWidth: 1.9, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
-  switch (name) {
-    case "spinner":
-      return <svg {...common} strokeWidth={2} style={{ animation: "callSpin .9s linear infinite" }}><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>;
-    case "alert":
-      return <svg {...common}><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>;
-    case "declined":
-      return <svg {...common}><path transform="rotate(135 12 12)" d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.81.36 1.6.7 2.34a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.74-1.27a2 2 0 0 1 2.11-.45c.74.34 1.53.57 2.34.7A2 2 0 0 1 22 16.92z" /></svg>;
-    case "missed":
-      return <svg {...common}><path d="M23 7l-8 8-4-4-9 9" /><polyline points="17 7 23 7 23 13" /></svg>;
-    case "clock":
-      return <svg {...common}><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>;
-  }
+function buildStatus(props: Props, connection: string, mediaIssue: string, onReconnect: () => void, onPrepare: () => void, onJoin: () => void): CallViewStatus | undefined {
+  if (props.errorText) return { icon: "alert", tone: "error", title: "Не удалось запросить звонок", caption: props.errorText };
+  if (mediaIssue === "unsupported") return { icon: "unsupported", tone: "error", title: "Видеозвонки не поддерживаются", caption: "Обновите браузер или откройте ссылку в Chrome, Safari или Edge." };
+  if (mediaIssue === "devices") return {
+    icon: "alert",
+    tone: "error",
+    title: "Нет доступа к камере и микрофону",
+    caption: "Разрешите доступ к устройствам в настройках браузера и повторите.",
+    actions: [
+      { label: "Повторить проверку", kind: "primary", onClick: onPrepare },
+      { label: "Без видео", kind: "secondary", onClick: onJoin },
+    ],
+  };
+  if (connection === "failed") return {
+    icon: "alert",
+    tone: "error",
+    title: "Не удалось соединиться",
+    caption: "Проверьте интернет-соединение и попробуйте снова.",
+    actions: [{ label: "Повторить", kind: "primary", onClick: onReconnect }],
+  };
+  if (!props.call) return undefined;
+  if (props.call.status === "ACCEPTED" || props.call.status === "CONNECTING") return { icon: "spinner", tone: "neutral", title: "Соединяем звонок", caption: "Устанавливаем защищённое соединение…" };
+  const terminal = TERMINAL[props.call.status];
+  if (!terminal) return undefined;
+  const duration = props.call.status === "ENDED" && props.call.durationSeconds != null ? `Длительность ${formatDuration(props.call.durationSeconds)}. ` : "";
+  return {
+    icon: terminal.icon,
+    tone: terminal.tone,
+    title: terminal.title,
+    caption: `${duration}${terminal.caption(props.dialog?.name ?? "Клиент")}`,
+    actions: [
+      ...(terminal.retry ? [{ label: terminal.retry, kind: "primary" as const, onClick: props.onRetry }] : []),
+      { label: "Закрыть", kind: "secondary" as const, onClick: props.onClose },
+    ],
+  };
+}
+
+function subtitleFor(mode: CallViewMode, call: ApiCall | null, status?: CallViewStatus) {
+  if (mode === "ringing") return call?.status === "REQUESTED" ? "Отправляем приглашение" : "Ожидание ответа";
+  if (mode === "precall") return "Проверьте камеру и микрофон";
+  if (mode === "active") return "Активный звонок";
+  if (mode === "reconnecting") return "Переподключение";
+  return status?.title ?? "Соединение";
+}
+
+function useElapsed(connectedAt: string | null, active: boolean) {
+  const [seconds, setSeconds] = useState(0);
+  useEffect(() => {
+    if (!connectedAt || !active) return;
+    const update = () => setSeconds(Math.max(0, Math.floor((Date.now() - new Date(connectedAt).getTime()) / 1000)));
+    update();
+    const timer = setInterval(update, 1000);
+    return () => clearInterval(timer);
+  }, [active, connectedAt]);
+  return seconds;
+}
+
+function formatDuration(seconds: number) {
+  return `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
 }

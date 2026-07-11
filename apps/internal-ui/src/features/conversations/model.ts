@@ -137,10 +137,16 @@ export type ApiCall = {
   durationSeconds: number | null;
 };
 
+export type CallAccess = { accessToken: string; iceServers: RTCIceServer[] };
+export type CreatedCall = { call: ApiCall; access: CallAccess };
+
 // Запрос звонка: при режиме AI backend атомарно выполняет takeover (§6).
 export const requestCall = (conversationId: number) =>
-  api<{ call: ApiCall; staffAccessToken: string }>(`/api/v1/calls/conversations/${conversationId}/`, { method: "POST" }).then((r) => r.call);
+  api<{ call: ApiCall; staffAccessToken: string; iceServers: RTCIceServer[] }>(`/api/v1/calls/conversations/${conversationId}/`, { method: "POST" })
+    .then((r): CreatedCall => ({ call: r.call, access: { accessToken: r.staffAccessToken, iceServers: r.iceServers } }));
 export const fetchActiveCall = (conversationId: number) =>
   api<{ call: ApiCall | null }>(`/api/v1/calls/conversations/${conversationId}/active/`).then((r) => r.call);
 export const fetchCall = (callId: string) => api<{ call: ApiCall }>(`/api/v1/calls/${callId}/`).then((r) => r.call);
 export const cancelCall = (callId: string) => api<{ call: ApiCall }>(`/api/v1/calls/${callId}/cancel/`, { method: "POST" }).then((r) => r.call);
+export const fetchStaffCallAccess = (callId: string) =>
+  api<{ accessToken: string; iceServers: RTCIceServer[] }>(`/api/v1/calls/${callId}/access-token/`, { method: "POST" });

@@ -1,3 +1,5 @@
+from django.conf import settings
+
 from hub_platform.calls.models import CallSession
 
 
@@ -44,6 +46,14 @@ def public_invite_payload(call: CallSession, expires_at) -> dict:
 
 def _staff_label(call: CallSession) -> str:
     return getattr(call.initiated_by, "full_name", "") or "Оператор"
+
+
+def ice_servers_payload() -> list[dict]:
+    # ICE-конфигурация клиента (SPEC §10): STUN организации; краткоживущие
+    # TURN credentials добавит контур Coturn.
+    if not settings.HUB_CALL_STUN_URLS:
+        return []
+    return [{"urls": list(settings.HUB_CALL_STUN_URLS)}]
 
 
 def public_call_state_payload(call: CallSession) -> dict:

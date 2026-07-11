@@ -51,6 +51,7 @@ class InternalCallApiTests(CallTestCase):
         self.assertEqual(response.status_code, 200)
         claims = verify_call_access_token(response.json()["accessToken"])
         self.assertEqual(claims.call_session_id, created.call_session.id)
+        self.assertIn("iceServers", response.json())
 
 
 class PublicInviteApiTests(CallTestCase):

@@ -7,7 +7,12 @@ from rest_framework.views import APIView
 from hub_platform.calls.errors import CallAccessDenied, CallConflict, CallTokenError
 from hub_platform.calls.models import CallSession
 from hub_platform.calls.permissions import ensure_call_access, ensure_conversation_call_access
-from hub_platform.calls.serializers import call_payload, public_call_state_payload, public_invite_payload
+from hub_platform.calls.serializers import (
+    call_payload,
+    ice_servers_payload,
+    public_call_state_payload,
+    public_invite_payload,
+)
 from hub_platform.calls.services import (
     accept_call_by_access_token,
     active_call_for_conversation,
@@ -61,7 +66,11 @@ class CallCreateView(APIView):
             request=request,
         )
         return _token_response(
-            {"call": call_payload(call), "staffAccessToken": created.staff_access_token},
+            {
+                "call": call_payload(call),
+                "staffAccessToken": created.staff_access_token,
+                "iceServers": ice_servers_payload(),
+            },
             status=201,
         )
 
@@ -94,7 +103,7 @@ class StaffAccessTokenView(APIView):
             return Response({"detail": str(error)}, status=403)
         except CallConflict as error:
             return Response({"detail": str(error)}, status=409)
-        return _token_response({"accessToken": token})
+        return _token_response({"accessToken": token, "iceServers": ice_servers_payload()})
 
 
 class CallCancelView(APIView):
@@ -157,6 +166,7 @@ class InviteResolveView(APIView):
                     resolved.invite.expires_at,
                 ),
                 "accessToken": resolved.customer_access_token,
+                "iceServers": ice_servers_payload(),
             }
         )
 
@@ -182,7 +192,9 @@ class CallAccessStateView(_CallAccessView):
             call = call_state_by_access_token(token=_bearer_token(request))
         except CallTokenError:
             return Response({"detail": "Недействительный или истёкший call access token"}, status=404)
-        return _token_response({"call": public_call_state_payload(call)})
+        return _token_response(
+            {"call": public_call_state_payload(call), "iceServers": ice_servers_payload()}
+        )
 
 
 class CallAccessAcceptView(_CallAccessView):

@@ -9,6 +9,7 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "peerDependencies": {
+    "@edevs/shared": "0.1.0",
     "antd": "^5.26.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

@@ -23,3 +23,18 @@ body,
   0% { transform: scale(1); opacity: 0.55; }
   100% { transform: scale(2.3); opacity: 0; }
 }
+
+.public-call-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: #f5f6f8;
+}
+
+@media (max-width: 480px) {
+  .public-call-page {
+    padding: 8px;
+  }
+}

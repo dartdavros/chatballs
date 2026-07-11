@@ -5,24 +5,18 @@ import { Composer } from "./Composer";
 import { ConversationThread } from "./ConversationThread";
 import { DialogList } from "./DialogList";
 import {
-  cancelCall,
   claimConversation,
   closeConversation,
   controlModeOf,
-  fetchActiveCall,
-  fetchCall,
   fetchConversation,
   fetchConversations,
   releaseConversation,
-  requestCall,
   returnToQueue,
   toConversationListItem,
-  type ApiCall,
   type ApiConversation,
 } from "./model";
 import type { ConversationListItem, ListTab } from "./types";
-
-const TERMINAL_CALL_STATUSES = new Set(["DECLINED", "CANCELLED", "MISSED", "ENDED", "FAILED", "EXPIRED"]);
+import { useConversationCall } from "./useConversationCall";
 
 // Общий workspace диалогов (SPEC-HUB-0010 §8.2): sales и support используют его.
 // Параметризуется department (изоляция inbox §10 + фильтр fetchConversations),
@@ -41,11 +35,6 @@ export function ConversationWorkspace({ department, listTitle, searchPlaceholder
   const [conversations, setConversations] = useState<ApiConversation[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(initialConversationId ?? null);
   const [detail, setDetail] = useState<ApiConversation | null>(null);
-  // Онлайн-звонок текущего диалога: оверлей по baseline «Экран звонка».
-  const [callOpen, setCallOpen] = useState(false);
-  const [call, setCall] = useState<ApiCall | null>(null);
-  const [callError, setCallError] = useState("");
-  const [callBusy, setCallBusy] = useState(false);
 
   const loadList = useCallback(async () => {
     try {
@@ -82,27 +71,10 @@ export function ConversationWorkspace({ department, listTitle, searchPlaceholder
     return () => clearInterval(timer);
   }, [selectedId, loadDetail]);
 
-  // Смена диалога сбрасывает оверлей звонка.
-  useEffect(() => {
-    setCallOpen(false);
-    setCall(null);
-    setCallError("");
-  }, [selectedId]);
-
-  // Поллинг состояния звонка, пока оверлей открыт и звонок не завершён.
-  const callId = call?.id ?? null;
-  const callStatus = call?.status ?? null;
-  useEffect(() => {
-    if (!callOpen || callId == null || callStatus == null || TERMINAL_CALL_STATUSES.has(callStatus)) return;
-    const timer = setInterval(async () => {
-      try {
-        setCall(await fetchCall(callId));
-      } catch {
-        /* transient */
-      }
-    }, 2000);
-    return () => clearInterval(timer);
-  }, [callOpen, callId, callStatus]);
+  const onConversationChanged = useCallback(() => {
+    if (selectedId != null) void loadDetail(selectedId);
+  }, [loadDetail, selectedId]);
+  const callController = useConversationCall({ conversationId: selectedId, onConversationChanged });
 
   const dialogs = useMemo(() => conversations.map(toConversationListItem), [conversations]);
   const filtered = useMemo(() => {
@@ -142,47 +114,6 @@ export function ConversationWorkspace({ department, listTitle, searchPlaceholder
     try { applyUpdated(await closeConversation(selectedId)); } catch { /* ignore */ }
   };
 
-  // Запрос онлайн-звонка (§6): если в диалоге уже есть незавершённый звонок —
-  // открываем его состояние; иначе создаём (backend атомарно перехватит AI).
-  const onCall = async () => {
-    if (selectedId == null || callBusy) return;
-    setCallBusy(true);
-    setCallError("");
-    try {
-      const active = await fetchActiveCall(selectedId);
-      const next = active ?? (await requestCall(selectedId));
-      setCall(next);
-      if (selectedId != null) void loadDetail(selectedId);
-    } catch (error) {
-      setCall(null);
-      setCallError(error instanceof Error ? error.message : "Не удалось запросить звонок");
-    } finally {
-      setCallBusy(false);
-      setCallOpen(true);
-    }
-  };
-
-  const onCallCancel = async () => {
-    if (call == null) return;
-    try {
-      setCall(await cancelCall(call.id));
-      if (selectedId != null) void loadDetail(selectedId);
-    } catch { /* поллинг подтянет фактическое состояние */ }
-    setCallOpen(false);
-  };
-
-  const onCallRetry = async () => {
-    if (selectedId == null) return;
-    setCall(null);
-    setCallError("");
-    try {
-      setCall(await requestCall(selectedId));
-      void loadDetail(selectedId);
-    } catch (error) {
-      setCallError(error instanceof Error ? error.message : "Не удалось запросить звонок");
-    }
-  };
-
   return (
     <div className="sales-dialogs">
       <DialogList
@@ -198,15 +129,17 @@ export function ConversationWorkspace({ department, listTitle, searchPlaceholder
         setSelectedId={setSelectedId}
       />
       <section className="sales-conversation">
-        <ConversationThread controlMode={controlMode} dialog={selectedDialog} detail={detail} onClaim={onClaim} onCall={() => void onCall()} />
+        <ConversationThread controlMode={controlMode} dialog={selectedDialog} detail={detail} onClaim={onClaim} onCall={() => void callController.start()} />
         <CallOverlay
-          open={callOpen}
+          open={callController.open}
           dialog={selectedDialog}
-          call={call}
-          errorText={callError}
-          onCancel={() => void onCallCancel()}
-          onRetry={() => void onCallRetry()}
-          onClose={() => setCallOpen(false)}
+          call={callController.call}
+          access={callController.access}
+          errorText={callController.errorText}
+          onCallChange={callController.setCall}
+          onCancel={() => void callController.cancel()}
+          onRetry={() => void callController.retry()}
+          onClose={callController.close}
         />
         <Composer
           mode={controlMode}

@@ -57,6 +57,9 @@ INSTALLED_APPS = [
     "hub_platform.events",
     "hub_platform.support",
     "hub_platform.calls",
+    # django-channels НЕ добавляется в INSTALLED_APPS: его app label «channels»
+    # конфликтует с доменным hub_platform.channels, а без runserver-оверрайда
+    # (сервер — uvicorn) библиотеке достаточно CHANNEL_LAYERS.
 ]
 
 MIDDLEWARE = [
@@ -110,6 +113,19 @@ CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.redis.RedisCache",
         "LOCATION": os.environ.get("REDIS_URL", "redis://redis:6379/0"),
+    }
+}
+
+# Signaling звонков: Redis только fan-out/presence, source of truth lifecycle —
+# PostgreSQL (SPEC-HUB-0013 §9). В тестах — InMemory layer.
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    }
+    if TESTING
+    else {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {"hosts": [os.environ.get("REDIS_URL", "redis://redis:6379/0")]},
     }
 }
 
@@ -186,8 +202,19 @@ HUB_CALL_INVITE_TTL_SECONDS = int(os.environ.get("HUB_CALL_INVITE_TTL_SECONDS", 
 HUB_CALL_ACCESS_TTL_SECONDS = int(os.environ.get("HUB_CALL_ACCESS_TTL_SECONDS", str(60 * 60)))
 # Grace period: принятый звонок без установленного соединения закрывается FAILED.
 HUB_CALL_CONNECT_GRACE_SECONDS = int(os.environ.get("HUB_CALL_CONNECT_GRACE_SECONDS", str(2 * 60)))
-if HUB_CALL_INVITE_TTL_SECONDS <= 0 or HUB_CALL_ACCESS_TTL_SECONDS <= 0 or HUB_CALL_CONNECT_GRACE_SECONDS <= 0:
+# Grace period восстановления активного звонка после обрыва участника.
+HUB_CALL_RECONNECT_GRACE_SECONDS = int(os.environ.get("HUB_CALL_RECONNECT_GRACE_SECONDS", str(60)))
+if (
+    HUB_CALL_INVITE_TTL_SECONDS <= 0
+    or HUB_CALL_ACCESS_TTL_SECONDS <= 0
+    or HUB_CALL_CONNECT_GRACE_SECONDS <= 0
+    or HUB_CALL_RECONNECT_GRACE_SECONDS <= 0
+):
     raise ImproperlyConfigured("HUB call token TTL values must be positive")
+
+# ICE-серверы для WebRTC (SPEC-HUB-0013 §10): STUN сейчас, TURN добавит контур
+# Coturn. Формат: URL через запятую (stun:host:port).
+HUB_CALL_STUN_URLS = env_list("HUB_CALL_STUN_URLS", [])
 STORAGES = {
     "default": {
         "BACKEND": "django.core.files.storage.FileSystemStorage",

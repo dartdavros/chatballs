@@ -25,6 +25,9 @@ export type CallInfo = {
   durationSeconds?: number | null;
 };
 
+export type CallBootstrap = { call: CallInfo; accessToken: string; iceServers: RTCIceServer[] };
+export type CallStateEnvelope = { call: CallInfo; iceServers: RTCIceServer[] };
+
 export type Poll = { state: "ai" | "operator" | "waiting"; lifecycle: string; messages: WebMessage[]; call?: CallInfo | null };
 
 export async function getConfig(channel: string): Promise<WebConfig> {
@@ -70,7 +73,7 @@ export async function poll(token: string, since: number): Promise<Poll> {
 const CALLS_API = "/api/v1/calls";
 
 // Виджет: получить call access token по session token (переход на страницу звонка).
-export async function openWebchatCall(sessionToken: string): Promise<{ call: CallInfo; accessToken: string } | null> {
+export async function openWebchatCall(sessionToken: string): Promise<CallBootstrap | null> {
   const r = await fetch(`${API}/call/open/`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${sessionToken}` },
@@ -89,7 +92,7 @@ export async function declineWebchatCall(sessionToken: string): Promise<boolean>
 }
 
 // Страница звонка: обмен invite token из ссылки TG/MAX на access token.
-export async function resolveCallInvite(inviteToken: string): Promise<{ call: CallInfo; accessToken: string } | null> {
+export async function resolveCallInvite(inviteToken: string): Promise<CallBootstrap | null> {
   const r = await fetch(`${CALLS_API}/invites/resolve/`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -99,7 +102,7 @@ export async function resolveCallInvite(inviteToken: string): Promise<{ call: Ca
   return r.json();
 }
 
-async function callAccessAction(action: "state" | "accept" | "decline", accessToken: string): Promise<CallInfo | null> {
+async function callAccessAction(action: "accept" | "decline", accessToken: string): Promise<CallInfo | null> {
   const r = await fetch(`${CALLS_API}/access/${action}/`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
@@ -108,7 +111,14 @@ async function callAccessAction(action: "state" | "accept" | "decline", accessTo
   return (await r.json()).call as CallInfo;
 }
 
-export const fetchCallState = (accessToken: string) => callAccessAction("state", accessToken);
+export async function fetchCallState(accessToken: string): Promise<CallStateEnvelope | null> {
+  const r = await fetch(`${CALLS_API}/access/state/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
+  });
+  if (!r.ok) return null;
+  return r.json();
+}
 export const acceptCall = (accessToken: string) => callAccessAction("accept", accessToken);
 export const declineCall = (accessToken: string) => callAccessAction("decline", accessToken);
 

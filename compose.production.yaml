@@ -33,7 +33,8 @@ services:
     env_file:
       - .env.production
     command: >
-      sh -c "gunicorn hub_backend.wsgi:application
+      sh -c "gunicorn hub_backend.asgi:application
+      --worker-class uvicorn.workers.UvicornWorker
       --bind 0.0.0.0:8000
       --workers $${HUB_GUNICORN_WORKERS:-3}
       --timeout $${HUB_GUNICORN_TIMEOUT:-60}"

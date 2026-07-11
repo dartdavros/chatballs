@@ -46,4 +46,27 @@ def expire_stale_calls() -> int:
             finished += 1
         except CallInvalidTransition:
             continue
+
+    # Активный звонок с участником, не восстановившимся после обрыва (SPEC §5:
+    # временный обрыв → reconnecting, после grace period — FAILED).
+    reconnect_deadline = now - timedelta(seconds=settings.HUB_CALL_RECONNECT_GRACE_SECONDS)
+    dropped = (
+        CallSession.objects.filter(
+            status=CallStatus.ACTIVE,
+            participants__left_at__lte=reconnect_deadline,
+        )
+        .distinct()
+        .values_list("id", flat=True)
+    )
+    for call_id in dropped:
+        try:
+            transition_call(
+                call_session_id=call_id,
+                target_status=CallStatus.FAILED,
+                ended_by=CallEndedBy.TIMEOUT,
+                failure_code="PEER_DISCONNECTED",
+            )
+            finished += 1
+        except CallInvalidTransition:
+            continue
     return finished

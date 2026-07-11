@@ -130,7 +130,9 @@ class CustomerAccessApiTests(CallTestCase):
         cancel_call(call_session=call, user=self.owner)
         response = self._post("/api/v1/calls/access/state/", token)
         self.assertEqual(response.status_code, 200)
-        payload = response.json()["call"]
+        body = response.json()
+        self.assertIn("iceServers", body)
+        payload = body["call"]
         self.assertEqual(payload["status"], CallStatus.CANCELLED)
         self.assertEqual(set(payload), {"callId", "status", "staffName", "endedBy", "durationSeconds"})
 
@@ -283,7 +285,7 @@ class ExpirySweepTests(CallTestCase):
         self.assertEqual(CallSession.objects.get().status, CallStatus.EXPIRED)
 
     def test_accepted_call_without_connection_fails_after_grace(self) -> None:
-        created = create_call_request(conversation_id=self.conversation.id, initiator=self.owner)
+        create_call_request(conversation_id=self.conversation.id, initiator=self.owner)
         token = open_call_for_identity(identity=self.identity).customer_access_token
         from hub_platform.calls.services import accept_call_by_access_token
 
