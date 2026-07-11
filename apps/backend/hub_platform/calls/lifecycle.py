@@ -10,6 +10,7 @@ from hub_platform.calls.models import (
     CallStatus,
     TERMINAL_CALL_STATUSES,
 )
+from hub_platform.conversations.models import Message, MessageAuthor
 
 ALLOWED_TRANSITIONS = {
     CallStatus.REQUESTED: {
@@ -31,6 +32,35 @@ ALLOWED_TRANSITIONS = {
     CallStatus.ACTIVE: {CallStatus.ENDED, CallStatus.FAILED},
 }
 FAILURE_CODE_PATTERN = re.compile(r"^[A-Z][A-Z0-9_]{0,63}$")
+
+
+def _format_duration(seconds: int) -> str:
+    return f"{seconds // 60:02d}:{seconds % 60:02d}"
+
+
+def _timeline_text(call: CallSession, target_status: str) -> str | None:
+    # Системные события звонка в timeline диалога (SPEC-HUB-0013 §13).
+    # Вызывается только при фактической смене статуса — retry дублей не даёт.
+    if target_status == CallStatus.ACCEPTED:
+        return "Клиент принял приглашение на звонок"
+    if target_status == CallStatus.DECLINED:
+        return "Клиент отклонил приглашение на звонок"
+    if target_status == CallStatus.CANCELLED:
+        return "Сотрудник отменил приглашение на звонок"
+    if target_status == CallStatus.MISSED:
+        return "Звонок пропущен: клиент не ответил"
+    if target_status == CallStatus.EXPIRED:
+        return "Приглашение на звонок истекло"
+    if target_status == CallStatus.ACTIVE:
+        return "Звонок начался: соединение установлено"
+    if target_status == CallStatus.ENDED:
+        duration = call.duration_seconds
+        if duration is not None:
+            return f"Звонок завершён · {_format_duration(duration)}"
+        return "Звонок завершён"
+    if target_status == CallStatus.FAILED:
+        return "Звонок завершился технической ошибкой"
+    return None
 
 
 @transaction.atomic
@@ -73,4 +103,11 @@ def transition_call(
         call.failure_code = normalized_failure_code
         update_fields.append("failure_code")
     call.save(update_fields=update_fields)
+    timeline_text = _timeline_text(call, target_status)
+    if timeline_text is not None:
+        Message.objects.create(
+            conversation_id=call.conversation_id,
+            author_type=MessageAuthor.SYSTEM,
+            text=timeline_text,
+        )
     return call

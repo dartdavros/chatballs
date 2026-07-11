@@ -22,7 +22,8 @@ class CallCreationTests(CallTestCase):
         self.conversation.refresh_from_db()
         self.assertEqual(self.conversation.control_mode, ControlMode.HUMAN)
         self.assertEqual(self.conversation.assigned_operator, self.owner)
-        self.assertEqual(created.call_session.status, CallStatus.REQUESTED)
+        # WEB-подключение: доставка поллингом виджета, звонок сразу RINGING.
+        self.assertEqual(created.call_session.status, CallStatus.RINGING)
         self.assertEqual(created.call_session.organization, self.organization)
         self.assertEqual(created.call_session.delivery_connection, self.connection)
         self.assertNotEqual(created.invite_token, created.call_session.invite.token_hash)

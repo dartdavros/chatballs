@@ -100,3 +100,9 @@ def send_contact_request(integration, *, chat_id: str, user_id: str, text: str) 
 def send_contact_ack(integration, *, chat_id: str, user_id: str, text: str) -> bool:
     # Подтверждение + снятие reply-клавиатуры, чтобы кнопка не висела у клиента.
     return _send(integration, chat_id=chat_id, user_id=user_id, body={"text": text, "reply_markup": {"remove_keyboard": True}})
+
+
+def send_call_invite(integration, *, chat_id: str, user_id: str, text: str, url: str) -> bool:
+    # Приглашение на онлайн-звонок: inline-кнопка со ссылкой /calls/<token>.
+    keyboard = {"inline_keyboard": [[{"text": "Перейти к звонку", "url": url}]]}
+    return _send(integration, chat_id=chat_id, user_id=user_id, body={"text": text, "reply_markup": keyboard})

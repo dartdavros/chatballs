@@ -1,6 +1,18 @@
 import { useEffect, useRef, useState } from "react";
 
-import { getConfig, poll, sendContact, sendMessage, startSession, type WebConfig, type WebMessage } from "./api";
+import {
+  declineWebchatCall,
+  getConfig,
+  openWebchatCall,
+  poll,
+  sendContact,
+  sendMessage,
+  startSession,
+  type CallInfo,
+  type Poll,
+  type WebConfig,
+  type WebMessage,
+} from "./api";
 
 const CHANNEL = new URLSearchParams(location.search).get("channel") || "edevs";
 const TOKEN_KEY = `edevs-chat-token:${CHANNEL}`;
@@ -20,6 +32,7 @@ export function App() {
   const [input, setInput] = useState("");
   const [starting, setStarting] = useState(false);
   const [contactSent, setContactSent] = useState(false);
+  const [call, setCall] = useState<CallInfo | null>(null);
   const lastId = useRef(0);
   const bodyRef = useRef<HTMLDivElement>(null);
 
@@ -27,8 +40,11 @@ export function App() {
     getConfig(CHANNEL).then(setConfig).catch(() => setConfig({ available: false }));
   }, []);
 
-  function ingestPoll(data: { state: "ai" | "operator" | "waiting"; messages: WebMessage[] }) {
+  function ingestPoll(data: Poll) {
     setState(data.state);
+    // Приглашение на звонок (SPEC-HUB-0013 §7.1): пропадает из payload после
+    // принятия/отклонения/истечения — карточка скрывается сама.
+    setCall(data.call ?? null);
     if (data.messages.length) {
       lastId.current = Math.max(lastId.current, ...data.messages.map((m) => m.id));
       setMessages((prev) => [...prev, ...data.messages.filter((m) => !prev.some((p) => p.id === m.id))]);
@@ -101,6 +117,21 @@ export function App() {
       }
     }
     return ok;
+  }
+
+  // Приглашение на звонок: «Принять» выпускает access token и открывает
+  // страницу звонка (token в fragment — не попадает на сервер и в referrer).
+  async function acceptCallInvite() {
+    if (!token) return;
+    const opened = await openWebchatCall(token).catch(() => null);
+    if (!opened) { setCall(null); return; }
+    window.open(`/calls/${opened.call.callId}#${opened.accessToken}`, "_blank", "noopener");
+  }
+
+  async function declineCallInvite() {
+    if (!token) return;
+    await declineWebchatCall(token).catch(() => undefined);
+    setCall(null);
   }
 
   // Форма телефона показывается под последним запросом контакта, пока клиент
@@ -178,6 +209,10 @@ export function App() {
         )}
       </div>
 
+      {config?.available && accepted && call && (call.status === "REQUESTED" || call.status === "RINGING") && (
+        <CallInviteBanner call={call} accent={accent} onAccept={() => void acceptCallInvite()} onDecline={() => void declineCallInvite()} />
+      )}
+
       {config?.available && !accepted && (
         <div style={{ flex: "none", background: "#fff", borderTop: "1px solid #f0f0f0", padding: "12px 14px 14px" }}>
           <button onClick={accept} disabled={starting} style={{ width: "100%", height: 44, borderRadius: 10, border: "none", background: accent, color: "#fff", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>{starting ? "Запуск…" : "Принять и начать чат"}</button>
@@ -207,6 +242,34 @@ export function App() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// Входящее приглашение на звонок (baseline «Экран звонка», состояние
+// «Входящий видеозвонок»): принять открывает страницу звонка, отклонить —
+// завершает приглашение прямо из виджета.
+function CallInviteBanner({ call, accent, onAccept, onDecline }: { call: CallInfo; accent: string; onAccept: () => void; onDecline: () => void }) {
+  const phoneIcon = (rotated: boolean) => (
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#fff" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" style={rotated ? { transform: "rotate(135deg)" } : undefined}>
+      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.81.36 1.6.7 2.34a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.74-1.27a2 2 0 0 1 2.11-.45c.74.34 1.53.57 2.34.7A2 2 0 0 1 22 16.92z" />
+    </svg>
+  );
+  return (
+    <div style={{ flex: "none", background: "#fff", borderTop: "1px solid #f0f0f0", padding: "12px 14px", display: "flex", alignItems: "center", gap: 12 }}>
+      <div style={{ width: 40, height: 40, borderRadius: "50%", background: accent, display: "flex", alignItems: "center", justifyContent: "center", flex: "none" }}>
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#fff" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M23 7l-7 5 7 5V7z" /><rect x="1" y="5" width="15" height="14" rx="2.5" /></svg>
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 13.5, fontWeight: 600, color: "#1f1f1f" }}>Входящий видеозвонок</div>
+        <div style={{ fontSize: 12, color: "#8c8c8c", marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{call.staffName || "Оператор"} приглашает вас на онлайн-звонок</div>
+      </div>
+      <button onClick={onDecline} aria-label="Отклонить" style={{ width: 42, height: 42, borderRadius: "50%", border: "none", background: "#ff4d4f", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flex: "none", boxShadow: "0 2px 8px rgba(255,77,79,.35)" }}>
+        {phoneIcon(true)}
+      </button>
+      <button onClick={onAccept} aria-label="Принять" style={{ width: 42, height: 42, borderRadius: "50%", border: "none", background: "#52c41a", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flex: "none", boxShadow: "0 2px 8px rgba(82,196,26,.35)" }}>
+        {phoneIcon(false)}
+      </button>
     </div>
   );
 }

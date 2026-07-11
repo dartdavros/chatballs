@@ -137,6 +137,18 @@ def post_contact(session: WebSession, phone: str) -> None:
     ingest_inbound(session.connection, inbound)
 
 
+def _call_payload(session: WebSession) -> dict | None:
+    # Приглашение на звонок для активной session (SPEC-HUB-0013 §7.1):
+    # виджет получает его этим же поллингом, без отдельного realtime-канала.
+    from hub_platform.calls.serializers import public_invite_payload
+    from hub_platform.calls.services import webchat_active_call
+
+    call = webchat_active_call(session.identity)
+    if call is None:
+        return None
+    return public_invite_payload(call, call.invite.expires_at)
+
+
 def messages_payload(session: WebSession, since: int) -> dict:
     conversation = (
         Conversation.objects.filter(
@@ -146,7 +158,7 @@ def messages_payload(session: WebSession, since: int) -> dict:
         .first()
     )
     if conversation is None:
-        return {"state": "ai", "lifecycle": LifecycleState.OPEN, "messages": []}
+        return {"state": "ai", "lifecycle": LifecycleState.OPEN, "messages": [], "call": None}
     items = conversation.messages.filter(id__gt=since).order_by("created_at")
     return {
         "state": _STATE.get(conversation.control_mode, "ai"),
@@ -155,4 +167,5 @@ def messages_payload(session: WebSession, since: int) -> dict:
             {"id": m.id, "author": _ROLE.get(m.author_type, "ai"), "kind": m.kind, "text": m.text, "createdAt": m.created_at.isoformat()}
             for m in items
         ],
+        "call": _call_payload(session),
     }

@@ -7,12 +7,15 @@ from django.conf import settings
 from django.db import IntegrityError, transaction
 from django.utils import timezone
 
-from hub_platform.calls.errors import CallConflict, CallTokenError
+from hub_platform.calls.errors import CallConflict, CallInvalidTransition, CallTokenError
+from hub_platform.calls.lifecycle import transition_call
 from hub_platform.calls.models import (
+    CallEndedBy,
     CallInvite,
     CallParticipant,
     CallSession,
     CallStatus,
+    InviteDeliveryStatus,
     ParticipantSide,
     TERMINAL_CALL_STATUSES,
     UNFINISHED_CALL_STATUSES,
@@ -30,8 +33,15 @@ from hub_platform.conversations.models import (
     Conversation,
     ControlMode,
     LifecycleState,
+    Message,
+    MessageAuthor,
 )
 from hub_platform.conversations.services import ClaimError, claim_locked_conversation
+from hub_platform.events.services import DomainEvent, enqueue_event
+from hub_platform.integrations.models import IntegrationProvider
+
+# Outbox-событие доставки приглашения в TG/MAX (обработчик — calls.event_handlers).
+CALL_INVITE_SEND = "calls.invite_send"
 
 
 @dataclass(frozen=True)
@@ -128,6 +138,27 @@ def create_call_request(*, conversation_id: int, initiator) -> CreatedCall:
             ),
         ]
     )
+    initiator_label = getattr(initiator, "full_name", "") or initiator.email
+    Message.objects.create(
+        conversation=conversation,
+        author_type=MessageAuthor.SYSTEM,
+        text=f"Оператор {initiator_label} запросил онлайн-звонок",
+    )
+    if conversation.connection.provider == IntegrationProvider.WEB:
+        # Web Chat: приглашение забирает виджет поллингом, внешней отправки нет.
+        call.invite.delivery_status = InviteDeliveryStatus.SENT
+        call.invite.save(update_fields=["delivery_status"])
+        call = transition_call(call_session_id=call.id, target_status=CallStatus.RINGING)
+    else:
+        # TG/MAX: кнопка со ссылкой /calls/<token> уходит через outbox с ретраями.
+        enqueue_event(
+            DomainEvent(
+                aggregate_type="call_session",
+                aggregate_id=str(call.id),
+                event_type=CALL_INVITE_SEND,
+                payload={"callSessionId": str(call.id)},
+            )
+        )
     staff_token = issue_call_access_token(
         call_session_id=call.id,
         side=ParticipantSide.STAFF,
@@ -177,15 +208,15 @@ def issue_staff_access_token(*, call_session: CallSession, user) -> str:
     )
 
 
-def authorize_call_access_token(*, token: str) -> tuple[CallAccessClaims, CallSession]:
+def authorize_call_access_token(*, token: str, allow_terminal: bool = False) -> tuple[CallAccessClaims, CallSession]:
     claims = verify_call_access_token(token)
     try:
-        call = CallSession.objects.select_related("conversation", "conversation__channel").get(
-            id=claims.call_session_id
-        )
+        call = CallSession.objects.select_related(
+            "conversation", "conversation__channel", "initiated_by"
+        ).get(id=claims.call_session_id)
     except CallSession.DoesNotExist:
         raise CallTokenError("Недействительный или истёкший call access token") from None
-    if call.status in TERMINAL_CALL_STATUSES:
+    if call.status in TERMINAL_CALL_STATUSES and not allow_terminal:
         raise CallTokenError("Звонок уже завершён")
     if claims.side == ParticipantSide.STAFF:
         valid = call.participants.filter(
@@ -193,11 +224,123 @@ def authorize_call_access_token(*, token: str) -> tuple[CallAccessClaims, CallSe
             user_id=claims.subject_id,
         ).exists()
     else:
+        # После принятия/завершения истечение invite не отзывает доступ к
+        # состоянию: TTL самого access token остаётся единственным пределом.
         invite = CallInvite.objects.filter(id=claims.subject_id, call_session=call).first()
         valid = invite is not None and (
             invite.expires_at > timezone.now()
-            or call.status in {CallStatus.ACCEPTED, CallStatus.CONNECTING, CallStatus.ACTIVE}
+            or call.status not in {CallStatus.REQUESTED, CallStatus.RINGING}
         )
     if not valid:
         raise CallTokenError("Недействительный или истёкший call access token")
     return claims, call
+
+
+def cancel_call(*, call_session: CallSession, user) -> CallSession:
+    ensure_call_access(user=user, call_session=call_session)
+    if not call_session.participants.filter(side=ParticipantSide.STAFF, user=user).exists():
+        raise CallConflict("Сотрудник не является участником звонка")
+    try:
+        # Повторная отмена идемпотентна: transition_call вернёт звонок без изменений.
+        return transition_call(
+            call_session_id=call_session.id,
+            target_status=CallStatus.CANCELLED,
+            ended_by=CallEndedBy.STAFF,
+        )
+    except CallInvalidTransition as error:
+        raise CallConflict("Звонок уже нельзя отменить") from error
+
+
+def _customer_call(*, token: str, allow_terminal: bool = False) -> CallSession:
+    claims, call = authorize_call_access_token(token=token, allow_terminal=allow_terminal)
+    if claims.side != ParticipantSide.CUSTOMER:
+        raise CallTokenError("Недействительный или истёкший call access token")
+    return call
+
+
+def accept_call_by_access_token(*, token: str) -> CallSession:
+    call = _customer_call(token=token)
+    try:
+        if call.status == CallStatus.REQUESTED:
+            call = transition_call(call_session_id=call.id, target_status=CallStatus.RINGING)
+        return transition_call(call_session_id=call.id, target_status=CallStatus.ACCEPTED)
+    except CallInvalidTransition as error:
+        raise CallConflict("Приглашение уже нельзя принять") from error
+
+
+def decline_call_by_access_token(*, token: str) -> CallSession:
+    call = _customer_call(token=token, allow_terminal=True)
+    if call.status == CallStatus.DECLINED:
+        return call
+    try:
+        return transition_call(
+            call_session_id=call.id,
+            target_status=CallStatus.DECLINED,
+            ended_by=CallEndedBy.CUSTOMER,
+        )
+    except CallInvalidTransition as error:
+        raise CallConflict("Приглашение уже нельзя отклонить") from error
+
+
+def call_state_by_access_token(*, token: str) -> CallSession:
+    _claims, call = authorize_call_access_token(token=token, allow_terminal=True)
+    return call
+
+
+def active_call_for_conversation(conversation: Conversation) -> CallSession | None:
+    return (
+        CallSession.objects.filter(
+            conversation=conversation,
+            status__in=UNFINISHED_CALL_STATUSES,
+        )
+        .select_related("initiated_by")
+        .prefetch_related("participants")
+        .first()
+    )
+
+
+# --- Web Chat: приглашение доставляется поллингом виджета по session identity ---
+
+
+def webchat_active_call(identity: ConnectionIdentity) -> CallSession | None:
+    return (
+        CallSession.objects.filter(
+            invite__connection_identity=identity,
+            status__in=UNFINISHED_CALL_STATUSES,
+        )
+        .select_related("invite", "initiated_by")
+        .first()
+    )
+
+
+@transaction.atomic
+def open_call_for_identity(*, identity: ConnectionIdentity) -> ResolvedInvite:
+    call = webchat_active_call(identity)
+    if call is None:
+        raise CallTokenError("Активное приглашение не найдено")
+    invite = CallInvite.objects.select_for_update().get(call_session=call)
+    if invite.expires_at <= timezone.now():
+        raise CallTokenError("Активное приглашение не найдено")
+    if invite.opened_at is None:
+        invite.opened_at = timezone.now()
+        invite.save(update_fields=["opened_at"])
+    access_token = issue_call_access_token(
+        call_session_id=call.id,
+        side=ParticipantSide.CUSTOMER,
+        subject_id=str(invite.id),
+    )
+    return ResolvedInvite(invite=invite, customer_access_token=access_token)
+
+
+def decline_call_for_identity(*, identity: ConnectionIdentity) -> CallSession:
+    call = webchat_active_call(identity)
+    if call is None:
+        raise CallTokenError("Активное приглашение не найдено")
+    try:
+        return transition_call(
+            call_session_id=call.id,
+            target_status=CallStatus.DECLINED,
+            ended_by=CallEndedBy.CUSTOMER,
+        )
+    except CallInvalidTransition as error:
+        raise CallConflict("Приглашение уже нельзя отклонить") from error

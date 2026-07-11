@@ -14,7 +14,18 @@ export type WebConfig = {
 
 // kind: "" — текст, "contact_request" — виджет рисует форму телефона, "contact" — клиент поделился номером.
 export type WebMessage = { id: number; author: "client" | "ai" | "operator" | "system"; kind?: string; text: string; createdAt: string };
-export type Poll = { state: "ai" | "operator" | "waiting"; lifecycle: string; messages: WebMessage[] };
+
+// Приглашение/состояние онлайн-звонка (SPEC-HUB-0013).
+export type CallInfo = {
+  callId: string;
+  status: string;
+  expiresAt?: string;
+  staffName?: string;
+  endedBy?: string | null;
+  durationSeconds?: number | null;
+};
+
+export type Poll = { state: "ai" | "operator" | "waiting"; lifecycle: string; messages: WebMessage[]; call?: CallInfo | null };
 
 export async function getConfig(channel: string): Promise<WebConfig> {
   const r = await fetch(`${API}/config/?channel=${encodeURIComponent(channel)}`);
@@ -53,6 +64,53 @@ export async function poll(token: string, since: number): Promise<Poll> {
   const r = await fetch(`${API}/messages/?since=${since}`, { headers: { Authorization: `Bearer ${token}` } });
   return r.json();
 }
+
+// --- Онлайн-звонки (SPEC-HUB-0013): доставка приглашения и клиентские действия ---
+
+const CALLS_API = "/api/v1/calls";
+
+// Виджет: получить call access token по session token (переход на страницу звонка).
+export async function openWebchatCall(sessionToken: string): Promise<{ call: CallInfo; accessToken: string } | null> {
+  const r = await fetch(`${API}/call/open/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${sessionToken}` },
+  });
+  if (!r.ok) return null;
+  return r.json();
+}
+
+// Виджет: отклонить приглашение, не открывая страницу звонка.
+export async function declineWebchatCall(sessionToken: string): Promise<boolean> {
+  const r = await fetch(`${API}/call/decline/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${sessionToken}` },
+  });
+  return r.ok;
+}
+
+// Страница звонка: обмен invite token из ссылки TG/MAX на access token.
+export async function resolveCallInvite(inviteToken: string): Promise<{ call: CallInfo; accessToken: string } | null> {
+  const r = await fetch(`${CALLS_API}/invites/resolve/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token: inviteToken }),
+  });
+  if (!r.ok) return null;
+  return r.json();
+}
+
+async function callAccessAction(action: "state" | "accept" | "decline", accessToken: string): Promise<CallInfo | null> {
+  const r = await fetch(`${CALLS_API}/access/${action}/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
+  });
+  if (!r.ok) return null;
+  return (await r.json()).call as CallInfo;
+}
+
+export const fetchCallState = (accessToken: string) => callAccessAction("state", accessToken);
+export const acceptCall = (accessToken: string) => callAccessAction("accept", accessToken);
+export const declineCall = (accessToken: string) => callAccessAction("decline", accessToken);
 
 // --- Support mode (SPEC-HUB-0010 §7): authenticated in-product chat ---
 

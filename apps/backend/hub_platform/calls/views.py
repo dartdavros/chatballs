@@ -6,10 +6,15 @@ from rest_framework.views import APIView
 
 from hub_platform.calls.errors import CallAccessDenied, CallConflict, CallTokenError
 from hub_platform.calls.models import CallSession
-from hub_platform.calls.permissions import ensure_call_access
-from hub_platform.calls.serializers import call_payload, public_invite_payload
+from hub_platform.calls.permissions import ensure_call_access, ensure_conversation_call_access
+from hub_platform.calls.serializers import call_payload, public_call_state_payload, public_invite_payload
 from hub_platform.calls.services import (
+    accept_call_by_access_token,
+    active_call_for_conversation,
+    call_state_by_access_token,
+    cancel_call,
     create_call_request,
+    decline_call_by_access_token,
     issue_staff_access_token,
     resolve_invite,
 )
@@ -92,6 +97,47 @@ class StaffAccessTokenView(APIView):
         return _token_response({"accessToken": token})
 
 
+class CallCancelView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request: Request, call_session_id) -> Response:
+        try:
+            call = _call_queryset().get(id=call_session_id)
+            cancel_call(call_session=call, user=request.user)
+        except CallSession.DoesNotExist:
+            return Response({"detail": "Звонок не найден"}, status=404)
+        except CallAccessDenied as error:
+            return Response({"detail": str(error)}, status=403)
+        except CallConflict as error:
+            return Response({"detail": str(error)}, status=409)
+        call = _call_queryset().get(id=call_session_id)
+        record_audit_event(
+            action="calls.cancelled",
+            actor=request.user,
+            organization=call.organization,
+            object_type="CallSession",
+            object_id=str(call.id),
+            payload={"conversation_id": call.conversation_id},
+            request=request,
+        )
+        return Response({"call": call_payload(call)})
+
+
+class ConversationActiveCallView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request, conversation_id: int) -> Response:
+        try:
+            conversation = Conversation.objects.select_related("channel").get(id=conversation_id)
+            ensure_conversation_call_access(user=request.user, conversation=conversation)
+        except Conversation.DoesNotExist:
+            return Response({"detail": "Диалог не найден"}, status=404)
+        except CallAccessDenied as error:
+            return Response({"detail": str(error)}, status=403)
+        call = active_call_for_conversation(conversation)
+        return Response({"call": call_payload(call) if call else None})
+
+
 class InviteResolveView(APIView):
     authentication_classes: list = []
     permission_classes = [AllowAny]
@@ -113,3 +159,49 @@ class InviteResolveView(APIView):
                 "accessToken": resolved.customer_access_token,
             }
         )
+
+
+def _bearer_token(request: Request) -> str:
+    auth = request.headers.get("Authorization", "")
+    if auth.startswith("Bearer "):
+        return auth[7:]
+    return str(request.data.get("token", "")) if request.method == "POST" else ""
+
+
+class _CallAccessView(APIView):
+    # Клиентские действия по call access token: без Django-сессии, throttle по IP.
+    authentication_classes: list = []
+    permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "call_access"
+
+
+class CallAccessStateView(_CallAccessView):
+    def post(self, request: Request) -> Response:
+        try:
+            call = call_state_by_access_token(token=_bearer_token(request))
+        except CallTokenError:
+            return Response({"detail": "Недействительный или истёкший call access token"}, status=404)
+        return _token_response({"call": public_call_state_payload(call)})
+
+
+class CallAccessAcceptView(_CallAccessView):
+    def post(self, request: Request) -> Response:
+        try:
+            call = accept_call_by_access_token(token=_bearer_token(request))
+        except CallTokenError:
+            return Response({"detail": "Недействительный или истёкший call access token"}, status=404)
+        except CallConflict as error:
+            return Response({"detail": str(error)}, status=409)
+        return _token_response({"call": public_call_state_payload(call)})
+
+
+class CallAccessDeclineView(_CallAccessView):
+    def post(self, request: Request) -> Response:
+        try:
+            call = decline_call_by_access_token(token=_bearer_token(request))
+        except CallTokenError:
+            return Response({"detail": "Недействительный или истёкший call access token"}, status=404)
+        except CallConflict as error:
+            return Response({"detail": str(error)}, status=409)
+        return _token_response({"call": public_call_state_payload(call)})

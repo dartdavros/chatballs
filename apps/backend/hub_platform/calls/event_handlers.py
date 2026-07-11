@@ -1,0 +1,65 @@
+"""Outbox-доставка приглашения на звонок в TG/MAX (SPEC-HUB-0013 §7.2).
+
+Сырой invite token не хранится в БД и payload события: при каждой попытке
+доставки token выпускается заново, в БД пишется только hash, а ссылка
+/calls/<token> уходит клиенту кнопкой сообщения.
+"""
+
+import logging
+
+from django.conf import settings
+from django.db import transaction
+
+from hub_platform.calls.lifecycle import transition_call
+from hub_platform.calls.models import CallInvite, CallSession, CallStatus, InviteDeliveryStatus
+from hub_platform.calls.services import CALL_INVITE_SEND
+from hub_platform.calls.tokens import issue_invite_token
+from hub_platform.conversations import transports
+from hub_platform.events.handlers import register
+
+logger = logging.getLogger(__name__)
+
+INVITE_MESSAGE_TEXT = "Приглашаем вас на онлайн-звонок. Нажмите кнопку, чтобы перейти к звонку."
+
+
+class CallInviteDeliveryError(Exception):
+    pass
+
+
+@register(CALL_INVITE_SEND)
+def handle_call_invite_send(payload: dict) -> None:
+    call_session_id = payload.get("callSessionId")
+    with transaction.atomic():
+        call = (
+            # of=("self",): delivery_connection nullable → LEFT JOIN, который
+            # нельзя блокировать; блокируем только строку звонка.
+            CallSession.objects.select_for_update(of=("self",))
+            .select_related("conversation", "delivery_connection")
+            .filter(id=call_session_id)
+            .first()
+        )
+        if call is None or call.status != CallStatus.REQUESTED or call.delivery_connection is None:
+            # Уже доставлено, отменено или истекло — повтор идемпотентен.
+            return
+        invite = (
+            CallInvite.objects.select_for_update()
+            .select_related("connection_identity")
+            .get(call_session=call)
+        )
+        token, token_hash = issue_invite_token()
+        invite.token_hash = token_hash
+        invite.save(update_fields=["token_hash"])
+        url = f"{settings.HUB_PUBLIC_BASE_URL.rstrip('/')}/calls/{token}"
+        sent = transports.send_call_invite(
+            call.delivery_connection,
+            chat_id=call.conversation.external_chat_id,
+            user_id=invite.connection_identity.external_user_id,
+            text=INVITE_MESSAGE_TEXT,
+            url=url,
+        )
+        if not sent:
+            # Rollback вернёт прежний hash; outbox повторит с новым token.
+            raise CallInviteDeliveryError(f"call invite delivery failed for call {call.id}")
+        invite.delivery_status = InviteDeliveryStatus.SENT
+        invite.save(update_fields=["delivery_status"])
+        transition_call(call_session_id=call.id, target_status=CallStatus.RINGING)

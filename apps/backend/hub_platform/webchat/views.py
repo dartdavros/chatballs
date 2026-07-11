@@ -74,6 +74,46 @@ class WebchatContactView(_Public):
         return Response({"ok": True}, status=201)
 
 
+class WebchatCallOpenView(_Public):
+    def post(self, request: Request) -> Response:
+        from hub_platform.calls.errors import CallTokenError
+        from hub_platform.calls.serializers import public_invite_payload
+        from hub_platform.calls.services import open_call_for_identity
+
+        session = services.resolve_session(_token(request))
+        if session is None:
+            return Response({"detail": "Сессия не найдена"}, status=401)
+        try:
+            resolved = open_call_for_identity(identity=session.identity)
+        except CallTokenError:
+            return Response({"detail": "Активное приглашение не найдено"}, status=404)
+        response = Response(
+            {
+                "call": public_invite_payload(resolved.invite.call_session, resolved.invite.expires_at),
+                "accessToken": resolved.customer_access_token,
+            }
+        )
+        response["Cache-Control"] = "no-store"
+        return response
+
+
+class WebchatCallDeclineView(_Public):
+    def post(self, request: Request) -> Response:
+        from hub_platform.calls.errors import CallConflict, CallTokenError
+        from hub_platform.calls.services import decline_call_for_identity
+
+        session = services.resolve_session(_token(request))
+        if session is None:
+            return Response({"detail": "Сессия не найдена"}, status=401)
+        try:
+            decline_call_for_identity(identity=session.identity)
+        except CallTokenError:
+            return Response({"detail": "Активное приглашение не найдено"}, status=404)
+        except CallConflict as error:
+            return Response({"detail": str(error)}, status=409)
+        return Response({"ok": True})
+
+
 class WidgetLoaderView(View):
     def get(self, request) -> HttpResponse:
         response = HttpResponse(LOADER_JS, content_type="application/javascript; charset=utf-8")

@@ -121,3 +121,26 @@ export const closeConversation = (id: number) => api<{ conversation: ApiConversa
 // Бейдж ожидающих диалогов. ConversationStatsView сейчас sales-only (SPEC §12:
 // support-метрики — отдельный endpoint); department-параметр backend не использует.
 export const fetchWaitingCount = () => api<{ waiting: number }>("/api/v1/conversations/stats/").then((r) => r.waiting);
+
+// --- Онлайн-звонки (SPEC-HUB-0013): запрос из диалога, ожидание, отмена ---
+
+export type ApiCall = {
+  id: string;
+  conversationId: number;
+  status: "REQUESTED" | "RINGING" | "ACCEPTED" | "CONNECTING" | "ACTIVE" | "DECLINED" | "CANCELLED" | "MISSED" | "ENDED" | "FAILED" | "EXPIRED";
+  requestedAt: string;
+  acceptedAt: string | null;
+  connectedAt: string | null;
+  endedAt: string | null;
+  endedBy: string | null;
+  failureCode: string | null;
+  durationSeconds: number | null;
+};
+
+// Запрос звонка: при режиме AI backend атомарно выполняет takeover (§6).
+export const requestCall = (conversationId: number) =>
+  api<{ call: ApiCall; staffAccessToken: string }>(`/api/v1/calls/conversations/${conversationId}/`, { method: "POST" }).then((r) => r.call);
+export const fetchActiveCall = (conversationId: number) =>
+  api<{ call: ApiCall | null }>(`/api/v1/calls/conversations/${conversationId}/active/`).then((r) => r.call);
+export const fetchCall = (callId: string) => api<{ call: ApiCall }>(`/api/v1/calls/${callId}/`).then((r) => r.call);
+export const cancelCall = (callId: string) => api<{ call: ApiCall }>(`/api/v1/calls/${callId}/cancel/`, { method: "POST" }).then((r) => r.call);

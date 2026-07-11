@@ -37,5 +37,21 @@ def public_invite_payload(call: CallSession, expires_at) -> dict:
         "callId": str(call.id),
         "status": call.status,
         "expiresAt": expires_at.isoformat(),
+        "staffName": _staff_label(call),
         "capabilities": {"audio": True, "video": True},
+    }
+
+
+def _staff_label(call: CallSession) -> str:
+    return getattr(call.initiated_by, "full_name", "") or "Оператор"
+
+
+def public_call_state_payload(call: CallSession) -> dict:
+    # Клиентская страница звонка: только lifecycle, без внутренних ID и данных диалога.
+    return {
+        "callId": str(call.id),
+        "status": call.status,
+        "staffName": _staff_label(call),
+        "endedBy": call.ended_by or None,
+        "durationSeconds": call.duration_seconds,
     }

@@ -20,7 +20,8 @@ class InternalCallApiTests(CallTestCase):
 
         self.assertEqual(response.status_code, 201)
         payload = response.json()
-        self.assertEqual(payload["call"]["status"], CallStatus.REQUESTED)
+        # WEB-подключение: доставка поллингом виджета, звонок сразу RINGING.
+        self.assertEqual(payload["call"]["status"], CallStatus.RINGING)
         self.assertNotIn("inviteToken", payload)
         self.assertNotIn("tokenHash", json.dumps(payload))
         self.assertEqual(response["Cache-Control"], "no-store")
@@ -69,7 +70,7 @@ class PublicInviteApiTests(CallTestCase):
         self.assertEqual(response["Cache-Control"], "no-store")
         self.assertEqual(
             set(payload["call"]),
-            {"callId", "status", "expiresAt", "capabilities"},
+            {"callId", "status", "expiresAt", "staffName", "capabilities"},
         )
         self.assertNotIn("conversation", json.dumps(payload))
         self.assertNotIn(created.invite_token, json.dumps(payload))

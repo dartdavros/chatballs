@@ -32,6 +32,13 @@ _CONTACT_ACK = {
     IntegrationProvider.WEB: _web_noop,
 }
 
+# Приглашение на онлайн-звонок: сообщение с кнопкой-ссылкой /calls/<token>
+# (SPEC-HUB-0013 §7.2). Web доставляется поллингом виджета, отправки нет.
+_CALL_INVITE = {
+    IntegrationProvider.MAX: _max.send_call_invite,
+    IntegrationProvider.TELEGRAM: _telegram.send_call_invite,
+}
+
 # Провайдеры-мессенджеры, у которых есть транспорт приёма/отправки.
 SUPPORTED_PROVIDERS = tuple(_POLL.keys())
 
@@ -50,3 +57,10 @@ def send_contact_request(integration, *, chat_id: str, user_id: str, text: str) 
 
 def send_contact_ack(integration, *, chat_id: str, user_id: str, text: str) -> bool:
     return _CONTACT_ACK[integration.provider](integration, chat_id=chat_id, user_id=user_id, text=text)
+
+
+def send_call_invite(integration, *, chat_id: str, user_id: str, text: str, url: str) -> bool:
+    sender = _CALL_INVITE.get(integration.provider)
+    if sender is None:
+        return False
+    return sender(integration, chat_id=chat_id, user_id=user_id, text=text, url=url)

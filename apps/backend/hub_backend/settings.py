@@ -184,7 +184,9 @@ HUB_PUBLIC_BASE_URL = os.environ.get("HUB_PUBLIC_BASE_URL", "http://localhost:80
 # P2P calls: opaque invitation lifetime and short-lived signaling/media access.
 HUB_CALL_INVITE_TTL_SECONDS = int(os.environ.get("HUB_CALL_INVITE_TTL_SECONDS", str(5 * 60)))
 HUB_CALL_ACCESS_TTL_SECONDS = int(os.environ.get("HUB_CALL_ACCESS_TTL_SECONDS", str(60 * 60)))
-if HUB_CALL_INVITE_TTL_SECONDS <= 0 or HUB_CALL_ACCESS_TTL_SECONDS <= 0:
+# Grace period: принятый звонок без установленного соединения закрывается FAILED.
+HUB_CALL_CONNECT_GRACE_SECONDS = int(os.environ.get("HUB_CALL_CONNECT_GRACE_SECONDS", str(2 * 60)))
+if HUB_CALL_INVITE_TTL_SECONDS <= 0 or HUB_CALL_ACCESS_TTL_SECONDS <= 0 or HUB_CALL_CONNECT_GRACE_SECONDS <= 0:
     raise ImproperlyConfigured("HUB call token TTL values must be positive")
 STORAGES = {
     "default": {
@@ -206,6 +208,8 @@ _THROTTLE_RATES = {
     "password_reset": "5/min",
     "totp": "10/min",
     "call_invite": "30/min",
+    # Страница звонка поллит состояние по access token — лимит с запасом.
+    "call_access": "120/min",
 }
 if TESTING:
     _THROTTLE_RATES = {scope: None for scope in _THROTTLE_RATES}
