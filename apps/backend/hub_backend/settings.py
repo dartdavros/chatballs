@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "hub_platform.health",
     "hub_platform.events",
     "hub_platform.support",
+    "hub_platform.calls",
 ]
 
 MIDDLEWARE = [
@@ -179,6 +180,12 @@ MEDIA_URL = "media/"
 
 # Публичный адрес Hub: абсолютные ссылки, уходящие клиентам (download вложений).
 HUB_PUBLIC_BASE_URL = os.environ.get("HUB_PUBLIC_BASE_URL", "http://localhost:8000")
+
+# P2P calls: opaque invitation lifetime and short-lived signaling/media access.
+HUB_CALL_INVITE_TTL_SECONDS = int(os.environ.get("HUB_CALL_INVITE_TTL_SECONDS", str(5 * 60)))
+HUB_CALL_ACCESS_TTL_SECONDS = int(os.environ.get("HUB_CALL_ACCESS_TTL_SECONDS", str(60 * 60)))
+if HUB_CALL_INVITE_TTL_SECONDS <= 0 or HUB_CALL_ACCESS_TTL_SECONDS <= 0:
+    raise ImproperlyConfigured("HUB call token TTL values must be positive")
 STORAGES = {
     "default": {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
@@ -194,7 +201,12 @@ STORAGES = {
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Лимиты на чувствительные эндпоинты (брутфорс/злоупотребление). В тестах отключены.
-_THROTTLE_RATES = {"login": "10/min", "password_reset": "5/min", "totp": "10/min"}
+_THROTTLE_RATES = {
+    "login": "10/min",
+    "password_reset": "5/min",
+    "totp": "10/min",
+    "call_invite": "30/min",
+}
 if TESTING:
     _THROTTLE_RATES = {scope: None for scope in _THROTTLE_RATES}
 

@@ -30,6 +30,11 @@ def _operator_label(operator) -> str:
 def claim_conversation(*, conversation_id: int, operator) -> Conversation:
     # Атомарный перехват у AI (ADR-HUB-0003): только один оператор забирает диалог.
     conversation = Conversation.objects.select_for_update().get(id=conversation_id)
+    return claim_locked_conversation(conversation=conversation, operator=operator)
+
+
+def claim_locked_conversation(*, conversation: Conversation, operator) -> Conversation:
+    """Claim an already locked conversation inside the caller's transaction."""
     if (
         conversation.control_mode == ControlMode.HUMAN
         and conversation.assigned_operator_id

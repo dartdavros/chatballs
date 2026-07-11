@@ -3,14 +3,18 @@ import urllib.request
 from unittest import mock
 
 from django.test import TestCase
-from rest_framework.test import APIClient
 
 from hub_platform.identity.bootstrap import bootstrap_edevs_owner
 from hub_platform.identity.models import Organization
 from hub_platform.integrations import checks
 from hub_platform.integrations.models import Integration, IntegrationProvider, IntegrationStatus
 from hub_platform.integrations.serializers import integration_payload
-from hub_platform.integrations.services import IntegrationInput, create_integration, test_integration, update_integration
+from hub_platform.integrations.services import (
+    IntegrationInput,
+    create_integration,
+    test_integration as run_integration_test,
+    update_integration,
+)
 
 
 def _fake_response(status: int, body: dict):
@@ -38,19 +42,19 @@ class WebIntegrationCheckTests(TestCase):
         )
 
     def test_web_without_channel_fails(self) -> None:
-        integration = test_integration(integration=self._web("Виджет", channel=None))
+        integration = run_integration_test(integration=self._web("Виджет", channel=None))
         self.assertEqual(integration.status, IntegrationStatus.ERROR)
         self.assertIn("не привязано к каналу", integration.last_error)
 
     def test_web_bound_to_channel_is_ok(self) -> None:
-        integration = test_integration(integration=self._web("Виджет", channel=self.channel))
+        integration = run_integration_test(integration=self._web("Виджет", channel=self.channel))
         self.assertEqual(integration.status, IntegrationStatus.OK)
         self.assertEqual(integration.last_error, "")
 
     def test_web_shadowed_by_another_connection_fails(self) -> None:
         # Два WEB-подключения на один канал: виджет обслуживает первое по сортировке.
         self._web("A-виджет", channel=self.channel)
-        shadowed = test_integration(integration=self._web("B-виджет", channel=self.channel))
+        shadowed = run_integration_test(integration=self._web("B-виджет", channel=self.channel))
         self.assertEqual(shadowed.status, IntegrationStatus.ERROR)
         self.assertIn("другое WEB-подключение", shadowed.last_error)
 

@@ -21,4 +21,5 @@ urlpatterns = [
     path("api/v1/webchat/", include("hub_platform.webchat.urls")),
     path("api/v1/health/", include("hub_platform.health.urls")),
     path("api/v1/support/", include("hub_platform.support.urls")),
+    path("api/v1/calls/", include("hub_platform.calls.urls")),
 ]
