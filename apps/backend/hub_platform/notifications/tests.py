@@ -112,6 +112,28 @@ class DeliveryTests(NotifierTestBase):
         send.assert_not_called()  # у оператора нет привязки; owner не адресат
 
 
+class PollerSelectionTests(NotifierTestBase):
+    """Клиентские боты (без purpose) поллятся; сервисные — нет.
+
+    Регрессия: JSON-exclude по отсутствующему ключу отбрасывал в SQL и строки
+    без ключа purpose — клиентские TG/MAX боты переставали поллиться."""
+
+    def test_client_bot_still_polled_notifier_excluded(self) -> None:
+        from hub_platform.channels.models import Channel
+        from hub_platform.conversations import poller
+
+        channel = Channel.objects.create(organization=self.organization, code="foxray-sales", name="FoxRay — продажи")
+        client_bot = Integration.objects.create(
+            organization=self.organization, kind=IntegrationKind.MESSENGER,
+            provider=IntegrationProvider.TELEGRAM, name="client-bot", secret="token", channel=channel,
+        )
+        with mock.patch("hub_platform.conversations.poller.transports.poll", return_value=([], "")) as poll:
+            poller.poll_all_messengers()
+        polled_ids = [call.args[0].id for call in poll.call_args_list]
+        self.assertIn(client_bot.id, polled_ids)
+        self.assertNotIn(self.integration.id, polled_ids)
+
+
 class BindingApiTests(NotifierTestBase):
     def setUp(self) -> None:
         super().setUp()
@@ -136,3 +158,17 @@ class BindingApiTests(NotifierTestBase):
         removed = self.client.delete(f"/api/v1/notifications/messenger-bindings/{self.integration.id}/")
         self.assertEqual(removed.status_code, 200)
         self.assertFalse(MessengerBinding.objects.exists())
+
+    def test_push_types_patch_and_listing(self) -> None:
+        MessengerBinding.objects.create(user=self.owner, integration=self.integration, external_chat_id="777")
+        listed = self.client.get("/api/v1/notifications/messenger-bindings/").json()
+        self.assertIn({"code": NotificationType.DIALOG_WAITING, "label": "Диалог ждёт оператора"}, listed["availableTypes"])
+        self.assertIn(NotificationType.DIALOG_WAITING, listed["items"][0]["pushTypes"])
+
+        patched = self.client.patch(
+            f"/api/v1/notifications/messenger-bindings/{self.integration.id}/",
+            data={"pushTypes": [NotificationType.PAYMENT_RECEIVED, "NOT_A_TYPE"]},
+            format="json",
+        )
+        self.assertEqual(patched.status_code, 200)
+        self.assertEqual(patched.json()["pushTypes"], [NotificationType.PAYMENT_RECEIVED])

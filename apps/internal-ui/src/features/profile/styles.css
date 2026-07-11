@@ -297,3 +297,45 @@
   font-size: 13px;
   font-weight: 600;
 }
+
+.profile-notifications-block + .profile-notifications-block .profile-notifications-row {
+  border-top: 1px solid #f0f0f0;
+}
+
+.profile-notifications-bind {
+  display: inline-flex;
+  align-items: center;
+  height: 34px;
+  padding: 0 16px;
+  border-radius: 8px;
+  background: #1677ff;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.profile-notifications-bind:hover {
+  background: #0958d9;
+  color: #ffffff;
+}
+
+.profile-notifications-types {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  padding: 2px 0 10px;
+}
+
+.profile-notifications-types label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #595959;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.profile-notifications-types input {
+  accent-color: #1677ff;
+}

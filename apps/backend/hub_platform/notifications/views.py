@@ -4,10 +4,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from hub_platform.notifications.binding import deep_link, issue_binding_code, notifier_integrations
-from hub_platform.notifications.models import MessengerBinding, NotificationRead
+from hub_platform.notifications.models import MessengerBinding, NotificationRead, NotificationType
 from hub_platform.notifications.selectors import unread_for, visible_for
 from hub_platform.notifications.serializers import notification_payload
-from hub_platform.notifications.services import mark_read
+from hub_platform.notifications.services import TYPE_META, mark_read
 
 _LIST_LIMIT = 50
 
@@ -35,21 +35,26 @@ class MessengerBindingListView(APIView):
 
     def get(self, request: Request) -> Response:
         organization_id = request.user.employee_profile.organization_id
-        bound_ids = set(
-            MessengerBinding.objects.filter(user=request.user, integration__organization_id=organization_id)
-            .values_list("integration_id", flat=True)
-        )
-        items = [
-            {
-                "integrationId": integration.id,
-                "provider": integration.provider,
-                "name": integration.name,
-                "botUsername": integration.config.get("bot_username", ""),
-                "bound": integration.id in bound_ids,
-            }
-            for integration in notifier_integrations(organization_id)
-        ]
-        return Response({"items": items})
+        bindings = {
+            binding.integration_id: binding
+            for binding in MessengerBinding.objects.filter(user=request.user, integration__organization_id=organization_id)
+        }
+        items = []
+        for integration in notifier_integrations(organization_id):
+            binding = bindings.get(integration.id)
+            items.append(
+                {
+                    "integrationId": integration.id,
+                    "provider": integration.provider,
+                    "name": integration.name,
+                    "botUsername": integration.config.get("bot_username", ""),
+                    "bound": binding is not None,
+                    "pushTypes": binding.push_types if binding else [],
+                }
+            )
+        # Реестр типов для чекбоксов в профиле (порядок — как в TYPE_META).
+        available = [{"code": code, "label": NotificationType(code).label} for code in TYPE_META]
+        return Response({"items": items, "availableTypes": available})
 
 
 class MessengerBindingDetailView(APIView):
@@ -72,6 +77,18 @@ class MessengerBindingDetailView(APIView):
             },
             status=201,
         )
+
+    def patch(self, request: Request, integration_id: int) -> Response:
+        """Обновить типы уведомлений, доставляемые в мессенджер."""
+        binding = MessengerBinding.objects.filter(user=request.user, integration_id=integration_id).first()
+        if binding is None:
+            return Response({"detail": "Привязка не найдена"}, status=404)
+        types = request.data.get("pushTypes")
+        if not isinstance(types, list):
+            return Response({"detail": "pushTypes must be a list"}, status=400)
+        binding.push_types = [t for t in types if t in NotificationType.values]
+        binding.save(update_fields=["push_types"])
+        return Response({"pushTypes": binding.push_types})
 
     def delete(self, request: Request, integration_id: int) -> Response:
         MessengerBinding.objects.filter(user=request.user, integration_id=integration_id).delete()

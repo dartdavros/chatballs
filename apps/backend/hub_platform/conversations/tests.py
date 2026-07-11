@@ -131,6 +131,20 @@ class TransportNormalizeTests(TestCase):
         self.assertEqual(inbound.phone, "+7 999 111-22-33")
         self.assertEqual(inbound.username, "maria")
 
+    def test_max_bot_started_becomes_start_command_with_payload(self) -> None:
+        update = {
+            "update_type": "bot_started",
+            "timestamp": 1573226679188,
+            "chat_id": 555,
+            "user": {"user_id": 42, "name": "Иван", "username": "ivan"},
+            "payload": "bind-code-123",
+        }
+        inbound = max_transport._normalize(update)
+        self.assertIsNotNone(inbound)
+        self.assertEqual(inbound.text, "/start bind-code-123")
+        self.assertEqual(inbound.chat_id, "555")
+        self.assertEqual(inbound.user_id, "42")
+
     def test_max_text_message_without_contact(self) -> None:
         update = {
             "update_type": "message_created",

@@ -9,12 +9,16 @@ logger = logging.getLogger(__name__)
 
 def poll_all_messengers() -> int:
     """Poll every messenger connection bound to a channel; ingest inbound. Returns count."""
-    integrations = (
-        Integration.objects.filter(provider__in=transports.SUPPORTED_PROVIDERS, channel__isnull=False)
-        .exclude(secret="")
-        # Сервисные боты уведомлений поллятся отдельно (notifications.binding).
-        .exclude(config__purpose="notifications")
-    )
+    # Сервисные боты уведомлений поллятся отдельно (notifications.binding).
+    # Фильтр по config — в Python: JSON-lookup в .exclude() отбрасывает и строки
+    # без ключа purpose (NULL в SQL), т.е. все клиентские боты.
+    integrations = [
+        integration
+        for integration in Integration.objects.filter(
+            provider__in=transports.SUPPORTED_PROVIDERS, channel__isnull=False
+        ).exclude(secret="")
+        if integration.config.get("purpose") != "notifications"
+    ]
     total = 0
     for integration in integrations:
         messages, new_marker = transports.poll(integration)

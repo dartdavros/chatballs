@@ -46,9 +46,32 @@ def _contact_phone(inner: dict, msg: dict) -> str:
     return ""
 
 
+def _bot_started(update: dict) -> InboundMessage | None:
+    # Нажатие «Начать» (в т.ч. по deep-link): payload из ?start=<...> приходит
+    # не сообщением, а отдельным апдейтом bot_started. Нормализуем в «/start
+    # <payload>» — как присылает Telegram, дальше единая обработка.
+    sender = update.get("user") or {}
+    user_id = first(sender, "user_id", "userId", "id")
+    chat_id = first(update, "chat_id", "chatId")
+    external_id = first(update, "update_id", "updateId", "timestamp")
+    if user_id is None or external_id is None:
+        return None
+    payload = str(first(update, "payload", default="") or "")
+    return InboundMessage(
+        external_id=str(external_id),
+        user_id=str(user_id),
+        chat_id="" if chat_id is None else str(chat_id),
+        text=f"/start {payload}".strip(),
+        display_name=str(first(sender, "name", "display_name", default="")),
+        username=str(first(sender, "username", "user_name", default="")),
+    )
+
+
 def _normalize(update: dict) -> InboundMessage | None:
     logger.info("MAX raw update: %s", json.dumps(update, ensure_ascii=False))
     update_type = update.get("update_type") or update.get("updateType")
+    if update_type == "bot_started":
+        return _bot_started(update)
     if update_type not in (None, "message_created"):
         return None
     msg = update.get("message") or update.get("payload") or {}
