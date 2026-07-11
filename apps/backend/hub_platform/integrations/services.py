@@ -114,12 +114,29 @@ _CHECKS = {
 }
 
 
+def _check_web(integration: Integration) -> tuple[bool, str, dict]:
+    """Web-виджет обслуживается нашим же backend'ом — внешнего API нет.
+    Проверяем конфигурацию: привязку к каналу и что именно это подключение
+    отдаётся виджету (webchat берёт первое WEB-подключение канала)."""
+    if integration.channel_id is None:
+        return False, "Подключение не привязано к каналу — виджет не активен", {}
+    from hub_platform.webchat.services import web_connection_for_channel
+
+    active = web_connection_for_channel(integration.channel.code)
+    if active is None or active.id != integration.id:
+        return False, "Для этого канала виджет обслуживает другое WEB-подключение", {}
+    return True, f"Web-виджет активен · канал «{integration.channel.name}»", {}
+
+
 def test_integration(*, integration: Integration) -> Integration:
-    check = _CHECKS.get(integration.provider)
-    if check is None:
-        ok, detail, meta = False, "Проверка для этого типа подключения не поддерживается", {}
+    if integration.provider == IntegrationProvider.WEB:
+        ok, detail, meta = _check_web(integration)
     else:
-        ok, detail, meta = check(secret=integration.secret, base_url=str(integration.config.get("base_url", "")), proxy_url=str(integration.config.get("proxy_url", "")))
+        check = _CHECKS.get(integration.provider)
+        if check is None:
+            ok, detail, meta = False, "Проверка для этого типа подключения не поддерживается", {}
+        else:
+            ok, detail, meta = check(secret=integration.secret, base_url=str(integration.config.get("base_url", "")), proxy_url=str(integration.config.get("proxy_url", "")))
     integration.status = IntegrationStatus.OK if ok else IntegrationStatus.ERROR
     integration.last_error = "" if ok else detail
     integration.last_checked_at = timezone.now()

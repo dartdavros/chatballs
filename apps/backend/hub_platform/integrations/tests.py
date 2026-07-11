@@ -10,7 +10,7 @@ from hub_platform.identity.models import Organization
 from hub_platform.integrations import checks
 from hub_platform.integrations.models import Integration, IntegrationProvider, IntegrationStatus
 from hub_platform.integrations.serializers import integration_payload
-from hub_platform.integrations.services import IntegrationInput, create_integration, update_integration
+from hub_platform.integrations.services import IntegrationInput, create_integration, test_integration, update_integration
 
 
 def _fake_response(status: int, body: dict):
@@ -18,6 +18,41 @@ def _fake_response(status: int, body: dict):
     response.status = status
     response.read.return_value = json.dumps(body).encode("utf-8")
     return response
+
+
+class WebIntegrationCheckTests(TestCase):
+    """«Проверить» для Web-виджета: внешнего API нет — валидируем привязку к
+    каналу и что виджет канала обслуживается именно этим подключением."""
+
+    def setUp(self) -> None:
+        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
+        self.organization = Organization.objects.get(slug="edevs")
+        from hub_platform.channels.models import Channel
+
+        self.channel = Channel.objects.create(organization=self.organization, code="edevs", name="Edevs — главный сайт")
+
+    def _web(self, name: str, channel=None) -> Integration:
+        return create_integration(
+            organization=self.organization,
+            data=IntegrationInput(provider=IntegrationProvider.WEB, name=name, channel_id=channel.id if channel else None),
+        )
+
+    def test_web_without_channel_fails(self) -> None:
+        integration = test_integration(integration=self._web("Виджет", channel=None))
+        self.assertEqual(integration.status, IntegrationStatus.ERROR)
+        self.assertIn("не привязано к каналу", integration.last_error)
+
+    def test_web_bound_to_channel_is_ok(self) -> None:
+        integration = test_integration(integration=self._web("Виджет", channel=self.channel))
+        self.assertEqual(integration.status, IntegrationStatus.OK)
+        self.assertEqual(integration.last_error, "")
+
+    def test_web_shadowed_by_another_connection_fails(self) -> None:
+        # Два WEB-подключения на один канал: виджет обслуживает первое по сортировке.
+        self._web("A-виджет", channel=self.channel)
+        shadowed = test_integration(integration=self._web("B-виджет", channel=self.channel))
+        self.assertEqual(shadowed.status, IntegrationStatus.ERROR)
+        self.assertIn("другое WEB-подключение", shadowed.last_error)
 
 
 class ProxyConfigTests(TestCase):

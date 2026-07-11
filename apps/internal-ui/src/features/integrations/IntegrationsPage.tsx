@@ -136,7 +136,7 @@ export function IntegrationsPage() {
                           </td>
                           <td className="row-actions">
                             <div className="ai-row-actions">
-                              <Button variant="secondary" icon="refresh" iconSize={14} disabled={!meta.testable || testingId === item.id} onClick={() => test(item)}>
+                              <Button variant="secondary" icon="refresh" iconSize={14} disabled={!meta.checkable || testingId === item.id} onClick={() => test(item)}>
                                 {testingId === item.id ? "Проверка…" : "Проверить"}
                               </Button>
                               <Dropdown

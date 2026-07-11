@@ -154,6 +154,11 @@
   border-radius: 10px;
 }
 
+/* Карточки отделов идут друг под другом — с зазором. */
+.sales-card + .sales-card {
+  margin-top: 16px;
+}
+
 .sales-head {
   display: flex;
   align-items: flex-start;
