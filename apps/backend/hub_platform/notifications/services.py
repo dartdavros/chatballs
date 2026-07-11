@@ -2,6 +2,8 @@ from datetime import timedelta
 
 from django.utils import timezone
 
+from hub_platform.events.services import DomainEvent, enqueue_event
+from hub_platform.notifications.delivery import NOTIFICATION_CREATED
 from hub_platform.notifications.models import (
     Notification,
     NotificationLevel,
@@ -42,7 +44,7 @@ def notify(
     ).exists():
         return None
     meta = TYPE_META.get(type, {})
-    return Notification.objects.create(
+    notification = Notification.objects.create(
         organization=organization,
         type=type,
         audience=audience,
@@ -56,6 +58,16 @@ def notify(
         source_id=str(source_id) if source_id else "",
         dedup_key=dedup_key,
     )
+    # Доставка в мессенджеры (привязанные сотрудники) — асинхронно через outbox.
+    enqueue_event(
+        DomainEvent(
+            aggregate_type="Notification",
+            aggregate_id=str(notification.id),
+            event_type=NOTIFICATION_CREATED,
+            payload={"notificationId": notification.id},
+        )
+    )
+    return notification
 
 
 def mark_read(*, user, ids: list[int] | None = None, all_unread: bool = False) -> int:

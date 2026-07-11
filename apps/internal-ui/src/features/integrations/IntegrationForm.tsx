@@ -20,6 +20,7 @@ export function IntegrationForm({ initial, onClose, onSaved }: { initial: Integr
   const [defaultModel, setDefaultModel] = useState(initial?.config.defaultModel ?? "");
   const [proxyUrl, setProxyUrl] = useState(initial?.config.proxyUrl ?? "");
   const [channelId, setChannelId] = useState(initial?.channel ? String(initial.channel.id) : "");
+  const [isNotifier, setIsNotifier] = useState(initial?.config.purpose === "notifications");
   const [channels, setChannels] = useState<ChannelOption[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -50,8 +51,9 @@ export function IntegrationForm({ initial, onClose, onSaved }: { initial: Integr
     if (!ready) return;
     setSubmitting(true);
     setError(null);
-    const config = { baseUrl: baseUrl.trim(), defaultModel: defaultModel.trim(), proxyUrl: proxyUrl.trim() };
-    const channel = isMessenger ? { channelId: channelId ? Number(channelId) : null } : {};
+    const config = { baseUrl: baseUrl.trim(), defaultModel: defaultModel.trim(), proxyUrl: proxyUrl.trim(), purpose: isNotifier ? "notifications" : "" };
+    // Сервисный бот уведомлений не привязывается к каналу продаж.
+    const channel = isMessenger ? { channelId: channelId && !isNotifier ? Number(channelId) : null } : {};
     try {
       if (isEdit) {
         await api(`/api/v1/integrations/${initial.id}/`, {
@@ -100,7 +102,13 @@ export function IntegrationForm({ initial, onClose, onSaved }: { initial: Integr
         {isEdit && initial.config.botUsername && (
           <FormField label="Бот" value={`${initial.config.botName || initial.config.botUsername}${initial.config.botUsername ? ` · @${initial.config.botUsername}` : ""}${initial.config.botId ? ` · id ${initial.config.botId}` : ""}`} />
         )}
-        {isMessenger && (
+        {isMessenger && !isWeb && (
+          <label className="integration-notifier-toggle">
+            <input type="checkbox" checked={isNotifier} onChange={(event) => setIsNotifier(event.target.checked)} />
+            Бот уведомлений для сотрудников (не участвует в продажах, привязка в профиле)
+          </label>
+        )}
+        {isMessenger && !isNotifier && (
           <SelectField
             label="Канал обработки"
             value={channelId}

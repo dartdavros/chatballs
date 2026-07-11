@@ -9,6 +9,7 @@ from hub_platform.conversations.poller import poll_all_messengers
 from hub_platform.events.handlers import dispatch
 from hub_platform.events.models import OutboxStatus
 from hub_platform.events.services import claim_next_outbox_event, mark_retry
+from hub_platform.notifications.binding import poll_notifier_bots
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +45,10 @@ class Command(BaseCommand):
                     poll_all_messengers()
                 except Exception:  # pragma: no cover
                     logger.exception("Messenger polling cycle failed")
+                try:
+                    poll_notifier_bots()
+                except Exception:  # pragma: no cover
+                    logger.exception("Notifier polling cycle failed")
             if now - last_maintenance >= MAINTENANCE_INTERVAL:
                 last_maintenance = now
                 try:

@@ -16,6 +16,7 @@ def integration_payload(integration: Integration) -> dict[str, object]:
             "botId": integration.config.get("bot_id", ""),
             "botUsername": integration.config.get("bot_username", ""),
             "botName": integration.config.get("bot_name", ""),
+            "purpose": integration.config.get("purpose", ""),
         },
         "channel": {"id": integration.channel.id, "code": integration.channel.code, "name": integration.channel.name} if integration.channel_id else None,
         "status": integration.status,

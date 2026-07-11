@@ -61,3 +61,40 @@ class NotificationRead(models.Model):
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=["notification", "user"], name="uniq_notification_read")]
+
+
+def default_push_types() -> list[str]:
+    # Дефолт: диалоговые события (новый диалог / ждёт оператора / новое сообщение).
+    return [NotificationType.DIALOG_WAITING, NotificationType.DIALOG_NEW_MESSAGE]
+
+
+class MessengerBinding(models.Model):
+    """Привязка сотрудника к сервисному боту уведомлений (TG/MAX).
+
+    Создаётся при подтверждении одноразового кода из профиля; уведомления
+    доставляются в external_chat_id через транспорт интеграции."""
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="messenger_bindings")
+    integration = models.ForeignKey("integrations.Integration", on_delete=models.CASCADE, related_name="messenger_bindings")
+    external_chat_id = models.CharField(max_length=128)
+    # Типы уведомлений, которые доставляются в мессенджер (подмножество NotificationType).
+    push_types = models.JSONField(default=default_push_types, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["integration", "user"], name="uniq_binding_integration_user")]
+
+    def __str__(self) -> str:
+        return f"binding:{self.user_id}/{self.integration_id}"
+
+
+class MessengerBindingCode(models.Model):
+    # Одноразовый код привязки (deep-link ?start=<code>); TTL ~10 минут.
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="messenger_binding_codes")
+    integration = models.ForeignKey("integrations.Integration", on_delete=models.CASCADE, related_name="messenger_binding_codes")
+    code = models.CharField(max_length=32, unique=True)
+    expires_at = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return f"binding-code:{self.user_id}/{self.integration_id}"

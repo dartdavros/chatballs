@@ -238,3 +238,62 @@
   font-weight: 600;
 }
 
+
+/* Уведомления в мессенджер: привязка к сервисному боту (TG/MAX). */
+.profile-notifications-note {
+  margin: 0 0 10px;
+  color: #8c8c8c;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.profile-notifications-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid #f0f0f0;
+}
+
+.profile-notifications-row > div:first-child strong {
+  display: block;
+  font-size: 13.5px;
+}
+
+.profile-notifications-row > div:first-child small {
+  color: #8c8c8c;
+  font-size: 12px;
+}
+
+.profile-notifications-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.profile-notifications-actions code {
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: #f5f5f5;
+  font-size: 12px;
+}
+
+.profile-notifications-status {
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.profile-notifications-status.ok {
+  color: #389e0d;
+}
+
+.profile-notifications-status.wait {
+  color: #d48806;
+}
+
+.profile-notifications-link {
+  color: #1677ff;
+  font-size: 13px;
+  font-weight: 600;
+}

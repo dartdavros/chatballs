@@ -12,6 +12,8 @@ def poll_all_messengers() -> int:
     integrations = (
         Integration.objects.filter(provider__in=transports.SUPPORTED_PROVIDERS, channel__isnull=False)
         .exclude(secret="")
+        # Сервисные боты уведомлений поллятся отдельно (notifications.binding).
+        .exclude(config__purpose="notifications")
     )
     total = 0
     for integration in integrations:

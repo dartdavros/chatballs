@@ -10,7 +10,8 @@ export type Integration = {
   provider: IntegrationProvider;
   name: string;
   hasSecret: boolean;
-  config: { baseUrl: string; defaultModel: string; proxyUrl: string; botId: string; botUsername: string; botName: string };
+  // purpose="notifications" — сервисный бот уведомлений сотрудников (не привязан к каналу продаж).
+  config: { baseUrl: string; defaultModel: string; proxyUrl: string; botId: string; botUsername: string; botName: string; purpose: string };
   channel: { id: number; code: string; name: string } | null;
   status: IntegrationStatus;
   lastCheckedAt: string | null;

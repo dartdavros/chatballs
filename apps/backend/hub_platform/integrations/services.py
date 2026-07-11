@@ -53,6 +53,10 @@ def _normalized_config(provider: str, config: dict) -> dict:
         bot_username = str(config.get("botUsername", config.get("bot_username", ""))).strip()
         if bot_username:
             result["bot_username"] = bot_username
+        # Сервисный бот уведомлений для сотрудников (не привязан к каналу продаж).
+        purpose = str(config.get("purpose", "")).strip()
+        if purpose:
+            result["purpose"] = purpose
     return result
 
 
