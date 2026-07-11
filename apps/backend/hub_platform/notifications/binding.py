@@ -87,6 +87,8 @@ def handle_notifier_inbound(integration: Integration, inbound: InboundMessage) -
         transports.send_reply(integration, chat_id=inbound.chat_id, user_id=inbound.user_id, text=HINT_TEXT)
         return
     with transaction.atomic():
+        # Уведомления идут ровно в один мессенджер: новая привязка заменяет прежние.
+        MessengerBinding.objects.filter(user=binding_code.user).exclude(integration=integration).delete()
         MessengerBinding.objects.update_or_create(
             user=binding_code.user,
             integration=integration,

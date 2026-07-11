@@ -1,10 +1,10 @@
-import type { CommandVm } from "./model";
+import type { StatusMeta } from "./model";
 
-export function StatusLabel({ vm }: { vm: CommandVm }) {
+export function StatusLabel({ status }: { status: StatusMeta }) {
   return (
-    <span className="command-status-label" style={{ background: vm.st.bg, borderColor: vm.st.border }}>
-      <span style={{ background: vm.st.dot }} />
-      <em style={{ color: vm.st.color }}>{vm.st.label}</em>
+    <span className="command-status-label" style={{ background: status.bg, borderColor: status.border }}>
+      <span style={{ background: status.dot }} />
+      <em style={{ color: status.color }}>{status.label}</em>
     </span>
   );
 }

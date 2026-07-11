@@ -98,6 +98,23 @@ class Conversation(models.Model):
         return f"conv:{self.id}/{self.lifecycle}/{self.control_mode}"
 
 
+class ConversationRead(models.Model):
+    """Персональная отметка прочтения диалога: до какого сообщения дочитал
+    сотрудник. Обновляется при открытии диалога; бейдж непрочитанных в списке
+    считается относительно этой отметки."""
+
+    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name="reads")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="conversation_reads")
+    last_read_message_id = models.BigIntegerField(default=0)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["conversation", "user"], name="uniq_conversation_read")]
+
+    def __str__(self) -> str:
+        return f"read:{self.conversation_id}/{self.user_id}@{self.last_read_message_id}"
+
+
 class MessageAuthor(models.TextChoices):
     CONTACT = "CONTACT", "Клиент"
     AI = "AI", "AI"

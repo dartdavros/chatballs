@@ -1,44 +1,41 @@
 import type { RouteKey } from "../../../types";
 import { Icon } from "../../../shared/icons";
 import { Button } from "../../../shared/ui-controls";
-import type { CommandVm } from "./model";
+import type { CommandVm, DepartmentVm } from "./model";
 import { MetricGroup } from "./MetricGroup";
 import { StatusLabel } from "./StatusLabel";
 
-export function SalesDepartmentCard({ setRoute, vm }: { setRoute: (route: RouteKey) => void; vm: CommandVm }) {
+export function DepartmentsColumn({ setRoute, vm }: { setRoute: (route: RouteKey) => void; vm: CommandVm }) {
   return (
     <section className="command-left">
       <div className="section-head">
         <h2>Отделы</h2>
-        <span>1 активный</span>
+        <span>{vm.departments.length} активных</span>
       </div>
-      <article className="sales-card">
-        <div className="sales-head">
-          <div className="sales-icon"><Icon name="shop" size={23} /></div>
-          <div className="sales-title">
-            <div>
-              <h3>Продажи</h3>
-              <StatusLabel vm={vm} />
-            </div>
-            <p>Ответственный: Анна Котова · 4 сотрудника · 1 AI-агент</p>
-          </div>
-          <Button className="sales-open" icon="arrow" iconSize={16} variant="primary" onClick={() => setRoute("salesOverview")}>Открыть отдел</Button>
-        </div>
-        <div className="dept-summary">{vm.deptSummary}</div>
-        <MetricGroup title="ДИАЛОГИ — СЕЙЧАС" columns={5} items={[
-          { label: "Открытые диалоги", value: vm.m.open },
-          { label: "Активны за 15 мин", value: vm.m.active },
-          { label: "На AI", value: vm.m.ai, dot: "#722ed1" },
-          { label: "На операторах", value: vm.m.op, dot: "#1677ff" },
-          { label: "Ожидают оператора", value: vm.m.wait, color: vm.m.waitColor },
-        ]} />
-        <MetricGroup title={`КОММЕРЦИЯ — ${vm.periodLabelUpper}`} columns={4} items={[
-          { label: "Незавершённые платежи", value: vm.m.pend, color: vm.m.pendColor },
-          { label: "Ошибки fulfillment", value: vm.m.ferr, color: vm.m.ferrColor },
-          { label: "Продажи", value: vm.m.sales },
-          { label: "Чистая выручка", value: vm.m.rev, color: "#389e0d" },
-        ]} />
-      </article>
+      {vm.departments.map((department) => (
+        <DepartmentCard department={department} periodLabelUpper={vm.periodLabelUpper} setRoute={setRoute} key={department.code} />
+      ))}
     </section>
+  );
+}
+
+function DepartmentCard({ department, periodLabelUpper, setRoute }: { department: DepartmentVm; periodLabelUpper: string; setRoute: (route: RouteKey) => void }) {
+  return (
+    <article className="sales-card">
+      <div className="sales-head">
+        <div className="sales-icon"><Icon name={department.icon} size={23} /></div>
+        <div className="sales-title">
+          <div>
+            <h3>{department.name}</h3>
+            <StatusLabel status={department.status} />
+          </div>
+          <p>{department.subtitle}</p>
+        </div>
+        <Button className="sales-open" icon="arrow" iconSize={16} variant="primary" onClick={() => setRoute(department.route as RouteKey)}>Открыть отдел</Button>
+      </div>
+      <div className="dept-summary">{department.summary}</div>
+      <MetricGroup title="ДИАЛОГИ — СЕЙЧАС" columns={5} items={department.dialogItems} />
+      {department.commerceItems && <MetricGroup title={`КОММЕРЦИЯ — ${periodLabelUpper}`} columns={4} items={department.commerceItems} />}
+    </article>
   );
 }

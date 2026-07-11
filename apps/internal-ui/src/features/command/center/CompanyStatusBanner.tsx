@@ -9,9 +9,9 @@ export function CompanyStatusBanner({ vm }: { vm: CommandVm }) {
         <p>{vm.compSummary}</p>
       </div>
       <div className="company-status-metrics">
-        <SmallMetric label="Отделы" value="1" />
-        <SmallMetric label="Открытые диалоги" value={vm.m.open} />
-        <SmallMetric label={`Выручка · ${vm.periodLabel}`} value={vm.m.rev} success />
+        <SmallMetric label="Отделы" value={vm.banner.departments} />
+        <SmallMetric label="Открытые диалоги" value={vm.banner.open} />
+        <SmallMetric label={`Выручка · ${vm.periodLabel}`} value={vm.banner.revenue} success />
       </div>
     </section>
   );

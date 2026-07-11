@@ -3,8 +3,10 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from hub_platform.api.permissions import IsOwner
 from hub_platform.conversations.clients import client_detail, clients_overview
-from hub_platform.conversations.models import Contact, ControlMode, Conversation
+from hub_platform.conversations.command import command_center_overview
+from hub_platform.conversations.models import Contact, ControlMode, Conversation, ConversationRead
 from hub_platform.conversations.selectors import (
     conversation_for_organization,
     conversations_for_organization,
@@ -60,7 +62,13 @@ class ConversationListView(_Base):
         lifecycle = request.query_params.get("lifecycle")
         if lifecycle:
             items = items.filter(lifecycle=lifecycle)
-        return Response({"items": [conversation_payload(c) for c in items]})
+        items = list(items)
+        # Отметки прочтения просматривающего: бейдж считается персонально.
+        read_map = dict(
+            ConversationRead.objects.filter(user=request.user, conversation__in=items)
+            .values_list("conversation_id", "last_read_message_id")
+        )
+        return Response({"items": [conversation_payload(c, last_read_id=read_map.get(c.id, 0)) for c in items]})
 
 
 class ConversationDetailView(_Base):
@@ -69,6 +77,16 @@ class ConversationDetailView(_Base):
             conversation = self._conversation(request, conversation_id)
         except Conversation.DoesNotExist:
             return Response({"detail": "Диалог не найден"}, status=404)
+        # Открытие диалога = прочтение: двигаем персональную отметку до последнего
+        # сообщения (detail поллится каждые 3 с — пишем только при продвижении).
+        last_id = conversation.messages.order_by("-id").values_list("id", flat=True).first() or 0
+        if last_id:
+            read, created = ConversationRead.objects.get_or_create(
+                conversation=conversation, user=request.user, defaults={"last_read_message_id": last_id}
+            )
+            if not created and read.last_read_message_id < last_id:
+                read.last_read_message_id = last_id
+                read.save(update_fields=["last_read_message_id", "updated_at"])
         return Response({"conversation": conversation_payload(conversation, with_messages=True)})
 
 
@@ -114,6 +132,17 @@ class ConversationStatsView(_Base):
         if period not in ("today", "d7", "d30"):
             period = "today"
         return Response(sales_overview_stats(self._org(request).id, period))
+
+
+class CommandOverviewView(_Base):
+    # Командный центр — страница владельца.
+    permission_classes = [IsOwner]
+
+    def get(self, request: Request) -> Response:
+        period = request.query_params.get("period", "today")
+        if period not in ("today", "d7", "d30"):
+            period = "today"
+        return Response(command_center_overview(self._org(request).id, period))
 
 
 class ClientsView(_Base):

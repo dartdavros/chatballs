@@ -257,6 +257,75 @@ class RequestContactApiTests(TestCase):
         self.assertEqual(payload["phone"], "+79991234567")
 
 
+class ConversationReadTests(TestCase):
+    """Открытие диалога двигает персональную отметку прочтения — бейдж
+    непрочитанных (pendingCount) в списке гаснет без ответа оператора."""
+
+    def setUp(self) -> None:
+        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
+        self.organization = Organization.objects.get(slug="edevs")
+        self.channel = Channel.objects.create(organization=self.organization, code="foxray-sales", name="FoxRay — продажи")
+        self.integration = _messenger_connection(self.channel)
+        contact = Contact.objects.create(organization=self.organization, name="Иван")
+        self.conversation = Conversation.objects.create(
+            organization=self.organization, channel=self.channel, connection=self.integration, contact=contact
+        )
+        Message.objects.create(conversation=self.conversation, author_type=MessageAuthor.CONTACT, text="Хорошо")
+        self.client = APIClient()
+        self.client.login(username="owner@edevs.tech", password="temporary-password")
+
+    def _pending(self) -> int:
+        items = self.client.get("/api/v1/conversations/").json()["items"]
+        return next(item["pendingCount"] for item in items if item["id"] == self.conversation.id)
+
+    def test_badge_clears_after_opening_dialog(self) -> None:
+        self.assertEqual(self._pending(), 1)
+        detail = self.client.get(f"/api/v1/conversations/{self.conversation.id}/")
+        self.assertEqual(detail.status_code, 200)
+        self.assertEqual(self._pending(), 0)
+        # Новое сообщение клиента снова поднимает бейдж.
+        Message.objects.create(conversation=self.conversation, author_type=MessageAuthor.CONTACT, text="Ещё вопрос")
+        self.assertEqual(self._pending(), 1)
+
+
+class CommandOverviewTests(TestCase):
+    """Сводка командного центра: оба отдела, реальные метрики, доступ OWNER."""
+
+    def setUp(self) -> None:
+        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
+        self.organization = Organization.objects.get(slug="edevs")
+        self.channel = Channel.objects.create(
+            organization=self.organization, code="foxray-sales", name="FoxRay — продажи",
+            department=self.organization.departments.get(code="sales"),
+        )
+        self.integration = _messenger_connection(self.channel)
+        contact = Contact.objects.create(organization=self.organization, name="Иван")
+        Conversation.objects.create(
+            organization=self.organization, channel=self.channel, connection=self.integration,
+            contact=contact, control_mode=ControlMode.PAUSED,
+        )
+        self.client = APIClient()
+        self.client.login(username="owner@edevs.tech", password="temporary-password")
+
+    def test_overview_returns_departments_and_attention(self) -> None:
+        response = self.client.get("/api/v1/conversations/command-overview/?period=today")
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        codes = [d["code"] for d in payload["departments"]]
+        self.assertIn("sales", codes)
+        self.assertIn("support", codes)
+        sales = next(d for d in payload["departments"] if d["code"] == "sales")
+        self.assertEqual(sales["dialogs"]["open"], 1)
+        self.assertEqual(sales["dialogs"]["waiting"], 1)
+        self.assertIn("commerce", sales)
+        support = next(d for d in payload["departments"] if d["code"] == "support")
+        self.assertNotIn("commerce", support)
+        self.assertEqual(payload["company"]["status"], "attention")
+        self.assertTrue(any(item["kind"] == "dialog" for item in payload["attention"]))
+        # Интеграции отражены с группой.
+        self.assertTrue(any(row["group"] == "Канал" for row in payload["integrations"]))
+
+
 class WebchatContactTests(TestCase):
     """Веб-виджет: клиент отправляет телефон формой — он сохраняется в Contact,
     в переписке появляются kind=contact и подтверждение."""

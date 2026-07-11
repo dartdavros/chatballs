@@ -484,3 +484,9 @@
   font-size: 12px;
 }
 
+
+.attention-empty {
+  padding: 10px 0;
+  color: #8c8c8c;
+  font-size: 12.5px;
+}

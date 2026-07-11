@@ -1,10 +1,19 @@
+import { useEffect, useState } from "react";
+
 import type { AppData, RouteKey } from "../../types";
 import { Icon } from "../../shared/icons";
 import { PageHeader, ProductTag } from "../../shared/ui";
-import { commandCenterModel, StatusLabel } from "../command/CommandCenter";
+import { commandCenterModel, fetchCommandOverview, StatusLabel, type ApiCommandOverview } from "../command/CommandCenter";
 import { formatRubMinor, useDepartmentStats } from "./useDepartmentStats";
 
 export function DepartmentsPage({ data, setRoute }: { data: AppData; setRoute: (route: RouteKey) => void }) {
+  // Реальный статус отделов из сводки командного центра (очередь → «Требует внимания»).
+  const [overview, setOverview] = useState<ApiCommandOverview | null>(null);
+  useEffect(() => {
+    fetchCommandOverview("today").then(setOverview).catch(() => undefined);
+  }, []);
+  const overviewVm = overview ? commandCenterModel(overview) : null;
+  const statusFor = (code: string) => overviewVm?.departments.find((department) => department.code === code)?.status ?? null;
   const sales = data.departments.find((department) => department.code === "sales") ?? data.departments[0];
   const support = data.departments.find((department) => department.code === "support");
   const salesProducts = data.products.filter((product) => product.departments.some((department) => department.code === "sales"));
@@ -29,7 +38,7 @@ export function DepartmentsPage({ data, setRoute }: { data: AppData; setRoute: (
               <div className="department-card-title">
                 <div>
                   <h2>{sales.name}</h2>
-                  <StatusLabel vm={commandCenterModel("today")} />
+                  {statusFor("sales") && <StatusLabel status={statusFor("sales")!} />}
                 </div>
                 <p>Публичные входящие обращения: лиды, контакты, продажи.</p>
               </div>
@@ -69,7 +78,7 @@ export function DepartmentsPage({ data, setRoute }: { data: AppData; setRoute: (
               <div className="department-card-title">
                 <div>
                   <h2>{support.name}</h2>
-                  <StatusLabel vm={commandCenterModel("today")} />
+                  {statusFor("support") && <StatusLabel status={statusFor("support")!} />}
                 </div>
                 <p>Обслуживание существующих клиентов продуктов через авторизованный чат.</p>
               </div>

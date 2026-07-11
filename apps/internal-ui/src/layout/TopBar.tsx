@@ -1,10 +1,8 @@
-import { commandCenterModel } from "../features/command/CommandCenter";
 import { routes } from "../routes";
 import type { Employee, Product, RouteKey, SessionUser } from "../types";
 import { Icon } from "../shared/icons";
 
 export function TopBar({ route, user, currentEmployee, currentProduct, currentAgentName, setRoute, unreadCount = 0, onOpenNotifications }: { route: RouteKey; user: SessionUser; currentEmployee?: Employee | null; currentProduct?: Product | null; currentAgentName?: string | null; setRoute: (route: RouteKey) => void; unreadCount?: number; onOpenNotifications?: () => void }) {
-  const st = commandCenterModel("today").st;
   const isCommand = route === "command";
   const isAiDetail = route === "aiAgentDetail" || route === "aiKnowledgeDetail";
   const isAi = route.startsWith("ai") && !isAiDetail && route !== "aiAgentCreate";
@@ -28,7 +26,6 @@ export function TopBar({ route, user, currentEmployee, currentProduct, currentAg
         {route !== "employeeDetail" && route !== "productDetail" && route !== "aiAgentCreate" && !isSalesWorkspace && !isSupportWorkspace && !isAi && !isAiDetail && <strong>{routes[route]}</strong>}
       </div>
       <div className="topbar-actions">
-        {isCommand && <span className="topbar-status" style={{ background: st.bg, borderColor: st.border, color: st.color }}><span style={{ background: st.dot }} />{st.label}</span>}
         <button className="icon-button" aria-label="Уведомления" onClick={onOpenNotifications}><Icon name="bell" size={18} />{unreadCount > 0 && <b>{unreadCount > 99 ? "99+" : unreadCount}</b>}</button>
       </div>
     </header>

@@ -1,60 +1,157 @@
-import type { CommandPeriod } from "./types";
+import { api } from "../../../api/client";
+import type { CommandPeriod, MetricItem } from "./types";
 
-export function commandCenterModel(period: CommandPeriod) {
-  const fmt = (n: number) => `₽${Math.round(n).toLocaleString("ru-RU").replace(/\u00a0/g, " ")}`;
-  const ops = { open: 42, active: 9, ai: 35, op: 7, wait: 0, pend: 1, ferr: 0 };
-  const com = {
-    today: { label: "Сегодня", sales: 18, rev: 146200, aiSpend: 1240, budget: 5000, tokens: "412K", dlg: 42 },
-    d7: { label: "7 дней", sales: 126, rev: 1024600, aiSpend: 8600, budget: 35000, tokens: "2,9M", dlg: 318 },
-    d30: { label: "30 дней", sales: 540, rev: 4386000, aiSpend: 36400, budget: 150000, tokens: "12,4M", dlg: 1342 },
-  }[period];
-  const st = { label: "Нормально", color: "#389e0d", bg: "#f6ffed", border: "#b7eb8f", dot: "#52c41a" };
-  const m = {
-    open: String(ops.open),
-    active: String(ops.active),
-    ai: String(ops.ai),
-    op: String(ops.op),
-    wait: String(ops.wait),
-    pend: String(ops.pend),
-    ferr: String(ops.ferr),
-    sales: String(com.sales),
-    rev: fmt(com.rev),
-    waitColor: "#262626",
-    pendColor: "#262626",
-    ferrColor: "#262626",
-  };
-  const attention = [
-    { dot: "#faad14", title: "Незавершённый платёж · заказ ORD-10482", meta: "Продажи · Точка", time: "6 мин" },
-    { dot: "#1677ff", title: "Подписка истекает через 2 дня · Foxray Про", meta: "Продажи", time: "1 ч" },
-  ];
-  const integrations = [
-    { name: "OpenRouter", group: "AI-провайдер", dot: "#52c41a", statusLabel: "Подключено", statusColor: "#52c41a" },
-    { name: "MAX", group: "Канал", dot: "#52c41a", statusLabel: "Подключено", statusColor: "#52c41a" },
-    { name: "Telegram", group: "Канал", dot: "#52c41a", statusLabel: "Подключено", statusColor: "#52c41a" },
-    { name: "Web Chat", group: "Канал", dot: "#52c41a", statusLabel: "Подключено", statusColor: "#52c41a" },
-    { name: "FirePage", group: "Коммерческая интеграция", dot: "#52c41a", statusLabel: "Подключено", statusColor: "#52c41a" },
-    { name: "Foxray", group: "Коммерческая интеграция", dot: "#52c41a", statusLabel: "Подключено", statusColor: "#52c41a" },
-  ];
-  const aiPct = Math.round((com.aiSpend / com.budget) * 100);
-  const aiBarColor = aiPct >= 85 ? "#ff4d4f" : aiPct >= 70 ? "#faad14" : "#1677ff";
+// Реальная сводка командного центра (conversations/command.py) — без мок-данных.
+
+export type ApiDialogBlock = { open: number; activeNow: number; onAI: number; onOperators: number; waiting: number };
+export type ApiCommerce = { pendingPayments: number; fulfillmentErrors: number; sales: number; revenueMinor: number };
+export type ApiDepartment = {
+  code: string;
+  name: string;
+  route: string;
+  employees: number;
+  aiAgents: number;
+  dialogs: ApiDialogBlock;
+  commerce?: ApiCommerce;
+};
+export type ApiCommandOverview = {
+  period: CommandPeriod;
+  generatedAt: string;
+  company: { status: "ok" | "attention" | "critical"; departments: number; openDialogs: number; revenueMinor: number };
+  departments: ApiDepartment[];
+  attention: Array<{ kind: "dialog" | "payment" | "integration"; title: string; meta: string; minutes: number }>;
+  integrations: Array<{ name: string; group: string; status: "OK" | "ERROR" | "UNCHECKED" }>;
+  ai: { spendMicros: number; dailyLimitMicros: number; tokens: number; dialogs: number };
+};
+
+export const fetchCommandOverview = (period: CommandPeriod) =>
+  api<ApiCommandOverview>(`/api/v1/conversations/command-overview/?period=${period}`);
+
+const rub = (minor: number) => `₽${Math.round(minor / 100).toLocaleString("ru-RU").replace(/ /g, " ")}`;
+const usd = (micros: number) => `$${(micros / 1_000_000).toLocaleString("ru-RU", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+function tokensLabel(tokens: number): string {
+  if (tokens >= 1_000_000) return `${(tokens / 1_000_000).toLocaleString("ru-RU", { maximumFractionDigits: 1 })}M`;
+  if (tokens >= 1_000) return `${Math.round(tokens / 1_000)}K`;
+  return String(tokens);
+}
+
+function timeLabel(minutes: number): string {
+  if (minutes < 60) return `${minutes} мин`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} ч`;
+  return `${Math.floor(hours / 24)} д`;
+}
+
+export type StatusMeta = { label: string; color: string; bg: string; border: string; dot: string };
+
+const STATUS_META: Record<ApiCommandOverview["company"]["status"], StatusMeta> = {
+  ok: { label: "Нормально", color: "#389e0d", bg: "#f6ffed", border: "#b7eb8f", dot: "#52c41a" },
+  attention: { label: "Требует внимания", color: "#d48806", bg: "#fff7e6", border: "#ffe58f", dot: "#faad14" },
+  critical: { label: "Критично", color: "#cf1322", bg: "#fff1f0", border: "#ffa39e", dot: "#ff4d4f" },
+};
+
+const COMPANY_SUMMARY: Record<ApiCommandOverview["company"]["status"], string> = {
+  ok: "Все системы в норме, критичных событий нет.",
+  attention: "Есть события, требующие внимания оператора.",
+  critical: "Есть критичные проблемы — проверьте раздел «Требует внимания».",
+};
+
+const ATTENTION_DOT: Record<string, string> = { dialog: "#faad14", payment: "#1677ff", integration: "#ff4d4f" };
+
+const INTEGRATION_STATUS: Record<string, { label: string; color: string }> = {
+  OK: { label: "Подключено", color: "#52c41a" },
+  ERROR: { label: "Ошибка", color: "#ff4d4f" },
+  UNCHECKED: { label: "Не проверено", color: "#8c8c8c" },
+};
+
+const PERIOD_LABEL: Record<CommandPeriod, string> = { today: "Сегодня", d7: "7 дней", d30: "30 дней" };
+
+export type DepartmentVm = {
+  code: string;
+  name: string;
+  route: string;
+  icon: "shop" | "wrench";
+  subtitle: string;
+  status: StatusMeta;
+  summary: string;
+  dialogItems: MetricItem[];
+  commerceItems: MetricItem[] | null;
+};
+
+export function commandCenterModel(data: ApiCommandOverview) {
+  const st = STATUS_META[data.company.status];
+  const periodLabel = PERIOD_LABEL[data.period];
+
+  const departments: DepartmentVm[] = data.departments.map((department) => {
+    const d = department.dialogs;
+    return {
+      code: department.code,
+      name: department.name,
+      route: department.route,
+      icon: department.code === "support" ? "wrench" : "shop",
+      subtitle: `Сотрудники: ${department.employees} · AI-агенты: ${department.aiAgents}`,
+      status: d.waiting > 0 ? STATUS_META.attention : STATUS_META.ok,
+      summary: d.waiting > 0 ? `В очереди ${d.waiting} — нужен оператор.` : "Очередь оператора пуста.",
+      dialogItems: [
+        { label: "Открытые диалоги", value: String(d.open) },
+        { label: "Активны за 15 мин", value: String(d.activeNow) },
+        { label: "На AI", value: String(d.onAI), dot: "#722ed1" },
+        { label: "На операторах", value: String(d.onOperators), dot: "#1677ff" },
+        { label: "Ожидают оператора", value: String(d.waiting), color: d.waiting > 0 ? "#d48806" : "#262626" },
+      ],
+      commerceItems: department.commerce
+        ? [
+            { label: "Незавершённые платежи", value: String(department.commerce.pendingPayments), color: department.commerce.pendingPayments > 0 ? "#d48806" : "#262626" },
+            { label: "Ошибки fulfillment", value: String(department.commerce.fulfillmentErrors), color: department.commerce.fulfillmentErrors > 0 ? "#cf1322" : "#262626" },
+            { label: "Продажи", value: String(department.commerce.sales) },
+            { label: "Выручка", value: rub(department.commerce.revenueMinor), color: "#389e0d" },
+          ]
+        : null,
+    };
+  });
+
+  const attention = data.attention.map((item) => ({
+    dot: ATTENTION_DOT[item.kind] ?? "#faad14",
+    title: item.title,
+    meta: item.meta,
+    time: timeLabel(item.minutes),
+  }));
+
+  const integrations = data.integrations.map((item) => {
+    const status = INTEGRATION_STATUS[item.status] ?? INTEGRATION_STATUS.UNCHECKED;
+    return { name: item.name, group: item.group, dot: status.color, statusLabel: status.label, statusColor: status.color };
+  });
+  const okCount = data.integrations.filter((item) => item.status === "OK").length;
+
+  // Прогресс бюджета осмыслен только для «Сегодня» и при заданном дневном лимите.
+  const hasBudget = data.period === "today" && data.ai.dailyLimitMicros > 0;
+  const aiPct = hasBudget ? Math.min(100, Math.round((data.ai.spendMicros / data.ai.dailyLimitMicros) * 100)) : 0;
+
   return {
     st,
-    m,
-    compSummary: "Все системы в норме. Один отдел активен, критичных событий нет.",
-    deptSummary: "AI ведёт большинство диалогов. Очередь оператора пуста, незавершённых задач почти нет.",
+    compSummary: COMPANY_SUMMARY[data.company.status],
+    banner: {
+      departments: String(data.company.departments),
+      open: String(data.company.openDialogs),
+      revenue: rub(data.company.revenueMinor),
+    },
+    departments,
     attention,
     integrations,
-    okCount: "6",
-    intHeadColor: "#389e0d",
-    periodLabel: com.label,
-    periodLabelUpper: com.label.toUpperCase(),
-    aiSpendStr: fmt(com.aiSpend),
-    budgetStr: fmt(com.budget),
+    okCount: `${okCount}/${data.integrations.length} в норме`,
+    intHeadColor: okCount === data.integrations.length ? "#389e0d" : "#d48806",
+    periodLabel,
+    periodLabelUpper: periodLabel.toUpperCase(),
+    aiSpendStr: usd(data.ai.spendMicros),
+    budgetStr: hasBudget ? usd(data.ai.dailyLimitMicros) : "",
+    hasBudget,
     aiPct,
-    aiBarColor,
-    aiTokens: com.tokens,
-    aiDialogs: String(com.dlg),
-    costPerDialog: fmt(com.aiSpend / com.dlg),
+    aiBarColor: aiPct >= 85 ? "#ff4d4f" : aiPct >= 70 ? "#faad14" : "#1677ff",
+    aiTokens: tokensLabel(data.ai.tokens),
+    aiDialogs: String(data.ai.dialogs),
+    costPerDialog: data.ai.dialogs > 0 ? usd(data.ai.spendMicros / data.ai.dialogs) : "—",
+    generatedAt: new Date(data.generatedAt).toLocaleString("ru-RU", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }),
   };
 }
 

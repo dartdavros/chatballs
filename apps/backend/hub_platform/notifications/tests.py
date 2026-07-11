@@ -58,6 +58,18 @@ class BindingTests(NotifierTestBase):
         self.assertFalse(MessengerBinding.objects.exists())
         self.assertIn("профиль", send.call_args.kwargs["text"])
 
+    def test_binding_is_exclusive_across_messengers(self) -> None:
+        # Уведомления идут в один мессенджер: привязка MAX заменяет привязку TG.
+        MessengerBinding.objects.create(user=self.owner, integration=self.integration, external_chat_id="111")
+        max_bot = _notifier(self.organization, provider=IntegrationProvider.MAX, username="edevs_max_bot")
+        code = issue_binding_code(user=self.owner, integration=max_bot)
+        inbound = InboundMessage(external_id="3", user_id="9", chat_id="9", text=f"/start {code.code}", display_name="Андрей")
+        with mock.patch("hub_platform.notifications.binding.transports.send_reply", return_value=True):
+            handle_notifier_inbound(max_bot, inbound)
+        bindings = list(MessengerBinding.objects.filter(user=self.owner))
+        self.assertEqual(len(bindings), 1)
+        self.assertEqual(bindings[0].integration_id, max_bot.id)
+
     def test_reissue_invalidates_previous_code(self) -> None:
         first = issue_binding_code(user=self.owner, integration=self.integration)
         issue_binding_code(user=self.owner, integration=self.integration)

@@ -7,7 +7,7 @@ export function CommandHeader({ period, setPeriod }: { period: CommandPeriod; se
     <div className="command-page-header">
       <div>
         <h1>Командный центр</h1>
-        <p>Состояние компании одним взглядом · обновлено только что</p>
+        <p>Состояние компании одним взглядом</p>
       </div>
       <div className="command-header-actions">
         <Segmented value={period} setValue={setPeriod} items={[["today", "Сегодня"], ["d7", "7 дней"], ["d30", "30 дней"]]} />

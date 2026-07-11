@@ -16,14 +16,16 @@ def _last_message(conversation: Conversation) -> Message | None:
     return conversation.messages.order_by("-created_at").first()
 
 
-def _pending_count(conversation: Conversation) -> int:
-    # Сообщения клиента, пришедшие после последнего ответа AI/оператора (ожидают ответа).
+def _pending_count(conversation: Conversation, last_read_id: int = 0) -> int:
+    # Бейдж непрочитанных: хвост клиентских сообщений (после последнего ответа
+    # AI/оператора), которые просматривающий ещё не открывал (id > отметки
+    # прочтения). Открытие диалога двигает отметку — бейдж гаснет.
     count = 0
     for message in conversation.messages.order_by("-created_at")[:50]:
-        if message.author_type == MessageAuthor.CONTACT:
-            count += 1
-        else:
+        if message.author_type != MessageAuthor.CONTACT:
             break
+        if message.id > last_read_id:
+            count += 1
     return count
 
 
@@ -88,7 +90,7 @@ def _conversation_history(conversation: Conversation) -> list[Conversation]:
     )
 
 
-def conversation_payload(conversation: Conversation, *, with_messages: bool = False) -> dict[str, object]:
+def conversation_payload(conversation: Conversation, *, with_messages: bool = False, last_read_id: int = 0) -> dict[str, object]:
     last = None if with_messages else _last_message(conversation)
     channel = conversation.channel
     payload = {
@@ -129,5 +131,5 @@ def conversation_payload(conversation: Conversation, *, with_messages: bool = Fa
         payload["history"] = [_history_item(c) for c in history]
     else:
         payload["lastMessage"] = message_payload(last) if last else None
-        payload["pendingCount"] = _pending_count(conversation)
+        payload["pendingCount"] = _pending_count(conversation, last_read_id)
     return payload
