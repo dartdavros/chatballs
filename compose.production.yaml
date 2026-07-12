@@ -96,8 +96,16 @@ services:
       - --use-auth-secret
       - --static-auth-secret=${HUB_CALL_TURN_SECRET:?HUB_CALL_TURN_SECRET is required}
       - --realm=${HUB_CALL_TURN_REALM:?HUB_CALL_TURN_REALM is required}
-      - --external-ip=${HUB_TURN_EXTERNAL_IP:?HUB_TURN_EXTERNAL_IP is required}
+      # Весь TURN живёт на выделенном публичном IP (отдельный порт/NIC), nginx — на
+      # основном IP. Это освобождает 443 под TURN-over-TLS без конфликта с web.
+      - --listening-ip=${HUB_TURN_LISTENING_IP:?HUB_TURN_LISTENING_IP is required}
+      - --relay-ip=${HUB_TURN_EXTERNAL_IP:?HUB_TURN_EXTERNAL_IP is required}
+      - --external-ip=${HUB_TURN_EXTERNAL_IP}
       - --listening-port=${HUB_TURN_LISTENING_PORT:-3478}
+      # TURN-over-TLS на 443: проходит через VPN/строгие сети, где UDP и 3478 режут.
+      - --tls-listening-port=${HUB_TURN_TLS_PORT:-443}
+      - --cert=/etc/coturn/certs/fullchain.pem
+      - --pkey=/etc/coturn/certs/privkey.pem
       - --min-port=${HUB_TURN_MIN_PORT:-49160}
       - --max-port=${HUB_TURN_MAX_PORT:-49200}
       # Запрет анонимного и внутрисетевого relay (SPEC §11: без пересечения с хостом).
@@ -108,9 +116,13 @@ services:
       - --denied-peer-ip=192.168.0.0-192.168.255.255
       - --no-tlsv1
       - --no-tlsv1_1
+    volumes:
+      # LE-сертификат TURN-хоста (turns:), скопированный под uid coturn (nobody)
+      # renewal deploy-hook'ом. См. docs по развёртыванию TURN-over-TLS.
+      - ./data/coturn-certs:/etc/coturn/certs:ro
     healthcheck:
-      # Allocation smoke: STUN binding к собственному listener.
-      test: ["CMD", "turnutils_stunclient", "-p", "${HUB_TURN_LISTENING_PORT:-3478}", "127.0.0.1"]
+      # Allocation smoke: STUN binding к собственному listener на выделенном IP.
+      test: ["CMD", "turnutils_stunclient", "-p", "${HUB_TURN_LISTENING_PORT:-3478}", "${HUB_TURN_LISTENING_IP}"]
       interval: 30s
       timeout: 5s
       retries: 5
