@@ -47,8 +47,10 @@ def command_center_overview(organization_id: int, period: str) -> dict:
     revenue = paid.aggregate(total=Sum("amount_minor"))["total"] or 0
 
     employees_by_dept = dict(
-        EmployeeProfile.objects.filter(organization_id=organization_id, blocked_at__isnull=True, department__isnull=False)
-        .values_list("department_id")
+        EmployeeProfile.objects.filter(
+            organization_id=organization_id, blocked_at__isnull=True, primary_department__isnull=False
+        )
+        .values_list("primary_department_id")
         .annotate(c=Count("id"))
     )
     agents_by_dept = dict(
