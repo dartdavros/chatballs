@@ -5,7 +5,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from hub_platform.api.permissions import IsOwner
+from hub_platform.api.permissions import IsManager
 from hub_platform.identity.audit import record_audit_event
 from hub_platform.products.models import Product, ProductStatus
 from hub_platform.products.selectors import product_for_organization, products_for_organization
@@ -51,7 +51,7 @@ class ProductListView(APIView):
 
 
 class ProductCreateView(APIView):
-    permission_classes = [IsOwner]
+    permission_classes = [IsManager]
 
     def post(self, request: Request) -> Response:
         profile = request.user.employee_profile
@@ -84,7 +84,7 @@ class ProductDetailView(APIView):
 
 
 class ProductUpdateView(APIView):
-    permission_classes = [IsOwner]
+    permission_classes = [IsManager]
 
     def patch(self, request: Request, product_id: int) -> Response:
         profile = request.user.employee_profile
@@ -108,7 +108,7 @@ class ProductUpdateView(APIView):
 
 
 class ProductStatusView(APIView):
-    permission_classes = [IsOwner]
+    permission_classes = [IsManager]
     status_value: ProductStatus
 
     def post(self, request: Request, product_id: int) -> Response:

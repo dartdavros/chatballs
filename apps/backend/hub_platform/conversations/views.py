@@ -3,7 +3,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from hub_platform.api.permissions import IsOwner
+from hub_platform.api.permissions import IsManager
 from hub_platform.conversations.clients import client_detail, clients_overview
 from hub_platform.conversations.command import command_center_overview
 from hub_platform.conversations.models import Contact, ControlMode, Conversation, ConversationRead
@@ -23,7 +23,7 @@ from hub_platform.conversations.services import (
 )
 from hub_platform.conversations.stats import sales_overview_stats
 from hub_platform.identity.audit import record_audit_event
-from hub_platform.identity.permissions import _operator_department_code, is_operator, is_owner
+from hub_platform.identity.permissions import _operator_department_code, is_manager, is_operator, is_owner
 
 
 class _Base(APIView):
@@ -135,8 +135,8 @@ class ConversationStatsView(_Base):
 
 
 class CommandOverviewView(_Base):
-    # Командный центр — страница владельца.
-    permission_classes = [IsOwner]
+    # Командный центр — обычная capability уровня организации: OWNER и ADMIN.
+    permission_classes = [IsManager]
 
     def get(self, request: Request) -> Response:
         period = request.query_params.get("period", "today")
@@ -169,7 +169,7 @@ class ConversationMessageView(_Base):
             return Response({"detail": "Пустое сообщение"}, status=400)
         if conversation.control_mode != ControlMode.HUMAN:
             return Response({"detail": "Сначала перехватите диалог"}, status=409)
-        if conversation.assigned_operator_id != request.user.id and not is_owner(request.user):
+        if conversation.assigned_operator_id != request.user.id and not is_manager(request.user):
             return Response({"detail": "Диалог ведёт другой оператор"}, status=409)
         message = post_operator_message(conversation=conversation, operator=request.user, text=text)
         return Response({"message": message_payload(message)}, status=201)

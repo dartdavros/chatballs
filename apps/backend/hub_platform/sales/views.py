@@ -7,7 +7,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from hub_platform.api.permissions import IsOwner
+from hub_platform.api.permissions import IsManager
 from hub_platform.conversations.models import Contact, Conversation
 from hub_platform.identity.audit import record_audit_event
 from hub_platform.identity.permissions import is_owner, is_sales_operator
@@ -154,12 +154,13 @@ class SaleDetailView(_Base):
 
 
 class SaleActionView(_Base):
-    """Ручная корректировка/возврат/отмена (SPEC §7.1). Только OWNER.
+    """Ручная корректировка/возврат/отмена (SPEC §7.1). Обычная capability уровня
+    организации — OWNER и ADMIN (ADR-HUB-0027 этап 2).
 
     Физическое удаление продажи запрещено — ошибка исправляется новым событием.
     """
 
-    permission_classes = [IsOwner]
+    permission_classes = [IsManager]
 
     _ACTIONS = {
         "correct": SaleEventType.CORRECTED,

@@ -12,9 +12,10 @@ def ensure_conversation_call_access(*, user, conversation: Conversation) -> None
         or profile is None
         or profile.is_blocked
         or profile.organization_id != conversation.organization_id
-        or profile.role not in {EmployeeRole.OWNER, EmployeeRole.EMPLOYEE}
+        or profile.role not in {EmployeeRole.OWNER, EmployeeRole.ADMIN, EmployeeRole.EMPLOYEE}
     ):
         raise CallAccessDenied("Нет доступа к звонкам этого диалога")
+    # OWNER/ADMIN — сквозной доступ; отдел ограничивает только EMPLOYEE (compat этап 1).
     if profile.role == EmployeeRole.EMPLOYEE and (
         profile.primary_department_id is None
         or profile.primary_department_id != conversation.channel.department_id

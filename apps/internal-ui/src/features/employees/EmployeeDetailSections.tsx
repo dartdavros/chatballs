@@ -38,7 +38,7 @@ export function EmployeeDetailSections({
       <section className="employee-detail-card">
         <h3>Роль и доступ</h3>
         <div className="employee-form-grid">
-          <SelectField label="Роль" value={form.role} onChange={(value) => updateForm("role", value)} options={[["EMPLOYEE", "Сотрудник"], ["OWNER", "Владелец"]]} />
+          <SelectField label="Роль" value={form.role} onChange={(value) => updateForm("role", value)} options={[["EMPLOYEE", "Сотрудник"], ["ADMIN", "Администратор"]]} />
           <SelectField label="Отдел" value={form.department} onChange={(value) => updateForm("department", value)} options={[["sales", "Отдел продаж"]]} />
         </div>
         <label className="employee-access-label">Доступные разделы</label>
@@ -71,7 +71,7 @@ export function EmployeeDetailSections({
         <h3>Опасная зона</h3>
         <div>
           <p>{blocked ? "Сотрудник заблокирован и не может войти. Разблокировка восстановит доступ к разделам отдела." : "Блокировка немедленно завершит все сессии и закроет доступ. Активные диалоги вернутся в очередь. Действие требует подтверждения."}</p>
-          <Button className="employee-danger-action" type="button" variant="danger-outline" onClick={toggleBlocked} disabled={currentEmployee.role === "OWNER"}>{blocked ? "Разблокировать сотрудника" : "Заблокировать сотрудника"}</Button>
+          <Button className="employee-danger-action" type="button" variant="danger-outline" onClick={toggleBlocked} disabled={blocked ? !(currentEmployee.permissions?.canUnblock ?? currentEmployee.role !== "OWNER") : !(currentEmployee.permissions?.canBlock ?? currentEmployee.role !== "OWNER")}>{blocked ? "Разблокировать сотрудника" : "Заблокировать сотрудника"}</Button>
         </div>
       </section>
     </div>

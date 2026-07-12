@@ -16,6 +16,17 @@ def is_owner(user: HumanUser | AnonymousUser) -> bool:
     return get_employee_role(user) == EmployeeRole.OWNER
 
 
+def is_admin(user: HumanUser | AnonymousUser) -> bool:
+    return get_employee_role(user) == EmployeeRole.ADMIN
+
+
+def is_manager(user: HumanUser | AnonymousUser) -> bool:
+    """Административный уровень (ADR-HUB-0027 этап 2): OWNER и ADMIN. ADMIN получает
+    все обычные capability уровня организации, поэтому обычные (не governance) операции
+    открыты менеджерам. Защищённые governance-действия остаются за OWNER (см. governance)."""
+    return get_employee_role(user) in {EmployeeRole.OWNER, EmployeeRole.ADMIN}
+
+
 def is_operator(user: HumanUser | AnonymousUser) -> bool:
     """Compatibility-адаптер этапа 1 (ADR-HUB-0027): «оператор» — это рабочая функция,
     которую после миграции выполняет обычный сотрудник (EMPLOYEE) в своём отделе.
@@ -24,11 +35,11 @@ def is_operator(user: HumanUser | AnonymousUser) -> bool:
 
 
 def can_access_global_settings(user: HumanUser | AnonymousUser) -> bool:
-    return is_owner(user)
+    return is_manager(user)
 
 
 def can_access_sales_workspace(user: HumanUser | AnonymousUser) -> bool:
-    return get_employee_role(user) in {EmployeeRole.OWNER, EmployeeRole.EMPLOYEE}
+    return get_employee_role(user) in {EmployeeRole.OWNER, EmployeeRole.ADMIN, EmployeeRole.EMPLOYEE}
 
 
 def _operator_department_code(user: HumanUser | AnonymousUser) -> str | None:
@@ -47,19 +58,20 @@ def _operator_department_code(user: HumanUser | AnonymousUser) -> str | None:
 
 
 def is_sales_operator(user: HumanUser | AnonymousUser) -> bool:
-    if is_owner(user):
+    # Менеджер (OWNER/ADMIN) имеет сквозной операционный доступ; EMPLOYEE — по отделу.
+    if is_manager(user):
         return True
     return is_operator(user) and _operator_department_code(user) == "sales"
 
 
 def is_support_operator(user: HumanUser | AnonymousUser) -> bool:
-    if is_owner(user):
+    if is_manager(user):
         return True
     return is_operator(user) and _operator_department_code(user) == "support"
 
 
 def can_access_support_workspace(user: HumanUser | AnonymousUser) -> bool:
-    # OWNER видит всё; OPERATOR — только если назначен в отдел поддержки.
-    return is_owner(user) or (
+    # OWNER/ADMIN видят всё; EMPLOYEE — только если назначен в отдел поддержки.
+    return is_manager(user) or (
         is_operator(user) and _operator_department_code(user) == "support"
     )

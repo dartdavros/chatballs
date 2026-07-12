@@ -415,7 +415,7 @@ class EmployeeEndpointTests(TestCase):
         self.assertTrue(operator.check_password("operator-password"))
         self.assertEqual(operator.employee_profile.role, EmployeeRole.EMPLOYEE)
         self.assertTrue(operator.employee_profile.must_change_password)
-        self.assertTrue(AuditEvent.objects.filter(action="identity.operator_created").exists())
+        self.assertTrue(AuditEvent.objects.filter(action="identity.employee_created").exists())
 
     def test_operator_cannot_create_operator(self) -> None:
         operator = HumanUser.objects.create_user(email="operator@edevs.tech", password="operator-password")
@@ -440,7 +440,7 @@ class EmployeeEndpointTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 403)
-        self.assertTrue(AuditEvent.objects.filter(action="identity.owner_permission_denied").exists())
+        self.assertTrue(AuditEvent.objects.filter(action="identity.manager_permission_denied").exists())
 
     def test_owner_blocks_operator(self) -> None:
         operator = HumanUser.objects.create_user(email="operator@edevs.tech", password="operator-password")
@@ -457,7 +457,7 @@ class EmployeeEndpointTests(TestCase):
         operator.refresh_from_db()
         self.assertFalse(operator.is_active)
         self.assertTrue(operator.employee_profile.is_blocked)
-        self.assertTrue(AuditEvent.objects.filter(action="identity.operator_blocked").exists())
+        self.assertTrue(AuditEvent.objects.filter(action="identity.employee_blocked").exists())
 
     def test_owner_updates_operator_card_fields(self) -> None:
         operator = HumanUser.objects.get(email="a.kotova@edevs.tech")
@@ -708,3 +708,223 @@ class EmployeeModelInvariantTests(TestCase):
         )
         self.assertEqual(response.status_code, 400)
         self.assertFalse(HumanUser.objects.filter(email="no-title@edevs.tech").exists())
+
+
+class EmployeeGovernanceTests(TestCase):
+    """ADR-HUB-0027 этап 2 / SPEC-HUB-0016 §8,§12: административная иерархия
+    OWNER/ADMIN/EMPLOYEE, target-aware управление и передача владения."""
+
+    def setUp(self) -> None:
+        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
+        self.organization = Organization.objects.get(slug="edevs")
+        self.sales = Department.objects.get(code="sales")
+
+    def _make(self, email: str, role: str, department: Department | None = None) -> HumanUser:
+        user = HumanUser.objects.create_user(email=email, password="member-password-123")
+        EmployeeProfile.objects.create(
+            user=user,
+            organization=self.organization,
+            role=role,
+            position_title="Позиция",
+            primary_department=None if role in (EmployeeRole.OWNER, EmployeeRole.ADMIN) else (department or self.sales),
+        )
+        return user
+
+    def _client(self, email: str, password: str = "member-password-123") -> APIClient:
+        client = APIClient()
+        client.login(username=email, password=password)
+        return client
+
+    def _create(self, client: APIClient, email: str, role: str) -> "object":
+        return client.post(
+            "/api/v1/employees/operators/",
+            data=json.dumps(
+                {
+                    "email": email,
+                    "fullName": "New Member",
+                    "positionTitle": "Позиция",
+                    "temporaryPassword": "temporary-password",
+                    "role": role,
+                }
+            ),
+            content_type="application/json",
+        )
+
+    # --- создание и назначение ролей ---
+
+    def test_owner_creates_admin_at_company_level(self) -> None:
+        client = self._client("owner@edevs.tech", "temporary-password")
+        response = self._create(client, "admin@edevs.tech", EmployeeRole.ADMIN)
+        self.assertEqual(response.status_code, 201)
+        profile = HumanUser.objects.get(email="admin@edevs.tech").employee_profile
+        self.assertEqual(profile.role, EmployeeRole.ADMIN)
+        self.assertIsNone(profile.primary_department)
+        self.assertTrue(AuditEvent.objects.filter(action="identity.employee_created").exists())
+
+    def test_admin_cannot_create_admin(self) -> None:
+        self._make("admin@edevs.tech", EmployeeRole.ADMIN)
+        response = self._create(self._client("admin@edevs.tech"), "admin2@edevs.tech", EmployeeRole.ADMIN)
+        self.assertEqual(response.status_code, 403)
+        self.assertFalse(HumanUser.objects.filter(email="admin2@edevs.tech").exists())
+        self.assertTrue(
+            AuditEvent.objects.filter(action="identity.employee_privileged_action_denied").exists()
+        )
+
+    def test_admin_creates_employee(self) -> None:
+        self._make("admin@edevs.tech", EmployeeRole.ADMIN)
+        response = self._create(self._client("admin@edevs.tech"), "emp@edevs.tech", EmployeeRole.EMPLOYEE)
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(HumanUser.objects.get(email="emp@edevs.tech").employee_profile.role, EmployeeRole.EMPLOYEE)
+
+    def test_create_owner_via_flow_is_rejected(self) -> None:
+        client = self._client("owner@edevs.tech", "temporary-password")
+        response = self._create(client, "owner2@edevs.tech", EmployeeRole.OWNER)
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(HumanUser.objects.filter(email="owner2@edevs.tech").exists())
+
+    # --- target-aware управление ---
+
+    def test_admin_can_block_employee(self) -> None:
+        emp = self._make("emp@edevs.tech", EmployeeRole.EMPLOYEE)
+        self._make("admin@edevs.tech", EmployeeRole.ADMIN)
+        response = self._client("admin@edevs.tech").post(f"/api/v1/employees/{emp.id}/block/")
+        self.assertEqual(response.status_code, 200)
+        emp.refresh_from_db()
+        self.assertFalse(emp.is_active)
+
+    def test_admin_cannot_block_another_admin(self) -> None:
+        other = self._make("admin2@edevs.tech", EmployeeRole.ADMIN)
+        self._make("admin@edevs.tech", EmployeeRole.ADMIN)
+        response = self._client("admin@edevs.tech").post(f"/api/v1/employees/{other.id}/block/")
+        self.assertEqual(response.status_code, 403)
+        other.refresh_from_db()
+        self.assertTrue(other.is_active)
+
+    def test_admin_cannot_block_owner(self) -> None:
+        owner = HumanUser.objects.get(email="owner@edevs.tech")
+        self._make("admin@edevs.tech", EmployeeRole.ADMIN)
+        response = self._client("admin@edevs.tech").post(f"/api/v1/employees/{owner.id}/block/")
+        self.assertEqual(response.status_code, 403)
+        owner.refresh_from_db()
+        self.assertTrue(owner.is_active)
+
+    def test_admin_cannot_update_another_admin(self) -> None:
+        other = self._make("admin2@edevs.tech", EmployeeRole.ADMIN)
+        self._make("admin@edevs.tech", EmployeeRole.ADMIN)
+        response = self._client("admin@edevs.tech").post(
+            f"/api/v1/employees/{other.id}/update/",
+            data=json.dumps({"fullName": "Hacked", "email": "admin2@edevs.tech", "positionTitle": "X"}),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_admin_cannot_change_employee_role(self) -> None:
+        emp = self._make("emp@edevs.tech", EmployeeRole.EMPLOYEE)
+        self._make("admin@edevs.tech", EmployeeRole.ADMIN)
+        response = self._client("admin@edevs.tech").post(
+            f"/api/v1/employees/{emp.id}/update/",
+            data=json.dumps(
+                {"fullName": "Emp", "email": "emp@edevs.tech", "positionTitle": "X", "role": EmployeeRole.ADMIN}
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+        emp.employee_profile.refresh_from_db()
+        self.assertEqual(emp.employee_profile.role, EmployeeRole.EMPLOYEE)
+
+    def test_owner_promotes_employee_to_admin(self) -> None:
+        emp = self._make("emp@edevs.tech", EmployeeRole.EMPLOYEE)
+        response = self._client("owner@edevs.tech", "temporary-password").post(
+            f"/api/v1/employees/{emp.id}/update/",
+            data=json.dumps(
+                {"fullName": "Emp", "email": "emp@edevs.tech", "positionTitle": "X", "role": EmployeeRole.ADMIN}
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        emp.employee_profile.refresh_from_db()
+        self.assertEqual(emp.employee_profile.role, EmployeeRole.ADMIN)
+        self.assertTrue(AuditEvent.objects.filter(action="identity.employee_role_changed").exists())
+
+    def test_employee_cannot_manage(self) -> None:
+        emp = self._make("emp@edevs.tech", EmployeeRole.EMPLOYEE)
+        other = self._make("emp2@edevs.tech", EmployeeRole.EMPLOYEE)
+        response = self._client("emp@edevs.tech").post(f"/api/v1/employees/{other.id}/block/")
+        self.assertEqual(response.status_code, 403)
+        emp.refresh_from_db()
+
+    def test_cross_org_target_is_not_found(self) -> None:
+        other_org = Organization.objects.create(name="Other", slug="other")
+        outsider = HumanUser.objects.create_user(email="out@other.tech", password="member-password-123")
+        EmployeeProfile.objects.create(
+            user=outsider, organization=other_org, role=EmployeeRole.EMPLOYEE, position_title="X"
+        )
+        response = self._client("owner@edevs.tech", "temporary-password").post(
+            f"/api/v1/employees/{outsider.id}/block/"
+        )
+        self.assertEqual(response.status_code, 404)
+
+    # --- передача владения ---
+
+    def test_owner_transfers_ownership_atomically(self) -> None:
+        target = self._make("heir@edevs.tech", EmployeeRole.EMPLOYEE)
+        owner = HumanUser.objects.get(email="owner@edevs.tech")
+        response = self._client("owner@edevs.tech", "temporary-password").post(
+            f"/api/v1/employees/{target.id}/transfer-ownership/",
+            data=json.dumps({"previousOwnerRole": EmployeeRole.ADMIN}),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        target.employee_profile.refresh_from_db()
+        owner.employee_profile.refresh_from_db()
+        self.assertEqual(target.employee_profile.role, EmployeeRole.OWNER)
+        self.assertIsNone(target.employee_profile.primary_department)
+        self.assertEqual(owner.employee_profile.role, EmployeeRole.ADMIN)
+        self.assertEqual(
+            EmployeeProfile.objects.filter(organization=self.organization, role=EmployeeRole.OWNER).count(),
+            1,
+        )
+        self.assertTrue(AuditEvent.objects.filter(action="identity.ownership_transferred").exists())
+
+    def test_admin_cannot_transfer_ownership(self) -> None:
+        target = self._make("heir@edevs.tech", EmployeeRole.EMPLOYEE)
+        self._make("admin@edevs.tech", EmployeeRole.ADMIN)
+        response = self._client("admin@edevs.tech").post(
+            f"/api/v1/employees/{target.id}/transfer-ownership/",
+            data=json.dumps({"previousOwnerRole": EmployeeRole.EMPLOYEE}),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(
+            EmployeeProfile.objects.filter(organization=self.organization, role=EmployeeRole.OWNER).count(),
+            1,
+        )
+
+    # --- обычные capability ADMIN ---
+
+    def test_admin_has_normal_capabilities(self) -> None:
+        self._make("admin@edevs.tech", EmployeeRole.ADMIN)
+        client = self._client("admin@edevs.tech")
+        overview = client.get("/api/v1/conversations/command-overview/?period=today")
+        self.assertEqual(overview.status_code, 200)
+        product = client.post(
+            "/api/v1/company/products/create/",
+            data=json.dumps({"code": "academy", "name": "Academy"}),
+            content_type="application/json",
+        )
+        self.assertEqual(product.status_code, 201)
+
+    def test_employee_denied_command_overview(self) -> None:
+        self._make("emp@edevs.tech", EmployeeRole.EMPLOYEE)
+        response = self._client("emp@edevs.tech").get("/api/v1/conversations/command-overview/?period=today")
+        self.assertEqual(response.status_code, 403)
+
+    def test_payload_permissions_reflect_actor(self) -> None:
+        self._make("emp@edevs.tech", EmployeeRole.EMPLOYEE)
+        self._make("admin@edevs.tech", EmployeeRole.ADMIN)
+        items = self._client("admin@edevs.tech").get("/api/v1/employees/").json()["items"]
+        by_email = {item["email"]: item for item in items}
+        # ADMIN может управлять EMPLOYEE, но не OWNER и не менять роли.
+        self.assertTrue(by_email["emp@edevs.tech"]["permissions"]["canBlock"])
+        self.assertFalse(by_email["emp@edevs.tech"]["permissions"]["canChangeRole"])
+        self.assertFalse(by_email["owner@edevs.tech"]["permissions"]["canBlock"])

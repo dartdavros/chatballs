@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 
 from hub_platform.identity.audit import record_audit_event
 from hub_platform.identity.models import AuditResult
-from hub_platform.identity.permissions import is_owner
+from hub_platform.identity.permissions import is_manager, is_owner
 
 
 class IsOwner(BasePermission):
@@ -21,6 +21,29 @@ class IsOwner(BasePermission):
         organization = getattr(getattr(user, "employee_profile", None), "organization", None)
         record_audit_event(
             action="identity.owner_permission_denied",
+            actor=user,
+            organization=organization,
+            result=AuditResult.DENIED,
+            request=request,
+        )
+        return False
+
+
+class IsManager(BasePermission):
+    """Обычные (не governance) capability уровня организации: OWNER и ADMIN
+    (ADR-HUB-0027 этап 2). EMPLOYEE отклоняется с аудитом отказа."""
+
+    message = "Owner or admin role required"
+
+    def has_permission(self, request: Request, view: APIView) -> bool:
+        user = request.user
+        if not (user and user.is_authenticated):
+            return False
+        if is_manager(user):
+            return True
+        organization = getattr(getattr(user, "employee_profile", None), "organization", None)
+        record_audit_event(
+            action="identity.manager_permission_denied",
             actor=user,
             organization=organization,
             result=AuditResult.DENIED,

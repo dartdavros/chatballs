@@ -27,7 +27,7 @@ from hub_platform.ai.services import (
     update_agent,
     update_knowledge,
 )
-from hub_platform.api.permissions import IsOwner
+from hub_platform.api.permissions import IsManager
 from hub_platform.identity.audit import record_audit_event
 
 
@@ -63,7 +63,7 @@ def _validation_error(error: ValidationError) -> Response:
 
 
 class AIAgentListView(APIView):
-    permission_classes = [IsOwner]
+    permission_classes = [IsManager]
 
     def get(self, request: Request) -> Response:
         agents = agents_for_organization(request.user.employee_profile.organization_id)
@@ -99,7 +99,7 @@ class AIAgentListView(APIView):
 
 
 class AIAgentDetailView(APIView):
-    permission_classes = [IsOwner]
+    permission_classes = [IsManager]
 
     def get(self, request: Request, agent_id: int) -> Response:
         try:
@@ -110,7 +110,7 @@ class AIAgentDetailView(APIView):
 
 
 class AIAgentUpdateView(APIView):
-    permission_classes = [IsOwner]
+    permission_classes = [IsManager]
 
     def patch(self, request: Request, agent_id: int) -> Response:
         organization_id = request.user.employee_profile.organization_id
@@ -135,7 +135,7 @@ class AIAgentUpdateView(APIView):
 
 
 class _AIAgentStatusView(APIView):
-    permission_classes = [IsOwner]
+    permission_classes = [IsManager]
     target_active: bool
 
     def post(self, request: Request, agent_id: int) -> Response:
@@ -178,7 +178,7 @@ def _knowledge_input(body: dict[str, object], *, current: Knowledge | None = Non
 
 
 class _KnowledgeBaseView(APIView):
-    permission_classes = [IsOwner]
+    permission_classes = [IsManager]
 
     def _org(self, request: Request):
         return request.user.employee_profile.organization

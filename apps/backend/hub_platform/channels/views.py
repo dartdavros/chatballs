@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from hub_platform.ai.provider.base import ProviderError
-from hub_platform.api.permissions import IsOwner
+from hub_platform.api.permissions import IsManager
 from hub_platform.channels.models import Channel
 from hub_platform.channels.runtime import run_channel_turn
 from hub_platform.channels.selectors import channel_for_organization, channels_for_organization
@@ -13,7 +13,7 @@ from hub_platform.identity.audit import record_audit_event
 
 
 class ChannelListView(APIView):
-    permission_classes = [IsOwner]
+    permission_classes = [IsManager]
 
     def get(self, request: Request) -> Response:
         items = channels_for_organization(request.user.employee_profile.organization_id)
@@ -21,7 +21,7 @@ class ChannelListView(APIView):
 
 
 class ChannelDetailView(APIView):
-    permission_classes = [IsOwner]
+    permission_classes = [IsManager]
 
     def patch(self, request: Request, channel_id: int) -> Response:
         try:
@@ -46,7 +46,7 @@ class ChannelDetailView(APIView):
 
 
 class ChannelTestChatView(APIView):
-    permission_classes = [IsOwner]
+    permission_classes = [IsManager]
 
     def post(self, request: Request, channel_id: int) -> Response:
         try:

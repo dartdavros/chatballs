@@ -29,6 +29,20 @@ export type LoginPayload =
   | { authenticated: true; user: SessionUser }
   | { authenticated: false; totpRequired: true; totpEnabled: true; challenge: AuthChallenge };
 
+// Флаги доступных действий над сотрудником для текущего пользователя. Backend —
+// источник истины (ADR-HUB-0027 этап 2); фронтенд скрывает недоступное.
+export type EmployeePermissions = {
+  canView: boolean;
+  canUpdateProfile: boolean;
+  canChangeRole: boolean;
+  canChangePlacement: boolean;
+  canBlock: boolean;
+  canUnblock: boolean;
+  canResetPassword: boolean;
+  canTerminateSessions: boolean;
+  canTransferOwnership: boolean;
+};
+
 export type Employee = {
   id: number;
   email: string;
@@ -42,6 +56,7 @@ export type Employee = {
   mustChangePassword: boolean;
   totpRequired: boolean;
   totpEnabled: boolean;
+  permissions?: EmployeePermissions;
 };
 
 export type Department = {

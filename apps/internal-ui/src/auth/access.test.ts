@@ -15,6 +15,14 @@ describe("role access", () => {
     }
   });
 
+  it("grants ADMIN every route like OWNER (ADR-HUB-0027 этап 2)", () => {
+    const all = [...OWNER_ONLY, ...SALES_EMPLOYEE_ROUTES, ...SUPPORT_EMPLOYEE_ROUTES];
+    for (const route of all) {
+      expect(canAccess("ADMIN", route)).toBe(true);
+    }
+    expect(defaultRoute("ADMIN")).toBe("command");
+  });
+
   it("grants sales EMPLOYEE only the sales workspace and profile", () => {
     for (const route of SALES_EMPLOYEE_ROUTES) {
       expect(canAccess("EMPLOYEE", route, "sales")).toBe(true);

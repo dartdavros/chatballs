@@ -38,10 +38,13 @@ def _recipient_user_ids(notification: Notification) -> list[int]:
         return [notification.recipient_user_id] if notification.recipient_user_id else []
     profiles = EmployeeProfile.objects.filter(organization_id=notification.organization_id, blocked_at__isnull=True)
     if notification.audience == NotificationAudience.OWNER:
-        profiles = profiles.filter(role=EmployeeRole.OWNER)
+        # Административный уровень (ADR-HUB-0027 этап 2): OWNER и ADMIN.
+        profiles = profiles.filter(role__in=(EmployeeRole.OWNER, EmployeeRole.ADMIN))
     elif notification.audience == NotificationAudience.OPERATORS:
-        # Зеркало visible_for: аудиторию OPERATORS видят и сотрудники, и владелец.
-        profiles = profiles.filter(role__in=(EmployeeRole.EMPLOYEE, EmployeeRole.OWNER))
+        # Зеркало visible_for: аудиторию OPERATORS видят сотрудники и менеджеры (OWNER/ADMIN).
+        profiles = profiles.filter(
+            role__in=(EmployeeRole.EMPLOYEE, EmployeeRole.OWNER, EmployeeRole.ADMIN)
+        )
     return list(profiles.values_list("user_id", flat=True))
 
 

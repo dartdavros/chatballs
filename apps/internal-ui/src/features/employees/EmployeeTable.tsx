@@ -62,7 +62,7 @@ function EmployeeRow({ employee, block, openEmployee, menuId, setMenuId }: { emp
             <a href="#" onClick={(event) => event.preventDefault()}><Icon name="logout" size={15} />Завершить сессии</a>
             <a href="#" onClick={(event) => event.preventDefault()}><Icon name="key" size={15} />Сбросить пароль</a>
             <span />
-            <button className={employee.isBlocked ? "success" : "danger"} onClick={() => block(employee)} disabled={employee.role === "OWNER" || employee.isBlocked}>{employee.isBlocked ? "Разблокировать" : "Заблокировать"}</button>
+            <button className={employee.isBlocked ? "success" : "danger"} onClick={() => block(employee)} disabled={employee.isBlocked || !(employee.permissions?.canBlock ?? employee.role !== "OWNER")}>{employee.isBlocked ? "Разблокировать" : "Заблокировать"}</button>
           </div>
         )}
       </td>

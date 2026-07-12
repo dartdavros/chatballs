@@ -5,7 +5,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from hub_platform.api.permissions import IsOwner
+from hub_platform.api.permissions import IsManager
 from hub_platform.identity.audit import record_audit_event
 from hub_platform.products.models import Offer, Product
 from hub_platform.products.selectors import product_for_organization
@@ -39,7 +39,7 @@ def _offer_input(body: dict[str, object], *, current: Offer | None = None) -> Of
 
 
 class _ProductScopedView(APIView):
-    permission_classes = [IsOwner]
+    permission_classes = [IsManager]
 
     def _product(self, request: Request, product_id: int) -> Product:
         return product_for_organization(

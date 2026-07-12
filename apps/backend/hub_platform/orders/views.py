@@ -4,7 +4,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from hub_platform.api.permissions import IsOwner
+from hub_platform.api.permissions import IsManager
 from hub_platform.conversations.models import Contact, Conversation
 from hub_platform.identity.audit import record_audit_event
 from hub_platform.orders.models import Order
@@ -148,7 +148,7 @@ class OrderDetailView(_Base):
 
 
 class _OrderActionView(_Base):
-    permission_classes = [IsOwner]
+    permission_classes = [IsManager]
 
     def _order(self, request: Request, order_id: int) -> Order:
         return order_for_organization(organization_id=self._org(request).id, order_id=order_id)

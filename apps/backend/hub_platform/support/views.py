@@ -4,7 +4,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from hub_platform.api.permissions import IsOwner
+from hub_platform.api.permissions import IsManager
 from hub_platform.channels.models import Channel
 from hub_platform.conversations.models import Conversation
 from hub_platform.conversations.serializers import conversation_payload
@@ -37,14 +37,14 @@ class _Public(APIView):
     permission_classes = [AllowAny]
 
 
-class _OwnerBase(APIView):
-    permission_classes = [IsOwner]
+class _ManagerBase(APIView):
+    permission_classes = [IsManager]
 
     def _org(self, request: Request):
         return request.user.employee_profile.organization
 
 
-class SupportContractListView(_OwnerBase):
+class SupportContractListView(_ManagerBase):
     def get(self, request: Request) -> Response:
         contracts = contracts_for_organization(self._org(request).id)
         return Response({"items": [support_contract_payload(c) for c in contracts]})
@@ -93,7 +93,7 @@ class SupportContractListView(_OwnerBase):
         return Response({"contract": support_contract_payload(contract)}, status=201)
 
 
-class SupportContractDetailView(_OwnerBase):
+class SupportContractDetailView(_ManagerBase):
     def get(self, request: Request, contract_id: int) -> Response:
         try:
             contract = contract_for_organization(
@@ -104,7 +104,7 @@ class SupportContractDetailView(_OwnerBase):
         return Response({"contract": support_contract_payload(contract)})
 
 
-class SupportContractStatusView(_OwnerBase):
+class SupportContractStatusView(_ManagerBase):
     def post(self, request: Request, contract_id: int) -> Response:
         try:
             contract = contract_for_organization(

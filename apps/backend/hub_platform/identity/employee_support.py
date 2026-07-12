@@ -3,11 +3,15 @@ import string
 
 from rest_framework.request import Request
 
+from hub_platform.identity.governance import employee_management_flags
 from hub_platform.identity.models import EmployeeProfile
 
 
-def employee_payload(profile: EmployeeProfile) -> dict[str, object]:
-    return {
+def employee_payload(
+    profile: EmployeeProfile,
+    actor: EmployeeProfile | None = None,
+) -> dict[str, object]:
+    payload: dict[str, object] = {
         "id": profile.user_id,
         "email": profile.user.email,
         "fullName": profile.user.full_name,
@@ -21,6 +25,11 @@ def employee_payload(profile: EmployeeProfile) -> dict[str, object]:
         "totpRequired": profile.totp_required,
         "totpEnabled": profile.totp_enabled,
     }
+    # Backend — источник истины для того, какие действия над сотрудником доступны
+    # запрашивающему (ADR-HUB-0027): фронтенд скрывает недоступное.
+    if actor is not None:
+        payload["permissions"] = employee_management_flags(actor, profile)
+    return payload
 
 
 def get_owned_profile(request: Request, user_id: int) -> EmployeeProfile | None:

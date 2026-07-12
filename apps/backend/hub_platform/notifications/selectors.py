@@ -1,6 +1,6 @@
 from django.db.models import Q, QuerySet
 
-from hub_platform.identity.permissions import is_owner
+from hub_platform.identity.permissions import is_manager
 from hub_platform.notifications.models import Notification, NotificationAudience
 
 
@@ -8,7 +8,8 @@ def visible_for(user) -> QuerySet[Notification]:
     profile = getattr(user, "employee_profile", None)
     if profile is None:
         return Notification.objects.none()
-    if is_owner(user):
+    # Административный уровень (OWNER/ADMIN) видит owner-аудиторию (ADR-HUB-0027 этап 2).
+    if is_manager(user):
         audiences = [NotificationAudience.ALL, NotificationAudience.OWNER, NotificationAudience.OPERATORS]
     else:
         audiences = [NotificationAudience.ALL, NotificationAudience.OPERATORS]
