@@ -1,6 +1,9 @@
 .hub-call-view { width:100%; max-width:428px; background:#fff; border:1px solid #e8e8e8; border-radius:24px; box-shadow:0 12px 40px rgba(0,0,0,.12); overflow:hidden; color:#262626; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif; }
 .hub-call-head { display:flex; align-items:center; gap:11px; padding:12px 15px; border-bottom:1px solid #e8e8e8; }
-.hub-call-avatar { display:flex; align-items:center; justify-content:center; border-radius:50%; color:#fff; font-weight:600; flex:none; padding-bottom:0.1em; }
+/* Инициалы без нижних выносных сидят на baseline, а flex ставит baseline в центр
+   круга — из-за чего заглавные буквы визуально уходят вверх (~0.37em). Сдвигаем
+   вниз через padding-top (box-sizing:border-box держит круг фиксированным). */
+.hub-call-avatar { display:flex; align-items:center; justify-content:center; border-radius:50%; color:#fff; font-weight:600; flex:none; padding-top:0.75em; }
 .hub-call-avatar.small { width:38px; height:38px; font-size:14px; }
 .hub-call-avatar.big { width:88px; height:88px; font-size:30px; position:relative; z-index:2; box-shadow:0 4px 18px rgba(0,0,0,.35); }
 .hub-call-avatar.pip { width:34px; height:34px; font-size:12px; background:#595959; position:absolute; inset:0; margin:auto; }
