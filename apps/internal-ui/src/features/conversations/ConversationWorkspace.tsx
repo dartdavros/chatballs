@@ -17,6 +17,7 @@ import {
 } from "./model";
 import type { ConversationListItem, ListTab } from "./types";
 import { useConversationCall } from "./useConversationCall";
+import { useIncomingMessageSound } from "./useIncomingMessageSound";
 
 // Общий workspace диалогов (SPEC-HUB-0010 §8.2): sales и support используют его.
 // Параметризуется department (изоляция inbox §10 + фильтр fetchConversations),
@@ -33,6 +34,7 @@ export function ConversationWorkspace({ department, listTitle, searchPlaceholder
   const [listTab, setListTab] = useState<ListTab>("all");
   const [search, setSearch] = useState("");
   const [conversations, setConversations] = useState<ApiConversation[]>([]);
+  const [listLoaded, setListLoaded] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(initialConversationId ?? null);
   const [detail, setDetail] = useState<ApiConversation | null>(null);
 
@@ -40,6 +42,7 @@ export function ConversationWorkspace({ department, listTitle, searchPlaceholder
     try {
       const items = await fetchConversations(department);
       setConversations(items);
+      setListLoaded(true);
       setSelectedId((current) => current ?? items[0]?.id ?? null);
     } catch {
       /* keep previous list on transient errors */
@@ -75,6 +78,7 @@ export function ConversationWorkspace({ department, listTitle, searchPlaceholder
     if (selectedId != null) void loadDetail(selectedId);
   }, [loadDetail, selectedId]);
   const callController = useConversationCall({ conversationId: selectedId, onConversationChanged });
+  useIncomingMessageSound(conversations, listLoaded);
 
   const dialogs = useMemo(() => conversations.map(toConversationListItem), [conversations]);
   const filtered = useMemo(() => {

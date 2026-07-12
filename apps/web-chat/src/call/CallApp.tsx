@@ -1,4 +1,4 @@
-import { CallView, useCallRtcSession } from "@edevs/ui";
+import { CallView, useCallRtcSession, useLoopingAudio } from "@edevs/ui";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
@@ -108,6 +108,7 @@ export function CallApp() {
   }
 
   const mode = resolveCallViewMode({ loading, invalid, call, started, connection: rtc.connectionPhase, mediaIssue: rtc.mediaIssue });
+  useLoopingAudio("/chat/audio/ringtone.mp3", !started && (call?.status === "REQUESTED" || call?.status === "RINGING"));
   const status = useMemo(
     () => buildCallViewStatus({ loading, invalid, call, connection: rtc.connectionPhase, mediaIssue: rtc.mediaIssue, close, retry: rtc.restart, prepare: rtc.prepare, join: () => void join() }),
     [loading, invalid, call, joining, rtc.connectionPhase, rtc.mediaIssue, close, rtc.restart, rtc.prepare],

@@ -1,4 +1,4 @@
-import { CallView, type CallViewMode, type CallViewStatus, useCallRtcSession } from "@edevs/ui";
+import { CallView, type CallViewMode, type CallViewStatus, useCallRtcSession, useLoopingAudio } from "@edevs/ui";
 import { Modal } from "antd";
 import { useEffect, useMemo, useState } from "react";
 
@@ -42,6 +42,7 @@ export function CallOverlay(props: Props) {
   });
   const elapsed = useElapsed(call?.connectedAt ?? null, call?.status === "ACTIVE");
   const mode = resolveMode(call, props.errorText, rtc.connectionPhase, rtc.mediaIssue);
+  useLoopingAudio("/audio/ringtone.mp3", props.open && mode === "ringing", 0.5);
   const status = useMemo(
     () => buildStatus(props, rtc.connectionPhase, rtc.mediaIssue, rtc.restart, rtc.prepare, rtc.start),
     [props, rtc.connectionPhase, rtc.mediaIssue, rtc.restart, rtc.prepare, rtc.start],

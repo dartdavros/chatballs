@@ -1,9 +1,6 @@
 .hub-call-view { width:100%; max-width:428px; background:#fff; border:1px solid #e8e8e8; border-radius:24px; box-shadow:0 12px 40px rgba(0,0,0,.12); overflow:hidden; color:#262626; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif; }
 .hub-call-head { display:flex; align-items:center; gap:11px; padding:12px 15px; border-bottom:1px solid #e8e8e8; }
-/* Инициалы без нижних выносных сидят на baseline, а flex ставит baseline в центр
-   круга — из-за чего заглавные буквы визуально уходят вверх (~0.37em). Сдвигаем
-   вниз через padding-top (box-sizing:border-box держит круг фиксированным). */
-.hub-call-avatar { display:flex; align-items:center; justify-content:center; border-radius:50%; color:#fff; font-weight:600; flex:none; padding-top:0.75em; }
+.hub-call-avatar { display:grid; place-items:center; box-sizing:border-box; padding:0; border-radius:50%; color:#fff; font-weight:600; line-height:1; text-align:center; flex:none; }
 .hub-call-avatar.small { width:38px; height:38px; font-size:14px; }
 .hub-call-avatar.big { width:88px; height:88px; font-size:30px; position:relative; z-index:2; box-shadow:0 4px 18px rgba(0,0,0,.35); }
 .hub-call-avatar.pip { width:34px; height:34px; font-size:12px; background:#595959; position:absolute; inset:0; margin:auto; }
@@ -20,7 +17,7 @@
 .hub-call-avatar-stage { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; z-index:3; }
 .hub-call-avatar-stage > div:last-child { text-align:center; }
 .hub-call-avatar-stage strong { display:block; font-size:15px; color:#fff; }
-.hub-call-avatar-stage div > span { display:block; margin-top:3px; color:rgba(255,255,255,.6); font-size:12.5px; }
+.hub-call-avatar-stage > div:last-child > span { display:block; margin-top:3px; color:rgba(255,255,255,.6); font-size:12.5px; }
 .hub-call-avatar-wrap { position:relative; display:flex; align-items:center; justify-content:center; }
 .hub-call-avatar-wrap > i { display:none; position:absolute; width:88px; height:88px; border-radius:50%; border:2px solid rgba(255,255,255,.6); animation:hub-call-ring 1.9s ease-out infinite; }
 .hub-call-avatar-wrap.rings > i { display:block; }

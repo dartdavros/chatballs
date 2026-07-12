@@ -24,7 +24,11 @@ LOADER_JS = r"""
     panelUrl += "&mode=support&token=" + encodeURIComponent(token);
   }
 
-  var open = false, frame = null;
+  var open = false, frame = null, unread = false, callActive = false;
+
+  var style = document.createElement("style");
+  style.textContent = "@keyframes edevs-chat-message-bump{0%,100%{transform:translateX(0)}35%{transform:translateX(-4px) rotate(-3deg)}70%{transform:translateX(3px) rotate(2deg)}}@keyframes edevs-chat-call-shake{0%,18%,100%{transform:translateX(0) rotate(0)}3%{transform:translateX(-5px) rotate(-5deg)}6%{transform:translateX(5px) rotate(5deg)}9%{transform:translateX(-4px) rotate(-4deg)}12%{transform:translateX(4px) rotate(4deg)}15%{transform:translateX(-2px) rotate(-2deg)}}.edevs-chat-message-bump{animation:edevs-chat-message-bump .42s ease-out}.edevs-chat-call-shake{animation:edevs-chat-call-shake 3.2s ease-in-out infinite}";
+  (document.head || document.documentElement).appendChild(style);
 
   var btn = document.createElement("button");
   btn.setAttribute("aria-label", "Открыть чат");
@@ -32,8 +36,42 @@ LOADER_JS = r"""
   btn.innerHTML = '<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/></svg>';
 
   var dot = document.createElement("span");
-  dot.style.cssText = "position:absolute;top:10px;right:10px;width:12px;height:12px;border-radius:50%;background:#ff4d4f;border:2px solid #1677ff;display:none;";
+  dot.style.cssText = "position:absolute;top:8px;right:8px;width:12px;height:12px;border-radius:50%;background:#faad14;border:2px solid #fff;display:none;";
   btn.appendChild(dot);
+
+  var notification = new Audio(origin + "/chat/audio/notification.mp3");
+  var ringtone = new Audio(origin + "/chat/audio/ringtone.mp3");
+  notification.preload = "auto";
+  ringtone.preload = "auto";
+  ringtone.loop = true;
+  ringtone.volume = 1;
+
+  function play(audio) {
+    var result = audio.play();
+    if (result && result.catch) result.catch(function () {});
+  }
+
+  function updateDot() {
+    dot.style.display = !open && (unread || callActive) ? "block" : "none";
+  }
+
+  function bumpLauncher() {
+    btn.classList.remove("edevs-chat-message-bump");
+    void btn.offsetWidth;
+    btn.classList.add("edevs-chat-message-bump");
+    window.setTimeout(function () { btn.classList.remove("edevs-chat-message-bump"); }, 450);
+  }
+
+  function setCallActive(active) {
+    callActive = active;
+    btn.classList.toggle("edevs-chat-call-shake", active);
+    if (active) play(ringtone);
+    else {
+      ringtone.pause();
+      ringtone.currentTime = 0;
+    }
+    updateDot();
+  }
 
   function ensureFrame() {
     if (frame) return;
@@ -46,7 +84,18 @@ LOADER_JS = r"""
       if (e.origin !== origin) return;
       var d = e.data || {};
       if (d.type === "edevs-chat-close") setOpen(false);
-      if (d.type === "edevs-chat-unread") dot.style.display = d.unread && !open ? "block" : "none";
+      if (d.type === "edevs-chat-unread") {
+        unread = Boolean(d.unread);
+        updateDot();
+      }
+      if (d.type === "edevs-chat-activity" && d.kind === "message") {
+        unread = !open;
+        updateDot();
+        if (!open && !callActive) bumpLauncher();
+        notification.currentTime = 0;
+        play(notification);
+      }
+      if (d.type === "edevs-chat-activity" && d.kind === "call") setCallActive(Boolean(d.active));
     });
   }
 
@@ -56,13 +105,19 @@ LOADER_JS = r"""
     frame.style.display = open ? "block" : "none";
     btn.style.display = open ? "none" : "flex";
     if (open) {
-      dot.style.display = "none";
+      unread = false;
+      updateDot();
+      if (callActive) play(ringtone);
       try { frame.contentWindow.postMessage({ type: "edevs-chat-opened" }, origin); } catch (_) {}
-    }
+    } else updateDot();
   }
 
   btn.addEventListener("click", function () { setOpen(true); });
-  if (document.body) document.body.appendChild(btn);
-  else window.addEventListener("DOMContentLoaded", function () { document.body.appendChild(btn); });
+  function mount() {
+    document.body.appendChild(btn);
+    ensureFrame();
+  }
+  if (document.body) mount();
+  else window.addEventListener("DOMContentLoaded", mount);
 })();
 """

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { pollSupport, sendSupport, startSupportSession, type WebMessage } from "./api";
+import { useWidgetActivity } from "./widgetActivity";
 
 // Support-режим виджета (SPEC-HUB-0010 §7): authenticated in-product чат.
 // Нет consent/lead form, нет полей имя/email/purchase — клиент уже авторизован
@@ -23,6 +24,7 @@ export function SupportApp() {
   const [input, setInput] = useState("");
   const lastId = useRef(0);
   const bodyRef = useRef<HTMLDivElement>(null);
+  const notifyNewMessage = useWidgetActivity(false);
 
   // Старт сессии один раз (SPEC §7.2: нет consent/accept flow).
   useEffect(() => {
@@ -61,6 +63,7 @@ export function SupportApp() {
         if (!alive) return;
         setState(data.state);
         if (data.messages.length) {
+          if (data.messages.some((m) => m.author === "ai" || m.author === "operator")) notifyNewMessage();
           lastId.current = Math.max(lastId.current, ...data.messages.map((m) => m.id));
           setMessages((prev) => [...prev, ...data.messages.filter((m) => !prev.some((p) => p.id === m.id))]);
           if (data.messages.some((m) => m.author !== "client")) setAwaiting(false);
@@ -94,6 +97,7 @@ export function SupportApp() {
       const data = await pollSupport(session.widgetCredential, lastId.current);
       setState(data.state);
       if (data.messages.length) {
+        if (data.messages.some((m) => m.author === "ai" || m.author === "operator")) notifyNewMessage();
         lastId.current = Math.max(lastId.current, ...data.messages.map((m) => m.id));
         setMessages((prev) => [...prev, ...data.messages.filter((m) => !prev.some((p) => p.id === m.id))]);
         setAwaiting(false);
