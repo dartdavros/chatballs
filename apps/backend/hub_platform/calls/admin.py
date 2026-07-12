@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from hub_platform.calls.models import CallInvite, CallParticipant, CallSession
+from hub_platform.calls.models import CallInvite, CallMetric, CallParticipant, CallSession
 
 
 @admin.register(CallSession)
@@ -21,3 +21,9 @@ class CallInviteAdmin(admin.ModelAdmin):
 class CallParticipantAdmin(admin.ModelAdmin):
     list_display = ["call_session", "side", "last_connection_state", "joined_at", "left_at"]
     list_filter = ["side", "last_connection_state"]
+
+
+@admin.register(CallMetric)
+class CallMetricAdmin(admin.ModelAdmin):
+    list_display = ["call_session", "side", "connection_type", "round_trip_ms", "updated_at"]
+    list_filter = ["connection_type", "side"]

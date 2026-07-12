@@ -192,6 +192,7 @@ export class CallRtcClient {
         case "connected":
           this.sendCommand({ type: "participant.connection_state", state: "CONNECTED" });
           this.options.handlers.onConnection?.("connected");
+          void this.reportMetrics();
           break;
         case "disconnected":
           this.sendCommand({ type: "participant.connection_state", state: "RECONNECTING" });
@@ -209,6 +210,51 @@ export class CallRtcClient {
       }
     };
     return pc;
+  }
+
+  /**
+   * Технические метрики соединения (SPEC §13): только КАТЕГОРИЯ выбранного
+   * ICE-кандидата (host/srflx/relay) и RTT — чтобы отличить direct от TURN relay.
+   * Ни SDP, ни адреса кандидатов, ни медиаданные не отправляются.
+   */
+  private async reportMetrics(): Promise<void> {
+    const pc = this.pc;
+    if (!pc) return;
+    try {
+      const stats = await pc.getStats();
+      const get = (id: unknown): Record<string, unknown> | undefined =>
+        typeof id === "string" ? (stats.get(id) as Record<string, unknown> | undefined) : undefined;
+      let selectedId = "";
+      let pair: Record<string, unknown> | null = null;
+      stats.forEach((report) => {
+        const entry = report as Record<string, unknown>;
+        if (entry.type === "transport" && typeof entry.selectedCandidatePairId === "string") {
+          selectedId = entry.selectedCandidatePairId;
+        }
+      });
+      stats.forEach((report) => {
+        const entry = report as Record<string, unknown>;
+        if (entry.type !== "candidate-pair") return;
+        if (entry.id === selectedId || (!pair && entry.nominated === true && entry.state === "succeeded")) {
+          pair = entry;
+        }
+      });
+      const selected = pair as Record<string, unknown> | null;
+      if (!selected) return;
+      const candidateType = (id: unknown): string => {
+        const type = get(id)?.candidateType;
+        return typeof type === "string" ? type : "";
+      };
+      const rtt = selected.currentRoundTripTime;
+      this.sendCommand({
+        type: "participant.metrics",
+        localCandidateType: candidateType(selected.localCandidateId),
+        remoteCandidateType: candidateType(selected.remoteCandidateId),
+        roundTripMs: typeof rtt === "number" ? Math.round(rtt * 1000) : null,
+      });
+    } catch {
+      /* getStats недоступен/прерван — метрики необязательны */
+    }
   }
 
   private publishMediaState(): void {

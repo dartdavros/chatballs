@@ -19,6 +19,7 @@ from hub_platform.calls.models import (
     TERMINAL_CALL_STATUSES,
 )
 from hub_platform.calls.serializers import public_call_state_payload
+from hub_platform.calls.services import record_call_metric
 
 SIDE_TO_ENDED_BY = {
     ParticipantSide.STAFF: CallEndedBy.STAFF,
@@ -121,6 +122,21 @@ def report_connection(call_id, side: str, connected: bool) -> tuple[dict | None,
     except CallInvalidTransition:
         return None, False
     return public_call_state_payload(call), True
+
+
+def record_metric(call_id, side: str, content: dict) -> None:
+    """Метрики соединения от участника: только категория маршрута и RTT.
+
+    Ничего не ретранслируется собеседнику и не логируется — payload не содержит
+    медиаконтента, но и типы кандидатов наружу не пересылаются.
+    """
+    record_call_metric(
+        call_session_id=call_id,
+        side=side,
+        local_candidate_type=content.get("localCandidateType"),
+        remote_candidate_type=content.get("remoteCandidateType"),
+        round_trip_ms=content.get("roundTripMs"),
+    )
 
 
 def end_from_signaling(call_id, side: str) -> dict:

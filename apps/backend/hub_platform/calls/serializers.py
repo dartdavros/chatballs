@@ -18,6 +18,16 @@ def call_payload(call: CallSession) -> dict:
         }
         for participant in call.participants.all()
     ]
+    metrics = [
+        {
+            "side": metric.side,
+            "connectionType": metric.connection_type,
+            "localCandidateType": metric.local_candidate_type or None,
+            "remoteCandidateType": metric.remote_candidate_type or None,
+            "roundTripMs": metric.round_trip_ms,
+        }
+        for metric in call.metrics.all()
+    ]
     return {
         "id": str(call.id),
         "conversationId": call.conversation_id,
@@ -32,6 +42,7 @@ def call_payload(call: CallSession) -> dict:
         "failureCode": call.failure_code or None,
         "durationSeconds": call.duration_seconds,
         "participants": participants,
+        "metrics": metrics,
     }
 
 

@@ -54,6 +54,9 @@ class CallSignalingConsumer(AsyncJsonWebsocketConsumer):
             await self._relay(msg_type, content)
         elif msg_type == "participant.connection_state":
             await self._connection_state(content)
+        elif msg_type == "participant.metrics":
+            # Технические метрики без медиаконтента: сохраняем, не ретранслируем.
+            await database_sync_to_async(signaling.record_metric)(self.call_id, self.side, content)
         elif msg_type == "call.ended":
             payload = await database_sync_to_async(signaling.end_from_signaling)(self.call_id, self.side)
             await self._broadcast({"type": "call.state", "call": payload}, include_self=True)

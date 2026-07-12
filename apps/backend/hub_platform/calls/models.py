@@ -62,6 +62,12 @@ class InviteDeliveryStatus(models.TextChoices):
     FAILED = "FAILED", "Ошибка доставки"
 
 
+class CallConnectionType(models.TextChoices):
+    DIRECT = "DIRECT", "Прямое P2P"
+    RELAY = "RELAY", "Через TURN relay"
+    UNKNOWN = "UNKNOWN", "Неизвестно"
+
+
 class CallSession(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     organization = models.ForeignKey("identity.Organization", on_delete=models.PROTECT, related_name="call_sessions")
@@ -171,3 +177,34 @@ class CallParticipant(models.Model):
 
     def __str__(self) -> str:
         return f"participant:{self.call_session_id}/{self.side}"
+
+
+class CallMetric(models.Model):
+    """Технические метрики соединения без медиаконтента (SPEC-HUB-0013 §13).
+
+    Хранится только КАТЕГОРИЯ ICE-кандидата (host/srflx/prflx/relay) и RTT, но
+    никогда сам ICE candidate, его адрес, SDP или медиапоток. Позволяет считать
+    долю direct/relay звонков (E15) и подтверждать TURN fallback, не раскрывая
+    сетевые адреса участников.
+    """
+
+    call_session = models.ForeignKey(CallSession, on_delete=models.CASCADE, related_name="metrics")
+    side = models.CharField(max_length=16, choices=ParticipantSide.choices)
+    connection_type = models.CharField(
+        max_length=16,
+        choices=CallConnectionType.choices,
+        default=CallConnectionType.UNKNOWN,
+    )
+    local_candidate_type = models.CharField(max_length=8, blank=True)
+    remote_candidate_type = models.CharField(max_length=8, blank=True)
+    round_trip_ms = models.PositiveIntegerField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["call_session", "side"], name="uniq_call_metric_side"),
+        ]
+
+    def __str__(self) -> str:
+        return f"metric:{self.call_session_id}/{self.side}/{self.connection_type}"
