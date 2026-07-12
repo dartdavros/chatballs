@@ -12,6 +12,8 @@ import json
 import logging
 import urllib.error
 
+from django.conf import settings
+
 from hub_platform.conversations.transports.base import InboundMessage, request_json
 from hub_platform.integrations.checks import DEFAULT_TELEGRAM_BASE_URL
 
@@ -52,7 +54,7 @@ def poll_updates(integration) -> tuple[list[InboundMessage], str]:
     if not token:
         return [], integration.poll_marker
     offset = integration.poll_marker or ""
-    url = f"{_base(integration)}/bot{token}/getUpdates?timeout=20&limit=100"
+    url = f"{_base(integration)}/bot{token}/getUpdates?timeout={settings.HUB_MESSENGER_POLL_TIMEOUT_SECONDS}&limit=100"
     if offset:
         url += f"&offset={offset}"
     try:

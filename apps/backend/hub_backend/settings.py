@@ -169,6 +169,12 @@ HUB_AI_GLOBAL_DAILY_COST_LIMIT_MICROS = int(os.environ.get("HUB_AI_GLOBAL_DAILY_
 HUB_AI_PRICING: dict = {}  # переопределение цен micro-USD/токен по модели
 HUB_AI_EMBEDDING_MODEL = os.environ.get("HUB_AI_EMBEDDING_MODEL", "openai/text-embedding-3-small")
 
+# Long-poll hold-time мессенджеров (сек). Держим малым: единый воркер выполняет
+# и inbound-поллинг, и outbox-диспатч в одном потоке — при большом hold-time
+# getUpdates/updates блокирует цикл и outbox (приглашения звонков, уведомления,
+# ответы AI) уходит с задержкой в размер long-poll на каждое подключение.
+HUB_MESSENGER_POLL_TIMEOUT_SECONDS = int(os.environ.get("HUB_MESSENGER_POLL_TIMEOUT_SECONDS", "2"))
+
 # Password reset link lifetime. UI обещает 30 минут (default_token_generator uses this setting).
 PASSWORD_RESET_TIMEOUT = int(os.environ.get("PASSWORD_RESET_TIMEOUT", str(30 * 60)))
 

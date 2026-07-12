@@ -14,6 +14,8 @@ import re
 import urllib.error
 import urllib.parse
 
+from django.conf import settings
+
 from hub_platform.conversations.transports.base import InboundMessage, first, request_json
 from hub_platform.integrations.checks import DEFAULT_MAX_BASE_URL
 
@@ -100,7 +102,7 @@ def poll_updates(integration) -> tuple[list[InboundMessage], str]:
     token = integration.secret
     if not token:
         return [], integration.poll_marker
-    params = {"timeout": 20, "limit": 100}
+    params = {"timeout": settings.HUB_MESSENGER_POLL_TIMEOUT_SECONDS, "limit": 100}
     if integration.poll_marker:
         params["marker"] = integration.poll_marker
     url = f"{_base(integration)}/updates?{urllib.parse.urlencode(params)}"
