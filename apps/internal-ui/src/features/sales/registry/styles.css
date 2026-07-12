@@ -1,0 +1,44 @@
+/* Единый реестр продаж (SPEC-HUB-0014 §8.1). Переиспользует табличные классы
+   .sales-orders-* из features/sales/orders; здесь только специфика реестра. */
+
+.sales-orders-table.registry {
+  min-width: 1440px;
+}
+
+.sales-orders-table .muted-cell {
+  color: #8c8c8c;
+  font-size: 12.5px;
+}
+
+.sales-registry-filters {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.sales-registry-filter select {
+  height: 34px;
+  padding: 0 30px 0 12px;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  background: #ffffff
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238c8c8c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>")
+    no-repeat right 10px center;
+  color: #262626;
+  font-size: 13px;
+  font-family: inherit;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+.sales-registry-filter select:hover {
+  border-color: #1677ff;
+}
+
+.sales-registry-filter select:focus {
+  outline: none;
+  border-color: #1677ff;
+}

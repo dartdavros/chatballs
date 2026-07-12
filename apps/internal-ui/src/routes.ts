@@ -11,7 +11,7 @@ export const routes: Record<RouteKey, string> = {
   salesClientDetail: "Контакт",
   salesClients: "Контакты",
   salesDialogs: "Диалоги",
-  salesOrderDetail: "Заказ",
+  salesOrderDetail: "Продажа",
   salesOrders: "Продажи",
   salesOverview: "Обзор",
   supportOverview: "Обзор",

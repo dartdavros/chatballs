@@ -1,0 +1,172 @@
+/* Карточка продажи (SPEC-HUB-0014 §8.2). Переиспользует .order-detail-* и
+   .ai-card из features/sales/order-detail; здесь — таймлайн событий и действия. */
+
+.sale-link-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #1677ff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.sale-link-button:hover {
+  text-decoration: underline;
+}
+
+.sale-snapshot-empty,
+.sale-timeline-empty {
+  margin: 0;
+  padding: 4px 2px 2px;
+  color: #8c8c8c;
+  font-size: 13px;
+}
+
+/* --- Append-only таймлайн --- */
+.sale-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sale-timeline-item {
+  display: flex;
+  gap: 12px;
+  padding: 2px 0;
+}
+
+.sale-timeline-dot {
+  position: relative;
+  width: 12px;
+  height: 12px;
+  margin-top: 4px;
+  border-radius: 50%;
+  flex: none;
+  background: #d9d9d9;
+}
+
+.sale-timeline-dot.done {
+  background: #389e0d;
+}
+
+.sale-timeline-dot.active {
+  background: #1677ff;
+}
+
+.sale-timeline-dot.error {
+  background: #cf1322;
+}
+
+/* Соединительная линия между событиями. */
+.sale-timeline-item:not(:last-child) .sale-timeline-dot::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 14px;
+  transform: translateX(-50%);
+  width: 2px;
+  height: calc(100% + 8px);
+  background: #f0f0f0;
+}
+
+.sale-timeline-body {
+  padding-bottom: 12px;
+}
+
+.sale-timeline-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sale-timeline-head strong {
+  color: #262626;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.sale-timeline-source {
+  padding: 1px 8px;
+  border-radius: 6px;
+  background: #f5f5f5;
+  color: #8c8c8c;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.sale-timeline-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 2px;
+  color: #8c8c8c;
+  font-size: 12.5px;
+}
+
+.sale-timeline-warn {
+  color: #d48806;
+  font-weight: 600;
+}
+
+.sale-timeline-error {
+  margin-top: 4px;
+  color: #cf1322;
+  font-family: "SF Mono", ui-monospace, Menlo, monospace;
+  font-size: 12px;
+}
+
+/* --- Инлайн-форма действий --- */
+.sale-action-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.sale-action-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.sale-action-field.wide {
+  flex: 1;
+  min-width: 220px;
+}
+
+.sale-action-field span {
+  color: #8c8c8c;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.sale-action-field input {
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  background: #fff;
+  color: #262626;
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.sale-action-field input:focus {
+  outline: none;
+  border-color: #1677ff;
+}
+
+.sale-action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.sale-action-error {
+  margin-top: 10px;
+  color: #cf1322;
+  font-size: 12.5px;
+}

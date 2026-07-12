@@ -12,6 +12,8 @@
 @import "./features/sales/dialogs/styles.css";
 @import "./features/sales/order-detail/styles.css";
 @import "./features/sales/orders/styles.css";
+@import "./features/sales/registry/styles.css";
+@import "./features/sales/sale-detail/styles.css";
 @import "./features/departments/styles.css";
 @import "./shared/table-controls.css";
 @import "./features/products/styles.css";

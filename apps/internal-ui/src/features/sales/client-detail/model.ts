@@ -5,7 +5,7 @@ export type ClientDetailTab = "overview" | "dialogs" | "orders" | "ids" | "conse
 export const clientDetailTabs: Array<{ key: ClientDetailTab; label: string }> = [
   { key: "overview", label: "Обзор" },
   { key: "dialogs", label: "Диалоги" },
-  { key: "orders", label: "Заказы" },
+  { key: "orders", label: "Продажи" },
   { key: "ids", label: "Идентификаторы каналов" },
   { key: "consent", label: "Consent" },
   { key: "audit", label: "Аудит" },
