@@ -222,9 +222,14 @@
   background: #f0f0f0;
 }
 
-.role-badge.operator {
+.role-badge.employee {
   color: #0958d9;
   background: #e6f4ff;
+}
+
+.role-badge.admin {
+  color: #ad4e00;
+  background: #fff7e6;
 }
 
 .status-pill {

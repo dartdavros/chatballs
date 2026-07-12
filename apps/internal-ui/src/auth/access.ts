@@ -1,10 +1,11 @@
 import type { Role, RouteKey } from "../types";
 
 // Матрица доступа SPEC-HUB-0004 §9 + SPEC-HUB-0010 §8.1/§10. OWNER имеет сквозной
-// доступ; OPERATOR работает только в пространстве своего отдела и личном профиле.
-// Department-scoped: sales operator видит только sales, support operator — только
-// support (изоляция inbox §10). §8.1 (оператор в нескольких отделах) не покрыт —
-// оператор строго в одном отделе (одиночный FK department на backend).
+// доступ; EMPLOYEE работает только в пространстве своего отдела и личном профиле.
+// Compat-адаптер этапа 1 (ADR-HUB-0027): операционный доступ по-прежнему определяется
+// department. Полная capability-модель придёт на этапе 3. Department-scoped: sales →
+// только sales, support → только support (изоляция inbox §10). §8.1 (несколько
+// отделов) не покрыт — сотрудник строго в одном основном отделе (одиночный FK).
 const SALES_ROUTES: ReadonlySet<RouteKey> = new Set<RouteKey>([
   "salesOverview",
   "salesDialogs",
@@ -23,7 +24,7 @@ export function canAccess(role: Role, route: RouteKey, department?: string | nul
   if (role === "OWNER") return true;
   if (route === "profile") return true;
   if (department === "support") return SUPPORT_ROUTES.has(route);
-  // По умолчанию OPERATOR — sales-пространство (обратная совместимость).
+  // По умолчанию EMPLOYEE — sales-пространство (обратная совместимость).
   return SALES_ROUTES.has(route);
 }
 

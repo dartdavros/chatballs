@@ -1,6 +1,6 @@
 import { Icon } from "../../../shared/icons";
 import { EmptyState, LoadingState } from "../../../shared/ui";
-import type { RouteKey } from "../../../types";
+import type { Role, RouteKey } from "../../../types";
 import { StatusBadge } from "../orders/StatusBadge";
 import { actorView, attributionLabel, dateTimeLong, money, sourceBadge, statusBadge } from "../registry/model";
 import { SaleActionPanel } from "./SaleActionPanel";
@@ -16,7 +16,7 @@ export function SaleDetailPage({
   openDialog,
 }: {
   saleId: number | null;
-  role: "OWNER" | "OPERATOR";
+  role: Role;
   setRoute: (route: RouteKey) => void;
   openDialog: (conversationId: number) => void;
 }) {

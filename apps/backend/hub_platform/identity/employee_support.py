@@ -12,8 +12,9 @@ def employee_payload(profile: EmployeeProfile) -> dict[str, object]:
         "email": profile.user.email,
         "fullName": profile.user.full_name,
         "role": profile.role,
+        "positionTitle": profile.position_title,
         "phone": profile.phone,
-        "department": profile.department.code if profile.department else None,
+        "department": profile.primary_department.code if profile.primary_department else None,
         "isActive": profile.user.is_active,
         "isBlocked": profile.is_blocked,
         "mustChangePassword": profile.must_change_password,
@@ -25,7 +26,7 @@ def employee_payload(profile: EmployeeProfile) -> dict[str, object]:
 def get_owned_profile(request: Request, user_id: int) -> EmployeeProfile | None:
     owner_profile = request.user.employee_profile
     try:
-        return EmployeeProfile.objects.select_related("user", "department").get(
+        return EmployeeProfile.objects.select_related("user", "primary_department").get(
             user_id=user_id,
             organization=owner_profile.organization,
         )

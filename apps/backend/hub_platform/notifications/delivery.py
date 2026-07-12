@@ -40,8 +40,8 @@ def _recipient_user_ids(notification: Notification) -> list[int]:
     if notification.audience == NotificationAudience.OWNER:
         profiles = profiles.filter(role=EmployeeRole.OWNER)
     elif notification.audience == NotificationAudience.OPERATORS:
-        # Зеркало visible_for: аудиторию OPERATORS видят и операторы, и владелец.
-        profiles = profiles.filter(role__in=(EmployeeRole.OPERATOR, EmployeeRole.OWNER))
+        # Зеркало visible_for: аудиторию OPERATORS видят и сотрудники, и владелец.
+        profiles = profiles.filter(role__in=(EmployeeRole.EMPLOYEE, EmployeeRole.OWNER))
     return list(profiles.values_list("user_id", flat=True))
 
 

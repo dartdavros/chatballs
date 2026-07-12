@@ -9,6 +9,7 @@ export type EmployeeForm = {
   email: string;
   fullName: string;
   phone: string;
+  positionTitle: string;
   role: Role;
   totpEnabled: boolean;
 };
@@ -36,6 +37,7 @@ export function employeeForm(employee: Employee): EmployeeForm {
     fullName: employee.fullName || employee.email,
     phone: employee.phone || employeeDetails(employee).phone,
     email: employee.email,
+    positionTitle: employee.positionTitle,
     role: employee.role,
     department: employee.department ?? "sales",
     totpEnabled: employee.totpEnabled,

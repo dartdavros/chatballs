@@ -53,8 +53,9 @@ class CallDomainMixin:
         EmployeeProfile.objects.create(
             user=user,
             organization=self.organization,
-            role=EmployeeRole.OPERATOR,
-            department=self.support_department,
+            role=EmployeeRole.EMPLOYEE,
+            position_title="Оператор поддержки",
+            primary_department=self.support_department,
         )
         return user
 

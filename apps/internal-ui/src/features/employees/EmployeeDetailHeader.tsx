@@ -30,7 +30,7 @@ export function EmployeeDetailHeader({
             <RoleBadge role={form.role} />
             <StatusPill status={status} />
           </div>
-          <p>{form.email} · {departmentLabel}</p>
+          <p>{form.email} · {form.positionTitle || "Должность не указана"} · {departmentLabel}</p>
         </div>
       </div>
       <div className="employee-header-actions">

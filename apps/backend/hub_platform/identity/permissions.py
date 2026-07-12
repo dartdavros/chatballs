@@ -17,7 +17,10 @@ def is_owner(user: HumanUser | AnonymousUser) -> bool:
 
 
 def is_operator(user: HumanUser | AnonymousUser) -> bool:
-    return get_employee_role(user) == EmployeeRole.OPERATOR
+    """Compatibility-адаптер этапа 1 (ADR-HUB-0027): «оператор» — это рабочая функция,
+    которую после миграции выполняет обычный сотрудник (EMPLOYEE) в своём отделе.
+    Операционная авторизация остаётся прежней до этапа 3 (capability-модель)."""
+    return get_employee_role(user) == EmployeeRole.EMPLOYEE
 
 
 def can_access_global_settings(user: HumanUser | AnonymousUser) -> bool:
@@ -25,22 +28,22 @@ def can_access_global_settings(user: HumanUser | AnonymousUser) -> bool:
 
 
 def can_access_sales_workspace(user: HumanUser | AnonymousUser) -> bool:
-    return get_employee_role(user) in {EmployeeRole.OWNER, EmployeeRole.OPERATOR}
+    return get_employee_role(user) in {EmployeeRole.OWNER, EmployeeRole.EMPLOYEE}
 
 
 def _operator_department_code(user: HumanUser | AnonymousUser) -> str | None:
-    """Код отдела оператора (EmployeeProfile.department.code) или None.
+    """Код основного отдела сотрудника (EmployeeProfile.primary_department.code) или None.
 
-    SPEC-HUB-0010 §8.1: оператор с доступом к нескольким отделам не поддерживается
-    (одиночный FK department). Для полного покрытия требуется DepartmentMembership.
-    Сейчас оператор строго в одном отделе: sales ИЛИ support (§10 изоляция inbox).
+    SPEC-HUB-0010 §8.1: доступ к нескольким отделам не поддерживается (одиночный FK
+    primary_department). Для полного покрытия требуется scoped-модель этапа 3.
+    Сейчас сотрудник строго в одном отделе: sales ИЛИ support (§10 изоляция inbox).
     """
     if not user.is_authenticated:
         return None
     profile = getattr(user, "employee_profile", None)
-    if profile is None or profile.is_blocked or profile.department_id is None:
+    if profile is None or profile.is_blocked or profile.primary_department_id is None:
         return None
-    return profile.department.code
+    return profile.primary_department.code
 
 
 def is_sales_operator(user: HumanUser | AnonymousUser) -> bool:

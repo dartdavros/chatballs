@@ -3,6 +3,7 @@ from __future__ import annotations
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
+from django.db.models import Q
 from django.utils import timezone
 
 from hub_platform.identity.crypto import EncryptedCharField
@@ -94,17 +95,27 @@ class Department(models.Model):
         return f"{self.organization.slug}/{self.code}"
 
 
+# ADR-HUB-0027 / SPEC-HUB-0016 §5: лимит должности задаётся backend-константой.
+POSITION_TITLE_MAX_LENGTH = 120
+
+
 class EmployeeRole(models.TextChoices):
     OWNER = "OWNER", "Owner"
-    OPERATOR = "OPERATOR", "Operator"
+    ADMIN = "ADMIN", "Admin"
+    EMPLOYEE = "EMPLOYEE", "Employee"
 
 
 class EmployeeProfile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="employee_profile")
     organization = models.ForeignKey(Organization, on_delete=models.PROTECT, related_name="employees")
     role = models.CharField(max_length=32, choices=EmployeeRole.choices)
+    # Должность вводится вручную; обязательна для новых записей (SPEC-HUB-0016 §5).
+    # Пустая строка допускается на уровне БД только для legacy-записей до backfill.
+    position_title = models.CharField(max_length=POSITION_TITLE_MAX_LENGTH, blank=True, default="")
     phone = models.CharField(max_length=32, blank=True)
-    department = models.ForeignKey(
+    # Основной отдел описывает оргструктуру, но не выдаёт прав (ADR-HUB-0027).
+    # null = сотрудник на верхнем уровне компании; OWNER всегда на уровне компании.
+    primary_department = models.ForeignKey(
         Department,
         on_delete=models.PROTECT,
         related_name="employees",
@@ -117,6 +128,21 @@ class EmployeeProfile(models.Model):
     totp_secret = EncryptedCharField(max_length=255, blank=True)
     blocked_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            # OWNER всегда на уровне компании (ADR-HUB-0027, инварианты размещения).
+            models.CheckConstraint(
+                check=~Q(role=EmployeeRole.OWNER) | Q(primary_department__isnull=True),
+                name="owner_is_company_level",
+            ),
+            # В организации ровно один владелец (ADR-HUB-0027).
+            models.UniqueConstraint(
+                fields=["organization"],
+                condition=Q(role=EmployeeRole.OWNER),
+                name="uniq_owner_per_organization",
+            ),
+        ]
 
     @property
     def is_blocked(self) -> bool:

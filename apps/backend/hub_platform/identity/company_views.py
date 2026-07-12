@@ -9,7 +9,7 @@ from hub_platform.identity.models import Department, EmployeeRole
 
 def _department_payload(department: Department) -> dict[str, object]:
     employees = list(department.employees.select_related("user").all())
-    operators = [employee for employee in employees if employee.role == EmployeeRole.OPERATOR]
+    operators = [employee for employee in employees if employee.role == EmployeeRole.EMPLOYEE]
     products = [link.product for link in department.product_links.select_related("product").order_by("product__name")]
     # AI-агенты отдела: AIAgent живёт на канале обработки (ADR-HUB-0019),
     # канал принадлежит отделу. Считаем активных агентов каналов этого отдела.
@@ -35,6 +35,6 @@ class DepartmentListView(APIView):
     def get(self, request: Request) -> Response:
         profile = request.user.employee_profile
         departments = Department.objects.filter(organization=profile.organization).order_by("name")
-        if profile.role == EmployeeRole.OPERATOR:
-            departments = departments.filter(id=profile.department_id)
+        if profile.role == EmployeeRole.EMPLOYEE:
+            departments = departments.filter(id=profile.primary_department_id)
         return Response({"items": [_department_payload(department) for department in departments]})

@@ -99,7 +99,9 @@ def _seed_core(*, owner_email: str, owner_password: str, owner_name: str) -> Cor
             defaults={
                 "organization": organization,
                 "role": EmployeeRole.OWNER,
-                "department": sales_department,
+                "position_title": "Владелец",
+                # OWNER всегда на уровне компании (ADR-HUB-0027).
+                "primary_department": None,
                 "totp_required": False,
             },
         )

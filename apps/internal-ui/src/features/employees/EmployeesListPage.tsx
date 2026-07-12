@@ -35,7 +35,7 @@ export function EmployeesPage({ employees, reload, openEmployee }: { employees: 
       <PageHeader
         title="Сотрудники"
         text={<>Доступ к Hub · показано <b>{filtered.length}</b> из {employees.length}</>}
-        action={<Button icon="team" iconSize={16} type="button" variant="primary">Добавить оператора</Button>}
+        action={<Button icon="team" iconSize={16} type="button" variant="primary">Добавить сотрудника</Button>}
       />
       <EmployeesFilters
         query={query}

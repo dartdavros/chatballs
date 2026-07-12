@@ -1,6 +1,8 @@
 import type { AiAgent } from "./features/ai/model";
 
-export type Role = "OWNER" | "OPERATOR";
+// Системные роли ADR-HUB-0027. OPERATOR удалён как системная роль (этап 1);
+// «оператор» — рабочая функция сотрудника (EMPLOYEE) в своём отделе.
+export type Role = "OWNER" | "ADMIN" | "EMPLOYEE";
 export type ProductStatus = "ACTIVE" | "DISABLED";
 
 export type SessionUser = {
@@ -8,6 +10,7 @@ export type SessionUser = {
   email: string;
   fullName: string;
   role: Role;
+  positionTitle: string;
   organization: string;
   organizationName: string;
   department: string | null;
@@ -31,6 +34,7 @@ export type Employee = {
   email: string;
   fullName: string;
   role: Role;
+  positionTitle: string;
   phone: string;
   department: string | null;
   isActive: boolean;

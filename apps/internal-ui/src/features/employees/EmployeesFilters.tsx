@@ -25,7 +25,7 @@ export function EmployeesFilters({
       <SearchInput className="employee-search" value={query} onChange={setQuery} placeholder="Поиск по имени или email…" />
       <div className="filter-group">
         <span>Роль</span>
-        <Segmented value={role} setValue={setRole} items={[["all", "Все"], ["OWNER", "OWNER"], ["OPERATOR", "OPERATOR"]]} />
+        <Segmented value={role} setValue={setRole} items={[["all", "Все"], ["OWNER", "Владелец"], ["EMPLOYEE", "Сотрудник"]]} />
       </div>
       <div className="filter-group">
         <span>Статус</span>

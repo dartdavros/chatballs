@@ -94,10 +94,11 @@ export function Shell({ route, setRoute, selectedEmployeeId, selectedProductId, 
   // Подменю AI показываем только там, где оно есть в baseline.
   const isAiSection = route === "aiAgents" || route === "aiKnowledge" || route === "aiUsage";
   const isAiFullWidth = route === "aiAgentCreate";
-  // OPERATOR работает в пространстве своего отдела (SPEC-HUB-0004 §9 + §0010 §10):
-  // sales operator → sales-sidebar, support operator → support-sidebar.
-  const showSalesSidebar = isSalesWorkspace || (user.role === "OPERATOR" && user.department !== "support" && !isSupportWorkspace);
-  const showSupportSidebar = isSupportWorkspace || (user.role === "OPERATOR" && user.department === "support");
+  // Сотрудник (EMPLOYEE) работает в пространстве своего отдела (SPEC-HUB-0004 §9 +
+  // §0010 §10): sales → sales-sidebar, support → support-sidebar. Compat-адаптер
+  // этапа 1 (ADR-HUB-0027): department по-прежнему определяет рабочее пространство.
+  const showSalesSidebar = isSalesWorkspace || (user.role === "EMPLOYEE" && user.department !== "support" && !isSupportWorkspace);
+  const showSupportSidebar = isSupportWorkspace || (user.role === "EMPLOYEE" && user.department === "support");
   return (
     <div className="hub-shell">
       {showSupportSidebar ? <SupportSidebar route={route} user={user} setRoute={setRoute} waitingCount={waitingCount} /> : showSalesSidebar ? <SalesSidebar route={route} user={user} setRoute={setRoute} waitingCount={waitingCount} /> : <Sidebar route={route} user={user} setRoute={setRoute} />}

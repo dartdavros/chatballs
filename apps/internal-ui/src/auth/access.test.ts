@@ -4,43 +4,43 @@ import type { RouteKey } from "../types";
 import { canAccess, defaultRoute } from "./access";
 
 const OWNER_ONLY: RouteKey[] = ["command", "departments", "employees", "employeeDetail", "products", "productDetail"];
-const SALES_OPERATOR_ROUTES: RouteKey[] = ["salesOverview", "salesDialogs", "salesClients", "salesClientDetail", "salesOrders", "salesOrderDetail", "profile"];
-const SUPPORT_OPERATOR_ROUTES: RouteKey[] = ["supportOverview", "supportDialogs", "profile"];
+const SALES_EMPLOYEE_ROUTES: RouteKey[] = ["salesOverview", "salesDialogs", "salesClients", "salesClientDetail", "salesOrders", "salesOrderDetail", "profile"];
+const SUPPORT_EMPLOYEE_ROUTES: RouteKey[] = ["supportOverview", "supportDialogs", "profile"];
 
 describe("role access", () => {
   it("grants OWNER every route", () => {
-    const all = [...OWNER_ONLY, ...SALES_OPERATOR_ROUTES, ...SUPPORT_OPERATOR_ROUTES];
+    const all = [...OWNER_ONLY, ...SALES_EMPLOYEE_ROUTES, ...SUPPORT_EMPLOYEE_ROUTES];
     for (const route of all) {
       expect(canAccess("OWNER", route)).toBe(true);
     }
   });
 
-  it("grants sales OPERATOR only the sales workspace and profile", () => {
-    for (const route of SALES_OPERATOR_ROUTES) {
-      expect(canAccess("OPERATOR", route, "sales")).toBe(true);
+  it("grants sales EMPLOYEE only the sales workspace and profile", () => {
+    for (const route of SALES_EMPLOYEE_ROUTES) {
+      expect(canAccess("EMPLOYEE", route, "sales")).toBe(true);
     }
   });
 
-  it("blocks sales OPERATOR from support workspace and owner-only routes", () => {
+  it("blocks sales EMPLOYEE from support workspace and owner-only routes", () => {
     for (const route of OWNER_ONLY) {
-      expect(canAccess("OPERATOR", route, "sales")).toBe(false);
+      expect(canAccess("EMPLOYEE", route, "sales")).toBe(false);
     }
-    expect(canAccess("OPERATOR", "supportDialogs", "sales")).toBe(false);
-    expect(canAccess("OPERATOR", "supportOverview", "sales")).toBe(false);
+    expect(canAccess("EMPLOYEE", "supportDialogs", "sales")).toBe(false);
+    expect(canAccess("EMPLOYEE", "supportOverview", "sales")).toBe(false);
   });
 
-  it("grants support OPERATOR only the support workspace and profile (§10 изоляция)", () => {
-    for (const route of SUPPORT_OPERATOR_ROUTES) {
-      expect(canAccess("OPERATOR", route, "support")).toBe(true);
+  it("grants support EMPLOYEE only the support workspace and profile (§10 изоляция)", () => {
+    for (const route of SUPPORT_EMPLOYEE_ROUTES) {
+      expect(canAccess("EMPLOYEE", route, "support")).toBe(true);
     }
     // Support operator не видит sales inbox.
-    expect(canAccess("OPERATOR", "salesDialogs", "support")).toBe(false);
-    expect(canAccess("OPERATOR", "salesOverview", "support")).toBe(false);
+    expect(canAccess("EMPLOYEE", "salesDialogs", "support")).toBe(false);
+    expect(canAccess("EMPLOYEE", "salesOverview", "support")).toBe(false);
   });
 
   it("lands each role on its default route", () => {
     expect(defaultRoute("OWNER")).toBe("command");
-    expect(defaultRoute("OPERATOR", "sales")).toBe("salesDialogs");
-    expect(defaultRoute("OPERATOR", "support")).toBe("supportDialogs");
+    expect(defaultRoute("EMPLOYEE", "sales")).toBe("salesDialogs");
+    expect(defaultRoute("EMPLOYEE", "support")).toBe("supportDialogs");
   });
 });

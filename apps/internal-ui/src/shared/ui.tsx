@@ -32,8 +32,14 @@ export function StatusPill({ status }: { status: "normal" | "active" | "blocked"
   return <span className="status-pill" style={{ background: bg, borderColor: border, color }}><span style={{ background: color }} />{label}</span>;
 }
 
+const ROLE_LABELS: Record<Role, string> = {
+  OWNER: "Владелец",
+  ADMIN: "Администратор",
+  EMPLOYEE: "Сотрудник",
+};
+
 export function RoleBadge({ role }: { role: Role }) {
-  return <span className={`role-badge ${role.toLowerCase()}`}>{role}</span>;
+  return <span className={`role-badge ${role.toLowerCase()}`}>{ROLE_LABELS[role] ?? role}</span>;
 }
 
 export function ProductTag({ product }: { product: Product }) {

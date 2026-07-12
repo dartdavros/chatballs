@@ -7,8 +7,24 @@ from rest_framework.views import APIView
 from hub_platform.api.permissions import IsOwner
 from hub_platform.identity.audit import record_audit_event
 from hub_platform.identity.employee_support import employee_payload, get_owned_profile, temporary_password
-from hub_platform.identity.models import Department, EmployeeProfile, EmployeeRole, HumanUser
+from hub_platform.identity.models import (
+    POSITION_TITLE_MAX_LENGTH,
+    Department,
+    EmployeeProfile,
+    EmployeeRole,
+    HumanUser,
+)
 from hub_platform.identity.sessions import revoke_user_sessions
+
+
+def _clean_position_title(raw: object) -> tuple[str, str | None]:
+    """Нормализует должность (SPEC-HUB-0016 §5). Возвращает (значение, ошибка)."""
+    value = str(raw or "").strip()
+    if not value:
+        return "", "Position title is required"
+    if len(value) > POSITION_TITLE_MAX_LENGTH:
+        return value, f"Position title must be at most {POSITION_TITLE_MAX_LENGTH} characters"
+    return value, None
 
 
 class EmployeeListView(APIView):
@@ -16,11 +32,12 @@ class EmployeeListView(APIView):
 
     def get(self, request: Request) -> Response:
         profile = request.user.employee_profile
-        employees = EmployeeProfile.objects.select_related("user", "department").filter(
+        employees = EmployeeProfile.objects.select_related("user", "primary_department").filter(
             organization=profile.organization
         )
-        if profile.role == EmployeeRole.OPERATOR:
-            employees = employees.filter(department=profile.department)
+        # Compatibility (этап 1): обычный сотрудник видит только свой основной отдел.
+        if profile.role == EmployeeRole.EMPLOYEE:
+            employees = employees.filter(primary_department=profile.primary_department)
         return Response({"items": [employee_payload(employee) for employee in employees.order_by("user__email")]})
 
 
@@ -34,8 +51,11 @@ class OperatorCreateView(APIView):
         email = HumanUser.objects.normalize_email(str(body.get("email", "")))
         full_name = str(body.get("fullName", ""))
         provided_password = str(body.get("temporaryPassword", ""))
+        position_title, position_error = _clean_position_title(body.get("positionTitle"))
         if not email:
             return Response({"detail": "Email is required"}, status=400)
+        if position_error:
+            return Response({"detail": position_error}, status=400)
         if len(provided_password) < 12:
             return Response({"detail": "Temporary password must contain at least 12 characters"}, status=400)
 
@@ -50,8 +70,9 @@ class OperatorCreateView(APIView):
         profile = EmployeeProfile.objects.create(
             user=user,
             organization=owner_profile.organization,
-            role=EmployeeRole.OPERATOR,
-            department=sales_department,
+            role=EmployeeRole.EMPLOYEE,
+            position_title=position_title,
+            primary_department=sales_department,
             must_change_password=True,
         )
         record_audit_event(
@@ -78,8 +99,10 @@ class EmployeeUpdateView(APIView):
         full_name = str(body.get("fullName", "")).strip()
         email = HumanUser.objects.normalize_email(str(body.get("email", "")).strip())
         phone = str(body.get("phone", "")).strip()
-        role = str(body.get("role", profile.role))
-        department_code = str(body.get("department", profile.department.code if profile.department else ""))
+        position_title, position_error = _clean_position_title(body.get("positionTitle", profile.position_title))
+        current_department_code = profile.primary_department.code if profile.primary_department else ""
+        department_code = str(body.get("department", current_department_code))
+        requested_role = str(body.get("role", profile.role))
         totp_enabled = body.get("totpEnabled", profile.totp_enabled)
 
         if not full_name:
@@ -88,8 +111,16 @@ class EmployeeUpdateView(APIView):
             return Response({"detail": "Email is required"}, status=400)
         if HumanUser.objects.exclude(id=profile.user_id).filter(email=email).exists():
             return Response({"detail": "Email is already used"}, status=400)
-        if role not in EmployeeRole.values:
-            return Response({"detail": "Invalid role"}, status=400)
+        if position_error:
+            return Response({"detail": position_error}, status=400)
+
+        # Governance-инварианты этапа 1 (ADR-HUB-0027, SPEC-HUB-0016 §7/§10):
+        # владелец не меняется обычным update; повышение до ADMIN/OWNER откроется
+        # на этапах 2-3. Здесь допускается управление только обычными сотрудниками.
+        if profile.role != EmployeeRole.EMPLOYEE:
+            return Response({"detail": "This employee cannot be modified by this operation"}, status=403)
+        if requested_role != EmployeeRole.EMPLOYEE:
+            return Response({"detail": "Role changes are not available yet"}, status=403)
 
         department = None
         if department_code:
@@ -102,12 +133,14 @@ class EmployeeUpdateView(APIView):
         profile.user.email = email
         profile.user.save(update_fields=["full_name", "email"])
         profile.phone = phone
-        profile.role = role
-        profile.department = department
+        profile.position_title = position_title
+        profile.primary_department = department
         profile.totp_enabled = bool(totp_enabled)
         if not profile.totp_enabled:
             profile.totp_secret = ""
-        profile.save(update_fields=["phone", "role", "department", "totp_enabled", "totp_secret"])
+        profile.save(
+            update_fields=["phone", "position_title", "primary_department", "totp_enabled", "totp_secret"]
+        )
 
         record_audit_event(
             action="identity.employee_updated",

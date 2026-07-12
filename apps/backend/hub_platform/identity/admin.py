@@ -47,8 +47,17 @@ class DepartmentAdmin(admin.ModelAdmin):
 
 @admin.register(EmployeeProfile)
 class EmployeeProfileAdmin(admin.ModelAdmin):
-    list_display = ["user", "organization", "role", "department", "must_change_password", "totp_required", "blocked_at"]
-    list_filter = ["organization", "role", "department", "must_change_password", "totp_required"]
+    list_display = [
+        "user",
+        "organization",
+        "role",
+        "position_title",
+        "primary_department",
+        "must_change_password",
+        "totp_required",
+        "blocked_at",
+    ]
+    list_filter = ["organization", "role", "primary_department", "must_change_password", "totp_required"]
     search_fields = ["user__email", "user__full_name"]
 
 

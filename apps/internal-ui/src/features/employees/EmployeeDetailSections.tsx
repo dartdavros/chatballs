@@ -29,6 +29,7 @@ export function EmployeeDetailSections({
         <h3>Основные данные</h3>
         <div className="employee-form-grid">
           <FormField label="Имя" value={form.fullName} onChange={(value) => updateForm("fullName", value)} />
+          <FormField label="Должность" value={form.positionTitle} onChange={(value) => updateForm("positionTitle", value)} />
           <FormField label="Телефон" value={form.phone} onChange={(value) => updateForm("phone", value)} />
           <FormField label="Email · используется для входа" value={form.email} onChange={(value) => updateForm("email", value)} mono wide />
         </div>
@@ -37,7 +38,7 @@ export function EmployeeDetailSections({
       <section className="employee-detail-card">
         <h3>Роль и доступ</h3>
         <div className="employee-form-grid">
-          <SelectField label="Роль" value={form.role} onChange={(value) => updateForm("role", value)} options={[["OPERATOR", "OPERATOR"], ["OWNER", "OWNER"]]} />
+          <SelectField label="Роль" value={form.role} onChange={(value) => updateForm("role", value)} options={[["EMPLOYEE", "Сотрудник"], ["OWNER", "Владелец"]]} />
           <SelectField label="Отдел" value={form.department} onChange={(value) => updateForm("department", value)} options={[["sales", "Отдел продаж"]]} />
         </div>
         <label className="employee-access-label">Доступные разделы</label>

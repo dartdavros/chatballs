@@ -10,6 +10,7 @@ const OWNER = {
   email: "owner@edevs.tech",
   fullName: "Владелец",
   role: "OWNER",
+  positionTitle: "Владелец",
   organization: "edevs",
   organizationName: "Edevs",
   department: null,
@@ -18,7 +19,8 @@ const OWNER = {
   totpEnabled: false,
 };
 
-const OPERATOR = { ...OWNER, id: 2, email: "operator@edevs.tech", fullName: "Оператор", role: "OPERATOR", department: "sales" };
+// «Оператор» — рабочая функция обычного сотрудника (EMPLOYEE) в отделе (ADR-HUB-0027).
+const OPERATOR = { ...OWNER, id: 2, email: "operator@edevs.tech", fullName: "Оператор", role: "EMPLOYEE", positionTitle: "Оператор отдела продаж", department: "sales" };
 
 async function mockData(page: Page) {
   await page.route("**/api/v1/employees/**", (route) => route.fulfill({ json: { items: [] } }));

@@ -176,8 +176,9 @@ class AIAgentPermissionTests(TestCase):
         EmployeeProfile.objects.create(
             user=operator,
             organization=Organization.objects.get(slug="edevs"),
-            role=EmployeeRole.OPERATOR,
-            department=None,
+            role=EmployeeRole.EMPLOYEE,
+            position_title="Оператор",
+            primary_department=None,
         )
         self.client = APIClient()
         self.client.login(username="operator@edevs.tech", password="operator-password")

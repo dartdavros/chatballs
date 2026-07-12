@@ -70,7 +70,9 @@ def bootstrap_edevs_owner(*, email: str, password: str, full_name: str = "") -> 
         defaults={
             "organization": organization,
             "role": EmployeeRole.OWNER,
-            "department": sales_department,
+            "position_title": "Владелец",
+            # OWNER всегда на уровне компании (ADR-HUB-0027): без основного отдела.
+            "primary_department": None,
             "totp_required": False,
         },
     )
@@ -91,9 +93,10 @@ def bootstrap_edevs_owner(*, email: str, password: str, full_name: str = "") -> 
         user=operator,
         defaults={
             "organization": organization,
-            "role": EmployeeRole.OPERATOR,
+            "role": EmployeeRole.EMPLOYEE,
+            "position_title": "Оператор отдела продаж",
             "phone": "+7 916 245 14 02",
-            "department": sales_department,
+            "primary_department": sales_department,
         },
     )
     if not operator_profile.phone:

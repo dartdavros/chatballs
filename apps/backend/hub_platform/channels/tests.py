@@ -67,8 +67,9 @@ class ChannelRenamePermissionTests(TestCase):
         EmployeeProfile.objects.create(
             user=operator,
             organization=organization,
-            role=EmployeeRole.OPERATOR,
-            department=None,
+            role=EmployeeRole.EMPLOYEE,
+            position_title="Оператор",
+            primary_department=None,
         )
         self.client = APIClient()
         self.client.login(username="operator@edevs.tech", password="operator-password")

@@ -48,7 +48,7 @@ function EmployeeRow({ employee, block, openEmployee, menuId, setMenuId }: { emp
   };
   return (
     <tr>
-      <td><div className="person-cell"><Avatar employee={employee} /><button className="person-link" type="button" onClick={open}><strong>{employee.fullName || employee.email}</strong><small>{employee.email}</small></button></div></td>
+      <td><div className="person-cell"><Avatar employee={employee} /><button className="person-link" type="button" onClick={open}><strong>{employee.fullName || employee.email}</strong><small>{employee.positionTitle || "Должность не указана"} · {employee.email}</small></button></div></td>
       <td><RoleBadge role={employee.role} /></td>
       <td>{employee.department === "sales" ? "Продажи" : "—"}</td>
       <td><StatusPill status={status} /></td>

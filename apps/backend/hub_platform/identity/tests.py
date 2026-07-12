@@ -49,7 +49,7 @@ class BootstrapOwnerTests(TestCase):
         self.assertTrue(result.owner.is_superuser)
         operator = HumanUser.objects.get(email="a.kotova@edevs.tech")
         self.assertEqual(operator.full_name, "Анна Котова")
-        self.assertEqual(operator.employee_profile.role, EmployeeRole.OPERATOR)
+        self.assertEqual(operator.employee_profile.role, EmployeeRole.EMPLOYEE)
         self.assertEqual(operator.employee_profile.phone, "+7 916 245 14 02")
         self.assertTrue(AuditEvent.objects.filter(action="identity.owner_bootstrapped").exists())
 
@@ -91,8 +91,8 @@ class PermissionTests(TestCase):
         EmployeeProfile.objects.create(
             user=operator,
             organization=self.organization,
-            role=EmployeeRole.OPERATOR,
-            department=self.sales,
+            role=EmployeeRole.EMPLOYEE,
+            primary_department=self.sales,
             must_change_password=True,
         )
 
@@ -403,6 +403,7 @@ class EmployeeEndpointTests(TestCase):
                 {
                     "email": "operator@edevs.tech",
                     "fullName": "Operator",
+                    "positionTitle": "Оператор продаж",
                     "temporaryPassword": "operator-password",
                 }
             ),
@@ -412,7 +413,7 @@ class EmployeeEndpointTests(TestCase):
         self.assertEqual(response.status_code, 201)
         operator = HumanUser.objects.get(email="operator@edevs.tech")
         self.assertTrue(operator.check_password("operator-password"))
-        self.assertEqual(operator.employee_profile.role, EmployeeRole.OPERATOR)
+        self.assertEqual(operator.employee_profile.role, EmployeeRole.EMPLOYEE)
         self.assertTrue(operator.employee_profile.must_change_password)
         self.assertTrue(AuditEvent.objects.filter(action="identity.operator_created").exists())
 
@@ -421,8 +422,8 @@ class EmployeeEndpointTests(TestCase):
         EmployeeProfile.objects.create(
             user=operator,
             organization=self.organization,
-            role=EmployeeRole.OPERATOR,
-            department=self.sales,
+            role=EmployeeRole.EMPLOYEE,
+            primary_department=self.sales,
         )
         self.client.logout()
         self.client.login(username="operator@edevs.tech", password="operator-password")
@@ -446,8 +447,8 @@ class EmployeeEndpointTests(TestCase):
         EmployeeProfile.objects.create(
             user=operator,
             organization=self.organization,
-            role=EmployeeRole.OPERATOR,
-            department=self.sales,
+            role=EmployeeRole.EMPLOYEE,
+            primary_department=self.sales,
         )
 
         response = self.client.post(f"/api/v1/employees/{operator.id}/block/")
@@ -468,7 +469,8 @@ class EmployeeEndpointTests(TestCase):
                     "fullName": "Анна Котова",
                     "email": "anna.kotova@edevs.tech",
                     "phone": "+7 916 245 14 03",
-                    "role": EmployeeRole.OPERATOR,
+                    "positionTitle": "Оператор продаж",
+                    "role": EmployeeRole.EMPLOYEE,
                     "department": "sales",
                     "totpEnabled": True,
                 }
@@ -553,8 +555,8 @@ class CompanyEndpointTests(TestCase):
         EmployeeProfile.objects.create(
             user=operator,
             organization=self.organization,
-            role=EmployeeRole.OPERATOR,
-            department=self.sales,
+            role=EmployeeRole.EMPLOYEE,
+            primary_department=self.sales,
         )
         self.client.logout()
         self.client.login(username="operator@edevs.tech", password="operator-password")
@@ -637,3 +639,72 @@ class SeedIdempotencyTests(TestCase):
         self.assertIn("seed skipped", out.getvalue())
         # Ни новые офферы, ни цены не создаются и не изменяются на развёрнутой установке.
         self.assertEqual(Offer.objects.count(), offers_before)
+
+
+class EmployeeModelInvariantTests(TestCase):
+    """ADR-HUB-0027 / SPEC-HUB-0016 §5,§7 — инварианты модели сотрудника после
+    миграции этапа 1: роли OWNER/ADMIN/EMPLOYEE, обязательная должность,
+    размещение владельца на уровне компании и ровно один владелец на организацию."""
+
+    def setUp(self) -> None:
+        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
+        self.organization = Organization.objects.get(slug="edevs")
+        self.sales = Department.objects.get(code="sales")
+
+    def test_bootstrap_owner_is_company_level_with_title(self) -> None:
+        owner = HumanUser.objects.get(email="owner@edevs.tech")
+        self.assertEqual(owner.employee_profile.role, EmployeeRole.OWNER)
+        self.assertIsNone(owner.employee_profile.primary_department)
+        self.assertTrue(owner.employee_profile.position_title)
+
+    def test_bootstrapped_operator_is_employee_in_sales(self) -> None:
+        operator = HumanUser.objects.get(email="a.kotova@edevs.tech")
+        self.assertEqual(operator.employee_profile.role, EmployeeRole.EMPLOYEE)
+        self.assertEqual(operator.employee_profile.primary_department, self.sales)
+        self.assertTrue(operator.employee_profile.position_title)
+
+    def test_second_owner_is_rejected(self) -> None:
+        from django.db import IntegrityError, transaction
+
+        second = HumanUser.objects.create_user(email="owner2@edevs.tech", password="temporary-password")
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                EmployeeProfile.objects.create(
+                    user=second,
+                    organization=self.organization,
+                    role=EmployeeRole.OWNER,
+                    position_title="Второй владелец",
+                    primary_department=None,
+                )
+
+    def test_owner_with_primary_department_is_rejected(self) -> None:
+        from django.db import IntegrityError, transaction
+
+        user = HumanUser.objects.create_user(email="owner3@edevs.tech", password="temporary-password")
+        other_org = Organization.objects.create(name="Other", slug="other")
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                EmployeeProfile.objects.create(
+                    user=user,
+                    organization=other_org,
+                    role=EmployeeRole.OWNER,
+                    position_title="Владелец",
+                    primary_department=self.sales,
+                )
+
+    def test_create_employee_requires_position_title(self) -> None:
+        client = APIClient()
+        client.login(username="owner@edevs.tech", password="temporary-password")
+        response = client.post(
+            "/api/v1/employees/operators/",
+            data=json.dumps(
+                {
+                    "email": "no-title@edevs.tech",
+                    "fullName": "No Title",
+                    "temporaryPassword": "temporary-password",
+                }
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(HumanUser.objects.filter(email="no-title@edevs.tech").exists())
