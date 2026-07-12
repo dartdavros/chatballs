@@ -10,7 +10,7 @@ export function SupportContextPanel({ rightTab, setRightTab, detail }: { rightTa
   return (
     <section className="sales-context">
       <div className="sales-context-tabs">
-        <RightTabButton active={rightTab === "client"} onClick={() => setRightTab("client")}>Клиент</RightTabButton>
+        <RightTabButton active={rightTab === "client"} onClick={() => setRightTab("client")}>Контакт</RightTabButton>
         <RightTabButton active={rightTab === "history"} onClick={() => setRightTab("history")}>История</RightTabButton>
       </div>
       <div className="sales-context-body">
