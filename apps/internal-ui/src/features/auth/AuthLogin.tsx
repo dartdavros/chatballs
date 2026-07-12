@@ -36,7 +36,7 @@ export function AuthLogin({ onLogin, onTotpChallenge, onRecover }: { onLogin: (u
   }
 
   return (
-    <AuthFrame title="Edevs Hub" subtitle="Вход во внутренний кабинет" logo="pulse" note="Доступ только для сотрудников Edevs · защищённое соединение">
+    <AuthFrame title="CustoCRM" subtitle="Вход во внутренний кабинет" logo="pulse" note="Доступ только для сотрудников Edevs · защищённое соединение">
       <form className="auth-card" onSubmit={submit}>
         {error && <div className="auth-error"><span className="auth-error-dot">!</span><span>Неверный email или пароль. Проверьте данные и попробуйте снова.</span></div>}
         <label className="field-label">Email</label>

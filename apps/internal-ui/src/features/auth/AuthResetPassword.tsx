@@ -94,7 +94,7 @@ export function AuthResetPassword({ onDone }: { onDone: () => void }) {
   }
 
   return (
-    <AuthFrame title="Новый пароль" subtitle="Задайте новый пароль для входа в Edevs Hub." logo="shield" width={420} note={backLink}>
+    <AuthFrame title="Новый пароль" subtitle="Задайте новый пароль для входа в CustoCRM." logo="shield" width={420} note={backLink}>
       <form className="auth-card" onSubmit={submit}>
         {error && <div className="auth-error"><span className="auth-error-dot">!</span><span>{error}</span></div>}
         <label className="field-label">Новый пароль</label>

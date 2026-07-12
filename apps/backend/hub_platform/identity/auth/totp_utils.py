@@ -8,7 +8,7 @@ import time
 from hub_platform.identity.models import HumanUser
 
 TOTP_SESSION_KEY = "identity_pending_totp_user_id"
-TOTP_ISSUER = "Edevs Hub"
+TOTP_ISSUER = "CustoCRM"
 TOTP_PERIOD_SECONDS = 30
 
 

@@ -1,5 +1,5 @@
 import type { RouteKey, SessionUser } from "../types";
-import { Icon, PulseIcon } from "../shared/icons";
+import { Icon, LogoIcon } from "../shared/icons";
 import { Avatar } from "../shared/ui";
 
 export function Sidebar({ route, user, setRoute }: { route: RouteKey; user: SessionUser; setRoute: (route: RouteKey) => void }) {
@@ -20,8 +20,8 @@ export function Sidebar({ route, user, setRoute }: { route: RouteKey; user: Sess
   return (
     <aside className="hub-sidebar">
       <button className="hub-brand" type="button" onClick={() => setRoute("command")}>
-        <div className="hub-brand-mark"><PulseIcon /></div>
-        <div><strong>Edevs Hub</strong><span>Уровень компании</span></div>
+        <div className="hub-brand-mark"><LogoIcon /></div>
+        <div><strong>CustoCRM</strong><span>Уровень компании</span></div>
       </button>
       <nav className="hub-nav">
         {nav.map((item, index) => {
