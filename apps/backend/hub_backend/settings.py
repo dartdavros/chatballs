@@ -212,9 +212,16 @@ if (
 ):
     raise ImproperlyConfigured("HUB call token TTL values must be positive")
 
-# ICE-серверы для WebRTC (SPEC-HUB-0013 §10): STUN сейчас, TURN добавит контур
-# Coturn. Формат: URL через запятую (stun:host:port).
+# ICE-серверы для WebRTC (SPEC-HUB-0013 §10): direct-first через STUN, TURN как
+# fallback. Формат URL через запятую (stun:host:port / turn:host:3478?transport=udp).
 HUB_CALL_STUN_URLS = env_list("HUB_CALL_STUN_URLS", [])
+# TURN (Coturn, SPEC-HUB-0013 §11): backend выдаёт краткоживущие REST-credentials
+# по общему static-auth-secret. Пусто локально -> только STUN/direct ICE.
+HUB_CALL_TURN_URLS = env_list("HUB_CALL_TURN_URLS", [])
+HUB_CALL_TURN_SECRET = os.environ.get("HUB_CALL_TURN_SECRET", "")
+HUB_CALL_TURN_TTL_SECONDS = int(os.environ.get("HUB_CALL_TURN_TTL_SECONDS", str(60 * 60)))
+if HUB_CALL_TURN_TTL_SECONDS <= 0:
+    raise ImproperlyConfigured("HUB_CALL_TURN_TTL_SECONDS must be positive")
 STORAGES = {
     "default": {
         "BACKEND": "django.core.files.storage.FileSystemStorage",

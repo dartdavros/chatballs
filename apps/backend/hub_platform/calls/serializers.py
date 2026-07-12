@@ -1,6 +1,7 @@
 from django.conf import settings
 
 from hub_platform.calls.models import CallSession
+from hub_platform.calls.turn import turn_credentials
 
 
 def _iso(value):
@@ -49,11 +50,22 @@ def _staff_label(call: CallSession) -> str:
 
 
 def ice_servers_payload() -> list[dict]:
-    # ICE-конфигурация клиента (SPEC §10): STUN организации; краткоживущие
-    # TURN credentials добавит контур Coturn.
-    if not settings.HUB_CALL_STUN_URLS:
-        return []
-    return [{"urls": list(settings.HUB_CALL_STUN_URLS)}]
+    # ICE-конфигурация клиента (SPEC §10): direct-first через STUN, TURN как
+    # fallback с краткоживущими credentials. Генерируется на каждый запрос токена,
+    # поэтому клиент всегда получает не истёкшие TURN credentials.
+    servers: list[dict] = []
+    if settings.HUB_CALL_STUN_URLS:
+        servers.append({"urls": list(settings.HUB_CALL_STUN_URLS)})
+    if settings.HUB_CALL_TURN_URLS and settings.HUB_CALL_TURN_SECRET:
+        username, credential = turn_credentials()
+        servers.append(
+            {
+                "urls": list(settings.HUB_CALL_TURN_URLS),
+                "username": username,
+                "credential": credential,
+            }
+        )
+    return servers
 
 
 def public_call_state_payload(call: CallSession) -> dict:

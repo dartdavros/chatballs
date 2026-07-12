@@ -79,3 +79,39 @@ services:
     depends_on:
       backend:
         condition: service_healthy
+
+  # Coturn — отдельный медиа-relay сервис для TURN fallback (SPEC-HUB-0013 §11).
+  # Host networking: relay использует широкий UDP-диапазон и реальный внешний IP,
+  # публикуется напрямую и не проходит через HTTP reverse proxy. credentials
+  # выдаёт backend по общему HUB_CALL_TURN_SECRET (static-auth-secret).
+  coturn:
+    image: coturn/coturn:4.6
+    restart: unless-stopped
+    network_mode: host
+    command:
+      - -n
+      - --log-file=stdout
+      - --no-cli
+      - --fingerprint
+      - --use-auth-secret
+      - --static-auth-secret=${HUB_CALL_TURN_SECRET:?HUB_CALL_TURN_SECRET is required}
+      - --realm=${HUB_CALL_TURN_REALM:?HUB_CALL_TURN_REALM is required}
+      - --external-ip=${HUB_TURN_EXTERNAL_IP:?HUB_TURN_EXTERNAL_IP is required}
+      - --listening-port=${HUB_TURN_LISTENING_PORT:-3478}
+      - --min-port=${HUB_TURN_MIN_PORT:-49160}
+      - --max-port=${HUB_TURN_MAX_PORT:-49200}
+      # Запрет анонимного и внутрисетевого relay (SPEC §11: без пересечения с хостом).
+      - --no-multicast-peers
+      - --no-tcp-relay
+      - --denied-peer-ip=10.0.0.0-10.255.255.255
+      - --denied-peer-ip=172.16.0.0-172.31.255.255
+      - --denied-peer-ip=192.168.0.0-192.168.255.255
+      - --no-tlsv1
+      - --no-tlsv1_1
+    healthcheck:
+      # Allocation smoke: STUN binding к собственному listener.
+      test: ["CMD", "turnutils_stunclient", "-p", "${HUB_TURN_LISTENING_PORT:-3478}", "127.0.0.1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
