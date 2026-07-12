@@ -37,6 +37,7 @@ from hub_platform.sales.models import (
     SaleEventType,
     SalesSource,
     SalesSourceStatus,
+    SalesSourceType,
     SaleStatus,
     SourceType,
 )
@@ -602,3 +603,155 @@ def issue_sales_source_credential(*, source: SalesSource) -> str:
     source.credential_hint = raw[-4:]
     source.save(update_fields=["credential_hash", "credential_hint", "updated_at"])
     return raw
+
+
+# --- Миграция legacy orders (ADR-HUB-0025 §11, SPEC-HUB-0014 §11) ---
+
+# Классификация legacy-заказа для отчёта dry-run (SPEC §11.2).
+LEGACY_CLASS_EXTERNAL = "external"          # внешний Order (source+external_id) — импорт
+LEGACY_CLASS_MANUAL = "manual"             # ручной Order с финальным статусом — импорт
+LEGACY_CLASS_PENDING = "pending_ambiguous"  # внутренний PENDING — НЕ продажа, ручное решение
+
+# Legacy PaymentStatus → SaleStatus. PENDING сюда не входит: не считается продажей.
+_LEGACY_STATUS_MAP = {
+    "PAID": SaleStatus.CONFIRMED,
+    "REFUNDED": SaleStatus.REFUNDED,
+    "CANCELLED": SaleStatus.CANCELLED,
+}
+
+
+def classify_legacy_order(order) -> str:
+    """Класс legacy-заказа: PENDING без подтверждения продажей не считается (§11.2)."""
+    if order.payment_status == "PENDING":
+        return LEGACY_CLASS_PENDING
+    if order.source and order.external_id:
+        return LEGACY_CLASS_EXTERNAL
+    return LEGACY_CLASS_MANUAL
+
+
+def _legacy_line_items(order) -> list[dict[str, Any]]:
+    return [
+        {
+            "external_item_id": f"legacy-item-{item.id}",
+            "offer_code": item.offer.code if item.offer_id else "",
+            "title": item.title,
+            "quantity": item.quantity,
+            "amount_minor": item.amount_minor,
+            "currency": item.currency,
+        }
+        for item in order.items.all()
+    ]
+
+
+@transaction.atomic
+def import_legacy_order(*, order) -> tuple[Sale, bool]:
+    """Импортирует ОДИН подтверждённый legacy-заказ в Sale через sale.legacy_imported.
+
+    Идемпотентно по metadata.legacy_order_id. Возвращает (sale, created). PENDING-заказы
+    отклоняются: они не являются продажей и требуют ручного подтверждения (§11.2).
+    Не синтезирует историю событий, которой нет в исходных данных (§11.3).
+    """
+    status = _LEGACY_STATUS_MAP.get(order.payment_status)
+    if status is None:
+        raise InvalidPayload(f"Order {order.id} ({order.payment_status}) is not a confirmed sale")
+
+    organization = order.organization
+    existing = Sale.objects.filter(
+        organization=organization,
+        source_type=SourceType.LEGACY_IMPORT,
+        metadata__legacy_order_id=order.id,
+    ).first()
+    if existing is not None:
+        return existing, False
+
+    occurred_at = order.paid_at or order.created_at
+    external_sale_id = order.external_id.strip() if order.external_id else f"legacy-{order.id}"
+    amount_minor = int(order.amount_minor or 0)
+    refunded_amount_minor = amount_minor if status == SaleStatus.REFUNDED else 0
+    line_items = _legacy_line_items(order)
+
+    # fulfillment_status переносится ТОЛЬКО в metadata, не становится полем Sale (§11.2).
+    metadata = {
+        "legacy_order_id": order.id,
+        "legacy_code": order.code,
+        "legacy_source": order.source,
+        "legacy_external_id": order.external_id,
+        "legacy_payment_status": order.payment_status,
+        "legacy_fulfillment_status": order.fulfillment_status,
+    }
+
+    event = SaleEvent.objects.create(
+        organization=organization,
+        sales_source=None,
+        environment=Environment.PRODUCTION,
+        source_type=SourceType.LEGACY_IMPORT,
+        event_type=SaleEventType.LEGACY_IMPORTED,
+        schema_version=1,
+        occurred_at=occurred_at,
+        raw_payload={
+            "event_type": SaleEventType.LEGACY_IMPORTED.value,
+            "sale": {
+                "external_sale_id": external_sale_id,
+                "amount_minor": amount_minor,
+                "refunded_amount_minor": refunded_amount_minor,
+                "currency": order.currency,
+                "items": line_items,
+            },
+            "metadata": metadata,
+        },
+        processing_status=ProcessingStatus.RECEIVED,
+    )
+
+    # Контакт/диалог сохраняются при валидной принадлежности организации (§11.2).
+    contact = order.contact if order.contact_id and order.contact.organization_id == organization.id else None
+    conversation = order.conversation if order.conversation_id and order.conversation.organization_id == organization.id else None
+    attribution = AttributionMethod.CONTACT_MATCH if (contact or conversation) else AttributionMethod.NONE
+
+    sale = Sale.objects.create(
+        organization=organization,
+        product=order.product,
+        sales_source=None,
+        environment=Environment.PRODUCTION,
+        source_type=SourceType.LEGACY_IMPORT,
+        external_sale_id=external_sale_id,
+        contact=contact,
+        conversation=conversation,
+        status=status,
+        amount_minor=amount_minor,
+        refunded_amount_minor=refunded_amount_minor,
+        currency=order.currency,
+        occurred_at=occurred_at,
+        last_event_at=occurred_at,
+        attribution_method=attribution,
+        line_items_snapshot=line_items,
+        metadata=metadata,
+    )
+    event.sale = sale
+    event.processing_status = ProcessingStatus.APPLIED
+    event.applied_at = timezone.now()
+    event.save(update_fields=["sale", "processing_status", "applied_at"])
+    sale.last_event = event
+    sale.save(update_fields=["last_event", "updated_at"])
+    return sale, True
+
+
+def provision_product_sales_source(*, product) -> tuple[SalesSource, bool, bool]:
+    """Создаёт production SalesSource(PRODUCT_API) продукта и копирует существующий
+    Product.ingest_token_hash в credential_hash для временной совместимости (§11 шаг 2-3).
+
+    НЕ генерирует и НЕ ротирует секрет — только копирует уже действующий hash, чтобы
+    текущий token продукта продолжал работать против нового endpoint. Возвращает
+    (source, created, credential_copied).
+    """
+    source, created = SalesSource.objects.get_or_create(
+        organization=product.organization,
+        product=product,
+        code="product-api",
+        defaults={"type": SalesSourceType.PRODUCT_API, "environment": Environment.PRODUCTION},
+    )
+    credential_copied = False
+    if product.ingest_token_hash and not source.credential_hash:
+        source.credential_hash = product.ingest_token_hash
+        source.save(update_fields=["credential_hash", "updated_at"])
+        credential_copied = True
+    return source, created, credential_copied

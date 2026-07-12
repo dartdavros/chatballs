@@ -296,3 +296,103 @@ class CredentialHashTests(TestCase):
     def test_hash_is_stable(self) -> None:
         self.assertEqual(hash_credential("abc"), hash_credential("abc"))
         self.assertNotEqual(hash_credential("abc"), hash_credential("abd"))
+
+
+class LegacyMigrationTests(TestCase):
+    def setUp(self) -> None:
+        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
+        self.organization = Organization.objects.get(slug="edevs")
+        self.product = Product.objects.get(code="firepage")
+        self.contact = Contact.objects.create(organization=self.organization, name="Клиент")
+
+    def _order(self, *, payment_status: str, source: str = "", external_id: str = "", amount: int = 490000):
+        from hub_platform.orders.models import Order
+
+        return Order.objects.create(
+            organization=self.organization,
+            contact=self.contact,
+            product=self.product,
+            payment_status=payment_status,
+            fulfillment_status="DELIVERED" if payment_status == "PAID" else "NONE",
+            amount_minor=amount,
+            currency="RUB",
+            source=source,
+            external_id=external_id,
+        )
+
+    def test_classification(self) -> None:
+        from hub_platform.sales.services import (
+            LEGACY_CLASS_EXTERNAL,
+            LEGACY_CLASS_MANUAL,
+            LEGACY_CLASS_PENDING,
+            classify_legacy_order,
+        )
+
+        external = self._order(payment_status="PAID", source="firepage", external_id="fp-1")
+        manual = self._order(payment_status="PAID")
+        pending = self._order(payment_status="PENDING")
+        self.assertEqual(classify_legacy_order(external), LEGACY_CLASS_EXTERNAL)
+        self.assertEqual(classify_legacy_order(manual), LEGACY_CLASS_MANUAL)
+        self.assertEqual(classify_legacy_order(pending), LEGACY_CLASS_PENDING)
+
+    def test_import_creates_legacy_sale_idempotently(self) -> None:
+        from hub_platform.sales.services import import_legacy_order
+
+        order = self._order(payment_status="PAID", source="firepage", external_id="fp-100")
+        sale, created = import_legacy_order(order=order)
+        again, created_again = import_legacy_order(order=order)
+        self.assertTrue(created)
+        self.assertFalse(created_again)
+        self.assertEqual(sale.id, again.id)
+        self.assertEqual(sale.source_type, SourceType.LEGACY_IMPORT)
+        self.assertEqual(sale.status, SaleStatus.CONFIRMED)
+        self.assertIsNone(sale.sales_source_id)
+        self.assertEqual(sale.external_sale_id, "fp-100")
+        self.assertEqual(sale.metadata["legacy_order_id"], order.id)
+        self.assertEqual(sale.metadata["legacy_fulfillment_status"], "DELIVERED")
+        self.assertEqual(sale.events.count(), 1)
+        self.assertEqual(sale.events.first().event_type, "sale.legacy_imported")
+
+    def test_refunded_order_maps_to_zero_net(self) -> None:
+        from hub_platform.sales.services import import_legacy_order
+
+        order = self._order(payment_status="REFUNDED", amount=200000)
+        sale, _ = import_legacy_order(order=order)
+        self.assertEqual(sale.status, SaleStatus.REFUNDED)
+        self.assertEqual(sale.refunded_amount_minor, 200000)
+        self.assertEqual(sale.net_amount_minor, 0)
+        self.assertTrue(sale.external_sale_id.startswith("legacy-"))
+
+    def test_pending_order_is_not_a_sale(self) -> None:
+        from hub_platform.sales.services import SalesApiError, import_legacy_order
+
+        order = self._order(payment_status="PENDING")
+        with self.assertRaises(SalesApiError):
+            import_legacy_order(order=order)
+
+    def test_dry_run_writes_nothing(self) -> None:
+        from django.core.management import call_command
+
+        self._order(payment_status="PAID", source="firepage", external_id="fp-dry")
+        call_command("import_legacy_orders")
+        self.assertEqual(Sale.objects.count(), 0)
+
+    def test_apply_imports_and_skips_pending(self) -> None:
+        from django.core.management import call_command
+
+        self._order(payment_status="PAID", source="firepage", external_id="fp-a")
+        self._order(payment_status="CANCELLED")
+        self._order(payment_status="PENDING")
+        call_command("import_legacy_orders", "--apply")
+        self.assertEqual(Sale.objects.count(), 2)
+        self.assertEqual(Sale.objects.filter(status=SaleStatus.CANCELLED).count(), 1)
+
+    def test_provision_copies_ingest_token_hash(self) -> None:
+        from hub_platform.sales.services import provision_product_sales_source
+
+        self.product.ingest_token_hash = "a" * 64
+        self.product.save(update_fields=["ingest_token_hash"])
+        source, created, copied = provision_product_sales_source(product=self.product)
+        self.assertTrue(created)
+        self.assertTrue(copied)
+        self.assertEqual(source.credential_hash, "a" * 64)
