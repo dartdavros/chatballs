@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import { CloseIcon, DeviceIcon, FullscreenIcon, PhoneIcon, SpinnerIcon, StatusIcon, type StatusIconName } from "./CallIcons";
 import "./call-view.css";
@@ -54,6 +54,25 @@ export function CallView(props: Props) {
   const showLocalVideo = props.camOn !== false && props.localStream != null;
   const timer = formatDuration(props.elapsedSeconds ?? 0);
 
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  useEffect(() => {
+    const sync = () => setIsFullscreen(document.fullscreenElement === rootRef.current);
+    document.addEventListener("fullscreenchange", sync);
+    return () => document.removeEventListener("fullscreenchange", sync);
+  }, []);
+  const toggleFullscreen = () => {
+    if (document.fullscreenElement) void document.exitFullscreen();
+    else void rootRef.current?.requestFullscreen();
+  };
+  // В полноэкранном режиме крестик сначала выходит из fullscreen, а не завершает звонок.
+  const handleClose = () => {
+    if (document.fullscreenElement) {
+      void document.exitFullscreen();
+      return;
+    }
+    props.onClose?.();
+  };
+
   return (
     <div className="hub-call-view" ref={rootRef}>
       <header className="hub-call-head">
@@ -63,11 +82,14 @@ export function CallView(props: Props) {
           <span>{props.subtitle}</span>
         </div>
         {isLive && <span className={`hub-call-timer ${props.mode === "reconnecting" ? "warn" : ""}`}><i />{timer}</span>}
-        {props.onClose && <button className="hub-call-close" onClick={props.onClose} aria-label="Закрыть"><CloseIcon /></button>}
+        {props.onClose && <button className="hub-call-close" onClick={handleClose} aria-label={isFullscreen ? "Выйти из полноэкранного режима" : "Закрыть"}><CloseIcon /></button>}
       </header>
 
       <div className="hub-call-media">
-        {showRemoteVideo && <Video stream={props.remoteStream} className="hub-call-remote-video" />}
+        {/* Пока звонок активен, поток собеседника всегда смонтирован — иначе при
+            выключенной камере (аудиозвонок) звук не воспроизводится. Когда камеры
+            нет, видео перекрывается аватаром, но аудиодорожка играет. */}
+        {isLive && props.remoteStream != null && <Video stream={props.remoteStream} className="hub-call-remote-video" />}
 
         {props.mode === "ringing" && (
           <CallAvatar name={props.peerName} initials={props.peerInitials} color={props.peerAvatarColor} caption="Вызываем…" rings />
@@ -114,7 +136,7 @@ export function CallView(props: Props) {
         <div className="hub-call-active-bar">
           <DeviceButton kind="mic" on={props.micOn !== false} onClick={props.onToggleMic} />
           <DeviceButton kind="cam" on={props.camOn !== false} onClick={props.onToggleCam} />
-          <button className="hub-call-round" onClick={() => void rootRef.current?.requestFullscreen()} aria-label="Полный экран"><FullscreenIcon /></button>
+          <button className="hub-call-round" onClick={toggleFullscreen} aria-label={isFullscreen ? "Выйти из полноэкранного режима" : "Полный экран"}><FullscreenIcon /></button>
           <button className="hub-call-end" onClick={props.onEnd} aria-label="Завершить"><PhoneIcon /></button>
         </div>
       )}

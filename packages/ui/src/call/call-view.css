@@ -61,3 +61,10 @@
   .hub-call-media { flex:1 1 auto; aspect-ratio:auto; min-height:0; }
   .hub-call-pip { width:88px; height:58px; }
 }
+
+/* Полноэкранный режим: карточка на весь экран колонкой, чтобы медиа тянулось,
+   а шапка и панель кнопок не выходили за нижнюю границу экрана. */
+.hub-call-view:fullscreen { max-width:none; width:100vw; height:100vh; border-radius:0; border:0; display:flex; flex-direction:column; background:#fff; }
+.hub-call-view:fullscreen .hub-call-head,
+.hub-call-view:fullscreen .hub-call-active-bar { flex:none; }
+.hub-call-view:fullscreen .hub-call-media { flex:1 1 auto; aspect-ratio:auto; min-height:0; }
