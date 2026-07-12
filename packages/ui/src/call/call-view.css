@@ -1,6 +1,6 @@
 .hub-call-view { width:100%; max-width:428px; background:#fff; border:1px solid #e8e8e8; border-radius:24px; box-shadow:0 12px 40px rgba(0,0,0,.12); overflow:hidden; color:#262626; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif; }
 .hub-call-head { display:flex; align-items:center; gap:11px; padding:12px 15px; border-bottom:1px solid #e8e8e8; }
-.hub-call-avatar { display:flex; align-items:center; justify-content:center; border-radius:50%; color:#fff; font-weight:600; flex:none; }
+.hub-call-avatar { display:flex; align-items:center; justify-content:center; border-radius:50%; color:#fff; font-weight:600; flex:none; padding-bottom:0.1em; }
 .hub-call-avatar.small { width:38px; height:38px; font-size:14px; }
 .hub-call-avatar.big { width:88px; height:88px; font-size:30px; position:relative; z-index:2; box-shadow:0 4px 18px rgba(0,0,0,.35); }
 .hub-call-avatar.pip { width:34px; height:34px; font-size:12px; background:#595959; position:absolute; inset:0; margin:auto; }
@@ -55,4 +55,9 @@
 .hub-call-spin { animation:hub-call-spin .9s linear infinite; }
 @keyframes hub-call-ring { from { transform:scale(1); opacity:.55; } to { transform:scale(2.3); opacity:0; } }
 @keyframes hub-call-spin { to { transform:rotate(360deg); } }
-@media (max-width:480px) { .hub-call-view { max-width:none; border-radius:18px; } .hub-call-head { padding:11px 12px; } .hub-call-pip { width:88px; height:58px; } }
+@media (max-width:480px) {
+  .hub-call-view { max-width:none; height:100vh; height:100dvh; border-radius:0; border:0; display:flex; flex-direction:column; }
+  .hub-call-head { padding:11px 12px; flex:none; }
+  .hub-call-media { flex:1 1 auto; aspect-ratio:auto; min-height:0; }
+  .hub-call-pip { width:88px; height:58px; }
+}

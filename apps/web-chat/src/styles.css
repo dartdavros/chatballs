@@ -35,6 +35,7 @@ body,
 
 @media (max-width: 480px) {
   .public-call-page {
-    padding: 8px;
+    padding: 0;
+    align-items: stretch;
   }
 }
