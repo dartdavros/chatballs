@@ -40,11 +40,11 @@ export function FormField({
   );
 }
 
-export function SelectField({ label, value, onChange, options }: { label: string; value: string; onChange: (value: string) => void; options: Array<[string, string]> }) {
+export function SelectField({ disabled = false, label, value, onChange, options }: { disabled?: boolean; label: string; value: string; onChange: (value: string) => void; options: Array<[string, string]> }) {
   return (
     <label className="readonly-field select-like">
       <span>{label}</span>
-      <select value={value} onChange={(event) => onChange(event.target.value)}>
+      <select disabled={disabled} value={value} onChange={(event) => onChange(event.target.value)}>
         {options.map(([optionValue, labelText]) => <option value={optionValue} key={optionValue}>{labelText}</option>)}
       </select>
       <Icon name="chevron" size={14} />

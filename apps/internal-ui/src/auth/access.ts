@@ -3,6 +3,7 @@ import type { RouteKey, SessionUser } from "../types";
 type RouteAccess = { capability: string; departmentCode?: string };
 
 const ROUTE_ACCESS: Partial<Record<RouteKey, RouteAccess>> = {
+  accessProfiles: { capability: "employees.manage" },
   command: { capability: "company.view" },
   departments: { capability: "departments.view" },
   employees: { capability: "employees.view" },

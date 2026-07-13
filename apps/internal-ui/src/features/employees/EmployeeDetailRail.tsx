@@ -1,37 +1,25 @@
-import { KeyValue, MetricBox } from "../../shared/form-controls";
+import type { Employee } from "../../types";
+import { KeyValue } from "../../shared/form-controls";
 import { StatusPill } from "../../shared/ui";
-import type { EmployeeStatus } from "./model";
+import { auditItem, employeeStatusKey, formatDate, formatLastLogin } from "./model";
 
-export function EmployeeDetailRail({ details, status }: { details: ReturnType<typeof import("./model").employeeDetails>; status: EmployeeStatus }) {
+const ROLE_LABELS = { OWNER: "Владелец", ADMIN: "Администратор", EMPLOYEE: "Сотрудник" } as const;
+
+export function EmployeeDetailRail({ employee }: { employee: Employee }) {
+  const audit = (employee.auditEvents ?? []).map(auditItem);
   return (
     <aside className="employee-detail-rail">
       <section className="employee-detail-card compact">
-        <h3>Статус аккаунта</h3>
-        <KeyValue label="Статус" value={<StatusPill status={status} />} />
-        <KeyValue label="Создан" value={details.account.createdAt} />
-        <KeyValue label="Приглашение принято" value={details.account.inviteAcceptedAt} />
-        <KeyValue label="Последний вход" value={details.account.lastLogin} />
+        <h3>Учётная запись</h3>
+        <KeyValue label="Статус" value={<StatusPill status={employeeStatusKey(employee)} />} />
+        <KeyValue label="Роль" value={ROLE_LABELS[employee.role]} />
+        <KeyValue label="Создан" value={formatDate(employee.createdAt)} />
+        <KeyValue label="Последний вход" value={formatLastLogin(employee.lastLogin)} />
       </section>
-
       <section className="employee-detail-card compact">
-        <h3>Текущая нагрузка</h3>
-        <div className="workload-grid">
-          <MetricBox label="Активные диалоги" value={details.workload.activeDialogs} />
-          <MetricBox label="В очереди" value={details.workload.queue} />
-          <MetricBox label="Продажи · сегодня" value={details.workload.salesToday} />
-          <MetricBox label="Ср. ответ" value={details.workload.avgReply} />
-        </div>
-      </section>
-
-      <section className="employee-detail-card compact">
-        <h3>Последние действия</h3>
+        <h3>Аудит</h3>
         <div className="employee-activity-list">
-          {details.activity.map((item) => (
-            <div key={item.text}>
-              <span style={{ background: item.dot }} />
-              <p><strong>{item.text}</strong><small>{item.time}</small></p>
-            </div>
-          ))}
+          {audit.map((item, index) => <div key={`${item.code}-${index}`}><span style={{ background: item.dot }} /><p><strong>{item.text}</strong><small>{item.code} · {item.time}</small></p></div>)}
         </div>
       </section>
     </aside>

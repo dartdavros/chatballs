@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
+from django.db.models import Count, Q
 from django.utils import timezone
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -9,8 +10,13 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from hub_platform.identity.audit import record_audit_event
-from hub_platform.identity.access_services import create_access_assignment
-from hub_platform.identity.capabilities import CAPABILITY_REGISTRY, capability_spec
+from hub_platform.identity.access_payloads import (
+    assignment_payload,
+    capability_codes,
+    capability_registry_payload,
+    profile_payload,
+)
+from hub_platform.identity.access_services import allowed_profile_scopes, create_access_assignment
 from hub_platform.identity.governance import EmployeeAction, can_manage_employee
 from hub_platform.identity.models import (
     AccessProfile,
@@ -22,48 +28,10 @@ from hub_platform.identity.policy import can_administer_access
 from hub_platform.identity.sessions import revoke_user_sessions
 
 
-def _profile_payload(profile: AccessProfile) -> dict[str, object]:
-    return {
-        "id": profile.id,
-        "name": profile.name,
-        "description": profile.description,
-        "isSystem": profile.is_system,
-        "isActive": profile.is_active,
-        "capabilities": sorted(
-            profile.capability_links.values_list("capability_code", flat=True)
-        ),
-    }
-
-
-def assignment_payload(assignment: EmployeeAccessAssignment) -> dict[str, object]:
-    return {
-        "id": assignment.id,
-        "profile": _profile_payload(assignment.access_profile),
-        "scopeType": assignment.scope_type,
-        "departmentId": assignment.department_id,
-        "departmentCode": assignment.department.code if assignment.department_id else None,
-        "revokedAt": assignment.revoked_at.isoformat() if assignment.revoked_at else None,
-    }
-
-
 def _manager_required(request: Request) -> Response | None:
     if can_administer_access(request.user):
         return None
     return Response({"detail": "Employee access management is not allowed"}, status=403)
-
-
-def _capability_codes(raw: object) -> tuple[list[str], str | None]:
-    if not isinstance(raw, list) or any(not isinstance(code, str) for code in raw):
-        return [], "capabilities must be a list of registry codes"
-    codes = list(dict.fromkeys(raw))
-    try:
-        for code in codes:
-            spec = capability_spec(code)
-            if not spec.assignable or spec.protected:
-                return [], f"Capability cannot be assigned: {code}"
-    except ValueError as error:
-        return [], str(error)
-    return codes, None
 
 
 class CapabilityRegistryView(APIView):
@@ -72,20 +40,7 @@ class CapabilityRegistryView(APIView):
     def get(self, request: Request) -> Response:
         if (denied := _manager_required(request)) is not None:
             return denied
-        return Response(
-            {
-                "items": [
-                    {
-                        "code": spec.code,
-                        "name": spec.name,
-                        "description": spec.description,
-                        "allowedScopes": sorted(spec.allowed_scopes),
-                    }
-                    for spec in CAPABILITY_REGISTRY.values()
-                    if spec.assignable and not spec.protected
-                ]
-            }
-        )
+        return Response({"items": capability_registry_payload()})
 
 
 class AccessProfileListCreateView(APIView):
@@ -96,22 +51,31 @@ class AccessProfileListCreateView(APIView):
             return denied
         profiles = AccessProfile.objects.filter(
             organization=request.user.employee_profile.organization
-        ).prefetch_related("capability_links")
-        return Response({"items": [_profile_payload(profile) for profile in profiles.order_by("name")]})
+        ).prefetch_related("capability_links").annotate(
+            active_assignment_count=Count(
+                "assignments",
+                filter=Q(assignments__revoked_at__isnull=True),
+                distinct=True,
+            )
+        )
+        return Response({"items": [profile_payload(profile) for profile in profiles.order_by("name")]})
 
     @transaction.atomic
     def post(self, request: Request) -> Response:
         if (denied := _manager_required(request)) is not None:
             return denied
-        codes, error = _capability_codes(request.data.get("capabilities", []))
+        codes, error = capability_codes(request.data.get("capabilities", []))
         if error:
             return Response({"detail": error}, status=400)
         actor = request.user.employee_profile
+        name = str(request.data.get("name", "")).strip()
+        if not name:
+            return Response({"detail": "Access profile name is required"}, status=400)
         try:
             profile = AccessProfile.objects.create(
                 organization=actor.organization,
-                name=str(request.data.get("name", "")),
-                description=str(request.data.get("description", "")),
+                name=name,
+                description=str(request.data.get("description", "")).strip(),
             )
             AccessProfileCapability.objects.bulk_create(
                 [
@@ -130,7 +94,7 @@ class AccessProfileListCreateView(APIView):
             payload={"capabilities": codes},
             request=request,
         )
-        return Response({"profile": _profile_payload(profile)}, status=201)
+        return Response({"profile": profile_payload(profile)}, status=201)
 
 
 class AccessProfileDetailView(APIView):
@@ -152,7 +116,9 @@ class AccessProfileDetailView(APIView):
         profile = self._profile(request, profile_id)
         if profile is None:
             return Response({"detail": "Access profile not found"}, status=404)
-        codes, error = _capability_codes(
+        if profile.is_system:
+            return Response({"detail": "System access profile is read-only"}, status=409)
+        codes, error = capability_codes(
             request.data.get(
                 "capabilities",
                 list(profile.capability_links.values_list("capability_code", flat=True)),
@@ -160,13 +126,25 @@ class AccessProfileDetailView(APIView):
         )
         if error:
             return Response({"detail": error}, status=400)
+        requested_scopes = set(
+            profile.assignments.filter(revoked_at__isnull=True).values_list(
+                "scope_type", flat=True
+            )
+        )
+        if not requested_scopes.issubset(allowed_profile_scopes(codes)):
+            return Response(
+                {"detail": "Profile capabilities conflict with active assignment scopes"},
+                status=409,
+            )
         affected_user_ids = list(
             profile.assignments.filter(revoked_at__isnull=True).values_list(
                 "employee__user_id", flat=True
             )
         )
-        profile.name = str(request.data.get("name", profile.name))
-        profile.description = str(request.data.get("description", profile.description))
+        profile.name = str(request.data.get("name", profile.name)).strip()
+        if not profile.name:
+            return Response({"detail": "Access profile name is required"}, status=400)
+        profile.description = str(request.data.get("description", profile.description)).strip()
         profile.is_active = bool(request.data.get("isActive", profile.is_active))
         try:
             profile.save()
@@ -190,7 +168,7 @@ class AccessProfileDetailView(APIView):
         )
         for user_id in affected_user_ids:
             revoke_user_sessions(user_id)
-        return Response({"profile": _profile_payload(profile)})
+        return Response({"profile": profile_payload(profile)})
 
     def delete(self, request: Request, profile_id: int) -> Response:
         if (denied := _manager_required(request)) is not None:
@@ -200,6 +178,14 @@ class AccessProfileDetailView(APIView):
             return Response({"detail": "Access profile not found"}, status=404)
         if profile.is_system or profile.assignments.exists():
             return Response({"detail": "Profile must be disabled to preserve access history"}, status=409)
+        record_audit_event(
+            action="access_profile.deleted",
+            actor=request.user,
+            organization=profile.organization,
+            object_type="AccessProfile",
+            object_id=str(profile.id),
+            request=request,
+        )
         profile.delete()
         return Response(status=204)
 

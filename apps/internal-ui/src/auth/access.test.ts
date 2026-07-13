@@ -37,9 +37,10 @@ function userWith(
 
 describe("effective access navigation", () => {
   it("uses organization capabilities instead of the system role", () => {
-    const user = userWith(["company.view", "employees.view", "products.view"]);
+    const user = userWith(["company.view", "employees.view", "employees.manage", "products.view"]);
     expect(canAccess(user, "command")).toBe(true);
     expect(canAccess(user, "employees")).toBe(true);
+    expect(canAccess(user, "accessProfiles")).toBe(true);
     expect(canAccess(user, "products")).toBe(true);
     expect(canAccess(user, "integrations")).toBe(false);
     expect(defaultRoute(user)).toBe("command");

@@ -29,7 +29,7 @@ export function StatusPill({ status }: { status: "normal" | "active" | "blocked"
     invited: ["transparent", "transparent", "#0958d9", "Приглашён"],
   } as const;
   const [bg, border, color, label] = map[status];
-  return <span className="status-pill" style={{ background: bg, borderColor: border, color }}><span style={{ background: color }} />{label}</span>;
+  return <span className={`status-pill ${status}`} style={{ background: bg, borderColor: border, color }}><span style={{ background: color }} />{label}</span>;
 }
 
 const ROLE_LABELS: Record<Role, string> = {

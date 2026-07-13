@@ -6,7 +6,7 @@ import { KnowledgePage } from "../features/ai/knowledge/KnowledgePage";
 import { CommandCenter } from "../features/command/CommandCenter";
 import { IntegrationsPage } from "../features/integrations/IntegrationsPage";
 import { DepartmentsPage } from "../features/departments/DepartmentsPage";
-import { EmployeeDetailPage, EmployeesPage } from "../features/employees/EmployeesPage";
+import { AccessProfilesPage, EmployeeDetailPage, EmployeesPage } from "../features/employees/EmployeesPage";
 import { ProductsPage } from "../features/products/ProductsPage";
 import { ProductDetailPage } from "../features/products/detail/ProductDetailPage";
 import { ProfilePage } from "../features/profile/ProfilePage";
@@ -26,9 +26,10 @@ export function ShellRouteContent({ route, data, currentEmployee, currentProduct
     <>
       {route === "command" && <CommandCenter data={data} setRoute={setRoute} />}
       {route === "departments" && <DepartmentsPage data={data} setRoute={setRoute} />}
-      {route === "employees" && <EmployeesPage employees={data.employees} reload={reload} openEmployee={openEmployee} />}
-      {route === "employeeDetail" && currentEmployee && <EmployeeDetailPage employee={currentEmployee} reload={reload} setRoute={setRoute} />}
-      {route === "employeeDetail" && !currentEmployee && <EmployeesPage employees={data.employees} reload={reload} openEmployee={openEmployee} />}
+      {route === "employees" && <EmployeesPage departments={data.departments} employees={data.employees} reload={reload} openEmployee={openEmployee} setRoute={setRoute} user={user} />}
+      {route === "accessProfiles" && <AccessProfilesPage setRoute={setRoute} />}
+      {route === "employeeDetail" && currentEmployee && <EmployeeDetailPage departments={data.departments} employee={currentEmployee} reload={reload} setRoute={setRoute} user={user} />}
+      {route === "employeeDetail" && !currentEmployee && <EmployeesPage departments={data.departments} employees={data.employees} reload={reload} openEmployee={openEmployee} setRoute={setRoute} user={user} />}
       {route === "products" && <ProductsPage departments={data.departments} products={data.products} reload={reload} openProduct={openProduct} />}
       {route === "productDetail" && currentProduct && <ProductDetailPage product={currentProduct} departments={data.departments} reload={reload} openAgentCreate={openAgentCreate} openAgent={openAgent} />}
       {route === "productDetail" && !currentProduct && <ProductsPage departments={data.departments} products={data.products} reload={reload} openProduct={openProduct} />}

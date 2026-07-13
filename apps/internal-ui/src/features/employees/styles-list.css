@@ -1,0 +1,53 @@
+.employee-page-actions {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.employee-page-actions .secondary-button,
+.employee-page-actions .primary-button {
+  height: 38px;
+  border-radius: 9px;
+}
+
+.employees-table {
+  min-width: 1040px;
+}
+
+.employees-table .avatar {
+  width: 34px;
+  height: 34px;
+  font-size: 12px;
+}
+
+.employees-table .role-badge.owner {
+  color: #cf1322;
+  background: #fff1f0;
+}
+
+.employees-table .role-badge.admin {
+  color: #0958d9;
+  background: #e6f4ff;
+}
+
+.employees-table .role-badge.employee {
+  color: #595959;
+  background: #f0f0f0;
+}
+
+.employee-last-login {
+  color: #595959 !important;
+  white-space: nowrap;
+}
+
+.employee-row-menu {
+  width: 214px;
+}
+
+.employee-row-menu p {
+  margin: 0;
+  padding: 8px 10px;
+  color: #bfbfbf;
+  font-size: 11.5px;
+  line-height: 1.4;
+}

@@ -1,26 +1,33 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { api } from "../../api/client";
-import type { Employee, RouteKey } from "../../types";
+import type { Department, Employee, RouteKey, SessionUser } from "../../types";
 import { EmployeeDetailHeader } from "./EmployeeDetailHeader";
 import { EmployeeDetailRail } from "./EmployeeDetailRail";
 import { EmployeeDetailSections } from "./EmployeeDetailSections";
-import { employeeDetails, employeeForm, employeeStatusKey, type EmployeeForm } from "./model";
+import { employeeForm, employeeStatusKey, type EmployeeForm } from "./model";
 
-export function EmployeeDetailPage({ employee, reload, setRoute }: { employee: Employee; reload: () => void; setRoute: (route: RouteKey) => void }) {
+export function EmployeeDetailPage({ departments, employee, reload, setRoute, user }: {
+  departments: Department[];
+  employee: Employee;
+  reload: () => void;
+  setRoute: (route: RouteKey) => void;
+  user: SessionUser;
+}) {
   const [currentEmployee, setCurrentEmployee] = useState(employee);
   const [form, setForm] = useState<EmployeeForm>(() => employeeForm(employee));
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
-  const details = employeeDetails(currentEmployee);
   const status = employeeStatusKey(currentEmployee);
-  const blocked = status === "blocked";
 
-  useEffect(() => {
-    setCurrentEmployee(employee);
-    setForm(employeeForm(employee));
-    setMessage("");
-  }, [employee]);
+  const refresh = useCallback(async () => {
+    const payload = await api<{ employee: Employee }>(`/api/v1/employees/${employee.id}/`);
+    setCurrentEmployee(payload.employee);
+    setForm(employeeForm(payload.employee));
+  }, [employee.id]);
+
+  useEffect(() => { void refresh().catch(() => undefined); }, [refresh]);
+  useEffect(() => { setCurrentEmployee(employee); setForm(employeeForm(employee)); setMessage(""); }, [employee]);
 
   function updateForm(field: keyof EmployeeForm, value: string | boolean) {
     setForm((current) => ({ ...current, [field]: value }));
@@ -28,62 +35,23 @@ export function EmployeeDetailPage({ employee, reload, setRoute }: { employee: E
   }
 
   async function saveEmployee() {
-    setSaving(true);
-    setMessage("");
+    setSaving(true); setMessage("");
     try {
-      const payload = await api<{ employee: Employee }>(`/api/v1/employees/${currentEmployee.id}/update/`, {
-        method: "POST",
-        body: JSON.stringify(form),
-      });
-      setCurrentEmployee(payload.employee);
-      setMessage("Изменения сохранены");
+      await api(`/api/v1/employees/${currentEmployee.id}/update/`, { method: "POST", body: JSON.stringify(form) });
+      await refresh();
       reload();
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Не удалось сохранить изменения");
+    } catch (reason) {
+      setMessage(reason instanceof Error ? reason.message : "Не удалось сохранить изменения");
     } finally {
       setSaving(false);
     }
   }
 
-  async function resetPassword() {
-    setMessage("");
-    const payload = await api<{ employee: Employee; temporaryPassword: string }>(`/api/v1/employees/${currentEmployee.id}/reset-password/`, { method: "POST" });
-    setCurrentEmployee(payload.employee);
-    setMessage(`Временный пароль: ${payload.temporaryPassword}`);
-    reload();
-  }
-
-  async function revokeSessions() {
-    const payload = await api<{ employee: Employee; revoked: number }>(`/api/v1/employees/${currentEmployee.id}/revoke-sessions/`, { method: "POST" });
-    setCurrentEmployee(payload.employee);
-    setMessage(`Сессии завершены: ${payload.revoked}`);
-  }
-
-  async function toggleBlocked() {
-    const action = blocked ? "unblock" : "block";
-    const payload = await api<{ employee: Employee }>(`/api/v1/employees/${currentEmployee.id}/${action}/`, { method: "POST" });
-    setCurrentEmployee(payload.employee);
-    setMessage(blocked ? "Сотрудник разблокирован" : "Сотрудник заблокирован");
-    reload();
-  }
-
-  return (
-    <>
-      <EmployeeDetailHeader employee={employee} departmentLabel={details.departmentLabel} form={form} saveEmployee={saveEmployee} saving={saving} setRoute={setRoute} status={status} />
-      {message && <div className="employee-action-message">{message}</div>}
-      <div className="employee-detail-grid">
-        <EmployeeDetailSections
-          blocked={blocked}
-          currentEmployee={currentEmployee}
-          details={details}
-          form={form}
-          resetPassword={resetPassword}
-          revokeSessions={revokeSessions}
-          toggleBlocked={toggleBlocked}
-          updateForm={updateForm}
-        />
-        <EmployeeDetailRail details={details} status={status} />
-      </div>
-    </>
-  );
+  const readOnlyPrivileged = user.role === "ADMIN" && (currentEmployee.role === "ADMIN" || currentEmployee.role === "OWNER") && !currentEmployee.permissions?.canUpdateProfile;
+  return <div className="employee-detail-page">
+    <EmployeeDetailHeader departments={departments} employee={currentEmployee} form={form} saveEmployee={saveEmployee} saving={saving} setRoute={setRoute} status={status} />
+    {readOnlyPrivileged && <div className="employee-readonly-banner">Привилегированная учётная запись ({currentEmployee.role}). Администратор не может изменять данные, роль, размещение, доступ и security state, блокировать, сбрасывать пароль или завершать сессии этого сотрудника. Эти операции выполняет только владелец.</div>}
+    {message && <div className="employee-action-message">{message}</div>}
+    <div className="employee-detail-grid"><EmployeeDetailSections blocked={status === "blocked"} departments={departments} employee={currentEmployee} form={form} updateForm={updateForm} /><EmployeeDetailRail employee={currentEmployee} /></div>
+  </div>;
 }

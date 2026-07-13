@@ -1,34 +1,36 @@
 import { useState } from "react";
 
-import { api } from "../../api/client";
-import type { Employee, Role } from "../../types";
+import { hasCapability } from "../../auth/access";
 import { PageHeader } from "../../shared/ui";
 import { Button } from "../../shared/ui-controls";
+import type { Department, Employee, RouteKey, SessionUser } from "../../types";
+import { useAccessCatalog } from "./access-api";
+import { EmployeeCreateDrawer } from "./EmployeeCreateDrawer";
 import { EmployeeTable } from "./EmployeeTable";
 import { EmployeesFilters } from "./EmployeesFilters";
-import { filterEmployees, type EmployeeStatusFilter } from "./model";
+import { filterEmployees, type EmployeePlacementFilter, type EmployeeRoleFilter } from "./model";
+import { OwnershipTransferModal } from "./OwnershipTransferModal";
 
-export function EmployeesPage({ employees, reload, openEmployee }: { employees: Employee[]; reload: () => void; openEmployee: (employee: Employee) => void }) {
-  const [role, setRole] = useState<"all" | Role>("all");
-  const [status, setStatus] = useState<EmployeeStatusFilter>("all");
+export function EmployeesPage({ departments, employees, reload, openEmployee, setRoute, user }: {
+  departments: Department[];
+  employees: Employee[];
+  reload: () => void;
+  openEmployee: (employee: Employee) => void;
+  setRoute: (route: RouteKey) => void;
+  user: SessionUser;
+}) {
+  const [role, setRole] = useState<EmployeeRoleFilter>("all");
+  const [placement, setPlacement] = useState<EmployeePlacementFilter>("all");
   const [query, setQuery] = useState("");
   const [menuId, setMenuId] = useState<number | null>(null);
-  const filtered = filterEmployees(employees, role, status, query);
-
-  async function block(employee: Employee) {
-    // Backend — источник истины; повторяем его решение, чтобы не слать заведомо 403.
-    const canBlock = employee.permissions?.canBlock ?? false;
-    if (!canBlock || employee.isBlocked) return;
-    await api(`/api/v1/employees/${employee.id}/block/`, { method: "POST" });
-    setMenuId(null);
-    reload();
-  }
+  const [createOpen, setCreateOpen] = useState(false);
+  const [transferOpen, setTransferOpen] = useState(false);
+  const canManage = hasCapability(user, "employees.manage");
+  const access = useAccessCatalog(canManage);
+  const filtered = filterEmployees(employees, role, placement, query);
 
   function resetFilters() {
-    setQuery("");
-    setRole("all");
-    setStatus("all");
-    setMenuId(null);
+    setQuery(""); setRole("all"); setPlacement("all"); setMenuId(null);
   }
 
   return (
@@ -36,19 +38,13 @@ export function EmployeesPage({ employees, reload, openEmployee }: { employees: 
       {menuId !== null && <button className="menu-scrim" aria-label="Закрыть меню" onClick={() => setMenuId(null)} />}
       <PageHeader
         title="Сотрудники"
-        text={<>Доступ к Hub · показано <b>{filtered.length}</b> из {employees.length}</>}
-        action={<Button icon="team" iconSize={16} type="button" variant="primary">Добавить сотрудника</Button>}
+        text={<>Системные роли, должности и размещение · показано <b>{filtered.length}</b> из {employees.length}</>}
+        action={canManage && <div className="employee-page-actions"><Button icon="columns" iconSize={16} type="button" variant="secondary" onClick={() => setRoute("accessProfiles")}>Профили доступа</Button><Button icon="team" iconSize={16} type="button" variant="primary" onClick={() => setCreateOpen(true)}>Добавить сотрудника</Button></div>}
       />
-      <EmployeesFilters
-        query={query}
-        role={role}
-        status={status}
-        resetFilters={resetFilters}
-        setQuery={(nextQuery) => { setQuery(nextQuery); setMenuId(null); }}
-        setRole={(nextRole) => { setRole(nextRole); setMenuId(null); }}
-        setStatus={(nextStatus) => { setStatus(nextStatus); setMenuId(null); }}
-      />
-      <EmployeeTable block={block} employees={filtered} menuId={menuId} openEmployee={openEmployee} setMenuId={setMenuId} total={employees.length} />
+      <EmployeesFilters placement={placement} query={query} role={role} resetFilters={resetFilters} setPlacement={(value) => { setPlacement(value); setMenuId(null); }} setQuery={(value) => { setQuery(value); setMenuId(null); }} setRole={(value) => { setRole(value); setMenuId(null); }} />
+      <EmployeeTable departments={departments} employees={filtered} menuId={menuId} onTransfer={() => { setMenuId(null); setTransferOpen(true); }} openEmployee={openEmployee} setMenuId={setMenuId} total={employees.length} />
+      <EmployeeCreateDrawer departments={departments} open={createOpen} profiles={access.profiles} user={user} onClose={() => setCreateOpen(false)} onCreated={() => { setCreateOpen(false); reload(); }} />
+      <OwnershipTransferModal employees={employees} open={transferOpen} onClose={() => setTransferOpen(false)} />
     </>
   );
 }

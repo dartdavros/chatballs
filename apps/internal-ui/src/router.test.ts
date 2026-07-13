@@ -2,6 +2,13 @@ import { describe, expect, it } from "vitest";
 
 import { pathFromRoute, routeFromPath } from "./router";
 
+describe("employee access routes", () => {
+  it("parses and creates the access profile URL", () => {
+    expect(routeFromPath("/employees/access-profiles")).toEqual({ route: "accessProfiles", employeeId: null, productId: null, productCode: null, agentId: null, knowledgeId: null, clientId: null, orderId: null });
+    expect(pathFromRoute("accessProfiles")).toBe("/employees/access-profiles");
+  });
+});
+
 describe("product routes", () => {
   it("parses a product detail URL", () => {
     expect(routeFromPath("/products/42")).toEqual({ route: "productDetail", employeeId: null, productId: 42, productCode: null, agentId: null, knowledgeId: null, clientId: null, orderId: null });

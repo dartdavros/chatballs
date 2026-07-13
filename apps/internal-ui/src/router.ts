@@ -31,6 +31,7 @@ export function routeFromPath(pathname: string, search = ""): RouteState {
     return Number.isInteger(id) && id > 0 ? { ...base, route: "salesOrderDetail", orderId: id } : { route: "salesOrders", ...base };
   }
   if (path === "/employees") return { route: "employees", ...base };
+  if (path === "/employees/access-profiles") return { route: "accessProfiles", ...base };
   if (path.startsWith("/employees/")) {
     const id = Number(path.split("/")[2]);
     return Number.isInteger(id) && id > 0 ? { ...base, route: "employeeDetail", employeeId: id } : { route: "employees", ...base };
@@ -72,6 +73,7 @@ export function pathFromRoute(route: RouteKey, entityId: number | null = null, p
   if (route === "salesOrders") return "/departments/sales/orders";
   if (route === "salesOrderDetail") return entityId ? `/departments/sales/orders/${entityId}` : "/departments/sales/orders";
   if (route === "employees") return "/employees";
+  if (route === "accessProfiles") return "/employees/access-profiles";
   if (route === "employeeDetail") return entityId ? `/employees/${entityId}` : "/employees";
   if (route === "products") return "/products";
   if (route === "productDetail") return entityId ? `/products/${entityId}` : "/products";

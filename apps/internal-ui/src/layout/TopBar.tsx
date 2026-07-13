@@ -14,6 +14,7 @@ export function TopBar({ route, user, currentEmployee, currentProduct, currentAg
         <button type="button" onClick={() => setRoute("command")}>{user.organizationName}</button>
         <i>/</i>
         {route === "employeeDetail" && <><button type="button" onClick={() => setRoute("employees")}>Сотрудники</button><i>/</i><strong>{currentEmployee?.fullName || currentEmployee?.email || routes[route]}</strong></>}
+        {route === "accessProfiles" && <><button type="button" onClick={() => setRoute("employees")}>Сотрудники</button><i>/</i><strong>{routes[route]}</strong></>}
         {route === "productDetail" && <><button type="button" onClick={() => setRoute("products")}>Продукты</button><i>/</i><strong>{currentProduct?.name || routes[route]}</strong></>}
         {isSalesWorkspace && route !== "salesClientDetail" && route !== "salesOrderDetail" && <><button type="button" onClick={() => setRoute("salesOverview")}>Продажи</button><i>/</i><strong>{routes[route]}</strong></>}
         {route === "salesClientDetail" && <><button type="button" onClick={() => setRoute("salesOverview")}>Продажи</button><i>/</i><button type="button" onClick={() => setRoute("salesClients")}>Контакты</button><i>/</i><strong>{routes[route]}</strong></>}
@@ -23,7 +24,7 @@ export function TopBar({ route, user, currentEmployee, currentProduct, currentAg
         {route === "aiAgentCreate" && <><button type="button" onClick={() => setRoute("aiAgents")}>AI</button><i>/</i><button type="button" onClick={() => setRoute("aiAgents")}>AI-агенты</button><i>/</i><strong>{routes[route]}</strong></>}
         {route === "aiAgentDetail" && <><button type="button" onClick={() => setRoute("aiAgents")}>AI</button><i>/</i><button type="button" onClick={() => setRoute("aiAgents")}>AI-агенты</button><i>/</i><strong>{currentAgentName || routes[route]}</strong></>}
         {route === "aiKnowledgeDetail" && <><button type="button" onClick={() => setRoute("aiAgents")}>AI</button><i>/</i><button type="button" onClick={() => setRoute("aiKnowledge")}>Знания</button><i>/</i><strong>{currentAgentName || routes[route]}</strong></>}
-        {route !== "employeeDetail" && route !== "productDetail" && route !== "aiAgentCreate" && !isSalesWorkspace && !isSupportWorkspace && !isAi && !isAiDetail && <strong>{routes[route]}</strong>}
+        {route !== "accessProfiles" && route !== "employeeDetail" && route !== "productDetail" && route !== "aiAgentCreate" && !isSalesWorkspace && !isSupportWorkspace && !isAi && !isAiDetail && <strong>{routes[route]}</strong>}
       </div>
       <div className="topbar-actions">
         <button className="icon-button" aria-label="Уведомления" onClick={onOpenNotifications}><Icon name="bell" size={18} />{unreadCount > 0 && <b>{unreadCount > 99 ? "99+" : unreadCount}</b>}</button>

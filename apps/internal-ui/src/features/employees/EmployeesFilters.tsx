@@ -1,35 +1,34 @@
-import type { Role } from "../../types";
-import { SearchInput } from "../../shared/ui-controls";
 import { Segmented } from "../../shared/ui";
-import type { EmployeeStatusFilter } from "./model";
+import { SearchInput } from "../../shared/ui-controls";
+import type { EmployeePlacementFilter, EmployeeRoleFilter } from "./model";
 
 export function EmployeesFilters({
+  placement,
   query,
-  role,
-  status,
   resetFilters,
+  role,
+  setPlacement,
   setQuery,
   setRole,
-  setStatus,
 }: {
+  placement: EmployeePlacementFilter;
   query: string;
-  role: "all" | Role;
-  status: EmployeeStatusFilter;
   resetFilters: () => void;
+  role: EmployeeRoleFilter;
+  setPlacement: (placement: EmployeePlacementFilter) => void;
   setQuery: (query: string) => void;
-  setRole: (role: "all" | Role) => void;
-  setStatus: (status: EmployeeStatusFilter) => void;
+  setRole: (role: EmployeeRoleFilter) => void;
 }) {
   return (
     <div className="filter-bar employees-filter">
-      <SearchInput className="employee-search" value={query} onChange={setQuery} placeholder="Поиск по имени или email…" />
+      <SearchInput className="employee-search" value={query} onChange={setQuery} placeholder="Поиск по имени, email, должности…" />
       <div className="filter-group">
         <span>Роль</span>
-        <Segmented value={role} setValue={setRole} items={[["all", "Все"], ["OWNER", "Владелец"], ["EMPLOYEE", "Сотрудник"]]} />
+        <Segmented value={role} setValue={setRole} items={[["all", "Все"], ["OWNER", "Владелец"], ["ADMIN", "Администратор"], ["EMPLOYEE", "Сотрудник"]]} />
       </div>
       <div className="filter-group">
-        <span>Статус</span>
-        <Segmented value={status} setValue={setStatus} items={[["all", "Все"], ["active", "Активные"], ["invited", "Приглашённые"], ["blocked", "Заблокированные"]]} />
+        <span>Размещение</span>
+        <Segmented value={placement} setValue={setPlacement} items={[["all", "Все"], ["company", "Компания"], ["department", "Отдел"]]} />
       </div>
       <button className="reset-filter" type="button" onClick={resetFilters}>Сбросить</button>
     </div>

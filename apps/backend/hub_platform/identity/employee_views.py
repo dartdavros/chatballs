@@ -5,6 +5,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from hub_platform.events.services import DomainEvent, enqueue_event
 from hub_platform.identity.audit import record_audit_event
 from hub_platform.identity.access_services import create_access_assignment
 from hub_platform.identity.employee_support import employee_payload, get_owned_profile
@@ -14,6 +15,7 @@ from hub_platform.identity.employee_validation import (
     deny_employee_action,
     resolve_department,
 )
+from hub_platform.identity.event_handlers import INITIAL_ACCESS_REQUESTED
 from hub_platform.identity.governance import EmployeeAction, can_create_role, can_manage_employee
 from hub_platform.identity.models import EmployeeProfile, EmployeeRole, HumanUser
 from hub_platform.identity.policy import (
@@ -32,8 +34,10 @@ class EmployeeListView(APIView):
         actor = request.user.employee_profile
         if not has_capability_any_scope(request.user, "employees.view"):
             return Response({"detail": "Not allowed"}, status=403)
-        employees = EmployeeProfile.objects.select_related("user", "primary_department").filter(
-            organization=actor.organization
+        employees = (
+            EmployeeProfile.objects.select_related("user", "primary_department")
+            .prefetch_related("access_assignments__access_profile__capability_links")
+            .filter(organization=actor.organization)
         )
         department_ids = accessible_department_ids(request.user, "employees.view")
         if department_ids is not None:
@@ -56,20 +60,23 @@ class EmployeeCreateView(APIView):
         actor = request.user.employee_profile
         body = request.data
         email = HumanUser.objects.normalize_email(str(body.get("email", "")))
-        full_name = str(body.get("fullName", ""))
+        full_name = str(body.get("fullName", "")).strip()
+        phone = str(body.get("phone", "")).strip()
         provided_password = str(body.get("temporaryPassword", ""))
         position_title, position_error = clean_position_title(body.get("positionTitle"))
         requested_role = str(body.get("role", EmployeeRole.EMPLOYEE))
         assignments = body.get("accessAssignments", [])
 
-        if not email:
-            return Response({"detail": "Email is required"}, status=400)
         if requested_role not in ASSIGNABLE_ROLES:
             return Response({"detail": "Invalid role"}, status=400)
         if not can_create_role(actor, requested_role):
             return deny_employee_action(
                 request, None, f"{EmployeeAction.CREATE}:{requested_role}"
             )
+        if not email:
+            return Response({"detail": "Email is required"}, status=400)
+        if not full_name:
+            return Response({"detail": "Full name is required"}, status=400)
         if not isinstance(assignments, list) or any(
             not isinstance(assignment, dict) for assignment in assignments
         ):
@@ -78,7 +85,7 @@ class EmployeeCreateView(APIView):
             return Response({"detail": "ADMIN access is defined by the system role"}, status=400)
         if position_error:
             return Response({"detail": position_error}, status=400)
-        if len(provided_password) < 12:
+        if provided_password and len(provided_password) < 12:
             return Response(
                 {"detail": "Temporary password must contain at least 12 characters"},
                 status=400,
@@ -94,7 +101,7 @@ class EmployeeCreateView(APIView):
 
         user = HumanUser.objects.create_user(
             email=email,
-            password=provided_password,
+            password=provided_password or None,
             full_name=full_name,
             is_staff=False,
             is_superuser=False,
@@ -104,6 +111,7 @@ class EmployeeCreateView(APIView):
             organization=actor.organization,
             role=requested_role,
             position_title=position_title,
+            phone=phone,
             primary_department=department,
             must_change_password=True,
         )
@@ -122,6 +130,15 @@ class EmployeeCreateView(APIView):
             payload={"role": requested_role},
             request=request,
         )
+        if not provided_password:
+            enqueue_event(
+                DomainEvent(
+                    aggregate_type="HumanUser",
+                    aggregate_id=str(user.id),
+                    event_type=INITIAL_ACCESS_REQUESTED,
+                    payload={"userId": user.id},
+                )
+            )
         return Response({"employee": employee_payload(profile, actor)}, status=201)
 
 
@@ -136,7 +153,7 @@ class EmployeeDetailView(APIView):
         scope = ResourceScope(profile.organization_id, profile.primary_department_id)
         if not authorize(request.user, "employees.view", scope):
             return Response({"detail": "Employee not found"}, status=404)
-        return Response({"employee": employee_payload(profile, actor)})
+        return Response({"employee": employee_payload(profile, actor, include_detail=True)})
 
 
 class EmployeeUpdateView(APIView):

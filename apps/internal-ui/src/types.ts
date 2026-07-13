@@ -61,20 +61,57 @@ export type Employee = {
   positionTitle: string;
   phone: string;
   department: string | null;
+  departmentName?: string | null;
+  createdAt?: string;
+  lastLogin?: string | null;
   isActive: boolean;
   isBlocked: boolean;
   mustChangePassword: boolean;
   totpRequired: boolean;
   totpEnabled: boolean;
   permissions?: EmployeePermissions;
-  accessAssignments?: Array<{
-    id: number;
-    profileId: number;
-    profileName: string;
-    scopeType: "ORGANIZATION" | "DEPARTMENT";
-    departmentId: number | null;
-    departmentCode: string | null;
-  }>;
+  accessAssignments?: EmployeeAccessAssignment[];
+  activeSessionCount?: number;
+  auditEvents?: EmployeeAuditEvent[];
+};
+
+export type ScopeType = "ORGANIZATION" | "DEPARTMENT";
+
+export type EmployeeAccessAssignment = {
+  id: number;
+  profileId: number;
+  profileName: string;
+  scopeType: ScopeType;
+  departmentId: number | null;
+  departmentCode: string | null;
+  departmentName?: string | null;
+  capabilities?: string[];
+};
+
+export type EmployeeAuditEvent = {
+  action: string;
+  result: string;
+  createdAt: string;
+};
+
+export type AccessProfile = {
+  id: number;
+  name: string;
+  description: string;
+  isSystem: boolean;
+  isActive: boolean;
+  capabilities: string[];
+  allowedScopes: ScopeType[];
+  assignedCount: number;
+};
+
+export type CapabilityDefinition = {
+  code: string;
+  name: string;
+  description: string;
+  allowedScopes: ScopeType[];
+  assignable: boolean;
+  protected: boolean;
 };
 
 export type Department = {
@@ -127,7 +164,7 @@ export type ProductOffer = {
   prices: ProductPrice[];
 };
 
-export type RouteKey = "command" | "departments" | "employeeDetail" | "employees" | "productDetail" | "products" | "profile" | "salesClientDetail" | "salesClients" | "salesDialogs" | "salesOrderDetail" | "salesOrders" | "salesOverview" | "supportOverview" | "supportDialogs" | "aiAgents" | "aiAgentCreate" | "aiAgentDetail" | "aiKnowledge" | "aiKnowledgeDetail" | "aiUsage" | "integrations";
+export type RouteKey = "accessProfiles" | "command" | "departments" | "employeeDetail" | "employees" | "productDetail" | "products" | "profile" | "salesClientDetail" | "salesClients" | "salesDialogs" | "salesOrderDetail" | "salesOrders" | "salesOverview" | "supportOverview" | "supportDialogs" | "aiAgents" | "aiAgentCreate" | "aiAgentDetail" | "aiKnowledge" | "aiKnowledgeDetail" | "aiUsage" | "integrations";
 
 export type AppData = {
   employees: Employee[];
