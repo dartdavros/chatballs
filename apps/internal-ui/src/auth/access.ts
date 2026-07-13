@@ -1,39 +1,64 @@
-import type { Role, RouteKey } from "../types";
+import type { RouteKey, SessionUser } from "../types";
 
-// Матрица доступа SPEC-HUB-0004 §9 + SPEC-HUB-0010 §8.1/§10. OWNER имеет сквозной
-// доступ; EMPLOYEE работает только в пространстве своего отдела и личном профиле.
-// Compat-адаптер этапа 1 (ADR-HUB-0027): операционный доступ по-прежнему определяется
-// department. Полная capability-модель придёт на этапе 3. Department-scoped: sales →
-// только sales, support → только support (изоляция inbox §10). §8.1 (несколько
-// отделов) не покрыт — сотрудник строго в одном основном отделе (одиночный FK).
-const SALES_ROUTES: ReadonlySet<RouteKey> = new Set<RouteKey>([
-  "salesOverview",
-  "salesDialogs",
-  "salesClients",
-  "salesClientDetail",
-  "salesOrders",
-  "salesOrderDetail",
-]);
+type RouteAccess = { capability: string; departmentCode?: string };
 
-const SUPPORT_ROUTES: ReadonlySet<RouteKey> = new Set<RouteKey>([
-  "supportOverview",
-  "supportDialogs",
-]);
+const ROUTE_ACCESS: Partial<Record<RouteKey, RouteAccess>> = {
+  command: { capability: "company.view" },
+  departments: { capability: "departments.view" },
+  employees: { capability: "employees.view" },
+  employeeDetail: { capability: "employees.view" },
+  products: { capability: "products.view" },
+  productDetail: { capability: "products.view" },
+  aiAgents: { capability: "ai.view" },
+  aiAgentCreate: { capability: "ai.manage" },
+  aiAgentDetail: { capability: "ai.view" },
+  aiKnowledge: { capability: "ai.view" },
+  aiKnowledgeDetail: { capability: "ai.view" },
+  aiUsage: { capability: "ai.view" },
+  integrations: { capability: "integrations.view" },
+  salesOverview: { capability: "sales.view", departmentCode: "sales" },
+  salesDialogs: { capability: "conversations.view", departmentCode: "sales" },
+  salesClients: { capability: "customers.view", departmentCode: "sales" },
+  salesClientDetail: { capability: "customers.view", departmentCode: "sales" },
+  salesOrders: { capability: "sales.view", departmentCode: "sales" },
+  salesOrderDetail: { capability: "sales.view", departmentCode: "sales" },
+  supportOverview: { capability: "support.view", departmentCode: "support" },
+  supportDialogs: { capability: "conversations.view", departmentCode: "support" },
+};
 
-export function canAccess(role: Role, route: RouteKey, department?: string | null): boolean {
-  // Административный уровень (ADR-HUB-0027 этап 2): ADMIN имеет все обычные capability
-  // организации наравне с OWNER, поэтому получает сквозной доступ к интерфейсу.
-  if (role === "OWNER" || role === "ADMIN") return true;
+export function hasCapability(
+  user: SessionUser,
+  capability: string,
+  departmentCode?: string,
+): boolean {
+  if (!user.capabilities.includes(capability)) return false;
+  return user.accessScopes.some((scope) => {
+    if (!scope.capabilities.includes(capability)) return false;
+    if (scope.scopeType === "ORGANIZATION") return true;
+    return Boolean(departmentCode) && scope.departmentCode === departmentCode;
+  });
+}
+
+export function canAccess(user: SessionUser, route: RouteKey): boolean {
   if (route === "profile") return true;
-  if (department === "support") return SUPPORT_ROUTES.has(route);
-  // По умолчанию EMPLOYEE — sales-пространство (обратная совместимость).
-  return SALES_ROUTES.has(route);
+  const requirement = ROUTE_ACCESS[route];
+  return requirement
+    ? hasCapability(user, requirement.capability, requirement.departmentCode)
+    : false;
 }
 
-// SPEC-HUB-0004 §11 + SPEC-HUB-0010 §8.1: OWNER/ADMIN — командный центр; EMPLOYEE —
-// диалоги своего отдела (support operator попадает в support dialogs).
-export function defaultRoute(role: Role, department?: string | null): RouteKey {
-  if (role === "OWNER" || role === "ADMIN") return "command";
-  return department === "support" ? "supportDialogs" : "salesDialogs";
-}
+const LANDING_PRIORITY: RouteKey[] = [
+  "command",
+  "salesDialogs",
+  "supportDialogs",
+  "salesOverview",
+  "supportOverview",
+  "employees",
+  "products",
+  "aiAgents",
+  "integrations",
+];
 
+export function defaultRoute(user: SessionUser): RouteKey {
+  return LANDING_PRIORITY.find((route) => canAccess(user, route)) ?? "profile";
+}

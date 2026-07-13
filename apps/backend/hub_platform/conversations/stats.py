@@ -39,8 +39,16 @@ def _window(period: str, now: datetime) -> tuple[datetime, datetime]:
     return start, start - span
 
 
-def _chart(org_id: int, period: str, start: datetime, now: datetime) -> dict:
+def _chart(
+    org_id: int,
+    period: str,
+    start: datetime,
+    now: datetime,
+    department_ids: set[int] | None,
+) -> dict:
     qs = Conversation.objects.filter(organization_id=org_id, created_at__gte=start)
+    if department_ids is not None:
+        qs = qs.filter(channel__department_id__in=department_ids)
     if period == "today":
         rows = qs.annotate(b=TruncHour("created_at")).values("b").annotate(c=Count("id"))
         counts = {row["b"].astimezone(now.tzinfo).hour: row["c"] for row in rows}
@@ -60,18 +68,31 @@ def _chart(org_id: int, period: str, start: datetime, now: datetime) -> dict:
     return {"values": values, "labels": labels}
 
 
-def _ai_cost(org_id: int, start: datetime, end: datetime | None = None) -> int:
+def _ai_cost(
+    org_id: int,
+    start: datetime,
+    end: datetime | None = None,
+    department_ids: set[int] | None = None,
+) -> int:
     qs = LlmInvocation.objects.filter(channel__organization_id=org_id, created_at__gte=start)
+    if department_ids is not None:
+        qs = qs.filter(channel__department_id__in=department_ids)
     if end is not None:
         qs = qs.filter(created_at__lt=end)
     return qs.aggregate(total=Sum("cost_micros"))["total"] or 0
 
 
-def sales_overview_stats(organization_id: int, period: str) -> dict:
+def sales_overview_stats(
+    organization_id: int,
+    period: str,
+    department_ids: set[int] | None = None,
+) -> dict:
     now = timezone.now()
     start, prev_start = _window(period, now)
 
     open_qs = Conversation.objects.filter(organization_id=organization_id, lifecycle=LifecycleState.OPEN)
+    if department_ids is not None:
+        open_qs = open_qs.filter(channel__department_id__in=department_ids)
     open_dialogs = open_qs.count()
     # «Ждут оператора» = очередь: диалоги, которые никто не взял (PAUSED).
     # Взятые оператором (HUMAN), но ещё без ответа, очередью не считаются —
@@ -86,8 +107,12 @@ def sales_overview_stats(organization_id: int, period: str) -> dict:
     }
 
     period_qs = Conversation.objects.filter(organization_id=organization_id, created_at__gte=start)
+    if department_ids is not None:
+        period_qs = period_qs.filter(channel__department_id__in=department_ids)
     dialogs = period_qs.count()
     paid = Order.objects.filter(organization_id=organization_id, payment_status=PaymentStatus.PAID)
+    if department_ids is not None:
+        paid = paid.filter(conversation__channel__department_id__in=department_ids)
     period_paid = paid.filter(paid_at__gte=start)
     prev_paid = paid.filter(paid_at__gte=prev_start, paid_at__lt=start)
     sales = period_paid.count()
@@ -96,10 +121,27 @@ def sales_overview_stats(organization_id: int, period: str) -> dict:
         "dialogs": dialogs,
         "dialogsPrev": Conversation.objects.filter(
             organization_id=organization_id, created_at__gte=prev_start, created_at__lt=start
+        ).filter(
+            **(
+                {"channel__department_id__in": department_ids}
+                if department_ids is not None
+                else {}
+            )
         ).count(),
-        "messages": Message.objects.filter(conversation__organization_id=organization_id, created_at__gte=start).count(),
-        "aiCostMicros": _ai_cost(organization_id, start),
-        "aiCostPrevMicros": _ai_cost(organization_id, prev_start, start),
+        "messages": Message.objects.filter(
+            conversation__organization_id=organization_id,
+            created_at__gte=start,
+        ).filter(
+            **(
+                {"conversation__channel__department_id__in": department_ids}
+                if department_ids is not None
+                else {}
+            )
+        ).count(),
+        "aiCostMicros": _ai_cost(organization_id, start, department_ids=department_ids),
+        "aiCostPrevMicros": _ai_cost(
+            organization_id, prev_start, start, department_ids=department_ids
+        ),
         "sales": sales,
         "salesPrev": prev_paid.count(),
         "revenueMinor": revenue,
@@ -114,7 +156,10 @@ def sales_overview_stats(organization_id: int, period: str) -> dict:
 
     by_channel: list[dict] = []
     by_product: dict[str, dict] = {}
-    for channel in channels_for_organization(organization_id):
+    channels = channels_for_organization(organization_id)
+    if department_ids is not None:
+        channels = channels.filter(department_id__in=department_ids)
+    for channel in channels:
         open_count = open_by_channel.get(channel.id, 0)
         period_count = period_by_channel.get(channel.id, 0)
         by_channel.append({"code": channel.code, "name": channel.name, "openDialogs": open_count, "dialogs": period_count})
@@ -160,6 +205,6 @@ def sales_overview_stats(organization_id: int, period: str) -> dict:
         "period": period_block,
         "byChannel": by_channel,
         "byProduct": list(by_product.values()),
-        "chart": _chart(organization_id, period, start, now),
+        "chart": _chart(organization_id, period, start, now, department_ids),
         "problems": problems,
     }

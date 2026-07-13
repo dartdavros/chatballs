@@ -64,12 +64,18 @@ export function App() {
     setDataError(false);
     try {
       const [employees, departments, products] = await Promise.all([
-        api<{ items: Employee[] }>("/api/v1/employees/"),
-        api<{ items: Department[] }>("/api/v1/company/departments/"),
-        api<{ items: Product[] }>("/api/v1/company/products/"),
+        user && canAccess(user, "employees")
+          ? api<{ items: Employee[] }>("/api/v1/employees/")
+          : Promise.resolve({ items: [] }),
+        user && canAccess(user, "departments")
+          ? api<{ items: Department[] }>("/api/v1/company/departments/")
+          : Promise.resolve({ items: [] }),
+        user && canAccess(user, "products")
+          ? api<{ items: Product[] }>("/api/v1/company/products/")
+          : Promise.resolve({ items: [] }),
       ]);
       let agents: AiAgent[] = [];
-      if (user?.role === "OWNER") {
+      if (user && canAccess(user, "aiAgents")) {
         const agentsResponse = await api<{ items: AiAgent[] }>("/api/v1/ai/agents/");
         agents = agentsResponse.items;
       }
@@ -77,7 +83,7 @@ export function App() {
     } catch {
       setDataError(true);
     }
-  }, [user?.role]);
+  }, [user]);
 
   useEffect(() => {
     api<{ authenticated: boolean; user?: SessionUser }>("/api/v1/auth/session/")
@@ -111,7 +117,7 @@ export function App() {
 
   const landAfterAuth = useCallback((nextUser: SessionUser) => {
     setUser(nextUser);
-    navigate(defaultRoute(nextUser.role, nextUser.department), null, true);
+    navigate(defaultRoute(nextUser), null, true);
   }, [navigate]);
 
   async function logout() {
@@ -148,8 +154,8 @@ export function App() {
         <AuthTotpSetup user={user} onConfirmed={setUser} />
       ) : dataError ? (
         <ErrorScreen retry={loadData} />
-      ) : !canAccess(user.role, route, user.department) ? (
-        <PermissionScreen onReturn={() => navigate(defaultRoute(user.role, user.department), null, true)} />
+      ) : !canAccess(user, route) ? (
+        <PermissionScreen onReturn={() => navigate(defaultRoute(user), null, true)} />
       ) : (
         <Shell route={route} setRoute={(nextRoute) => navigate(nextRoute)} selectedEmployeeId={selectedEmployeeId} selectedProductId={selectedProductId} selectedProductCode={selectedProductCode} selectedAgentId={selectedAgentId} selectedKnowledgeId={selectedKnowledgeId} selectedConversationId={selectedConversationId} selectedClientId={selectedClientId} openClientRoute={(clientId) => navigate("salesClientDetail", clientId)} selectedOrderId={selectedOrderId} openOrderRoute={(orderId) => navigate("salesOrderDetail", orderId)} openEmployeeRoute={(employeeId) => navigate("employeeDetail", employeeId)} openProductRoute={(productId) => navigate("productDetail", productId)} openAgentCreateRoute={(productCode) => navigate("aiAgentCreate", null, false, productCode)} openAgentRoute={(agentId) => navigate("aiAgentDetail", agentId)} openKnowledgeRoute={(knowledgeId) => navigate("aiKnowledgeDetail", knowledgeId)} openConversationRoute={(conversationId) => navigate("salesDialogs", conversationId)} user={user} data={data} reload={loadData} onUserUpdated={setUser} onLogout={logout} />
       )}

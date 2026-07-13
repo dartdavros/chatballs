@@ -133,7 +133,7 @@ class EmployeeProfile(models.Model):
         constraints = [
             # OWNER всегда на уровне компании (ADR-HUB-0027, инварианты размещения).
             models.CheckConstraint(
-                check=~Q(role=EmployeeRole.OWNER) | Q(primary_department__isnull=True),
+                condition=~Q(role=EmployeeRole.OWNER) | Q(primary_department__isnull=True),
                 name="owner_is_company_level",
             ),
             # В организации ровно один владелец (ADR-HUB-0027).
@@ -198,3 +198,12 @@ class AuditEvent(models.Model):
 
     def __str__(self) -> str:
         return f"{self.action}:{self.result}"
+
+
+# Django imports only models.py by convention. Re-export access models after the core
+# identity entities are defined so they are registered without growing this file.
+from hub_platform.identity.access_models import (  # noqa: E402, F401
+    AccessProfile,
+    AccessProfileCapability,
+    EmployeeAccessAssignment,
+)

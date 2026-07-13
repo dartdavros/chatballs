@@ -13,13 +13,14 @@ import logging
 from django.conf import settings
 
 from hub_platform.conversations import transports
-from hub_platform.identity.models import EmployeeProfile, EmployeeRole
+from hub_platform.identity.models import EmployeeProfile
 from hub_platform.notifications.models import (
     MessengerBinding,
     Notification,
     NotificationAudience,
     NotificationLevel,
 )
+from hub_platform.notifications.selectors import visible_for
 
 logger = logging.getLogger(__name__)
 
@@ -36,16 +37,16 @@ _LEVEL_MARK = {
 def _recipient_user_ids(notification: Notification) -> list[int]:
     if notification.audience == NotificationAudience.USER:
         return [notification.recipient_user_id] if notification.recipient_user_id else []
-    profiles = EmployeeProfile.objects.filter(organization_id=notification.organization_id, blocked_at__isnull=True)
-    if notification.audience == NotificationAudience.OWNER:
-        # Административный уровень (ADR-HUB-0027 этап 2): OWNER и ADMIN.
-        profiles = profiles.filter(role__in=(EmployeeRole.OWNER, EmployeeRole.ADMIN))
-    elif notification.audience == NotificationAudience.OPERATORS:
-        # Зеркало visible_for: аудиторию OPERATORS видят сотрудники и менеджеры (OWNER/ADMIN).
-        profiles = profiles.filter(
-            role__in=(EmployeeRole.EMPLOYEE, EmployeeRole.OWNER, EmployeeRole.ADMIN)
-        )
-    return list(profiles.values_list("user_id", flat=True))
+    profiles = EmployeeProfile.objects.filter(
+        organization_id=notification.organization_id,
+        blocked_at__isnull=True,
+        user__is_active=True,
+    ).select_related("user")
+    return [
+        profile.user_id
+        for profile in profiles
+        if visible_for(profile.user).filter(id=notification.id).exists()
+    ]
 
 
 def _message_text(notification: Notification) -> str:

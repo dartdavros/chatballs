@@ -4,7 +4,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from hub_platform.api.permissions import IsManager
+from hub_platform.api.permissions import HasCapability
 from hub_platform.identity.audit import record_audit_event
 from hub_platform.integrations.models import Integration
 from hub_platform.integrations.selectors import (
@@ -57,7 +57,9 @@ def _audit(request: Request, action: str, integration: Integration) -> None:
 
 
 class IntegrationListView(APIView):
-    permission_classes = [IsManager]
+    permission_classes = [HasCapability]
+    required_capabilities = {"GET": "integrations.view", "POST": "integrations.manage"}
+    require_organization_scope = True
 
     def get(self, request: Request) -> Response:
         items = integrations_for_organization(request.user.employee_profile.organization_id)
@@ -74,7 +76,9 @@ class IntegrationListView(APIView):
 
 
 class IntegrationDetailView(APIView):
-    permission_classes = [IsManager]
+    permission_classes = [HasCapability]
+    required_capability = "integrations.manage"
+    require_organization_scope = True
 
     def _get(self, request: Request, integration_id: int) -> Integration:
         return integration_for_organization(
@@ -103,7 +107,9 @@ class IntegrationDetailView(APIView):
 
 
 class IntegrationTestView(APIView):
-    permission_classes = [IsManager]
+    permission_classes = [HasCapability]
+    required_capability = "integrations.manage"
+    require_organization_scope = True
 
     def post(self, request: Request, integration_id: int) -> Response:
         try:

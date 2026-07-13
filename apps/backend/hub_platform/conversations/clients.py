@@ -11,6 +11,7 @@ from django.db.models import Prefetch, Q
 from django.db.models import Count, Sum
 
 from hub_platform.conversations.models import (
+    ConnectionIdentity,
     Contact,
     Conversation,
     ControlMode,
@@ -42,19 +43,34 @@ def _mode(latest: Conversation) -> str:
     return "wait"
 
 
-def clients_overview(organization_id: int) -> list[dict]:
+def clients_overview(
+    organization_id: int, department_ids: set[int] | None = None
+) -> list[dict]:
+    conversation_qs = Conversation.objects.select_related(
+        "channel", "channel__product", "connection"
+    ).order_by("-last_activity_at")
+    if department_ids is not None:
+        conversation_qs = conversation_qs.filter(channel__department_id__in=department_ids)
+    identity_qs = ConnectionIdentity.objects.select_related("connection")
+    if department_ids is not None:
+        identity_qs = identity_qs.filter(connection__channel__department_id__in=department_ids)
     contacts = Contact.objects.filter(organization_id=organization_id).prefetch_related(
         Prefetch(
             "conversations",
-            queryset=Conversation.objects.select_related("channel", "channel__product", "connection").order_by("-last_activity_at"),
+            queryset=conversation_qs,
         ),
-        "identities",
+        Prefetch("identities", queryset=identity_qs),
     )
+    paid_qs = Order.objects.filter(
+        organization_id=organization_id, payment_status=PaymentStatus.PAID
+    )
+    if department_ids is not None:
+        paid_qs = paid_qs.filter(conversation__channel__department_id__in=department_ids)
     paid_by_contact = {
         row["contact_id"]: row
-        for row in Order.objects.filter(organization_id=organization_id, payment_status=PaymentStatus.PAID)
-        .values("contact_id")
-        .annotate(n=Count("id"), total=Sum("amount_minor"))
+        for row in paid_qs.values("contact_id").annotate(
+            n=Count("id"), total=Sum("amount_minor")
+        )
     }
     rows: list[dict] = []
     for contact in contacts:
@@ -102,13 +118,20 @@ def _dialog_status(conversation: Conversation) -> str:
     return {"closed": "Закрыт", "operator": "Оператор", "ai": "AI", "wait": "Ждёт оператора"}[_mode(conversation)]
 
 
-def client_detail(organization_id: int, contact_id: int) -> dict:
+def client_detail(
+    organization_id: int,
+    contact_id: int,
+    department_ids: set[int] | None = None,
+) -> dict:
     contact = Contact.objects.get(organization_id=organization_id, id=contact_id)
-    conversations = list(
-        Conversation.objects.filter(organization_id=organization_id, contact=contact)
-        .select_related("channel", "channel__product", "connection")
-        .order_by("-last_activity_at")
-    )
+    conversation_qs = Conversation.objects.filter(
+        organization_id=organization_id, contact=contact
+    ).select_related("channel", "channel__product", "connection")
+    if department_ids is not None:
+        conversation_qs = conversation_qs.filter(channel__department_id__in=department_ids)
+    conversations = list(conversation_qs.order_by("-last_activity_at"))
+    if not conversations:
+        raise Contact.DoesNotExist
 
     channels: set[str] = set()
     products: set[str] = set()
@@ -136,6 +159,11 @@ def client_detail(organization_id: int, contact_id: int) -> dict:
             }
         )
 
+    identity_qs = contact.identities.select_related("connection")
+    if department_ids is not None:
+        identity_qs = identity_qs.filter(
+            connection__channel__department_id__in=department_ids
+        )
     identities = [
         {
             "provider": identity.connection.provider,
@@ -143,7 +171,7 @@ def client_detail(organization_id: int, contact_id: int) -> dict:
             "username": identity.username,
             "createdAt": identity.created_at.isoformat(),
         }
-        for identity in contact.identities.select_related("connection").order_by("created_at")
+        for identity in identity_qs.order_by("created_at")
     ]
 
     # Активность из жизненного цикла диалогов (created/closed) — реальные события.
@@ -156,9 +184,12 @@ def client_detail(organization_id: int, contact_id: int) -> dict:
 
     conversation_ids = [str(conversation.id) for conversation in conversations]
     audit = []
+    audit_scope = Q(object_type="Conversation", object_id__in=conversation_ids)
+    if department_ids is None:
+        audit_scope |= Q(object_type="Contact", object_id=str(contact_id))
     audit_qs = (
         AuditEvent.objects.filter(organization_id=organization_id)
-        .filter(Q(object_type="Conversation", object_id__in=conversation_ids) | Q(object_type="Contact", object_id=str(contact_id)))
+        .filter(audit_scope)
         .select_related("actor")
         .order_by("-created_at")[:20]
     )
@@ -184,7 +215,11 @@ def client_detail(organization_id: int, contact_id: int) -> dict:
             "fulfillmentStatus": order.fulfillment_status,
             "createdAt": order.created_at.isoformat(),
         }
-        for order in Order.objects.filter(organization_id=organization_id, contact=contact).select_related("product").order_by("-created_at")
+        for order in Order.objects.filter(
+            organization_id=organization_id,
+            contact=contact,
+            conversation_id__in=[conversation.id for conversation in conversations],
+        ).select_related("product").order_by("-created_at")
     ]
     paid_total = sum(order["amountMinor"] for order in orders if order["paymentStatus"] == PaymentStatus.PAID)
 

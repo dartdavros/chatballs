@@ -24,6 +24,19 @@ def employee_payload(
         "mustChangePassword": profile.must_change_password,
         "totpRequired": profile.totp_required,
         "totpEnabled": profile.totp_enabled,
+        "accessAssignments": [
+            {
+                "id": assignment.id,
+                "profileId": assignment.access_profile_id,
+                "profileName": assignment.access_profile.name,
+                "scopeType": assignment.scope_type,
+                "departmentId": assignment.department_id,
+                "departmentCode": assignment.department.code if assignment.department_id else None,
+            }
+            for assignment in profile.access_assignments.filter(
+                revoked_at__isnull=True, access_profile__is_active=True
+            ).select_related("access_profile", "department")
+        ],
     }
     # Backend — источник истины для того, какие действия над сотрудником доступны
     # запрашивающему (ADR-HUB-0027): фронтенд скрывает недоступное.

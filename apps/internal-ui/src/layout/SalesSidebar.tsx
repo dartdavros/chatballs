@@ -1,6 +1,7 @@
 import type { RouteKey, SessionUser } from "../types";
 import { Icon } from "../shared/icons";
 import { Avatar } from "../shared/ui";
+import { canAccess } from "../auth/access";
 
 export function SalesSidebar({ route, user, setRoute, waitingCount = 0 }: { route: RouteKey; user: SessionUser; setRoute: (route: RouteKey) => void; waitingCount?: number }) {
   const nav = [
@@ -11,7 +12,7 @@ export function SalesSidebar({ route, user, setRoute, waitingCount = 0 }: { rout
   ];
   return (
     <aside className="hub-sidebar sales-workspace-sidebar">
-      {user.role === "OWNER" && (
+      {canAccess(user, "command") && (
         <div className="sales-sidebar-back-wrap">
           <button className="sales-sidebar-back" type="button" onClick={() => setRoute("command")}><Icon name="arrow" size={16} />Назад в Hub</button>
         </div>
@@ -23,6 +24,7 @@ export function SalesSidebar({ route, user, setRoute, waitingCount = 0 }: { rout
       <nav className="hub-nav sales-workspace-nav">
         {nav.map((item) => {
           const nextRoute = "key" in item ? item.key : null;
+          if (nextRoute && !canAccess(user, nextRoute)) return null;
           const active = nextRoute === route || (nextRoute === "salesClients" && route === "salesClientDetail") || (nextRoute === "salesOrders" && route === "salesOrderDetail");
           return (
           <button className={`hub-nav-item ${active ? "is-active" : ""}`} type="button" onClick={() => nextRoute && setRoute(nextRoute)} key={item.label}>

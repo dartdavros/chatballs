@@ -17,7 +17,7 @@ export function EmployeesPage({ employees, reload, openEmployee }: { employees: 
 
   async function block(employee: Employee) {
     // Backend — источник истины; повторяем его решение, чтобы не слать заведомо 403.
-    const canBlock = employee.permissions?.canBlock ?? employee.role !== "OWNER";
+    const canBlock = employee.permissions?.canBlock ?? false;
     if (!canBlock || employee.isBlocked) return;
     await api(`/api/v1/employees/${employee.id}/block/`, { method: "POST" });
     setMenuId(null);

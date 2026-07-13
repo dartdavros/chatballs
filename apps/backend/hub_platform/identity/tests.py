@@ -10,8 +10,6 @@ from django.utils.http import urlsafe_base64_encode
 from rest_framework.test import APIClient
 from rest_framework.throttling import ScopedRateThrottle
 
-_LOCMEM_CACHE = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
-
 from hub_platform.identity.bootstrap import bootstrap_edevs_owner
 from hub_platform.identity.auth.totp_utils import _totp_code
 from hub_platform.identity.models import (
@@ -22,8 +20,10 @@ from hub_platform.identity.models import (
     HumanUser,
     Organization,
 )
-from hub_platform.identity.permissions import can_access_global_settings, can_access_sales_workspace
+from hub_platform.identity.policy import ResourceScope, authorize
 from hub_platform.products.models import Product
+
+_LOCMEM_CACHE = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
 
 
 class BootstrapOwnerTests(TestCase):
@@ -51,6 +51,15 @@ class BootstrapOwnerTests(TestCase):
         self.assertEqual(operator.full_name, "Анна Котова")
         self.assertEqual(operator.employee_profile.role, EmployeeRole.EMPLOYEE)
         self.assertEqual(operator.employee_profile.phone, "+7 916 245 14 02")
+        assignment = operator.employee_profile.access_assignments.get(revoked_at__isnull=True)
+        self.assertEqual(assignment.scope_type, "DEPARTMENT")
+        self.assertEqual(assignment.department.code, "sales")
+        self.assertIn(
+            "conversations.view",
+            assignment.access_profile.capability_links.values_list(
+                "capability_code", flat=True
+            ),
+        )
         self.assertTrue(AuditEvent.objects.filter(action="identity.owner_bootstrapped").exists())
 
     def test_bootstrap_is_idempotent_for_owner(self) -> None:
@@ -83,21 +92,29 @@ class PermissionTests(TestCase):
     def test_owner_can_access_global_settings_and_sales_workspace(self) -> None:
         owner = HumanUser.objects.get(email="owner@edevs.tech")
 
-        self.assertTrue(can_access_global_settings(owner))
-        self.assertTrue(can_access_sales_workspace(owner))
-
-    def test_operator_cannot_access_global_settings(self) -> None:
-        operator = HumanUser.objects.create_user(email="operator@edevs.tech", password="temporary-password")
-        EmployeeProfile.objects.create(
-            user=operator,
-            organization=self.organization,
-            role=EmployeeRole.EMPLOYEE,
-            primary_department=self.sales,
-            must_change_password=True,
+        self.assertTrue(
+            authorize(owner, "settings.manage", ResourceScope(self.organization.id))
+        )
+        self.assertTrue(
+            authorize(
+                owner,
+                "conversations.view",
+                ResourceScope(self.organization.id, self.sales.id),
+            )
         )
 
-        self.assertFalse(can_access_global_settings(operator))
-        self.assertTrue(can_access_sales_workspace(operator))
+    def test_operator_cannot_access_global_settings(self) -> None:
+        operator = HumanUser.objects.get(email="a.kotova@edevs.tech")
+        self.assertFalse(
+            authorize(operator, "settings.manage", ResourceScope(self.organization.id))
+        )
+        self.assertTrue(
+            authorize(
+                operator,
+                "conversations.view",
+                ResourceScope(self.organization.id, self.sales.id),
+            )
+        )
 
 
 class AuthEndpointTests(TestCase):
@@ -114,6 +131,9 @@ class AuthEndpointTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         payload = response.json()
+        self.assertIn("capabilities", payload["user"])
+        self.assertIn("accessScopes", payload["user"])
+        self.assertIn("employees.manage_privileged", payload["user"]["capabilities"])
         self.assertTrue(payload["authenticated"])
         self.assertEqual(payload["user"]["organizationName"], "Edevs")
         self.assertEqual(payload["user"]["role"], EmployeeRole.OWNER)
@@ -440,7 +460,11 @@ class EmployeeEndpointTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 403)
-        self.assertTrue(AuditEvent.objects.filter(action="identity.manager_permission_denied").exists())
+        self.assertTrue(
+            AuditEvent.objects.filter(
+                action="identity.employee_privileged_action_denied"
+            ).exists()
+        )
 
     def test_owner_blocks_operator(self) -> None:
         operator = HumanUser.objects.create_user(email="operator@edevs.tech", password="operator-password")

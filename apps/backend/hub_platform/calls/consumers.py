@@ -17,7 +17,9 @@ from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from hub_platform.calls import signaling
 from hub_platform.calls.errors import CallTokenError
 from hub_platform.calls.models import TERMINAL_CALL_STATUSES
+from hub_platform.calls.permissions import staff_call_access_valid
 from hub_platform.calls.services import authorize_call_access_token
+from hub_platform.calls.models import ParticipantSide
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +33,7 @@ class CallSignalingConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self) -> None:
         self.call_id = None
         self.side = None
+        self.staff_user_id = None
         self.group = None
         self._seen_commands: set[str] = set()
         await self.accept()
@@ -39,6 +42,12 @@ class CallSignalingConsumer(AsyncJsonWebsocketConsumer):
         msg_type = content.get("type")
         if self.call_id is None:
             await self._authenticate(msg_type, content)
+            return
+        if self.side == ParticipantSide.STAFF and not await database_sync_to_async(
+            staff_call_access_valid
+        )(user_id=self.staff_user_id, call_session_id=self.call_id):
+            await self.send_json({"type": "error", "code": "ACCESS_REVOKED"})
+            await self.close(code=4403)
             return
 
         # Идемпотентность command-событий: повтор с тем же id игнорируется.
@@ -89,6 +98,7 @@ class CallSignalingConsumer(AsyncJsonWebsocketConsumer):
             return
         self.call_id = call.id
         self.side = claims.side
+        self.staff_user_id = int(claims.subject_id) if claims.side == ParticipantSide.STAFF else None
         self.group = f"call.{call.id}"
         await self.channel_layer.group_add(self.group, self.channel_name)
         payload = await database_sync_to_async(signaling.signaling_join)(self.call_id, self.side)

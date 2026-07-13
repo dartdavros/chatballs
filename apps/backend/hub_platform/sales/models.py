@@ -66,6 +66,8 @@ class AttributionMethod(models.TextChoices):
 
 class ActorType(models.TextChoices):
     AI_AGENT = "AI_AGENT", "AI-агент"
+    EMPLOYEE = "EMPLOYEE", "Сотрудник"
+    # Historical read compatibility (SPEC-HUB-0018 §10). New events never use these.
     OPERATOR = "OPERATOR", "Оператор"
     OWNER = "OWNER", "Владелец"
 

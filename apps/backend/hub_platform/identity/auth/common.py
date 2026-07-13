@@ -1,12 +1,13 @@
 from rest_framework.request import Request
 
 from hub_platform.identity.models import HumanUser
+from hub_platform.identity.policy import get_effective_access
 from hub_platform.identity.sessions import revoke_user_sessions
 
 
 def _user_payload(user: HumanUser) -> dict[str, object]:
     profile = user.employee_profile
-    return {
+    payload = {
         "id": user.id,
         "email": user.email,
         "fullName": user.full_name,
@@ -19,6 +20,8 @@ def _user_payload(user: HumanUser) -> dict[str, object]:
         "totpRequired": profile.totp_required,
         "totpEnabled": profile.totp_enabled,
     }
+    payload.update(get_effective_access(user))
+    return payload
 
 
 def _challenge_payload(user: HumanUser) -> dict[str, object]:

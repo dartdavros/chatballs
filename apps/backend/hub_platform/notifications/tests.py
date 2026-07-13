@@ -13,6 +13,7 @@ from hub_platform.notifications.binding import deep_link, handle_notifier_inboun
 from hub_platform.notifications.delivery import NOTIFICATION_CREATED
 from hub_platform.notifications.models import MessengerBinding, MessengerBindingCode, NotificationAudience, NotificationType
 from hub_platform.notifications.services import notify
+from hub_platform.notifications.selectors import visible_for
 
 
 def _notifier(organization, provider=IntegrationProvider.TELEGRAM, username="edevs_notify_bot"):
@@ -122,6 +123,29 @@ class DeliveryTests(NotifierTestBase):
             )
             self._dispatch_last_event()
         send.assert_not_called()  # у оператора нет привязки; owner не адресат
+
+    def test_operator_notifications_follow_assignment_scope(self) -> None:
+        operator = HumanUser.objects.get(email="a.kotova@edevs.tech")
+        sales = self.organization.departments.get(code="sales")
+        support = self.organization.departments.get(code="support")
+        sales_notification = notify(
+            organization=self.organization,
+            department=sales,
+            type=NotificationType.DIALOG_WAITING,
+            audience=NotificationAudience.OPERATORS,
+            title="Sales dialog",
+        )
+        notify(
+            organization=self.organization,
+            department=support,
+            type=NotificationType.DIALOG_WAITING,
+            audience=NotificationAudience.OPERATORS,
+            title="Support dialog",
+        )
+        self.assertEqual(
+            list(visible_for(operator).values_list("id", flat=True)),
+            [sales_notification.id],
+        )
 
 
 class PollerSelectionTests(NotifierTestBase):

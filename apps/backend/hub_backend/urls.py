@@ -12,6 +12,7 @@ urlpatterns = [
     path("api/v1/company/", include("hub_platform.identity.company_urls")),
     path("api/v1/company/", include("hub_platform.products.urls")),
     path("api/v1/employees/", include("hub_platform.identity.employee_urls")),
+    path("api/v1/access-profiles/", include("hub_platform.identity.access_urls")),
     path("api/v1/ai/", include("hub_platform.ai.urls")),
     path("api/v1/integrations/", include("hub_platform.integrations.urls")),
     path("api/v1/channels/", include("hub_platform.channels.urls")),

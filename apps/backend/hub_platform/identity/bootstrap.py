@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from django.db import transaction
 
 from hub_platform.identity.audit import record_audit_event
+from hub_platform.identity.access_defaults import ensure_system_assignment
 from hub_platform.identity.models import (
     Department,
     EmployeeProfile,
@@ -65,7 +66,7 @@ def bootstrap_edevs_owner(*, email: str, password: str, full_name: str = "") -> 
         owner.is_superuser = True
         owner.save(update_fields=["is_staff", "is_superuser"])
 
-    EmployeeProfile.objects.get_or_create(
+    owner_profile, _ = EmployeeProfile.objects.get_or_create(
         user=owner,
         defaults={
             "organization": organization,
@@ -102,6 +103,12 @@ def bootstrap_edevs_owner(*, email: str, password: str, full_name: str = "") -> 
     if not operator_profile.phone:
         operator_profile.phone = "+7 916 245 14 02"
         operator_profile.save(update_fields=["phone"])
+    ensure_system_assignment(
+        employee=operator_profile,
+        assigned_by=owner_profile,
+        department=sales_department,
+        profile_name="Sales operator",
+    )
 
     record_audit_event(
         organization=organization,

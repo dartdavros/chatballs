@@ -17,6 +17,15 @@ export type SessionUser = {
   mustChangePassword: boolean;
   totpRequired: boolean;
   totpEnabled: boolean;
+  capabilities: string[];
+  accessScopes: AccessScope[];
+};
+
+export type AccessScope = {
+  scopeType: "ORGANIZATION" | "DEPARTMENT";
+  departmentId: number | null;
+  departmentCode: string | null;
+  capabilities: string[];
 };
 
 export type AuthChallenge = {
@@ -36,6 +45,7 @@ export type EmployeePermissions = {
   canUpdateProfile: boolean;
   canChangeRole: boolean;
   canChangePlacement: boolean;
+  canChangeAccess: boolean;
   canBlock: boolean;
   canUnblock: boolean;
   canResetPassword: boolean;
@@ -57,6 +67,14 @@ export type Employee = {
   totpRequired: boolean;
   totpEnabled: boolean;
   permissions?: EmployeePermissions;
+  accessAssignments?: Array<{
+    id: number;
+    profileId: number;
+    profileName: string;
+    scopeType: "ORGANIZATION" | "DEPARTMENT";
+    departmentId: number | null;
+    departmentCode: string | null;
+  }>;
 };
 
 export type Department = {

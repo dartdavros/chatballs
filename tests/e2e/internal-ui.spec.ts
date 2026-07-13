@@ -17,10 +17,41 @@ const OWNER = {
   mustChangePassword: false,
   totpRequired: false,
   totpEnabled: false,
+  capabilities: [
+    "company.view", "departments.view", "employees.view", "products.view", "ai.view",
+    "ai.manage", "integrations.view", "conversations.view", "customers.view", "sales.view",
+    "support.view",
+  ],
+  accessScopes: [{
+    scopeType: "ORGANIZATION",
+    departmentId: null,
+    departmentCode: null,
+    capabilities: [
+      "company.view", "departments.view", "employees.view", "products.view", "ai.view",
+      "ai.manage", "integrations.view", "conversations.view", "customers.view", "sales.view",
+      "support.view",
+    ],
+  }],
 };
 
 // «Оператор» — рабочая функция обычного сотрудника (EMPLOYEE) в отделе (ADR-HUB-0027).
-const OPERATOR = { ...OWNER, id: 2, email: "operator@edevs.tech", fullName: "Оператор", role: "EMPLOYEE", positionTitle: "Оператор отдела продаж", department: "sales" };
+const OPERATOR_CAPABILITIES = ["conversations.view", "conversations.operate", "customers.view", "sales.view", "sales.operate"];
+const OPERATOR = {
+  ...OWNER,
+  id: 2,
+  email: "operator@edevs.tech",
+  fullName: "Оператор",
+  role: "EMPLOYEE",
+  positionTitle: "Оператор отдела продаж",
+  department: "sales",
+  capabilities: OPERATOR_CAPABILITIES,
+  accessScopes: [{
+    scopeType: "DEPARTMENT",
+    departmentId: 1,
+    departmentCode: "sales",
+    capabilities: OPERATOR_CAPABILITIES,
+  }],
+};
 
 async function mockData(page: Page) {
   await page.route("**/api/v1/employees/**", (route) => route.fulfill({ json: { items: [] } }));

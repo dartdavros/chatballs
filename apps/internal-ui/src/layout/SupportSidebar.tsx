@@ -1,6 +1,7 @@
 import type { RouteKey, SessionUser } from "../types";
 import { Icon } from "../shared/icons";
 import { Avatar } from "../shared/ui";
+import { canAccess } from "../auth/access";
 
 // SPEC-HUB-0010 §8.1: навигация отдела поддержки — Обзор и Диалоги.
 // Зеркало SalesSidebar (переиспользование layout/структуры), переиспользует
@@ -12,7 +13,7 @@ export function SupportSidebar({ route, user, setRoute, waitingCount = 0 }: { ro
   ];
   return (
     <aside className="hub-sidebar sales-workspace-sidebar">
-      {user.role === "OWNER" && (
+      {canAccess(user, "command") && (
         <div className="sales-sidebar-back-wrap">
           <button className="sales-sidebar-back" type="button" onClick={() => setRoute("command")}><Icon name="arrow" size={16} />Назад в Hub</button>
         </div>
@@ -23,6 +24,7 @@ export function SupportSidebar({ route, user, setRoute, waitingCount = 0 }: { ro
       </div>
       <nav className="hub-nav sales-workspace-nav">
         {nav.map((item) => {
+          if (!canAccess(user, item.key)) return null;
           const active = item.key === route;
           return (
             <button className={`hub-nav-item ${active ? "is-active" : ""}`} type="button" onClick={() => setRoute(item.key)} key={item.label}>

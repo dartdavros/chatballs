@@ -1,14 +1,15 @@
 from django.core.exceptions import ValidationError
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from hub_platform.api.permissions import IsManager
+from hub_platform.api.permissions import HasCapability
 from hub_platform.channels.models import Channel
 from hub_platform.conversations.models import Conversation
 from hub_platform.conversations.serializers import conversation_payload
 from hub_platform.identity.audit import record_audit_event
+from hub_platform.identity.policy import accessible_department_ids
 from hub_platform.support import errors
 from hub_platform.support.messages import post_support_message, support_messages_since
 from hub_platform.support.models import ProductSupportContract
@@ -38,7 +39,9 @@ class _Public(APIView):
 
 
 class _ManagerBase(APIView):
-    permission_classes = [IsManager]
+    permission_classes = [HasCapability]
+    required_capability = "products.manage"
+    require_organization_scope = True
 
     def _org(self, request: Request):
         return request.user.employee_profile.organization
@@ -196,7 +199,8 @@ class SupportSessionMessagesView(_Public):
 
 class SupportSnapshotsBySubjectView(APIView):
     # История обращений клиента для правой панели оператора (этап 1 — минимально).
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasCapability]
+    required_capability = "support.view"
 
     def get(self, request: Request) -> Response:
         from hub_platform.support.selectors import snapshots_for_subject
@@ -212,7 +216,13 @@ class SupportSnapshotsBySubjectView(APIView):
         ).first()
         if product is None:
             return Response({"detail": "Продукт не найден"}, status=404)
-        snapshots = snapshots_for_subject(product_id=product.id, subject_key=subject_key)[:20]
+        snapshots = snapshots_for_subject(product_id=product.id, subject_key=subject_key)
+        department_ids = accessible_department_ids(request.user, self.required_capability)
+        if department_ids is not None:
+            snapshots = snapshots.filter(
+                conversations__channel__department_id__in=department_ids
+            ).distinct()
+        snapshots = snapshots[:20]
         return Response({"items": [support_identity_snapshot_payload(s) for s in snapshots]})
 
 

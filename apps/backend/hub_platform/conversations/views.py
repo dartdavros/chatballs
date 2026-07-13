@@ -1,9 +1,8 @@
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from hub_platform.api.permissions import IsManager
+from hub_platform.api.permissions import HasCapability
 from hub_platform.conversations.clients import client_detail, clients_overview
 from hub_platform.conversations.command import command_center_overview
 from hub_platform.conversations.models import Contact, ControlMode, Conversation, ConversationRead
@@ -23,17 +22,33 @@ from hub_platform.conversations.services import (
 )
 from hub_platform.conversations.stats import sales_overview_stats
 from hub_platform.identity.audit import record_audit_event
-from hub_platform.identity.permissions import _operator_department_code, is_manager, is_operator, is_owner
+from hub_platform.identity.policy import (
+    ResourceScope,
+    accessible_department_ids,
+    authorize,
+    require_capability,
+)
 
 
 class _Base(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasCapability]
+    required_capability = "conversations.view"
 
     def _org(self, request: Request):
         return request.user.employee_profile.organization
 
-    def _conversation(self, request: Request, conversation_id: int) -> Conversation:
-        return conversation_for_organization(organization_id=self._org(request).id, conversation_id=conversation_id)
+    def _conversation(
+        self,
+        request: Request,
+        conversation_id: int,
+        capability: str = "conversations.view",
+    ) -> Conversation:
+        conversation = conversation_for_organization(
+            organization_id=self._org(request).id, conversation_id=conversation_id
+        )
+        if not require_capability(request.user, capability, conversation):
+            raise Conversation.DoesNotExist
+        return conversation
 
     def _audit(self, request: Request, action: str, conversation: Conversation) -> None:
         record_audit_event(
@@ -49,16 +64,12 @@ class _Base(APIView):
 class ConversationListView(_Base):
     def get(self, request: Request) -> Response:
         items = conversations_for_organization(self._org(request).id)
-        # Department-scoped inbox (SPEC-HUB-0010 §8.1/§10): OPERATOR видит только
-        # каналы своего отдела (sales ИЛИ support); OWNER — все. Явный выбор отдела
-        # через ?department= (для оператора с доступом к обоим — TODO §8.1).
+        department_ids = accessible_department_ids(request.user, self.required_capability)
+        if department_ids is not None:
+            items = items.filter(channel__department_id__in=department_ids)
         department = request.query_params.get("department")
-        if department in ("sales", "support"):
+        if department:
             items = items.filter(channel__department__code=department)
-        elif is_operator(request.user) and not is_owner(request.user):
-            dept = _operator_department_code(request.user)
-            if dept:
-                items = items.filter(channel__department__code=dept)
         lifecycle = request.query_params.get("lifecycle")
         if lifecycle:
             items = items.filter(lifecycle=lifecycle)
@@ -91,9 +102,11 @@ class ConversationDetailView(_Base):
 
 
 class ConversationClaimView(_Base):
+    required_capability = "conversations.operate"
+
     def post(self, request: Request, conversation_id: int) -> Response:
         try:
-            self._conversation(request, conversation_id)
+            self._conversation(request, conversation_id, self.required_capability)
         except Conversation.DoesNotExist:
             return Response({"detail": "Диалог не найден"}, status=404)
         try:
@@ -105,9 +118,11 @@ class ConversationClaimView(_Base):
 
 
 class ConversationReleaseView(_Base):
+    required_capability = "conversations.operate"
+
     def post(self, request: Request, conversation_id: int) -> Response:
         try:
-            self._conversation(request, conversation_id)
+            self._conversation(request, conversation_id, self.required_capability)
         except Conversation.DoesNotExist:
             return Response({"detail": "Диалог не найден"}, status=404)
         conversation = release_to_ai(conversation_id=conversation_id)
@@ -116,9 +131,11 @@ class ConversationReleaseView(_Base):
 
 
 class ConversationReturnQueueView(_Base):
+    required_capability = "conversations.operate"
+
     def post(self, request: Request, conversation_id: int) -> Response:
         try:
-            self._conversation(request, conversation_id)
+            self._conversation(request, conversation_id, self.required_capability)
         except Conversation.DoesNotExist:
             return Response({"detail": "Диалог не найден"}, status=404)
         conversation = return_to_queue(conversation_id=conversation_id)
@@ -131,12 +148,13 @@ class ConversationStatsView(_Base):
         period = request.query_params.get("period", "today")
         if period not in ("today", "d7", "d30"):
             period = "today"
-        return Response(sales_overview_stats(self._org(request).id, period))
+        department_ids = accessible_department_ids(request.user, self.required_capability)
+        return Response(sales_overview_stats(self._org(request).id, period, department_ids))
 
 
 class CommandOverviewView(_Base):
-    # Командный центр — обычная capability уровня организации: OWNER и ADMIN.
-    permission_classes = [IsManager]
+    required_capability = "company.view"
+    require_organization_scope = True
 
     def get(self, request: Request) -> Response:
         period = request.query_params.get("period", "today")
@@ -146,22 +164,32 @@ class CommandOverviewView(_Base):
 
 
 class ClientsView(_Base):
+    required_capability = "customers.view"
+
     def get(self, request: Request) -> Response:
-        return Response({"items": clients_overview(self._org(request).id)})
+        department_ids = accessible_department_ids(request.user, self.required_capability)
+        return Response({"items": clients_overview(self._org(request).id, department_ids)})
 
 
 class ClientDetailView(_Base):
+    required_capability = "customers.view"
+
     def get(self, request: Request, contact_id: int) -> Response:
         try:
-            return Response({"client": client_detail(self._org(request).id, contact_id)})
+            department_ids = accessible_department_ids(request.user, self.required_capability)
+            return Response(
+                {"client": client_detail(self._org(request).id, contact_id, department_ids)}
+            )
         except Contact.DoesNotExist:
             return Response({"detail": "Клиент не найден"}, status=404)
 
 
 class ConversationMessageView(_Base):
+    required_capability = "conversations.operate"
+
     def post(self, request: Request, conversation_id: int) -> Response:
         try:
-            conversation = self._conversation(request, conversation_id)
+            conversation = self._conversation(request, conversation_id, self.required_capability)
         except Conversation.DoesNotExist:
             return Response({"detail": "Диалог не найден"}, status=404)
         text = str(request.data.get("text", "")).strip()
@@ -169,16 +197,23 @@ class ConversationMessageView(_Base):
             return Response({"detail": "Пустое сообщение"}, status=400)
         if conversation.control_mode != ControlMode.HUMAN:
             return Response({"detail": "Сначала перехватите диалог"}, status=409)
-        if conversation.assigned_operator_id != request.user.id and not is_manager(request.user):
+        manager_override = authorize(
+            request.user,
+            self.required_capability,
+            ResourceScope(conversation.organization_id),
+        )
+        if conversation.assigned_operator_id != request.user.id and not manager_override:
             return Response({"detail": "Диалог ведёт другой оператор"}, status=409)
         message = post_operator_message(conversation=conversation, operator=request.user, text=text)
         return Response({"message": message_payload(message)}, status=201)
 
 
 class ConversationRequestContactView(_Base):
+    required_capability = "conversations.operate"
+
     def post(self, request: Request, conversation_id: int) -> Response:
         try:
-            conversation = self._conversation(request, conversation_id)
+            conversation = self._conversation(request, conversation_id, self.required_capability)
         except Conversation.DoesNotExist:
             return Response({"detail": "Диалог не найден"}, status=404)
         if not conversation.contact_id or not conversation.connection_id:
@@ -191,9 +226,11 @@ class ConversationRequestContactView(_Base):
 
 
 class ConversationCloseView(_Base):
+    required_capability = "conversations.operate"
+
     def post(self, request: Request, conversation_id: int) -> Response:
         try:
-            self._conversation(request, conversation_id)
+            self._conversation(request, conversation_id, self.required_capability)
         except Conversation.DoesNotExist:
             return Response({"detail": "Диалог не найден"}, status=404)
         conversation = close_conversation(conversation_id=conversation_id)

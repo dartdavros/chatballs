@@ -131,6 +131,7 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
     if is_new:
         notify(
             organization=channel.organization,
+            department=channel.department,
             type=NotificationType.DIALOG_WAITING,
             audience=NotificationAudience.OPERATORS,
             title=f"Новый диалог · {channel.name}",
@@ -145,6 +146,7 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
         operator = conversation.assigned_operator
         notify(
             organization=channel.organization,
+            department=channel.department,
             type=NotificationType.DIALOG_NEW_MESSAGE,
             audience=NotificationAudience.USER if operator else NotificationAudience.OPERATORS,
             recipient_user=operator,
@@ -186,6 +188,7 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
         Message.objects.create(conversation=conversation, author_type=MessageAuthor.AI, text=fallback)
         notify(
             organization=channel.organization,
+            department=channel.department,
             type=NotificationType.DIALOG_WAITING,
             audience=NotificationAudience.OPERATORS,
             title=f"Нужен оператор · {contact.name or 'Гость'}",
@@ -216,6 +219,7 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
         Message.objects.create(conversation=conversation, author_type=MessageAuthor.SYSTEM, text="AI передал диалог оператору")
         notify(
             organization=channel.organization,
+            department=channel.department,
             type=NotificationType.DIALOG_WAITING,
             audience=NotificationAudience.OPERATORS,
             title=f"AI передал диалог · {contact.name or 'Гость'}",

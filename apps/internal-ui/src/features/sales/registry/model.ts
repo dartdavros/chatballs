@@ -22,7 +22,7 @@ export type SaleEventType =
   | "sale.refunded"
   | "sale.legacy_imported";
 export type AttributionMethod = "ATTRIBUTION_TOKEN" | "EXTERNAL_IDENTITY" | "CONTACT_MATCH" | "MANUAL" | "NONE";
-export type ActorType = "AI_AGENT" | "OPERATOR" | "OWNER" | "";
+export type ActorType = "AI_AGENT" | "EMPLOYEE" | "OPERATOR" | "OWNER" | "";
 
 export type ApiSaleEvent = {
   id: number;
@@ -87,6 +87,7 @@ const ATTRIBUTION_LABEL: Record<AttributionMethod, string> = {
 const ACTOR_LABEL: Record<Exclude<ActorType, "">, string> = {
   AI_AGENT: "AI-агент",
   OPERATOR: "Оператор",
+  EMPLOYEE: "Сотрудник",
   OWNER: "Владелец",
 };
 

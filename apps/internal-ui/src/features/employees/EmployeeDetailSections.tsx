@@ -71,7 +71,7 @@ export function EmployeeDetailSections({
         <h3>Опасная зона</h3>
         <div>
           <p>{blocked ? "Сотрудник заблокирован и не может войти. Разблокировка восстановит доступ к разделам отдела." : "Блокировка немедленно завершит все сессии и закроет доступ. Активные диалоги вернутся в очередь. Действие требует подтверждения."}</p>
-          <Button className="employee-danger-action" type="button" variant="danger-outline" onClick={toggleBlocked} disabled={blocked ? !(currentEmployee.permissions?.canUnblock ?? currentEmployee.role !== "OWNER") : !(currentEmployee.permissions?.canBlock ?? currentEmployee.role !== "OWNER")}>{blocked ? "Разблокировать сотрудника" : "Заблокировать сотрудника"}</Button>
+          <Button className="employee-danger-action" type="button" variant="danger-outline" onClick={toggleBlocked} disabled={blocked ? !(currentEmployee.permissions?.canUnblock ?? false) : !(currentEmployee.permissions?.canBlock ?? false)}>{blocked ? "Разблокировать сотрудника" : "Заблокировать сотрудника"}</Button>
         </div>
       </section>
     </div>

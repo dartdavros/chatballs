@@ -1,54 +1,76 @@
 import { describe, expect, it } from "vitest";
 
-import type { RouteKey } from "../types";
+import type { SessionUser } from "../types";
 import { canAccess, defaultRoute } from "./access";
 
-const OWNER_ONLY: RouteKey[] = ["command", "departments", "employees", "employeeDetail", "products", "productDetail"];
-const SALES_EMPLOYEE_ROUTES: RouteKey[] = ["salesOverview", "salesDialogs", "salesClients", "salesClientDetail", "salesOrders", "salesOrderDetail", "profile"];
-const SUPPORT_EMPLOYEE_ROUTES: RouteKey[] = ["supportOverview", "supportDialogs", "profile"];
+const baseUser: Omit<SessionUser, "role" | "capabilities" | "accessScopes"> = {
+  id: 1,
+  email: "employee@example.test",
+  fullName: "Employee",
+  positionTitle: "Specialist",
+  organization: "example",
+  organizationName: "Example",
+  department: null,
+  mustChangePassword: false,
+  totpRequired: false,
+  totpEnabled: false,
+};
 
-describe("role access", () => {
-  it("grants OWNER every route", () => {
-    const all = [...OWNER_ONLY, ...SALES_EMPLOYEE_ROUTES, ...SUPPORT_EMPLOYEE_ROUTES];
-    for (const route of all) {
-      expect(canAccess("OWNER", route)).toBe(true);
-    }
+function userWith(
+  capabilities: string[],
+  departmentCode: string | null = null,
+): SessionUser {
+  return {
+    ...baseUser,
+    role: "EMPLOYEE",
+    capabilities,
+    accessScopes: [
+      {
+        scopeType: departmentCode ? "DEPARTMENT" : "ORGANIZATION",
+        departmentId: departmentCode ? 10 : null,
+        departmentCode,
+        capabilities,
+      },
+    ],
+  };
+}
+
+describe("effective access navigation", () => {
+  it("uses organization capabilities instead of the system role", () => {
+    const user = userWith(["company.view", "employees.view", "products.view"]);
+    expect(canAccess(user, "command")).toBe(true);
+    expect(canAccess(user, "employees")).toBe(true);
+    expect(canAccess(user, "products")).toBe(true);
+    expect(canAccess(user, "integrations")).toBe(false);
+    expect(defaultRoute(user)).toBe("command");
   });
 
-  it("grants ADMIN every route like OWNER (ADR-HUB-0027 этап 2)", () => {
-    const all = [...OWNER_ONLY, ...SALES_EMPLOYEE_ROUTES, ...SUPPORT_EMPLOYEE_ROUTES];
-    for (const route of all) {
-      expect(canAccess("ADMIN", route)).toBe(true);
-    }
-    expect(defaultRoute("ADMIN")).toBe("command");
+  it("keeps sales and support department scopes isolated", () => {
+    const capabilities = ["conversations.view", "sales.view", "customers.view"];
+    const sales = userWith(capabilities, "sales");
+    const support = userWith(["conversations.view", "support.view"], "support");
+
+    expect(canAccess(sales, "salesDialogs")).toBe(true);
+    expect(canAccess(sales, "supportDialogs")).toBe(false);
+    expect(canAccess(support, "supportDialogs")).toBe(true);
+    expect(canAccess(support, "salesDialogs")).toBe(false);
   });
 
-  it("grants sales EMPLOYEE only the sales workspace and profile", () => {
-    for (const route of SALES_EMPLOYEE_ROUTES) {
-      expect(canAccess("EMPLOYEE", route, "sales")).toBe(true);
-    }
+  it("combines multiple department assignments", () => {
+    const user = userWith([], "sales");
+    user.capabilities = ["conversations.view"];
+    user.accessScopes = [
+      { scopeType: "DEPARTMENT", departmentId: 10, departmentCode: "sales", capabilities: ["conversations.view"] },
+      { scopeType: "DEPARTMENT", departmentId: 20, departmentCode: "support", capabilities: ["conversations.view"] },
+    ];
+    expect(canAccess(user, "salesDialogs")).toBe(true);
+    expect(canAccess(user, "supportDialogs")).toBe(true);
+    expect(defaultRoute(user)).toBe("salesDialogs");
   });
 
-  it("blocks sales EMPLOYEE from support workspace and owner-only routes", () => {
-    for (const route of OWNER_ONLY) {
-      expect(canAccess("EMPLOYEE", route, "sales")).toBe(false);
-    }
-    expect(canAccess("EMPLOYEE", "supportDialogs", "sales")).toBe(false);
-    expect(canAccess("EMPLOYEE", "supportOverview", "sales")).toBe(false);
-  });
-
-  it("grants support EMPLOYEE only the support workspace and profile (§10 изоляция)", () => {
-    for (const route of SUPPORT_EMPLOYEE_ROUTES) {
-      expect(canAccess("EMPLOYEE", route, "support")).toBe(true);
-    }
-    // Support operator не видит sales inbox.
-    expect(canAccess("EMPLOYEE", "salesDialogs", "support")).toBe(false);
-    expect(canAccess("EMPLOYEE", "salesOverview", "support")).toBe(false);
-  });
-
-  it("lands each role on its default route", () => {
-    expect(defaultRoute("OWNER")).toBe("command");
-    expect(defaultRoute("EMPLOYEE", "sales")).toBe("salesDialogs");
-    expect(defaultRoute("EMPLOYEE", "support")).toBe("supportDialogs");
+  it("falls back to self-service profile when no work capability is assigned", () => {
+    const user = userWith([]);
+    expect(canAccess(user, "profile")).toBe(true);
+    expect(defaultRoute(user)).toBe("profile");
   });
 });

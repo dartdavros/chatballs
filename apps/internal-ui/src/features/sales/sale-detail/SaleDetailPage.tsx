@@ -1,6 +1,6 @@
 import { Icon } from "../../../shared/icons";
 import { EmptyState, LoadingState } from "../../../shared/ui";
-import type { Role, RouteKey } from "../../../types";
+import type { RouteKey } from "../../../types";
 import { StatusBadge } from "../orders/StatusBadge";
 import { actorView, attributionLabel, dateTimeLong, money, sourceBadge, statusBadge } from "../registry/model";
 import { SaleActionPanel } from "./SaleActionPanel";
@@ -11,12 +11,12 @@ const ENVIRONMENT_LABEL: Record<string, string> = { PRODUCTION: "Production", ST
 
 export function SaleDetailPage({
   saleId,
-  role,
+  canCorrect,
   setRoute,
   openDialog,
 }: {
   saleId: number | null;
-  role: Role;
+  canCorrect: boolean;
   setRoute: (route: RouteKey) => void;
   openDialog: (conversationId: number) => void;
 }) {
@@ -93,7 +93,7 @@ export function SaleDetailPage({
         <SaleEventTimeline events={sale.events ?? []} />
       </section>
 
-      {role === "OWNER" && (
+      {canCorrect && (
         <SaleActionPanel busy={busy} actionError={actionError} onCorrect={correct} onPartialRefund={partialRefund} onRefund={refund} onCancel={cancel} />
       )}
     </div>

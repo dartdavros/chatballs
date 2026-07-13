@@ -2,15 +2,15 @@ from __future__ import annotations
 
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from hub_platform.api.permissions import IsManager
+from hub_platform.api.permissions import HasCapability
 from hub_platform.conversations.models import Contact, Conversation
 from hub_platform.identity.audit import record_audit_event
-from hub_platform.identity.permissions import is_owner, is_sales_operator
+from hub_platform.identity.policy import accessible_department_ids, require_capability
 from hub_platform.products.models import Product
 from hub_platform.sales.analytics import sales_analytics
 from hub_platform.sales.models import Sale, SaleEventType
@@ -80,16 +80,17 @@ class _Base(APIView):
 
 
 class SaleListCreateView(_Base):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasCapability]
+    required_capabilities = {"GET": "sales.view", "POST": "sales.operate"}
 
     def get(self, request: Request) -> Response:
         qs = apply_sale_filters(sales_for_organization(self._org(request).id), request.query_params)
+        department_ids = accessible_department_ids(request.user, "sales.view")
+        if department_ids is not None:
+            qs = qs.filter(conversation__channel__department_id__in=department_ids)
         return Response({"items": [sale_payload(sale) for sale in qs]})
 
     def post(self, request: Request) -> Response:
-        # Ручная фиксация (SPEC §7). AI не создаёт ручную продажу; OWNER/оператор — да.
-        if not is_sales_operator(request.user):
-            return Response({"detail": "Not allowed"}, status=403)
         org = self._org(request)
         data = request.data
 
@@ -104,10 +105,14 @@ class SaleListCreateView(_Base):
             conversation = Conversation.objects.filter(id=data.get("conversationId"), organization=org).first()
             if conversation is None:
                 return Response({"detail": "Conversation not found"}, status=400)
+            if not require_capability(request.user, "sales.operate", conversation):
+                return Response({"detail": "Conversation not found"}, status=404)
         if data.get("contactId"):
             contact = Contact.objects.filter(id=data.get("contactId"), organization=org).first()
             if contact is None:
                 return Response({"detail": "Contact not found"}, status=400)
+        if conversation is None and accessible_department_ids(request.user, "sales.operate") is not None:
+            return Response({"detail": "Department-scoped sale requires a conversation"}, status=403)
 
         occurred_at = parse_datetime(str(data.get("occurredAt", ""))) or timezone.now()
         try:
@@ -143,12 +148,15 @@ class SaleListCreateView(_Base):
 
 
 class SaleDetailView(_Base):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasCapability]
+    required_capability = "sales.view"
 
     def get(self, request: Request, sale_id: int) -> Response:
         try:
             sale = sale_for_organization(organization_id=self._org(request).id, sale_id=sale_id)
         except Sale.DoesNotExist:
+            return Response({"detail": "Sale not found"}, status=404)
+        if not require_capability(request.user, self.required_capability, sale):
             return Response({"detail": "Sale not found"}, status=404)
         return Response({"sale": sale_payload(sale, with_events=True)})
 
@@ -160,7 +168,8 @@ class SaleActionView(_Base):
     Физическое удаление продажи запрещено — ошибка исправляется новым событием.
     """
 
-    permission_classes = [IsManager]
+    permission_classes = [HasCapability]
+    required_capability = "sales.correct"
 
     _ACTIONS = {
         "correct": SaleEventType.CORRECTED,
@@ -176,6 +185,8 @@ class SaleActionView(_Base):
         try:
             sale = sale_for_organization(organization_id=self._org(request).id, sale_id=sale_id)
         except Sale.DoesNotExist:
+            return Response({"detail": "Sale not found"}, status=404)
+        if not require_capability(request.user, self.required_capability, sale):
             return Response({"detail": "Sale not found"}, status=404)
 
         data = request.data
@@ -215,7 +226,8 @@ class SaleActionView(_Base):
 class AttributionTokenView(_Base):
     """Выпуск непрозрачного attribution token для ссылки покупки из диалога (SPEC §6.1)."""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasCapability]
+    required_capability = "sales.operate"
 
     def post(self, request: Request) -> Response:
         org = self._org(request)
@@ -223,12 +235,14 @@ class AttributionTokenView(_Base):
         conversation = Conversation.objects.filter(id=data.get("conversationId"), organization=org).select_related("contact", "channel", "connection").first()
         if conversation is None:
             return Response({"detail": "Conversation not found"}, status=400)
+        if not require_capability(request.user, self.required_capability, conversation):
+            return Response({"detail": "Conversation not found"}, status=404)
         try:
             product = Product.objects.get(organization=org, code=str(data.get("productCode", "")))
         except Product.DoesNotExist:
             return Response({"detail": "Product not found"}, status=400)
 
-        actor_type = "OWNER" if is_owner(request.user) else "OPERATOR"
+        actor_type = "EMPLOYEE"
         try:
             token, raw = issue_attribution_token(
                 organization=org,
@@ -255,7 +269,9 @@ class AttributionTokenView(_Base):
 
 
 class SalesAnalyticsView(_Base):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasCapability]
+    required_capability = "sales.view"
+    require_organization_scope = True
 
     def get(self, request: Request) -> Response:
         params = request.query_params

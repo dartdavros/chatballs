@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/edevs-hub-design-system-e4c9df12-82c8-42b3-b819-63d92dfb8702/tokens/colors.css">
+<link rel="stylesheet" href="_ds/edevs-hub-design-system-e4c9df12-82c8-42b3-b819-63d92dfb8702/tokens/typography.css">
+<link rel="stylesheet" href="_ds/edevs-hub-design-system-e4c9df12-82c8-42b3-b819-63d92dfb8702/tokens/spacing.css">
+<link rel="stylesheet" href="_ds/edevs-hub-design-system-e4c9df12-82c8-42b3-b819-63d92dfb8702/tokens/effects.css">
+<link rel="stylesheet" href="_ds/edevs-hub-design-system-e4c9df12-82c8-42b3-b819-63d92dfb8702/styles.css">
+<script src="_ds/edevs-hub-design-system-e4c9df12-82c8-42b3-b819-63d92dfb8702/_ds_bundle.js"></script>
+<style>
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+::-webkit-scrollbar{width:10px;height:10px;}
+::-webkit-scrollbar-thumb{background:#dcdcdc;border-radius:8px;border:2px solid #f0f2f5;background-clip:content-box;}
+::-webkit-scrollbar-thumb:hover{background:#bfbfbf;background-clip:content-box;}
+</style>
+</helmet>
+
+<div style="display:flex;height:100vh;overflow:hidden;background:#f0f2f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;color:#262626;-webkit-font-smoothing:antialiased;min-width:1080px;">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside style="width:248px;flex:none;background:#ffffff;border-right:1px solid #f0f0f0;display:flex;flex-direction:column;height:100vh;">
+    <div style="height:56px;flex:none;display:flex;align-items:center;gap:11px;padding:0 20px;border-bottom:1px solid #f5f5f5;">
+      <img src="favicon.svg" width="30" height="30" style="border-radius:8px;display:block;flex:none;" />
+      <div style="display:flex;flex-direction:column;line-height:1.15;"><span style="font-size:14px;font-weight:600;color:#1f1f1f;letter-spacing:-0.01em;">CustoCRM</span><span style="font-size:11px;color:#8c8c8c;">Уровень компании</span></div>
+    </div>
+    <nav style="flex:1;overflow-y:auto;padding:12px 12px 8px;">
+      <a href="#" style="display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;color:#595959;font-size:13.5px;font-weight:500;text-decoration:none;margin-bottom:2px;" style-hover="background:#f5f5f5;color:#262626;"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.4"/><rect x="14" y="3" width="7" height="5" rx="1.4"/><rect x="14" y="12" width="7" height="9" rx="1.4"/><rect x="3" y="16" width="7" height="5" rx="1.4"/></svg>Командный центр</a>
+      <div style="font-size:11px;font-weight:600;letter-spacing:0.06em;color:#bfbfbf;padding:14px 12px 6px;">КОМПАНИЯ</div>
+      <a href="#" style="display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;color:#595959;font-size:13.5px;font-weight:500;text-decoration:none;margin-bottom:2px;" style-hover="background:#f5f5f5;color:#262626;"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"/><path d="M9 8h1.5M13.5 8H15M9 12h1.5M13.5 12H15M9 16h1.5M13.5 16H15"/></svg>Отделы</a>
+      <a href="#" onClick="{{ goList }}" style="display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;background:#e6f4ff;color:#0958d9;font-size:13.5px;font-weight:600;text-decoration:none;margin-bottom:2px;position:relative;"><span style="position:absolute;left:0;top:8px;bottom:8px;width:3px;border-radius:0 3px 3px 0;background:#1677ff;"></span><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Сотрудники</a>
+      <a href="#" style="display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;color:#595959;font-size:13.5px;font-weight:500;text-decoration:none;margin-bottom:2px;" style-hover="background:#f5f5f5;color:#262626;"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>Продукты</a>
+      <div style="font-size:11px;font-weight:600;letter-spacing:0.06em;color:#bfbfbf;padding:14px 12px 6px;">ИНСТРУМЕНТЫ</div>
+      <span style="display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;color:#bfbfbf;font-size:13.5px;font-weight:500;margin-bottom:2px;opacity:0.55;cursor:not-allowed;"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>Доска</span>
+      <div style="font-size:11px;font-weight:600;letter-spacing:0.06em;color:#bfbfbf;padding:14px 12px 6px;">ПЛАТФОРМА</div>
+      <a href="#" style="display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;color:#595959;font-size:13.5px;font-weight:500;text-decoration:none;margin-bottom:2px;" style-hover="background:#f5f5f5;color:#262626;"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="12" rx="2.5"/><path d="M12 8V4.5"/><circle cx="12" cy="3.5" r="1.2"/><circle cx="9" cy="13.5" r="1"/><circle cx="15" cy="13.5" r="1"/><path d="M2 13.5h2M20 13.5h2"/></svg>AI</a>
+      <a href="#" style="display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;color:#595959;font-size:13.5px;font-weight:500;text-decoration:none;margin-bottom:2px;" style-hover="background:#f5f5f5;color:#262626;"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 8V2.5M15 8V2.5M18 8v5.5a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V8Z"/><path d="M12 17.5V22"/></svg>Интеграции</a>
+      <div style="height:1px;background:#f5f5f5;margin:14px 12px 10px;"></div>
+      <span style="display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;color:#bfbfbf;font-size:13.5px;font-weight:500;margin-bottom:2px;opacity:0.55;cursor:not-allowed;"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="6" x2="9" y2="6"/><line x1="3" y1="6" x2="5" y2="6"/><circle cx="7" cy="6" r="2"/><line x1="21" y1="12" x2="13" y2="12"/><line x1="3" y1="12" x2="9" y2="12"/><circle cx="11" cy="12" r="2"/><line x1="21" y1="18" x2="15" y2="18"/><line x1="3" y1="18" x2="11" y2="18"/><circle cx="13" cy="18" r="2"/></svg>Настройки</span>
+    </nav>
+    <div style="flex:none;border-top:1px solid #f5f5f5;padding:10px 12px;">
+      <a href="#" style="display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:8px;text-decoration:none;" style-hover="background:#f5f5f5;"><div style="width:32px;height:32px;border-radius:50%;background:#1677ff;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex:none;">ИП</div><div style="display:flex;flex-direction:column;line-height:1.2;"><span style="font-size:13px;font-weight:600;color:#262626;">Иван Петров</span><span style="font-size:11px;color:#8c8c8c;">Владелец · вы</span></div></a>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <div style="flex:1;min-width:0;display:flex;flex-direction:column;height:100vh;">
+    <header style="height:56px;flex:none;background:#ffffff;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;padding:0 24px;">
+      <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#8c8c8c;">
+        <a href="#" onClick="{{ goCommand }}" style="font-weight:500;color:#595959;text-decoration:none;" style-hover="color:#1677ff;">Edevs</a><span style="color:#d9d9d9;">/</span>
+        <a href="#" onClick="{{ goList }}" style="font-weight:{{ crumbWeight }};color:{{ crumbColor }};text-decoration:none;" style-hover="color:#1677ff;">Сотрудники</a>
+        <sc-if value="{{ crumbTail }}" hint-placeholder-val="{{ false }}"><span style="color:#d9d9d9;">/</span><span style="font-weight:600;color:#262626;">{{ crumbTail }}</span></sc-if>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <button style="position:relative;width:36px;height:36px;border-radius:8px;border:1px solid #f0f0f0;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#595959;" style-hover="background:#f5f5f5;color:#262626;"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><b style="position:absolute;top:6px;right:7px;min-width:15px;height:15px;display:flex;align-items:center;justify-content:center;padding:0 4px;color:#fff;background:#ff4d4f;border:1.5px solid #fff;border-radius:8px;font-size:10px;font-weight:600;font-style:normal;">3</b></button>
+      </div>
+    </header>
+
+    <main style="flex:1;overflow-y:auto;padding:24px 28px 40px;">
+
+      <!-- ======================= LIST SCREEN ======================= -->
+      <sc-if value="{{ isList }}" hint-placeholder-val="{{ true }}">
+      <div style="max-width:1240px;margin:0 auto;">
+
+        <sc-if value="{{ menuId }}" hint-placeholder-val="{{ false }}"><div onClick="{{ closeMenu }}" style="position:fixed;inset:0;z-index:20;"></div></sc-if>
+
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:24px;margin-bottom:18px;">
+          <div>
+            <h1 style="margin:0;font-size:24px;font-weight:700;letter-spacing:-0.02em;color:#1f1f1f;line-height:1.2;">Сотрудники</h1>
+            <p style="margin:6px 0 0;font-size:13.5px;color:#8c8c8c;">Системные роли, должности и размещение · показано <b style="color:#595959;">{{ shownCount }}</b> из {{ totalCount }}</p>
+          </div>
+          <div style="display:flex;align-items:center;gap:9px;flex:none;">
+            <button onClick="{{ goProfiles }}" style="display:flex;align-items:center;gap:8px;height:38px;padding:0 15px;border-radius:9px;border:1px solid #d9d9d9;background:#fff;color:#595959;font-size:13px;font-weight:500;cursor:pointer;" style-hover="border-color:#1677ff;color:#1677ff;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/></svg>Профили доступа</button>
+            <button onClick="{{ openCreate }}" style="display:flex;align-items:center;gap:8px;height:38px;padding:0 16px;border-radius:9px;border:none;background:#1677ff;color:#fff;font-size:13.5px;font-weight:600;cursor:pointer;box-shadow:0 1px 2px rgba(22,119,255,0.3);" style-hover="background:#0958d9;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>Добавить сотрудника</button>
+          </div>
+        </div>
+
+        <!-- FILTER BAR -->
+        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:#fff;border:1px solid #f0f0f0;border-radius:11px;padding:11px 14px;margin-bottom:16px;box-shadow:0 1px 2px rgba(0,0,0,0.03);">
+          <div style="display:flex;align-items:center;gap:8px;height:34px;padding:0 11px;border:1px solid #e8e8e8;border-radius:8px;background:#fafafa;width:250px;">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#bfbfbf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input value="{{ q }}" onInput="{{ onSearch }}" placeholder="Поиск по имени, email, должности…" style="border:none;outline:none;background:transparent;font-size:13px;color:#262626;width:100%;font-family:inherit;" />
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:12px;color:#8c8c8c;font-weight:500;">Роль</span>
+            <div style="display:flex;align-items:center;gap:3px;padding:3px;border-radius:8px;background:#f0f2f5;">
+              <button onClick="{{ rAll }}" style="{{ segRAll }}">Все</button>
+              <button onClick="{{ rOwner }}" style="{{ segROwner }}">Владелец</button>
+              <button onClick="{{ rAdmin }}" style="{{ segRAdmin }}">Администратор</button>
+              <button onClick="{{ rEmp }}" style="{{ segREmp }}">Сотрудник</button>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:12px;color:#8c8c8c;font-weight:500;">Размещение</span>
+            <div style="display:flex;align-items:center;gap:3px;padding:3px;border-radius:8px;background:#f0f2f5;">
+              <button onClick="{{ pAll }}" style="{{ segPAll }}">Все</button>
+              <button onClick="{{ pCompany }}" style="{{ segPCompany }}">Компания</button>
+              <button onClick="{{ pDept }}" style="{{ segPDept }}">Отдел</button>
+            </div>
+          </div>
+          <div style="flex:1;"></div>
+          <button onClick="{{ onReset }}" style="height:34px;padding:0 12px;border:none;background:transparent;color:#8c8c8c;font-size:13px;font-weight:500;cursor:pointer;border-radius:8px;" style-hover="color:#1677ff;background:#f5f5f5;">Сбросить</button>
+        </div>
+
+        <!-- TABLE -->
+        <div style="background:#fff;border:1px solid #f0f0f0;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04);overflow:hidden;">
+          <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:1040px;">
+              <thead><tr style="background:#fafafa;">
+                <th style="text-align:left;padding:11px 16px;font-size:11px;font-weight:600;color:#8c8c8c;letter-spacing:0.03em;border-bottom:1px solid #f0f0f0;">СОТРУДНИК</th>
+                <th style="text-align:left;padding:11px 12px;font-size:11px;font-weight:600;color:#8c8c8c;letter-spacing:0.03em;border-bottom:1px solid #f0f0f0;">РОЛЬ</th>
+                <th style="text-align:left;padding:11px 12px;font-size:11px;font-weight:600;color:#8c8c8c;letter-spacing:0.03em;border-bottom:1px solid #f0f0f0;">ДОЛЖНОСТЬ</th>
+                <th style="text-align:left;padding:11px 12px;font-size:11px;font-weight:600;color:#8c8c8c;letter-spacing:0.03em;border-bottom:1px solid #f0f0f0;">РАЗМЕЩЕНИЕ</th>
+                <th style="text-align:left;padding:11px 12px;font-size:11px;font-weight:600;color:#8c8c8c;letter-spacing:0.03em;border-bottom:1px solid #f0f0f0;">ДОСТУП</th>
+                <th style="text-align:left;padding:11px 12px;font-size:11px;font-weight:600;color:#8c8c8c;letter-spacing:0.03em;border-bottom:1px solid #f0f0f0;">СТАТУС</th>
+                <th style="text-align:left;padding:11px 12px;font-size:11px;font-weight:600;color:#8c8c8c;letter-spacing:0.03em;border-bottom:1px solid #f0f0f0;">ПОСЛЕДНИЙ ВХОД</th>
+                <th style="width:48px;border-bottom:1px solid #f0f0f0;"></th>
+              </tr></thead>
+              <tbody>
+                <sc-for list="{{ rows }}" as="r" hint-placeholder-count="7">
+                  <tr style="border-bottom:1px solid #f5f5f5;" style-hover="background:#fafbfc;">
+                    <td style="padding:12px 16px;">
+                      <div style="display:flex;align-items:center;gap:11px;">
+                        <div style="width:34px;height:34px;border-radius:50%;background:{{ r.avatarBg }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex:none;">{{ r.initials }}</div>
+                        <div style="min-width:0;"><a href="#" onClick="{{ r.onOpen }}" style="font-weight:600;color:#1677ff;text-decoration:none;font-size:13.5px;">{{ r.name }}</a><div style="font-size:11.5px;color:#bfbfbf;font-family:'SF Mono',ui-monospace,Menlo,monospace;">{{ r.email }}</div></div>
+                      </div>
+                    </td>
+                    <td style="padding:12px 12px;"><span style="padding:2px 9px;border-radius:6px;background:{{ r.roleBg }};color:{{ r.roleColor }};font-size:11px;font-weight:600;letter-spacing:0.02em;">{{ r.roleRu }}</span></td>
+                    <td style="padding:12px 12px;color:#262626;">{{ r.position }}</td>
+                    <td style="padding:12px 12px;"><span style="display:inline-flex;align-items:center;gap:6px;color:#595959;">{{ r.placement }}</span></td>
+                    <td style="padding:12px 12px;color:#595959;">{{ r.access }}</td>
+                    <td style="padding:12px 12px;"><span style="display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:500;color:{{ r.stColor }};"><span style="width:7px;height:7px;border-radius:50%;background:{{ r.stDot }};"></span>{{ r.stLabel }}</span></td>
+                    <td style="padding:12px 12px;color:#595959;white-space:nowrap;">{{ r.lastLogin }}</td>
+                    <td style="padding:12px 12px;text-align:center;position:relative;">
+                      <button onClick="{{ r.onMenu }}" style="width:30px;height:30px;border-radius:7px;border:none;background:transparent;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:#8c8c8c;" style-hover="background:#f0f0f0;color:#262626;"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button>
+                      <sc-if value="{{ r.menuOpen }}" hint-placeholder-val="{{ false }}">
+                        <div style="position:absolute;right:12px;top:42px;z-index:30;width:214px;background:#fff;border:1px solid #f0f0f0;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,0.12);padding:5px;text-align:left;">
+                          <a href="#" onClick="{{ r.onOpen }}" style="display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:7px;text-decoration:none;color:#262626;font-size:13px;font-weight:500;" style-hover="background:#f5f5f5;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>Открыть карточку</a>
+                          <sc-if value="{{ r.canTransfer }}" hint-placeholder-val="{{ false }}"><a href="#" onClick="{{ openTransfer }}" style="display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:7px;text-decoration:none;color:#262626;font-size:13px;font-weight:500;" style-hover="background:#f5f5f5;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/></svg>Передать владение</a></sc-if>
+                          <sc-if value="{{ r.canManage }}" hint-placeholder-val="{{ false }}">
+                          <a href="#" style="display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:7px;text-decoration:none;color:#262626;font-size:13px;font-weight:500;" style-hover="background:#f5f5f5;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Завершить сессии</a>
+                          <a href="#" style="display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:7px;text-decoration:none;color:#262626;font-size:13px;font-weight:500;" style-hover="background:#f5f5f5;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Сбросить пароль</a>
+                          <div style="height:1px;background:#f5f5f5;margin:4px 8px;"></div>
+                          <a href="#" style="display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:7px;text-decoration:none;color:{{ r.blockColor }};font-size:13px;font-weight:500;" style-hover="background:#fafafa;">{{ r.blockLabel }}</a>
+                          </sc-if>
+                          <sc-if value="{{ r.privileged }}" hint-placeholder-val="{{ false }}"><div style="padding:8px 10px;font-size:11.5px;color:#bfbfbf;line-height:1.4;">Привилегированная учётная запись — изменяется только владельцем через отдельный flow.</div></sc-if>
+                        </div>
+                      </sc-if>
+                    </td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+          <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:54px 20px;text-align:center;">
+              <div style="width:48px;height:48px;border-radius:50%;background:#f5f5f5;display:inline-flex;align-items:center;justify-content:center;margin-bottom:14px;"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#bfbfbf" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+              <div style="font-size:14px;font-weight:600;color:#595959;">Сотрудники не найдены</div>
+              <div style="font-size:12.5px;color:#bfbfbf;margin-top:4px;">Измените условия фильтра.</div>
+            </div>
+          </sc-if>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-top:1px solid #f5f5f5;">
+            <div style="font-size:12.5px;color:#8c8c8c;">Показано {{ shownCount }} из {{ totalCount }}</div>
+            <div style="font-size:12.5px;color:#bfbfbf;">Роль не выводится из должности или отдела · SPEC-HUB-0016</div>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ======================= CARD SCREEN ======================= -->
+      <sc-if value="{{ isCard }}" hint-placeholder-val="{{ false }}">
+      <div style="max-width:1080px;margin:0 auto;">
+
+        <a href="#" onClick="{{ goList }}" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#8c8c8c;text-decoration:none;margin-bottom:14px;" style-hover="color:#1677ff;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>Все сотрудники</a>
+
+        <!-- HEADER CARD -->
+        <div style="background:#fff;border:1px solid #f0f0f0;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04);padding:20px 22px;margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:16px;">
+            <div style="width:56px;height:56px;border-radius:50%;background:{{ c.avatarBg }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:600;flex:none;">{{ c.initials }}</div>
+            <div style="flex:1;min-width:0;">
+              <div style="display:flex;align-items:center;gap:11px;flex-wrap:wrap;">
+                <h1 style="margin:0;font-size:21px;font-weight:700;letter-spacing:-0.01em;color:#1f1f1f;">{{ c.name }}</h1>
+                <span style="padding:2px 9px;border-radius:6px;background:{{ c.roleBg }};color:{{ c.roleColor }};font-size:11px;font-weight:600;">{{ c.roleRu }}</span>
+                <span style="display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:14px;background:{{ c.stBg }};border:1px solid {{ c.stBorder }};font-size:11.5px;font-weight:600;color:{{ c.stColor }};"><span style="width:6px;height:6px;border-radius:50%;background:{{ c.stDot }};"></span>{{ c.stLabel }}</span>
+              </div>
+              <div style="margin-top:6px;font-size:12.5px;color:#8c8c8c;"><span style="font-family:'SF Mono',ui-monospace,Menlo,monospace;">{{ c.email }}</span> · {{ c.position }} · {{ c.placement }}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:9px;flex:none;">
+              <sc-if value="{{ c.readOnly }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 13px;border-radius:9px;background:#f5f5f5;color:#8c8c8c;font-size:12.5px;font-weight:500;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Только просмотр</span></sc-if>
+              <sc-if value="{{ c.editable }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ goList }}" style="height:38px;padding:0 14px;border-radius:9px;border:1px solid #d9d9d9;background:#fff;color:#595959;font-size:13px;font-weight:500;cursor:pointer;" style-hover="border-color:#bfbfbf;color:#262626;">Отмена</button>
+              <button style="display:flex;align-items:center;gap:7px;height:38px;padding:0 18px;border-radius:9px;border:none;background:#1677ff;color:#fff;font-size:13.5px;font-weight:600;cursor:pointer;box-shadow:0 1px 2px rgba(22,119,255,0.3);" style-hover="background:#0958d9;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Сохранить</button>
+              </sc-if>
+            </div>
+          </div>
+        </div>
+
+        <!-- privileged banner -->
+        <sc-if value="{{ c.readOnly }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:flex-start;gap:11px;background:#fffbe6;border:1px solid #ffe58f;border-radius:10px;padding:13px 15px;margin-bottom:16px;">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#d48806" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px;"><path d="M12 9v4"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 17h.01"/></svg>
+            <div style="font-size:12.5px;color:#595959;line-height:1.5;">{{ c.roBanner }}</div>
+          </div>
+        </sc-if>
+
+        <div style="display:flex;gap:16px;align-items:flex-start;">
+          <!-- LEFT -->
+          <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:16px;">
+
+            <!-- Основные данные -->
+            <div style="background:#fff;border:1px solid #f0f0f0;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04);padding:18px 20px;">
+              <h3 style="margin:0 0 16px;font-size:14px;font-weight:700;color:#1f1f1f;">Основные данные</h3>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                <div><label style="display:block;font-size:12px;color:#8c8c8c;margin-bottom:6px;font-weight:500;">Имя</label><input value="{{ c.name }}" disabled="{{ c.readOnly }}" style="{{ c.inp }}" /></div>
+                <div><label style="display:block;font-size:12px;color:#8c8c8c;margin-bottom:6px;font-weight:500;">Телефон</label><input value="{{ c.phone }}" disabled="{{ c.readOnly }}" style="{{ c.inp }}" /></div>
+                <div style="grid-column:span 2;"><label style="display:block;font-size:12px;color:#8c8c8c;margin-bottom:6px;font-weight:500;">Email <span style="color:#bfbfbf;">· используется для входа</span></label><input value="{{ c.email }}" disabled="{{ c.readOnly }}" style="{{ c.inpMono }}" /></div>
+              </div>
+            </div>
+
+            <!-- Должность и размещение -->
+            <div style="background:#fff;border:1px solid #f0f0f0;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04);padding:18px 20px;">
+              <h3 style="margin:0 0 4px;font-size:14px;font-weight:700;color:#1f1f1f;">Должность и размещение</h3>
+              <p style="margin:0 0 15px;font-size:12px;color:#bfbfbf;">Оргструктура. Не выдаёт прав доступа.</p>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                <div><label style="display:block;font-size:12px;color:#8c8c8c;margin-bottom:6px;font-weight:500;">Должность <span style="color:#ff7875;">·</span></label><input value="{{ c.position }}" disabled="{{ c.readOnly }}" placeholder="напр. Менеджер по продажам" style="{{ c.inp }}" /></div>
+                <div><label style="display:block;font-size:12px;color:#8c8c8c;margin-bottom:6px;font-weight:500;">Основной отдел</label>
+                  <div style="position:relative;"><select disabled="{{ c.placementLocked }}" style="{{ c.sel }}"><option>{{ c.placement }}</option><option>Верхний уровень компании</option><option>Отдел продаж</option><option>Отдел поддержки</option><option>Контент</option></select><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#8c8c8c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position:absolute;right:11px;top:12px;pointer-events:none;"><polyline points="6 9 12 15 18 9"/></svg></div>
+                </div>
+              </div>
+              <sc-if value="{{ c.ownerPlacementNote }}" hint-placeholder-val="{{ false }}"><div style="margin-top:11px;font-size:11.5px;color:#8c8c8c;background:#fafafa;border:1px solid #f0f0f0;border-radius:8px;padding:9px 11px;">Владелец всегда находится на уровне компании — отдел назначить нельзя.</div></sc-if>
+            </div>
+
+            <!-- Системная роль -->
+            <div style="background:#fff;border:1px solid #f0f0f0;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04);padding:18px 20px;">
+              <h3 style="margin:0 0 4px;font-size:14px;font-weight:700;color:#1f1f1f;">Системная роль</h3>
+              <p style="margin:0 0 15px;font-size:12px;color:#bfbfbf;">Уровень в административной иерархии. {{ c.roleHint }}</p>
+              <div style="display:flex;flex-direction:column;gap:9px;">
+                <sc-for list="{{ c.roleOptions }}" as="ro" hint-placeholder-count="3">
+                  <label style="display:flex;align-items:flex-start;gap:11px;padding:12px 13px;border:1px solid {{ ro.border }};border-radius:9px;background:{{ ro.bg }};cursor:{{ ro.cursor }};">
+                    <span style="width:17px;height:17px;border-radius:50%;border:1.6px solid {{ ro.dotBorder }};background:{{ ro.dotBg }};flex:none;margin-top:1px;display:flex;align-items:center;justify-content:center;"><sc-if value="{{ ro.checked }}" hint-placeholder-val="{{ false }}"><span style="width:7px;height:7px;border-radius:50%;background:#fff;"></span></sc-if></span>
+                    <span style="flex:1;"><span style="display:flex;align-items:center;gap:8px;"><b style="font-size:13px;color:#262626;letter-spacing:0.02em;">{{ ro.name }}</b><sc-if value="{{ ro.locked }}" hint-placeholder-val="{{ false }}"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#bfbfbf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></sc-if></span><span style="display:block;font-size:11.5px;color:#8c8c8c;margin-top:3px;line-height:1.45;">{{ ro.desc }}</span></span>
+                  </label>
+                </sc-for>
+              </div>
+            </div>
+
+            <!-- Профили и scopes -->
+            <div style="background:#fff;border:1px solid #f0f0f0;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04);padding:18px 20px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+                <h3 style="margin:0;font-size:14px;font-weight:700;color:#1f1f1f;">Профили доступа и scopes</h3>
+                <sc-if value="{{ c.showAssign }}" hint-placeholder-val="{{ false }}"><button style="height:32px;padding:0 12px;border-radius:8px;border:1px solid #d9d9d9;background:#fff;color:#595959;font-size:12.5px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:6px;" style-hover="border-color:#1677ff;color:#1677ff;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Назначить</button></sc-if>
+              </div>
+              <p style="margin:0 0 15px;font-size:12px;color:#bfbfbf;">{{ c.accessHint }}</p>
+              <sc-if value="{{ c.hasAssignments }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                  <sc-for list="{{ c.assignments }}" as="a" hint-placeholder-count="2">
+                    <div style="border:1px solid #f0f0f0;border-radius:10px;padding:12px 14px;">
+                      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+                        <div style="display:flex;align-items:center;gap:9px;min-width:0;">
+                          <span style="width:30px;height:30px;border-radius:8px;background:#f4f0ff;display:flex;align-items:center;justify-content:center;flex:none;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#722ed1" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/></svg></span>
+                          <div style="min-width:0;"><div style="font-size:13px;font-weight:600;color:#262626;">{{ a.profile }}</div><div style="font-size:11.5px;color:#8c8c8c;">{{ a.scopeLabel }}</div></div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:10px;flex:none;">
+                          <span style="display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border-radius:6px;background:{{ a.scopeBg }};color:{{ a.scopeColor }};font-size:10.5px;font-weight:600;letter-spacing:0.03em;">{{ a.scopeTag }}</span>
+                          <sc-if value="{{ c.showAssign }}" hint-placeholder-val="{{ false }}"><button style="width:28px;height:28px;border-radius:7px;border:none;background:transparent;cursor:pointer;color:#bfbfbf;display:flex;align-items:center;justify-content:center;" style-hover="background:#fff2f0;color:#cf1322;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></sc-if>
+                        </div>
+                      </div>
+                      <div style="margin-top:10px;padding-top:10px;border-top:1px solid #f7f7f7;display:flex;gap:6px;flex-wrap:wrap;">
+                        <sc-for list="{{ a.caps }}" as="cp" hint-placeholder-count="4"><span style="padding:2px 8px;border-radius:6px;background:#f5f5f5;color:#595959;font-size:11px;font-family:'SF Mono',ui-monospace,Menlo,monospace;">{{ cp }}</span></sc-for>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <sc-if value="{{ c.noAccess }}" hint-placeholder-val="{{ false }}">
+                <div style="border:1px dashed #ffccc7;background:#fff7f6;border-radius:10px;padding:14px 15px;display:flex;align-items:flex-start;gap:10px;">
+                  <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="#cf1322" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px;"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                  <div style="font-size:12.5px;color:#595959;line-height:1.5;"><b style="color:#cf1322;">Нет рабочего доступа.</b> У сотрудника нет активных назначений — доступен только разрешённый self-service. Роль EMPLOYEE сама по себе прав не даёт.</div>
+                </div>
+              </sc-if>
+              <sc-if value="{{ c.adminAccessNote }}" hint-placeholder-val="{{ false }}">
+                <div style="border:1px solid #e6f4ff;background:#f0f8ff;border-radius:10px;padding:14px 15px;display:flex;align-items:flex-start;gap:10px;">
+                  <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="#1677ff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                  <div style="font-size:12.5px;color:#595959;line-height:1.5;">ADMIN имеет все обычные capability организации без назначений. Профили не ограничивают его полный обычный доступ. Защищённые governance-capability остаются только у OWNER.</div>
+                </div>
+              </sc-if>
+            </div>
+
+            <!-- Статус и безопасность -->
+            <div style="background:#fff;border:1px solid #f0f0f0;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04);padding:18px 20px;">
+              <h3 style="margin:0 0 4px;font-size:14px;font-weight:700;color:#1f1f1f;">Статус и безопасность</h3>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid #f5f5f5;">
+                <div><div style="font-size:13px;font-weight:500;color:#262626;">Пароль</div><div style="font-size:11.5px;color:#8c8c8c;margin-top:2px;">Последняя смена: {{ c.pwdDate }}</div></div>
+                <button disabled="{{ c.readOnly }}" style="{{ c.secBtn }}">Сбросить пароль</button>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid #f5f5f5;">
+                <div><div style="font-size:13px;font-weight:500;color:#262626;">Двухфакторная аутентификация (TOTP)</div><div style="font-size:11.5px;color:#8c8c8c;margin-top:2px;">{{ totpLabel }}</div></div>
+                <div role="switch" onClick="{{ onToggleTotp }}" style="width:42px;height:24px;border-radius:14px;cursor:{{ c.switchCursor }};padding:2px;display:flex;align-items:center;justify-content:{{ totpJustify }};background:{{ totpBg }};flex:none;opacity:{{ c.switchOpacity }};"><span style="width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.2);display:block;"></span></div>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0 4px;">
+                <div><div style="font-size:13px;font-weight:500;color:#262626;">Активные сессии</div><div style="font-size:11.5px;color:#8c8c8c;margin-top:2px;">{{ c.sessions }}</div></div>
+                <button disabled="{{ c.readOnly }}" style="{{ c.secBtn }}">Завершить все</button>
+              </div>
+            </div>
+
+            <!-- Опасная зона / только для editable -->
+            <sc-if value="{{ c.editable }}" hint-placeholder-val="{{ false }}">
+            <div style="background:#fff;border:1px solid #ffccc7;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04);padding:18px 20px;">
+              <h3 style="margin:0 0 4px;font-size:14px;font-weight:700;color:#cf1322;">Опасная зона</h3>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:8px;">
+                <div style="font-size:12.5px;color:#595959;line-height:1.5;">{{ c.dangerNote }}</div>
+                <button style="height:38px;padding:0 16px;border-radius:9px;border:1px solid #ffccc7;background:#fff;color:#cf1322;font-size:13px;font-weight:600;cursor:pointer;flex:none;" style-hover="background:#fff2f0;">{{ c.blockLabel }}</button>
+              </div>
+            </div>
+            </sc-if>
+          </div>
+
+          <!-- RIGHT RAIL -->
+          <div style="width:308px;flex:none;display:flex;flex-direction:column;gap:16px;">
+            <div style="background:#fff;border:1px solid #f0f0f0;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04);padding:16px 18px;">
+              <h3 style="margin:0 0 13px;font-size:14px;font-weight:700;color:#1f1f1f;">Учётная запись</h3>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;"><span style="font-size:12.5px;color:#8c8c8c;">Статус</span><span style="display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:{{ c.stColor }};"><span style="width:7px;height:7px;border-radius:50%;background:{{ c.stDot }};"></span>{{ c.stLabel }}</span></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;"><span style="font-size:12.5px;color:#8c8c8c;">Роль</span><span style="font-size:12.5px;font-weight:600;color:#262626;">{{ c.roleRu }}</span></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;"><span style="font-size:12.5px;color:#8c8c8c;">Создан</span><span style="font-size:12.5px;color:#262626;">{{ c.created }}</span></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;"><span style="font-size:12.5px;color:#8c8c8c;">Последний вход</span><span style="font-size:12.5px;color:#262626;">{{ c.lastLogin }}</span></div>
+            </div>
+
+            <sc-if value="{{ c.hasLoad }}" hint-placeholder-val="{{ false }}">
+            <div style="background:#fff;border:1px solid #f0f0f0;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04);padding:16px 18px;">
+              <h3 style="margin:0 0 13px;font-size:14px;font-weight:700;color:#1f1f1f;">Текущая нагрузка</h3>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#f0f0f0;border:1px solid #f0f0f0;border-radius:8px;overflow:hidden;">
+                <div style="background:#fff;padding:11px 13px;"><div style="font-size:11.5px;color:#8c8c8c;">Активные диалоги</div><div style="font-size:18px;font-weight:700;color:#262626;margin-top:3px;">{{ c.loadDialogs }}</div></div>
+                <div style="background:#fff;padding:11px 13px;"><div style="font-size:11.5px;color:#8c8c8c;">В очереди</div><div style="font-size:18px;font-weight:700;color:#262626;margin-top:3px;">{{ c.loadQueue }}</div></div>
+                <div style="background:#fff;padding:11px 13px;"><div style="font-size:11.5px;color:#8c8c8c;">Продажи · сегодня</div><div style="font-size:18px;font-weight:700;color:#262626;margin-top:3px;">{{ c.loadSales }}</div></div>
+                <div style="background:#fff;padding:11px 13px;"><div style="font-size:11.5px;color:#8c8c8c;">Ср. ответ</div><div style="font-size:18px;font-weight:700;color:#262626;margin-top:3px;">{{ c.loadResp }}</div></div>
+              </div>
+            </sc-if>
+
+            <!-- Аудит -->
+            <div style="background:#fff;border:1px solid #f0f0f0;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04);padding:16px 18px;">
+              <h3 style="margin:0 0 13px;font-size:14px;font-weight:700;color:#1f1f1f;">Аудит</h3>
+              <div style="display:flex;flex-direction:column;gap:0;font-size:12.5px;">
+                <sc-for list="{{ c.audit }}" as="ev" hint-placeholder-count="3">
+                  <div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #f7f7f7;"><span style="width:6px;height:6px;border-radius:50%;background:{{ ev.dot }};margin-top:5px;flex:none;"></span><div style="flex:1;"><div style="color:#262626;">{{ ev.text }}</div><div style="font-size:10.5px;color:#bfbfbf;margin-top:1px;font-family:'SF Mono',ui-monospace,Menlo,monospace;">{{ ev.code }} · {{ ev.time }}</div></div></div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ======================= PROFILES SCREEN ======================= -->
+      <sc-if value="{{ isProfiles }}" hint-placeholder-val="{{ false }}">
+      <div style="max-width:1240px;margin:0 auto;">
+        <a href="#" onClick="{{ goList }}" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#8c8c8c;text-decoration:none;margin-bottom:14px;" style-hover="color:#1677ff;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>Сотрудники</a>
+
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:24px;margin-bottom:18px;">
+          <div>
+            <h1 style="margin:0;font-size:24px;font-weight:700;letter-spacing:-0.02em;color:#1f1f1f;line-height:1.2;">Профили доступа</h1>
+            <p style="margin:6px 0 0;font-size:13.5px;color:#8c8c8c;">Именованные наборы capability организации · назначаются сотрудникам со scope</p>
+          </div>
+          <button style="display:flex;align-items:center;gap:8px;height:38px;padding:0 16px;border-radius:9px;border:none;background:#1677ff;color:#fff;font-size:13.5px;font-weight:600;cursor:pointer;box-shadow:0 1px 2px rgba(22,119,255,0.3);flex:none;" style-hover="background:#0958d9;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Новый профиль</button>
+        </div>
+
+        <div style="display:flex;gap:16px;align-items:flex-start;">
+          <!-- profile list -->
+          <div style="width:340px;flex:none;display:flex;flex-direction:column;gap:10px;">
+            <sc-for list="{{ profiles }}" as="p" hint-placeholder-count="5">
+              <div onClick="{{ p.onSelect }}" style="background:#fff;border:1px solid {{ p.border }};border-radius:11px;box-shadow:0 1px 2px rgba(0,0,0,0.03);padding:14px 15px;cursor:pointer;">
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
+                  <div style="min-width:0;">
+                    <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:13.5px;font-weight:600;color:#1f1f1f;">{{ p.name }}</span><sc-if value="{{ p.isSystem }}" hint-placeholder-val="{{ false }}"><span style="padding:1px 7px;border-radius:5px;background:#f0f0f0;color:#8c8c8c;font-size:10px;font-weight:600;letter-spacing:0.03em;">SYSTEM</span></sc-if></div>
+                    <div style="font-size:11.5px;color:#8c8c8c;margin-top:4px;line-height:1.45;">{{ p.desc }}</div>
+                  </div>
+                  <sc-if value="{{ p.disabled }}" hint-placeholder-val="{{ false }}"><span style="padding:1px 7px;border-radius:5px;background:#fff7e6;color:#d48806;font-size:10px;font-weight:600;flex:none;">ОТКЛ.</span></sc-if>
+                </div>
+                <div style="display:flex;align-items:center;gap:14px;margin-top:11px;font-size:11.5px;color:#8c8c8c;">
+                  <span style="display:inline-flex;align-items:center;gap:5px;"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#bfbfbf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 11 3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>{{ p.capCount }} capability</span>
+                  <span style="display:inline-flex;align-items:center;gap:5px;"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#bfbfbf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>{{ p.assignedCount }} назнач.</span>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+
+          <!-- editor panel -->
+          <div style="flex:1;min-width:0;background:#fff;border:1px solid #f0f0f0;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04);padding:20px 22px;">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding-bottom:16px;border-bottom:1px solid #f5f5f5;">
+              <div>
+                <div style="display:flex;align-items:center;gap:9px;"><h2 style="margin:0;font-size:17px;font-weight:700;color:#1f1f1f;letter-spacing:-0.01em;">{{ sp.name }}</h2><sc-if value="{{ sp.isSystem }}" hint-placeholder-val="{{ false }}"><span style="padding:2px 8px;border-radius:5px;background:#f0f0f0;color:#8c8c8c;font-size:10px;font-weight:600;letter-spacing:0.03em;">SYSTEM</span></sc-if></div>
+                <p style="margin:6px 0 0;font-size:12.5px;color:#8c8c8c;max-width:520px;line-height:1.5;">{{ sp.desc }}</p>
+              </div>
+              <div style="display:flex;gap:8px;flex:none;">
+                <button style="height:34px;padding:0 13px;border-radius:8px;border:1px solid #d9d9d9;background:#fff;color:#595959;font-size:12.5px;font-weight:500;cursor:{{ sp.editCursor }};opacity:{{ sp.editOpacity }};" style-hover="border-color:#1677ff;color:#1677ff;">{{ sp.toggleLabel }}</button>
+                <button style="height:34px;padding:0 15px;border-radius:8px;border:none;background:#1677ff;color:#fff;font-size:12.5px;font-weight:600;cursor:pointer;box-shadow:0 1px 2px rgba(22,119,255,0.3);" style-hover="background:#0958d9;">Сохранить</button>
+              </div>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:20px;padding:14px 0;border-bottom:1px solid #f5f5f5;font-size:12px;color:#8c8c8c;">
+              <span>Разрешённые scopes: <b style="color:#595959;">{{ sp.scopes }}</b></span>
+              <span>Назначено сотрудникам: <b style="color:#595959;">{{ sp.assignedCount }}</b></span>
+            </div>
+
+            <div style="padding-top:16px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                <h3 style="margin:0;font-size:13px;font-weight:700;color:#1f1f1f;">Capability</h3>
+                <span style="font-size:11.5px;color:#bfbfbf;">Каталог задан кодом приложения · произвольные коды запрещены</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:16px;">
+                <sc-for list="{{ sp.groups }}" as="g" hint-placeholder-count="4">
+                  <div>
+                    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;color:#bfbfbf;margin-bottom:8px;">{{ g.domain }}</div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                      <sc-for list="{{ g.caps }}" as="cp" hint-placeholder-count="2">
+                        <label style="display:flex;align-items:flex-start;gap:10px;padding:9px 11px;border:1px solid {{ cp.border }};border-radius:8px;background:{{ cp.bg }};cursor:{{ cp.cursor }};">
+                          <span style="width:16px;height:16px;border-radius:5px;border:1.6px solid {{ cp.boxBorder }};background:{{ cp.boxBg }};flex:none;margin-top:1px;display:flex;align-items:center;justify-content:center;"><sc-if value="{{ cp.checked }}" hint-placeholder-val="{{ false }}"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></sc-if></span>
+                          <span style="min-width:0;"><span style="display:flex;align-items:center;gap:6px;"><code style="font-size:12px;font-family:'SF Mono',ui-monospace,Menlo,monospace;color:{{ cp.codeColor }};">{{ cp.code }}</code><sc-if value="{{ cp.protectedFlag }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:3px;padding:0 5px;border-radius:4px;background:#fff1f0;color:#cf1322;font-size:9.5px;font-weight:700;letter-spacing:0.02em;">OWNER</span></sc-if></span><span style="display:block;font-size:11px;color:#8c8c8c;margin-top:2px;line-height:1.4;">{{ cp.label }}</span></span>
+                        </label>
+                      </sc-for>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="margin-top:16px;background:#fff7f6;border:1px solid #ffe0dd;border-radius:9px;padding:11px 13px;display:flex;align-items:flex-start;gap:9px;">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#cf1322" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px;"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <div style="font-size:11.5px;color:#595959;line-height:1.5;">Защищённые capability <code style="font-family:'SF Mono',ui-monospace,Menlo,monospace;">employees.manage_privileged</code> и <code style="font-family:'SF Mono',ui-monospace,Menlo,monospace;">ownership.transfer</code> нельзя включить в профиль — они доступны только владельцу.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+    </main>
+  </div>
+
+  <!-- ======================= CREATE DRAWER ======================= -->
+  <sc-if value="{{ createOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeCreate }}" style="position:fixed;inset:0;z-index:60;background:rgba(0,0,0,0.32);"></div>
+    <div style="position:fixed;top:0;right:0;bottom:0;z-index:61;width:520px;max-width:94vw;background:#fff;box-shadow:-8px 0 32px rgba(0,0,0,0.12);display:flex;flex-direction:column;">
+      <div style="height:60px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 22px;border-bottom:1px solid #f0f0f0;">
+        <div><div style="font-size:16px;font-weight:700;color:#1f1f1f;letter-spacing:-0.01em;">Новый сотрудник</div><div style="font-size:11.5px;color:#8c8c8c;margin-top:1px;">Учётные данные · роль · размещение · доступ</div></div>
+        <button onClick="{{ closeCreate }}" style="width:34px;height:34px;border-radius:8px;border:none;background:transparent;cursor:pointer;color:#8c8c8c;display:flex;align-items:center;justify-content:center;" style-hover="background:#f5f5f5;color:#262626;"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:20px 22px 24px;">
+
+        <!-- step 1 -->
+        <div style="margin-bottom:22px;">
+          <div style="display:flex;align-items:center;gap:9px;margin-bottom:13px;"><span style="width:22px;height:22px;border-radius:50%;background:#1677ff;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none;">1</span><h3 style="margin:0;font-size:13.5px;font-weight:700;color:#1f1f1f;">Учётные данные</h3></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div><label style="display:block;font-size:12px;color:#8c8c8c;margin-bottom:6px;font-weight:500;">Имя</label><input placeholder="Имя и фамилия" style="width:100%;height:38px;padding:0 12px;border:1px solid #e8e8e8;border-radius:8px;font-size:13px;color:#262626;font-family:inherit;outline:none;" style-focus="border-color:#1677ff;" /></div>
+            <div><label style="display:block;font-size:12px;color:#8c8c8c;margin-bottom:6px;font-weight:500;">Телефон</label><input placeholder="+7 …" style="width:100%;height:38px;padding:0 12px;border:1px solid #e8e8e8;border-radius:8px;font-size:13px;color:#262626;font-family:inherit;outline:none;" style-focus="border-color:#1677ff;" /></div>
+            <div style="grid-column:span 2;"><label style="display:block;font-size:12px;color:#8c8c8c;margin-bottom:6px;font-weight:500;">Рабочий email <span style="color:#bfbfbf;">· используется для входа</span></label><input placeholder="name@edevs.tech" style="width:100%;height:38px;padding:0 12px;border:1px solid #e8e8e8;border-radius:8px;font-size:13px;color:#262626;font-family:'SF Mono',ui-monospace,Menlo,monospace;outline:none;" style-focus="border-color:#1677ff;" /></div>
+          </div>
+        </div>
+
+        <!-- step 2 -->
+        <div style="margin-bottom:22px;">
+          <div style="display:flex;align-items:center;gap:9px;margin-bottom:13px;"><span style="width:22px;height:22px;border-radius:50%;background:#1677ff;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none;">2</span><h3 style="margin:0;font-size:13.5px;font-weight:700;color:#1f1f1f;">Системная роль</h3></div>
+          <div style="display:flex;flex-direction:column;gap:9px;">
+            <label onClick="{{ pickEmp }}" style="display:flex;align-items:flex-start;gap:11px;padding:12px 13px;border:1px solid {{ crEmpBorder }};border-radius:9px;background:{{ crEmpBg }};cursor:pointer;">
+              <span style="width:17px;height:17px;border-radius:50%;border:1.6px solid {{ crEmpDotBorder }};flex:none;margin-top:1px;display:flex;align-items:center;justify-content:center;"><sc-if value="{{ crEmp }}" hint-placeholder-val="{{ true }}"><span style="width:7px;height:7px;border-radius:50%;background:#1677ff;"></span></sc-if></span>
+              <span style="flex:1;"><b style="font-size:13px;color:#262626;letter-spacing:0.02em;">Сотрудник</b><span style="display:block;font-size:11.5px;color:#8c8c8c;margin-top:3px;line-height:1.45;">Рабочий доступ только через назначенные профили и scopes. Без назначений — только self-service.</span></span>
+            </label>
+            <label onClick="{{ pickAdmin }}" style="display:flex;align-items:flex-start;gap:11px;padding:12px 13px;border:1px solid {{ crAdmBorder }};border-radius:9px;background:{{ crAdmBg }};cursor:pointer;">
+              <span style="width:17px;height:17px;border-radius:50%;border:1.6px solid {{ crAdmDotBorder }};flex:none;margin-top:1px;display:flex;align-items:center;justify-content:center;"><sc-if value="{{ crAdm }}" hint-placeholder-val="{{ false }}"><span style="width:7px;height:7px;border-radius:50%;background:#1677ff;"></span></sc-if></span>
+              <span style="flex:1;"><b style="font-size:13px;color:#262626;letter-spacing:0.02em;">Администратор</b><span style="display:block;font-size:11.5px;color:#8c8c8c;margin-top:3px;line-height:1.45;">Все обычные capability организации. Не управляет владельцем и другими администраторами. Создаёт только OWNER.</span></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- step 3 -->
+        <div style="margin-bottom:22px;">
+          <div style="display:flex;align-items:center;gap:9px;margin-bottom:13px;"><span style="width:22px;height:22px;border-radius:50%;background:#1677ff;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none;">3</span><h3 style="margin:0;font-size:13.5px;font-weight:700;color:#1f1f1f;">Должность и размещение</h3></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div><label style="display:block;font-size:12px;color:#8c8c8c;margin-bottom:6px;font-weight:500;">Должность <span style="color:#ff7875;">·</span></label><input placeholder="напр. Менеджер по продажам" style="width:100%;height:38px;padding:0 12px;border:1px solid #e8e8e8;border-radius:8px;font-size:13px;color:#262626;font-family:inherit;outline:none;" style-focus="border-color:#1677ff;" /></div>
+            <div><label style="display:block;font-size:12px;color:#8c8c8c;margin-bottom:6px;font-weight:500;">Размещение</label><div style="position:relative;"><select style="width:100%;height:38px;padding:0 30px 0 12px;border:1px solid #e8e8e8;border-radius:8px;font-size:13px;color:#262626;font-family:inherit;cursor:pointer;appearance:none;-webkit-appearance:none;background:#fff;"><option>Верхний уровень компании</option><option>Отдел продаж</option><option>Отдел поддержки</option><option>Контент</option></select><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#8c8c8c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position:absolute;right:11px;top:12px;pointer-events:none;"><polyline points="6 9 12 15 18 9"/></svg></div></div>
+          </div>
+          <div style="margin-top:9px;font-size:11.5px;color:#8c8c8c;line-height:1.45;">Должность вводится вручную и не выводится из роли. Основной отдел описывает оргструктуру, но не выдаёт прав.</div>
+        </div>
+
+        <!-- step 4 -->
+        <div style="margin-bottom:6px;">
+          <div style="display:flex;align-items:center;gap:9px;margin-bottom:13px;"><span style="width:22px;height:22px;border-radius:50%;background:{{ crStep4Bg }};color:{{ crStep4Color }};font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none;">4</span><h3 style="margin:0;font-size:13.5px;font-weight:700;color:{{ crStep4Title }};">Профили доступа</h3></div>
+          <sc-if value="{{ crEmp }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <sc-for list="{{ crProfiles }}" as="cp" hint-placeholder-count="3">
+                <label onClick="{{ cp.onToggle }}" style="display:flex;align-items:center;gap:11px;padding:11px 13px;border:1px solid {{ cp.border }};border-radius:9px;background:{{ cp.bg }};cursor:pointer;">
+                  <span style="width:16px;height:16px;border-radius:5px;border:1.6px solid {{ cp.boxBorder }};background:{{ cp.boxBg }};flex:none;display:flex;align-items:center;justify-content:center;"><sc-if value="{{ cp.checked }}" hint-placeholder-val="{{ false }}"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></sc-if></span>
+                  <span style="flex:1;min-width:0;"><span style="font-size:13px;font-weight:600;color:#262626;">{{ cp.name }}</span><span style="display:block;font-size:11px;color:#8c8c8c;margin-top:2px;">{{ cp.desc }}</span></span>
+                  <sc-if value="{{ cp.checked }}" hint-placeholder-val="{{ false }}"><div style="position:relative;flex:none;"><select style="height:30px;padding:0 26px 0 10px;border:1px solid #e8e8e8;border-radius:7px;font-size:11.5px;color:#595959;font-family:inherit;cursor:pointer;appearance:none;-webkit-appearance:none;background:#fff;"><option>Отдел</option><option>Организация</option></select><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#8c8c8c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position:absolute;right:9px;top:9px;pointer-events:none;"><polyline points="6 9 12 15 18 9"/></svg></div></sc-if>
+                </label>
+              </sc-for>
+              <div style="margin-top:5px;font-size:11.5px;color:#8c8c8c;line-height:1.45;background:#fafafa;border:1px solid #f0f0f0;border-radius:8px;padding:10px 12px;">Без назначенных профилей сотрудник не получит рабочего доступа — только разрешённый self-service. Отсутствие доступа здесь является явным.</div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ crAdm }}" hint-placeholder-val="{{ false }}">
+            <div style="background:#f0f8ff;border:1px solid #d6e9ff;border-radius:9px;padding:13px 15px;display:flex;align-items:flex-start;gap:10px;">
+              <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="#1677ff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+              <div style="font-size:12px;color:#595959;line-height:1.5;">ADMIN получает все обычные capability организации. Профили доступа не назначаются и не должны создавать иллюзию ограничения его полного доступа. Защищённые governance-capability остаются только у OWNER.</div>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+      <div style="flex:none;padding:14px 22px;border-top:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+        <div style="font-size:11.5px;color:#bfbfbf;">Пароль первичного доступа отправится на email</div>
+        <div style="display:flex;gap:9px;">
+          <button onClick="{{ closeCreate }}" style="height:38px;padding:0 15px;border-radius:9px;border:1px solid #d9d9d9;background:#fff;color:#595959;font-size:13px;font-weight:500;cursor:pointer;" style-hover="border-color:#bfbfbf;color:#262626;">Отмена</button>
+          <button style="display:flex;align-items:center;gap:7px;height:38px;padding:0 18px;border-radius:9px;border:none;background:#1677ff;color:#fff;font-size:13.5px;font-weight:600;cursor:pointer;box-shadow:0 1px 2px rgba(22,119,255,0.3);" style-hover="background:#0958d9;">Создать сотрудника</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ======================= OWNERSHIP TRANSFER MODAL ======================= -->
+  <sc-if value="{{ transferOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeTransfer }}" style="position:fixed;inset:0;z-index:70;background:rgba(0,0,0,0.32);display:flex;align-items:center;justify-content:center;padding:24px;">
+      <div onClick="{{ stop }}" style="width:560px;max-width:100%;max-height:90vh;overflow-y:auto;background:#fff;border-radius:14px;box-shadow:0 12px 48px rgba(0,0,0,0.2);">
+        <div style="padding:22px 24px 0;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <span style="width:42px;height:42px;border-radius:11px;background:#fff7e6;display:flex;align-items:center;justify-content:center;flex:none;"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="#d48806" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/></svg></span>
+            <div><h2 style="margin:0;font-size:18px;font-weight:700;color:#1f1f1f;letter-spacing:-0.01em;">Передача владения</h2><p style="margin:3px 0 0;font-size:12.5px;color:#8c8c8c;">Атомарная операция · в организации остаётся ровно один владелец</p></div>
+          </div>
+        </div>
+        <div style="padding:20px 24px;">
+          <label style="display:block;font-size:12px;color:#8c8c8c;margin-bottom:7px;font-weight:500;">Новый владелец</label>
+          <div style="position:relative;margin-bottom:16px;"><select style="width:100%;height:40px;padding:0 34px 0 12px;border:1px solid #e8e8e8;border-radius:9px;font-size:13px;color:#262626;font-family:inherit;cursor:pointer;appearance:none;-webkit-appearance:none;background:#fff;"><option>Анна Котова · Администратор · Руководитель продаж</option><option>Дмитрий Соколов · Сотрудник · Менеджер по продажам</option></select><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#8c8c8c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position:absolute;right:13px;top:13px;pointer-events:none;"><polyline points="6 9 12 15 18 9"/></svg></div>
+
+          <div style="display:flex;align-items:center;gap:14px;background:#fafafa;border:1px solid #f0f0f0;border-radius:10px;padding:14px 16px;margin-bottom:18px;">
+            <div style="display:flex;align-items:center;gap:9px;"><div style="width:34px;height:34px;border-radius:50%;background:#1677ff;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;">ИП</div><div><div style="font-size:12.5px;font-weight:600;color:#262626;">Иван Петров</div><span style="padding:1px 7px;border-radius:5px;background:#f0f0f0;color:#595959;font-size:10px;font-weight:600;">Владелец</span></div></div>
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#bfbfbf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            <div style="display:flex;align-items:center;gap:9px;"><div style="width:34px;height:34px;border-radius:50%;background:#9254de;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;">АК</div><div><div style="font-size:12.5px;font-weight:600;color:#262626;">Анна Котова</div><span style="padding:1px 7px;border-radius:5px;background:#f6ffed;color:#389e0d;font-size:10px;font-weight:600;">→ Владелец</span></div></div>
+          </div>
+
+          <label style="display:block;font-size:12px;color:#8c8c8c;margin-bottom:7px;font-weight:500;">Новая роль прежнего владельца</label>
+          <div style="display:flex;gap:9px;margin-bottom:16px;">
+            <label onClick="{{ prevAdmin }}" style="flex:1;display:flex;align-items:center;gap:9px;padding:11px 13px;border:1px solid {{ prevAdmBorder }};border-radius:9px;background:{{ prevAdmBg }};cursor:pointer;"><span style="width:16px;height:16px;border-radius:50%;border:1.6px solid {{ prevAdmDot }};flex:none;display:flex;align-items:center;justify-content:center;"><sc-if value="{{ prevIsAdm }}" hint-placeholder-val="{{ true }}"><span style="width:7px;height:7px;border-radius:50%;background:#1677ff;"></span></sc-if></span><span style="font-size:13px;font-weight:600;color:#262626;">Администратор</span></label>
+            <label onClick="{{ prevEmp }}" style="flex:1;display:flex;align-items:center;gap:9px;padding:11px 13px;border:1px solid {{ prevEmpBorder }};border-radius:9px;background:{{ prevEmpBg }};cursor:pointer;"><span style="width:16px;height:16px;border-radius:50%;border:1.6px solid {{ prevEmpDot }};flex:none;display:flex;align-items:center;justify-content:center;"><sc-if value="{{ prevIsEmp }}" hint-placeholder-val="{{ false }}"><span style="width:7px;height:7px;border-radius:50%;background:#1677ff;"></span></sc-if></span><span style="font-size:13px;font-weight:600;color:#262626;">Сотрудник</span></label>
+          </div>
+
+          <div style="background:#fffbe6;border:1px solid #ffe58f;border-radius:10px;padding:13px 15px;display:flex;align-items:flex-start;gap:10px;margin-bottom:16px;">
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="#d48806" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px;"><path d="M12 9v4"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 17h.01"/></svg>
+            <div style="font-size:12px;color:#595959;line-height:1.5;">Новый владелец получит полный доступ и company placement. Вы потеряете права владельца, включая передачу владения и управление администраторами. Операция аудируется и необратима без повторной передачи.</div>
+          </div>
+
+          <label onClick="{{ toggleConfirm }}" style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
+            <span style="width:18px;height:18px;border-radius:5px;border:1.6px solid {{ confBoxBorder }};background:{{ confBoxBg }};flex:none;margin-top:1px;display:flex;align-items:center;justify-content:center;"><sc-if value="{{ confirmed }}" hint-placeholder-val="{{ false }}"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></sc-if></span>
+            <span style="font-size:12.5px;color:#595959;line-height:1.45;">Я понимаю последствия и подтверждаю передачу владения организацией.</span>
+          </label>
+        </div>
+        <div style="padding:14px 24px;border-top:1px solid #f0f0f0;display:flex;justify-content:flex-end;gap:9px;">
+          <button onClick="{{ closeTransfer }}" style="height:40px;padding:0 16px;border-radius:9px;border:1px solid #d9d9d9;background:#fff;color:#595959;font-size:13px;font-weight:500;cursor:pointer;" style-hover="border-color:#bfbfbf;color:#262626;">Отмена</button>
+          <button disabled="{{ transferDisabled }}" style="{{ transferBtn }}">Передать владение</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 1440, &quot;height&quot;: 940}, &quot;viewAs&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;Владелец&quot;, &quot;options&quot;: [&quot;Владелец&quot;, &quot;Администратор&quot;], &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Уровень просмотра&quot;}}">
+class Component extends DCLogic {
+  state = {
+    screen: 'list',
+    q: '', role: 'all', placement: 'all',
+    menuId: null,
+    createOpen: false, createRole: 'EMPLOYEE', createProfiles: {},
+    transferOpen: false, prevRole: 'ADMIN', confirmed: false,
+    selectedId: 'e3', actor: 'owner', totp: false,
+    selectedProfile: 'p1',
+  };
+
+  ROLE = {
+    OWNER:    { roleColor: '#cf1322', roleBg: '#fff1f0', ruName: 'Владелец' },
+    ADMIN:    { roleColor: '#0958d9', roleBg: '#e6f4ff', ruName: 'Администратор' },
+    EMPLOYEE: { roleColor: '#595959', roleBg: '#f0f0f0', ruName: 'Сотрудник' },
+  };
+  ST = {
+    active:  { stLabel: 'Активен', stColor: '#389e0d', stDot: '#52c41a', stBg: '#f6ffed', stBorder: '#b7eb8f' },
+    invited: { stLabel: 'Приглашён', stColor: '#0958d9', stDot: '#1677ff', stBg: '#e6f4ff', stBorder: '#91caff' },
+    blocked: { stLabel: 'Заблокирован', stColor: '#cf1322', stDot: '#ff4d4f', stBg: '#fff2f0', stBorder: '#ffccc7' },
+  };
+
+  DATA = [
+    { id: 'e1', name: 'Иван Петров', initials: 'ИП', avatarBg: '#1677ff', email: 'i.petrov@edevs.tech', phone: '+7 916 000 11 22', role: 'OWNER', position: 'Генеральный директор', dept: null, st: 'active', lastLogin: 'сейчас · онлайн', created: '02 фев 2026', pwdDate: '14 июн 2026', sessions: '1 устройство · Chrome (Москва)', assignments: [], load: null },
+    { id: 'e2', name: 'Анна Котова', initials: 'АК', avatarBg: '#9254de', email: 'a.kotova@edevs.tech', phone: '+7 916 245 14 02', role: 'ADMIN', position: 'Руководитель продаж', dept: null, st: 'active', lastLogin: '5 мин назад', created: '12 мая 2026', pwdDate: '28 мая 2026', sessions: '2 устройства · Chrome, Safari (Москва)', assignments: 'admin', load: { d: '2', q: '0', s: '9', r: '1м 20с' } },
+    { id: 'e3', name: 'Дмитрий Соколов', initials: 'ДС', avatarBg: '#3b82c4', email: 'd.sokolov@edevs.tech', phone: '+7 903 118 77 51', role: 'EMPLOYEE', position: 'Менеджер по продажам', dept: 'Отдел продаж', st: 'active', lastLogin: '18 мин назад', created: '20 мая 2026', pwdDate: '20 мая 2026', sessions: '1 устройство · Chrome (Москва)', assignments: [{ profile: 'Продажи · оператор', scopeType: 'DEPARTMENT', scopeName: 'Отдел продаж', caps: ['sales.view', 'sales.operate', 'customers.view', 'customers.manage', 'conversations.view', 'conversations.operate'] }], load: { d: '3', q: '0', s: '5', r: '1м 40с' } },
+    { id: 'e4', name: 'Мария Орлова', initials: 'МО', avatarBg: '#13a8a8', email: 'm.orlova@edevs.tech', phone: '+7 921 554 30 18', role: 'EMPLOYEE', position: 'Специалист поддержки', dept: 'Отдел поддержки', st: 'active', lastLogin: '1 ч назад', created: '03 июн 2026', pwdDate: '03 июн 2026', sessions: '1 устройство · Firefox (СПб)', assignments: [{ profile: 'Поддержка', scopeType: 'DEPARTMENT', scopeName: 'Отдел поддержки', caps: ['support.view', 'support.operate', 'conversations.view', 'conversations.operate'] }], load: { d: '1', q: '2', s: '0', r: '2м 05с' } },
+    { id: 'e5', name: 'Павел Верхов', initials: 'ПВ', avatarBg: '#d4784b', email: 'p.verkhov@edevs.tech', phone: '+7 917 903 66 40', role: 'EMPLOYEE', position: 'Аналитик продаж', dept: 'Отдел продаж', st: 'active', lastLogin: '2 ч назад', created: '11 июн 2026', pwdDate: '11 июн 2026', sessions: '1 устройство · Chrome (Казань)', assignments: [{ profile: 'Продажи · оператор', scopeType: 'DEPARTMENT', scopeName: 'Отдел продаж', caps: ['sales.view', 'sales.operate', 'customers.view'] }, { profile: 'Продукты · чтение', scopeType: 'ORGANIZATION', scopeName: null, caps: ['products.view'] }], load: null },
+    { id: 'e6', name: 'Сергей Лебедев', initials: 'СЛ', avatarBg: '#bfbfbf', email: 's.lebedev@edevs.tech', phone: '—', role: 'EMPLOYEE', position: 'Менеджер по продажам', dept: 'Отдел продаж', st: 'invited', lastLogin: 'не входил', created: '09 июл 2026', pwdDate: '—', sessions: 'нет активных сессий', assignments: [], load: null },
+    { id: 'e7', name: 'Ольга Зайцева', initials: 'ОЗ', avatarBg: '#c4456b', email: 'o.zaytseva@edevs.tech', phone: '+7 905 771 22 09', role: 'EMPLOYEE', position: 'Контент-менеджер', dept: null, st: 'blocked', lastLogin: '3 дня назад', created: '18 апр 2026', pwdDate: '01 июн 2026', sessions: 'нет активных сессий', assignments: [], load: null },
+  ];
+
+  REG = [
+    { domain: 'Компания', caps: [['company.view', 'Просмотр компании'], ['company.manage', 'Управление компанией']] },
+    { domain: 'Отделы', caps: [['departments.view', 'Просмотр отделов'], ['departments.manage', 'Управление отделами']] },
+    { domain: 'Сотрудники', caps: [['employees.view', 'Просмотр сотрудников'], ['employees.manage', 'Управление сотрудниками'], ['employees.manage_privileged', 'Управление привилегированными', true], ['ownership.transfer', 'Передача владения', true]] },
+    { domain: 'Продукты', caps: [['products.view', 'Просмотр продуктов'], ['products.manage', 'Управление продуктами']] },
+    { domain: 'AI', caps: [['ai.view', 'Просмотр агентов'], ['ai.manage', 'Настройка агентов'], ['ai.publish', 'Публикация агентов']] },
+    { domain: 'Интеграции', caps: [['integrations.view', 'Просмотр интеграций'], ['integrations.manage', 'Управление интеграциями'], ['secrets.manage', 'Управление секретами', true]] },
+    { domain: 'Настройки и аудит', caps: [['settings.view', 'Просмотр настроек'], ['settings.manage', 'Управление настройками'], ['audit.view', 'Просмотр аудита']] },
+    { domain: 'Диалоги', caps: [['conversations.view', 'Просмотр диалогов'], ['conversations.operate', 'Работа с диалогами'], ['conversations.call', 'Звонки']] },
+    { domain: 'Клиенты', caps: [['customers.view', 'Просмотр клиентов'], ['customers.manage', 'Управление клиентами']] },
+    { domain: 'Продажи', caps: [['sales.view', 'Просмотр продаж'], ['sales.operate', 'Работа с продажами'], ['sales.correct', 'Корректировка продаж'], ['sales_sources.manage', 'Источники продаж']] },
+    { domain: 'Поддержка', caps: [['support.view', 'Просмотр поддержки'], ['support.operate', 'Работа с поддержкой']] },
+    { domain: 'Уведомления', caps: [['notifications.manage', 'Управление уведомлениями']] },
+  ];
+
+  PROFILES = [
+    { id: 'p1', name: 'Продажи · оператор', desc: 'Работа с диалогами, клиентами и продажами отдела.', isSystem: false, disabled: false, scopes: 'Отдел, Организация', assigned: 2, caps: ['sales.view', 'sales.operate', 'customers.view', 'customers.manage', 'conversations.view', 'conversations.operate'] },
+    { id: 'p2', name: 'Поддержка', desc: 'Обработка обращений поддержки и связанных диалогов.', isSystem: false, disabled: false, scopes: 'Отдел', assigned: 1, caps: ['support.view', 'support.operate', 'conversations.view', 'conversations.operate'] },
+    { id: 'p3', name: 'Звонки', desc: 'Доступ к голосовым звонкам в диалогах.', isSystem: false, disabled: false, scopes: 'Отдел', assigned: 0, caps: ['conversations.call'] },
+    { id: 'p4', name: 'Продукты · чтение', desc: 'Просмотр карточек продуктов и релизов.', isSystem: false, disabled: false, scopes: 'Организация', assigned: 1, caps: ['products.view'] },
+    { id: 'p5', name: 'Базовый доступ', desc: 'Минимальный self-service. Требуется приложением, удалить нельзя.', isSystem: true, disabled: false, scopes: 'Организация', assigned: 6, caps: ['company.view', 'notifications.manage'] },
+    { id: 'p6', name: 'Управление продажами', desc: 'Расширенный профиль руководителя направления продаж.', isSystem: false, disabled: true, scopes: 'Организация', assigned: 0, caps: ['sales.view', 'sales.operate', 'sales.correct', 'sales_sources.manage', 'customers.manage', 'conversations.operate'] },
+  ];
+
+  seg(active) {
+    return active
+      ? 'padding:6px 13px;border:none;border-radius:6px;font-size:12.5px;font-weight:600;cursor:pointer;background:#fff;color:#1f1f1f;box-shadow:0 1px 2px rgba(0,0,0,0.1);white-space:nowrap;'
+      : 'padding:6px 13px;border:none;border-radius:6px;font-size:12.5px;font-weight:500;cursor:pointer;background:transparent;color:#595959;white-space:nowrap;';
+  }
+
+  renderVals() {
+    const s = this.state;
+    const setScreen = (sc) => this.setState({ screen: sc, menuId: null });
+
+    // ---------- LIST ----------
+    const ql = s.q.trim().toLowerCase();
+    const filtered = this.DATA.filter((d) =>
+      (!ql || d.name.toLowerCase().includes(ql) || d.email.toLowerCase().includes(ql) || d.position.toLowerCase().includes(ql)) &&
+      (s.role === 'all' || d.role === s.role) &&
+      (s.placement === 'all' || (s.placement === 'company' ? d.dept === null : d.dept !== null)));
+
+    const rows = filtered.map((d) => {
+      let access;
+      if (d.role === 'OWNER') access = 'Полный доступ';
+      else if (d.role === 'ADMIN') access = 'Все обычные capability';
+      else if (Array.isArray(d.assignments) && d.assignments.length) access = d.assignments.length + (d.assignments.length === 1 ? ' профиль' : ' профиля');
+      else access = 'Нет доступа';
+      const priv = d.role === 'OWNER' || d.role === 'ADMIN';
+      return {
+        ...d, ...this.ROLE[d.role], ...this.ST[d.st],
+        roleRu: this.ROLE[d.role].ruName,
+        placement: d.dept || 'Уровень компании',
+        access,
+        canManage: d.role === 'EMPLOYEE',
+        canTransfer: d.role === 'OWNER',
+        privileged: d.role === 'ADMIN',
+        blockLabel: d.st === 'blocked' ? 'Разблокировать' : 'Заблокировать',
+        blockColor: d.st === 'blocked' ? '#389e0d' : '#cf1322',
+        menuOpen: s.menuId === d.id,
+        onMenu: (e) => { e.preventDefault(); e.stopPropagation(); this.setState((st) => ({ menuId: st.menuId === d.id ? null : d.id })); },
+        onOpen: (e) => { e.preventDefault(); this.setState({ screen: 'card', selectedId: d.id, menuId: null, actor: 'owner' }); },
+      };
+    });
+
+    // ---------- CARD ----------
+    const d = this.DATA.find((x) => x.id === s.selectedId) || this.DATA[2];
+    const priv = d.role === 'OWNER' || d.role === 'ADMIN';
+    const actor = this.props.viewAs === 'Администратор' ? 'admin' : 'owner';
+    const readOnly = actor === 'admin' && priv;
+    const editable = !readOnly;
+    const inpBase = 'width:100%;height:38px;padding:0 12px;border:1px solid #e8e8e8;border-radius:8px;font-size:13px;color:#262626;font-family:inherit;outline:none;';
+    const inpDis = 'width:100%;height:38px;padding:0 12px;border:1px solid #f0f0f0;border-radius:8px;font-size:13px;color:#8c8c8c;font-family:inherit;outline:none;background:#fafafa;';
+    const inpMonoBase = inpBase.replace('font-family:inherit', "font-family:'SF Mono',ui-monospace,Menlo,monospace");
+    const inpMonoDis = inpDis.replace('font-family:inherit', "font-family:'SF Mono',ui-monospace,Menlo,monospace");
+    const selBase = 'width:100%;height:38px;padding:0 30px 0 12px;border:1px solid #e8e8e8;border-radius:8px;font-size:13px;color:#262626;font-family:inherit;cursor:pointer;appearance:none;-webkit-appearance:none;background:#fff;';
+    const selDis = 'width:100%;height:38px;padding:0 30px 0 12px;border:1px solid #f0f0f0;border-radius:8px;font-size:13px;color:#8c8c8c;font-family:inherit;appearance:none;-webkit-appearance:none;background:#fafafa;';
+    const secBtnBase = 'height:34px;padding:0 13px;border-radius:8px;border:1px solid #d9d9d9;background:#fff;color:#262626;font-size:12.5px;font-weight:500;cursor:pointer;';
+    const secBtnDis = 'height:34px;padding:0 13px;border-radius:8px;border:1px solid #f0f0f0;background:#fafafa;color:#bfbfbf;font-size:12.5px;font-weight:500;cursor:not-allowed;';
+
+    const roleDefs = [
+      { code: 'OWNER', desc: 'Полный доступ. Ровно один в организации. Изменяется только через передачу владения.', locked: true },
+      { code: 'ADMIN', desc: 'Все обычные capability. Не управляет владельцем и другими администраторами.', locked: false },
+      { code: 'EMPLOYEE', desc: 'Доступ только через назначенные профили и scopes.', locked: false },
+    ];
+    const roleOptions = roleDefs.map((r) => {
+      const checked = r.code === d.role;
+      const disabled = readOnly || r.code === 'OWNER';
+      return {
+        code: r.code, name: this.ROLE[r.code].ruName, desc: r.desc, checked, locked: r.locked,
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        border: checked ? '#91caff' : '#f0f0f0',
+        bg: checked ? '#f0f8ff' : (disabled ? '#fafafa' : '#fff'),
+        dotBorder: checked ? '#1677ff' : '#d9d9d9',
+        dotBg: checked ? '#1677ff' : '#fff',
+      };
+    });
+
+    const assignments = Array.isArray(d.assignments) ? d.assignments.map((a) => ({
+      profile: a.profile,
+      scopeLabel: a.scopeType === 'ORGANIZATION' ? 'Вся организация' : a.scopeName,
+      scopeTag: a.scopeType === 'ORGANIZATION' ? 'ОРГАНИЗАЦИЯ' : 'ОТДЕЛ',
+      scopeBg: a.scopeType === 'ORGANIZATION' ? '#f9f0ff' : '#e6f7ff',
+      scopeColor: a.scopeType === 'ORGANIZATION' ? '#722ed1' : '#0958d9',
+      caps: a.caps,
+    })) : [];
+
+    const auditMap = {
+      e1: [{ dot: '#52c41a', text: 'Вход в систему · Chrome', code: 'session.started', time: 'сегодня 08:40' }, { dot: '#1677ff', text: 'Создан профиль доступа «Поддержка»', code: 'access_profile.created', time: '03 июн' }],
+      e2: [{ dot: '#722ed1', text: 'Повышена до ADMIN владельцем', code: 'employee.role_changed', time: '01 июн' }, { dot: '#52c41a', text: 'Вход в систему · Chrome', code: 'session.started', time: 'сегодня 09:15' }],
+      e3: [{ dot: '#52c41a', text: 'Закрыл диалог · продажа FoxRay', code: 'sales.operate', time: '8 мин назад' }, { dot: '#1677ff', text: 'Назначен профиль «Продажи · оператор»', code: 'access_assignment.created', time: '20 мая' }, { dot: '#bfbfbf', text: 'Сотрудник создан', code: 'employee.created', time: '20 мая' }],
+      e4: [{ dot: '#1677ff', text: 'Назначен профиль «Поддержка»', code: 'access_assignment.created', time: '03 июн' }, { dot: '#bfbfbf', text: 'Сотрудник создан', code: 'employee.created', time: '03 июн' }],
+      e5: [{ dot: '#722ed1', text: 'Назначен профиль «Продукты · чтение»', code: 'access_assignment.created', time: '12 июн' }, { dot: '#1677ff', text: 'Назначен профиль «Продажи · оператор»', code: 'access_assignment.created', time: '11 июн' }],
+      e6: [{ dot: '#1677ff', text: 'Приглашение отправлено', code: 'employee.created', time: '09 июл' }],
+      e7: [{ dot: '#ff4d4f', text: 'Сотрудник заблокирован', code: 'employee.blocked', time: '10 июл' }, { dot: '#bfbfbf', text: 'Сотрудник создан', code: 'employee.created', time: '18 апр' }],
+    };
+
+    const c = {
+      ...d, ...this.ROLE[d.role], ...this.ST[d.st],
+      roleRu: this.ROLE[d.role].ruName,
+      placement: d.dept || 'Уровень компании',
+      readOnly, editable,
+      placementLocked: readOnly || d.role === 'OWNER',
+      ownerPlacementNote: d.role === 'OWNER',
+      inp: readOnly ? inpDis : inpBase,
+      inpMono: readOnly ? inpMonoDis : inpMonoBase,
+      sel: (readOnly || d.role === 'OWNER') ? selDis : selBase,
+      secBtn: readOnly ? secBtnDis : secBtnBase,
+      switchCursor: readOnly ? 'not-allowed' : 'pointer',
+      switchOpacity: readOnly ? '0.5' : '1',
+      roleOptions,
+      roleHint: d.role === 'OWNER' ? 'Роль владельца меняется только через передачу владения.' : 'Не выводится из должности или отдела.',
+      assignments,
+      hasAssignments: d.role === 'EMPLOYEE' && assignments.length > 0,
+      noAccess: d.role === 'EMPLOYEE' && assignments.length === 0,
+      adminAccessNote: d.role === 'ADMIN' || d.role === 'OWNER',
+      showAssign: d.role === 'EMPLOYEE' && !readOnly,
+      accessHint: d.role === 'EMPLOYEE' ? 'Рабочий доступ появляется только через активные назначения.' : 'Роль даёт capability напрямую — назначения не требуются.',
+      hasLoad: !!d.load,
+      loadDialogs: d.load ? d.load.d : '0', loadQueue: d.load ? d.load.q : '0', loadSales: d.load ? d.load.s : '0', loadResp: d.load ? d.load.r : '—',
+      audit: auditMap[d.id] || [],
+      dangerNote: d.st === 'blocked'
+        ? 'Сотрудник заблокирован и не может войти. Разблокировка восстановит доступ по активным назначениям.'
+        : 'Блокировка немедленно завершит все сессии и прекратит HTTP и realtime actions. Аудит и авторство сохраняются. Требует подтверждения.',
+      blockLabel: d.st === 'blocked' ? 'Разблокировать сотрудника' : 'Заблокировать сотрудника',
+      actorNote: readOnly
+        ? 'ADMIN видит привилегированную учётную запись без действий.'
+        : (s.actor === 'admin' ? 'ADMIN управляет сотрудниками EMPLOYEE.' : 'OWNER имеет полный доступ ко всем операциям.'),
+      roBanner: 'Привилегированная учётная запись (' + d.role + '). Администратор не может изменять данные, роль, размещение, доступ и security state, блокировать, сбрасывать пароль или завершать сессии этого сотрудника. Эти операции выполняет только владелец.',
+    };
+    const totp = s.totp;
+
+    // ---------- PROFILES ----------
+    const profiles = this.PROFILES.map((p) => ({
+      id: p.id, name: p.name, desc: p.desc, isSystem: p.isSystem, disabled: p.disabled,
+      capCount: p.caps.length, assignedCount: p.assigned,
+      border: p.id === s.selectedProfile ? '#91caff' : '#f0f0f0',
+      onSelect: () => this.setState({ selectedProfile: p.id }),
+    }));
+    const spData = this.PROFILES.find((p) => p.id === s.selectedProfile) || this.PROFILES[0];
+    const spEditable = !spData.isSystem && !spData.disabled;
+    const spGroups = this.REG.map((grp) => ({
+      domain: grp.domain,
+      caps: grp.caps.map((cap) => {
+        const [code, label, prot] = cap;
+        const checked = !prot && spData.caps.includes(code);
+        return {
+          code, label, protectedFlag: !!prot, checked,
+          cursor: (prot || spData.isSystem) ? 'not-allowed' : 'pointer',
+          codeColor: prot ? '#cf1322' : '#262626',
+          border: checked ? '#91caff' : '#f0f0f0',
+          bg: checked ? '#f0f8ff' : (prot ? '#fff7f6' : '#fff'),
+          boxBorder: checked ? '#1677ff' : (prot ? '#ffccc7' : '#d9d9d9'),
+          boxBg: checked ? '#1677ff' : '#fff',
+        };
+      }),
+    }));
+    const sp = {
+      name: spData.name, desc: spData.desc, isSystem: spData.isSystem,
+      scopes: spData.scopes, assignedCount: spData.assigned, groups: spGroups,
+      toggleLabel: spData.disabled ? 'Включить' : 'Отключить',
+      editCursor: spData.isSystem ? 'not-allowed' : 'pointer',
+      editOpacity: spData.isSystem ? '0.5' : '1',
+    };
+
+    // ---------- CREATE ----------
+    const isEmp = s.createRole === 'EMPLOYEE';
+    const crProfiles = this.PROFILES.filter((p) => !p.isSystem && !p.disabled).map((p) => {
+      const checked = !!s.createProfiles[p.id];
+      return {
+        name: p.name, desc: p.caps.slice(0, 3).join(' · ') + (p.caps.length > 3 ? ' …' : ''),
+        checked,
+        border: checked ? '#91caff' : '#f0f0f0',
+        bg: checked ? '#f0f8ff' : '#fff',
+        boxBorder: checked ? '#1677ff' : '#d9d9d9',
+        boxBg: checked ? '#1677ff' : '#fff',
+        onToggle: () => this.setState((st) => ({ createProfiles: { ...st.createProfiles, [p.id]: !st.createProfiles[p.id] } })),
+      };
+    });
+
+    // ---------- TRANSFER ----------
+    const prevIsAdm = s.prevRole === 'ADMIN';
+
+    return {
+      // screen flags
+      isList: s.screen === 'list', isCard: s.screen === 'card', isProfiles: s.screen === 'profiles',
+      crumbWeight: s.screen === 'list' ? '600' : '500',
+      crumbColor: s.screen === 'list' ? '#262626' : '#595959',
+      crumbTail: s.screen === 'card' ? c.name : (s.screen === 'profiles' ? 'Профили доступа' : ''),
+      goList: (e) => { if (e) e.preventDefault(); setScreen('list'); },
+      goCommand: (e) => { if (e) e.preventDefault(); setScreen('list'); },
+      goProfiles: (e) => { if (e) e.preventDefault(); setScreen('profiles'); },
+
+      // list
+      rows, shownCount: String(rows.length), totalCount: String(this.DATA.length),
+      isEmpty: rows.length === 0, q: s.q, menuId: s.menuId,
+      closeMenu: () => this.setState({ menuId: null }),
+      segRAll: this.seg(s.role === 'all'), segROwner: this.seg(s.role === 'OWNER'), segRAdmin: this.seg(s.role === 'ADMIN'), segREmp: this.seg(s.role === 'EMPLOYEE'),
+      segPAll: this.seg(s.placement === 'all'), segPCompany: this.seg(s.placement === 'company'), segPDept: this.seg(s.placement === 'dept'),
+      rAll: () => this.setState({ role: 'all', menuId: null }), rOwner: () => this.setState({ role: 'OWNER', menuId: null }), rAdmin: () => this.setState({ role: 'ADMIN', menuId: null }), rEmp: () => this.setState({ role: 'EMPLOYEE', menuId: null }),
+      pAll: () => this.setState({ placement: 'all', menuId: null }), pCompany: () => this.setState({ placement: 'company', menuId: null }), pDept: () => this.setState({ placement: 'dept', menuId: null }),
+      onSearch: (e) => this.setState({ q: e.target.value, menuId: null }),
+      onReset: () => this.setState({ q: '', role: 'all', placement: 'all', menuId: null }),
+
+      // card
+      c, totpLabel: totp ? 'Включена · требуется при каждом входе' : 'Отключена для этого сотрудника',
+      totpJustify: totp ? 'flex-end' : 'flex-start', totpBg: totp ? '#1677ff' : '#d9d9d9',
+      onToggleTotp: () => { if (!readOnly) this.setState((st) => ({ totp: !st.totp })); },
+      segActorOwner: this.seg(s.actor === 'owner'), segActorAdmin: this.seg(s.actor === 'admin'),
+      actorOwner: () => this.setState({ actor: 'owner' }), actorAdmin: () => this.setState({ actor: 'admin' }),
+
+      // profiles
+      profiles, sp,
+
+      // create
+      createOpen: s.createOpen, crEmp: isEmp, crAdm: !isEmp,
+      openCreate: () => this.setState({ createOpen: true, menuId: null }),
+      closeCreate: () => this.setState({ createOpen: false }),
+      pickEmp: () => this.setState({ createRole: 'EMPLOYEE' }), pickAdmin: () => this.setState({ createRole: 'ADMIN' }),
+      crEmpBorder: isEmp ? '#91caff' : '#f0f0f0', crEmpBg: isEmp ? '#f0f8ff' : '#fff', crEmpDotBorder: isEmp ? '#1677ff' : '#d9d9d9',
+      crAdmBorder: !isEmp ? '#91caff' : '#f0f0f0', crAdmBg: !isEmp ? '#f0f8ff' : '#fff', crAdmDotBorder: !isEmp ? '#1677ff' : '#d9d9d9',
+      crProfiles,
+      crStep4Bg: isEmp ? '#1677ff' : '#f0f0f0', crStep4Color: isEmp ? '#fff' : '#bfbfbf', crStep4Title: isEmp ? '#1f1f1f' : '#bfbfbf',
+
+      // transfer
+      transferOpen: s.transferOpen,
+      openTransfer: (e) => { if (e) e.preventDefault(); this.setState({ transferOpen: true, menuId: null }); },
+      closeTransfer: () => this.setState({ transferOpen: false, confirmed: false }),
+      stop: (e) => e.stopPropagation(),
+      prevIsAdm, prevIsEmp: !prevIsAdm,
+      prevAdmin: () => this.setState({ prevRole: 'ADMIN' }), prevEmp: () => this.setState({ prevRole: 'EMPLOYEE' }),
+      prevAdmBorder: prevIsAdm ? '#91caff' : '#f0f0f0', prevAdmBg: prevIsAdm ? '#f0f8ff' : '#fff', prevAdmDot: prevIsAdm ? '#1677ff' : '#d9d9d9',
+      prevEmpBorder: !prevIsAdm ? '#91caff' : '#f0f0f0', prevEmpBg: !prevIsAdm ? '#f0f8ff' : '#fff', prevEmpDot: !prevIsAdm ? '#1677ff' : '#d9d9d9',
+      confirmed: s.confirmed, toggleConfirm: () => this.setState((st) => ({ confirmed: !st.confirmed })),
+      confBoxBorder: s.confirmed ? '#1677ff' : '#d9d9d9', confBoxBg: s.confirmed ? '#1677ff' : '#fff',
+      transferDisabled: !s.confirmed,
+      transferBtn: s.confirmed
+        ? 'height:40px;padding:0 18px;border-radius:9px;border:none;background:#cf1322;color:#fff;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 1px 2px rgba(207,19,34,0.3);'
+        : 'height:40px;padding:0 18px;border-radius:9px;border:none;background:#f5f5f5;color:#bfbfbf;font-size:13px;font-weight:600;cursor:not-allowed;',
+    };
+  }
+}
+</script>
+</body>
+</html>

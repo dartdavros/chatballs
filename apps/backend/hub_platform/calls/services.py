@@ -7,7 +7,12 @@ from django.conf import settings
 from django.db import IntegrityError, transaction
 from django.utils import timezone
 
-from hub_platform.calls.errors import CallConflict, CallInvalidTransition, CallTokenError
+from hub_platform.calls.errors import (
+    CallAccessDenied,
+    CallConflict,
+    CallInvalidTransition,
+    CallTokenError,
+)
 from hub_platform.calls.lifecycle import transition_call
 from hub_platform.calls.models import (
     CallConnectionType,
@@ -221,10 +226,16 @@ def authorize_call_access_token(*, token: str, allow_terminal: bool = False) -> 
     if call.status in TERMINAL_CALL_STATUSES and not allow_terminal:
         raise CallTokenError("Звонок уже завершён")
     if claims.side == ParticipantSide.STAFF:
-        valid = call.participants.filter(
+        participant = call.participants.select_related("user").filter(
             side=ParticipantSide.STAFF,
             user_id=claims.subject_id,
-        ).exists()
+        ).first()
+        valid = participant is not None
+        if participant is not None:
+            try:
+                ensure_call_access(user=participant.user, call_session=call)
+            except CallAccessDenied:
+                valid = False
     else:
         # После принятия/завершения истечение invite не отзывает доступ к
         # состоянию: TTL самого access token остаётся единственным пределом.

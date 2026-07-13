@@ -1,10 +1,10 @@
 from django.core.exceptions import ValidationError
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from hub_platform.api.permissions import IsManager
+from hub_platform.api.permissions import HasCapability
 from hub_platform.conversations.models import Contact, Conversation
 from hub_platform.identity.audit import record_audit_event
 from hub_platform.orders.models import Order
@@ -20,6 +20,7 @@ from hub_platform.orders.services import (
     resolve_product_by_token,
     set_fulfillment,
 )
+from hub_platform.identity.policy import accessible_department_ids, require_capability
 
 
 def _validation_error(error: ValidationError) -> Response:
@@ -43,10 +44,14 @@ class _Base(APIView):
 
 
 class OrderListCreateView(_Base):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasCapability]
+    required_capabilities = {"GET": "sales.view", "POST": "sales.operate"}
 
     def get(self, request: Request) -> Response:
         orders = orders_for_organization(self._org(request).id)
+        department_ids = accessible_department_ids(request.user, "sales.view")
+        if department_ids is not None:
+            orders = orders.filter(conversation__channel__department_id__in=department_ids)
         status_filter = request.query_params.get("paymentStatus")
         if status_filter:
             orders = orders.filter(payment_status=status_filter)
@@ -71,8 +76,24 @@ class OrderListCreateView(_Base):
             contact = Contact.objects.get(id=int(request.data.get("contactId", 0)), organization=org)
         except (Contact.DoesNotExist, TypeError, ValueError):
             return Response({"detail": "Contact not found"}, status=400)
+        department_ids = accessible_department_ids(request.user, "sales.operate")
+        conversation = None
+        if request.data.get("conversationId"):
+            conversation = Conversation.objects.filter(
+                id=request.data.get("conversationId"), organization=org, contact=contact
+            ).select_related("channel").first()
+            if conversation is None or not require_capability(
+                request.user, "sales.operate", conversation
+            ):
+                return Response({"detail": "Conversation not found"}, status=404)
+        if department_ids is not None and conversation is None:
+            return Response(
+                {"detail": "Department-scoped order requires a conversation"}, status=403
+            )
         try:
-            order = create_order(organization=org, contact=contact, items=items)
+            order = create_order(
+                organization=org, contact=contact, items=items, conversation=conversation
+            )
         except ValidationError as error:
             return _validation_error(error)
         self._audit(request, "created", order)
@@ -137,21 +158,28 @@ class OrderIngestView(APIView):
 
 
 class OrderDetailView(_Base):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasCapability]
+    required_capability = "sales.view"
 
     def get(self, request: Request, order_id: int) -> Response:
         try:
             order = order_for_organization(organization_id=self._org(request).id, order_id=order_id)
         except Order.DoesNotExist:
             return Response({"detail": "Order not found"}, status=404)
+        if not require_capability(request.user, self.required_capability, order):
+            return Response({"detail": "Order not found"}, status=404)
         return Response({"order": order_payload(order, with_items=True)})
 
 
 class _OrderActionView(_Base):
-    permission_classes = [IsManager]
+    permission_classes = [HasCapability]
+    required_capability = "sales.correct"
 
     def _order(self, request: Request, order_id: int) -> Order:
-        return order_for_organization(organization_id=self._org(request).id, order_id=order_id)
+        order = order_for_organization(organization_id=self._org(request).id, order_id=order_id)
+        if not require_capability(request.user, self.required_capability, order):
+            raise Order.DoesNotExist
+        return order
 
 
 class OrderMarkPaidView(_OrderActionView):

@@ -5,8 +5,9 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from hub_platform.api.permissions import IsManager
+from hub_platform.api.permissions import HasCapability
 from hub_platform.identity.audit import record_audit_event
+from hub_platform.identity.policy import accessible_department_ids
 from hub_platform.products.models import Offer, Product
 from hub_platform.products.selectors import product_for_organization
 from hub_platform.products.serializers import product_payload
@@ -39,12 +40,19 @@ def _offer_input(body: dict[str, object], *, current: Offer | None = None) -> Of
 
 
 class _ProductScopedView(APIView):
-    permission_classes = [IsManager]
+    permission_classes = [HasCapability]
+    required_capability = "products.manage"
 
     def _product(self, request: Request, product_id: int) -> Product:
-        return product_for_organization(
+        product = product_for_organization(
             organization_id=request.user.employee_profile.organization_id, product_id=product_id
         )
+        department_ids = accessible_department_ids(request.user, self.required_capability)
+        if department_ids is not None and not product.department_links.filter(
+            department_id__in=department_ids
+        ).exists():
+            raise Product.DoesNotExist
+        return product
 
     def _audit(self, request: Request, action: str, object_type: str, object_id: int) -> None:
         record_audit_event(

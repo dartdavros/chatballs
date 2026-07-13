@@ -2,51 +2,32 @@ from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
 from rest_framework.views import APIView
 
-from hub_platform.identity.audit import record_audit_event
-from hub_platform.identity.models import AuditResult
-from hub_platform.identity.permissions import is_manager, is_owner
+from hub_platform.identity.policy import ResourceScope, authorize, has_capability_any_scope
 
 
-class IsOwner(BasePermission):
-    """Allow only authenticated OWNER users; audit denials, as the legacy decorator did."""
+class HasCapability(BasePermission):
+    """DRF entry-point guard backed by the shared capability policy.
 
-    message = "Owner role required"
+    Views declare ``required_capability`` or a method keyed
+    ``required_capabilities`` mapping. Object/resource scope is still checked by the
+    view after loading the canonical resource.
+    """
 
-    def has_permission(self, request: Request, view: APIView) -> bool:
-        user = request.user
-        if not (user and user.is_authenticated):
-            return False
-        if is_owner(user):
-            return True
-        organization = getattr(getattr(user, "employee_profile", None), "organization", None)
-        record_audit_event(
-            action="identity.owner_permission_denied",
-            actor=user,
-            organization=organization,
-            result=AuditResult.DENIED,
-            request=request,
-        )
-        return False
-
-
-class IsManager(BasePermission):
-    """Обычные (не governance) capability уровня организации: OWNER и ADMIN
-    (ADR-HUB-0027 этап 2). EMPLOYEE отклоняется с аудитом отказа."""
-
-    message = "Owner or admin role required"
+    message = "Required capability is missing"
 
     def has_permission(self, request: Request, view: APIView) -> bool:
-        user = request.user
-        if not (user and user.is_authenticated):
+        capability = getattr(view, "required_capability", None)
+        by_method = getattr(view, "required_capabilities", {})
+        capability = by_method.get(request.method, capability)
+        if not capability:
             return False
-        if is_manager(user):
-            return True
-        organization = getattr(getattr(user, "employee_profile", None), "organization", None)
-        record_audit_event(
-            action="identity.manager_permission_denied",
-            actor=user,
-            organization=organization,
-            result=AuditResult.DENIED,
-            request=request,
-        )
-        return False
+        profile = getattr(request.user, "employee_profile", None)
+        if profile is None:
+            return False
+        if getattr(view, "require_organization_scope", False):
+            return authorize(
+                request.user,
+                capability,
+                ResourceScope(organization_id=profile.organization_id),
+            )
+        return has_capability_any_scope(request.user, capability)

@@ -11,6 +11,7 @@ import { SalesSidebar } from "./SalesSidebar";
 import { SupportSidebar } from "./SupportSidebar";
 import { ShellRouteContent } from "./ShellRouteContent";
 import { TopBar } from "./TopBar";
+import { canAccess } from "../auth/access";
 
 export function Shell({ route, setRoute, selectedEmployeeId, selectedProductId, selectedProductCode, selectedAgentId, selectedKnowledgeId, selectedConversationId, selectedClientId, selectedOrderId, openEmployeeRoute, openProductRoute, openAgentCreateRoute, openAgentRoute, openKnowledgeRoute, openConversationRoute, openClientRoute, openOrderRoute, user, data, reload, onUserUpdated, onLogout }: { route: RouteKey; setRoute: (route: RouteKey) => void; selectedEmployeeId: number | null; selectedProductId: number | null; selectedProductCode: string | null; selectedAgentId: number | null; selectedKnowledgeId: number | null; selectedConversationId: number | null; selectedClientId: number | null; selectedOrderId: number | null; openEmployeeRoute: (employeeId: number) => void; openProductRoute: (productId: number) => void; openAgentCreateRoute: (productCode: string | null) => void; openAgentRoute: (agentId: number) => void; openKnowledgeRoute: (knowledgeId: number) => void; openConversationRoute: (conversationId: number) => void; openClientRoute: (clientId: number) => void; openOrderRoute: (orderId: number) => void; user: SessionUser; data: AppData; reload: () => void; onUserUpdated: (user: SessionUser) => void; onLogout: () => void }) {
   const [agentName, setAgentName] = useState<string | null>(null);
@@ -94,11 +95,12 @@ export function Shell({ route, setRoute, selectedEmployeeId, selectedProductId, 
   // Подменю AI показываем только там, где оно есть в baseline.
   const isAiSection = route === "aiAgents" || route === "aiKnowledge" || route === "aiUsage";
   const isAiFullWidth = route === "aiAgentCreate";
-  // Сотрудник (EMPLOYEE) работает в пространстве своего отдела (SPEC-HUB-0004 §9 +
-  // §0010 §10): sales → sales-sidebar, support → support-sidebar. Compat-адаптер
-  // этапа 1 (ADR-HUB-0027): department по-прежнему определяет рабочее пространство.
-  const showSalesSidebar = isSalesWorkspace || (user.role === "EMPLOYEE" && user.department !== "support" && !isSupportWorkspace);
-  const showSupportSidebar = isSupportWorkspace || (user.role === "EMPLOYEE" && user.department === "support");
+  const showSalesSidebar = isSalesWorkspace || (
+    canAccess(user, "salesDialogs") && !canAccess(user, "command") && !isSupportWorkspace
+  );
+  const showSupportSidebar = isSupportWorkspace || (
+    canAccess(user, "supportDialogs") && !canAccess(user, "command") && !isSalesWorkspace
+  );
   return (
     <div className="hub-shell">
       {showSupportSidebar ? <SupportSidebar route={route} user={user} setRoute={setRoute} waitingCount={waitingCount} /> : showSalesSidebar ? <SalesSidebar route={route} user={user} setRoute={setRoute} waitingCount={waitingCount} /> : <Sidebar route={route} user={user} setRoute={setRoute} />}

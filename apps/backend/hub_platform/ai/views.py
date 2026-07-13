@@ -27,7 +27,7 @@ from hub_platform.ai.services import (
     update_agent,
     update_knowledge,
 )
-from hub_platform.api.permissions import IsManager
+from hub_platform.api.permissions import HasCapability
 from hub_platform.identity.audit import record_audit_event
 
 
@@ -63,7 +63,9 @@ def _validation_error(error: ValidationError) -> Response:
 
 
 class AIAgentListView(APIView):
-    permission_classes = [IsManager]
+    permission_classes = [HasCapability]
+    required_capabilities = {"GET": "ai.view", "POST": "ai.manage"}
+    require_organization_scope = True
 
     def get(self, request: Request) -> Response:
         agents = agents_for_organization(request.user.employee_profile.organization_id)
@@ -99,7 +101,9 @@ class AIAgentListView(APIView):
 
 
 class AIAgentDetailView(APIView):
-    permission_classes = [IsManager]
+    permission_classes = [HasCapability]
+    required_capability = "ai.view"
+    require_organization_scope = True
 
     def get(self, request: Request, agent_id: int) -> Response:
         try:
@@ -110,7 +114,9 @@ class AIAgentDetailView(APIView):
 
 
 class AIAgentUpdateView(APIView):
-    permission_classes = [IsManager]
+    permission_classes = [HasCapability]
+    required_capability = "ai.manage"
+    require_organization_scope = True
 
     def patch(self, request: Request, agent_id: int) -> Response:
         organization_id = request.user.employee_profile.organization_id
@@ -135,7 +141,9 @@ class AIAgentUpdateView(APIView):
 
 
 class _AIAgentStatusView(APIView):
-    permission_classes = [IsManager]
+    permission_classes = [HasCapability]
+    required_capability = "ai.manage"
+    require_organization_scope = True
     target_active: bool
 
     def post(self, request: Request, agent_id: int) -> Response:
@@ -178,7 +186,14 @@ def _knowledge_input(body: dict[str, object], *, current: Knowledge | None = Non
 
 
 class _KnowledgeBaseView(APIView):
-    permission_classes = [IsManager]
+    permission_classes = [HasCapability]
+    required_capabilities = {
+        "GET": "ai.view",
+        "POST": "ai.manage",
+        "PATCH": "ai.manage",
+        "DELETE": "ai.manage",
+    }
+    require_organization_scope = True
 
     def _org(self, request: Request):
         return request.user.employee_profile.organization

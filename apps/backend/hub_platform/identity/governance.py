@@ -122,6 +122,7 @@ def employee_management_flags(
         "canUpdateProfile": can_manage_employee(actor, target, EmployeeAction.UPDATE_PROFILE),
         "canChangeRole": can_manage_employee(actor, target, EmployeeAction.CHANGE_ROLE),
         "canChangePlacement": can_manage_employee(actor, target, EmployeeAction.CHANGE_PLACEMENT),
+        "canChangeAccess": can_manage_employee(actor, target, EmployeeAction.CHANGE_ACCESS),
         "canBlock": can_manage_employee(actor, target, EmployeeAction.BLOCK),
         "canUnblock": can_manage_employee(actor, target, EmployeeAction.UNBLOCK),
         "canResetPassword": can_manage_employee(actor, target, EmployeeAction.RESET_PASSWORD),
