@@ -14,6 +14,12 @@ RUN pip install --no-cache-dir -r /app/apps/backend/requirements.txt
 COPY apps/backend /app/apps/backend
 COPY content /app/content
 
+# collectstatic в образе (ADR-HUB-0028): STATIC_ROOT испечён, runtime-шаг не нужен.
+# Build-time secret нужен только чтобы settings загрузились в production-режиме;
+# collectstatic не обращается к БД/Redis. whitenoise раздаёт static в runtime.
+RUN cd apps/backend && HUB_SECRET_KEY=collectstatic-build HUB_DEBUG=false HUB_ENV=production \
+    python manage.py collectstatic --noinput
+
 RUN chown -R hub:hub /app
 
 WORKDIR /app/apps/backend

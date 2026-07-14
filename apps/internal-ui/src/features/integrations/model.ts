@@ -55,9 +55,8 @@ export type ChannelOption = { id: number; code: string; name: string };
 export const fetchChannels = () => api<{ items: ChannelOption[] }>("/api/v1/channels/").then((r) => r.items);
 
 // Публичный домен Hub для встраивания Web-виджета (SPEC-HUB-0003 §3).
-// Подставляется в src сниппета: <hub>/chat-widget.js?data-channel=<code>.
-const PUBLIC_HUB_URL = (import.meta.env.VITE_PUBLIC_HUB_URL ?? "").replace(/\/+$/, "");
-
+// Один frontend-образ работает на любом домене (ADR-HUB-0028 §runtime frontend):
+// сниппет генерируется от текущего origin в рантайме, а не от build-time аргумента.
 export function webWidgetSnippet(channelCode: string): string {
-  return `<script src="${PUBLIC_HUB_URL}/chat-widget.js" data-channel="${channelCode}" async></script>`;
+  return `<script src="${window.location.origin}/chat-widget.js" data-channel="${channelCode}" async></script>`;
 }

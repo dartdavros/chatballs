@@ -1,0 +1,23 @@
+# Caddyfile — единый HTTP/HTTPS public boundary CustoCRM (ADR-HUB-0028 §gateway).
+# Подставляется в release bundle и монтируется в контейнер gateway.
+# Caddy: TLS termination + ACME, HTTP->HTTPS redirect, WebSocket upgrade (native).
+# Маршрутизация публичных путей делегирована frontend-контейнеру (internal nginx,
+# deploy/nginx/frontend.production.conf) — Caddy только терминирует TLS и проксирует
+# всё на frontend:80. Coturn не проксируется через Caddy (отдельная boundary, profile calls).
+
+{
+	email {$CUSTOCRM_ACME_EMAIL:}
+	# Caddy admin API не публикуется наружу (default localhost:2019).
+}
+
+# Домен экземпляра берётся из instance .env (CUSTOCRM_DOMAIN).
+{$CUSTOCRM_DOMAIN} {
+	encode gzip zstd
+
+	reverse_proxy frontend:80 {
+		header_up Host {host}
+		header_up X-Real-IP {remote_host}
+		header_up X-Forwarded-For {remote_host}
+		header_up X-Forwarded-Proto {scheme}
+	}
+}

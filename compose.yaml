@@ -1,19 +1,27 @@
-x-hub-env: &hub-env
-  - path: .env.example
-  - path: .env
-    required: false
+# Канонический production-манифест CustoCRM (ADR-HUB-0028).
+# Один Compose для: box-установки клиента, hub.edevs.tech, staging, smoke.
+# Локальная разработка — через override compose.dev.yaml; этот файл не содержит
+# dev source mounts, dev-команд и host-портов (кроме public 80/443 у gateway).
+#
+# Image references берутся из release.env (immutable digest refs, см. ADR §release).
+# В dev они не задаются — срабатывают безопасные defaults, а override подменяет
+# image на build.
+#
+# Запуск production/box:
+#   docker compose --env-file .env --env-file release.env up -d
+# Запуск разработки:
+#   docker compose -f compose.yaml -f compose.dev.yaml --env-file .env.example --env-file .env up
 
 services:
   postgres:
-    image: pgvector/pgvector:pg16
+    image: ${CUSTOCRM_POSTGRES_IMAGE:-pgvector/pgvector:pg16}
+    restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-edevs_hub}
-      POSTGRES_USER: ${POSTGRES_USER:-edevs_hub}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-edevs_hub}
-    ports:
-      - "${POSTGRES_HOST_PORT:-5432}:5432"
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is required}
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ${CUSTOCRM_INSTANCE_DIR:-.}/data/postgres:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
@@ -21,29 +29,50 @@ services:
       retries: 10
 
   redis:
-    image: redis:7-alpine
-    ports:
-      - "${REDIS_HOST_PORT:-6379}:6379"
+    image: ${CUSTOCRM_REDIS_IMAGE:-redis:7-alpine}
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - ${CUSTOCRM_INSTANCE_DIR:-.}/data/redis:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 10
+      start_period: 20s
+
+  # One-shot init: миграции (ADR-HUB-0028 §one-shot init). Не запускает Edevs seed,
+  # не создаёт OWNER, не трогает demo — это отдельные ответственности (этап 2).
+  # collectstatic испечён в backend-образ, здесь не вызывается.
+  init:
+    image: ${CUSTOCRM_BACKEND_IMAGE:-custocrm-backend:dev}
+    env_file:
+      - ${CUSTOCRM_INSTANCE_DIR:-.}/.env
+    command: ["python", "manage.py", "migrate", "--noinput"]
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   backend:
-    build:
-      context: .
-      dockerfile: apps/backend/Dockerfile
-    env_file: *hub-env
+    image: ${CUSTOCRM_BACKEND_IMAGE:-custocrm-backend:dev}
+    restart: unless-stopped
+    env_file:
+      - ${CUSTOCRM_INSTANCE_DIR:-.}/.env
     command: >
-      sh -c "python manage.py collectstatic --noinput &&
-             python manage.py migrate &&
-             uvicorn hub_backend.asgi:application --host 0.0.0.0 --port 8000"
-    ports:
-      - "${BACKEND_PORT:-8010}:8000"
+      sh -c "gunicorn hub_backend.asgi:application
+      --worker-class uvicorn.workers.UvicornWorker
+      --bind 0.0.0.0:8000
+      --workers $${HUB_GUNICORN_WORKERS:-3}
+      --timeout $${HUB_GUNICORN_TIMEOUT:-60}"
     volumes:
-      - ./apps/backend:/app/apps/backend
+      # Файловые вложения знаний (ADR-HUB-0023).
+      - ${CUSTOCRM_INSTANCE_DIR:-.}/data/media:/app/apps/backend/media
     depends_on:
+      init:
+        condition: service_completed_successfully
       postgres:
         condition: service_healthy
       redis:
@@ -54,65 +83,102 @@ services:
           "CMD",
           "python",
           "-c",
-          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health/live/', timeout=3)",
+          "import os, urllib.request; req = urllib.request.Request('http://127.0.0.1:8000/api/v1/health/live/', headers={'Host': os.environ.get('HUB_HEALTHCHECK_HOST', 'localhost'), 'X-Forwarded-Proto': 'https'}); urllib.request.urlopen(req, timeout=3)",
         ]
       interval: 10s
       timeout: 5s
       retries: 10
+      start_period: 20s
 
   worker:
-    build:
-      context: .
-      dockerfile: apps/backend/Dockerfile
-    env_file: *hub-env
-    command: python manage.py run_worker
+    image: ${CUSTOCRM_BACKEND_IMAGE:-custocrm-backend:dev}
+    restart: unless-stopped
+    env_file:
+      - ${CUSTOCRM_INSTANCE_DIR:-.}/.env
+    command: ["python", "manage.py", "run_worker"]
     volumes:
-      - ./apps/backend:/app/apps/backend
+      - ${CUSTOCRM_INSTANCE_DIR:-.}/data/media:/app/apps/backend/media
     depends_on:
       backend:
         condition: service_healthy
 
-  internal-ui:
-    build:
-      context: .
-      dockerfile: apps/internal-ui/Dockerfile
-    env_file: *hub-env
-    command: npm run dev -- --host 0.0.0.0 --port 5173
-    ports:
-      - "5173:5173"
-    volumes:
-      - ./apps/internal-ui:/app/apps/internal-ui
-      - ./packages:/app/packages
-      - /app/node_modules
-      - /app/apps/internal-ui/node_modules
-
-  web-chat:
-    build:
-      context: .
-      dockerfile: apps/web-chat/Dockerfile
-    env_file: *hub-env
-    command: npm run dev -- --host 0.0.0.0 --port 5175
-    ports:
-      - "5175:5175"
-    volumes:
-      - ./apps/web-chat:/app/apps/web-chat
-      - ./packages:/app/packages
-      - /app/node_modules
-      - /app/apps/web-chat/node_modules
-
-  proxy:
-    image: nginx:1.27-alpine
-    ports:
-      - "80:80"
-    volumes:
-      - ./deploy/nginx/local.conf:/etc/nginx/conf.d/default.conf:ro
+  # Frontend: один nginx-образ со static-сборкой internal-ui и web-chat,
+  # внутренняя маршрутизация (/api/, /ws/, /admin/, /static/, /chat-widget.js,
+  # /chat/, /calls/) — в deploy/nginx/frontend.production.conf. Не публикует
+  # host-порт: public boundary — gateway (Caddy).
+  frontend:
+    image: ${CUSTOCRM_FRONTEND_IMAGE:-custocrm-frontend:dev}
+    restart: unless-stopped
     depends_on:
       backend:
         condition: service_healthy
-      internal-ui:
-        condition: service_started
-      web-chat:
-        condition: service_started
 
-volumes:
-  postgres_data:
+  # Gateway: единственный HTTP/HTTPS public boundary (ADR-HUB-0028 §gateway).
+  # Caddy: TLS termination, ACME, HTTP->HTTPS redirect, WebSocket upgrade (native).
+  # Маршрутизация публичных путей делегируется frontend (internal). Coturn не
+  # проксируется через Caddy — отдельная network boundary (profile calls).
+  gateway:
+    image: ${CUSTOCRM_GATEWAY_IMAGE:-caddy:2.8.4}
+    restart: unless-stopped
+    ports:
+      - "${CUSTOCRM_WEB_LISTENING_IP:-0.0.0.0}:80:80"
+      - "${CUSTOCRM_WEB_LISTENING_IP:-0.0.0.0}:443:443"
+    volumes:
+      - ${CUSTOCRM_RELEASE_DIR:-.}/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ${CUSTOCRM_INSTANCE_DIR:-.}/data/caddy:/data
+      - ${CUSTOCRM_INSTANCE_DIR:-.}/data/caddy-config:/config
+    depends_on:
+      frontend:
+        condition: service_started
+      backend:
+        condition: service_healthy
+
+  # Coturn — медиа-relay для TURN fallback (SPEC-HUB-0013 §11).
+  # Опциональный profile `calls` (ADR-HUB-0028): включается через COMPOSE_PROFILES=calls.
+  # Host networking: relay использует широкий UDP-диапазон и реальный внешний IP,
+  # публикуется напрямую и не проходит через HTTP reverse proxy. credentials
+  # выдаёт backend по общему HUB_CALL_TURN_SECRET (static-auth-secret).
+  coturn:
+    profiles: ["calls"]
+    image: ${CUSTOCRM_COTURN_IMAGE:-coturn/coturn:4.6}
+    restart: unless-stopped
+    network_mode: host
+    command:
+      - -n
+      - --log-file=stdout
+      - --no-cli
+      - --fingerprint
+      - --use-auth-secret
+      - --static-auth-secret=${HUB_CALL_TURN_SECRET}
+      - --realm=${HUB_CALL_TURN_REALM}
+      # Весь TURN живёт на выделенном публичном IP (отдельный порт/NIC), Caddy — на
+      # основном IP. Это освобождает 443 под TURN-over-TLS без конфликта с web.
+      - --listening-ip=${HUB_TURN_LISTENING_IP}
+      - --relay-ip=${HUB_TURN_EXTERNAL_IP}
+      - --external-ip=${HUB_TURN_EXTERNAL_IP}
+      - --listening-port=${HUB_TURN_LISTENING_PORT:-3478}
+      # TURN-over-TLS на 443: проходит через VPN/строгие сети, где UDP и 3478 режут.
+      - --tls-listening-port=${HUB_TURN_TLS_PORT:-443}
+      - --cert=/etc/coturn/certs/fullchain.pem
+      - --pkey=/etc/coturn/certs/privkey.pem
+      - --min-port=${HUB_TURN_MIN_PORT:-49160}
+      - --max-port=${HUB_TURN_MAX_PORT:-49200}
+      # Запрет анонимного и внутрисетевого relay (SPEC §11: без пересечения с хостом).
+      - --no-multicast-peers
+      - --no-tcp-relay
+      - --denied-peer-ip=10.0.0.0-10.255.255.255
+      - --denied-peer-ip=172.16.0.0-172.31.255.255
+      - --denied-peer-ip=192.168.0.0-192.168.255.255
+      - --no-tlsv1
+      - --no-tlsv1_1
+    volumes:
+      # LE-сертификат TURN-хоста (turns:), скопированный под uid coturn (nobody)
+      # renewal deploy-hook'ом. См. docs по развёртыванию TURN-over-TLS.
+      - ${CUSTOCRM_INSTANCE_DIR:-.}/data/coturn-certs:/etc/coturn/certs:ro
+    healthcheck:
+      # Allocation smoke: STUN binding к собственному listener на выделенном IP.
+      test: ["CMD", "turnutils_stunclient", "-p", "${HUB_TURN_LISTENING_PORT:-3478}", "${HUB_TURN_LISTENING_IP}"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 15s

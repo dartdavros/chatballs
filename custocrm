@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+# custocrm — единый deployment entrypoint CustoCRM (ADR-HUB-0028 §CLI).
+# Команды этапа 1: doctor, deploy, status, logs.
+# (install/setup-url/update/backup/restore/rollback — этап 2.)
+#
+# Не требует Python/Node на host. POSIX bash + flock. Запускается из instance dir;
+# release-файлы (compose.yaml, Caddyfile, release.env) лежат в release dir и
+# проектируются в instance через symlink (см. lib/compose.sh).
+set -euo pipefail
+
+CUSTOCRM_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+: "${CUSTOCRM_RELEASE_DIR:=$CUSTOCRM_SCRIPT_DIR}"
+: "${CUSTOCRM_INSTANCE_DIR:=$PWD}"
+export CUSTOCRM_RELEASE_DIR CUSTOCRM_INSTANCE_DIR
+CLI_LIB_DIR="$CUSTOCRM_RELEASE_DIR/deploy/cli/lib"
+
+# shellcheck source=deploy/cli/lib/common.sh
+. "$CLI_LIB_DIR/common.sh"
+# shellcheck source=deploy/cli/lib/compose.sh
+. "$CLI_LIB_DIR/compose.sh"
+# shellcheck source=deploy/cli/lib/doctor.sh
+. "$CLI_LIB_DIR/doctor.sh"
+# shellcheck source=deploy/cli/lib/deploy.sh
+. "$CLI_LIB_DIR/deploy.sh"
+# shellcheck source=deploy/cli/lib/status.sh
+. "$CLI_LIB_DIR/status.sh"
+# shellcheck source=deploy/cli/lib/logs.sh
+. "$CLI_LIB_DIR/logs.sh"
+
+usage() {
+  cat >&2 <<'USAGE'
+CustoCRM deployment CLI (stage 1).
+
+Usage: custocrm <command> [options]
+
+Commands:
+  doctor    Pre-flight checks (no container starts, no data changes).
+  deploy    Apply the active release (canonical workflow).
+  status    Show versions, services, profiles.
+  logs [service]  Tail compose logs (optional service filter).
+
+Global options:
+  --non-interactive   Suppress prompts (CI). Destructive ops require this or a tty.
+  --json              Machine-readable output (status/doctor errors).
+
+Environment:
+  CUSTOCRM_RELEASE_DIR   Release bundle dir (default: script dir).
+  CUSTOCRM_INSTANCE_DIR   Instance dir with .env and data/ (default: $PWD).
+USAGE
+}
+
+cmd="${1:-}"
+[[ -n "$cmd" ]] || { usage; exit 2; }
+shift || true
+
+# Разбор глобальных флагов: --non-interactive/--json могут стоять до или после команды.
+rest=()
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --non-interactive) CUSTOCRM_NON_INTERACTIVE=1; shift ;;
+    --json) CUSTOCRM_JSON=1; shift ;;
+    *) rest+=("$1"); shift ;;
+  esac
+done
+set -- "${rest[@]}"
+
+case "$cmd" in
+  doctor) cmd_doctor "$@" ;;
+  deploy) cmd_deploy "$@" ;;
+  status) cmd_status "$@" ;;
+  logs)   cmd_logs "$@" ;;
+  -h|--help|help) usage; exit 0 ;;
+  *) log_err "unknown command: $cmd"; usage; exit 2 ;;
+esac

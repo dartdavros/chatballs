@@ -1,8 +1,8 @@
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
+  // Dev-only: empty в production -> API/realtime на same-origin (ADR-HUB-0028 §10).
   readonly VITE_API_BASE_URL?: string;
-  readonly VITE_PUBLIC_HUB_URL?: string;
 }
 
 interface ImportMeta {

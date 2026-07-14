@@ -1,0 +1,95 @@
+# Override для локальной разработки (ADR-HUB-0028 §compose.dev).
+# Применяется поверх canonical compose.yaml:
+#   docker compose -f compose.yaml -f compose.dev.yaml --env-file .env.example --env-file .env up
+# Переопределяет image на build, dev-команды, bind mounts и host-порты.
+# Не определяет отдельную production-топологию.
+
+services:
+  postgres:
+    ports:
+      - "${POSTGRES_HOST_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    ports:
+      - "${REDIS_HOST_PORT:-6379}:6379"
+
+  # Dev: migrate через init, без collectstatic (испечён только в prod-образе).
+  init:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+
+  backend:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    command: >
+      sh -c "python manage.py migrate --noinput &&
+             uvicorn hub_backend.asgi:application --host 0.0.0.0 --port 8000 --reload"
+    ports:
+      - "${BACKEND_PORT:-8010}:8000"
+    volumes:
+      - ./apps/backend:/app/apps/backend
+    depends_on:
+      init:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    volumes:
+      - ./apps/backend:/app/apps/backend
+
+  # Dev: frontend-сервис превращается в Vite dev-сервер internal-ui (HMR).
+  frontend:
+    build:
+      context: .
+      dockerfile: apps/internal-ui/Dockerfile
+    command: npm run dev -- --host 0.0.0.0 --port 5173
+    ports:
+      - "${INTERNAL_UI_PORT:-5173}:5173"
+    volumes:
+      - ./apps/internal-ui:/app/apps/internal-ui
+      - ./packages:/app/packages
+      - /app/node_modules
+      - /app/apps/internal-ui/node_modules
+
+  # Dev-only: web-chat как отдельный Vite-сервер (в prod встроен в frontend-образ).
+  web-chat:
+    build:
+      context: .
+      dockerfile: apps/web-chat/Dockerfile
+    command: npm run dev -- --host 0.0.0.0 --port 5175
+    ports:
+      - "${WEB_CHAT_PORT:-5175}:5175"
+    volumes:
+      - ./apps/web-chat:/app/apps/web-chat
+      - ./packages:/app/packages
+      - /app/node_modules
+      - /app/apps/web-chat/node_modules
+
+  # Dev: gateway — nginx с local.conf вместо Caddy (та же маршрутизация, HMR-friendly).
+  gateway:
+    image: nginx:1.27-alpine
+    command: ["nginx", "-g", "daemon off;"]
+    ports:
+      - "80:80"
+    volumes:
+      - ./deploy/nginx/local.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_started
+      web-chat:
+        condition: service_started
+
+volumes:
+  postgres_data:

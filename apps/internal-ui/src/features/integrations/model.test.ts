@@ -1,34 +1,42 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 describe("webWidgetSnippet", () => {
   beforeEach(() => {
     vi.resetModules();
   });
 
-  it("builds the embed snippet from the public hub url and channel code", async () => {
-    vi.stubEnv("VITE_PUBLIC_HUB_URL", "https://hub.edevs.tech");
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("builds the embed snippet from the current origin and channel code", async () => {
+    vi.stubGlobal("window", { location: { origin: "https://hub.example.com" } });
     const { webWidgetSnippet } = await import("./model");
 
     expect(webWidgetSnippet("edeves")).toBe(
-      `<script src="https://hub.edevs.tech/chat-widget.js" data-channel="edeves" async></script>`,
+      `<script src="https://hub.example.com/chat-widget.js" data-channel="edeves" async></script>`,
     );
   });
 
-  it("strips trailing slashes from the hub url", async () => {
-    vi.stubEnv("VITE_PUBLIC_HUB_URL", "https://hub.edevs.tech/");
+  it("follows whatever origin serves the page (one image, any domain)", async () => {
+    vi.stubGlobal("window", { location: { origin: "https://acme.test" } });
     const { webWidgetSnippet } = await import("./model");
 
     expect(webWidgetSnippet("foxray")).toBe(
-      `<script src="https://hub.edevs.tech/chat-widget.js" data-channel="foxray" async></script>`,
+      `<script src="https://acme.test/chat-widget.js" data-channel="foxray" async></script>`,
     );
   });
 
-  it("falls back to a relative src when the hub url is empty", async () => {
-    vi.stubEnv("VITE_PUBLIC_HUB_URL", "");
+  it("uses the origin verbatim with a custom port", async () => {
+    vi.stubGlobal("window", { location: { origin: "https://hub.example.com:8443" } });
     const { webWidgetSnippet } = await import("./model");
 
     expect(webWidgetSnippet("edeves")).toBe(
-      `<script src="/chat-widget.js" data-channel="edeves" async></script>`,
+      `<script src="https://hub.example.com:8443/chat-widget.js" data-channel="edeves" async></script>`,
     );
   });
 });
+
+// Гарантия отсутствия build-time привязки: сниппет выводится от текущего origin в
+// рантайме, поэтому один frontend-образ работает на любом домене без пересборки
+// (ADR-HUB-0028 §10).
