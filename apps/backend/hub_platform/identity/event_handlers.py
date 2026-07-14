@@ -9,11 +9,12 @@ PASSWORD_RESET_REQUESTED = "identity.password_reset_requested"
 def _active_user(payload: dict) -> HumanUser | None:
     user = (
         HumanUser.objects.filter(pk=payload.get("userId"), is_active=True)
-        .select_related("employee_profile")
+        .prefetch_related("memberships")
         .first()
     )
-    profile = getattr(user, "employee_profile", None) if user is not None else None
-    return user if user is not None and profile is not None and not profile.is_blocked else None
+    if user is None:
+        return None
+    return user if user.memberships.filter(blocked_at__isnull=True).exists() else None
 
 
 @register(INITIAL_ACCESS_REQUESTED)

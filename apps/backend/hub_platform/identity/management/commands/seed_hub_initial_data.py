@@ -70,7 +70,7 @@ def _seed_core(*, owner_email: str, owner_password: str, owner_name: str) -> Cor
     owner = None
     created_owner = False
     existing_owner = (
-        organization.employees.filter(role=EmployeeRole.OWNER).select_related("user").first()
+        organization.memberships.filter(role=EmployeeRole.OWNER).select_related("user").first()
     )
     if owner_email:
         normalized_email = HumanUser.objects.normalize_email(owner_email)
@@ -96,8 +96,8 @@ def _seed_core(*, owner_email: str, owner_password: str, owner_name: str) -> Cor
             owner.save(update_fields=changed_fields)
         EmployeeProfile.objects.update_or_create(
             user=owner,
+            organization=organization,
             defaults={
-                "organization": organization,
                 "role": EmployeeRole.OWNER,
                 "position_title": "Владелец",
                 # OWNER всегда на уровне компании (ADR-HUB-0027).
@@ -199,7 +199,7 @@ class Command(BaseCommand):
         if (
             owner_email
             and not owner_password
-            and not Organization.objects.filter(employees__role=EmployeeRole.OWNER).exists()
+            and not Organization.objects.filter(memberships__role=EmployeeRole.OWNER).exists()
         ):
             raise CommandError("HUB_SEED_OWNER_PASSWORD is required when creating the first OWNER.")
 

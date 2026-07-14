@@ -206,7 +206,6 @@ class AccessManagementApiTests(TestCase):
             {
                 "email": "new@access.test",
                 "fullName": "New Employee",
-                "temporaryPassword": "Temporary-123",
                 "positionTitle": "Specialist",
                 "role": "EMPLOYEE",
                 "department": "sales",
@@ -240,7 +239,7 @@ class AccessManagementApiTests(TestCase):
         self.assertEqual(response.status_code, 201)
         created = HumanUser.objects.get(email="invited@access.test")
         self.assertFalse(created.has_usable_password())
-        self.assertTrue(created.employee_profile.must_change_password)
+        self.assertTrue(created.must_change_password)
         self.assertTrue(
             OutboxEvent.objects.filter(
                 aggregate_id=str(created.id),

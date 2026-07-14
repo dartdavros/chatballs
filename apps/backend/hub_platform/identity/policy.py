@@ -10,7 +10,11 @@ from hub_platform.identity.capabilities import (
     ScopeType,
     capability_spec,
 )
-from hub_platform.identity.models import EmployeeAccessAssignment, EmployeeProfile, EmployeeRole
+from hub_platform.identity.models import (
+    EmployeeAccessAssignment,
+    EmployeeRole,
+    OrganizationMembership,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -19,16 +23,30 @@ class ResourceScope:
     department_id: int | None = None
 
 
-def _active_profile(actor) -> EmployeeProfile | None:
+def _active_membership(actor) -> OrganizationMembership | None:
+    """Resolve the authorization actor without guessing between organizations.
+
+    C02 services can pass a membership directly. Legacy user-based routes remain
+    available only while the user has exactly one membership and are removed in C03.
+    """
+
+    if isinstance(actor, OrganizationMembership):
+        if not actor.user.is_active or actor.is_blocked:
+            return None
+        return actor
     if not getattr(actor, "is_authenticated", False) or not getattr(actor, "is_active", False):
         return None
-    profile = getattr(actor, "employee_profile", None)
-    if profile is None or profile.is_blocked:
+    try:
+        membership = actor.memberships.get()
+    except (
+        OrganizationMembership.DoesNotExist,
+        OrganizationMembership.MultipleObjectsReturned,
+    ):
         return None
-    return profile
+    return None if membership.is_blocked else membership
 
 
-def _assignments(profile: EmployeeProfile) -> QuerySet[EmployeeAccessAssignment]:
+def _assignments(profile: OrganizationMembership) -> QuerySet[EmployeeAccessAssignment]:
     return (
         EmployeeAccessAssignment.objects.filter(
             employee=profile,
@@ -47,7 +65,7 @@ def authorize(actor, capability: str, resource_scope: ResourceScope) -> bool:
     except ValueError:
         return False
 
-    profile = _active_profile(actor)
+    profile = _active_membership(actor)
     if profile is None or profile.organization_id != resource_scope.organization_id:
         return False
     if profile.role == EmployeeRole.OWNER:
@@ -74,7 +92,7 @@ def authorize(actor, capability: str, resource_scope: ResourceScope) -> bool:
 
 
 def has_capability_any_scope(actor, capability: str) -> bool:
-    profile = _active_profile(actor)
+    profile = _active_membership(actor)
     if profile is None:
         return False
     if profile.role == EmployeeRole.OWNER:
@@ -89,13 +107,13 @@ def has_capability_any_scope(actor, capability: str) -> bool:
 
 
 def can_administer_access(actor) -> bool:
-    profile = _active_profile(actor)
+    profile = _active_membership(actor)
     return profile is not None and profile.role in {EmployeeRole.OWNER, EmployeeRole.ADMIN}
 
 
 def accessible_department_ids(actor, capability: str) -> set[int] | None:
     """None means all departments in the actor organization; set() means no access."""
-    profile = _active_profile(actor)
+    profile = _active_membership(actor)
     if profile is None:
         return set()
     if profile.role == EmployeeRole.OWNER:
@@ -117,7 +135,7 @@ def accessible_department_ids(actor, capability: str) -> set[int] | None:
 
 
 def get_effective_access(actor) -> dict[str, object]:
-    profile = _active_profile(actor)
+    profile = _active_membership(actor)
     if profile is None:
         return {"capabilities": [], "accessScopes": []}
 

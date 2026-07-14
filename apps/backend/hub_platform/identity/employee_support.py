@@ -1,16 +1,13 @@
-import secrets
-import string
-
 from rest_framework.request import Request
 
 from hub_platform.identity.governance import employee_management_flags
-from hub_platform.identity.models import AuditEvent, EmployeeProfile
+from hub_platform.identity.models import AuditEvent, OrganizationMembership
 from hub_platform.identity.sessions import count_user_sessions
 
 
 def employee_payload(
-    profile: EmployeeProfile,
-    actor: EmployeeProfile | None = None,
+    profile: OrganizationMembership,
+    actor: OrganizationMembership | None = None,
     *,
     include_detail: bool = False,
 ) -> dict[str, object]:
@@ -27,9 +24,9 @@ def employee_payload(
         "lastLogin": profile.user.last_login.isoformat() if profile.user.last_login else None,
         "isActive": profile.user.is_active,
         "isBlocked": profile.is_blocked,
-        "mustChangePassword": profile.must_change_password,
+        "mustChangePassword": profile.user.must_change_password,
         "totpRequired": profile.totp_required,
-        "totpEnabled": profile.totp_enabled,
+        "totpEnabled": profile.user.totp_enabled,
         "accessAssignments": [
             {
                 "id": assignment.id,
@@ -71,18 +68,13 @@ def employee_payload(
     return payload
 
 
-def get_owned_profile(request: Request, user_id: int) -> EmployeeProfile | None:
+def get_owned_profile(request: Request, user_id: int) -> OrganizationMembership | None:
     owner_profile = request.user.employee_profile
     try:
         return (
-            EmployeeProfile.objects.select_related("user", "primary_department")
+            OrganizationMembership.objects.select_related("user", "primary_department")
             .prefetch_related("access_assignments__access_profile__capability_links")
             .get(user_id=user_id, organization=owner_profile.organization)
         )
-    except EmployeeProfile.DoesNotExist:
+    except OrganizationMembership.DoesNotExist:
         return None
-
-
-def temporary_password() -> str:
-    alphabet = string.ascii_letters + string.digits
-    return "Temp-" + "".join(secrets.choice(alphabet) for _ in range(14)) + "!"

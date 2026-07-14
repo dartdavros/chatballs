@@ -4,9 +4,10 @@ from django.contrib.auth.admin import UserAdmin
 from hub_platform.identity.models import (
     AuditEvent,
     Department,
-    EmployeeProfile,
     HumanUser,
     Organization,
+    OrganizationInvitation,
+    OrganizationMembership,
 )
 
 
@@ -45,8 +46,8 @@ class DepartmentAdmin(admin.ModelAdmin):
     search_fields = ["code", "name"]
 
 
-@admin.register(EmployeeProfile)
-class EmployeeProfileAdmin(admin.ModelAdmin):
+@admin.register(OrganizationMembership)
+class OrganizationMembershipAdmin(admin.ModelAdmin):
     list_display = [
         "user",
         "organization",
@@ -57,8 +58,32 @@ class EmployeeProfileAdmin(admin.ModelAdmin):
         "totp_required",
         "blocked_at",
     ]
-    list_filter = ["organization", "role", "primary_department", "must_change_password", "totp_required"]
+    list_filter = [
+        "organization",
+        "role",
+        "primary_department",
+        "user__must_change_password",
+        "totp_required",
+    ]
     search_fields = ["user__email", "user__full_name"]
+
+    @admin.display(boolean=True, ordering="user__must_change_password")
+    def must_change_password(self, membership: OrganizationMembership) -> bool:
+        return membership.user.must_change_password
+
+
+@admin.register(OrganizationInvitation)
+class OrganizationInvitationAdmin(admin.ModelAdmin):
+    list_display = ["email", "organization", "role", "expires_at", "accepted_at", "revoked_at"]
+    list_filter = ["organization", "role"]
+    search_fields = ["email", "organization__name"]
+    readonly_fields = ["token_hash", "created_at", "accepted_at", "revoked_at"]
+
+    def has_add_permission(self, request) -> bool:  # noqa: ANN001
+        return False
+
+    def has_delete_permission(self, request, obj=None) -> bool:  # noqa: ANN001
+        return False
 
 
 @admin.register(AuditEvent)

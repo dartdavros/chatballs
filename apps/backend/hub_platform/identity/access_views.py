@@ -25,7 +25,6 @@ from hub_platform.identity.models import (
     EmployeeProfile,
 )
 from hub_platform.identity.policy import can_administer_access
-from hub_platform.identity.sessions import revoke_user_sessions
 
 
 def _manager_required(request: Request) -> Response | None:
@@ -136,11 +135,6 @@ class AccessProfileDetailView(APIView):
                 {"detail": "Profile capabilities conflict with active assignment scopes"},
                 status=409,
             )
-        affected_user_ids = list(
-            profile.assignments.filter(revoked_at__isnull=True).values_list(
-                "employee__user_id", flat=True
-            )
-        )
         profile.name = str(request.data.get("name", profile.name)).strip()
         if not profile.name:
             return Response({"detail": "Access profile name is required"}, status=400)
@@ -166,8 +160,6 @@ class AccessProfileDetailView(APIView):
             payload={"capabilities": codes},
             request=request,
         )
-        for user_id in affected_user_ids:
-            revoke_user_sessions(user_id)
         return Response({"profile": profile_payload(profile)})
 
     def delete(self, request: Request, profile_id: int) -> Response:
@@ -220,7 +212,6 @@ class EmployeeAccessAssignmentView(APIView):
             payload={"employeeId": target.user_id, "scopeType": assignment.scope_type},
             request=request,
         )
-        revoke_user_sessions(target.user_id)
         return Response({"assignment": assignment_payload(assignment)}, status=201)
 
 
@@ -251,5 +242,4 @@ class EmployeeAccessAssignmentRevokeView(APIView):
             object_id=str(assignment.id),
             request=request,
         )
-        revoke_user_sessions(assignment.employee.user_id)
         return Response({"assignment": assignment_payload(assignment)})

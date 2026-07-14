@@ -1,12 +1,15 @@
 from rest_framework.request import Request
 
+from hub_platform.identity.membership_context import single_membership_for_user
 from hub_platform.identity.models import HumanUser
 from hub_platform.identity.policy import get_effective_access
 from hub_platform.identity.sessions import revoke_user_sessions
 
 
 def _user_payload(user: HumanUser) -> dict[str, object]:
-    profile = user.employee_profile
+    profile = single_membership_for_user(user)
+    if profile is None:
+        raise ValueError("An explicit organization context is required")
     payload = {
         "id": user.id,
         "email": user.email,
@@ -16,16 +19,18 @@ def _user_payload(user: HumanUser) -> dict[str, object]:
         "organizationName": profile.organization.name,
         "organization": profile.organization.slug,
         "department": profile.primary_department.code if profile.primary_department else None,
-        "mustChangePassword": profile.must_change_password,
+        "mustChangePassword": user.must_change_password,
         "totpRequired": profile.totp_required,
-        "totpEnabled": profile.totp_enabled,
+        "totpEnabled": user.totp_enabled,
     }
-    payload.update(get_effective_access(user))
+    payload.update(get_effective_access(profile))
     return payload
 
 
 def _challenge_payload(user: HumanUser) -> dict[str, object]:
-    profile = user.employee_profile
+    profile = single_membership_for_user(user)
+    if profile is None:
+        raise ValueError("An explicit organization context is required")
     return {
         "email": user.email,
         "fullName": user.full_name,

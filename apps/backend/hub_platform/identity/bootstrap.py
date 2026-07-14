@@ -68,8 +68,8 @@ def bootstrap_edevs_owner(*, email: str, password: str, full_name: str = "") -> 
 
     owner_profile, _ = EmployeeProfile.objects.get_or_create(
         user=owner,
+        organization=organization,
         defaults={
-            "organization": organization,
             "role": EmployeeRole.OWNER,
             "position_title": "Владелец",
             # OWNER всегда на уровне компании (ADR-HUB-0027): без основного отдела.
@@ -92,8 +92,8 @@ def bootstrap_edevs_owner(*, email: str, password: str, full_name: str = "") -> 
 
     operator_profile, _ = EmployeeProfile.objects.get_or_create(
         user=operator,
+        organization=organization,
         defaults={
-            "organization": organization,
             "role": EmployeeRole.EMPLOYEE,
             "position_title": "Оператор отдела продаж",
             "phone": "+7 916 245 14 02",

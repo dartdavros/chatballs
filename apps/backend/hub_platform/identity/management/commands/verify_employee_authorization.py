@@ -23,7 +23,7 @@ class Command(BaseCommand):
         invalid_owner_organizations = list(
             Organization.objects.annotate(
                 owner_count=Count(
-                    "employees", filter=Q(employees__role=EmployeeRole.OWNER)
+                    "memberships", filter=Q(memberships__role=EmployeeRole.OWNER)
                 )
             )
             .exclude(owner_count=1)

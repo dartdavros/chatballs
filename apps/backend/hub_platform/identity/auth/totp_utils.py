@@ -43,8 +43,7 @@ def _verify_totp(secret: str, code: str) -> bool:
 
 
 def _ensure_totp_secret(user: HumanUser) -> str:
-    profile = user.employee_profile
-    if not profile.totp_secret:
-        profile.totp_secret = _generate_totp_secret()
-        profile.save(update_fields=["totp_secret"])
-    return profile.totp_secret
+    if not user.totp_secret:
+        user.totp_secret = _generate_totp_secret()
+        user.save(update_fields=["totp_secret"])
+    return user.totp_secret

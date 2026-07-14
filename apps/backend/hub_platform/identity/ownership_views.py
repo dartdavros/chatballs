@@ -13,7 +13,6 @@ from hub_platform.identity.employee_validation import (
 )
 from hub_platform.identity.governance import EmployeeAction, can_manage_employee
 from hub_platform.identity.models import EmployeeProfile, EmployeeRole
-from hub_platform.identity.sessions import revoke_user_sessions
 
 
 class OwnershipTransferView(APIView):
@@ -72,8 +71,6 @@ class OwnershipTransferView(APIView):
             },
             request=request,
         )
-        revoke_user_sessions(target.user_id)
-        revoke_user_sessions(actor.user_id)
         return Response(
             {
                 "employee": employee_payload(target, actor),

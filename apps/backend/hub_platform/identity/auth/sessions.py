@@ -10,6 +10,7 @@ from rest_framework.views import APIView
 from hub_platform.identity.audit import record_audit_event
 from hub_platform.identity.auth.common import _challenge_payload, _user_payload
 from hub_platform.identity.auth.totp_utils import TOTP_SESSION_KEY
+from hub_platform.identity.membership_context import single_membership_for_user
 from hub_platform.identity.models import AuditResult
 
 
@@ -39,12 +40,15 @@ class LoginView(APIView):
         if user is None:
             record_audit_event(action="identity.login_failed", result=AuditResult.DENIED, request=request)
             return Response({"detail": "Invalid credentials"}, status=401)
-        if not hasattr(user, "employee_profile") or user.employee_profile.is_blocked:
+        profile = single_membership_for_user(user)
+        if profile is None:
+            record_audit_event(action="identity.login_blocked", actor=user, result=AuditResult.DENIED, request=request)
+            return Response({"detail": "Organization context is unavailable"}, status=403)
+        if profile.is_blocked:
             record_audit_event(action="identity.login_blocked", actor=user, result=AuditResult.DENIED, request=request)
             return Response({"detail": "Account is blocked"}, status=403)
 
-        profile = user.employee_profile
-        if profile.totp_enabled:
+        if user.totp_enabled:
             request.session[TOTP_SESSION_KEY] = user.id
             record_audit_event(
                 action="identity.login_totp_required",
@@ -76,7 +80,8 @@ class LogoutView(APIView):
 
     def post(self, request: Request) -> Response:
         user = request.user
-        organization = getattr(getattr(user, "employee_profile", None), "organization", None)
+        membership = single_membership_for_user(user)
+        organization = membership.organization if membership is not None else None
         logout(request)
         record_audit_event(action="identity.logout", actor=user, organization=organization, request=request)
         return Response({"authenticated": False})

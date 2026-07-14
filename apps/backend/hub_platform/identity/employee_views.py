@@ -24,7 +24,6 @@ from hub_platform.identity.policy import (
     authorize,
     has_capability_any_scope,
 )
-from hub_platform.identity.sessions import revoke_user_sessions
 
 
 class EmployeeListView(APIView):
@@ -85,11 +84,8 @@ class EmployeeCreateView(APIView):
             return Response({"detail": "ADMIN access is defined by the system role"}, status=400)
         if position_error:
             return Response({"detail": position_error}, status=400)
-        if provided_password and len(provided_password) < 12:
-            return Response(
-                {"detail": "Temporary password must contain at least 12 characters"},
-                status=400,
-            )
+        if provided_password:
+            return Response({"detail": "Temporary passwords are not supported"}, status=400)
         if HumanUser.objects.filter(email=email).exists():
             return Response({"detail": "Email is already used"}, status=400)
 
@@ -101,10 +97,11 @@ class EmployeeCreateView(APIView):
 
         user = HumanUser.objects.create_user(
             email=email,
-            password=provided_password or None,
+            password=None,
             full_name=full_name,
             is_staff=False,
             is_superuser=False,
+            must_change_password=True,
         )
         profile = EmployeeProfile.objects.create(
             user=user,
@@ -113,7 +110,6 @@ class EmployeeCreateView(APIView):
             position_title=position_title,
             phone=phone,
             primary_department=department,
-            must_change_password=True,
         )
         try:
             for assignment in assignments:
@@ -130,15 +126,14 @@ class EmployeeCreateView(APIView):
             payload={"role": requested_role},
             request=request,
         )
-        if not provided_password:
-            enqueue_event(
-                DomainEvent(
-                    aggregate_type="HumanUser",
-                    aggregate_id=str(user.id),
-                    event_type=INITIAL_ACCESS_REQUESTED,
-                    payload={"userId": user.id},
-                )
+        enqueue_event(
+            DomainEvent(
+                aggregate_type="HumanUser",
+                aggregate_id=str(user.id),
+                event_type=INITIAL_ACCESS_REQUESTED,
+                payload={"userId": user.id},
             )
+        )
         return Response({"employee": employee_payload(profile, actor)}, status=201)
 
 
@@ -179,7 +174,6 @@ class EmployeeUpdateView(APIView):
             profile.primary_department.code if profile.primary_department else ""
         )
         requested_role = str(body.get("role", profile.role))
-        totp_enabled = body.get("totpEnabled", profile.totp_enabled)
 
         if not full_name:
             return Response({"detail": "Full name is required"}, status=400)
@@ -217,17 +211,12 @@ class EmployeeUpdateView(APIView):
         profile.position_title = position_title
         profile.role = requested_role
         profile.primary_department = department
-        profile.totp_enabled = bool(totp_enabled)
-        if not profile.totp_enabled:
-            profile.totp_secret = ""
         profile.save(
             update_fields=[
                 "phone",
                 "position_title",
                 "role",
                 "primary_department",
-                "totp_enabled",
-                "totp_secret",
             ]
         )
 
@@ -249,7 +238,6 @@ class EmployeeUpdateView(APIView):
                 payload={"role": profile.role},
                 request=request,
             )
-            revoke_user_sessions(profile.user_id)
         if placement_changing:
             record_audit_event(
                 action="identity.employee_placement_changed",

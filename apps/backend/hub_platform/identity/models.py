@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import uuid
+
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, UserManager
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q
 from django.utils import timezone
@@ -40,6 +43,9 @@ class HumanUser(AbstractUser):
     username = None
     email = models.EmailField(unique=True)
     full_name = models.CharField(max_length=255, blank=True)
+    must_change_password = models.BooleanField(default=False)
+    totp_enabled = models.BooleanField(default=False)
+    totp_secret = EncryptedCharField(max_length=255, blank=True)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS: list[str] = []
@@ -47,6 +53,18 @@ class HumanUser(AbstractUser):
 
     def __str__(self) -> str:
         return self.email
+
+    @property
+    def employee_profile(self) -> "OrganizationMembership":
+        """C02 compatibility for legacy unscoped routes; removed by C03.
+
+        Never guesses a tenant when a user has multiple memberships.
+        """
+
+        try:
+            return self.memberships.get()
+        except OrganizationMembership.DoesNotExist as error:
+            raise AttributeError("User has no organization membership") from error
 
 
 class TaxRegime(models.TextChoices):
@@ -58,6 +76,7 @@ class VatMode(models.TextChoices):
 
 
 class Organization(models.Model):
+    public_id = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     name = models.CharField(max_length=255)
     slug = models.SlugField(unique=True)
     timezone = models.CharField(max_length=64, default="Europe/Moscow")
@@ -68,6 +87,11 @@ class Organization(models.Model):
 
     def __str__(self) -> str:
         return self.name
+
+    def save(self, *args, **kwargs) -> None:
+        if self.pk and type(self).objects.filter(pk=self.pk).exclude(public_id=self.public_id).exists():
+            raise ValidationError({"public_id": "Organization public_id is immutable"})
+        super().save(*args, **kwargs)
 
 
 class DepartmentStatus(models.TextChoices):
@@ -105,9 +129,17 @@ class EmployeeRole(models.TextChoices):
     EMPLOYEE = "EMPLOYEE", "Employee"
 
 
-class EmployeeProfile(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="employee_profile")
-    organization = models.ForeignKey(Organization, on_delete=models.PROTECT, related_name="employees")
+class OrganizationMembership(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="memberships",
+    )
+    organization = models.ForeignKey(
+        Organization,
+        on_delete=models.PROTECT,
+        related_name="memberships",
+    )
     role = models.CharField(max_length=32, choices=EmployeeRole.choices)
     # Должность вводится вручную; обязательна для новых записей (SPEC-HUB-0016 §5).
     # Пустая строка допускается на уровне БД только для legacy-записей до backfill.
@@ -118,19 +150,22 @@ class EmployeeProfile(models.Model):
     primary_department = models.ForeignKey(
         Department,
         on_delete=models.PROTECT,
-        related_name="employees",
+        related_name="memberships",
         null=True,
         blank=True,
     )
-    must_change_password = models.BooleanField(default=False)
     totp_required = models.BooleanField(default=False)
-    totp_enabled = models.BooleanField(default=False)
-    totp_secret = EncryptedCharField(max_length=255, blank=True)
     blocked_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        # Preserve the deployed table and every existing PK/FK during C02 rename.
+        db_table = "identity_employeeprofile"
         constraints = [
+            models.UniqueConstraint(
+                fields=["user", "organization"],
+                name="uniq_membership_user_organization",
+            ),
             # OWNER всегда на уровне компании (ADR-HUB-0027, инварианты размещения).
             models.CheckConstraint(
                 condition=~Q(role=EmployeeRole.OWNER) | Q(primary_department__isnull=True),
@@ -144,18 +179,25 @@ class EmployeeProfile(models.Model):
             ),
         ]
 
+    def __str__(self) -> str:
+        return f"{self.organization.slug}:{self.user.email}:{self.role}"
+
     @property
     def is_blocked(self) -> bool:
         return self.blocked_at is not None
 
     def block(self) -> None:
         self.blocked_at = timezone.now()
-        self.user.is_active = False
-        self.user.save(update_fields=["is_active"])
         self.save(update_fields=["blocked_at"])
 
-    def __str__(self) -> str:
-        return f"{self.user.email}:{self.role}"
+    def unblock(self) -> None:
+        self.blocked_at = None
+        self.save(update_fields=["blocked_at"])
+
+
+# Transitional import compatibility only. There is no second EmployeeProfile model/table.
+# Runtime access through user.employee_profile is intentionally single-membership-only.
+EmployeeProfile = OrganizationMembership
 
 
 class AuditResult(models.TextChoices):
@@ -206,4 +248,7 @@ from hub_platform.identity.access_models import (  # noqa: E402, F401
     AccessProfile,
     AccessProfileCapability,
     EmployeeAccessAssignment,
+)
+from hub_platform.identity.invitation_models import (  # noqa: E402, F401
+    OrganizationInvitation,
 )

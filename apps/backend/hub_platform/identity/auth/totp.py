@@ -18,6 +18,7 @@ from hub_platform.identity.auth.totp_utils import (
     _ensure_totp_secret,
     _verify_totp,
 )
+from hub_platform.identity.membership_context import single_membership_for_user
 from hub_platform.identity.models import AuditResult, HumanUser
 
 
@@ -28,7 +29,7 @@ class TotpSetupView(APIView):
         profile = request.user.employee_profile
         if not profile.totp_required:
             return Response({"detail": "TOTP is not required"}, status=400)
-        if profile.totp_enabled:
+        if request.user.totp_enabled:
             return Response({"detail": "TOTP is already enabled"}, status=400)
 
         secret = _ensure_totp_secret(request.user)
@@ -67,8 +68,8 @@ class TotpConfirmView(APIView):
             )
             return Response({"detail": "Invalid TOTP code"}, status=400)
 
-        profile.totp_enabled = True
-        profile.save(update_fields=["totp_enabled"])
+        request.user.totp_enabled = True
+        request.user.save(update_fields=["totp_enabled"])
         record_audit_event(
             action="identity.totp_enabled",
             actor=request.user,
@@ -91,18 +92,21 @@ class TotpVerifyView(APIView):
             return Response({"detail": "TOTP challenge is not active"}, status=401)
 
         try:
-            user = HumanUser.objects.select_related("employee_profile", "employee_profile__organization").get(
+            user = HumanUser.objects.prefetch_related("memberships__organization").get(
                 id=pending_user_id
             )
         except HumanUser.DoesNotExist:
             request.session.pop(TOTP_SESSION_KEY, None)
             return Response({"detail": "TOTP challenge is not active"}, status=401)
 
-        profile = user.employee_profile
+        profile = single_membership_for_user(user)
+        if profile is None or profile.is_blocked:
+            request.session.pop(TOTP_SESSION_KEY, None)
+            return Response({"detail": "TOTP challenge is not active"}, status=401)
         if (
-            not profile.totp_enabled
-            or not profile.totp_secret
-            or not _verify_totp(profile.totp_secret, str(request.data.get("code", "")))
+            not user.totp_enabled
+            or not user.totp_secret
+            or not _verify_totp(user.totp_secret, str(request.data.get("code", "")))
         ):
             record_audit_event(
                 action="identity.totp_verify_failed",

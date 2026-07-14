@@ -12,7 +12,7 @@
 
 from __future__ import annotations
 
-from hub_platform.identity.models import EmployeeProfile, EmployeeRole
+from hub_platform.identity.models import EmployeeRole, OrganizationMembership
 
 
 class EmployeeAction:
@@ -40,14 +40,12 @@ _TARGET_ACTIONS = frozenset(
         EmployeeAction.CHANGE_ACCESS,
         EmployeeAction.BLOCK,
         EmployeeAction.UNBLOCK,
-        EmployeeAction.RESET_PASSWORD,
-        EmployeeAction.TERMINATE_SESSIONS,
         EmployeeAction.DELETE,
     }
 )
 
 
-def _is_active_manager(actor: EmployeeProfile | None) -> bool:
+def _is_active_manager(actor: OrganizationMembership | None) -> bool:
     return (
         actor is not None
         and not actor.is_blocked
@@ -55,7 +53,7 @@ def _is_active_manager(actor: EmployeeProfile | None) -> bool:
     )
 
 
-def can_create_role(actor: EmployeeProfile | None, new_role: str) -> bool:
+def can_create_role(actor: OrganizationMembership | None, new_role: str) -> bool:
     """Кого actor вправе создать. OWNER — ADMIN или EMPLOYEE; ADMIN — только EMPLOYEE.
 
     Второй OWNER через обычный create не создаётся (инвариант ровно одного владельца)."""
@@ -71,8 +69,8 @@ def can_create_role(actor: EmployeeProfile | None, new_role: str) -> bool:
 
 
 def can_manage_employee(
-    actor: EmployeeProfile | None,
-    target: EmployeeProfile | None,
+    actor: OrganizationMembership | None,
+    target: OrganizationMembership | None,
     action: str,
 ) -> bool:
     """Может ли actor выполнить action над target (SPEC-HUB-0016 §8).
@@ -112,8 +110,8 @@ def can_manage_employee(
 
 
 def employee_management_flags(
-    actor: EmployeeProfile | None,
-    target: EmployeeProfile,
+    actor: OrganizationMembership | None,
+    target: OrganizationMembership,
 ) -> dict[str, bool]:
     """Флаги доступных действий над target для actor — backend как источник истины
     для скрытия недоступных действий во фронтенде (ADR-HUB-0027)."""

@@ -236,11 +236,10 @@ class AuthEndpointTests(TestCase):
         self.assertTrue(valid.json()["valid"])
         self.assertFalse(invalid.json()["valid"])
 
-    def test_change_temporary_password_clears_profile_flag(self) -> None:
+    def test_change_temporary_password_clears_user_flag(self) -> None:
         owner = HumanUser.objects.get(email="owner@edevs.tech")
-        profile = owner.employee_profile
-        profile.must_change_password = True
-        profile.save(update_fields=["must_change_password"])
+        owner.must_change_password = True
+        owner.save(update_fields=["must_change_password"])
         self.client.login(username="owner@edevs.tech", password="temporary-password")
 
         response = self.client.post(
@@ -255,13 +254,13 @@ class AuthEndpointTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        profile.refresh_from_db()
-        self.assertFalse(profile.must_change_password)
+        owner.refresh_from_db()
+        self.assertFalse(owner.must_change_password)
 
     def test_change_temporary_password_rejects_weak_password(self) -> None:
         owner = HumanUser.objects.get(email="owner@edevs.tech")
-        owner.employee_profile.must_change_password = True
-        owner.employee_profile.save(update_fields=["must_change_password"])
+        owner.must_change_password = True
+        owner.save(update_fields=["must_change_password"])
         self.client.login(username="owner@edevs.tech", password="temporary-password")
 
         response = self.client.post(
@@ -271,8 +270,8 @@ class AuthEndpointTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 400)
-        owner.employee_profile.refresh_from_db()
-        self.assertTrue(owner.employee_profile.must_change_password)
+        owner.refresh_from_db()
+        self.assertTrue(owner.must_change_password)
 
     def test_profile_update_changes_current_user_identity(self) -> None:
         self.client.login(username="owner@edevs.tech", password="temporary-password")
@@ -307,25 +306,27 @@ class AuthEndpointTests(TestCase):
         owner = HumanUser.objects.get(email="owner@edevs.tech")
         profile = owner.employee_profile
         profile.totp_required = False
-        profile.totp_enabled = False
-        profile.totp_secret = "JBSWY3DPEHPK3PXP"
-        profile.save(update_fields=["totp_required", "totp_enabled", "totp_secret"])
+        profile.save(update_fields=["totp_required"])
+        owner.totp_enabled = False
+        owner.totp_secret = "JBSWY3DPEHPK3PXP"
+        owner.save(update_fields=["totp_enabled", "totp_secret"])
         self.client.login(username="owner@edevs.tech", password="temporary-password")
 
         response = self.client.post("/api/v1/auth/profile/totp/start/")
 
         self.assertEqual(response.status_code, 200)
         profile.refresh_from_db()
+        owner.refresh_from_db()
         self.assertTrue(profile.totp_required)
-        self.assertFalse(profile.totp_enabled)
-        self.assertEqual(profile.totp_secret, "")
+        self.assertFalse(owner.totp_enabled)
+        self.assertEqual(owner.totp_secret, "")
 
     def test_profile_totp_disable_requires_password_and_revokes_other_sessions(self) -> None:
         owner = HumanUser.objects.get(email="owner@edevs.tech")
         profile = owner.employee_profile
-        profile.totp_enabled = True
-        profile.totp_secret = "JBSWY3DPEHPK3PXP"
-        profile.save(update_fields=["totp_enabled", "totp_secret"])
+        owner.totp_enabled = True
+        owner.totp_secret = "JBSWY3DPEHPK3PXP"
+        owner.save(update_fields=["totp_enabled", "totp_secret"])
         self.client.login(username="owner@edevs.tech", password="temporary-password")
         other_session = SessionStore()
         other_session["_auth_user_id"] = str(owner.id)
@@ -342,9 +343,10 @@ class AuthEndpointTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["revoked"], 1)
         profile.refresh_from_db()
+        owner.refresh_from_db()
         self.assertFalse(profile.totp_required)
-        self.assertFalse(profile.totp_enabled)
-        self.assertEqual(profile.totp_secret, "")
+        self.assertFalse(owner.totp_enabled)
+        self.assertEqual(owner.totp_secret, "")
 
     def test_totp_setup_and_confirm_enables_profile_totp(self) -> None:
         # TOTP по умолчанию не требуется; включаем требование, чтобы пройти setup→confirm.
@@ -369,14 +371,13 @@ class AuthEndpointTests(TestCase):
 
         self.assertEqual(confirm_response.status_code, 200)
         owner = HumanUser.objects.get(email="owner@edevs.tech")
-        self.assertTrue(owner.employee_profile.totp_enabled)
+        self.assertTrue(owner.totp_enabled)
 
     def test_enabled_totp_requires_second_factor_before_session(self) -> None:
         owner = HumanUser.objects.get(email="owner@edevs.tech")
-        profile = owner.employee_profile
-        profile.totp_secret = "JBSWY3DPEHPK3PXP"
-        profile.totp_enabled = True
-        profile.save(update_fields=["totp_secret", "totp_enabled"])
+        owner.totp_secret = "JBSWY3DPEHPK3PXP"
+        owner.totp_enabled = True
+        owner.save(update_fields=["totp_secret", "totp_enabled"])
 
         login_response = self.client.post(
             "/api/v1/auth/login/",
@@ -390,7 +391,7 @@ class AuthEndpointTests(TestCase):
 
         verify_response = self.client.post(
             "/api/v1/auth/totp/verify/",
-            data=json.dumps({"code": _totp_code(profile.totp_secret)}),
+            data=json.dumps({"code": _totp_code(owner.totp_secret)}),
             content_type="application/json",
         )
 
@@ -418,7 +419,7 @@ class EmployeeEndpointTests(TestCase):
         self.client = APIClient()
         self.client.login(username="owner@edevs.tech", password="temporary-password")
 
-    def test_owner_creates_operator_with_temporary_password(self) -> None:
+    def test_owner_cannot_create_operator_with_temporary_password(self) -> None:
         response = self.client.post(
             "/api/v1/employees/operators/",
             data=json.dumps(
@@ -432,12 +433,8 @@ class EmployeeEndpointTests(TestCase):
             content_type="application/json",
         )
 
-        self.assertEqual(response.status_code, 201)
-        operator = HumanUser.objects.get(email="operator@edevs.tech")
-        self.assertTrue(operator.check_password("operator-password"))
-        self.assertEqual(operator.employee_profile.role, EmployeeRole.EMPLOYEE)
-        self.assertTrue(operator.employee_profile.must_change_password)
-        self.assertTrue(AuditEvent.objects.filter(action="identity.employee_created").exists())
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(HumanUser.objects.filter(email="operator@edevs.tech").exists())
 
     def test_operator_cannot_create_operator(self) -> None:
         operator = HumanUser.objects.create_user(email="operator@edevs.tech", password="operator-password")
@@ -481,7 +478,7 @@ class EmployeeEndpointTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         operator.refresh_from_db()
-        self.assertFalse(operator.is_active)
+        self.assertTrue(operator.is_active)
         self.assertTrue(operator.employee_profile.is_blocked)
         self.assertTrue(AuditEvent.objects.filter(action="identity.employee_blocked").exists())
 
@@ -509,19 +506,18 @@ class EmployeeEndpointTests(TestCase):
         operator.employee_profile.refresh_from_db()
         self.assertEqual(operator.email, "anna.kotova@edevs.tech")
         self.assertEqual(operator.employee_profile.phone, "+7 916 245 14 03")
-        self.assertTrue(operator.employee_profile.totp_enabled)
+        self.assertFalse(operator.totp_enabled)
 
-    def test_owner_resets_operator_password(self) -> None:
+    def test_owner_cannot_reset_operator_global_password(self) -> None:
         operator = HumanUser.objects.get(email="a.kotova@edevs.tech")
+        password_hash = operator.password
 
         response = self.client.post(f"/api/v1/employees/{operator.id}/reset-password/")
 
-        self.assertEqual(response.status_code, 200)
-        payload = response.json()
+        self.assertEqual(response.status_code, 403)
         operator.refresh_from_db()
-        operator.employee_profile.refresh_from_db()
-        self.assertTrue(operator.check_password(payload["temporaryPassword"]))
-        self.assertTrue(operator.employee_profile.must_change_password)
+        self.assertEqual(operator.password, password_hash)
+        self.assertFalse(operator.must_change_password)
 
     def test_owner_unblocks_operator(self) -> None:
         operator = HumanUser.objects.get(email="a.kotova@edevs.tech")
@@ -606,19 +602,18 @@ class TotpSecretEncryptionTests(TestCase):
         from hub_platform.identity.crypto import decrypt_secret
 
         owner = HumanUser.objects.get(email="owner@edevs.tech")
-        profile = owner.employee_profile
-        profile.totp_secret = "JBSWY3DPEHPK3PXP"
-        profile.save(update_fields=["totp_secret"])
+        owner.totp_secret = "JBSWY3DPEHPK3PXP"
+        owner.save(update_fields=["totp_secret"])
 
         with connection.cursor() as cursor:
-            cursor.execute("SELECT totp_secret FROM identity_employeeprofile WHERE user_id = %s", [owner.id])
+            cursor.execute("SELECT totp_secret FROM identity_humanuser WHERE id = %s", [owner.id])
             stored = cursor.fetchone()[0]
 
         self.assertNotEqual(stored, "JBSWY3DPEHPK3PXP")
         self.assertEqual(decrypt_secret(stored), "JBSWY3DPEHPK3PXP")
 
-        profile.refresh_from_db()
-        self.assertEqual(profile.totp_secret, "JBSWY3DPEHPK3PXP")
+        owner.refresh_from_db()
+        self.assertEqual(owner.totp_secret, "JBSWY3DPEHPK3PXP")
 
 
 @override_settings(CACHES=_LOCMEM_CACHE)
@@ -727,7 +722,6 @@ class EmployeeModelInvariantTests(TestCase):
                 {
                     "email": "no-title@edevs.tech",
                     "fullName": "No Title",
-                    "temporaryPassword": "temporary-password",
                 }
             ),
             content_type="application/json",
@@ -769,7 +763,6 @@ class EmployeeGovernanceTests(TestCase):
                     "email": email,
                     "fullName": "New Member",
                     "positionTitle": "Позиция",
-                    "temporaryPassword": "temporary-password",
                     "role": role,
                 }
             ),
@@ -816,7 +809,8 @@ class EmployeeGovernanceTests(TestCase):
         response = self._client("admin@edevs.tech").post(f"/api/v1/employees/{emp.id}/block/")
         self.assertEqual(response.status_code, 200)
         emp.refresh_from_db()
-        self.assertFalse(emp.is_active)
+        self.assertTrue(emp.is_active)
+        self.assertTrue(emp.employee_profile.is_blocked)
 
     def test_admin_cannot_block_another_admin(self) -> None:
         other = self._make("admin2@edevs.tech", EmployeeRole.ADMIN)

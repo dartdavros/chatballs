@@ -75,9 +75,10 @@ class ProfileTotpStartView(APIView):
     def post(self, request: Request) -> Response:
         profile = request.user.employee_profile
         profile.totp_required = True
-        profile.totp_enabled = False
-        profile.totp_secret = ""
-        profile.save(update_fields=["totp_required", "totp_enabled", "totp_secret"])
+        profile.save(update_fields=["totp_required"])
+        request.user.totp_enabled = False
+        request.user.totp_secret = ""
+        request.user.save(update_fields=["totp_enabled", "totp_secret"])
         record_audit_event(
             action="identity.profile_totp_setup_started",
             actor=request.user,
@@ -97,9 +98,10 @@ class ProfileTotpDisableView(APIView):
 
         profile = request.user.employee_profile
         profile.totp_required = False
-        profile.totp_enabled = False
-        profile.totp_secret = ""
-        profile.save(update_fields=["totp_required", "totp_enabled", "totp_secret"])
+        profile.save(update_fields=["totp_required"])
+        request.user.totp_enabled = False
+        request.user.totp_secret = ""
+        request.user.save(update_fields=["totp_enabled", "totp_secret"])
         revoked = _revoke_other_user_sessions(request)
         record_audit_event(
             action="identity.profile_totp_disabled",
@@ -135,7 +137,7 @@ class ChangeTemporaryPasswordView(APIView):
         current_password = str(body.get("currentPassword", ""))
         new_password = str(body.get("newPassword", ""))
         profile = request.user.employee_profile
-        if not profile.must_change_password and not request.user.check_password(current_password):
+        if not request.user.must_change_password and not request.user.check_password(current_password):
             return Response({"detail": "Current password is invalid"}, status=400)
         try:
             validate_password(new_password, user=request.user)
@@ -143,9 +145,8 @@ class ChangeTemporaryPasswordView(APIView):
             return Response({"detail": " ".join(error.messages)}, status=400)
 
         request.user.set_password(new_password)
-        request.user.save(update_fields=["password"])
-        profile.must_change_password = False
-        profile.save(update_fields=["must_change_password"])
+        request.user.must_change_password = False
+        request.user.save(update_fields=["password", "must_change_password"])
         login(request, request.user)
         record_audit_event(
             action="identity.temporary_password_changed",

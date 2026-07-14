@@ -6,7 +6,7 @@ from django.db.models import Q
 from django.db.models.functions import Lower
 
 from hub_platform.identity.capabilities import CAPABILITY_REGISTRY, ScopeType, capability_spec
-from hub_platform.identity.models import Department, EmployeeProfile, Organization
+from hub_platform.identity.models import Department, Organization, OrganizationMembership
 
 
 class AccessProfile(models.Model):
@@ -79,7 +79,9 @@ class AccessProfileCapability(models.Model):
 
 class EmployeeAccessAssignment(models.Model):
     employee = models.ForeignKey(
-        EmployeeProfile, on_delete=models.PROTECT, related_name="access_assignments"
+        OrganizationMembership,
+        on_delete=models.PROTECT,
+        related_name="access_assignments",
     )
     access_profile = models.ForeignKey(
         AccessProfile, on_delete=models.PROTECT, related_name="assignments"
@@ -96,7 +98,7 @@ class EmployeeAccessAssignment(models.Model):
         blank=True,
     )
     assigned_by = models.ForeignKey(
-        EmployeeProfile,
+        OrganizationMembership,
         on_delete=models.PROTECT,
         related_name="access_assignments_created",
     )
