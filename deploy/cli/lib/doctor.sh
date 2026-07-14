@@ -93,6 +93,14 @@ cmd_doctor() {
     _doctor_report 0 "CUSTOCRM_DOMAIN not set"
   fi
 
+  local acme_email
+  acme_email="$(env_get "$(instance_env_file)" CUSTOCRM_ACME_EMAIL)"
+  if [[ -n "$acme_email" ]]; then
+    _doctor_report 1 "CUSTOCRM_ACME_EMAIL set"
+  else
+    _doctor_report 0 "CUSTOCRM_ACME_EMAIL not set"
+  fi
+
   local pg_pwd
   pg_pwd="$(env_get "$(instance_env_file)" POSTGRES_PASSWORD)"
   if [[ -n "$pg_pwd" ]]; then

@@ -197,6 +197,17 @@ def test_doctor_fails_on_default_secret_and_missing_password(fake_env):
     assert "HUB_SECRET_KEY" in r.stderr
 
 
+def test_doctor_fails_when_acme_email_missing(fake_env):
+    fake_env.write_env(CUSTOCRM_ACME_EMAIL="")
+    fake_env.install_docker()
+    fake_env.install_flock(held=False)
+
+    result = _run(fake_env, "doctor")
+
+    assert result.returncode == 1
+    assert "CUSTOCRM_ACME_EMAIL" in result.stderr
+
+
 # ---------------------------------------------------------------------------
 # status
 # ---------------------------------------------------------------------------

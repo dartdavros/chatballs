@@ -120,6 +120,9 @@ services:
   gateway:
     image: ${CUSTOCRM_GATEWAY_IMAGE:-caddy:2.8.4}
     restart: unless-stopped
+    environment:
+      CUSTOCRM_DOMAIN: ${CUSTOCRM_DOMAIN:?CUSTOCRM_DOMAIN is required}
+      CUSTOCRM_ACME_EMAIL: ${CUSTOCRM_ACME_EMAIL:?CUSTOCRM_ACME_EMAIL is required}
     ports:
       - "${CUSTOCRM_WEB_LISTENING_IP:-0.0.0.0}:80:80"
       - "${CUSTOCRM_WEB_LISTENING_IP:-0.0.0.0}:443:443"
