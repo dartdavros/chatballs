@@ -19,3 +19,17 @@ class LocalCorsMiddlewareTests(TestCase):
 
         self.assertEqual(response.status_code, 204)
         self.assertEqual(response["Access-Control-Allow-Origin"], "http://localhost:5173")
+
+
+class ContentSecurityPolicyMiddlewareTests(TestCase):
+    @override_settings(HUB_CONTENT_SECURITY_POLICY="default-src 'none'")
+    def test_surface_policy_is_applied(self) -> None:
+        response = self.client.get("/api/v1/health/live/")
+
+        self.assertEqual(response["Content-Security-Policy"], "default-src 'none'")
+
+    @override_settings(HUB_CONTENT_SECURITY_POLICY="")
+    def test_empty_policy_does_not_add_header(self) -> None:
+        response = self.client.get("/api/v1/health/live/")
+
+        self.assertFalse(response.has_header("Content-Security-Policy"))

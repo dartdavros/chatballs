@@ -85,12 +85,23 @@ cmd_doctor() {
     _doctor_report 0 "release image references are invalid"
   fi
 
-  local domain
-  domain="$(env_get "$(instance_env_file)" CUSTOCRM_DOMAIN)"
-  if [[ -n "$domain" ]]; then
-    _doctor_report 1 "CUSTOCRM_DOMAIN set: $domain"
+  local app_domain platform_domain
+  app_domain="$(env_get "$(instance_env_file)" CUSTOCRM_APP_DOMAIN)"
+  platform_domain="$(env_get "$(instance_env_file)" CUSTOCRM_PLATFORM_DOMAIN)"
+  if [[ -n "$app_domain" ]]; then
+    _doctor_report 1 "CUSTOCRM_APP_DOMAIN set: $app_domain"
   else
-    _doctor_report 0 "CUSTOCRM_DOMAIN not set"
+    _doctor_report 0 "CUSTOCRM_APP_DOMAIN not set"
+  fi
+  if [[ -n "$platform_domain" ]]; then
+    _doctor_report 1 "CUSTOCRM_PLATFORM_DOMAIN set: $platform_domain"
+  else
+    _doctor_report 0 "CUSTOCRM_PLATFORM_DOMAIN not set"
+  fi
+  if [[ -n "$app_domain" ]] && [[ "$app_domain" != "$platform_domain" ]]; then
+    _doctor_report 1 "app and platform domains are distinct"
+  else
+    _doctor_report 0 "app and platform domains must be distinct"
   fi
 
   local acme_email

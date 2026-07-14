@@ -1,10 +1,14 @@
+from django.conf import settings
 from django.core.cache import cache
 from django.db import connection
 from django.http import JsonResponse
 
 
 def live(request):
-    return JsonResponse({"status": "ok", "service": "hub-backend"})
+    surface = settings.HUB_RUNTIME_SURFACE
+    return JsonResponse(
+        {"status": "ok", "service": f"custocrm-{surface}", "surface": surface}
+    )
 
 
 def ready(request):
@@ -18,4 +22,7 @@ def ready(request):
     checks["redis"] = cache.get("healthcheck") == "ok"
 
     status_code = 200 if all(checks.values()) else 503
-    return JsonResponse({"status": "ok" if status_code == 200 else "degraded", "checks": checks}, status=status_code)
+    return JsonResponse(
+        {"status": "ok" if status_code == 200 else "degraded", "checks": checks},
+        status=status_code,
+    )

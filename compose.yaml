@@ -56,13 +56,13 @@ services:
       redis:
         condition: service_healthy
 
-  backend:
+  backend-app:
     image: ${CUSTOCRM_BACKEND_IMAGE:-custocrm-backend:dev}
     restart: unless-stopped
     env_file:
       - ${CUSTOCRM_INSTANCE_DIR:-.}/.env
     command: >
-      sh -c "gunicorn hub_backend.asgi:application
+      sh -c "gunicorn hub_backend.asgi_app:application
       --worker-class uvicorn.workers.UvicornWorker
       --bind 0.0.0.0:8000
       --workers $${HUB_GUNICORN_WORKERS:-3}
@@ -83,12 +83,66 @@ services:
           "CMD",
           "python",
           "-c",
-          "import os, urllib.request; req = urllib.request.Request('http://127.0.0.1:8000/api/v1/health/live/', headers={'Host': os.environ.get('HUB_HEALTHCHECK_HOST', 'localhost'), 'X-Forwarded-Proto': 'https'}); urllib.request.urlopen(req, timeout=3)",
+          "import os, urllib.request; req = urllib.request.Request('http://127.0.0.1:8000/api/v1/health/live/', headers={'Host': os.environ.get('CUSTOCRM_APP_HEALTHCHECK_HOST', 'app.localhost'), 'X-Forwarded-Proto': 'https'}); urllib.request.urlopen(req, timeout=3)",
         ]
       interval: 10s
       timeout: 5s
       retries: 10
       start_period: 20s
+
+  backend-platform:
+    image: ${CUSTOCRM_BACKEND_IMAGE:-custocrm-backend:dev}
+    restart: unless-stopped
+    env_file:
+      - ${CUSTOCRM_INSTANCE_DIR:-.}/.env
+    command: >
+      sh -c "gunicorn hub_backend.asgi_platform:application
+      --worker-class uvicorn.workers.UvicornWorker
+      --bind 0.0.0.0:8000
+      --workers $${HUB_GUNICORN_WORKERS:-3}
+      --timeout $${HUB_GUNICORN_TIMEOUT:-60}"
+    depends_on:
+      init:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import os, urllib.request; req = urllib.request.Request('http://127.0.0.1:8000/api/v1/health/live/', headers={'Host': os.environ.get('CUSTOCRM_PLATFORM_HEALTHCHECK_HOST', 'platform.localhost'), 'X-Forwarded-Proto': 'https'}); urllib.request.urlopen(req, timeout=3)",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  # Django admin не подключён к gateway. Единственный host bind — loopback;
+  # удалённый доступ допускается только через SSH tunnel (ADR-HUB-0031).
+  backend-admin:
+    image: ${CUSTOCRM_BACKEND_IMAGE:-custocrm-backend:dev}
+    restart: unless-stopped
+    env_file:
+      - ${CUSTOCRM_INSTANCE_DIR:-.}/.env
+    command: >
+      sh -c "gunicorn hub_backend.asgi_admin:application
+      --worker-class uvicorn.workers.UvicornWorker
+      --bind 0.0.0.0:8000
+      --workers $${HUB_GUNICORN_WORKERS:-2}
+      --timeout $${HUB_GUNICORN_TIMEOUT:-60}"
+    ports:
+      - "127.0.0.1:${CUSTOCRM_ADMIN_PORT:-18001}:8000"
+    depends_on:
+      init:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   worker:
     image: ${CUSTOCRM_BACKEND_IMAGE:-custocrm-backend:dev}
@@ -99,18 +153,18 @@ services:
     volumes:
       - ${CUSTOCRM_INSTANCE_DIR:-.}/data/media:/app/apps/backend/media
     depends_on:
-      backend:
+      backend-app:
         condition: service_healthy
 
   # Frontend: один nginx-образ со static-сборкой internal-ui и web-chat,
-  # внутренняя маршрутизация (/api/, /ws/, /admin/, /static/, /chat-widget.js,
+  # внутренняя маршрутизация (/api/, /ws/, /chat-widget.js,
   # /chat/, /calls/) — в deploy/nginx/frontend.production.conf. Не публикует
   # host-порт: public boundary — gateway (Caddy).
   frontend:
     image: ${CUSTOCRM_FRONTEND_IMAGE:-custocrm-frontend:dev}
     restart: unless-stopped
     depends_on:
-      backend:
+      backend-app:
         condition: service_healthy
 
   # Gateway: единственный HTTP/HTTPS public boundary (ADR-HUB-0028 §gateway).
@@ -121,7 +175,8 @@ services:
     image: ${CUSTOCRM_GATEWAY_IMAGE:-caddy:2.8.4}
     restart: unless-stopped
     environment:
-      CUSTOCRM_DOMAIN: ${CUSTOCRM_DOMAIN:?CUSTOCRM_DOMAIN is required}
+      CUSTOCRM_APP_DOMAIN: ${CUSTOCRM_APP_DOMAIN:?CUSTOCRM_APP_DOMAIN is required}
+      CUSTOCRM_PLATFORM_DOMAIN: ${CUSTOCRM_PLATFORM_DOMAIN:?CUSTOCRM_PLATFORM_DOMAIN is required}
       CUSTOCRM_ACME_EMAIL: ${CUSTOCRM_ACME_EMAIL:?CUSTOCRM_ACME_EMAIL is required}
     ports:
       - "${CUSTOCRM_WEB_LISTENING_IP:-0.0.0.0}:80:80"
@@ -133,7 +188,9 @@ services:
     depends_on:
       frontend:
         condition: service_started
-      backend:
+      backend-app:
+        condition: service_healthy
+      backend-platform:
         condition: service_healthy
 
   # Coturn — медиа-relay для TURN fallback (SPEC-HUB-0013 §11).

@@ -11,7 +11,8 @@ Copy-Item .env.example .env
 
 The local compose stack contains:
 
-- Django ASGI backend and background worker;
+- isolated app, platform, and loopback-only admin Django runtimes;
+- background worker;
 - PostgreSQL;
 - Redis;
 - Internal Hub UI;
@@ -22,10 +23,12 @@ No production secrets are stored in the repository.
 
 Default local URLs:
 
-- Internal Hub UI: `http://localhost:5173`
-- Django admin: `http://localhost:8010/admin/`
+- App gateway: `http://app.localhost/`
+- Platform health: `http://platform.localhost/api/v1/health/live/`
+- Django admin (loopback only): `http://127.0.0.1:18001/admin/`
+- Internal Hub UI (direct Vite): `http://localhost:5173`
 - Web Chat: `http://localhost:5175`
-- Backend API: `http://localhost:8010/api/v1`
+- App API (direct): `http://localhost:8010/api/v1`
 
 Local accounts (TOTP disabled). These credentials are fixed — do not change them:
 
@@ -35,7 +38,7 @@ Local accounts (TOTP disabled). These credentials are fixed — do not change th
 Bootstrap the organization and both accounts:
 
 ```powershell
-docker compose run --rm backend python manage.py bootstrap_owner --email owner@edevs.tech --password Owner-Local-2026 --name "Иван Петров"
+docker compose run --rm backend-app python manage.py bootstrap_owner --email owner@edevs.tech --password Owner-Local-2026 --name "Иван Петров"
 ```
 
 ## Tests
@@ -54,10 +57,10 @@ Individual suites:
 
 ```powershell
 # Backend (pytest + pytest-django)
-docker compose run --rm backend pytest
+docker compose run --rm backend-app pytest
 
 # Frontend unit tests (vitest)
-docker compose run --rm internal-ui npm run test
+docker compose run --rm frontend npm run test
 
 # End-to-end (Playwright, internal-ui) — auto-starts the dev server
 npx playwright install chromium   # one-time

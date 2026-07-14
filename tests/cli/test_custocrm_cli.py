@@ -64,8 +64,11 @@ def test_deploy_success_orders_canonical_workflow(fake_env):
     idx_pull = _index_of(log, " pull")
     idx_infra = _index_of(log, " up -d postgres redis")
     idx_init = _index_of(log, "run --rm init")
-    idx_app = _index_of(log, " up -d backend worker frontend gateway")
-    idx_exec = _index_of(log, "exec -T backend")
+    idx_app = _index_of(
+        log,
+        " up -d backend-app backend-platform backend-admin worker frontend gateway",
+    )
+    idx_exec = _index_of(log, "exec -T backend-app")
 
     assert idx_pull < idx_infra < idx_init < idx_app < idx_exec, joined
     assert "seed_hub_initial_data" not in joined  # init не запускает Edevs seed
@@ -89,7 +92,10 @@ def test_deploy_includes_coturn_when_calls_profile_active(fake_env):
     r = _run(fake_env, "deploy", "--non-interactive")
     assert r.returncode == 0, r.stderr
     joined = "\n".join(_log_lines(fake_env))
-    assert "up -d backend worker frontend gateway coturn" in joined
+    assert (
+        "up -d backend-app backend-platform backend-admin worker frontend gateway coturn"
+        in joined
+    )
 
 
 def test_deploy_rejects_shared_web_and_turn_ip(fake_env):
@@ -206,6 +212,17 @@ def test_doctor_fails_when_acme_email_missing(fake_env):
 
     assert result.returncode == 1
     assert "CUSTOCRM_ACME_EMAIL" in result.stderr
+
+
+def test_doctor_fails_when_surface_domains_match(fake_env):
+    fake_env.write_env(CUSTOCRM_PLATFORM_DOMAIN="app.test")
+    fake_env.install_docker()
+    fake_env.install_flock(held=False)
+
+    result = _run(fake_env, "doctor")
+
+    assert result.returncode == 1
+    assert "must be distinct" in result.stderr
 
 
 # ---------------------------------------------------------------------------

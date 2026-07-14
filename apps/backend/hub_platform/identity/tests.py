@@ -1,10 +1,11 @@
 import json
 from unittest import mock
 
+from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
+from django.contrib.sessions.backends.db import SessionStore
 from django.core import mail
 from django.test import Client, TestCase, override_settings
-from django.contrib.sessions.backends.db import SessionStore
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from rest_framework.test import APIClient
@@ -142,7 +143,7 @@ class AuthEndpointTests(TestCase):
         response = self.client.get("/api/v1/auth/session/")
 
         self.assertEqual(response.status_code, 200)
-        self.assertIn("csrftoken", response.cookies)
+        self.assertIn(settings.CSRF_COOKIE_NAME, response.cookies)
 
     def test_login_rejects_invalid_password(self) -> None:
         response = self.client.post(
@@ -397,6 +398,7 @@ class AuthEndpointTests(TestCase):
         self.assertTrue(verify_response.json()["authenticated"])
 
 
+@override_settings(ROOT_URLCONF="hub_backend.urls_admin")
 class DjangoAdminTests(TestCase):
     def test_bootstrapped_owner_can_access_django_admin(self) -> None:
         bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")

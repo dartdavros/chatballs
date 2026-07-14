@@ -21,15 +21,15 @@ services:
       context: .
       dockerfile: apps/backend/Dockerfile
 
-  backend:
+  backend-app:
     build:
       context: .
       dockerfile: apps/backend/Dockerfile
     command: >
       sh -c "python manage.py migrate --noinput &&
-             uvicorn hub_backend.asgi:application --host 0.0.0.0 --port 8000 --reload"
+             uvicorn hub_backend.asgi_app:application --host 0.0.0.0 --port 8000 --reload"
     ports:
-      - "${BACKEND_PORT:-8010}:8000"
+      - "${BACKEND_APP_PORT:-8010}:8000"
     volumes:
       - ./apps/backend:/app/apps/backend
     depends_on:
@@ -39,6 +39,24 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+
+  backend-platform:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    command: uvicorn hub_backend.asgi_platform:application --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "${BACKEND_PLATFORM_PORT:-8011}:8000"
+    volumes:
+      - ./apps/backend:/app/apps/backend
+
+  backend-admin:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    command: uvicorn hub_backend.asgi_admin:application --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - ./apps/backend:/app/apps/backend
 
   worker:
     build:
@@ -84,7 +102,9 @@ services:
     volumes:
       - ./deploy/nginx/local.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
-      backend:
+      backend-app:
+        condition: service_healthy
+      backend-platform:
         condition: service_healthy
       frontend:
         condition: service_started

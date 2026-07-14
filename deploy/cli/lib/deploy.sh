@@ -21,14 +21,16 @@ cmd_deploy() {
   run_compose run --rm init || die "deploy: init (migrate) failed" 1
 
   log "deploy: starting application services"
-  local app_services=(backend worker frontend gateway)
+  local app_services=(backend-app backend-platform backend-admin worker frontend gateway)
   if profile_enabled calls; then
     app_services+=(coturn)
   fi
   run_compose up -d "${app_services[@]}" || die "deploy: application start failed" 1
 
   log "deploy: waiting for application health"
-  _wait_healthy backend 90 || die "deploy: backend did not become healthy" 1
+  _wait_healthy backend-app 90 || die "deploy: app backend did not become healthy" 1
+  _wait_healthy backend-platform 90 || die "deploy: platform backend did not become healthy" 1
+  _wait_running backend-admin 30 || die "deploy: admin backend did not start" 1
   _wait_running frontend 30 || die "deploy: frontend did not start" 1
   _wait_running gateway 30 || die "deploy: gateway did not start" 1
   if profile_enabled calls; then
@@ -50,9 +52,15 @@ _deploy_validate() {
   verify_release_checksums || return 1
   validate_release_image_refs || return 1
 
-  local domain
-  domain="$(env_get "$(instance_env_file)" CUSTOCRM_DOMAIN)"
-  [[ -n "$domain" ]] || { log_err "CUSTOCRM_DOMAIN not set"; return 1; }
+  local app_domain platform_domain
+  app_domain="$(env_get "$(instance_env_file)" CUSTOCRM_APP_DOMAIN)"
+  platform_domain="$(env_get "$(instance_env_file)" CUSTOCRM_PLATFORM_DOMAIN)"
+  [[ -n "$app_domain" ]] || { log_err "CUSTOCRM_APP_DOMAIN not set"; return 1; }
+  [[ -n "$platform_domain" ]] || { log_err "CUSTOCRM_PLATFORM_DOMAIN not set"; return 1; }
+  [[ "$app_domain" != "$platform_domain" ]] || {
+    log_err "app and platform domains must be distinct"
+    return 1
+  }
 
   if profile_enabled calls; then
     validate_calls_network_boundary || return 1
@@ -101,20 +109,31 @@ _first_json_service_state() {
 }
 
 _smoke() {
-  local domain
-  domain="$(env_get "$(instance_env_file)" CUSTOCRM_DOMAIN)"
+  local app_domain platform_domain
+  app_domain="$(env_get "$(instance_env_file)" CUSTOCRM_APP_DOMAIN)"
+  platform_domain="$(env_get "$(instance_env_file)" CUSTOCRM_PLATFORM_DOMAIN)"
 
-  run_compose exec -T backend python - <<'PY' >/dev/null 2>&1 || {
+  run_compose exec -T backend-app python - <<'PY' >/dev/null 2>&1 || {
 import os
 import urllib.error
 import urllib.request
 
-health_host = os.environ.get("HUB_HEALTHCHECK_HOST") or os.environ["CUSTOCRM_DOMAIN"]
-health_request = urllib.request.Request(
+app_domain = os.environ["CUSTOCRM_APP_DOMAIN"]
+platform_domain = os.environ["CUSTOCRM_PLATFORM_DOMAIN"]
+app_health_host = os.environ.get("CUSTOCRM_APP_HEALTHCHECK_HOST") or app_domain
+platform_health_host = os.environ.get("CUSTOCRM_PLATFORM_HEALTHCHECK_HOST") or platform_domain
+app_health_request = urllib.request.Request(
     "http://127.0.0.1:8000/api/v1/health/ready/",
-    headers={"Host": health_host, "X-Forwarded-Proto": "https"},
+    headers={"Host": app_health_host, "X-Forwarded-Proto": "https"},
 )
-with urllib.request.urlopen(health_request, timeout=5) as response:
+with urllib.request.urlopen(app_health_request, timeout=5) as response:
+    assert response.status == 200
+
+platform_health_request = urllib.request.Request(
+    "http://backend-platform:8000/api/v1/health/ready/",
+    headers={"Host": platform_health_host, "X-Forwarded-Proto": "https"},
+)
+with urllib.request.urlopen(platform_health_request, timeout=5) as response:
     assert response.status == 200
 
 with urllib.request.urlopen("http://frontend/", timeout=5) as response:
@@ -125,28 +144,29 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
         return None
 
 opener = urllib.request.build_opener(NoRedirect)
-domain = os.environ["CUSTOCRM_DOMAIN"]
-gateway_request = urllib.request.Request("http://gateway/", headers={"Host": domain})
-try:
-    opener.open(gateway_request, timeout=5)
-except urllib.error.HTTPError as error:
-    assert error.code in {301, 302, 303, 307, 308}
-    assert error.headers.get("Location", "").startswith(f"https://{domain}")
-else:
-    raise AssertionError("gateway did not redirect HTTP to HTTPS")
+for domain in (app_domain, platform_domain):
+    gateway_request = urllib.request.Request("http://gateway/", headers={"Host": domain})
+    try:
+        opener.open(gateway_request, timeout=5)
+    except urllib.error.HTTPError as error:
+        assert error.code in {301, 302, 303, 307, 308}
+        assert error.headers.get("Location", "").startswith(f"https://{domain}")
+    else:
+        raise AssertionError(f"gateway did not redirect HTTP to HTTPS for {domain}")
 PY
-    log_err "smoke: internal backend/frontend/gateway checks failed"
+    log_err "smoke: internal app/platform/frontend/gateway checks failed"
     return 1
   }
-  log_ok "smoke: backend, frontend and gateway"
+  log_ok "smoke: app, platform, frontend and gateway"
 
   if command -v curl >/dev/null 2>&1; then
-    local code
-    code="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 10 "https://$domain/" 2>/dev/null || true)"
-    if [[ "$code" =~ ^(200|30[12378])$ ]]; then
-      log_ok "smoke: public HTTPS endpoint"
+    local app_code platform_code
+    app_code="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 10 "https://$app_domain/" 2>/dev/null || true)"
+    platform_code="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 10 "https://$platform_domain/api/v1/health/live/" 2>/dev/null || true)"
+    if [[ "$app_code" =~ ^(200|30[12378])$ ]] && [[ "$platform_code" == "200" ]]; then
+      log_ok "smoke: public app and platform HTTPS endpoints"
     else
-      log_warn "smoke: public HTTPS endpoint is not reachable yet (HTTP $code)"
+      log_warn "smoke: public HTTPS endpoints are not reachable yet (app $app_code, platform $platform_code)"
     fi
   fi
 }

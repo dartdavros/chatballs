@@ -89,7 +89,7 @@ if [[ "$1" == "compose" ]]; then
       svc="${@: -1}"
       echo "{\"Service\":\"$svc\",\"Health\":\"healthy\"}"
       exit 0 ;;
-    *"exec -T backend"*) exit 0 ;;
+    *"exec -T backend-app"*) exit 0 ;;
     *"logs"*) exit 0 ;;
     *) exit 0 ;;
   esac
@@ -144,7 +144,8 @@ def fake_env(tmp_path: Path):
     def write_env(**overrides) -> Path:
         lines = {
             "COMPOSE_PROJECT_NAME": "custocrm_test",
-            "CUSTOCRM_DOMAIN": "hub.test",
+            "CUSTOCRM_APP_DOMAIN": "app.test",
+            "CUSTOCRM_PLATFORM_DOMAIN": "platform.test",
             "CUSTOCRM_ACME_EMAIL": "admin@test",
             "HUB_SECRET_KEY": "test-secret-not-default",
             "HUB_FIELD_ENCRYPTION_KEY": "",
@@ -154,8 +155,10 @@ def fake_env(tmp_path: Path):
             "POSTGRES_HOST": "postgres",
             "POSTGRES_PORT": "5432",
             "REDIS_URL": "redis://redis:6379/0",
-            "HUB_ALLOWED_HOSTS": "hub.test",
-            "HUB_HEALTHCHECK_HOST": "hub.test",
+            "CUSTOCRM_APP_ALLOWED_HOSTS": "app.test",
+            "CUSTOCRM_PLATFORM_ALLOWED_HOSTS": "platform.test",
+            "CUSTOCRM_APP_HEALTHCHECK_HOST": "app.test",
+            "CUSTOCRM_PLATFORM_HEALTHCHECK_HOST": "platform.test",
         }
         lines.update(overrides)
         body = "".join(f"{k}={v}\n" for k, v in lines.items())
