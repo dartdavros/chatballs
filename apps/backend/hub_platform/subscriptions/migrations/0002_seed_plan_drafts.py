@@ -1,5 +1,11 @@
 from django.db import migrations
 
+# Approved quotas are stored as a unified dict so each grant is described by a
+# single tuple of (mode, limit_source, limit_value, window_seconds). This keeps
+# the seed readable regardless of whether a quota is a fixed cap, a rate window,
+# a concurrent ceiling, or unlimited. Unapproved quotas stay absent.
+#
+# storage_bytes values use binary units (MiB/GiB).
 
 ENTITLEMENTS = (
     "sales_department",
@@ -29,6 +35,33 @@ QUOTAS = {
     "audit_retention_days": "days",
 }
 
+_MIB = 1024 * 1024
+_GIB = 1024 * 1024 * 1024
+
+
+def _fixed(value):
+    return ("HARD", "FIXED", value, None)
+
+
+def _unlimited():
+    return ("UNLIMITED", "FIXED", None, None)
+
+
+def _concurrent(value):
+    return ("CONCURRENT", "FIXED", value, None)
+
+
+def _rate(value, window_seconds):
+    return ("RATE", "FIXED", value, window_seconds)
+
+
+def _ai_slots():
+    return ("HARD", "SUBSCRIPTION_AI_AGENT_QUANTITY", None, None)
+
+
+# Quotas approved by the owner on 2026-07-15 for Free/Startup publication.
+# concurrent_p2p_calls is a provisional minimum for Startup; deriving it from the
+# active membership count is a separate C07 decision (see PLAN-CUSTOCRM-0003 §12).
 PLAN_SPECS = {
     "FREE": {
         "name": "Бесплатный",
@@ -36,12 +69,18 @@ PLAN_SPECS = {
         "price": 0,
         "fixed_quantity": 1,
         "entitlements": ("managed_ai", "byok_ai"),
-        "fixed_quotas": {
-            "products": 1,
-            "client_connections": 3,
-            "new_dialogs_per_period": 500,
+        "quotas": {
+            "ai_agent_slots": _ai_slots(),
+            "products": _fixed(1),
+            "client_connections": _fixed(3),
+            "new_dialogs_per_period": _fixed(500),
+            "managed_ai_credits": _fixed(300),
+            "storage_bytes": _fixed(500 * _MIB),
+            # No CRM API / calls / voice entitlement on Free -> gated to zero.
+            "crm_api_requests_per_window": _fixed(0),
+            "concurrent_p2p_calls": _concurrent(0),
+            "concurrent_voice_sessions": _concurrent(0),
         },
-        "unlimited_quotas": (),
     },
     "STARTUP": {
         "name": "Стартап",
@@ -59,12 +98,17 @@ PLAN_SPECS = {
             "managed_ai",
             "byok_ai",
         ),
-        "fixed_quotas": {},
-        "unlimited_quotas": (
-            "products",
-            "client_connections",
-            "new_dialogs_per_period",
-        ),
+        "quotas": {
+            "ai_agent_slots": _ai_slots(),
+            "products": _unlimited(),
+            "client_connections": _unlimited(),
+            "new_dialogs_per_period": _unlimited(),
+            "managed_ai_credits": _fixed(1000),
+            "storage_bytes": _fixed(2 * _GIB),
+            "crm_api_requests_per_window": _rate(60, 60),
+            "concurrent_p2p_calls": _concurrent(3),
+            "concurrent_voice_sessions": _concurrent(10),
+        },
     },
     "BUSINESS": {
         "name": "Бизнес",
@@ -83,12 +127,9 @@ PLAN_SPECS = {
             "managed_ai",
             "byok_ai",
         ),
-        "fixed_quotas": {},
-        "unlimited_quotas": (
-            "products",
-            "client_connections",
-            "new_dialogs_per_period",
-        ),
+        "quotas": {
+            "ai_agent_slots": _ai_slots(),
+        },
     },
     "CORPORATION": {
         "name": "Корпорация",
@@ -96,12 +137,9 @@ PLAN_SPECS = {
         "price": 990_000,
         "fixed_quantity": None,
         "entitlements": ENTITLEMENTS,
-        "fixed_quotas": {},
-        "unlimited_quotas": (
-            "products",
-            "client_connections",
-            "new_dialogs_per_period",
-        ),
+        "quotas": {
+            "ai_agent_slots": _ai_slots(),
+        },
     },
 }
 
@@ -150,31 +188,17 @@ def seed_plan_drafts(apps, schema_editor):
                 for key in spec["entitlements"]
             ]
         )
-        QuotaGrant.objects.create(
-            plan_version=version,
-            definition=quota_definitions["ai_agent_slots"],
-            mode="HARD",
-            limit_source="SUBSCRIPTION_AI_AGENT_QUANTITY",
-        )
         QuotaGrant.objects.bulk_create(
             [
                 QuotaGrant(
                     plan_version=version,
                     definition=quota_definitions[key],
-                    mode="HARD",
-                    limit_source="FIXED",
-                    limit_value=value,
+                    mode=mode,
+                    limit_source=limit_source,
+                    limit_value=limit_value,
+                    window_seconds=window_seconds,
                 )
-                for key, value in spec["fixed_quotas"].items()
-            ]
-            + [
-                QuotaGrant(
-                    plan_version=version,
-                    definition=quota_definitions[key],
-                    mode="UNLIMITED",
-                    limit_source="FIXED",
-                )
-                for key in spec["unlimited_quotas"]
+                for key, (mode, limit_source, limit_value, window_seconds) in spec["quotas"].items()
             ]
         )
 

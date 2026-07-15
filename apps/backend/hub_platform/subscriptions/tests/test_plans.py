@@ -6,6 +6,9 @@ from hub_platform.subscriptions.keys import PlanCode, QuotaKey
 from hub_platform.subscriptions.models import Plan, PlanVersion, QuotaGrant
 from hub_platform.subscriptions.plan_service import publish_plan_version
 
+_MIB = 1024 * 1024
+_GIB = 1024 * 1024 * 1024
+
 
 class PlanVersionTests(TestCase):
     def test_canonical_plan_drafts_are_seeded_without_unapproved_limits(self) -> None:
@@ -23,15 +26,58 @@ class PlanVersionTests(TestCase):
         self.assertEqual(startup.agent_unit_price_minor, 290_000)
         self.assertIsNone(free.published_at)
         self.assertIsNone(startup.published_at)
-        self.assertFalse(
-            startup.quota_grants.filter(
-                definition__key__in=[
-                    QuotaKey.MANAGED_AI_CREDITS,
-                    QuotaKey.STORAGE_BYTES,
-                    QuotaKey.CRM_API_REQUESTS_PER_WINDOW,
-                ]
-            ).exists()
+
+    def test_free_startup_approved_quota_grants(self) -> None:
+        # Owner-approved quota values (2026-07-15) required to publish Free/Startup
+        # before C06. Business/Corporation stay draft with only ai_agent_slots.
+        free = PlanVersion.objects.get(plan__code=PlanCode.FREE, version=1)
+        startup = PlanVersion.objects.get(plan__code=PlanCode.STARTUP, version=1)
+        business = PlanVersion.objects.get(plan__code=PlanCode.BUSINESS, version=1)
+        corporation = PlanVersion.objects.get(plan__code=PlanCode.CORPORATION, version=1)
+
+        free_quotas = self._quota_map(free)
+        self.assertEqual(free_quotas[QuotaKey.MANAGED_AI_CREDITS], ("HARD", 300, None))
+        self.assertEqual(
+            free_quotas[QuotaKey.STORAGE_BYTES], ("HARD", 500 * _MIB, None)
         )
+        self.assertEqual(
+            free_quotas[QuotaKey.CRM_API_REQUESTS_PER_WINDOW], ("HARD", 0, None)
+        )
+        self.assertEqual(
+            free_quotas[QuotaKey.CONCURRENT_P2P_CALLS], ("CONCURRENT", 0, None)
+        )
+        self.assertEqual(
+            free_quotas[QuotaKey.CONCURRENT_VOICE_SESSIONS], ("CONCURRENT", 0, None)
+        )
+
+        startup_quotas = self._quota_map(startup)
+        self.assertEqual(
+            startup_quotas[QuotaKey.MANAGED_AI_CREDITS], ("HARD", 1000, None)
+        )
+        self.assertEqual(
+            startup_quotas[QuotaKey.STORAGE_BYTES], ("HARD", 2 * _GIB, None)
+        )
+        self.assertEqual(
+            startup_quotas[QuotaKey.CRM_API_REQUESTS_PER_WINDOW], ("RATE", 60, 60)
+        )
+        self.assertEqual(
+            startup_quotas[QuotaKey.CONCURRENT_P2P_CALLS], ("CONCURRENT", 3, None)
+        )
+        self.assertEqual(
+            startup_quotas[QuotaKey.CONCURRENT_VOICE_SESSIONS],
+            ("CONCURRENT", 10, None),
+        )
+
+        # Business/Corporation remain draft: only ai_agent_slots, no approved quotas.
+        self.assertEqual(set(self._quota_map(business)), {QuotaKey.AI_AGENT_SLOTS})
+        self.assertEqual(set(self._quota_map(corporation)), {QuotaKey.AI_AGENT_SLOTS})
+
+    @staticmethod
+    def _quota_map(version: PlanVersion) -> dict[str, tuple[str, int | None, int | None]]:
+        return {
+            grant.definition.key: (grant.mode, grant.limit_value, grant.window_seconds)
+            for grant in version.quota_grants.all()
+        }
 
     def test_published_version_and_grants_are_immutable(self) -> None:
         version = publish_plan_version(
