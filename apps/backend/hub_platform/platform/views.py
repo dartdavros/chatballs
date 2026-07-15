@@ -1,0 +1,58 @@
+from __future__ import annotations
+
+from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from hub_platform.identity.models import EmployeeRole, OrganizationMembership
+from hub_platform.platform.authentication import PlatformTokenAuthentication
+from hub_platform.platform.errors import ProvisioningError
+from hub_platform.platform.models import ProvisioningSource
+from hub_platform.platform.payloads import owner_state_for, provisioning_result_payload
+from hub_platform.platform.permissions import HasPlatformCapability
+from hub_platform.platform.provisioning_service import provision_organization
+from hub_platform.platform.validation import parse_provisioning_body
+from hub_platform.subscriptions.models import Subscription
+
+_IDEMPOTENCY_HEADER = "Idempotency-Key"
+
+
+class OrganizationProvisionView(APIView):
+    """POST platform.custocrm.ru/api/v1/organizations (SPEC-HUB-0021 §12).
+
+    The first Platform API adapter: machine-to-machine provisioning via an
+    opaque platform token. Does not reuse tenant HasCapability (no membership
+    exists yet) and is not reachable on the app surface.
+    """
+
+    authentication_classes = [PlatformTokenAuthentication]
+    permission_classes = [HasPlatformCapability]
+    required_platform_capability = "platform.organizations.provision"
+
+    def post(self, request: Request) -> Response:
+        idempotency_key = request.headers.get(_IDEMPOTENCY_HEADER, "").strip()
+        if not idempotency_key:
+            return Response({"detail": "Idempotency-Key header is required"}, status=400)
+        command, error = parse_provisioning_body(
+            request.data,
+            idempotency_key=idempotency_key,
+            source=ProvisioningSource.PLATFORM_OPERATOR,
+        )
+        if error:
+            return Response({"detail": error}, status=400)
+        try:
+            result = provision_organization(command=command, operator=request.user)
+        except ProvisioningError as error:
+            return Response({"detail": str(error)}, status=error.status_code)
+        subscription = Subscription.objects.filter(organization=result.organization).first()
+        owner_membership = OrganizationMembership.objects.filter(
+            organization=result.organization, role=EmployeeRole.OWNER
+        ).first()
+        payload = provisioning_result_payload(
+            provisioning=result.provisioning,
+            organization=result.organization,
+            subscription=subscription,
+            owner_state=owner_state_for(result.organization, owner_membership),
+        )
+        status_code = 201 if result.created else 200
+        return Response(payload, status=status_code)

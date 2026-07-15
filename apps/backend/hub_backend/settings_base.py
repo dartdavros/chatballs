@@ -4,8 +4,8 @@ from pathlib import Path
 
 from django.core.exceptions import ImproperlyConfigured
 
-from hub_backend.settings_env import env_bool, env_list
 from hub_backend.settings_database import build_databases
+from hub_backend.settings_env import env_bool, env_list
 from hub_backend.settings_storage import build_storage_settings
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     "hub_platform.identity",
     "hub_platform.tenancy",
     "hub_platform.subscriptions",
+    "hub_platform.platform",
     "hub_platform.products",
     "hub_platform.ai",
     "hub_platform.integrations",

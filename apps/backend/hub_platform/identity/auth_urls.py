@@ -18,4 +18,5 @@ urlpatterns = [
     path("totp/setup/", auth.TotpSetupView.as_view(), name="auth-totp-setup"),
     path("totp/confirm/", auth.TotpConfirmView.as_view(), name="auth-totp-confirm"),
     path("totp/verify/", auth.TotpVerifyView.as_view(), name="auth-totp-verify"),
+    path("invitations/accept/", auth.InvitationAcceptView.as_view(), name="auth-invitation-accept"),
 ]

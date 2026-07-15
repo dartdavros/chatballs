@@ -1,3 +1,4 @@
+from hub_platform.identity.auth.invitations import InvitationAcceptView
 from hub_platform.identity.auth.password_reset import (
     PasswordResetConfirmView,
     PasswordResetRequestView,
@@ -30,4 +31,5 @@ __all__ = [
     "TotpSetupView",
     "TotpConfirmView",
     "TotpVerifyView",
+    "InvitationAcceptView",
 ]

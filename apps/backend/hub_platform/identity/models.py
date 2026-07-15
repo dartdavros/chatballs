@@ -62,10 +62,21 @@ class VatMode(models.TextChoices):
     WITHOUT_VAT = "WITHOUT_VAT", "Без НДС"
 
 
+class OrganizationStatus(models.TextChoices):
+    # SPEC-HUB-0021 §6/§8: PENDING_OWNER до принятия OWNER invitation, ACTIVE после.
+    ACTIVE = "ACTIVE", "Active"
+    PENDING_OWNER = "PENDING_OWNER", "Pending owner"
+
+
 class Organization(models.Model):
     public_id = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     name = models.CharField(max_length=255)
     slug = models.SlugField(unique=True)
+    status = models.CharField(
+        max_length=32,
+        choices=OrganizationStatus.choices,
+        default=OrganizationStatus.ACTIVE,
+    )
     timezone = models.CharField(max_length=64, default="Europe/Moscow")
     currency = models.CharField(max_length=3, default="RUB")
     tax_regime = models.CharField(max_length=32, choices=TaxRegime.choices, default=TaxRegime.USN_INCOME)
