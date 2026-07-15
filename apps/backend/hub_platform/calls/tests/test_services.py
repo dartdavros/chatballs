@@ -9,8 +9,7 @@ from hub_platform.calls.models import (
     CallStatus,
     ParticipantSide,
 )
-from hub_platform.calls.services import create_call_request
-from hub_platform.calls.tests.helpers import CallTestCase
+from hub_platform.calls.tests.helpers import CallTestCase, create_call_request
 from hub_platform.calls.tokens import hash_invite_token
 from hub_platform.conversations.models import ControlMode, LifecycleState, Message
 
@@ -63,7 +62,7 @@ class CallCreationTests(CallTestCase):
         self.assertEqual(self.conversation.control_mode, ControlMode.AI)
 
     def test_blocked_operator_is_denied(self) -> None:
-        self.operator.employee_profile.block()
+        self.operator.memberships.get(organization=self.organization).block()
         with self.assertRaises(CallAccessDenied):
             create_call_request(conversation_id=self.conversation.id, initiator=self.operator)
         self.assertFalse(CallSession.objects.exists())

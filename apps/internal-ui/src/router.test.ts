@@ -2,16 +2,27 @@ import { describe, expect, it } from "vitest";
 
 import { pathFromRoute, routeFromPath } from "./router";
 
+const empty = {
+  organizationPublicId: null,
+  employeeId: null,
+  productId: null,
+  productCode: null,
+  agentId: null,
+  knowledgeId: null,
+  clientId: null,
+  orderId: null,
+};
+
 describe("employee access routes", () => {
   it("parses and creates the access profile URL", () => {
-    expect(routeFromPath("/employees/access-profiles")).toEqual({ route: "accessProfiles", employeeId: null, productId: null, productCode: null, agentId: null, knowledgeId: null, clientId: null, orderId: null });
+    expect(routeFromPath("/employees/access-profiles")).toEqual({ route: "accessProfiles", ...empty });
     expect(pathFromRoute("accessProfiles")).toBe("/employees/access-profiles");
   });
 });
 
 describe("product routes", () => {
   it("parses a product detail URL", () => {
-    expect(routeFromPath("/products/42")).toEqual({ route: "productDetail", employeeId: null, productId: 42, productCode: null, agentId: null, knowledgeId: null, clientId: null, orderId: null });
+    expect(routeFromPath("/products/42")).toEqual({ route: "productDetail", ...empty, productId: 42 });
   });
 
   it("creates a product detail URL", () => {
@@ -21,11 +32,11 @@ describe("product routes", () => {
 
 describe("sales detail routes", () => {
   it("parses a client detail URL", () => {
-    expect(routeFromPath("/departments/sales/clients/15")).toEqual({ route: "salesClientDetail", employeeId: null, productId: null, productCode: null, agentId: null, knowledgeId: null, clientId: 15, orderId: null });
+    expect(routeFromPath("/departments/sales/clients/15")).toEqual({ route: "salesClientDetail", ...empty, clientId: 15 });
   });
 
   it("parses an order detail URL", () => {
-    expect(routeFromPath("/departments/sales/orders/8")).toEqual({ route: "salesOrderDetail", employeeId: null, productId: null, productCode: null, agentId: null, knowledgeId: null, clientId: null, orderId: 8 });
+    expect(routeFromPath("/departments/sales/orders/8")).toEqual({ route: "salesOrderDetail", ...empty, orderId: 8 });
   });
 
   it("creates client and order detail URLs", () => {
@@ -36,7 +47,7 @@ describe("sales detail routes", () => {
 
 describe("ai agent routes", () => {
   it("parses an AI agent detail URL", () => {
-    expect(routeFromPath("/ai/agents/7")).toEqual({ route: "aiAgentDetail", employeeId: null, productId: null, productCode: null, agentId: 7, knowledgeId: null, clientId: null, orderId: null });
+    expect(routeFromPath("/ai/agents/7")).toEqual({ route: "aiAgentDetail", ...empty, agentId: 7 });
   });
 
   it("creates an AI agent detail URL", () => {
@@ -44,7 +55,7 @@ describe("ai agent routes", () => {
   });
 
   it("parses an AI agent creation URL", () => {
-    expect(routeFromPath("/ai/agents/new", "?product=academy")).toEqual({ route: "aiAgentCreate", employeeId: null, productId: null, productCode: "academy", agentId: null, knowledgeId: null, clientId: null, orderId: null });
+    expect(routeFromPath("/ai/agents/new", "?product=academy")).toEqual({ route: "aiAgentCreate", ...empty, productCode: "academy" });
   });
 
   it("creates an AI agent creation URL", () => {
@@ -54,8 +65,8 @@ describe("ai agent routes", () => {
 
 describe("ai knowledge routes", () => {
   it("parses knowledge list and detail URLs", () => {
-    expect(routeFromPath("/ai/knowledge")).toEqual({ route: "aiKnowledge", employeeId: null, productId: null, productCode: null, agentId: null, knowledgeId: null, clientId: null, orderId: null });
-    expect(routeFromPath("/ai/knowledge/12")).toEqual({ route: "aiKnowledgeDetail", employeeId: null, productId: null, productCode: null, agentId: null, knowledgeId: 12, clientId: null, orderId: null });
+    expect(routeFromPath("/ai/knowledge")).toEqual({ route: "aiKnowledge", ...empty });
+    expect(routeFromPath("/ai/knowledge/12")).toEqual({ route: "aiKnowledgeDetail", ...empty, knowledgeId: 12 });
   });
 
   it("creates knowledge URLs", () => {
@@ -66,12 +77,31 @@ describe("ai knowledge routes", () => {
 
 describe("support routes", () => {
   it("parses support overview and dialogs URLs", () => {
-    expect(routeFromPath("/departments/support")).toEqual({ route: "supportOverview", employeeId: null, productId: null, productCode: null, agentId: null, knowledgeId: null, clientId: null, orderId: null });
-    expect(routeFromPath("/departments/support/dialogs")).toEqual({ route: "supportDialogs", employeeId: null, productId: null, productCode: null, agentId: null, knowledgeId: null, clientId: null, orderId: null });
+    expect(routeFromPath("/departments/support")).toEqual({ route: "supportOverview", ...empty });
+    expect(routeFromPath("/departments/support/dialogs")).toEqual({ route: "supportDialogs", ...empty });
   });
 
   it("creates support overview and dialogs URLs", () => {
     expect(pathFromRoute("supportOverview")).toBe("/departments/support");
     expect(pathFromRoute("supportDialogs")).toBe("/departments/support/dialogs");
+  });
+});
+
+describe("organization routes", () => {
+  const organizationPublicId = "123e4567-e89b-12d3-a456-426614174000";
+
+  it("parses the selected organization from the URL", () => {
+    expect(routeFromPath(`/organizations/${organizationPublicId}/products/42`)).toEqual({
+      route: "productDetail",
+      ...empty,
+      organizationPublicId,
+      productId: 42,
+    });
+  });
+
+  it("creates navigation URLs inside the selected organization", () => {
+    expect(pathFromRoute("salesOrders", null, null, organizationPublicId)).toBe(
+      `/organizations/${organizationPublicId}/departments/sales/orders`,
+    );
   });
 });

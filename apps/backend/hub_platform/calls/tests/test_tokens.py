@@ -9,10 +9,9 @@ from hub_platform.calls.lifecycle import transition_call
 from hub_platform.calls.models import CallStatus, ParticipantSide
 from hub_platform.calls.services import (
     authorize_call_access_token,
-    create_call_request,
     resolve_invite,
 )
-from hub_platform.calls.tests.helpers import CallTestCase
+from hub_platform.calls.tests.helpers import CallTestCase, create_call_request
 from hub_platform.calls.tokens import (
     issue_call_access_token,
     verify_call_access_token,

@@ -32,6 +32,7 @@ from hub_platform.conversations.transports.base import InboundMessage
 from hub_platform.events.models import InboxEvent
 from hub_platform.notifications.models import NotificationAudience, NotificationType
 from hub_platform.notifications.services import notify
+from hub_platform.tenancy.context import TenantContext
 
 logger = logging.getLogger(__name__)
 
@@ -64,6 +65,7 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
     if channel is None:
         logger.warning("Integration %s has no channel — inbound dropped", integration.id)
         return
+    context = TenantContext.for_resource(channel.organization)
     source = f"{integration.provider.lower()}:{integration.id}"
     if _already_processed(source, inbound.external_id, inbound.text):
         return
@@ -130,7 +132,7 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
 
     if is_new:
         notify(
-            organization=channel.organization,
+            context=context,
             department=channel.department,
             type=NotificationType.DIALOG_WAITING,
             audience=NotificationAudience.OPERATORS,
@@ -145,7 +147,7 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
         # Клиент написал в диалог, который ведёт оператор или который в очереди — пуш.
         operator = conversation.assigned_operator
         notify(
-            organization=channel.organization,
+            context=context,
             department=channel.department,
             type=NotificationType.DIALOG_NEW_MESSAGE,
             audience=NotificationAudience.USER if operator else NotificationAudience.OPERATORS,
@@ -187,7 +189,7 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
         fallback = "Извините, прямо сейчас не получается ответить. Я передал ваш вопрос специалисту — он скоро подключится."
         Message.objects.create(conversation=conversation, author_type=MessageAuthor.AI, text=fallback)
         notify(
-            organization=channel.organization,
+            context=context,
             department=channel.department,
             type=NotificationType.DIALOG_WAITING,
             audience=NotificationAudience.OPERATORS,
@@ -218,7 +220,7 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
     if handoff:
         Message.objects.create(conversation=conversation, author_type=MessageAuthor.SYSTEM, text="AI передал диалог оператору")
         notify(
-            organization=channel.organization,
+            context=context,
             department=channel.department,
             type=NotificationType.DIALOG_WAITING,
             audience=NotificationAudience.OPERATORS,

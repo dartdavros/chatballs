@@ -24,6 +24,7 @@ from hub_platform.conversations.models import (
 )
 from hub_platform.notifications.models import NotificationAudience, NotificationType
 from hub_platform.notifications.services import notify
+from hub_platform.tenancy.context import TenantContext
 
 logger = logging.getLogger(__name__)
 
@@ -71,12 +72,16 @@ def support_messages_since(conversation: Conversation, since: int) -> dict:
 
 
 @transaction.atomic
-def post_support_message(*, conversation: Conversation, text: str) -> None:
+def post_support_message(
+    *, context: TenantContext, conversation: Conversation, text: str
+) -> None:
     """Сохраняет сообщение клиента и запускает AI-ответ (если диалог ведёт AI).
 
     ADR-HUB-0003: AI-first; handoff AI→operator. Без Contact/ConnectionIdentity и
     без transports.send_reply (ответ идёт через polling, не через messenger API).
     """
+    if conversation.organization_id != context.organization_id:
+        raise ValueError("Support conversation is outside tenant context")
     Message.objects.create(conversation=conversation, author_type=MessageAuthor.CONTACT, text=text)
     snapshot = conversation.support_identity_snapshot
     client_label = (snapshot.display_name if snapshot else "") or "Клиент"
@@ -112,7 +117,7 @@ def post_support_message(*, conversation: Conversation, text: str) -> None:
             conversation=conversation, author_type=MessageAuthor.AI, text=fallback
         )
         notify(
-            organization=conversation.organization,
+            context=context,
             department=conversation.channel.department,
             type=NotificationType.DIALOG_WAITING,
             audience=NotificationAudience.OPERATORS,
@@ -146,7 +151,7 @@ def post_support_message(*, conversation: Conversation, text: str) -> None:
             text="AI передал диалог оператору",
         )
         notify(
-            organization=conversation.organization,
+            context=context,
             department=conversation.channel.department,
             type=NotificationType.DIALOG_WAITING,
             audience=NotificationAudience.OPERATORS,

@@ -2,7 +2,7 @@ import hashlib
 import secrets
 import uuid
 
-from django.db import transaction
+from django.db import models, transaction
 
 from hub_platform.conversations.ingest import ingest_inbound
 from hub_platform.conversations.models import (
@@ -29,11 +29,16 @@ def _hash(token: str) -> str:
 
 
 def web_connection_for_channel(channel_code: str) -> Integration | None:
-    return (
+    matches = list(
         Integration.objects.select_related("channel")
-        .filter(provider=IntegrationProvider.WEB, channel__code=channel_code)
-        .first()
+        .filter(
+            provider=IntegrationProvider.WEB,
+            channel__code=channel_code,
+            channel__is_active=True,
+        )
+        .order_by("id")[:2]
     )
+    return matches[0] if len(matches) == 1 else None
 
 
 def _host_allowed(integration: Integration, origin: str) -> bool:
@@ -94,9 +99,17 @@ def resolve_session(token: str) -> WebSession | None:
         return None
     return (
         WebSession.objects.select_related(
-            "connection", "connection__channel", "identity", "identity__contact"
+            "connection",
+            "connection__channel",
+            "connection__organization",
+            "identity",
+            "identity__contact",
         )
-        .filter(token_hash=_hash(token))
+        .filter(
+            token_hash=_hash(token),
+            connection__organization_id=models.F("identity__contact__organization_id"),
+            connection__channel__organization_id=models.F("connection__organization_id"),
+        )
         .first()
     )
 

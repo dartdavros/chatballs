@@ -6,8 +6,8 @@ from hub_platform.identity.models import (
     Department,
     DepartmentStatus,
     EmployeeAccessAssignment,
-    EmployeeProfile,
     EmployeeRole,
+    OrganizationMembership,
 )
 
 
@@ -19,7 +19,7 @@ def allowed_profile_scopes(capability_codes: list[str]) -> set[str]:
 
 
 def create_access_assignment(
-    *, actor: EmployeeProfile, employee: EmployeeProfile, payload: dict
+    *, actor: OrganizationMembership, employee: OrganizationMembership, payload: dict
 ) -> EmployeeAccessAssignment:
     if employee.role != EmployeeRole.EMPLOYEE:
         raise ValidationError("Access assignments are only allowed for EMPLOYEE")

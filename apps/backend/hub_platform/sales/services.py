@@ -186,7 +186,11 @@ class IngestResult:
     duplicate: bool
 
 
-def record_product_sales_event(*, source: SalesSource, payload: dict[str, Any]) -> IngestResult:
+def record_product_sales_event(
+    *, context, source: SalesSource, payload: dict[str, Any]
+) -> IngestResult:
+    if source.organization_id != context.organization_id:
+        raise CredentialError("Sales source belongs to another organization")
     if source.status == SalesSourceStatus.DISABLED:
         raise CredentialError("Sales source is disabled")
 
@@ -405,8 +409,7 @@ def _resolve_attribution(*, sale: Sale, source: SalesSource | None, parsed: Pars
 @transaction.atomic
 def create_manual_sale(
     *,
-    organization,
-    actor_user,
+    context,
     product: Product,
     amount_minor: int,
     currency: str,
@@ -419,6 +422,13 @@ def create_manual_sale(
     line_items: list[dict[str, Any]] | None = None,
     metadata: dict[str, Any] | None = None,
 ) -> Sale:
+    organization = context.organization
+    actor_user = context.actor_user
+    if actor_user is None:
+        raise InvalidPayload("Manual sale requires a human actor")
+    for resource in (product, contact, conversation):
+        if resource is not None and resource.organization_id != context.organization_id:
+            raise InvalidPayload("Manual sale resource belongs to another organization")
     if contact is None and conversation is None:
         raise InvalidPayload("Manual sale needs a contact or conversation")
     if conversation is not None and contact is None:
@@ -498,8 +508,8 @@ def create_manual_sale(
 @transaction.atomic
 def record_manual_action(
     *,
+    context,
     sale: Sale,
-    actor_user,
     event_type: str,
     reason: str,
     amount_minor: int | None = None,
@@ -514,7 +524,12 @@ def record_manual_action(
     }:
         raise InvalidPayload("Unsupported manual event_type")
 
-    locked = Sale.objects.select_for_update().get(pk=sale.pk)
+    actor_user = context.actor_user
+    if actor_user is None:
+        raise InvalidPayload("Manual action requires a human actor")
+    locked = Sale.objects.select_for_update().get(
+        pk=sale.pk, organization=context.organization
+    )
     occurred_at = timezone.now()
     meta = {"reason": reason} if reason else {}
 
@@ -564,7 +579,7 @@ def record_manual_action(
 @transaction.atomic
 def issue_attribution_token(
     *,
-    organization,
+    context,
     product: Product,
     contact: Contact,
     conversation: Conversation,
@@ -576,6 +591,12 @@ def issue_attribution_token(
     ttl_hours: int = 72,
     metadata: dict[str, Any] | None = None,
 ) -> tuple[AttributionToken, str]:
+    organization = context.organization
+    for resource in (product, contact, conversation, channel, connection):
+        if resource is not None and resource.organization_id != context.organization_id:
+            raise InvalidPayload("Attribution resource belongs to another organization")
+    if offer is not None and offer.product.organization_id != context.organization_id:
+        raise InvalidPayload("Attribution offer belongs to another organization")
     if actor_type not in ActorType.values:
         raise InvalidPayload("Unknown actor_type")
     raw = secrets.token_urlsafe(32)

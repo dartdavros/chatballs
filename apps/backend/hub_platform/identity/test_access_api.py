@@ -1,15 +1,15 @@
 from django.test import TestCase
-from rest_framework.test import APIClient
+from hub_platform.testing import TenantAPIClient as APIClient
 
 from hub_platform.events.models import OutboxEvent
 from hub_platform.identity.models import (
     AccessProfile,
     AccessProfileCapability,
     Department,
-    EmployeeProfile,
     EmployeeRole,
     HumanUser,
     Organization,
+    OrganizationMembership,
 )
 
 
@@ -30,9 +30,9 @@ class AccessManagementApiTests(TestCase):
 
     def _employee(
         self, email: str, role: str, department: Department | None = None
-    ) -> EmployeeProfile:
+    ) -> OrganizationMembership:
         user = HumanUser.objects.create_user(email=email, password="Password-123")
-        return EmployeeProfile.objects.create(
+        return OrganizationMembership.objects.create(
             user=user,
             organization=self.organization,
             role=role,
@@ -220,7 +220,7 @@ class AccessManagementApiTests(TestCase):
             format="json",
         )
         self.assertEqual(response.status_code, 201)
-        created = EmployeeProfile.objects.get(user__email="new@access.test")
+        created = OrganizationMembership.objects.get(user__email="new@access.test")
         self.assertEqual(created.access_assignments.get().department, self.sales)
 
     def test_employee_create_without_password_queues_first_access_email(self) -> None:

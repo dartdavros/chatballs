@@ -15,6 +15,7 @@ from hub_platform.integrations.services import (
     test_integration as run_integration_test,
     update_integration,
 )
+from hub_platform.testing import system_tenant_context
 
 
 def _fake_response(status: int, body: dict):
@@ -31,30 +32,37 @@ class WebIntegrationCheckTests(TestCase):
     def setUp(self) -> None:
         bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
         self.organization = Organization.objects.get(slug="edevs")
+        self.context = system_tenant_context(self.organization)
         from hub_platform.channels.models import Channel
 
         self.channel = Channel.objects.create(organization=self.organization, code="edevs", name="Edevs — главный сайт")
 
     def _web(self, name: str, channel=None) -> Integration:
         return create_integration(
-            organization=self.organization,
+            context=self.context,
             data=IntegrationInput(provider=IntegrationProvider.WEB, name=name, channel_id=channel.id if channel else None),
         )
 
     def test_web_without_channel_fails(self) -> None:
-        integration = run_integration_test(integration=self._web("Виджет", channel=None))
+        integration = run_integration_test(
+            context=self.context, integration=self._web("Виджет", channel=None)
+        )
         self.assertEqual(integration.status, IntegrationStatus.ERROR)
         self.assertIn("не привязано к каналу", integration.last_error)
 
     def test_web_bound_to_channel_is_ok(self) -> None:
-        integration = run_integration_test(integration=self._web("Виджет", channel=self.channel))
+        integration = run_integration_test(
+            context=self.context, integration=self._web("Виджет", channel=self.channel)
+        )
         self.assertEqual(integration.status, IntegrationStatus.OK)
         self.assertEqual(integration.last_error, "")
 
     def test_web_shadowed_by_another_connection_fails(self) -> None:
         # Два WEB-подключения на один канал: виджет обслуживает первое по сортировке.
         self._web("A-виджет", channel=self.channel)
-        shadowed = run_integration_test(integration=self._web("B-виджет", channel=self.channel))
+        shadowed = run_integration_test(
+            context=self.context, integration=self._web("B-виджет", channel=self.channel)
+        )
         self.assertEqual(shadowed.status, IntegrationStatus.ERROR)
         self.assertIn("другое WEB-подключение", shadowed.last_error)
 
@@ -63,10 +71,11 @@ class ProxyConfigTests(TestCase):
     def setUp(self) -> None:
         bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
         self.organization = Organization.objects.get(slug="edevs")
+        self.context = system_tenant_context(self.organization)
 
     def test_proxy_url_is_persisted_in_config(self) -> None:
         integration = create_integration(
-            organization=self.organization,
+            context=self.context,
             data=IntegrationInput(
                 provider=IntegrationProvider.OPENROUTER,
                 name="OpenRouter",
@@ -78,7 +87,7 @@ class ProxyConfigTests(TestCase):
 
     def test_update_clears_proxy_when_empty(self) -> None:
         integration = create_integration(
-            organization=self.organization,
+            context=self.context,
             data=IntegrationInput(
                 provider=IntegrationProvider.OPENROUTER,
                 name="OpenRouter",
@@ -87,6 +96,7 @@ class ProxyConfigTests(TestCase):
             ),
         )
         updated = update_integration(
+            context=self.context,
             integration=integration,
             data=IntegrationInput(provider=IntegrationProvider.OPENROUTER, name="OpenRouter", config={"proxyUrl": ""}),
         )
@@ -94,7 +104,7 @@ class ProxyConfigTests(TestCase):
 
     def test_serializer_exposes_proxy_url(self) -> None:
         integration = create_integration(
-            organization=self.organization,
+            context=self.context,
             data=IntegrationInput(
                 provider=IntegrationProvider.OPENROUTER,
                 name="OpenRouter",

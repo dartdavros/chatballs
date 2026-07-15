@@ -18,7 +18,6 @@ from hub_platform.identity.auth.totp_utils import (
     _ensure_totp_secret,
     _verify_totp,
 )
-from hub_platform.identity.membership_context import single_membership_for_user
 from hub_platform.identity.models import AuditResult, HumanUser
 
 
@@ -26,9 +25,6 @@ class TotpSetupView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request: Request) -> Response:
-        profile = request.user.employee_profile
-        if not profile.totp_required:
-            return Response({"detail": "TOTP is not required"}, status=400)
         if request.user.totp_enabled:
             return Response({"detail": "TOTP is already enabled"}, status=400)
 
@@ -53,16 +49,11 @@ class TotpConfirmView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request: Request) -> Response:
-        profile = request.user.employee_profile
-        if not profile.totp_required:
-            return Response({"detail": "TOTP is not required"}, status=400)
-
         secret = _ensure_totp_secret(request.user)
         if not _verify_totp(secret, str(request.data.get("code", ""))):
             record_audit_event(
                 action="identity.totp_setup_failed",
                 actor=request.user,
-                organization=profile.organization,
                 result=AuditResult.DENIED,
                 request=request,
             )
@@ -73,7 +64,6 @@ class TotpConfirmView(APIView):
         record_audit_event(
             action="identity.totp_enabled",
             actor=request.user,
-            organization=profile.organization,
             request=request,
         )
         return Response({"authenticated": True, "user": _user_payload(request.user)})
@@ -99,10 +89,6 @@ class TotpVerifyView(APIView):
             request.session.pop(TOTP_SESSION_KEY, None)
             return Response({"detail": "TOTP challenge is not active"}, status=401)
 
-        profile = single_membership_for_user(user)
-        if profile is None or profile.is_blocked:
-            request.session.pop(TOTP_SESSION_KEY, None)
-            return Response({"detail": "TOTP challenge is not active"}, status=401)
         if (
             not user.totp_enabled
             or not user.totp_secret
@@ -111,7 +97,6 @@ class TotpVerifyView(APIView):
             record_audit_event(
                 action="identity.totp_verify_failed",
                 actor=user,
-                organization=profile.organization,
                 result=AuditResult.DENIED,
                 request=request,
             )
@@ -122,7 +107,6 @@ class TotpVerifyView(APIView):
         record_audit_event(
             action="identity.login_succeeded",
             actor=user,
-            organization=profile.organization,
             request=request,
         )
         return Response({"authenticated": True, "user": _user_payload(user)})

@@ -1,11 +1,11 @@
 import json
 
 from django.test import TestCase
-from rest_framework.test import APIClient
+from hub_platform.testing import TenantAPIClient as APIClient
 
 from hub_platform.channels.models import Channel
 from hub_platform.identity.bootstrap import bootstrap_edevs_owner
-from hub_platform.identity.models import EmployeeProfile, EmployeeRole, HumanUser, Organization
+from hub_platform.identity.models import EmployeeRole, HumanUser, Organization, OrganizationMembership
 
 
 def _make_channel(organization, *, code, name):
@@ -64,7 +64,7 @@ class ChannelRenamePermissionTests(TestCase):
         organization = Organization.objects.get(slug="edevs")
         self.channel = _make_channel(organization, code="firepage-sales", name="FirePage — продажи")
         operator = HumanUser.objects.create_user(email="operator@edevs.tech", password="operator-password")
-        EmployeeProfile.objects.create(
+        OrganizationMembership.objects.create(
             user=operator,
             organization=organization,
             role=EmployeeRole.EMPLOYEE,

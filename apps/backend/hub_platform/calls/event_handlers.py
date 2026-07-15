@@ -16,6 +16,7 @@ from hub_platform.calls.services import CALL_INVITE_SEND
 from hub_platform.calls.tokens import issue_invite_token
 from hub_platform.conversations import transports
 from hub_platform.events.handlers import register
+from hub_platform.tenancy.context import TenantContext
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +28,9 @@ class CallInviteDeliveryError(Exception):
 
 
 @register(CALL_INVITE_SEND)
-def handle_call_invite_send(payload: dict) -> None:
+def handle_call_invite_send(payload: dict, context: TenantContext | None) -> None:
+    if context is None:
+        raise ValueError("Call invite event has no tenant context")
     call_session_id = payload.get("callSessionId")
     with transaction.atomic():
         call = (
@@ -35,7 +38,7 @@ def handle_call_invite_send(payload: dict) -> None:
             # нельзя блокировать; блокируем только строку звонка.
             CallSession.objects.select_for_update(of=("self",))
             .select_related("conversation", "delivery_connection")
-            .filter(id=call_session_id)
+            .filter(id=call_session_id, organization=context.organization)
             .first()
         )
         if call is None or call.status != CallStatus.REQUESTED or call.delivery_connection is None:

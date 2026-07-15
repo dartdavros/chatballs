@@ -2,7 +2,7 @@ import json
 
 from django.test import TestCase
 from django.utils import timezone
-from rest_framework.test import APIClient
+from hub_platform.testing import TenantAPIClient as APIClient, system_tenant_context
 
 from hub_platform.conversations.models import Contact
 from hub_platform.identity.bootstrap import bootstrap_edevs_owner
@@ -16,6 +16,7 @@ class OrdersTestBase(TestCase):
     def setUp(self) -> None:
         bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
         self.organization = Organization.objects.get(slug="edevs")
+        self.context = system_tenant_context(self.organization)
         self.contact = Contact.objects.create(organization=self.organization, name="Тестовый клиент")
         product = Product.objects.get(code="firepage")
         self.offer = Offer.objects.create(
@@ -31,15 +32,15 @@ class OrdersTestBase(TestCase):
 
 class OrderServiceTests(OrdersTestBase):
     def test_create_order_uses_active_price(self) -> None:
-        order = create_order(organization=self.organization, contact=self.contact, items=[OrderItemInput(offer_id=self.offer.id)])
+        order = create_order(context=self.context, contact=self.contact, items=[OrderItemInput(offer_id=self.offer.id)])
         self.assertEqual(order.amount_minor, 490_000)
         self.assertEqual(order.payment_status, PaymentStatus.PENDING)
         self.assertEqual(order.items.count(), 1)
         self.assertEqual(order.product_id, self.offer.product_id)
 
     def test_mark_paid_sets_paid_at_and_fulfillment(self) -> None:
-        order = create_order(organization=self.organization, contact=self.contact, items=[OrderItemInput(offer_id=self.offer.id)])
-        mark_paid(order=order)
+        order = create_order(context=self.context, contact=self.contact, items=[OrderItemInput(offer_id=self.offer.id)])
+        mark_paid(context=self.context, order=order)
         order.refresh_from_db()
         self.assertEqual(order.payment_status, PaymentStatus.PAID)
         self.assertIsNotNone(order.paid_at)
@@ -60,9 +61,9 @@ class OrderApiTests(OrdersTestBase):
         self.assertEqual(paid.json()["order"]["paymentStatus"], PaymentStatus.PAID)
 
     def test_list_filters_by_payment_status(self) -> None:
-        order = create_order(organization=self.organization, contact=self.contact, items=[OrderItemInput(offer_id=self.offer.id)])
-        mark_paid(order=order)
-        create_order(organization=self.organization, contact=self.contact, items=[OrderItemInput(offer_id=self.offer.id)])
+        order = create_order(context=self.context, contact=self.contact, items=[OrderItemInput(offer_id=self.offer.id)])
+        mark_paid(context=self.context, order=order)
+        create_order(context=self.context, contact=self.contact, items=[OrderItemInput(offer_id=self.offer.id)])
 
         response = self.client.get("/api/v1/orders/?paymentStatus=PAID")
         self.assertEqual(response.status_code, 200)
@@ -73,9 +74,9 @@ class OrderApiTests(OrdersTestBase):
     def test_paid_order_reflected_in_sales_stats(self) -> None:
         from hub_platform.conversations.stats import sales_overview_stats
 
-        order = create_order(organization=self.organization, contact=self.contact, items=[OrderItemInput(offer_id=self.offer.id)])
-        mark_paid(order=order)
-        stats = sales_overview_stats(self.organization.id, "d30")["period"]
+        order = create_order(context=self.context, contact=self.contact, items=[OrderItemInput(offer_id=self.offer.id)])
+        mark_paid(context=self.context, order=order)
+        stats = sales_overview_stats(self.context, "d30")["period"]
         self.assertEqual(stats["sales"], 1)
         self.assertEqual(stats["revenueMinor"], 490_000)
 

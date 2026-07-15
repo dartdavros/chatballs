@@ -17,7 +17,7 @@ from hub_platform.identity.employee_validation import (
 )
 from hub_platform.identity.event_handlers import INITIAL_ACCESS_REQUESTED
 from hub_platform.identity.governance import EmployeeAction, can_create_role, can_manage_employee
-from hub_platform.identity.models import EmployeeProfile, EmployeeRole, HumanUser
+from hub_platform.identity.models import EmployeeRole, HumanUser, OrganizationMembership
 from hub_platform.identity.policy import (
     ResourceScope,
     accessible_department_ids,
@@ -30,15 +30,15 @@ class EmployeeListView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request: Request) -> Response:
-        actor = request.user.employee_profile
-        if not has_capability_any_scope(request.user, "employees.view"):
+        actor = request.tenant_context.membership
+        if not has_capability_any_scope(actor, "employees.view"):
             return Response({"detail": "Not allowed"}, status=403)
         employees = (
-            EmployeeProfile.objects.select_related("user", "primary_department")
+            OrganizationMembership.objects.select_related("user", "primary_department")
             .prefetch_related("access_assignments__access_profile__capability_links")
             .filter(organization=actor.organization)
         )
-        department_ids = accessible_department_ids(request.user, "employees.view")
+        department_ids = accessible_department_ids(actor, "employees.view")
         if department_ids is not None:
             employees = employees.filter(primary_department_id__in=department_ids)
         return Response(
@@ -56,7 +56,7 @@ class EmployeeCreateView(APIView):
 
     @transaction.atomic
     def post(self, request: Request) -> Response:
-        actor = request.user.employee_profile
+        actor = request.tenant_context.membership
         body = request.data
         email = HumanUser.objects.normalize_email(str(body.get("email", "")))
         full_name = str(body.get("fullName", "")).strip()
@@ -103,7 +103,7 @@ class EmployeeCreateView(APIView):
             is_superuser=False,
             must_change_password=True,
         )
-        profile = EmployeeProfile.objects.create(
+        profile = OrganizationMembership.objects.create(
             user=user,
             organization=actor.organization,
             role=requested_role,
@@ -132,6 +132,7 @@ class EmployeeCreateView(APIView):
                 aggregate_id=str(user.id),
                 event_type=INITIAL_ACCESS_REQUESTED,
                 payload={"userId": user.id},
+                tenant_context=request.tenant_context,
             )
         )
         return Response({"employee": employee_payload(profile, actor)}, status=201)
@@ -141,12 +142,12 @@ class EmployeeDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request: Request, user_id: int) -> Response:
-        actor = request.user.employee_profile
+        actor = request.tenant_context.membership
         profile = get_owned_profile(request, user_id)
         if profile is None:
             return Response({"detail": "Employee not found"}, status=404)
         scope = ResourceScope(profile.organization_id, profile.primary_department_id)
-        if not authorize(request.user, "employees.view", scope):
+        if not authorize(actor, "employees.view", scope):
             return Response({"detail": "Employee not found"}, status=404)
         return Response({"employee": employee_payload(profile, actor, include_detail=True)})
 
@@ -156,7 +157,7 @@ class EmployeeUpdateView(APIView):
 
     @transaction.atomic
     def post(self, request: Request, user_id: int) -> Response:
-        actor = request.user.employee_profile
+        actor = request.tenant_context.membership
         profile = get_owned_profile(request, user_id)
         if profile is None:
             return Response({"detail": "Employee not found"}, status=404)

@@ -8,10 +8,10 @@ from rest_framework.views import APIView
 
 from hub_platform.ai.models import AIAgent, Knowledge, KnowledgeAttachment
 from hub_platform.ai.selectors import (
-    agent_for_organization,
-    agents_for_organization,
-    knowledge_for_organization,
-    knowledge_item_for_organization,
+    agent_for_context,
+    agents_for_context,
+    knowledge_for_context,
+    knowledge_item_for_context,
 )
 from hub_platform.ai.serializers import agent_payload, attachment_payload, knowledge_payload
 from hub_platform.ai.services import (
@@ -29,6 +29,7 @@ from hub_platform.ai.services import (
 )
 from hub_platform.api.permissions import HasCapability
 from hub_platform.identity.audit import record_audit_event
+from hub_platform.tenancy.context import TenantContext
 
 
 def _agent_input(body: dict[str, object], *, current: AIAgent) -> AgentInput:
@@ -68,7 +69,7 @@ class AIAgentListView(APIView):
     require_organization_scope = True
 
     def get(self, request: Request) -> Response:
-        agents = agents_for_organization(request.user.employee_profile.organization_id)
+        agents = agents_for_context(request.tenant_context)
         return Response({"items": [agent_payload(agent) for agent in agents]})
 
     def post(self, request: Request) -> Response:
@@ -77,7 +78,7 @@ class AIAgentListView(APIView):
             return Response({"detail": "knowledgeIds must be a list of ids"}, status=400)
         try:
             agent = create_agent(
-                organization=request.user.employee_profile.organization,
+                context=request.tenant_context,
                 data=AgentCreateInput(
                     channel_code=str(request.data.get("channel", "")).strip(),
                     model=str(request.data.get("model", "")).strip(),
@@ -92,7 +93,7 @@ class AIAgentListView(APIView):
         record_audit_event(
             action="ai.agent_created",
             actor=request.user,
-            organization=request.user.employee_profile.organization,
+            organization=request.tenant_context.organization,
             object_type="AIAgent",
             object_id=str(agent.id),
             request=request,
@@ -107,7 +108,7 @@ class AIAgentDetailView(APIView):
 
     def get(self, request: Request, agent_id: int) -> Response:
         try:
-            agent = agent_for_organization(organization_id=request.user.employee_profile.organization_id, agent_id=agent_id)
+            agent = agent_for_context(context=request.tenant_context, agent_id=agent_id)
         except AIAgent.DoesNotExist:
             return Response({"detail": "Agent not found"}, status=404)
         return Response({"agent": agent_payload(agent)})
@@ -119,24 +120,27 @@ class AIAgentUpdateView(APIView):
     require_organization_scope = True
 
     def patch(self, request: Request, agent_id: int) -> Response:
-        organization_id = request.user.employee_profile.organization_id
         try:
-            agent = agent_for_organization(organization_id=organization_id, agent_id=agent_id)
+            agent = agent_for_context(context=request.tenant_context, agent_id=agent_id)
         except AIAgent.DoesNotExist:
             return Response({"detail": "Agent not found"}, status=404)
         try:
-            agent = update_agent(agent=agent, data=_agent_input(request.data, current=agent))
+            agent = update_agent(
+                context=request.tenant_context,
+                agent=agent,
+                data=_agent_input(request.data, current=agent),
+            )
         except ValidationError as error:
             return _validation_error(error)
         record_audit_event(
             action="ai.agent_updated",
             actor=request.user,
-            organization=request.user.employee_profile.organization,
+            organization=request.tenant_context.organization,
             object_type="AIAgent",
             object_id=str(agent.id),
             request=request,
         )
-        agent = agent_for_organization(organization_id=organization_id, agent_id=agent_id)
+        agent = agent_for_context(context=request.tenant_context, agent_id=agent_id)
         return Response({"agent": agent_payload(agent)})
 
 
@@ -147,12 +151,16 @@ class _AIAgentStatusView(APIView):
     target_active: bool
 
     def post(self, request: Request, agent_id: int) -> Response:
-        organization = request.user.employee_profile.organization
+        organization = request.tenant_context.organization
         try:
-            agent = agent_for_organization(organization_id=organization.id, agent_id=agent_id)
+            agent = agent_for_context(context=request.tenant_context, agent_id=agent_id)
         except AIAgent.DoesNotExist:
             return Response({"detail": "Agent not found"}, status=404)
-        agent = set_agent_active(agent=agent, is_active=self.target_active)
+        agent = set_agent_active(
+            context=request.tenant_context,
+            agent=agent,
+            is_active=self.target_active,
+        )
         record_audit_event(
             action="ai.agent_activated" if self.target_active else "ai.agent_deactivated",
             actor=request.user,
@@ -196,10 +204,10 @@ class _KnowledgeBaseView(APIView):
     require_organization_scope = True
 
     def _org(self, request: Request):
-        return request.user.employee_profile.organization
+        return request.tenant_context.organization
 
     def _knowledge(self, request: Request, knowledge_id: int) -> Knowledge:
-        return knowledge_item_for_organization(organization_id=self._org(request).id, knowledge_id=knowledge_id)
+        return knowledge_item_for_context(context=request.tenant_context, knowledge_id=knowledge_id)
 
     def _audit(self, request: Request, action: str, knowledge: Knowledge) -> None:
         record_audit_event(
@@ -214,12 +222,15 @@ class _KnowledgeBaseView(APIView):
 
 class KnowledgeListCreateView(_KnowledgeBaseView):
     def get(self, request: Request) -> Response:
-        items = knowledge_for_organization(self._org(request).id)
+        items = knowledge_for_context(request.tenant_context)
         return Response({"items": [knowledge_payload(item, include_content=False) for item in items]})
 
     def post(self, request: Request) -> Response:
         try:
-            knowledge = create_knowledge(organization=self._org(request), data=_knowledge_input(request.data))
+            knowledge = create_knowledge(
+                context=request.tenant_context,
+                data=_knowledge_input(request.data),
+            )
         except ValidationError as error:
             return _validation_error(error)
         knowledge = self._knowledge(request, knowledge.id)
@@ -241,7 +252,11 @@ class KnowledgeDetailView(_KnowledgeBaseView):
         except Knowledge.DoesNotExist:
             return Response({"detail": "Knowledge not found"}, status=404)
         try:
-            knowledge = update_knowledge(knowledge=knowledge, data=_knowledge_input(request.data, current=knowledge))
+            knowledge = update_knowledge(
+                context=request.tenant_context,
+                knowledge=knowledge,
+                data=_knowledge_input(request.data, current=knowledge),
+            )
         except ValidationError as error:
             return _validation_error(error)
         knowledge = self._knowledge(request, knowledge_id)
@@ -254,7 +269,7 @@ class KnowledgeDetailView(_KnowledgeBaseView):
         except Knowledge.DoesNotExist:
             return Response({"detail": "Knowledge not found"}, status=404)
         self._audit(request, "deleted", knowledge)
-        delete_knowledge(knowledge=knowledge)
+        delete_knowledge(context=request.tenant_context, knowledge=knowledge)
         return Response(status=204)
 
 
@@ -278,7 +293,7 @@ class KnowledgeImportView(_KnowledgeBaseView):
             knowledge = Knowledge.objects.filter(organization=organization, title=title).first()
             if knowledge is None:
                 create_knowledge(
-                    organization=organization,
+                    context=request.tenant_context,
                     data=KnowledgeInput(title=title, description=description, content=content, is_enabled=True),
                 )
                 created += 1
@@ -286,6 +301,7 @@ class KnowledgeImportView(_KnowledgeBaseView):
                 unchanged += 1
             else:
                 update_knowledge(
+                    context=request.tenant_context,
                     knowledge=knowledge,
                     data=KnowledgeInput(
                         title=title,
@@ -319,7 +335,9 @@ class KnowledgeAttachmentUploadView(_KnowledgeBaseView):
         if upload is None:
             return Response({"detail": "file is required (multipart/form-data)"}, status=400)
         try:
-            attachment = add_attachment(knowledge=knowledge, upload=upload)
+            attachment = add_attachment(
+                context=request.tenant_context, knowledge=knowledge, upload=upload
+            )
         except ValidationError as error:
             return _validation_error(error)
         self._audit(request, "attachment_added", knowledge)
@@ -335,7 +353,7 @@ class KnowledgeAttachmentDeleteView(_KnowledgeBaseView):
         attachment = knowledge.attachments.filter(id=attachment_id).first()
         if attachment is None:
             return Response({"detail": "Attachment not found"}, status=404)
-        delete_attachment(attachment=attachment)
+        delete_attachment(context=request.tenant_context, attachment=attachment)
         self._audit(request, "attachment_deleted", knowledge)
         return Response(status=204)
 
@@ -347,7 +365,12 @@ class AttachmentDownloadView(APIView):
     authentication_classes: list = []
 
     def get(self, request: Request, public_id) -> FileResponse:
-        attachment = KnowledgeAttachment.objects.filter(public_id=public_id).first()
+        attachment = KnowledgeAttachment.objects.select_related(
+            "knowledge__organization"
+        ).filter(public_id=public_id).first()
         if attachment is None:
+            raise Http404
+        context = TenantContext.for_resource(attachment.knowledge.organization)
+        if attachment.knowledge.organization_id != context.organization_id:
             raise Http404
         return FileResponse(attachment.file.open("rb"), as_attachment=True, filename=attachment.original_name)

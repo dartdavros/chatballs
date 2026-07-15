@@ -54,19 +54,6 @@ class HumanUser(AbstractUser):
     def __str__(self) -> str:
         return self.email
 
-    @property
-    def employee_profile(self) -> "OrganizationMembership":
-        """C02 compatibility for legacy unscoped routes; removed by C03.
-
-        Never guesses a tenant when a user has multiple memberships.
-        """
-
-        try:
-            return self.memberships.get()
-        except OrganizationMembership.DoesNotExist as error:
-            raise AttributeError("User has no organization membership") from error
-
-
 class TaxRegime(models.TextChoices):
     USN_INCOME = "USN_INCOME", "УСН доходы"
 
@@ -193,11 +180,6 @@ class OrganizationMembership(models.Model):
     def unblock(self) -> None:
         self.blocked_at = None
         self.save(update_fields=["blocked_at"])
-
-
-# Transitional import compatibility only. There is no second EmployeeProfile model/table.
-# Runtime access through user.employee_profile is intentionally single-membership-only.
-EmployeeProfile = OrganizationMembership
 
 
 class AuditResult(models.TextChoices):

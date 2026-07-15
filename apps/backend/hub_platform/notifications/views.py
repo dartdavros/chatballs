@@ -16,14 +16,14 @@ class NotificationListView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request: Request) -> Response:
-        items = list(visible_for(request.user)[:_LIST_LIMIT])
+        items = list(visible_for(request.tenant_context)[:_LIST_LIMIT])
         read_ids = set(
             NotificationRead.objects.filter(user=request.user, notification__in=items).values_list("notification_id", flat=True)
         )
         return Response(
             {
                 "items": [notification_payload(n, unread=n.id not in read_ids) for n in items],
-                "unreadCount": unread_for(request.user).count(),
+                "unreadCount": unread_for(request.tenant_context).count(),
             }
         )
 
@@ -34,13 +34,15 @@ class MessengerBindingListView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request: Request) -> Response:
-        organization_id = request.user.employee_profile.organization_id
         bindings = {
             binding.integration_id: binding
-            for binding in MessengerBinding.objects.filter(user=request.user, integration__organization_id=organization_id)
+            for binding in MessengerBinding.objects.filter(
+                user=request.user,
+                integration__organization=request.tenant_context.organization,
+            )
         }
         items = []
-        for integration in notifier_integrations(organization_id):
+        for integration in notifier_integrations(request.tenant_context):
             binding = bindings.get(integration.id)
             items.append(
                 {
@@ -61,14 +63,16 @@ class MessengerBindingDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
     def _integration(self, request: Request, integration_id: int):
-        return notifier_integrations(request.user.employee_profile.organization_id).filter(id=integration_id).first()
+        return notifier_integrations(request.tenant_context).filter(id=integration_id).first()
 
     def post(self, request: Request, integration_id: int) -> Response:
         """Выдать одноразовый код привязки и deep-link на бота."""
         integration = self._integration(request, integration_id)
         if integration is None:
             return Response({"detail": "Бот уведомлений не найден"}, status=404)
-        binding_code = issue_binding_code(user=request.user, integration=integration)
+        binding_code = issue_binding_code(
+            context=request.tenant_context, integration=integration
+        )
         return Response(
             {
                 "code": binding_code.code,
@@ -100,10 +104,10 @@ class NotificationReadView(APIView):
 
     def post(self, request: Request) -> Response:
         if request.data.get("all"):
-            mark_read(user=request.user, all_unread=True)
+            mark_read(context=request.tenant_context, all_unread=True)
         else:
             ids = request.data.get("ids")
             if not isinstance(ids, list):
                 return Response({"detail": "ids must be a list or use all=true"}, status=400)
-            mark_read(user=request.user, ids=[i for i in ids if isinstance(i, int)])
-        return Response({"unreadCount": unread_for(request.user).count()})
+            mark_read(context=request.tenant_context, ids=[i for i in ids if isinstance(i, int)])
+        return Response({"unreadCount": unread_for(request.tenant_context).count()})

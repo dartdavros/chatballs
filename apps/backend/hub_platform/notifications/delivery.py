@@ -13,7 +13,7 @@ import logging
 from django.conf import settings
 
 from hub_platform.conversations import transports
-from hub_platform.identity.models import EmployeeProfile
+from hub_platform.identity.models import OrganizationMembership
 from hub_platform.notifications.models import (
     MessengerBinding,
     Notification,
@@ -21,6 +21,7 @@ from hub_platform.notifications.models import (
     NotificationLevel,
 )
 from hub_platform.notifications.selectors import visible_for
+from hub_platform.tenancy.context import TenantContext
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +38,7 @@ _LEVEL_MARK = {
 def _recipient_user_ids(notification: Notification) -> list[int]:
     if notification.audience == NotificationAudience.USER:
         return [notification.recipient_user_id] if notification.recipient_user_id else []
-    profiles = EmployeeProfile.objects.filter(
+    profiles = OrganizationMembership.objects.filter(
         organization_id=notification.organization_id,
         blocked_at__isnull=True,
         user__is_active=True,
@@ -45,7 +46,7 @@ def _recipient_user_ids(notification: Notification) -> list[int]:
     return [
         profile.user_id
         for profile in profiles
-        if visible_for(profile.user).filter(id=notification.id).exists()
+        if visible_for(TenantContext.for_membership(profile)).filter(id=notification.id).exists()
     ]
 
 

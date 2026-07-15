@@ -4,7 +4,6 @@ from hub_platform.orders import views
 
 urlpatterns = [
     path("", views.OrderListCreateView.as_view(), name="order-list"),
-    path("ingest/", views.OrderIngestView.as_view(), name="order-ingest"),
     path("<int:order_id>/", views.OrderDetailView.as_view(), name="order-detail"),
     path("<int:order_id>/mark-paid/", views.OrderMarkPaidView.as_view(), name="order-mark-paid"),
     path("<int:order_id>/cancel/", views.OrderCancelView.as_view(), name="order-cancel"),

@@ -1,14 +1,14 @@
 import { type FormEvent, useEffect, useState } from "react";
 
 import { api } from "../../api/client";
-import type { AuthChallenge, SessionUser } from "../../types";
+import type { AuthChallenge, AuthenticatedUser } from "../../types";
 import { Icon } from "../../shared/icons";
 import { Button } from "../../shared/ui-controls";
 import { AuthCodeInput } from "./AuthCodeInput";
 import { AuthFrame } from "./AuthFrame";
 import { formatCountdown } from "./time";
 
-export function AuthTotpCode({ challenge, onVerified }: { challenge: AuthChallenge; onVerified: (user: SessionUser) => void }) {
+export function AuthTotpCode({ challenge, onVerified }: { challenge: AuthChallenge; onVerified: (user: AuthenticatedUser) => void }) {
   const [code, setCode] = useState("");
   const [error, setError] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -24,7 +24,7 @@ export function AuthTotpCode({ challenge, onVerified }: { challenge: AuthChallen
     setSubmitting(true);
     setError(false);
     try {
-      const payload = await api<{ authenticated: true; user: SessionUser }>("/api/v1/auth/totp/verify/", {
+      const payload = await api<{ authenticated: true; user: AuthenticatedUser }>("/api/v1/auth/totp/verify/", {
         method: "POST",
         body: JSON.stringify({ code }),
       });

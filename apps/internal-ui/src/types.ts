@@ -5,21 +5,29 @@ import type { AiAgent } from "./features/ai/model";
 export type Role = "OWNER" | "ADMIN" | "EMPLOYEE";
 export type ProductStatus = "ACTIVE" | "DISABLED";
 
-export type SessionUser = {
+export type OrganizationMembership = {
   id: number;
-  email: string;
-  fullName: string;
+  organizationPublicId: string;
   role: Role;
   positionTitle: string;
   organization: string;
   organizationName: string;
   department: string | null;
-  mustChangePassword: boolean;
   totpRequired: boolean;
-  totpEnabled: boolean;
   capabilities: string[];
   accessScopes: AccessScope[];
 };
+
+export type AuthenticatedUser = {
+  id: number;
+  email: string;
+  fullName: string;
+  mustChangePassword: boolean;
+  totpEnabled: boolean;
+  memberships: OrganizationMembership[];
+};
+
+export type SessionUser = AuthenticatedUser & OrganizationMembership;
 
 export type AccessScope = {
   scopeType: "ORGANIZATION" | "DEPARTMENT";
@@ -31,11 +39,10 @@ export type AccessScope = {
 export type AuthChallenge = {
   email: string;
   fullName: string;
-  role: Role;
 };
 
 export type LoginPayload =
-  | { authenticated: true; user: SessionUser }
+  | { authenticated: true; user: AuthenticatedUser }
   | { authenticated: false; totpRequired: true; totpEnabled: true; challenge: AuthChallenge };
 
 // Флаги доступных действий над сотрудником для текущего пользователя. Backend —

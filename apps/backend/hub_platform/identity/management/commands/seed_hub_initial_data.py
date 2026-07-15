@@ -16,12 +16,13 @@ from hub_platform.channels.models import Channel
 from hub_platform.identity.audit import record_audit_event
 from hub_platform.identity.models import (
     Department,
-    EmployeeProfile,
     EmployeeRole,
     HumanUser,
     Organization,
+    OrganizationMembership,
 )
 from hub_platform.products.models import Product, ProductDepartment
+from hub_platform.tenancy.context import TenantContext
 
 from ._seed_specs import CHANNEL_SPECS, PRODUCT_SPECS, TONE
 
@@ -94,7 +95,7 @@ def _seed_core(*, owner_email: str, owner_password: str, owner_name: str) -> Cor
             changed_fields.append("is_superuser")
         if changed_fields:
             owner.save(update_fields=changed_fields)
-        EmployeeProfile.objects.update_or_create(
+        OrganizationMembership.objects.update_or_create(
             user=owner,
             organization=organization,
             defaults={
@@ -130,7 +131,8 @@ def _seed_core(*, owner_email: str, owner_password: str, owner_name: str) -> Cor
     )
 
 
-def _seed_channels(*, organization: Organization) -> tuple[int, int]:
+def _seed_channels(*, context: TenantContext) -> tuple[int, int]:
+    organization = context.organization
     created = 0
     agents_created = 0
     for spec in CHANNEL_SPECS:
@@ -187,7 +189,7 @@ class Command(BaseCommand):
         # Seed выполняется только при первичной установке: OWNER создаётся ровно
         # однажды (см. _seed_core). На уже развёрнутой установке команда — no-op,
         # чтобы не затирать данные, изменённые через UI/API (например цены офферов).
-        if EmployeeProfile.objects.filter(role=EmployeeRole.OWNER).exists():
+        if OrganizationMembership.objects.filter(role=EmployeeRole.OWNER).exists():
             self.stdout.write(self.style.WARNING(
                 "Installation already initialized (OWNER exists) — seed skipped."
             ))
@@ -206,14 +208,22 @@ class Command(BaseCommand):
         core = _seed_core(
             owner_email=owner_email, owner_password=owner_password, owner_name=owner_name
         )
-        call_command("seed_catalog", verbosity=0)
-        channels_created, agents_created = _seed_channels(organization=core.organization)
+        membership = core.organization.memberships.select_related(
+            "organization", "user"
+        ).get(user=core.owner)
+        context = TenantContext.for_membership(membership)
+        call_command(
+            "seed_catalog",
+            organization=str(core.organization.public_id),
+            verbosity=0,
+        )
+        channels_created, agents_created = _seed_channels(context=context)
         from hub_platform.support.seed_support import seed_support_reference
 
-        support_stats = seed_support_reference(organization=core.organization)
+        support_stats = seed_support_reference(context=context)
         content_result = import_ai_content(
             base_dir=Path(__file__).resolve().parents[6],
-            organization=core.organization,
+            context=context,
         )
 
         owner_state = "created" if core.created_owner else "ready"

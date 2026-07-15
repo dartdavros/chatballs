@@ -17,5 +17,4 @@ urlpatterns = [
         views.KnowledgeAttachmentDeleteView.as_view(),
         name="ai-knowledge-attachment-delete",
     ),
-    path("files/<uuid:public_id>/", views.AttachmentDownloadView.as_view(), name="ai-attachment-download"),
 ]

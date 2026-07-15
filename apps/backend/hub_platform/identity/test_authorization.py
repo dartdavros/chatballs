@@ -8,10 +8,10 @@ from hub_platform.identity.models import (
     AccessProfileCapability,
     Department,
     EmployeeAccessAssignment,
-    EmployeeProfile,
     EmployeeRole,
     HumanUser,
     Organization,
+    OrganizationMembership,
 )
 from hub_platform.identity.policy import (
     ResourceScope,
@@ -39,9 +39,9 @@ class CapabilityPolicyTests(TestCase):
 
     def _employee(
         self, email: str, role: str, department: Department | None = None
-    ) -> EmployeeProfile:
+    ) -> OrganizationMembership:
         user = HumanUser.objects.create_user(email=email, password="Password-123")
-        return EmployeeProfile.objects.create(
+        return OrganizationMembership.objects.create(
             user=user,
             organization=self.organization,
             role=role,
@@ -73,9 +73,9 @@ class CapabilityPolicyTests(TestCase):
 
     def test_owner_and_admin_role_policy(self) -> None:
         organization_scope = ResourceScope(self.organization.id)
-        self.assertTrue(authorize(self.owner.user, "ownership.transfer", organization_scope))
-        self.assertFalse(authorize(self.admin.user, "ownership.transfer", organization_scope))
-        self.assertTrue(authorize(self.admin.user, "integrations.manage", organization_scope))
+        self.assertTrue(authorize(self.owner, "ownership.transfer", organization_scope))
+        self.assertFalse(authorize(self.admin, "ownership.transfer", organization_scope))
+        self.assertTrue(authorize(self.admin, "integrations.manage", organization_scope))
 
     def test_department_assignment_does_not_cross_department(self) -> None:
         self._assign(
@@ -83,21 +83,21 @@ class CapabilityPolicyTests(TestCase):
         )
         self.assertTrue(
             authorize(
-                self.employee.user,
+                self.employee,
                 "conversations.view",
                 ResourceScope(self.organization.id, self.sales.id),
             )
         )
         self.assertFalse(
             authorize(
-                self.employee.user,
+                self.employee,
                 "conversations.view",
                 ResourceScope(self.organization.id, self.support.id),
             )
         )
         self.assertFalse(
             authorize(
-                self.employee.user,
+                self.employee,
                 "conversations.view",
                 ResourceScope(self.other_organization.id, self.sales.id),
             )
@@ -106,7 +106,7 @@ class CapabilityPolicyTests(TestCase):
     def test_primary_department_never_grants_access(self) -> None:
         self.assertFalse(
             authorize(
-                self.employee.user,
+                self.employee,
                 "conversations.view",
                 ResourceScope(self.organization.id, self.sales.id),
             )
@@ -116,12 +116,12 @@ class CapabilityPolicyTests(TestCase):
         self._assign(self._profile("Company reader", "conversations.view"))
         self.assertTrue(
             authorize(
-                self.employee.user,
+                self.employee,
                 "conversations.view",
                 ResourceScope(self.organization.id, self.support.id),
             )
         )
-        self.assertIsNone(accessible_department_ids(self.employee.user, "conversations.view"))
+        self.assertIsNone(accessible_department_ids(self.employee, "conversations.view"))
 
     def test_multiple_assignments_are_unioned_and_exposed(self) -> None:
         self._assign(
@@ -132,13 +132,13 @@ class CapabilityPolicyTests(TestCase):
             self._profile("Support reader", "support.view", "conversations.view"),
             department=self.support,
         )
-        access = get_effective_access(self.employee.user)
+        access = get_effective_access(self.employee)
         self.assertEqual(
             access["capabilities"],
             ["conversations.view", "sales.view", "support.view"],
         )
         self.assertEqual(
-            accessible_department_ids(self.employee.user, "conversations.view"),
+            accessible_department_ids(self.employee, "conversations.view"),
             {self.sales.id, self.support.id},
         )
         self.assertEqual(len(access["accessScopes"]), 2)
@@ -147,15 +147,15 @@ class CapabilityPolicyTests(TestCase):
         profile = self._profile("Reader", "products.view")
         assignment = self._assign(profile, department=self.sales)
         scope = ResourceScope(self.organization.id, self.sales.id)
-        self.assertTrue(authorize(self.employee.user, "products.view", scope))
+        self.assertTrue(authorize(self.employee, "products.view", scope))
         assignment.revoked_at = timezone.now()
         assignment.save(update_fields=["revoked_at"])
-        self.assertFalse(authorize(self.employee.user, "products.view", scope))
+        self.assertFalse(authorize(self.employee, "products.view", scope))
 
         second = self._assign(profile, department=self.sales)
         profile.is_active = False
         profile.save()
-        self.assertFalse(authorize(self.employee.user, "products.view", scope))
+        self.assertFalse(authorize(self.employee, "products.view", scope))
         self.assertIsNotNone(second.id)
 
     def test_unknown_and_protected_capabilities_are_rejected(self) -> None:

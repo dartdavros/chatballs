@@ -69,7 +69,7 @@ def employee_payload(
 
 
 def get_owned_profile(request: Request, user_id: int) -> OrganizationMembership | None:
-    owner_profile = request.user.employee_profile
+    owner_profile = request.tenant_context.membership
     try:
         return (
             OrganizationMembership.objects.select_related("user", "primary_department")

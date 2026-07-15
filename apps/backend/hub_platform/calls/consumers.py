@@ -18,7 +18,7 @@ from hub_platform.calls import signaling
 from hub_platform.calls.errors import CallTokenError
 from hub_platform.calls.models import TERMINAL_CALL_STATUSES
 from hub_platform.calls.permissions import staff_call_access_valid
-from hub_platform.calls.services import authorize_call_access_token
+from hub_platform.calls.services import authorize_call_access_context
 from hub_platform.calls.models import ParticipantSide
 
 logger = logging.getLogger(__name__)
@@ -33,7 +33,7 @@ class CallSignalingConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self) -> None:
         self.call_id = None
         self.side = None
-        self.staff_user_id = None
+        self.tenant_context = None
         self.group = None
         self._seen_commands: set[str] = set()
         await self.accept()
@@ -45,7 +45,7 @@ class CallSignalingConsumer(AsyncJsonWebsocketConsumer):
             return
         if self.side == ParticipantSide.STAFF and not await database_sync_to_async(
             staff_call_access_valid
-        )(user_id=self.staff_user_id, call_session_id=self.call_id):
+        )(context=self.tenant_context, call_session_id=self.call_id):
             await self.send_json({"type": "error", "code": "ACCESS_REVOKED"})
             await self.close(code=4403)
             return
@@ -65,9 +65,13 @@ class CallSignalingConsumer(AsyncJsonWebsocketConsumer):
             await self._connection_state(content)
         elif msg_type == "participant.metrics":
             # Технические метрики без медиаконтента: сохраняем, не ретранслируем.
-            await database_sync_to_async(signaling.record_metric)(self.call_id, self.side, content)
+            await database_sync_to_async(signaling.record_metric)(
+                self.tenant_context, self.call_id, self.side, content
+            )
         elif msg_type == "call.ended":
-            payload = await database_sync_to_async(signaling.end_from_signaling)(self.call_id, self.side)
+            payload = await database_sync_to_async(signaling.end_from_signaling)(
+                self.tenant_context, self.call_id, self.side
+            )
             await self._broadcast({"type": "call.state", "call": payload}, include_self=True)
         # незнакомые типы игнорируются без разрыва соединения
 
@@ -75,7 +79,9 @@ class CallSignalingConsumer(AsyncJsonWebsocketConsumer):
         if self.group is None:
             return
         await self.channel_layer.group_discard(self.group, self.channel_name)
-        payload = await database_sync_to_async(signaling.signaling_leave)(self.call_id, self.side)
+        payload = await database_sync_to_async(signaling.signaling_leave)(
+            self.tenant_context, self.call_id, self.side
+        )
         if payload is not None:
             await self._broadcast(
                 {"type": "participant.connection_state", "side": self.side, "state": "DISCONNECTED"},
@@ -89,8 +95,8 @@ class CallSignalingConsumer(AsyncJsonWebsocketConsumer):
             return
         token = str(content.get("token", ""))
         try:
-            claims, call = await database_sync_to_async(
-                lambda: authorize_call_access_token(token=token)
+            claims, call, context = await database_sync_to_async(
+                lambda: authorize_call_access_context(token=token)
             )()
         except CallTokenError:
             await self.send_json({"type": "error", "code": "AUTH_FAILED"})
@@ -98,10 +104,12 @@ class CallSignalingConsumer(AsyncJsonWebsocketConsumer):
             return
         self.call_id = call.id
         self.side = claims.side
-        self.staff_user_id = int(claims.subject_id) if claims.side == ParticipantSide.STAFF else None
+        self.tenant_context = context
         self.group = f"call.{call.id}"
         await self.channel_layer.group_add(self.group, self.channel_name)
-        payload = await database_sync_to_async(signaling.signaling_join)(self.call_id, self.side)
+        payload = await database_sync_to_async(signaling.signaling_join)(
+            self.tenant_context, self.call_id, self.side
+        )
         await self.send_json({"type": "call.state", "call": payload})
         await self._broadcast({"type": "peer.joined", "side": self.side})
         logger.info("call signaling joined: call=%s side=%s", self.call_id, self.side)
@@ -109,11 +117,15 @@ class CallSignalingConsumer(AsyncJsonWebsocketConsumer):
     async def _relay(self, msg_type: str, content: dict) -> None:
         # Сервер валидирует состояние CallSession перед передачей (SPEC §9);
         # payload не логируется — там SDP/ICE.
-        status = await database_sync_to_async(signaling.call_status)(self.call_id)
+        status = await database_sync_to_async(signaling.call_status)(
+            self.tenant_context, self.call_id
+        )
         if status in TERMINAL_CALL_STATUSES:
             return
         if msg_type == "webrtc.offer":
-            changed = await database_sync_to_async(signaling.start_negotiation)(self.call_id)
+            changed = await database_sync_to_async(signaling.start_negotiation)(
+                self.tenant_context, self.call_id
+            )
             if changed is not None:
                 await self._broadcast({"type": "call.state", "call": changed}, include_self=True)
         await self._broadcast({**content, "side": self.side})
@@ -121,7 +133,7 @@ class CallSignalingConsumer(AsyncJsonWebsocketConsumer):
     async def _connection_state(self, content: dict) -> None:
         connected = content.get("state") == "CONNECTED"
         payload, became_active = await database_sync_to_async(signaling.report_connection)(
-            self.call_id, self.side, connected
+            self.tenant_context, self.call_id, self.side, connected
         )
         await self._broadcast(
             {"type": "participant.connection_state", "side": self.side, "state": str(content.get("state", ""))[:16]},

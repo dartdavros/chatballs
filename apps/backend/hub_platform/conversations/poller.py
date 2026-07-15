@@ -7,7 +7,7 @@ from hub_platform.integrations.models import Integration
 logger = logging.getLogger(__name__)
 
 
-def poll_all_messengers() -> int:
+def poll_all_messengers(context) -> int:
     """Poll every messenger connection bound to a channel; ingest inbound. Returns count."""
     # Сервисные боты уведомлений поллятся отдельно (notifications.binding).
     # Фильтр по config — в Python: JSON-lookup в .exclude() отбрасывает и строки
@@ -15,7 +15,9 @@ def poll_all_messengers() -> int:
     integrations = [
         integration
         for integration in Integration.objects.filter(
-            provider__in=transports.SUPPORTED_PROVIDERS, channel__isnull=False
+            organization=context.organization,
+            provider__in=transports.SUPPORTED_PROVIDERS,
+            channel__isnull=False,
         ).exclude(secret="")
         if integration.config.get("purpose") != "notifications"
     ]

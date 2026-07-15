@@ -3,7 +3,7 @@ import json
 from unittest import mock
 
 from django.test import TestCase
-from rest_framework.test import APIClient
+from hub_platform.testing import TenantAPIClient as APIClient
 
 from hub_platform.ai.limits import LimitExceeded
 from hub_platform.ai.models import AIAgent

@@ -1,7 +1,7 @@
 from unittest import mock
 
 from django.test import TestCase
-from rest_framework.test import APIClient
+from hub_platform.testing import TenantAPIClient as APIClient, tenant_context_for
 
 from hub_platform.conversations.transports.base import InboundMessage
 from hub_platform.events.handlers import dispatch
@@ -32,18 +32,19 @@ class NotifierTestBase(TestCase):
         bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
         self.organization = Organization.objects.get(slug="edevs")
         self.owner = HumanUser.objects.get(email="owner@edevs.tech")
+        self.context = tenant_context_for(self.owner, self.organization)
         self.integration = _notifier(self.organization)
 
 
 class BindingTests(NotifierTestBase):
     def test_deep_link_for_telegram_and_max(self) -> None:
-        code = issue_binding_code(user=self.owner, integration=self.integration)
+        code = issue_binding_code(context=self.context, integration=self.integration)
         self.assertEqual(deep_link(self.integration, code.code), f"https://t.me/edevs_notify_bot?start={code.code}")
         max_bot = _notifier(self.organization, provider=IntegrationProvider.MAX, username="edevs_max_bot")
         self.assertEqual(deep_link(max_bot, "abc"), "https://max.ru/edevs_max_bot?start=abc")
 
     def test_start_code_creates_binding_and_confirms(self) -> None:
-        code = issue_binding_code(user=self.owner, integration=self.integration)
+        code = issue_binding_code(context=self.context, integration=self.integration)
         inbound = InboundMessage(external_id="1", user_id="777", chat_id="777", text=f"/start {code.code}", display_name="Андрей")
         with mock.patch("hub_platform.notifications.binding.transports.send_reply", return_value=True) as send:
             handle_notifier_inbound(self.integration, inbound)
@@ -63,7 +64,7 @@ class BindingTests(NotifierTestBase):
         # Уведомления идут в один мессенджер: привязка MAX заменяет привязку TG.
         MessengerBinding.objects.create(user=self.owner, integration=self.integration, external_chat_id="111")
         max_bot = _notifier(self.organization, provider=IntegrationProvider.MAX, username="edevs_max_bot")
-        code = issue_binding_code(user=self.owner, integration=max_bot)
+        code = issue_binding_code(context=self.context, integration=max_bot)
         inbound = InboundMessage(external_id="3", user_id="9", chat_id="9", text=f"/start {code.code}", display_name="Андрей")
         with mock.patch("hub_platform.notifications.binding.transports.send_reply", return_value=True):
             handle_notifier_inbound(max_bot, inbound)
@@ -72,8 +73,8 @@ class BindingTests(NotifierTestBase):
         self.assertEqual(bindings[0].integration_id, max_bot.id)
 
     def test_reissue_invalidates_previous_code(self) -> None:
-        first = issue_binding_code(user=self.owner, integration=self.integration)
-        issue_binding_code(user=self.owner, integration=self.integration)
+        first = issue_binding_code(context=self.context, integration=self.integration)
+        issue_binding_code(context=self.context, integration=self.integration)
         self.assertFalse(MessengerBindingCode.objects.filter(code=first.code).exists())
 
 
@@ -84,12 +85,12 @@ class DeliveryTests(NotifierTestBase):
 
     def _dispatch_last_event(self) -> None:
         event = OutboxEvent.objects.filter(event_type=NOTIFICATION_CREATED).latest("created_at")
-        dispatch(event.event_type, event.payload)
+        dispatch(event)
 
     def test_notify_enqueues_and_delivers_to_binding(self) -> None:
         with mock.patch("hub_platform.notifications.delivery.transports.send_reply", return_value=True) as send:
             notify(
-                organization=self.organization,
+                context=self.context,
                 type=NotificationType.DIALOG_WAITING,
                 audience=NotificationAudience.OPERATORS,
                 title="Новый диалог · Edevs — сайт",
@@ -103,7 +104,7 @@ class DeliveryTests(NotifierTestBase):
     def test_type_not_in_push_types_is_skipped(self) -> None:
         with mock.patch("hub_platform.notifications.delivery.transports.send_reply", return_value=True) as send:
             notify(
-                organization=self.organization,
+                context=self.context,
                 type=NotificationType.LIMIT_REACHED,
                 audience=NotificationAudience.OWNER,
                 title="Достигнут лимит",
@@ -115,7 +116,7 @@ class DeliveryTests(NotifierTestBase):
         operator = HumanUser.objects.get(email="a.kotova@edevs.tech")
         with mock.patch("hub_platform.notifications.delivery.transports.send_reply", return_value=True) as send:
             notify(
-                organization=self.organization,
+                context=self.context,
                 type=NotificationType.DIALOG_NEW_MESSAGE,
                 audience=NotificationAudience.USER,
                 recipient_user=operator,
@@ -129,21 +130,21 @@ class DeliveryTests(NotifierTestBase):
         sales = self.organization.departments.get(code="sales")
         support = self.organization.departments.get(code="support")
         sales_notification = notify(
-            organization=self.organization,
+            context=self.context,
             department=sales,
             type=NotificationType.DIALOG_WAITING,
             audience=NotificationAudience.OPERATORS,
             title="Sales dialog",
         )
         notify(
-            organization=self.organization,
+            context=self.context,
             department=support,
             type=NotificationType.DIALOG_WAITING,
             audience=NotificationAudience.OPERATORS,
             title="Support dialog",
         )
         self.assertEqual(
-            list(visible_for(operator).values_list("id", flat=True)),
+            list(visible_for(tenant_context_for(operator, self.organization)).values_list("id", flat=True)),
             [sales_notification.id],
         )
 
@@ -164,7 +165,7 @@ class PollerSelectionTests(NotifierTestBase):
             provider=IntegrationProvider.TELEGRAM, name="client-bot", secret="token", channel=channel,
         )
         with mock.patch("hub_platform.conversations.poller.transports.poll", return_value=([], "")) as poll:
-            poller.poll_all_messengers()
+            poller.poll_all_messengers(self.context)
         polled_ids = [call.args[0].id for call in poll.call_args_list]
         self.assertIn(client_bot.id, polled_ids)
         self.assertNotIn(self.integration.id, polled_ids)

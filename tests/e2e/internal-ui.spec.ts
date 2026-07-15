@@ -1,5 +1,8 @@
 import { expect, type Page, test } from "@playwright/test";
 
+const ORGANIZATION_PUBLIC_ID = "123e4567-e89b-12d3-a456-426614174000";
+const SECOND_ORGANIZATION_PUBLIC_ID = "223e4567-e89b-12d3-a456-426614174000";
+
 // Эти сценарии относятся только к internal-ui; на других проектах пропускаем.
 test.beforeEach(({}, testInfo) => {
   test.skip(testInfo.project.name !== "internal-ui", "internal-ui only");
@@ -53,6 +56,29 @@ const OPERATOR = {
   }],
 };
 
+const identityFor = (membership: typeof OWNER) => ({
+  id: membership.id,
+  email: membership.email,
+  fullName: membership.fullName,
+  mustChangePassword: membership.mustChangePassword,
+  totpEnabled: membership.totpEnabled,
+  memberships: [{
+    id: membership.id,
+    organizationPublicId: ORGANIZATION_PUBLIC_ID,
+    organization: membership.organization,
+    organizationName: membership.organizationName,
+    role: membership.role,
+    positionTitle: membership.positionTitle,
+    department: membership.department,
+    totpRequired: membership.totpRequired,
+    capabilities: membership.capabilities,
+    accessScopes: membership.accessScopes,
+  }],
+});
+
+const OWNER_IDENTITY = identityFor(OWNER);
+const OPERATOR_IDENTITY = identityFor(OPERATOR);
+
 async function mockData(page: Page) {
   const permissions = {
     canView: true, canUpdateProfile: true, canChangeRole: true, canChangePlacement: true,
@@ -89,18 +115,18 @@ async function mockData(page: Page) {
     { code: "employees.manage_privileged", name: "Управление привилегированными сотрудниками", description: "", allowedScopes: ["ORGANIZATION"], assignable: false, protected: true },
     { code: "ownership.transfer", name: "Передача владения", description: "", allowedScopes: ["ORGANIZATION"], assignable: false, protected: true },
   ];
-  await page.route("**/api/v1/access-profiles/capabilities/", (route) => route.fulfill({ json: { items: capabilities } }));
-  await page.route("**/api/v1/access-profiles/", (route) => route.fulfill({ json: { items: profiles } }));
-  await page.route("**/api/v1/employees/**", (route) => {
+  await page.route("**/api/v1/organizations/*/access-profiles/capabilities/", (route) => route.fulfill({ json: { items: capabilities } }));
+  await page.route("**/api/v1/organizations/*/access-profiles/", (route) => route.fulfill({ json: { items: profiles } }));
+  await page.route("**/api/v1/organizations/*/employees/**", (route) => {
     const path = new URL(route.request().url()).pathname;
-    if (path === "/api/v1/employees/7/") {
+    if (path.endsWith("/employees/7/")) {
       return route.fulfill({ json: { employee: { ...employee, activeSessionCount: 1, auditEvents: [{ action: "identity.employee_created", result: "SUCCESS", createdAt: "2026-05-20T10:00:00Z" }] } } });
     }
     return route.fulfill({ json: { items: [ownerEmployee, employee] } });
   });
-  await page.route("**/api/v1/company/departments/**", (route) => route.fulfill({ json: { items: [{ id: 1, code: "sales", name: "Отдел продаж", status: "ACTIVE", memberCount: 1, operatorCount: 1, activeOperatorCount: 1, agentCount: 0, products: [] }] } }));
-  await page.route("**/api/v1/company/products/**", (route) => route.fulfill({ json: { items: [] } }));
-  await page.route("**/api/v1/ai/agents/**", (route) => route.fulfill({ json: { items: [] } }));
+  await page.route("**/api/v1/organizations/*/company/departments/**", (route) => route.fulfill({ json: { items: [{ id: 1, code: "sales", name: "Отдел продаж", status: "ACTIVE", memberCount: 1, operatorCount: 1, activeOperatorCount: 1, agentCount: 0, products: [] }] } }));
+  await page.route("**/api/v1/organizations/*/company/products/**", (route) => route.fulfill({ json: { items: [] } }));
+  await page.route("**/api/v1/organizations/*/ai/agents/**", (route) => route.fulfill({ json: { items: [] } }));
 }
 
 async function mockSession(page: Page, user: object | null) {
@@ -120,9 +146,9 @@ async function login(page: Page, user: object) {
 }
 
 test("OWNER logs in and lands on the command center with the global sidebar", async ({ page }) => {
-  await login(page, OWNER);
+  await login(page, OWNER_IDENTITY);
 
-  await expect(page).toHaveURL(/\/$|\/command/);
+  await expect(page).toHaveURL(new RegExp(`/organizations/${ORGANIZATION_PUBLIC_ID}/`));
   await expect(page.getByRole("heading", { name: "Командный центр" })).toBeVisible();
   // Глобальный sidebar уровня компании.
   await expect(page.getByText("Уровень компании")).toBeVisible();
@@ -130,7 +156,7 @@ test("OWNER logs in and lands on the command center with the global sidebar", as
 });
 
 test("OPERATOR logs in and lands on sales dialogs with the sales sidebar", async ({ page }) => {
-  await login(page, OPERATOR);
+  await login(page, OPERATOR_IDENTITY);
 
   await expect(page).toHaveURL(/\/departments\/sales\/dialogs/);
   // Операторская навигация показывает только рабочее пространство продаж.
@@ -140,7 +166,7 @@ test("OPERATOR logs in and lands on sales dialogs with the sales sidebar", async
 });
 
 test("OPERATOR opening an owner-only route sees the 403 permission screen", async ({ page }) => {
-  await mockSession(page, OPERATOR);
+  await mockSession(page, OPERATOR_IDENTITY);
   await mockData(page);
 
   await page.goto("/employees");
@@ -149,9 +175,33 @@ test("OPERATOR opening an owner-only route sees the 403 permission screen", asyn
   await expect(page.getByRole("button", { name: "Вернуться" })).toBeVisible();
 });
 
+test("the organization URL selects one membership without a global session tenant", async ({ page }) => {
+  const secondMembership = {
+    ...OWNER_IDENTITY.memberships[0],
+    id: 3,
+    organizationPublicId: SECOND_ORGANIZATION_PUBLIC_ID,
+    organization: "second",
+    organizationName: "Second",
+  };
+  const requests: string[] = [];
+  page.on("request", (request) => {
+    if (request.url().includes("/api/v1/organizations/")) requests.push(request.url());
+  });
+  await mockSession(page, {
+    ...OWNER_IDENTITY,
+    memberships: [...OWNER_IDENTITY.memberships, secondMembership],
+  });
+  await mockData(page);
+
+  await page.goto(`/organizations/${SECOND_ORGANIZATION_PUBLIC_ID}/`);
+
+  await expect(page.getByRole("heading", { name: "Командный центр" })).toBeVisible();
+  await expect.poll(() => requests.some((url) => url.includes(SECOND_ORGANIZATION_PUBLIC_ID))).toBe(true);
+});
+
 test("internal UI renders at the minimum supported width of 1024px", async ({ page }) => {
   await page.setViewportSize({ width: 1024, height: 768 });
-  await mockSession(page, OWNER);
+  await mockSession(page, OWNER_IDENTITY);
   await mockData(page);
 
   await page.goto("/");
@@ -162,7 +212,7 @@ test("internal UI renders at the minimum supported width of 1024px", async ({ pa
 
 test("employee stage 3 screens follow the approved baseline", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 940 });
-  await mockSession(page, OWNER);
+  await mockSession(page, OWNER_IDENTITY);
   await mockData(page);
 
   await page.goto("/employees");

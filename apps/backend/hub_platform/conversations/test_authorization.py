@@ -1,5 +1,5 @@
 from django.test import TestCase
-from rest_framework.test import APIClient
+from hub_platform.testing import TenantAPIClient as APIClient
 
 from hub_platform.channels.models import Channel
 from hub_platform.conversations.models import Contact, Conversation
@@ -8,10 +8,10 @@ from hub_platform.identity.models import (
     AccessProfileCapability,
     Department,
     EmployeeAccessAssignment,
-    EmployeeProfile,
     EmployeeRole,
     HumanUser,
     Organization,
+    OrganizationMembership,
 )
 
 
@@ -53,9 +53,9 @@ class ConversationAuthorizationTests(TestCase):
 
     def _employee(
         self, email: str, role: str, department: Department | None = None
-    ) -> EmployeeProfile:
+    ) -> OrganizationMembership:
         user = HumanUser.objects.create_user(email=email, password="Password-123")
-        return EmployeeProfile.objects.create(
+        return OrganizationMembership.objects.create(
             user=user,
             organization=self.organization,
             role=role,
@@ -96,4 +96,3 @@ class ConversationAuthorizationTests(TestCase):
         self.client.force_authenticate(self.unassigned.user)
         response = self.client.get("/api/v1/conversations/")
         self.assertEqual(response.status_code, 403)
-

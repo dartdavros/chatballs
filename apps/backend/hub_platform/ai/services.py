@@ -8,6 +8,7 @@ from hub_platform.ai.extraction import extract_text
 from hub_platform.ai.indexing import reindex_knowledge
 from hub_platform.ai.models import AIAgent, Knowledge, KnowledgeAttachment
 from hub_platform.channels.models import Channel
+from hub_platform.tenancy.context import TenantContext
 
 
 @dataclass(frozen=True)
@@ -47,15 +48,16 @@ def _normalize_limits(raw: dict | None) -> dict:
     return {"dailyCostUsd": cents} if cents > 0 else {}
 
 
-def _knowledge_for_ids(*, organization, knowledge_ids: list[int]) -> list[Knowledge]:
-    items = list(Knowledge.objects.filter(organization=organization, id__in=knowledge_ids))
+def _knowledge_for_ids(*, context: TenantContext, knowledge_ids: list[int]) -> list[Knowledge]:
+    items = list(Knowledge.objects.filter(organization=context.organization, id__in=knowledge_ids))
     if len(items) != len(set(knowledge_ids)):
         raise ValidationError({"knowledgeIds": "Unknown knowledge item"})
     return items
 
 
 @transaction.atomic
-def create_agent(*, organization, data: AgentCreateInput) -> AIAgent:
+def create_agent(*, context: TenantContext, data: AgentCreateInput) -> AIAgent:
+    organization = context.organization
     if not data.channel_code:
         raise ValidationError({"channel": "Channel is required"})
     if not data.model:
@@ -76,12 +78,14 @@ def create_agent(*, organization, data: AgentCreateInput) -> AIAgent:
         tone=data.tone,
         instructions=data.instructions,
     )
-    agent.knowledge_items.set(_knowledge_for_ids(organization=organization, knowledge_ids=data.knowledge_ids))
+    agent.knowledge_items.set(_knowledge_for_ids(context=context, knowledge_ids=data.knowledge_ids))
     return agent
 
 
 @transaction.atomic
-def update_agent(*, agent: AIAgent, data: AgentInput) -> AIAgent:
+def update_agent(*, context: TenantContext, agent: AIAgent, data: AgentInput) -> AIAgent:
+    if agent.channel.organization_id != context.organization_id:
+        raise ValidationError({"agent": "Agent belongs to another organization"})
     agent.name = data.name
     agent.model = data.model
     agent.model_params = data.model_params
@@ -93,12 +97,14 @@ def update_agent(*, agent: AIAgent, data: AgentInput) -> AIAgent:
     agent.save(update_fields=["name", "model", "model_params", "allowed_tools", "limits", "persona", "tone", "instructions", "updated_at"])
     if data.knowledge_ids is not None:
         agent.knowledge_items.set(
-            _knowledge_for_ids(organization=agent.channel.organization, knowledge_ids=data.knowledge_ids)
+            _knowledge_for_ids(context=context, knowledge_ids=data.knowledge_ids)
         )
     return agent
 
 
-def set_agent_active(*, agent: AIAgent, is_active: bool) -> AIAgent:
+def set_agent_active(*, context: TenantContext, agent: AIAgent, is_active: bool) -> AIAgent:
+    if agent.channel.organization_id != context.organization_id:
+        raise ValidationError({"agent": "Agent belongs to another organization"})
     agent.is_active = is_active
     agent.save(update_fields=["is_active", "updated_at"])
     return agent
@@ -115,11 +121,11 @@ class KnowledgeInput:
     is_enabled: bool
 
 
-def create_knowledge(*, organization, data: KnowledgeInput) -> Knowledge:
+def create_knowledge(*, context: TenantContext, data: KnowledgeInput) -> Knowledge:
     if not data.title.strip():
         raise ValidationError({"title": "Title is required"})
     knowledge = Knowledge.objects.create(
-        organization=organization,
+        organization=context.organization,
         title=data.title.strip(),
         description=data.description.strip(),
         content=data.content,
@@ -129,7 +135,9 @@ def create_knowledge(*, organization, data: KnowledgeInput) -> Knowledge:
     return knowledge
 
 
-def update_knowledge(*, knowledge: Knowledge, data: KnowledgeInput) -> Knowledge:
+def update_knowledge(*, context: TenantContext, knowledge: Knowledge, data: KnowledgeInput) -> Knowledge:
+    if knowledge.organization_id != context.organization_id:
+        raise ValidationError({"knowledge": "Knowledge belongs to another organization"})
     if not data.title.strip():
         raise ValidationError({"title": "Title is required"})
     content_changed = knowledge.content != data.content
@@ -143,7 +151,9 @@ def update_knowledge(*, knowledge: Knowledge, data: KnowledgeInput) -> Knowledge
     return knowledge
 
 
-def delete_knowledge(*, knowledge: Knowledge) -> None:
+def delete_knowledge(*, context: TenantContext, knowledge: Knowledge) -> None:
+    if knowledge.organization_id != context.organization_id:
+        raise ValidationError({"knowledge": "Knowledge belongs to another organization"})
     # Файлы вложений удаляются вместе со знанием: сначала с диска, потом запись.
     for attachment in knowledge.attachments.all():
         attachment.file.delete(save=False)
@@ -154,7 +164,11 @@ _MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024
 
 
 @transaction.atomic
-def add_attachment(*, knowledge: Knowledge, upload: UploadedFile) -> KnowledgeAttachment:
+def add_attachment(
+    *, context: TenantContext, knowledge: Knowledge, upload: UploadedFile
+) -> KnowledgeAttachment:
+    if knowledge.organization_id != context.organization_id:
+        raise ValidationError({"knowledge": "Knowledge belongs to another organization"})
     original_name = (upload.name or "").strip()
     if not original_name:
         raise ValidationError({"file": "File name is required"})
@@ -181,7 +195,9 @@ def add_attachment(*, knowledge: Knowledge, upload: UploadedFile) -> KnowledgeAt
     return attachment
 
 
-def delete_attachment(*, attachment: KnowledgeAttachment) -> None:
+def delete_attachment(*, context: TenantContext, attachment: KnowledgeAttachment) -> None:
+    if attachment.knowledge.organization_id != context.organization_id:
+        raise ValidationError({"attachment": "Attachment belongs to another organization"})
     knowledge = attachment.knowledge
     attachment.file.delete(save=False)
     attachment.delete()

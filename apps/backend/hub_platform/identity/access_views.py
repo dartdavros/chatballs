@@ -22,13 +22,13 @@ from hub_platform.identity.models import (
     AccessProfile,
     AccessProfileCapability,
     EmployeeAccessAssignment,
-    EmployeeProfile,
+    OrganizationMembership,
 )
 from hub_platform.identity.policy import can_administer_access
 
 
 def _manager_required(request: Request) -> Response | None:
-    if can_administer_access(request.user):
+    if can_administer_access(request.tenant_context.membership):
         return None
     return Response({"detail": "Employee access management is not allowed"}, status=403)
 
@@ -49,7 +49,7 @@ class AccessProfileListCreateView(APIView):
         if (denied := _manager_required(request)) is not None:
             return denied
         profiles = AccessProfile.objects.filter(
-            organization=request.user.employee_profile.organization
+            organization=request.tenant_context.organization
         ).prefetch_related("capability_links").annotate(
             active_assignment_count=Count(
                 "assignments",
@@ -66,7 +66,7 @@ class AccessProfileListCreateView(APIView):
         codes, error = capability_codes(request.data.get("capabilities", []))
         if error:
             return Response({"detail": error}, status=400)
-        actor = request.user.employee_profile
+        actor = request.tenant_context.membership
         name = str(request.data.get("name", "")).strip()
         if not name:
             return Response({"detail": "Access profile name is required"}, status=400)
@@ -102,7 +102,7 @@ class AccessProfileDetailView(APIView):
     def _profile(self, request: Request, profile_id: int) -> AccessProfile | None:
         return (
             AccessProfile.objects.filter(
-                id=profile_id, organization=request.user.employee_profile.organization
+                id=profile_id, organization=request.tenant_context.organization
             )
             .prefetch_related("capability_links")
             .first()
@@ -187,8 +187,8 @@ class EmployeeAccessAssignmentView(APIView):
 
     @transaction.atomic
     def post(self, request: Request, user_id: int) -> Response:
-        actor = request.user.employee_profile
-        target = EmployeeProfile.objects.filter(
+        actor = request.tenant_context.membership
+        target = OrganizationMembership.objects.filter(
             user_id=user_id, organization=actor.organization
         ).first()
         if target is None:
@@ -219,7 +219,7 @@ class EmployeeAccessAssignmentRevokeView(APIView):
     permission_classes = [IsAuthenticated]
 
     def delete(self, request: Request, user_id: int, assignment_id: int) -> Response:
-        actor = request.user.employee_profile
+        actor = request.tenant_context.membership
         assignment = EmployeeAccessAssignment.objects.select_related(
             "employee", "access_profile", "department"
         ).filter(

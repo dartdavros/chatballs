@@ -3,10 +3,11 @@ import { describe, expect, it } from "vitest";
 import type { SessionUser } from "../types";
 import { canAccess, defaultRoute } from "./access";
 
-const baseUser: Omit<SessionUser, "role" | "capabilities" | "accessScopes"> = {
+const baseUser: Omit<SessionUser, "role" | "capabilities" | "accessScopes" | "memberships"> = {
   id: 1,
   email: "employee@example.test",
   fullName: "Employee",
+  organizationPublicId: "00000000-0000-4000-8000-000000000001",
   positionTitle: "Specialist",
   organization: "example",
   organizationName: "Example",
@@ -20,18 +21,29 @@ function userWith(
   capabilities: string[],
   departmentCode: string | null = null,
 ): SessionUser {
-  return {
-    ...baseUser,
-    role: "EMPLOYEE",
+  const membership = {
+    id: baseUser.id,
+    organizationPublicId: baseUser.organizationPublicId,
+    organization: baseUser.organization,
+    organizationName: baseUser.organizationName,
+    role: "EMPLOYEE" as const,
+    positionTitle: baseUser.positionTitle,
+    department: baseUser.department,
+    totpRequired: baseUser.totpRequired,
     capabilities,
     accessScopes: [
       {
-        scopeType: departmentCode ? "DEPARTMENT" : "ORGANIZATION",
+        scopeType: departmentCode ? "DEPARTMENT" as const : "ORGANIZATION" as const,
         departmentId: departmentCode ? 10 : null,
         departmentCode,
         capabilities,
       },
     ],
+  };
+  return {
+    ...baseUser,
+    ...membership,
+    memberships: [membership],
   };
 }
 

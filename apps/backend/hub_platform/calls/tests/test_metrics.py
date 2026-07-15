@@ -3,8 +3,9 @@ import uuid
 from hub_platform.calls import signaling
 from hub_platform.calls.models import CallConnectionType, CallMetric, ParticipantSide
 from hub_platform.calls.serializers import call_payload
-from hub_platform.calls.services import create_call_request, record_call_metric
-from hub_platform.calls.tests.helpers import CallTestCase
+from hub_platform.calls.services import record_call_metric
+from hub_platform.calls.tests.helpers import CallTestCase, create_call_request
+from hub_platform.testing import system_tenant_context
 
 
 class RecordCallMetricTests(CallTestCase):
@@ -63,6 +64,7 @@ class RecordCallMetricTests(CallTestCase):
 
     def test_signaling_helper_maps_camel_case_payload(self) -> None:
         signaling.record_metric(
+            system_tenant_context(self.organization),
             self.call.id,
             ParticipantSide.CUSTOMER,
             {"localCandidateType": "relay", "remoteCandidateType": "host", "roundTripMs": 88},

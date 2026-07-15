@@ -7,8 +7,8 @@ from hub_platform.conversations.clients import client_detail, clients_overview
 from hub_platform.conversations.command import command_center_overview
 from hub_platform.conversations.models import Contact, ControlMode, Conversation, ConversationRead
 from hub_platform.conversations.selectors import (
-    conversation_for_organization,
-    conversations_for_organization,
+    conversation_for_context,
+    conversations_for_context,
 )
 from hub_platform.conversations.serializers import conversation_payload, message_payload
 from hub_platform.conversations.services import (
@@ -35,7 +35,7 @@ class _Base(APIView):
     required_capability = "conversations.view"
 
     def _org(self, request: Request):
-        return request.user.employee_profile.organization
+        return request.tenant_context.organization
 
     def _conversation(
         self,
@@ -43,10 +43,10 @@ class _Base(APIView):
         conversation_id: int,
         capability: str = "conversations.view",
     ) -> Conversation:
-        conversation = conversation_for_organization(
-            organization_id=self._org(request).id, conversation_id=conversation_id
+        conversation = conversation_for_context(
+            context=request.tenant_context, conversation_id=conversation_id
         )
-        if not require_capability(request.user, capability, conversation):
+        if not require_capability(request.tenant_context.membership, capability, conversation):
             raise Conversation.DoesNotExist
         return conversation
 
@@ -63,8 +63,8 @@ class _Base(APIView):
 
 class ConversationListView(_Base):
     def get(self, request: Request) -> Response:
-        items = conversations_for_organization(self._org(request).id)
-        department_ids = accessible_department_ids(request.user, self.required_capability)
+        items = conversations_for_context(request.tenant_context)
+        department_ids = accessible_department_ids(request.tenant_context.membership, self.required_capability)
         if department_ids is not None:
             items = items.filter(channel__department_id__in=department_ids)
         department = request.query_params.get("department")
@@ -110,7 +110,9 @@ class ConversationClaimView(_Base):
         except Conversation.DoesNotExist:
             return Response({"detail": "Диалог не найден"}, status=404)
         try:
-            conversation = claim_conversation(conversation_id=conversation_id, operator=request.user)
+            conversation = claim_conversation(
+                context=request.tenant_context, conversation_id=conversation_id
+            )
         except ClaimError as error:
             return Response({"detail": str(error)}, status=409)
         self._audit(request, "claimed", conversation)
@@ -125,7 +127,9 @@ class ConversationReleaseView(_Base):
             self._conversation(request, conversation_id, self.required_capability)
         except Conversation.DoesNotExist:
             return Response({"detail": "Диалог не найден"}, status=404)
-        conversation = release_to_ai(conversation_id=conversation_id)
+        conversation = release_to_ai(
+            context=request.tenant_context, conversation_id=conversation_id
+        )
         self._audit(request, "released_to_ai", conversation)
         return Response({"conversation": conversation_payload(conversation, with_messages=True)})
 
@@ -138,7 +142,9 @@ class ConversationReturnQueueView(_Base):
             self._conversation(request, conversation_id, self.required_capability)
         except Conversation.DoesNotExist:
             return Response({"detail": "Диалог не найден"}, status=404)
-        conversation = return_to_queue(conversation_id=conversation_id)
+        conversation = return_to_queue(
+            context=request.tenant_context, conversation_id=conversation_id
+        )
         self._audit(request, "returned_to_queue", conversation)
         return Response({"conversation": conversation_payload(conversation, with_messages=True)})
 
@@ -148,8 +154,8 @@ class ConversationStatsView(_Base):
         period = request.query_params.get("period", "today")
         if period not in ("today", "d7", "d30"):
             period = "today"
-        department_ids = accessible_department_ids(request.user, self.required_capability)
-        return Response(sales_overview_stats(self._org(request).id, period, department_ids))
+        department_ids = accessible_department_ids(request.tenant_context.membership, self.required_capability)
+        return Response(sales_overview_stats(request.tenant_context, period, department_ids))
 
 
 class CommandOverviewView(_Base):
@@ -160,14 +166,14 @@ class CommandOverviewView(_Base):
         period = request.query_params.get("period", "today")
         if period not in ("today", "d7", "d30"):
             period = "today"
-        return Response(command_center_overview(self._org(request).id, period))
+        return Response(command_center_overview(request.tenant_context, period))
 
 
 class ClientsView(_Base):
     required_capability = "customers.view"
 
     def get(self, request: Request) -> Response:
-        department_ids = accessible_department_ids(request.user, self.required_capability)
+        department_ids = accessible_department_ids(request.tenant_context.membership, self.required_capability)
         return Response({"items": clients_overview(self._org(request).id, department_ids)})
 
 
@@ -176,7 +182,7 @@ class ClientDetailView(_Base):
 
     def get(self, request: Request, contact_id: int) -> Response:
         try:
-            department_ids = accessible_department_ids(request.user, self.required_capability)
+            department_ids = accessible_department_ids(request.tenant_context.membership, self.required_capability)
             return Response(
                 {"client": client_detail(self._org(request).id, contact_id, department_ids)}
             )
@@ -198,13 +204,15 @@ class ConversationMessageView(_Base):
         if conversation.control_mode != ControlMode.HUMAN:
             return Response({"detail": "Сначала перехватите диалог"}, status=409)
         manager_override = authorize(
-            request.user,
+            request.tenant_context.membership,
             self.required_capability,
             ResourceScope(conversation.organization_id),
         )
         if conversation.assigned_operator_id != request.user.id and not manager_override:
             return Response({"detail": "Диалог ведёт другой оператор"}, status=409)
-        message = post_operator_message(conversation=conversation, operator=request.user, text=text)
+        message = post_operator_message(
+            context=request.tenant_context, conversation=conversation, text=text
+        )
         return Response({"message": message_payload(message)}, status=201)
 
 
@@ -220,7 +228,7 @@ class ConversationRequestContactView(_Base):
             return Response({"detail": "У диалога нет канала для запроса контакта"}, status=409)
         if conversation.contact.phone:
             return Response({"detail": "Контакт уже получен"}, status=409)
-        message = request_contact(conversation=conversation, operator=request.user)
+        message = request_contact(context=request.tenant_context, conversation=conversation)
         self._audit(request, "contact_requested", conversation)
         return Response({"message": message_payload(message)}, status=201)
 
@@ -233,6 +241,8 @@ class ConversationCloseView(_Base):
             self._conversation(request, conversation_id, self.required_capability)
         except Conversation.DoesNotExist:
             return Response({"detail": "Диалог не найден"}, status=404)
-        conversation = close_conversation(conversation_id=conversation_id)
+        conversation = close_conversation(
+            context=request.tenant_context, conversation_id=conversation_id
+        )
         self._audit(request, "closed", conversation)
         return Response({"conversation": conversation_payload(conversation, with_messages=True)})

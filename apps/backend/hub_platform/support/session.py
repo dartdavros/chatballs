@@ -31,6 +31,7 @@ from hub_platform.support.models import (
 from hub_platform.support.selectors import contract_by_code
 from hub_platform.support.token import TokenClaims, claims_datetimes, verify_support_token
 from hub_platform.support.widget_credential import issue_widget_credential
+from hub_platform.tenancy.context import TenantContext
 
 
 def _deny_channel_policy(channel) -> errors.SupportSessionError | None:
@@ -63,7 +64,8 @@ def verify_and_resolve(
     if claims.iss != product.code:
         raise errors.SupportSessionError(errors.CHANNEL_PRODUCT_MISMATCH)
 
-    contract = contract_by_code(organization_id=channel.organization_id, code=claims.contract)
+    context = TenantContext.for_resource(channel.organization)
+    contract = contract_by_code(context=context, code=claims.contract)
     if contract is None:
         raise errors.SupportSessionError(errors.CONTRACT_NOT_FOUND)
     # DRAFT и DISABLED не принимают production traffic (SPEC-HUB-0011 §3).

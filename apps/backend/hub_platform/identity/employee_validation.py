@@ -7,8 +7,8 @@ from hub_platform.identity.models import (
     AuditResult,
     Department,
     DepartmentStatus,
-    EmployeeProfile,
     EmployeeRole,
+    OrganizationMembership,
 )
 
 ASSIGNABLE_ROLES = {EmployeeRole.ADMIN, EmployeeRole.EMPLOYEE}
@@ -37,9 +37,9 @@ def resolve_department(organization, code: str) -> tuple[Department | None, str 
 
 
 def deny_employee_action(
-    request: Request, target: EmployeeProfile | None, action: str
+    request: Request, target: OrganizationMembership | None, action: str
 ) -> Response:
-    actor_profile = request.user.employee_profile
+    actor_profile = request.tenant_context.membership
     record_audit_event(
         action="identity.employee_privileged_action_denied",
         actor=request.user,
@@ -51,4 +51,3 @@ def deny_employee_action(
         request=request,
     )
     return Response({"detail": "You cannot perform this action on this employee"}, status=403)
-

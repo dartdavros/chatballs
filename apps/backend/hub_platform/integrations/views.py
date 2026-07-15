@@ -8,8 +8,8 @@ from hub_platform.api.permissions import HasCapability
 from hub_platform.identity.audit import record_audit_event
 from hub_platform.integrations.models import Integration
 from hub_platform.integrations.selectors import (
-    integration_for_organization,
-    integrations_for_organization,
+    integration_for_context,
+    integrations_for_context,
 )
 from hub_platform.integrations.serializers import integration_payload
 from hub_platform.integrations.services import (
@@ -49,7 +49,7 @@ def _audit(request: Request, action: str, integration: Integration) -> None:
     record_audit_event(
         action=action,
         actor=request.user,
-        organization=request.user.employee_profile.organization,
+        organization=request.tenant_context.organization,
         object_type="Integration",
         object_id=str(integration.id),
         request=request,
@@ -62,13 +62,15 @@ class IntegrationListView(APIView):
     require_organization_scope = True
 
     def get(self, request: Request) -> Response:
-        items = integrations_for_organization(request.user.employee_profile.organization_id)
+        items = integrations_for_context(request.tenant_context)
         return Response({"items": [integration_payload(item) for item in items]})
 
     def post(self, request: Request) -> Response:
-        profile = request.user.employee_profile
+        profile = request.tenant_context.membership
         try:
-            integration = create_integration(organization=profile.organization, data=_input(request.data))
+            integration = create_integration(
+                context=request.tenant_context, data=_input(request.data)
+            )
         except (ValidationError, IntegrityError) as error:
             return _validation_error(error)
         _audit(request, "integrations.integration_created", integration)
@@ -81,14 +83,18 @@ class IntegrationDetailView(APIView):
     require_organization_scope = True
 
     def _get(self, request: Request, integration_id: int) -> Integration:
-        return integration_for_organization(
-            organization_id=request.user.employee_profile.organization_id, integration_id=integration_id
+        return integration_for_context(
+            context=request.tenant_context, integration_id=integration_id
         )
 
     def patch(self, request: Request, integration_id: int) -> Response:
         try:
             integration = self._get(request, integration_id)
-            integration = update_integration(integration=integration, data=_input(request.data, current=integration))
+            integration = update_integration(
+                context=request.tenant_context,
+                integration=integration,
+                data=_input(request.data, current=integration),
+            )
         except Integration.DoesNotExist:
             return Response({"detail": "Интеграция не найдена"}, status=404)
         except (ValidationError, IntegrityError) as error:
@@ -102,7 +108,7 @@ class IntegrationDetailView(APIView):
         except Integration.DoesNotExist:
             return Response({"detail": "Интеграция не найдена"}, status=404)
         _audit(request, "integrations.integration_deleted", integration)
-        delete_integration(integration=integration)
+        delete_integration(context=request.tenant_context, integration=integration)
         return Response(status=204)
 
 
@@ -113,11 +119,13 @@ class IntegrationTestView(APIView):
 
     def post(self, request: Request, integration_id: int) -> Response:
         try:
-            integration = integration_for_organization(
-                organization_id=request.user.employee_profile.organization_id, integration_id=integration_id
+            integration = integration_for_context(
+                context=request.tenant_context, integration_id=integration_id
             )
         except Integration.DoesNotExist:
             return Response({"detail": "Интеграция не найдена"}, status=404)
-        integration = test_integration(integration=integration)
+        integration = test_integration(
+            context=request.tenant_context, integration=integration
+        )
         _audit(request, "integrations.integration_tested", integration)
         return Response({"integration": integration_payload(integration)})

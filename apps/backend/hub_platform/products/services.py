@@ -7,6 +7,7 @@ from django.utils import timezone
 
 from hub_platform.identity.models import Department, Organization
 from hub_platform.products.models import Offer, Price, Product, ProductDepartment, ProductStatus
+from hub_platform.tenancy.context import TenantContext
 
 
 @dataclass(frozen=True)
@@ -27,7 +28,8 @@ def _departments(organization: Organization, department_ids: tuple[int, ...]) ->
 
 
 @transaction.atomic
-def create_product(*, organization: Organization, data: ProductInput) -> Product:
+def create_product(*, context: TenantContext, data: ProductInput) -> Product:
+    organization = context.organization
     product = Product(
         organization=organization,
         code=data.code.strip().lower(),
@@ -43,7 +45,9 @@ def create_product(*, organization: Organization, data: ProductInput) -> Product
 
 
 @transaction.atomic
-def update_product(*, product: Product, data: ProductInput) -> Product:
+def update_product(*, context: TenantContext, product: Product, data: ProductInput) -> Product:
+    if product.organization_id != context.organization_id:
+        raise ValidationError({"product": "Product belongs to another organization"})
     product.name = data.name.strip()
     product.site_url = data.site_url.strip()
     product.full_clean(exclude=["code"])
@@ -55,7 +59,11 @@ def update_product(*, product: Product, data: ProductInput) -> Product:
     return product
 
 
-def set_product_status(*, product: Product, status: ProductStatus) -> Product:
+def set_product_status(
+    *, context: TenantContext, product: Product, status: ProductStatus
+) -> Product:
+    if product.organization_id != context.organization_id:
+        raise ValidationError({"product": "Product belongs to another organization"})
     if product.status != status:
         product.status = status
         product.save(update_fields=["status", "updated_at"])
@@ -87,7 +95,9 @@ def _primary_box_offer(product: Product, primary_box_offer_id: int | None) -> Of
 
 
 @transaction.atomic
-def create_offer(*, product: Product, data: OfferInput) -> Offer:
+def create_offer(*, context: TenantContext, product: Product, data: OfferInput) -> Offer:
+    if product.organization_id != context.organization_id:
+        raise ValidationError({"product": "Product belongs to another organization"})
     offer = Offer(
         product=product,
         code=data.code.strip().lower(),
@@ -105,7 +115,9 @@ def create_offer(*, product: Product, data: OfferInput) -> Offer:
 
 
 @transaction.atomic
-def update_offer(*, offer: Offer, data: OfferInput) -> Offer:
+def update_offer(*, context: TenantContext, offer: Offer, data: OfferInput) -> Offer:
+    if offer.product.organization_id != context.organization_id:
+        raise ValidationError({"offer": "Offer belongs to another organization"})
     # Код предложения неизменяем; всё остальное редактируется.
     offer.name = data.name.strip()
     offer.description = data.description.strip()
@@ -131,7 +143,9 @@ class PriceInput:
 
 
 @transaction.atomic
-def add_price_version(*, offer: Offer, data: PriceInput) -> Price:
+def add_price_version(*, context: TenantContext, offer: Offer, data: PriceInput) -> Price:
+    if offer.product.organization_id != context.organization_id:
+        raise ValidationError({"offer": "Offer belongs to another organization"})
     # Новая версия цены архивирует прежнюю активную в той же валюте/периоде.
     valid_from = data.valid_from or timezone.now()
     same_line = Price.objects.filter(offer=offer, currency=data.currency, billing_period=data.billing_period)

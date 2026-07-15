@@ -14,12 +14,6 @@ urlpatterns = [
         views.SupportContractStatusView.as_view(),
         name="support-contract-status",
     ),
-    path("sessions/", views.SupportSessionStartView.as_view(), name="support-session-start"),
-    path(
-        "sessions/messages/",
-        views.SupportSessionMessagesView.as_view(),
-        name="support-session-messages",
-    ),
     path(
         "snapshots/",
         views.SupportSnapshotsBySubjectView.as_view(),

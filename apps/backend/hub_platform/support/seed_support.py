@@ -19,6 +19,7 @@ from django.db import transaction
 from hub_platform.channels.models import Channel
 from hub_platform.products.models import Product
 from hub_platform.support.models import ContractStatus, ProductSupportContract
+from hub_platform.tenancy.context import TenantContext
 
 # Пример контракта FoxRay (SPEC-HUB-0011 §5.2): врач/клиника/подписка.
 _FOXRAY_SUPPORT_V1 = {
@@ -137,8 +138,9 @@ def _ensure_secret(*, product: Product) -> bool:
     return True
 
 
-def seed_support_reference(*, organization) -> str:
+def seed_support_reference(*, context: TenantContext) -> str:
     """Наполняет reference-данные поддержки. Возвращает строку-статистику."""
+    organization = context.organization
     contracts_created = 0
     secrets_created = 0
     for product in Product.objects.filter(organization=organization):

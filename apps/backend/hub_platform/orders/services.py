@@ -8,6 +8,7 @@ from django.utils import timezone
 from hub_platform.conversations.models import Contact, Conversation
 from hub_platform.orders.models import FulfillmentStatus, Order, OrderItem, PaymentStatus
 from hub_platform.products.models import Offer, Price, Product
+from hub_platform.tenancy.context import TenantContext
 
 
 def hash_ingest_token(token: str) -> str:
@@ -26,7 +27,14 @@ def _active_price(offer: Offer) -> Price | None:
 
 
 @transaction.atomic
-def create_order(*, organization, contact: Contact, items: list[OrderItemInput], conversation: Conversation | None = None) -> Order:
+def create_order(
+    *,
+    context: TenantContext,
+    contact: Contact,
+    items: list[OrderItemInput],
+    conversation: Conversation | None = None,
+) -> Order:
+    organization = context.organization
     if not items:
         raise ValidationError({"items": "Order needs at least one item"})
     if contact.organization_id != organization.id:
@@ -73,7 +81,9 @@ def create_order(*, organization, contact: Contact, items: list[OrderItemInput],
     return order
 
 
-def mark_paid(*, order: Order) -> Order:
+def mark_paid(*, context: TenantContext, order: Order) -> Order:
+    if order.organization_id != context.organization_id:
+        raise ValidationError({"order": "Order belongs to another organization"})
     if order.payment_status != PaymentStatus.PAID:
         order.payment_status = PaymentStatus.PAID
         order.paid_at = timezone.now()
@@ -83,13 +93,17 @@ def mark_paid(*, order: Order) -> Order:
     return order
 
 
-def cancel_order(*, order: Order) -> Order:
+def cancel_order(*, context: TenantContext, order: Order) -> Order:
+    if order.organization_id != context.organization_id:
+        raise ValidationError({"order": "Order belongs to another organization"})
     order.payment_status = PaymentStatus.CANCELLED
     order.save(update_fields=["payment_status", "updated_at"])
     return order
 
 
-def set_fulfillment(*, order: Order, status: str) -> Order:
+def set_fulfillment(*, context: TenantContext, order: Order, status: str) -> Order:
+    if order.organization_id != context.organization_id:
+        raise ValidationError({"order": "Order belongs to another organization"})
     if status not in FulfillmentStatus.values:
         raise ValidationError({"fulfillmentStatus": "Unknown status"})
     order.fulfillment_status = status
@@ -115,6 +129,7 @@ def resolve_product_by_token(token: str) -> Product | None:
 @transaction.atomic
 def ingest_order(
     *,
+    context: TenantContext,
     product: Product,
     external_id: str,
     items: list[IngestItemInput],
@@ -128,7 +143,9 @@ def ingest_order(
         raise ValidationError({"paymentStatus": "Unknown status"})
     if not items:
         raise ValidationError({"items": "Order needs at least one item"})
-    organization = product.organization
+    organization = context.organization
+    if product.organization_id != context.organization_id:
+        raise ValidationError({"product": "Product belongs to another organization"})
 
     # Идемпотентность по (организация, продукт, внешний id).
     if external_id:

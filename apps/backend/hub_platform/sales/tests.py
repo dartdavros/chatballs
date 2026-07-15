@@ -2,7 +2,7 @@ import json
 
 from django.test import TestCase
 from django.utils import timezone
-from rest_framework.test import APIClient
+from hub_platform.testing import TenantAPIClient as APIClient, system_tenant_context
 
 from hub_platform.conversations.models import Contact, Conversation
 from hub_platform.identity.bootstrap import bootstrap_edevs_owner
@@ -169,7 +169,7 @@ class AttributionTests(SalesTestBase):
 
     def test_valid_token_attributes_sale(self) -> None:
         token, raw = issue_attribution_token(
-            organization=self.organization,
+            context=system_tenant_context(self.organization),
             product=self.product,
             contact=self.contact,
             conversation=self.conversation,
@@ -285,7 +285,7 @@ class AnalyticsTests(SalesTestBase):
         )
         from hub_platform.sales.analytics import sales_analytics
 
-        data = sales_analytics(self.organization.id)
+        data = sales_analytics(system_tenant_context(self.organization))
         self.assertEqual(data["grossSalesCount"], 1)
         self.assertEqual(data["grossRevenueMinor"], 100000)
         self.assertEqual(data["refundedAmountMinor"], 40000)

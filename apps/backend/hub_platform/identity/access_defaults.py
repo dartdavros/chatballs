@@ -6,7 +6,7 @@ from hub_platform.identity.models import (
     AccessProfileCapability,
     Department,
     EmployeeAccessAssignment,
-    EmployeeProfile,
+    OrganizationMembership,
 )
 
 
@@ -35,8 +35,8 @@ SYSTEM_PROFILE_CAPABILITIES = {
 
 def ensure_system_assignment(
     *,
-    employee: EmployeeProfile,
-    assigned_by: EmployeeProfile,
+    employee: OrganizationMembership,
+    assigned_by: OrganizationMembership,
     department: Department,
     profile_name: str,
 ) -> EmployeeAccessAssignment:
@@ -70,4 +70,3 @@ def ensure_system_assignment(
         department=department,
         assigned_by=assigned_by,
     )
-

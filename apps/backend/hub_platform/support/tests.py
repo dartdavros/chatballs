@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 
 from django.test import TestCase
-from rest_framework.test import APIClient
+from hub_platform.testing import TenantAPIClient as APIClient
 
 from hub_platform.channels.models import Channel
 from hub_platform.identity.audit import AuditResult

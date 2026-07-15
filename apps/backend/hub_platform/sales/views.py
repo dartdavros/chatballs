@@ -16,8 +16,8 @@ from hub_platform.sales.analytics import sales_analytics
 from hub_platform.sales.models import Sale, SaleEventType
 from hub_platform.sales.selectors import (
     apply_sale_filters,
-    sale_for_organization,
-    sales_for_organization,
+    sale_for_context,
+    sales_for_context,
 )
 from hub_platform.sales.serializers import sale_payload
 from hub_platform.sales.services import (
@@ -28,6 +28,7 @@ from hub_platform.sales.services import (
     record_product_sales_event,
     resolve_sales_source_by_credential,
 )
+from hub_platform.tenancy.context import TenantContext
 
 
 def _api_error(error: SalesApiError) -> Response:
@@ -55,9 +56,12 @@ class ProductSalesEventView(APIView):
         source = resolve_sales_source_by_credential(_bearer(request))
         if source is None:
             return Response({"detail": "Invalid or revoked credential", "error": "invalid_credential"}, status=401)
+        context = TenantContext.for_resource(source.organization)
 
         try:
-            result = record_product_sales_event(source=source, payload=request.data)
+            result = record_product_sales_event(
+                context=context, source=source, payload=request.data
+            )
         except SalesApiError as error:
             record_audit_event(
                 action="sales.event_rejected",
@@ -76,7 +80,7 @@ class ProductSalesEventView(APIView):
 
 class _Base(APIView):
     def _org(self, request: Request):
-        return request.user.employee_profile.organization
+        return request.tenant_context.organization
 
 
 class SaleListCreateView(_Base):
@@ -84,8 +88,8 @@ class SaleListCreateView(_Base):
     required_capabilities = {"GET": "sales.view", "POST": "sales.operate"}
 
     def get(self, request: Request) -> Response:
-        qs = apply_sale_filters(sales_for_organization(self._org(request).id), request.query_params)
-        department_ids = accessible_department_ids(request.user, "sales.view")
+        qs = apply_sale_filters(sales_for_context(request.tenant_context), request.query_params)
+        department_ids = accessible_department_ids(request.tenant_context.membership, "sales.view")
         if department_ids is not None:
             qs = qs.filter(conversation__channel__department_id__in=department_ids)
         return Response({"items": [sale_payload(sale) for sale in qs]})
@@ -105,20 +109,19 @@ class SaleListCreateView(_Base):
             conversation = Conversation.objects.filter(id=data.get("conversationId"), organization=org).first()
             if conversation is None:
                 return Response({"detail": "Conversation not found"}, status=400)
-            if not require_capability(request.user, "sales.operate", conversation):
+            if not require_capability(request.tenant_context.membership, "sales.operate", conversation):
                 return Response({"detail": "Conversation not found"}, status=404)
         if data.get("contactId"):
             contact = Contact.objects.filter(id=data.get("contactId"), organization=org).first()
             if contact is None:
                 return Response({"detail": "Contact not found"}, status=400)
-        if conversation is None and accessible_department_ids(request.user, "sales.operate") is not None:
+        if conversation is None and accessible_department_ids(request.tenant_context.membership, "sales.operate") is not None:
             return Response({"detail": "Department-scoped sale requires a conversation"}, status=403)
 
         occurred_at = parse_datetime(str(data.get("occurredAt", ""))) or timezone.now()
         try:
             sale = create_manual_sale(
-                organization=org,
-                actor_user=request.user,
+                context=request.tenant_context,
                 product=product,
                 amount_minor=int(data.get("amountMinor", 0)),
                 currency=str(data.get("currency", "RUB")),
@@ -153,10 +156,10 @@ class SaleDetailView(_Base):
 
     def get(self, request: Request, sale_id: int) -> Response:
         try:
-            sale = sale_for_organization(organization_id=self._org(request).id, sale_id=sale_id)
+            sale = sale_for_context(context=request.tenant_context, sale_id=sale_id)
         except Sale.DoesNotExist:
             return Response({"detail": "Sale not found"}, status=404)
-        if not require_capability(request.user, self.required_capability, sale):
+        if not require_capability(request.tenant_context.membership, self.required_capability, sale):
             return Response({"detail": "Sale not found"}, status=404)
         return Response({"sale": sale_payload(sale, with_events=True)})
 
@@ -183,10 +186,10 @@ class SaleActionView(_Base):
         if event_type is None:
             return Response({"detail": "Unknown action"}, status=404)
         try:
-            sale = sale_for_organization(organization_id=self._org(request).id, sale_id=sale_id)
+            sale = sale_for_context(context=request.tenant_context, sale_id=sale_id)
         except Sale.DoesNotExist:
             return Response({"detail": "Sale not found"}, status=404)
-        if not require_capability(request.user, self.required_capability, sale):
+        if not require_capability(request.tenant_context.membership, self.required_capability, sale):
             return Response({"detail": "Sale not found"}, status=404)
 
         data = request.data
@@ -202,8 +205,8 @@ class SaleActionView(_Base):
 
         try:
             sale = record_manual_action(
+                context=request.tenant_context,
                 sale=sale,
-                actor_user=request.user,
                 event_type=event_type,
                 reason=str(data.get("reason", "")),
                 amount_minor=amount_minor,
@@ -235,7 +238,7 @@ class AttributionTokenView(_Base):
         conversation = Conversation.objects.filter(id=data.get("conversationId"), organization=org).select_related("contact", "channel", "connection").first()
         if conversation is None:
             return Response({"detail": "Conversation not found"}, status=400)
-        if not require_capability(request.user, self.required_capability, conversation):
+        if not require_capability(request.tenant_context.membership, self.required_capability, conversation):
             return Response({"detail": "Conversation not found"}, status=404)
         try:
             product = Product.objects.get(organization=org, code=str(data.get("productCode", "")))
@@ -245,7 +248,7 @@ class AttributionTokenView(_Base):
         actor_type = "EMPLOYEE"
         try:
             token, raw = issue_attribution_token(
-                organization=org,
+                context=request.tenant_context,
                 product=product,
                 contact=conversation.contact,
                 conversation=conversation,
@@ -276,7 +279,7 @@ class SalesAnalyticsView(_Base):
     def get(self, request: Request) -> Response:
         params = request.query_params
         data = sales_analytics(
-            self._org(request).id,
+            request.tenant_context,
             date_from=params.get("from") or None,
             date_to=params.get("to") or None,
         )

@@ -8,7 +8,7 @@ from hub_platform.api.permissions import HasCapability
 from hub_platform.conversations.models import Contact, Conversation
 from hub_platform.identity.audit import record_audit_event
 from hub_platform.orders.models import Order
-from hub_platform.orders.selectors import order_for_organization, orders_for_organization
+from hub_platform.orders.selectors import order_for_context, orders_for_context
 from hub_platform.orders.serializers import order_payload
 from hub_platform.orders.services import (
     IngestItemInput,
@@ -21,6 +21,7 @@ from hub_platform.orders.services import (
     set_fulfillment,
 )
 from hub_platform.identity.policy import accessible_department_ids, require_capability
+from hub_platform.tenancy.context import TenantContext
 
 
 def _validation_error(error: ValidationError) -> Response:
@@ -30,7 +31,7 @@ def _validation_error(error: ValidationError) -> Response:
 
 class _Base(APIView):
     def _org(self, request: Request):
-        return request.user.employee_profile.organization
+        return request.tenant_context.organization
 
     def _audit(self, request: Request, action: str, order: Order) -> None:
         record_audit_event(
@@ -48,8 +49,8 @@ class OrderListCreateView(_Base):
     required_capabilities = {"GET": "sales.view", "POST": "sales.operate"}
 
     def get(self, request: Request) -> Response:
-        orders = orders_for_organization(self._org(request).id)
-        department_ids = accessible_department_ids(request.user, "sales.view")
+        orders = orders_for_context(request.tenant_context)
+        department_ids = accessible_department_ids(request.tenant_context.membership, "sales.view")
         if department_ids is not None:
             orders = orders.filter(conversation__channel__department_id__in=department_ids)
         status_filter = request.query_params.get("paymentStatus")
@@ -76,14 +77,14 @@ class OrderListCreateView(_Base):
             contact = Contact.objects.get(id=int(request.data.get("contactId", 0)), organization=org)
         except (Contact.DoesNotExist, TypeError, ValueError):
             return Response({"detail": "Contact not found"}, status=400)
-        department_ids = accessible_department_ids(request.user, "sales.operate")
+        department_ids = accessible_department_ids(request.tenant_context.membership, "sales.operate")
         conversation = None
         if request.data.get("conversationId"):
             conversation = Conversation.objects.filter(
                 id=request.data.get("conversationId"), organization=org, contact=contact
             ).select_related("channel").first()
             if conversation is None or not require_capability(
-                request.user, "sales.operate", conversation
+                request.tenant_context.membership, "sales.operate", conversation
             ):
                 return Response({"detail": "Conversation not found"}, status=404)
         if department_ids is not None and conversation is None:
@@ -92,12 +93,15 @@ class OrderListCreateView(_Base):
             )
         try:
             order = create_order(
-                organization=org, contact=contact, items=items, conversation=conversation
+                context=request.tenant_context,
+                contact=contact,
+                items=items,
+                conversation=conversation,
             )
         except ValidationError as error:
             return _validation_error(error)
         self._audit(request, "created", order)
-        order = order_for_organization(organization_id=org.id, order_id=order.id)
+        order = order_for_context(context=request.tenant_context, order_id=order.id)
         return Response({"order": order_payload(order, with_items=True)}, status=201)
 
 
@@ -111,6 +115,7 @@ class OrderIngestView(APIView):
         product = resolve_product_by_token(token)
         if product is None:
             return Response({"detail": "Invalid product token"}, status=401)
+        context = TenantContext.for_resource(product.organization)
 
         raw_items = request.data.get("items")
         if not isinstance(raw_items, list) or not raw_items:
@@ -135,6 +140,7 @@ class OrderIngestView(APIView):
 
         try:
             order, created = ingest_order(
+                context=context,
                 product=product,
                 external_id=str(request.data.get("externalId", "")).strip(),
                 items=items,
@@ -163,10 +169,10 @@ class OrderDetailView(_Base):
 
     def get(self, request: Request, order_id: int) -> Response:
         try:
-            order = order_for_organization(organization_id=self._org(request).id, order_id=order_id)
+            order = order_for_context(context=request.tenant_context, order_id=order_id)
         except Order.DoesNotExist:
             return Response({"detail": "Order not found"}, status=404)
-        if not require_capability(request.user, self.required_capability, order):
+        if not require_capability(request.tenant_context.membership, self.required_capability, order):
             return Response({"detail": "Order not found"}, status=404)
         return Response({"order": order_payload(order, with_items=True)})
 
@@ -176,8 +182,8 @@ class _OrderActionView(_Base):
     required_capability = "sales.correct"
 
     def _order(self, request: Request, order_id: int) -> Order:
-        order = order_for_organization(organization_id=self._org(request).id, order_id=order_id)
-        if not require_capability(request.user, self.required_capability, order):
+        order = order_for_context(context=request.tenant_context, order_id=order_id)
+        if not require_capability(request.tenant_context.membership, self.required_capability, order):
             raise Order.DoesNotExist
         return order
 
@@ -188,7 +194,7 @@ class OrderMarkPaidView(_OrderActionView):
             order = self._order(request, order_id)
         except Order.DoesNotExist:
             return Response({"detail": "Order not found"}, status=404)
-        mark_paid(order=order)
+        mark_paid(context=request.tenant_context, order=order)
         self._audit(request, "paid", order)
         return Response({"order": order_payload(self._order(request, order_id), with_items=True)})
 
@@ -199,7 +205,7 @@ class OrderCancelView(_OrderActionView):
             order = self._order(request, order_id)
         except Order.DoesNotExist:
             return Response({"detail": "Order not found"}, status=404)
-        cancel_order(order=order)
+        cancel_order(context=request.tenant_context, order=order)
         self._audit(request, "cancelled", order)
         return Response({"order": order_payload(self._order(request, order_id), with_items=True)})
 
@@ -211,7 +217,11 @@ class OrderFulfillmentView(_OrderActionView):
         except Order.DoesNotExist:
             return Response({"detail": "Order not found"}, status=404)
         try:
-            set_fulfillment(order=order, status=str(request.data.get("fulfillmentStatus", "")))
+            set_fulfillment(
+                context=request.tenant_context,
+                order=order,
+                status=str(request.data.get("fulfillmentStatus", "")),
+            )
         except ValidationError as error:
             return _validation_error(error)
         self._audit(request, "fulfillment_set", order)

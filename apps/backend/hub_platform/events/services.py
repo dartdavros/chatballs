@@ -6,7 +6,9 @@ from django.db import transaction
 from django.utils import timezone
 
 from hub_platform.events.context import get_correlation_id
-from hub_platform.events.models import OutboxEvent, OutboxStatus
+from hub_platform.events.models import EventOwnership, OutboxEvent, OutboxStatus
+from hub_platform.identity.models import Organization, OrganizationMembership
+from hub_platform.tenancy.context import TenantActorKind, TenantContext
 
 
 @dataclass(frozen=True)
@@ -15,15 +17,59 @@ class DomainEvent:
     aggregate_id: str
     event_type: str
     payload: dict[str, Any]
+    tenant_context: TenantContext | None = None
 
 
 def enqueue_event(event: DomainEvent) -> OutboxEvent:
+    context = event.tenant_context
     return OutboxEvent.objects.create(
         aggregate_type=event.aggregate_type,
         aggregate_id=event.aggregate_id,
         event_type=event.event_type,
         payload=event.payload,
-        correlation_id=get_correlation_id(),
+        ownership=EventOwnership.TENANT if context is not None else EventOwnership.PLATFORM,
+        organization=context.organization if context is not None else None,
+        membership=context.membership if context is not None else None,
+        actor_user=context.actor_user if context is not None else None,
+        actor_kind=context.actor_kind if context is not None else "",
+        correlation_id=context.correlation_id if context is not None else get_correlation_id(),
+    )
+
+
+def tenant_context_for_event(event: OutboxEvent) -> TenantContext | None:
+    if event.ownership == EventOwnership.PLATFORM:
+        if event.organization_id or event.membership_id:
+            raise ValueError("Platform event cannot carry tenant ownership")
+        return None
+    if event.organization_id is None:
+        raise ValueError("Tenant event has no organization")
+    organization = Organization.objects.get(pk=event.organization_id)
+    membership = None
+    actor_user = None
+    if event.membership_id is not None:
+        membership = OrganizationMembership.objects.select_related("user", "organization").get(
+            pk=event.membership_id,
+            organization=organization,
+            blocked_at__isnull=True,
+            user__is_active=True,
+        )
+        actor_user = membership.user
+        if event.actor_user_id not in {None, membership.user_id}:
+            raise ValueError("Tenant event actor does not match membership")
+    elif event.actor_user_id is not None:
+        actor_user = event.actor_user
+    try:
+        actor_kind = TenantActorKind(event.actor_kind)
+    except ValueError as error:
+        raise ValueError("Tenant event has invalid actor kind") from error
+    if actor_kind == TenantActorKind.HUMAN and membership is None:
+        raise ValueError("Human tenant event has no membership")
+    return TenantContext(
+        organization=organization,
+        membership=membership,
+        actor_user=actor_user,
+        actor_kind=actor_kind,
+        correlation_id=event.correlation_id,
     )
 
 

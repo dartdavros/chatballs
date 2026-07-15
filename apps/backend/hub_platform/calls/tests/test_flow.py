@@ -6,10 +6,9 @@ from datetime import timedelta
 from unittest import mock
 
 from django.utils import timezone
-from rest_framework.test import APIClient
+from hub_platform.testing import TenantAPIClient as APIClient, tenant_context_for
 
 from hub_platform.calls.event_handlers import handle_call_invite_send
-from hub_platform.calls.maintenance import expire_stale_calls
 from hub_platform.calls.models import (
     CallEndedBy,
     CallInvite,
@@ -18,11 +17,10 @@ from hub_platform.calls.models import (
     InviteDeliveryStatus,
 )
 from hub_platform.calls.services import (
-    create_call_request,
     open_call_for_identity,
     decline_call_for_identity,
 )
-from hub_platform.calls.tests.helpers import CallTestCase
+from hub_platform.calls.tests.helpers import CallTestCase, create_call_request, expire_stale_calls
 from hub_platform.calls.tokens import hash_invite_token
 from hub_platform.conversations.models import Conversation, Message
 from hub_platform.events.models import OutboxEvent
@@ -127,7 +125,10 @@ class CustomerAccessApiTests(CallTestCase):
         call = CallSession.objects.get()
         from hub_platform.calls.services import cancel_call
 
-        cancel_call(call_session=call, user=self.owner)
+        cancel_call(
+            context=tenant_context_for(self.owner, self.organization),
+            call_session=call,
+        )
         response = self._post("/api/v1/calls/access/state/", token)
         self.assertEqual(response.status_code, 200)
         body = response.json()
@@ -140,7 +141,10 @@ class CustomerAccessApiTests(CallTestCase):
         token = self._customer_token()
         from hub_platform.calls.services import cancel_call
 
-        cancel_call(call_session=CallSession.objects.get(), user=self.owner)
+        cancel_call(
+            context=tenant_context_for(self.owner, self.organization),
+            call_session=CallSession.objects.get(),
+        )
         response = self._post("/api/v1/calls/access/accept/", token)
         self.assertEqual(response.status_code, 404)
 
@@ -213,7 +217,10 @@ class MessengerDeliveryTests(CallTestCase):
         with mock.patch(
             "hub_platform.calls.event_handlers.transports.send_call_invite", side_effect=fake_send
         ):
-            handle_call_invite_send({"callSessionId": str(created.call_session.id)})
+            handle_call_invite_send(
+                {"callSessionId": str(created.call_session.id)},
+                tenant_context_for(self.owner, self.organization),
+            )
 
         call = CallSession.objects.get()
         invite = call.invite
@@ -232,7 +239,10 @@ class MessengerDeliveryTests(CallTestCase):
             "hub_platform.calls.event_handlers.transports.send_call_invite", return_value=False
         ):
             with self.assertRaises(Exception):
-                handle_call_invite_send({"callSessionId": str(created.call_session.id)})
+                handle_call_invite_send(
+                    {"callSessionId": str(created.call_session.id)},
+                    tenant_context_for(self.owner, self.organization),
+                )
         call = CallSession.objects.get()
         self.assertEqual(call.status, CallStatus.REQUESTED)
         self.assertEqual(call.invite.delivery_status, InviteDeliveryStatus.PENDING)
@@ -243,8 +253,9 @@ class MessengerDeliveryTests(CallTestCase):
         with mock.patch(
             "hub_platform.calls.event_handlers.transports.send_call_invite", return_value=True
         ) as sender:
-            handle_call_invite_send({"callSessionId": str(created.call_session.id)})
-            handle_call_invite_send({"callSessionId": str(created.call_session.id)})
+            context = tenant_context_for(self.owner, self.organization)
+            handle_call_invite_send({"callSessionId": str(created.call_session.id)}, context)
+            handle_call_invite_send({"callSessionId": str(created.call_session.id)}, context)
         self.assertEqual(sender.call_count, 1)
 
 
@@ -257,7 +268,7 @@ class ExpirySweepTests(CallTestCase):
     def test_ringing_call_becomes_missed(self) -> None:
         created = create_call_request(conversation_id=self.conversation.id, initiator=self.owner)
         self._expire_invite(created.call_session)
-        expire_stale_calls()
+        expire_stale_calls(self.organization)
         call = CallSession.objects.get()
         self.assertEqual(call.status, CallStatus.MISSED)
         self.assertEqual(call.ended_by, CallEndedBy.TIMEOUT)
@@ -281,7 +292,7 @@ class ExpirySweepTests(CallTestCase):
         self.identity.save(update_fields=["connection"])
         created = create_call_request(conversation_id=self.conversation.id, initiator=self.owner)
         self._expire_invite(created.call_session)
-        expire_stale_calls()
+        expire_stale_calls(self.organization)
         self.assertEqual(CallSession.objects.get().status, CallStatus.EXPIRED)
 
     def test_accepted_call_without_connection_fails_after_grace(self) -> None:
@@ -291,7 +302,7 @@ class ExpirySweepTests(CallTestCase):
 
         accept_call_by_access_token(token=token)
         CallSession.objects.update(accepted_at=timezone.now() - timedelta(hours=1))
-        expire_stale_calls()
+        expire_stale_calls(self.organization)
         call = CallSession.objects.get()
         self.assertEqual(call.status, CallStatus.FAILED)
         self.assertEqual(call.failure_code, "CONNECT_TIMEOUT")
@@ -299,8 +310,8 @@ class ExpirySweepTests(CallTestCase):
     def test_sweep_is_idempotent(self) -> None:
         created = create_call_request(conversation_id=self.conversation.id, initiator=self.owner)
         self._expire_invite(created.call_session)
-        expire_stale_calls()
-        expire_stale_calls()
+        expire_stale_calls(self.organization)
+        expire_stale_calls(self.organization)
         self.assertEqual(
             Message.objects.filter(
                 conversation=self.conversation, text="Звонок пропущен: клиент не ответил"

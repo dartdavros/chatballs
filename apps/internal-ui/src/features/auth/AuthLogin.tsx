@@ -1,13 +1,13 @@
 import { type FormEvent, useState } from "react";
 
 import { api } from "../../api/client";
-import type { AuthChallenge, LoginPayload, SessionUser } from "../../types";
+import type { AuthChallenge, AuthenticatedUser, LoginPayload } from "../../types";
 import { Icon } from "../../shared/icons";
 import { Button } from "../../shared/ui-controls";
 import { AuthField } from "./AuthField";
 import { AuthFrame } from "./AuthFrame";
 
-export function AuthLogin({ onLogin, onTotpChallenge, onRecover }: { onLogin: (user: SessionUser) => void; onTotpChallenge: (challenge: AuthChallenge) => void; onRecover: () => void }) {
+export function AuthLogin({ onLogin, onTotpChallenge, onRecover }: { onLogin: (user: AuthenticatedUser) => void; onTotpChallenge: (challenge: AuthChallenge) => void; onRecover: () => void }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);

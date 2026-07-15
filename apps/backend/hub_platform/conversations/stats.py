@@ -14,7 +14,7 @@ from django.db.models.functions import TruncDate, TruncHour
 from django.utils import timezone
 
 from hub_platform.ai.models import LlmInvocation
-from hub_platform.channels.selectors import channels_for_organization
+from hub_platform.channels.selectors import channels_for_context
 from hub_platform.conversations.models import (
     Conversation,
     ControlMode,
@@ -83,10 +83,11 @@ def _ai_cost(
 
 
 def sales_overview_stats(
-    organization_id: int,
+    context,
     period: str,
     department_ids: set[int] | None = None,
 ) -> dict:
+    organization_id = context.organization_id
     now = timezone.now()
     start, prev_start = _window(period, now)
 
@@ -156,7 +157,7 @@ def sales_overview_stats(
 
     by_channel: list[dict] = []
     by_product: dict[str, dict] = {}
-    channels = channels_for_organization(organization_id)
+    channels = channels_for_context(context)
     if department_ids is not None:
         channels = channels.filter(department_id__in=department_ids)
     for channel in channels:

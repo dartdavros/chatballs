@@ -1,5 +1,6 @@
 import uuid
 
+from django.conf import settings
 from django.db import models
 from django.utils import timezone
 
@@ -12,12 +13,45 @@ class OutboxStatus(models.TextChoices):
     DEAD_LETTER = "DEAD_LETTER", "Dead letter"
 
 
+class EventOwnership(models.TextChoices):
+    PLATFORM = "PLATFORM", "Platform"
+    TENANT = "TENANT", "Tenant"
+
+
 class OutboxEvent(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     aggregate_type = models.CharField(max_length=128)
     aggregate_id = models.CharField(max_length=128)
     event_type = models.CharField(max_length=128)
     payload = models.JSONField(default=dict)
+    ownership = models.CharField(
+        max_length=16,
+        choices=EventOwnership.choices,
+        default=EventOwnership.PLATFORM,
+        db_index=True,
+    )
+    organization = models.ForeignKey(
+        "identity.Organization",
+        on_delete=models.PROTECT,
+        related_name="outbox_events",
+        null=True,
+        blank=True,
+    )
+    membership = models.ForeignKey(
+        "identity.OrganizationMembership",
+        on_delete=models.SET_NULL,
+        related_name="outbox_events",
+        null=True,
+        blank=True,
+    )
+    actor_user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        related_name="outbox_events",
+        null=True,
+        blank=True,
+    )
+    actor_kind = models.CharField(max_length=16, blank=True)
     status = models.CharField(
         max_length=32,
         choices=OutboxStatus.choices,

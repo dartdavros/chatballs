@@ -21,13 +21,14 @@ class HasCapability(BasePermission):
         capability = by_method.get(request.method, capability)
         if not capability:
             return False
-        profile = getattr(request.user, "employee_profile", None)
-        if profile is None:
+        context = getattr(request, "tenant_context", None)
+        if context is None or context.membership is None:
             return False
+        profile = context.membership
         if getattr(view, "require_organization_scope", False):
             return authorize(
-                request.user,
+                profile,
                 capability,
                 ResourceScope(organization_id=profile.organization_id),
             )
-        return has_capability_any_scope(request.user, capability)
+        return has_capability_any_scope(profile, capability)

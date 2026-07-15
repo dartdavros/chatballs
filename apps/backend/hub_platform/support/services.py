@@ -9,6 +9,7 @@ from hub_platform.channels.models import Channel
 from hub_platform.identity.models import Organization
 from hub_platform.products.models import Product
 from hub_platform.support.models import ContractStatus, ProductSupportContract
+from hub_platform.tenancy.context import TenantContext
 
 
 @dataclass(frozen=True)
@@ -49,8 +50,9 @@ def _resolve_channels(organization: Organization, ids: tuple[int, ...]) -> list[
 
 @transaction.atomic
 def register_contract(
-    *, organization: Organization, data: ContractInput
+    *, context: TenantContext, data: ContractInput
 ) -> ProductSupportContract:
+    organization = context.organization
     try:
         product = Product.objects.get(id=data.product_id, organization=organization)
     except Product.DoesNotExist as error:
@@ -75,7 +77,11 @@ def register_contract(
     return contract
 
 
-def set_contract_status(*, contract: ProductSupportContract, status: str) -> ProductSupportContract:
+def set_contract_status(
+    *, context: TenantContext, contract: ProductSupportContract, status: str
+) -> ProductSupportContract:
+    if contract.organization_id != context.organization_id:
+        raise ValidationError({"contract": "Contract belongs to another organization"})
     if status not in ContractStatus.values:
         raise ValidationError({"status": "Unknown contract status"})
     if contract.status != status:

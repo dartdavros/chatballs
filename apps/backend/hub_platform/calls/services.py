@@ -46,6 +46,8 @@ from hub_platform.conversations.models import (
 from hub_platform.conversations.services import ClaimError, claim_locked_conversation
 from hub_platform.events.services import DomainEvent, enqueue_event
 from hub_platform.integrations.models import IntegrationProvider
+from hub_platform.identity.models import OrganizationMembership
+from hub_platform.tenancy.context import TenantContext
 
 # Outbox-событие доставки приглашения в TG/MAX (обработчик — calls.event_handlers).
 CALL_INVITE_SEND = "calls.invite_send"
@@ -101,19 +103,22 @@ def _check_call_creation_conflicts(*, conversation: Conversation, initiator) -> 
 
 
 @transaction.atomic
-def create_call_request(*, conversation_id: int, initiator) -> CreatedCall:
+def create_call_request(*, context: TenantContext, conversation_id: int) -> CreatedCall:
+    initiator = context.actor_user
+    if initiator is None or context.membership is None:
+        raise CallAccessDenied("Для звонка требуется контекст сотрудника")
     conversation = (
         Conversation.objects.select_for_update()
         .select_related("channel")
-        .get(id=conversation_id)
+        .get(id=conversation_id, organization=context.organization)
     )
-    ensure_conversation_call_access(user=initiator, conversation=conversation)
+    ensure_conversation_call_access(user=context.membership, conversation=conversation)
     identity = _conversation_identity(conversation)
     _check_call_creation_conflicts(conversation=conversation, initiator=initiator)
 
     if conversation.control_mode != ControlMode.HUMAN or conversation.assigned_operator_id != initiator.id:
         try:
-            claim_locked_conversation(conversation=conversation, operator=initiator)
+            claim_locked_conversation(context=context, conversation=conversation)
         except ClaimError as error:
             raise CallConflict(str(error)) from error
 
@@ -164,6 +169,7 @@ def create_call_request(*, conversation_id: int, initiator) -> CreatedCall:
                 aggregate_id=str(call.id),
                 event_type=CALL_INVITE_SEND,
                 payload={"callSessionId": str(call.id)},
+                tenant_context=context,
             )
         )
     staff_token = issue_call_access_token(
@@ -201,8 +207,11 @@ def resolve_invite(*, token: str) -> ResolvedInvite:
     return ResolvedInvite(invite=invite, customer_access_token=access_token)
 
 
-def issue_staff_access_token(*, call_session: CallSession, user) -> str:
-    ensure_call_access(user=user, call_session=call_session)
+def issue_staff_access_token(*, context: TenantContext, call_session: CallSession) -> str:
+    user = context.actor_user
+    if user is None or context.membership is None:
+        raise CallAccessDenied("Для звонка требуется контекст сотрудника")
+    ensure_call_access(user=context.membership, call_session=call_session)
     participant_exists = call_session.participants.filter(side=ParticipantSide.STAFF, user=user).exists()
     if not participant_exists:
         raise CallConflict("Сотрудник не является участником звонка")
@@ -219,7 +228,7 @@ def authorize_call_access_token(*, token: str, allow_terminal: bool = False) -> 
     claims = verify_call_access_token(token)
     try:
         call = CallSession.objects.select_related(
-            "conversation", "conversation__channel", "initiated_by"
+            "conversation", "conversation__channel", "initiated_by", "organization"
         ).get(id=claims.call_session_id)
     except CallSession.DoesNotExist:
         raise CallTokenError("Недействительный или истёкший call access token") from None
@@ -232,8 +241,13 @@ def authorize_call_access_token(*, token: str, allow_terminal: bool = False) -> 
         ).first()
         valid = participant is not None
         if participant is not None:
+            membership = OrganizationMembership.objects.select_related("user").filter(
+                user=participant.user,
+                organization_id=call.organization_id,
+                blocked_at__isnull=True,
+            ).first()
             try:
-                ensure_call_access(user=participant.user, call_session=call)
+                ensure_call_access(user=membership, call_session=call)
             except CallAccessDenied:
                 valid = False
     else:
@@ -249,8 +263,29 @@ def authorize_call_access_token(*, token: str, allow_terminal: bool = False) -> 
     return claims, call
 
 
-def cancel_call(*, call_session: CallSession, user) -> CallSession:
-    ensure_call_access(user=user, call_session=call_session)
+def authorize_call_access_context(
+    *, token: str, allow_terminal: bool = False
+) -> tuple[CallAccessClaims, CallSession, TenantContext]:
+    claims, call = authorize_call_access_token(token=token, allow_terminal=allow_terminal)
+    if claims.side == ParticipantSide.STAFF:
+        membership = OrganizationMembership.objects.select_related(
+            "user", "organization"
+        ).get(
+            user_id=claims.subject_id,
+            organization=call.organization,
+            blocked_at__isnull=True,
+        )
+        context = TenantContext.for_membership(membership)
+    else:
+        context = TenantContext.for_resource(call.organization)
+    return claims, call, context
+
+
+def cancel_call(*, context: TenantContext, call_session: CallSession) -> CallSession:
+    user = context.actor_user
+    if user is None or context.membership is None:
+        raise CallAccessDenied("Для звонка требуется контекст сотрудника")
+    ensure_call_access(user=context.membership, call_session=call_session)
     if not call_session.participants.filter(side=ParticipantSide.STAFF, user=user).exists():
         raise CallConflict("Сотрудник не является участником звонка")
     try:

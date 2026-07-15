@@ -14,9 +14,10 @@ from django.utils import timezone
 from hub_platform.ai.models import AIAgent, LlmInvocation
 from hub_platform.conversations.models import Conversation, ControlMode, LifecycleState
 from hub_platform.conversations.stats import _ACTIVE_WINDOW, _window
-from hub_platform.identity.models import Department, DepartmentStatus, EmployeeProfile
+from hub_platform.identity.models import Department, DepartmentStatus, OrganizationMembership
 from hub_platform.integrations.models import Integration, IntegrationKind, IntegrationStatus
 from hub_platform.orders.models import FulfillmentStatus, Order, PaymentStatus
+from hub_platform.tenancy.context import TenantContext
 
 _DEPT_ROUTE = {"sales": "salesOverview", "support": "supportOverview"}
 
@@ -36,7 +37,8 @@ def _minutes_since(moment, now) -> int:
     return max(0, int((now - moment).total_seconds() // 60))
 
 
-def command_center_overview(organization_id: int, period: str) -> dict:
+def command_center_overview(context: TenantContext, period: str) -> dict:
+    organization_id = context.organization_id
     now = timezone.now()
     start, _ = _window(period, now)
 
@@ -47,7 +49,7 @@ def command_center_overview(organization_id: int, period: str) -> dict:
     revenue = paid.aggregate(total=Sum("amount_minor"))["total"] or 0
 
     employees_by_dept = dict(
-        EmployeeProfile.objects.filter(
+        OrganizationMembership.objects.filter(
             organization_id=organization_id, blocked_at__isnull=True, primary_department__isnull=False
         )
         .values_list("primary_department_id")

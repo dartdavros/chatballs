@@ -38,13 +38,7 @@ class PasswordResetRequestView(APIView):
         email = HumanUser.objects.normalize_email(str(request.data.get("email", "")).strip())
         if email:
             user = HumanUser.objects.filter(email__iexact=email, is_active=True).first()
-            active_memberships = (
-                user.memberships.filter(blocked_at__isnull=True).select_related("organization")
-                if user is not None
-                else None
-            )
-            profile = active_memberships.first() if active_memberships is not None else None
-            if user is not None and profile is not None:
+            if user is not None:
                 enqueue_event(
                     DomainEvent(
                         aggregate_type="HumanUser",
@@ -56,7 +50,6 @@ class PasswordResetRequestView(APIView):
                 record_audit_event(
                     action="identity.password_reset_requested",
                     actor=user,
-                    organization=profile.organization,
                     request=request,
                 )
             else:
@@ -103,12 +96,9 @@ class PasswordResetConfirmView(APIView):
         user.set_password(new_password)
         user.must_change_password = False
         user.save(update_fields=["password", "must_change_password"])
-        memberships = user.memberships.select_related("organization")
-        profile = memberships.first() if memberships.count() == 1 else None
         record_audit_event(
             action="identity.password_reset_completed",
             actor=user,
-            organization=profile.organization if profile is not None else None,
             request=request,
         )
         return Response({"ok": True})

@@ -1,14 +1,14 @@
 import { type FormEvent, useState } from "react";
 
 import { api } from "../../api/client";
-import type { SessionUser } from "../../types";
+import type { AuthenticatedUser, SessionUser } from "../../types";
 import { Icon } from "../../shared/icons";
 import { Button } from "../../shared/ui-controls";
 import { AuthField } from "./AuthField";
 import { AuthFrame } from "./AuthFrame";
 import { passwordIsValid, passwordLabels, passwordScore } from "./password";
 
-export function AuthChangePassword({ onChanged }: { user: SessionUser; onChanged: (user: SessionUser) => void }) {
+export function AuthChangePassword({ onChanged }: { user: SessionUser; onChanged: (user: AuthenticatedUser) => void }) {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -23,7 +23,7 @@ export function AuthChangePassword({ onChanged }: { user: SessionUser; onChanged
     setSubmitting(true);
     setError("");
     try {
-      const payload = await api<{ authenticated: true; user: SessionUser }>("/api/v1/auth/change-temporary-password/", {
+      const payload = await api<{ authenticated: true; user: AuthenticatedUser }>("/api/v1/auth/change-temporary-password/", {
         method: "POST",
         body: JSON.stringify({ newPassword: password }),
       });

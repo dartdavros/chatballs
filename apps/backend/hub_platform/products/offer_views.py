@@ -9,7 +9,7 @@ from hub_platform.api.permissions import HasCapability
 from hub_platform.identity.audit import record_audit_event
 from hub_platform.identity.policy import accessible_department_ids
 from hub_platform.products.models import Offer, Product
-from hub_platform.products.selectors import product_for_organization
+from hub_platform.products.selectors import product_for_context
 from hub_platform.products.serializers import product_payload
 from hub_platform.products.services import (
     OfferInput,
@@ -44,10 +44,10 @@ class _ProductScopedView(APIView):
     required_capability = "products.manage"
 
     def _product(self, request: Request, product_id: int) -> Product:
-        product = product_for_organization(
-            organization_id=request.user.employee_profile.organization_id, product_id=product_id
+        product = product_for_context(
+            context=request.tenant_context, product_id=product_id
         )
-        department_ids = accessible_department_ids(request.user, self.required_capability)
+        department_ids = accessible_department_ids(request.tenant_context.membership, self.required_capability)
         if department_ids is not None and not product.department_links.filter(
             department_id__in=department_ids
         ).exists():
@@ -58,7 +58,7 @@ class _ProductScopedView(APIView):
         record_audit_event(
             action=action,
             actor=request.user,
-            organization=request.user.employee_profile.organization,
+            organization=request.tenant_context.organization,
             object_type=object_type,
             object_id=str(object_id),
             request=request,
@@ -76,7 +76,11 @@ class OfferCreateView(_ProductScopedView):
         except Product.DoesNotExist:
             return Response({"detail": "Product not found"}, status=404)
         try:
-            offer = create_offer(product=product, data=_offer_input(request.data))
+            offer = create_offer(
+                context=request.tenant_context,
+                product=product,
+                data=_offer_input(request.data),
+            )
         except (ValidationError, IntegrityError) as error:
             return _validation_error(error)
         self._audit(request, "products.offer_created", "Offer", offer.id)
@@ -91,7 +95,11 @@ class OfferUpdateView(_ProductScopedView):
         except (Product.DoesNotExist, Offer.DoesNotExist):
             return Response({"detail": "Offer not found"}, status=404)
         try:
-            update_offer(offer=offer, data=_offer_input(request.data, current=offer))
+            update_offer(
+                context=request.tenant_context,
+                offer=offer,
+                data=_offer_input(request.data, current=offer),
+            )
         except (ValidationError, IntegrityError) as error:
             return _validation_error(error)
         self._audit(request, "products.offer_updated", "Offer", offer.id)
@@ -118,7 +126,9 @@ class PriceCreateView(_ProductScopedView):
             valid_from=parse_datetime(valid_from_raw) if valid_from_raw else None,
         )
         try:
-            price = add_price_version(offer=offer, data=price_input)
+            price = add_price_version(
+                context=request.tenant_context, offer=offer, data=price_input
+            )
         except (ValidationError, IntegrityError) as error:
             return _validation_error(error)
         self._audit(request, "products.price_version_added", "Price", price.id)

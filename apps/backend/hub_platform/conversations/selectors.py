@@ -1,11 +1,12 @@
 from django.db.models import F, Max, QuerySet
 
 from hub_platform.conversations.models import Conversation
+from hub_platform.tenancy.context import TenantContext
 
 
-def conversations_for_organization(organization_id: int) -> QuerySet[Conversation]:
+def conversations_for_context(context: TenantContext) -> QuerySet[Conversation]:
     return (
-        Conversation.objects.filter(organization_id=organization_id)
+        Conversation.objects.filter(organization_id=context.organization_id)
         .select_related(
             "channel",
             "channel__product",
@@ -22,5 +23,5 @@ def conversations_for_organization(organization_id: int) -> QuerySet[Conversatio
     )
 
 
-def conversation_for_organization(*, organization_id: int, conversation_id: int) -> Conversation:
-    return conversations_for_organization(organization_id).get(id=conversation_id)
+def conversation_for_context(*, context: TenantContext, conversation_id: int) -> Conversation:
+    return conversations_for_context(context).get(id=conversation_id)

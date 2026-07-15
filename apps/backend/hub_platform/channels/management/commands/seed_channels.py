@@ -48,11 +48,15 @@ CHANNELS = [
 class Command(BaseCommand):
     help = "Seed processing channels (edevs, foxray, firepage)."
 
+    def add_arguments(self, parser) -> None:
+        parser.add_argument("--organization", required=True, help="Organization public UUID")
+
     @transaction.atomic
     def handle(self, *args: object, **options: object) -> None:
-        organization = Organization.objects.first()
-        if organization is None:
-            self.stderr.write("no organization — run bootstrap_owner first")
+        try:
+            organization = Organization.objects.get(public_id=options["organization"])
+        except (Organization.DoesNotExist, ValueError):
+            self.stderr.write("organization not found")
             return
         sales = Department.objects.filter(organization=organization, code="sales").first()
         provider = (

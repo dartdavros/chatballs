@@ -6,10 +6,10 @@ from hub_platform.identity.audit import record_audit_event
 from hub_platform.identity.access_defaults import ensure_system_assignment
 from hub_platform.identity.models import (
     Department,
-    EmployeeProfile,
     EmployeeRole,
     HumanUser,
     Organization,
+    OrganizationMembership,
 )
 from hub_platform.products.models import Product, ProductDepartment
 
@@ -66,7 +66,7 @@ def bootstrap_edevs_owner(*, email: str, password: str, full_name: str = "") -> 
         owner.is_superuser = True
         owner.save(update_fields=["is_staff", "is_superuser"])
 
-    owner_profile, _ = EmployeeProfile.objects.get_or_create(
+    owner_profile, _ = OrganizationMembership.objects.get_or_create(
         user=owner,
         organization=organization,
         defaults={
@@ -90,7 +90,7 @@ def bootstrap_edevs_owner(*, email: str, password: str, full_name: str = "") -> 
         operator.set_password("Operator-Local-2026")
         operator.save(update_fields=["password"])
 
-    operator_profile, _ = EmployeeProfile.objects.get_or_create(
+    operator_profile, _ = OrganizationMembership.objects.get_or_create(
         user=operator,
         organization=organization,
         defaults={

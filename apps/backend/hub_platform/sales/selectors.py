@@ -3,18 +3,19 @@ from __future__ import annotations
 from django.db.models import QuerySet
 
 from hub_platform.sales.models import Environment, Sale, SaleEvent
+from hub_platform.tenancy.context import TenantContext
 
 
-def sales_for_organization(organization_id: int) -> QuerySet[Sale]:
+def sales_for_context(context: TenantContext) -> QuerySet[Sale]:
     return (
-        Sale.objects.filter(organization_id=organization_id)
+        Sale.objects.filter(organization_id=context.organization_id)
         .select_related("product", "contact", "conversation", "sales_source", "last_event")
         .order_by("-occurred_at")
     )
 
 
-def sale_for_organization(*, organization_id: int, sale_id: int) -> Sale:
-    return sales_for_organization(organization_id).get(id=sale_id)
+def sale_for_context(*, context: TenantContext, sale_id: int) -> Sale:
+    return sales_for_context(context).get(id=sale_id)
 
 
 def events_for_sale(sale: Sale) -> QuerySet[SaleEvent]:
@@ -64,5 +65,5 @@ def apply_sale_filters(qs: QuerySet[Sale], params) -> QuerySet[Sale]:
     return qs
 
 
-def sale_events_with_errors(organization_id: int) -> QuerySet[SaleEvent]:
-    return SaleEvent.objects.filter(organization_id=organization_id).exclude(processing_error="")
+def sale_events_with_errors(context: TenantContext) -> QuerySet[SaleEvent]:
+    return SaleEvent.objects.filter(organization_id=context.organization_id).exclude(processing_error="")

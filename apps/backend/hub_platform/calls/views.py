@@ -47,7 +47,9 @@ class CallCreateView(APIView):
 
     def post(self, request: Request, conversation_id: int) -> Response:
         try:
-            created = create_call_request(conversation_id=conversation_id, initiator=request.user)
+            created = create_call_request(
+                context=request.tenant_context, conversation_id=conversation_id
+            )
         except Conversation.DoesNotExist:
             return Response({"detail": "Диалог не найден"}, status=404)
         except CallAccessDenied as error:
@@ -55,7 +57,9 @@ class CallCreateView(APIView):
         except CallConflict as error:
             return Response({"detail": str(error)}, status=409)
 
-        call = _call_queryset().get(id=created.call_session.id)
+        call = _call_queryset().get(
+            id=created.call_session.id, organization=request.tenant_context.organization
+        )
         record_audit_event(
             action="calls.requested",
             actor=request.user,
@@ -80,11 +84,13 @@ class CallDetailView(APIView):
 
     def get(self, request: Request, call_session_id) -> Response:
         try:
-            call = _call_queryset().get(id=call_session_id)
+            call = _call_queryset().get(
+                id=call_session_id, organization=request.tenant_context.organization
+            )
         except CallSession.DoesNotExist:
             return Response({"detail": "Звонок не найден"}, status=404)
         try:
-            ensure_call_access(user=request.user, call_session=call)
+            ensure_call_access(user=request.tenant_context.membership, call_session=call)
         except CallAccessDenied as error:
             return Response({"detail": str(error)}, status=403)
         return Response({"call": call_payload(call)})
@@ -95,8 +101,10 @@ class StaffAccessTokenView(APIView):
 
     def post(self, request: Request, call_session_id) -> Response:
         try:
-            call = _call_queryset().get(id=call_session_id)
-            token = issue_staff_access_token(call_session=call, user=request.user)
+            call = _call_queryset().get(
+                id=call_session_id, organization=request.tenant_context.organization
+            )
+            token = issue_staff_access_token(context=request.tenant_context, call_session=call)
         except CallSession.DoesNotExist:
             return Response({"detail": "Звонок не найден"}, status=404)
         except CallAccessDenied as error:
@@ -111,15 +119,19 @@ class CallCancelView(APIView):
 
     def post(self, request: Request, call_session_id) -> Response:
         try:
-            call = _call_queryset().get(id=call_session_id)
-            cancel_call(call_session=call, user=request.user)
+            call = _call_queryset().get(
+                id=call_session_id, organization=request.tenant_context.organization
+            )
+            cancel_call(context=request.tenant_context, call_session=call)
         except CallSession.DoesNotExist:
             return Response({"detail": "Звонок не найден"}, status=404)
         except CallAccessDenied as error:
             return Response({"detail": str(error)}, status=403)
         except CallConflict as error:
             return Response({"detail": str(error)}, status=409)
-        call = _call_queryset().get(id=call_session_id)
+        call = _call_queryset().get(
+            id=call_session_id, organization=request.tenant_context.organization
+        )
         record_audit_event(
             action="calls.cancelled",
             actor=request.user,
@@ -137,8 +149,12 @@ class ConversationActiveCallView(APIView):
 
     def get(self, request: Request, conversation_id: int) -> Response:
         try:
-            conversation = Conversation.objects.select_related("channel").get(id=conversation_id)
-            ensure_conversation_call_access(user=request.user, conversation=conversation)
+            conversation = Conversation.objects.select_related("channel").get(
+                id=conversation_id, organization=request.tenant_context.organization
+            )
+            ensure_conversation_call_access(
+                user=request.tenant_context.membership, conversation=conversation
+            )
         except Conversation.DoesNotExist:
             return Response({"detail": "Диалог не найден"}, status=404)
         except CallAccessDenied as error:

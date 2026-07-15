@@ -3,8 +3,40 @@ from django.test import TestCase
 from hub_platform.channels.models import Channel
 from hub_platform.conversations.models import ConnectionIdentity, Contact, Conversation
 from hub_platform.identity.bootstrap import bootstrap_edevs_owner
-from hub_platform.identity.models import EmployeeProfile, EmployeeRole, HumanUser, Organization
+from hub_platform.identity.models import (
+    EmployeeRole,
+    HumanUser,
+    Organization,
+    OrganizationMembership,
+)
 from hub_platform.integrations.models import Integration, IntegrationKind, IntegrationProvider
+from hub_platform.tenancy.context import TenantActorKind, TenantContext
+
+
+def create_call_request(*, conversation_id: int, initiator: HumanUser):
+    """Keep historical call fixtures concise while exercising explicit tenancy."""
+
+    conversation = Conversation.objects.only("organization_id").get(id=conversation_id)
+    membership = OrganizationMembership.objects.select_related("organization", "user").get(
+        organization_id=conversation.organization_id,
+        user=initiator,
+    )
+    from hub_platform.calls.services import create_call_request as create_with_context
+
+    return create_with_context(
+        context=TenantContext.for_membership(membership),
+        conversation_id=conversation_id,
+    )
+
+
+def expire_stale_calls(organization: Organization) -> int:
+    """Run one organization's maintenance pass in legacy call fixtures."""
+
+    from hub_platform.calls.maintenance import expire_stale_calls as expire_with_context
+
+    return expire_with_context(
+        TenantContext.for_resource(organization, actor_kind=TenantActorKind.SYSTEM)
+    )
 
 
 class CallDomainMixin:
@@ -50,7 +82,7 @@ class CallDomainMixin:
             email="support-operator@edevs.tech",
             password="support-password",
         )
-        EmployeeProfile.objects.create(
+        OrganizationMembership.objects.create(
             user=user,
             organization=self.organization,
             role=EmployeeRole.EMPLOYEE,

@@ -1,10 +1,9 @@
 import json
 
-from rest_framework.test import APIClient
+from hub_platform.testing import TenantAPIClient as APIClient
 
 from hub_platform.calls.models import CallSession, CallStatus, ParticipantSide
-from hub_platform.calls.services import create_call_request
-from hub_platform.calls.tests.helpers import CallTestCase
+from hub_platform.calls.tests.helpers import CallTestCase, create_call_request
 from hub_platform.calls.tokens import verify_call_access_token
 from hub_platform.conversations.models import ControlMode
 

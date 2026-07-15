@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { api } from "./client";
+import { api, setActiveOrganization } from "./client";
+
+const organizationPublicId = "123e4567-e89b-12d3-a456-426614174000";
 
 function jsonResponse(body: unknown, init: { status?: number; ok?: boolean } = {}): Response {
   const status = init.status ?? 200;
@@ -19,6 +21,7 @@ const originalFetch = globalThis.fetch;
 const originalDocumentCookie = (globalThis as { document?: { cookie?: string } }).document?.cookie;
 
 afterEach(() => {
+  setActiveOrganization(null);
   globalThis.fetch = originalFetch;
   if (originalDocumentCookie === undefined) {
     delete (globalThis as { document?: { cookie?: string } }).document;
@@ -28,6 +31,7 @@ afterEach(() => {
 
 describe("api client", () => {
   it("resolves 204 No Content to undefined without parsing the body", async () => {
+    setActiveOrganization(organizationPublicId);
     (globalThis as { document?: { cookie?: string } }).document = { cookie: "csrftoken=abc" };
     globalThis.fetch = vi.fn().mockResolvedValue(emptyResponse(204)) as unknown as typeof fetch;
 
@@ -42,6 +46,7 @@ describe("api client", () => {
   });
 
   it("parses JSON for a normal 200 response", async () => {
+    setActiveOrganization(organizationPublicId);
     const payload = { integration: { id: 5 } };
     globalThis.fetch = vi.fn().mockResolvedValue(jsonResponse(payload)) as unknown as typeof fetch;
 
@@ -49,9 +54,41 @@ describe("api client", () => {
   });
 
   it("throws with the server detail on an error response", async () => {
+    setActiveOrganization(organizationPublicId);
     const payload = { detail: "Интеграция не найдена" };
     globalThis.fetch = vi.fn().mockResolvedValue(jsonResponse(payload, { status: 404, ok: false })) as unknown as typeof fetch;
 
     await expect(api("/api/v1/integrations/1/")).rejects.toThrow("Интеграция не найдена");
+  });
+
+  it("uses the canonical organization API route", async () => {
+    setActiveOrganization(organizationPublicId);
+    globalThis.fetch = vi.fn().mockResolvedValue(jsonResponse({ items: [] })) as unknown as typeof fetch;
+
+    await api("/api/v1/company/products/");
+
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      `/api/v1/organizations/${organizationPublicId}/company/products/`,
+      expect.objectContaining({ credentials: "include" }),
+    );
+  });
+
+  it("fails closed when a tenant request has no selected organization", async () => {
+    await expect(api("/api/v1/integrations/")).rejects.toThrow(
+      "Organization context is required",
+    );
+  });
+
+  it("keeps public credential routes outside the selected organization", async () => {
+    setActiveOrganization(organizationPublicId);
+    (globalThis as { document?: { cookie?: string } }).document = { cookie: "csrftoken=abc" };
+    globalThis.fetch = vi.fn().mockResolvedValue(jsonResponse({ ok: true })) as unknown as typeof fetch;
+
+    await api("/api/v1/support/sessions/", { method: "POST", body: "{}" });
+
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      "/api/v1/support/sessions/",
+      expect.objectContaining({ credentials: "include" }),
+    );
   });
 });

@@ -27,7 +27,7 @@ TYPE_META: dict[str, dict] = {
 
 def notify(
     *,
-    organization,
+    context,
     department=None,
     type: str,
     audience: str,
@@ -40,6 +40,7 @@ def notify(
     dedup_key: str = "",
     level: str | None = None,
 ) -> Notification | None:
+    organization = context.organization
     if dedup_key and Notification.objects.filter(
         organization=organization, dedup_key=dedup_key, created_at__gte=timezone.now() - timedelta(hours=24)
     ).exists():
@@ -70,15 +71,16 @@ def notify(
             aggregate_id=str(notification.id),
             event_type=NOTIFICATION_CREATED,
             payload={"notificationId": notification.id},
+            tenant_context=context,
         )
     )
     return notification
 
 
-def mark_read(*, user, ids: list[int] | None = None, all_unread: bool = False) -> int:
-    queryset = unread_for(user)
+def mark_read(*, context, ids: list[int] | None = None, all_unread: bool = False) -> int:
+    queryset = unread_for(context)
     if not all_unread:
         queryset = queryset.filter(id__in=ids or [])
-    rows = [NotificationRead(notification=n, user=user) for n in queryset]
+    rows = [NotificationRead(notification=n, user=context.actor_user) for n in queryset]
     NotificationRead.objects.bulk_create(rows, ignore_conflicts=True)
     return len(rows)

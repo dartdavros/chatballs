@@ -19,6 +19,7 @@ from django.db import transaction
 
 from hub_platform.ai import indexing
 from hub_platform.ai.models import Knowledge
+from hub_platform.tenancy.context import TenantContext
 
 _SECTION_RE = re.compile(r"^===\s*(?P<code>[a-z0-9-]+)\s*===\s*$", re.MULTILINE)
 
@@ -127,7 +128,8 @@ def _assign_knowledge(*, organization, global_items: list[Knowledge], by_product
 
 
 @transaction.atomic
-def import_ai_content(*, base_dir: Path, organization) -> ImportResult:
+def import_ai_content(*, base_dir: Path, context: TenantContext) -> ImportResult:
+    organization = context.organization
     result = ImportResult()
     prompts: dict[tuple[str | None, str], str] = {}
     global_items: list[Knowledge] = []

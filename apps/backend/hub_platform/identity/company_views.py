@@ -4,13 +4,13 @@ from rest_framework.views import APIView
 
 from hub_platform.ai.models import AIAgent
 from hub_platform.api.permissions import HasCapability
-from hub_platform.identity.models import Department, EmployeeProfile
+from hub_platform.identity.models import Department, OrganizationMembership
 from hub_platform.identity.policy import ResourceScope, accessible_department_ids, authorize
 
 
 def _department_payload(department: Department) -> dict[str, object]:
     employees = list(
-        EmployeeProfile.objects.filter(organization=department.organization).select_related("user")
+        OrganizationMembership.objects.filter(organization=department.organization).select_related("user")
     )
     department_members = [
         employee for employee in employees if employee.primary_department_id == department.id
@@ -19,7 +19,7 @@ def _department_payload(department: Department) -> dict[str, object]:
         employee
         for employee in employees
         if authorize(
-            employee.user,
+            employee,
             "conversations.operate",
             ResourceScope(department.organization_id, department.id),
         )
@@ -48,9 +48,9 @@ class DepartmentListView(APIView):
     required_capability = "departments.view"
 
     def get(self, request: Request) -> Response:
-        profile = request.user.employee_profile
+        profile = request.tenant_context.membership
         departments = Department.objects.filter(organization=profile.organization).order_by("name")
-        department_ids = accessible_department_ids(request.user, self.required_capability)
+        department_ids = accessible_department_ids(request.tenant_context.membership, self.required_capability)
         if department_ids is not None:
             departments = departments.filter(id__in=department_ids)
         return Response({"items": [_department_payload(department) for department in departments]})

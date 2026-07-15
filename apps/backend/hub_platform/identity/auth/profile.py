@@ -28,11 +28,9 @@ class ProfileUpdateView(APIView):
         request.user.full_name = full_name
         request.user.email = email
         request.user.save(update_fields=["full_name", "email"])
-        profile = request.user.employee_profile
         record_audit_event(
             action="identity.profile_updated",
             actor=request.user,
-            organization=profile.organization,
             object_type="HumanUser",
             object_id=str(request.user.id),
             request=request,
@@ -57,12 +55,10 @@ class ProfilePasswordView(APIView):
         request.user.set_password(new_password)
         request.user.save(update_fields=["password"])
         login(request, request.user)
-        profile = request.user.employee_profile
         revoked = _revoke_other_user_sessions(request)
         record_audit_event(
             action="identity.profile_password_changed",
             actor=request.user,
-            organization=profile.organization,
             payload={"revoked": revoked},
             request=request,
         )
@@ -73,16 +69,12 @@ class ProfileTotpStartView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request: Request) -> Response:
-        profile = request.user.employee_profile
-        profile.totp_required = True
-        profile.save(update_fields=["totp_required"])
         request.user.totp_enabled = False
         request.user.totp_secret = ""
         request.user.save(update_fields=["totp_enabled", "totp_secret"])
         record_audit_event(
             action="identity.profile_totp_setup_started",
             actor=request.user,
-            organization=profile.organization,
             request=request,
         )
         return Response({"authenticated": True, "user": _user_payload(request.user)})
@@ -96,9 +88,10 @@ class ProfileTotpDisableView(APIView):
         if not request.user.check_password(current_password):
             return Response({"detail": "Current password is invalid"}, status=400)
 
-        profile = request.user.employee_profile
-        profile.totp_required = False
-        profile.save(update_fields=["totp_required"])
+        if request.user.memberships.filter(
+            blocked_at__isnull=True, totp_required=True
+        ).exists():
+            return Response({"detail": "TOTP is required by an organization policy"}, status=409)
         request.user.totp_enabled = False
         request.user.totp_secret = ""
         request.user.save(update_fields=["totp_enabled", "totp_secret"])
@@ -106,7 +99,6 @@ class ProfileTotpDisableView(APIView):
         record_audit_event(
             action="identity.profile_totp_disabled",
             actor=request.user,
-            organization=profile.organization,
             payload={"revoked": revoked},
             request=request,
         )
@@ -118,11 +110,9 @@ class ProfileRevokeOtherSessionsView(APIView):
 
     def post(self, request: Request) -> Response:
         revoked = _revoke_other_user_sessions(request)
-        profile = request.user.employee_profile
         record_audit_event(
             action="identity.profile_sessions_revoked",
             actor=request.user,
-            organization=profile.organization,
             payload={"revoked": revoked},
             request=request,
         )
@@ -136,7 +126,6 @@ class ChangeTemporaryPasswordView(APIView):
         body = request.data
         current_password = str(body.get("currentPassword", ""))
         new_password = str(body.get("newPassword", ""))
-        profile = request.user.employee_profile
         if not request.user.must_change_password and not request.user.check_password(current_password):
             return Response({"detail": "Current password is invalid"}, status=400)
         try:
@@ -151,7 +140,6 @@ class ChangeTemporaryPasswordView(APIView):
         record_audit_event(
             action="identity.temporary_password_changed",
             actor=request.user,
-            organization=profile.organization,
             request=request,
         )
         return Response({"authenticated": True, "user": _user_payload(request.user)})

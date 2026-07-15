@@ -11,13 +11,14 @@ from hub_platform.calls.lifecycle import transition_call
 from hub_platform.calls.models import CallEndedBy, CallSession, CallStatus
 
 
-def expire_stale_calls() -> int:
+def expire_stale_calls(context) -> int:
     now = timezone.now()
     finished = 0
 
     # Приглашение истекло: доставленное — MISSED (клиент не ответил),
     # недоставленное — EXPIRED.
     pending = CallSession.objects.filter(
+        organization=context.organization,
         status__in=[CallStatus.REQUESTED, CallStatus.RINGING],
         invite__expires_at__lte=now,
     ).values_list("id", "status")
@@ -32,6 +33,7 @@ def expire_stale_calls() -> int:
     # Принятый звонок без установленного соединения дольше grace period — FAILED.
     connect_deadline = now - timedelta(seconds=settings.HUB_CALL_CONNECT_GRACE_SECONDS)
     stuck = CallSession.objects.filter(
+        organization=context.organization,
         status__in=[CallStatus.ACCEPTED, CallStatus.CONNECTING],
         accepted_at__lte=connect_deadline,
     ).values_list("id", flat=True)
@@ -52,6 +54,7 @@ def expire_stale_calls() -> int:
     reconnect_deadline = now - timedelta(seconds=settings.HUB_CALL_RECONNECT_GRACE_SECONDS)
     dropped = (
         CallSession.objects.filter(
+            organization=context.organization,
             status=CallStatus.ACTIVE,
             participants__left_at__lte=reconnect_deadline,
         )

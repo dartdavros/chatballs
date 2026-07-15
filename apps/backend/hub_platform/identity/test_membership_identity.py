@@ -12,7 +12,6 @@ from hub_platform.identity.invitation_service import (
 )
 from hub_platform.identity.models import (
     EmployeeAccessAssignment,
-    EmployeeProfile,
     EmployeeRole,
     HumanUser,
     Organization,
@@ -90,20 +89,18 @@ class MembershipIdentityTests(TestCase):
             with self.assertRaises(FieldDoesNotExist):
                 OrganizationMembership._meta.get_field(field_name)
 
-    def test_employee_profile_is_only_a_transitional_python_alias(self) -> None:
-        self.assertIs(EmployeeProfile, OrganizationMembership)
+    def test_membership_keeps_the_historical_table_name(self) -> None:
         self.assertEqual(OrganizationMembership._meta.db_table, "identity_employeeprofile")
 
-    def test_legacy_user_lookup_refuses_to_guess_between_memberships(self) -> None:
-        self.assertEqual(self.user.employee_profile, self.first_membership)
+    def test_user_has_no_implicit_membership_lookup(self) -> None:
+        self.assertFalse(hasattr(self.user, "employee_profile"))
         OrganizationMembership.objects.create(
             user=self.user,
             organization=self.second_organization,
             role=EmployeeRole.EMPLOYEE,
             position_title="Specialist",
         )
-        with self.assertRaises(OrganizationMembership.MultipleObjectsReturned):
-            _ = self.user.employee_profile
+        self.assertFalse(hasattr(self.user, "employee_profile"))
 
     def test_policy_authorizes_an_explicit_membership(self) -> None:
         self.assertTrue(

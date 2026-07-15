@@ -1,6 +1,47 @@
 const configuredApiBase = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/+$/, "");
+let activeOrganizationPublicId: string | null = null;
+
+const tenantNamespaces = [
+  "access-profiles",
+  "ai",
+  "calls",
+  "channels",
+  "company",
+  "conversations",
+  "employees",
+  "integrations",
+  "notifications",
+  "orders",
+  "sales",
+  "support",
+];
+
+const publicPaths = [
+  "/api/v1/ai/files/",
+  "/api/v1/calls/access/",
+  "/api/v1/calls/invites/",
+  "/api/v1/orders/ingest/",
+  "/api/v1/support/sessions/",
+];
+
+export function setActiveOrganization(publicId: string | null): void {
+  activeOrganizationPublicId = publicId;
+}
+
+function organizationScopedPath(path: string): string {
+  if (!path.startsWith("/api/v1/") || publicPaths.some((item) => path.startsWith(item))) {
+    return path;
+  }
+  const namespace = path.slice("/api/v1/".length).split("/", 1)[0];
+  if (!tenantNamespaces.includes(namespace)) return path;
+  if (!activeOrganizationPublicId) {
+    throw new Error("Organization context is required");
+  }
+  return `/api/v1/organizations/${activeOrganizationPublicId}${path.slice("/api/v1".length)}`;
+}
 
 function resolveApiUrl(path: string): string {
+  path = organizationScopedPath(path);
   if (!configuredApiBase) return path;
   if (configuredApiBase.endsWith("/api/v1") && path.startsWith("/api/v1/")) {
     return `${configuredApiBase}${path.slice("/api/v1".length)}`;

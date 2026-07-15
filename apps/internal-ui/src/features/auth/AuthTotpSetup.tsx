@@ -1,14 +1,14 @@
 import { type FormEvent, useEffect, useState } from "react";
 
 import { api } from "../../api/client";
-import type { SessionUser } from "../../types";
+import type { AuthenticatedUser, SessionUser } from "../../types";
 import { Icon } from "../../shared/icons";
 import { Button } from "../../shared/ui-controls";
 import { AuthCodeInput } from "./AuthCodeInput";
 import { AuthFrame } from "./AuthFrame";
 import { TotpQr } from "./TotpQr";
 
-export function AuthTotpSetup({ user: _user, onConfirmed }: { user: SessionUser; onConfirmed: (user: SessionUser) => void }) {
+export function AuthTotpSetup({ user: _user, onConfirmed }: { user: SessionUser; onConfirmed: (user: AuthenticatedUser) => void }) {
   const [secret, setSecret] = useState("");
   const [otpauthUrl, setOtpauthUrl] = useState("");
   const [code, setCode] = useState("");
@@ -30,7 +30,7 @@ export function AuthTotpSetup({ user: _user, onConfirmed }: { user: SessionUser;
     setSubmitting(true);
     setError(false);
     try {
-      const payload = await api<{ authenticated: true; user: SessionUser }>("/api/v1/auth/totp/confirm/", {
+      const payload = await api<{ authenticated: true; user: AuthenticatedUser }>("/api/v1/auth/totp/confirm/", {
         method: "POST",
         body: JSON.stringify({ code }),
       });

@@ -10,6 +10,7 @@ import secrets
 
 from django.core.management.base import BaseCommand, CommandError
 
+from hub_platform.identity.models import Organization
 from hub_platform.orders.services import hash_ingest_token
 from hub_platform.products.models import Product
 
@@ -19,10 +20,15 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser) -> None:
         parser.add_argument("product_code")
+        parser.add_argument("--organization", required=True, help="Organization public UUID")
 
     def handle(self, *args: object, **options: object) -> None:
         code = str(options["product_code"])
-        product = Product.objects.filter(code=code).first()
+        try:
+            organization = Organization.objects.get(public_id=options["organization"])
+        except (Organization.DoesNotExist, ValueError) as error:
+            raise CommandError("Unknown organization public UUID") from error
+        product = Product.objects.filter(organization=organization, code=code).first()
         if product is None:
             raise CommandError(f"product '{code}' not found")
         token = secrets.token_urlsafe(32)

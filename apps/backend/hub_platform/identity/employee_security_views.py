@@ -15,7 +15,7 @@ class EmployeeResetPasswordView(APIView):
 
     @transaction.atomic
     def post(self, request: Request, user_id: int) -> Response:
-        actor = request.user.employee_profile
+        actor = request.tenant_context.membership
         profile = get_owned_profile(request, user_id)
         if profile is None:
             return Response({"detail": "Employee not found"}, status=404)
@@ -26,7 +26,7 @@ class EmployeeRevokeSessionsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request: Request, user_id: int) -> Response:
-        actor = request.user.employee_profile
+        actor = request.tenant_context.membership
         profile = get_owned_profile(request, user_id)
         if profile is None:
             return Response({"detail": "Employee not found"}, status=404)
@@ -38,7 +38,7 @@ class EmployeeBlockView(APIView):
 
     @transaction.atomic
     def post(self, request: Request, user_id: int) -> Response:
-        actor = request.user.employee_profile
+        actor = request.tenant_context.membership
         profile = get_owned_profile(request, user_id)
         if profile is None:
             return Response({"detail": "Employee not found"}, status=404)
@@ -61,7 +61,7 @@ class EmployeeUnblockView(APIView):
 
     @transaction.atomic
     def post(self, request: Request, user_id: int) -> Response:
-        actor = request.user.employee_profile
+        actor = request.tenant_context.membership
         profile = get_owned_profile(request, user_id)
         if profile is None:
             return Response({"detail": "Employee not found"}, status=404)

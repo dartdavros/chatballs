@@ -3,12 +3,12 @@ import tempfile
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
-from rest_framework.test import APIClient
+from hub_platform.testing import TenantAPIClient as APIClient, system_tenant_context
 
 from hub_platform.ai.models import AIAgent, Knowledge, KnowledgeFragment
 from hub_platform.channels.models import Channel
 from hub_platform.identity.bootstrap import bootstrap_edevs_owner
-from hub_platform.identity.models import EmployeeProfile, EmployeeRole, HumanUser, Organization
+from hub_platform.identity.models import EmployeeRole, HumanUser, Organization, OrganizationMembership
 from hub_platform.products.models import Product
 
 _MEDIA_ROOT = tempfile.mkdtemp(prefix="hub-test-media-")
@@ -45,7 +45,7 @@ class AIAgentInvariantTests(TestCase):
         )
         with self.assertRaises(ValidationError):
             create_agent(
-                organization=self.organization,
+                context=system_tenant_context(self.organization),
                 data=AgentCreateInput(channel_code=channel.code, model="gpt-4o-mini", persona="", tone="", instructions="", knowledge_ids=[]),
             )
 
@@ -173,7 +173,7 @@ class AIAgentPermissionTests(TestCase):
     def setUp(self) -> None:
         bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
         operator = HumanUser.objects.create_user(email="operator@edevs.tech", password="operator-password")
-        EmployeeProfile.objects.create(
+        OrganizationMembership.objects.create(
             user=operator,
             organization=Organization.objects.get(slug="edevs"),
             role=EmployeeRole.EMPLOYEE,
@@ -545,7 +545,7 @@ class KnowledgeRetrievalTests(TestCase):
         from hub_platform.ai.services import KnowledgeInput, create_knowledge
 
         self.knowledge = create_knowledge(
-            organization=self.organization,
+            context=system_tenant_context(self.organization),
             data=KnowledgeInput(
                 title="FAQ",
                 description="Возвраты и доставка",
@@ -596,7 +596,7 @@ class AgentRuntimeTests(TestCase):
         from hub_platform.ai.services import KnowledgeInput, create_knowledge
 
         self.knowledge = create_knowledge(
-            organization=self.organization,
+            context=system_tenant_context(self.organization),
             data=KnowledgeInput(title="FAQ", description="Возвраты", content="Refund policy details here.", is_enabled=True),
         )
         self.agent.knowledge_items.add(self.knowledge)

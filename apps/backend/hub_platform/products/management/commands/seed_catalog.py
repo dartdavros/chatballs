@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
 from hub_platform.products.models import (
@@ -24,6 +24,8 @@ from hub_platform.products.models import (
     Price,
     Product,
 )
+from hub_platform.identity.models import Organization
+from hub_platform.tenancy.context import TenantActorKind, TenantContext
 
 VALID_FROM = datetime(2026, 1, 1, tzinfo=timezone.utc)
 
@@ -94,12 +96,25 @@ CATALOG: dict[str, list[dict]] = {
 class Command(BaseCommand):
     help = "Seed FirePage and Foxray catalog offers and prices (idempotent)."
 
+    def add_arguments(self, parser) -> None:
+        parser.add_argument("--organization", required=True)
+
     @transaction.atomic
     def handle(self, *args: object, **options: object) -> None:
+        try:
+            organization = Organization.objects.get(public_id=options["organization"])
+        except (Organization.DoesNotExist, ValueError) as error:
+            raise CommandError("Unknown organization public UUID") from error
+        context = TenantContext.for_resource(
+            organization, actor_kind=TenantActorKind.SYSTEM
+        )
         created_offers = 0
         created_prices = 0
         for product_code, offers in CATALOG.items():
-            product = Product.objects.filter(code=product_code).first()
+            product = Product.objects.filter(
+                organization=context.organization,
+                code=product_code,
+            ).first()
             if product is None:
                 self.stderr.write(f"product '{product_code}' not found — skipped")
                 continue

@@ -12,7 +12,7 @@ from hub_platform.identity.employee_validation import (
     resolve_department,
 )
 from hub_platform.identity.governance import EmployeeAction, can_manage_employee
-from hub_platform.identity.models import EmployeeProfile, EmployeeRole
+from hub_platform.identity.models import EmployeeRole, OrganizationMembership
 
 
 class OwnershipTransferView(APIView):
@@ -21,17 +21,17 @@ class OwnershipTransferView(APIView):
     @transaction.atomic
     def post(self, request: Request, user_id: int) -> Response:
         actor = (
-            EmployeeProfile.objects.select_for_update(of=("self",))
+            OrganizationMembership.objects.select_for_update(of=("self",))
             .select_related("user", "primary_department")
-            .get(pk=request.user.employee_profile.pk)
+            .get(pk=request.tenant_context.membership.pk)
         )
         try:
             target = (
-                EmployeeProfile.objects.select_for_update(of=("self",))
+                OrganizationMembership.objects.select_for_update(of=("self",))
                 .select_related("user", "primary_department")
                 .get(user_id=user_id, organization=actor.organization)
             )
-        except EmployeeProfile.DoesNotExist:
+        except OrganizationMembership.DoesNotExist:
             return Response({"detail": "Employee not found"}, status=404)
 
         if not can_manage_employee(actor, target, EmployeeAction.TRANSFER_OWNERSHIP):

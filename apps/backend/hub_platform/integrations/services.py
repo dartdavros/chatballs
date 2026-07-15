@@ -12,6 +12,7 @@ from hub_platform.integrations.models import (
     IntegrationProvider,
     IntegrationStatus,
 )
+from hub_platform.tenancy.context import TenantContext
 
 
 @dataclass(frozen=True)
@@ -67,7 +68,8 @@ def _validate_provider(provider: str) -> str:
 
 
 @transaction.atomic
-def create_integration(*, organization: Organization, data: IntegrationInput) -> Integration:
+def create_integration(*, context: TenantContext, data: IntegrationInput) -> Integration:
+    organization = context.organization
     provider = _validate_provider(data.provider)
     name = data.name.strip()
     if not name:
@@ -88,7 +90,11 @@ def create_integration(*, organization: Organization, data: IntegrationInput) ->
 
 
 @transaction.atomic
-def update_integration(*, integration: Integration, data: IntegrationInput) -> Integration:
+def update_integration(
+    *, context: TenantContext, integration: Integration, data: IntegrationInput
+) -> Integration:
+    if integration.organization_id != context.organization_id:
+        raise ValidationError({"integration": "Integration belongs to another organization"})
     integration.name = data.name.strip() or integration.name
     integration.config = _normalized_config(integration.provider, data.config)
     integration.channel = _resolve_channel(integration.organization, data.channel_id)
@@ -103,7 +109,9 @@ def update_integration(*, integration: Integration, data: IntegrationInput) -> I
     return integration
 
 
-def delete_integration(*, integration: Integration) -> None:
+def delete_integration(*, context: TenantContext, integration: Integration) -> None:
+    if integration.organization_id != context.organization_id:
+        raise ValidationError({"integration": "Integration belongs to another organization"})
     integration.delete()
 
 
@@ -128,7 +136,9 @@ def _check_web(integration: Integration) -> tuple[bool, str, dict]:
     return True, f"Web-виджет активен · канал «{integration.channel.name}»", {}
 
 
-def test_integration(*, integration: Integration) -> Integration:
+def test_integration(*, context: TenantContext, integration: Integration) -> Integration:
+    if integration.organization_id != context.organization_id:
+        raise ValidationError({"integration": "Integration belongs to another organization"})
     if integration.provider == IntegrationProvider.WEB:
         ok, detail, meta = _check_web(integration)
     else:

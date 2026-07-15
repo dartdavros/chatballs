@@ -1,40 +1,46 @@
 from rest_framework.request import Request
 
-from hub_platform.identity.membership_context import single_membership_for_user
 from hub_platform.identity.models import HumanUser
 from hub_platform.identity.policy import get_effective_access
 from hub_platform.identity.sessions import revoke_user_sessions
 
 
 def _user_payload(user: HumanUser) -> dict[str, object]:
-    profile = single_membership_for_user(user)
-    if profile is None:
-        raise ValueError("An explicit organization context is required")
-    payload = {
+    memberships = []
+    active_memberships = (
+        user.memberships.filter(blocked_at__isnull=True)
+        .select_related("organization", "primary_department")
+        .order_by("organization__name", "id")
+    )
+    for membership in active_memberships:
+        membership_payload = {
+            "id": membership.id,
+            "organizationPublicId": str(membership.organization.public_id),
+            "organization": membership.organization.slug,
+            "organizationName": membership.organization.name,
+            "role": membership.role,
+            "positionTitle": membership.position_title,
+            "department": (
+                membership.primary_department.code if membership.primary_department else None
+            ),
+            "totpRequired": membership.totp_required,
+        }
+        membership_payload.update(get_effective_access(membership))
+        memberships.append(membership_payload)
+    return {
         "id": user.id,
         "email": user.email,
         "fullName": user.full_name,
-        "role": profile.role,
-        "positionTitle": profile.position_title,
-        "organizationName": profile.organization.name,
-        "organization": profile.organization.slug,
-        "department": profile.primary_department.code if profile.primary_department else None,
         "mustChangePassword": user.must_change_password,
-        "totpRequired": profile.totp_required,
         "totpEnabled": user.totp_enabled,
+        "memberships": memberships,
     }
-    payload.update(get_effective_access(profile))
-    return payload
 
 
 def _challenge_payload(user: HumanUser) -> dict[str, object]:
-    profile = single_membership_for_user(user)
-    if profile is None:
-        raise ValueError("An explicit organization context is required")
     return {
         "email": user.email,
         "fullName": user.full_name,
-        "role": profile.role,
     }
 
 

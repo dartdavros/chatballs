@@ -11,6 +11,7 @@ from django.db.models import Count, F, Sum
 from django.db.models.functions import Coalesce
 
 from hub_platform.sales.models import Environment, ProcessingStatus, Sale, SaleEvent, SaleStatus
+from hub_platform.tenancy.context import TenantContext
 
 # Статусы, формирующие действующую выручку.
 _REVENUE_STATUSES = (SaleStatus.CONFIRMED, SaleStatus.PARTIALLY_REFUNDED)
@@ -20,7 +21,8 @@ def _net_expr():
     return F("amount_minor") - F("refunded_amount_minor")
 
 
-def sales_analytics(organization_id: int, *, date_from=None, date_to=None) -> dict[str, object]:
+def sales_analytics(context: TenantContext, *, date_from=None, date_to=None) -> dict[str, object]:
+    organization_id = context.organization_id
     base = Sale.objects.filter(organization_id=organization_id, environment=Environment.PRODUCTION)
     if date_from:
         base = base.filter(occurred_at__gte=date_from)

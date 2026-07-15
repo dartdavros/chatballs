@@ -24,26 +24,12 @@ class ResourceScope:
 
 
 def _active_membership(actor) -> OrganizationMembership | None:
-    """Resolve the authorization actor without guessing between organizations.
-
-    C02 services can pass a membership directly. Legacy user-based routes remain
-    available only while the user has exactly one membership and are removed in C03.
-    """
-
-    if isinstance(actor, OrganizationMembership):
-        if not actor.user.is_active or actor.is_blocked:
-            return None
-        return actor
-    if not getattr(actor, "is_authenticated", False) or not getattr(actor, "is_active", False):
+    """Validate an already-resolved membership; never infer its organization."""
+    if not isinstance(actor, OrganizationMembership):
         return None
-    try:
-        membership = actor.memberships.get()
-    except (
-        OrganizationMembership.DoesNotExist,
-        OrganizationMembership.MultipleObjectsReturned,
-    ):
+    if not actor.user.is_active or actor.is_blocked:
         return None
-    return None if membership.is_blocked else membership
+    return actor
 
 
 def _assignments(profile: OrganizationMembership) -> QuerySet[EmployeeAccessAssignment]:

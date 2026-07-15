@@ -14,17 +14,25 @@ from hub_platform.identity.models import Organization
 from hub_platform.orders.models import Order
 from hub_platform.orders.services import OrderItemInput, create_order, mark_paid
 from hub_platform.products.models import Offer
+from hub_platform.tenancy.context import TenantActorKind, TenantContext
 
 
 class Command(BaseCommand):
     help = "Seed demo orders for local development (idempotent)."
 
+    def add_arguments(self, parser) -> None:
+        parser.add_argument("--organization", required=True, help="Organization public UUID")
+
     @transaction.atomic
     def handle(self, *args: object, **options: object) -> None:
-        organization = Organization.objects.first()
-        if organization is None:
-            self.stderr.write("no organization — run bootstrap_owner first")
+        try:
+            organization = Organization.objects.get(public_id=options["organization"])
+        except (Organization.DoesNotExist, ValueError):
+            self.stderr.write("organization not found")
             return
+        context = TenantContext.for_resource(
+            organization, actor_kind=TenantActorKind.SYSTEM
+        )
         if Order.objects.filter(organization=organization).exists():
             self.stdout.write("orders already present — skipping")
             return
@@ -37,8 +45,12 @@ class Command(BaseCommand):
         created = 0
         for index, contact in enumerate(contacts):
             offer = offers[index % len(offers)]
-            order = create_order(organization=organization, contact=contact, items=[OrderItemInput(offer_id=offer.id, quantity=1)])
+            order = create_order(
+                context=context,
+                contact=contact,
+                items=[OrderItemInput(offer_id=offer.id, quantity=1)],
+            )
             if index % 3 != 0:  # часть оставляем в ожидании оплаты
-                mark_paid(order=order)
+                mark_paid(context=context, order=order)
             created += 1
         self.stdout.write(self.style.SUCCESS(f"seeded {created} demo orders"))

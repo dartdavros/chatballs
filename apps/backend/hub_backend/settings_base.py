@@ -63,6 +63,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "hub_platform.events.middleware.CorrelationIdMiddleware",
+    "hub_platform.tenancy.middleware.TenantContextMiddleware",
 ]
 
 TEMPLATES = [

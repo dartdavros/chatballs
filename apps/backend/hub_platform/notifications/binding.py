@@ -34,15 +34,13 @@ _DEEP_LINK_BASE = {
 }
 
 
-def notifier_integrations(organization_id: int | None = None):
+def notifier_integrations(context):
     qs = Integration.objects.filter(
         kind=IntegrationKind.MESSENGER,
         provider__in=(IntegrationProvider.TELEGRAM, IntegrationProvider.MAX),
         config__purpose=NOTIFIER_PURPOSE,
     ).exclude(secret="")
-    if organization_id is not None:
-        qs = qs.filter(organization_id=organization_id)
-    return qs
+    return qs.filter(organization=context.organization)
 
 
 def deep_link(integration: Integration, code: str) -> str:
@@ -53,7 +51,10 @@ def deep_link(integration: Integration, code: str) -> str:
     return template.format(username=username, code=code)
 
 
-def issue_binding_code(*, user, integration: Integration) -> MessengerBindingCode:
+def issue_binding_code(*, context, integration: Integration) -> MessengerBindingCode:
+    if integration.organization_id != context.organization_id or context.actor_user is None:
+        raise ValueError("Notifier integration is outside tenant context")
+    user = context.actor_user
     # Прошлые коды пользователя для этого бота гасим — активен только последний.
     MessengerBindingCode.objects.filter(user=user, integration=integration).delete()
     return MessengerBindingCode.objects.create(
@@ -78,7 +79,14 @@ def handle_notifier_inbound(integration: Integration, inbound: InboundMessage) -
     code_value = _extract_code(inbound.text)
     binding_code = (
         MessengerBindingCode.objects.select_related("user")
-        .filter(integration=integration, code=code_value, expires_at__gte=timezone.now())
+        .filter(
+            integration=integration,
+            code=code_value,
+            expires_at__gte=timezone.now(),
+            user__memberships__organization=integration.organization,
+            user__memberships__blocked_at__isnull=True,
+        )
+        .distinct()
         .first()
         if code_value
         else None
@@ -88,7 +96,10 @@ def handle_notifier_inbound(integration: Integration, inbound: InboundMessage) -
         return
     with transaction.atomic():
         # Уведомления идут ровно в один мессенджер: новая привязка заменяет прежние.
-        MessengerBinding.objects.filter(user=binding_code.user).exclude(integration=integration).delete()
+        MessengerBinding.objects.filter(
+            user=binding_code.user,
+            integration__organization=integration.organization,
+        ).exclude(integration=integration).delete()
         MessengerBinding.objects.update_or_create(
             user=binding_code.user,
             integration=integration,
@@ -98,10 +109,10 @@ def handle_notifier_inbound(integration: Integration, inbound: InboundMessage) -
     transports.send_reply(integration, chat_id=inbound.chat_id, user_id=inbound.user_id, text=CONFIRMATION_TEXT)
 
 
-def poll_notifier_bots() -> int:
+def poll_notifier_bots(context) -> int:
     """Поллинг сервисных ботов: только привязочные сообщения, без ingest."""
     total = 0
-    for integration in notifier_integrations():
+    for integration in notifier_integrations(context):
         messages, new_marker = transports.poll(integration)
         for inbound in messages:
             try:

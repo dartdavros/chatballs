@@ -10,7 +10,6 @@ from django.test import TransactionTestCase
 from django.utils import timezone
 
 from hub_backend.asgi import application
-from hub_platform.calls.maintenance import expire_stale_calls
 from hub_platform.calls.models import (
     CallParticipant,
     CallSession,
@@ -20,10 +19,9 @@ from hub_platform.calls.models import (
 )
 from hub_platform.calls.services import (
     accept_call_by_access_token,
-    create_call_request,
     open_call_for_identity,
 )
-from hub_platform.calls.tests.helpers import CallDomainMixin
+from hub_platform.calls.tests.helpers import CallDomainMixin, create_call_request, expire_stale_calls
 from hub_platform.conversations.models import Message
 
 WS_PATH = "/ws/calls/"
@@ -215,7 +213,7 @@ class ReconnectSweepTests(SignalingTestCase):
         CallParticipant.objects.filter(
             call_session=created.call_session, side=ParticipantSide.CUSTOMER
         ).update(left_at=timezone.now() - timedelta(hours=1))
-        expire_stale_calls()
+        expire_stale_calls(self.organization)
         call = CallSession.objects.get()
         self.assertEqual(call.status, CallStatus.FAILED)
         self.assertEqual(call.failure_code, "PEER_DISCONNECTED")
@@ -244,6 +242,6 @@ class ReconnectSweepTests(SignalingTestCase):
         async_to_sync(scenario)()
         # Обрыва не осталось (left_at сброшен reconnect'ом до дисконнекта в
         # конце сценария) — недавний left_at не старше grace, звонок жив.
-        expire_stale_calls()
+        expire_stale_calls(self.organization)
         call = CallSession.objects.get()
         self.assertEqual(call.status, CallStatus.ACTIVE)
