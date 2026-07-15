@@ -9,6 +9,7 @@ from hub_platform.ai.indexing import reindex_knowledge
 from hub_platform.ai.models import AIAgent, Knowledge, KnowledgeAttachment
 from hub_platform.channels.models import Channel
 from hub_platform.tenancy.context import TenantContext
+from hub_platform.tenancy.storage import adjust_storage_usage
 
 
 @dataclass(frozen=True)
@@ -155,9 +156,13 @@ def delete_knowledge(*, context: TenantContext, knowledge: Knowledge) -> None:
     if knowledge.organization_id != context.organization_id:
         raise ValidationError({"knowledge": "Knowledge belongs to another organization"})
     # Файлы вложений удаляются вместе со знанием: сначала с диска, потом запись.
-    for attachment in knowledge.attachments.all():
+    attachments = list(knowledge.attachments.all())
+    released_bytes = sum(attachment.size for attachment in attachments)
+    for attachment in attachments:
         attachment.file.delete(save=False)
     knowledge.delete()
+    if released_bytes:
+        adjust_storage_usage(context=context, delta_bytes=-released_bytes)
 
 
 _MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024
@@ -177,11 +182,15 @@ def add_attachment(
     # Повторная загрузка с тем же именем заменяет файл (ADR-HUB-0023: без версий).
     existing = knowledge.attachments.filter(original_name=original_name).first()
     if existing is not None:
+        existing_size = existing.size
         existing.file.delete(save=False)
         existing.delete()
+        if existing_size:
+            adjust_storage_usage(context=context, delta_bytes=-existing_size)
     data = upload.read()
     content_type = upload.content_type or ""
     attachment = KnowledgeAttachment(
+        organization=context.organization,
         knowledge=knowledge,
         original_name=original_name,
         content_type=content_type,
@@ -191,6 +200,8 @@ def add_attachment(
     from django.core.files.base import ContentFile
 
     attachment.file.save(original_name, ContentFile(data), save=True)
+    if attachment.size:
+        adjust_storage_usage(context=context, delta_bytes=attachment.size)
     reindex_knowledge(knowledge)
     return attachment
 
@@ -199,6 +210,9 @@ def delete_attachment(*, context: TenantContext, attachment: KnowledgeAttachment
     if attachment.knowledge.organization_id != context.organization_id:
         raise ValidationError({"attachment": "Attachment belongs to another organization"})
     knowledge = attachment.knowledge
+    released_bytes = attachment.size
     attachment.file.delete(save=False)
     attachment.delete()
+    if released_bytes:
+        adjust_storage_usage(context=context, delta_bytes=-released_bytes)
     reindex_knowledge(knowledge)

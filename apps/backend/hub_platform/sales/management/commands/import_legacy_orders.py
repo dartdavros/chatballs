@@ -20,10 +20,11 @@ from __future__ import annotations
 
 from collections import Counter
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.db.models import QuerySet
 
 from hub_platform.orders.models import Order
+from hub_platform.identity.models import Organization
 from hub_platform.products.models import Product
 from hub_platform.sales.services import (
     LEGACY_CLASS_PENDING,
@@ -31,6 +32,8 @@ from hub_platform.sales.services import (
     import_legacy_order,
     provision_product_sales_source,
 )
+from hub_platform.tenancy.context import TenantActorKind, TenantContext
+from hub_platform.tenancy.database import tenant_atomic
 
 
 class Command(BaseCommand):
@@ -40,19 +43,32 @@ class Command(BaseCommand):
         parser.add_argument("--apply", action="store_true", help="Импортировать подтверждённые заказы в Sale/SaleEvent")
         parser.add_argument("--provision-sources", action="store_true", help="Создать SalesSource и скопировать ingest_token_hash")
         parser.add_argument("--product", default="", help="Код продукта (по умолчанию — все)")
+        parser.add_argument("--organization", required=True, help="Organization public UUID")
 
-    def _orders(self, product_code: str) -> QuerySet[Order]:
-        orders = Order.objects.select_related("organization", "product", "contact", "conversation").prefetch_related("items")
+    def _orders(self, context: TenantContext, product_code: str) -> QuerySet[Order]:
+        orders = Order.objects.filter(organization=context.organization).select_related("organization", "product", "contact", "conversation").prefetch_related("items")
         if product_code:
             orders = orders.filter(product__code=product_code)
         return orders.order_by("id")
 
     def handle(self, *args: object, **options: object) -> None:
+        try:
+            organization = Organization.objects.get(public_id=options["organization"])
+        except (Organization.DoesNotExist, ValueError) as error:
+            raise CommandError("Unknown organization public UUID") from error
+        context = TenantContext.for_resource(
+            organization,
+            actor_kind=TenantActorKind.SYSTEM,
+        )
+        with tenant_atomic(context):
+            self._handle_for_tenant(context=context, options=options)
+
+    def _handle_for_tenant(self, *, context: TenantContext, options: dict) -> None:
         apply = bool(options["apply"])
         provision = bool(options["provision_sources"])
         product_code = str(options["product"])
 
-        orders = self._orders(product_code)
+        orders = self._orders(context, product_code)
         classes = Counter(classify_legacy_order(order) for order in orders)
         total = sum(classes.values())
 
@@ -64,7 +80,7 @@ class Command(BaseCommand):
         self.stdout.write(f"  требуют ручного решения (PENDING): {classes.get(LEGACY_CLASS_PENDING, 0)}")
 
         if provision:
-            self._provision(product_code)
+            self._provision(context, product_code)
 
         if not apply:
             self.stdout.write(self.style.WARNING("DRY-RUN: изменения не внесены. Повторите с --apply для импорта."))
@@ -84,8 +100,8 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(f"Импортировано: {created}; уже были: {skipped}; пропущено PENDING: {pending}"))
         self.stdout.write("Legacy orders НЕ удалены и остаются read-only источником до отдельного подтверждения владельца (§11 шаг 12).")
 
-    def _provision(self, product_code: str) -> None:
-        products = Product.objects.all()
+    def _provision(self, context: TenantContext, product_code: str) -> None:
+        products = Product.objects.filter(organization=context.organization)
         if product_code:
             products = products.filter(code=product_code)
         self.stdout.write(self.style.MIGRATE_HEADING("Provisioning SalesSource:"))

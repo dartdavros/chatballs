@@ -4,6 +4,7 @@ from typing import Callable
 from hub_platform.events.models import OutboxEvent
 from hub_platform.events.services import tenant_context_for_event
 from hub_platform.tenancy.context import TenantContext
+from hub_platform.tenancy.database import tenant_atomic
 
 logger = logging.getLogger(__name__)
 
@@ -24,4 +25,9 @@ def dispatch(event: OutboxEvent) -> None:
     if handler is None:
         logger.info("No handler registered for event %s", event.event_type)
         return
-    handler(event.payload, tenant_context_for_event(event))
+    context = tenant_context_for_event(event)
+    if context is None:
+        handler(event.payload, None)
+        return
+    with tenant_atomic(context):
+        handler(event.payload, context)

@@ -16,7 +16,12 @@ class RecordCallMetricTests(CallTestCase):
         ).call_session
 
     def _record(self, **kwargs):
-        record_call_metric(call_session_id=self.call.id, side=ParticipantSide.STAFF, **kwargs)
+        record_call_metric(
+            context=system_tenant_context(self.organization),
+            call_session_id=self.call.id,
+            side=ParticipantSide.STAFF,
+            **kwargs,
+        )
         return CallMetric.objects.get(call_session=self.call, side=ParticipantSide.STAFF)
 
     def test_direct_connection_type_from_non_relay_candidates(self) -> None:
@@ -55,11 +60,21 @@ class RecordCallMetricTests(CallTestCase):
         self.assertEqual(metrics.first().connection_type, CallConnectionType.RELAY)
 
     def test_unknown_side_ignored(self) -> None:
-        record_call_metric(call_session_id=self.call.id, side="ALIEN", local_candidate_type="host")
+        record_call_metric(
+            context=system_tenant_context(self.organization),
+            call_session_id=self.call.id,
+            side="ALIEN",
+            local_candidate_type="host",
+        )
         self.assertFalse(CallMetric.objects.filter(call_session=self.call).exists())
 
     def test_missing_call_ignored(self) -> None:
-        record_call_metric(call_session_id=uuid.uuid4(), side=ParticipantSide.STAFF, local_candidate_type="host")
+        record_call_metric(
+            context=system_tenant_context(self.organization),
+            call_session_id=uuid.uuid4(),
+            side=ParticipantSide.STAFF,
+            local_candidate_type="host",
+        )
         self.assertEqual(CallMetric.objects.count(), 0)
 
     def test_signaling_helper_maps_camel_case_payload(self) -> None:

@@ -15,6 +15,7 @@ from hub_platform.orders.models import Order
 from hub_platform.orders.services import OrderItemInput, create_order, mark_paid
 from hub_platform.products.models import Offer
 from hub_platform.tenancy.context import TenantActorKind, TenantContext
+from hub_platform.tenancy.database import set_local_tenant
 
 
 class Command(BaseCommand):
@@ -33,6 +34,7 @@ class Command(BaseCommand):
         context = TenantContext.for_resource(
             organization, actor_kind=TenantActorKind.SYSTEM
         )
+        set_local_tenant(context)
         if Order.objects.filter(organization=organization).exists():
             self.stdout.write("orders already present — skipping")
             return

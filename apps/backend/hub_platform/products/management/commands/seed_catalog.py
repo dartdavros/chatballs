@@ -26,6 +26,7 @@ from hub_platform.products.models import (
 )
 from hub_platform.identity.models import Organization
 from hub_platform.tenancy.context import TenantActorKind, TenantContext
+from hub_platform.tenancy.database import set_local_tenant
 
 VALID_FROM = datetime(2026, 1, 1, tzinfo=timezone.utc)
 
@@ -108,6 +109,7 @@ class Command(BaseCommand):
         context = TenantContext.for_resource(
             organization, actor_kind=TenantActorKind.SYSTEM
         )
+        set_local_tenant(context)
         created_offers = 0
         created_prices = 0
         for product_code, offers in CATALOG.items():

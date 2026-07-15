@@ -15,10 +15,8 @@ from hub_platform.calls.errors import (
 )
 from hub_platform.calls.lifecycle import transition_call
 from hub_platform.calls.models import (
-    CallConnectionType,
     CallEndedBy,
     CallInvite,
-    CallMetric,
     CallParticipant,
     CallSession,
     CallStatus,
@@ -27,13 +25,20 @@ from hub_platform.calls.models import (
     TERMINAL_CALL_STATUSES,
     UNFINISHED_CALL_STATUSES,
 )
+from hub_platform.calls.metrics import record_call_metric
 from hub_platform.calls.permissions import ensure_call_access, ensure_conversation_call_access
+from hub_platform.calls.public_access import (
+    ResolvedInvite,
+    accept_call_by_access_token,
+    authorize_call_access_context,
+    authorize_call_access_token,
+    call_state_by_access_token,
+    decline_call_by_access_token,
+    resolve_invite,
+)
 from hub_platform.calls.tokens import (
-    CallAccessClaims,
-    hash_invite_token,
     issue_call_access_token,
     issue_invite_token,
-    verify_call_access_token,
 )
 from hub_platform.conversations.models import (
     ConnectionIdentity,
@@ -46,8 +51,17 @@ from hub_platform.conversations.models import (
 from hub_platform.conversations.services import ClaimError, claim_locked_conversation
 from hub_platform.events.services import DomainEvent, enqueue_event
 from hub_platform.integrations.models import IntegrationProvider
-from hub_platform.identity.models import OrganizationMembership
 from hub_platform.tenancy.context import TenantContext
+
+__all__ = (
+    "accept_call_by_access_token",
+    "authorize_call_access_context",
+    "authorize_call_access_token",
+    "call_state_by_access_token",
+    "decline_call_by_access_token",
+    "resolve_invite",
+    "record_call_metric",
+)
 
 # Outbox-событие доставки приглашения в TG/MAX (обработчик — calls.event_handlers).
 CALL_INVITE_SEND = "calls.invite_send"
@@ -58,12 +72,6 @@ class CreatedCall:
     call_session: CallSession
     invite_token: str
     staff_access_token: str
-
-
-@dataclass(frozen=True)
-class ResolvedInvite:
-    invite: CallInvite
-    customer_access_token: str
 
 
 def _conversation_identity(conversation: Conversation) -> ConnectionIdentity:
@@ -135,6 +143,7 @@ def create_call_request(*, context: TenantContext, conversation_id: int) -> Crea
         raise CallConflict("Не удалось создать второй незавершённый звонок") from error
 
     CallInvite.objects.create(
+        organization=context.organization,
         call_session=call,
         connection_identity=identity,
         token_hash=token_hash,
@@ -142,8 +151,14 @@ def create_call_request(*, context: TenantContext, conversation_id: int) -> Crea
     )
     CallParticipant.objects.bulk_create(
         [
-            CallParticipant(call_session=call, side=ParticipantSide.STAFF, user=initiator),
             CallParticipant(
+                organization=context.organization,
+                call_session=call,
+                side=ParticipantSide.STAFF,
+                user=initiator,
+            ),
+            CallParticipant(
+                organization=context.organization,
                 call_session=call,
                 side=ParticipantSide.CUSTOMER,
                 connection_identity=identity,
@@ -180,33 +195,6 @@ def create_call_request(*, context: TenantContext, conversation_id: int) -> Crea
     return CreatedCall(call_session=call, invite_token=invite_token, staff_access_token=staff_token)
 
 
-@transaction.atomic
-def resolve_invite(*, token: str) -> ResolvedInvite:
-    message = "Недействительное или истёкшее приглашение"
-    invite = (
-        CallInvite.objects.select_for_update()
-        .select_related("call_session", "connection_identity")
-        .filter(token_hash=hash_invite_token(token))
-        .first()
-    )
-    now = timezone.now()
-    if (
-        invite is None
-        or invite.expires_at <= now
-        or invite.opened_at is not None
-        or invite.call_session.status in TERMINAL_CALL_STATUSES
-    ):
-        raise CallTokenError(message)
-    invite.opened_at = now
-    invite.save(update_fields=["opened_at"])
-    access_token = issue_call_access_token(
-        call_session_id=invite.call_session_id,
-        side=ParticipantSide.CUSTOMER,
-        subject_id=str(invite.id),
-    )
-    return ResolvedInvite(invite=invite, customer_access_token=access_token)
-
-
 def issue_staff_access_token(*, context: TenantContext, call_session: CallSession) -> str:
     user = context.actor_user
     if user is None or context.membership is None:
@@ -222,63 +210,6 @@ def issue_staff_access_token(*, context: TenantContext, call_session: CallSessio
         side=ParticipantSide.STAFF,
         subject_id=str(user.id),
     )
-
-
-def authorize_call_access_token(*, token: str, allow_terminal: bool = False) -> tuple[CallAccessClaims, CallSession]:
-    claims = verify_call_access_token(token)
-    try:
-        call = CallSession.objects.select_related(
-            "conversation", "conversation__channel", "initiated_by", "organization"
-        ).get(id=claims.call_session_id)
-    except CallSession.DoesNotExist:
-        raise CallTokenError("Недействительный или истёкший call access token") from None
-    if call.status in TERMINAL_CALL_STATUSES and not allow_terminal:
-        raise CallTokenError("Звонок уже завершён")
-    if claims.side == ParticipantSide.STAFF:
-        participant = call.participants.select_related("user").filter(
-            side=ParticipantSide.STAFF,
-            user_id=claims.subject_id,
-        ).first()
-        valid = participant is not None
-        if participant is not None:
-            membership = OrganizationMembership.objects.select_related("user").filter(
-                user=participant.user,
-                organization_id=call.organization_id,
-                blocked_at__isnull=True,
-            ).first()
-            try:
-                ensure_call_access(user=membership, call_session=call)
-            except CallAccessDenied:
-                valid = False
-    else:
-        # После принятия/завершения истечение invite не отзывает доступ к
-        # состоянию: TTL самого access token остаётся единственным пределом.
-        invite = CallInvite.objects.filter(id=claims.subject_id, call_session=call).first()
-        valid = invite is not None and (
-            invite.expires_at > timezone.now()
-            or call.status not in {CallStatus.REQUESTED, CallStatus.RINGING}
-        )
-    if not valid:
-        raise CallTokenError("Недействительный или истёкший call access token")
-    return claims, call
-
-
-def authorize_call_access_context(
-    *, token: str, allow_terminal: bool = False
-) -> tuple[CallAccessClaims, CallSession, TenantContext]:
-    claims, call = authorize_call_access_token(token=token, allow_terminal=allow_terminal)
-    if claims.side == ParticipantSide.STAFF:
-        membership = OrganizationMembership.objects.select_related(
-            "user", "organization"
-        ).get(
-            user_id=claims.subject_id,
-            organization=call.organization,
-            blocked_at__isnull=True,
-        )
-        context = TenantContext.for_membership(membership)
-    else:
-        context = TenantContext.for_resource(call.organization)
-    return claims, call, context
 
 
 def cancel_call(*, context: TenantContext, call_session: CallSession) -> CallSession:
@@ -297,96 +228,6 @@ def cancel_call(*, context: TenantContext, call_session: CallSession) -> CallSes
         )
     except CallInvalidTransition as error:
         raise CallConflict("Звонок уже нельзя отменить") from error
-
-
-def _customer_call(*, token: str, allow_terminal: bool = False) -> CallSession:
-    claims, call = authorize_call_access_token(token=token, allow_terminal=allow_terminal)
-    if claims.side != ParticipantSide.CUSTOMER:
-        raise CallTokenError("Недействительный или истёкший call access token")
-    return call
-
-
-def accept_call_by_access_token(*, token: str) -> CallSession:
-    call = _customer_call(token=token)
-    try:
-        if call.status == CallStatus.REQUESTED:
-            call = transition_call(call_session_id=call.id, target_status=CallStatus.RINGING)
-        return transition_call(call_session_id=call.id, target_status=CallStatus.ACCEPTED)
-    except CallInvalidTransition as error:
-        raise CallConflict("Приглашение уже нельзя принять") from error
-
-
-def decline_call_by_access_token(*, token: str) -> CallSession:
-    call = _customer_call(token=token, allow_terminal=True)
-    if call.status == CallStatus.DECLINED:
-        return call
-    try:
-        return transition_call(
-            call_session_id=call.id,
-            target_status=CallStatus.DECLINED,
-            ended_by=CallEndedBy.CUSTOMER,
-        )
-    except CallInvalidTransition as error:
-        raise CallConflict("Приглашение уже нельзя отклонить") from error
-
-
-def call_state_by_access_token(*, token: str) -> CallSession:
-    _claims, call = authorize_call_access_token(token=token, allow_terminal=True)
-    return call
-
-
-# ICE candidate типы (RFC 8445), допустимые в метриках. Храним только категорию,
-# без адреса/порта/foundation самого кандидата.
-_ALLOWED_CANDIDATE_TYPES = {"host", "srflx", "prflx", "relay"}
-_MAX_ROUND_TRIP_MS = 60_000
-
-
-def _sanitize_candidate_type(value) -> str:
-    text = str(value or "").lower()
-    return text if text in _ALLOWED_CANDIDATE_TYPES else ""
-
-
-def _connection_type(local: str, remote: str) -> str:
-    if "relay" in (local, remote):
-        return CallConnectionType.RELAY
-    if local or remote:
-        return CallConnectionType.DIRECT
-    return CallConnectionType.UNKNOWN
-
-
-def record_call_metric(
-    *,
-    call_session_id,
-    side: str,
-    local_candidate_type=None,
-    remote_candidate_type=None,
-    round_trip_ms=None,
-) -> None:
-    """Сохранить технические метрики соединения участника (без медиаконтента).
-
-    Идемпотентно по (call_session, side): при reconnect/ICE-restart метрика
-    обновляется актуальным типом маршрута. Никакие SDP/ICE payload не пишутся —
-    только производная категория кандидата и RTT.
-    """
-    if side not in ParticipantSide.values:
-        return
-    if not CallSession.objects.filter(id=call_session_id).exists():
-        return
-    local = _sanitize_candidate_type(local_candidate_type)
-    remote = _sanitize_candidate_type(remote_candidate_type)
-    rtt: int | None = None
-    if isinstance(round_trip_ms, (int, float)) and not isinstance(round_trip_ms, bool):
-        rtt = max(0, min(_MAX_ROUND_TRIP_MS, int(round_trip_ms)))
-    CallMetric.objects.update_or_create(
-        call_session_id=call_session_id,
-        side=side,
-        defaults={
-            "connection_type": _connection_type(local, remote),
-            "local_candidate_type": local,
-            "remote_candidate_type": remote,
-            "round_trip_ms": rtt,
-        },
-    )
 
 
 def active_call_for_conversation(conversation: Conversation) -> CallSession | None:

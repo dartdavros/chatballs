@@ -5,6 +5,7 @@ from django.db import models
 from django.db.models import Q
 
 from hub_platform.identity.crypto import EncryptedCharField
+from hub_platform.tenancy.models import TenantRelationModel
 
 
 class ProductStatus(models.TextChoices):
@@ -38,7 +39,8 @@ class Product(models.Model):
         return f"{self.organization.slug}/{self.code}"
 
 
-class ProductDepartment(models.Model):
+class ProductDepartment(TenantRelationModel):
+    tenant_relation_fields = ("product", "department")
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="department_links")
     department = models.ForeignKey("identity.Department", on_delete=models.PROTECT, related_name="product_links")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -64,7 +66,8 @@ class OfferPaymentType(models.TextChoices):
     SUBSCRIPTION = "SUBSCRIPTION", "Подписка"
 
 
-class Offer(models.Model):
+class Offer(TenantRelationModel):
+    tenant_relation_fields = ("product", "primary_box_offer")
     product = models.ForeignKey(Product, on_delete=models.PROTECT, related_name="offers")
     code = models.SlugField(max_length=64)
     name = models.CharField(max_length=255)
@@ -117,7 +120,8 @@ class BillingPeriod(models.TextChoices):
     YEAR = "YEAR", "Год"
 
 
-class Price(models.Model):
+class Price(TenantRelationModel):
+    tenant_relation_fields = ("offer",)
     offer = models.ForeignKey(Offer, on_delete=models.PROTECT, related_name="prices")
     version = models.PositiveIntegerField()
     amount_minor = models.PositiveBigIntegerField()
@@ -158,7 +162,8 @@ class MarketplacePublicationStatus(models.TextChoices):
     DISABLED = "DISABLED", "Отключено"
 
 
-class MarketplacePublication(models.Model):
+class MarketplacePublication(TenantRelationModel):
+    tenant_relation_fields = ("price",)
     marketplace_code = models.SlugField(max_length=64)
     price = models.ForeignKey(Price, on_delete=models.PROTECT, related_name="marketplace_publications")
     status = models.CharField(

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
-from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -25,57 +24,11 @@ from hub_platform.sales.services import (
     create_manual_sale,
     issue_attribution_token,
     record_manual_action,
-    record_product_sales_event,
-    resolve_sales_source_by_credential,
 )
-from hub_platform.tenancy.context import TenantContext
 
 
 def _api_error(error: SalesApiError) -> Response:
     return Response({"detail": error.message, "error": error.error_code}, status=error.status_code)
-
-
-def _bearer(request: Request) -> str:
-    header = request.headers.get("Authorization", "")
-    if header.startswith("Bearer "):
-        return header[len("Bearer ") :].strip()
-    return ""
-
-
-class ProductSalesEventView(APIView):
-    """Канонический вход Product Sales API (SPEC-HUB-0014 §4).
-
-    Аутентификация — Bearer-ключ конкретного SalesSource, без пользовательской
-    сессии. Идемпотентно по (source, event_id).
-    """
-
-    permission_classes = [AllowAny]
-    authentication_classes: list = []  # только Bearer источника, не сессия пользователя
-
-    def post(self, request: Request) -> Response:
-        source = resolve_sales_source_by_credential(_bearer(request))
-        if source is None:
-            return Response({"detail": "Invalid or revoked credential", "error": "invalid_credential"}, status=401)
-        context = TenantContext.for_resource(source.organization)
-
-        try:
-            result = record_product_sales_event(
-                context=context, source=source, payload=request.data
-            )
-        except SalesApiError as error:
-            record_audit_event(
-                action="sales.event_rejected",
-                actor=None,
-                organization=source.organization,
-                object_type="SalesSource",
-                object_id=str(source.id),
-                payload={"error": error.error_code},
-                request=request,
-            )
-            return _api_error(error)
-
-        body = {"accepted": True, "duplicate": result.duplicate, "event_id": result.event.external_event_id}
-        return Response(body, status=200 if result.duplicate else 202)
 
 
 class _Base(APIView):

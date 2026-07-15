@@ -15,6 +15,8 @@ from hub_platform.channels.models import Channel
 from hub_platform.identity.models import Department, Organization
 from hub_platform.integrations.models import Integration, IntegrationProvider
 from hub_platform.products.models import Product
+from hub_platform.tenancy.context import TenantActorKind, TenantContext
+from hub_platform.tenancy.database import set_local_tenant
 
 # Тон общения (поле tone агента): простой текст для мессенджера.
 TONE = (
@@ -58,6 +60,11 @@ class Command(BaseCommand):
         except (Organization.DoesNotExist, ValueError):
             self.stderr.write("organization not found")
             return
+        context = TenantContext.for_resource(
+            organization,
+            actor_kind=TenantActorKind.SYSTEM,
+        )
+        set_local_tenant(context)
         sales = Department.objects.filter(organization=organization, code="sales").first()
         provider = (
             Integration.objects.filter(organization=organization, provider=IntegrationProvider.OPENROUTER)
@@ -84,6 +91,7 @@ class Command(BaseCommand):
             # Агент канала (ADR-HUB-0023): одна сущность, без релизов.
             if not AIAgent.objects.filter(channel=channel).exists():
                 AIAgent.objects.create(
+                    organization=organization,
                     channel=channel,
                     name=f"{name} Agent",
                     is_active=True,

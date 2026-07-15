@@ -78,7 +78,11 @@ class AccessProfileListCreateView(APIView):
             )
             AccessProfileCapability.objects.bulk_create(
                 [
-                    AccessProfileCapability(access_profile=profile, capability_code=code)
+                    AccessProfileCapability(
+                        organization=profile.organization,
+                        access_profile=profile,
+                        capability_code=code,
+                    )
                     for code in codes
                 ]
             )
@@ -145,7 +149,11 @@ class AccessProfileDetailView(APIView):
             profile.capability_links.all().delete()
             AccessProfileCapability.objects.bulk_create(
                 [
-                    AccessProfileCapability(access_profile=profile, capability_code=code)
+                    AccessProfileCapability(
+                        organization=profile.organization,
+                        access_profile=profile,
+                        capability_code=code,
+                    )
                     for code in codes
                 ]
             )

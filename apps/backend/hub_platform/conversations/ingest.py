@@ -29,7 +29,7 @@ from hub_platform.conversations.models import (
 )
 from hub_platform.conversations import transports
 from hub_platform.conversations.transports.base import InboundMessage
-from hub_platform.events.models import InboxEvent
+from hub_platform.events.models import EventOwnership, InboxEvent
 from hub_platform.notifications.models import NotificationAudience, NotificationType
 from hub_platform.notifications.services import notify
 from hub_platform.tenancy.context import TenantContext
@@ -45,10 +45,16 @@ _ROLE = {
 }
 
 
-def _already_processed(source: str, external_id: str, text: str) -> bool:
+def _already_processed(context: TenantContext, source: str, external_id: str, text: str) -> bool:
     payload_hash = hashlib.sha256(text.encode("utf-8")).hexdigest()[:32]
     try:
-        InboxEvent.objects.create(source=source, external_event_id=external_id, payload_hash=payload_hash)
+        InboxEvent.objects.create(
+            source=source,
+            external_event_id=external_id,
+            payload_hash=payload_hash,
+            ownership=EventOwnership.TENANT,
+            organization=context.organization,
+        )
         return False
     except IntegrityError:
         return True
@@ -67,7 +73,7 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
         return
     context = TenantContext.for_resource(channel.organization)
     source = f"{integration.provider.lower()}:{integration.id}"
-    if _already_processed(source, inbound.external_id, inbound.text):
+    if _already_processed(context, source, inbound.external_id, inbound.text):
         return
 
     # Явный шаринг контакта: сообщение без текста, но с телефоном.

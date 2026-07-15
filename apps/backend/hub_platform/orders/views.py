@@ -7,6 +7,7 @@ from rest_framework.views import APIView
 from hub_platform.api.permissions import HasCapability
 from hub_platform.conversations.models import Contact, Conversation
 from hub_platform.identity.audit import record_audit_event
+from hub_platform.identity.models import Organization
 from hub_platform.orders.models import Order
 from hub_platform.orders.selectors import order_for_context, orders_for_context
 from hub_platform.orders.serializers import order_payload
@@ -15,13 +16,16 @@ from hub_platform.orders.services import (
     OrderItemInput,
     cancel_order,
     create_order,
+    hash_ingest_token,
     ingest_order,
     mark_paid,
-    resolve_product_by_token,
     set_fulfillment,
 )
+from hub_platform.products.models import Product
 from hub_platform.identity.policy import accessible_department_ids, require_capability
 from hub_platform.tenancy.context import TenantContext
+from hub_platform.tenancy.database import tenant_atomic
+from hub_platform.tenancy.ingress import product_ingest_route
 
 
 def _validation_error(error: ValidationError) -> Response:
@@ -112,11 +116,31 @@ class OrderIngestView(APIView):
 
     def post(self, request: Request) -> Response:
         token = request.headers.get("X-Product-Token", "")
-        product = resolve_product_by_token(token)
-        if product is None:
+        route = product_ingest_route(hash_ingest_token(token)) if token else None
+        if route is None:
             return Response({"detail": "Invalid product token"}, status=401)
-        context = TenantContext.for_resource(product.organization)
+        try:
+            organization = Organization.objects.get(pk=route.organization_id)
+        except Organization.DoesNotExist:
+            return Response({"detail": "Invalid product token"}, status=401)
+        context = TenantContext.for_resource(organization)
+        with tenant_atomic(context):
+            product = Product.objects.filter(
+                id=route.resource_id,
+                organization=organization,
+                ingest_token_hash=hash_ingest_token(token),
+            ).first()
+            if product is None:
+                return Response({"detail": "Invalid product token"}, status=401)
+            return self._post_for_product(request, context=context, product=product)
 
+    def _post_for_product(
+        self,
+        request: Request,
+        *,
+        context: TenantContext,
+        product: Product,
+    ) -> Response:
         raw_items = request.data.get("items")
         if not isinstance(raw_items, list) or not raw_items:
             return Response({"detail": "items must be a non-empty list"}, status=400)

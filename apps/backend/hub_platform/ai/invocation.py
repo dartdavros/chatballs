@@ -20,6 +20,7 @@ def invoke_chat(*, channel, messages: list[ChatMessage], purpose: str, model: st
         limits.assert_within_limits(channel, agent)
     except limits.LimitExceeded as error:
         LlmInvocation.objects.create(
+            organization=channel.organization,
             channel=channel, product=channel.product, purpose=purpose, operation="chat", model=model,
             status=LlmInvocationStatus.BLOCKED, error=str(error),
         )
@@ -37,6 +38,7 @@ def invoke_chat(*, channel, messages: list[ChatMessage], purpose: str, model: st
         )
     except ProviderError as error:
         LlmInvocation.objects.create(
+            organization=channel.organization,
             channel=channel, product=channel.product, purpose=purpose, operation="chat", model=model,
             status=LlmInvocationStatus.ERROR, error=str(error)[:1000],
             latency_ms=int((time.monotonic() - started) * 1000),
@@ -44,6 +46,7 @@ def invoke_chat(*, channel, messages: list[ChatMessage], purpose: str, model: st
         raise
 
     LlmInvocation.objects.create(
+        organization=channel.organization,
         channel=channel, product=channel.product, purpose=purpose, operation="chat", model=result.model,
         prompt_tokens=result.prompt_tokens, completion_tokens=result.completion_tokens, total_tokens=result.total_tokens,
         cost_micros=result.cost_micros or pricing.cost_micros(result.model, result.prompt_tokens, result.completion_tokens),
@@ -53,7 +56,14 @@ def invoke_chat(*, channel, messages: list[ChatMessage], purpose: str, model: st
     return result
 
 
-def embed_texts(*, channel=None, texts: list[str], model: str, purpose: str = "retrieval") -> list[EmbeddingResult]:
+def embed_texts(
+    *,
+    channel=None,
+    organization=None,
+    texts: list[str],
+    model: str,
+    purpose: str = "retrieval",
+) -> list[EmbeddingResult]:
     # Знания авторские (не клиентские PII), поэтому redaction не требуется.
     provider = get_provider()
     results: list[EmbeddingResult] = call_with_resilience(
@@ -63,6 +73,7 @@ def embed_texts(*, channel=None, texts: list[str], model: str, purpose: str = "r
     )
     tokens = sum(result.tokens for result in results)
     LlmInvocation.objects.create(
+        organization=channel.organization if channel else organization,
         channel=channel, product=(channel.product if channel else None), purpose=purpose, operation="embedding", model=model,
         prompt_tokens=tokens, total_tokens=tokens, cost_micros=pricing.cost_micros(model, tokens, 0),
         status=LlmInvocationStatus.SUCCESS,

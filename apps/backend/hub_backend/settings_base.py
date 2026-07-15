@@ -5,6 +5,8 @@ from pathlib import Path
 from django.core.exceptions import ImproperlyConfigured
 
 from hub_backend.settings_env import env_bool, env_list
+from hub_backend.settings_database import build_databases
+from hub_backend.settings_storage import build_storage_settings
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -33,6 +35,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "hub_platform.identity",
+    "hub_platform.tenancy",
     "hub_platform.products",
     "hub_platform.ai",
     "hub_platform.integrations",
@@ -83,17 +86,9 @@ TEMPLATES = [
 
 AUTH_USER_MODEL = "identity.HumanUser"
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ.get("POSTGRES_DB", "edevs_hub"),
-        "USER": os.environ.get("POSTGRES_USER", "edevs_hub"),
-        "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "edevs_hub"),
-        "HOST": os.environ.get("POSTGRES_HOST", "postgres"),
-        "PORT": os.environ.get("POSTGRES_PORT", "5432"),
-        "CONN_MAX_AGE": 60,
-    }
-}
+# Tests use the disposable cluster owner to create/drop the test database. The
+# dedicated RLS suite explicitly SET ROLEs into the non-owner runtime roles.
+DATABASES = build_databases(debug=DEBUG, testing=TESTING)
 
 CACHES = {
     "default": {
@@ -191,8 +186,12 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # Файловые вложения знаний (ADR-HUB-0023). Файлы отдаются только через
 # download-endpoint (FileResponse), прямого статик-роутинга MEDIA нет.
-MEDIA_ROOT = Path(os.environ.get("HUB_MEDIA_ROOT", BASE_DIR / "media"))
 MEDIA_URL = "media/"
+HUB_STORAGE_BACKEND, MEDIA_ROOT, STORAGES = build_storage_settings(
+    base_dir=BASE_DIR,
+    debug=DEBUG,
+    testing=TESTING,
+)
 
 # Публичный адрес Hub: абсолютные ссылки, уходящие клиентам (download вложений).
 HUB_PUBLIC_BASE_URL = os.environ.get("HUB_PUBLIC_BASE_URL", "http://localhost:8000")
@@ -222,18 +221,6 @@ HUB_CALL_TURN_SECRET = os.environ.get("HUB_CALL_TURN_SECRET", "")
 HUB_CALL_TURN_TTL_SECONDS = int(os.environ.get("HUB_CALL_TURN_TTL_SECONDS", str(60 * 60)))
 if HUB_CALL_TURN_TTL_SECONDS <= 0:
     raise ImproperlyConfigured("HUB_CALL_TURN_TTL_SECONDS must be positive")
-STORAGES = {
-    "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
-    },
-    "staticfiles": {
-        # В тестах manifest-хранилище требует прогнанного collectstatic,
-        # поэтому используем обычное хранилище без манифеста.
-        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"
-        if TESTING
-        else "whitenoise.storage.CompressedManifestStaticFilesStorage",
-    },
-}
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Лимиты на чувствительные эндпоинты (брутфорс/злоупотребление). В тестах отключены.

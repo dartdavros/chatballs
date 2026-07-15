@@ -96,7 +96,6 @@ class ProductDetailView(APIView):
     required_capability = "products.view"
 
     def get(self, request: Request, product_id: int) -> Response:
-        profile = request.tenant_context.membership
         try:
             product = product_for_context(context=request.tenant_context, product_id=product_id)
         except Product.DoesNotExist:

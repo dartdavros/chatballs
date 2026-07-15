@@ -23,6 +23,7 @@ from hub_platform.identity.models import (
 )
 from hub_platform.products.models import Product, ProductDepartment
 from hub_platform.tenancy.context import TenantContext
+from hub_platform.tenancy.database import tenant_atomic
 
 from ._seed_specs import CHANNEL_SPECS, PRODUCT_SPECS, TONE
 
@@ -212,19 +213,20 @@ class Command(BaseCommand):
             "organization", "user"
         ).get(user=core.owner)
         context = TenantContext.for_membership(membership)
-        call_command(
-            "seed_catalog",
-            organization=str(core.organization.public_id),
-            verbosity=0,
-        )
-        channels_created, agents_created = _seed_channels(context=context)
-        from hub_platform.support.seed_support import seed_support_reference
+        with tenant_atomic(context):
+            call_command(
+                "seed_catalog",
+                organization=str(core.organization.public_id),
+                verbosity=0,
+            )
+            channels_created, agents_created = _seed_channels(context=context)
+            from hub_platform.support.seed_support import seed_support_reference
 
-        support_stats = seed_support_reference(context=context)
-        content_result = import_ai_content(
-            base_dir=Path(__file__).resolve().parents[6],
-            context=context,
-        )
+            support_stats = seed_support_reference(context=context)
+            content_result = import_ai_content(
+                base_dir=Path(__file__).resolve().parents[6],
+                context=context,
+            )
 
         owner_state = "created" if core.created_owner else "ready"
         self.stdout.write(

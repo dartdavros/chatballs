@@ -66,7 +66,6 @@ class IntegrationListView(APIView):
         return Response({"items": [integration_payload(item) for item in items]})
 
     def post(self, request: Request) -> Response:
-        profile = request.tenant_context.membership
         try:
             integration = create_integration(
                 context=request.tenant_context, data=_input(request.data)

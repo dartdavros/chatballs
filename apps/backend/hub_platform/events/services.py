@@ -44,33 +44,43 @@ def tenant_context_for_event(event: OutboxEvent) -> TenantContext | None:
     if event.organization_id is None:
         raise ValueError("Tenant event has no organization")
     organization = Organization.objects.get(pk=event.organization_id)
-    membership = None
-    actor_user = None
-    if event.membership_id is not None:
-        membership = OrganizationMembership.objects.select_related("user", "organization").get(
-            pk=event.membership_id,
-            organization=organization,
-            blocked_at__isnull=True,
-            user__is_active=True,
-        )
-        actor_user = membership.user
-        if event.actor_user_id not in {None, membership.user_id}:
-            raise ValueError("Tenant event actor does not match membership")
-    elif event.actor_user_id is not None:
-        actor_user = event.actor_user
     try:
         actor_kind = TenantActorKind(event.actor_kind)
     except ValueError as error:
         raise ValueError("Tenant event has invalid actor kind") from error
-    if actor_kind == TenantActorKind.HUMAN and membership is None:
-        raise ValueError("Human tenant event has no membership")
-    return TenantContext(
-        organization=organization,
-        membership=membership,
-        actor_user=actor_user,
+    resource_context = TenantContext.for_resource(
+        organization,
         actor_kind=actor_kind,
         correlation_id=event.correlation_id,
     )
+    from hub_platform.tenancy.database import tenant_atomic
+
+    with tenant_atomic(resource_context):
+        membership = None
+        actor_user = None
+        if event.membership_id is not None:
+            membership = OrganizationMembership.objects.select_related(
+                "user", "organization"
+            ).get(
+                pk=event.membership_id,
+                organization=organization,
+                blocked_at__isnull=True,
+                user__is_active=True,
+            )
+            actor_user = membership.user
+            if event.actor_user_id not in {None, membership.user_id}:
+                raise ValueError("Tenant event actor does not match membership")
+        elif event.actor_user_id is not None:
+            actor_user = event.actor_user
+        if actor_kind == TenantActorKind.HUMAN and membership is None:
+            raise ValueError("Human tenant event has no membership")
+        return TenantContext(
+            organization=organization,
+            membership=membership,
+            actor_user=actor_user,
+            actor_kind=actor_kind,
+            correlation_id=event.correlation_id,
+        )
 
 
 def mark_retry(event: OutboxEvent, error: str, max_attempts: int = 5) -> None:
@@ -78,13 +88,16 @@ def mark_retry(event: OutboxEvent, error: str, max_attempts: int = 5) -> None:
     event.last_error = error
     event.status = OutboxStatus.DEAD_LETTER if event.attempts >= max_attempts else OutboxStatus.FAILED
     event.next_attempt_at = timezone.now() + timedelta(seconds=min(300, 2**event.attempts))
-    event.save(update_fields=["attempts", "last_error", "status", "next_attempt_at"])
+    event.save(
+        using="platform",
+        update_fields=["attempts", "last_error", "status", "next_attempt_at"],
+    )
 
 
 def claim_next_outbox_event() -> OutboxEvent | None:
-    with transaction.atomic():
+    with transaction.atomic(using="platform"):
         event = (
-            OutboxEvent.objects.select_for_update(skip_locked=True)
+            OutboxEvent.objects.using("platform").select_for_update(skip_locked=True)
             .filter(
                 status__in=[OutboxStatus.PENDING, OutboxStatus.FAILED],
                 next_attempt_at__lte=timezone.now(),
@@ -95,5 +108,5 @@ def claim_next_outbox_event() -> OutboxEvent | None:
         if event is None:
             return None
         event.status = OutboxStatus.PROCESSING
-        event.save(update_fields=["status"])
+        event.save(using="platform", update_fields=["status"])
         return event

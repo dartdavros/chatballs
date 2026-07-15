@@ -21,12 +21,23 @@ def reindex_knowledge(knowledge: Knowledge) -> list[KnowledgeFragment]:
     if not chunks:
         return []
     try:
-        embeddings = embed_texts(channel=None, texts=chunks, model=settings.HUB_AI_EMBEDDING_MODEL, purpose="knowledge_index")
+        embeddings = embed_texts(
+            organization=knowledge.organization,
+            texts=chunks,
+            model=settings.HUB_AI_EMBEDDING_MODEL,
+            purpose="knowledge_index",
+        )
         vectors = [result.vector for result in embeddings]
     except ProviderError:
         vectors = [None] * len(chunks)
     fragments = [
-        KnowledgeFragment(knowledge=knowledge, chunk_index=index, content=chunk, embedding=vector)
+        KnowledgeFragment(
+            organization=knowledge.organization,
+            knowledge=knowledge,
+            chunk_index=index,
+            content=chunk,
+            embedding=vector,
+        )
         for index, (chunk, vector) in enumerate(zip(chunks, vectors))
     ]
     return KnowledgeFragment.objects.bulk_create(fragments)

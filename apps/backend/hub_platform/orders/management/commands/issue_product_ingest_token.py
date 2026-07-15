@@ -13,6 +13,8 @@ from django.core.management.base import BaseCommand, CommandError
 from hub_platform.identity.models import Organization
 from hub_platform.orders.services import hash_ingest_token
 from hub_platform.products.models import Product
+from hub_platform.tenancy.context import TenantActorKind, TenantContext
+from hub_platform.tenancy.database import tenant_atomic
 
 
 class Command(BaseCommand):
@@ -28,11 +30,16 @@ class Command(BaseCommand):
             organization = Organization.objects.get(public_id=options["organization"])
         except (Organization.DoesNotExist, ValueError) as error:
             raise CommandError("Unknown organization public UUID") from error
-        product = Product.objects.filter(organization=organization, code=code).first()
-        if product is None:
-            raise CommandError(f"product '{code}' not found")
-        token = secrets.token_urlsafe(32)
-        product.ingest_token_hash = hash_ingest_token(token)
-        product.save(update_fields=["ingest_token_hash", "updated_at"])
+        context = TenantContext.for_resource(
+            organization,
+            actor_kind=TenantActorKind.SYSTEM,
+        )
+        with tenant_atomic(context):
+            product = Product.objects.filter(organization=organization, code=code).first()
+            if product is None:
+                raise CommandError(f"product '{code}' not found")
+            token = secrets.token_urlsafe(32)
+            product.ingest_token_hash = hash_ingest_token(token)
+            product.save(update_fields=["ingest_token_hash", "updated_at"])
         self.stdout.write(self.style.SUCCESS(f"ingest token for {code} (store it now, shown once):"))
         self.stdout.write(token)

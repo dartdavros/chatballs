@@ -80,16 +80,6 @@ def hash_credential(token: str) -> str:
     return hashlib.sha256(token.encode("utf-8")).hexdigest()
 
 
-def resolve_sales_source_by_credential(token: str) -> SalesSource | None:
-    if not token:
-        return None
-    return (
-        SalesSource.objects.select_related("product", "organization")
-        .filter(credential_hash=hash_credential(token))
-        .first()
-    )
-
-
 # --- Разбор конверта Product Sales API (SPEC §4.3) ---
 
 

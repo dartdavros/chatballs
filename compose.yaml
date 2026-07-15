@@ -20,8 +20,15 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is required}
       POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_APP_USER: ${POSTGRES_APP_USER:?POSTGRES_APP_USER is required}
+      POSTGRES_APP_PASSWORD: ${POSTGRES_APP_PASSWORD:?POSTGRES_APP_PASSWORD is required}
+      POSTGRES_PLATFORM_USER: ${POSTGRES_PLATFORM_USER:?POSTGRES_PLATFORM_USER is required}
+      POSTGRES_PLATFORM_PASSWORD: ${POSTGRES_PLATFORM_PASSWORD:?POSTGRES_PLATFORM_PASSWORD is required}
+      POSTGRES_MIGRATION_USER: ${POSTGRES_MIGRATION_USER:?POSTGRES_MIGRATION_USER is required}
+      POSTGRES_MIGRATION_PASSWORD: ${POSTGRES_MIGRATION_PASSWORD:?POSTGRES_MIGRATION_PASSWORD is required}
     volumes:
       - ${CUSTOCRM_INSTANCE_DIR:-.}/data/postgres:/var/lib/postgresql/data
+      - ./deploy/postgres/init-runtime-roles.sh:/docker-entrypoint-initdb.d/20-custocrm-runtime-roles.sh:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
@@ -49,6 +56,8 @@ services:
     env_file:
       - ${CUSTOCRM_INSTANCE_DIR:-.}/.env
     command: ["python", "manage.py", "migrate", "--noinput"]
+    environment:
+      HUB_DB_ROLE: migration
     restart: "no"
     depends_on:
       postgres:
@@ -67,8 +76,11 @@ services:
       --bind 0.0.0.0:8000
       --workers $${HUB_GUNICORN_WORKERS:-3}
       --timeout $${HUB_GUNICORN_TIMEOUT:-60}"
+    environment:
+      HUB_DB_ROLE: app
     volumes:
-      # Файловые вложения знаний (ADR-HUB-0023).
+      # Legacy source media retained for the separately approved copy/hash
+      # migration. Production writes use the required S3 backend in C04.
       - ${CUSTOCRM_INSTANCE_DIR:-.}/data/media:/app/apps/backend/media
     depends_on:
       init:
@@ -101,6 +113,8 @@ services:
       --bind 0.0.0.0:8000
       --workers $${HUB_GUNICORN_WORKERS:-3}
       --timeout $${HUB_GUNICORN_TIMEOUT:-60}"
+    environment:
+      HUB_DB_ROLE: platform
     depends_on:
       init:
         condition: service_completed_successfully
@@ -134,6 +148,10 @@ services:
       --bind 0.0.0.0:8000
       --workers $${HUB_GUNICORN_WORKERS:-2}
       --timeout $${HUB_GUNICORN_TIMEOUT:-60}"
+    # Break-glass technical surface only: schema credentials are never used by
+    # public app/platform runtimes and this service remains loopback-only.
+    environment:
+      HUB_DB_ROLE: migration
     ports:
       - "127.0.0.1:${CUSTOCRM_ADMIN_PORT:-18001}:8000"
     depends_on:
@@ -150,6 +168,8 @@ services:
     env_file:
       - ${CUSTOCRM_INSTANCE_DIR:-.}/.env
     command: ["python", "manage.py", "run_worker"]
+    environment:
+      HUB_DB_ROLE: app
     volumes:
       - ${CUSTOCRM_INSTANCE_DIR:-.}/data/media:/app/apps/backend/media
     depends_on:

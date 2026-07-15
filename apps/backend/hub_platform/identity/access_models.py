@@ -7,6 +7,7 @@ from django.db.models.functions import Lower
 
 from hub_platform.identity.capabilities import CAPABILITY_REGISTRY, ScopeType, capability_spec
 from hub_platform.identity.models import Department, Organization, OrganizationMembership
+from hub_platform.tenancy.models import TenantRelationModel
 
 
 class AccessProfile(models.Model):
@@ -40,7 +41,8 @@ class AccessProfile(models.Model):
         return f"{self.organization.slug}/{self.name}"
 
 
-class AccessProfileCapability(models.Model):
+class AccessProfileCapability(TenantRelationModel):
+    tenant_relation_fields = ("access_profile",)
     access_profile = models.ForeignKey(
         AccessProfile, on_delete=models.CASCADE, related_name="capability_links"
     )
@@ -73,11 +75,18 @@ class AccessProfileCapability(models.Model):
             raise ValidationError({"capability_code": "Protected capability cannot be assigned"})
 
     def save(self, *args, **kwargs) -> None:
+        self.validate_tenant_relations()
         self.full_clean()
         super().save(*args, **kwargs)
 
 
-class EmployeeAccessAssignment(models.Model):
+class EmployeeAccessAssignment(TenantRelationModel):
+    tenant_relation_fields = (
+        "employee",
+        "access_profile",
+        "department",
+        "assigned_by",
+    )
     employee = models.ForeignKey(
         OrganizationMembership,
         on_delete=models.PROTECT,
@@ -139,5 +148,6 @@ class EmployeeAccessAssignment(models.Model):
             raise ValidationError("Department is required only for DEPARTMENT scope")
 
     def save(self, *args, **kwargs) -> None:
+        self.validate_tenant_relations()
         self.full_clean()
         super().save(*args, **kwargs)

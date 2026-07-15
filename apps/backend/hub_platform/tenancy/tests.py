@@ -1,5 +1,6 @@
 import json
 
+from django.db import DatabaseError, IntegrityError, transaction
 from django.test import TestCase
 from rest_framework.test import APIClient as RawAPIClient
 
@@ -160,10 +161,8 @@ class TenantEventBoundaryTests(TestCase):
     def test_tenant_event_rejects_cross_organization_membership(self) -> None:
         event = self._event()
         event.organization = self.second
-        event.save(update_fields=["organization"])
-
-        with self.assertRaises(OrganizationMembership.DoesNotExist):
-            tenant_context_for_event(event)
+        with self.assertRaises(DatabaseError), transaction.atomic():
+            event.save(update_fields=["organization"])
 
     def test_tenant_event_rejects_membership_blocked_after_enqueue(self) -> None:
         event = self._event()
@@ -182,9 +181,5 @@ class TenantEventBoundaryTests(TestCase):
             )
         )
         event.organization = self.first
-        event.save(update_fields=["organization"])
-
-        with self.assertRaisesMessage(
-            ValueError, "Platform event cannot carry tenant ownership"
-        ):
-            tenant_context_for_event(event)
+        with self.assertRaises(IntegrityError), transaction.atomic():
+            event.save(update_fields=["organization"])

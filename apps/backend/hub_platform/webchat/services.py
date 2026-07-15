@@ -14,6 +14,7 @@ from hub_platform.conversations.models import (
 )
 from hub_platform.conversations.transports.base import InboundMessage
 from hub_platform.integrations.models import Integration, IntegrationProvider
+from hub_platform.tenancy.context import TenantContext
 from hub_platform.webchat.models import WebSession
 
 DEFAULT_GREETING = "Здравствуйте! Готов помочь и ответить на вопросы. Чем можем помочь?"
@@ -24,16 +25,21 @@ _STATE = {ControlMode.AI: "ai", ControlMode.HUMAN: "operator", ControlMode.PAUSE
 _ROLE = {"CONTACT": "client", "AI": "ai", "OPERATOR": "operator", "SYSTEM": "system"}
 
 
-def _hash(token: str) -> str:
+def hash_session_token(token: str) -> str:
     return hashlib.sha256(token.encode("utf-8")).hexdigest()
 
 
-def web_connection_for_channel(channel_code: str) -> Integration | None:
+def web_connection_for_channel(
+    context: TenantContext,
+    channel_code: str,
+) -> Integration | None:
     matches = list(
         Integration.objects.select_related("channel")
         .filter(
             provider=IntegrationProvider.WEB,
+            organization=context.organization,
             channel__code=channel_code,
+            channel__organization=context.organization,
             channel__is_active=True,
         )
         .order_by("id")[:2]
@@ -51,8 +57,7 @@ def _host_allowed(integration: Integration, origin: str) -> bool:
     return any(host == d or host.endswith("." + d) for d in allowed)
 
 
-def public_config(channel_code: str, origin: str) -> dict:
-    integration = web_connection_for_channel(channel_code)
+def public_config(*, context: TenantContext, integration: Integration, origin: str) -> dict:
     if integration is None or integration.channel_id is None:
         return {"available": False}
     if not _host_allowed(integration, origin):
@@ -79,22 +84,35 @@ def public_config(channel_code: str, origin: str) -> dict:
 
 
 @transaction.atomic
-def issue_session(channel_code: str) -> dict | None:
-    integration = web_connection_for_channel(channel_code)
+def issue_session(*, context: TenantContext, integration: Integration) -> dict | None:
     if integration is None or integration.channel_id is None:
         return None
     session_id = uuid.uuid4().hex
     guest_name = f"Веб-гость · {session_id[:6]}"
     contact = Contact.objects.create(organization=integration.channel.organization, name=guest_name)
     identity = ConnectionIdentity.objects.create(
-        contact=contact, connection=integration, external_user_id=session_id, display_name=guest_name
+        organization=context.organization,
+        contact=contact,
+        connection=integration,
+        external_user_id=session_id,
+        display_name=guest_name,
     )
     token = secrets.token_urlsafe(32)
-    WebSession.objects.create(token_hash=_hash(token), connection=integration, identity=identity)
+    WebSession.objects.create(
+        organization=context.organization,
+        token_hash=hash_session_token(token),
+        connection=integration,
+        identity=identity,
+    )
     return {"token": token, "sessionId": session_id}
 
 
-def resolve_session(token: str) -> WebSession | None:
+def resolve_session(
+    *,
+    context: TenantContext,
+    token: str,
+    session_id: int,
+) -> WebSession | None:
     if not token:
         return None
     return (
@@ -106,7 +124,9 @@ def resolve_session(token: str) -> WebSession | None:
             "identity__contact",
         )
         .filter(
-            token_hash=_hash(token),
+            token_hash=hash_session_token(token),
+            id=session_id,
+            organization=context.organization,
             connection__organization_id=models.F("identity__contact__organization_id"),
             connection__channel__organization_id=models.F("connection__organization_id"),
         )

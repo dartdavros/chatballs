@@ -1,32 +1,52 @@
 from rest_framework.request import Request
 
-from hub_platform.identity.models import HumanUser
+from hub_platform.identity.models import HumanUser, Organization, OrganizationMembership
 from hub_platform.identity.policy import get_effective_access
 from hub_platform.identity.sessions import revoke_user_sessions
+from hub_platform.tenancy.database import tenant_atomic
+from hub_platform.tenancy.ingress import membership_routes_for_user
 
 
 def _user_payload(user: HumanUser) -> dict[str, object]:
     memberships = []
-    active_memberships = (
-        user.memberships.filter(blocked_at__isnull=True)
-        .select_related("organization", "primary_department")
-        .order_by("organization__name", "id")
+    routes = membership_routes_for_user(user.id)
+    organizations = Organization.objects.in_bulk(
+        [route.organization_id for route in routes]
     )
-    for membership in active_memberships:
-        membership_payload = {
-            "id": membership.id,
-            "organizationPublicId": str(membership.organization.public_id),
-            "organization": membership.organization.slug,
-            "organizationName": membership.organization.name,
-            "role": membership.role,
-            "positionTitle": membership.position_title,
-            "department": (
-                membership.primary_department.code if membership.primary_department else None
-            ),
-            "totpRequired": membership.totp_required,
-        }
-        membership_payload.update(get_effective_access(membership))
-        memberships.append(membership_payload)
+    for route in routes:
+        organization = organizations.get(route.organization_id)
+        if organization is None:
+            continue
+        with tenant_atomic(organization.id):
+            membership = (
+                OrganizationMembership.objects.select_related(
+                    "organization", "primary_department"
+                )
+                .filter(
+                    id=route.resource_id,
+                    user=user,
+                    organization=organization,
+                    blocked_at__isnull=True,
+                )
+                .first()
+            )
+            if membership is None:
+                continue
+            membership_payload = {
+                "id": membership.id,
+                "organizationPublicId": str(membership.organization.public_id),
+                "organization": membership.organization.slug,
+                "organizationName": membership.organization.name,
+                "role": membership.role,
+                "positionTitle": membership.position_title,
+                "department": (
+                    membership.primary_department.code if membership.primary_department else None
+                ),
+                "totpRequired": membership.totp_required,
+            }
+            membership_payload.update(get_effective_access(membership))
+            memberships.append(membership_payload)
+    memberships.sort(key=lambda item: (str(item["organizationName"]), int(item["id"])))
     return {
         "id": user.id,
         "email": user.email,

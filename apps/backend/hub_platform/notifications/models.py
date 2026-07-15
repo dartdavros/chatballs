@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.db import models
 
+from hub_platform.tenancy.models import TenantRelationModel
+
 # Уведомления: событие создаётся один раз и адресуется аудитории; прочтение —
 # персональное (NotificationRead). Фундамент под любые типы событий, не только чат.
 
@@ -61,7 +63,8 @@ class Notification(models.Model):
         return f"notif:{self.type}/{self.audience}"
 
 
-class NotificationRead(models.Model):
+class NotificationRead(TenantRelationModel):
+    tenant_relation_fields = ("notification",)
     notification = models.ForeignKey(Notification, on_delete=models.CASCADE, related_name="reads")
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="notification_reads")
     read_at = models.DateTimeField(auto_now_add=True)
@@ -75,11 +78,13 @@ def default_push_types() -> list[str]:
     return [NotificationType.DIALOG_WAITING, NotificationType.DIALOG_NEW_MESSAGE]
 
 
-class MessengerBinding(models.Model):
+class MessengerBinding(TenantRelationModel):
     """Привязка сотрудника к сервисному боту уведомлений (TG/MAX).
 
     Создаётся при подтверждении одноразового кода из профиля; уведомления
     доставляются в external_chat_id через транспорт интеграции."""
+
+    tenant_relation_fields = ("integration",)
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="messenger_bindings")
     integration = models.ForeignKey("integrations.Integration", on_delete=models.CASCADE, related_name="messenger_bindings")
@@ -95,7 +100,8 @@ class MessengerBinding(models.Model):
         return f"binding:{self.user_id}/{self.integration_id}"
 
 
-class MessengerBindingCode(models.Model):
+class MessengerBindingCode(TenantRelationModel):
+    tenant_relation_fields = ("integration",)
     # Одноразовый код привязки (deep-link ?start=<code>); TTL ~10 минут.
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="messenger_binding_codes")
     integration = models.ForeignKey("integrations.Integration", on_delete=models.CASCADE, related_name="messenger_binding_codes")

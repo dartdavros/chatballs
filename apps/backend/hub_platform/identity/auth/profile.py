@@ -8,6 +8,7 @@ from rest_framework.views import APIView
 
 from hub_platform.identity.audit import record_audit_event
 from hub_platform.identity.auth.common import _revoke_other_user_sessions, _user_payload
+from hub_platform.tenancy.ingress import user_requires_totp
 from hub_platform.identity.models import HumanUser
 
 
@@ -88,9 +89,7 @@ class ProfileTotpDisableView(APIView):
         if not request.user.check_password(current_password):
             return Response({"detail": "Current password is invalid"}, status=400)
 
-        if request.user.memberships.filter(
-            blocked_at__isnull=True, totp_required=True
-        ).exists():
+        if user_requires_totp(request.user.id):
             return Response({"detail": "TOTP is required by an organization policy"}, status=409)
         request.user.totp_enabled = False
         request.user.totp_secret = ""

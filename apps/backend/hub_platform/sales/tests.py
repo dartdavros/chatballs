@@ -374,7 +374,11 @@ class LegacyMigrationTests(TestCase):
         from django.core.management import call_command
 
         self._order(payment_status="PAID", source="firepage", external_id="fp-dry")
-        call_command("import_legacy_orders")
+        call_command(
+            "import_legacy_orders",
+            "--organization",
+            str(self.organization.public_id),
+        )
         self.assertEqual(Sale.objects.count(), 0)
 
     def test_apply_imports_and_skips_pending(self) -> None:
@@ -383,7 +387,12 @@ class LegacyMigrationTests(TestCase):
         self._order(payment_status="PAID", source="firepage", external_id="fp-a")
         self._order(payment_status="CANCELLED")
         self._order(payment_status="PENDING")
-        call_command("import_legacy_orders", "--apply")
+        call_command(
+            "import_legacy_orders",
+            "--organization",
+            str(self.organization.public_id),
+            "--apply",
+        )
         self.assertEqual(Sale.objects.count(), 2)
         self.assertEqual(Sale.objects.filter(status=SaleStatus.CANCELLED).count(), 1)
 

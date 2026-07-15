@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.db import models
 
+from hub_platform.tenancy.models import TenantRelationModel
+
 # Минимальный домен диалогов (ADR-HUB-0001/0002/0003/0006). Состояние диалога
 # разделено на независимые оси; перехват оператором — атомарный.
 
@@ -17,7 +19,8 @@ class Contact(models.Model):
         return self.name or f"contact:{self.id}"
 
 
-class ConnectionIdentity(models.Model):
+class ConnectionIdentity(TenantRelationModel):
+    tenant_relation_fields = ("contact", "connection")
     # Устойчивая идентичность контакта внутри конкретного подключения (ADR-HUB-0006).
     contact = models.ForeignKey(Contact, on_delete=models.CASCADE, related_name="identities")
     connection = models.ForeignKey("integrations.Integration", on_delete=models.PROTECT, related_name="identities")
@@ -98,10 +101,12 @@ class Conversation(models.Model):
         return f"conv:{self.id}/{self.lifecycle}/{self.control_mode}"
 
 
-class ConversationRead(models.Model):
+class ConversationRead(TenantRelationModel):
     """Персональная отметка прочтения диалога: до какого сообщения дочитал
     сотрудник. Обновляется при открытии диалога; бейдж непрочитанных в списке
     считается относительно этой отметки."""
+
+    tenant_relation_fields = ("conversation",)
 
     conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name="reads")
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="conversation_reads")
@@ -128,7 +133,8 @@ class MessageKind(models.TextChoices):
     CONTACT = "contact", "Контакт"
 
 
-class Message(models.Model):
+class Message(TenantRelationModel):
+    tenant_relation_fields = ("conversation",)
     conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name="messages")
     author_type = models.CharField(max_length=16, choices=MessageAuthor.choices)
     author_user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+")

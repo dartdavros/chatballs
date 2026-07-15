@@ -3,6 +3,8 @@ import uuid
 from django.db import models
 from pgvector.django import VectorField
 
+from hub_platform.tenancy.models import TenantRelationModel
+
 # Один основной агент на канал обработки (ADR-HUB-0019, ADR-HUB-0023).
 DEFAULT_AI_MODEL = "anthropic/claude-sonnet-4.6"
 
@@ -28,10 +30,15 @@ class Knowledge(models.Model):
 
 
 def attachment_upload_path(instance: "KnowledgeAttachment", filename: str) -> str:
-    return f"knowledge/{instance.knowledge_id}/{instance.public_id}/{filename}"
+    organization = instance.knowledge.organization
+    return (
+        f"organizations/{organization.public_id}/knowledge/"
+        f"{instance.knowledge_id}/{instance.public_id}/{filename}"
+    )
 
 
-class KnowledgeAttachment(models.Model):
+class KnowledgeAttachment(TenantRelationModel):
+    tenant_relation_fields = ("knowledge",)
     knowledge = models.ForeignKey(Knowledge, on_delete=models.CASCADE, related_name="attachments")
     # Непредсказуемый идентификатор публичной ссылки скачивания (ADR-HUB-0023):
     # агент может отдать ссылку клиенту в мессенджер, где нет аутентификации Hub.
@@ -63,7 +70,8 @@ class KnowledgeAttachment(models.Model):
         return settings.HUB_PUBLIC_BASE_URL.rstrip("/") + path
 
 
-class KnowledgeFragment(models.Model):
+class KnowledgeFragment(TenantRelationModel):
+    tenant_relation_fields = ("knowledge",)
     # Чанк знания + его эмбеддинг (pgvector). ADR-HUB-0016. Перестраивается при
     # каждом изменении содержимого или вложений знания.
     knowledge = models.ForeignKey(Knowledge, on_delete=models.CASCADE, related_name="fragments")
@@ -84,7 +92,8 @@ class KnowledgeFragment(models.Model):
 # --- Агент канала: одна сущность, без релизов (ADR-HUB-0023) ---
 
 
-class AIAgent(models.Model):
+class AIAgent(TenantRelationModel):
+    tenant_relation_fields = ("channel",)
     channel = models.OneToOneField("channels.Channel", on_delete=models.CASCADE, related_name="ai_agent")
     name = models.CharField(max_length=255)
     is_active = models.BooleanField(default=True)
@@ -115,7 +124,8 @@ class LlmInvocationStatus(models.TextChoices):
     BLOCKED = "BLOCKED", "Заблокировано лимитом"
 
 
-class LlmInvocation(models.Model):
+class LlmInvocation(TenantRelationModel):
+    tenant_relation_fields = ("channel", "product")
     # Учёт по каналу (ADR-HUB-0019) и/или продукту, если канал продуктовый.
     channel = models.ForeignKey("channels.Channel", on_delete=models.SET_NULL, null=True, blank=True, related_name="ai_invocations")
     product = models.ForeignKey("products.Product", on_delete=models.PROTECT, related_name="ai_invocations", null=True, blank=True)

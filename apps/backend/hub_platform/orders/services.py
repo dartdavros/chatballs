@@ -74,7 +74,16 @@ def create_order(
     )
     OrderItem.objects.bulk_create(
         [
-            OrderItem(order=order, offer=offer, price=price, title=offer.name, quantity=quantity, amount_minor=amount, currency=currency)
+            OrderItem(
+                organization=organization,
+                order=order,
+                offer=offer,
+                price=price,
+                title=offer.name,
+                quantity=quantity,
+                amount_minor=amount,
+                currency=currency,
+            )
             for offer, price, quantity, amount in resolved
         ]
     )
@@ -118,12 +127,6 @@ def set_fulfillment(*, context: TenantContext, order: Order, status: str) -> Ord
 class IngestItemInput:
     offer_code: str
     quantity: int = 1
-
-
-def resolve_product_by_token(token: str) -> Product | None:
-    if not token:
-        return None
-    return Product.objects.filter(ingest_token_hash=hash_ingest_token(token)).first()
 
 
 @transaction.atomic
@@ -190,7 +193,16 @@ def ingest_order(
     )
     OrderItem.objects.bulk_create(
         [
-            OrderItem(order=order, offer=offer, price=price, title=offer.name, quantity=quantity, amount_minor=amount, currency=currency)
+            OrderItem(
+                organization=organization,
+                order=order,
+                offer=offer,
+                price=price,
+                title=offer.name,
+                quantity=quantity,
+                amount_minor=amount,
+                currency=currency,
+            )
             for offer, price, quantity, amount in resolved
         ]
     )

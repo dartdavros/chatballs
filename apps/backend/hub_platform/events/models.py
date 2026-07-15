@@ -71,6 +71,15 @@ class OutboxEvent(models.Model):
             models.Index(fields=["status", "next_attempt_at"]),
             models.Index(fields=["aggregate_type", "aggregate_id"]),
         ]
+        constraints = [
+            models.CheckConstraint(
+                condition=(
+                    models.Q(ownership=EventOwnership.TENANT, organization__isnull=False)
+                    | models.Q(ownership=EventOwnership.PLATFORM, organization__isnull=True)
+                ),
+                name="outbox_ownership_matches_organization",
+            )
+        ]
 
     def __str__(self) -> str:
         return f"{self.event_type}:{self.id}"
@@ -81,6 +90,19 @@ class InboxEvent(models.Model):
     source = models.CharField(max_length=128)
     external_event_id = models.CharField(max_length=256)
     payload_hash = models.CharField(max_length=128)
+    ownership = models.CharField(
+        max_length=16,
+        choices=EventOwnership.choices,
+        default=EventOwnership.PLATFORM,
+        db_index=True,
+    )
+    organization = models.ForeignKey(
+        "identity.Organization",
+        on_delete=models.PROTECT,
+        related_name="inbox_events",
+        null=True,
+        blank=True,
+    )
     received_at = models.DateTimeField(auto_now_add=True)
     processed_at = models.DateTimeField(null=True, blank=True)
 
@@ -89,7 +111,14 @@ class InboxEvent(models.Model):
             models.UniqueConstraint(
                 fields=["source", "external_event_id"],
                 name="uniq_inbox_source_external_event_id",
-            )
+            ),
+            models.CheckConstraint(
+                condition=(
+                    models.Q(ownership=EventOwnership.TENANT, organization__isnull=False)
+                    | models.Q(ownership=EventOwnership.PLATFORM, organization__isnull=True)
+                ),
+                name="inbox_ownership_matches_organization",
+            ),
         ]
 
     def __str__(self) -> str:

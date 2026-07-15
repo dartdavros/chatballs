@@ -1,12 +1,10 @@
 from django.core.exceptions import ValidationError
-from django.http import FileResponse, Http404
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
-from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from hub_platform.ai.models import AIAgent, Knowledge, KnowledgeAttachment
+from hub_platform.ai.models import AIAgent, Knowledge
 from hub_platform.ai.selectors import (
     agent_for_context,
     agents_for_context,
@@ -29,7 +27,6 @@ from hub_platform.ai.services import (
 )
 from hub_platform.api.permissions import HasCapability
 from hub_platform.identity.audit import record_audit_event
-from hub_platform.tenancy.context import TenantContext
 
 
 def _agent_input(body: dict[str, object], *, current: AIAgent) -> AgentInput:
@@ -356,21 +353,3 @@ class KnowledgeAttachmentDeleteView(_KnowledgeBaseView):
         delete_attachment(context=request.tenant_context, attachment=attachment)
         self._audit(request, "attachment_deleted", knowledge)
         return Response(status=204)
-
-
-class AttachmentDownloadView(APIView):
-    # Публичная ссылка (ADR-HUB-0023): уходит клиентам в мессенджеры, где нет
-    # аутентификации Hub. Защита — непредсказуемый UUID.
-    permission_classes = [AllowAny]
-    authentication_classes: list = []
-
-    def get(self, request: Request, public_id) -> FileResponse:
-        attachment = KnowledgeAttachment.objects.select_related(
-            "knowledge__organization"
-        ).filter(public_id=public_id).first()
-        if attachment is None:
-            raise Http404
-        context = TenantContext.for_resource(attachment.knowledge.organization)
-        if attachment.knowledge.organization_id != context.organization_id:
-            raise Http404
-        return FileResponse(attachment.file.open("rb"), as_attachment=True, filename=attachment.original_name)

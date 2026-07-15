@@ -99,6 +99,7 @@ def create_offer(*, context: TenantContext, product: Product, data: OfferInput) 
     if product.organization_id != context.organization_id:
         raise ValidationError({"product": "Product belongs to another organization"})
     offer = Offer(
+        organization=context.organization,
         product=product,
         code=data.code.strip().lower(),
         name=data.name.strip(),
@@ -152,6 +153,7 @@ def add_price_version(*, context: TenantContext, offer: Offer, data: PriceInput)
     same_line.filter(is_active=True).update(is_active=False, valid_until=valid_from)
     last = same_line.order_by("-version").first()
     price = Price(
+        organization=context.organization,
         offer=offer,
         version=last.version + 1 if last is not None else 1,
         amount_minor=data.amount_minor,

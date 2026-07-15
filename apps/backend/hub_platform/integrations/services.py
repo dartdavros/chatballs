@@ -122,7 +122,7 @@ _CHECKS = {
 }
 
 
-def _check_web(integration: Integration) -> tuple[bool, str, dict]:
+def _check_web(context: TenantContext, integration: Integration) -> tuple[bool, str, dict]:
     """Web-виджет обслуживается нашим же backend'ом — внешнего API нет.
     Проверяем конфигурацию: привязку к каналу и что именно это подключение
     отдаётся виджету (webchat берёт первое WEB-подключение канала)."""
@@ -130,7 +130,7 @@ def _check_web(integration: Integration) -> tuple[bool, str, dict]:
         return False, "Подключение не привязано к каналу — виджет не активен", {}
     from hub_platform.webchat.services import web_connection_for_channel
 
-    active = web_connection_for_channel(integration.channel.code)
+    active = web_connection_for_channel(context, integration.channel.code)
     if active is None or active.id != integration.id:
         return False, "Для этого канала виджет обслуживает другое WEB-подключение", {}
     return True, f"Web-виджет активен · канал «{integration.channel.name}»", {}
@@ -140,7 +140,7 @@ def test_integration(*, context: TenantContext, integration: Integration) -> Int
     if integration.organization_id != context.organization_id:
         raise ValidationError({"integration": "Integration belongs to another organization"})
     if integration.provider == IntegrationProvider.WEB:
-        ok, detail, meta = _check_web(integration)
+        ok, detail, meta = _check_web(context, integration)
     else:
         check = _CHECKS.get(integration.provider)
         if check is None:

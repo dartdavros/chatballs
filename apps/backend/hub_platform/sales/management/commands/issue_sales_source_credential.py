@@ -13,6 +13,8 @@ from hub_platform.identity.models import Organization
 from hub_platform.products.models import Product
 from hub_platform.sales.models import Environment, SalesSource, SalesSourceType
 from hub_platform.sales.services import issue_sales_source_credential
+from hub_platform.tenancy.context import TenantActorKind, TenantContext
+from hub_platform.tenancy.database import tenant_atomic
 
 
 class Command(BaseCommand):
@@ -30,19 +32,24 @@ class Command(BaseCommand):
             organization = Organization.objects.get(public_id=options["organization"])
         except (Organization.DoesNotExist, ValueError) as error:
             raise CommandError("Unknown organization public UUID") from error
-        product = Product.objects.filter(
-            organization=organization, code=code
-        ).select_related("organization").first()
-        if product is None:
-            raise CommandError(f"product '{code}' not found")
-
-        source, created = SalesSource.objects.get_or_create(
-            organization=product.organization,
-            product=product,
-            code=str(options["code"]),
-            defaults={"type": SalesSourceType.PRODUCT_API, "environment": str(options["environment"])},
+        context = TenantContext.for_resource(
+            organization,
+            actor_kind=TenantActorKind.SYSTEM,
         )
-        raw = issue_sales_source_credential(source=source)
+        with tenant_atomic(context):
+            product = Product.objects.filter(
+                organization=organization, code=code
+            ).select_related("organization").first()
+            if product is None:
+                raise CommandError(f"product '{code}' not found")
+
+            source, created = SalesSource.objects.get_or_create(
+                organization=product.organization,
+                product=product,
+                code=str(options["code"]),
+                defaults={"type": SalesSourceType.PRODUCT_API, "environment": str(options["environment"])},
+            )
+            raw = issue_sales_source_credential(source=source)
         verb = "created" if created else "rotated"
         self.stdout.write(self.style.SUCCESS(f"Product Sales API source {verb} for {code} ({source.environment}); key (shown once):"))
         self.stdout.write(raw)

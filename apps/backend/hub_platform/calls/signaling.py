@@ -153,6 +153,7 @@ def record_metric(context: TenantContext, call_id, side: str, content: dict) -> 
     """
     _call(context, call_id)
     record_call_metric(
+        context=context,
         call_session_id=call_id,
         side=side,
         local_candidate_type=content.get("localCandidateType"),

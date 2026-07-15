@@ -13,6 +13,7 @@ from hub_platform.events.services import claim_next_outbox_event, mark_retry
 from hub_platform.identity.models import Organization
 from hub_platform.notifications.binding import poll_notifier_bots
 from hub_platform.tenancy.context import TenantActorKind, TenantContext
+from hub_platform.tenancy.database import tenant_atomic
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +45,10 @@ class Command(BaseCommand):
                     dispatch(event)
                     event.status = OutboxStatus.PROCESSED
                     event.processed_at = timezone.now()
-                    event.save(update_fields=["status", "processed_at"])
+                    event.save(
+                        using="platform",
+                        update_fields=["status", "processed_at"],
+                    )
                 except Exception as exc:  # pragma: no cover
                     logger.exception("Outbox event failed: %s", event.id)
                     mark_retry(event, str(exc))
@@ -55,26 +59,30 @@ class Command(BaseCommand):
                 last_poll = now
                 try:
                     for context in self._tenant_contexts():
-                        poll_all_messengers(context)
+                        with tenant_atomic(context):
+                            poll_all_messengers(context)
                 except Exception:  # pragma: no cover
                     logger.exception("Messenger polling cycle failed")
                 try:
                     for context in self._tenant_contexts():
-                        poll_notifier_bots(context)
+                        with tenant_atomic(context):
+                            poll_notifier_bots(context)
                 except Exception:  # pragma: no cover
                     logger.exception("Notifier polling cycle failed")
             if now - last_call_sweep >= CALL_SWEEP_INTERVAL:
                 last_call_sweep = now
                 try:
                     for context in self._tenant_contexts():
-                        expire_stale_calls(context)
+                        with tenant_atomic(context):
+                            expire_stale_calls(context)
                 except Exception:  # pragma: no cover
                     logger.exception("Call sweep cycle failed")
             if now - last_maintenance >= MAINTENANCE_INTERVAL:
                 last_maintenance = now
                 try:
                     for context in self._tenant_contexts():
-                        close_stale_conversations(context)
+                        with tenant_atomic(context):
+                            close_stale_conversations(context)
                 except Exception:  # pragma: no cover
                     logger.exception("Maintenance cycle failed")
             time.sleep(1)

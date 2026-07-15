@@ -3,6 +3,8 @@ import uuid
 from django.conf import settings
 from django.db import models
 
+from hub_platform.tenancy.models import TenantRelationModel
+
 
 class CallStatus(models.TextChoices):
     REQUESTED = "REQUESTED", "Запрошен"
@@ -115,7 +117,8 @@ class CallSession(models.Model):
         return f"call:{self.id}/{self.status}"
 
 
-class CallInvite(models.Model):
+class CallInvite(TenantRelationModel):
+    tenant_relation_fields = ("call_session", "connection_identity")
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     call_session = models.OneToOneField(CallSession, on_delete=models.CASCADE, related_name="invite")
     connection_identity = models.ForeignKey(
@@ -138,7 +141,8 @@ class CallInvite(models.Model):
         return f"invite:{self.id}/{self.delivery_status}"
 
 
-class CallParticipant(models.Model):
+class CallParticipant(TenantRelationModel):
+    tenant_relation_fields = ("call_session", "connection_identity")
     call_session = models.ForeignKey(CallSession, on_delete=models.CASCADE, related_name="participants")
     side = models.CharField(max_length=16, choices=ParticipantSide.choices)
     user = models.ForeignKey(
@@ -179,7 +183,7 @@ class CallParticipant(models.Model):
         return f"participant:{self.call_session_id}/{self.side}"
 
 
-class CallMetric(models.Model):
+class CallMetric(TenantRelationModel):
     """Технические метрики соединения без медиаконтента (SPEC-HUB-0013 §13).
 
     Хранится только КАТЕГОРИЯ ICE-кандидата (host/srflx/prflx/relay) и RTT, но
@@ -187,6 +191,8 @@ class CallMetric(models.Model):
     долю direct/relay звонков (E15) и подтверждать TURN fallback, не раскрывая
     сетевые адреса участников.
     """
+
+    tenant_relation_fields = ("call_session",)
 
     call_session = models.ForeignKey(CallSession, on_delete=models.CASCADE, related_name="metrics")
     side = models.CharField(max_length=16, choices=ParticipantSide.choices)

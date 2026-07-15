@@ -81,6 +81,13 @@ def mark_read(*, context, ids: list[int] | None = None, all_unread: bool = False
     queryset = unread_for(context)
     if not all_unread:
         queryset = queryset.filter(id__in=ids or [])
-    rows = [NotificationRead(notification=n, user=context.actor_user) for n in queryset]
+    rows = [
+        NotificationRead(
+            organization=context.organization,
+            notification=notification,
+            user=context.actor_user,
+        )
+        for notification in queryset
+    ]
     NotificationRead.objects.bulk_create(rows, ignore_conflicts=True)
     return len(rows)

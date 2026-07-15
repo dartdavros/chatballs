@@ -1,5 +1,7 @@
 from django.db import models
 
+from hub_platform.tenancy.models import TenantRelationModel
+
 # Коммерческий заказ (ADR-HUB-0018): каталог и факт продажи живут в Хабе,
 # само исполнение (выдача доступа) — на стороне бэкенда продукта. Позиции
 # хранят снимок offer/цены, чтобы запись не «плыла» при изменении каталога.
@@ -55,7 +57,8 @@ class Order(models.Model):
         return f"{self.code}/{self.payment_status}"
 
 
-class OrderItem(models.Model):
+class OrderItem(TenantRelationModel):
+    tenant_relation_fields = ("order", "offer", "price")
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
     offer = models.ForeignKey("products.Offer", on_delete=models.PROTECT, related_name="order_items")
     price = models.ForeignKey("products.Price", on_delete=models.PROTECT, null=True, blank=True, related_name="order_items")
