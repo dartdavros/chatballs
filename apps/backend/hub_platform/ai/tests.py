@@ -5,7 +5,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from hub_platform.testing import TenantAPIClient as APIClient, system_tenant_context
 
-from hub_platform.ai.models import AIAgent, Knowledge, KnowledgeFragment
+from hub_platform.ai.models import AIAgent, AIAgentStatus, Knowledge, KnowledgeFragment
 from hub_platform.channels.models import Channel
 from hub_platform.identity.bootstrap import bootstrap_edevs_owner
 from hub_platform.identity.models import EmployeeRole, HumanUser, Organization, OrganizationMembership
@@ -18,7 +18,12 @@ def make_channel_with_agent(organization, *, code, name, product=None, model="op
     """Канал обработки + его агент (ADR-HUB-0019/0023). Bootstrap не сидит
     каналы/агентов — в проде это делает seed_channels, в тестах — этот helper."""
     channel = Channel.objects.create(organization=organization, code=code, name=name, product=product)
-    agent = AIAgent.objects.create(channel=channel, name=f"{name} Agent", model=model, is_active=True)
+    agent = AIAgent.objects.create(
+        channel=channel,
+        name=f"{name} Agent",
+        model=model,
+        status=AIAgentStatus.ACTIVE,
+    )
     return channel, agent
 
 
@@ -59,6 +64,9 @@ class AIAgentApiTests(TestCase):
         bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
         self.organization = Organization.objects.get(slug="edevs")
         seed_sales_channels(self.organization)
+        from hub_platform.subscriptions.testing import create_test_subscription
+
+        create_test_subscription(self.organization, quantity=2)
         self.client = APIClient()
         self.client.login(username="owner@edevs.tech", password="temporary-password")
 
@@ -631,8 +639,8 @@ class AgentRuntimeTests(TestCase):
         from hub_platform.ai.provider.base import ProviderError
         from hub_platform.channels.runtime import run_channel_turn
 
-        self.agent.is_active = False
-        self.agent.save(update_fields=["is_active"])
+        self.agent.status = AIAgentStatus.DISABLED
+        self.agent.save(update_fields=["status"])
         with self.assertRaises(ProviderError):
             run_channel_turn(channel=self.channel, message="hi")
 

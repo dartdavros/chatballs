@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "hub_platform.identity",
     "hub_platform.tenancy",
+    "hub_platform.subscriptions",
     "hub_platform.products",
     "hub_platform.ai",
     "hub_platform.integrations",

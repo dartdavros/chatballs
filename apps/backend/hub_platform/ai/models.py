@@ -9,6 +9,13 @@ from hub_platform.tenancy.models import TenantRelationModel
 DEFAULT_AI_MODEL = "anthropic/claude-sonnet-4.6"
 
 
+class AIAgentStatus(models.TextChoices):
+    DRAFT = "DRAFT", "Draft"
+    ACTIVE = "ACTIVE", "Active"
+    DISABLED = "DISABLED", "Disabled"
+    ARCHIVED = "ARCHIVED", "Archived"
+
+
 # --- Знания: плоская библиотека организации с вложениями (ADR-HUB-0023) ---
 
 
@@ -96,7 +103,12 @@ class AIAgent(TenantRelationModel):
     tenant_relation_fields = ("channel",)
     channel = models.OneToOneField("channels.Channel", on_delete=models.CASCADE, related_name="ai_agent")
     name = models.CharField(max_length=255)
-    is_active = models.BooleanField(default=True)
+    status = models.CharField(
+        max_length=16,
+        choices=AIAgentStatus.choices,
+        default=AIAgentStatus.DRAFT,
+    )
+    lifecycle_version = models.PositiveIntegerField(default=0)
     model = models.CharField(max_length=128, default=DEFAULT_AI_MODEL)
     model_params = models.JSONField(default=dict, blank=True)
     # Инструкции из трёх частей; системный промпт собирается в этом порядке.
@@ -113,6 +125,14 @@ class AIAgent(TenantRelationModel):
 
     def __str__(self) -> str:
         return f"{self.channel.code}:agent"
+
+    @property
+    def is_active(self) -> bool:
+        return self.status == AIAgentStatus.ACTIVE
+
+    @is_active.setter
+    def is_active(self, value: bool) -> None:
+        self.status = AIAgentStatus.ACTIVE if value else AIAgentStatus.DISABLED
 
 
 # --- LLM usage accounting (tokens, cost) ---

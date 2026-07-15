@@ -44,6 +44,7 @@ def agent_payload(agent: AIAgent) -> dict[str, object]:
         "channel": _channel_ref(agent.channel),
         "name": agent.name,
         "isActive": agent.is_active,
+        "status": agent.status,
         "model": agent.model,
         "modelParams": agent.model_params,
         "allowedTools": agent.allowed_tools,

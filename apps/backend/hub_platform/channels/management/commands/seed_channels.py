@@ -1,7 +1,7 @@
 """Seed processing channels (ADR-HUB-0019/0023). Idempotent.
 
 Creates the company site channel "edevs" (no product) plus product channels for
-FoxRay and FirePage, each with an active AI agent (persona/tone/instructions),
+FoxRay and FirePage, each with a draft AI agent (persona/tone/instructions),
 bound to the configured OpenRouter provider integration if present.
 """
 
@@ -10,7 +10,7 @@ from __future__ import annotations
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from hub_platform.ai.models import DEFAULT_AI_MODEL, AIAgent
+from hub_platform.ai.models import DEFAULT_AI_MODEL, AIAgent, AIAgentStatus
 from hub_platform.channels.models import Channel
 from hub_platform.identity.models import Department, Organization
 from hub_platform.integrations.models import Integration, IntegrationProvider
@@ -94,7 +94,7 @@ class Command(BaseCommand):
                     organization=organization,
                     channel=channel,
                     name=f"{name} Agent",
-                    is_active=True,
+                    status=AIAgentStatus.DRAFT,
                     model=DEFAULT_AI_MODEL,
                     persona=persona,
                     tone=TONE,

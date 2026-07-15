@@ -6,7 +6,7 @@ from django.test import TestCase
 from hub_platform.testing import TenantAPIClient as APIClient
 
 from hub_platform.ai.limits import LimitExceeded
-from hub_platform.ai.models import AIAgent
+from hub_platform.ai.models import AIAgent, AIAgentStatus
 from hub_platform.channels.models import Channel
 from hub_platform.conversations.models import (
     ConnectionIdentity,
@@ -46,7 +46,12 @@ class IngestLimitHandlingTests(TestCase):
         bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
         self.organization = Organization.objects.get(slug="edevs")
         self.channel = Channel.objects.create(organization=self.organization, code="foxray-sales", name="FoxRay — продажи")
-        AIAgent.objects.create(channel=self.channel, name="FoxRay Agent", model="openai/gpt-4o-mini")
+        AIAgent.objects.create(
+            channel=self.channel,
+            name="FoxRay Agent",
+            model="openai/gpt-4o-mini",
+            status=AIAgentStatus.ACTIVE,
+        )
         self.integration = _messenger_connection(self.channel)
         self.inbound = InboundMessage(
             external_id="ext-1", user_id="user-1", chat_id="chat-1", text="Здравствуйте", display_name="Гость"
@@ -168,7 +173,12 @@ class ContactShareIngestTests(TestCase):
         bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
         self.organization = Organization.objects.get(slug="edevs")
         self.channel = Channel.objects.create(organization=self.organization, code="foxray-sales", name="FoxRay — продажи")
-        AIAgent.objects.create(channel=self.channel, name="FoxRay Agent", model="openai/gpt-4o-mini")
+        AIAgent.objects.create(
+            channel=self.channel,
+            name="FoxRay Agent",
+            model="openai/gpt-4o-mini",
+            status=AIAgentStatus.ACTIVE,
+        )
         self.integration = _messenger_connection(self.channel)
 
     def test_username_saved_on_identity(self) -> None:
@@ -334,7 +344,12 @@ class WebchatContactTests(TestCase):
         bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
         self.organization = Organization.objects.get(slug="edevs")
         self.channel = Channel.objects.create(organization=self.organization, code="edevs-web", name="Веб-чат")
-        AIAgent.objects.create(channel=self.channel, name="Web Agent", model="openai/gpt-4o-mini")
+        AIAgent.objects.create(
+            channel=self.channel,
+            name="Web Agent",
+            model="openai/gpt-4o-mini",
+            status=AIAgentStatus.ACTIVE,
+        )
         Integration.objects.create(
             organization=self.organization, kind=IntegrationKind.MESSENGER,
             provider=IntegrationProvider.WEB, name="web-widget", channel=self.channel,

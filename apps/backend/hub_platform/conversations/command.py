@@ -56,7 +56,7 @@ def command_center_overview(context: TenantContext, period: str) -> dict:
         .annotate(c=Count("id"))
     )
     agents_by_dept = dict(
-        AIAgent.objects.filter(channel__organization_id=organization_id, is_active=True, channel__department__isnull=False)
+        AIAgent.objects.filter(channel__organization_id=organization_id, status="ACTIVE", channel__department__isnull=False)
         .values_list("channel__department_id")
         .annotate(c=Count("id"))
     )

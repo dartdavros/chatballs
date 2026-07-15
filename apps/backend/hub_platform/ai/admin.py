@@ -11,8 +11,8 @@ class KnowledgeAttachmentInline(admin.TabularInline):
 
 @admin.register(AIAgent)
 class AIAgentAdmin(admin.ModelAdmin):
-    list_display = ("name", "channel", "model", "is_active")
-    list_filter = ("is_active",)
+    list_display = ("name", "channel", "model", "status")
+    list_filter = ("status",)
     search_fields = ("name", "channel__code")
     filter_horizontal = ("knowledge_items",)
 

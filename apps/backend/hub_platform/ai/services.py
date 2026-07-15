@@ -6,7 +6,7 @@ from django.db import transaction
 
 from hub_platform.ai.extraction import extract_text
 from hub_platform.ai.indexing import reindex_knowledge
-from hub_platform.ai.models import AIAgent, Knowledge, KnowledgeAttachment
+from hub_platform.ai.models import AIAgent, AIAgentStatus, Knowledge, KnowledgeAttachment
 from hub_platform.channels.models import Channel
 from hub_platform.tenancy.context import TenantContext
 from hub_platform.tenancy.storage import adjust_storage_usage
@@ -73,7 +73,7 @@ def create_agent(*, context: TenantContext, data: AgentCreateInput) -> AIAgent:
     agent = AIAgent.objects.create(
         channel=channel,
         name=f"{channel.name} Agent",
-        is_active=False,
+        status=AIAgentStatus.DRAFT,
         model=data.model,
         persona=data.persona,
         tone=data.tone,
@@ -106,9 +106,13 @@ def update_agent(*, context: TenantContext, agent: AIAgent, data: AgentInput) ->
 def set_agent_active(*, context: TenantContext, agent: AIAgent, is_active: bool) -> AIAgent:
     if agent.channel.organization_id != context.organization_id:
         raise ValidationError({"agent": "Agent belongs to another organization"})
-    agent.is_active = is_active
-    agent.save(update_fields=["is_active", "updated_at"])
-    return agent
+    from hub_platform.subscriptions.agent_slots import set_agent_status
+
+    return set_agent_status(
+        context=context,
+        agent_id=agent.id,
+        target_status=AIAgentStatus.ACTIVE if is_active else AIAgentStatus.DISABLED,
+    )
 
 
 # --- Знания (ADR-HUB-0023) ---

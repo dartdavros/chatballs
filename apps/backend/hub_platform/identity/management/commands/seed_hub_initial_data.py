@@ -11,7 +11,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from hub_platform.ai.content_importer import import_ai_content
-from hub_platform.ai.models import DEFAULT_AI_MODEL, AIAgent
+from hub_platform.ai.models import DEFAULT_AI_MODEL, AIAgent, AIAgentStatus
 from hub_platform.channels.models import Channel
 from hub_platform.identity.audit import record_audit_event
 from hub_platform.identity.models import (
@@ -168,7 +168,7 @@ def _seed_channels(*, context: TenantContext) -> tuple[int, int]:
             AIAgent.objects.create(
                 channel=channel,
                 name=f"{spec['name']} Agent",
-                is_active=True,
+                status=AIAgentStatus.DRAFT,
                 model=DEFAULT_AI_MODEL,
                 persona=spec["persona"],
                 tone=TONE,
