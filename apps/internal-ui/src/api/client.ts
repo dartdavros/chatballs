@@ -1,6 +1,10 @@
 const configuredApiBase = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/+$/, "");
 let activeOrganizationPublicId: string | null = null;
 
+// Имя CSRF-cookie должно совпадать с backend CSRF_COOKIE_NAME (settings_app):
+// production (SESSION_COOKIE_SECURE) → "__Host-custocrm-app-csrf".
+const CSRF_COOKIE_NAME = "__Host-custocrm-app-csrf";
+
 const tenantNamespaces = [
   "access-profiles",
   "ai",
@@ -62,7 +66,7 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   headers.set("Accept", "application/json");
   if (method !== "GET") {
     headers.set("Content-Type", "application/json");
-    headers.set("X-CSRFToken", getCookie("csrftoken"));
+    headers.set("X-CSRFToken", getCookie(CSRF_COOKIE_NAME));
   }
   const response = await fetch(resolveApiUrl(path), {
     ...init,
@@ -79,7 +83,7 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
 
 // Multipart-загрузка (вложения знаний): Content-Type выставляет браузер (boundary).
 export async function apiUpload<T>(path: string, form: FormData): Promise<T> {
-  const headers = new Headers({ Accept: "application/json", "X-CSRFToken": getCookie("csrftoken") });
+  const headers = new Headers({ Accept: "application/json", "X-CSRFToken": getCookie(CSRF_COOKIE_NAME) });
   const response = await fetch(resolveApiUrl(path), { method: "POST", body: form, credentials: "include", headers });
   if (!response.ok) {
     const payload = await response.json().catch(() => ({ detail: "Ошибка запроса" }));
