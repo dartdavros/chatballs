@@ -16,9 +16,16 @@ COPY content /app/content
 
 # collectstatic в образе (ADR-HUB-0028): STATIC_ROOT испечён, runtime-шаг не нужен.
 # Build-time secret нужен только чтобы settings загрузились в production-режиме;
-# collectstatic не обращается к БД/Redis. whitenoise раздаёт static в runtime.
+# collectstatic не обращается к БД/Redis/S3. whitenoise раздаёт static в runtime.
+# Build-time dummy values satisfy C04 runtime guards (distinct DB users in
+# settings_database, S3 bucket in settings_storage) that only matter at runtime;
+# collectstatic touches neither. Runtime values come from instance .env.
 RUN cd apps/backend && HUB_SECRET_KEY=collectstatic-build HUB_DEBUG=false HUB_ENV=production \
     CUSTOCRM_APP_ALLOWED_HOSTS=collectstatic.invalid \
+    POSTGRES_APP_USER=build-app \
+    POSTGRES_PLATFORM_USER=build-platform \
+    POSTGRES_MIGRATION_USER=build-migration \
+    HUB_S3_BUCKET=build-placeholder \
     python manage.py collectstatic --noinput
 
 RUN chown -R hub:hub /app
