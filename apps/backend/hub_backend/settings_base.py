@@ -205,6 +205,11 @@ HUB_CALL_ACCESS_TTL_SECONDS = int(os.environ.get("HUB_CALL_ACCESS_TTL_SECONDS", 
 HUB_CALL_CONNECT_GRACE_SECONDS = int(os.environ.get("HUB_CALL_CONNECT_GRACE_SECONDS", str(2 * 60)))
 # Grace period восстановления активного звонка после обрыва участника.
 HUB_CALL_RECONNECT_GRACE_SECONDS = int(os.environ.get("HUB_CALL_RECONNECT_GRACE_SECONDS", str(60)))
+# C07 concurrent quota: lease TTL for a p2p-call slot reservation. A crashed
+# session is released by the reservation sweep once the lease lapses.
+HUB_CONCURRENT_CALL_LEASE_SECONDS = int(
+    os.environ.get("HUB_CONCURRENT_CALL_LEASE_SECONDS", str(2 * 60 * 60))
+)
 if (
     HUB_CALL_INVITE_TTL_SECONDS <= 0
     or HUB_CALL_ACCESS_TTL_SECONDS <= 0

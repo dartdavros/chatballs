@@ -7,6 +7,8 @@ from django.utils import timezone
 
 from hub_platform.identity.models import Department, Organization
 from hub_platform.products.models import Offer, Price, Product, ProductDepartment, ProductStatus
+from hub_platform.subscriptions.keys import QuotaKey
+from hub_platform.subscriptions.usage_service import record_usage
 from hub_platform.tenancy.context import TenantContext
 
 
@@ -39,6 +41,15 @@ def create_product(*, context: TenantContext, data: ProductInput) -> Product:
     )
     product.full_clean()
     product.save()
+    record_usage(
+        context=context,
+        quota_key=QuotaKey.PRODUCTS,
+        quantity=1,
+        idempotency_key=f"product:{product.id}",
+        source="product.created",
+        aggregate_type="Product",
+        aggregate_id=str(product.id),
+    )
     for department in _departments(organization, data.department_ids):
         ProductDepartment.objects.create(product=product, department=department)
     return product

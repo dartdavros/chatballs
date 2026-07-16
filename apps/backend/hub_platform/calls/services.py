@@ -14,7 +14,10 @@ from hub_platform.calls.errors import (
     CallTokenError,
 )
 from hub_platform.calls.lifecycle import transition_call
+from hub_platform.calls.metrics import record_call_metric
 from hub_platform.calls.models import (
+    TERMINAL_CALL_STATUSES,
+    UNFINISHED_CALL_STATUSES,
     CallEndedBy,
     CallInvite,
     CallParticipant,
@@ -22,10 +25,7 @@ from hub_platform.calls.models import (
     CallStatus,
     InviteDeliveryStatus,
     ParticipantSide,
-    TERMINAL_CALL_STATUSES,
-    UNFINISHED_CALL_STATUSES,
 )
-from hub_platform.calls.metrics import record_call_metric
 from hub_platform.calls.permissions import ensure_call_access, ensure_conversation_call_access
 from hub_platform.calls.public_access import (
     ResolvedInvite,
@@ -42,8 +42,8 @@ from hub_platform.calls.tokens import (
 )
 from hub_platform.conversations.models import (
     ConnectionIdentity,
-    Conversation,
     ControlMode,
+    Conversation,
     LifecycleState,
     Message,
     MessageAuthor,
@@ -51,6 +51,8 @@ from hub_platform.conversations.models import (
 from hub_platform.conversations.services import ClaimError, claim_locked_conversation
 from hub_platform.events.services import DomainEvent, enqueue_event
 from hub_platform.integrations.models import IntegrationProvider
+from hub_platform.subscriptions.keys import QuotaKey
+from hub_platform.subscriptions.reservation_service import reserve_usage
 from hub_platform.tenancy.context import TenantContext
 
 __all__ = (
@@ -164,6 +166,18 @@ def create_call_request(*, context: TenantContext, conversation_id: int) -> Crea
                 connection_identity=identity,
             ),
         ]
+    )
+    # C07 concurrent quota: reserve a p2p-call slot for the lifetime of the
+    # session. Released on terminal status (calls/lifecycle.transition_call) or
+    # reaped by the reservation sweep if the lease lapses.
+    reserve_usage(
+        context=context,
+        quota_key=QuotaKey.CONCURRENT_P2P_CALLS,
+        idempotency_key=f"p2p:{call.id}",
+        lease_seconds=settings.HUB_CONCURRENT_CALL_LEASE_SECONDS,
+        source="calls.session_created",
+        aggregate_type="CallSession",
+        aggregate_id=str(call.id),
     )
     initiator_label = getattr(initiator, "full_name", "") or initiator.email
     Message.objects.create(

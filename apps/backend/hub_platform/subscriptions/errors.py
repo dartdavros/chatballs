@@ -29,12 +29,14 @@ class QuotaExceeded(SubscriptionDomainError):
         used: int,
         requested: int,
         period_ends_at=None,
+        mode: str = "HARD",
     ) -> None:
         self.resource = resource
         self.limit = limit
         self.used = used
         self.requested = requested
         self.period_ends_at = period_ends_at
+        self.mode = mode
         super().__init__(f"Quota exceeded: {resource}")
 
 

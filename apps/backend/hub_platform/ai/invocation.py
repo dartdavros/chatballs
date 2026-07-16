@@ -3,6 +3,7 @@ import time
 from django.conf import settings
 
 from hub_platform.ai import limits, pricing
+from hub_platform.ai.credits import assert_managed_ai_entitlement, consume_invocation_credits
 from hub_platform.ai.models import LlmInvocation, LlmInvocationStatus
 from hub_platform.ai.pii import redact
 from hub_platform.ai.provider.base import ChatMessage, ChatResult, EmbeddingResult, ProviderError
@@ -15,6 +16,10 @@ _breaker = CircuitBreaker()
 def invoke_chat(*, channel, messages: list[ChatMessage], purpose: str, model: str | None = None, params: dict | None = None, used_fragment_ids: list | None = None) -> ChatResult:
     agent = channel.ai_agent
     model = model or agent.model
+
+    # C07: managed_ai entitlement gates platform-managed LLM usage. BYOK paths
+    # (track B) will bypass this when the org supplies its own credentials.
+    assert_managed_ai_entitlement(channel=channel)
 
     try:
         limits.assert_within_limits(channel, agent)
@@ -45,7 +50,7 @@ def invoke_chat(*, channel, messages: list[ChatMessage], purpose: str, model: st
         )
         raise
 
-    LlmInvocation.objects.create(
+    invocation = LlmInvocation.objects.create(
         organization=channel.organization,
         channel=channel, product=channel.product, purpose=purpose, operation="chat", model=result.model,
         prompt_tokens=result.prompt_tokens, completion_tokens=result.completion_tokens, total_tokens=result.total_tokens,
@@ -53,6 +58,7 @@ def invoke_chat(*, channel, messages: list[ChatMessage], purpose: str, model: st
         latency_ms=int((time.monotonic() - started) * 1000), status=LlmInvocationStatus.SUCCESS,
         used_fragment_ids=used_fragment_ids or [],
     )
+    consume_invocation_credits(channel=channel, invocation=invocation)
     return result
 
 

@@ -11,6 +11,9 @@ from hub_platform.sales.services import (
     hash_credential,
     record_product_sales_event,
 )
+from hub_platform.subscriptions.errors import EntitlementRequired
+from hub_platform.subscriptions.keys import EntitlementKey
+from hub_platform.subscriptions.policy import require_entitlement
 from hub_platform.tenancy.context import TenantContext
 from hub_platform.tenancy.database import tenant_atomic
 from hub_platform.tenancy.ingress import sales_source_route
@@ -58,6 +61,14 @@ class ProductSalesEventView(APIView):
             ).first()
             if source is None:
                 return self._invalid_credential()
+            # C07: product_sales_api entitlement gates the inbound public API.
+            try:
+                require_entitlement(context, EntitlementKey.PRODUCT_SALES_API)
+            except EntitlementRequired:
+                return Response(
+                    {"detail": "Product Sales API is not enabled for this organization"},
+                    status=403,
+                )
             return self._post_for_source(request, context=context, source=source)
 
     def _post_for_source(

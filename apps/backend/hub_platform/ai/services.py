@@ -9,7 +9,7 @@ from hub_platform.ai.indexing import reindex_knowledge
 from hub_platform.ai.models import AIAgent, AIAgentStatus, Knowledge, KnowledgeAttachment
 from hub_platform.channels.models import Channel
 from hub_platform.tenancy.context import TenantContext
-from hub_platform.tenancy.storage import adjust_storage_usage
+from hub_platform.tenancy.storage import adjust_storage_usage, assert_storage_quota
 
 
 @dataclass(frozen=True)
@@ -185,13 +185,16 @@ def add_attachment(
         raise ValidationError({"file": "File is too large (max 25 MB)"})
     # Повторная загрузка с тем же именем заменяет файл (ADR-HUB-0023: без версий).
     existing = knowledge.attachments.filter(original_name=original_name).first()
+    existing_size = existing.size if existing is not None else 0
+    data = upload.read()
+    # C07 storage gate: block the write if the net delta (new - replaced) would
+    # exceed the storage_bytes quota. Reads are never gated.
+    assert_storage_quota(context=context, delta_bytes=len(data) - existing_size)
     if existing is not None:
-        existing_size = existing.size
         existing.file.delete(save=False)
         existing.delete()
         if existing_size:
             adjust_storage_usage(context=context, delta_bytes=-existing_size)
-    data = upload.read()
     content_type = upload.content_type or ""
     attachment = KnowledgeAttachment(
         organization=context.organization,

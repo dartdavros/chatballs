@@ -6,7 +6,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from hub_platform.api.permissions import HasCapability
+from hub_platform.api.permissions import HasCapability, HasEntitlement
 from hub_platform.conversations.models import Contact, Conversation
 from hub_platform.identity.audit import record_audit_event
 from hub_platform.identity.policy import accessible_department_ids, require_capability
@@ -37,7 +37,8 @@ class _Base(APIView):
 
 
 class SaleListCreateView(_Base):
-    permission_classes = [HasCapability]
+    permission_classes = [HasEntitlement, HasCapability]
+    required_entitlement = "sales_department"
     required_capabilities = {"GET": "sales.view", "POST": "sales.operate"}
 
     def get(self, request: Request) -> Response:
@@ -104,7 +105,8 @@ class SaleListCreateView(_Base):
 
 
 class SaleDetailView(_Base):
-    permission_classes = [HasCapability]
+    permission_classes = [HasEntitlement, HasCapability]
+    required_entitlement = "sales_department"
     required_capability = "sales.view"
 
     def get(self, request: Request, sale_id: int) -> Response:
@@ -124,7 +126,8 @@ class SaleActionView(_Base):
     Физическое удаление продажи запрещено — ошибка исправляется новым событием.
     """
 
-    permission_classes = [HasCapability]
+    permission_classes = [HasEntitlement, HasCapability]
+    required_entitlement = "sales_department"
     required_capability = "sales.correct"
 
     _ACTIONS = {
@@ -182,7 +185,8 @@ class SaleActionView(_Base):
 class AttributionTokenView(_Base):
     """Выпуск непрозрачного attribution token для ссылки покупки из диалога (SPEC §6.1)."""
 
-    permission_classes = [HasCapability]
+    permission_classes = [HasEntitlement, HasCapability]
+    required_entitlement = "sales_department"
     required_capability = "sales.operate"
 
     def post(self, request: Request) -> Response:
@@ -225,7 +229,8 @@ class AttributionTokenView(_Base):
 
 
 class SalesAnalyticsView(_Base):
-    permission_classes = [HasCapability]
+    permission_classes = [HasEntitlement, HasCapability]
+    required_entitlement = "sales_department"
     required_capability = "sales.view"
     require_organization_scope = True
 

@@ -16,22 +16,25 @@ from hub_platform.ai.limits import LimitExceeded
 from hub_platform.ai.provider.base import ProviderError
 from hub_platform.ai.runtime import HANDOFF_TOKEN
 from hub_platform.channels.runtime import run_channel_turn
+from hub_platform.conversations import transports
 from hub_platform.conversations.models import (
     ConnectionIdentity,
     Contact,
-    Conversation,
     ControlMode,
+    Conversation,
     ExpectedResponder,
     LifecycleState,
     Message,
     MessageAuthor,
     MessageKind,
 )
-from hub_platform.conversations import transports
 from hub_platform.conversations.transports.base import InboundMessage
 from hub_platform.events.models import EventOwnership, InboxEvent
 from hub_platform.notifications.models import NotificationAudience, NotificationType
 from hub_platform.notifications.services import notify
+from hub_platform.subscriptions.errors import EntitlementRequired
+from hub_platform.subscriptions.keys import QuotaKey
+from hub_platform.subscriptions.usage_service import record_usage
 from hub_platform.tenancy.context import TenantContext
 
 logger = logging.getLogger(__name__)
@@ -123,6 +126,17 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
                 expected_responder=ExpectedResponder.AI,
                 previous_conversation=previous,
             )
+            # C07: only a brand-new dialog counts toward new_dialogs quota.
+            # Resuming an existing conversation (the elif branch) does not.
+            record_usage(
+                context=context,
+                quota_key=QuotaKey.NEW_DIALOGS_PER_PERIOD,
+                quantity=1,
+                idempotency_key=f"dialog:{conversation.id}",
+                source="conversation.created",
+                aggregate_type="Conversation",
+                aggregate_id=str(conversation.id),
+            )
         elif inbound.chat_id and not conversation.external_chat_id:
             conversation.external_chat_id = inbound.chat_id
 
@@ -182,7 +196,7 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
 
     try:
         result = run_channel_turn(channel=channel, message=inbound.text, history=_history(conversation))
-    except (ProviderError, LimitExceeded) as error:
+    except (ProviderError, LimitExceeded, EntitlementRequired) as error:
         # Сбой AI (провайдер недоступен) или срабатывание лимита стоимости не должны
         # «терять» сообщение: переводим диалог в очередь к оператору, уведомляем и
         # отвечаем клиенту понятным fallback.

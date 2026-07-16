@@ -18,7 +18,7 @@ from hub_platform.ai.services import (
     delete_knowledge,
     update_knowledge,
 )
-from hub_platform.api.permissions import HasCapability
+from hub_platform.api.permissions import HasCapability, HasEntitlement
 from hub_platform.identity.audit import record_audit_event
 
 
@@ -41,7 +41,8 @@ def _knowledge_input(body: dict[str, object], *, current: Knowledge | None = Non
 
 
 class _KnowledgeBaseView(APIView):
-    permission_classes = [HasCapability]
+    permission_classes = [HasEntitlement, HasCapability]
+    required_entitlement = "knowledge_base"
     required_capabilities = {
         "GET": "ai.view",
         "POST": "ai.manage",

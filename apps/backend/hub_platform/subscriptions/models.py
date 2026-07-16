@@ -23,3 +23,4 @@ from hub_platform.subscriptions.usage_models import (  # noqa: F401
     UsagePeriod,
     UsagePeriodStatus,
 )
+from hub_platform.subscriptions.reservation_models import UsageReservation  # noqa: F401,E402

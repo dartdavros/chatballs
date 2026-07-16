@@ -12,6 +12,7 @@ from hub_platform.events.models import OutboxStatus
 from hub_platform.events.services import claim_next_outbox_event, mark_retry
 from hub_platform.identity.models import Organization
 from hub_platform.notifications.binding import poll_notifier_bots
+from hub_platform.subscriptions.reservation_service import expire_stale_reservations
 from hub_platform.tenancy.context import TenantActorKind, TenantContext
 from hub_platform.tenancy.database import tenant_atomic
 
@@ -20,6 +21,7 @@ logger = logging.getLogger(__name__)
 MESSENGER_POLL_INTERVAL = 3.0  # seconds between messenger long-poll cycles
 MAINTENANCE_INTERVAL = 3600.0  # seconds between maintenance cycles (auto-close stale dialogs)
 CALL_SWEEP_INTERVAL = 10.0  # seconds between call timeout sweeps (invite expiry, stuck connect)
+RESERVATION_SWEEP_INTERVAL = 60.0  # seconds between concurrent-reservation expiry sweeps
 
 
 class Command(BaseCommand):
@@ -37,6 +39,7 @@ class Command(BaseCommand):
         last_poll = 0.0
         last_maintenance = 0.0
         last_call_sweep = 0.0
+        last_reservation_sweep = 0.0
         while True:
             event = claim_next_outbox_event()
             if event is not None:
@@ -85,4 +88,12 @@ class Command(BaseCommand):
                             close_stale_conversations(context)
                 except Exception:  # pragma: no cover
                     logger.exception("Maintenance cycle failed")
+            if now - last_reservation_sweep >= RESERVATION_SWEEP_INTERVAL:
+                last_reservation_sweep = now
+                try:
+                    expired = expire_stale_reservations()
+                    if expired:
+                        logger.info("Expired %d stale concurrent reservations", expired)
+                except Exception:  # pragma: no cover
+                    logger.exception("Reservation sweep cycle failed")
             time.sleep(1)

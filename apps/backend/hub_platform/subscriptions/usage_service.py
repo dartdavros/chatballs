@@ -117,6 +117,7 @@ def record_usage(
             used=counter.used_value + counter.reserved_value,
             requested=quantity,
             period_ends_at=period.ends_at,
+            mode=quota.mode,
         )
     entry_kind = kind or (
         UsageEntryKind.CONSUMPTION if quantity > 0 else UsageEntryKind.RELEASE

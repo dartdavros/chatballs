@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
+from hub_platform.api.permissions import HasEntitlement
 from hub_platform.calls.errors import CallAccessDenied, CallConflict, CallTokenError
 from hub_platform.calls.models import CallSession
 from hub_platform.calls.permissions import ensure_call_access, ensure_conversation_call_access
@@ -43,7 +44,8 @@ def _token_response(payload: dict, *, status: int = 200) -> Response:
 
 
 class CallCreateView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasEntitlement, IsAuthenticated]
+    required_entitlement = "p2p_calls"
 
     def post(self, request: Request, conversation_id: int) -> Response:
         try:

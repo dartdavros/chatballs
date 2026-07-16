@@ -21,6 +21,8 @@ from hub_platform.conversations.models import (
 )
 from hub_platform.identity.audit import record_audit_event
 from hub_platform.identity.models import AuditResult, Organization
+from hub_platform.subscriptions.keys import QuotaKey
+from hub_platform.subscriptions.usage_service import record_usage
 from hub_platform.support import errors
 from hub_platform.support.extract import extract_context, validate_schema
 from hub_platform.support.models import (
@@ -120,7 +122,9 @@ def _commit_session(
         issued_at=issued_at,
         expires_at=expires_at,
     )
-    conversation = _create_or_continue_conversation(channel=channel, snapshot=snapshot)
+    conversation = _create_or_continue_conversation(
+        organization=organization, channel=channel, snapshot=snapshot
+    )
 
     record_audit_event(
         action="support.session_started",
@@ -205,7 +209,7 @@ def _upsert_snapshot(
     return snapshot
 
 
-def _create_or_continue_conversation(*, channel, snapshot) -> Conversation:
+def _create_or_continue_conversation(*, organization, channel, snapshot) -> Conversation:
     conversation = (
         Conversation.objects.filter(
             channel=channel, support_identity_snapshot=snapshot, lifecycle=LifecycleState.OPEN
@@ -222,7 +226,7 @@ def _create_or_continue_conversation(*, channel, snapshot) -> Conversation:
         .order_by("-created_at")
         .first()
     )
-    return Conversation.objects.create(
+    conversation = Conversation.objects.create(
         organization=channel.organization,
         channel=channel,
         contact=None,
@@ -231,3 +235,14 @@ def _create_or_continue_conversation(*, channel, snapshot) -> Conversation:
         expected_responder=ExpectedResponder.AI,
         previous_conversation=previous,
     )
+    # C07: a brand-new support dialog counts toward new_dialogs quota.
+    record_usage(
+        context=TenantContext.for_resource(organization),
+        quota_key=QuotaKey.NEW_DIALOGS_PER_PERIOD,
+        quantity=1,
+        idempotency_key=f"dialog:{conversation.id}",
+        source="support.conversation_created",
+        aggregate_type="Conversation",
+        aggregate_id=str(conversation.id),
+    )
+    return conversation

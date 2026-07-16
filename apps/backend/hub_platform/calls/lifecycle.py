@@ -5,12 +5,14 @@ from django.utils import timezone
 
 from hub_platform.calls.errors import CallInvalidTransition
 from hub_platform.calls.models import (
+    TERMINAL_CALL_STATUSES,
     CallEndedBy,
     CallSession,
     CallStatus,
-    TERMINAL_CALL_STATUSES,
 )
 from hub_platform.conversations.models import Message, MessageAuthor
+from hub_platform.subscriptions.reservation_service import release_usage
+from hub_platform.tenancy.context import TenantContext
 
 ALLOWED_TRANSITIONS = {
     CallStatus.REQUESTED: {
@@ -103,6 +105,12 @@ def transition_call(
         call.failure_code = normalized_failure_code
         update_fields.append("failure_code")
     call.save(update_fields=update_fields)
+    if target_status in TERMINAL_CALL_STATUSES:
+        # C07: release the p2p-call concurrent slot reserved at creation.
+        release_usage(
+            context=TenantContext.for_resource(call.organization),
+            idempotency_key=f"p2p:{call.id}",
+        )
     timeline_text = _timeline_text(call, target_status)
     if timeline_text is not None:
         Message.objects.create(

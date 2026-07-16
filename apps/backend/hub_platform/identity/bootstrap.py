@@ -77,6 +77,11 @@ def bootstrap_edevs_owner(*, email: str, password: str, full_name: str = "") -> 
             "totp_required": False,
         },
     )
+    # C07: every tenant operation requires an active subscription. Ensure the
+    # bootstrapped organization has one so it is operational post-enforcement.
+    from hub_platform.subscriptions.default_subscription import ensure_default_subscription
+
+    ensure_default_subscription(organization)
 
     operator, created_operator = HumanUser.objects.get_or_create(
         email=HumanUser.objects.normalize_email("a.kotova@edevs.tech"),
