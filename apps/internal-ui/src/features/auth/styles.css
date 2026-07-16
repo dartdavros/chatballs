@@ -4,7 +4,7 @@
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: #f0f2f5;
+  background: #f0f2f5 url("/hero.png") center center / cover no-repeat;
 }
 
 .auth-box {
@@ -61,7 +61,7 @@
   background: #ffffff;
   border: 1px solid #f0f0f0;
   border-radius: 14px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 6px 32px rgba(0, 0, 0, 0.18);
 }
 
 .auth-error {
