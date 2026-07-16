@@ -9,7 +9,12 @@ from hub_platform.ai.indexing import reindex_knowledge
 from hub_platform.ai.models import AIAgent, AIAgentStatus, Knowledge, KnowledgeAttachment
 from hub_platform.channels.models import Channel
 from hub_platform.tenancy.context import TenantContext
-from hub_platform.tenancy.storage import adjust_storage_usage, assert_storage_quota
+from hub_platform.tenancy.storage import adjust_storage_usage
+from hub_platform.tenancy.storage_quota import (
+    finalize_storage,
+    release_storage,
+    reserve_storage,
+)
 
 
 @dataclass(frozen=True)
@@ -187,28 +192,42 @@ def add_attachment(
     existing = knowledge.attachments.filter(original_name=original_name).first()
     existing_size = existing.size if existing is not None else 0
     data = upload.read()
-    # C07 storage gate: block the write if the net delta (new - replaced) would
-    # exceed the storage_bytes quota. Reads are never gated.
-    assert_storage_quota(context=context, delta_bytes=len(data) - existing_size)
-    if existing is not None:
-        existing.file.delete(save=False)
-        existing.delete()
-        if existing_size:
-            adjust_storage_usage(context=context, delta_bytes=-existing_size)
-    content_type = upload.content_type or ""
-    attachment = KnowledgeAttachment(
-        organization=context.organization,
-        knowledge=knowledge,
-        original_name=original_name,
-        content_type=content_type,
-        size=len(data),
-        extracted_text=extract_text(filename=original_name, content_type=content_type, data=data),
+    # C07 storage gate (SPEC §10): reserve the expected size before the write so a
+    # concurrent upload cannot exceed storage_bytes; finalize with the actual size
+    # after the object is persisted, or release on failure. Reads are never gated.
+    # Deterministic key makes a retried upload of the same file idempotent; a prior
+    # finalized/released reservation is ignored by the active-reservation filter.
+    reservation_key = f"attachment:{knowledge.id}:{original_name}"
+    reserve_storage(
+        context=context, expected_bytes=len(data), idempotency_key=reservation_key
     )
-    from django.core.files.base import ContentFile
+    try:
+        if existing is not None:
+            existing.file.delete(save=False)
+            existing.delete()
+            if existing_size:
+                adjust_storage_usage(context=context, delta_bytes=-existing_size)
+        content_type = upload.content_type or ""
+        attachment = KnowledgeAttachment(
+            organization=context.organization,
+            knowledge=knowledge,
+            original_name=original_name,
+            content_type=content_type,
+            size=len(data),
+            extracted_text=extract_text(
+                filename=original_name, content_type=content_type, data=data
+            ),
+        )
+        from django.core.files.base import ContentFile
 
-    attachment.file.save(original_name, ContentFile(data), save=True)
-    if attachment.size:
-        adjust_storage_usage(context=context, delta_bytes=attachment.size)
+        attachment.file.save(original_name, ContentFile(data), save=True)
+    except Exception:
+        # Upload failed after reservation: release the reserved bytes (SPEC §10.4).
+        release_storage(context=context, idempotency_key=reservation_key)
+        raise
+    finalize_storage(
+        context=context, idempotency_key=reservation_key, actual_bytes=len(data)
+    )
     reindex_knowledge(knowledge)
     return attachment
 

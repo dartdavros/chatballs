@@ -54,7 +54,12 @@ class TenantRelationModel(models.Model):
 
 
 class OrganizationStorageUsage(models.Model):
-    """Authoritative storage_bytes usage counter for one organization."""
+    """Authoritative storage_bytes usage counter for one organization.
+
+    ``bytes_used`` is the committed total; ``reserved_bytes`` covers in-flight
+    uploads whose final size is not yet known (SPEC-HUB-0022 §10 reserve/finalize).
+    The effective usage against the quota is ``bytes_used + reserved_bytes``.
+    """
 
     organization = models.OneToOneField(
         "identity.Organization",
@@ -62,6 +67,7 @@ class OrganizationStorageUsage(models.Model):
         related_name="storage_usage",
     )
     bytes_used = models.PositiveBigIntegerField(default=0)
+    reserved_bytes = models.PositiveBigIntegerField(default=0)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -69,5 +75,45 @@ class OrganizationStorageUsage(models.Model):
             models.CheckConstraint(
                 condition=models.Q(bytes_used__gte=0),
                 name="storage_usage_bytes_non_negative",
-            )
+            ),
+            models.CheckConstraint(
+                condition=models.Q(reserved_bytes__gte=0),
+                name="storage_usage_reserved_non_negative",
+            ),
         ]
+
+
+class StorageReservation(models.Model):
+    """An in-flight storage_bytes reservation keyed by an idempotency token, so a
+    multi-step upload (SPEC-HUB-0022 §10) can reserve the expected size, finalize
+    the actual size once the object is persisted, and release the reservation on
+    failure. A single reservation tracks one upload lifecycle.
+    """
+
+    organization = models.ForeignKey(
+        "identity.Organization",
+        on_delete=models.PROTECT,
+        related_name="storage_reservations",
+    )
+    idempotency_key = models.CharField(max_length=160)
+    reserved_bytes = models.PositiveBigIntegerField()
+    finalized = models.BooleanField(default=False)
+    released = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            # Only one *active* reservation per idempotency key per org. Once a
+            # reservation is finalized or released the same key may be reused for a
+            # later upload (e.g. re-upload replacing a file with the same name).
+            models.UniqueConstraint(
+                fields=["organization", "idempotency_key"],
+                condition=models.Q(finalized=False, released=False),
+                name="uniq_storage_reservation_active",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        state = "finalized" if self.finalized else "released" if self.released else "active"
+        return f"{self.organization_id}:{self.idempotency_key}:{state}"
