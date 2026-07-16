@@ -65,26 +65,30 @@ def _startup_plan_version() -> PlanVersion:
                 "limit_source": QuotaLimitSource.SUBSCRIPTION_AI_AGENT_QUANTITY,
             },
         )
-        # concurrent quotas exercised by bootstrap tests (calls). A permissive
-        # fixed limit keeps the bootstrapped tenant operational.
-        _ensure_fixed_quota(
+        # C07: concurrent_p2p_calls derives from the active non-OWNER membership
+        # count, matching the published STARTUP PlanVersion (PLAN §12).
+        _ensure_membership_quota(
             version,
             QuotaKey.CONCURRENT_P2P_CALLS,
             "calls",
-            QuotaMode.CONCURRENT,
-            32,
         )
     if version.published_at is None:
         version = publish_plan_version(version)
     return version
 
 
-def _ensure_fixed_quota(version, key, unit, mode, limit) -> None:
+def _ensure_membership_quota(version, key, unit) -> None:
+    """Grant a CONCURRENT quota whose limit is derived at read time from the active
+    non-OWNER membership count (C07 MEMBERSHIP_COUNT)."""
     quota, _ = QuotaDefinition.objects.get_or_create(
         key=key, defaults={"name": key.replace("_", " "), "unit": unit}
     )
     QuotaGrant.objects.get_or_create(
         plan_version=version,
         definition=quota,
-        defaults={"mode": mode, "limit_source": QuotaLimitSource.FIXED, "limit_value": limit},
+        defaults={
+            "mode": QuotaMode.CONCURRENT,
+            "limit_source": QuotaLimitSource.MEMBERSHIP_COUNT,
+            "limit_value": None,
+        },
     )

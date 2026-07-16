@@ -60,8 +60,10 @@ class PlanVersionTests(TestCase):
         self.assertEqual(
             startup_quotas[QuotaKey.CRM_API_REQUESTS_PER_WINDOW], ("RATE", 60, 60)
         )
+        # C07: STARTUP concurrent_p2p_calls derives from the active non-OWNER
+        # membership count (migration 0005), so limit_value is NULL.
         self.assertEqual(
-            startup_quotas[QuotaKey.CONCURRENT_P2P_CALLS], ("CONCURRENT", 3, None)
+            startup_quotas[QuotaKey.CONCURRENT_P2P_CALLS], ("CONCURRENT", None, None)
         )
         self.assertEqual(
             startup_quotas[QuotaKey.CONCURRENT_VOICE_SESSIONS],

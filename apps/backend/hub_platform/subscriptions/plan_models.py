@@ -27,6 +27,9 @@ class QuotaLimitSource(models.TextChoices):
         "SUBSCRIPTION_AI_AGENT_QUANTITY",
         "Subscription AI agent quantity",
     )
+    # C07: derive the limit from the active membership count (excluding OWNER),
+    # e.g. concurrent_p2p_calls = number of non-OWNER, non-blocked members.
+    MEMBERSHIP_COUNT = "MEMBERSHIP_COUNT", "Active non-owner membership count"
 
 
 class Plan(models.Model):
@@ -183,6 +186,10 @@ class QuotaGrant(PublishedVersionGrantModel):
                     Q(mode=QuotaMode.UNLIMITED, limit_value__isnull=True)
                     | Q(
                         limit_source=QuotaLimitSource.SUBSCRIPTION_AI_AGENT_QUANTITY,
+                        limit_value__isnull=True,
+                    )
+                    | Q(
+                        limit_source=QuotaLimitSource.MEMBERSHIP_COUNT,
                         limit_value__isnull=True,
                     )
                     | Q(

@@ -60,8 +60,9 @@ def _ai_slots():
 
 
 # Quotas approved by the owner on 2026-07-15 for Free/Startup publication.
-# concurrent_p2p_calls is a provisional minimum for Startup; deriving it from the
-# active membership count is a separate C07 decision (see PLAN-CUSTOCRM-0003 §12).
+# concurrent_p2p_calls: Startup seeds FIXED=3 here; migration 0005 widens the
+# constraint and flips this grant to MEMBERSHIP_COUNT. Free has no p2p_calls
+# entitlement -> gated to 0.
 PLAN_SPECS = {
     "FREE": {
         "name": "Бесплатный",

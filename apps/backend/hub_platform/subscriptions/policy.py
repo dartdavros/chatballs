@@ -69,6 +69,23 @@ def _active_overrides(context: TenantContext, at) -> list[SubscriptionOverride]:
     )
 
 
+def _non_owner_membership_count(organization_id: int) -> int:
+    """C07 MEMBERSHIP_COUNT limit source: active (non-blocked) memberships that are
+    not the organization OWNER (OWNER is an administrator, not a call slot). Lazy
+    import keeps the subscriptions → identity edge explicit and avoids import cycles.
+    """
+    from hub_platform.identity.models import EmployeeRole, OrganizationMembership
+
+    return (
+        OrganizationMembership.objects.filter(
+            organization_id=organization_id,
+            blocked_at__isnull=True,
+        )
+        .exclude(role=EmployeeRole.OWNER)
+        .count()
+    )
+
+
 def get_effective_policy(
     context: TenantContext,
     *,
@@ -93,6 +110,9 @@ def get_effective_policy(
         limit = grant.limit_value
         if grant.limit_source == QuotaLimitSource.SUBSCRIPTION_AI_AGENT_QUANTITY:
             limit = subscription.ai_agent_quantity
+        elif grant.limit_source == QuotaLimitSource.MEMBERSHIP_COUNT:
+            # C07: derive from the active non-OWNER membership count.
+            limit = _non_owner_membership_count(subscription.organization_id)
         quotas[grant.definition.key] = EffectiveQuota(
             key=grant.definition.key,
             mode=grant.mode,
