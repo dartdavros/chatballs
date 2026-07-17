@@ -101,7 +101,7 @@ verify_release_checksums() {
 validate_calls_network_boundary() {
   local web_ip turn_ip
   web_ip="$(env_get "$(instance_env_file)" CUSTOCRM_WEB_LISTENING_IP)"
-  turn_ip="$(env_get "$(instance_env_file)" HUB_TURN_LISTENING_IP)"
+  turn_ip="$(env_get "$(instance_env_file)" CUS_TURN_LISTENING_IP)"
 
   [[ -n "$web_ip" ]] || {
     log_err "CUSTOCRM_WEB_LISTENING_IP is required for calls profile"

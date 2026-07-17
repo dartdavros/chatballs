@@ -149,7 +149,7 @@ def create_call_request(*, context: TenantContext, conversation_id: int) -> Crea
         call_session=call,
         connection_identity=identity,
         token_hash=token_hash,
-        expires_at=timezone.now() + timedelta(seconds=settings.HUB_CALL_INVITE_TTL_SECONDS),
+        expires_at=timezone.now() + timedelta(seconds=settings.CUS_CALL_INVITE_TTL_SECONDS),
     )
     CallParticipant.objects.bulk_create(
         [
@@ -174,7 +174,7 @@ def create_call_request(*, context: TenantContext, conversation_id: int) -> Crea
         context=context,
         quota_key=QuotaKey.CONCURRENT_P2P_CALLS,
         idempotency_key=f"p2p:{call.id}",
-        lease_seconds=settings.HUB_CONCURRENT_CALL_LEASE_SECONDS,
+        lease_seconds=settings.CUS_CONCURRENT_CALL_LEASE_SECONDS,
         source="calls.session_created",
         aggregate_type="CallSession",
         aggregate_id=str(call.id),

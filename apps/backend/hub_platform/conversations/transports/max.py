@@ -102,7 +102,7 @@ def poll_updates(integration) -> tuple[list[InboundMessage], str]:
     token = integration.secret
     if not token:
         return [], integration.poll_marker
-    params = {"timeout": settings.HUB_MESSENGER_POLL_TIMEOUT_SECONDS, "limit": 100}
+    params = {"timeout": settings.CUS_MESSENGER_POLL_TIMEOUT_SECONDS, "limit": 100}
     if integration.poll_marker:
         params["marker"] = integration.poll_marker
     url = f"{_base(integration)}/updates?{urllib.parse.urlencode(params)}"

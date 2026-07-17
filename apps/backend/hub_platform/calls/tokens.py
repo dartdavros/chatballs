@@ -74,7 +74,7 @@ def issue_call_access_token(*, call_session_id: uuid.UUID, side: str, subject_id
         "side": side,
         "subject_id": str(subject_id),
         "iat": now,
-        "exp": now + settings.HUB_CALL_ACCESS_TTL_SECONDS,
+        "exp": now + settings.CUS_CALL_ACCESS_TTL_SECONDS,
         "jti": secrets.token_urlsafe(16),
     }
     encoded = _b64encode(json.dumps(payload, separators=(",", ":"), sort_keys=True).encode("utf-8"))

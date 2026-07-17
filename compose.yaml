@@ -57,7 +57,7 @@ services:
       - ${CUSTOCRM_INSTANCE_DIR:-.}/.env
     command: ["python", "manage.py", "migrate", "--noinput"]
     environment:
-      HUB_DB_ROLE: migration
+      CUS_DB_ROLE: migration
     restart: "no"
     depends_on:
       postgres:
@@ -74,10 +74,10 @@ services:
       sh -c "gunicorn hub_backend.asgi_app:application
       --worker-class uvicorn.workers.UvicornWorker
       --bind 0.0.0.0:8000
-      --workers $${HUB_GUNICORN_WORKERS:-3}
-      --timeout $${HUB_GUNICORN_TIMEOUT:-60}"
+      --workers $${CUS_GUNICORN_WORKERS:-3}
+      --timeout $${CUS_GUNICORN_TIMEOUT:-60}"
     environment:
-      HUB_DB_ROLE: app
+      CUS_DB_ROLE: app
     volumes:
       # Legacy source media retained for the separately approved copy/hash
       # migration. Production writes use the required S3 backend in C04.
@@ -111,10 +111,10 @@ services:
       sh -c "gunicorn hub_backend.asgi_platform:application
       --worker-class uvicorn.workers.UvicornWorker
       --bind 0.0.0.0:8000
-      --workers $${HUB_GUNICORN_WORKERS:-3}
-      --timeout $${HUB_GUNICORN_TIMEOUT:-60}"
+      --workers $${CUS_GUNICORN_WORKERS:-3}
+      --timeout $${CUS_GUNICORN_TIMEOUT:-60}"
     environment:
-      HUB_DB_ROLE: platform
+      CUS_DB_ROLE: platform
     depends_on:
       init:
         condition: service_completed_successfully
@@ -146,12 +146,12 @@ services:
       sh -c "gunicorn hub_backend.asgi_admin:application
       --worker-class uvicorn.workers.UvicornWorker
       --bind 0.0.0.0:8000
-      --workers $${HUB_GUNICORN_WORKERS:-2}
-      --timeout $${HUB_GUNICORN_TIMEOUT:-60}"
+      --workers $${CUS_GUNICORN_WORKERS:-2}
+      --timeout $${CUS_GUNICORN_TIMEOUT:-60}"
     # Break-glass technical surface only: schema credentials are never used by
     # public app/platform runtimes and this service remains loopback-only.
     environment:
-      HUB_DB_ROLE: migration
+      CUS_DB_ROLE: migration
     ports:
       - "127.0.0.1:${CUSTOCRM_ADMIN_PORT:-18001}:8000"
     depends_on:
@@ -169,7 +169,7 @@ services:
       - ${CUSTOCRM_INSTANCE_DIR:-.}/.env
     command: ["python", "manage.py", "run_worker"]
     environment:
-      HUB_DB_ROLE: app
+      CUS_DB_ROLE: app
     volumes:
       - ${CUSTOCRM_INSTANCE_DIR:-.}/data/media:/app/apps/backend/media
     depends_on:
@@ -217,7 +217,7 @@ services:
   # Опциональный profile `calls` (ADR-HUB-0028): включается через COMPOSE_PROFILES=calls.
   # Host networking: relay использует широкий UDP-диапазон и реальный внешний IP,
   # публикуется напрямую и не проходит через HTTP reverse proxy. credentials
-  # выдаёт backend по общему HUB_CALL_TURN_SECRET (static-auth-secret).
+  # выдаёт backend по общему CUS_CALL_TURN_SECRET (static-auth-secret).
   coturn:
     profiles: ["calls"]
     image: ${CUSTOCRM_COTURN_IMAGE:-coturn/coturn:4.6}
@@ -229,20 +229,20 @@ services:
       - --no-cli
       - --fingerprint
       - --use-auth-secret
-      - --static-auth-secret=${HUB_CALL_TURN_SECRET}
-      - --realm=${HUB_CALL_TURN_REALM}
+      - --static-auth-secret=${CUS_CALL_TURN_SECRET}
+      - --realm=${CUS_CALL_TURN_REALM}
       # Весь TURN живёт на выделенном публичном IP (отдельный порт/NIC), Caddy — на
       # основном IP. Это освобождает 443 под TURN-over-TLS без конфликта с web.
-      - --listening-ip=${HUB_TURN_LISTENING_IP}
-      - --relay-ip=${HUB_TURN_EXTERNAL_IP}
-      - --external-ip=${HUB_TURN_EXTERNAL_IP}
-      - --listening-port=${HUB_TURN_LISTENING_PORT:-3478}
+      - --listening-ip=${CUS_TURN_LISTENING_IP}
+      - --relay-ip=${CUS_TURN_EXTERNAL_IP}
+      - --external-ip=${CUS_TURN_EXTERNAL_IP}
+      - --listening-port=${CUS_TURN_LISTENING_PORT:-3478}
       # TURN-over-TLS на 443: проходит через VPN/строгие сети, где UDP и 3478 режут.
-      - --tls-listening-port=${HUB_TURN_TLS_PORT:-443}
+      - --tls-listening-port=${CUS_TURN_TLS_PORT:-443}
       - --cert=/etc/coturn/certs/fullchain.pem
       - --pkey=/etc/coturn/certs/privkey.pem
-      - --min-port=${HUB_TURN_MIN_PORT:-49160}
-      - --max-port=${HUB_TURN_MAX_PORT:-49200}
+      - --min-port=${CUS_TURN_MIN_PORT:-49160}
+      - --max-port=${CUS_TURN_MAX_PORT:-49200}
       # Запрет анонимного и внутрисетевого relay (SPEC §11: без пересечения с хостом).
       - --no-multicast-peers
       - --no-tcp-relay
@@ -257,7 +257,7 @@ services:
       - ${CUSTOCRM_INSTANCE_DIR:-.}/data/coturn-certs:/etc/coturn/certs:ro
     healthcheck:
       # Allocation smoke: STUN binding к собственному listener на выделенном IP.
-      test: ["CMD", "turnutils_stunclient", "-p", "${HUB_TURN_LISTENING_PORT:-3478}", "${HUB_TURN_LISTENING_IP}"]
+      test: ["CMD", "turnutils_stunclient", "-p", "${CUS_TURN_LISTENING_PORT:-3478}", "${CUS_TURN_LISTENING_IP}"]
       interval: 30s
       timeout: 5s
       retries: 5

@@ -95,8 +95,8 @@ def reserve_managed_ai_tokens(
             idempotency_key=key,
             lease_seconds=max(
                 60,
-                int(settings.HUB_AI_REQUEST_TIMEOUT)
-                * (int(settings.HUB_AI_MAX_RETRIES) + 1)
+                int(settings.CUS_AI_REQUEST_TIMEOUT)
+                * (int(settings.CUS_AI_MAX_RETRIES) + 1)
                 + 120,
             ),
             source="ai.managed_invocation",

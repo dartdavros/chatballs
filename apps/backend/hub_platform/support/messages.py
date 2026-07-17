@@ -12,6 +12,8 @@ import logging
 from django.db import transaction
 from django.utils import timezone
 
+from hub_platform.ai.credits import ManagedAiQuotaExceeded
+from hub_platform.ai.limits import LimitExceeded
 from hub_platform.ai.provider.base import ProviderError
 from hub_platform.ai.runtime import HANDOFF_TOKEN
 from hub_platform.channels.runtime import run_channel_turn
@@ -23,7 +25,8 @@ from hub_platform.conversations.models import (
     MessageAuthor,
 )
 from hub_platform.notifications.models import NotificationAudience, NotificationType
-from hub_platform.notifications.services import notify
+from hub_platform.notifications.services import notify, notify_management
+from hub_platform.subscriptions.errors import EntitlementRequired
 from hub_platform.tenancy.context import TenantContext
 
 logger = logging.getLogger(__name__)
@@ -96,7 +99,12 @@ def post_support_message(
         result = run_channel_turn(
             channel=conversation.channel, message=text, history=_history(conversation)
         )
-    except ProviderError as error:
+    except (
+        ProviderError,
+        ManagedAiQuotaExceeded,
+        LimitExceeded,
+        EntitlementRequired,
+    ) as error:
         logger.warning("AI turn failed for support conversation %s: %s", conversation.id, error)
         conversation.control_mode = ControlMode.PAUSED
         conversation.expected_responder = ExpectedResponder.OPERATOR
@@ -127,6 +135,16 @@ def post_support_message(
             source_type="Conversation",
             source_id=conversation.id,
             dedup_key=f"aifail:{conversation.id}",
+        )
+        notify_management(
+            context=context,
+            type=NotificationType.INTEGRATION_ERROR,
+            title=f"Ошибка AI · {conversation.channel.name}",
+            body="AI временно недоступен, диалог передан оператору",
+            target_id=conversation.id,
+            source_type="Conversation",
+            source_id=conversation.id,
+            dedup_key=f"aierror:{conversation.id}",
         )
         return
 

@@ -52,7 +52,7 @@ def handle_call_invite_send(payload: dict, context: TenantContext | None) -> Non
         token, token_hash = issue_invite_token()
         invite.token_hash = token_hash
         invite.save(update_fields=["token_hash"])
-        url = f"{settings.HUB_PUBLIC_BASE_URL.rstrip('/')}/calls/{token}"
+        url = f"{settings.CUS_PUBLIC_BASE_URL.rstrip('/')}/calls/{token}"
         sent = transports.send_call_invite(
             call.delivery_connection,
             chat_id=call.conversation.external_chat_id,

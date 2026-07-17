@@ -54,7 +54,7 @@ def poll_updates(integration) -> tuple[list[InboundMessage], str]:
     if not token:
         return [], integration.poll_marker
     offset = integration.poll_marker or ""
-    url = f"{_base(integration)}/bot{token}/getUpdates?timeout={settings.HUB_MESSENGER_POLL_TIMEOUT_SECONDS}&limit=100"
+    url = f"{_base(integration)}/bot{token}/getUpdates?timeout={settings.CUS_MESSENGER_POLL_TIMEOUT_SECONDS}&limit=100"
     if offset:
         url += f"&offset={offset}"
     try:

@@ -121,16 +121,16 @@ cmd_doctor() {
   fi
 
   local secret
-  secret="$(env_get "$(instance_env_file)" HUB_SECRET_KEY)"
+  secret="$(env_get "$(instance_env_file)" CUS_SECRET_KEY)"
   if [[ -n "$secret" ]] && [[ "$secret" != "change-me-long-random-secret" ]]; then
-    _doctor_report 1 "HUB_SECRET_KEY set"
+    _doctor_report 1 "CUS_SECRET_KEY set"
   else
-    _doctor_report 0 "HUB_SECRET_KEY default/empty"
+    _doctor_report 0 "CUS_SECRET_KEY default/empty"
   fi
 
   if profile_enabled calls; then
     local missing=0 k
-    for k in HUB_CALL_TURN_SECRET HUB_CALL_TURN_REALM HUB_TURN_EXTERNAL_IP HUB_TURN_LISTENING_IP; do
+    for k in CUS_CALL_TURN_SECRET CUS_CALL_TURN_REALM CUS_TURN_EXTERNAL_IP CUS_TURN_LISTENING_IP; do
       if [[ -z "$(env_get "$(instance_env_file)" "$k")" ]]; then
         _doctor_report 0 "$k required for calls profile"
         missing=1

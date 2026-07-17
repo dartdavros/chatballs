@@ -158,7 +158,7 @@ def command_center_overview(context: TenantContext, period: str) -> dict:
             "spendMicros": ai_totals["cost"] or 0,
             # Дневной лимит стоимости (USD micros); 0 = не задан. Прогресс-бар
             # осмыслен только для периода «Сегодня».
-            "dailyLimitMicros": int(getattr(settings, "HUB_AI_GLOBAL_DAILY_COST_LIMIT_MICROS", 0) or 0),
+            "dailyLimitMicros": int(getattr(settings, "CUS_AI_GLOBAL_DAILY_COST_LIMIT_MICROS", 0) or 0),
             "tokens": ai_totals["tokens"] or 0,
             "dialogs": period_dialogs,
         },

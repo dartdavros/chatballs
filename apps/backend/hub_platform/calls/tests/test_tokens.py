@@ -78,7 +78,7 @@ class AccessTokenTests(CallTestCase):
         with self.assertRaises(CallTokenError):
             verify_call_access_token("%%%.$$$")
 
-    @override_settings(HUB_CALL_ACCESS_TTL_SECONDS=-1)
+    @override_settings(CUS_CALL_ACCESS_TTL_SECONDS=-1)
     def test_expired_access_token_is_rejected(self) -> None:
         token = issue_call_access_token(
             call_session_id=uuid.uuid4(),

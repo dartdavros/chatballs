@@ -3,9 +3,11 @@ from datetime import timedelta
 from django.utils import timezone
 
 from hub_platform.events.services import DomainEvent, enqueue_event
+from hub_platform.identity.models import EmployeeRole, OrganizationMembership
 from hub_platform.notifications.delivery import NOTIFICATION_CREATED
 from hub_platform.notifications.models import (
     Notification,
+    NotificationAudience,
     NotificationLevel,
     NotificationRead,
     NotificationType,
@@ -75,6 +77,28 @@ def notify(
         )
     )
     return notification
+
+
+def notify_management(*, context, dedup_key: str = "", **notification_data) -> int:
+    """Create direct notifications for every active OWNER and ADMIN."""
+
+    memberships = OrganizationMembership.objects.filter(
+        organization=context.organization,
+        role__in=[EmployeeRole.OWNER, EmployeeRole.ADMIN],
+        blocked_at__isnull=True,
+        user__is_active=True,
+    ).select_related("user")
+    created = 0
+    for membership in memberships:
+        notification = notify(
+            context=context,
+            audience=NotificationAudience.USER,
+            recipient_user=membership.user,
+            dedup_key=(f"{dedup_key}:user:{membership.user_id}" if dedup_key else ""),
+            **notification_data,
+        )
+        created += notification is not None
+    return created
 
 
 def mark_read(*, context, ids: list[int] | None = None, all_unread: bool = False) -> int:

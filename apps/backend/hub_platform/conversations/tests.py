@@ -2,9 +2,10 @@ import json
 
 from unittest import mock
 
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from hub_platform.testing import TenantAPIClient as APIClient
 
+from hub_platform.ai.credits import ManagedAiQuotaExceeded
 from hub_platform.ai.limits import LimitExceeded
 from hub_platform.ai.models import AIAgent, AIAgentStatus
 from hub_platform.channels.models import Channel
@@ -22,8 +23,14 @@ from hub_platform.conversations.transports.base import InboundMessage
 from hub_platform.conversations.transports import max as max_transport
 from hub_platform.conversations.transports import telegram as telegram_transport
 from hub_platform.identity.bootstrap import bootstrap_edevs_owner
-from hub_platform.identity.models import Organization
+from hub_platform.identity.models import (
+    EmployeeRole,
+    HumanUser,
+    Organization,
+    OrganizationMembership,
+)
 from hub_platform.integrations.models import Integration, IntegrationKind, IntegrationProvider
+from hub_platform.notifications.models import Notification, NotificationAudience, NotificationType
 
 
 def _messenger_connection(channel):
@@ -366,6 +373,14 @@ class WebchatContactTests(TestCase):
             HTTP_AUTHORIZATION=f"Bearer {self.token}",
         )
 
+    def _post_message(self, text: str):
+        return self.client.post(
+            "/api/v1/webchat/messages/",
+            data=json.dumps({"text": text}),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {self.token}",
+        )
+
     def test_contact_saved_and_ack_visible_in_poll(self) -> None:
         response = self._post_contact("+7 (999) 123-45-67")
         self.assertEqual(response.status_code, 201)
@@ -379,3 +394,63 @@ class WebchatContactTests(TestCase):
     def test_invalid_phone_rejected(self) -> None:
         response = self._post_contact("12345")
         self.assertEqual(response.status_code, 400)
+
+    @override_settings(CUS_AI_PROVIDER="", CUS_CUSTOAI_API_KEY="")
+    def test_missing_managed_provider_hands_off_without_500_and_notifies_management(
+        self,
+    ) -> None:
+        admin = HumanUser.objects.create_user(email="admin@edevs.tech", password="temporary")
+        OrganizationMembership.objects.create(
+            user=admin,
+            organization=self.organization,
+            role=EmployeeRole.ADMIN,
+            position_title="Администратор",
+        )
+
+        response = self._post_message("Здравствуйте")
+
+        self.assertEqual(response.status_code, 201)
+        conversation = Conversation.objects.get(channel=self.channel)
+        self.assertEqual(conversation.control_mode, ControlMode.PAUSED)
+        self.assertEqual(conversation.expected_responder, ExpectedResponder.OPERATOR)
+        self.assertTrue(
+            conversation.messages.filter(
+                author_type=MessageAuthor.AI,
+                text__contains="специалисту",
+            ).exists()
+        )
+        self.assertTrue(
+            Notification.objects.filter(
+                type=NotificationType.DIALOG_WAITING,
+                audience=NotificationAudience.OPERATORS,
+                target_id=str(conversation.id),
+            ).exists()
+        )
+        self.assertEqual(
+            set(
+                Notification.objects.filter(
+                    type=NotificationType.INTEGRATION_ERROR,
+                    audience=NotificationAudience.USER,
+                    target_id=str(conversation.id),
+                ).values_list("recipient_user__email", flat=True)
+            ),
+            {"owner@edevs.tech", "admin@edevs.tech"},
+        )
+
+    def test_managed_quota_exhaustion_hands_off_without_500(self) -> None:
+        with mock.patch(
+            "hub_platform.conversations.ingest.run_channel_turn",
+            side_effect=ManagedAiQuotaExceeded(),
+        ):
+            response = self._post_message("Здравствуйте")
+
+        self.assertEqual(response.status_code, 201)
+        conversation = Conversation.objects.get(channel=self.channel)
+        self.assertEqual(conversation.control_mode, ControlMode.PAUSED)
+        self.assertEqual(conversation.expected_responder, ExpectedResponder.OPERATOR)
+        self.assertTrue(
+            conversation.messages.filter(
+                author_type=MessageAuthor.AI,
+                text__contains="специалисту",
+            ).exists()
+        )

@@ -24,7 +24,7 @@ def reindex_knowledge(knowledge: Knowledge) -> list[KnowledgeFragment]:
         embeddings = embed_texts(
             organization=knowledge.organization,
             texts=chunks,
-            model=settings.HUB_AI_EMBEDDING_MODEL,
+            model=settings.CUS_AI_EMBEDDING_MODEL,
             purpose="knowledge_index",
         )
         vectors = [result.vector for result in embeddings]

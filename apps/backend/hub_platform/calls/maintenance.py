@@ -31,7 +31,7 @@ def expire_stale_calls(context) -> int:
             continue  # состояние сменилось между выборкой и переходом
 
     # Принятый звонок без установленного соединения дольше grace period — FAILED.
-    connect_deadline = now - timedelta(seconds=settings.HUB_CALL_CONNECT_GRACE_SECONDS)
+    connect_deadline = now - timedelta(seconds=settings.CUS_CALL_CONNECT_GRACE_SECONDS)
     stuck = CallSession.objects.filter(
         organization=context.organization,
         status__in=[CallStatus.ACCEPTED, CallStatus.CONNECTING],
@@ -51,7 +51,7 @@ def expire_stale_calls(context) -> int:
 
     # Активный звонок с участником, не восстановившимся после обрыва (SPEC §5:
     # временный обрыв → reconnecting, после grace period — FAILED).
-    reconnect_deadline = now - timedelta(seconds=settings.HUB_CALL_RECONNECT_GRACE_SECONDS)
+    reconnect_deadline = now - timedelta(seconds=settings.CUS_CALL_RECONNECT_GRACE_SECONDS)
     dropped = (
         CallSession.objects.filter(
             organization=context.organization,

@@ -5,7 +5,7 @@ from django.core.exceptions import ImproperlyConfigured
 
 from hub_backend.settings_base import *
 
-HUB_RUNTIME_SURFACE = "platform"
+CUS_RUNTIME_SURFACE = "platform"
 ROOT_URLCONF = "hub_backend.urls_platform"
 ASGI_APPLICATION = "hub_backend.asgi_platform.application"
 WSGI_APPLICATION = "hub_backend.wsgi_platform.application"
@@ -39,7 +39,7 @@ CSRF_COOKIE_DOMAIN = None
 SESSION_COOKIE_PATH = "/"
 CSRF_COOKIE_PATH = "/"
 
-HUB_CONTENT_SECURITY_POLICY = os.environ.get(
+CUS_CONTENT_SECURITY_POLICY = os.environ.get(
     "CUSTOCRM_PLATFORM_CSP",
     "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'",
 )

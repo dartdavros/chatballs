@@ -15,15 +15,15 @@ INSECURE_SECRET_KEY = "local-development-only"
 # Автоопределение тестового прогона, чтобы manage.py test / pytest работали
 # без ручного выставления production-окружения.
 TESTING = "test" in sys.argv or "pytest" in sys.modules
-SECRET_KEY = os.environ.get("HUB_SECRET_KEY", INSECURE_SECRET_KEY)
-DEBUG = env_bool("HUB_DEBUG")
-ALLOWED_HOSTS = env_list("HUB_ALLOWED_HOSTS", ["localhost", "127.0.0.1"])
-CSRF_TRUSTED_ORIGINS = env_list("HUB_CSRF_TRUSTED_ORIGINS", [])
+SECRET_KEY = os.environ.get("CUS_SECRET_KEY", INSECURE_SECRET_KEY)
+DEBUG = env_bool("CUS_DEBUG")
+ALLOWED_HOSTS = env_list("CUS_ALLOWED_HOSTS", ["localhost", "127.0.0.1"])
+CSRF_TRUSTED_ORIGINS = env_list("CUS_CSRF_TRUSTED_ORIGINS", [])
 
 # Запрещаем запуск в production с дефолтным/пустым ключом подписи.
 if not DEBUG and not TESTING and SECRET_KEY in {"", INSECURE_SECRET_KEY}:
     raise ImproperlyConfigured(
-        "HUB_SECRET_KEY must be set to a strong value when HUB_DEBUG is disabled"
+        "CUS_SECRET_KEY must be set to a strong value when CUS_DEBUG is disabled"
     )
 
 INSTALLED_APPS = [
@@ -142,26 +142,26 @@ INTERNAL_UI_BASE_URL = os.environ.get("INTERNAL_UI_BASE_URL", "http://localhost:
 
 # Ключ шифрования секретов в БД (Fernet). В production задаётся явно; иначе
 # детерминированно выводится из SECRET_KEY (см. hub_platform.identity.crypto).
-HUB_FIELD_ENCRYPTION_KEY = os.environ.get("HUB_FIELD_ENCRYPTION_KEY", "")
+CUS_FIELD_ENCRYPTION_KEY = os.environ.get("CUS_FIELD_ENCRYPTION_KEY", "")
 
 # AI provider runtime. The local adapter is explicit and test-only.
-HUB_AI_PROVIDER = os.environ.get("HUB_AI_PROVIDER", "")
-if TESTING and not HUB_AI_PROVIDER:
-    HUB_AI_PROVIDER = "test"
-HUB_OPENROUTER_BASE_URL = os.environ.get("HUB_OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
-HUB_AI_REQUEST_TIMEOUT = float(os.environ.get("HUB_AI_REQUEST_TIMEOUT", "30"))
-HUB_AI_MAX_RETRIES = int(os.environ.get("HUB_AI_MAX_RETRIES", "2"))
-HUB_AI_GLOBAL_DAILY_COST_LIMIT_MICROS = int(
-    os.environ.get("HUB_AI_GLOBAL_DAILY_COST_LIMIT_MICROS", "0")
+CUS_AI_PROVIDER = os.environ.get("CUS_AI_PROVIDER", "")
+if TESTING and not CUS_AI_PROVIDER:
+    CUS_AI_PROVIDER = "test"
+CUS_OPENROUTER_BASE_URL = os.environ.get("CUS_OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
+CUS_AI_REQUEST_TIMEOUT = float(os.environ.get("CUS_AI_REQUEST_TIMEOUT", "30"))
+CUS_AI_MAX_RETRIES = int(os.environ.get("CUS_AI_MAX_RETRIES", "2"))
+CUS_AI_GLOBAL_DAILY_COST_LIMIT_MICROS = int(
+    os.environ.get("CUS_AI_GLOBAL_DAILY_COST_LIMIT_MICROS", "0")
 )  # 0 = без лимита
-HUB_AI_PRICING: dict = {}  # переопределение цен micro-USD/токен по модели
-HUB_AI_EMBEDDING_MODEL = os.environ.get("HUB_AI_EMBEDDING_MODEL", "openai/text-embedding-3-small")
+CUS_AI_PRICING: dict = {}  # переопределение цен micro-USD/токен по модели
+CUS_AI_EMBEDDING_MODEL = os.environ.get("CUS_AI_EMBEDDING_MODEL", "openai/text-embedding-3-small")
 
 # CustoAI platform credential is configured only through environment/secret storage.
-HUB_CUSTOAI_API_KEY = os.environ.get("HUB_CUSTOAI_API_KEY", "")
-HUB_CUSTOAI_BASE_URL = os.environ.get("HUB_CUSTOAI_BASE_URL", "https://ai.api.cloud.yandex.net/v1")
-HUB_CUSTOAI_MODEL = os.environ.get(
-    "HUB_CUSTOAI_MODEL",
+CUS_CUSTOAI_API_KEY = os.environ.get("CUS_CUSTOAI_API_KEY", "")
+CUS_CUSTOAI_BASE_URL = os.environ.get("CUS_CUSTOAI_BASE_URL", "https://ai.api.cloud.yandex.net/v1")
+CUS_CUSTOAI_MODEL = os.environ.get(
+    "CUS_CUSTOAI_MODEL",
     "gpt://b1g89tr9t8iedhnl8pgg/yandexgpt-5.1/latest",
 )
 
@@ -169,7 +169,7 @@ HUB_CUSTOAI_MODEL = os.environ.get(
 # и inbound-поллинг, и outbox-диспатч в одном потоке — при большом hold-time
 # getUpdates/updates блокирует цикл и outbox (приглашения звонков, уведомления,
 # ответы AI) уходит с задержкой в размер long-poll на каждое подключение.
-HUB_MESSENGER_POLL_TIMEOUT_SECONDS = int(os.environ.get("HUB_MESSENGER_POLL_TIMEOUT_SECONDS", "2"))
+CUS_MESSENGER_POLL_TIMEOUT_SECONDS = int(os.environ.get("CUS_MESSENGER_POLL_TIMEOUT_SECONDS", "2"))
 
 # Password reset link lifetime. UI обещает 30 минут (default_token_generator uses this setting).
 PASSWORD_RESET_TIMEOUT = int(os.environ.get("PASSWORD_RESET_TIMEOUT", str(30 * 60)))
@@ -179,13 +179,13 @@ _secure_default = not DEBUG and not TESTING
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SAMESITE = os.environ.get("HUB_COOKIE_SAMESITE", "Lax")
+SESSION_COOKIE_SAMESITE = os.environ.get("CUS_COOKIE_SAMESITE", "Lax")
 CSRF_COOKIE_SAMESITE = SESSION_COOKIE_SAMESITE
-SESSION_COOKIE_SECURE = env_bool("HUB_COOKIE_SECURE", _secure_default)
-CSRF_COOKIE_SECURE = env_bool("HUB_COOKIE_SECURE", _secure_default)
-SECURE_SSL_REDIRECT = env_bool("HUB_SSL_REDIRECT", _secure_default)
+SESSION_COOKIE_SECURE = env_bool("CUS_COOKIE_SECURE", _secure_default)
+CSRF_COOKIE_SECURE = env_bool("CUS_COOKIE_SECURE", _secure_default)
+SECURE_SSL_REDIRECT = env_bool("CUS_SSL_REDIRECT", _secure_default)
 SECURE_HSTS_SECONDS = int(
-    os.environ.get("HUB_HSTS_SECONDS", str(60 * 60 * 24 * 365) if _secure_default else "0")
+    os.environ.get("CUS_HSTS_SECONDS", str(60 * 60 * 24 * 365) if _secure_default else "0")
 )
 SECURE_HSTS_INCLUDE_SUBDOMAINS = SECURE_HSTS_SECONDS > 0
 SECURE_HSTS_PRELOAD = SECURE_HSTS_SECONDS > 0
@@ -196,45 +196,45 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 # Файловые вложения знаний (ADR-HUB-0023). Файлы отдаются только через
 # download-endpoint (FileResponse), прямого статик-роутинга MEDIA нет.
 MEDIA_URL = "media/"
-HUB_STORAGE_BACKEND, MEDIA_ROOT, STORAGES = build_storage_settings(
+CUS_STORAGE_BACKEND, MEDIA_ROOT, STORAGES = build_storage_settings(
     base_dir=BASE_DIR,
     debug=DEBUG,
     testing=TESTING,
 )
 
 # Публичный адрес Hub: абсолютные ссылки, уходящие клиентам (download вложений).
-HUB_PUBLIC_BASE_URL = os.environ.get("HUB_PUBLIC_BASE_URL", "http://localhost:8000")
+CUS_PUBLIC_BASE_URL = os.environ.get("CUS_PUBLIC_BASE_URL", "http://localhost:8000")
 
 # P2P calls: opaque invitation lifetime and short-lived signaling/media access.
-HUB_CALL_INVITE_TTL_SECONDS = int(os.environ.get("HUB_CALL_INVITE_TTL_SECONDS", str(5 * 60)))
-HUB_CALL_ACCESS_TTL_SECONDS = int(os.environ.get("HUB_CALL_ACCESS_TTL_SECONDS", str(60 * 60)))
+CUS_CALL_INVITE_TTL_SECONDS = int(os.environ.get("CUS_CALL_INVITE_TTL_SECONDS", str(5 * 60)))
+CUS_CALL_ACCESS_TTL_SECONDS = int(os.environ.get("CUS_CALL_ACCESS_TTL_SECONDS", str(60 * 60)))
 # Grace period: принятый звонок без установленного соединения закрывается FAILED.
-HUB_CALL_CONNECT_GRACE_SECONDS = int(os.environ.get("HUB_CALL_CONNECT_GRACE_SECONDS", str(2 * 60)))
+CUS_CALL_CONNECT_GRACE_SECONDS = int(os.environ.get("CUS_CALL_CONNECT_GRACE_SECONDS", str(2 * 60)))
 # Grace period восстановления активного звонка после обрыва участника.
-HUB_CALL_RECONNECT_GRACE_SECONDS = int(os.environ.get("HUB_CALL_RECONNECT_GRACE_SECONDS", str(60)))
+CUS_CALL_RECONNECT_GRACE_SECONDS = int(os.environ.get("CUS_CALL_RECONNECT_GRACE_SECONDS", str(60)))
 # C07 concurrent quota: lease TTL for a p2p-call slot reservation. A crashed
 # session is released by the reservation sweep once the lease lapses.
-HUB_CONCURRENT_CALL_LEASE_SECONDS = int(
-    os.environ.get("HUB_CONCURRENT_CALL_LEASE_SECONDS", str(2 * 60 * 60))
+CUS_CONCURRENT_CALL_LEASE_SECONDS = int(
+    os.environ.get("CUS_CONCURRENT_CALL_LEASE_SECONDS", str(2 * 60 * 60))
 )
 if (
-    HUB_CALL_INVITE_TTL_SECONDS <= 0
-    or HUB_CALL_ACCESS_TTL_SECONDS <= 0
-    or HUB_CALL_CONNECT_GRACE_SECONDS <= 0
-    or HUB_CALL_RECONNECT_GRACE_SECONDS <= 0
+    CUS_CALL_INVITE_TTL_SECONDS <= 0
+    or CUS_CALL_ACCESS_TTL_SECONDS <= 0
+    or CUS_CALL_CONNECT_GRACE_SECONDS <= 0
+    or CUS_CALL_RECONNECT_GRACE_SECONDS <= 0
 ):
     raise ImproperlyConfigured("HUB call token TTL values must be positive")
 
 # ICE-серверы для WebRTC (SPEC-HUB-0013 §10): direct-first через STUN, TURN как
 # fallback. Формат URL через запятую (stun:host:port / turn:host:3478?transport=udp).
-HUB_CALL_STUN_URLS = env_list("HUB_CALL_STUN_URLS", [])
+CUS_CALL_STUN_URLS = env_list("CUS_CALL_STUN_URLS", [])
 # TURN (Coturn, SPEC-HUB-0013 §11): backend выдаёт краткоживущие REST-credentials
 # по общему static-auth-secret. Пусто локально -> только STUN/direct ICE.
-HUB_CALL_TURN_URLS = env_list("HUB_CALL_TURN_URLS", [])
-HUB_CALL_TURN_SECRET = os.environ.get("HUB_CALL_TURN_SECRET", "")
-HUB_CALL_TURN_TTL_SECONDS = int(os.environ.get("HUB_CALL_TURN_TTL_SECONDS", str(60 * 60)))
-if HUB_CALL_TURN_TTL_SECONDS <= 0:
-    raise ImproperlyConfigured("HUB_CALL_TURN_TTL_SECONDS must be positive")
+CUS_CALL_TURN_URLS = env_list("CUS_CALL_TURN_URLS", [])
+CUS_CALL_TURN_SECRET = os.environ.get("CUS_CALL_TURN_SECRET", "")
+CUS_CALL_TURN_TTL_SECONDS = int(os.environ.get("CUS_CALL_TURN_TTL_SECONDS", str(60 * 60)))
+if CUS_CALL_TURN_TTL_SECONDS <= 0:
+    raise ImproperlyConfigured("CUS_CALL_TURN_TTL_SECONDS must be positive")
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Лимиты на чувствительные эндпоинты (брутфорс/злоупотребление). В тестах отключены.
@@ -259,13 +259,13 @@ REST_FRAMEWORK = {
 }
 
 CORS_ALLOWED_ORIGINS = env_list(
-    "HUB_CORS_ALLOWED_ORIGINS",
+    "CUS_CORS_ALLOWED_ORIGINS",
     ["http://localhost:5173", "http://localhost:5174", "http://localhost:5175"],
 )
 
 # Конкретное значение задаёт surface settings. Middleware не добавляет header,
 # если policy пуста (например, в узком техническом тесте).
-HUB_CONTENT_SECURITY_POLICY = ""
+CUS_CONTENT_SECURITY_POLICY = ""
 
 LOGGING = {
     "version": 1,

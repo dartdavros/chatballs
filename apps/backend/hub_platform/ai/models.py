@@ -82,7 +82,7 @@ class KnowledgeAttachment(TenantRelationModel):
         from django.urls import reverse
 
         path = reverse("ai-attachment-download", kwargs={"public_id": self.public_id})
-        return settings.HUB_PUBLIC_BASE_URL.rstrip("/") + path
+        return settings.CUS_PUBLIC_BASE_URL.rstrip("/") + path
 
 
 class KnowledgeFragment(TenantRelationModel):

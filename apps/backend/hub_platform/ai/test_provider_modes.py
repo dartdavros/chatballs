@@ -110,7 +110,7 @@ class ProviderModeTests(TestCase):
                 self.assertIsInstance(provider, provider_type)
                 self.assertEqual(model, "runtime-model")
 
-    @override_settings(HUB_AI_PROVIDER="")
+    @override_settings(CUS_AI_PROVIDER="")
     def test_byok_uses_channel_integration(self) -> None:
         self._set_mode(CredentialMode.BYOK)
         integration = self._link_integration()
@@ -121,10 +121,10 @@ class ProviderModeTests(TestCase):
         self.assertEqual(provider.api_key, integration.secret)
 
     @override_settings(
-        HUB_AI_PROVIDER="",
-        HUB_CUSTOAI_API_KEY="platform-key",
-        HUB_CUSTOAI_BASE_URL="https://ai.api.cloud.yandex.net/v1",
-        HUB_CUSTOAI_MODEL="gpt://folder/yandexgpt-5.1/latest",
+        CUS_AI_PROVIDER="",
+        CUS_CUSTOAI_API_KEY="platform-key",
+        CUS_CUSTOAI_BASE_URL="https://ai.api.cloud.yandex.net/v1",
+        CUS_CUSTOAI_MODEL="gpt://folder/yandexgpt-5.1/latest",
     )
     def test_custoai_uses_platform_credential(self) -> None:
         from hub_platform.ai.provider.factory import get_provider
@@ -135,7 +135,7 @@ class ProviderModeTests(TestCase):
         self.assertEqual(provider.base_url, "https://ai.api.cloud.yandex.net/v1")
         self.assertEqual(provider.model, "gpt://folder/yandexgpt-5.1/latest")
 
-    @override_settings(HUB_AI_PROVIDER="", HUB_CUSTOAI_API_KEY="platform-key")
+    @override_settings(CUS_AI_PROVIDER="", CUS_CUSTOAI_API_KEY="platform-key")
     def test_no_implicit_fallback(self) -> None:
         from hub_platform.ai.provider.factory import get_provider
 
@@ -166,7 +166,7 @@ class ProviderModeTests(TestCase):
             chat.call_args.kwargs["model"], "gpt://folder/yandexgpt-5.1/latest"
         )
 
-    @override_settings(HUB_AI_PROVIDER="")
+    @override_settings(CUS_AI_PROVIDER="")
     def test_default_model_read_in_runtime(self) -> None:
         self._set_mode(CredentialMode.BYOK)
         self._link_integration(default_model="integration-model")

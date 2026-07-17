@@ -18,7 +18,7 @@ def _expected_credential(username: str, secret: str = SECRET) -> str:
     return base64.b64encode(digest).decode("ascii")
 
 
-@override_settings(HUB_CALL_TURN_SECRET=SECRET, HUB_CALL_TURN_TTL_SECONDS=3600)
+@override_settings(CUS_CALL_TURN_SECRET=SECRET, CUS_CALL_TURN_TTL_SECONDS=3600)
 class TurnCredentialsTests(SimpleTestCase):
     def test_username_encodes_expiry_and_label(self) -> None:
         before = int(time.time())
@@ -36,26 +36,26 @@ class TurnCredentialsTests(SimpleTestCase):
 
     def test_credential_rotates_with_secret(self) -> None:
         _u, credential = turn_credentials(now=1_700_000_000)
-        with override_settings(HUB_CALL_TURN_SECRET="other-secret"):
+        with override_settings(CUS_CALL_TURN_SECRET="other-secret"):
             _u2, other = turn_credentials(now=1_700_000_000)
         self.assertNotEqual(credential, other)
 
 
 class IceServersPayloadTests(SimpleTestCase):
-    @override_settings(HUB_CALL_STUN_URLS=[], HUB_CALL_TURN_URLS=[], HUB_CALL_TURN_SECRET="")
+    @override_settings(CUS_CALL_STUN_URLS=[], CUS_CALL_TURN_URLS=[], CUS_CALL_TURN_SECRET="")
     def test_empty_without_configuration(self) -> None:
         self.assertEqual(ice_servers_payload(), [])
 
-    @override_settings(HUB_CALL_STUN_URLS=STUN_URLS, HUB_CALL_TURN_URLS=[], HUB_CALL_TURN_SECRET="")
+    @override_settings(CUS_CALL_STUN_URLS=STUN_URLS, CUS_CALL_TURN_URLS=[], CUS_CALL_TURN_SECRET="")
     def test_stun_only(self) -> None:
         servers = ice_servers_payload()
         self.assertEqual(servers, [{"urls": STUN_URLS}])
 
     @override_settings(
-        HUB_CALL_STUN_URLS=STUN_URLS,
-        HUB_CALL_TURN_URLS=TURN_URLS,
-        HUB_CALL_TURN_SECRET=SECRET,
-        HUB_CALL_TURN_TTL_SECONDS=3600,
+        CUS_CALL_STUN_URLS=STUN_URLS,
+        CUS_CALL_TURN_URLS=TURN_URLS,
+        CUS_CALL_TURN_SECRET=SECRET,
+        CUS_CALL_TURN_TTL_SECONDS=3600,
     )
     def test_direct_first_then_turn_fallback(self) -> None:
         servers = ice_servers_payload()
@@ -67,7 +67,7 @@ class IceServersPayloadTests(SimpleTestCase):
         self.assertIn(":hub", turn["username"])
         self.assertEqual(turn["credential"], _expected_credential(turn["username"]))
 
-    @override_settings(HUB_CALL_STUN_URLS=[], HUB_CALL_TURN_URLS=TURN_URLS, HUB_CALL_TURN_SECRET="")
+    @override_settings(CUS_CALL_STUN_URLS=[], CUS_CALL_TURN_URLS=TURN_URLS, CUS_CALL_TURN_SECRET="")
     def test_turn_urls_without_secret_are_not_exposed(self) -> None:
         # Без секрета выдать рабочие credentials нельзя — TURN не отдаётся вовсе.
         self.assertEqual(ice_servers_payload(), [])

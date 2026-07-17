@@ -30,9 +30,9 @@ def _credentials() -> tuple[dict[str, str], dict[str, str]]:
 
 
 def build_databases(*, debug: bool, testing: bool) -> dict[str, dict]:
-    role = os.environ.get("HUB_DB_ROLE", "app").lower()
+    role = os.environ.get("CUS_DB_ROLE", "app").lower()
     if role not in {"app", "platform", "migration"}:
-        raise ImproperlyConfigured("HUB_DB_ROLE must be app, platform or migration")
+        raise ImproperlyConfigured("CUS_DB_ROLE must be app, platform or migration")
     users, passwords = _credentials()
     if not debug and not testing and len(set(users.values())) != 3:
         raise ImproperlyConfigured(

@@ -68,15 +68,15 @@ def _provider_from_integration(integration: Integration) -> LLMProvider:
     if integration.provider == IntegrationProvider.OPENROUTER:
         return OpenRouterProvider(
             api_key=integration.secret,
-            base_url=integration.config.get("base_url") or settings.HUB_OPENROUTER_BASE_URL,
-            timeout=settings.HUB_AI_REQUEST_TIMEOUT,
+            base_url=integration.config.get("base_url") or settings.CUS_OPENROUTER_BASE_URL,
+            timeout=settings.CUS_AI_REQUEST_TIMEOUT,
             proxy_url=integration.config.get("proxy_url", ""),
         )
     if integration.provider == IntegrationProvider.CUSTOM:
         return CustomProvider(
             api_key=integration.secret,
             base_url=integration.config["base_url"],
-            timeout=settings.HUB_AI_REQUEST_TIMEOUT,
+            timeout=settings.CUS_AI_REQUEST_TIMEOUT,
             proxy_url=integration.config.get("proxy_url", ""),
         )
     raise IntegrationNotConfigured(

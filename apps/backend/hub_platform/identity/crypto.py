@@ -9,7 +9,7 @@ from django.db import models
 
 @lru_cache(maxsize=1)
 def _fernet() -> Fernet:
-    configured = getattr(settings, "HUB_FIELD_ENCRYPTION_KEY", "")
+    configured = getattr(settings, "CUS_FIELD_ENCRYPTION_KEY", "")
     if configured:
         return Fernet(configured.encode() if isinstance(configured, str) else configured)
     # Dev/тестовый фолбэк: детерминированный ключ из SECRET_KEY (в production задаётся отдельно).

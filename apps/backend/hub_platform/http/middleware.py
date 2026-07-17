@@ -35,7 +35,7 @@ class ContentSecurityPolicyMiddleware:
 
     def __call__(self, request: HttpRequest) -> HttpResponse:
         response = self.get_response(request)
-        policy = settings.HUB_CONTENT_SECURITY_POLICY
+        policy = settings.CUS_CONTENT_SECURITY_POLICY
         if policy and not response.has_header("Content-Security-Policy"):
             response["Content-Security-Policy"] = policy
         return response

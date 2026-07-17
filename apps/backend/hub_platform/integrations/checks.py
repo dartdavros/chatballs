@@ -34,7 +34,7 @@ CheckResult = tuple[bool, str, dict]
 def _get(url: str, *, headers: dict[str, str] | None = None, proxy_url: str = "") -> tuple[int, dict]:
     opener = build_opener(proxy_url)
     request = urllib.request.Request(url, headers=headers or {}, method="GET")
-    with opener.open(request, timeout=settings.HUB_AI_REQUEST_TIMEOUT) as response:
+    with opener.open(request, timeout=settings.CUS_AI_REQUEST_TIMEOUT) as response:
         body = response.read().decode("utf-8")
         try:
             data = json.loads(body) if body else {}

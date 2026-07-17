@@ -81,10 +81,10 @@ def test_deploy_includes_coturn_when_calls_profile_active(fake_env):
     fake_env.write_env(
         COMPOSE_PROFILES="calls",
         CUSTOCRM_WEB_LISTENING_IP="203.0.113.10",
-        HUB_CALL_TURN_SECRET="turn-secret",
-        HUB_CALL_TURN_REALM="turn.hub.test",
-        HUB_TURN_EXTERNAL_IP="203.0.113.11",
-        HUB_TURN_LISTENING_IP="203.0.113.11",
+        CUS_CALL_TURN_SECRET="turn-secret",
+        CUS_CALL_TURN_REALM="turn.hub.test",
+        CUS_TURN_EXTERNAL_IP="203.0.113.11",
+        CUS_TURN_LISTENING_IP="203.0.113.11",
     )
     fake_env.install_docker()
     fake_env.install_flock(held=False)
@@ -102,10 +102,10 @@ def test_deploy_rejects_shared_web_and_turn_ip(fake_env):
     fake_env.write_env(
         COMPOSE_PROFILES="calls",
         CUSTOCRM_WEB_LISTENING_IP="203.0.113.10",
-        HUB_CALL_TURN_SECRET="turn-secret",
-        HUB_CALL_TURN_REALM="turn.hub.test",
-        HUB_TURN_EXTERNAL_IP="203.0.113.10",
-        HUB_TURN_LISTENING_IP="203.0.113.10",
+        CUS_CALL_TURN_SECRET="turn-secret",
+        CUS_CALL_TURN_REALM="turn.hub.test",
+        CUS_TURN_EXTERNAL_IP="203.0.113.10",
+        CUS_TURN_LISTENING_IP="203.0.113.10",
     )
     fake_env.install_docker()
     fake_env.install_flock(held=False)
@@ -191,7 +191,7 @@ def test_doctor_passes_on_valid_env(fake_env):
 
 def test_doctor_fails_on_default_secret_and_missing_password(fake_env):
     fake_env.write_env(
-        HUB_SECRET_KEY="change-me-long-random-secret",  # default -> должно провалиться
+        CUS_SECRET_KEY="change-me-long-random-secret",  # default -> должно провалиться
         POSTGRES_PASSWORD="",  # пусто -> должно провалиться
     )
     fake_env.install_docker()
@@ -200,7 +200,7 @@ def test_doctor_fails_on_default_secret_and_missing_password(fake_env):
     r = _run(fake_env, "doctor")
     assert r.returncode == 1
     assert "POSTGRES_PASSWORD" in r.stderr
-    assert "HUB_SECRET_KEY" in r.stderr
+    assert "CUS_SECRET_KEY" in r.stderr
 
 
 def test_doctor_fails_when_acme_email_missing(fake_env):

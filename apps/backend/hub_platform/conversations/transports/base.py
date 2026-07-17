@@ -29,7 +29,7 @@ class InboundMessage:
 def request_json(url: str, *, headers: dict | None = None, method: str = "GET", body: dict | None = None, proxy_url: str = "") -> dict:
     data = json.dumps(body).encode("utf-8") if body is not None else None
     request = urllib.request.Request(url, data=data, headers=headers or {}, method=method)
-    with build_opener(proxy_url).open(request, timeout=settings.HUB_AI_REQUEST_TIMEOUT) as response:
+    with build_opener(proxy_url).open(request, timeout=settings.CUS_AI_REQUEST_TIMEOUT) as response:
         raw = response.read().decode("utf-8")
         return json.loads(raw) if raw else {}
 

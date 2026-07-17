@@ -65,13 +65,13 @@ def ice_servers_payload() -> list[dict]:
     # fallback с краткоживущими credentials. Генерируется на каждый запрос токена,
     # поэтому клиент всегда получает не истёкшие TURN credentials.
     servers: list[dict] = []
-    if settings.HUB_CALL_STUN_URLS:
-        servers.append({"urls": list(settings.HUB_CALL_STUN_URLS)})
-    if settings.HUB_CALL_TURN_URLS and settings.HUB_CALL_TURN_SECRET:
+    if settings.CUS_CALL_STUN_URLS:
+        servers.append({"urls": list(settings.CUS_CALL_STUN_URLS)})
+    if settings.CUS_CALL_TURN_URLS and settings.CUS_CALL_TURN_SECRET:
         username, credential = turn_credentials()
         servers.append(
             {
-                "urls": list(settings.HUB_CALL_TURN_URLS),
+                "urls": list(settings.CUS_CALL_TURN_URLS),
                 "username": username,
                 "credential": credential,
             }

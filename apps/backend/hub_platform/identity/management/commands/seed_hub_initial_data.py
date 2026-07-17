@@ -111,8 +111,8 @@ def _seed_core(*, owner_email: str, owner_password: str, owner_name: str) -> Cor
         owner = existing_owner.user
     else:
         raise CommandError(
-            "OWNER is required for the first production seed. Set HUB_SEED_OWNER_EMAIL and "
-            "HUB_SEED_OWNER_PASSWORD, or pass --owner-email and --owner-password."
+            "OWNER is required for the first production seed. Set CUS_SEED_OWNER_EMAIL and "
+            "CUS_SEED_OWNER_PASSWORD, or pass --owner-email and --owner-password."
         )
 
     record_audit_event(
@@ -196,15 +196,15 @@ class Command(BaseCommand):
             ))
             return
 
-        owner_email = _option_or_env(options, "owner_email", "HUB_SEED_OWNER_EMAIL")
-        owner_password = _option_or_env(options, "owner_password", "HUB_SEED_OWNER_PASSWORD")
-        owner_name = _option_or_env(options, "owner_name", "HUB_SEED_OWNER_NAME")
+        owner_email = _option_or_env(options, "owner_email", "CUS_SEED_OWNER_EMAIL")
+        owner_password = _option_or_env(options, "owner_password", "CUS_SEED_OWNER_PASSWORD")
+        owner_name = _option_or_env(options, "owner_name", "CUS_SEED_OWNER_NAME")
         if (
             owner_email
             and not owner_password
             and not Organization.objects.filter(memberships__role=EmployeeRole.OWNER).exists()
         ):
-            raise CommandError("HUB_SEED_OWNER_PASSWORD is required when creating the first OWNER.")
+            raise CommandError("CUS_SEED_OWNER_PASSWORD is required when creating the first OWNER.")
 
         core = _seed_core(
             owner_email=owner_email, owner_password=owner_password, owner_name=owner_name

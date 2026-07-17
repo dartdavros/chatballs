@@ -46,7 +46,7 @@ def _prepare_invocation(*, channel, requested_model: str | None) -> tuple[LLMPro
     effective_model = agent.model
     if mode == CredentialMode.CUSTOAI:
         assert_managed_ai_entitlement(channel=channel)
-        effective_model = settings.HUB_CUSTOAI_MODEL
+        effective_model = settings.CUS_CUSTOAI_MODEL
     elif mode == CredentialMode.BYOK:
         assert_byok_ai_entitlement(channel=channel)
         effective_model = routing.resolve_model(channel, fallback_model=agent.model)
@@ -70,7 +70,7 @@ def invoke_chat(
     used_fragment_ids: list | None = None,
 ) -> ChatResult:
     fallback_model = (
-        settings.HUB_CUSTOAI_MODEL
+        settings.CUS_CUSTOAI_MODEL
         if channel.ai_agent.credential_mode == CredentialMode.CUSTOAI
         else model or channel.ai_agent.model
     )
@@ -102,7 +102,7 @@ def invoke_chat(
     try:
         result: ChatResult = call_with_resilience(
             lambda: provider.chat(messages=safe_messages, model=model, params=effective_params),
-            retries=settings.HUB_AI_MAX_RETRIES,
+            retries=settings.CUS_AI_MAX_RETRIES,
             breaker=_breaker,
         )
     except ProviderError as error:
@@ -158,7 +158,7 @@ def embed_texts(
     provider = get_provider(channel=channel)
     results: list[EmbeddingResult] = call_with_resilience(
         lambda: provider.embed(texts=texts, model=model),
-        retries=settings.HUB_AI_MAX_RETRIES,
+        retries=settings.CUS_AI_MAX_RETRIES,
         breaker=_breaker,
     )
     tokens = sum(result.tokens for result in results)

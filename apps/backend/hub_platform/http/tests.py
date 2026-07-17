@@ -22,13 +22,13 @@ class LocalCorsMiddlewareTests(TestCase):
 
 
 class ContentSecurityPolicyMiddlewareTests(TestCase):
-    @override_settings(HUB_CONTENT_SECURITY_POLICY="default-src 'none'")
+    @override_settings(CUS_CONTENT_SECURITY_POLICY="default-src 'none'")
     def test_surface_policy_is_applied(self) -> None:
         response = self.client.get("/api/v1/health/live/")
 
         self.assertEqual(response["Content-Security-Policy"], "default-src 'none'")
 
-    @override_settings(HUB_CONTENT_SECURITY_POLICY="")
+    @override_settings(CUS_CONTENT_SECURITY_POLICY="")
     def test_empty_policy_does_not_add_header(self) -> None:
         response = self.client.get("/api/v1/health/live/")
 

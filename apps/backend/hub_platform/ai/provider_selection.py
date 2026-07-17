@@ -17,7 +17,7 @@ def configure_agent_provider(
     if mode not in CredentialMode.values:
         raise ValidationError({"credentialMode": "Unknown credential mode"})
     if mode == CredentialMode.CUSTOAI:
-        return mode, settings.HUB_CUSTOAI_MODEL
+        return mode, settings.CUS_CUSTOAI_MODEL
     if integration_id is None:
         raise ValidationError({"providerIntegrationId": "BYOK integration is required"})
     try:

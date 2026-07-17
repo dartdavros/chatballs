@@ -432,7 +432,7 @@ class ProviderFactoryTests(TestCase):
 
         self.assertIsInstance(get_provider(), LocalProvider)
 
-    @override_settings(DEBUG=False, TESTING=False, HUB_AI_PROVIDER="test")
+    @override_settings(DEBUG=False, TESTING=False, CUS_AI_PROVIDER="test")
     def test_local_provider_forbidden_in_production(self) -> None:
         from django.core.exceptions import ImproperlyConfigured
 

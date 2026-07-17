@@ -12,6 +12,7 @@ import logging
 from django.db import IntegrityError, transaction
 from django.utils import timezone
 
+from hub_platform.ai.credits import ManagedAiQuotaExceeded
 from hub_platform.ai.limits import LimitExceeded
 from hub_platform.ai.provider.base import ProviderError
 from hub_platform.ai.runtime import HANDOFF_TOKEN
@@ -31,7 +32,7 @@ from hub_platform.conversations.models import (
 from hub_platform.conversations.transports.base import InboundMessage
 from hub_platform.events.models import EventOwnership, InboxEvent
 from hub_platform.notifications.models import NotificationAudience, NotificationType
-from hub_platform.notifications.services import notify
+from hub_platform.notifications.services import notify, notify_management
 from hub_platform.subscriptions.errors import EntitlementRequired
 from hub_platform.subscriptions.keys import QuotaKey
 from hub_platform.subscriptions.usage_service import record_usage
@@ -196,7 +197,12 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
 
     try:
         result = run_channel_turn(channel=channel, message=inbound.text, history=_history(conversation))
-    except (ProviderError, LimitExceeded, EntitlementRequired) as error:
+    except (
+        ProviderError,
+        ManagedAiQuotaExceeded,
+        LimitExceeded,
+        EntitlementRequired,
+    ) as error:
         # Сбой AI (провайдер недоступен) или срабатывание лимита стоимости не должны
         # «терять» сообщение: переводим диалог в очередь к оператору, уведомляем и
         # отвечаем клиенту понятным fallback.
@@ -219,6 +225,16 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
             source_type="Conversation",
             source_id=conversation.id,
             dedup_key=f"aifail:{conversation.id}",
+        )
+        notify_management(
+            context=context,
+            type=NotificationType.INTEGRATION_ERROR,
+            title=f"Ошибка AI · {channel.name}",
+            body="AI временно недоступен, диалог передан оператору",
+            target_id=conversation.id,
+            source_type="Conversation",
+            source_id=conversation.id,
+            dedup_key=f"aierror:{conversation.id}",
         )
         transports.send_reply(integration, chat_id=conversation.external_chat_id, user_id=inbound.user_id, text=fallback)
         return

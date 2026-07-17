@@ -3,7 +3,7 @@ import os
 
 from hub_backend.settings_base import *
 
-HUB_RUNTIME_SURFACE = "admin"
+CUS_RUNTIME_SURFACE = "admin"
 ROOT_URLCONF = "hub_backend.urls_admin"
 ASGI_APPLICATION = "hub_backend.asgi_admin.application"
 WSGI_APPLICATION = "hub_backend.wsgi_admin.application"
@@ -22,7 +22,7 @@ SESSION_COOKIE_PATH = "/"
 CSRF_COOKIE_PATH = "/"
 SECURE_SSL_REDIRECT = env_bool("CUSTOCRM_ADMIN_SSL_REDIRECT", False)
 
-HUB_CONTENT_SECURITY_POLICY = os.environ.get(
+CUS_CONTENT_SECURITY_POLICY = os.environ.get(
     "CUSTOCRM_ADMIN_CSP",
     "default-src 'self'; frame-ancestors 'none'; base-uri 'self'; "
     "form-action 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; "

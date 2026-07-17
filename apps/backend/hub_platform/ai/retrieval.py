@@ -43,7 +43,7 @@ class KnowledgeRetriever:
             query_vector = embed_texts(
                 channel=agent.channel,
                 texts=[query],
-                model=settings.HUB_AI_EMBEDDING_MODEL,
+                model=settings.CUS_AI_EMBEDDING_MODEL,
                 purpose="retrieval_query",
             )[0].vector
             semantic = semantic_search(agent, query_vector, limit=limit)
