@@ -14,7 +14,7 @@ export function Sidebar({ route, user, setRoute, onLogout }: { route: RouteKey; 
     { key: "aiAgents" as const, label: "AI", icon: "robot" as const },
     { key: "integrations" as const, label: "Интеграции", icon: "plug" as const },
     { divider: true },
-    { key: "settings" as const, label: "Настройки", icon: "settings" as const },
+    { label: "Настройки", icon: "settings" as const, disabled: true },
   ];
   return (
     <aside className="hub-sidebar">
@@ -30,7 +30,7 @@ export function Sidebar({ route, user, setRoute, onLogout }: { route: RouteKey; 
           if (nextRoute && !canAccess(user, nextRoute)) return null;
           const active = nextRoute === route || (nextRoute === "employees" && (route === "employeeDetail" || route === "accessProfiles")) || (nextRoute === "products" && route === "productDetail") || (nextRoute === "aiAgents" && route.startsWith("ai"));
           return (
-            <button className={`hub-nav-item ${active ? "is-active" : ""}`} key={item.label} onClick={() => nextRoute && setRoute(nextRoute)}>
+            <button className={`hub-nav-item ${active ? "is-active" : ""}`} disabled={item.disabled} key={item.label} onClick={() => nextRoute && setRoute(nextRoute)}>
               {active && <span className="active-bar" />}
               <Icon name={item.icon} />
               {item.label}
