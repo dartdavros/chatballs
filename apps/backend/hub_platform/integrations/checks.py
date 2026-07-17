@@ -67,6 +67,33 @@ def check_openrouter(*, secret: str, base_url: str, proxy_url: str = "") -> Chec
     return _safe(run)
 
 
+def check_custom(*, secret: str, base_url: str, proxy_url: str = "") -> CheckResult:
+    """Connectivity check for a generic OpenAI-compatible endpoint (ADR-HUB-0034).
+
+    Unlike OpenRouter there is no /key identity endpoint and no model catalog we
+    can trust as authoritative; we only verify the endpoint speaks the OpenAI
+    shape by listing models. GET /models with Authorization: Bearer <key>.
+    """
+    if not secret:
+        return False, "Не указан API-ключ", {}
+    if not base_url:
+        return False, "Не указан Base URL", {}
+
+    base = base_url.rstrip("/")
+
+    def run() -> CheckResult:
+        status, data = _get(f"{base}/models", headers={"Authorization": f"Bearer {secret}"}, proxy_url=proxy_url)
+        if status != 200:
+            return False, f"Эндпоинт ответил {status}", {}
+        # OpenAI shape: {"data": [{"id": "..."}, ...]}. Каталог не является
+        # разрешительным списком (ADR-HUB-0020:89), ответственность за model
+        # identifier лежит на владельце (ADR-HUB-0034 §4).
+        count = len(data.get("data") or [])
+        return True, f"Эндпоинт отвечает: {count} моделей", {}
+
+    return _safe(run)
+
+
 def check_max(*, secret: str, base_url: str, proxy_url: str = "") -> CheckResult:
     if not secret:
         return False, "Не указан токен бота", {}

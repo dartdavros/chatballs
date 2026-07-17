@@ -1,0 +1,82 @@
+"""BYOK provider routing for AI invocations (ADR-HUB-0020:45, ADR-HUB-0034).
+
+Resolves an LLM provider and the effective model from a channel's
+`provider_integration`. This is the BYOK path: the organization supplies its
+own credentials, the integration is selected explicitly via
+`Channel.provider_integration`, and managed AI credits are not consumed.
+
+Selecting the first OpenRouter integration of the org or globally overriding
+the owner's choice is forbidden (ADR-HUB-0020:45). The integration MUST be
+the one the channel points at.
+
+This module also closes the as-built gap where the OpenRouter «Модель по
+умолчанию» field was decorative (SPEC-HUB-0005:388, SPEC-HUB-0024 §4.3, §6):
+for OpenRouter and Custom integrations the configured `default_model` is read
+at runtime and overrides `AIAgent.model`.
+"""
+
+from __future__ import annotations
+
+from hub_platform.ai.provider.base import LLMProvider
+from hub_platform.ai.provider.custom import CustomProvider
+from hub_platform.ai.provider.openrouter import OpenRouterProvider
+from hub_platform.integrations.models import Integration, IntegrationProvider
+
+
+class IntegrationNotConfigured(Exception):
+    """Raised when a channel has no provider_integration for a BYOK call.
+
+    Surfaces a clear configuration error instead of silently falling back to a
+    global/first integration (which is forbidden by ADR-HUB-0020:45 and would
+    reintroduce the tenant-isolation gap removed by ADR-HUB-0033 §3).
+    """
+
+
+def resolve_provider(channel) -> LLMProvider:
+    """Build the BYOK LLMProvider from the channel's explicit integration."""
+    integration = _channel_integration(channel)
+    return _provider_from_integration(integration)
+
+
+def resolve_provider_and_model(channel, *, fallback_model: str) -> tuple[LLMProvider, str]:
+    """Build the BYOK provider and the effective model for the channel.
+
+    `fallback_model` is `AIAgent.model`; it is used only when the integration
+    has no `default_model` configured, so existing agents keep working while
+    the integration-level model field becomes the authoritative override.
+    """
+    integration = _channel_integration(channel)
+    provider = _provider_from_integration(integration)
+    model = str(integration.config.get("default_model") or "").strip() or fallback_model
+    return provider, model
+
+
+def _channel_integration(channel) -> Integration:
+    integration = getattr(channel, "provider_integration", None)
+    if integration is None or not integration.secret:
+        raise IntegrationNotConfigured(
+            "Канал не привязан к LLM-интеграции BYOK; выберите провайдера в настройках канала"
+        )
+    return integration
+
+
+def _provider_from_integration(integration: Integration) -> LLMProvider:
+    from django.conf import settings
+
+    if integration.provider == IntegrationProvider.OPENROUTER:
+        return OpenRouterProvider(
+            api_key=integration.secret,
+            base_url=integration.config.get("base_url") or settings.HUB_OPENROUTER_BASE_URL,
+            timeout=settings.HUB_AI_REQUEST_TIMEOUT,
+            proxy_url=integration.config.get("proxy_url", ""),
+        )
+    if integration.provider == IntegrationProvider.CUSTOM:
+        return CustomProvider(
+            api_key=integration.secret,
+            base_url=integration.config["base_url"],
+            timeout=settings.HUB_AI_REQUEST_TIMEOUT,
+            proxy_url=integration.config.get("proxy_url", ""),
+        )
+    raise IntegrationNotConfigured(
+        f"Интеграция «{integration.provider}» не является LLM-провайдером BYOK"
+    )

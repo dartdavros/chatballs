@@ -47,7 +47,10 @@ def _normalized_config(provider: str, config: dict) -> dict:
     proxy_url = str(config.get("proxyUrl", config.get("proxy_url", ""))).strip()
     if proxy_url:
         result["proxy_url"] = proxy_url
-    if provider == IntegrationProvider.OPENROUTER:
+    # LLM-провайдеры (OpenRouter, Custom) хранят модель по умолчанию свободным текстом.
+    # Для OpenRouter поле исторически декоративно (SPEC-HUB-0005:388); для Custom оно
+    # читается в рантайме (ADR-HUB-0034 §4). Версионирование модели — дорожка ADR-0034.
+    if provider in (IntegrationProvider.OPENROUTER, IntegrationProvider.CUSTOM):
         default_model = str(config.get("defaultModel", config.get("default_model", ""))).strip()
         if default_model:
             result["default_model"] = default_model
@@ -128,6 +131,7 @@ def delete_integration(*, context: TenantContext, integration: Integration) -> N
 
 _CHECKS = {
     IntegrationProvider.OPENROUTER: checks.check_openrouter,
+    IntegrationProvider.CUSTOM: checks.check_custom,
     IntegrationProvider.MAX: checks.check_max,
     IntegrationProvider.TELEGRAM: checks.check_telegram,
 }

@@ -6,6 +6,7 @@ from hub_platform.ai import limits, pricing
 from hub_platform.ai.credits import assert_managed_ai_entitlement, consume_invocation_credits
 from hub_platform.ai.models import LlmInvocation, LlmInvocationStatus
 from hub_platform.ai.pii import redact
+from hub_platform.ai.provider import routing
 from hub_platform.ai.provider.base import ChatMessage, ChatResult, EmbeddingResult, ProviderError
 from hub_platform.ai.provider.factory import get_provider
 from hub_platform.ai.provider.resilience import CircuitBreaker, call_with_resilience
@@ -33,7 +34,11 @@ def invoke_chat(*, channel, messages: list[ChatMessage], purpose: str, model: st
 
     # ADR-HUB-0011: отдельное очищенное представление сообщений для LLM.
     safe_messages = [ChatMessage(role=m.role, content=redact(m.content)) for m in messages]
-    provider = get_provider()
+    # BYOK-интеграция канала переопределяет и провайдера, и модель (ADR-HUB-0034 §4,
+    # SPEC-HUB-0024 §6): «Модель по умолчанию» интеграции читается в рантайме и
+    # заменяет AIAgent.model — устраняет as-built разрыв SPEC-HUB-0005:388.
+    provider, model = routing.resolve_provider_and_model(channel, fallback_model=model) \
+        if getattr(channel, "provider_integration_id", None) else (get_provider(channel=channel), model)
     started = time.monotonic()
     try:
         result: ChatResult = call_with_resilience(

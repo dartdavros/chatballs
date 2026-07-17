@@ -97,7 +97,7 @@ export function IntegrationForm({ initial, onClose, onSaved }: { initial: Integr
           <FormField label="Прокси" value={proxyUrl} onChange={setProxyUrl} placeholder="http://host:port или socks5://user:pass@host:port — пусто, если без прокси" />
         )}
         {meta.hasModel && (
-          <FormField label="Модель по умолчанию" value={defaultModel} onChange={setDefaultModel} placeholder="anthropic/claude-sonnet-4.6" />
+          <FormField label="Модель по умолчанию" value={defaultModel} onChange={setDefaultModel} placeholder={provider === "OPENROUTER" ? "anthropic/claude-sonnet-4.6" : ""} />
         )}
         {isEdit && initial.config.botUsername && (
           <FormField label="Бот" value={`${initial.config.botName || initial.config.botUsername}${initial.config.botUsername ? ` · @${initial.config.botUsername}` : ""}${initial.config.botId ? ` · id ${initial.config.botId}` : ""}`} />

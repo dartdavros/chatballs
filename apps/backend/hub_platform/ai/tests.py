@@ -431,6 +431,137 @@ class ProviderFactoryTests(TestCase):
             get_provider()
 
 
+class ByokRoutingTests(TestCase):
+    """BYOK provider routing through Channel.provider_integration.
+
+    Covers SPEC-HUB-0024 §5-§6: a channel linked to an OpenRouter/Custom
+    integration resolves that integration (never the first org-wide), and the
+    integration's `default_model` overrides `AIAgent.model` at runtime — the
+    as-built gap from SPEC-HUB-0005:388 (decorative model field).
+    """
+
+    def setUp(self) -> None:
+        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
+        self.organization = Organization.objects.get(slug="edevs")
+        self.context = system_tenant_context(self.organization)
+        self.channel, self.agent = make_channel_with_agent(
+            self.organization, code="firepage-sales", name="FirePage — продажи",
+            product=Product.objects.get(code="firepage"),
+        )
+
+    def _link_integration(self, *, provider, base_url, default_model, secret="sk-byok") -> None:
+        from hub_platform.integrations.services import IntegrationInput, create_integration
+
+        integration = create_integration(
+            context=self.context,
+            data=IntegrationInput(
+                provider=provider,
+                name="BYOK",
+                secret=secret,
+                config={"baseUrl": base_url, "defaultModel": default_model},
+            ),
+        )
+        self.channel.provider_integration = integration
+        self.channel.save(update_fields=["provider_integration"])
+
+    def test_custom_integration_resolves_to_custom_provider(self) -> None:
+        from hub_platform.ai.provider.custom import CustomProvider
+        from hub_platform.ai.provider.routing import resolve_provider_and_model
+        from hub_platform.integrations.models import IntegrationProvider
+
+        self._link_integration(
+            provider=IntegrationProvider.CUSTOM,
+            base_url="https://api.example.com/v1",
+            default_model="local-llama-3",
+        )
+        provider, model = resolve_provider_and_model(self.channel, fallback_model="agent-model")
+
+        self.assertIsInstance(provider, CustomProvider)
+        self.assertEqual(model, "local-llama-3")
+
+    def test_openrouter_integration_resolves_to_openrouter_provider(self) -> None:
+        from hub_platform.ai.provider.openrouter import OpenRouterProvider
+        from hub_platform.ai.provider.routing import resolve_provider_and_model
+        from hub_platform.integrations.models import IntegrationProvider
+
+        self._link_integration(
+            provider=IntegrationProvider.OPENROUTER,
+            base_url="https://openrouter.ai/api/v1",
+            default_model="anthropic/claude-sonnet-4.6",
+        )
+        provider, model = resolve_provider_and_model(self.channel, fallback_model="agent-model")
+
+        self.assertIsInstance(provider, OpenRouterProvider)
+        self.assertEqual(model, "anthropic/claude-sonnet-4.6")
+
+    def test_default_model_overrides_agent_model_at_runtime(self) -> None:
+        # SPEC-HUB-0024 §6: поле «Модель по умолчанию» читается в рантайме.
+        from hub_platform.ai.provider.routing import resolve_provider_and_model
+        from hub_platform.integrations.models import IntegrationProvider
+
+        self._link_integration(
+            provider=IntegrationProvider.CUSTOM,
+            base_url="https://api.example.com/v1",
+            default_model="runtime-model",
+        )
+        _, model = resolve_provider_and_model(self.channel, fallback_model="agent-default")
+        self.assertEqual(model, "runtime-model")
+
+    def test_missing_default_model_falls_back_to_agent_model(self) -> None:
+        from hub_platform.ai.provider.routing import resolve_provider_and_model
+        from hub_platform.integrations.models import IntegrationProvider
+
+        self._link_integration(
+            provider=IntegrationProvider.CUSTOM,
+            base_url="https://api.example.com/v1",
+            default_model="",
+        )
+        _, model = resolve_provider_and_model(self.channel, fallback_model="agent-default")
+        self.assertEqual(model, "agent-default")
+
+    def test_channel_without_integration_raises(self) -> None:
+        from hub_platform.ai.provider.routing import IntegrationNotConfigured, resolve_provider
+
+        with self.assertRaises(IntegrationNotConfigured):
+            resolve_provider(self.channel)
+
+    def test_invoke_chat_uses_integration_model_for_byok_channel(self) -> None:
+        # End-to-end SPEC #5: invoke_chat на канале с BYOK-интеграцией использует
+        # модель из integration.config, а не AIAgent.model.
+        from unittest import mock
+
+        from hub_platform.ai.invocation import invoke_chat
+        from hub_platform.ai.provider.base import ChatMessage, ChatResult
+        from hub_platform.integrations.models import IntegrationProvider
+
+        self._link_integration(
+            provider=IntegrationProvider.CUSTOM,
+            base_url="https://api.example.com/v1",
+            default_model="byok-model",
+        )
+
+        captured = {}
+
+        class _Capturing:
+            name = "custom"
+
+            def chat(self, *, messages, model, params=None):
+                captured["model"] = model
+                return ChatResult(text="ok", model=model, prompt_tokens=1, completion_tokens=1)
+
+            def embed(self, *, texts, model):  # pragma: no cover
+                return []
+
+        with mock.patch("hub_platform.ai.provider.routing.resolve_provider_and_model",
+                        return_value=(_Capturing(), "byok-model")):
+            invoke_chat(
+                channel=self.channel,
+                messages=[ChatMessage(role="user", content="hi")],
+                purpose="agent_chat",
+            )
+        self.assertEqual(captured["model"], "byok-model")
+
+
 class ChatInvocationTests(TestCase):
     def setUp(self) -> None:
         bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")

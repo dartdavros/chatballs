@@ -7,7 +7,7 @@ from django.test import TestCase
 from hub_platform.identity.bootstrap import bootstrap_edevs_owner
 from hub_platform.identity.models import Organization
 from hub_platform.integrations import checks
-from hub_platform.integrations.models import Integration, IntegrationProvider, IntegrationStatus
+from hub_platform.integrations.models import Integration, IntegrationKind, IntegrationProvider, IntegrationStatus
 from hub_platform.integrations.serializers import integration_payload
 from hub_platform.integrations.services import (
     IntegrationInput,
@@ -188,3 +188,82 @@ class BuildOpenerSocksTests(TestCase):
         with mock.patch.object(proxy, "_import_socks", side_effect=ValueError("no PySocks")):
             with self.assertRaises(ValueError):
                 build_opener("socks5://host:1080")
+
+
+class CustomIntegrationTests(TestCase):
+    """Generic OpenAI-compatible BYOK provider (ADR-HUB-0034, SPEC-HUB-0024 §5).
+
+    Covers the three required fields (endpoint, API key, model), runtime
+    reading of the model field (SPEC #2, #5 — closing the as-built gap where
+    «Модель по умолчанию» was decorative), and the connectivity check against
+    an arbitrary OpenAI-compatible endpoint.
+    """
+
+    def setUp(self) -> None:
+        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
+        self.organization = Organization.objects.get(slug="edevs")
+        self.context = system_tenant_context(self.organization)
+
+    def test_custom_persists_endpoint_and_model(self) -> None:
+        integration = create_integration(
+            context=self.context,
+            data=IntegrationInput(
+                provider=IntegrationProvider.CUSTOM,
+                name="Мой провайдер",
+                secret="sk-custom",
+                config={
+                    "baseUrl": "https://api.example.com/v1",
+                    "defaultModel": "local-llama-3",
+                },
+            ),
+        )
+        # Модель — отдельное рабочее поле (ADR-HUB-0034 §4), читается в рантайме.
+        self.assertEqual(integration.config["base_url"], "https://api.example.com/v1")
+        self.assertEqual(integration.config["default_model"], "local-llama-3")
+        self.assertEqual(integration.kind, IntegrationKind.LLM_PROVIDER)
+
+    def test_custom_requires_model_free_text(self) -> None:
+        # Каталога нет — модель обязательна к заполнению владельцем, но на уровне
+        # нормализации конфига мы её сохраняем; пустое значение просто не сохраняется.
+        integration = create_integration(
+            context=self.context,
+            data=IntegrationInput(
+                provider=IntegrationProvider.CUSTOM,
+                name="Мой провайдер",
+                secret="sk-custom",
+                config={"baseUrl": "https://api.example.com/v1"},
+            ),
+        )
+        self.assertNotIn("default_model", integration.config)
+
+    def test_check_custom_lists_models_on_openai_shape(self) -> None:
+        captured = {}
+        with mock.patch("hub_platform.integrations.checks.build_opener", side_effect=_patched_opener(captured, {"data": [{"id": "local-llama-3"}]})):
+            ok, detail, meta = checks.check_custom(secret="sk-custom", base_url="https://api.example.com/v1")
+
+        self.assertTrue(ok)
+        self.assertIn("1 моделей", detail)
+
+    def test_check_custom_without_secret_fails(self) -> None:
+        ok, detail, meta = checks.check_custom(secret="", base_url="https://api.example.com/v1")
+        self.assertFalse(ok)
+        self.assertEqual(detail, "Не указан API-ключ")
+
+    def test_check_custom_without_base_url_fails(self) -> None:
+        ok, detail, meta = checks.check_custom(secret="sk-custom", base_url="")
+        self.assertFalse(ok)
+        self.assertEqual(detail, "Не указан Base URL")
+
+    def test_check_custom_non_200_is_error(self) -> None:
+        response = mock.MagicMock()
+        response.status = 401
+        response.read.return_value = b"{}"
+        opener = mock.MagicMock()
+        ctx = mock.MagicMock()
+        ctx.__enter__.return_value = response
+        opener.open.return_value = ctx
+        with mock.patch("hub_platform.integrations.checks.build_opener", return_value=opener):
+            ok, detail, meta = checks.check_custom(secret="sk-custom", base_url="https://api.example.com/v1")
+
+        self.assertFalse(ok)
+        self.assertIn("401", detail)
