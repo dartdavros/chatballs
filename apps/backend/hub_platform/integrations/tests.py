@@ -160,7 +160,9 @@ class OpenRouterProviderProxyTests(TestCase):
 
         captured = {}
         provider = OpenRouterProvider(api_key="sk-test", base_url="https://openrouter.ai/api/v1", proxy_url="http://proxy:8080")
-        with mock.patch("hub_platform.ai.provider.openrouter.build_opener", side_effect=_patched_opener(captured, {"choices": [{"message": {"content": "ok"}}]})):
+        # После рефакторинга общий HTTP-слой живёт в openai_http (ADR-HUB-0033 §7):
+        # мокаем именно его build_opener.
+        with mock.patch("hub_platform.ai.provider.openai_http.build_opener", side_effect=_patched_opener(captured, {"choices": [{"message": {"content": "ok"}}], "model": "x"})):
             result = provider.chat(messages=[], model="x")
 
         self.assertEqual(result.text, "ok")

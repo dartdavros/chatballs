@@ -1,62 +1,34 @@
-import http.client
-import json
-import urllib.error
-import urllib.request
-
-from hub_platform.ai.provider.base import ChatMessage, ChatResult, EmbeddingResult, LLMProvider, ProviderError
-from hub_platform.integrations.proxy import build_opener
+from hub_platform.ai.provider import openai_http
+from hub_platform.ai.provider.base import ChatMessage, ChatResult, EmbeddingResult, LLMProvider
 
 
 class OpenRouterProvider(LLMProvider):
-    """OpenRouter HTTP adapter (stdlib only). Exercised with a real key; tests use TestProvider."""
+    """OpenRouter HTTP adapter (stdlib only).
+
+    OpenAI Chat Completions shape with usage.include=true (returns the actual
+    USD cost in usage.cost). Delegates HTTP/parsing to the shared openai_http
+    layer (ADR-HUB-0033 §7, ADR-HUB-0034 §3); this adapter only carries the
+    OpenRouter product semantics (cost reporting). Exercised with a real key;
+    tests use the LocalProvider.
+    """
 
     name = "openrouter"
 
     def __init__(self, *, api_key: str, base_url: str, timeout: float = 30.0, proxy_url: str = ""):
         self.api_key = api_key
-        self.base_url = base_url.rstrip("/")
+        self.base_url = base_url
         self.timeout = timeout
         self.proxy_url = proxy_url or ""
 
-    def _post(self, path: str, payload: dict) -> dict:
-        request = urllib.request.Request(
-            f"{self.base_url}{path}",
-            data=json.dumps(payload).encode("utf-8"),
-            headers={"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"},
-            method="POST",
-        )
-        try:
-            with build_opener(self.proxy_url).open(request, timeout=self.timeout) as response:
-                return json.loads(response.read().decode("utf-8"))
-        # http.client.HTTPException покрывает IncompleteRead/BadStatusLine (оборванный ответ) —
-        # это не OSError, поэтому ловим отдельно, иначе исключение уходит мимо ProviderError.
-        except (urllib.error.URLError, TimeoutError, OSError, http.client.HTTPException, json.JSONDecodeError) as error:
-            raise ProviderError(f"{type(error).__name__}: {error}") from error
-
     def chat(self, *, messages: list[ChatMessage], model: str, params: dict | None = None) -> ChatResult:
         # usage.include=true — OpenRouter возвращает фактическую стоимость в usage.cost (USD).
-        payload = {"model": model, "messages": [{"role": m.role, "content": m.content} for m in messages], "usage": {"include": True}, **(params or {})}
-        data = self._post("/chat/completions", payload)
-        try:
-            text = data["choices"][0]["message"]["content"]
-        except (KeyError, IndexError, TypeError) as error:
-            raise ProviderError(f"Unexpected OpenRouter response: {error}") from error
-        usage = data.get("usage") or {}
-        cost = usage.get("cost")
-        return ChatResult(
-            text=text,
-            model=data.get("model", model),
-            prompt_tokens=int(usage.get("prompt_tokens", 0)),
-            completion_tokens=int(usage.get("completion_tokens", 0)),
-            cost_micros=round(float(cost) * 1_000_000) if cost else 0,
+        return openai_http.chat_completions(
+            base_url=self.base_url, api_key=self.api_key, messages=messages, model=model,
+            timeout=self.timeout, proxy_url=self.proxy_url, params=params, include_cost=True,
         )
 
     def embed(self, *, texts: list[str], model: str) -> list[EmbeddingResult]:
-        data = self._post("/embeddings", {"model": model, "input": texts})
-        try:
-            items = data["data"]
-        except (KeyError, TypeError) as error:
-            raise ProviderError(f"Unexpected OpenRouter response: {error}") from error
-        usage = data.get("usage") or {}
-        per_text = int(usage.get("prompt_tokens", 0)) // max(1, len(texts))
-        return [EmbeddingResult(vector=item["embedding"], model=data.get("model", model), tokens=per_text) for item in items]
+        return openai_http.embeddings(
+            base_url=self.base_url, api_key=self.api_key, texts=texts, model=model,
+            timeout=self.timeout, proxy_url=self.proxy_url,
+        )
