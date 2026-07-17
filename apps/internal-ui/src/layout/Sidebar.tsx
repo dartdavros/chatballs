@@ -14,7 +14,7 @@ export function Sidebar({ route, user, setRoute, onLogout }: { route: RouteKey; 
     { key: "aiAgents" as const, label: "AI", icon: "robot" as const },
     { key: "integrations" as const, label: "Интеграции", icon: "plug" as const },
     { divider: true },
-    { label: "Настройки", icon: "settings" as const, disabled: true },
+    { label: "Администрирование", icon: "settings" as const, disabled: true },
   ];
   return (
     <aside className="hub-sidebar">
