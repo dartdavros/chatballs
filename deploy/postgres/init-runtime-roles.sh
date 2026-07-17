@@ -40,15 +40,9 @@ WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = :'migration_user')
 SELECT format('GRANT custocrm_runtime_app TO %I', :'app_user') \gexec
 SELECT format('GRANT custocrm_runtime_platform TO %I', :'platform_user') \gexec
 SELECT format('GRANT custocrm_schema TO %I', :'migration_user') \gexec
--- C04 RLS: runtime_app/platform must also be members of custocrm_schema so the
--- permissive custocrm_schema_access policy (USING/WITH CHECK true, created by
--- tenancy.0003 on every tenant table) applies to them. Without this membership
--- the schema_access policy does not cover the login roles, leaving only the
--- tenant_isolation / audit-insert policies, which do not OR to true for
--- cross-tenant writes (e.g. login-failed audit with organization_id IS NULL)
--- and block the write with "violates row-level security policy".
-SELECT format('GRANT custocrm_schema TO custocrm_runtime_app') \gexec
-SELECT format('GRANT custocrm_schema TO custocrm_runtime_platform') \gexec
+-- Runtime roles must not inherit the permissive custocrm_schema_access policy:
+-- membership in the schema-owner role would bypass tenant RLS entirely.
+REVOKE custocrm_schema FROM custocrm_runtime_app, custocrm_runtime_platform;
 SELECT format('GRANT CONNECT ON DATABASE %I TO %I', current_database(), :'app_user') \gexec
 SELECT format('GRANT CONNECT ON DATABASE %I TO %I', current_database(), :'platform_user') \gexec
 SELECT format('GRANT CONNECT, CREATE, TEMPORARY ON DATABASE %I TO %I', current_database(), :'migration_user') \gexec

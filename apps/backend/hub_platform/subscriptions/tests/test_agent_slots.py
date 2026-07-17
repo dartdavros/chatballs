@@ -1,7 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor
 from threading import Barrier
 
-from django.db import close_old_connections
+from django.db import close_old_connections, connections
 from django.test import TestCase, TransactionTestCase
 
 from hub_platform.ai.models import AIAgent, AIAgentStatus
@@ -142,7 +142,7 @@ class ConcurrentAgentSlotTests(TransactionTestCase):
             except QuotaExceeded:
                 return "limited"
             finally:
-                close_old_connections()
+                connections.close_all()
 
         with ThreadPoolExecutor(max_workers=2) as executor:
             outcomes = list(executor.map(activate, self.agent_ids))

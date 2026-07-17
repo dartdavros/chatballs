@@ -56,7 +56,8 @@ class RowLevelSecurityTests(TransactionTestCase):
     def test_runtime_roles_are_not_owners_or_bypassrls(self) -> None:
         with connection.cursor() as cursor:
             cursor.execute(
-                "SELECT rolname, rolsuper, rolbypassrls FROM pg_roles "
+                "SELECT rolname, rolsuper, rolbypassrls, "
+                "pg_has_role(rolname, 'custocrm_schema', 'MEMBER') FROM pg_roles "
                 "WHERE rolname IN ('custocrm_runtime_app', 'custocrm_runtime_platform') "
                 "ORDER BY rolname"
             )
@@ -67,7 +68,12 @@ class RowLevelSecurityTests(TransactionTestCase):
             )
             owner = cursor.fetchone()[0]
         self.assertEqual(len(roles), 2)
-        self.assertTrue(all(not superuser and not bypass for _, superuser, bypass in roles))
+        self.assertTrue(
+            all(
+                not superuser and not bypass and not schema_member
+                for _, superuser, bypass, schema_member in roles
+            )
+        )
         self.assertEqual(owner, "custocrm_schema")
 
     def test_app_role_is_fail_closed_and_scoped(self) -> None:
