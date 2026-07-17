@@ -14,7 +14,7 @@ export function SalesSidebar({ route, user, setRoute, waitingCount = 0 }: { rout
     <aside className="hub-sidebar sales-workspace-sidebar">
       {canAccess(user, "command") && (
         <div className="sales-sidebar-back-wrap">
-          <button className="sales-sidebar-back" type="button" onClick={() => setRoute("command")}><Icon name="arrow" size={16} />Назад в Hub</button>
+          <button className="sales-sidebar-back" type="button" onClick={() => setRoute("command")}><Icon name="arrow" size={16} />Назад</button>
         </div>
       )}
       <div className="sales-sidebar-title">

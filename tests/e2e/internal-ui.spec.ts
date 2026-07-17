@@ -162,7 +162,7 @@ test("OPERATOR logs in and lands on sales dialogs with the sales sidebar", async
   // Операторская навигация показывает только рабочее пространство продаж.
   await expect(page.getByText("Рабочее пространство")).toBeVisible();
   await expect(page.getByText("Уровень компании")).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "Назад в Hub" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Назад" })).toHaveCount(0);
 });
 
 test("OPERATOR opening an owner-only route sees the 403 permission screen", async ({ page }) => {

@@ -25,7 +25,7 @@ CODE_TTL = timedelta(minutes=10)
 NOTIFIER_PURPOSE = "notifications"
 
 CONFIRMATION_TEXT = "Готово! Уведомления CustoCRM подключены. Отключить можно в профиле."
-HINT_TEXT = "Это сервисный бот уведомлений CustoCRM. Чтобы подключить уведомления, откройте профиль в Hub и нажмите «Подключить»."
+HINT_TEXT = "Это сервисный бот уведомлений CustoCRM. Чтобы подключить уведомления, откройте профиль в CustoCRM и нажмите «Подключить»."
 
 # База deep-link по провайдеру: и TG, и MAX поддерживают ?start=<код>.
 _DEEP_LINK_BASE = {
