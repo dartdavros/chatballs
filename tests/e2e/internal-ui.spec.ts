@@ -140,7 +140,7 @@ async function login(page: Page, user: object) {
   await mockData(page);
   await page.route("**/api/v1/auth/login/", (route) => route.fulfill({ json: { authenticated: true, user } }));
   await page.goto("/");
-  await page.getByPlaceholder("you@edevs.tech").fill("user@edevs.tech");
+  await page.getByPlaceholder("you@domain.ru").fill("user@edevs.tech");
   await page.getByPlaceholder("Пароль").fill("Password-123");
   await page.getByRole("button", { name: "Войти" }).click();
 }

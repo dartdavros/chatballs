@@ -40,7 +40,7 @@ export function AuthLogin({ onLogin, onTotpChallenge, onRecover }: { onLogin: (u
       <form className="auth-card" onSubmit={submit}>
         {error && <div className="auth-error"><span className="auth-error-dot">!</span><span>Неверный email или пароль. Проверьте данные и попробуйте снова.</span></div>}
         <label className="field-label">Email</label>
-        <AuthField icon="mail" value={email} onChange={(nextEmail) => { setEmail(nextEmail); setError(false); }} placeholder="you@edevs.tech" error={error} />
+        <AuthField icon="mail" value={email} onChange={(nextEmail) => { setEmail(nextEmail); setError(false); }} placeholder="you@domain.ru" error={error} />
         <div className="password-row">
           <label className="field-label">Пароль</label>
           <a href="#" onClick={(event) => { event.preventDefault(); onRecover(); }}>Восстановить доступ</a>

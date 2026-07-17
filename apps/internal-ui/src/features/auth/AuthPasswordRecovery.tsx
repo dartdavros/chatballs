@@ -101,7 +101,7 @@ export function AuthPasswordRecovery({ onBackToLogin }: { onBackToLogin: () => v
     <AuthFrame title="Восстановление доступа" subtitle="Укажите рабочий email — пришлём ссылку для создания нового пароля." logo="pulse" note={backLink}>
       <form className="auth-card" onSubmit={submit}>
         <label className="field-label">Рабочий email</label>
-        <AuthField icon="mail" value={email} onChange={setEmail} placeholder="you@edevs.tech" />
+        <AuthField icon="mail" value={email} onChange={setEmail} placeholder="you@domain.ru" />
         <p className="auth-recovery-hint">Если адрес зарегистрирован, отправим ссылку для сброса пароля. Ссылка действует 30 минут.</p>
         <Button className="auth-submit" icon="arrow" iconSize={16} type="submit" variant="primary" disabled={!valid || submitting}>Отправить ссылку</Button>
       </form>

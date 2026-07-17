@@ -11,7 +11,9 @@
   width: 400px;
   max-width: 100%;
   padding: 26px 26px 24px;
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.9);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
   border: 1px solid #f0f0f0;
   border-radius: 14px;
   box-shadow: 0 6px 32px rgba(0, 0, 0, 0.18);
@@ -62,8 +64,8 @@
 }
 
 .auth-card {
-  /* Белая плашка, рамка и тень живут на .auth-box, чтобы бренд-блок, форма
-     и подпись составляли единый белый блок поверх фона auth-screen. */
+  /* Плашка, рамка и тень живут на .auth-box, чтобы бренд-блок, форма
+     и подпись составляли единый матовый блок поверх фона auth-screen. */
 }
 
 .auth-error {
