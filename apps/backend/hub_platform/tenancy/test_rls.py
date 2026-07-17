@@ -4,6 +4,8 @@ from django.test import TransactionTestCase
 from hub_platform.ai.models import AIAgent, Knowledge
 from hub_platform.channels.models import Channel
 from hub_platform.identity.models import (
+    AuditEvent,
+    AuditResult,
     Department,
     EmployeeRole,
     HumanUser,
@@ -100,6 +102,26 @@ class RowLevelSecurityTests(TransactionTestCase):
                 organization_id=self.second.id,
                 code="forged",
                 name="Forged",
+            )
+
+    def test_app_role_writes_platform_audit_event_without_tenant_context(self) -> None:
+        # Login-failed audit path: app role, no tenant context, organization NULL.
+        # ORM create() issues INSERT ... RETURNING id, which also requires SELECT
+        # visibility of the new row (tenancy.0007 policies).
+        with transaction.atomic():
+            self._set_role("custocrm_runtime_app")
+            event = AuditEvent.objects.create(
+                action="identity.login_failed",
+                object_type="HumanUser",
+                result=AuditResult.DENIED,
+                correlation_id="rls-null-org-audit",
+            )
+            self.assertIsNotNone(event.pk)
+
+        with transaction.atomic():
+            self._set_role("custocrm_runtime_app")
+            self.assertEqual(
+                AuditEvent.objects.filter(organization__isnull=False).count(), 0
             )
 
     def test_cross_tenant_relation_is_rejected_by_database_trigger(self) -> None:
