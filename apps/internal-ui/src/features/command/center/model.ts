@@ -46,7 +46,7 @@ function timeLabel(minutes: number): string {
 export type StatusMeta = { label: string; color: string; bg: string; border: string; dot: string };
 
 const STATUS_META: Record<ApiCommandOverview["company"]["status"], StatusMeta> = {
-  ok: { label: "Нормально", color: "#389e0d", bg: "#f6ffed", border: "#b7eb8f", dot: "#52c41a" },
+  ok: { label: "Штатно", color: "#389e0d", bg: "#f6ffed", border: "#b7eb8f", dot: "#52c41a" },
   attention: { label: "Требует внимания", color: "#d48806", bg: "#fff7e6", border: "#ffe58f", dot: "#faad14" },
   critical: { label: "Критично", color: "#cf1322", bg: "#fff1f0", border: "#ffa39e", dot: "#ff4d4f" },
 };

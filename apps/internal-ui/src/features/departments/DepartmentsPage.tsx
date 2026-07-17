@@ -66,7 +66,7 @@ export function DepartmentsPage({ data, setRoute }: { data: AppData; setRoute: (
             </div>
 
             <div className="department-action">
-              <button type="button" onClick={() => setRoute("salesOverview")}>Открыть отдел<Icon name="arrow" size={16} /></button>
+              <button type="button" onClick={() => setRoute("salesOverview")}>Перейти<Icon name="arrow" size={16} /></button>
             </div>
           </section>
         )}
@@ -106,7 +106,7 @@ export function DepartmentsPage({ data, setRoute }: { data: AppData; setRoute: (
             </div>
 
             <div className="department-action">
-              <button type="button" onClick={() => setRoute("supportOverview")}>Открыть отдел<Icon name="arrow" size={16} /></button>
+              <button type="button" onClick={() => setRoute("supportOverview")}>Перейти<Icon name="arrow" size={16} /></button>
             </div>
           </section>
         )}

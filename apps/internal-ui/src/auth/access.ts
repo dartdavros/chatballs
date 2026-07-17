@@ -41,7 +41,7 @@ export function hasCapability(
 }
 
 export function canAccess(user: SessionUser, route: RouteKey): boolean {
-  if (route === "profile") return true;
+  if (route === "profile" || route === "settings") return true;
   const requirement = ROUTE_ACCESS[route];
   return requirement
     ? hasCapability(user, requirement.capability, requirement.departmentCode)

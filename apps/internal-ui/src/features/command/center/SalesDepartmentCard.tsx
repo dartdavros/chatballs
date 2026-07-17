@@ -31,7 +31,7 @@ function DepartmentCard({ department, periodLabelUpper, setRoute }: { department
           </div>
           <p>{department.subtitle}</p>
         </div>
-        <Button className="sales-open" icon="arrow" iconSize={16} variant="primary" onClick={() => setRoute(department.route as RouteKey)}>Открыть отдел</Button>
+        <Button className="sales-open" icon="arrow" iconSize={16} variant="primary" onClick={() => setRoute(department.route as RouteKey)}>Перейти</Button>
       </div>
       <div className="dept-summary">{department.summary}</div>
       <MetricGroup title="ДИАЛОГИ — СЕЙЧАС" columns={5} items={department.dialogItems} />

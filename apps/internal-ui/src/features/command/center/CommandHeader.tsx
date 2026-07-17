@@ -6,7 +6,7 @@ export function CommandHeader({ period, setPeriod }: { period: CommandPeriod; se
   return (
     <div className="command-page-header">
       <div>
-        <h1>Командный центр</h1>
+        <h1>Обзор</h1>
         <p>Состояние компании одним взглядом</p>
       </div>
       <div className="command-header-actions">

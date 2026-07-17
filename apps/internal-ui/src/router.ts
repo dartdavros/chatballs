@@ -63,6 +63,7 @@ export function routeFromPath(pathname: string, search = ""): RouteState {
   if (path === "/ai/usage") return { route: "aiUsage", ...state };
   if (path === "/integrations") return { route: "integrations", ...state };
   if (path === "/profile") return { route: "profile", ...state };
+  if (path === "/settings") return { route: "settings", ...state };
   return { route: "command", ...state };
 }
 
@@ -91,5 +92,6 @@ export function pathFromRoute(route: RouteKey, entityId: number | null = null, p
   if (route === "aiKnowledgeDetail") return entityId ? `${prefix}/ai/knowledge/${entityId}` : `${prefix}/ai/knowledge`;
   if (route === "integrations") return `${prefix}/integrations`;
   if (route === "profile") return `${prefix}/profile`;
+  if (route === "settings") return `${prefix}/settings`;
   return `${prefix}/profile`;
 }

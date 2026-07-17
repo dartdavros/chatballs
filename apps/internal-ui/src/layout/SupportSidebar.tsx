@@ -1,12 +1,12 @@
 import type { RouteKey, SessionUser } from "../types";
 import { Icon } from "../shared/icons";
-import { Avatar } from "../shared/ui";
 import { canAccess } from "../auth/access";
+import { SidebarUserMenu } from "./SidebarUserMenu";
 
 // SPEC-HUB-0010 §8.1: навигация отдела поддержки — Обзор и Диалоги.
 // Зеркало SalesSidebar (переиспользование layout/структуры), переиспользует
 // существующие CSS-классы sales-workspace-sidebar/nav — дизайн baseline.
-export function SupportSidebar({ route, user, setRoute, waitingCount = 0 }: { route: RouteKey; user: SessionUser; setRoute: (route: RouteKey) => void; waitingCount?: number }) {
+export function SupportSidebar({ route, user, setRoute, onLogout, waitingCount = 0 }: { route: RouteKey; user: SessionUser; setRoute: (route: RouteKey) => void; onLogout: () => void; waitingCount?: number }) {
   const nav = [
     { key: "supportOverview" as const, label: "Обзор", icon: "grid" as const },
     { key: "supportDialogs" as const, label: "Диалоги", icon: "message" as const, badge: waitingCount > 0 ? String(waitingCount) : undefined },
@@ -36,10 +36,7 @@ export function SupportSidebar({ route, user, setRoute, waitingCount = 0 }: { ro
           );
         })}
       </nav>
-      <button className="profile-link" onClick={() => setRoute("profile")}>
-        <Avatar user={user} />
-        <span><strong>{user.fullName || user.email}</strong><small>{user.role}</small></span>
-      </button>
+      <SidebarUserMenu user={user} route={route} setRoute={setRoute} onLogout={onLogout} />
     </aside>
   );
 }

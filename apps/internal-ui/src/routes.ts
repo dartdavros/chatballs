@@ -2,13 +2,14 @@ import type { RouteKey } from "./types";
 
 export const routes: Record<RouteKey, string> = {
   accessProfiles: "Профили доступа",
-  command: "Командный центр",
+  command: "Обзор",
   departments: "Отделы",
   employeeDetail: "Сотрудники",
   employees: "Сотрудники",
   productDetail: "Продукты",
   products: "Продукты",
   profile: "Профиль",
+  settings: "Настройки",
   salesClientDetail: "Контакт",
   salesClients: "Контакты",
   salesDialogs: "Диалоги",

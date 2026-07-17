@@ -10,6 +10,7 @@ import { AccessProfilesPage, EmployeeDetailPage, EmployeesPage } from "../featur
 import { ProductsPage } from "../features/products/ProductsPage";
 import { ProductDetailPage } from "../features/products/detail/ProductDetailPage";
 import { ProfilePage } from "../features/profile/ProfilePage";
+import { SettingsPage } from "../features/settings/SettingsPage";
 import { SalesClientDetailPage } from "../features/sales/client-detail/SalesClientDetailPage";
 import { SalesClientsPage } from "../features/sales/SalesClientsPage";
 import { SalesDialogsPage } from "../features/sales/SalesDialogsPage";
@@ -34,6 +35,7 @@ export function ShellRouteContent({ route, data, currentEmployee, currentProduct
       {route === "productDetail" && currentProduct && <ProductDetailPage product={currentProduct} departments={data.departments} reload={reload} openAgentCreate={openAgentCreate} openAgent={openAgent} />}
       {route === "productDetail" && !currentProduct && <ProductsPage departments={data.departments} products={data.products} reload={reload} openProduct={openProduct} />}
       {route === "profile" && <ProfilePage user={user} onUserUpdated={onUserUpdated} reload={reload} onLogout={onLogout} />}
+      {route === "settings" && <SettingsPage user={user} onUserUpdated={onUserUpdated} reload={reload} />}
       {route === "salesClients" && <SalesClientsPage openClient={openClient} />}
       {route === "salesClientDetail" && <SalesClientDetailPage contactId={selectedClientId} setRoute={setRoute} />}
       {route === "salesOverview" && <SalesOverviewPage />}

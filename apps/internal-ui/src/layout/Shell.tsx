@@ -103,7 +103,7 @@ export function Shell({ route, setRoute, selectedEmployeeId, selectedProductId, 
   );
   return (
     <div className="hub-shell">
-      {showSupportSidebar ? <SupportSidebar route={route} user={user} setRoute={setRoute} waitingCount={waitingCount} /> : showSalesSidebar ? <SalesSidebar route={route} user={user} setRoute={setRoute} waitingCount={waitingCount} /> : <Sidebar route={route} user={user} setRoute={setRoute} />}
+      {showSupportSidebar ? <SupportSidebar route={route} user={user} setRoute={setRoute} onLogout={onLogout} waitingCount={waitingCount} /> : showSalesSidebar ? <SalesSidebar route={route} user={user} setRoute={setRoute} onLogout={onLogout} waitingCount={waitingCount} /> : <Sidebar route={route} user={user} setRoute={setRoute} onLogout={onLogout} />}
       <div className="hub-main">
         <TopBar route={route} user={user} currentEmployee={currentEmployee} currentProduct={currentProduct} currentAgentName={agentName} setRoute={setRoute} unreadCount={unreadCount} onOpenNotifications={() => { setNotifOpen(true); void loadNotifications(); }} />
         {isAiSection && <AiSubnav route={route} setRoute={setRoute} />}
