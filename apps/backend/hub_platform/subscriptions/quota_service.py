@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from hub_platform.subscriptions.models import UsageCounter, UsagePeriodStatus
+from hub_platform.subscriptions.models import QuotaDefinition, UsageCounter, UsagePeriodStatus
 from hub_platform.subscriptions.policy import get_effective_policy
 from hub_platform.tenancy.context import TenantContext
 
@@ -28,8 +28,11 @@ def check(
         return False
     if quota.limit is None:
         return True
+    definition = QuotaDefinition.objects.filter(key=quota_key).first()
+    if definition is None:
+        return False
     current = _current_usage(context, quota_key)
-    return current + quantity <= quota.limit
+    return current + quantity <= quota.limit * definition.accounting_scale
 
 
 def _current_usage(context: TenantContext, quota_key: str) -> int:

@@ -1,6 +1,13 @@
-export type ChannelRef = { id: number; code: string; name: string; product: { code: string; name: string } | null };
+export type ChannelRef = { id: number; code: string; name: string; product: { code: string; name: string } | null; providerIntegrationId: number | null };
 
 export type AgentKnowledgeRef = { id: number; title: string; isEnabled: boolean };
+
+export type CredentialMode = "CUSTOAI" | "BYOK";
+
+export const CREDENTIAL_MODE_OPTIONS: Array<[CredentialMode, string]> = [
+  ["CUSTOAI", "CustoAI (Managed)"],
+  ["BYOK", "BYOK"],
+];
 
 export type AiAgent = {
   id: number;
@@ -8,6 +15,7 @@ export type AiAgent = {
   name: string;
   isActive: boolean;
   model: string;
+  credentialMode: CredentialMode;
   modelParams: Record<string, unknown>;
   allowedTools: unknown[];
   limits: Record<string, unknown>;

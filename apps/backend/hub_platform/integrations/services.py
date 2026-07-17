@@ -63,6 +63,11 @@ def _normalized_config(provider: str, config: dict) -> dict:
         purpose = str(config.get("purpose", "")).strip()
         if purpose:
             result["purpose"] = purpose
+    if provider == IntegrationProvider.CUSTOM:
+        if not base_url:
+            raise ValidationError({"config": "Custom Base URL is required"})
+        if "default_model" not in result:
+            raise ValidationError({"config": "Custom model is required"})
     return result
 
 
@@ -79,6 +84,8 @@ def create_integration(*, context: TenantContext, data: IntegrationInput) -> Int
     name = data.name.strip()
     if not name:
         raise ValidationError({"name": "Name required"})
+    if provider == IntegrationProvider.CUSTOM and not (data.secret or "").strip():
+        raise ValidationError({"secret": "Custom API key is required"})
     integration = Integration(
         organization=organization,
         kind=PROVIDER_KIND[provider],

@@ -1,14 +1,47 @@
-import { modelOptions } from "./model";
+import { SelectField } from "../../../shared/form-controls";
+import type { Integration } from "../../integrations/model";
+import { CREDENTIAL_MODE_OPTIONS, type CredentialMode } from "../model";
 import { CreateAgentStepCard } from "./CreateAgentStepCard";
 
-export function ModelStep({ model, setModel }: { model: string; setModel: (model: string) => void }) {
+export function ModelStep({
+  credentialMode,
+  setCredentialMode,
+  providerIntegrationId,
+  setProviderIntegrationId,
+  integrations,
+}: {
+  credentialMode: CredentialMode;
+  setCredentialMode: (mode: CredentialMode) => void;
+  providerIntegrationId: number | null;
+  setProviderIntegrationId: (id: number | null) => void;
+  integrations: Integration[];
+}) {
+  const integrationOptions: Array<[string, string]> = [
+    ["", "Выберите интеграцию"],
+    ...integrations.map((item) => [String(item.id), item.name] as [string, string]),
+  ];
   return (
-    <CreateAgentStepCard number={2} title="Базовая модель" text="Стартовая конфигурация создаётся из разрешённой модели. Позже модель и параметры меняются в карточке агента.">
+    <CreateAgentStepCard number={2} title="AI-провайдер" text="CustoAI готов к работе сразу. При необходимости подключите собственный OpenRouter или Custom-провайдер.">
       <div className="ai-create-field-offset">
-        <select className="ai-create-model" value={model} onChange={(event) => setModel(event.target.value)}>
-          {modelOptions.map((option) => <option value={option.value} key={option.value}>{option.label}</option>)}
-        </select>
-        <div className="ai-create-help">Список моделей задаётся в интеграции OpenRouter.</div>
+        <SelectField
+          label="Режим AI"
+          value={credentialMode}
+          onChange={(value) => setCredentialMode(value as CredentialMode)}
+          options={CREDENTIAL_MODE_OPTIONS}
+        />
+        {credentialMode === "BYOK" && (
+          <SelectField
+            label="Интеграция"
+            value={providerIntegrationId ? String(providerIntegrationId) : ""}
+            onChange={(value) => setProviderIntegrationId(value ? Number(value) : null)}
+            options={integrationOptions}
+          />
+        )}
+        <div className="ai-create-help">
+          {credentialMode === "CUSTOAI"
+            ? "CustoAI использует настроенную платформой модель и лимит организации."
+            : "Модель берётся из выбранной OpenRouter или Custom-интеграции."}
+        </div>
       </div>
     </CreateAgentStepCard>
   );

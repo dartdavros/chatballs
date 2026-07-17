@@ -6,7 +6,13 @@ from django.db import transaction
 
 from hub_platform.ai.extraction import extract_text
 from hub_platform.ai.indexing import reindex_knowledge
-from hub_platform.ai.models import AIAgent, AIAgentStatus, Knowledge, KnowledgeAttachment
+from hub_platform.ai.models import (
+    AIAgent,
+    AIAgentStatus,
+    Knowledge,
+    KnowledgeAttachment,
+)
+from hub_platform.ai.provider_selection import configure_agent_provider
 from hub_platform.channels.models import Channel
 from hub_platform.tenancy.context import TenantContext
 from hub_platform.tenancy.storage import adjust_storage_usage
@@ -20,7 +26,8 @@ from hub_platform.tenancy.storage_quota import (
 @dataclass(frozen=True)
 class AgentInput:
     name: str
-    model: str
+    credential_mode: str
+    provider_integration_id: int | None
     model_params: dict
     allowed_tools: list
     limits: dict
@@ -33,7 +40,8 @@ class AgentInput:
 @dataclass(frozen=True)
 class AgentCreateInput:
     channel_code: str
-    model: str
+    credential_mode: str
+    provider_integration_id: int | None
     persona: str
     tone: str
     instructions: str
@@ -66,8 +74,6 @@ def create_agent(*, context: TenantContext, data: AgentCreateInput) -> AIAgent:
     organization = context.organization
     if not data.channel_code:
         raise ValidationError({"channel": "Channel is required"})
-    if not data.model:
-        raise ValidationError({"model": "Model is required"})
     try:
         channel = Channel.objects.get(organization=organization, code=data.channel_code)
     except Channel.DoesNotExist as error:
@@ -75,11 +81,18 @@ def create_agent(*, context: TenantContext, data: AgentCreateInput) -> AIAgent:
     if AIAgent.objects.filter(channel=channel).exists():
         raise ValidationError({"channel": "Channel already has an AI agent"})
 
+    mode, model = configure_agent_provider(
+        context=context,
+        channel=channel,
+        mode=data.credential_mode,
+        integration_id=data.provider_integration_id,
+    )
     agent = AIAgent.objects.create(
         channel=channel,
         name=f"{channel.name} Agent",
         status=AIAgentStatus.DRAFT,
-        model=data.model,
+        model=model,
+        credential_mode=mode,
         persona=data.persona,
         tone=data.tone,
         instructions=data.instructions,
@@ -93,14 +106,33 @@ def update_agent(*, context: TenantContext, agent: AIAgent, data: AgentInput) ->
     if agent.channel.organization_id != context.organization_id:
         raise ValidationError({"agent": "Agent belongs to another organization"})
     agent.name = data.name
-    agent.model = data.model
+    mode, agent.model = configure_agent_provider(
+        context=context,
+        channel=agent.channel,
+        mode=data.credential_mode,
+        integration_id=data.provider_integration_id,
+    )
+    agent.credential_mode = mode
     agent.model_params = data.model_params
     agent.allowed_tools = data.allowed_tools
     agent.limits = _normalize_limits(data.limits)
     agent.persona = data.persona
     agent.tone = data.tone
     agent.instructions = data.instructions
-    agent.save(update_fields=["name", "model", "model_params", "allowed_tools", "limits", "persona", "tone", "instructions", "updated_at"])
+    agent.save(
+        update_fields=[
+            "name",
+            "model",
+            "credential_mode",
+            "model_params",
+            "allowed_tools",
+            "limits",
+            "persona",
+            "tone",
+            "instructions",
+            "updated_at",
+        ]
+    )
     if data.knowledge_ids is not None:
         agent.knowledge_items.set(
             _knowledge_for_ids(context=context, knowledge_ids=data.knowledge_ids)

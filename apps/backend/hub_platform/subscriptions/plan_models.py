@@ -108,6 +108,8 @@ class QuotaDefinition(models.Model):
     key = models.SlugField(max_length=64, unique=True)
     name = models.CharField(max_length=128)
     unit = models.CharField(max_length=32)
+    accounting_scale = models.PositiveIntegerField(default=1)
+    accounting_unit = models.CharField(max_length=32, blank=True, default="")
 
     class Meta:
         ordering = ["key"]

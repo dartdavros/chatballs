@@ -45,10 +45,12 @@ def resolve_provider_and_model(channel, *, fallback_model: str) -> tuple[LLMProv
     has no `default_model` configured, so existing agents keep working while
     the integration-level model field becomes the authoritative override.
     """
+    return resolve_provider(channel), resolve_model(channel, fallback_model=fallback_model)
+
+
+def resolve_model(channel, *, fallback_model: str) -> str:
     integration = _channel_integration(channel)
-    provider = _provider_from_integration(integration)
-    model = str(integration.config.get("default_model") or "").strip() or fallback_model
-    return provider, model
+    return str(integration.config.get("default_model") or "").strip() or fallback_model
 
 
 def _channel_integration(channel) -> Integration:

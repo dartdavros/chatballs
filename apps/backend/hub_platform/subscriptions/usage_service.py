@@ -71,6 +71,7 @@ def record_usage(
     occurred_at=None,
     kind: str | None = None,
     correction_of: UsageLedgerEntry | None = None,
+    rule_version: str | None = None,
 ) -> UsageResult:
     if quantity == 0:
         raise UsageConflict("Usage quantity cannot be zero")
@@ -109,11 +110,11 @@ def record_usage(
         quantity > 0
         and quota.mode in {QuotaMode.HARD, QuotaMode.RATE, QuotaMode.CONCURRENT}
         and quota.limit is not None
-        and next_value + counter.reserved_value > quota.limit
+        and next_value + counter.reserved_value > quota.limit * definition.accounting_scale
     ):
         raise QuotaExceeded(
             resource=quota_key,
-            limit=quota.limit,
+            limit=quota.limit * definition.accounting_scale,
             used=counter.used_value + counter.reserved_value,
             requested=quantity,
             period_ends_at=period.ends_at,
@@ -128,12 +129,12 @@ def record_usage(
         quota_definition=definition,
         kind=entry_kind,
         quantity=quantity,
-        unit=definition.unit,
+        unit=definition.accounting_unit or definition.unit,
         source=source,
         aggregate_type=aggregate_type,
         aggregate_id=aggregate_id,
         idempotency_key=idempotency_key,
-        rule_version=f"subscription:{policy.subscription_id}",
+        rule_version=rule_version or f"subscription:{policy.subscription_id}",
         metadata=metadata or {},
         correction_of=correction_of,
         occurred_at=occurred_at or timezone.now(),

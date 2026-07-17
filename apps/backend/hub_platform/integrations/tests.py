@@ -2,6 +2,7 @@ import json
 import urllib.request
 from unittest import mock
 
+from django.core.exceptions import ValidationError
 from django.test import TestCase
 
 from hub_platform.identity.bootstrap import bootstrap_edevs_owner
@@ -225,18 +226,41 @@ class CustomIntegrationTests(TestCase):
         self.assertEqual(integration.kind, IntegrationKind.LLM_PROVIDER)
 
     def test_custom_requires_model_free_text(self) -> None:
-        # Каталога нет — модель обязательна к заполнению владельцем, но на уровне
-        # нормализации конфига мы её сохраняем; пустое значение просто не сохраняется.
-        integration = create_integration(
-            context=self.context,
-            data=IntegrationInput(
-                provider=IntegrationProvider.CUSTOM,
-                name="Мой провайдер",
-                secret="sk-custom",
-                config={"baseUrl": "https://api.example.com/v1"},
-            ),
-        )
-        self.assertNotIn("default_model", integration.config)
+        with self.assertRaises(ValidationError):
+            create_integration(
+                context=self.context,
+                data=IntegrationInput(
+                    provider=IntegrationProvider.CUSTOM,
+                    name="Мой провайдер",
+                    secret="sk-custom",
+                    config={"baseUrl": "https://api.example.com/v1"},
+                ),
+            )
+
+    def test_custom_requires_base_url_and_api_key(self) -> None:
+        with self.assertRaises(ValidationError):
+            create_integration(
+                context=self.context,
+                data=IntegrationInput(
+                    provider=IntegrationProvider.CUSTOM,
+                    name="Без endpoint",
+                    secret="sk-custom",
+                    config={"defaultModel": "local-model"},
+                ),
+            )
+        with self.assertRaises(ValidationError):
+            create_integration(
+                context=self.context,
+                data=IntegrationInput(
+                    provider=IntegrationProvider.CUSTOM,
+                    name="Без ключа",
+                    secret="",
+                    config={
+                        "baseUrl": "https://api.example.com/v1",
+                        "defaultModel": "local-model",
+                    },
+                ),
+            )
 
     def test_check_custom_lists_models_on_openai_shape(self) -> None:
         captured = {}

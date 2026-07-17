@@ -29,6 +29,7 @@ class UsageReservation(TenantRelationModel):
     aggregate_type = models.CharField(max_length=64, blank=True, default="")
     aggregate_id = models.CharField(max_length=128, blank=True, default="")
     source = models.CharField(max_length=128)
+    quantity = models.PositiveBigIntegerField(default=1)
     acquired_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
     released_at = models.DateTimeField(null=True, blank=True)

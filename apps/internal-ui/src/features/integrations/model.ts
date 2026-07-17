@@ -57,6 +57,11 @@ export type ChannelOption = { id: number; code: string; name: string };
 
 export const fetchChannels = () => api<{ items: ChannelOption[] }>("/api/v1/channels/").then((r) => r.items);
 
+export const fetchLlmProviders = () =>
+  api<{ items: Integration[] }>("/api/v1/integrations/").then((response) =>
+    response.items.filter((item) => item.kind === "LLM_PROVIDER")
+  );
+
 // Публичный домен Hub для встраивания Web-виджета (SPEC-HUB-0003 §3).
 // Один frontend-образ работает на любом домене (ADR-HUB-0028 §runtime frontend):
 // сниппет генерируется от текущего origin в рантайме, а не от build-time аргумента.

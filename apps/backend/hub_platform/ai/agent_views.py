@@ -3,7 +3,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from hub_platform.ai.models import AIAgent
+from hub_platform.ai.models import AIAgent, CredentialMode
 from hub_platform.ai.selectors import agent_for_context, agents_for_context
 from hub_platform.ai.serializers import agent_payload
 from hub_platform.ai.services import (
@@ -38,9 +38,17 @@ def _agent_input(body: dict[str, object], *, current: AIAgent) -> AgentInput:
         or not all(isinstance(item, int) for item in knowledge_ids)
     ):
         raise ValidationError({"knowledgeIds": "List of ids required"})
+    provider_integration_id = body.get(
+        "providerIntegrationId", current.channel.provider_integration_id
+    )
+    if provider_integration_id is not None and not isinstance(provider_integration_id, int):
+        raise ValidationError({"providerIntegrationId": "Integer id required"})
     return AgentInput(
         name=str(body.get("name", current.name)).strip() or current.name,
-        model=str(body.get("model", current.model)).strip() or current.model,
+        credential_mode=str(
+            body.get("credentialMode", current.credential_mode)
+        ).strip(),
+        provider_integration_id=provider_integration_id,
         model_params=model_params,
         allowed_tools=allowed_tools,
         limits=limits,
@@ -80,7 +88,10 @@ class AIAgentListView(APIView):
                 context=request.tenant_context,
                 data=AgentCreateInput(
                     channel_code=str(request.data.get("channel", "")).strip(),
-                    model=str(request.data.get("model", "")).strip(),
+                    credential_mode=str(
+                        request.data.get("credentialMode", CredentialMode.CUSTOAI)
+                    ).strip(),
+                    provider_integration_id=request.data.get("providerIntegrationId"),
                     persona=str(request.data.get("persona", "")),
                     tone=str(request.data.get("tone", "")),
                     instructions=str(request.data.get("instructions", "")),

@@ -1,10 +1,11 @@
 import { Modal } from "antd";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { api } from "../../../api/client";
 import { FormField, SelectField } from "../../../shared/form-controls";
 import { Button } from "../../../shared/ui-controls";
-import { modelOptions } from "../create/model";
+import { CREDENTIAL_MODE_OPTIONS, type CredentialMode } from "../model";
+import { fetchLlmProviders, type Integration } from "../../integrations/model";
 import type { AiAgentDetail } from "./model";
 
 // Известные инструменты системы (services.py: operator-handoff). Хранятся как string[].
@@ -26,7 +27,9 @@ function isBudget(value: string): boolean {
 
 export function AgentEditForm({ agent, onClose, onSaved }: { agent: AiAgentDetail; onClose: () => void; onSaved: () => void }) {
   const [name, setName] = useState(agent.name);
-  const [model, setModel] = useState(agent.model);
+  const [credentialMode, setCredentialMode] = useState<CredentialMode>(agent.credentialMode);
+  const [providerIntegrationId, setProviderIntegrationId] = useState<number | null>(agent.channel.providerIntegrationId);
+  const [integrations, setIntegrations] = useState<Integration[]>([]);
   const [tools, setTools] = useState<string[]>(Array.isArray(agent.allowedTools) ? (agent.allowedTools as string[]) : []);
   const [budget, setBudget] = useState(budgetFromCents(agent.limits as Record<string, unknown>));
   const [submitting, setSubmitting] = useState(false);
@@ -36,7 +39,11 @@ export function AgentEditForm({ agent, onClose, onSaved }: { agent: AiAgentDetai
     setTools((current) => (current.includes(code) ? current.filter((item) => item !== code) : [...current, code]));
   }
 
-  const ready = name.trim().length > 0 && isBudget(budget);
+  useEffect(() => {
+    fetchLlmProviders().then(setIntegrations).catch(() => setIntegrations([]));
+  }, []);
+
+  const ready = name.trim().length > 0 && isBudget(budget) && (credentialMode === "CUSTOAI" || providerIntegrationId !== null);
 
   async function submit() {
     if (!ready) return;
@@ -47,7 +54,7 @@ export function AgentEditForm({ agent, onClose, onSaved }: { agent: AiAgentDetai
     try {
       await api(`/api/v1/ai/agents/${agent.id}/update/`, {
         method: "PATCH",
-        body: JSON.stringify({ name: name.trim(), model, allowedTools: tools, limits }),
+        body: JSON.stringify({ name: name.trim(), credentialMode, providerIntegrationId, allowedTools: tools, limits }),
       });
       onSaved();
     } catch (caught) {
@@ -61,7 +68,20 @@ export function AgentEditForm({ agent, onClose, onSaved }: { agent: AiAgentDetai
     <Modal open title="Изменить агента" onCancel={onClose} footer={null} destroyOnClose>
       <div className="integration-form">
         <FormField label="Название" value={name} onChange={setName} placeholder="название агента" />
-        <SelectField label="Модель" value={model} onChange={(value) => setModel(value)} options={modelOptions.map((option) => [option.value, option.label] as [string, string])} />
+        <SelectField
+          label="Режим AI"
+          value={credentialMode}
+          onChange={(value) => setCredentialMode(value as CredentialMode)}
+          options={CREDENTIAL_MODE_OPTIONS}
+        />
+        {credentialMode === "BYOK" && (
+          <SelectField
+            label="Интеграция"
+            value={providerIntegrationId ? String(providerIntegrationId) : ""}
+            onChange={(value) => setProviderIntegrationId(value ? Number(value) : null)}
+            options={[["", "Выберите интеграцию"], ...integrations.map((item) => [String(item.id), item.name] as [string, string])]}
+          />
+        )}
         <div className="ai-edit-tools">
           <span className="ai-edit-label">Инструменты</span>
           <div className="ai-edit-checks">

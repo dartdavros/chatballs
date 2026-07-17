@@ -3,67 +3,147 @@ import time
 from django.conf import settings
 
 from hub_platform.ai import limits, pricing
-from hub_platform.ai.credits import assert_managed_ai_entitlement, consume_invocation_credits
-from hub_platform.ai.models import LlmInvocation, LlmInvocationStatus
+from hub_platform.ai.credits import (
+    ManagedAiQuotaExceeded,
+    assert_byok_ai_entitlement,
+    assert_managed_ai_entitlement,
+    commit_managed_ai_tokens,
+    release_managed_ai_tokens,
+    reserve_managed_ai_tokens,
+)
+from hub_platform.ai.models import CredentialMode, LlmInvocation, LlmInvocationStatus
 from hub_platform.ai.pii import redact
 from hub_platform.ai.provider import routing
-from hub_platform.ai.provider.base import ChatMessage, ChatResult, EmbeddingResult, ProviderError
+from hub_platform.ai.provider.base import (
+    ChatMessage,
+    ChatResult,
+    EmbeddingResult,
+    LLMProvider,
+    ProviderError,
+)
 from hub_platform.ai.provider.factory import get_provider
 from hub_platform.ai.provider.resilience import CircuitBreaker, call_with_resilience
 
 _breaker = CircuitBreaker()
 
 
-def invoke_chat(*, channel, messages: list[ChatMessage], purpose: str, model: str | None = None, params: dict | None = None, used_fragment_ids: list | None = None) -> ChatResult:
+def _record_blocked(*, channel, purpose: str, model: str, error: Exception) -> None:
+    LlmInvocation.objects.create(
+        organization=channel.organization,
+        channel=channel,
+        product=channel.product,
+        purpose=purpose,
+        operation="chat",
+        model=model,
+        status=LlmInvocationStatus.BLOCKED,
+        error=str(error),
+    )
+
+
+def _prepare_invocation(*, channel, requested_model: str | None) -> tuple[LLMProvider, str]:
     agent = channel.ai_agent
-    model = model or agent.model
+    mode = agent.credential_mode
+    effective_model = agent.model
+    if mode == CredentialMode.CUSTOAI:
+        assert_managed_ai_entitlement(channel=channel)
+        effective_model = settings.HUB_CUSTOAI_MODEL
+    elif mode == CredentialMode.BYOK:
+        assert_byok_ai_entitlement(channel=channel)
+        effective_model = routing.resolve_model(channel, fallback_model=agent.model)
+    else:
+        raise ValueError(f"Unknown AI credential mode: {mode}")
+    selected_model = (
+        effective_model
+        if mode == CredentialMode.CUSTOAI
+        else requested_model or effective_model
+    )
+    return get_provider(channel=channel), selected_model
 
-    # C07: managed_ai entitlement gates platform-managed LLM usage. BYOK paths
-    # (track B) will bypass this when the org supplies its own credentials.
-    assert_managed_ai_entitlement(channel=channel)
 
+def invoke_chat(
+    *,
+    channel,
+    messages: list[ChatMessage],
+    purpose: str,
+    model: str | None = None,
+    params: dict | None = None,
+    used_fragment_ids: list | None = None,
+) -> ChatResult:
+    fallback_model = (
+        settings.HUB_CUSTOAI_MODEL
+        if channel.ai_agent.credential_mode == CredentialMode.CUSTOAI
+        else model or channel.ai_agent.model
+    )
     try:
-        limits.assert_within_limits(channel, agent)
-    except limits.LimitExceeded as error:
-        LlmInvocation.objects.create(
-            organization=channel.organization,
-            channel=channel, product=channel.product, purpose=purpose, operation="chat", model=model,
-            status=LlmInvocationStatus.BLOCKED, error=str(error),
+        provider, model = _prepare_invocation(channel=channel, requested_model=model)
+        limits.assert_within_limits(channel, channel.ai_agent)
+    except (ManagedAiQuotaExceeded, limits.LimitExceeded) as error:
+        _record_blocked(
+            channel=channel,
+            purpose=purpose,
+            model=fallback_model,
+            error=error,
         )
         raise
 
-    # ADR-HUB-0011: отдельное очищенное представление сообщений для LLM.
-    safe_messages = [ChatMessage(role=m.role, content=redact(m.content)) for m in messages]
-    # BYOK-интеграция канала переопределяет и провайдера, и модель (ADR-HUB-0034 §4,
-    # SPEC-HUB-0024 §6): «Модель по умолчанию» интеграции читается в рантайме и
-    # заменяет AIAgent.model — устраняет as-built разрыв SPEC-HUB-0005:388.
-    provider, model = routing.resolve_provider_and_model(channel, fallback_model=model) \
-        if getattr(channel, "provider_integration_id", None) else (get_provider(channel=channel), model)
+    safe_messages = [ChatMessage(role=item.role, content=redact(item.content)) for item in messages]
+    reservation = None
+    effective_params = params
+    if channel.ai_agent.credential_mode == CredentialMode.CUSTOAI:
+        try:
+            reservation = reserve_managed_ai_tokens(
+                channel=channel, messages=safe_messages, params=params
+            )
+            effective_params = reservation.params
+        except ManagedAiQuotaExceeded as error:
+            _record_blocked(channel=channel, purpose=purpose, model=model, error=error)
+            raise
     started = time.monotonic()
     try:
         result: ChatResult = call_with_resilience(
-            lambda: provider.chat(messages=safe_messages, model=model, params=params),
+            lambda: provider.chat(messages=safe_messages, model=model, params=effective_params),
             retries=settings.HUB_AI_MAX_RETRIES,
             breaker=_breaker,
         )
     except ProviderError as error:
+        if reservation is not None:
+            release_managed_ai_tokens(channel=channel, reservation=reservation)
         LlmInvocation.objects.create(
             organization=channel.organization,
-            channel=channel, product=channel.product, purpose=purpose, operation="chat", model=model,
-            status=LlmInvocationStatus.ERROR, error=str(error)[:1000],
+            channel=channel,
+            product=channel.product,
+            purpose=purpose,
+            operation="chat",
+            model=model,
+            status=LlmInvocationStatus.ERROR,
+            error=str(error)[:1000],
             latency_ms=int((time.monotonic() - started) * 1000),
         )
         raise
 
     invocation = LlmInvocation.objects.create(
         organization=channel.organization,
-        channel=channel, product=channel.product, purpose=purpose, operation="chat", model=result.model,
-        prompt_tokens=result.prompt_tokens, completion_tokens=result.completion_tokens, total_tokens=result.total_tokens,
-        cost_micros=result.cost_micros or pricing.cost_micros(result.model, result.prompt_tokens, result.completion_tokens),
-        latency_ms=int((time.monotonic() - started) * 1000), status=LlmInvocationStatus.SUCCESS,
+        channel=channel,
+        product=channel.product,
+        purpose=purpose,
+        operation="chat",
+        model=result.model,
+        prompt_tokens=result.prompt_tokens,
+        completion_tokens=result.completion_tokens,
+        total_tokens=result.total_tokens,
+        cost_micros=result.cost_micros
+        or pricing.cost_micros(result.model, result.prompt_tokens, result.completion_tokens),
+        latency_ms=int((time.monotonic() - started) * 1000),
+        status=LlmInvocationStatus.SUCCESS,
         used_fragment_ids=used_fragment_ids or [],
     )
-    consume_invocation_credits(channel=channel, invocation=invocation)
+    if reservation is not None:
+        commit_managed_ai_tokens(
+            channel=channel,
+            reservation=reservation,
+            result=result,
+            invocation_id=invocation.id,
+        )
     return result
 
 
@@ -75,8 +155,7 @@ def embed_texts(
     model: str,
     purpose: str = "retrieval",
 ) -> list[EmbeddingResult]:
-    # Знания авторские (не клиентские PII), поэтому redaction не требуется.
-    provider = get_provider()
+    provider = get_provider(channel=channel)
     results: list[EmbeddingResult] = call_with_resilience(
         lambda: provider.embed(texts=texts, model=model),
         retries=settings.HUB_AI_MAX_RETRIES,
@@ -85,8 +164,14 @@ def embed_texts(
     tokens = sum(result.tokens for result in results)
     LlmInvocation.objects.create(
         organization=channel.organization if channel else organization,
-        channel=channel, product=(channel.product if channel else None), purpose=purpose, operation="embedding", model=model,
-        prompt_tokens=tokens, total_tokens=tokens, cost_micros=pricing.cost_micros(model, tokens, 0),
+        channel=channel,
+        product=(channel.product if channel else None),
+        purpose=purpose,
+        operation="embedding",
+        model=model,
+        prompt_tokens=tokens,
+        total_tokens=tokens,
+        cost_micros=pricing.cost_micros(model, tokens, 0),
         status=LlmInvocationStatus.SUCCESS,
     )
     return results

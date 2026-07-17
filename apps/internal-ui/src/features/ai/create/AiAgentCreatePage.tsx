@@ -5,6 +5,8 @@ import { Icon } from "../../../shared/icons";
 import { LoadingState } from "../../../shared/ui";
 import type { RouteKey } from "../../../types";
 import { fetchKnowledgeList, type KnowledgeItem } from "../knowledge/model";
+import { fetchLlmProviders, type Integration } from "../../integrations/model";
+import type { CredentialMode } from "../model";
 import { useAiAgents } from "../useAiAgents";
 import { CreateAgentFooter } from "./CreateAgentFooter";
 import { KnowledgeStep } from "./KnowledgeStep";
@@ -18,7 +20,9 @@ export function AiAgentCreatePage({ selectedProductCode, reload, setRoute, openA
   const [channels, setChannels] = useState<ChannelOption[]>([]);
   const [channelsLoading, setChannelsLoading] = useState(true);
   const [channelCode, setChannelCode] = useState<string | null>(selectedProductCode);
-  const [model, setModel] = useState("anthropic/claude-sonnet-4.6");
+  const [credentialMode, setCredentialMode] = useState<CredentialMode>("CUSTOAI");
+  const [providerIntegrationId, setProviderIntegrationId] = useState<number | null>(null);
+  const [integrations, setIntegrations] = useState<Integration[]>([]);
   const [persona, setPersona] = useState(startPersona);
   const [tone, setTone] = useState(startTone);
   const [instructions, setInstructions] = useState(startInstructions);
@@ -35,6 +39,10 @@ export function AiAgentCreatePage({ selectedProductCode, reload, setRoute, openA
       .finally(() => setChannelsLoading(false));
   }, []);
 
+  useEffect(() => {
+    fetchLlmProviders().then(setIntegrations).catch(() => setIntegrations([]));
+  }, []);
+
   // Знания — общая библиотека организации (выбор опционален).
   useEffect(() => {
     setKnowledgeLoading(true);
@@ -48,7 +56,7 @@ export function AiAgentCreatePage({ selectedProductCode, reload, setRoute, openA
   const availableChannels = channels.filter((channel) => !agentChannelCodes.has(channel.code));
   const channelsWithAgents = channels.filter((channel) => agentChannelCodes.has(channel.code)).map((channel) => channel.name);
   const selectedChannel = availableChannels.find((channel) => channel.code === channelCode) ?? null;
-  const ready = !!selectedChannel;
+  const ready = !!selectedChannel && (credentialMode === "CUSTOAI" || providerIntegrationId !== null);
 
   useEffect(() => {
     if (!channelCode || agentChannelCodes.has(channelCode)) setChannelCode(availableChannels[0]?.code ?? null);
@@ -65,7 +73,7 @@ export function AiAgentCreatePage({ selectedProductCode, reload, setRoute, openA
     try {
       const response = await api<CreateAgentResponse>("/api/v1/ai/agents/", {
         method: "POST",
-        body: JSON.stringify({ channel: selectedChannel.code, model, persona, tone, instructions, knowledgeIds: selectedKnowledgeIds }),
+        body: JSON.stringify({ channel: selectedChannel.code, credentialMode, providerIntegrationId, persona, tone, instructions, knowledgeIds: selectedKnowledgeIds }),
       });
       reload();
       reloadAgents();
@@ -79,7 +87,7 @@ export function AiAgentCreatePage({ selectedProductCode, reload, setRoute, openA
   }
 
   const summary = ready && selectedChannel
-    ? `Будет создан агент для канала «${selectedChannel.name}» · модель ${model} · знаний: ${selectedKnowledgeIds.length}. Агент создаётся выключенным — запустите его из карточки.`
+    ? `Будет создан агент для канала «${selectedChannel.name}» · ${credentialMode === "CUSTOAI" ? "CustoAI" : "BYOK"} · знаний: ${selectedKnowledgeIds.length}. Агент создаётся выключенным — запустите его из карточки.`
     : "Выберите канал без агента, чтобы продолжить.";
 
   if (agentsLoading || channelsLoading) return <div className="ai-create-page"><LoadingState /></div>;
@@ -91,10 +99,19 @@ export function AiAgentCreatePage({ selectedProductCode, reload, setRoute, openA
           <h1>Создание AI-агента</h1>
           <p>Один агент на канал обработки. Агент создаётся для канала без агента; начнёт отвечать после запуска.</p>
         </div>
-        <div className="ai-create-provider"><Icon name="check" size={16} />Модель по умолчанию <b>Sonnet 4.6</b> · провайдер OpenRouter (раздел «Интеграции»)</div>
+        <div className="ai-create-provider">
+          <Icon name="check" size={16} />
+          {credentialMode === "CUSTOAI" ? "CustoAI · platform credential" : "BYOK · интеграция канала"}
+        </div>
         {error && <div className="ai-create-error">Не удалось создать агента. Проверьте выбранный канал.</div>}
         <ProductChoiceStep channels={availableChannels} selectedChannelCode={channelCode} channelsWithAgents={channelsWithAgents} onSelect={setChannelCode} />
-        <ModelStep model={model} setModel={setModel} />
+        <ModelStep
+          credentialMode={credentialMode}
+          setCredentialMode={setCredentialMode}
+          providerIntegrationId={providerIntegrationId}
+          setProviderIntegrationId={setProviderIntegrationId}
+          integrations={integrations}
+        />
         <PromptStep persona={persona} tone={tone} instructions={instructions} setPersona={setPersona} setTone={setTone} setInstructions={setInstructions} />
         <KnowledgeStep items={knowledge} selectedIds={selectedKnowledgeIds} loading={knowledgeLoading} toggle={toggleKnowledge} />
       </div>

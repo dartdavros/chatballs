@@ -70,9 +70,24 @@ class PlanVersionTests(TestCase):
             ("CONCURRENT", 10, None),
         )
 
-        # Business/Corporation remain draft: only ai_agent_slots, no approved quotas.
-        self.assertEqual(set(self._quota_map(business)), {QuotaKey.AI_AGENT_SLOTS})
+        # BUSINESS received the owner-approved Managed AI pool in migration 0006.
+        business_quotas = self._quota_map(business)
+        self.assertEqual(
+            business_quotas[QuotaKey.MANAGED_AI_CREDITS], ("HARD", 3000, None)
+        )
+        self.assertEqual(
+            set(business_quotas),
+            {QuotaKey.AI_AGENT_SLOTS, QuotaKey.MANAGED_AI_CREDITS},
+        )
+        # CORPORATION remains contract-specific and has no numeric credits grant.
         self.assertEqual(set(self._quota_map(corporation)), {QuotaKey.AI_AGENT_SLOTS})
+
+    def test_business_has_3000_managed_credits(self) -> None:
+        business = PlanVersion.objects.get(plan__code=PlanCode.BUSINESS, version=1)
+        grant = business.quota_grants.get(definition__key=QuotaKey.MANAGED_AI_CREDITS)
+        self.assertEqual(grant.mode, "HARD")
+        self.assertEqual(grant.limit_source, "FIXED")
+        self.assertEqual(grant.limit_value, 3000)
 
     @staticmethod
     def _quota_map(version: PlanVersion) -> dict[str, tuple[str, int | None, int | None]]:

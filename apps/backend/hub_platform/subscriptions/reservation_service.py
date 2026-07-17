@@ -10,6 +10,7 @@ from django.utils import timezone
 from hub_platform.subscriptions.errors import (
     PolicyUnavailable,
     QuotaExceeded,
+    UsageConflict,
 )
 from hub_platform.subscriptions.models import (
     QuotaDefinition,
@@ -56,13 +57,17 @@ def reserve_usage(
     source: str,
     aggregate_type: str = "",
     aggregate_id: str = "",
+    quantity: int = 1,
+    reserve_up_to_available: bool = False,
 ) -> ReservationResult:
-    """Acquire a slot on a CONCURRENT-mode quota for a live session (SPEC §7).
+    """Reserve quota units for a live operation (SPEC §7).
 
     Idempotent on (organization, idempotency_key): a replay returns the existing
-    reservation without taking a second slot. Raises QuotaExceeded (mode=CONCURRENT)
-    if the active-reservation count exceeds the limit.
+    reservation without taking units twice. Raises QuotaExceeded when the
+    requested quantity does not fit the effective limit.
     """
+    if quantity <= 0:
+        raise UsageConflict("Reservation quantity must be positive")
     period = _locked_period(context)
     definition = _quota_definition(quota_key)
 
@@ -94,17 +99,22 @@ def reserve_usage(
             quota_definition=definition,
         )
         current = counter.used_value + counter.reserved_value
-        if current + 1 > quota.limit:
+        effective_limit = quota.limit * definition.accounting_scale
+        available = effective_limit - current
+        reserved_quantity = min(quantity, available) if reserve_up_to_available else quantity
+        if reserved_quantity <= 0 or current + reserved_quantity > effective_limit:
             raise QuotaExceeded(
                 resource=quota_key,
-                limit=quota.limit,
+                limit=effective_limit,
                 used=current,
-                requested=1,
+                requested=max(1, reserved_quantity),
                 period_ends_at=period.ends_at,
                 mode=quota.mode,
             )
-        counter.reserved_value = F("reserved_value") + 1
+        counter.reserved_value = F("reserved_value") + reserved_quantity
         counter.save(update_fields=["reserved_value"])
+    else:
+        reserved_quantity = quantity
 
     reservation = UsageReservation.objects.create(
         organization_id=context.organization_id,
@@ -114,6 +124,7 @@ def reserve_usage(
         aggregate_type=aggregate_type,
         aggregate_id=aggregate_id,
         source=source,
+        quantity=reserved_quantity,
         expires_at=timezone.now() + timedelta(seconds=lease_seconds),
     )
     return ReservationResult(
@@ -144,7 +155,50 @@ def release_usage(*, context: TenantContext, idempotency_key: str) -> None:
         organization_id=context.organization_id,
         period=reservation.period_id,
         quota_definition=reservation.quota_definition,
-    ).update(reserved_value=F("reserved_value") - 1)
+    ).update(reserved_value=F("reserved_value") - reservation.quantity)
+
+
+@transaction.atomic
+def commit_usage_reservation(
+    *,
+    context: TenantContext,
+    idempotency_key: str,
+    quantity: int,
+    metadata: dict | None = None,
+    rule_version: str | None = None,
+):
+    """Atomically replace an active reservation with exact metered usage."""
+    if quantity <= 0:
+        raise UsageConflict("Committed usage quantity must be positive")
+    _locked_period(context)
+    reservation = UsageReservation.objects.select_for_update().get(
+        organization_id=context.organization_id,
+        idempotency_key=idempotency_key,
+        released_at__isnull=True,
+    )
+    if quantity > reservation.quantity:
+        raise UsageConflict("Committed usage exceeds reserved quantity")
+    reservation.released_at = timezone.now()
+    reservation.save(update_fields=["released_at"])
+    UsageCounter.objects.filter(
+        organization_id=context.organization_id,
+        period=reservation.period_id,
+        quota_definition=reservation.quota_definition,
+    ).update(reserved_value=F("reserved_value") - reservation.quantity)
+
+    from hub_platform.subscriptions.usage_service import record_usage
+
+    return record_usage(
+        context=context,
+        quota_key=reservation.quota_definition.key,
+        quantity=quantity,
+        idempotency_key=idempotency_key,
+        source=reservation.source,
+        aggregate_type=reservation.aggregate_type,
+        aggregate_id=reservation.aggregate_id,
+        metadata=metadata,
+        rule_version=rule_version,
+    )
 
 
 @transaction.atomic
@@ -162,7 +216,7 @@ def expire_stale_reservations() -> int:
     for reservation in stale:
         reservation.released_at = now
         key = (reservation.period_id, reservation.quota_definition_id)
-        by_period_quota[key] = by_period_quota.get(key, 0) + 1
+        by_period_quota[key] = by_period_quota.get(key, 0) + reservation.quantity
     UsageReservation.objects.bulk_update(stale, ["released_at"])
     # Decrement reserved_value per counter in a single guarded update.
     for (period_id, definition_id), count in by_period_quota.items():

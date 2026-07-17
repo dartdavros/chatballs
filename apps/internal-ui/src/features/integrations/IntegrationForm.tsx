@@ -45,7 +45,8 @@ export function IntegrationForm({ initial, onClose, onSaved }: { initial: Integr
   useEffect(() => {
     if (isMessenger) fetchChannels().then(setChannels).catch(() => setChannels([]));
   }, [isMessenger]);
-  const ready = name.trim().length > 0 && (isEdit || !meta.testable || secret.trim().length > 0);
+  const customReady = provider !== "CUSTOM" || (baseUrl.trim().length > 0 && defaultModel.trim().length > 0);
+  const ready = name.trim().length > 0 && customReady && (isEdit || !meta.testable || secret.trim().length > 0);
 
   async function submit() {
     if (!ready) return;

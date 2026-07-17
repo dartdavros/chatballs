@@ -144,11 +144,10 @@ INTERNAL_UI_BASE_URL = os.environ.get("INTERNAL_UI_BASE_URL", "http://localhost:
 # детерминированно выводится из SECRET_KEY (см. hub_platform.identity.crypto).
 HUB_FIELD_ENCRYPTION_KEY = os.environ.get("HUB_FIELD_ENCRYPTION_KEY", "")
 
-# AI-провайдер (chat + embeddings). По умолчанию тестовый адаптер локально;
-# в production требуется реальный провайдер (см. hub_platform.ai.provider.factory).
-# Empty means auto: OpenRouter when a key exists, otherwise the test provider.
+# AI provider runtime. The local adapter is explicit and test-only.
 HUB_AI_PROVIDER = os.environ.get("HUB_AI_PROVIDER", "")
-HUB_OPENROUTER_API_KEY = os.environ.get("HUB_OPENROUTER_API_KEY", "")
+if TESTING and not HUB_AI_PROVIDER:
+    HUB_AI_PROVIDER = "test"
 HUB_OPENROUTER_BASE_URL = os.environ.get("HUB_OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
 HUB_AI_REQUEST_TIMEOUT = float(os.environ.get("HUB_AI_REQUEST_TIMEOUT", "30"))
 HUB_AI_MAX_RETRIES = int(os.environ.get("HUB_AI_MAX_RETRIES", "2"))
@@ -157,6 +156,14 @@ HUB_AI_GLOBAL_DAILY_COST_LIMIT_MICROS = int(
 )  # 0 = без лимита
 HUB_AI_PRICING: dict = {}  # переопределение цен micro-USD/токен по модели
 HUB_AI_EMBEDDING_MODEL = os.environ.get("HUB_AI_EMBEDDING_MODEL", "openai/text-embedding-3-small")
+
+# CustoAI platform credential is configured only through environment/secret storage.
+HUB_CUSTOAI_API_KEY = os.environ.get("HUB_CUSTOAI_API_KEY", "")
+HUB_CUSTOAI_BASE_URL = os.environ.get("HUB_CUSTOAI_BASE_URL", "https://ai.api.cloud.yandex.net/v1")
+HUB_CUSTOAI_MODEL = os.environ.get(
+    "HUB_CUSTOAI_MODEL",
+    "gpt://b1g89tr9t8iedhnl8pgg/yandexgpt-5.1/latest",
+)
 
 # Long-poll hold-time мессенджеров (сек). Держим малым: единый воркер выполняет
 # и inbound-поллинг, и outbox-диспатч в одном потоке — при большом hold-time

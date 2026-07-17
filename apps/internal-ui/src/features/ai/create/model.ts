@@ -6,11 +6,6 @@ export type CreateAgentResponse = {
   agent?: AiAgent;
 };
 
-export const modelOptions = [
-  { value: "anthropic/claude-sonnet-4.6", label: "Sonnet 4.6 · по умолчанию" },
-  { value: "openai/gpt-4o-mini", label: "gpt-4o-mini · дешевле" },
-];
-
 export const startPersona = "Ты — AI-ассистент канала обработки. Представляй компанию и помогай клиенту разобраться в продукте.";
 export const startTone = "Отвечай дружелюбно и по делу, на русском, простым текстом без markdown-разметки, короткими абзацами.";
 export const startInstructions = "Квалифицируй потребность клиента и помогай довести до результата. Не обещай возможности вне базы знаний. При запросе человека или нестандартной ситуации — передавай диалог оператору.";
