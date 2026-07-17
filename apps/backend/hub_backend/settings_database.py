@@ -29,6 +29,24 @@ def _credentials() -> tuple[dict[str, str], dict[str, str]]:
     return users, passwords
 
 
+def _pool_options(*, testing: bool) -> dict | None:
+    # ASGI-серверы исполняют ORM в короткоживущих потоках sync_to_async;
+    # persistent-соединения (CONN_MAX_AGE > 0) в таких потоках осиротевают и
+    # исчерпывают max_connections Postgres. Вместо них — psycopg pool на процесс:
+    # соединения возвращаются в пул независимо от потока и ограничены сверху.
+    # CUS_DB_POOL_MAX=0 отключает пул (короткоживущие соединения на запрос).
+    if testing:
+        return None
+    max_size = int(os.environ.get("CUS_DB_POOL_MAX", "4"))
+    if max_size <= 0:
+        return None
+    return {
+        "min_size": int(os.environ.get("CUS_DB_POOL_MIN", "1")),
+        "max_size": max_size,
+        "timeout": float(os.environ.get("CUS_DB_POOL_TIMEOUT", "10")),
+    }
+
+
 def build_databases(*, debug: bool, testing: bool) -> dict[str, dict]:
     role = os.environ.get("CUS_DB_ROLE", "app").lower()
     if role not in {"app", "platform", "migration"}:
@@ -38,6 +56,7 @@ def build_databases(*, debug: bool, testing: bool) -> dict[str, dict]:
         raise ImproperlyConfigured(
             "App, platform and migration database users must be distinct"
         )
+    pool = _pool_options(testing=testing)
 
     def config(selected_role: str) -> dict:
         return {
@@ -47,7 +66,11 @@ def build_databases(*, debug: bool, testing: bool) -> dict[str, dict]:
             "PASSWORD": passwords[selected_role],
             "HOST": os.environ.get("POSTGRES_HOST", "postgres"),
             "PORT": os.environ.get("POSTGRES_PORT", "5432"),
-            "CONN_MAX_AGE": 60,
+            # Пул несовместим с persistent-соединениями: с ним CONN_MAX_AGE
+            # обязан быть 0, а без пула persistent-режим возвращать нельзя
+            # (см. _pool_options).
+            "CONN_MAX_AGE": 0,
+            "OPTIONS": {"pool": dict(pool)} if pool else {},
         }
 
     databases = {
