@@ -37,9 +37,37 @@ def _resolve_channel(organization: Organization, channel_id: int | None):
         raise ValidationError({"channel": "Channel not found"}) from error
 
 
+def _email_config(config: dict) -> dict:
+    """Email-подключение (ADR-HUB-0035): адрес и хосты IMAP/SMTP обязательны,
+    порты/SSL имеют значения по умолчанию, purpose не поддерживается."""
+    if str(config.get("purpose", "")).strip():
+        raise ValidationError({"config": "Email cannot be a notifications bot"})
+    address = str(config.get("email", "")).strip().lower()
+    imap_host = str(config.get("imapHost", config.get("imap_host", ""))).strip()
+    smtp_host = str(config.get("smtpHost", config.get("smtp_host", ""))).strip()
+    if not address or not imap_host or not smtp_host:
+        raise ValidationError({"config": "Email address, IMAP host and SMTP host are required"})
+    try:
+        imap_port = int(config.get("imapPort", config.get("imap_port")) or 993)
+        smtp_port = int(config.get("smtpPort", config.get("smtp_port")) or 465)
+    except (TypeError, ValueError) as error:
+        raise ValidationError({"config": "Ports must be numbers"}) from error
+    return {
+        "email": address,
+        "imap_host": imap_host,
+        "imap_port": imap_port,
+        "imap_ssl": bool(config.get("imapSsl", config.get("imap_ssl", True))),
+        "smtp_host": smtp_host,
+        "smtp_port": smtp_port,
+        "smtp_ssl": bool(config.get("smtpSsl", config.get("smtp_ssl", True))),
+    }
+
+
 def _normalized_config(provider: str, config: dict) -> dict:
     if not isinstance(config, dict):
         raise ValidationError({"config": "Object required"})
+    if provider == IntegrationProvider.EMAIL:
+        return _email_config(config)
     base_url = str(config.get("baseUrl", config.get("base_url", ""))).strip()
     result: dict[str, str] = {}
     if base_url:
@@ -86,6 +114,8 @@ def create_integration(*, context: TenantContext, data: IntegrationInput) -> Int
         raise ValidationError({"name": "Name required"})
     if provider == IntegrationProvider.CUSTOM and not (data.secret or "").strip():
         raise ValidationError({"secret": "Custom API key is required"})
+    if provider == IntegrationProvider.EMAIL and not (data.secret or "").strip():
+        raise ValidationError({"secret": "Mailbox password is required"})
     integration = Integration(
         organization=organization,
         kind=PROVIDER_KIND[provider],
@@ -163,6 +193,9 @@ def test_integration(*, context: TenantContext, integration: Integration) -> Int
         raise ValidationError({"integration": "Integration belongs to another organization"})
     if integration.provider == IntegrationProvider.WEB:
         ok, detail, meta = _check_web(context, integration)
+    elif integration.provider == IntegrationProvider.EMAIL:
+        # Email: сигнатура шире общей (нужен весь config), диспетчеризуется отдельно.
+        ok, detail, meta = checks.check_email(secret=integration.secret, config=integration.config)
     else:
         check = _CHECKS.get(integration.provider)
         if check is None:

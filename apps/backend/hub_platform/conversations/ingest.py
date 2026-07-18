@@ -149,7 +149,18 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
             external_id=inbound.external_id,
         )
         conversation.last_activity_at = timezone.now()
-        conversation.save(update_fields=["external_chat_id", "last_activity_at"])
+        update_fields = ["external_chat_id", "last_activity_at"]
+        if inbound.thread_meta:
+            # Email: Message-ID последнего входящего — для ответа в тред;
+            # тема диалога фиксируется по первому письму (ADR-HUB-0035).
+            current = conversation.transport_meta or {}
+            conversation.transport_meta = {
+                **current,
+                **inbound.thread_meta,
+                "subject": current.get("subject") or inbound.thread_meta.get("subject", ""),
+            }
+            update_fields.append("transport_meta")
+        conversation.save(update_fields=update_fields)
 
     if is_new:
         notify(

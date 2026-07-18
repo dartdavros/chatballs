@@ -14,7 +14,9 @@ Each check returns (ok, detail, meta) and never raises; meta may carry
 
 from __future__ import annotations
 
+import imaplib
 import json
+import smtplib
 import urllib.error
 import urllib.request
 
@@ -111,6 +113,58 @@ def check_max(*, secret: str, base_url: str, proxy_url: str = "") -> CheckResult
         return True, f"MAX: {name}", meta
 
     return _safe(run)
+
+
+def _describe_mail_error(error: Exception) -> str:
+    # imaplib/smtplib кладут в args байтовые ответы сервера — декодируем,
+    # чтобы в статусе интеграции не светился Python-репр вида b'...'.
+    parts = [part.decode("utf-8", "replace") if isinstance(part, bytes) else str(part) for part in (error.args or [])]
+    return " ".join(p for p in parts if p) or str(error)
+
+
+def check_email(*, secret: str, config: dict) -> CheckResult:
+    """Email-подключение (ADR-HUB-0035): проверка проходит только если успешны
+    ОБЕ стороны — IMAP (login + SELECT INBOX) и SMTP (EHLO + login)."""
+    address = str(config.get("email", "")).strip().lower()
+    imap_host = str(config.get("imap_host", "")).strip()
+    smtp_host = str(config.get("smtp_host", "")).strip()
+    if not secret:
+        return False, "Не указан пароль ящика", {}
+    if not address or not imap_host or not smtp_host:
+        return False, "Не заполнены адрес, IMAP- или SMTP-хост", {}
+    timeout = settings.CUS_AI_REQUEST_TIMEOUT
+
+    try:
+        imap_port = int(config.get("imap_port") or 993)
+        client = (
+            imaplib.IMAP4_SSL(imap_host, imap_port, timeout=timeout)
+            if config.get("imap_ssl", True)
+            else imaplib.IMAP4(imap_host, imap_port, timeout=timeout)
+        )
+        try:
+            client.login(address, secret)
+            client.select("INBOX", readonly=True)
+        finally:
+            try:
+                client.logout()
+            except (imaplib.IMAP4.error, OSError):
+                pass
+    except (imaplib.IMAP4.error, OSError, TimeoutError) as error:
+        return False, f"IMAP: {_describe_mail_error(error)}", {}
+
+    try:
+        smtp_port = int(config.get("smtp_port") or 465)
+        if config.get("smtp_ssl", True):
+            smtp = smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=timeout)
+        else:
+            smtp = smtplib.SMTP(smtp_host, smtp_port, timeout=timeout)
+            smtp.starttls()
+        with smtp:
+            smtp.login(address, secret)
+    except (smtplib.SMTPException, OSError, TimeoutError) as error:
+        return False, f"SMTP: {_describe_mail_error(error)}", {}
+
+    return True, f"Email: {address}", {}
 
 
 def check_telegram(*, secret: str, base_url: str, proxy_url: str = "") -> CheckResult:

@@ -1,3 +1,4 @@
+from hub_platform.conversations.transports import email as _email
 from hub_platform.conversations.transports import max as _max
 from hub_platform.conversations.transports import telegram as _telegram
 from hub_platform.integrations.models import IntegrationProvider
@@ -5,6 +6,7 @@ from hub_platform.integrations.models import IntegrationProvider
 _POLL = {
     IntegrationProvider.MAX: _max.poll_updates,
     IntegrationProvider.TELEGRAM: _telegram.poll_updates,
+    IntegrationProvider.EMAIL: _email.poll_updates,
 }
 def _web_noop(integration, *, chat_id: str, user_id: str, text: str) -> bool:
     # Web Chat: ответ уже сохранён в БД, браузер забирает его поллингом — внешней отправки нет.
@@ -15,6 +17,7 @@ _SEND = {
     IntegrationProvider.MAX: _max.send_text,
     IntegrationProvider.TELEGRAM: _telegram.send_text,
     IntegrationProvider.WEB: _web_noop,
+    IntegrationProvider.EMAIL: _email.send_text,
 }
 
 # Запрос контакта: сообщение с кнопкой «Поделиться контактом» (TG/MAX);
@@ -23,6 +26,8 @@ _CONTACT_REQUEST = {
     IntegrationProvider.MAX: _max.send_contact_request,
     IntegrationProvider.TELEGRAM: _telegram.send_contact_request,
     IntegrationProvider.WEB: _web_noop,
+    # Email: кнопок нет — просьба уходит обычным письмом.
+    IntegrationProvider.EMAIL: _email.send_text,
 }
 
 # Подтверждение получения контакта: в TG заодно снимает reply-клавиатуру.
@@ -30,6 +35,7 @@ _CONTACT_ACK = {
     IntegrationProvider.MAX: _max.send_text,
     IntegrationProvider.TELEGRAM: _telegram.send_contact_ack,
     IntegrationProvider.WEB: _web_noop,
+    IntegrationProvider.EMAIL: _email.send_text,
 }
 
 # Приглашение на онлайн-звонок: сообщение с кнопкой-ссылкой /calls/<token>

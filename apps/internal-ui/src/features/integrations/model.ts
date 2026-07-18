@@ -1,6 +1,6 @@
 import { api } from "../../api/client";
 
-export type IntegrationProvider = "OPENROUTER" | "CUSTOM" | "MAX" | "TELEGRAM" | "WEB";
+export type IntegrationProvider = "OPENROUTER" | "CUSTOM" | "MAX" | "TELEGRAM" | "WEB" | "EMAIL";
 export type IntegrationKind = "LLM_PROVIDER" | "MESSENGER";
 export type IntegrationStatus = "UNCHECKED" | "OK" | "ERROR";
 
@@ -11,7 +11,23 @@ export type Integration = {
   name: string;
   hasSecret: boolean;
   // purpose="notifications" — сервисный бот уведомлений сотрудников (не привязан к каналу продаж).
-  config: { baseUrl: string; defaultModel: string; proxyUrl: string; botId: string; botUsername: string; botName: string; purpose: string };
+  // email/imap*/smtp* — Email-подключение (SPEC-HUB-0025 §3.1).
+  config: {
+    baseUrl: string;
+    defaultModel: string;
+    proxyUrl: string;
+    botId: string;
+    botUsername: string;
+    botName: string;
+    purpose: string;
+    email: string;
+    imapHost: string;
+    imapPort: number;
+    imapSsl: boolean;
+    smtpHost: string;
+    smtpPort: number;
+    smtpSsl: boolean;
+  };
   channel: { id: number; code: string; name: string } | null;
   status: IntegrationStatus;
   lastCheckedAt: string | null;
@@ -40,6 +56,8 @@ export const PROVIDERS: Record<IntegrationProvider, ProviderMeta> = {
   MAX: { label: "MAX", kind: "MESSENGER", secretLabel: "Токен бота", defaultBaseUrl: "https://platform-api.max.ru", hasModel: false, testable: true, checkable: true },
   TELEGRAM: { label: "Telegram", kind: "MESSENGER", secretLabel: "Токен бота", defaultBaseUrl: "https://api.telegram.org", hasModel: false, testable: true, checkable: true },
   WEB: { label: "Web-виджет", kind: "MESSENGER", secretLabel: "", defaultBaseUrl: "", hasModel: false, testable: false, checkable: true },
+  // Email — подключение-ящик IMAP/SMTP (ADR-HUB-0035); секрет — пароль приложения.
+  EMAIL: { label: "Email (IMAP/SMTP)", kind: "MESSENGER", secretLabel: "Пароль", defaultBaseUrl: "", hasModel: false, testable: true, checkable: true },
 };
 
 export const STATUS_META: Record<IntegrationStatus, { label: string; bg: string; color: string }> = {

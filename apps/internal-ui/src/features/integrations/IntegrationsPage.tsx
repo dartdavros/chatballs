@@ -1,27 +1,25 @@
-import { Dropdown, Modal } from "antd";
+import { Modal } from "antd";
 import { useCallback, useEffect, useState } from "react";
 
 import { api } from "../../api/client";
-import { Icon } from "../../shared/icons";
 import { EmptyState, LoadingState, PageHeader } from "../../shared/ui";
-import { Button, ToneBadge } from "../../shared/ui-controls";
+import { Button, UnderlineTabs } from "../../shared/ui-controls";
+import { ConnectionsTable } from "./ConnectionsTable";
 import { IntegrationForm } from "./IntegrationForm";
-import { KIND_LABEL, PROVIDERS, STATUS_META, type Integration, type IntegrationKind } from "./model";
+import { KIND_LABEL, type Integration, type IntegrationKind } from "./model";
+import { ProvidersTable } from "./ProvidersTable";
 
-const KIND_ORDER: IntegrationKind[] = ["LLM_PROVIDER", "MESSENGER"];
-
-function formatChecked(value: string | null): string {
-  if (!value) return "ещё не проверялось";
-  return new Date(value).toLocaleString("ru-RU", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
-}
+// Страница «Интеграции» (SPEC-HUB-0025 §2): два таба по родам — подключения
+// (MESSENGER) и LLM-провайдеры; кнопка создания контекстна активному табу.
+type FormState = { initial: Integration | null; kind: IntegrationKind } | null;
 
 export function IntegrationsPage() {
   const [items, setItems] = useState<Integration[]>([]);
+  const [tab, setTab] = useState<IntegrationKind>("MESSENGER");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const [form, setForm] = useState<Integration | "new" | null>(null);
+  const [form, setForm] = useState<FormState>(null);
   const [testingId, setTestingId] = useState<number | null>(null);
-  const [menuId, setMenuId] = useState<number | null>(null);
   const [deleting, setDeleting] = useState<Integration | null>(null);
   const [deletingError, setDeletingError] = useState<string | null>(null);
 
@@ -55,7 +53,6 @@ export function IntegrationsPage() {
   }
 
   function startDelete(integration: Integration) {
-    setMenuId(null);
     setDeletingError(null);
     setDeleting(integration);
   }
@@ -71,11 +68,21 @@ export function IntegrationsPage() {
     }
   }
 
+  const connections = items.filter((item) => item.kind === "MESSENGER");
+  const providers = items.filter((item) => item.kind === "LLM_PROVIDER");
+  const isConnections = tab === "MESSENGER";
+  const shown = isConnections ? connections : providers;
+  const rowHandlers = { testingId, onTest: test, onEdit: (item: Integration) => setForm({ initial: item, kind: item.kind }), onDelete: startDelete };
+
   const header = (
     <PageHeader
       title="Интеграции"
-      text="Провайдеры (LLM) и подключения (боты/виджеты) · заводятся и проверяются здесь"
-      action={<Button variant="primary" icon="plus" onClick={() => setForm("new")}>Создать интеграцию</Button>}
+      text="Подключения мессенджеров, почты и LLM-провайдеры · заводятся и проверяются здесь"
+      action={
+        <Button variant="primary" icon="plus" onClick={() => setForm({ initial: null, kind: tab })}>
+          {isConnections ? "Добавить подключение" : "Добавить провайдера"}
+        </Button>
+      }
     />
   );
 
@@ -85,82 +92,30 @@ export function IntegrationsPage() {
   return (
     <div className="integrations-page">
       {header}
-      {items.length === 0 ? (
-        <EmptyState title="Пока нет интеграций. Создайте OpenRouter и MAX-подключение." />
+      <UnderlineTabs
+        className="integrations-tabs"
+        items={[
+          { key: "MESSENGER", label: KIND_LABEL.MESSENGER, count: connections.length },
+          { key: "LLM_PROVIDER", label: KIND_LABEL.LLM_PROVIDER, count: providers.length },
+        ]}
+        value={tab}
+        onChange={setTab}
+      />
+      {shown.length === 0 ? (
+        <EmptyState title={isConnections ? "Подключений пока нет. Добавьте бота, почту или Web-виджет." : "Провайдеров пока нет. Добавьте OpenRouter или Custom endpoint."} />
+      ) : isConnections ? (
+        <ConnectionsTable items={connections} {...rowHandlers} />
       ) : (
-        KIND_ORDER.map((kind) => {
-          const group = items.filter((item) => item.kind === kind);
-          if (group.length === 0) return null;
-          return (
-            <section className="integration-group" key={kind}>
-              <h2>{KIND_LABEL[kind]}</h2>
-              <div className="table-card">
-                <table className="baseline-table">
-                  <thead>
-                    <tr>
-                      <th>НАЗВАНИЕ</th>
-                      <th>СЕКРЕТ</th>
-                      <th>КОНФИГ</th>
-                      <th>СТАТУС</th>
-                      <th />
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {group.map((item) => {
-                      const meta = PROVIDERS[item.provider];
-                      const status = STATUS_META[item.status];
-                      const menuItems = [
-                        { key: "edit", label: <button type="button" onClick={() => { setMenuId(null); setForm(item); }}><Icon name="edit" size={15} />Изменить</button> },
-                        { type: "divider" as const },
-                        { key: "delete", label: <button type="button" className="warning" onClick={() => startDelete(item)}><Icon name="trash" size={15} />Удалить</button> },
-                      ];
-                      return (
-                        <tr key={item.id}>
-                          <td>
-                            <div className="product-cell">
-                              <span className="product-icon"><Icon name={item.kind === "LLM_PROVIDER" ? "robot" : "plug"} size={20} /></span>
-                              <span><strong>{item.name}</strong><small>{meta.label}{item.config.botUsername ? ` · @${item.config.botUsername}` : item.config.botName ? ` · ${item.config.botName}` : ""}</small></span>
-                            </div>
-                          </td>
-                          <td>{item.hasSecret ? <code className="ai-mono">••••••••</code> : <span className="product-empty-value">—</span>}</td>
-                          <td className="integration-config">
-                            <span>{item.config.baseUrl || meta.defaultBaseUrl || "—"}</span>
-                            {item.config.defaultModel && <small>{item.config.defaultModel}</small>}
-                            {item.kind === "MESSENGER" && <small>{item.channel ? `Канал: ${item.channel.name}` : "канал не привязан"}</small>}
-                          </td>
-                          <td>
-                            <div className="integration-status">
-                              <ToneBadge bg={status.bg} color={status.color}>{status.label}</ToneBadge>
-                              <small>{item.status === "ERROR" && item.lastError ? item.lastError : formatChecked(item.lastCheckedAt)}</small>
-                            </div>
-                          </td>
-                          <td className="row-actions">
-                            <div className="ai-row-actions">
-                              <Button variant="secondary" icon="refresh" iconSize={14} disabled={!meta.checkable || testingId === item.id} onClick={() => test(item)}>
-                                {testingId === item.id ? "Проверка…" : "Проверить"}
-                              </Button>
-                              <Dropdown
-                                menu={{ items: menuItems }}
-                                open={menuId === item.id}
-                                onOpenChange={(open) => setMenuId(open ? item.id : null)}
-                                trigger={["click"]}
-                                overlayClassName="product-actions-dropdown"
-                              >
-                                <button className="row-menu-button" aria-label="Действия интеграции"><Icon name="more" /></button>
-                              </Dropdown>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </section>
-          );
-        })
+        <ProvidersTable items={providers} {...rowHandlers} />
       )}
-      {form && <IntegrationForm initial={form === "new" ? null : form} onClose={() => setForm(null)} onSaved={() => { setForm(null); void load(); }} />}
+      {form && (
+        <IntegrationForm
+          initial={form.initial}
+          kind={form.kind}
+          onClose={() => setForm(null)}
+          onSaved={() => { setForm(null); void load(); }}
+        />
+      )}
       {deleting && (
         <Modal open title="Удалить интеграцию?" onCancel={() => setDeleting(null)} footer={null} destroyOnClose>
           <div className="integration-form">

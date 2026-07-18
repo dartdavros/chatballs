@@ -5,20 +5,26 @@ import { api } from "../../api/client";
 import { Icon } from "../../shared/icons";
 import { FormField, SelectField } from "../../shared/form-controls";
 import { Button } from "../../shared/ui-controls";
-import { fetchChannels, PROVIDERS, webWidgetSnippet, type ChannelOption, type Integration, type IntegrationProvider } from "./model";
+import { EMAIL_CONFIG_DEFAULTS, EmailFields, emailConfigFromIntegration, emailConfigPayload } from "./EmailFields";
+import { fetchChannels, PROVIDERS, webWidgetSnippet, type ChannelOption, type Integration, type IntegrationKind, type IntegrationProvider } from "./model";
 
-const PROVIDER_OPTIONS: Array<[string, string]> = (Object.keys(PROVIDERS) as IntegrationProvider[]).map(
-  (key) => [key, PROVIDERS[key].label],
-);
+// Селектор «Тип» показывает только провайдеров рода активного таба (SPEC-HUB-0025 §2.2).
+function providerOptions(kind: IntegrationKind): Array<[string, string]> {
+  return (Object.keys(PROVIDERS) as IntegrationProvider[])
+    .filter((key) => PROVIDERS[key].kind === kind)
+    .map((key) => [key, PROVIDERS[key].label]);
+}
 
-export function IntegrationForm({ initial, onClose, onSaved }: { initial: Integration | null; onClose: () => void; onSaved: () => void }) {
+export function IntegrationForm({ initial, kind, onClose, onSaved }: { initial: Integration | null; kind: IntegrationKind; onClose: () => void; onSaved: () => void }) {
   const isEdit = initial !== null;
-  const [provider, setProvider] = useState<IntegrationProvider>(initial?.provider ?? "OPENROUTER");
+  const options = providerOptions(kind);
+  const [provider, setProvider] = useState<IntegrationProvider>(initial?.provider ?? (options[0][0] as IntegrationProvider));
   const [name, setName] = useState(initial?.name ?? "");
   const [secret, setSecret] = useState("");
   const [baseUrl, setBaseUrl] = useState(initial?.config.baseUrl ?? "");
   const [defaultModel, setDefaultModel] = useState(initial?.config.defaultModel ?? "");
   const [proxyUrl, setProxyUrl] = useState(initial?.config.proxyUrl ?? "");
+  const [emailConfig, setEmailConfig] = useState(initial ? emailConfigFromIntegration(initial.config) : EMAIL_CONFIG_DEFAULTS);
   const [channelId, setChannelId] = useState(initial?.channel ? String(initial.channel.id) : "");
   const [isNotifier, setIsNotifier] = useState(initial?.config.purpose === "notifications");
   const [channels, setChannels] = useState<ChannelOption[]>([]);
@@ -29,6 +35,7 @@ export function IntegrationForm({ initial, onClose, onSaved }: { initial: Integr
   const meta = PROVIDERS[provider];
   const isMessenger = meta.kind === "MESSENGER";
   const isWeb = provider === "WEB";
+  const isEmail = provider === "EMAIL";
   const widgetChannel = channels.find((item) => String(item.id) === channelId) ?? null;
   const widgetSnippet = isWeb && widgetChannel ? webWidgetSnippet(widgetChannel.code) : "";
 
@@ -46,13 +53,16 @@ export function IntegrationForm({ initial, onClose, onSaved }: { initial: Integr
     if (isMessenger) fetchChannels().then(setChannels).catch(() => setChannels([]));
   }, [isMessenger]);
   const customReady = provider !== "CUSTOM" || (baseUrl.trim().length > 0 && defaultModel.trim().length > 0);
-  const ready = name.trim().length > 0 && customReady && (isEdit || !meta.testable || secret.trim().length > 0);
+  const emailReady = !isEmail || Boolean(emailConfig.email.trim() && emailConfig.imapHost.trim() && emailConfig.smtpHost.trim());
+  const ready = name.trim().length > 0 && customReady && emailReady && (isEdit || !meta.testable || secret.trim().length > 0);
 
   async function submit() {
     if (!ready) return;
     setSubmitting(true);
     setError(null);
-    const config = { baseUrl: baseUrl.trim(), defaultModel: defaultModel.trim(), proxyUrl: proxyUrl.trim(), purpose: isNotifier ? "notifications" : "" };
+    const config = isEmail
+      ? emailConfigPayload(emailConfig)
+      : { baseUrl: baseUrl.trim(), defaultModel: defaultModel.trim(), proxyUrl: proxyUrl.trim(), purpose: isNotifier ? "notifications" : "" };
     // Сервисный бот уведомлений не привязывается к каналу продаж.
     const channel = isMessenger ? { channelId: channelId && !isNotifier ? Number(channelId) : null } : {};
     try {
@@ -81,9 +91,10 @@ export function IntegrationForm({ initial, onClose, onSaved }: { initial: Integr
         {isEdit ? (
           <FormField label="Тип" value={meta.label} />
         ) : (
-          <SelectField label="Тип" value={provider} onChange={(value) => setProvider(value as IntegrationProvider)} options={PROVIDER_OPTIONS} />
+          <SelectField label="Тип" value={provider} onChange={(value) => setProvider(value as IntegrationProvider)} options={options} />
         )}
-        <FormField label="Название" value={name} onChange={setName} placeholder="например, OpenRouter · основной" />
+        <FormField label="Название" value={name} onChange={setName} placeholder={isEmail ? "например, Почта поддержки" : "например, OpenRouter · основной"} />
+        {isEmail && <EmailFields value={emailConfig} onChange={setEmailConfig} />}
         {meta.testable && (
           <FormField
             label={meta.secretLabel}
@@ -93,8 +104,11 @@ export function IntegrationForm({ initial, onClose, onSaved }: { initial: Integr
             placeholder={isEdit ? "оставьте пустым, чтобы не менять" : ""}
           />
         )}
-        <FormField label="Base URL" value={baseUrl} onChange={setBaseUrl} placeholder={meta.defaultBaseUrl || "—"} />
-        {!isWeb && (
+        {isEmail && !isEdit && (
+          <div className="integration-form-hint">Для Gmail и Яндекс используйте пароль приложения, не основной пароль аккаунта</div>
+        )}
+        {!isEmail && <FormField label="Base URL" value={baseUrl} onChange={setBaseUrl} placeholder={meta.defaultBaseUrl || "—"} />}
+        {!isWeb && !isEmail && (
           <FormField label="Прокси" value={proxyUrl} onChange={setProxyUrl} placeholder="http://host:port или socks5://user:pass@host:port — пусто, если без прокси" />
         )}
         {meta.hasModel && (
@@ -103,7 +117,7 @@ export function IntegrationForm({ initial, onClose, onSaved }: { initial: Integr
         {isEdit && initial.config.botUsername && (
           <FormField label="Бот" value={`${initial.config.botName || initial.config.botUsername}${initial.config.botUsername ? ` · @${initial.config.botUsername}` : ""}${initial.config.botId ? ` · id ${initial.config.botId}` : ""}`} />
         )}
-        {isMessenger && !isWeb && (
+        {isMessenger && !isWeb && !isEmail && (
           <label className="integration-notifier-toggle">
             <input type="checkbox" checked={isNotifier} onChange={(event) => setIsNotifier(event.target.checked)} />
             Бот уведомлений для сотрудников (не участвует в продажах, привязка в профиле)

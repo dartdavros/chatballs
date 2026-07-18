@@ -75,6 +75,9 @@ class Conversation(models.Model):
     )
     # Внешний идентификатор чата (для отправки ответа в канал).
     external_chat_id = models.CharField(max_length=128, blank=True)
+    # Транспортная мета диалога (ADR-HUB-0035): для email — тема исходного
+    # письма и Message-ID последнего входящего (тредирование Re:/In-Reply-To).
+    transport_meta = models.JSONField(default=dict, blank=True)
     lifecycle = models.CharField(max_length=16, choices=LifecycleState.choices, default=LifecycleState.OPEN)
     control_mode = models.CharField(max_length=16, choices=ControlMode.choices, default=ControlMode.AI)
     expected_responder = models.CharField(max_length=16, choices=ExpectedResponder.choices, default=ExpectedResponder.AI)

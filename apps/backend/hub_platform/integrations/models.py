@@ -17,6 +17,7 @@ class IntegrationProvider(models.TextChoices):
     MAX = "MAX", "MAX"
     TELEGRAM = "TELEGRAM", "Telegram"
     WEB = "WEB", "Web-виджет"
+    EMAIL = "EMAIL", "Email (IMAP/SMTP)"
 
 
 class IntegrationStatus(models.TextChoices):
@@ -33,6 +34,8 @@ PROVIDER_KIND = {
     IntegrationProvider.MAX: IntegrationKind.MESSENGER,
     IntegrationProvider.TELEGRAM: IntegrationKind.MESSENGER,
     IntegrationProvider.WEB: IntegrationKind.MESSENGER,
+    # Email-ящик — транспорт диалогов наравне с ботами (ADR-HUB-0035).
+    IntegrationProvider.EMAIL: IntegrationKind.MESSENGER,
 }
 
 
