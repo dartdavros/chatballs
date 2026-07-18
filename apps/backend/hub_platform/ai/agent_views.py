@@ -4,7 +4,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from hub_platform.ai.models import AIAgent, CredentialMode
-from hub_platform.ai.selectors import agent_for_context, agents_for_context
+from hub_platform.ai.selectors import (
+    agent_for_employee,
+    agents_for_employee,
+    channel_for_ai_capability,
+)
 from hub_platform.ai.serializers import agent_payload
 from hub_platform.ai.services import (
     AgentCreateInput,
@@ -14,6 +18,7 @@ from hub_platform.ai.services import (
     update_agent,
 )
 from hub_platform.api.permissions import HasCapability
+from hub_platform.channels.models import Channel
 from hub_platform.identity.audit import record_audit_event
 from hub_platform.subscriptions.errors import (
     PolicyUnavailable,
@@ -71,10 +76,11 @@ def _validation_error(error: ValidationError) -> Response:
 class AIAgentListView(APIView):
     permission_classes = [HasCapability]
     required_capabilities = {"GET": "ai.view", "POST": "ai.manage"}
-    require_organization_scope = True
-
     def get(self, request: Request) -> Response:
-        agents = agents_for_context(request.tenant_context)
+        agents = agents_for_employee(
+            context=request.tenant_context,
+            capability="ai.view",
+        )
         return Response({"items": [agent_payload(agent) for agent in agents]})
 
     def post(self, request: Request) -> Response:
@@ -83,11 +89,20 @@ class AIAgentListView(APIView):
             isinstance(item, int) for item in knowledge_ids
         ):
             return Response({"detail": "knowledgeIds must be a list of ids"}, status=400)
+        channel_code = str(request.data.get("channel", "")).strip()
+        try:
+            channel_for_ai_capability(
+                context=request.tenant_context,
+                channel_code=channel_code,
+                capability="ai.manage",
+            )
+        except Channel.DoesNotExist:
+            return Response({"detail": "Channel not found"}, status=404)
         try:
             agent = create_agent(
                 context=request.tenant_context,
                 data=AgentCreateInput(
-                    channel_code=str(request.data.get("channel", "")).strip(),
+                    channel_code=channel_code,
                     credential_mode=str(
                         request.data.get("credentialMode", CredentialMode.CUSTOAI)
                     ).strip(),
@@ -114,11 +129,13 @@ class AIAgentListView(APIView):
 class AIAgentDetailView(APIView):
     permission_classes = [HasCapability]
     required_capability = "ai.view"
-    require_organization_scope = True
-
     def get(self, request: Request, agent_id: int) -> Response:
         try:
-            agent = agent_for_context(context=request.tenant_context, agent_id=agent_id)
+            agent = agent_for_employee(
+                context=request.tenant_context,
+                agent_id=agent_id,
+                capability="ai.view",
+            )
         except AIAgent.DoesNotExist:
             return Response({"detail": "Agent not found"}, status=404)
         return Response({"agent": agent_payload(agent)})
@@ -127,11 +144,13 @@ class AIAgentDetailView(APIView):
 class AIAgentUpdateView(APIView):
     permission_classes = [HasCapability]
     required_capability = "ai.manage"
-    require_organization_scope = True
-
     def patch(self, request: Request, agent_id: int) -> Response:
         try:
-            agent = agent_for_context(context=request.tenant_context, agent_id=agent_id)
+            agent = agent_for_employee(
+                context=request.tenant_context,
+                agent_id=agent_id,
+                capability="ai.manage",
+            )
         except AIAgent.DoesNotExist:
             return Response({"detail": "Agent not found"}, status=404)
         try:
@@ -153,7 +172,11 @@ class AIAgentUpdateView(APIView):
         return Response(
             {
                 "agent": agent_payload(
-                    agent_for_context(context=request.tenant_context, agent_id=agent_id)
+                    agent_for_employee(
+                        context=request.tenant_context,
+                        agent_id=agent_id,
+                        capability="ai.manage",
+                    )
                 )
             }
         )
@@ -162,12 +185,15 @@ class AIAgentUpdateView(APIView):
 class _AIAgentStatusView(APIView):
     permission_classes = [HasCapability]
     required_capability = "ai.manage"
-    require_organization_scope = True
     target_active: bool
 
     def post(self, request: Request, agent_id: int) -> Response:
         try:
-            agent = agent_for_context(context=request.tenant_context, agent_id=agent_id)
+            agent = agent_for_employee(
+                context=request.tenant_context,
+                agent_id=agent_id,
+                capability="ai.manage",
+            )
         except AIAgent.DoesNotExist:
             return Response({"detail": "Agent not found"}, status=404)
         try:
