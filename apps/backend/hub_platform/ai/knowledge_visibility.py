@@ -20,7 +20,7 @@ def _normalize_department_ids(department_ids: Iterable[int]) -> list[int]:
     return normalized
 
 
-def _departments_for_scope(
+def departments_for_scope(
     *, context: TenantContext, visibility: str, department_ids: Iterable[int]
 ) -> list[Department]:
     if visibility not in KnowledgeVisibility.values:
@@ -61,7 +61,7 @@ def replace_knowledge_visibility(
         raise ValidationError({"knowledge": "Knowledge belongs to another organization"})
 
     locked = Knowledge.objects.select_for_update().get(pk=knowledge.pk)
-    departments = _departments_for_scope(
+    departments = departments_for_scope(
         context=context,
         visibility=visibility,
         department_ids=department_ids,

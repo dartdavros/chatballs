@@ -53,7 +53,7 @@ def _normalize_limits(raw: dict | None) -> dict:
     return {"dailyCostUsd": cents} if cents > 0 else {}
 
 
-def _knowledge_for_ids(
+def knowledge_for_agent_ids(
     *, context: TenantContext, channel: Channel, knowledge_ids: list[int]
 ) -> list[Knowledge]:
     requested_ids = set(knowledge_ids)
@@ -92,7 +92,7 @@ def create_agent(*, context: TenantContext, data: AgentCreateInput) -> AIAgent:
     if AIAgent.objects.filter(channel=channel).exists():
         raise ValidationError({"channel": "Channel already has an AI agent"})
 
-    knowledge_items = _knowledge_for_ids(
+    knowledge_items = knowledge_for_agent_ids(
         context=context,
         channel=channel,
         knowledge_ids=data.knowledge_ids,
@@ -127,7 +127,7 @@ def update_agent(*, context: TenantContext, agent: AIAgent, data: AgentInput) ->
     )
     knowledge_items = None
     if data.knowledge_ids is not None:
-        knowledge_items = _knowledge_for_ids(
+        knowledge_items = knowledge_for_agent_ids(
             context=context,
             channel=channel,
             knowledge_ids=data.knowledge_ids,

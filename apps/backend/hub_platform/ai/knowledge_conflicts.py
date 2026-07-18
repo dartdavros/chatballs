@@ -52,8 +52,20 @@ def _active_agents():
 def require_knowledge_scope_compatible(
     *, knowledge: Knowledge, visibility: str, department_ids: Iterable[int]
 ) -> None:
+    conflicts = knowledge_scope_conflicts(
+        knowledge=knowledge,
+        visibility=visibility,
+        department_ids=department_ids,
+    )
+    if conflicts:
+        raise KnowledgeScopeConflict(conflicts)
+
+
+def knowledge_scope_conflicts(
+    *, knowledge: Knowledge, visibility: str, department_ids: Iterable[int]
+) -> tuple[AgentKnowledgeConflict, ...]:
     if visibility == KnowledgeVisibility.ORGANIZATION:
-        return
+        return ()
     allowed_department_ids = set(department_ids)
     agents = (
         _active_agents()
@@ -64,7 +76,7 @@ def require_knowledge_scope_compatible(
         )
         .order_by("id")
     )
-    conflicts = [
+    return tuple(
         AgentKnowledgeConflict(
             agent_id=agent.id,
             agent_name=agent.name,
@@ -72,9 +84,7 @@ def require_knowledge_scope_compatible(
             knowledge_title=knowledge.title,
         )
         for agent in agents
-    ]
-    if conflicts:
-        raise KnowledgeScopeConflict(conflicts)
+    )
 
 
 def require_channel_department_compatible(*, channel: Channel, department_id: int | None) -> None:

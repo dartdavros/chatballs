@@ -7,12 +7,12 @@ from rest_framework.views import APIView
 from hub_platform.ai.api_errors import validation_error_response
 from hub_platform.ai.knowledge_api_inputs import knowledge_filters, knowledge_input
 from hub_platform.ai.knowledge_conflicts import KnowledgeScopeConflict
+from hub_platform.ai.knowledge_import import import_knowledge_documents
 from hub_platform.ai.knowledge_policy import (
     employee_can_write_knowledge,
     require_knowledge_create,
 )
 from hub_platform.ai.knowledge_services import (
-    KnowledgeInput,
     add_attachment,
     create_knowledge,
     delete_attachment,
@@ -25,7 +25,6 @@ from hub_platform.ai.selectors import (
     apply_knowledge_filters,
     knowledge_for_context,
     knowledge_item_for_context,
-    writable_knowledge_for_employee,
     writable_knowledge_item_for_employee,
 )
 from hub_platform.ai.serializers import attachment_payload, knowledge_payload
@@ -144,85 +143,25 @@ class KnowledgeDetailView(_KnowledgeBaseView):
 
 
 class KnowledgeImportView(_KnowledgeBaseView):
-    # POST {documents: [{title, description?, content}]} — идемпотентный upsert
-    # по заголовку (SPEC-HUB-0012). Ошибки per-doc копятся в failed[].
     def post(self, request: Request) -> Response:
         documents = request.data.get("documents")
         if not isinstance(documents, list) or not documents:
             return Response({"detail": "documents must be a non-empty list"}, status=400)
-        organization = self._org(request)
-        created = updated = unchanged = 0
-        failed: list[dict[str, str]] = []
-        for index, item in enumerate(documents):
-            title = str(item.get("title", "")).strip() if isinstance(item, dict) else ""
-            if not title:
-                failed.append({"title": "", "detail": f"Документ #{index + 1}: пустой заголовок"})
-                continue
-            description = str(item.get("description", "") or "").strip()
-            content = str(item.get("content", "") or "")
-            knowledge = (
-                writable_knowledge_for_employee(context=request.tenant_context)
-                .filter(title=title)
-                .first()
-            )
-            if knowledge is None:
-                try:
-                    require_knowledge_create(
-                        context=request.tenant_context,
-                        visibility=KnowledgeVisibility.ORGANIZATION,
-                        department_ids=[],
-                    )
-                    create_knowledge(
-                        context=request.tenant_context,
-                        data=KnowledgeInput(
-                            title=title,
-                            description=description,
-                            content=content,
-                            is_enabled=True,
-                        ),
-                    )
-                    created += 1
-                except PermissionDenied:
-                    failed.append({"title": title, "detail": "Knowledge is not manageable"})
-            elif knowledge.content == content and knowledge.description == (
-                description or knowledge.description
-            ):
-                unchanged += 1
-            else:
-                update_knowledge(
-                    context=request.tenant_context,
-                    knowledge=knowledge,
-                    data=KnowledgeInput(
-                        title=title,
-                        description=description or knowledge.description,
-                        content=content,
-                        is_enabled=knowledge.is_enabled,
-                    ),
-                )
-                updated += 1
+        result = import_knowledge_documents(
+            context=request.tenant_context,
+            documents=documents,
+        )
+        payload = result.payload()
         record_audit_event(
             action="ai.knowledge_imported",
             actor=request.user,
-            organization=organization,
+            organization=self._org(request),
             object_type="Knowledge",
             object_id="",
-            payload={
-                "created": created,
-                "updated": updated,
-                "unchanged": unchanged,
-                "failed": failed,
-            },
+            payload=payload,
             request=request,
         )
-        return Response(
-            {
-                "created": created,
-                "updated": updated,
-                "unchanged": unchanged,
-                "failed": failed,
-            },
-            status=201,
-        )
+        return Response(payload, status=201)
 
 
 class KnowledgeAttachmentUploadView(_KnowledgeBaseView):
