@@ -5,6 +5,7 @@ from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 
+from hub_platform.ai.knowledge_categories import ensure_uncategorized_category
 from hub_platform.ai.models import Knowledge
 from hub_platform.identity.bootstrap import bootstrap_edevs_owner
 from hub_platform.identity.models import Organization
@@ -25,6 +26,7 @@ class TenantStorageIsolationTests(TestCase):
         self.organization = Organization.objects.get(slug="edevs")
         self.knowledge = Knowledge.objects.create(
             organization=self.organization,
+            category=ensure_uncategorized_category(self.organization),
             title="Storage isolation",
         )
         self.client = TenantAPIClient()

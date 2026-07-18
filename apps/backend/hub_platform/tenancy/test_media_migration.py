@@ -6,6 +6,7 @@ from pathlib import Path
 from django.core.management import call_command
 from django.test import TestCase, override_settings
 
+from hub_platform.ai.knowledge_categories import ensure_uncategorized_category
 from hub_platform.ai.models import Knowledge, KnowledgeAttachment
 from hub_platform.identity.models import Organization
 from hub_platform.tenancy.models import OrganizationStorageUsage
@@ -20,6 +21,7 @@ class TenantMediaMigrationTests(TestCase):
         self.organization = Organization.objects.create(name="Media", slug="media")
         knowledge = Knowledge.objects.create(
             organization=self.organization,
+            category=ensure_uncategorized_category(self.organization),
             title="Legacy",
         )
         self.attachment = KnowledgeAttachment.objects.create(

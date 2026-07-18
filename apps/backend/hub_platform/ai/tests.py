@@ -5,6 +5,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from hub_platform.testing import TenantAPIClient as APIClient, system_tenant_context
 
+from hub_platform.ai.knowledge_categories import ensure_uncategorized_category
 from hub_platform.ai.models import AIAgent, AIAgentStatus, CredentialMode, Knowledge, KnowledgeFragment
 from hub_platform.channels.models import Channel
 from hub_platform.identity.bootstrap import bootstrap_edevs_owner
@@ -32,6 +33,15 @@ def seed_sales_channels(organization):
     foxray = Product.objects.get(organization=organization, code="foxray")
     make_channel_with_agent(organization, code="firepage-sales", name="FirePage — продажи", product=firepage)
     make_channel_with_agent(organization, code="foxray-sales", name="FoxRay — продажи", product=foxray)
+
+
+def make_knowledge(organization, *, title, content=""):
+    return Knowledge.objects.create(
+        organization=organization,
+        category=ensure_uncategorized_category(organization),
+        title=title,
+        content=content,
+    )
 
 
 class AIAgentInvariantTests(TestCase):
@@ -88,7 +98,7 @@ class AIAgentApiTests(TestCase):
     def test_owner_creates_agent_with_instructions_and_knowledge(self) -> None:
         academy = Product.objects.create(organization=self.organization, code="academy", name="Academy")
         Channel.objects.create(organization=self.organization, code="academy-sales", name="Academy", product=academy)
-        knowledge = Knowledge.objects.create(organization=self.organization, title="FAQ", content="v1")
+        knowledge = make_knowledge(self.organization, title="FAQ", content="v1")
 
         response = self.client.post(
             "/api/v1/ai/agents/",
@@ -141,7 +151,7 @@ class AIAgentApiTests(TestCase):
 
     def test_owner_updates_agent_knowledge_selection(self) -> None:
         agent = AIAgent.objects.get(channel__code="firepage-sales")
-        knowledge = Knowledge.objects.create(organization=self.organization, title="FAQ", content="v1")
+        knowledge = make_knowledge(self.organization, title="FAQ", content="v1")
 
         response = self.client.patch(
             f"/api/v1/ai/agents/{agent.id}/update/",
@@ -281,7 +291,11 @@ class KnowledgeAttachmentTests(TestCase):
         self.organization = Organization.objects.get(slug="edevs")
         self.client = APIClient()
         self.client.login(username="owner@edevs.tech", password="temporary-password")
-        self.knowledge = Knowledge.objects.create(organization=self.organization, title="FAQ", content="Основной текст.")
+        self.knowledge = make_knowledge(
+            self.organization,
+            title="FAQ",
+            content="Основной текст.",
+        )
 
     def _upload(self, name="price.txt", data=b"Full price list contents", content_type="text/plain"):
         return self.client.post(

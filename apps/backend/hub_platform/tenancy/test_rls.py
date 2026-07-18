@@ -1,6 +1,7 @@
 from django.db import DatabaseError, connection, transaction
 from django.test import TransactionTestCase
 
+from hub_platform.ai.knowledge_categories import ensure_uncategorized_category
 from hub_platform.ai.models import AIAgent, Knowledge
 from hub_platform.channels.models import Channel
 from hub_platform.identity.models import (
@@ -149,6 +150,7 @@ class RowLevelSecurityTests(TransactionTestCase):
         )
         foreign_knowledge = Knowledge.objects.create(
             organization=self.second,
+            category=ensure_uncategorized_category(self.second),
             title="Foreign knowledge",
         )
 

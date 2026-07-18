@@ -31,14 +31,10 @@ class CredentialMode(models.TextChoices):
 
 class Knowledge(models.Model):
     organization = models.ForeignKey("identity.Organization", on_delete=models.PROTECT, related_name="knowledge_items")
-    # Nullable only during B01→B03 rollout. B03 backfills the system category and
-    # changes this field to NOT NULL without changing existing runtime behaviour.
     category = models.ForeignKey(
         "ai.KnowledgeCategory",
         on_delete=models.PROTECT,
         related_name="knowledge_items",
-        null=True,
-        blank=True,
     )
     title = models.CharField(max_length=255)
     description = models.CharField(max_length=500, blank=True)
