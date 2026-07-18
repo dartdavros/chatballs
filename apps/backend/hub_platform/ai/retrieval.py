@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from pgvector.django import CosineDistance
 
+from hub_platform.ai.agent_knowledge import runtime_knowledge_for_agent
 from hub_platform.ai.invocation import embed_texts
 from hub_platform.ai.models import AIAgent, KnowledgeFragment
 from hub_platform.ai.provider.base import ProviderError
@@ -9,7 +10,7 @@ from hub_platform.ai.provider.base import ProviderError
 
 def _agent_fragments(agent: AIAgent):
     return KnowledgeFragment.objects.filter(
-        knowledge__agents=agent, knowledge__is_enabled=True
+        knowledge_id__in=runtime_knowledge_for_agent(agent).values("id")
     ).select_related("knowledge")
 
 
@@ -25,7 +26,9 @@ def lexical_search(agent: AIAgent, query: str, *, limit: int = 5) -> list[Knowle
     )
 
 
-def semantic_search(agent: AIAgent, query_vector: list[float], *, limit: int = 5) -> list[KnowledgeFragment]:
+def semantic_search(
+    agent: AIAgent, query_vector: list[float], *, limit: int = 5
+) -> list[KnowledgeFragment]:
     return list(
         _agent_fragments(agent)
         .filter(embedding__isnull=False)

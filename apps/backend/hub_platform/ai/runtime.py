@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from hub_platform.ai.agent_knowledge import runtime_knowledge_for_agent
 from hub_platform.ai.invocation import invoke_chat
 from hub_platform.ai.models import AIAgent, KnowledgeFragment
 from hub_platform.ai.provider.base import ChatMessage, ChatResult
@@ -35,7 +36,9 @@ class AgentTurnResult:
 
 def agent_system_prompt(agent: AIAgent) -> str:
     # Порядок частей фиксирован (ADR-HUB-0023): Персонализация -> Тон -> Инструкции.
-    parts = [part.strip() for part in (agent.persona, agent.tone, agent.instructions) if part.strip()]
+    parts = [
+        part.strip() for part in (agent.persona, agent.tone, agent.instructions) if part.strip()
+    ]
     return "\n\n".join(parts)
 
 
@@ -43,7 +46,7 @@ def knowledge_catalog(agent: AIAgent) -> str:
     """Каталог выбранных знаний для системного промпта: заголовок, краткое
     описание и публичные ссылки вложений (агент может отдать ссылку клиенту)."""
     lines: list[str] = []
-    items = agent.knowledge_items.filter(is_enabled=True).prefetch_related("attachments")
+    items = runtime_knowledge_for_agent(agent).prefetch_related("attachments")
     for knowledge in items:
         line = f"- {knowledge.title}"
         if knowledge.description.strip():
@@ -53,10 +56,20 @@ def knowledge_catalog(agent: AIAgent) -> str:
             lines.append(f"  файл: {attachment.original_name} — {attachment.public_url()}")
     if not lines:
         return ""
-    return "Тебе доступны следующие знания (детали подтягиваются автоматически по запросу). Ссылки на файлы можно давать клиенту:\n" + "\n".join(lines)
+    return (
+        "Тебе доступны следующие знания (детали подтягиваются автоматически по "
+        "запросу). Ссылки на файлы можно давать клиенту:\n"
+        + "\n".join(lines)
+    )
 
 
-def run_agent_turn(*, agent: AIAgent, message: str, history: list[dict] | None = None, style_guard: bool = True) -> AgentTurnResult:
+def run_agent_turn(
+    *,
+    agent: AIAgent,
+    message: str,
+    history: list[dict] | None = None,
+    style_guard: bool = True,
+) -> AgentTurnResult:
     fragments = KnowledgeRetriever().retrieve(agent=agent, query=message, limit=5)
 
     messages: list[ChatMessage] = []
@@ -64,17 +77,27 @@ def run_agent_turn(*, agent: AIAgent, message: str, history: list[dict] | None =
     if system_prompt:
         messages.append(ChatMessage(role="system", content=system_prompt))
     if style_guard:
-        messages.append(ChatMessage(role="system", content=MESSENGER_STYLE_GUARD + "\n\n" + HANDOFF_PROTOCOL))
+        messages.append(
+            ChatMessage(role="system", content=MESSENGER_STYLE_GUARD + "\n\n" + HANDOFF_PROTOCOL)
+        )
     catalog = knowledge_catalog(agent)
     if catalog:
         messages.append(ChatMessage(role="system", content=catalog))
     if fragments:
         knowledge = "\n\n".join(
-            f"[{fragment.knowledge.title}#{fragment.chunk_index}] {fragment.content}" for fragment in fragments
+            f"[{fragment.knowledge.title}#{fragment.chunk_index}] {fragment.content}"
+            for fragment in fragments
         )
-        messages.append(ChatMessage(role="system", content="Отвечай только на основе этих знаний:\n" + knowledge))
+        messages.append(
+            ChatMessage(
+                role="system",
+                content="Отвечай только на основе этих знаний:\n" + knowledge,
+            )
+        )
     for item in history or []:
-        messages.append(ChatMessage(role=str(item.get("role", "user")), content=str(item.get("content", ""))))
+        messages.append(
+            ChatMessage(role=str(item.get("role", "user")), content=str(item.get("content", "")))
+        )
     messages.append(ChatMessage(role="user", content=message))
 
     result = invoke_chat(

@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from django.core.exceptions import ValidationError
 from django.db import transaction
 
+from hub_platform.ai.agent_knowledge import knowledge_available_to_channel
 from hub_platform.ai.models import (
     AIAgent,
     AIAgentStatus,
@@ -52,10 +53,27 @@ def _normalize_limits(raw: dict | None) -> dict:
     return {"dailyCostUsd": cents} if cents > 0 else {}
 
 
-def _knowledge_for_ids(*, context: TenantContext, knowledge_ids: list[int]) -> list[Knowledge]:
-    items = list(Knowledge.objects.filter(organization=context.organization, id__in=knowledge_ids))
-    if len(items) != len(set(knowledge_ids)):
-        raise ValidationError({"knowledgeIds": "Unknown knowledge item"})
+def _knowledge_for_ids(
+    *, context: TenantContext, channel: Channel, knowledge_ids: list[int]
+) -> list[Knowledge]:
+    requested_ids = set(knowledge_ids)
+    available_ids = knowledge_available_to_channel(
+        Knowledge.objects.filter(
+            organization_id=context.organization_id,
+            id__in=requested_ids,
+        ),
+        channel=channel,
+    ).values("id")
+    items = list(
+        Knowledge.objects.select_for_update()
+        .filter(
+            organization_id=context.organization_id,
+            id__in=available_ids,
+        )
+        .order_by("id")
+    )
+    if len(items) != len(requested_ids):
+        raise ValidationError({"knowledgeIds": "Unknown or unavailable knowledge item"})
     return items
 
 
@@ -65,12 +83,20 @@ def create_agent(*, context: TenantContext, data: AgentCreateInput) -> AIAgent:
     if not data.channel_code:
         raise ValidationError({"channel": "Channel is required"})
     try:
-        channel = Channel.objects.get(organization=organization, code=data.channel_code)
+        channel = Channel.objects.select_for_update().get(
+            organization=organization,
+            code=data.channel_code,
+        )
     except Channel.DoesNotExist as error:
         raise ValidationError({"channel": "Channel not found"}) from error
     if AIAgent.objects.filter(channel=channel).exists():
         raise ValidationError({"channel": "Channel already has an AI agent"})
 
+    knowledge_items = _knowledge_for_ids(
+        context=context,
+        channel=channel,
+        knowledge_ids=data.knowledge_ids,
+    )
     mode, model = configure_agent_provider(
         context=context,
         channel=channel,
@@ -87,7 +113,7 @@ def create_agent(*, context: TenantContext, data: AgentCreateInput) -> AIAgent:
         tone=data.tone,
         instructions=data.instructions,
     )
-    agent.knowledge_items.set(_knowledge_for_ids(context=context, knowledge_ids=data.knowledge_ids))
+    agent.knowledge_items.set(knowledge_items)
     return agent
 
 
@@ -95,21 +121,36 @@ def create_agent(*, context: TenantContext, data: AgentCreateInput) -> AIAgent:
 def update_agent(*, context: TenantContext, agent: AIAgent, data: AgentInput) -> AIAgent:
     if agent.channel.organization_id != context.organization_id:
         raise ValidationError({"agent": "Agent belongs to another organization"})
-    agent.name = data.name
-    mode, agent.model = configure_agent_provider(
+    channel = Channel.objects.select_for_update().get(
+        id=agent.channel_id,
+        organization_id=context.organization_id,
+    )
+    knowledge_items = None
+    if data.knowledge_ids is not None:
+        knowledge_items = _knowledge_for_ids(
+            context=context,
+            channel=channel,
+            knowledge_ids=data.knowledge_ids,
+        )
+    locked = AIAgent.objects.select_for_update().get(
+        id=agent.id,
+        channel=channel,
+    )
+    locked.name = data.name
+    mode, locked.model = configure_agent_provider(
         context=context,
-        channel=agent.channel,
+        channel=channel,
         mode=data.credential_mode,
         integration_id=data.provider_integration_id,
     )
-    agent.credential_mode = mode
-    agent.model_params = data.model_params
-    agent.allowed_tools = data.allowed_tools
-    agent.limits = _normalize_limits(data.limits)
-    agent.persona = data.persona
-    agent.tone = data.tone
-    agent.instructions = data.instructions
-    agent.save(
+    locked.credential_mode = mode
+    locked.model_params = data.model_params
+    locked.allowed_tools = data.allowed_tools
+    locked.limits = _normalize_limits(data.limits)
+    locked.persona = data.persona
+    locked.tone = data.tone
+    locked.instructions = data.instructions
+    locked.save(
         update_fields=[
             "name",
             "model",
@@ -123,11 +164,9 @@ def update_agent(*, context: TenantContext, agent: AIAgent, data: AgentInput) ->
             "updated_at",
         ]
     )
-    if data.knowledge_ids is not None:
-        agent.knowledge_items.set(
-            _knowledge_for_ids(context=context, knowledge_ids=data.knowledge_ids)
-        )
-    return agent
+    if knowledge_items is not None:
+        locked.knowledge_items.set(knowledge_items)
+    return locked
 
 
 def set_agent_active(*, context: TenantContext, agent: AIAgent, is_active: bool) -> AIAgent:

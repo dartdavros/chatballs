@@ -6,6 +6,7 @@ from rest_framework.views import APIView
 
 from hub_platform.ai.api_errors import validation_error_response
 from hub_platform.ai.knowledge_api_inputs import knowledge_filters, knowledge_input
+from hub_platform.ai.knowledge_conflicts import KnowledgeScopeConflict
 from hub_platform.ai.knowledge_policy import (
     employee_can_write_knowledge,
     require_knowledge_create,
@@ -30,7 +31,6 @@ from hub_platform.ai.selectors import (
 from hub_platform.ai.serializers import attachment_payload, knowledge_payload
 from hub_platform.api.permissions import HasCapability, HasEntitlement
 from hub_platform.identity.audit import record_audit_event
-
 
 _validation_error = validation_error_response
 
@@ -74,10 +74,10 @@ class KnowledgeListCreateView(_KnowledgeBaseView):
             filters = knowledge_filters(request)
         except ValidationError as error:
             return _validation_error(error)
-        items = apply_knowledge_filters(
-            knowledge_for_context(request.tenant_context), filters
+        items = apply_knowledge_filters(knowledge_for_context(request.tenant_context), filters)
+        return Response(
+            {"items": [knowledge_payload(item, include_content=False) for item in items]}
         )
-        return Response({"items": [knowledge_payload(item, include_content=False) for item in items]})
 
     def post(self, request: Request) -> Response:
         try:
@@ -125,6 +125,8 @@ class KnowledgeDetailView(_KnowledgeBaseView):
                 knowledge=knowledge,
                 data=data,
             )
+        except KnowledgeScopeConflict as error:
+            return Response(error.payload(), status=409)
         except ValidationError as error:
             return _validation_error(error)
         knowledge = self._write_knowledge(request, knowledge_id)
@@ -158,9 +160,11 @@ class KnowledgeImportView(_KnowledgeBaseView):
                 continue
             description = str(item.get("description", "") or "").strip()
             content = str(item.get("content", "") or "")
-            knowledge = writable_knowledge_for_employee(
-                context=request.tenant_context
-            ).filter(title=title).first()
+            knowledge = (
+                writable_knowledge_for_employee(context=request.tenant_context)
+                .filter(title=title)
+                .first()
+            )
             if knowledge is None:
                 try:
                     require_knowledge_create(
@@ -170,14 +174,19 @@ class KnowledgeImportView(_KnowledgeBaseView):
                     )
                     create_knowledge(
                         context=request.tenant_context,
-                        data=KnowledgeInput(title=title, description=description, content=content, is_enabled=True),
+                        data=KnowledgeInput(
+                            title=title,
+                            description=description,
+                            content=content,
+                            is_enabled=True,
+                        ),
                     )
                     created += 1
                 except PermissionDenied:
-                    failed.append(
-                        {"title": title, "detail": "Knowledge is not manageable"}
-                    )
-            elif knowledge.content == content and knowledge.description == (description or knowledge.description):
+                    failed.append({"title": title, "detail": "Knowledge is not manageable"})
+            elif knowledge.content == content and knowledge.description == (
+                description or knowledge.description
+            ):
                 unchanged += 1
             else:
                 update_knowledge(
@@ -197,10 +206,23 @@ class KnowledgeImportView(_KnowledgeBaseView):
             organization=organization,
             object_type="Knowledge",
             object_id="",
-            payload={"created": created, "updated": updated, "unchanged": unchanged, "failed": failed},
+            payload={
+                "created": created,
+                "updated": updated,
+                "unchanged": unchanged,
+                "failed": failed,
+            },
             request=request,
         )
-        return Response({"created": created, "updated": updated, "unchanged": unchanged, "failed": failed}, status=201)
+        return Response(
+            {
+                "created": created,
+                "updated": updated,
+                "unchanged": unchanged,
+                "failed": failed,
+            },
+            status=201,
+        )
 
 
 class KnowledgeAttachmentUploadView(_KnowledgeBaseView):

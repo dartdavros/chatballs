@@ -3,6 +3,7 @@ from collections.abc import Iterable
 from django.core.exceptions import ValidationError
 from django.db import transaction
 
+from hub_platform.ai.knowledge_conflicts import require_knowledge_scope_compatible
 from hub_platform.ai.knowledge_types import KnowledgeVisibility
 from hub_platform.ai.models import Knowledge, KnowledgeDepartment
 from hub_platform.identity.models import Department, DepartmentStatus
@@ -28,9 +29,7 @@ def _departments_for_scope(
     normalized_ids = _normalize_department_ids(department_ids)
     if visibility == KnowledgeVisibility.ORGANIZATION:
         if normalized_ids:
-            raise ValidationError(
-                {"departments": "Organization knowledge cannot have departments"}
-            )
+            raise ValidationError({"departments": "Organization knowledge cannot have departments"})
         return []
     if not normalized_ids:
         raise ValidationError(
@@ -66,6 +65,11 @@ def replace_knowledge_visibility(
         context=context,
         visibility=visibility,
         department_ids=department_ids,
+    )
+    require_knowledge_scope_compatible(
+        knowledge=locked,
+        visibility=visibility,
+        department_ids=[department.id for department in departments],
     )
     locked.visibility = visibility
     locked.save(update_fields=["visibility", "updated_at"])

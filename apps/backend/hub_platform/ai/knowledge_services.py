@@ -34,9 +34,7 @@ class KnowledgeInput:
     department_ids: tuple[int, ...] | None = None
 
 
-def _knowledge_category(
-    *, context: TenantContext, category_id: int | None
-) -> KnowledgeCategory:
+def _knowledge_category(*, context: TenantContext, category_id: int | None) -> KnowledgeCategory:
     if category_id is None:
         return ensure_uncategorized_category(context.organization)
     try:
@@ -83,6 +81,17 @@ def update_knowledge(
         raise ValidationError({"title": "Title is required"})
     locked = Knowledge.objects.select_for_update().get(pk=knowledge.pk)
     content_changed = locked.content != data.content
+    if data.visibility is not None or data.department_ids is not None:
+        locked = replace_knowledge_visibility(
+            context=context,
+            knowledge=locked,
+            visibility=data.visibility or locked.visibility,
+            department_ids=(
+                data.department_ids
+                if data.department_ids is not None
+                else tuple(locked.department_links.values_list("department_id", flat=True))
+            ),
+        )
     locked.title = data.title.strip()
     locked.description = data.description.strip()
     locked.content = data.content
@@ -102,19 +111,6 @@ def update_knowledge(
             "updated_at",
         ]
     )
-    if data.visibility is not None or data.department_ids is not None:
-        locked = replace_knowledge_visibility(
-            context=context,
-            knowledge=locked,
-            visibility=data.visibility or locked.visibility,
-            department_ids=(
-                data.department_ids
-                if data.department_ids is not None
-                else tuple(
-                    locked.department_links.values_list("department_id", flat=True)
-                )
-            ),
-        )
     if content_changed:
         reindex_knowledge(locked)
     return locked
@@ -150,9 +146,7 @@ def add_attachment(
     existing_size = existing.size if existing is not None else 0
     data = upload.read()
     reservation_key = f"attachment:{knowledge.id}:{original_name}"
-    reserve_storage(
-        context=context, expected_bytes=len(data), idempotency_key=reservation_key
-    )
+    reserve_storage(context=context, expected_bytes=len(data), idempotency_key=reservation_key)
     try:
         if existing is not None:
             existing.file.delete(save=False)
@@ -176,9 +170,7 @@ def add_attachment(
     except Exception:
         release_storage(context=context, idempotency_key=reservation_key)
         raise
-    finalize_storage(
-        context=context, idempotency_key=reservation_key, actual_bytes=len(data)
-    )
+    finalize_storage(context=context, idempotency_key=reservation_key, actual_bytes=len(data))
     reindex_knowledge(knowledge)
     return attachment
 

@@ -5,6 +5,7 @@ from collections.abc import Iterable
 from django.core.exceptions import PermissionDenied
 from django.db.models import Exists, OuterRef, Q, QuerySet
 
+from hub_platform.ai.agent_knowledge import knowledge_available_to_channel
 from hub_platform.ai.knowledge_types import KnowledgeVisibility
 from hub_platform.ai.models import AIAgent, Knowledge, KnowledgeDepartment
 from hub_platform.identity.policy import (
@@ -13,7 +14,6 @@ from hub_platform.identity.policy import (
     authorize,
 )
 from hub_platform.tenancy.context import TenantContext
-
 
 AI_VIEW = "ai.view"
 AI_MANAGE = "ai.manage"
@@ -61,17 +61,15 @@ def writable_knowledge(
     covered_links = KnowledgeDepartment.objects.filter(
         knowledge_id=OuterRef("pk"), department_id__in=department_ids
     )
-    uncovered_links = KnowledgeDepartment.objects.filter(
-        knowledge_id=OuterRef("pk")
-    ).exclude(department_id__in=department_ids)
-    return queryset.filter(
-        visibility=KnowledgeVisibility.DEPARTMENTS
-    ).filter(Exists(covered_links), ~Exists(uncovered_links))
+    uncovered_links = KnowledgeDepartment.objects.filter(knowledge_id=OuterRef("pk")).exclude(
+        department_id__in=department_ids
+    )
+    return queryset.filter(visibility=KnowledgeVisibility.DEPARTMENTS).filter(
+        Exists(covered_links), ~Exists(uncovered_links)
+    )
 
 
-def employee_can_read_knowledge(
-    *, context: TenantContext, knowledge: Knowledge
-) -> bool:
+def employee_can_read_knowledge(*, context: TenantContext, knowledge: Knowledge) -> bool:
     if knowledge.organization_id != context.organization_id:
         return False
     return readable_knowledge(
@@ -103,9 +101,7 @@ def employee_can_write_knowledge(
         return False
     if target_visibility == KnowledgeVisibility.ORGANIZATION:
         return False
-    current_ids = set(
-        knowledge.department_links.values_list("department_id", flat=True)
-    )
+    current_ids = set(knowledge.department_links.values_list("department_id", flat=True))
     return bool(current_ids | target_department_ids) and (
         current_ids | target_department_ids
     ).issubset(allowed_ids)
@@ -148,14 +144,8 @@ def require_category_manage(*, context: TenantContext) -> None:
         raise PermissionDenied("Organization-scoped ai.manage is required")
 
 
-def knowledge_is_available_to_agent(
-    *, knowledge: Knowledge, agent: AIAgent
-) -> bool:
-    channel = agent.channel
-    if knowledge.organization_id != channel.organization_id:
-        return False
-    if knowledge.visibility == KnowledgeVisibility.ORGANIZATION:
-        return True
-    return channel.department_id is not None and knowledge.department_links.filter(
-        department_id=channel.department_id
+def knowledge_is_available_to_agent(*, knowledge: Knowledge, agent: AIAgent) -> bool:
+    return knowledge_available_to_channel(
+        Knowledge.objects.filter(pk=knowledge.pk),
+        channel=agent.channel,
     ).exists()

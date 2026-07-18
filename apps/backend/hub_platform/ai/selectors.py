@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from django.db.models import Count, Prefetch, Q, QuerySet
 
+from hub_platform.ai.agent_knowledge import knowledge_available_to_channel
 from hub_platform.ai.knowledge_policy import readable_knowledge, writable_knowledge
 from hub_platform.ai.knowledge_types import KnowledgeVisibility
 from hub_platform.ai.models import AIAgent, Knowledge, KnowledgeCategory
@@ -24,9 +25,7 @@ def agent_for_context(*, context: TenantContext, agent_id: int) -> AIAgent:
     return agents_for_context(context).get(id=agent_id)
 
 
-def agents_for_employee(
-    *, context: TenantContext, capability: str
-) -> QuerySet[AIAgent]:
+def agents_for_employee(*, context: TenantContext, capability: str) -> QuerySet[AIAgent]:
     queryset = agents_for_context(context)
     department_ids = accessible_department_ids(context.membership, capability)
     if department_ids is None:
@@ -36,9 +35,7 @@ def agents_for_employee(
     return queryset.filter(channel__department_id__in=department_ids)
 
 
-def agent_for_employee(
-    *, context: TenantContext, agent_id: int, capability: str
-) -> AIAgent:
+def agent_for_employee(*, context: TenantContext, agent_id: int, capability: str) -> AIAgent:
     return agents_for_employee(context=context, capability=capability).get(id=agent_id)
 
 
@@ -92,9 +89,7 @@ def knowledge_for_employee(
     )
 
 
-def writable_knowledge_for_employee(
-    *, context: TenantContext
-) -> QuerySet[Knowledge]:
+def writable_knowledge_for_employee(*, context: TenantContext) -> QuerySet[Knowledge]:
     return _with_knowledge_relations(
         writable_knowledge(context=context, queryset=_knowledge_base(context))
     )
@@ -104,32 +99,23 @@ def knowledge_item_for_context(*, context: TenantContext, knowledge_id: int) -> 
     return knowledge_for_employee(context=context).get(id=knowledge_id)
 
 
-def writable_knowledge_item_for_employee(
-    *, context: TenantContext, knowledge_id: int
-) -> Knowledge:
+def writable_knowledge_item_for_employee(*, context: TenantContext, knowledge_id: int) -> Knowledge:
     return writable_knowledge_for_employee(context=context).get(id=knowledge_id)
 
 
 def knowledge_available_to_agent(*, agent: AIAgent) -> QuerySet[Knowledge]:
-    queryset = _with_knowledge_relations(
-        Knowledge.objects.filter(
-            organization_id=agent.channel.organization_id,
-        )
+    queryset = knowledge_available_to_channel(
+        _with_knowledge_relations(
+            Knowledge.objects.filter(
+                organization_id=agent.channel.organization_id,
+            )
+        ),
+        channel=agent.channel,
     )
-    if agent.channel.department_id is None:
-        return queryset.filter(visibility=KnowledgeVisibility.ORGANIZATION)
-    return queryset.filter(
-        Q(visibility=KnowledgeVisibility.ORGANIZATION)
-        | Q(
-            visibility=KnowledgeVisibility.DEPARTMENTS,
-            department_links__department_id=agent.channel.department_id,
-        )
-    ).distinct()
+    return queryset
 
 
-def category_tree_for_employee(
-    *, context: TenantContext
-) -> list[KnowledgeCategory]:
+def category_tree_for_employee(*, context: TenantContext) -> list[KnowledgeCategory]:
     available_ids = readable_knowledge(
         context=context,
         queryset=_knowledge_base(context),
@@ -160,8 +146,7 @@ def category_tree_for_employee(
     subtree_counts: dict[int, int] = {}
     for category in reversed(ordered):
         count = category.direct_knowledge_count + sum(
-            subtree_counts[child.id]
-            for child in children_by_parent.get(category.id, [])
+            subtree_counts[child.id] for child in children_by_parent.get(category.id, [])
         )
         category.knowledge_count = count
         subtree_counts[category.id] = count
@@ -193,7 +178,5 @@ def apply_knowledge_filters(
         queryset = queryset.filter(is_enabled=filters.is_enabled)
     search = filters.search.strip()
     if search:
-        queryset = queryset.filter(
-            Q(title__icontains=search) | Q(description__icontains=search)
-        )
+        queryset = queryset.filter(Q(title__icontains=search) | Q(description__icontains=search))
     return queryset.distinct()

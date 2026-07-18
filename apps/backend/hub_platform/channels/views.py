@@ -1,7 +1,9 @@
+from django.core.exceptions import ValidationError
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from hub_platform.ai.knowledge_conflicts import KnowledgeScopeConflict
 from hub_platform.ai.provider.base import ProviderError
 from hub_platform.api.permissions import HasCapability
 from hub_platform.channels.models import Channel
@@ -29,21 +31,32 @@ class ChannelDetailView(APIView):
 
     def patch(self, request: Request, channel_id: int) -> Response:
         try:
-            channel = channel_for_context(
-                context=request.tenant_context, channel_id=channel_id
-            )
+            channel = channel_for_context(context=request.tenant_context, channel_id=channel_id)
         except Channel.DoesNotExist:
             return Response({"detail": "Канал не найден"}, status=404)
         name = str(request.data.get("name", channel.name)).strip()
         if not name:
             return Response({"detail": "Название канала не может быть пустым"}, status=400)
-        channel = update_channel(
-            context=request.tenant_context,
-            channel=channel,
-            data=ChannelInput(name=name),
-        )
+        department_id = request.data.get("departmentId", channel.department_id)
+        if department_id is not None and (
+            isinstance(department_id, bool) or not isinstance(department_id, int)
+        ):
+            return Response({"detail": "departmentId must be an integer or null"}, status=400)
+        try:
+            channel = update_channel(
+                context=request.tenant_context,
+                channel=channel,
+                data=ChannelInput(name=name, department_id=department_id),
+            )
+        except KnowledgeScopeConflict as error:
+            return Response(error.payload(), status=409)
+        except ValidationError as error:
+            detail = "; ".join(
+                message for messages in error.message_dict.values() for message in messages
+            )
+            return Response({"detail": detail}, status=400)
         record_audit_event(
-            action="channels.channel_renamed",
+            action="channels.channel_updated",
             actor=request.user,
             organization=request.tenant_context.organization,
             object_type="Channel",
@@ -60,9 +73,7 @@ class ChannelTestChatView(APIView):
 
     def post(self, request: Request, channel_id: int) -> Response:
         try:
-            channel = channel_for_context(
-                context=request.tenant_context, channel_id=channel_id
-            )
+            channel = channel_for_context(context=request.tenant_context, channel_id=channel_id)
         except Channel.DoesNotExist:
             return Response({"detail": "Канал не найден"}, status=404)
         message = str(request.data.get("message", "")).strip()
