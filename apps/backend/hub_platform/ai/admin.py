@@ -1,6 +1,10 @@
 from django.contrib import admin
 
-from hub_platform.ai.models import AIAgent, Knowledge, KnowledgeAttachment
+from hub_platform.ai.models import (
+    AIAgent,
+    Knowledge,
+    KnowledgeAttachment,
+)
 
 
 class KnowledgeAttachmentInline(admin.TabularInline):
@@ -19,7 +23,14 @@ class AIAgentAdmin(admin.ModelAdmin):
 
 @admin.register(Knowledge)
 class KnowledgeAdmin(admin.ModelAdmin):
-    list_display = ("title", "organization", "is_enabled", "updated_at")
-    list_filter = ("is_enabled",)
+    list_display = (
+        "title",
+        "organization",
+        "category",
+        "visibility",
+        "is_enabled",
+        "updated_at",
+    )
+    list_filter = ("visibility", "is_enabled")
     search_fields = ("title", "description")
     inlines = [KnowledgeAttachmentInline]

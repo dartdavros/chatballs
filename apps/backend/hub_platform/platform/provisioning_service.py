@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils import timezone
 
+from hub_platform.ai.knowledge_categories import ensure_uncategorized_category
 from hub_platform.events.services import DomainEvent, enqueue_event
 from hub_platform.identity.audit import record_audit_event
 from hub_platform.identity.invitation_service import issue_invitation
@@ -85,6 +86,7 @@ def _run(command: ProvisioningCommand, operator: PlatformOperator) -> Provisioni
 
         with tenant_atomic(org.id):
             ensure_system_departments(org)
+            ensure_uncategorized_category(org)
             context = TenantContext.for_resource(
                 org,
                 actor_kind=TenantActorKind.SYSTEM,

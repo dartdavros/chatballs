@@ -6,6 +6,7 @@ from django.db import transaction
 
 from hub_platform.ai.extraction import extract_text
 from hub_platform.ai.indexing import reindex_knowledge
+from hub_platform.ai.knowledge_categories import ensure_uncategorized_category
 from hub_platform.ai.models import (
     AIAgent,
     AIAgentStatus,
@@ -168,6 +169,7 @@ def create_knowledge(*, context: TenantContext, data: KnowledgeInput) -> Knowled
         raise ValidationError({"title": "Title is required"})
     knowledge = Knowledge.objects.create(
         organization=context.organization,
+        category=ensure_uncategorized_category(context.organization),
         title=data.title.strip(),
         description=data.description.strip(),
         content=data.content,

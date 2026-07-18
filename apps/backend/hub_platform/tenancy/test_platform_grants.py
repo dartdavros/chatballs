@@ -3,6 +3,8 @@ from __future__ import annotations
 from django.db import transaction
 from django.test import TestCase
 
+from hub_platform.ai.knowledge_types import UNCATEGORIZED_CATEGORY_NAME
+from hub_platform.ai.models import KnowledgeCategory
 from hub_platform.identity.models import (
     Department,
     EmployeeRole,
@@ -44,6 +46,13 @@ class PlatformProvisioningGrantsTests(TestCase):
         org = result.organization
         # Tenant-owned rows were created under matching tenant context.
         self.assertEqual(Department.objects.filter(organization=org).count(), 2)
+        self.assertTrue(
+            KnowledgeCategory.objects.filter(
+                organization=org,
+                name=UNCATEGORIZED_CATEGORY_NAME,
+                is_system=True,
+            ).exists()
+        )
         self.assertTrue(
             OrganizationMembership.objects.filter(
                 organization=org, role=EmployeeRole.OWNER

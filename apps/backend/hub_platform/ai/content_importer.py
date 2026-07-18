@@ -18,6 +18,7 @@ from pathlib import Path
 from django.db import transaction
 
 from hub_platform.ai import indexing
+from hub_platform.ai.knowledge_categories import ensure_uncategorized_category
 from hub_platform.ai.models import Knowledge
 from hub_platform.tenancy.context import TenantContext
 
@@ -70,7 +71,12 @@ def parse_filled_content(text: str) -> dict[str, str]:
 def _import_knowledge(*, organization, code: str, content: str) -> tuple[Knowledge, ImportResult]:
     knowledge = Knowledge.objects.filter(organization=organization, title=code).first()
     if knowledge is None:
-        knowledge = Knowledge.objects.create(organization=organization, title=code, content=content)
+        knowledge = Knowledge.objects.create(
+            organization=organization,
+            category=ensure_uncategorized_category(organization),
+            title=code,
+            content=content,
+        )
         fragments = indexing.reindex_knowledge(knowledge)
         return knowledge, ImportResult(knowledge_created=1, fragments_created=len(fragments))
     if knowledge.content == content:

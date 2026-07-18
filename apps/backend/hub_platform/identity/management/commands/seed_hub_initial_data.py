@@ -11,6 +11,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from hub_platform.ai.content_importer import import_ai_content
+from hub_platform.ai.knowledge_categories import ensure_uncategorized_category
 from hub_platform.ai.models import DEFAULT_AI_MODEL, AIAgent, AIAgentStatus
 from hub_platform.channels.models import Channel
 from hub_platform.identity.audit import record_audit_event
@@ -47,6 +48,7 @@ def _seed_core(*, owner_email: str, owner_password: str, owner_name: str) -> Cor
         slug="edevs",
         defaults={"name": "ООО «ЭДЕВС»", "timezone": "Europe/Moscow", "currency": "RUB"},
     )
+    ensure_uncategorized_category(organization)
     sales_department, _ = Department.objects.update_or_create(
         organization=organization,
         code="sales",

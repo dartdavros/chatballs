@@ -33,6 +33,9 @@ def bootstrap_edevs_owner(*, email: str, password: str, full_name: str = "") -> 
             "currency": "RUB",
         },
     )
+    from hub_platform.ai.knowledge_categories import ensure_uncategorized_category
+
+    ensure_uncategorized_category(organization)
     sales_department, _ = Department.objects.get_or_create(
         organization=organization,
         code="sales",
