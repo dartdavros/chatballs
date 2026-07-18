@@ -143,6 +143,11 @@ def require_knowledge_create(
         raise PermissionDenied("Knowledge scope is not manageable")
 
 
+def require_category_manage(*, context: TenantContext) -> None:
+    if not employee_can_manage_categories(context=context):
+        raise PermissionDenied("Organization-scoped ai.manage is required")
+
+
 def knowledge_is_available_to_agent(
     *, knowledge: Knowledge, agent: AIAgent
 ) -> bool:

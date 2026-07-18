@@ -4,19 +4,13 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from hub_platform.ai.models import Knowledge
-from hub_platform.ai.knowledge_policy import require_knowledge_create
-from hub_platform.ai.knowledge_types import KnowledgeVisibility
-from hub_platform.ai.selectors import (
-    KnowledgeFilters,
-    apply_knowledge_filters,
-    knowledge_for_context,
-    knowledge_item_for_context,
-    writable_knowledge_for_employee,
-    writable_knowledge_item_for_employee,
+from hub_platform.ai.api_errors import validation_error_response
+from hub_platform.ai.knowledge_api_inputs import knowledge_filters, knowledge_input
+from hub_platform.ai.knowledge_policy import (
+    employee_can_write_knowledge,
+    require_knowledge_create,
 )
-from hub_platform.ai.serializers import attachment_payload, knowledge_payload
-from hub_platform.ai.services import (
+from hub_platform.ai.knowledge_services import (
     KnowledgeInput,
     add_attachment,
     create_knowledge,
@@ -24,62 +18,21 @@ from hub_platform.ai.services import (
     delete_knowledge,
     update_knowledge,
 )
+from hub_platform.ai.knowledge_types import KnowledgeVisibility
+from hub_platform.ai.models import Knowledge
+from hub_platform.ai.selectors import (
+    apply_knowledge_filters,
+    knowledge_for_context,
+    knowledge_item_for_context,
+    writable_knowledge_for_employee,
+    writable_knowledge_item_for_employee,
+)
+from hub_platform.ai.serializers import attachment_payload, knowledge_payload
 from hub_platform.api.permissions import HasCapability, HasEntitlement
 from hub_platform.identity.audit import record_audit_event
 
 
-def _validation_error(error: ValidationError) -> Response:
-    detail = "; ".join(message for messages in error.message_dict.values() for message in messages) if hasattr(error, "message_dict") else "; ".join(error.messages)
-    return Response({"detail": detail}, status=400)
-
-
-# --- Знания (ADR-HUB-0023) ---
-
-
-def _knowledge_input(body: dict[str, object], *, current: Knowledge | None = None) -> KnowledgeInput:
-    is_enabled = body.get("isEnabled", current.is_enabled if current else True)
-    return KnowledgeInput(
-        title=str(body.get("title", current.title if current else "")),
-        description=str(body.get("description", current.description if current else "")),
-        content=str(body.get("content", current.content if current else "")),
-        is_enabled=bool(is_enabled),
-    )
-
-
-def _optional_id(value: str | None, field: str) -> int | None:
-    if value in (None, ""):
-        return None
-    try:
-        parsed = int(value)
-    except (TypeError, ValueError) as error:
-        raise ValidationError({field: "Integer id required"}) from error
-    if parsed <= 0:
-        raise ValidationError({field: "Positive integer id required"})
-    return parsed
-
-
-def _knowledge_filters(request: Request) -> KnowledgeFilters:
-    visibility = request.query_params.get("visibility") or None
-    if visibility is not None and visibility not in KnowledgeVisibility.values:
-        raise ValidationError({"visibility": "Unknown knowledge visibility"})
-    raw_enabled = request.query_params.get("isEnabled")
-    if raw_enabled in (None, ""):
-        is_enabled = None
-    elif raw_enabled.lower() == "true":
-        is_enabled = True
-    elif raw_enabled.lower() == "false":
-        is_enabled = False
-    else:
-        raise ValidationError({"isEnabled": "Boolean required"})
-    return KnowledgeFilters(
-        category_id=_optional_id(request.query_params.get("category"), "category"),
-        department_id=_optional_id(
-            request.query_params.get("department"), "department"
-        ),
-        visibility=visibility,
-        is_enabled=is_enabled,
-        search=request.query_params.get("search", ""),
-    )
+_validation_error = validation_error_response
 
 
 class _KnowledgeBaseView(APIView):
@@ -118,7 +71,7 @@ class _KnowledgeBaseView(APIView):
 class KnowledgeListCreateView(_KnowledgeBaseView):
     def get(self, request: Request) -> Response:
         try:
-            filters = _knowledge_filters(request)
+            filters = knowledge_filters(request)
         except ValidationError as error:
             return _validation_error(error)
         items = apply_knowledge_filters(
@@ -128,14 +81,15 @@ class KnowledgeListCreateView(_KnowledgeBaseView):
 
     def post(self, request: Request) -> Response:
         try:
+            data = knowledge_input(request.data)
             require_knowledge_create(
                 context=request.tenant_context,
-                visibility=KnowledgeVisibility.ORGANIZATION,
-                department_ids=[],
+                visibility=data.visibility or KnowledgeVisibility.ORGANIZATION,
+                department_ids=data.department_ids or (),
             )
             knowledge = create_knowledge(
                 context=request.tenant_context,
-                data=_knowledge_input(request.data),
+                data=data,
             )
         except ValidationError as error:
             return _validation_error(error)
@@ -158,10 +112,18 @@ class KnowledgeDetailView(_KnowledgeBaseView):
         except Knowledge.DoesNotExist:
             return Response({"detail": "Knowledge not found"}, status=404)
         try:
+            data = knowledge_input(request.data, current=knowledge)
+            if not employee_can_write_knowledge(
+                context=request.tenant_context,
+                knowledge=knowledge,
+                visibility=data.visibility,
+                department_ids=data.department_ids,
+            ):
+                raise PermissionDenied("Knowledge scope is not manageable")
             knowledge = update_knowledge(
                 context=request.tenant_context,
                 knowledge=knowledge,
-                data=_knowledge_input(request.data, current=knowledge),
+                data=data,
             )
         except ValidationError as error:
             return _validation_error(error)

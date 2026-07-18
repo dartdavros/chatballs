@@ -1,11 +1,12 @@
 from dataclasses import dataclass
 
-from django.db.models import Count, Q, QuerySet
+from django.db.models import Count, Prefetch, Q, QuerySet
 
 from hub_platform.ai.knowledge_policy import readable_knowledge, writable_knowledge
 from hub_platform.ai.knowledge_types import KnowledgeVisibility
 from hub_platform.ai.models import AIAgent, Knowledge, KnowledgeCategory
 from hub_platform.channels.models import Channel
+from hub_platform.identity.models import Department
 from hub_platform.identity.policy import accessible_department_ids
 from hub_platform.tenancy.context import TenantContext
 
@@ -67,7 +68,13 @@ def _knowledge_base(context: TenantContext) -> QuerySet[Knowledge]:
 def _with_knowledge_relations(queryset: QuerySet[Knowledge]) -> QuerySet[Knowledge]:
     return (
         queryset.select_related("category")
-        .prefetch_related("attachments", "departments")
+        .prefetch_related(
+            "attachments",
+            Prefetch(
+                "departments",
+                queryset=Department.objects.order_by("name", "id"),
+            ),
+        )
         .annotate(agents_count=Count("agents", distinct=True))
         .order_by("title")
     )

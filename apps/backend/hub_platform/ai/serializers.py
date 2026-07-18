@@ -1,4 +1,10 @@
-from hub_platform.ai.models import AIAgent, Knowledge, KnowledgeAttachment
+from hub_platform.ai.models import (
+    AIAgent,
+    Knowledge,
+    KnowledgeAttachment,
+    KnowledgeCategory,
+)
+from hub_platform.identity.models import Department
 
 
 def _channel_ref(channel) -> dict[str, object]:
@@ -23,11 +29,42 @@ def attachment_payload(attachment: KnowledgeAttachment) -> dict[str, object]:
     }
 
 
+def category_ref_payload(category: KnowledgeCategory) -> dict[str, object]:
+    return {
+        "id": category.id,
+        "name": category.name,
+        "parentId": category.parent_id,
+    }
+
+
+def category_payload(category: KnowledgeCategory) -> dict[str, object]:
+    return {
+        **category_ref_payload(category),
+        "sortOrder": category.sort_order,
+        "isSystem": category.is_system,
+        "knowledgeCount": getattr(category, "knowledge_count", None),
+    }
+
+
+def department_ref_payload(department: Department) -> dict[str, object]:
+    return {
+        "id": department.id,
+        "code": department.code,
+        "name": department.name,
+    }
+
+
 def knowledge_payload(knowledge: Knowledge, *, include_content: bool = True) -> dict[str, object]:
     payload: dict[str, object] = {
         "id": knowledge.id,
         "title": knowledge.title,
         "description": knowledge.description,
+        "category": category_ref_payload(knowledge.category),
+        "visibility": knowledge.visibility,
+        "departments": [
+            department_ref_payload(department)
+            for department in knowledge.departments.all()
+        ],
         "isEnabled": knowledge.is_enabled,
         "attachments": [attachment_payload(attachment) for attachment in knowledge.attachments.all()],
         "agentsCount": getattr(knowledge, "agents_count", None),

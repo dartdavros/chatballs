@@ -93,6 +93,33 @@ def move_category(
 
 
 @transaction.atomic
+def update_category(
+    *,
+    context: TenantContext,
+    category: KnowledgeCategory,
+    name: str,
+    parent: KnowledgeCategory | None,
+    sort_order: int,
+) -> KnowledgeCategory:
+    _validate_category_context(context=context, category=category)
+    _validate_parent(context=context, parent=parent)
+    if category.is_system:
+        raise ValidationError({"category": "System category is immutable"})
+    locked_categories = {
+        item.pk: item
+        for item in KnowledgeCategory.objects.select_for_update().filter(
+            organization_id=context.organization_id
+        )
+    }
+    locked = locked_categories[category.pk]
+    locked.name = name
+    locked.parent = locked_categories[parent.pk] if parent is not None else None
+    locked.sort_order = sort_order
+    locked.save(update_fields=["name", "parent", "sort_order"])
+    return locked
+
+
+@transaction.atomic
 def delete_category(*, context: TenantContext, category: KnowledgeCategory) -> None:
     _validate_category_context(context=context, category=category)
     locked = KnowledgeCategory.objects.select_for_update().get(pk=category.pk)

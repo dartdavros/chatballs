@@ -1,6 +1,6 @@
 from django.urls import path
 
-from hub_platform.ai import agent_views, views
+from hub_platform.ai import agent_views, category_views, views
 
 urlpatterns = [
     path("agents/", agent_views.AIAgentListView.as_view(), name="ai-agent-list"),
@@ -9,6 +9,16 @@ urlpatterns = [
     path("agents/<int:agent_id>/activate/", agent_views.AIAgentActivateView.as_view(), name="ai-agent-activate"),
     path("agents/<int:agent_id>/deactivate/", agent_views.AIAgentDeactivateView.as_view(), name="ai-agent-deactivate"),
     path("knowledge/", views.KnowledgeListCreateView.as_view(), name="ai-knowledge-list"),
+    path(
+        "knowledge/categories/",
+        category_views.KnowledgeCategoryListCreateView.as_view(),
+        name="ai-knowledge-category-list",
+    ),
+    path(
+        "knowledge/categories/<int:category_id>/",
+        category_views.KnowledgeCategoryDetailView.as_view(),
+        name="ai-knowledge-category-detail",
+    ),
     path("knowledge/import/", views.KnowledgeImportView.as_view(), name="ai-knowledge-import"),
     path("knowledge/<int:knowledge_id>/", views.KnowledgeDetailView.as_view(), name="ai-knowledge-detail"),
     path("knowledge/<int:knowledge_id>/attachments/", views.KnowledgeAttachmentUploadView.as_view(), name="ai-knowledge-attachment-upload"),
