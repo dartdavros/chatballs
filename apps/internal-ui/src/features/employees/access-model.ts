@@ -3,6 +3,7 @@ import type { AccessProfile, CapabilityDefinition, ScopeType } from "../../types
 const DOMAIN_LABELS: Record<string, string> = {
   ai: "AI",
   audit: "Настройки и аудит",
+  channels: "Каналы",
   company: "Компания",
   conversations: "Диалоги",
   customers: "Клиенты",
@@ -20,7 +21,7 @@ const DOMAIN_LABELS: Record<string, string> = {
 };
 
 const DOMAIN_ORDER = [
-  "Компания", "Отделы", "Сотрудники", "Продукты", "AI", "Интеграции",
+  "Компания", "Отделы", "Сотрудники", "Продукты", "Каналы", "AI", "Интеграции",
   "Настройки и аудит", "Диалоги", "Клиенты", "Продажи", "Поддержка", "Уведомления",
 ];
 

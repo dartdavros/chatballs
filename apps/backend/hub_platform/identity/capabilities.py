@@ -66,6 +66,10 @@ CAPABILITY_REGISTRY = {
         ),
         _capability("products.view", "Просмотр продуктов"),
         _capability("products.manage", "Управление продуктами"),
+        # Канал обработки — коммерческая граница, а не настройка AI (ADR-HUB-0037 §9):
+        # право разрешить checkout и attribution отделено от права настраивать агента.
+        _capability("channels.view", "Просмотр каналов"),
+        _capability("channels.manage", "Управление каналами"),
         _capability("ai.view", "Просмотр агентов"),
         _capability("ai.manage", "Настройка агентов"),
         _capability("ai.publish", "Публикация агентов", scopes=_ORGANIZATION_ONLY),

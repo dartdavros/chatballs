@@ -55,4 +55,24 @@ describe("access catalog model", () => {
     expect(groups[0].domain).toBe("Сотрудники");
     expect(groups[0].capabilities[0].protected).toBe(true);
   });
+
+  it("labels channel capabilities and orders them after products", () => {
+    // Без метки домен channels остался бы сырым кодом и всплыл первой группой
+    // (indexOf === -1). SPEC-HUB-0027 §10.3: «Каналы» идут после «Продукты».
+    const capability = (code: string): CapabilityDefinition => ({
+      code,
+      name: code,
+      description: "",
+      allowedScopes: ["ORGANIZATION", "DEPARTMENT"],
+      assignable: true,
+      protected: false,
+    });
+    const groups = groupCapabilities([
+      capability("ai.view"),
+      capability("channels.view"),
+      capability("products.view"),
+    ]);
+
+    expect(groups.map((group) => group.domain)).toEqual(["Продукты", "Каналы", "AI"]);
+  });
 });
