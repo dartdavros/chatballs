@@ -14,7 +14,7 @@ from django.db.models.functions import TruncDate, TruncHour
 from django.utils import timezone
 
 from hub_platform.ai.models import LlmInvocation
-from hub_platform.channels.selectors import channels_for_context
+from hub_platform.channels.selectors import channels_in_organization
 from hub_platform.conversations.models import (
     Conversation,
     ControlMode,
@@ -157,7 +157,7 @@ def sales_overview_stats(
 
     by_channel: list[dict] = []
     by_product: dict[str, dict] = {}
-    channels = channels_for_context(context)
+    channels = channels_in_organization(context)
     if department_ids is not None:
         channels = channels.filter(department_id__in=department_ids)
     for channel in channels:
