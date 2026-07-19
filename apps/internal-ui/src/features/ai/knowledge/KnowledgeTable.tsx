@@ -6,6 +6,7 @@ import { knowledgeCategoryPath } from "./knowledgeTree";
 import type { KnowledgeCategory, KnowledgeItem } from "./model";
 
 type KnowledgeTableProps = {
+  bulkMode: boolean;
   canCreate: boolean;
   canSelect: boolean;
   categories: KnowledgeCategory[];
@@ -23,6 +24,7 @@ type KnowledgeTableProps = {
 };
 
 export function KnowledgeTable({
+  bulkMode,
   canCreate,
   canSelect,
   categories,
@@ -64,8 +66,8 @@ export function KnowledgeTable({
           <col className="knowledge-col-title" />
           <col className="knowledge-col-category" />
           <col className="knowledge-col-visibility" />
-          <col className="knowledge-col-attachments" />
-          <col className="knowledge-col-agents" />
+          {!bulkMode && <col className="knowledge-col-attachments" />}
+          {!bulkMode && <col className="knowledge-col-agents" />}
           <col className="knowledge-col-status" />
           <col className="knowledge-col-updated" />
         </colgroup>
@@ -79,15 +81,15 @@ export function KnowledgeTable({
             <th>ЗНАНИЕ</th>
             <th>КАТЕГОРИЯ</th>
             <th>ДОСТУПНОСТЬ</th>
-            <th className="numeric">ВЛОЖ.</th>
-            <th className="numeric">АГЕНТЫ</th>
+            {!bulkMode && <th className="numeric">ВЛОЖ.</th>}
+            {!bulkMode && <th className="numeric">АГЕНТЫ</th>}
             <th>СТАТУС</th>
             <th>ОБНОВЛЕНО</th>
           </tr>
         </thead>
         <tbody>
           {items.map((item) => (
-            <tr key={item.id} className="knowledge-row" onClick={() => openKnowledge(item.id)}>
+            <tr key={item.id} className={`knowledge-row${selectedIds.has(item.id) ? " selected" : ""}`} onClick={() => openKnowledge(item.id)}>
               {canSelect && (
                 <td className="knowledge-select-cell" onClick={(event) => event.stopPropagation()}>
                   <input
@@ -121,22 +123,22 @@ export function KnowledgeTable({
                   </span>
                 )}
               </td>
-              <td className="numeric">
+              {!bulkMode && <td className="numeric">
                 {item.attachments.length || <span className="product-empty-value">—</span>}
-              </td>
-              <td className="numeric">
+              </td>}
+              {!bulkMode && <td className="numeric">
                 {item.agentsCount || <span className="product-empty-value">—</span>}
-              </td>
+              </td>}
               <td><span className={`knowledge-status ${item.isEnabled ? "active" : "disabled"}`}><i />{item.isEnabled ? "Активно" : "Выключено"}</span></td>
               <td>{formatDate(item.updatedAt)}</td>
             </tr>
           ))}
         </tbody>
       </table>
-      <div className="ai-table-footer">
+      {!bulkMode && <div className="ai-table-footer">
         <span>{items.length} знаний</span>
         <span>{selectedIds.size > 0 ? `Выбрано: ${selectedIds.size}` : "Изменения знаний применяются к агентам сразу"}</span>
-      </div>
+      </div>}
     </div>
   );
 }

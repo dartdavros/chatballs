@@ -13,6 +13,8 @@
   gap: 18px;
 }
 
+.knowledge-library-layout.bulk-mode { grid-template-columns: minmax(0, 1fr); }
+
 .knowledge-library-list {
   display: flex;
   min-width: 0;

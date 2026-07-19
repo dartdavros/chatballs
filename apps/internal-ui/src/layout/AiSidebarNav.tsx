@@ -12,7 +12,7 @@ const ITEMS: Array<{
     label: "AI-агенты",
   },
   {
-    activeRoutes: ["aiKnowledge", "aiKnowledgeDetail"],
+    activeRoutes: ["aiKnowledge", "aiKnowledgeCreate", "aiKnowledgeDetail"],
     key: "aiKnowledge",
     label: "Знания",
   },

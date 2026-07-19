@@ -1,10 +1,10 @@
 import { useMemo, useState } from "react";
 
 import { hasCapability } from "../../../auth/access";
-import type { Department, SessionUser } from "../../../types";
+import type { Department, RouteKey, SessionUser } from "../../../types";
 import { CategoryManagement } from "./CategoryManagement";
+import { KnowledgeBulkActions } from "./KnowledgeBulkActions";
 import { KnowledgeCategoryTree } from "./KnowledgeCategoryTree";
-import { KnowledgeCreateModal } from "./KnowledgeCreateModal";
 import { KnowledgeImportModal } from "./KnowledgeImportModal";
 import { KnowledgePageHeader } from "./KnowledgePageHeader";
 import { KnowledgeTable } from "./KnowledgeTable";
@@ -15,6 +15,8 @@ import { useKnowledgeLibrary } from "./useKnowledgeLibrary";
 type KnowledgePageProps = {
   departments: Department[];
   openKnowledge: (knowledgeId: number) => void;
+  openAgent: (agentId: number) => void;
+  setRoute: (route: RouteKey) => void;
   user: SessionUser;
 };
 
@@ -39,13 +41,13 @@ function KnowledgeAccessNotice({ departments, user }: { departments: Department[
   );
 }
 
-export function KnowledgePage({ departments, openKnowledge, user }: KnowledgePageProps) {
-  const [createOpen, setCreateOpen] = useState(false);
+export function KnowledgePage({ departments, openAgent, openKnowledge, setRoute, user }: KnowledgePageProps) {
   const [importOpen, setImportOpen] = useState(false);
   const [categoryManagementOpen, setCategoryManagementOpen] = useState(false);
   const library = useKnowledgeLibrary();
   const canManageCategories = hasCapability(user, "ai.manage");
   const canManageKnowledge = canManageInAnyScope(user);
+  const bulkMode = library.selectedIds.size > 0;
 
   const filterDepartments = useMemo(() => {
     const byId = new Map<number, KnowledgeDepartmentReference>();
@@ -68,12 +70,12 @@ export function KnowledgePage({ departments, openKnowledge, user }: KnowledgePag
       <KnowledgePageHeader
         canCreate={canManageCategories}
         canImport={canManageKnowledge}
-        onCreate={() => setCreateOpen(true)}
+        onCreate={() => setRoute("aiKnowledgeCreate")}
         onImport={() => setImportOpen(true)}
       />
       <KnowledgeAccessNotice departments={departments} user={user} />
-      <div className="knowledge-library-layout">
-        <KnowledgeCategoryTree
+      <div className={`knowledge-library-layout${bulkMode ? " bulk-mode" : ""}`}>
+        {!bulkMode && <KnowledgeCategoryTree
           canManage={canManageCategories}
           categories={library.categories}
           error={library.categoriesError}
@@ -82,22 +84,34 @@ export function KnowledgePage({ departments, openKnowledge, user }: KnowledgePag
           onManage={() => setCategoryManagementOpen(true)}
           onRetry={() => void library.reloadCategories()}
           onSelect={(categoryId) => library.updateFilter("category", categoryId)}
-        />
+        />}
         <main className="knowledge-library-list">
-          <KnowledgeToolbar
-            department={library.filters.department}
-            departments={filterDepartments}
-            isEnabled={library.filters.isEnabled}
-            query={library.filters.search}
-            visibility={library.filters.visibility}
-            onDepartmentChange={(value) => library.updateFilter("department", value)}
-            onEnabledChange={(value) => library.updateFilter("isEnabled", value)}
-            onQueryChange={(value) => library.updateFilter("search", value)}
-            onVisibilityChange={(value) => library.updateFilter("visibility", value)}
-          />
+          {bulkMode ? (
+            <KnowledgeBulkActions
+              categories={library.categories}
+              departments={filterDepartments}
+              selectedIds={library.selectedIds}
+              onClear={library.clearSelected}
+              onComplete={async () => { await library.reload(); library.clearSelected(); }}
+              openAgent={openAgent}
+            />
+          ) : (
+            <KnowledgeToolbar
+              department={library.filters.department}
+              departments={filterDepartments}
+              isEnabled={library.filters.isEnabled}
+              query={library.filters.search}
+              visibility={library.filters.visibility}
+              onDepartmentChange={(value) => library.updateFilter("department", value)}
+              onEnabledChange={(value) => library.updateFilter("isEnabled", value)}
+              onQueryChange={(value) => library.updateFilter("search", value)}
+              onVisibilityChange={(value) => library.updateFilter("visibility", value)}
+            />
+          )}
           <KnowledgeTable
             canCreate={canManageCategories}
             canSelect={canManageKnowledge}
+            bulkMode={bulkMode}
             categories={library.categories}
             error={library.itemsError}
             hasActiveFilters={hasActiveFilters}
@@ -106,11 +120,12 @@ export function KnowledgePage({ departments, openKnowledge, user }: KnowledgePag
             openKnowledge={openKnowledge}
             selectedCategoryId={library.filters.category}
             selectedIds={library.selectedIds}
-            onCreate={() => setCreateOpen(true)}
+            onCreate={() => setRoute("aiKnowledgeCreate")}
             onRetry={() => void library.reload()}
             onToggleSelected={library.toggleSelected}
             onToggleVisible={library.toggleVisible}
           />
+          {bulkMode && <p className="knowledge-bulk-note">Операция атомарна: при одной недопустимой записи или конфликтующем агенте ничего не изменяется. Выбор снимается только после успеха.</p>}
         </main>
       </div>
       {categoryManagementOpen && (
@@ -118,17 +133,6 @@ export function KnowledgePage({ departments, openKnowledge, user }: KnowledgePag
           categories={library.categories}
           onChanged={library.reload}
           onClose={() => setCategoryManagementOpen(false)}
-        />
-      )}
-      {createOpen && (
-        <KnowledgeCreateModal
-          initialCategoryId={library.filters.category}
-          onClose={() => setCreateOpen(false)}
-          onCreated={(id) => {
-            setCreateOpen(false);
-            void library.reload();
-            openKnowledge(id);
-          }}
         />
       )}
       {importOpen && (

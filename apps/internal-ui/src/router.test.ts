@@ -66,11 +66,13 @@ describe("ai agent routes", () => {
 describe("ai knowledge routes", () => {
   it("parses knowledge list and detail URLs", () => {
     expect(routeFromPath("/ai/knowledge")).toEqual({ route: "aiKnowledge", ...empty });
+    expect(routeFromPath("/ai/knowledge/new")).toEqual({ route: "aiKnowledgeCreate", ...empty });
     expect(routeFromPath("/ai/knowledge/12")).toEqual({ route: "aiKnowledgeDetail", ...empty, knowledgeId: 12 });
   });
 
   it("creates knowledge URLs", () => {
     expect(pathFromRoute("aiKnowledge")).toBe("/ai/knowledge");
+    expect(pathFromRoute("aiKnowledgeCreate")).toBe("/ai/knowledge/new");
     expect(pathFromRoute("aiKnowledgeDetail", 12)).toBe("/ai/knowledge/12");
   });
 });

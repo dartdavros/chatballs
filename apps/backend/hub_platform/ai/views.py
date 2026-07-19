@@ -30,6 +30,7 @@ from hub_platform.ai.selectors import (
 from hub_platform.ai.serializers import attachment_payload, knowledge_payload
 from hub_platform.api.permissions import HasCapability, HasEntitlement
 from hub_platform.identity.audit import record_audit_event
+from hub_platform.identity.models import AuditEvent
 
 _validation_error = validation_error_response
 
@@ -103,7 +104,21 @@ class KnowledgeDetailView(_KnowledgeBaseView):
             knowledge = self._read_knowledge(request, knowledge_id)
         except Knowledge.DoesNotExist:
             return Response({"detail": "Knowledge not found"}, status=404)
-        return Response({"knowledge": knowledge_payload(knowledge)})
+        payload = knowledge_payload(knowledge)
+        created_event = (
+            AuditEvent.objects.filter(
+                organization_id=knowledge.organization_id,
+                action="ai.knowledge_created",
+                object_type="Knowledge",
+                object_id=str(knowledge.id),
+            )
+            .select_related("actor")
+            .order_by("created_at")
+            .first()
+        )
+        if created_event and created_event.actor:
+            payload["createdBy"] = created_event.actor.full_name or created_event.actor.email
+        return Response({"knowledge": payload})
 
     def patch(self, request: Request, knowledge_id: int) -> Response:
         try:

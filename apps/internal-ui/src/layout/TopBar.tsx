@@ -4,7 +4,7 @@ import { Icon } from "../shared/icons";
 
 export function TopBar({ route, user, currentEmployee, currentProduct, currentAgentName, setRoute, unreadCount = 0, onOpenNotifications }: { route: RouteKey; user: SessionUser; currentEmployee?: Employee | null; currentProduct?: Product | null; currentAgentName?: string | null; setRoute: (route: RouteKey) => void; unreadCount?: number; onOpenNotifications?: () => void }) {
   const isCommand = route === "command";
-  const isAiDetail = route === "aiAgentDetail" || route === "aiKnowledgeDetail";
+  const isAiDetail = route === "aiAgentDetail" || route === "aiKnowledgeCreate" || route === "aiKnowledgeDetail";
   const isAi = route.startsWith("ai") && !isAiDetail && route !== "aiAgentCreate";
   const isSalesWorkspace = route === "salesOverview" || route === "salesClientDetail" || route === "salesClients" || route === "salesDialogs" || route === "salesOrderDetail" || route === "salesOrders";
   const isSupportWorkspace = route === "supportOverview" || route === "supportDialogs";
@@ -24,6 +24,7 @@ export function TopBar({ route, user, currentEmployee, currentProduct, currentAg
         {route === "aiAgentCreate" && <><button type="button" onClick={() => setRoute("aiAgents")}>AI</button><i>/</i><button type="button" onClick={() => setRoute("aiAgents")}>AI-агенты</button><i>/</i><strong>{routes[route]}</strong></>}
         {route === "aiAgentDetail" && <><button type="button" onClick={() => setRoute("aiAgents")}>AI</button><i>/</i><button type="button" onClick={() => setRoute("aiAgents")}>AI-агенты</button><i>/</i><strong>{currentAgentName || routes[route]}</strong></>}
         {route === "aiKnowledgeDetail" && <><button type="button" onClick={() => setRoute("aiAgents")}>AI</button><i>/</i><button type="button" onClick={() => setRoute("aiKnowledge")}>Знания</button><i>/</i><strong>{currentAgentName || routes[route]}</strong></>}
+        {route === "aiKnowledgeCreate" && <><button type="button" onClick={() => setRoute("aiAgents")}>AI</button><i>/</i><button type="button" onClick={() => setRoute("aiKnowledge")}>Знания</button><i>/</i><strong>{routes[route]}</strong></>}
         {route !== "accessProfiles" && route !== "employeeDetail" && route !== "productDetail" && route !== "aiAgentCreate" && !isSalesWorkspace && !isSupportWorkspace && !isAi && !isAiDetail && <strong>{routes[route]}</strong>}
       </div>
       <div className="topbar-actions">

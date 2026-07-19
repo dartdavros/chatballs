@@ -171,7 +171,7 @@ export type ProductOffer = {
   prices: ProductPrice[];
 };
 
-export type RouteKey = "accessProfiles" | "command" | "departments" | "employeeDetail" | "employees" | "productDetail" | "products" | "profile" | "settings" | "salesClientDetail" | "salesClients" | "salesDialogs" | "salesOrderDetail" | "salesOrders" | "salesOverview" | "supportOverview" | "supportDialogs" | "aiAgents" | "aiAgentCreate" | "aiAgentDetail" | "aiKnowledge" | "aiKnowledgeDetail" | "aiUsage" | "integrations";
+export type RouteKey = "accessProfiles" | "command" | "departments" | "employeeDetail" | "employees" | "productDetail" | "products" | "profile" | "settings" | "salesClientDetail" | "salesClients" | "salesDialogs" | "salesOrderDetail" | "salesOrders" | "salesOverview" | "supportOverview" | "supportDialogs" | "aiAgents" | "aiAgentCreate" | "aiAgentDetail" | "aiKnowledge" | "aiKnowledgeCreate" | "aiKnowledgeDetail" | "aiUsage" | "integrations";
 
 export type AppData = {
   employees: Employee[];

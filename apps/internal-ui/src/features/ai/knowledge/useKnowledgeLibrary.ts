@@ -111,6 +111,8 @@ export function useKnowledgeLibrary() {
     });
   }, []);
 
+  const clearSelected = useCallback(() => setSelectedIds(new Set()), []);
+
   const toggleVisible = useCallback(() => {
     setSelectedIds((current) => {
       const visibleIds = items.map((item) => item.id);
@@ -138,6 +140,7 @@ export function useKnowledgeLibrary() {
     categories,
     categoriesError,
     categoriesLoading,
+    clearSelected,
     filters,
     items,
     itemsError,

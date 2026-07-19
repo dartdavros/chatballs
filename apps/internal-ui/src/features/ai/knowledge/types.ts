@@ -39,6 +39,8 @@ export type KnowledgeItem = {
   isEnabled: boolean;
   attachments: KnowledgeAttachment[];
   agentsCount: number | null;
+  createdBy?: string;
+  fragmentsCount: number | null;
   createdAt: string;
   updatedAt: string;
 };

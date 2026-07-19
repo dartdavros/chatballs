@@ -56,6 +56,7 @@ export function routeFromPath(pathname: string, search = ""): RouteState {
     return Number.isInteger(id) && id > 0 ? { ...state, route: "aiAgentDetail", agentId: id } : { route: "aiAgents", ...state };
   }
   if (path === "/ai/knowledge") return { route: "aiKnowledge", ...state };
+  if (path === "/ai/knowledge/new") return { route: "aiKnowledgeCreate", ...state };
   if (path.startsWith("/ai/knowledge/")) {
     const id = Number(path.split("/")[3]);
     return Number.isInteger(id) && id > 0 ? { ...state, route: "aiKnowledgeDetail", knowledgeId: id } : { route: "aiKnowledge", ...state };
@@ -89,6 +90,7 @@ export function pathFromRoute(route: RouteKey, entityId: number | null = null, p
   if (route === "aiUsage") return `${prefix}/ai/usage`;
   if (route === "aiAgentDetail") return entityId ? `${prefix}/ai/agents/${entityId}` : `${prefix}/ai/agents`;
   if (route === "aiKnowledge") return `${prefix}/ai/knowledge`;
+  if (route === "aiKnowledgeCreate") return `${prefix}/ai/knowledge/new`;
   if (route === "aiKnowledgeDetail") return entityId ? `${prefix}/ai/knowledge/${entityId}` : `${prefix}/ai/knowledge`;
   if (route === "integrations") return `${prefix}/integrations`;
   if (route === "profile") return `${prefix}/profile`;

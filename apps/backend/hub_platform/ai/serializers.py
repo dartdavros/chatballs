@@ -13,6 +13,7 @@ def _channel_ref(channel) -> dict[str, object]:
         "code": channel.code,
         "name": channel.name,
         "product": {"code": channel.product.code, "name": channel.product.name} if channel.product_id else None,
+        "department": department_ref_payload(channel.department) if channel.department_id else None,
         "providerIntegrationId": channel.provider_integration_id,
     }
 
@@ -68,6 +69,7 @@ def knowledge_payload(knowledge: Knowledge, *, include_content: bool = True) -> 
         "isEnabled": knowledge.is_enabled,
         "attachments": [attachment_payload(attachment) for attachment in knowledge.attachments.all()],
         "agentsCount": getattr(knowledge, "agents_count", None),
+        "fragmentsCount": getattr(knowledge, "fragments_count", None),
         "createdAt": knowledge.created_at.isoformat(),
         "updatedAt": knowledge.updated_at.isoformat(),
     }

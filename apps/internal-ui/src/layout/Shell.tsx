@@ -93,6 +93,7 @@ export function Shell({ route, setRoute, selectedEmployeeId, selectedProductId, 
   const isSalesOrders = route === "salesOrderDetail" || route === "salesOrders";
   const isAiFullWidth = route === "aiAgentCreate";
   const isKnowledgeLibrary = route === "aiKnowledge";
+  const isKnowledgeEditor = route === "aiKnowledgeCreate" || route === "aiKnowledgeDetail";
   const showSalesSidebar = isSalesWorkspace || (
     canAccess(user, "salesDialogs") && !canAccess(user, "command") && !isSupportWorkspace
   );
@@ -105,7 +106,7 @@ export function Shell({ route, setRoute, selectedEmployeeId, selectedProductId, 
       <div className="hub-main">
         <TopBar route={route} user={user} currentEmployee={currentEmployee} currentProduct={currentProduct} currentAgentName={agentName} setRoute={setRoute} unreadCount={unreadCount} onOpenNotifications={() => { setNotifOpen(true); void loadNotifications(); }} />
         <main className={`hub-scroll ${isDialogsWorkspace ? "sales-dialogs-scroll" : ""} ${isAiFullWidth ? "ai-fullwidth-scroll" : ""}`}>
-          <div className={`hub-page ${isSalesWorkspace || isSupportWorkspace ? "sales-workspace-page" : ""} ${isDialogsWorkspace ? "sales-dialogs-page" : ""} ${isSalesClients ? "sales-clients-page" : ""} ${isSalesClientDetail ? "sales-client-detail-page" : ""} ${isSalesOrderDetail ? "sales-order-detail-page" : ""} ${isSalesOrders ? "sales-orders-page" : ""} ${isAiFullWidth ? "ai-fullwidth-page" : ""} ${isKnowledgeLibrary ? "ai-knowledge-library-page" : ""}`}>
+          <div className={`hub-page ${isSalesWorkspace || isSupportWorkspace ? "sales-workspace-page" : ""} ${isDialogsWorkspace ? "sales-dialogs-page" : ""} ${isSalesClients ? "sales-clients-page" : ""} ${isSalesClientDetail ? "sales-client-detail-page" : ""} ${isSalesOrderDetail ? "sales-order-detail-page" : ""} ${isSalesOrders ? "sales-orders-page" : ""} ${isAiFullWidth ? "ai-fullwidth-page" : ""} ${isKnowledgeLibrary ? "ai-knowledge-library-page" : ""} ${isKnowledgeEditor ? "ai-knowledge-editor-page" : ""}`}>
             <ShellRouteContent route={route} data={data} currentEmployee={currentEmployee} currentProduct={currentProduct} selectedProductCode={selectedProductCode} selectedAgentId={selectedAgentId} selectedKnowledgeId={selectedKnowledgeId} selectedConversationId={selectedConversationId} selectedClientId={selectedClientId} openClient={openClientRoute} selectedOrderId={selectedOrderId} openOrder={openOrderRoute} openConversation={openConversationRoute} openEmployee={openEmployee} openProduct={openProduct} openAgentCreate={openAgentCreateRoute} openAgent={openAgentRoute} openKnowledge={openKnowledgeRoute} onAgentLoaded={setAgentName} reload={reload} setRoute={setRoute} user={user} onUserUpdated={onUserUpdated} onLogout={onLogout} />
           </div>
         </main>

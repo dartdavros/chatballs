@@ -22,6 +22,7 @@ export const routes: Record<RouteKey, string> = {
   aiAgentCreate: "Создание агента",
   aiAgentDetail: "Карточка агента",
   aiKnowledge: "Знания",
+  aiKnowledgeCreate: "Создание знания",
   aiKnowledgeDetail: "Знание",
   aiUsage: "Использование AI",
   integrations: "Интеграции",

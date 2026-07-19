@@ -1,4 +1,11 @@
-export type ChannelRef = { id: number; code: string; name: string; product: { code: string; name: string } | null; providerIntegrationId: number | null };
+export type ChannelRef = {
+  id: number;
+  code: string;
+  name: string;
+  department: { id: number; code: string; name: string } | null;
+  product: { code: string; name: string } | null;
+  providerIntegrationId: number | null;
+};
 
 export type AgentKnowledgeRef = { id: number; title: string; isEnabled: boolean };
 

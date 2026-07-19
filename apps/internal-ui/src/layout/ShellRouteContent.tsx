@@ -2,6 +2,7 @@ import { AiAgentsPage } from "../features/ai/AiAgentsPage";
 import { AiAgentCreatePage } from "../features/ai/create/AiAgentCreatePage";
 import { AiAgentDetailPage } from "../features/ai/detail/AiAgentDetailPage";
 import { KnowledgeDetailPage } from "../features/ai/knowledge/KnowledgeDetailPage";
+import { KnowledgeCreatePage } from "../features/ai/knowledge/KnowledgeCreatePage";
 import { KnowledgePage } from "../features/ai/knowledge/KnowledgePage";
 import { CommandCenter } from "../features/command/CommandCenter";
 import { IntegrationsPage } from "../features/integrations/IntegrationsPage";
@@ -47,8 +48,9 @@ export function ShellRouteContent({ route, data, currentEmployee, currentProduct
       {route === "aiAgents" && <AiAgentsPage agents={data.agents} reload={reload} openAgentCreate={openAgentCreate} openAgent={openAgent} />}
       {route === "aiAgentCreate" && <AiAgentCreatePage selectedProductCode={selectedProductCode} reload={reload} setRoute={setRoute} openAgent={openAgent} />}
       {route === "aiAgentDetail" && <AiAgentDetailPage agentId={selectedAgentId} openKnowledge={openKnowledge} onAgentLoaded={onAgentLoaded} />}
-      {route === "aiKnowledge" && <KnowledgePage departments={data.departments} openKnowledge={openKnowledge} user={user} />}
-      {route === "aiKnowledgeDetail" && <KnowledgeDetailPage knowledgeId={selectedKnowledgeId} setRoute={setRoute} onLoaded={onAgentLoaded} />}
+      {route === "aiKnowledge" && <KnowledgePage departments={data.departments} openAgent={openAgent} openKnowledge={openKnowledge} setRoute={setRoute} user={user} />}
+      {route === "aiKnowledgeCreate" && <KnowledgeCreatePage departments={data.departments} openKnowledge={openKnowledge} setRoute={setRoute} />}
+      {route === "aiKnowledgeDetail" && <KnowledgeDetailPage agents={data.agents} canManage={hasCapability(user, "ai.manage")} departments={data.departments} knowledgeId={selectedKnowledgeId} openAgent={openAgent} setRoute={setRoute} onLoaded={onAgentLoaded} />}
       {route === "integrations" && <IntegrationsPage />}
     </>
   );

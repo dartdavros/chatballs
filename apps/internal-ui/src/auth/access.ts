@@ -14,6 +14,7 @@ const ROUTE_ACCESS: Partial<Record<RouteKey, RouteAccess>> = {
   aiAgentCreate: { capability: "ai.manage" },
   aiAgentDetail: { capability: "ai.view" },
   aiKnowledge: { capability: "ai.view" },
+  aiKnowledgeCreate: { capability: "ai.manage" },
   aiKnowledgeDetail: { capability: "ai.view" },
   aiUsage: { capability: "ai.view" },
   integrations: { capability: "integrations.view" },

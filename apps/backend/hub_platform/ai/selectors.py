@@ -14,7 +14,7 @@ from hub_platform.tenancy.context import TenantContext
 
 def agents_for_context(context: TenantContext) -> QuerySet[AIAgent]:
     return (
-        AIAgent.objects.select_related("channel", "channel__product")
+        AIAgent.objects.select_related("channel", "channel__department", "channel__product")
         .prefetch_related("knowledge_items")
         .filter(channel__organization_id=context.organization_id)
         .order_by("channel__name")
@@ -72,7 +72,10 @@ def _with_knowledge_relations(queryset: QuerySet[Knowledge]) -> QuerySet[Knowled
                 queryset=Department.objects.order_by("name", "id"),
             ),
         )
-        .annotate(agents_count=Count("agents", distinct=True))
+        .annotate(
+            agents_count=Count("agents", distinct=True),
+            fragments_count=Count("fragments", distinct=True),
+        )
         .order_by("title")
     )
 
