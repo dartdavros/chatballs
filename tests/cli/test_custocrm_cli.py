@@ -71,7 +71,6 @@ def test_deploy_success_orders_canonical_workflow(fake_env):
     idx_exec = _index_of(log, "exec -T backend-app")
 
     assert idx_pull < idx_infra < idx_init < idx_app < idx_exec, joined
-    assert "seed_hub_initial_data" not in joined  # init не запускает Edevs seed
     # applied_release записан.
     assert (fake_env.instance / "state" / "applied_release").exists()
     assert not (fake_env.instance / "compose.yaml").exists()

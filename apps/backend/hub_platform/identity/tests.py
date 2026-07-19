@@ -644,29 +644,6 @@ class ThrottlingTests(TestCase):
         self.assertEqual(second.status_code, 429)
 
 
-class SeedIdempotencyTests(TestCase):
-    """seed_hub_initial_data — посев только при первичной установке: на уже
-    развёрнутой установке (OWNER существует) команда должна быть no-op, чтобы
-    не затирать данные, изменённые через UI/API (см. seed_catalog и цены офферов).
-    """
-
-    def test_seed_skipped_when_owner_exists(self) -> None:
-        from django.core.management import call_command
-        from io import StringIO
-
-        from hub_platform.products.models import Offer
-
-        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
-        offers_before = Offer.objects.count()
-
-        out = StringIO()
-        call_command("seed_hub_initial_data", "--owner-email=owner@edevs.tech", "--owner-password=temporary-password", stdout=out)
-
-        self.assertIn("seed skipped", out.getvalue())
-        # Ни новые офферы, ни цены не создаются и не изменяются на развёрнутой установке.
-        self.assertEqual(Offer.objects.count(), offers_before)
-
-
 class EmployeeModelInvariantTests(TestCase):
     """ADR-HUB-0027 / SPEC-HUB-0016 §5,§7 — инварианты модели сотрудника после
     миграции этапа 1: роли OWNER/ADMIN/EMPLOYEE, обязательная должность,

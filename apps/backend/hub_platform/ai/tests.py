@@ -16,8 +16,8 @@ _MEDIA_ROOT = tempfile.mkdtemp(prefix="hub-test-media-")
 
 
 def make_channel_with_agent(organization, *, code, name, product=None, model="openai/gpt-4o-mini"):
-    """Канал обработки + его агент (ADR-HUB-0019/0023). Bootstrap не сидит
-    каналы/агентов — в проде это делает seed_channels, в тестах — этот helper."""
+    """Канал обработки + его агент (ADR-HUB-0019/0023). Bootstrap не создаёт
+    каналы/агентов — в тестах их собирает этот helper."""
     channel = Channel.objects.create(organization=organization, code=code, name=name, product=product)
     agent = AIAgent.objects.create(
         channel=channel,

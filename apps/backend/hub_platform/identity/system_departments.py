@@ -3,9 +3,8 @@ from __future__ import annotations
 from hub_platform.identity.models import Department, Organization
 
 # System department codes (ADR-HUB-0022, SPEC-HUB-0010 §4.1). These were
-# previously hardcoded strings in bootstrap.py / seed_hub_initial_data.py /
-# conversations routing. Centralised here so provisioning and future callers
-# share one source of truth.
+# previously hardcoded strings in bootstrap.py / conversations routing.
+# Centralised here so provisioning and future callers share one source of truth.
 SALES_CODE = "sales"
 SUPPORT_CODE = "support"
 
