@@ -30,6 +30,23 @@ const publicPaths = [
   "/api/v1/support/sessions/",
 ];
 
+export type ApiErrorPayload = {
+  detail?: string;
+  [key: string]: unknown;
+};
+
+export class ApiError<TPayload extends { detail?: string } = ApiErrorPayload> extends Error {
+  readonly status: number;
+  readonly payload: TPayload;
+
+  constructor(status: number, payload: TPayload) {
+    super(payload.detail ?? "Ошибка запроса");
+    this.name = "ApiError";
+    this.status = status;
+    this.payload = payload;
+  }
+}
+
 export function setActiveOrganization(publicId: string | null): void {
   activeOrganizationPublicId = publicId;
 }
@@ -76,8 +93,8 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
     headers,
   });
   if (!response.ok) {
-    const payload = await response.json().catch(() => ({ detail: "Ошибка запроса" }));
-    throw new Error(payload.detail ?? "Ошибка запроса");
+    const payload = await response.json().catch(() => ({ detail: "Ошибка запроса" })) as ApiErrorPayload;
+    throw new ApiError(response.status, payload);
   }
   if (response.status === 204 || response.status === 205) return undefined as T;
   return response.json() as Promise<T>;
@@ -88,8 +105,8 @@ export async function apiUpload<T>(path: string, form: FormData): Promise<T> {
   const headers = new Headers({ Accept: "application/json", "X-CSRFToken": getCookie(CSRF_COOKIE_NAME) });
   const response = await fetch(resolveApiUrl(path), { method: "POST", body: form, credentials: "include", headers });
   if (!response.ok) {
-    const payload = await response.json().catch(() => ({ detail: "Ошибка запроса" }));
-    throw new Error(payload.detail ?? "Ошибка запроса");
+    const payload = await response.json().catch(() => ({ detail: "Ошибка запроса" })) as ApiErrorPayload;
+    throw new ApiError(response.status, payload);
   }
   return response.json() as Promise<T>;
 }

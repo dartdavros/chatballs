@@ -1,0 +1,121 @@
+import { afterEach, describe, expect, it, vi } from "vitest";
+
+import { ApiError, setActiveOrganization } from "../../../api/client";
+import {
+  bulkMoveKnowledge,
+  bulkReplaceKnowledgeVisibility,
+  createKnowledgeCategory,
+  fetchKnowledgeCategories,
+  fetchKnowledgeList,
+  isKnowledgeScopeConflict,
+  selectAgentCategoryKnowledge,
+  updateKnowledgeCategory,
+} from "./api";
+
+const organizationPublicId = "123e4567-e89b-12d3-a456-426614174000";
+const originalFetch = globalThis.fetch;
+const originalDocumentCookie = (globalThis as { document?: { cookie?: string } }).document?.cookie;
+
+function jsonResponse(body: unknown, status = 200): Response {
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    json: async () => body,
+  } as unknown as Response;
+}
+
+afterEach(() => {
+  setActiveOrganization(null);
+  globalThis.fetch = originalFetch;
+  if (originalDocumentCookie === undefined) {
+    delete (globalThis as { document?: { cookie?: string } }).document;
+  }
+  vi.restoreAllMocks();
+});
+
+function mockSuccess(body: unknown = {}): ReturnType<typeof vi.fn> {
+  const mocked = vi.fn().mockResolvedValue(jsonResponse(body));
+  globalThis.fetch = mocked as unknown as typeof fetch;
+  (globalThis as { document?: { cookie?: string } }).document = { cookie: "csrftoken=abc" };
+  setActiveOrganization(organizationPublicId);
+  return mocked;
+}
+
+describe("knowledge API", () => {
+  it("sends list filters to the backend without deriving visibility", async () => {
+    const fetchMock = mockSuccess({ items: [] });
+
+    await fetchKnowledgeList({
+      category: 7,
+      department: 2,
+      visibility: "DEPARTMENTS",
+      isEnabled: false,
+      search: "тариф FoxRay",
+    });
+
+    const url = new URL(fetchMock.mock.calls[0][0], "https://app.example");
+    expect(url.pathname).toBe(
+      `/api/v1/organizations/${organizationPublicId}/ai/knowledge/`,
+    );
+    expect(Object.fromEntries(url.searchParams)).toEqual({
+      category: "7",
+      department: "2",
+      visibility: "DEPARTMENTS",
+      isEnabled: "false",
+      search: "тариф FoxRay",
+    });
+  });
+
+  it("uses the category list, create and update contracts", async () => {
+    const fetchMock = mockSuccess({ items: [] });
+
+    await fetchKnowledgeCategories();
+    await createKnowledgeCategory({ name: "FoxRay", parentId: 3, sortOrder: 20 });
+    await updateKnowledgeCategory(7, { name: "FoxRay Pro", parentId: null, sortOrder: 30 });
+
+    expect(fetchMock.mock.calls.map(([path]) => path)).toEqual([
+      `/api/v1/organizations/${organizationPublicId}/ai/knowledge/categories/`,
+      `/api/v1/organizations/${organizationPublicId}/ai/knowledge/categories/`,
+      `/api/v1/organizations/${organizationPublicId}/ai/knowledge/categories/7/`,
+    ]);
+    expect(JSON.parse(fetchMock.mock.calls[1][1].body)).toEqual({
+      name: "FoxRay",
+      parentId: 3,
+      sortOrder: 20,
+    });
+    expect(JSON.parse(fetchMock.mock.calls[2][1].body)).toEqual({
+      name: "FoxRay Pro",
+      parentId: null,
+      sortOrder: 30,
+    });
+  });
+
+  it("uses dedicated bulk and agent category-selection endpoints", async () => {
+    const fetchMock = mockSuccess({ updated: 2, knowledgeIds: [10, 11] });
+
+    await bulkMoveKnowledge({ knowledgeIds: [10, 11], categoryId: 5 });
+    await bulkReplaceKnowledgeVisibility({
+      knowledgeIds: [10, 11],
+      visibility: "DEPARTMENTS",
+      departmentIds: [2, 4],
+    });
+    await selectAgentCategoryKnowledge(9, 5);
+
+    expect(fetchMock.mock.calls.map(([path]) => path)).toEqual([
+      `/api/v1/organizations/${organizationPublicId}/ai/knowledge/bulk/move/`,
+      `/api/v1/organizations/${organizationPublicId}/ai/knowledge/bulk/visibility/`,
+      `/api/v1/organizations/${organizationPublicId}/ai/agents/9/knowledge/select-category/`,
+    ]);
+  });
+
+  it("recognizes the backend scope-conflict response", () => {
+    const conflict = new ApiError(409, {
+      code: "agent_knowledge_scope_conflict",
+      detail: "Knowledge scope conflicts with assigned agents",
+      conflicts: [{ agent: { id: 4, name: "Sales" }, knowledge: { id: 8, title: "Policy" } }],
+    });
+
+    expect(isKnowledgeScopeConflict(conflict)).toBe(true);
+    expect(isKnowledgeScopeConflict(new ApiError(400, { detail: "Validation error" }))).toBe(false);
+  });
+});

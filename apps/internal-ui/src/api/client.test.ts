@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { api, setActiveOrganization } from "./client";
+import { ApiError, api, setActiveOrganization } from "./client";
 
 const organizationPublicId = "123e4567-e89b-12d3-a456-426614174000";
 
@@ -59,6 +59,25 @@ describe("api client", () => {
     globalThis.fetch = vi.fn().mockResolvedValue(jsonResponse(payload, { status: 404, ok: false })) as unknown as typeof fetch;
 
     await expect(api("/api/v1/integrations/1/")).rejects.toThrow("Интеграция не найдена");
+  });
+
+  it("preserves status and structured payload on an error response", async () => {
+    setActiveOrganization(organizationPublicId);
+    (globalThis as { document?: { cookie?: string } }).document = { cookie: "csrftoken=abc" };
+    const payload = {
+      code: "agent_knowledge_scope_conflict",
+      detail: "Knowledge scope conflicts with assigned agents",
+      conflicts: [{ agent: { id: 4, name: "Sales" }, knowledge: { id: 8, title: "Policy" } }],
+    };
+    globalThis.fetch = vi.fn().mockResolvedValue(
+      jsonResponse(payload, { status: 409, ok: false }),
+    ) as unknown as typeof fetch;
+
+    const error = await api("/api/v1/ai/knowledge/8/", { method: "PATCH", body: "{}" })
+      .catch((caught: unknown) => caught);
+
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error).toMatchObject({ status: 409, payload });
   });
 
   it("uses the canonical organization API route", async () => {
