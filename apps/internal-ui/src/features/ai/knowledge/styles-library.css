@@ -33,6 +33,7 @@
 
 .knowledge-filter-select {
   display: inline-flex;
+  flex: 0 0 auto;
   align-items: center;
   height: 36px;
   padding: 0 8px 0 12px;
@@ -44,13 +45,10 @@
   white-space: nowrap;
 }
 
-.knowledge-filter-select.department { width: 120px; }
-.knowledge-filter-select.visibility { width: 145px; }
-.knowledge-filter-select.status { width: 105px; }
-
 .knowledge-filter-select select {
-  min-width: 0;
-  flex: 1;
+  width: auto;
+  max-width: 100%;
+  flex: 0 0 auto;
   padding: 0 20px 0 6px;
   border: 0;
   outline: 0;
@@ -67,7 +65,7 @@
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 
-.knowledge-table { min-width: 860px; table-layout: fixed; }
+.knowledge-table { table-layout: fixed; }
 .knowledge-col-select { width: 38px; }
 .knowledge-col-title { width: 24%; }
 .knowledge-col-category { width: 17%; }

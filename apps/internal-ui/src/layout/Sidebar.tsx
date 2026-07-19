@@ -1,6 +1,7 @@
 import type { RouteKey, SessionUser } from "../types";
 import { Icon, LogoIcon } from "../shared/icons";
 import { canAccess } from "../auth/access";
+import { AiSidebarNav } from "./AiSidebarNav";
 import { SidebarUserMenu } from "./SidebarUserMenu";
 
 export function Sidebar({ route, user, setRoute, onLogout }: { route: RouteKey; user: SessionUser; setRoute: (route: RouteKey) => void; onLogout: () => void }) {
@@ -30,11 +31,14 @@ export function Sidebar({ route, user, setRoute, onLogout }: { route: RouteKey; 
           if (nextRoute && !canAccess(user, nextRoute)) return null;
           const active = nextRoute === route || (nextRoute === "employees" && (route === "employeeDetail" || route === "accessProfiles")) || (nextRoute === "products" && route === "productDetail") || (nextRoute === "aiAgents" && route.startsWith("ai"));
           return (
-            <button className={`hub-nav-item ${active ? "is-active" : ""}`} disabled={item.disabled} key={item.label} onClick={() => nextRoute && setRoute(nextRoute)}>
-              {active && <span className="active-bar" />}
-              <Icon name={item.icon} />
-              {item.label}
-            </button>
+            <div key={item.label}>
+              <button className={`hub-nav-item ${active ? "is-active" : ""}`} disabled={item.disabled} onClick={() => nextRoute && setRoute(nextRoute)}>
+                {active && <span className="active-bar" />}
+                <Icon name={item.icon} />
+                {item.label}
+              </button>
+              {nextRoute === "aiAgents" && active && <AiSidebarNav route={route} setRoute={setRoute} />}
+            </div>
           );
         })}
       </nav>
