@@ -1,38 +1,59 @@
-import { PageHeader } from "../../../shared/ui";
-import { Button, SearchInput } from "../../../shared/ui-controls";
+import { SearchInput } from "../../../shared/ui-controls";
+import type { KnowledgeDepartmentReference, KnowledgeVisibility } from "./types";
 
 type KnowledgeToolbarProps = {
-  query: string;
+  departments: KnowledgeDepartmentReference[];
+  department?: number;
+  isEnabled?: boolean;
+  onDepartmentChange: (departmentId: number | undefined) => void;
+  onEnabledChange: (isEnabled: boolean | undefined) => void;
   onQueryChange: (query: string) => void;
-  onCreate: () => void;
-  onImport: () => void;
+  onVisibilityChange: (visibility: KnowledgeVisibility | undefined) => void;
+  query: string;
+  visibility?: KnowledgeVisibility;
 };
 
 export function KnowledgeToolbar({
+  departments,
+  department,
+  isEnabled,
+  onDepartmentChange,
+  onEnabledChange,
   query,
   onQueryChange,
-  onCreate,
-  onImport,
+  onVisibilityChange,
+  visibility,
 }: KnowledgeToolbarProps) {
   return (
-    <>
-      <PageHeader
-        title="Знания"
-        text="Общая библиотека знаний · агент выбирает нужные знания в своей карточке"
-        action={(
-          <div className="knowledge-header-actions">
-            <Button variant="secondary" icon="download" onClick={onImport}>Импорт YAML</Button>
-            <Button variant="primary" icon="plus" onClick={onCreate}>Создать знание</Button>
-          </div>
-        )}
-      />
       <div className="knowledge-toolbar">
         <SearchInput
           placeholder="Поиск по заголовку и описанию"
           value={query}
           onChange={onQueryChange}
         />
+        <label className="knowledge-filter-select department">
+          <span>Отдел:</span>
+          <select value={department ?? ""} onChange={(event) => onDepartmentChange(event.target.value ? Number(event.target.value) : undefined)}>
+            <option value="">Все</option>
+            {departments.map((item) => <option value={item.id} key={item.id}>{item.name}</option>)}
+          </select>
+        </label>
+        <label className="knowledge-filter-select visibility">
+          <span>Доступность:</span>
+          <select value={visibility ?? ""} onChange={(event) => onVisibilityChange(event.target.value ? event.target.value as KnowledgeVisibility : undefined)}>
+            <option value="">Все</option>
+            <option value="ORGANIZATION">Организация</option>
+            <option value="DEPARTMENTS">Отделы</option>
+          </select>
+        </label>
+        <label className="knowledge-filter-select status">
+          <span>Статус:</span>
+          <select value={isEnabled === undefined ? "" : String(isEnabled)} onChange={(event) => onEnabledChange(event.target.value === "" ? undefined : event.target.value === "true")}>
+            <option value="">Все</option>
+            <option value="true">Активно</option>
+            <option value="false">Выключено</option>
+          </select>
+        </label>
       </div>
-    </>
   );
 }

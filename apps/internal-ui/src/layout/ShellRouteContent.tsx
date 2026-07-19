@@ -47,7 +47,7 @@ export function ShellRouteContent({ route, data, currentEmployee, currentProduct
       {route === "aiAgents" && <AiAgentsPage agents={data.agents} reload={reload} openAgentCreate={openAgentCreate} openAgent={openAgent} />}
       {route === "aiAgentCreate" && <AiAgentCreatePage selectedProductCode={selectedProductCode} reload={reload} setRoute={setRoute} openAgent={openAgent} />}
       {route === "aiAgentDetail" && <AiAgentDetailPage agentId={selectedAgentId} openKnowledge={openKnowledge} onAgentLoaded={onAgentLoaded} />}
-      {route === "aiKnowledge" && <KnowledgePage openKnowledge={openKnowledge} />}
+      {route === "aiKnowledge" && <KnowledgePage departments={data.departments} openKnowledge={openKnowledge} user={user} />}
       {route === "aiKnowledgeDetail" && <KnowledgeDetailPage knowledgeId={selectedKnowledgeId} setRoute={setRoute} onLoaded={onAgentLoaded} />}
       {route === "integrations" && <IntegrationsPage />}
     </>

@@ -1,25 +1,6 @@
 /* Знания (ADR-HUB-0023): библиотека + карточка знания. Построено на shared
    компонентах (baseline-table, ai-card); здесь только специфичные детали. */
 
-.knowledge-header-actions {
-  display: flex;
-  gap: 10px;
-}
-
-.knowledge-toolbar {
-  margin-bottom: 14px;
-  max-width: 360px;
-}
-
-.knowledge-row {
-  cursor: pointer;
-}
-
-.knowledge-icon {
-  background: #f0f5ff;
-  color: #2f54eb;
-}
-
 .knowledge-content-field {
   display: flex;
   flex-direction: column;

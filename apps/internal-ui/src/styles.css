@@ -23,6 +23,8 @@
 @import "./features/ai/create/styles.css";
 @import "./features/ai/detail/styles.css";
 @import "./features/ai/knowledge/styles.css";
+@import "./features/ai/knowledge/styles-library.css";
+@import "./features/ai/knowledge/styles-category.css";
 @import "./features/integrations/styles.css";
 @import "./features/notifications/styles.css";
 @import "./shared/state.css";

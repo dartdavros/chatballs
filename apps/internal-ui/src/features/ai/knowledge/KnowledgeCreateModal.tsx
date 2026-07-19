@@ -6,11 +6,12 @@ import { Button } from "../../../shared/ui-controls";
 import { createKnowledgeItem } from "./model";
 
 type KnowledgeCreateModalProps = {
+  initialCategoryId?: number;
   onClose: () => void;
   onCreated: (id: number) => void;
 };
 
-export function KnowledgeCreateModal({ onClose, onCreated }: KnowledgeCreateModalProps) {
+export function KnowledgeCreateModal({ initialCategoryId, onClose, onCreated }: KnowledgeCreateModalProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [content, setContent] = useState("");
@@ -26,6 +27,7 @@ export function KnowledgeCreateModal({ onClose, onCreated }: KnowledgeCreateModa
         title: title.trim(),
         description: description.trim(),
         content,
+        categoryId: initialCategoryId,
       });
       onCreated(knowledge.id);
     } catch (caught) {
