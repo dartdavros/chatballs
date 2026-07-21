@@ -6,9 +6,9 @@ import { EmptyState, LoadingState } from "../../shared/ui";
 import { Button } from "../../shared/ui-controls";
 import { formatDate, productAccent } from "../../shared/utils";
 import type { Department, Product, RouteKey } from "../../types";
-import { ChannelBadge, providerLabel } from "./ChannelBadge";
+import { ChannelConnectionsSection } from "./ChannelConnectionsSection";
 import { ChannelPolicySection } from "./ChannelPolicySection";
-import { deleteChannel, loadChannel, unbindConnection, updateChannel } from "./api";
+import { deleteChannel, loadChannel, updateChannel } from "./api";
 import { BLOCKER_LABELS } from "./model";
 import type { Channel, DeletionBlocker, PolicyFlag, PolicyViolation } from "./types";
 import "./styles.css";
@@ -248,41 +248,11 @@ export function ChannelDetailPage({
         onToggle={(flag: PolicyFlag, value) => patch({ policy: { [flag]: value } })}
       />
 
-      <section className="channel-card-section">
-        <header>
-          <h3>Подключения</h3>
-        </header>
-        {channel.connections.length === 0 ? (
-          <p className="channel-muted">Подключений нет. Привяжите их в разделе «Интеграции».</p>
-        ) : (
-          <div className="channel-connections">
-            {channel.connections.map((connection) => (
-              <div className="channel-connection" key={connection.id}>
-                <ChannelBadge provider={connection.provider} />
-                <div className="channel-connection-text">
-                  <strong>{connection.name}</strong>
-                  <span>{providerLabel(connection.provider)}</span>
-                </div>
-                <span className={`channel-status channel-status--${connection.status.toLowerCase()}`}>
-                  <i />
-                  {connection.status}
-                </span>
-                {canManage && (
-                  <Button
-                    variant="secondary"
-                    onClick={async () => {
-                      await unbindConnection(channel.id, connection.id);
-                      await reload();
-                    }}
-                  >
-                    Отвязать
-                  </Button>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
+      <ChannelConnectionsSection
+        channel={channel}
+        canManage={canManage}
+        onChanged={setChannel}
+      />
 
       {/* Одна строка сводки и переход наружу: редактор агента остаётся на его странице. */}
       <section className="channel-card-section channel-agent-section">

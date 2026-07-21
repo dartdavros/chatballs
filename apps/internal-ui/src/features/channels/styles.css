@@ -992,3 +992,86 @@
   font-weight: 600;
   color: #722ed1;
 }
+
+/* Привязка и перенос подключения (кадр D). */
+.channel-connection-picker {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px dashed #e8eaee;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.channel-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 20, 30, 0.28);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 40;
+}
+
+.channel-modal {
+  width: 560px;
+  max-width: calc(100vw - 32px);
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 24px 60px rgba(15, 20, 30, 0.24);
+  overflow: hidden;
+}
+
+.channel-modal-head {
+  padding: 22px 24px 18px;
+  border-bottom: 1px solid #e8eaee;
+}
+
+.channel-modal-head strong {
+  display: block;
+  font-size: 16px;
+  color: #131923;
+  margin-bottom: 5px;
+}
+
+.channel-modal-head p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #5b6472;
+}
+
+.channel-modal-body {
+  padding: 16px 24px;
+}
+
+.channel-transfer-path {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid #e8eaee;
+  border-radius: 10px;
+  background: #fafbfc;
+  font-size: 12.5px;
+  color: #5b6472;
+  margin-bottom: 12px;
+}
+
+.channel-transfer-path i {
+  font-style: normal;
+  color: #1677ff;
+  font-weight: 700;
+}
+
+.channel-transfer-path b {
+  color: #1f2530;
+}
+
+.channel-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 24px;
+  border-top: 1px solid #e8eaee;
+}

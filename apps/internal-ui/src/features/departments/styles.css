@@ -280,3 +280,55 @@
   color: #bfbfbf;
 }
 
+
+/* Каналы отдела — read-only срез (SPEC-HUB-0027 §11.4). */
+.department-channels {
+  border-top: 1px solid #f1f3f5;
+  padding-top: 12px;
+  margin-top: 4px;
+}
+
+.department-channels-title {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: #8a9099;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.department-channels ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.department-channels li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12.5px;
+}
+
+.department-channels button {
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #1677ff;
+  cursor: pointer;
+  text-align: left;
+}
+
+.department-channels em {
+  font-style: normal;
+  color: #8a9099;
+  font-variant-numeric: tabular-nums;
+  flex: none;
+}

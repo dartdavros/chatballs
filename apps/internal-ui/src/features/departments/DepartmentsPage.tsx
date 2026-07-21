@@ -1,12 +1,21 @@
 import { useEffect, useState } from "react";
 
 import type { AppData, RouteKey } from "../../types";
+import { listChannels } from "../channels/api";
+import type { Channel } from "../channels/types";
+import { DepartmentChannels } from "./DepartmentChannels";
 import { Icon } from "../../shared/icons";
 import { PageHeader, ProductTag } from "../../shared/ui";
 import { commandCenterModel, fetchCommandOverview, StatusLabel, type ApiCommandOverview } from "../command/CommandCenter";
 import { formatRubMinor, useDepartmentStats } from "./useDepartmentStats";
 
-export function DepartmentsPage({ data, setRoute }: { data: AppData; setRoute: (route: RouteKey) => void }) {
+export function DepartmentsPage({ data, setRoute, openChannel }: { data: AppData; setRoute: (route: RouteKey) => void; openChannel: (channelId: number) => void }) {
+  // Без channels.view список недоступен — блок каналов просто не рендерится.
+  const [channels, setChannels] = useState<Channel[]>([]);
+  useEffect(() => {
+    listChannels().then((response) => setChannels(response.items)).catch(() => setChannels([]));
+  }, []);
+  const channelsOf = (departmentId: number) => channels.filter((channel) => channel.departmentId === departmentId);
   // Реальный статус отделов из сводки командного центра (очередь → «Требует внимания»).
   const [overview, setOverview] = useState<ApiCommandOverview | null>(null);
   useEffect(() => {
@@ -65,6 +74,8 @@ export function DepartmentsPage({ data, setRoute }: { data: AppData; setRoute: (
               <div><span>Выручка</span><strong className="success">{revenue}</strong></div>
             </div>
 
+            <DepartmentChannels channels={channelsOf(sales.id)} openChannel={openChannel} />
+
             <div className="department-action">
               <button type="button" onClick={() => setRoute("salesOverview")}>Перейти<Icon name="arrow" size={16} /></button>
             </div>
@@ -104,6 +115,8 @@ export function DepartmentsPage({ data, setRoute }: { data: AppData; setRoute: (
               <div><span>Ожидают оператора</span><strong>—</strong></div>
               <div><span>Обслуживаются AI</span><strong>—</strong></div>
             </div>
+
+            <DepartmentChannels channels={channelsOf(support.id)} openChannel={openChannel} />
 
             <div className="department-action">
               <button type="button" onClick={() => setRoute("supportOverview")}>Перейти<Icon name="arrow" size={16} /></button>

@@ -30,7 +30,7 @@ export function ShellRouteContent({ route, data, currentEmployee, currentProduct
   return (
     <>
       {route === "command" && <CommandCenter data={data} setRoute={setRoute} />}
-      {route === "departments" && <DepartmentsPage data={data} setRoute={setRoute} />}
+      {route === "departments" && <DepartmentsPage data={data} setRoute={setRoute} openChannel={openChannel} />}
       {route === "employees" && <EmployeesPage departments={data.departments} employees={data.employees} reload={reload} openEmployee={openEmployee} setRoute={setRoute} user={user} />}
       {route === "accessProfiles" && <AccessProfilesPage setRoute={setRoute} />}
       {route === "employeeDetail" && currentEmployee && <EmployeeDetailPage departments={data.departments} employee={currentEmployee} reload={reload} setRoute={setRoute} user={user} />}
