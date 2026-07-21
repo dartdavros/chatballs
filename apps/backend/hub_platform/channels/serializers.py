@@ -71,8 +71,6 @@ def channel_payload(channel: Channel) -> dict[str, object]:
         },
         "createdAt": channel.created_at.isoformat(),
         "updatedAt": channel.updated_at.isoformat(),
-        # Read-only до переноса provider_integration на агента (SPEC §9).
-        "providerIntegrationId": channel.provider_integration_id,
         # Совместимость на один релиз: плоские ключи политики и agentId живут
         # рядом с policy/agent и удаляются после перевода клиентов (SPEC §6.1).
         "agentId": agent["id"] if agent else None,

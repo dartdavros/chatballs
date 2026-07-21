@@ -1,13 +1,17 @@
 """BYOK provider routing for AI invocations (ADR-HUB-0020:45, ADR-HUB-0034).
 
-Resolves an LLM provider and the effective model from a channel's
+Resolves an LLM provider and the effective model from the channel agent's
 `provider_integration`. This is the BYOK path: the organization supplies its
-own credentials, the integration is selected explicitly via
-`Channel.provider_integration`, and managed AI credits are not consumed.
+own credentials, the integration is selected explicitly on `AIAgent`, and
+managed AI credits are not consumed.
+
+Источник провайдера переехал с канала на агента (SPEC-HUB-0027 §9). Один
+релиз резолвер падает на `Channel.provider_integration` для записей, не
+попавших в data-миграцию; после удаления поля канала fallback уходит.
 
 Selecting the first OpenRouter integration of the org or globally overriding
 the owner's choice is forbidden (ADR-HUB-0020:45). The integration MUST be
-the one the channel points at.
+the one the agent points at.
 
 This module also closes the as-built gap where the OpenRouter «Модель по
 умолчанию» field was decorative (SPEC-HUB-0005:388, SPEC-HUB-0024 §4.3, §6):
@@ -54,10 +58,15 @@ def resolve_model(channel, *, fallback_model: str) -> str:
 
 
 def _channel_integration(channel) -> Integration:
-    integration = getattr(channel, "provider_integration", None)
+    agent = getattr(channel, "ai_agent", None)
+    integration = getattr(agent, "provider_integration", None) if agent else None
+    if integration is None:
+        # Переходный fallback на один релиз (SPEC-HUB-0027 §9 шаг 3): записи,
+        # не попавшие в data-миграцию, продолжают работать через канал.
+        integration = getattr(channel, "provider_integration", None)
     if integration is None or not integration.secret:
         raise IntegrationNotConfigured(
-            "Канал не привязан к LLM-интеграции BYOK; выберите провайдера в настройках канала"
+            "Агент не привязан к LLM-интеграции BYOK; выберите провайдера в настройках агента"
         )
     return integration
 

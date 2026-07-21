@@ -4,7 +4,6 @@ export type ChannelRef = {
   name: string;
   department: { id: number; code: string; name: string } | null;
   product: { code: string; name: string } | null;
-  providerIntegrationId: number | null;
 };
 
 export type AgentKnowledgeRef = { id: number; title: string; isEnabled: boolean };
@@ -23,6 +22,8 @@ export type AiAgent = {
   isActive: boolean;
   model: string;
   credentialMode: CredentialMode;
+  // BYOK-провайдер принадлежит агенту, а не каналу (SPEC-HUB-0027 §9).
+  providerIntegrationId: number | null;
   modelParams: Record<string, unknown>;
   allowedTools: unknown[];
   limits: Record<string, unknown>;

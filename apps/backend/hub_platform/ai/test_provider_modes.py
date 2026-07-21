@@ -1,5 +1,6 @@
 from unittest import mock
 
+from django.core.exceptions import ValidationError
 from django.test import TestCase, override_settings
 from django.utils import timezone
 
@@ -12,12 +13,14 @@ from hub_platform.ai.provider.custoai import CustoAIProvider
 from hub_platform.ai.provider.openrouter import OpenRouterProvider
 from hub_platform.ai.provider.routing import (
     IntegrationNotConfigured,
+    resolve_model,
     resolve_provider_and_model,
 )
+from hub_platform.ai.provider_selection import configure_agent_provider
 from hub_platform.ai.tests import make_channel_with_agent
 from hub_platform.identity.bootstrap import bootstrap_edevs_owner
 from hub_platform.identity.models import HumanUser, Organization
-from hub_platform.integrations.models import IntegrationProvider
+from hub_platform.integrations.models import Integration, IntegrationProvider
 from hub_platform.integrations.services import IntegrationInput, create_integration
 from hub_platform.products.models import Product
 from hub_platform.subscriptions.errors import EntitlementRequired
@@ -73,8 +76,10 @@ class ProviderModeTests(TestCase):
                 config={"baseUrl": base_url, "defaultModel": default_model},
             ),
         )
-        self.channel.provider_integration = integration
-        self.channel.save(update_fields=["provider_integration"])
+        agent = self.channel.ai_agent
+        agent.provider_integration = integration
+        agent.save(update_fields=["provider_integration"])
+        self.channel.refresh_from_db()
         return integration
 
     def _exhaust_managed_quota(self) -> None:
@@ -101,8 +106,9 @@ class ProviderModeTests(TestCase):
             (IntegrationProvider.OPENROUTER, OpenRouterProvider),
         ):
             with self.subTest(provider=provider_code):
-                self.channel.provider_integration = None
-                self.channel.save(update_fields=["provider_integration"])
+                agent = self.channel.ai_agent
+                agent.provider_integration = None
+                agent.save(update_fields=["provider_integration"])
                 self._link_integration(provider=provider_code, default_model="runtime-model")
                 provider, model = resolve_provider_and_model(
                     self.channel, fallback_model="agent-model"
@@ -111,7 +117,7 @@ class ProviderModeTests(TestCase):
                 self.assertEqual(model, "runtime-model")
 
     @override_settings(CUS_AI_PROVIDER="")
-    def test_byok_uses_channel_integration(self) -> None:
+    def test_byok_uses_agent_integration(self) -> None:
         self._set_mode(CredentialMode.BYOK)
         integration = self._link_integration()
         from hub_platform.ai.provider.factory import get_provider
@@ -245,6 +251,94 @@ class ProviderModeTests(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["agent"]["credentialMode"], CredentialMode.BYOK)
+        # Провайдер принадлежит агенту, а не каналу (SPEC-HUB-0027 §9).
         self.assertEqual(
-            response.json()["agent"]["channel"]["providerIntegrationId"], integration.id
+            response.json()["agent"]["providerIntegrationId"], integration.id
+        )
+        self.assertNotIn("providerIntegrationId", response.json()["agent"]["channel"])
+        # Сохранение агента не изменяет ни одного поля канала.
+        self.channel.refresh_from_db()
+        self.assertIsNone(self.channel.provider_integration_id)
+
+
+class AgentProviderOwnershipTests(TestCase):
+    """SPEC-HUB-0027 §9 — провайдер живёт на агенте, канал не изменяется."""
+
+    def setUp(self) -> None:
+        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
+        self.organization = Organization.objects.get(slug="edevs")
+        self.context = system_tenant_context(self.organization)
+        self.channel, self.agent = make_channel_with_agent(
+            self.organization, code="byok", name="BYOK"
+        )
+
+    def _integration(self, *, default_model: str = "byok-model") -> Integration:
+        return create_integration(
+            context=self.context,
+            data=IntegrationInput(
+                provider=IntegrationProvider.OPENROUTER,
+                name="BYOK",
+                secret="sk-byok",
+                config={"baseUrl": "https://openrouter.ai/api/v1", "defaultModel": default_model},
+            ),
+        )
+
+    def test_byok_without_integration_is_rejected(self) -> None:
+        # credential_mode = BYOK ⇒ provider_integration ≠ null.
+        with self.assertRaises(ValidationError):
+            configure_agent_provider(
+                context=self.context, mode=CredentialMode.BYOK, integration_id=None
+            )
+
+    def test_custoai_detaches_the_integration(self) -> None:
+        selection = configure_agent_provider(
+            context=self.context, mode=CredentialMode.CUSTOAI, integration_id=None
+        )
+        self.assertIsNone(selection.integration)
+
+    def test_selection_never_writes_to_the_channel(self) -> None:
+        integration = self._integration()
+        selection = configure_agent_provider(
+            context=self.context,
+            mode=CredentialMode.BYOK,
+            integration_id=integration.id,
+        )
+
+        self.assertEqual(selection.integration, integration)
+        self.assertEqual(selection.model, "byok-model")
+        self.channel.refresh_from_db()
+        self.assertIsNone(self.channel.provider_integration_id)
+
+    def test_runtime_falls_back_to_the_channel_for_unmigrated_rows(self) -> None:
+        # Переходный fallback §9 шаг 3: агент пуст, провайдер ещё на канале.
+        integration = self._integration(default_model="legacy-model")
+        self.channel.provider_integration = integration
+        self.channel.save(update_fields=["provider_integration"])
+        self.agent.provider_integration = None
+        self.agent.save(update_fields=["provider_integration"])
+        self.channel.refresh_from_db()
+
+        self.assertEqual(
+            resolve_model(self.channel, fallback_model="agent-model"), "legacy-model"
+        )
+
+    def test_agent_integration_wins_over_the_channel(self) -> None:
+        stale = self._integration(default_model="legacy-model")
+        self.channel.provider_integration = stale
+        self.channel.save(update_fields=["provider_integration"])
+        current = create_integration(
+            context=self.context,
+            data=IntegrationInput(
+                provider=IntegrationProvider.CUSTOM,
+                name="Current",
+                secret="sk-current",
+                config={"baseUrl": "https://api.example.com/v1", "defaultModel": "current-model"},
+            ),
+        )
+        self.agent.provider_integration = current
+        self.agent.save(update_fields=["provider_integration"])
+        self.channel.refresh_from_db()
+
+        self.assertEqual(
+            resolve_model(self.channel, fallback_model="agent-model"), "current-model"
         )

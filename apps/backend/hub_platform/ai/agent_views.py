@@ -44,7 +44,7 @@ def _agent_input(body: dict[str, object], *, current: AIAgent) -> AgentInput:
     ):
         raise ValidationError({"knowledgeIds": "List of ids required"})
     provider_integration_id = body.get(
-        "providerIntegrationId", current.channel.provider_integration_id
+        "providerIntegrationId", current.provider_integration_id
     )
     if provider_integration_id is not None and not isinstance(provider_integration_id, int):
         raise ValidationError({"providerIntegrationId": "Integer id required"})

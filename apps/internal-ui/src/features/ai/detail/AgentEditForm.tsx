@@ -28,7 +28,7 @@ function isBudget(value: string): boolean {
 export function AgentEditForm({ agent, onClose, onSaved }: { agent: AiAgentDetail; onClose: () => void; onSaved: () => void }) {
   const [name, setName] = useState(agent.name);
   const [credentialMode, setCredentialMode] = useState<CredentialMode>(agent.credentialMode);
-  const [providerIntegrationId, setProviderIntegrationId] = useState<number | null>(agent.channel.providerIntegrationId);
+  const [providerIntegrationId, setProviderIntegrationId] = useState<number | null>(agent.providerIntegrationId);
   const [integrations, setIntegrations] = useState<Integration[]>([]);
   const [tools, setTools] = useState<string[]>(Array.isArray(agent.allowedTools) ? (agent.allowedTools as string[]) : []);
   const [budget, setBudget] = useState(budgetFromCents(agent.limits as Record<string, unknown>));

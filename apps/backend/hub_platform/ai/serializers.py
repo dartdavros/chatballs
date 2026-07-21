@@ -14,7 +14,6 @@ def _channel_ref(channel) -> dict[str, object]:
         "name": channel.name,
         "product": {"code": channel.product.code, "name": channel.product.name} if channel.product_id else None,
         "department": department_ref_payload(channel.department) if channel.department_id else None,
-        "providerIntegrationId": channel.provider_integration_id,
     }
 
 
@@ -87,6 +86,8 @@ def agent_payload(agent: AIAgent) -> dict[str, object]:
         "status": agent.status,
         "model": agent.model,
         "credentialMode": agent.credential_mode,
+        # BYOK-провайдер принадлежит агенту (SPEC-HUB-0027 §9).
+        "providerIntegrationId": agent.provider_integration_id,
         "modelParams": agent.model_params,
         "allowedTools": agent.allowed_tools,
         "limits": agent.limits,

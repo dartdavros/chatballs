@@ -97,9 +97,8 @@ def create_agent(*, context: TenantContext, data: AgentCreateInput) -> AIAgent:
         channel=channel,
         knowledge_ids=data.knowledge_ids,
     )
-    mode, model = configure_agent_provider(
+    selection = configure_agent_provider(
         context=context,
-        channel=channel,
         mode=data.credential_mode,
         integration_id=data.provider_integration_id,
     )
@@ -107,8 +106,9 @@ def create_agent(*, context: TenantContext, data: AgentCreateInput) -> AIAgent:
         channel=channel,
         name=f"{channel.name} Agent",
         status=AIAgentStatus.DRAFT,
-        model=model,
-        credential_mode=mode,
+        model=selection.model,
+        credential_mode=selection.mode,
+        provider_integration=selection.integration,
         persona=data.persona,
         tone=data.tone,
         instructions=data.instructions,
@@ -137,13 +137,15 @@ def update_agent(*, context: TenantContext, agent: AIAgent, data: AgentInput) ->
         channel=channel,
     )
     locked.name = data.name
-    mode, locked.model = configure_agent_provider(
+    selection = configure_agent_provider(
         context=context,
-        channel=channel,
         mode=data.credential_mode,
         integration_id=data.provider_integration_id,
     )
-    locked.credential_mode = mode
+    locked.model = selection.model
+    locked.credential_mode = selection.mode
+    # Провайдер живёт на агенте: канал больше не изменяется при сохранении агента.
+    locked.provider_integration = selection.integration
     locked.model_params = data.model_params
     locked.allowed_tools = data.allowed_tools
     locked.limits = _normalize_limits(data.limits)

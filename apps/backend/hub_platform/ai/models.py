@@ -23,7 +23,7 @@ class CredentialMode(models.TextChoices):
     # использует ОДИН явно выбранный режим; неявный fallback запрещён
     # (ADR-HUB-0030:230). Продуктовые имена режимов избегают двусмысленности.
     CUSTOAI = "CUSTOAI", "CustoAI (Managed)"  # platform credential, credits тарифа
-    BYOK = "BYOK", "BYOK"  # секрет организации через Channel.provider_integration
+    BYOK = "BYOK", "BYOK"  # секрет организации через AIAgent.provider_integration
 
 
 # --- Знания: иерархия и отделовая доступность (ADR-HUB-0036) ---
@@ -151,8 +151,18 @@ class KnowledgeFragment(TenantRelationModel):
 
 
 class AIAgent(TenantRelationModel):
-    tenant_relation_fields = ("channel",)
+    tenant_relation_fields = ("channel", "provider_integration")
     channel = models.OneToOneField("channels.Channel", on_delete=models.CASCADE, related_name="ai_agent")
+    # BYOK-секрет организации (SPEC-HUB-0027 §9). Раньше жил на Channel, из-за
+    # чего credential_mode и model были на агенте, а секрет — на канале: одно
+    # решение в двух таблицах, и форма агента скрыто писала в канал.
+    provider_integration = models.ForeignKey(
+        "integrations.Integration",
+        on_delete=models.PROTECT,
+        related_name="agents",
+        null=True,
+        blank=True,
+    )
     name = models.CharField(max_length=255)
     status = models.CharField(
         max_length=16,
