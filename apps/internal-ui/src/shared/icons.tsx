@@ -35,15 +35,18 @@ export function MaxLogo({ size = 24 }: { size?: number }) {
   );
 }
 
-export function Icon({ name, size = 17 }: { name: "grid" | "building" | "team" | "box" | "robot" | "plug" | "settings" | "bell" | "chevron" | "plus" | "arrow" | "paperclip" | "send" | "phone" | "lock" | "mail" | "eye" | "eyeOff" | "logout" | "user" | "refresh" | "warning" | "bolt" | "shop" | "search" | "more" | "external" | "key" | "pause" | "percent" | "save" | "check" | "copy" | "clock" | "message" | "cart" | "columns" | "download" | "list" | "split" | "expand" | "edit" | "trash" | "wrench" | "xCircle" | "folder" | "grip"; size?: number }) {
+export function Icon({ name, size = 17 }: { name: "grid" | "building" | "team" | "box" | "robot" | "plug" | "settings" | "bell" | "chevron" | "plus" | "arrow" | "paperclip" | "send" | "phone" | "lock" | "mail" | "eye" | "eyeOff" | "logout" | "user" | "refresh" | "warning" | "bolt" | "shop" | "search" | "more" | "external" | "key" | "pause" | "percent" | "save" | "check" | "copy" | "clock" | "message" | "cart" | "columns" | "download" | "list" | "split" | "gitBranch" | "expand" | "edit" | "trash" | "wrench" | "xCircle" | "folder" | "grip"; size?: number }) {
   const common = { width: size, height: size, fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round", strokeLinejoin: "round" } as const;
   const paths: Record<typeof name, ReactNode> = {
     grid: <><rect x="3" y="3" width="7" height="9" rx="1.4" /><rect x="14" y="3" width="7" height="5" rx="1.4" /><rect x="14" y="12" width="7" height="9" rx="1.4" /><rect x="3" y="16" width="7" height="5" rx="1.4" /></>,
     building: <><path d="M3 21h18" /><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16" /><path d="M9 8h1.5M13.5 8H15M9 12h1.5M13.5 12H15M9 16h1.5M13.5 16H15" /></>,
     team: <><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></>,
     box: <><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" /><path d="m3.3 7 8.7 5 8.7-5" /><path d="M12 22V12" /></>,
-    robot: <><rect x="4" y="8" width="16" height="12" rx="2.5" /><path d="M12 8V4.5" /><circle cx="12" cy="3.5" r="1.2" /><circle cx="9" cy="13.5" r="1" /><circle cx="15" cy="13.5" r="1" /></>,
-    plug: <><path d="M9 8V2.5M15 8V2.5M18 8v5.5a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V8Z" /><path d="M12 17.5V22" /></>,
+    // Tabler ti-robot. Глаза — точки: рисуются нулевыми сегментами v.01
+    // и держатся на strokeLinecap="round" из common.
+    robot: <><path d="M6 6a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2h-8a2 2 0 0 1 -2 -2l0 -4" /><path d="M12 2v2" /><path d="M9 12v9" /><path d="M15 12v9" /><path d="M5 16l4 -2" /><path d="M15 14l4 2" /><path d="M9 18h6" /><path d="M10 8v.01" /><path d="M14 8v.01" /></>,
+    // Tabler ti-plug.
+    plug: <><path d="M9.785 6l8.215 8.215l-2.054 2.054a5.81 5.81 0 1 1 -8.215 -8.215l2.054 -2.054" /><path d="M4 20l3.5 -3.5" /><path d="M15 4l-3.5 3.5" /><path d="M20 9l-3.5 3.5" /></>,
     settings: <><line x1="21" y1="6" x2="9" y2="6" /><line x1="3" y1="6" x2="5" y2="6" /><circle cx="7" cy="6" r="2" /><line x1="21" y1="12" x2="13" y2="12" /><line x1="3" y1="12" x2="9" y2="12" /><circle cx="11" cy="12" r="2" /><line x1="21" y1="18" x2="15" y2="18" /><line x1="3" y1="18" x2="11" y2="18" /><circle cx="13" cy="18" r="2" /></>,
     bell: <><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></>,
     message: <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z" />,
@@ -54,6 +57,9 @@ export function Icon({ name, size = 17 }: { name: "grid" | "building" | "team" |
     folder: <path d="M4 20a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2Z" />,
     grip: <><circle cx="9" cy="6" r="1" /><circle cx="9" cy="12" r="1" /><circle cx="9" cy="18" r="1" /><circle cx="15" cy="6" r="1" /><circle cx="15" cy="12" r="1" /><circle cx="15" cy="18" r="1" /></>,
     split: <><path d="M3 12h7m11 0h-7M7 8l-4 4 4 4m10-8 4 4-4 4" /></>,
+    // git-branch (Feather / Lucide) — канал обработки как точка ветвления
+    // маршрута. Пути совпадают с утверждённым baseline DG-02, кадры A и S.
+    gitBranch: <><line x1="6" y1="3" x2="6" y2="15" /><circle cx="18" cy="6" r="3" /><circle cx="6" cy="18" r="3" /><path d="M18 9a9 9 0 0 1-9 9" /></>,
     expand: <><path d="M16 3h5v5" /><path d="M8 3H3v5" /><path d="M21 3l-7 7" /><path d="M3 3l7 7" /><path d="M16 21h5v-5" /><path d="M8 21H3v-5" /><path d="M21 21l-7-7" /><path d="M3 21l7-7" /></>,
     edit: <><path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" /></>,
     trash: <><path d="M3 6h18" /><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /></>,

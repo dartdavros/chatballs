@@ -11,7 +11,7 @@ export function Sidebar({ route, user, setRoute, onLogout }: { route: RouteKey; 
     { key: "departments" as const, label: "Отделы", icon: "building" as const },
     { key: "employees" as const, label: "Сотрудники", icon: "team" as const },
     { key: "products" as const, label: "Продукты", icon: "box" as const },
-    { key: "channels" as const, label: "Каналы", icon: "split" as const },
+    { key: "channels" as const, label: "Каналы", icon: "gitBranch" as const },
     { label: "ПЛАТФОРМА", group: true },
     { key: "aiAgents" as const, label: "AI", icon: "robot" as const },
     { key: "integrations" as const, label: "Интеграции", icon: "plug" as const },

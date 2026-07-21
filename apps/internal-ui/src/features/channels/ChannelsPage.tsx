@@ -74,7 +74,7 @@ export function ChannelsPage({
       {channels.length === 0 ? (
         <div className="channels-empty">
           <span className="channels-empty-mark">
-            <Icon name="split" size={24} />
+            <Icon name="gitBranch" size={24} />
           </span>
           <strong>Создайте первый канал</strong>
           <p>
