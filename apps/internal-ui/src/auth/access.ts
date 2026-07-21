@@ -44,6 +44,21 @@ export function hasCapability(
   });
 }
 
+/**
+ * Отделы, которыми ограничен доступ пользователя к возможности.
+ *
+ * `null` — доступ на всю организацию. Непустой список означает, что данные
+ * приходят подмножеством, и интерфейс обязан сказать об этом явно, иначе
+ * пользователь примет отфильтрованный список за полный.
+ */
+export function scopeDepartments(user: SessionUser, capability: string): string[] | null {
+  const scopes = user.accessScopes.filter((scope) => scope.capabilities.includes(capability));
+  if (scopes.some((scope) => scope.scopeType === "ORGANIZATION")) return null;
+  return [...new Set(
+    scopes.map((scope) => scope.departmentCode).filter((code): code is string => Boolean(code)),
+  )];
+}
+
 export function canAccess(user: SessionUser, route: RouteKey): boolean {
   if (route === "profile" || route === "settings") return true;
   const requirement = ROUTE_ACCESS[route];

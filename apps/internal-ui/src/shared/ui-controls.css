@@ -18,6 +18,37 @@
   border-color: #1677ff;
 }
 
+/* Кнопка-иконка: рамка как у вторичной кнопки, bare — без рамки. */
+.ui-icon-button {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  color: #8c8c8c;
+  background: #ffffff;
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.ui-icon-button:hover {
+  color: #262626;
+  background: #fafafa;
+}
+
+.ui-icon-button.is-bare {
+  background: transparent;
+  border-color: transparent;
+}
+
+.ui-icon-button.is-danger:hover {
+  color: #cf1322;
+  border-color: #ffccc7;
+  background: #fff2f0;
+}
+
 .primary-button {
   min-height: 38px;
   display: inline-flex;

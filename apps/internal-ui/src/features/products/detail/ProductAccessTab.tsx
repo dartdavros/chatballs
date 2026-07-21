@@ -13,7 +13,7 @@ export function ProductAccessTab({ product }: { product: Product }) {
     <div className="product-access-tab">
       <div className="ai-notice">
         <Icon name="warning" size={17} />
-        <span>Каталог (как продаётся и фискальные данные) живёт в Хабе. Само исполнение — выдача доступа, метрики, операции — на стороне бэкенда продукта (ADR-HUB-0018).</span>
+        <span>Каталог (как продаётся и фискальные данные) живёт в Хабе. Само исполнение — выдача доступа, метрики, операции — на стороне бэкенда продукта.</span>
       </div>
 
       <section className="product-detail-card">

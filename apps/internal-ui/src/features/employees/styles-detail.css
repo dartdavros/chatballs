@@ -4,26 +4,6 @@
   margin: 0 auto;
 }
 
-.employee-back-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 0;
-  margin-bottom: 14px;
-  color: #8c8c8c;
-  background: transparent;
-  border: 0;
-  font-size: 13px;
-}
-
-.employee-back-link svg {
-  transform: rotate(180deg);
-}
-
-.employee-back-link:hover {
-  color: #1677ff;
-}
-
 .employee-detail-header {
   display: flex;
   align-items: center;
@@ -165,10 +145,6 @@
 .security-row span { display: block; }
 .security-row strong { color: #262626; font-size: 13px; font-weight: 500; }
 .security-row span { margin-top: 2px; color: #8c8c8c; font-size: 11.5px; }
-.detail-totp-switch { width: 42px; height: 24px; display: flex; align-items: center; justify-content: flex-start; padding: 2px; background: #d9d9d9; border: 0; border-radius: 14px; }
-.detail-totp-switch.on { justify-content: flex-end; background: #1677ff; }
-.detail-totp-switch i { width: 20px; height: 20px; background: #fff; border-radius: 50%; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); }
-
 .employee-danger-card { border-color: #ffccc7; }
 .employee-danger-card h3 { margin-bottom: 4px; color: #cf1322; }
 .employee-danger-card > div { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 8px; }

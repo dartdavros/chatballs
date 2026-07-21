@@ -1,20 +1,6 @@
 /* Карточка продажи (SPEC-HUB-0014 §8.2). Переиспользует .order-detail-* и
    .ai-card из features/sales/order-detail; здесь — таймлайн событий и действия. */
 
-.sale-link-button {
-  padding: 0;
-  border: 0;
-  background: none;
-  color: #1677ff;
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.sale-link-button:hover {
-  text-decoration: underline;
-}
-
 .sale-snapshot-empty,
 .sale-timeline-empty {
   margin: 0;

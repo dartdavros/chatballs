@@ -349,7 +349,7 @@
   font-weight: 700;
 }
 
-.rail-card-head a,
+.rail-card-head > .link,
 .rail-card-head > span {
   flex: none;
   color: #1677ff;
@@ -378,6 +378,9 @@
 
 .attention-row {
   grid-template-columns: 8px minmax(0, 1fr) auto;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
 }
 
 .integration-row {

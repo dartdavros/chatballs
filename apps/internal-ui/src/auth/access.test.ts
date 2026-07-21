@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { SessionUser } from "../types";
-import { canAccess, defaultRoute } from "./access";
+import { canAccess, defaultRoute, scopeDepartments } from "./access";
 
 const baseUser: Omit<SessionUser, "role" | "capabilities" | "accessScopes" | "memberships"> = {
   id: 1,
@@ -85,5 +85,30 @@ describe("effective access navigation", () => {
     const user = userWith([]);
     expect(canAccess(user, "profile")).toBe(true);
     expect(defaultRoute(user)).toBe("profile");
+  });
+
+  it("reports organization-wide access without a department list", () => {
+    expect(scopeDepartments(userWith(["channels.view"]), "channels.view")).toBeNull();
+  });
+
+  it("returns the unique department subset for an assigned capability", () => {
+    const user = userWith(["channels.view"], "sales");
+    user.accessScopes.push({
+      scopeType: "DEPARTMENT",
+      departmentId: 10,
+      departmentCode: "sales",
+      capabilities: ["channels.view"],
+    });
+    user.accessScopes.push({
+      scopeType: "DEPARTMENT",
+      departmentId: 20,
+      departmentCode: "support",
+      capabilities: ["channels.view"],
+    });
+    expect(scopeDepartments(user, "channels.view")).toEqual(["sales", "support"]);
+  });
+
+  it("returns an empty subset when the capability is not assigned", () => {
+    expect(scopeDepartments(userWith([]), "channels.view")).toEqual([]);
   });
 });

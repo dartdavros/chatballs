@@ -254,88 +254,6 @@
   text-align: center;
 }
 
-.row-menu-button {
-  width: 30px;
-  height: 30px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: #8c8c8c;
-  background: transparent;
-  border: none;
-  border-radius: 7px;
-}
-
-.row-menu-button:hover {
-  color: #262626;
-  background: #f0f0f0;
-}
-
-.row-menu {
-  position: absolute;
-  top: 42px;
-  right: 12px;
-  z-index: 30;
-  width: 206px;
-  padding: 5px;
-  text-align: left;
-  background: #ffffff;
-  border: 1px solid #f0f0f0;
-  border-radius: 10px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
-}
-
-.row-menu a,
-.row-menu button {
-  width: 100%;
-  min-height: 32px;
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 8px 10px;
-  color: #262626;
-  background: transparent;
-  border: 0;
-  border-radius: 7px;
-  font-size: 13px;
-  font-weight: 500;
-  text-align: left;
-  text-decoration: none;
-}
-
-.row-menu a:hover,
-.row-menu button:hover {
-  background: #f5f5f5;
-}
-
-.row-menu span {
-  display: block;
-  height: 1px;
-  margin: 4px 8px;
-  background: #f5f5f5;
-}
-
-.row-menu button.danger {
-  color: #cf1322;
-}
-
-.row-menu button.success {
-  color: #389e0d;
-}
-
-.row-menu button.warning {
-  color: #d48806;
-}
-
-.row-menu button:disabled {
-  color: #bfbfbf;
-  cursor: not-allowed;
-}
-
-.row-menu button:disabled:hover {
-  background: transparent;
-}
-
 .numeric {
   text-align: right;
 }
@@ -362,14 +280,6 @@
 
 .employees-footer span:last-child {
   color: #bfbfbf;
-}
-
-.menu-scrim {
-  position: fixed;
-  inset: 0;
-  z-index: 20;
-  background: transparent;
-  border: 0;
 }
 
 .empty-state {

@@ -1,8 +1,4 @@
-import { channelMeta } from "../conversations/data";
-import type { ChannelKey } from "../conversations/types";
-
-const PROVIDER_KEY: Record<string, ChannelKey> = { MAX: "MAX", TELEGRAM: "TG", WEB: "WEB" };
-const SHORT_LABEL: Record<ChannelKey, string> = { MAX: "MAX", TG: "TG", WEB: "Web" };
+import { providerKey, providerLabel, providerMeta } from "../../shared/providers";
 
 /**
  * Точка + короткий лейбл на токенах провайдера (ADR-HUB-0013).
@@ -12,20 +8,17 @@ const SHORT_LABEL: Record<ChannelKey, string> = { MAX: "MAX", TG: "TG", WEB: "We
  * Провайдеры различаются бейджем, а не бренд-логотипами.
  */
 export function ChannelBadge({ provider }: { provider: string }) {
-  const key = PROVIDER_KEY[provider];
+  const key = providerKey(provider);
   if (!key) {
     return <span className="channel-badge channel-badge--plain">{provider}</span>;
   }
-  const meta = channelMeta[key];
+  const meta = providerMeta[key];
   return (
-    <span className="channel-badge" style={{ background: meta.bg, color: meta.color }}>
+    <span className="channel-badge" style={{ background: meta.bg, color: meta.color }} title={meta.label}>
       <i style={{ background: meta.color }} />
-      {SHORT_LABEL[key]}
+      {meta.short}
     </span>
   );
 }
 
-export function providerLabel(provider: string): string {
-  const key = PROVIDER_KEY[provider];
-  return key ? channelMeta[key].label : provider;
-}
+export { providerLabel };

@@ -1,5 +1,5 @@
 import { Icon } from "../../../../shared/icons";
-import { MonoLink, StatusBadge } from "../StatusBadge";
+import { StatusBadge } from "../StatusBadge";
 import type { SalesFulfillment } from "../types";
 
 export function FulfillmentTable({ rows }: { rows: SalesFulfillment[] }) {
@@ -14,7 +14,7 @@ export function FulfillmentTable({ rows }: { rows: SalesFulfillment[] }) {
       <tbody>
         {rows.map((row) => (
           <tr key={row.operation}>
-            <td><MonoLink>{row.order}</MonoLink></td>
+            <td><span className="mono-strong">{row.order}</span></td>
             <td>{row.product}</td>
             <td className="mono-muted">{row.operation}</td>
             <td><StatusBadge value={row.status} /></td>

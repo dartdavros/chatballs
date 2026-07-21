@@ -179,39 +179,6 @@
   color: #bfbfbf;
 }
 
-/* Выпадающее меню пользователя в сайдбаре — оформление по дизайн-системе
-   (зеркало product-actions-dropdown). */
-.sidebar-user-dropdown .ant-dropdown-menu {
-  width: 216px;
-  padding: 5px;
-  border: 1px solid #f0f0f0;
-  border-radius: 10px;
-}
-
-.sidebar-user-dropdown .ant-dropdown-menu-item {
-  padding: 0 !important;
-}
-
-.sidebar-user-dropdown .ant-dropdown-menu-item button {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 8px 10px;
-  color: #262626;
-  background: transparent;
-  border: 0;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 500;
-  text-align: left;
-  cursor: pointer;
-}
-
-.sidebar-user-dropdown .ant-dropdown-menu-item button.danger {
-  color: #cf1322;
-}
-
 .sales-workspace-sidebar {
   width: 240px;
 }

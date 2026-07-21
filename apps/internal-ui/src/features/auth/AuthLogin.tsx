@@ -43,7 +43,7 @@ export function AuthLogin({ onLogin, onTotpChallenge, onRecover }: { onLogin: (u
         <AuthField icon="mail" value={email} onChange={(nextEmail) => { setEmail(nextEmail); setError(false); }} placeholder="you@domain.ru" error={error} />
         <div className="password-row">
           <label className="field-label">Пароль</label>
-          <a href="#" onClick={(event) => { event.preventDefault(); onRecover(); }}>Восстановить доступ</a>
+          <button className="link" type="button" onClick={onRecover}>Восстановить доступ</button>
         </div>
         <AuthField icon="lock" value={password} onChange={(nextPassword) => { setPassword(nextPassword); setError(false); }} placeholder="Пароль" type={show ? "text" : "password"} variant="auth-password" error={error}>
           <button type="button" onClick={() => setShow((value) => !value)} aria-label={show ? "Скрыть пароль" : "Показать пароль"}>

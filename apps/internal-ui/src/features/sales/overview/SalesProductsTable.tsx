@@ -5,7 +5,7 @@ export function SalesProductsTable({ products }: { products: SalesOverviewVm["pr
     <section className="sales-table-card">
       <div className="sales-card-head">
         <h3>Продукты</h3>
-        <a href="#" onClick={(event) => event.preventDefault()}>Все продукты</a>
+        <button className="link" type="button">Все продукты</button>
       </div>
       <table>
         <thead>
@@ -21,7 +21,7 @@ export function SalesProductsTable({ products }: { products: SalesOverviewVm["pr
         <tbody>
           {products.map((product) => (
             <tr key={product.name}>
-              <td><a href="#" onClick={(event) => event.preventDefault()}>{product.name}</a></td>
+              <td><button className="link is-strong" type="button">{product.name}</button></td>
               <td><span className="sales-active-status"><i />{product.status}</span></td>
               <td>{product.sales}</td>
               <td>{product.rev}</td>

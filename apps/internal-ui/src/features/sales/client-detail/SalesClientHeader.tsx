@@ -1,3 +1,4 @@
+import { Dropdown } from "antd";
 import { useState } from "react";
 
 import { Icon } from "../../../shared/icons";
@@ -10,7 +11,6 @@ export function SalesClientHeader({ client, setRoute }: { client: ClientDetailVm
 
   return (
     <div className="sales-client-detail-header-card">
-      {menuOpen && <button className="sales-client-detail-scrim" type="button" aria-label="Закрыть меню" onClick={() => setMenuOpen(false)} />}
       <div className="sales-client-detail-header">
         <div className="sales-client-detail-avatar" style={{ background: client.avatarBg }}>{client.initials}</div>
         <div className="sales-client-detail-title">
@@ -30,22 +30,19 @@ export function SalesClientHeader({ client, setRoute }: { client: ClientDetailVm
         </div>
         <div className="sales-client-detail-actions">
           <Button className="sales-client-primary" icon="message" variant="primary" onClick={() => setRoute("salesDialogs")}>Открыть диалог</Button>
-          <button className={`sales-client-more ${menuOpen ? "active" : ""}`} type="button" aria-label="Действия контакта" onClick={() => setMenuOpen((value) => !value)}><Icon name="more" size={18} /></button>
-          {menuOpen && <SalesClientMenu />}
+          <Dropdown menu={{ items: clientMenuItems }} open={menuOpen} onOpenChange={setMenuOpen} trigger={["click"]} placement="bottomRight" overlayClassName="app-dropdown is-wide">
+            <button className="row-menu-button" type="button" aria-label="Действия контакта"><Icon name="more" size={18} /></button>
+          </Dropdown>
         </div>
       </div>
     </div>
   );
 }
 
-function SalesClientMenu() {
-  return (
-    <div className="sales-client-detail-menu">
-      <a href="#" onClick={(event) => event.preventDefault()}><Icon name="list" size={15} />Объединить контакты</a>
-      <a href="#" onClick={(event) => event.preventDefault()}><Icon name="split" size={15} />Разъединить контакты</a>
-      <a href="#" onClick={(event) => event.preventDefault()}><Icon name="edit" size={15} />Исправить данные</a>
-      <span />
-      <a className="danger" href="#" onClick={(event) => event.preventDefault()}><Icon name="eyeOff" size={15} />Обезличить данные</a>
-    </div>
-  );
-}
+const clientMenuItems = [
+  { key: "merge", label: <button type="button"><Icon name="list" size={15} />Объединить контакты</button> },
+  { key: "split", label: <button type="button"><Icon name="split" size={15} />Разъединить контакты</button> },
+  { key: "edit", label: <button type="button"><Icon name="edit" size={15} />Исправить данные</button> },
+  { type: "divider" as const },
+  { key: "anonymize", label: <button className="danger" type="button"><Icon name="eyeOff" size={15} />Обезличить данные</button> },
+];

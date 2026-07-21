@@ -35,7 +35,6 @@ export function EmployeesPage({ departments, employees, reload, openEmployee, se
 
   return (
     <>
-      {menuId !== null && <button className="menu-scrim" aria-label="Закрыть меню" onClick={() => setMenuId(null)} />}
       <PageHeader
         title="Сотрудники"
         text={<>Системные роли, должности и размещение · показано <b>{filtered.length}</b> из {employees.length}</>}

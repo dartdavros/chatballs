@@ -1,0 +1,92 @@
+/* Единое оформление выпадающих меню приложения (antd Dropdown).
+
+   Один стандарт на всё: меню строки таблицы, меню пользователя в сайдбаре,
+   действия карточки. Своих меню на absolute-позиционировании и подложках
+   больше нет — портал antd сам закрывается по клику вне и по Esc и не
+   обрезается overflow-контейнерами. */
+
+.app-dropdown .ant-dropdown-menu {
+  width: 200px;
+  padding: 5px;
+  border: 1px solid #f0f0f0;
+  border-radius: 10px;
+}
+
+.app-dropdown.is-wide .ant-dropdown-menu {
+  width: 216px;
+}
+
+.app-dropdown .ant-dropdown-menu-item {
+  padding: 0 !important;
+}
+
+.app-dropdown .ant-dropdown-menu-item button {
+  width: 100%;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 10px;
+  color: #262626;
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+}
+
+.app-dropdown .ant-dropdown-menu-item button.warning {
+  color: #d48806;
+}
+
+.app-dropdown .ant-dropdown-menu-item button.danger {
+  color: #cf1322;
+}
+
+.app-dropdown .ant-dropdown-menu-item button.success {
+  color: #389e0d;
+}
+
+.app-dropdown .ant-dropdown-menu-item-disabled button {
+  color: #bfbfbf;
+  cursor: not-allowed;
+}
+
+/* Причина недоступного пункта — второй строкой под названием. */
+.app-dropdown .ant-dropdown-menu-item button small {
+  display: block;
+  margin-top: 2px;
+  color: #bfbfbf;
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.app-dropdown .ant-dropdown-menu-item button span {
+  display: block;
+}
+
+.row-menu-button {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #8c8c8c;
+  background: transparent;
+  border: 0;
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+.row-menu-button:hover,
+.row-menu-button[aria-expanded="true"] {
+  color: #262626;
+  background: #f0f0f0;
+}
+
+.row-menu-button:focus-visible {
+  outline: 2px solid #91caff;
+  outline-offset: 2px;
+}

@@ -1,4 +1,4 @@
-import { MonoLink, StatusBadge } from "../StatusBadge";
+import { StatusBadge } from "../StatusBadge";
 import type { SalesPayment } from "../types";
 
 export function PaymentsTable({ rows }: { rows: SalesPayment[] }) {
@@ -14,7 +14,7 @@ export function PaymentsTable({ rows }: { rows: SalesPayment[] }) {
         {rows.map((row) => (
           <tr key={row.id}>
             <td><span className="mono-strong">{row.id}</span></td>
-            <td><MonoLink>{row.order}</MonoLink></td>
+            <td><span className="mono-strong">{row.order}</span></td>
             <td>{row.provider}</td>
             <td className="numeric nowrap"><strong>{row.amount}</strong></td>
             <td><StatusBadge value={row.status} /></td>

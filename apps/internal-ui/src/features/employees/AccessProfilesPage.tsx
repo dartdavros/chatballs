@@ -21,9 +21,9 @@ export function AccessProfilesPage({ setRoute }: { setRoute: (route: RouteKey) =
 
   return (
     <div className="access-profiles-page">
-      <button className="employee-back-link" type="button" onClick={() => setRoute("employees")}><Icon name="arrow" size={15} />Сотрудники</button>
+      <button className="link is-muted has-icon" type="button" onClick={() => setRoute("employees")}><Icon name="arrow" size={15} />Сотрудники</button>
       {/* Baseline does not define the state opened by this action; keep the approved control without inventing a form. */}
-      <PageHeader title="Профили доступа" text="Именованные наборы capability организации · назначаются сотрудникам со scope" action={<Button icon="plus" iconSize={16} type="button" variant="primary">Новый профиль</Button>} />
+      <PageHeader title="Профили доступа" text="Наборы разрешений, которые можно назначать сотрудникам" action={<Button icon="plus" iconSize={16} type="button" variant="primary">Новый профиль</Button>} />
       {catalog.loading ? <LoadingState /> : catalog.error ? <div className="access-profile-error">{catalog.error}</div> : <div className="access-profiles-layout"><AccessProfileList profiles={catalog.profiles} selectedId={selectedId} select={setSelectedId} /><AccessProfileEditor capabilities={catalog.capabilities} profile={selected} reload={catalog.reload} /></div>}
     </div>
   );

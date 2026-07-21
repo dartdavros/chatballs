@@ -1,0 +1,74 @@
+/* Единый стиль ссылок приложения.
+
+   Одна база `.link` для <a> и <button> — визуально ссылка не зависит от того,
+   ведёт она на маршрут или вызывает действие. Модификаторы отвечают только за
+   роль ссылки, не за место, где она стоит: своих `*-name-link`,
+   `*-meta-link`, `*-link-button` в фичах больше нет. */
+
+.link {
+  display: inline;
+  padding: 0;
+  color: #1677ff;
+  background: none;
+  border: 0;
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.link:hover {
+  color: #0958d9;
+}
+
+.link:disabled {
+  color: #bfbfbf;
+  cursor: not-allowed;
+}
+
+.link:focus-visible {
+  outline: 2px solid #91caff;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Имя сущности — первая колонка таблицы, заголовок строки. */
+.link.is-strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* Тёмное имя, синее только при наведении: для плотных таблиц, где синим
+   выделен уже другой смысл. */
+.link.is-neutral {
+  color: #1f1f1f;
+}
+
+.link.is-neutral:hover {
+  color: #1677ff;
+}
+
+/* Второстепенная ссылка: «Назад», «Отмена», подписи. */
+.link.is-muted {
+  color: #8c8c8c;
+  font-weight: 500;
+}
+
+.link.is-muted:hover {
+  color: #1677ff;
+}
+
+/* Идентификаторы: номера заказов, коды. */
+.link.is-mono {
+  font-family: "SF Mono", ui-monospace, Menlo, monospace;
+  font-size: 12.5px;
+}
+
+/* Ссылка с иконкой — иконка и текст на одной базовой линии. */
+.link.has-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}

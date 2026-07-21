@@ -51,16 +51,26 @@
   margin-top: 4px;
 }
 
+/* Ровно две колонки: карточки отделов сравниваются попарно и тянутся на всю
+   ширину контента, а не прижимаются влево остатком auto-fill. */
 .departments-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(380px, 460px));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 18px;
 }
 
+/* Карточка — колонка: высота у соседей одинаковая (grid stretch), поэтому
+   кнопка прижимается к низу, а не повисает в середине короткой карточки. */
 .department-card {
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   border-radius: 14px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.department-action {
+  margin-top: auto;
 }
 
 .department-card-header {
@@ -148,19 +158,11 @@
   font-weight: 500;
 }
 
-.owner-person i {
+/* Аватар ответственного — общий .avatar в компактном размере строки. */
+.owner-person .avatar {
   width: 24px;
   height: 24px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: none;
-  color: #ffffff;
-  background: #9254de;
-  border-radius: 50%;
   font-size: 10.5px;
-  font-style: normal;
-  font-weight: 600;
 }
 
 .department-stats {
@@ -202,25 +204,9 @@
   border-top: 1px solid #f5f5f5;
 }
 
-.department-action button {
+.department-action .primary-button {
   width: 100%;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  color: #ffffff;
-  background: #1677ff;
-  border: none;
-  border-radius: 9px;
-  box-shadow: 0 1px 2px rgba(22, 119, 255, 0.3);
-  font-size: 13.5px;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.department-action button:hover {
-  background: #0958d9;
+  min-height: 40px;
 }
 
 .product-icon {
@@ -281,54 +267,54 @@
 }
 
 
-/* Каналы отдела — read-only срез (SPEC-HUB-0027 §11.4). */
+/* Каналы отдела — read-only срез. По той же сетке, что и остальные секции
+   карточки: те же боковые отступы 22px и тот же цвет разделителя. */
 .department-channels {
-  border-top: 1px solid #f1f3f5;
-  padding-top: 12px;
-  margin-top: 4px;
+  padding: 14px 22px 16px;
+  border-top: 1px solid #f5f5f5;
 }
 
 .department-channels-title {
   display: block;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  color: #8a9099;
   margin-bottom: 8px;
+  color: #8c8c8c;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
-.department-channels ul {
-  list-style: none;
+.department-channels-empty {
   margin: 0;
-  padding: 0;
+  color: #bfbfbf;
+  font-size: 12.5px;
+}
+
+.department-channels ul {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .department-channels li {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
   font-size: 12.5px;
 }
 
-.department-channels button {
-  border: none;
-  background: none;
-  padding: 0;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: #1677ff;
-  cursor: pointer;
-  text-align: left;
+.department-channels-badges {
+  display: inline-flex;
+  gap: 4px;
+  flex: 1;
 }
 
 .department-channels em {
-  font-style: normal;
-  color: #8a9099;
-  font-variant-numeric: tabular-nums;
   flex: none;
+  color: #8c8c8c;
+  font-style: normal;
+  font-variant-numeric: tabular-nums;
 }

@@ -39,15 +39,3 @@
   color: #595959 !important;
   white-space: nowrap;
 }
-
-.employee-row-menu {
-  width: 214px;
-}
-
-.employee-row-menu p {
-  margin: 0;
-  padding: 8px 10px;
-  color: #bfbfbf;
-  font-size: 11.5px;
-  line-height: 1.4;
-}

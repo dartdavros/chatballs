@@ -8,7 +8,7 @@ export function ProfileTotpCard({ user, message, saving, onToggle }: { user: Ses
         <h3>Двухфакторная аутентификация (TOTP)</h3>
         <p>{user.totpEnabled ? "Включена. Для OWNER рекомендуется держать включённой." : "Отключена. Для роли OWNER настоятельно рекомендуется включить."}</p>
       </div>
-      <SwitchButton checked={user.totpEnabled} className="totp-switch" label="Переключить TOTP" onClick={onToggle} disabled={saving} />
+      <SwitchButton checked={user.totpEnabled} className="ui-switch is-large" label="Переключить TOTP" onClick={onToggle} disabled={saving} />
       {message && <div className="security-note warning">{message}</div>}
       {user.totpEnabled && <div className="security-note ok">Приложение-аутентификатор подключено · последний код принят 5 мин назад</div>}
     </section>

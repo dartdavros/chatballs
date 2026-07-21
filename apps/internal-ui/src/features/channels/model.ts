@@ -1,4 +1,5 @@
 import type { Channel, ChannelPolicy, PolicyFlag, PolicyPreset } from "./types";
+import type { StatusPillKey } from "../../shared/ui";
 
 export const POLICY_FLAGS: PolicyFlag[] = [
   "requiresAuthenticatedProductIdentity",
@@ -23,11 +24,11 @@ export const POLICY_LABELS: Record<PolicyFlag, { title: string; hint: string }> 
     hint: "Позволяет пользователю указать контакт вручную.",
   },
   allowSalesAttribution: {
-    title: "Attribution продаж",
+    title: "Связь продаж с диалогами",
     hint: "Связывает продажу с диалогом канала.",
   },
   allowCheckoutActions: {
-    title: "Коммерческие действия (checkout)",
+    title: "Оформление заказа в диалоге",
     hint: "Разрешает оформление заказа в диалоге.",
   },
 };
@@ -57,7 +58,38 @@ export const OPERATOR_POLICY: ChannelPolicy = {
   allowCheckoutActions: false,
 };
 
-export type FlagLock = { rule: string; reason: string; fix?: string } | null;
+/** Состояние подключения приходит строкой — на экран идёт словарь, не энум. */
+export const CONNECTION_STATUS = {
+  OK: "healthy",
+  ERROR: "error",
+  PENDING: "pending",
+  UNCHECKED: "unchecked",
+} as const;
+
+export type ConnectionStatusKey = typeof CONNECTION_STATUS[keyof typeof CONNECTION_STATUS];
+
+export function connectionStatus(status: string): ConnectionStatusKey {
+  return CONNECTION_STATUS[status as keyof typeof CONNECTION_STATUS] ?? "unchecked";
+}
+
+const AGENT_STATUS: Record<string, StatusPillKey> = {
+  ACTIVE: "active",
+  ARCHIVED: "archived",
+  DISABLED: "disabled",
+  DRAFT: "draft",
+};
+
+export function agentStatus(status: string): StatusPillKey {
+  return AGENT_STATUS[status] ?? "draft";
+}
+
+/**
+ * Причина недоступности флага.
+ *
+ * `needsProduct` включает ссылку-починку «Назначить продукт» — причина без
+ * способа её устранить бесполезна пользователю.
+ */
+export type FlagLock = { rule: string; reason: string; fix: string; needsProduct: boolean } | null;
 
 /**
  * Причина, по которой флаг запрещён инвариантом при текущем состоянии канала.
@@ -74,13 +106,15 @@ export function flagLock(flag: PolicyFlag, policy: ChannelPolicy, hasProduct: bo
         rule: "P1",
         reason: "Коммерческие действия недоступны непродуктовому каналу",
         fix: "Назначьте продукт каналу, чтобы включить.",
+        needsProduct: true,
       };
     }
     if (flag === "allowSalesAttribution") {
       return {
         rule: "P2",
-        reason: "Attribution недоступна непродуктовому каналу",
+        reason: "Связь продаж с диалогами недоступна непродуктовому каналу",
         fix: "Свяжите канал с продуктом, чтобы включить.",
+        needsProduct: true,
       };
     }
     if (flag === "requiresAuthenticatedProductIdentity") {
@@ -88,6 +122,7 @@ export function flagLock(flag: PolicyFlag, policy: ChannelPolicy, hasProduct: bo
         rule: "P3",
         reason: "Продуктовая идентичность требует продукта",
         fix: "Назначьте продукт каналу, чтобы включить.",
+        needsProduct: true,
       };
     }
   }
@@ -97,6 +132,7 @@ export function flagLock(flag: PolicyFlag, policy: ChannelPolicy, hasProduct: bo
         rule: "P4",
         reason: "Анонимные сессии несовместимы с обязательной идентичностью",
         fix: "Выключите обязательную идентичность, чтобы включить.",
+        needsProduct: false,
       };
     }
     if (flag === "allowSelfReportedContact") {
@@ -104,6 +140,7 @@ export function flagLock(flag: PolicyFlag, policy: ChannelPolicy, hasProduct: bo
         rule: "P5",
         reason: "Самозаявленный контакт несовместим с обязательной идентичностью",
         fix: "Выключите обязательную идентичность, чтобы включить.",
+        needsProduct: false,
       };
     }
   }
@@ -146,16 +183,30 @@ export function slugify(name: string): string {
 export const BLOCKER_LABELS: Record<string, string> = {
   conversations: "Диалоги",
   orders: "Заказы",
-  attributionTokens: "Attribution-токены",
+  attributionTokens: "Связи продаж с диалогами",
   connections: "Подключения",
-  supportContracts: "Support-контракты",
+  supportContracts: "Договоры поддержки",
   agent: "Агент",
-  llmInvocations: "Вызовы LLM",
+  llmInvocations: "История работы AI",
 };
+
+/**
+ * Почему канал нельзя удалить — по данным строки списка.
+ *
+ * Это подсказка интерфейса, а не решение: удаление всё равно проверяет
+ * backend. Она нужна, чтобы недоступный пункт меню объяснял себя.
+ */
+export function deletionHint(channel: Channel): string | null {
+  const parts: string[] = [];
+  if (channel.counters.openConversations > 0) parts.push(`${channel.counters.openConversations} диалогов`);
+  if (channel.counters.connections > 0) parts.push(`${channel.counters.connections} подключений`);
+  if (channel.agent) parts.push("агент");
+  return parts.length ? `Нельзя: ${parts.join(", ")}` : null;
+}
 
 export function blockerSummary(blockers: { type: string; count: number }[]): string {
   return blockers
-    .map((item) => `${(BLOCKER_LABELS[item.type] ?? item.type).toLowerCase()}: ${item.count}`)
+    .map((item) => `${(BLOCKER_LABELS[item.type] ?? "связанные записи").toLowerCase()}: ${item.count}`)
     .join(", ");
 }
 

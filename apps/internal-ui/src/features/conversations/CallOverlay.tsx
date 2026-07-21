@@ -2,7 +2,7 @@ import { CallView, type CallViewMode, type CallViewStatus, useCallRtcSession, us
 import { Modal } from "antd";
 import { useEffect, useMemo, useState } from "react";
 
-import { channelMeta } from "./data";
+import { providerMeta } from "../../shared/providers";
 import type { ApiCall, CallAccess } from "./model";
 import type { ConversationListItem } from "./types";
 import "./call.css";
@@ -49,7 +49,7 @@ export function CallOverlay(props: Props) {
   );
 
   if (!props.dialog) return null;
-  const channel = channelMeta[props.dialog.channel];
+  const channel = providerMeta[props.dialog.channel];
   const subtitle = subtitleFor(mode, call, status);
   const mediaCaption = rtc.mediaIssue === "devices" ? "Нет доступа к камере и микрофону" : rtc.mediaIssue === "video" ? "Камера недоступна" : "Камера выключена";
   const endAndClose = () => {

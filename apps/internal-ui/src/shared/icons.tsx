@@ -35,7 +35,7 @@ export function MaxLogo({ size = 24 }: { size?: number }) {
   );
 }
 
-export function Icon({ name, size = 17 }: { name: "grid" | "building" | "team" | "box" | "robot" | "plug" | "settings" | "bell" | "chevron" | "plus" | "arrow" | "paperclip" | "send" | "phone" | "lock" | "mail" | "eye" | "eyeOff" | "logout" | "user" | "refresh" | "warning" | "bolt" | "shop" | "search" | "more" | "external" | "key" | "pause" | "percent" | "save" | "check" | "copy" | "clock" | "message" | "cart" | "columns" | "download" | "list" | "split" | "gitBranch" | "expand" | "edit" | "trash" | "wrench" | "xCircle" | "folder" | "grip"; size?: number }) {
+export function Icon({ name, size = 17 }: { name: "grid" | "building" | "team" | "box" | "robot" | "plug" | "settings" | "bell" | "chevron" | "plus" | "arrow" | "paperclip" | "send" | "phone" | "lock" | "mail" | "eye" | "eyeOff" | "logout" | "user" | "refresh" | "warning" | "bolt" | "shop" | "search" | "more" | "external" | "key" | "pause" | "percent" | "save" | "check" | "copy" | "clock" | "message" | "cart" | "columns" | "download" | "list" | "split" | "gitBranch" | "route" | "expand" | "edit" | "trash" | "wrench" | "xCircle" | "folder" | "grip"; size?: number }) {
   const common = { width: size, height: size, fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round", strokeLinejoin: "round" } as const;
   const paths: Record<typeof name, ReactNode> = {
     grid: <><rect x="3" y="3" width="7" height="9" rx="1.4" /><rect x="14" y="3" width="7" height="5" rx="1.4" /><rect x="14" y="12" width="7" height="9" rx="1.4" /><rect x="3" y="16" width="7" height="5" rx="1.4" /></>,
@@ -59,6 +59,8 @@ export function Icon({ name, size = 17 }: { name: "grid" | "building" | "team" |
     split: <><path d="M3 12h7m11 0h-7M7 8l-4 4 4 4m10-8 4 4-4 4" /></>,
     // git-branch (Feather / Lucide) — канал обработки как точка ветвления
     // маршрута. Пути совпадают с утверждённым baseline DG-02, кадры A и S.
+    // Tabler ti-route.
+    route: <><path d="M3 19a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" /><path d="M19 7a2 2 0 1 0 0 -4a2 2 0 0 0 0 4" /><path d="M11 19h5.5a3.5 3.5 0 0 0 0 -7h-8a3.5 3.5 0 0 1 0 -7h4.5" /></>,
     gitBranch: <><line x1="6" y1="3" x2="6" y2="15" /><circle cx="18" cy="6" r="3" /><circle cx="6" cy="18" r="3" /><path d="M18 9a9 9 0 0 1-9 9" /></>,
     expand: <><path d="M16 3h5v5" /><path d="M8 3H3v5" /><path d="M21 3l-7 7" /><path d="M3 3l7 7" /><path d="M16 21h5v-5" /><path d="M8 21H3v-5" /><path d="M21 21l-7-7" /><path d="M3 21l7-7" /></>,
     edit: <><path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" /></>,

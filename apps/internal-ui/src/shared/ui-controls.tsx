@@ -1,4 +1,4 @@
-import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "react";
+import type { ButtonHTMLAttributes, ReactNode } from "react";
 
 import { Icon } from "./icons";
 
@@ -64,6 +64,15 @@ export function ActionButton(props: ActionButtonProps) {
   return <Button {...props} variant="action" />;
 }
 
+/** Кнопка-иконка: подпись обязательна и уходит в aria-label и title. */
+export function IconButton({ icon, iconSize = 16, label, bare = false, className = "", ...buttonProps }: Omit<ActionButtonProps, "icon"> & { icon: IconName; label: string; bare?: boolean }) {
+  return (
+    <button className={`ui-icon-button ${bare ? "is-bare" : ""} ${className}`.trim()} type="button" aria-label={label} title={label} {...buttonProps}>
+      <Icon name={icon} size={iconSize} />
+    </button>
+  );
+}
+
 export function SearchInput({ className = "", placeholder, value, onChange }: SearchInputProps) {
   return (
     <label className={`ui-search-input ${className}`.trim()}>
@@ -88,22 +97,6 @@ export function UnderlineTabs<T extends string>({ className = "", items, value, 
 
 export function ToneBadge({ bg, className = "", color, children }: ToneBadgeProps) {
   return <span className={`ui-tone-badge ${className}`.trim()} style={{ background: bg, color }}>{children}</span>;
-}
-
-export function MonoLink({ children, className = "", href = "#", onClick, ...linkProps }: AnchorHTMLAttributes<HTMLAnchorElement> & { children: string }) {
-  return (
-    <a
-      className={`ui-mono-link ${className}`.trim()}
-      href={href}
-      onClick={(event) => {
-        if (href === "#") event.preventDefault();
-        onClick?.(event);
-      }}
-      {...linkProps}
-    >
-      {children}
-    </a>
-  );
 }
 
 export function TablePagination({ className = "", pageSizeLabel, pages, shown, total }: TablePaginationProps) {

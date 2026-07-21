@@ -8,11 +8,11 @@ export function CommandRail({ vm }: { vm: CommandVm }) {
       <RailCard title="Требует внимания" icon="warning" iconColor="#faad14" count={String(vm.attention.length)}>
         {vm.attention.length === 0 && <div className="attention-empty">Нет событий, требующих внимания</div>}
         {vm.attention.map((item) => (
-          <a className="attention-row" href="#" onClick={(event) => event.preventDefault()} key={item.title}>
+          <button className="attention-row" type="button" key={item.title}>
             <span style={{ background: item.dot }} />
             <span><strong>{item.title}</strong><small>{item.meta}</small></span>
             <em>{item.time}</em>
-          </a>
+          </button>
         ))}
       </RailCard>
       <RailCard title="Состояние интеграций" icon="plug" iconColor="#595959" side={<span style={{ color: vm.intHeadColor }}>{vm.okCount}</span>}>

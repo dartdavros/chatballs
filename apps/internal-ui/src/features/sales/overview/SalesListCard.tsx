@@ -10,11 +10,11 @@ export function SalesListCard({ title, icon, items }: { title: string; icon: "wa
       </div>
       {items.length === 0 && <div className="sales-empty-line">Нет данных</div>}
       {items.map((item, index) => (
-        <a href="#" onClick={(event) => event.preventDefault()} key={index}>
+        <button type="button" key={index}>
           <span style={{ background: item.dot }} />
           <strong>{item.title}<small>{item.meta}</small></strong>
           <em>{item.time}</em>
-        </a>
+        </button>
       ))}
     </section>
   );

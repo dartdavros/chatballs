@@ -7,7 +7,7 @@ export function RailCard({ title, icon, iconColor, count, action, side, children
     <section className="rail-card">
       <div className="rail-card-head">
         <div><span className="rail-icon" style={{ color: iconColor }}><Icon name={icon} size={17} /></span><strong>{title}</strong>{count && <b>{count}</b>}</div>
-        {action && <a href="#" onClick={(event) => event.preventDefault()}>{action}</a>}
+        {action && <button className="link" type="button">{action}</button>}
         {side}
       </div>
       <div className="rail-card-body">{children}</div>

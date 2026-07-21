@@ -1,25 +1,23 @@
-import type { MouseEvent } from "react";
+import { Dropdown } from "antd";
 
 import { Icon } from "../../../shared/icons";
 import type { SalesClientRowVm } from "./model";
 
-export function SalesClientRow({ client, menu, openClient, setMenu }: { client: SalesClientRowVm; menu: { id: string; left: number; top: number } | null; openClient: (id: number) => void; setMenu: (menu: { id: string; left: number; top: number } | null) => void }) {
-  const menuOpen = menu?.id === client.cid;
-  function toggleMenu(event: MouseEvent<HTMLButtonElement>) {
-    if (menuOpen) {
-      setMenu(null);
-      return;
-    }
-    const rect = event.currentTarget.getBoundingClientRect();
-    setMenu({ id: client.cid, left: Math.max(8, rect.right - 212), top: rect.bottom + 6 });
-  }
+export function SalesClientRow({ client, menu, openClient, setMenu }: { client: SalesClientRowVm; menu: string | null; openClient: (id: number) => void; setMenu: (menu: string | null) => void }) {
+  const menuOpen = menu === client.cid;
+  const menuItems = [
+    { key: "open", label: <button type="button" onClick={() => { setMenu(null); openClient(client.id); }}><Icon name="external" size={15} />Открыть клиента</button> },
+    { key: "merge", label: <button type="button"><Icon name="list" size={15} />Объединить контакты</button> },
+    { type: "divider" as const },
+    { key: "anonymize", label: <button className="danger" type="button"><Icon name="eyeOff" size={15} />Обезличить данные</button> },
+  ];
   return (
     <tr>
       <td>
         <div className="sales-client-person">
           <div style={{ background: client.avatarBg }}>{client.initials}</div>
           <span>
-            <a href="#" onClick={(event) => { event.preventDefault(); openClient(client.id); }}>{client.name}</a>
+            <button className="link" type="button" onClick={() => openClient(client.id)}>{client.name}</button>
             <small>{client.cid}</small>
           </span>
         </div>
@@ -48,15 +46,9 @@ export function SalesClientRow({ client, menu, openClient, setMenu }: { client: 
       <td className="numeric">{client.orders}</td>
       <td className="numeric"><strong style={{ color: client.totalColor }}>{client.totalLabel}</strong></td>
       <td className="row-actions">
-        <button className="row-menu-button" type="button" aria-label="Действия клиента" onClick={toggleMenu}><Icon name="more" /></button>
-        {menuOpen && (
-          <div className="row-menu sales-client-row-menu" style={{ left: menu.left, position: "fixed", right: "auto", top: menu.top }}>
-            <a href="#" onClick={(event) => { event.preventDefault(); setMenu(null); openClient(client.id); }}><Icon name="external" size={15} />Открыть клиента</a>
-            <a href="#" onClick={(event) => event.preventDefault()}><Icon name="list" size={15} />Объединить контакты</a>
-            <span />
-            <a className="danger" href="#" onClick={(event) => event.preventDefault()}><Icon name="eyeOff" size={15} />Обезличить данные</a>
-          </div>
-        )}
+        <Dropdown menu={{ items: menuItems }} open={menuOpen} onOpenChange={(open) => setMenu(open ? client.cid : null)} trigger={["click"]} overlayClassName="app-dropdown is-wide">
+          <button className="row-menu-button" type="button" aria-label="Действия клиента"><Icon name="more" /></button>
+        </Dropdown>
       </td>
     </tr>
   );

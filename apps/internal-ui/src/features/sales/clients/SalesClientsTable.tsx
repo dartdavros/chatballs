@@ -7,7 +7,6 @@ import type { SalesClientsState } from "./useSalesClients";
 export function SalesClientsTable({ clients, openClient, totalCount }: { clients: SalesClientsState; openClient: (id: number) => void; totalCount: number }) {
   return (
     <>
-      {clients.menu && <button className="sales-clients-menu-scrim" type="button" aria-label="Закрыть меню" onClick={() => clients.setMenu(null)} />}
       <div className="sales-clients-card">
         <div className="sales-clients-table-scroll">
           <table className="sales-clients-table">

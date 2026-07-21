@@ -224,34 +224,6 @@
   color: #262626;
 }
 
-.ui-switch {
-  width: 42px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  flex: none;
-  padding: 2px;
-  background: #d9d9d9;
-  border: 0;
-  border-radius: 14px;
-  cursor: pointer;
-}
-
-.ui-switch.on {
-  justify-content: flex-end;
-  background: #1677ff;
-}
-
-.ui-switch i {
-  width: 20px;
-  height: 20px;
-  display: block;
-  background: #ffffff;
-  border-radius: 50%;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-}
-
 .product-price-history {
   overflow: hidden;
 }

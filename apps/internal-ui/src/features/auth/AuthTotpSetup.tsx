@@ -69,7 +69,7 @@ export function AuthTotpSetup({ user: _user, onConfirmed }: { user: SessionUser;
         {error && <div className="auth-inline-error setup-error"><Icon name="warning" size={14} />Код не совпал. Попробуйте ещё раз</div>}
         <Button className="auth-submit" type="submit" variant="primary" disabled={code.length !== 6 || submitting}>Активировать</Button>
       </form>
-      <div className="auth-cancel-link"><a href="#" onClick={(event) => event.preventDefault()}>Отмена</a></div>
+      <div className="auth-cancel-link"><button className="link is-muted" type="button">Отмена</button></div>
     </AuthFrame>
   );
 }

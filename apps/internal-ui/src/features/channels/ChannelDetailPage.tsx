@@ -1,329 +1,122 @@
-import { useEffect, useState } from "react";
-
-import { ApiError } from "../../api/client";
-import { Icon } from "../../shared/icons";
-import { EmptyState, LoadingState } from "../../shared/ui";
-import { Button } from "../../shared/ui-controls";
-import { formatDate, productAccent } from "../../shared/utils";
-import type { Department, Product, RouteKey } from "../../types";
+import { hasCapability, scopeDepartments } from "../../auth/access";
+import { EmptyState, ErrorScreen, LoadingState } from "../../shared/ui";
+import type { Department, Product, RouteKey, SessionUser } from "../../types";
+import { ChannelAgentSection } from "./ChannelAgentSection";
+import { ChannelArchivedNotice } from "./ChannelArchivedNotice";
+import { ChannelAssignmentSection } from "./ChannelAssignmentSection";
 import { ChannelConnectionsSection } from "./ChannelConnectionsSection";
+import { ChannelCountersSection } from "./ChannelCountersSection";
+import { ChannelDeactivationDialog } from "./ChannelDeactivationDialog";
+import { ChannelDeleteDialog } from "./ChannelDeleteDialog";
+import { ChannelDetailHeader } from "./ChannelDetailHeader";
 import { ChannelPolicySection } from "./ChannelPolicySection";
-import { deleteChannel, loadChannel, updateChannel } from "./api";
-import { BLOCKER_LABELS } from "./model";
-import type { Channel, DeletionBlocker, PolicyFlag, PolicyViolation } from "./types";
-import "./styles.css";
-
-type Feedback = { kind: "error" | "warning"; text: string } | null;
+import type { PolicyFlag } from "./types";
+import { useChannelDetail } from "./useChannelDetail";
 
 export function ChannelDetailPage({
-  channelId,
-  departments,
-  products,
-  canManage,
-  setRoute,
-  openAgent,
-  openChannels,
+  channelId, departments, products, user, setRoute, openAgent, openChannels,
 }: {
   channelId: number | null;
   departments: Department[];
   products: Product[];
-  canManage: boolean;
+  user: SessionUser;
   setRoute: (route: RouteKey) => void;
   openAgent: (agentId: number) => void;
   openChannels: () => void;
 }) {
-  const [channel, setChannel] = useState<Channel | null>(null);
-  const [missing, setMissing] = useState(false);
-  const [feedback, setFeedback] = useState<Feedback>(null);
-  const [blockers, setBlockers] = useState<DeletionBlocker[] | null>(null);
+  const detail = useChannelDetail(channelId, openChannels);
 
-  async function reload() {
-    if (channelId === null) return;
-    try {
-      const response = await loadChannel(channelId);
-      setChannel(response.channel);
-      setMissing(false);
-    } catch (error) {
-      // Канал вне scope не раскрывает своё существование.
-      if (error instanceof ApiError && error.status === 404) setMissing(true);
-    }
-  }
+  if (detail.missing) return <EmptyState title="Канал не найден" />;
+  if (detail.loadFailed) return <ErrorScreen retry={() => void detail.reload()} />;
+  if (!detail.channel) return <LoadingState />;
 
-  useEffect(() => {
-    void reload();
-  }, [channelId]);
-
-  async function patch(body: Parameters<typeof updateChannel>[1]) {
-    if (!channel) return;
-    setFeedback(null);
-    try {
-      const response = await updateChannel(channel.id, body);
-      setChannel(response.channel);
-      const warning = response.warnings?.find((item) => item.code === "agent_still_active");
-      if (warning) {
-        setFeedback({
-          kind: "warning",
-          text: "Канал деактивирован, но агент остаётся активным и продолжает занимать слот. Остановите его на странице агента.",
-        });
-      }
-    } catch (error) {
-      if (error instanceof ApiError) {
-        const violations = (error.payload as { violations?: PolicyViolation[] }).violations;
-        setFeedback({
-          kind: "error",
-          text: violations?.length
-            ? violations.map((item) => `${item.detail} (${item.rule})`).join("; ")
-            : error.message,
-        });
-      }
-    }
-  }
-
-  async function remove() {
-    if (!channel) return;
-    try {
-      await deleteChannel(channel.id);
-      openChannels();
-    } catch (error) {
-      if (error instanceof ApiError) {
-        const payload = error.payload as { blockers?: DeletionBlocker[] };
-        if (payload.blockers) setBlockers(payload.blockers);
-        else setFeedback({ kind: "error", text: error.message });
-      }
-    }
-  }
-
-  if (missing) return <EmptyState title="Канал не найден" />;
-  if (!channel) return <LoadingState />;
-
-  const accent = channel.product ? productAccent(channel.product.code) : null;
+  const { channel } = detail;
+  const organizationManage = hasCapability(user, "channels.manage");
+  const canManageCurrent = organizationManage || Boolean(
+    channel.department && hasCapability(user, "channels.manage", channel.department),
+  );
+  const managedDepartments = scopeDepartments(user, "channels.manage");
+  const editableDepartments = organizationManage || managedDepartments === null
+    ? departments
+    : departments.filter((department) => managedDepartments.includes(department.code));
+  const canOpenAgent = hasCapability(user, "ai.view", channel.department ?? undefined);
+  const canOpenDialogs = hasCapability(user, "conversations.view", channel.department ?? undefined);
 
   return (
     <div className="channel-detail">
-      <div className="channel-breadcrumb">
-        <a
-          href="#"
-          onClick={(event) => {
-            event.preventDefault();
-            openChannels();
-          }}
-        >
-          Каналы
-        </a>
-        <span>/</span>
-        <strong>{channel.name}</strong>
-      </div>
+      <ChannelDetailHeader
+        channel={channel}
+        canEdit={canManageCurrent}
+        canManageLifecycle={organizationManage}
+        editing={detail.editing}
+        busy={detail.busy}
+        onEdit={() => detail.setEditing(true)}
+        onToggleActive={detail.requestToggleActive}
+        onDelete={() => detail.setDeleting(true)}
+        openChannels={openChannels}
+      />
 
-      <div className="channel-detail-header">
-        <div>
-          <h1>{channel.name}</h1>
-          <div className="channel-detail-meta">
-            <code>{channel.code}</code>
-            <span>·</span>
-            {channel.departmentName ?? <span className="channel-chip">Без отдела</span>}
-            <span>·</span>
-            {channel.product && accent ? (
-              <span className="channel-detail-product">
-                <i style={{ background: accent.color }} />
-                {channel.product.name}
-              </span>
-            ) : (
-              <span className="channel-muted">— непродуктовый</span>
-            )}
-          </div>
-        </div>
-        <div className="channel-detail-actions">
-          <span
-            className={`channel-state-pill ${channel.isActive ? "is-active" : "is-archived"}`}
-          >
-            <i />
-            {channel.isActive ? "Активен" : "Архивный"}
-          </span>
-          {canManage && (
-            <Button
-              variant="secondary"
-              icon="pause"
-              onClick={() => patch({ isActive: !channel.isActive })}
-            >
-              {channel.isActive ? "Деактивировать" : "Активировать"}
-            </Button>
-          )}
-          {canManage && (
-            <Button variant="danger-outline" icon="trash" onClick={remove}>
-              Удалить
-            </Button>
-          )}
-        </div>
-      </div>
+      {detail.feedback && <div className={`channel-feedback is-${detail.feedback.kind}`}>{detail.feedback.text}</div>}
+      {!channel.isActive && <ChannelArchivedNotice canManage={organizationManage} busy={detail.busy} onActivate={() => void detail.patch({ isActive: true })} />}
 
-      {feedback && <div className={`channel-feedback is-${feedback.kind}`}>{feedback.text}</div>}
-
-      {blockers && (
-        <div className="channel-blockers">
-          <div className="channel-blockers-head">
-            <strong>Канал нельзя удалить</strong>
-            <p>Есть связанные записи. Вместо удаления используйте деактивацию — история сохранится.</p>
-          </div>
-          <div className="channel-blockers-list">
-            {blockers.map((item) => (
-              <div key={item.type}>
-                <span>{BLOCKER_LABELS[item.type] ?? item.type}</span>
-                <b>{item.count}</b>
-              </div>
-            ))}
-          </div>
-          <div className="channel-blockers-actions">
-            <Button variant="secondary" onClick={() => setBlockers(null)}>
-              Закрыть
-            </Button>
-            {channel.isActive && (
-              <Button
-                variant="secondary"
-                onClick={async () => {
-                  setBlockers(null);
-                  await patch({ isActive: false });
-                }}
-              >
-                Деактивировать вместо удаления
-              </Button>
-            )}
-          </div>
-        </div>
-      )}
-
-      <section className="channel-card-section">
-        <header>
-          <h3>Назначение</h3>
-          <span>Отдел и продукт редактируются здесь</span>
-        </header>
-        <div className="channel-assignment">
-          <label>
-            <span>Отдел</span>
-            <select
-              value={channel.departmentId ?? ""}
-              disabled={!canManage}
-              onChange={(event) =>
-                patch({ departmentId: event.target.value ? Number(event.target.value) : null })
-              }
-            >
-              <option value="">Без отдела</option>
-              {departments.map((department) => (
-                <option value={department.id} key={department.id}>
-                  {department.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            <span>Продукт</span>
-            <select
-              value={channel.product?.id ?? ""}
-              disabled={!canManage}
-              onChange={(event) =>
-                patch({ productId: event.target.value ? Number(event.target.value) : null })
-              }
-            >
-              <option value="">— непродуктовый</option>
-              {products.map((product) => (
-                <option value={product.id} key={product.id}>
-                  {product.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <div className="channel-readonly">
-            <span>Код</span>
-            <code>{channel.code}</code>
-          </div>
-          <div className="channel-readonly">
-            <span>Создан</span>
-            <b>{formatDate(channel.createdAt)}</b>
-          </div>
-        </div>
-      </section>
+      <ChannelAssignmentSection
+        key={`${channel.name}-${channel.departmentId}-${channel.product?.id ?? "none"}-${String(detail.editing)}`}
+        channel={channel}
+        departments={editableDepartments}
+        products={products}
+        editing={detail.editing}
+        canEditName={canManageCurrent}
+        canEditDepartment={canManageCurrent}
+        canEditProduct={organizationManage}
+        allowNoDepartment={organizationManage}
+        busy={detail.busy}
+        onSave={(assignment) => void detail.patch(assignment)}
+        onCancel={() => detail.setEditing(false)}
+      />
 
       <ChannelPolicySection
         channel={channel}
-        canManage={canManage}
-        onToggle={(flag: PolicyFlag, value) => patch({ policy: { [flag]: value } })}
+        canManage={organizationManage}
+        busy={detail.busy}
+        onToggle={(flag: PolicyFlag, value) => void detail.patch({ policy: { [flag]: value } })}
+        onAssignProduct={() => detail.setEditing(true)}
       />
 
       <ChannelConnectionsSection
         channel={channel}
-        canManage={canManage}
-        onChanged={setChannel}
+        canManage={hasCapability(user, "integrations.manage")}
+        initiallyOpen={window.location.hash === "#connections"}
+        onChanged={detail.setChannel}
+      />
+      <ChannelAgentSection channel={channel} canOpenAgent={canOpenAgent} openAgent={openAgent} openAgentCreate={() => setRoute("aiAgentCreate")} />
+      <ChannelCountersSection channel={channel} canOpenDialogs={canOpenDialogs} openDialogs={() => setRoute("salesDialogs")} />
+
+      <ChannelDeleteDialog
+        channel={channel}
+        open={detail.deleting}
+        blockers={detail.blockers}
+        busy={detail.busy}
+        onConfirm={() => void detail.remove()}
+        onDeactivate={() => {
+          detail.closeDeleteDialog();
+          detail.requestToggleActive();
+        }}
+        onClose={detail.closeDeleteDialog}
       />
 
-      {/* Одна строка сводки и переход наружу: редактор агента остаётся на его странице. */}
-      <section className="channel-card-section channel-agent-section">
-        <div className="channel-section-eyebrow">AI-АГЕНТ</div>
-        {channel.agent ? (
-          <div className="channel-agent-row">
-            <span className="channel-agent-mark">
-              <Icon name="robot" size={18} />
-            </span>
-            <div className="channel-agent-summary">
-              <b>{channel.agent.name}</b>
-              <span>·</span>
-              <span
-                className={`channel-status ${
-                  channel.agent.status === "ACTIVE" ? "channel-status--active" : "channel-status--draft"
-                }`}
-              >
-                <i />
-                {channel.agent.status === "ACTIVE" ? "Активен" : "Черновик"}
-              </span>
-              <span>·</span>
-              <code>{channel.agent.model}</code>
-            </div>
-            <a
-              href="#"
-              className="channel-agent-link"
-              onClick={(event) => {
-                event.preventDefault();
-                openAgent(channel.agent!.id);
-              }}
-            >
-              Открыть агента
-              <Icon name="arrow" size={14} />
-            </a>
-          </div>
-        ) : (
-          <div className="channel-agent-none">
-            <span className="channel-agent-mark">
-              <Icon name="robot" size={22} />
-            </span>
-            <strong>Агента нет, канал ведут операторы</strong>
-            <p>Валидное состояние канала. Агент создаётся отдельным действием в разделе AI.</p>
-            <a
-              href="#"
-              onClick={(event) => {
-                event.preventDefault();
-                setRoute("aiAgentCreate");
-              }}
-            >
-              Создать агента в разделе AI
-              <Icon name="arrow" size={14} />
-            </a>
-          </div>
-        )}
-      </section>
-
-      <section className="channel-card-section">
-        <header>
-          <h3>Счётчики</h3>
-        </header>
-        <div className="channel-counters">
-          <div>
-            <span>ОТКРЫТЫЕ ДИАЛОГИ</span>
-            <b>{channel.counters.openConversations}</b>
-          </div>
-          <div>
-            <span>ПОДКЛЮЧЕНИЯ</span>
-            <b>{channel.counters.connections}</b>
-          </div>
-        </div>
-      </section>
+      {channel.agent && (
+        <ChannelDeactivationDialog
+          channel={channel}
+          open={detail.confirmingDeactivation}
+          busy={detail.busy}
+          onConfirm={async () => {
+            detail.setConfirmingDeactivation(false);
+            await detail.patch({ isActive: false });
+          }}
+          onOpenAgent={() => openAgent(channel.agent!.id)}
+          onClose={() => detail.setConfirmingDeactivation(false)}
+        />
+      )}
     </div>
   );
 }

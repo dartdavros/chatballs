@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { channelMeta } from "../../../conversations/data";
+import { providerMeta } from "../../../../shared/providers";
 import { FieldRow } from "../../../conversations/FieldRow";
 import { ContextSection } from "../../../conversations/ContextSection";
 import { requestContact, type ApiConversation } from "../../../conversations/model";
@@ -29,7 +29,7 @@ export function ClientContext({ dialog, detail }: { dialog: ConversationListItem
   if (!dialog) {
     return <div className="sales-client-context"><p className="sales-context-muted">Выберите диалог</p></div>;
   }
-  const channel = channelMeta[dialog.channel];
+  const channel = providerMeta[dialog.channel];
   const messageCount = detail?.messages?.length ?? 0;
 
   const contact = detail?.contact ?? null;

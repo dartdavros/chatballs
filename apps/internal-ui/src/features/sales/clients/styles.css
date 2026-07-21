@@ -70,16 +70,8 @@
   font-size: 13px;
 }
 
-.sales-clients-dd-scrim {
-  position: fixed;
-  inset: 0;
-  z-index: 20;
-  background: transparent;
-  border: 0;
-}
-
 .sales-clients-dd {
-  position: relative;
+  display: inline-flex;
 }
 
 .sales-clients-dd-button,
@@ -128,41 +120,7 @@
   transform: rotate(180deg);
 }
 
-.sales-clients-dd-menu {
-  position: absolute;
-  top: 40px;
-  left: 0;
-  z-index: 30;
-  width: 212px;
-  padding: 6px;
-  background: #ffffff;
-  border: 1px solid #f0f0f0;
-  border-radius: 10px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
-}
-
-.sales-clients-dd-option {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 8px 10px;
-  color: #262626;
-  border-radius: 7px;
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.sales-clients-dd-option:hover {
-  background: #f5f5f5;
-}
-
-.sales-clients-dd-option input {
-  position: absolute;
-  opacity: 0;
-}
-
-.sales-clients-dd-option i {
+.sales-filter-dot {
   width: 8px;
   height: 8px;
   flex: none;
@@ -409,27 +367,6 @@
 
 .sales-clients-table .numeric {
   text-align: right;
-}
-
-.row-menu.sales-client-row-menu {
-  z-index: 40;
-  width: 212px;
-}
-
-.sales-clients-menu-scrim {
-  position: fixed;
-  inset: 0;
-  z-index: 35;
-  background: transparent;
-  border: 0;
-}
-
-.sales-client-row-menu a.danger {
-  color: #cf1322;
-}
-
-.sales-client-row-menu a.danger:hover {
-  background: #fff2f0;
 }
 
 .sales-clients-empty {

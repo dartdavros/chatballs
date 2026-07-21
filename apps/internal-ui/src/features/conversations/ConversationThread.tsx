@@ -1,7 +1,8 @@
 import { useEffect, useRef, type ReactNode } from "react";
 
 import { Icon } from "../../shared/icons";
-import { channelMeta, statusFor } from "./data";
+import { statusFor } from "./data";
+import { providerMeta } from "../../shared/providers";
 import type { ApiConversation, ApiMessage } from "./model";
 import type { ConversationListItem, ControlMode, StatusInfo } from "./types";
 
@@ -24,7 +25,7 @@ export function ConversationThread({ controlMode, dialog, detail, onClaim, onCal
     return <div className="sales-timeline"><div className="sales-timeline-inner"><div className="sales-wait-note">Выберите диалог</div></div></div>;
   }
   const status = statusFor(controlMode);
-  const channel = channelMeta[dialog.channel];
+  const channel = providerMeta[dialog.channel];
   return (
     <>
       <div className="sales-conversation-head">

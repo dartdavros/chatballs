@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { Dropdown } from "antd";
+import { useState } from "react";
 
 import { Icon } from "../../../shared/icons";
 import type { KnowledgeDepartmentReference } from "./types";
@@ -15,16 +16,7 @@ export function KnowledgeDepartmentPicker({
   onChange: (departmentIds: number[]) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const root = useRef<HTMLDivElement>(null);
   const selected = departments.filter((department) => selectedIds.includes(department.id));
-
-  useEffect(() => {
-    const close = (event: MouseEvent) => {
-      if (!root.current?.contains(event.target as Node)) setOpen(false);
-    };
-    document.addEventListener("mousedown", close);
-    return () => document.removeEventListener("mousedown", close);
-  }, []);
 
   function toggle(id: number) {
     onChange(selectedIds.includes(id)
@@ -32,10 +24,28 @@ export function KnowledgeDepartmentPicker({
       : [...selectedIds, id]);
   }
 
+  const items = departments.map((department) => ({
+    key: String(department.id),
+    label: (
+      <button
+        type="button"
+        onClick={(event) => {
+          event.stopPropagation();
+          toggle(department.id);
+        }}
+      >
+        <span className={selectedIds.includes(department.id) ? "selected" : ""}>
+          {selectedIds.includes(department.id) && <Icon name="check" size={13} />}
+        </span>
+        {department.name}
+      </button>
+    ),
+  }));
+
   return (
     <label className="knowledge-editor-field knowledge-departments-field">
       <span>Отделы <small>— знание доступно агентам этих отделов</small></span>
-      <div className="knowledge-department-picker" ref={root}>
+      <div className="knowledge-department-picker">
         <div className="knowledge-department-picker-value">
           {selected.map((department) => (
             <span className="knowledge-department-chip" key={department.id}>
@@ -45,19 +55,12 @@ export function KnowledgeDepartmentPicker({
               </button>
             </span>
           ))}
-          <button className="knowledge-add-department" disabled={disabled} type="button" onClick={() => setOpen((value) => !value)}>
-            <Icon name="plus" size={13} />Добавить отдел
-          </button>
+          <Dropdown menu={{ items }} open={open} onOpenChange={setOpen} trigger={["click"]} overlayClassName="app-dropdown is-wide knowledge-department-dropdown">
+            <button className="knowledge-add-department" disabled={disabled} type="button">
+              <Icon name="plus" size={13} />Добавить отдел
+            </button>
+          </Dropdown>
         </div>
-        {open && (
-          <div className="knowledge-department-menu">
-            {departments.map((department) => (
-              <button className={selectedIds.includes(department.id) ? "selected" : ""} type="button" key={department.id} onClick={() => toggle(department.id)}>
-                <span><Icon name="check" size={13} /></span>{department.name}
-              </button>
-            ))}
-          </div>
-        )}
       </div>
     </label>
   );

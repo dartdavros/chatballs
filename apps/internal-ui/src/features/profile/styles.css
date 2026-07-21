@@ -118,33 +118,6 @@
   line-height: 1.5;
 }
 
-.totp-switch {
-  width: 46px;
-  height: 26px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  flex: none;
-  padding: 2px;
-  background: #d9d9d9;
-  border: none;
-  border-radius: 14px;
-}
-
-.totp-switch.on {
-  justify-content: flex-end;
-  background: #52c41a;
-}
-
-.totp-switch i {
-  width: 22px;
-  height: 22px;
-  display: block;
-  background: #ffffff;
-  border-radius: 50%;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-}
-
 .security-note {
   width: 100%;
   display: flex;

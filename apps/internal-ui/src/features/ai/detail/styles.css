@@ -88,17 +88,6 @@
   color: #bfbfbf !important;
 }
 
-.ai-agent-meta-link {
-  margin-top: 2px;
-  padding: 0;
-  background: none;
-  border: 0;
-  font-size: 13.5px;
-  font-weight: 600;
-  color: #1677ff;
-  cursor: pointer;
-}
-
 .ai-agent-header-actions {
   display: flex;
   align-items: center;

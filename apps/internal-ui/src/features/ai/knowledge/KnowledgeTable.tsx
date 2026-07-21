@@ -102,7 +102,7 @@ export function KnowledgeTable({
               )}
               <td>
                 <button
-                  className="ai-agent-name-link"
+                  className="link is-strong is-neutral"
                   type="button"
                   onClick={(event) => {
                     event.stopPropagation();

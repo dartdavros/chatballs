@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
-import { channelMeta, modeDots } from "./data";
+import { modeDots } from "./data";
+import { providerMeta } from "../../shared/providers";
 import type { ConversationListItem, ListTab } from "./types";
 import { SearchInput } from "../../shared/ui-controls";
 
@@ -43,7 +44,7 @@ function DialogTab({ active, onClick, children }: { active: boolean; onClick: ()
 }
 
 function DialogListItem({ dialog, active, setSelectedId }: { dialog: ConversationListItem; active: boolean; setSelectedId: (id: number) => void }) {
-  const channel = channelMeta[dialog.channel];
+  const channel = providerMeta[dialog.channel];
   return (
     <button className={`sales-dialog-row ${active ? "active" : ""}`} onClick={() => setSelectedId(dialog.id)}>
       <span className="sales-dialog-row-bar" />

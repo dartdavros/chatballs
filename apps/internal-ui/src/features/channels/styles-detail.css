@@ -1,0 +1,256 @@
+.channel-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.channel-breadcrumb,
+.channel-detail-meta,
+.channel-detail-actions,
+.channel-section-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.channel-breadcrumb,
+.channel-detail-meta {
+  color: #8a9099;
+  font-size: 12.5px;
+}
+
+.channel-breadcrumb strong {
+  color: #1f2530;
+}
+
+.channel-detail-meta code,
+.channel-agent-summary code {
+  font-family: var(--font-mono, ui-monospace, monospace);
+}
+
+.channel-detail-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.channel-detail-header h1 {
+  margin: 0 0 5px;
+  color: #131923;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.channel-detail-actions {
+  flex: none;
+}
+
+.channel-feedback,
+.channel-notice {
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.channel-notice {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.channel-notice strong {
+  display: block;
+}
+
+.channel-notice p {
+  margin: 4px 0 0;
+}
+
+.channel-feedback.is-error {
+  border: 1px solid #ffccc7;
+  background: #fff2f0;
+  color: #cf1322;
+}
+
+.channel-feedback.is-warning,
+.channel-notice {
+  border: 1px solid #ffe58f;
+  background: #fffbe6;
+  color: #ad6800;
+}
+
+.channel-card-section,
+.channel-card-aside {
+  border: 1px solid #e8eaee;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(15, 20, 30, 0.04);
+}
+
+.channel-card-section {
+  padding: 20px;
+}
+
+.channel-card-section > header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.channel-card-section > header h3 {
+  margin: 0 auto 0 0;
+  color: #131923;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.channel-card-section > header span {
+  color: #8a9099;
+  font-size: 12px;
+}
+
+.channel-section-actions {
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.channel-section-eyebrow {
+  margin-bottom: 12px;
+  color: #8a9099;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.channel-assignment {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 24px;
+  font-size: 13px;
+}
+
+.channel-assignment .key-value,
+.channel-card-aside .key-value {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: #1f2530;
+  font-size: 12.5px;
+}
+
+.channel-assignment .key-value {
+  padding: 8px 0;
+  border-bottom: 1px solid #f1f3f5;
+}
+
+.channel-card-aside .key-value + .key-value {
+  margin-top: 10px;
+}
+
+.channel-assignment .key-value > span,
+.channel-card-aside .key-value > span {
+  color: #8a9099;
+}
+
+.channel-assignment .key-value > strong,
+.channel-card-aside .key-value > strong {
+  font-weight: 500;
+  text-align: right;
+}
+
+.channel-policy-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 24px;
+}
+
+.channel-policy-flags {
+  min-width: 0;
+}
+
+.channel-policy-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 0;
+  border-top: 1px solid #f1f3f5;
+}
+
+.channel-policy-row.is-locked {
+  margin: 0 -20px;
+  padding-right: 20px;
+  padding-left: 20px;
+  background: #fffbe6;
+}
+
+.channel-policy-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.channel-policy-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #1f2530;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.channel-policy-row.is-locked .channel-policy-title {
+  color: #8a9099;
+}
+
+.channel-policy-text p {
+  margin: 3px 0 0;
+  color: #8a9099;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.channel-policy-row.is-locked .channel-policy-text p {
+  color: #d48806;
+}
+
+.channel-lock-badge {
+  padding: 1px 7px;
+  border: 1px solid #ffe58f;
+  border-radius: 999px;
+  background: #fff;
+  color: #d48806;
+  font-size: 10.5px;
+  font-weight: 600;
+}
+
+.channel-policy-context {
+  min-width: 0;
+}
+
+.channel-card-aside {
+  padding: 16px;
+}
+
+.channel-card-aside h4 {
+  margin: 0 0 12px;
+  color: #131923;
+  font-size: 13px;
+}
+
+.channel-policy-note {
+  margin: 12px 0 0;
+  color: #8a9099;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+@media (max-width: 900px) {
+  .channel-policy-layout {
+    grid-template-columns: 1fr;
+  }
+}

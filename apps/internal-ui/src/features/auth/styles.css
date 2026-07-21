@@ -424,13 +424,6 @@
   text-align: center;
 }
 
-.auth-cancel-link a {
-  color: #8c8c8c;
-  font-size: 12.5px;
-  font-weight: 500;
-  text-decoration: none;
-}
-
 .auth-totp-code-card {
   padding: 28px 26px 24px;
 }
@@ -475,12 +468,6 @@
   color: #bfbfbf;
   font-size: 12px;
   text-align: center;
-}
-
-.auth-support-link a {
-  color: #1677ff;
-  font-weight: 500;
-  text-decoration: none;
 }
 
 .auth-recovery-hint {

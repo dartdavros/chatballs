@@ -1,5 +1,5 @@
 import { Icon } from "../../../shared/icons";
-import { MonoLink, StatusBadge } from "../orders/StatusBadge";
+import { StatusBadge } from "../orders/StatusBadge";
 import type { SaleRow } from "./model";
 
 export function SalesRegistryTable({ rows, openSale, openDialog }: { rows: SaleRow[]; openSale: (id: number) => void; openDialog: (conversationId: number) => void }) {
@@ -27,7 +27,7 @@ export function SalesRegistryTable({ rows, openSale, openDialog }: { rows: SaleR
       <tbody>
         {rows.map((row) => (
           <tr key={row.saleId}>
-            <td><MonoLink onClick={() => openSale(row.saleId)}>{row.external}</MonoLink></td>
+            <td><button className="link is-mono" type="button" onClick={() => openSale(row.saleId)}>{row.external}</button></td>
             <td className="nowrap">{row.date}</td>
             <td className="strong-text">{row.client}</td>
             <td>{row.product}</td>
@@ -40,7 +40,7 @@ export function SalesRegistryTable({ rows, openSale, openDialog }: { rows: SaleR
             <td><span className={row.actor.ai ? "seller-ai" : "seller"}>{row.actor.label}</span></td>
             <td>
               {row.conversationId ? (
-                <MonoLink onClick={() => openDialog(row.conversationId as number)}>{`#${row.conversationId}`}</MonoLink>
+                <button className="link is-mono" type="button" onClick={() => openDialog(row.conversationId as number)}>{`#${row.conversationId}`}</button>
               ) : (
                 <span className="muted-dash">—</span>
               )}

@@ -13,13 +13,13 @@ export function ProductRow({ product, period, menuId, setMenuId, deactivate, ope
   const sales = details.sales[period];
   const menuOpen = menuId === product.id;
   const menuItems = [
-    { key: "open", label: <button onClick={() => openProduct(product)}><Icon name="external" size={15} />Открыть продукт</button> },
+    { key: "open", label: <button type="button" onClick={() => openProduct(product)}><Icon name="external" size={15} />Открыть продукт</button> },
     { type: "divider" as const },
-    { key: "status", disabled: product.status === "DISABLED", label: <button className="warning" onClick={() => deactivate(product)}><Icon name="pause" size={15} />Деактивировать</button> },
+    { key: "status", disabled: product.status === "DISABLED", label: <button className="warning" type="button" onClick={() => deactivate(product)}><Icon name="pause" size={15} />Деактивировать</button> },
   ];
   return (
     <tr>
-      <td><div className="product-cell"><span className="product-icon" style={{ background: accent.bg, color: accent.color }}><Icon name="box" size={21} /></span><span><button className="product-name-link" type="button" onClick={() => openProduct(product)}>{product.name}</button><small>{details.sub}</small></span></div></td>
+      <td><div className="product-cell"><span className="product-icon" style={{ background: accent.bg, color: accent.color }}><Icon name="box" size={21} /></span><span><button className="link is-strong" type="button" onClick={() => openProduct(product)}>{product.name}</button><small>{details.sub}</small></span></div></td>
       <td><StatusPill status={product.status === "ACTIVE" ? "active" : "disabled"} /></td>
       <td>
         <div className="offer-list">
@@ -31,8 +31,8 @@ export function ProductRow({ product, period, menuId, setMenuId, deactivate, ope
       <td><span className="product-empty-value">—</span></td>
       <td className="numeric"><div className="product-sales"><strong>{sales.sum}</strong><small>{sales.n} продаж</small></div></td>
       <td className="row-actions">
-        <Dropdown menu={{ items: menuItems }} open={menuOpen} onOpenChange={(open) => setMenuId(open ? product.id : null)} trigger={["click"]} overlayClassName="product-actions-dropdown">
-          <button className="row-menu-button" aria-label="Действия продукта"><Icon name="more" /></button>
+        <Dropdown menu={{ items: menuItems }} open={menuOpen} onOpenChange={(open) => setMenuId(open ? product.id : null)} trigger={["click"]} overlayClassName="app-dropdown">
+          <button className="row-menu-button" type="button" aria-label="Действия продукта"><Icon name="more" /></button>
         </Dropdown>
       </td>
     </tr>

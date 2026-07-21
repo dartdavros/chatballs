@@ -63,8 +63,8 @@ export function RowActions({ integration, testing, onTest, onEdit, onDelete }: R
       <Button variant="secondary" icon="refresh" iconSize={14} disabled={!meta.checkable || testing} onClick={() => onTest(integration)}>
         {testing ? "Проверка…" : "Проверить"}
       </Button>
-      <Dropdown menu={{ items: menuItems }} open={open} onOpenChange={setOpen} trigger={["click"]} overlayClassName="product-actions-dropdown">
-        <button className="row-menu-button" aria-label="Действия интеграции"><Icon name="more" /></button>
+      <Dropdown menu={{ items: menuItems }} open={open} onOpenChange={setOpen} trigger={["click"]} overlayClassName="app-dropdown">
+        <button className="row-menu-button" type="button" aria-label="Действия интеграции"><Icon name="more" /></button>
       </Dropdown>
     </div>
   );

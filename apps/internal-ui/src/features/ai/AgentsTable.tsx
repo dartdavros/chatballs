@@ -57,7 +57,7 @@ export function AgentsTable({
                     <div className="product-cell">
                       <span className="product-icon" style={{ background: accent.bg, color: accent.color }}><Icon name="robot" size={21} /></span>
                       <span>
-                        <button className="ai-agent-name-link" type="button" onClick={() => openAgent(agent.id)}>{agent.name}</button>
+                        <button className="link is-strong is-neutral" type="button" onClick={() => openAgent(agent.id)}>{agent.name}</button>
                         <small>{agent.channel.code}</small>
                       </span>
                     </div>
@@ -75,9 +75,9 @@ export function AgentsTable({
                         open={menuId === agent.id}
                         onOpenChange={(open) => setMenuId(open ? agent.id : null)}
                         trigger={["click"]}
-                        overlayClassName="product-actions-dropdown"
+                        overlayClassName="app-dropdown"
                       >
-                        <button className="row-menu-button" aria-label="Действия агента"><Icon name="more" /></button>
+                        <button className="row-menu-button" type="button" aria-label="Действия агента"><Icon name="more" /></button>
                       </Dropdown>
                     </div>
                   </td>

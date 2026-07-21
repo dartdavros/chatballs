@@ -1,3 +1,5 @@
+import { Dropdown } from "antd";
+
 import type { Department, Employee } from "../../types";
 import { Icon } from "../../shared/icons";
 import { Avatar, EmptyState, RoleBadge, StatusPill } from "../../shared/ui";
@@ -43,7 +45,7 @@ export function EmployeeTable({
       {!employees.length && <EmptyState title="Сотрудники не найдены" />}
       <div className="employees-footer">
         <span>Показано {employees.length} из {total}</span>
-        <span>Роль не выводится из должности или отдела · SPEC-HUB-0016</span>
+        <span>Роль не выводится из должности или отдела</span>
       </div>
     </div>
   );
@@ -61,6 +63,17 @@ function EmployeeRow({ departments, employee, menuOpen, onTransfer, openEmployee
   const permissions = employee.permissions;
   const manageable = Boolean(permissions?.canBlock || permissions?.canUnblock || permissions?.canResetPassword || permissions?.canTerminateSessions);
   const open = () => { setMenuId(null); openEmployee(employee); };
+  const menuItems = [
+    { key: "open", label: <button type="button" onClick={open}><Icon name="external" size={15} />Открыть карточку</button> },
+    ...(permissions?.canTransferOwnership ? [{ key: "transfer", label: <button type="button" onClick={onTransfer}><Icon name="split" size={15} />Передать владение</button> }] : []),
+    ...(manageable ? [
+      { key: "sessions", disabled: !permissions?.canTerminateSessions, label: <button type="button"><Icon name="logout" size={15} />Завершить сессии</button> },
+      { key: "password", disabled: !permissions?.canResetPassword, label: <button type="button"><Icon name="lock" size={15} />Сбросить пароль</button> },
+      { type: "divider" as const },
+      { key: "block", disabled: employee.isBlocked ? !permissions?.canUnblock : !permissions?.canBlock, label: <button className={employee.isBlocked ? "success" : "danger"} type="button">{employee.isBlocked ? "Разблокировать" : "Заблокировать"}</button> },
+    ] : []),
+    ...(!manageable && employee.role === "ADMIN" ? [{ key: "note", disabled: true, label: <button type="button"><span>Привилегированная учётная запись<small>Изменяется только владельцем</small></span></button> }] : []),
+  ];
   return (
     <tr>
       <td><div className="person-cell"><Avatar employee={employee} /><button className="person-link" type="button" onClick={open}><strong>{employee.fullName || employee.email}</strong><small>{employee.email}</small></button></div></td>
@@ -71,20 +84,9 @@ function EmployeeRow({ departments, employee, menuOpen, onTransfer, openEmployee
       <td><StatusPill status={employeeStatusKey(employee)} /></td>
       <td className="employee-last-login">{formatLastLogin(employee.lastLogin)}</td>
       <td className="row-actions">
-        <button className="row-menu-button" aria-label={`Действия: ${employee.fullName || employee.email}`} onClick={() => setMenuId(menuOpen ? null : employee.id)}><Icon name="more" /></button>
-        {menuOpen && (
-          <div className="row-menu employee-row-menu">
-            <button type="button" onClick={open}><Icon name="external" size={15} />Открыть карточку</button>
-            {permissions?.canTransferOwnership && <button type="button" onClick={onTransfer}><Icon name="split" size={15} />Передать владение</button>}
-            {manageable && <>
-              <button type="button" disabled={!permissions?.canTerminateSessions}><Icon name="logout" size={15} />Завершить сессии</button>
-              <button type="button" disabled={!permissions?.canResetPassword}><Icon name="lock" size={15} />Сбросить пароль</button>
-              <span />
-              <button className={employee.isBlocked ? "success" : "danger"} disabled={employee.isBlocked ? !permissions?.canUnblock : !permissions?.canBlock}>{employee.isBlocked ? "Разблокировать" : "Заблокировать"}</button>
-            </>}
-            {!manageable && employee.role === "ADMIN" && <p>Привилегированная учётная запись — изменяется только владельцем через отдельный flow.</p>}
-          </div>
-        )}
+        <Dropdown menu={{ items: menuItems }} open={menuOpen} onOpenChange={(next) => setMenuId(next ? employee.id : null)} trigger={["click"]} overlayClassName="app-dropdown is-wide">
+          <button className="row-menu-button" type="button" aria-label={`Действия: ${employee.fullName || employee.email}`}><Icon name="more" /></button>
+        </Dropdown>
       </td>
     </tr>
   );

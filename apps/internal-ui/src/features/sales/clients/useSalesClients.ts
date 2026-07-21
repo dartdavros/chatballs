@@ -14,7 +14,7 @@ export function useSalesClients(salesClients: SalesClient[]) {
   const [statusFilter, setStatusFilter] = useState<ClientStatus | null>(null);
   const [sortKey, setSortKey] = useState<ClientSortKey>("last");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
-  const [menu, setMenu] = useState<{ id: string; left: number; top: number } | null>(null);
+  const [menu, setMenu] = useState<string | null>(null);
   const [dropdown, setDropdown] = useState<ClientDropdown | null>(null);
 
   const rows = useMemo(() => {
@@ -80,6 +80,7 @@ export function useSalesClients(salesClients: SalesClient[]) {
     toggleProduct,
     toggleChannel,
     toggleDropdown,
+    setDropdown,
     closeDropdown: () => setDropdown(null),
     toggleOpenOnly: () => { setOpenOnly((current) => !current); setMenu(null); setDropdown(null); },
     // Повторный клик по активному статусу снимает фильтр (возврат к «все»).

@@ -20,16 +20,27 @@ export function PageHeader({ title, text, action }: { title: string; text?: Reac
   );
 }
 
-export function StatusPill({ status }: { status: "normal" | "active" | "blocked" | "disabled" | "invited" }) {
+export type StatusPillKey = "normal" | "active" | "blocked" | "disabled" | "invited" | "archived" | "draft" | "healthy" | "error" | "pending" | "unchecked";
+
+export function StatusPill({ status }: { status: StatusPillKey }) {
   const map = {
-    normal: ["#f6ffed", "#b7eb8f", "#389e0d", "NORMAL"],
+    normal: ["#f6ffed", "#b7eb8f", "#389e0d", "Работает"],
     active: ["transparent", "transparent", "#389e0d", "Активен"],
     blocked: ["transparent", "transparent", "#cf1322", "Заблокирован"],
     disabled: ["transparent", "transparent", "#d48806", "Неактивен"],
     invited: ["transparent", "transparent", "#0958d9", "Приглашён"],
+    archived: ["#f5f5f5", "#e8e8e8", "#8c8c8c", "Архивный"],
+    draft: ["#fafafa", "#e8e8e8", "#8c8c8c", "Черновик"],
+    healthy: ["#f6ffed", "#b7eb8f", "#389e0d", "Работает"],
+    error: ["#fff2f0", "#ffccc7", "#cf1322", "Ошибка"],
+    pending: ["#fffbe6", "#ffe58f", "#d48806", "Проверяется"],
+    unchecked: ["#fafafa", "#e8e8e8", "#8c8c8c", "Не проверялось"],
   } as const;
   const [bg, border, color, label] = map[status];
-  return <span className={`status-pill ${status}`} style={{ background: bg, borderColor: border, color }}><span style={{ background: color }} />{label}</span>;
+  const dotStyle = status === "archived"
+    ? { background: "transparent", border: `1.5px solid ${color}` }
+    : { background: color };
+  return <span className={`status-pill ${status}`} style={{ background: bg, borderColor: border, color }}><span style={dotStyle} />{label}</span>;
 }
 
 const ROLE_LABELS: Record<Role, string> = {
@@ -38,8 +49,12 @@ const ROLE_LABELS: Record<Role, string> = {
   EMPLOYEE: "Сотрудник",
 };
 
+export function roleLabel(role: Role): string {
+  return ROLE_LABELS[role] ?? role;
+}
+
 export function RoleBadge({ role }: { role: Role }) {
-  return <span className={`role-badge ${role.toLowerCase()}`}>{ROLE_LABELS[role] ?? role}</span>;
+  return <span className={`role-badge ${role.toLowerCase()}`}>{roleLabel(role)}</span>;
 }
 
 export function ProductTag({ product }: { product: Product }) {

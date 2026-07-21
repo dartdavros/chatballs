@@ -1,5 +1,5 @@
 import { Icon } from "../../../../shared/icons";
-import { MonoLink, StatusBadge } from "../StatusBadge";
+import { StatusBadge } from "../StatusBadge";
 import type { SalesOrder } from "../types";
 
 export function OrdersTable({ rows, openOrder }: { rows: Array<SalesOrder & { orderId: number }>; openOrder: (id: number) => void }) {
@@ -15,7 +15,7 @@ export function OrdersTable({ rows, openOrder }: { rows: Array<SalesOrder & { or
       <tbody>
         {rows.map((row) => (
           <tr key={row.id}>
-            <td><MonoLink onClick={() => openOrder(row.orderId)}>{row.id}</MonoLink></td>
+            <td><button className="link is-mono" type="button" onClick={() => openOrder(row.orderId)}>{row.id}</button></td>
             <td className="nowrap">{row.date}</td>
             <td className="strong-text">{row.client}</td>
             <td>{row.offer}</td>

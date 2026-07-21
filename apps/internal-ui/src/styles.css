@@ -16,6 +16,8 @@
 @import "./features/sales/sale-detail/styles.css";
 @import "./features/departments/styles.css";
 @import "./shared/table-controls.css";
+@import "./shared/menu.css";
+@import "./shared/links.css";
 @import "./features/products/styles.css";
 @import "./features/employees/styles.css";
 @import "./features/profile/styles.css";
@@ -27,6 +29,10 @@
 @import "./features/ai/knowledge/styles-bulk.css";
 @import "./features/ai/knowledge/styles-library.css";
 @import "./features/ai/knowledge/styles-category.css";
+@import "./features/channels/styles-list.css";
+@import "./features/channels/styles-detail.css";
+@import "./features/channels/styles-sections.css";
+@import "./features/channels/styles-wizard.css";
 @import "./features/integrations/styles.css";
 @import "./features/notifications/styles.css";
 @import "./shared/state.css";

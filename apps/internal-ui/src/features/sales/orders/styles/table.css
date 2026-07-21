@@ -71,17 +71,10 @@
   color: #262626;
 }
 
-.sales-orders-mono-link,
 .mono-strong,
 .mono-muted {
   font-family: "SF Mono", ui-monospace, Menlo, monospace;
   font-size: 12.5px;
-}
-
-.sales-orders-mono-link {
-  color: #1677ff;
-  font-weight: 600;
-  text-decoration: none;
 }
 
 .mono-strong {

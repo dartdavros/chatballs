@@ -15,7 +15,7 @@ export function EmployeeDetailHeader({ departments, employee, form, saveEmployee
 }) {
   const editable = employee.permissions?.canUpdateProfile ?? false;
   return <>
-    <button className="employee-back-link" type="button" onClick={() => setRoute("employees")}><Icon name="arrow" size={15} />Все сотрудники</button>
+    <button className="link is-muted has-icon" type="button" onClick={() => setRoute("employees")}><Icon name="arrow" size={15} />Все сотрудники</button>
     <section className="employee-detail-header">
       <div className="employee-detail-main">
         <Avatar employee={employee} />

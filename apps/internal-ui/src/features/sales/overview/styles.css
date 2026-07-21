@@ -233,7 +233,7 @@
   font-weight: 700;
 }
 
-.sales-card-head a {
+.sales-card-head > .link {
   color: #1677ff;
   font-size: 12.5px;
   font-weight: 500;
@@ -288,7 +288,7 @@
   text-align: left;
 }
 
-.sales-table-card td a {
+.sales-table-card td .link {
   color: #1677ff;
   font-weight: 600;
   text-decoration: none;
@@ -482,8 +482,9 @@
   color: #faad14;
 }
 
-.sales-list-card a {
+.sales-list-card > button {
   display: grid;
+  width: 100%;
   grid-template-columns: 8px minmax(0, 1fr) auto;
   align-items: start;
   gap: 11px;
@@ -492,11 +493,11 @@
   text-decoration: none;
 }
 
-.sales-list-card a:hover {
+.sales-list-card > button:hover {
   background: #fafafa;
 }
 
-.sales-list-card a > span {
+.sales-list-card > button > span {
   width: 8px;
   height: 8px;
   margin-top: 5px;

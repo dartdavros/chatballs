@@ -3,6 +3,9 @@ import { describe, expect, it } from "vitest";
 import {
   OPERATOR_POLICY,
   PRESETS,
+  agentStatus,
+  blockerSummary,
+  connectionStatus,
   departmentTabs,
   filterChannels,
   flagLock,
@@ -55,6 +58,25 @@ describe("channel policy invariants", () => {
     expect(presetOf(PRESETS.SALES)).toBe("SALES");
     expect(presetOf(PRESETS.SUPPORT)).toBe("SUPPORT");
     expect(presetOf(OPERATOR_POLICY)).toBe("CUSTOM");
+  });
+});
+
+describe("channel presentation dictionaries", () => {
+  it("maps backend connection states to product statuses", () => {
+    expect(connectionStatus("OK")).toBe("healthy");
+    expect(connectionStatus("ERROR")).toBe("error");
+    expect(connectionStatus("UNKNOWN_VALUE")).toBe("unchecked");
+  });
+
+  it("maps every agent lifecycle state without exposing its code", () => {
+    expect(agentStatus("ACTIVE")).toBe("active");
+    expect(agentStatus("DISABLED")).toBe("disabled");
+    expect(agentStatus("ARCHIVED")).toBe("archived");
+    expect(agentStatus("DRAFT")).toBe("draft");
+  });
+
+  it("does not expose an unknown blocker code", () => {
+    expect(blockerSummary([{ type: "unknown_table", count: 2 }])).toBe("связанные записи: 2");
   });
 });
 

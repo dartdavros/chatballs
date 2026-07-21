@@ -59,7 +59,7 @@ export function SaleDetailPage({
           <div>
             <span>Связанный диалог</span>
             {sale.conversationId ? (
-              <b><button type="button" className="sale-link-button" onClick={() => openDialog(sale.conversationId as number)}>{`Диалог #${sale.conversationId}`}</button></b>
+              <b><button type="button" className="link" onClick={() => openDialog(sale.conversationId as number)}>{`Диалог #${sale.conversationId}`}</button></b>
             ) : (
               <b>—</b>
             )}
