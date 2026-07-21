@@ -26,4 +26,7 @@ export const routes: Record<RouteKey, string> = {
   aiKnowledgeDetail: "Знание",
   aiUsage: "Использование AI",
   integrations: "Интеграции",
+  channels: "Каналы",
+  channelCreate: "Создание канала",
+  channelDetail: "Карточка канала",
 };

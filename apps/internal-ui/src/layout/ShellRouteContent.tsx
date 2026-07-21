@@ -5,6 +5,9 @@ import { KnowledgeDetailPage } from "../features/ai/knowledge/KnowledgeDetailPag
 import { KnowledgeCreatePage } from "../features/ai/knowledge/KnowledgeCreatePage";
 import { KnowledgePage } from "../features/ai/knowledge/KnowledgePage";
 import { CommandCenter } from "../features/command/CommandCenter";
+import { ChannelsPage } from "../features/channels/ChannelsPage";
+import { ChannelDetailPage } from "../features/channels/ChannelDetailPage";
+import { ChannelCreateWizard } from "../features/channels/ChannelCreateWizard";
 import { IntegrationsPage } from "../features/integrations/IntegrationsPage";
 import { DepartmentsPage } from "../features/departments/DepartmentsPage";
 import { AccessProfilesPage, EmployeeDetailPage, EmployeesPage } from "../features/employees/EmployeesPage";
@@ -23,7 +26,7 @@ import { SupportOverviewPage } from "../features/support/SupportOverviewPage";
 import type { AppData, Employee, Product, RouteKey, SessionUser } from "../types";
 import { hasCapability } from "../auth/access";
 
-export function ShellRouteContent({ route, data, currentEmployee, currentProduct, selectedProductCode, selectedAgentId, selectedKnowledgeId, selectedConversationId, selectedClientId, openClient, selectedOrderId, openOrder, openConversation, openEmployee, openProduct, openAgentCreate, openAgent, openKnowledge, onAgentLoaded, reload, setRoute, user, onUserUpdated, onLogout }: { route: RouteKey; data: AppData; currentEmployee: Employee | null; currentProduct: Product | null; selectedProductCode: string | null; selectedAgentId: number | null; selectedKnowledgeId: number | null; selectedConversationId: number | null; selectedClientId: number | null; openClient: (clientId: number) => void; selectedOrderId: number | null; openOrder: (orderId: number) => void; openConversation: (conversationId: number) => void; openEmployee: (employee: Employee) => void; openProduct: (product: Product) => void; openAgentCreate: (productCode: string | null) => void; openAgent: (agentId: number) => void; openKnowledge: (knowledgeId: number) => void; onAgentLoaded: (name: string | null) => void; reload: () => void; setRoute: (route: RouteKey) => void; user: SessionUser; onUserUpdated: (user: SessionUser) => void; onLogout: () => void }) {
+export function ShellRouteContent({ route, data, currentEmployee, currentProduct, selectedProductCode, selectedAgentId, selectedKnowledgeId, selectedConversationId, selectedClientId, openClient, selectedOrderId, openOrder, selectedChannelId, openChannel, openConversation, openEmployee, openProduct, openAgentCreate, openAgent, openKnowledge, onAgentLoaded, reload, setRoute, user, onUserUpdated, onLogout }: { route: RouteKey; data: AppData; currentEmployee: Employee | null; currentProduct: Product | null; selectedProductCode: string | null; selectedAgentId: number | null; selectedKnowledgeId: number | null; selectedConversationId: number | null; selectedClientId: number | null; openClient: (clientId: number) => void; selectedOrderId: number | null; openOrder: (orderId: number) => void; selectedChannelId: number | null; openChannel: (channelId: number) => void; openConversation: (conversationId: number) => void; openEmployee: (employee: Employee) => void; openProduct: (product: Product) => void; openAgentCreate: (productCode: string | null) => void; openAgent: (agentId: number) => void; openKnowledge: (knowledgeId: number) => void; onAgentLoaded: (name: string | null) => void; reload: () => void; setRoute: (route: RouteKey) => void; user: SessionUser; onUserUpdated: (user: SessionUser) => void; onLogout: () => void }) {
   return (
     <>
       {route === "command" && <CommandCenter data={data} setRoute={setRoute} />}
@@ -47,10 +50,13 @@ export function ShellRouteContent({ route, data, currentEmployee, currentProduct
       {route === "salesOrders" && <SalesRegistryPage products={data.products} setRoute={setRoute} openSale={openOrder} openDialog={openConversation} />}
       {route === "aiAgents" && <AiAgentsPage agents={data.agents} reload={reload} openAgentCreate={openAgentCreate} openAgent={openAgent} />}
       {route === "aiAgentCreate" && <AiAgentCreatePage selectedProductCode={selectedProductCode} reload={reload} setRoute={setRoute} openAgent={openAgent} />}
-      {route === "aiAgentDetail" && <AiAgentDetailPage agentId={selectedAgentId} openKnowledge={openKnowledge} onAgentLoaded={onAgentLoaded} />}
+      {route === "aiAgentDetail" && <AiAgentDetailPage agentId={selectedAgentId} openKnowledge={openKnowledge} openChannel={openChannel} onAgentLoaded={onAgentLoaded} />}
       {route === "aiKnowledge" && <KnowledgePage departments={data.departments} openAgent={openAgent} openKnowledge={openKnowledge} setRoute={setRoute} user={user} />}
       {route === "aiKnowledgeCreate" && <KnowledgeCreatePage departments={data.departments} openKnowledge={openKnowledge} setRoute={setRoute} />}
       {route === "aiKnowledgeDetail" && <KnowledgeDetailPage agents={data.agents} canManage={hasCapability(user, "ai.manage")} departments={data.departments} knowledgeId={selectedKnowledgeId} openAgent={openAgent} setRoute={setRoute} onLoaded={onAgentLoaded} />}
+      {route === "channels" && <ChannelsPage canManage={hasCapability(user, "channels.manage")} openChannel={openChannel} openChannelCreate={() => setRoute("channelCreate")} openAgent={openAgent} />}
+      {route === "channelDetail" && <ChannelDetailPage channelId={selectedChannelId} departments={data.departments} products={data.products} canManage={hasCapability(user, "channels.manage")} setRoute={setRoute} openAgent={openAgent} openChannels={() => setRoute("channels")} />}
+      {route === "channelCreate" && <ChannelCreateWizard departments={data.departments} products={data.products} openChannel={openChannel} openChannels={() => setRoute("channels")} openAgentCreate={() => openAgentCreate(null)} />}
       {route === "integrations" && <IntegrationsPage />}
     </>
   );

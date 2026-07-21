@@ -3,7 +3,7 @@ import { StatusPill } from "../../../shared/ui";
 import { productAccent } from "../../../shared/utils";
 import { dailyBudget, type AiAgentDetail } from "./model";
 
-export function AiAgentDetailHeader({ agent, onEditChannel }: { agent: AiAgentDetail; onEditChannel: () => void }) {
+export function AiAgentDetailHeader({ agent, onOpenChannel }: { agent: AiAgentDetail; onOpenChannel: () => void }) {
   const accent = productAccent(agent.channel.code);
   return (
     <section className="ai-agent-header">
@@ -15,7 +15,7 @@ export function AiAgentDetailHeader({ agent, onEditChannel }: { agent: AiAgentDe
             <StatusPill status={agent.isActive ? "active" : "disabled"} />
           </div>
           <div className="ai-agent-meta">
-            <div><span>Канал</span><button type="button" className="ai-agent-meta-link" onClick={onEditChannel}>{agent.channel.name}</button></div>
+            <div><span>Канал</span><button type="button" className="ai-agent-meta-link" onClick={onOpenChannel}>{agent.channel.name}</button></div>
             <div><span>Модель</span><code className="ai-mono">{agent.model}</code></div>
             <div><span>Знания</span><b>{agent.knowledge.length > 0 ? `${agent.knowledge.length} выбрано` : "—"}</b></div>
             <div><span>Лимиты</span><b>{dailyBudget(agent.limits)}</b></div>

@@ -11,6 +11,7 @@ export function Sidebar({ route, user, setRoute, onLogout }: { route: RouteKey; 
     { key: "departments" as const, label: "Отделы", icon: "building" as const },
     { key: "employees" as const, label: "Сотрудники", icon: "team" as const },
     { key: "products" as const, label: "Продукты", icon: "box" as const },
+    { key: "channels" as const, label: "Каналы", icon: "split" as const },
     { label: "ПЛАТФОРМА", group: true },
     { key: "aiAgents" as const, label: "AI", icon: "robot" as const },
     { key: "integrations" as const, label: "Интеграции", icon: "plug" as const },
@@ -29,7 +30,7 @@ export function Sidebar({ route, user, setRoute, onLogout }: { route: RouteKey; 
           if ("divider" in item) return <div className="hub-nav-divider" key={index} />;
           const nextRoute = "key" in item ? item.key : null;
           if (nextRoute && !canAccess(user, nextRoute)) return null;
-          const active = nextRoute === route || (nextRoute === "employees" && (route === "employeeDetail" || route === "accessProfiles")) || (nextRoute === "products" && route === "productDetail") || (nextRoute === "aiAgents" && route.startsWith("ai"));
+          const active = nextRoute === route || (nextRoute === "employees" && (route === "employeeDetail" || route === "accessProfiles")) || (nextRoute === "products" && route === "productDetail") || (nextRoute === "aiAgents" && route.startsWith("ai")) || (nextRoute === "channels" && route.startsWith("channel"));
           return (
             <div key={item.label}>
               <button className={`hub-nav-item ${active ? "is-active" : ""}`} disabled={item.disabled} onClick={() => nextRoute && setRoute(nextRoute)}>

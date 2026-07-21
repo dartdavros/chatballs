@@ -5,7 +5,6 @@ import { EmptyState, LoadingState } from "../../../shared/ui";
 import { UnderlineTabs } from "../../../shared/ui-controls";
 import { AiAgentDetailHeader } from "./AiAgentDetailHeader";
 import { AgentEditForm } from "./AgentEditForm";
-import { ChannelEditForm } from "./ChannelEditForm";
 import { AiAgentInstructionsTab } from "./AiAgentInstructionsTab";
 import { AiAgentKnowledgeTab } from "./AiAgentKnowledgeTab";
 import { AiAgentMetricsTab } from "./AiAgentMetricsTab";
@@ -13,11 +12,10 @@ import { AiAgentOverviewTab } from "./AiAgentOverviewTab";
 import { agentTabs, type AgentTab } from "./model";
 import { useAiAgentDetail } from "./useAiAgentDetail";
 
-export function AiAgentDetailPage({ agentId, openKnowledge, onAgentLoaded }: { agentId: number | null; openKnowledge: (knowledgeId: number) => void; onAgentLoaded: (name: string | null) => void }) {
+export function AiAgentDetailPage({ agentId, openKnowledge, openChannel, onAgentLoaded }: { agentId: number | null; openKnowledge: (knowledgeId: number) => void; openChannel: (channelId: number) => void; onAgentLoaded: (name: string | null) => void }) {
   const { agent, library, loading, error, reload } = useAiAgentDetail(agentId);
   const [tab, setTab] = useState<AgentTab>("overview");
   const [editOpen, setEditOpen] = useState(false);
-  const [channelEdit, setChannelEdit] = useState(false);
 
   useEffect(() => {
     onAgentLoaded(agent?.name ?? null);
@@ -36,14 +34,13 @@ export function AiAgentDetailPage({ agentId, openKnowledge, onAgentLoaded }: { a
 
   return (
     <div className="ai-agent-page">
-      <AiAgentDetailHeader agent={agent} onEditChannel={() => setChannelEdit(true)} />
+      <AiAgentDetailHeader agent={agent} onOpenChannel={() => openChannel(agent.channel.id)} />
       <UnderlineTabs className="ai-agent-tabs" items={agentTabs} value={tab} onChange={setTab} />
       {tab === "overview" && <AiAgentOverviewTab agent={agent} toggleActive={toggleActive} onEdit={() => setEditOpen(true)} />}
       {tab === "instructions" && <AiAgentInstructionsTab agent={agent} onChanged={reload} />}
       {tab === "knowledge" && <AiAgentKnowledgeTab agent={agent} library={library} openKnowledge={openKnowledge} onChanged={reload} />}
       {tab === "metrics" && <AiAgentMetricsTab />}
       {editOpen && <AgentEditForm agent={agent} onClose={() => setEditOpen(false)} onSaved={() => { setEditOpen(false); reload(); }} />}
-      {channelEdit && <ChannelEditForm channel={agent.channel} onClose={() => setChannelEdit(false)} onSaved={() => { setChannelEdit(false); reload(); }} />}
     </div>
   );
 }

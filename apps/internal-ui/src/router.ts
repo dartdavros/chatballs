@@ -10,6 +10,7 @@ export type RouteState = {
   knowledgeId: number | null;
   clientId: number | null;
   orderId: number | null;
+  channelId: number | null;
 };
 
 export function routeFromPath(pathname: string, search = ""): RouteState {
@@ -17,7 +18,7 @@ export function routeFromPath(pathname: string, search = ""): RouteState {
   const match = normalized.match(/^\/organizations\/([0-9a-f-]{36})(\/.*)?$/i);
   const organizationPublicId = match?.[1] ?? null;
   const path = match ? match[2] || "/" : normalized;
-  const base = { employeeId: null, productId: null, productCode: null, agentId: null, knowledgeId: null, clientId: null, orderId: null };
+  const base = { employeeId: null, productId: null, productCode: null, agentId: null, knowledgeId: null, clientId: null, orderId: null, channelId: null };
   const state = { organizationPublicId, ...base };
   if (path === "/" || path === "/command") return { route: "command", ...state };
   if (path === "/departments") return { route: "departments", ...state };
@@ -45,6 +46,12 @@ export function routeFromPath(pathname: string, search = ""): RouteState {
   if (path.startsWith("/products/")) {
     const id = Number(path.split("/")[2]);
     return Number.isInteger(id) && id > 0 ? { ...state, route: "productDetail", productId: id } : { route: "products", ...state };
+  }
+  if (path === "/channels") return { route: "channels", ...state };
+  if (path === "/channels/new") return { route: "channelCreate", ...state };
+  if (path.startsWith("/channels/")) {
+    const id = Number(path.split("/")[2]);
+    return Number.isInteger(id) && id > 0 ? { ...state, route: "channelDetail", channelId: id } : { route: "channels", ...state };
   }
   if (path === "/ai" || path === "/ai/agents") return { route: "aiAgents", ...state };
   if (path === "/ai/agents/new") {
@@ -92,6 +99,9 @@ export function pathFromRoute(route: RouteKey, entityId: number | null = null, p
   if (route === "aiKnowledge") return `${prefix}/ai/knowledge`;
   if (route === "aiKnowledgeCreate") return `${prefix}/ai/knowledge/new`;
   if (route === "aiKnowledgeDetail") return entityId ? `${prefix}/ai/knowledge/${entityId}` : `${prefix}/ai/knowledge`;
+  if (route === "channels") return `${prefix}/channels`;
+  if (route === "channelCreate") return `${prefix}/channels/new`;
+  if (route === "channelDetail") return entityId ? `${prefix}/channels/${entityId}` : `${prefix}/channels`;
   if (route === "integrations") return `${prefix}/integrations`;
   if (route === "profile") return `${prefix}/profile`;
   if (route === "settings") return `${prefix}/settings`;
