@@ -170,11 +170,11 @@ def update_channel(
     *, context: TenantContext, channel: Channel, update: ChannelUpdate
 ) -> Channel:
     """Порядок обработки §6.5: блокировка, права по каждому полю, целевое
-    состояние, конфликты, одна транзакция.
+    состояние, инварианты, конфликты, одна транзакция.
 
-    Инварианты P1-P5 на изменении включаются этапом 3: до устранения нарушений
-    в существующих данных первый же PATCH имени упёрся бы в ошибку политики
-    (SPEC §12). На создании они действуют уже сейчас — см. create_channel.
+    Инварианты проверяются по итоговому состоянию, а не по переданным полям:
+    выключить продукт и коммерческие флаги можно одним запросом, а вот запрос,
+    оставляющий канал в запрещённой комбинации, отклоняется целиком.
     """
     locked = Channel.objects.select_for_update().get(
         id=channel.id, organization_id=context.organization_id
@@ -231,6 +231,13 @@ def update_channel(
         if getattr(locked, name) != value:
             setattr(locked, name, value)
             changed.append(name)
+
+    # Инварианты по целевому состоянию — до записи: нарушение отклоняет запрос
+    # целиком, частичного применения не остаётся даже в памяти (§3.2, §6.5).
+    require_valid_policy(
+        policy=ChannelPolicy.from_channel(locked),
+        has_product=locked.product_id is not None,
+    )
 
     if changed:
         locked.save(update_fields=[*changed, "updated_at"])

@@ -577,3 +577,84 @@ class ChannelCountersTests(ChannelApiTestCase):
         channel = _make_channel(self.organization, code="main", name="Основной")
         response = self.client.get(f"/api/v1/channels/{channel.id}/counters/?period=1y")
         self.assertEqual(response.status_code, 400)
+
+
+class ChannelPolicyInvariantTests(ChannelApiTestCase):
+    """§3.2 — P1-P5 на изменении (этап 3)."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.orphan = _make_channel(
+            self.organization, code="partners", name="Партнёрская линия"
+        )
+        self.product_channel = _make_channel(
+            self.organization,
+            code="foxray-sales",
+            name="FoxRay — продажи",
+            product=self.product,
+            allow_sales_attribution=True,
+            allow_checkout_actions=True,
+        )
+
+    def test_rejects_commercial_flag_on_non_product_channel(self) -> None:
+        response = self.patch_channel(
+            self.orphan.id, policy={"allowCheckoutActions": True}
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            {item["rule"] for item in response.json()["violations"]}, {"P1"}
+        )
+        self.orphan.refresh_from_db()
+        self.assertFalse(self.orphan.allow_checkout_actions)
+
+    def test_rename_of_compliant_channel_is_not_blocked_by_policy(self) -> None:
+        # Ровно тот сценарий, ради которого этап 3 шёл после приведения данных.
+        response = self.patch_channel(self.orphan.id, name="Партнёры")
+        self.assertEqual(response.status_code, 200)
+
+    def test_detaching_product_names_the_flags_to_turn_off(self) -> None:
+        response = self.patch_channel(self.product_channel.id, productId=None)
+
+        self.assertEqual(response.status_code, 400)
+        fields = {item["field"] for item in response.json()["violations"]}
+        self.assertEqual(fields, {"allowCheckoutActions", "allowSalesAttribution"})
+        self.product_channel.refresh_from_db()
+        self.assertEqual(self.product_channel.product_id, self.product.id)
+
+    def test_detaching_product_with_flags_off_succeeds_in_one_request(self) -> None:
+        # Инварианты считаются по итоговому состоянию, а не по переданным полям.
+        response = self.patch_channel(
+            self.product_channel.id,
+            productId=None,
+            policy={"allowCheckoutActions": False, "allowSalesAttribution": False},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.product_channel.refresh_from_db()
+        self.assertIsNone(self.product_channel.product_id)
+        self.assertFalse(self.product_channel.allow_checkout_actions)
+
+    def test_partial_application_is_impossible(self) -> None:
+        response = self.patch_channel(
+            self.orphan.id,
+            name="Новое имя",
+            policy={"allowSalesAttribution": True},
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.orphan.refresh_from_db()
+        # Имя не сохранилось вместе с отклонённым флагом.
+        self.assertEqual(self.orphan.name, "Партнёрская линия")
+        self.assertFalse(self.orphan.allow_sales_attribution)
+
+    def test_authenticated_identity_requires_disabling_anonymous_flags(self) -> None:
+        response = self.patch_channel(
+            self.product_channel.id,
+            policy={"requiresAuthenticatedProductIdentity": True},
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            {item["rule"] for item in response.json()["violations"]}, {"P4", "P5"}
+        )
