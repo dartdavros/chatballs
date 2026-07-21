@@ -41,7 +41,15 @@ class Command(BaseCommand):
         last_call_sweep = 0.0
         last_reservation_sweep = 0.0
         while True:
-            event = claim_next_outbox_event()
+            try:
+                event = claim_next_outbox_event()
+            except Exception:  # pragma: no cover
+                # Отравленное событие не должно ронять процесс: иначе воркер
+                # уходит в краш-петлю и вместе с outbox встают поллинг
+                # мессенджеров и таймауты звонков.
+                logger.exception("Outbox claim cycle failed")
+                time.sleep(1)
+                continue
             if event is not None:
                 try:
                     logger.info("Processing outbox event %s", event.id)
