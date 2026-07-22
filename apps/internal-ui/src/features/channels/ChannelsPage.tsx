@@ -68,7 +68,7 @@ export function ChannelsPage({
           <div className="channels-toolbar">
             <UnderlineTabs className="channels-tabs" items={page.tabs} value={page.tab} onChange={page.setTab} />
             <div className="channels-toolbar-tools">
-              <SearchInput placeholder="Поиск по имени и коду" value={page.search} onChange={page.setSearch} />
+              <SearchInput className="channels-search" placeholder="Поиск по имени и коду" value={page.search} onChange={page.setSearch} />
               <div className="channels-archive-toggle">
                 <SwitchButton className="ui-switch" checked={page.showArchived} label="Показывать архивные" onClick={() => page.setShowArchived(!page.showArchived)} />
                 <span>Показывать архивные</span>

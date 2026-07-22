@@ -30,12 +30,13 @@ export function ChannelPolicySection({
         <span>Пресет: {PRESET_LABELS[presetOf(channel.policy)]}</span>
       </header>
 
-      <div className="channel-policy-layout">
+      <div className={`channel-policy-layout ${hasProduct ? "" : "has-context"}`.trim()}>
         <div className="channel-policy-flags">
           {POLICY_FLAGS.map((flag) => {
             const lock = flagLock(flag, channel.policy, hasProduct);
+            const emphasized = lock !== null && flag === "allowCheckoutActions";
             return (
-              <div className={`channel-policy-row ${lock ? "is-locked" : ""}`} key={flag}>
+              <div className={`channel-policy-row ${lock ? "is-locked" : ""} ${emphasized ? "is-emphasized" : ""}`.trim()} key={flag}>
                 <div className="channel-policy-text">
                   <div className="channel-policy-title">
                     {POLICY_LABELS[flag].title}
@@ -60,18 +61,20 @@ export function ChannelPolicySection({
           })}
         </div>
 
-        <aside className="channel-policy-context">
-          <div className="channel-card-aside">
-            <h4>Контекст политики</h4>
-            <KeyValue label="Продукт" value={channel.product?.name ?? "— непродуктовый"} />
-            <KeyValue label="Отдел" value={channel.departmentName ?? "Без отдела"} />
-            <KeyValue label="Пресет" value={PRESET_LABELS[presetOf(channel.policy)]} />
-          </div>
-          <p className="channel-policy-note">
-            Настройки сохраняются целиком: если хотя бы одна недоступна, не сохранится ни одна.
-            Чтобы включить коммерческие настройки, сначала назначьте продукт в секции «Назначение».
-          </p>
-        </aside>
+        {!hasProduct && (
+          <aside className="channel-policy-context">
+            <div className="channel-card-aside">
+              <h4>Контекст политики</h4>
+              <KeyValue label="Продукт" value="— непродуктовый" />
+              <KeyValue label="Отдел" value={channel.departmentName ?? "Без отдела"} />
+              <KeyValue label="Пресет" value={PRESET_LABELS[presetOf(channel.policy)]} />
+            </div>
+            <p className="channel-policy-note">
+              Настройки сохраняются целиком: если хотя бы одна недоступна, не сохранится ни одна.
+              Чтобы включить коммерческие настройки, сначала назначьте продукт в секции «Назначение».
+            </p>
+          </aside>
+        )}
       </div>
     </section>
   );

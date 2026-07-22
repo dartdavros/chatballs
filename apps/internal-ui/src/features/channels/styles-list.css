@@ -14,6 +14,30 @@
   padding-bottom: 6px;
 }
 
+.channels-search {
+  width: 240px;
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid #e8e8e8;
+  border-radius: 9px;
+  background: #fff;
+  color: #8a9099;
+  font-size: 13px;
+}
+
+.channels-search:focus-within {
+  border-color: #1677ff;
+}
+
+.channels-search input {
+  color: #1f2530;
+  font-size: 13px;
+}
+
+.channels-search input::placeholder {
+  color: #8a9099;
+}
+
 .channels-tabs button {
   height: 38px;
   gap: 7px;

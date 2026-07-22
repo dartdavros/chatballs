@@ -165,6 +165,10 @@
 }
 
 .channel-policy-layout {
+  display: block;
+}
+
+.channel-policy-layout.has-context {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 300px;
   gap: 24px;
@@ -183,10 +187,15 @@
 }
 
 .channel-policy-row.is-locked {
+  color: #8a9099;
+}
+
+.channel-policy-row.is-emphasized {
   margin: 0 -20px;
   padding-right: 20px;
   padding-left: 20px;
-  background: #fffbe6;
+  border-radius: 9px;
+  background: #fff7e6;
 }
 
 .channel-policy-text {
@@ -214,7 +223,7 @@
   line-height: 1.5;
 }
 
-.channel-policy-row.is-locked .channel-policy-text p {
+.channel-policy-row.is-emphasized .channel-policy-text p {
   color: #d48806;
 }
 
@@ -244,13 +253,17 @@
 
 .channel-policy-note {
   margin: 12px 0 0;
-  color: #8a9099;
+  padding: 16px 18px;
+  border: 1px solid #91caff;
+  border-radius: 12px;
+  background: #e6f4ff;
+  color: #0958d9;
   font-size: 12px;
   line-height: 1.5;
 }
 
 @media (max-width: 900px) {
-  .channel-policy-layout {
+  .channel-policy-layout.has-context {
     grid-template-columns: 1fr;
   }
 }
