@@ -1,24 +1,20 @@
+import { ChannelBadge } from "../../shared/badges";
+import { providerLabel } from "../../shared/providers";
 import { StatusPill } from "../../shared/ui";
-import { Button } from "../../shared/ui-controls";
-import { ChannelBadge, providerLabel } from "./ChannelBadge";
 import { connectionStatus } from "./model";
 import type { Channel } from "./types";
 
-export function ChannelConnectionsTable({ channel, canManage, busy, onUnbind }: { channel: Channel; canManage: boolean; busy: boolean; onUnbind: (connectionId: number) => void }) {
+export function ChannelConnectionsTable({ channel }: { channel: Channel }) {
   if (channel.connections.length === 0) return <p className="channel-muted">Подключений нет.</p>;
   return (
-    <table className="baseline-table channel-connections-table">
-      <thead><tr><th>ПОДКЛЮЧЕНИЕ</th><th>ПРОВАЙДЕР</th><th>СТАТУС</th><th aria-label="Действия" /></tr></thead>
-      <tbody>
-        {channel.connections.map((connection) => (
-          <tr key={connection.id}>
-            <td><strong>{connection.name}</strong><div className="channel-sub">{providerLabel(connection.provider)}</div></td>
-            <td><ChannelBadge provider={connection.provider} /></td>
-            <td><StatusPill status={connectionStatus(connection.status)} /></td>
-            <td className="row-actions">{canManage && <Button variant="secondary" disabled={busy} onClick={() => onUnbind(connection.id)}>Отвязать</Button>}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <div className="channel-connections">
+      {channel.connections.map((connection) => (
+        <div className="channel-connection" key={connection.id}>
+          <ChannelBadge provider={connection.provider} />
+          <div className="channel-connection-text"><strong>{connection.name}</strong><span>{providerLabel(connection.provider)}</span></div>
+          <StatusPill status={connectionStatus(connection.status)} />
+        </div>
+      ))}
+    </div>
   );
 }

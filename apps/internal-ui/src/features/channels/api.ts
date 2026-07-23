@@ -8,7 +8,6 @@ export type ChannelCreateInput = {
   productId: number | null;
   policyPreset: PolicyPreset;
   policy?: ChannelPolicy;
-  connectionIds?: number[];
 };
 
 export type ChannelUpdateInput = {
@@ -43,7 +42,6 @@ export function createChannel(input: ChannelCreateInput): Promise<{ channel: Cha
     policyPreset: input.policyPreset,
   };
   if (input.policyPreset === "CUSTOM") body.policy = input.policy;
-  if (input.connectionIds?.length) body.connectionIds = input.connectionIds;
   return api("/api/v1/channels/", { method: "POST", body: JSON.stringify(body) });
 }
 
@@ -59,24 +57,4 @@ export function updateChannel(
 
 export function deleteChannel(channelId: number): Promise<void> {
   return api(`/api/v1/channels/${channelId}/`, { method: "DELETE" });
-}
-
-export function bindConnection(
-  channelId: number,
-  integrationId: number,
-  force = false,
-): Promise<{ channel: Channel }> {
-  return api(`/api/v1/channels/${channelId}/connections/`, {
-    method: "POST",
-    body: JSON.stringify(force ? { integrationId, force: true } : { integrationId }),
-  });
-}
-
-export function unbindConnection(
-  channelId: number,
-  integrationId: number,
-): Promise<{ channel: Channel }> {
-  return api(`/api/v1/channels/${channelId}/connections/${integrationId}/`, {
-    method: "DELETE",
-  });
 }

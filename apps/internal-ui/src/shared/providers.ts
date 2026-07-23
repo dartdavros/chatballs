@@ -14,7 +14,13 @@ export const providerMeta: Record<ProviderKey, { label: string; short: string; c
 };
 
 /** Код провайдера из API → ключ словаря. */
-const BY_CODE: Record<string, ProviderKey> = { MAX: "MAX", TELEGRAM: "TG", WEB: "WEB" };
+const BY_CODE: Record<string, ProviderKey> = {
+  MAX: "MAX",
+  TELEGRAM: "TG",
+  TG: "TG",
+  WEB: "WEB",
+  WEBCHAT: "WEB",
+};
 
 export function providerKey(code: string): ProviderKey | null {
   return BY_CODE[code] ?? null;

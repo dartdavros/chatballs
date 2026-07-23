@@ -57,9 +57,30 @@ export function RoleBadge({ role }: { role: Role }) {
   return <span className={`role-badge ${role.toLowerCase()}`}>{roleLabel(role)}</span>;
 }
 
-export function ProductTag({ product }: { product: Product }) {
+export function ProductTag({ product }: { product: Pick<Product, "code" | "name"> }) {
   const accent = productAccent(product.code);
-  return <span style={{ background: accent.bg, color: accent.color }}>{product.name}</span>;
+  return (
+    <span className="product-tag" style={{ background: accent.bg, color: accent.color }}>
+      <i style={{ background: accent.color }} />
+      {product.name}
+    </span>
+  );
+}
+
+export function ProductMark({ product }: { product: Pick<Product, "code" | "name"> }) {
+  const accent = productAccent(product.code);
+  return <span className="product-mark"><i style={{ background: accent.color }} />{product.name}</span>;
+}
+
+export function ContentState({ icon, tone = "primary", title, text, action, className = "" }: { icon: ReactNode; tone?: "primary" | "warning"; title: string; text: ReactNode; action?: ReactNode; className?: string }) {
+  return (
+    <div className={`content-state ${className}`.trim()}>
+      <span className={`content-state-icon is-${tone}`}>{icon}</span>
+      <strong>{title}</strong>
+      <p>{text}</p>
+      {action}
+    </div>
+  );
 }
 
 export function ReadOnlyField({ label, value, editable = false, mono = false, wide = false }: { label: string; value: string; editable?: boolean; mono?: boolean; wide?: boolean }) {

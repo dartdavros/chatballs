@@ -1,18 +1,7 @@
-.channel-connections,
-.channel-connection-picker {
+.channel-connections {
   display: flex;
   flex-direction: column;
   gap: 8px;
-}
-
-.channel-connection-picker {
-  margin-top: 14px;
-  padding-top: 14px;
-  border-top: 1px dashed #e8eaee;
-}
-
-.channel-connections-table {
-  width: 100%;
 }
 
 .channel-connection {
@@ -20,8 +9,8 @@
   align-items: center;
   gap: 11px;
   padding: 11px 12px;
-  border: 1px solid #e8eaee;
-  border-radius: 10px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
 }
 
 .channel-connection-text {
@@ -31,12 +20,12 @@
 
 .channel-connection-text strong {
   display: block;
-  color: #1f2530;
+  color: var(--text-body);
   font-size: 13px;
 }
 
 .channel-connection-text span {
-  color: #8a9099;
+  color: var(--text-tertiary);
   font-size: 11.5px;
 }
 
@@ -54,8 +43,8 @@
   width: 34px;
   height: 34px;
   border-radius: 9px;
-  background: #f9f0ff;
-  color: #722ed1;
+  background: var(--ai-bg);
+  color: var(--ai);
   flex: none;
 }
 
@@ -66,7 +55,7 @@
 }
 
 .channel-agent-summary code {
-  color: #8a9099;
+  color: var(--text-tertiary);
   font-size: 12px;
 }
 
@@ -85,13 +74,13 @@
 .channel-agent-none strong {
   display: block;
   margin-bottom: 5px;
-  color: #1f2530;
+  color: var(--text-body);
   font-size: 14px;
 }
 
 .channel-agent-none p {
   margin: 0 0 16px;
-  color: #8a9099;
+  color: var(--text-tertiary);
   font-size: 12.5px;
   line-height: 1.5;
 }
@@ -104,22 +93,22 @@
 
 .channel-counters > div {
   padding: 16px 18px;
-  border: 1px solid #e8eaee;
-  border-radius: 12px;
-  background: #fafbfc;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
+  background: var(--n-10);
 }
 
 .channel-counters span {
   display: block;
   margin-bottom: 8px;
-  color: #8a9099;
+  color: var(--text-tertiary);
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.04em;
 }
 
 .channel-counters strong {
-  color: #131923;
+  color: var(--text-heading);
   font-size: 26px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
@@ -136,50 +125,16 @@
   align-items: center;
   justify-content: space-between;
   padding: 9px 12px;
-  border: 1px solid #e8eaee;
-  border-radius: 8px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
   font-size: 12.5px;
 }
 
-.channel-transfer-path {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
-  padding: 12px 14px;
-  border: 1px solid #e8eaee;
-  border-radius: 10px;
-  background: #fafbfc;
-  color: #5b6472;
+.channel-delete-note {
+  margin: 0;
+  color: var(--text-secondary);
   font-size: 12.5px;
+  line-height: 1.5;
 }
 
-.channel-transfer-path i {
-  color: #1677ff;
-  font-style: normal;
-  font-weight: 700;
-}
-
-.channel-transfer-path b {
-  color: #1f2530;
-}
-
-.channel-modal-lead,
-.channel-modal-hint {
-  color: #5b6472;
-  font-size: 13px;
-  line-height: 1.55;
-}
-
-.channel-modal-hint {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.channel-modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 18px;
-}
+.channel-warning-action { color: var(--warning-text); }

@@ -41,6 +41,25 @@ Bootstrap the organization and both accounts:
 docker compose run --rm backend-app python manage.py bootstrap_owner --email owner@edevs.tech --password Owner-Local-2026 --name "Иван Петров"
 ```
 
+## Optional local demo seed
+
+The local demo seed is explicit and idempotent: it creates the documented local
+accounts and a connected set of departments, products, channels, integrations,
+AI agents, conversations, orders, and command-center data. It never runs during
+`start.ps1`, `docker compose up`, or migrations.
+
+Run it only after the local dev stack is running:
+
+```powershell
+.\scripts\seed-local.ps1
+```
+
+The data manifest and importer live in `dev/local-seed/`. The explicit
+`local-seed` one-shot service is defined only by `compose.dev.yaml`, runs with
+the local migration DB role, is excluded from the backend image, and the
+importer refuses any environment other than `CUS_ENV=local`. Production compose
+has no seed service or seed command.
+
 ## Tests
 
 All suites run in Docker, so no manual environment is required — the test

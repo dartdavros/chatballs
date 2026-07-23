@@ -1,9 +1,8 @@
 import { Dropdown } from "antd";
 
+import { ChannelBadge } from "../../shared/badges";
 import { Icon } from "../../shared/icons";
-import { StatusPill } from "../../shared/ui";
-import { ChannelBadge } from "./ChannelBadge";
-import { ChannelProductMark } from "./ChannelProductMark";
+import { ProductTag, StatusPill } from "../../shared/ui";
 import { agentStatus, deletionHint } from "./model";
 import type { Channel } from "./types";
 
@@ -35,51 +34,36 @@ function AgentCell({ channel, canOpenAgent, openAgent }: { channel: Channel; can
 export function ChannelRow({
   channel,
   canManageLifecycle,
-  canManageConnections,
   canOpenAgent,
   menuId,
   setMenuId,
   openChannel,
-  openConnections,
   openAgent,
   requestToggleActive,
   onDelete,
 }: {
   channel: Channel;
   canManageLifecycle: boolean;
-  canManageConnections: boolean;
   canOpenAgent: boolean;
   menuId: number | null;
   setMenuId: (channelId: number | null) => void;
   openChannel: (channelId: number) => void;
-  openConnections: (channelId: number) => void;
   openAgent: (agentId: number) => void;
   requestToggleActive: (channel: Channel) => void;
   onDelete: (channel: Channel) => void;
 }) {
   const blocked = deletionHint(channel);
-  const menuItems = [
-    {
-      key: "open",
-      label: (
-        <button type="button" onClick={() => openChannel(channel.id)}>
-          <Icon name="external" size={15} />
-          Открыть
-        </button>
-      ),
-    },
-    // Пункты, недоступные по capability, не показываются вовсе.
-    ...(canManageConnections && channel.isActive
-      ? [{
-          key: "bind",
-          label: (
-            <button type="button" onClick={() => openConnections(channel.id)}>
-              <Icon name="plug" size={15} />
-              Привязать подключение
-            </button>
-          ),
-        }]
-      : []),
+  const openItem = {
+    key: "open",
+    label: (
+      <button type="button" onClick={() => openChannel(channel.id)}>
+        <Icon name="external" size={15} />
+        Открыть
+      </button>
+    ),
+  };
+  const menuItems = channel.isActive ? [
+    openItem,
     ...(canManageLifecycle
       ? [
           { type: "divider" as const },
@@ -88,11 +72,11 @@ export function ChannelRow({
             label: (
               <button className="warning" type="button" onClick={() => requestToggleActive(channel)}>
                 <Icon name="pause" size={15} />
-                {channel.isActive ? "Деактивировать" : "Активировать"}
+                Деактивировать
               </button>
             ),
           },
-          ...(channel.isActive ? [{
+          {
             key: "delete",
             disabled: blocked !== null,
             label: (
@@ -101,9 +85,21 @@ export function ChannelRow({
                 <span>Удалить{blocked && <small>{blocked}</small>}</span>
               </button>
             ),
-          }] : []),
+          },
         ]
       : []),
+  ] : [
+    ...(canManageLifecycle
+      ? [{
+          key: "status",
+          label: (
+            <button type="button" onClick={() => requestToggleActive(channel)}>
+              <Icon name="refresh" size={15} />
+              Активировать
+            </button>
+          ),
+        }]
+      : [openItem]),
   ];
 
   return (
@@ -126,7 +122,7 @@ export function ChannelRow({
         </div>
       </td>
       <td>
-        <ChannelProductMark product={channel.product} />
+        {channel.product ? <ProductTag product={channel.product} /> : <span className="channel-muted">— непродуктовый</span>}
       </td>
       <td>
         {channel.connections.length ? (
@@ -149,7 +145,7 @@ export function ChannelRow({
           open={menuId === channel.id}
           onOpenChange={(open) => setMenuId(open ? channel.id : null)}
           trigger={["click"]}
-          overlayClassName="app-dropdown"
+          overlayClassName="app-dropdown is-channels-menu"
         >
           <button className="row-menu-button" type="button" aria-label={`Действия: ${channel.name}`}>
             <Icon name="more" />

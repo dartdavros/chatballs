@@ -1,7 +1,4 @@
-import { useState } from "react";
-
 import { FormField, KeyValue, SelectField } from "../../shared/form-controls";
-import { Button } from "../../shared/ui-controls";
 import { formatDate } from "../../shared/utils";
 import type { Department, Product } from "../../types";
 import type { Channel } from "./types";
@@ -22,9 +19,12 @@ export function ChannelAssignmentSection({
   canEditDepartment,
   canEditProduct,
   allowNoDepartment,
-  busy,
-  onSave,
-  onCancel,
+  name,
+  departmentId,
+  productId,
+  onNameChange,
+  onDepartmentChange,
+  onProductChange,
 }: {
   channel: Channel;
   departments: Department[];
@@ -34,47 +34,30 @@ export function ChannelAssignmentSection({
   canEditDepartment: boolean;
   canEditProduct: boolean;
   allowNoDepartment: boolean;
-  busy: boolean;
-  onSave: (patch: { name?: string; departmentId?: number | null; productId?: number | null }) => void;
-  onCancel: () => void;
+  name: string;
+  departmentId: number | null;
+  productId: number | null;
+  onNameChange: (value: string) => void;
+  onDepartmentChange: (value: number | null) => void;
+  onProductChange: (value: number | null) => void;
 }) {
-  const [departmentId, setDepartmentId] = useState(String(channel.departmentId ?? ""));
-  const [productId, setProductId] = useState(String(channel.product?.id ?? ""));
-  const [name, setName] = useState(channel.name);
-
   return (
     <section className="channel-card-section">
       <header>
         <h3>Назначение</h3>
-        <span>{editing ? "Изменения применяются одним сохранением" : "Отдел и продукт канала"}</span>
+        <span>Отдел и продукт канала</span>
       </header>
 
       {editing ? (
-        <>
-          <div className="channel-assignment">
-            {canEditName && <FormField label="Название" value={name} onChange={setName} />}
-            {canEditDepartment ? (
-              <SelectField label="Отдел" value={departmentId} onChange={setDepartmentId} options={[...(allowNoDepartment ? [["", "Без отдела"] as [string, string]] : []), ...departments.map((item) => [String(item.id), item.name] as [string, string])]} />
-            ) : <KeyValue label="Отдел" value={channel.departmentName ?? "Без отдела"} />}
-            {canEditProduct ? (
-              <SelectField label="Продукт" value={productId} onChange={setProductId} options={[["", "— непродуктовый"], ...products.map((item) => [String(item.id), item.name] as [string, string])]} />
-            ) : <KeyValue label="Продукт" value={channel.product?.name ?? "— непродуктовый"} />}
-          </div>
-          <div className="channel-section-actions">
-            <Button variant="secondary" onClick={onCancel}>Отмена</Button>
-            <Button
-              variant="primary"
-              disabled={busy || !name.trim()}
-              onClick={() => onSave({
-                ...(canEditName ? { name: name.trim() } : {}),
-                ...(canEditDepartment ? { departmentId: departmentId ? Number(departmentId) : null } : {}),
-                ...(canEditProduct ? { productId: productId ? Number(productId) : null } : {}),
-              })}
-            >
-              Сохранить
-            </Button>
-          </div>
-        </>
+        <div className="channel-assignment">
+          {canEditName && <FormField label="Название" value={name} onChange={onNameChange} />}
+          {canEditDepartment ? (
+            <SelectField label="Отдел" value={departmentId === null ? "" : String(departmentId)} onChange={(value) => onDepartmentChange(value ? Number(value) : null)} options={[...(allowNoDepartment ? [["", "Без отдела"] as [string, string]] : []), ...departments.map((item) => [String(item.id), item.name] as [string, string])]} />
+          ) : <KeyValue label="Отдел" value={channel.departmentName ?? "Без отдела"} />}
+          {canEditProduct ? (
+            <SelectField label="Продукт" value={productId === null ? "" : String(productId)} onChange={(value) => onProductChange(value ? Number(value) : null)} options={[["", "— непродуктовый"], ...products.map((item) => [String(item.id), item.name] as [string, string])]} />
+          ) : <KeyValue label="Продукт" value={channel.product?.name ?? "— непродуктовый"} />}
+        </div>
       ) : (
         <div className="channel-assignment">
           <KeyValue label="Отдел" value={channel.departmentName ?? "Без отдела"} />

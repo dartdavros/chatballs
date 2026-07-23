@@ -1,12 +1,11 @@
 import type { ReactNode } from "react";
 
 import { Icon } from "../../shared/icons";
+import { formatRussianCount } from "../../shared/text";
 import { Avatar, ProductTag } from "../../shared/ui";
 import { Button } from "../../shared/ui-controls";
 import type { Employee, Product } from "../../types";
 import { StatusLabel } from "../command/CommandCenter";
-import type { Channel } from "../channels/types";
-import { DepartmentChannels } from "./DepartmentChannels";
 import { departmentCopy } from "./model";
 
 export type DepartmentCardVm = {
@@ -19,13 +18,11 @@ export type DepartmentCardVm = {
   status: Parameters<typeof StatusLabel>[0]["status"] | null;
   owner: Employee | null;
   products: Product[];
-  channels: Channel[];
-  channelsFailed: boolean;
   stats: [ReactNode, ReactNode, ReactNode];
   onOpen: (() => void) | null;
 };
 
-export function DepartmentCard({ department, openChannel }: { department: DepartmentCardVm; openChannel: (channelId: number) => void }) {
+export function DepartmentCard({ department }: { department: DepartmentCardVm }) {
   const copy = departmentCopy(department.code);
 
   return (
@@ -50,7 +47,13 @@ export function DepartmentCard({ department, openChannel }: { department: Depart
         </div>
         <div>
           <span>Состав</span>
-          <strong>{department.memberCount} сотрудник(ов) · {department.operatorCount} операторов · {department.agentCount} AI-агент(ов)</strong>
+          <strong>
+            {formatRussianCount(department.memberCount, "сотрудник", "сотрудника", "сотрудников")}
+            {" · "}
+            {formatRussianCount(department.operatorCount, "оператор", "оператора", "операторов")}
+            {" · "}
+            {formatRussianCount(department.agentCount, "AI-агент", "AI-агента", "AI-агентов")}
+          </strong>
         </div>
         <div>
           <span>Связанные продукты</span>
@@ -68,8 +71,6 @@ export function DepartmentCard({ department, openChannel }: { department: Depart
           </div>
         ))}
       </div>
-
-      <DepartmentChannels channels={department.channels} failed={department.channelsFailed} openChannel={openChannel} />
 
       {department.onOpen && (
         <div className="department-action">

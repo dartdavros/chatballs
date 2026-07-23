@@ -1,6 +1,7 @@
 @import "./styles/base.css";
 @import "./shared/ui-controls.css";
 @import "./shared/form-controls.css";
+@import "./shared/design-components.css";
 @import "./features/auth/styles.css";
 @import "./layout/styles.css";
 @import "./layout/topbar.css";
@@ -31,6 +32,7 @@
 @import "./features/ai/knowledge/styles-category.css";
 @import "./features/channels/styles-list.css";
 @import "./features/channels/styles-detail.css";
+@import "./features/channels/styles-policy.css";
 @import "./features/channels/styles-sections.css";
 @import "./features/channels/styles-wizard.css";
 @import "./features/integrations/styles.css";

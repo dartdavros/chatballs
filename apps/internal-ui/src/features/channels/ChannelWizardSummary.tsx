@@ -1,34 +1,75 @@
 import { KeyValue } from "../../shared/form-controls";
 import { Icon } from "../../shared/icons";
-import { providerLabel } from "./ChannelBadge";
-import type { Channel } from "./types";
 
-/** Правая колонка финального шага: что именно создано и что делать дальше. */
-export function ChannelWizardSummary({ channel, openAgentCreate }: { channel: Channel; openAgentCreate: () => void }) {
-  const connections = channel.connections.length
-    ? channel.connections.map((connection) => providerLabel(connection.provider)).join(", ")
-    : "нет";
-
+export function ChannelWizardSummary({
+  name,
+  code,
+  departmentName,
+  productName,
+  showDestinations = false,
+  openAgentCreate,
+  openIntegrations,
+}: {
+  name: string;
+  code: string;
+  departmentName: string;
+  productName: string;
+  showDestinations?: boolean;
+  openAgentCreate: () => void;
+  openIntegrations: () => void;
+}) {
   return (
     <aside className="channel-wizard-aside">
-      <div className="channel-card-aside channel-wizard-ai">
-        <h4>Сводка канала</h4>
-        <KeyValue label="Название" value={channel.name} />
-        <KeyValue label="Код" value={<code>{channel.code}</code>} />
-        <KeyValue label="Отдел" value={channel.departmentName ?? "Без отдела"} />
-        <KeyValue label="Продукт" value={channel.product?.name ?? "— непродуктовый"} />
-        <KeyValue label="Подключения" value={connections} />
-      </div>
       <div className="channel-card-aside">
-        <p>
-          <b>Нужен AI-агент?</b> Создайте его отдельным действием в разделе AI — он подключится
-          к этому каналу.
-        </p>
-        <button className="link has-icon" type="button" onClick={openAgentCreate}>
-          Перейти в раздел AI
-          <Icon name="arrow" size={14} />
-        </button>
+        <h4>Сводка канала</h4>
+        <KeyValue label="Название" value={name || "—"} />
+        <KeyValue label="Код" value={code ? <code>{code}</code> : "—"} />
+        <KeyValue label="Отдел" value={departmentName} />
+        <KeyValue label="Продукт" value={productName} />
       </div>
+
+      {showDestinations && (
+        <>
+          <DestinationCard
+            tone="ai"
+            title="Нужен AI-агент?"
+            text="Создайте его отдельным действием в разделе AI и выберите этот канал."
+            action="Перейти в раздел AI"
+            onClick={openAgentCreate}
+          />
+          <DestinationCard
+            tone="integration"
+            title="Нужно подключение?"
+            text="Создайте или измените подключение в разделе «Интеграции» и выберите этот канал."
+            action="Перейти в интеграции"
+            onClick={openIntegrations}
+          />
+        </>
+      )}
     </aside>
+  );
+}
+
+function DestinationCard({
+  tone,
+  title,
+  text,
+  action,
+  onClick,
+}: {
+  tone: "ai" | "integration";
+  title: string;
+  text: string;
+  action: string;
+  onClick: () => void;
+}) {
+  return (
+    <section className={`channel-wizard-destination is-${tone}`}>
+      <p><b>{title}</b> {text}</p>
+      <button className="link has-icon" type="button" onClick={onClick}>
+        {action}
+        <Icon name="arrow" size={14} />
+      </button>
+    </section>
   );
 }

@@ -1,5 +1,6 @@
 import type { Channel, ChannelPolicy, PolicyFlag, PolicyPreset } from "./types";
 import type { StatusPillKey } from "../../shared/ui";
+import { formatRussianCount } from "../../shared/text";
 
 export const POLICY_FLAGS: PolicyFlag[] = [
   "requiresAuthenticatedProductIdentity",
@@ -198,8 +199,12 @@ export const BLOCKER_LABELS: Record<string, string> = {
  */
 export function deletionHint(channel: Channel): string | null {
   const parts: string[] = [];
-  if (channel.counters.openConversations > 0) parts.push(`${channel.counters.openConversations} диалогов`);
-  if (channel.counters.connections > 0) parts.push(`${channel.counters.connections} подключений`);
+  if (channel.counters.openConversations > 0) {
+    parts.push(formatRussianCount(channel.counters.openConversations, "диалог", "диалога", "диалогов"));
+  }
+  if (channel.counters.connections > 0) {
+    parts.push(formatRussianCount(channel.counters.connections, "подключение", "подключения", "подключений"));
+  }
   if (channel.agent) parts.push("агент");
   return parts.length ? `Нельзя: ${parts.join(", ")}` : null;
 }
@@ -212,29 +217,35 @@ export function blockerSummary(blockers: { type: string; count: number }[]): str
 
 export type DepartmentTab = { key: string; label: string; count: number };
 
-/** Табы-фильтры: Все, по одному на отдел видимых каналов, Без отдела (§11.1). */
-export function departmentTabs(channels: Channel[]): DepartmentTab[] {
-  const byDepartment = new Map<string, { label: string; count: number }>();
-  let orphans = 0;
-  for (const channel of channels) {
-    if (channel.departmentId === null) {
-      orphans += 1;
-      continue;
-    }
-    const key = String(channel.departmentId);
-    const existing = byDepartment.get(key);
-    const label = channel.departmentName ?? channel.department ?? key;
-    byDepartment.set(key, { label, count: (existing?.count ?? 0) + 1 });
-  }
-  const tabs: DepartmentTab[] = [{ key: "all", label: "Все", count: channels.length }];
-  for (const [key, value] of [...byDepartment.entries()].sort((a, b) =>
-    a[1].label.localeCompare(b[1].label, "ru"),
-  )) {
-    tabs.push({ key, label: value.label, count: value.count });
-  }
-  if (orphans) tabs.push({ key: "none", label: "Без отдела", count: orphans });
-  return tabs;
+/** Табы идут в порядке отделов компании; «Без отдела» присутствует даже при нуле. */
+export function departmentTabs(
+  channels: Channel[],
+  departments: Array<{ id: number; name: string; code?: string }>,
+): DepartmentTab[] {
+  const countOf = (departmentId: number | null) =>
+    channels.filter((channel) => channel.departmentId === departmentId).length;
+  const priority: Record<string, number> = { sales: 0, support: 1 };
+  const orderedDepartments = departments
+    .map((department, index) => ({ department, index }))
+    .sort((left, right) => {
+      const leftPriority = priority[left.department.code ?? ""] ?? 100 + left.index;
+      const rightPriority = priority[right.department.code ?? ""] ?? 100 + right.index;
+      return leftPriority - rightPriority;
+    })
+    .map(({ department }) => department);
+  return [
+    { key: "all", label: "Все", count: channels.length },
+    ...orderedDepartments.map((department) => ({
+      key: String(department.id),
+      label: department.name,
+      count: countOf(department.id),
+    })),
+    { key: "none", label: "Без отдела", count: countOf(null) },
+  ];
 }
+
+export const channelCountLabel = (value: number) => formatRussianCount(value, "канал", "канала", "каналов");
+export const archivedCountLabel = (value: number) => formatRussianCount(value, "архивный", "архивных", "архивных");
 
 export function filterChannels(
   channels: Channel[],

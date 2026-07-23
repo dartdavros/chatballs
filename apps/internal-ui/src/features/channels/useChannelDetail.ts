@@ -11,7 +11,6 @@ export function useChannelDetail(channelId: number | null, openChannels: () => v
   const [missing, setMissing] = useState(false);
   const [loadFailed, setLoadFailed] = useState(false);
   const [feedback, setFeedback] = useState<ChannelFeedback>(null);
-  const [editing, setEditing] = useState(false);
   const [busy, setBusy] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [confirmingDeactivation, setConfirmingDeactivation] = useState(false);
@@ -38,19 +37,19 @@ export function useChannelDetail(channelId: number | null, openChannels: () => v
   }, [reload]);
 
   async function patch(body: Parameters<typeof updateChannel>[1]) {
-    if (!channel) return;
+    if (!channel) return false;
     setFeedback(null);
     setBusy(true);
     try {
       const response = await updateChannel(channel.id, body);
       setChannel(response.channel);
-      setEditing(false);
       if (response.warnings?.some((item) => item.code === "agent_still_active")) {
         setFeedback({
           kind: "warning",
           text: "Канал деактивирован, но агент остаётся активным и продолжает занимать слот. Остановите его на странице агента.",
         });
       }
+      return true;
     } catch (error) {
       if (error instanceof ApiError) {
         const violations = (error.payload as { violations?: PolicyViolation[] }).violations;
@@ -59,6 +58,7 @@ export function useChannelDetail(channelId: number | null, openChannels: () => v
           text: violations?.length ? violations.map((item) => item.detail).join("; ") : error.message,
         });
       } else setFeedback({ kind: "error", text: "Не удалось сохранить канал." });
+      return false;
     } finally {
       setBusy(false);
     }
@@ -96,8 +96,8 @@ export function useChannelDetail(channelId: number | null, openChannels: () => v
   }
 
   return {
-    blockers, busy, channel, confirmingDeactivation, deleting, editing, feedback, loadFailed, missing,
+    blockers, busy, channel, confirmingDeactivation, deleting, feedback, loadFailed, missing,
     closeDeleteDialog, patch, reload, remove, requestToggleActive, setChannel, setConfirmingDeactivation,
-    setDeleting, setEditing,
+    setDeleting,
   };
 }

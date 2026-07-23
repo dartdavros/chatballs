@@ -5,7 +5,7 @@ import { deleteChannel, listChannels, updateChannel } from "./api";
 import { departmentTabs, filterChannels } from "./model";
 import type { Channel, DeletionBlocker } from "./types";
 
-export function useChannelsPage() {
+export function useChannelsPage(departments: Array<{ id: number; name: string; code?: string }>) {
   const [channels, setChannels] = useState<Channel[] | null>(null);
   const [failed, setFailed] = useState(false);
   const [tab, setTab] = useState("all");
@@ -31,7 +31,7 @@ export function useChannelsPage() {
     void reload();
   }, [reload]);
 
-  const tabs = useMemo(() => departmentTabs(channels ?? []), [channels]);
+  const tabs = useMemo(() => departmentTabs(channels ?? [], departments), [channels, departments]);
   const visible = useMemo(
     () => filterChannels(channels ?? [], { tab, search, showArchived }),
     [channels, tab, search, showArchived],

@@ -4,8 +4,11 @@ import {
   OPERATOR_POLICY,
   PRESETS,
   agentStatus,
+  archivedCountLabel,
   blockerSummary,
+  channelCountLabel,
   connectionStatus,
+  deletionHint,
   departmentTabs,
   filterChannels,
   flagLock,
@@ -100,12 +103,35 @@ describe("channel list filtering", () => {
   ];
 
   it("builds a tab per department plus «Без отдела»", () => {
-    expect(departmentTabs(channels).map((tab) => [tab.key, tab.label, tab.count])).toEqual([
+    expect(departmentTabs(channels, [{ id: 2, code: "support", name: "Поддержка" }, { id: 1, code: "sales", name: "Продажи" }]).map((tab) => [tab.key, tab.label, tab.count])).toEqual([
       ["all", "Все", 4],
-      ["2", "Поддержка", 1],
       ["1", "Продажи", 2],
+      ["2", "Поддержка", 1],
       ["none", "Без отдела", 1],
     ]);
+  });
+
+  it("formats channel counters with russian plural forms", () => {
+    expect(channelCountLabel(1)).toBe("1 канал");
+    expect(channelCountLabel(2)).toBe("2 канала");
+    expect(channelCountLabel(5)).toBe("5 каналов");
+    expect(archivedCountLabel(1)).toBe("1 архивный");
+    expect(archivedCountLabel(2)).toBe("2 архивных");
+  });
+
+  it("formats deletion blockers with russian plural forms", () => {
+    expect(deletionHint(channel({
+      counters: { openConversations: 1, connections: 1 },
+    }))).toBe("Нельзя: 1 диалог, 1 подключение");
+  });
+
+  it("keeps «Без отдела» visible when the count is zero", () => {
+    const assigned = channels.filter((item) => item.departmentId !== null);
+    expect(departmentTabs(assigned, [{ id: 1, name: "Продажи" }]).at(-1)).toEqual({
+      key: "none",
+      label: "Без отдела",
+      count: 0,
+    });
   });
 
   it("hides archived channels until the toggle is on", () => {

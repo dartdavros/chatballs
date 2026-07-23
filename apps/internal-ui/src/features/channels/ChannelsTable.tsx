@@ -6,10 +6,8 @@ import type { Channel } from "./types";
 export function ChannelsTable({
   channels,
   canManageLifecycle,
-  canManageConnections,
   canOpenAgent,
   openChannel,
-  openConnections,
   openAgent,
   requestToggleActive,
   onDelete,
@@ -17,10 +15,8 @@ export function ChannelsTable({
 }: {
   channels: Channel[];
   canManageLifecycle: boolean;
-  canManageConnections: boolean;
   canOpenAgent: (channel: Channel) => boolean;
   openChannel: (channelId: number) => void;
-  openConnections: (channelId: number) => void;
   openAgent: (agentId: number) => void;
   requestToggleActive: (channel: Channel) => void;
   onDelete: (channel: Channel) => void;
@@ -47,12 +43,10 @@ export function ChannelsTable({
               key={channel.id}
               channel={channel}
               canManageLifecycle={canManageLifecycle}
-              canManageConnections={canManageConnections}
               canOpenAgent={canOpenAgent(channel)}
               menuId={menuId}
               setMenuId={setMenuId}
               openChannel={openChannel}
-              openConnections={openConnections}
               openAgent={openAgent}
               requestToggleActive={requestToggleActive}
               onDelete={onDelete}

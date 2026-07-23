@@ -16,6 +16,10 @@
   width: 216px;
 }
 
+.app-dropdown.is-channels-menu .ant-dropdown-menu {
+  width: 246px;
+}
+
 .app-dropdown .ant-dropdown-menu-item {
   padding: 0 !important;
 }
@@ -35,6 +39,7 @@
   font-weight: 500;
   text-align: left;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .app-dropdown .ant-dropdown-menu-item button.warning {
@@ -52,6 +57,11 @@
 .app-dropdown .ant-dropdown-menu-item-disabled button {
   color: #bfbfbf;
   cursor: not-allowed;
+}
+
+.app-dropdown .ant-dropdown-menu-item-disabled button.danger,
+.app-dropdown .ant-dropdown-menu-item-disabled button.danger small {
+  color: var(--text-disabled);
 }
 
 /* Причина недоступного пункта — второй строкой под названием. */

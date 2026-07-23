@@ -71,6 +71,10 @@ services:
       context: .
       dockerfile: apps/internal-ui/Dockerfile
     command: npm run dev -- --host 0.0.0.0 --port 5173
+    environment:
+      # Direct Vite remains same-origin for cookies/CSRF and proxies only to the
+      # real local Django service. This variable exists only in dev compose.
+      VITE_DEV_API_TARGET: http://backend-app:8000
     ports:
       - "${INTERNAL_UI_PORT:-5173}:5173"
     volumes:
@@ -92,6 +96,30 @@ services:
       - ./packages:/app/packages
       - /app/node_modules
       - /app/apps/web-chat/node_modules
+
+  # Явный одноразовый импорт демонстрационных данных. Сервис существует только
+  # в compose.dev.yaml, профилем не включается в обычный `up` и не попадает в
+  # canonical production compose или backend image.
+  local-seed:
+    profiles: ["local-seed"]
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    env_file:
+      - .env
+    command: ["python", "/opt/custocrm-local-seed/seed.py"]
+    working_dir: /app/apps/backend
+    environment:
+      CUS_DB_ROLE: migration
+      CUSTOCRM_LOCAL_SEED: "1"
+    volumes:
+      - ./apps/backend:/app/apps/backend
+      - ./dev/local-seed:/opt/custocrm-local-seed:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   # Dev: gateway — nginx с local.conf вместо Caddy (та же маршрутизация, HMR-friendly).
   gateway:

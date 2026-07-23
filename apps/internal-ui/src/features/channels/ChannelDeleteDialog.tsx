@@ -1,6 +1,4 @@
-import { Modal } from "antd";
-
-import { Icon } from "../../shared/icons";
+import { DecisionDialog } from "../../shared/DecisionDialog";
 import { Button } from "../../shared/ui-controls";
 import { BLOCKER_LABELS } from "./model";
 import type { Channel, DeletionBlocker } from "./types";
@@ -29,19 +27,26 @@ export function ChannelDeleteDialog({
   onClose: () => void;
 }) {
   return (
-    <Modal
-      className="channel-delete-modal"
+    <DecisionDialog
       open={open}
-      onCancel={onClose}
-      footer={null}
+      onClose={onClose}
+      tone="danger"
+      icon="trash"
       title={blockers ? "Канал нельзя удалить" : "Удалить канал?"}
-      destroyOnHidden
+      description={blockers
+        ? "Есть связанные записи. Вместо удаления используйте деактивацию — история сохранится."
+        : <>Канал <b>«{channel.name}»</b> будет удалён безвозвратно.</>}
+      width={566}
+      actions={blockers ? <>
+        <Button variant="secondary" onClick={onClose}>Закрыть</Button>
+        {channel.isActive && <Button className="channel-warning-action" variant="secondary" disabled={busy} onClick={onDeactivate}>Деактивировать вместо удаления</Button>}
+      </> : <>
+        <Button variant="secondary" onClick={onClose}>Отмена</Button>
+        <Button variant="danger-outline" icon="trash" disabled={busy} onClick={onConfirm}>Удалить канал</Button>
+      </>}
     >
       {blockers ? (
         <>
-          <p className="channel-modal-lead">
-            Есть связанные записи. Вместо удаления используйте деактивацию — история сохранится.
-          </p>
           <div className="channel-section-eyebrow">БЛОКИРУЮЩИЕ СВЯЗИ</div>
           <div className="channel-blockers-list">
             {blockers.map((item) => (
@@ -51,35 +56,10 @@ export function ChannelDeleteDialog({
               </div>
             ))}
           </div>
-          <div className="channel-modal-actions">
-            <Button variant="secondary" onClick={onClose}>Закрыть</Button>
-            {channel.isActive && (
-              <Button variant="primary" disabled={busy} onClick={onDeactivate}>
-                Деактивировать вместо удаления
-              </Button>
-            )}
-          </div>
         </>
       ) : (
-        <>
-          <p className="channel-modal-lead">
-            Канал <b>«{channel.name}»</b> будет удалён безвозвратно. Если у канала есть диалоги,
-            заказы или подключения, удаление не выполнится — их придётся снять или деактивировать канал.
-          </p>
-          <div className="channel-modal-actions">
-            <Button variant="secondary" onClick={onClose}>Отмена</Button>
-            <Button variant="danger-outline" icon="trash" disabled={busy} onClick={onConfirm}>
-              Удалить канал
-            </Button>
-          </div>
-        </>
+        <p className="channel-delete-note">Если у канала есть диалоги, заказы или подключения, удаление не выполнится. Деактивация сохраняет историю и отключает канал от новых диалогов.</p>
       )}
-      {!blockers && (
-        <p className="channel-modal-hint">
-          <Icon name="warning" size={14} />
-          Деактивация сохраняет историю и отключает канал от новых диалогов.
-        </p>
-      )}
-    </Modal>
+    </DecisionDialog>
   );
 }

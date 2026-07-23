@@ -1,19 +1,15 @@
-import { Button } from "../../shared/ui-controls";
+import { StatusPill } from "../../shared/ui";
 
 /** Архивный канал: что это значит и как вернуть в работу. */
-export function ChannelArchivedNotice({ canManage, busy, onActivate }: { canManage: boolean; busy: boolean; onActivate: () => void }) {
+export function ChannelArchivedNotice({ name, code }: { name: string; code: string }) {
   return (
-    <div className="channel-notice">
-      <div>
-        <strong>Канал архивный</strong>
-        <p>
-          Не принимает новые диалоги и не выбирается при привязке подключения.
-          История диалогов сохранена и доступна.
-        </p>
+    <section className="channel-archived-state">
+      <div className="channel-section-eyebrow">АРХИВНЫЙ КАНАЛ</div>
+      <div className="channel-archived-summary">
+        <div><strong>{name}</strong><code>{code}</code></div>
+        <StatusPill status="archived" />
       </div>
-      {canManage && (
-        <Button variant="secondary" disabled={busy} onClick={onActivate}>Активировать</Button>
-      )}
-    </div>
+      <p>Не принимает новые диалоги и недоступен для выбора в настройках подключений. История диалогов сохранена и доступна.</p>
+    </section>
   );
 }

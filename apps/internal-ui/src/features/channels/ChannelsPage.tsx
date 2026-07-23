@@ -1,12 +1,13 @@
 import { hasCapability, scopeDepartments } from "../../auth/access";
 import { SwitchButton } from "../../shared/form-controls";
 import { Icon } from "../../shared/icons";
-import { ErrorScreen, LoadingState, PageHeader } from "../../shared/ui";
+import { ContentState, ErrorScreen, LoadingState, PageHeader } from "../../shared/ui";
 import { Button, SearchInput, UnderlineTabs } from "../../shared/ui-controls";
 import type { Department, SessionUser } from "../../types";
 import { ChannelDeactivationDialog } from "./ChannelDeactivationDialog";
 import { ChannelDeleteDialog } from "./ChannelDeleteDialog";
 import { ChannelsTable } from "./ChannelsTable";
+import { archivedCountLabel, channelCountLabel } from "./model";
 import type { Channel } from "./types";
 import { useChannelsPage } from "./useChannelsPage";
 
@@ -19,13 +20,12 @@ export function ChannelsPage({
   openChannelCreate: () => void;
   openAgent: (agentId: number) => void;
 }) {
-  const page = useChannelsPage();
+  const page = useChannelsPage(departments);
   const scopedCodes = scopeDepartments(user, "channels.view");
   const scopedNames = scopedCodes
     ?.map((code) => departments.find((department) => department.code === code)?.name ?? code)
     .join(", ");
   const canManageLifecycle = hasCapability(user, "channels.manage");
-  const canManageConnections = hasCapability(user, "integrations.manage");
   const canOpenAgent = (channel: Channel) => hasCapability(user, "ai.view", channel.department ?? undefined);
   const openChannelCard = (channelId: number) => {
     if (window.location.hash) {
@@ -42,27 +42,28 @@ export function ChannelsPage({
       <PageHeader
         title="Каналы"
         text="Точка маршрутизации диалогов: связывает отдел, продукт, подключения и — необязательно — AI-агента"
-        action={canManageLifecycle ? <Button variant="primary" icon="plus" onClick={openChannelCreate}>Создать канал</Button> : undefined}
+        action={canManageLifecycle ? <Button className="channel-create-action" variant="primary" icon="plus" onClick={openChannelCreate}>Создать канал</Button> : undefined}
       />
 
       {page.feedback && <div className="channel-feedback is-error">{page.feedback}</div>}
 
-      {scopedNames && (
-        <div className="channel-notice">
-          <div>
-            <strong>Доступ ограничен отделом</strong>
-            <p>Показаны каналы отдела «{scopedNames}». Каналы других отделов и канал без отдела не отображаются; счётчики фильтров считаются по видимым каналам.</p>
-          </div>
-        </div>
+      {scopedNames && page.channels.length > 0 && (
+        <ContentState
+          className="channels-scope-state"
+          icon={<Icon name="lock" size={23} />}
+          tone="warning"
+          title="Доступ ограничен отделом"
+          text={<>Показаны каналы отдела «{scopedNames}». Каналы других отделов и канал без отдела не отображаются; счётчики фильтров считаются по видимым каналам.</>}
+        />
       )}
 
       {page.channels.length === 0 ? (
-        <div className="channels-empty">
-          <span className="channels-empty-mark"><Icon name="route" size={24} /></span>
-          <strong>Создайте первый канал</strong>
-          <p>Канал маршрутизирует диалоги от подключений к отделу, продукту и — при необходимости — к AI-агенту.</p>
-          {canManageLifecycle && <Button variant="primary" onClick={openChannelCreate}>Создать канал</Button>}
-        </div>
+        <ContentState
+          icon={<Icon name="route" size={24} />}
+          title="Создайте первый канал"
+          text="Канал маршрутизирует диалоги от подключений к отделу, продукту и — при необходимости — к AI-агенту."
+          action={canManageLifecycle ? <Button className="channel-state-action" variant="primary" onClick={openChannelCreate}>Создать канал</Button> : undefined}
+        />
       ) : (
         <>
           <div className="channels-toolbar">
@@ -78,17 +79,12 @@ export function ChannelsPage({
           <ChannelsTable
             channels={page.visible}
             canManageLifecycle={canManageLifecycle}
-            canManageConnections={canManageConnections}
             canOpenAgent={canOpenAgent}
             openChannel={openChannelCard}
-            openConnections={(channelId) => {
-              window.location.hash = "connections";
-              openChannel(channelId);
-            }}
             openAgent={openAgent}
             requestToggleActive={page.requestToggleActive}
             onDelete={page.setDeleteTarget}
-            footer={`${page.channels.length} каналов${page.archived ? ` · ${page.archived} архивных` : ""}`}
+            footer={`${channelCountLabel(page.channels.length)}${page.archived ? ` · ${archivedCountLabel(page.archived)}` : ""}`}
           />
         </>
       )}

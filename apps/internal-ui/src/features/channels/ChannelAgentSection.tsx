@@ -39,7 +39,7 @@ export function ChannelAgentSection({
         <div className="channel-agent-none">
           <span className="channel-agent-mark"><Icon name="robot" size={22} /></span>
           <strong>Агента нет, канал ведут операторы</strong>
-          <p>Канал работает без AI-агента: диалоги ведут операторы.</p>
+          <p>Это рабочее состояние. При создании AI-агента нужный канал выбирается в разделе AI.</p>
           {canOpenAgent && (
             <button className="link has-icon" type="button" onClick={openAgentCreate}>
               Создать агента в разделе AI
