@@ -2,12 +2,12 @@ import { api } from "../../api/client";
 import type { ChannelKey, ConversationListItem, ControlMode, DialogMode } from "./types";
 
 // kind: "" — текст, "contact_request" — запрос контакта, "contact" — клиент поделился номером.
-export type ApiMessage = { id: number; author: "CONTACT" | "AI" | "OPERATOR" | "SYSTEM"; kind?: string; text: string; createdAt: string };
+export type ApiMessage = { id: number; author: "CONTACT" | "AI" | "OPERATOR" | "SYSTEM"; kind?: string; text: string; contentHtml?: string; createdAt: string };
 
 export type HistoryItem = {
   id: number;
   channelName: string;
-  provider: "MAX" | "TELEGRAM" | "WEB" | null;
+  provider: "EMAIL" | "MAX" | "TELEGRAM" | "WEB" | null;
   lifecycle: "OPEN" | "CLOSED" | "SPAM";
   createdAt: string;
   lastActivityAt: string;
@@ -41,16 +41,18 @@ export type OperatorCard = {
 export type ApiConversation = {
   id: number;
   channel: { code: string; name: string; product: { code: string; name: string } | null };
-  connection: { id: number; provider: "MAX" | "TELEGRAM" | "WEB"; name: string } | null;
+  connection: { id: number; provider: "EMAIL" | "MAX" | "TELEGRAM" | "WEB"; name: string } | null;
   // Источник identity: sales Contact (лид) ИЛИ verified SupportIdentitySnapshot.
   // ADR-HUB-0022: ровно один заполнен.
   // phone появляется после явного шаринга контакта; username (@логин TG/MAX) — только в detail-режиме.
-  contact: { id: number; name: string; phone?: string; username?: string } | null;
+  contact: { id: number; name: string; email?: string; phone?: string; username?: string } | null;
   supportIdentitySnapshot: SupportIdentitySnapshotRef | null;
   lifecycle: "OPEN" | "CLOSED" | "SPAM";
   controlMode: "AI" | "HUMAN" | "PAUSED";
   expectedResponder: string;
   assignedOperatorId: number | null;
+  assignedOperator: { id: number; name: string } | null;
+  isAssignedToViewer: boolean;
   lastActivityAt: string;
   createdAt: string;
   lastMessage: ApiMessage | null;
@@ -60,10 +62,18 @@ export type ApiConversation = {
 };
 
 const AVATAR_PALETTE = ["#eb6f4b", "#3b82c4", "#9254de", "#13a8a8", "#d4860b", "#52a838", "#c4413b", "#6b5be0"];
-const PROVIDER_CHANNEL: Record<string, ChannelKey> = { MAX: "MAX", TELEGRAM: "TG", WEB: "WEB" };
+const PROVIDER_CHANNEL: Record<string, ChannelKey> = {
+  EMAIL: "EMAIL",
+  MAX: "MAX",
+  TELEGRAM: "TG",
+  WEB: "WEB",
+};
 
 export function controlModeOf(conversation: ApiConversation): ControlMode {
-  if (conversation.controlMode === "HUMAN") return "human";
+  if (conversation.lifecycle !== "OPEN") return "closed";
+  if (conversation.controlMode === "HUMAN") {
+    return conversation.isAssignedToViewer ? "human" : "assigned";
+  }
   if (conversation.controlMode === "AI") return "ai";
   return "waiting";
 }
@@ -100,6 +110,7 @@ export function toConversationListItem(conversation: ApiConversation): Conversat
     avatarBg: AVATAR_PALETTE[seed % AVATAR_PALETTE.length],
     product: conversation.channel.name,
     channel: PROVIDER_CHANNEL[conversation.connection?.provider ?? "WEB"] ?? "WEB",
+    email: conversation.contact?.email ?? "",
     mode: dialogMode(conversation),
     preview: conversation.lastMessage?.text.replace(/\s+/g, " ").slice(0, 80) ?? "—",
     time: new Date(conversation.lastActivityAt).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }),
@@ -118,6 +129,7 @@ export const returnToQueue = (id: number) => api<{ conversation: ApiConversation
 // Запрос контакта: в TG/MAX клиент видит кнопку «Поделиться контактом», в веб-чате — форму телефона.
 export const requestContact = (id: number) => api(`/api/v1/conversations/${id}/request-contact/`, { method: "POST" });
 export const closeConversation = (id: number) => api<{ conversation: ApiConversation }>(`/api/v1/conversations/${id}/close/`, { method: "POST" }).then((r) => r.conversation);
+export const markConversationAsSpam = (id: number) => api<{ conversation: ApiConversation }>(`/api/v1/conversations/${id}/spam/`, { method: "POST" }).then((r) => r.conversation);
 // Бейдж ожидающих диалогов. ConversationStatsView сейчас sales-only (SPEC §12:
 // support-метрики — отдельный endpoint); department-параметр backend не использует.
 export const fetchWaitingCount = () => api<{ waiting: number }>("/api/v1/conversations/stats/").then((r) => r.waiting);

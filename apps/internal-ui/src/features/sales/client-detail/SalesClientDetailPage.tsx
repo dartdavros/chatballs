@@ -1,7 +1,6 @@
 import { useState } from "react";
 
 import { EmptyState, LoadingState } from "../../../shared/ui";
-import type { RouteKey } from "../../../types";
 import { type ClientDetailTab } from "./model";
 import { SalesClientAuditTab } from "./SalesClientAuditTab";
 import { SalesClientConsentTab } from "./SalesClientConsentTab";
@@ -13,7 +12,7 @@ import { SalesClientOverviewTab } from "./SalesClientOverviewTab";
 import { SalesClientTabs } from "./SalesClientTabs";
 import { useClientDetail } from "./useClientDetail";
 
-export function SalesClientDetailPage({ contactId, setRoute }: { contactId: number | null; setRoute: (route: RouteKey) => void }) {
+export function SalesClientDetailPage({ contactId, openConversation }: { contactId: number | null; openConversation: (conversationId: number) => void }) {
   const [tab, setTab] = useState<ClientDetailTab>("overview");
   const { client, loading, error } = useClientDetail(contactId);
 
@@ -22,10 +21,10 @@ export function SalesClientDetailPage({ contactId, setRoute }: { contactId: numb
 
   return (
     <>
-      <SalesClientHeader client={client} setRoute={setRoute} />
+      <SalesClientHeader client={client} openConversation={openConversation} />
       <SalesClientTabs activeTab={tab} setActiveTab={setTab} />
-      {tab === "overview" && <SalesClientOverviewTab client={client} setRoute={setRoute} />}
-      {tab === "dialogs" && <SalesClientDialogsTab dialogs={client.dialogs} setRoute={setRoute} />}
+      {tab === "overview" && <SalesClientOverviewTab client={client} openConversation={openConversation} />}
+      {tab === "dialogs" && <SalesClientDialogsTab dialogs={client.dialogs} openConversation={openConversation} />}
       {tab === "orders" && <SalesClientSalesTab contactId={contactId} />}
       {tab === "ids" && <SalesClientIdentitiesTab identities={client.identities} />}
       {tab === "consent" && <SalesClientConsentTab />}

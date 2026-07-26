@@ -24,17 +24,26 @@ class IntegrationInput:
     secret: str | None = None  # None = не менять при update
     config: dict = field(default_factory=dict)
     channel_id: int | None = None  # канал обработки для подключения (ADR-HUB-0019)
+    is_active: bool | None = None
 
 
-def _resolve_channel(organization: Organization, channel_id: int | None):
+def _resolve_channel(
+    organization: Organization,
+    channel_id: int | None,
+    *,
+    current_channel_id: int | None = None,
+):
     if not channel_id:
         return None
     from hub_platform.channels.models import Channel
 
     try:
-        return Channel.objects.get(organization=organization, id=channel_id)
+        channel = Channel.objects.get(organization=organization, id=channel_id)
     except Channel.DoesNotExist as error:
         raise ValidationError({"channel": "Channel not found"}) from error
+    if not channel.is_active and channel.id != current_channel_id:
+        raise ValidationError({"channel": "Inactive channel cannot accept connections"})
+    return channel
 
 
 def _email_config(config: dict) -> dict:
@@ -124,6 +133,7 @@ def create_integration(*, context: TenantContext, data: IntegrationInput) -> Int
         secret=(data.secret or "").strip(),
         config=_normalized_config(provider, data.config),
         channel=_resolve_channel(organization, data.channel_id),
+        is_active=True if data.is_active is None else data.is_active,
         status=IntegrationStatus.UNCHECKED,
     )
     integration.full_clean(exclude=["secret"])
@@ -148,7 +158,13 @@ def update_integration(
         raise ValidationError({"integration": "Integration belongs to another organization"})
     integration.name = data.name.strip() or integration.name
     integration.config = _normalized_config(integration.provider, data.config)
-    integration.channel = _resolve_channel(integration.organization, data.channel_id)
+    integration.channel = _resolve_channel(
+        integration.organization,
+        data.channel_id,
+        current_channel_id=integration.channel_id,
+    )
+    if data.is_active is not None:
+        integration.is_active = data.is_active
     # Пустой/отсутствующий секрет при обновлении не затирает существующий.
     if data.secret:
         integration.secret = data.secret.strip()

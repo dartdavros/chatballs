@@ -21,7 +21,12 @@ from hub_platform.identity.models import AuditEvent
 from hub_platform.orders.models import Order, PaymentStatus
 
 # Короткие коды для UI (совпадают с фронтовыми справочниками).
-PROVIDER_CODE = {"MAX": "MAX", "TELEGRAM": "TG", "WEB": "WEB"}
+PROVIDER_CODE = {
+    "MAX": "MAX",
+    "TELEGRAM": "TG",
+    "WEB": "WEB",
+    "EMAIL": "EMAIL",
+}
 PRODUCT_CODE = {"firepage": "FP", "foxray": "FX"}
 
 # Понятные подписи для аудита диалогов.
@@ -30,6 +35,7 @@ AUDIT_LABELS = {
     "conversations.released_to_ai": "Возврат к AI",
     "conversations.returned_to_queue": "Возврат в очередь",
     "conversations.closed": "Диалог закрыт",
+    "conversations.marked_spam": "Диалог помечен как спам",
 }
 
 
@@ -96,6 +102,14 @@ def clients_overview(
                 "cid": f"CUS-{contact.id}",
                 "name": contact.name or "Гость",
                 "phone": contact.phone,
+                "email": next(
+                    (
+                        identity.external_user_id
+                        for identity in contact.identities.all()
+                        if identity.connection.provider == "EMAIL"
+                    ),
+                    "",
+                ),
                 # Первый непустой @логин среди identity каналов (остальные — в карточке).
                 "username": next((identity.username for identity in contact.identities.all() if identity.username), ""),
                 # Статус выводится из данных: есть оплаченный заказ — клиент, иначе лид.
@@ -167,7 +181,11 @@ def client_detail(
     identities = [
         {
             "provider": identity.connection.provider,
-            "value": identity.display_name or identity.external_user_id,
+            "value": (
+                identity.external_user_id
+                if identity.connection.provider == "EMAIL"
+                else identity.display_name or identity.external_user_id
+            ),
             "username": identity.username,
             "createdAt": identity.created_at.isoformat(),
         }
@@ -228,6 +246,14 @@ def client_detail(
         "cid": f"CUS-{contact.id}",
         "name": contact.name or "Гость",
         "phone": contact.phone,
+        "email": next(
+            (
+                identity.external_user_id
+                for identity in identity_qs
+                if identity.connection.provider == "EMAIL"
+            ),
+            "",
+        ),
         "channels": sorted(channels),
         "products": sorted(products),
         "openDialogs": open_dialogs,

@@ -41,7 +41,7 @@ export function ShellRouteContent({ route, data, currentEmployee, currentProduct
       {route === "profile" && <ProfilePage user={user} onUserUpdated={onUserUpdated} reload={reload} onLogout={onLogout} />}
       {route === "settings" && <SettingsPage user={user} onUserUpdated={onUserUpdated} reload={reload} />}
       {route === "salesClients" && <SalesClientsPage openClient={openClient} />}
-      {route === "salesClientDetail" && <SalesClientDetailPage contactId={selectedClientId} setRoute={setRoute} />}
+      {route === "salesClientDetail" && <SalesClientDetailPage contactId={selectedClientId} openConversation={openConversation} />}
       {route === "salesOverview" && <SalesOverviewPage />}
       {route === "supportOverview" && <SupportOverviewPage />}
       {route === "supportDialogs" && <SupportDialogsPage initialConversationId={selectedConversationId} />}

@@ -1,13 +1,9 @@
-import { Dropdown } from "antd";
-import { useState } from "react";
-
 import { Icon } from "../../../shared/icons";
 import { Button } from "../../../shared/ui-controls";
-import type { RouteKey } from "../../../types";
 import type { ClientDetailVm } from "./model";
 
-export function SalesClientHeader({ client, setRoute }: { client: ClientDetailVm; setRoute: (route: RouteKey) => void }) {
-  const [menuOpen, setMenuOpen] = useState(false);
+export function SalesClientHeader({ client, openConversation }: { client: ClientDetailVm; openConversation: (conversationId: number) => void }) {
+  const targetDialog = client.dialogs.find((dialog) => dialog.active) ?? client.dialogs[0];
 
   return (
     <div className="sales-client-detail-header-card">
@@ -29,20 +25,9 @@ export function SalesClientHeader({ client, setRoute }: { client: ClientDetailVm
           </div>
         </div>
         <div className="sales-client-detail-actions">
-          <Button className="sales-client-primary" icon="message" variant="primary" onClick={() => setRoute("salesDialogs")}>Открыть диалог</Button>
-          <Dropdown menu={{ items: clientMenuItems }} open={menuOpen} onOpenChange={setMenuOpen} trigger={["click"]} placement="bottomRight" overlayClassName="app-dropdown is-wide">
-            <button className="row-menu-button" type="button" aria-label="Действия контакта"><Icon name="more" size={18} /></button>
-          </Dropdown>
+          <Button className="sales-client-primary" icon="message" variant="primary" disabled={!targetDialog} onClick={() => targetDialog && openConversation(targetDialog.id)}>Открыть диалог</Button>
         </div>
       </div>
     </div>
   );
 }
-
-const clientMenuItems = [
-  { key: "merge", label: <button type="button"><Icon name="list" size={15} />Объединить контакты</button> },
-  { key: "split", label: <button type="button"><Icon name="split" size={15} />Разъединить контакты</button> },
-  { key: "edit", label: <button type="button"><Icon name="edit" size={15} />Исправить данные</button> },
-  { type: "divider" as const },
-  { key: "anonymize", label: <button className="danger" type="button"><Icon name="eyeOff" size={15} />Обезличить данные</button> },
-];

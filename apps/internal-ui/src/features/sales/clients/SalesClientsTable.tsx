@@ -4,7 +4,7 @@ import { SalesClientsPagination } from "./SalesClientsPagination";
 import type { ClientSortKey } from "./model";
 import type { SalesClientsState } from "./useSalesClients";
 
-export function SalesClientsTable({ clients, openClient, totalCount }: { clients: SalesClientsState; openClient: (id: number) => void; totalCount: number }) {
+export function SalesClientsTable({ clients, openClient }: { clients: SalesClientsState; openClient: (id: number) => void }) {
   return (
     <>
       <div className="sales-clients-card">
@@ -14,7 +14,7 @@ export function SalesClientsTable({ clients, openClient, totalCount }: { clients
               <tr>
                 <th>КОНТАКТ</th>
                 <th>СТАТУС</th>
-                <th>ТЕЛЕФОН / ЛОГИН</th>
+                <th>ТЕЛЕФОН / EMAIL / ЛОГИН</th>
                 <th>КАНАЛЫ</th>
                 <th>ПРОДУКТЫ</th>
                 <SortableTh label="ПОСЛ. ДИАЛОГ" sortKey="last" clients={clients} />
@@ -30,7 +30,7 @@ export function SalesClientsTable({ clients, openClient, totalCount }: { clients
           </table>
         </div>
         {clients.rows.length === 0 && <SalesClientsEmpty />}
-        <SalesClientsPagination shownCount={clients.rows.length} totalCount={totalCount} />
+        <SalesClientsPagination page={clients.page} pageCount={clients.pageCount} shownCount={clients.rows.length} totalCount={clients.filteredCount} setPage={clients.setPage} />
       </div>
     </>
   );

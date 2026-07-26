@@ -2,9 +2,9 @@
 // общий conversation workspace, не отдельная реализация под каждый отдел.
 
 export type DialogMode = "ai" | "closed" | "operator" | "wait";
-export type ControlMode = "ai" | "human" | "waiting";
+export type ControlMode = "ai" | "assigned" | "closed" | "human" | "waiting";
 export type ListTab = "ai" | "all" | "operator" | "unread" | "wait";
-export type ChannelKey = "MAX" | "TG" | "WEB";
+export type ChannelKey = "EMAIL" | "MAX" | "TG" | "WEB";
 
 // Элемент списка диалогов (бывш. SalesDialog). Полностью generic.
 export type ConversationListItem = {
@@ -14,6 +14,7 @@ export type ConversationListItem = {
   avatarBg: string;
   product: string;
   channel: ChannelKey;
+  email: string;
   mode: DialogMode;
   preview: string;
   time: string;

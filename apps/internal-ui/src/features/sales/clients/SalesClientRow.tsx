@@ -7,9 +7,6 @@ export function SalesClientRow({ client, menu, openClient, setMenu }: { client: 
   const menuOpen = menu === client.cid;
   const menuItems = [
     { key: "open", label: <button type="button" onClick={() => { setMenu(null); openClient(client.id); }}><Icon name="external" size={15} />Открыть клиента</button> },
-    { key: "merge", label: <button type="button"><Icon name="list" size={15} />Объединить контакты</button> },
-    { type: "divider" as const },
-    { key: "anonymize", label: <button className="danger" type="button"><Icon name="eyeOff" size={15} />Обезличить данные</button> },
   ];
   return (
     <tr>
@@ -26,8 +23,8 @@ export function SalesClientRow({ client, menu, openClient, setMenu }: { client: 
         <span className="sales-client-status" style={{ background: client.statusMeta.bg, color: client.statusMeta.color }}>{client.statusMeta.label}</span>
       </td>
       <td>
-        <div className={`sales-client-contact ${client.phone ? "" : "muted"}`}>{client.phone || "—"}</div>
-        <small className="sales-client-phone">{client.username ? `@${client.username}` : ""}</small>
+        <div className={`sales-client-contact ${client.phone || client.email ? "" : "muted"}`}>{client.phone || client.email || "—"}</div>
+        <small className="sales-client-phone">{client.phone && client.email ? client.email : client.username ? `@${client.username}` : ""}</small>
       </td>
       <td>
         <div className="sales-client-tags">

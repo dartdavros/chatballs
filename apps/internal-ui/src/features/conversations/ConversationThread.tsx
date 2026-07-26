@@ -1,6 +1,8 @@
 import { useEffect, useRef, type ReactNode } from "react";
 
 import { Icon } from "../../shared/icons";
+import { ConversationActions } from "./ConversationActions";
+import { EmailMessageBody } from "./EmailMessageBody";
 import { statusFor } from "./data";
 import { providerMeta } from "../../shared/providers";
 import type { ApiConversation, ApiMessage } from "./model";
@@ -10,7 +12,7 @@ function fmtTime(value: string): string {
   return new Date(value).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
 }
 
-export function ConversationThread({ controlMode, dialog, detail, onClaim, onCall }: { controlMode: ControlMode; dialog: ConversationListItem | null; detail: ApiConversation | null; onClaim: () => void; onCall: () => void }) {
+export function ConversationThread({ controlMode, dialog, detail, onClaim, onCall, onClose, onSpam }: { controlMode: ControlMode; dialog: ConversationListItem | null; detail: ApiConversation | null; onClaim: () => void; onCall: () => void; onClose: () => void; onSpam: () => Promise<boolean> }) {
   const timelineRef = useRef<HTMLDivElement>(null);
   const messages = detail?.messages ?? [];
   const lastMessageId = messages.length ? messages[messages.length - 1].id : 0;
@@ -24,7 +26,7 @@ export function ConversationThread({ controlMode, dialog, detail, onClaim, onCal
   if (!dialog) {
     return <div className="sales-timeline"><div className="sales-timeline-inner"><div className="sales-wait-note">Выберите диалог</div></div></div>;
   }
-  const status = statusFor(controlMode);
+  const status = statusFor(controlMode, detail?.assignedOperator?.name);
   const channel = providerMeta[dialog.channel];
   return (
     <>
@@ -39,10 +41,10 @@ export function ConversationThread({ controlMode, dialog, detail, onClaim, onCal
         <div className="sales-conversation-actions">
           {controlMode === "waiting" && <button className="sales-claim-button" onClick={onClaim}><Icon name="check" size={15} />Забрать</button>}
           {controlMode === "ai" && <button className="sales-ai-button" onClick={onClaim}>Перехватить AI</button>}
-          {detail?.lifecycle === "OPEN" && (
+          {detail?.lifecycle === "OPEN" && dialog.channel !== "EMAIL" && (
             <button className="sales-more-button" aria-label="Запросить онлайн-звонок" title="Запросить онлайн-звонок" onClick={onCall}><Icon name="phone" size={17} /></button>
           )}
-          <button className="sales-more-button" aria-label="Действия диалога"><Icon name="more" size={18} /></button>
+          <ConversationActions open={detail?.lifecycle === "OPEN"} onClose={onClose} onSpam={onSpam} />
         </div>
       </div>
       <div className="sales-timeline" ref={timelineRef}>
@@ -65,7 +67,9 @@ function MessageRow({ message, dialog }: { message: ApiMessage; dialog: Conversa
   const actor = message.author === "AI" ? "AI-агент" : message.author === "OPERATOR" ? "Оператор" : undefined;
   return (
     <Message side={side} initials={dialog.initials} avatarBg={dialog.avatarBg} actor={actor} time={fmtTime(message.createdAt)}>
-      {message.text}
+      {message.author === "CONTACT" && message.contentHtml
+        ? <EmailMessageBody html={message.contentHtml} />
+        : message.text}
     </Message>
   );
 }

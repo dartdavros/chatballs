@@ -17,7 +17,9 @@ def poll_all_messengers(context) -> int:
         for integration in Integration.objects.filter(
             organization=context.organization,
             provider__in=transports.SUPPORTED_PROVIDERS,
+            is_active=True,
             channel__isnull=False,
+            channel__is_active=True,
         ).exclude(secret="")
         if integration.config.get("purpose") != "notifications"
     ]

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
 import { CallOverlay } from "./CallOverlay";
 import { Composer } from "./Composer";
@@ -10,6 +10,7 @@ import {
   controlModeOf,
   fetchConversation,
   fetchConversations,
+  markConversationAsSpam,
   releaseConversation,
   returnToQueue,
   toConversationListItem,
@@ -35,25 +36,37 @@ export function ConversationWorkspace({ department, listTitle, searchPlaceholder
   const [search, setSearch] = useState("");
   const [conversations, setConversations] = useState<ApiConversation[]>([]);
   const [listLoaded, setListLoaded] = useState(false);
+  const [listError, setListError] = useState("");
   const [selectedId, setSelectedId] = useState<number | null>(initialConversationId ?? null);
   const [detail, setDetail] = useState<ApiConversation | null>(null);
+  const [detailError, setDetailError] = useState("");
+  const [actionError, setActionError] = useState("");
+  const selectedIdRef = useRef<number | null>(selectedId);
+  selectedIdRef.current = selectedId;
 
   const loadList = useCallback(async () => {
     try {
       const items = await fetchConversations(department);
       setConversations(items);
       setListLoaded(true);
+      setListError("");
       setSelectedId((current) => current ?? items[0]?.id ?? null);
     } catch {
-      /* keep previous list on transient errors */
+      setListError("Не удалось обновить список диалогов");
     }
   }, [department]);
 
   const loadDetail = useCallback(async (id: number) => {
     try {
-      setDetail(await fetchConversation(id));
+      const loaded = await fetchConversation(id);
+      if (selectedIdRef.current === id) {
+        setDetail(loaded);
+        setDetailError("");
+      }
     } catch {
-      /* ignore */
+      if (selectedIdRef.current === id) {
+        setDetailError("Не удалось загрузить диалог");
+      }
     }
   }, []);
 
@@ -69,6 +82,9 @@ export function ConversationWorkspace({ department, listTitle, searchPlaceholder
 
   useEffect(() => {
     if (selectedId == null) return;
+    setDetail(null);
+    setDetailError("");
+    setActionError("");
     void loadDetail(selectedId);
     const timer = setInterval(() => loadDetail(selectedId), 3000);
     return () => clearInterval(timer);
@@ -84,7 +100,7 @@ export function ConversationWorkspace({ department, listTitle, searchPlaceholder
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
     return dialogs.filter((dialog) => {
-      if (query && !`${dialog.name} ${dialog.product} ${dialog.preview}`.toLowerCase().includes(query)) return false;
+      if (query && !`${dialog.name} ${dialog.email} ${dialog.product} ${dialog.preview}`.toLowerCase().includes(query)) return false;
       if (listTab === "wait") return dialog.mode === "wait";
       if (listTab === "ai") return dialog.mode === "ai";
       if (listTab === "operator") return dialog.mode === "operator";
@@ -94,29 +110,32 @@ export function ConversationWorkspace({ department, listTitle, searchPlaceholder
   }, [dialogs, listTab, search]);
 
   const selectedDialog = dialogs.find((dialog) => dialog.id === selectedId) ?? null;
-  const controlMode = detail ? controlModeOf(detail) : "ai";
+  const detailLoaded = detail?.id === selectedId;
+  const controlMode = detailLoaded ? controlModeOf(detail) : "waiting";
 
   function applyUpdated(updated: ApiConversation) {
     setDetail(updated);
+    setActionError("");
     void loadList();
   }
 
-  const onClaim = async () => {
-    if (selectedId == null) return;
-    try { applyUpdated(await claimConversation(selectedId)); } catch { /* ignore */ }
-  };
-  const onRelease = async () => {
-    if (selectedId == null) return;
-    try { applyUpdated(await releaseConversation(selectedId)); } catch { /* ignore */ }
-  };
-  const onReturnQueue = async () => {
-    if (selectedId == null) return;
-    try { applyUpdated(await returnToQueue(selectedId)); } catch { /* ignore */ }
-  };
-  const onClose = async () => {
-    if (selectedId == null) return;
-    try { applyUpdated(await closeConversation(selectedId)); } catch { /* ignore */ }
-  };
+  async function updateConversation(action: (id: number) => Promise<ApiConversation>): Promise<boolean> {
+    if (selectedId == null) return false;
+    setActionError("");
+    try {
+      applyUpdated(await action(selectedId));
+      return true;
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : "Не удалось выполнить действие");
+      return false;
+    }
+  }
+
+  const onClaim = () => { void updateConversation(claimConversation); };
+  const onRelease = () => { void updateConversation(releaseConversation); };
+  const onReturnQueue = () => { void updateConversation(returnToQueue); };
+  const onClose = () => { void updateConversation(closeConversation); };
+  const onSpam = () => updateConversation(markConversationAsSpam);
 
   return (
     <div className="sales-dialogs">
@@ -128,12 +147,14 @@ export function ConversationWorkspace({ department, listTitle, searchPlaceholder
         listTab={listTab}
         selectedId={selectedId ?? -1}
         search={search}
+        errorText={listError}
         setSearch={setSearch}
         setListTab={setListTab}
         setSelectedId={setSelectedId}
       />
       <section className="sales-conversation">
-        <ConversationThread controlMode={controlMode} dialog={selectedDialog} detail={detail} onClaim={onClaim} onCall={() => void callController.start()} />
+        <ConversationThread controlMode={controlMode} dialog={selectedDialog} detail={detail} onClaim={onClaim} onCall={() => void callController.start()} onClose={onClose} onSpam={onSpam} />
+        {(detailError || actionError) && <div className="sales-conversation-error">{detailError || actionError}</div>}
         <CallOverlay
           open={callController.open}
           dialog={selectedDialog}
@@ -147,6 +168,8 @@ export function ConversationWorkspace({ department, listTitle, searchPlaceholder
         />
         <Composer
           mode={controlMode}
+          loaded={detailLoaded}
+          assignedOperatorName={detail?.assignedOperator?.name}
           conversationId={selectedId}
           onClaim={onClaim}
           onRelease={onRelease}

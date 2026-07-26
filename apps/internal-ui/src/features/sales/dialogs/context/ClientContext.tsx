@@ -33,6 +33,7 @@ export function ClientContext({ dialog, detail }: { dialog: ConversationListItem
   const messageCount = detail?.messages?.length ?? 0;
 
   const contact = detail?.contact ?? null;
+  const email = contact?.email ?? "";
   const phone = contact?.phone ?? "";
   const username = contact?.username ?? "";
   // Запрос уже отправлен, если в диалоге есть сообщение kind=contact_request (detail поллится каждые 3 с).
@@ -58,7 +59,11 @@ export function ClientContext({ dialog, detail }: { dialog: ConversationListItem
       <div className="sales-client-hero"><span style={{ background: dialog.avatarBg }}>{dialog.initials}</span><strong>{dialog.name}</strong></div>
 
       <ContextSection title="КОНТАКТ">
-        <FieldRow dot={channel.color} title={username ? `@${username}` : "—"} text={`Логин · ${channel.label}`} />
+        {dialog.channel === "EMAIL" ? (
+          <FieldRow icon="mail" title={email || "—"} text="Email" mono={Boolean(email)} muted={!email} />
+        ) : (
+          <FieldRow dot={channel.color} title={username ? `@${username}` : "—"} text={`Логин · ${channel.label}`} />
+        )}
         <FieldRow icon="phone" title={phone || "—"} text="Телефон" mono={Boolean(phone)} muted={!phone} />
         {contact && !phone && (
           <>

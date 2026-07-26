@@ -33,6 +33,14 @@ export function formatChecked(value: string | null): string {
 }
 
 export function StatusCell({ integration }: { integration: Integration }) {
+  if (!integration.isActive) {
+    return (
+      <div className="integration-status">
+        <ToneBadge bg="#f5f5f5" color="#8c8c8c">Отключено</ToneBadge>
+        <small>Приём и отправка сообщений остановлены</small>
+      </div>
+    );
+  }
   const status = STATUS_META[integration.status];
   return (
     <div className="integration-status">
@@ -47,14 +55,24 @@ type RowActionsProps = {
   testing: boolean;
   onTest: (integration: Integration) => void;
   onEdit: (integration: Integration) => void;
+  onToggleActive: (integration: Integration) => void;
   onDelete: (integration: Integration) => void;
 };
 
-export function RowActions({ integration, testing, onTest, onEdit, onDelete }: RowActionsProps) {
+export function RowActions({ integration, testing, onTest, onEdit, onToggleActive, onDelete }: RowActionsProps) {
   const [open, setOpen] = useState(false);
   const meta = PROVIDERS[integration.provider];
   const menuItems = [
     { key: "edit", label: <button type="button" onClick={() => { setOpen(false); onEdit(integration); }}><Icon name="edit" size={15} />Изменить</button> },
+    ...(integration.kind === "MESSENGER" ? [{
+      key: "active",
+      label: (
+        <button type="button" onClick={() => { setOpen(false); onToggleActive(integration); }}>
+          <Icon name={integration.isActive ? "pause" : "plug"} size={15} />
+          {integration.isActive ? "Отключить" : "Включить"}
+        </button>
+      ),
+    }] : []),
     { type: "divider" as const },
     { key: "delete", label: <button type="button" className="warning" onClick={() => { setOpen(false); onDelete(integration); }}><Icon name="trash" size={15} />Удалить</button> },
   ];

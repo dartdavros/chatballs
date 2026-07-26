@@ -18,6 +18,7 @@ from email.utils import parseaddr
 
 from django.conf import settings
 
+from hub_platform.conversations.html_sanitizer import sanitize_email_html
 from hub_platform.conversations.transports.base import InboundMessage
 
 logger = logging.getLogger(__name__)
@@ -56,6 +57,13 @@ def _body_text(message) -> str:
     return _html_to_text(str(rich.get_content())) if rich is not None else ""
 
 
+def _body_html(message) -> str:
+    rich = message.get_body(preferencelist=("html",))
+    if rich is None:
+        return ""
+    return sanitize_email_html(str(rich.get_content()))
+
+
 def _normalize(message, *, own_address: str, fallback_id: str) -> tuple[InboundMessage | None, str]:
     """Parse one RFC822 message → (InboundMessage | None, raw Message-ID)."""
     display_name, address = parseaddr(str(message.get("From", "")))
@@ -65,6 +73,7 @@ def _normalize(message, *, own_address: str, fallback_id: str) -> tuple[InboundM
         return None, ""
     message_id = str(message.get("Message-ID", "")).strip()
     text = _body_text(message)
+    content_html = _body_html(message)
     attachments = sum(1 for _ in message.iter_attachments())
     if attachments:
         # Вложения в первой итерации не принимаются (ADR-HUB-0035).
@@ -77,6 +86,7 @@ def _normalize(message, *, own_address: str, fallback_id: str) -> tuple[InboundM
         user_id=address,
         chat_id=address,
         text=text,
+        content_html=content_html,
         display_name=str(display_name).strip() or address,
         thread_meta={"subject": str(message.get("Subject", "")).strip(), "last_message_id": message_id},
     )

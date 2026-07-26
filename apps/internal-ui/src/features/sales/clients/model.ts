@@ -1,5 +1,5 @@
 export type ClientProductCode = "FP" | "FX";
-export type ClientChannelCode = "MAX" | "TG" | "WEB";
+export type ClientChannelCode = "EMAIL" | "MAX" | "TG" | "WEB";
 export type ClientSortKey = "last" | "open" | "orders" | "total";
 export type ClientDropdown = "products" | "channels";
 
@@ -12,6 +12,7 @@ export type SalesClient = {
   avatarBg: string;
   cid: string;
   phone: string;
+  email: string;
   username: string;
   status: ClientStatus;
   anon?: boolean;
@@ -42,6 +43,7 @@ export const statusMap = {
 } satisfies Record<ClientStatus, { label: string; color: string; bg: string }>;
 
 export const channelMap = {
+  EMAIL: { label: "Email", full: "Email", color: "#d48806", bg: "#fff7e6" },
   MAX: { label: "MAX", full: "MAX", color: "#6b5be0", bg: "#f2f0ff" },
   TG: { label: "TG", full: "Telegram", color: "#2f8fd0", bg: "#eaf6fd" },
   WEB: { label: "Web", full: "Web Chat", color: "#0f9b8e", bg: "#e8f7f4" },
@@ -53,6 +55,7 @@ export const productMap = {
 } satisfies Record<ClientProductCode, { name: string; color: string; bg: string }>;
 
 export const channelOptions: Array<{ code: ClientChannelCode; name: string; color: string }> = [
+  { code: "EMAIL", name: "Email", color: channelMap.EMAIL.color },
   { code: "MAX", name: "MAX", color: channelMap.MAX.color },
   { code: "TG", name: "Telegram", color: channelMap.TG.color },
   { code: "WEB", name: "Web Chat", color: channelMap.WEB.color },
@@ -76,6 +79,7 @@ export type ApiClient = {
   cid: string;
   name: string;
   phone: string;
+  email: string;
   username: string;
   status: ClientStatus;
   channels: ClientChannelCode[];
@@ -120,6 +124,7 @@ export function toSalesClient(api: ApiClient): SalesClient {
     avatarBg: isGuest ? "#8c8c8c" : avatarColor(api.cid),
     cid: api.cid,
     phone: api.phone,
+    email: api.email,
     username: api.username,
     status: api.status,
     anon: isGuest,

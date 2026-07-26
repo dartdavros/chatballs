@@ -145,6 +145,9 @@ class Message(TenantRelationModel):
     # телефона), полученный контакт. Пустая строка = текст.
     kind = models.CharField(max_length=32, choices=MessageKind.choices, default=MessageKind.TEXT, blank=True)
     text = models.TextField(blank=True)
+    # Санитизированный HTML входящего email. Остальные транспорты и исходящие
+    # ответы используют plain text.
+    content_html = models.TextField(blank=True)
     external_id = models.CharField(max_length=128, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 

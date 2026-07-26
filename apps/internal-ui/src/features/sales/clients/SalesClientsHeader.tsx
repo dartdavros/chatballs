@@ -1,6 +1,6 @@
 import { ActionButton } from "../../../shared/ui-controls";
 
-export function SalesClientsHeader({ shownCount, totalCount }: { shownCount: number; totalCount: number }) {
+export function SalesClientsHeader({ shownCount, totalCount, onExport }: { shownCount: number; totalCount: number; onExport: () => void }) {
   return (
     <div className="sales-clients-header">
       <div>
@@ -8,8 +8,7 @@ export function SalesClientsHeader({ shownCount, totalCount }: { shownCount: num
         <p>Лиды и клиенты отдела продаж · показано <b>{shownCount}</b> из {totalCount}</p>
       </div>
       <div className="sales-clients-header-actions">
-        <ActionButton icon="columns">Столбцы</ActionButton>
-        <ActionButton icon="download">Экспорт</ActionButton>
+        <ActionButton icon="download" disabled={shownCount === 0} onClick={onExport}>Экспорт</ActionButton>
       </div>
     </div>
   );

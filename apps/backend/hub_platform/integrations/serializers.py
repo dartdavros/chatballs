@@ -9,6 +9,7 @@ def integration_payload(integration: Integration) -> dict[str, object]:
         "provider": integration.provider,
         "name": integration.name,
         "hasSecret": bool(integration.secret),
+        "isActive": integration.is_active,
         "config": {
             "baseUrl": integration.config.get("base_url", ""),
             "defaultModel": integration.config.get("default_model", ""),

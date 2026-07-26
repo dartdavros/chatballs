@@ -52,6 +52,20 @@ export function IntegrationsPage() {
     }
   }
 
+  async function toggleActive(integration: Integration) {
+    try {
+      const payload = await api<{ integration: Integration }>(`/api/v1/integrations/${integration.id}/`, {
+        method: "PATCH",
+        body: JSON.stringify({ isActive: !integration.isActive }),
+      });
+      setItems((current) => current.map((item) => (
+        item.id === integration.id ? payload.integration : item
+      )));
+    } catch {
+      void load();
+    }
+  }
+
   function startDelete(integration: Integration) {
     setDeletingError(null);
     setDeleting(integration);
@@ -72,7 +86,13 @@ export function IntegrationsPage() {
   const providers = items.filter((item) => item.kind === "LLM_PROVIDER");
   const isConnections = tab === "MESSENGER";
   const shown = isConnections ? connections : providers;
-  const rowHandlers = { testingId, onTest: test, onEdit: (item: Integration) => setForm({ initial: item, kind: item.kind }), onDelete: startDelete };
+  const rowHandlers = {
+    testingId,
+    onTest: test,
+    onEdit: (item: Integration) => setForm({ initial: item, kind: item.kind }),
+    onToggleActive: toggleActive,
+    onDelete: startDelete,
+  };
 
   const header = (
     <PageHeader

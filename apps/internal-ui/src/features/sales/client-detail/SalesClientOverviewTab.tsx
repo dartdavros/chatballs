@@ -1,8 +1,7 @@
 import { Button } from "../../../shared/ui-controls";
-import type { RouteKey } from "../../../types";
 import type { ClientDetailVm } from "./model";
 
-export function SalesClientOverviewTab({ client, setRoute }: { client: ClientDetailVm; setRoute: (route: RouteKey) => void }) {
+export function SalesClientOverviewTab({ client, openConversation }: { client: ClientDetailVm; openConversation: (conversationId: number) => void }) {
   const currentDialog = client.dialogs.find((dialog) => dialog.active);
   return (
     <div className="sales-client-overview">
@@ -18,7 +17,7 @@ export function SalesClientOverviewTab({ client, setRoute }: { client: ClientDet
               <span className="sales-client-status-blue"><i />{currentDialog.status}</span>
             </div>
             <p className="sales-client-current-dialog">{currentDialog.meta}<br />«{currentDialog.title}»</p>
-            <Button className="sales-client-outline-action" variant="secondary" onClick={() => setRoute("salesDialogs")}>Открыть диалог</Button>
+            <Button className="sales-client-outline-action" variant="secondary" onClick={() => openConversation(currentDialog.id)}>Открыть диалог</Button>
           </section>
         )}
         <section className="sales-client-section-card">

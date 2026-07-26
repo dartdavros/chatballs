@@ -24,6 +24,9 @@ class InboundMessage:
     username: str = ""
     # Телефон из явного шаринга контакта (кнопка/форма); text при этом может быть пуст.
     phone: str = ""
+    # Безопасный форматированный вариант входящего письма. Plain text остаётся
+    # обязательным fallback для AI, поиска, уведомлений и превью.
+    content_html: str = ""
     # Транспортная мета для тредирования ответа (email: subject/last_message_id).
     # Пишется в Conversation.transport_meta при ingest (ADR-HUB-0035).
     thread_meta: dict | None = None

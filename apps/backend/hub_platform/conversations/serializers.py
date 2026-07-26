@@ -1,4 +1,5 @@
 from hub_platform.conversations.models import ConnectionIdentity, Conversation, Message, MessageAuthor
+from hub_platform.integrations.models import IntegrationProvider
 
 
 def message_payload(message: Message) -> dict[str, object]:
@@ -8,6 +9,7 @@ def message_payload(message: Message) -> dict[str, object]:
         "authorUserId": message.author_user_id,
         "kind": message.kind,
         "text": message.text,
+        "contentHtml": message.content_html,
         "createdAt": message.created_at.isoformat(),
     }
 
@@ -74,6 +76,15 @@ def _contact_username(conversation: Conversation) -> str:
     return identity.username if identity else ""
 
 
+def _contact_email(conversation: Conversation) -> str:
+    if (
+        conversation.connection_id
+        and conversation.connection.provider == IntegrationProvider.EMAIL
+    ):
+        return conversation.external_chat_id
+    return ""
+
+
 def _conversation_history(conversation: Conversation) -> list[Conversation]:
     # История по тому же источнику identity: для sales — по contact, для
     # support — по snapshot (ADR-HUB-0002: цепочка прошлых обращений).
@@ -90,7 +101,13 @@ def _conversation_history(conversation: Conversation) -> list[Conversation]:
     )
 
 
-def conversation_payload(conversation: Conversation, *, with_messages: bool = False, last_read_id: int = 0) -> dict[str, object]:
+def conversation_payload(
+    conversation: Conversation,
+    *,
+    with_messages: bool = False,
+    last_read_id: int = 0,
+    viewer_id: int | None = None,
+) -> dict[str, object]:
     last = None if with_messages else _last_message(conversation)
     channel = conversation.channel
     payload = {
@@ -112,6 +129,7 @@ def conversation_payload(conversation: Conversation, *, with_messages: bool = Fa
                 "id": conversation.contact_id,
                 "name": conversation.contact.name,
                 "phone": conversation.contact.phone,
+                "email": _contact_email(conversation),
                 "username": _contact_username(conversation) if with_messages else "",
             }
             if conversation.contact_id
@@ -122,6 +140,20 @@ def conversation_payload(conversation: Conversation, *, with_messages: bool = Fa
         "controlMode": conversation.control_mode,
         "expectedResponder": conversation.expected_responder,
         "assignedOperatorId": conversation.assigned_operator_id,
+        "assignedOperator": (
+            {
+                "id": conversation.assigned_operator_id,
+                "name": (
+                    conversation.assigned_operator.full_name
+                    or conversation.assigned_operator.email
+                ),
+            }
+            if conversation.assigned_operator_id
+            else None
+        ),
+        "isAssignedToViewer": bool(
+            viewer_id and conversation.assigned_operator_id == viewer_id
+        ),
         "lastActivityAt": conversation.last_activity_at.isoformat(),
         "createdAt": conversation.created_at.isoformat(),
     }

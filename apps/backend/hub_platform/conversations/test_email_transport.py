@@ -8,6 +8,8 @@ from django.test import TestCase
 
 from hub_platform.channels.models import Channel
 from hub_platform.conversations.models import Contact, Conversation, MessageAuthor
+from hub_platform.conversations.clients import client_detail, clients_overview
+from hub_platform.conversations.serializers import conversation_payload
 from hub_platform.conversations.transports import email as email_transport
 from hub_platform.identity.bootstrap import bootstrap_edevs_owner
 from hub_platform.identity.models import Organization
@@ -86,6 +88,29 @@ class EmailNormalizeTests(TestCase):
         self.assertIn("Добрый день!", inbound.text)
         self.assertIn("«FoxRay»", inbound.text)
         self.assertNotIn("<p>", inbound.text)
+        self.assertIn("<p>Добрый день!</p>", inbound.content_html)
+
+    def test_html_body_is_sanitized_before_ingest(self) -> None:
+        inbound, _ = email_transport._normalize(
+            _parsed(
+                _raw(
+                    html=(
+                        '<p onclick="steal()">Здравствуйте!</p>'
+                        '<script>alert("xss")</script>'
+                        '<a href="javascript:alert(1)">опасная ссылка</a>'
+                        '<a href="https://example.com/path">сайт</a>'
+                    )
+                )
+            ),
+            own_address="support@edevs.tech",
+            fallback_id="7:100",
+        )
+        self.assertIsNotNone(inbound)
+        self.assertNotIn("onclick", inbound.content_html)
+        self.assertNotIn("script", inbound.content_html)
+        self.assertNotIn("alert", inbound.content_html)
+        self.assertNotIn("javascript:", inbound.content_html)
+        self.assertIn('href="https://example.com/path"', inbound.content_html)
 
     def test_attachments_add_note(self) -> None:
         inbound, _ = email_transport._normalize(
@@ -225,6 +250,7 @@ class EmailIngestThreadMetaTests(TestCase):
         with (
             mock.patch("hub_platform.conversations.ingest.run_channel_turn", return_value=mock.Mock(text="Ответ")),
             mock.patch("hub_platform.conversations.ingest.transports.send_reply", return_value=True),
+            mock.patch("hub_platform.conversations.ingest.record_usage"),
         ):
             ingest_inbound(self.integration, inbound)
 
@@ -236,3 +262,23 @@ class EmailIngestThreadMetaTests(TestCase):
         self.assertEqual(conversation.transport_meta["last_message_id"], "<m2@example.com>")
         authors = list(conversation.messages.values_list("author_type", flat=True))
         self.assertIn(MessageAuthor.CONTACT, authors)
+
+    def test_email_identity_is_exposed_in_dialog_and_contact_payloads(self) -> None:
+        self._ingest(
+            external_id="<identity@example.com>",
+            subject="Контакты",
+            message_id="<identity@example.com>",
+        )
+        conversation = Conversation.objects.get(channel=self.channel)
+        dialog = conversation_payload(conversation, with_messages=True)
+        self.assertEqual(dialog["connection"]["provider"], "EMAIL")
+        self.assertEqual(dialog["contact"]["email"], "ivan@example.com")
+        self.assertEqual(dialog["messages"][0]["contentHtml"], "")
+
+        overview = clients_overview(self.organization.id)
+        self.assertEqual(overview[0]["email"], "ivan@example.com")
+        self.assertIn("EMAIL", overview[0]["channels"])
+
+        detail = client_detail(self.organization.id, conversation.contact_id)
+        self.assertEqual(detail["email"], "ivan@example.com")
+        self.assertEqual(detail["identities"][0]["value"], "ivan@example.com")

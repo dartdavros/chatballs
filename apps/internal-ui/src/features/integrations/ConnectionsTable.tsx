@@ -17,10 +17,11 @@ type ConnectionsTableProps = {
   testingId: number | null;
   onTest: (integration: Integration) => void;
   onEdit: (integration: Integration) => void;
+  onToggleActive: (integration: Integration) => void;
   onDelete: (integration: Integration) => void;
 };
 
-export function ConnectionsTable({ items, testingId, onTest, onEdit, onDelete }: ConnectionsTableProps) {
+export function ConnectionsTable({ items, testingId, onTest, onEdit, onToggleActive, onDelete }: ConnectionsTableProps) {
   return (
     <div className="table-card">
       <table className="baseline-table">
@@ -44,7 +45,7 @@ export function ConnectionsTable({ items, testingId, onTest, onEdit, onDelete }:
               <td>{item.channel ? item.channel.name : <span className="product-empty-value">—</span>}</td>
               <td><StatusCell integration={item} /></td>
               <td className="row-actions">
-                <RowActions integration={item} testing={testingId === item.id} onTest={onTest} onEdit={onEdit} onDelete={onDelete} />
+                <RowActions integration={item} testing={testingId === item.id} onTest={onTest} onEdit={onEdit} onToggleActive={onToggleActive} onDelete={onDelete} />
               </td>
             </tr>
           ))}

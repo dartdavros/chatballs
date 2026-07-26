@@ -76,6 +76,8 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
         logger.warning("Integration %s has no channel — inbound dropped", integration.id)
         return
     context = TenantContext.for_resource(channel.organization)
+    agent = getattr(channel, "ai_agent", None)
+    ai_available = bool(agent and agent.is_active)
     source = f"{integration.provider.lower()}:{integration.id}"
     if _already_processed(context, source, inbound.external_id, inbound.text):
         return
@@ -123,8 +125,8 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
                 connection=integration,
                 contact=contact,
                 external_chat_id=inbound.chat_id,
-                control_mode=ControlMode.AI,
-                expected_responder=ExpectedResponder.AI,
+                control_mode=ControlMode.AI if ai_available else ControlMode.PAUSED,
+                expected_responder=ExpectedResponder.AI if ai_available else ExpectedResponder.OPERATOR,
                 previous_conversation=previous,
             )
             # C07: only a brand-new dialog counts toward new_dialogs quota.
@@ -146,10 +148,15 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
             author_type=MessageAuthor.CONTACT,
             kind=MessageKind.CONTACT if is_contact_share else MessageKind.TEXT,
             text=message_text,
+            content_html=inbound.content_html,
             external_id=inbound.external_id,
         )
         conversation.last_activity_at = timezone.now()
         update_fields = ["external_chat_id", "last_activity_at"]
+        if conversation.control_mode == ControlMode.AI and not ai_available:
+            conversation.control_mode = ControlMode.PAUSED
+            conversation.expected_responder = ExpectedResponder.OPERATOR
+            update_fields.extend(["control_mode", "expected_responder"])
         if inbound.thread_meta:
             # Email: Message-ID последнего входящего — для ответа в тред;
             # тема диалога фиксируется по первому письму (ADR-HUB-0035).
@@ -202,7 +209,8 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
         transports.send_contact_ack(integration, chat_id=conversation.external_chat_id, user_id=inbound.user_id, text=ack)
         return
 
-    # AI отвечает только когда диалог ведёт AI (ADR-HUB-0003).
+    # Операторский канал без активного агента сразу создаёт очередь и не
+    # имитирует сбой AI перед клиентом.
     if conversation.control_mode != ControlMode.AI:
         return
 

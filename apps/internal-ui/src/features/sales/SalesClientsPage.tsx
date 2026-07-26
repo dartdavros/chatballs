@@ -2,6 +2,7 @@ import { EmptyState, LoadingState } from "../../shared/ui";
 import { SalesClientsFilters } from "./clients/SalesClientsFilters";
 import { SalesClientsHeader } from "./clients/SalesClientsHeader";
 import { SalesClientsTable } from "./clients/SalesClientsTable";
+import { exportClientsCsv } from "./clients/exportClientsCsv";
 import { useClientsData } from "./clients/useClientsData";
 import { useSalesClients } from "./clients/useSalesClients";
 
@@ -11,7 +12,7 @@ export function SalesClientsPage({ openClient }: { openClient: (id: number) => v
 
   return (
     <>
-      <SalesClientsHeader shownCount={clients.rows.length} totalCount={data.length} />
+      <SalesClientsHeader shownCount={clients.filteredCount} totalCount={data.length} onExport={() => exportClientsCsv(clients.filteredRows)} />
       {loading ? (
         <LoadingState />
       ) : error ? (
@@ -19,7 +20,7 @@ export function SalesClientsPage({ openClient }: { openClient: (id: number) => v
       ) : (
         <>
           <SalesClientsFilters clients={clients} />
-          <SalesClientsTable clients={clients} openClient={openClient} totalCount={data.length} />
+          <SalesClientsTable clients={clients} openClient={openClient} />
         </>
       )}
     </>

@@ -11,8 +11,8 @@ export const clientDetailTabs: Array<{ key: ClientDetailTab; label: string }> = 
   { key: "audit", label: "Аудит" },
 ];
 
-const PROVIDER_TO_CHANNEL: Record<string, ClientChannelCode> = { MAX: "MAX", TELEGRAM: "TG", WEB: "WEB" };
-const PROVIDER_LABEL: Record<string, string> = { MAX: "MAX", TELEGRAM: "Telegram", WEB: "Web Chat" };
+const PROVIDER_TO_CHANNEL: Record<string, ClientChannelCode> = { EMAIL: "EMAIL", MAX: "MAX", TELEGRAM: "TG", WEB: "WEB" };
+const PROVIDER_LABEL: Record<string, string> = { EMAIL: "Email", MAX: "MAX", TELEGRAM: "Telegram", WEB: "Web Chat" };
 const PAYMENT_LABEL: Record<string, string> = { PENDING: "Ожидает", PAID: "Оплачен", CANCELLED: "Отменён", REFUNDED: "Возврат" };
 const FULFILLMENT_LABEL: Record<string, string> = { NONE: "—", PENDING: "В процессе", DELIVERED: "Исполнен", FAILED: "Ошибка" };
 
@@ -22,6 +22,8 @@ export type ApiClientDetail = {
   id: number;
   cid: string;
   name: string;
+  email: string;
+  phone: string;
   channels: ClientChannelCode[];
   products: ClientProductCode[];
   openDialogs: number;
@@ -71,8 +73,8 @@ export function toClientDetailVm(api: ApiClientDetail): ClientDetailVm {
     name: api.name,
     initials: initialsOf(api.name),
     avatarBg: isGuest ? "#8c8c8c" : avatarColor(api.cid),
-    email: isGuest ? "без контакта" : "—",
-    phone: "идентификация по каналу",
+    email: api.email || (isGuest ? "без контакта" : "—"),
+    phone: api.phone || "—",
     channels: api.channels.map((code) => ({ label: channelMap[code].label, color: channelMap[code].color, bg: channelMap[code].bg })),
     products: api.products.map((code) => ({ name: productMap[code].name, color: productMap[code].color, bg: productMap[code].bg })),
     summary: [

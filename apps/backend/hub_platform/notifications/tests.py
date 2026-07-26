@@ -170,6 +170,49 @@ class PollerSelectionTests(NotifierTestBase):
         self.assertIn(client_bot.id, polled_ids)
         self.assertNotIn(self.integration.id, polled_ids)
 
+    def test_disabled_connection_and_inactive_channel_are_not_polled(self) -> None:
+        from hub_platform.channels.models import Channel
+        from hub_platform.conversations import poller
+
+        active_channel = Channel.objects.create(
+            organization=self.organization,
+            code="active-channel",
+            name="Активный канал",
+        )
+        inactive_channel = Channel.objects.create(
+            organization=self.organization,
+            code="inactive-channel",
+            name="Неактивный канал",
+            is_active=False,
+        )
+        Integration.objects.create(
+            organization=self.organization,
+            kind=IntegrationKind.MESSENGER,
+            provider=IntegrationProvider.TELEGRAM,
+            name="disabled-client",
+            secret="token",
+            channel=active_channel,
+            is_active=False,
+        )
+        Integration.objects.create(
+            organization=self.organization,
+            kind=IntegrationKind.MESSENGER,
+            provider=IntegrationProvider.TELEGRAM,
+            name="inactive-channel-client",
+            secret="token",
+            channel=inactive_channel,
+        )
+
+        with mock.patch(
+            "hub_platform.conversations.poller.transports.poll",
+            return_value=([], ""),
+        ) as poll:
+            poller.poll_all_messengers(self.context)
+
+        polled_names = [call.args[0].name for call in poll.call_args_list]
+        self.assertNotIn("disabled-client", polled_names)
+        self.assertNotIn("inactive-channel-client", polled_names)
+
 
 class BindingApiTests(NotifierTestBase):
     def setUp(self) -> None:

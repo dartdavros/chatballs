@@ -31,6 +31,11 @@ def _input(body: dict[str, object], *, current: Integration | None = None) -> In
         secret=body.get("secret") if "secret" in body else None,
         config=config if isinstance(config, dict) else {},
         channel_id=channel_id,
+        is_active=(
+            body["isActive"]
+            if isinstance(body.get("isActive"), bool)
+            else (current.is_active if current else None)
+        ),
     )
 
 

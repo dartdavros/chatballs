@@ -6,10 +6,11 @@ type ProvidersTableProps = {
   testingId: number | null;
   onTest: (integration: Integration) => void;
   onEdit: (integration: Integration) => void;
+  onToggleActive: (integration: Integration) => void;
   onDelete: (integration: Integration) => void;
 };
 
-export function ProvidersTable({ items, testingId, onTest, onEdit, onDelete }: ProvidersTableProps) {
+export function ProvidersTable({ items, testingId, onTest, onEdit, onToggleActive, onDelete }: ProvidersTableProps) {
   return (
     <div className="table-card">
       <table className="baseline-table">
@@ -40,7 +41,7 @@ export function ProvidersTable({ items, testingId, onTest, onEdit, onDelete }: P
                 </td>
                 <td><StatusCell integration={item} /></td>
                 <td className="row-actions">
-                  <RowActions integration={item} testing={testingId === item.id} onTest={onTest} onEdit={onEdit} onDelete={onDelete} />
+                  <RowActions integration={item} testing={testingId === item.id} onTest={onTest} onEdit={onEdit} onToggleActive={onToggleActive} onDelete={onDelete} />
                 </td>
               </tr>
             );

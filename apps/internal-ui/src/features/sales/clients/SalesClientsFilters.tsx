@@ -6,7 +6,7 @@ import type { SalesClientsState } from "./useSalesClients";
 export function SalesClientsFilters({ clients }: { clients: SalesClientsState }) {
   return (
     <div className="sales-clients-filterbar">
-      <SearchInput className="sales-clients-search" value={clients.query} onChange={clients.setQuery} placeholder="Поиск по имени, телефону или логину…" />
+      <SearchInput className="sales-clients-search" value={clients.query} onChange={clients.setQuery} placeholder="Поиск по имени, email, телефону или логину…" />
       <SalesFilterDropdown
         active={clients.productFilter.length > 0 || clients.dropdown === "products"}
         count={clients.productFilter.length}

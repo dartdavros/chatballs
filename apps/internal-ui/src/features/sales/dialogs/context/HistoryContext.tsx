@@ -1,5 +1,6 @@
 import { ContextSection } from "../../../conversations/ContextSection";
 import type { ApiConversation } from "../../../conversations/model";
+import { providerLabel } from "../../../../shared/providers";
 
 const LIFECYCLE: Record<string, string> = { OPEN: "открыт", CLOSED: "закрыт", SPAM: "спам" };
 
@@ -20,7 +21,7 @@ export function HistoryContext({ detail }: { detail: ApiConversation | null }) {
         {history.map((item) => (
           <div className="sales-history-card" key={item.id}>
             <div><strong>{item.channelName}</strong><span>{fmtDate(item.lastActivityAt)}</span></div>
-            <p>{(item.provider ?? "—")} · {LIFECYCLE[item.lifecycle] ?? item.lifecycle}{item.preview ? `. ${item.preview}` : ""}</p>
+            <p>{item.provider ? providerLabel(item.provider) : "—"} · {LIFECYCLE[item.lifecycle] ?? item.lifecycle}{item.preview ? `. ${item.preview}` : ""}</p>
           </div>
         ))}
       </ContextSection>

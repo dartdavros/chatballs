@@ -5,7 +5,7 @@ import { providerMeta } from "../../shared/providers";
 import type { ConversationListItem, ListTab } from "./types";
 import { SearchInput } from "../../shared/ui-controls";
 
-export function DialogList({ title = "Диалоги", searchPlaceholder = "Поиск по клиенту, продукту…", dialogs, filtered, listTab, selectedId, search, setSearch, setListTab, setSelectedId }: {
+export function DialogList({ title = "Диалоги", searchPlaceholder = "Поиск по клиенту, продукту…", dialogs, filtered, listTab, selectedId, search, errorText, setSearch, setListTab, setSelectedId }: {
   title?: string;
   searchPlaceholder?: string;
   dialogs: ConversationListItem[];
@@ -13,6 +13,7 @@ export function DialogList({ title = "Диалоги", searchPlaceholder = "По
   listTab: ListTab;
   selectedId: number;
   search: string;
+  errorText?: string;
   setSearch: (value: string) => void;
   setListTab: (tab: ListTab) => void;
   setSelectedId: (id: number) => void;
@@ -33,6 +34,7 @@ export function DialogList({ title = "Диалоги", searchPlaceholder = "По
         <DialogTab active={listTab === "unread"} onClick={() => setListTab("unread")}>Непрочитанные {unreadCount > 0 && <b>{unreadCount}</b>}</DialogTab>
       </div>
       <div className="sales-dialog-list-body">
+        {errorText && <div className="sales-wait-note sales-load-error">{errorText}</div>}
         {filtered.map((dialog) => <DialogListItem dialog={dialog} active={dialog.id === selectedId} setSelectedId={setSelectedId} key={dialog.id} />)}
       </div>
     </section>
