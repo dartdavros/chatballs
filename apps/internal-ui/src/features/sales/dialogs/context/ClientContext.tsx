@@ -7,7 +7,7 @@ import { requestContact, type ApiConversation } from "../../../conversations/mod
 import type { ConversationListItem } from "../../../conversations/types";
 
 const LIFECYCLE_LABEL: Record<string, string> = { OPEN: "Открыт", CLOSED: "Закрыт", SPAM: "Спам" };
-const CONTROL_LABEL: Record<string, string> = { AI: "AI ведёт", HUMAN: "Оператор ведёт", PAUSED: "Пауза" };
+const CONTROL_LABEL: Record<string, string> = { AI: "AI ведёт", HUMAN: "Человек", PAUSED: "Пауза" };
 
 function fmt(value?: string): string {
   if (!value) return "—";

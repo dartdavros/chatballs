@@ -1,5 +1,6 @@
 Django>=5.2,<5.3
 djangorestframework>=3.16,<3.17
+dnspython>=2.7,<3
 django-storages[s3]>=1.14,<1.15
 channels>=4.2,<5
 channels-redis>=4.2,<5

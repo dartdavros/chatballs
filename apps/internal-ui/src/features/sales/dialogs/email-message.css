@@ -6,3 +6,26 @@
   background: #ffffff;
   border: 0;
 }
+
+.sales-email-plain > div,
+.sales-email-quoted > div {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.sales-email-quoted {
+  margin-top: 10px;
+  color: #595959;
+}
+
+.sales-email-quoted > summary {
+  color: #8c8c8c;
+  cursor: pointer;
+  user-select: none;
+}
+
+.sales-email-quoted > div {
+  margin-top: 8px;
+  padding-left: 12px;
+  border-left: 3px solid #d9d9d9;
+}

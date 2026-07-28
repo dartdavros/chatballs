@@ -29,6 +29,8 @@ const ROUTE_ACCESS: Partial<Record<RouteKey, RouteAccess>> = {
   salesOrderDetail: { capability: "sales.view", departmentCode: "sales" },
   supportOverview: { capability: "support.view", departmentCode: "support" },
   supportDialogs: { capability: "conversations.view", departmentCode: "support" },
+  supportPortals: { capability: "support.view", departmentCode: "support" },
+  supportPortalDetail: { capability: "support.view", departmentCode: "support" },
 };
 
 export function hasCapability(
@@ -75,6 +77,7 @@ const LANDING_PRIORITY: RouteKey[] = [
   "supportOverview",
   "employees",
   "products",
+  "supportPortals",
   "aiAgents",
   "integrations",
 ];

@@ -19,6 +19,8 @@ ALLOWED_HOSTS = env_list(
     "CUSTOCRM_PLATFORM_ALLOWED_HOSTS",
     ["localhost", "127.0.0.1", "platform.localhost"],
 )
+if "backend-platform" not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append("backend-platform")
 CSRF_TRUSTED_ORIGINS = env_list("CUSTOCRM_PLATFORM_CSRF_TRUSTED_ORIGINS", [])
 CORS_ALLOWED_ORIGINS = []
 

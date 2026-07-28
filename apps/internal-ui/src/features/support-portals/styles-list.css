@@ -1,0 +1,133 @@
+.portal-policy-notice {
+  margin-bottom: 14px;
+  padding: 11px 13px;
+  border: 1px solid #ffe58f;
+  border-radius: var(--radius-lg);
+  color: #ad6800;
+  background: #fffbe6;
+  font-size: 12.5px;
+}
+
+.support-portal-name {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.support-portal-name > i {
+  display: grid;
+  flex: 0 0 38px;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: var(--radius-lg);
+  background: var(--n-9);
+  color: var(--text-secondary);
+}
+
+.support-portal-name small {
+  display: block;
+}
+
+.support-portal-name .link {
+  margin-bottom: 3px;
+  font-size: 14px;
+}
+
+.support-portal-name small {
+  color: var(--text-tertiary);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11.5px;
+}
+
+.support-portal-open {
+  color: var(--text-tertiary);
+}
+
+.portal-dialog-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  padding-top: 8px;
+}
+
+.portal-dialog-form > * {
+  grid-column: 1;
+}
+
+.portal-dialog-form > p {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+.portal-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.portal-form-error {
+  padding: 9px 11px;
+  border-radius: var(--radius-md);
+  background: #fff2f0;
+  color: #cf1322;
+  font-size: 12.5px;
+}
+
+.portal-address-field {
+  display: grid;
+  gap: 6px;
+}
+
+.portal-address-field > span {
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.portal-address-field > div {
+  display: flex;
+  height: 40px;
+  overflow: hidden;
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-md);
+  background: #fff;
+}
+
+.portal-address-field > div:focus-within {
+  border-color: var(--primary);
+}
+
+.portal-address-field input {
+  min-width: 0;
+  flex: 1;
+  padding: 0 12px;
+  border: 0;
+  outline: 0;
+  font-family: var(--font-mono);
+}
+
+.portal-address-field b {
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  border-left: 1px solid var(--border-input);
+  background: var(--n-10);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.portal-address-field small,
+.portal-address-field code {
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+}
+
+.portal-address-field code {
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}

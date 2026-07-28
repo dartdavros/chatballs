@@ -50,10 +50,18 @@ def _startup_plan_version() -> PlanVersion:
         defaults={"agent_unit_price_minor": 290_000, "currency": "RUB", "billing_period": "MONTH"},
     )
     if created:
-        entitlement, _ = EntitlementDefinition.objects.get_or_create(
-            key="byok_ai", defaults={"name": "BYOK AI"}
-        )
-        EntitlementGrant.objects.get_or_create(plan_version=version, definition=entitlement)
+        for key, name in (
+            ("byok_ai", "BYOK AI"),
+            ("support_department", "Support department"),
+            ("knowledge_base", "Knowledge base"),
+        ):
+            entitlement, _ = EntitlementDefinition.objects.get_or_create(
+                key=key, defaults={"name": name}
+            )
+            EntitlementGrant.objects.get_or_create(
+                plan_version=version,
+                definition=entitlement,
+            )
         slots_quota, _ = QuotaDefinition.objects.get_or_create(
             key=QuotaKey.AI_AGENT_SLOTS, defaults={"name": "AI agent slots", "unit": "slots"}
         )
@@ -63,6 +71,19 @@ def _startup_plan_version() -> PlanVersion:
             defaults={
                 "mode": QuotaMode.HARD,
                 "limit_source": QuotaLimitSource.SUBSCRIPTION_AI_AGENT_QUANTITY,
+            },
+        )
+        portal_quota, _ = QuotaDefinition.objects.get_or_create(
+            key=QuotaKey.SUPPORT_PORTALS,
+            defaults={"name": "Support portals", "unit": "portals"},
+        )
+        QuotaGrant.objects.get_or_create(
+            plan_version=version,
+            definition=portal_quota,
+            defaults={
+                "mode": QuotaMode.UNLIMITED,
+                "limit_source": QuotaLimitSource.FIXED,
+                "limit_value": None,
             },
         )
         # C07: concurrent_p2p_calls derives from the active non-OWNER membership

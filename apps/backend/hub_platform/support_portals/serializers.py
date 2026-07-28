@@ -1,0 +1,147 @@
+from hub_platform.support_portals.models import (
+    PortalArticle,
+    PortalArticleRevision,
+    PortalCategory,
+    SupportPortal,
+    SupportPortalProduct,
+)
+from hub_platform.support_portals.addressing import portal_public_url
+from hub_platform.support_portals.domain_services import (
+    domain_verification_name,
+    domain_verification_value,
+)
+
+
+def product_link_payload(link: SupportPortalProduct) -> dict:
+    return {
+        "productId": link.product_id,
+        "code": link.product.code,
+        "name": link.product.name,
+        "supportChannelId": link.support_channel_id,
+        "supportChannelCode": (
+            link.support_channel.code if link.support_channel_id else None
+        ),
+        "sortOrder": link.sort_order,
+    }
+
+
+def portal_payload(portal: SupportPortal) -> dict:
+    public_url = portal_public_url(
+        hosted=portal.hosted_domain,
+        custom=portal.custom_domain,
+        custom_verified=portal.custom_domain_verified_at is not None,
+    )
+    return {
+        "id": portal.id,
+        "publicId": str(portal.public_id),
+        "departmentCode": portal.department.code,
+        "slug": portal.slug,
+        "hostedDomain": portal.hosted_domain,
+        "customDomain": portal.custom_domain or None,
+        "customDomainVerifiedAt": portal.custom_domain_verified_at,
+        "customDomainVerification": (
+            {
+                "name": domain_verification_name(portal),
+                "type": "TXT",
+                "value": domain_verification_value(portal),
+            }
+            if portal.custom_domain and portal.custom_domain_verified_at is None
+            else None
+        ),
+        "publicUrl": public_url,
+        "name": portal.name,
+        "defaultLocale": portal.default_locale,
+        "status": portal.status,
+        "publishedAt": portal.published_at,
+        "products": [product_link_payload(link) for link in portal.product_links.all()],
+        "createdAt": portal.created_at,
+        "updatedAt": portal.updated_at,
+    }
+
+
+def category_payload(
+    category: PortalCategory, *, article_count: int | None = None
+) -> dict:
+    payload = {
+        "id": category.id,
+        "slug": category.slug,
+        "name": category.name,
+        "description": category.description,
+        "parentId": category.parent_id,
+        "sortOrder": category.sort_order,
+    }
+    if article_count is not None:
+        payload["articleCount"] = article_count
+    return payload
+
+
+def revision_payload(revision: PortalArticleRevision, *, content: bool = True) -> dict:
+    payload = {
+        "id": revision.id,
+        "revision": revision.revision,
+        "title": revision.title,
+        "summary": revision.summary,
+        "createdAt": revision.created_at,
+        "publishedAt": revision.published_at,
+    }
+    if content:
+        payload["content"] = revision.content
+    return payload
+
+
+def article_payload(article: PortalArticle, *, revisions: bool = False) -> dict:
+    latest_revision = next(iter(article.revisions.all()), None)
+    payload = {
+        "id": article.id,
+        "slug": article.slug,
+        "locale": article.locale,
+        "status": article.status,
+        "category": category_payload(article.category),
+        "publishedRevision": (
+            revision_payload(article.published_revision)
+            if article.published_revision_id
+            else None
+        ),
+        "latestRevision": (
+            revision_payload(latest_revision, content=False)
+            if latest_revision is not None
+            else None
+        ),
+        "createdAt": article.created_at,
+        "updatedAt": article.updated_at,
+    }
+    if revisions:
+        payload["revisions"] = [
+            revision_payload(revision) for revision in article.revisions.all()
+        ]
+    return payload
+
+
+def public_portal_payload(portal: SupportPortal) -> dict:
+    return {
+        "slug": portal.slug,
+        "name": portal.name,
+        "defaultLocale": portal.default_locale,
+        "products": [
+            {
+                "code": link.product.code,
+                "name": link.product.name,
+                "siteUrl": link.product.site_url,
+                "supportAvailable": link.support_channel_id is not None,
+                "supportChannelCode": (
+                    link.support_channel.code if link.support_channel_id else None
+                ),
+            }
+            for link in portal.product_links.all()
+        ],
+    }
+
+
+def public_article_payload(article: PortalArticle, *, content: bool = True) -> dict:
+    return {
+        "slug": article.slug,
+        "locale": article.locale,
+        "category": category_payload(article.category),
+        "revision": revision_payload(article.published_revision, content=content),
+        "updatedAt": article.updated_at,
+    }

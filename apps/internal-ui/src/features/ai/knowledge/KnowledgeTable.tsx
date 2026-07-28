@@ -1,7 +1,5 @@
-import { Icon } from "../../../shared/icons";
-import { LoadingState } from "../../../shared/ui";
+import { ContentLibraryTable } from "../../../shared/content-library/ContentLibraryTable";
 import { formatDate } from "../../../shared/utils";
-import { Button } from "../../../shared/ui-controls";
 import { knowledgeCategoryPath } from "./knowledgeTree";
 import type { KnowledgeCategory, KnowledgeItem } from "./model";
 
@@ -40,26 +38,26 @@ export function KnowledgeTable({
   selectedCategoryId,
   selectedIds,
 }: KnowledgeTableProps) {
-  if (loading) return <div className="knowledge-table-state"><LoadingState variant="inline" /></div>;
-  if (error) return <div className="knowledge-table-state"><strong>Не удалось загрузить знания</strong><Button variant="secondary" onClick={onRetry}>Повторить</Button></div>;
-  if (items.length === 0) {
-    if (selectedCategoryId !== undefined && !hasActiveFilters) {
-      return (
-        <div className="knowledge-empty-category">
-          <span><Icon name="folder" size={24} /></span>
-          <strong>В категории пока нет знаний</strong>
-          <p>Создайте знание в этой категории или переместите существующие.</p>
-          {canCreate && <Button variant="primary" onClick={onCreate}>Создать знание</Button>}
-        </div>
-      );
-    }
-    return <div className="knowledge-table-state"><strong>{hasActiveFilters ? "Ничего не найдено" : "Знаний пока нет"}</strong></div>;
-  }
-
   const allVisibleSelected = items.every((item) => selectedIds.has(item.id));
+  const emptyCategory = selectedCategoryId !== undefined && !hasActiveFilters;
 
   return (
-    <div className="table-card knowledge-table-card">
+    <ContentLibraryTable
+      canCreate={canCreate && emptyCategory}
+      createLabel="Создать знание"
+      emptyDescription={emptyCategory ? "Создайте знание в этой категории или переместите существующие." : undefined}
+      emptyTitle={emptyCategory ? "В категории пока нет знаний" : hasActiveFilters ? "Ничего не найдено" : "Знаний пока нет"}
+      error={error}
+      errorTitle="Не удалось загрузить знания"
+      hasItems={items.length > 0}
+      loading={loading}
+      onCreate={onCreate}
+      onRetry={onRetry}
+      footer={!bulkMode && <div className="ai-table-footer">
+        <span>{items.length} знаний</span>
+        <span>{selectedIds.size > 0 ? `Выбрано: ${selectedIds.size}` : "Изменения знаний применяются к агентам сразу"}</span>
+      </div>}
+    >
       <table className="baseline-table knowledge-table">
         <colgroup>
           {canSelect && <col className="knowledge-col-select" />}
@@ -135,10 +133,6 @@ export function KnowledgeTable({
           ))}
         </tbody>
       </table>
-      {!bulkMode && <div className="ai-table-footer">
-        <span>{items.length} знаний</span>
-        <span>{selectedIds.size > 0 ? `Выбрано: ${selectedIds.size}` : "Изменения знаний применяются к агентам сразу"}</span>
-      </div>}
-    </div>
+    </ContentLibraryTable>
   );
 }

@@ -1,3 +1,5 @@
+import { lazy, Suspense } from "react";
+
 import { AiAgentsPage } from "../features/ai/AiAgentsPage";
 import { AiAgentCreatePage } from "../features/ai/create/AiAgentCreatePage";
 import { AiAgentDetailPage } from "../features/ai/detail/AiAgentDetailPage";
@@ -23,10 +25,18 @@ import { SaleDetailPage } from "../features/sales/sale-detail/SaleDetailPage";
 import { SalesOverviewPage } from "../features/sales/SalesOverviewPage";
 import { SupportDialogsPage } from "../features/support/SupportDialogsPage";
 import { SupportOverviewPage } from "../features/support/SupportOverviewPage";
+import { LoadingState } from "../shared/ui";
 import type { AppData, Employee, Product, RouteKey, SessionUser } from "../types";
 import { hasCapability } from "../auth/access";
 
-export function ShellRouteContent({ route, data, currentEmployee, currentProduct, selectedProductCode, selectedAgentId, selectedKnowledgeId, selectedConversationId, selectedClientId, openClient, selectedOrderId, openOrder, selectedChannelId, openChannel, openConversation, openEmployee, openProduct, openAgentCreate, openAgent, openKnowledge, onAgentLoaded, onChannelLoaded, reload, setRoute, user, onUserUpdated, onLogout }: { route: RouteKey; data: AppData; currentEmployee: Employee | null; currentProduct: Product | null; selectedProductCode: string | null; selectedAgentId: number | null; selectedKnowledgeId: number | null; selectedConversationId: number | null; selectedClientId: number | null; openClient: (clientId: number) => void; selectedOrderId: number | null; openOrder: (orderId: number) => void; selectedChannelId: number | null; openChannel: (channelId: number) => void; openConversation: (conversationId: number) => void; openEmployee: (employee: Employee) => void; openProduct: (product: Product) => void; openAgentCreate: (productCode: string | null) => void; openAgent: (agentId: number) => void; openKnowledge: (knowledgeId: number) => void; onAgentLoaded: (name: string | null) => void; onChannelLoaded: (name: string | null) => void; reload: () => void; setRoute: (route: RouteKey) => void; user: SessionUser; onUserUpdated: (user: SessionUser) => void; onLogout: () => void }) {
+const SupportPortalsPage = lazy(() => import("../features/support-portals/SupportPortalsPage").then(
+  (module) => ({ default: module.SupportPortalsPage }),
+));
+const SupportPortalDetailPage = lazy(() => import("../features/support-portals/SupportPortalDetailPage").then(
+  (module) => ({ default: module.SupportPortalDetailPage }),
+));
+
+export function ShellRouteContent({ route, data, currentEmployee, currentProduct, selectedProductCode, selectedAgentId, selectedKnowledgeId, selectedConversationId, selectedClientId, openClient, selectedOrderId, openOrder, selectedChannelId, openChannel, selectedSupportPortalId, openSupportPortal, openConversation, openEmployee, openProduct, openAgentCreate, openAgent, openKnowledge, onAgentLoaded, onChannelLoaded, reload, setRoute, user, onUserUpdated, onLogout }: { route: RouteKey; data: AppData; currentEmployee: Employee | null; currentProduct: Product | null; selectedProductCode: string | null; selectedAgentId: number | null; selectedKnowledgeId: number | null; selectedConversationId: number | null; selectedClientId: number | null; openClient: (clientId: number) => void; selectedOrderId: number | null; openOrder: (orderId: number) => void; selectedChannelId: number | null; openChannel: (channelId: number) => void; selectedSupportPortalId: number | null; openSupportPortal: (portalId: number) => void; openConversation: (conversationId: number) => void; openEmployee: (employee: Employee) => void; openProduct: (product: Product) => void; openAgentCreate: (productCode: string | null) => void; openAgent: (agentId: number) => void; openKnowledge: (knowledgeId: number) => void; onAgentLoaded: (name: string | null) => void; onChannelLoaded: (name: string | null) => void; reload: () => void; setRoute: (route: RouteKey) => void; user: SessionUser; onUserUpdated: (user: SessionUser) => void; onLogout: () => void }) {
   return (
     <>
       {route === "command" && <CommandCenter data={data} setRoute={setRoute} />}
@@ -58,6 +68,8 @@ export function ShellRouteContent({ route, data, currentEmployee, currentProduct
       {route === "channelDetail" && <ChannelDetailPage channelId={selectedChannelId} departments={data.departments} products={data.products} user={user} setRoute={setRoute} openAgent={openAgent} openChannels={() => setRoute("channels")} onChannelLoaded={onChannelLoaded} />}
       {route === "channelCreate" && <ChannelCreateWizard departments={data.departments} products={data.products} openChannel={openChannel} openChannels={() => setRoute("channels")} openAgentCreate={() => openAgentCreate(null)} openIntegrations={() => setRoute("integrations")} />}
       {route === "integrations" && <IntegrationsPage />}
+      {route === "supportPortals" && <Suspense fallback={<LoadingState />}><SupportPortalsPage user={user} openPortal={openSupportPortal} /></Suspense>}
+      {route === "supportPortalDetail" && <Suspense fallback={<LoadingState />}><SupportPortalDetailPage portalId={selectedSupportPortalId} products={data.products} user={user} openPortals={() => setRoute("supportPortals")} /></Suspense>}
     </>
   );
 }

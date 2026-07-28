@@ -49,7 +49,9 @@ class PlanVersionTests(TestCase):
         self.assertEqual(
             free_quotas[QuotaKey.CONCURRENT_VOICE_SESSIONS], ("CONCURRENT", 0, None)
         )
-
+        self.assertEqual(
+            free_quotas[QuotaKey.SUPPORT_PORTALS], ("UNLIMITED", None, None)
+        )
         startup_quotas = self._quota_map(startup)
         self.assertEqual(
             startup_quotas[QuotaKey.MANAGED_AI_CREDITS], ("HARD", 1000, None)
@@ -69,7 +71,9 @@ class PlanVersionTests(TestCase):
             startup_quotas[QuotaKey.CONCURRENT_VOICE_SESSIONS],
             ("CONCURRENT", 10, None),
         )
-
+        self.assertEqual(
+            startup_quotas[QuotaKey.SUPPORT_PORTALS], ("UNLIMITED", None, None)
+        )
         # BUSINESS received the owner-approved Managed AI pool in migration 0006.
         business_quotas = self._quota_map(business)
         self.assertEqual(
@@ -77,10 +81,24 @@ class PlanVersionTests(TestCase):
         )
         self.assertEqual(
             set(business_quotas),
-            {QuotaKey.AI_AGENT_SLOTS, QuotaKey.MANAGED_AI_CREDITS},
+            {
+                QuotaKey.AI_AGENT_SLOTS,
+                QuotaKey.MANAGED_AI_CREDITS,
+                QuotaKey.SUPPORT_PORTALS,
+            },
+        )
+        self.assertEqual(
+            business_quotas[QuotaKey.SUPPORT_PORTALS], ("UNLIMITED", None, None)
         )
         # CORPORATION remains contract-specific and has no numeric credits grant.
-        self.assertEqual(set(self._quota_map(corporation)), {QuotaKey.AI_AGENT_SLOTS})
+        corporation_quotas = self._quota_map(corporation)
+        self.assertEqual(
+            set(corporation_quotas),
+            {QuotaKey.AI_AGENT_SLOTS, QuotaKey.SUPPORT_PORTALS},
+        )
+        self.assertEqual(
+            corporation_quotas[QuotaKey.SUPPORT_PORTALS], ("UNLIMITED", None, None)
+        )
 
     def test_business_has_3000_managed_credits(self) -> None:
         business = PlanVersion.objects.get(plan__code=PlanCode.BUSINESS, version=1)

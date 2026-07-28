@@ -65,7 +65,9 @@ describe("effective access navigation", () => {
 
     expect(canAccess(sales, "salesDialogs")).toBe(true);
     expect(canAccess(sales, "supportDialogs")).toBe(false);
+    expect(canAccess(sales, "supportPortals")).toBe(false);
     expect(canAccess(support, "supportDialogs")).toBe(true);
+    expect(canAccess(support, "supportPortals")).toBe(true);
     expect(canAccess(support, "salesDialogs")).toBe(false);
   });
 

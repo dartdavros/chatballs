@@ -34,3 +34,4 @@ class QuotaKey(models.TextChoices):
     CONCURRENT_P2P_CALLS = "concurrent_p2p_calls", "Concurrent P2P calls"
     CONCURRENT_VOICE_SESSIONS = "concurrent_voice_sessions", "Concurrent voice sessions"
     AUDIT_RETENTION_DAYS = "audit_retention_days", "Audit retention days"
+    SUPPORT_PORTALS = "support_portals", "Support portals"

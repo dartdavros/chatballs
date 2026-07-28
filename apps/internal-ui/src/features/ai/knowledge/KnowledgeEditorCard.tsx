@@ -1,4 +1,5 @@
 import { Icon } from "../../../shared/icons";
+import { ContentEditorCard } from "../../../shared/content-library/ContentEditorCard";
 import { Button } from "../../../shared/ui-controls";
 import { formatDate } from "../../../shared/utils";
 import { KnowledgeEditorFields } from "./KnowledgeEditorFields";
@@ -31,15 +32,11 @@ export function KnowledgeEditorCard({
   onToggleEnabled?: () => void;
 }) {
   return (
-    <section className="knowledge-editor-card knowledge-main-card">
-      <div className="knowledge-card-heading">
-        <h3>Знание</h3>
-        <span className={`knowledge-card-status ${state.isEnabled ? "active" : "disabled"}`}><i />{state.isEnabled ? "Активно" : "Выключено"}</span>
-        {item && <span className="knowledge-card-updated">обновлено {formatDate(item.updatedAt)}</span>}
-      </div>
-      <KnowledgeEditorFields categories={categories} departments={departments} disabled={busy || !editable} state={state} onChange={onChange} />
-      {error && <div className="knowledge-editor-error">{error}</div>}
-      {editable && <div className="knowledge-editor-actions">
+    <ContentEditorCard
+      heading={<h3>Знание</h3>}
+      meta={<><span className={`knowledge-card-status ${state.isEnabled ? "active" : "disabled"}`}><i />{state.isEnabled ? "Активно" : "Выключено"}</span>{item && <span className="knowledge-card-updated">обновлено {formatDate(item.updatedAt)}</span>}</>}
+      error={error}
+      actions={editable && <>
         <Button variant="primary" icon={item ? "save" : "plus"} disabled={busy} onClick={onSave}>
           {item ? "Сохранить" : "Создать знание"}
         </Button>
@@ -50,7 +47,9 @@ export function KnowledgeEditorCard({
         )}
         <span />
         {item && onDelete && <Button className="knowledge-delete-button" variant="secondary" icon="trash" disabled={busy} onClick={onDelete}>Удалить</Button>}
-      </div>}
-    </section>
+      </>}
+    >
+      <KnowledgeEditorFields categories={categories} departments={departments} disabled={busy || !editable} state={state} onChange={onChange} />
+    </ContentEditorCard>
   );
 }

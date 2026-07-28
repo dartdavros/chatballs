@@ -12,6 +12,7 @@ const empty = {
   clientId: null,
   orderId: null,
   channelId: null,
+  supportPortalId: null,
 };
 
 describe("employee access routes", () => {
@@ -87,6 +88,18 @@ describe("support routes", () => {
   it("creates support overview and dialogs URLs", () => {
     expect(pathFromRoute("supportOverview")).toBe("/departments/support");
     expect(pathFromRoute("supportDialogs")).toBe("/departments/support/dialogs");
+  });
+});
+
+describe("support portal routes", () => {
+  it("parses support portal list and detail URLs", () => {
+    expect(routeFromPath("/departments/support/portals")).toEqual({ route: "supportPortals", ...empty });
+    expect(routeFromPath("/departments/support/portals/9")).toEqual({ route: "supportPortalDetail", ...empty, supportPortalId: 9 });
+  });
+
+  it("creates support portal URLs", () => {
+    expect(pathFromRoute("supportPortals")).toBe("/departments/support/portals");
+    expect(pathFromRoute("supportPortalDetail", 9)).toBe("/departments/support/portals/9");
   });
 });
 

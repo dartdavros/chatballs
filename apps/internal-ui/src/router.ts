@@ -11,6 +11,7 @@ export type RouteState = {
   clientId: number | null;
   orderId: number | null;
   channelId: number | null;
+  supportPortalId: number | null;
 };
 
 export function routeFromPath(pathname: string, search = ""): RouteState {
@@ -18,7 +19,7 @@ export function routeFromPath(pathname: string, search = ""): RouteState {
   const match = normalized.match(/^\/organizations\/([0-9a-f-]{36})(\/.*)?$/i);
   const organizationPublicId = match?.[1] ?? null;
   const path = match ? match[2] || "/" : normalized;
-  const base = { employeeId: null, productId: null, productCode: null, agentId: null, knowledgeId: null, clientId: null, orderId: null, channelId: null };
+  const base = { employeeId: null, productId: null, productCode: null, agentId: null, knowledgeId: null, clientId: null, orderId: null, channelId: null, supportPortalId: null };
   const state = { organizationPublicId, ...base };
   if (path === "/" || path === "/command") return { route: "command", ...state };
   if (path === "/departments") return { route: "departments", ...state };
@@ -46,6 +47,11 @@ export function routeFromPath(pathname: string, search = ""): RouteState {
   if (path.startsWith("/products/")) {
     const id = Number(path.split("/")[2]);
     return Number.isInteger(id) && id > 0 ? { ...state, route: "productDetail", productId: id } : { route: "products", ...state };
+  }
+  if (path === "/departments/support/portals") return { route: "supportPortals", ...state };
+  if (path.startsWith("/departments/support/portals/")) {
+    const id = Number(path.split("/")[4]);
+    return Number.isInteger(id) && id > 0 ? { ...state, route: "supportPortalDetail", supportPortalId: id } : { route: "supportPortals", ...state };
   }
   if (path === "/channels") return { route: "channels", ...state };
   if (path === "/channels/new") return { route: "channelCreate", ...state };
@@ -92,6 +98,8 @@ export function pathFromRoute(route: RouteKey, entityId: number | null = null, p
   if (route === "employeeDetail") return entityId ? `${prefix}/employees/${entityId}` : `${prefix}/employees`;
   if (route === "products") return `${prefix}/products`;
   if (route === "productDetail") return entityId ? `${prefix}/products/${entityId}` : `${prefix}/products`;
+  if (route === "supportPortals") return `${prefix}/departments/support/portals`;
+  if (route === "supportPortalDetail") return entityId ? `${prefix}/departments/support/portals/${entityId}` : `${prefix}/departments/support/portals`;
   if (route === "aiAgents") return `${prefix}/ai/agents`;
   if (route === "aiAgentCreate") return productCode ? `${prefix}/ai/agents/new?product=${encodeURIComponent(productCode)}` : `${prefix}/ai/agents/new`;
   if (route === "aiUsage") return `${prefix}/ai/usage`;

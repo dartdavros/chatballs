@@ -1,5 +1,7 @@
 import { useMemo } from "react";
 
+import { foldQuotedHtml, splitQuotedEmail } from "./emailContent";
+
 const DOCUMENT_START = `<!doctype html>
 <html lang="ru">
 <head>
@@ -16,15 +18,32 @@ const DOCUMENT_START = `<!doctype html>
     table { width: 100%; border-collapse: collapse; }
     th, td { padding: 5px 7px; border: 1px solid #d9d9d9; text-align: left; vertical-align: top; }
     a { color: #1677ff; }
+    details.email-quoted { margin-top: 10px; color: #595959; }
+    details.email-quoted > summary { color: #8c8c8c; cursor: pointer; user-select: none; }
+    details.email-quoted > blockquote { margin-top: 8px; }
   </style>
 </head>
 <body>`;
 
-export function EmailMessageBody({ html }: { html: string }) {
+export function EmailMessageBody({ html, text }: { html?: string; text: string }) {
+  const textParts = useMemo(() => splitQuotedEmail(text), [text]);
   const srcDoc = useMemo(
-    () => `${DOCUMENT_START}${html}</body></html>`,
+    () => `${DOCUMENT_START}${foldQuotedHtml(html ?? "")}</body></html>`,
     [html],
   );
+  if (!html) {
+    return (
+      <div className="sales-email-plain">
+        {textParts.latest && <div>{textParts.latest}</div>}
+        {textParts.quoted && (
+          <details className="sales-email-quoted">
+            <summary>Показать предыдущие сообщения</summary>
+            <div>{textParts.quoted}</div>
+          </details>
+        )}
+      </div>
+    );
+  }
   return (
     <iframe
       className="sales-email-body-frame"

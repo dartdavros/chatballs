@@ -13,9 +13,21 @@ WSGI_APPLICATION = "hub_backend.wsgi_app.application"
 _app_hosts = os.environ.get("CUSTOCRM_APP_ALLOWED_HOSTS", "")
 if not DEBUG and not TESTING and not _app_hosts:
     raise ImproperlyConfigured("CUSTOCRM_APP_ALLOWED_HOSTS is required for the app surface")
-ALLOWED_HOSTS = env_list(
+CUS_APP_PRIMARY_HOSTS = env_list(
     "CUSTOCRM_APP_ALLOWED_HOSTS",
     env_list("CUS_ALLOWED_HOSTS", ["localhost", "127.0.0.1", "app.localhost"]),
+)
+_help_host_pattern = f".{CUS_HELP_BASE_DOMAIN}"
+if _help_host_pattern not in CUS_APP_PRIMARY_HOSTS:
+    CUS_APP_PRIMARY_HOSTS.append(_help_host_pattern)
+if TESTING and "testserver" not in CUS_APP_PRIMARY_HOSTS:
+    CUS_APP_PRIMARY_HOSTS.append("testserver")
+# Custom portal domains are checked against the published ingress directory by
+# SupportPortalHostBoundaryMiddleware. Django's static list cannot express them.
+ALLOWED_HOSTS = ["*"]
+MIDDLEWARE.insert(
+    1,
+    "hub_platform.support_portals.host_boundary.SupportPortalHostBoundaryMiddleware",
 )
 CSRF_TRUSTED_ORIGINS = env_list(
     "CUSTOCRM_APP_CSRF_TRUSTED_ORIGINS",

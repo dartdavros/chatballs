@@ -7,7 +7,7 @@ export function TopBar({ route, user, currentEmployee, currentProduct, currentAg
   const isAiDetail = route === "aiAgentDetail" || route === "aiKnowledgeCreate" || route === "aiKnowledgeDetail";
   const isAi = route.startsWith("ai") && !isAiDetail && route !== "aiAgentCreate";
   const isSalesWorkspace = route === "salesOverview" || route === "salesClientDetail" || route === "salesClients" || route === "salesDialogs" || route === "salesOrderDetail" || route === "salesOrders";
-  const isSupportWorkspace = route === "supportOverview" || route === "supportDialogs";
+  const isSupportWorkspace = route === "supportOverview" || route === "supportDialogs" || route === "supportPortals" || route === "supportPortalDetail";
   return (
     <header className="hub-topbar">
       <div className="breadcrumbs">
@@ -21,13 +21,14 @@ export function TopBar({ route, user, currentEmployee, currentProduct, currentAg
         {isSalesWorkspace && route !== "salesClientDetail" && route !== "salesOrderDetail" && <><button type="button" onClick={() => setRoute("salesOverview")}>Продажи</button><i>/</i><strong>{routes[route]}</strong></>}
         {route === "salesClientDetail" && <><button type="button" onClick={() => setRoute("salesOverview")}>Продажи</button><i>/</i><button type="button" onClick={() => setRoute("salesClients")}>Контакты</button><i>/</i><strong>{routes[route]}</strong></>}
         {route === "salesOrderDetail" && <><button type="button" onClick={() => setRoute("salesOverview")}>Продажи</button><i>/</i><button type="button" onClick={() => setRoute("salesOrders")}>Продажи</button><i>/</i><strong className="topbar-mono">{routes[route]}</strong></>}
-        {isSupportWorkspace && <><button type="button" onClick={() => setRoute("supportOverview")}>Поддержка</button><i>/</i><strong>{routes[route]}</strong></>}
+        {isSupportWorkspace && route !== "supportPortalDetail" && <><button type="button" onClick={() => setRoute("supportOverview")}>Поддержка</button><i>/</i><strong>{routes[route]}</strong></>}
+        {route === "supportPortalDetail" && <><button type="button" onClick={() => setRoute("supportOverview")}>Поддержка</button><i>/</i><button type="button" onClick={() => setRoute("supportPortals")}>Порталы</button><i>/</i><strong>{routes[route]}</strong></>}
         {isAi && <><button type="button" onClick={() => setRoute("aiAgents")}>AI</button><i>/</i><strong>{routes[route]}</strong></>}
         {route === "aiAgentCreate" && <><button type="button" onClick={() => setRoute("aiAgents")}>AI</button><i>/</i><button type="button" onClick={() => setRoute("aiAgents")}>AI-агенты</button><i>/</i><strong>{routes[route]}</strong></>}
         {route === "aiAgentDetail" && <><button type="button" onClick={() => setRoute("aiAgents")}>AI</button><i>/</i><button type="button" onClick={() => setRoute("aiAgents")}>AI-агенты</button><i>/</i><strong>{currentAgentName || routes[route]}</strong></>}
         {route === "aiKnowledgeDetail" && <><button type="button" onClick={() => setRoute("aiAgents")}>AI</button><i>/</i><button type="button" onClick={() => setRoute("aiKnowledge")}>Знания</button><i>/</i><strong>{currentAgentName || routes[route]}</strong></>}
         {route === "aiKnowledgeCreate" && <><button type="button" onClick={() => setRoute("aiAgents")}>AI</button><i>/</i><button type="button" onClick={() => setRoute("aiKnowledge")}>Знания</button><i>/</i><strong>{routes[route]}</strong></>}
-        {route !== "accessProfiles" && route !== "employeeDetail" && route !== "productDetail" && route !== "channelDetail" && route !== "channelCreate" && route !== "aiAgentCreate" && !isSalesWorkspace && !isSupportWorkspace && !isAi && !isAiDetail && <strong>{routes[route]}</strong>}
+        {route !== "accessProfiles" && route !== "employeeDetail" && route !== "productDetail" && route !== "channelDetail" && route !== "channelCreate" && route !== "supportPortalDetail" && route !== "aiAgentCreate" && !isSalesWorkspace && !isSupportWorkspace && !isAi && !isAiDetail && <strong>{routes[route]}</strong>}
       </div>
       <div className="topbar-actions">
         <button className="icon-button" aria-label="Уведомления" onClick={onOpenNotifications}><Icon name="bell" size={18} />{unreadCount > 0 && <b>{unreadCount > 99 ? "99+" : unreadCount}</b>}</button>

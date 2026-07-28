@@ -92,6 +92,18 @@ describe("api client", () => {
     );
   });
 
+  it("keeps portal management inside the organization support namespace", async () => {
+    setActiveOrganization(organizationPublicId);
+    globalThis.fetch = vi.fn().mockResolvedValue(jsonResponse({ items: [] })) as unknown as typeof fetch;
+
+    await api("/api/v1/support/portals/");
+
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      `/api/v1/organizations/${organizationPublicId}/support/portals/`,
+      expect.objectContaining({ credentials: "include" }),
+    );
+  });
+
   it("fails closed when a tenant request has no selected organization", async () => {
     await expect(api("/api/v1/integrations/")).rejects.toThrow(
       "Organization context is required",

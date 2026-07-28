@@ -28,6 +28,7 @@ const publicPaths = [
   "/api/v1/calls/invites/",
   "/api/v1/orders/ingest/",
   "/api/v1/support/sessions/",
+  "/api/v1/help/",
 ];
 
 export type ApiErrorPayload = {

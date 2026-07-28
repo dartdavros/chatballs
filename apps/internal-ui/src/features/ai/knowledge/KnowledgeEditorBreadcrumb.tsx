@@ -1,3 +1,4 @@
+import { ContentEditorBreadcrumb } from "../../../shared/content-library/ContentEditorBreadcrumb";
 import { knowledgeCategoryPath } from "./knowledgeTree";
 import type { KnowledgeCategory } from "./types";
 
@@ -14,10 +15,11 @@ export function KnowledgeEditorBreadcrumb({
 }) {
   const category = categoryId === null ? "" : knowledgeCategoryPath(categories, categoryId);
   return (
-    <div className="knowledge-editor-breadcrumb">
-      <button type="button" onClick={onBack}>Знания</button>
-      {category && <><span>/</span><em>{category}</em></>}
-      <span>/</span><strong>{title || "Создание знания"}</strong>
-    </div>
+    <ContentEditorBreadcrumb
+      backLabel="Знания"
+      category={category}
+      title={title || "Создание знания"}
+      onBack={onBack}
+    />
   );
 }

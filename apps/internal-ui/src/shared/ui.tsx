@@ -20,12 +20,13 @@ export function PageHeader({ title, text, action }: { title: string; text?: Reac
   );
 }
 
-export type StatusPillKey = "normal" | "active" | "blocked" | "disabled" | "invited" | "archived" | "draft" | "healthy" | "error" | "pending" | "unchecked";
+export type StatusPillKey = "normal" | "active" | "published" | "blocked" | "disabled" | "invited" | "archived" | "draft" | "healthy" | "error" | "pending" | "unchecked";
 
 export function StatusPill({ status }: { status: StatusPillKey }) {
   const map = {
     normal: ["#f6ffed", "#b7eb8f", "#389e0d", "Работает"],
     active: ["transparent", "transparent", "#389e0d", "Активен"],
+    published: ["#f6ffed", "#b7eb8f", "#389e0d", "Опубликован"],
     blocked: ["transparent", "transparent", "#cf1322", "Заблокирован"],
     disabled: ["transparent", "transparent", "#d48806", "Неактивен"],
     invited: ["transparent", "transparent", "#0958d9", "Приглашён"],

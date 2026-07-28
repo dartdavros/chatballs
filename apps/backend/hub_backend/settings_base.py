@@ -18,6 +18,8 @@ TESTING = "test" in sys.argv or "pytest" in sys.modules
 SECRET_KEY = os.environ.get("CUS_SECRET_KEY", INSECURE_SECRET_KEY)
 DEBUG = env_bool("CUS_DEBUG")
 ALLOWED_HOSTS = env_list("CUS_ALLOWED_HOSTS", ["localhost", "127.0.0.1"])
+if TESTING:
+    ALLOWED_HOSTS.extend(["testserver", ".help.custocrm.ru", ".localhost"])
 CSRF_TRUSTED_ORIGINS = env_list("CUS_CSRF_TRUSTED_ORIGINS", [])
 
 # Запрещаем запуск в production с дефолтным/пустым ключом подписи.
@@ -50,6 +52,7 @@ INSTALLED_APPS = [
     "hub_platform.health",
     "hub_platform.events",
     "hub_platform.support",
+    "hub_platform.support_portals",
     "hub_platform.calls",
     # django-channels НЕ добавляется в INSTALLED_APPS: его app label «channels»
     # конфликтует с доменным hub_platform.channels, а без runserver-оверрайда
@@ -205,6 +208,14 @@ CUS_STORAGE_BACKEND, MEDIA_ROOT, STORAGES = build_storage_settings(
 # Публичный адрес Hub: абсолютные ссылки, уходящие клиентам (download вложений).
 CUS_PUBLIC_BASE_URL = os.environ.get("CUS_PUBLIC_BASE_URL", "http://localhost:8000")
 
+# Публичные порталы поддержки размещаются на отдельных хостах.
+CUS_HELP_BASE_DOMAIN = os.environ.get(
+    "CUS_HELP_BASE_DOMAIN",
+    "help.custocrm.ru",
+).strip().lower().rstrip(".")
+CUS_HELP_PUBLIC_SCHEME = os.environ.get("CUS_HELP_PUBLIC_SCHEME", "https").strip().lower()
+CUS_HELP_PUBLIC_PORT = os.environ.get("CUS_HELP_PUBLIC_PORT", "").strip()
+
 # P2P calls: opaque invitation lifetime and short-lived signaling/media access.
 CUS_CALL_INVITE_TTL_SECONDS = int(os.environ.get("CUS_CALL_INVITE_TTL_SECONDS", str(5 * 60)))
 CUS_CALL_ACCESS_TTL_SECONDS = int(os.environ.get("CUS_CALL_ACCESS_TTL_SECONDS", str(60 * 60)))
@@ -245,6 +256,7 @@ _THROTTLE_RATES = {
     "call_invite": "30/min",
     # Страница звонка поллит состояние по access token — лимит с запасом.
     "call_access": "120/min",
+    "help_feedback": "20/hour",
 }
 if TESTING:
     _THROTTLE_RATES = {scope: None for scope in _THROTTLE_RATES}

@@ -7,6 +7,25 @@
 {
 	email {$CUSTOCRM_ACME_EMAIL:}
 	# Caddy admin API не публикуется наружу (default localhost:2019).
+	on_demand_tls {
+		ask http://backend-platform:8000/api/v1/gateway/help-domain/
+	}
+}
+
+# Published hosted and verified custom Help Center domains. Certificate
+# issuance is authorized against the platform ingress directory above.
+https:// {
+	encode gzip zstd
+	tls {
+		on_demand
+	}
+
+	reverse_proxy frontend:80 {
+		header_up Host {host}
+		header_up X-Real-IP {remote_host}
+		header_up X-Forwarded-For {remote_host}
+		header_up X-Forwarded-Proto {scheme}
+	}
 }
 
 # Tenant-facing application surface.

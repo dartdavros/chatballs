@@ -67,8 +67,8 @@ function MessageRow({ message, dialog }: { message: ApiMessage; dialog: Conversa
   const actor = message.author === "AI" ? "AI-агент" : message.author === "OPERATOR" ? "Оператор" : undefined;
   return (
     <Message side={side} initials={dialog.initials} avatarBg={dialog.avatarBg} actor={actor} time={fmtTime(message.createdAt)}>
-      {message.author === "CONTACT" && message.contentHtml
-        ? <EmailMessageBody html={message.contentHtml} />
+      {message.author === "CONTACT" && dialog.channel === "EMAIL"
+        ? <EmailMessageBody html={message.contentHtml} text={message.text} />
         : message.text}
     </Message>
   );

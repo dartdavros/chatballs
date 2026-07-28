@@ -2,6 +2,7 @@ from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
 from rest_framework.views import APIView
 
+from hub_platform.identity.models import Department
 from hub_platform.identity.policy import ResourceScope, authorize, has_capability_any_scope
 from hub_platform.subscriptions.policy import get_effective_policy
 
@@ -26,6 +27,24 @@ class HasCapability(BasePermission):
         if context is None or context.membership is None:
             return False
         profile = context.membership
+        department_code = getattr(view, "required_department_code", None)
+        if department_code:
+            department_id = (
+                Department.objects.filter(
+                    organization_id=profile.organization_id,
+                    code=department_code,
+                )
+                .values_list("id", flat=True)
+                .first()
+            )
+            return bool(department_id) and authorize(
+                profile,
+                capability,
+                ResourceScope(
+                    organization_id=profile.organization_id,
+                    department_id=department_id,
+                ),
+            )
         if getattr(view, "require_organization_scope", False):
             return authorize(
                 profile,

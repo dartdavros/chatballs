@@ -36,7 +36,7 @@ function KnowledgeAccessNotice({ departments, user }: { departments: Department[
   return (
     <div className="knowledge-access-notice">
       <span>Доступ ограничен отделом</span>
-      <p>Ваш доступ <code>ai.view</code> охватывает: {departmentNames.join(", ")}. Знания других отделов не показываются и недоступны для изменения.</p>
+      <p>Доступны знания отделов: {departmentNames.join(", ")}. Материалы других отделов не показываются.</p>
     </div>
   );
 }
@@ -125,7 +125,7 @@ export function KnowledgePage({ departments, openAgent, openKnowledge, setRoute,
             onToggleSelected={library.toggleSelected}
             onToggleVisible={library.toggleVisible}
           />
-          {bulkMode && <p className="knowledge-bulk-note">Операция атомарна: при одной недопустимой записи или конфликтующем агенте ничего не изменяется. Выбор снимается только после успеха.</p>}
+          {bulkMode && <p className="knowledge-bulk-note">Если часть выбранных знаний нельзя изменить, список останется без изменений. Выбор снимется после успешного сохранения.</p>}
         </main>
       </div>
       {categoryManagementOpen && (

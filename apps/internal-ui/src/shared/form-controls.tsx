@@ -4,6 +4,7 @@ import { Icon } from "./icons";
 
 type FormFieldProps = {
   disabled?: boolean;
+  error?: string;
   label: string;
   mono?: boolean;
   onChange?: (value: string) => void;
@@ -15,6 +16,7 @@ type FormFieldProps = {
 
 export function FormField({
   disabled = false,
+  error,
   label,
   mono = false,
   onChange,
@@ -29,6 +31,7 @@ export function FormField({
     "form-field",
     editable ? "is-editable" : "is-readonly",
     disabled ? "is-disabled" : "",
+    error ? "is-invalid" : "",
     wide ? "wide" : "",
   ].filter(Boolean).join(" ");
 
@@ -36,6 +39,7 @@ export function FormField({
     <label className={className}>
       <span>{label}</span>
       <input className={mono ? "mono" : ""} type={type} value={value} placeholder={placeholder} disabled={disabled} readOnly={!editable} onChange={(event) => onChange?.(event.target.value)} />
+      {error && <small className="form-field-error" role="alert">{error}</small>}
     </label>
   );
 }

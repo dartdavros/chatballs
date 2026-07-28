@@ -17,6 +17,7 @@ export function useRouteNavigation(
   const [selectedClientId, setSelectedClientId] = useState(initialRoute.clientId);
   const [selectedOrderId, setSelectedOrderId] = useState(initialRoute.orderId);
   const [selectedChannelId, setSelectedChannelId] = useState(initialRoute.channelId);
+  const [selectedSupportPortalId, setSelectedSupportPortalId] = useState(initialRoute.supportPortalId);
 
   const applyRouteState = useCallback((next: RouteState) => {
     setRoute(next.route);
@@ -29,6 +30,7 @@ export function useRouteNavigation(
     setSelectedClientId(next.clientId);
     setSelectedOrderId(next.orderId);
     setSelectedChannelId(next.channelId);
+    setSelectedSupportPortalId(next.supportPortalId);
   }, []);
 
   const navigate = useCallback((
@@ -49,6 +51,7 @@ export function useRouteNavigation(
       clientId: nextRoute === "salesClientDetail" ? entityId : null,
       orderId: nextRoute === "salesOrderDetail" ? entityId : null,
       channelId: nextRoute === "channelDetail" ? entityId : null,
+      supportPortalId: nextRoute === "supportPortalDetail" ? entityId : null,
     };
     applyRouteState(nextState);
     setSelectedConversationId(
@@ -76,6 +79,7 @@ export function useRouteNavigation(
     selectedClientId,
     selectedOrderId,
     selectedChannelId,
+    selectedSupportPortalId,
     applyRouteState,
     navigate,
   };

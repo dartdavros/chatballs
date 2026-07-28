@@ -50,6 +50,7 @@ class TenantAPIClient(APIClient):
         "/api/v1/calls/invites/",
         "/api/v1/orders/ingest/",
         "/api/v1/support/sessions/",
+        "/api/v1/help/",
     )
 
     def __init__(self, *args, **kwargs) -> None:

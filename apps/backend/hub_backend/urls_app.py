@@ -60,5 +60,6 @@ urlpatterns = [
     path("api/v1/orders/", include("hub_platform.orders.public_urls")),
     path("api/v1/ai/", include("hub_platform.ai.public_urls")),
     path("api/v1/support/", include("hub_platform.support.public_urls")),
+    path("api/v1/help/", include("hub_platform.support_portals.public_urls")),
     path("api/v1/calls/", include("hub_platform.calls.public_urls")),
 ]
