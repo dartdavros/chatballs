@@ -102,15 +102,17 @@
   font-weight: 600;
 }
 
-.hub-ai-subnav {
+.hub-subnav {
   display: flex;
   flex-direction: column;
   gap: 2px;
   padding: 2px 0 2px 30px;
 }
 
-.hub-ai-nav-item {
+.hub-subnav-item {
   width: 100%;
+  display: flex;
+  align-items: center;
   padding: 6px 12px;
   border: 0;
   border-radius: 7px;
@@ -122,20 +124,45 @@
   text-align: left;
 }
 
-.hub-ai-nav-item:not(:disabled):hover {
+.hub-subnav-item:not(:disabled):hover {
   color: #262626;
   background: #f5f5f5;
 }
 
-.hub-ai-nav-item.is-active {
+.hub-subnav-item.is-active {
   color: #0958d9;
   background: #e6f4ff;
   font-weight: 600;
 }
 
-.hub-ai-nav-item:disabled {
+.hub-subnav-item:disabled {
   color: #bfbfbf;
   cursor: not-allowed;
+}
+
+.hub-nav-chevron {
+  display: inline-flex;
+  margin-left: auto;
+  transition: transform 0.15s ease;
+}
+
+.hub-nav-section-toggle[aria-expanded="false"] .hub-nav-chevron {
+  transform: rotate(-90deg);
+}
+
+.hub-subnav-item b {
+  min-width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  padding: 0 6px;
+  color: #ffffff;
+  background: #faad14;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
 }
 
 .active-bar {
@@ -177,98 +204,6 @@
 .profile-link > svg:last-child {
   flex: none;
   color: #bfbfbf;
-}
-
-.sales-workspace-sidebar {
-  width: 240px;
-}
-
-.sales-sidebar-back-wrap {
-  height: 56px;
-  display: flex;
-  align-items: center;
-  flex: none;
-  padding: 0 14px;
-  border-bottom: 1px solid #f5f5f5;
-}
-
-.sales-sidebar-back {
-  width: 100%;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 0 12px;
-  color: #595959;
-  background: #ffffff;
-  border: 1px solid #f0f0f0;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.sales-sidebar-back:hover {
-  color: #1677ff;
-  background: #f5f5f5;
-  border-color: #d9d9d9;
-}
-
-.sales-sidebar-back svg {
-  transform: rotate(180deg);
-}
-
-.sales-sidebar-title {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  padding: 16px 16px 8px;
-}
-
-.sales-sidebar-icon {
-  width: 34px;
-  height: 34px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: none;
-  color: #1677ff;
-  background: #e6f4ff;
-  border-radius: 9px;
-}
-
-.sales-sidebar-title strong {
-  display: block;
-  color: #1f1f1f;
-  font-size: 15px;
-  font-weight: 700;
-  line-height: 1.15;
-}
-
-.sales-sidebar-title span {
-  display: block;
-  margin-top: 2px;
-  color: #8c8c8c;
-  font-size: 11px;
-  line-height: 1.15;
-}
-
-.sales-workspace-nav {
-  padding-top: 8px;
-}
-
-.sales-workspace-nav b {
-  min-width: 20px;
-  height: 20px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-left: auto;
-  padding: 0 6px;
-  color: #ffffff;
-  background: #faad14;
-  border-radius: 10px;
-  font-size: 11px;
-  font-weight: 700;
 }
 
 .avatar {

@@ -4,6 +4,7 @@ import uuid
 
 import dns.exception
 import dns.resolver
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
@@ -48,6 +49,27 @@ def verify_custom_domain(portal: SupportPortal) -> SupportPortal:
         )
     if not portal.custom_domain:
         raise ValidationError({"customDomain": "Сначала укажите домен"})
+    if settings.CUS_HELP_PUBLIC_IPV4:
+        try:
+            address_answers = dns.resolver.resolve(portal.custom_domain, "A")
+            addresses = {
+                getattr(answer, "address", str(answer).rstrip("."))
+                for answer in address_answers
+            }
+        except (
+            dns.resolver.NoAnswer,
+            dns.resolver.NXDOMAIN,
+            dns.resolver.NoNameservers,
+            dns.exception.Timeout,
+        ) as error:
+            raise ValidationError(
+                {"customDomain": "A-запись домена пока не найдена"}
+            ) from error
+        if settings.CUS_HELP_PUBLIC_IPV4 not in addresses:
+            raise ValidationError(
+                {"customDomain": "A-запись домена указывает не на сервер CustoCRM"}
+            )
+
     expected = domain_verification_value(portal)
     try:
         answers = dns.resolver.resolve(domain_verification_name(portal), "TXT")

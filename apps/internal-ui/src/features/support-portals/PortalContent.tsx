@@ -1,15 +1,12 @@
-import { Dropdown } from "antd";
 import { useMemo, useState } from "react";
 
 import { CategoryTree } from "../../shared/content-library/CategoryTree";
 import { ContentLibraryTable } from "../../shared/content-library/ContentLibraryTable";
 import { ContentLibraryToolbar } from "../../shared/content-library/ContentLibraryToolbar";
 import { DecisionDialog } from "../../shared/DecisionDialog";
-import { Icon } from "../../shared/icons";
-import { StatusPill } from "../../shared/ui";
 import { Button } from "../../shared/ui-controls";
-import { formatDate } from "../../shared/utils";
 import { PortalArticleEditor } from "./PortalArticleEditor";
+import { PortalArticleTable } from "./PortalArticleTable";
 import { PortalCategoryManagement } from "./PortalCategoryManagement";
 import {
   archivePortalArticle,
@@ -150,35 +147,12 @@ export function PortalContent({
             onRetry={() => void reload()}
             footer={<div className="ai-table-footer"><span>{filtered.length} материалов</span></div>}
           >
-              <table className="baseline-table knowledge-table">
-                <thead><tr><th>СТАТЬЯ</th><th>РАЗДЕЛ</th><th>ЯЗЫК</th><th>ВЕРСИЯ</th><th>СТАТУС</th><th>ОБНОВЛЕНО</th><th /></tr></thead>
-                <tbody>
-                  {filtered.map((article) => (
-                    <tr className="knowledge-row" key={article.id} onClick={() => setEditing(article)}>
-                      <td><button className="link is-strong is-neutral" type="button" onClick={() => setEditing(article)}>{article.latestRevision?.title || article.slug}</button><small className="knowledge-description">{article.latestRevision?.summary || article.slug}</small></td>
-                      <td className="knowledge-category-path">{article.category.name}</td>
-                      <td>{article.locale.toLocaleUpperCase()}</td>
-                      <td>{article.publishedRevision ? article.publishedRevision.revision : "—"}</td>
-                      <td><StatusPill status={article.status === "PUBLISHED" ? "published" : article.status === "ARCHIVED" ? "archived" : "draft"} /></td>
-                      <td>{formatDate(article.updatedAt)}</td>
-                      <td onClick={(event) => event.stopPropagation()}>
-                        {canManage && (
-                          <Dropdown
-                            overlayClassName="app-dropdown"
-                            trigger={["click"]}
-                            menu={{ items: [
-                              { key: "edit", label: "Изменить", onClick: () => setEditing(article) },
-                              ...(article.status !== "ARCHIVED" ? [{ key: "archive", danger: true, label: "В архив", onClick: () => setDecision({ article, type: "archive" as const }) }] : []),
-                            ] }}
-                          >
-                            <button aria-label={`Действия: ${article.latestRevision?.title ?? article.slug}`} className="row-menu-button" type="button"><Icon name="more" size={18} /></button>
-                          </Dropdown>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <PortalArticleTable
+              articles={filtered}
+              canManage={canManage}
+              onArchive={(article) => setDecision({ article, type: "archive" })}
+              onEdit={setEditing}
+            />
           </ContentLibraryTable>
         </main>
       </div>

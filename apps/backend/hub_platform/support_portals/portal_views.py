@@ -8,6 +8,7 @@ from hub_platform.api.permissions import HasCapability, HasEntitlement
 from hub_platform.channels.models import Channel
 from hub_platform.channels.serializers import channel_payload
 from hub_platform.identity.audit import record_audit_event
+from hub_platform.integrations.models import IntegrationProvider, IntegrationStatus
 from hub_platform.support_portals.api import validation_response
 from hub_platform.support_portals.models import SupportPortal
 from hub_platform.support_portals.domain_services import (
@@ -26,6 +27,17 @@ from hub_platform.support_portals.serializers import portal_payload
 from hub_platform.subscriptions.errors import PolicyUnavailable
 from hub_platform.subscriptions.keys import QuotaKey
 from hub_platform.subscriptions.policy import get_effective_policy
+
+
+def _optional_id(value) -> int | None:
+    if value in (None, ""):
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError) as error:
+        raise ValidationError(
+            {"widgetChannelId": "Канал веб-виджета не найден"}
+        ) from error
 
 
 class PortalBaseView(APIView):
@@ -56,6 +68,15 @@ def _input(request: Request, current: SupportPortal | None = None) -> PortalInpu
             request.data.get(
                 "defaultLocale",
                 current.default_locale if current else "ru",
+            )
+        ),
+        widget_channel_id=(
+            _optional_id(request.data["widgetChannelId"])
+            if request.data.get("widgetChannelId") not in (None, "")
+            else (
+                current.widget_channel_id
+                if current is not None and "widgetChannelId" not in request.data
+                else None
             )
         ),
     )
@@ -198,7 +219,29 @@ class PortalSupportChannelsView(PortalBaseView):
             )
             .order_by("product__name", "name", "id")
         )
-        return Response({"items": [channel_payload(channel) for channel in channels]})
+        widget_channels = (
+            Channel.objects.select_related("department", "product")
+            .filter(
+                organization=request.tenant_context.organization,
+                department__code="support",
+                is_active=True,
+                requires_authenticated_product_identity=False,
+                allow_anonymous_sessions=True,
+                connections__provider=IntegrationProvider.WEB,
+                connections__status=IntegrationStatus.OK,
+                connections__is_active=True,
+            )
+            .distinct()
+            .order_by("name", "id")
+        )
+        return Response(
+            {
+                "items": [channel_payload(channel) for channel in channels],
+                "widgetItems": [
+                    channel_payload(channel) for channel in widget_channels
+                ],
+            }
+        )
 
 
 class PortalDomainView(PortalBaseView):

@@ -1,47 +1,89 @@
 import type { RouteKey, SessionUser } from "../types";
 import { Icon, LogoIcon } from "../shared/icons";
-import { canAccess } from "../auth/access";
-import { AiSidebarNav } from "./AiSidebarNav";
+import { canAccess, defaultRoute } from "../auth/access";
+import { SidebarNavSection, type SidebarNavSectionItem } from "./SidebarNavSection";
 import { SidebarUserMenu } from "./SidebarUserMenu";
 
-export function Sidebar({ route, user, setRoute, onLogout }: { route: RouteKey; user: SessionUser; setRoute: (route: RouteKey) => void; onLogout: () => void }) {
-  const nav = [
-    { key: "command" as const, label: "Обзор", icon: "grid" as const },
-    { label: "КОМПАНИЯ", group: true },
-    { key: "departments" as const, label: "Отделы", icon: "building" as const },
-    { key: "employees" as const, label: "Сотрудники", icon: "team" as const },
-    { key: "products" as const, label: "Продукты", icon: "box" as const },
-    { key: "channels" as const, label: "Каналы", icon: "route" as const },
-    { label: "ПЛАТФОРМА", group: true },
-    { key: "aiAgents" as const, label: "AI", icon: "robot" as const },
-    { key: "integrations" as const, label: "Интеграции", icon: "plug" as const },
-    { divider: true },
-    { label: "Администрирование", icon: "settings" as const, disabled: true },
-  ];
+type SidebarLinkProps = {
+  activeRoutes?: RouteKey[];
+  disabled?: boolean;
+  icon: Parameters<typeof Icon>[0]["name"];
+  label: string;
+  route: RouteKey;
+  routeKey?: RouteKey;
+  setRoute: (route: RouteKey) => void;
+};
+
+function SidebarLink({ activeRoutes, disabled, icon, label, route, routeKey, setRoute }: SidebarLinkProps) {
+  const active = activeRoutes?.includes(route) ?? routeKey === route;
+  return (
+    <button
+      className={`hub-nav-item ${active ? "is-active" : ""}`}
+      disabled={disabled}
+      type="button"
+      onClick={() => routeKey && setRoute(routeKey)}
+    >
+      {active && <span className="active-bar" />}
+      <Icon name={icon} />
+      {label}
+    </button>
+  );
+}
+
+const SALES_ITEMS: SidebarNavSectionItem[] = [
+  { activeRoutes: ["salesOverview"], key: "salesOverview", label: "Обзор" },
+  { activeRoutes: ["salesDialogs"], key: "salesDialogs", label: "Диалоги" },
+  { activeRoutes: ["salesClients", "salesClientDetail"], key: "salesClients", label: "Контакты" },
+  { activeRoutes: ["salesOrders", "salesOrderDetail"], key: "salesOrders", label: "Продажи" },
+];
+
+const SUPPORT_ITEMS: SidebarNavSectionItem[] = [
+  { activeRoutes: ["supportOverview"], key: "supportOverview", label: "Обзор" },
+  { activeRoutes: ["supportDialogs"], key: "supportDialogs", label: "Диалоги" },
+  { activeRoutes: ["supportPortals", "supportPortalDetail"], key: "supportPortals", label: "Порталы" },
+];
+
+const AI_ITEMS: SidebarNavSectionItem[] = [
+  { activeRoutes: ["aiAgents", "aiAgentCreate", "aiAgentDetail"], key: "aiAgents", label: "AI-агенты" },
+  { activeRoutes: ["aiKnowledge", "aiKnowledgeCreate", "aiKnowledgeDetail"], key: "aiKnowledge", label: "Знания" },
+  { activeRoutes: ["aiUsage"], disabled: true, key: "aiUsage", label: "Использование AI" },
+];
+
+function visibleItems(user: SessionUser, items: SidebarNavSectionItem[]) {
+  return items.filter((item) => canAccess(user, item.key));
+}
+
+export function Sidebar({ route, user, setRoute, onLogout, waitingCount = 0 }: { route: RouteKey; user: SessionUser; setRoute: (route: RouteKey) => void; onLogout: () => void; waitingCount?: number }) {
+  const sectionStorageKey = (section: string) => (
+    `custocrm.sidebar.${user.organizationPublicId}.${section}.expanded`
+  );
+  const salesItems = visibleItems(user, SALES_ITEMS).map((item) => (
+    item.key === "salesDialogs" && waitingCount > 0
+      ? { ...item, badge: String(waitingCount) }
+      : item
+  ));
+  const supportItems = visibleItems(user, SUPPORT_ITEMS);
+  const aiItems = visibleItems(user, AI_ITEMS);
+
   return (
     <aside className="hub-sidebar">
-      <button className="hub-brand" type="button" onClick={() => setRoute("command")}>
+      <button className="hub-brand" type="button" onClick={() => setRoute(defaultRoute(user))}>
         <div className="hub-brand-mark"><LogoIcon /></div>
         <div><strong>CustoCRM</strong><span>Управление компанией</span></div>
       </button>
       <nav className="hub-nav">
-        {nav.map((item, index) => {
-          if ("group" in item) return <div className="hub-nav-group" key={item.label}>{item.label}</div>;
-          if ("divider" in item) return <div className="hub-nav-divider" key={index} />;
-          const nextRoute = "key" in item ? item.key : null;
-          if (nextRoute && !canAccess(user, nextRoute)) return null;
-          const active = nextRoute === route || (nextRoute === "employees" && (route === "employeeDetail" || route === "accessProfiles")) || (nextRoute === "products" && route === "productDetail") || (nextRoute === "aiAgents" && route.startsWith("ai")) || (nextRoute === "channels" && route.startsWith("channel"));
-          return (
-            <div key={item.label}>
-              <button className={`hub-nav-item ${active ? "is-active" : ""}`} disabled={item.disabled} onClick={() => nextRoute && setRoute(nextRoute)}>
-                {active && <span className="active-bar" />}
-                <Icon name={item.icon} />
-                {item.label}
-              </button>
-              {nextRoute === "aiAgents" && active && <AiSidebarNav route={route} setRoute={setRoute} />}
-            </div>
-          );
-        })}
+        {canAccess(user, "command") && <SidebarLink icon="grid" label="Обзор" route={route} routeKey="command" setRoute={setRoute} />}
+        <div className="hub-nav-group">КОМПАНИЯ</div>
+        <SidebarNavSection icon="shop" items={salesItems} label="Продажи" route={route} setRoute={setRoute} storageKey={sectionStorageKey("sales")} />
+        <SidebarNavSection icon="wrench" items={supportItems} label="Поддержка" route={route} setRoute={setRoute} storageKey={sectionStorageKey("support")} />
+        {canAccess(user, "employees") && <SidebarLink activeRoutes={["employees", "employeeDetail", "accessProfiles"]} icon="team" label="Сотрудники" route={route} routeKey="employees" setRoute={setRoute} />}
+        {canAccess(user, "products") && <SidebarLink activeRoutes={["products", "productDetail"]} icon="box" label="Продукты" route={route} routeKey="products" setRoute={setRoute} />}
+        {canAccess(user, "channels") && <SidebarLink activeRoutes={["channels", "channelCreate", "channelDetail"]} icon="route" label="Каналы" route={route} routeKey="channels" setRoute={setRoute} />}
+        <div className="hub-nav-group">ПЛАТФОРМА</div>
+        <SidebarNavSection icon="robot" items={aiItems} label="AI" route={route} setRoute={setRoute} storageKey={sectionStorageKey("ai")} />
+        {canAccess(user, "integrations") && <SidebarLink icon="plug" label="Интеграции" route={route} routeKey="integrations" setRoute={setRoute} />}
+        <div className="hub-nav-divider" />
+        <SidebarLink disabled icon="settings" label="Администрирование" route={route} setRoute={setRoute} />
       </nav>
       <SidebarUserMenu user={user} route={route} setRoute={setRoute} onLogout={onLogout} />
     </aside>

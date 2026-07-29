@@ -6,6 +6,7 @@ from django.utils import timezone
 
 from hub_platform.channels.models import Channel
 from hub_platform.identity.models import Department
+from hub_platform.integrations.models import IntegrationProvider, IntegrationStatus
 from hub_platform.products.models import Product
 from hub_platform.subscriptions.keys import EntitlementKey, QuotaKey
 from hub_platform.subscriptions.policy import require_entitlement
@@ -24,6 +25,7 @@ class PortalInput:
     slug: str
     name: str
     default_locale: str = "ru"
+    widget_channel_id: int | None = None
 
 
 @transaction.atomic
@@ -40,6 +42,7 @@ def create_portal(*, context: TenantContext, data: PortalInput) -> SupportPortal
         hosted_domain=hosted_domain(data.slug.strip().lower()),
         name=data.name.strip(),
         default_locale=data.default_locale.strip().lower() or "ru",
+        widget_channel=_widget_channel(context, data.widget_channel_id),
     )
     portal.full_clean()
     portal.save()
@@ -65,9 +68,39 @@ def update_portal(
     portal.hosted_domain = hosted_domain(portal.slug)
     portal.name = data.name.strip()
     portal.default_locale = data.default_locale.strip().lower() or "ru"
+    portal.widget_channel = _widget_channel(context, data.widget_channel_id)
     portal.full_clean()
     portal.save()
     return portal
+
+
+def _widget_channel(
+    context: TenantContext,
+    channel_id: int | None,
+) -> Channel | None:
+    if channel_id is None:
+        return None
+    try:
+        return (
+            Channel.objects.select_related("department")
+            .filter(
+                id=channel_id,
+                organization=context.organization,
+                department__code="support",
+                is_active=True,
+                requires_authenticated_product_identity=False,
+                allow_anonymous_sessions=True,
+                connections__provider=IntegrationProvider.WEB,
+                connections__status=IntegrationStatus.OK,
+                connections__is_active=True,
+            )
+            .distinct()
+            .get()
+        )
+    except Channel.DoesNotExist as error:
+        raise ValidationError(
+            {"widgetChannelId": "Активный Web-виджет поддержки не найден"}
+        ) from error
 
 
 @transaction.atomic

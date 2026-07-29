@@ -145,24 +145,23 @@ async function login(page: Page, user: object) {
   await page.getByRole("button", { name: "Войти" }).click();
 }
 
-test("OWNER logs in and lands on the command center with the global sidebar", async ({ page }) => {
+test("OWNER logs in and sees every available sidebar section collapsed", async ({ page }) => {
   await login(page, OWNER_IDENTITY);
 
   await expect(page).toHaveURL(new RegExp(`/organizations/${ORGANIZATION_PUBLIC_ID}/`));
   await expect(page.getByRole("heading", { name: "Командный центр" })).toBeVisible();
-  // Глобальный sidebar уровня компании.
-  await expect(page.getByText("Уровень компании")).toBeVisible();
-  await expect(page.getByText("Рабочее пространство")).toHaveCount(0);
+  await expect(page.locator(".hub-nav-section-toggle", { hasText: "Продажи" })).toHaveAttribute("aria-expanded", "false");
+  await expect(page.locator(".hub-nav-section-toggle", { hasText: "Поддержка" })).toHaveAttribute("aria-expanded", "false");
+  await expect(page.locator(".hub-nav-section-toggle", { hasText: "AI" })).toHaveAttribute("aria-expanded", "false");
+  await expect(page.getByRole("button", { name: "Отделы", exact: true })).toHaveCount(0);
 });
 
-test("OPERATOR logs in and lands on sales dialogs with the sales sidebar", async ({ page }) => {
+test("OPERATOR logs in and sees the accessible department in the main sidebar", async ({ page }) => {
   await login(page, OPERATOR_IDENTITY);
 
   await expect(page).toHaveURL(/\/departments\/sales\/dialogs/);
-  // Операторская навигация показывает только рабочее пространство продаж.
-  await expect(page.getByText("Рабочее пространство")).toBeVisible();
-  await expect(page.getByText("Уровень компании")).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "Назад" })).toHaveCount(0);
+  await expect(page.locator(".hub-nav-section-toggle", { hasText: "Продажи" })).toHaveAttribute("aria-expanded", "false");
+  await expect(page.getByRole("button", { name: "Поддержка", exact: true })).toHaveCount(0);
 });
 
 test("OPERATOR opening an owner-only route sees the 403 permission screen", async ({ page }) => {

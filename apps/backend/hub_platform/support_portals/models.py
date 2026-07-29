@@ -11,7 +11,7 @@ from hub_platform.support_portals.statuses import ArticleStatus, PortalStatus
 class SupportPortal(TenantRelationModel):
     """Публичный Help Center, управляемый внутри отдела поддержки."""
 
-    tenant_relation_fields = ("department",)
+    tenant_relation_fields = ("department", "widget_channel")
     department = models.ForeignKey(
         "identity.Department",
         on_delete=models.PROTECT,
@@ -34,6 +34,13 @@ class SupportPortal(TenantRelationModel):
     )
     transition_version = models.PositiveIntegerField(default=0)
     published_at = models.DateTimeField(null=True, blank=True)
+    widget_channel = models.ForeignKey(
+        "channels.Channel",
+        on_delete=models.PROTECT,
+        related_name="support_portal_widgets",
+        null=True,
+        blank=True,
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     products = models.ManyToManyField(
@@ -69,6 +76,19 @@ class SupportPortal(TenantRelationModel):
             raise ValidationError(
                 {"department": "Support portal must belong to the support department"}
             )
+        if self.widget_channel_id is not None:
+            channel = self.widget_channel
+            if channel.department_id is None or channel.department.code != "support":
+                raise ValidationError(
+                    {"widget_channel": "Portal widget must belong to the support department"}
+                )
+            if (
+                channel.requires_authenticated_product_identity
+                or not channel.allow_anonymous_sessions
+            ):
+                raise ValidationError(
+                    {"widget_channel": "Portal widget must allow anonymous web sessions"}
+                )
 
 
 class SupportPortalProduct(TenantRelationModel):

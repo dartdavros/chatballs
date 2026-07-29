@@ -60,6 +60,18 @@ the local migration DB role, is excluded from the backend image, and the
 importer refuses any environment other than `CUS_ENV=local`. Production compose
 has no seed service or seed command.
 
+Демо-контент портала FoxRay и отдельный анонимный Web-виджет поддержки можно
+установить независимо от общего seed:
+
+```powershell
+.\scripts\seed-support-portal.ps1
+```
+
+Этот portal-only импорт идемпотентен и не создаёт пользователей, не меняет
+пароли, роли, сессии или права доступа. Он публикует локальный портал
+`http://foxray.localhost/`, категории и статьи, а также подключает существующий
+Web Chat через отдельный канал `foxray-help`.
+
 ## Tests
 
 All suites run in Docker, so no manual environment is required — the test

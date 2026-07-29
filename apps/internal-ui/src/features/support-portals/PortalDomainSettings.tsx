@@ -30,7 +30,7 @@ export function PortalDomainSettings({
     try {
       const payload = await setPortalCustomDomain(portal.id, domain);
       onChanged(payload.portal);
-      setFeedback(domain.trim() ? "Домен сохранён. Добавьте TXT-запись для подтверждения." : "Свой домен отключён");
+      setFeedback(domain.trim() ? "Домен сохранён. Добавьте показанные DNS-записи и проверьте домен." : "Свой домен отключён");
     } catch (error) {
       setFeedback(portalErrorMessage(error, "Не удалось сохранить домен"));
     } finally {
@@ -68,14 +68,29 @@ export function PortalDomainSettings({
           wide
         />
       </div>
-      {portal.customDomainVerification && (
+      {(portal.customDomainAddress || portal.customDomainVerification) && (
         <div className="portal-domain-verification">
-          <strong>Добавьте DNS-запись</strong>
-          <dl>
-            <div><dt>Тип</dt><dd>{portal.customDomainVerification.type}</dd></div>
-            <div><dt>Имя</dt><dd><code>{portal.customDomainVerification.name}</code></dd></div>
-            <div><dt>Значение</dt><dd><code>{portal.customDomainVerification.value}</code></dd></div>
-          </dl>
+          <strong>DNS-записи для {portal.customDomain}</strong>
+          {portal.customDomainAddress && (
+            <div className="portal-domain-record">
+              <b>A-запись</b>
+              <dl>
+                <div><dt>Тип</dt><dd>{portal.customDomainAddress.type}</dd></div>
+                <div><dt>Имя</dt><dd><code>{portal.customDomainAddress.name}</code></dd></div>
+                <div><dt>Значение</dt><dd><code>{portal.customDomainAddress.value}</code></dd></div>
+              </dl>
+            </div>
+          )}
+          {portal.customDomainVerification && (
+            <div className="portal-domain-record">
+              <b>TXT-запись</b>
+              <dl>
+                <div><dt>Тип</dt><dd>{portal.customDomainVerification.type}</dd></div>
+                <div><dt>Имя</dt><dd><code>{portal.customDomainVerification.name}</code></dd></div>
+                <div><dt>Значение</dt><dd><code>{portal.customDomainVerification.value}</code></dd></div>
+              </dl>
+            </div>
+          )}
         </div>
       )}
       <div className="portal-domain-actions">

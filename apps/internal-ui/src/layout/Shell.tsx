@@ -6,11 +6,8 @@ import { NotificationDrawer } from "../features/notifications/NotificationDrawer
 import { fetchNotifications, markAllRead, markRead, type AppNotification } from "../features/notifications/model";
 import { fetchWaitingCount } from "../features/conversations/model";
 import { Sidebar } from "./Sidebar";
-import { SalesSidebar } from "./SalesSidebar";
-import { SupportSidebar } from "./SupportSidebar";
 import { ShellRouteContent } from "./ShellRouteContent";
 import { TopBar } from "./TopBar";
-import { canAccess } from "../auth/access";
 
 export function Shell({ route, setRoute, selectedEmployeeId, selectedProductId, selectedProductCode, selectedAgentId, selectedKnowledgeId, selectedConversationId, selectedClientId, selectedOrderId, selectedChannelId, selectedSupportPortalId, openChannelRoute, openSupportPortalRoute, openEmployeeRoute, openProductRoute, openAgentCreateRoute, openAgentRoute, openKnowledgeRoute, openConversationRoute, openClientRoute, openOrderRoute, user, data, reload, onUserUpdated, onLogout }: { route: RouteKey; setRoute: (route: RouteKey) => void; selectedEmployeeId: number | null; selectedProductId: number | null; selectedProductCode: string | null; selectedAgentId: number | null; selectedKnowledgeId: number | null; selectedConversationId: number | null; selectedClientId: number | null; selectedOrderId: number | null; selectedChannelId: number | null; selectedSupportPortalId: number | null; openEmployeeRoute: (employeeId: number) => void; openProductRoute: (productId: number) => void; openAgentCreateRoute: (productCode: string | null) => void; openAgentRoute: (agentId: number) => void; openKnowledgeRoute: (knowledgeId: number) => void; openConversationRoute: (conversationId: number) => void; openClientRoute: (clientId: number) => void; openOrderRoute: (orderId: number) => void; openChannelRoute: (channelId: number) => void; openSupportPortalRoute: (portalId: number) => void; user: SessionUser; data: AppData; reload: () => void; onUserUpdated: (user: SessionUser) => void; onLogout: () => void }) {
   const [agentName, setAgentName] = useState<string | null>(null);
@@ -95,15 +92,9 @@ export function Shell({ route, setRoute, selectedEmployeeId, selectedProductId, 
   const isAiFullWidth = route === "aiAgentCreate";
   const isKnowledgeLibrary = route === "aiKnowledge";
   const isKnowledgeEditor = route === "aiKnowledgeCreate" || route === "aiKnowledgeDetail";
-  const showSalesSidebar = isSalesWorkspace || (
-    canAccess(user, "salesDialogs") && !canAccess(user, "command") && !isSupportWorkspace
-  );
-  const showSupportSidebar = isSupportWorkspace || (
-    canAccess(user, "supportDialogs") && !canAccess(user, "command") && !isSalesWorkspace
-  );
   return (
     <div className="hub-shell">
-      {showSupportSidebar ? <SupportSidebar route={route} user={user} setRoute={setRoute} onLogout={onLogout} waitingCount={waitingCount} /> : showSalesSidebar ? <SalesSidebar route={route} user={user} setRoute={setRoute} onLogout={onLogout} waitingCount={waitingCount} /> : <Sidebar route={route} user={user} setRoute={setRoute} onLogout={onLogout} />}
+      <Sidebar route={route} user={user} setRoute={setRoute} onLogout={onLogout} waitingCount={waitingCount} />
       <div className="hub-main">
         <TopBar route={route} user={user} currentEmployee={currentEmployee} currentProduct={currentProduct} currentAgentName={agentName} currentChannelName={channelName} setRoute={setRoute} unreadCount={unreadCount} onOpenNotifications={() => { setNotifOpen(true); void loadNotifications(); }} />
         <main className={`hub-scroll ${isDialogsWorkspace ? "sales-dialogs-scroll" : ""} ${isAiFullWidth ? "ai-fullwidth-scroll" : ""}`}>

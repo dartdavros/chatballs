@@ -51,6 +51,7 @@ def _resolved_web_connection(channel_code: str):
             id=route.resource_id,
             organization=organization,
             provider=IntegrationProvider.WEB,
+            is_active=True,
             channel__organization=organization,
             channel__code=channel_code,
             channel__is_active=True,
@@ -86,6 +87,11 @@ class WebchatConfigView(_Public):
         with _resolved_web_connection(channel_code) as (context, integration):
             if context is None or integration is None:
                 return Response({"available": False})
+            if (
+                integration.channel.requires_authenticated_product_identity
+                or not integration.channel.allow_anonymous_sessions
+            ):
+                return Response({"available": False})
             return Response(
                 services.public_config(
                     context=context,
@@ -100,6 +106,11 @@ class WebchatSessionView(_Public):
         channel_code = str(request.data.get("channel", ""))
         with _resolved_web_connection(channel_code) as (context, integration):
             if context is None or integration is None:
+                return Response({"detail": "Канал недоступен"}, status=404)
+            if (
+                integration.channel.requires_authenticated_product_identity
+                or not integration.channel.allow_anonymous_sessions
+            ):
                 return Response({"detail": "Канал недоступен"}, status=404)
             result = services.issue_session(context=context, integration=integration)
             if result is None:

@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 
 import { LogoIcon } from "../../shared/icons";
 import { HelpSearch } from "./HelpSearch";
+import { PortalWebWidget } from "./PortalWebWidget";
 import { SupportLauncher } from "./SupportLauncher";
 import type { HelpPortal } from "./types";
 
@@ -52,7 +53,9 @@ export function HelpLayout({
         </a>
         <span>База знаний и поддержка</span>
       </footer>
-      <SupportLauncher products={portal.products} />
+      {portal.webWidgetChannelCode
+        ? <PortalWebWidget channelCode={portal.webWidgetChannelCode} />
+        : <SupportLauncher products={portal.products} />}
     </div>
   );
 }

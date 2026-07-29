@@ -75,6 +75,20 @@
   font-size: 11.5px;
 }
 
+.portal-article-col-title { width: 26%; }
+.portal-article-col-category { width: 18%; }
+.portal-article-col-language { width: 7%; }
+.portal-article-col-version { width: 7%; }
+.portal-article-col-status { width: 18%; }
+.portal-article-col-updated { width: 17%; }
+.portal-article-col-actions { width: 48px; }
+
+.portal-article-table th:last-child,
+.portal-article-table td:last-child {
+  padding-right: 10px;
+  padding-left: 8px;
+}
+
 .portal-product-list {
   display: grid;
   gap: 8px;
@@ -130,10 +144,19 @@
   font-size: 13px;
 }
 
+.portal-domain-record {
+  margin-top: 14px;
+}
+
+.portal-domain-record > b {
+  color: var(--text-heading);
+  font-size: 12.5px;
+}
+
 .portal-domain-verification dl {
   display: grid;
   gap: 8px;
-  margin: 12px 0 0;
+  margin: 8px 0 0;
 }
 
 .portal-domain-verification dl > div {

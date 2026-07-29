@@ -14,12 +14,88 @@ from hub_platform.identity.models import (
     Organization,
     OrganizationMembership,
 )
+from hub_platform.integrations.models import (
+    Integration,
+    IntegrationKind,
+    IntegrationProvider,
+    IntegrationStatus,
+)
 from hub_platform.subscriptions.testing import create_test_subscription
 from hub_platform.support_portals.models import SupportPortal, SupportPortalProduct
 from hub_platform.support_portals.tests.base import SupportPortalTestCase
 
 
 class SupportPortalManagementTests(SupportPortalTestCase):
+    def test_anonymous_web_channel_can_be_attached_as_portal_widget(self) -> None:
+        portal_id = self.create_portal().json()["portal"]["id"]
+        widget_channel = Channel.objects.create(
+            organization=self.organization,
+            code="foxray-portal-chat",
+            name="FoxRay — чат портала",
+            department=self.channel.department,
+            product=self.product,
+            requires_authenticated_product_identity=False,
+            allow_anonymous_sessions=True,
+            allow_self_reported_contact=True,
+        )
+        Integration.objects.create(
+            organization=self.organization,
+            kind=IntegrationKind.MESSENGER,
+            provider=IntegrationProvider.WEB,
+            name="FoxRay portal widget",
+            channel=widget_channel,
+            status=IntegrationStatus.OK,
+        )
+
+        options = self.client.get(
+            f"/api/v1/support/portals/{portal_id}/support-channels/"
+        )
+        self.assertEqual(options.status_code, 200, options.content)
+        self.assertEqual(
+            [item["id"] for item in options.json()["widgetItems"]],
+            [widget_channel.id],
+        )
+
+        updated = self.client.patch(
+            f"/api/v1/support/portals/{portal_id}/",
+            {"widgetChannelId": widget_channel.id},
+            format="json",
+        )
+        self.assertEqual(updated.status_code, 200, updated.content)
+        self.assertEqual(
+            updated.json()["portal"]["widgetChannelCode"],
+            widget_channel.code,
+        )
+
+        config = self.client.get(
+            f"/api/v1/webchat/config/?channel={widget_channel.code}",
+            HTTP_ORIGIN="http://foxray-help.localhost",
+        )
+        self.assertEqual(config.status_code, 200, config.content)
+        self.assertTrue(config.json()["available"])
+
+    def test_authenticated_support_channel_is_rejected_by_public_webchat(self) -> None:
+        Integration.objects.create(
+            organization=self.organization,
+            kind=IntegrationKind.MESSENGER,
+            provider=IntegrationProvider.WEB,
+            name="Authenticated support widget",
+            channel=self.channel,
+            status=IntegrationStatus.OK,
+        )
+
+        config = self.client.get(
+            f"/api/v1/webchat/config/?channel={self.channel.code}",
+        )
+        session = self.client.post(
+            "/api/v1/webchat/session/",
+            {"channel": self.channel.code},
+            format="json",
+        )
+
+        self.assertFalse(config.json()["available"])
+        self.assertEqual(session.status_code, 404, session.content)
+
     def test_subscription_allows_multiple_active_portals(self) -> None:
         first = self.create_portal()
         self.assertEqual(first.status_code, 201, first.content)
@@ -85,7 +161,8 @@ class SupportPortalManagementTests(SupportPortalTestCase):
         link.refresh_from_db()
         self.assertEqual(link.support_channel, self.channel)
 
-    def test_custom_domain_requires_matching_dns_record(self) -> None:
+    @override_settings(CUS_HELP_PUBLIC_IPV4="203.0.113.42")
+    def test_custom_domain_requires_matching_dns_records(self) -> None:
         portal_id = self.create_portal().json()["portal"]["id"]
         configured = self.client.put(
             f"/api/v1/support/portals/{portal_id}/domain/",
@@ -94,9 +171,23 @@ class SupportPortalManagementTests(SupportPortalTestCase):
         )
         self.assertEqual(configured.status_code, 200, configured.content)
         verification = configured.json()["portal"]["customDomainVerification"]
-        answer = mock.Mock(strings=[verification["value"].encode("utf-8")])
+        self.assertEqual(
+            configured.json()["portal"]["customDomainAddress"],
+            {
+                "name": "help.customer.example",
+                "type": "A",
+                "value": "203.0.113.42",
+            },
+        )
+        address_answer = mock.Mock(address="203.0.113.42")
+        verification_answer = mock.Mock(
+            strings=[verification["value"].encode("utf-8")]
+        )
 
-        with mock.patch("dns.resolver.resolve", return_value=[answer]):
+        with mock.patch(
+            "dns.resolver.resolve",
+            side_effect=[[address_answer], [verification_answer]],
+        ) as resolve:
             verified = self.client.post(
                 f"/api/v1/support/portals/{portal_id}/domain/verify/",
                 {},
@@ -106,6 +197,35 @@ class SupportPortalManagementTests(SupportPortalTestCase):
         self.assertEqual(verified.status_code, 200, verified.content)
         self.assertIsNotNone(verified.json()["portal"]["customDomainVerifiedAt"])
         self.assertIsNone(verified.json()["portal"]["customDomainVerification"])
+        self.assertEqual(
+            resolve.call_args_list,
+            [
+                mock.call("help.customer.example", "A"),
+                mock.call("_custocrm.help.customer.example", "TXT"),
+            ],
+        )
+
+    @override_settings(CUS_HELP_PUBLIC_IPV4="203.0.113.42")
+    def test_custom_domain_rejects_wrong_address_record(self) -> None:
+        portal_id = self.create_portal().json()["portal"]["id"]
+        self.client.put(
+            f"/api/v1/support/portals/{portal_id}/domain/",
+            {"customDomain": "help.customer.example"},
+            format="json",
+        )
+
+        with mock.patch(
+            "dns.resolver.resolve",
+            return_value=[mock.Mock(address="203.0.113.99")],
+        ):
+            response = self.client.post(
+                f"/api/v1/support/portals/{portal_id}/domain/verify/",
+                {},
+                format="json",
+            )
+
+        self.assertEqual(response.status_code, 400, response.content)
+        self.assertIn("указывает не на сервер CustoCRM", str(response.json()))
 
     @override_settings(CUS_APP_PRIMARY_HOSTS=["app.customer.example"])
     def test_custom_domain_cannot_shadow_application_host(self) -> None:

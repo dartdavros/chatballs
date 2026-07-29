@@ -10,7 +10,7 @@ def portals_for_context(context: TenantContext) -> QuerySet[SupportPortal]:
             organization=context.organization,
             department__code="support",
         )
-        .select_related("department")
+        .select_related("department", "widget_channel")
         .prefetch_related("product_links__product", "product_links__support_channel")
     )
 

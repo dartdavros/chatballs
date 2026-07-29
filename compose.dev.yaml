@@ -135,6 +135,32 @@ services:
       redis:
         condition: service_healthy
 
+  # Отдельный импорт демо-контента портала не создаёт пользователей и не
+  # изменяет пароли, роли, сессии или другие учётные данные.
+  support-portal-seed:
+    profiles: ["support-portal-seed"]
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    env_file:
+      - .env
+    command: ["python", "/opt/custocrm-local-seed/seed_support_portal.py"]
+    working_dir: /app/apps/backend
+    environment:
+      CUS_DB_ROLE: migration
+      CUSTOCRM_LOCAL_SEED: "1"
+      CUS_HELP_BASE_DOMAIN: localhost
+      CUS_HELP_PUBLIC_SCHEME: http
+      CUS_HELP_PUBLIC_PORT: ""
+    volumes:
+      - ./apps/backend:/app/apps/backend
+      - ./dev/local-seed:/opt/custocrm-local-seed:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
   # Dev: gateway — nginx с local.conf вместо Caddy (та же маршрутизация, HMR-friendly).
   gateway:
     image: nginx:1.27-alpine

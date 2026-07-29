@@ -38,6 +38,7 @@ export type HelpPortal = {
   slug: string;
   name: string;
   defaultLocale: string;
+  webWidgetChannelCode: string | null;
   products: HelpProduct[];
 };
 

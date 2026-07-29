@@ -1,3 +1,5 @@
+from django.conf import settings
+
 from hub_platform.support_portals.models import (
     PortalArticle,
     PortalArticleRevision,
@@ -5,6 +7,7 @@ from hub_platform.support_portals.models import (
     SupportPortal,
     SupportPortalProduct,
 )
+from hub_platform.integrations.models import IntegrationProvider, IntegrationStatus
 from hub_platform.support_portals.addressing import portal_public_url
 from hub_platform.support_portals.domain_services import (
     domain_verification_name,
@@ -38,6 +41,15 @@ def portal_payload(portal: SupportPortal) -> dict:
         "slug": portal.slug,
         "hostedDomain": portal.hosted_domain,
         "customDomain": portal.custom_domain or None,
+        "customDomainAddress": (
+            {
+                "name": portal.custom_domain,
+                "type": "A",
+                "value": settings.CUS_HELP_PUBLIC_IPV4,
+            }
+            if portal.custom_domain and settings.CUS_HELP_PUBLIC_IPV4
+            else None
+        ),
         "customDomainVerifiedAt": portal.custom_domain_verified_at,
         "customDomainVerification": (
             {
@@ -53,6 +65,8 @@ def portal_payload(portal: SupportPortal) -> dict:
         "defaultLocale": portal.default_locale,
         "status": portal.status,
         "publishedAt": portal.published_at,
+        "widgetChannelId": portal.widget_channel_id,
+        "widgetChannelCode": _public_widget_channel_code(portal),
         "products": [product_link_payload(link) for link in portal.product_links.all()],
         "createdAt": portal.created_at,
         "updatedAt": portal.updated_at,
@@ -122,6 +136,7 @@ def public_portal_payload(portal: SupportPortal) -> dict:
         "slug": portal.slug,
         "name": portal.name,
         "defaultLocale": portal.default_locale,
+        "webWidgetChannelCode": _public_widget_channel_code(portal),
         "products": [
             {
                 "code": link.product.code,
@@ -135,6 +150,23 @@ def public_portal_payload(portal: SupportPortal) -> dict:
             for link in portal.product_links.all()
         ],
     }
+
+
+def _public_widget_channel_code(portal: SupportPortal) -> str | None:
+    channel = portal.widget_channel
+    if (
+        channel is None
+        or not channel.is_active
+        or channel.requires_authenticated_product_identity
+        or not channel.allow_anonymous_sessions
+    ):
+        return None
+    available = channel.connections.filter(
+        provider=IntegrationProvider.WEB,
+        status=IntegrationStatus.OK,
+        is_active=True,
+    ).exists()
+    return channel.code if available else None
 
 
 def public_article_payload(article: PortalArticle, *, content: bool = True) -> dict:

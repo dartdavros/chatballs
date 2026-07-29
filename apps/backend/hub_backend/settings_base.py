@@ -1,5 +1,6 @@
 import os
 import sys
+from ipaddress import IPv4Address
 from pathlib import Path
 
 from django.core.exceptions import ImproperlyConfigured
@@ -215,6 +216,27 @@ CUS_HELP_BASE_DOMAIN = os.environ.get(
 ).strip().lower().rstrip(".")
 CUS_HELP_PUBLIC_SCHEME = os.environ.get("CUS_HELP_PUBLIC_SCHEME", "https").strip().lower()
 CUS_HELP_PUBLIC_PORT = os.environ.get("CUS_HELP_PUBLIC_PORT", "").strip()
+_default_help_public_ipv4 = os.environ.get(
+    "CUSTOCRM_WEB_LISTENING_IP",
+    "",
+).strip()
+if _default_help_public_ipv4 in {"", "0.0.0.0", "::"}:
+    _default_help_public_ipv4 = "127.0.0.1" if CUS_HELP_BASE_DOMAIN == "localhost" else ""
+CUS_HELP_PUBLIC_IPV4 = os.environ.get(
+    "CUS_HELP_PUBLIC_IPV4",
+    _default_help_public_ipv4,
+).strip()
+if not DEBUG and not TESTING and not CUS_HELP_PUBLIC_IPV4:
+    raise ImproperlyConfigured(
+        "CUS_HELP_PUBLIC_IPV4 or a non-wildcard CUSTOCRM_WEB_LISTENING_IP is required"
+    )
+if CUS_HELP_PUBLIC_IPV4:
+    try:
+        IPv4Address(CUS_HELP_PUBLIC_IPV4)
+    except ValueError as error:
+        raise ImproperlyConfigured(
+            "CUS_HELP_PUBLIC_IPV4 must be a valid IPv4 address"
+        ) from error
 
 # P2P calls: opaque invitation lifetime and short-lived signaling/media access.
 CUS_CALL_INVITE_TTL_SECONDS = int(os.environ.get("CUS_CALL_INVITE_TTL_SECONDS", str(5 * 60)))
