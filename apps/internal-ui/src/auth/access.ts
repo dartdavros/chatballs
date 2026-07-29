@@ -4,6 +4,9 @@ type RouteAccess = { capability: string; departmentCode?: string };
 
 const ROUTE_ACCESS: Partial<Record<RouteKey, RouteAccess>> = {
   accessProfiles: { capability: "employees.manage" },
+  administrationOrganization: { capability: "settings.view" },
+  administrationSubscription: { capability: "settings.view" },
+  administrationAudit: { capability: "audit.view" },
   command: { capability: "company.view" },
   departments: { capability: "departments.view" },
   employees: { capability: "employees.view" },
@@ -63,6 +66,9 @@ export function scopeDepartments(user: SessionUser, capability: string): string[
 
 export function canAccess(user: SessionUser, route: RouteKey): boolean {
   if (route === "profile" || route === "settings") return true;
+  if (route === "administrationSubscription" && user.deliveryMode !== "CLOUD") {
+    return false;
+  }
   const requirement = ROUTE_ACCESS[route];
   return requirement
     ? hasCapability(user, requirement.capability, requirement.departmentCode)

@@ -17,6 +17,7 @@ import { ProductsPage } from "../features/products/ProductsPage";
 import { ProductDetailPage } from "../features/products/detail/ProductDetailPage";
 import { ProfilePage } from "../features/profile/ProfilePage";
 import { SettingsPage } from "../features/settings/SettingsPage";
+import { AdministrationPage } from "../features/administration/AdministrationPage";
 import { SalesClientDetailPage } from "../features/sales/client-detail/SalesClientDetailPage";
 import { SalesClientsPage } from "../features/sales/SalesClientsPage";
 import { SalesDialogsPage } from "../features/sales/SalesDialogsPage";
@@ -50,6 +51,15 @@ export function ShellRouteContent({ route, data, currentEmployee, currentProduct
       {route === "productDetail" && !currentProduct && <ProductsPage departments={data.departments} products={data.products} reload={reload} openProduct={openProduct} />}
       {route === "profile" && <ProfilePage user={user} onUserUpdated={onUserUpdated} reload={reload} onLogout={onLogout} />}
       {route === "settings" && <SettingsPage user={user} onUserUpdated={onUserUpdated} reload={reload} />}
+      {(route === "administrationOrganization"
+        || route === "administrationSubscription"
+        || route === "administrationAudit") && (
+        <AdministrationPage
+          route={route}
+          user={user}
+          onUserUpdated={onUserUpdated}
+        />
+      )}
       {route === "salesClients" && <SalesClientsPage openClient={openClient} />}
       {route === "salesClientDetail" && <SalesClientDetailPage contactId={selectedClientId} openConversation={openConversation} />}
       {route === "salesOverview" && <SalesOverviewPage />}

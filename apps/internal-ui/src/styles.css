@@ -36,5 +36,6 @@
 @import "./features/channels/styles-sections.css";
 @import "./features/channels/styles-wizard.css";
 @import "./features/integrations/styles.css";
+@import "./features/administration/styles.css";
 @import "./features/notifications/styles.css";
 @import "./shared/state.css";

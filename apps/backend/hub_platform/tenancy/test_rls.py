@@ -15,6 +15,7 @@ from hub_platform.identity.models import (
 )
 from hub_platform.products.models import Product
 from hub_platform.tenancy.database import current_tenant_id, set_local_tenant
+from hub_platform.tenancy.models import StorageReservation
 from hub_platform.testing import TenantAPIClient
 
 
@@ -87,13 +88,17 @@ class RowLevelSecurityTests(TransactionTestCase):
         with transaction.atomic():
             self._set_role("custocrm_runtime_app")
             set_local_tenant(self.first.id)
-            self.assertEqual(list(Product.objects.values_list("code", flat=True)), ["first"])
+            self.assertEqual(
+                list(Product.objects.values_list("code", flat=True)), ["first"]
+            )
             Product.objects.create(
                 organization_id=self.first.id,
                 code="created",
                 name="Created",
             )
-            self.assertEqual(Product.objects.filter(code="created").update(name="Updated"), 1)
+            self.assertEqual(
+                Product.objects.filter(code="created").update(name="Updated"), 1
+            )
             self.assertEqual(Product.objects.filter(code="created").delete()[0], 1)
 
         with self.assertRaises(DatabaseError), transaction.atomic():
@@ -103,6 +108,52 @@ class RowLevelSecurityTests(TransactionTestCase):
                 organization_id=self.second.id,
                 code="forged",
                 name="Forged",
+            )
+
+    def test_app_role_updates_only_current_organization(self) -> None:
+        with transaction.atomic():
+            self._set_role("custocrm_runtime_app")
+            set_local_tenant(self.first.id)
+            self.assertEqual(
+                Organization.objects.filter(id=self.first.id).update(
+                    name="Updated first"
+                ),
+                1,
+            )
+            self.assertEqual(
+                Organization.objects.filter(id=self.second.id).update(
+                    name="Forged second"
+                ),
+                0,
+            )
+
+        self.first.refresh_from_db()
+        self.second.refresh_from_db()
+        self.assertEqual(self.first.name, "Updated first")
+        self.assertEqual(self.second.name, "Second")
+
+    def test_app_role_manages_only_own_storage_reservations(self) -> None:
+        with transaction.atomic():
+            self._set_role("custocrm_runtime_app")
+            set_local_tenant(self.first.id)
+            reservation = StorageReservation.objects.create(
+                organization=self.first,
+                idempotency_key="rls-storage",
+                reserved_bytes=128,
+            )
+            self.assertIsNotNone(reservation.pk)
+            self.assertEqual(
+                StorageReservation.objects.filter(organization=self.second).count(),
+                0,
+            )
+
+        with self.assertRaises(DatabaseError), transaction.atomic():
+            self._set_role("custocrm_runtime_app")
+            set_local_tenant(self.first.id)
+            StorageReservation.objects.create(
+                organization=self.second,
+                idempotency_key="rls-forged-storage",
+                reserved_bytes=128,
             )
 
     def test_app_role_writes_platform_audit_event_without_tenant_context(self) -> None:

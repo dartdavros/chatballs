@@ -21,6 +21,7 @@ services:
       context: .
       dockerfile: apps/backend/Dockerfile
     environment:
+      CUS_DELIVERY_MODE: ${CUS_DELIVERY_MODE:-CLOUD}
       CUS_HELP_BASE_DOMAIN: localhost
       CUS_HELP_PUBLIC_SCHEME: http
       CUS_HELP_PUBLIC_PORT: ""
@@ -35,6 +36,7 @@ services:
     ports:
       - "${BACKEND_APP_PORT:-8010}:8000"
     environment:
+      CUS_DELIVERY_MODE: ${CUS_DELIVERY_MODE:-CLOUD}
       CUS_ALLOWED_HOSTS: "localhost,127.0.0.1,.localhost"
       CUS_HELP_BASE_DOMAIN: localhost
       CUS_HELP_PUBLIC_SCHEME: http
@@ -57,6 +59,7 @@ services:
     ports:
       - "${BACKEND_PLATFORM_PORT:-8011}:8000"
     environment:
+      CUS_DELIVERY_MODE: ${CUS_DELIVERY_MODE:-CLOUD}
       CUS_ALLOWED_HOSTS: "localhost,127.0.0.1,.localhost"
       CUS_HELP_BASE_DOMAIN: localhost
       CUS_HELP_PUBLIC_SCHEME: http
@@ -69,6 +72,8 @@ services:
       context: .
       dockerfile: apps/backend/Dockerfile
     command: uvicorn hub_backend.asgi_admin:application --host 0.0.0.0 --port 8000 --reload
+    environment:
+      CUS_DELIVERY_MODE: ${CUS_DELIVERY_MODE:-CLOUD}
     volumes:
       - ./apps/backend:/app/apps/backend
 
@@ -76,6 +81,8 @@ services:
     build:
       context: .
       dockerfile: apps/backend/Dockerfile
+    environment:
+      CUS_DELIVERY_MODE: ${CUS_DELIVERY_MODE:-CLOUD}
     volumes:
       - ./apps/backend:/app/apps/backend
 
@@ -125,6 +132,7 @@ services:
     working_dir: /app/apps/backend
     environment:
       CUS_DB_ROLE: migration
+      CUS_DELIVERY_MODE: ${CUS_DELIVERY_MODE:-CLOUD}
       CUSTOCRM_LOCAL_SEED: "1"
     volumes:
       - ./apps/backend:/app/apps/backend
@@ -148,6 +156,7 @@ services:
     working_dir: /app/apps/backend
     environment:
       CUS_DB_ROLE: migration
+      CUS_DELIVERY_MODE: ${CUS_DELIVERY_MODE:-CLOUD}
       CUSTOCRM_LOCAL_SEED: "1"
       CUS_HELP_BASE_DOMAIN: localhost
       CUS_HELP_PUBLIC_SCHEME: http

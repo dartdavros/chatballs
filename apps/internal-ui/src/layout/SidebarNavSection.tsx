@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Icon } from "../shared/icons";
 import type { RouteKey } from "../types";
@@ -26,14 +26,18 @@ export function SidebarNavSection({
   setRoute: (route: RouteKey) => void;
   storageKey: string;
 }) {
+  const active = items.some((item) => item.activeRoutes.includes(route));
   const [expanded, setExpanded] = useState(() => {
     try {
-      return window.localStorage.getItem(storageKey) === "true";
+      return active || window.localStorage.getItem(storageKey) === "true";
     } catch {
-      return false;
+      return active;
     }
   });
-  const active = items.some((item) => item.activeRoutes.includes(route));
+
+  useEffect(() => {
+    if (active) setExpanded(true);
+  }, [active]);
 
   if (items.length === 0) return null;
 

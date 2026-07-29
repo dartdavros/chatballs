@@ -76,6 +76,15 @@ export function routeFromPath(pathname: string, search = ""): RouteState {
   }
   if (path === "/ai/usage") return { route: "aiUsage", ...state };
   if (path === "/integrations") return { route: "integrations", ...state };
+  if (path === "/administration" || path === "/administration/organization") {
+    return { route: "administrationOrganization", ...state };
+  }
+  if (path === "/administration/subscription") {
+    return { route: "administrationSubscription", ...state };
+  }
+  if (path === "/administration/audit") {
+    return { route: "administrationAudit", ...state };
+  }
   if (path === "/profile") return { route: "profile", ...state };
   if (path === "/settings") return { route: "settings", ...state };
   return { route: "command", ...state };
@@ -111,6 +120,9 @@ export function pathFromRoute(route: RouteKey, entityId: number | null = null, p
   if (route === "channelCreate") return `${prefix}/channels/new`;
   if (route === "channelDetail") return entityId ? `${prefix}/channels/${entityId}` : `${prefix}/channels`;
   if (route === "integrations") return `${prefix}/integrations`;
+  if (route === "administrationOrganization") return `${prefix}/administration/organization`;
+  if (route === "administrationSubscription") return `${prefix}/administration/subscription`;
+  if (route === "administrationAudit") return `${prefix}/administration/audit`;
   if (route === "profile") return `${prefix}/profile`;
   if (route === "settings") return `${prefix}/settings`;
   return `${prefix}/profile`;

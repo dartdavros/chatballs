@@ -49,6 +49,24 @@ const AI_ITEMS: SidebarNavSectionItem[] = [
   { activeRoutes: ["aiUsage"], disabled: true, key: "aiUsage", label: "Использование AI" },
 ];
 
+const ADMINISTRATION_ITEMS: SidebarNavSectionItem[] = [
+  {
+    activeRoutes: ["administrationOrganization"],
+    key: "administrationOrganization",
+    label: "Организация",
+  },
+  {
+    activeRoutes: ["administrationSubscription"],
+    key: "administrationSubscription",
+    label: "Тариф и оплата",
+  },
+  {
+    activeRoutes: ["administrationAudit"],
+    key: "administrationAudit",
+    label: "Аудит",
+  },
+];
+
 function visibleItems(user: SessionUser, items: SidebarNavSectionItem[]) {
   return items.filter((item) => canAccess(user, item.key));
 }
@@ -64,11 +82,16 @@ export function Sidebar({ route, user, setRoute, onLogout, waitingCount = 0 }: {
   ));
   const supportItems = visibleItems(user, SUPPORT_ITEMS);
   const aiItems = visibleItems(user, AI_ITEMS);
+  const administrationItems = visibleItems(user, ADMINISTRATION_ITEMS);
 
   return (
     <aside className="hub-sidebar">
       <button className="hub-brand" type="button" onClick={() => setRoute(defaultRoute(user))}>
-        <div className="hub-brand-mark"><LogoIcon /></div>
+        <div className={`hub-brand-mark ${user.organizationLogoUrl ? "has-logo" : ""}`}>
+          {user.organizationLogoUrl
+            ? <img src={user.organizationLogoUrl} alt="" />
+            : <LogoIcon />}
+        </div>
         <div><strong>CustoCRM</strong><span>Управление компанией</span></div>
       </button>
       <nav className="hub-nav">
@@ -83,7 +106,14 @@ export function Sidebar({ route, user, setRoute, onLogout, waitingCount = 0 }: {
         <SidebarNavSection icon="robot" items={aiItems} label="AI" route={route} setRoute={setRoute} storageKey={sectionStorageKey("ai")} />
         {canAccess(user, "integrations") && <SidebarLink icon="plug" label="Интеграции" route={route} routeKey="integrations" setRoute={setRoute} />}
         <div className="hub-nav-divider" />
-        <SidebarLink disabled icon="settings" label="Администрирование" route={route} setRoute={setRoute} />
+        <SidebarNavSection
+          icon="settings"
+          items={administrationItems}
+          label="Администрирование"
+          route={route}
+          setRoute={setRoute}
+          storageKey={sectionStorageKey("administration")}
+        />
       </nav>
       <SidebarUserMenu user={user} route={route} setRoute={setRoute} onLogout={onLogout} />
     </aside>

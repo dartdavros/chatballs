@@ -1,3 +1,4 @@
+from django.conf import settings
 from rest_framework.request import Request
 
 from hub_platform.identity.models import HumanUser, Organization, OrganizationMembership
@@ -37,6 +38,12 @@ def _user_payload(user: HumanUser) -> dict[str, object]:
                 "organizationPublicId": str(membership.organization.public_id),
                 "organization": membership.organization.slug,
                 "organizationName": membership.organization.name,
+                "organizationLogoUrl": (
+                    f"/api/v1/organizations/{membership.organization.public_id}"
+                    "/company/administration/logo/"
+                    if membership.organization.logo
+                    else None
+                ),
                 "role": membership.role,
                 "positionTitle": membership.position_title,
                 "department": (
@@ -53,6 +60,7 @@ def _user_payload(user: HumanUser) -> dict[str, object]:
         "fullName": user.full_name,
         "mustChangePassword": user.must_change_password,
         "totpEnabled": user.totp_enabled,
+        "deliveryMode": settings.CUS_DELIVERY_MODE,
         "memberships": memberships,
     }
 

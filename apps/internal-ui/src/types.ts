@@ -4,6 +4,7 @@ import type { AiAgent } from "./features/ai/model";
 // «оператор» — рабочая функция сотрудника (EMPLOYEE) в своём отделе.
 export type Role = "OWNER" | "ADMIN" | "EMPLOYEE";
 export type ProductStatus = "ACTIVE" | "DISABLED";
+export type DeliveryMode = "CLOUD" | "SELF_HOSTED";
 
 export type OrganizationMembership = {
   id: number;
@@ -12,6 +13,7 @@ export type OrganizationMembership = {
   positionTitle: string;
   organization: string;
   organizationName: string;
+  organizationLogoUrl: string | null;
   department: string | null;
   totpRequired: boolean;
   capabilities: string[];
@@ -24,6 +26,7 @@ export type AuthenticatedUser = {
   fullName: string;
   mustChangePassword: boolean;
   totpEnabled: boolean;
+  deliveryMode: DeliveryMode;
   memberships: OrganizationMembership[];
 };
 
@@ -171,7 +174,7 @@ export type ProductOffer = {
   prices: ProductPrice[];
 };
 
-export type RouteKey = "accessProfiles" | "command" | "departments" | "employeeDetail" | "employees" | "productDetail" | "products" | "profile" | "settings" | "salesClientDetail" | "salesClients" | "salesDialogs" | "salesOrderDetail" | "salesOrders" | "salesOverview" | "supportOverview" | "supportDialogs" | "supportPortals" | "supportPortalDetail" | "aiAgents" | "aiAgentCreate" | "aiAgentDetail" | "aiKnowledge" | "aiKnowledgeCreate" | "aiKnowledgeDetail" | "aiUsage" | "integrations" | "channels" | "channelCreate" | "channelDetail";
+export type RouteKey = "accessProfiles" | "administrationOrganization" | "administrationSubscription" | "administrationAudit" | "command" | "departments" | "employeeDetail" | "employees" | "productDetail" | "products" | "profile" | "settings" | "salesClientDetail" | "salesClients" | "salesDialogs" | "salesOrderDetail" | "salesOrders" | "salesOverview" | "supportOverview" | "supportDialogs" | "supportPortals" | "supportPortalDetail" | "aiAgents" | "aiAgentCreate" | "aiAgentDetail" | "aiKnowledge" | "aiKnowledgeCreate" | "aiKnowledgeDetail" | "aiUsage" | "integrations" | "channels" | "channelCreate" | "channelDetail";
 
 export type AppData = {
   employees: Employee[];

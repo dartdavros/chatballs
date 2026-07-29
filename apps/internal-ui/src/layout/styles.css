@@ -45,6 +45,20 @@
   border-radius: 8px;
 }
 
+.hub-brand-mark.has-logo {
+  overflow: hidden;
+  color: inherit;
+  background: #ffffff;
+  border: 1px solid #e8e8e8;
+}
+
+.hub-brand-mark img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+}
+
 .hub-brand strong,
 .profile-link strong {
   display: block;

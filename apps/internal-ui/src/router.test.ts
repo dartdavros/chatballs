@@ -91,6 +91,33 @@ describe("support routes", () => {
   });
 });
 
+describe("administration route", () => {
+  it("keeps the old URL as an organization alias", () => {
+    expect(routeFromPath("/administration")).toEqual({
+      route: "administrationOrganization",
+      ...empty,
+    });
+  });
+
+  it("parses and creates administration subsection URLs", () => {
+    expect(routeFromPath("/administration/organization")).toEqual({
+      route: "administrationOrganization",
+      ...empty,
+    });
+    expect(routeFromPath("/administration/subscription")).toEqual({
+      route: "administrationSubscription",
+      ...empty,
+    });
+    expect(routeFromPath("/administration/audit")).toEqual({
+      route: "administrationAudit",
+      ...empty,
+    });
+    expect(pathFromRoute("administrationOrganization")).toBe("/administration/organization");
+    expect(pathFromRoute("administrationSubscription")).toBe("/administration/subscription");
+    expect(pathFromRoute("administrationAudit")).toBe("/administration/audit");
+  });
+});
+
 describe("support portal routes", () => {
   it("parses support portal list and detail URLs", () => {
     expect(routeFromPath("/departments/support/portals")).toEqual({ route: "supportPortals", ...empty });

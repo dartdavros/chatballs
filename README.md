@@ -9,6 +9,19 @@ Copy-Item .env.example .env
 .\scripts\start.ps1
 ```
 
+По умолчанию локально запускается облачный режим. Коробочный режим запускается
+тем же штатным контуром, но с явным признаком поставки:
+
+```powershell
+.\scripts\start.ps1 -Mode Cloud
+.\scripts\start.ps1 -Mode SelfHosted
+```
+
+Приложение не определяет режим по домену, числу организаций или данным тарифа.
+Единственный источник — `CUS_DELIVERY_MODE` со значением `CLOUD` или
+`SELF_HOSTED`. В production переменная обязательна; шаблон коробочного
+экземпляра `env.example` уже содержит `SELF_HOSTED`.
+
 The local compose stack contains:
 
 - isolated app, platform, and loopback-only admin Django runtimes;

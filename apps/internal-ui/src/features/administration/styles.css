@@ -1,0 +1,211 @@
+.administration-page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 100%;
+  max-width: 900px;
+}
+
+.administration-page .page-header {
+  margin-bottom: 0;
+}
+
+.administration-card {
+  width: 100%;
+  padding: 20px;
+  background: #ffffff;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-sm);
+}
+
+.administration-logo-field {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--border-default);
+}
+
+.administration-logo-preview {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  overflow: hidden;
+  color: var(--primary);
+  background: var(--primary-bg);
+  border: 1px solid var(--primary-border);
+  border-radius: var(--radius-xl);
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.administration-logo-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #ffffff;
+}
+
+.administration-logo-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.administration-logo-copy > strong {
+  color: var(--text-body);
+  font-size: 13px;
+}
+
+.administration-logo-copy > span {
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+}
+
+.administration-logo-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 7px;
+}
+
+.administration-logo-actions button {
+  height: 30px;
+  padding-inline: 10px;
+  font-size: 12px;
+}
+
+.administration-fields {
+  display: grid;
+  grid-template-columns: minmax(280px, 460px) 220px;
+  gap: 14px;
+  align-items: end;
+  margin-top: 18px;
+}
+
+.administration-currency {
+  width: 220px;
+}
+
+.administration-message {
+  margin-top: 14px;
+  padding: 9px 12px;
+  color: var(--primary-hover);
+  background: var(--primary-bg);
+  border: 1px solid var(--primary-border);
+  border-radius: var(--radius-lg);
+  font-size: 12.5px;
+}
+
+.administration-message.error {
+  color: var(--error-text);
+  background: var(--error-bg);
+  border-color: var(--error-border);
+}
+
+.administration-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 18px;
+}
+
+.administration-subscription-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(120px, 1fr));
+  gap: 16px;
+}
+
+.administration-subscription-summary > div {
+  min-width: 0;
+}
+
+.administration-subscription-summary .is-wide {
+  grid-column: span 2;
+}
+
+.administration-subscription-summary span,
+.administration-quotas article span {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+}
+
+.administration-subscription-summary strong,
+.administration-quotas article strong {
+  color: var(--text-body);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.administration-quotas {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border-default);
+}
+
+.administration-quotas h3 {
+  margin: 0 0 12px;
+  color: var(--text-heading);
+  font-size: 13px;
+}
+
+.administration-quotas > div {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.administration-quotas article {
+  padding: 12px;
+  background: var(--n-10);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+}
+
+.administration-audit {
+  padding: 0;
+  overflow-x: auto;
+}
+
+.administration-audit .baseline-table {
+  min-width: 720px;
+}
+
+.administration-audit td {
+  padding: 12px;
+}
+
+.administration-audit td:first-child span,
+.administration-audit td:first-child small {
+  display: block;
+}
+
+.administration-audit td:first-child small {
+  margin-top: 2px;
+  color: var(--text-tertiary);
+}
+
+.administration-audit-result {
+  color: var(--success-text);
+  font-weight: 600;
+}
+
+.administration-audit-result.is-denied,
+.administration-audit-result.is-failed {
+  color: var(--error-text);
+}
+
+@media (max-width: 1120px) {
+  .administration-fields {
+    grid-template-columns: minmax(280px, 420px) 200px;
+  }
+
+  .administration-subscription-summary,
+  .administration-quotas > div {
+    grid-template-columns: repeat(3, minmax(120px, 1fr));
+  }
+}

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import uuid
+from pathlib import Path
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, UserManager
@@ -68,6 +69,14 @@ class OrganizationStatus(models.TextChoices):
     PENDING_OWNER = "PENDING_OWNER", "Pending owner"
 
 
+def organization_logo_upload_path(instance: "Organization", filename: str) -> str:
+    suffix = Path(filename).suffix.lower()
+    return (
+        f"organizations/{instance.public_id}/branding/"
+        f"logo-{uuid.uuid4()}{suffix}"
+    )
+
+
 class Organization(models.Model):
     public_id = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     name = models.CharField(max_length=255)
@@ -81,6 +90,13 @@ class Organization(models.Model):
     currency = models.CharField(max_length=3, default="RUB")
     tax_regime = models.CharField(max_length=32, choices=TaxRegime.choices, default=TaxRegime.USN_INCOME)
     vat_mode = models.CharField(max_length=32, choices=VatMode.choices, default=VatMode.WITHOUT_VAT)
+    logo = models.FileField(
+        upload_to=organization_logo_upload_path,
+        max_length=512,
+        blank=True,
+    )
+    logo_content_type = models.CharField(max_length=64, blank=True)
+    logo_size = models.PositiveBigIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:

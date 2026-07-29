@@ -1,3 +1,4 @@
+from django.conf import settings
 from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
 from rest_framework.views import APIView
@@ -82,3 +83,12 @@ class HasEntitlement(BasePermission):
             # No subscription / inactive subscription -> entitlements unavailable.
             return False
         return policy.has_entitlement(entitlement)
+
+
+class CloudDeliveryOnly(BasePermission):
+    """Guard tenant APIs that exist only in the managed CustoCRM Cloud."""
+
+    message = "This operation is available only in CustoCRM Cloud"
+
+    def has_permission(self, request: Request, view: APIView) -> bool:
+        return settings.CUS_DELIVERY_MODE == "CLOUD"

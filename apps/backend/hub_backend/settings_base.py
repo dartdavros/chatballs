@@ -18,6 +18,14 @@ INSECURE_SECRET_KEY = "local-development-only"
 TESTING = "test" in sys.argv or "pytest" in sys.modules
 SECRET_KEY = os.environ.get("CUS_SECRET_KEY", INSECURE_SECRET_KEY)
 DEBUG = env_bool("CUS_DEBUG")
+_delivery_mode = os.environ.get("CUS_DELIVERY_MODE", "").strip().upper()
+if not _delivery_mode and (DEBUG or TESTING):
+    _delivery_mode = "CLOUD"
+if _delivery_mode not in {"CLOUD", "SELF_HOSTED"}:
+    raise ImproperlyConfigured(
+        "CUS_DELIVERY_MODE must be CLOUD or SELF_HOSTED"
+    )
+CUS_DELIVERY_MODE = _delivery_mode
 ALLOWED_HOSTS = env_list("CUS_ALLOWED_HOSTS", ["localhost", "127.0.0.1"])
 if TESTING:
     ALLOWED_HOSTS.extend(["testserver", ".help.custocrm.ru", ".localhost"])

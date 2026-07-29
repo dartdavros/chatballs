@@ -11,10 +11,12 @@ const baseUser: Omit<SessionUser, "role" | "capabilities" | "accessScopes" | "me
   positionTitle: "Specialist",
   organization: "example",
   organizationName: "Example",
+  organizationLogoUrl: null,
   department: null,
   mustChangePassword: false,
   totpRequired: false,
   totpEnabled: false,
+  deliveryMode: "CLOUD",
 };
 
 function userWith(
@@ -26,6 +28,7 @@ function userWith(
     organizationPublicId: baseUser.organizationPublicId,
     organization: baseUser.organization,
     organizationName: baseUser.organizationName,
+    organizationLogoUrl: baseUser.organizationLogoUrl,
     role: "EMPLOYEE" as const,
     positionTitle: baseUser.positionTitle,
     department: baseUser.department,
@@ -54,8 +57,25 @@ describe("effective access navigation", () => {
     expect(canAccess(user, "employees")).toBe(true);
     expect(canAccess(user, "accessProfiles")).toBe(true);
     expect(canAccess(user, "products")).toBe(true);
+    expect(canAccess(user, "administrationOrganization")).toBe(false);
     expect(canAccess(user, "integrations")).toBe(false);
     expect(defaultRoute(user)).toBe("command");
+  });
+
+  it("opens administration subsections only with their capabilities", () => {
+    const settingsUser = userWith(["settings.view"]);
+    const auditUser = userWith(["audit.view"]);
+    expect(canAccess(settingsUser, "administrationOrganization")).toBe(true);
+    expect(canAccess(settingsUser, "administrationSubscription")).toBe(true);
+    expect(canAccess(settingsUser, "administrationAudit")).toBe(false);
+    expect(canAccess(auditUser, "administrationOrganization")).toBe(false);
+    expect(canAccess(auditUser, "administrationAudit")).toBe(true);
+  });
+
+  it("does not expose the cloud subscription in a self-hosted installation", () => {
+    const user = userWith(["settings.view"]);
+    user.deliveryMode = "SELF_HOSTED";
+    expect(canAccess(user, "administrationSubscription")).toBe(false);
   });
 
   it("keeps sales and support department scopes isolated", () => {
