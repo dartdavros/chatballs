@@ -94,9 +94,16 @@ class Organization(models.Model):
         upload_to=organization_logo_upload_path,
         max_length=512,
         blank=True,
+        default="",
+        db_default="",
     )
-    logo_content_type = models.CharField(max_length=64, blank=True)
-    logo_size = models.PositiveBigIntegerField(default=0)
+    logo_content_type = models.CharField(
+        max_length=64,
+        blank=True,
+        default="",
+        db_default="",
+    )
+    logo_size = models.PositiveBigIntegerField(default=0, db_default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
