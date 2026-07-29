@@ -22,6 +22,7 @@ COPY content /app/content
 # collectstatic touches neither. Runtime values come from instance .env.
 RUN cd apps/backend && CUS_SECRET_KEY=collectstatic-build CUS_DEBUG=false CUS_ENV=production \
     CUSTOCRM_APP_ALLOWED_HOSTS=collectstatic.invalid \
+    CUS_HELP_PUBLIC_IPV4=127.0.0.1 \
     POSTGRES_APP_USER=build-app \
     POSTGRES_PLATFORM_USER=build-platform \
     POSTGRES_MIGRATION_USER=build-migration \
