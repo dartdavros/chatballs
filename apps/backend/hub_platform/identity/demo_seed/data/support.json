@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "contracts": [
+    { "key": "vektor-contract", "product": "vektor", "code": "vektor.support.v1", "version": 1, "status": "ACTIVE" },
+    { "key": "reper-contract", "product": "reper", "code": "reper.support.v1", "version": 1, "status": "ACTIVE" }
+  ],
+  "identitySnapshots": [
+    {
+      "key": "vektor-n-kuznetsova",
+      "contract": "vektor-contract",
+      "subjectKey": "vektor-customer:nkuznetsova",
+      "accountKey": "plant-4712",
+      "displayName": "Наталья Кузнецова — ООО «Литейный завод №4»",
+      "displayEmail": "n.kuznetsova@lz4.ru",
+      "operatorContext": { "license_id": "V-4712", "site": "Литейный цех №4, Санкт-Петербург" },
+      "aiContext": { "product": "Вектор", "version": "3.4" },
+      "searchText": "Литейный завод 4 Наталья Кузнецова лицензия V-4712",
+      "issuedDaysAgo": 2,
+      "expiresInDays": 28
+    },
+    {
+      "key": "reper-p-gusev",
+      "contract": "reper-contract",
+      "subjectKey": "reper-customer:pgusev",
+      "accountKey": "fleet-0091",
+      "displayName": "Павел Гусев — ООО «ТрансЛогистик»",
+      "displayEmail": "p.gusev@translogistic.ru",
+      "operatorContext": { "fleet_id": "TL-0091", "units": 60 },
+      "aiContext": { "product": "Репер", "tariff": "year" },
+      "searchText": "ТрансЛогистик Павел Гусев автопарк 60",
+      "issuedDaysAgo": 5,
+      "expiresInDays": 25
+    }
+  ],
+  "portal": {
+    "slug": "reper",
+    "name": "Репер — центр помощи",
+    "locale": "ru",
+    "status": "PUBLISHED",
+    "widgetChannel": "reper-help-widget",
+    "products": ["reper"],
+    "categories": [
+      { "slug": "getting-started", "name": "Начало работы", "description": "Подключение техники и первые шаги в Репер", "sortOrder": 10 },
+      { "slug": "devices", "name": "Оборудование и датчики", "description": "Совместимые бортовые контроллеры и датчики", "sortOrder": 20 },
+      { "slug": "reports", "name": "Отчёты", "description": "Отчёты по топливу, моточасам и геозонам", "sortOrder": 30 },
+      { "slug": "billing", "name": "Оплата и подписка", "description": "Тарифы, счета и продление подписки", "sortOrder": 40 }
+    ],
+    "articles": [
+      {
+        "slug": "how-to-connect-first-unit",
+        "category": "getting-started",
+        "title": "Как подключить первую единицу техники",
+        "summary": "Пошаговая инструкция по добавлению транспортного средства в Репер.",
+        "content": "# Подключение первой единицы техники\n\n1. В разделе «Парк» нажмите «Добавить технику».\n2. Укажите госномер и модель.\n3. Выберите подключенный бортовой контроллер.\n4. Дождитесь первого пакета данных — он придёт в течение нескольких минут.\n\nЕсли данные не появляются дольше 15 минут, проверьте питание контроллера.",
+        "status": "PUBLISHED",
+        "helpfulVotes": 14
+      },
+      {
+        "slug": "supported-trackers",
+        "category": "devices",
+        "title": "Поддерживаемые бортовые контроллеры",
+        "summary": "Список совместимых контроллеров и протоколов обмена данными.",
+        "content": "# Поддерживаемые контроллеры\n\nРепер поддерживает устройства по протоколам: Teltonika, Wialon IPS, Galileosky.\n\nПолная спецификация протоколов приведена в базе знаний операторов поддержки.",
+        "status": "PUBLISHED",
+        "helpfulVotes": 8
+      },
+      {
+        "slug": "fuel-report",
+        "category": "reports",
+        "title": "Отчёт по расходу топлива",
+        "summary": "Как построить отчёт о заправках и сливах топлива.",
+        "content": "# Отчёт по топливу\n\nОткройте «Отчёты → Топливо», выберите период и технику. Отчёт покажет заправки, сливы и средний расход.\n\nДля корректных данных нужен исправный ДУТ.",
+        "status": "PUBLISHED",
+        "helpfulVotes": 11
+      },
+      {
+        "slug": "geozone-setup",
+        "category": "reports",
+        "title": "Настройка геозон",
+        "summary": "Создание геозон и контроль въезда/выезда.",
+        "content": "# Геозоны\n\nВ разделе «Геозоны» создайте область на карте. К ней можно привязать уведомления о въезде и выезде техники.",
+        "status": "PUBLISHED",
+        "helpfulVotes": 5
+      },
+      {
+        "slug": "tariffs-and-payment",
+        "category": "billing",
+        "title": "Тарифы и оплата подписки",
+        "summary": "Помесячная и годовая оплата, как получить счёт.",
+        "content": "# Тарифы и оплата\n\nДоступны два варианта оплаты: помесячно и за год. Годовая подписка выгоднее для парков от 50 единиц техники.\n\nСчёт на оплату можно запросить у вашего менеджера или в этом чате.",
+        "status": "PUBLISHED",
+        "helpfulVotes": 9
+      },
+      {
+        "slug": "change-fleet-size",
+        "category": "billing",
+        "title": "Изменение размера парка",
+        "summary": "Как добавить или убрать технику из подписки.",
+        "content": "# Изменение парка\n\nПодписка пересчитывается по числу активных единиц техники. Чтобы убрать технику — переведите её в статус «Неактивна».",
+        "status": "PUBLISHED",
+        "helpfulVotes": 3
+      }
+    ]
+  }
+}

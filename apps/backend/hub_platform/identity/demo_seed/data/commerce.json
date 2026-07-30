@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "orders": [
+    {
+      "externalId": "demo-ord-001",
+      "product": "vektor",
+      "contact": "e.zaitseva",
+      "conversation": "vektor-closed-deal",
+      "channel": "vektor-sales",
+      "paymentStatus": "PAID",
+      "fulfillmentStatus": "DELIVERED",
+      "amountMinor": 1479000,
+      "items": [
+        { "offer": "vektor-box", "price": "vektor-box-price", "title": "Вектор — коробочная лицензия", "quantity": 1, "amountMinor": 1290000 },
+        { "offer": "vektor-support", "price": "vektor-support-price", "title": "Продление поддержки 12 мес.", "quantity": 1, "amountMinor": 189000 }
+      ]
+    },
+    {
+      "externalId": "demo-ord-002",
+      "product": "reper",
+      "contact": "p.gusev",
+      "conversation": "reper-lead-active",
+      "channel": "reper-sales",
+      "paymentStatus": "PENDING",
+      "fulfillmentStatus": "PENDING",
+      "amountMinor": 264000,
+      "items": [
+        { "offer": "reper-cloud", "price": "reper-cloud-year", "title": "Репер — подписка на 12 мес. (60 ед.)", "quantity": 1, "amountMinor": 264000 }
+      ]
+    },
+    {
+      "externalId": "demo-ord-003",
+      "product": "reper",
+      "contact": "v.lebedeva",
+      "conversation": "reper-quote",
+      "channel": "reper-sales",
+      "paymentStatus": "PAID",
+      "fulfillmentStatus": "FAILED",
+      "amountMinor": 140000,
+      "items": [
+        { "offer": "reper-cloud", "price": "reper-cloud-month", "title": "Репер — подписка (32 ед.)", "quantity": 1, "amountMinor": 140000 }
+      ]
+    },
+    {
+      "externalId": "demo-ord-004",
+      "product": "vektor",
+      "contact": "n.kuznetsova",
+      "conversation": "vektor-lead-active",
+      "channel": "vektor-sales",
+      "paymentStatus": "PENDING",
+      "fulfillmentStatus": "PENDING",
+      "amountMinor": 1290000,
+      "items": [
+        { "offer": "vektor-box", "price": "vektor-box-price", "title": "Вектор — коробочная лицензия", "quantity": 1, "amountMinor": 1290000 }
+      ]
+    }
+  ],
+  "sales": [
+    {
+      "salesSource": "vektor-source",
+      "eventId": "demo-sale-evt-001",
+      "eventType": "sale.confirmed",
+      "externalSaleId": "demo-sale-001",
+      "amountMinor": 1290000,
+      "currency": "RUB",
+      "daysAgo": 25,
+      "items": [
+        { "name": "Вектор — коробочная лицензия", "quantity": 1, "amount_minor": 1290000 }
+      ]
+    },
+    {
+      "salesSource": "reper-source",
+      "eventId": "demo-sale-evt-002",
+      "eventType": "sale.confirmed",
+      "externalSaleId": "demo-sale-002",
+      "amountMinor": 264000,
+      "currency": "RUB",
+      "daysAgo": 9,
+      "items": [
+        { "name": "Репер — подписка на 12 мес.", "quantity": 1, "amount_minor": 264000 }
+      ]
+    },
+    {
+      "salesSource": "reper-source",
+      "eventId": "demo-sale-evt-003",
+      "eventType": "sale.partially_refunded",
+      "externalSaleId": "demo-sale-002",
+      "amountMinor": 264000,
+      "refundedAmountMinor": 40000,
+      "currency": "RUB",
+      "daysAgo": 2,
+      "metadata": { "reason": "Списание за неиспользуемые единицы по обращению клиента" }
+    }
+  ],
+  "externalCustomers": [
+    { "product": "vektor", "externalCustomerId": "demo-vektor-cust-001", "contact": "e.zaitseva" },
+    { "product": "reper", "externalCustomerId": "demo-reper-cust-001", "contact": "p.gusev" }
+  ],
+  "attributionTokens": [
+    {
+      "product": "vektor",
+      "offer": "vektor-box",
+      "contact": "n.kuznetsova",
+      "conversation": "vektor-lead-active",
+      "channel": "vektor-sales",
+      "connection": "vektor-sales-tg",
+      "actorType": "AI_AGENT",
+      "actorId": "vektor-sales-agent",
+      "ttlDays": 30
+    },
+    {
+      "product": "reper",
+      "offer": "reper-cloud",
+      "contact": "p.gusev",
+      "conversation": "reper-lead-active",
+      "channel": "reper-sales",
+      "connection": "reper-sales-tg",
+      "actorType": "AI_AGENT",
+      "actorId": "reper-sales-agent",
+      "ttlDays": 30
+    }
+  ]
+}

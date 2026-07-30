@@ -1,0 +1,210 @@
+{
+  "schemaVersion": 1,
+  "contacts": [
+    { "key": "n.kuznetsova", "name": "Наталья Кузнецова", "phone": "+7 812 445 90 12" },
+    { "key": "s.orlov", "name": "Сергей Орлов", "phone": "+7 343 261 04 77", "avatarUrl": "https://i.pravatar.cc/200?img=12" },
+    { "key": "v.lebedeva", "name": "Виктория Лебедева", "phone": "+7 846 230 58 90", "avatarUrl": "https://i.pravatar.cc/200?img=5" },
+    { "key": "p.gusev", "name": "Павел Гусев", "phone": "" },
+    { "key": "o.frolova", "name": "Ольга Фролова", "phone": "+7 495 120 33 18" },
+    { "key": "a.makarov", "name": "Антон Макаров", "phone": "+7 861 200 41 55" },
+    { "key": "e.zaitseva", "name": "Екатерина Зайцева", "phone": "+7 831 410 76 22" },
+    { "key": "r.borisov", "name": "Роман Борисов", "phone": "+7 846 300 88 04" },
+    { "key": "f.grigorev", "name": "Фёдор Григорьев", "phone": "+7 495 778 12 09" }
+  ],
+  "connectionIdentities": [
+    { "key": "n.kuznetsova-tg", "contact": "n.kuznetsova", "connection": "vektor-sales-tg", "externalUserId": "demo-nkuznetsova", "displayName": "Наталья Кузнецова", "username": "nkuznetsova_plant" },
+    { "key": "s.orlov-tg", "contact": "s.orlov", "connection": "vektor-sales-tg", "externalUserId": "demo-sorlov", "displayName": "Сергей Орлов", "username": "sorlov_ural" },
+    { "key": "v.lebedeva-max", "contact": "v.lebedeva", "connection": "reper-sales-max", "externalUserId": "demo-vlebedeva", "displayName": "Виктория Лебедева", "username": "vlebedeva" },
+    { "key": "p.gusev-tg", "contact": "p.gusev", "connection": "reper-sales-tg", "externalUserId": "demo-pgusev", "displayName": "Павел Гусев", "username": "pgusev_logistics" },
+    { "key": "o.frolova-web", "contact": "o.frolova", "connection": "site-web", "externalUserId": "demo-ofrolova", "displayName": "Ольга Фролова" },
+    { "key": "a.makarov-tg", "contact": "a.makarov", "connection": "site-tg", "externalUserId": "demo-amakarov", "displayName": "Антон Макаров", "username": "amakarov_int" },
+    { "key": "r.borisov-max", "contact": "r.borisov", "connection": "site-max", "externalUserId": "demo-rborisov", "displayName": "Роман Борисов", "username": "rborisov" },
+    { "key": "e.zaitseva-tg", "contact": "e.zaitseva", "connection": "vektor-sales-tg", "externalUserId": "demo-ezaitseva", "displayName": "Екатерина Зайцева", "username": "ezaitseva_nnp" },
+    { "key": "f.grigorev-email", "contact": "f.grigorev", "connection": "support-email", "externalUserId": "f.grigorev@technosoft.ru", "displayName": "Фёдор Григорьев", "username": "f.grigorev@technosoft.ru" }
+  ],
+  "conversations": [
+    {
+      "key": "vektor-lead-active",
+      "channel": "vektor-sales",
+      "connection": "vektor-sales-tg",
+      "contact": "n.kuznetsova",
+      "externalChatId": "demo-vektor-lead-active",
+      "controlMode": "AI",
+      "expectedResponder": "AI",
+      "lastActivityMinutesAgo": 3,
+      "messages": [
+        { "externalId": "m1", "author": "CONTACT", "text": "Добрый день! Нас интересует мониторинг оборудования для литейного цеха. Что по Вектору?" },
+        { "externalId": "m2", "author": "AI", "text": "Здравствуйте, Наталья! Вектор хорошо подходит для цехов с разнородными контроллерами — опрашивает их по OPC UA и Modbus. Подскажу конфигурацию под ваш масштаб." }
+      ]
+    },
+    {
+      "key": "vektor-queue",
+      "channel": "vektor-sales",
+      "connection": "vektor-sales-tg",
+      "contact": "s.orlov",
+      "externalChatId": "demo-vektor-queue",
+      "controlMode": "PAUSED",
+      "expectedResponder": "OPERATOR",
+      "lastActivityMinutesAgo": 14,
+      "assignedOperator": "sales_lead",
+      "readBy": "sales_lead",
+      "messages": [
+        { "externalId": "m1", "author": "CONTACT", "text": "Нужен расчёт лицензий на 3 производственных участка. Скидка за объём есть?" }
+      ]
+    },
+    {
+      "key": "vektor-closed-deal",
+      "channel": "vektor-sales",
+      "connection": "vektor-sales-tg",
+      "contact": "e.zaitseva",
+      "externalChatId": "demo-vektor-closed-deal",
+      "controlMode": "HUMAN",
+      "expectedResponder": "NOBODY",
+      "lifecycle": "CLOSED",
+      "assignedOperator": "sales_lead",
+      "readBy": "sales_lead",
+      "lastActivityMinutesAgo": 1800,
+      "messages": [
+        { "externalId": "m1", "author": "CONTACT", "text": "Добрый день! Берём Вектор на основной цех плюс продление поддержки." },
+        { "externalId": "m2", "author": "OPERATOR", "authorUser": "sales_lead", "text": "Отлично, Екатерина! Готовлю счёт на лицензию и год поддержки. Пришлю на почту сегодня." },
+        { "externalId": "m3", "author": "CONTACT", "text": "Спасибо, жду." }
+      ]
+    },
+    {
+      "key": "reper-lead-active",
+      "channel": "reper-sales",
+      "connection": "reper-sales-tg",
+      "contact": "p.gusev",
+      "externalChatId": "demo-reper-lead-active",
+      "controlMode": "AI",
+      "expectedResponder": "CUSTOMER",
+      "lastActivityMinutesAgo": 8,
+      "messages": [
+        { "externalId": "m1", "author": "CONTACT", "text": "Здравствуйте! У нас автопарк 60 машин, интересна телематика Репер." },
+        { "externalId": "m2", "author": "AI", "text": "Здравствуйте, Павел! Для 60 единиц выгоднее годовая подписка. Уточните, пожалуйста, типы транспорта — есть ли спецтехника?" }
+      ]
+    },
+    {
+      "key": "reper-quote",
+      "channel": "reper-sales",
+      "connection": "reper-sales-max",
+      "contact": "v.lebedeva",
+      "externalChatId": "demo-reper-quote",
+      "controlMode": "PAUSED",
+      "expectedResponder": "OPERATOR",
+      "lastActivityMinutesAgo": 22,
+      "assignedOperator": "sales_junior",
+      "readBy": "sales_junior",
+      "messages": [
+        { "externalId": "m1", "author": "CONTACT", "text": "Пришлите КП на телематику для парка спецтехники, 32 единицы." }
+      ]
+    },
+    {
+      "key": "site-general",
+      "channel": "site-main",
+      "connection": "site-web",
+      "contact": "o.frolova",
+      "externalChatId": "demo-site-general",
+      "controlMode": "AI",
+      "expectedResponder": "AI",
+      "lastActivityMinutesAgo": 1,
+      "messages": [
+        { "externalId": "m1", "author": "CONTACT", "text": "Здравствуйте! Не пойму, какой продукт мне подходит — у меня небольшой завод." },
+        { "externalId": "m2", "author": "AI", "text": "Здравствуйте! Подскажу. Если нужно следить за оборудованием в цеху — это Вектор. Если техника и автопарк — Репер. Расскажите чуть подробнее о задаче?" }
+      ]
+    },
+    {
+      "key": "site-partner",
+      "channel": "site-main",
+      "connection": "site-tg",
+      "contact": "a.makarov",
+      "externalChatId": "demo-site-partner",
+      "controlMode": "HUMAN",
+      "expectedResponder": "OPERATOR",
+      "lifecycle": "OPEN",
+      "lastActivityMinutesAgo": 35,
+      "assignedOperator": "admin",
+      "readBy": "admin",
+      "messages": [
+        { "externalId": "m1", "author": "CONTACT", "text": "Мы системный интегратор, обсуждаем партнёрство по вашим продуктам." },
+        { "externalId": "m2", "author": "OPERATOR", "authorUser": "admin", "text": "Антон, спасибо за интерес! Подключу вас к партнёрской программе, отправлю условия на почту." }
+      ]
+    },
+    {
+      "key": "site-spam",
+      "channel": "site-main",
+      "connection": "site-max",
+      "contact": "r.borisov",
+      "externalChatId": "demo-site-spam",
+      "controlMode": "AI",
+      "expectedResponder": "NOBODY",
+      "lifecycle": "SPAM",
+      "lastActivityMinutesAgo": 120,
+      "messages": [
+        { "externalId": "m1", "author": "CONTACT", "text": "Куплю ваш бизнес, пишите на этот номер" }
+      ]
+    },
+    {
+      "key": "reper-support-identity",
+      "channel": "reper-support",
+      "connection": "reper-support-web",
+      "contact": "p.gusev",
+      "supportIdentitySnapshot": "reper-p-gusev",
+      "externalChatId": "demo-reper-support-identity",
+      "controlMode": "HUMAN",
+      "expectedResponder": "OPERATOR",
+      "lastActivityMinutesAgo": 6,
+      "assignedOperator": "support_lead",
+      "readBy": "support_lead",
+      "messages": [
+        { "externalId": "m1", "author": "CONTACT", "text": "Не отображается топливный датчик на одной из машин." },
+        { "externalId": "m2", "author": "OPERATOR", "authorUser": "support_lead", "text": "Проверяю статус опроса контроллера. Какой госномер машины?" },
+        { "externalId": "m3", "author": "CONTACT", "text": "В 477 ОР 63" }
+      ]
+    },
+    {
+      "key": "vektor-support-identity",
+      "channel": "vektor-support",
+      "connection": "vektor-support-web",
+      "contact": "n.kuznetsova",
+      "supportIdentitySnapshot": "vektor-n-kuznetsova",
+      "externalChatId": "demo-vektor-support-identity",
+      "controlMode": "AI",
+      "expectedResponder": "AI",
+      "lifecycle": "OPEN",
+      "lastActivityMinutesAgo": 11,
+      "messages": [
+        { "externalId": "m1", "author": "CONTACT", "text": "После обновления Вектора пропали тревоги по давлению." },
+        { "externalId": "m2", "author": "AI", "text": "Проверю настройки порогов после обновления. Уточните версию сборки в правом нижнем углу консоли." }
+      ]
+    },
+    {
+      "key": "support-email-thread",
+      "channel": "site-main",
+      "connection": "support-email",
+      "contact": "f.grigorev",
+      "externalChatId": "f.grigorev@technosoft.ru",
+      "controlMode": "HUMAN",
+      "expectedResponder": "OPERATOR",
+      "lifecycle": "OPEN",
+      "lastActivityMinutesAgo": 42,
+      "assignedOperator": "support_engineer",
+      "readBy": "support_engineer",
+      "transportMeta": { "subject": "Вопрос по продлению поддержки Вектор", "last_message_id": "<abc123.def456@technosoft.ru>" },
+      "messages": [
+        {
+          "externalId": "<abc123.def456@technosoft.ru>",
+          "author": "CONTACT",
+          "text": "Добрый день!\n\nПодскажите, пожалуйста, условия продления технической поддержки Вектор на следующий год. Лицензия В-4712, срок поддержки заканчивается в августе.\n\nС уважением,\nФёдор Григорьев\nООО «ТехноСофт»",
+          "contentHtml": "<div><p>Добрый день!</p><p>Подскажите, пожалуйста, условия продления технической поддержки Вектор на следующий год. Лицензия В-4712, срок поддержки заканчивается в августе.</p><p>С уважением,<br>Фёдор Григорьев<br>ООО «ТехноСофт»</p></div>"
+        },
+        {
+          "externalId": "demo-email-reply-1",
+          "author": "OPERATOR",
+          "authorUser": "support_engineer",
+          "text": "Здравствуйте, Фёдор! Продление поддержки на 12 месяцев для лицензии В-4712 — 189 000 ₽. Подготовлю счёт, на какую почту направить?"
+        }
+      ]
+    }
+  ]
+}

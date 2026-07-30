@@ -54,36 +54,36 @@ Bootstrap the organization and both accounts:
 docker compose run --rm backend-app python manage.py bootstrap_owner --email owner@edevs.tech --password Owner-Local-2026 --name "Иван Петров"
 ```
 
-## Optional local demo seed
+## Optional demo seed
 
-The local demo seed is explicit and idempotent: it creates the documented local
-accounts and a connected set of departments, products, channels, integrations,
-AI agents, conversations, orders, and command-center data. It never runs during
-`start.ps1`, `docker compose up`, or migrations.
+The demo seed is a Django management command (`seed_demo`) that loads a full
+fictional dataset for a Russian IIoT vendor company «Северная Верфь» (products
+«Вектор» and «Репер»): organization with logo, staff with access profiles,
+product catalog with offers and prices, channels and AI agents, knowledge base
+with file attachments, conversations, orders, external sales, support contracts
+and a public help-center portal, calls, and notifications. It is idempotent and
+never runs during `start.ps1`, `docker compose up`, or migrations.
+
+The editable data lives in
+`apps/backend/hub_platform/identity/demo_seed/data/` (one JSON manifest per
+domain, plus `media/` for attachments). The command is baked into the backend
+image, so the same dataset works for local testing and cloud installation.
 
 Run it only after the local dev stack is running:
 
 ```powershell
-.\scripts\seed-local.ps1
+.\scripts\seed-demo.ps1
 ```
 
-The data manifest and importer live in `dev/local-seed/`. The explicit
-`local-seed` one-shot service is defined only by `compose.dev.yaml`, runs with
-the local migration DB role, is excluded from the backend image, and the
-importer refuses any environment other than `CUS_ENV=local`. Production compose
-has no seed service or seed command.
+Or directly via management command (dry-run by default, `--apply` to write):
 
-Демо-контент портала FoxRay и отдельный анонимный Web-виджет поддержки можно
-установить независимо от общего seed:
-
-```powershell
-.\scripts\seed-support-portal.ps1
+```
+python manage.py seed_demo --apply
 ```
 
-Этот portal-only импорт идемпотентен и не создаёт пользователей, не меняет
-пароли, роли, сессии или права доступа. Он публикует локальный портал
-`http://foxray.localhost/`, категории и статьи, а также подключает существующий
-Web Chat через отдельный канал `foxray-help`.
+The `demo-seed` one-shot service is defined only by `compose.dev.yaml`. Outside
+`DEBUG` (e.g. cloud installation) the command requires `--force`. Production
+compose has no seed service.
 
 ## Tests
 

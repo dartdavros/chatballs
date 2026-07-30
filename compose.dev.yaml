@@ -119,51 +119,25 @@ services:
       - /app/apps/web-chat/node_modules
 
   # Явный одноразовый импорт демонстрационных данных. Сервис существует только
-  # в compose.dev.yaml, профилем не включается в обычный `up` и не попадает в
-  # canonical production compose или backend image.
-  local-seed:
-    profiles: ["local-seed"]
+  # в compose.dev.yaml, профилем не включается в обычный `up`. Данные живут в
+  # backend image (management-команда seed_demo), отдельный bind-mount не нужен.
+  demo-seed:
+    profiles: ["demo-seed"]
     build:
       context: .
       dockerfile: apps/backend/Dockerfile
     env_file:
       - .env
-    command: ["python", "/opt/custocrm-local-seed/seed.py"]
+    command: ["python", "manage.py", "seed_demo", "--apply"]
     working_dir: /app/apps/backend
     environment:
       CUS_DB_ROLE: migration
       CUS_DELIVERY_MODE: ${CUS_DELIVERY_MODE:-CLOUD}
-      CUSTOCRM_LOCAL_SEED: "1"
-    volumes:
-      - ./apps/backend:/app/apps/backend
-      - ./dev/local-seed:/opt/custocrm-local-seed:ro
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-
-  # Отдельный импорт демо-контента портала не создаёт пользователей и не
-  # изменяет пароли, роли, сессии или другие учётные данные.
-  support-portal-seed:
-    profiles: ["support-portal-seed"]
-    build:
-      context: .
-      dockerfile: apps/backend/Dockerfile
-    env_file:
-      - .env
-    command: ["python", "/opt/custocrm-local-seed/seed_support_portal.py"]
-    working_dir: /app/apps/backend
-    environment:
-      CUS_DB_ROLE: migration
-      CUS_DELIVERY_MODE: ${CUS_DELIVERY_MODE:-CLOUD}
-      CUSTOCRM_LOCAL_SEED: "1"
       CUS_HELP_BASE_DOMAIN: localhost
       CUS_HELP_PUBLIC_SCHEME: http
       CUS_HELP_PUBLIC_PORT: ""
     volumes:
       - ./apps/backend:/app/apps/backend
-      - ./dev/local-seed:/opt/custocrm-local-seed:ro
     depends_on:
       postgres:
         condition: service_healthy

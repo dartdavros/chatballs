@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "organization": {
+    "slug": "severnaya-verf",
+    "name": "Северная Верфь",
+    "timezone": "Europe/Moscow",
+    "currency": "RUB"
+  },
+  "aiAgentSlots": 5,
+  "accounts": [
+    {
+      "key": "owner",
+      "email": "i.volkov@severnayaverf.ru",
+      "password": "Demo-Owner-2026",
+      "fullName": "Игорь Волков",
+      "role": "OWNER",
+      "positionTitle": "Генеральный директор",
+      "phone": "+7 812 240 19 00",
+      "isStaff": true,
+      "isSuperuser": true
+    },
+    {
+      "key": "admin",
+      "email": "e.sokolova@severnayaverf.ru",
+      "password": "Demo-Admin-2026",
+      "fullName": "Елена Соколова",
+      "role": "ADMIN",
+      "positionTitle": "Руководитель клиентского сервиса",
+      "phone": "+7 812 240 19 01",
+      "isStaff": true
+    },
+    {
+      "key": "sales_lead",
+      "email": "d.morozov@severnayaverf.ru",
+      "password": "Demo-Sales-2026",
+      "fullName": "Дмитрий Морозов",
+      "role": "EMPLOYEE",
+      "positionTitle": "Старший менеджер по продажам",
+      "phone": "+7 921 330 11 45",
+      "department": "sales",
+      "systemProfile": "Sales operator"
+    },
+    {
+      "key": "sales_junior",
+      "email": "k.belaya@severnayaverf.ru",
+      "password": "Demo-Sales-2026",
+      "fullName": "Кристина Белая",
+      "role": "EMPLOYEE",
+      "positionTitle": "Менеджер по продажам",
+      "phone": "+7 921 778 02 19",
+      "department": "sales",
+      "systemProfile": "Sales operator"
+    },
+    {
+      "key": "support_lead",
+      "email": "a.novikov@severnayaverf.ru",
+      "password": "Demo-Support-2026",
+      "fullName": "Андрей Новиков",
+      "role": "EMPLOYEE",
+      "positionTitle": "Старший инженер поддержки",
+      "phone": "+7 812 240 19 50",
+      "department": "support",
+      "systemProfile": "Support operator"
+    },
+    {
+      "key": "support_engineer",
+      "email": "m.zhukova@severnayaverf.ru",
+      "password": "Demo-Support-2026",
+      "fullName": "Марина Жукова",
+      "role": "EMPLOYEE",
+      "positionTitle": "Инженер технической поддержки",
+      "phone": "+7 812 240 19 51",
+      "department": "support",
+      "systemProfile": "Support operator"
+    }
+  ]
+}
