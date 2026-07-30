@@ -20,6 +20,7 @@ from hub_platform.calls.models import (
     UNFINISHED_CALL_STATUSES,
     CallEndedBy,
     CallInvite,
+    CallKind,
     CallParticipant,
     CallSession,
     CallStatus,
@@ -113,7 +114,9 @@ def _check_call_creation_conflicts(*, conversation: Conversation, initiator) -> 
 
 
 @transaction.atomic
-def create_call_request(*, context: TenantContext, conversation_id: int) -> CreatedCall:
+def create_call_request(
+    *, context: TenantContext, conversation_id: int, kind: str = CallKind.AUDIO
+) -> CreatedCall:
     initiator = context.actor_user
     if initiator is None or context.membership is None:
         raise CallAccessDenied("Для звонка требуется контекст сотрудника")
@@ -140,6 +143,7 @@ def create_call_request(*, context: TenantContext, conversation_id: int) -> Crea
                 conversation=conversation,
                 initiated_by=initiator,
                 delivery_connection_id=conversation.connection_id,
+                kind=kind,
             )
     except IntegrityError as error:
         raise CallConflict("Не удалось создать второй незавершённый звонок") from error
@@ -180,10 +184,11 @@ def create_call_request(*, context: TenantContext, conversation_id: int) -> Crea
         aggregate_id=str(call.id),
     )
     initiator_label = getattr(initiator, "full_name", "") or initiator.email
+    call_word = "аудиозвонок" if call.kind == CallKind.AUDIO else "видеозвонок"
     Message.objects.create(
         conversation=conversation,
         author_type=MessageAuthor.SYSTEM,
-        text=f"Оператор {initiator_label} запросил онлайн-звонок",
+        text=f"Оператор {initiator_label} запросил {call_word}",
     )
     if conversation.connection.provider == IntegrationProvider.WEB:
         # Web Chat: приглашение забирает виджет поллингом, внешней отправки нет.

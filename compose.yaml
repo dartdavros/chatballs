@@ -242,7 +242,11 @@ services:
       - --cert=/etc/coturn/certs/fullchain.pem
       - --pkey=/etc/coturn/certs/privkey.pem
       - --min-port=${CUS_TURN_MIN_PORT:-49160}
-      - --max-port=${CUS_TURN_MAX_PORT:-49200}
+      # Relay-диапазон UDP (1 порт на media-endpoint; ~2 порта на звонок).
+      # 49160-49999 = 840 портов ≈ 420 одновременных TURN-звонков на хосте.
+      # Расширяется через CUS_TURN_MIN_PORT/CUS_TURN_MAX_PORT; все порты диапазона
+      # должны быть открыты на firewall и не пересекаться с ephemeral-диапазоном ОС.
+      - --max-port=${CUS_TURN_MAX_PORT:-49999}
       # Запрет анонимного и внутрисетевого relay (SPEC §11: без пересечения с хостом).
       - --no-multicast-peers
       - --no-tcp-relay

@@ -1,4 +1,4 @@
-import type { CallViewMode, CallViewStatus } from "@edevs/ui";
+import { type AudioCallMode, type AudioCallStatus, type CallViewMode, type CallViewStatus, buildAudioStatus } from "@edevs/ui";
 
 import type { CallInfo } from "../api";
 
@@ -40,6 +40,39 @@ export function callViewSubtitle(mode: CallViewMode, status?: CallViewStatus) {
   if (mode === "active") return "Активный звонок";
   if (mode === "reconnecting") return "Переподключение";
   return status?.title ?? "Соединение";
+}
+
+// --- Аудиозвонок (baseline «Аудиозвонок.dc.html»): incoming → active → терминал,
+// без pre-call. Статус-центр — через общий buildAudioStatus из @edevs/ui. ---
+
+export function resolveAudioCallViewMode(state: { loading: boolean; invalid: boolean; call: CallInfo | null; started: boolean; connection: string; mediaIssue: string }): AudioCallMode {
+  if (state.loading || state.invalid || !state.call) return "status";
+  if (state.mediaIssue === "devices" || state.mediaIssue === "unsupported") return "status";
+  if (isTerminalCall(state.call.status) || state.connection === "failed") return "status";
+  if (!state.started) return state.call.status === "RINGING" || state.call.status === "REQUESTED" ? "ringing" : "incoming";
+  if (state.connection === "reconnecting") return "reconnecting";
+  if (state.connection === "connected" || state.call.status === "ACTIVE") return "active";
+  return "connecting";
+}
+
+export function buildAudioCallViewStatus(state: { loading: boolean; invalid: boolean; call: CallInfo | null; connection: string; mediaIssue: string; close: () => void }): AudioCallStatus | undefined {
+  if (state.loading) return { icon: "clock", tone: "warn", title: "Проверяем приглашение", caption: "Секунду…", bar: "ended" };
+  if (state.invalid || !state.call) return { icon: "clock", tone: "warn", title: "Приглашение недействительно", caption: "Ссылка устарела или уже была использована. Запросите новое приглашение в чате.", bar: "ended" };
+  if (state.mediaIssue === "unsupported") return buildAudioStatus("unsupported", state.call.staffName || "Оператор") ?? undefined;
+  if (state.mediaIssue === "devices") return buildAudioStatus("nodevice", state.call.staffName || "Оператор") ?? undefined;
+  if (state.connection === "failed") return buildAudioStatus("FAILED", state.call.staffName || "Оператор") ?? undefined;
+  const key = state.call.status === "ACCEPTED" || state.call.status === "CONNECTING" ? "connecting" : state.call.status;
+  return buildAudioStatus(key, state.call.staffName || "Оператор", state.call.durationSeconds ?? undefined) ?? undefined;
+}
+
+export function audioCallStatusLabel(mode: AudioCallMode, status?: AudioCallStatus): string {
+  if (status) return status.title;
+  if (mode === "incoming") return "Входящий звонок";
+  if (mode === "ringing") return "Соединение";
+  if (mode === "active") return "Аудиозвонок";
+  if (mode === "connecting") return "Соединение";
+  if (mode === "reconnecting") return "Переподключение";
+  return "Звонок завершён";
 }
 
 function formatDuration(seconds: number) {

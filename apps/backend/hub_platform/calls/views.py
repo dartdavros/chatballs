@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 
 from hub_platform.api.permissions import HasEntitlement
 from hub_platform.calls.errors import CallAccessDenied, CallConflict, CallTokenError
-from hub_platform.calls.models import CallSession
+from hub_platform.calls.models import CallKind, CallSession
 from hub_platform.calls.permissions import ensure_call_access, ensure_conversation_call_access
 from hub_platform.calls.serializers import (
     call_payload,
@@ -48,9 +48,12 @@ class CallCreateView(APIView):
     required_entitlement = "p2p_calls"
 
     def post(self, request: Request, conversation_id: int) -> Response:
+        kind = str(request.data.get("kind", CallKind.AUDIO))
+        if kind not in CallKind.values:
+            return Response({"detail": "Недопустимый тип звонка"}, status=400)
         try:
             created = create_call_request(
-                context=request.tenant_context, conversation_id=conversation_id
+                context=request.tenant_context, conversation_id=conversation_id, kind=kind
             )
         except Conversation.DoesNotExist:
             return Response({"detail": "Диалог не найден"}, status=404)
@@ -68,7 +71,7 @@ class CallCreateView(APIView):
             organization=call.organization,
             object_type="CallSession",
             object_id=str(call.id),
-            payload={"conversation_id": call.conversation_id},
+            payload={"conversation_id": call.conversation_id, "kind": call.kind},
             request=request,
         )
         return _token_response(

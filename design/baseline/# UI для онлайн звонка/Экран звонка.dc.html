@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/edevs-hub-design-system-e4c9df12-82c8-42b3-b819-63d92dfb8702/tokens/colors.css">
+  <link rel="stylesheet" href="_ds/edevs-hub-design-system-e4c9df12-82c8-42b3-b819-63d92dfb8702/tokens/typography.css">
+  <link rel="stylesheet" href="_ds/edevs-hub-design-system-e4c9df12-82c8-42b3-b819-63d92dfb8702/tokens/spacing.css">
+  <link rel="stylesheet" href="_ds/edevs-hub-design-system-e4c9df12-82c8-42b3-b819-63d92dfb8702/tokens/effects.css">
+  <link rel="stylesheet" href="_ds/edevs-hub-design-system-e4c9df12-82c8-42b3-b819-63d92dfb8702/styles.css">
+  <script src="_ds/edevs-hub-design-system-e4c9df12-82c8-42b3-b819-63d92dfb8702/_ds_bundle.js"></script>
+  <style>
+    body { margin: 0; background: var(--surface-page); }
+    a { color: var(--primary); text-decoration: none; }
+    a:hover { color: var(--primary-hover); }
+    @keyframes edv-ring { 0% { transform: scale(1); opacity: .55; } 100% { transform: scale(2.3); opacity: 0; } }
+    @keyframes edv-spin { to { transform: rotate(360deg); } }
+  </style>
+</helmet>
+
+<div style="min-height:100vh; box-sizing:border-box; display:flex; flex-direction:column; align-items:center; gap:20px; padding:36px 24px 60px; font-family:var(--font-sans); color:var(--text-body);">
+
+  <div style="text-align:center; max-width:560px;">
+    <div style="font-size:20px; font-weight:600; letter-spacing:-0.01em; color:var(--text-heading);">Экран звонка</div>
+    <div style="font-size:13.5px; color:var(--text-secondary); margin-top:5px; line-height:1.5;">Встраиваемый компонент видеозвонка оператора и клиента — для модалки или страницы Hub. Полный жизненный цикл вызова.</div>
+  </div>
+
+  <div style="display:flex; flex-direction:column; gap:12px; background:var(--surface-card); border:1px solid var(--border-default); border-radius:var(--radius-2xl); padding:14px 18px; box-shadow:var(--shadow-sm); max-width:640px;">
+    <div style="display:flex; flex-wrap:wrap; gap:20px; align-items:flex-start;">
+      <div style="display:flex; flex-direction:column; gap:7px;">
+        <span style="font-size:10.5px; font-weight:600; letter-spacing:0.05em; text-transform:uppercase; color:var(--text-tertiary);">Сторона</span>
+        <div style="display:flex; gap:3px; background:var(--n-9); padding:3px; border-radius:var(--radius-md);">
+          <button style="{{ segOp }}" onClick="{{ setOp }}">Оператор</button>
+          <button style="{{ segCl }}" onClick="{{ setCl }}">Клиент</button>
+        </div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:7px;">
+        <span style="font-size:10.5px; font-weight:600; letter-spacing:0.05em; text-transform:uppercase; color:var(--text-tertiary);">Основные состояния</span>
+        <div style="display:flex; flex-wrap:wrap; gap:6px;">
+          <sc-for list="{{ mainStates }}" as="st" hint-placeholder-count="5">
+            <button style="{{ st.style }}" onClick="{{ st.onClick }}">{{ st.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:7px;">
+      <span style="font-size:10.5px; font-weight:600; letter-spacing:0.05em; text-transform:uppercase; color:var(--text-tertiary);">Ошибки и завершение</span>
+      <div style="display:flex; flex-wrap:wrap; gap:6px;">
+        <sc-for list="{{ errorStates }}" as="st" hint-placeholder-count="7">
+          <button style="{{ st.style }}" onClick="{{ st.onClick }}">{{ st.label }}</button>
+        </sc-for>
+      </div>
+    </div>
+    <sc-if value="{{ liveCall }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; flex-wrap:wrap; gap:14px; align-items:center; padding-top:11px; border-top:1px solid var(--border-subtle);">
+        <span style="font-size:10.5px; font-weight:600; letter-spacing:0.05em; text-transform:uppercase; color:var(--text-tertiary);">Собеседник</span>
+        <button style="{{ remoteMicChip }}" onClick="{{ toggleRemoteMic }}">Микрофон: {{ remoteMicLabel }}</button>
+        <button style="{{ remoteCamChip }}" onClick="{{ toggleRemoteCam }}">Камера: {{ remoteCamLabel }}</button>
+      </div>
+    </sc-if>
+  </div>
+
+  <div style="width:100%; max-width:428px; background:var(--surface-card); border:1px solid var(--border-default); border-radius:var(--radius-4xl); box-shadow:var(--shadow-lg); overflow:hidden;">
+
+    <div style="display:flex; align-items:center; gap:11px; padding:12px 15px; border-bottom:1px solid var(--border-default);">
+      <div style="{{ smallAvatarStyle }}">{{ peerInitials }}</div>
+      <div style="display:flex; flex-direction:column; gap:2px; min-width:0;">
+        <div style="display:flex; align-items:center; gap:7px;">
+          <span style="font-size:14px; font-weight:600; color:var(--text-heading); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ peerName }}</span>
+          <sc-if value="{{ showChannel }}" hint-placeholder-val="{{ true }}">
+            <x-import component-from-global-scope="EdevsHubDesignSystem_e4c9df.ChannelBadge" channel="{{ channel }}" hint-size="auto,16px"></x-import>
+          </sc-if>
+        </div>
+        <span style="font-size:12px; color:var(--text-secondary);">{{ subtitle }}</span>
+      </div>
+      <div style="flex:1;"></div>
+      <sc-if value="{{ showTimer }}" hint-placeholder-val="{{ false }}">
+        <div style="{{ timerStyle }}">
+          <span style="{{ timerDot }}"></span>
+          {{ timer }}
+        </div>
+      </sc-if>
+      <button onClick="{{ close }}" aria-label="Закрыть" style="width:34px; height:34px; border-radius:var(--radius-md); border:1px solid var(--border-default); background:var(--surface-card); color:var(--text-secondary); display:flex; align-items:center; justify-content:center; cursor:pointer; flex:none;" style-hover="background:var(--n-9); color:var(--text-body);">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+
+    <div style="position:relative; aspect-ratio:16/9; background:#141414; overflow:hidden;">
+
+      <sc-if value="{{ videoVisible }}" hint-placeholder-val="{{ false }}">
+        <x-import component-from-global-scope="image-slot" from="./image-slot.js" id="edevs-call-main" placeholder="Кадр с камеры" shape="rect" style="position:absolute; inset:0; width:100%; height:100%;" hint-size="100%,100%"></x-import>
+      </sc-if>
+
+      <sc-if value="{{ showMainAvatar }}" hint-placeholder-val="{{ true }}">
+        <div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; z-index:3;">
+          <div style="position:relative; display:flex; align-items:center; justify-content:center;">
+            <sc-if value="{{ ringsVisible }}" hint-placeholder-val="{{ true }}">
+              <span style="position:absolute; width:88px; height:88px; border-radius:50%; border:2px solid rgba(255,255,255,.6); animation:edv-ring 1.9s ease-out infinite;"></span>
+              <span style="position:absolute; width:88px; height:88px; border-radius:50%; border:2px solid rgba(255,255,255,.6); animation:edv-ring 1.9s ease-out infinite; animation-delay:.95s;"></span>
+            </sc-if>
+            <div style="{{ bigAvatarStyle }}">{{ mainInitials }}</div>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-size:15px; font-weight:600; color:#fff;">{{ mainName }}</div>
+            <div style="font-size:12.5px; color:rgba(255,255,255,.6); margin-top:3px;">{{ mainCaption }}</div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showReconnBanner }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute; top:0; left:0; right:0; display:flex; align-items:center; justify-content:center; gap:9px; padding:9px 12px; background:rgba(20,20,20,.82); color:#fff; font-size:12.5px; font-weight:500; z-index:6;">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="animation:edv-spin .9s linear infinite;"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg>
+          Связь прервана · восстанавливаем соединение…
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showStatus }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; padding:22px 26px; text-align:center; background:#1a1a1a; z-index:7;">
+          <div style="{{ statusIconTile }}">{{ statusIcon }}</div>
+          <div>
+            <div style="font-size:15.5px; font-weight:600; color:#fff; line-height:1.3;">{{ statusTitle }}</div>
+            <div style="font-size:12.5px; color:rgba(255,255,255,.6); margin-top:6px; line-height:1.5; max-width:280px;">{{ statusCaption }}</div>
+          </div>
+          <sc-if value="{{ hasStatusActions }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; gap:9px; margin-top:2px;">
+              <sc-for list="{{ statusActions }}" as="act" hint-placeholder-count="2">
+                <button style="{{ act.style }}" onClick="{{ act.onClick }}">{{ act.label }}</button>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showNameLabel }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute; left:12px; bottom:12px; display:flex; align-items:center; gap:6px; padding:4px 10px; border-radius:var(--radius-md); background:rgba(0,0,0,.5); z-index:5; pointer-events:none;">
+          <sc-if value="{{ remoteMuted }}" hint-placeholder-val="{{ false }}">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#ff7875" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="3" x2="21" y2="21"></line><path d="M9 9v2a3 3 0 0 0 5.1 2.1"></path><path d="M15 9.3V5a3 3 0 0 0-5.9-.7"></path><path d="M19 10v1a7 7 0 0 1-1.4 4.2M12 18a7 7 0 0 1-7-7v-1"></path><line x1="12" y1="18" x2="12" y2="22"></line></svg>
+          </sc-if>
+          <span style="color:#fff; font-size:12px; font-weight:500;">{{ peerName }}</span>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showPip }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute; right:12px; bottom:12px; width:100px; height:66px; border-radius:10px; overflow:hidden; background:#1f1f1f; border:2px solid rgba(255,255,255,.9); box-shadow:0 4px 14px rgba(0,0,0,.4); z-index:4;">
+          <sc-if value="{{ camOn }}" hint-placeholder-val="{{ true }}">
+            <x-import component-from-global-scope="image-slot" from="./image-slot.js" id="edevs-call-pip" placeholder="Вы" shape="rect" style="position:absolute; inset:0; width:100%; height:100%;" hint-size="100%,100%"></x-import>
+          </sc-if>
+          <sc-if value="{{ camOff }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center;">
+              <div style="width:34px; height:34px; border-radius:50%; background:var(--n-3); color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:600;">ВЫ</div>
+            </div>
+          </sc-if>
+          <span style="position:absolute; left:5px; bottom:4px; font-size:10px; font-weight:600; color:#fff; text-shadow:0 1px 2px rgba(0,0,0,.6); pointer-events:none;">Вы</span>
+        </div>
+      </sc-if>
+
+    </div>
+
+    <sc-if value="{{ barIncoming }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex; justify-content:center; gap:52px; padding:18px 16px 22px;">
+        <div style="display:flex; flex-direction:column; align-items:center; gap:9px;">
+          <button onClick="{{ decline }}" aria-label="Отклонить" style="width:58px; height:58px; border-radius:50%; border:none; background:var(--error); color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 2px 8px rgba(255,77,79,.35);">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate(135deg);"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.81.36 1.6.7 2.34a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.74-1.27a2 2 0 0 1 2.11-.45c.74.34 1.53.57 2.34.7A2 2 0 0 1 22 16.92z"></path></svg>
+          </button>
+          <span style="font-size:12.5px; color:var(--text-secondary);">Отклонить</span>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:9px;">
+          <button onClick="{{ accept }}" aria-label="Принять" style="width:58px; height:58px; border-radius:50%; border:none; background:var(--success); color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 2px 8px rgba(82,196,26,.35);">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.81.36 1.6.7 2.34a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.74-1.27a2 2 0 0 1 2.11-.45c.74.34 1.53.57 2.34.7A2 2 0 0 1 22 16.92z"></path></svg>
+          </button>
+          <span style="font-size:12.5px; color:var(--text-secondary);">Принять</span>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ barRinging }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; flex-direction:column; align-items:center; gap:9px; padding:18px 16px 22px;">
+        <button onClick="{{ close }}" aria-label="Отменить вызов" style="width:58px; height:58px; border-radius:50%; border:none; background:var(--error); color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 2px 8px rgba(255,77,79,.35);">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate(135deg);"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.81.36 1.6.7 2.34a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.74-1.27a2 2 0 0 1 2.11-.45c.74.34 1.53.57 2.34.7A2 2 0 0 1 22 16.92z"></path></svg>
+        </button>
+        <span style="font-size:12.5px; color:var(--text-secondary);">Отменить</span>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ barPrep }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; flex-direction:column; gap:15px; padding:16px 16px 18px;">
+        <div style="display:flex; justify-content:center; gap:32px;">
+          <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+            <button onClick="{{ toggleMic }}" style="{{ micStyle }}" aria-label="Микрофон">{{ micIcon }}</button>
+            <span style="font-size:12px; color:var(--text-secondary);">Микрофон</span>
+          </div>
+          <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+            <button onClick="{{ toggleCam }}" style="{{ camStyle }}" aria-label="Камера">{{ camIcon }}</button>
+            <span style="font-size:12px; color:var(--text-secondary);">Камера</span>
+          </div>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <button onClick="{{ close }}" style="flex:1; height:44px; border-radius:var(--radius-lg); border:1px solid var(--n-6); background:var(--surface-card); color:var(--text-body); font-size:14px; font-weight:600; font-family:var(--font-sans); cursor:pointer;" style-hover="border-color:var(--primary); color:var(--primary);">Отмена</button>
+          <button onClick="{{ join }}" style="flex:1; height:44px; border-radius:var(--radius-lg); border:none; background:var(--primary); color:#fff; font-size:14px; font-weight:600; font-family:var(--font-sans); cursor:pointer; box-shadow:var(--shadow-primary);" style-hover="background:var(--primary-hover);">Присоединиться</button>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ barActive }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; justify-content:center; align-items:center; gap:14px; padding:16px;">
+        <button onClick="{{ toggleMic }}" style="{{ micStyle }}" aria-label="Микрофон">{{ micIcon }}</button>
+        <button onClick="{{ toggleCam }}" style="{{ camStyle }}" aria-label="Камера">{{ camIcon }}</button>
+        <button aria-label="Полный экран" style="width:54px; height:54px; border-radius:50%; border:1px solid var(--n-7); background:var(--n-9); color:var(--n-3); display:flex; align-items:center; justify-content:center; cursor:pointer;">
+          <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"></path><path d="M21 8V5a2 2 0 0 0-2-2h-3"></path><path d="M3 16v3a2 2 0 0 0 2 2h3"></path><path d="M16 21h3a2 2 0 0 0 2-2v-3"></path></svg>
+        </button>
+        <button onClick="{{ end }}" aria-label="Завершить" style="width:60px; height:54px; border-radius:27px; border:none; background:var(--error); color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 2px 8px rgba(255,77,79,.35);">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate(135deg);"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.81.36 1.6.7 2.34a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.74-1.27a2 2 0 0 1 2.11-.45c.74.34 1.53.57 2.34.7A2 2 0 0 1 22 16.92z"></path></svg>
+        </button>
+      </div>
+    </sc-if>
+
+  </div>
+
+  <div style="font-size:12.5px; color:var(--text-tertiary); text-align:center; max-width:420px; line-height:1.5;">Переключайте сторону и состояние выше. В активном звонке доступны тумблеры «Собеседник», чтобы проверить индикаторы удалённого микрофона и камеры.</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:700,&quot;height&quot;:820},&quot;clientName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Анна Ковалёва&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Контент&quot;},&quot;channel&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;webchat&quot;,&quot;options&quot;:[&quot;webchat&quot;,&quot;telegram&quot;,&quot;max&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Контент&quot;}}">
+class Component extends DCLogic {
+  state = { perspective: 'operator', stateName: 'incoming', micOn: true, camOn: true, remoteMicOn: true, remoteCamOn: true, seconds: 0 };
+
+  componentDidMount() {
+    this._t = setInterval(() => {
+      if (this.state.stateName === 'active') this.setState(s => ({ seconds: s.seconds + 1 }));
+    }, 1000);
+  }
+  componentWillUnmount() { clearInterval(this._t); }
+
+  goto(st) { if (st) this.setState(s => ({ stateName: st, seconds: (st === 'active' && s.stateName !== 'reconnecting') ? 0 : s.seconds })); }
+
+  icon(name) {
+    const h = React.createElement;
+    const svg = (children, extra) => h('svg', Object.assign({ viewBox: '0 0 24 24', width: 26, height: 26, fill: 'none', stroke: 'currentColor', strokeWidth: 1.9, strokeLinecap: 'round', strokeLinejoin: 'round' }, extra || {}), children);
+    switch (name) {
+      case 'spinner': return svg([h('path', { key: 1, d: 'M21 12a9 9 0 1 1-6.219-8.56' })], { strokeWidth: 2, style: { animation: 'edv-spin .9s linear infinite' } });
+      case 'alert': return svg([h('path', { key: 1, d: 'M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z' }), h('line', { key: 2, x1: 12, y1: 9, x2: 12, y2: 13 }), h('line', { key: 3, x1: 12, y1: 17, x2: 12.01, y2: 17 })]);
+      case 'declined': return svg([h('path', { key: 1, transform: 'rotate(135 12 12)', d: 'M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.81.36 1.6.7 2.34a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.74-1.27a2 2 0 0 1 2.11-.45c.74.34 1.53.57 2.34.7A2 2 0 0 1 22 16.92z' })]);
+      case 'missed': return svg([h('path', { key: 1, d: 'M23 7l-8 8-4-4-9 9' }), h('polyline', { key: 2, points: '17 7 23 7 23 13' })]);
+      case 'clock': return svg([h('circle', { key: 1, cx: 12, cy: 12, r: 9 }), h('path', { key: 2, d: 'M12 7v5l3 2' })]);
+      case 'nodevice': return svg([h('line', { key: 1, x1: 2, y1: 2, x2: 22, y2: 22 }), h('path', { key: 2, d: 'M16 16v1a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2' }), h('path', { key: 3, d: 'M10 5h4a2 2 0 0 1 2 2v3l4-3v9' })]);
+      case 'unsupported': return svg([h('rect', { key: 1, x: 2, y: 3, width: 20, height: 14, rx: 2 }), h('line', { key: 2, x1: 8, y1: 21, x2: 16, y2: 21 }), h('line', { key: 3, x1: 12, y1: 17, x2: 12, y2: 21 }), h('line', { key: 4, x1: 9, y1: 8, x2: 15, y2: 14 }), h('line', { key: 5, x1: 15, y1: 8, x2: 9, y2: 14 })]);
+      default: return null;
+    }
+  }
+
+  micIcon() {
+    const h = React.createElement;
+    const svg = (c) => h('svg', { viewBox: '0 0 24 24', width: 22, height: 22, fill: 'none', stroke: 'currentColor', strokeWidth: 1.85, strokeLinecap: 'round', strokeLinejoin: 'round' }, c);
+    return this.state.micOn
+      ? svg([h('rect', { key: 1, x: 9, y: 2, width: 6, height: 12, rx: 3 }), h('path', { key: 2, d: 'M19 10v1a7 7 0 0 1-14 0v-1' }), h('line', { key: 3, x1: 12, y1: 18, x2: 12, y2: 22 })])
+      : svg([h('line', { key: 1, x1: 3, y1: 3, x2: 21, y2: 21 }), h('path', { key: 2, d: 'M9 9v2a3 3 0 0 0 5.1 2.1' }), h('path', { key: 3, d: 'M15 9.3V5a3 3 0 0 0-5.9-.7' }), h('path', { key: 4, d: 'M19 10v1a7 7 0 0 1-1.4 4.2M12 18a7 7 0 0 1-7-7v-1' }), h('line', { key: 5, x1: 12, y1: 18, x2: 12, y2: 22 })]);
+  }
+  camIcon() {
+    const h = React.createElement;
+    const svg = (c) => h('svg', { viewBox: '0 0 24 24', width: 22, height: 22, fill: 'none', stroke: 'currentColor', strokeWidth: 1.85, strokeLinecap: 'round', strokeLinejoin: 'round' }, c);
+    return this.state.camOn
+      ? svg([h('path', { key: 1, d: 'M23 7l-7 5 7 5V7z' }), h('rect', { key: 2, x: 1, y: 5, width: 15, height: 14, rx: 2.5 })])
+      : svg([h('line', { key: 1, x1: 2, y1: 2, x2: 22, y2: 22 }), h('path', { key: 2, d: 'M16 16v1a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2' }), h('path', { key: 3, d: 'M10 5h4a2 2 0 0 1 2 2v3l4-3v9' })]);
+  }
+
+  renderVals() {
+    const s = this.state;
+    const st = s.stateName;
+    const isOperator = s.perspective === 'operator';
+    const clientName = this.props.clientName ?? 'Анна Ковалёва';
+    const channel = this.props.channel ?? 'webchat';
+
+    const isIncoming = st === 'incoming';
+    const isRinging = st === 'ringing';
+    const isPrep = st === 'prep';
+    const isActive = st === 'active';
+    const isReconnecting = st === 'reconnecting';
+    const liveCall = isActive || isReconnecting;
+
+    const peer = isOperator
+      ? { name: clientName, initials: (clientName.trim()[0] || 'К').toUpperCase() + ((clientName.split(' ')[1] || '')[0] || '').toUpperCase(), color: '#722ed1' }
+      : { name: 'Оператор Edevs', initials: 'ОЭ', color: '#1677ff' };
+    const self = { name: 'Вы', initials: 'ВЫ', color: '#595959' };
+    const P = peer.name;
+
+    const mm = String(Math.floor(s.seconds / 60)).padStart(2, '0');
+    const ss = String(s.seconds % 60).padStart(2, '0');
+
+    // ---- status message states ----
+    const chanLabel = channel === 'webchat' ? 'Веб-виджет' : channel === 'telegram' ? 'Telegram' : 'MAX';
+    const msg = {
+      connecting: { icon: 'spinner', tone: 'neutral', title: 'Соединяем звонок', caption: 'Устанавливаем защищённое соединение…', actions: [{ label: 'Отменить', kind: 'ghost', to: 'incoming' }] },
+      failed: { icon: 'alert', tone: 'error', title: 'Не удалось соединиться', caption: 'Проверьте интернет-соединение и попробуйте снова.', actions: [{ label: 'Повторить', kind: 'primary', to: 'connecting' }, { label: 'Закрыть', kind: 'secondary', to: 'incoming' }] },
+      declined: { icon: 'declined', tone: 'neutral', title: 'Звонок отклонён', caption: P + ' отклонил(а) вызов.', actions: [{ label: 'Позвонить снова', kind: 'primary', to: 'ringing' }, { label: 'Закрыть', kind: 'secondary', to: 'incoming' }] },
+      missed: { icon: 'missed', tone: 'warn', title: 'Пропущенный звонок', caption: P + ' не ответил(а) на вызов.', actions: [{ label: 'Перезвонить', kind: 'primary', to: 'ringing' }, { label: 'Закрыть', kind: 'secondary', to: 'incoming' }] },
+      expired: { icon: 'clock', tone: 'warn', title: 'Время ожидания истекло', caption: 'Никто не ответил вовремя. Попробуйте позвонить снова.', actions: [{ label: 'Позвонить снова', kind: 'primary', to: 'ringing' }, { label: 'Закрыть', kind: 'secondary', to: 'incoming' }] },
+      nodevice: { icon: 'nodevice', tone: 'error', title: 'Нет доступа к камере и микрофону', caption: 'Разрешите доступ к устройствам в настройках браузера и повторите.', actions: [{ label: 'Повторить проверку', kind: 'primary', to: 'prep' }, { label: 'Без видео', kind: 'secondary', to: 'connecting' }] },
+      unsupported: { icon: 'unsupported', tone: 'error', title: 'Видеозвонки не поддерживаются', caption: 'Обновите браузер или откройте ссылку в Chrome, Safari или Edge.', actions: [{ label: 'Скопировать ссылку', kind: 'secondary', to: null }] },
+    };
+    const cur = msg[st];
+    const showStatus = !!cur;
+
+    const toneColor = { neutral: { bg: 'rgba(255,255,255,.08)', fg: '#fff' }, error: { bg: 'rgba(255,77,79,.16)', fg: '#ff7875' }, warn: { bg: 'rgba(250,173,20,.16)', fg: '#ffc53d' } };
+    const tc = cur ? toneColor[cur.tone] : toneColor.neutral;
+    const statusIconTile = { width: 56, height: 56, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: tc.bg, color: tc.fg };
+
+    const actBtn = (kind) => {
+      const base = { height: 38, padding: '0 16px', borderRadius: 'var(--radius-lg)', fontSize: 13.5, fontWeight: 600, fontFamily: 'var(--font-sans)', cursor: 'pointer' };
+      if (kind === 'primary') return { ...base, border: 'none', background: 'var(--primary)', color: '#fff' };
+      if (kind === 'secondary') return { ...base, border: '1px solid rgba(255,255,255,.28)', background: 'transparent', color: '#fff' };
+      return { ...base, border: 'none', background: 'transparent', color: 'rgba(255,255,255,.7)' };
+    };
+    const statusActions = (cur ? cur.actions : []).map(a => ({ label: a.label, style: actBtn(a.kind), onClick: a.to ? () => this.goto(a.to) : () => {} }));
+
+    // ---- main preview subject / caption ----
+    const remoteCamOff = liveCall && !s.remoteCamOn;
+    const mainSubject = isPrep ? self : peer;
+    let mainCaption;
+    if (isIncoming) mainCaption = isOperator ? ('Входящий · ' + chanLabel) : 'Входящий видеозвонок';
+    else if (isRinging) mainCaption = 'Вызываем…';
+    else if (isPrep) mainCaption = 'Камера выключена';
+    else mainCaption = 'Камера собеседника выключена';
+
+    let subtitle;
+    if (isIncoming) subtitle = isOperator ? 'Входящий звонок' : 'Входящий видеозвонок';
+    else if (isRinging) subtitle = 'Ожидание ответа';
+    else if (isPrep) subtitle = 'Проверьте камеру и микрофон';
+    else if (isReconnecting) subtitle = 'Переподключение';
+    else if (isActive) subtitle = 'На связи';
+    else if (cur) subtitle = cur.title;
+    else subtitle = '';
+
+    // ---- control styles ----
+    const roundBase = { width: 54, height: 54, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flex: 'none', transition: 'background .15s, border-color .15s, color .15s' };
+    const neutralRound = { ...roundBase, border: '1px solid var(--n-7)', background: 'var(--n-9)', color: 'var(--n-3)' };
+    const mutedRound = { ...roundBase, border: '1px solid var(--error-border)', background: 'var(--error-bg)', color: 'var(--error-text)' };
+
+    const smallAvatarStyle = { width: 38, height: 38, borderRadius: '50%', background: peer.color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 600, flex: 'none' };
+    const bigAvatarStyle = { width: 88, height: 88, borderRadius: '50%', background: mainSubject.color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 30, fontWeight: 600, position: 'relative', zIndex: 2, boxShadow: '0 4px 18px rgba(0,0,0,.35)' };
+
+    // ---- selectors ----
+    const segBase = { display: 'flex', alignItems: 'center', padding: '7px 13px', borderRadius: 'var(--radius-md)', border: 'none', cursor: 'pointer', fontSize: 13, fontFamily: 'var(--font-sans)', whiteSpace: 'nowrap' };
+    const segActive = { ...segBase, fontWeight: 600, background: 'var(--surface-card)', color: 'var(--primary)', boxShadow: '0 1px 2px rgba(0,0,0,.09)' };
+    const segIdle = { ...segBase, fontWeight: 500, background: 'transparent', color: 'var(--text-secondary)' };
+
+    const chip = (active) => ({ padding: '6px 12px', borderRadius: 'var(--radius-pill)', border: '1px solid ' + (active ? 'var(--primary)' : 'var(--border-strong)'), background: active ? 'var(--primary-bg)' : 'var(--surface-card)', color: active ? 'var(--primary)' : 'var(--text-secondary)', fontSize: 12.5, fontWeight: active ? 600 : 500, fontFamily: 'var(--font-sans)', cursor: 'pointer', whiteSpace: 'nowrap' });
+    const mkStates = (arr) => arr.map(([id, label]) => ({ label, style: chip(st === id), onClick: () => this.goto(id) }));
+    const mainStates = mkStates([['incoming', 'Входящий'], ['ringing', 'Ожидание'], ['prep', 'Подготовка'], ['connecting', 'Соединение'], ['active', 'Активный']]);
+    const errorStates = mkStates([['reconnecting', 'Переподключение'], ['declined', 'Отклонён'], ['missed', 'Пропущен'], ['expired', 'Истёк'], ['failed', 'Ошибка'], ['nodevice', 'Нет устройств'], ['unsupported', 'Не поддерж.']]);
+
+    const remoteChip = (on) => ({ padding: '5px 11px', borderRadius: 'var(--radius-pill)', border: '1px solid ' + (on ? 'var(--border-strong)' : 'var(--error-border)'), background: on ? 'var(--surface-card)' : 'var(--error-bg)', color: on ? 'var(--text-secondary)' : 'var(--error-text)', fontSize: 12, fontWeight: 500, fontFamily: 'var(--font-sans)', cursor: 'pointer' });
+
+    const showTimer = liveCall;
+    const timerBg = isReconnecting ? { bg: 'var(--warning-bg)', fg: 'var(--warning-text)', dot: 'var(--warning)' } : { bg: 'var(--error-bg)', fg: 'var(--error-text)', dot: 'var(--error)' };
+
+    return {
+      isOperator, channel, showChannel: isOperator, liveCall,
+      peerName: peer.name, peerInitials: peer.initials, subtitle,
+      mainName: mainSubject.name, mainInitials: mainSubject.initials, mainCaption,
+      timer: mm + ':' + ss, showTimer,
+      timerStyle: { display: 'flex', alignItems: 'center', gap: 6, padding: '4px 9px', borderRadius: 'var(--radius-pill)', background: timerBg.bg, color: timerBg.fg, fontSize: 12.5, fontWeight: 600, fontFamily: 'ui-monospace,SFMono-Regular,Menlo,monospace' },
+      timerDot: { width: 6, height: 6, borderRadius: '50%', background: timerBg.dot, animation: 'hub-pulse 1.6s ease-in-out infinite' },
+
+      videoVisible: (liveCall && s.remoteCamOn) || (isPrep && s.camOn),
+      showMainAvatar: isIncoming || isRinging || (isPrep && !s.camOn) || remoteCamOff,
+      ringsVisible: isIncoming || isRinging,
+      showReconnBanner: isReconnecting,
+      showStatus, statusIcon: cur ? this.icon(cur.icon) : null, statusIconTile,
+      statusTitle: cur ? cur.title : '', statusCaption: cur ? cur.caption : '',
+      hasStatusActions: statusActions.length > 0, statusActions,
+      showNameLabel: liveCall && !showStatus,
+      remoteMuted: liveCall && !s.remoteMicOn,
+      showPip: liveCall && !showStatus,
+
+      micOn: s.micOn, camOn: s.camOn, camOff: !s.camOn,
+      micIcon: this.micIcon(), camIcon: this.camIcon(),
+      micStyle: s.micOn ? neutralRound : mutedRound,
+      camStyle: s.camOn ? neutralRound : mutedRound,
+      smallAvatarStyle, bigAvatarStyle,
+
+      barIncoming: isIncoming, barRinging: isRinging, barPrep: isPrep, barActive: liveCall && !showStatus,
+
+      mainStates, errorStates,
+      segOp: isOperator ? segActive : segIdle, segCl: !isOperator ? segActive : segIdle,
+      setOp: () => this.setState({ perspective: 'operator' }),
+      setCl: () => this.setState({ perspective: 'client' }),
+
+      remoteMicChip: remoteChip(s.remoteMicOn), remoteCamChip: remoteChip(s.remoteCamOn),
+      remoteMicLabel: s.remoteMicOn ? 'вкл' : 'выкл', remoteCamLabel: s.remoteCamOn ? 'вкл' : 'выкл',
+      toggleRemoteMic: () => this.setState(x => ({ remoteMicOn: !x.remoteMicOn })),
+      toggleRemoteCam: () => this.setState(x => ({ remoteCamOn: !x.remoteCamOn })),
+
+      close: () => this.goto('incoming'),
+      accept: () => this.goto('active'),
+      decline: () => this.goto('incoming'),
+      join: () => this.goto('active'),
+      end: () => this.goto('incoming'),
+      toggleMic: () => this.setState(x => ({ micOn: !x.micOn })),
+      toggleCam: () => this.setState(x => ({ camOn: !x.camOn })),
+    };
+  }
+}
+</script>
+</body>
+</html>

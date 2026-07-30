@@ -70,12 +70,18 @@ class CallConnectionType(models.TextChoices):
     UNKNOWN = "UNKNOWN", "Неизвестно"
 
 
+class CallKind(models.TextChoices):
+    AUDIO = "AUDIO", "Аудиозвонок"
+    VIDEO = "VIDEO", "Видеозвонок"
+
+
 class CallSession(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     organization = models.ForeignKey("identity.Organization", on_delete=models.PROTECT, related_name="call_sessions")
     conversation = models.ForeignKey("conversations.Conversation", on_delete=models.PROTECT, related_name="call_sessions")
     initiated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="initiated_calls")
     status = models.CharField(max_length=16, choices=CallStatus.choices, default=CallStatus.REQUESTED, db_index=True)
+    kind = models.CharField(max_length=8, choices=CallKind.choices, default=CallKind.AUDIO, db_index=True)
     requested_at = models.DateTimeField(auto_now_add=True)
     accepted_at = models.DateTimeField(null=True, blank=True)
     connected_at = models.DateTimeField(null=True, blank=True)

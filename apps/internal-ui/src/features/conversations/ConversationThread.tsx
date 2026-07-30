@@ -13,7 +13,7 @@ function fmtTime(value: string): string {
   return new Date(value).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
 }
 
-export function ConversationThread({ controlMode, dialog, detail, onClaim, onCall, onClose, onSpam }: { controlMode: ControlMode; dialog: ConversationListItem | null; detail: ApiConversation | null; onClaim: () => void; onCall: () => void; onClose: () => void; onSpam: () => Promise<boolean> }) {
+export function ConversationThread({ controlMode, dialog, detail, onClaim, onCall, onClose, onSpam }: { controlMode: ControlMode; dialog: ConversationListItem | null; detail: ApiConversation | null; onClaim: () => void; onCall: (kind: "AUDIO" | "VIDEO") => void; onClose: () => void; onSpam: () => Promise<boolean> }) {
   const timelineRef = useRef<HTMLDivElement>(null);
   const messages = detail?.messages ?? [];
   const lastMessageId = messages.length ? messages[messages.length - 1].id : 0;
@@ -43,7 +43,10 @@ export function ConversationThread({ controlMode, dialog, detail, onClaim, onCal
           {controlMode === "waiting" && <button className="sales-claim-button" onClick={onClaim}><Icon name="check" size={15} />Забрать</button>}
           {controlMode === "ai" && <button className="sales-ai-button" onClick={onClaim}>Перехватить AI</button>}
           {detail?.lifecycle === "OPEN" && dialog.channel !== "EMAIL" && (
-            <button className="sales-more-button" aria-label="Запросить онлайн-звонок" title="Запросить онлайн-звонок" onClick={onCall}><Icon name="phone" size={17} /></button>
+            <>
+              <button className="sales-more-button" aria-label="Запросить аудиозвонок" title="Запросить аудиозвонок" onClick={() => onCall("AUDIO")}><Icon name="phone" size={17} /></button>
+              <button className="sales-more-button" aria-label="Запросить видеозвонок" title="Запросить видеозвонок" onClick={() => onCall("VIDEO")}><Icon name="video" size={17} /></button>
+            </>
           )}
           <ConversationActions open={detail?.lifecycle === "OPEN"} onClose={onClose} onSpam={onSpam} />
         </div>

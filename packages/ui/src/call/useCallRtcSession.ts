@@ -9,6 +9,7 @@ type Options = {
   accessToken: string;
   side: CallSide;
   iceServers: RTCIceServer[];
+  videoEnabled?: boolean;
   onCallState: (call: PublicCallState) => void;
 };
 
@@ -27,6 +28,8 @@ export function useCallRtcSession(options: Options) {
   const localRef = useRef<MediaStream | null>(null);
   const clientRef = useRef<CallRtcClient | null>(null);
   const preparingRef = useRef(false);
+  const videoEnabledRef = useRef(options.videoEnabled ?? true);
+  videoEnabledRef.current = options.videoEnabled ?? true;
   const onCallStateRef = useRef(options.onCallState);
   onCallStateRef.current = options.onCallState;
 
@@ -47,14 +50,24 @@ export function useCallRtcSession(options: Options) {
     preparingRef.current = true;
     setPreparing(true);
     try {
+      // Аудиозвонок: видео не запрашивается и не откатывается — это честный
+      // аудио-режим. Видеозвонок: video+audio, при отказе камеры — audio-only.
+      const constraints: MediaStreamConstraints = videoEnabledRef.current
+        ? { audio: true, video: true }
+        : { audio: true, video: false };
       let stream: MediaStream;
       try {
-        stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
         setMediaIssue("none");
+        if (!videoEnabledRef.current) setCamOn(false);
       } catch {
-        stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-        setCamOn(false);
-        setMediaIssue("video");
+        if (videoEnabledRef.current) {
+          stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+          setCamOn(false);
+          setMediaIssue("video");
+        } else {
+          throw new Error("audio devices unavailable");
+        }
       }
       localRef.current = stream;
       setLocalStream(stream);
@@ -71,7 +84,7 @@ export function useCallRtcSession(options: Options) {
   useEffect(() => {
     stop();
     setMicOn(true);
-    setCamOn(true);
+    setCamOn(videoEnabledRef.current);
     setRemoteMicOn(true);
     setRemoteCamOn(true);
     setMediaIssue("none");

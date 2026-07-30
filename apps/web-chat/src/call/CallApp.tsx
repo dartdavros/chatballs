@@ -9,6 +9,7 @@ import {
   type CallBootstrap,
   type CallInfo,
 } from "../api";
+import { AudioCallStage } from "./AudioCallStage";
 import { buildCallViewStatus, callViewSubtitle, isTerminalCall, resolveCallViewMode } from "./model";
 
 function storageKey() { return `edevs-call:${location.pathname}`; }
@@ -36,6 +37,13 @@ export function CallApp() {
     if (started) rtc.end();
     if (history.length > 1) history.back(); else window.close();
   }, [rtc.end, started]);
+
+  // Тип звонка определяется из приглашения/состояния. Все хуки выше вызваны до
+  // условного return, поэтому их количество постоянно (rules of hooks). Аудио
+  // рендерится AudioCallStage (своим RTC); видеопуть — ниже без изменений.
+  if (call?.kind !== "VIDEO") {
+    return <AudioCallStage call={call} accessToken={accessToken} iceServers={iceServers} loading={loading} invalid={invalid} onCall={setCall} />;
+  }
 
   const applyBootstrap = useCallback((value: CallBootstrap) => {
     sessionStorage.setItem(storageKey(), value.accessToken);

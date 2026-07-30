@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/edevs-hub-design-system-e4c9df12-82c8-42b3-b819-63d92dfb8702/tokens/colors.css">
+  <link rel="stylesheet" href="_ds/edevs-hub-design-system-e4c9df12-82c8-42b3-b819-63d92dfb8702/tokens/typography.css">
+  <link rel="stylesheet" href="_ds/edevs-hub-design-system-e4c9df12-82c8-42b3-b819-63d92dfb8702/tokens/spacing.css">
+  <link rel="stylesheet" href="_ds/edevs-hub-design-system-e4c9df12-82c8-42b3-b819-63d92dfb8702/tokens/effects.css">
+  <link rel="stylesheet" href="_ds/edevs-hub-design-system-e4c9df12-82c8-42b3-b819-63d92dfb8702/styles.css">
+  <script src="_ds/edevs-hub-design-system-e4c9df12-82c8-42b3-b819-63d92dfb8702/_ds_bundle.js"></script>
+  <style>
+    body { margin: 0; background: #0b0b12; }
+    @keyframes edv-ring2 { 0% { transform: scale(1); opacity: .5; } 100% { transform: scale(1.9); opacity: 0; } }
+    @keyframes edv-drift { 0% { transform: translate(0,0) scale(1); } 50% { transform: translate(4%,-3%) scale(1.08); } 100% { transform: translate(0,0) scale(1); } }
+    @keyframes edv-drift2 { 0% { transform: translate(0,0) scale(1.05); } 50% { transform: translate(-5%,4%) scale(1); } 100% { transform: translate(0,0) scale(1.05); } }
+    @keyframes edv-spin { to { transform: rotate(360deg); } }
+  </style>
+</helmet>
+
+<div style="min-height:100vh; box-sizing:border-box; display:flex; flex-direction:column; align-items:center; gap:18px; padding:28px 20px 48px; font-family:var(--font-sans);">
+
+  <div style="display:flex; flex-wrap:wrap; gap:6px; background:#16161f; border:1px solid rgba(255,255,255,.08); padding:5px; border-radius:var(--radius-lg);">
+    <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="4">
+      <button style="{{ t.style }}" onClick="{{ t.onClick }}">{{ t.label }}</button>
+    </sc-for>
+  </div>
+
+  <div style="position:relative; width:100%; max-width:400px; aspect-ratio:9/16; max-height:760px; border-radius:var(--radius-4xl); overflow:hidden; box-shadow:0 24px 70px rgba(0,0,0,.55); background:#0d0d16;">
+
+    <div style="position:absolute; inset:0; z-index:0; overflow:hidden;">
+      <div style="position:absolute; inset:0; background:linear-gradient(150deg,#0958d9 0%,#722ed1 52%,#c41d7f 100%); opacity:{{ bgOpacity }}; transition:opacity .6s;"></div>
+      <div style="position:absolute; width:75%; height:55%; left:-12%; top:-10%; border-radius:50%; background:radial-gradient(circle,#597ef7,transparent 68%); filter:blur(18px); opacity:.75; animation:edv-drift 9s ease-in-out infinite;"></div>
+      <div style="position:absolute; width:70%; height:52%; right:-14%; bottom:-8%; border-radius:50%; background:radial-gradient(circle,#c41d7f,transparent 68%); filter:blur(20px); opacity:.6; animation:edv-drift2 11s ease-in-out infinite;"></div>
+      <div style="position:absolute; inset:0; background:linear-gradient(180deg,rgba(11,11,18,.15) 0%,rgba(11,11,18,.05) 45%,rgba(11,11,18,.55) 100%);"></div>
+    </div>
+
+    <div style="position:relative; z-index:2; height:100%; box-sizing:border-box; display:flex; flex-direction:column; padding:26px 24px 30px; color:#fff;">
+
+      <div style="display:flex; align-items:center; gap:9px;">
+        <span style="font-size:13px; font-weight:600; letter-spacing:.02em; color:rgba(255,255,255,.9);">{{ statusLabel }}</span>
+        <sc-if value="{{ showChannel }}" hint-placeholder-val="{{ true }}">
+          <span style="display:inline-flex; align-items:center; gap:5px; padding:3px 9px; border-radius:var(--radius-pill); background:rgba(255,255,255,.16); backdrop-filter:blur(6px); font-size:11.5px; font-weight:500; color:#fff;">{{ channelLabel }}</span>
+        </sc-if>
+        <div style="flex:1;"></div>
+        <sc-if value="{{ isActive }}" hint-placeholder-val="{{ false }}">
+          <span style="font-size:14px; font-weight:600; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; color:#fff; letter-spacing:.04em;">{{ timer }}</span>
+        </sc-if>
+      </div>
+
+      <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:22px;">
+        <sc-if value="{{ showAvatarCenter }}" hint-placeholder-val="{{ true }}">
+          <div style="position:relative; display:flex; align-items:center; justify-content:center;">
+            <sc-if value="{{ ringsVisible }}" hint-placeholder-val="{{ true }}">
+              <span style="position:absolute; width:126px; height:126px; border-radius:50%; border:2px solid rgba(255,255,255,.45); animation:edv-ring2 2s ease-out infinite;"></span>
+              <span style="position:absolute; width:126px; height:126px; border-radius:50%; border:2px solid rgba(255,255,255,.45); animation:edv-ring2 2s ease-out infinite; animation-delay:1s;"></span>
+            </sc-if>
+            <div style="width:126px; height:126px; border-radius:50%; background:rgba(255,255,255,.14); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,.28); display:flex; align-items:center; justify-content:center; font-size:42px; font-weight:600; color:#fff; box-shadow:0 8px 30px rgba(0,0,0,.3);">{{ initials }}</div>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-size:25px; font-weight:600; letter-spacing:-0.01em; color:#fff;">{{ peerName }}</div>
+            <div style="font-size:14px; color:rgba(255,255,255,.72); margin-top:6px;">{{ subCaption }}</div>
+          </div>
+          <div style="height:56px; width:100%; max-width:260px; display:flex; align-items:center; justify-content:center;">
+            <sc-if value="{{ showWave }}" hint-placeholder-val="{{ false }}">
+              <canvas ref="{{ waveRef }}" width="520" height="112" style="width:100%; height:56px;"></canvas>
+            </sc-if>
+            <sc-if value="{{ showEndSummary }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; align-items:center; gap:8px; padding:8px 16px; border-radius:var(--radius-pill); background:rgba(255,255,255,.12); font-size:13.5px; color:#fff;">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+                Длительность {{ finalDuration }}
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ showStatusCenter }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; text-align:center;">
+            <div style="{{ statusIconTile }}">{{ statusIcon }}</div>
+            <div>
+              <div style="font-size:23px; font-weight:600; letter-spacing:-0.01em; color:#fff; line-height:1.25;">{{ statusTitle }}</div>
+              <div style="font-size:14px; color:rgba(255,255,255,.72); margin-top:8px; line-height:1.5; max-width:280px;">{{ statusCaption }}</div>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+
+      <sc-if value="{{ barIncoming }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex; justify-content:center; gap:64px;">
+          <div style="display:flex; flex-direction:column; align-items:center; gap:9px;">
+            <button onClick="{{ decline }}" aria-label="Отклонить" style="width:64px; height:64px; border-radius:50%; border:none; background:var(--error); color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 6px 20px rgba(255,77,79,.45);">
+              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate(135deg);"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.81.36 1.6.7 2.34a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.74-1.27a2 2 0 0 1 2.11-.45c.74.34 1.53.57 2.34.7A2 2 0 0 1 22 16.92z"></path></svg>
+            </button>
+            <span style="font-size:12.5px; color:rgba(255,255,255,.75);">Отклонить</span>
+          </div>
+          <div style="display:flex; flex-direction:column; align-items:center; gap:9px;">
+            <button onClick="{{ accept }}" aria-label="Принять" style="width:64px; height:64px; border-radius:50%; border:none; background:var(--success); color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 6px 20px rgba(82,196,26,.45);">
+              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.81.36 1.6.7 2.34a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.74-1.27a2 2 0 0 1 2.11-.45c.74.34 1.53.57 2.34.7A2 2 0 0 1 22 16.92z"></path></svg>
+            </button>
+            <span style="font-size:12.5px; color:rgba(255,255,255,.75);">Принять</span>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ barActive }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; flex-direction:column; gap:18px;">
+          <div style="display:flex; justify-content:center; gap:40px;">
+            <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+              <button onClick="{{ toggleMic }}" style="{{ micStyle }}" aria-label="Микрофон">{{ micIcon }}</button>
+              <span style="font-size:11.5px; color:rgba(255,255,255,.72);">Микрофон</span>
+            </div>
+            <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+              <button onClick="{{ toggleSpk }}" style="{{ spkStyle }}" aria-label="Динамик">{{ spkIcon }}</button>
+              <span style="font-size:11.5px; color:rgba(255,255,255,.72);">Динамик</span>
+            </div>
+          </div>
+          <div style="display:flex; justify-content:center;">
+            <button onClick="{{ end }}" aria-label="Завершить" style="width:64px; height:64px; border-radius:50%; border:none; background:var(--error); color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 6px 20px rgba(255,77,79,.45);">
+              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate(135deg);"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.81.36 1.6.7 2.34a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.74-1.27a2 2 0 0 1 2.11-.45c.74.34 1.53.57 2.34.7A2 2 0 0 1 22 16.92z"></path></svg>
+            </button>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ barRinging }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; flex-direction:column; align-items:center; gap:9px;">
+          <button onClick="{{ end }}" aria-label="Отменить" style="width:64px; height:64px; border-radius:50%; border:none; background:var(--error); color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 6px 20px rgba(255,77,79,.45);">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate(135deg);"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.81.36 1.6.7 2.34a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.74-1.27a2 2 0 0 1 2.11-.45c.74.34 1.53.57 2.34.7A2 2 0 0 1 22 16.92z"></path></svg>
+          </button>
+          <span style="font-size:12.5px; color:rgba(255,255,255,.75);">Отменить</span>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ barEnded }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; gap:12px;">
+          <button onClick="{{ toIncoming }}" style="flex:1; height:48px; border-radius:var(--radius-lg); border:1px solid rgba(255,255,255,.3); background:rgba(255,255,255,.08); color:#fff; font-size:14px; font-weight:600; font-family:var(--font-sans); cursor:pointer;">Закрыть</button>
+          <button onClick="{{ callAgain }}" style="flex:1; height:48px; border-radius:var(--radius-lg); border:none; background:#fff; color:#141414; font-size:14px; font-weight:600; font-family:var(--font-sans); cursor:pointer;">Позвонить снова</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ barRetrySingle }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; justify-content:center;">
+          <button onClick="{{ callAgain }}" style="flex:1; height:48px; border-radius:var(--radius-lg); border:none; background:#fff; color:#141414; font-size:14px; font-weight:600; font-family:var(--font-sans); cursor:pointer;">Позвонить снова</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ barRetryClose }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; gap:12px;">
+          <button onClick="{{ toIncoming }}" style="flex:1; height:48px; border-radius:var(--radius-lg); border:1px solid rgba(255,255,255,.3); background:rgba(255,255,255,.08); color:#fff; font-size:14px; font-weight:600; font-family:var(--font-sans); cursor:pointer;">Закрыть</button>
+          <button onClick="{{ retry }}" style="flex:1; height:48px; border-radius:var(--radius-lg); border:none; background:#fff; color:#141414; font-size:14px; font-weight:600; font-family:var(--font-sans); cursor:pointer;">Повторить</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ barReconnect }}" hint-placeholder-val="{{ false }}">
+        <div style="position:relative;">
+          <div style="position:absolute; bottom:calc(100% + 14px); left:50%; transform:translateX(-50%); display:flex; align-items:center; gap:9px; padding:9px 16px; border-radius:var(--radius-pill); background:rgba(255,255,255,.12); backdrop-filter:blur(8px); border:1px solid rgba(255,255,255,.22); font-size:13px; font-weight:500; color:#fff; white-space:nowrap;">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="animation:edv-spin .9s linear infinite;"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg>
+            Восстанавливаем связь…
+          </div>
+          <div style="display:flex; justify-content:center;">
+            <button onClick="{{ toIncoming }}" aria-label="Завершить" style="width:64px; height:64px; border-radius:50%; border:none; background:var(--error); color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 6px 20px rgba(255,77,79,.45);">
+              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate(135deg);"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.81.36 1.6.7 2.34a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.74-1.27a2 2 0 0 1 2.11-.45c.74.34 1.53.57 2.34.7A2 2 0 0 1 22 16.92z"></path></svg>
+            </button>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ barRetryCheck }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; gap:12px;">
+          <button onClick="{{ toIncoming }}" style="flex:1; height:48px; border-radius:var(--radius-lg); border:1px solid rgba(255,255,255,.3); background:rgba(255,255,255,.08); color:#fff; font-size:14px; font-weight:600; font-family:var(--font-sans); cursor:pointer;">Закрыть</button>
+          <button onClick="{{ retry }}" style="flex:1; height:48px; border-radius:var(--radius-lg); border:none; background:#fff; color:#141414; font-size:14px; font-weight:600; font-family:var(--font-sans); cursor:pointer;">Повторить проверку</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ barConnecting }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; flex-direction:column; align-items:center; gap:9px;">
+          <button onClick="{{ toIncoming }}" aria-label="Отменить" style="width:64px; height:64px; border-radius:50%; border:none; background:var(--error); color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 6px 20px rgba(255,77,79,.45);">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate(135deg);"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.81.36 1.6.7 2.34a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.74-1.27a2 2 0 0 1 2.11-.45c.74.34 1.53.57 2.34.7A2 2 0 0 1 22 16.92z"></path></svg>
+          </button>
+          <span style="font-size:12.5px; color:rgba(255,255,255,.75);">Отменить</span>
+        </div>
+      </sc-if>
+
+    </div>
+  </div>
+
+  <div style="font-size:12.5px; color:var(--text-tertiary); text-align:center; max-width:380px; line-height:1.5;">Полноэкранный аудиозвонок · тёмная тема, живая осциллограмма собеседника. Переключайте состояния выше.</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:440,&quot;height&quot;:900},&quot;clientName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Анна Ковалёва&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Контент&quot;},&quot;channel&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;webchat&quot;,&quot;options&quot;:[&quot;webchat&quot;,&quot;telegram&quot;,&quot;max&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Контент&quot;}}">
+class Component extends DCLogic {
+  state = { stateName: 'incoming', micOn: true, spkOn: true, seconds: 0, endedAt: 0 };
+
+  componentDidMount() {
+    this._waveRef = React.createRef();
+    this._t = setInterval(() => {
+      if (this.state.stateName === 'active') this.setState(s => ({ seconds: s.seconds + 1 }));
+    }, 1000);
+    this._raf = requestAnimationFrame(this._draw);
+  }
+  componentWillUnmount() { clearInterval(this._t); cancelAnimationFrame(this._raf); }
+
+  _draw = (ts) => {
+    this._raf = requestAnimationFrame(this._draw);
+    const cv = this._waveRef && this._waveRef.current;
+    if (!cv) return;
+    const ctx = cv.getContext('2d');
+    const W = cv.width, H = cv.height, mid = H / 2;
+    ctx.clearRect(0, 0, W, H);
+    const active = this.state.stateName === 'active';
+    const speaking = active && this.state.spkOn;
+    const t = ts / 1000;
+    ctx.lineWidth = 3;
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = 'rgba(255,255,255,0.92)';
+    ctx.beginPath();
+    for (let x = 0; x <= W; x += 4) {
+      const p = x / W;
+      const env = Math.sin(p * Math.PI); // taper ends
+      const base = speaking ? 0.5 : 0.12;
+      const amp = env * H * 0.36 * base * (0.6 + 0.4 * Math.sin(t * 2.1 + p * 3));
+      const y = mid + Math.sin(p * 22 + t * 6) * amp + Math.sin(p * 9 - t * 3.3) * amp * 0.5;
+      if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  };
+
+  goto(st) {
+    this.setState(s => {
+      const next = { stateName: st };
+      if (st === 'active') next.seconds = 0;
+      if (st === 'ended' || st === 'declined' || st === 'missed' || st === 'expired' || st === 'failed') next.endedAt = s.seconds || 184;
+      return next;
+    });
+  }
+
+  statusIcon(name) {
+    const h = React.createElement;
+    const svg = (children, extra) => h('svg', Object.assign({ viewBox: '0 0 24 24', width: 34, height: 34, fill: 'none', stroke: 'currentColor', strokeWidth: 1.9, strokeLinecap: 'round', strokeLinejoin: 'round' }, extra || {}), children);
+    switch (name) {
+      case 'spinner': return svg([h('path', { key: 1, d: 'M21 12a9 9 0 1 1-6.219-8.56' })], { strokeWidth: 2, style: { animation: 'edv-spin .9s linear infinite' } });
+      case 'declined': return svg([h('path', { key: 1, transform: 'rotate(135 12 12)', d: 'M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.81.36 1.6.7 2.34a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.74-1.27a2 2 0 0 1 2.11-.45c.74.34 1.53.57 2.34.7A2 2 0 0 1 22 16.92z' })]);
+      case 'missed': return svg([h('path', { key: 1, d: 'M23 7l-8 8-4-4-9 9' }), h('polyline', { key: 2, points: '17 7 23 7 23 13' })]);
+      case 'clock': return svg([h('circle', { key: 1, cx: 12, cy: 12, r: 9 }), h('path', { key: 2, d: 'M12 7v5l3 2' })]);
+      case 'alert': return svg([h('path', { key: 1, d: 'M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z' }), h('line', { key: 2, x1: 12, y1: 9, x2: 12, y2: 13 }), h('line', { key: 3, x1: 12, y1: 17, x2: 12.01, y2: 17 })]);
+      case 'nodevice': return svg([h('line', { key: 1, x1: 2, y1: 2, x2: 22, y2: 22 }), h('path', { key: 2, d: 'M16 16v1a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2' }), h('path', { key: 3, d: 'M10 5h4a2 2 0 0 1 2 2v3l4-3v9' })]);
+      case 'unsupported': return svg([h('rect', { key: 1, x: 2, y: 3, width: 20, height: 14, rx: 2 }), h('line', { key: 2, x1: 8, y1: 21, x2: 16, y2: 21 }), h('line', { key: 3, x1: 12, y1: 17, x2: 12, y2: 21 }), h('line', { key: 4, x1: 9, y1: 8, x2: 15, y2: 14 }), h('line', { key: 5, x1: 15, y1: 8, x2: 9, y2: 14 })]);
+      default: return null;
+    }
+  }
+
+  fmt(sec) { return String(Math.floor(sec / 60)).padStart(2, '0') + ':' + String(sec % 60).padStart(2, '0'); }
+
+  micIcon() {
+    const h = React.createElement;
+    const svg = (c) => h('svg', { viewBox: '0 0 24 24', width: 23, height: 23, fill: 'none', stroke: 'currentColor', strokeWidth: 1.85, strokeLinecap: 'round', strokeLinejoin: 'round' }, c);
+    return this.state.micOn
+      ? svg([h('rect', { key: 1, x: 9, y: 2, width: 6, height: 12, rx: 3 }), h('path', { key: 2, d: 'M19 10v1a7 7 0 0 1-14 0v-1' }), h('line', { key: 3, x1: 12, y1: 18, x2: 12, y2: 22 })])
+      : svg([h('line', { key: 1, x1: 3, y1: 3, x2: 21, y2: 21 }), h('path', { key: 2, d: 'M9 9v2a3 3 0 0 0 5.1 2.1' }), h('path', { key: 3, d: 'M15 9.3V5a3 3 0 0 0-5.9-.7' }), h('path', { key: 4, d: 'M19 10v1a7 7 0 0 1-1.4 4.2M12 18a7 7 0 0 1-7-7v-1' }), h('line', { key: 5, x1: 12, y1: 18, x2: 12, y2: 22 })]);
+  }
+  spkIcon() {
+    const h = React.createElement;
+    const svg = (c) => h('svg', { viewBox: '0 0 24 24', width: 23, height: 23, fill: 'none', stroke: 'currentColor', strokeWidth: 1.85, strokeLinecap: 'round', strokeLinejoin: 'round' }, c);
+    return this.state.spkOn
+      ? svg([h('polygon', { key: 1, points: '11 5 6 9 2 9 2 15 6 15 11 19 11 5' }), h('path', { key: 2, d: 'M15.5 8.5a5 5 0 0 1 0 7' }), h('path', { key: 3, d: 'M19 5a9 9 0 0 1 0 14' })])
+      : svg([h('polygon', { key: 1, points: '11 5 6 9 2 9 2 15 6 15 11 19 11 5' }), h('line', { key: 2, x1: 22, y1: 9, x2: 16, y2: 15 }), h('line', { key: 3, x1: 16, y1: 9, x2: 22, y2: 15 })]);
+  }
+
+  renderVals() {
+    const s = this.state;
+    const st = s.stateName;
+    const clientName = this.props.clientName ?? 'Анна Ковалёва';
+    const channel = this.props.channel ?? 'webchat';
+    const initials = (clientName.trim()[0] || 'К').toUpperCase() + ((clientName.split(' ')[1] || '')[0] || '').toUpperCase();
+    const channelLabel = channel === 'webchat' ? 'Веб-виджет' : channel === 'telegram' ? 'Telegram' : 'MAX';
+
+    const isIncoming = st === 'incoming', isRinging = st === 'ringing', isActive = st === 'active', isEnded = st === 'ended', isConnecting = st === 'connecting';
+    const isReconnecting = st === 'reconnecting', isDeclined = st === 'declined', isMissed = st === 'missed', isExpired = st === 'expired', isFailed = st === 'failed', isNoDevice = st === 'nodevice', isUnsupported = st === 'unsupported';
+
+    const statusLabel = isIncoming ? 'Входящий звонок' : isRinging ? 'Исходящий звонок' : isActive ? 'Аудиозвонок' : isConnecting ? 'Соединение' : isReconnecting ? 'Переподключение' : isDeclined ? 'Отклонён' : isMissed ? 'Пропущенный' : isExpired ? 'Истёк' : isFailed ? 'Ошибка' : isNoDevice ? 'Нет микрофона' : isUnsupported ? 'Не поддерживается' : 'Звонок завершён';
+    const subCaption = isIncoming ? 'Аудиозвонок · ' + channelLabel : isRinging ? 'Вызываем…' : isActive ? (s.micOn ? 'Говорите' : 'Ваш микрофон выключен') : isEnded ? 'Звонок завершён' : '';
+
+    // Status-center для процессов/ошибок/терминалов (вместо аватара/волны).
+    const msg = {
+      connecting: { icon: 'spinner', title: 'Соединяем', caption: 'Устанавливаем защищённое соединение…' },
+      reconnecting: { icon: 'spinner', title: 'Связь прервана', caption: 'Восстанавливаем соединение…' },
+      declined: { icon: 'declined', title: 'Звонок отклонён', caption: clientName + ' отклонил(а) вызов.' },
+      missed: { icon: 'missed', title: 'Пропущенный звонок', caption: clientName + ' не ответил(а) на вызов.' },
+      expired: { icon: 'clock', title: 'Время ожидания истекло', caption: 'Никто не ответил вовремя. Попробуйте позвонить снова.' },
+      failed: { icon: 'alert', title: 'Не удалось соединиться', caption: 'Проверьте интернет-соединение и попробуйте снова.' },
+      nodevice: { icon: 'nodevice', title: 'Нет доступа к микрофону', caption: 'Разрешите доступ к микрофону в настройках браузера и повторите.' },
+      unsupported: { icon: 'unsupported', title: 'Аудиозвонки не поддерживаются', caption: 'Обновите браузер или откройте ссылку в Chrome, Safari или Edge.' },
+    };
+    const cur = msg[st];
+    const showStatusCenter = !!cur;
+    const showAvatarCenter = !showStatusCenter;
+    const toneColor = { spinner: 'rgba(255,255,255,.16)', declined: 'rgba(255,255,255,.12)', missed: 'rgba(250,173,20,.18)', clock: 'rgba(250,173,20,.18)', alert: 'rgba(255,77,79,.2)', nodevice: 'rgba(255,77,79,.2)', unsupported: 'rgba(255,77,79,.2)' };
+    const toneFg = { spinner: '#fff', declined: '#fff', missed: '#ffc53d', clock: '#ffc53d', alert: '#ff7875', nodevice: '#ff7875', unsupported: '#ff7875' };
+    const tc = cur ? (toneColor[cur.icon] || 'rgba(255,255,255,.16)') : 'rgba(255,255,255,.16)';
+    const tfg = cur ? (toneFg[cur.icon] || '#fff') : '#fff';
+    const statusIconTile = { width: 92, height: 92, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: tc, color: tfg, border: '1px solid rgba(255,255,255,.22)', backdropFilter: 'blur(10px)', boxShadow: '0 8px 30px rgba(0,0,0,.3)' };
+
+    const round = (on, accent) => ({ width: 60, height: 60, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flex: 'none', transition: 'all .15s', border: '1px solid rgba(255,255,255,.28)', background: on ? 'rgba(255,255,255,.16)' : '#fff', color: on ? '#fff' : '#141414', backdropFilter: 'blur(8px)' });
+
+    const tabBase = { padding: '7px 14px', borderRadius: 'var(--radius-md)', border: 'none', cursor: 'pointer', fontSize: 13, fontFamily: 'var(--font-sans)', whiteSpace: 'nowrap' };
+    const tabAct = { ...tabBase, fontWeight: 600, background: 'rgba(255,255,255,.14)', color: '#fff' };
+    const tabIdle = { ...tabBase, fontWeight: 500, background: 'transparent', color: 'rgba(255,255,255,.55)' };
+    const tabs = [['incoming', 'Входящий'], ['ringing', 'Дозвон'], ['connecting', 'Соединение'], ['active', 'Активный'], ['reconnecting', 'Связь'], ['declined', 'Отклонён'], ['missed', 'Пропущен'], ['expired', 'Истёк'], ['failed', 'Ошибка'], ['nodevice', 'Нет микрофона'], ['unsupported', 'Не поддерж.'], ['ended', 'Завершение']].map(([id, label]) => ({ label, style: st === id ? tabAct : tabIdle, onClick: () => this.goto(id) }));
+
+    // Длительность показываем для состояний, где звонок реально состоялся.
+    const dur = (st === 'ended' || st === 'failed') && s.endedAt ? ('Длительность ' + this.fmt(s.endedAt) + '. ') : '';
+    const statusCaption = cur ? (dur + cur.caption) : '';
+
+    return {
+      tabs, initials, peerName: clientName, channelLabel, showChannel: !isEnded,
+      statusLabel, subCaption,
+      isActive, ringsVisible: isIncoming || isRinging,
+      timer: this.fmt(s.seconds),
+      showWave: isActive, showEndSummary: isEnded,
+      showAvatarCenter, showStatusCenter,
+      statusIcon: cur ? this.statusIcon(cur.icon) : null, statusIconTile,
+      statusTitle: cur ? cur.title : '', statusCaption,
+      finalDuration: this.fmt(s.endedAt),
+      waveRef: this._waveRef,
+      micIcon: this.micIcon(), spkIcon: this.spkIcon(),
+      micStyle: round(s.micOn), spkStyle: round(s.spkOn),
+      bgOpacity: isEnded ? 0.55 : isFailed ? 0.5 : isReconnecting ? 0.5 : isActive ? 0.85 : 1,
+      barIncoming: isIncoming, barRinging: isRinging, barActive: isActive, barEnded: isEnded, barConnecting: isConnecting,
+      // Перезвонить (без «Закрыть») — пропущенный/истёк.
+      barRetrySingle: isMissed || isExpired,
+      // Повторить + Закрыть — ошибка соединения.
+      barRetryClose: isFailed,
+      // Переподключение: нижняя кнопка завершения + плавающий статус сверху.
+      barReconnect: isReconnecting,
+      // Повторить проверку + Закрыть — нет микрофона / не поддерживается.
+      barRetryCheck: isNoDevice || isUnsupported,
+      accept: () => this.goto('active'), decline: () => this.goto('incoming'),
+      end: () => this.goto('ended'), toIncoming: () => this.goto('incoming'), callAgain: () => this.goto('ringing'), retry: () => this.goto('reconnecting'),
+      toggleMic: () => this.setState(x => ({ micOn: !x.micOn })),
+      toggleSpk: () => this.setState(x => ({ spkOn: !x.spkOn })),
+    };
+  }
+}
+</script>
+</body>
+</html>

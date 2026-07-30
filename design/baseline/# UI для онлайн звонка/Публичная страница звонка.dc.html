@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/edevs-hub-design-system-e4c9df12-82c8-42b3-b819-63d92dfb8702/tokens/colors.css">
+  <link rel="stylesheet" href="_ds/edevs-hub-design-system-e4c9df12-82c8-42b3-b819-63d92dfb8702/tokens/typography.css">
+  <link rel="stylesheet" href="_ds/edevs-hub-design-system-e4c9df12-82c8-42b3-b819-63d92dfb8702/tokens/spacing.css">
+  <link rel="stylesheet" href="_ds/edevs-hub-design-system-e4c9df12-82c8-42b3-b819-63d92dfb8702/tokens/effects.css">
+  <link rel="stylesheet" href="_ds/edevs-hub-design-system-e4c9df12-82c8-42b3-b819-63d92dfb8702/styles.css">
+  <script src="_ds/edevs-hub-design-system-e4c9df12-82c8-42b3-b819-63d92dfb8702/_ds_bundle.js"></script>
+  <style>
+    body { margin: 0; background: var(--surface-page); }
+    a { color: var(--primary); text-decoration: none; }
+    a:hover { color: var(--primary-hover); }
+    @keyframes edv-ring3 { 0% { transform: scale(1); opacity: .45; } 100% { transform: scale(1.7); opacity: 0; } }
+  </style>
+</helmet>
+
+<div style="min-height:100vh; box-sizing:border-box; display:flex; flex-direction:column; font-family:var(--font-sans); color:var(--text-body); background:var(--surface-page);">
+
+  <header style="display:flex; align-items:center; gap:10px; padding:18px 28px; border-bottom:1px solid var(--border-default);">
+    <div style="width:30px; height:30px; border-radius:8px; background:var(--primary); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:16px;">E</div>
+    <span style="font-size:15px; font-weight:600; color:var(--text-heading);">Edevs</span>
+    <div style="flex:1;"></div>
+    <span style="font-size:12.5px; color:var(--text-tertiary);">Защищённое соединение</span>
+  </header>
+
+  <div style="flex:1; display:flex; align-items:center; justify-content:center; padding:40px 24px;">
+    <div style="width:100%; max-width:460px; background:var(--surface-card); border:1px solid var(--border-default); border-radius:var(--radius-4xl); box-shadow:var(--shadow-lg); overflow:hidden;">
+
+      <div style="position:relative; padding:40px 32px 30px; text-align:center; background:linear-gradient(155deg,#0958d9 0%,#722ed1 60%,#c41d7f 100%); color:#fff; overflow:hidden;">
+        <div style="position:absolute; width:70%; height:90%; left:-10%; top:-20%; border-radius:50%; background:radial-gradient(circle,rgba(89,126,247,.6),transparent 65%); filter:blur(16px);"></div>
+        <div style="position:relative; display:inline-flex; align-items:center; justify-content:center; margin-bottom:18px;">
+          <span style="position:absolute; width:96px; height:96px; border-radius:50%; border:2px solid rgba(255,255,255,.5); animation:edv-ring3 2.1s ease-out infinite;"></span>
+          <span style="position:absolute; width:96px; height:96px; border-radius:50%; border:2px solid rgba(255,255,255,.5); animation:edv-ring3 2.1s ease-out infinite; animation-delay:1.05s;"></span>
+          <div style="width:96px; height:96px; border-radius:50%; background:rgba(255,255,255,.16); backdrop-filter:blur(8px); border:1px solid rgba(255,255,255,.3); display:flex; align-items:center; justify-content:center; font-size:34px; font-weight:600;">{{ initials }}</div>
+        </div>
+        <div style="position:relative; font-size:22px; font-weight:600; letter-spacing:-0.01em;">{{ orgName }}</div>
+        <div style="position:relative; font-size:14px; color:rgba(255,255,255,.78); margin-top:6px;">приглашает вас на видеозвонок</div>
+      </div>
+
+      <div style="padding:26px 32px 32px;">
+        <div style="display:flex; align-items:center; gap:12px; padding:13px 15px; border:1px solid var(--border-default); border-radius:var(--radius-xl); background:var(--surface-subtle); margin-bottom:22px;">
+          <div style="width:40px; height:40px; border-radius:50%; background:#1677ff; color:#fff; display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:600; flex:none;">{{ agentInitials }}</div>
+          <div style="min-width:0;">
+            <div style="font-size:14px; font-weight:600; color:var(--text-heading);">{{ agentName }}</div>
+            <div style="font-size:12.5px; color:var(--text-secondary);">{{ agentRole }} · {{ orgName }}</div>
+          </div>
+          <div style="flex:1;"></div>
+          <span style="display:inline-flex; align-items:center; gap:6px; padding:5px 10px; border-radius:var(--radius-pill); background:var(--success-bg); color:var(--success-text); font-size:12px; font-weight:600;"><span style="width:6px; height:6px; border-radius:50%; background:var(--success);"></span>Онлайн</span>
+        </div>
+
+        <div style="text-align:center; margin-bottom:16px;">
+          <div style="font-size:15px; font-weight:600; color:var(--text-heading);">Готовы присоединиться?</div>
+          <div style="font-size:13px; color:var(--text-secondary); margin-top:5px; line-height:1.5;">Проверьте камеру и микрофон перед входом. Мы не записываем видео без предупреждения.</div>
+        </div>
+
+        <div style="display:flex; justify-content:center; gap:14px; margin-bottom:22px;">
+          <div style="display:flex; flex-direction:column; align-items:center; gap:7px;">
+            <button onClick="{{ toggleMic }}" style="{{ micStyle }}" aria-label="Микрофон">{{ micIcon }}</button>
+            <span style="font-size:11.5px; color:var(--text-tertiary);">Микрофон</span>
+          </div>
+          <div style="display:flex; flex-direction:column; align-items:center; gap:7px;">
+            <button onClick="{{ toggleCam }}" style="{{ camStyle }}" aria-label="Камера">{{ camIcon }}</button>
+            <span style="font-size:11.5px; color:var(--text-tertiary);">Камера</span>
+          </div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:11px;">
+          <input value="{{ nameValue }}" onChange="{{ onName }}" placeholder="Ваше имя" style="height:46px; padding:0 15px; border:1px solid var(--border-strong); border-radius:var(--radius-lg); font-size:14px; font-family:var(--font-sans); color:var(--text-body); background:var(--surface-card); box-sizing:border-box; outline:none;" style-focus="border-color:var(--primary);" />
+          <button onClick="{{ join }}" style="height:50px; border-radius:var(--radius-lg); border:none; background:var(--primary); color:#fff; font-size:15px; font-weight:600; font-family:var(--font-sans); cursor:pointer; box-shadow:var(--shadow-primary);" style-hover="background:var(--primary-hover);">Присоединиться к звонку</button>
+        </div>
+
+        <div style="display:flex; align-items:center; justify-content:center; gap:6px; margin-top:18px; font-size:12px; color:var(--text-tertiary);">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          Звонок защищён сквозным шифрованием
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer style="text-align:center; padding:18px; font-size:12px; color:var(--text-tertiary);">Работает на платформе Edevs Hub</footer>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:900,&quot;height&quot;:820},&quot;orgName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Магазин «Северный»&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Контент&quot;},&quot;agentName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Иван Петров&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Контент&quot;},&quot;agentRole&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Менеджер поддержки&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Контент&quot;}}">
+class Component extends DCLogic {
+  state = { micOn: true, camOn: true, name: '' };
+
+  micIcon() {
+    const h = React.createElement;
+    const svg = (c) => h('svg', { viewBox: '0 0 24 24', width: 22, height: 22, fill: 'none', stroke: 'currentColor', strokeWidth: 1.85, strokeLinecap: 'round', strokeLinejoin: 'round' }, c);
+    return this.state.micOn
+      ? svg([h('rect', { key: 1, x: 9, y: 2, width: 6, height: 12, rx: 3 }), h('path', { key: 2, d: 'M19 10v1a7 7 0 0 1-14 0v-1' }), h('line', { key: 3, x1: 12, y1: 18, x2: 12, y2: 22 })])
+      : svg([h('line', { key: 1, x1: 3, y1: 3, x2: 21, y2: 21 }), h('path', { key: 2, d: 'M9 9v2a3 3 0 0 0 5.1 2.1' }), h('path', { key: 3, d: 'M15 9.3V5a3 3 0 0 0-5.9-.7' }), h('path', { key: 4, d: 'M19 10v1a7 7 0 0 1-1.4 4.2M12 18a7 7 0 0 1-7-7v-1' }), h('line', { key: 5, x1: 12, y1: 18, x2: 12, y2: 22 })]);
+  }
+  camIcon() {
+    const h = React.createElement;
+    const svg = (c) => h('svg', { viewBox: '0 0 24 24', width: 22, height: 22, fill: 'none', stroke: 'currentColor', strokeWidth: 1.85, strokeLinecap: 'round', strokeLinejoin: 'round' }, c);
+    return this.state.camOn
+      ? svg([h('path', { key: 1, d: 'M23 7l-7 5 7 5V7z' }), h('rect', { key: 2, x: 1, y: 5, width: 15, height: 14, rx: 2.5 })])
+      : svg([h('line', { key: 1, x1: 2, y1: 2, x2: 22, y2: 22 }), h('path', { key: 2, d: 'M16 16v1a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2' }), h('path', { key: 3, d: 'M10 5h4a2 2 0 0 1 2 2v3l4-3v9' })]);
+  }
+
+  renderVals() {
+    const s = this.state;
+    const orgName = this.props.orgName ?? 'Магазин «Северный»';
+    const agentName = this.props.agentName ?? 'Иван Петров';
+    const agentRole = this.props.agentRole ?? 'Менеджер поддержки';
+    const initials = (orgName.replace(/[«»"]/g, '').trim()[0] || 'E').toUpperCase();
+    const agentInitials = (agentName.trim()[0] || 'A').toUpperCase() + ((agentName.split(' ')[1] || '')[0] || '').toUpperCase();
+
+    const ctrl = (on) => ({ width: 52, height: 52, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flex: 'none', transition: 'all .15s', border: '1px solid ' + (on ? 'var(--border-strong)' : 'var(--error-border)'), background: on ? 'var(--surface-card)' : 'var(--error-bg)', color: on ? 'var(--text-body)' : 'var(--error-text)' });
+
+    return {
+      orgName, agentName, agentRole, initials, agentInitials,
+      micIcon: this.micIcon(), camIcon: this.camIcon(),
+      micStyle: ctrl(s.micOn), camStyle: ctrl(s.camOn),
+      nameValue: s.name,
+      onName: (e) => this.setState({ name: e.target.value }),
+      toggleMic: () => this.setState(x => ({ micOn: !x.micOn })),
+      toggleCam: () => this.setState(x => ({ camOn: !x.camOn })),
+      join: () => {},
+    };
+  }
+}
+</script>
+</body>
+</html>

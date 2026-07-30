@@ -153,7 +153,7 @@ export function ConversationWorkspace({ department, listTitle, searchPlaceholder
         setSelectedId={setSelectedId}
       />
       <section className="sales-conversation">
-        <ConversationThread controlMode={controlMode} dialog={selectedDialog} detail={detail} onClaim={onClaim} onCall={() => void callController.start()} onClose={onClose} onSpam={onSpam} />
+        <ConversationThread controlMode={controlMode} dialog={selectedDialog} detail={detail} onClaim={onClaim} onCall={(kind) => void callController.start(kind)} onClose={onClose} onSpam={onSpam} />
         {(detailError || actionError) && <div className="sales-conversation-error">{detailError || actionError}</div>}
         <CallOverlay
           open={callController.open}

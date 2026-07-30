@@ -70,7 +70,7 @@ class PublicInviteApiTests(CallTestCase):
         self.assertEqual(response["Cache-Control"], "no-store")
         self.assertEqual(
             set(payload["call"]),
-            {"callId", "status", "expiresAt", "staffName", "capabilities"},
+            {"callId", "status", "kind", "expiresAt", "staffName"},
         )
         self.assertNotIn("conversation", json.dumps(payload))
         self.assertNotIn(created.invite_token, json.dumps(payload))

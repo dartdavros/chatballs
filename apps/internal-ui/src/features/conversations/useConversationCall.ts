@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
   cancelCall,
@@ -8,6 +8,7 @@ import {
   requestCall,
   type ApiCall,
   type CallAccess,
+  type CallKind,
 } from "./model";
 
 const TERMINAL = new Set(["DECLINED", "CANCELLED", "MISSED", "ENDED", "FAILED", "EXPIRED"]);
@@ -23,6 +24,7 @@ export function useConversationCall({ conversationId, onConversationChanged }: O
   const [access, setAccess] = useState<CallAccess | null>(null);
   const [errorText, setErrorText] = useState("");
   const [busy, setBusy] = useState(false);
+  const lastKind = useRef<CallKind>("AUDIO");
 
   const reset = useCallback(() => {
     setOpen(false);
@@ -47,8 +49,9 @@ export function useConversationCall({ conversationId, onConversationChanged }: O
     return next;
   }, []);
 
-  const start = useCallback(async () => {
+  const start = useCallback(async (kind: CallKind = "AUDIO") => {
     if (conversationId == null || busy) return;
+    lastKind.current = kind;
     setBusy(true);
     setErrorText("");
     try {
@@ -57,7 +60,7 @@ export function useConversationCall({ conversationId, onConversationChanged }: O
         setCall(active);
         await ensureAccess(active.id);
       } else {
-        const created = await requestCall(conversationId);
+        const created = await requestCall(conversationId, kind);
         setCall(created.call);
         setAccess(created.access);
       }
@@ -87,7 +90,7 @@ export function useConversationCall({ conversationId, onConversationChanged }: O
     setAccess(null);
     setErrorText("");
     try {
-      const created = await requestCall(conversationId);
+      const created = await requestCall(conversationId, lastKind.current);
       setCall(created.call);
       setAccess(created.access);
       onConversationChanged();

@@ -16,9 +16,11 @@ export type WebConfig = {
 export type WebMessage = { id: number; author: "client" | "ai" | "operator" | "system"; kind?: string; text: string; createdAt: string };
 
 // Приглашение/состояние онлайн-звонка (SPEC-HUB-0013).
+export type CallKind = "AUDIO" | "VIDEO";
 export type CallInfo = {
   callId: string;
   status: string;
+  kind?: CallKind;
   expiresAt?: string;
   staffName?: string;
   endedBy?: string | null;

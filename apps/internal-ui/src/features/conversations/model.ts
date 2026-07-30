@@ -137,10 +137,13 @@ export const fetchWaitingCount = () => api<{ waiting: number }>("/api/v1/convers
 
 // --- Онлайн-звонки (SPEC-HUB-0013): запрос из диалога, ожидание, отмена ---
 
+export type CallKind = "AUDIO" | "VIDEO";
+
 export type ApiCall = {
   id: string;
   conversationId: number;
   status: "REQUESTED" | "RINGING" | "ACCEPTED" | "CONNECTING" | "ACTIVE" | "DECLINED" | "CANCELLED" | "MISSED" | "ENDED" | "FAILED" | "EXPIRED";
+  kind: CallKind;
   requestedAt: string;
   acceptedAt: string | null;
   connectedAt: string | null;
@@ -154,8 +157,8 @@ export type CallAccess = { accessToken: string; iceServers: RTCIceServer[] };
 export type CreatedCall = { call: ApiCall; access: CallAccess };
 
 // Запрос звонка: при режиме AI backend атомарно выполняет takeover (§6).
-export const requestCall = (conversationId: number) =>
-  api<{ call: ApiCall; staffAccessToken: string; iceServers: RTCIceServer[] }>(`/api/v1/calls/conversations/${conversationId}/`, { method: "POST" })
+export const requestCall = (conversationId: number, kind: CallKind = "AUDIO") =>
+  api<{ call: ApiCall; staffAccessToken: string; iceServers: RTCIceServer[] }>(`/api/v1/calls/conversations/${conversationId}/`, { method: "POST", body: JSON.stringify({ kind }) })
     .then((r): CreatedCall => ({ call: r.call, access: { accessToken: r.staffAccessToken, iceServers: r.iceServers } }));
 export const fetchActiveCall = (conversationId: number) =>
   api<{ call: ApiCall | null }>(`/api/v1/calls/conversations/${conversationId}/active/`).then((r) => r.call);

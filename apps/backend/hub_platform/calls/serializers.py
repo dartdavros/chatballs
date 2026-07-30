@@ -32,6 +32,7 @@ def call_payload(call: CallSession) -> dict:
         "id": str(call.id),
         "conversationId": call.conversation_id,
         "status": call.status,
+        "kind": call.kind,
         "initiatedByUserId": call.initiated_by_id,
         "deliveryConnectionId": call.delivery_connection_id,
         "requestedAt": _iso(call.requested_at),
@@ -50,9 +51,9 @@ def public_invite_payload(call: CallSession, expires_at) -> dict:
     return {
         "callId": str(call.id),
         "status": call.status,
+        "kind": call.kind,
         "expiresAt": expires_at.isoformat(),
         "staffName": _staff_label(call),
-        "capabilities": {"audio": True, "video": True},
     }
 
 
@@ -84,6 +85,7 @@ def public_call_state_payload(call: CallSession) -> dict:
     return {
         "callId": str(call.id),
         "status": call.status,
+        "kind": call.kind,
         "staffName": _staff_label(call),
         "endedBy": call.ended_by or None,
         "durationSeconds": call.duration_seconds,

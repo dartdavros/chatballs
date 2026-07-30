@@ -135,7 +135,7 @@ class CustomerAccessApiTests(CallTestCase):
         self.assertIn("iceServers", body)
         payload = body["call"]
         self.assertEqual(payload["status"], CallStatus.CANCELLED)
-        self.assertEqual(set(payload), {"callId", "status", "staffName", "endedBy", "durationSeconds"})
+        self.assertEqual(set(payload), {"callId", "status", "kind", "staffName", "endedBy", "durationSeconds"})
 
     def test_accept_after_cancel_is_rejected(self) -> None:
         token = self._customer_token()
@@ -325,7 +325,7 @@ class TimelineEventTests(CallTestCase):
         create_call_request(conversation_id=self.conversation.id, initiator=self.owner)
         self.assertEqual(
             Message.objects.filter(
-                conversation=self.conversation, text__icontains="запросил онлайн-звонок"
+                conversation=self.conversation, text__icontains="запросил аудиозвонок"
             ).count(),
             1,
         )
