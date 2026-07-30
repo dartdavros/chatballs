@@ -14,7 +14,7 @@ export type SalesStats = {
   byChannel: Array<{ code: string; name: string; openDialogs: number; dialogs: number }>;
   byProduct: Array<{ code: string; name: string; openDialogs: number; dialogs: number; sales: number; revenueMinor: number }>;
   chart: { values: number[]; labels: string[] };
-  problems: Array<{ title: string; meta: string; minutes: number }>;
+  problems: Array<{ conversationId: number; title: string; meta: string; minutes: number }>;
 };
 
 const DASH = "—";
@@ -85,6 +85,7 @@ export function buildSalesOverviewVm(period: SalesPeriod, stats: SalesStats) {
     title: problem.title,
     meta: problem.meta,
     time: minutesLabel(problem.minutes),
+    conversationId: problem.conversationId,
   }));
 
   return {
@@ -104,7 +105,6 @@ export function buildSalesOverviewVm(period: SalesPeriod, stats: SalesStats) {
     xLabels: stats.chart.labels,
     ...chart,
     problems,
-    payments: [] as SalesListItem[],
   };
 }
 

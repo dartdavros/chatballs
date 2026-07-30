@@ -1,21 +1,19 @@
-import { Icon } from "../../../shared/icons";
 import type { SalesListItem } from "./types";
 
-export function SalesListCard({ title, icon, items }: { title: string; icon: "warning" | "box"; items: SalesListItem[] }) {
+export function SalesListCard({ title, items, openConversation }: { title: string; items: SalesListItem[]; openConversation: (conversationId: number) => void }) {
   return (
-    <section className="sales-list-card">
-      <div className="sales-list-head">
-        <Icon name={icon} size={17} />
-        <h3>{title}</h3>
+    <section className="sales-panel-card problem-dialogs-card">
+      <h3>{title}</h3>
+      {items.length === 0 && <div className="attention-empty">Нет проблемных диалогов</div>}
+      <div className="problem-dialogs-list">
+        {items.map((item) => (
+          <button className="attention-row" type="button" key={`${item.title}-${item.time}`} onClick={() => item.conversationId && openConversation(item.conversationId)}>
+            <span style={{ background: item.dot }} />
+            <span><strong>{item.title}</strong><small>{item.meta}</small></span>
+            <em>{item.time}</em>
+          </button>
+        ))}
       </div>
-      {items.length === 0 && <div className="sales-empty-line">Нет данных</div>}
-      {items.map((item, index) => (
-        <button type="button" key={index}>
-          <span style={{ background: item.dot }} />
-          <strong>{item.title}<small>{item.meta}</small></strong>
-          <em>{item.time}</em>
-        </button>
-      ))}
     </section>
   );
 }

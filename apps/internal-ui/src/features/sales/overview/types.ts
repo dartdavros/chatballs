@@ -17,4 +17,5 @@ export type SalesListItem = {
   title: string;
   meta: string;
   time: string;
+  conversationId?: number;
 };

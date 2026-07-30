@@ -62,7 +62,7 @@ export function ShellRouteContent({ route, data, currentEmployee, currentProduct
       )}
       {route === "salesClients" && <SalesClientsPage openClient={openClient} />}
       {route === "salesClientDetail" && <SalesClientDetailPage contactId={selectedClientId} openConversation={openConversation} />}
-      {route === "salesOverview" && <SalesOverviewPage />}
+      {route === "salesOverview" && <SalesOverviewPage openConversation={openConversation} />}
       {route === "supportOverview" && <SupportOverviewPage />}
       {route === "supportDialogs" && <SupportDialogsPage initialConversationId={selectedConversationId} />}
       {route === "salesDialogs" && <SalesDialogsPage initialConversationId={selectedConversationId} />}

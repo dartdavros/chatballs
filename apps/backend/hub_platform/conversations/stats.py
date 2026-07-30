@@ -194,6 +194,7 @@ def sales_overview_stats(
             title = "Гость"
         problems.append(
             {
+                "conversationId": conversation.id,
                 "title": title,
                 "meta": meta,
                 "minutes": minutes,

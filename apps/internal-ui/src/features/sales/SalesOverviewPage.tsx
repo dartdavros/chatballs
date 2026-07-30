@@ -9,7 +9,7 @@ import { buildSalesOverviewVm } from "./overview/model";
 import type { SalesPeriod } from "./overview/types";
 import { useSalesOverview } from "./overview/useSalesOverview";
 
-export function SalesOverviewPage() {
+export function SalesOverviewPage({ openConversation }: { openConversation: (conversationId: number) => void }) {
   const [period, setPeriod] = useState<SalesPeriod>("today");
   const { stats, loading, error } = useSalesOverview(period);
   const vm = useMemo(() => (stats ? buildSalesOverviewVm(period, stats) : null), [period, stats]);
@@ -26,7 +26,7 @@ export function SalesOverviewPage() {
           <SalesKpiSection label="ОПЕРАЦИОННЫЕ · СЕЙЧАС" items={vm.opsKpi} />
           <SalesKpiSection label={`РЕЗУЛЬТАТ · ${vm.periodLabel.toUpperCase()}`} items={vm.resKpi} result />
           <SalesChart vm={vm} />
-          <SalesOverviewGrid vm={vm} />
+          <SalesOverviewGrid vm={vm} openConversation={openConversation} />
         </>
       )}
     </>
