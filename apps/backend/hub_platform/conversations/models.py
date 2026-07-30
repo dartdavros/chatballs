@@ -13,6 +13,11 @@ class Contact(models.Model):
     # Телефон приходит только через явный шаринг контакта (кнопка в TG/MAX,
     # форма в веб-чате) — автоматически мессенджеры его не отдают.
     phone = models.CharField(max_length=32, blank=True)
+    # Внешний URL аватара контакта, если провайдер его отдаёт (например, MAX
+    # присылает avatar_url в профиле отправителя). Telegram не отдаёт фото в
+    # getUpdates, поэтому для него поле остаётся пустым. Хранится только URL —
+    # само изображение живёт на стороне провайдера.
+    avatar_url = models.URLField(max_length=512, blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:

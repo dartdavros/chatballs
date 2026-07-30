@@ -146,6 +146,10 @@
   font-weight: 600;
 }
 
+img.sales-dialog-avatar {
+  object-fit: cover;
+}
+
 .sales-dialog-avatar-wrap i {
   position: absolute;
   right: -1px;

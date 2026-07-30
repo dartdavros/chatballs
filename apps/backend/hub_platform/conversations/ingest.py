@@ -93,7 +93,11 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
             .first()
         )
         if identity is None:
-            contact = Contact.objects.create(organization=channel.organization, name=inbound.display_name)
+            contact = Contact.objects.create(
+                organization=channel.organization,
+                name=inbound.display_name,
+                avatar_url=inbound.avatar_url,
+            )
             identity = ConnectionIdentity.objects.create(
                 contact=contact,
                 connection=integration,
@@ -108,6 +112,11 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
         if is_contact_share and contact.phone != inbound.phone:
             contact.phone = inbound.phone
             contact.save(update_fields=["phone"])
+        # Аватар обновляем при каждом заходе: провайдер может сменить фото,
+        # а контакт ещё не шарил телефон (is_contact_share=False).
+        if inbound.avatar_url and contact.avatar_url != inbound.avatar_url:
+            contact.avatar_url = inbound.avatar_url
+            contact.save(update_fields=["avatar_url"])
 
         conversation = (
             Conversation.objects.filter(channel=channel, contact=contact, lifecycle=LifecycleState.OPEN)

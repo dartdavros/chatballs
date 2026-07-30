@@ -102,6 +102,7 @@ def clients_overview(
                 "cid": f"CUS-{contact.id}",
                 "name": contact.name or "Гость",
                 "phone": contact.phone,
+                "avatarUrl": contact.avatar_url,
                 "email": next(
                     (
                         identity.external_user_id
@@ -246,6 +247,7 @@ def client_detail(
         "cid": f"CUS-{contact.id}",
         "name": contact.name or "Гость",
         "phone": contact.phone,
+        "avatarUrl": contact.avatar_url,
         "email": next(
             (
                 identity.external_user_id

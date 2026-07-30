@@ -45,7 +45,7 @@ export type ApiConversation = {
   // Источник identity: sales Contact (лид) ИЛИ verified SupportIdentitySnapshot.
   // ADR-HUB-0022: ровно один заполнен.
   // phone появляется после явного шаринга контакта; username (@логин TG/MAX) — только в detail-режиме.
-  contact: { id: number; name: string; email?: string; phone?: string; username?: string } | null;
+  contact: { id: number; name: string; email?: string; phone?: string; username?: string; avatarUrl?: string } | null;
   supportIdentitySnapshot: SupportIdentitySnapshotRef | null;
   lifecycle: "OPEN" | "CLOSED" | "SPAM";
   controlMode: "AI" | "HUMAN" | "PAUSED";
@@ -108,6 +108,7 @@ export function toConversationListItem(conversation: ApiConversation): Conversat
     name,
     initials: initialsOf(name),
     avatarBg: AVATAR_PALETTE[seed % AVATAR_PALETTE.length],
+    avatarUrl: conversation.contact?.avatarUrl || undefined,
     product: conversation.channel.name,
     channel: PROVIDER_CHANNEL[conversation.connection?.provider ?? "WEB"] ?? "WEB",
     email: conversation.contact?.email ?? "",

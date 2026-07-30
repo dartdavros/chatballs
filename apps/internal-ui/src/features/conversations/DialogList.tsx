@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import { modeDots } from "./data";
+import { ContactAvatar } from "./ContactAvatar";
 import { providerMeta } from "../../shared/providers";
 import type { ConversationListItem, ListTab } from "./types";
 import { SearchInput } from "../../shared/ui-controls";
@@ -51,7 +52,7 @@ function DialogListItem({ dialog, active, setSelectedId }: { dialog: Conversatio
     <button className={`sales-dialog-row ${active ? "active" : ""}`} onClick={() => setSelectedId(dialog.id)}>
       <span className="sales-dialog-row-bar" />
       <span className="sales-dialog-avatar-wrap">
-        <span className="sales-dialog-avatar" style={{ background: dialog.avatarBg }}>{dialog.initials}</span>
+        <ContactAvatar avatarUrl={dialog.avatarUrl} initials={dialog.initials} background={dialog.avatarBg} className="sales-dialog-avatar" />
         <i style={{ background: modeDots[dialog.mode] }} />
       </span>
       <span className="sales-dialog-row-main">

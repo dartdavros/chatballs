@@ -2,6 +2,7 @@ import { useEffect, useRef, type ReactNode } from "react";
 
 import { Icon } from "../../shared/icons";
 import { ConversationActions } from "./ConversationActions";
+import { ContactAvatar } from "./ContactAvatar";
 import { EmailMessageBody } from "./EmailMessageBody";
 import { statusFor } from "./data";
 import { providerMeta } from "../../shared/providers";
@@ -32,7 +33,7 @@ export function ConversationThread({ controlMode, dialog, detail, onClaim, onCal
     <>
       <div className="sales-conversation-head">
         <div className="sales-conversation-person">
-          <span style={{ background: dialog.avatarBg }}>{dialog.initials}</span>
+          <ContactAvatar avatarUrl={dialog.avatarUrl} initials={dialog.initials} background={dialog.avatarBg} className="sales-conversation-avatar" />
           <div>
             <div><strong>{dialog.name}</strong><StatusBadge status={status} /></div>
             <p>{dialog.product}<i /> <em style={{ background: channel.color }} />{channel.label}</p>
@@ -66,7 +67,7 @@ function MessageRow({ message, dialog }: { message: ApiMessage; dialog: Conversa
   const side = message.author === "CONTACT" ? "client" : message.author === "OPERATOR" ? "operator" : "ai";
   const actor = message.author === "AI" ? "AI-агент" : message.author === "OPERATOR" ? "Оператор" : undefined;
   return (
-    <Message side={side} initials={dialog.initials} avatarBg={dialog.avatarBg} actor={actor} time={fmtTime(message.createdAt)}>
+    <Message side={side} initials={dialog.initials} avatarBg={dialog.avatarBg} avatarUrl={dialog.avatarUrl} actor={actor} time={fmtTime(message.createdAt)}>
       {message.author === "CONTACT" && dialog.channel === "EMAIL"
         ? <EmailMessageBody html={message.contentHtml} text={message.text} />
         : message.text}
@@ -78,10 +79,10 @@ function StatusBadge({ status }: { status: StatusInfo }) {
   return <span className="sales-status-badge" style={{ background: status.bg, borderColor: status.border, color: status.color }}><i style={{ background: status.dot }} />{status.label}</span>;
 }
 
-function Message({ side, initials, avatarBg, actor, time, children }: { side: "ai" | "client" | "operator"; initials?: string; avatarBg?: string; actor?: string; time: string; children: ReactNode }) {
+function Message({ side, initials, avatarBg, avatarUrl, actor, time, children }: { side: "ai" | "client" | "operator"; initials?: string; avatarBg?: string; avatarUrl?: string; actor?: string; time: string; children: ReactNode }) {
   return (
     <div className={`sales-message ${side}`}>
-      <div className="sales-message-avatar">{side === "ai" ? <Icon name="robot" size={16} /> : <span style={{ background: avatarBg }}>{initials}</span>}</div>
+      <div className="sales-message-avatar">{side === "ai" ? <Icon name="robot" size={16} /> : <ContactAvatar avatarUrl={avatarUrl} initials={initials ?? ""} background={avatarBg ?? "#8c8c8c"} className="sales-message-avatar-img" />}</div>
       <div className="sales-message-content">
         {actor && <strong>{actor}</strong>}
         <div>{children}</div>

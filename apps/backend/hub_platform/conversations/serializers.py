@@ -129,6 +129,7 @@ def conversation_payload(
                 "id": conversation.contact_id,
                 "name": conversation.contact.name,
                 "phone": conversation.contact.phone,
+                "avatarUrl": conversation.contact.avatar_url,
                 "email": _contact_email(conversation),
                 "username": _contact_username(conversation) if with_messages else "",
             }

@@ -66,6 +66,7 @@ def _bot_started(update: dict) -> InboundMessage | None:
         text=f"/start {payload}".strip(),
         display_name=str(first(sender, "name", "display_name", default="")),
         username=str(first(sender, "username", "user_name", default="")),
+        avatar_url=str(first(sender, "avatar_url", "avatar", default="")),
     )
 
 
@@ -95,6 +96,7 @@ def _normalize(update: dict) -> InboundMessage | None:
         display_name=str(first(sender, "name", "display_name", default="")),
         username=str(first(sender, "username", "user_name", default="")),
         phone=phone,
+        avatar_url=str(first(sender, "avatar_url", "avatar", default="")),
     )
 
 
