@@ -1,6 +1,7 @@
 import { useEffect, useRef, type ReactNode } from "react";
 
 import { Icon } from "../../shared/icons";
+import { IconButton } from "../../shared/ui-controls";
 import { ConversationActions } from "./ConversationActions";
 import { ContactAvatar } from "./ContactAvatar";
 import { EmailMessageBody } from "./EmailMessageBody";
@@ -13,7 +14,7 @@ function fmtTime(value: string): string {
   return new Date(value).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
 }
 
-export function ConversationThread({ controlMode, dialog, detail, onClaim, onCall, onClose, onSpam }: { controlMode: ControlMode; dialog: ConversationListItem | null; detail: ApiConversation | null; onClaim: () => void; onCall: (kind: "AUDIO" | "VIDEO") => void; onClose: () => void; onSpam: () => Promise<boolean> }) {
+export function ConversationThread({ controlMode, dialog, detail, isOwner = false, onClaim, onCall, onClose, onSpam }: { controlMode: ControlMode; dialog: ConversationListItem | null; detail: ApiConversation | null; isOwner?: boolean; onClaim: () => void; onCall: (kind: "AUDIO" | "VIDEO") => void; onClose: () => void; onSpam: () => Promise<boolean> }) {
   const timelineRef = useRef<HTMLDivElement>(null);
   const messages = detail?.messages ?? [];
   const lastMessageId = messages.length ? messages[messages.length - 1].id : 0;
@@ -40,12 +41,17 @@ export function ConversationThread({ controlMode, dialog, detail, onClaim, onCal
           </div>
         </div>
         <div className="sales-conversation-actions">
-          {controlMode === "waiting" && <button className="sales-claim-button" onClick={onClaim}><Icon name="check" size={15} />Забрать</button>}
-          {controlMode === "ai" && <button className="sales-ai-button" onClick={onClaim}>Перехватить AI</button>}
+          {/* Владелец может перехватить любой открытый диалог (в т.ч. у другого оператора);
+              обычный сотрудник — только забрать из очереди или перехватить у AI. */}
+          {isOwner && detail?.lifecycle === "OPEN" && !detail?.isAssignedToViewer && (
+            <button className="sales-ai-button" onClick={onClaim}>Перехватить диалог</button>
+          )}
+          {!isOwner && controlMode === "waiting" && <button className="sales-claim-button" onClick={onClaim}><Icon name="check" size={15} />Забрать</button>}
+          {!isOwner && controlMode === "ai" && <button className="sales-ai-button" onClick={onClaim}>Перехватить AI</button>}
           {detail?.lifecycle === "OPEN" && dialog.channel !== "EMAIL" && (
             <>
-              <button className="sales-more-button" aria-label="Запросить аудиозвонок" title="Запросить аудиозвонок" onClick={() => onCall("AUDIO")}><Icon name="phone" size={17} /></button>
-              <button className="sales-more-button" aria-label="Запросить видеозвонок" title="Запросить видеозвонок" onClick={() => onCall("VIDEO")}><Icon name="video" size={17} /></button>
+              <IconButton icon="phone" label="Запросить аудиозвонок" className="is-audio" onClick={() => onCall("AUDIO")} />
+              <IconButton icon="video" label="Запросить видеозвонок" className="is-video" onClick={() => onCall("VIDEO")} />
             </>
           )}
           <ConversationActions open={detail?.lifecycle === "OPEN"} onClose={onClose} onSpam={onSpam} />

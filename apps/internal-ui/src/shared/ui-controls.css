@@ -49,6 +49,21 @@
   background: #fff2f0;
 }
 
+/* Цветные hover для кнопок запроса звонка в шапке диалога — по образцу is-danger.
+   Токены дизайн-системы base.css: success и primary. База ui-icon-button
+   остаётся белой с outline-иконкой; характерный цвет проявляется только на hover. */
+.ui-icon-button.is-audio:hover {
+  color: #389e0d;
+  border-color: #b7eb8f;
+  background: #f6ffed;
+}
+
+.ui-icon-button.is-video:hover {
+  color: #1677ff;
+  border-color: #91caff;
+  background: #e6f4ff;
+}
+
 .primary-button {
   min-height: 38px;
   display: inline-flex;

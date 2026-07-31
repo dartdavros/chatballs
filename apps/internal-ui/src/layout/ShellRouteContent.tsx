@@ -64,8 +64,8 @@ export function ShellRouteContent({ route, data, currentEmployee, currentProduct
       {route === "salesClientDetail" && <SalesClientDetailPage contactId={selectedClientId} openConversation={openConversation} />}
       {route === "salesOverview" && <SalesOverviewPage openConversation={openConversation} />}
       {route === "supportOverview" && <SupportOverviewPage />}
-      {route === "supportDialogs" && <SupportDialogsPage initialConversationId={selectedConversationId} />}
-      {route === "salesDialogs" && <SalesDialogsPage initialConversationId={selectedConversationId} />}
+      {route === "supportDialogs" && <SupportDialogsPage initialConversationId={selectedConversationId} user={user} />}
+      {route === "salesDialogs" && <SalesDialogsPage initialConversationId={selectedConversationId} user={user} />}
       {route === "salesOrderDetail" && <SaleDetailPage saleId={selectedOrderId} canCorrect={hasCapability(user, "sales.correct", "sales")} setRoute={setRoute} openDialog={openConversation} />}
       {route === "salesOrders" && <SalesRegistryPage products={data.products} setRoute={setRoute} openSale={openOrder} openDialog={openConversation} />}
       {route === "aiAgents" && <AiAgentsPage agents={data.agents} reload={reload} openAgentCreate={openAgentCreate} openAgent={openAgent} />}

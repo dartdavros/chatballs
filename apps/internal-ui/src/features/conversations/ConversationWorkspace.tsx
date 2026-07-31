@@ -25,8 +25,9 @@ import { useIncomingMessageSound } from "./useIncomingMessageSound";
 // заголовком/placeholder поиска и правой панелью через render-prop: consumer
 // получает {dialog, detail} из state (sales рендерит лид-контекст, support —
 // operator_cards из контракта).
-export function ConversationWorkspace({ department, listTitle, searchPlaceholder, renderContextPanel, initialConversationId }: {
+export function ConversationWorkspace({ department, isOwner = false, listTitle, searchPlaceholder, renderContextPanel, initialConversationId }: {
   department: "sales" | "support";
+  isOwner?: boolean;
   listTitle?: string;
   searchPlaceholder?: string;
   renderContextPanel: (ctx: { dialog: ConversationListItem | null; detail: ApiConversation | null }) => ReactNode;
@@ -153,7 +154,7 @@ export function ConversationWorkspace({ department, listTitle, searchPlaceholder
         setSelectedId={setSelectedId}
       />
       <section className="sales-conversation">
-        <ConversationThread controlMode={controlMode} dialog={selectedDialog} detail={detail} onClaim={onClaim} onCall={(kind) => void callController.start(kind)} onClose={onClose} onSpam={onSpam} />
+        <ConversationThread controlMode={controlMode} dialog={selectedDialog} detail={detail} isOwner={isOwner} onClaim={onClaim} onCall={(kind) => void callController.start(kind)} onClose={onClose} onSpam={onSpam} />
         {(detailError || actionError) && <div className="sales-conversation-error">{detailError || actionError}</div>}
         <CallOverlay
           open={callController.open}

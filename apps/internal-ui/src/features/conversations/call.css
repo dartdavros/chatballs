@@ -9,6 +9,23 @@
   box-shadow: none;
 }
 
+/* Аудиозвонок: сцена тёмная и портретная (9:16). Modal-контейнер должен
+   сливаться со сценой — никаких белых полей/паддингов/рамок вокруг карточки. */
+.audio-call-modal .ant-modal-content {
+  padding: 0;
+  background: #0d0d16;
+  border-radius: 24px;
+  overflow: hidden;
+}
+
+.audio-call-modal .hub-audio-view {
+  max-width: none;
+  max-height: none;
+  aspect-ratio: 9 / 16;
+  border-radius: 0;
+  box-shadow: none;
+}
+
 .call-channel {
   display: inline-flex;
   align-items: center;

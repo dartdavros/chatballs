@@ -12,6 +12,7 @@ from hub_platform.conversations.models import (
     MessageAuthor,
     MessageKind,
 )
+from hub_platform.identity.models import EmployeeRole
 from hub_platform.integrations.models import IntegrationProvider
 from hub_platform.tenancy.context import TenantContext
 
@@ -47,8 +48,12 @@ def claim_locked_conversation(*, context: TenantContext, conversation: Conversat
     if operator is None or conversation.organization_id != context.organization_id:
         raise ClaimError("Диалог недоступен")
     _require_open(conversation)
+    # Владелец (OWNER) может перехватить диалог у любого оператора; прочие сотрудники
+    # не могут забрать диалог, уже назначенный другому оператору.
+    is_owner = context.membership is not None and context.membership.role == EmployeeRole.OWNER
     if (
-        conversation.control_mode == ControlMode.HUMAN
+        not is_owner
+        and conversation.control_mode == ControlMode.HUMAN
         and conversation.assigned_operator_id
         and conversation.assigned_operator_id != operator.id
     ):
