@@ -17,6 +17,9 @@ cmd_deploy() {
   _wait_healthy postgres 60 || die "deploy: postgres did not become healthy" 1
   _wait_healthy redis 30 || die "deploy: redis did not become healthy" 1
 
+  log "deploy: normalizing schema ownership for migrations"
+  _normalize_schema_ownership || die "deploy: schema ownership normalization failed" 1
+
   log "deploy: running one-shot init (migrate)"
   run_compose run --rm init || die "deploy: init (migrate) failed" 1
 
@@ -94,6 +97,22 @@ _wait_running() {
     waited=$((waited + 3))
   done
   return 1
+}
+
+_normalize_schema_ownership() {
+  # Приводит владение объектов public-схемы к роли custocrm_schema, в которую
+  # входит migration-user. Идемпотентно: безопасно на каждом деплое. Без этого
+  # миграции от migration-user падают на таблицах, созданных не им
+  # («must be owner of table …»). Выполняется под суперпользователем POSTGRES_USER.
+  local env_file pg_user pg_db
+  env_file="$(instance_env_file)"
+  pg_user="$(env_get "$env_file" POSTGRES_USER)"
+  pg_db="$(env_get "$env_file" POSTGRES_DB)"
+  [[ -n "$pg_user" ]] || { log_err "POSTGRES_USER not set"; return 1; }
+  [[ -n "$pg_db" ]] || { log_err "POSTGRES_DB not set"; return 1; }
+  run_compose exec -T postgres \
+    psql -v ON_ERROR_STOP=1 -U "$pg_user" -d "$pg_db" \
+    -f /custocrm-reassign-ownership.sql >/dev/null
 }
 
 _first_json_service_state() {
