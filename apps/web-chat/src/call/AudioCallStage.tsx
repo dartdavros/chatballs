@@ -102,6 +102,7 @@ export function AudioCallStage({ call, accessToken, iceServers, loading, invalid
         subCaption={mode === "active" ? (rtc.micOn ? "Говорите" : "Ваш микрофон выключен") : undefined}
         onToggleMic={rtc.toggleMic}
         onAccept={() => void join()}
+        onDecline={() => void onCancel()}
         onCancel={() => void onCancel()}
         onEnd={rtc.end}
         onClose={close}

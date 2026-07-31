@@ -49,7 +49,10 @@ export function resolveAudioCallViewMode(state: { loading: boolean; invalid: boo
   if (state.loading || state.invalid || !state.call) return "status";
   if (state.mediaIssue === "devices" || state.mediaIssue === "unsupported") return "status";
   if (isTerminalCall(state.call.status) || state.connection === "failed") return "status";
-  if (!state.started) return state.call.status === "RINGING" || state.call.status === "REQUESTED" ? "ringing" : "incoming";
+  // Приглашение для клиента — входящий звонок: он решает принять или отклонить
+  // (звонок всегда инициирует сотрудник, поэтому «исходящего» для клиента нет).
+  // REQUESTED/RINGING до старта → incoming (парные Принять/Отклонить).
+  if (!state.started) return "incoming";
   if (state.connection === "reconnecting") return "reconnecting";
   if (state.connection === "connected" || state.call.status === "ACTIVE") return "active";
   return "connecting";
