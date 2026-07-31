@@ -109,6 +109,7 @@ export {
   createPortalCategory,
   createSupportPortal,
   deletePortalCategory,
+  importPortalArticles,
   listPortalArticles,
   listPortalCategories,
   listPortalSupportChannels,

@@ -1,20 +1,22 @@
 import { Modal } from "antd";
 import { useState } from "react";
 
-import { Icon } from "../../../shared/icons";
-import { Button } from "../../../shared/ui-controls";
-import { downloadKnowledgeTemplate } from "./downloadKnowledgeTemplate";
-import { importKnowledge, type KnowledgeImportReport } from "./model";
-import { parseKnowledgeYaml, type ParsedKnowledgeYaml } from "./parseKnowledgeYaml";
+import { Icon } from "../../shared/icons";
+import { Button } from "../../shared/ui-controls";
+import type { ArticleImportReport } from "./api";
+import { downloadArticleTemplate } from "./downloadArticleTemplate";
+import { importPortalArticles, portalErrorMessage } from "./model";
+import { parseArticleYaml, type ParsedArticleYaml } from "./parseArticleYaml";
 
-type KnowledgeImportModalProps = {
+type PortalArticleImportModalProps = {
+  portalId: number;
   onClose: () => void;
   onImported: () => void;
 };
 
-export function KnowledgeImportModal({ onClose, onImported }: KnowledgeImportModalProps) {
-  const [parsed, setParsed] = useState<ParsedKnowledgeYaml | null>(null);
-  const [result, setResult] = useState<KnowledgeImportReport | null>(null);
+export function PortalArticleImportModal({ portalId, onClose, onImported }: PortalArticleImportModalProps) {
+  const [parsed, setParsed] = useState<ParsedArticleYaml | null>(null);
+  const [result, setResult] = useState<ArticleImportReport | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,7 +26,7 @@ export function KnowledgeImportModal({ onClose, onImported }: KnowledgeImportMod
     setError(null);
     setResult(null);
     try {
-      setParsed(parseKnowledgeYaml(await file.text()));
+      setParsed(parseArticleYaml(await file.text()));
     } catch (caught) {
       setParsed(null);
       setError(caught instanceof Error ? caught.message : "Не удалось прочитать файл");
@@ -36,23 +38,23 @@ export function KnowledgeImportModal({ onClose, onImported }: KnowledgeImportMod
     setBusy(true);
     setError(null);
     try {
-      setResult(await importKnowledge(parsed.documents));
+      setResult(await importPortalArticles(portalId, parsed.articles));
       setParsed(null);
       onImported();
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Не удалось импортировать");
+      setError(portalErrorMessage(caught, "Не удалось импортировать статьи"));
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <Modal open title="Импорт знаний из YAML" onCancel={onClose} footer={null} destroyOnClose>
+    <Modal open title="Импорт статей из YAML" onCancel={onClose} footer={null} destroyOnClose>
       <div className="integration-form">
         <label className="knowledge-import-file">
           <span>
-            Файл YAML · формат: documents: [{"{"} title, description?, content {"}"}]
-            <button className="link has-icon" type="button" onClick={downloadKnowledgeTemplate}>
+            Файл YAML · формат: articles: [{"{"} slug, categoryPath, locale?, title, summary?, content {"}"}]
+            <button className="link has-icon" type="button" onClick={downloadArticleTemplate}>
               <Icon name="download" size={14} />Скачать шаблон
             </button>
           </span>
@@ -60,7 +62,7 @@ export function KnowledgeImportModal({ onClose, onImported }: KnowledgeImportMod
         </label>
         {parsed && (
           <div className="ai-doc-import-preview">
-            К импорту: <b>{parsed.documents.length}</b> знаний. Совпадение по заголовку обновит существующее знание.
+            К импорту: <b>{parsed.articles.length}</b> статей. Совпадение по адресу создаст новую версию.
           </div>
         )}
         {result && (
@@ -71,7 +73,7 @@ export function KnowledgeImportModal({ onClose, onImported }: KnowledgeImportMod
             {result.failed.length > 0 && (
               <ul className="ai-doc-import-failed">
                 {result.failed.map((item, index) => (
-                  <li key={index}>{item.title ? `«${item.title}»: ` : ""}{item.detail}</li>
+                  <li key={index}>{item.slug ? `«${item.slug}»: ` : ""}{item.detail}</li>
                 ))}
               </ul>
             )}

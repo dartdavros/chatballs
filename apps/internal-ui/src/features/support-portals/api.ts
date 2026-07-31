@@ -1,5 +1,6 @@
 import { api } from "../../api/client";
 import type { Channel } from "../channels/types";
+import type { ArticleImportDocument } from "./parseArticleYaml";
 import type {
   ArticleRevision,
   PortalArticle,
@@ -180,5 +181,22 @@ export function archivePortalArticle(
 ): Promise<{ article: PortalArticle }> {
   return api(`/api/v1/support/portals/${portalId}/articles/${articleId}/archive/`, {
     method: "POST",
+  });
+}
+
+export type ArticleImportReport = {
+  created: number;
+  updated: number;
+  unchanged: number;
+  failed: Array<{ slug?: string; detail: string }>;
+};
+
+export function importPortalArticles(
+  portalId: number,
+  articles: ArticleImportDocument[],
+): Promise<ArticleImportReport> {
+  return api(`/api/v1/support/portals/${portalId}/articles/import/`, {
+    method: "POST",
+    body: JSON.stringify({ articles }),
   });
 }

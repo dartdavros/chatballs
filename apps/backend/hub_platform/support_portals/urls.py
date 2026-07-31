@@ -1,6 +1,6 @@
 from django.urls import path
 
-from hub_platform.support_portals import content_views, portal_views
+from hub_platform.support_portals import article_import_views, content_views, portal_views
 
 urlpatterns = [
     path("", portal_views.PortalListView.as_view(), name="support-portal-list"),
@@ -13,6 +13,7 @@ urlpatterns = [
     path("<int:portal_id>/categories/", content_views.CategoryListView.as_view(), name="support-portal-categories"),
     path("<int:portal_id>/categories/<int:category_id>/", content_views.CategoryDetailView.as_view(), name="support-portal-category-detail"),
     path("<int:portal_id>/articles/", content_views.ArticleListView.as_view(), name="support-portal-articles"),
+    path("<int:portal_id>/articles/import/", article_import_views.ArticleImportView.as_view(), name="support-portal-article-import"),
     path("<int:portal_id>/articles/<int:article_id>/", content_views.ArticleDetailView.as_view(), name="support-portal-article"),
     path("<int:portal_id>/articles/<int:article_id>/revisions/", content_views.ArticleRevisionListView.as_view(), name="support-portal-article-revisions"),
     path("<int:portal_id>/articles/<int:article_id>/publish/", content_views.ArticlePublishView.as_view(), name="support-portal-article-publish"),

@@ -6,6 +6,7 @@ import { ContentLibraryToolbar } from "../../shared/content-library/ContentLibra
 import { DecisionDialog } from "../../shared/DecisionDialog";
 import { Button } from "../../shared/ui-controls";
 import { PortalArticleEditor } from "./PortalArticleEditor";
+import { PortalArticleImportModal } from "./PortalArticleImportModal";
 import { PortalArticleTable } from "./PortalArticleTable";
 import { PortalCategoryManagement } from "./PortalCategoryManagement";
 import {
@@ -43,6 +44,7 @@ export function PortalContent({
   const [status, setStatus] = useState("");
   const [editing, setEditing] = useState<PortalArticle | null | undefined>(undefined);
   const [managingCategories, setManagingCategories] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const [decision, setDecision] = useState<Decision | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -128,7 +130,12 @@ export function PortalContent({
           <ContentLibraryToolbar
             query={query}
             onQueryChange={setQuery}
-            action={canManage && categories.length > 0 && <Button variant="primary" icon="plus" onClick={() => setEditing(null)}>Новая статья</Button>}
+            action={canManage && categories.length > 0 && (
+              <>
+                <Button variant="secondary" icon="download" onClick={() => setImportOpen(true)}>Импорт YAML</Button>
+                <Button variant="primary" icon="plus" onClick={() => setEditing(null)}>Новая статья</Button>
+              </>
+            )}
           >
             <label className="knowledge-filter-select"><span>Язык:</span><select value={language} onChange={(event) => setLanguage(event.target.value)}><option value="">Все</option><option value="ru">Русский</option><option value="en">English</option></select></label>
             <label className="knowledge-filter-select"><span>Статус:</span><select value={status} onChange={(event) => setStatus(event.target.value)}><option value="">Все</option><option value="DRAFT">Черновик</option><option value="PUBLISHED">Опубликована</option><option value="ARCHIVED">Архив</option></select></label>
@@ -157,6 +164,13 @@ export function PortalContent({
         </main>
       </div>
       {managingCategories && <PortalCategoryManagement categories={categories} portalId={portalId} onChanged={reload} onClose={() => setManagingCategories(false)} />}
+      {importOpen && (
+        <PortalArticleImportModal
+          portalId={portalId}
+          onClose={() => setImportOpen(false)}
+          onImported={() => void reload()}
+        />
+      )}
       <DecisionDialog
         open={Boolean(decision)}
         onClose={() => setDecision(null)}
