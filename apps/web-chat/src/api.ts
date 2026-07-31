@@ -27,6 +27,10 @@ export type CallInfo = {
   durationSeconds?: number | null;
 };
 
+// Единая проверка типа звонка (default — AUDIO). Используется и баннером виджета,
+// и страницей звонка, чтобы они не расходились при неопределённом kind.
+export const isVideoCall = (call: CallInfo | null | undefined): boolean => call?.kind === "VIDEO";
+
 export type CallBootstrap = { call: CallInfo; accessToken: string; iceServers: RTCIceServer[] };
 export type CallStateEnvelope = { call: CallInfo; iceServers: RTCIceServer[] };
 

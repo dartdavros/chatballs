@@ -1,6 +1,6 @@
 import { useState, type RefObject } from "react";
 
-import type { CallInfo, WebConfig, WebMessage } from "./api";
+import { isVideoCall, type CallInfo, type WebConfig, type WebMessage } from "./api";
 
 export function ChatHeader({ accent, letter, title, statusLabel, statusDot, unavailable, onClose }: { accent: string; letter: string; title: string; statusLabel: string; statusDot: string; unavailable: boolean; onClose: () => void }) {
   return (
@@ -85,7 +85,7 @@ export function ChatComposer({ accent, state, quickReplies, pendingCount, messag
 
 export function CallInviteBanner({ call, accent, onAccept, onDecline }: { call: CallInfo; accent: string; onAccept: () => void; onDecline: () => void }) {
   const phoneIcon = (rotated: boolean) => <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#fff" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" style={rotated ? { transform: "rotate(135deg)" } : undefined}><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.81.36 1.6.7 2.34a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.74-1.27a2 2 0 0 1 2.11-.45c.74.34 1.53.57 2.34.7A2 2 0 0 1 22 16.92z" /></svg>;
-  const isVideo = call.kind !== "AUDIO";
+  const isVideo = isVideoCall(call);
   const inviteIcon = isVideo
     ? <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#fff" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M23 7l-7 5 7 5V7z" /><rect x="1" y="5" width="15" height="14" rx="2.5" /></svg>
     : <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#fff" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.81.36 1.6.7 2.34a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.74-1.27a2 2 0 0 1 2.11-.45c.74.34 1.53.57 2.34.7A2 2 0 0 1 22 16.92z" /></svg>;
