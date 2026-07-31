@@ -8,7 +8,12 @@ def products_for_context(context: TenantContext) -> QuerySet[Product]:
     offers = Offer.objects.prefetch_related("prices").order_by("name")
     return (
         Product.objects.filter(organization_id=context.organization_id)
-        .prefetch_related("department_links__department", Prefetch("offers", queryset=offers))
+        .prefetch_related(
+            "department_links__department",
+            Prefetch("offers", queryset=offers),
+            "channels__ai_agent",
+            "channels__connections",
+        )
         .order_by("name")
     )
 

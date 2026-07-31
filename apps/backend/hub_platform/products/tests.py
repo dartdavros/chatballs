@@ -76,6 +76,22 @@ class ProductApiTests(TestCase):
 
         self.assertEqual(response.status_code, 404)
 
+    def test_product_payload_exposes_assigned_channels(self) -> None:
+        from hub_platform.channels.models import Channel
+
+        product = Product.objects.get(code="firepage")
+        Channel.objects.create(organization=self.organization, code="site", name="Сайт", product=product)
+
+        response = self.client.get("/api/v1/company/products/")
+
+        payload = next(item for item in response.json()["items"] if item["id"] == product.id)
+        channel = payload["channels"][0]
+        self.assertEqual(channel["code"], "site")
+        self.assertTrue(channel["isActive"])
+        # Единый источник: payload содержит связи, нужные табу каналов продукта.
+        self.assertIsNone(channel["agentId"])
+        self.assertEqual(channel["connections"], [])
+
     def test_create_offer_via_api(self) -> None:
         product = Product.objects.get(code="firepage")
         response = self.client.post(

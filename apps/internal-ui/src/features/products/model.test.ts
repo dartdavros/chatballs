@@ -10,6 +10,7 @@ const product: Product = {
   status: "ACTIVE",
   siteUrl: "https://foxray.pro",
   departments: [],
+  channels: [],
   createdAt: "2026-06-19T00:00:00Z",
   updatedAt: "2026-06-19T00:00:00Z",
   offers: [

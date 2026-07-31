@@ -2,7 +2,7 @@ import { Dropdown } from "antd";
 
 import type { Product } from "../../types";
 import { Icon } from "../../shared/icons";
-import { StatusPill } from "../../shared/ui";
+import { ProductMark, StatusPill } from "../../shared/ui";
 import { productAccent } from "../../shared/utils";
 import { productDetails } from "./model";
 import type { ProductPeriod } from "./types";
@@ -26,9 +26,11 @@ export function ProductRow({ product, period, menuId, setMenuId, deactivate, ope
           {details.offers.length ? details.offers.map((offer) => <div key={`${product.id}-${offer.name}`}><span>{offer.name} <em>· {offer.type}</em></span><strong>{offer.price}</strong></div>) : <span className="product-empty-value">—</span>}
         </div>
       </td>
-      <td><span className="product-empty-value">—</span></td>
-      <td><span className="product-empty-value">—</span></td>
-      <td><span className="product-empty-value">—</span></td>
+      <td>
+        <div className="product-channels">
+          {product.channels.length ? product.channels.map((channel) => <ProductMark key={`${product.id}-${channel.id}`} product={channel} />) : <span className="product-empty-value">—</span>}
+        </div>
+      </td>
       <td className="numeric"><div className="product-sales"><strong>{sales.sum}</strong><small>{sales.n} продаж</small></div></td>
       <td className="row-actions">
         <Dropdown menu={{ items: menuItems }} open={menuOpen} onOpenChange={(open) => setMenuId(open ? product.id : null)} trigger={["click"]} overlayClassName="app-dropdown">

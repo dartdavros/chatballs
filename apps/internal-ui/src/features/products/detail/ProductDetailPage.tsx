@@ -19,7 +19,7 @@ export function ProductDetailPage({ product, departments, reload, openAgentCreat
       <UnderlineTabs className="product-detail-tabs" items={productTabs} value={tab} onChange={setTab} />
       {tab === "overview" && <ProductOverviewTab product={product} openAgentCreate={openAgentCreate} openAgent={openAgent} />}
       {tab === "offers" && <ProductOffersTab product={product} reload={reload} />}
-      {tab === "channels" && <ProductChannelsTab productCode={product.code} openAgent={openAgent} openAgentCreate={openAgentCreate} />}
+      {tab === "channels" && <ProductChannelsTab product={product} openAgent={openAgent} openAgentCreate={openAgentCreate} />}
       {tab === "fulfillment" && <ProductAccessTab product={product} />}
       <ProductFormModal departments={departments} open={editing} product={product} onClose={() => setEditing(false)} onSaved={reload} />
     </>

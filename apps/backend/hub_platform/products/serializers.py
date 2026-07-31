@@ -31,6 +31,29 @@ def offer_payload(offer: Offer) -> dict[str, object]:
     }
 
 
+def _channel_payload(channel: object) -> dict[str, object]:
+    # Единый источник каналов продукта: тот же состав, что потребляет таб
+    # «Каналы продаж» в карточке продукта (connections + agent), чтобы не
+    # дублировать выборку отдельным запросом /api/v1/channels/.
+    agent = getattr(channel, "ai_agent", None)
+    return {
+        "id": channel.id,
+        "code": channel.code,
+        "name": channel.name,
+        "isActive": channel.is_active,
+        "agentId": agent.id if agent else None,
+        "connections": [
+            {
+                "id": connection.id,
+                "provider": connection.provider,
+                "name": connection.name,
+                "status": connection.status,
+            }
+            for connection in sorted(channel.connections.all(), key=lambda item: item.id)
+        ],
+    }
+
+
 def product_payload(product: Product) -> dict[str, object]:
     return {
         "id": product.id,
@@ -42,6 +65,7 @@ def product_payload(product: Product) -> dict[str, object]:
             {"id": link.department_id, "code": link.department.code, "name": link.department.name}
             for link in product.department_links.all()
         ],
+        "channels": [_channel_payload(channel) for channel in product.channels.all()],
         "offers": [offer_payload(offer) for offer in product.offers.all()],
         "createdAt": product.created_at.isoformat(),
         "updatedAt": product.updated_at.isoformat(),

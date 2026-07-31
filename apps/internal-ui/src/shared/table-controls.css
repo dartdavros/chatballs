@@ -172,6 +172,13 @@
   gap: 11px;
 }
 
+.product-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+
 .person-cell strong {
   display: block;
   color: #1677ff;

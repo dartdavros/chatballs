@@ -7,7 +7,7 @@ export function ProductsTable({ products, period, periodLabel, menuId, setMenuId
     <div className="table-card products-card">
       <div className="product-table-scroll">
         <table className="baseline-table products-table">
-          <thead><tr><th>ПРОДУКТ</th><th>СТАТУС</th><th>OFFER И ЦЕНЫ</th><th>SALES-AGENT</th><th>КАНАЛЫ</th><th>FULFILLMENT</th><th className="numeric">ПРОДАЖИ · {periodLabel.toUpperCase()}</th><th /></tr></thead>
+          <thead><tr><th>ПРОДУКТ</th><th>СТАТУС</th><th>OFFER И ЦЕНЫ</th><th>КАНАЛЫ</th><th className="numeric">ПРОДАЖИ · {periodLabel.toUpperCase()}</th><th /></tr></thead>
           <tbody>{products.map((product) => <ProductRow product={product} period={period} menuId={menuId} setMenuId={setMenuId} deactivate={deactivate} openProduct={openProduct} key={product.id} />)}</tbody>
         </table>
       </div>

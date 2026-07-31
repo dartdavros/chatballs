@@ -136,6 +136,17 @@ export type Department = {
   products: Array<{ code: string; name: string }>;
 };
 
+export type ProductChannelRef = {
+  id: number;
+  code: string;
+  name: string;
+  isActive: boolean;
+  agentId: number | null;
+  // provider/status — значения enum интеграций (см. features/integrations/model.ts);
+  // объявлены литералами, чтобы корневой тип не зависел от feature-модуля.
+  connections: Array<{ id: number; provider: string; name: string; status: string }>;
+};
+
 export type Product = {
   id: number;
   code: string;
@@ -143,6 +154,7 @@ export type Product = {
   status: ProductStatus;
   siteUrl: string;
   departments: Array<{ id: number; code: string; name: string }>;
+  channels: ProductChannelRef[];
   offers: ProductOffer[];
   createdAt: string;
   updatedAt: string;
