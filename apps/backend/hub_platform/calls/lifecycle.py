@@ -9,6 +9,7 @@ from hub_platform.calls.models import (
     CallEndedBy,
     CallSession,
     CallStatus,
+    ParticipantSide,
 )
 from hub_platform.conversations.models import Message, MessageAuthor
 from hub_platform.subscriptions.reservation_service import release_usage
@@ -119,3 +120,36 @@ def transition_call(
             text=timeline_text,
         )
     return call
+
+
+@transaction.atomic
+def finish_call(*, call_session_id, side: str) -> CallSession:
+    """Надёжно завершает звонок из любой незавершённой фазы.
+
+    Используется и REST access endpoint'ом, и WebSocket signaling, чтобы закрытие
+    вкладки/модального окна не оставляло ACCEPTED/CONNECTING звонок зависшим.
+    """
+    # Блокировка не позволяет конкурентному signaling-событию перевести звонок
+    # между чтением статуса и завершающим переходом.
+    call = CallSession.objects.select_for_update().get(id=call_session_id)
+    if call.status in TERMINAL_CALL_STATUSES:
+        return call
+    ended_by = CallEndedBy.STAFF if side == ParticipantSide.STAFF else CallEndedBy.CUSTOMER
+    if call.status == CallStatus.ACTIVE:
+        target_status = CallStatus.ENDED
+        failure_code = ""
+    elif call.status in {CallStatus.ACCEPTED, CallStatus.CONNECTING}:
+        target_status = CallStatus.FAILED
+        failure_code = "ABORTED_BEFORE_CONNECT"
+    elif side == ParticipantSide.STAFF:
+        target_status = CallStatus.CANCELLED
+        failure_code = ""
+    else:
+        target_status = CallStatus.DECLINED
+        failure_code = ""
+    return transition_call(
+        call_session_id=call.id,
+        target_status=target_status,
+        ended_by=ended_by,
+        failure_code=failure_code,
+    )

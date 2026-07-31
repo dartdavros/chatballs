@@ -27,58 +27,78 @@ export function useCallRtcSession(options: Options) {
   const [preparing, setPreparing] = useState(false);
   const localRef = useRef<MediaStream | null>(null);
   const clientRef = useRef<CallRtcClient | null>(null);
-  const preparingRef = useRef(false);
+  const preparePromiseRef = useRef<Promise<MediaStream | null> | null>(null);
+  const startPromiseRef = useRef<Promise<boolean> | null>(null);
+  const generationRef = useRef(0);
   const videoEnabledRef = useRef(options.videoEnabled ?? true);
   videoEnabledRef.current = options.videoEnabled ?? true;
   const onCallStateRef = useRef(options.onCallState);
   onCallStateRef.current = options.onCallState;
 
   const stop = useCallback(() => {
+    generationRef.current += 1;
     clientRef.current?.dispose();
     clientRef.current = null;
     localRef.current?.getTracks().forEach((track) => track.stop());
     localRef.current = null;
+    preparePromiseRef.current = null;
+    startPromiseRef.current = null;
     setLocalStream(null);
     setRemoteStream(null);
+    setPreparing(false);
   }, []);
 
-  const prepare = useCallback(async () => {
-    if (localRef.current || preparingRef.current || !navigator.mediaDevices?.getUserMedia || typeof RTCPeerConnection === "undefined") {
-      if (!navigator.mediaDevices?.getUserMedia || typeof RTCPeerConnection === "undefined") setMediaIssue("unsupported");
-      return;
+  const prepare = useCallback((): Promise<MediaStream | null> => {
+    if (localRef.current) return Promise.resolve(localRef.current);
+    if (!navigator.mediaDevices?.getUserMedia || typeof RTCPeerConnection === "undefined") {
+      setMediaIssue("unsupported");
+      return Promise.resolve(null);
     }
-    preparingRef.current = true;
-    setPreparing(true);
-    try {
-      // Аудиозвонок: видео не запрашивается и не откатывается — это честный
-      // аудио-режим. Видеозвонок: video+audio, при отказе камеры — audio-only.
-      const constraints: MediaStreamConstraints = videoEnabledRef.current
-        ? { audio: true, video: true }
-        : { audio: true, video: false };
-      let stream: MediaStream;
+    if (preparePromiseRef.current) return preparePromiseRef.current;
+
+    const generation = generationRef.current;
+    const pending = (async () => {
+      setPreparing(true);
       try {
-        stream = await navigator.mediaDevices.getUserMedia(constraints);
-        setMediaIssue("none");
-        if (!videoEnabledRef.current) setCamOn(false);
-      } catch {
-        if (videoEnabledRef.current) {
+        // Аудиозвонок запрашивает только микрофон. Видеозвонок сначала запрашивает
+        // camera+microphone и честно откатывается в audio-only при проблеме камеры.
+        const constraints: MediaStreamConstraints = videoEnabledRef.current
+          ? { audio: true, video: true }
+          : { audio: true, video: false };
+        let stream: MediaStream;
+        try {
+          stream = await navigator.mediaDevices.getUserMedia(constraints);
+          setMediaIssue("none");
+          if (!videoEnabledRef.current) setCamOn(false);
+        } catch {
+          if (!videoEnabledRef.current) throw new Error("audio devices unavailable");
           stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
           setCamOn(false);
           setMediaIssue("video");
-        } else {
-          throw new Error("audio devices unavailable");
         }
+        if (generation !== generationRef.current) {
+          stream.getTracks().forEach((track) => track.stop());
+          return null;
+        }
+        localRef.current = stream;
+        setLocalStream(stream);
+        setMicOn(stream.getAudioTracks().some((track) => track.enabled));
+        return stream;
+      } catch {
+        setCamOn(false);
+        setMicOn(false);
+        setMediaIssue("devices");
+        return null;
       }
-      localRef.current = stream;
-      setLocalStream(stream);
-    } catch {
-      setCamOn(false);
-      setMicOn(false);
-      setMediaIssue("devices");
-    } finally {
-      preparingRef.current = false;
-      setPreparing(false);
-    }
+    })();
+    preparePromiseRef.current = pending;
+    void pending.finally(() => {
+      if (preparePromiseRef.current === pending) {
+        preparePromiseRef.current = null;
+        setPreparing(false);
+      }
+    });
+    return pending;
   }, []);
 
   useEffect(() => {
@@ -97,33 +117,45 @@ export function useCallRtcSession(options: Options) {
 
   useEffect(() => stop, [stop]);
 
-  const start = useCallback(() => {
-    if (!options.accessToken || clientRef.current) return false;
-    if (mediaIssue === "devices") setMediaIssue("none");
-    const client = new CallRtcClient({
-      accessToken: options.accessToken,
-      side: options.side,
-      iceServers: options.iceServers,
-      localStream: localRef.current,
-      handlers: {
-        onCallState: (call) => {
-          onCallStateRef.current(call);
-          if (TERMINAL.has(call.status)) queueMicrotask(stop);
+  const start = useCallback((): Promise<boolean> => {
+    if (clientRef.current) return Promise.resolve(true);
+    if (!options.accessToken) return Promise.resolve(false);
+    if (startPromiseRef.current) return startPromiseRef.current;
+
+    const generation = generationRef.current;
+    let pending: Promise<boolean>;
+    pending = (async () => {
+      const stream = localRef.current ?? await prepare();
+      if (generation !== generationRef.current || !stream || clientRef.current) return Boolean(clientRef.current);
+      const client = new CallRtcClient({
+        accessToken: options.accessToken,
+        side: options.side,
+        iceServers: options.iceServers,
+        localStream: stream,
+        handlers: {
+          onCallState: (call) => {
+            onCallStateRef.current(call);
+            if (TERMINAL.has(call.status)) queueMicrotask(stop);
+          },
+          onRemoteStream: setRemoteStream,
+          onRemoteMedia: ({ mic, cam }) => {
+            setRemoteMicOn(mic);
+            setRemoteCamOn(cam);
+          },
+          onConnection: setConnectionPhase,
+          onClosed: stop,
         },
-        onRemoteStream: setRemoteStream,
-        onRemoteMedia: ({ mic, cam }) => {
-          setRemoteMicOn(mic);
-          setRemoteCamOn(cam);
-        },
-        onConnection: setConnectionPhase,
-        onClosed: stop,
-      },
+      });
+      clientRef.current = client;
+      setConnectionPhase("connecting");
+      client.start();
+      return true;
+    })().finally(() => {
+      if (startPromiseRef.current === pending) startPromiseRef.current = null;
     });
-    clientRef.current = client;
-    setConnectionPhase("connecting");
-    client.start();
-    return true;
-  }, [mediaIssue, options.accessToken, options.iceServers, options.side, stop]);
+    startPromiseRef.current = pending;
+    return pending;
+  }, [options.accessToken, options.iceServers, options.side, prepare, stop]);
 
   const toggleMic = useCallback(() => {
     setMicOn((current) => {
@@ -147,9 +179,8 @@ export function useCallRtcSession(options: Options) {
   const restart = useCallback(async () => {
     stop();
     setConnectionPhase("connecting");
-    await prepare();
     return start();
-  }, [prepare, start, stop]);
+  }, [start, stop]);
 
   return {
     localStream,

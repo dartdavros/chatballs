@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Макеты страниц · CustoCRM Design System</title>
+  <link rel="stylesheet" href="assets/base.css">
+  <link rel="stylesheet" href="assets/docs.css">
+  <link rel="stylesheet" href="assets/components.css">
+  <link rel="stylesheet" href="assets/data.css">
+  <link rel="stylesheet" href="assets/patterns.css">
+  <link rel="stylesheet" href="assets/layouts.css">
+  <link rel="stylesheet" href="assets/responsive.css">
+</head>
+<body data-page="layouts">
+  <div class="ds-shell">
+    <aside class="ds-sidebar" data-ds-sidebar></aside>
+    <div class="ds-main">
+      <header class="ds-topbar">
+        <div class="ds-breadcrumbs"><span>Design System</span><i>/</i><strong>Макеты страниц</strong></div>
+        <span class="ds-version">Layouts</span>
+      </header>
+      <main class="ds-content">
+        <header class="ds-page-header">
+          <div>
+            <div class="ds-eyebrow">Layouts</div>
+            <h1>Компоновка экранов</h1>
+            <p>Наглядные схемы существующих типов экранов. Они показывают состав и иерархию, сохраняя текущий shell, интервалы, поверхности и controls.</p>
+          </div>
+        </header>
+
+        <section class="ds-section">
+          <div class="ds-section-heading">
+            <div><h2>Application shell + list page</h2><p>Sidebar, topbar, page header, filter bar и table card.</p></div>
+            <span class="ds-source">layout/* · list features</span>
+          </div>
+          <div class="layout-preview mini-shell">
+            <aside class="mini-sidebar">
+              <div class="mini-brand"><i>C</i>CustoCRM</div>
+              <nav class="mini-nav">
+                <span><svg class="icon"><use href="#i-grid"></use></svg>Обзор</span>
+                <span><svg class="icon"><use href="#i-message"></use></svg>Диалоги</span>
+                <span class="active"><svg class="icon"><use href="#i-list"></use></svg>Сотрудники</span>
+                <span><svg class="icon"><use href="#i-box"></use></svg>Продукты</span>
+                <span><svg class="icon"><use href="#i-settings"></use></svg>Настройки</span>
+              </nav>
+            </aside>
+            <div class="mini-main">
+              <header class="mini-topbar"><span>Организация / Сотрудники</span><span>Рабочий контур</span></header>
+              <div class="mini-content">
+                <div class="mini-page-header"><div><strong>Сотрудники</strong><small>Управление доступом и ролями</small></div><button class="mini-button">+ Добавить</button></div>
+                <div class="mini-filter"><i></i><span class="ds-chip">Все</span><span class="ds-chip">Активные</span></div>
+                <div class="mini-table">
+                  <div class="mini-table-row header"><span>Сотрудник</span><span>Роль</span><span>Статус</span><span></span></div>
+                  <div class="mini-table-row"><span>Андрей Ермолаев</span><span>Владелец</span><span>Активен</span><span>•••</span></div>
+                  <div class="mini-table-row"><span>Ирина Ковалева</span><span>Администратор</span><span>Приглашён</span><span>•••</span></div>
+                  <div class="mini-table-row"><span>Максим Серов</span><span>Сотрудник</span><span>Неактивен</span><span>•••</span></div>
+                  <div class="mini-table-row"><span>Елена Миронова</span><span>Сотрудник</span><span>Активен</span><span>•••</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="ds-section">
+          <div class="ds-section-heading">
+            <div><h2>Detail page</h2><p>Основная колонка, боковой rail и секции редактирования.</p></div>
+            <span class="ds-source">employee/channel detail features</span>
+          </div>
+          <article class="ds-specimen">
+            <div class="ds-specimen-header"><strong>Entity detail</strong><code>header + content + rail</code></div>
+            <div class="ds-specimen-body is-column" style="background:#f0f2f5">
+              <div class="page-header">
+                <div><h1>Telegram · Продажи</h1><p>Канал обработки обращений отдела продаж.</p></div>
+                <div style="display:flex;gap:8px"><button class="secondary-button">Назад</button><button class="primary-button">Сохранить</button></div>
+              </div>
+              <div class="detail-grid">
+                <div class="ds-grid">
+                  <section class="preview-panel"><h4>Основные параметры</h4><div class="preview-field"></div><div class="preview-field"></div><div class="preview-field"></div></section>
+                  <section class="preview-panel"><h4>Назначение и политика</h4><div class="preview-field"></div><div class="preview-field"></div></section>
+                </div>
+                <aside class="ds-grid">
+                  <section class="preview-panel"><h4>Статус</h4><span class="status-pill is-healthy"><i></i>Работает</span></section>
+                  <section class="preview-panel"><h4>Подключение</h4><div class="key-value"><span>Провайдер</span><strong>Telegram</strong></div></section>
+                </aside>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <section class="ds-section">
+          <div class="ds-section-heading">
+            <div><h2>Settings page</h2><p>Последовательность тематических секций с локальными действиями.</p></div>
+            <span class="ds-source">settings · profile · administration</span>
+          </div>
+          <article class="ds-specimen">
+            <div class="ds-specimen-header"><strong>Settings composition</strong><code>page header + section cards</code></div>
+            <div class="ds-specimen-body is-column" style="background:#f0f2f5">
+              <div class="page-header"><div><h1>Настройки организации</h1><p>Основные параметры, безопасность и уведомления.</p></div></div>
+              <div class="ds-grid cols-2">
+                <section class="preview-panel"><h4>Организация</h4><div class="preview-field"></div><div class="preview-field"></div><button class="primary-button" style="margin-top:4px">Сохранить</button></section>
+                <section class="preview-panel"><h4>Безопасность</h4><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px"><span style="font-size:12px">Двухфакторная аутентификация</span><button class="ui-switch on" role="switch" aria-checked="true"><i></i></button></div><div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px">Уведомления о входе</span><button class="ui-switch" role="switch" aria-checked="false"><i></i></button></div></section>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <section class="ds-section">
+          <div class="ds-section-heading">
+            <div><h2>Conversation workspace</h2><p>Список диалогов, центральный thread и контекст клиента.</p></div>
+            <span class="ds-source">features/conversations</span>
+          </div>
+          <div class="layout-preview conversation-preview">
+            <aside class="conversation-list">
+              <label class="search-control" style="height:32px;margin-bottom:10px"><svg class="icon"><use href="#i-search"></use></svg><input placeholder="Поиск" aria-label="Поиск"></label>
+              <div class="conversation-item active"><strong>Иван Петров</strong><br><span style="color:#8c8c8c">Вопрос по тарифу</span></div>
+              <div class="conversation-item"><strong>ООО «Вектор»</strong><br><span style="color:#8c8c8c">Новая заявка</span></div>
+              <div class="conversation-item"><strong>Мария Орлова</strong><br><span style="color:#8c8c8c">Настройка интеграции</span></div>
+            </aside>
+            <section class="conversation-thread">
+              <header class="thread-header">Иван Петров · Telegram</header>
+              <div class="thread-messages"><div class="message-bubble">Здравствуйте! Подскажите, какой тариф подходит для двух агентов?</div><div class="message-bubble own">Для двух активных ИИ-агентов подойдёт тариф Startup.</div></div>
+              <footer class="thread-composer"><i></i><button class="ui-icon-button" aria-label="Отправить"><svg class="icon"><use href="#i-message"></use></svg></button></footer>
+            </section>
+            <aside class="conversation-context"><h4 style="margin:0 0 14px;font-size:11px">Контекст</h4><div class="key-value" style="margin-bottom:12px"><span>Продукт</span><strong>CustoCRM</strong></div><div class="key-value" style="margin-bottom:12px"><span>Канал</span><strong>Telegram</strong></div><div class="key-value"><span>Статус</span><strong>Открыт</strong></div></aside>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+  <script src="assets/icons-data.js"></script>
+  <script src="assets/design-system.js"></script>
+</body>
+</html>

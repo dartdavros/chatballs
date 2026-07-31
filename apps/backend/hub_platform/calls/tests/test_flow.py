@@ -3,6 +3,7 @@ TG/MAX через outbox, истечение и системные событи�
 
 import json
 from datetime import timedelta
+from urllib.parse import parse_qs, urlparse
 from unittest import mock
 
 from django.utils import timezone
@@ -120,6 +121,34 @@ class CustomerAccessApiTests(CallTestCase):
         self.assertEqual(call.ended_by, CallEndedBy.CUSTOMER)
         self.assertIsNotNone(call.invite.responded_at)
 
+    def test_customer_ends_accepted_call_without_websocket(self) -> None:
+        token = self._customer_token()
+        self._post("/api/v1/calls/access/accept/", token)
+
+        response = self._post("/api/v1/calls/access/end/", token)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["call"]["status"], CallStatus.FAILED)
+        call = CallSession.objects.get()
+        self.assertEqual(call.failure_code, "ABORTED_BEFORE_CONNECT")
+        self.assertEqual(call.ended_by, CallEndedBy.CUSTOMER)
+
+    def test_staff_ends_accepted_call_without_websocket(self) -> None:
+        created = create_call_request(
+            conversation_id=self.conversation.id,
+            initiator=self.owner,
+        )
+        customer_token = open_call_for_identity(identity=self.identity).customer_access_token
+        self._post("/api/v1/calls/access/accept/", customer_token)
+
+        response = self._post("/api/v1/calls/access/end/", created.staff_access_token)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["call"]["status"], CallStatus.FAILED)
+        call = CallSession.objects.get()
+        self.assertEqual(call.failure_code, "ABORTED_BEFORE_CONNECT")
+        self.assertEqual(call.ended_by, CallEndedBy.STAFF)
+
     def test_state_visible_after_cancellation(self) -> None:
         token = self._customer_token()
         call = CallSession.objects.get()
@@ -228,9 +257,12 @@ class MessengerDeliveryTests(CallTestCase):
         self.assertEqual(invite.delivery_status, InviteDeliveryStatus.SENT)
         self.assertEqual(sent_kwargs["chat_id"], "chat-42")
         # Ссылка содержит свежий token; в БД хранится только его hash.
-        url_token = sent_kwargs["url"].rsplit("/", 1)[1]
+        parsed_url = urlparse(sent_kwargs["url"])
+        url_token = parsed_url.path.rsplit("/", 1)[1]
         self.assertEqual(hash_invite_token(url_token), invite.token_hash)
         self.assertNotEqual(url_token, created.invite_token)
+        self.assertEqual(parse_qs(parsed_url.query), {"kind": ["AUDIO"]})
+        self.assertIn("аудиозвонок", sent_kwargs["text"])
 
     def test_failed_delivery_keeps_call_requested_for_retry(self) -> None:
         created = create_call_request(conversation_id=self.conversation.id, initiator=self.owner)

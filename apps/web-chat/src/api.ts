@@ -20,16 +20,18 @@ export type CallKind = "AUDIO" | "VIDEO";
 export type CallInfo = {
   callId: string;
   status: string;
-  kind?: CallKind;
+  kind: CallKind;
   expiresAt?: string;
   staffName?: string;
   endedBy?: string | null;
   durationSeconds?: number | null;
 };
 
-// Единая проверка типа звонка (default — AUDIO). Используется и баннером виджета,
-// и страницей звонка, чтобы они не расходились при неопределённом kind.
-export const isVideoCall = (call: CallInfo | null | undefined): boolean => call?.kind === "VIDEO";
+export function callKindOf(call: CallInfo | null | undefined): CallKind | null {
+  return call?.kind === "AUDIO" || call?.kind === "VIDEO" ? call.kind : null;
+}
+
+export const isVideoCall = (call: CallInfo | null | undefined): boolean => callKindOf(call) === "VIDEO";
 
 export type CallBootstrap = { call: CallInfo; accessToken: string; iceServers: RTCIceServer[] };
 export type CallStateEnvelope = { call: CallInfo; iceServers: RTCIceServer[] };
@@ -108,12 +110,15 @@ export async function resolveCallInvite(inviteToken: string): Promise<CallBootst
   return r.json();
 }
 
-async function callAccessAction(action: "accept" | "decline", accessToken: string): Promise<CallInfo | null> {
+async function callAccessAction(action: "accept" | "decline" | "end", accessToken: string): Promise<CallInfo> {
   const r = await fetch(`${CALLS_API}/access/${action}/`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
   });
-  if (!r.ok) return null;
+  if (!r.ok) {
+    const payload = await r.json().catch(() => ({ detail: "Не удалось выполнить действие со звонком" })) as { detail?: string };
+    throw new Error(payload.detail || "Не удалось выполнить действие со звонком");
+  }
   return (await r.json()).call as CallInfo;
 }
 
@@ -127,6 +132,7 @@ export async function fetchCallState(accessToken: string): Promise<CallStateEnve
 }
 export const acceptCall = (accessToken: string) => callAccessAction("accept", accessToken);
 export const declineCall = (accessToken: string) => callAccessAction("decline", accessToken);
+export const endCall = (accessToken: string) => callAccessAction("end", accessToken);
 
 // --- Support mode (SPEC-HUB-0010 §7): authenticated in-product chat ---
 

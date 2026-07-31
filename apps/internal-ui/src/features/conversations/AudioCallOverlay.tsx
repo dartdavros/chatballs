@@ -7,7 +7,7 @@ import { Modal } from "antd";
 import { useEffect, useState } from "react";
 
 import { providerMeta } from "../../shared/providers";
-import type { ApiCall, CallAccess } from "./model";
+import { endCallByAccess, type ApiCall, type CallAccess } from "./model";
 import type { ConversationListItem } from "./types";
 import "./call.css";
 
@@ -15,6 +15,7 @@ type Props = {
   open: boolean;
   dialog: ConversationListItem | null;
   call: ApiCall | null;
+  requestedKind?: ApiCall["kind"] | null;
   access: CallAccess | null;
   errorText: string;
   onCallChange: (call: ApiCall) => void;
@@ -25,6 +26,7 @@ type Props = {
 
 export function AudioCallOverlay(props: Props) {
   const call = props.call;
+  const [speakerOn, setSpeakerOn] = useState(true);
   const rtc = useCallRtcSession({
     resetKey: call?.id ?? "",
     previewEnabled: false,
@@ -40,18 +42,31 @@ export function AudioCallOverlay(props: Props) {
   const mode = resolveAudioMode(call, props.errorText, rtc.connectionPhase, rtc.mediaIssue);
   useLoopingAudio("/audio/ringtone.mp3", props.open && (mode === "incoming" || mode === "ringing"), 0.5);
 
+  useEffect(() => {
+    if (!props.open || !props.access || !call || rtc.connectionPhase !== "idle") return;
+    if (call.status === "ACCEPTED" || call.status === "CONNECTING") void rtc.start();
+  }, [props.open, props.access, call?.status, rtc.connectionPhase, rtc.start]);
+
   if (!props.dialog) return null;
   const channel = providerMeta[props.dialog.channel];
   const subCaption = mode === "active" ? (rtc.micOn ? "Говорите" : "Ваш микрофон выключен") : undefined;
-  const status = buildAudioStatus(audioStatusKey(mode, call, props.errorText, rtc.connectionPhase, rtc.mediaIssue), props.dialog.name, call?.durationSeconds ?? undefined);
+  const builtStatus = buildAudioStatus(audioStatusKey(mode, call, props.errorText, rtc.connectionPhase, rtc.mediaIssue), props.dialog.name, call?.durationSeconds ?? undefined);
+  const status = props.errorText && builtStatus
+    ? { ...builtStatus, caption: props.errorText }
+    : builtStatus;
 
   const onAccept = () => { void rtc.start(); };
-  const onEnd = () => { rtc.end(); };
-  const endAndClose = () => {
-    if (mode === "active" || mode === "reconnecting" || mode === "connecting") rtc.end();
+  const finish = async () => {
+    const token = props.access?.accessToken;
+    if (!token || !call || isTerminal(call.status)) return;
+    try { props.onCallChange(await endCallByAccess(token)); }
+    finally { rtc.stop(); }
+  };
+  const onEnd = () => { void finish(); };
+  const endAndClose = async () => {
+    if (mode === "active" || mode === "reconnecting" || mode === "connecting") await finish();
     props.onClose();
   };
-  const toggleSpeaker = () => { /* громкость/динамик управляется браузером; индикация переключается без реального мьюта */ };
   // retry для статус-экрана: при проблемах с устройствами/браузером — перепроверка,
   // иначе — пересоздание звонка (props.onRetry) или рестарт соединения.
   const onRetry = () => {
@@ -61,7 +76,7 @@ export function AudioCallOverlay(props: Props) {
   };
 
   return (
-    <Modal open={props.open} onCancel={endAndClose} footer={null} closable={false} width={428} className="call-modal audio-call-modal" destroyOnHidden>
+    <Modal open={props.open} onCancel={() => void endAndClose()} footer={null} closable={false} width={428} className="call-modal audio-call-modal" destroyOnHidden>
       <AudioCallView
         mode={mode}
         status={status ?? undefined}
@@ -70,7 +85,7 @@ export function AudioCallOverlay(props: Props) {
         channelLabel={channel.label}
         showChannel
         micOn={rtc.micOn}
-        speakerOn
+        speakerOn={speakerOn}
         remoteStream={rtc.remoteStream}
         remoteMicOn={rtc.remoteMicOn}
         elapsedSeconds={elapsed}
@@ -79,12 +94,12 @@ export function AudioCallOverlay(props: Props) {
         statusLabel={statusLabel(mode)}
         subCaption={subCaption}
         onToggleMic={rtc.toggleMic}
-        onToggleSpeaker={toggleSpeaker}
+        onToggleSpeaker={() => setSpeakerOn((current) => !current)}
         onAccept={onAccept}
         onDecline={props.onCancel}
-        onCancel={mode === "ringing" || mode === "connecting" ? props.onCancel : endAndClose}
+        onCancel={mode === "ringing" ? props.onCancel : () => void endAndClose()}
         onEnd={onEnd}
-        onClose={endAndClose}
+        onClose={() => void endAndClose()}
         onCallAgain={props.onRetry}
         onRetry={onRetry}
       />

@@ -1,0 +1,260 @@
+.ui-underline-tabs {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  border-bottom: 1px solid var(--border-default);
+}
+
+.ui-underline-tabs button {
+  position: relative;
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  color: var(--text-tertiary);
+  background: transparent;
+  border: 0;
+  white-space: nowrap;
+}
+
+.ui-underline-tabs button.active {
+  color: var(--text-body);
+  font-weight: 600;
+}
+
+.ui-underline-tabs button.active::after {
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: 2px;
+  background: var(--primary);
+  content: "";
+}
+
+.ui-underline-tabs b {
+  min-width: 20px;
+  padding: 2px 6px;
+  color: var(--text-tertiary);
+  background: var(--n-9);
+  border-radius: 10px;
+  font-size: 10px;
+}
+
+.product-tag,
+.product-mark,
+.channel-badge,
+.status-pill,
+.role-badge,
+.ui-tone-badge {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.product-tag {
+  gap: 6px;
+  padding: 2px 9px;
+  border-radius: var(--radius-pill);
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.product-tag i,
+.product-mark i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.product-mark {
+  gap: 5px;
+}
+
+.channel-badge {
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 5px;
+  font-size: 10.5px;
+  font-weight: 600;
+}
+
+.channel-badge i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+
+.channel-badge.is-plain {
+  color: var(--text-secondary);
+  background: var(--n-9);
+}
+
+.role-badge {
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.role-badge.owner {
+  color: var(--text-secondary);
+  background: var(--n-8);
+}
+
+.role-badge.admin {
+  color: #ad4e00;
+  background: var(--warning-bg-strong);
+}
+
+.role-badge.employee {
+  color: var(--primary-hover);
+  background: var(--primary-bg);
+}
+
+.status-pill {
+  gap: 6px;
+  padding: 2px 8px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+.status-pill i {
+  width: 7px;
+  height: 7px;
+  background: currentColor;
+  border-radius: 50%;
+}
+
+.status-pill.is-active,
+.status-pill.is-healthy,
+.status-pill.is-published {
+  color: var(--success-text);
+}
+
+.status-pill.is-healthy,
+.status-pill.is-published {
+  background: var(--success-bg);
+  border-color: var(--success-border);
+}
+
+.status-pill.is-error {
+  color: var(--error-text);
+  background: var(--error-bg);
+  border-color: var(--error-border);
+}
+
+.status-pill.is-pending {
+  color: var(--warning-text);
+  background: var(--warning-bg);
+  border-color: var(--warning-border);
+}
+
+.status-pill.is-archived,
+.status-pill.is-draft,
+.status-pill.is-unchecked {
+  color: var(--text-tertiary);
+  background: var(--n-10);
+  border-color: var(--n-7);
+}
+
+.status-pill.is-blocked {
+  color: var(--error-text);
+}
+
+.status-pill.is-disabled {
+  color: var(--warning-text);
+}
+
+.status-pill.is-invited {
+  color: var(--primary-hover);
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  color: #fff;
+  background: var(--primary);
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.key-value,
+.metric-box {
+  display: grid;
+  gap: 5px;
+}
+
+.key-value span,
+.metric-box span {
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+}
+
+.key-value strong,
+.metric-box strong {
+  color: var(--text-body);
+  font-size: 13.5px;
+}
+
+.metric-box {
+  min-width: 150px;
+  padding: 14px 16px;
+  background: #fff;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
+}
+
+.metric-box strong {
+  font-size: 22px;
+  line-height: 1.2;
+}
+
+.ui-table-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.ui-table-pagination > span {
+  color: var(--text-tertiary);
+  font-size: 12.5px;
+}
+
+.ui-table-pagination nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ui-table-pagination button {
+  min-width: 30px;
+  height: 30px;
+  padding: 0 9px;
+  color: var(--text-secondary);
+  background: #fff;
+  border: 1px solid var(--n-7);
+  border-radius: 7px;
+  font-size: 13px;
+}
+
+.ui-table-pagination button.active {
+  color: #fff;
+  background: var(--primary);
+  border-color: var(--primary);
+  font-weight: 600;
+}
+
+.ui-table-pagination button:not(:disabled):hover {
+  color: var(--primary);
+  border-color: var(--primary);
+}

@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Инвентарь · CustoCRM Design System</title>
+  <link rel="stylesheet" href="assets/base.css">
+  <link rel="stylesheet" href="assets/docs.css">
+  <link rel="stylesheet" href="assets/components.css">
+  <link rel="stylesheet" href="assets/data.css">
+  <link rel="stylesheet" href="assets/patterns.css">
+  <link rel="stylesheet" href="assets/layouts.css">
+  <link rel="stylesheet" href="assets/responsive.css">
+</head>
+<body data-page="inventory">
+  <div class="ds-shell">
+    <aside class="ds-sidebar" data-ds-sidebar></aside>
+    <div class="ds-main">
+      <header class="ds-topbar">
+        <div class="ds-breadcrumbs"><span>Design System</span><i>/</i><strong>Инвентарь</strong></div>
+        <span class="ds-version">Inventory</span>
+      </header>
+      <main class="ds-content">
+        <header class="ds-page-header">
+          <div>
+            <div class="ds-eyebrow">Inventory</div>
+            <h1>Инвентарь фронтенда</h1>
+            <p>Реестр включает PascalCase-компоненты из TSX-файлов, системные CSS-компоненты, дизайн-токены и основные layout-паттерны. Всего записей: <strong data-inventory-total>—</strong>.</p>
+          </div>
+        </header>
+
+        <div class="ds-note">
+          <strong>Область:</strong> в таблице отдельно помечены системные, layout-, application- и feature-компоненты. Это инвентаризация существующего состава без оценки и без проверки соблюдения дизайн-системы.
+        </div>
+
+        <section class="ds-section">
+          <div class="inventory-toolbar">
+            <input class="inventory-search" type="search" placeholder="Название, категория, исходник или вариант" data-inventory-search aria-label="Поиск по инвентарю">
+            <span class="inventory-count" data-inventory-count></span>
+            <a class="link is-muted" href="inventory.json">Открыть JSON</a>
+          </div>
+          <div class="table-card">
+            <div class="table-scroll">
+              <table class="baseline-table">
+                <thead>
+                  <tr><th>Название</th><th>Тип</th><th>Категория</th><th>Область</th><th>Исходник</th><th>Варианты / роль</th></tr>
+                </thead>
+                <tbody data-inventory-body></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+  <script src="assets/inventory-data.js"></script>
+  <script src="assets/icons-data.js"></script>
+  <script src="assets/design-system.js"></script>
+</body>
+</html>

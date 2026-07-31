@@ -160,6 +160,7 @@ export function ConversationWorkspace({ department, isOwner = false, listTitle, 
           open={callController.open}
           dialog={selectedDialog}
           call={callController.call}
+          requestedKind={callController.requestedKind}
           access={callController.access}
           errorText={callController.errorText}
           onCallChange={callController.setCall}

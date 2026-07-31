@@ -1,9 +1,15 @@
 import { describe, expect, it, vi } from "vitest";
 
 import type { CallInfo } from "../api";
-import { buildCallViewStatus, isTerminalCall, resolveCallViewMode } from "./model";
+import {
+  buildAudioCallViewStatus,
+  buildCallViewStatus,
+  isTerminalCall,
+  resolveAudioCallViewMode,
+  resolveCallViewMode,
+} from "./model";
 
-const call: CallInfo = { callId: "call-1", status: "ACCEPTED", staffName: "Оператор" };
+const call: CallInfo = { callId: "call-1", status: "ACCEPTED", kind: "VIDEO", staffName: "Оператор" };
 const action = vi.fn();
 
 describe("call view model", () => {
@@ -20,5 +26,34 @@ describe("call view model", () => {
     expect(status?.title).toBe("Нет доступа к камере и микрофону");
     expect(status?.actions?.map((item) => item.label)).toEqual(["Повторить проверку", "Без видео"]);
     expect(isTerminalCall("ENDED")).toBe(true);
+  });
+
+  it("keeps an audio invitation incoming until the customer accepts it", () => {
+    expect(resolveAudioCallViewMode({
+      loading: false,
+      invalid: false,
+      call: { ...call, kind: "AUDIO", status: "RINGING" },
+      started: false,
+      connection: "idle",
+      mediaIssue: "none",
+    })).toBe("incoming");
+  });
+
+  it("turns an audio action failure into a classified retry state", () => {
+    const status = buildAudioCallViewStatus({
+      loading: false,
+      invalid: false,
+      call: { ...call, kind: "AUDIO" },
+      connection: "idle",
+      mediaIssue: "none",
+      errorText: "Приглашение уже нельзя принять",
+      close: action,
+    });
+    expect(status).toMatchObject({
+      icon: "alert",
+      tone: "error",
+      caption: "Приглашение уже нельзя принять",
+      bar: "retryClose",
+    });
   });
 });

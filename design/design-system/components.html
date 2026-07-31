@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Компоненты · CustoCRM Design System</title>
+  <link rel="stylesheet" href="assets/base.css">
+  <link rel="stylesheet" href="assets/docs.css">
+  <link rel="stylesheet" href="assets/components.css">
+  <link rel="stylesheet" href="assets/data.css">
+  <link rel="stylesheet" href="assets/patterns.css">
+  <link rel="stylesheet" href="assets/layouts.css">
+  <link rel="stylesheet" href="assets/responsive.css">
+</head>
+<body data-page="components">
+  <div class="ds-shell">
+    <aside class="ds-sidebar" data-ds-sidebar></aside>
+    <div class="ds-main">
+      <header class="ds-topbar">
+        <div class="ds-breadcrumbs"><span>Design System</span><i>/</i><strong>Компоненты</strong></div>
+        <span class="ds-version">Shared UI</span>
+      </header>
+      <main class="ds-content">
+        <header class="ds-page-header">
+          <div>
+            <div class="ds-eyebrow">Components</div>
+            <h1>Базовые компоненты</h1>
+            <p>Статические примеры повторяют варианты и классы компонентов из <code>src/shared</code>. Интерактивные состояния можно переключать прямо на странице.</p>
+          </div>
+        </header>
+
+        <section class="ds-section">
+          <div class="ds-section-heading">
+            <div><h2>Кнопки</h2><p>Основные действия, вторичные действия, danger и компактные controls.</p></div>
+            <span class="ds-source">ui-controls.tsx · ui-controls.css</span>
+          </div>
+          <div class="ds-grid cols-2">
+            <article class="ds-specimen">
+              <div class="ds-specimen-header"><strong>Button variants</strong><code>Button</code></div>
+              <div class="ds-specimen-body">
+                <button class="primary-button"><svg class="icon"><use href="#i-plus"></use></svg>Создать</button>
+                <button class="secondary-button">Отмена</button>
+                <button class="ui-action-button"><svg class="icon"><use href="#i-edit"></use></svg>Изменить</button>
+                <button class="danger-outline"><svg class="icon"><use href="#i-trash"></use></svg>Удалить</button>
+                <button class="primary-button" disabled>Недоступно</button>
+              </div>
+            </article>
+            <article class="ds-specimen">
+              <div class="ds-specimen-header"><strong>Icon buttons</strong><code>IconButton</code></div>
+              <div class="ds-specimen-body">
+                <button class="ui-icon-button" aria-label="Редактировать"><svg class="icon"><use href="#i-edit"></use></svg></button>
+                <button class="ui-icon-button is-bare" aria-label="Дополнительно"><svg class="icon"><use href="#i-more"></use></svg></button>
+                <button class="ui-icon-button is-danger" aria-label="Удалить"><svg class="icon"><use href="#i-trash"></use></svg></button>
+                <button class="icon-button" aria-label="Уведомления"><svg class="icon"><use href="#i-bell"></use></svg><b>3</b></button>
+                <button class="row-menu-button" aria-label="Меню строки"><svg class="icon"><use href="#i-more"></use></svg></button>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="ds-section">
+          <div class="ds-section-heading">
+            <div><h2>Ссылки</h2><p>Одна база <code>.link</code> и модификаторы по роли.</p></div>
+            <span class="ds-source">links.css</span>
+          </div>
+          <article class="ds-specimen">
+            <div class="ds-specimen-header"><strong>Link variants</strong><code>.link</code></div>
+            <div class="ds-specimen-body">
+              <a class="link" href="#">Открыть</a>
+              <a class="link is-strong" href="#">ООО «ЭДЕВС»</a>
+              <a class="link is-neutral" href="#">Андрей Ермолаев</a>
+              <button class="link is-muted">Назад</button>
+              <a class="link is-mono" href="#">ORD-2026-0142</a>
+              <a class="link has-icon" href="#"><svg class="icon"><use href="#i-copy"></use></svg>Скопировать</a>
+              <button class="link" disabled>Недоступно</button>
+            </div>
+          </article>
+        </section>
+
+        <section class="ds-section">
+          <div class="ds-section-heading">
+            <div><h2>Поля формы</h2><p>Editable, readonly, disabled, invalid, select и textarea.</p></div>
+            <span class="ds-source">form-controls.tsx · form-controls.css</span>
+          </div>
+          <div class="ds-grid cols-2">
+            <article class="ds-specimen">
+              <div class="ds-specimen-header"><strong>FormField</strong><code>FormField</code></div>
+              <div class="ds-specimen-body is-column">
+                <label class="readonly-field form-field is-editable"><span>Название</span><input value="Основной канал" aria-label="Название"></label>
+                <label class="readonly-field form-field is-readonly"><span>Идентификатор</span><input value="channel_primary" disabled aria-label="Идентификатор"></label>
+                <label class="readonly-field form-field is-editable is-invalid"><span>Email</span><input value="wrong-address" aria-label="Email"><small class="form-field-error">Укажите корректный email</small></label>
+              </div>
+            </article>
+            <article class="ds-specimen">
+              <div class="ds-specimen-header"><strong>Select & textarea</strong><code>SelectField · TextAreaField</code></div>
+              <div class="ds-specimen-body is-column">
+                <label class="readonly-field select-like"><span>Статус</span><select aria-label="Статус"><option>Активен</option><option>Неактивен</option></select><svg class="icon select-chevron"><use href="#i-chevron"></use></svg></label>
+                <label class="readonly-field form-field is-editable"><span>Описание</span><textarea aria-label="Описание">Канал обработки обращений клиентов.</textarea></label>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="ds-section">
+          <div class="ds-section-heading">
+            <div><h2>Поиск и переключатели</h2><p>Компактный поиск, switch и segmented control.</p></div>
+            <span class="ds-source">ui-controls.tsx · table-controls.css</span>
+          </div>
+          <div class="ds-grid cols-3">
+            <article class="ds-specimen">
+              <div class="ds-specimen-header"><strong>SearchInput</strong><code>SearchInput</code></div>
+              <div class="ds-specimen-body">
+                <label class="search-control"><svg class="icon"><use href="#i-search"></use></svg><input placeholder="Поиск" aria-label="Поиск"></label>
+              </div>
+            </article>
+            <article class="ds-specimen">
+              <div class="ds-specimen-header"><strong>SwitchButton</strong><code>.ui-switch</code></div>
+              <div class="ds-specimen-body">
+                <button class="ui-switch" type="button" role="switch" aria-checked="false" aria-label="Выключено"><i></i></button>
+                <button class="ui-switch on" type="button" role="switch" aria-checked="true" aria-label="Включено"><i></i></button>
+                <button class="ui-switch is-large on" type="button" role="switch" aria-checked="true" aria-label="Крупный"><i></i></button>
+              </div>
+            </article>
+            <article class="ds-specimen">
+              <div class="ds-specimen-header"><strong>Segmented</strong><code>Segmented</code></div>
+              <div class="ds-specimen-body">
+                <div class="segmented" data-segmented><button class="active">Все</button><button>Активные</button><button>Архив</button></div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="ds-section">
+          <div class="ds-section-heading">
+            <div><h2>Вкладки и пагинация</h2><p>Навигация внутри раздела и управление страницами таблицы.</p></div>
+            <span class="ds-source">ui-controls.tsx · ui-controls.css</span>
+          </div>
+          <div class="ds-grid cols-2">
+            <article class="ds-specimen">
+              <div class="ds-specimen-header"><strong>UnderlineTabs</strong><code>UnderlineTabs</code></div>
+              <div class="ds-specimen-body is-column">
+                <div class="ui-underline-tabs" data-tabs>
+                  <button class="active">Обзор</button>
+                  <button>Настройки</button>
+                  <button>История <b>12</b></button>
+                  <button disabled>Удалённые</button>
+                </div>
+              </div>
+            </article>
+            <article class="ds-specimen">
+              <div class="ds-specimen-header"><strong>TablePagination</strong><code>TablePagination</code></div>
+              <div class="ds-specimen-body is-column">
+                <div class="ui-table-pagination">
+                  <span>Показано 1–20 из 74</span>
+                  <nav aria-label="Пагинация"><button disabled>‹</button><button class="active">1</button><button>2</button><button>3</button><button>4</button><button>›</button></nav>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+  <script src="assets/icons-data.js"></script>
+  <script src="assets/design-system.js"></script>
+</body>
+</html>

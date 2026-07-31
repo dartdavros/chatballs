@@ -3,6 +3,8 @@
 // glass-аватар 126px с двумя волнами edv-ring2, живая осциллограмма собеседника.
 // Никакой камеры/видео/PiP — это честный аудио-режим.
 
+import { useEffect, useRef } from "react";
+
 import { AudioCallWaveform } from "./AudioCallWaveform";
 import { AudioStatusIcon } from "./AudioCallIcons";
 import { MicIcon, PhoneIcon, SpeakerIcon } from "./AudioCallIcons";
@@ -46,6 +48,7 @@ export function AudioCallView(props: Props) {
 
   return (
     <div className="hub-audio-view" data-bg={bgState(props.mode)}>
+      <RemoteAudio stream={props.remoteStream} muted={props.speakerOn === false} />
       <div className="hub-audio-bg" aria-hidden>
         <div className="hub-audio-grad" />
         <div className="hub-audio-blob a" />
@@ -114,6 +117,17 @@ export function AudioCallView(props: Props) {
       </div>
     </div>
   );
+}
+
+function RemoteAudio({ stream, muted }: { stream?: MediaStream | null; muted: boolean }) {
+  const ref = useRef<HTMLAudioElement>(null);
+  useEffect(() => {
+    const audio = ref.current;
+    if (!audio) return;
+    audio.srcObject = stream ?? null;
+    if (stream) void audio.play().catch(() => undefined);
+  }, [stream]);
+  return <audio ref={ref} autoPlay muted={muted} className="hub-audio-remote" />;
 }
 
 function StatusCenter({ status }: { status: AudioCallStatus }) {

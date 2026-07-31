@@ -5,7 +5,7 @@
 import { AudioCallView, type AudioCallMode, type AudioCallStatus, useCallRtcSession, useLoopingAudio } from "@edevs/ui";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { acceptCall, declineCall, fetchCallState, type CallInfo } from "../api";
+import { acceptCall, declineCall, endCall, fetchCallState, type CallInfo } from "../api";
 import { audioCallStatusLabel, buildAudioCallViewStatus, isTerminalCall, resolveAudioCallViewMode } from "./model";
 import { useConnectionTimer } from "./useConnectionTimer";
 
@@ -21,6 +21,8 @@ type Props = {
 export function AudioCallStage({ call, accessToken, iceServers, loading, invalid, onCall }: Props) {
   const [started, setStarted] = useState(false);
   const [joining, setJoining] = useState(false);
+  const [speakerOn, setSpeakerOn] = useState(true);
+  const [errorText, setErrorText] = useState("");
 
   const rtc = useCallRtcSession({
     resetKey: call?.callId ?? "",
@@ -46,53 +48,77 @@ export function AudioCallStage({ call, accessToken, iceServers, loading, invalid
     if (isTerminalCall(call?.status)) rtc.stop();
   }, [call?.status, rtc.stop]);
 
-  const close = useCallback(() => {
-    if (started) rtc.end();
+  const close = useCallback(async () => {
+    if (accessToken && call && !isTerminalCall(call.status) && call.status !== "REQUESTED" && call.status !== "RINGING") {
+      try { onCall(await endCall(accessToken)); } catch { /* terminal polling remains authoritative */ }
+    }
+    rtc.stop();
     if (history.length > 1) history.back(); else window.close();
-  }, [rtc.end, started]);
+  }, [accessToken, call, onCall, rtc.stop]);
 
   async function join() {
     if (!accessToken || joining) return;
     setJoining(true);
-    if (call?.status === "REQUESTED" || call?.status === "RINGING") {
-      const accepted = await acceptCall(accessToken);
-      if (accepted) onCall(accepted);
+    setErrorText("");
+    try {
+      const stream = await rtc.prepare();
+      if (!stream) return;
+      if (call?.status === "REQUESTED" || call?.status === "RINGING") {
+        onCall(await acceptCall(accessToken));
+      }
+      setStarted(true);
+      await rtc.start();
+    } catch (error) {
+      setErrorText(error instanceof Error ? error.message : "Не удалось принять звонок");
+    } finally {
+      setJoining(false);
     }
-    setStarted(true);
-    rtc.start();
-    setJoining(false);
   }
 
   const onCancel = useCallback(async () => {
     if (!accessToken) return;
-    if (call?.status === "REQUESTED" || call?.status === "RINGING") {
-      const declined = await declineCall(accessToken);
-      if (declined) onCall(declined);
-      return;
+    setErrorText("");
+    try {
+      const ended = call?.status === "REQUESTED" || call?.status === "RINGING"
+        ? await declineCall(accessToken)
+        : await endCall(accessToken);
+      onCall(ended);
+      rtc.stop();
+    } catch (error) {
+      setErrorText(error instanceof Error ? error.message : "Не удалось завершить звонок");
     }
-    setStarted(true);
-    if (rtc.start()) rtc.end();
-  }, [accessToken, call?.status, onCall, rtc]);
+  }, [accessToken, call?.status, onCall, rtc.stop]);
 
-  const mode: AudioCallMode = resolveAudioCallViewMode({ loading, invalid, call, started, connection: rtc.connectionPhase, mediaIssue: rtc.mediaIssue });
+  const onEnd = useCallback(async () => {
+    if (!accessToken) return;
+    try {
+      onCall(await endCall(accessToken));
+    } catch (error) {
+      setErrorText(error instanceof Error ? error.message : "Не удалось завершить звонок");
+    } finally {
+      rtc.stop();
+    }
+  }, [accessToken, onCall, rtc.stop]);
+
+  const mode: AudioCallMode = resolveAudioCallViewMode({ loading, invalid, call, started, connection: rtc.connectionPhase, mediaIssue: rtc.mediaIssue, errorText });
   useLoopingAudio("/chat/audio/ringtone.mp3", !started && (call?.status === "REQUESTED" || call?.status === "RINGING"));
   const status: AudioCallStatus | undefined = useMemo(
-    () => buildAudioCallViewStatus({ loading, invalid, call, connection: rtc.connectionPhase, mediaIssue: rtc.mediaIssue, close }),
-    [loading, invalid, call, rtc.connectionPhase, rtc.mediaIssue, close],
+    () => buildAudioCallViewStatus({ loading, invalid, call, connection: rtc.connectionPhase, mediaIssue: rtc.mediaIssue, errorText, close }),
+    [loading, invalid, call, rtc.connectionPhase, rtc.mediaIssue, errorText, close],
   );
   const elapsed = useConnectionTimer(rtc.connectionPhase === "connected");
   const peerName = call?.staffName || "Оператор";
   const initials = peerName.trim().split(/\s+/).map((part) => part[0]).slice(0, 2).join("").toUpperCase() || "ОП";
 
   return (
-    <main className="public-call-page">
+    <main className="public-call-page is-audio">
       <AudioCallView
         mode={mode}
         status={status}
         peerName={peerName}
         peerInitials={initials}
         micOn={rtc.micOn}
-        speakerOn
+        speakerOn={speakerOn}
         remoteStream={rtc.remoteStream}
         remoteMicOn={rtc.remoteMicOn}
         elapsedSeconds={elapsed}
@@ -101,11 +127,13 @@ export function AudioCallStage({ call, accessToken, iceServers, loading, invalid
         statusLabel={audioCallStatusLabel(mode, status)}
         subCaption={mode === "active" ? (rtc.micOn ? "Говорите" : "Ваш микрофон выключен") : undefined}
         onToggleMic={rtc.toggleMic}
+        onToggleSpeaker={() => setSpeakerOn((current) => !current)}
         onAccept={() => void join()}
         onDecline={() => void onCancel()}
         onCancel={() => void onCancel()}
-        onEnd={rtc.end}
-        onClose={close}
+        onEnd={() => void onEnd()}
+        onClose={() => void close()}
+        onRetry={() => { setErrorText(""); void rtc.prepare(); }}
       />
     </main>
   );

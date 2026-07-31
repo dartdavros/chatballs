@@ -10,7 +10,7 @@ from hub_platform.calls.errors import (
     CallInvalidTransition,
     CallTokenError,
 )
-from hub_platform.calls.lifecycle import transition_call
+from hub_platform.calls.lifecycle import finish_call, transition_call
 from hub_platform.calls.models import (
     TERMINAL_CALL_STATUSES,
     CallEndedBy,
@@ -206,6 +206,12 @@ def decline_call_by_access_token(*, token: str) -> CallSession:
             )
         except CallInvalidTransition as error:
             raise CallConflict("Приглашение уже нельзя отклонить") from error
+
+
+def end_call_by_access_token(*, token: str) -> CallSession:
+    claims, call, context = _authorize_call_access(token=token, allow_terminal=True)
+    with tenant_atomic(context):
+        return finish_call(call_session_id=call.id, side=claims.side)
 
 
 def call_state_by_access_token(*, token: str) -> CallSession:

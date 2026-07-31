@@ -5,7 +5,7 @@
 import { CallView, useCallRtcSession, useLoopingAudio } from "@edevs/ui";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { acceptCall, declineCall, fetchCallState, type CallInfo } from "../api";
+import { acceptCall, declineCall, endCall, fetchCallState, type CallInfo } from "../api";
 import { buildCallViewStatus, callViewSubtitle, isTerminalCall, resolveCallViewMode } from "./model";
 import { useConnectionTimer } from "./useConnectionTimer";
 
@@ -21,6 +21,7 @@ type Props = {
 export function VideoCallStage({ call, accessToken, iceServers, loading, invalid, onCall }: Props) {
   const [started, setStarted] = useState(false);
   const [joining, setJoining] = useState(false);
+  const [errorText, setErrorText] = useState("");
 
   const rtc = useCallRtcSession({
     resetKey: call?.callId ?? "",
@@ -28,12 +29,15 @@ export function VideoCallStage({ call, accessToken, iceServers, loading, invalid
     accessToken,
     side: "CUSTOMER",
     iceServers,
-    onCallState: (state) => { if (call) onCall({ ...call, ...state }); else onCall(state); },
+    onCallState: (state) => { if (call) onCall({ ...call, ...state }); },
   });
-  const close = useCallback(() => {
-    if (started) rtc.end();
+  const close = useCallback(async () => {
+    if (accessToken && call && !isTerminalCall(call.status) && call.status !== "REQUESTED" && call.status !== "RINGING") {
+      try { onCall(await endCall(accessToken)); } catch { /* terminal polling remains authoritative */ }
+    }
+    rtc.stop();
     if (history.length > 1) history.back(); else window.close();
-  }, [rtc.end, started]);
+  }, [accessToken, call, onCall, rtc.stop]);
 
   // Поллинг состояния до терминала.
   useEffect(() => {
@@ -52,31 +56,48 @@ export function VideoCallStage({ call, accessToken, iceServers, loading, invalid
   async function join() {
     if (!accessToken || joining) return;
     setJoining(true);
-    if (call?.status === "REQUESTED" || call?.status === "RINGING") {
-      const accepted = await acceptCall(accessToken);
-      if (accepted) onCall(accepted);
+    setErrorText("");
+    try {
+      const stream = await rtc.prepare();
+      if (!stream) return;
+      if (call?.status === "REQUESTED" || call?.status === "RINGING") {
+        onCall(await acceptCall(accessToken));
+      }
+      setStarted(true);
+      await rtc.start();
+    } catch (error) {
+      setErrorText(error instanceof Error ? error.message : "Не удалось принять звонок");
+    } finally {
+      setJoining(false);
     }
-    setStarted(true);
-    rtc.start();
-    setJoining(false);
   }
 
   async function cancelPrecall() {
     if (!accessToken) return;
-    if (call?.status === "REQUESTED" || call?.status === "RINGING") {
-      const declined = await declineCall(accessToken);
-      if (declined) onCall(declined);
-      return;
+    setErrorText("");
+    try {
+      const ended = call?.status === "REQUESTED" || call?.status === "RINGING"
+        ? await declineCall(accessToken)
+        : await endCall(accessToken);
+      onCall(ended);
+      rtc.stop();
+    } catch (error) {
+      setErrorText(error instanceof Error ? error.message : "Не удалось завершить звонок");
     }
-    setStarted(true);
-    if (rtc.start()) rtc.end();
   }
 
-  const mode = resolveCallViewMode({ loading, invalid, call, started, connection: rtc.connectionPhase, mediaIssue: rtc.mediaIssue });
+  async function end() {
+    if (!accessToken) return;
+    try { onCall(await endCall(accessToken)); }
+    catch (error) { setErrorText(error instanceof Error ? error.message : "Не удалось завершить звонок"); }
+    finally { rtc.stop(); }
+  }
+
+  const mode = resolveCallViewMode({ loading, invalid, call, started, connection: rtc.connectionPhase, mediaIssue: rtc.mediaIssue, errorText });
   useLoopingAudio("/chat/audio/ringtone.mp3", !started && (call?.status === "REQUESTED" || call?.status === "RINGING"));
   const status = useMemo(
-    () => buildCallViewStatus({ loading, invalid, call, connection: rtc.connectionPhase, mediaIssue: rtc.mediaIssue, close, retry: rtc.restart, prepare: rtc.prepare, join: () => void join() }),
-    [loading, invalid, call, joining, rtc.connectionPhase, rtc.mediaIssue, close, rtc.restart, rtc.prepare],
+    () => buildCallViewStatus({ loading, invalid, call, connection: rtc.connectionPhase, mediaIssue: rtc.mediaIssue, errorText, close: () => void close(), retry: rtc.restart, prepare: rtc.prepare, join: () => void join() }),
+    [loading, invalid, call, joining, rtc.connectionPhase, rtc.mediaIssue, errorText, close, rtc.restart, rtc.prepare],
   );
   const elapsed = useConnectionTimer(rtc.connectionPhase === "connected");
   const peerName = call?.staffName || "Оператор";
@@ -105,8 +126,8 @@ export function VideoCallStage({ call, accessToken, iceServers, loading, invalid
         onToggleCam={rtc.toggleCam}
         onJoin={() => void join()}
         onCancel={() => void cancelPrecall()}
-        onEnd={rtc.end}
-        onClose={close}
+        onEnd={() => void end()}
+        onClose={() => void close()}
       />
     </main>
   );

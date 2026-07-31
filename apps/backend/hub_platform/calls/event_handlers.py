@@ -20,9 +20,6 @@ from hub_platform.tenancy.context import TenantContext
 
 logger = logging.getLogger(__name__)
 
-INVITE_MESSAGE_TEXT = "Приглашаем вас на онлайн-звонок. Нажмите кнопку, чтобы перейти к звонку."
-
-
 class CallInviteDeliveryError(Exception):
     pass
 
@@ -52,12 +49,14 @@ def handle_call_invite_send(payload: dict, context: TenantContext | None) -> Non
         token, token_hash = issue_invite_token()
         invite.token_hash = token_hash
         invite.save(update_fields=["token_hash"])
-        url = f"{settings.CUS_PUBLIC_BASE_URL.rstrip('/')}/calls/{token}"
+        call_label = "аудиозвонок" if call.kind == "AUDIO" else "видеозвонок"
+        invite_text = f"Приглашаем вас на {call_label}. Нажмите кнопку, чтобы перейти к звонку."
+        url = f"{settings.CUS_PUBLIC_BASE_URL.rstrip('/')}/calls/{token}?kind={call.kind}"
         sent = transports.send_call_invite(
             call.delivery_connection,
             chat_id=call.conversation.external_chat_id,
             user_id=invite.connection_identity.external_user_id,
-            text=INVITE_MESSAGE_TEXT,
+            text=invite_text,
             url=url,
         )
         if not sent:

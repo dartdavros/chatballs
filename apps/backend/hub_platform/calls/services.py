@@ -35,6 +35,7 @@ from hub_platform.calls.public_access import (
     authorize_call_access_token,
     call_state_by_access_token,
     decline_call_by_access_token,
+    end_call_by_access_token,
     resolve_invite,
 )
 from hub_platform.calls.tokens import (
@@ -62,6 +63,7 @@ __all__ = (
     "authorize_call_access_token",
     "call_state_by_access_token",
     "decline_call_by_access_token",
+    "end_call_by_access_token",
     "resolve_invite",
     "record_call_metric",
 )

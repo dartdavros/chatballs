@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Данные и статусы · CustoCRM Design System</title>
+  <link rel="stylesheet" href="assets/base.css">
+  <link rel="stylesheet" href="assets/docs.css">
+  <link rel="stylesheet" href="assets/components.css">
+  <link rel="stylesheet" href="assets/data.css">
+  <link rel="stylesheet" href="assets/patterns.css">
+  <link rel="stylesheet" href="assets/layouts.css">
+  <link rel="stylesheet" href="assets/responsive.css">
+</head>
+<body data-page="data-display">
+  <div class="ds-shell">
+    <aside class="ds-sidebar" data-ds-sidebar></aside>
+    <div class="ds-main">
+      <header class="ds-topbar">
+        <div class="ds-breadcrumbs"><span>Design System</span><i>/</i><strong>Данные и статусы</strong></div>
+        <span class="ds-version">Data display</span>
+      </header>
+      <main class="ds-content">
+        <header class="ds-page-header">
+          <div>
+            <div class="ds-eyebrow">Data display</div>
+            <h1>Представление данных</h1>
+            <p>Компоненты для статусов, ролей, продуктов, каналов, идентичности и кратких показателей.</p>
+          </div>
+        </header>
+
+        <section class="ds-section">
+          <div class="ds-section-heading">
+            <div><h2>Статусы</h2><p>Полный набор ключей <code>StatusPillKey</code>.</p></div>
+            <span class="ds-source">src/shared/ui.tsx</span>
+          </div>
+          <article class="ds-specimen">
+            <div class="ds-specimen-header"><strong>StatusPill</strong><code>12 состояний</code></div>
+            <div class="ds-specimen-body">
+              <span class="status-pill is-healthy"><i></i>Работает</span>
+              <span class="status-pill is-active"><i></i>Активен</span>
+              <span class="status-pill is-published"><i></i>Опубликован</span>
+              <span class="status-pill is-blocked"><i></i>Заблокирован</span>
+              <span class="status-pill is-disabled"><i></i>Неактивен</span>
+              <span class="status-pill is-invited"><i></i>Приглашён</span>
+              <span class="status-pill is-archived"><i></i>Архивный</span>
+              <span class="status-pill is-draft"><i></i>Черновик</span>
+              <span class="status-pill is-error"><i></i>Ошибка</span>
+              <span class="status-pill is-pending"><i></i>Проверяется</span>
+              <span class="status-pill is-unchecked"><i></i>Не проверялось</span>
+            </div>
+          </article>
+        </section>
+
+        <section class="ds-section">
+          <div class="ds-section-heading">
+            <div><h2>Роли</h2><p>Роли сотрудников организации.</p></div>
+            <span class="ds-source">src/shared/ui.tsx</span>
+          </div>
+          <article class="ds-specimen">
+            <div class="ds-specimen-header"><strong>RoleBadge</strong><code>OWNER · ADMIN · EMPLOYEE</code></div>
+            <div class="ds-specimen-body">
+              <span class="role-badge owner">Владелец</span>
+              <span class="role-badge admin">Администратор</span>
+              <span class="role-badge employee">Сотрудник</span>
+            </div>
+          </article>
+        </section>
+
+        <section class="ds-section">
+          <div class="ds-section-heading">
+            <div><h2>Продукты</h2><p>Плотный tag для таблиц и нейтральный mark для текста.</p></div>
+            <span class="ds-source">ui.tsx · utils.ts</span>
+          </div>
+          <div class="ds-grid cols-2">
+            <article class="ds-specimen">
+              <div class="ds-specimen-header"><strong>ProductTag</strong><code>productAccent()</code></div>
+              <div class="ds-specimen-body">
+                <span class="product-tag" style="color:#722ed1;background:#f9f0ff"><i style="background:#722ed1"></i>FoxRay</span>
+                <span class="product-tag" style="color:#0958d9;background:#e6f4ff"><i style="background:#0958d9"></i>CustoCRM</span>
+                <span class="product-tag" style="color:#0958d9;background:#e6f4ff"><i style="background:#0958d9"></i>FirePage</span>
+              </div>
+            </article>
+            <article class="ds-specimen">
+              <div class="ds-specimen-header"><strong>ProductMark</strong><code>ProductMark</code></div>
+              <div class="ds-specimen-body">
+                <span class="product-mark"><i style="background:#722ed1"></i>FoxRay</span>
+                <span class="product-mark"><i style="background:#0958d9"></i>CustoCRM</span>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="ds-section">
+          <div class="ds-section-heading">
+            <div><h2>Каналы</h2><p>Короткие метки провайдеров из общего словаря.</p></div>
+            <span class="ds-source">badges.tsx · providers.ts</span>
+          </div>
+          <article class="ds-specimen">
+            <div class="ds-specimen-header"><strong>ChannelBadge</strong><code>EMAIL · MAX · TG · WEB</code></div>
+            <div class="ds-specimen-body">
+              <span class="channel-badge" style="color:#d48806;background:#fff7e6"><i style="background:#d48806"></i>Email</span>
+              <span class="channel-badge" style="color:#6b5be0;background:#f2f0ff"><i style="background:#6b5be0"></i>MAX</span>
+              <span class="channel-badge" style="color:#2f8fd0;background:#eaf6fd"><i style="background:#2f8fd0"></i>TG</span>
+              <span class="channel-badge" style="color:#0f9b8e;background:#e8f7f4"><i style="background:#0f9b8e"></i>Web</span>
+              <span class="channel-badge is-plain">Unknown</span>
+            </div>
+          </article>
+        </section>
+
+        <section class="ds-section">
+          <div class="ds-section-heading">
+            <div><h2>Идентичность и показатели</h2><p>Avatar, KeyValue и MetricBox.</p></div>
+            <span class="ds-source">ui.tsx · form-controls.tsx</span>
+          </div>
+          <div class="ds-grid cols-3">
+            <article class="ds-specimen">
+              <div class="ds-specimen-header"><strong>Avatar</strong><code>initials()</code></div>
+              <div class="ds-specimen-body">
+                <span class="avatar">АЕ</span>
+                <span class="avatar">ИК</span>
+                <span class="avatar">EH</span>
+              </div>
+            </article>
+            <article class="ds-specimen">
+              <div class="ds-specimen-header"><strong>KeyValue</strong><code>KeyValue</code></div>
+              <div class="ds-specimen-body is-column">
+                <div class="key-value"><span>Организация</span><strong>ООО «ЭДЕВС»</strong></div>
+                <div class="key-value"><span>Владелец</span><strong>Андрей Ермолаев</strong></div>
+              </div>
+            </article>
+            <article class="ds-specimen">
+              <div class="ds-specimen-header"><strong>MetricBox</strong><code>MetricBox</code></div>
+              <div class="ds-specimen-body">
+                <div class="metric-box"><span>Активные агенты</span><strong>6</strong></div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="ds-section">
+          <div class="ds-section-heading">
+            <div><h2>Иконки</h2><p>Набор <code>Icon</code> из shared. Здесь показаны наиболее частые роли.</p></div>
+            <span class="ds-source">src/shared/icons.tsx</span>
+          </div>
+          <article class="ds-card">
+            <div class="ds-grid cols-4">
+              <div class="ds-card" style="box-shadow:none"><svg class="icon" style="font-size:20px"><use href="#i-grid"></use></svg><h3 style="margin-top:10px">grid</h3></div>
+              <div class="ds-card" style="box-shadow:none"><svg class="icon" style="font-size:20px"><use href="#i-box"></use></svg><h3 style="margin-top:10px">box</h3></div>
+              <div class="ds-card" style="box-shadow:none"><svg class="icon" style="font-size:20px"><use href="#i-list"></use></svg><h3 style="margin-top:10px">list</h3></div>
+              <div class="ds-card" style="box-shadow:none"><svg class="icon" style="font-size:20px"><use href="#i-columns"></use></svg><h3 style="margin-top:10px">columns</h3></div>
+              <div class="ds-card" style="box-shadow:none"><svg class="icon" style="font-size:20px"><use href="#i-search"></use></svg><h3 style="margin-top:10px">search</h3></div>
+              <div class="ds-card" style="box-shadow:none"><svg class="icon" style="font-size:20px"><use href="#i-more"></use></svg><h3 style="margin-top:10px">more</h3></div>
+              <div class="ds-card" style="box-shadow:none"><svg class="icon" style="font-size:20px"><use href="#i-edit"></use></svg><h3 style="margin-top:10px">edit</h3></div>
+              <div class="ds-card" style="box-shadow:none"><svg class="icon" style="font-size:20px"><use href="#i-trash"></use></svg><h3 style="margin-top:10px">trash</h3></div>
+              <div class="ds-card" style="box-shadow:none"><svg class="icon" style="font-size:20px"><use href="#i-warning"></use></svg><h3 style="margin-top:10px">warning</h3></div>
+              <div class="ds-card" style="box-shadow:none"><svg class="icon" style="font-size:20px"><use href="#i-bell"></use></svg><h3 style="margin-top:10px">bell</h3></div>
+              <div class="ds-card" style="box-shadow:none"><svg class="icon" style="font-size:20px"><use href="#i-user"></use></svg><h3 style="margin-top:10px">user</h3></div>
+              <div class="ds-card" style="box-shadow:none"><svg class="icon" style="font-size:20px"><use href="#i-message"></use></svg><h3 style="margin-top:10px">message</h3></div>
+            </div>
+          </article>
+        </section>
+      </main>
+    </div>
+  </div>
+  <script src="assets/icons-data.js"></script>
+  <script src="assets/design-system.js"></script>
+</body>
+</html>

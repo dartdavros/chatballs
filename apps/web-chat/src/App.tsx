@@ -123,7 +123,7 @@ export function App() {
     if (!opened) { setCall(null); return; }
     openedCallId.current = opened.call.callId;
     setCall(null);
-    window.open(`/calls/${opened.call.callId}#${opened.accessToken}`, "_blank", "noopener");
+    window.open(`/calls/${opened.call.callId}?kind=${opened.call.kind}#${opened.accessToken}`, "_blank", "noopener");
   }
 
   async function declineCallInvite() {

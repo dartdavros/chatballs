@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Токены · CustoCRM Design System</title>
+  <link rel="stylesheet" href="assets/base.css">
+  <link rel="stylesheet" href="assets/docs.css">
+  <link rel="stylesheet" href="assets/components.css">
+  <link rel="stylesheet" href="assets/data.css">
+  <link rel="stylesheet" href="assets/patterns.css">
+  <link rel="stylesheet" href="assets/layouts.css">
+  <link rel="stylesheet" href="assets/responsive.css">
+</head>
+<body data-page="foundations">
+  <div class="ds-shell">
+    <aside class="ds-sidebar" data-ds-sidebar></aside>
+    <div class="ds-main">
+      <header class="ds-topbar">
+        <div class="ds-breadcrumbs"><span>Design System</span><i>/</i><strong>Токены</strong></div>
+        <span class="ds-version">Foundations</span>
+      </header>
+      <main class="ds-content">
+        <header class="ds-page-header">
+          <div>
+            <div class="ds-eyebrow">Foundations</div>
+            <h1>Токены интерфейса</h1>
+            <p>Значения собраны из текущих общих CSS-файлов и темы UI. Названия отражают фактическое назначение значений во фронтенде.</p>
+          </div>
+        </header>
+
+        <section class="ds-section">
+          <div class="ds-section-heading">
+            <div><h2>Нейтральная палитра</h2><p>Текст, границы, фоны и disabled-состояния.</p></div>
+            <span class="ds-source">src/styles/base.css</span>
+          </div>
+          <div class="token-grid">
+            <article class="token-card"><div class="token-swatch" style="background:#1f1f1f"></div><div class="token-info"><strong>neutral.1</strong><code>--n-1 · #1f1f1f</code></div></article>
+            <article class="token-card"><div class="token-swatch" style="background:#262626"></div><div class="token-info"><strong>neutral.2</strong><code>--n-2 · #262626</code></div></article>
+            <article class="token-card"><div class="token-swatch" style="background:#595959"></div><div class="token-info"><strong>neutral.3</strong><code>--n-3 · #595959</code></div></article>
+            <article class="token-card"><div class="token-swatch" style="background:#8c8c8c"></div><div class="token-info"><strong>neutral.4</strong><code>--n-4 · #8c8c8c</code></div></article>
+            <article class="token-card"><div class="token-swatch" style="background:#bfbfbf"></div><div class="token-info"><strong>neutral.5</strong><code>--n-5 · #bfbfbf</code></div></article>
+            <article class="token-card"><div class="token-swatch" style="background:#d9d9d9"></div><div class="token-info"><strong>neutral.6</strong><code>--n-6 · #d9d9d9</code></div></article>
+            <article class="token-card"><div class="token-swatch" style="background:#e8e8e8"></div><div class="token-info"><strong>neutral.7</strong><code>--n-7 · #e8e8e8</code></div></article>
+            <article class="token-card"><div class="token-swatch" style="background:#f0f0f0"></div><div class="token-info"><strong>neutral.8</strong><code>--n-8 · #f0f0f0</code></div></article>
+            <article class="token-card"><div class="token-swatch" style="background:#f5f5f5"></div><div class="token-info"><strong>neutral.9</strong><code>--n-9 · #f5f5f5</code></div></article>
+            <article class="token-card"><div class="token-swatch" style="background:#fafafa"></div><div class="token-info"><strong>neutral.10</strong><code>--n-10 · #fafafa</code></div></article>
+          </div>
+        </section>
+
+        <section class="ds-section">
+          <div class="ds-section-heading">
+            <div><h2>Основные и семантические цвета</h2><p>Интерактивные элементы, статусы и AI-акцент.</p></div>
+            <span class="ds-source">base.css · theme.ts</span>
+          </div>
+          <div class="token-grid">
+            <article class="token-card"><div class="token-swatch" style="background:#1677ff"></div><div class="token-info"><strong>color.primary</strong><code>--primary · #1677ff</code></div></article>
+            <article class="token-card"><div class="token-swatch" style="background:#0958d9"></div><div class="token-info"><strong>color.primary.hover</strong><code>--primary-hover · #0958d9</code></div></article>
+            <article class="token-card"><div class="token-swatch" style="background:#e6f4ff"></div><div class="token-info"><strong>color.primary.bg</strong><code>--primary-bg · #e6f4ff</code></div></article>
+            <article class="token-card"><div class="token-swatch" style="background:#91caff"></div><div class="token-info"><strong>color.primary.border</strong><code>--primary-border · #91caff</code></div></article>
+            <article class="token-card"><div class="token-swatch" style="background:#52c41a"></div><div class="token-info"><strong>color.success</strong><code>--success · #52c41a</code></div></article>
+            <article class="token-card"><div class="token-swatch" style="background:#f6ffed"></div><div class="token-info"><strong>color.success.bg</strong><code>--success-bg · #f6ffed</code></div></article>
+            <article class="token-card"><div class="token-swatch" style="background:#d48806"></div><div class="token-info"><strong>color.warning.text</strong><code>--warning-text · #d48806</code></div></article>
+            <article class="token-card"><div class="token-swatch" style="background:#fffbe6"></div><div class="token-info"><strong>color.warning.bg</strong><code>--warning-bg · #fffbe6</code></div></article>
+            <article class="token-card"><div class="token-swatch" style="background:#cf1322"></div><div class="token-info"><strong>color.error.text</strong><code>--error-text · #cf1322</code></div></article>
+            <article class="token-card"><div class="token-swatch" style="background:#fff2f0"></div><div class="token-info"><strong>color.error.bg</strong><code>--error-bg · #fff2f0</code></div></article>
+            <article class="token-card"><div class="token-swatch" style="background:#722ed1"></div><div class="token-info"><strong>color.ai</strong><code>--ai · #722ed1</code></div></article>
+            <article class="token-card"><div class="token-swatch" style="background:#f9f0ff"></div><div class="token-info"><strong>color.ai.bg</strong><code>--ai-bg · #f9f0ff</code></div></article>
+          </div>
+        </section>
+
+        <section class="ds-section">
+          <div class="ds-section-heading">
+            <div><h2>Каналы</h2><p>Акцентные пары из общего словаря провайдеров.</p></div>
+            <span class="ds-source">src/shared/providers.ts</span>
+          </div>
+          <div class="token-grid">
+            <article class="token-card"><div class="token-swatch" style="background:#fff7e6"></div><div class="token-info"><strong>provider.email.bg</strong><code>#fff7e6 · text #d48806</code></div></article>
+            <article class="token-card"><div class="token-swatch" style="background:#f2f0ff"></div><div class="token-info"><strong>provider.max.bg</strong><code>#f2f0ff · text #6b5be0</code></div></article>
+            <article class="token-card"><div class="token-swatch" style="background:#eaf6fd"></div><div class="token-info"><strong>provider.telegram.bg</strong><code>#eaf6fd · text #2f8fd0</code></div></article>
+            <article class="token-card"><div class="token-swatch" style="background:#e8f7f4"></div><div class="token-info"><strong>provider.web.bg</strong><code>#e8f7f4 · text #0f9b8e</code></div></article>
+          </div>
+        </section>
+
+        <section class="ds-section">
+          <div class="ds-section-heading">
+            <div><h2>Типографика</h2><p>Системный sans-serif и моноширинный стек для идентификаторов.</p></div>
+            <span class="ds-source">base.css · page.css</span>
+          </div>
+          <div class="ds-grid cols-2">
+            <article class="ds-specimen">
+              <div class="ds-specimen-header"><strong>Основной шрифт</strong><code>--font-sans</code></div>
+              <div class="ds-specimen-body is-column">
+                <div style="font-size:24px;font-weight:700;letter-spacing:-.02em">Заголовок страницы · 24 / 700</div>
+                <div style="font-size:14px;font-weight:600">Заголовок компонента · 14 / 600</div>
+                <div style="font-size:13.5px">Основной текст интерфейса · 13.5 / 400</div>
+                <div style="font-size:12px;color:#8c8c8c">Подпись поля · 12 / 500</div>
+              </div>
+            </article>
+            <article class="ds-specimen">
+              <div class="ds-specimen-header"><strong>Моноширинный</strong><code>--font-mono</code></div>
+              <div class="ds-specimen-body is-column" style="font-family:var(--font-mono)">
+                <div style="font-size:13px">org_01J9R7Q6ZWPB</div>
+                <div style="font-size:12px;color:#595959">connection_telegram_primary</div>
+                <div style="font-size:11px;color:#8c8c8c">2026-07-30T14:13:00Z</div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="ds-section">
+          <div class="ds-section-heading">
+            <div><h2>Радиусы</h2><p>Корневые токены и используемые малые значения controls.</p></div>
+            <span class="ds-source">base.css · shared/*.css</span>
+          </div>
+          <article class="ds-card">
+            <div class="scale-row"><code>radius.4</code><div class="radius-demo" style="border-radius:4px"></div><small>4px · focus</small></div>
+            <div class="scale-row"><code>radius.6</code><div class="radius-demo" style="border-radius:6px"></div><small>6px · badges</small></div>
+            <div class="scale-row"><code>radius.md</code><div class="radius-demo" style="border-radius:8px"></div><small>8px · controls</small></div>
+            <div class="scale-row"><code>radius.lg</code><div class="radius-demo" style="border-radius:9px"></div><small>9px · buttons</small></div>
+            <div class="scale-row"><code>radius.xl</code><div class="radius-demo" style="border-radius:10px"></div><small>10px · cards</small></div>
+            <div class="scale-row"><code>radius.2xl</code><div class="radius-demo" style="border-radius:12px"></div><small>12px · panels</small></div>
+            <div class="scale-row"><code>radius.4xl</code><div class="radius-demo" style="border-radius:14px"></div><small>14px · dialogs</small></div>
+            <div class="scale-row"><code>radius.pill</code><div class="radius-demo" style="border-radius:999px"></div><small>999px · tags</small></div>
+          </article>
+        </section>
+
+        <section class="ds-section">
+          <div class="ds-section-heading">
+            <div><h2>Интервалы и размеры controls</h2><p>Повторяющиеся значения общих компонентов.</p></div>
+            <span class="ds-source">shared/*.css · layout/*.css</span>
+          </div>
+          <div class="ds-grid cols-2">
+            <article class="ds-card">
+              <h3>Spacing scale</h3>
+              <div class="scale-row"><code>space.1</code><div class="scale-demo"><i style="width:4px"></i></div><small>4px</small></div>
+              <div class="scale-row"><code>space.2</code><div class="scale-demo"><i style="width:6px"></i></div><small>6px</small></div>
+              <div class="scale-row"><code>space.3</code><div class="scale-demo"><i style="width:8px"></i></div><small>8px</small></div>
+              <div class="scale-row"><code>space.4</code><div class="scale-demo"><i style="width:12px"></i></div><small>12px</small></div>
+              <div class="scale-row"><code>space.5</code><div class="scale-demo"><i style="width:14px"></i></div><small>14px</small></div>
+              <div class="scale-row"><code>space.6</code><div class="scale-demo"><i style="width:16px"></i></div><small>16px</small></div>
+              <div class="scale-row"><code>space.7</code><div class="scale-demo"><i style="width:20px"></i></div><small>20px</small></div>
+              <div class="scale-row"><code>space.8</code><div class="scale-demo"><i style="width:24px"></i></div><small>24px</small></div>
+              <div class="scale-row"><code>space.9</code><div class="scale-demo"><i style="width:28px"></i></div><small>28px</small></div>
+            </article>
+            <article class="ds-card">
+              <h3>Control heights</h3>
+              <div class="scale-row"><code>control.xs</code><div class="scale-demo"><i style="width:24px;height:24px"></i></div><small>24px</small></div>
+              <div class="scale-row"><code>control.sm</code><div class="scale-demo"><i style="width:30px;height:30px"></i></div><small>30px</small></div>
+              <div class="scale-row"><code>control.compact</code><div class="scale-demo"><i style="width:34px;height:34px"></i></div><small>34px</small></div>
+              <div class="scale-row"><code>control.action</code><div class="scale-demo"><i style="width:36px;height:36px"></i></div><small>36px</small></div>
+              <div class="scale-row"><code>control.md</code><div class="scale-demo"><i style="width:38px;height:38px"></i></div><small>38px</small></div>
+              <div class="scale-row"><code>switch.md</code><div class="scale-demo"><i style="width:42px;height:24px"></i></div><small>42×24</small></div>
+              <div class="scale-row"><code>switch.lg</code><div class="scale-demo"><i style="width:46px;height:26px"></i></div><small>46×26</small></div>
+              <div class="scale-row"><code>shell.bar</code><div class="scale-demo"><i style="width:56px;height:20px"></i></div><small>56px</small></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="ds-section">
+          <div class="ds-section-heading">
+            <div><h2>Тени</h2><p>Общие elevation-уровни и характерные component shadows.</p></div>
+            <span class="ds-source">base.css · shared/*.css</span>
+          </div>
+          <article class="ds-card">
+            <div class="scale-row"><code>shadow.xs</code><div class="shadow-demo" style="box-shadow:var(--shadow-xs)"></div><small>cards</small></div>
+            <div class="scale-row"><code>shadow.sm</code><div class="shadow-demo" style="box-shadow:var(--shadow-sm)"></div><small>panels</small></div>
+            <div class="scale-row"><code>shadow.button</code><div class="shadow-demo" style="box-shadow:0 1px 2px rgba(22,119,255,.3)"></div><small>primary</small></div>
+            <div class="scale-row"><code>shadow.lg</code><div class="shadow-demo" style="box-shadow:var(--shadow-lg)"></div><small>dialogs</small></div>
+          </article>
+        </section>
+      </main>
+    </div>
+  </div>
+  <script src="assets/icons-data.js"></script>
+  <script src="assets/design-system.js"></script>
+</body>
+</html>

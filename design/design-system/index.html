@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CustoCRM Design System</title>
+  <link rel="stylesheet" href="assets/base.css">
+  <link rel="stylesheet" href="assets/docs.css">
+  <link rel="stylesheet" href="assets/components.css">
+  <link rel="stylesheet" href="assets/data.css">
+  <link rel="stylesheet" href="assets/patterns.css">
+  <link rel="stylesheet" href="assets/layouts.css">
+  <link rel="stylesheet" href="assets/responsive.css">
+</head>
+<body data-page="index">
+  <div class="ds-shell">
+    <aside class="ds-sidebar" data-ds-sidebar></aside>
+    <div class="ds-main">
+      <header class="ds-topbar">
+        <div class="ds-breadcrumbs"><span>Design System</span><i>/</i><strong>Обзор</strong></div>
+        <span class="ds-version">Текущий frontend</span>
+      </header>
+      <main class="ds-content">
+        <header class="ds-page-header">
+          <div>
+            <div class="ds-eyebrow">CustoCRM UI inventory</div>
+            <h1>Дизайн-система текущего фронтенда</h1>
+            <p>Статический справочник существующих токенов, компонентов, паттернов и компоновок CustoCRM. Примеры повторяют действующие CSS-классы и визуальные решения из <code>apps/internal-ui/src</code>.</p>
+          </div>
+        </header>
+
+        <div class="ds-note">
+          <strong>Назначение:</strong> перед разработкой нового интерфейса открыть нужный раздел, найти существующий элемент и использовать его как эталон. Каталог ничего не меняет в приложении и не требует React.
+        </div>
+
+        <section class="ds-section">
+          <div class="ds-section-heading">
+            <div><h2>Разделы</h2><p>От базовых значений до компоновки целых экранов.</p></div>
+          </div>
+          <div class="ds-grid cols-3">
+            <a class="ds-card ds-card-link" href="foundations.html">
+              <span class="ds-card-icon"><svg class="icon"><use href="#i-box"></use></svg></span>
+              <h3>Токены</h3>
+              <p>Цвета, типографика, радиусы, тени, интервалы и размеры controls.</p>
+              <span class="ds-arrow">Открыть foundations →</span>
+            </a>
+            <a class="ds-card ds-card-link" href="components.html">
+              <span class="ds-card-icon"><svg class="icon"><use href="#i-columns"></use></svg></span>
+              <h3>Компоненты</h3>
+              <p>Кнопки, ссылки, поля, селекты, переключатели, вкладки и пагинация.</p>
+              <span class="ds-arrow">Открыть components →</span>
+            </a>
+            <a class="ds-card ds-card-link" href="data-display.html">
+              <span class="ds-card-icon"><svg class="icon"><use href="#i-list"></use></svg></span>
+              <h3>Данные и статусы</h3>
+              <p>Бейджи, статусы, продукты, каналы, аватары, метрики и иконки.</p>
+              <span class="ds-arrow">Открыть data display →</span>
+            </a>
+            <a class="ds-card ds-card-link" href="patterns.html">
+              <span class="ds-card-icon"><svg class="icon"><use href="#i-settings"></use></svg></span>
+              <h3>Паттерны</h3>
+              <p>Таблицы, фильтры, карточки, состояния, меню и decision dialogs.</p>
+              <span class="ds-arrow">Открыть patterns →</span>
+            </a>
+            <a class="ds-card ds-card-link" href="layouts.html">
+              <span class="ds-card-icon"><svg class="icon"><use href="#i-grid"></use></svg></span>
+              <h3>Макеты страниц</h3>
+              <p>Shell, list page, detail page, settings и conversation workspace.</p>
+              <span class="ds-arrow">Открыть layouts →</span>
+            </a>
+            <a class="ds-card ds-card-link" href="inventory.html">
+              <span class="ds-card-icon"><svg class="icon"><use href="#i-search"></use></svg></span>
+              <h3>Инвентарь</h3>
+              <p>Поисковый реестр компонентов, CSS-паттернов, токенов и исходников.</p>
+              <span class="ds-arrow">Открыть inventory →</span>
+            </a>
+          </div>
+        </section>
+
+        <section class="ds-section">
+          <div class="ds-section-heading">
+            <div><h2>Уровни системы</h2><p>Как читать и использовать каталог.</p></div>
+          </div>
+          <div class="ds-grid cols-4">
+            <article class="ds-card"><h3>1. Foundations</h3><p>Фактические значения, на которых построен интерфейс: цвет, размер, радиус, тень и типографика.</p></article>
+            <article class="ds-card"><h3>2. Components</h3><p>Переиспользуемые элементы из <code>src/shared</code> и их состояния.</p></article>
+            <article class="ds-card"><h3>3. Patterns</h3><p>Устоявшиеся композиции: таблица с фильтрами, карточка, форма, диалог.</p></article>
+            <article class="ds-card"><h3>4. Layouts</h3><p>Каркас целой страницы или рабочего пространства из существующих частей.</p></article>
+          </div>
+        </section>
+
+        <section class="ds-section">
+          <div class="ds-section-heading">
+            <div><h2>Основные источники</h2><p>Файлы фронтенда, по которым собран этот справочник.</p></div>
+          </div>
+          <article class="ds-card">
+            <div class="ds-meta-list">
+              <div class="ds-meta-row"><span>Токены</span><code>src/styles/base.css · packages/ui/src/theme.ts</code></div>
+              <div class="ds-meta-row"><span>Controls</span><code>src/shared/ui-controls.* · form-controls.*</code></div>
+              <div class="ds-meta-row"><span>Data display</span><code>src/shared/ui.tsx · badges.tsx · design-components.css</code></div>
+              <div class="ds-meta-row"><span>Таблицы</span><code>src/shared/table-controls.css</code></div>
+              <div class="ds-meta-row"><span>Layout</span><code>src/layout/styles.css · topbar.css · page.css</code></div>
+              <div class="ds-meta-row"><span>Иконки</span><code>src/shared/icons.tsx</code></div>
+            </div>
+          </article>
+        </section>
+      </main>
+    </div>
+  </div>
+  <script src="assets/icons-data.js"></script>
+  <script src="assets/design-system.js"></script>
+</body>
+</html>

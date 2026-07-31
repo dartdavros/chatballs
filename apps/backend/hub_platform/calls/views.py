@@ -21,6 +21,7 @@ from hub_platform.calls.services import (
     cancel_call,
     create_call_request,
     decline_call_by_access_token,
+    end_call_by_access_token,
     issue_staff_access_token,
     resolve_invite,
 )
@@ -48,7 +49,9 @@ class CallCreateView(APIView):
     required_entitlement = "p2p_calls"
 
     def post(self, request: Request, conversation_id: int) -> Response:
-        kind = str(request.data.get("kind", CallKind.AUDIO))
+        if "kind" not in request.data:
+            return Response({"detail": "Укажите тип звонка"}, status=400)
+        kind = str(request.data.get("kind", ""))
         if kind not in CallKind.values:
             return Response({"detail": "Недопустимый тип звонка"}, status=400)
         try:
@@ -237,4 +240,13 @@ class CallAccessDeclineView(_CallAccessView):
             return Response({"detail": "Недействительный или истёкший call access token"}, status=404)
         except CallConflict as error:
             return Response({"detail": str(error)}, status=409)
+        return _token_response({"call": public_call_state_payload(call)})
+
+
+class CallAccessEndView(_CallAccessView):
+    def post(self, request: Request) -> Response:
+        try:
+            call = end_call_by_access_token(token=_bearer_token(request))
+        except CallTokenError:
+            return Response({"detail": "Недействительный или истёкший call access token"}, status=404)
         return _token_response({"call": public_call_state_payload(call)})

@@ -90,7 +90,7 @@ export function AudioCallWaveform({ stream, micOn = true, active }: Props) {
       analyser?.disconnect();
       void audioCtx?.close();
     };
-  }, [active, micOn]);
+  }, [active, micOn, stream]);
 
   return <canvas ref={canvasRef} width={520} height={112} className="hub-audio-wave" />;
 }

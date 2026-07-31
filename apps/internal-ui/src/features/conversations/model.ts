@@ -166,3 +166,5 @@ export const fetchCall = (callId: string) => api<{ call: ApiCall }>(`/api/v1/cal
 export const cancelCall = (callId: string) => api<{ call: ApiCall }>(`/api/v1/calls/${callId}/cancel/`, { method: "POST" }).then((r) => r.call);
 export const fetchStaffCallAccess = (callId: string) =>
   api<{ accessToken: string; iceServers: RTCIceServer[] }>(`/api/v1/calls/${callId}/access-token/`, { method: "POST" });
+export const endCallByAccess = (accessToken: string) =>
+  api<{ call: ApiCall }>("/api/v1/calls/access/end/", { method: "POST", headers: { Authorization: `Bearer ${accessToken}` } }).then((r) => r.call);

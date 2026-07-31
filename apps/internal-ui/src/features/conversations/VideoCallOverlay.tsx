@@ -7,7 +7,7 @@ import { Modal } from "antd";
 import { useEffect, useMemo, useState } from "react";
 
 import { providerMeta } from "../../shared/providers";
-import type { ApiCall, CallAccess } from "./model";
+import { endCallByAccess, type ApiCall, type CallAccess } from "./model";
 import type { ConversationListItem } from "./types";
 import "./call.css";
 
@@ -24,6 +24,7 @@ type Props = {
   open: boolean;
   dialog: ConversationListItem | null;
   call: ApiCall | null;
+  requestedKind?: ApiCall["kind"] | null;
   access: CallAccess | null;
   errorText: string;
   onCallChange: (call: ApiCall) => void;
@@ -56,13 +57,19 @@ export function VideoCallOverlay(props: Props) {
   const channel = providerMeta[props.dialog.channel];
   const subtitle = subtitleFor(mode, call, status);
   const mediaCaption = rtc.mediaIssue === "devices" ? "Нет доступа к камере и микрофону" : rtc.mediaIssue === "video" ? "Камера недоступна" : "Камера выключена";
-  const endAndClose = () => {
-    if (mode === "active" || mode === "reconnecting" || mode === "connecting") rtc.end();
+  const finish = async () => {
+    const token = props.access?.accessToken;
+    if (!token || !call || TERMINAL[call.status]) return;
+    try { props.onCallChange(await endCallByAccess(token)); }
+    finally { rtc.stop(); }
+  };
+  const endAndClose = async () => {
+    if (mode === "active" || mode === "reconnecting" || mode === "connecting" || mode === "precall") await finish();
     props.onClose();
   };
 
   return (
-    <Modal open={props.open} onCancel={endAndClose} footer={null} closable={false} width={428} className="call-modal" destroyOnHidden>
+    <Modal open={props.open} onCancel={() => void endAndClose()} footer={null} closable={false} width={428} className="call-modal" destroyOnHidden>
       <CallView
         mode={mode}
         peerName={props.dialog.name}
@@ -82,10 +89,10 @@ export function VideoCallOverlay(props: Props) {
         joining={rtc.preparing || rtc.connectionPhase === "connecting"}
         onToggleMic={rtc.toggleMic}
         onToggleCam={rtc.toggleCam}
-        onJoin={rtc.start}
-        onCancel={mode === "ringing" ? props.onCancel : endAndClose}
-        onEnd={rtc.end}
-        onClose={endAndClose}
+        onJoin={() => void rtc.start()}
+        onCancel={mode === "ringing" ? props.onCancel : () => void endAndClose()}
+        onEnd={() => void finish()}
+        onClose={() => void endAndClose()}
       />
     </Modal>
   );

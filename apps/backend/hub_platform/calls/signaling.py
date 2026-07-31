@@ -8,25 +8,17 @@ PostgreSQL; Redis (channel layer) — только fan-out и presence.
 from django.utils import timezone
 
 from hub_platform.calls.errors import CallInvalidTransition
-from hub_platform.calls.lifecycle import transition_call
+from hub_platform.calls.lifecycle import finish_call, transition_call
 from hub_platform.calls.models import (
-    CallEndedBy,
     CallParticipant,
     CallSession,
     CallStatus,
     ParticipantConnectionState,
-    ParticipantSide,
     TERMINAL_CALL_STATUSES,
 )
 from hub_platform.calls.serializers import public_call_state_payload
 from hub_platform.calls.services import record_call_metric
 from hub_platform.tenancy.context import TenantContext
-
-SIDE_TO_ENDED_BY = {
-    ParticipantSide.STAFF: CallEndedBy.STAFF,
-    ParticipantSide.CUSTOMER: CallEndedBy.CUSTOMER,
-}
-
 
 def _call(context: TenantContext, call_id) -> CallSession:
     return CallSession.objects.select_related("initiated_by").get(
@@ -164,24 +156,6 @@ def record_metric(context: TenantContext, call_id, side: str, content: dict) -> 
 
 def end_from_signaling(context: TenantContext, call_id, side: str) -> dict:
     """Завершение звонка стороной: идемпотентно, целевой статус — по фазе."""
-    ended_by = SIDE_TO_ENDED_BY.get(side, CallEndedBy.SYSTEM)
-    call = _call(context, call_id)
-    if call.status in TERMINAL_CALL_STATUSES:
-        return public_call_state_payload(call)
-    try:
-        if call.status == CallStatus.ACTIVE:
-            call = transition_call(call_session_id=call_id, target_status=CallStatus.ENDED, ended_by=ended_by)
-        elif call.status in {CallStatus.ACCEPTED, CallStatus.CONNECTING}:
-            call = transition_call(
-                call_session_id=call_id,
-                target_status=CallStatus.FAILED,
-                ended_by=ended_by,
-                failure_code="ABORTED_BEFORE_CONNECT",
-            )
-        elif side == ParticipantSide.STAFF:
-            call = transition_call(call_session_id=call_id, target_status=CallStatus.CANCELLED, ended_by=ended_by)
-        else:
-            call = transition_call(call_session_id=call_id, target_status=CallStatus.DECLINED, ended_by=ended_by)
-    except CallInvalidTransition:
-        call = _call(context, call_id)
+    _call(context, call_id)
+    call = finish_call(call_session_id=call_id, side=side)
     return public_call_state_payload(call)

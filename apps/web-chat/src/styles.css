@@ -52,6 +52,11 @@ body,
   background: #f5f6f8;
 }
 
+.public-call-page.is-audio {
+  background: #0b0b12;
+  font-family: var(--font-sans);
+}
+
 @media (max-width: 480px) {
   .public-call-page {
     padding: 0;

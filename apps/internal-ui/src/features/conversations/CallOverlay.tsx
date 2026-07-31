@@ -11,6 +11,7 @@ type Props = {
   open: boolean;
   dialog: ConversationListItem | null;
   call: ApiCall | null;
+  requestedKind: ApiCall["kind"] | null;
   access: CallAccess | null;
   errorText: string;
   onCallChange: (call: ApiCall) => void;
@@ -20,8 +21,10 @@ type Props = {
 };
 
 export function CallOverlay(props: Props) {
-  // Активный/существующий звонок возвращается из API с kind; новый запрос
-  // создан под выбранный тип. Дефолт — аудио (как и requestCall / модели).
-  if (props.call?.kind === "VIDEO") return <VideoCallOverlay {...props} />;
-  return <AudioCallOverlay {...props} />;
+  // Активный/существующий звонок возвращается из API с kind; пока запрос
+  // выполняется, используем явно выбранный тип. Неизвестный kind не подменяем.
+  const kind = props.call?.kind ?? props.requestedKind;
+  if (kind === "VIDEO") return <VideoCallOverlay {...props} />;
+  if (kind === "AUDIO") return <AudioCallOverlay {...props} />;
+  return null;
 }

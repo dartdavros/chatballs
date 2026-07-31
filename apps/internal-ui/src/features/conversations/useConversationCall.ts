@@ -24,6 +24,7 @@ export function useConversationCall({ conversationId, onConversationChanged }: O
   const [access, setAccess] = useState<CallAccess | null>(null);
   const [errorText, setErrorText] = useState("");
   const [busy, setBusy] = useState(false);
+  const [requestedKind, setRequestedKind] = useState<CallKind | null>(null);
   const lastKind = useRef<CallKind>("AUDIO");
 
   const reset = useCallback(() => {
@@ -31,6 +32,7 @@ export function useConversationCall({ conversationId, onConversationChanged }: O
     setCall(null);
     setAccess(null);
     setErrorText("");
+    setRequestedKind(null);
   }, []);
 
   useEffect(() => reset(), [conversationId, reset]);
@@ -52,11 +54,16 @@ export function useConversationCall({ conversationId, onConversationChanged }: O
   const start = useCallback(async (kind: CallKind = "AUDIO") => {
     if (conversationId == null || busy) return;
     lastKind.current = kind;
+    setRequestedKind(kind);
     setBusy(true);
     setErrorText("");
     try {
       const active = await fetchActiveCall(conversationId);
       if (active) {
+        if (active.kind !== kind) {
+          const activeLabel = active.kind === "AUDIO" ? "аудиозвонок" : "видеозвонок";
+          throw new Error(`Сначала завершите текущий ${activeLabel}`);
+        }
         setCall(active);
         await ensureAccess(active.id);
       } else {
@@ -80,8 +87,10 @@ export function useConversationCall({ conversationId, onConversationChanged }: O
     try {
       setCall(await cancelCall(call.id));
       onConversationChanged();
-    } catch { /* поллинг подтянет фактическое состояние */ }
-    setOpen(false);
+      setOpen(false);
+    } catch (error) {
+      setErrorText(error instanceof Error ? error.message : "Не удалось отменить звонок");
+    }
   }, [call, onConversationChanged]);
 
   const retry = useCallback(async () => {
@@ -89,6 +98,7 @@ export function useConversationCall({ conversationId, onConversationChanged }: O
     setCall(null);
     setAccess(null);
     setErrorText("");
+    setRequestedKind(lastKind.current);
     try {
       const created = await requestCall(conversationId, lastKind.current);
       setCall(created.call);
@@ -105,6 +115,7 @@ export function useConversationCall({ conversationId, onConversationChanged }: O
     access,
     errorText,
     busy,
+    requestedKind,
     start,
     cancel,
     retry,
