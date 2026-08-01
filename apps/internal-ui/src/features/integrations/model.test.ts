@@ -13,8 +13,8 @@ describe("webWidgetSnippet", () => {
     vi.stubGlobal("window", { location: { origin: "https://hub.example.com" } });
     const { webWidgetSnippet } = await import("./model");
 
-    expect(webWidgetSnippet("edeves")).toBe(
-      `<script src="https://hub.example.com/chat-widget.js" data-channel="edeves" async></script>`,
+    expect(webWidgetSnippet("wgt_edeves")).toBe(
+      `<script src="https://hub.example.com/chat-widget.js" data-widget-key="wgt_edeves" async></script>`,
     );
   });
 
@@ -22,8 +22,8 @@ describe("webWidgetSnippet", () => {
     vi.stubGlobal("window", { location: { origin: "https://acme.test" } });
     const { webWidgetSnippet } = await import("./model");
 
-    expect(webWidgetSnippet("foxray")).toBe(
-      `<script src="https://acme.test/chat-widget.js" data-channel="foxray" async></script>`,
+    expect(webWidgetSnippet("wgt_foxray")).toBe(
+      `<script src="https://acme.test/chat-widget.js" data-widget-key="wgt_foxray" async></script>`,
     );
   });
 
@@ -31,8 +31,8 @@ describe("webWidgetSnippet", () => {
     vi.stubGlobal("window", { location: { origin: "https://hub.example.com:8443" } });
     const { webWidgetSnippet } = await import("./model");
 
-    expect(webWidgetSnippet("edeves")).toBe(
-      `<script src="https://hub.example.com:8443/chat-widget.js" data-channel="edeves" async></script>`,
+    expect(webWidgetSnippet("wgt_edeves")).toBe(
+      `<script src="https://hub.example.com:8443/chat-widget.js" data-widget-key="wgt_edeves" async></script>`,
     );
   });
 });

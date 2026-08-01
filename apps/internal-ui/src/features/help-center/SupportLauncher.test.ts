@@ -9,8 +9,9 @@ describe("supportHref", () => {
       name: "Foxray",
       siteUrl: "https://foxray.example/account?from=help",
       supportAvailable: true,
+      supportWidgetKey: "wgt_foxray_support",
       supportChannelCode: "foxray-support",
-    })).toBe("https://foxray.example/account?from=help&custocrmSupportChannel=foxray-support");
+    })).toBe("https://foxray.example/account?from=help&custocrmSupportWidget=wgt_foxray_support");
   });
 
   it("does not build an unauthenticated fallback without a channel", () => {
@@ -20,6 +21,7 @@ describe("supportHref", () => {
       siteUrl: "https://foxray.example",
       supportAvailable: false,
       supportChannelCode: null,
+      supportWidgetKey: null,
     })).toBeNull();
   });
 });

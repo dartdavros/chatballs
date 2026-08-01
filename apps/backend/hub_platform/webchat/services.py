@@ -1,7 +1,9 @@
 import hashlib
 import secrets
 import uuid
+from urllib.parse import urlsplit
 
+from django.conf import settings
 from django.db import models, transaction
 
 from hub_platform.conversations.ingest import ingest_inbound
@@ -15,7 +17,7 @@ from hub_platform.conversations.models import (
 from hub_platform.conversations.transports.base import InboundMessage
 from hub_platform.integrations.models import Integration, IntegrationProvider
 from hub_platform.tenancy.context import TenantContext
-from hub_platform.webchat.models import WebSession
+from hub_platform.webchat.models import WebChatWidget, WebSession
 
 DEFAULT_GREETING = "Здравствуйте! Готов помочь и ответить на вопросы. Чем можем помочь?"
 DEFAULT_CONSENT = "Продолжая, вы соглашаетесь на обработку сообщений для ответа на обращение."
@@ -47,22 +49,40 @@ def web_connection_for_channel(
     return matches[0] if len(matches) == 1 else None
 
 
-def _host_allowed(integration: Integration, origin: str) -> bool:
-    allowed = integration.config.get("allowed_domains") or []
+def origin_allowed(widget: WebChatWidget, origin: str) -> bool:
+    allowed = widget.allowed_origins or []
     if not allowed:
-        return True  # dev: пустой allowlist = разрешено
+        return bool(settings.DEBUG or settings.TESTING)
     if not origin:
         return False
-    host = origin.split("//")[-1].split("/")[0].split(":")[0]
-    return any(host == d or host.endswith("." + d) for d in allowed)
+    parsed = urlsplit(origin)
+    if parsed.scheme not in {"http", "https"} or not parsed.hostname:
+        return False
+    normalized_origin = f"{parsed.scheme}://{parsed.netloc.lower()}"
+    host = parsed.hostname.lower().rstrip(".")
+    for raw_rule in allowed:
+        rule = str(raw_rule).strip().lower().rstrip("/")
+        if not rule:
+            continue
+        if "://" in rule and normalized_origin == rule:
+            return True
+        if rule.startswith("*."):
+            suffix = rule[2:].rstrip(".")
+            if host != suffix and host.endswith(f".{suffix}"):
+                return True
+        elif "://" not in rule and host == rule.rstrip("."):
+            return True
+    return False
 
 
-def public_config(*, context: TenantContext, integration: Integration, origin: str) -> dict:
-    if integration is None or integration.channel_id is None:
+def public_config(*, context: TenantContext, widget: WebChatWidget, origin: str) -> dict:
+    integration = widget.integration
+    if integration.channel_id is None:
         return {"available": False}
-    if not _host_allowed(integration, origin):
+    if not origin_allowed(widget, origin):
         return {"available": False, "reason": "domain"}
-    cfg = integration.config
+    cfg = widget.presentation_config
+    consent = widget.consent_config
     channel = integration.channel
     fallback = []
     for sib in Integration.objects.filter(channel=channel).exclude(id=integration.id):
@@ -73,18 +93,23 @@ def public_config(*, context: TenantContext, integration: Integration, origin: s
             fallback.append({"label": "Написать в MAX", "url": ""})
     return {
         "available": True,
-        "channel": channel.code,
+        "widgetKey": widget.public_key,
+        "mode": widget.mode,
         "title": cfg.get("title") or channel.name,
         "accent": cfg.get("accent") or DEFAULT_ACCENT,
         "greeting": cfg.get("greeting") or DEFAULT_GREETING,
-        "consent": {"text": cfg.get("consent_text") or DEFAULT_CONSENT, "version": cfg.get("consent_version") or "v1"},
+        "consent": {
+            "text": consent.get("consent_text") or DEFAULT_CONSENT,
+            "version": consent.get("consent_version") or "v1",
+        },
         "quickReplies": cfg.get("quick_replies") or [],
         "fallback": fallback,
     }
 
 
 @transaction.atomic
-def issue_session(*, context: TenantContext, integration: Integration) -> dict | None:
+def issue_session(*, context: TenantContext, widget: WebChatWidget) -> dict | None:
+    integration = widget.integration
     if integration is None or integration.channel_id is None:
         return None
     session_id = uuid.uuid4().hex
@@ -102,6 +127,7 @@ def issue_session(*, context: TenantContext, integration: Integration) -> dict |
         organization=context.organization,
         token_hash=hash_session_token(token),
         connection=integration,
+        widget=widget,
         identity=identity,
     )
     return {"token": token, "sessionId": session_id}
@@ -120,6 +146,7 @@ def resolve_session(
             "connection",
             "connection__channel",
             "connection__organization",
+            "widget",
             "identity",
             "identity__contact",
         )
@@ -127,6 +154,8 @@ def resolve_session(
             token_hash=hash_session_token(token),
             id=session_id,
             organization=context.organization,
+            widget__organization=context.organization,
+            widget__integration_id=models.F("connection_id"),
             connection__organization_id=models.F("identity__contact__organization_id"),
             connection__channel__organization_id=models.F("connection__organization_id"),
         )
@@ -143,6 +172,23 @@ def post_message(session: WebSession, text: str) -> None:
         display_name=session.identity.display_name,
     )
     ingest_inbound(session.connection, inbound)
+    conversation = (
+        Conversation.objects.filter(
+            channel=session.connection.channel,
+            contact=session.identity.contact,
+            lifecycle=LifecycleState.OPEN,
+        )
+        .order_by("-last_activity_at")
+        .first()
+    )
+    if conversation is not None:
+        metadata = conversation.transport_meta or {}
+        if "webChatWidgetId" not in metadata:
+            conversation.transport_meta = {
+                **metadata,
+                "webChatWidgetId": session.widget_id,
+            }
+            conversation.save(update_fields=["transport_meta"])
 
 
 def normalize_phone(raw: str) -> str:

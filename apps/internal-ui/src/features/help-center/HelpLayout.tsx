@@ -53,8 +53,8 @@ export function HelpLayout({
         </a>
         <span>База знаний и поддержка</span>
       </footer>
-      {portal.webWidgetChannelCode
-        ? <PortalWebWidget channelCode={portal.webWidgetChannelCode} />
+      {portal.webWidgetKey
+        ? <PortalWebWidget widgetKey={portal.webWidgetKey} />
         : <SupportLauncher products={portal.products} />}
     </div>
   );

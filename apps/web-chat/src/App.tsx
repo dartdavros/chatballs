@@ -17,8 +17,12 @@ import { CallInviteBanner, ChatBody, ChatComposer, ChatHeader, StartChatFooter }
 import { useScrollToLatest } from "./useScrollToLatest";
 import { useWidgetActivity } from "./widgetActivity";
 
-const CHANNEL = new URLSearchParams(location.search).get("channel") || "edevs";
-const TOKEN_KEY = `edevs-chat-token:${CHANNEL}`;
+const PARAMS = new URLSearchParams(location.search);
+const WIDGET_KEY = PARAMS.get("widgetKey") || "";
+const LEGACY_CHANNEL = PARAMS.get("channel") || "";
+const ENTRY = WIDGET_KEY ? { widgetKey: WIDGET_KEY } : { channel: LEGACY_CHANNEL };
+const HOST_ORIGIN = document.referrer ? new URL(document.referrer).origin : location.origin;
+const TOKEN_KEY = `edevs-chat-token:${WIDGET_KEY || `channel:${LEGACY_CHANNEL}`}`;
 
 function closePanel() {
   window.parent.postMessage({ type: "edevs-chat-close" }, "*");
@@ -45,7 +49,7 @@ export function App() {
   const notifyNewMessage = useWidgetActivity(incomingCall);
 
   useEffect(() => {
-    getConfig(CHANNEL).then(setConfig).catch(() => setConfig({ available: false }));
+    getConfig(ENTRY, HOST_ORIGIN).then(setConfig).catch(() => setConfig({ available: false }));
   }, []);
 
   function ingestPoll(data: Poll, notify = true) {
@@ -88,7 +92,7 @@ export function App() {
 
   async function accept() {
     setStarting(true);
-    const nextToken = await startSession(CHANNEL);
+    const nextToken = await startSession(ENTRY, HOST_ORIGIN);
     setStarting(false);
     if (!nextToken) return;
     localStorage.setItem(TOKEN_KEY, nextToken);

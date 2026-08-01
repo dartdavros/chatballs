@@ -13,6 +13,7 @@ from hub_platform.identity.models import Department, Organization
 from hub_platform.products.models import Product
 from hub_platform.support.models import ContractStatus, ProductSupportContract
 from hub_platform.support.test_helpers import FOXRAY_DATA, make_support_token
+from hub_platform.webchat.testing import create_web_widget
 
 SECRET = "test-support-secret-very-long-32bytes!!"
 
@@ -78,13 +79,14 @@ class SupportWidgetMessagesTests(TestCase):
         self.channel, self.contract = _setup_support_channel(
             self.organization, self.support, self.product
         )
+        self.widget = create_web_widget(self.channel, name="FoxRay support widget")
         self.client = APIClient()
 
     def _start_session(self) -> dict:
         token = make_support_token(secret=SECRET, data=FOXRAY_DATA)
         response = self.client.post(
             "/api/v1/support/sessions/",
-            data=json.dumps({"channel": "foxray-support", "token": token}),
+            data=json.dumps({"widgetKey": self.widget.public_key, "token": token}),
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 201, response.content)

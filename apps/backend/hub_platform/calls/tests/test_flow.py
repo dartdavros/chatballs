@@ -200,9 +200,18 @@ class WebchatCallFlowTests(CallTestCase):
     def test_poll_payload_contains_invite(self) -> None:
         from hub_platform.webchat.models import WebSession
         from hub_platform.webchat.services import messages_payload
+        from hub_platform.webchat.testing import create_web_widget
 
+        widget = create_web_widget(
+            self.channel,
+            integration=self.connection,
+            name="call-flow-widget",
+        )
         session = WebSession.objects.create(
-            token_hash="x" * 64, connection=self.connection, identity=self.identity
+            token_hash="x" * 64,
+            connection=self.connection,
+            widget=widget,
+            identity=self.identity,
         )
         created = create_call_request(conversation_id=self.conversation.id, initiator=self.owner)
         payload = messages_payload(session, 0)

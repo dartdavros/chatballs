@@ -3,6 +3,7 @@ export type HelpProduct = {
   name: string;
   siteUrl: string;
   supportAvailable: boolean;
+  supportWidgetKey: string | null;
   supportChannelCode: string | null;
 };
 
@@ -38,6 +39,7 @@ export type HelpPortal = {
   slug: string;
   name: string;
   defaultLocale: string;
+  webWidgetKey: string | null;
   webWidgetChannelCode: string | null;
   products: HelpProduct[];
 };

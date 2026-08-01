@@ -357,12 +357,15 @@ class WebchatContactTests(TestCase):
             model="openai/gpt-4o-mini",
             status=AIAgentStatus.ACTIVE,
         )
-        Integration.objects.create(
-            organization=self.organization, kind=IntegrationKind.MESSENGER,
-            provider=IntegrationProvider.WEB, name="web-widget", channel=self.channel,
-        )
+        from hub_platform.webchat.testing import create_web_widget
+
+        self.widget = create_web_widget(self.channel, name="web-widget")
         self.client = APIClient()
-        session = self.client.post("/api/v1/webchat/session/", data=json.dumps({"channel": "edevs-web"}), content_type="application/json")
+        session = self.client.post(
+            "/api/v1/webchat/session/",
+            data=json.dumps({"widgetKey": self.widget.public_key}),
+            content_type="application/json",
+        )
         self.token = session.json()["token"]
 
     def _post_contact(self, phone: str):

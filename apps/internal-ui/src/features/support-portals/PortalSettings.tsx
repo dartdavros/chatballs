@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 
-import type { Channel } from "../channels/types";
 import { FormField, SelectField } from "../../shared/form-controls";
 import { Button } from "../../shared/ui-controls";
 import type { Product } from "../../types";
@@ -8,6 +7,7 @@ import {
   listPortalSupportChannels,
   portalErrorMessage,
   updateSupportPortal,
+  type PortalWidgetOption,
   type SupportPortal,
 } from "./model";
 import { PortalDomainSettings } from "./PortalDomainSettings";
@@ -28,8 +28,8 @@ export function PortalSettings({
   const [name, setName] = useState(portal.name);
   const [slug, setSlug] = useState(portal.slug);
   const [locale, setLocale] = useState(portal.defaultLocale);
-  const [channels, setChannels] = useState<Channel[]>([]);
-  const [widgetChannels, setWidgetChannels] = useState<Channel[]>([]);
+  const [supportWidgets, setSupportWidgets] = useState<PortalWidgetOption[]>([]);
+  const [anonymousWidgets, setAnonymousWidgets] = useState<PortalWidgetOption[]>([]);
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState("");
 
@@ -42,12 +42,12 @@ export function PortalSettings({
   useEffect(() => {
     listPortalSupportChannels(portal.id)
       .then((payload) => {
-        setChannels(payload.items);
-        setWidgetChannels(payload.widgetItems);
+        setSupportWidgets(payload.items);
+        setAnonymousWidgets(payload.widgetItems);
       })
       .catch(() => {
-        setChannels([]);
-        setWidgetChannels([]);
+        setSupportWidgets([]);
+        setAnonymousWidgets([]);
       });
   }, [portal.id]);
 
@@ -92,14 +92,14 @@ export function PortalSettings({
 
       <PortalProductSettings
         canManage={canManage}
-        channels={channels}
+        widgets={supportWidgets}
         portal={portal}
         products={products}
         onChanged={onChanged}
       />
       <PortalWidgetSettings
         canManage={canManage}
-        channels={widgetChannels}
+        widgets={anonymousWidgets}
         portal={portal}
         onChanged={onChanged}
       />

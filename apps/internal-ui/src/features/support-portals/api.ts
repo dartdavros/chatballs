@@ -1,5 +1,4 @@
 import { api } from "../../api/client";
-import type { Channel } from "../channels/types";
 import type { ArticleImportDocument } from "./parseArticleYaml";
 import type {
   ArticleRevision,
@@ -7,6 +6,7 @@ import type {
   PortalCategory,
   PortalInput,
   PortalStatus,
+  PortalWidgetOption,
   SupportPortal,
   SupportPortalList,
 } from "./model";
@@ -48,7 +48,7 @@ export function changePortalStatus(
 
 export function replacePortalProducts(
   id: number,
-  items: Array<{ productId: number; supportChannelId: number | null; sortOrder: number }>,
+  items: Array<{ productId: number; supportWidgetId: number | null; sortOrder: number }>,
 ): Promise<{ portal: SupportPortal }> {
   return api(`/api/v1/support/portals/${id}/products/`, {
     method: "PUT",
@@ -92,7 +92,7 @@ export function deletePortalCategory(
 
 export function listPortalSupportChannels(
   portalId: number,
-): Promise<{ items: Channel[]; widgetItems: Channel[] }> {
+): Promise<{ items: PortalWidgetOption[]; widgetItems: PortalWidgetOption[] }> {
   return api(`/api/v1/support/portals/${portalId}/support-channels/`);
 }
 

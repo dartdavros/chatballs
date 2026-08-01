@@ -4,10 +4,10 @@ import { HelpMessageIcon } from "./HelpIcons";
 import type { HelpProduct } from "./types";
 
 export function supportHref(product: HelpProduct): string | null {
-  if (!product.siteUrl || !product.supportChannelCode) return null;
+  if (!product.siteUrl || !product.supportWidgetKey) return null;
   try {
     const url = new URL(product.siteUrl);
-    url.searchParams.set("custocrmSupportChannel", product.supportChannelCode);
+    url.searchParams.set("custocrmSupportWidget", product.supportWidgetKey);
     return url.toString();
   } catch {
     return null;

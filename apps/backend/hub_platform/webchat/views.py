@@ -8,16 +8,30 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from hub_platform.identity.models import Organization
-from hub_platform.integrations.models import Integration, IntegrationProvider
+from hub_platform.integrations.models import IntegrationStatus
 from hub_platform.tenancy.context import TenantContext
 from hub_platform.tenancy.database import tenant_atomic
-from hub_platform.tenancy.ingress import web_channel_route, web_session_route
+from hub_platform.tenancy.ingress import (
+    web_channel_route,
+    web_session_route,
+    web_widget_route,
+)
 from hub_platform.webchat import services
 from hub_platform.webchat.loader import LOADER_JS
+from hub_platform.webchat.models import (
+    WebChatWidget,
+    WebChatWidgetMode,
+    WebChatWidgetStatus,
+)
 
 
 def _origin(request: Request) -> str:
-    return request.headers.get("Origin") or request.headers.get("Referer") or ""
+    explicit = (
+        request.data.get("hostOrigin", "")
+        if request.method == "POST"
+        else request.GET.get("hostOrigin", "")
+    )
+    return str(explicit or request.headers.get("Origin") or request.headers.get("Referer") or "")
 
 
 def _token(request: Request) -> str:
@@ -35,8 +49,8 @@ class _Public(APIView):
 
 
 @contextmanager
-def _resolved_web_connection(channel_code: str):
-    route = web_channel_route(channel_code)
+def _resolved_web_widget(widget_key: str, channel_code: str = ""):
+    route = web_widget_route(widget_key) if widget_key else web_channel_route(channel_code)
     if route is None:
         yield None, None
         return
@@ -47,16 +61,28 @@ def _resolved_web_connection(channel_code: str):
         return
     context = TenantContext.for_resource(organization)
     with tenant_atomic(context):
-        integration = Integration.objects.select_related("channel").filter(
-            id=route.resource_id,
+        filters = (
+            {"id": route.resource_id, "public_key": widget_key}
+            if widget_key
+            else {"integration_id": route.resource_id}
+        )
+        widget = WebChatWidget.objects.select_related(
+            "integration",
+            "integration__channel",
+        ).filter(
+            **filters,
             organization=organization,
-            provider=IntegrationProvider.WEB,
-            is_active=True,
-            channel__organization=organization,
-            channel__code=channel_code,
-            channel__is_active=True,
+            status=WebChatWidgetStatus.PUBLISHED,
+            integration__organization=organization,
+            integration__provider="WEB",
+            integration__status=IntegrationStatus.OK,
+            integration__is_active=True,
+            integration__channel__organization=organization,
+            integration__channel__is_active=True,
         ).first()
-        yield context, integration
+        if widget is not None and channel_code and widget.integration.channel.code != channel_code:
+            widget = None
+        yield context, widget
 
 
 @contextmanager
@@ -83,19 +109,15 @@ def _resolved_web_session(request: Request):
 
 class WebchatConfigView(_Public):
     def get(self, request: Request) -> Response:
+        widget_key = request.GET.get("widgetKey", "")
         channel_code = request.GET.get("channel", "")
-        with _resolved_web_connection(channel_code) as (context, integration):
-            if context is None or integration is None:
-                return Response({"available": False})
-            if (
-                integration.channel.requires_authenticated_product_identity
-                or not integration.channel.allow_anonymous_sessions
-            ):
+        with _resolved_web_widget(widget_key, channel_code) as (context, widget):
+            if context is None or widget is None:
                 return Response({"available": False})
             return Response(
                 services.public_config(
                     context=context,
-                    integration=integration,
+                    widget=widget,
                     origin=_origin(request),
                 )
             )
@@ -103,18 +125,21 @@ class WebchatConfigView(_Public):
 
 class WebchatSessionView(_Public):
     def post(self, request: Request) -> Response:
+        widget_key = str(request.data.get("widgetKey", ""))
         channel_code = str(request.data.get("channel", ""))
-        with _resolved_web_connection(channel_code) as (context, integration):
-            if context is None or integration is None:
-                return Response({"detail": "Канал недоступен"}, status=404)
+        with _resolved_web_widget(widget_key, channel_code) as (context, widget):
+            if context is None or widget is None:
+                return Response({"detail": "Виджет недоступен"}, status=404)
             if (
-                integration.channel.requires_authenticated_product_identity
-                or not integration.channel.allow_anonymous_sessions
+                widget.mode != WebChatWidgetMode.ANONYMOUS
+                or widget.integration.channel.requires_authenticated_product_identity
+                or not widget.integration.channel.allow_anonymous_sessions
+                or not services.origin_allowed(widget, _origin(request))
             ):
-                return Response({"detail": "Канал недоступен"}, status=404)
-            result = services.issue_session(context=context, integration=integration)
+                return Response({"detail": "Виджет недоступен"}, status=404)
+            result = services.issue_session(context=context, widget=widget)
             if result is None:
-                return Response({"detail": "Канал недоступен"}, status=404)
+                return Response({"detail": "Виджет недоступен"}, status=404)
             return Response(result, status=201)
 
 

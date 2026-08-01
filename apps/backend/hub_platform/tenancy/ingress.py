@@ -87,6 +87,10 @@ def web_channel_route(channel_code: str) -> IngressRoute | None:
     return _unique_route("web_channel_directory", channel_code)
 
 
+def web_widget_route(public_key: str) -> IngressRoute | None:
+    return _unique_route("web_widget_directory", public_key)
+
+
 def support_portal_route(hostname: str) -> IngressRoute | None:
     return _unique_route("support_portal_directory", hostname.strip().lower().rstrip("."))
 

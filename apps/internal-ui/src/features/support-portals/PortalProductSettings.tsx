@@ -1,25 +1,25 @@
 import { useEffect, useMemo, useState } from "react";
 
-import type { Channel } from "../channels/types";
 import { SelectField, SwitchButton } from "../../shared/form-controls";
 import { Button } from "../../shared/ui-controls";
 import type { Product } from "../../types";
 import {
   portalErrorMessage,
   replacePortalProducts,
+  type PortalWidgetOption,
   type SupportPortal,
 } from "./model";
 
 export function PortalProductSettings({
   portal,
   products,
-  channels,
+  widgets,
   canManage,
   onChanged,
 }: {
   portal: SupportPortal;
   products: Product[];
-  channels: Channel[];
+  widgets: PortalWidgetOption[];
   canManage: boolean;
   onChanged: (portal: SupportPortal) => void;
 }) {
@@ -29,17 +29,14 @@ export function PortalProductSettings({
 
   useEffect(() => {
     setSelected(Object.fromEntries(
-      portal.products.map((item) => [item.productId, item.supportChannelId]),
+      portal.products.map((item) => [item.productId, item.supportWidgetId]),
     ));
   }, [portal.products]);
 
-  const supportChannels = useMemo(() => channels.filter((channel) => (
-    channel.isActive
-    && channel.department === "support"
-    && channel.product
-    && channel.policy.requiresAuthenticatedProductIdentity
-    && !channel.policy.allowAnonymousSessions
-  )), [channels]);
+  const supportWidgets = useMemo(
+    () => widgets.filter((widget) => widget.mode === "AUTHENTICATED_PRODUCT"),
+    [widgets],
+  );
 
   function toggleProduct(productId: number) {
     setSelected((current) => {
@@ -54,9 +51,9 @@ export function PortalProductSettings({
     setBusy(true);
     setFeedback("");
     try {
-      const items = Object.entries(selected).map(([productId, supportChannelId], index) => ({
+      const items = Object.entries(selected).map(([productId, supportWidgetId], index) => ({
         productId: Number(productId),
-        supportChannelId,
+        supportWidgetId,
         sortOrder: index,
       }));
       const payload = await replacePortalProducts(portal.id, items);
@@ -72,16 +69,16 @@ export function PortalProductSettings({
   return (
     <section className="portal-section">
       <div className="portal-section-heading">
-        <div><h2>Продукты и поддержка</h2><p>Выберите продукты и каналы, в которых клиенты смогут обратиться в поддержку.</p></div>
+        <div><h2>Продукты и поддержка</h2><p>Выберите продукты и виджеты, через которые клиенты смогут обратиться в поддержку.</p></div>
       </div>
       <div className="portal-product-list">
         {products.map((product) => {
           const enabled = product.id in selected;
           const options: Array<[string, string]> = [
             ["", "Без перехода в поддержку"],
-            ...supportChannels
-              .filter((channel) => channel.product?.id === product.id)
-              .map((channel): [string, string] => [String(channel.id), channel.name]),
+            ...supportWidgets
+              .filter((widget) => widget.channel?.productId === product.id)
+              .map((widget): [string, string] => [String(widget.id), widget.name]),
           ];
           return (
             <div className={enabled ? "is-enabled" : ""} key={product.id}>
@@ -96,7 +93,7 @@ export function PortalProductSettings({
               {enabled && (
                 <SelectField
                   disabled={!canManage}
-                  label="Канал поддержки"
+                  label="Виджет поддержки"
                   value={String(selected[product.id] ?? "")}
                   onChange={(value) => setSelected((current) => ({
                     ...current,

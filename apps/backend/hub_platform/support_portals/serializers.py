@@ -16,6 +16,7 @@ from hub_platform.support_portals.domain_services import (
 
 
 def product_link_payload(link: SupportPortalProduct) -> dict:
+    widget_key = _public_widget_key(link.support_widget, "AUTHENTICATED_PRODUCT")
     return {
         "productId": link.product_id,
         "code": link.product.code,
@@ -24,6 +25,8 @@ def product_link_payload(link: SupportPortalProduct) -> dict:
         "supportChannelCode": (
             link.support_channel.code if link.support_channel_id else None
         ),
+        "supportWidgetId": link.support_widget_id,
+        "supportWidgetKey": widget_key,
         "sortOrder": link.sort_order,
     }
 
@@ -65,6 +68,8 @@ def portal_payload(portal: SupportPortal) -> dict:
         "defaultLocale": portal.default_locale,
         "status": portal.status,
         "publishedAt": portal.published_at,
+        "widgetId": portal.widget_id,
+        "widgetKey": _public_widget_key(portal.widget, "ANONYMOUS"),
         "widgetChannelId": portal.widget_channel_id,
         "widgetChannelCode": _public_widget_channel_code(portal),
         "products": [product_link_payload(link) for link in portal.product_links.all()],
@@ -132,17 +137,26 @@ def article_payload(article: PortalArticle, *, revisions: bool = False) -> dict:
 
 
 def public_portal_payload(portal: SupportPortal) -> dict:
+    widget_key = _public_widget_key(portal.widget, "ANONYMOUS")
     return {
         "slug": portal.slug,
         "name": portal.name,
         "defaultLocale": portal.default_locale,
+        "webWidgetKey": widget_key,
         "webWidgetChannelCode": _public_widget_channel_code(portal),
         "products": [
             {
                 "code": link.product.code,
                 "name": link.product.name,
                 "siteUrl": link.product.site_url,
-                "supportAvailable": link.support_channel_id is not None,
+                "supportAvailable": _public_widget_key(
+                    link.support_widget,
+                    "AUTHENTICATED_PRODUCT",
+                ) is not None,
+                "supportWidgetKey": _public_widget_key(
+                    link.support_widget,
+                    "AUTHENTICATED_PRODUCT",
+                ),
                 "supportChannelCode": (
                     link.support_channel.code if link.support_channel_id else None
                 ),
@@ -153,7 +167,10 @@ def public_portal_payload(portal: SupportPortal) -> dict:
 
 
 def _public_widget_channel_code(portal: SupportPortal) -> str | None:
-    channel = portal.widget_channel
+    widget = portal.widget
+    if _public_widget_key(widget, "ANONYMOUS") is None:
+        return None
+    channel = widget.integration.channel
     if (
         channel is None
         or not channel.is_active
@@ -167,6 +184,22 @@ def _public_widget_channel_code(portal: SupportPortal) -> str | None:
         is_active=True,
     ).exists()
     return channel.code if available else None
+
+
+def _public_widget_key(widget, expected_mode: str) -> str | None:
+    if widget is None or widget.mode != expected_mode or widget.status != "PUBLISHED":
+        return None
+    integration = widget.integration
+    channel = integration.channel
+    if (
+        channel is None
+        or not channel.is_active
+        or integration.provider != IntegrationProvider.WEB
+        or integration.status != IntegrationStatus.OK
+        or not integration.is_active
+    ):
+        return None
+    return widget.public_key
 
 
 def public_article_payload(article: PortalArticle, *, content: bool = True) -> dict:

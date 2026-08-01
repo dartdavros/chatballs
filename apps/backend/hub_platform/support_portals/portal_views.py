@@ -5,8 +5,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from hub_platform.api.permissions import HasCapability, HasEntitlement
-from hub_platform.channels.models import Channel
-from hub_platform.channels.serializers import channel_payload
 from hub_platform.identity.audit import record_audit_event
 from hub_platform.integrations.models import IntegrationProvider, IntegrationStatus
 from hub_platform.support_portals.api import validation_response
@@ -27,6 +25,12 @@ from hub_platform.support_portals.serializers import portal_payload
 from hub_platform.subscriptions.errors import PolicyUnavailable
 from hub_platform.subscriptions.keys import QuotaKey
 from hub_platform.subscriptions.policy import get_effective_policy
+from hub_platform.webchat.models import (
+    WebChatWidget,
+    WebChatWidgetMode,
+    WebChatWidgetStatus,
+)
+from hub_platform.webchat.widgets import widget_payload
 
 
 def _optional_id(value) -> int | None:
@@ -61,6 +65,24 @@ class PortalBaseView(APIView):
 
 
 def _input(request: Request, current: SupportPortal | None = None) -> PortalInput:
+    if "widgetId" in request.data:
+        widget_id = (
+            _optional_id(request.data["widgetId"])
+            if request.data.get("widgetId") not in (None, "")
+            else None
+        )
+        widget_channel_id = None
+    else:
+        widget_id = current.widget_id if current is not None else None
+        widget_channel_id = (
+            _optional_id(request.data["widgetChannelId"])
+            if request.data.get("widgetChannelId") not in (None, "")
+            else (
+                current.widget_channel_id
+                if current is not None and "widgetChannelId" not in request.data
+                else None
+            )
+        )
     return PortalInput(
         slug=str(request.data.get("slug", current.slug if current else "")),
         name=str(request.data.get("name", current.name if current else "")),
@@ -70,15 +92,8 @@ def _input(request: Request, current: SupportPortal | None = None) -> PortalInpu
                 current.default_locale if current else "ru",
             )
         ),
-        widget_channel_id=(
-            _optional_id(request.data["widgetChannelId"])
-            if request.data.get("widgetChannelId") not in (None, "")
-            else (
-                current.widget_channel_id
-                if current is not None and "widgetChannelId" not in request.data
-                else None
-            )
-        ),
+        widget_id=widget_id,
+        widget_channel_id=widget_channel_id,
     )
 
 
@@ -201,45 +216,55 @@ class PortalProductsView(PortalBaseView):
 
 
 class PortalSupportChannelsView(PortalBaseView):
-    """Portal-scoped channel options available to support operators."""
+    """Portal-scoped widget options available to support operators."""
 
     def get(self, request: Request, portal_id: int) -> Response:
         portal = self.portal(request, portal_id)
         if portal is None:
             return Response({"detail": "Портал не найден"}, status=404)
-        channels = (
-            Channel.objects.select_related("department", "product")
+        widgets = (
+            WebChatWidget.objects.select_related(
+                "integration",
+                "integration__channel",
+                "integration__channel__product",
+            )
             .filter(
                 organization=request.tenant_context.organization,
-                department__code="support",
-                product__isnull=False,
-                is_active=True,
-                requires_authenticated_product_identity=True,
-                allow_anonymous_sessions=False,
+                mode=WebChatWidgetMode.AUTHENTICATED_PRODUCT,
+                status=WebChatWidgetStatus.PUBLISHED,
+                integration__provider=IntegrationProvider.WEB,
+                integration__status=IntegrationStatus.OK,
+                integration__is_active=True,
+                integration__channel__department__code="support",
+                integration__channel__product__isnull=False,
+                integration__channel__is_active=True,
             )
-            .order_by("product__name", "name", "id")
+            .order_by("integration__channel__product__name", "name", "id")
         )
-        widget_channels = (
-            Channel.objects.select_related("department", "product")
+        anonymous_widgets = (
+            WebChatWidget.objects.select_related(
+                "integration",
+                "integration__channel",
+                "integration__channel__product",
+            )
             .filter(
                 organization=request.tenant_context.organization,
-                department__code="support",
-                is_active=True,
-                requires_authenticated_product_identity=False,
-                allow_anonymous_sessions=True,
-                connections__provider=IntegrationProvider.WEB,
-                connections__status=IntegrationStatus.OK,
-                connections__is_active=True,
+                mode=WebChatWidgetMode.ANONYMOUS,
+                status=WebChatWidgetStatus.PUBLISHED,
+                integration__provider=IntegrationProvider.WEB,
+                integration__status=IntegrationStatus.OK,
+                integration__is_active=True,
+                integration__channel__department__code="support",
+                integration__channel__is_active=True,
+                integration__channel__requires_authenticated_product_identity=False,
+                integration__channel__allow_anonymous_sessions=True,
             )
-            .distinct()
             .order_by("name", "id")
         )
         return Response(
             {
-                "items": [channel_payload(channel) for channel in channels],
-                "widgetItems": [
-                    channel_payload(channel) for channel in widget_channels
-                ],
+                "items": [widget_payload(widget) for widget in widgets],
+                "widgetItems": [widget_payload(widget) for widget in anonymous_widgets],
             }
         )
 

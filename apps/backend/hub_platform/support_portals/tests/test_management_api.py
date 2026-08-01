@@ -14,15 +14,10 @@ from hub_platform.identity.models import (
     Organization,
     OrganizationMembership,
 )
-from hub_platform.integrations.models import (
-    Integration,
-    IntegrationKind,
-    IntegrationProvider,
-    IntegrationStatus,
-)
 from hub_platform.subscriptions.testing import create_test_subscription
 from hub_platform.support_portals.models import SupportPortal, SupportPortalProduct
 from hub_platform.support_portals.tests.base import SupportPortalTestCase
+from hub_platform.webchat.testing import create_web_widget
 
 
 class SupportPortalManagementTests(SupportPortalTestCase):
@@ -38,14 +33,7 @@ class SupportPortalManagementTests(SupportPortalTestCase):
             allow_anonymous_sessions=True,
             allow_self_reported_contact=True,
         )
-        Integration.objects.create(
-            organization=self.organization,
-            kind=IntegrationKind.MESSENGER,
-            provider=IntegrationProvider.WEB,
-            name="FoxRay portal widget",
-            channel=widget_channel,
-            status=IntegrationStatus.OK,
-        )
+        widget = create_web_widget(widget_channel, name="FoxRay portal widget")
 
         options = self.client.get(
             f"/api/v1/support/portals/{portal_id}/support-channels/"
@@ -53,47 +41,41 @@ class SupportPortalManagementTests(SupportPortalTestCase):
         self.assertEqual(options.status_code, 200, options.content)
         self.assertEqual(
             [item["id"] for item in options.json()["widgetItems"]],
-            [widget_channel.id],
+            [widget.id],
         )
 
         updated = self.client.patch(
             f"/api/v1/support/portals/{portal_id}/",
-            {"widgetChannelId": widget_channel.id},
+            {"widgetId": widget.id},
             format="json",
         )
         self.assertEqual(updated.status_code, 200, updated.content)
         self.assertEqual(
-            updated.json()["portal"]["widgetChannelCode"],
-            widget_channel.code,
+            updated.json()["portal"]["widgetKey"],
+            widget.public_key,
         )
 
         config = self.client.get(
-            f"/api/v1/webchat/config/?channel={widget_channel.code}",
+            f"/api/v1/webchat/config/?widgetKey={widget.public_key}",
             HTTP_ORIGIN="http://foxray-help.localhost",
         )
         self.assertEqual(config.status_code, 200, config.content)
         self.assertTrue(config.json()["available"])
 
     def test_authenticated_support_channel_is_rejected_by_public_webchat(self) -> None:
-        Integration.objects.create(
-            organization=self.organization,
-            kind=IntegrationKind.MESSENGER,
-            provider=IntegrationProvider.WEB,
-            name="Authenticated support widget",
-            channel=self.channel,
-            status=IntegrationStatus.OK,
-        )
+        widget = create_web_widget(self.channel, name="Authenticated support widget")
 
         config = self.client.get(
-            f"/api/v1/webchat/config/?channel={self.channel.code}",
+            f"/api/v1/webchat/config/?widgetKey={widget.public_key}",
         )
         session = self.client.post(
             "/api/v1/webchat/session/",
-            {"channel": self.channel.code},
+            {"widgetKey": widget.public_key},
             format="json",
         )
 
-        self.assertFalse(config.json()["available"])
+        self.assertTrue(config.json()["available"])
+        self.assertEqual(config.json()["mode"], "AUTHENTICATED_PRODUCT")
         self.assertEqual(session.status_code, 404, session.content)
 
     def test_subscription_allows_multiple_active_portals(self) -> None:
@@ -121,13 +103,14 @@ class SupportPortalManagementTests(SupportPortalTestCase):
 
     def test_product_route_requires_authenticated_support_channel(self) -> None:
         portal_id = self.create_portal().json()["portal"]["id"]
+        support_widget = create_web_widget(self.channel, name="Product support widget")
         response = self.client.put(
             f"/api/v1/support/portals/{portal_id}/products/",
             {
                 "items": [
                     {
                         "productId": self.product.id,
-                        "supportChannelId": self.channel.id,
+                        "supportWidgetId": support_widget.id,
                     }
                 ]
             },
@@ -137,6 +120,7 @@ class SupportPortalManagementTests(SupportPortalTestCase):
         link = SupportPortalProduct.objects.get()
         self.assertEqual(link.product, self.product)
         self.assertEqual(link.support_channel, self.channel)
+        self.assertEqual(link.support_widget, support_widget)
 
         anonymous_channel = Channel.objects.create(
             organization=self.organization,
@@ -145,13 +129,14 @@ class SupportPortalManagementTests(SupportPortalTestCase):
             department=self.channel.department,
             product=self.product,
         )
+        anonymous_widget = create_web_widget(anonymous_channel, name="Anonymous widget")
         rejected = self.client.put(
             f"/api/v1/support/portals/{portal_id}/products/",
             {
                 "items": [
                     {
                         "productId": self.product.id,
-                        "supportChannelId": anonymous_channel.id,
+                        "supportWidgetId": anonymous_widget.id,
                     }
                 ]
             },

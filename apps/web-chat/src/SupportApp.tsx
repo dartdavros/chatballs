@@ -2,15 +2,48 @@ import { useEffect, useRef, useState } from "react";
 
 import { pollSupport, sendSupport, startSupportSession, type WebMessage } from "./api";
 import { Bubble, ChatComposer, ChatHeader, SystemMessage, Typing } from "./ChatView";
+import { SUPPORT_ACCENT, SupportStatusScreen, supportShell } from "./SupportStatusScreen";
 import { useScrollToLatest } from "./useScrollToLatest";
 import { useWidgetActivity } from "./widgetActivity";
 
 // Support-режим виджета (SPEC-HUB-0010 §7): authenticated in-product чат.
 // Нет consent/lead form, нет полей имя/email/purchase — клиент уже авторизован
-// в продукте. Старт по Product Support Token (data-support-token в loader).
-const CHANNEL = new URLSearchParams(location.search).get("channel") || "";
-const TOKEN = new URLSearchParams(location.search).get("token") || "";
-const DEFAULT_ACCENT = "#1677ff";
+// в продукте. Product Support Token запрашивается у host через loader runtime API.
+const PARAMS = new URLSearchParams(location.search);
+const WIDGET_KEY = PARAMS.get("widgetKey") || "";
+const INSTANCE_ID = PARAMS.get("instanceId") || "";
+const HOST_ORIGIN = document.referrer ? new URL(document.referrer).origin : location.origin;
+
+function requestSupportToken(): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const requestId = `token_${crypto.randomUUID()}`;
+    const timeout = window.setTimeout(() => {
+      window.removeEventListener("message", receive);
+      reject(new Error("Support token provider timed out"));
+    }, 10000);
+    function receive(event: MessageEvent) {
+      const data = event.data ?? {};
+      if (
+        event.source !== window.parent
+        || event.origin !== HOST_ORIGIN
+        || data.type !== "custocrm-chat-token-response"
+        || data.instanceId !== INSTANCE_ID
+        || data.requestId !== requestId
+      ) return;
+      window.clearTimeout(timeout);
+      window.removeEventListener("message", receive);
+      if (typeof data.token === "string" && data.token) resolve(data.token);
+      else reject(new Error("Support token unavailable"));
+    }
+    window.addEventListener("message", receive);
+    window.parent.postMessage({
+      type: "custocrm-chat-token-request",
+      instanceId: INSTANCE_ID,
+      requestId,
+      widgetKey: WIDGET_KEY,
+    }, HOST_ORIGIN);
+  });
+}
 
 function closePanel() {
   window.parent.postMessage({ type: "edevs-chat-close" }, "*");
@@ -32,11 +65,12 @@ export function SupportApp() {
   // Старт сессии один раз (SPEC §7.2: нет consent/accept flow).
   useEffect(() => {
     let alive = true;
-    if (!CHANNEL || !TOKEN) {
+    if (!WIDGET_KEY || !INSTANCE_ID) {
       setFailed(true);
       return;
     }
-    startSupportSession(CHANNEL, TOKEN)
+    requestSupportToken()
+      .then((token) => startSupportSession(WIDGET_KEY, token, HOST_ORIGIN))
       .then((s) => {
         if (!alive) return;
         if (!s) {
@@ -111,44 +145,21 @@ export function SupportApp() {
   }
 
   const displayName = session?.snapshot.displayName || "";
-  const accent = DEFAULT_ACCENT;
+  const accent = SUPPORT_ACCENT;
   const status = state === "operator"
     ? { label: "Отвечает специалист", dot: "#52c41a" }
     : state === "waiting"
       ? { label: "Передаём оператору", dot: "#faad14" }
       : { label: "Виртуальный помощник", dot: "#52c41a" };
 
-  const header = (statusLabel: string, dot: string) => (
-    <ChatHeader accent={accent} letter="П" title="Поддержка" statusLabel={statusLabel} statusDot={dot} unavailable={false} onClose={closePanel} />
-  );
-
-  if (failed) {
-    return (
-      <div style={shell()}>
-        {header("Временно недоступна", "#faad14")}
-        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", background: "#f7f8fa" }}>
-          <p style={{ color: "#595959", fontSize: 13, padding: 24, textAlign: "center" }}>Поддержка временно недоступна. Обновите страницу или обратитесь позже.</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!session) {
-    return (
-      <div style={shell()}>
-        {header("Подключение…", "#52c41a")}
-        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", background: "#f7f8fa" }}>
-          <span style={{ color: "#8c8c8c", fontSize: 13 }}>Загрузка…</span>
-        </div>
-      </div>
-    );
-  }
+  if (failed) return <SupportStatusScreen failed />;
+  if (!session) return <SupportStatusScreen failed={false} />;
 
   const greeting = displayName ? `Здравствуйте, ${displayName.split(" ")[0]}.` : "Здравствуйте.";
 
   return (
-    <div style={shell()}>
-      {header(status.label, status.dot)}
+    <div style={supportShell()}>
+      <ChatHeader accent={accent} letter="П" title="Поддержка" statusLabel={status.label} statusDot={status.dot} unavailable={false} onClose={closePanel} />
 
       <div ref={bodyRef} style={{ flex: 1, minHeight: 0, overflowY: "auto", background: "#f7f8fa", padding: "18px 16px" }}>
         <div style={{ textAlign: "center", marginBottom: 14 }}>
@@ -171,8 +182,4 @@ function modeOf(controlMode: string): "ai" | "operator" | "waiting" {
   if (controlMode === "HUMAN") return "operator";
   if (controlMode === "PAUSED") return "waiting";
   return "ai";
-}
-
-function shell(): React.CSSProperties {
-  return { display: "flex", flexDirection: "column", height: "100%", width: "100%", background: "#fff", fontFamily: "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif", color: "#1f1f1f", overflow: "hidden" };
 }

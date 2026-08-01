@@ -11,7 +11,7 @@ from hub_platform.support_portals.statuses import ArticleStatus, PortalStatus
 class SupportPortal(TenantRelationModel):
     """Публичный Help Center, управляемый внутри отдела поддержки."""
 
-    tenant_relation_fields = ("department", "widget_channel")
+    tenant_relation_fields = ("department", "widget_channel", "widget")
     department = models.ForeignKey(
         "identity.Department",
         on_delete=models.PROTECT,
@@ -38,6 +38,13 @@ class SupportPortal(TenantRelationModel):
         "channels.Channel",
         on_delete=models.PROTECT,
         related_name="support_portal_widgets",
+        null=True,
+        blank=True,
+    )
+    widget = models.ForeignKey(
+        "webchat.WebChatWidget",
+        on_delete=models.PROTECT,
+        related_name="support_portals",
         null=True,
         blank=True,
     )
@@ -70,31 +77,20 @@ class SupportPortal(TenantRelationModel):
     def clean(self) -> None:
         super().clean()
         from hub_platform.support_portals.addressing import clean_portal_domains
+        from hub_platform.support_portals.widget_validation import validate_portal_widget
 
         clean_portal_domains(self)
         if self.department_id is not None and self.department.code != "support":
             raise ValidationError(
                 {"department": "Support portal must belong to the support department"}
             )
-        if self.widget_channel_id is not None:
-            channel = self.widget_channel
-            if channel.department_id is None or channel.department.code != "support":
-                raise ValidationError(
-                    {"widget_channel": "Portal widget must belong to the support department"}
-                )
-            if (
-                channel.requires_authenticated_product_identity
-                or not channel.allow_anonymous_sessions
-            ):
-                raise ValidationError(
-                    {"widget_channel": "Portal widget must allow anonymous web sessions"}
-                )
+        validate_portal_widget(self)
 
 
 class SupportPortalProduct(TenantRelationModel):
     """Продукт портала и его authenticated support-маршрут."""
 
-    tenant_relation_fields = ("portal", "product", "support_channel")
+    tenant_relation_fields = ("portal", "product", "support_channel", "support_widget")
     portal = models.ForeignKey(
         SupportPortal,
         on_delete=models.CASCADE,
@@ -107,6 +103,13 @@ class SupportPortalProduct(TenantRelationModel):
     )
     support_channel = models.ForeignKey(
         "channels.Channel",
+        on_delete=models.PROTECT,
+        related_name="support_portal_routes",
+        null=True,
+        blank=True,
+    )
+    support_widget = models.ForeignKey(
+        "webchat.WebChatWidget",
         on_delete=models.PROTECT,
         related_name="support_portal_routes",
         null=True,
@@ -125,6 +128,11 @@ class SupportPortalProduct(TenantRelationModel):
 
     def clean(self) -> None:
         super().clean()
+        from hub_platform.support_portals.widget_validation import (
+            validate_product_support_widget,
+        )
+
+        validate_product_support_widget(self)
         if self.support_channel_id is None:
             return
         channel = self.support_channel

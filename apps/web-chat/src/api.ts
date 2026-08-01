@@ -3,7 +3,8 @@ const API = "/api/v1/webchat";
 export type WebConfig = {
   available: boolean;
   reason?: string;
-  channel?: string;
+  widgetKey?: string;
+  mode?: "ANONYMOUS" | "AUTHENTICATED_PRODUCT";
   title?: string;
   accent?: string;
   greeting?: string;
@@ -38,16 +39,23 @@ export type CallStateEnvelope = { call: CallInfo; iceServers: RTCIceServer[] };
 
 export type Poll = { state: "ai" | "operator" | "waiting"; lifecycle: string; messages: WebMessage[]; call?: CallInfo | null };
 
-export async function getConfig(channel: string): Promise<WebConfig> {
-  const r = await fetch(`${API}/config/?channel=${encodeURIComponent(channel)}`);
+export type WidgetEntry = { widgetKey?: string; channel?: string };
+
+function entryQuery(entry: WidgetEntry): string {
+  if (entry.widgetKey) return `widgetKey=${encodeURIComponent(entry.widgetKey)}`;
+  return `channel=${encodeURIComponent(entry.channel ?? "")}`;
+}
+
+export async function getConfig(entry: WidgetEntry, hostOrigin: string): Promise<WebConfig> {
+  const r = await fetch(`${API}/config/?${entryQuery(entry)}&hostOrigin=${encodeURIComponent(hostOrigin)}`);
   return r.json();
 }
 
-export async function startSession(channel: string): Promise<string | null> {
+export async function startSession(entry: WidgetEntry, hostOrigin: string): Promise<string | null> {
   const r = await fetch(`${API}/session/`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ channel }),
+    body: JSON.stringify({ ...entry, hostOrigin }),
   });
   if (!r.ok) return null;
   return (await r.json()).token as string;
@@ -146,17 +154,16 @@ export type SupportSession = {
 
 // Старт сессии: verify Product Support Token → conversation + widget-credential.
 // При ошибке (invalid/expired token) → null (виджет покажет unavailable).
-export async function startSupportSession(channel: string, token: string): Promise<SupportSession | null> {
+export async function startSupportSession(widgetKey: string, token: string, hostOrigin: string): Promise<SupportSession | null> {
   const r = await fetch(`${SUPPORT_API}/sessions/`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ channel, token }),
+    body: JSON.stringify({ widgetKey, token, hostOrigin }),
   });
   if (!r.ok) return null;
   const data = await r.json();
   // controlMode → виджет-стейт (AI→ai, HUMAN→operator, PAUSED→waiting).
   const conv = data.conversation;
-  const stateMap: Record<string, "ai" | "operator" | "waiting"> = { AI: "ai", HUMAN: "operator", PAUSED: "waiting" };
   return {
     conversation: {
       id: conv.id,

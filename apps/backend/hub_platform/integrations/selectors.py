@@ -5,8 +5,15 @@ from hub_platform.tenancy.context import TenantContext
 
 
 def integrations_for_context(context: TenantContext) -> QuerySet[Integration]:
-    return Integration.objects.filter(organization_id=context.organization_id).select_related("channel").order_by("provider", "name")
+    return (
+        Integration.objects.filter(organization_id=context.organization_id)
+        .select_related("channel", "web_chat_widget")
+        .order_by("provider", "name")
+    )
 
 
 def integration_for_context(*, context: TenantContext, integration_id: int) -> Integration:
-    return Integration.objects.get(id=integration_id, organization_id=context.organization_id)
+    return Integration.objects.select_related("channel", "web_chat_widget").get(
+        id=integration_id,
+        organization_id=context.organization_id,
+    )

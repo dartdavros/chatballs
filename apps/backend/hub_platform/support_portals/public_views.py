@@ -42,10 +42,17 @@ class PublicPortalView(APIView):
             if not policy.has_entitlement(EntitlementKey.SUPPORT_DEPARTMENT):
                 return None
             portal = (
-                SupportPortal.objects.prefetch_related(
+                SupportPortal.objects.select_related(
+                    "widget",
+                    "widget__integration",
+                    "widget__integration__channel",
+                ).prefetch_related(
                     "categories",
                     "product_links__product",
                     "product_links__support_channel",
+                    "product_links__support_widget",
+                    "product_links__support_widget__integration",
+                    "product_links__support_widget__integration__channel",
                 )
                 .filter(
                     id=route.resource_id,

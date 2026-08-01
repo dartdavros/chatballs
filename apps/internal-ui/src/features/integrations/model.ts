@@ -3,6 +3,15 @@ import { api } from "../../api/client";
 export type IntegrationProvider = "OPENROUTER" | "CUSTOM" | "MAX" | "TELEGRAM" | "WEB" | "EMAIL";
 export type IntegrationKind = "LLM_PROVIDER" | "MESSENGER";
 export type IntegrationStatus = "UNCHECKED" | "OK" | "ERROR";
+export type WebChatWidgetSummary = {
+  id: number;
+  code: string;
+  publicKey: string;
+  name: string;
+  mode: "ANONYMOUS" | "AUTHENTICATED_PRODUCT";
+  status: "DRAFT" | "PUBLISHED" | "DISABLED";
+  channel: { id: number; code: string; name: string } | null;
+};
 
 export type Integration = {
   id: number;
@@ -21,6 +30,13 @@ export type Integration = {
     botUsername: string;
     botName: string;
     purpose: string;
+    allowedOrigins: string[];
+    title: string;
+    accent: string;
+    greeting: string;
+    quickReplies: string[];
+    consentText: string;
+    consentVersion: string;
     email: string;
     imapHost: string;
     imapPort: number;
@@ -30,6 +46,7 @@ export type Integration = {
     smtpSsl: boolean;
   };
   channel: { id: number; code: string; name: string } | null;
+  webChatWidget?: WebChatWidgetSummary | null;
   status: IntegrationStatus;
   lastCheckedAt: string | null;
   lastError: string;
@@ -84,6 +101,6 @@ export const fetchLlmProviders = () =>
 // Публичный домен Hub для встраивания Web-виджета (SPEC-HUB-0003 §3).
 // Один frontend-образ работает на любом домене (ADR-HUB-0028 §runtime frontend):
 // сниппет генерируется от текущего origin в рантайме, а не от build-time аргумента.
-export function webWidgetSnippet(channelCode: string): string {
-  return `<script src="${window.location.origin}/chat-widget.js" data-channel="${channelCode}" async></script>`;
+export function webWidgetSnippet(widgetKey: string): string {
+  return `<script src="${window.location.origin}/chat-widget.js" data-widget-key="${widgetKey}" async></script>`;
 }

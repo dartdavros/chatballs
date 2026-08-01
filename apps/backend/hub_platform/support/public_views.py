@@ -4,7 +4,6 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from hub_platform.channels.models import Channel
 from hub_platform.conversations.models import Conversation
 from hub_platform.conversations.serializers import conversation_payload
 from hub_platform.identity.models import Organization
@@ -19,7 +18,14 @@ from hub_platform.tenancy.database import tenant_atomic
 from hub_platform.tenancy.ingress import (
     support_channel_routes,
     support_conversation_route,
+    web_widget_route,
 )
+from hub_platform.webchat.models import (
+    WebChatWidget,
+    WebChatWidgetMode,
+    WebChatWidgetStatus,
+)
+from hub_platform.webchat.services import origin_allowed
 
 
 class _Public(APIView):
@@ -29,43 +35,77 @@ class _Public(APIView):
 
 class SupportSessionStartView(_Public):
     def post(self, request: Request) -> Response:
+        widget_key = str(request.data.get("widgetKey", "")).strip()
         channel_code = str(request.data.get("channel", "")).strip()
         token = str(request.data.get("token", ""))
-        if not channel_code or not token:
+        if not token or (not widget_key and not channel_code):
             return _denied()
-        routes = support_channel_routes(channel_code)
-        if len(routes) == 1:
-            route = routes[0]
-        else:
-            verified = []
-            for candidate in routes:
-                try:
-                    verify_support_token(token=token, secret=candidate.support_secret)
-                except errors.SupportSessionError:
-                    continue
-                verified.append(candidate)
-            if len(verified) != 1:
+        if widget_key:
+            route = web_widget_route(widget_key)
+            if route is None:
                 return _denied()
-            route = verified[0]
+            channel_id = None
+        else:
+            routes = support_channel_routes(channel_code)
+            if len(routes) == 1:
+                route = routes[0]
+            else:
+                verified = []
+                for candidate in routes:
+                    try:
+                        verify_support_token(token=token, secret=candidate.support_secret)
+                    except errors.SupportSessionError:
+                        continue
+                    verified.append(candidate)
+                if len(verified) != 1:
+                    return _denied()
+                route = verified[0]
+            channel_id = int(route.resource_id)
         try:
             organization = Organization.objects.get(pk=route.organization_id)
         except Organization.DoesNotExist:
             return _denied()
         context = TenantContext.for_resource(organization)
         with tenant_atomic(context):
-            channel = Channel.objects.select_related(
-                "department", "product", "organization"
+            widgets = WebChatWidget.objects.select_related(
+                "organization",
+                "integration",
+                "integration__channel",
+                "integration__channel__department",
+                "integration__channel__product",
             ).filter(
-                id=route.resource_id,
                 organization=organization,
-                code=channel_code,
-                is_active=True,
-            ).first()
-            if channel is None:
+                mode=WebChatWidgetMode.AUTHENTICATED_PRODUCT,
+                status=WebChatWidgetStatus.PUBLISHED,
+                integration__provider="WEB",
+                integration__status="OK",
+                integration__is_active=True,
+                integration__channel__is_active=True,
+            )
+            if widget_key:
+                widget = widgets.filter(
+                    id=route.resource_id,
+                    public_key=widget_key,
+                ).first()
+            else:
+                candidates = list(
+                    widgets.filter(
+                        integration__channel_id=channel_id,
+                        integration__channel__code=channel_code,
+                    ).order_by("id")[:2]
+                )
+                widget = candidates[0] if len(candidates) == 1 else None
+            origin = str(
+                request.data.get("hostOrigin", "")
+                or request.headers.get("Origin")
+                or request.headers.get("Referer")
+                or ""
+            )
+            if widget is None or not origin_allowed(widget, origin):
                 return _denied()
             try:
                 result = start_support_session(
-                    channel=channel,
+                    widget=widget,
                     token=token,
                     request=request,
                 )

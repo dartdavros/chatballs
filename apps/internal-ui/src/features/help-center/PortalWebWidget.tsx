@@ -2,16 +2,16 @@ import { useEffect } from "react";
 
 const SCRIPT_ID = "custocrm-help-widget-loader";
 
-export function PortalWebWidget({ channelCode }: { channelCode: string }) {
+export function PortalWebWidget({ widgetKey }: { widgetKey: string }) {
   useEffect(() => {
     if (document.getElementById(SCRIPT_ID)) return;
     const script = document.createElement("script");
     script.id = SCRIPT_ID;
     script.src = "/chat-widget.js";
     script.async = true;
-    script.dataset.channel = channelCode;
+    script.dataset.widgetKey = widgetKey;
     document.body.appendChild(script);
-  }, [channelCode]);
+  }, [widgetKey]);
 
   return null;
 }

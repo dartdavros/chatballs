@@ -2,6 +2,20 @@ import { ApiError } from "../../api/client";
 
 export type PortalStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
 export type ArticleStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
+export type PortalWidgetOption = {
+  id: number;
+  code: string;
+  publicKey: string;
+  name: string;
+  mode: "ANONYMOUS" | "AUTHENTICATED_PRODUCT";
+  status: "DRAFT" | "PUBLISHED" | "DISABLED";
+  channel: {
+    id: number;
+    code: string;
+    name: string;
+    productId: number | null;
+  } | null;
+};
 
 export type PortalProductLink = {
   productId: number;
@@ -9,6 +23,8 @@ export type PortalProductLink = {
   name: string;
   supportChannelId: number | null;
   supportChannelCode: string | null;
+  supportWidgetId: number | null;
+  supportWidgetKey: string | null;
   sortOrder: number;
 };
 
@@ -35,6 +51,8 @@ export type SupportPortal = {
   defaultLocale: string;
   status: PortalStatus;
   publishedAt: string | null;
+  widgetId: number | null;
+  widgetKey: string | null;
   widgetChannelId: number | null;
   widgetChannelCode: string | null;
   products: PortalProductLink[];
@@ -79,7 +97,7 @@ export type PortalInput = {
   slug: string;
   name: string;
   defaultLocale: string;
-  widgetChannelId?: number | null;
+  widgetId?: number | null;
 };
 
 export type PortalCreationPolicy = {

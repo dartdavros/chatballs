@@ -16,6 +16,8 @@ from hub_platform.support.models import (
     SupportIdentitySnapshot,
 )
 from hub_platform.support.test_helpers import FOXRAY_DATA, make_support_token
+from hub_platform.webchat.models import WebChatWidgetMode
+from hub_platform.webchat.testing import create_web_widget
 
 SECRET = "test-support-secret-very-long-32bytes!!"
 
@@ -96,12 +98,13 @@ class SupportSessionTests(TestCase):
             allow_checkout_actions=False,
         )
         self.contract.allowed_channels.add(self.channel)
+        self.widget = create_web_widget(self.channel, name="FoxRay support widget")
         self.client = APIClient()
 
-    def _start(self, token: str, channel_code: str = "foxray-support"):
+    def _start(self, token: str, widget_key: str | None = None):
         return self.client.post(
             "/api/v1/support/sessions/",
-            data=json.dumps({"channel": channel_code, "token": token}),
+            data=json.dumps({"widgetKey": widget_key or self.widget.public_key, "token": token}),
             content_type="application/json",
         )
 
@@ -171,12 +174,17 @@ class SupportSessionTests(TestCase):
     def test_wrong_channel_not_support(self) -> None:
         # Sales-канал не может принимать support-токен.
         sales = Department.objects.get(organization=self.organization, code="sales")
-        Channel.objects.create(
+        sales_channel = Channel.objects.create(
             organization=self.organization, code="foxray-sales-x",
             name="FoxRay sales", department=sales, product=self.product,
         )
+        invalid_widget = create_web_widget(
+            sales_channel,
+            name="Invalid support widget",
+            mode=WebChatWidgetMode.AUTHENTICATED_PRODUCT,
+        )
         token = make_support_token(secret=SECRET, data=FOXRAY_DATA)
-        response = self._start(token, channel_code="foxray-sales-x")
+        response = self._start(token, widget_key=invalid_widget.public_key)
         self.assertEqual(response.status_code, 422)
         self._assert_denied_audit("CHANNEL_NOT_SUPPORT")
 
@@ -190,7 +198,7 @@ class SupportSessionTests(TestCase):
     def test_missing_token_denied(self) -> None:
         response = self.client.post(
             "/api/v1/support/sessions/",
-            data=json.dumps({"channel": "foxray-support"}),
+            data=json.dumps({"widgetKey": self.widget.public_key}),
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 422)

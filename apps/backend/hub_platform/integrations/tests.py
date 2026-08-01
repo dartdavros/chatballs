@@ -28,7 +28,7 @@ def _fake_response(status: int, body: dict):
 
 class WebIntegrationCheckTests(TestCase):
     """«Проверить» для Web-виджета: внешнего API нет — валидируем привязку к
-    каналу и что виджет канала обслуживается именно этим подключением."""
+    каналу и самостоятельный widget entry point подключения."""
 
     def setUp(self) -> None:
         bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
@@ -57,15 +57,23 @@ class WebIntegrationCheckTests(TestCase):
         )
         self.assertEqual(integration.status, IntegrationStatus.OK)
         self.assertEqual(integration.last_error, "")
+        self.assertEqual(integration.web_chat_widget.status, "PUBLISHED")
+        self.assertTrue(integration_payload(integration)["webChatWidget"]["publicKey"])
 
-    def test_web_shadowed_by_another_connection_fails(self) -> None:
-        # Два WEB-подключения на один канал: виджет обслуживает первое по сортировке.
-        self._web("A-виджет", channel=self.channel)
-        shadowed = run_integration_test(
+    def test_two_web_connections_on_one_channel_are_independent(self) -> None:
+        first = run_integration_test(
+            context=self.context,
+            integration=self._web("A-виджет", channel=self.channel),
+        )
+        second = run_integration_test(
             context=self.context, integration=self._web("B-виджет", channel=self.channel)
         )
-        self.assertEqual(shadowed.status, IntegrationStatus.ERROR)
-        self.assertIn("другое WEB-подключение", shadowed.last_error)
+        self.assertEqual(first.status, IntegrationStatus.OK)
+        self.assertEqual(second.status, IntegrationStatus.OK)
+        self.assertNotEqual(
+            first.web_chat_widget.public_key,
+            second.web_chat_widget.public_key,
+        )
 
 
 class ProxyConfigTests(TestCase):

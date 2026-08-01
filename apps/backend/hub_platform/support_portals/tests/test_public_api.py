@@ -3,14 +3,9 @@ from django.utils import timezone
 
 from hub_platform.identity.bootstrap import bootstrap_edevs_owner
 from hub_platform.channels.models import Channel
-from hub_platform.integrations.models import (
-    Integration,
-    IntegrationKind,
-    IntegrationProvider,
-    IntegrationStatus,
-)
 from hub_platform.support_portals.models import PortalArticleFeedback, SupportPortal
 from hub_platform.testing import TenantAPIClient
+from hub_platform.webchat.testing import create_web_widget
 
 
 class PublicSupportPortalTests(TestCase):
@@ -36,17 +31,10 @@ class PublicSupportPortalTests(TestCase):
             requires_authenticated_product_identity=False,
             allow_anonymous_sessions=True,
         )
-        Integration.objects.create(
-            organization=result.organization,
-            kind=IntegrationKind.MESSENGER,
-            provider=IntegrationProvider.WEB,
-            name="Edevs Help widget",
-            channel=widget_channel,
-            status=IntegrationStatus.OK,
-        )
+        self.widget = create_web_widget(widget_channel, name="Edevs Help widget")
         self.client.patch(
             f"/api/v1/support/portals/{self.portal_id}/",
-            {"widgetChannelId": widget_channel.id},
+            {"widgetId": self.widget.id},
             format="json",
         )
         category = self.client.post(
@@ -100,8 +88,8 @@ class PublicSupportPortalTests(TestCase):
         self.assertEqual(portal.status_code, 200, portal.content)
         self.assertEqual(portal.json()["portal"]["name"], "Edevs Help")
         self.assertEqual(
-            portal.json()["portal"]["webWidgetChannelCode"],
-            "edevs-help-chat",
+            portal.json()["portal"]["webWidgetKey"],
+            self.widget.public_key,
         )
         self.assertEqual(
             portal.json()["categories"][0]["description"],

@@ -1,37 +1,37 @@
 import { useEffect, useState } from "react";
 
-import type { Channel } from "../channels/types";
 import { SelectField } from "../../shared/form-controls";
 import { Button } from "../../shared/ui-controls";
 import {
   portalErrorMessage,
   updateSupportPortal,
+  type PortalWidgetOption,
   type SupportPortal,
 } from "./model";
 
 export function PortalWidgetSettings({
   canManage,
-  channels,
+  widgets,
   portal,
   onChanged,
 }: {
   canManage: boolean;
-  channels: Channel[];
+  widgets: PortalWidgetOption[];
   portal: SupportPortal;
   onChanged: (portal: SupportPortal) => void;
 }) {
-  const [channelId, setChannelId] = useState(portal.widgetChannelId);
+  const [widgetId, setWidgetId] = useState(portal.widgetId);
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState("");
 
-  useEffect(() => setChannelId(portal.widgetChannelId), [portal.widgetChannelId]);
+  useEffect(() => setWidgetId(portal.widgetId), [portal.widgetId]);
 
   async function save() {
     setBusy(true);
     setFeedback("");
     try {
       const payload = await updateSupportPortal(portal.id, {
-        widgetChannelId: channelId,
+        widgetId,
       });
       onChanged(payload.portal);
       setFeedback("Веб-виджет обновлён");
@@ -53,14 +53,14 @@ export function PortalWidgetSettings({
       <div className="portal-settings-fields">
         <SelectField
           disabled={!canManage}
-          label="Канал виджета"
-          value={String(channelId ?? "")}
-          onChange={(value) => setChannelId(value ? Number(value) : null)}
+          label="Веб-виджет"
+          value={String(widgetId ?? "")}
+          onChange={(value) => setWidgetId(value ? Number(value) : null)}
           options={[
             ["", "Не показывать"],
-            ...channels.map((channel): [string, string] => [
-              String(channel.id),
-              channel.name,
+            ...widgets.map((widget): [string, string] => [
+              String(widget.id),
+              widget.name,
             ]),
           ]}
         />

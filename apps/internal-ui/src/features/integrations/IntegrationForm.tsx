@@ -36,8 +36,9 @@ export function IntegrationForm({ initial, kind, onClose, onSaved }: { initial: 
   const isMessenger = meta.kind === "MESSENGER";
   const isWeb = provider === "WEB";
   const isEmail = provider === "EMAIL";
-  const widgetChannel = channels.find((item) => String(item.id) === channelId) ?? null;
-  const widgetSnippet = isWeb && widgetChannel ? webWidgetSnippet(widgetChannel.code) : "";
+  const widgetSnippet = isWeb && initial?.webChatWidget
+    ? webWidgetSnippet(initial.webChatWidget.publicKey)
+    : "";
 
   async function copySnippet() {
     try {
@@ -62,7 +63,17 @@ export function IntegrationForm({ initial, kind, onClose, onSaved }: { initial: 
     setError(null);
     const config = isEmail
       ? emailConfigPayload(emailConfig)
-      : { baseUrl: baseUrl.trim(), defaultModel: defaultModel.trim(), proxyUrl: proxyUrl.trim(), purpose: isNotifier ? "notifications" : "" };
+      : isWeb
+        ? {
+            allowedOrigins: initial?.config.allowedOrigins ?? [],
+            title: initial?.config.title ?? "",
+            accent: initial?.config.accent ?? "",
+            greeting: initial?.config.greeting ?? "",
+            quickReplies: initial?.config.quickReplies ?? [],
+            consentText: initial?.config.consentText ?? "",
+            consentVersion: initial?.config.consentVersion ?? "",
+          }
+        : { baseUrl: baseUrl.trim(), defaultModel: defaultModel.trim(), proxyUrl: proxyUrl.trim(), purpose: isNotifier ? "notifications" : "" };
     // Сервисный бот уведомлений не привязывается к каналу продаж.
     const channel = isMessenger ? { channelId: channelId && !isNotifier ? Number(channelId) : null } : {};
     try {

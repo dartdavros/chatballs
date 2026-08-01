@@ -77,6 +77,24 @@ def _normalized_config(provider: str, config: dict) -> dict:
         raise ValidationError({"config": "Object required"})
     if provider == IntegrationProvider.EMAIL:
         return _email_config(config)
+    if provider == IntegrationProvider.WEB:
+        allowed = config.get("allowedOrigins", config.get("allowed_domains", []))
+        if not isinstance(allowed, list) or not all(isinstance(item, str) for item in allowed):
+            raise ValidationError({"config": "allowedOrigins must be a list of strings"})
+        quick_replies = config.get("quickReplies", config.get("quick_replies", []))
+        if not isinstance(quick_replies, list) or not all(
+            isinstance(item, str) for item in quick_replies
+        ):
+            raise ValidationError({"config": "quickReplies must be a list of strings"})
+        return {
+            "allowed_domains": [item.strip() for item in allowed if item.strip()],
+            "title": str(config.get("title", "")).strip(),
+            "accent": str(config.get("accent", "")).strip(),
+            "greeting": str(config.get("greeting", "")).strip(),
+            "quick_replies": quick_replies,
+            "consent_text": str(config.get("consentText", config.get("consent_text", ""))).strip(),
+            "consent_version": str(config.get("consentVersion", config.get("consent_version", ""))).strip(),
+        }
     base_url = str(config.get("baseUrl", config.get("base_url", ""))).strip()
     result: dict[str, str] = {}
     if base_url:
@@ -138,6 +156,10 @@ def create_integration(*, context: TenantContext, data: IntegrationInput) -> Int
     )
     integration.full_clean(exclude=["secret"])
     integration.save()
+    if integration.provider == IntegrationProvider.WEB:
+        from hub_platform.webchat.widgets import ensure_widget
+
+        ensure_widget(integration)
     record_usage(
         context=context,
         quota_key=QuotaKey.CLIENT_CONNECTIONS,
@@ -173,6 +195,10 @@ def update_integration(
     integration.last_error = ""
     integration.full_clean(exclude=["secret"])
     integration.save()
+    if integration.provider == IntegrationProvider.WEB:
+        from hub_platform.webchat.widgets import ensure_widget
+
+        ensure_widget(integration)
     return integration
 
 
@@ -192,15 +218,17 @@ _CHECKS = {
 
 def _check_web(context: TenantContext, integration: Integration) -> tuple[bool, str, dict]:
     """Web-виджет обслуживается нашим же backend'ом — внешнего API нет.
-    Проверяем конфигурацию: привязку к каналу и что именно это подключение
-    отдаётся виджету (webchat берёт первое WEB-подключение канала)."""
+    Проверяем конфигурацию конкретного widget entry point."""
     if integration.channel_id is None:
         return False, "Подключение не привязано к каналу — виджет не активен", {}
-    from hub_platform.webchat.services import web_connection_for_channel
+    from hub_platform.webchat.widgets import ensure_widget
 
-    active = web_connection_for_channel(context, integration.channel.code)
-    if active is None or active.id != integration.id:
-        return False, "Для этого канала виджет обслуживает другое WEB-подключение", {}
+    try:
+        widget = ensure_widget(integration)
+    except ValidationError as error:
+        return False, "; ".join(error.messages), {}
+    if widget is None:
+        return False, "Конфигурация Web-виджета не создана", {}
     return True, f"Web-виджет активен · канал «{integration.channel.name}»", {}
 
 
@@ -232,4 +260,8 @@ def test_integration(*, context: TenantContext, integration: Integration) -> Int
             integration.config = config
             update_fields.append("config")
     integration.save(update_fields=update_fields)
+    if integration.provider == IntegrationProvider.WEB:
+        from hub_platform.webchat.widgets import sync_widget_check_status
+
+        sync_widget_check_status(integration, ok=ok)
     return integration

@@ -3,7 +3,7 @@ from hub_platform.integrations.models import Integration
 
 def integration_payload(integration: Integration) -> dict[str, object]:
     # Секрет не возвращаем; отдаём только признак его наличия.
-    return {
+    payload = {
         "id": integration.id,
         "kind": integration.kind,
         "provider": integration.provider,
@@ -18,6 +18,13 @@ def integration_payload(integration: Integration) -> dict[str, object]:
             "botUsername": integration.config.get("bot_username", ""),
             "botName": integration.config.get("bot_name", ""),
             "purpose": integration.config.get("purpose", ""),
+            "allowedOrigins": integration.config.get("allowed_domains", []),
+            "title": integration.config.get("title", ""),
+            "accent": integration.config.get("accent", ""),
+            "greeting": integration.config.get("greeting", ""),
+            "quickReplies": integration.config.get("quick_replies", []),
+            "consentText": integration.config.get("consent_text", ""),
+            "consentVersion": integration.config.get("consent_version", ""),
             # Email-подключение (ADR-HUB-0035).
             "email": integration.config.get("email", ""),
             "imapHost": integration.config.get("imap_host", ""),
@@ -34,3 +41,8 @@ def integration_payload(integration: Integration) -> dict[str, object]:
         "createdAt": integration.created_at.isoformat(),
         "updatedAt": integration.updated_at.isoformat(),
     }
+    if integration.provider == "WEB":
+        from hub_platform.webchat.widgets import widget_for_integration, widget_payload
+
+        payload["webChatWidget"] = widget_payload(widget_for_integration(integration))
+    return payload

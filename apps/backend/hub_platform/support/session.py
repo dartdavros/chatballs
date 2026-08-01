@@ -82,7 +82,7 @@ def verify_and_resolve(
 
 
 def start_support_session(
-    *, channel, token: str, request: HttpRequest | None = None
+    *, widget, token: str, request: HttpRequest | None = None
 ) -> dict[str, Any]:
     """Создаёт/обновляет snapshot и создаёт/продолжает support Conversation.
 
@@ -92,7 +92,8 @@ def start_support_session(
     Audit-deny пишется вне write-транзакции: иначе откат при raise уничтожил бы
     запись. Успешный путь (snapshot + conversation + audit-success) атомарен.
     """
-    organization: Organization = channel.organization
+    channel = widget.integration.channel
+    organization: Organization = widget.organization
     try:
         claims, contract, extracted = verify_and_resolve(channel=channel, token=token)
     except errors.SupportSessionError as error:
@@ -104,13 +105,13 @@ def start_support_session(
 
     return _commit_session(
         organization=organization, channel=channel, contract=contract,
-        claims=claims, extracted=extracted, request=request,
+        claims=claims, extracted=extracted, widget=widget, request=request,
     )
 
 
 @transaction.atomic
 def _commit_session(
-    *, organization, channel, contract, claims, extracted, request
+    *, organization, channel, contract, claims, extracted, widget, request
 ) -> dict[str, Any]:
     issued_at, expires_at = claims_datetimes(claims)
     snapshot = _upsert_snapshot(
@@ -123,7 +124,10 @@ def _commit_session(
         expires_at=expires_at,
     )
     conversation = _create_or_continue_conversation(
-        organization=organization, channel=channel, snapshot=snapshot
+        organization=organization,
+        channel=channel,
+        snapshot=snapshot,
+        widget=widget,
     )
 
     record_audit_event(
@@ -136,6 +140,7 @@ def _commit_session(
             "contract": contract.code,
             "subject_key": extracted["subject_key"],
             "product": channel.product.code,
+            "web_chat_widget_id": widget.id,
             "jti_hash": claims.jti_hash[:16],
         },
         request=request,
@@ -209,7 +214,7 @@ def _upsert_snapshot(
     return snapshot
 
 
-def _create_or_continue_conversation(*, organization, channel, snapshot) -> Conversation:
+def _create_or_continue_conversation(*, organization, channel, snapshot, widget) -> Conversation:
     conversation = (
         Conversation.objects.filter(
             channel=channel, support_identity_snapshot=snapshot, lifecycle=LifecycleState.OPEN
@@ -218,6 +223,17 @@ def _create_or_continue_conversation(*, organization, channel, snapshot) -> Conv
         .first()
     )
     if conversation is not None:
+        metadata = conversation.transport_meta or {}
+        conversation.transport_meta = {
+            **metadata,
+            "webChatWidgetId": metadata.get("webChatWidgetId", widget.id),
+            "lastWebChatWidgetId": widget.id,
+        }
+        update_fields = ["transport_meta"]
+        if conversation.connection_id is None:
+            conversation.connection = widget.integration
+            update_fields.append("connection")
+        conversation.save(update_fields=update_fields)
         return conversation
     previous = (
         Conversation.objects.filter(
@@ -229,8 +245,13 @@ def _create_or_continue_conversation(*, organization, channel, snapshot) -> Conv
     conversation = Conversation.objects.create(
         organization=channel.organization,
         channel=channel,
+        connection=widget.integration,
         contact=None,
         support_identity_snapshot=snapshot,
+        transport_meta={
+            "webChatWidgetId": widget.id,
+            "lastWebChatWidgetId": widget.id,
+        },
         control_mode=ControlMode.AI,
         expected_responder=ExpectedResponder.AI,
         previous_conversation=previous,

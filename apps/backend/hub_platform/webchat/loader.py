@@ -1,8 +1,9 @@
 # Публичный JS-лоадер виджета (SPEC-HUB-0003 §3, SPEC-HUB-0010 §7.1). Подключается
 # одним тегом:
-#   sales:    <script src="https://hub.edevs.tech/chat-widget.js" data-channel="edevs" async></script>
-#   support:  <script src=".../chat-widget.js" data-channel="foxray-support"
-#                        data-mode="support" data-support-token="<token>" async></script>
+#   <script src="https://hub.edevs.tech/chat-widget.js"
+#           data-widget-key="wgt_public_key" async></script>
+# Authenticated host регистрирует async token provider через CustoCRMChat.init;
+# Product Support Token никогда не попадает в URL или data-*.
 # Лоадер рисует launcher и открывает панель в изолированном iframe (/chat/).
 #
 # TODO (SPEC-HUB-0010 §7.3, security): для production настроить CSP
@@ -15,16 +16,27 @@ LOADER_JS = r"""
 (function () {
   var script = document.currentScript;
   if (!script) return;
-  var channel = script.getAttribute("data-channel") || "edevs";
-  var mode = script.getAttribute("data-mode") || "sales";
+  var widgetKey = script.getAttribute("data-widget-key") || "";
+  var legacyChannel = script.getAttribute("data-channel") || "";
+  if (!widgetKey && !legacyChannel) return;
   var origin = new URL(script.src, location.href).origin;
-  var panelUrl = origin + "/chat/?channel=" + encodeURIComponent(channel);
-  if (mode === "support") {
-    var token = script.getAttribute("data-support-token") || "";
-    panelUrl += "&mode=support&token=" + encodeURIComponent(token);
-  }
+  var instanceId = "chat_" + Math.random().toString(36).slice(2);
+  var entryQuery = widgetKey
+    ? "widgetKey=" + encodeURIComponent(widgetKey)
+    : "channel=" + encodeURIComponent(legacyChannel);
+  var panelUrl = origin + "/chat/?" + entryQuery + "&instanceId=" + encodeURIComponent(instanceId);
 
-  var open = false, frame = null, unread = false, callActive = false;
+  var open = false, frame = null, unread = false, callActive = false, tokenProvider = null;
+  var api = window.CustoCRMChat = window.CustoCRMChat || {};
+  api._instances = api._instances || [];
+  api._providers = api._providers || {};
+  api.init = function (options) {
+    if (!options || !options.widgetKey || typeof options.getSupportToken !== "function") return;
+    api._providers[options.widgetKey] = options.getSupportToken;
+    api._instances.forEach(function (instance) {
+      if (instance.widgetKey === options.widgetKey) instance.enableAuthenticated(options.getSupportToken);
+    });
+  };
 
   var style = document.createElement("style");
   style.textContent = "@keyframes edevs-chat-message-bump{0%,100%{transform:translateY(0)}35%{transform:translateY(-6px)}70%{transform:translateY(-2px)}}@keyframes edevs-chat-call-shake{0%,18%,100%{transform:translateX(0)}3%{transform:translateX(-5px)}6%{transform:translateX(5px)}9%{transform:translateX(-4px)}12%{transform:translateX(4px)}15%{transform:translateX(-2px)}}.edevs-chat-message-bump{animation:edevs-chat-message-bump .42s ease-out}.edevs-chat-call-shake{animation:edevs-chat-call-shake 3.2s ease-in-out infinite}.edevs-chat-launcher:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(22,119,255,0.45)}.edevs-chat-launcher:focus-visible{outline:3px solid rgba(22,119,255,0.45);outline-offset:2px}";
@@ -89,8 +101,9 @@ LOADER_JS = r"""
     frame.addEventListener("load", function () { if (open) notifyOpened(); });
     document.body.appendChild(frame);
     window.addEventListener("message", function (e) {
-      if (e.origin !== origin) return;
+      if (e.origin !== origin || !frame || e.source !== frame.contentWindow) return;
       var d = e.data || {};
+      if (d.instanceId && d.instanceId !== instanceId) return;
       if (d.type === "edevs-chat-close") setOpen(false);
       if (d.type === "edevs-chat-unread") {
         unread = Boolean(d.unread);
@@ -104,8 +117,37 @@ LOADER_JS = r"""
         play(notification);
       }
       if (d.type === "edevs-chat-activity" && d.kind === "call") setCallActive(Boolean(d.active));
+      if (d.type === "custocrm-chat-token-request" && tokenProvider) {
+        Promise.resolve().then(tokenProvider).then(function (token) {
+          frame.contentWindow.postMessage({
+            type: "custocrm-chat-token-response",
+            instanceId: instanceId,
+            requestId: d.requestId,
+            token: String(token || "")
+          }, origin);
+        }).catch(function () {
+          frame.contentWindow.postMessage({
+            type: "custocrm-chat-token-response",
+            instanceId: instanceId,
+            requestId: d.requestId,
+            token: ""
+          }, origin);
+        });
+      }
     });
   }
+
+  function enableAuthenticated(provider) {
+    tokenProvider = provider;
+    panelUrl = origin + "/chat/?" + entryQuery + "&mode=support&instanceId=" + encodeURIComponent(instanceId);
+    if (frame && frame.src !== panelUrl) frame.src = panelUrl;
+  }
+
+  api._instances.push({
+    widgetKey: widgetKey,
+    enableAuthenticated: enableAuthenticated
+  });
+  if (widgetKey && api._providers[widgetKey]) enableAuthenticated(api._providers[widgetKey]);
 
   function notifyOpened() {
     try { frame.contentWindow.postMessage({ type: "edevs-chat-opened" }, origin); } catch (_) {}
