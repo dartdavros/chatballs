@@ -1,4 +1,4 @@
-import { useState, type RefObject } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 
 import { isVideoCall, type CallInfo, type WebConfig, type WebMessage } from "./api";
 
@@ -36,7 +36,7 @@ export function ChatBody({ bodyRef, config, unavailable, accepted, accent, lette
   onSubmitContact: (phone: string) => Promise<boolean>;
 }) {
   return (
-    <div ref={bodyRef} style={{ flex: 1, minHeight: 0, overflowY: "auto", background: "#f7f8fa", padding: "16px 14px" }}>
+    <div ref={bodyRef} style={{ flex: 1, minHeight: 0, overflowY: "auto", background: "#f7f8fa", padding: "18px 16px" }}>
       {config === null && <div style={{ textAlign: "center", color: "#8c8c8c", padding: 24, fontSize: 13 }}>Загрузка…</div>}
       {unavailable && <Unavailable />}
       {config?.available && !accepted && <Consent config={config} accent={accent} letter={letter} title={title} />}
@@ -46,7 +46,7 @@ export function ChatBody({ bodyRef, config, unavailable, accepted, accent, lette
           {config.greeting && <Bubble author="ai" text={config.greeting} accent={accent} />}
           {messages.map((message) => message.author === "system"
             ? <SystemMessage key={message.id} text={message.text} />
-            : <div key={message.id}><Bubble author={message.author} text={message.text} accent={accent} />{message.kind === "contact_request" && message.id === lastContactRequestId && showPhoneForm && <PhoneForm accent={accent} onSubmit={onSubmitContact} />}</div>)}
+            : <div key={message.id}><Bubble author={message.author} text={message.text} accent={accent} time={message.createdAt} />{message.kind === "contact_request" && message.id === lastContactRequestId && showPhoneForm && <PhoneForm accent={accent} onSubmit={onSubmitContact} />}</div>)}
           {pending.map((text, index) => <Bubble key={`p${index}`} author="client" text={text} accent={accent} pendingState />)}
           {awaiting && <Typing />}
         </>
@@ -63,7 +63,7 @@ function Consent({ config, accent, letter, title }: { config: WebConfig; accent:
   return <><div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", padding: "20px 12px 8px" }}><div style={{ width: 56, height: 56, borderRadius: 16, background: "#e6f4ff", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 14 }}><span style={{ fontSize: 24, fontWeight: 700, color: accent }}>{letter}</span></div><h3 style={{ margin: 0, fontSize: 17, fontWeight: 700 }}>{title}</h3><p style={{ margin: "8px 0 0", fontSize: 13, color: "#595959", lineHeight: 1.5, maxWidth: 280 }}>{config.greeting}</p></div><div style={{ marginTop: 18, background: "#fff", border: "1px solid #f0f0f0", borderRadius: 12, padding: 14 }}><div style={{ fontSize: 12, color: "#595959", lineHeight: 1.5 }}>{config.consent?.text} · ред. {config.consent?.version}</div></div></>;
 }
 
-function SystemMessage({ text }: { text: string }) {
+export function SystemMessage({ text }: { text: string }) {
   return <div style={{ textAlign: "center", margin: "12px 0" }}><span style={{ display: "inline-block", padding: "4px 12px", borderRadius: 20, background: "#e6f4ff", border: "1px solid #91caff", fontSize: 11.5, color: "#0958d9" }}>{text}</span></div>;
 }
 
@@ -71,13 +71,27 @@ export function StartChatFooter({ accent, starting, onAccept }: { accent: string
   return <div style={{ flex: "none", background: "#fff", borderTop: "1px solid #f0f0f0", padding: "12px 14px 14px" }}><button onClick={onAccept} disabled={starting} style={{ width: "100%", height: 44, borderRadius: 10, border: "none", background: accent, color: "#fff", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>{starting ? "Запуск…" : "Принять и начать чат"}</button></div>;
 }
 
-export function ChatComposer({ accent, state, quickReplies, pendingCount, messageCount, input, onInput, onSend }: { accent: string; state: "ai" | "operator" | "waiting"; quickReplies: string[]; pendingCount: number; messageCount: number; input: string; onInput: (value: string) => void; onSend: () => void }) {
+const COMPOSER_MAX_HEIGHT = 132;
+
+export function ChatComposer({ accent, state, quickReplies, pendingCount, messageCount, input, placeholder, onInput, onSend }: { accent: string; state: "ai" | "operator" | "waiting"; quickReplies: string[]; pendingCount: number; messageCount: number; input: string; placeholder?: string; onInput: (value: string) => void; onSend: () => void }) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Поле растёт под текст, как в мессенджере (до COMPOSER_MAX_HEIGHT, дальше скролл).
+  useEffect(() => {
+    const node = textareaRef.current;
+    if (!node) return;
+    node.style.height = "auto";
+    // Панель может быть ещё скрыта (у iframe display:none) — тогда scrollHeight
+    // равен нулю и высоту задавать нельзя, иначе поле схлопнется.
+    node.style.height = node.scrollHeight > 0 ? `${Math.min(node.scrollHeight, COMPOSER_MAX_HEIGHT)}px` : "";
+  }, [input]);
+
   return (
-    <div style={{ flex: "none", background: "#fff", borderTop: "1px solid #f0f0f0", padding: "10px 12px 12px" }}>
-      {state === "ai" && quickReplies.length > 0 && pendingCount === 0 && messageCount === 0 && <div style={{ display: "flex", gap: 7, flexWrap: "wrap", marginBottom: 9 }}>{quickReplies.map((reply) => <button key={reply} onClick={() => onInput(reply)} style={{ padding: "6px 12px", borderRadius: 16, border: "1px solid #d6e4ff", background: "#f0f7ff", color: "#0958d9", fontSize: 12, fontWeight: 500, cursor: "pointer" }}>{reply}</button>)}</div>}
-      <div style={{ display: "flex", alignItems: "flex-end", gap: 8, border: "1px solid #e8e8e8", borderRadius: 12, padding: "6px 6px 6px 12px", background: "#fff" }}>
-        <textarea rows={1} value={input} onChange={(event) => onInput(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); onSend(); } }} placeholder="Напишите сообщение…" style={{ flex: 1, border: "none", outline: "none", resize: "none", fontSize: 13.5, lineHeight: 1.5, color: "#262626", fontFamily: "inherit", padding: "6px 0", maxHeight: 90 }} />
-        <button onClick={onSend} aria-label="Отправить" style={{ width: 34, height: 34, borderRadius: 8, border: "none", background: accent, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flex: "none" }}><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg></button>
+    <div style={{ flex: "none", background: "#fff", borderTop: "1px solid #f0f0f0", padding: "12px 14px 14px" }}>
+      {state === "ai" && quickReplies.length > 0 && pendingCount === 0 && messageCount === 0 && <div style={{ display: "flex", gap: 7, flexWrap: "wrap", marginBottom: 10 }}>{quickReplies.map((reply) => <button key={reply} onClick={() => onInput(reply)} style={{ padding: "7px 13px", borderRadius: 16, border: "1px solid #d6e4ff", background: "#f0f7ff", color: "#0958d9", fontSize: 12.5, fontWeight: 500, cursor: "pointer" }}>{reply}</button>)}</div>}
+      <div style={{ display: "flex", alignItems: "flex-end", gap: 8, border: "1px solid #e8e8e8", borderRadius: 14, padding: "6px 6px 6px 14px", background: "#fff" }}>
+        <textarea ref={textareaRef} rows={1} value={input} onChange={(event) => onInput(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); onSend(); } }} placeholder={placeholder ?? "Напишите сообщение…"} style={{ flex: 1, border: "none", outline: "none", resize: "none", fontSize: 14, lineHeight: 1.5, color: "#262626", fontFamily: "inherit", padding: "7px 0", maxHeight: COMPOSER_MAX_HEIGHT }} />
+        <button onClick={onSend} aria-label="Отправить" style={{ width: 36, height: 36, borderRadius: 10, border: "none", background: accent, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flex: "none" }}><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg></button>
       </div>
     </div>
   );
@@ -93,10 +107,19 @@ export function CallInviteBanner({ call, accent, onAccept, onDecline }: { call: 
   return <div style={{ flex: "none", background: "#fff", borderTop: "1px solid #f0f0f0", padding: "12px 14px", display: "flex", alignItems: "center", gap: 12 }}><div style={{ width: 40, height: 40, borderRadius: "50%", background: accent, display: "flex", alignItems: "center", justifyContent: "center", flex: "none" }}>{inviteIcon}</div><div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: 13.5, fontWeight: 600, color: "#1f1f1f" }}>{title}</div><div style={{ fontSize: 12, color: "#8c8c8c", marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{call.staffName || "Оператор"} приглашает вас на онлайн-звонок</div></div><button onClick={onDecline} aria-label="Отклонить" style={{ width: 42, height: 42, borderRadius: "50%", border: "none", background: "#ff4d4f", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flex: "none", boxShadow: "0 2px 8px rgba(255,77,79,.35)" }}>{phoneIcon(true)}</button><button onClick={onAccept} aria-label="Принять" style={{ width: 42, height: 42, borderRadius: "50%", border: "none", background: "#52c41a", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flex: "none", boxShadow: "0 2px 8px rgba(82,196,26,.35)" }}>{phoneIcon(false)}</button></div>;
 }
 
-function Bubble({ author, text, accent, pendingState }: { author: "client" | "ai" | "operator"; text: string; accent: string; pendingState?: boolean }) {
-  if (author === "client") return <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 10 }}><div style={{ maxWidth: "78%" }}><div style={{ background: accent, color: "#fff", borderRadius: "14px 14px 4px 14px", padding: "9px 13px", fontSize: 13.5, lineHeight: 1.45, whiteSpace: "pre-wrap" }}>{text}</div><div style={{ fontSize: 10.5, color: "#bfbfbf", margin: "3px 4px 0 0", textAlign: "right" }}>{pendingState ? "отправка…" : "доставлено"}</div></div></div>;
+function formatTime(iso: string | undefined): string {
+  if (!iso) return "";
+  const date = new Date(iso);
+  return Number.isNaN(date.getTime()) ? "" : date.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+}
+
+const META: React.CSSProperties = { fontSize: 11, color: "#bfbfbf", marginTop: 4 };
+
+export function Bubble({ author, text, accent, time, pendingState }: { author: "client" | "ai" | "operator"; text: string; accent: string; time?: string; pendingState?: boolean }) {
+  const at = formatTime(time);
+  if (author === "client") return <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}><div style={{ maxWidth: "82%" }}><div style={{ background: accent, color: "#fff", borderRadius: "16px 16px 4px 16px", padding: "10px 14px", fontSize: 14.5, lineHeight: 1.5, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{text}</div><div style={{ ...META, marginRight: 4, textAlign: "right" }}>{pendingState ? "отправка…" : [at, "доставлено"].filter(Boolean).join(" · ")}</div></div></div>;
   const isOperator = author === "operator";
-  return <div style={{ display: "flex", gap: 8, marginBottom: 10 }}><div style={{ width: 28, height: 28, borderRadius: "50%", background: isOperator ? accent : "#eef0f2", border: isOperator ? "none" : "1px solid #e3e6ea", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", flex: "none" }}>{isOperator ? <span style={{ fontSize: 11, fontWeight: 600 }}>О</span> : <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#8c8c8c" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="3.2" /><path d="M5.5 20a6.5 6.5 0 0 1 13 0" /></svg>}</div><div style={{ maxWidth: "78%" }}><div style={{ background: "#fff", border: "1px solid #eee", borderRadius: "14px 14px 14px 4px", padding: "9px 13px", fontSize: 13.5, lineHeight: 1.45, color: "#262626", whiteSpace: "pre-wrap" }}>{text}</div><div style={{ fontSize: 10.5, color: "#bfbfbf", margin: "3px 0 0 4px" }}>{isOperator ? "Специалист" : "Виртуальный помощник"}</div></div></div>;
+  return <div style={{ display: "flex", gap: 9, marginBottom: 12 }}><div style={{ width: 30, height: 30, borderRadius: "50%", background: isOperator ? accent : "#eef0f2", border: isOperator ? "none" : "1px solid #e3e6ea", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", flex: "none" }}>{isOperator ? <span style={{ fontSize: 11.5, fontWeight: 600 }}>О</span> : <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#8c8c8c" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="3.2" /><path d="M5.5 20a6.5 6.5 0 0 1 13 0" /></svg>}</div><div style={{ maxWidth: "82%" }}><div style={{ background: "#fff", border: "1px solid #eee", borderRadius: "16px 16px 16px 4px", padding: "10px 14px", fontSize: 14.5, lineHeight: 1.5, color: "#262626", whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{text}</div><div style={{ ...META, marginLeft: 4 }}>{[isOperator ? "Специалист" : "Виртуальный помощник", at].filter(Boolean).join(" · ")}</div></div></div>;
 }
 
 function formatPhone(raw: string): string {
@@ -123,6 +146,6 @@ function PhoneForm({ accent, onSubmit }: { accent: string; onSubmit: (phone: str
   return <div style={{ margin: "2px 0 10px 36px", maxWidth: "78%", background: "#fff", border: "1px solid #eee", borderRadius: 12, padding: 12 }}><input type="tel" inputMode="tel" value={phone} onChange={(event) => setPhone(formatPhone(event.target.value))} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); void submit(); } }} placeholder="+7 (___) ___-__-__" style={{ width: "100%", boxSizing: "border-box", height: 38, borderRadius: 8, border: error ? "1px solid #ff4d4f" : "1px solid #d9d9d9", padding: "0 10px", outline: "none", fontSize: 13.5 }} /><button type="button" onClick={() => void submit()} disabled={!valid || sending} style={{ width: "100%", height: 36, marginTop: 8, borderRadius: 8, border: "none", background: valid ? accent : "#d9d9d9", color: "#fff", fontSize: 12.5, fontWeight: 600, cursor: valid ? "pointer" : "default" }}>{sending ? "Отправка…" : "Поделиться номером"}</button>{error && <div style={{ marginTop: 6, color: "#cf1322", fontSize: 11.5 }}>Не удалось отправить. Попробуйте ещё раз.</div>}</div>;
 }
 
-function Typing() {
-  return <div style={{ display: "flex", gap: 8, marginBottom: 4 }}><div style={{ width: 28, height: 28, borderRadius: "50%", background: "#eef0f2", border: "1px solid #e3e6ea", display: "flex", alignItems: "center", justifyContent: "center", flex: "none" }}><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#8c8c8c" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="3.2" /><path d="M5.5 20a6.5 6.5 0 0 1 13 0" /></svg></div><div style={{ background: "#fff", border: "1px solid #eee", borderRadius: "14px 14px 14px 4px", padding: "12px 14px", display: "flex", alignItems: "center", gap: 5 }}>{[0, 0.2, 0.4].map((delay) => <span key={delay} style={{ width: 6, height: 6, borderRadius: "50%", background: "#b37feb", animation: `wcTyping 1.2s infinite ease-in-out ${delay}s` }} />)}</div></div>;
+export function Typing() {
+  return <div style={{ display: "flex", gap: 9, marginBottom: 4 }}><div style={{ width: 30, height: 30, borderRadius: "50%", background: "#eef0f2", border: "1px solid #e3e6ea", display: "flex", alignItems: "center", justifyContent: "center", flex: "none" }}><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#8c8c8c" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="3.2" /><path d="M5.5 20a6.5 6.5 0 0 1 13 0" /></svg></div><div style={{ background: "#fff", border: "1px solid #eee", borderRadius: "14px 14px 14px 4px", padding: "12px 14px", display: "flex", alignItems: "center", gap: 5 }}>{[0, 0.2, 0.4].map((delay) => <span key={delay} style={{ width: 6, height: 6, borderRadius: "50%", background: "#b37feb", animation: `wcTyping 1.2s infinite ease-in-out ${delay}s` }} />)}</div></div>;
 }

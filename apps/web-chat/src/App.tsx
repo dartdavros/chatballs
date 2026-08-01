@@ -14,6 +14,7 @@ import {
   type WebMessage,
 } from "./api";
 import { CallInviteBanner, ChatBody, ChatComposer, ChatHeader, StartChatFooter } from "./ChatView";
+import { useScrollToLatest } from "./useScrollToLatest";
 import { useWidgetActivity } from "./widgetActivity";
 
 const CHANNEL = new URLSearchParams(location.search).get("channel") || "edevs";
@@ -39,6 +40,7 @@ export function App() {
   const openedCallId = useRef("");
   const pollingReady = useRef(false);
   const bodyRef = useRef<HTMLDivElement>(null);
+  const scrollToLatest = useScrollToLatest(bodyRef);
   const incomingCall = Boolean(call && (call.status === "REQUESTED" || call.status === "RINGING"));
   const notifyNewMessage = useWidgetActivity(incomingCall);
 
@@ -77,9 +79,8 @@ export function App() {
   }, [accepted, token]);
 
   useEffect(() => {
-    const node = bodyRef.current;
-    if (node) node.scrollTop = node.scrollHeight;
-  }, [messages, pending, awaiting]);
+    scrollToLatest();
+  }, [scrollToLatest, messages, pending, awaiting]);
 
   const accent = config?.accent || "#1677ff";
   const title = config?.title || "Чат";
