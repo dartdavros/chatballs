@@ -24,6 +24,12 @@ if "backend-platform" not in ALLOWED_HOSTS:
 CSRF_TRUSTED_ORIGINS = env_list("CUSTOCRM_PLATFORM_CSRF_TRUSTED_ORIGINS", [])
 CORS_ALLOWED_ORIGINS = []
 
+# Caddy спрашивает разрешение на on-demand сертификат Help Center по plain HTTP
+# из внутренней сети: заголовок X-Forwarded-Proto он не шлёт и по редиректам не
+# ходит. Без исключения SECURE_SSL_REDIRECT отвечает 301, Caddy считает домен
+# неавторизованным и сертификат портала не выпускается.
+SECURE_REDIRECT_EXEMPT = [r"^api/v1/gateway/"]
+
 SESSION_COOKIE_NAME = os.environ.get(
     "CUSTOCRM_PLATFORM_SESSION_COOKIE_NAME",
     "__Host-custocrm-platform-session"

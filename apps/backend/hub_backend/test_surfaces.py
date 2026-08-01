@@ -1,3 +1,4 @@
+import re
 from importlib import import_module
 
 from django.test import SimpleTestCase, override_settings
@@ -41,3 +42,15 @@ class RuntimeSurfaceSettingsTests(SimpleTestCase):
         admin_settings = import_module("hub_backend.settings_admin")
 
         self.assertEqual(admin_settings.ALLOWED_HOSTS, ["127.0.0.1", "localhost"])
+
+    def test_gateway_ask_endpoint_is_exempt_from_ssl_redirect(self) -> None:
+        # Caddy ходит на этот путь по plain HTTP и редирект считает отказом:
+        # 301 здесь означает, что Help Center остаётся без сертификата.
+        platform_settings = import_module("hub_backend.settings_platform")
+
+        self.assertTrue(
+            any(
+                re.search(pattern, "api/v1/gateway/help-domain/")
+                for pattern in platform_settings.SECURE_REDIRECT_EXEMPT
+            )
+        )
