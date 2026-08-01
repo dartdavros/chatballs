@@ -5,6 +5,7 @@ from hub_platform.ai.models import (
     KnowledgeCategory,
 )
 from hub_platform.identity.models import Department
+from hub_platform.support_portals.addressing import article_public_url
 
 
 def _channel_ref(channel) -> dict[str, object]:
@@ -77,6 +78,19 @@ def knowledge_payload(knowledge: Knowledge, *, include_content: bool = True) -> 
     return payload
 
 
+def agent_portal_article_payload(article) -> dict[str, object]:
+    """Статья портала в карточке агента: заголовок опубликованной ревизии и
+    адреса — в Help Center и в разделе поддержки."""
+    revision = article.published_revision
+    return {
+        "id": article.id,
+        "title": revision.title if revision is not None else article.slug,
+        "status": article.status,
+        "portal": {"id": article.portal_id, "name": article.portal.name},
+        "publicUrl": article_public_url(article),
+    }
+
+
 def agent_payload(agent: AIAgent) -> dict[str, object]:
     return {
         "id": agent.id,
@@ -97,6 +111,10 @@ def agent_payload(agent: AIAgent) -> dict[str, object]:
         "knowledge": [
             {"id": knowledge.id, "title": knowledge.title, "isEnabled": knowledge.is_enabled}
             for knowledge in agent.knowledge_items.all()
+        ],
+        "portalArticles": [
+            agent_portal_article_payload(article)
+            for article in agent.portal_articles.all()
         ],
         "createdAt": agent.created_at.isoformat(),
         "updatedAt": agent.updated_at.isoformat(),

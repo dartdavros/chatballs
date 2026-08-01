@@ -37,6 +37,16 @@ urlpatterns = [
         name="ai-knowledge-bulk-visibility",
     ),
     path(
+        "knowledge/bulk/agent/",
+        bulk_views.AgentKnowledgeLinkView.as_view(),
+        name="ai-knowledge-bulk-agent",
+    ),
+    path(
+        "portal-articles/bulk/agent/",
+        bulk_views.AgentPortalArticleLinkView.as_view(),
+        name="ai-portal-article-bulk-agent",
+    ),
+    path(
         "knowledge/categories/",
         category_views.KnowledgeCategoryListCreateView.as_view(),
         name="ai-knowledge-category-list",

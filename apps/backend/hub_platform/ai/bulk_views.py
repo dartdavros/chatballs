@@ -3,6 +3,11 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from hub_platform.ai.agent_attachments import (
+    AgentLinkResult,
+    link_knowledge_to_agent,
+    link_portal_articles_to_agent,
+)
 from hub_platform.ai.api_errors import validation_error_response
 from hub_platform.ai.knowledge_bulk import (
     add_category_knowledge_to_agent,
@@ -86,6 +91,100 @@ class KnowledgeBulkVisibilityView(_KnowledgeBulkView):
             return validation_error_response(error)
         _audit_bulk(request, "ai.knowledge_bulk_visibility_replaced", updated_ids)
         return Response({"updated": len(updated_ids), "knowledgeIds": updated_ids})
+
+
+def _attach_action(body: dict[str, object]) -> bool:
+    action = str(body.get("action", "attach"))
+    if action not in {"attach", "detach"}:
+        raise ValidationError({"action": "Expected attach or detach"})
+    return action == "attach"
+
+
+class _AgentLinkView(APIView):
+    """Массовое прикрепление/открепление одного агента к выборке источников."""
+
+    permission_classes = [HasCapability]
+    required_capability = "ai.manage"
+    id_field: str
+    audit_action: str
+
+    def link(
+        self, request: Request, agent: AIAgent, ids: list[int], attach: bool
+    ) -> AgentLinkResult:
+        raise NotImplementedError
+
+    def post(self, request: Request) -> Response:
+        agent_id = None
+        try:
+            agent_id = _positive_id(request.data.get("agentId"), "agentId")
+            raw_ids = request.data.get(self.id_field)
+            if not isinstance(raw_ids, list):
+                raise ValidationError({self.id_field: "List of IDs required"})
+            ids = [_positive_id(item, self.id_field) for item in raw_ids]
+            attach = _attach_action(request.data)
+        except ValidationError as error:
+            return validation_error_response(error)
+        try:
+            agent = agent_for_employee(
+                context=request.tenant_context,
+                agent_id=agent_id,
+                capability="ai.manage",
+            )
+        except AIAgent.DoesNotExist:
+            return Response({"detail": "Agent not found"}, status=404)
+        try:
+            result = self.link(request, agent, ids, attach)
+        except ValidationError as error:
+            return validation_error_response(error)
+        record_audit_event(
+            action=f"{self.audit_action}_{'attached' if attach else 'detached'}",
+            actor=request.user,
+            organization=request.tenant_context.organization,
+            object_type="AIAgent",
+            object_id=str(agent_id),
+            payload={self.id_field: list(result.linked_ids)},
+            request=request,
+        )
+        return Response(
+            {
+                "agentId": result.agent_id,
+                "action": "attach" if attach else "detach",
+                "changed": len(result.linked_ids),
+                "changedIds": list(result.linked_ids),
+                "skippedIds": list(result.skipped_ids),
+                self.id_field: list(result.selected_ids),
+            }
+        )
+
+
+class AgentKnowledgeLinkView(_AgentLinkView):
+    id_field = "knowledgeIds"
+    audit_action = "ai.agent_knowledge"
+
+    def link(
+        self, request: Request, agent: AIAgent, ids: list[int], attach: bool
+    ) -> AgentLinkResult:
+        return link_knowledge_to_agent(
+            context=request.tenant_context,
+            agent=agent,
+            knowledge_ids=ids,
+            attach=attach,
+        )
+
+
+class AgentPortalArticleLinkView(_AgentLinkView):
+    id_field = "articleIds"
+    audit_action = "ai.agent_portal_articles"
+
+    def link(
+        self, request: Request, agent: AIAgent, ids: list[int], attach: bool
+    ) -> AgentLinkResult:
+        return link_portal_articles_to_agent(
+            context=request.tenant_context,
+            agent=agent,
+            article_ids=ids,
+            attach=attach,
+        )
 
 
 class AgentCategoryKnowledgeSelectView(APIView):

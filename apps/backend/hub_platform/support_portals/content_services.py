@@ -4,6 +4,7 @@ from django.db.models import Max
 from django.utils import timezone
 from django.utils.text import slugify
 
+from hub_platform.ai.indexing import reindex_portal_article
 from hub_platform.support_portals.models import (
     PortalArticle,
     PortalArticleFeedback,
@@ -148,13 +149,20 @@ def publish_revision(
     article.status = ArticleStatus.PUBLISHED
     article.full_clean()
     article.save(update_fields=["published_revision", "status", "updated_at"])
+    # Агенты отвечают по опубликованной ревизии, поэтому индекс перестраивается
+    # ровно в момент публикации (ADR-HUB-0016).
+    reindex_portal_article(article)
     return article
 
 
+@transaction.atomic
 def archive_article(article: PortalArticle) -> PortalArticle:
     ensure_portal_editable(article.portal)
     article.status = ArticleStatus.ARCHIVED
     article.save(update_fields=["status", "updated_at"])
+    # Архивная статья уходит и из выдачи агентов: фрагменты снимаются, связь с
+    # агентом сохраняется — при восстановлении публикации она снова заработает.
+    reindex_portal_article(article)
     return article
 
 

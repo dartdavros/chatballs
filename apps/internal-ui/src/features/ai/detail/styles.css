@@ -417,6 +417,10 @@
 }
 
 .ai-knowledge-headline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   font-size: 12px;
   font-weight: 600;
   color: #8c8c8c;
@@ -619,10 +623,11 @@
 }
 
 
-/* Выбор знаний агента (ADR-HUB-0023): чекбокс-список из общей библиотеки. */
+/* Знания агента (ADR-HUB-0023): нередактируемый список источников. Состав
+   меняется массовыми действиями в разделах «Знания» и «Поддержка». */
 .agent-knowledge-list {
   list-style: none;
-  margin: 0 0 12px;
+  margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
@@ -638,24 +643,15 @@
   border-radius: 8px;
 }
 
-.agent-knowledge-list li.is-selected {
-  border-color: #91caff;
-  background: #f0f8ff;
-}
-
-.agent-knowledge-list li label {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex: 1;
-  cursor: pointer;
+.agent-knowledge-group {
+  margin: 0 0 10px;
+  color: #8c8c8c;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
 }
 
 .agent-knowledge-text {
-  display: flex;
-  flex-direction: column;
-}
-
-.agent-knowledge-text small {
-  color: #8c8c8c;
+  flex: 1;
+  text-align: left;
 }

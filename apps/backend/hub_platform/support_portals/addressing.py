@@ -72,3 +72,14 @@ def portal_public_url(*, hosted: str, custom: str = "", custom_verified: bool = 
     scheme = "https" if custom and custom_verified else settings.CUS_HELP_PUBLIC_SCHEME
     port = "" if custom and custom_verified else settings.CUS_HELP_PUBLIC_PORT
     return f"{scheme}://{host}{f':{port}' if port else ''}"
+
+
+def article_public_url(article) -> str:
+    """Адрес статьи в Help Center — той же формы, что читает клиент."""
+    portal = article.portal
+    base = portal_public_url(
+        hosted=portal.hosted_domain,
+        custom=portal.custom_domain,
+        custom_verified=portal.custom_domain_verified_at is not None,
+    )
+    return f"{base}/articles/{article.slug}"

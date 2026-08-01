@@ -1,5 +1,4 @@
-.ai-create-product-list,
-.ai-create-knowledge {
+.ai-create-product-list {
   display: flex;
   flex-direction: column;
   gap: 9px;

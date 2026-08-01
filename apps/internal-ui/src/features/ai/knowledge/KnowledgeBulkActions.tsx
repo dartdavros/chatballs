@@ -2,24 +2,27 @@ import { useState } from "react";
 
 import { Icon } from "../../../shared/icons";
 import {
+  AgentLinkDialog,
+  type AgentLinkAction,
+  type AgentLinkOption,
+  type AgentLinkOutcome,
+} from "../../../shared/content-library/AgentLinkDialog";
+import { BulkSelectionBar } from "../../../shared/content-library/BulkSelectionBar";
+import {
   bulkMoveKnowledge,
   bulkReplaceKnowledgeVisibility,
   isKnowledgeScopeConflict,
+  linkKnowledgeToAgent,
 } from "./model";
 import { KnowledgeBulkDialog, type KnowledgeBulkMode } from "./KnowledgeBulkDialog";
 import { KnowledgeScopeConflictModal } from "./KnowledgeScopeConflictModal";
 import type { KnowledgeCategory, KnowledgeDepartmentReference, KnowledgeScopeConflict, KnowledgeVisibility } from "./types";
 
-function selectedKnowledgeLabel(count: number): string {
-  const remainder100 = count % 100;
-  const remainder10 = count % 10;
-  if (remainder100 >= 11 && remainder100 <= 14) return "знаний";
-  if (remainder10 === 1) return "знание";
-  if (remainder10 >= 2 && remainder10 <= 4) return "знания";
-  return "знаний";
-}
+const KNOWLEDGE_FORMS: [string, string, string] = ["знание", "знания", "знаний"];
 
 export function KnowledgeBulkActions({
+  agents,
+  canLinkAgents,
   categories,
   departments,
   selectedIds,
@@ -27,6 +30,8 @@ export function KnowledgeBulkActions({
   onComplete,
   openAgent,
 }: {
+  agents: AgentLinkOption[];
+  canLinkAgents: boolean;
   categories: KnowledgeCategory[];
   departments: KnowledgeDepartmentReference[];
   selectedIds: Set<number>;
@@ -35,6 +40,8 @@ export function KnowledgeBulkActions({
   openAgent: (agentId: number) => void;
 }) {
   const [mode, setMode] = useState<KnowledgeBulkMode | null>(null);
+  const [agentOpen, setAgentOpen] = useState(false);
+  const [outcome, setOutcome] = useState<AgentLinkOutcome | null>(null);
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [visibility, setVisibility] = useState<KnowledgeVisibility>("ORGANIZATION");
   const [departmentIds, setDepartmentIds] = useState<number[]>([]);
@@ -48,6 +55,12 @@ export function KnowledgeBulkActions({
     setCategoryId(null);
     setVisibility(nextMode === "departments" ? "DEPARTMENTS" : "ORGANIZATION");
     setDepartmentIds([]);
+  }
+
+  function openAgentDialog() {
+    setAgentOpen(true);
+    setOutcome(null);
+    setError(null);
   }
 
   async function submit() {
@@ -70,18 +83,29 @@ export function KnowledgeBulkActions({
     }
   }
 
+  async function submitAgentLink(agentId: number, action: AgentLinkAction) {
+    setBusy(true);
+    setError(null);
+    try {
+      const result = await linkKnowledgeToAgent({ agentId, action, knowledgeIds: [...selectedIds] });
+      // onComplete снимает выбор и размонтирует панель вместе с диалогом,
+      // поэтому список перечитывается только после закрытия отчёта.
+      setOutcome({ action, changed: result.changed, skipped: result.skippedIds.length });
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Не удалось изменить знания агента");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <>
-      <div className="knowledge-bulk-bar">
-        <span className="knowledge-bulk-check"><Icon name="check" size={12} /></span>
-        <strong>Выбрано {selectedIds.size} {selectedKnowledgeLabel(selectedIds.size)}</strong>
-        <i />
+      <BulkSelectionBar count={selectedIds.size} forms={KNOWLEDGE_FORMS} onClear={onClear}>
         <button type="button" onClick={() => open("move")}><Icon name="folder" size={15} />Переместить в категорию</button>
         <button type="button" onClick={() => open("visibility")}><Icon name="eye" size={15} />Изменить доступность</button>
         <button type="button" onClick={() => open("departments")}><Icon name="building" size={15} />Заменить отделы</button>
-        <span />
-        <button className="knowledge-bulk-clear" type="button" onClick={onClear}>Снять выбор</button>
-      </div>
+        {canLinkAgents && <button type="button" onClick={openAgentDialog}><Icon name="robot" size={15} />Прикрепить к агенту</button>}
+      </BulkSelectionBar>
       {mode && (
         <KnowledgeBulkDialog
           busy={busy}
@@ -97,6 +121,18 @@ export function KnowledgeBulkActions({
           onDepartmentChange={setDepartmentIds}
           onSubmit={() => void submit()}
           onVisibilityChange={(value) => { setVisibility(value); if (value === "ORGANIZATION") setDepartmentIds([]); }}
+        />
+      )}
+      {agentOpen && (
+        <AgentLinkDialog
+          agents={agents}
+          busy={busy}
+          error={error}
+          forms={KNOWLEDGE_FORMS}
+          outcome={outcome}
+          title="Знания агента"
+          onCancel={() => { setAgentOpen(false); if (outcome) void onComplete(); }}
+          onSubmit={(agentId, action) => void submitAgentLink(agentId, action)}
         />
       )}
       {conflicts.length > 0 && <KnowledgeScopeConflictModal conflicts={conflicts} onClose={() => setConflicts([])} openAgent={openAgent} />}

@@ -89,6 +89,19 @@ export type KnowledgeBulkResult = {
   knowledgeIds: number[];
 };
 
+export type AgentLinkRequest = {
+  agentId: number;
+  action: "attach" | "detach";
+};
+
+export type AgentLinkResponse = {
+  agentId: number;
+  action: "attach" | "detach";
+  changed: number;
+  changedIds: number[];
+  skippedIds: number[];
+};
+
 export type AgentCategoryKnowledgeSelectionResult = {
   agentId: number;
   categoryId: number;

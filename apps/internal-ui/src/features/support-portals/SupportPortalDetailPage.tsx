@@ -101,6 +101,7 @@ export function SupportPortalDetailPage({
       <PortalContent
         articles={articles}
         canManage={canManage && portal.status !== "ARCHIVED"}
+        canLinkAgents={hasCapability(user, "ai.manage")}
         categories={categories}
         locale={portal.defaultLocale}
         portalId={portal.id}

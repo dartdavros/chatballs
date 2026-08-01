@@ -1,10 +1,14 @@
 from dataclasses import dataclass
 
-from hub_platform.ai.agent_knowledge import runtime_knowledge_for_agent
+from hub_platform.ai.agent_knowledge import (
+    runtime_knowledge_for_agent,
+    runtime_portal_articles_for_agent,
+)
 from hub_platform.ai.invocation import invoke_chat
 from hub_platform.ai.models import AIAgent, KnowledgeFragment
 from hub_platform.ai.provider.base import ChatMessage, ChatResult
 from hub_platform.ai.retrieval import KnowledgeRetriever
+from hub_platform.support_portals.addressing import article_public_url
 
 # Гард стиля для мессенджеров: гарантирует простой текст вне зависимости от
 # того, что написано в авторских инструкциях.
@@ -44,7 +48,8 @@ def agent_system_prompt(agent: AIAgent) -> str:
 
 def knowledge_catalog(agent: AIAgent) -> str:
     """Каталог выбранных знаний для системного промпта: заголовок, краткое
-    описание и публичные ссылки вложений (агент может отдать ссылку клиенту)."""
+    описание и публичные ссылки вложений (агент может отдать ссылку клиенту).
+    Статьи портала поддержки идут отдельной секцией со ссылкой на Help Center."""
     lines: list[str] = []
     items = runtime_knowledge_for_agent(agent).prefetch_related("attachments")
     for knowledge in items:
@@ -54,13 +59,30 @@ def knowledge_catalog(agent: AIAgent) -> str:
         lines.append(line)
         for attachment in knowledge.attachments.all():
             lines.append(f"  файл: {attachment.original_name} — {attachment.public_url()}")
-    if not lines:
-        return ""
-    return (
-        "Тебе доступны следующие знания (детали подтягиваются автоматически по "
-        "запросу). Ссылки на файлы можно давать клиенту:\n"
-        + "\n".join(lines)
+    article_lines: list[str] = []
+    articles = runtime_portal_articles_for_agent(agent).select_related(
+        "portal", "published_revision"
     )
+    for article in articles:
+        revision = article.published_revision
+        line = f"- {revision.title}"
+        if revision.summary.strip():
+            line += f" — {revision.summary.strip()}"
+        article_lines.append(f"{line}\n  статья: {article_public_url(article)}")
+    if not lines and not article_lines:
+        return ""
+    parts: list[str] = []
+    if lines:
+        parts.append(
+            "Тебе доступны следующие знания (детали подтягиваются автоматически по "
+            "запросу). Ссылки на файлы можно давать клиенту:\n" + "\n".join(lines)
+        )
+    if article_lines:
+        parts.append(
+            "Статьи базы знаний поддержки (ссылку можно дать клиенту):\n"
+            + "\n".join(article_lines)
+        )
+    return "\n\n".join(parts)
 
 
 def run_agent_turn(
@@ -85,7 +107,7 @@ def run_agent_turn(
         messages.append(ChatMessage(role="system", content=catalog))
     if fragments:
         knowledge = "\n\n".join(
-            f"[{fragment.knowledge.title}#{fragment.chunk_index}] {fragment.content}"
+            f"[{fragment.source_title}#{fragment.chunk_index}] {fragment.content}"
             for fragment in fragments
         )
         messages.append(

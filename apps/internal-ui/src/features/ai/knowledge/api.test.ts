@@ -8,6 +8,8 @@ import {
   fetchKnowledgeCategories,
   fetchKnowledgeList,
   isKnowledgeScopeConflict,
+  linkKnowledgeToAgent,
+  linkPortalArticlesToAgent,
   selectAgentCategoryKnowledge,
   updateKnowledgeCategory,
 } from "./api";
@@ -106,6 +108,28 @@ describe("knowledge API", () => {
       `/api/v1/organizations/${organizationPublicId}/ai/knowledge/bulk/visibility/`,
       `/api/v1/organizations/${organizationPublicId}/ai/agents/9/knowledge/select-category/`,
     ]);
+  });
+
+  it("sends agent link requests for both libraries", async () => {
+    const fetchMock = mockSuccess({ agentId: 9, action: "attach", changed: 2, changedIds: [10, 11], skippedIds: [] });
+
+    await linkKnowledgeToAgent({ agentId: 9, action: "attach", knowledgeIds: [10, 11] });
+    await linkPortalArticlesToAgent({ agentId: 9, action: "detach", articleIds: [4] });
+
+    expect(fetchMock.mock.calls.map(([path]) => path)).toEqual([
+      `/api/v1/organizations/${organizationPublicId}/ai/knowledge/bulk/agent/`,
+      `/api/v1/organizations/${organizationPublicId}/ai/portal-articles/bulk/agent/`,
+    ]);
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({
+      agentId: 9,
+      action: "attach",
+      knowledgeIds: [10, 11],
+    });
+    expect(JSON.parse(fetchMock.mock.calls[1][1].body)).toEqual({
+      agentId: 9,
+      action: "detach",
+      articleIds: [4],
+    });
   });
 
   it("recognizes the backend scope-conflict response", () => {

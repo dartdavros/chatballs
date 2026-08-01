@@ -1,17 +1,24 @@
 from django.conf import settings
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
+from django.db.models import Q
 from pgvector.django import CosineDistance
 
-from hub_platform.ai.agent_knowledge import runtime_knowledge_for_agent
+from hub_platform.ai.agent_knowledge import (
+    runtime_knowledge_for_agent,
+    runtime_portal_articles_for_agent,
+)
 from hub_platform.ai.invocation import embed_texts
 from hub_platform.ai.models import AIAgent, KnowledgeFragment
 from hub_platform.ai.provider.base import ProviderError
 
 
 def _agent_fragments(agent: AIAgent):
+    # Оба источника знаний агента живут в одной таблице фрагментов, поэтому
+    # поиск остаётся одним запросом (ADR-HUB-0016).
     return KnowledgeFragment.objects.filter(
-        knowledge_id__in=runtime_knowledge_for_agent(agent).values("id")
-    ).select_related("knowledge")
+        Q(knowledge_id__in=runtime_knowledge_for_agent(agent).values("id"))
+        | Q(portal_article_id__in=runtime_portal_articles_for_agent(agent).values("id"))
+    ).select_related("knowledge", "portal_article__published_revision")
 
 
 def lexical_search(agent: AIAgent, query: str, *, limit: int = 5) -> list[KnowledgeFragment]:

@@ -15,7 +15,11 @@ from hub_platform.tenancy.context import TenantContext
 def agents_for_context(context: TenantContext) -> QuerySet[AIAgent]:
     return (
         AIAgent.objects.select_related("channel", "channel__department", "channel__product")
-        .prefetch_related("knowledge_items")
+        .prefetch_related(
+            "knowledge_items",
+            "portal_articles__portal",
+            "portal_articles__published_revision",
+        )
         .filter(channel__organization_id=context.organization_id)
         .order_by("channel__name")
     )

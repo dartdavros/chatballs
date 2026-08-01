@@ -129,10 +129,25 @@ class KnowledgeAttachment(TenantRelationModel):
 
 
 class KnowledgeFragment(TenantRelationModel):
-    tenant_relation_fields = ("knowledge",)
-    # Чанк знания + его эмбеддинг (pgvector). ADR-HUB-0016. Перестраивается при
-    # каждом изменении содержимого или вложений знания.
-    knowledge = models.ForeignKey(Knowledge, on_delete=models.CASCADE, related_name="fragments")
+    tenant_relation_fields = ("knowledge", "portal_article")
+    # Чанк источника + его эмбеддинг (pgvector). ADR-HUB-0016. Источник — либо
+    # знание библиотеки, либо опубликованная статья портала поддержки: обе
+    # ветки индексируются одинаково, чтобы retrieval оставался одним запросом.
+    # Перестраивается при каждом изменении содержимого источника.
+    knowledge = models.ForeignKey(
+        Knowledge,
+        on_delete=models.CASCADE,
+        related_name="fragments",
+        null=True,
+        blank=True,
+    )
+    portal_article = models.ForeignKey(
+        "support_portals.PortalArticle",
+        on_delete=models.CASCADE,
+        related_name="fragments",
+        null=True,
+        blank=True,
+    )
     chunk_index = models.PositiveIntegerField()
     content = models.TextField()
     # Размерность не фиксируется: совместимость локального и production embedding-провайдера.
@@ -140,11 +155,38 @@ class KnowledgeFragment(TenantRelationModel):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ["knowledge_id", "chunk_index"]
-        constraints = [models.UniqueConstraint(fields=["knowledge", "chunk_index"], name="uniq_fragment_knowledge_chunk")]
+        ordering = ["knowledge_id", "portal_article_id", "chunk_index"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["knowledge", "chunk_index"], name="uniq_fragment_knowledge_chunk"
+            ),
+            models.UniqueConstraint(
+                fields=["portal_article", "chunk_index"], name="uniq_fragment_article_chunk"
+            ),
+            models.CheckConstraint(
+                condition=(
+                    models.Q(knowledge__isnull=False, portal_article__isnull=True)
+                    | models.Q(knowledge__isnull=True, portal_article__isnull=False)
+                ),
+                name="fragment_single_source",
+            ),
+        ]
 
     def __str__(self) -> str:
-        return f"fragment:{self.knowledge_id}/{self.chunk_index}"
+        source = (
+            f"knowledge:{self.knowledge_id}"
+            if self.knowledge_id
+            else f"article:{self.portal_article_id}"
+        )
+        return f"fragment:{source}/{self.chunk_index}"
+
+    @property
+    def source_title(self) -> str:
+        """Заголовок источника для цитирования в системном промпте."""
+        if self.knowledge_id is not None:
+            return self.knowledge.title
+        revision = self.portal_article.published_revision
+        return revision.title if revision is not None else self.portal_article.slug
 
 
 # --- Агент канала: одна сущность, без релизов (ADR-HUB-0023) ---
@@ -186,6 +228,13 @@ class AIAgent(TenantRelationModel):
     instructions = models.TextField(blank=True)  # правила работы
     # Выбор знаний из библиотеки организации.
     knowledge_items = models.ManyToManyField(Knowledge, blank=True, related_name="agents")
+    # Статьи портала поддержки остаются в support_portals: агент ссылается на
+    # них, а не на копию, поэтому правка статьи сразу меняет ответы агента.
+    portal_articles = models.ManyToManyField(
+        "support_portals.PortalArticle",
+        blank=True,
+        related_name="agents",
+    )
     allowed_tools = models.JSONField(default=list, blank=True)
     # Единственный поддерживаемый лимит — дневной бюджет dailyCostUsd (центы USD).
     limits = models.JSONField(default=dict, blank=True)

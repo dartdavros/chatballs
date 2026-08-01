@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 import { api } from "../../../api/client";
 import { EmptyState, LoadingState } from "../../../shared/ui";
+import type { RouteKey } from "../../../types";
 import { UnderlineTabs } from "../../../shared/ui-controls";
 import { AiAgentDetailHeader } from "./AiAgentDetailHeader";
 import { AgentEditForm } from "./AgentEditForm";
@@ -12,8 +13,8 @@ import { AiAgentOverviewTab } from "./AiAgentOverviewTab";
 import { agentTabs, type AgentTab } from "./model";
 import { useAiAgentDetail } from "./useAiAgentDetail";
 
-export function AiAgentDetailPage({ agentId, openKnowledge, openChannel, onAgentLoaded }: { agentId: number | null; openKnowledge: (knowledgeId: number) => void; openChannel: (channelId: number) => void; onAgentLoaded: (name: string | null) => void }) {
-  const { agent, library, loading, error, reload } = useAiAgentDetail(agentId);
+export function AiAgentDetailPage({ agentId, openKnowledge, openChannel, onAgentLoaded, setRoute }: { agentId: number | null; openKnowledge: (knowledgeId: number) => void; openChannel: (channelId: number) => void; onAgentLoaded: (name: string | null) => void; setRoute: (route: RouteKey) => void }) {
+  const { agent, loading, error, reload } = useAiAgentDetail(agentId);
   const [tab, setTab] = useState<AgentTab>("overview");
   const [editOpen, setEditOpen] = useState(false);
 
@@ -38,7 +39,7 @@ export function AiAgentDetailPage({ agentId, openKnowledge, openChannel, onAgent
       <UnderlineTabs className="ai-agent-tabs" items={agentTabs} value={tab} onChange={setTab} />
       {tab === "overview" && <AiAgentOverviewTab agent={agent} toggleActive={toggleActive} onEdit={() => setEditOpen(true)} />}
       {tab === "instructions" && <AiAgentInstructionsTab agent={agent} onChanged={reload} />}
-      {tab === "knowledge" && <AiAgentKnowledgeTab agent={agent} library={library} openKnowledge={openKnowledge} onChanged={reload} />}
+      {tab === "knowledge" && <AiAgentKnowledgeTab agent={agent} openKnowledge={openKnowledge} setRoute={setRoute} />}
       {tab === "metrics" && <AiAgentMetricsTab />}
       {editOpen && <AgentEditForm agent={agent} onClose={() => setEditOpen(false)} onSaved={() => { setEditOpen(false); reload(); }} />}
     </div>

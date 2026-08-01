@@ -1,6 +1,8 @@
 import { ApiError, api, apiUpload } from "../../../api/client";
 import type {
   AgentCategoryKnowledgeSelectionResult,
+  AgentLinkRequest,
+  AgentLinkResponse,
   KnowledgeAttachment,
   KnowledgeBulkMoveRequest,
   KnowledgeBulkResult,
@@ -94,6 +96,20 @@ export function bulkMoveKnowledge(data: KnowledgeBulkMoveRequest) {
 
 export function bulkReplaceKnowledgeVisibility(data: KnowledgeBulkVisibilityRequest) {
   return api<KnowledgeBulkResult>("/api/v1/ai/knowledge/bulk/visibility/", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export function linkKnowledgeToAgent(data: AgentLinkRequest & { knowledgeIds: number[] }) {
+  return api<AgentLinkResponse>("/api/v1/ai/knowledge/bulk/agent/", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export function linkPortalArticlesToAgent(data: AgentLinkRequest & { articleIds: number[] }) {
+  return api<AgentLinkResponse>("/api/v1/ai/portal-articles/bulk/agent/", {
     method: "POST",
     body: JSON.stringify(data),
   });

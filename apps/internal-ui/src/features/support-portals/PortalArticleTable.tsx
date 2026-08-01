@@ -8,17 +8,27 @@ import type { PortalArticle } from "./model";
 export function PortalArticleTable({
   articles,
   canManage,
+  canSelect,
   onArchive,
   onEdit,
+  onToggleSelected,
+  onToggleVisible,
+  selectedIds,
 }: {
   articles: PortalArticle[];
   canManage: boolean;
+  canSelect: boolean;
   onArchive: (article: PortalArticle) => void;
   onEdit: (article: PortalArticle) => void;
+  onToggleSelected: (articleId: number) => void;
+  onToggleVisible: () => void;
+  selectedIds: Set<number>;
 }) {
+  const allVisibleSelected = articles.length > 0 && articles.every((article) => selectedIds.has(article.id));
   return (
     <table className="baseline-table knowledge-table portal-article-table">
       <colgroup>
+        {canSelect && <col className="knowledge-col-select" />}
         <col className="portal-article-col-title" />
         <col className="portal-article-col-category" />
         <col className="portal-article-col-language" />
@@ -27,7 +37,16 @@ export function PortalArticleTable({
         <col className="portal-article-col-updated" />
         <col className="portal-article-col-actions" />
       </colgroup>
-      <thead><tr><th>СТАТЬЯ</th><th>РАЗДЕЛ</th><th>ЯЗЫК</th><th>ВЕРСИЯ</th><th>СТАТУС</th><th>ОБНОВЛЕНО</th><th /></tr></thead>
+      <thead>
+        <tr>
+          {canSelect && (
+            <th className="knowledge-select-cell">
+              <input aria-label="Выбрать все статьи" checked={allVisibleSelected} type="checkbox" onChange={onToggleVisible} />
+            </th>
+          )}
+          <th>СТАТЬЯ</th><th>РАЗДЕЛ</th><th>ЯЗЫК</th><th>ВЕРСИЯ</th><th>СТАТУС</th><th>ОБНОВЛЕНО</th><th />
+        </tr>
+      </thead>
       <tbody>
         {articles.map((article) => {
           const title = article.latestRevision?.title || article.slug;
@@ -42,7 +61,17 @@ export function PortalArticleTable({
             }] : []),
           ];
           return (
-            <tr className="knowledge-row" key={article.id} onClick={() => onEdit(article)}>
+            <tr className={`knowledge-row${selectedIds.has(article.id) ? " selected" : ""}`} key={article.id} onClick={() => onEdit(article)}>
+              {canSelect && (
+                <td className="knowledge-select-cell" onClick={(event) => event.stopPropagation()}>
+                  <input
+                    aria-label={`Выбрать ${title}`}
+                    checked={selectedIds.has(article.id)}
+                    type="checkbox"
+                    onChange={() => onToggleSelected(article.id)}
+                  />
+                </td>
+              )}
               <td>
                 <button
                   className="link is-strong is-neutral"

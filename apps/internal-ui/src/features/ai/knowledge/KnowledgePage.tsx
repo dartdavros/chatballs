@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 
 import { hasCapability } from "../../../auth/access";
+import { agentLinkOptions } from "../agentOptions";
+import { useAiAgents } from "../useAiAgents";
 import type { Department, RouteKey, SessionUser } from "../../../types";
 import { CategoryManagement } from "./CategoryManagement";
 import { KnowledgeBulkActions } from "./KnowledgeBulkActions";
@@ -45,6 +47,7 @@ export function KnowledgePage({ departments, openAgent, openKnowledge, setRoute,
   const [importOpen, setImportOpen] = useState(false);
   const [categoryManagementOpen, setCategoryManagementOpen] = useState(false);
   const library = useKnowledgeLibrary();
+  const { agents } = useAiAgents();
   const canManageCategories = hasCapability(user, "ai.manage");
   const canManageKnowledge = canManageInAnyScope(user);
   const bulkMode = library.selectedIds.size > 0;
@@ -88,6 +91,8 @@ export function KnowledgePage({ departments, openAgent, openKnowledge, setRoute,
         <main className="knowledge-library-list">
           {bulkMode ? (
             <KnowledgeBulkActions
+              agents={agentLinkOptions(agents)}
+              canLinkAgents={canManageCategories}
               categories={library.categories}
               departments={filterDepartments}
               selectedIds={library.selectedIds}

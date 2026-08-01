@@ -8,6 +8,14 @@ export type ChannelRef = {
 
 export type AgentKnowledgeRef = { id: number; title: string; isEnabled: boolean };
 
+export type AgentPortalArticleRef = {
+  id: number;
+  title: string;
+  status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
+  portal: { id: number; name: string };
+  publicUrl: string;
+};
+
 export type CredentialMode = "CUSTOAI" | "BYOK";
 
 export const CREDENTIAL_MODE_OPTIONS: Array<[CredentialMode, string]> = [
@@ -31,4 +39,5 @@ export type AiAgent = {
   tone: string;
   instructions: string;
   knowledge: AgentKnowledgeRef[];
+  portalArticles: AgentPortalArticleRef[];
 };

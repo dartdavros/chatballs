@@ -1,10 +1,20 @@
 import { useMemo, useState } from "react";
 
+import {
+  AgentLinkDialog,
+  type AgentLinkAction,
+  type AgentLinkOutcome,
+} from "../../shared/content-library/AgentLinkDialog";
+import { BulkSelectionBar } from "../../shared/content-library/BulkSelectionBar";
 import { CategoryTree } from "../../shared/content-library/CategoryTree";
 import { ContentLibraryTable } from "../../shared/content-library/ContentLibraryTable";
 import { ContentLibraryToolbar } from "../../shared/content-library/ContentLibraryToolbar";
 import { DecisionDialog } from "../../shared/DecisionDialog";
+import { Icon } from "../../shared/icons";
 import { Button } from "../../shared/ui-controls";
+import { agentLinkOptions } from "../ai/agentOptions";
+import { linkPortalArticlesToAgent } from "../ai/knowledge/model";
+import { useAiAgents } from "../ai/useAiAgents";
 import { PortalArticleEditor } from "./PortalArticleEditor";
 import { PortalArticleImportModal } from "./PortalArticleImportModal";
 import { PortalArticleTable } from "./PortalArticleTable";
@@ -23,8 +33,11 @@ type Decision = {
   type: "archive" | "publish";
 };
 
+const ARTICLE_FORMS: [string, string, string] = ["статья", "статьи", "статей"];
+
 export function PortalContent({
   articles,
+  canLinkAgents,
   canManage,
   categories,
   locale,
@@ -32,6 +45,7 @@ export function PortalContent({
   reload,
 }: {
   articles: PortalArticle[];
+  canLinkAgents: boolean;
   canManage: boolean;
   categories: PortalCategory[];
   locale: string;
@@ -39,6 +53,10 @@ export function PortalContent({
   reload: () => Promise<void>;
 }) {
   const [selectedCategory, setSelectedCategory] = useState<number | undefined>();
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [agentOpen, setAgentOpen] = useState(false);
+  const [outcome, setOutcome] = useState<AgentLinkOutcome | null>(null);
+  const [agentError, setAgentError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [language, setLanguage] = useState("");
   const [status, setStatus] = useState("");
@@ -71,6 +89,39 @@ export function PortalContent({
       ].some((value) => value?.toLocaleLowerCase().includes(normalized)))
     ));
   }, [articles, categories, language, query, selectedCategory, status]);
+
+  const { agents } = useAiAgents();
+  const bulkMode = selectedIds.size > 0;
+
+  function toggleSelected(articleId: number) {
+    setSelectedIds((current) => {
+      const next = new Set(current);
+      if (next.has(articleId)) next.delete(articleId);
+      else next.add(articleId);
+      return next;
+    });
+  }
+
+  function toggleVisible() {
+    setSelectedIds((current) => (
+      filtered.every((article) => current.has(article.id))
+        ? new Set()
+        : new Set(filtered.map((article) => article.id))
+    ));
+  }
+
+  async function submitAgentLink(agentId: number, action: AgentLinkAction) {
+    setBusy(true);
+    setAgentError(null);
+    try {
+      const result = await linkPortalArticlesToAgent({ agentId, action, articleIds: [...selectedIds] });
+      setOutcome({ action, changed: result.changed, skipped: result.skippedIds.length });
+    } catch (caught) {
+      setAgentError(portalErrorMessage(caught, "Не удалось изменить статьи агента"));
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function applyDecision() {
     if (!decision) return;
@@ -127,6 +178,15 @@ export function PortalContent({
           onSelect={setSelectedCategory}
         />
         <main className="knowledge-library-list">
+          {bulkMode ? (
+            <BulkSelectionBar count={selectedIds.size} forms={ARTICLE_FORMS} onClear={() => setSelectedIds(new Set())}>
+              {canLinkAgents && (
+                <button type="button" onClick={() => { setAgentOpen(true); setOutcome(null); setAgentError(null); }}>
+                  <Icon name="robot" size={15} />Прикрепить к агенту
+                </button>
+              )}
+            </BulkSelectionBar>
+          ) : (
           <ContentLibraryToolbar
             query={query}
             onQueryChange={setQuery}
@@ -140,6 +200,7 @@ export function PortalContent({
             <label className="knowledge-filter-select"><span>Язык:</span><select value={language} onChange={(event) => setLanguage(event.target.value)}><option value="">Все</option><option value="ru">Русский</option><option value="en">English</option></select></label>
             <label className="knowledge-filter-select"><span>Статус:</span><select value={status} onChange={(event) => setStatus(event.target.value)}><option value="">Все</option><option value="DRAFT">Черновик</option><option value="PUBLISHED">Опубликована</option><option value="ARCHIVED">Архив</option></select></label>
           </ContentLibraryToolbar>
+          )}
           {error && <div className="portal-form-error">{error}</div>}
           <ContentLibraryTable
             canCreate={canManage && categories.length > 0 && selectedCategory !== undefined && !query && !language && !status}
@@ -157,12 +218,29 @@ export function PortalContent({
             <PortalArticleTable
               articles={filtered}
               canManage={canManage}
+              canSelect={canLinkAgents}
+              selectedIds={selectedIds}
               onArchive={(article) => setDecision({ article, type: "archive" })}
               onEdit={setEditing}
+              onToggleSelected={toggleSelected}
+              onToggleVisible={toggleVisible}
             />
           </ContentLibraryTable>
+          {bulkMode && <p className="knowledge-bulk-note">Агент отвечает только по опубликованным статьям: черновики и архив в выдачу не попадают.</p>}
         </main>
       </div>
+      {agentOpen && (
+        <AgentLinkDialog
+          agents={agentLinkOptions(agents, "support")}
+          busy={busy}
+          error={agentError}
+          forms={ARTICLE_FORMS}
+          outcome={outcome}
+          title="Статьи агента поддержки"
+          onCancel={() => { setAgentOpen(false); if (outcome) setSelectedIds(new Set()); }}
+          onSubmit={(agentId, action) => void submitAgentLink(agentId, action)}
+        />
+      )}
       {managingCategories && <PortalCategoryManagement categories={categories} portalId={portalId} onChanged={reload} onClose={() => setManagingCategories(false)} />}
       {importOpen && (
         <PortalArticleImportModal

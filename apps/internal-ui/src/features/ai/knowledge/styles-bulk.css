@@ -21,6 +21,7 @@
 .knowledge-bulk-note { margin: 0 2px; color: #8c8c8c; font-size: 12px; }
 
 .knowledge-bulk-dialog-body { display: flex; flex-direction: column; gap: 14px; }
+.knowledge-bulk-outcome { margin: 0; color: #262626; font-size: 13.5px; line-height: 1.5; }
 .knowledge-bulk-dialog-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 4px; }
 
 .knowledge-conflict-modal .ant-modal-content { overflow: hidden; padding: 0; border-radius: 14px; }
