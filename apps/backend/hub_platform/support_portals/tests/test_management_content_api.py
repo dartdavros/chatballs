@@ -1,4 +1,5 @@
 from hub_platform.support_portals.tests.base import SupportPortalTestCase
+from hub_platform.webchat.testing import create_web_widget
 
 
 class SupportPortalContentManagementTests(SupportPortalTestCase):
@@ -108,10 +109,12 @@ class SupportPortalContentManagementTests(SupportPortalTestCase):
         )
         self.assertEqual(protected.status_code, 400, protected.content)
 
-    def test_support_operator_uses_portal_scoped_channel_options(self) -> None:
+    def test_support_operator_uses_portal_scoped_widget_options(self) -> None:
         portal_id = self.create_portal().json()["portal"]["id"]
+        widget = create_web_widget(self.channel, name="Foxray support widget")
         response = self.client.get(
             f"/api/v1/support/portals/{portal_id}/support-channels/"
         )
         self.assertEqual(response.status_code, 200, response.content)
-        self.assertEqual([item["id"] for item in response.json()["items"]], [self.channel.id])
+        self.assertEqual([item["id"] for item in response.json()["items"]], [widget.id])
+        self.assertEqual(response.json()["items"][0]["channel"]["id"], self.channel.id)
