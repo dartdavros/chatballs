@@ -126,6 +126,19 @@ def _normalized_config(provider: str, config: dict) -> dict:
     return result
 
 
+def _publish_web_widget(*, context: TenantContext, integration: Integration) -> None:
+    """Web-виджет проверяется локально, без внешнего API, — поэтому проверяем сразу
+    после сохранения. Иначе любая правка подключения оставляла бы виджет в DRAFT, а
+    подключение в UNCHECKED; раздача требует PUBLISHED + OK (webchat.views), и чат на
+    сайте молча падал бы в «Чат временно недоступен» до ручного «Проверить»."""
+    from hub_platform.webchat.widgets import ensure_widget
+
+    # Отдельным вызовом — чтобы конфликт смены режима остался 400 на сохранении;
+    # внутри проверки та же ошибка превратилась бы в статус ERROR.
+    ensure_widget(integration)
+    test_integration(context=context, integration=integration)
+
+
 def _validate_provider(provider: str) -> str:
     if provider not in IntegrationProvider.values:
         raise ValidationError({"provider": "Unknown provider"})
@@ -157,9 +170,7 @@ def create_integration(*, context: TenantContext, data: IntegrationInput) -> Int
     integration.full_clean(exclude=["secret"])
     integration.save()
     if integration.provider == IntegrationProvider.WEB:
-        from hub_platform.webchat.widgets import ensure_widget
-
-        ensure_widget(integration)
+        _publish_web_widget(context=context, integration=integration)
     record_usage(
         context=context,
         quota_key=QuotaKey.CLIENT_CONNECTIONS,
@@ -196,9 +207,7 @@ def update_integration(
     integration.full_clean(exclude=["secret"])
     integration.save()
     if integration.provider == IntegrationProvider.WEB:
-        from hub_platform.webchat.widgets import ensure_widget
-
-        ensure_widget(integration)
+        _publish_web_widget(context=context, integration=integration)
     return integration
 
 
@@ -229,6 +238,11 @@ def _check_web(context: TenantContext, integration: Integration) -> tuple[bool, 
         return False, "; ".join(error.messages), {}
     if widget is None:
         return False, "Конфигурация Web-виджета не создана", {}
+    # Пустой allowed_origins в проде запрещает вообще все домены (webchat.services.
+    # origin_allowed), и на сайте виджет молча показывает «Чат временно недоступен».
+    # Проверка обязана падать здесь, а не оставлять зелёный статус при мёртвом чате.
+    if not widget.allowed_origins:
+        return False, "Не заданы разрешённые домены — виджет будет недоступен на сайте", {}
     return True, f"Web-виджет активен · канал «{integration.channel.name}»", {}
 
 

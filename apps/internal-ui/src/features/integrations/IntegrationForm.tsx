@@ -6,7 +6,18 @@ import { Icon } from "../../shared/icons";
 import { FormField, SelectField } from "../../shared/form-controls";
 import { Button } from "../../shared/ui-controls";
 import { EMAIL_CONFIG_DEFAULTS, EmailFields, emailConfigFromIntegration, emailConfigPayload } from "./EmailFields";
-import { fetchChannels, PROVIDERS, webWidgetSnippet, type ChannelOption, type Integration, type IntegrationKind, type IntegrationProvider } from "./model";
+import {
+  fetchChannels,
+  formatAllowedOrigins,
+  invalidAllowedOrigin,
+  parseAllowedOrigins,
+  PROVIDERS,
+  webWidgetSnippet,
+  type ChannelOption,
+  type Integration,
+  type IntegrationKind,
+  type IntegrationProvider,
+} from "./model";
 
 // Селектор «Тип» показывает только провайдеров рода активного таба (SPEC-HUB-0025 §2.2).
 function providerOptions(kind: IntegrationKind): Array<[string, string]> {
@@ -24,6 +35,7 @@ export function IntegrationForm({ initial, kind, onClose, onSaved }: { initial: 
   const [baseUrl, setBaseUrl] = useState(initial?.config.baseUrl ?? "");
   const [defaultModel, setDefaultModel] = useState(initial?.config.defaultModel ?? "");
   const [proxyUrl, setProxyUrl] = useState(initial?.config.proxyUrl ?? "");
+  const [allowedOrigins, setAllowedOrigins] = useState(formatAllowedOrigins(initial?.config.allowedOrigins ?? []));
   const [emailConfig, setEmailConfig] = useState(initial ? emailConfigFromIntegration(initial.config) : EMAIL_CONFIG_DEFAULTS);
   const [channelId, setChannelId] = useState(initial?.channel ? String(initial.channel.id) : "");
   const [isNotifier, setIsNotifier] = useState(initial?.config.purpose === "notifications");
@@ -55,7 +67,12 @@ export function IntegrationForm({ initial, kind, onClose, onSaved }: { initial: 
   }, [isMessenger]);
   const customReady = provider !== "CUSTOM" || (baseUrl.trim().length > 0 && defaultModel.trim().length > 0);
   const emailReady = !isEmail || Boolean(emailConfig.email.trim() && emailConfig.imapHost.trim() && emailConfig.smtpHost.trim());
-  const ready = name.trim().length > 0 && customReady && emailReady && (isEdit || !meta.testable || secret.trim().length > 0);
+  // Без доменов виджет сохранится, но на сайте покажет «Чат временно недоступен»:
+  // origin_allowed на пустом списке запрещает всё. Поэтому поле обязательное.
+  const originList = parseAllowedOrigins(allowedOrigins);
+  const badOrigin = isWeb ? invalidAllowedOrigin(originList) : undefined;
+  const webReady = !isWeb || (originList.length > 0 && !badOrigin);
+  const ready = name.trim().length > 0 && customReady && emailReady && webReady && (isEdit || !meta.testable || secret.trim().length > 0);
 
   async function submit() {
     if (!ready) return;
@@ -65,7 +82,7 @@ export function IntegrationForm({ initial, kind, onClose, onSaved }: { initial: 
       ? emailConfigPayload(emailConfig)
       : isWeb
         ? {
-            allowedOrigins: initial?.config.allowedOrigins ?? [],
+            allowedOrigins: originList,
             title: initial?.config.title ?? "",
             accent: initial?.config.accent ?? "",
             greeting: initial?.config.greeting ?? "",
@@ -118,7 +135,19 @@ export function IntegrationForm({ initial, kind, onClose, onSaved }: { initial: 
         {isEmail && !isEdit && (
           <div className="integration-form-hint">Для Gmail и Яндекс используйте пароль приложения, не основной пароль аккаунта</div>
         )}
-        {!isEmail && <FormField label="Base URL" value={baseUrl} onChange={setBaseUrl} placeholder={meta.defaultBaseUrl || "—"} />}
+        {!isEmail && !isWeb && <FormField label="Base URL" value={baseUrl} onChange={setBaseUrl} placeholder={meta.defaultBaseUrl || "—"} />}
+        {isWeb && (
+          <>
+            <FormField
+              label="Разрешённые домены"
+              value={allowedOrigins}
+              onChange={setAllowedOrigins}
+              error={badOrigin && `Непонятный домен: ${badOrigin}`}
+              placeholder="example.com, *.example.com — через запятую"
+            />
+            <div className="integration-form-hint">Сайты, на которых виджету разрешено открываться: домен, поддомены через «*.» или полный origin с портом. На остальных чат ответит «Чат временно недоступен»</div>
+          </>
+        )}
         {!isWeb && !isEmail && (
           <FormField label="Прокси" value={proxyUrl} onChange={setProxyUrl} placeholder="http://host:port или socks5://user:pass@host:port — пусто, если без прокси" />
         )}

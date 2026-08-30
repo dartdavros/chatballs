@@ -37,6 +37,49 @@ describe("webWidgetSnippet", () => {
   });
 });
 
+describe("parseAllowedOrigins", () => {
+  it("splits on commas, semicolons and newlines and trims each entry", async () => {
+    const { parseAllowedOrigins } = await import("./model");
+
+    expect(parseAllowedOrigins(` edevs.tech ,
+*.edevs.tech; foxray.pro `)).toEqual([
+      "edevs.tech",
+      "*.edevs.tech",
+      "foxray.pro",
+    ]);
+  });
+
+  it("drops empty entries, trailing slashes and case-insensitive duplicates", async () => {
+    const { parseAllowedOrigins } = await import("./model");
+
+    expect(parseAllowedOrigins("edevs.tech/, ,, EDEVS.TECH, edevs.tech")).toEqual(["edevs.tech"]);
+  });
+
+  it("returns an empty list for blank input so the form can require a domain", async () => {
+    const { parseAllowedOrigins } = await import("./model");
+
+    expect(parseAllowedOrigins(`
+  `)).toEqual([]);
+  });
+});
+
+describe("invalidAllowedOrigin", () => {
+  it("accepts the three forms origin_allowed understands", async () => {
+    const { invalidAllowedOrigin } = await import("./model");
+
+    expect(
+      invalidAllowedOrigin(["edevs.tech", "*.edevs.tech", "https://app.custocrm.ru", "localhost:5173"]),
+    ).toBeUndefined();
+  });
+
+  it("reports the first entry that is not a domain", async () => {
+    const { invalidAllowedOrigin } = await import("./model");
+
+    expect(invalidAllowedOrigin(["edevs.tech", "https://edevs.tech/chat"])).toBe("https://edevs.tech/chat");
+    expect(invalidAllowedOrigin(["не домен"])).toBe("не домен");
+  });
+});
+
 // Гарантия отсутствия build-time привязки: сниппет выводится от текущего origin в
 // рантайме, поэтому один frontend-образ работает на любом домене без пересборки
 // (ADR-HUB-0028 §10).

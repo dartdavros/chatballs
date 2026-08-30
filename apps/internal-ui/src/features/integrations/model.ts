@@ -98,6 +98,32 @@ export const fetchLlmProviders = () =>
     response.items.filter((item) => item.kind === "LLM_PROVIDER")
   );
 
+// Разрешённые домены Web-виджета (SPEC-HUB-0010 §7.1). Пустой список в проде
+// запрещает все origin'ы, поэтому домены вводятся руками и обязательны.
+// Принимаем три формы, которые понимает backend (webchat.services.origin_allowed):
+// `example.com`, `*.example.com` и `https://example.com:8443`; `localhost` — для разработки.
+const ORIGIN_RULE = /^(?:https?:\/\/)?(?:\*\.)?[a-z0-9-]+(?:\.[a-z0-9-]+)*(?::\d{1,5})?$/i;
+
+// Ввод — свободный текст: домены разделяются запятой, точкой с запятой или переносом.
+export function parseAllowedOrigins(input: string): string[] {
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const raw of input.split(/[\s,;]+/)) {
+    const item = raw.trim().replace(/\/+$/, "");
+    const key = item.toLowerCase();
+    if (!item || seen.has(key)) continue;
+    seen.add(key);
+    result.push(item);
+  }
+  return result;
+}
+
+export const formatAllowedOrigins = (origins: string[]): string => origins.join(", ");
+
+// Возвращает первый непонятный домен — форма показывает его в ошибке поля.
+export const invalidAllowedOrigin = (origins: string[]): string | undefined =>
+  origins.find((item) => !ORIGIN_RULE.test(item));
+
 // Публичный домен Hub для встраивания Web-виджета (SPEC-HUB-0003 §3).
 // Один frontend-образ работает на любом домене (ADR-HUB-0028 §runtime frontend):
 // сниппет генерируется от текущего origin в рантайме, а не от build-time аргумента.

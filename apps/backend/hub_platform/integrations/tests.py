@@ -38,10 +38,15 @@ class WebIntegrationCheckTests(TestCase):
 
         self.channel = Channel.objects.create(organization=self.organization, code="edevs", name="Edevs — главный сайт")
 
-    def _web(self, name: str, channel=None) -> Integration:
+    def _web(self, name: str, channel=None, origins=("edevs.tech",)) -> Integration:
         return create_integration(
             context=self.context,
-            data=IntegrationInput(provider=IntegrationProvider.WEB, name=name, channel_id=channel.id if channel else None),
+            data=IntegrationInput(
+                provider=IntegrationProvider.WEB,
+                name=name,
+                channel_id=channel.id if channel else None,
+                config={"allowedOrigins": list(origins)},
+            ),
         )
 
     def test_web_without_channel_fails(self) -> None:
@@ -75,6 +80,55 @@ class WebIntegrationCheckTests(TestCase):
             second.web_chat_widget.public_key,
         )
 
+    def test_web_without_allowed_origins_fails(self) -> None:
+        """Пустой allowed_origins в проде запрещает все домены, и виджет молча
+        показывает «Чат временно недоступен» — проверка обязана это ловить."""
+        integration = run_integration_test(
+            context=self.context,
+            integration=self._web("Виджет", channel=self.channel, origins=()),
+        )
+        self.assertEqual(integration.status, IntegrationStatus.ERROR)
+        self.assertIn("Не заданы разрешённые домены", integration.last_error)
+        self.assertEqual(integration.web_chat_widget.status, "DRAFT")
+
+    def test_allowed_origins_reach_the_widget(self) -> None:
+        integration = run_integration_test(
+            context=self.context,
+            integration=self._web(
+                "Виджет", channel=self.channel, origins=("edevs.tech", "*.edevs.tech")
+            ),
+        )
+        self.assertEqual(integration.status, IntegrationStatus.OK)
+        self.assertEqual(
+            integration.web_chat_widget.allowed_origins, ["edevs.tech", "*.edevs.tech"]
+        )
+        self.assertEqual(
+            integration_payload(integration)["config"]["allowedOrigins"],
+            ["edevs.tech", "*.edevs.tech"],
+        )
+
+    def test_saving_connection_keeps_the_widget_published(self) -> None:
+        """Регрессия: раздача виджета требует PUBLISHED + OK (webchat.views), а правка
+        подключения не должна ни ронять чат на сайте до ручного «Проверить», ни
+        обнулять домены — именно так виджеты уходили в «Чат временно недоступен»."""
+        integration = self._web("Виджет", channel=self.channel)
+        self.assertEqual(integration.status, IntegrationStatus.OK)
+        self.assertEqual(integration.web_chat_widget.status, "PUBLISHED")
+
+        renamed = update_integration(
+            context=self.context,
+            integration=integration,
+            data=IntegrationInput(
+                provider=IntegrationProvider.WEB,
+                name="Виджет · переименован",
+                channel_id=self.channel.id,
+                config={"allowedOrigins": ["edevs.tech"]},
+            ),
+        )
+        self.assertEqual(renamed.status, IntegrationStatus.OK)
+        self.assertEqual(renamed.web_chat_widget.status, "PUBLISHED")
+        self.assertEqual(renamed.config["allowed_domains"], ["edevs.tech"])
+        self.assertEqual(renamed.web_chat_widget.allowed_origins, ["edevs.tech"])
 
 class ProxyConfigTests(TestCase):
     def setUp(self) -> None:
