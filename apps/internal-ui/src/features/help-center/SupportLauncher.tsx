@@ -7,7 +7,7 @@ export function supportHref(product: HelpProduct): string | null {
   if (!product.siteUrl || !product.supportWidgetKey) return null;
   try {
     const url = new URL(product.siteUrl);
-    url.searchParams.set("custocrmSupportWidget", product.supportWidgetKey);
+    url.searchParams.set("chatbollsSupportWidget", product.supportWidgetKey);
     return url.toString();
   } catch {
     return null;

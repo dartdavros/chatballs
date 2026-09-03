@@ -31,10 +31,8 @@ function SidebarLink({ activeRoutes, disabled, icon, label, route, routeKey, set
 }
 
 const SALES_ITEMS: SidebarNavSectionItem[] = [
-  { activeRoutes: ["salesOverview"], key: "salesOverview", label: "Обзор" },
   { activeRoutes: ["salesDialogs"], key: "salesDialogs", label: "Диалоги" },
   { activeRoutes: ["salesClients", "salesClientDetail"], key: "salesClients", label: "Контакты" },
-  { activeRoutes: ["salesOrders", "salesOrderDetail"], key: "salesOrders", label: "Продажи" },
 ];
 
 const SUPPORT_ITEMS: SidebarNavSectionItem[] = [
@@ -73,7 +71,7 @@ function visibleItems(user: SessionUser, items: SidebarNavSectionItem[]) {
 
 export function Sidebar({ route, user, setRoute, onLogout, waitingCount = 0 }: { route: RouteKey; user: SessionUser; setRoute: (route: RouteKey) => void; onLogout: () => void; waitingCount?: number }) {
   const sectionStorageKey = (section: string) => (
-    `custocrm.sidebar.${user.organizationPublicId}.${section}.expanded`
+    `chatbolls.sidebar.${user.organizationPublicId}.${section}.expanded`
   );
   const salesItems = visibleItems(user, SALES_ITEMS).map((item) => (
     item.key === "salesDialogs" && waitingCount > 0
@@ -92,15 +90,14 @@ export function Sidebar({ route, user, setRoute, onLogout, waitingCount = 0 }: {
             ? <img src={user.organizationLogoUrl} alt="" />
             : <LogoIcon />}
         </div>
-        <div><strong>CustoCRM</strong><span>Управление компанией</span></div>
+        <div><strong>Chatbolls</strong><span>Управление компанией</span></div>
       </button>
       <nav className="hub-nav">
         {canAccess(user, "command") && <SidebarLink icon="grid" label="Обзор" route={route} routeKey="command" setRoute={setRoute} />}
         <div className="hub-nav-group">КОМПАНИЯ</div>
-        <SidebarNavSection icon="shop" items={salesItems} label="Продажи" route={route} setRoute={setRoute} storageKey={sectionStorageKey("sales")} />
+        <SidebarNavSection icon="shop" items={salesItems} label="Клиенты" route={route} setRoute={setRoute} storageKey={sectionStorageKey("sales")} />
         <SidebarNavSection icon="wrench" items={supportItems} label="Поддержка" route={route} setRoute={setRoute} storageKey={sectionStorageKey("support")} />
         {canAccess(user, "employees") && <SidebarLink activeRoutes={["employees", "employeeDetail", "accessProfiles"]} icon="team" label="Сотрудники" route={route} routeKey="employees" setRoute={setRoute} />}
-        {canAccess(user, "products") && <SidebarLink activeRoutes={["products", "productDetail"]} icon="box" label="Продукты" route={route} routeKey="products" setRoute={setRoute} />}
         {canAccess(user, "channels") && <SidebarLink activeRoutes={["channels", "channelCreate", "channelDetail"]} icon="route" label="Каналы" route={route} routeKey="channels" setRoute={setRoute} />}
         <div className="hub-nav-group">ПЛАТФОРМА</div>
         <SidebarNavSection icon="robot" items={aiItems} label="AI" route={route} setRoute={setRoute} storageKey={sectionStorageKey("ai")} />

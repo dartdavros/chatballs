@@ -5,97 +5,19 @@
       "code": "vektor",
       "name": "Вектор",
       "siteUrl": "https://vektor.severnayaverf.ru",
-      "departments": ["sales", "support"]
+      "departments": [
+        "sales",
+        "support"
+      ]
     },
     {
       "code": "reper",
       "name": "Репер",
       "siteUrl": "https://reper.severnayaverf.ru",
-      "departments": ["sales", "support"]
-    }
-  ],
-  "offers": [
-    {
-      "key": "vektor-box",
-      "product": "vektor",
-      "code": "vektor-box",
-      "name": "Вектор — коробочная лицензия",
-      "description": "Постоянная лицензия на сервер SCADA-мониторинга оборудования для одного производственного участка. Развёртывается на площадке заказчика.",
-      "fulfillmentType": "BOX_LICENSE",
-      "paymentType": "ONE_TIME",
-      "fiscalName": "Лицензия на ПО «Вектор» (коробочная)",
-      "aiOfferable": true
-    },
-    {
-      "key": "vektor-support",
-      "product": "vektor",
-      "code": "vektor-support-12m",
-      "name": "Вектор — продление поддержки на 12 месяцев",
-      "description": "Доступ к обновлениям и технической поддержке коробочной лицензии Вектор. Привязывается к основной лицензии.",
-      "fulfillmentType": "SUPPORT_EXTENSION",
-      "paymentType": "SUBSCRIPTION",
-      "primaryBoxOffer": "vektor-box",
-      "fiscalName": "Продление поддержки «Вектор» (12 мес.)",
-      "aiOfferable": false
-    },
-    {
-      "key": "reper-cloud",
-      "product": "reper",
-      "code": "reper-cloud",
-      "name": "Репер — облачная подписка",
-      "description": "Доступ к платформе телематики транспорта и спецтехники в облаке. Оплата за парк техники помесячно.",
-      "fulfillmentType": "SAAS_ACCESS",
-      "paymentType": "SUBSCRIPTION",
-      "fiscalName": "Подписка на сервис «Репер»",
-      "aiOfferable": true
-    }
-  ],
-  "prices": [
-    {
-      "key": "vektor-box-price",
-      "offer": "vektor-box",
-      "billingPeriod": "ONE_TIME",
-      "amountMinor": 1290000,
-      "currency": "RUB"
-    },
-    {
-      "key": "vektor-support-price",
-      "offer": "vektor-support",
-      "billingPeriod": "YEAR",
-      "amountMinor": 189000,
-      "currency": "RUB"
-    },
-    {
-      "key": "reper-cloud-month",
-      "offer": "reper-cloud",
-      "billingPeriod": "MONTH",
-      "amountMinor": 24000,
-      "currency": "RUB"
-    },
-    {
-      "key": "reper-cloud-year",
-      "offer": "reper-cloud",
-      "billingPeriod": "YEAR",
-      "amountMinor": 264000,
-      "currency": "RUB"
-    }
-  ],
-  "salesSources": [
-    {
-      "key": "vektor-source",
-      "product": "vektor",
-      "code": "vektor-product-api",
-      "environment": "PRODUCTION",
-      "status": "ACTIVE",
-      "credentialHint": "demo-vektor-2026"
-    },
-    {
-      "key": "reper-source",
-      "product": "reper",
-      "code": "reper-product-api",
-      "environment": "PRODUCTION",
-      "status": "ACTIVE",
-      "credentialHint": "demo-reper-2026"
+      "departments": [
+        "sales",
+        "support"
+      ]
     }
   ]
 }

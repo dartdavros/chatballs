@@ -18,8 +18,6 @@ SYSTEM_PROFILE_CAPABILITIES = {
         "customers.view",
         "customers.manage",
         "products.view",
-        "sales.view",
-        "sales.operate",
     ),
     "Support operator": (
         "conversations.view",

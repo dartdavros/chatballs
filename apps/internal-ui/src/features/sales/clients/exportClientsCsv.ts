@@ -2,7 +2,6 @@ import type { SalesClientRowVm } from "./model";
 
 const HEADERS = [
   "Контакт",
-  "Статус",
   "Телефон",
   "Email",
   "Логин",
@@ -10,8 +9,6 @@ const HEADERS = [
   "Продукты",
   "Последний диалог",
   "Открытые диалоги",
-  "Заказы",
-  "Сумма покупок",
 ];
 
 function csvCell(value: string | number): string {
@@ -22,7 +19,6 @@ function csvCell(value: string | number): string {
 export function exportClientsCsv(rows: SalesClientRowVm[]): void {
   const data = rows.map((client) => [
     client.name,
-    client.statusMeta.label,
     client.phone,
     client.email,
     client.username,
@@ -30,8 +26,6 @@ export function exportClientsCsv(rows: SalesClientRowVm[]): void {
     client.products.map((product) => product.name).join(", "),
     client.lastLabel,
     client.openDialogs,
-    client.orders,
-    client.totalLabel,
   ]);
   const csv = [HEADERS, ...data]
     .map((row) => row.map(csvCell).join(","))

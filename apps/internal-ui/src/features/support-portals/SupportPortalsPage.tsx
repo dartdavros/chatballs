@@ -81,7 +81,7 @@ export function SupportPortalsPage({
         <ContentState
           icon={<Icon name="folder" size={24} />}
           title="Создание порталов временно недоступно"
-          text="Обратитесь к администратору CustoCRM."
+          text="Обратитесь к администратору Chatbolls."
         />
       ) : portals.length === 0 ? (
         <ContentState

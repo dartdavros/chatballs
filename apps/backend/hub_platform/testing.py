@@ -40,15 +40,12 @@ class TenantAPIClient(APIClient):
         "employees",
         "integrations",
         "notifications",
-        "orders",
-        "sales",
         "support",
     }
     public_prefixes = (
         "/api/v1/ai/files/",
         "/api/v1/calls/access/",
         "/api/v1/calls/invites/",
-        "/api/v1/orders/ingest/",
         "/api/v1/support/sessions/",
         "/api/v1/help/",
     )

@@ -11,7 +11,7 @@ describe("supportHref", () => {
       supportAvailable: true,
       supportWidgetKey: "wgt_foxray_support",
       supportChannelCode: "foxray-support",
-    })).toBe("https://foxray.example/account?from=help&custocrmSupportWidget=wgt_foxray_support");
+    })).toBe("https://foxray.example/account?from=help&chatbollsSupportWidget=wgt_foxray_support");
   });
 
   it("does not build an unauthenticated fallback without a channel", () => {

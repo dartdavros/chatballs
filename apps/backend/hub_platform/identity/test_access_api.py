@@ -45,7 +45,7 @@ class AccessManagementApiTests(TestCase):
             "/api/v1/access-profiles/",
             {
                 "name": "Sales reader",
-                "capabilities": ["sales.view", "conversations.view"],
+                "capabilities": ["customers.view", "conversations.view"],
             },
             format="json",
         )
@@ -105,7 +105,7 @@ class AccessManagementApiTests(TestCase):
             organization=self.organization, name="Department reader"
         )
         AccessProfileCapability.objects.create(
-            access_profile=profile, capability_code="sales.view"
+            access_profile=profile, capability_code="customers.view"
         )
         assigned = self.client.post(
             f"/api/v1/employees/{self.employee.user_id}/access-assignments/",
@@ -127,7 +127,7 @@ class AccessManagementApiTests(TestCase):
         self.assertEqual(response.status_code, 409)
         self.assertEqual(
             list(profile.capability_links.values_list("capability_code", flat=True)),
-            ["sales.view"],
+            ["customers.view"],
         )
 
     def test_system_profile_is_read_only(self) -> None:

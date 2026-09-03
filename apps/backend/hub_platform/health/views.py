@@ -7,7 +7,7 @@ from django.http import JsonResponse
 def live(request):
     surface = settings.CUS_RUNTIME_SURFACE
     return JsonResponse(
-        {"status": "ok", "service": f"custocrm-{surface}", "surface": surface}
+        {"status": "ok", "service": f"chatbolls-{surface}", "surface": surface}
     )
 
 

@@ -4,7 +4,6 @@ import type { CommandPeriod, MetricItem } from "./types";
 // Реальная сводка командного центра (conversations/command.py) — без мок-данных.
 
 export type ApiDialogBlock = { open: number; activeNow: number; onAI: number; onOperators: number; waiting: number };
-export type ApiCommerce = { pendingPayments: number; fulfillmentErrors: number; sales: number; revenueMinor: number };
 export type ApiDepartment = {
   code: string;
   name: string;
@@ -12,14 +11,13 @@ export type ApiDepartment = {
   employees: number;
   aiAgents: number;
   dialogs: ApiDialogBlock;
-  commerce?: ApiCommerce;
 };
 export type ApiCommandOverview = {
   period: CommandPeriod;
   generatedAt: string;
-  company: { status: "ok" | "attention" | "critical"; departments: number; openDialogs: number; revenueMinor: number };
+  company: { status: "ok" | "attention" | "critical"; departments: number; openDialogs: number };
   departments: ApiDepartment[];
-  attention: Array<{ kind: "dialog" | "payment" | "integration"; title: string; meta: string; minutes: number }>;
+  attention: Array<{ kind: "dialog" | "integration"; title: string; meta: string; minutes: number }>;
   integrations: Array<{ name: string; group: string; status: "OK" | "ERROR" | "UNCHECKED" }>;
   ai: { spendMicros: number; dailyLimitMicros: number; tokens: number; dialogs: number };
 };
@@ -27,7 +25,6 @@ export type ApiCommandOverview = {
 export const fetchCommandOverview = (period: CommandPeriod) =>
   api<ApiCommandOverview>(`/api/v1/conversations/command-overview/?period=${period}`);
 
-const rub = (minor: number) => `₽${Math.round(minor / 100).toLocaleString("ru-RU").replace(/ /g, " ")}`;
 const usd = (micros: number) => `$${(micros / 1_000_000).toLocaleString("ru-RU", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 function tokensLabel(tokens: number): string {
@@ -57,7 +54,7 @@ const COMPANY_SUMMARY: Record<ApiCommandOverview["company"]["status"], string> =
   critical: "Есть критичные проблемы — проверьте раздел «Требует внимания».",
 };
 
-const ATTENTION_DOT: Record<string, string> = { dialog: "#faad14", payment: "#1677ff", integration: "#ff4d4f" };
+const ATTENTION_DOT: Record<string, string> = { dialog: "#faad14", integration: "#ff4d4f" };
 
 const INTEGRATION_STATUS: Record<string, { label: string; color: string }> = {
   OK: { label: "Подключено", color: "#52c41a" },
@@ -76,7 +73,6 @@ export type DepartmentVm = {
   status: StatusMeta;
   summary: string;
   dialogItems: MetricItem[];
-  commerceItems: MetricItem[] | null;
 };
 
 export function commandCenterModel(data: ApiCommandOverview) {
@@ -100,14 +96,6 @@ export function commandCenterModel(data: ApiCommandOverview) {
         { label: "На операторах", value: String(d.onOperators), dot: "#1677ff" },
         { label: "Ожидают оператора", value: String(d.waiting), color: d.waiting > 0 ? "#d48806" : "#262626" },
       ],
-      commerceItems: department.commerce
-        ? [
-            { label: "Незавершённые платежи", value: String(department.commerce.pendingPayments), color: department.commerce.pendingPayments > 0 ? "#d48806" : "#262626" },
-            { label: "Ошибки fulfillment", value: String(department.commerce.fulfillmentErrors), color: department.commerce.fulfillmentErrors > 0 ? "#cf1322" : "#262626" },
-            { label: "Продажи", value: String(department.commerce.sales) },
-            { label: "Выручка", value: rub(department.commerce.revenueMinor), color: "#389e0d" },
-          ]
-        : null,
     };
   });
 
@@ -134,7 +122,6 @@ export function commandCenterModel(data: ApiCommandOverview) {
     banner: {
       departments: String(data.company.departments),
       open: String(data.company.openDialogs),
-      revenue: rub(data.company.revenueMinor),
     },
     departments,
     attention,

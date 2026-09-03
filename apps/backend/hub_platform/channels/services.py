@@ -220,8 +220,6 @@ def update_channel(
         changed.append("department")
     if update.product_id is not UNSET and update.product_id != locked.product_id:
         product = _product_for_channel(context=context, product_id=update.product_id)
-        if product is None:
-            _require_product_detachable(locked)
         locked.product = product
         changed.append("product")
     if update.is_active is not UNSET and update.is_active != locked.is_active:
@@ -244,24 +242,11 @@ def update_channel(
     return locked
 
 
-def _require_product_detachable(channel: Channel) -> None:
-    """§7.3: снятие продукта у канала с коммерческими связями блокируется."""
-    blockers = [
-        {"type": "orders", "count": channel.orders.count()},
-        {"type": "attributionTokens", "count": channel.attribution_tokens.count()},
-    ]
-    blocking = [item for item in blockers if item["count"]]
-    if blocking:
-        raise ChannelHasReferences(blocking)
-
-
 def deletion_blockers(channel: Channel) -> list[dict[str, Any]]:
-    """§7.2. Молчаливая потеря привязки заказа и каскадное удаление агента
-    запрещены, поэтому SET_NULL и CASCADE тоже блокируют."""
+    """§7.2. Каскадное удаление агента запрещено, поэтому SET_NULL и CASCADE
+    тоже блокируют."""
     counts = (
         ("conversations", channel.conversations.count()),
-        ("orders", channel.orders.count()),
-        ("attributionTokens", channel.attribution_tokens.count()),
         ("connections", channel.connections.count()),
         ("supportContracts", channel.allowed_support_contracts.count()),
         ("agent", 1 if hasattr(channel, "ai_agent") else 0),

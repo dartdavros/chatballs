@@ -334,9 +334,7 @@ class CommandOverviewTests(TestCase):
         sales = next(d for d in payload["departments"] if d["code"] == "sales")
         self.assertEqual(sales["dialogs"]["open"], 1)
         self.assertEqual(sales["dialogs"]["waiting"], 1)
-        self.assertIn("commerce", sales)
-        support = next(d for d in payload["departments"] if d["code"] == "support")
-        self.assertNotIn("commerce", support)
+        self.assertNotIn("commerce", sales)
         self.assertEqual(payload["company"]["status"], "attention")
         self.assertTrue(any(item["kind"] == "dialog" for item in payload["attention"]))
         # Интеграции отражены с группой.

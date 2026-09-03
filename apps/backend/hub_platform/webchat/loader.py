@@ -2,7 +2,7 @@
 # одним тегом:
 #   <script src="https://hub.edevs.tech/chat-widget.js"
 #           data-widget-key="wgt_public_key" async></script>
-# Authenticated host регистрирует async token provider через CustoCRMChat.init;
+# Authenticated host регистрирует async token provider через ChatbollsChat.init;
 # Product Support Token никогда не попадает в URL или data-*.
 # Лоадер рисует launcher и открывает панель в изолированном iframe (/chat/).
 #
@@ -27,7 +27,8 @@ LOADER_JS = r"""
   var panelUrl = origin + "/chat/?" + entryQuery + "&instanceId=" + encodeURIComponent(instanceId);
 
   var open = false, frame = null, unread = false, callActive = false, tokenProvider = null;
-  var api = window.CustoCRMChat = window.CustoCRMChat || {};
+  var api = window.ChatbollsChat = window.ChatbollsChat || {};
+  window.CustoCRMChat = api; // legacy alias для уже встроенных хостов
   api._instances = api._instances || [];
   api._providers = api._providers || {};
   api.init = function (options) {
@@ -117,17 +118,17 @@ LOADER_JS = r"""
         play(notification);
       }
       if (d.type === "edevs-chat-activity" && d.kind === "call") setCallActive(Boolean(d.active));
-      if (d.type === "custocrm-chat-token-request" && tokenProvider) {
+      if (d.type === "chatbolls-chat-token-request" && tokenProvider) {
         Promise.resolve().then(tokenProvider).then(function (token) {
           frame.contentWindow.postMessage({
-            type: "custocrm-chat-token-response",
+            type: "chatbolls-chat-token-response",
             instanceId: instanceId,
             requestId: d.requestId,
             token: String(token || "")
           }, origin);
         }).catch(function () {
           frame.contentWindow.postMessage({
-            type: "custocrm-chat-token-response",
+            type: "chatbolls-chat-token-response",
             instanceId: instanceId,
             requestId: d.requestId,
             token: ""

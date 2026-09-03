@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 
-import type { ClientChannelCode, ClientDropdown, ClientProductCode, ClientSortKey, ClientStatus, SalesClient } from "./model";
+import type { ClientChannelCode, ClientDropdown, ClientProductCode, ClientSortKey, SalesClient } from "./model";
 import { toSalesClientRow } from "./model";
 
 export type SalesClientsState = ReturnType<typeof useSalesClients>;
@@ -10,8 +10,6 @@ export function useSalesClients(salesClients: SalesClient[]) {
   const [productFilter, setProductFilter] = useState<ClientProductCode[]>([]);
   const [channelFilter, setChannelFilter] = useState<ClientChannelCode[]>([]);
   const [openOnly, setOpenOnly] = useState(false);
-  // Фильтр по статусу контакта: null — все, иначе только лиды/клиенты.
-  const [statusFilter, setStatusFilter] = useState<ClientStatus | null>(null);
   const [sortKey, setSortKey] = useState<ClientSortKey>("last");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [menu, setMenu] = useState<string | null>(null);
@@ -25,14 +23,13 @@ export function useSalesClients(salesClients: SalesClient[]) {
       return (!normalizedQuery || client.name.toLowerCase().includes(normalizedQuery) || client.email.toLowerCase().includes(normalizedQuery) || client.phone.includes(normalizedQuery) || client.username.toLowerCase().includes(normalizedQuery))
         && (productFilter.length === 0 || client.products.some((product) => productFilter.includes(product)))
         && (channelFilter.length === 0 || client.channels.some((channel) => channelFilter.includes(channel)))
-        && (!openOnly || client.openDialogs > 0)
-        && (statusFilter === null || client.status === statusFilter);
+        && (!openOnly || client.openDialogs > 0);
     });
-    const key = { last: "last", open: "openDialogs", orders: "orders", total: "total" } satisfies Record<ClientSortKey, keyof typeof salesClients[number]>;
+    const key = { last: "last", open: "openDialogs" } satisfies Record<ClientSortKey, keyof typeof salesClients[number]>;
     return [...filtered]
       .sort((left, right) => sortDir === "asc" ? Number(left[key[sortKey]]) - Number(right[key[sortKey]]) : Number(right[key[sortKey]]) - Number(left[key[sortKey]]))
       .map(toSalesClientRow);
-  }, [salesClients, statusFilter, channelFilter, openOnly, productFilter, query, sortDir, sortKey]);
+  }, [salesClients, channelFilter, openOnly, productFilter, query, sortDir, sortKey]);
   const pageCount = Math.max(1, Math.ceil(filteredRows.length / pageSize));
   const rows = useMemo(
     () => filteredRows.slice((page - 1) * pageSize, page * pageSize),
@@ -75,7 +72,6 @@ export function useSalesClients(salesClients: SalesClient[]) {
     setProductFilter([]);
     setChannelFilter([]);
     setOpenOnly(false);
-    setStatusFilter(null);
     setPage(1);
     setMenu(null);
     setDropdown(null);
@@ -92,7 +88,6 @@ export function useSalesClients(salesClients: SalesClient[]) {
     productFilter,
     channelFilter,
     openOnly,
-    statusFilter,
     dropdown,
     menu,
     setMenu,
@@ -103,8 +98,6 @@ export function useSalesClients(salesClients: SalesClient[]) {
     setDropdown,
     closeDropdown: () => setDropdown(null),
     toggleOpenOnly: () => { setOpenOnly((current) => !current); setPage(1); setMenu(null); setDropdown(null); },
-    // Повторный клик по активному статусу снимает фильтр (возврат к «все»).
-    toggleStatus: (status: ClientStatus) => { setStatusFilter((current) => (current === status ? null : status)); setPage(1); setMenu(null); setDropdown(null); },
     sortBy,
     sortArrow: (key: ClientSortKey) => sortKey === key ? (sortDir === "asc" ? "↑" : "↓") : "",
     reset,

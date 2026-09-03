@@ -23,7 +23,7 @@ function validPortalKey(value: string): boolean {
 function creationError(caught: unknown): string {
   if (caught instanceof ApiError) {
     if (caught.payload.code === "policy_unavailable") {
-      return "Создание порталов временно недоступно. Обратитесь к администратору CustoCRM.";
+      return "Создание порталов временно недоступно. Обратитесь к администратору Chatbolls.";
     }
     if (caught.payload.code === "quota_exceeded") {
       return "Достигнут лимит порталов для текущего тарифа.";
@@ -79,7 +79,7 @@ export function PortalCreateDialog({
         <p>Портал — это публичный центр помощи с инструкциями и ответами для клиентов.</p>
         <FormField error={fieldErrors.name} label="Название портала" value={name} onChange={setName} placeholder="Например, Центр помощи Foxray" wide />
         <label className={`portal-address-field${fieldErrors.slug ? " is-invalid" : ""}`}>
-          <span>Адрес CustoCRM</span>
+          <span>Адрес Chatbolls</span>
           <div>
             <input
               type="text"

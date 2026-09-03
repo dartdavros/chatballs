@@ -26,7 +26,7 @@ function requestSupportToken(): Promise<string> {
       if (
         event.source !== window.parent
         || event.origin !== HOST_ORIGIN
-        || data.type !== "custocrm-chat-token-response"
+        || data.type !== "chatbolls-chat-token-response"
         || data.instanceId !== INSTANCE_ID
         || data.requestId !== requestId
       ) return;
@@ -37,7 +37,7 @@ function requestSupportToken(): Promise<string> {
     }
     window.addEventListener("message", receive);
     window.parent.postMessage({
-      type: "custocrm-chat-token-request",
+      type: "chatbolls-chat-token-request",
       instanceId: INSTANCE_ID,
       requestId,
       widgetKey: WIDGET_KEY,

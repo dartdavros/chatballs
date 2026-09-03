@@ -19,7 +19,7 @@ export function DepartmentsColumn({ setRoute, vm }: { setRoute: (route: RouteKey
   );
 }
 
-function DepartmentCard({ department, periodLabelUpper, setRoute }: { department: DepartmentVm; periodLabelUpper: string; setRoute: (route: RouteKey) => void }) {
+function DepartmentCard({ department, setRoute }: { department: DepartmentVm; periodLabelUpper?: string; setRoute: (route: RouteKey) => void }) {
   return (
     <article className="sales-card">
       <div className="sales-head">
@@ -35,7 +35,6 @@ function DepartmentCard({ department, periodLabelUpper, setRoute }: { department
       </div>
       <div className="dept-summary">{department.summary}</div>
       <MetricGroup title="ДИАЛОГИ — СЕЙЧАС" columns={5} items={department.dialogItems} />
-      {department.commerceItems && <MetricGroup title={`КОММЕРЦИЯ — ${periodLabelUpper}`} columns={4} items={department.commerceItems} />}
     </article>
   );
 }

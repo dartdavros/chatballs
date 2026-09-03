@@ -24,7 +24,6 @@ MANIFEST_FILES: tuple[str, ...] = (
     "catalog",
     "channels_ai",
     "conversations",
-    "commerce",
     "support",
     "operations",
 )

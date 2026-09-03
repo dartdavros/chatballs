@@ -13,14 +13,11 @@ export function SalesClientsTable({ clients, openClient }: { clients: SalesClien
             <thead>
               <tr>
                 <th>КОНТАКТ</th>
-                <th>СТАТУС</th>
                 <th>ТЕЛЕФОН / EMAIL / ЛОГИН</th>
                 <th>КАНАЛЫ</th>
                 <th>ПРОДУКТЫ</th>
                 <SortableTh label="ПОСЛ. ДИАЛОГ" sortKey="last" clients={clients} />
                 <SortableTh label="ОТКР." sortKey="open" clients={clients} numeric />
-                <SortableTh label="ЗАКАЗЫ" sortKey="orders" clients={clients} numeric />
-                <SortableTh label="СУММА ПОКУПОК" sortKey="total" clients={clients} numeric />
                 <th />
               </tr>
             </thead>

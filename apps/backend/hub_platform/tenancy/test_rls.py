@@ -29,13 +29,11 @@ class RowLevelSecurityTests(TransactionTestCase):
             organization=self.first,
             code="first",
             name="First product",
-            ingest_token_hash="first-hash",
         )
         self.second_product = Product.objects.create(
             organization=self.second,
             code="second",
             name="Second product",
-            ingest_token_hash="second-hash",
         )
         self.second_department = Department.objects.create(
             organization=self.second,
@@ -240,16 +238,18 @@ class RowLevelSecurityTests(TransactionTestCase):
             with connection.cursor() as cursor:
                 cursor.execute("SELECT id FROM identity_product LIMIT 1")
 
+        # Ingress-вьюха продаж удалена (ADR-HUB-0041) — используем membership_directory.
         with transaction.atomic():
             self._set_role("custocrm_runtime_platform")
             with connection.cursor() as cursor:
                 cursor.execute(
                     "SELECT organization_id, resource_id "
-                    "FROM custocrm.product_ingest_directory WHERE lookup_key = %s",
-                    ["first-hash"],
+                    "FROM custocrm.membership_directory WHERE user_id = %s",
+                    [self.user.id],
                 )
                 row = cursor.fetchone()
-        self.assertEqual(row, (self.first.id, self.first_product.id))
+        self.assertIsNotNone(row)
+        self.assertEqual(row[0], self.first.id)
 
     def test_transaction_local_context_clears_after_commit_and_rollback(self) -> None:
         with transaction.atomic():

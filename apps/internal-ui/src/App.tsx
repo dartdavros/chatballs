@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { edevsHubTheme } from "@edevs/ui";
 
 import { api, setActiveOrganization } from "./api/client";
-import { canAccess, defaultRoute } from "./auth/access";
+import { canAccess, defaultRoute, hasCapability } from "./auth/access";
 import { activateOrganization, clearOrganizationPreference } from "./auth/session";
 import { AuthChangePassword, AuthLogin, AuthPasswordRecovery, AuthResetPassword, AuthTotpCode, AuthTotpSetup } from "./features/auth/AuthScreens";
 import { Shell } from "./layout/Shell";
@@ -47,7 +47,7 @@ export function App() {
         user && canAccess(user, "departments")
           ? api<{ items: Department[] }>("/api/v1/company/departments/")
           : Promise.resolve({ items: [] }),
-        user && canAccess(user, "products")
+        user && hasCapability(user, "products.view")
           ? api<{ items: Product[] }>("/api/v1/company/products/")
           : Promise.resolve({ items: [] }),
       ]);
@@ -70,7 +70,7 @@ export function App() {
           if (activeUser && !initialRoute.organizationPublicId) {
             const nextPath = pathFromRoute(
               initialRoute.route,
-              initialRoute.employeeId || initialRoute.productId || initialRoute.agentId || initialRoute.knowledgeId || initialRoute.clientId || initialRoute.orderId || initialRoute.channelId || initialRoute.supportPortalId,
+              initialRoute.employeeId || initialRoute.agentId || initialRoute.knowledgeId || initialRoute.clientId || initialRoute.channelId || initialRoute.supportPortalId,
               initialRoute.productCode,
               activeUser.organizationPublicId,
             );
@@ -151,7 +151,7 @@ export function App() {
       ) : !canAccess(user, navigation.route) ? (
         <PermissionScreen onReturn={() => navigate(defaultRoute(user), null, true)} />
       ) : (
-        <Shell route={navigation.route} setRoute={(nextRoute) => navigate(nextRoute)} selectedEmployeeId={navigation.selectedEmployeeId} selectedProductId={navigation.selectedProductId} selectedProductCode={navigation.selectedProductCode} selectedAgentId={navigation.selectedAgentId} selectedKnowledgeId={navigation.selectedKnowledgeId} selectedConversationId={navigation.selectedConversationId} selectedClientId={navigation.selectedClientId} openClientRoute={(clientId) => navigate("salesClientDetail", clientId)} selectedOrderId={navigation.selectedOrderId} selectedChannelId={navigation.selectedChannelId} openChannelRoute={(channelId) => navigate("channelDetail", channelId)} selectedSupportPortalId={navigation.selectedSupportPortalId} openSupportPortalRoute={(portalId) => navigate("supportPortalDetail", portalId)} openOrderRoute={(orderId) => navigate("salesOrderDetail", orderId)} openEmployeeRoute={(employeeId) => navigate("employeeDetail", employeeId)} openProductRoute={(productId) => navigate("productDetail", productId)} openAgentCreateRoute={(productCode) => navigate("aiAgentCreate", null, false, productCode)} openAgentRoute={(agentId) => navigate("aiAgentDetail", agentId)} openKnowledgeRoute={(knowledgeId) => navigate("aiKnowledgeDetail", knowledgeId)} openConversationRoute={(conversationId) => navigate("salesDialogs", conversationId)} user={user} data={data} reload={loadData} onUserUpdated={refreshIdentity} onLogout={logout} />
+        <Shell route={navigation.route} setRoute={(nextRoute) => navigate(nextRoute)} selectedEmployeeId={navigation.selectedEmployeeId} selectedProductCode={navigation.selectedProductCode} selectedAgentId={navigation.selectedAgentId} selectedKnowledgeId={navigation.selectedKnowledgeId} selectedConversationId={navigation.selectedConversationId} selectedClientId={navigation.selectedClientId} openClientRoute={(clientId) => navigate("salesClientDetail", clientId)} selectedChannelId={navigation.selectedChannelId} openChannelRoute={(channelId) => navigate("channelDetail", channelId)} selectedSupportPortalId={navigation.selectedSupportPortalId} openSupportPortalRoute={(portalId) => navigate("supportPortalDetail", portalId)} openEmployeeRoute={(employeeId) => navigate("employeeDetail", employeeId)} openAgentCreateRoute={(productCode) => navigate("aiAgentCreate", null, false, productCode)} openAgentRoute={(agentId) => navigate("aiAgentDetail", agentId)} openKnowledgeRoute={(knowledgeId) => navigate("aiKnowledgeDetail", knowledgeId)} openConversationRoute={(conversationId) => navigate("salesDialogs", conversationId)} user={user} data={data} reload={loadData} onUserUpdated={refreshIdentity} onLogout={logout} />
       )}
     </ConfigProvider>
   );

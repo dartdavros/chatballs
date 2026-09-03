@@ -85,7 +85,7 @@ export function AuthResetPassword({ onDone }: { onDone: () => void }) {
           <div className="auth-recovery-sent">
             <div className="auth-recovery-sent-icon success"><Icon name="check" size={26} /></div>
             <h3>Готово</h3>
-            <p>Пароль успешно изменён. Войдите в CustoCRM, используя новый пароль.</p>
+            <p>Пароль успешно изменён. Войдите в Chatbolls, используя новый пароль.</p>
           </div>
           <Button className="auth-submit" variant="primary" onClick={onDone}>Войти</Button>
         </div>
@@ -94,7 +94,7 @@ export function AuthResetPassword({ onDone }: { onDone: () => void }) {
   }
 
   return (
-    <AuthFrame title="Новый пароль" subtitle="Задайте новый пароль для входа в CustoCRM." logo="shield" width={420} note={backLink}>
+    <AuthFrame title="Новый пароль" subtitle="Задайте новый пароль для входа в Chatbolls." logo="shield" width={420} note={backLink}>
       <form className="auth-card" onSubmit={submit}>
         {error && <div className="auth-error"><span className="auth-error-dot">!</span><span>{error}</span></div>}
         <label className="field-label">Новый пароль</label>

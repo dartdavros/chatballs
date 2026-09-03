@@ -27,13 +27,7 @@ TENANT_TABLES = (
     "conversations_conversation",
     "conversations_conversationread",
     "conversations_message",
-    "orders_order",
-    "orders_orderitem",
-    "sales_salessource",
-    "sales_sale",
-    "sales_saleevent",
-    "sales_attributiontoken",
-    "sales_externalcustomeridentity",
+    # Таблицы orders_*/sales_* удалены вместе с приложениями (ADR-HUB-0041).
     "support_productsupportcontract",
     "support_supportidentitysnapshot",
     "calls_callsession",
@@ -206,5 +200,13 @@ def disable_rls(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-    dependencies = [("tenancy", "0002_cross_tenant_constraints")]
+    # sessions/auth/contenttypes — явно: миграция выдаёт GRANT на django_session,
+    # auth_permission и django_content_type; раньше порядок обеспечивался
+    # транзитивно через удалённые приложения orders/sales (ADR-HUB-0041).
+    dependencies = [
+        ("tenancy", "0002_cross_tenant_constraints"),
+        ("sessions", "0001_initial"),
+        ("auth", "0001_initial"),
+        ("contenttypes", "0001_initial"),
+    ]
     operations = [migrations.RunPython(enable_rls, disable_rls)]

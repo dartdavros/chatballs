@@ -24,8 +24,8 @@ logger = logging.getLogger(__name__)
 CODE_TTL = timedelta(minutes=10)
 NOTIFIER_PURPOSE = "notifications"
 
-CONFIRMATION_TEXT = "Готово! Уведомления CustoCRM подключены. Отключить можно в профиле."
-HINT_TEXT = "Это сервисный бот уведомлений CustoCRM. Чтобы подключить уведомления, откройте профиль в CustoCRM и нажмите «Подключить»."
+CONFIRMATION_TEXT = "Готово! Уведомления Chatbolls подключены. Отключить можно в профиле."
+HINT_TEXT = "Это сервисный бот уведомлений Chatbolls. Чтобы подключить уведомления, откройте профиль в Chatbolls и нажмите «Подключить»."
 
 # База deep-link по провайдеру: и TG, и MAX поддерживают ?start=<код>.
 _DEEP_LINK_BASE = {

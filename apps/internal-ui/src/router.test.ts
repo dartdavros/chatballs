@@ -5,12 +5,10 @@ import { pathFromRoute, routeFromPath } from "./router";
 const empty = {
   organizationPublicId: null,
   employeeId: null,
-  productId: null,
   productCode: null,
   agentId: null,
   knowledgeId: null,
   clientId: null,
-  orderId: null,
   channelId: null,
   supportPortalId: null,
 };
@@ -22,28 +20,13 @@ describe("employee access routes", () => {
   });
 });
 
-describe("product routes", () => {
-  it("parses a product detail URL", () => {
-    expect(routeFromPath("/products/42")).toEqual({ route: "productDetail", ...empty, productId: 42 });
-  });
-
-  it("creates a product detail URL", () => {
-    expect(pathFromRoute("productDetail", 42)).toBe("/products/42");
-  });
-});
-
 describe("sales detail routes", () => {
   it("parses a client detail URL", () => {
     expect(routeFromPath("/departments/sales/clients/15")).toEqual({ route: "salesClientDetail", ...empty, clientId: 15 });
   });
 
-  it("parses an order detail URL", () => {
-    expect(routeFromPath("/departments/sales/orders/8")).toEqual({ route: "salesOrderDetail", ...empty, orderId: 8 });
-  });
-
-  it("creates client and order detail URLs", () => {
+  it("creates a client detail URL", () => {
     expect(pathFromRoute("salesClientDetail", 15)).toBe("/departments/sales/clients/15");
-    expect(pathFromRoute("salesOrderDetail", 8)).toBe("/departments/sales/orders/8");
   });
 });
 
@@ -134,17 +117,17 @@ describe("organization routes", () => {
   const organizationPublicId = "123e4567-e89b-12d3-a456-426614174000";
 
   it("parses the selected organization from the URL", () => {
-    expect(routeFromPath(`/organizations/${organizationPublicId}/products/42`)).toEqual({
-      route: "productDetail",
+    expect(routeFromPath(`/organizations/${organizationPublicId}/employees/42`)).toEqual({
+      route: "employeeDetail",
       ...empty,
       organizationPublicId,
-      productId: 42,
+      employeeId: 42,
     });
   });
 
   it("creates navigation URLs inside the selected organization", () => {
-    expect(pathFromRoute("salesOrders", null, null, organizationPublicId)).toBe(
-      `/organizations/${organizationPublicId}/departments/sales/orders`,
+    expect(pathFromRoute("salesClients", null, null, organizationPublicId)).toBe(
+      `/organizations/${organizationPublicId}/departments/sales/clients`,
     );
   });
 });

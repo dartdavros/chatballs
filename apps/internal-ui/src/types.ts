@@ -155,38 +155,11 @@ export type Product = {
   siteUrl: string;
   departments: Array<{ id: number; code: string; name: string }>;
   channels: ProductChannelRef[];
-  offers: ProductOffer[];
   createdAt: string;
   updatedAt: string;
 };
 
-export type ProductPrice = {
-  id: number;
-  version: number;
-  amountMinor: number;
-  currency: string;
-  billingPeriod: "ONE_TIME" | "MONTH" | "YEAR";
-  validFrom: string;
-  validUntil: string | null;
-  isActive: boolean;
-};
-
-export type ProductOffer = {
-  id: number;
-  code: string;
-  name: string;
-  description: string;
-  fulfillmentType: "SAAS_ACCESS" | "BOX_LICENSE" | "SUPPORT_EXTENSION";
-  paymentType: "ONE_TIME" | "SUBSCRIPTION";
-  primaryBoxOfferId: number | null;
-  isActive: boolean;
-  aiOfferable: boolean;
-  fiscalName: string;
-  accessSchema: Record<string, unknown>;
-  prices: ProductPrice[];
-};
-
-export type RouteKey = "accessProfiles" | "administrationOrganization" | "administrationSubscription" | "administrationAudit" | "command" | "departments" | "employeeDetail" | "employees" | "productDetail" | "products" | "profile" | "settings" | "salesClientDetail" | "salesClients" | "salesDialogs" | "salesOrderDetail" | "salesOrders" | "salesOverview" | "supportOverview" | "supportDialogs" | "supportPortals" | "supportPortalDetail" | "aiAgents" | "aiAgentCreate" | "aiAgentDetail" | "aiKnowledge" | "aiKnowledgeCreate" | "aiKnowledgeDetail" | "aiUsage" | "integrations" | "channels" | "channelCreate" | "channelDetail";
+export type RouteKey = "accessProfiles" | "administrationOrganization" | "administrationSubscription" | "administrationAudit" | "command" | "departments" | "employeeDetail" | "employees" | "profile" | "settings" | "salesClientDetail" | "salesClients" | "salesDialogs" | "supportOverview" | "supportDialogs" | "supportPortals" | "supportPortalDetail" | "aiAgents" | "aiAgentCreate" | "aiAgentDetail" | "aiKnowledge" | "aiKnowledgeCreate" | "aiKnowledgeDetail" | "aiUsage" | "integrations" | "channels" | "channelCreate" | "channelDetail";
 
 export type AppData = {
   employees: Employee[];

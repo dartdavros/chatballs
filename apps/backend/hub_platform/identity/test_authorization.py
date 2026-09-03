@@ -125,7 +125,7 @@ class CapabilityPolicyTests(TestCase):
 
     def test_multiple_assignments_are_unioned_and_exposed(self) -> None:
         self._assign(
-            self._profile("Sales reader", "sales.view", "conversations.view"),
+            self._profile("Sales reader", "customers.view", "conversations.view"),
             department=self.sales,
         )
         self._assign(
@@ -135,7 +135,7 @@ class CapabilityPolicyTests(TestCase):
         access = get_effective_access(self.employee)
         self.assertEqual(
             access["capabilities"],
-            ["conversations.view", "sales.view", "support.view"],
+            ["conversations.view", "customers.view", "support.view"],
         )
         self.assertEqual(
             accessible_department_ids(self.employee, "conversations.view"),

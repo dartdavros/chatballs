@@ -86,9 +86,9 @@ class HasEntitlement(BasePermission):
 
 
 class CloudDeliveryOnly(BasePermission):
-    """Guard tenant APIs that exist only in the managed CustoCRM Cloud."""
+    """Guard tenant APIs that exist only in the managed Chatbolls Cloud."""
 
-    message = "This operation is available only in CustoCRM Cloud"
+    message = "This operation is available only in Chatbolls Cloud"
 
     def has_permission(self, request: Request, view: APIView) -> bool:
         return settings.CUS_DELIVERY_MODE == "CLOUD"

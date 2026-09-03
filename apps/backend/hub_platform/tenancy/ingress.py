@@ -59,14 +59,6 @@ def user_requires_totp(user_id: int) -> bool:
     )
 
 
-def product_ingest_route(credential_hash: str) -> IngressRoute | None:
-    return _unique_route("product_ingest_directory", credential_hash)
-
-
-def sales_source_route(credential_hash: str) -> IngressRoute | None:
-    return _unique_route("sales_source_directory", credential_hash)
-
-
 def attachment_route(public_id: str) -> IngressRoute | None:
     return _unique_route("attachment_directory", public_id)
 

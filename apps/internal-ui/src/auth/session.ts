@@ -1,6 +1,6 @@
 import type { AuthenticatedUser, SessionUser } from "../types";
 
-const preferenceKey = "custocrm.organizationPublicId";
+const preferenceKey = "chatbolls.organizationPublicId";
 
 export function activateOrganization(
   identity: AuthenticatedUser,

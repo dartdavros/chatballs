@@ -1,7 +1,7 @@
 import { notification as antToast } from "antd";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import type { AppData, Employee, Product, RouteKey, SessionUser } from "../types";
+import type { AppData, Employee, RouteKey, SessionUser } from "../types";
 import { NotificationDrawer } from "../features/notifications/NotificationDrawer";
 import { fetchNotifications, markAllRead, markRead, type AppNotification } from "../features/notifications/model";
 import { fetchWaitingCount } from "../features/conversations/model";
@@ -9,7 +9,7 @@ import { Sidebar } from "./Sidebar";
 import { ShellRouteContent } from "./ShellRouteContent";
 import { TopBar } from "./TopBar";
 
-export function Shell({ route, setRoute, selectedEmployeeId, selectedProductId, selectedProductCode, selectedAgentId, selectedKnowledgeId, selectedConversationId, selectedClientId, selectedOrderId, selectedChannelId, selectedSupportPortalId, openChannelRoute, openSupportPortalRoute, openEmployeeRoute, openProductRoute, openAgentCreateRoute, openAgentRoute, openKnowledgeRoute, openConversationRoute, openClientRoute, openOrderRoute, user, data, reload, onUserUpdated, onLogout }: { route: RouteKey; setRoute: (route: RouteKey) => void; selectedEmployeeId: number | null; selectedProductId: number | null; selectedProductCode: string | null; selectedAgentId: number | null; selectedKnowledgeId: number | null; selectedConversationId: number | null; selectedClientId: number | null; selectedOrderId: number | null; selectedChannelId: number | null; selectedSupportPortalId: number | null; openEmployeeRoute: (employeeId: number) => void; openProductRoute: (productId: number) => void; openAgentCreateRoute: (productCode: string | null) => void; openAgentRoute: (agentId: number) => void; openKnowledgeRoute: (knowledgeId: number) => void; openConversationRoute: (conversationId: number) => void; openClientRoute: (clientId: number) => void; openOrderRoute: (orderId: number) => void; openChannelRoute: (channelId: number) => void; openSupportPortalRoute: (portalId: number) => void; user: SessionUser; data: AppData; reload: () => void; onUserUpdated: (user: SessionUser) => void; onLogout: () => void }) {
+export function Shell({ route, setRoute, selectedEmployeeId, selectedProductCode, selectedAgentId, selectedKnowledgeId, selectedConversationId, selectedClientId, selectedChannelId, selectedSupportPortalId, openChannelRoute, openSupportPortalRoute, openEmployeeRoute, openAgentCreateRoute, openAgentRoute, openKnowledgeRoute, openConversationRoute, openClientRoute, user, data, reload, onUserUpdated, onLogout }: { route: RouteKey; setRoute: (route: RouteKey) => void; selectedEmployeeId: number | null; selectedProductCode: string | null; selectedAgentId: number | null; selectedKnowledgeId: number | null; selectedConversationId: number | null; selectedClientId: number | null; selectedChannelId: number | null; selectedSupportPortalId: number | null; openEmployeeRoute: (employeeId: number) => void; openAgentCreateRoute: (productCode: string | null) => void; openAgentRoute: (agentId: number) => void; openKnowledgeRoute: (knowledgeId: number) => void; openConversationRoute: (conversationId: number) => void; openClientRoute: (clientId: number) => void; openChannelRoute: (channelId: number) => void; openSupportPortalRoute: (portalId: number) => void; user: SessionUser; data: AppData; reload: () => void; onUserUpdated: (user: SessionUser) => void; onLogout: () => void }) {
   const [agentName, setAgentName] = useState<string | null>(null);
   const [channelName, setChannelName] = useState<string | null>(null);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
@@ -76,19 +76,13 @@ export function Shell({ route, setRoute, selectedEmployeeId, selectedProductId, 
   function openEmployee(employee: Employee) {
     openEmployeeRoute(employee.id);
   }
-  const currentProduct = route === "productDetail" ? data.products.find((product) => product.id === selectedProductId) ?? null : null;
-  function openProduct(product: Product) {
-    openProductRoute(product.id);
-  }
-  const isSalesWorkspace = route === "salesOverview" || route === "salesClientDetail" || route === "salesClients" || route === "salesDialogs" || route === "salesOrderDetail" || route === "salesOrders";
+  const isSalesWorkspace = route === "salesClientDetail" || route === "salesClients" || route === "salesDialogs";
   const isSupportWorkspace = route === "supportOverview" || route === "supportDialogs" || route === "supportPortals" || route === "supportPortalDetail";
   const isSalesDialogs = route === "salesDialogs";
   const isSupportDialogs = route === "supportDialogs";
   const isDialogsWorkspace = isSalesDialogs || isSupportDialogs;
   const isSalesClients = route === "salesClients";
   const isSalesClientDetail = route === "salesClientDetail";
-  const isSalesOrderDetail = route === "salesOrderDetail";
-  const isSalesOrders = route === "salesOrderDetail" || route === "salesOrders";
   const isAiFullWidth = route === "aiAgentCreate";
   const isKnowledgeLibrary = route === "aiKnowledge";
   const isKnowledgeEditor = route === "aiKnowledgeCreate" || route === "aiKnowledgeDetail";
@@ -96,10 +90,10 @@ export function Shell({ route, setRoute, selectedEmployeeId, selectedProductId, 
     <div className="hub-shell">
       <Sidebar route={route} user={user} setRoute={setRoute} onLogout={onLogout} waitingCount={waitingCount} />
       <div className="hub-main">
-        <TopBar route={route} user={user} currentEmployee={currentEmployee} currentProduct={currentProduct} currentAgentName={agentName} currentChannelName={channelName} setRoute={setRoute} unreadCount={unreadCount} onOpenNotifications={() => { setNotifOpen(true); void loadNotifications(); }} />
+        <TopBar route={route} user={user} currentEmployee={currentEmployee} currentAgentName={agentName} currentChannelName={channelName} setRoute={setRoute} unreadCount={unreadCount} onOpenNotifications={() => { setNotifOpen(true); void loadNotifications(); }} />
         <main className={`hub-scroll ${isDialogsWorkspace ? "sales-dialogs-scroll" : ""} ${isAiFullWidth ? "ai-fullwidth-scroll" : ""}`}>
-          <div className={`hub-page ${isSalesWorkspace || isSupportWorkspace ? "sales-workspace-page" : ""} ${isDialogsWorkspace ? "sales-dialogs-page" : ""} ${isSalesClients ? "sales-clients-page" : ""} ${isSalesClientDetail ? "sales-client-detail-page" : ""} ${isSalesOrderDetail ? "sales-order-detail-page" : ""} ${isSalesOrders ? "sales-orders-page" : ""} ${isAiFullWidth ? "ai-fullwidth-page" : ""} ${isKnowledgeLibrary ? "ai-knowledge-library-page" : ""} ${isKnowledgeEditor ? "ai-knowledge-editor-page" : ""}`}>
-            <ShellRouteContent route={route} data={data} currentEmployee={currentEmployee} currentProduct={currentProduct} selectedProductCode={selectedProductCode} selectedAgentId={selectedAgentId} selectedKnowledgeId={selectedKnowledgeId} selectedConversationId={selectedConversationId} selectedClientId={selectedClientId} openClient={openClientRoute} selectedOrderId={selectedOrderId} openOrder={openOrderRoute} selectedChannelId={selectedChannelId} openChannel={openChannelRoute} selectedSupportPortalId={selectedSupportPortalId} openSupportPortal={openSupportPortalRoute} openConversation={openConversationRoute} openEmployee={openEmployee} openProduct={openProduct} openAgentCreate={openAgentCreateRoute} openAgent={openAgentRoute} openKnowledge={openKnowledgeRoute} onAgentLoaded={setAgentName} onChannelLoaded={setChannelName} reload={reload} setRoute={setRoute} user={user} onUserUpdated={onUserUpdated} onLogout={onLogout} />
+          <div className={`hub-page ${isSalesWorkspace || isSupportWorkspace ? "sales-workspace-page" : ""} ${isDialogsWorkspace ? "sales-dialogs-page" : ""} ${isSalesClients ? "sales-clients-page" : ""} ${isSalesClientDetail ? "sales-client-detail-page" : ""} ${isAiFullWidth ? "ai-fullwidth-page" : ""} ${isKnowledgeLibrary ? "ai-knowledge-library-page" : ""} ${isKnowledgeEditor ? "ai-knowledge-editor-page" : ""}`}>
+            <ShellRouteContent route={route} data={data} currentEmployee={currentEmployee} selectedProductCode={selectedProductCode} selectedAgentId={selectedAgentId} selectedKnowledgeId={selectedKnowledgeId} selectedConversationId={selectedConversationId} selectedClientId={selectedClientId} openClient={openClientRoute} selectedChannelId={selectedChannelId} openChannel={openChannelRoute} selectedSupportPortalId={selectedSupportPortalId} openSupportPortal={openSupportPortalRoute} openConversation={openConversationRoute} openEmployee={openEmployee} openAgentCreate={openAgentCreateRoute} openAgent={openAgentRoute} openKnowledge={openKnowledgeRoute} onAgentLoaded={setAgentName} onChannelLoaded={setChannelName} reload={reload} setRoute={setRoute} user={user} onUserUpdated={onUserUpdated} onLogout={onLogout} />
           </div>
         </main>
       </div>

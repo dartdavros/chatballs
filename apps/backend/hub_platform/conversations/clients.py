@@ -1,14 +1,12 @@
-"""Real clients list for the sales department (contacts + their conversations).
+"""Real clients list (contacts + their conversations).
 
-A "client" is a Contact. Orders/revenue have no domain in Hub yet, so they are
-reported as 0 and shown as "—" in the UI — no fabricated numbers.
+A "client" is a Contact. Commerce data was removed with the sales domain
+(ADR-HUB-0041) — no orders or revenue here.
 """
 
 from __future__ import annotations
 
 from django.db.models import Prefetch, Q
-
-from django.db.models import Count, Sum
 
 from hub_platform.conversations.models import (
     ConnectionIdentity,
@@ -18,7 +16,6 @@ from hub_platform.conversations.models import (
     LifecycleState,
 )
 from hub_platform.identity.models import AuditEvent
-from hub_platform.orders.models import Order, PaymentStatus
 
 # Короткие коды для UI (совпадают с фронтовыми справочниками).
 PROVIDER_CODE = {
@@ -67,17 +64,6 @@ def clients_overview(
         ),
         Prefetch("identities", queryset=identity_qs),
     )
-    paid_qs = Order.objects.filter(
-        organization_id=organization_id, payment_status=PaymentStatus.PAID
-    )
-    if department_ids is not None:
-        paid_qs = paid_qs.filter(conversation__channel__department_id__in=department_ids)
-    paid_by_contact = {
-        row["contact_id"]: row
-        for row in paid_qs.values("contact_id").annotate(
-            n=Count("id"), total=Sum("amount_minor")
-        )
-    }
     rows: list[dict] = []
     for contact in contacts:
         conversations = list(contact.conversations.all())
@@ -95,7 +81,6 @@ def clients_overview(
             if conversation.lifecycle == LifecycleState.OPEN:
                 open_dialogs += 1
         latest = conversations[0]
-        paid = paid_by_contact.get(contact.id)
         rows.append(
             {
                 "id": contact.id,
@@ -113,16 +98,12 @@ def clients_overview(
                 ),
                 # Первый непустой @логин среди identity каналов (остальные — в карточке).
                 "username": next((identity.username for identity in contact.identities.all() if identity.username), ""),
-                # Статус выводится из данных: есть оплаченный заказ — клиент, иначе лид.
-                "status": "client" if paid else "lead",
                 "channels": sorted(channels),
                 "products": sorted(products),
                 "openDialogs": open_dialogs,
                 "totalDialogs": len(conversations),
                 "lastActivityAt": latest.last_activity_at.isoformat(),
                 "mode": _mode(latest),
-                "orders": paid["n"] if paid else 0,
-                "total": (paid["total"] or 0) if paid else 0,
             }
         )
     rows.sort(key=lambda row: row["lastActivityAt"], reverse=True)
@@ -223,25 +204,6 @@ def client_detail(
             }
         )
 
-    orders = [
-        {
-            "id": order.id,
-            "code": order.code,
-            "product": order.product.name if order.product_id else "—",
-            "amountMinor": order.amount_minor,
-            "currency": order.currency,
-            "paymentStatus": order.payment_status,
-            "fulfillmentStatus": order.fulfillment_status,
-            "createdAt": order.created_at.isoformat(),
-        }
-        for order in Order.objects.filter(
-            organization_id=organization_id,
-            contact=contact,
-            conversation_id__in=[conversation.id for conversation in conversations],
-        ).select_related("product").order_by("-created_at")
-    ]
-    paid_total = sum(order["amountMinor"] for order in orders if order["paymentStatus"] == PaymentStatus.PAID)
-
     return {
         "id": contact.id,
         "cid": f"CUS-{contact.id}",
@@ -260,13 +222,10 @@ def client_detail(
         "products": sorted(products),
         "openDialogs": open_dialogs,
         "totalDialogs": len(conversations),
-        "ordersCount": len([order for order in orders if order["paymentStatus"] == PaymentStatus.PAID]),
-        "purchasesMinor": paid_total,
         "firstContactAt": contact.created_at.isoformat(),
         "lastActivityAt": conversations[0].last_activity_at.isoformat() if conversations else contact.created_at.isoformat(),
         "dialogs": dialogs,
         "identities": identities,
-        "orders": orders,
         "activity": activity[:8],
         "audit": audit,
     }

@@ -13,9 +13,7 @@ from hub_platform.identity.models import (
     Organization,
 )
 from hub_platform.notifications.models import Notification
-from hub_platform.orders.models import Order
-from hub_platform.products.models import Offer, Price, Product
-from hub_platform.sales.models import Sale, SaleEvent
+from hub_platform.products.models import Product
 from hub_platform.support.models import ProductSupportContract, SupportIdentitySnapshot
 from hub_platform.support_portals.models import PortalArticle, SupportPortal
 from hub_platform.tenancy.context import TenantActorKind, TenantContext
@@ -47,12 +45,8 @@ class SeedDemoTests(TestCase):
         self.assertEqual(
             refs.organization.memberships.filter(role=EmployeeRole.EMPLOYEE).count(), 4
         )
-        # Продукты, офферы, цены.
+        # Продукты.
         self.assertEqual(Product.objects.filter(organization=refs.organization).count(), 2)
-        self.assertGreaterEqual(
-            Offer.objects.filter(product__organization=refs.organization).count(), 3
-        )
-        self.assertGreaterEqual(Price.objects.count(), 3)
         # Каналы и AI-агенты.
         self.assertGreaterEqual(refs.organization.channels.count(), 6)
         self.assertGreaterEqual(AIAgent.objects.count(), 3)
@@ -63,10 +57,6 @@ class SeedDemoTests(TestCase):
         conversations = Conversation.objects.filter(organization=refs.organization)
         self.assertGreaterEqual(conversations.count(), 8)
         self.assertGreaterEqual(Message.objects.count(), 10)
-        # Заказы и продажи.
-        self.assertGreaterEqual(Order.objects.filter(organization=refs.organization).count(), 3)
-        self.assertGreaterEqual(Sale.objects.count(), 1)
-        self.assertGreaterEqual(SaleEvent.objects.count(), 1)
         # Поддержка: контракты, снимки, портал со статьями.
         self.assertGreaterEqual(ProductSupportContract.objects.count(), 2)
         self.assertGreaterEqual(SupportIdentitySnapshot.objects.count(), 2)
@@ -83,7 +73,6 @@ class SeedDemoTests(TestCase):
             "products": Product.objects.filter(organization__slug=DEMO_SLUG).count(),
             "conversations": Conversation.objects.filter(organization__slug=DEMO_SLUG).count(),
             "messages": Message.objects.filter(conversation__organization__slug=DEMO_SLUG).count(),
-            "orders": Order.objects.filter(organization__slug=DEMO_SLUG).count(),
         }
         _run_seed()
         counts_after = {
@@ -91,7 +80,6 @@ class SeedDemoTests(TestCase):
             "products": Product.objects.filter(organization__slug=DEMO_SLUG).count(),
             "conversations": Conversation.objects.filter(organization__slug=DEMO_SLUG).count(),
             "messages": Message.objects.filter(conversation__organization__slug=DEMO_SLUG).count(),
-            "orders": Order.objects.filter(organization__slug=DEMO_SLUG).count(),
         }
         self.assertEqual(counts_before, counts_after)
 

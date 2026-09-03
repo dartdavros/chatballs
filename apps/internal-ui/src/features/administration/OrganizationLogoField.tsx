@@ -69,7 +69,7 @@ export function OrganizationLogoField({
         tone="danger"
         icon="trash"
         title="Удалить логотип?"
-        description="Вместо него в меню снова будет показан знак CustoCRM."
+        description="Вместо него в меню снова будет показан знак Chatbolls."
         actions={(
           <>
             <Button variant="secondary" onClick={() => setConfirmingRemoval(false)}>

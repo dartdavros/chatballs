@@ -210,7 +210,7 @@ class SupportPortalManagementTests(SupportPortalTestCase):
             )
 
         self.assertEqual(response.status_code, 400, response.content)
-        self.assertIn("указывает не на сервер CustoCRM", str(response.json()))
+        self.assertIn("указывает не на сервер Chatbolls", str(response.json()))
 
     @override_settings(CUS_APP_PRIMARY_HOSTS=["app.customer.example"])
     def test_custom_domain_cannot_shadow_application_host(self) -> None:

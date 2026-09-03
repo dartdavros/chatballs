@@ -5,7 +5,7 @@ export function SalesClientsHeader({ shownCount, totalCount, onExport }: { shown
     <div className="sales-clients-header">
       <div>
         <h1>Контакты</h1>
-        <p>Лиды и клиенты отдела продаж · показано <b>{shownCount}</b> из {totalCount}</p>
+        <p>Контакты клиентов · показано <b>{shownCount}</b> из {totalCount}</p>
       </div>
       <div className="sales-clients-header-actions">
         <ActionButton icon="download" disabled={shownCount === 0} onClick={onExport}>Экспорт</ActionButton>

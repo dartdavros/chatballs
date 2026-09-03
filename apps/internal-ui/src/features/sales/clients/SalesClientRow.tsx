@@ -20,9 +20,6 @@ export function SalesClientRow({ client, menu, openClient, setMenu }: { client: 
         </div>
       </td>
       <td>
-        <span className="sales-client-status" style={{ background: client.statusMeta.bg, color: client.statusMeta.color }}>{client.statusMeta.label}</span>
-      </td>
-      <td>
         <div className={`sales-client-contact ${client.phone || client.email ? "" : "muted"}`}>{client.phone || client.email || "—"}</div>
         <small className="sales-client-phone">{client.phone && client.email ? client.email : client.username ? `@${client.username}` : ""}</small>
       </td>
@@ -40,8 +37,6 @@ export function SalesClientRow({ client, menu, openClient, setMenu }: { client: 
       </td>
       <td><div className="sales-client-last"><i style={{ background: client.lastDot }} />{client.lastLabel}</div></td>
       <td className="numeric"><strong style={{ color: client.openColor }}>{client.openDialogs}</strong></td>
-      <td className="numeric">{client.orders}</td>
-      <td className="numeric"><strong style={{ color: client.totalColor }}>{client.totalLabel}</strong></td>
       <td className="row-actions">
         <Dropdown menu={{ items: menuItems }} open={menuOpen} onOpenChange={(open) => setMenu(open ? client.cid : null)} trigger={["click"]} overlayClassName="app-dropdown is-wide">
           <button className="row-menu-button" type="button" aria-label="Действия клиента"><Icon name="more" /></button>

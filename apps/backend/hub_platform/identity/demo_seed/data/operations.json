@@ -34,16 +34,6 @@
       "readBy": "sales_lead"
     },
     {
-      "type": "PAYMENT_RECEIVED",
-      "level": "SUCCESS",
-      "title": "Платёж получен",
-      "body": "Оплачен заказ на подписку Репер для ТрансЛогистик.",
-      "targetRoute": "orders",
-      "targetId": "demo-ord-003",
-      "audience": "OWNER",
-      "sourceId": "demo-ord-003"
-    },
-    {
       "type": "DIALOG_NEW_MESSAGE",
       "level": "INFO",
       "title": "Новое сообщение в диалоге",

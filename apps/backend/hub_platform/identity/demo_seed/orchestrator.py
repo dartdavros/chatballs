@@ -2,8 +2,8 @@
 
 Создаёт полный, взаимосвязанный набор выдуманных данных одной организации,
 будто система уже работает. Запускается строго в порядке FK-зависимостей:
-foundation → catalog → channels/ai → conversations → commerce → support →
-operations. Идемпотентен на каждом шаге.
+foundation → catalog → channels/ai → conversations → support → operations.
+Идемпотентен на каждом шаге.
 """
 
 from __future__ import annotations
@@ -13,9 +13,6 @@ from hub_platform.identity.demo_seed.loaders import (
 )
 from hub_platform.identity.demo_seed.loaders import (
     channels_ai as channels_ai_loader,
-)
-from hub_platform.identity.demo_seed.loaders import (
-    commerce as commerce_loader,
 )
 from hub_platform.identity.demo_seed.loaders import (
     conversations as conversations_loader,
@@ -47,7 +44,6 @@ def run_demo_seed(context: TenantContext, *, refs: DemoRefs | None = None) -> De
     catalog_loader.load(context, refs)
     channels_ai_loader.load(context, refs)
     conversations_loader.load(context, refs)
-    commerce_loader.load(context, refs)
     support_loader.load(context, refs)
     operations_loader.load(context, refs)
     return refs

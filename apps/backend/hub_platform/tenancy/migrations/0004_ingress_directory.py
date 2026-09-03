@@ -10,20 +10,8 @@ VIEWS = {
                membership.blocked_at
         FROM identity_employeeprofile membership
     """,
-    "product_ingest_directory": """
-        SELECT product.id AS resource_id,
-               product.organization_id,
-               product.ingest_token_hash AS lookup_key
-        FROM identity_product product
-        WHERE product.ingest_token_hash <> ''
-    """,
-    "sales_source_directory": """
-        SELECT source.id AS resource_id,
-               source.organization_id,
-               source.credential_hash AS lookup_key
-        FROM sales_salessource source
-        WHERE source.credential_hash <> '' AND source.status = 'ACTIVE'
-    """,
+    # Вьюхи product_ingest_directory/sales_source_directory удалены вместе с
+    # доменом продаж (ADR-HUB-0041); на старых БД их снимает 0017_drop_commerce.
     "attachment_directory": """
         SELECT attachment.id AS resource_id,
                attachment.organization_id,

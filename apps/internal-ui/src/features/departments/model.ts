@@ -14,9 +14,9 @@ export type DepartmentCopy = {
 const COPY: Record<string, DepartmentCopy> = {
   sales: {
     icon: "shop",
-    description: "Публичные входящие обращения: лиды, контакты, продажи.",
-    overview: "salesOverview",
-    statLabels: ["Открытые диалоги", "Продажи · сегодня", "Выручка"],
+    description: "Публичные входящие обращения новых клиентов.",
+    overview: "salesDialogs",
+    statLabels: ["Открытые диалоги", "Ожидают оператора", "Обслуживаются AI"],
   },
   support: {
     icon: "wrench",

@@ -1,39 +1,8 @@
-from hub_platform.products.models import Offer, Price, Product
-
-
-def price_payload(price: Price) -> dict[str, object]:
-    return {
-        "id": price.id,
-        "version": price.version,
-        "amountMinor": price.amount_minor,
-        "currency": price.currency,
-        "billingPeriod": price.billing_period,
-        "validFrom": price.valid_from.isoformat(),
-        "validUntil": price.valid_until.isoformat() if price.valid_until else None,
-        "isActive": price.is_active,
-    }
-
-
-def offer_payload(offer: Offer) -> dict[str, object]:
-    return {
-        "id": offer.id,
-        "code": offer.code,
-        "name": offer.name,
-        "description": offer.description,
-        "fulfillmentType": offer.fulfillment_type,
-        "paymentType": offer.payment_type,
-        "primaryBoxOfferId": offer.primary_box_offer_id,
-        "isActive": offer.is_active,
-        "aiOfferable": offer.ai_offerable,
-        "fiscalName": offer.fiscal_name,
-        "accessSchema": offer.access_schema,
-        "prices": [price_payload(price) for price in offer.prices.all()],
-    }
+from hub_platform.products.models import Product
 
 
 def _channel_payload(channel: object) -> dict[str, object]:
-    # Единый источник каналов продукта: тот же состав, что потребляет таб
-    # «Каналы продаж» в карточке продукта (connections + agent), чтобы не
+    # Единый источник каналов продукта: connections + agent, чтобы не
     # дублировать выборку отдельным запросом /api/v1/channels/.
     agent = getattr(channel, "ai_agent", None)
     return {
@@ -66,7 +35,6 @@ def product_payload(product: Product) -> dict[str, object]:
             for link in product.department_links.all()
         ],
         "channels": [_channel_payload(channel) for channel in product.channels.all()],
-        "offers": [offer_payload(offer) for offer in product.offers.all()],
         "createdAt": product.created_at.isoformat(),
         "updatedAt": product.updated_at.isoformat(),
     }

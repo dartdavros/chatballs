@@ -67,7 +67,7 @@ def verify_custom_domain(portal: SupportPortal) -> SupportPortal:
             ) from error
         if settings.CUS_HELP_PUBLIC_IPV4 not in addresses:
             raise ValidationError(
-                {"customDomain": "A-запись домена указывает не на сервер CustoCRM"}
+                {"customDomain": "A-запись домена указывает не на сервер Chatbolls"}
             )
 
     expected = domain_verification_value(portal)

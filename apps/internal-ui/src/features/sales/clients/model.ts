@@ -1,9 +1,7 @@
 export type ClientProductCode = "FP" | "FX";
 export type ClientChannelCode = "EMAIL" | "MAX" | "TG" | "WEB";
-export type ClientSortKey = "last" | "open" | "orders" | "total";
+export type ClientSortKey = "last" | "open";
 export type ClientDropdown = "products" | "channels";
-
-export type ClientStatus = "lead" | "client";
 
 export type SalesClient = {
   id: number;
@@ -14,7 +12,6 @@ export type SalesClient = {
   phone: string;
   email: string;
   username: string;
-  status: ClientStatus;
   anon?: boolean;
   channels: ClientChannelCode[];
   products: ClientProductCode[];
@@ -22,25 +19,14 @@ export type SalesClient = {
   lastLabel: string;
   mode: "wait" | "ai" | "operator" | "closed";
   openDialogs: number;
-  orders: number;
-  total: number;
 };
 
 export type SalesClientRowVm = Omit<SalesClient, "channels" | "products"> & {
   lastDot: string;
   openColor: string;
-  totalColor: string;
-  totalLabel: string;
-  statusMeta: { label: string; color: string; bg: string };
   channels: Array<{ label: string; full: string; color: string; bg: string }>;
   products: Array<{ name: string; color: string; bg: string }>;
 };
-
-// Статус контакта: лид (писал, не покупал) / клиент (есть оплаченный заказ).
-export const statusMap = {
-  lead: { label: "Лид", color: "#d48806", bg: "#fff7e6" },
-  client: { label: "Клиент", color: "#389e0d", bg: "#f6ffed" },
-} satisfies Record<ClientStatus, { label: string; color: string; bg: string }>;
 
 export const channelMap = {
   EMAIL: { label: "Email", full: "Email", color: "#d48806", bg: "#fff7e6" },
@@ -81,15 +67,12 @@ export type ApiClient = {
   phone: string;
   email: string;
   username: string;
-  status: ClientStatus;
   channels: ClientChannelCode[];
   products: ClientProductCode[];
   openDialogs: number;
   totalDialogs: number;
   lastActivityAt: string;
   mode: SalesClient["mode"];
-  orders: number;
-  total: number;
 };
 
 const AVATAR_COLORS = ["#eb6f4b", "#3b82c4", "#9254de", "#13a8a8", "#d4860b", "#52a838", "#c4456b", "#4c6ef0", "#7048b6"];
@@ -126,7 +109,6 @@ export function toSalesClient(api: ApiClient): SalesClient {
     phone: api.phone,
     email: api.email,
     username: api.username,
-    status: api.status,
     anon: isGuest,
     channels: api.channels,
     products: api.products,
@@ -134,8 +116,6 @@ export function toSalesClient(api: ApiClient): SalesClient {
     lastLabel: label,
     mode: api.mode,
     openDialogs: api.openDialogs,
-    orders: api.orders,
-    total: Math.round(api.total / 100), // бэкенд отдаёт сумму в копейках
   };
 }
 
@@ -146,8 +126,5 @@ export function toSalesClientRow(client: SalesClient): SalesClientRowVm {
     products: client.products.map((product) => productMap[product]),
     lastDot: statusDot[client.mode],
     openColor: client.openDialogs > 0 ? "#d48806" : "#bfbfbf",
-    totalColor: client.total > 0 ? "#262626" : "#bfbfbf",
-    statusMeta: statusMap[client.status],
-    totalLabel: client.total === 0 ? "—" : `₽${client.total.toLocaleString("ru-RU").replace(/\u00a0/g, " ")}`,
   };
 }

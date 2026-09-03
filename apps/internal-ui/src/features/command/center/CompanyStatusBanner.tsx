@@ -11,12 +11,11 @@ export function CompanyStatusBanner({ vm }: { vm: CommandVm }) {
       <div className="company-status-metrics">
         <SmallMetric label="Отделы" value={vm.banner.departments} />
         <SmallMetric label="Открытые диалоги" value={vm.banner.open} />
-        <SmallMetric label={`Выручка · ${vm.periodLabel}`} value={vm.banner.revenue} success />
       </div>
     </section>
   );
 }
 
-function SmallMetric({ label, value, success = false }: { label: string; value: string; success?: boolean }) {
-  return <div><span>{label}</span><strong className={success ? "success" : ""}>{value}</strong></div>;
+function SmallMetric({ label, value }: { label: string; value: string }) {
+  return <div><span>{label}</span><strong>{value}</strong></div>;
 }

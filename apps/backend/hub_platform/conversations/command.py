@@ -1,8 +1,8 @@
 """Командный центр: реальная сводка уровня компании (без выдуманных чисел).
 
-Оба отдела (sales/support) с живыми метриками диалогов; коммерция — в карточке
-продаж (заказы не привязаны к отделу). «Требует внимания» и состояние
-интеграций — из реальных данных; расходы AI — из LlmInvocation.
+Метрики диалогов по отделам; коммерция удалена вместе с доменом продаж
+(ADR-HUB-0041). «Требует внимания» и состояние интеграций — из реальных
+данных; расходы AI — из LlmInvocation.
 """
 
 from __future__ import annotations
@@ -16,10 +16,9 @@ from hub_platform.conversations.models import Conversation, ControlMode, Lifecyc
 from hub_platform.conversations.stats import _ACTIVE_WINDOW, _window
 from hub_platform.identity.models import Department, DepartmentStatus, OrganizationMembership
 from hub_platform.integrations.models import Integration, IntegrationKind, IntegrationStatus
-from hub_platform.orders.models import FulfillmentStatus, Order, PaymentStatus
 from hub_platform.tenancy.context import TenantContext
 
-_DEPT_ROUTE = {"sales": "salesOverview", "support": "supportOverview"}
+_DEPT_ROUTE = {"sales": "salesDialogs", "support": "supportOverview"}
 
 
 def _dialog_block(open_qs, now) -> dict:
@@ -43,10 +42,6 @@ def command_center_overview(context: TenantContext, period: str) -> dict:
     start, _ = _window(period, now)
 
     open_qs = Conversation.objects.filter(organization_id=organization_id, lifecycle=LifecycleState.OPEN)
-    paid = Order.objects.filter(organization_id=organization_id, payment_status=PaymentStatus.PAID, paid_at__gte=start)
-    pending_orders = Order.objects.filter(organization_id=organization_id, payment_status=PaymentStatus.PENDING)
-    fulfillment_errors = Order.objects.filter(organization_id=organization_id, fulfillment_status=FulfillmentStatus.FAILED)
-    revenue = paid.aggregate(total=Sum("amount_minor"))["total"] or 0
 
     employees_by_dept = dict(
         OrganizationMembership.objects.filter(
@@ -72,16 +67,9 @@ def command_center_overview(context: TenantContext, period: str) -> dict:
             "aiAgents": agents_by_dept.get(department.id, 0),
             "dialogs": _dialog_block(dept_open, now),
         }
-        if department.code == "sales":
-            block["commerce"] = {
-                "pendingPayments": pending_orders.count(),
-                "fulfillmentErrors": fulfillment_errors.count(),
-                "sales": paid.count(),
-                "revenueMinor": revenue,
-            }
         departments.append(block)
 
-    # «Требует внимания»: очередь диалогов + незавершённые платежи + ошибки интеграций.
+    # «Требует внимания»: очередь диалогов + ошибки интеграций.
     attention: list[dict] = []
     queue = (
         open_qs.filter(control_mode=ControlMode.PAUSED)
@@ -97,15 +85,6 @@ def command_center_overview(context: TenantContext, period: str) -> dict:
                 "title": f"Диалог ждёт оператора · {who}",
                 "meta": conversation.channel.name,
                 "minutes": _minutes_since(conversation.last_activity_at, now),
-            }
-        )
-    for order in pending_orders.select_related("product").order_by("-created_at")[:3]:
-        attention.append(
-            {
-                "kind": "payment",
-                "title": f"Незавершённый платёж · {order.code}",
-                "meta": f"Продажи · {order.product.name}" if order.product_id else "Продажи",
-                "minutes": _minutes_since(order.created_at, now),
             }
         )
 
@@ -135,9 +114,9 @@ def command_center_overview(context: TenantContext, period: str) -> dict:
     period_dialogs = Conversation.objects.filter(organization_id=organization_id, created_at__gte=start).count()
 
     total_waiting = sum(d["dialogs"]["waiting"] for d in departments)
-    if error_count or fulfillment_errors.exists():
+    if error_count:
         status = "critical"
-    elif total_waiting or pending_orders.exists():
+    elif total_waiting:
         status = "attention"
     else:
         status = "ok"
@@ -149,7 +128,6 @@ def command_center_overview(context: TenantContext, period: str) -> dict:
             "status": status,
             "departments": len(departments),
             "openDialogs": open_qs.count(),
-            "revenueMinor": revenue,
         },
         "departments": departments,
         "attention": attention,

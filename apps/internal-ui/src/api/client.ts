@@ -17,8 +17,6 @@ const tenantNamespaces = [
   "employees",
   "integrations",
   "notifications",
-  "orders",
-  "sales",
   "support",
 ];
 
@@ -26,7 +24,6 @@ const publicPaths = [
   "/api/v1/ai/files/",
   "/api/v1/calls/access/",
   "/api/v1/calls/invites/",
-  "/api/v1/orders/ingest/",
   "/api/v1/support/sessions/",
   "/api/v1/help/",
 ];

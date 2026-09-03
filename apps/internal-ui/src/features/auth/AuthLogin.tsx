@@ -36,7 +36,7 @@ export function AuthLogin({ onLogin, onTotpChallenge, onRecover }: { onLogin: (u
   }
 
   return (
-    <AuthFrame title="CustoCRM" subtitle="Рабочая область организации" logo="pulse" note="Защищённое соединение">
+    <AuthFrame title="Chatbolls" subtitle="Рабочая область организации" logo="pulse" note="Защищённое соединение">
       <form className="auth-card" onSubmit={submit}>
         {error && <div className="auth-error"><span className="auth-error-dot">!</span><span>Неверный email или пароль. Проверьте данные и попробуйте снова.</span></div>}
         <label className="field-label">Email</label>

@@ -7,7 +7,7 @@ urlpatterns = [
     path("chat-widget.js", WidgetLoaderView.as_view(), name="chat-widget-loader"),
     path(
         "api/v1/schema/",
-        get_schema_view(title="CustoCRM API", version="0.1.0"),
+        get_schema_view(title="Chatbolls API", version="0.1.0"),
         name="openapi-schema",
     ),
     path("api/v1/auth/", include("hub_platform.identity.auth_urls")),
@@ -41,11 +41,6 @@ urlpatterns = [
         include("hub_platform.conversations.urls"),
     ),
     path(
-        "api/v1/organizations/<uuid:organization_public_id>/orders/",
-        include("hub_platform.orders.urls"),
-    ),
-    path("api/v1/organizations/<uuid:organization_public_id>/sales/", include("hub_platform.sales.urls")),
-    path(
         "api/v1/organizations/<uuid:organization_public_id>/notifications/",
         include("hub_platform.notifications.urls"),
     ),
@@ -54,10 +49,8 @@ urlpatterns = [
         include("hub_platform.support.urls"),
     ),
     path("api/v1/organizations/<uuid:organization_public_id>/calls/", include("hub_platform.calls.urls")),
-    path("api/v1/product-sales/", include("hub_platform.sales.product_sales_urls")),
     path("api/v1/webchat/", include("hub_platform.webchat.urls")),
     path("api/v1/health/", include("hub_platform.health.urls")),
-    path("api/v1/orders/", include("hub_platform.orders.public_urls")),
     path("api/v1/ai/", include("hub_platform.ai.public_urls")),
     path("api/v1/support/", include("hub_platform.support.public_urls")),
     path("api/v1/help/", include("hub_platform.support_portals.public_urls")),

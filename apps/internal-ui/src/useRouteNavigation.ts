@@ -9,26 +9,22 @@ export function useRouteNavigation(
 ) {
   const [route, setRoute] = useState<RouteKey>(initialRoute.route);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState(initialRoute.employeeId);
-  const [selectedProductId, setSelectedProductId] = useState(initialRoute.productId);
   const [selectedProductCode, setSelectedProductCode] = useState(initialRoute.productCode);
   const [selectedAgentId, setSelectedAgentId] = useState(initialRoute.agentId);
   const [selectedKnowledgeId, setSelectedKnowledgeId] = useState(initialRoute.knowledgeId);
   const [selectedConversationId, setSelectedConversationId] = useState<number | null>(null);
   const [selectedClientId, setSelectedClientId] = useState(initialRoute.clientId);
-  const [selectedOrderId, setSelectedOrderId] = useState(initialRoute.orderId);
   const [selectedChannelId, setSelectedChannelId] = useState(initialRoute.channelId);
   const [selectedSupportPortalId, setSelectedSupportPortalId] = useState(initialRoute.supportPortalId);
 
   const applyRouteState = useCallback((next: RouteState) => {
     setRoute(next.route);
     setSelectedEmployeeId(next.employeeId);
-    setSelectedProductId(next.productId);
     setSelectedProductCode(next.productCode);
     setSelectedAgentId(next.agentId);
     setSelectedKnowledgeId(next.knowledgeId);
     setSelectedConversationId(null);
     setSelectedClientId(next.clientId);
-    setSelectedOrderId(next.orderId);
     setSelectedChannelId(next.channelId);
     setSelectedSupportPortalId(next.supportPortalId);
   }, []);
@@ -44,12 +40,10 @@ export function useRouteNavigation(
       organizationPublicId: organizationId,
       route: nextRoute,
       employeeId: nextRoute === "employeeDetail" ? entityId : null,
-      productId: nextRoute === "productDetail" ? entityId : null,
       productCode: nextRoute === "aiAgentCreate" ? productCode : null,
       agentId: nextRoute === "aiAgentDetail" ? entityId : null,
       knowledgeId: nextRoute === "aiKnowledgeDetail" ? entityId : null,
       clientId: nextRoute === "salesClientDetail" ? entityId : null,
-      orderId: nextRoute === "salesOrderDetail" ? entityId : null,
       channelId: nextRoute === "channelDetail" ? entityId : null,
       supportPortalId: nextRoute === "supportPortalDetail" ? entityId : null,
     };
@@ -71,13 +65,11 @@ export function useRouteNavigation(
   return {
     route,
     selectedEmployeeId,
-    selectedProductId,
     selectedProductCode,
     selectedAgentId,
     selectedKnowledgeId,
     selectedConversationId,
     selectedClientId,
-    selectedOrderId,
     selectedChannelId,
     selectedSupportPortalId,
     applyRouteState,

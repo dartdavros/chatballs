@@ -247,8 +247,8 @@ class BindingApiTests(NotifierTestBase):
 
         patched = self.client.patch(
             f"/api/v1/notifications/messenger-bindings/{self.integration.id}/",
-            data={"pushTypes": [NotificationType.PAYMENT_RECEIVED, "NOT_A_TYPE"]},
+            data={"pushTypes": [NotificationType.INTEGRATION_ERROR, "NOT_A_TYPE"]},
             format="json",
         )
         self.assertEqual(patched.status_code, 200)
-        self.assertEqual(patched.json()["pushTypes"], [NotificationType.PAYMENT_RECEIVED])
+        self.assertEqual(patched.json()["pushTypes"], [NotificationType.INTEGRATION_ERROR])
