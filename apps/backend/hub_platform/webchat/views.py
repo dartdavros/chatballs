@@ -1,12 +1,15 @@
 from contextlib import contextmanager
 
-from django.http import HttpResponse
+from django.http import FileResponse, HttpResponse
 from django.views import View
+from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from hub_platform.conversations.models import Message, MessageKind
+from hub_platform.conversations.voice_views import ALLOWED_AUDIO_TYPES, MAX_VOICE_BYTES
 from hub_platform.identity.models import Organization
 from hub_platform.integrations.models import IntegrationStatus
 from hub_platform.tenancy.context import TenantContext
@@ -144,10 +147,32 @@ class WebchatSessionView(_Public):
 
 
 class WebchatMessagesView(_Public):
+    # JSON — текст, multipart — голосовое из записи в виджете.
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
+
     def post(self, request: Request) -> Response:
         with _resolved_web_session(request) as (_context, session):
             if session is None:
                 return Response({"detail": "Сессия не найдена"}, status=401)
+            upload = request.FILES.get("audio")
+            if upload is not None:
+                # Голосовое из виджета (дизайн-базлайн v2, кадр H).
+                if upload.size > MAX_VOICE_BYTES:
+                    return Response({"detail": "Аудио больше 10 МБ"}, status=400)
+                content_type = (upload.content_type or "audio/webm").split(";")[0]
+                if content_type not in ALLOWED_AUDIO_TYPES:
+                    return Response({"detail": "Неподдерживаемый формат аудио"}, status=400)
+                try:
+                    duration = max(0, int(request.data.get("duration", 0)))
+                except (TypeError, ValueError):
+                    duration = 0
+                services.post_voice(
+                    session,
+                    content=upload.read(),
+                    content_type=content_type,
+                    duration=duration,
+                )
+                return Response({"ok": True}, status=201)
             text = str(request.data.get("text", "")).strip()
             if not text:
                 return Response({"detail": "Пустое сообщение"}, status=400)
@@ -163,6 +188,31 @@ class WebchatMessagesView(_Public):
             except ValueError:
                 since = 0
             return Response(services.messages_payload(session, since))
+
+
+class WebchatMessageAudioView(_Public):
+    def get(self, request: Request, message_id: int) -> Response | FileResponse:
+        with _resolved_web_session(request) as (_context, session):
+            if session is None:
+                return Response({"detail": "Сессия не найдена"}, status=401)
+            message = (
+                Message.objects.filter(
+                    id=message_id,
+                    kind=MessageKind.VOICE,
+                    conversation__channel=session.connection.channel,
+                    conversation__contact=session.identity.contact,
+                )
+                .exclude(audio="")
+                .first()
+            )
+            if message is None:
+                return Response({"detail": "Сообщение не найдено"}, status=404)
+            response = FileResponse(
+                message.audio.open("rb"),
+                content_type=message.audio_content_type or "audio/ogg",
+            )
+            response["Cache-Control"] = "private, max-age=3600"
+            return response
 
 
 class WebchatContactView(_Public):

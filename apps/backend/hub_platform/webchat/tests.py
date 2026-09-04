@@ -74,6 +74,54 @@ class PublicWebChatWidgetTests(TestCase):
 
         self.assertEqual(response.json(), {"available": False})
 
+    def test_voice_message_round_trip(self) -> None:
+        # Голосовое из виджета: multipart → VOICE-сообщение, диалог уходит
+        # оператору; аудио отдаётся только владельцу токена сессии.
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        from hub_platform.conversations.models import (
+            ControlMode,
+            Conversation,
+            MessageKind,
+        )
+
+        widget = create_web_widget(self.channel, name="Виджет")
+        token = self._session(widget.public_key).json()["token"]
+
+        posted = self.client.post(
+            "/api/v1/webchat/messages/",
+            data={
+                "audio": SimpleUploadedFile("voice.webm", b"WEBMDATA", content_type="audio/webm"),
+                "duration": "4",
+            },
+            format="multipart",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        self.assertEqual(posted.status_code, 201)
+
+        conversation = Conversation.objects.get(channel=self.channel)
+        message = conversation.messages.get(kind=MessageKind.VOICE)
+        self.assertEqual(message.duration_seconds, 4)
+        self.assertTrue(message.audio)
+        self.assertEqual(conversation.control_mode, ControlMode.PAUSED)
+
+        payload = self.client.get(
+            "/api/v1/webchat/messages/?since=0",
+            headers={"Authorization": f"Bearer {token}"},
+        ).json()
+        voice = next(m for m in payload["messages"] if m["kind"] == MessageKind.VOICE)
+        self.assertTrue(voice["hasAudio"])
+        self.assertEqual(voice["durationSeconds"], 4)
+
+        audio = self.client.get(f"/api/v1/webchat/messages/{message.id}/audio/?token={token}")
+        self.assertEqual(audio.status_code, 200)
+        self.assertEqual(audio.headers["Content-Type"], "audio/webm")
+
+        # Чужая сессия не видит аудио этого диалога.
+        foreign_token = self._session(widget.public_key).json()["token"]
+        denied = self.client.get(f"/api/v1/webchat/messages/{message.id}/audio/?token={foreign_token}")
+        self.assertEqual(denied.status_code, 404)
+
     def test_widget_origin_policy_is_scoped_per_widget(self) -> None:
         allowed = create_web_widget(
             self.channel,

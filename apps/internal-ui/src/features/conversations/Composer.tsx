@@ -43,7 +43,7 @@ export function Composer({ mode, loaded, assignedOperatorName, conversationId, c
     },
   });
   // Каналы с транспортом отправки голосовых (transports.supports_voice_send).
-  const voiceAvailable = recorder.supported && (channel === "TG" || channel === "MAX");
+  const voiceAvailable = recorder.supported && (channel === "TG" || channel === "MAX" || channel === "WEB");
 
   if (conversationId == null) {
     return <div className="sales-composer"><div className="sales-waiting-composer"><div><strong>Выберите диалог</strong></div></div></div>;

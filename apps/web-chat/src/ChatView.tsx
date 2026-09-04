@@ -1,6 +1,13 @@
 import { useEffect, useRef, useState, type RefObject } from "react";
 
 import { isVideoCall, type CallInfo, type WebConfig, type WebMessage } from "./api";
+import type { useVoiceRecorder } from "./useVoiceRecorder";
+
+export type ComposerVoice = ReturnType<typeof useVoiceRecorder>;
+
+function formatSeconds(total: number): string {
+  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
+}
 
 export function ChatHeader({ accent, letter, title, statusLabel, statusDot, unavailable, onClose }: { accent: string; letter: string; title: string; statusLabel: string; statusDot: string; unavailable: boolean; onClose: () => void }) {
   return (
@@ -20,7 +27,7 @@ export function ChatHeader({ accent, letter, title, statusLabel, statusDot, unav
   );
 }
 
-export function ChatBody({ bodyRef, config, unavailable, accepted, accent, letter, title, messages, pending, awaiting, lastContactRequestId, showPhoneForm, onSubmitContact }: {
+export function ChatBody({ bodyRef, config, unavailable, accepted, accent, letter, title, messages, pending, awaiting, lastContactRequestId, showPhoneForm, onSubmitContact, audioUrlFor }: {
   bodyRef: RefObject<HTMLDivElement | null>;
   config: WebConfig | null;
   unavailable: boolean;
@@ -34,6 +41,7 @@ export function ChatBody({ bodyRef, config, unavailable, accepted, accent, lette
   lastContactRequestId: number;
   showPhoneForm: boolean;
   onSubmitContact: (phone: string) => Promise<boolean>;
+  audioUrlFor?: (messageId: number) => string;
 }) {
   return (
     <div ref={bodyRef} style={{ flex: 1, minHeight: 0, overflowY: "auto", background: "#f7f8fa", padding: "18px 16px" }}>
@@ -46,7 +54,7 @@ export function ChatBody({ bodyRef, config, unavailable, accepted, accent, lette
           {config.greeting && <Bubble author="ai" text={config.greeting} accent={accent} />}
           {messages.map((message) => message.author === "system"
             ? <SystemMessage key={message.id} text={message.text} />
-            : <div key={message.id}><Bubble author={message.author} text={message.text} accent={accent} time={message.createdAt} />{message.kind === "contact_request" && message.id === lastContactRequestId && showPhoneForm && <PhoneForm accent={accent} onSubmit={onSubmitContact} />}</div>)}
+            : <div key={message.id}><Bubble author={message.author} text={message.hasAudio ? "" : message.text || "Голосовое сообщение"} accent={accent} time={message.createdAt} audioUrl={message.hasAudio && audioUrlFor ? audioUrlFor(message.id) : undefined} />{message.kind === "contact_request" && message.id === lastContactRequestId && showPhoneForm && <PhoneForm accent={accent} onSubmit={onSubmitContact} />}</div>)}
           {pending.map((text, index) => <Bubble key={`p${index}`} author="client" text={text} accent={accent} pendingState />)}
           {awaiting && <Typing />}
         </>
@@ -73,7 +81,7 @@ export function StartChatFooter({ accent, starting, onAccept }: { accent: string
 
 const COMPOSER_MAX_HEIGHT = 132;
 
-export function ChatComposer({ accent, state, quickReplies, pendingCount, messageCount, input, placeholder, onInput, onSend }: { accent: string; state: "ai" | "operator" | "waiting"; quickReplies: string[]; pendingCount: number; messageCount: number; input: string; placeholder?: string; onInput: (value: string) => void; onSend: () => void }) {
+export function ChatComposer({ accent, state, quickReplies, pendingCount, messageCount, input, placeholder, onInput, onSend, voice }: { accent: string; state: "ai" | "operator" | "waiting"; quickReplies: string[]; pendingCount: number; messageCount: number; input: string; placeholder?: string; onInput: (value: string) => void; onSend: () => void; voice?: ComposerVoice }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Поле растёт под текст, как в мессенджере (до COMPOSER_MAX_HEIGHT, дальше скролл).
@@ -86,11 +94,31 @@ export function ChatComposer({ accent, state, quickReplies, pendingCount, messag
     node.style.height = node.scrollHeight > 0 ? `${Math.min(node.scrollHeight, COMPOSER_MAX_HEIGHT)}px` : "";
   }, [input]);
 
+  if (voice && voice.state !== "idle") {
+    // Режим записи (кадр H, упрощённый для виджета): корзина · таймер · отправить.
+    const sending = voice.state === "sending";
+    return (
+      <div style={{ flex: "none", background: "#fff", borderTop: "1px solid #f0f0f0", padding: "12px 14px 14px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, border: "1px solid #e8e8e8", borderRadius: 14, padding: "6px 6px 6px 10px", minHeight: 48, boxSizing: "border-box" }}>
+          <button onClick={voice.cancel} disabled={sending} aria-label="Отменить запись" style={{ width: 34, height: 34, borderRadius: 9, border: "none", background: "transparent", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flex: "none" }}><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="#8c8c8c" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg></button>
+          <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#f5222d", flex: "none", animation: "wcTyping 1.2s infinite ease-in-out" }} />
+          <span style={{ fontSize: 13.5, fontWeight: 600, color: "#f5222d", fontVariantNumeric: "tabular-nums" }}>{formatSeconds(voice.seconds)}</span>
+          <span style={{ flex: 1, fontSize: 12.5, color: "#8c8c8c" }}>{sending ? "Отправка…" : "Идёт запись"}</span>
+          <button onClick={voice.stopAndSend} disabled={sending} aria-label="Отправить голосовое" style={{ width: 36, height: 36, borderRadius: 10, border: "none", background: accent, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flex: "none", opacity: sending ? 0.6 : 1 }}><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg></button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={{ flex: "none", background: "#fff", borderTop: "1px solid #f0f0f0", padding: "12px 14px 14px" }}>
+      {voice?.errorText && <div style={{ marginBottom: 8, fontSize: 12, color: "#cf1322" }}>{voice.errorText}</div>}
       {state === "ai" && quickReplies.length > 0 && pendingCount === 0 && messageCount === 0 && <div style={{ display: "flex", gap: 7, flexWrap: "wrap", marginBottom: 10 }}>{quickReplies.map((reply) => <button key={reply} onClick={() => onInput(reply)} style={{ padding: "7px 13px", borderRadius: 16, border: "1px solid #d6e4ff", background: "#f0f7ff", color: "#0958d9", fontSize: 12.5, fontWeight: 500, cursor: "pointer" }}>{reply}</button>)}</div>}
       <div style={{ display: "flex", alignItems: "flex-end", gap: 8, border: "1px solid #e8e8e8", borderRadius: 14, padding: "6px 6px 6px 14px", background: "#fff" }}>
         <textarea ref={textareaRef} rows={1} value={input} onChange={(event) => onInput(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); onSend(); } }} placeholder={placeholder ?? "Напишите сообщение…"} style={{ flex: 1, border: "none", outline: "none", resize: "none", fontSize: 14, lineHeight: 1.5, color: "#262626", fontFamily: "inherit", padding: "7px 0", maxHeight: COMPOSER_MAX_HEIGHT }} />
+        {voice?.supported && !input.trim() && (
+          <button onClick={() => void voice.start()} aria-label="Записать голосовое" style={{ width: 36, height: 36, borderRadius: 10, border: "none", background: "transparent", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flex: "none" }}><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="#8c8c8c" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" /><path d="M19 10v2a7 7 0 0 1-14 0v-2" /><line x1="12" y1="19" x2="12" y2="22" /></svg></button>
+        )}
         <button onClick={onSend} aria-label="Отправить" style={{ width: 36, height: 36, borderRadius: 10, border: "none", background: accent, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flex: "none" }}><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg></button>
       </div>
     </div>
@@ -115,11 +143,14 @@ function formatTime(iso: string | undefined): string {
 
 const META: React.CSSProperties = { fontSize: 11, color: "#bfbfbf", marginTop: 4 };
 
-export function Bubble({ author, text, accent, time, pendingState }: { author: "client" | "ai" | "operator"; text: string; accent: string; time?: string; pendingState?: boolean }) {
+export function Bubble({ author, text, accent, time, pendingState, audioUrl }: { author: "client" | "ai" | "operator"; text: string; accent: string; time?: string; pendingState?: boolean; audioUrl?: string }) {
   const at = formatTime(time);
-  if (author === "client") return <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}><div style={{ maxWidth: "82%" }}><div style={{ background: accent, color: "#fff", borderRadius: "16px 16px 4px 16px", padding: "10px 14px", fontSize: 14.5, lineHeight: 1.5, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{text}</div><div style={{ ...META, marginRight: 4, textAlign: "right" }}>{pendingState ? "отправка…" : [at, "доставлено"].filter(Boolean).join(" · ")}</div></div></div>;
+  const content = audioUrl
+    ? <audio controls preload="none" src={audioUrl} style={{ width: 216, height: 36, display: "block" }} />
+    : text;
+  if (author === "client") return <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}><div style={{ maxWidth: "82%" }}><div style={{ background: accent, color: "#fff", borderRadius: "16px 16px 4px 16px", padding: audioUrl ? "8px" : "10px 14px", fontSize: 14.5, lineHeight: 1.5, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{content}</div><div style={{ ...META, marginRight: 4, textAlign: "right" }}>{pendingState ? "отправка…" : [at, "доставлено"].filter(Boolean).join(" · ")}</div></div></div>;
   const isOperator = author === "operator";
-  return <div style={{ display: "flex", gap: 9, marginBottom: 12 }}><div style={{ width: 30, height: 30, borderRadius: "50%", background: isOperator ? accent : "#eef0f2", border: isOperator ? "none" : "1px solid #e3e6ea", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", flex: "none" }}>{isOperator ? <span style={{ fontSize: 11.5, fontWeight: 600 }}>О</span> : <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#8c8c8c" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="3.2" /><path d="M5.5 20a6.5 6.5 0 0 1 13 0" /></svg>}</div><div style={{ maxWidth: "82%" }}><div style={{ background: "#fff", border: "1px solid #eee", borderRadius: "16px 16px 16px 4px", padding: "10px 14px", fontSize: 14.5, lineHeight: 1.5, color: "#262626", whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{text}</div><div style={{ ...META, marginLeft: 4 }}>{[isOperator ? "Специалист" : "Виртуальный помощник", at].filter(Boolean).join(" · ")}</div></div></div>;
+  return <div style={{ display: "flex", gap: 9, marginBottom: 12 }}><div style={{ width: 30, height: 30, borderRadius: "50%", background: isOperator ? accent : "#eef0f2", border: isOperator ? "none" : "1px solid #e3e6ea", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", flex: "none" }}>{isOperator ? <span style={{ fontSize: 11.5, fontWeight: 600 }}>О</span> : <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#8c8c8c" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="3.2" /><path d="M5.5 20a6.5 6.5 0 0 1 13 0" /></svg>}</div><div style={{ maxWidth: "82%" }}><div style={{ background: "#fff", border: "1px solid #eee", borderRadius: "16px 16px 16px 4px", padding: audioUrl ? "8px" : "10px 14px", fontSize: 14.5, lineHeight: 1.5, color: "#262626", whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{content}</div><div style={{ ...META, marginLeft: 4 }}>{[isOperator ? "Специалист" : "Виртуальный помощник", at].filter(Boolean).join(" · ")}</div></div></div>;
 }
 
 function formatPhone(raw: string): string {

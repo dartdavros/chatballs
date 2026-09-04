@@ -7,7 +7,9 @@ import {
   poll,
   sendContact,
   sendMessage,
+  sendVoice,
   startSession,
+  voiceAudioUrl,
   type CallInfo,
   type Poll,
   type WebConfig,
@@ -15,6 +17,7 @@ import {
 } from "./api";
 import { CallInviteBanner, ChatBody, ChatComposer, ChatHeader, StartChatFooter } from "./ChatView";
 import { useScrollToLatest } from "./useScrollToLatest";
+import { useVoiceRecorder } from "./useVoiceRecorder";
 import { useWidgetActivity } from "./widgetActivity";
 
 const PARAMS = new URLSearchParams(location.search);
@@ -47,6 +50,14 @@ export function App() {
   const scrollToLatest = useScrollToLatest(bodyRef);
   const incomingCall = Boolean(call && (call.status === "REQUESTED" || call.status === "RINGING"));
   const notifyNewMessage = useWidgetActivity(incomingCall);
+  const recorder = useVoiceRecorder({
+    onSend: async (audio, durationSeconds) => {
+      if (!token) return;
+      const ok = await sendVoice(token, audio, durationSeconds);
+      if (!ok) throw new Error("Не удалось отправить голосовое");
+      try { ingestPoll(await poll(token, lastId.current)); } catch { /* polling loop will retry */ }
+    },
+  });
 
   useEffect(() => {
     getConfig(ENTRY, HOST_ORIGIN).then(setConfig).catch(() => setConfig({ available: false }));
@@ -149,10 +160,10 @@ export function App() {
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", width: "100%", background: "#fff", fontFamily: "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif", color: "#1f1f1f", overflow: "hidden" }}>
       <ChatHeader accent={accent} letter={letter} title={title} statusLabel={status.label} statusDot={status.dot} unavailable={unavailable} onClose={closePanel} />
-      <ChatBody bodyRef={bodyRef} config={config} unavailable={unavailable} accepted={accepted} accent={accent} letter={letter} title={title} messages={messages} pending={pending} awaiting={awaiting} lastContactRequestId={lastContactRequestId} showPhoneForm={showPhoneForm} onSubmitContact={submitContact} />
+      <ChatBody bodyRef={bodyRef} config={config} unavailable={unavailable} accepted={accepted} accent={accent} letter={letter} title={title} messages={messages} pending={pending} awaiting={awaiting} lastContactRequestId={lastContactRequestId} showPhoneForm={showPhoneForm} onSubmitContact={submitContact} audioUrlFor={token ? (id) => voiceAudioUrl(token, id) : undefined} />
       {config?.available && accepted && call && (call.status === "REQUESTED" || call.status === "RINGING") && <CallInviteBanner call={call} accent={accent} onAccept={() => void acceptCallInvite()} onDecline={() => void declineCallInvite()} />}
       {config?.available && !accepted && <StartChatFooter accent={accent} starting={starting} onAccept={() => void accept()} />}
-      {config?.available && accepted && <ChatComposer accent={accent} state={state} quickReplies={config.quickReplies ?? []} pendingCount={pending.length} messageCount={messages.length} input={input} onInput={setInput} onSend={() => void send()} />}
+      {config?.available && accepted && <ChatComposer accent={accent} state={state} quickReplies={config.quickReplies ?? []} pendingCount={pending.length} messageCount={messages.length} input={input} onInput={setInput} onSend={() => void send()} voice={recorder} />}
     </div>
   );
 }

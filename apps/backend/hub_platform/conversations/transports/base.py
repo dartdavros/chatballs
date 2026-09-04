@@ -37,6 +37,8 @@ class InboundMessage:
     # провайдера (TG file_id) ИЛИ прямой URL (MAX), длительность и mime.
     voice_file_id: str = ""
     voice_url: str = ""
+    # Голосовое, пришедшее телом запроса (web-виджет): скачивать нечего.
+    voice_content: bytes = b""
     voice_duration: int = 0
     voice_mime: str = ""
 

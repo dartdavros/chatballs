@@ -80,7 +80,7 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
 
     # Явный шаринг контакта: сообщение без текста, но с телефоном.
     is_contact_share = bool(inbound.phone)
-    is_voice = bool(inbound.voice_file_id or inbound.voice_url)
+    is_voice = bool(inbound.voice_file_id or inbound.voice_url or inbound.voice_content)
     message_text = inbound.text or (
         f"Поделился контактом: {inbound.phone}" if is_contact_share else ""
     ) or ("Голосовое сообщение" if is_voice else "")

@@ -73,15 +73,24 @@ def send_call_invite(integration, *, chat_id: str, user_id: str, text: str, url:
 
 
 # Голосовые (дизайн-базлайн v2, кадр H): скачивание входящих — TG (file_id) и
-# MAX (прямой url); отправка операторских голосовых — Telegram и MAX.
+# MAX (прямой url) — web-виджет шлёт байты сразу; отправка операторских
+# голосовых — Telegram, MAX и Web (доставка поллингом виджета).
+
+def _web_voice_noop(integration, *, chat_id: str, user_id: str, content: bytes, content_type: str, duration: int) -> bool:
+    # Web Chat: голосовое уже сохранено в БД, браузер заберёт его поллингом.
+    return True
+
 
 _VOICE_SEND = {
     IntegrationProvider.TELEGRAM: _telegram.send_voice,
     IntegrationProvider.MAX: _max.send_voice,
+    IntegrationProvider.WEB: _web_voice_noop,
 }
 
 
 def download_voice(integration, inbound) -> tuple[bytes, str]:
+    if inbound.voice_content:
+        return inbound.voice_content, inbound.voice_mime or "audio/webm"
     if integration.provider == IntegrationProvider.TELEGRAM and inbound.voice_file_id:
         return _telegram.download_voice(integration, inbound.voice_file_id)
     if integration.provider == IntegrationProvider.MAX and inbound.voice_url:

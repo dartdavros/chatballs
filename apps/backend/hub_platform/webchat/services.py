@@ -172,6 +172,26 @@ def post_message(session: WebSession, text: str) -> None:
         display_name=session.identity.display_name,
     )
     ingest_inbound(session.connection, inbound)
+    _remember_widget(session)
+
+
+def post_voice(session: WebSession, *, content: bytes, content_type: str, duration: int) -> None:
+    """Голосовое из виджета: байты приходят телом запроса, скачивать нечего."""
+    inbound = InboundMessage(
+        external_id=uuid.uuid4().hex,
+        user_id=session.identity.external_user_id,
+        chat_id="",
+        text="",
+        display_name=session.identity.display_name,
+        voice_content=content,
+        voice_mime=content_type,
+        voice_duration=duration,
+    )
+    ingest_inbound(session.connection, inbound)
+    _remember_widget(session)
+
+
+def _remember_widget(session: WebSession) -> None:
     conversation = (
         Conversation.objects.filter(
             channel=session.connection.channel,
@@ -243,7 +263,15 @@ def messages_payload(session: WebSession, since: int) -> dict:
         "state": _STATE.get(conversation.control_mode, "ai"),
         "lifecycle": conversation.lifecycle,
         "messages": [
-            {"id": m.id, "author": _ROLE.get(m.author_type, "ai"), "kind": m.kind, "text": m.text, "createdAt": m.created_at.isoformat()}
+            {
+                "id": m.id,
+                "author": _ROLE.get(m.author_type, "ai"),
+                "kind": m.kind,
+                "text": m.text,
+                "createdAt": m.created_at.isoformat(),
+                "durationSeconds": m.duration_seconds,
+                "hasAudio": bool(m.audio),
+            }
             for m in items
         ],
         "call": _call_payload(session),

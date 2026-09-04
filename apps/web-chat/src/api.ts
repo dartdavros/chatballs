@@ -13,8 +13,9 @@ export type WebConfig = {
   fallback?: { label: string; url: string }[];
 };
 
-// kind: "" — текст, "contact_request" — виджет рисует форму телефона, "contact" — клиент поделился номером.
-export type WebMessage = { id: number; author: "client" | "ai" | "operator" | "system"; kind?: string; text: string; createdAt: string };
+// kind: "" — текст, "contact_request" — виджет рисует форму телефона,
+// "contact" — клиент поделился номером, "VOICE" — голосовое (см. hasAudio).
+export type WebMessage = { id: number; author: "client" | "ai" | "operator" | "system"; kind?: string; text: string; createdAt: string; durationSeconds?: number; hasAudio?: boolean };
 
 // Приглашение/состояние онлайн-звонка (SPEC-HUB-0013).
 export type CallKind = "AUDIO" | "VIDEO";
@@ -68,6 +69,20 @@ export async function sendMessage(token: string, text: string): Promise<boolean>
     body: JSON.stringify({ text }),
   });
   return r.ok;
+}
+
+export async function sendVoice(token: string, audio: Blob, durationSeconds: number): Promise<boolean> {
+  const body = new FormData();
+  const type = (audio.type || "audio/webm").split(";")[0];
+  body.append("audio", audio, `voice.${type.split("/")[1] || "webm"}`);
+  body.append("duration", String(Math.round(durationSeconds)));
+  const r = await fetch(`${API}/messages/`, { method: "POST", headers: { Authorization: `Bearer ${token}` }, body });
+  return r.ok;
+}
+
+// URL аудио голосового: <audio src> не умеет заголовки — токен идёт параметром.
+export function voiceAudioUrl(token: string, messageId: number): string {
+  return `${API}/messages/${messageId}/audio/?token=${encodeURIComponent(token)}`;
 }
 
 export async function sendContact(token: string, phone: string): Promise<boolean> {
