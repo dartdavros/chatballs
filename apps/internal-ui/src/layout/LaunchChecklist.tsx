@@ -26,7 +26,7 @@ type Step = {
 
 const STEPS: Step[] = [
   { key: "agentCreated", label: "Создать агента", action: "Создать агента", route: "agents", icon: "robot" },
-  { key: "connectionBound", label: "Подключить точку входа", action: "Подключить", route: "integrations", icon: "plug" },
+  { key: "connectionBound", label: "Подключить точку входа", action: "Подключить", route: "settings", icon: "plug" },
   { key: "employeeInvited", label: "Пригласить сотрудников", action: "Пригласить", route: "employees", icon: "team" },
 ];
 

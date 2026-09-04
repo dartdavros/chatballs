@@ -76,28 +76,31 @@ describe("chat route", () => {
 });
 
 describe("administration route", () => {
-  it("keeps the old URL as an organization alias", () => {
+  it("sends legacy administration URLs to settings (§8.6)", () => {
     expect(routeFromPath("/administration")).toEqual({
-      route: "administrationOrganization",
+      route: "settings",
+      ...empty,
+    });
+    expect(routeFromPath("/integrations")).toEqual({
+      route: "settings",
       ...empty,
     });
   });
 
   it("parses and creates administration subsection URLs", () => {
+    // Организация переехала в «Настройки» (§8.6); тарифы — устаревший адрес (ADR-HUB-0042).
     expect(routeFromPath("/administration/organization")).toEqual({
-      route: "administrationOrganization",
+      route: "settings",
       ...empty,
     });
-    // Устаревший адрес тарифов ведёт в организацию (ADR-HUB-0042).
     expect(routeFromPath("/administration/subscription")).toEqual({
-      route: "administrationOrganization",
+      route: "settings",
       ...empty,
     });
     expect(routeFromPath("/administration/audit")).toEqual({
       route: "administrationAudit",
       ...empty,
     });
-    expect(pathFromRoute("administrationOrganization")).toBe("/administration/organization");
     expect(pathFromRoute("administrationAudit")).toBe("/administration/audit");
   });
 });

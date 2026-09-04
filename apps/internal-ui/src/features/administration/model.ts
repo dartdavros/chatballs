@@ -1,10 +1,7 @@
 import type { RouteKey, SessionUser } from "../../types";
 import { hasCapability } from "../../auth/access";
 
-export type AdministrationRoute = Extract<
-  RouteKey,
-  "administrationOrganization" | "administrationAudit"
->;
+export type AdministrationRoute = Extract<RouteKey, "administrationAudit">;
 
 export type AdministrationSection = "organization" | "audit";
 

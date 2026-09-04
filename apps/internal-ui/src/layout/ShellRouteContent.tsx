@@ -6,7 +6,6 @@ import { KnowledgeDetailPage } from "../features/ai/knowledge/KnowledgeDetailPag
 import { KnowledgeCreatePage } from "../features/ai/knowledge/KnowledgeCreatePage";
 import { KnowledgePage } from "../features/ai/knowledge/KnowledgePage";
 import { CommandCenter } from "../features/command/CommandCenter";
-import { IntegrationsPage } from "../features/integrations/IntegrationsPage";
 import { EmployeeDetailPage, EmployeesPage } from "../features/employees/EmployeesPage";
 import { ProfilePage } from "../features/profile/ProfilePage";
 import { SettingsPage } from "../features/settings/SettingsPage";
@@ -36,9 +35,8 @@ export function ShellRouteContent({ chatScope, setChatScope, chatCounters, chatS
       {route === "employeeDetail" && currentEmployee && <EmployeeDetailPage groups={data.groups} employee={currentEmployee} reload={reload} setRoute={setRoute} user={user} />}
       {route === "employeeDetail" && !currentEmployee && <EmployeesPage groups={data.groups} employees={data.employees} reload={reload} openEmployee={openEmployee} setRoute={setRoute} user={user} />}
       {route === "profile" && <ProfilePage user={user} onUserUpdated={onUserUpdated} reload={reload} onLogout={onLogout} />}
-      {route === "settings" && <SettingsPage user={user} onUserUpdated={onUserUpdated} reload={reload} />}
-      {(route === "administrationOrganization"
-        || route === "administrationAudit") && (
+      {route === "settings" && <SettingsPage user={user} onUserUpdated={onUserUpdated} reload={reload} groups={data.groups} />}
+      {route === "administrationAudit" && (
         <AdministrationPage
           route={route}
           user={user}
@@ -71,7 +69,7 @@ export function ShellRouteContent({ chatScope, setChatScope, chatCounters, chatS
           canManageConnections={hasCapability(user, "integrations.manage")}
           openAgents={() => setRoute("agents")}
           openKnowledge={openKnowledge}
-          openIntegrations={() => setRoute("integrations")}
+          openIntegrations={() => setRoute("settings")}
           setRoute={setRoute}
           onLoaded={onAgentLoaded}
         />
@@ -79,7 +77,6 @@ export function ShellRouteContent({ chatScope, setChatScope, chatCounters, chatS
       {route === "aiKnowledge" && <KnowledgePage openAgent={openAgent} openKnowledge={openKnowledge} setRoute={setRoute} user={user} />}
       {route === "aiKnowledgeCreate" && <KnowledgeCreatePage openKnowledge={openKnowledge} setRoute={setRoute} />}
       {route === "aiKnowledgeDetail" && <KnowledgeDetailPage agents={data.agents} canManage={hasCapability(user, "ai.manage")} knowledgeId={selectedKnowledgeId} openAgent={openAgent} setRoute={setRoute} onLoaded={onAgentLoaded} />}
-      {route === "integrations" && <IntegrationsPage />}
       {route === "supportPortals" && <Suspense fallback={<LoadingState />}><SupportPortalsPage user={user} openPortal={openSupportPortal} /></Suspense>}
       {route === "supportPortalDetail" && <Suspense fallback={<LoadingState />}><SupportPortalDetailPage portalId={selectedSupportPortalId} products={data.products} user={user} openPortals={() => setRoute("supportPortals")} /></Suspense>}
     </>

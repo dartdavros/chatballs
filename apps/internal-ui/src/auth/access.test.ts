@@ -35,7 +35,7 @@ describe("role-based navigation (SPEC-HUB-0031 §3)", () => {
       expect(canAccess(user, "employees")).toBe(true);
       expect(canAccess(user, "agents")).toBe(true);
       expect(canAccess(user, "aiKnowledge")).toBe(true);
-      expect(canAccess(user, "administrationOrganization")).toBe(true);
+      expect(canAccess(user, "administrationAudit")).toBe(true);
       expect(defaultRoute(user)).toBe("command");
     }
   });

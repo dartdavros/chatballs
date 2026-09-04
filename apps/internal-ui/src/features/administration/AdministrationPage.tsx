@@ -23,8 +23,8 @@ export function AdministrationPage({
   const page = useAdministration({ section, user, onUserUpdated });
   const header = (
     <PageHeader
-      title="Администрирование"
-      text="Настройки организации и журнал действий"
+      title="Аудит"
+      text="Журнал действий в организации"
     />
   );
 

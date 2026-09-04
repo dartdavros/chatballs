@@ -44,8 +44,6 @@ const SERVICE_ITEMS: SidebarNavSectionItem[] = [
   { activeRoutes: ["supportOverview"], key: "supportOverview", label: "Обзор поддержки" },
   { activeRoutes: ["aiKnowledge", "aiKnowledgeCreate", "aiKnowledgeDetail"], key: "aiKnowledge", label: "Знания" },
   { activeRoutes: ["aiUsage"], key: "aiUsage", label: "Использование AI" },
-  { activeRoutes: ["integrations"], key: "integrations", label: "Интеграции" },
-  { activeRoutes: ["administrationOrganization"], key: "administrationOrganization", label: "Организация" },
   { activeRoutes: ["administrationAudit"], key: "administrationAudit", label: "Аудит" },
 ];
 

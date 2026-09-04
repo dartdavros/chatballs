@@ -1,0 +1,110 @@
+/* Экран «Настройки» (SPEC-HUB-0031 §8.6): вертикальные секции. */
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.settings-section-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.settings-section-head h2 {
+  margin: 0;
+  color: var(--n-1);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.settings-section-head span {
+  color: var(--n-4);
+  font-size: 12.5px;
+}
+
+.settings-section-note {
+  margin: 0;
+  color: var(--n-4);
+  font-size: 12.5px;
+}
+
+.settings-section-error {
+  color: var(--error);
+  font-size: 12.5px;
+}
+
+.settings-groups-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-group-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 2px;
+  border-bottom: 1px solid var(--n-9);
+}
+
+.settings-group-row strong {
+  color: var(--n-1);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.settings-group-row small {
+  flex: 1;
+  color: var(--n-4);
+  font-size: 12px;
+}
+
+.settings-group-row button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: 7px;
+  color: var(--n-4);
+  background: transparent;
+}
+
+.settings-group-row button:hover {
+  color: var(--n-2);
+  background: var(--n-9);
+}
+
+.settings-group-create {
+  display: flex;
+  gap: 8px;
+}
+
+.settings-group-create input,
+.settings-modal-input {
+  flex: 1;
+  height: 34px;
+  padding: 0 11px;
+  border: 1px solid var(--n-7);
+  border-radius: 8px;
+  color: var(--n-1);
+  background: var(--surface-card);
+  font-size: 13px;
+}
+
+.settings-modal-input {
+  width: 100%;
+}
+
+.integrations-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.integrations-section-actions {
+  display: flex;
+  justify-content: flex-end;
+}

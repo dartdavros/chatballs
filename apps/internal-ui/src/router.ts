@@ -60,10 +60,11 @@ export function routeFromPath(pathname: string, search = ""): RouteState {
     return Number.isInteger(id) && id > 0 ? { ...state, route: "aiKnowledgeDetail", knowledgeId: id } : { route: "aiKnowledge", ...state };
   }
   if (path === "/ai/usage") return { route: "aiUsage", ...state };
-  if (path === "/integrations") return { route: "integrations", ...state };
-  // /administration/subscription — устаревший адрес тарифов (ADR-HUB-0042), ведёт в организацию.
+  // Устаревшие адреса: интеграции и организация переехали в «Настройки» (§8.6).
+  if (path === "/integrations") return { route: "settings", ...state };
+  // /administration/subscription — устаревший адрес тарифов (ADR-HUB-0042).
   if (path === "/administration" || path === "/administration/organization" || path === "/administration/subscription") {
-    return { route: "administrationOrganization", ...state };
+    return { route: "settings", ...state };
   }
   if (path === "/administration/audit") {
     return { route: "administrationAudit", ...state };
@@ -90,8 +91,6 @@ export function pathFromRoute(route: RouteKey, entityId: number | null = null, p
   if (route === "aiKnowledge") return `${prefix}/ai/knowledge`;
   if (route === "aiKnowledgeCreate") return `${prefix}/ai/knowledge/new`;
   if (route === "aiKnowledgeDetail") return entityId ? `${prefix}/ai/knowledge/${entityId}` : `${prefix}/ai/knowledge`;
-  if (route === "integrations") return `${prefix}/integrations`;
-  if (route === "administrationOrganization") return `${prefix}/administration/organization`;
   if (route === "administrationAudit") return `${prefix}/administration/audit`;
   if (route === "profile") return `${prefix}/profile`;
   if (route === "settings") return `${prefix}/settings`;
