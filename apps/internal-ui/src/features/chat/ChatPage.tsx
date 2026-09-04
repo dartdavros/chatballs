@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from "react";
 
 import { ChatMobileHeader } from "../../layout/ChatMobileHeader";
+import { Hint } from "../../shared/Hint";
 
 import { ConversationWorkspace, type DialogScope } from "../conversations/ConversationWorkspace";
 import { DialogControls } from "../conversations/DialogControls";
@@ -51,6 +52,9 @@ export function ChatPage({
       counters={counters}
       showScopeSwitcher={showScopeSwitcher}
       mobileHeader={<ChatMobileHeader user={user} setRoute={setRoute} onLogout={onLogout} />}
+      hint={showScopeSwitcher
+        ? <Hint id="chat-visibility">Вы видите все диалоги организации. Сотрудники видят только диалоги своих групп, без группы и те, где они ответственные.</Hint>
+        : undefined}
       renderContextPanel={({ dialog, detail, applyConversation }) => (
         <ChatContextPanel
           rightTab={rightTab}

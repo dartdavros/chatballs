@@ -45,12 +45,13 @@ import { useIncomingMessageSound } from "./useIncomingMessageSound";
 // Общий workspace диалогов (SPEC-HUB-0010 §8.2). Видимость inbox решает
 // backend по группам (ADR-HUB-0043); страница параметризуется заголовком,
 // placeholder поиска и правой панелью через render-prop.
-export function ConversationWorkspace({ isOwner = false, listTitle, searchPlaceholder, renderContextPanel, mobileHeader, initialConversationId, scope, setScope, counters, showScopeSwitcher = true }: {
+export function ConversationWorkspace({ isOwner = false, listTitle, searchPlaceholder, renderContextPanel, mobileHeader, hint, initialConversationId, scope, setScope, counters, showScopeSwitcher = true }: {
   isOwner?: boolean;
   listTitle?: string;
   searchPlaceholder?: string;
   renderContextPanel: (ctx: { dialog: ConversationListItem | null; detail: ApiConversation | null; applyConversation: (updated: ApiConversation) => void }) => ReactNode;
   mobileHeader?: ReactNode;
+  hint?: ReactNode;
   initialConversationId?: number | null;
   // Охват (дерево фильтров) живёт в Shell: у сотрудника им управляет сайдбар,
   // у менеджера — поповер в заголовке списка.
@@ -198,6 +199,7 @@ export function ConversationWorkspace({ isOwner = false, listTitle, searchPlaceh
           setMobileDialogOpen(true);
         }}
         mobileHeader={mobileHeader}
+        hint={hint}
       />
       <section className="sales-conversation">
         <ConversationThread controlMode={controlMode} dialog={selectedDialog} detail={detail} isOwner={isOwner} onClaim={onClaim} onCall={(kind) => void callController.start(kind)} onClose={onClose} onSpam={onSpam} onReturnQueue={onReturnQueue} onArchive={onArchive} onToggleContext={() => setCtxOpen((open) => !open)} onMobileBack={() => setMobileDialogOpen(false)} />

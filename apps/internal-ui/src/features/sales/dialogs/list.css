@@ -291,3 +291,40 @@ img.sales-dialog-avatar {
 .scope-dropdown .scope-dot.is-muted {
   background: var(--n-5);
 }
+
+/* Inline-подсказка первого визита (кадр A1). */
+.hub-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin: 10px 12px 2px;
+  padding: 9px 10px 9px 12px;
+  border: 1px solid var(--primary-border);
+  border-radius: 8px;
+  background: var(--primary-bg);
+}
+
+.hub-hint p {
+  flex: 1;
+  margin: 0;
+  color: var(--n-2);
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+.hub-hint button {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  border: 0;
+  border-radius: 5px;
+  color: var(--n-4);
+  background: transparent;
+}
+
+.hub-hint button:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
