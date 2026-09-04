@@ -65,6 +65,7 @@ export function ConversationWorkspace({ isOwner = false, listTitle, searchPlaceh
   const [ctxOpen, setCtxOpen] = useState(false);
   // Кадры M1/M2: на ≤768px список и лента — отдельные экраны.
   const [mobileDialogOpen, setMobileDialogOpen] = useState(false);
+  const searchRef = useRef<HTMLInputElement | null>(null);
   const [search, setSearch] = useState("");
   const [conversations, setConversations] = useState<ApiConversation[]>([]);
   const [listLoaded, setListLoaded] = useState(false);
@@ -132,6 +133,37 @@ export function ConversationWorkspace({ isOwner = false, listTitle, searchPlaceh
   const callController = useConversationCall({ conversationId: selectedId, onConversationChanged });
   useIncomingMessageSound(conversations, listLoaded);
 
+  // Клавиатура (SPEC-HUB-0031 §9): ↑/↓ — по списку, Enter — открыть (мобайл),
+  // «/» — фокус в поиск. Не перехватываем ввод в полях.
+  const filteredRef = useRef<ConversationListItem[]>([]);
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      const target = event.target as HTMLElement | null;
+      if (target?.closest("input, textarea, [contenteditable], .ant-dropdown")) return;
+      if (event.key === "/") {
+        event.preventDefault();
+        searchRef.current?.focus();
+        return;
+      }
+      if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+        const list = filteredRef.current;
+        if (!list.length) return;
+        event.preventDefault();
+        const index = list.findIndex((dialog) => dialog.id === selectedIdRef.current);
+        const next = event.key === "ArrowDown"
+          ? list[Math.min(index + 1, list.length - 1)]
+          : list[Math.max(index - 1, 0)];
+        if (next) setSelectedId(next.id);
+        return;
+      }
+      if (event.key === "Enter" && selectedIdRef.current != null) {
+        setMobileDialogOpen(true);
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+
   const dialogs = useMemo(() => conversations.map(toConversationListItem), [conversations]);
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -143,6 +175,7 @@ export function ConversationWorkspace({ isOwner = false, listTitle, searchPlaceh
     });
   }, [dialogs, listTab, search]);
 
+  filteredRef.current = filtered;
   const selectedDialog = dialogs.find((dialog) => dialog.id === selectedId) ?? null;
   const detailLoaded = detail?.id === selectedId;
   const controlMode = detailLoaded ? controlModeOf(detail) : "waiting";
@@ -200,6 +233,7 @@ export function ConversationWorkspace({ isOwner = false, listTitle, searchPlaceh
         }}
         mobileHeader={mobileHeader}
         hint={hint}
+        searchRef={searchRef}
       />
       <section className="sales-conversation">
         <ConversationThread controlMode={controlMode} dialog={selectedDialog} detail={detail} isOwner={isOwner} onClaim={onClaim} onCall={(kind) => void callController.start(kind)} onClose={onClose} onSpam={onSpam} onReturnQueue={onReturnQueue} onArchive={onArchive} onToggleContext={() => setCtxOpen((open) => !open)} onMobileBack={() => setMobileDialogOpen(false)} />

@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ReactNode } from "react";
+import type { ButtonHTMLAttributes, ReactNode, RefObject } from "react";
 
 import { Icon } from "./icons";
 
@@ -27,6 +27,7 @@ type SearchInputProps = {
   placeholder: string;
   value?: string;
   onChange?: (value: string) => void;
+  inputRef?: RefObject<HTMLInputElement | null>;
 };
 
 type UnderlineTabsProps<T extends string> = {
@@ -75,11 +76,11 @@ export function IconButton({ icon, iconSize = 16, label, bare = false, className
   );
 }
 
-export function SearchInput({ className = "", placeholder, value, onChange }: SearchInputProps) {
+export function SearchInput({ className = "", placeholder, value, onChange, inputRef }: SearchInputProps) {
   return (
     <label className={`ui-search-input ${className}`.trim()}>
       <Icon name="search" size={15} />
-      <input value={value} onChange={(event) => onChange?.(event.target.value)} placeholder={placeholder} />
+      <input ref={inputRef} value={value} onChange={(event) => onChange?.(event.target.value)} placeholder={placeholder} />
     </label>
   );
 }

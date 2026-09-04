@@ -1,5 +1,5 @@
 import { Dropdown } from "antd";
-import type { ReactNode } from "react";
+import type { ReactNode, RefObject } from "react";
 
 import { modeDots } from "./data";
 import { ContactAvatar } from "./ContactAvatar";
@@ -10,7 +10,7 @@ import type { ConversationCounters } from "./model";
 import type { ConversationListItem, ListTab } from "./types";
 import { SearchInput } from "../../shared/ui-controls";
 
-export function DialogList({ title = "Диалоги", searchPlaceholder = "Поиск по клиенту, продукту…", scope, counters, setScope, showScopeSwitcher = true, mobileHeader, hint, dialogs, filtered, listTab, selectedId, search, errorText, setSearch, setListTab, setSelectedId }: {
+export function DialogList({ title = "Диалоги", searchPlaceholder = "Поиск по клиенту, продукту…", scope, counters, setScope, showScopeSwitcher = true, mobileHeader, hint, searchRef, dialogs, filtered, listTab, selectedId, search, errorText, setSearch, setListTab, setSelectedId }: {
   title?: string;
   searchPlaceholder?: string;
   scope: DialogScope;
@@ -19,6 +19,7 @@ export function DialogList({ title = "Диалоги", searchPlaceholder = "По
   showScopeSwitcher?: boolean;
   mobileHeader?: ReactNode;
   hint?: ReactNode;
+  searchRef?: RefObject<HTMLInputElement | null>;
   dialogs: ConversationListItem[];
   filtered: ConversationListItem[];
   listTab: ListTab;
@@ -40,7 +41,7 @@ export function DialogList({ title = "Диалоги", searchPlaceholder = "По
             : <h2>{scope.kind === "all" ? title : scopeLabel(scope)}</h2>}
           <span>{dialogs.length} всего</span>
         </div>
-        <SearchInput className="sales-dialog-search" placeholder={searchPlaceholder} value={search} onChange={setSearch} />
+        <SearchInput className="sales-dialog-search" inputRef={searchRef} placeholder={searchPlaceholder} value={search} onChange={setSearch} />
       </div>
       <div className="sales-dialog-tabs">
         <DialogTab active={listTab === "all"} onClick={() => setListTab("all")}>Все</DialogTab>
