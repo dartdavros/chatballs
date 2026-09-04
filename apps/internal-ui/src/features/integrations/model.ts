@@ -79,9 +79,9 @@ export const PROVIDERS: Record<IntegrationProvider, ProviderMeta> = {
 };
 
 export const STATUS_META: Record<IntegrationStatus, { label: string; bg: string; color: string }> = {
-  OK: { label: "Подключено", bg: "#f6ffed", color: "#389e0d" },
-  ERROR: { label: "Ошибка", bg: "#fff1f0", color: "#cf1322" },
-  UNCHECKED: { label: "Не проверено", bg: "#f5f5f5", color: "#8c8c8c" },
+  OK: { label: "Подключено", bg: "var(--success-bg)", color: "var(--success-text)" },
+  ERROR: { label: "Ошибка", bg: "var(--error-bg)", color: "var(--error-text)" },
+  UNCHECKED: { label: "Не проверено", bg: "var(--n-9)", color: "var(--n-4)" },
 };
 
 export const KIND_LABEL: Record<IntegrationKind, string> = {

@@ -13,7 +13,7 @@
 
 .sales-clients-header h1 {
   margin: 0;
-  color: #1f1f1f;
+  color: var(--n-1);
   font-size: 24px;
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -22,12 +22,12 @@
 
 .sales-clients-header p {
   margin: 6px 0 0;
-  color: #8c8c8c;
+  color: var(--n-4);
   font-size: 13.5px;
 }
 
 .sales-clients-header p b {
-  color: #595959;
+  color: var(--n-3);
 }
 
 .sales-clients-header-actions {
@@ -45,28 +45,28 @@
   gap: 12px;
   margin-bottom: 16px;
   padding: 11px 14px;
-  background: #ffffff;
-  border: 1px solid #f0f0f0;
+  background: var(--surface-card);
+  border: 1px solid var(--n-8);
   border-radius: 11px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  box-shadow: var(--shadow-xs);
 }
 
 .sales-clients-search {
   width: 280px;
   height: 34px;
   padding: 0 11px;
-  color: #bfbfbf;
-  background: #fafafa;
-  border: 1px solid #e8e8e8;
+  color: var(--n-5);
+  background: var(--n-10);
+  border: 1px solid var(--n-7);
   border-radius: 8px;
 }
 
 .sales-clients-search:focus-within {
-  border-color: #1677ff;
+  border-color: var(--primary);
 }
 
 .sales-clients-search input {
-  color: #262626;
+  color: var(--n-2);
   font-size: 13px;
 }
 
@@ -81,9 +81,9 @@
   align-items: center;
   gap: 8px;
   padding: 0 12px;
-  color: #595959;
-  background: #ffffff;
-  border: 1px solid #e8e8e8;
+  color: var(--n-3);
+  background: var(--surface-card);
+  border: 1px solid var(--n-7);
   border-radius: 8px;
   font-size: 13px;
   font-weight: 500;
@@ -92,9 +92,9 @@
 
 .sales-clients-dd-button.active,
 .sales-clients-chip.active {
-  color: #0958d9;
-  background: #e6f4ff;
-  border-color: #1677ff;
+  color: var(--primary-text);
+  background: var(--primary-bg);
+  border-color: var(--primary);
   font-weight: 600;
 }
 
@@ -106,7 +106,7 @@
   justify-content: center;
   padding: 0 5px;
   color: #ffffff;
-  background: #1677ff;
+  background: var(--primary);
   border-radius: 9px;
   font-size: 11px;
   font-weight: 700;
@@ -135,14 +135,14 @@
   justify-content: center;
   flex: none;
   color: #ffffff;
-  background: #ffffff;
-  border: 1.5px solid #d9d9d9;
+  background: var(--surface-card);
+  border: 1.5px solid var(--n-6);
   border-radius: 5px;
 }
 
 .sales-clients-check.checked {
-  background: #1677ff;
-  border-color: #1677ff;
+  background: var(--primary);
+  border-color: var(--primary);
 }
 
 .sales-clients-chip {
@@ -155,7 +155,7 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #faad14;
+  background: var(--warning);
 }
 
 .sales-clients-filter-spacer {
@@ -165,7 +165,7 @@
 .sales-clients-reset {
   height: 34px;
   padding: 0 12px;
-  color: #8c8c8c;
+  color: var(--n-4);
   background: transparent;
   border: 0;
   border-radius: 8px;
@@ -174,16 +174,16 @@
 }
 
 .sales-clients-reset:hover {
-  color: #1677ff;
-  background: #f5f5f5;
+  color: var(--primary);
+  background: var(--n-9);
 }
 
 .sales-clients-card {
   overflow: visible;
-  background: #ffffff;
-  border: 1px solid #f0f0f0;
+  background: var(--surface-card);
+  border: 1px solid var(--n-8);
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--shadow-sm);
 }
 
 .sales-clients-table-scroll {
@@ -202,9 +202,9 @@
   position: sticky;
   top: 0;
   padding: 11px 12px;
-  color: #8c8c8c;
-  background: #fafafa;
-  border-bottom: 1px solid #f0f0f0;
+  color: var(--n-4);
+  background: var(--n-10);
+  border-bottom: 1px solid var(--n-8);
   font-size: 11px;
   font-weight: 600;
   text-align: left;
@@ -239,13 +239,13 @@
 
 .sales-clients-table td {
   padding: 12px;
-  border-bottom: 1px solid #f5f5f5;
-  color: #262626;
+  border-bottom: 1px solid var(--n-9);
+  color: var(--n-2);
   vertical-align: middle;
 }
 
 .sales-clients-table tbody tr:hover {
-  background: #fafbfc;
+  background: var(--n-10);
 }
 
 .sales-client-person {
@@ -273,7 +273,7 @@
 
 .sales-client-person a {
   display: block;
-  color: #1677ff;
+  color: var(--primary);
   font-size: 13.5px;
   font-weight: 600;
   text-decoration: none;
@@ -286,23 +286,23 @@
 
 .sales-client-person small {
   display: block;
-  color: #bfbfbf;
+  color: var(--n-5);
   font-size: 11px;
 }
 
 .sales-client-contact {
-  color: #595959;
+  color: var(--n-3);
   font-size: 12.5px;
 }
 
 .sales-client-contact.muted {
-  color: #bfbfbf;
+  color: var(--n-5);
 }
 
 .sales-client-phone {
   display: block;
   margin-top: 2px;
-  color: #bfbfbf;
+  color: var(--n-5);
   font-size: 11.5px;
 }
 
@@ -353,7 +353,7 @@
   display: flex;
   align-items: center;
   gap: 7px;
-  color: #595959;
+  color: var(--n-3);
   font-size: 12.5px;
   white-space: nowrap;
 }
@@ -381,14 +381,14 @@
   align-items: center;
   justify-content: center;
   margin-bottom: 14px;
-  color: #bfbfbf;
-  background: #f5f5f5;
+  color: var(--n-5);
+  background: var(--n-9);
   border-radius: 50%;
 }
 
 .sales-clients-empty strong {
   display: block;
-  color: #595959;
+  color: var(--n-3);
   font-size: 14px;
   font-weight: 600;
 }
@@ -396,11 +396,11 @@
 .sales-clients-empty span {
   display: block;
   margin-top: 4px;
-  color: #bfbfbf;
+  color: var(--n-5);
   font-size: 12.5px;
 }
 
 .sales-clients-pagination {
   padding: 12px 18px;
-  border-top: 1px solid #f5f5f5;
+  border-top: 1px solid var(--n-9);
 }

@@ -7,19 +7,19 @@
 /* Табы «Подключения / Провайдеры» (SPEC-HUB-0025 §2.1) — по образцу sales-orders-tabs. */
 .integrations-tabs {
   gap: 4px;
-  border-bottom: 1px solid #e8e8e8;
+  border-bottom: 1px solid var(--n-7);
 }
 
 .integrations-tabs button {
   gap: 8px;
   padding: 11px 16px;
-  color: #595959;
+  color: var(--n-3);
   font-size: 14px;
   font-weight: 500;
 }
 
 .integrations-tabs button.active {
-  color: #1677ff;
+  color: var(--primary);
   font-weight: 600;
 }
 
@@ -27,16 +27,16 @@
   min-width: 20px;
   height: 20px;
   padding: 0 6px;
-  color: #8c8c8c;
-  background: #f0f0f0;
+  color: var(--n-4);
+  background: var(--n-8);
   border-radius: 10px;
   font-size: 11px;
   font-weight: 700;
 }
 
 .integrations-tabs button.active span {
-  color: #1677ff;
-  background: #e6f4ff;
+  color: var(--primary);
+  background: var(--primary-bg);
 }
 
 .integrations-page .product-icon {
@@ -46,8 +46,8 @@
   width: 38px;
   height: 38px;
   border-radius: 10px;
-  background: #f0f2f5;
-  color: #595959;
+  background: var(--n-11);
+  color: var(--n-3);
 }
 
 /* Плитки подключений: белая фирменная марка на фирменном фоне (SPEC-HUB-0025 §2.3).
@@ -65,22 +65,22 @@
 }
 
 .integrations-page .integration-tile--web {
-  background: #1677ff;
+  background: var(--primary);
 }
 
 .integrations-page .integration-tile--email {
-  background: #d48806;
+  background: var(--warning-text);
 }
 
 .integration-config {
   font-size: 13px;
-  color: #595959;
+  color: var(--n-3);
 }
 
 .integration-config > small {
   display: block;
   margin-top: 2px;
-  color: #8c8c8c;
+  color: var(--n-4);
   font-family: var(--mono-font, ui-monospace, monospace);
 }
 
@@ -92,7 +92,7 @@
 }
 
 .integration-status > small {
-  color: #8c8c8c;
+  color: var(--n-4);
   font-size: 12px;
   max-width: 280px;
 }
@@ -105,13 +105,13 @@
 }
 
 .integration-form-error {
-  color: #cf1322;
+  color: var(--error-text);
   font-size: 13px;
 }
 
 .integration-form-hint {
   margin-top: -8px;
-  color: #8c8c8c;
+  color: var(--n-4);
   font-size: 11.5px;
 }
 
@@ -121,7 +121,7 @@
   flex-direction: column;
   gap: 9px;
   padding-top: 12px;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--n-8);
 }
 
 .integration-email-section > h3 {
@@ -130,7 +130,7 @@
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: #8c8c8c;
+  color: var(--n-4);
 }
 
 .integration-email-grid {
@@ -143,20 +143,20 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #595959;
+  color: var(--n-3);
   font-size: 13px;
   cursor: pointer;
 }
 
 .integration-ssl-toggle input {
-  accent-color: #1677ff;
+  accent-color: var(--primary);
 }
 
 .integration-notifier-toggle {
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  color: #595959;
+  color: var(--n-3);
   font-size: 13px;
   line-height: 1.4;
   cursor: pointer;
@@ -164,7 +164,7 @@
 
 .integration-notifier-toggle input {
   margin-top: 2px;
-  accent-color: #1677ff;
+  accent-color: var(--primary);
 }
 
 .integration-form-actions {

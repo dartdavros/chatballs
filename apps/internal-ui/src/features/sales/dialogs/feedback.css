@@ -1,9 +1,9 @@
 .sales-load-error,
 .sales-composer-error,
 .sales-conversation-error {
-  color: #cf1322;
-  background: #fff1f0;
-  border: 1px solid #ffa39e;
+  color: var(--error-text);
+  background: var(--error-bg);
+  border: 1px solid var(--error-border);
   border-radius: 8px;
   font-size: 12px;
 }

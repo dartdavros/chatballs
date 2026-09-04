@@ -11,6 +11,8 @@ function userWith(role: Role, capabilities: string[] = []): SessionUser {
     mustChangePassword: false,
     totpEnabled: false,
     deliveryMode: "CLOUD",
+  uiTheme: "SYSTEM",
+  uiAccent: "",
     memberships: [],
     organizationPublicId: "org-1",
     organization: "org",

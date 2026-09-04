@@ -9,7 +9,7 @@
   align-items: center;
   gap: 16px;
   padding: 20px 22px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--shadow-sm);
 }
 
 .profile-header-card .avatar {
@@ -32,7 +32,7 @@
 .profile-header-main h1 {
   display: inline-block;
   margin: 0;
-  color: #1f1f1f;
+  color: var(--n-1);
   font-size: 21px;
   font-weight: 700;
   letter-spacing: -0.01em;
@@ -40,19 +40,19 @@
 
 .profile-header-main p {
   margin: 5px 0 0;
-  color: #8c8c8c;
+  color: var(--n-4);
   font-family: "SF Mono", ui-monospace, Menlo, monospace;
   font-size: 12.5px;
 }
 
 .profile-card {
   padding: 18px 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--shadow-sm);
 }
 
 .profile-card h3 {
   margin: 0 0 16px;
-  color: #1f1f1f;
+  color: var(--n-1);
   font-size: 14px;
   font-weight: 700;
 }
@@ -72,18 +72,18 @@
 .profile-message {
   margin-top: 12px;
   padding: 9px 12px;
-  color: #0958d9;
-  background: #e6f4ff;
-  border: 1px solid #91caff;
+  color: var(--primary-text);
+  background: var(--primary-bg);
+  border: 1px solid var(--primary-border);
   border-radius: 9px;
   font-size: 12.5px;
   font-weight: 500;
 }
 
 .profile-message.error {
-  color: #cf1322;
-  background: #fff2f0;
-  border-color: #ffccc7;
+  color: var(--error-text);
+  background: var(--error-bg);
+  border-color: var(--error-border);
 }
 
 .profile-message.sessions {
@@ -113,7 +113,7 @@
 
 .totp-card p {
   margin: 4px 0 0;
-  color: #8c8c8c;
+  color: var(--n-4);
   font-size: 12.5px;
   line-height: 1.5;
 }
@@ -130,21 +130,21 @@
 }
 
 .security-note.ok {
-  color: #389e0d;
-  background: #f6ffed;
-  border: 1px solid #d9f7be;
+  color: var(--success-text);
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
 }
 
 .security-note.warn,
 .security-note.warning {
-  color: #d48806;
-  background: #fffbe6;
-  border: 1px solid #ffe58f;
+  color: var(--warning-text);
+  background: var(--warning-bg);
+  border: 1px solid var(--warning-border);
 }
 
 .sessions-card {
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--shadow-sm);
 }
 
 .sessions-head {
@@ -156,7 +156,7 @@
 
 .sessions-card h3 {
   margin: 0;
-  color: #1f1f1f;
+  color: var(--n-1);
   font-size: 14px;
   font-weight: 700;
 }
@@ -173,7 +173,7 @@
   align-items: center;
   gap: 13px;
   padding: 13px 20px;
-  border-top: 1px solid #f5f5f5;
+  border-top: 1px solid var(--n-9);
 }
 
 .session-icon {
@@ -183,14 +183,14 @@
   align-items: center;
   justify-content: center;
   flex: none;
-  color: #8c8c8c;
-  background: #f5f5f5;
+  color: var(--n-4);
+  background: var(--n-9);
   border-radius: 9px;
 }
 
 .session-row strong {
   display: block;
-  color: #262626;
+  color: var(--n-2);
   font-size: 13px;
   font-weight: 500;
 }
@@ -198,14 +198,14 @@
 .session-row small {
   display: block;
   margin-top: 3px;
-  color: #8c8c8c;
+  color: var(--n-4);
   font-size: 11.5px;
 }
 
 .session-row b {
   padding: 1px 8px;
-  color: #389e0d;
-  background: #f6ffed;
+  color: var(--success-text);
+  background: var(--success-bg);
   border-radius: 5px;
   font-size: 10.5px;
   font-weight: 600;
@@ -215,7 +215,7 @@
 /* Уведомления в мессенджер: привязка к сервисному боту (TG/MAX). */
 .profile-notifications-note {
   margin: 0 0 10px;
-  color: #8c8c8c;
+  color: var(--n-4);
   font-size: 12.5px;
   line-height: 1.5;
 }
@@ -226,7 +226,7 @@
   justify-content: space-between;
   gap: 12px;
   padding: 10px 0;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--n-8);
 }
 
 .profile-notifications-row > div:first-child strong {
@@ -235,7 +235,7 @@
 }
 
 .profile-notifications-row > div:first-child small {
-  color: #8c8c8c;
+  color: var(--n-4);
   font-size: 12px;
 }
 
@@ -248,7 +248,7 @@
 .profile-notifications-actions code {
   padding: 3px 8px;
   border-radius: 6px;
-  background: #f5f5f5;
+  background: var(--n-9);
   font-size: 12px;
 }
 
@@ -258,21 +258,21 @@
 }
 
 .profile-notifications-status.ok {
-  color: #389e0d;
+  color: var(--success-text);
 }
 
 .profile-notifications-status.wait {
-  color: #d48806;
+  color: var(--warning-text);
 }
 
 .profile-notifications-link {
-  color: #1677ff;
+  color: var(--primary);
   font-size: 13px;
   font-weight: 600;
 }
 
 .profile-notifications-block + .profile-notifications-block .profile-notifications-row {
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--n-8);
 }
 
 .profile-notifications-bind {
@@ -281,7 +281,7 @@
   height: 34px;
   padding: 0 16px;
   border-radius: 8px;
-  background: #1677ff;
+  background: var(--primary);
   color: #ffffff;
   font-size: 13px;
   font-weight: 600;
@@ -289,7 +289,7 @@
 }
 
 .profile-notifications-bind:hover {
-  background: #0958d9;
+  background: var(--primary-hover);
   color: #ffffff;
 }
 
@@ -304,11 +304,113 @@
   display: flex;
   align-items: center;
   gap: 7px;
-  color: #595959;
+  color: var(--n-3);
   font-size: 12.5px;
   cursor: pointer;
 }
 
 .profile-notifications-types input {
-  accent-color: #1677ff;
+  accent-color: var(--primary);
+}
+
+/* --- «Внешний вид» (SPEC-HUB-0031 §7) --- */
+
+.appearance-card h3 {
+  margin: 0 0 14px;
+}
+
+.appearance-row {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 14px;
+}
+
+.appearance-row > span {
+  color: var(--text-tertiary);
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+.appearance-theme-options {
+  display: inline-flex;
+  gap: 0;
+  border: 1px solid var(--border-input);
+  border-radius: 9px;
+  overflow: hidden;
+  width: fit-content;
+}
+
+.appearance-theme-options button {
+  padding: 7px 14px;
+  border: none;
+  background: var(--surface-card);
+  color: var(--text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.appearance-theme-options button + button {
+  border-left: 1px solid var(--border-input);
+}
+
+.appearance-theme-options button.active {
+  background: var(--primary);
+  color: #fff;
+  font-weight: 600;
+}
+
+.appearance-accents {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.appearance-accents > button {
+  width: 28px;
+  height: 28px;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 0;
+}
+
+.appearance-accents > button.active {
+  border-color: var(--text-heading);
+  box-shadow: inset 0 0 0 2px var(--surface-card);
+}
+
+.appearance-custom {
+  display: flex;
+  gap: 6px;
+  margin-left: 6px;
+}
+
+.appearance-custom input {
+  width: 96px;
+  padding: 5px 9px;
+  border: 1px solid var(--border-input);
+  border-radius: 8px;
+  background: var(--surface-card);
+  color: var(--text-body);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 12.5px;
+}
+
+.appearance-custom button {
+  padding: 0 11px;
+  border: 1px solid var(--border-input);
+  border-radius: 8px;
+  background: var(--surface-card);
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.appearance-note {
+  margin: 0;
+  color: var(--text-tertiary);
+  font-size: 12px;
 }

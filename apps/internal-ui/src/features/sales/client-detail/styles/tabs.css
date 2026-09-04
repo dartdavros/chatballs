@@ -3,7 +3,7 @@
   margin-bottom: 18px;
   overflow-x: auto;
   scrollbar-width: none;
-  border-bottom: 1px solid #e8e8e8;
+  border-bottom: 1px solid var(--n-7);
 }
 
 .sales-client-detail-tabs::-webkit-scrollbar {
@@ -12,12 +12,12 @@
 
 .sales-client-detail-tabs button {
   padding: 11px 15px;
-  color: #595959;
+  color: var(--n-3);
   font-size: 14px;
   font-weight: 500;
 }
 
 .sales-client-detail-tabs button.active {
-  color: #1677ff;
+  color: var(--primary);
   font-weight: 600;
 }

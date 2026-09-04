@@ -72,7 +72,7 @@ export function ClientContext({ dialog, detail, groups = [], employees = [], app
             <button className="sales-secondary-action" style={{ width: "100%", marginTop: 8 }} onClick={() => void onRequestContact()} disabled={!canRequest || requesting || alreadyRequested}>
               {requesting ? "Отправка…" : alreadyRequested ? "Контакт запрошен" : "Запросить контакт"}
             </button>
-            {requestError && <p className="sales-context-muted" style={{ color: "#cf1322" }}>Не удалось отправить запрос — попробуйте ещё раз</p>}
+            {requestError && <p className="sales-context-muted" style={{ color: "var(--error-text)" }}>Не удалось отправить запрос — попробуйте ещё раз</p>}
           </>
         )}
       </ContextSection>

@@ -76,7 +76,7 @@
     min-height: 126px;
     padding: 14px 4px;
     border-radius: 0;
-    border-bottom: 1px solid #ececec;
+    border-bottom: 1px solid var(--n-7);
   }
 
   .help-category-icon {

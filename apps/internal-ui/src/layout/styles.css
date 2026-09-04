@@ -2,7 +2,7 @@
   height: 100vh;
   display: flex;
   overflow: hidden;
-  background: #f0f2f5;
+  background: var(--n-11);
 }
 
 .hub-sidebar {
@@ -11,8 +11,8 @@
   display: flex;
   flex: none;
   flex-direction: column;
-  background: #ffffff;
-  border-right: 1px solid #f0f0f0;
+  background: var(--surface-card);
+  border-right: 1px solid var(--n-8);
 }
 
 .hub-brand {
@@ -25,12 +25,12 @@
   padding: 0 20px;
   background: transparent;
   border: none;
-  border-bottom: 1px solid #f5f5f5;
+  border-bottom: 1px solid var(--n-9);
   text-align: left;
 }
 
 .hub-brand:hover {
-  background: #fafafa;
+  background: var(--n-10);
 }
 
 .hub-brand-mark {
@@ -41,15 +41,15 @@
   justify-content: center;
   flex: none;
   color: #ffffff;
-  background: #1677ff;
+  background: var(--primary);
   border-radius: 8px;
 }
 
 .hub-brand-mark.has-logo {
   overflow: hidden;
   color: inherit;
-  background: #ffffff;
-  border: 1px solid #e8e8e8;
+  background: var(--surface-card);
+  border: 1px solid var(--n-7);
 }
 
 .hub-brand-mark img {
@@ -62,7 +62,7 @@
 .hub-brand strong,
 .profile-link strong {
   display: block;
-  color: #1f1f1f;
+  color: var(--n-1);
   font-size: 14px;
   font-weight: 600;
   line-height: 1.15;
@@ -72,7 +72,7 @@
 .profile-link small {
   display: block;
   margin-top: 2px;
-  color: #8c8c8c;
+  color: var(--n-4);
   font-size: 11px;
   line-height: 1.15;
 }
@@ -93,7 +93,7 @@
   min-height: 36px;
   padding: 9px 12px;
   margin-bottom: 2px;
-  color: #595959;
+  color: var(--n-3);
   background: transparent;
   border: none;
   border-radius: 8px;
@@ -105,14 +105,14 @@
 
 .hub-nav-item:not(:disabled):hover,
 .profile-link:hover {
-  color: #262626;
-  background: #f5f5f5;
+  color: var(--n-2);
+  background: var(--n-9);
 }
 
 .hub-nav-item.is-active,
 .profile-link.is-active {
-  color: #0958d9;
-  background: #e6f4ff;
+  color: var(--primary-text);
+  background: var(--primary-bg);
   font-weight: 600;
 }
 
@@ -130,7 +130,7 @@
   padding: 6px 12px;
   border: 0;
   border-radius: 7px;
-  color: #595959;
+  color: var(--n-3);
   background: transparent;
   font-size: 13px;
   font-weight: 500;
@@ -139,18 +139,18 @@
 }
 
 .hub-subnav-item:not(:disabled):hover {
-  color: #262626;
-  background: #f5f5f5;
+  color: var(--n-2);
+  background: var(--n-9);
 }
 
 .hub-subnav-item.is-active {
-  color: #0958d9;
-  background: #e6f4ff;
+  color: var(--primary-text);
+  background: var(--primary-bg);
   font-weight: 600;
 }
 
 .hub-subnav-item:disabled {
-  color: #bfbfbf;
+  color: var(--n-5);
   cursor: not-allowed;
 }
 
@@ -173,7 +173,7 @@
   margin-left: auto;
   padding: 0 6px;
   color: #ffffff;
-  background: #faad14;
+  background: var(--warning);
   border-radius: 10px;
   font-size: 11px;
   font-weight: 700;
@@ -186,12 +186,12 @@
   bottom: 8px;
   width: 3px;
   border-radius: 0 3px 3px 0;
-  background: #1677ff;
+  background: var(--primary);
 }
 
 .hub-nav-group {
   padding: 14px 12px 6px;
-  color: #bfbfbf;
+  color: var(--n-5);
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.06em;
@@ -200,13 +200,13 @@
 .hub-nav-divider {
   height: 1px;
   margin: 14px 12px 10px;
-  background: #f5f5f5;
+  background: var(--n-9);
 }
 
 .profile-link {
   margin: 0;
   padding: 8px 10px;
-  border-top: 1px solid #f5f5f5;
+  border-top: 1px solid var(--n-9);
   border-radius: 0;
 }
 
@@ -217,7 +217,7 @@
 
 .profile-link > svg:last-child {
   flex: none;
-  color: #bfbfbf;
+  color: var(--n-5);
 }
 
 .avatar {
@@ -228,7 +228,7 @@
   justify-content: center;
   flex: none;
   color: #ffffff;
-  background: #1677ff;
+  background: var(--primary);
   border-radius: 50%;
   font-size: 13px;
   font-weight: 600;

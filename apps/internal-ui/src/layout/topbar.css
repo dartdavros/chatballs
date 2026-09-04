@@ -5,37 +5,37 @@
   justify-content: space-between;
   flex: none;
   padding: 0 24px;
-  background: #ffffff;
-  border-bottom: 1px solid #f0f0f0;
+  background: var(--surface-card);
+  border-bottom: 1px solid var(--n-8);
 }
 
 .breadcrumbs {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #8c8c8c;
+  color: var(--n-4);
   font-size: 13px;
 }
 
 .breadcrumbs button {
   padding: 0;
-  color: #595959;
+  color: var(--n-3);
   background: transparent;
   border: none;
   font-weight: 500;
 }
 
 .breadcrumbs button:hover {
-  color: #1677ff;
+  color: var(--primary);
 }
 
 .breadcrumbs i {
-  color: #d9d9d9;
+  color: var(--n-6);
   font-style: normal;
 }
 
 .breadcrumbs strong {
-  color: #262626;
+  color: var(--n-2);
   font-weight: 600;
 }
 
@@ -69,9 +69,9 @@
   align-items: center;
   gap: 7px;
   padding: 5px 11px;
-  color: #389e0d;
-  background: #f6ffed;
-  border: 1px solid #b7eb8f;
+  color: var(--success-text);
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
   border-radius: 7px;
   font-size: 12.5px;
   font-weight: 600;
@@ -81,7 +81,7 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #52c41a;
+  background: var(--success);
 }
 
 .icon-button {
@@ -91,9 +91,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #595959;
-  background: #ffffff;
-  border: 1px solid #f0f0f0;
+  color: var(--n-3);
+  background: var(--surface-card);
+  border: 1px solid var(--n-8);
   border-radius: 8px;
 }
 
@@ -108,8 +108,8 @@
   justify-content: center;
   padding: 0 4px;
   color: #ffffff;
-  background: #ff4d4f;
-  border: 1.5px solid #ffffff;
+  background: var(--error);
+  border: 1.5px solid var(--surface-card);
   border-radius: 8px;
   font-size: 10px;
   font-weight: 600;

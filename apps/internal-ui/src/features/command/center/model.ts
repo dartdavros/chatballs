@@ -43,9 +43,9 @@ function timeLabel(minutes: number): string {
 export type StatusMeta = { label: string; color: string; bg: string; border: string; dot: string };
 
 const STATUS_META: Record<ApiCommandOverview["company"]["status"], StatusMeta> = {
-  ok: { label: "Штатно", color: "#389e0d", bg: "#f6ffed", border: "#b7eb8f", dot: "#52c41a" },
-  attention: { label: "Требует внимания", color: "#d48806", bg: "#fff7e6", border: "#ffe58f", dot: "#faad14" },
-  critical: { label: "Критично", color: "#cf1322", bg: "#fff1f0", border: "#ffa39e", dot: "#ff4d4f" },
+  ok: { label: "Штатно", color: "var(--success-text)", bg: "var(--success-bg)", border: "var(--success-border)", dot: "var(--success)" },
+  attention: { label: "Требует внимания", color: "var(--warning-text)", bg: "var(--warning-bg-strong)", border: "var(--warning-border)", dot: "var(--warning)" },
+  critical: { label: "Критично", color: "var(--error-text)", bg: "var(--error-bg)", border: "var(--error-border)", dot: "var(--error)" },
 };
 
 const COMPANY_SUMMARY: Record<ApiCommandOverview["company"]["status"], string> = {
@@ -54,12 +54,12 @@ const COMPANY_SUMMARY: Record<ApiCommandOverview["company"]["status"], string> =
   critical: "Есть критичные проблемы — проверьте раздел «Требует внимания».",
 };
 
-const ATTENTION_DOT: Record<string, string> = { dialog: "#faad14", integration: "#ff4d4f" };
+const ATTENTION_DOT: Record<string, string> = { dialog: "var(--warning)", integration: "var(--error)" };
 
 const INTEGRATION_STATUS: Record<string, { label: string; color: string }> = {
-  OK: { label: "Подключено", color: "#52c41a" },
-  ERROR: { label: "Ошибка", color: "#ff4d4f" },
-  UNCHECKED: { label: "Не проверено", color: "#8c8c8c" },
+  OK: { label: "Подключено", color: "var(--success)" },
+  ERROR: { label: "Ошибка", color: "var(--error)" },
+  UNCHECKED: { label: "Не проверено", color: "var(--n-4)" },
 };
 
 const PERIOD_LABEL: Record<CommandPeriod, string> = { today: "Сегодня", d7: "7 дней", d30: "30 дней" };
@@ -92,15 +92,15 @@ export function commandCenterModel(data: ApiCommandOverview) {
       dialogItems: [
         { label: "Открытые диалоги", value: String(d.open) },
         { label: "Активны за 15 мин", value: String(d.activeNow) },
-        { label: "На AI", value: String(d.onAI), dot: "#722ed1" },
-        { label: "На операторах", value: String(d.onOperators), dot: "#1677ff" },
-        { label: "Ожидают оператора", value: String(d.waiting), color: d.waiting > 0 ? "#d48806" : "#262626" },
+        { label: "На AI", value: String(d.onAI), dot: "var(--ai)" },
+        { label: "На операторах", value: String(d.onOperators), dot: "var(--primary)" },
+        { label: "Ожидают оператора", value: String(d.waiting), color: d.waiting > 0 ? "var(--warning-text)" : "var(--text-body)" },
       ],
     };
   });
 
   const attention = data.attention.map((item) => ({
-    dot: ATTENTION_DOT[item.kind] ?? "#faad14",
+    dot: ATTENTION_DOT[item.kind] ?? "var(--warning)",
     title: item.title,
     meta: item.meta,
     time: timeLabel(item.minutes),
@@ -127,14 +127,14 @@ export function commandCenterModel(data: ApiCommandOverview) {
     attention,
     integrations,
     okCount: `${okCount}/${data.integrations.length} в норме`,
-    intHeadColor: okCount === data.integrations.length ? "#389e0d" : "#d48806",
+    intHeadColor: okCount === data.integrations.length ? "var(--success-text)" : "var(--warning-text)",
     periodLabel,
     periodLabelUpper: periodLabel.toUpperCase(),
     aiSpendStr: usd(data.ai.spendMicros),
     budgetStr: hasBudget ? usd(data.ai.dailyLimitMicros) : "",
     hasBudget,
     aiPct,
-    aiBarColor: aiPct >= 85 ? "#ff4d4f" : aiPct >= 70 ? "#faad14" : "#1677ff",
+    aiBarColor: aiPct >= 85 ? "var(--error)" : aiPct >= 70 ? "var(--warning)" : "var(--primary)",
     aiTokens: tokensLabel(data.ai.tokens),
     aiDialogs: String(data.ai.dialogs),
     costPerDialog: data.ai.dialogs > 0 ? usd(data.ai.spendMicros / data.ai.dialogs) : "—",

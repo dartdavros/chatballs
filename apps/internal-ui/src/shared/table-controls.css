@@ -5,8 +5,8 @@
   gap: 16px;
   padding: 12px 14px;
   margin-bottom: 14px;
-  background: #ffffff;
-  border: 1px solid #f0f0f0;
+  background: var(--surface-card);
+  border: 1px solid var(--n-8);
   border-radius: 10px;
 }
 
@@ -17,30 +17,30 @@
   padding: 11px 14px;
   margin-bottom: 16px;
   border-radius: 11px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  box-shadow: var(--shadow-xs);
 }
 
 .employee-search {
   width: 260px;
   height: 34px;
   padding: 0 11px;
-  color: #bfbfbf;
-  background: #fafafa;
-  border: 1px solid #e8e8e8;
+  color: var(--n-5);
+  background: var(--n-10);
+  border: 1px solid var(--n-7);
   border-radius: 8px;
 }
 
 .employee-search:focus-within {
-  border-color: #1677ff;
+  border-color: var(--primary);
 }
 
 .employee-search input {
-  color: #262626;
+  color: var(--n-2);
   font-size: 13px;
 }
 
 .employee-search input::placeholder {
-  color: #bfbfbf;
+  color: var(--n-5);
 }
 
 .filter-group {
@@ -50,7 +50,7 @@
 }
 
 .filter-group > span {
-  color: #8c8c8c;
+  color: var(--n-4);
   font-size: 12px;
   font-weight: 500;
 }
@@ -59,7 +59,7 @@
   height: 34px;
   margin-left: auto;
   padding: 0 12px;
-  color: #8c8c8c;
+  color: var(--n-4);
   background: transparent;
   border: 0;
   border-radius: 8px;
@@ -68,8 +68,8 @@
 }
 
 .reset-filter:hover {
-  color: #1677ff;
-  background: #f5f5f5;
+  color: var(--primary);
+  background: var(--n-9);
 }
 
 .segmented {
@@ -77,14 +77,14 @@
   align-items: center;
   gap: 3px;
   padding: 3px;
-  background: #f0f2f5;
+  background: var(--n-11);
   border-radius: 8px;
 }
 
 .segmented button {
   height: 30px;
   padding: 0 13px;
-  color: #595959;
+  color: var(--n-3);
   background: transparent;
   border: none;
   border-radius: 6px;
@@ -94,8 +94,8 @@
 }
 
 .segmented button.active {
-  color: #1f1f1f;
-  background: #ffffff;
+  color: var(--n-1);
+  background: var(--surface-card);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   font-weight: 600;
 }
@@ -109,7 +109,7 @@
   position: relative;
   overflow: visible;
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--shadow-sm);
 }
 
 .table-scroll {
@@ -133,9 +133,9 @@
 
 .baseline-table th {
   padding: 11px 12px;
-  color: #8c8c8c;
-  background: #fafafa;
-  border-bottom: 1px solid #f0f0f0;
+  color: var(--n-4);
+  background: var(--n-10);
+  border-bottom: 1px solid var(--n-8);
   font-size: 11px;
   font-weight: 600;
   text-align: left;
@@ -156,13 +156,13 @@
 
 .baseline-table td {
   padding: 12px;
-  border-bottom: 1px solid #f5f5f5;
-  color: #262626;
+  border-bottom: 1px solid var(--n-9);
+  color: var(--n-2);
   vertical-align: middle;
 }
 
 .baseline-table tbody tr:hover {
-  background: #fafbfc;
+  background: var(--n-10);
 }
 
 .person-cell,
@@ -181,7 +181,7 @@
 
 .person-cell strong {
   display: block;
-  color: #1677ff;
+  color: var(--primary);
   font-size: 13.5px;
   font-weight: 600;
 }
@@ -196,12 +196,12 @@
 }
 
 .person-link:hover strong {
-  color: #0958d9;
+  color: var(--primary-text);
 }
 
 .product-cell strong {
   display: block;
-  color: #262626;
+  color: var(--n-2);
   font-size: 13px;
   font-weight: 600;
 }
@@ -210,7 +210,7 @@
 .product-cell small {
   display: block;
   margin-top: 3px;
-  color: #bfbfbf;
+  color: var(--n-5);
   font-family: "SF Mono", ui-monospace, Menlo, monospace;
   font-size: 11.5px;
 }
@@ -225,18 +225,18 @@
 }
 
 .role-badge.owner {
-  color: #595959;
-  background: #f0f0f0;
+  color: var(--n-3);
+  background: var(--n-8);
 }
 
 .role-badge.employee {
-  color: #0958d9;
-  background: #e6f4ff;
+  color: var(--primary-text);
+  background: var(--primary-bg);
 }
 
 .role-badge.admin {
-  color: #ad4e00;
-  background: #fff7e6;
+  color: var(--warning-text);
+  background: var(--warning-bg-strong);
 }
 
 .status-pill {
@@ -266,12 +266,12 @@
 }
 
 .muted-number {
-  color: #bfbfbf !important;
+  color: var(--n-5) !important;
 }
 
 .table-footer {
   margin-top: 10px;
-  color: #bfbfbf;
+  color: var(--n-5);
 }
 
 .employees-footer {
@@ -280,13 +280,13 @@
   justify-content: space-between;
   gap: 20px;
   padding: 12px 18px;
-  color: #8c8c8c;
-  border-top: 1px solid #f5f5f5;
+  color: var(--n-4);
+  border-top: 1px solid var(--n-9);
   font-size: 12.5px;
 }
 
 .employees-footer span:last-child {
-  color: #bfbfbf;
+  color: var(--n-5);
 }
 
 .empty-state {
@@ -294,14 +294,14 @@
   align-items: center;
   justify-content: center;
   min-height: 160px;
-  color: #595959;
+  color: var(--n-3);
 }
 
 .loading-state {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #595959;
+  color: var(--n-3);
 }
 
 .loading-state.page {

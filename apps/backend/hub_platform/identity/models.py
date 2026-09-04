@@ -40,6 +40,13 @@ class HumanUserManager(UserManager):
         return self._create_user(email, password, **extra_fields)
 
 
+class UiTheme(models.TextChoices):
+    # Персональная тема интерфейса (дизайн-базлайн v2, SPEC-HUB-0031 §7).
+    LIGHT = "LIGHT", "Светлая"
+    DARK = "DARK", "Тёмная"
+    SYSTEM = "SYSTEM", "Как в системе"
+
+
 class HumanUser(AbstractUser):
     username = None
     email = models.EmailField(unique=True)
@@ -47,6 +54,10 @@ class HumanUser(AbstractUser):
     must_change_password = models.BooleanField(default=False)
     totp_enabled = models.BooleanField(default=False)
     totp_secret = EncryptedCharField(max_length=255, blank=True)
+    # Внешний вид — глобальная настройка пользователя (не membership):
+    # тема и акцентный HEX-цвет; пустой акцент — дефолтный синий #1677ff.
+    ui_theme = models.CharField(max_length=8, choices=UiTheme.choices, default=UiTheme.SYSTEM)
+    ui_accent = models.CharField(max_length=9, blank=True)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS: list[str] = []

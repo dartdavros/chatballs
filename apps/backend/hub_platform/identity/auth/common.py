@@ -56,6 +56,8 @@ def _user_payload(user: HumanUser) -> dict[str, object]:
         "mustChangePassword": user.must_change_password,
         "totpEnabled": user.totp_enabled,
         "deliveryMode": settings.CUS_DELIVERY_MODE,
+        "uiTheme": user.ui_theme,
+        "uiAccent": user.ui_accent,
         "memberships": memberships,
     }
 

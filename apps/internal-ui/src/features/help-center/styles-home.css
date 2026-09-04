@@ -23,14 +23,14 @@
   gap: 16px;
   border: 0;
   border-radius: 12px;
-  background: #fff;
+  background: var(--surface-card);
   color: var(--help-ink);
   text-align: left;
   transition: background 150ms ease, transform 150ms ease;
 }
 
 .help-category-grid > button:hover {
-  background: #f6f6f6;
+  background: var(--n-9);
   transform: translateY(-1px);
 }
 
@@ -41,8 +41,8 @@
   flex: 0 0 64px;
   place-items: center;
   border-radius: 7px;
-  background: #171717;
-  color: #fff;
+  background: var(--n-1);
+  color: var(--surface-card);
 }
 
 .help-category-copy {
@@ -71,7 +71,7 @@
 }
 
 .help-category-copy small {
-  color: #8a8a8a;
+  color: var(--n-4);
   font-size: 12px;
 }
 
@@ -100,14 +100,14 @@
 .help-results-heading button {
   padding: 8px 0;
   border: 0;
-  border-bottom: 1px solid #929292;
+  border-bottom: 1px solid var(--n-4);
   background: transparent;
   color: var(--help-ink);
   font-size: 14px;
 }
 
 .help-article-results {
-  border-top: 1px solid #dcdcdc;
+  border-top: 1px solid var(--n-6);
 }
 
 .help-article-results > a {
@@ -115,7 +115,7 @@
   display: block;
   min-height: 128px;
   padding: 24px 52px 24px 4px;
-  border-bottom: 1px solid #e5e5e5;
+  border-bottom: 1px solid var(--n-7);
   color: var(--help-ink);
   text-decoration: none;
   transition: padding-left 150ms ease;
@@ -155,10 +155,10 @@
   display: block;
   margin: 24px auto 0;
   padding: 9px 18px;
-  border: 1px solid #c9c9c9;
+  border: 1px solid var(--n-6);
   border-radius: 999px;
   color: var(--help-ink);
-  background: #fff;
+  background: var(--surface-card);
   font: inherit;
   cursor: pointer;
 }
@@ -173,8 +173,8 @@
   place-content: center;
   justify-items: center;
   gap: 7px;
-  border-top: 1px solid #dedede;
-  border-bottom: 1px solid #dedede;
+  border-top: 1px solid var(--n-6);
+  border-bottom: 1px solid var(--n-6);
 }
 
 .help-empty strong {
@@ -194,7 +194,7 @@
 .help-loading-lines i {
   height: 74px;
   border-radius: 8px;
-  background: linear-gradient(90deg, #f1f1f1, #f8f8f8, #f1f1f1);
+  background: linear-gradient(90deg, var(--n-9), var(--n-10), var(--n-9));
   background-size: 200% 100%;
   animation: helpShimmer 1.2s linear infinite;
 }

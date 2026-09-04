@@ -38,10 +38,10 @@
   align-items: center;
   height: 36px;
   padding: 0 8px 0 12px;
-  border: 1px solid #d9d9d9;
+  border: 1px solid var(--n-6);
   border-radius: 8px;
-  color: #595959;
-  background: #fff;
+  color: var(--n-3);
+  background: var(--surface-card);
   font-size: 13px;
   white-space: nowrap;
 }
@@ -53,17 +53,17 @@
   padding: 0 20px 0 6px;
   border: 0;
   outline: 0;
-  color: #262626;
+  color: var(--n-2);
   background: transparent;
   font: inherit;
   font-weight: 600;
 }
 
 .knowledge-table-card {
-  border: 1px solid #f0f0f0;
+  border: 1px solid var(--n-8);
   border-radius: 12px;
-  background: #fff;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  background: var(--surface-card);
+  box-shadow: var(--shadow-xs);
 }
 
 .knowledge-table { table-layout: fixed; }
@@ -90,7 +90,7 @@
   width: 17px;
   height: 17px;
   margin: 0;
-  accent-color: #1677ff;
+  accent-color: var(--primary);
   cursor: pointer;
 }
 
@@ -103,14 +103,14 @@
   max-width: 300px;
   margin-top: 2px;
   overflow: hidden;
-  color: #8c8c8c;
+  color: var(--n-4);
   font-size: 12px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .knowledge-category-path {
-  color: #595959 !important;
+  color: var(--n-3) !important;
   overflow-wrap: anywhere;
 }
 
@@ -128,8 +128,8 @@
   background: currentColor;
 }
 
-.knowledge-status.active { color: #389e0d; }
-.knowledge-status.disabled { color: #8c8c8c; }
+.knowledge-status.active { color: var(--success-text); }
+.knowledge-status.disabled { color: var(--n-4); }
 
 .knowledge-table-state,
 .knowledge-empty-category {
@@ -140,11 +140,11 @@
   justify-content: center;
   gap: 12px;
   padding: 32px 24px;
-  border: 1px solid #f0f0f0;
+  border: 1px solid var(--n-8);
   border-radius: 12px;
-  color: #595959;
-  background: #fff;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  color: var(--n-3);
+  background: var(--surface-card);
+  box-shadow: var(--shadow-xs);
 }
 
 .knowledge-empty-category > span {
@@ -154,12 +154,12 @@
   align-items: center;
   justify-content: center;
   border-radius: 12px;
-  color: #bfbfbf;
-  background: #fafafa;
+  color: var(--n-5);
+  background: var(--n-10);
 }
 
 .knowledge-empty-category p {
   margin: -7px 0 4px;
-  color: #8c8c8c;
+  color: var(--n-4);
   font-size: 12.5px;
 }

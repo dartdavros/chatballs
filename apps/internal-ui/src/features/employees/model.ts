@@ -94,7 +94,7 @@ export function formatLastLogin(value?: string | null, empty = "не входи�
 export function auditItem(event: EmployeeAuditEvent) {
   return {
     code: event.action,
-    dot: event.result === "DENIED" ? "#ff4d4f" : "#1677ff",
+    dot: event.result === "DENIED" ? "var(--error)" : "var(--primary)",
     text: AUDIT_LABELS[event.action] ?? event.action,
     time: formatLastLogin(event.createdAt, "—"),
   };

@@ -1,7 +1,9 @@
 import { ConfigProvider } from "antd";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { edevsHubTheme } from "@edevs/ui";
+import { buildHubTheme } from "@edevs/ui";
+
+import { applyAppearance, DEFAULT_ACCENT, resolvedDark } from "./shared/appearance";
 
 import { api, setActiveOrganization } from "./api/client";
 import { canAccess, defaultRoute, isManager } from "./auth/access";
@@ -18,6 +20,15 @@ export function App() {
   const initialRoute = useMemo(() => routeFromPath(window.location.pathname, window.location.search), []);
   const [sessionLoading, setSessionLoading] = useState(true);
   const [identity, setIdentity] = useState<AuthenticatedUser | null>(null);
+  const appearanceTheme = identity?.uiTheme ?? "SYSTEM";
+  const appearanceAccent = identity?.uiAccent || DEFAULT_ACCENT;
+  useEffect(() => {
+    applyAppearance(appearanceTheme, appearanceAccent);
+  }, [appearanceTheme, appearanceAccent]);
+  const antdTheme = useMemo(
+    () => buildHubTheme(resolvedDark(appearanceTheme), appearanceAccent),
+    [appearanceTheme, appearanceAccent],
+  );
   const [user, setUser] = useState<SessionUser | null>(null);
   const [organizationPublicId, setOrganizationPublicId] = useState<string | null>(initialRoute.organizationPublicId);
   const [totpChallenge, setTotpChallenge] = useState<AuthChallenge | null>(null);
@@ -123,16 +134,16 @@ export function App() {
 
   if (resetting) {
     return (
-      <ConfigProvider theme={edevsHubTheme}>
+      <ConfigProvider theme={antdTheme}>
         <AuthResetPassword onDone={() => { setResetting(false); window.history.replaceState({}, "", pathFromRoute("command")); }} />
       </ConfigProvider>
     );
   }
 
-  if (sessionLoading) return <ConfigProvider theme={edevsHubTheme}><LoadingScreen /></ConfigProvider>;
+  if (sessionLoading) return <ConfigProvider theme={antdTheme}><LoadingScreen /></ConfigProvider>;
 
   return (
-    <ConfigProvider theme={edevsHubTheme}>
+    <ConfigProvider theme={antdTheme}>
       {totpChallenge ? (
         <AuthTotpCode challenge={totpChallenge} onVerified={(nextUser) => { setTotpChallenge(null); landAfterAuth(nextUser); }} />
       ) : !identity ? (

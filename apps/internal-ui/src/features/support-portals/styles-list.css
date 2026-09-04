@@ -61,8 +61,8 @@
 .portal-form-error {
   padding: 9px 11px;
   border-radius: var(--radius-md);
-  background: #fff2f0;
-  color: #cf1322;
+  background: var(--error-bg);
+  color: var(--error-text);
   font-size: 12.5px;
 }
 
@@ -83,7 +83,7 @@
   overflow: hidden;
   border: 1px solid var(--border-input);
   border-radius: var(--radius-md);
-  background: #fff;
+  background: var(--surface-card);
 }
 
 .portal-address-field > div:focus-within {

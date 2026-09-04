@@ -288,6 +288,41 @@ class AuthEndpointTests(TestCase):
         self.assertEqual(owner.email, "ivan@edevs.tech")
         self.assertTrue(AuditEvent.objects.filter(action="identity.profile_updated").exists())
 
+    def test_profile_appearance_saves_theme_and_accent(self) -> None:
+        """Тема и акцент — глобальные настройки пользователя (SPEC-HUB-0031 §7)."""
+        self.client.login(username="owner@edevs.tech", password="temporary-password")
+
+        response = self.client.post(
+            "/api/v1/auth/profile/appearance/",
+            data=json.dumps({"theme": "DARK", "accent": "#0F9B8E"}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()["user"]
+        self.assertEqual(payload["uiTheme"], "DARK")
+        self.assertEqual(payload["uiAccent"], "#0f9b8e")
+        owner = HumanUser.objects.get(email="owner@edevs.tech")
+        self.assertEqual(owner.ui_theme, "DARK")
+        self.assertEqual(owner.ui_accent, "#0f9b8e")
+
+        # Пустой акцент возвращает дефолтный синий на клиенте.
+        cleared = self.client.post(
+            "/api/v1/auth/profile/appearance/",
+            data=json.dumps({"theme": "SYSTEM", "accent": ""}),
+            content_type="application/json",
+        )
+        self.assertEqual(cleared.json()["user"]["uiAccent"], "")
+
+        for body in ({"theme": "NEON"}, {"accent": "blue"}, {"accent": "#12345"}):
+            with self.subTest(body=body):
+                rejected = self.client.post(
+                    "/api/v1/auth/profile/appearance/",
+                    data=json.dumps(body),
+                    content_type="application/json",
+                )
+                self.assertEqual(rejected.status_code, 400)
+
     def test_profile_password_changes_current_user_password(self) -> None:
         self.client.login(username="owner@edevs.tech", password="temporary-password")
 

@@ -81,7 +81,7 @@ function DialogListItem({ dialog, active, setSelectedId }: { dialog: Conversatio
 
 const PRIORITY_TITLE: Record<string, string> = { HIGH: "Высокий", MEDIUM: "Средний", LOW: "Низкий" };
 const PRIORITY_ON: Record<string, number> = { HIGH: 3, MEDIUM: 2, LOW: 1 };
-const PRIORITY_COLOR: Record<string, string> = { HIGH: "#ff4d4f", MEDIUM: "#fa8c16", LOW: "#1677ff" };
+const PRIORITY_COLOR: Record<string, string> = { HIGH: "var(--error)", MEDIUM: "var(--warning)", LOW: "var(--primary)" };
 
 export function PriorityBars({ priority }: { priority: "HIGH" | "MEDIUM" | "LOW" | "NONE" }) {
   if (priority === "NONE") return null;

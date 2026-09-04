@@ -51,7 +51,7 @@
 
 .page-header h1 {
   margin: 0;
-  color: #1f1f1f;
+  color: var(--n-1);
   font-size: 24px;
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -60,11 +60,11 @@
 
 .page-header p {
   margin: 6px 0 0;
-  color: #8c8c8c;
+  color: var(--n-4);
   font-size: 13.5px;
 }
 
 .page-header p b {
-  color: #595959;
+  color: var(--n-3);
   font-weight: 700;
 }

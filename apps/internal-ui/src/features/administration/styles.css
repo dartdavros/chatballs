@@ -13,7 +13,7 @@
 .administration-card {
   width: 100%;
   padding: 20px;
-  background: #ffffff;
+  background: var(--surface-card);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-2xl);
   box-shadow: var(--shadow-sm);
@@ -47,7 +47,7 @@
   width: 100%;
   height: 100%;
   object-fit: contain;
-  background: #ffffff;
+  background: var(--surface-card);
 }
 
 .administration-logo-copy {

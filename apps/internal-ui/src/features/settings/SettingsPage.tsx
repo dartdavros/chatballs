@@ -1,4 +1,5 @@
 import type { SessionUser } from "../../types";
+import { ProfileAppearanceCard } from "../profile/ProfileAppearanceCard";
 import { ProfileNotificationsCard } from "../profile/ProfileNotificationsCard";
 import { ProfilePasswordForm } from "../profile/ProfilePasswordForm";
 import { ProfileSessionsCard } from "../profile/ProfileSessionsCard";
@@ -10,6 +11,7 @@ export function SettingsPage({ user, onUserUpdated, reload }: { user: SessionUse
 
   return (
     <div className="profile-stack">
+      <ProfileAppearanceCard user={user} onUserUpdated={onUserUpdated} />
       <ProfilePasswordForm passwords={profilePage.passwords} message={profilePage.passwordMessage} mismatch={profilePage.passwordMismatch} ready={profilePage.passwordReady} saving={profilePage.savingPassword} setPasswords={profilePage.setPasswords} onSubmit={profilePage.updatePassword} />
       <ProfileNotificationsCard />
       <ProfileTotpCard user={user} message={profilePage.totpMessage} saving={profilePage.savingTotp} onToggle={profilePage.toggleTotp} />

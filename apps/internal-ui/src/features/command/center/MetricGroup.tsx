@@ -8,7 +8,7 @@ export function MetricGroup({ title, columns, items }: { title: string; columns:
         {items.map((item) => (
           <div className="metric-cell" key={item.label}>
             <div>{item.dot && <span style={{ background: item.dot }} />}{item.label}</div>
-            <strong style={{ color: item.color ?? "#262626" }}>{item.value}</strong>
+            <strong style={{ color: item.color ?? "var(--text-body)" }}>{item.value}</strong>
           </div>
         ))}
       </div>

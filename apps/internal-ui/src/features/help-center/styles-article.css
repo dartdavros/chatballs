@@ -9,13 +9,13 @@
   align-items: center;
   gap: 7px;
   overflow: hidden;
-  color: #666;
+  color: var(--n-3);
   font-size: 14px;
   white-space: nowrap;
 }
 
 .help-breadcrumbs a {
-  color: #555;
+  color: var(--n-3);
   text-decoration: none;
 }
 
@@ -55,7 +55,7 @@
 .help-article > header time {
   display: block;
   margin-top: 14px;
-  color: #929292;
+  color: var(--n-4);
   font-size: 14px;
 }
 
@@ -124,7 +124,7 @@
 .help-markdown code {
   padding: 2px 5px;
   border-radius: 5px;
-  background: #f2f2f2;
+  background: var(--n-9);
   font-family: var(--font-mono);
   font-size: 0.9em;
 }
@@ -134,8 +134,8 @@
   padding: 20px;
   overflow: auto;
   border-radius: 12px;
-  background: #191919;
-  color: #f7f7f7;
+  background: var(--n-1);
+  color: var(--n-9);
 }
 
 .help-markdown pre code {
@@ -146,8 +146,8 @@
 .help-markdown blockquote {
   margin: 26px 0;
   padding: 2px 0 2px 20px;
-  border-left: 3px solid #d8d8d8;
-  color: #626262;
+  border-left: 3px solid var(--n-6);
+  color: var(--n-3);
 }
 
 .help-markdown blockquote p:last-child {
@@ -164,13 +164,13 @@
 .help-markdown th,
 .help-markdown td {
   padding: 10px 12px;
-  border: 1px solid #dedede;
+  border: 1px solid var(--n-6);
   text-align: left;
   vertical-align: top;
 }
 
 .help-markdown th {
-  background: #f7f7f7;
+  background: var(--n-9);
   font-weight: 650;
 }
 
@@ -185,7 +185,7 @@
 .help-markdown hr {
   margin: 38px 0;
   border: 0;
-  border-top: 1px solid #dedede;
+  border-top: 1px solid var(--n-6);
 }
 
 .help-markdown input[type="checkbox"] {
@@ -211,14 +211,14 @@
 }
 
 .help-toc a {
-  color: #626262;
+  color: var(--n-3);
   font-size: 13px;
   line-height: 1.35;
   text-decoration: none;
 }
 
 .help-toc a:hover {
-  color: #111;
+  color: var(--n-1);
 }
 
 .help-toc a.is-nested {
@@ -231,8 +231,8 @@
   margin-top: 68px;
   place-content: center;
   justify-items: center;
-  border-top: 1px solid #dedede;
-  border-bottom: 1px solid #dedede;
+  border-top: 1px solid var(--n-6);
+  border-bottom: 1px solid var(--n-6);
 }
 
 .help-feedback h2 {
@@ -251,15 +251,15 @@
   width: 48px;
   height: 48px;
   place-items: center;
-  border: 1px solid #d7d7d7;
+  border: 1px solid var(--n-6);
   border-radius: 50%;
-  background: #fff;
-  color: #333;
+  background: var(--surface-card);
+  color: var(--n-2);
 }
 
 .help-feedback button:hover {
-  border-color: #222;
-  background: #f4f4f4;
+  border-color: var(--n-1);
+  background: var(--n-9);
 }
 
 .help-feedback-thanks {
@@ -289,7 +289,7 @@
 .help-article-loading i {
   height: 26px;
   border-radius: 6px;
-  background: #f0f0f0;
+  background: var(--n-8);
 }
 
 .help-article-loading i:first-child {
@@ -306,5 +306,5 @@
 }
 
 .help-article-error a {
-  color: #333;
+  color: var(--n-2);
 }

@@ -1,4 +1,37 @@
+import { theme as antdTheme } from "antd";
 import type { ThemeConfig } from "antd";
+
+// Персональная тема и акцент (SPEC-HUB-0031 §7): antd-конфиг собирается из
+// выбранных пользователем режима (light/dark) и акцентного цвета.
+export function buildHubTheme(dark: boolean, accent: string): ThemeConfig {
+  const base = edevsHubTheme;
+  if (!dark) {
+    return {
+      ...base,
+      token: { ...base.token, colorPrimary: accent, colorInfo: accent },
+    };
+  }
+  return {
+    algorithm: antdTheme.darkAlgorithm,
+    token: {
+      ...base.token,
+      colorPrimary: accent,
+      colorInfo: accent,
+      // Нейтрали тёмной темы — из дизайн-базлайна v2.
+      colorBgLayout: "#101113",
+      colorBgContainer: "#1b1c1f",
+      colorBorder: "#2d2f35",
+      colorText: "#c3c5ca",
+      colorTextSecondary: "#767881",
+    },
+    components: {
+      ...base.components,
+      Layout: { headerBg: "#1b1c1f", siderBg: "#181a1d", bodyBg: "#101113" },
+      Table: { headerBg: "#212327", headerColor: "#767881", rowHoverBg: "#212327" },
+      Button: base.components?.Button,
+    },
+  };
+}
 
 export const edevsHubTheme: ThemeConfig = {
   token: {

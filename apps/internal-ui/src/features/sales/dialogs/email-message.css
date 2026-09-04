@@ -15,11 +15,11 @@
 
 .sales-email-quoted {
   margin-top: 10px;
-  color: #595959;
+  color: var(--n-3);
 }
 
 .sales-email-quoted > summary {
-  color: #8c8c8c;
+  color: var(--n-4);
   cursor: pointer;
   user-select: none;
 }
@@ -27,5 +27,5 @@
 .sales-email-quoted > div {
   margin-top: 8px;
   padding-left: 12px;
-  border-left: 3px solid #d9d9d9;
+  border-left: 3px solid var(--n-6);
 }

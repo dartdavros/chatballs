@@ -16,7 +16,7 @@ export function OperatorCards({ detail }: { detail: ApiConversation | null }) {
   const hero = snapshot.displayName || `client:${snapshot.subjectKey.slice(0, 8)}`;
   return (
     <div className="sales-client-context">
-      <div className="sales-client-hero"><span style={{ background: "#9254de" }}>{initialsOf(hero)}</span><strong>{hero}</strong></div>
+      <div className="sales-client-hero"><span style={{ background: "var(--ai)" }}>{initialsOf(hero)}</span><strong>{hero}</strong></div>
 
       <ContextSection title="КОНТРАКТ">
         <FieldRow title="Subject" text={snapshot.subjectKey} mono note={snapshot.contractCode} />
@@ -54,9 +54,9 @@ function OperatorField({ field }: { field: OperatorCardField }) {
     case "code":
       return <FieldRow title={field.label} text={String(value)} mono />;
     case "badge":
-      return <FieldRow dot="#1677ff" title={field.label} text={String(value)} />;
+      return <FieldRow dot="var(--primary)" title={field.label} text={String(value)} />;
     case "boolean":
-      return <FieldRow dot={value ? "#389e0d" : "#bfbfbf"} title={field.label} text={value ? "да" : "нет"} />;
+      return <FieldRow dot={value ? "var(--success-text)" : "var(--n-5)"} title={field.label} text={value ? "да" : "нет"} />;
     case "number":
       return <FieldRow title={field.label} text={String(value)} />;
     case "datetime":

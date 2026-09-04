@@ -8,7 +8,7 @@
 .link {
   display: inline;
   padding: 0;
-  color: #1677ff;
+  color: var(--primary);
   background: none;
   border: 0;
   font: inherit;
@@ -19,16 +19,16 @@
 }
 
 .link:hover {
-  color: #0958d9;
+  color: var(--primary-text);
 }
 
 .link:disabled {
-  color: #bfbfbf;
+  color: var(--n-5);
   cursor: not-allowed;
 }
 
 .link:focus-visible {
-  outline: 2px solid #91caff;
+  outline: 2px solid var(--primary-border);
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -43,21 +43,21 @@
 /* Тёмное имя, синее только при наведении: для плотных таблиц, где синим
    выделен уже другой смысл. */
 .link.is-neutral {
-  color: #1f1f1f;
+  color: var(--n-1);
 }
 
 .link.is-neutral:hover {
-  color: #1677ff;
+  color: var(--primary);
 }
 
 /* Второстепенная ссылка: «Назад», «Отмена», подписи. */
 .link.is-muted {
-  color: #8c8c8c;
+  color: var(--n-4);
   font-weight: 500;
 }
 
 .link.is-muted:hover {
-  color: #1677ff;
+  color: var(--primary);
 }
 
 /* Идентификаторы: номера заказов, коды. */

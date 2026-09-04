@@ -41,7 +41,7 @@
 
 .sales-client-detail-name-row h1 {
   margin: 0;
-  color: #1f1f1f;
+  color: var(--n-1);
   font-size: 21px;
   font-weight: 700;
   letter-spacing: 0;
@@ -53,23 +53,23 @@
   align-items: center;
   gap: 6px;
   padding: 3px 10px;
-  color: #389e0d;
-  background: #f6ffed;
-  border: 1px solid #b7eb8f;
+  color: var(--success-text);
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
   border-radius: 14px;
   font-size: 11.5px;
   font-weight: 600;
 }
 
 .sales-client-cid {
-  color: #bfbfbf;
+  color: var(--n-5);
   font-size: 12px;
 }
 
 .sales-client-detail-meta {
   gap: 14px;
   margin-top: 9px;
-  color: #595959;
+  color: var(--n-3);
   font-size: 12.5px;
 }
 
@@ -80,11 +80,11 @@
 }
 
 .sales-client-detail-meta svg {
-  color: #8c8c8c;
+  color: var(--n-4);
 }
 
 .sales-client-detail-meta .muted {
-  color: #8c8c8c;
+  color: var(--n-4);
 }
 
 .sales-client-detail-channels i {

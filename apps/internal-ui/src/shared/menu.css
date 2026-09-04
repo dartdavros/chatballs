@@ -8,7 +8,7 @@
 .app-dropdown .ant-dropdown-menu {
   width: 200px;
   padding: 5px;
-  border: 1px solid #f0f0f0;
+  border: 1px solid var(--n-8);
   border-radius: 10px;
 }
 
@@ -31,7 +31,7 @@
   align-items: center;
   gap: 9px;
   padding: 8px 10px;
-  color: #262626;
+  color: var(--n-2);
   background: transparent;
   border: 0;
   border-radius: 6px;
@@ -43,19 +43,19 @@
 }
 
 .app-dropdown .ant-dropdown-menu-item button.warning {
-  color: #d48806;
+  color: var(--warning-text);
 }
 
 .app-dropdown .ant-dropdown-menu-item button.danger {
-  color: #cf1322;
+  color: var(--error-text);
 }
 
 .app-dropdown .ant-dropdown-menu-item button.success {
-  color: #389e0d;
+  color: var(--success-text);
 }
 
 .app-dropdown .ant-dropdown-menu-item-disabled button {
-  color: #bfbfbf;
+  color: var(--n-5);
   cursor: not-allowed;
 }
 
@@ -68,7 +68,7 @@
 .app-dropdown .ant-dropdown-menu-item button small {
   display: block;
   margin-top: 2px;
-  color: #bfbfbf;
+  color: var(--n-5);
   font-size: 11px;
   font-weight: 400;
 }
@@ -83,7 +83,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #8c8c8c;
+  color: var(--n-4);
   background: transparent;
   border: 0;
   border-radius: 7px;
@@ -92,11 +92,11 @@
 
 .row-menu-button:hover,
 .row-menu-button[aria-expanded="true"] {
-  color: #262626;
-  background: #f0f0f0;
+  color: var(--n-2);
+  background: var(--n-8);
 }
 
 .row-menu-button:focus-visible {
-  outline: 2px solid #91caff;
+  outline: 2px solid var(--primary-border);
   outline-offset: 2px;
 }

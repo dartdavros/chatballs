@@ -9,7 +9,7 @@
 .readonly-field span {
   display: block;
   margin-bottom: 6px;
-  color: #8c8c8c;
+  color: var(--n-4);
   font-size: 12px;
   font-weight: 500;
 }
@@ -18,9 +18,9 @@
   width: 100%;
   height: 38px;
   padding: 0 12px;
-  color: #262626;
-  background: #ffffff;
-  border: 1px solid #e8e8e8;
+  color: var(--n-2);
+  background: var(--surface-card);
+  border: 1px solid var(--n-7);
   border-radius: 8px;
   outline: none;
   font-size: 13px;
@@ -32,7 +32,7 @@
 .form-field.is-editable textarea:focus,
 .select-like:focus-within select,
 .select-like select:focus {
-  border-color: #1677ff;
+  border-color: var(--primary);
 }
 
 .readonly-field textarea {
@@ -40,9 +40,9 @@
   min-height: 92px;
   padding: 10px 12px;
   resize: vertical;
-  color: #262626;
-  background: #ffffff;
-  border: 1px solid #e8e8e8;
+  color: var(--n-2);
+  background: var(--surface-card);
+  border: 1px solid var(--n-7);
   border-radius: 8px;
   outline: none;
   font: inherit;
@@ -56,13 +56,13 @@
 
 .form-field.is-readonly input,
 .readonly-field input:disabled {
-  color: #8c8c8c;
-  background: #fafafa;
-  border-color: #f0f0f0;
+  color: var(--n-4);
+  background: var(--n-10);
+  border-color: var(--n-8);
 }
 
 .form-field.is-editable input {
-  background: #ffffff;
+  background: var(--surface-card);
 }
 
 .select-like {
@@ -79,9 +79,9 @@
 
 .select-like select {
   padding-left: 12px;
-  color: #262626;
-  background: #ffffff;
-  border: 1px solid #e8e8e8;
+  color: var(--n-2);
+  background: var(--surface-card);
+  border: 1px solid var(--n-7);
   border-radius: 8px;
   outline: none;
   appearance: none;
@@ -92,7 +92,7 @@
   position: absolute;
   right: 11px;
   bottom: 12px;
-  color: #8c8c8c;
+  color: var(--n-4);
   pointer-events: none;
 }
 
@@ -107,7 +107,7 @@
   justify-content: flex-start;
   flex: none;
   padding: 2px;
-  background: #d9d9d9;
+  background: var(--n-6);
   border: 0;
   border-radius: 14px;
   cursor: pointer;
@@ -116,7 +116,7 @@
 
 .ui-switch.on {
   justify-content: flex-end;
-  background: #1677ff;
+  background: var(--primary);
 }
 
 .ui-switch:disabled {
@@ -144,10 +144,10 @@
   height: 22px;
 }
 .form-field-error {
-  color: #cf1322;
+  color: var(--error-text);
   font-size: 11.5px;
 }
 
 .form-field.is-invalid input {
-  border-color: #ff7875;
+  border-color: var(--error);
 }

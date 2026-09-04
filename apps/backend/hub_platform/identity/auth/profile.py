@@ -142,3 +142,27 @@ class ChangeTemporaryPasswordView(APIView):
             request=request,
         )
         return Response({"authenticated": True, "user": _user_payload(request.user)})
+
+
+class ProfileAppearanceView(APIView):
+    """Тема и акцентный цвет — глобальные настройки пользователя
+    (SPEC-HUB-0031 §7, дизайн-базлайн v2)."""
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request: Request) -> Response:
+        import re
+
+        from hub_platform.identity.models import UiTheme
+
+        body = request.data
+        theme = str(body.get("theme", request.user.ui_theme)).strip().upper()
+        accent = str(body.get("accent", request.user.ui_accent)).strip().lower()
+        if theme not in UiTheme.values:
+            return Response({"detail": "Неизвестная тема"}, status=400)
+        if accent and not re.fullmatch(r"#[0-9a-f]{6}", accent):
+            return Response({"detail": "Акцент — HEX-цвет вида #1677ff"}, status=400)
+        request.user.ui_theme = theme
+        request.user.ui_accent = accent
+        request.user.save(update_fields=["ui_theme", "ui_accent"])
+        return Response({"authenticated": True, "user": _user_payload(request.user)})

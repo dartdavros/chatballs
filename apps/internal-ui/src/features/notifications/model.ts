@@ -15,10 +15,10 @@ export type AppNotification = {
 };
 
 export const LEVEL_META: Record<NotificationLevel, { color: string; icon: "bell" | "check" | "warning" | "xCircle" }> = {
-  INFO: { color: "#1677ff", icon: "bell" },
-  SUCCESS: { color: "#389e0d", icon: "check" },
-  WARNING: { color: "#d48806", icon: "warning" },
-  CRITICAL: { color: "#cf1322", icon: "xCircle" },
+  INFO: { color: "var(--primary)", icon: "bell" },
+  SUCCESS: { color: "var(--success)", icon: "check" },
+  WARNING: { color: "var(--warning)", icon: "warning" },
+  CRITICAL: { color: "var(--error)", icon: "xCircle" },
 };
 
 export const fetchNotifications = () => api<{ items: AppNotification[]; unreadCount: number }>("/api/v1/notifications/");

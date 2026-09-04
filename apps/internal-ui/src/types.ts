@@ -38,6 +38,8 @@ export type AuthenticatedUser = {
   totpEnabled: boolean;
   deliveryMode: DeliveryMode;
   memberships: OrganizationMembership[];
+  uiTheme: "LIGHT" | "DARK" | "SYSTEM";
+  uiAccent: string;
 };
 
 export type SessionUser = AuthenticatedUser & OrganizationMembership;

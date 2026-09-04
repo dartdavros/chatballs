@@ -5,6 +5,7 @@ from hub_platform.identity.auth.password_reset import (
     PasswordResetValidateView,
 )
 from hub_platform.identity.auth.profile import (
+    ProfileAppearanceView,
     ChangeTemporaryPasswordView,
     ProfilePasswordView,
     ProfileRevokeOtherSessionsView,

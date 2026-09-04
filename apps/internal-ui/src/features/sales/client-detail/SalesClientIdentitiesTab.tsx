@@ -7,7 +7,7 @@ export function SalesClientIdentitiesTab({ identities }: { identities: ClientDet
     <div className="sales-client-list-card">
       {identities.map((identity) => (
         <div className="sales-client-identity-row" key={`${identity.name}-${identity.value}`}>
-          <span className="sales-client-identity-icon" style={{ background: identity.bg, color: "#8c8c8c" }}>
+          <span className="sales-client-identity-icon" style={{ background: identity.bg, color: "var(--n-4)" }}>
             <i style={{ background: identity.color }} />
           </span>
           <span><strong>{identity.name}</strong><small>{identity.value}</small></span>

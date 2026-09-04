@@ -1,8 +1,8 @@
 .sales-composer {
   flex: none;
   padding: 14px 24px 16px;
-  background: #ffffff;
-  border-top: 1px solid #f0f0f0;
+  background: var(--surface-card);
+  border-top: 1px solid var(--n-8);
 }
 
 .sales-composer > div {
@@ -26,7 +26,7 @@
 
 .sales-ai-composer {
   background: #fcfaff;
-  border: 1px solid #efdbff;
+  border: 1px solid var(--ai-border);
 }
 
 .sales-waiting-composer > span,
@@ -41,13 +41,13 @@
 }
 
 .sales-waiting-composer > span {
-  color: #d48806;
-  background: #fff7e6;
+  color: var(--warning-text);
+  background: var(--warning-bg-strong);
 }
 
 .sales-ai-composer > span {
-  color: #722ed1;
-  background: #f9f0ff;
+  color: var(--ai);
+  background: var(--ai-bg);
 }
 
 .sales-waiting-composer div,
@@ -58,7 +58,7 @@
 
 .sales-waiting-composer strong,
 .sales-ai-composer strong {
-  color: #262626;
+  color: var(--n-2);
   font-size: 13.5px;
   font-weight: 600;
 }
@@ -66,7 +66,7 @@
 .sales-waiting-composer p,
 .sales-ai-composer p {
   margin: 1px 0 0;
-  color: #8c8c8c;
+  color: var(--n-4);
   font-size: 12px;
 }
 
@@ -83,18 +83,18 @@
   justify-content: center;
   height: 28px;
   padding: 0 11px;
-  color: #595959;
-  background: #fafafa;
-  border: 1px solid #e8e8e8;
+  color: var(--n-3);
+  background: var(--n-10);
+  border: 1px solid var(--n-7);
   border-radius: 14px;
   font-size: 12px;
   font-weight: 500;
 }
 
 .sales-human-tools button.ai {
-  color: #722ed1;
-  background: #f9f0ff;
-  border-color: #d3adf7;
+  color: var(--ai);
+  background: var(--ai-bg);
+  border-color: var(--ai-border);
   font-weight: 600;
 }
 
@@ -107,13 +107,13 @@
   align-items: flex-end;
   gap: 10px;
   padding: 8px 8px 8px 14px;
-  background: #ffffff;
-  border: 1px solid #e8e8e8;
+  background: var(--surface-card);
+  border: 1px solid var(--n-7);
   border-radius: 12px;
 }
 
 .sales-message-input:focus-within {
-  border-color: #1677ff;
+  border-color: var(--primary);
 }
 
 .sales-message-input textarea {
@@ -123,7 +123,7 @@
   border: none;
   outline: none;
   resize: none;
-  color: #262626;
+  color: var(--n-2);
   font-size: 13.5px;
   line-height: 1.5;
 }
@@ -136,7 +136,7 @@
   flex: none;
   padding: 0 16px;
   color: #ffffff;
-  background: #1677ff;
+  background: var(--primary);
   border: none;
   border-radius: 9px;
   font-size: 13px;
@@ -181,7 +181,7 @@
   border: 1px solid var(--border-default);
   border-radius: 10px;
   background: var(--surface-card);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--shadow-lg);
 }
 
 .composer-templates-menu p {

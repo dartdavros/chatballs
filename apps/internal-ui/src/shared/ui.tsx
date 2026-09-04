@@ -24,18 +24,18 @@ export type StatusPillKey = "normal" | "active" | "published" | "blocked" | "dis
 
 export function StatusPill({ status }: { status: StatusPillKey }) {
   const map = {
-    normal: ["#f6ffed", "#b7eb8f", "#389e0d", "Работает"],
-    active: ["transparent", "transparent", "#389e0d", "Активен"],
-    published: ["#f6ffed", "#b7eb8f", "#389e0d", "Опубликован"],
-    blocked: ["transparent", "transparent", "#cf1322", "Заблокирован"],
-    disabled: ["transparent", "transparent", "#d48806", "Неактивен"],
-    invited: ["transparent", "transparent", "#0958d9", "Приглашён"],
-    archived: ["#f5f5f5", "#e8e8e8", "#8c8c8c", "Архивный"],
-    draft: ["#fafafa", "#e8e8e8", "#8c8c8c", "Черновик"],
-    healthy: ["#f6ffed", "#b7eb8f", "#389e0d", "Работает"],
-    error: ["#fff2f0", "#ffccc7", "#cf1322", "Ошибка"],
-    pending: ["#fffbe6", "#ffe58f", "#d48806", "Проверяется"],
-    unchecked: ["#fafafa", "#e8e8e8", "#8c8c8c", "Не проверялось"],
+    normal: ["var(--success-bg)", "var(--success-border)", "var(--success-text)", "Работает"],
+    active: ["transparent", "transparent", "var(--success-text)", "Активен"],
+    published: ["var(--success-bg)", "var(--success-border)", "var(--success-text)", "Опубликован"],
+    blocked: ["transparent", "transparent", "var(--error-text)", "Заблокирован"],
+    disabled: ["transparent", "transparent", "var(--warning-text)", "Неактивен"],
+    invited: ["transparent", "transparent", "var(--primary-text)", "Приглашён"],
+    archived: ["var(--n-9)", "var(--n-7)", "var(--n-4)", "Архивный"],
+    draft: ["var(--n-10)", "var(--n-7)", "var(--n-4)", "Черновик"],
+    healthy: ["var(--success-bg)", "var(--success-border)", "var(--success-text)", "Работает"],
+    error: ["var(--error-bg)", "var(--error-border)", "var(--error-text)", "Ошибка"],
+    pending: ["var(--warning-bg)", "var(--warning-border)", "var(--warning-text)", "Проверяется"],
+    unchecked: ["var(--n-10)", "var(--n-7)", "var(--n-4)", "Не проверялось"],
   } as const;
   const [bg, border, color, label] = map[status];
   const dotStyle = status === "archived"

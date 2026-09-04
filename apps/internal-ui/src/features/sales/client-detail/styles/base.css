@@ -7,8 +7,8 @@
 .sales-client-section-card,
 .sales-client-list-card,
 .sales-client-table-card {
-  background: #ffffff;
-  border: 1px solid #f0f0f0;
+  background: var(--surface-card);
+  border: 1px solid var(--n-8);
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
@@ -19,7 +19,7 @@
 
 .sales-client-section-card h3 {
   margin: 0 0 14px;
-  color: #1f1f1f;
+  color: var(--n-1);
   font-size: 14px;
   font-weight: 700;
 }
@@ -38,7 +38,7 @@
 
 .sales-client-section-head button,
 .sales-client-identity-row button {
-  color: #1677ff;
+  color: var(--primary);
   background: transparent;
   border: 0;
   font-size: 12px;

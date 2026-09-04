@@ -60,7 +60,7 @@
   padding: 40px 24px;
   border: 1px solid var(--border-default);
   border-radius: var(--radius-2xl);
-  background: #fff;
+  background: var(--surface-card);
   box-shadow: var(--shadow-sm);
   text-align: center;
 }
