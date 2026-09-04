@@ -18,3 +18,37 @@
   display: flex;
   overflow: hidden;
 }
+
+/* Кадр S2 (≤1024px): рабочее поле сжимается, контекст-панель — выдвижная. */
+.sales-conversation-actions .ctx-toggle {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  .sales-dialogs {
+    min-width: 0;
+    position: relative;
+  }
+
+  .sales-conversation-actions .ctx-toggle {
+    display: inline-flex;
+    color: var(--primary-text);
+    background: var(--primary-bg);
+    border-color: var(--primary-border);
+  }
+
+  .sales-dialogs .sales-context {
+    display: none;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 320px;
+    z-index: 4;
+    box-shadow: -8px 0 24px rgba(0, 0, 0, 0.1);
+  }
+
+  .sales-dialogs.is-ctx-open .sales-context {
+    display: flex;
+  }
+}

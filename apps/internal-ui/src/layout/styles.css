@@ -15,6 +15,106 @@
   border-right: 1px solid var(--n-8);
 }
 
+.hub-sidebar-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Рейка 60px (дизайн-базлайн v2, кадр S2): показывается только на ≤1024px. */
+.hub-rail {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 0 12px;
+  height: 100%;
+}
+
+.hub-rail .hub-brand-mark {
+  margin-bottom: 8px;
+}
+
+.hub-rail-button {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 9px;
+  color: var(--n-4);
+  background: transparent;
+}
+
+.hub-rail-button:hover {
+  background: var(--n-9);
+}
+
+.hub-rail-button.is-active {
+  color: var(--primary-text);
+  background: var(--primary-bg);
+}
+
+.hub-rail-spacer {
+  flex: 1;
+}
+
+.hub-rail-avatar {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 50%;
+  color: #ffffff;
+  background: var(--primary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.hub-rail-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 19;
+  border: 0;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+@media (max-width: 1024px) {
+  .hub-sidebar {
+    width: 60px;
+  }
+
+  .hub-rail {
+    display: flex;
+  }
+
+  .hub-sidebar-body {
+    display: none;
+  }
+
+  .hub-sidebar.is-rail-expanded .hub-rail-backdrop {
+    display: block;
+  }
+
+  .hub-sidebar.is-rail-expanded .hub-sidebar-body {
+    display: flex;
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 248px;
+    z-index: 20;
+    background: var(--surface-card);
+    border-right: 1px solid var(--n-8);
+    box-shadow: 8px 0 24px rgba(0, 0, 0, 0.1);
+  }
+}
+
 .hub-brand {
   width: 100%;
   height: 56px;

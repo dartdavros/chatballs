@@ -59,6 +59,8 @@ export function ConversationWorkspace({ isOwner = false, listTitle, searchPlaceh
   showScopeSwitcher?: boolean;
 }) {
   const [listTab, setListTab] = useState<ListTab>("all");
+  // Кадр S2: на ≤1024px контекст-панель — выдвижная поверх ленты.
+  const [ctxOpen, setCtxOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [conversations, setConversations] = useState<ApiConversation[]>([]);
   const [listLoaded, setListLoaded] = useState(false);
@@ -105,6 +107,10 @@ export function ConversationWorkspace({ isOwner = false, listTitle, searchPlaceh
   useEffect(() => {
     if (initialConversationId != null) setSelectedId(initialConversationId);
   }, [initialConversationId]);
+
+  useEffect(() => {
+    setCtxOpen(false);
+  }, [selectedId]);
 
   useEffect(() => {
     if (selectedId == null) return;
@@ -168,7 +174,7 @@ export function ConversationWorkspace({ isOwner = false, listTitle, searchPlaceh
   };
 
   return (
-    <div className="sales-dialogs">
+    <div className={`sales-dialogs ${ctxOpen ? "is-ctx-open" : ""}`}>
       <DialogList
         scope={scope}
         counters={counters}
@@ -187,7 +193,7 @@ export function ConversationWorkspace({ isOwner = false, listTitle, searchPlaceh
         setSelectedId={setSelectedId}
       />
       <section className="sales-conversation">
-        <ConversationThread controlMode={controlMode} dialog={selectedDialog} detail={detail} isOwner={isOwner} onClaim={onClaim} onCall={(kind) => void callController.start(kind)} onClose={onClose} onSpam={onSpam} onReturnQueue={onReturnQueue} onArchive={onArchive} />
+        <ConversationThread controlMode={controlMode} dialog={selectedDialog} detail={detail} isOwner={isOwner} onClaim={onClaim} onCall={(kind) => void callController.start(kind)} onClose={onClose} onSpam={onSpam} onReturnQueue={onReturnQueue} onArchive={onArchive} onToggleContext={() => setCtxOpen((open) => !open)} />
         {(detailError || actionError) && <div className="sales-conversation-error">{detailError || actionError}</div>}
         <CallOverlay
           open={callController.open}

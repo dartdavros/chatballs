@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import type { RouteKey, SessionUser } from "../types";
 import { Icon, LogoIcon } from "../shared/icons";
 import { defaultRoute, isManager } from "../auth/access";
@@ -67,12 +69,43 @@ export function Sidebar({
   chatCounters: ConversationCounters | null;
 }) {
   const manager = isManager(user);
+  // Кадр S2: на ≤1024px сайдбар сжимается в рейку 60px; «развернуть»
+  // раскрывает полный сайдбар поверх контента.
+  const [railExpanded, setRailExpanded] = useState(false);
   const sectionStorageKey = (section: string) => (
     `chatbolls.sidebar.${user.organizationPublicId}.${section}.expanded`
   );
+  const initials = (user.fullName || user.email)
+    .split(/\s+/)
+    .map((part) => part[0] ?? "")
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
   return (
-    <aside className="hub-sidebar">
+    <aside className={`hub-sidebar ${railExpanded ? "is-rail-expanded" : ""}`}>
+      <div className="hub-rail">
+        <div className={`hub-brand-mark ${user.organizationLogoUrl ? "has-logo" : ""}`}>
+          {user.organizationLogoUrl ? <img src={user.organizationLogoUrl} alt="" /> : <LogoIcon />}
+        </div>
+        <button
+          className={`hub-rail-button ${route === "chat" ? "is-active" : ""}`}
+          title="Чат"
+          type="button"
+          onClick={() => setRoute("chat")}
+        >
+          <Icon name="message" size={18} />
+        </button>
+        <button className="hub-rail-button" title="Развернуть" type="button" onClick={() => setRailExpanded(true)}>
+          <Icon name="chevron" size={17} />
+        </button>
+        <div className="hub-rail-spacer" />
+        <button className="hub-rail-avatar" title={user.fullName || user.email} type="button" onClick={() => setRailExpanded(true)}>
+          {initials}
+        </button>
+      </div>
+      {railExpanded && <button className="hub-rail-backdrop" aria-label="Свернуть меню" type="button" onClick={() => setRailExpanded(false)} />}
+      <div className="hub-sidebar-body" onClick={() => setRailExpanded(false)}>
       <button className="hub-brand" type="button" onClick={() => setRoute(defaultRoute(user))}>
         <div className={`hub-brand-mark ${user.organizationLogoUrl ? "has-logo" : ""}`}>
           {user.organizationLogoUrl
@@ -113,6 +146,7 @@ export function Sidebar({
       )}
       {manager && <LaunchChecklist user={user} setRoute={setRoute} />}
       <SidebarUserMenu user={user} route={route} setRoute={setRoute} onLogout={onLogout} />
+      </div>
     </aside>
   );
 }
