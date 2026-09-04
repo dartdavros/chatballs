@@ -165,6 +165,8 @@ CUS_AI_GLOBAL_DAILY_COST_LIMIT_MICROS = int(
 )  # 0 = без лимита
 CUS_AI_PRICING: dict = {}  # переопределение цен micro-USD/токен по модели
 CUS_AI_EMBEDDING_MODEL = os.environ.get("CUS_AI_EMBEDDING_MODEL", "openai/text-embedding-3-small")
+# Модель расшифровки голосовых (OpenAI-совместимый /audio/transcriptions).
+CUS_AI_TRANSCRIPTION_MODEL = os.environ.get("CUS_AI_TRANSCRIPTION_MODEL", "whisper-1")
 
 # Managed-провайдер CustoAI удалён (ADR-HUB-0042 §3): AI — только через
 # интеграцию организации (BYOK).

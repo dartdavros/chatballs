@@ -80,7 +80,10 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
 
     # Явный шаринг контакта: сообщение без текста, но с телефоном.
     is_contact_share = bool(inbound.phone)
-    message_text = inbound.text or (f"Поделился контактом: {inbound.phone}" if is_contact_share else "")
+    is_voice = bool(inbound.voice_file_id or inbound.voice_url)
+    message_text = inbound.text or (
+        f"Поделился контактом: {inbound.phone}" if is_contact_share else ""
+    ) or ("Голосовое сообщение" if is_voice else "")
 
     with transaction.atomic():
         identity = (
@@ -139,14 +142,22 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
         elif inbound.chat_id and not conversation.external_chat_id:
             conversation.external_chat_id = inbound.chat_id
 
-        Message.objects.create(
+        message = Message.objects.create(
             conversation=conversation,
             author_type=MessageAuthor.CONTACT,
-            kind=MessageKind.CONTACT if is_contact_share else MessageKind.TEXT,
-            text=message_text,
+            kind=(
+                MessageKind.CONTACT
+                if is_contact_share
+                else MessageKind.VOICE
+                if is_voice
+                else MessageKind.TEXT
+            ),
+            text="" if is_voice else message_text,
             content_html=inbound.content_html,
             external_id=inbound.external_id,
         )
+        if is_voice:
+            _store_voice(integration, inbound, message)
         conversation.last_activity_at = timezone.now()
         update_fields = ["external_chat_id", "last_activity_at"]
         if conversation.control_mode == ControlMode.AI and not ai_available:
@@ -201,6 +212,15 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
         conversation.expected_responder = ExpectedResponder.CUSTOMER if conversation.control_mode == ControlMode.AI else conversation.expected_responder
         conversation.save(update_fields=["expected_responder"])
         transports.send_contact_ack(integration, chat_id=conversation.external_chat_id, user_id=inbound.user_id, text=ack)
+        return
+
+    # Голосовое AI не разбирает (расшифровка — по кнопке оператора): диалог
+    # уходит оператору, как при недоступном AI, но без имитации сбоя.
+    if is_voice:
+        if conversation.control_mode == ControlMode.AI:
+            conversation.control_mode = ControlMode.PAUSED
+            conversation.expected_responder = ExpectedResponder.OPERATOR
+            conversation.save(update_fields=["control_mode", "expected_responder"])
         return
 
     # Операторский канал без активного агента сразу создаёт очередь и не
@@ -278,3 +298,25 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
         transports.send_reply(
             integration, chat_id=conversation.external_chat_id, user_id=inbound.user_id, text=reply
         )
+
+
+def _store_voice(integration, inbound: InboundMessage, message: Message) -> None:
+    """Скачивание и сохранение голосового. Сбой скачивания не теряет сообщение:
+    остаётся текстовая заглушка без аудио."""
+    from django.core.files.base import ContentFile
+
+    try:
+        content, content_type = transports.download_voice(integration, inbound)
+    except Exception as error:  # noqa: BLE001 - провайдер/сеть, деградация мягкая
+        logger.warning(
+            "Voice download failed for message %s: %s", message.id, error
+        )
+        message.kind = MessageKind.TEXT
+        message.text = "Голосовое сообщение (не удалось загрузить)"
+        message.save(update_fields=["kind", "text"])
+        return
+    suffix = "ogg" if "ogg" in content_type else content_type.rsplit("/", 1)[-1][:8] or "bin"
+    message.audio_content_type = content_type
+    message.duration_seconds = inbound.voice_duration
+    message.audio.save(f"voice.{suffix}", ContentFile(content), save=False)
+    message.save(update_fields=["audio", "audio_content_type", "duration_seconds"])

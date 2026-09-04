@@ -1,6 +1,6 @@
 from django.urls import path
 
-from hub_platform.conversations import chat_extras_views, reporting_views, views
+from hub_platform.conversations import chat_extras_views, reporting_views, views, voice_views
 
 urlpatterns = [
     path("", views.ConversationListView.as_view(), name="conversation-list"),
@@ -27,4 +27,7 @@ urlpatterns = [
     path("labels/<int:label_id>/", chat_extras_views.LabelDetailView.as_view(), name="conversation-label-detail"),
     path("templates/", chat_extras_views.ReplyTemplateListView.as_view(), name="reply-template-list"),
     path("templates/<int:template_id>/", chat_extras_views.ReplyTemplateDetailView.as_view(), name="reply-template-detail"),
+    path("<int:conversation_id>/voice/", voice_views.ConversationVoiceView.as_view(), name="conversation-voice"),
+    path("messages/<int:message_id>/audio/", voice_views.MessageAudioView.as_view(), name="message-audio"),
+    path("messages/<int:message_id>/transcribe/", voice_views.MessageTranscribeView.as_view(), name="message-transcribe"),
 ]

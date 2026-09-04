@@ -14,7 +14,7 @@ import urllib.error
 
 from django.conf import settings
 
-from hub_platform.conversations.transports.base import InboundMessage, request_json
+from hub_platform.conversations.transports.base import InboundMessage, download_bytes, request_json, request_json_multipart
 from hub_platform.integrations.checks import DEFAULT_TELEGRAM_BASE_URL
 
 logger = logging.getLogger(__name__)
@@ -35,7 +35,10 @@ def _normalize(update: dict) -> InboundMessage | None:
     chat = message.get("chat") or {}
     # Контакт приходит отдельным сообщением без текста (ответ на request_contact).
     phone = str((message.get("contact") or {}).get("phone_number") or "")
-    if (not text and not phone) or "id" not in sender or "id" not in chat:
+    # Голосовое (дизайн-базлайн v2): file_id скачивается в ingest через getFile.
+    voice = message.get("voice") or {}
+    voice_file_id = str(voice.get("file_id") or "")
+    if (not text and not phone and not voice_file_id) or "id" not in sender or "id" not in chat:
         return None
     name = " ".join(p for p in [sender.get("first_name"), sender.get("last_name")] if p) or sender.get("username") or ""
     return InboundMessage(
@@ -46,6 +49,9 @@ def _normalize(update: dict) -> InboundMessage | None:
         display_name=str(name),
         username=str(sender.get("username") or ""),
         phone=phone,
+        voice_file_id=voice_file_id,
+        voice_duration=int(voice.get("duration") or 0),
+        voice_mime=str(voice.get("mime_type") or "audio/ogg"),
     )
 
 
@@ -108,3 +114,44 @@ def send_call_invite(integration, *, chat_id: str, user_id: str, text: str, url:
     # Приглашение на онлайн-звонок: inline-кнопка со ссылкой /calls/<token>.
     keyboard = {"inline_keyboard": [[{"text": "Перейти к звонку", "url": url}]]}
     return _send(integration, chat_id=chat_id, user_id=user_id, body={"text": text, "reply_markup": keyboard})
+
+
+def download_voice(integration, file_id: str) -> tuple[bytes, str]:
+    """Скачивание голосового: getFile -> file_path -> /file/bot<token>/<path>."""
+    token = integration.secret
+    data = request_json(
+        f"{_base(integration)}/bot{token}/getFile?file_id={file_id}",
+        proxy_url=_proxy(integration),
+    )
+    file_path = ((data.get("result") or {}).get("file_path") or "")
+    if not data.get("ok") or not file_path:
+        raise ValueError("Telegram getFile failed")
+    content = download_bytes(
+        f"{_base(integration)}/file/bot{token}/{file_path}",
+        proxy_url=_proxy(integration),
+    )
+    suffix = file_path.rsplit(".", 1)[-1].lower() if "." in file_path else "oga"
+    return content, f"audio/{'ogg' if suffix in ('oga', 'ogg') else suffix}"
+
+
+def send_voice(integration, *, chat_id: str, user_id: str, content: bytes, content_type: str, duration: int) -> bool:
+    """Отправка голосового оператора (sendVoice, multipart)."""
+    token = integration.secret
+    target = chat_id or user_id
+    if not token or not target:
+        return False
+    suffix = (content_type.rsplit("/", 1)[-1] or "ogg").split(";")[0]
+    try:
+        data = request_json_multipart(
+            f"{_base(integration)}/bot{token}/sendVoice",
+            fields={"chat_id": target, **({"duration": str(duration)} if duration else {})},
+            file_field="voice",
+            filename=f"voice.{suffix}",
+            content=content,
+            content_type=content_type,
+            proxy_url=_proxy(integration),
+        )
+        return bool(data.get("ok"))
+    except (urllib.error.URLError, TimeoutError, OSError, http.client.HTTPException, json.JSONDecodeError) as error:
+        logger.warning("Telegram sendVoice failed for integration %s: %s", integration.id, error)
+        return False

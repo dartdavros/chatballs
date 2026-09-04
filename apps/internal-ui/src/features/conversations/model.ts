@@ -1,8 +1,20 @@
-import { api } from "../../api/client";
+import { api, apiUpload } from "../../api/client";
 import type { ChannelKey, ConversationListItem, ControlMode, DialogMode } from "./types";
 
 // kind: "" — текст, "contact_request" — запрос контакта, "contact" — клиент поделился номером.
-export type ApiMessage = { id: number; author: "CONTACT" | "AI" | "OPERATOR" | "SYSTEM"; kind?: string; text: string; contentHtml?: string; createdAt: string };
+export type ApiMessage = {
+  id: number;
+  author: "CONTACT" | "AI" | "OPERATOR" | "SYSTEM";
+  kind?: string;
+  text: string;
+  contentHtml?: string;
+  createdAt: string;
+  // Голосовое (kind="voice", дизайн-базлайн v2 кадр H).
+  audioUrl?: string | null;
+  durationSeconds?: number;
+  transcript?: string;
+  transcriptStatus?: "NONE" | "READY" | "FAILED";
+};
 
 export type HistoryItem = {
   id: number;
@@ -106,6 +118,11 @@ function dialogMode(conversation: ApiConversation): DialogMode {
   return "wait";
 }
 
+function formatPreviewDuration(totalSeconds: number): string {
+  const seconds = Math.max(0, Math.round(totalSeconds));
+  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+}
+
 function initialsOf(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
   if (parts.length === 0) return "Г";
@@ -134,7 +151,10 @@ export function toConversationListItem(conversation: ApiConversation): Conversat
     channel: PROVIDER_CHANNEL[conversation.connection?.provider ?? "WEB"] ?? "WEB",
     email: conversation.contact?.email ?? "",
     mode: dialogMode(conversation),
-    preview: conversation.lastMessage?.text.replace(/\s+/g, " ").slice(0, 80) ?? "—",
+    preview:
+      conversation.lastMessage?.kind === "voice"
+        ? `Голосовое сообщение · ${formatPreviewDuration(conversation.lastMessage.durationSeconds ?? 0)}`
+        : conversation.lastMessage?.text.replace(/\s+/g, " ").slice(0, 80) ?? "—",
     time: new Date(conversation.lastActivityAt).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }),
     unread: conversation.pendingCount ?? 0,
     isMine: conversation.isAssignedToViewer,
@@ -212,6 +232,17 @@ export const createConversationLabel = (name: string, color = "") =>
   }).then((r) => r.label);
 export const fetchReplyTemplates = () =>
   api<{ items: ReplyTemplateRef[] }>("/api/v1/conversations/templates/").then((r) => r.items);
+
+export const transcribeMessage = (messageId: number) =>
+  api<{ message: ApiMessage }>(`/api/v1/conversations/messages/${messageId}/transcribe/`, { method: "POST" }).then((r) => r.message);
+
+export const sendVoiceMessage = (conversationId: number, audio: Blob, durationSeconds: number) => {
+  const form = new FormData();
+  const extension = audio.type.includes("ogg") ? "ogg" : audio.type.includes("webm") ? "webm" : "bin";
+  form.append("audio", audio, `voice.${extension}`);
+  form.append("duration", String(Math.round(durationSeconds)));
+  return apiUpload<{ message: ApiMessage }>(`/api/v1/conversations/${conversationId}/voice/`, form).then((r) => r.message);
+};
 
 // --- Онлайн-звонки (SPEC-HUB-0013): запрос из диалога, ожидание, отмена ---
 

@@ -216,6 +216,7 @@ export function ConversationWorkspace({ isOwner = false, listTitle, searchPlaceh
         />
         <Composer
           mode={controlMode}
+          channel={selectedDialog?.channel}
           loaded={detailLoaded}
           assignedOperatorName={detail?.assignedOperator?.name}
           conversationId={selectedId}

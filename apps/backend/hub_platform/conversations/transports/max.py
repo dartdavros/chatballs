@@ -16,7 +16,7 @@ import urllib.parse
 
 from django.conf import settings
 
-from hub_platform.conversations.transports.base import InboundMessage, first, request_json
+from hub_platform.conversations.transports.base import InboundMessage, download_bytes, first, request_json
 from hub_platform.integrations.checks import DEFAULT_MAX_BASE_URL
 
 logger = logging.getLogger(__name__)
@@ -86,7 +86,8 @@ def _normalize(update: dict) -> InboundMessage | None:
     chat_id = first(recipient, "chat_id", "chatId")
     external_id = first(inner, "mid", "msgId", "seq") or first(update, "update_id", "updateId", "timestamp")
     phone = _contact_phone(inner, msg)
-    if (not text and not phone) or user_id is None or external_id is None:
+    voice_url, voice_duration = _voice_attachment(inner)
+    if (not text and not phone and not voice_url) or user_id is None or external_id is None:
         return None
     return InboundMessage(
         external_id=str(external_id),
@@ -97,7 +98,21 @@ def _normalize(update: dict) -> InboundMessage | None:
         username=str(first(sender, "username", "user_name", default="")),
         phone=phone,
         avatar_url=str(first(sender, "avatar_url", "avatar", default="")),
+        voice_url=voice_url,
+        voice_duration=voice_duration,
+        voice_mime="audio/ogg" if voice_url else "",
     )
+
+
+def _voice_attachment(inner: dict) -> tuple[str, int]:
+    """Голосовое/аудио-вложение MAX: payload.url для скачивания."""
+    for attachment in inner.get("attachments") or []:
+        if attachment.get("type") in ("audio", "voice"):
+            payload = attachment.get("payload") or {}
+            url = str(first(payload, "url", "download_url", default=""))
+            if url:
+                return url, int(first(attachment, "duration", default=0) or payload.get("duration") or 0)
+    return "", 0
 
 
 def poll_updates(integration) -> tuple[list[InboundMessage], str]:
@@ -157,3 +172,9 @@ def send_call_invite(integration, *, chat_id: str, user_id: str, text: str, url:
         "payload": {"buttons": [[{"type": "link", "text": "Перейти к звонку", "url": url}]]},
     }
     return _send(integration, chat_id=chat_id, user_id=user_id, body={"text": text, "attachments": [keyboard]})
+
+
+def download_voice(integration, url: str) -> tuple[bytes, str]:
+    """Скачивание голосового MAX по прямому URL вложения."""
+    content = download_bytes(url, proxy_url=_proxy(integration))
+    return content, "audio/ogg"

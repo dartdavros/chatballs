@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Icon } from "../../shared/icons";
-import { fetchReplyTemplates, sendOperatorMessage, type ReplyTemplateRef } from "./model";
-import type { ControlMode } from "./types";
+import { fetchReplyTemplates, sendOperatorMessage, sendVoiceMessage, type ReplyTemplateRef } from "./model";
+import { formatDuration } from "./VoiceMessage";
+import { useVoiceRecorder } from "./useVoiceRecorder";
+import type { ChannelKey, ControlMode } from "./types";
 
-export function Composer({ mode, loaded, assignedOperatorName, conversationId, onClaim, onRelease, onReturnQueue, onClose, onSent }: { mode: ControlMode; loaded: boolean; assignedOperatorName?: string; conversationId: number | null; onClaim: () => void; onRelease: () => void; onReturnQueue: () => void; onClose: () => void; onSent: () => void }) {
+export function Composer({ mode, loaded, assignedOperatorName, conversationId, channel, onClaim, onRelease, onReturnQueue, onClose, onSent }: { mode: ControlMode; loaded: boolean; assignedOperatorName?: string; conversationId: number | null; channel?: ChannelKey; onClaim: () => void; onRelease: () => void; onReturnQueue: () => void; onClose: () => void; onSent: () => void }) {
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState("");
@@ -31,6 +33,16 @@ export function Composer({ mode, loaded, assignedOperatorName, conversationId, o
     setTemplatesOpen(false);
     textareaRef.current?.focus();
   }
+
+  // Запись голосового: поддержана в Telegram-диалогах (отправка sendVoice).
+  const recorder = useVoiceRecorder({
+    onSend: async (audio, duration) => {
+      if (conversationId == null) return;
+      await sendVoiceMessage(conversationId, audio, duration);
+      onSent();
+    },
+  });
+  const voiceAvailable = recorder.supported && channel === "TG";
 
   if (conversationId == null) {
     return <div className="sales-composer"><div className="sales-waiting-composer"><div><strong>Выберите диалог</strong></div></div></div>;
@@ -94,6 +106,26 @@ export function Composer({ mode, loaded, assignedOperatorName, conversationId, o
     }
   }
 
+  if (recorder.state !== "idle") {
+    return (
+      <div className="sales-composer">
+        <div className="voice-recorder">
+          <button aria-label="Отменить запись" className="voice-recorder-cancel" title="Отменить запись" type="button" onClick={recorder.cancel}>
+            <Icon name="trash" size={16} />
+          </button>
+          <span className="voice-recorder-timer"><i />{formatDuration(recorder.seconds)}</span>
+          <span className="voice-recorder-hint">
+            {recorder.state === "sending" ? "Отправка…" : "Идёт запись. Esc — отменить, Enter — отправить"}
+          </span>
+          <button className="voice-recorder-send" disabled={recorder.state === "sending"} type="button" onClick={recorder.stopAndSend}>
+            <Icon name="send" size={14} />Отправить
+          </button>
+        </div>
+        {recorder.errorText && <div className="sales-composer-error">{recorder.errorText}</div>}
+      </div>
+    );
+  }
+
   return (
     <div className="sales-composer">
       <div className="sales-human-tools">
@@ -122,6 +154,16 @@ export function Composer({ mode, loaded, assignedOperatorName, conversationId, o
             onClick={() => setTemplatesOpen((open) => !open)}
           >
             <Icon name="list" size={16} />
+          </button>
+        )}
+        {voiceAvailable && (
+          <button
+            className="composer-templates-button"
+            title="Записать голосовое"
+            type="button"
+            onClick={() => void recorder.start()}
+          >
+            <Icon name="message" size={16} />
           </button>
         )}
         <textarea

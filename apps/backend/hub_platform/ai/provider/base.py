@@ -44,3 +44,8 @@ class LLMProvider(abc.ABC):
 
     @abc.abstractmethod
     def embed(self, *, texts: list[str], model: str) -> list[EmbeddingResult]: ...
+
+    def transcribe(self, *, audio: bytes, filename: str, content_type: str, model: str) -> str:
+        """Расшифровка аудио (дизайн-базлайн v2). Реализуется OpenAI-совместимыми
+        адаптерами (POST /audio/transcriptions); остальные явно отказывают."""
+        raise ProviderError(f"Провайдер {self.name} не поддерживает расшифровку аудио")

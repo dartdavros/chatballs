@@ -5,6 +5,7 @@ import { IconButton } from "../../shared/ui-controls";
 import { ConversationActions } from "./ConversationActions";
 import { ContactAvatar } from "./ContactAvatar";
 import { EmailMessageBody } from "./EmailMessageBody";
+import { VoiceMessage } from "./VoiceMessage";
 import { statusFor } from "./data";
 import { providerMeta } from "../../shared/providers";
 import type { ApiConversation, ApiMessage } from "./model";
@@ -77,9 +78,11 @@ function MessageRow({ message, dialog }: { message: ApiMessage; dialog: Conversa
   const actor = message.author === "AI" ? "AI-агент" : message.author === "OPERATOR" ? "Оператор" : undefined;
   return (
     <Message side={side} initials={dialog.initials} avatarBg={dialog.avatarBg} avatarUrl={dialog.avatarUrl} actor={actor} time={fmtTime(message.createdAt)}>
-      {message.author === "CONTACT" && dialog.channel === "EMAIL"
-        ? <EmailMessageBody html={message.contentHtml} text={message.text} />
-        : message.text}
+      {message.kind === "voice"
+        ? <VoiceMessage message={message} />
+        : message.author === "CONTACT" && dialog.channel === "EMAIL"
+          ? <EmailMessageBody html={message.contentHtml} text={message.text} />
+          : message.text}
     </Message>
   );
 }

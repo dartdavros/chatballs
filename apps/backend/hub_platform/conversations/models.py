@@ -190,6 +190,24 @@ class MessageKind(models.TextChoices):
     TEXT = "", "Текст"
     CONTACT_REQUEST = "contact_request", "Запрос контакта"
     CONTACT = "contact", "Контакт"
+    VOICE = "voice", "Голосовое сообщение"
+
+
+class TranscriptStatus(models.TextChoices):
+    # Расшифровка голосового (дизайн-базлайн v2, кадр H): по кнопке, через
+    # BYOK-провайдера организации (решение владельца 2026-09-04).
+    NONE = "NONE", "Не расшифровано"
+    READY = "READY", "Готова"
+    FAILED = "FAILED", "Ошибка"
+
+
+def message_audio_upload_path(instance: "Message", filename: str) -> str:
+    import uuid
+    from pathlib import Path
+
+    suffix = Path(filename).suffix.lower() or ".ogg"
+    organization = instance.conversation.organization
+    return f"organizations/{organization.public_id}/voice/{uuid.uuid4().hex}{suffix}"
 
 
 class Message(TenantRelationModel):
@@ -204,6 +222,14 @@ class Message(TenantRelationModel):
     # Санитизированный HTML входящего email. Остальные транспорты и исходящие
     # ответы используют plain text.
     content_html = models.TextField(blank=True)
+    # Голосовое сообщение (kind=VOICE): аудиофайл, длительность и расшифровка.
+    audio = models.FileField(upload_to=message_audio_upload_path, max_length=512, blank=True)
+    audio_content_type = models.CharField(max_length=64, blank=True)
+    duration_seconds = models.PositiveIntegerField(default=0)
+    transcript = models.TextField(blank=True)
+    transcript_status = models.CharField(
+        max_length=8, choices=TranscriptStatus.choices, default=TranscriptStatus.NONE
+    )
     external_id = models.CharField(max_length=128, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 

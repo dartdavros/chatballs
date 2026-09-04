@@ -61,7 +61,7 @@ function organizationScopedPath(path: string): string {
   return `/api/v1/organizations/${activeOrganizationPublicId}${path.slice("/api/v1".length)}`;
 }
 
-function resolveApiUrl(path: string): string {
+export function resolveApiUrl(path: string): string {
   path = organizationScopedPath(path);
   if (!configuredApiBase) return path;
   if (configuredApiBase.endsWith("/api/v1") && path.startsWith("/api/v1/")) {

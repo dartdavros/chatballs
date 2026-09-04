@@ -3,7 +3,7 @@ from hub_platform.integrations.models import IntegrationProvider
 
 
 def message_payload(message: Message) -> dict[str, object]:
-    return {
+    payload = {
         "id": message.id,
         "author": message.author_type,
         "authorUserId": message.author_user_id,
@@ -12,6 +12,14 @@ def message_payload(message: Message) -> dict[str, object]:
         "contentHtml": message.content_html,
         "createdAt": message.created_at.isoformat(),
     }
+    if message.kind == "voice":
+        payload["audioUrl"] = (
+            f"/api/v1/conversations/messages/{message.id}/audio/" if message.audio else None
+        )
+        payload["durationSeconds"] = message.duration_seconds
+        payload["transcript"] = message.transcript
+        payload["transcriptStatus"] = message.transcript_status
+    return payload
 
 
 def _last_message(conversation: Conversation) -> Message | None:

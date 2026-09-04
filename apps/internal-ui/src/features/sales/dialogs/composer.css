@@ -219,3 +219,194 @@
   color: var(--text-tertiary);
   font-size: 11.5px;
 }
+
+/* --- Голосовые (дизайн-базлайн v2, кадр H): запись в композере --- */
+
+.voice-recorder {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 8px 8px 10px;
+  border: 1px solid var(--error-border);
+  border-radius: 12px;
+  background: var(--surface-card);
+  box-shadow: 0 0 0 3px var(--error-bg);
+}
+
+.voice-recorder-cancel {
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text-tertiary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.voice-recorder-cancel:hover {
+  background: var(--error-bg);
+  color: var(--error-text);
+}
+
+.voice-recorder-timer {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex: none;
+  padding: 0 10px;
+  height: 30px;
+  border-radius: 15px;
+  background: var(--error-bg);
+  color: var(--error-text);
+  font-size: 12.5px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+
+.voice-recorder-timer i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--error);
+  animation: hubTyping 1.2s infinite;
+}
+
+.voice-recorder-hint {
+  flex: 1;
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.voice-recorder-send {
+  height: 36px;
+  padding: 0 14px;
+  flex: none;
+  border: none;
+  border-radius: 9px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.voice-recorder-send:hover {
+  background: var(--primary-hover);
+}
+
+/* --- Голосовые в ленте: плеер, волна, расшифровка --- */
+
+.voice-message {
+  min-width: 260px;
+}
+
+.voice-message-player {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.voice-message-play {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border: none;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.voice-message-play:hover {
+  background: var(--primary-hover);
+}
+
+.voice-message-wave {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 24px;
+  min-width: 120px;
+}
+
+.voice-message-wave i {
+  display: block;
+  width: 3px;
+  border-radius: 1.5px;
+  background: color-mix(in srgb, var(--primary) 45%, var(--surface-card));
+  flex: none;
+}
+
+.voice-message-wave i.is-played {
+  background: var(--primary);
+}
+
+.voice-message-transcribe {
+  width: 26px;
+  height: 26px;
+  flex: none;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--primary-text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.voice-message-transcribe:hover {
+  background: var(--n-9);
+}
+
+.voice-message-busy {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex: none;
+}
+
+.voice-message-busy i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--primary-text);
+  animation: hubTyping 1.2s infinite;
+}
+
+.voice-message-busy i:nth-child(2) { animation-delay: 0.15s; }
+.voice-message-busy i:nth-child(3) { animation-delay: 0.3s; }
+
+.voice-message-player em {
+  flex: none;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-style: normal;
+  font-variant-numeric: tabular-nums;
+}
+
+.voice-message-transcript {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-body);
+}
+
+.voice-message-transcript .link,
+.voice-message-show {
+  margin-left: 8px;
+  font-size: 12px;
+}
+
+.voice-message-error {
+  margin: 6px 0 0;
+  color: var(--error-text);
+  font-size: 12px;
+}

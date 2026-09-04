@@ -70,3 +70,32 @@ def send_call_invite(integration, *, chat_id: str, user_id: str, text: str, url:
     if sender is None:
         return False
     return sender(integration, chat_id=chat_id, user_id=user_id, text=text, url=url)
+
+
+# Голосовые (дизайн-базлайн v2, кадр H): скачивание входящих — TG (file_id) и
+# MAX (прямой url); отправка операторских голосовых поддержана в Telegram.
+
+
+def download_voice(integration, inbound) -> tuple[bytes, str]:
+    if integration.provider == IntegrationProvider.TELEGRAM and inbound.voice_file_id:
+        return _telegram.download_voice(integration, inbound.voice_file_id)
+    if integration.provider == IntegrationProvider.MAX and inbound.voice_url:
+        return _max.download_voice(integration, inbound.voice_url)
+    raise ValueError("Voice download is not supported for this provider")
+
+
+def supports_voice_send(integration) -> bool:
+    return integration.provider == IntegrationProvider.TELEGRAM
+
+
+def send_voice(integration, *, chat_id: str, user_id: str, content: bytes, content_type: str, duration: int) -> bool:
+    if integration.provider != IntegrationProvider.TELEGRAM:
+        return False
+    return _telegram.send_voice(
+        integration,
+        chat_id=chat_id,
+        user_id=user_id,
+        content=content,
+        content_type=content_type,
+        duration=duration,
+    )

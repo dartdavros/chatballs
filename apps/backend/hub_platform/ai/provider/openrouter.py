@@ -32,3 +32,43 @@ class OpenRouterProvider(LLMProvider):
             base_url=self.base_url, api_key=self.api_key, texts=texts, model=model,
             timeout=self.timeout, proxy_url=self.proxy_url,
         )
+
+    def transcribe(self, *, audio: bytes, filename: str, content_type: str, model: str) -> str:
+        # OpenAI-совместимый POST /audio/transcriptions (whisper). Формат ответа
+        # {"text": "..."}; ошибки транслируются в ProviderError.
+        import json
+        import urllib.error
+        import urllib.request
+
+        from hub_platform.ai.provider.base import ProviderError
+        from hub_platform.conversations.transports.base import multipart_body
+        from hub_platform.integrations.proxy import build_opener
+
+        body, body_type = multipart_body(
+            {"model": model},
+            file_field="file",
+            filename=filename,
+            content=audio,
+            content_type=content_type,
+        )
+        request = urllib.request.Request(
+            self.base_url.rstrip("/") + "/audio/transcriptions",
+            data=body,
+            headers={
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": body_type,
+            },
+            method="POST",
+        )
+        try:
+            with build_opener(self.proxy_url).open(request, timeout=self.timeout) as response:
+                payload = json.loads(response.read().decode("utf-8"))
+        except urllib.error.HTTPError as error:
+            detail = error.read().decode("utf-8", "replace")[:300]
+            raise ProviderError(f"Расшифровка не удалась: HTTP {error.code} {detail}") from error
+        except (urllib.error.URLError, TimeoutError, OSError, json.JSONDecodeError) as error:
+            raise ProviderError(f"Расшифровка не удалась: {error}") from error
+        text = str(payload.get("text") or "").strip()
+        if not text:
+            raise ProviderError("Провайдер вернул пустую расшифровку")
+        return text

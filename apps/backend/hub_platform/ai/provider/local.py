@@ -39,3 +39,7 @@ class LocalProvider(LLMProvider):
             EmbeddingResult(vector=_deterministic_vector(text), model=model, tokens=_count_tokens(text))
             for text in texts
         ]
+
+    def transcribe(self, *, audio: bytes, filename: str, content_type: str, model: str) -> str:
+        # Тестовый провайдер: детерминированная стенограмма для тестов.
+        return f"[стенограмма {len(audio)} байт]"
