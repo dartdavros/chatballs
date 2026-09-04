@@ -17,8 +17,6 @@ from hub_platform.identity.models import (
     OrganizationMembership,
     OrganizationStatus,
 )
-from hub_platform.subscriptions.activation_service import activate_owner_subscription
-from hub_platform.tenancy.context import TenantActorKind, TenantContext
 from hub_platform.tenancy.database import tenant_atomic
 
 
@@ -159,14 +157,6 @@ def _activate_organization(
     if organization.status != OrganizationStatus.ACTIVE:
         organization.status = OrganizationStatus.ACTIVE
         organization.save(update_fields=["status"])
-    context = TenantContext(
-        organization=organization,
-        membership=membership,
-        actor_user=user,
-        actor_kind=TenantActorKind.HUMAN,
-        correlation_id="",
-    )
-    activate_owner_subscription(context=context)
 
 
 def _already_accepted_for(

@@ -250,7 +250,6 @@ class EmailIngestThreadMetaTests(TestCase):
         with (
             mock.patch("hub_platform.conversations.ingest.run_channel_turn", return_value=mock.Mock(text="Ответ")),
             mock.patch("hub_platform.conversations.ingest.transports.send_reply", return_value=True),
-            mock.patch("hub_platform.conversations.ingest.record_usage"),
         ):
             ingest_inbound(self.integration, inbound)
 

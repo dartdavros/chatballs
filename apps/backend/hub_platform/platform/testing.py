@@ -3,9 +3,6 @@ from __future__ import annotations
 from hub_platform.platform.capabilities import is_valid_platform_capability
 from hub_platform.platform.models import PlatformOperator
 from hub_platform.platform.tokens import issue_platform_token
-from hub_platform.subscriptions.keys import PlanCode
-from hub_platform.subscriptions.models import PlanVersion
-from hub_platform.subscriptions.plan_service import publish_plan_version
 
 
 def create_platform_operator(
@@ -23,6 +20,3 @@ def create_platform_operator(
     return operator, plaintext
 
 
-def published_plan_version(plan_code: str = PlanCode.STARTUP) -> PlanVersion:
-    version = PlanVersion.objects.get(plan__code=plan_code, version=1)
-    return publish_plan_version(version)

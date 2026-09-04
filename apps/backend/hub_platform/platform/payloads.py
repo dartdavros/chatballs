@@ -5,7 +5,6 @@ from typing import Any
 from hub_platform.identity.models import Organization, OrganizationMembership
 from hub_platform.platform.models import OrganizationProvisioning
 from hub_platform.platform.provisioning_models import ProvisioningStatus
-from hub_platform.subscriptions.models import Subscription
 
 _PROVISIONING_SOURCE_DEFAULT = "PLATFORM_OPERATOR"
 
@@ -14,7 +13,6 @@ def provisioning_result_payload(
     *,
     provisioning: OrganizationProvisioning,
     organization: Organization,
-    subscription: Subscription | None,
     owner_state: str,
 ) -> dict[str, Any]:
     """Response shape for POST /api/v1/organizations. Never includes secrets,
@@ -34,18 +32,6 @@ def provisioning_result_payload(
             "idempotencyKey": provisioning.idempotency_key,
         },
         "owner": {"state": owner_state},
-        "subscription": _subscription_payload(subscription),
-    }
-
-
-def _subscription_payload(subscription: Subscription | None) -> dict[str, Any]:
-    if subscription is None:
-        return {"state": "none"}
-    return {
-        "state": subscription.status,
-        "planVersionId": str(subscription.plan_version_id),
-        "aiAgentQuantity": subscription.ai_agent_quantity,
-        "suspensionReason": subscription.suspension_reason,
     }
 
 

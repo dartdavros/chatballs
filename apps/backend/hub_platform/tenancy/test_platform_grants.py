@@ -14,7 +14,7 @@ from hub_platform.identity.models import (
 )
 from hub_platform.platform.provisioning_command import ProvisioningCommand
 from hub_platform.platform.provisioning_service import provision_organization
-from hub_platform.platform.testing import create_platform_operator, published_plan_version
+from hub_platform.platform.testing import create_platform_operator
 from hub_platform.tenancy.database import current_tenant_id, tenant_atomic
 
 
@@ -25,7 +25,6 @@ class PlatformProvisioningGrantsTests(TestCase):
 
     def setUp(self) -> None:
         self.operator, _ = create_platform_operator()
-        self.plan_version = published_plan_version()
 
     def test_provisioning_creates_organization_and_tenant_rows(self) -> None:
         # Pre-create an active owner user so provisioning takes the ACTIVE path
@@ -36,8 +35,6 @@ class PlatformProvisioningGrantsTests(TestCase):
                 organization_name="Grants Co",
                 organization_slug="grants-co",
                 owner_email="grants-owner@example.test",
-                plan_version_id=str(self.plan_version.public_id),
-                ai_agent_quantity=1,
                 source="PLATFORM_OPERATOR",
                 idempotency_key="idem-grants",
             ),

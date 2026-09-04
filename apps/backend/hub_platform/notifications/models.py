@@ -13,7 +13,6 @@ class NotificationType(models.TextChoices):
     # Задел на будущее (добавляются записью в реестр notifications.services.TYPE_META):
     RELEASE_PUBLISHED = "RELEASE_PUBLISHED", "Опубликован релиз агента"
     INTEGRATION_ERROR = "INTEGRATION_ERROR", "Ошибка интеграции"
-    LIMIT_REACHED = "LIMIT_REACHED", "Достигнут лимит"
 
 
 class NotificationLevel(models.TextChoices):

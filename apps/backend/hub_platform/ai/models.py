@@ -17,12 +17,8 @@ class AIAgentStatus(models.TextChoices):
     ARCHIVED = "ARCHIVED", "Archived"
 
 
-class CredentialMode(models.TextChoices):
-    # Режим credential AI-агента (ADR-HUB-0033 §4, SPEC-HUB-0024 §2). Агент
-    # использует ОДИН явно выбранный режим; неявный fallback запрещён
-    # (ADR-HUB-0030:230). Продуктовые имена режимов избегают двусмысленности.
-    CUSTOAI = "CUSTOAI", "CustoAI (Managed)"  # platform credential, credits тарифа
-    BYOK = "BYOK", "BYOK"  # секрет организации через AIAgent.provider_integration
+# Managed-режим CustoAI удалён вместе с тарифным контуром (ADR-HUB-0042 §3):
+# AI работает только через провайдера организации (AIAgent.provider_integration).
 
 
 # --- Знания: общая библиотека организации с иерархией категорий
@@ -193,14 +189,6 @@ class AIAgent(TenantRelationModel):
     )
     lifecycle_version = models.PositiveIntegerField(default=0)
     model = models.CharField(max_length=128, default=DEFAULT_AI_MODEL)
-    # Режим credential: CustoAI (platform) или BYOK (интеграция организации).
-    # Явный выбор на агенте — режим не выводится неявно (ADR-HUB-0030:230).
-    # По умолчанию CustoAI — встроенная интеграция (ADR-HUB-0033 §1).
-    credential_mode = models.CharField(
-        max_length=16,
-        choices=CredentialMode.choices,
-        default=CredentialMode.CUSTOAI,
-    )
     model_params = models.JSONField(default=dict, blank=True)
     # Инструкции из трёх частей; системный промпт собирается в этом порядке.
     persona = models.TextField(blank=True)  # кто он и что он

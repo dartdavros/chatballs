@@ -5,8 +5,6 @@ from rest_framework.views import APIView
 from rest_framework.throttling import ScopedRateThrottle
 
 from hub_platform.identity.models import Organization
-from hub_platform.subscriptions.keys import EntitlementKey
-from hub_platform.subscriptions.policy import get_effective_policy
 from hub_platform.support_portals.content_services import record_feedback
 from hub_platform.support_portals.models import SupportPortal
 from hub_platform.support_portals.selectors import category_article_counts, public_articles
@@ -35,12 +33,6 @@ class PublicPortalView(APIView):
             return None
         context = TenantContext.for_resource(organization)
         with tenant_atomic(context):
-            try:
-                policy = get_effective_policy(context)
-            except Exception:
-                return None
-            if not policy.has_entitlement(EntitlementKey.SUPPORT_DEPARTMENT):
-                return None
             portal = (
                 SupportPortal.objects.select_related(
                     "widget",

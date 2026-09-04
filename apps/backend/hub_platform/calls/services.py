@@ -53,8 +53,6 @@ from hub_platform.conversations.models import (
 from hub_platform.conversations.services import ClaimError, claim_locked_conversation
 from hub_platform.events.services import DomainEvent, enqueue_event
 from hub_platform.integrations.models import IntegrationProvider
-from hub_platform.subscriptions.keys import QuotaKey
-from hub_platform.subscriptions.reservation_service import reserve_usage
 from hub_platform.tenancy.context import TenantContext
 
 __all__ = (
@@ -172,18 +170,6 @@ def create_call_request(
                 connection_identity=identity,
             ),
         ]
-    )
-    # C07 concurrent quota: reserve a p2p-call slot for the lifetime of the
-    # session. Released on terminal status (calls/lifecycle.transition_call) or
-    # reaped by the reservation sweep if the lease lapses.
-    reserve_usage(
-        context=context,
-        quota_key=QuotaKey.CONCURRENT_P2P_CALLS,
-        idempotency_key=f"p2p:{call.id}",
-        lease_seconds=settings.CUS_CONCURRENT_CALL_LEASE_SECONDS,
-        source="calls.session_created",
-        aggregate_type="CallSession",
-        aggregate_id=str(call.id),
     )
     initiator_label = getattr(initiator, "full_name", "") or initiator.email
     call_word = "аудиозвонок" if call.kind == CallKind.AUDIO else "видеозвонок"

@@ -10,7 +10,6 @@ import type { SessionUser } from "../../types";
 import {
   listSupportPortals,
   type PortalAddressConfig,
-  type PortalCreationPolicy,
   type SupportPortal,
 } from "./model";
 import { PortalCreateDialog } from "./PortalCreateDialog";
@@ -24,7 +23,6 @@ export function SupportPortalsPage({
   openPortal: (portalId: number) => void;
 }) {
   const [portals, setPortals] = useState<SupportPortal[] | null>(null);
-  const [creation, setCreation] = useState<PortalCreationPolicy | null>(null);
   const [address, setAddress] = useState<PortalAddressConfig | null>(null);
   const [failed, setFailed] = useState(false);
   const [search, setSearch] = useState("");
@@ -36,7 +34,6 @@ export function SupportPortalsPage({
     try {
       const payload = await listSupportPortals();
       setPortals(payload.items);
-      setCreation(payload.creation);
       setAddress(payload.address);
     } catch {
       setFailed(true);
@@ -57,15 +54,10 @@ export function SupportPortalsPage({
   }, [portals, search]);
 
   if (failed) return <ErrorScreen retry={() => void load()} />;
-  if (!portals || !creation || !address) return <LoadingState />;
+  if (!portals || !address) return <LoadingState />;
 
   const createAction = canManage ? (
-    <Button
-      variant="primary"
-      icon="plus"
-      disabled={!creation.canCreate}
-      onClick={() => creation.canCreate && setCreating(true)}
-    >
+    <Button variant="primary" icon="plus" onClick={() => setCreating(true)}>
       Создать портал
     </Button>
   ) : undefined;
@@ -77,29 +69,15 @@ export function SupportPortalsPage({
         text="Публичные базы знаний отдела поддержки"
         action={createAction}
       />
-      {!creation.available && portals.length === 0 ? (
+      {portals.length === 0 ? (
         <ContentState
           icon={<Icon name="folder" size={24} />}
-          title="Создание порталов временно недоступно"
-          text="Обратитесь к администратору Chatbolls."
-        />
-      ) : portals.length === 0 ? (
-        <ContentState
-          icon={<Icon name="folder" size={24} />}
-          title={creation.canCreate ? "Создайте первый портал поддержки" : "Порталы недоступны на текущем тарифе"}
-          text={creation.canCreate
-            ? "Публикуйте инструкции и ответы на частые вопросы для клиентов."
-            : "Чтобы создать портал поддержки, перейдите на тариф с порталами."}
+          title="Создайте первый портал поддержки"
+          text="Публикуйте инструкции и ответы на частые вопросы для клиентов."
           action={createAction}
         />
       ) : (
-        <>
-          {!creation.available && (
-            <div className="portal-policy-notice">
-              Создание порталов временно недоступно. Существующие порталы остаются доступны для просмотра.
-            </div>
-          )}
-          <div className="knowledge-library-list">
+        <div className="knowledge-library-list">
             <ContentLibraryToolbar
               placeholder="Поиск по названию и адресу"
               query={search}
@@ -135,9 +113,8 @@ export function SupportPortalsPage({
                 ))}
               </tbody>
               </table>
-            </ContentLibraryTable>
-          </div>
-        </>
+          </ContentLibraryTable>
+        </div>
       )}
       {creating && (
         <PortalCreateDialog

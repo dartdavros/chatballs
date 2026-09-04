@@ -99,13 +99,6 @@ export type PortalInput = {
   widgetId?: number | null;
 };
 
-export type PortalCreationPolicy = {
-  available: boolean;
-  canCreate: boolean;
-  limit: number | null;
-  used: number;
-};
-
 export type PortalAddressConfig = {
   scheme: string;
   baseDomain: string;
@@ -114,7 +107,6 @@ export type PortalAddressConfig = {
 
 export type SupportPortalList = {
   items: SupportPortal[];
-  creation: PortalCreationPolicy;
   address: PortalAddressConfig;
 };
 

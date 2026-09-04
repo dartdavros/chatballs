@@ -22,12 +22,6 @@ function validPortalKey(value: string): boolean {
 
 function creationError(caught: unknown): string {
   if (caught instanceof ApiError) {
-    if (caught.payload.code === "policy_unavailable") {
-      return "Создание порталов временно недоступно. Обратитесь к администратору Chatbolls.";
-    }
-    if (caught.payload.code === "quota_exceeded") {
-      return "Достигнут лимит порталов для текущего тарифа.";
-    }
     if (caught.status === 400) {
       return "Проверьте название и адрес портала.";
     }

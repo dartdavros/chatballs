@@ -15,7 +15,7 @@ from hub_platform.ai.knowledge_bulk import (
 )
 from hub_platform.ai.models import AIAgent
 from hub_platform.ai.selectors import agent_for_employee
-from hub_platform.api.permissions import HasCapability, HasEntitlement
+from hub_platform.api.permissions import HasCapability
 from hub_platform.identity.audit import record_audit_event
 
 
@@ -45,8 +45,7 @@ def _audit_bulk(request: Request, action: str, object_ids: list[int]) -> None:
 
 
 class _KnowledgeBulkView(APIView):
-    permission_classes = [HasEntitlement, HasCapability]
-    required_entitlement = "knowledge_base"
+    permission_classes = [HasCapability]
     required_capability = "ai.manage"
 
 

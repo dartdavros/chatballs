@@ -6,7 +6,6 @@ import type { SessionUser } from "../../types";
 import {
   loadAudit,
   loadOrganizationSettings,
-  loadSubscription,
   removeOrganizationLogo,
   saveOrganizationSettings,
   uploadOrganizationLogo,
@@ -15,7 +14,6 @@ import type {
   AdministrationSection,
   AuditEvent,
   OrganizationSettings,
-  SubscriptionSummary,
 } from "./model";
 
 export function useAdministration({
@@ -29,7 +27,6 @@ export function useAdministration({
 }) {
   const [organization, setOrganization] = useState<OrganizationSettings | null>(null);
   const [timezones, setTimezones] = useState<string[]>([]);
-  const [subscription, setSubscription] = useState<SubscriptionSummary | null>(null);
   const [audit, setAudit] = useState<AuditEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -51,8 +48,6 @@ export function useAdministration({
         const settings = await loadOrganizationSettings();
         setOrganization(settings.organization);
         setTimezones(settings.timezones);
-      } else if (section === "subscription" && user.deliveryMode === "CLOUD") {
-        setSubscription(await loadSubscription());
       } else if (section === "audit" && hasCapability(user, "audit.view")) {
         setAudit(await loadAudit());
       }
@@ -93,7 +88,6 @@ export function useAdministration({
     message,
     organization,
     saving,
-    subscription,
     timezones,
     setOrganization,
     reload: load,

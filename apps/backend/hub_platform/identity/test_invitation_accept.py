@@ -17,22 +17,12 @@ from hub_platform.identity.models import (
     OrganizationMembership,
     OrganizationStatus,
 )
-from hub_platform.subscriptions.models import SubscriptionStatus, UsagePeriod
-from hub_platform.subscriptions.testing import create_test_subscription
-
-
 def _pending_org(slug: str = "pending-org") -> Organization:
-    org = Organization.objects.create(
+    return Organization.objects.create(
         name="Pending Org",
         slug=slug,
         status=OrganizationStatus.PENDING_OWNER,
     )
-    create_test_subscription(org)
-    sub = org.subscription
-    sub.status = SubscriptionStatus.SUSPENDED
-    sub.suspension_reason = "OWNER_PENDING"
-    sub.save(update_fields=["status", "suspension_reason"])
-    return org
 
 
 class AcceptInvitationTests(TestCase):
@@ -53,12 +43,6 @@ class AcceptInvitationTests(TestCase):
         self.assertEqual(result.membership.role, EmployeeRole.OWNER)
         self.org.refresh_from_db()
         self.assertEqual(self.org.status, OrganizationStatus.ACTIVE)
-        sub = self.org.subscription
-        self.assertEqual(sub.status, SubscriptionStatus.ACTIVE)
-        self.assertEqual(sub.suspension_reason, "")
-        self.assertTrue(
-            UsagePeriod.objects.filter(subscription__organization=self.org).exists()
-        )
 
     def test_re_accept_same_token_is_idempotent(self) -> None:
         accept_invitation(token=self.token, user=self.user)

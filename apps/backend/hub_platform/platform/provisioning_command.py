@@ -18,8 +18,6 @@ class ProvisioningCommand:
     organization_name: str
     organization_slug: str
     owner_email: str
-    plan_version_id: str
-    ai_agent_quantity: int
     source: str
     idempotency_key: str
     timezone: str = "Europe/Moscow"

@@ -11,7 +11,6 @@ import { Button } from "../../shared/ui-controls";
 import { formatDate } from "../../shared/utils";
 import type { EmployeeGroup, RouteKey } from "../../types";
 import { api } from "../../api/client";
-import { CREDENTIAL_MODE_OPTIONS, type CredentialMode } from "../ai/model";
 import { fetchLlmProviders, type Integration } from "../integrations/model";
 import { connectionStatus } from "./connection-status";
 import {
@@ -131,8 +130,13 @@ export function AgentDetailPage({
     try {
       const saved = await setAgentAiActive(card!.id, card!.aiStatus !== "ACTIVE");
       setCard(saved.agent);
-    } catch {
-      setFeedback({ kind: "error", text: "Не удалось изменить статус AI" });
+    } catch (caught) {
+      setFeedback({
+        kind: "error",
+        text: caught instanceof ApiError && caught.payload.detail
+          ? caught.payload.detail
+          : "Не удалось изменить статус AI",
+      });
     } finally {
       setBusy(false);
     }
@@ -385,37 +389,24 @@ function ModelSection({
     <section className="agent-card-section">
       <header>
         <h3>Модель и провайдер</h3>
-        <span>BYOK — ключ вашей организации из раздела «Интеграции»</span>
+        <span>AI отвечает через провайдера вашей организации — добавьте ключ в разделе «Интеграции»</span>
       </header>
       <div className="agent-assignment">
         <KeyValue label="Модель" value={<code>{card.model}</code>} />
         {canManage ? (
           <SelectField
-            label="Режим AI"
-            value={card.credentialMode}
-            onChange={(value) => {
-              const mode = value as CredentialMode;
-              if (mode === "CUSTOAI") void apply({ credentialMode: mode, providerIntegrationId: null });
-              else if (providers.length > 0) void apply({ credentialMode: mode, providerIntegrationId: providers[0].id });
-            }}
-            options={CREDENTIAL_MODE_OPTIONS}
+            label="Провайдер"
+            value={card.providerIntegrationId ? String(card.providerIntegrationId) : ""}
+            onChange={(value) => void apply({ providerIntegrationId: value ? Number(value) : null })}
+            options={[["", "Не выбран"], ...providers.map((item) => [String(item.id), item.name] as [string, string])]}
           />
         ) : (
-          <KeyValue label="Режим AI" value={card.credentialMode} />
-        )}
-        {card.credentialMode === "BYOK" && (
-          canManage ? (
-            <SelectField
-              label="Интеграция"
-              value={card.providerIntegrationId ? String(card.providerIntegrationId) : ""}
-              onChange={(value) => {
-                if (value) void apply({ providerIntegrationId: Number(value) });
-              }}
-              options={[["", "Выберите интеграцию"], ...providers.map((item) => [String(item.id), item.name] as [string, string])]}
-            />
-          ) : (
-            <KeyValue label="Интеграция" value={String(card.providerIntegrationId ?? "—")} />
-          )
+          <KeyValue
+            label="Провайдер"
+            value={card.providerIntegrationId === null
+              ? "Не выбран"
+              : providers.find((item) => item.id === card.providerIntegrationId)?.name ?? String(card.providerIntegrationId)}
+          />
         )}
       </div>
       {busy && <p className="agent-muted">Сохранение…</p>}

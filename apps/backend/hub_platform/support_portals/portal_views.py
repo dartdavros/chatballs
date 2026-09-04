@@ -4,7 +4,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from hub_platform.api.permissions import HasCapability, HasEntitlement
+from hub_platform.api.permissions import HasCapability
 from hub_platform.identity.audit import record_audit_event
 from hub_platform.integrations.models import IntegrationProvider, IntegrationStatus
 from hub_platform.support_portals.api import validation_response
@@ -22,9 +22,6 @@ from hub_platform.support_portals.portal_services import (
 )
 from hub_platform.support_portals.selectors import portal_for_context, portals_for_context
 from hub_platform.support_portals.serializers import portal_payload
-from hub_platform.subscriptions.errors import PolicyUnavailable
-from hub_platform.subscriptions.keys import QuotaKey
-from hub_platform.subscriptions.policy import get_effective_policy
 from hub_platform.webchat.models import (
     WebChatWidget,
     WebChatWidgetMode,
@@ -45,8 +42,7 @@ def _optional_id(value) -> int | None:
 
 
 class PortalBaseView(APIView):
-    permission_classes = [HasEntitlement, HasCapability]
-    required_entitlement = "support_department"
+    permission_classes = [HasCapability]
     required_capability = "support.view"
     required_capabilities = {
         "GET": "support.view",
@@ -99,24 +95,15 @@ def _input(request: Request, current: SupportPortal | None = None) -> PortalInpu
 class PortalListView(PortalBaseView):
     def get(self, request: Request) -> Response:
         portals = list(portals_for_context(request.tenant_context))
-        try:
-            quota = get_effective_policy(request.tenant_context).quota(
-                QuotaKey.SUPPORT_PORTALS
-            )
-        except PolicyUnavailable:
-            quota = None
+        # Тарифные лимиты порталов удалены (ADR-HUB-0042 §2): создание доступно всегда.
         active_count = sum(item.status != "ARCHIVED" for item in portals)
-        available = quota is not None
-        can_create = available and (
-            quota.limit is None or active_count < quota.limit
-        )
         return Response(
             {
                 "items": [portal_payload(item) for item in portals],
                 "creation": {
-                    "available": available,
-                    "canCreate": can_create,
-                    "limit": quota.limit if quota else None,
+                    "available": True,
+                    "canCreate": True,
+                    "limit": None,
                     "used": active_count,
                 },
                 "address": {

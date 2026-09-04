@@ -3,7 +3,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from hub_platform.api.permissions import HasCapability, HasEntitlement
+from hub_platform.api.permissions import HasCapability
 from hub_platform.identity.audit import record_audit_event
 from hub_platform.support.models import ProductSupportContract
 from hub_platform.support.selectors import contract_for_context, contracts_for_context
@@ -24,8 +24,7 @@ def _validation_error(error: ValidationError) -> Response:
 
 
 class _ManagerBase(APIView):
-    permission_classes = [HasEntitlement, HasCapability]
-    required_entitlement = "support_department"
+    permission_classes = [HasCapability]
     required_capability = "products.manage"
     require_organization_scope = True
 
@@ -121,8 +120,7 @@ class SupportContractStatusView(_ManagerBase):
 
 class SupportSnapshotsBySubjectView(APIView):
     # История обращений клиента для правой панели оператора (этап 1 — минимально).
-    permission_classes = [HasEntitlement, HasCapability]
-    required_entitlement = "support_department"
+    permission_classes = [HasCapability]
     required_capability = "support.view"
 
     def get(self, request: Request) -> Response:

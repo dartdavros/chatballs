@@ -1,9 +1,5 @@
 import { api, apiUpload } from "../../api/client";
-import type {
-  AuditEvent,
-  OrganizationSettings,
-  SubscriptionSummary,
-} from "./model";
+import type { AuditEvent, OrganizationSettings } from "./model";
 
 const BASE = "/api/v1/company/administration/";
 
@@ -44,13 +40,6 @@ export async function removeOrganizationLogo(): Promise<OrganizationSettings> {
     { method: "DELETE" },
   );
   return payload.organization;
-}
-
-export async function loadSubscription(): Promise<SubscriptionSummary> {
-  const payload = await api<{ subscription: SubscriptionSummary }>(
-    `${BASE}subscription/`,
-  );
-  return payload.subscription;
 }
 
 export async function loadAudit(): Promise<AuditEvent[]> {

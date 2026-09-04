@@ -13,7 +13,7 @@ from hub_platform.ai.knowledge_policy import require_category_manage
 from hub_platform.ai.models import KnowledgeCategory
 from hub_platform.ai.selectors import category_tree_for_employee
 from hub_platform.ai.serializers import category_payload
-from hub_platform.api.permissions import HasCapability, HasEntitlement
+from hub_platform.api.permissions import HasCapability
 from hub_platform.identity.audit import record_audit_event
 
 
@@ -72,8 +72,7 @@ def _category_payload(request: Request, category_id: int) -> dict[str, object]:
 
 
 class KnowledgeCategoryListCreateView(APIView):
-    permission_classes = [HasEntitlement, HasCapability]
-    required_entitlement = "knowledge_base"
+    permission_classes = [HasCapability]
     required_capabilities = {"GET": "ai.view", "POST": "ai.manage"}
 
     def get(self, request: Request) -> Response:
@@ -103,8 +102,7 @@ class KnowledgeCategoryListCreateView(APIView):
 
 
 class KnowledgeCategoryDetailView(APIView):
-    permission_classes = [HasEntitlement, HasCapability]
-    required_entitlement = "knowledge_base"
+    permission_classes = [HasCapability]
     required_capability = "ai.manage"
 
     def patch(self, request: Request, category_id: int) -> Response:

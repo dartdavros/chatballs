@@ -52,12 +52,6 @@ describe("role-based navigation (SPEC-HUB-0031 §3)", () => {
     expect(defaultRoute(user)).toBe("salesDialogs");
   });
 
-  it("hides cloud subscription section outside the cloud delivery", () => {
-    const user = userWith("OWNER");
-    user.deliveryMode = "SELF_HOSTED";
-    expect(canAccess(user, "administrationSubscription")).toBe(false);
-  });
-
   it("reads capabilities straight from the session payload", () => {
     const user = userWith("EMPLOYEE", ["conversations.view"]);
     expect(hasCapability(user, "conversations.view")).toBe(true);

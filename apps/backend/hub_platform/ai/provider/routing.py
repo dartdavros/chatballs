@@ -21,18 +21,20 @@ at runtime and overrides `AIAgent.model`.
 
 from __future__ import annotations
 
-from hub_platform.ai.provider.base import LLMProvider
+from hub_platform.ai.provider.base import LLMProvider, ProviderError
 from hub_platform.ai.provider.custom import CustomProvider
 from hub_platform.ai.provider.openrouter import OpenRouterProvider
 from hub_platform.integrations.models import Integration, IntegrationProvider
 
 
-class IntegrationNotConfigured(Exception):
-    """Raised when a channel has no provider_integration for a BYOK call.
+class IntegrationNotConfigured(ProviderError):
+    """Raised when a channel has no provider_integration.
 
     Surfaces a clear configuration error instead of silently falling back to a
-    global/first integration (which is forbidden by ADR-HUB-0020:45 and would
-    reintroduce the tenant-isolation gap removed by ADR-HUB-0033 §3).
+    global/first integration (forbidden by ADR-HUB-0020:45). Наследует
+    ProviderError: после удаления managed-режима (ADR-HUB-0042 §3) отсутствие
+    интеграции — штатное «провайдера нет», а не 500: индексация знаний пишет
+    фрагменты без эмбеддингов, ретривер работает лексически.
     """
 
 

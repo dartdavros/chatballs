@@ -7,7 +7,6 @@ from django.core.files.base import ContentFile
 from hub_platform.ai.models import (
     AIAgent,
     AIAgentStatus,
-    CredentialMode,
     Knowledge,
     KnowledgeAttachment,
     LlmInvocation,
@@ -76,7 +75,6 @@ def _ensure_agent(refs: DemoRefs, item: dict) -> None:
             "name": item["name"],
             "status": item.get("status", AIAgentStatus.ACTIVE),
             "model": item.get("model", ""),
-            "credential_mode": item.get("credentialMode", CredentialMode.CUSTOAI),
             "persona": item.get("persona", ""),
             "tone": item.get("tone", ""),
             "instructions": item.get("instructions", ""),

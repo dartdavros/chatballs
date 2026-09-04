@@ -53,11 +53,6 @@ const ADMINISTRATION_ITEMS: SidebarNavSectionItem[] = [
     label: "Организация",
   },
   {
-    activeRoutes: ["administrationSubscription"],
-    key: "administrationSubscription",
-    label: "Тариф и оплата",
-  },
-  {
     activeRoutes: ["administrationAudit"],
     key: "administrationAudit",
     label: "Аудит",

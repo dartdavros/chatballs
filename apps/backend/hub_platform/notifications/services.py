@@ -21,7 +21,6 @@ TYPE_META: dict[str, dict] = {
     NotificationType.DIALOG_NEW_MESSAGE: {"level": NotificationLevel.INFO, "route": "salesDialogs"},
     NotificationType.RELEASE_PUBLISHED: {"level": NotificationLevel.SUCCESS, "route": "agents"},
     NotificationType.INTEGRATION_ERROR: {"level": NotificationLevel.CRITICAL, "route": "integrations"},
-    NotificationType.LIMIT_REACHED: {"level": NotificationLevel.WARNING, "route": "command"},
 }
 
 

@@ -12,7 +12,6 @@ from hub_platform.identity.models import (
     Organization,
     OrganizationMembership,
 )
-from hub_platform.subscriptions.default_subscription import ensure_default_subscription
 from hub_platform.testing import TenantAPIClient
 
 
@@ -41,7 +40,6 @@ class AdministrationApiTests(TestCase):
             role=EmployeeRole.OWNER,
             position_title="Владелец",
         )
-        ensure_default_subscription(self.organization, quantity=3)
         self.client = TenantAPIClient()
         self.client.force_authenticate(self.owner)
 
@@ -147,22 +145,6 @@ class AdministrationApiTests(TestCase):
 
         self.assertEqual(response.status_code, 400)
         self.assertIn("PNG, JPEG и WebP", response.json()["detail"])
-
-    @override_settings(CUS_DELIVERY_MODE="CLOUD")
-    def test_cloud_exposes_real_subscription_summary(self) -> None:
-        response = self.client.get("/api/v1/company/administration/subscription/")
-
-        self.assertEqual(response.status_code, 200)
-        subscription = response.json()["subscription"]
-        self.assertEqual(subscription["planName"], "Стартап")
-        self.assertEqual(subscription["aiAgentQuantity"], 3)
-        self.assertEqual(subscription["monthlyChargeMinor"], 870_000)
-
-    @override_settings(CUS_DELIVERY_MODE="SELF_HOSTED")
-    def test_self_hosted_rejects_cloud_subscription_endpoint(self) -> None:
-        response = self.client.get("/api/v1/company/administration/subscription/")
-
-        self.assertEqual(response.status_code, 403)
 
     def test_audit_returns_product_text_instead_of_internal_action_codes(self) -> None:
         record_audit_event(

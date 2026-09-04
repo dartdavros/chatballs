@@ -24,13 +24,6 @@ from hub_platform.notifications.models import (
     NotificationLevel,
     NotificationRead,
 )
-from hub_platform.subscriptions.models import (
-    UsageCounter,
-    UsageEntryKind,
-    UsageLedgerEntry,
-    UsagePeriod,
-    UsagePeriodStatus,
-)
 from hub_platform.tenancy.context import TenantContext
 
 
@@ -38,7 +31,6 @@ def load(context: TenantContext, refs: DemoRefs) -> None:
     data = manifest.load("operations")
     _ensure_calls(refs, data.get("calls", []))
     _ensure_notifications(refs, data.get("notifications", []))
-    _ensure_usage_period(refs, data.get("usage"))
 
 
 def _ensure_calls(refs: DemoRefs, items: list[dict]) -> None:
@@ -136,42 +128,3 @@ def _ensure_notifications(refs: DemoRefs, items: list[dict]) -> None:
             user = refs.users.get(item["readBy"])
             if user is not None:
                 NotificationRead.objects.get_or_create(notification=notification, user=user)
-
-
-def _ensure_usage_period(refs: DemoRefs, usage_data: dict | None) -> None:
-    if not usage_data:
-        return
-    subscription = refs.subscription
-    now = timezone.now()
-    starts_at = now - timedelta(days=usage_data.get("daysElapsed", 15))
-    ends_at = now + timedelta(days=usage_data.get("daysRemaining", 15))
-    period, _ = UsagePeriod.objects.get_or_create(
-        subscription=subscription,
-        status=UsagePeriodStatus.OPEN,
-        defaults={"starts_at": starts_at, "ends_at": ends_at},
-    )
-    from hub_platform.subscriptions.models import QuotaDefinition
-
-    for item in usage_data.get("counters", []):
-        quota, _ = QuotaDefinition.objects.get_or_create(
-            key=item["quota"],
-            defaults={"name": item["quota"].replace("_", " "), "unit": item.get("unit", "")},
-        )
-        counter, _ = UsageCounter.objects.update_or_create(
-            period=period,
-            quota_definition=quota,
-            defaults={"used_value": item.get("used", 0), "reserved_value": item.get("reserved", 0)},
-        )
-        UsageLedgerEntry.objects.get_or_create(
-            period=period,
-            quota_definition=quota,
-            idempotency_key=f"demo-usage:{period.id}:{item['quota']}",
-            defaults={
-                "kind": UsageEntryKind.OPENING_BALANCE,
-                "quantity": item.get("used", 0),
-                "unit": item.get("unit", ""),
-                "source": "demo-seed",
-                "rule_version": "demo-seed",
-                "occurred_at": starts_at,
-            },
-        )

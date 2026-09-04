@@ -5,8 +5,8 @@ from unittest import mock
 from django.test import TestCase, override_settings
 from hub_platform.testing import TenantAPIClient as APIClient
 
-from hub_platform.ai.credits import ManagedAiQuotaExceeded
 from hub_platform.ai.limits import LimitExceeded
+from hub_platform.ai.provider.base import ProviderError
 from hub_platform.ai.models import AIAgent, AIAgentStatus
 from hub_platform.channels.models import Channel
 from hub_platform.conversations.models import (
@@ -399,10 +399,12 @@ class WebchatContactTests(TestCase):
         response = self._post_contact("12345")
         self.assertEqual(response.status_code, 400)
 
-    @override_settings(CUS_AI_PROVIDER="", CUS_CUSTOAI_API_KEY="")
-    def test_missing_managed_provider_hands_off_without_500_and_notifies_management(
+    @override_settings(CUS_AI_PROVIDER="")
+    def test_missing_provider_integration_hands_off_without_500_and_notifies_management(
         self,
     ) -> None:
+        # Агент без BYOK-интеграции: IntegrationNotConfigured (ProviderError)
+        # переводит диалог оператору вместо 500 (ADR-HUB-0042 §3).
         admin = HumanUser.objects.create_user(email="admin@edevs.tech", password="temporary")
         OrganizationMembership.objects.create(
             user=admin,
@@ -441,10 +443,10 @@ class WebchatContactTests(TestCase):
             {"owner@edevs.tech", "admin@edevs.tech"},
         )
 
-    def test_managed_quota_exhaustion_hands_off_without_500(self) -> None:
+    def test_provider_error_hands_off_without_500(self) -> None:
         with mock.patch(
             "hub_platform.conversations.ingest.run_channel_turn",
-            side_effect=ManagedAiQuotaExceeded(),
+            side_effect=ProviderError("AI недоступен"),
         ):
             response = self._post_message("Здравствуйте")
 

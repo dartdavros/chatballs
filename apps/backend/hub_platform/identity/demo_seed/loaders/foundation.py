@@ -15,7 +15,6 @@ from hub_platform.identity.models import (
     Organization,
     OrganizationMembership,
 )
-from hub_platform.subscriptions.default_subscription import ensure_default_subscription
 from hub_platform.tenancy.context import TenantContext
 
 
@@ -40,8 +39,6 @@ def load(context: TenantContext, refs: DemoRefs) -> None:
         refs.groups[item["key"]] = group
 
     ensure_uncategorized_category(organization)
-    slots = data.get("aiAgentSlots", 5)
-    refs.subscription = ensure_default_subscription(organization, quantity=slots)
 
     _ensure_users_and_memberships(context, refs, data)
 

@@ -102,12 +102,13 @@ class DeliveryTests(NotifierTestBase):
         self.assertIn("Новый диалог", send.call_args.kwargs["text"])
 
     def test_type_not_in_push_types_is_skipped(self) -> None:
+        # INTEGRATION_ERROR не входит в дефолтные push_types привязки.
         with mock.patch("hub_platform.notifications.delivery.transports.send_reply", return_value=True) as send:
             notify(
                 context=self.context,
-                type=NotificationType.LIMIT_REACHED,
+                type=NotificationType.INTEGRATION_ERROR,
                 audience=NotificationAudience.OWNER,
-                title="Достигнут лимит",
+                title="Ошибка интеграции",
             )
             self._dispatch_last_event()
         send.assert_not_called()
@@ -135,7 +136,7 @@ class DeliveryTests(NotifierTestBase):
         )
         notify(
             context=self.context,
-            type=NotificationType.LIMIT_REACHED,
+            type=NotificationType.INTEGRATION_ERROR,
             audience=NotificationAudience.OWNER,
             title="Owner-only notice",
         )

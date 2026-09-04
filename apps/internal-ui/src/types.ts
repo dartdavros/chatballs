@@ -113,7 +113,7 @@ export type Product = {
   updatedAt: string;
 };
 
-export type RouteKey = "administrationOrganization" | "administrationSubscription" | "administrationAudit" | "command" | "employeeDetail" | "employees" | "profile" | "settings" | "salesClientDetail" | "salesClients" | "salesDialogs" | "supportOverview" | "supportDialogs" | "supportPortals" | "supportPortalDetail" | "agents" | "agentDetail" | "aiKnowledge" | "aiKnowledgeCreate" | "aiKnowledgeDetail" | "aiUsage" | "integrations";
+export type RouteKey = "administrationOrganization" | "administrationAudit" | "command" | "employeeDetail" | "employees" | "profile" | "settings" | "salesClientDetail" | "salesClients" | "salesDialogs" | "supportOverview" | "supportDialogs" | "supportPortals" | "supportPortalDetail" | "agents" | "agentDetail" | "aiKnowledge" | "aiKnowledgeCreate" | "aiKnowledgeDetail" | "aiUsage" | "integrations";
 
 export type AppData = {
   employees: Employee[];

@@ -17,7 +17,6 @@ from hub_platform.tenancy.context import TenantContext
 @dataclass(frozen=True)
 class AgentInput:
     name: str
-    credential_mode: str
     provider_integration_id: int | None
     model_params: dict
     allowed_tools: list
@@ -31,7 +30,6 @@ class AgentInput:
 @dataclass(frozen=True)
 class AgentCreateInput:
     channel_code: str
-    credential_mode: str
     provider_integration_id: int | None
     persona: str
     tone: str
@@ -99,7 +97,6 @@ def create_agent(*, context: TenantContext, data: AgentCreateInput) -> AIAgent:
     )
     selection = configure_agent_provider(
         context=context,
-        mode=data.credential_mode,
         integration_id=data.provider_integration_id,
     )
     agent = AIAgent.objects.create(
@@ -107,7 +104,6 @@ def create_agent(*, context: TenantContext, data: AgentCreateInput) -> AIAgent:
         name=f"{channel.name} Agent",
         status=AIAgentStatus.DRAFT,
         model=selection.model,
-        credential_mode=selection.mode,
         provider_integration=selection.integration,
         persona=data.persona,
         tone=data.tone,
@@ -139,11 +135,11 @@ def update_agent(*, context: TenantContext, agent: AIAgent, data: AgentInput) ->
     locked.name = data.name
     selection = configure_agent_provider(
         context=context,
-        mode=data.credential_mode,
         integration_id=data.provider_integration_id,
     )
-    locked.model = selection.model
-    locked.credential_mode = selection.mode
+    # Модель принадлежит интеграции; без провайдера прежняя модель сохраняется,
+    # чтобы PATCH инструкций не стирал её у черновика.
+    locked.model = selection.model if selection.integration else locked.model
     # Провайдер живёт на агенте: канал больше не изменяется при сохранении агента.
     locked.provider_integration = selection.integration
     locked.model_params = data.model_params
@@ -156,7 +152,7 @@ def update_agent(*, context: TenantContext, agent: AIAgent, data: AgentInput) ->
         update_fields=[
             "name",
             "model",
-            "credential_mode",
+            "provider_integration",
             "model_params",
             "allowed_tools",
             "limits",
@@ -171,16 +167,38 @@ def update_agent(*, context: TenantContext, agent: AIAgent, data: AgentInput) ->
     return locked
 
 
+@transaction.atomic
 def set_agent_active(*, context: TenantContext, agent: AIAgent, is_active: bool) -> AIAgent:
+    """Смена статуса AI без тарифных слотов (ADR-HUB-0042 §2): количество
+    активных агентов не ограничено; активация требует настроенного провайдера."""
     if agent.channel.organization_id != context.organization_id:
         raise ValidationError({"agent": "Agent belongs to another organization"})
-    from hub_platform.subscriptions.agent_slots import set_agent_status
-
-    return set_agent_status(
-        context=context,
-        agent_id=agent.id,
-        target_status=AIAgentStatus.ACTIVE if is_active else AIAgentStatus.DISABLED,
+    locked = AIAgent.objects.select_for_update().get(
+        pk=agent.id, organization_id=context.organization_id
     )
+    target_status = AIAgentStatus.ACTIVE if is_active else AIAgentStatus.DISABLED
+    if locked.status == target_status:
+        return locked
+    if locked.status == AIAgentStatus.ARCHIVED:
+        raise ValidationError({"agent": "Archived AI agent cannot change state"})
+    if is_active and locked.provider_integration_id is None:
+        raise ValidationError(
+            {"providerIntegrationId": "Для запуска AI выберите провайдера организации"}
+        )
+    locked.status = target_status
+    locked.lifecycle_version += 1
+    locked.save(update_fields=["status", "lifecycle_version", "updated_at"])
+    from hub_platform.identity.audit import record_audit_event
+
+    record_audit_event(
+        action="ai.agent_status_changed",
+        actor=context.actor_user,
+        organization=context.organization,
+        object_type="AIAgent",
+        object_id=str(locked.id),
+        payload={"current": target_status},
+    )
+    return locked
 
 
 from hub_platform.ai.knowledge_services import (  # noqa: E402, F401

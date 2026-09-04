@@ -89,7 +89,6 @@ def agent_payload(agent: AIAgent) -> dict[str, object]:
         "isActive": agent.is_active,
         "status": agent.status,
         "model": agent.model,
-        "credentialMode": agent.credential_mode,
         # BYOK-провайдер принадлежит агенту (SPEC-HUB-0027 §9).
         "providerIntegrationId": agent.provider_integration_id,
         "modelParams": agent.model_params,

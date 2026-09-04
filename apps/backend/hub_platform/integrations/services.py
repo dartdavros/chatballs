@@ -12,8 +12,6 @@ from hub_platform.integrations.models import (
     IntegrationProvider,
     IntegrationStatus,
 )
-from hub_platform.subscriptions.keys import QuotaKey
-from hub_platform.subscriptions.usage_service import record_usage
 from hub_platform.tenancy.context import TenantContext
 
 
@@ -171,15 +169,6 @@ def create_integration(*, context: TenantContext, data: IntegrationInput) -> Int
     integration.save()
     if integration.provider == IntegrationProvider.WEB:
         _publish_web_widget(context=context, integration=integration)
-    record_usage(
-        context=context,
-        quota_key=QuotaKey.CLIENT_CONNECTIONS,
-        quantity=1,
-        idempotency_key=f"connection:{integration.id}",
-        source="integration.created",
-        aggregate_type="Integration",
-        aggregate_id=str(integration.id),
-    )
     return integration
 
 

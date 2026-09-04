@@ -16,9 +16,9 @@ urlpatterns = [
         name="organization-logo",
     ),
     path(
-        "administration/subscription/",
-        administration_views.SubscriptionSummaryView.as_view(),
-        name="organization-subscription",
+        "launch-checklist/",
+        administration_views.LaunchChecklistView.as_view(),
+        name="launch-checklist",
     ),
     path(
         "administration/audit/",

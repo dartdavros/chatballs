@@ -9,8 +9,6 @@ _REQUIRED_FIELDS = (
     "name",
     "slug",
     "owner_email",
-    "plan_version_id",
-    "ai_agent_quantity",
     "timezone",
     "currency",
 )
@@ -27,15 +25,10 @@ def parse_provisioning_body(
     for field in _REQUIRED_FIELDS:
         if field not in body:
             return _empty_command(idempotency_key, source), f"{field} is required"
-    quantity_raw = body.get("ai_agent_quantity")
-    if not isinstance(quantity_raw, int) or isinstance(quantity_raw, bool):
-        return _empty_command(idempotency_key, source), "ai_agent_quantity must be an integer"
     command = ProvisioningCommand(
         organization_name=str(body.get("name", "")),
         organization_slug=str(body.get("slug", "")),
         owner_email=str(body.get("owner_email", "")),
-        plan_version_id=str(body.get("plan_version_id", "")),
-        ai_agent_quantity=quantity_raw,
         source=source,
         idempotency_key=idempotency_key,
         timezone=str(body.get("timezone", "Europe/Moscow")),
@@ -58,8 +51,6 @@ def _empty_command(idempotency_key: str, source: str) -> ProvisioningCommand:
         organization_name="",
         organization_slug="",
         owner_email="",
-        plan_version_id="",
-        ai_agent_quantity=0,
         source=source,
         idempotency_key=idempotency_key,
     )

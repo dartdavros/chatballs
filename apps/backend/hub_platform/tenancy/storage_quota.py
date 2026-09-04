@@ -3,11 +3,8 @@ from __future__ import annotations
 from django.db import transaction
 from django.db.models import F
 
-from hub_platform.subscriptions.errors import QuotaExceeded
-from hub_platform.subscriptions.policy import get_effective_policy
 from hub_platform.tenancy.context import TenantContext
 from hub_platform.tenancy.models import OrganizationStorageUsage, StorageReservation
-from hub_platform.tenancy.storage import STORAGE_QUOTA_KEY
 
 
 @transaction.atomic
@@ -18,16 +15,14 @@ def reserve_storage(
     before the object is persisted. Idempotent on (organization, idempotency_key):
     a replay returns the existing reservation without reserving a second time.
 
-    Raises ``QuotaExceeded`` (mode=HARD) when ``bytes_used + reserved + expected``
-    would exceed the quota. A missing policy/UNLIMITED quota is a no-op so a tenant
-    without an active subscription is not silently blocked at upload.
+    Тарифная ёмкость удалена (ADR-HUB-0042 §2): резервирование остаётся
+    техническим учётом занятого места без отказов по лимиту.
     """
     usage = _locked_usage(context)
     existing = _active_reservation(context, idempotency_key)
     if existing is not None:
         return existing
 
-    _assert_capacity(context, usage, expected_bytes)
     usage.reserved_bytes = F("reserved_bytes") + expected_bytes
     usage.save(update_fields=["reserved_bytes", "updated_at"])
     return StorageReservation.objects.create(
@@ -52,10 +47,6 @@ def finalize_storage(
     reservation = _active_reservation(context, idempotency_key)
     if reservation is None:
         return
-    delta = actual_bytes - reservation.reserved_bytes
-    if delta > 0:
-        # Overrun: the reservation underestimated; consume the extra against the cap.
-        _assert_capacity(context, usage, delta)
     # Release the reservation slot then commit the actual size as used storage.
     usage.reserved_bytes = F("reserved_bytes") - reservation.reserved_bytes
     usage.bytes_used = F("bytes_used") + actual_bytes
@@ -100,26 +91,3 @@ def _active_reservation(
         )
         .first()
     )
-
-
-def _assert_capacity(
-    context: TenantContext,
-    usage: OrganizationStorageUsage,
-    requested_bytes: int,
-) -> None:
-    try:
-        policy = get_effective_policy(context)
-    except Exception:
-        return
-    quota = policy.quota(STORAGE_QUOTA_KEY)
-    if quota is None or quota.limit is None:
-        return
-    effective_used = usage.bytes_used + usage.reserved_bytes
-    if effective_used + requested_bytes > quota.limit:
-        raise QuotaExceeded(
-            resource=STORAGE_QUOTA_KEY,
-            limit=quota.limit,
-            used=effective_used,
-            requested=requested_bytes,
-            mode=quota.mode,
-        )

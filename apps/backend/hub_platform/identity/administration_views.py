@@ -8,12 +8,11 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from hub_platform.api.permissions import CloudDeliveryOnly, HasCapability
+from hub_platform.api.permissions import HasCapability
 from hub_platform.identity.administration_payloads import (
     administration_timezones,
     audit_event_payload,
     organization_settings_payload,
-    subscription_payload,
 )
 from hub_platform.identity.administration_services import (
     OrganizationSettingsInput,
@@ -23,7 +22,6 @@ from hub_platform.identity.administration_services import (
 )
 from hub_platform.identity.audit import record_audit_event
 from hub_platform.identity.models import AuditEvent
-from hub_platform.subscriptions.models import Subscription
 
 
 def _validation_response(error: ValidationError) -> Response:
@@ -137,19 +135,6 @@ class OrganizationLogoView(APIView):
         return Response({"organization": organization_settings_payload(organization)})
 
 
-class SubscriptionSummaryView(APIView):
-    permission_classes = [CloudDeliveryOnly, HasCapability]
-    required_capability = "settings.view"
-    require_organization_scope = True
-
-    def get(self, request: Request) -> Response:
-        try:
-            payload = subscription_payload(request.tenant_context)
-        except Subscription.DoesNotExist:
-            return Response({"detail": "Тариф организации не найден"}, status=404)
-        return Response({"subscription": payload})
-
-
 class AuditListView(APIView):
     permission_classes = [HasCapability]
     required_capability = "audit.view"
@@ -164,3 +149,39 @@ class AuditListView(APIView):
             .order_by("-created_at")[:50]
         )
         return Response({"items": [audit_event_payload(event) for event in events]})
+
+
+class LaunchChecklistView(APIView):
+    """Чек-лист «Запуск» (SPEC-HUB-0031 §5, дизайн-базлайн v2): три шага с
+    автоотметкой по факту. Скрытие блока — предпочтение клиента (localStorage)."""
+
+    permission_classes = [HasCapability]
+    required_capability = "settings.view"
+
+    def get(self, request: Request) -> Response:
+        from hub_platform.channels.models import Channel
+        from hub_platform.identity.models import OrganizationMembership
+        from hub_platform.integrations.models import Integration, IntegrationKind
+
+        organization_id = request.tenant_context.organization_id
+        agent_created = Channel.objects.filter(organization_id=organization_id).exists()
+        connection_bound = Integration.objects.filter(
+            organization_id=organization_id,
+            kind=IntegrationKind.MESSENGER,
+            channel__isnull=False,
+        ).exists()
+        employee_invited = (
+            OrganizationMembership.objects.filter(
+                organization_id=organization_id
+            ).count()
+            > 1
+            or request.tenant_context.organization.invitations.exists()
+        )
+        return Response(
+            {
+                "agentCreated": agent_created,
+                "connectionBound": connection_bound,
+                "employeeInvited": employee_invited,
+                "done": agent_created and connection_bound and employee_invited,
+            }
+        )

@@ -8,7 +8,6 @@ from hub_platform.ai.knowledge_types import UNCATEGORIZED_CATEGORY_NAME
 from hub_platform.ai.models import AIAgent, AIAgentStatus, Knowledge, KnowledgeCategory
 from hub_platform.channels.models import Channel
 from hub_platform.identity.bootstrap import bootstrap_edevs_owner
-from hub_platform.subscriptions.testing import create_test_subscription
 from hub_platform.testing import TenantAPIClient, system_tenant_context
 
 
@@ -146,7 +145,6 @@ class KnowledgeMetadataImportTests(TestCase):
 class KnowledgeImportPolicyTests(KnowledgePolicyTestBase):
     def setUp(self) -> None:
         super().setUp()
-        create_test_subscription(self.organization)
         self.client = TenantAPIClient()
         self.client.force_login(self.employee.user)
 

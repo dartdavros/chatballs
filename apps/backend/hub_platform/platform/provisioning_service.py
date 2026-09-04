@@ -33,8 +33,6 @@ from hub_platform.platform.provisioning_command import (
     is_replay,
     is_terminal,
 )
-from hub_platform.subscriptions.models import PlanVersion, SubscriptionStatus
-from hub_platform.subscriptions.subscription_service import create_subscription
 from hub_platform.tenancy.context import TenantActorKind, TenantContext
 from hub_platform.tenancy.database import tenant_atomic
 
@@ -48,8 +46,8 @@ def provision_organization(
 ) -> ProvisioningResult:
     """Single write boundary for tenant provisioning (SPEC-HUB-0021 §4).
 
-    Coordinates identity, subscription, audit and outbox in one
-    transaction. Tenant-owned rows are written under set_local_tenant(new_org.id)
+    Coordinates identity, audit and outbox in one
+    transaction (тариф удалён, ADR-HUB-0042 §2: организация создаётся без подписки). Tenant-owned rows are written under set_local_tenant(new_org.id)
     via tenant_atomic. No email/provider calls happen before commit (SPEC §4).
     """
     with transaction.atomic():
@@ -77,7 +75,6 @@ def _run(command: ProvisioningCommand, operator: PlatformOperator) -> Provisioni
 
     provisioning = _open_or_resume(existing, command, operator)
     try:
-        plan_version = _resolve_plan_version(command)
         owner_user = _resolve_owner_user(command.owner_email)
         org = _create_organization(command, owner_user)
         provisioning.organization = org
@@ -91,10 +88,10 @@ def _run(command: ProvisioningCommand, operator: PlatformOperator) -> Provisioni
                 actor_user=owner_user,
             )
             if owner_user is not None and owner_user.is_active:
-                _provision_active_owner(org, owner_user, plan_version, command, context)
+                _provision_active_owner(org, owner_user, command, context)
                 provisioning.status = ProvisioningStatus.COMPLETED
             else:
-                _provision_pending_owner(org, owner_user, plan_version, command, context)
+                _provision_pending_owner(org, owner_user, command, context)
                 provisioning.status = ProvisioningStatus.WAITING_FOR_OWNER
 
         provisioning.failure_code = ""
@@ -116,8 +113,6 @@ def _validate_command(command: ProvisioningCommand) -> None:
         raise ProvisioningValidation("organization_slug is required", code="slug_required")
     if not command.owner_email.strip():
         raise ProvisioningValidation("owner_email is required", code="email_required")
-    if command.ai_agent_quantity < 1:
-        raise ProvisioningValidation("ai_agent_quantity must be >= 1", code="quantity_invalid")
 
 
 def _open_or_resume(
@@ -137,20 +132,6 @@ def _open_or_resume(
         requested_by=operator,
         status=ProvisioningStatus.IN_PROGRESS,
     )
-
-
-def _resolve_plan_version(command: ProvisioningCommand) -> PlanVersion:
-    try:
-        plan_version = PlanVersion.objects.select_related("plan").get(
-            public_id=command.plan_version_id
-        )
-    except (PlanVersion.DoesNotExist, ValueError) as error:
-        raise ProvisioningValidation(
-            "plan_version_id is unknown", code="plan_version_unknown"
-        ) from error
-    if plan_version.published_at is None:
-        raise ProvisioningValidation("plan_version is not published", code="plan_version_draft")
-    return plan_version
 
 
 def _resolve_owner_user(email: str) -> HumanUser | None:
@@ -185,7 +166,6 @@ def _create_organization(
 def _provision_active_owner(
     org: Organization,
     owner_user: HumanUser,
-    plan_version: PlanVersion,
     command: ProvisioningCommand,
     context: TenantContext,
 ) -> None:
@@ -195,35 +175,20 @@ def _provision_active_owner(
         role=EmployeeRole.OWNER,
         position_title=_owner_position_title(),
     )
-    create_subscription(
-        context=context,
-        plan_version=plan_version,
-        ai_agent_quantity=command.ai_agent_quantity,
-        status=SubscriptionStatus.ACTIVE,
-    )
     record_audit_event(
         action="organization.provisioned",
         actor=owner_user,
         organization=org,
         object_type="Organization",
         object_id=str(org.public_id),
-        payload={"source": command.source, "planVersionId": str(plan_version.public_id)},
+        payload={"source": command.source},
     )
     enqueue_event(
         DomainEvent(
             aggregate_type="Organization",
             aggregate_id=str(org.public_id),
             event_type="organization.provisioned",
-            payload={"planVersionId": str(plan_version.public_id)},
-            tenant_context=context,
-        )
-    )
-    enqueue_event(
-        DomainEvent(
-            aggregate_type="Subscription",
-            aggregate_id=str(org.public_id),
-            event_type="subscription.activated",
-            payload={"planVersionId": str(plan_version.public_id)},
+            payload={},
             tenant_context=context,
         )
     )
@@ -232,7 +197,6 @@ def _provision_active_owner(
 def _provision_pending_owner(
     org: Organization,
     owner_user: HumanUser | None,
-    plan_version: PlanVersion,
     command: ProvisioningCommand,
     context: TenantContext,
 ) -> None:
@@ -245,22 +209,13 @@ def _provision_pending_owner(
         expires_at=timezone.now() + OWNER_INVITATION_TTL,
         created_by=None,
     )
-    subscription = create_subscription(
-        context=context,
-        plan_version=plan_version,
-        ai_agent_quantity=command.ai_agent_quantity,
-        status=SubscriptionStatus.SUSPENDED,
-    )
-    # Stamp suspension reason for the OWNER_PENDING state.
-    subscription.suspension_reason = "OWNER_PENDING"
-    subscription.save(update_fields=["suspension_reason"])
     record_audit_event(
         action="organization.owner_invitation_requested",
         actor=owner_user,
         organization=org,
         object_type="Organization",
         object_id=str(org.public_id),
-        payload={"source": command.source, "planVersionId": str(plan_version.public_id)},
+        payload={"source": command.source},
     )
     enqueue_event(
         DomainEvent(

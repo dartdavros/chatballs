@@ -60,11 +60,9 @@ export function routeFromPath(pathname: string, search = ""): RouteState {
   }
   if (path === "/ai/usage") return { route: "aiUsage", ...state };
   if (path === "/integrations") return { route: "integrations", ...state };
-  if (path === "/administration" || path === "/administration/organization") {
+  // /administration/subscription — устаревший адрес тарифов (ADR-HUB-0042), ведёт в организацию.
+  if (path === "/administration" || path === "/administration/organization" || path === "/administration/subscription") {
     return { route: "administrationOrganization", ...state };
-  }
-  if (path === "/administration/subscription") {
-    return { route: "administrationSubscription", ...state };
   }
   if (path === "/administration/audit") {
     return { route: "administrationAudit", ...state };
@@ -94,7 +92,6 @@ export function pathFromRoute(route: RouteKey, entityId: number | null = null, p
   if (route === "aiKnowledgeDetail") return entityId ? `${prefix}/ai/knowledge/${entityId}` : `${prefix}/ai/knowledge`;
   if (route === "integrations") return `${prefix}/integrations`;
   if (route === "administrationOrganization") return `${prefix}/administration/organization`;
-  if (route === "administrationSubscription") return `${prefix}/administration/subscription`;
   if (route === "administrationAudit") return `${prefix}/administration/audit`;
   if (route === "profile") return `${prefix}/profile`;
   if (route === "settings") return `${prefix}/settings`;

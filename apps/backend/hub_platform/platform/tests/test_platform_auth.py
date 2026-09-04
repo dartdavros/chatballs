@@ -4,10 +4,7 @@ from django.test import TestCase, override_settings
 from rest_framework.test import APIClient
 
 from hub_platform.platform.models import PlatformToken
-from hub_platform.platform.testing import (
-    create_platform_operator,
-    published_plan_version,
-)
+from hub_platform.platform.testing import create_platform_operator
 
 
 def _client(token: str | None) -> APIClient:
@@ -21,10 +18,8 @@ def _client(token: str | None) -> APIClient:
 class PlatformAuthTests(TestCase):
     def setUp(self) -> None:
         self.operator, self.token = create_platform_operator()
-        published_plan_version()
 
     def test_valid_token_provisions_organization(self) -> None:
-        version = published_plan_version()
         client = _client(self.token)
         response = client.post(
             "/api/v1/organizations",
@@ -32,8 +27,6 @@ class PlatformAuthTests(TestCase):
                 "name": "Acme",
                 "slug": "acme",
                 "owner_email": "owner-acme@example.test",
-                "plan_version_id": str(version.public_id),
-                "ai_agent_quantity": 1,
                 "timezone": "Europe/Moscow",
                 "currency": "RUB",
             },
@@ -43,6 +36,8 @@ class PlatformAuthTests(TestCase):
         self.assertEqual(response.status_code, 201, response.content)
         self.assertIn("organization", response.json())
         self.assertIn("publicId", response.json()["organization"])
+        # Тарифный контур удалён (ADR-HUB-0042): ответ без ключа subscription.
+        self.assertNotIn("subscription", response.json())
 
     def test_missing_token_is_unauthenticated(self) -> None:
         client = _client(None)
@@ -68,15 +63,12 @@ class PlatformCapabilityGateTests(TestCase):
     def test_token_without_capability_is_forbidden(self) -> None:
         operator, _token = create_platform_operator(capabilities=[])
         client = _client(_token)
-        version = published_plan_version()
         response = client.post(
             "/api/v1/organizations",
             data={
                 "name": "Acme",
                 "slug": "acme",
                 "owner_email": "owner-acme@example.test",
-                "plan_version_id": str(version.public_id),
-                "ai_agent_quantity": 1,
                 "timezone": "Europe/Moscow",
                 "currency": "RUB",
             },

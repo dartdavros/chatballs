@@ -78,8 +78,9 @@ describe("administration route", () => {
       route: "administrationOrganization",
       ...empty,
     });
+    // Устаревший адрес тарифов ведёт в организацию (ADR-HUB-0042).
     expect(routeFromPath("/administration/subscription")).toEqual({
-      route: "administrationSubscription",
+      route: "administrationOrganization",
       ...empty,
     });
     expect(routeFromPath("/administration/audit")).toEqual({
@@ -87,7 +88,6 @@ describe("administration route", () => {
       ...empty,
     });
     expect(pathFromRoute("administrationOrganization")).toBe("/administration/organization");
-    expect(pathFromRoute("administrationSubscription")).toBe("/administration/subscription");
     expect(pathFromRoute("administrationAudit")).toBe("/administration/audit");
   });
 });

@@ -12,7 +12,6 @@ import logging
 from django.db import transaction
 from django.utils import timezone
 
-from hub_platform.ai.credits import ManagedAiQuotaExceeded
 from hub_platform.ai.limits import LimitExceeded
 from hub_platform.ai.provider.base import ProviderError
 from hub_platform.ai.runtime import HANDOFF_TOKEN
@@ -26,7 +25,6 @@ from hub_platform.conversations.models import (
 )
 from hub_platform.notifications.models import NotificationAudience, NotificationType
 from hub_platform.notifications.services import notify, notify_management
-from hub_platform.subscriptions.errors import EntitlementRequired
 from hub_platform.tenancy.context import TenantContext
 
 logger = logging.getLogger(__name__)
@@ -99,12 +97,7 @@ def post_support_message(
         result = run_channel_turn(
             channel=conversation.channel, message=text, history=_history(conversation)
         )
-    except (
-        ProviderError,
-        ManagedAiQuotaExceeded,
-        LimitExceeded,
-        EntitlementRequired,
-    ) as error:
+    except (ProviderError, LimitExceeded) as error:
         logger.warning("AI turn failed for support conversation %s: %s", conversation.id, error)
         conversation.control_mode = ControlMode.PAUSED
         conversation.expected_responder = ExpectedResponder.OPERATOR

@@ -2,14 +2,12 @@ import json
 
 from hub_platform.ai.knowledge_policy_test_base import KnowledgePolicyTestBase
 from hub_platform.ai.models import KnowledgeCategory
-from hub_platform.subscriptions.testing import create_test_subscription
 from hub_platform.testing import TenantAPIClient
 
 
 class KnowledgeCategoryApiTests(KnowledgePolicyTestBase):
     def setUp(self) -> None:
         super().setUp()
-        create_test_subscription(self.organization)
         self.client = TenantAPIClient()
         self.client.force_authenticate(self.admin.user)
 

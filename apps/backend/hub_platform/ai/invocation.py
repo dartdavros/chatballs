@@ -3,15 +3,7 @@ import time
 from django.conf import settings
 
 from hub_platform.ai import limits, pricing
-from hub_platform.ai.credits import (
-    ManagedAiQuotaExceeded,
-    assert_byok_ai_entitlement,
-    assert_managed_ai_entitlement,
-    commit_managed_ai_tokens,
-    release_managed_ai_tokens,
-    reserve_managed_ai_tokens,
-)
-from hub_platform.ai.models import CredentialMode, LlmInvocation, LlmInvocationStatus
+from hub_platform.ai.models import LlmInvocation, LlmInvocationStatus
 from hub_platform.ai.pii import redact
 from hub_platform.ai.provider import routing
 from hub_platform.ai.provider.base import (
@@ -41,23 +33,15 @@ def _record_blocked(*, channel, purpose: str, model: str, error: Exception) -> N
 
 
 def _prepare_invocation(*, channel, requested_model: str | None) -> tuple[LLMProvider, str]:
+    # BYOK — единственный режим (ADR-HUB-0042 §3): модель берётся из интеграции
+    # организации с fallback на модель агента. Без интеграции модель остаётся
+    # агентской: тестовый провайдер работает, прод упадёт в get_provider штатно.
     agent = channel.ai_agent
-    mode = agent.credential_mode
-    effective_model = agent.model
-    if mode == CredentialMode.CUSTOAI:
-        assert_managed_ai_entitlement(channel=channel)
-        effective_model = settings.CUS_CUSTOAI_MODEL
-    elif mode == CredentialMode.BYOK:
-        assert_byok_ai_entitlement(channel=channel)
+    try:
         effective_model = routing.resolve_model(channel, fallback_model=agent.model)
-    else:
-        raise ValueError(f"Unknown AI credential mode: {mode}")
-    selected_model = (
-        effective_model
-        if mode == CredentialMode.CUSTOAI
-        else requested_model or effective_model
-    )
-    return get_provider(channel=channel), selected_model
+    except routing.IntegrationNotConfigured:
+        effective_model = agent.model
+    return get_provider(channel=channel), requested_model or effective_model
 
 
 def invoke_chat(
@@ -69,15 +53,11 @@ def invoke_chat(
     params: dict | None = None,
     used_fragment_ids: list | None = None,
 ) -> ChatResult:
-    fallback_model = (
-        settings.CUS_CUSTOAI_MODEL
-        if channel.ai_agent.credential_mode == CredentialMode.CUSTOAI
-        else model or channel.ai_agent.model
-    )
+    fallback_model = model or channel.ai_agent.model
     try:
         provider, model = _prepare_invocation(channel=channel, requested_model=model)
         limits.assert_within_limits(channel, channel.ai_agent)
-    except (ManagedAiQuotaExceeded, limits.LimitExceeded) as error:
+    except limits.LimitExceeded as error:
         _record_blocked(
             channel=channel,
             purpose=purpose,
@@ -87,27 +67,14 @@ def invoke_chat(
         raise
 
     safe_messages = [ChatMessage(role=item.role, content=redact(item.content)) for item in messages]
-    reservation = None
-    effective_params = params
-    if channel.ai_agent.credential_mode == CredentialMode.CUSTOAI:
-        try:
-            reservation = reserve_managed_ai_tokens(
-                channel=channel, messages=safe_messages, params=params
-            )
-            effective_params = reservation.params
-        except ManagedAiQuotaExceeded as error:
-            _record_blocked(channel=channel, purpose=purpose, model=model, error=error)
-            raise
     started = time.monotonic()
     try:
         result: ChatResult = call_with_resilience(
-            lambda: provider.chat(messages=safe_messages, model=model, params=effective_params),
+            lambda: provider.chat(messages=safe_messages, model=model, params=params),
             retries=settings.CUS_AI_MAX_RETRIES,
             breaker=_breaker,
         )
     except ProviderError as error:
-        if reservation is not None:
-            release_managed_ai_tokens(channel=channel, reservation=reservation)
         LlmInvocation.objects.create(
             organization=channel.organization,
             channel=channel,
@@ -121,7 +88,8 @@ def invoke_chat(
         )
         raise
 
-    invocation = LlmInvocation.objects.create(
+    return_result = result
+    LlmInvocation.objects.create(
         organization=channel.organization,
         channel=channel,
         product=channel.product,
@@ -137,14 +105,7 @@ def invoke_chat(
         status=LlmInvocationStatus.SUCCESS,
         used_fragment_ids=used_fragment_ids or [],
     )
-    if reservation is not None:
-        commit_managed_ai_tokens(
-            channel=channel,
-            reservation=reservation,
-            result=result,
-            invocation_id=invocation.id,
-        )
-    return result
+    return return_result
 
 
 def embed_texts(

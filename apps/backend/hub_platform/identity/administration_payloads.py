@@ -5,17 +5,7 @@ from zoneinfo import available_timezones
 from django.urls import reverse
 
 from hub_platform.identity.models import AuditEvent, Organization
-from hub_platform.subscriptions.models import Subscription, UsageCounter
-from hub_platform.subscriptions.policy import get_effective_policy
-from hub_platform.tenancy.context import TenantContext
-from hub_platform.tenancy.models import OrganizationStorageUsage
 
-
-QUOTA_LABELS = {
-    "new_dialogs_per_period": "Новые диалоги",
-    "managed_ai_credits": "AI-кредиты",
-    "storage_bytes": "Хранилище",
-}
 
 AUDIT_ACTION_LABELS = {
     "identity.profile_updated": "Изменён профиль сотрудника",
@@ -71,60 +61,6 @@ def organization_settings_payload(organization: Organization) -> dict[str, objec
 
 def administration_timezones() -> list[str]:
     return sorted(available_timezones())
-
-
-def subscription_payload(context: TenantContext) -> dict[str, object]:
-    subscription = Subscription.objects.select_related("plan_version__plan").get(
-        organization_id=context.organization_id
-    )
-    policy = get_effective_policy(context)
-    counters = {
-        counter.quota_definition.key: counter.used_value
-        for counter in UsageCounter.objects.select_related("quota_definition").filter(
-            organization_id=context.organization_id,
-            period__status="OPEN",
-        )
-    }
-    storage = (
-        OrganizationStorageUsage.objects.filter(
-            organization_id=context.organization_id,
-        )
-        .values_list("bytes_used", flat=True)
-        .first()
-    )
-    counters["storage_bytes"] = storage or 0
-    quotas = [
-        {
-            "key": quota.key,
-            "label": QUOTA_LABELS.get(quota.key, "Лимит"),
-            "mode": quota.mode,
-            "limit": quota.limit,
-            "used": counters.get(quota.key, 0),
-            "unit": quota.unit,
-        }
-        for quota in policy.quotas.values()
-        if quota.key in QUOTA_LABELS
-    ]
-    quotas.sort(key=lambda item: str(item["label"]))
-    return {
-        "planCode": subscription.plan_version.plan.code,
-        "planName": subscription.plan_version.plan.name,
-        "status": subscription.status,
-        "aiAgentQuantity": subscription.ai_agent_quantity,
-        "monthlyChargeMinor": subscription.monthly_charge_minor,
-        "currency": subscription.plan_version.currency,
-        "periodStart": (
-            subscription.current_period_start.isoformat()
-            if subscription.current_period_start
-            else None
-        ),
-        "periodEnd": (
-            subscription.current_period_end.isoformat()
-            if subscription.current_period_end
-            else None
-        ),
-        "quotas": quotas,
-    }
 
 
 def audit_event_payload(event: AuditEvent) -> dict[str, object]:

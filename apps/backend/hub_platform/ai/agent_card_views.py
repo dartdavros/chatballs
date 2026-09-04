@@ -20,11 +20,6 @@ from hub_platform.api.permissions import HasCapability
 from hub_platform.channels import services as channel_services
 from hub_platform.channels.models import Channel
 from hub_platform.identity.audit import record_audit_event
-from hub_platform.subscriptions.errors import (
-    PolicyUnavailable,
-    QuotaExceeded,
-    SubscriptionDomainError,
-)
 
 AGENT_NOT_FOUND = {"detail": "Агент не найден"}
 
@@ -164,24 +159,8 @@ class _AgentCardStatusView(APIView):
                 channel=channel,
                 is_active=self.target_active,
             )
-        except QuotaExceeded as error:
-            return Response(
-                {
-                    "code": error.code,
-                    "resource": error.resource,
-                    "limit": error.limit,
-                    "used": error.used,
-                    "requested": error.requested,
-                    "period_ends_at": (
-                        error.period_ends_at.isoformat() if error.period_ends_at else None
-                    ),
-                },
-                status=409,
-            )
-        except PolicyUnavailable as error:
-            return Response({"code": error.code}, status=503)
-        except SubscriptionDomainError as error:
-            return Response({"code": error.code}, status=409)
+        except ValidationError as error:
+            return Response({"detail": _validation_detail(error)}, status=400)
         return Response({"agent": agent_card_payload(channel)})
 
 

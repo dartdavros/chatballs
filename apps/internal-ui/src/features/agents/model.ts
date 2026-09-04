@@ -1,7 +1,7 @@
 // Единая сущность «Агент» = канал + AI-конфигурация (ADR-HUB-0041 §4).
 // Источник данных — агрегированный API /api/v1/agents/.
 import { api } from "../../api/client";
-import type { AgentKnowledgeRef, AgentPortalArticleRef, CredentialMode } from "../ai/model";
+import type { AgentKnowledgeRef, AgentPortalArticleRef } from "../ai/model";
 
 export type AgentConnection = {
   id: number;
@@ -22,7 +22,6 @@ export type AgentCard = {
   groupName: string | null;
   aiStatus: AgentAiStatus;
   model: string;
-  credentialMode: CredentialMode;
   providerIntegrationId: number | null;
   modelParams: Record<string, unknown>;
   limits: Record<string, unknown>;
@@ -41,7 +40,6 @@ export type AgentPatch = Partial<{
   name: string;
   groupId: number | null;
   isActive: boolean;
-  credentialMode: CredentialMode;
   providerIntegrationId: number | null;
   persona: string;
   tone: string;

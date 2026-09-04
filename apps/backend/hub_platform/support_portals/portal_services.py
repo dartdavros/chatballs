@@ -7,9 +7,6 @@ from django.utils import timezone
 from hub_platform.channels.models import Channel
 from hub_platform.integrations.models import IntegrationProvider, IntegrationStatus
 from hub_platform.products.models import Product
-from hub_platform.subscriptions.keys import EntitlementKey, QuotaKey
-from hub_platform.subscriptions.policy import require_entitlement
-from hub_platform.subscriptions.usage_service import record_usage
 from hub_platform.support_portals.addressing import hosted_domain
 from hub_platform.support_portals.models import (
     SupportPortal,
@@ -35,7 +32,6 @@ class PortalInput:
 
 @transaction.atomic
 def create_portal(*, context: TenantContext, data: PortalInput) -> SupportPortal:
-    require_entitlement(context, EntitlementKey.SUPPORT_DEPARTMENT)
     widget = _widget(context, data.widget_id, data.widget_channel_id)
     portal = SupportPortal(
         organization=context.organization,
@@ -48,15 +44,6 @@ def create_portal(*, context: TenantContext, data: PortalInput) -> SupportPortal
     )
     portal.full_clean()
     portal.save()
-    record_usage(
-        context=context,
-        quota_key=QuotaKey.SUPPORT_PORTALS,
-        quantity=1,
-        idempotency_key=f"support-portal:{portal.public_id}:create",
-        source="support_portal.created",
-        aggregate_type="SupportPortal",
-        aggregate_id=str(portal.public_id),
-    )
     return portal
 
 
@@ -125,30 +112,10 @@ def set_portal_status(
         return portal
     portal.transition_version += 1
     if status == PortalStatus.ARCHIVED:
-        record_usage(
-            context=context,
-            quota_key=QuotaKey.SUPPORT_PORTALS,
-            quantity=-1,
-            idempotency_key=f"support-portal:{portal.public_id}:archive:{portal.transition_version}",
-            source="support_portal.archived",
-            aggregate_type="SupportPortal",
-            aggregate_id=str(portal.public_id),
-        )
         portal.published_at = None
     elif portal.status == PortalStatus.ARCHIVED:
-        require_entitlement(context, EntitlementKey.SUPPORT_DEPARTMENT)
-        record_usage(
-            context=context,
-            quota_key=QuotaKey.SUPPORT_PORTALS,
-            quantity=1,
-            idempotency_key=f"support-portal:{portal.public_id}:restore:{portal.transition_version}",
-            source="support_portal.restored",
-            aggregate_type="SupportPortal",
-            aggregate_id=str(portal.public_id),
-        )
         status = PortalStatus.DRAFT
     elif status == PortalStatus.PUBLISHED:
-        require_entitlement(context, EntitlementKey.SUPPORT_DEPARTMENT)
         portal.published_at = timezone.now()
     else:
         portal.published_at = None

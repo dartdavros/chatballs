@@ -2,7 +2,6 @@ import { EmptyState, LoadingState, PageHeader } from "../../shared/ui";
 import { Button } from "../../shared/ui-controls";
 import type { SessionUser } from "../../types";
 import { AuditTable } from "./AuditTable";
-import { CloudSubscriptionPanel } from "./CloudSubscriptionPanel";
 import {
   administrationSection,
   canManageSettings,
@@ -58,14 +57,6 @@ export function AdministrationPage({
           onUploadLogo={(file) => void page.uploadLogo(file)}
           onRemoveLogo={() => void page.removeLogo()}
         />
-      )}
-      {section === "subscription" && page.subscription && (
-        <CloudSubscriptionPanel subscription={page.subscription} />
-      )}
-      {section === "subscription" && !page.subscription && (
-        <div className="administration-card">
-          <EmptyState title={page.error || "Не удалось загрузить данные тарифа"} />
-        </div>
       )}
       {section === "audit" && <AuditTable events={page.audit} />}
     </div>

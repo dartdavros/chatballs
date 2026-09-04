@@ -47,7 +47,6 @@ INSTALLED_APPS = [
     "rest_framework",
     "hub_platform.identity",
     "hub_platform.tenancy",
-    "hub_platform.subscriptions",
     "hub_platform.platform",
     "hub_platform.products",
     "hub_platform.ai",
@@ -167,13 +166,8 @@ CUS_AI_GLOBAL_DAILY_COST_LIMIT_MICROS = int(
 CUS_AI_PRICING: dict = {}  # переопределение цен micro-USD/токен по модели
 CUS_AI_EMBEDDING_MODEL = os.environ.get("CUS_AI_EMBEDDING_MODEL", "openai/text-embedding-3-small")
 
-# CustoAI platform credential is configured only through environment/secret storage.
-CUS_CUSTOAI_API_KEY = os.environ.get("CUS_CUSTOAI_API_KEY", "")
-CUS_CUSTOAI_BASE_URL = os.environ.get("CUS_CUSTOAI_BASE_URL", "https://ai.api.cloud.yandex.net/v1")
-CUS_CUSTOAI_MODEL = os.environ.get(
-    "CUS_CUSTOAI_MODEL",
-    "gpt://b1g89tr9t8iedhnl8pgg/yandexgpt-5.1/latest",
-)
+# Managed-провайдер CustoAI удалён (ADR-HUB-0042 §3): AI — только через
+# интеграцию организации (BYOK).
 
 # Long-poll hold-time мессенджеров (сек). Держим малым: единый воркер выполняет
 # и inbound-поллинг, и outbox-диспатч в одном потоке — при большом hold-time

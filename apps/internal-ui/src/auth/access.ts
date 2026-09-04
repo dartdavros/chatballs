@@ -21,9 +21,6 @@ export function hasCapability(user: SessionUser, capability: string): boolean {
 
 export function canAccess(user: SessionUser, route: RouteKey): boolean {
   if (route === "profile" || route === "settings") return true;
-  if (route === "administrationSubscription" && user.deliveryMode !== "CLOUD") {
-    return false;
-  }
   if (isManager(user)) return true;
   return EMPLOYEE_ROUTES.has(route);
 }

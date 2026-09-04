@@ -112,60 +112,6 @@
   margin-top: 18px;
 }
 
-.administration-subscription-summary {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(120px, 1fr));
-  gap: 16px;
-}
-
-.administration-subscription-summary > div {
-  min-width: 0;
-}
-
-.administration-subscription-summary .is-wide {
-  grid-column: span 2;
-}
-
-.administration-subscription-summary span,
-.administration-quotas article span {
-  display: block;
-  margin-bottom: 5px;
-  color: var(--text-tertiary);
-  font-size: 11.5px;
-}
-
-.administration-subscription-summary strong,
-.administration-quotas article strong {
-  color: var(--text-body);
-  font-size: 13.5px;
-  font-weight: 600;
-}
-
-.administration-quotas {
-  margin-top: 20px;
-  padding-top: 18px;
-  border-top: 1px solid var(--border-default);
-}
-
-.administration-quotas h3 {
-  margin: 0 0 12px;
-  color: var(--text-heading);
-  font-size: 13px;
-}
-
-.administration-quotas > div {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(120px, 1fr));
-  gap: 12px;
-}
-
-.administration-quotas article {
-  padding: 12px;
-  background: var(--n-10);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-lg);
-}
-
 .administration-audit {
   padding: 0;
   overflow-x: auto;
@@ -202,10 +148,5 @@
 @media (max-width: 1120px) {
   .administration-fields {
     grid-template-columns: minmax(280px, 420px) 200px;
-  }
-
-  .administration-subscription-summary,
-  .administration-quotas > div {
-    grid-template-columns: repeat(3, minmax(120px, 1fr));
   }
 }

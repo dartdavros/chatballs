@@ -16,21 +16,13 @@ export type AgentPortalArticleRef = {
   publicUrl: string;
 };
 
-export type CredentialMode = "CUSTOAI" | "BYOK";
-
-export const CREDENTIAL_MODE_OPTIONS: Array<[CredentialMode, string]> = [
-  ["CUSTOAI", "CustoAI (Managed)"],
-  ["BYOK", "BYOK"],
-];
-
 export type AiAgent = {
   id: number;
   channel: ChannelRef;
   name: string;
   isActive: boolean;
   model: string;
-  credentialMode: CredentialMode;
-  // BYOK-провайдер принадлежит агенту, а не каналу (SPEC-HUB-0027 §9).
+  // BYOK — единственный режим (ADR-HUB-0042); провайдер принадлежит агенту, а не каналу.
   providerIntegrationId: number | null;
   modelParams: Record<string, unknown>;
   allowedTools: unknown[];

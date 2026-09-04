@@ -12,7 +12,7 @@ from django.db import transaction
 from django.db.models import Count, Q, QuerySet
 from django.utils.text import slugify
 
-from hub_platform.ai.models import AIAgent, AIAgentStatus, CredentialMode
+from hub_platform.ai.models import AIAgent, AIAgentStatus
 from hub_platform.ai.provider_selection import configure_agent_provider
 from hub_platform.ai.serializers import agent_portal_article_payload
 from hub_platform.channels.models import Channel
@@ -74,7 +74,6 @@ def agent_card_payload(channel: Channel) -> dict[str, object]:
         "groupName": channel.group.name if channel.group_id else None,
         "aiStatus": agent.status,
         "model": agent.model,
-        "credentialMode": agent.credential_mode,
         "providerIntegrationId": agent.provider_integration_id,
         "modelParams": agent.model_params,
         "limits": agent.limits,
@@ -124,7 +123,6 @@ def ensure_channel_agent(channel: Channel) -> AIAgent:
         channel=channel,
         name=channel.name,
         status=AIAgentStatus.DRAFT,
-        credential_mode=CredentialMode.CUSTOAI,
     )
     # Обновляем кеш select_related, чтобы payload не перечитывал канал.
     channel.ai_agent = agent
@@ -171,7 +169,6 @@ def update_agent_card(
     channel = update_channel(context=context, channel=channel, update=update)
 
     ai_fields = {
-        "credentialMode",
         "providerIntegrationId",
         "modelParams",
         "limits",
@@ -208,9 +205,6 @@ def update_agent_card(
             data=AgentInput(
                 # Имя агента следует за именем карточки: сущность одна.
                 name=channel.name,
-                credential_mode=str(
-                    body.get("credentialMode", agent.credential_mode)
-                ).strip(),
                 provider_integration_id=provider_integration_id,
                 model_params=model_params,
                 allowed_tools=agent.allowed_tools,

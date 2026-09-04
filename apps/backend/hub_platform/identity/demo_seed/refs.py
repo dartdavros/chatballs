@@ -18,7 +18,6 @@ class DemoRefs:
     """
 
     organization: object | None = None
-    subscription: object | None = None
     groups: dict[str, object] = field(default_factory=dict)
     memberships: dict[str, object] = field(default_factory=dict)
     users: dict[str, object] = field(default_factory=dict)

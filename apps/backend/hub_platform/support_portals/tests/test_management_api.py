@@ -10,7 +10,6 @@ from hub_platform.identity.models import (
     Organization,
     OrganizationMembership,
 )
-from hub_platform.subscriptions.testing import create_test_subscription
 from hub_platform.support_portals.models import SupportPortal, SupportPortalProduct
 from hub_platform.support_portals.tests.base import SupportPortalTestCase
 from hub_platform.webchat.testing import create_web_widget
@@ -73,7 +72,8 @@ class SupportPortalManagementTests(SupportPortalTestCase):
         self.assertEqual(config.json()["mode"], "AUTHENTICATED_PRODUCT")
         self.assertEqual(session.status_code, 404, session.content)
 
-    def test_subscription_allows_multiple_active_portals(self) -> None:
+    def test_multiple_active_portals_without_limits(self) -> None:
+        # Лимитов на порталы нет (ADR-HUB-0042): creation всегда canCreate=true.
         first = self.create_portal()
         self.assertEqual(first.status_code, 201, first.content)
         self.assertEqual(
@@ -230,7 +230,6 @@ class SupportPortalManagementTests(SupportPortalTestCase):
             user=other_owner,
             role=EmployeeRole.OWNER,
         )
-        create_test_subscription(other_organization)
         self.client.force_authenticate(other_owner)
         self.client.set_tenant(other_organization)
 

@@ -26,7 +26,7 @@ from hub_platform.ai.selectors import (
     writable_knowledge_item_for_employee,
 )
 from hub_platform.ai.serializers import attachment_payload, knowledge_payload
-from hub_platform.api.permissions import HasCapability, HasEntitlement
+from hub_platform.api.permissions import HasCapability
 from hub_platform.identity.audit import record_audit_event
 from hub_platform.identity.models import AuditEvent
 
@@ -34,8 +34,7 @@ _validation_error = validation_error_response
 
 
 class _KnowledgeBaseView(APIView):
-    permission_classes = [HasEntitlement, HasCapability]
-    required_entitlement = "knowledge_base"
+    permission_classes = [HasCapability]
     required_capabilities = {
         "GET": "ai.view",
         "POST": "ai.manage",

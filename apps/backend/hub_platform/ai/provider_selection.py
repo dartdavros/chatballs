@@ -1,18 +1,16 @@
-"""Выбор credential-режима и провайдера агента (SPEC-HUB-0027 §9).
+"""Выбор LLM-провайдера агента (SPEC-HUB-0027 §9, ADR-HUB-0042 §3).
 
-Раньше эта функция сохраняла выбор в `Channel.provider_integration` как side
-effect сохранения агента. Теперь она ничего не пишет: возвращает разрешённую
-интеграцию, а вызывающий сервис ставит её на самого агента — выбор провайдера,
-модели и режима credential выполняется в одной форме и одной транзакции, а
-инвариант проверяется на одной сущности.
+Managed-режим CustoAI удалён вместе с тарифным контуром: агент работает только
+через интеграцию организации (BYOK, ADR-HUB-0034). Функция ничего не пишет:
+возвращает разрешённую интеграцию и модель, вызывающий сервис ставит их на
+агента в одной транзакции. Агент без интеграции — валидное состояние черновика;
+активация без провайдера запрещена в set_agent_active.
 """
 
 from dataclasses import dataclass
 
-from django.conf import settings
 from django.core.exceptions import ValidationError
 
-from hub_platform.ai.models import CredentialMode
 from hub_platform.integrations.models import (
     Integration,
     IntegrationKind,
@@ -23,23 +21,15 @@ from hub_platform.tenancy.context import TenantContext
 
 @dataclass(frozen=True, slots=True)
 class ProviderSelection:
-    mode: str
     model: str
     integration: Integration | None
 
 
 def configure_agent_provider(
-    *, context: TenantContext, mode: str, integration_id: int | None
+    *, context: TenantContext, integration_id: int | None
 ) -> ProviderSelection:
-    if mode not in CredentialMode.values:
-        raise ValidationError({"credentialMode": "Unknown credential mode"})
-    if mode == CredentialMode.CUSTOAI:
-        # CustoAI не использует секрет организации: связь с интеграцией снимается,
-        # иначе BYOK-инвариант проверялся бы по осиротевшему полю.
-        return ProviderSelection(mode, settings.CUS_CUSTOAI_MODEL, None)
-    # Инвариант BYOK: credential_mode = BYOK ⇒ provider_integration ≠ null.
     if integration_id is None:
-        raise ValidationError({"providerIntegrationId": "BYOK integration is required"})
+        return ProviderSelection("", None)
     try:
         integration = Integration.objects.get(
             id=integration_id,
@@ -56,4 +46,4 @@ def configure_agent_provider(
         raise ValidationError(
             {"providerIntegrationId": "Integration default model is required"}
         )
-    return ProviderSelection(mode, model, integration)
+    return ProviderSelection(model, integration)

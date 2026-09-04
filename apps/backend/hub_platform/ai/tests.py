@@ -6,7 +6,7 @@ from django.test import TestCase, override_settings
 from hub_platform.testing import TenantAPIClient as APIClient, system_tenant_context
 
 from hub_platform.ai.knowledge_categories import ensure_uncategorized_category
-from hub_platform.ai.models import AIAgent, AIAgentStatus, CredentialMode, Knowledge, KnowledgeFragment
+from hub_platform.ai.models import AIAgent, AIAgentStatus, Knowledge, KnowledgeFragment
 from hub_platform.channels.models import Channel
 from hub_platform.identity.bootstrap import bootstrap_edevs_owner
 from hub_platform.identity.models import EmployeeRole, HumanUser, Organization, OrganizationMembership
@@ -33,6 +33,23 @@ def seed_sales_channels(organization):
     foxray = Product.objects.get(organization=organization, code="foxray")
     make_channel_with_agent(organization, code="firepage-sales", name="FirePage — продажи", product=firepage)
     make_channel_with_agent(organization, code="foxray-sales", name="FoxRay — продажи", product=foxray)
+
+
+def _byok_integration(organization, *, default_model="byok-model"):
+    """LLM-интеграция организации: единственный источник провайдера агента
+    после удаления managed-режима (ADR-HUB-0042 §3)."""
+    from hub_platform.integrations.models import IntegrationProvider
+    from hub_platform.integrations.services import IntegrationInput, create_integration
+
+    return create_integration(
+        context=system_tenant_context(organization),
+        data=IntegrationInput(
+            provider=IntegrationProvider.OPENROUTER,
+            name="BYOK",
+            secret="sk-byok",
+            config={"baseUrl": "https://openrouter.ai/api/v1", "defaultModel": default_model},
+        ),
+    )
 
 
 def make_knowledge(organization, *, title, content=""):
@@ -63,7 +80,6 @@ class AIAgentInvariantTests(TestCase):
                 context=system_tenant_context(self.organization),
                 data=AgentCreateInput(
                     channel_code=channel.code,
-                    credential_mode=CredentialMode.CUSTOAI,
                     provider_integration_id=None,
                     persona="",
                     tone="",
@@ -82,9 +98,6 @@ class AIAgentApiTests(TestCase):
         bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
         self.organization = Organization.objects.get(slug="edevs")
         seed_sales_channels(self.organization)
-        from hub_platform.subscriptions.testing import create_test_subscription
-
-        create_test_subscription(self.organization, quantity=2)
         self.client = APIClient()
         self.client.login(username="owner@edevs.tech", password="temporary-password")
 
@@ -105,7 +118,6 @@ class AIAgentApiTests(TestCase):
             data=json.dumps(
                 {
                     "channel": "academy-sales",
-                    "model": "gpt-4o-mini",
                     "persona": "Ты — ассистент Academy.",
                     "tone": "Коротко и по делу.",
                     "instructions": "Отвечай по делу.",
@@ -125,27 +137,35 @@ class AIAgentApiTests(TestCase):
     def test_owner_cannot_create_second_agent_for_channel(self) -> None:
         response = self.client.post(
             "/api/v1/ai/agents/",
-            data=json.dumps({"channel": "firepage-sales", "model": "gpt-4o-mini", "knowledgeIds": []}),
+            data=json.dumps({"channel": "firepage-sales", "knowledgeIds": []}),
             content_type="application/json",
         )
 
         self.assertEqual(response.status_code, 400)
 
-    def test_owner_updates_agent_model_and_instructions(self) -> None:
+    def test_owner_updates_agent_provider_and_instructions(self) -> None:
         agent = AIAgent.objects.get(channel__code="firepage-sales")
+        integration = _byok_integration(self.organization)
 
         response = self.client.patch(
             f"/api/v1/ai/agents/{agent.id}/update/",
-            data=json.dumps({"model": "anthropic/claude-3.5", "modelParams": {"temperature": 0.3}, "tone": "Дружелюбно."}),
+            data=json.dumps(
+                {
+                    "providerIntegrationId": integration.id,
+                    "modelParams": {"temperature": 0.3},
+                    "tone": "Дружелюбно.",
+                }
+            ),
             content_type="application/json",
         )
 
         self.assertEqual(response.status_code, 200)
+        # Модель принадлежит интеграции: агент получает её default_model.
+        self.assertEqual(response.json()["agent"]["providerIntegrationId"], integration.id)
+        self.assertNotIn("credentialMode", response.json()["agent"])
         agent.refresh_from_db()
-        self.assertEqual(
-            agent.model,
-            "gpt://b1g89tr9t8iedhnl8pgg/yandexgpt-5.1/latest",
-        )
+        self.assertEqual(agent.provider_integration_id, integration.id)
+        self.assertEqual(agent.model, "byok-model")
         self.assertEqual(agent.model_params, {"temperature": 0.3})
         self.assertEqual(agent.tone, "Дружелюбно.")
 
@@ -178,13 +198,30 @@ class AIAgentApiTests(TestCase):
 
     def test_owner_deactivates_and_activates_agent(self) -> None:
         agent = AIAgent.objects.get(channel__code="foxray-sales")
+        integration = _byok_integration(self.organization)
+        agent.provider_integration = integration
+        agent.save(update_fields=["provider_integration"])
 
         deactivated = self.client.post(f"/api/v1/ai/agents/{agent.id}/deactivate/")
         self.assertEqual(deactivated.status_code, 200)
         self.assertFalse(deactivated.json()["agent"]["isActive"])
 
         activated = self.client.post(f"/api/v1/ai/agents/{agent.id}/activate/")
+        self.assertEqual(activated.status_code, 200)
         self.assertTrue(activated.json()["agent"]["isActive"])
+
+    def test_activation_without_provider_integration_is_rejected(self) -> None:
+        # Активация требует выбранного провайдера организации (ADR-HUB-0042 §2);
+        # деактивация свободна.
+        agent = AIAgent.objects.get(channel__code="foxray-sales")
+        self.client.post(f"/api/v1/ai/agents/{agent.id}/deactivate/")
+
+        response = self.client.post(f"/api/v1/ai/agents/{agent.id}/activate/")
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("провайдера", response.json()["detail"])
+        agent.refresh_from_db()
+        self.assertFalse(agent.is_active)
 
     def test_update_rejects_invalid_model_params(self) -> None:
         agent = AIAgent.objects.get(channel__code="firepage-sales")
@@ -479,7 +516,15 @@ class ChatInvocationTests(TestCase):
         invocation = LlmInvocation.objects.get(channel=self.channel, operation="chat")
         self.assertEqual(invocation.status, LlmInvocationStatus.SUCCESS)
         self.assertGreater(invocation.total_tokens, 0)
-        self.assertEqual(invocation.cost_micros, 0)
+        # Технический учёт стоимости (ADR-HUB-0042 §2): считается по прайсу модели.
+        from hub_platform.ai import pricing
+
+        self.assertEqual(
+            invocation.cost_micros,
+            pricing.cost_micros(
+                invocation.model, invocation.prompt_tokens, invocation.completion_tokens
+            ),
+        )
 
     def test_pii_is_redacted_before_reaching_provider(self) -> None:
         from unittest import mock

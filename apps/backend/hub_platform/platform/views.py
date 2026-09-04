@@ -12,7 +12,6 @@ from hub_platform.platform.payloads import owner_state_for, provisioning_result_
 from hub_platform.platform.permissions import HasPlatformCapability
 from hub_platform.platform.provisioning_service import provision_organization
 from hub_platform.platform.validation import parse_provisioning_body
-from hub_platform.subscriptions.models import Subscription
 
 _IDEMPOTENCY_HEADER = "Idempotency-Key"
 
@@ -44,14 +43,12 @@ class OrganizationProvisionView(APIView):
             result = provision_organization(command=command, operator=request.user)
         except ProvisioningError as error:
             return Response({"detail": str(error)}, status=error.status_code)
-        subscription = Subscription.objects.filter(organization=result.organization).first()
         owner_membership = OrganizationMembership.objects.filter(
             organization=result.organization, role=EmployeeRole.OWNER
         ).first()
         payload = provisioning_result_payload(
             provisioning=result.provisioning,
             organization=result.organization,
-            subscription=subscription,
             owner_state=owner_state_for(result.organization, owner_membership),
         )
         status_code = 201 if result.created else 200

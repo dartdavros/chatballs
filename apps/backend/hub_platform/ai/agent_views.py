@@ -3,7 +3,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from hub_platform.ai.models import AIAgent, CredentialMode
+from hub_platform.ai.models import AIAgent
 from hub_platform.ai.selectors import (
     agent_for_employee,
     agents_for_employee,
@@ -20,11 +20,6 @@ from hub_platform.ai.services import (
 from hub_platform.api.permissions import HasCapability
 from hub_platform.channels.models import Channel
 from hub_platform.identity.audit import record_audit_event
-from hub_platform.subscriptions.errors import (
-    PolicyUnavailable,
-    QuotaExceeded,
-    SubscriptionDomainError,
-)
 
 
 def _agent_input(body: dict[str, object], *, current: AIAgent) -> AgentInput:
@@ -50,9 +45,6 @@ def _agent_input(body: dict[str, object], *, current: AIAgent) -> AgentInput:
         raise ValidationError({"providerIntegrationId": "Integer id required"})
     return AgentInput(
         name=str(body.get("name", current.name)).strip() or current.name,
-        credential_mode=str(
-            body.get("credentialMode", current.credential_mode)
-        ).strip(),
         provider_integration_id=provider_integration_id,
         model_params=model_params,
         allowed_tools=allowed_tools,
@@ -103,9 +95,6 @@ class AIAgentListView(APIView):
                 context=request.tenant_context,
                 data=AgentCreateInput(
                     channel_code=channel_code,
-                    credential_mode=str(
-                        request.data.get("credentialMode", CredentialMode.CUSTOAI)
-                    ).strip(),
                     provider_integration_id=request.data.get("providerIntegrationId"),
                     persona=str(request.data.get("persona", "")),
                     tone=str(request.data.get("tone", "")),
@@ -202,24 +191,8 @@ class _AIAgentStatusView(APIView):
                 agent=agent,
                 is_active=self.target_active,
             )
-        except QuotaExceeded as error:
-            return Response(
-                {
-                    "code": error.code,
-                    "resource": error.resource,
-                    "limit": error.limit,
-                    "used": error.used,
-                    "requested": error.requested,
-                    "period_ends_at": (
-                        error.period_ends_at.isoformat() if error.period_ends_at else None
-                    ),
-                },
-                status=409,
-            )
-        except PolicyUnavailable as error:
-            return Response({"code": error.code}, status=503)
-        except SubscriptionDomainError as error:
-            return Response({"code": error.code}, status=409)
+        except ValidationError as error:
+            return _validation_error(error)
         return Response({"agent": agent_payload(agent)})
 
 

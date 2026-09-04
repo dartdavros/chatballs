@@ -6,7 +6,6 @@
     "timezone": "Europe/Moscow",
     "currency": "RUB"
   },
-  "aiAgentSlots": 5,
   "accounts": [
     {
       "key": "owner",
