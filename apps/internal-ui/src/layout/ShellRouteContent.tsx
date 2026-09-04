@@ -58,6 +58,8 @@ export function ShellRouteContent({ chatScope, setChatScope, chatCounters, chatS
           setScope={setChatScope}
           counters={chatCounters}
           showScopeSwitcher={chatScopeSwitcher}
+          setRoute={setRoute}
+          onLogout={onLogout}
         />
       )}
       {route === "agents" && <AgentsPage agents={data.agents} groups={data.groups} reload={reload} openAgent={openAgent} />}

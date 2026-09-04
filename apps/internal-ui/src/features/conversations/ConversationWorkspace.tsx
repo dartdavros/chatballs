@@ -45,11 +45,12 @@ import { useIncomingMessageSound } from "./useIncomingMessageSound";
 // Общий workspace диалогов (SPEC-HUB-0010 §8.2). Видимость inbox решает
 // backend по группам (ADR-HUB-0043); страница параметризуется заголовком,
 // placeholder поиска и правой панелью через render-prop.
-export function ConversationWorkspace({ isOwner = false, listTitle, searchPlaceholder, renderContextPanel, initialConversationId, scope, setScope, counters, showScopeSwitcher = true }: {
+export function ConversationWorkspace({ isOwner = false, listTitle, searchPlaceholder, renderContextPanel, mobileHeader, initialConversationId, scope, setScope, counters, showScopeSwitcher = true }: {
   isOwner?: boolean;
   listTitle?: string;
   searchPlaceholder?: string;
   renderContextPanel: (ctx: { dialog: ConversationListItem | null; detail: ApiConversation | null; applyConversation: (updated: ApiConversation) => void }) => ReactNode;
+  mobileHeader?: ReactNode;
   initialConversationId?: number | null;
   // Охват (дерево фильтров) живёт в Shell: у сотрудника им управляет сайдбар,
   // у менеджера — поповер в заголовке списка.
@@ -61,6 +62,8 @@ export function ConversationWorkspace({ isOwner = false, listTitle, searchPlaceh
   const [listTab, setListTab] = useState<ListTab>("all");
   // Кадр S2: на ≤1024px контекст-панель — выдвижная поверх ленты.
   const [ctxOpen, setCtxOpen] = useState(false);
+  // Кадры M1/M2: на ≤768px список и лента — отдельные экраны.
+  const [mobileDialogOpen, setMobileDialogOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [conversations, setConversations] = useState<ApiConversation[]>([]);
   const [listLoaded, setListLoaded] = useState(false);
@@ -174,7 +177,7 @@ export function ConversationWorkspace({ isOwner = false, listTitle, searchPlaceh
   };
 
   return (
-    <div className={`sales-dialogs ${ctxOpen ? "is-ctx-open" : ""}`}>
+    <div className={`sales-dialogs ${ctxOpen ? "is-ctx-open" : ""} ${mobileDialogOpen ? "is-mobile-dialog" : ""}`}>
       <DialogList
         scope={scope}
         counters={counters}
@@ -190,10 +193,14 @@ export function ConversationWorkspace({ isOwner = false, listTitle, searchPlaceh
         errorText={listError}
         setSearch={setSearch}
         setListTab={setListTab}
-        setSelectedId={setSelectedId}
+        setSelectedId={(id) => {
+          setSelectedId(id);
+          setMobileDialogOpen(true);
+        }}
+        mobileHeader={mobileHeader}
       />
       <section className="sales-conversation">
-        <ConversationThread controlMode={controlMode} dialog={selectedDialog} detail={detail} isOwner={isOwner} onClaim={onClaim} onCall={(kind) => void callController.start(kind)} onClose={onClose} onSpam={onSpam} onReturnQueue={onReturnQueue} onArchive={onArchive} onToggleContext={() => setCtxOpen((open) => !open)} />
+        <ConversationThread controlMode={controlMode} dialog={selectedDialog} detail={detail} isOwner={isOwner} onClaim={onClaim} onCall={(kind) => void callController.start(kind)} onClose={onClose} onSpam={onSpam} onReturnQueue={onReturnQueue} onArchive={onArchive} onToggleContext={() => setCtxOpen((open) => !open)} onMobileBack={() => setMobileDialogOpen(false)} />
         {(detailError || actionError) && <div className="sales-conversation-error">{detailError || actionError}</div>}
         <CallOverlay
           open={callController.open}

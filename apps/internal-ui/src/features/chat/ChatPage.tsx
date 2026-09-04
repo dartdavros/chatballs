@@ -1,5 +1,7 @@
 import { useState, type ReactNode } from "react";
 
+import { ChatMobileHeader } from "../../layout/ChatMobileHeader";
+
 import { ConversationWorkspace, type DialogScope } from "../conversations/ConversationWorkspace";
 import { DialogControls } from "../conversations/DialogControls";
 import type { ApiConversation, ConversationCounters } from "../conversations/model";
@@ -8,7 +10,7 @@ import { ClientContext } from "../sales/dialogs/context/ClientContext";
 import { HistoryContext } from "../sales/dialogs/context/HistoryContext";
 import { OperatorCards } from "../support/context/OperatorCards";
 import { SupportHistory } from "../support/context/SupportHistory";
-import type { EmployeeGroup, SessionUser } from "../../types";
+import type { EmployeeGroup, RouteKey, SessionUser } from "../../types";
 
 // Единый «Чат» (дизайн-базлайн v2 §8.1): один экран для всех диалогов
 // организации. Контекст-панель сама выбирает представление по источнику
@@ -25,6 +27,8 @@ export function ChatPage({
   setScope,
   counters,
   showScopeSwitcher,
+  setRoute,
+  onLogout,
 }: {
   initialConversationId?: number | null;
   user: SessionUser;
@@ -34,6 +38,8 @@ export function ChatPage({
   setScope: (scope: DialogScope) => void;
   counters: ConversationCounters | null;
   showScopeSwitcher: boolean;
+  setRoute: (route: RouteKey) => void;
+  onLogout: () => void;
 }) {
   const [rightTab, setRightTab] = useState<ChatRightTab>("client");
   return (
@@ -44,6 +50,7 @@ export function ChatPage({
       setScope={setScope}
       counters={counters}
       showScopeSwitcher={showScopeSwitcher}
+      mobileHeader={<ChatMobileHeader user={user} setRoute={setRoute} onLogout={onLogout} />}
       renderContextPanel={({ dialog, detail, applyConversation }) => (
         <ChatContextPanel
           rightTab={rightTab}

@@ -10,13 +10,14 @@ import type { ConversationCounters } from "./model";
 import type { ConversationListItem, ListTab } from "./types";
 import { SearchInput } from "../../shared/ui-controls";
 
-export function DialogList({ title = "Диалоги", searchPlaceholder = "Поиск по клиенту, продукту…", scope, counters, setScope, showScopeSwitcher = true, dialogs, filtered, listTab, selectedId, search, errorText, setSearch, setListTab, setSelectedId }: {
+export function DialogList({ title = "Диалоги", searchPlaceholder = "Поиск по клиенту, продукту…", scope, counters, setScope, showScopeSwitcher = true, mobileHeader, dialogs, filtered, listTab, selectedId, search, errorText, setSearch, setListTab, setSelectedId }: {
   title?: string;
   searchPlaceholder?: string;
   scope: DialogScope;
   counters: ConversationCounters | null;
   setScope: (scope: DialogScope) => void;
   showScopeSwitcher?: boolean;
+  mobileHeader?: ReactNode;
   dialogs: ConversationListItem[];
   filtered: ConversationListItem[];
   listTab: ListTab;
@@ -30,6 +31,7 @@ export function DialogList({ title = "Диалоги", searchPlaceholder = "По
   const waitCount = dialogs.filter((dialog) => dialog.mode === "wait").length;
   return (
     <section className="sales-dialog-list">
+      {mobileHeader}
       <div className="sales-dialog-list-head">
         <div>
           {showScopeSwitcher
@@ -46,6 +48,8 @@ export function DialogList({ title = "Диалоги", searchPlaceholder = "По
       </div>
       <div className="sales-dialog-list-body">
         {errorText && <div className="sales-wait-note sales-load-error">{errorText}</div>}
+        {/* Кадр S1: пустой список без призыва к действию. */}
+        {!errorText && dialogs.length === 0 && <div className="sales-wait-note">Диалоги появятся, когда клиенты напишут вашему агенту</div>}
         {filtered.map((dialog) => <DialogListItem dialog={dialog} active={dialog.id === selectedId} setSelectedId={setSelectedId} key={dialog.id} />)}
       </div>
     </section>

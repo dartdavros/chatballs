@@ -95,7 +95,7 @@ export function Shell({ route, setRoute, selectedEmployeeId, selectedProductCode
   const isKnowledgeLibrary = route === "aiKnowledge";
   const isKnowledgeEditor = route === "aiKnowledgeCreate" || route === "aiKnowledgeDetail";
   return (
-    <div className="hub-shell">
+    <div className={`hub-shell ${isDialogsWorkspace ? "is-chat-route" : ""}`}>
       <Sidebar route={route} user={user} setRoute={setRoute} onLogout={onLogout} waitingCount={waitingCount} chatScope={chatScope.scope} setChatScope={chatScope.setScope} chatCounters={chatScope.counters} />
       <div className="hub-main">
         {/* У сотрудника верхней панели нет (дизайн-базлайн v2 §4.1). */}

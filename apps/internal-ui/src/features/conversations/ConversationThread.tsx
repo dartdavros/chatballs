@@ -15,7 +15,7 @@ function fmtTime(value: string): string {
   return new Date(value).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
 }
 
-export function ConversationThread({ controlMode, dialog, detail, isOwner = false, onClaim, onCall, onClose, onSpam, onReturnQueue, onArchive, onToggleContext }: { controlMode: ControlMode; dialog: ConversationListItem | null; detail: ApiConversation | null; isOwner?: boolean; onClaim: () => void; onCall: (kind: "AUDIO" | "VIDEO") => void; onClose: () => void; onSpam: () => Promise<boolean>; onReturnQueue: () => void; onArchive: () => Promise<boolean>; onToggleContext?: () => void }) {
+export function ConversationThread({ controlMode, dialog, detail, isOwner = false, onClaim, onCall, onClose, onSpam, onReturnQueue, onArchive, onToggleContext, onMobileBack }: { controlMode: ControlMode; dialog: ConversationListItem | null; detail: ApiConversation | null; isOwner?: boolean; onClaim: () => void; onCall: (kind: "AUDIO" | "VIDEO") => void; onClose: () => void; onSpam: () => Promise<boolean>; onReturnQueue: () => void; onArchive: () => Promise<boolean>; onToggleContext?: () => void; onMobileBack?: () => void }) {
   const timelineRef = useRef<HTMLDivElement>(null);
   const messages = detail?.messages ?? [];
   const lastMessageId = messages.length ? messages[messages.length - 1].id : 0;
@@ -34,6 +34,8 @@ export function ConversationThread({ controlMode, dialog, detail, isOwner = fals
   return (
     <>
       <div className="sales-conversation-head">
+        {/* Кадр M2: на мобильном лента — отдельный экран, назад к списку. */}
+        {onMobileBack && <button className="mobile-back" type="button" aria-label="К списку диалогов" onClick={onMobileBack}><Icon name="arrow" size={19} /></button>}
         <div className="sales-conversation-person">
           <ContactAvatar avatarUrl={dialog.avatarUrl} initials={dialog.initials} background={dialog.avatarBg} className="sales-conversation-avatar" />
           <div>
