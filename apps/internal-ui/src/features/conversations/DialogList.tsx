@@ -1,14 +1,21 @@
+import { Dropdown } from "antd";
 import type { ReactNode } from "react";
 
 import { modeDots } from "./data";
 import { ContactAvatar } from "./ContactAvatar";
+import { Icon } from "../../shared/icons";
 import { providerMeta } from "../../shared/providers";
+import { scopeLabel, type DialogScope } from "./ConversationWorkspace";
+import type { ConversationCounters } from "./model";
 import type { ConversationListItem, ListTab } from "./types";
 import { SearchInput } from "../../shared/ui-controls";
 
-export function DialogList({ title = "Диалоги", searchPlaceholder = "Поиск по клиенту, продукту…", dialogs, filtered, listTab, selectedId, search, errorText, setSearch, setListTab, setSelectedId }: {
+export function DialogList({ title = "Диалоги", searchPlaceholder = "Поиск по клиенту, продукту…", scope, counters, setScope, dialogs, filtered, listTab, selectedId, search, errorText, setSearch, setListTab, setSelectedId }: {
   title?: string;
   searchPlaceholder?: string;
+  scope: DialogScope;
+  counters: ConversationCounters | null;
+  setScope: (scope: DialogScope) => void;
   dialogs: ConversationListItem[];
   filtered: ConversationListItem[];
   listTab: ListTab;
@@ -23,7 +30,10 @@ export function DialogList({ title = "Диалоги", searchPlaceholder = "По
   return (
     <section className="sales-dialog-list">
       <div className="sales-dialog-list-head">
-        <div><h2>{title}</h2><span>{dialogs.length} всего</span></div>
+        <div>
+          <ScopeSwitcher scope={scope} counters={counters} setScope={setScope} fallbackTitle={title} />
+          <span>{dialogs.length} всего</span>
+        </div>
         <SearchInput className="sales-dialog-search" placeholder={searchPlaceholder} value={search} onChange={setSearch} />
       </div>
       <div className="sales-dialog-tabs">
@@ -83,5 +93,57 @@ export function PriorityBars({ priority }: { priority: "HIGH" | "MEDIUM" | "LOW"
         <i key={height} style={{ height, background: index < on ? color : "var(--n-7)" }} />
       ))}
     </span>
+  );
+}
+
+// Переключатель охвата (дизайн-базлайн v2 A1): Все диалоги · Группы · Агенты.
+// Дерево фильтров живёт в заголовке списка, сайдбар остаётся плоским.
+function ScopeSwitcher({ scope, counters, setScope, fallbackTitle }: { scope: DialogScope; counters: ConversationCounters | null; setScope: (scope: DialogScope) => void; fallbackTitle: string }) {
+  if (!counters || (counters.groups.length === 0 && counters.agents.length <= 1)) {
+    return <h2>{scope.kind === "all" ? fallbackTitle : scopeLabel(scope)}</h2>;
+  }
+  const items = [
+    {
+      key: "all",
+      label: <button type="button" onClick={() => setScope({ kind: "all" })}><Icon name="box" size={15} />Все диалоги<small>{counters.all}</small></button>,
+    },
+    ...(counters.groups.length > 0
+      ? [
+          { key: "groups-head", type: "group" as const, label: "ГРУППЫ" },
+          ...counters.groups.map((group) => ({
+            key: `group-${group.id}`,
+            label: (
+              <button type="button" onClick={() => setScope({ kind: "group", id: group.id, label: group.name })}>
+                <i className="scope-dot" />{group.name}<small>{group.count}</small>
+              </button>
+            ),
+          })),
+          {
+            key: "ungrouped",
+            label: <button type="button" onClick={() => setScope({ kind: "ungrouped" })}><i className="scope-dot is-muted" />Без группы<small>{counters.ungrouped}</small></button>,
+          },
+        ]
+      : []),
+    ...(counters.agents.length > 0
+      ? [
+          { key: "agents-head", type: "group" as const, label: "АГЕНТЫ" },
+          ...counters.agents.map((agent) => ({
+            key: `agent-${agent.id}`,
+            label: (
+              <button type="button" onClick={() => setScope({ kind: "agent", id: agent.id, label: agent.name })}>
+                <Icon name="robot" size={14} />{agent.name}<small>{agent.count}</small>
+              </button>
+            ),
+          })),
+        ]
+      : []),
+  ];
+  return (
+    <Dropdown menu={{ items }} trigger={["click"]} placement="bottomLeft" overlayClassName="app-dropdown scope-dropdown">
+      <button className="sales-scope-switcher" type="button">
+        <h2>{scope.kind === "all" ? fallbackTitle : scopeLabel(scope)}</h2>
+        <Icon name="chevron" size={14} />
+      </button>
+    </Dropdown>
   );
 }

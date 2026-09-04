@@ -142,3 +142,80 @@
   font-size: 13px;
   font-weight: 600;
 }
+
+/* --- Шаблоны ответов «/» (дизайн-базлайн v2 §9) --- */
+
+.sales-message-input {
+  position: relative;
+}
+
+.composer-templates-button {
+  flex: none;
+  align-self: flex-end;
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-tertiary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.composer-templates-button:hover {
+  background: var(--n-9);
+  color: var(--text-body);
+}
+
+.composer-templates-menu {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(100% + 6px);
+  z-index: 6;
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 5px;
+  border: 1px solid var(--border-default);
+  border-radius: 10px;
+  background: var(--surface-card);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+.composer-templates-menu p {
+  margin: 0;
+  padding: 8px 10px;
+  color: var(--text-tertiary);
+  font-size: 12.5px;
+}
+
+.composer-templates-menu button {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 7px 10px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.composer-templates-menu button:hover {
+  background: var(--n-9);
+}
+
+.composer-templates-menu strong {
+  color: var(--text-body);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.composer-templates-menu small {
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+}

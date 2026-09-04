@@ -1,6 +1,7 @@
 import type { RouteKey, SessionUser } from "../types";
 import { Icon, LogoIcon } from "../shared/icons";
-import { canAccess, defaultRoute } from "../auth/access";
+import { canAccess, defaultRoute, isManager } from "../auth/access";
+import { LaunchChecklist } from "./LaunchChecklist";
 import { SidebarNavSection, type SidebarNavSectionItem } from "./SidebarNavSection";
 import { SidebarUserMenu } from "./SidebarUserMenu";
 
@@ -75,6 +76,7 @@ export function Sidebar({ route, user, setRoute, onLogout, waitingCount = 0 }: {
   const supportItems = visibleItems(user, SUPPORT_ITEMS);
   const aiItems = visibleItems(user, AI_ITEMS);
   const administrationItems = visibleItems(user, ADMINISTRATION_ITEMS);
+  const isManagerUser = isManager(user);
 
   return (
     <aside className="hub-sidebar">
@@ -106,6 +108,7 @@ export function Sidebar({ route, user, setRoute, onLogout, waitingCount = 0 }: {
           storageKey={sectionStorageKey("administration")}
         />
       </nav>
+      {isManagerUser && <LaunchChecklist user={user} setRoute={setRoute} />}
       <SidebarUserMenu user={user} route={route} setRoute={setRoute} onLogout={onLogout} />
     </aside>
   );

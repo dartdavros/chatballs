@@ -9,6 +9,7 @@ import {
   closeConversation,
   controlModeOf,
   fetchConversation,
+  fetchConversationCounters,
   fetchConversations,
   markConversationAsSpam,
   releaseConversation,
@@ -16,7 +17,28 @@ import {
   returnToQueue,
   toConversationListItem,
   type ApiConversation,
+  type ConversationCounters,
+  type ConversationListFilters,
 } from "./model";
+export type DialogScope =
+  | { kind: "all" }
+  | { kind: "group"; id: number; label: string }
+  | { kind: "ungrouped" }
+  | { kind: "agent"; id: number; label: string };
+
+function scopeFilters(scope: DialogScope): ConversationListFilters {
+  if (scope.kind === "group") return { group: String(scope.id) };
+  if (scope.kind === "ungrouped") return { group: "none" };
+  if (scope.kind === "agent") return { agent: scope.id };
+  return {};
+}
+
+export function scopeLabel(scope: DialogScope): string {
+  if (scope.kind === "group") return scope.label;
+  if (scope.kind === "ungrouped") return "Без группы";
+  if (scope.kind === "agent") return scope.label;
+  return "Все диалоги";
+}
 import type { ConversationListItem, ListTab } from "./types";
 import { useConversationCall } from "./useConversationCall";
 import { useIncomingMessageSound } from "./useIncomingMessageSound";
@@ -32,6 +54,8 @@ export function ConversationWorkspace({ isOwner = false, listTitle, searchPlaceh
   initialConversationId?: number | null;
 }) {
   const [listTab, setListTab] = useState<ListTab>("all");
+  const [scope, setScope] = useState<DialogScope>({ kind: "all" });
+  const [counters, setCounters] = useState<ConversationCounters | null>(null);
   const [search, setSearch] = useState("");
   const [conversations, setConversations] = useState<ApiConversation[]>([]);
   const [listLoaded, setListLoaded] = useState(false);
@@ -45,7 +69,7 @@ export function ConversationWorkspace({ isOwner = false, listTitle, searchPlaceh
 
   const loadList = useCallback(async () => {
     try {
-      const items = await fetchConversations();
+      const items = await fetchConversations(scopeFilters(scope));
       setConversations(items);
       setListLoaded(true);
       setListError("");
@@ -53,7 +77,7 @@ export function ConversationWorkspace({ isOwner = false, listTitle, searchPlaceh
     } catch {
       setListError("Не удалось обновить список диалогов");
     }
-  }, []);
+  }, [scope]);
 
   const loadDetail = useCallback(async (id: number) => {
     try {
@@ -74,6 +98,23 @@ export function ConversationWorkspace({ isOwner = false, listTitle, searchPlaceh
     const timer = setInterval(loadList, 4000);
     return () => clearInterval(timer);
   }, [loadList]);
+
+  // Счётчики дерева охвата (группы/агенты) обновляются реже списка.
+  useEffect(() => {
+    let cancelled = false;
+    const load = () =>
+      fetchConversationCounters()
+        .then((payload) => {
+          if (!cancelled) setCounters(payload);
+        })
+        .catch(() => undefined);
+    void load();
+    const timer = setInterval(load, 30000);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, []);
 
   useEffect(() => {
     if (initialConversationId != null) setSelectedId(initialConversationId);
@@ -143,6 +184,9 @@ export function ConversationWorkspace({ isOwner = false, listTitle, searchPlaceh
   return (
     <div className="sales-dialogs">
       <DialogList
+        scope={scope}
+        counters={counters}
+        setScope={setScope}
         title={listTitle}
         searchPlaceholder={searchPlaceholder}
         dialogs={dialogs}

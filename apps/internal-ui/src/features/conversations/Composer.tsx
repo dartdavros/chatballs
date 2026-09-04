@@ -1,13 +1,36 @@
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Icon } from "../../shared/icons";
-import { sendOperatorMessage } from "./model";
+import { fetchReplyTemplates, sendOperatorMessage, type ReplyTemplateRef } from "./model";
 import type { ControlMode } from "./types";
 
 export function Composer({ mode, loaded, assignedOperatorName, conversationId, onClaim, onRelease, onReturnQueue, onClose, onSent }: { mode: ControlMode; loaded: boolean; assignedOperatorName?: string; conversationId: number | null; onClaim: () => void; onRelease: () => void; onReturnQueue: () => void; onClose: () => void; onSent: () => void }) {
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState("");
+  const [templates, setTemplates] = useState<ReplyTemplateRef[]>([]);
+  const [templatesOpen, setTemplatesOpen] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    fetchReplyTemplates().then(setTemplates).catch(() => setTemplates([]));
+  }, []);
+
+  // Шаблоны «/» (дизайн-базлайн v2 §9): ввод «/» в начале открывает список,
+  // продолжение ввода фильтрует по названию.
+  const slashQuery = text.startsWith("/") ? text.slice(1).trim().toLowerCase() : null;
+  const visibleTemplates = useMemo(() => {
+    if (templates.length === 0) return [];
+    if (slashQuery === null) return templates;
+    return templates.filter((template) => template.title.toLowerCase().includes(slashQuery));
+  }, [templates, slashQuery]);
+  const menuOpen = templatesOpen || (slashQuery !== null && visibleTemplates.length > 0);
+
+  function applyTemplate(template: ReplyTemplateRef) {
+    setText(template.text);
+    setTemplatesOpen(false);
+    textareaRef.current?.focus();
+  }
 
   if (conversationId == null) {
     return <div className="sales-composer"><div className="sales-waiting-composer"><div><strong>Выберите диалог</strong></div></div></div>;
@@ -80,12 +103,42 @@ export function Composer({ mode, loaded, assignedOperatorName, conversationId, o
         <button onClick={onClose}>Закрыть</button>
       </div>
       <div className="sales-message-input">
+        {menuOpen && (
+          <div className="composer-templates-menu">
+            {visibleTemplates.length === 0 && <p>Нет подходящих шаблонов</p>}
+            {visibleTemplates.map((template) => (
+              <button key={template.id} type="button" onMouseDown={(event) => { event.preventDefault(); applyTemplate(template); }}>
+                <strong>{template.title}</strong>
+                <small>{template.text.replace(/\s+/g, " ").slice(0, 80)}</small>
+              </button>
+            ))}
+          </div>
+        )}
+        {templates.length > 0 && (
+          <button
+            className="composer-templates-button"
+            title="Шаблоны ответов · /"
+            type="button"
+            onClick={() => setTemplatesOpen((open) => !open)}
+          >
+            <Icon name="list" size={16} />
+          </button>
+        )}
         <textarea
+          ref={textareaRef}
           rows={1}
-          placeholder="Введите сообщение…"
+          placeholder={templates.length > 0 ? "Введите сообщение… («/» — шаблоны)" : "Введите сообщение…"}
           value={text}
           onChange={(event) => setText(event.target.value)}
-          onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); void send(); } }}
+          onKeyDown={(event) => {
+            if (event.key === "Escape" && menuOpen) { setTemplatesOpen(false); if (slashQuery !== null) setText(""); return; }
+            if (event.key === "Enter" && !event.shiftKey) {
+              if (slashQuery !== null && visibleTemplates.length > 0) { event.preventDefault(); applyTemplate(visibleTemplates[0]); return; }
+              event.preventDefault();
+              void send();
+            }
+          }}
+          onBlur={() => setTemplatesOpen(false)}
         />
         <button onClick={() => void send()} disabled={sending}>Отправить<Icon name="send" size={15} /></button>
       </div>
