@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 
-import { hasCapability, scopeDepartments } from "../../auth/access";
+import { hasCapability } from "../../auth/access";
 import { EmptyState, ErrorScreen, LoadingState } from "../../shared/ui";
-import type { Department, Product, RouteKey, SessionUser } from "../../types";
+import type { EmployeeGroup, Product, RouteKey, SessionUser } from "../../types";
 import { ChannelAgentSection } from "./ChannelAgentSection";
 import { ChannelArchivedNotice } from "./ChannelArchivedNotice";
 import { ChannelAssignmentSection } from "./ChannelAssignmentSection";
@@ -19,10 +19,10 @@ import { useChannelEditor } from "./useChannelEditor";
 import { useChannelDetail } from "./useChannelDetail";
 
 export function ChannelDetailPage({
-  channelId, departments, products, user, setRoute, openAgent, openChannels, onChannelLoaded,
+  channelId, groups, products, user, setRoute, openAgent, openChannels, onChannelLoaded,
 }: {
   channelId: number | null;
-  departments: Department[];
+  groups: EmployeeGroup[];
   products: Product[];
   user: SessionUser;
   setRoute: (route: RouteKey) => void;
@@ -44,23 +44,16 @@ export function ChannelDetailPage({
 
   const { channel } = detail;
   if (!editor.draft) return <LoadingState />;
-  const organizationManage = hasCapability(user, "channels.manage");
-  const canManageCurrent = organizationManage || Boolean(
-    channel.department && hasCapability(user, "channels.manage", channel.department),
-  );
-  const managedDepartments = scopeDepartments(user, "channels.manage");
-  const editableDepartments = organizationManage || managedDepartments === null
-    ? departments
-    : departments.filter((department) => managedDepartments.includes(department.code));
-  const canOpenAgent = hasCapability(user, "ai.view", channel.department ?? undefined);
-  const canOpenDialogs = hasCapability(user, "conversations.view", channel.department ?? undefined);
+  const canEdit = hasCapability(user, "channels.manage");
+  const canOpenAgent = hasCapability(user, "ai.view");
+  const canOpenDialogs = hasCapability(user, "conversations.view");
   const editAccess = {
-    name: canManageCurrent,
-    department: canManageCurrent,
-    product: organizationManage,
-    policy: organizationManage,
+    name: canEdit,
+    group: canEdit,
+    product: canEdit,
+    policy: canEdit,
   };
-  const draftDepartment = departments.find((item) => item.id === editor.draft!.departmentId);
+  const draftGroup = groups.find((item) => item.id === editor.draft!.groupId);
   const draftProduct = products.find((item) => item.id === editor.draft!.productId);
 
   async function saveDraft() {
@@ -73,7 +66,7 @@ export function ChannelDetailPage({
     <div className="channel-detail">
       <ChannelDetailHeader
         channel={channel}
-        canEdit={canManageCurrent}
+        canEdit={canEdit}
         editing={editor.editing}
         busy={detail.busy}
         onEdit={editor.begin}
@@ -86,18 +79,17 @@ export function ChannelDetailPage({
 
       <ChannelAssignmentSection
         channel={channel}
-        departments={editableDepartments}
+        groups={groups}
         products={products}
         editing={editor.editing}
-        canEditName={canManageCurrent}
-        canEditDepartment={canManageCurrent}
-        canEditProduct={organizationManage}
-        allowNoDepartment={organizationManage}
+        canEditName={canEdit}
+        canEditGroup={canEdit}
+        canEditProduct={canEdit}
         name={editor.draft.name}
-        departmentId={editor.draft.departmentId}
+        groupId={editor.draft.groupId}
         productId={editor.draft.productId}
         onNameChange={editor.setName}
-        onDepartmentChange={editor.setDepartmentId}
+        onGroupChange={editor.setGroupId}
         onProductChange={editor.setProductId}
       />
 
@@ -105,9 +97,9 @@ export function ChannelDetailPage({
         policy={editor.draft.policy}
         hasProduct={editor.draft.productId !== null}
         productName={draftProduct?.name ?? "— непродуктовый"}
-        departmentName={draftDepartment?.name ?? "Без отдела"}
+        groupName={draftGroup?.name ?? "Без группы"}
         editing={editor.editing}
-        canManage={organizationManage}
+        canManage={canEdit}
         busy={detail.busy}
         onToggle={(flag: PolicyFlag, value) => editor.setPolicy(flag, value)}
       />
@@ -124,7 +116,7 @@ export function ChannelDetailPage({
         </>
       )}
 
-      {editor.editing && organizationManage && (
+      {editor.editing && canEdit && (
         <ChannelDangerActions
           active={channel.isActive}
           busy={detail.busy}

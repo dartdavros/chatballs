@@ -8,12 +8,8 @@ from hub_platform.testing import TenantAPIClient as APIClient
 from hub_platform.ai.models import AIAgent, AIAgentStatus
 from hub_platform.channels.models import Channel
 from hub_platform.identity.bootstrap import bootstrap_edevs_owner
-from hub_platform.identity.capabilities import ScopeType
+from hub_platform.identity.group_models import EmployeeGroup
 from hub_platform.identity.models import (
-    AccessProfile,
-    AccessProfileCapability,
-    Department,
-    EmployeeAccessAssignment,
     EmployeeRole,
     HumanUser,
     Organization,
@@ -64,10 +60,8 @@ class ChannelApiTestCase(TestCase):
     def setUp(self) -> None:
         bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
         self.organization = Organization.objects.get(slug="edevs")
-        self.sales = Department.objects.get(organization=self.organization, code="sales")
-        self.support = Department.objects.get(
-            organization=self.organization, code="support"
-        )
+        self.operators = self.organization.employee_groups.get(name="Операторы")
+        self.support_group = self.organization.employee_groups.get(name="Поддержка")
         self.product = Product.objects.get(organization=self.organization, code="foxray")
         self.client = APIClient()
         self.client.login(username="owner@edevs.tech", password="temporary-password")
@@ -76,7 +70,7 @@ class ChannelApiTestCase(TestCase):
         body = {
             "code": "partners",
             "name": "Партнёрская линия",
-            "departmentId": None,
+            "groupId": None,
             "productId": None,
             "policyPreset": "CUSTOM",
             "policy": OPERATOR_POLICY,
@@ -123,7 +117,7 @@ class ChannelCreateTests(ChannelApiTestCase):
             code="foxray-sales",
             name="FoxRay — продажи",
             productId=self.product.id,
-            departmentId=self.sales.id,
+            groupId=self.operators.id,
             policyPreset="SALES",
             policy=None,
         )
@@ -138,7 +132,7 @@ class ChannelCreateTests(ChannelApiTestCase):
                     "code": "foxray-sales",
                     "name": "FoxRay — продажи",
                     "productId": self.product.id,
-                    "departmentId": self.sales.id,
+                    "groupId": self.operators.id,
                     "policyPreset": "SALES",
                 }
             ),
@@ -358,7 +352,7 @@ class ChannelListTests(ChannelApiTestCase):
         super().setUp()
         self.sales_channel = _make_channel(
             self.organization, code="foxray-sales", name="FoxRay — продажи",
-            department=self.sales, product=self.product,
+            group=self.operators, product=self.product,
         )
         self.orphan = _make_channel(self.organization, code="edevs", name="Edevs — сайт")
         self.archived = _make_channel(
@@ -372,10 +366,10 @@ class ChannelListTests(ChannelApiTestCase):
         codes = {item["code"] for item in response.json()["items"]}
         self.assertEqual(codes, {"foxray-sales", "edevs", "old"})
 
-    def test_filters_by_department_product_and_status(self) -> None:
+    def test_filters_by_group_product_and_status(self) -> None:
         cases = (
-            ({"department": "none"}, {"edevs", "old"}),
-            ({"department": str(self.sales.id)}, {"foxray-sales"}),
+            ({"group": "none"}, {"edevs", "old"}),
+            ({"group": str(self.operators.id)}, {"foxray-sales"}),
             ({"product": "none"}, {"edevs", "old"}),
             ({"isActive": "false"}, {"old"}),
             ({"hasAgent": "false"}, {"foxray-sales", "edevs", "old"}),
@@ -407,126 +401,42 @@ class ChannelListTests(ChannelApiTestCase):
         self.assertEqual(count_queries(), baseline)
 
 
-class ChannelScopeTests(ChannelApiTestCase):
-    """§5.2 — department-scoped доступ."""
+class ChannelGroupTests(ChannelApiTestCase):
+    """Канал закрепляется за настраиваемой группой (ADR-HUB-0043 §3)."""
 
     def setUp(self) -> None:
         super().setUp()
-        self.sales_channel = _make_channel(
+        self.channel = _make_channel(
             self.organization, code="foxray-sales", name="FoxRay — продажи",
-            department=self.sales, product=self.product,
-        )
-        self.support_channel = _make_channel(
-            self.organization, code="foxray-support", name="FoxRay — поддержка",
-            department=self.support, product=self.product,
-        )
-        self.orphan = _make_channel(self.organization, code="edevs", name="Edevs — сайт")
-
-        user = HumanUser.objects.create_user(
-            email="sales.lead@edevs.tech", password="Operator-Local-2026"
-        )
-        self.employee = OrganizationMembership.objects.create(
-            user=user,
-            organization=self.organization,
-            role=EmployeeRole.EMPLOYEE,
-            position_title="Руководитель продаж",
-            primary_department=self.sales,
-        )
-        profile = AccessProfile.objects.create(
-            organization=self.organization, name="Channel manager"
-        )
-        for code in ("channels.view", "channels.manage"):
-            AccessProfileCapability.objects.create(
-                access_profile=profile, capability_code=code
-            )
-        owner = self.organization.memberships.get(role=EmployeeRole.OWNER)
-        EmployeeAccessAssignment.objects.create(
-            employee=self.employee,
-            access_profile=profile,
-            scope_type=ScopeType.DEPARTMENT,
-            department=self.sales,
-            assigned_by=owner,
-        )
-        self.scoped = APIClient()
-        self.scoped.login(
-            username="sales.lead@edevs.tech", password="Operator-Local-2026"
+            group=self.operators, product=self.product,
         )
 
-    def test_list_hides_other_departments_and_orphan_channels(self) -> None:
-        response = self.scoped.get("/api/v1/channels/")
+    def test_payload_exposes_group_reference(self) -> None:
+        response = self.client.get(f"/api/v1/channels/{self.channel.id}/")
 
-        codes = {item["code"] for item in response.json()["items"]}
-        self.assertEqual(codes, {"foxray-sales"})
+        channel = response.json()["channel"]
+        self.assertEqual(channel["groupId"], self.operators.id)
+        self.assertEqual(channel["groupName"], "Операторы")
 
-    def test_channel_outside_scope_is_not_found(self) -> None:
-        for channel in (self.support_channel, self.orphan):
-            with self.subTest(code=channel.code):
-                response = self.scoped.get(f"/api/v1/channels/{channel.id}/")
-                self.assertEqual(response.status_code, 404)
+    def test_manager_moves_channel_between_groups_and_detaches(self) -> None:
+        moved = self.patch_channel(self.channel.id, groupId=self.support_group.id)
+        self.assertEqual(moved.status_code, 200)
+        self.channel.refresh_from_db()
+        self.assertEqual(self.channel.group_id, self.support_group.id)
 
-    def test_scoped_manager_renames_own_channel(self) -> None:
-        response = self.scoped.patch(
-            f"/api/v1/channels/{self.sales_channel.id}/",
-            data=json.dumps({"name": "FoxRay — продажи RU"}),
-            content_type="application/json",
-        )
-        self.assertEqual(response.status_code, 200)
+        detached = self.patch_channel(self.channel.id, groupId=None)
+        self.assertEqual(detached.status_code, 200)
+        self.channel.refresh_from_db()
+        self.assertIsNone(self.channel.group_id)
 
-    def test_scoped_manager_cannot_change_product_policy_or_status(self) -> None:
-        for body in (
-            {"productId": None},
-            {"isActive": False},
-            {"policy": {"allowCheckoutActions": True}},
-        ):
-            with self.subTest(body=body):
-                response = self.scoped.patch(
-                    f"/api/v1/channels/{self.sales_channel.id}/",
-                    data=json.dumps(body),
-                    content_type="application/json",
-                )
-                self.assertEqual(response.status_code, 403)
-        self.sales_channel.refresh_from_db()
-        self.assertEqual(self.sales_channel.product_id, self.product.id)
-        self.assertTrue(self.sales_channel.is_active)
+    def test_foreign_organization_group_is_rejected(self) -> None:
+        other = Organization.objects.create(slug="other-group-org", name="Other")
+        foreign = EmployeeGroup.objects.create(organization=other, name="Чужая")
+        response = self.patch_channel(self.channel.id, groupId=foreign.id)
 
-    def test_scoped_manager_cannot_detach_department(self) -> None:
-        # Снятие отдела вывело бы канал из собственной видимости сотрудника.
-        response = self.scoped.patch(
-            f"/api/v1/channels/{self.sales_channel.id}/",
-            data=json.dumps({"departmentId": None}),
-            content_type="application/json",
-        )
-
-        self.assertEqual(response.status_code, 403)
-        self.sales_channel.refresh_from_db()
-        self.assertEqual(self.sales_channel.department_id, self.sales.id)
-
-    def test_scoped_manager_cannot_move_channel_to_foreign_department(self) -> None:
-        response = self.scoped.patch(
-            f"/api/v1/channels/{self.sales_channel.id}/",
-            data=json.dumps({"departmentId": self.support.id}),
-            content_type="application/json",
-        )
-
-        self.assertEqual(response.status_code, 403)
-
-    def test_scoped_manager_cannot_create_or_delete(self) -> None:
-        created = self.scoped.post(
-            "/api/v1/channels/",
-            data=json.dumps(
-                {
-                    "code": "new-line",
-                    "name": "Новая линия",
-                    "departmentId": self.sales.id,
-                    "policy": OPERATOR_POLICY,
-                }
-            ),
-            content_type="application/json",
-        )
-        self.assertEqual(created.status_code, 403)
-
-        deleted = self.scoped.delete(f"/api/v1/channels/{self.sales_channel.id}/")
-        self.assertEqual(deleted.status_code, 403)
+        self.assertEqual(response.status_code, 400)
+        self.channel.refresh_from_db()
+        self.assertEqual(self.channel.group_id, self.operators.id)
 
 
 class ChannelPermissionTests(ChannelApiTestCase):
@@ -543,7 +453,6 @@ class ChannelPermissionTests(ChannelApiTestCase):
             organization=self.organization,
             role=EmployeeRole.EMPLOYEE,
             position_title="Оператор",
-            primary_department=None,
         )
         self.operator_client = APIClient()
         self.operator_client.login(

@@ -1,5 +1,3 @@
-export type KnowledgeVisibility = "ORGANIZATION" | "DEPARTMENTS";
-
 export type KnowledgeCategoryReference = {
   id: number;
   name: string;
@@ -10,12 +8,6 @@ export type KnowledgeCategory = KnowledgeCategoryReference & {
   sortOrder: number;
   isSystem: boolean;
   knowledgeCount: number | null;
-};
-
-export type KnowledgeDepartmentReference = {
-  id: number;
-  code: string;
-  name: string;
 };
 
 export type KnowledgeAttachment = {
@@ -34,8 +26,6 @@ export type KnowledgeItem = {
   description: string;
   content?: string;
   category: KnowledgeCategoryReference;
-  visibility: KnowledgeVisibility;
-  departments: KnowledgeDepartmentReference[];
   isEnabled: boolean;
   attachments: KnowledgeAttachment[];
   agentsCount: number | null;
@@ -47,8 +37,6 @@ export type KnowledgeItem = {
 
 export type KnowledgeListFilters = {
   category?: number;
-  department?: number;
-  visibility?: KnowledgeVisibility;
   isEnabled?: boolean;
   search?: string;
 };
@@ -58,8 +46,6 @@ export type KnowledgeCreateRequest = {
   description?: string;
   content?: string;
   categoryId?: number;
-  visibility?: KnowledgeVisibility;
-  departmentIds?: number[];
   isEnabled?: boolean;
 };
 
@@ -76,12 +62,6 @@ export type KnowledgeCategoryUpdateRequest = Partial<KnowledgeCategoryCreateRequ
 export type KnowledgeBulkMoveRequest = {
   knowledgeIds: number[];
   categoryId: number;
-};
-
-export type KnowledgeBulkVisibilityRequest = {
-  knowledgeIds: number[];
-  visibility: KnowledgeVisibility;
-  departmentIds: number[];
 };
 
 export type KnowledgeBulkResult = {
@@ -109,24 +89,11 @@ export type AgentCategoryKnowledgeSelectionResult = {
   knowledgeIds: number[];
 };
 
-export type KnowledgeScopeConflict = {
-  agent: { id: number; name: string };
-  knowledge: { id: number; title: string };
-};
-
-export type KnowledgeScopeConflictResponse = {
-  code: "agent_knowledge_scope_conflict";
-  detail: string;
-  conflicts: KnowledgeScopeConflict[];
-};
-
 export type KnowledgeImportDocument = {
   title: string;
   description?: string;
   content: string;
   categoryPath?: string[];
-  visibility?: KnowledgeVisibility;
-  departmentCodes?: string[];
 };
 
 export type KnowledgeImportReport = {

@@ -39,7 +39,7 @@ export function SupportPortalDetailPage({
   const [busy, setBusy] = useState(false);
   const [pendingStatus, setPendingStatus] = useState<"DRAFT" | "PUBLISHED" | "ARCHIVED" | null>(null);
   const [actionError, setActionError] = useState("");
-  const canManage = hasCapability(user, "support.operate", "support");
+  const canManage = hasCapability(user, "support.operate");
 
   const load = useCallback(async () => {
     if (!portalId) return;

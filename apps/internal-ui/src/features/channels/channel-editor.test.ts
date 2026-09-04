@@ -14,9 +14,8 @@ const channel: Channel = {
   name: "Партнёрская линия",
   isActive: true,
   product: { id: 7, code: "foxray", name: "FoxRay" },
-  departmentId: 2,
-  department: "sales",
-  departmentName: "Продажи",
+  groupId: 2,
+  groupName: "Продажи",
   agent: null,
   connections: [],
   policy: {
@@ -49,12 +48,12 @@ describe("channel editor", () => {
   it("builds one request according to edit access", () => {
     expect(channelDraftRequest(channelDraft(channel), {
       name: true,
-      department: true,
+      group: true,
       product: false,
       policy: false,
     })).toEqual({
       name: "Партнёрская линия",
-      departmentId: 2,
+      groupId: 2,
     });
   });
 

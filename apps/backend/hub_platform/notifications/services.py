@@ -28,7 +28,6 @@ TYPE_META: dict[str, dict] = {
 def notify(
     *,
     context,
-    department=None,
     type: str,
     audience: str,
     title: str,
@@ -47,11 +46,8 @@ def notify(
         return None
     meta = TYPE_META.get(type, {})
     target_route = meta.get("route", "")
-    if type in {NotificationType.DIALOG_WAITING, NotificationType.DIALOG_NEW_MESSAGE}:
-        target_route = "supportDialogs" if getattr(department, "code", None) == "support" else "salesDialogs"
     notification = Notification.objects.create(
         organization=organization,
-        department=department,
         type=type,
         audience=audience,
         title=title,

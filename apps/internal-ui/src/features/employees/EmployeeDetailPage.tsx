@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { api } from "../../api/client";
-import type { Department, Employee, RouteKey, SessionUser } from "../../types";
+import type { Employee, EmployeeGroup, RouteKey, SessionUser } from "../../types";
 import { EmployeeDetailHeader } from "./EmployeeDetailHeader";
 import { EmployeeDetailRail } from "./EmployeeDetailRail";
 import { EmployeeDetailSections } from "./EmployeeDetailSections";
 import { employeeForm, employeeStatusKey, type EmployeeForm } from "./model";
 
-export function EmployeeDetailPage({ departments, employee, reload, setRoute, user }: {
-  departments: Department[];
+export function EmployeeDetailPage({ groups, employee, reload, setRoute, user }: {
+  groups: EmployeeGroup[];
   employee: Employee;
   reload: () => void;
   setRoute: (route: RouteKey) => void;
@@ -29,7 +29,7 @@ export function EmployeeDetailPage({ departments, employee, reload, setRoute, us
   useEffect(() => { void refresh().catch(() => undefined); }, [refresh]);
   useEffect(() => { setCurrentEmployee(employee); setForm(employeeForm(employee)); setMessage(""); }, [employee]);
 
-  function updateForm(field: keyof EmployeeForm, value: string | boolean) {
+  function updateForm(field: keyof EmployeeForm, value: string | boolean | number[]) {
     setForm((current) => ({ ...current, [field]: value }));
     setMessage("");
   }
@@ -47,11 +47,11 @@ export function EmployeeDetailPage({ departments, employee, reload, setRoute, us
     }
   }
 
-  const readOnlyPrivileged = user.role === "ADMIN" && (currentEmployee.role === "ADMIN" || currentEmployee.role === "OWNER") && !currentEmployee.permissions?.canUpdateProfile;
+  const ownerReadOnly = currentEmployee.role === "OWNER" && user.id !== currentEmployee.id;
   return <div className="employee-detail-page">
-    <EmployeeDetailHeader departments={departments} employee={currentEmployee} form={form} saveEmployee={saveEmployee} saving={saving} setRoute={setRoute} status={status} />
-    {readOnlyPrivileged && <div className="employee-readonly-banner">Привилегированная учётная запись ({currentEmployee.role}). Администратор не может изменять данные, роль, размещение, доступ и security state, блокировать, сбрасывать пароль или завершать сессии этого сотрудника. Эти операции выполняет только владелец.</div>}
+    <EmployeeDetailHeader employee={currentEmployee} form={form} saveEmployee={saveEmployee} saving={saving} setRoute={setRoute} status={status} />
+    {ownerReadOnly && <div className="employee-readonly-banner">Владельца нельзя удалить, заблокировать или сменить ему роль — единственный путь изменения роли владельца это передача владения.</div>}
     {message && <div className="employee-action-message">{message}</div>}
-    <div className="employee-detail-grid"><EmployeeDetailSections blocked={status === "blocked"} departments={departments} employee={currentEmployee} form={form} updateForm={updateForm} /><EmployeeDetailRail employee={currentEmployee} /></div>
+    <div className="employee-detail-grid"><EmployeeDetailSections blocked={status === "blocked"} groups={groups} employee={currentEmployee} form={form} updateForm={updateForm} /><EmployeeDetailRail employee={currentEmployee} /></div>
   </div>;
 }

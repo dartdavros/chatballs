@@ -11,8 +11,7 @@ import { ChannelsPage } from "../features/channels/ChannelsPage";
 import { ChannelDetailPage } from "../features/channels/ChannelDetailPage";
 import { ChannelCreateWizard } from "../features/channels/ChannelCreateWizard";
 import { IntegrationsPage } from "../features/integrations/IntegrationsPage";
-import { DepartmentsPage } from "../features/departments/DepartmentsPage";
-import { AccessProfilesPage, EmployeeDetailPage, EmployeesPage } from "../features/employees/EmployeesPage";
+import { EmployeeDetailPage, EmployeesPage } from "../features/employees/EmployeesPage";
 import { ProfilePage } from "../features/profile/ProfilePage";
 import { SettingsPage } from "../features/settings/SettingsPage";
 import { AdministrationPage } from "../features/administration/AdministrationPage";
@@ -36,11 +35,9 @@ export function ShellRouteContent({ route, data, currentEmployee, selectedProduc
   return (
     <>
       {route === "command" && <CommandCenter data={data} setRoute={setRoute} />}
-      {route === "departments" && <DepartmentsPage data={data} setRoute={setRoute} />}
-      {route === "employees" && <EmployeesPage departments={data.departments} employees={data.employees} reload={reload} openEmployee={openEmployee} setRoute={setRoute} user={user} />}
-      {route === "accessProfiles" && <AccessProfilesPage setRoute={setRoute} />}
-      {route === "employeeDetail" && currentEmployee && <EmployeeDetailPage departments={data.departments} employee={currentEmployee} reload={reload} setRoute={setRoute} user={user} />}
-      {route === "employeeDetail" && !currentEmployee && <EmployeesPage departments={data.departments} employees={data.employees} reload={reload} openEmployee={openEmployee} setRoute={setRoute} user={user} />}
+      {route === "employees" && <EmployeesPage groups={data.groups} employees={data.employees} reload={reload} openEmployee={openEmployee} setRoute={setRoute} user={user} />}
+      {route === "employeeDetail" && currentEmployee && <EmployeeDetailPage groups={data.groups} employee={currentEmployee} reload={reload} setRoute={setRoute} user={user} />}
+      {route === "employeeDetail" && !currentEmployee && <EmployeesPage groups={data.groups} employees={data.employees} reload={reload} openEmployee={openEmployee} setRoute={setRoute} user={user} />}
       {route === "profile" && <ProfilePage user={user} onUserUpdated={onUserUpdated} reload={reload} onLogout={onLogout} />}
       {route === "settings" && <SettingsPage user={user} onUserUpdated={onUserUpdated} reload={reload} />}
       {(route === "administrationOrganization"
@@ -60,12 +57,12 @@ export function ShellRouteContent({ route, data, currentEmployee, selectedProduc
       {route === "aiAgents" && <AiAgentsPage agents={data.agents} reload={reload} openAgentCreate={openAgentCreate} openAgent={openAgent} />}
       {route === "aiAgentCreate" && <AiAgentCreatePage selectedProductCode={selectedProductCode} reload={reload} setRoute={setRoute} openAgent={openAgent} />}
       {route === "aiAgentDetail" && <AiAgentDetailPage agentId={selectedAgentId} openKnowledge={openKnowledge} openChannel={openChannel} onAgentLoaded={onAgentLoaded} setRoute={setRoute} />}
-      {route === "aiKnowledge" && <KnowledgePage departments={data.departments} openAgent={openAgent} openKnowledge={openKnowledge} setRoute={setRoute} user={user} />}
-      {route === "aiKnowledgeCreate" && <KnowledgeCreatePage departments={data.departments} openKnowledge={openKnowledge} setRoute={setRoute} />}
-      {route === "aiKnowledgeDetail" && <KnowledgeDetailPage agents={data.agents} canManage={hasCapability(user, "ai.manage")} departments={data.departments} knowledgeId={selectedKnowledgeId} openAgent={openAgent} setRoute={setRoute} onLoaded={onAgentLoaded} />}
-      {route === "channels" && <ChannelsPage user={user} departments={data.departments} openChannel={openChannel} openChannelCreate={() => setRoute("channelCreate")} openAgent={openAgent} />}
-      {route === "channelDetail" && <ChannelDetailPage channelId={selectedChannelId} departments={data.departments} products={data.products} user={user} setRoute={setRoute} openAgent={openAgent} openChannels={() => setRoute("channels")} onChannelLoaded={onChannelLoaded} />}
-      {route === "channelCreate" && <ChannelCreateWizard departments={data.departments} products={data.products} openChannel={openChannel} openChannels={() => setRoute("channels")} openAgentCreate={() => openAgentCreate(null)} openIntegrations={() => setRoute("integrations")} />}
+      {route === "aiKnowledge" && <KnowledgePage openAgent={openAgent} openKnowledge={openKnowledge} setRoute={setRoute} user={user} />}
+      {route === "aiKnowledgeCreate" && <KnowledgeCreatePage openKnowledge={openKnowledge} setRoute={setRoute} />}
+      {route === "aiKnowledgeDetail" && <KnowledgeDetailPage agents={data.agents} canManage={hasCapability(user, "ai.manage")} knowledgeId={selectedKnowledgeId} openAgent={openAgent} setRoute={setRoute} onLoaded={onAgentLoaded} />}
+      {route === "channels" && <ChannelsPage user={user} groups={data.groups} openChannel={openChannel} openChannelCreate={() => setRoute("channelCreate")} openAgent={openAgent} />}
+      {route === "channelDetail" && <ChannelDetailPage channelId={selectedChannelId} groups={data.groups} products={data.products} user={user} setRoute={setRoute} openAgent={openAgent} openChannels={() => setRoute("channels")} onChannelLoaded={onChannelLoaded} />}
+      {route === "channelCreate" && <ChannelCreateWizard groups={data.groups} products={data.products} openChannel={openChannel} openChannels={() => setRoute("channels")} openAgentCreate={() => openAgentCreate(null)} openIntegrations={() => setRoute("integrations")} />}
       {route === "integrations" && <IntegrationsPage />}
       {route === "supportPortals" && <Suspense fallback={<LoadingState />}><SupportPortalsPage user={user} openPortal={openSupportPortal} /></Suspense>}
       {route === "supportPortalDetail" && <Suspense fallback={<LoadingState />}><SupportPortalDetailPage portalId={selectedSupportPortalId} products={data.products} user={user} openPortals={() => setRoute("supportPortals")} /></Suspense>}

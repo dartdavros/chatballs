@@ -18,12 +18,12 @@ export function KnowledgeDetailSidebar({
     <aside className="knowledge-detail-sidebar">
       <section className="knowledge-editor-card knowledge-agents-card">
         <h4>Агенты, использующие знание</h4>
-        <p>Выбор знания хранится у агента явно. Смена области может затронуть этих агентов.</p>
+        <p>Выбор знания хранится у агента явно.</p>
         <div className="knowledge-agent-list">
           {assignedAgents.map((agent) => (
             <button type="button" onClick={() => openAgent(agent.id)} key={agent.id}>
               <span><Icon name="robot" size={16} /></span>
-              <div><strong>{agent.name}</strong><small>{agent.channel.name}{agent.channel.department ? ` · ${agent.channel.department.name}` : ""}</small></div>
+              <div><strong>{agent.name}</strong><small>{agent.channel.name}</small></div>
             </button>
           ))}
         </div>

@@ -1,4 +1,4 @@
-"""Базовый слой: организация, отделы, пользователи, участия, доступ, аудит.
+"""Базовый слой: организация, группы, пользователи, участия, аудит.
 
 Использует существующие идемпотентные хелперы (``ensure_*``).
 """
@@ -6,18 +6,15 @@
 from __future__ import annotations
 
 from hub_platform.ai.knowledge_categories import ensure_uncategorized_category
-from hub_platform.identity.access_defaults import ensure_system_assignment
 from hub_platform.identity.audit import record_audit_event
 from hub_platform.identity.demo_seed import manifest
 from hub_platform.identity.demo_seed.refs import DemoRefs
+from hub_platform.identity.group_models import EmployeeGroup, EmployeeGroupMember
 from hub_platform.identity.models import (
-    Department,
-    EmployeeRole,
     HumanUser,
     Organization,
     OrganizationMembership,
 )
-from hub_platform.identity.system_departments import ensure_system_departments
 from hub_platform.subscriptions.default_subscription import ensure_default_subscription
 from hub_platform.tenancy.context import TenantContext
 
@@ -36,15 +33,11 @@ def load(context: TenantContext, refs: DemoRefs) -> None:
     )
     refs.organization = organization
 
-    departments = ensure_system_departments(organization)
-    refs.departments.update(departments)
-    for item in data.get("extraDepartments", []):
-        dept, _ = Department.objects.get_or_create(
-            organization=organization,
-            code=item["code"],
-            defaults={"name": item["name"]},
+    for item in data.get("groups", []):
+        group, _ = EmployeeGroup.objects.get_or_create(
+            organization=organization, name=item["name"]
         )
-        refs.departments[item["code"]] = dept
+        refs.groups[item["key"]] = group
 
     ensure_uncategorized_category(organization)
     slots = data.get("aiAgentSlots", 5)
@@ -65,7 +58,6 @@ def load(context: TenantContext, refs: DemoRefs) -> None:
 
 def _ensure_users_and_memberships(context: TenantContext, refs: DemoRefs, data: dict) -> None:
     organization = refs.organization
-    owner_membership = None
 
     for item in data["accounts"]:
         email = HumanUser.objects.normalize_email(item["email"])
@@ -82,25 +74,19 @@ def _ensure_users_and_memberships(context: TenantContext, refs: DemoRefs, data: 
             user.save(update_fields=["password"])
         refs.users[item["key"]] = user
 
-        role = item["role"]
         membership, _ = OrganizationMembership.objects.get_or_create(
             user=user,
             organization=organization,
             defaults={
-                "role": role,
+                "role": item["role"],
                 "position_title": item.get("positionTitle", ""),
                 "phone": item.get("phone", ""),
-                "primary_department": refs.departments.get(item.get("department", "")),
             },
         )
         refs.memberships[item["key"]] = membership
 
-        if role == EmployeeRole.OWNER:
-            owner_membership = membership
-        elif item.get("systemProfile") and owner_membership is not None:
-            ensure_system_assignment(
-                employee=membership,
-                assigned_by=owner_membership,
-                department=refs.departments[item["department"]],
-                profile_name=item["systemProfile"],
+        group = refs.groups.get(item.get("group", ""))
+        if group is not None:
+            EmployeeGroupMember.objects.get_or_create(
+                organization=organization, group=group, employee=membership
             )

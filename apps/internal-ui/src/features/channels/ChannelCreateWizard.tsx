@@ -3,7 +3,7 @@ import { useState } from "react";
 import { ApiError } from "../../api/client";
 import { Icon } from "../../shared/icons";
 import { Button } from "../../shared/ui-controls";
-import type { Department, Product } from "../../types";
+import type { EmployeeGroup, Product } from "../../types";
 import { createChannel } from "./api";
 import { OPERATOR_POLICY, PRESETS, slugify } from "./model";
 import { ChannelWizardAssignmentStep } from "./ChannelWizardAssignmentStep";
@@ -14,14 +14,14 @@ import type { Channel, PolicyPreset, PolicyViolation } from "./types";
 const STEPS = ["Канал", "Назначение"];
 
 export function ChannelCreateWizard({
-  departments,
+  groups,
   products,
   openChannel,
   openChannels,
   openAgentCreate,
   openIntegrations,
 }: {
-  departments: Department[];
+  groups: EmployeeGroup[];
   products: Product[];
   openChannel: (channelId: number) => void;
   openChannels: () => void;
@@ -32,7 +32,7 @@ export function ChannelCreateWizard({
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
   const [codeTouched, setCodeTouched] = useState(false);
-  const [departmentId, setDepartmentId] = useState<number | null>(null);
+  const [groupId, setGroupId] = useState<number | null>(null);
   const [productId, setProductId] = useState<number | null>(null);
   const [preset, setPreset] = useState<PolicyPreset>("CUSTOM");
   const [created, setCreated] = useState<Channel | null>(null);
@@ -40,7 +40,7 @@ export function ChannelCreateWizard({
   const [busy, setBusy] = useState(false);
   const effectiveCode = codeTouched ? code : slugify(name);
   const policy = preset === "CUSTOM" ? OPERATOR_POLICY : PRESETS[preset];
-  const departmentName = departments.find((item) => item.id === departmentId)?.name ?? "Без отдела";
+  const groupName = groups.find((item) => item.id === groupId)?.name ?? "Без группы";
   const productName = products.find((item) => item.id === productId)?.name ?? "— непродуктовый";
 
   async function submit() {
@@ -50,7 +50,7 @@ export function ChannelCreateWizard({
       const response = await createChannel({
         code: effectiveCode,
         name: name.trim(),
-        departmentId,
+        groupId,
         productId,
         policyPreset: preset,
         policy: preset === "CUSTOM" ? OPERATOR_POLICY : undefined,
@@ -109,7 +109,7 @@ export function ChannelCreateWizard({
           <ChannelWizardSummary
             name={created.name}
             code={created.code}
-            departmentName={created.departmentName ?? "Без отдела"}
+            groupName={created.groupName ?? "Без группы"}
             productName={created.product?.name ?? "— непродуктовый"}
             showDestinations
             openAgentCreate={openAgentCreate}
@@ -122,14 +122,14 @@ export function ChannelCreateWizard({
             <ChannelWizardChannelStep
               name={name}
               code={effectiveCode}
-              departmentId={departmentId}
-              departments={departments}
+              groupId={groupId}
+              groups={groups}
               onNameChange={setName}
               onCodeChange={(value) => {
                 setCodeTouched(true);
                 setCode(value);
               }}
-              onDepartmentChange={setDepartmentId}
+              onGroupChange={setGroupId}
               onCancel={openChannels}
               onNext={() => setStep(1)}
             />
@@ -149,7 +149,7 @@ export function ChannelCreateWizard({
           <ChannelWizardSummary
             name={name.trim()}
             code={effectiveCode}
-            departmentName={departmentName}
+            groupName={groupName}
             productName={productName}
             openAgentCreate={openAgentCreate}
             openIntegrations={openIntegrations}

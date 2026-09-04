@@ -11,7 +11,7 @@ class KnowledgeCategoryApiTests(KnowledgePolicyTestBase):
         super().setUp()
         create_test_subscription(self.organization)
         self.client = TenantAPIClient()
-        self.client.force_authenticate(self.organization_manager.user)
+        self.client.force_authenticate(self.admin.user)
 
     def _create(
         self, name: str, *, parent_id: int | None = None, sort_order: int = 0
@@ -35,16 +35,11 @@ class KnowledgeCategoryApiTests(KnowledgePolicyTestBase):
         ids = [item["id"] for item in items]
         self.assertLess(ids.index(self.products.id), ids.index(child["id"]))
         products = next(item for item in items if item["id"] == self.products.id)
-        self.assertEqual(products["knowledgeCount"], 5)
-
-        self.client.force_authenticate(self.sales_employee.user)
-        restricted = self.client.get("/api/v1/ai/knowledge/categories/")
-        products = next(
-            item
-            for item in restricted.json()["items"]
-            if item["id"] == self.products.id
-        )
         self.assertEqual(products["knowledgeCount"], 4)
+
+        self.client.force_authenticate(self.employee.user)
+        restricted = self.client.get("/api/v1/ai/knowledge/categories/")
+        self.assertEqual(restricted.status_code, 403)
         denied = self._create("Forbidden")
         self.assertEqual(denied.status_code, 403)
 

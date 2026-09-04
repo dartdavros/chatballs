@@ -4,11 +4,7 @@ from django.conf import settings
 from django.test import override_settings
 
 from hub_platform.channels.models import Channel
-from hub_platform.identity.capabilities import ScopeType
 from hub_platform.identity.models import (
-    AccessProfile,
-    AccessProfileCapability,
-    EmployeeAccessAssignment,
     EmployeeRole,
     HumanUser,
     Organization,
@@ -27,7 +23,6 @@ class SupportPortalManagementTests(SupportPortalTestCase):
             organization=self.organization,
             code="foxray-portal-chat",
             name="FoxRay — чат портала",
-            department=self.channel.department,
             product=self.product,
             requires_authenticated_product_identity=False,
             allow_anonymous_sessions=True,
@@ -81,7 +76,6 @@ class SupportPortalManagementTests(SupportPortalTestCase):
     def test_subscription_allows_multiple_active_portals(self) -> None:
         first = self.create_portal()
         self.assertEqual(first.status_code, 201, first.content)
-        self.assertEqual(first.json()["portal"]["departmentCode"], "support")
         self.assertEqual(
             first.json()["portal"]["hostedDomain"],
             f"foxray-help.{settings.CUS_HELP_BASE_DOMAIN}",
@@ -126,7 +120,6 @@ class SupportPortalManagementTests(SupportPortalTestCase):
             organization=self.organization,
             code="anonymous-help",
             name="Anonymous",
-            department=self.channel.department,
             product=self.product,
         )
         anonymous_widget = create_web_widget(anonymous_channel, name="Anonymous widget")
@@ -232,29 +225,10 @@ class SupportPortalManagementTests(SupportPortalTestCase):
             email="other-portal-owner@example.com",
             password="temporary-password",
         )
-        other_owner_membership = OrganizationMembership.objects.create(
+        OrganizationMembership.objects.create(
             organization=other_organization,
             user=other_owner,
             role=EmployeeRole.OWNER,
-        )
-        other_support = other_organization.departments.create(
-            code="support",
-            name="Поддержка",
-        )
-        other_profile = AccessProfile.objects.create(
-            organization=other_organization,
-            name="Portal reader",
-        )
-        AccessProfileCapability.objects.create(
-            access_profile=other_profile,
-            capability_code="support.view",
-        )
-        EmployeeAccessAssignment.objects.create(
-            employee=other_owner_membership,
-            access_profile=other_profile,
-            scope_type=ScopeType.DEPARTMENT,
-            department=other_support,
-            assigned_by=other_owner_membership,
         )
         create_test_subscription(other_organization)
         self.client.force_authenticate(other_owner)
@@ -263,39 +237,3 @@ class SupportPortalManagementTests(SupportPortalTestCase):
         response = self.client.get(f"/api/v1/support/portals/{portal_id}/")
 
         self.assertEqual(response.status_code, 404, response.content)
-
-    def test_support_scope_is_required_for_portal_access(self) -> None:
-        self.create_portal()
-        employee_user = HumanUser.objects.create_user(
-            email="scoped-portal-reader@example.com",
-            password="temporary-password",
-        )
-        employee = OrganizationMembership.objects.create(
-            organization=self.organization,
-            user=employee_user,
-            role=EmployeeRole.EMPLOYEE,
-        )
-        profile = AccessProfile.objects.create(
-            organization=self.organization,
-            name="Portal reader",
-        )
-        AccessProfileCapability.objects.create(
-            access_profile=profile,
-            capability_code="support.view",
-        )
-        sales = self.organization.departments.get(code="sales")
-        assignment = EmployeeAccessAssignment.objects.create(
-            employee=employee,
-            access_profile=profile,
-            scope_type=ScopeType.DEPARTMENT,
-            department=sales,
-            assigned_by=self.organization.memberships.get(user=self.owner),
-        )
-        self.client.force_authenticate(employee_user)
-        denied = self.client.get("/api/v1/support/portals/")
-        self.assertEqual(denied.status_code, 403, denied.content)
-
-        assignment.department = self.organization.departments.get(code="support")
-        assignment.save(update_fields=["department"])
-        allowed = self.client.get("/api/v1/support/portals/")
-        self.assertEqual(allowed.status_code, 200, allowed.content)

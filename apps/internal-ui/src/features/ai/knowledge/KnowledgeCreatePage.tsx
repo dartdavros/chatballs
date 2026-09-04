@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import type { Department, RouteKey } from "../../../types";
+import type { RouteKey } from "../../../types";
 import { EmptyState, LoadingState } from "../../../shared/ui";
 import { createKnowledgeItem, deleteKnowledgeItem, uploadAttachment } from "./model";
 import { KnowledgeAttachmentsCard } from "./KnowledgeAttachmentsCard";
@@ -10,11 +10,9 @@ import { emptyKnowledgeEditorState, knowledgeEditorError, knowledgeEditorRequest
 import { useKnowledgeCategories } from "./useKnowledgeCategories";
 
 export function KnowledgeCreatePage({
-  departments,
   openKnowledge,
   setRoute,
 }: {
-  departments: Department[];
   openKnowledge: (knowledgeId: number) => void;
   setRoute: (route: RouteKey) => void;
 }) {
@@ -60,7 +58,6 @@ export function KnowledgeCreatePage({
           <KnowledgeEditorCard
             busy={busy}
             categories={catalog.categories}
-            departments={departments}
             editable
             error={error}
             item={null}

@@ -126,7 +126,6 @@ def post_support_message(
         )
         notify(
             context=context,
-            department=conversation.channel.department,
             type=NotificationType.DIALOG_WAITING,
             audience=NotificationAudience.OPERATORS,
             title=f"Нужен оператор · {client_label}",
@@ -170,7 +169,6 @@ def post_support_message(
         )
         notify(
             context=context,
-            department=conversation.channel.department,
             type=NotificationType.DIALOG_WAITING,
             audience=NotificationAudience.OPERATORS,
             title=f"AI передал диалог · {client_label}",

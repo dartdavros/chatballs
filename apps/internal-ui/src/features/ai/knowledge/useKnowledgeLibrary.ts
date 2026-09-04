@@ -4,24 +4,19 @@ import {
   fetchKnowledgeCategories,
   fetchKnowledgeList,
   type KnowledgeCategory,
-  type KnowledgeDepartmentReference,
   type KnowledgeItem,
   type KnowledgeListFilters,
-  type KnowledgeVisibility,
 } from "./model";
 
 export type KnowledgeLibraryFilterState = {
   category?: number;
-  department?: number;
   isEnabled?: boolean;
   search: string;
-  visibility?: KnowledgeVisibility;
 };
 
 export function useKnowledgeLibrary() {
   const [items, setItems] = useState<KnowledgeItem[]>([]);
   const [categories, setCategories] = useState<KnowledgeCategory[]>([]);
-  const [knownDepartments, setKnownDepartments] = useState<KnowledgeDepartmentReference[]>([]);
   const [filters, setFilters] = useState<KnowledgeLibraryFilterState>({ search: "" });
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [itemsLoading, setItemsLoading] = useState(true);
@@ -57,13 +52,6 @@ export function useKnowledgeLibrary() {
       const payload = await fetchKnowledgeList(activeFilters);
       if (activeRequest !== requestId.current) return;
       setItems(payload.items);
-      setKnownDepartments((current) => {
-        const byId = new Map(current.map((department) => [department.id, department]));
-        payload.items.forEach((item) => item.departments.forEach((department) => {
-          byId.set(department.id, department);
-        }));
-        return [...byId.values()].sort((left, right) => left.name.localeCompare(right.name, "ru"));
-      });
     } catch {
       if (activeRequest === requestId.current) setItemsError(true);
     } finally {
@@ -88,12 +76,10 @@ export function useKnowledgeLibrary() {
   useEffect(() => {
     void reloadItems({
       category: filters.category,
-      department: filters.department,
       isEnabled: filters.isEnabled,
       search: debouncedSearch,
-      visibility: filters.visibility,
     });
-  }, [debouncedSearch, filters.category, filters.department, filters.isEnabled, filters.visibility, reloadItems]);
+  }, [debouncedSearch, filters.category, filters.isEnabled, reloadItems]);
 
   const updateFilter = useCallback(<TKey extends keyof KnowledgeLibraryFilterState>(
     key: TKey,
@@ -128,10 +114,8 @@ export function useKnowledgeLibrary() {
       reloadCategories(),
       reloadItems({
         category: filters.category,
-        department: filters.department,
         isEnabled: filters.isEnabled,
         search: debouncedSearch,
-        visibility: filters.visibility,
       }),
     ]);
   }, [debouncedSearch, filters, reloadCategories, reloadItems]);
@@ -145,7 +129,6 @@ export function useKnowledgeLibrary() {
     items,
     itemsError,
     itemsLoading,
-    knownDepartments,
     reload,
     reloadCategories,
     selectedIds,

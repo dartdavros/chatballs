@@ -1,26 +1,23 @@
-import type { Department, Employee, EmployeeAuditEvent, Role } from "../../types";
+import type { Employee, EmployeeAuditEvent, Role } from "../../types";
 
 export type EmployeeStatus = "active" | "blocked" | "invited";
 export type EmployeeRoleFilter = "all" | Role;
-export type EmployeePlacementFilter = "all" | "company" | "department";
 
 export type EmployeeForm = {
-  department: string;
   email: string;
   fullName: string;
   phone: string;
   positionTitle: string;
   role: Role;
+  groupIds: number[];
   totpEnabled: boolean;
 };
 
 const AUDIT_LABELS: Record<string, string> = {
-  "access_assignment.created": "Назначен профиль доступа",
-  "access_assignment.revoked": "Назначение профиля отозвано",
   "identity.employee_blocked": "Сотрудник заблокирован",
   "identity.employee_created": "Сотрудник создан",
   "identity.employee_password_reset": "Пароль сотрудника сброшен",
-  "identity.employee_placement_changed": "Изменено размещение сотрудника",
+  "identity.employee_groups_changed": "Изменены группы сотрудника",
   "identity.employee_role_changed": "Изменена системная роль",
   "identity.employee_sessions_terminated": "Активные сессии завершены",
   "identity.employee_unblocked": "Сотрудник разблокирован",
@@ -37,13 +34,13 @@ export function employeeStatusKey(employee: Employee): EmployeeStatus {
 export function filterEmployees(
   employees: Employee[],
   role: EmployeeRoleFilter,
-  placement: EmployeePlacementFilter,
+  groupId: number | "all",
   query: string,
 ) {
   const q = query.trim().toLowerCase();
   return employees.filter((employee) => (
     (role === "all" || employee.role === role)
-    && (placement === "all" || (placement === "company" ? !employee.department : Boolean(employee.department)))
+    && (groupId === "all" || employee.groups.some((group) => group.id === groupId))
     && (!q
       || employee.fullName.toLowerCase().includes(q)
       || employee.email.toLowerCase().includes(q)
@@ -58,24 +55,19 @@ export function employeeForm(employee: Employee): EmployeeForm {
     email: employee.email,
     positionTitle: employee.positionTitle,
     role: employee.role,
-    department: employee.department ?? "",
+    groupIds: employee.groups.map((group) => group.id),
     totpEnabled: employee.totpEnabled,
   };
 }
 
-export function departmentLabel(employee: Employee, departments: Department[] = []) {
-  if (!employee.department) return "Уровень компании";
-  return employee.departmentName
-    || departments.find((department) => department.code === employee.department)?.name
-    || employee.department;
+export function groupsLabel(employee: Employee) {
+  if (!employee.groups.length) return "Без группы";
+  return employee.groups.map((group) => group.name).join(", ");
 }
 
-export function employeeAccessLabel(employee: Employee) {
-  if (employee.role === "OWNER") return "Полный доступ";
-  if (employee.role === "ADMIN") return "Все обычные capability";
-  const count = employee.accessAssignments?.length ?? 0;
-  if (!count) return "Нет доступа";
-  return `${count} ${count === 1 ? "профиль" : count < 5 ? "профиля" : "профилей"}`;
+export function roleAccessLabel(employee: Employee) {
+  if (employee.role === "OWNER" || employee.role === "ADMIN") return "Полный доступ";
+  return "Только чат";
 }
 
 export function formatDate(value?: string | null, empty = "—") {

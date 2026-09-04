@@ -51,7 +51,7 @@ class CallCreationTests(CallTestCase):
         self.conversation.refresh_from_db()
         self.assertEqual(self.conversation.assigned_operator, self.operator)
 
-    def test_operator_from_other_department_is_denied_without_takeover(self) -> None:
+    def test_operator_outside_group_is_denied(self) -> None:
         support_operator = self.create_support_operator()
 
         with self.assertRaises(CallAccessDenied):

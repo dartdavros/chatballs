@@ -10,7 +10,12 @@
       "minutesAgo": 30,
       "durationSeconds": 240,
       "deliveryConnection": "reper-support-web",
-      "metrics": { "connectionType": "DIRECT", "localCandidateType": "host", "remoteCandidateType": "srflx", "roundTripMs": 42 }
+      "metrics": {
+        "connectionType": "DIRECT",
+        "localCandidateType": "host",
+        "remoteCandidateType": "srflx",
+        "roundTripMs": 42
+      }
     },
     {
       "conversation": "vektor-queue",
@@ -29,7 +34,6 @@
       "targetRoute": "conversations",
       "targetId": "vektor-queue",
       "audience": "OPERATORS",
-      "department": "sales",
       "sourceId": "vektor-queue",
       "readBy": "sales_lead"
     },
@@ -41,7 +45,6 @@
       "targetRoute": "conversations",
       "targetId": "vektor-lead-active",
       "audience": "OPERATORS",
-      "department": "sales",
       "sourceId": "vektor-lead-active"
     },
     {
@@ -57,10 +60,30 @@
     "daysElapsed": 15,
     "daysRemaining": 16,
     "counters": [
-      { "quota": "ai_agent_slots", "unit": "slots", "used": 3, "reserved": 0 },
-      { "quota": "new_dialogs_per_period", "unit": "dialogs", "used": 47, "reserved": 0 },
-      { "quota": "managed_ai_credits", "unit": "credits", "used": 1840, "reserved": 0 },
-      { "quota": "storage_bytes", "unit": "bytes", "used": 5242880, "reserved": 0 }
+      {
+        "quota": "ai_agent_slots",
+        "unit": "slots",
+        "used": 3,
+        "reserved": 0
+      },
+      {
+        "quota": "new_dialogs_per_period",
+        "unit": "dialogs",
+        "used": 47,
+        "reserved": 0
+      },
+      {
+        "quota": "managed_ai_credits",
+        "unit": "credits",
+        "used": 1840,
+        "reserved": 0
+      },
+      {
+        "quota": "storage_bytes",
+        "unit": "bytes",
+        "used": 5242880,
+        "reserved": 0
+      }
     ]
   }
 }

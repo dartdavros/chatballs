@@ -118,7 +118,7 @@ export function ChannelRow({
         <div className="channel-sub">
           <code>{channel.code}</code>
           {" · "}
-          {channel.departmentName ?? <span className="channel-badge channel-badge--plain">Без отдела</span>}
+          {channel.groupName ?? <span className="channel-badge channel-badge--plain">Без группы</span>}
         </div>
       </td>
       <td>

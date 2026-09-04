@@ -201,7 +201,6 @@ def _make_member(org, *, email: str, role: str = EmployeeRole.EMPLOYEE) -> None:
         organization=org,
         role=role,
         position_title="Member",
-        primary_department=None,
     )
 
 
@@ -225,7 +224,6 @@ class MembershipCountLimitTests(TestCase):
             organization=self.organization,
             role=EmployeeRole.OWNER,
             position_title="Owner",
-            primary_department=None,
         )
         with self.assertRaises(QuotaExceeded):
             reserve_usage(

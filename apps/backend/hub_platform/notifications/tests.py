@@ -125,27 +125,23 @@ class DeliveryTests(NotifierTestBase):
             self._dispatch_last_event()
         send.assert_not_called()  # у оператора нет привязки; owner не адресат
 
-    def test_operator_notifications_follow_assignment_scope(self) -> None:
+    def test_operator_sees_operator_audience_but_not_owner_audience(self) -> None:
         operator = HumanUser.objects.get(email="a.kotova@edevs.tech")
-        sales = self.organization.departments.get(code="sales")
-        support = self.organization.departments.get(code="support")
-        sales_notification = notify(
+        operators_notification = notify(
             context=self.context,
-            department=sales,
             type=NotificationType.DIALOG_WAITING,
             audience=NotificationAudience.OPERATORS,
-            title="Sales dialog",
+            title="Waiting dialog",
         )
         notify(
             context=self.context,
-            department=support,
-            type=NotificationType.DIALOG_WAITING,
-            audience=NotificationAudience.OPERATORS,
-            title="Support dialog",
+            type=NotificationType.LIMIT_REACHED,
+            audience=NotificationAudience.OWNER,
+            title="Owner-only notice",
         )
         self.assertEqual(
             list(visible_for(tenant_context_for(operator, self.organization)).values_list("id", flat=True)),
-            [sales_notification.id],
+            [operators_notification.id],
         )
 
 

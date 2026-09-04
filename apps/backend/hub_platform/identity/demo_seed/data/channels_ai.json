@@ -1,17 +1,84 @@
 {
   "schemaVersion": 1,
   "integrations": [
-    { "key": "llm-provider", "provider": "OPENROUTER", "name": "OpenRouter (CustoAI)", "kind": "LLM_PROVIDER", "channel": null, "status": "OK" },
-    { "key": "site-max", "provider": "MAX", "name": "Сайт — MAX", "channel": "site-main", "status": "OK" },
-    { "key": "site-tg", "provider": "TELEGRAM", "name": "Сайт — Telegram", "channel": "site-main", "status": "OK" },
-    { "key": "site-web", "provider": "WEB", "name": "Сайт — веб-чат", "channel": "site-main", "status": "OK" },
-    { "key": "vektor-sales-tg", "provider": "TELEGRAM", "name": "Вектор продажи — Telegram", "channel": "vektor-sales", "status": "OK" },
-    { "key": "vektor-sales-web", "provider": "WEB", "name": "Вектор продажи — веб-чат", "channel": "vektor-sales", "status": "OK" },
-    { "key": "reper-sales-tg", "provider": "TELEGRAM", "name": "Репер продажи — Telegram", "channel": "reper-sales", "status": "OK" },
-    { "key": "reper-sales-max", "provider": "MAX", "name": "Репер продажи — MAX", "channel": "reper-sales", "status": "UNCHECKED" },
-    { "key": "vektor-support-web", "provider": "WEB", "name": "Вектор поддержка — веб-чат", "channel": "vektor-support", "status": "OK" },
-    { "key": "reper-support-web", "provider": "WEB", "name": "Репер поддержка — веб-чат", "channel": "reper-support", "status": "OK" },
-    { "key": "partners-tg", "provider": "TELEGRAM", "name": "Партнёрская линия — Telegram", "channel": "partners", "status": "OK" },
+    {
+      "key": "llm-provider",
+      "provider": "OPENROUTER",
+      "name": "OpenRouter (CustoAI)",
+      "kind": "LLM_PROVIDER",
+      "channel": null,
+      "status": "OK"
+    },
+    {
+      "key": "site-max",
+      "provider": "MAX",
+      "name": "Сайт — MAX",
+      "channel": "site-main",
+      "status": "OK"
+    },
+    {
+      "key": "site-tg",
+      "provider": "TELEGRAM",
+      "name": "Сайт — Telegram",
+      "channel": "site-main",
+      "status": "OK"
+    },
+    {
+      "key": "site-web",
+      "provider": "WEB",
+      "name": "Сайт — веб-чат",
+      "channel": "site-main",
+      "status": "OK"
+    },
+    {
+      "key": "vektor-sales-tg",
+      "provider": "TELEGRAM",
+      "name": "Вектор продажи — Telegram",
+      "channel": "vektor-sales",
+      "status": "OK"
+    },
+    {
+      "key": "vektor-sales-web",
+      "provider": "WEB",
+      "name": "Вектор продажи — веб-чат",
+      "channel": "vektor-sales",
+      "status": "OK"
+    },
+    {
+      "key": "reper-sales-tg",
+      "provider": "TELEGRAM",
+      "name": "Репер продажи — Telegram",
+      "channel": "reper-sales",
+      "status": "OK"
+    },
+    {
+      "key": "reper-sales-max",
+      "provider": "MAX",
+      "name": "Репер продажи — MAX",
+      "channel": "reper-sales",
+      "status": "UNCHECKED"
+    },
+    {
+      "key": "vektor-support-web",
+      "provider": "WEB",
+      "name": "Вектор поддержка — веб-чат",
+      "channel": "vektor-support",
+      "status": "OK"
+    },
+    {
+      "key": "reper-support-web",
+      "provider": "WEB",
+      "name": "Репер поддержка — веб-чат",
+      "channel": "reper-support",
+      "status": "OK"
+    },
+    {
+      "key": "partners-tg",
+      "provider": "TELEGRAM",
+      "name": "Партнёрская линия — Telegram",
+      "channel": "partners",
+      "status": "OK"
+    },
     {
       "key": "support-email",
       "provider": "EMAIL",
@@ -33,7 +100,6 @@
     {
       "code": "site-main",
       "name": "Северная Верфь — главный сайт",
-      "department": "sales",
       "product": null,
       "providerIntegration": "llm-provider",
       "policy": {
@@ -42,12 +108,12 @@
         "allow_self_reported_contact": true,
         "allow_sales_attribution": false,
         "allow_checkout_actions": false
-      }
+      },
+      "group": "sales"
     },
     {
       "code": "vektor-sales",
       "name": "Вектор — продажи",
-      "department": "sales",
       "product": "vektor",
       "providerIntegration": "llm-provider",
       "policy": {
@@ -56,12 +122,12 @@
         "allow_self_reported_contact": true,
         "allow_sales_attribution": true,
         "allow_checkout_actions": true
-      }
+      },
+      "group": "sales"
     },
     {
       "code": "reper-sales",
       "name": "Репер — продажи",
-      "department": "sales",
       "product": "reper",
       "providerIntegration": "llm-provider",
       "policy": {
@@ -70,12 +136,12 @@
         "allow_self_reported_contact": true,
         "allow_sales_attribution": true,
         "allow_checkout_actions": true
-      }
+      },
+      "group": "sales"
     },
     {
       "code": "vektor-support",
       "name": "Вектор — поддержка",
-      "department": "support",
       "product": "vektor",
       "policy": {
         "requires_authenticated_product_identity": true,
@@ -83,12 +149,12 @@
         "allow_self_reported_contact": false,
         "allow_sales_attribution": false,
         "allow_checkout_actions": false
-      }
+      },
+      "group": "support"
     },
     {
       "code": "reper-support",
       "name": "Репер — поддержка",
-      "department": "support",
       "product": "reper",
       "policy": {
         "requires_authenticated_product_identity": true,
@@ -96,12 +162,12 @@
         "allow_self_reported_contact": false,
         "allow_sales_attribution": false,
         "allow_checkout_actions": false
-      }
+      },
+      "group": "support"
     },
     {
       "code": "partners",
       "name": "Партнёрская линия",
-      "department": null,
       "product": null,
       "isActive": false,
       "policy": {
@@ -110,12 +176,12 @@
         "allow_self_reported_contact": true,
         "allow_sales_attribution": false,
         "allow_checkout_actions": false
-      }
+      },
+      "group": null
     },
     {
       "code": "reper-help-widget",
       "name": "Репер — виджет Help-центра",
-      "department": "support",
       "product": "reper",
       "policy": {
         "requires_authenticated_product_identity": false,
@@ -123,7 +189,8 @@
         "allow_self_reported_contact": true,
         "allow_sales_attribution": false,
         "allow_checkout_actions": false
-      }
+      },
+      "group": "support"
     }
   ],
   "agents": [
@@ -135,7 +202,10 @@
       "persona": "Виртуальный ассистент компании «Северная Верфь» — производителя промышленной телеметрии. Помогает посетителям сайта сориентироваться в продуктах Вектор и Репер.",
       "tone": "Дружелюбный, деловой, без излишней фамильярности. Обращается на «вы».",
       "instructions": "Если вопрос касается конкретного продукта или условий покупки — переключай диалог на менеджера продаж. Не обещай скидки и сроки, которых нет в базе знаний.",
-      "knowledge": ["vektor-overview", "reper-overview"]
+      "knowledge": [
+        "vektor-overview",
+        "reper-overview"
+      ]
     },
     {
       "channel": "vektor-sales",
@@ -145,7 +215,10 @@
       "persona": "Отвечает за продажи коробочной лицензии Вектор производственным предприятиям.",
       "tone": "Деловой, экспертный, по сути.",
       "instructions": "Уточняй масштаб производства и число участков — от этого зависит конфигурация. Предлагай продление поддержки как сопутствующую услугу.",
-      "knowledge": ["vektor-overview", "vektor-deploy"]
+      "knowledge": [
+        "vektor-overview",
+        "vektor-deploy"
+      ]
     },
     {
       "channel": "reper-sales",
@@ -155,7 +228,10 @@
       "persona": "Отвечает за продажи облачной подписки на телематику Репер.",
       "tone": "Деловой, ориентируется на выгоду клиента.",
       "instructions": "Уточняй размер парка техники и типы транспорта. Для парков от 50 единиц предлагай годовую оплату — она выгоднее помесячной.",
-      "knowledge": ["reper-overview", "reper-telematics"]
+      "knowledge": [
+        "reper-overview",
+        "reper-telematics"
+      ]
     }
   ],
   "knowledge": [
@@ -172,7 +248,9 @@
       "description": "Требования к серверу и шаги развёртывания коробочной лицензии. Приложен файл с детальным руководством.",
       "content": "Подробное руководство по развёртыванию коробочной лицензии Вектор приведено во вложении. Требуется сервер с ОС Linux, 8 ГБ ОЗУ, доступ к контроллерам по сети.",
       "visibility": "DEPARTMENTS",
-      "attachments": ["vektor-deploy-guide.md"]
+      "attachments": [
+        "vektor-deploy-guide.md"
+      ]
     },
     {
       "key": "reper-overview",
@@ -187,7 +265,9 @@
       "description": "Поддерживаемые протоколы и бортовые контроллеры. Приложен файл со спецификацией.",
       "content": "Поддерживаемые протоколы обмена с бортовыми контроллерами и список совместимого оборудования приведены во вложении.",
       "visibility": "DEPARTMENTS",
-      "attachments": ["reper-telematics-spec.md"]
+      "attachments": [
+        "reper-telematics-spec.md"
+      ]
     }
   ],
   "llmInvocations": [

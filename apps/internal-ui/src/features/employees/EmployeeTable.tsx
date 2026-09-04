@@ -1,12 +1,11 @@
 import { Dropdown } from "antd";
 
-import type { Department, Employee } from "../../types";
+import type { Employee } from "../../types";
 import { Icon } from "../../shared/icons";
 import { Avatar, EmptyState, RoleBadge, StatusPill } from "../../shared/ui";
-import { departmentLabel, employeeAccessLabel, employeeStatusKey, formatLastLogin } from "./model";
+import { employeeStatusKey, formatLastLogin, groupsLabel, roleAccessLabel } from "./model";
 
 export function EmployeeTable({
-  departments,
   employees,
   menuId,
   onTransfer,
@@ -14,7 +13,6 @@ export function EmployeeTable({
   setMenuId,
   total,
 }: {
-  departments: Department[];
   employees: Employee[];
   menuId: number | null;
   onTransfer: () => void;
@@ -26,11 +24,10 @@ export function EmployeeTable({
     <div className="table-card employees-card">
       <div className="table-scroll">
         <table className="baseline-table employees-table">
-          <thead><tr><th>СОТРУДНИК</th><th>РОЛЬ</th><th>ДОЛЖНОСТЬ</th><th>РАЗМЕЩЕНИЕ</th><th>ДОСТУП</th><th>СТАТУС</th><th>ПОСЛЕДНИЙ ВХОД</th><th /></tr></thead>
+          <thead><tr><th>СОТРУДНИК</th><th>РОЛЬ</th><th>ДОЛЖНОСТЬ</th><th>ГРУППЫ</th><th>ДОСТУП</th><th>СТАТУС</th><th>ПОСЛЕДНИЙ ВХОД</th><th /></tr></thead>
           <tbody>
             {employees.map((employee) => (
               <EmployeeRow
-                departments={departments}
                 employee={employee}
                 menuOpen={menuId === employee.id}
                 onTransfer={onTransfer}
@@ -45,14 +42,13 @@ export function EmployeeTable({
       {!employees.length && <EmptyState title="Сотрудники не найдены" />}
       <div className="employees-footer">
         <span>Показано {employees.length} из {total}</span>
-        <span>Роль не выводится из должности или отдела</span>
+        <span>Группа задаёт только видимость диалогов и не выдаёт прав</span>
       </div>
     </div>
   );
 }
 
-function EmployeeRow({ departments, employee, menuOpen, onTransfer, openEmployee, setMenuId }: {
-  departments: Department[];
+function EmployeeRow({ employee, menuOpen, onTransfer, openEmployee, setMenuId }: {
   employee: Employee;
   menuOpen: boolean;
   onTransfer: () => void;
@@ -72,15 +68,14 @@ function EmployeeRow({ departments, employee, menuOpen, onTransfer, openEmployee
       { type: "divider" as const },
       { key: "block", disabled: employee.isBlocked ? !permissions?.canUnblock : !permissions?.canBlock, label: <button className={employee.isBlocked ? "success" : "danger"} type="button">{employee.isBlocked ? "Разблокировать" : "Заблокировать"}</button> },
     ] : []),
-    ...(!manageable && employee.role === "ADMIN" ? [{ key: "note", disabled: true, label: <button type="button"><span>Привилегированная учётная запись<small>Изменяется только владельцем</small></span></button> }] : []),
   ];
   return (
     <tr>
       <td><div className="person-cell"><Avatar employee={employee} /><button className="person-link" type="button" onClick={open}><strong>{employee.fullName || employee.email}</strong><small>{employee.email}</small></button></div></td>
       <td><RoleBadge role={employee.role} /></td>
       <td>{employee.positionTitle}</td>
-      <td>{departmentLabel(employee, departments)}</td>
-      <td>{employeeAccessLabel(employee)}</td>
+      <td>{groupsLabel(employee)}</td>
+      <td>{roleAccessLabel(employee)}</td>
       <td><StatusPill status={employeeStatusKey(employee)} /></td>
       <td className="employee-last-login">{formatLastLogin(employee.lastLogin)}</td>
       <td className="row-actions">

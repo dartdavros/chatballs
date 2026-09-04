@@ -4,7 +4,6 @@ from django.test import TestCase
 
 from hub_platform.ai.knowledge_categories import create_category
 from hub_platform.ai.knowledge_services import KnowledgeInput, create_knowledge
-from hub_platform.ai.knowledge_types import KnowledgeVisibility
 from hub_platform.ai.models import AIAgent, AIAgentStatus
 from hub_platform.channels.models import Channel
 from hub_platform.identity.bootstrap import bootstrap_edevs_owner
@@ -18,8 +17,6 @@ class KnowledgeBulkApiTests(TestCase):
             password="temporary-password",
         )
         self.organization = result.organization
-        self.sales = result.sales_department
-        self.support = result.support_department
         self.context = system_tenant_context(self.organization)
         self.source = create_category(
             context=self.context,
@@ -44,8 +41,6 @@ class KnowledgeBulkApiTests(TestCase):
         title: str,
         *,
         category_id: int | None = None,
-        visibility: str = KnowledgeVisibility.ORGANIZATION,
-        department_ids: tuple[int, ...] = (),
         is_enabled: bool = True,
     ):
         return create_knowledge(
@@ -56,8 +51,6 @@ class KnowledgeBulkApiTests(TestCase):
                 content=f"{title} content",
                 is_enabled=is_enabled,
                 category_id=category_id or self.source.id,
-                visibility=visibility,
-                department_ids=department_ids,
             ),
         )
 
@@ -106,63 +99,6 @@ class KnowledgeBulkApiTests(TestCase):
             {self.first.id, self.second.id},
         )
 
-    def test_bulk_visibility_conflict_rolls_back_every_item(self) -> None:
-        channel = Channel.objects.create(
-            organization=self.organization,
-            code="bulk-sales",
-            name="Bulk sales",
-            department=self.sales,
-        )
-        agent = AIAgent.objects.create(
-            channel=channel,
-            name="Bulk sales agent",
-            status=AIAgentStatus.ACTIVE,
-        )
-        agent.knowledge_items.add(self.first)
-
-        response = self._post(
-            "/api/v1/ai/knowledge/bulk/visibility/",
-            {
-                "knowledgeIds": [self.first.id, self.second.id],
-                "visibility": KnowledgeVisibility.DEPARTMENTS,
-                "departmentIds": [self.support.id],
-            },
-        )
-
-        self.assertEqual(response.status_code, 409)
-        for knowledge in (self.first, self.second):
-            knowledge.refresh_from_db()
-            self.assertEqual(knowledge.visibility, KnowledgeVisibility.ORGANIZATION)
-            self.assertFalse(knowledge.department_links.exists())
-
-    def test_bulk_visibility_replaces_all_links_without_reindexing(self) -> None:
-        fragment_ids = {
-            self.first.id: list(self.first.fragments.values_list("id", flat=True)),
-            self.second.id: list(self.second.fragments.values_list("id", flat=True)),
-        }
-
-        response = self._post(
-            "/api/v1/ai/knowledge/bulk/visibility/",
-            {
-                "knowledgeIds": [self.first.id, self.second.id],
-                "visibility": KnowledgeVisibility.DEPARTMENTS,
-                "departmentIds": [self.sales.id, self.support.id],
-            },
-        )
-
-        self.assertEqual(response.status_code, 200)
-        for knowledge in (self.first, self.second):
-            knowledge.refresh_from_db()
-            self.assertEqual(knowledge.visibility, KnowledgeVisibility.DEPARTMENTS)
-            self.assertEqual(
-                set(knowledge.department_links.values_list("department_id", flat=True)),
-                {self.sales.id, self.support.id},
-            )
-            self.assertEqual(
-                list(knowledge.fragments.values_list("id", flat=True)),
-                fragment_ids[knowledge.id],
-            )
-
 
 class AgentCategoryKnowledgeSelectionTests(TestCase):
     def setUp(self) -> None:
@@ -180,7 +116,6 @@ class AgentCategoryKnowledgeSelectionTests(TestCase):
             organization=self.organization,
             code="category-sales",
             name="Category sales",
-            department=result.sales_department,
         )
         self.agent = AIAgent.objects.create(
             channel=self.channel,
@@ -195,12 +130,6 @@ class AgentCategoryKnowledgeSelectionTests(TestCase):
             category_id=self.category.id,
             is_enabled=False,
         )
-        self.support_only = self._knowledge(
-            "Support",
-            category_id=self.category.id,
-            visibility=KnowledgeVisibility.DEPARTMENTS,
-            department_ids=(result.support_department.id,),
-        )
         self.client = TenantAPIClient()
         self.client.login(
             username="owner@edevs.tech",
@@ -212,8 +141,6 @@ class AgentCategoryKnowledgeSelectionTests(TestCase):
         title: str,
         *,
         category_id: int | None = None,
-        visibility: str = KnowledgeVisibility.ORGANIZATION,
-        department_ids: tuple[int, ...] = (),
         is_enabled: bool = True,
     ):
         return create_knowledge(
@@ -224,12 +151,10 @@ class AgentCategoryKnowledgeSelectionTests(TestCase):
                 content=title,
                 is_enabled=is_enabled,
                 category_id=category_id,
-                visibility=visibility,
-                department_ids=department_ids,
             ),
         )
 
-    def test_selection_adds_only_current_compatible_category_items(self) -> None:
+    def test_selection_adds_only_current_category_items(self) -> None:
         response = self.client.post(
             f"/api/v1/ai/agents/{self.agent.id}/knowledge/select-category/",
             data=json.dumps({"categoryId": self.category.id}),

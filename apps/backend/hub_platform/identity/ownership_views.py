@@ -9,7 +9,6 @@ from hub_platform.identity.employee_support import employee_payload
 from hub_platform.identity.employee_validation import (
     ASSIGNABLE_ROLES,
     deny_employee_action,
-    resolve_department,
 )
 from hub_platform.identity.governance import EmployeeAction, can_manage_employee
 from hub_platform.identity.models import EmployeeRole, OrganizationMembership
@@ -22,13 +21,13 @@ class OwnershipTransferView(APIView):
     def post(self, request: Request, user_id: int) -> Response:
         actor = (
             OrganizationMembership.objects.select_for_update(of=("self",))
-            .select_related("user", "primary_department")
+            .select_related("user")
             .get(pk=request.tenant_context.membership.pk)
         )
         try:
             target = (
                 OrganizationMembership.objects.select_for_update(of=("self",))
-                .select_related("user", "primary_department")
+                .select_related("user")
                 .get(user_id=user_id, organization=actor.organization)
             )
         except OrganizationMembership.DoesNotExist:
@@ -43,20 +42,10 @@ class OwnershipTransferView(APIView):
         if previous_owner_role not in ASSIGNABLE_ROLES:
             return Response({"detail": "Previous owner role must be ADMIN or EMPLOYEE"}, status=400)
 
-        previous_department = None
-        if previous_owner_role == EmployeeRole.EMPLOYEE:
-            previous_department, department_error = resolve_department(
-                actor.organization, str(request.data.get("previousOwnerDepartment", ""))
-            )
-            if department_error:
-                return Response({"detail": department_error}, status=400)
-
         actor.role = previous_owner_role
-        actor.primary_department = previous_department
-        actor.save(update_fields=["role", "primary_department"])
+        actor.save(update_fields=["role"])
         target.role = EmployeeRole.OWNER
-        target.primary_department = None
-        target.save(update_fields=["role", "primary_department"])
+        target.save(update_fields=["role"])
 
         record_audit_event(
             action="identity.ownership_transferred",

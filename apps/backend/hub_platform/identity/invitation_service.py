@@ -138,7 +138,6 @@ def _ensure_owner_membership(
         defaults={
             "role": EmployeeRole.OWNER,
             "position_title": "Владелец",
-            "primary_department": None,
             "totp_required": False,
         },
     )

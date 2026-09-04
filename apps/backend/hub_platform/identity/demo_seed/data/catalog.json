@@ -4,20 +4,12 @@
     {
       "code": "vektor",
       "name": "Вектор",
-      "siteUrl": "https://vektor.severnayaverf.ru",
-      "departments": [
-        "sales",
-        "support"
-      ]
+      "siteUrl": "https://vektor.severnayaverf.ru"
     },
     {
       "code": "reper",
       "name": "Репер",
-      "siteUrl": "https://reper.severnayaverf.ru",
-      "departments": [
-        "sales",
-        "support"
-      ]
+      "siteUrl": "https://reper.severnayaverf.ru"
     }
   ]
 }

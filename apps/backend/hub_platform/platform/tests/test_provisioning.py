@@ -4,7 +4,6 @@ from django.test import TestCase
 
 from hub_platform.ai.models import AIAgent
 from hub_platform.identity.models import (
-    Department,
     EmployeeRole,
     HumanUser,
     Organization,
@@ -63,10 +62,6 @@ class ProvisionExistingOwnerTests(TestCase):
         )
         self.assertTrue(SubscriptionActive(org))
         self.assertTrue(UsagePeriod.objects.filter(subscription__organization=org).exists())
-        self.assertEqual(
-            {d.code for d in Department.objects.filter(organization=org)},
-            {"sales", "support"},
-        )
         record = OrganizationProvisioning.objects.get(idempotency_key="idem-acme")
         self.assertEqual(record.status, ProvisioningStatus.COMPLETED)
         self.assertEqual(record.organization_id, org.id)

@@ -9,14 +9,9 @@ from hub_platform.support_portals.statuses import ArticleStatus, PortalStatus
 
 
 class SupportPortal(TenantRelationModel):
-    """Публичный Help Center, управляемый внутри отдела поддержки."""
+    """Публичный Help Center организации."""
 
-    tenant_relation_fields = ("department", "widget_channel", "widget")
-    department = models.ForeignKey(
-        "identity.Department",
-        on_delete=models.PROTECT,
-        related_name="support_portals",
-    )
+    tenant_relation_fields = ("widget_channel", "widget")
     public_id = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     slug = models.SlugField(max_length=64, unique=True)
     hosted_domain = models.CharField(max_length=253, unique=True)
@@ -80,10 +75,6 @@ class SupportPortal(TenantRelationModel):
         from hub_platform.support_portals.widget_validation import validate_portal_widget
 
         clean_portal_domains(self)
-        if self.department_id is not None and self.department.code != "support":
-            raise ValidationError(
-                {"department": "Support portal must belong to the support department"}
-            )
         validate_portal_widget(self)
 
 
@@ -139,10 +130,6 @@ class SupportPortalProduct(TenantRelationModel):
         if channel.product_id != self.product_id:
             raise ValidationError(
                 {"support_channel": "Support channel must belong to the linked product"}
-            )
-        if channel.department_id is None or channel.department.code != "support":
-            raise ValidationError(
-                {"support_channel": "Support channel must belong to the support department"}
             )
         if (
             not channel.requires_authenticated_product_identity

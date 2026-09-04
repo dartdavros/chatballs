@@ -38,8 +38,6 @@ from hub_platform.tenancy.context import TenantContext
 
 def _deny_channel_policy(channel) -> errors.SupportSessionError | None:
     """Fail-closed проверки канала (SPEC §5.2)."""
-    if channel.department_id is None or channel.department.code != "support":
-        return errors.SupportSessionError(errors.CHANNEL_NOT_SUPPORT)
     if channel.product_id is None:
         return errors.SupportSessionError(errors.CHANNEL_PRODUCT_MISMATCH)
     if channel.requires_authenticated_product_identity and not channel.allow_anonymous_sessions:
@@ -245,6 +243,8 @@ def _create_or_continue_conversation(*, organization, channel, snapshot, widget)
     conversation = Conversation.objects.create(
         organization=channel.organization,
         channel=channel,
+        # Диалог наследует группу канала при создании (ADR-HUB-0043 §3).
+        group=channel.group,
         connection=widget.integration,
         contact=None,
         support_identity_snapshot=snapshot,

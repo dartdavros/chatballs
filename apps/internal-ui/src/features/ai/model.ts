@@ -2,7 +2,7 @@ export type ChannelRef = {
   id: number;
   code: string;
   name: string;
-  department: { id: number; code: string; name: string } | null;
+  group: { id: number; name: string } | null;
   product: { code: string; name: string } | null;
 };
 

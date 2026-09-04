@@ -63,7 +63,6 @@ export function KnowledgeTable({
           {canSelect && <col className="knowledge-col-select" />}
           <col className="knowledge-col-title" />
           <col className="knowledge-col-category" />
-          <col className="knowledge-col-visibility" />
           {!bulkMode && <col className="knowledge-col-attachments" />}
           {!bulkMode && <col className="knowledge-col-agents" />}
           <col className="knowledge-col-status" />
@@ -78,7 +77,6 @@ export function KnowledgeTable({
             )}
             <th>ЗНАНИЕ</th>
             <th>КАТЕГОРИЯ</th>
-            <th>ДОСТУПНОСТЬ</th>
             {!bulkMode && <th className="numeric">ВЛОЖ.</th>}
             {!bulkMode && <th className="numeric">АГЕНТЫ</th>}
             <th>СТАТУС</th>
@@ -112,15 +110,6 @@ export function KnowledgeTable({
                 <small className="knowledge-description">{item.description || "—"}</small>
               </td>
               <td className="knowledge-category-path">{knowledgeCategoryPath(categories, item.category.id) || item.category.name}</td>
-              <td>
-                {item.visibility === "ORGANIZATION" ? (
-                  <span className="knowledge-visibility-badge organization">Организация</span>
-                ) : (
-                  <span className="knowledge-department-badges">
-                    {item.departments.map((department) => <span key={department.id}>{department.name}</span>)}
-                  </span>
-                )}
-              </td>
               {!bulkMode && <td className="numeric">
                 {item.attachments.length || <span className="product-empty-value">—</span>}
               </td>}

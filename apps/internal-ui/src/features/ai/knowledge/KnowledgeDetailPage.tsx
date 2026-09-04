@@ -4,29 +4,25 @@ import { useCallback, useEffect, useState } from "react";
 import type { AiAgent } from "../model";
 import { Button } from "../../../shared/ui-controls";
 import { EmptyState, LoadingState } from "../../../shared/ui";
-import type { Department, RouteKey } from "../../../types";
+import type { RouteKey } from "../../../types";
 import {
   deleteAttachment,
   deleteKnowledgeItem,
   fetchKnowledgeItem,
-  isKnowledgeScopeConflict,
   updateKnowledgeItem,
   uploadAttachment,
   type KnowledgeItem,
-  type KnowledgeScopeConflict,
 } from "./model";
 import { KnowledgeAttachmentsCard } from "./KnowledgeAttachmentsCard";
 import { KnowledgeDetailSidebar } from "./KnowledgeDetailSidebar";
 import { KnowledgeEditorBreadcrumb } from "./KnowledgeEditorBreadcrumb";
 import { KnowledgeEditorCard } from "./KnowledgeEditorCard";
 import { knowledgeEditorError, knowledgeEditorRequest, knowledgeEditorState, type KnowledgeEditorState } from "./knowledgeEditorModel";
-import { KnowledgeScopeConflictModal } from "./KnowledgeScopeConflictModal";
 import { useKnowledgeCategories } from "./useKnowledgeCategories";
 
 export function KnowledgeDetailPage({
   agents,
   canManage,
-  departments,
   knowledgeId,
   onLoaded,
   openAgent,
@@ -34,7 +30,6 @@ export function KnowledgeDetailPage({
 }: {
   agents: AiAgent[];
   canManage: boolean;
-  departments: Department[];
   knowledgeId: number | null;
   onLoaded: (title: string | null) => void;
   openAgent: (agentId: number) => void;
@@ -48,7 +43,6 @@ export function KnowledgeDetailPage({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [conflicts, setConflicts] = useState<KnowledgeScopeConflict[]>([]);
 
   const load = useCallback(async () => {
     if (!knowledgeId) return;
@@ -78,8 +72,7 @@ export function KnowledgeDetailPage({
       await action();
       await load();
     } catch (caught) {
-      if (isKnowledgeScopeConflict(caught)) setConflicts(caught.payload.conflicts);
-      else setError(caught instanceof Error ? caught.message : "Не удалось сохранить знание");
+      setError(caught instanceof Error ? caught.message : "Не удалось сохранить знание");
     } finally {
       setBusy(false);
     }
@@ -102,7 +95,6 @@ export function KnowledgeDetailPage({
           <KnowledgeEditorCard
             busy={busy}
             categories={catalog.categories}
-            departments={departments}
             editable={canManage}
             error={error}
             item={item}
@@ -132,7 +124,6 @@ export function KnowledgeDetailPage({
           </div>
         </Modal>
       )}
-      {conflicts.length > 0 && <KnowledgeScopeConflictModal conflicts={conflicts} onClose={() => setConflicts([])} openAgent={openAgent} />}
     </div>
   );
 }

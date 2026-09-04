@@ -3,7 +3,7 @@ from django.contrib.auth.admin import UserAdmin
 
 from hub_platform.identity.models import (
     AuditEvent,
-    Department,
+    EmployeeGroup,
     HumanUser,
     Organization,
     OrganizationInvitation,
@@ -39,11 +39,11 @@ class OrganizationAdmin(admin.ModelAdmin):
     search_fields = ["slug", "name"]
 
 
-@admin.register(Department)
-class DepartmentAdmin(admin.ModelAdmin):
-    list_display = ["code", "name", "organization", "status"]
-    list_filter = ["organization", "status"]
-    search_fields = ["code", "name"]
+@admin.register(EmployeeGroup)
+class EmployeeGroupAdmin(admin.ModelAdmin):
+    list_display = ["name", "organization", "created_at"]
+    list_filter = ["organization"]
+    search_fields = ["name"]
 
 
 @admin.register(OrganizationMembership)
@@ -53,7 +53,6 @@ class OrganizationMembershipAdmin(admin.ModelAdmin):
         "organization",
         "role",
         "position_title",
-        "primary_department",
         "must_change_password",
         "totp_required",
         "blocked_at",
@@ -61,7 +60,6 @@ class OrganizationMembershipAdmin(admin.ModelAdmin):
     list_filter = [
         "organization",
         "role",
-        "primary_department",
         "user__must_change_password",
         "totp_required",
     ]

@@ -28,7 +28,6 @@ class SupportPortalTestCase(TestCase):
             organization=self.organization,
             code="foxray-help",
             name="Foxray support",
-            department=result.support_department,
             product=self.product,
             requires_authenticated_product_identity=True,
             allow_anonymous_sessions=False,

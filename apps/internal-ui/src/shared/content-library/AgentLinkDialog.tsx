@@ -10,7 +10,7 @@ export type AgentLinkOption = {
   id: number;
   name: string;
   channelName: string;
-  departmentName: string | null;
+  groupName: string | null;
 };
 
 export type AgentLinkOutcome = {
@@ -73,7 +73,7 @@ export function AgentLinkDialog({
                   <option value="">Выберите агента</option>
                   {agents.map((agent) => (
                     <option value={agent.id} key={agent.id}>
-                      {agent.name} · {agent.channelName}{agent.departmentName ? ` · ${agent.departmentName}` : ""}
+                      {agent.name} · {agent.channelName}{agent.groupName ? ` · ${agent.groupName}` : ""}
                     </option>
                   ))}
                 </select>

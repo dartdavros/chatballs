@@ -1,5 +1,4 @@
-from django.core.exceptions import ValidationError
-from django.db import IntegrityError, transaction
+from django.db import transaction
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -7,23 +6,32 @@ from rest_framework.views import APIView
 
 from hub_platform.events.services import DomainEvent, enqueue_event
 from hub_platform.identity.audit import record_audit_event
-from hub_platform.identity.access_services import create_access_assignment
 from hub_platform.identity.employee_support import employee_payload, get_owned_profile
 from hub_platform.identity.employee_validation import (
     ASSIGNABLE_ROLES,
     clean_position_title,
     deny_employee_action,
-    resolve_department,
+    resolve_groups,
 )
 from hub_platform.identity.event_handlers import INITIAL_ACCESS_REQUESTED
 from hub_platform.identity.governance import EmployeeAction, can_create_role, can_manage_employee
+from hub_platform.identity.group_models import EmployeeGroupMember
 from hub_platform.identity.models import EmployeeRole, HumanUser, OrganizationMembership
-from hub_platform.identity.policy import (
-    ResourceScope,
-    accessible_department_ids,
-    authorize,
-    has_capability_any_scope,
-)
+from hub_platform.identity.policy import has_capability_any_scope
+
+
+def _set_groups(profile: OrganizationMembership, groups) -> None:
+    profile.group_links.all().delete()
+    EmployeeGroupMember.objects.bulk_create(
+        [
+            EmployeeGroupMember(
+                organization_id=profile.organization_id,
+                group=group,
+                employee=profile,
+            )
+            for group in groups
+        ]
+    )
 
 
 class EmployeeListView(APIView):
@@ -34,13 +42,10 @@ class EmployeeListView(APIView):
         if not has_capability_any_scope(actor, "employees.view"):
             return Response({"detail": "Not allowed"}, status=403)
         employees = (
-            OrganizationMembership.objects.select_related("user", "primary_department")
-            .prefetch_related("access_assignments__access_profile__capability_links")
+            OrganizationMembership.objects.select_related("user")
+            .prefetch_related("group_links__group")
             .filter(organization=actor.organization)
         )
-        department_ids = accessible_department_ids(actor, "employees.view")
-        if department_ids is not None:
-            employees = employees.filter(primary_department_id__in=department_ids)
         return Response(
             {
                 "items": [
@@ -64,7 +69,6 @@ class EmployeeCreateView(APIView):
         provided_password = str(body.get("temporaryPassword", ""))
         position_title, position_error = clean_position_title(body.get("positionTitle"))
         requested_role = str(body.get("role", EmployeeRole.EMPLOYEE))
-        assignments = body.get("accessAssignments", [])
 
         if requested_role not in ASSIGNABLE_ROLES:
             return Response({"detail": "Invalid role"}, status=400)
@@ -76,12 +80,6 @@ class EmployeeCreateView(APIView):
             return Response({"detail": "Email is required"}, status=400)
         if not full_name:
             return Response({"detail": "Full name is required"}, status=400)
-        if not isinstance(assignments, list) or any(
-            not isinstance(assignment, dict) for assignment in assignments
-        ):
-            return Response({"detail": "accessAssignments must be a list"}, status=400)
-        if requested_role == EmployeeRole.ADMIN and assignments:
-            return Response({"detail": "ADMIN access is defined by the system role"}, status=400)
         if position_error:
             return Response({"detail": position_error}, status=400)
         if provided_password:
@@ -89,11 +87,9 @@ class EmployeeCreateView(APIView):
         if HumanUser.objects.filter(email=email).exists():
             return Response({"detail": "Email is already used"}, status=400)
 
-        department, department_error = resolve_department(
-            actor.organization, str(body.get("department", "")).strip()
-        )
-        if department_error:
-            return Response({"detail": department_error}, status=400)
+        groups, groups_error = resolve_groups(actor.organization, body.get("groupIds"))
+        if groups_error:
+            return Response({"detail": groups_error}, status=400)
 
         user = HumanUser.objects.create_user(
             email=email,
@@ -109,14 +105,9 @@ class EmployeeCreateView(APIView):
             role=requested_role,
             position_title=position_title,
             phone=phone,
-            primary_department=department,
         )
-        try:
-            for assignment in assignments:
-                create_access_assignment(actor=actor, employee=profile, payload=assignment)
-        except (ValidationError, IntegrityError) as error:
-            transaction.set_rollback(True)
-            return Response({"detail": str(error)}, status=400)
+        if groups:
+            _set_groups(profile, groups)
         record_audit_event(
             action="identity.employee_created",
             actor=request.user,
@@ -146,8 +137,7 @@ class EmployeeDetailView(APIView):
         profile = get_owned_profile(request, user_id)
         if profile is None:
             return Response({"detail": "Employee not found"}, status=404)
-        scope = ResourceScope(profile.organization_id, profile.primary_department_id)
-        if not authorize(actor, "employees.view", scope):
+        if not has_capability_any_scope(actor, "employees.view"):
             return Response({"detail": "Employee not found"}, status=404)
         return Response({"employee": employee_payload(profile, actor, include_detail=True)})
 
@@ -171,9 +161,6 @@ class EmployeeUpdateView(APIView):
         position_title, position_error = clean_position_title(
             body.get("positionTitle", profile.position_title)
         )
-        current_department_code = (
-            profile.primary_department.code if profile.primary_department else ""
-        )
         requested_role = str(body.get("role", profile.role))
 
         if not full_name:
@@ -192,18 +179,13 @@ class EmployeeUpdateView(APIView):
             if not can_manage_employee(actor, profile, EmployeeAction.CHANGE_ROLE):
                 return deny_employee_action(request, profile, EmployeeAction.CHANGE_ROLE)
 
-        department, department_error = resolve_department(
-            profile.organization, str(body.get("department", current_department_code))
-        )
-        if department_error:
-            return Response({"detail": department_error}, status=400)
-        placement_changing = (
-            department.id if department else None
-        ) != profile.primary_department_id
-        if placement_changing and not can_manage_employee(
-            actor, profile, EmployeeAction.CHANGE_PLACEMENT
+        groups, groups_error = resolve_groups(profile.organization, body.get("groupIds"))
+        if groups_error:
+            return Response({"detail": groups_error}, status=400)
+        if groups is not None and not can_manage_employee(
+            actor, profile, EmployeeAction.CHANGE_GROUPS
         ):
-            return deny_employee_action(request, profile, EmployeeAction.CHANGE_PLACEMENT)
+            return deny_employee_action(request, profile, EmployeeAction.CHANGE_GROUPS)
 
         profile.user.full_name = full_name
         profile.user.email = email
@@ -211,15 +193,9 @@ class EmployeeUpdateView(APIView):
         profile.phone = phone
         profile.position_title = position_title
         profile.role = requested_role
-        profile.primary_department = department
-        profile.save(
-            update_fields=[
-                "phone",
-                "position_title",
-                "role",
-                "primary_department",
-            ]
-        )
+        profile.save(update_fields=["phone", "position_title", "role"])
+        if groups is not None:
+            _set_groups(profile, groups)
 
         record_audit_event(
             action="identity.employee_updated",
@@ -239,14 +215,14 @@ class EmployeeUpdateView(APIView):
                 payload={"role": profile.role},
                 request=request,
             )
-        if placement_changing:
+        if groups is not None:
             record_audit_event(
-                action="identity.employee_placement_changed",
+                action="identity.employee_groups_changed",
                 actor=request.user,
                 organization=profile.organization,
                 object_type="HumanUser",
                 object_id=str(profile.user_id),
-                payload={"department": department.code if department else None},
+                payload={"groupIds": [group.id for group in groups]},
                 request=request,
             )
         return Response({"employee": employee_payload(profile, actor)})

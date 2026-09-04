@@ -7,8 +7,6 @@ from django.db import transaction
 from hub_platform.ai.extraction import extract_text
 from hub_platform.ai.indexing import reindex_knowledge
 from hub_platform.ai.knowledge_categories import ensure_uncategorized_category
-from hub_platform.ai.knowledge_types import KnowledgeVisibility
-from hub_platform.ai.knowledge_visibility import replace_knowledge_visibility
 from hub_platform.ai.models import (
     Knowledge,
     KnowledgeAttachment,
@@ -30,8 +28,6 @@ class KnowledgeInput:
     content: str
     is_enabled: bool
     category_id: int | None = None
-    visibility: str | None = None
-    department_ids: tuple[int, ...] | None = None
 
 
 def _knowledge_category(*, context: TenantContext, category_id: int | None) -> KnowledgeCategory:
@@ -50,8 +46,6 @@ def _knowledge_category(*, context: TenantContext, category_id: int | None) -> K
 def create_knowledge(*, context: TenantContext, data: KnowledgeInput) -> Knowledge:
     if not data.title.strip():
         raise ValidationError({"title": "Title is required"})
-    visibility = data.visibility or KnowledgeVisibility.ORGANIZATION
-    department_ids = data.department_ids or ()
     knowledge = Knowledge.objects.create(
         organization=context.organization,
         category=_knowledge_category(context=context, category_id=data.category_id),
@@ -59,13 +53,6 @@ def create_knowledge(*, context: TenantContext, data: KnowledgeInput) -> Knowled
         description=data.description.strip(),
         content=data.content,
         is_enabled=data.is_enabled,
-        visibility=visibility,
-    )
-    knowledge = replace_knowledge_visibility(
-        context=context,
-        knowledge=knowledge,
-        visibility=visibility,
-        department_ids=department_ids,
     )
     reindex_knowledge(knowledge)
     return knowledge
@@ -81,17 +68,6 @@ def update_knowledge(
         raise ValidationError({"title": "Title is required"})
     locked = Knowledge.objects.select_for_update().get(pk=knowledge.pk)
     content_changed = locked.content != data.content
-    if data.visibility is not None or data.department_ids is not None:
-        locked = replace_knowledge_visibility(
-            context=context,
-            knowledge=locked,
-            visibility=data.visibility or locked.visibility,
-            department_ids=(
-                data.department_ids
-                if data.department_ids is not None
-                else tuple(locked.department_links.values_list("department_id", flat=True))
-            ),
-        )
     locked.title = data.title.strip()
     locked.description = data.description.strip()
     locked.content = data.content

@@ -7,7 +7,7 @@ from hub_platform.conversations.models import (
     ConversationRead,
     LifecycleState,
 )
-from hub_platform.conversations.selectors import conversations_for_context
+from hub_platform.conversations.selectors import visible_conversations_for
 from hub_platform.conversations.serializers import conversation_payload, message_payload
 from hub_platform.conversations.services import (
     ClaimError,
@@ -20,22 +20,19 @@ from hub_platform.conversations.services import (
     return_to_queue,
 )
 from hub_platform.conversations.view_base import ConversationViewBase
-from hub_platform.identity.policy import (
-    ResourceScope,
-    accessible_department_ids,
-    authorize,
-)
+from hub_platform.identity.group_models import EmployeeGroup
+from hub_platform.identity.models import OrganizationMembership
+from hub_platform.identity.policy import ResourceScope, authorize
 
 
 class ConversationListView(ConversationViewBase):
     def get(self, request: Request) -> Response:
-        items = conversations_for_context(request.tenant_context)
-        department_ids = accessible_department_ids(request.tenant_context.membership, self.required_capability)
-        if department_ids is not None:
-            items = items.filter(channel__department_id__in=department_ids)
-        department = request.query_params.get("department")
-        if department:
-            items = items.filter(channel__department__code=department)
+        items = visible_conversations_for(request.tenant_context)
+        group = request.query_params.get("group")
+        if group == "none":
+            items = items.filter(group__isnull=True)
+        elif group:
+            items = items.filter(group_id=group)
         lifecycle = request.query_params.get("lifecycle")
         if lifecycle:
             items = items.filter(lifecycle=lifecycle)
@@ -267,6 +264,73 @@ class ConversationSpamView(ConversationViewBase):
                     conversation,
                     with_messages=True,
                     viewer_id=request.user.id,
+                )
+            }
+        )
+
+
+class ConversationGroupView(ConversationViewBase):
+    """Перенос диалога в группу и снятие группы (ADR-HUB-0043 §3)."""
+
+    required_capability = "conversations.operate"
+
+    def post(self, request: Request, conversation_id: int) -> Response:
+        try:
+            conversation = self._conversation(request, conversation_id, self.required_capability)
+        except Conversation.DoesNotExist:
+            return Response({"detail": "Диалог не найден"}, status=404)
+        group_id = request.data.get("groupId")
+        group = None
+        if group_id is not None:
+            group = EmployeeGroup.objects.filter(
+                organization_id=conversation.organization_id, id=group_id
+            ).first()
+            if group is None:
+                return Response({"detail": "Группа не найдена"}, status=400)
+        conversation.group = group
+        conversation.save(update_fields=["group"])
+        self._audit(request, "group_changed", conversation)
+        return Response(
+            {
+                "conversation": conversation_payload(
+                    conversation, viewer_id=request.user.id
+                )
+            }
+        )
+
+
+class ConversationAssigneeView(ConversationViewBase):
+    """Назначение и переназначение ответственного (ADR-HUB-0043 §3)."""
+
+    required_capability = "conversations.operate"
+
+    def post(self, request: Request, conversation_id: int) -> Response:
+        try:
+            conversation = self._conversation(request, conversation_id, self.required_capability)
+        except Conversation.DoesNotExist:
+            return Response({"detail": "Диалог не найден"}, status=404)
+        user_id = request.data.get("userId")
+        assignee = None
+        if user_id is not None:
+            membership = (
+                OrganizationMembership.objects.select_related("user")
+                .filter(
+                    organization_id=conversation.organization_id,
+                    user_id=user_id,
+                    blocked_at__isnull=True,
+                )
+                .first()
+            )
+            if membership is None:
+                return Response({"detail": "Сотрудник не найден"}, status=400)
+            assignee = membership.user
+        conversation.assigned_operator = assignee
+        conversation.save(update_fields=["assigned_operator"])
+        self._audit(request, "assignee_changed", conversation)
+        return Response(
+            {
+                "conversation": conversation_payload(
+                    conversation, viewer_id=request.user.id
                 )
             }
         )

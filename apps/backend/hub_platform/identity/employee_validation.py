@@ -5,8 +5,7 @@ from hub_platform.identity.audit import record_audit_event
 from hub_platform.identity.models import (
     POSITION_TITLE_MAX_LENGTH,
     AuditResult,
-    Department,
-    DepartmentStatus,
+    EmployeeGroup,
     EmployeeRole,
     OrganizationMembership,
 )
@@ -23,17 +22,17 @@ def clean_position_title(raw: object) -> tuple[str, str | None]:
     return value, None
 
 
-def resolve_department(organization, code: str) -> tuple[Department | None, str | None]:
-    code = (code or "").strip()
-    if not code:
+def resolve_groups(organization, raw: object) -> tuple[list[EmployeeGroup] | None, str | None]:
+    """Валидирует список id групп из запроса; None на входе — «не менять»."""
+    if raw is None:
         return None, None
-    try:
-        department = Department.objects.get(
-            organization=organization, code=code, status=DepartmentStatus.ACTIVE
-        )
-    except Department.DoesNotExist:
-        return None, "Department not found"
-    return department, None
+    if not isinstance(raw, list) or any(not isinstance(item, int) for item in raw):
+        return None, "groupIds must be a list of ids"
+    requested = list(dict.fromkeys(raw))
+    groups = list(EmployeeGroup.objects.filter(organization=organization, id__in=requested))
+    if len(groups) != len(requested):
+        return None, "Group not found"
+    return groups, None
 
 
 def deny_employee_action(

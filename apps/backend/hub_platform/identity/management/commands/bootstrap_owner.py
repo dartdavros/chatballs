@@ -22,6 +22,6 @@ class Command(BaseCommand):
         state = "created" if result.created_owner else "already_exists"
         self.stdout.write(
             self.style.SUCCESS(
-                f"OWNER {state}: {result.owner.email}; org={result.organization.slug}; department={result.sales_department.code}"
+                f"OWNER {state}: {result.owner.email}; org={result.organization.slug}; groups={result.operators_group.name},{result.support_group.name}"
             )
         )

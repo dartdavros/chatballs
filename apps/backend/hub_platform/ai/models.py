@@ -4,7 +4,6 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from pgvector.django import VectorField
 
-from hub_platform.ai.knowledge_types import KnowledgeVisibility
 from hub_platform.tenancy.models import TenantRelationModel
 
 # Один основной агент на канал обработки (ADR-HUB-0019, ADR-HUB-0023).
@@ -26,7 +25,8 @@ class CredentialMode(models.TextChoices):
     BYOK = "BYOK", "BYOK"  # секрет организации через AIAgent.provider_integration
 
 
-# --- Знания: иерархия и отделовая доступность (ADR-HUB-0036) ---
+# --- Знания: общая библиотека организации с иерархией категорий
+# (ADR-HUB-0023, ADR-HUB-0041 §8: областей видимости по отделам нет) ---
 
 
 class Knowledge(models.Model):
@@ -40,36 +40,17 @@ class Knowledge(models.Model):
     description = models.CharField(max_length=500, blank=True)
     content = models.TextField(blank=True)  # Markdown
     is_enabled = models.BooleanField(default=True)
-    visibility = models.CharField(
-        max_length=16,
-        choices=KnowledgeVisibility.choices,
-        default=KnowledgeVisibility.ORGANIZATION,
-    )
-    departments = models.ManyToManyField(
-        "identity.Department",
-        through="KnowledgeDepartment",
-        related_name="knowledge_items",
-        blank=True,
-    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ["title"]
         verbose_name_plural = "knowledge"
-        constraints = [
-            models.CheckConstraint(
-                condition=models.Q(visibility__in=KnowledgeVisibility.values),
-                name="knowledge_visibility_valid",
-            )
-        ]
 
     def clean(self) -> None:
         super().clean()
         if self.category_id is not None and self.category.organization_id != self.organization_id:
             raise ValidationError({"category": "Category belongs to another organization"})
-        if self.visibility not in KnowledgeVisibility.values:
-            raise ValidationError({"visibility": "Unknown knowledge visibility"})
 
     def save(self, *args: object, **kwargs: object) -> None:
         self.clean()
@@ -83,7 +64,6 @@ class Knowledge(models.Model):
 # models after Knowledge exists so they are registered without growing this file.
 from hub_platform.ai.knowledge_models import (  # noqa: E402, F401
     KnowledgeCategory,
-    KnowledgeDepartment,
 )
 
 

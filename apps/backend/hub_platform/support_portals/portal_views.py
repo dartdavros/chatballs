@@ -55,7 +55,6 @@ class PortalBaseView(APIView):
         "PUT": "support.operate",
         "DELETE": "support.operate",
     }
-    required_department_code = "support"
 
     def portal(self, request: Request, portal_id: int) -> SupportPortal | None:
         try:
@@ -235,7 +234,6 @@ class PortalSupportChannelsView(PortalBaseView):
                 integration__provider=IntegrationProvider.WEB,
                 integration__status=IntegrationStatus.OK,
                 integration__is_active=True,
-                integration__channel__department__code="support",
                 integration__channel__product__isnull=False,
                 integration__channel__is_active=True,
             )
@@ -254,7 +252,6 @@ class PortalSupportChannelsView(PortalBaseView):
                 integration__provider=IntegrationProvider.WEB,
                 integration__status=IntegrationStatus.OK,
                 integration__is_active=True,
-                integration__channel__department__code="support",
                 integration__channel__is_active=True,
                 integration__channel__requires_authenticated_product_identity=False,
                 integration__channel__allow_anonymous_sessions=True,

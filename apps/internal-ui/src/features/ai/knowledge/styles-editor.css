@@ -38,7 +38,6 @@
 
 .knowledge-editor-fields { display: flex; flex-direction: column; gap: 14px; }
 .knowledge-main-card .form-field input { height: 42px; font-size: 14px; }
-.knowledge-editor-scope-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .knowledge-editor-field { display: flex; min-width: 0; flex-direction: column; gap: 5px; color: #595959; font-size: 12.5px; font-weight: 500; }
 .knowledge-editor-field > span small { color: #8c8c8c; font-weight: 400; }
 
@@ -55,40 +54,6 @@
 }
 
 .knowledge-category-select select { min-width: 0; flex: 1; border: 0; outline: 0; color: #262626; background: transparent; font: inherit; font-size: 14px; }
-
-.knowledge-visibility-segmented {
-  display: flex;
-  height: 42px;
-  padding: 3px;
-  border: 1px solid #d9d9d9;
-  border-radius: 9px;
-  background: #f5f5f5;
-}
-
-.knowledge-visibility-segmented button { flex: 1; border: 0; border-radius: 7px; color: #595959; background: transparent; font-size: 13px; font-weight: 500; }
-.knowledge-visibility-segmented button.active { color: #262626; background: #fff; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03); font-weight: 600; }
-
-.knowledge-departments-field { gap: 6px; }
-.knowledge-department-picker { position: relative; }
-.knowledge-department-picker-value {
-  display: flex;
-  min-height: 42px;
-  align-items: center;
-  gap: 7px;
-  flex-wrap: wrap;
-  padding: 6px 10px;
-  border: 1px solid #e8e8e8;
-  border-radius: 9px;
-  background: #fff;
-}
-
-.knowledge-department-chip { display: inline-flex; align-items: center; gap: 7px; padding: 4px 8px 4px 10px; border-radius: 999px; color: #0958d9; background: #e6f4ff; font-size: 12.5px; font-weight: 600; }
-.knowledge-department-chip > i { width: 6px; height: 6px; border-radius: 50%; background: #1677ff; }
-.knowledge-department-chip button { display: flex; padding: 0; border: 0; color: inherit; background: transparent; opacity: 0.7; }
-.knowledge-add-department { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border: 1px dashed #d9d9d9; border-radius: 999px; color: #8c8c8c; background: #fff; font-size: 12.5px; font-weight: 600; }
-
-.knowledge-department-dropdown .ant-dropdown-menu-item button > span { display: flex; width: 17px; height: 17px; align-items: center; justify-content: center; border: 1px solid #d9d9d9; border-radius: 5px; color: transparent; }
-.knowledge-department-dropdown .ant-dropdown-menu-item button > span.selected { border-color: #1677ff; color: #fff; background: #1677ff; }
 
 .knowledge-content-field { display: flex; flex-direction: column; gap: 6px; }
 .knowledge-content-field > span { color: #595959; font-size: 12.5px; font-weight: 500; }

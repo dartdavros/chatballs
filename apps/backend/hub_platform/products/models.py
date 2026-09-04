@@ -4,7 +4,6 @@ from django.core.exceptions import ValidationError
 from django.db import models
 
 from hub_platform.identity.crypto import EncryptedCharField
-from hub_platform.tenancy.models import TenantRelationModel
 
 
 class ProductStatus(models.TextChoices):
@@ -33,19 +32,3 @@ class Product(models.Model):
 
     def __str__(self) -> str:
         return f"{self.organization.slug}/{self.code}"
-
-
-class ProductDepartment(TenantRelationModel):
-    tenant_relation_fields = ("product", "department")
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="department_links")
-    department = models.ForeignKey("identity.Department", on_delete=models.PROTECT, related_name="product_links")
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(fields=["product", "department"], name="uniq_product_department")
-        ]
-
-    def clean(self) -> None:
-        if self.product.organization_id != self.department.organization_id:
-            raise ValidationError("Product and department must belong to the same organization")

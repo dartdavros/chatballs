@@ -71,7 +71,6 @@ class SupportSessionStartView(_Public):
                 "organization",
                 "integration",
                 "integration__channel",
-                "integration__channel__department",
                 "integration__channel__product",
             ).filter(
                 organization=organization,

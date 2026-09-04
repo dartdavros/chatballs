@@ -131,6 +131,8 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
             conversation = Conversation.objects.create(
                 organization=channel.organization,
                 channel=channel,
+                # Диалог наследует группу канала при создании (ADR-HUB-0043 §3).
+                group=channel.group,
                 connection=integration,
                 contact=contact,
                 external_chat_id=inbound.chat_id,
@@ -181,7 +183,6 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
     if is_new:
         notify(
             context=context,
-            department=channel.department,
             type=NotificationType.DIALOG_WAITING,
             audience=NotificationAudience.OPERATORS,
             title=f"Новый диалог · {channel.name}",
@@ -196,7 +197,6 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
         operator = conversation.assigned_operator
         notify(
             context=context,
-            department=channel.department,
             type=NotificationType.DIALOG_NEW_MESSAGE,
             audience=NotificationAudience.USER if operator else NotificationAudience.OPERATORS,
             recipient_user=operator,
@@ -244,7 +244,6 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
         Message.objects.create(conversation=conversation, author_type=MessageAuthor.AI, text=fallback)
         notify(
             context=context,
-            department=channel.department,
             type=NotificationType.DIALOG_WAITING,
             audience=NotificationAudience.OPERATORS,
             title=f"Нужен оператор · {contact.name or 'Гость'}",
@@ -285,7 +284,6 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
         Message.objects.create(conversation=conversation, author_type=MessageAuthor.SYSTEM, text="AI передал диалог оператору")
         notify(
             context=context,
-            department=channel.department,
             type=NotificationType.DIALOG_WAITING,
             audience=NotificationAudience.OPERATORS,
             title=f"AI передал диалог · {contact.name or 'Гость'}",

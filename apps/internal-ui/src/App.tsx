@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { edevsHubTheme } from "@edevs/ui";
 
 import { api, setActiveOrganization } from "./api/client";
-import { canAccess, defaultRoute, hasCapability } from "./auth/access";
+import { canAccess, defaultRoute, isManager } from "./auth/access";
 import { activateOrganization, clearOrganizationPreference } from "./auth/session";
 import { AuthChangePassword, AuthLogin, AuthPasswordRecovery, AuthResetPassword, AuthTotpCode, AuthTotpSetup } from "./features/auth/AuthScreens";
 import { Shell } from "./layout/Shell";
@@ -12,7 +12,7 @@ import { pathFromRoute, routeFromPath } from "./router";
 import { ErrorScreen, LoadingScreen, PermissionScreen } from "./shared/ui";
 import { useRouteNavigation } from "./useRouteNavigation";
 import type { AiAgent } from "./features/ai/model";
-import type { AppData, AuthChallenge, AuthenticatedUser, Department, Employee, Product, SessionUser } from "./types";
+import type { AppData, AuthChallenge, AuthenticatedUser, Employee, EmployeeGroup, Product, SessionUser } from "./types";
 
 export function App() {
   const initialRoute = useMemo(() => routeFromPath(window.location.pathname, window.location.search), []);
@@ -23,7 +23,7 @@ export function App() {
   const [totpChallenge, setTotpChallenge] = useState<AuthChallenge | null>(null);
   const [recovering, setRecovering] = useState(false);
   const [resetting, setResetting] = useState(() => window.location.pathname === "/reset-password");
-  const [data, setData] = useState<AppData>({ employees: [], departments: [], products: [], agents: [] });
+  const [data, setData] = useState<AppData>({ employees: [], groups: [], products: [], agents: [] });
   const [dataError, setDataError] = useState(false);
   const navigation = useRouteNavigation(initialRoute, organizationPublicId);
   const { navigate } = navigation;
@@ -40,14 +40,15 @@ export function App() {
   const loadData = useCallback(async () => {
     setDataError(false);
     try {
-      const [employees, departments, products] = await Promise.all([
-        user && canAccess(user, "employees")
+      const manager = Boolean(user && isManager(user));
+      const [employees, groups, products] = await Promise.all([
+        manager
           ? api<{ items: Employee[] }>("/api/v1/employees/")
           : Promise.resolve({ items: [] }),
-        user && canAccess(user, "departments")
-          ? api<{ items: Department[] }>("/api/v1/company/departments/")
+        manager
+          ? api<{ items: EmployeeGroup[] }>("/api/v1/company/groups/")
           : Promise.resolve({ items: [] }),
-        user && hasCapability(user, "products.view")
+        manager
           ? api<{ items: Product[] }>("/api/v1/company/products/")
           : Promise.resolve({ items: [] }),
       ]);
@@ -56,7 +57,7 @@ export function App() {
         const agentsResponse = await api<{ items: AiAgent[] }>("/api/v1/ai/agents/");
         agents = agentsResponse.items;
       }
-      setData({ employees: employees.items, departments: departments.items, products: products.items, agents });
+      setData({ employees: employees.items, groups: groups.items, products: products.items, agents });
     } catch {
       setDataError(true);
     }
@@ -117,7 +118,7 @@ export function App() {
     clearOrganizationPreference();
     setTotpChallenge(null);
     navigate("command", null, true, null, null);
-    setData({ employees: [], departments: [], products: [], agents: [] });
+    setData({ employees: [], groups: [], products: [], agents: [] });
   }
 
   if (resetting) {

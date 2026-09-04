@@ -27,7 +27,6 @@ class PublicSupportPortalTests(TestCase):
             organization=result.organization,
             code="edevs-help-chat",
             name="Edevs Help — чат",
-            department=result.support_department,
             requires_authenticated_product_identity=False,
             allow_anonymous_sessions=True,
         )

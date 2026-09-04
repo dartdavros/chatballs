@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from django.core.files.base import ContentFile
 
-from hub_platform.ai.knowledge_types import KnowledgeVisibility
 from hub_platform.ai.models import (
     AIAgent,
     AIAgentStatus,
@@ -59,7 +58,7 @@ def _ensure_channel(refs: DemoRefs, item: dict) -> None:
         code=item["code"],
         defaults={
             "name": item["name"],
-            "department": refs.departments.get(item.get("department")),
+            "group": refs.groups.get(item.get("group")),
             "product": refs.products.get(item.get("product")),
             "provider_integration": refs.integrations.get(item.get("providerIntegration")),
             "is_active": item.get("isActive", True),
@@ -106,7 +105,6 @@ def _ensure_knowledge(context: TenantContext, refs: DemoRefs, items: list[dict])
                 "category": category,
                 "description": item.get("description", ""),
                 "content": item.get("content", ""),
-                "visibility": item.get("visibility", KnowledgeVisibility.ORGANIZATION),
             },
         )
         refs.knowledge[item["key"]] = knowledge

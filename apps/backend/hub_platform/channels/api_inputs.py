@@ -91,7 +91,7 @@ def parse_update(data: dict, *, current_code: str) -> ChannelUpdate:
         raise ValidationError({"code": "Код канала не изменяется после создания"})
     return ChannelUpdate(
         name=data["name"] if "name" in data else UNSET,
-        department_id=_optional_id(data, "departmentId"),
+        group_id=_optional_id(data, "groupId"),
         product_id=_optional_id(data, "productId"),
         is_active=_optional_bool(data, "isActive"),
         policy=parse_policy_fields(data["policy"]) if "policy" in data else {},

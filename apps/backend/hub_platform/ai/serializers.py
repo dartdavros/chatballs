@@ -4,7 +4,6 @@ from hub_platform.ai.models import (
     KnowledgeAttachment,
     KnowledgeCategory,
 )
-from hub_platform.identity.models import Department
 from hub_platform.support_portals.addressing import article_public_url
 
 
@@ -14,7 +13,11 @@ def _channel_ref(channel) -> dict[str, object]:
         "code": channel.code,
         "name": channel.name,
         "product": {"code": channel.product.code, "name": channel.product.name} if channel.product_id else None,
-        "department": department_ref_payload(channel.department) if channel.department_id else None,
+        "group": (
+            {"id": channel.group_id, "name": channel.group.name}
+            if channel.group_id
+            else None
+        ),
     }
 
 
@@ -47,25 +50,12 @@ def category_payload(category: KnowledgeCategory) -> dict[str, object]:
     }
 
 
-def department_ref_payload(department: Department) -> dict[str, object]:
-    return {
-        "id": department.id,
-        "code": department.code,
-        "name": department.name,
-    }
-
-
 def knowledge_payload(knowledge: Knowledge, *, include_content: bool = True) -> dict[str, object]:
     payload: dict[str, object] = {
         "id": knowledge.id,
         "title": knowledge.title,
         "description": knowledge.description,
         "category": category_ref_payload(knowledge.category),
-        "visibility": knowledge.visibility,
-        "departments": [
-            department_ref_payload(department)
-            for department in knowledge.departments.all()
-        ],
         "isEnabled": knowledge.is_enabled,
         "attachments": [attachment_payload(attachment) for attachment in knowledge.attachments.all()],
         "agentsCount": getattr(knowledge, "agents_count", None),

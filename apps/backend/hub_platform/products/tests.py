@@ -4,19 +4,18 @@ from django.test import TestCase
 from hub_platform.testing import TenantAPIClient as APIClient
 
 from hub_platform.identity.bootstrap import bootstrap_edevs_owner
-from hub_platform.identity.models import Department, Organization
-from hub_platform.products.models import Product, ProductDepartment, ProductStatus
+from hub_platform.identity.models import Organization
+from hub_platform.products.models import Product, ProductStatus
 
 
 class ProductApiTests(TestCase):
     def setUp(self) -> None:
         bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
         self.organization = Organization.objects.get(slug="edevs")
-        self.sales = Department.objects.get(organization=self.organization, code="sales")
         self.client = APIClient()
         self.client.login(username="owner@edevs.tech", password="temporary-password")
 
-    def test_create_product_is_active_and_assigned_to_department(self) -> None:
+    def test_create_product_is_active(self) -> None:
         response = self.client.post(
             "/api/v1/company/products/create/",
             data=json.dumps(
@@ -24,7 +23,6 @@ class ProductApiTests(TestCase):
                     "code": "academy",
                     "name": "Academy",
                     "siteUrl": "https://academy.edevs.tech",
-                    "departmentIds": [self.sales.id],
                 }
             ),
             content_type="application/json",
@@ -33,8 +31,6 @@ class ProductApiTests(TestCase):
         self.assertEqual(response.status_code, 201)
         payload = response.json()["product"]
         self.assertEqual(payload["status"], ProductStatus.ACTIVE)
-        self.assertEqual(payload["departments"][0]["code"], "sales")
-        self.assertTrue(ProductDepartment.objects.filter(product_id=payload["id"], department=self.sales).exists())
 
     def test_update_does_not_change_product_code(self) -> None:
         product = Product.objects.get(code="firepage")
@@ -44,7 +40,6 @@ class ProductApiTests(TestCase):
                 {
                     "code": "changed-code",
                     "name": "FirePage Updated",
-                    "departmentIds": [self.sales.id],
                 }
             ),
             content_type="application/json",

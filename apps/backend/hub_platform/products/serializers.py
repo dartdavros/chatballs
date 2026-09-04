@@ -30,10 +30,6 @@ def product_payload(product: Product) -> dict[str, object]:
         "name": product.name,
         "status": product.status,
         "siteUrl": product.site_url,
-        "departments": [
-            {"id": link.department_id, "code": link.department.code, "name": link.department.name}
-            for link in product.department_links.all()
-        ],
         "channels": [_channel_payload(channel) for channel in product.channels.all()],
         "createdAt": product.created_at.isoformat(),
         "updatedAt": product.updated_at.isoformat(),

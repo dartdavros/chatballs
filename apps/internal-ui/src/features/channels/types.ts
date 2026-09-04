@@ -31,9 +31,8 @@ export type Channel = {
   name: string;
   isActive: boolean;
   product: { id: number; code: string; name: string } | null;
-  departmentId: number | null;
-  department: string | null;
-  departmentName: string | null;
+  groupId: number | null;
+  groupName: string | null;
   agent: ChannelAgent | null;
   connections: ChannelConnection[];
   policy: ChannelPolicy;

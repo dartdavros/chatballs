@@ -1,7 +1,6 @@
 from django.urls import path
 
 from hub_platform.identity import (
-    access_views,
     employee_security_views,
     employee_views,
     ownership_views,
@@ -19,6 +18,4 @@ urlpatterns = [
     path("<int:user_id>/block/", employee_security_views.EmployeeBlockView.as_view(), name="employee-block"),
     path("<int:user_id>/unblock/", employee_security_views.EmployeeUnblockView.as_view(), name="employee-unblock"),
     path("<int:user_id>/transfer-ownership/", ownership_views.OwnershipTransferView.as_view(), name="employee-transfer-ownership"),
-    path("<int:user_id>/access-assignments/", access_views.EmployeeAccessAssignmentView.as_view(), name="employee-access-assignment"),
-    path("<int:user_id>/access-assignments/<int:assignment_id>/", access_views.EmployeeAccessAssignmentRevokeView.as_view(), name="employee-access-assignment-revoke"),
 ]

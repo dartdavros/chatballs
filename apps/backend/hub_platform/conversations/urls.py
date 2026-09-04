@@ -16,4 +16,6 @@ urlpatterns = [
     path("<int:conversation_id>/request-contact/", views.ConversationRequestContactView.as_view(), name="conversation-request-contact"),
     path("<int:conversation_id>/close/", views.ConversationCloseView.as_view(), name="conversation-close"),
     path("<int:conversation_id>/spam/", views.ConversationSpamView.as_view(), name="conversation-spam"),
+    path("<int:conversation_id>/group/", views.ConversationGroupView.as_view(), name="conversation-group"),
+    path("<int:conversation_id>/assignee/", views.ConversationAssigneeView.as_view(), name="conversation-assignee"),
 ]

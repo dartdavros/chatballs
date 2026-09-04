@@ -4,12 +4,11 @@ import { Button } from "../../../shared/ui-controls";
 import { formatDate } from "../../../shared/utils";
 import { KnowledgeEditorFields } from "./KnowledgeEditorFields";
 import type { KnowledgeEditorState } from "./knowledgeEditorModel";
-import type { KnowledgeCategory, KnowledgeDepartmentReference, KnowledgeItem } from "./types";
+import type { KnowledgeCategory, KnowledgeItem } from "./types";
 
 export function KnowledgeEditorCard({
   busy,
   categories,
-  departments,
   editable,
   error,
   item,
@@ -21,7 +20,6 @@ export function KnowledgeEditorCard({
 }: {
   busy: boolean;
   categories: KnowledgeCategory[];
-  departments: KnowledgeDepartmentReference[];
   editable: boolean;
   error: string | null;
   item: KnowledgeItem | null;
@@ -49,7 +47,7 @@ export function KnowledgeEditorCard({
         {item && onDelete && <Button className="knowledge-delete-button" variant="secondary" icon="trash" disabled={busy} onClick={onDelete}>Удалить</Button>}
       </>}
     >
-      <KnowledgeEditorFields categories={categories} departments={departments} disabled={busy || !editable} state={state} onChange={onChange} />
+      <KnowledgeEditorFields categories={categories} disabled={busy || !editable} state={state} onChange={onChange} />
     </ContentEditorCard>
   );
 }

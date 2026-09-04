@@ -8,7 +8,7 @@ from hub_platform.testing import TenantAPIClient as APIClient
 from hub_platform.channels.models import Channel
 from hub_platform.identity.audit import AuditResult
 from hub_platform.identity.bootstrap import bootstrap_edevs_owner
-from hub_platform.identity.models import AuditEvent, Department, Organization
+from hub_platform.identity.models import AuditEvent, Organization
 from hub_platform.products.models import Product
 from hub_platform.support.models import (
     ContractStatus,
@@ -80,7 +80,6 @@ class SupportSessionTests(TestCase):
     def setUp(self) -> None:
         bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
         self.organization = Organization.objects.get(slug="edevs")
-        self.support = Department.objects.get(organization=self.organization, code="support")
         self.product = Product.objects.get(organization=self.organization, code="foxray")
         self.product.support_token_secret = SECRET
         self.product.save(update_fields=["support_token_secret"])
@@ -89,7 +88,6 @@ class SupportSessionTests(TestCase):
             organization=self.organization,
             code="foxray-support",
             name="FoxRay — поддержка",
-            department=self.support,
             product=self.product,
             requires_authenticated_product_identity=True,
             allow_anonymous_sessions=False,
@@ -172,11 +170,11 @@ class SupportSessionTests(TestCase):
         self._assert_denied_audit("CONTRACT_DISABLED")
 
     def test_wrong_channel_not_support(self) -> None:
-        # Sales-канал не может принимать support-токен.
-        sales = Department.objects.get(organization=self.organization, code="sales")
+        # Канал без support-политики (анонимные сессии разрешены) не может
+        # принимать support-токен.
         sales_channel = Channel.objects.create(
             organization=self.organization, code="foxray-sales-x",
-            name="FoxRay sales", department=sales, product=self.product,
+            name="FoxRay sales", product=self.product,
         )
         invalid_widget = create_web_widget(
             sales_channel,
@@ -261,7 +259,7 @@ class SupportContractApiTests(TestCase):
         self.assertEqual(response.json()["contract"]["version"], 2)
 
     def test_operator_cannot_register_contract(self) -> None:
-        # Оператор назначен в sales (bootstrap) — не имеет прав на контракты.
+        # Оператор (роль EMPLOYEE) не имеет прав на управление контрактами.
         self.client.login(username="a.kotova@edevs.tech", password="Operator-Local-2026")
         response = self.client.post(
             "/api/v1/support/contracts/",

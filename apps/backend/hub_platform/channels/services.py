@@ -9,11 +9,10 @@ from typing import Any
 from django.core.exceptions import ValidationError
 from django.db import transaction
 
-from hub_platform.ai.knowledge_conflicts import require_channel_department_compatible
 from hub_platform.channels import authorization
 from hub_platform.channels.models import Channel
 from hub_platform.channels.policy import ChannelPolicy, require_valid_policy
-from hub_platform.identity.models import Department, DepartmentStatus
+from hub_platform.identity.group_models import EmployeeGroup
 from hub_platform.integrations.models import Integration, IntegrationKind
 from hub_platform.products.models import Product
 from hub_platform.tenancy.context import TenantContext
@@ -76,7 +75,7 @@ class ChannelUpdate:
     """Частичное изменение: UNSET — поле не передано (SPEC §6.5)."""
 
     name: Any = UNSET
-    department_id: Any = UNSET
+    group_id: Any = UNSET
     product_id: Any = UNSET
     is_active: Any = UNSET
     policy: dict[str, bool] = field(default_factory=dict)
@@ -100,19 +99,18 @@ def _clean_name(raw: object) -> str:
     return name
 
 
-def _department_for_channel(
-    *, context: TenantContext, department_id: int | None
-) -> Department | None:
-    if department_id is None:
+def _group_for_channel(
+    *, context: TenantContext, group_id: int | None
+) -> EmployeeGroup | None:
+    if group_id is None:
         return None
     try:
-        return Department.objects.get(
-            id=department_id,
+        return EmployeeGroup.objects.get(
+            id=group_id,
             organization_id=context.organization_id,
-            status=DepartmentStatus.ACTIVE,
         )
-    except Department.DoesNotExist as error:
-        raise ValidationError({"departmentId": "Unknown or disabled department"}) from error
+    except EmployeeGroup.DoesNotExist as error:
+        raise ValidationError({"groupId": "Unknown group"}) from error
 
 
 def _product_for_channel(
@@ -134,7 +132,7 @@ def create_channel(
     context: TenantContext,
     code: object,
     name: object,
-    department_id: int | None,
+    group_id: int | None,
     product_id: int | None,
     policy: ChannelPolicy,
     connection_ids: list[int] | None = None,
@@ -142,7 +140,7 @@ def create_channel(
     authorization.require_organization_manage(context, operation="Создание канала")
     clean_code = _clean_code(code)
     clean_name = _clean_name(name)
-    department = _department_for_channel(context=context, department_id=department_id)
+    group = _group_for_channel(context=context, group_id=group_id)
     product = _product_for_channel(context=context, product_id=product_id)
     # Инварианты проверяются до записи: частичное применение запрещено (§3.2).
     require_valid_policy(policy=policy, has_product=product is not None)
@@ -156,7 +154,7 @@ def create_channel(
         organization_id=context.organization_id,
         code=clean_code,
         name=clean_name,
-        department=department,
+        group=group,
         product=product,
         **policy.as_model_fields(),
     )
@@ -181,15 +179,9 @@ def update_channel(
     )
 
     if update.name is not UNSET:
-        authorization.require_channel_manage(
-            context, department_id=locked.department_id
-        )
-    if update.department_id is not UNSET and update.department_id != locked.department_id:
-        authorization.require_department_change(
-            context,
-            current_department_id=locked.department_id,
-            target_department_id=update.department_id,
-        )
+        authorization.require_channel_manage(context)
+    if update.group_id is not UNSET and update.group_id != locked.group_id:
+        authorization.require_channel_manage(context)
     if update.product_id is not UNSET and update.product_id != locked.product_id:
         authorization.require_organization_manage(
             context, operation="Изменение продукта канала"
@@ -209,15 +201,9 @@ def update_channel(
         if clean_name != locked.name:
             locked.name = clean_name
             changed.append("name")
-    if update.department_id is not UNSET and update.department_id != locked.department_id:
-        department = _department_for_channel(
-            context=context, department_id=update.department_id
-        )
-        require_channel_department_compatible(
-            channel=locked, department_id=update.department_id
-        )
-        locked.department = department
-        changed.append("department")
+    if update.group_id is not UNSET and update.group_id != locked.group_id:
+        locked.group = _group_for_channel(context=context, group_id=update.group_id)
+        changed.append("group")
     if update.product_id is not UNSET and update.product_id != locked.product_id:
         product = _product_for_channel(context=context, product_id=update.product_id)
         locked.product = product

@@ -1,4 +1,4 @@
-import { ApiError, api, apiUpload } from "../../../api/client";
+import { api, apiUpload } from "../../../api/client";
 import type {
   AgentCategoryKnowledgeSelectionResult,
   AgentLinkRequest,
@@ -6,7 +6,6 @@ import type {
   KnowledgeAttachment,
   KnowledgeBulkMoveRequest,
   KnowledgeBulkResult,
-  KnowledgeBulkVisibilityRequest,
   KnowledgeCategory,
   KnowledgeCategoryCreateRequest,
   KnowledgeCategoryUpdateRequest,
@@ -15,24 +14,12 @@ import type {
   KnowledgeImportReport,
   KnowledgeItem,
   KnowledgeListFilters,
-  KnowledgeScopeConflictResponse,
   KnowledgeUpdateRequest,
 } from "./types";
-
-export function isKnowledgeScopeConflict(
-  error: unknown,
-): error is ApiError<KnowledgeScopeConflictResponse> {
-  return error instanceof ApiError
-    && error.status === 409
-    && error.payload.code === "agent_knowledge_scope_conflict"
-    && Array.isArray(error.payload.conflicts);
-}
 
 function knowledgeListPath(filters: KnowledgeListFilters): string {
   const query = new URLSearchParams();
   if (filters.category !== undefined) query.set("category", String(filters.category));
-  if (filters.department !== undefined) query.set("department", String(filters.department));
-  if (filters.visibility !== undefined) query.set("visibility", filters.visibility);
   if (filters.isEnabled !== undefined) query.set("isEnabled", String(filters.isEnabled));
   if (filters.search !== undefined && filters.search !== "") query.set("search", filters.search);
   const suffix = query.toString();
@@ -89,13 +76,6 @@ export function deleteKnowledgeCategory(id: number) {
 
 export function bulkMoveKnowledge(data: KnowledgeBulkMoveRequest) {
   return api<KnowledgeBulkResult>("/api/v1/ai/knowledge/bulk/move/", {
-    method: "POST",
-    body: JSON.stringify(data),
-  });
-}
-
-export function bulkReplaceKnowledgeVisibility(data: KnowledgeBulkVisibilityRequest) {
-  return api<KnowledgeBulkResult>("/api/v1/ai/knowledge/bulk/visibility/", {
     method: "POST",
     body: JSON.stringify(data),
   });

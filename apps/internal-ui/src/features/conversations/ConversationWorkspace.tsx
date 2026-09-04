@@ -20,13 +20,10 @@ import type { ConversationListItem, ListTab } from "./types";
 import { useConversationCall } from "./useConversationCall";
 import { useIncomingMessageSound } from "./useIncomingMessageSound";
 
-// Общий workspace диалогов (SPEC-HUB-0010 §8.2): sales и support используют его.
-// Параметризуется department (изоляция inbox §10 + фильтр fetchConversations),
-// заголовком/placeholder поиска и правой панелью через render-prop: consumer
-// получает {dialog, detail} из state (sales рендерит лид-контекст, support —
-// operator_cards из контракта).
-export function ConversationWorkspace({ department, isOwner = false, listTitle, searchPlaceholder, renderContextPanel, initialConversationId }: {
-  department: "sales" | "support";
+// Общий workspace диалогов (SPEC-HUB-0010 §8.2). Видимость inbox решает
+// backend по группам (ADR-HUB-0043); страница параметризуется заголовком,
+// placeholder поиска и правой панелью через render-prop.
+export function ConversationWorkspace({ isOwner = false, listTitle, searchPlaceholder, renderContextPanel, initialConversationId }: {
   isOwner?: boolean;
   listTitle?: string;
   searchPlaceholder?: string;
@@ -47,7 +44,7 @@ export function ConversationWorkspace({ department, isOwner = false, listTitle, 
 
   const loadList = useCallback(async () => {
     try {
-      const items = await fetchConversations(department);
+      const items = await fetchConversations();
       setConversations(items);
       setListLoaded(true);
       setListError("");
@@ -55,7 +52,7 @@ export function ConversationWorkspace({ department, isOwner = false, listTitle, 
     } catch {
       setListError("Не удалось обновить список диалогов");
     }
-  }, [department]);
+  }, []);
 
   const loadDetail = useCallback(async (id: number) => {
     try {

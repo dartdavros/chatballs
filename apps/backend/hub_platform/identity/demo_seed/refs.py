@@ -19,7 +19,7 @@ class DemoRefs:
 
     organization: object | None = None
     subscription: object | None = None
-    departments: dict[str, object] = field(default_factory=dict)
+    groups: dict[str, object] = field(default_factory=dict)
     memberships: dict[str, object] = field(default_factory=dict)
     users: dict[str, object] = field(default_factory=dict)
     products: dict[str, object] = field(default_factory=dict)

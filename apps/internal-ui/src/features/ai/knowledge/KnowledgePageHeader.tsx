@@ -15,7 +15,7 @@ export function KnowledgePageHeader({
   return (
     <PageHeader
       title="Знания"
-      text="Иерархическая библиотека · категория задаёт размещение, область доступности — какие отделы могут использовать знание"
+      text="Иерархическая библиотека знаний организации · категория задаёт размещение знания"
       action={(canImport || canCreate) && (
         <div className="knowledge-header-actions">
           {canImport && <Button variant="secondary" icon="download" onClick={onImport}>Импорт YAML</Button>}

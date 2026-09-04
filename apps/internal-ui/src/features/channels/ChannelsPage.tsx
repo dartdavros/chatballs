@@ -1,9 +1,9 @@
-import { hasCapability, scopeDepartments } from "../../auth/access";
+import { hasCapability } from "../../auth/access";
 import { SwitchButton } from "../../shared/form-controls";
 import { Icon } from "../../shared/icons";
 import { ContentState, ErrorScreen, LoadingState, PageHeader } from "../../shared/ui";
 import { Button, SearchInput, UnderlineTabs } from "../../shared/ui-controls";
-import type { Department, SessionUser } from "../../types";
+import type { EmployeeGroup, SessionUser } from "../../types";
 import { ChannelDeactivationDialog } from "./ChannelDeactivationDialog";
 import { ChannelDeleteDialog } from "./ChannelDeleteDialog";
 import { ChannelsTable } from "./ChannelsTable";
@@ -12,21 +12,17 @@ import type { Channel } from "./types";
 import { useChannelsPage } from "./useChannelsPage";
 
 export function ChannelsPage({
-  user, departments, openChannel, openChannelCreate, openAgent,
+  user, groups, openChannel, openChannelCreate, openAgent,
 }: {
   user: SessionUser;
-  departments: Department[];
+  groups: EmployeeGroup[];
   openChannel: (channelId: number) => void;
   openChannelCreate: () => void;
   openAgent: (agentId: number) => void;
 }) {
-  const page = useChannelsPage(departments);
-  const scopedCodes = scopeDepartments(user, "channels.view");
-  const scopedNames = scopedCodes
-    ?.map((code) => departments.find((department) => department.code === code)?.name ?? code)
-    .join(", ");
+  const page = useChannelsPage(groups);
   const canManageLifecycle = hasCapability(user, "channels.manage");
-  const canOpenAgent = (channel: Channel) => hasCapability(user, "ai.view", channel.department ?? undefined);
+  const canOpenAgent = (_channel: Channel) => hasCapability(user, "ai.view");
   const openChannelCard = (channelId: number) => {
     if (window.location.hash) {
       window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
@@ -41,27 +37,17 @@ export function ChannelsPage({
     <>
       <PageHeader
         title="Каналы"
-        text="Точка маршрутизации диалогов: связывает отдел, продукт, подключения и — необязательно — AI-агента"
+        text="Точка маршрутизации диалогов: связывает группу, продукт, подключения и — необязательно — AI-агента. Группа определяет, какие сотрудники видят диалоги канала; без группы диалоги видны всем"
         action={canManageLifecycle ? <Button className="channel-create-action" variant="primary" icon="plus" onClick={openChannelCreate}>Создать канал</Button> : undefined}
       />
 
       {page.feedback && <div className="channel-feedback is-error">{page.feedback}</div>}
 
-      {scopedNames && page.channels.length > 0 && (
-        <ContentState
-          className="channels-scope-state"
-          icon={<Icon name="lock" size={23} />}
-          tone="warning"
-          title="Доступ ограничен отделом"
-          text={<>Показаны каналы отдела «{scopedNames}». Каналы других отделов и канал без отдела не отображаются; счётчики фильтров считаются по видимым каналам.</>}
-        />
-      )}
-
       {page.channels.length === 0 ? (
         <ContentState
           icon={<Icon name="route" size={24} />}
           title="Создайте первый канал"
-          text="Канал маршрутизирует диалоги от подключений к отделу, продукту и — при необходимости — к AI-агенту."
+          text="Канал маршрутизирует диалоги от подключений к группе, продукту и — при необходимости — к AI-агенту. Группа определяет, какие сотрудники видят диалоги канала; без группы диалоги видны всем."
           action={canManageLifecycle ? <Button className="channel-state-action" variant="primary" onClick={openChannelCreate}>Создать канал</Button> : undefined}
         />
       ) : (

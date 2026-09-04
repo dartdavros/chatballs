@@ -57,7 +57,6 @@ class PublicPortalView(APIView):
                 .filter(
                     id=route.resource_id,
                     organization=organization,
-                    department__code="support",
                     status="PUBLISHED",
                 )
                 .first()

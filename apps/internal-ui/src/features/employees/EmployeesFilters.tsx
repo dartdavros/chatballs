@@ -1,21 +1,24 @@
 import { Segmented } from "../../shared/ui";
 import { SearchInput } from "../../shared/ui-controls";
-import type { EmployeePlacementFilter, EmployeeRoleFilter } from "./model";
+import type { EmployeeGroup } from "../../types";
+import type { EmployeeRoleFilter } from "./model";
 
 export function EmployeesFilters({
-  placement,
+  groupId,
+  groups,
   query,
   resetFilters,
   role,
-  setPlacement,
+  setGroupId,
   setQuery,
   setRole,
 }: {
-  placement: EmployeePlacementFilter;
+  groupId: number | "all";
+  groups: EmployeeGroup[];
   query: string;
   resetFilters: () => void;
   role: EmployeeRoleFilter;
-  setPlacement: (placement: EmployeePlacementFilter) => void;
+  setGroupId: (groupId: number | "all") => void;
   setQuery: (query: string) => void;
   setRole: (role: EmployeeRoleFilter) => void;
 }) {
@@ -26,10 +29,15 @@ export function EmployeesFilters({
         <span>Роль</span>
         <Segmented value={role} setValue={setRole} items={[["all", "Все"], ["OWNER", "Владелец"], ["ADMIN", "Администратор"], ["EMPLOYEE", "Сотрудник"]]} />
       </div>
-      <div className="filter-group">
-        <span>Размещение</span>
-        <Segmented value={placement} setValue={setPlacement} items={[["all", "Все"], ["company", "Компания"], ["department", "Отдел"]]} />
-      </div>
+      {groups.length > 0 && (
+        <div className="filter-group">
+          <span>Группа</span>
+          <select value={String(groupId)} onChange={(event) => setGroupId(event.target.value === "all" ? "all" : Number(event.target.value))}>
+            <option value="all">Все</option>
+            {groups.map((group) => <option value={group.id} key={group.id}>{group.name}</option>)}
+          </select>
+        </div>
+      )}
       <button className="reset-filter" type="button" onClick={resetFilters}>Сбросить</button>
     </div>
   );

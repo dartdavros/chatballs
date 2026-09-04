@@ -3,22 +3,21 @@ from dataclasses import dataclass
 from django.db import transaction
 
 from hub_platform.identity.audit import record_audit_event
-from hub_platform.identity.access_defaults import ensure_system_assignment
+from hub_platform.identity.group_models import EmployeeGroup, EmployeeGroupMember
 from hub_platform.identity.models import (
-    Department,
     EmployeeRole,
     HumanUser,
     Organization,
     OrganizationMembership,
 )
-from hub_platform.products.models import Product, ProductDepartment
+from hub_platform.products.models import Product
 
 
 @dataclass(frozen=True)
 class BootstrapResult:
     organization: Organization
-    sales_department: Department
-    support_department: Department
+    operators_group: EmployeeGroup
+    support_group: EmployeeGroup
     owner: HumanUser
     created_owner: bool
 
@@ -36,23 +35,17 @@ def bootstrap_edevs_owner(*, email: str, password: str, full_name: str = "") -> 
     from hub_platform.ai.knowledge_categories import ensure_uncategorized_category
 
     ensure_uncategorized_category(organization)
-    sales_department, _ = Department.objects.get_or_create(
-        organization=organization,
-        code="sales",
-        defaults={"name": "Продажи"},
+    # Группы сотрудников (ADR-HUB-0043): не обязательны для запуска, но дают
+    # локальному контуру и тестам готовое разделение потоков.
+    operators_group, _ = EmployeeGroup.objects.get_or_create(
+        organization=organization, name="Операторы"
     )
-    # Отдел поддержки (ADR-HUB-0022, SPEC-HUB-0010 §4.1): authenticated in-product
-    # чат существующих клиентов продуктов. Сосуществует с sales, identity разделены.
-    support_department, _ = Department.objects.get_or_create(
-        organization=organization,
-        code="support",
-        defaults={"name": "Поддержка"},
+    support_group, _ = EmployeeGroup.objects.get_or_create(
+        organization=organization, name="Поддержка"
     )
     for code, name in (("firepage", "FirePage"), ("foxray", "Foxray")):
-        product, _ = Product.objects.get_or_create(organization=organization, code=code, defaults={"name": name})
-        ProductDepartment.objects.get_or_create(product=product, department=sales_department)
-    # Каналы обработки и их агенты (ADR-HUB-0019) создаются через API каналов,
-    # а не bootstrap: SPEC-HUB-0027.
+        Product.objects.get_or_create(organization=organization, code=code, defaults={"name": name})
+    # Каналы обработки и их агенты (ADR-HUB-0019) создаются через API каналов.
 
     owner, created_owner = HumanUser.objects.get_or_create(
         email=HumanUser.objects.normalize_email(email),
@@ -70,14 +63,12 @@ def bootstrap_edevs_owner(*, email: str, password: str, full_name: str = "") -> 
         owner.is_superuser = True
         owner.save(update_fields=["is_staff", "is_superuser"])
 
-    owner_profile, _ = OrganizationMembership.objects.get_or_create(
+    OrganizationMembership.objects.get_or_create(
         user=owner,
         organization=organization,
         defaults={
             "role": EmployeeRole.OWNER,
             "position_title": "Владелец",
-            # OWNER всегда на уровне компании (ADR-HUB-0027): без основного отдела.
-            "primary_department": None,
             "totp_required": False,
         },
     )
@@ -104,19 +95,17 @@ def bootstrap_edevs_owner(*, email: str, password: str, full_name: str = "") -> 
         organization=organization,
         defaults={
             "role": EmployeeRole.EMPLOYEE,
-            "position_title": "Оператор отдела продаж",
+            "position_title": "Оператор",
             "phone": "+7 916 245 14 02",
-            "primary_department": sales_department,
         },
     )
     if not operator_profile.phone:
         operator_profile.phone = "+7 916 245 14 02"
         operator_profile.save(update_fields=["phone"])
-    ensure_system_assignment(
+    EmployeeGroupMember.objects.get_or_create(
+        organization=organization,
+        group=operators_group,
         employee=operator_profile,
-        assigned_by=owner_profile,
-        department=sales_department,
-        profile_name="Sales operator",
     )
 
     record_audit_event(
@@ -130,8 +119,8 @@ def bootstrap_edevs_owner(*, email: str, password: str, full_name: str = "") -> 
 
     return BootstrapResult(
         organization=organization,
-        sales_department=sales_department,
-        support_department=support_department,
+        operators_group=operators_group,
+        support_group=support_group,
         owner=owner,
         created_owner=created_owner,
     )

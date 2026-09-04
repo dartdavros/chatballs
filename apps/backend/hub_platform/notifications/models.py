@@ -32,13 +32,6 @@ class NotificationAudience(models.TextChoices):
 
 class Notification(models.Model):
     organization = models.ForeignKey("identity.Organization", on_delete=models.PROTECT, related_name="notifications")
-    department = models.ForeignKey(
-        "identity.Department",
-        on_delete=models.PROTECT,
-        related_name="notifications",
-        null=True,
-        blank=True,
-    )
     type = models.CharField(max_length=32, choices=NotificationType.choices)
     level = models.CharField(max_length=16, choices=NotificationLevel.choices, default=NotificationLevel.INFO)
     title = models.CharField(max_length=255)

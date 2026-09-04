@@ -9,7 +9,7 @@ export function CompanyStatusBanner({ vm }: { vm: CommandVm }) {
         <p>{vm.compSummary}</p>
       </div>
       <div className="company-status-metrics">
-        <SmallMetric label="Отделы" value={vm.banner.departments} />
+        <SmallMetric label="Группы" value={vm.banner.departments} />
         <SmallMetric label="Открытые диалоги" value={vm.banner.open} />
       </div>
     </section>

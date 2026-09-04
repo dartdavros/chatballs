@@ -1,13 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { ApiError, setActiveOrganization } from "../../../api/client";
+import { setActiveOrganization } from "../../../api/client";
 import {
   bulkMoveKnowledge,
-  bulkReplaceKnowledgeVisibility,
   createKnowledgeCategory,
   fetchKnowledgeCategories,
   fetchKnowledgeList,
-  isKnowledgeScopeConflict,
   linkKnowledgeToAgent,
   linkPortalArticlesToAgent,
   selectAgentCategoryKnowledge,
@@ -44,13 +42,11 @@ function mockSuccess(body: unknown = {}): ReturnType<typeof vi.fn> {
 }
 
 describe("knowledge API", () => {
-  it("sends list filters to the backend without deriving visibility", async () => {
+  it("sends list filters to the backend", async () => {
     const fetchMock = mockSuccess({ items: [] });
 
     await fetchKnowledgeList({
       category: 7,
-      department: 2,
-      visibility: "DEPARTMENTS",
       isEnabled: false,
       search: "тариф FoxRay",
     });
@@ -61,8 +57,6 @@ describe("knowledge API", () => {
     );
     expect(Object.fromEntries(url.searchParams)).toEqual({
       category: "7",
-      department: "2",
-      visibility: "DEPARTMENTS",
       isEnabled: "false",
       search: "тариф FoxRay",
     });
@@ -96,18 +90,16 @@ describe("knowledge API", () => {
     const fetchMock = mockSuccess({ updated: 2, knowledgeIds: [10, 11] });
 
     await bulkMoveKnowledge({ knowledgeIds: [10, 11], categoryId: 5 });
-    await bulkReplaceKnowledgeVisibility({
-      knowledgeIds: [10, 11],
-      visibility: "DEPARTMENTS",
-      departmentIds: [2, 4],
-    });
     await selectAgentCategoryKnowledge(9, 5);
 
     expect(fetchMock.mock.calls.map(([path]) => path)).toEqual([
       `/api/v1/organizations/${organizationPublicId}/ai/knowledge/bulk/move/`,
-      `/api/v1/organizations/${organizationPublicId}/ai/knowledge/bulk/visibility/`,
       `/api/v1/organizations/${organizationPublicId}/ai/agents/9/knowledge/select-category/`,
     ]);
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({
+      knowledgeIds: [10, 11],
+      categoryId: 5,
+    });
   });
 
   it("sends agent link requests for both libraries", async () => {
@@ -130,16 +122,5 @@ describe("knowledge API", () => {
       action: "detach",
       articleIds: [4],
     });
-  });
-
-  it("recognizes the backend scope-conflict response", () => {
-    const conflict = new ApiError(409, {
-      code: "agent_knowledge_scope_conflict",
-      detail: "Knowledge scope conflicts with assigned agents",
-      conflicts: [{ agent: { id: 4, name: "Sales" }, knowledge: { id: 8, title: "Policy" } }],
-    });
-
-    expect(isKnowledgeScopeConflict(conflict)).toBe(true);
-    expect(isKnowledgeScopeConflict(new ApiError(400, { detail: "Validation error" }))).toBe(false);
   });
 });

@@ -13,13 +13,6 @@ const empty = {
   supportPortalId: null,
 };
 
-describe("employee access routes", () => {
-  it("parses and creates the access profile URL", () => {
-    expect(routeFromPath("/employees/access-profiles")).toEqual({ route: "accessProfiles", ...empty });
-    expect(pathFromRoute("accessProfiles")).toBe("/employees/access-profiles");
-  });
-});
-
 describe("sales detail routes", () => {
   it("parses a client detail URL", () => {
     expect(routeFromPath("/departments/sales/clients/15")).toEqual({ route: "salesClientDetail", ...empty, clientId: 15 });

@@ -1,10 +1,10 @@
-"""Каталог: продукты и связи отделов."""
+"""Каталог: продукты (скрытая техническая привязка, ADR-HUB-0041)."""
 
 from __future__ import annotations
 
 from hub_platform.identity.demo_seed import manifest
 from hub_platform.identity.demo_seed.refs import DemoRefs
-from hub_platform.products.models import Product, ProductDepartment, ProductStatus
+from hub_platform.products.models import Product, ProductStatus
 from hub_platform.tenancy.context import TenantContext
 
 
@@ -23,7 +23,3 @@ def load(context: TenantContext, refs: DemoRefs) -> None:
             },
         )
         refs.products[item["code"]] = product
-        for department_code in item.get("departments", []):
-            department = refs.departments.get(department_code)
-            if department is not None:
-                ProductDepartment.objects.get_or_create(product=product, department=department)

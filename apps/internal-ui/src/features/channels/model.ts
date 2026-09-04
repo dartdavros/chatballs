@@ -215,32 +215,23 @@ export function blockerSummary(blockers: { type: string; count: number }[]): str
     .join(", ");
 }
 
-export type DepartmentTab = { key: string; label: string; count: number };
+export type GroupTab = { key: string; label: string; count: number };
 
-/** Табы идут в порядке отделов компании; «Без отдела» присутствует даже при нуле. */
-export function departmentTabs(
+/** Табы идут в порядке групп компании; «Без группы» присутствует даже при нуле. */
+export function groupTabs(
   channels: Channel[],
-  departments: Array<{ id: number; name: string; code?: string }>,
-): DepartmentTab[] {
-  const countOf = (departmentId: number | null) =>
-    channels.filter((channel) => channel.departmentId === departmentId).length;
-  const priority: Record<string, number> = { sales: 0, support: 1 };
-  const orderedDepartments = departments
-    .map((department, index) => ({ department, index }))
-    .sort((left, right) => {
-      const leftPriority = priority[left.department.code ?? ""] ?? 100 + left.index;
-      const rightPriority = priority[right.department.code ?? ""] ?? 100 + right.index;
-      return leftPriority - rightPriority;
-    })
-    .map(({ department }) => department);
+  groups: Array<{ id: number; name: string }>,
+): GroupTab[] {
+  const countOf = (groupId: number | null) =>
+    channels.filter((channel) => channel.groupId === groupId).length;
   return [
     { key: "all", label: "Все", count: channels.length },
-    ...orderedDepartments.map((department) => ({
-      key: String(department.id),
-      label: department.name,
-      count: countOf(department.id),
+    ...groups.map((group) => ({
+      key: String(group.id),
+      label: group.name,
+      count: countOf(group.id),
     })),
-    { key: "none", label: "Без отдела", count: countOf(null) },
+    { key: "none", label: "Без группы", count: countOf(null) },
   ];
 }
 
@@ -254,8 +245,8 @@ export function filterChannels(
   const query = search.trim().toLowerCase();
   return channels.filter((channel) => {
     if (!showArchived && !channel.isActive) return false;
-    if (tab === "none" && channel.departmentId !== null) return false;
-    if (tab !== "all" && tab !== "none" && String(channel.departmentId) !== tab) return false;
+    if (tab === "none" && channel.groupId !== null) return false;
+    if (tab !== "all" && tab !== "none" && String(channel.groupId) !== tab) return false;
     if (!query) return true;
     return (
       channel.name.toLowerCase().includes(query) || channel.code.toLowerCase().includes(query)

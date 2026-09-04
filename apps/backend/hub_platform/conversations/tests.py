@@ -306,35 +306,38 @@ class ConversationReadTests(TestCase):
 
 
 class CommandOverviewTests(TestCase):
-    """Сводка командного центра: оба отдела, реальные метрики, доступ OWNER."""
+    """Сводка командного центра: карточки по группам, реальные метрики, доступ OWNER."""
 
     def setUp(self) -> None:
         bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
         self.organization = Organization.objects.get(slug="edevs")
+        self.operators = self.organization.employee_groups.get(name="Операторы")
         self.channel = Channel.objects.create(
             organization=self.organization, code="foxray-sales", name="FoxRay — продажи",
-            department=self.organization.departments.get(code="sales"),
+            group=self.operators,
         )
         self.integration = _messenger_connection(self.channel)
         contact = Contact.objects.create(organization=self.organization, name="Иван")
         Conversation.objects.create(
             organization=self.organization, channel=self.channel, connection=self.integration,
-            contact=contact, control_mode=ControlMode.PAUSED,
+            contact=contact, group=self.operators, control_mode=ControlMode.PAUSED,
         )
         self.client = APIClient()
         self.client.login(username="owner@edevs.tech", password="temporary-password")
 
-    def test_overview_returns_departments_and_attention(self) -> None:
+    def test_overview_returns_groups_and_attention(self) -> None:
         response = self.client.get("/api/v1/conversations/command-overview/?period=today")
         self.assertEqual(response.status_code, 200)
         payload = response.json()
         codes = [d["code"] for d in payload["departments"]]
-        self.assertIn("sales", codes)
-        self.assertIn("support", codes)
-        sales = next(d for d in payload["departments"] if d["code"] == "sales")
-        self.assertEqual(sales["dialogs"]["open"], 1)
-        self.assertEqual(sales["dialogs"]["waiting"], 1)
-        self.assertNotIn("commerce", sales)
+        self.assertIn(str(self.operators.id), codes)
+        operators = next(
+            d for d in payload["departments"] if d["code"] == str(self.operators.id)
+        )
+        self.assertEqual(operators["name"], "Операторы")
+        self.assertEqual(operators["dialogs"]["open"], 1)
+        self.assertEqual(operators["dialogs"]["waiting"], 1)
+        self.assertNotIn("commerce", operators)
         self.assertEqual(payload["company"]["status"], "attention")
         self.assertTrue(any(item["kind"] == "dialog" for item in payload["attention"]))
         # Интеграции отражены с группой.

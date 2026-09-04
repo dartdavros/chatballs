@@ -5,7 +5,6 @@ from django.test import TestCase
 from hub_platform.ai.agent_knowledge import runtime_portal_articles_for_agent
 from hub_platform.ai.knowledge_categories import create_category
 from hub_platform.ai.knowledge_services import KnowledgeInput, create_knowledge
-from hub_platform.ai.knowledge_types import KnowledgeVisibility
 from hub_platform.ai.models import AIAgent, AIAgentStatus, KnowledgeFragment
 from hub_platform.ai.retrieval import lexical_search
 from hub_platform.channels.models import Channel
@@ -32,42 +31,23 @@ class AgentAttachmentTestCase(TestCase):
             password="temporary-password",
         )
         self.organization = result.organization
-        self.sales = result.sales_department
-        self.support = result.support_department
         self.context = system_tenant_context(self.organization)
         self.category = create_category(context=self.context, name="Library")
         self.support_channel = Channel.objects.create(
             organization=self.organization,
             code="attach-support",
             name="Attach support",
-            department=self.support,
-        )
-        self.sales_channel = Channel.objects.create(
-            organization=self.organization,
-            code="attach-sales",
-            name="Attach sales",
-            department=self.sales,
+            group=result.support_group,
         )
         self.support_agent = AIAgent.objects.create(
             channel=self.support_channel,
             name="Support agent",
             status=AIAgentStatus.ACTIVE,
         )
-        self.sales_agent = AIAgent.objects.create(
-            channel=self.sales_channel,
-            name="Sales agent",
-            status=AIAgentStatus.ACTIVE,
-        )
         self.client = TenantAPIClient()
         self.client.force_authenticate(result.owner)
 
-    def knowledge(
-        self,
-        title: str,
-        *,
-        visibility: str = KnowledgeVisibility.ORGANIZATION,
-        department_ids: tuple[int, ...] = (),
-    ):
+    def knowledge(self, title: str):
         return create_knowledge(
             context=self.context,
             data=KnowledgeInput(
@@ -76,8 +56,6 @@ class AgentAttachmentTestCase(TestCase):
                 content=f"{title} content",
                 is_enabled=True,
                 category_id=self.category.id,
-                visibility=visibility,
-                department_ids=department_ids,
             ),
         )
 
@@ -118,30 +96,26 @@ class AgentAttachmentTestCase(TestCase):
 
 
 class AgentKnowledgeLinkApiTests(AgentAttachmentTestCase):
-    def test_attach_adds_available_knowledge_and_reports_skipped(self) -> None:
+    def test_attach_adds_all_selected_organization_knowledge(self) -> None:
         shared = self.knowledge("Shared")
-        sales_only = self.knowledge(
-            "Sales only",
-            visibility=KnowledgeVisibility.DEPARTMENTS,
-            department_ids=(self.sales.id,),
-        )
+        second = self.knowledge("Second")
 
         response = self.post(
             "/api/v1/ai/knowledge/bulk/agent/",
             {
                 "agentId": self.support_agent.id,
-                "knowledgeIds": [shared.id, sales_only.id],
+                "knowledgeIds": [shared.id, second.id],
                 "action": "attach",
             },
         )
 
         self.assertEqual(response.status_code, 200)
         payload = response.json()
-        self.assertEqual(payload["changedIds"], [shared.id])
-        self.assertEqual(payload["skippedIds"], [sales_only.id])
+        self.assertEqual(payload["changedIds"], sorted([shared.id, second.id]))
+        self.assertEqual(payload["skippedIds"], [])
         self.assertEqual(
             set(self.support_agent.knowledge_items.values_list("id", flat=True)),
-            {shared.id},
+            {shared.id, second.id},
         )
 
     def test_attach_is_idempotent_for_already_linked_knowledge(self) -> None:
@@ -157,25 +131,21 @@ class AgentKnowledgeLinkApiTests(AgentAttachmentTestCase):
         self.assertEqual(response.json()["changedIds"], [])
         self.assertEqual(self.support_agent.knowledge_items.count(), 1)
 
-    def test_detach_removes_link_without_availability_check(self) -> None:
-        scoped = self.knowledge(
-            "Support scoped",
-            visibility=KnowledgeVisibility.DEPARTMENTS,
-            department_ids=(self.support.id,),
-        )
-        self.support_agent.knowledge_items.add(scoped)
+    def test_detach_removes_link(self) -> None:
+        shared = self.knowledge("Shared")
+        self.support_agent.knowledge_items.add(shared)
 
         response = self.post(
             "/api/v1/ai/knowledge/bulk/agent/",
             {
                 "agentId": self.support_agent.id,
-                "knowledgeIds": [scoped.id],
+                "knowledgeIds": [shared.id],
                 "action": "detach",
             },
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["changedIds"], [scoped.id])
+        self.assertEqual(response.json()["changedIds"], [shared.id])
         self.assertFalse(self.support_agent.knowledge_items.exists())
 
     def test_unknown_knowledge_id_rejects_whole_request(self) -> None:
@@ -201,7 +171,7 @@ class AgentKnowledgeLinkApiTests(AgentAttachmentTestCase):
 
 
 class AgentPortalArticleLinkApiTests(AgentAttachmentTestCase):
-    def test_attach_article_to_support_agent(self) -> None:
+    def test_attach_article_to_agent(self) -> None:
         article = self.article(self.portal(), title="Refund policy")
 
         response = self.post(
@@ -210,25 +180,13 @@ class AgentPortalArticleLinkApiTests(AgentAttachmentTestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["changedIds"], [article.id])
+        payload = response.json()
+        self.assertEqual(payload["changedIds"], [article.id])
+        self.assertEqual(payload["skippedIds"], [])
         self.assertEqual(
             set(self.support_agent.portal_articles.values_list("id", flat=True)),
             {article.id},
         )
-
-    def test_article_is_skipped_for_agent_outside_support_department(self) -> None:
-        article = self.article(self.portal(), title="Refund policy")
-
-        response = self.post(
-            "/api/v1/ai/portal-articles/bulk/agent/",
-            {"agentId": self.sales_agent.id, "articleIds": [article.id]},
-        )
-
-        self.assertEqual(response.status_code, 200)
-        payload = response.json()
-        self.assertEqual(payload["changedIds"], [])
-        self.assertEqual(payload["skippedIds"], [article.id])
-        self.assertFalse(self.sales_agent.portal_articles.exists())
 
     def test_detach_article_keeps_other_links(self) -> None:
         portal = self.portal()

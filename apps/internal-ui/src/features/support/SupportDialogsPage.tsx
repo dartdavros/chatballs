@@ -8,7 +8,6 @@ export function SupportDialogsPage({ initialConversationId, user }: { initialCon
   const [rightTab, setRightTab] = useState<SupportRightTab>("client");
   return (
     <ConversationWorkspace
-      department="support"
       isOwner={user.role === "OWNER"}
       listTitle="Обращения"
       searchPlaceholder="Поиск по клиенту, продукту…"

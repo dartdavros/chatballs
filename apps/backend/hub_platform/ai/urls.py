@@ -32,11 +32,6 @@ urlpatterns = [
         name="ai-knowledge-bulk-move",
     ),
     path(
-        "knowledge/bulk/visibility/",
-        bulk_views.KnowledgeBulkVisibilityView.as_view(),
-        name="ai-knowledge-bulk-visibility",
-    ),
-    path(
         "knowledge/bulk/agent/",
         bulk_views.AgentKnowledgeLinkView.as_view(),
         name="ai-knowledge-bulk-agent",

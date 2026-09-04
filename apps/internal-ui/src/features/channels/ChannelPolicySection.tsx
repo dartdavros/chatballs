@@ -13,7 +13,7 @@ export function ChannelPolicySection({
   policy,
   hasProduct,
   productName,
-  departmentName,
+  groupName,
   editing,
   canManage,
   busy,
@@ -22,7 +22,7 @@ export function ChannelPolicySection({
   policy: Channel["policy"];
   hasProduct: boolean;
   productName: string;
-  departmentName: string;
+  groupName: string;
   editing: boolean;
   canManage: boolean;
   busy: boolean;
@@ -68,7 +68,7 @@ export function ChannelPolicySection({
         <div className="channel-card-aside">
           <h4>Контекст политики</h4>
           <KeyValue label="Продукт" value={productName} />
-          <KeyValue label="Отдел" value={departmentName} />
+          <KeyValue label="Группа" value={groupName} />
           <KeyValue label="Пресет" value={preset} />
         </div>
         <p className="channel-policy-note">

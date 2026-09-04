@@ -48,7 +48,7 @@ class InternalCallApiTests(CallTestCase):
         self.assertEqual(second.status_code, 409)
         self.assertEqual(set(second.json()), {"detail"})
 
-    def test_other_department_operator_gets_403_without_takeover(self) -> None:
+    def test_operator_outside_group_gets_403(self) -> None:
         support_operator = self.create_support_operator()
         self.client.force_authenticate(user=support_operator)
         response = self.client.post(

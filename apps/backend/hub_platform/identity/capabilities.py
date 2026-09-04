@@ -1,100 +1,54 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+# Возможности как словарь операций backend'а (ADR-HUB-0041, SPEC-HUB-0031 §3).
+# Права выводятся ТОЛЬКО из роли: OWNER и ADMIN идентичны и получают всё;
+# EMPLOYEE получает фиксированный набор для работы в чате. Профили доступа,
+# scope-модель и отделы упразднены (ADR-HUB-0043).
 
-
-class ScopeType:
-    ORGANIZATION = "ORGANIZATION"
-    DEPARTMENT = "DEPARTMENT"
-
-
-@dataclass(frozen=True, slots=True)
-class CapabilitySpec:
-    code: str
-    name: str
-    description: str
-    allowed_scopes: frozenset[str]
-    assignable: bool = True
-    protected: bool = False
-
-
-_ALL_SCOPES = frozenset({ScopeType.ORGANIZATION, ScopeType.DEPARTMENT})
-_ORGANIZATION_ONLY = frozenset({ScopeType.ORGANIZATION})
-
-
-def _capability(
-    code: str,
-    name: str,
-    *,
-    scopes: frozenset[str] = _ALL_SCOPES,
-    assignable: bool = True,
-    protected: bool = False,
-) -> CapabilitySpec:
-    return CapabilitySpec(
-        code=code,
-        name=name,
-        description=name,
-        allowed_scopes=scopes,
-        assignable=assignable,
-        protected=protected,
-    )
-
-
-# SPEC-HUB-0017 §5.2. The registry is application code, never database data.
-CAPABILITY_REGISTRY = {
-    item.code: item
-    for item in (
-        _capability("company.view", "Просмотр компании", scopes=_ORGANIZATION_ONLY),
-        _capability("company.manage", "Управление компанией", scopes=_ORGANIZATION_ONLY),
-        _capability("departments.view", "Просмотр отделов"),
-        _capability("departments.manage", "Управление отделами", scopes=_ORGANIZATION_ONLY),
-        _capability("employees.view", "Просмотр сотрудников"),
-        _capability("employees.manage", "Управление сотрудниками", scopes=_ORGANIZATION_ONLY),
-        _capability(
-            "employees.manage_privileged",
-            "Управление привилегированными сотрудниками",
-            scopes=_ORGANIZATION_ONLY,
-            assignable=False,
-            protected=True,
-        ),
-        _capability(
-            "ownership.transfer",
-            "Передача владения",
-            scopes=_ORGANIZATION_ONLY,
-            assignable=False,
-            protected=True,
-        ),
-        _capability("products.view", "Просмотр продуктов"),
-        _capability("products.manage", "Управление продуктами"),
-        _capability("channels.view", "Просмотр каналов"),
-        _capability("channels.manage", "Управление каналами"),
-        _capability("ai.view", "Просмотр агентов"),
-        _capability("ai.manage", "Настройка агентов"),
-        _capability("ai.publish", "Публикация агентов", scopes=_ORGANIZATION_ONLY),
-        _capability("integrations.view", "Просмотр интеграций", scopes=_ORGANIZATION_ONLY),
-        _capability("integrations.manage", "Управление интеграциями", scopes=_ORGANIZATION_ONLY),
-        _capability("secrets.manage", "Управление секретами", scopes=_ORGANIZATION_ONLY),
-        _capability("settings.view", "Просмотр настроек", scopes=_ORGANIZATION_ONLY),
-        _capability("settings.manage", "Управление настройками", scopes=_ORGANIZATION_ONLY),
-        _capability("audit.view", "Просмотр аудита", scopes=_ORGANIZATION_ONLY),
-        _capability("conversations.view", "Просмотр диалогов"),
-        _capability("conversations.operate", "Работа с диалогами"),
-        _capability("conversations.call", "Звонки"),
-        _capability("customers.view", "Просмотр клиентов"),
-        _capability("customers.manage", "Управление клиентами"),
-        _capability("support.view", "Просмотр поддержки"),
-        _capability("support.operate", "Работа с поддержкой"),
-        _capability("notifications.manage", "Управление уведомлениями", scopes=_ORGANIZATION_ONLY),
-    )
-}
-
-PROTECTED_CAPABILITIES = frozenset(
-    code for code, spec in CAPABILITY_REGISTRY.items() if spec.protected
+ALL_CAPABILITIES: frozenset[str] = frozenset(
+    {
+        "company.view",
+        "company.manage",
+        "employees.view",
+        "employees.manage",
+        "groups.manage",
+        "products.view",
+        "products.manage",
+        "channels.view",
+        "channels.manage",
+        "ai.view",
+        "ai.manage",
+        "ai.publish",
+        "integrations.view",
+        "integrations.manage",
+        "secrets.manage",
+        "settings.view",
+        "settings.manage",
+        "audit.view",
+        "conversations.view",
+        "conversations.operate",
+        "conversations.call",
+        "customers.view",
+        "customers.manage",
+        "support.view",
+        "support.operate",
+        "notifications.manage",
+        "employees.manage_privileged",
+        "ownership.transfer",
+    }
 )
 
+# Сотрудник работает в одном окне — чате: диалоги, звонки, карточка контакта.
+EMPLOYEE_CAPABILITIES: frozenset[str] = frozenset(
+    {
+        "conversations.view",
+        "conversations.operate",
+        "conversations.call",
+        "customers.view",
+        "support.view",
+        "support.operate",
+    }
+)
 
-def capability_spec(code: str) -> CapabilitySpec:
-    try:
-        return CAPABILITY_REGISTRY[code]
-    except KeyError as error:
-        raise ValueError(f"Unknown capability: {code}") from error
+# Операции, доступные только владельцу (SPEC-HUB-0031 §3: передача владения).
+OWNER_ONLY_CAPABILITIES: frozenset[str] = frozenset({"ownership.transfer"})

@@ -20,7 +20,6 @@ export function routeFromPath(pathname: string, search = ""): RouteState {
   const base = { employeeId: null, productCode: null, agentId: null, knowledgeId: null, clientId: null, channelId: null, supportPortalId: null };
   const state = { organizationPublicId, ...base };
   if (path === "/" || path === "/command") return { route: "command", ...state };
-  if (path === "/departments") return { route: "departments", ...state };
   if (path === "/departments/sales") return { route: "salesDialogs", ...state };
   if (path === "/departments/support") return { route: "supportOverview", ...state };
   if (path === "/departments/support/dialogs") return { route: "supportDialogs", ...state };
@@ -31,7 +30,6 @@ export function routeFromPath(pathname: string, search = ""): RouteState {
   }
   if (path === "/departments/sales/dialogs") return { route: "salesDialogs", ...state };
   if (path === "/employees") return { route: "employees", ...state };
-  if (path === "/employees/access-profiles") return { route: "accessProfiles", ...state };
   if (path.startsWith("/employees/")) {
     const id = Number(path.split("/")[2]);
     return Number.isInteger(id) && id > 0 ? { ...state, route: "employeeDetail", employeeId: id } : { route: "employees", ...state };
@@ -81,14 +79,12 @@ export function routeFromPath(pathname: string, search = ""): RouteState {
 export function pathFromRoute(route: RouteKey, entityId: number | null = null, productCode: string | null = null, organizationPublicId: string | null = null): string {
   const prefix = organizationPublicId ? `/organizations/${organizationPublicId}` : "";
   if (route === "command") return `${prefix}/`;
-  if (route === "departments") return `${prefix}/departments`;
   if (route === "supportOverview") return `${prefix}/departments/support`;
   if (route === "supportDialogs") return `${prefix}/departments/support/dialogs`;
   if (route === "salesClients") return `${prefix}/departments/sales/clients`;
   if (route === "salesClientDetail") return entityId ? `${prefix}/departments/sales/clients/${entityId}` : `${prefix}/departments/sales/clients`;
   if (route === "salesDialogs") return `${prefix}/departments/sales/dialogs`;
   if (route === "employees") return `${prefix}/employees`;
-  if (route === "accessProfiles") return `${prefix}/employees/access-profiles`;
   if (route === "employeeDetail") return entityId ? `${prefix}/employees/${entityId}` : `${prefix}/employees`;
   if (route === "supportPortals") return `${prefix}/departments/support/portals`;
   if (route === "supportPortalDetail") return entityId ? `${prefix}/departments/support/portals/${entityId}` : `${prefix}/departments/support/portals`;

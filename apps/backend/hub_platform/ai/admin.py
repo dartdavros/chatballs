@@ -27,10 +27,9 @@ class KnowledgeAdmin(admin.ModelAdmin):
         "title",
         "organization",
         "category",
-        "visibility",
         "is_enabled",
         "updated_at",
     )
-    list_filter = ("visibility", "is_enabled")
+    list_filter = ("is_enabled",)
     search_fields = ("title", "description")
     inlines = [KnowledgeAttachmentInline]

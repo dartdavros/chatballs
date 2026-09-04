@@ -41,7 +41,7 @@ class TenantContextMiddleware:
             try:
                 membership = (
                     OrganizationMembership.objects.select_related(
-                        "organization", "user", "primary_department"
+                        "organization", "user"
                     )
                     .get(
                         organization=organization,

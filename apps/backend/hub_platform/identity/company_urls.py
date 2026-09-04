@@ -1,9 +1,10 @@
 from django.urls import path
 
-from hub_platform.identity import administration_views, company_views
+from hub_platform.identity import administration_views, group_views
 
 urlpatterns = [
-    path("departments/", company_views.DepartmentListView.as_view(), name="department-list"),
+    path("groups/", group_views.GroupListView.as_view(), name="group-list"),
+    path("groups/<int:group_id>/", group_views.GroupDetailView.as_view(), name="group-detail"),
     path(
         "administration/",
         administration_views.OrganizationSettingsView.as_view(),

@@ -9,8 +9,8 @@ import {
   channelCountLabel,
   connectionStatus,
   deletionHint,
-  departmentTabs,
   filterChannels,
+  groupTabs,
   flagLock,
   presetOf,
   slugify,
@@ -24,9 +24,8 @@ function channel(overrides: Partial<Channel>): Channel {
     name: "Канал",
     isActive: true,
     product: null,
-    departmentId: null,
-    department: null,
-    departmentName: null,
+    groupId: null,
+    groupName: null,
     agent: null,
     connections: [],
     policy: OPERATOR_POLICY,
@@ -96,18 +95,18 @@ describe("channel code generation", () => {
 
 describe("channel list filtering", () => {
   const channels = [
-    channel({ id: 1, code: "foxray-sales", name: "FoxRay — продажи", departmentId: 1, departmentName: "Продажи" }),
-    channel({ id: 2, code: "foxray-support", name: "FoxRay — поддержка", departmentId: 2, departmentName: "Поддержка" }),
+    channel({ id: 1, code: "foxray-sales", name: "FoxRay — продажи", groupId: 1, groupName: "Продажи" }),
+    channel({ id: 2, code: "foxray-support", name: "FoxRay — поддержка", groupId: 2, groupName: "Поддержка" }),
     channel({ id: 3, code: "partners", name: "Партнёрская линия" }),
-    channel({ id: 4, code: "old", name: "Старый", departmentId: 1, departmentName: "Продажи", isActive: false }),
+    channel({ id: 4, code: "old", name: "Старый", groupId: 1, groupName: "Продажи", isActive: false }),
   ];
 
-  it("builds a tab per department plus «Без отдела»", () => {
-    expect(departmentTabs(channels, [{ id: 2, code: "support", name: "Поддержка" }, { id: 1, code: "sales", name: "Продажи" }]).map((tab) => [tab.key, tab.label, tab.count])).toEqual([
+  it("builds a tab per group plus «Без группы»", () => {
+    expect(groupTabs(channels, [{ id: 1, name: "Продажи" }, { id: 2, name: "Поддержка" }]).map((tab) => [tab.key, tab.label, tab.count])).toEqual([
       ["all", "Все", 4],
       ["1", "Продажи", 2],
       ["2", "Поддержка", 1],
-      ["none", "Без отдела", 1],
+      ["none", "Без группы", 1],
     ]);
   });
 
@@ -125,11 +124,11 @@ describe("channel list filtering", () => {
     }))).toBe("Нельзя: 1 диалог, 1 подключение");
   });
 
-  it("keeps «Без отдела» visible when the count is zero", () => {
-    const assigned = channels.filter((item) => item.departmentId !== null);
-    expect(departmentTabs(assigned, [{ id: 1, name: "Продажи" }]).at(-1)).toEqual({
+  it("keeps «Без группы» visible when the count is zero", () => {
+    const assigned = channels.filter((item) => item.groupId !== null);
+    expect(groupTabs(assigned, [{ id: 1, name: "Продажи" }]).at(-1)).toEqual({
       key: "none",
-      label: "Без отдела",
+      label: "Без группы",
       count: 0,
     });
   });
@@ -142,7 +141,7 @@ describe("channel list filtering", () => {
     expect(withArchived).toHaveLength(4);
   });
 
-  it("filters by department tab including channels without one", () => {
+  it("filters by group tab including channels without one", () => {
     const orphans = filterChannels(channels, { tab: "none", search: "", showArchived: false });
     expect(orphans.map((item) => item.code)).toEqual(["partners"]);
   });

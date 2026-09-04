@@ -2,13 +2,15 @@ import json
 
 from django.test import TestCase
 
+from hub_platform.ai.knowledge_categories import ensure_uncategorized_category
 from hub_platform.ai.knowledge_services import KnowledgeInput, create_knowledge
-from hub_platform.ai.knowledge_types import KnowledgeVisibility
 from hub_platform.ai.models import AIAgent, AIAgentStatus
 from hub_platform.ai.retrieval import lexical_search, semantic_search
 from hub_platform.ai.runtime import knowledge_catalog
 from hub_platform.channels.models import Channel
 from hub_platform.identity.bootstrap import bootstrap_edevs_owner
+from hub_platform.identity.models import Organization
+from hub_platform.tenancy.context import TenantContext
 from hub_platform.testing import TenantAPIClient, system_tenant_context
 
 
@@ -19,8 +21,6 @@ class AgentKnowledgeAssignmentTests(TestCase):
             password="temporary-password",
         )
         self.organization = result.organization
-        self.sales = result.sales_department
-        self.support = result.support_department
         self.context = system_tenant_context(self.organization)
         self.shared = create_knowledge(
             context=self.context,
@@ -31,33 +31,19 @@ class AgentKnowledgeAssignmentTests(TestCase):
                 is_enabled=True,
             ),
         )
-        self.support_only = create_knowledge(
+        self.second = create_knowledge(
             context=self.context,
             data=KnowledgeInput(
-                title="Support only",
+                title="Second",
                 description="",
-                content="Support procedure",
+                content="Second procedure",
                 is_enabled=True,
-                visibility=KnowledgeVisibility.DEPARTMENTS,
-                department_ids=(self.support.id,),
             ),
         )
-        self.sales_channel = Channel.objects.create(
+        self.channel = Channel.objects.create(
             organization=self.organization,
-            code="sales-agent",
-            name="Sales",
-            department=self.sales,
-        )
-        self.support_channel = Channel.objects.create(
-            organization=self.organization,
-            code="support-agent",
-            name="Support",
-            department=self.support,
-        )
-        self.no_department_channel = Channel.objects.create(
-            organization=self.organization,
-            code="company-agent",
-            name="Company",
+            code="org-agent",
+            name="Org",
         )
         self.client = TenantAPIClient()
         self.client.login(
@@ -72,44 +58,31 @@ class AgentKnowledgeAssignmentTests(TestCase):
             content_type="application/json",
         )
 
-    def test_create_rejects_entire_mixed_department_selection(self) -> None:
+    def test_create_accepts_organization_knowledge(self) -> None:
         response = self._create(
-            self.sales_channel,
-            [self.shared.id, self.support_only.id],
-        )
-
-        self.assertEqual(response.status_code, 400)
-        self.assertFalse(AIAgent.objects.filter(channel=self.sales_channel).exists())
-
-    def test_support_agent_accepts_support_and_organization_knowledge(self) -> None:
-        response = self._create(
-            self.support_channel,
-            [self.shared.id, self.support_only.id],
+            self.channel,
+            [self.shared.id, self.second.id],
         )
 
         self.assertEqual(response.status_code, 201)
-        agent = AIAgent.objects.get(channel=self.support_channel)
+        agent = AIAgent.objects.get(channel=self.channel)
         self.assertEqual(
             set(agent.knowledge_items.values_list("id", flat=True)),
-            {self.shared.id, self.support_only.id},
+            {self.shared.id, self.second.id},
         )
 
-    def test_channel_without_department_accepts_only_organization_knowledge(
-        self,
-    ) -> None:
-        denied = self._create(
-            self.no_department_channel,
-            [self.support_only.id],
+    def test_create_rejects_selection_with_unknown_knowledge_id(self) -> None:
+        response = self._create(
+            self.channel,
+            [self.shared.id, 999999],
         )
 
-        self.assertEqual(denied.status_code, 400)
-        self.assertFalse(AIAgent.objects.filter(channel=self.no_department_channel).exists())
-        allowed = self._create(self.no_department_channel, [self.shared.id])
-        self.assertEqual(allowed.status_code, 201)
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(AIAgent.objects.filter(channel=self.channel).exists())
 
     def test_update_rolls_back_agent_fields_and_selection_on_invalid_id(self) -> None:
         agent = AIAgent.objects.create(
-            channel=self.sales_channel,
+            channel=self.channel,
             name="Original",
             status=AIAgentStatus.ACTIVE,
         )
@@ -120,7 +93,7 @@ class AgentKnowledgeAssignmentTests(TestCase):
             data=json.dumps(
                 {
                     "name": "Changed",
-                    "knowledgeIds": [self.shared.id, self.support_only.id],
+                    "knowledgeIds": [self.shared.id, 999999],
                 }
             ),
             content_type="application/json",
@@ -151,51 +124,60 @@ class AgentKnowledgeRuntimeDefenseTests(TestCase):
                 is_enabled=True,
             ),
         )
-        self.support_only = create_knowledge(
-            context=self.context,
+        self.other_organization = Organization.objects.create(
+            name="Foreign",
+            slug="runtime-foreign",
+        )
+        ensure_uncategorized_category(self.other_organization)
+        self.foreign = create_knowledge(
+            context=TenantContext.for_resource(self.other_organization),
             data=KnowledgeInput(
-                title="Support secret",
+                title="Foreign secret",
                 description="Must stay hidden",
-                content="secret support phrase",
+                content="secret foreign phrase",
                 is_enabled=True,
-                visibility=KnowledgeVisibility.DEPARTMENTS,
-                department_ids=(result.support_department.id,),
             ),
         )
         channel = Channel.objects.create(
             organization=result.organization,
             code="runtime-sales",
             name="Runtime sales",
-            department=result.sales_department,
         )
         self.agent = AIAgent.objects.create(
             channel=channel,
             name="Runtime agent",
             status=AIAgentStatus.ACTIVE,
         )
-        # Simulate a historical/direct-DB invalid assignment.
-        self.agent.knowledge_items.add(self.shared, self.support_only)
+        self.agent.knowledge_items.add(self.shared)
 
-    def test_catalog_excludes_incompatible_selected_knowledge(self) -> None:
+    def test_cross_organization_assignment_is_rejected_by_database(self) -> None:
+        # Парный триггер enforce_tenant_pair не даёт «протащить» чужое знание
+        # даже прямой записью в M2M-таблицу.
+        from django.db import DatabaseError, transaction
+
+        with self.assertRaises(DatabaseError), transaction.atomic():
+            self.agent.knowledge_items.add(self.foreign)
+
+    def test_catalog_excludes_foreign_organization_knowledge(self) -> None:
         catalog = knowledge_catalog(self.agent)
 
         self.assertIn(self.shared.title, catalog)
-        self.assertNotIn(self.support_only.title, catalog)
+        self.assertNotIn(self.foreign.title, catalog)
 
-    def test_lexical_retrieval_excludes_incompatible_fragment(self) -> None:
-        results = lexical_search(self.agent, "secret support", limit=10)
+    def test_lexical_retrieval_excludes_foreign_fragment(self) -> None:
+        results = lexical_search(self.agent, "secret foreign", limit=10)
 
         self.assertNotIn(
-            self.support_only.id,
+            self.foreign.id,
             {fragment.knowledge_id for fragment in results},
         )
 
-    def test_semantic_retrieval_excludes_incompatible_fragment(self) -> None:
-        query_vector = list(self.support_only.fragments.first().embedding)
+    def test_semantic_retrieval_excludes_foreign_fragment(self) -> None:
+        query_vector = list(self.foreign.fragments.first().embedding)
         results = semantic_search(self.agent, query_vector, limit=10)
 
         self.assertNotIn(
-            self.support_only.id,
+            self.foreign.id,
             {fragment.knowledge_id for fragment in results},
         )
 

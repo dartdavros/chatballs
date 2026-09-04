@@ -5,7 +5,6 @@ from django.db import transaction
 from django.utils import timezone
 
 from hub_platform.channels.models import Channel
-from hub_platform.identity.models import Department
 from hub_platform.integrations.models import IntegrationProvider, IntegrationStatus
 from hub_platform.products.models import Product
 from hub_platform.subscriptions.keys import EntitlementKey, QuotaKey
@@ -37,14 +36,9 @@ class PortalInput:
 @transaction.atomic
 def create_portal(*, context: TenantContext, data: PortalInput) -> SupportPortal:
     require_entitlement(context, EntitlementKey.SUPPORT_DEPARTMENT)
-    support_department = Department.objects.get(
-        organization=context.organization,
-        code="support",
-    )
     widget = _widget(context, data.widget_id, data.widget_channel_id)
     portal = SupportPortal(
         organization=context.organization,
-        department=support_department,
         slug=data.slug.strip().lower(),
         hosted_domain=hosted_domain(data.slug.strip().lower()),
         name=data.name.strip(),
@@ -94,7 +88,6 @@ def _widget(
     widgets = WebChatWidget.objects.select_related(
         "integration",
         "integration__channel",
-        "integration__channel__department",
     ).filter(
         organization=context.organization,
         mode=WebChatWidgetMode.ANONYMOUS,
@@ -102,7 +95,6 @@ def _widget(
         integration__provider=IntegrationProvider.WEB,
         integration__status=IntegrationStatus.OK,
         integration__is_active=True,
-        integration__channel__department__code="support",
         integration__channel__is_active=True,
         integration__channel__requires_authenticated_product_identity=False,
         integration__channel__allow_anonymous_sessions=True,
@@ -196,7 +188,7 @@ def replace_product_links(
     }
     channels = {
         item.id: item
-        for item in Channel.objects.select_related("department").filter(
+        for item in Channel.objects.filter(
             organization=context.organization,
             id__in=channel_ids,
         )
@@ -206,7 +198,6 @@ def replace_product_links(
         for item in WebChatWidget.objects.select_related(
             "integration",
             "integration__channel",
-            "integration__channel__department",
         ).filter(
             organization=context.organization,
             id__in=widget_ids,
@@ -270,5 +261,3 @@ def replace_product_links(
 def _check_tenant(context: TenantContext, portal: SupportPortal) -> None:
     if portal.organization_id != context.organization_id:
         raise ValidationError({"portal": "Портал принадлежит другой организации"})
-    if portal.department.code != "support":
-        raise ValidationError({"portal": "Портал не относится к отделу поддержки"})

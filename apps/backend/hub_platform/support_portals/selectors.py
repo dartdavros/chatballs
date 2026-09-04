@@ -8,10 +8,8 @@ def portals_for_context(context: TenantContext) -> QuerySet[SupportPortal]:
     return (
         SupportPortal.objects.filter(
             organization=context.organization,
-            department__code="support",
         )
         .select_related(
-            "department",
             "widget_channel",
             "widget",
             "widget__integration",

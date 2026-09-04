@@ -9,7 +9,6 @@ export function SalesDialogsPage({ initialConversationId, user }: { initialConve
   const [rightTab, setRightTab] = useState<SalesRightTab>("client");
   return (
     <ConversationWorkspace
-      department="sales"
       isOwner={user.role === "OWNER"}
       initialConversationId={initialConversationId}
       renderContextPanel={({ dialog, detail }) => (

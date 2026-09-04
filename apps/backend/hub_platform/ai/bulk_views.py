@@ -12,9 +12,7 @@ from hub_platform.ai.api_errors import validation_error_response
 from hub_platform.ai.knowledge_bulk import (
     add_category_knowledge_to_agent,
     bulk_move_knowledge,
-    bulk_replace_knowledge_visibility,
 )
-from hub_platform.ai.knowledge_conflicts import KnowledgeScopeConflict
 from hub_platform.ai.models import AIAgent
 from hub_platform.ai.selectors import agent_for_employee
 from hub_platform.api.permissions import HasCapability, HasEntitlement
@@ -32,13 +30,6 @@ def _knowledge_ids(body: dict[str, object]) -> list[int]:
     if not isinstance(raw_ids, list):
         raise ValidationError({"knowledgeIds": "List of knowledge IDs required"})
     return [_positive_id(item, "knowledgeIds") for item in raw_ids]
-
-
-def _department_ids(body: dict[str, object]) -> list[int]:
-    raw_ids = body.get("departmentIds", [])
-    if not isinstance(raw_ids, list):
-        raise ValidationError({"departmentIds": "List of department IDs required"})
-    return [_positive_id(item, "departmentIds") for item in raw_ids]
 
 
 def _audit_bulk(request: Request, action: str, object_ids: list[int]) -> None:
@@ -72,24 +63,6 @@ class KnowledgeBulkMoveView(_KnowledgeBulkView):
         except ValidationError as error:
             return validation_error_response(error)
         _audit_bulk(request, "ai.knowledge_bulk_moved", updated_ids)
-        return Response({"updated": len(updated_ids), "knowledgeIds": updated_ids})
-
-
-class KnowledgeBulkVisibilityView(_KnowledgeBulkView):
-    def post(self, request: Request) -> Response:
-        try:
-            knowledge_ids = _knowledge_ids(request.data)
-            updated_ids = bulk_replace_knowledge_visibility(
-                context=request.tenant_context,
-                knowledge_ids=knowledge_ids,
-                visibility=str(request.data.get("visibility", "")),
-                department_ids=_department_ids(request.data),
-            )
-        except KnowledgeScopeConflict as error:
-            return Response(error.payload(), status=409)
-        except ValidationError as error:
-            return validation_error_response(error)
-        _audit_bulk(request, "ai.knowledge_bulk_visibility_replaced", updated_ids)
         return Response({"updated": len(updated_ids), "knowledgeIds": updated_ids})
 
 

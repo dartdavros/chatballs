@@ -231,7 +231,7 @@ export function PortalContent({
       </div>
       {agentOpen && (
         <AgentLinkDialog
-          agents={agentLinkOptions(agents, "support")}
+          agents={agentLinkOptions(agents)}
           busy={busy}
           error={agentError}
           forms={ARTICLE_FORMS}

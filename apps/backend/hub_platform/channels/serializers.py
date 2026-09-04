@@ -59,9 +59,8 @@ def channel_payload(channel: Channel) -> dict[str, object]:
         }
         if channel.product_id
         else None,
-        "departmentId": channel.department_id,
-        "department": channel.department.code if channel.department_id else None,
-        "departmentName": channel.department.name if channel.department_id else None,
+        "groupId": channel.group_id,
+        "groupName": channel.group.name if channel.group_id else None,
         "agent": agent,
         "connections": connections,
         "policy": policy.as_payload(),

@@ -29,7 +29,7 @@ export function ChannelDetailHeader({
         <div className="channel-detail-meta">
           <code>{channel.code}</code>
           <span>·</span>
-          {channel.departmentName ?? "Без отдела"}
+          {channel.groupName ?? "Без группы"}
           <span>·</span>
           {channel.product ? <ProductMark product={channel.product} /> : "— непродуктовый"}
         </div>

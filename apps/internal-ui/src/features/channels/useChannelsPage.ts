@@ -2,10 +2,10 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { ApiError } from "../../api/client";
 import { deleteChannel, listChannels, updateChannel } from "./api";
-import { departmentTabs, filterChannels } from "./model";
+import { groupTabs, filterChannels } from "./model";
 import type { Channel, DeletionBlocker } from "./types";
 
-export function useChannelsPage(departments: Array<{ id: number; name: string; code?: string }>) {
+export function useChannelsPage(groups: Array<{ id: number; name: string }>) {
   const [channels, setChannels] = useState<Channel[] | null>(null);
   const [failed, setFailed] = useState(false);
   const [tab, setTab] = useState("all");
@@ -31,7 +31,7 @@ export function useChannelsPage(departments: Array<{ id: number; name: string; c
     void reload();
   }, [reload]);
 
-  const tabs = useMemo(() => departmentTabs(channels ?? [], departments), [channels, departments]);
+  const tabs = useMemo(() => groupTabs(channels ?? [], groups), [channels, groups]);
   const visible = useMemo(
     () => filterChannels(channels ?? [], { tab, search, showArchived }),
     [channels, tab, search, showArchived],

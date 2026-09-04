@@ -86,6 +86,16 @@ class Conversation(models.Model):
     lifecycle = models.CharField(max_length=16, choices=LifecycleState.choices, default=LifecycleState.OPEN)
     control_mode = models.CharField(max_length=16, choices=ControlMode.choices, default=ControlMode.AI)
     expected_responder = models.CharField(max_length=16, choices=ExpectedResponder.choices, default=ExpectedResponder.AI)
+    # Группа видимости (ADR-HUB-0043): наследуется от group агента/канала при
+    # создании, переносится вручную. NULL — диалог виден всем сотрудникам.
+    group = models.ForeignKey(
+        "identity.EmployeeGroup",
+        on_delete=models.SET_NULL,
+        related_name="conversations",
+        null=True,
+        blank=True,
+    )
+    # «Ответственный» (ADR-HUB-0043): видит диалог независимо от групп.
     assigned_operator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="assigned_conversations")
     previous_conversation = models.ForeignKey("self", on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
     created_at = models.DateTimeField(auto_now_add=True)

@@ -37,8 +37,7 @@
       "role": "EMPLOYEE",
       "positionTitle": "Старший менеджер по продажам",
       "phone": "+7 921 330 11 45",
-      "department": "sales",
-      "systemProfile": "Sales operator"
+      "group": "sales"
     },
     {
       "key": "sales_junior",
@@ -48,8 +47,7 @@
       "role": "EMPLOYEE",
       "positionTitle": "Менеджер по продажам",
       "phone": "+7 921 778 02 19",
-      "department": "sales",
-      "systemProfile": "Sales operator"
+      "group": "sales"
     },
     {
       "key": "support_lead",
@@ -59,8 +57,7 @@
       "role": "EMPLOYEE",
       "positionTitle": "Старший инженер поддержки",
       "phone": "+7 812 240 19 50",
-      "department": "support",
-      "systemProfile": "Support operator"
+      "group": "support"
     },
     {
       "key": "support_engineer",
@@ -70,8 +67,17 @@
       "role": "EMPLOYEE",
       "positionTitle": "Инженер технической поддержки",
       "phone": "+7 812 240 19 51",
-      "department": "support",
-      "systemProfile": "Support operator"
+      "group": "support"
+    }
+  ],
+  "groups": [
+    {
+      "key": "sales",
+      "name": "Операторы"
+    },
+    {
+      "key": "support",
+      "name": "Поддержка"
     }
   ]
 }

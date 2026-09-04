@@ -46,17 +46,11 @@ def _mode(latest: Conversation) -> str:
     return "wait"
 
 
-def clients_overview(
-    organization_id: int, department_ids: set[int] | None = None
-) -> list[dict]:
+def clients_overview(organization_id: int) -> list[dict]:
     conversation_qs = Conversation.objects.select_related(
         "channel", "channel__product", "connection"
     ).order_by("-last_activity_at")
-    if department_ids is not None:
-        conversation_qs = conversation_qs.filter(channel__department_id__in=department_ids)
     identity_qs = ConnectionIdentity.objects.select_related("connection")
-    if department_ids is not None:
-        identity_qs = identity_qs.filter(connection__channel__department_id__in=department_ids)
     contacts = Contact.objects.filter(organization_id=organization_id).prefetch_related(
         Prefetch(
             "conversations",
@@ -114,17 +108,11 @@ def _dialog_status(conversation: Conversation) -> str:
     return {"closed": "Закрыт", "operator": "Оператор", "ai": "AI", "wait": "Ждёт оператора"}[_mode(conversation)]
 
 
-def client_detail(
-    organization_id: int,
-    contact_id: int,
-    department_ids: set[int] | None = None,
-) -> dict:
+def client_detail(organization_id: int, contact_id: int) -> dict:
     contact = Contact.objects.get(organization_id=organization_id, id=contact_id)
     conversation_qs = Conversation.objects.filter(
         organization_id=organization_id, contact=contact
     ).select_related("channel", "channel__product", "connection")
-    if department_ids is not None:
-        conversation_qs = conversation_qs.filter(channel__department_id__in=department_ids)
     conversations = list(conversation_qs.order_by("-last_activity_at"))
     if not conversations:
         raise Contact.DoesNotExist
@@ -156,10 +144,6 @@ def client_detail(
         )
 
     identity_qs = contact.identities.select_related("connection")
-    if department_ids is not None:
-        identity_qs = identity_qs.filter(
-            connection__channel__department_id__in=department_ids
-        )
     identities = [
         {
             "provider": identity.connection.provider,
@@ -185,8 +169,7 @@ def client_detail(
     conversation_ids = [str(conversation.id) for conversation in conversations]
     audit = []
     audit_scope = Q(object_type="Conversation", object_id__in=conversation_ids)
-    if department_ids is None:
-        audit_scope |= Q(object_type="Contact", object_id=str(contact_id))
+    audit_scope |= Q(object_type="Contact", object_id=str(contact_id))
     audit_qs = (
         AuditEvent.objects.filter(organization_id=organization_id)
         .filter(audit_scope)

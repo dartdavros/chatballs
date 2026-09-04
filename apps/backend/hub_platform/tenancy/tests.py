@@ -6,8 +6,8 @@ from rest_framework.test import APIClient as RawAPIClient
 
 from hub_platform.events.models import EventOwnership
 from hub_platform.events.services import DomainEvent, enqueue_event, tenant_context_for_event
+from hub_platform.identity.group_models import EmployeeGroup
 from hub_platform.identity.models import (
-    Department,
     EmployeeRole,
     HumanUser,
     Organization,
@@ -28,11 +28,11 @@ class TenantHttpBoundaryTests(TestCase):
         )
         self.first_membership = self._membership(self.first)
         self.second_membership = self._membership(self.second)
-        self.first_department = Department.objects.create(
-            organization=self.first, code="sales", name="First Sales"
+        self.first_group = EmployeeGroup.objects.create(
+            organization=self.first, name="Операторы"
         )
-        self.second_department = Department.objects.create(
-            organization=self.second, code="sales", name="Second Sales"
+        self.second_group = EmployeeGroup.objects.create(
+            organization=self.second, name="Операторы"
         )
         self.first_product = Product.objects.create(
             organization=self.first, code="first-product", name="First Product"

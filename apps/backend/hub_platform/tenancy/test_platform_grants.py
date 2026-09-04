@@ -5,8 +5,8 @@ from django.test import TestCase
 
 from hub_platform.ai.knowledge_types import UNCATEGORIZED_CATEGORY_NAME
 from hub_platform.ai.models import KnowledgeCategory
+from hub_platform.identity.group_models import EmployeeGroup
 from hub_platform.identity.models import (
-    Department,
     EmployeeRole,
     HumanUser,
     Organization,
@@ -29,7 +29,7 @@ class PlatformProvisioningGrantsTests(TestCase):
 
     def test_provisioning_creates_organization_and_tenant_rows(self) -> None:
         # Pre-create an active owner user so provisioning takes the ACTIVE path
-        # and creates both departments and an OWNER membership.
+        # and creates an OWNER membership.
         HumanUser.objects.create_user(email="grants-owner@example.test")
         result = provision_organization(
             command=ProvisioningCommand(
@@ -45,7 +45,6 @@ class PlatformProvisioningGrantsTests(TestCase):
         )
         org = result.organization
         # Tenant-owned rows were created under matching tenant context.
-        self.assertEqual(Department.objects.filter(organization=org).count(), 2)
         self.assertTrue(
             KnowledgeCategory.objects.filter(
                 organization=org,
@@ -72,7 +71,7 @@ class PlatformProvisioningGrantsTests(TestCase):
         # the platform role has DML grants. A direct insert with no context yields
         # zero visible rows for the platform role.
         org = Organization.objects.create(name="Blind Org", slug="blind-org")
-        Department.objects.create(organization=org, code="sales", name="Sales")
+        EmployeeGroup.objects.create(organization=org, name="Операторы")
         # Reading via ORM (test superuser) sees the row; this documents that the
         # isolation boundary is the transaction-local context, tested elsewhere.
-        self.assertEqual(Department.objects.filter(organization=org).count(), 1)
+        self.assertEqual(EmployeeGroup.objects.filter(organization=org).count(), 1)

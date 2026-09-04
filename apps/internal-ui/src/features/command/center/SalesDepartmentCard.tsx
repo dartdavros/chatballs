@@ -9,7 +9,7 @@ export function DepartmentsColumn({ setRoute, vm }: { setRoute: (route: RouteKey
   return (
     <section className="command-left">
       <div className="section-head">
-        <h2>Отделы</h2>
+        <h2>Группы</h2>
         <span>{vm.departments.length} активных</span>
       </div>
       {vm.departments.map((department) => (

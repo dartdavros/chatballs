@@ -3,14 +3,14 @@ import type { Channel, ChannelPolicy, PolicyFlag } from "./types";
 
 export type ChannelEditDraft = {
   name: string;
-  departmentId: number | null;
+  groupId: number | null;
   productId: number | null;
   policy: ChannelPolicy;
 };
 
 export type ChannelEditAccess = {
   name: boolean;
-  department: boolean;
+  group: boolean;
   product: boolean;
   policy: boolean;
 };
@@ -24,7 +24,7 @@ const PRODUCT_REQUIRED_FLAGS: PolicyFlag[] = [
 export function channelDraft(channel: Channel): ChannelEditDraft {
   return {
     name: channel.name,
-    departmentId: channel.departmentId,
+    groupId: channel.groupId,
     productId: channel.product?.id ?? null,
     policy: { ...channel.policy },
   };
@@ -48,7 +48,7 @@ export function channelDraftRequest(
 ): ChannelUpdateInput {
   return {
     ...(access.name ? { name: draft.name.trim() } : {}),
-    ...(access.department ? { departmentId: draft.departmentId } : {}),
+    ...(access.group ? { groupId: draft.groupId } : {}),
     ...(access.product ? { productId: draft.productId } : {}),
     ...(access.policy ? { policy: draft.policy } : {}),
   };

@@ -7,7 +7,6 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from hub_platform.ai.knowledge_conflicts import KnowledgeScopeConflict
 from hub_platform.ai.models import AIAgentStatus
 from hub_platform.ai.provider.base import ProviderError
 from hub_platform.api.permissions import HasCapability
@@ -55,7 +54,6 @@ def _load(request: Request, channel_id: int) -> Channel:
 
 class ChannelListView(APIView):
     permission_classes = [HasCapability]
-    # Department-scoped доступ обязан проходить вход: срез считает селектор.
     required_capabilities = {"GET": "channels.view", "POST": "channels.manage"}
 
     def get(self, request: Request) -> Response:
@@ -73,7 +71,7 @@ class ChannelListView(APIView):
                 context=request.tenant_context,
                 code=data.get("code"),
                 name=data.get("name"),
-                department_id=data.get("departmentId"),
+                group_id=data.get("groupId"),
                 product_id=data.get("productId"),
                 policy=policy,
                 connection_ids=connection_ids,
@@ -117,8 +115,6 @@ class ChannelDetailView(APIView):
             channel = services.update_channel(
                 context=request.tenant_context, channel=channel, update=update
             )
-        except KnowledgeScopeConflict as error:
-            return Response(error.payload(), status=409)
         except services.ChannelHasReferences as error:
             return Response(error.payload(), status=409)
         except PolicyInvariantError as error:
@@ -130,7 +126,7 @@ class ChannelDetailView(APIView):
         after = channel_payload(channel)
         diff = {
             key: {"from": before[key], "to": after[key]}
-            for key in ("name", "departmentId", "product", "isActive", "policy")
+            for key in ("name", "groupId", "product", "isActive", "policy")
             if before[key] != after[key]
         }
         if diff:

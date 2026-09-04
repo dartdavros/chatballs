@@ -23,10 +23,6 @@ urlpatterns = [
         "api/v1/organizations/<uuid:organization_public_id>/employees/",
         include("hub_platform.identity.employee_urls"),
     ),
-    path(
-        "api/v1/organizations/<uuid:organization_public_id>/access-profiles/",
-        include("hub_platform.identity.access_urls"),
-    ),
     path("api/v1/organizations/<uuid:organization_public_id>/ai/", include("hub_platform.ai.urls")),
     path(
         "api/v1/organizations/<uuid:organization_public_id>/integrations/",

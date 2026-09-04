@@ -5,13 +5,6 @@ def validate_portal_widget(portal) -> None:
     if portal.widget_channel_id is not None:
         legacy_channel = portal.widget_channel
         if (
-            legacy_channel.department_id is None
-            or legacy_channel.department.code != "support"
-        ):
-            raise ValidationError(
-                {"widget_channel": "Portal widget must belong to the support department"}
-            )
-        if (
             legacy_channel.requires_authenticated_product_identity
             or not legacy_channel.allow_anonymous_sessions
         ):
@@ -24,12 +17,8 @@ def validate_portal_widget(portal) -> None:
     channel = widget.integration.channel
     if widget.mode != "ANONYMOUS":
         raise ValidationError({"widget": "Portal requires an anonymous widget"})
-    if (
-        channel is None
-        or channel.department_id is None
-        or channel.department.code != "support"
-    ):
-        raise ValidationError({"widget": "Portal widget must belong to support"})
+    if channel is None:
+        raise ValidationError({"widget": "Portal widget must be bound to a channel"})
     if portal.widget_channel_id is not None and channel.id != portal.widget_channel_id:
         raise ValidationError({"widget": "Widget and legacy channel must match"})
 

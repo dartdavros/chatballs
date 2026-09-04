@@ -1,7 +1,7 @@
 from django.db import models
 
 # Канал обработки — якорь AI-контекста (ADR-HUB-0019). Опциональный продукт,
-# отдел перехвата, ссылка на провайдер-интеграцию. Поведение AI (модель,
+# группа видимости, ссылка на провайдер-интеграцию. Поведение AI (модель,
 # инструкции, знания) живёт на агенте канала (ADR-HUB-0023).
 
 
@@ -9,8 +9,9 @@ class Channel(models.Model):
     organization = models.ForeignKey("identity.Organization", on_delete=models.PROTECT, related_name="channels")
     code = models.SlugField(max_length=64)
     name = models.CharField(max_length=255)
-    # Отдел, чьи операторы перехватывают диалоги канала.
-    department = models.ForeignKey("identity.Department", on_delete=models.PROTECT, related_name="channels", null=True, blank=True)
+    # Группа видимости (ADR-HUB-0043): новые диалоги канала попадают в неё.
+    # NULL — диалоги видны всем сотрудникам.
+    group = models.ForeignKey("identity.EmployeeGroup", on_delete=models.SET_NULL, related_name="channels", null=True, blank=True)
     # Продукт опционален: непродуктовый канал — главный сайт edevs.
     product = models.ForeignKey("products.Product", on_delete=models.PROTECT, related_name="channels", null=True, blank=True)
     # LLM-провайдер канала (ADR-HUB-0020).

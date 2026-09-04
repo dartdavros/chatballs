@@ -8,7 +8,11 @@ from hub_platform.tenancy.context import TenantContext
 
 def ensure_conversation_call_access(*, user, conversation: Conversation) -> None:
     if not require_capability(user, "conversations.call", conversation):
-        raise CallAccessDenied("Нет доступа к звонкам этого отдела")
+        raise CallAccessDenied("Нет доступа к звонкам")
+    from hub_platform.conversations.selectors import conversation_is_visible
+
+    if not conversation_is_visible(actor=user, conversation=conversation):
+        raise CallAccessDenied("Диалог вне групп сотрудника")
 
 
 def ensure_call_access(*, user, call_session: CallSession) -> None:

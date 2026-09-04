@@ -15,7 +15,7 @@ from hub_platform.identity.bootstrap import bootstrap_edevs_owner
 from hub_platform.identity.auth.totp_utils import _totp_code
 from hub_platform.identity.models import (
     AuditEvent,
-    Department,
+    EmployeeGroup,
     EmployeeRole,
     HumanUser,
     Organization,
@@ -37,11 +37,12 @@ class BootstrapOwnerTests(TestCase):
 
         self.assertTrue(result.created_owner)
         self.assertEqual(Organization.objects.get().slug, "edevs")
-        # Seed создаёт отделы продаж и поддержки (SPEC-HUB-0010 §4.1).
+        # Seed создаёт стартовые группы (ADR-HUB-0043).
         self.assertEqual(
-            set(Department.objects.values_list("code", flat=True)), {"sales", "support"}
+            set(EmployeeGroup.objects.values_list("name", flat=True)),
+            {"Операторы", "Поддержка"},
         )
-        self.assertEqual(result.support_department.code, "support")
+        self.assertEqual(result.support_group.name, "Поддержка")
         self.assertEqual(set(Product.objects.values_list("code", flat=True)), {"firepage", "foxray"})
         self.assertEqual(result.owner.memberships.get().role, EmployeeRole.OWNER)
         # TOTP выключен по умолчанию (намеренно, локальная разработка).
@@ -52,14 +53,9 @@ class BootstrapOwnerTests(TestCase):
         self.assertEqual(operator.full_name, "Анна Котова")
         self.assertEqual(operator.memberships.get().role, EmployeeRole.EMPLOYEE)
         self.assertEqual(operator.memberships.get().phone, "+7 916 245 14 02")
-        assignment = operator.memberships.get().access_assignments.get(revoked_at__isnull=True)
-        self.assertEqual(assignment.scope_type, "DEPARTMENT")
-        self.assertEqual(assignment.department.code, "sales")
-        self.assertIn(
-            "conversations.view",
-            assignment.access_profile.capability_links.values_list(
-                "capability_code", flat=True
-            ),
+        self.assertEqual(
+            [link.group.name for link in operator.memberships.get().group_links.all()],
+            ["Операторы"],
         )
         self.assertTrue(AuditEvent.objects.filter(action="identity.owner_bootstrapped").exists())
 
@@ -88,7 +84,6 @@ class PermissionTests(TestCase):
     def setUp(self) -> None:
         bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
         self.organization = Organization.objects.get(slug="edevs")
-        self.sales = Department.objects.get(code="sales")
 
     def test_owner_can_access_global_settings_and_sales_workspace(self) -> None:
         owner = HumanUser.objects.get(email="owner@edevs.tech")
@@ -101,7 +96,7 @@ class PermissionTests(TestCase):
             authorize(
                 membership,
                 "conversations.view",
-                ResourceScope(self.organization.id, self.sales.id),
+                ResourceScope(self.organization.id),
             )
         )
 
@@ -115,7 +110,7 @@ class PermissionTests(TestCase):
             authorize(
                 membership,
                 "conversations.view",
-                ResourceScope(self.organization.id, self.sales.id),
+                ResourceScope(self.organization.id),
             )
         )
 
@@ -139,7 +134,7 @@ class AuthEndpointTests(TestCase):
         self.assertNotIn("role", payload["user"])
         self.assertEqual(len(payload["user"]["memberships"]), 1)
         membership = payload["user"]["memberships"][0]
-        self.assertIn("accessScopes", membership)
+        self.assertIn("groups", membership)
         self.assertIn("employees.manage_privileged", membership["capabilities"])
         self.assertEqual(membership["organizationName"], "Edevs")
         self.assertEqual(membership["role"], EmployeeRole.OWNER)
@@ -420,7 +415,6 @@ class EmployeeEndpointTests(TestCase):
     def setUp(self) -> None:
         bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
         self.organization = Organization.objects.get(slug="edevs")
-        self.sales = Department.objects.get(code="sales")
         self.client = APIClient()
         self.client.login(username="owner@edevs.tech", password="temporary-password")
 
@@ -447,7 +441,6 @@ class EmployeeEndpointTests(TestCase):
             user=operator,
             organization=self.organization,
             role=EmployeeRole.EMPLOYEE,
-            primary_department=self.sales,
         )
         self.client.logout()
         self.client.login(username="operator@edevs.tech", password="operator-password")
@@ -476,7 +469,6 @@ class EmployeeEndpointTests(TestCase):
             user=operator,
             organization=self.organization,
             role=EmployeeRole.EMPLOYEE,
-            primary_department=self.sales,
         )
 
         response = self.client.post(f"/api/v1/employees/{operator.id}/block/")
@@ -499,7 +491,6 @@ class EmployeeEndpointTests(TestCase):
                     "phone": "+7 916 245 14 03",
                     "positionTitle": "Оператор продаж",
                     "role": EmployeeRole.EMPLOYEE,
-                    "department": "sales",
                     "totpEnabled": True,
                 }
             ),
@@ -541,19 +532,18 @@ class CompanyEndpointTests(TestCase):
     def setUp(self) -> None:
         bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
         self.organization = Organization.objects.get(slug="edevs")
-        self.sales = Department.objects.get(code="sales")
         self.client = APIClient()
         self.client.login(username="owner@edevs.tech", password="temporary-password")
 
-    def test_owner_reads_departments_and_products(self) -> None:
-        departments_response = self.client.get("/api/v1/company/departments/")
+    def test_owner_reads_groups_and_products(self) -> None:
+        groups_response = self.client.get("/api/v1/company/groups/")
         products_response = self.client.get("/api/v1/company/products/")
 
-        self.assertEqual(departments_response.status_code, 200)
+        self.assertEqual(groups_response.status_code, 200)
         self.assertEqual(products_response.status_code, 200)
         self.assertEqual(
-            set(d["code"] for d in departments_response.json()["items"]),
-            {"sales", "support"},
+            set(group["name"] for group in groups_response.json()["items"]),
+            {"Операторы", "Поддержка"},
         )
         self.assertEqual(
             set(product["code"] for product in products_response.json()["items"]),
@@ -583,7 +573,6 @@ class CompanyEndpointTests(TestCase):
             user=operator,
             organization=self.organization,
             role=EmployeeRole.EMPLOYEE,
-            primary_department=self.sales,
         )
         self.client.logout()
         self.client.login(username="operator@edevs.tech", password="operator-password")
@@ -652,18 +641,19 @@ class EmployeeModelInvariantTests(TestCase):
     def setUp(self) -> None:
         bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
         self.organization = Organization.objects.get(slug="edevs")
-        self.sales = Department.objects.get(code="sales")
 
-    def test_bootstrap_owner_is_company_level_with_title(self) -> None:
+    def test_bootstrap_owner_has_owner_role_and_title(self) -> None:
         owner = HumanUser.objects.get(email="owner@edevs.tech")
         self.assertEqual(owner.memberships.get().role, EmployeeRole.OWNER)
-        self.assertIsNone(owner.memberships.get().primary_department)
         self.assertTrue(owner.memberships.get().position_title)
 
-    def test_bootstrapped_operator_is_employee_in_sales(self) -> None:
+    def test_bootstrapped_operator_is_employee_in_operators_group(self) -> None:
         operator = HumanUser.objects.get(email="a.kotova@edevs.tech")
         self.assertEqual(operator.memberships.get().role, EmployeeRole.EMPLOYEE)
-        self.assertEqual(operator.memberships.get().primary_department, self.sales)
+        self.assertEqual(
+            [link.group.name for link in operator.memberships.get().group_links.all()],
+            ["Операторы"],
+        )
         self.assertTrue(operator.memberships.get().position_title)
 
     def test_second_owner_is_rejected(self) -> None:
@@ -677,22 +667,6 @@ class EmployeeModelInvariantTests(TestCase):
                     organization=self.organization,
                     role=EmployeeRole.OWNER,
                     position_title="Второй владелец",
-                    primary_department=None,
-                )
-
-    def test_owner_with_primary_department_is_rejected(self) -> None:
-        from django.db import IntegrityError, transaction
-
-        user = HumanUser.objects.create_user(email="owner3@edevs.tech", password="temporary-password")
-        other_org = Organization.objects.create(name="Other", slug="other")
-        with self.assertRaises(IntegrityError):
-            with transaction.atomic():
-                OrganizationMembership.objects.create(
-                    user=user,
-                    organization=other_org,
-                    role=EmployeeRole.OWNER,
-                    position_title="Владелец",
-                    primary_department=self.sales,
                 )
 
     def test_create_employee_requires_position_title(self) -> None:
@@ -719,16 +693,14 @@ class EmployeeGovernanceTests(TestCase):
     def setUp(self) -> None:
         bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
         self.organization = Organization.objects.get(slug="edevs")
-        self.sales = Department.objects.get(code="sales")
 
-    def _make(self, email: str, role: str, department: Department | None = None) -> HumanUser:
+    def _make(self, email: str, role: str) -> HumanUser:
         user = HumanUser.objects.create_user(email=email, password="member-password-123")
         OrganizationMembership.objects.create(
             user=user,
             organization=self.organization,
             role=role,
             position_title="Позиция",
-            primary_department=None if role in (EmployeeRole.OWNER, EmployeeRole.ADMIN) else (department or self.sales),
         )
         return user
 
@@ -753,22 +725,22 @@ class EmployeeGovernanceTests(TestCase):
 
     # --- создание и назначение ролей ---
 
-    def test_owner_creates_admin_at_company_level(self) -> None:
+    def test_owner_creates_admin(self) -> None:
         client = self._client("owner@edevs.tech", "temporary-password")
         response = self._create(client, "admin@edevs.tech", EmployeeRole.ADMIN)
         self.assertEqual(response.status_code, 201)
         profile = HumanUser.objects.get(email="admin@edevs.tech").memberships.get()
         self.assertEqual(profile.role, EmployeeRole.ADMIN)
-        self.assertIsNone(profile.primary_department)
         self.assertTrue(AuditEvent.objects.filter(action="identity.employee_created").exists())
 
-    def test_admin_cannot_create_admin(self) -> None:
+    def test_admin_creates_admin(self) -> None:
+        # SPEC-HUB-0031 §3: ADMIN идентичен OWNER и может создавать админов.
         self._make("admin@edevs.tech", EmployeeRole.ADMIN)
         response = self._create(self._client("admin@edevs.tech"), "admin2@edevs.tech", EmployeeRole.ADMIN)
-        self.assertEqual(response.status_code, 403)
-        self.assertFalse(HumanUser.objects.filter(email="admin2@edevs.tech").exists())
-        self.assertTrue(
-            AuditEvent.objects.filter(action="identity.employee_privileged_action_denied").exists()
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(
+            HumanUser.objects.get(email="admin2@edevs.tech").memberships.get().role,
+            EmployeeRole.ADMIN,
         )
 
     def test_admin_creates_employee(self) -> None:
@@ -797,13 +769,13 @@ class EmployeeGovernanceTests(TestCase):
         self.assertTrue(emp.is_active)
         self.assertTrue(emp.memberships.get().is_blocked)
 
-    def test_admin_cannot_block_another_admin(self) -> None:
+    def test_admin_blocks_another_admin(self) -> None:
+        # SPEC-HUB-0031 §3: админы управляют друг другом; защищён только владелец.
         other = self._make("admin2@edevs.tech", EmployeeRole.ADMIN)
         self._make("admin@edevs.tech", EmployeeRole.ADMIN)
         response = self._client("admin@edevs.tech").post(f"/api/v1/employees/{other.id}/block/")
-        self.assertEqual(response.status_code, 403)
-        other.refresh_from_db()
-        self.assertTrue(other.is_active)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(other.memberships.get().is_blocked)
 
     def test_admin_cannot_block_owner(self) -> None:
         owner = HumanUser.objects.get(email="owner@edevs.tech")
@@ -813,17 +785,19 @@ class EmployeeGovernanceTests(TestCase):
         owner.refresh_from_db()
         self.assertTrue(owner.is_active)
 
-    def test_admin_cannot_update_another_admin(self) -> None:
+    def test_admin_updates_another_admin(self) -> None:
         other = self._make("admin2@edevs.tech", EmployeeRole.ADMIN)
         self._make("admin@edevs.tech", EmployeeRole.ADMIN)
         response = self._client("admin@edevs.tech").post(
             f"/api/v1/employees/{other.id}/update/",
-            data=json.dumps({"fullName": "Hacked", "email": "admin2@edevs.tech", "positionTitle": "X"}),
+            data=json.dumps({"fullName": "Renamed", "email": "admin2@edevs.tech", "positionTitle": "X"}),
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 200)
+        other.refresh_from_db()
+        self.assertEqual(other.full_name, "Renamed")
 
-    def test_admin_cannot_change_employee_role(self) -> None:
+    def test_admin_promotes_employee_to_admin(self) -> None:
         emp = self._make("emp@edevs.tech", EmployeeRole.EMPLOYEE)
         self._make("admin@edevs.tech", EmployeeRole.ADMIN)
         response = self._client("admin@edevs.tech").post(
@@ -833,9 +807,9 @@ class EmployeeGovernanceTests(TestCase):
             ),
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 200)
         emp.memberships.get().refresh_from_db()
-        self.assertEqual(emp.memberships.get().role, EmployeeRole.EMPLOYEE)
+        self.assertEqual(emp.memberships.get().role, EmployeeRole.ADMIN)
 
     def test_owner_promotes_employee_to_admin(self) -> None:
         emp = self._make("emp@edevs.tech", EmployeeRole.EMPLOYEE)
@@ -883,7 +857,6 @@ class EmployeeGovernanceTests(TestCase):
         target.memberships.get().refresh_from_db()
         owner.memberships.get().refresh_from_db()
         self.assertEqual(target.memberships.get().role, EmployeeRole.OWNER)
-        self.assertIsNone(target.memberships.get().primary_department)
         self.assertEqual(owner.memberships.get().role, EmployeeRole.ADMIN)
         self.assertEqual(
             OrganizationMembership.objects.filter(organization=self.organization, role=EmployeeRole.OWNER).count(),
@@ -929,7 +902,8 @@ class EmployeeGovernanceTests(TestCase):
         self._make("admin@edevs.tech", EmployeeRole.ADMIN)
         items = self._client("admin@edevs.tech").get("/api/v1/employees/").json()["items"]
         by_email = {item["email"]: item for item in items}
-        # ADMIN может управлять EMPLOYEE, но не OWNER и не менять роли.
+        # ADMIN идентичен OWNER: управляет всеми, кроме блокировки/удаления владельца.
         self.assertTrue(by_email["emp@edevs.tech"]["permissions"]["canBlock"])
-        self.assertFalse(by_email["emp@edevs.tech"]["permissions"]["canChangeRole"])
+        self.assertTrue(by_email["emp@edevs.tech"]["permissions"]["canChangeRole"])
         self.assertFalse(by_email["owner@edevs.tech"]["permissions"]["canBlock"])
+        self.assertTrue(by_email["owner@edevs.tech"]["permissions"]["canUpdateProfile"])

@@ -9,7 +9,7 @@ from hub_platform.testing import TenantAPIClient as APIClient
 
 from hub_platform.channels.models import Channel
 from hub_platform.identity.bootstrap import bootstrap_edevs_owner
-from hub_platform.identity.models import Department, Organization
+from hub_platform.identity.models import Organization
 from hub_platform.products.models import Product
 from hub_platform.support.models import ContractStatus, ProductSupportContract
 from hub_platform.support.test_helpers import FOXRAY_DATA, make_support_token
@@ -19,7 +19,7 @@ SECRET = "test-support-secret-very-long-32bytes!!"
 
 
 def _setup_support_channel(
-    organization, support_department, product
+    organization, product
 ) -> tuple[Channel, ProductSupportContract]:
     product.support_token_secret = SECRET
     product.save(update_fields=["support_token_secret"])
@@ -58,7 +58,6 @@ def _setup_support_channel(
         organization=organization,
         code="foxray-support",
         name="FoxRay — поддержка",
-        department=support_department,
         product=product,
         requires_authenticated_product_identity=True,
         allow_anonymous_sessions=False,
@@ -74,10 +73,9 @@ class SupportWidgetMessagesTests(TestCase):
     def setUp(self) -> None:
         bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
         self.organization = Organization.objects.get(slug="edevs")
-        self.support = Department.objects.get(organization=self.organization, code="support")
         self.product = Product.objects.get(organization=self.organization, code="foxray")
         self.channel, self.contract = _setup_support_channel(
-            self.organization, self.support, self.product
+            self.organization, self.product
         )
         self.widget = create_web_widget(self.channel, name="FoxRay support widget")
         self.client = APIClient()

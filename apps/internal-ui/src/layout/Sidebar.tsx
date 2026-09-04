@@ -97,7 +97,7 @@ export function Sidebar({ route, user, setRoute, onLogout, waitingCount = 0 }: {
         <div className="hub-nav-group">КОМПАНИЯ</div>
         <SidebarNavSection icon="shop" items={salesItems} label="Клиенты" route={route} setRoute={setRoute} storageKey={sectionStorageKey("sales")} />
         <SidebarNavSection icon="wrench" items={supportItems} label="Поддержка" route={route} setRoute={setRoute} storageKey={sectionStorageKey("support")} />
-        {canAccess(user, "employees") && <SidebarLink activeRoutes={["employees", "employeeDetail", "accessProfiles"]} icon="team" label="Сотрудники" route={route} routeKey="employees" setRoute={setRoute} />}
+        {canAccess(user, "employees") && <SidebarLink activeRoutes={["employees", "employeeDetail"]} icon="team" label="Сотрудники" route={route} routeKey="employees" setRoute={setRoute} />}
         {canAccess(user, "channels") && <SidebarLink activeRoutes={["channels", "channelCreate", "channelDetail"]} icon="route" label="Каналы" route={route} routeKey="channels" setRoute={setRoute} />}
         <div className="hub-nav-group">ПЛАТФОРМА</div>
         <SidebarNavSection icon="robot" items={aiItems} label="AI" route={route} setRoute={setRoute} storageKey={sectionStorageKey("ai")} />

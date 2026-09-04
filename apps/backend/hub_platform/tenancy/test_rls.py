@@ -4,10 +4,10 @@ from django.test import TransactionTestCase
 from hub_platform.ai.knowledge_categories import ensure_uncategorized_category
 from hub_platform.ai.models import AIAgent, Knowledge
 from hub_platform.channels.models import Channel
+from hub_platform.identity.group_models import EmployeeGroup
 from hub_platform.identity.models import (
     AuditEvent,
     AuditResult,
-    Department,
     EmployeeRole,
     HumanUser,
     Organization,
@@ -35,13 +35,12 @@ class RowLevelSecurityTests(TransactionTestCase):
             code="second",
             name="Second product",
         )
-        self.second_department = Department.objects.create(
+        self.second_group = EmployeeGroup.objects.create(
             organization=self.second,
-            code="foreign",
             name="Foreign",
         )
         self.user = HumanUser.objects.create_user(email="rls@example.test")
-        OrganizationMembership.objects.create(
+        self.membership = OrganizationMembership.objects.create(
             organization=self.first,
             user=self.user,
             role=EmployeeRole.OWNER,
@@ -180,10 +179,10 @@ class RowLevelSecurityTests(TransactionTestCase):
             set_local_tenant(self.first.id)
             with connection.cursor() as cursor:
                 cursor.execute(
-                    "INSERT INTO products_productdepartment "
-                    "(organization_id, product_id, department_id, created_at) "
+                    "INSERT INTO identity_employeegroupmember "
+                    "(organization_id, group_id, employee_id, created_at) "
                     "VALUES (%s, %s, %s, NOW())",
-                    [self.first.id, self.first_product.id, self.second_department.id],
+                    [self.first.id, self.second_group.id, self.membership.id],
                 )
 
     def test_cross_tenant_many_to_many_is_rejected(self) -> None:

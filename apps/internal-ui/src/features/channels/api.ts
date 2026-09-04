@@ -4,7 +4,7 @@ import type { Channel, ChannelPolicy, PolicyPreset } from "./types";
 export type ChannelCreateInput = {
   code: string;
   name: string;
-  departmentId: number | null;
+  groupId: number | null;
   productId: number | null;
   policyPreset: PolicyPreset;
   policy?: ChannelPolicy;
@@ -12,7 +12,7 @@ export type ChannelCreateInput = {
 
 export type ChannelUpdateInput = {
   name?: string;
-  departmentId?: number | null;
+  groupId?: number | null;
   productId?: number | null;
   isActive?: boolean;
   policy?: Partial<ChannelPolicy>;
@@ -37,7 +37,7 @@ export function createChannel(input: ChannelCreateInput): Promise<{ channel: Cha
   const body: Record<string, unknown> = {
     code: input.code,
     name: input.name,
-    departmentId: input.departmentId,
+    groupId: input.groupId,
     productId: input.productId,
     policyPreset: input.policyPreset,
   };

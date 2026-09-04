@@ -77,9 +77,7 @@ class WebChatWidget(TenantRelationModel):
             raise ValidationError({"integration": "Web Chat widget requires a channel"})
         if self.mode == WebChatWidgetMode.AUTHENTICATED_PRODUCT:
             if (
-                channel.department_id is None
-                or channel.department.code != "support"
-                or channel.product_id is None
+                channel.product_id is None
                 or not channel.requires_authenticated_product_identity
                 or channel.allow_anonymous_sessions
                 or channel.allow_self_reported_contact

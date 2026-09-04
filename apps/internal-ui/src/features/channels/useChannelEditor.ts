@@ -51,7 +51,7 @@ export function useChannelEditor(channel: Channel | null) {
     begin,
     cancel,
     finish: cancel,
-    setDepartmentId: (departmentId: number | null) => update({ departmentId }),
+    setGroupId: (groupId: number | null) => update({ groupId }),
     setName: (name: string) => update({ name }),
     setPolicy,
     setProductId,

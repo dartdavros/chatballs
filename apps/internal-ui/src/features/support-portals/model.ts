@@ -31,7 +31,6 @@ export type PortalProductLink = {
 export type SupportPortal = {
   id: number;
   publicId: string;
-  departmentCode: "support";
   slug: string;
   hostedDomain: string;
   customDomain: string | null;

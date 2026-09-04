@@ -46,13 +46,13 @@ class CallDomainMixin:
     def setUp(self) -> None:
         bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
         self.organization = Organization.objects.get(slug="edevs")
-        self.sales_department = self.organization.departments.get(code="sales")
-        self.support_department = self.organization.departments.get(code="support")
+        self.operators_group = self.organization.employee_groups.get(name="Операторы")
+        self.support_group = self.organization.employee_groups.get(name="Поддержка")
         self.owner = HumanUser.objects.get(email="owner@edevs.tech")
         self.operator = HumanUser.objects.get(email="a.kotova@edevs.tech")
         self.channel = Channel.objects.create(
             organization=self.organization,
-            department=self.sales_department,
+            group=self.operators_group,
             code="call-sales",
             name="Звонки — продажи",
         )
@@ -73,6 +73,7 @@ class CallDomainMixin:
         self.conversation = Conversation.objects.create(
             organization=self.organization,
             channel=self.channel,
+            group=self.operators_group,
             connection=self.connection,
             contact=self.contact,
         )
@@ -87,7 +88,6 @@ class CallDomainMixin:
             organization=self.organization,
             role=EmployeeRole.EMPLOYEE,
             position_title="Оператор поддержки",
-            primary_department=self.support_department,
         )
         return user
 
@@ -102,6 +102,7 @@ class CallDomainMixin:
         return Conversation.objects.create(
             organization=self.organization,
             channel=self.channel,
+            group=self.operators_group,
             connection=self.connection,
             contact=contact,
         )

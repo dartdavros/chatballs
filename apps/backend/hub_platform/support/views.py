@@ -5,7 +5,6 @@ from rest_framework.views import APIView
 
 from hub_platform.api.permissions import HasCapability, HasEntitlement
 from hub_platform.identity.audit import record_audit_event
-from hub_platform.identity.policy import accessible_department_ids
 from hub_platform.support.models import ProductSupportContract
 from hub_platform.support.selectors import contract_for_context, contracts_for_context
 from hub_platform.support.serializers import (
@@ -145,10 +144,5 @@ class SupportSnapshotsBySubjectView(APIView):
             product_id=product.id,
             subject_key=subject_key,
         )
-        department_ids = accessible_department_ids(request.tenant_context.membership, self.required_capability)
-        if department_ids is not None:
-            snapshots = snapshots.filter(
-                conversations__channel__department_id__in=department_ids
-            ).distinct()
         snapshots = snapshots[:20]
         return Response({"items": [support_identity_snapshot_payload(s) for s in snapshots]})

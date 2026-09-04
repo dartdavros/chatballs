@@ -1,20 +1,18 @@
-import type { Department, Employee } from "../../types";
-import { EmployeeAccessSection } from "./EmployeeAccessSection";
+import type { Employee, EmployeeGroup } from "../../types";
 import { EmployeeIdentitySections } from "./EmployeeIdentitySections";
 import { EmployeeSecuritySections } from "./EmployeeSecuritySections";
 import type { EmployeeForm } from "./model";
 
-export function EmployeeDetailSections({ blocked, departments, employee, form, updateForm }: {
+export function EmployeeDetailSections({ blocked, groups, employee, form, updateForm }: {
   blocked: boolean;
-  departments: Department[];
+  groups: EmployeeGroup[];
   employee: Employee;
   form: EmployeeForm;
-  updateForm: (field: keyof EmployeeForm, value: string | boolean) => void;
+  updateForm: (field: keyof EmployeeForm, value: string | boolean | number[]) => void;
 }) {
   return (
     <div className="employee-detail-left">
-      <EmployeeIdentitySections departments={departments} employee={employee} form={form} updateForm={updateForm} />
-      <EmployeeAccessSection employee={employee} />
+      <EmployeeIdentitySections groups={groups} employee={employee} form={form} updateForm={updateForm} />
       <EmployeeSecuritySections blocked={blocked} employee={employee} form={form} updateForm={updateForm} />
     </div>
   );

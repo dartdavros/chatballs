@@ -122,7 +122,6 @@ def _ensure_notifications(refs: DemoRefs, items: list[dict]) -> None:
             organization=refs.organization,
             dedup_key=dedup_key,
             defaults={
-                "department": refs.departments.get(item.get("department")),
                 "type": item["type"],
                 "level": item.get("level", NotificationLevel.INFO),
                 "title": item["title"],

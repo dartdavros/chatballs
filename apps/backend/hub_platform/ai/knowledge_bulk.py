@@ -6,17 +6,11 @@ from django.db import transaction
 from django.utils import timezone
 
 from hub_platform.ai.agent_knowledge import knowledge_available_to_channel
-from hub_platform.ai.knowledge_conflicts import (
-    KnowledgeScopeConflict,
-    knowledge_scope_conflicts,
-)
 from hub_platform.ai.knowledge_policy import employee_can_write_knowledge
-from hub_platform.ai.knowledge_visibility import departments_for_scope
 from hub_platform.ai.models import (
     AIAgent,
     Knowledge,
     KnowledgeCategory,
-    KnowledgeDepartment,
 )
 from hub_platform.ai.services import knowledge_for_agent_ids
 from hub_platform.channels.models import Channel
@@ -43,7 +37,6 @@ def _locked_knowledge(*, context: TenantContext, knowledge_ids: Iterable[int]) -
             organization_id=context.organization_id,
             id__in=normalized_ids,
         )
-        .prefetch_related("department_links")
         .order_by("id")
     )
     if len(items) != len(normalized_ids):
@@ -55,17 +48,10 @@ def _require_bulk_write(
     *,
     context: TenantContext,
     items: Iterable[Knowledge],
-    visibility: str | None = None,
-    department_ids: Iterable[int] | None = None,
 ) -> None:
     for knowledge in items:
-        if not employee_can_write_knowledge(
-            context=context,
-            knowledge=knowledge,
-            visibility=visibility,
-            department_ids=department_ids,
-        ):
-            raise PermissionDenied("Knowledge scope is not manageable")
+        if not employee_can_write_knowledge(context=context, knowledge=knowledge):
+            raise PermissionDenied("Knowledge is not manageable")
 
 
 @transaction.atomic
@@ -87,59 +73,6 @@ def bulk_move_knowledge(
         updated_at=now,
     )
     return [item.id for item in items]
-
-
-@transaction.atomic
-def bulk_replace_knowledge_visibility(
-    *,
-    context: TenantContext,
-    knowledge_ids: Iterable[int],
-    visibility: str,
-    department_ids: Iterable[int],
-) -> list[int]:
-    departments = departments_for_scope(
-        context=context,
-        visibility=visibility,
-        department_ids=department_ids,
-    )
-    target_department_ids = [department.id for department in departments]
-    items = _locked_knowledge(context=context, knowledge_ids=knowledge_ids)
-    _require_bulk_write(
-        context=context,
-        items=items,
-        visibility=visibility,
-        department_ids=target_department_ids,
-    )
-    conflicts = tuple(
-        conflict
-        for knowledge in items
-        for conflict in knowledge_scope_conflicts(
-            knowledge=knowledge,
-            visibility=visibility,
-            department_ids=target_department_ids,
-        )
-    )
-    if conflicts:
-        raise KnowledgeScopeConflict(conflicts)
-
-    item_ids = [item.id for item in items]
-    Knowledge.objects.filter(id__in=item_ids).update(
-        visibility=visibility,
-        updated_at=timezone.now(),
-    )
-    KnowledgeDepartment.objects.filter(knowledge_id__in=item_ids).delete()
-    KnowledgeDepartment.objects.bulk_create(
-        [
-            KnowledgeDepartment(
-                organization=context.organization,
-                knowledge=knowledge,
-                department=department,
-            )
-            for knowledge in items
-            for department in departments
-        ]
-    )
-    return item_ids
 
 
 @dataclass(frozen=True, slots=True)

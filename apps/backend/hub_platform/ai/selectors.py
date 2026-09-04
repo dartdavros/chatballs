@@ -4,17 +4,15 @@ from django.db.models import Count, Prefetch, Q, QuerySet
 
 from hub_platform.ai.agent_knowledge import knowledge_available_to_channel
 from hub_platform.ai.knowledge_policy import readable_knowledge, writable_knowledge
-from hub_platform.ai.knowledge_types import KnowledgeVisibility
 from hub_platform.ai.models import AIAgent, Knowledge, KnowledgeCategory
 from hub_platform.channels.models import Channel
-from hub_platform.identity.models import Department
-from hub_platform.identity.policy import accessible_department_ids
+from hub_platform.identity.policy import has_capability_any_scope
 from hub_platform.tenancy.context import TenantContext
 
 
 def agents_for_context(context: TenantContext) -> QuerySet[AIAgent]:
     return (
-        AIAgent.objects.select_related("channel", "channel__department", "channel__product")
+        AIAgent.objects.select_related("channel", "channel__group", "channel__product")
         .prefetch_related(
             "knowledge_items",
             "portal_articles__portal",
@@ -31,12 +29,9 @@ def agent_for_context(*, context: TenantContext, agent_id: int) -> AIAgent:
 
 def agents_for_employee(*, context: TenantContext, capability: str) -> QuerySet[AIAgent]:
     queryset = agents_for_context(context)
-    department_ids = accessible_department_ids(context.membership, capability)
-    if department_ids is None:
+    if has_capability_any_scope(context.membership, capability):
         return queryset
-    if not department_ids:
-        return queryset.none()
-    return queryset.filter(channel__department_id__in=department_ids)
+    return queryset.none()
 
 
 def agent_for_employee(*, context: TenantContext, agent_id: int, capability: str) -> AIAgent:
@@ -50,12 +45,9 @@ def channel_for_ai_capability(
         organization_id=context.organization_id,
         code=channel_code,
     )
-    department_ids = accessible_department_ids(context.membership, capability)
-    if department_ids is None:
+    if has_capability_any_scope(context.membership, capability):
         return queryset.get()
-    if not department_ids:
-        return queryset.none().get()
-    return queryset.filter(department_id__in=department_ids).get()
+    return queryset.none().get()
 
 
 def knowledge_for_context(context: TenantContext) -> QuerySet[Knowledge]:
@@ -69,13 +61,7 @@ def _knowledge_base(context: TenantContext) -> QuerySet[Knowledge]:
 def _with_knowledge_relations(queryset: QuerySet[Knowledge]) -> QuerySet[Knowledge]:
     return (
         queryset.select_related("category")
-        .prefetch_related(
-            "attachments",
-            Prefetch(
-                "departments",
-                queryset=Department.objects.order_by("name", "id"),
-            ),
-        )
+        .prefetch_related("attachments")
         .annotate(
             agents_count=Count("agents", distinct=True),
             fragments_count=Count("fragments", distinct=True),
@@ -163,8 +149,6 @@ def category_tree_for_employee(*, context: TenantContext) -> list[KnowledgeCateg
 @dataclass(frozen=True, slots=True)
 class KnowledgeFilters:
     category_id: int | None = None
-    department_id: int | None = None
-    visibility: str | None = None
     is_enabled: bool | None = None
     search: str = ""
 
@@ -174,13 +158,6 @@ def apply_knowledge_filters(
 ) -> QuerySet[Knowledge]:
     if filters.category_id is not None:
         queryset = queryset.filter(category_id=filters.category_id)
-    if filters.department_id is not None:
-        queryset = queryset.filter(
-            visibility=KnowledgeVisibility.DEPARTMENTS,
-            department_links__department_id=filters.department_id,
-        )
-    if filters.visibility is not None:
-        queryset = queryset.filter(visibility=filters.visibility)
     if filters.is_enabled is not None:
         queryset = queryset.filter(is_enabled=filters.is_enabled)
     search = filters.search.strip()

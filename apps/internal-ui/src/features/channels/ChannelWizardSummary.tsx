@@ -4,7 +4,7 @@ import { Icon } from "../../shared/icons";
 export function ChannelWizardSummary({
   name,
   code,
-  departmentName,
+  groupName,
   productName,
   showDestinations = false,
   openAgentCreate,
@@ -12,7 +12,7 @@ export function ChannelWizardSummary({
 }: {
   name: string;
   code: string;
-  departmentName: string;
+  groupName: string;
   productName: string;
   showDestinations?: boolean;
   openAgentCreate: () => void;
@@ -24,7 +24,7 @@ export function ChannelWizardSummary({
         <h4>Сводка канала</h4>
         <KeyValue label="Название" value={name || "—"} />
         <KeyValue label="Код" value={code ? <code>{code}</code> : "—"} />
-        <KeyValue label="Отдел" value={departmentName} />
+        <KeyValue label="Группа" value={groupName} />
         <KeyValue label="Продукт" value={productName} />
       </div>
 

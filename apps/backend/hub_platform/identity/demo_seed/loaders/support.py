@@ -79,13 +79,11 @@ def _ensure_portal(context: TenantContext, refs: DemoRefs, portal_data: dict | N
     if not portal_data:
         return
     organization = refs.organization
-    support_dept = refs.departments["support"]
 
     portal, portal_created = SupportPortal.objects.get_or_create(
         slug=portal_data["slug"],
         defaults={
             "organization": organization,
-            "department": support_dept,
             "name": portal_data["name"],
             "default_locale": portal_data.get("locale", "ru"),
             "status": portal_data.get("status", PortalStatus.PUBLISHED),

@@ -1,10 +1,21 @@
 import type { AiAgent } from "./features/ai/model";
 
-// Системные роли ADR-HUB-0027. OPERATOR удалён как системная роль (этап 1);
-// «оператор» — рабочая функция сотрудника (EMPLOYEE) в своём отделе.
+// Роли SPEC-HUB-0031 §3: OWNER и ADMIN идентичны (владельца нельзя удалить),
+// EMPLOYEE работает только в чате; видимость диалогов — по группам (ADR-HUB-0043).
 export type Role = "OWNER" | "ADMIN" | "EMPLOYEE";
 export type ProductStatus = "ACTIVE" | "DISABLED";
 export type DeliveryMode = "CLOUD" | "SELF_HOSTED";
+
+export type EmployeeGroupRef = {
+  id: number;
+  name: string;
+};
+
+export type EmployeeGroup = EmployeeGroupRef & {
+  memberCount: number;
+  memberIds: number[];
+  createdAt: string;
+};
 
 export type OrganizationMembership = {
   id: number;
@@ -14,10 +25,9 @@ export type OrganizationMembership = {
   organization: string;
   organizationName: string;
   organizationLogoUrl: string | null;
-  department: string | null;
   totpRequired: boolean;
   capabilities: string[];
-  accessScopes: AccessScope[];
+  groups: EmployeeGroupRef[];
 };
 
 export type AuthenticatedUser = {
@@ -32,13 +42,6 @@ export type AuthenticatedUser = {
 
 export type SessionUser = AuthenticatedUser & OrganizationMembership;
 
-export type AccessScope = {
-  scopeType: "ORGANIZATION" | "DEPARTMENT";
-  departmentId: number | null;
-  departmentCode: string | null;
-  capabilities: string[];
-};
-
 export type AuthChallenge = {
   email: string;
   fullName: string;
@@ -49,13 +52,12 @@ export type LoginPayload =
   | { authenticated: false; totpRequired: true; totpEnabled: true; challenge: AuthChallenge };
 
 // Флаги доступных действий над сотрудником для текущего пользователя. Backend —
-// источник истины (ADR-HUB-0027 этап 2); фронтенд скрывает недоступное.
+// источник истины (SPEC-HUB-0031 §3); фронтенд скрывает недоступное.
 export type EmployeePermissions = {
   canView: boolean;
   canUpdateProfile: boolean;
   canChangeRole: boolean;
-  canChangePlacement: boolean;
-  canChangeAccess: boolean;
+  canChangeGroups: boolean;
   canBlock: boolean;
   canUnblock: boolean;
   canResetPassword: boolean;
@@ -70,8 +72,7 @@ export type Employee = {
   role: Role;
   positionTitle: string;
   phone: string;
-  department: string | null;
-  departmentName?: string | null;
+  groups: EmployeeGroupRef[];
   createdAt?: string;
   lastLogin?: string | null;
   isActive: boolean;
@@ -80,60 +81,14 @@ export type Employee = {
   totpRequired: boolean;
   totpEnabled: boolean;
   permissions?: EmployeePermissions;
-  accessAssignments?: EmployeeAccessAssignment[];
   activeSessionCount?: number;
   auditEvents?: EmployeeAuditEvent[];
-};
-
-export type ScopeType = "ORGANIZATION" | "DEPARTMENT";
-
-export type EmployeeAccessAssignment = {
-  id: number;
-  profileId: number;
-  profileName: string;
-  scopeType: ScopeType;
-  departmentId: number | null;
-  departmentCode: string | null;
-  departmentName?: string | null;
-  capabilities?: string[];
 };
 
 export type EmployeeAuditEvent = {
   action: string;
   result: string;
   createdAt: string;
-};
-
-export type AccessProfile = {
-  id: number;
-  name: string;
-  description: string;
-  isSystem: boolean;
-  isActive: boolean;
-  capabilities: string[];
-  allowedScopes: ScopeType[];
-  assignedCount: number;
-};
-
-export type CapabilityDefinition = {
-  code: string;
-  name: string;
-  description: string;
-  allowedScopes: ScopeType[];
-  assignable: boolean;
-  protected: boolean;
-};
-
-export type Department = {
-  id: number;
-  code: string;
-  name: string;
-  status: string;
-  memberCount: number;
-  operatorCount: number;
-  activeOperatorCount: number;
-  agentCount: number;
-  products: Array<{ code: string; name: string }>;
 };
 
 export type ProductChannelRef = {
@@ -153,17 +108,16 @@ export type Product = {
   name: string;
   status: ProductStatus;
   siteUrl: string;
-  departments: Array<{ id: number; code: string; name: string }>;
   channels: ProductChannelRef[];
   createdAt: string;
   updatedAt: string;
 };
 
-export type RouteKey = "accessProfiles" | "administrationOrganization" | "administrationSubscription" | "administrationAudit" | "command" | "departments" | "employeeDetail" | "employees" | "profile" | "settings" | "salesClientDetail" | "salesClients" | "salesDialogs" | "supportOverview" | "supportDialogs" | "supportPortals" | "supportPortalDetail" | "aiAgents" | "aiAgentCreate" | "aiAgentDetail" | "aiKnowledge" | "aiKnowledgeCreate" | "aiKnowledgeDetail" | "aiUsage" | "integrations" | "channels" | "channelCreate" | "channelDetail";
+export type RouteKey = "administrationOrganization" | "administrationSubscription" | "administrationAudit" | "command" | "employeeDetail" | "employees" | "profile" | "settings" | "salesClientDetail" | "salesClients" | "salesDialogs" | "supportOverview" | "supportDialogs" | "supportPortals" | "supportPortalDetail" | "aiAgents" | "aiAgentCreate" | "aiAgentDetail" | "aiKnowledge" | "aiKnowledgeCreate" | "aiKnowledgeDetail" | "aiUsage" | "integrations" | "channels" | "channelCreate" | "channelDetail";
 
 export type AppData = {
   employees: Employee[];
-  departments: Department[];
+  groups: EmployeeGroup[];
   products: Product[];
   agents: AiAgent[];
 };

@@ -119,9 +119,10 @@ export function toConversationListItem(conversation: ApiConversation): Conversat
   };
 }
 
-// department — изоляция inbox (§10): sales/support оператор видит только свой отдел.
-export const fetchConversations = (department: "sales" | "support") =>
-  api<{ items: ApiConversation[] }>(`/api/v1/conversations/?department=${department}`).then((r) => r.items);
+// Видимость inbox решает backend (ADR-HUB-0043): группы сотрудника + без группы
+// + назначенные ему; владелец и админ видят всё.
+export const fetchConversations = () =>
+  api<{ items: ApiConversation[] }>("/api/v1/conversations/").then((r) => r.items);
 export const fetchConversation = (id: number) => api<{ conversation: ApiConversation }>(`/api/v1/conversations/${id}/`).then((r) => r.conversation);
 export const claimConversation = (id: number) => api<{ conversation: ApiConversation }>(`/api/v1/conversations/${id}/claim/`, { method: "POST" }).then((r) => r.conversation);
 export const releaseConversation = (id: number) => api<{ conversation: ApiConversation }>(`/api/v1/conversations/${id}/release/`, { method: "POST" }).then((r) => r.conversation);

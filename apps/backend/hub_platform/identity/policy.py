@@ -2,25 +2,22 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from django.db.models import QuerySet
-
 from hub_platform.identity.capabilities import (
-    CAPABILITY_REGISTRY,
-    PROTECTED_CAPABILITIES,
-    ScopeType,
-    capability_spec,
+    ALL_CAPABILITIES,
+    EMPLOYEE_CAPABILITIES,
+    OWNER_ONLY_CAPABILITIES,
 )
-from hub_platform.identity.models import (
-    EmployeeAccessAssignment,
-    EmployeeRole,
-    OrganizationMembership,
-)
+from hub_platform.identity.models import EmployeeRole, OrganizationMembership
+
+# Ролевая авторизация (SPEC-HUB-0031 §3, ADR-HUB-0043): OWNER и ADMIN идентичны
+# (кроме ownership.transfer и невозможности удалить/заблокировать владельца —
+# это проверяют employee-сервисы), EMPLOYEE ограничен чатом. Deny-by-default
+# сохраняется; scope-модель и отделы упразднены.
 
 
 @dataclass(frozen=True, slots=True)
 class ResourceScope:
     organization_id: int
-    department_id: int | None = None
 
 
 def _active_membership(actor) -> OrganizationMembership | None:
@@ -32,64 +29,29 @@ def _active_membership(actor) -> OrganizationMembership | None:
     return actor
 
 
-def _assignments(profile: OrganizationMembership) -> QuerySet[EmployeeAccessAssignment]:
-    return (
-        EmployeeAccessAssignment.objects.filter(
-            employee=profile,
-            revoked_at__isnull=True,
-            access_profile__is_active=True,
-        )
-        .select_related("department", "access_profile")
-        .prefetch_related("access_profile__capability_links")
-    )
+def _role_capabilities(role: str) -> frozenset[str]:
+    if role == EmployeeRole.OWNER:
+        return ALL_CAPABILITIES
+    if role == EmployeeRole.ADMIN:
+        return ALL_CAPABILITIES - OWNER_ONLY_CAPABILITIES
+    if role == EmployeeRole.EMPLOYEE:
+        return EMPLOYEE_CAPABILITIES
+    return frozenset()
 
 
 def authorize(actor, capability: str, resource_scope: ResourceScope) -> bool:
-    """Deny-by-default capability and scope decision (SPEC-HUB-0017 §8)."""
-    try:
-        spec = capability_spec(capability)
-    except ValueError:
-        return False
-
+    """Deny-by-default решение по роли внутри проверенной организации."""
     profile = _active_membership(actor)
     if profile is None or profile.organization_id != resource_scope.organization_id:
         return False
-    if profile.role == EmployeeRole.OWNER:
-        return True
-    if profile.role == EmployeeRole.ADMIN:
-        return capability not in PROTECTED_CAPABILITIES
-    if profile.role != EmployeeRole.EMPLOYEE:
-        return False
-
-    for assignment in _assignments(profile):
-        if assignment.scope_type not in spec.allowed_scopes:
-            continue
-        if assignment.scope_type == ScopeType.DEPARTMENT:
-            if resource_scope.department_id is None:
-                continue
-            if assignment.department_id != resource_scope.department_id:
-                continue
-        codes = {
-            link.capability_code for link in assignment.access_profile.capability_links.all()
-        }
-        if capability in codes:
-            return True
-    return False
+    return capability in _role_capabilities(profile.role)
 
 
 def has_capability_any_scope(actor, capability: str) -> bool:
     profile = _active_membership(actor)
     if profile is None:
         return False
-    if profile.role == EmployeeRole.OWNER:
-        return capability in CAPABILITY_REGISTRY
-    if profile.role == EmployeeRole.ADMIN:
-        return capability in CAPABILITY_REGISTRY and capability not in PROTECTED_CAPABILITIES
-    if profile.role != EmployeeRole.EMPLOYEE:
-        return False
-    return _assignments(profile).filter(
-        access_profile__capability_links__capability_code=capability
-    ).exists()
+    return capability in _role_capabilities(profile.role)
 
 
 def can_administer_access(actor) -> bool:
@@ -97,79 +59,42 @@ def can_administer_access(actor) -> bool:
     return profile is not None and profile.role in {EmployeeRole.OWNER, EmployeeRole.ADMIN}
 
 
-def accessible_department_ids(actor, capability: str) -> set[int] | None:
-    """None means all departments in the actor organization; set() means no access."""
+def conversation_visibility(actor) -> dict | None:
+    """Видимость диалогов (ADR-HUB-0043 §4).
+
+    None — без ограничений (OWNER/ADMIN). Иначе словарь для построения фильтра:
+    диалоги групп сотрудника + диалоги без группы + назначенные ему.
+    Пустой доступ (нет membership) — {"none": True}.
+    """
     profile = _active_membership(actor)
     if profile is None:
-        return set()
-    if profile.role == EmployeeRole.OWNER:
-        return None if capability in CAPABILITY_REGISTRY else set()
-    if profile.role == EmployeeRole.ADMIN:
-        return None if capability not in PROTECTED_CAPABILITIES else set()
-    if profile.role != EmployeeRole.EMPLOYEE:
-        return set()
+        return {"none": True}
+    if profile.role in {EmployeeRole.OWNER, EmployeeRole.ADMIN}:
+        return None
+    from hub_platform.identity.group_models import member_group_ids
 
-    department_ids: set[int] = set()
-    for assignment in _assignments(profile).filter(
-        access_profile__capability_links__capability_code=capability
-    ):
-        if assignment.scope_type == ScopeType.ORGANIZATION:
-            return None
-        if assignment.department_id is not None:
-            department_ids.add(assignment.department_id)
-    return department_ids
+    return {
+        "group_ids": member_group_ids(profile),
+        "user_id": profile.user_id,
+    }
 
 
 def get_effective_access(actor) -> dict[str, object]:
     profile = _active_membership(actor)
     if profile is None:
-        return {"capabilities": [], "accessScopes": []}
+        return {"capabilities": [], "groups": []}
+    from hub_platform.identity.group_models import EmployeeGroupMember
 
-    if profile.role in {EmployeeRole.OWNER, EmployeeRole.ADMIN}:
-        codes = sorted(
-            code
-            for code in CAPABILITY_REGISTRY
-            if profile.role == EmployeeRole.OWNER or code not in PROTECTED_CAPABILITIES
+    groups = [
+        {"id": link.group_id, "name": link.group.name}
+        for link in EmployeeGroupMember.objects.filter(employee=profile).select_related(
+            "group"
         )
-        return {
-            "capabilities": codes,
-            "accessScopes": [
-                {
-                    "scopeType": ScopeType.ORGANIZATION,
-                    "departmentId": None,
-                    "departmentCode": None,
-                    "capabilities": codes,
-                }
-            ],
-        }
-
-    scope_codes: dict[tuple[str, int | None, str | None], set[str]] = {}
-    for assignment in _assignments(profile):
-        key = (
-            assignment.scope_type,
-            assignment.department_id,
-            assignment.department.code if assignment.department_id else None,
-        )
-        codes = scope_codes.setdefault(key, set())
-        for link in assignment.access_profile.capability_links.all():
-            spec = CAPABILITY_REGISTRY.get(link.capability_code)
-            if spec and spec.assignable and assignment.scope_type in spec.allowed_scopes:
-                codes.add(link.capability_code)
-    scopes = [
-        {
-            "scopeType": scope_type,
-            "departmentId": department_id,
-            "departmentCode": department_code,
-            "capabilities": sorted(codes),
-        }
-        for (scope_type, department_id, department_code), codes in sorted(
-            scope_codes.items(), key=lambda item: (item[0][0], item[0][1] or 0)
-        )
-        if codes
     ]
+    groups.sort(key=lambda item: str(item["name"]))
     return {
-        "capabilities": sorted({code for scope in scopes for code in scope["capabilities"]}),
-        "accessScopes": scopes,
+        "capabilities": sorted(_role_capabilities(profile.role)),
+        "groups": groups,
     }
 
 
@@ -178,16 +103,7 @@ def scope_for_resource(resource) -> ResourceScope | None:
     organization_id = getattr(resource, "organization_id", None)
     if organization_id is None:
         return None
-    department_id = getattr(resource, "department_id", None)
-    if department_id is None:
-        channel = getattr(resource, "channel", None)
-        if channel is not None:
-            department_id = channel.department_id
-    if department_id is None:
-        conversation = getattr(resource, "conversation", None)
-        if conversation is not None:
-            department_id = conversation.channel.department_id
-    return ResourceScope(organization_id=organization_id, department_id=department_id)
+    return ResourceScope(organization_id=organization_id)
 
 
 def require_capability(actor, capability: str, resource) -> bool:

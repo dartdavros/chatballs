@@ -8,7 +8,6 @@ def products_for_context(context: TenantContext) -> QuerySet[Product]:
     return (
         Product.objects.filter(organization_id=context.organization_id)
         .prefetch_related(
-            "department_links__department",
             "channels__ai_agent",
             "channels__connections",
         )

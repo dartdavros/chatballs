@@ -29,7 +29,7 @@ export function SupportPortalsPage({
   const [failed, setFailed] = useState(false);
   const [search, setSearch] = useState("");
   const [creating, setCreating] = useState(false);
-  const canManage = hasCapability(user, "support.operate", "support");
+  const canManage = hasCapability(user, "support.operate");
 
   const load = useCallback(async () => {
     setFailed(false);

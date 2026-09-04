@@ -20,9 +20,7 @@ def _user_payload(user: HumanUser) -> dict[str, object]:
             continue
         with tenant_atomic(organization.id):
             membership = (
-                OrganizationMembership.objects.select_related(
-                    "organization", "primary_department"
-                )
+                OrganizationMembership.objects.select_related("organization")
                 .filter(
                     id=route.resource_id,
                     user=user,
@@ -46,9 +44,6 @@ def _user_payload(user: HumanUser) -> dict[str, object]:
                 ),
                 "role": membership.role,
                 "positionTitle": membership.position_title,
-                "department": (
-                    membership.primary_department.code if membership.primary_department else None
-                ),
                 "totpRequired": membership.totp_required,
             }
             membership_payload.update(get_effective_access(membership))

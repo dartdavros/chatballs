@@ -115,32 +115,7 @@ class Organization(models.Model):
         super().save(*args, **kwargs)
 
 
-class DepartmentStatus(models.TextChoices):
-    ACTIVE = "ACTIVE", "Active"
-    DISABLED = "DISABLED", "Disabled"
-
-
-class Department(models.Model):
-    organization = models.ForeignKey(Organization, on_delete=models.PROTECT, related_name="departments")
-    code = models.SlugField(max_length=64)
-    name = models.CharField(max_length=255)
-    status = models.CharField(
-        max_length=32,
-        choices=DepartmentStatus.choices,
-        default=DepartmentStatus.ACTIVE,
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(fields=["organization", "code"], name="uniq_department_org_code")
-        ]
-
-    def __str__(self) -> str:
-        return f"{self.organization.slug}/{self.code}"
-
-
-# ADR-HUB-0027 / SPEC-HUB-0016 §5: лимит должности задаётся backend-константой.
+# SPEC-HUB-0016 §5: лимит должности задаётся backend-константой.
 POSITION_TITLE_MAX_LENGTH = 120
 
 
@@ -166,15 +141,6 @@ class OrganizationMembership(models.Model):
     # Пустая строка допускается на уровне БД только для legacy-записей до backfill.
     position_title = models.CharField(max_length=POSITION_TITLE_MAX_LENGTH, blank=True, default="")
     phone = models.CharField(max_length=32, blank=True)
-    # Основной отдел описывает оргструктуру, но не выдаёт прав (ADR-HUB-0027).
-    # null = сотрудник на верхнем уровне компании; OWNER всегда на уровне компании.
-    primary_department = models.ForeignKey(
-        Department,
-        on_delete=models.PROTECT,
-        related_name="memberships",
-        null=True,
-        blank=True,
-    )
     totp_required = models.BooleanField(default=False)
     blocked_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -187,12 +153,7 @@ class OrganizationMembership(models.Model):
                 fields=["user", "organization"],
                 name="uniq_membership_user_organization",
             ),
-            # OWNER всегда на уровне компании (ADR-HUB-0027, инварианты размещения).
-            models.CheckConstraint(
-                condition=~Q(role=EmployeeRole.OWNER) | Q(primary_department__isnull=True),
-                name="owner_is_company_level",
-            ),
-            # В организации ровно один владелец (ADR-HUB-0027).
+            # В организации ровно один владелец (SPEC-HUB-0031 §3).
             models.UniqueConstraint(
                 fields=["organization"],
                 condition=Q(role=EmployeeRole.OWNER),
@@ -258,12 +219,11 @@ class AuditEvent(models.Model):
         return f"{self.action}:{self.result}"
 
 
-# Django imports only models.py by convention. Re-export access models after the core
+# Django imports only models.py by convention. Re-export related models after the core
 # identity entities are defined so they are registered without growing this file.
-from hub_platform.identity.access_models import (  # noqa: E402, F401
-    AccessProfile,
-    AccessProfileCapability,
-    EmployeeAccessAssignment,
+from hub_platform.identity.group_models import (  # noqa: E402, F401
+    EmployeeGroup,
+    EmployeeGroupMember,
 )
 from hub_platform.identity.invitation_models import (  # noqa: E402, F401
     OrganizationInvitation,

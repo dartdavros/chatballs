@@ -11,7 +11,6 @@ from hub_platform.identity.invitation_service import (
     pending_invitation_for_token,
 )
 from hub_platform.identity.models import (
-    EmployeeAccessAssignment,
     EmployeeRole,
     HumanUser,
     Organization,
@@ -116,12 +115,6 @@ class MembershipIdentityTests(TestCase):
                 "integrations.manage",
                 ResourceScope(self.second_organization.id),
             )
-        )
-
-    def test_access_assignment_targets_membership_model(self) -> None:
-        self.assertIs(
-            EmployeeAccessAssignment._meta.get_field("employee").remote_field.model,
-            OrganizationMembership,
         )
 
     def test_invitation_stores_only_hash_and_can_precede_human_user(self) -> None:

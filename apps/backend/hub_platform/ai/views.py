@@ -6,7 +6,6 @@ from rest_framework.views import APIView
 
 from hub_platform.ai.api_errors import validation_error_response
 from hub_platform.ai.knowledge_api_inputs import knowledge_filters, knowledge_input
-from hub_platform.ai.knowledge_conflicts import KnowledgeScopeConflict
 from hub_platform.ai.knowledge_import import import_knowledge_documents
 from hub_platform.ai.knowledge_policy import (
     employee_can_write_knowledge,
@@ -19,7 +18,6 @@ from hub_platform.ai.knowledge_services import (
     delete_knowledge,
     update_knowledge,
 )
-from hub_platform.ai.knowledge_types import KnowledgeVisibility
 from hub_platform.ai.models import Knowledge
 from hub_platform.ai.selectors import (
     apply_knowledge_filters,
@@ -82,11 +80,7 @@ class KnowledgeListCreateView(_KnowledgeBaseView):
     def post(self, request: Request) -> Response:
         try:
             data = knowledge_input(request.data)
-            require_knowledge_create(
-                context=request.tenant_context,
-                visibility=data.visibility or KnowledgeVisibility.ORGANIZATION,
-                department_ids=data.department_ids or (),
-            )
+            require_knowledge_create(context=request.tenant_context)
             knowledge = create_knowledge(
                 context=request.tenant_context,
                 data=data,
@@ -130,17 +124,13 @@ class KnowledgeDetailView(_KnowledgeBaseView):
             if not employee_can_write_knowledge(
                 context=request.tenant_context,
                 knowledge=knowledge,
-                visibility=data.visibility,
-                department_ids=data.department_ids,
             ):
-                raise PermissionDenied("Knowledge scope is not manageable")
+                raise PermissionDenied("Knowledge is not manageable")
             knowledge = update_knowledge(
                 context=request.tenant_context,
                 knowledge=knowledge,
                 data=data,
             )
-        except KnowledgeScopeConflict as error:
-            return Response(error.payload(), status=409)
         except ValidationError as error:
             return _validation_error(error)
         knowledge = self._write_knowledge(request, knowledge_id)

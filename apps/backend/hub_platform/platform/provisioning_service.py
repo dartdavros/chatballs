@@ -17,7 +17,6 @@ from hub_platform.identity.models import (
     OrganizationMembership,
     OrganizationStatus,
 )
-from hub_platform.identity.system_departments import ensure_system_departments
 from hub_platform.platform.errors import (
     ProvisioningConflict,
     ProvisioningOwnerUnavailable,
@@ -49,7 +48,7 @@ def provision_organization(
 ) -> ProvisioningResult:
     """Single write boundary for tenant provisioning (SPEC-HUB-0021 §4).
 
-    Coordinates identity, subscription, departments, audit and outbox in one
+    Coordinates identity, subscription, audit and outbox in one
     transaction. Tenant-owned rows are written under set_local_tenant(new_org.id)
     via tenant_atomic. No email/provider calls happen before commit (SPEC §4).
     """
@@ -85,7 +84,6 @@ def _run(command: ProvisioningCommand, operator: PlatformOperator) -> Provisioni
         provisioning.save(update_fields=["organization"])
 
         with tenant_atomic(org.id):
-            ensure_system_departments(org)
             ensure_uncategorized_category(org)
             context = TenantContext.for_resource(
                 org,
@@ -196,7 +194,6 @@ def _provision_active_owner(
         organization=org,
         role=EmployeeRole.OWNER,
         position_title=_owner_position_title(),
-        primary_department=None,
     )
     create_subscription(
         context=context,

@@ -40,7 +40,6 @@ def portal_payload(portal: SupportPortal) -> dict:
     return {
         "id": portal.id,
         "publicId": str(portal.public_id),
-        "departmentCode": portal.department.code,
         "slug": portal.slug,
         "hostedDomain": portal.hosted_domain,
         "customDomain": portal.custom_domain or None,
