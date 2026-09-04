@@ -73,7 +73,12 @@ def send_call_invite(integration, *, chat_id: str, user_id: str, text: str, url:
 
 
 # Голосовые (дизайн-базлайн v2, кадр H): скачивание входящих — TG (file_id) и
-# MAX (прямой url); отправка операторских голосовых поддержана в Telegram.
+# MAX (прямой url); отправка операторских голосовых — Telegram и MAX.
+
+_VOICE_SEND = {
+    IntegrationProvider.TELEGRAM: _telegram.send_voice,
+    IntegrationProvider.MAX: _max.send_voice,
+}
 
 
 def download_voice(integration, inbound) -> tuple[bytes, str]:
@@ -85,13 +90,14 @@ def download_voice(integration, inbound) -> tuple[bytes, str]:
 
 
 def supports_voice_send(integration) -> bool:
-    return integration.provider == IntegrationProvider.TELEGRAM
+    return integration.provider in _VOICE_SEND
 
 
 def send_voice(integration, *, chat_id: str, user_id: str, content: bytes, content_type: str, duration: int) -> bool:
-    if integration.provider != IntegrationProvider.TELEGRAM:
+    sender = _VOICE_SEND.get(integration.provider)
+    if sender is None:
         return False
-    return _telegram.send_voice(
+    return sender(
         integration,
         chat_id=chat_id,
         user_id=user_id,

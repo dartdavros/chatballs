@@ -34,7 +34,7 @@ from hub_platform.integrations.models import (
 
 class VoiceTestCase(TestCase):
     """Голосовые сообщения (дизайн-базлайн v2, кадр H): приём, отдача,
-    расшифровка через BYOK, отправка оператором в Telegram."""
+    расшифровка через BYOK, отправка оператором в Telegram и MAX."""
 
     def setUp(self) -> None:
         bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
@@ -193,6 +193,51 @@ class VoiceApiTests(VoiceTestCase):
         self.assertEqual(sent.kind, MessageKind.VOICE)
         self.assertEqual(sent.duration_seconds, 3)
         self.assertTrue(sent.audio)
+
+    def test_max_send_voice_uploads_then_sends_attachment(self) -> None:
+        from hub_platform.conversations import transports
+        from hub_platform.conversations.transports import max as max_transport
+
+        integration = Integration.objects.create(
+            organization=self.organization,
+            kind=IntegrationKind.MESSENGER,
+            provider=IntegrationProvider.MAX,
+            name="MAX Bot",
+            secret="max-token",
+            channel=Channel.objects.create(
+                organization=self.organization, code="max-line", name="MAX"
+            ),
+        )
+        self.assertTrue(transports.supports_voice_send(integration))
+
+        # Последовательность запросов: /uploads -> multipart -> /messages.
+        with mock.patch.object(
+            max_transport,
+            "request_json",
+            side_effect=[{"url": "https://upload.example/audio"}, {"message": {}}],
+        ) as request_json, mock.patch.object(
+            max_transport,
+            "request_json_multipart",
+            return_value={"token": "att-1"},
+        ) as upload:
+            sent = transports.send_voice(
+                integration,
+                chat_id="c-1",
+                user_id="",
+                content=b"WEBMDATA",
+                content_type="audio/webm",
+                duration=3,
+            )
+
+        self.assertTrue(sent)
+        upload.assert_called_once()
+        self.assertEqual(upload.call_args.args[0], "https://upload.example/audio")
+        send_call = request_json.call_args_list[-1]
+        self.assertIn("/messages?", send_call.args[0])
+        self.assertEqual(
+            send_call.kwargs["body"],
+            {"attachments": [{"type": "audio", "payload": {"token": "att-1"}}]},
+        )
 
     def test_voice_send_requires_assignment_and_supported_channel(self) -> None:
         message = self._voice_message()

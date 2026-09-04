@@ -11,12 +11,13 @@ import http.client
 import json
 import logging
 import re
+import time
 import urllib.error
 import urllib.parse
 
 from django.conf import settings
 
-from hub_platform.conversations.transports.base import InboundMessage, download_bytes, first, request_json
+from hub_platform.conversations.transports.base import InboundMessage, download_bytes, first, request_json, request_json_multipart
 from hub_platform.integrations.checks import DEFAULT_MAX_BASE_URL
 
 logger = logging.getLogger(__name__)
@@ -178,3 +179,46 @@ def download_voice(integration, url: str) -> tuple[bytes, str]:
     """Скачивание голосового MAX по прямому URL вложения."""
     content = download_bytes(url, proxy_url=_proxy(integration))
     return content, "audio/ogg"
+
+
+def send_voice(integration, *, chat_id: str, user_id: str, content: bytes, content_type: str, duration: int) -> bool:
+    """Отправка голосового оператора: /uploads?type=audio -> multipart -> attachment token."""
+    token = integration.secret
+    if not token or not (chat_id or user_id):
+        return False
+    suffix = (content_type.rsplit("/", 1)[-1] or "ogg").split(";")[0]
+    try:
+        upload = request_json(
+            f"{_base(integration)}/uploads?type=audio",
+            headers={"Authorization": token, "Content-Type": "application/json"},
+            method="POST",
+            body={},
+            proxy_url=_proxy(integration),
+        )
+        upload_url = str(upload.get("url") or "")
+        if not upload_url:
+            return False
+        uploaded = request_json_multipart(
+            upload_url,
+            fields={},
+            file_field="data",
+            filename=f"voice.{suffix}",
+            content=content,
+            content_type=content_type,
+            proxy_url=_proxy(integration),
+        )
+        attach_token = str(uploaded.get("token") or "")
+        if not attach_token:
+            return False
+    except (urllib.error.URLError, TimeoutError, OSError, http.client.HTTPException, json.JSONDecodeError) as error:
+        logger.warning("MAX voice upload failed for integration %s: %s", integration.id, error)
+        return False
+    body = {"attachments": [{"type": "audio", "payload": {"token": attach_token}}]}
+    # Сразу после загрузки MAX может ответить attachment.not.ready — файл ещё
+    # обрабатывается на его стороне; даём пару повторов с паузой.
+    for attempt in range(3):
+        if attempt:
+            time.sleep(1)
+        if _send(integration, chat_id=chat_id, user_id=user_id, body=body):
+            return True
+    return False
