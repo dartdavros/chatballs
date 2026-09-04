@@ -10,12 +10,13 @@ import type { ConversationCounters } from "./model";
 import type { ConversationListItem, ListTab } from "./types";
 import { SearchInput } from "../../shared/ui-controls";
 
-export function DialogList({ title = "Диалоги", searchPlaceholder = "Поиск по клиенту, продукту…", scope, counters, setScope, dialogs, filtered, listTab, selectedId, search, errorText, setSearch, setListTab, setSelectedId }: {
+export function DialogList({ title = "Диалоги", searchPlaceholder = "Поиск по клиенту, продукту…", scope, counters, setScope, showScopeSwitcher = true, dialogs, filtered, listTab, selectedId, search, errorText, setSearch, setListTab, setSelectedId }: {
   title?: string;
   searchPlaceholder?: string;
   scope: DialogScope;
   counters: ConversationCounters | null;
   setScope: (scope: DialogScope) => void;
+  showScopeSwitcher?: boolean;
   dialogs: ConversationListItem[];
   filtered: ConversationListItem[];
   listTab: ListTab;
@@ -31,7 +32,9 @@ export function DialogList({ title = "Диалоги", searchPlaceholder = "По
     <section className="sales-dialog-list">
       <div className="sales-dialog-list-head">
         <div>
-          <ScopeSwitcher scope={scope} counters={counters} setScope={setScope} fallbackTitle={title} />
+          {showScopeSwitcher
+            ? <ScopeSwitcher scope={scope} counters={counters} setScope={setScope} fallbackTitle={title} />
+            : <h2>{scope.kind === "all" ? title : scopeLabel(scope)}</h2>}
           <span>{dialogs.length} всего</span>
         </div>
         <SearchInput className="sales-dialog-search" placeholder={searchPlaceholder} value={search} onChange={setSearch} />

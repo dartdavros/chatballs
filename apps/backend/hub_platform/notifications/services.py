@@ -17,8 +17,8 @@ from hub_platform.notifications.selectors import unread_for
 # Реестр типов: дефолтный уровень и маршрут диплинка. Новый тип события —
 # одна запись здесь + вызов notify(...) из доменного сервиса.
 TYPE_META: dict[str, dict] = {
-    NotificationType.DIALOG_WAITING: {"level": NotificationLevel.WARNING, "route": "salesDialogs"},
-    NotificationType.DIALOG_NEW_MESSAGE: {"level": NotificationLevel.INFO, "route": "salesDialogs"},
+    NotificationType.DIALOG_WAITING: {"level": NotificationLevel.WARNING, "route": "chat"},
+    NotificationType.DIALOG_NEW_MESSAGE: {"level": NotificationLevel.INFO, "route": "chat"},
     NotificationType.RELEASE_PUBLISHED: {"level": NotificationLevel.SUCCESS, "route": "agents"},
     NotificationType.INTEGRATION_ERROR: {"level": NotificationLevel.CRITICAL, "route": "integrations"},
 }

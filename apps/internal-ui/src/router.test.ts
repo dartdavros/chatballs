@@ -54,14 +54,24 @@ describe("ai knowledge routes", () => {
 });
 
 describe("support routes", () => {
-  it("parses support overview and dialogs URLs", () => {
+  it("parses the support overview URL", () => {
     expect(routeFromPath("/departments/support")).toEqual({ route: "supportOverview", ...empty });
-    expect(routeFromPath("/departments/support/dialogs")).toEqual({ route: "supportDialogs", ...empty });
   });
 
-  it("creates support overview and dialogs URLs", () => {
+  it("creates the support overview URL", () => {
     expect(pathFromRoute("supportOverview")).toBe("/departments/support");
-    expect(pathFromRoute("supportDialogs")).toBe("/departments/support/dialogs");
+  });
+});
+
+describe("chat route", () => {
+  it("parses /chat and the legacy dialog URLs", () => {
+    expect(routeFromPath("/chat")).toEqual({ route: "chat", ...empty });
+    expect(routeFromPath("/departments/sales/dialogs")).toEqual({ route: "chat", ...empty });
+    expect(routeFromPath("/departments/support/dialogs")).toEqual({ route: "chat", ...empty });
+  });
+
+  it("creates the chat URL", () => {
+    expect(pathFromRoute("chat")).toBe("/chat");
   });
 });
 

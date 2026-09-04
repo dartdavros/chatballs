@@ -63,7 +63,7 @@ def command_center_overview(context: TenantContext, period: str) -> dict:
             {
                 "code": str(group.id),
                 "name": group.name,
-                "route": "salesDialogs",
+                "route": "chat",
                 "employees": group.member_count,
                 "aiAgents": agents_by_group.get(group.id, 0),
                 "dialogs": _dialog_block(group_open, now),
@@ -75,7 +75,7 @@ def command_center_overview(context: TenantContext, period: str) -> dict:
             {
                 "code": "none",
                 "name": "Без группы",
-                "route": "salesDialogs",
+                "route": "chat",
                 "employees": 0,
                 "aiAgents": AIAgent.objects.filter(
                     channel__organization_id=organization_id,

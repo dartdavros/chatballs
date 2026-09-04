@@ -49,7 +49,7 @@ export function useRouteNavigation(
     };
     applyRouteState(nextState);
     setSelectedConversationId(
-      nextRoute === "salesDialogs" || nextRoute === "supportDialogs" ? entityId : null,
+      nextRoute === "chat" ? entityId : null,
     );
     const nextPath = pathFromRoute(
       nextRoute,

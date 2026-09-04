@@ -5,6 +5,8 @@ import type { AppData, Employee, RouteKey, SessionUser } from "../types";
 import { NotificationDrawer } from "../features/notifications/NotificationDrawer";
 import { fetchNotifications, markAllRead, markRead, type AppNotification } from "../features/notifications/model";
 import { fetchWaitingCount } from "../features/conversations/model";
+import { useChatScope } from "../features/chat/useChatScope";
+import { isManager } from "../auth/access";
 import { Sidebar } from "./Sidebar";
 import { ShellRouteContent } from "./ShellRouteContent";
 import { TopBar } from "./TopBar";
@@ -17,6 +19,10 @@ export function Shell({ route, setRoute, selectedEmployeeId, selectedProductCode
   const [notifOpen, setNotifOpen] = useState(false);
   const [waitingCount, setWaitingCount] = useState(0);
   const prevUnread = useRef<number | null>(null);
+  const manager = isManager(user);
+  // Охват чата живёт здесь: сотрудницкий сайдбар и страница чата делят одно
+  // состояние (дизайн-базлайн v2 §4.1).
+  const chatScope = useChatScope(true);
 
   const loadWaitingCount = useCallback(async () => {
     try {
@@ -58,10 +64,14 @@ export function Shell({ route, setRoute, selectedEmployeeId, selectedProductCode
       await markRead([notification.id]).catch(() => undefined);
       void loadNotifications();
     }
-    if (notification.targetRoute === "salesDialogs" && notification.targetId) {
+    // «salesDialogs»/«conversations» — легаси-маршруты старых уведомлений в БД.
+    const targetRoute = notification.targetRoute === "salesDialogs" || notification.targetRoute === "conversations"
+      ? "chat"
+      : notification.targetRoute;
+    if (targetRoute === "chat" && notification.targetId) {
       openConversationRoute(Number(notification.targetId));
-    } else if (notification.targetRoute) {
-      setRoute(notification.targetRoute as RouteKey);
+    } else if (targetRoute) {
+      setRoute(targetRoute as RouteKey);
     }
   }
 
@@ -76,11 +86,9 @@ export function Shell({ route, setRoute, selectedEmployeeId, selectedProductCode
   function openEmployee(employee: Employee) {
     openEmployeeRoute(employee.id);
   }
-  const isSalesWorkspace = route === "salesClientDetail" || route === "salesClients" || route === "salesDialogs";
-  const isSupportWorkspace = route === "supportOverview" || route === "supportDialogs" || route === "supportPortals" || route === "supportPortalDetail";
-  const isSalesDialogs = route === "salesDialogs";
-  const isSupportDialogs = route === "supportDialogs";
-  const isDialogsWorkspace = isSalesDialogs || isSupportDialogs;
+  const isSalesWorkspace = route === "salesClientDetail" || route === "salesClients" || route === "chat";
+  const isSupportWorkspace = route === "supportOverview" || route === "supportPortals" || route === "supportPortalDetail";
+  const isDialogsWorkspace = route === "chat";
   const isSalesClients = route === "salesClients";
   const isSalesClientDetail = route === "salesClientDetail";
   const isAiFullWidth = false;
@@ -88,12 +96,13 @@ export function Shell({ route, setRoute, selectedEmployeeId, selectedProductCode
   const isKnowledgeEditor = route === "aiKnowledgeCreate" || route === "aiKnowledgeDetail";
   return (
     <div className="hub-shell">
-      <Sidebar route={route} user={user} setRoute={setRoute} onLogout={onLogout} waitingCount={waitingCount} />
+      <Sidebar route={route} user={user} setRoute={setRoute} onLogout={onLogout} waitingCount={waitingCount} chatScope={chatScope.scope} setChatScope={chatScope.setScope} chatCounters={chatScope.counters} />
       <div className="hub-main">
-        <TopBar route={route} user={user} currentEmployee={currentEmployee} currentAgentName={agentName} currentChannelName={channelName} setRoute={setRoute} unreadCount={unreadCount} onOpenNotifications={() => { setNotifOpen(true); void loadNotifications(); }} />
+        {/* У сотрудника верхней панели нет (дизайн-базлайн v2 §4.1). */}
+        {manager && <TopBar route={route} user={user} currentEmployee={currentEmployee} currentAgentName={agentName} currentChannelName={channelName} setRoute={setRoute} unreadCount={unreadCount} onOpenNotifications={() => { setNotifOpen(true); void loadNotifications(); }} />}
         <main className={`hub-scroll ${isDialogsWorkspace ? "sales-dialogs-scroll" : ""} ${isAiFullWidth ? "ai-fullwidth-scroll" : ""}`}>
           <div className={`hub-page ${isSalesWorkspace || isSupportWorkspace ? "sales-workspace-page" : ""} ${isDialogsWorkspace ? "sales-dialogs-page" : ""} ${isSalesClients ? "sales-clients-page" : ""} ${isSalesClientDetail ? "sales-client-detail-page" : ""} ${isAiFullWidth ? "ai-fullwidth-page" : ""} ${isKnowledgeLibrary ? "ai-knowledge-library-page" : ""} ${isKnowledgeEditor ? "ai-knowledge-editor-page" : ""}`}>
-            <ShellRouteContent route={route} data={data} currentEmployee={currentEmployee} selectedProductCode={selectedProductCode} selectedAgentId={selectedAgentId} selectedKnowledgeId={selectedKnowledgeId} selectedConversationId={selectedConversationId} selectedClientId={selectedClientId} openClient={openClientRoute} selectedChannelId={selectedChannelId} openChannel={openChannelRoute} selectedSupportPortalId={selectedSupportPortalId} openSupportPortal={openSupportPortalRoute} openConversation={openConversationRoute} openEmployee={openEmployee} openAgentCreate={openAgentCreateRoute} openAgent={openAgentRoute} openKnowledge={openKnowledgeRoute} onAgentLoaded={setAgentName} onChannelLoaded={setChannelName} reload={reload} setRoute={setRoute} user={user} onUserUpdated={onUserUpdated} onLogout={onLogout} />
+            <ShellRouteContent chatScope={chatScope.scope} setChatScope={chatScope.setScope} chatCounters={chatScope.counters} chatScopeSwitcher={manager} route={route} data={data} currentEmployee={currentEmployee} selectedProductCode={selectedProductCode} selectedAgentId={selectedAgentId} selectedKnowledgeId={selectedKnowledgeId} selectedConversationId={selectedConversationId} selectedClientId={selectedClientId} openClient={openClientRoute} selectedChannelId={selectedChannelId} openChannel={openChannelRoute} selectedSupportPortalId={selectedSupportPortalId} openSupportPortal={openSupportPortalRoute} openConversation={openConversationRoute} openEmployee={openEmployee} openAgentCreate={openAgentCreateRoute} openAgent={openAgentRoute} openKnowledge={openKnowledgeRoute} onAgentLoaded={setAgentName} onChannelLoaded={setChannelName} reload={reload} setRoute={setRoute} user={user} onUserUpdated={onUserUpdated} onLogout={onLogout} />
           </div>
         </main>
       </div>

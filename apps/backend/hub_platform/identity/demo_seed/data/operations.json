@@ -31,7 +31,7 @@
       "level": "WARNING",
       "title": "Диалог ожидает оператора",
       "body": "Сергей Орлов ждёт ответа в канале продаж Вектора.",
-      "targetRoute": "conversations",
+      "targetRoute": "chat",
       "targetId": "vektor-queue",
       "audience": "OPERATORS",
       "sourceId": "vektor-queue",
@@ -42,7 +42,7 @@
       "level": "INFO",
       "title": "Новое сообщение в диалоге",
       "body": "Наталья Кузнецова написала в продажи Вектора.",
-      "targetRoute": "conversations",
+      "targetRoute": "chat",
       "targetId": "vektor-lead-active",
       "audience": "OPERATORS",
       "sourceId": "vektor-lead-active"

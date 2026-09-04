@@ -43,15 +43,14 @@ describe("role-based navigation (SPEC-HUB-0031 §3)", () => {
   it("limits employee to the chat plus self-service", () => {
     const user = userWith("EMPLOYEE");
     expect(isManager(user)).toBe(false);
-    expect(canAccess(user, "salesDialogs")).toBe(true);
-    expect(canAccess(user, "supportDialogs")).toBe(true);
+    expect(canAccess(user, "chat")).toBe(true);
     expect(canAccess(user, "profile")).toBe(true);
     expect(canAccess(user, "settings")).toBe(true);
     expect(canAccess(user, "employees")).toBe(false);
     expect(canAccess(user, "agents")).toBe(false);
     expect(canAccess(user, "aiKnowledge")).toBe(false);
     expect(canAccess(user, "salesClients")).toBe(false);
-    expect(defaultRoute(user)).toBe("salesDialogs");
+    expect(defaultRoute(user)).toBe("chat");
   });
 
   it("reads capabilities straight from the session payload", () => {

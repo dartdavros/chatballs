@@ -20,15 +20,16 @@ export function routeFromPath(pathname: string, search = ""): RouteState {
   const base = { employeeId: null, productCode: null, agentId: null, knowledgeId: null, clientId: null, channelId: null, supportPortalId: null };
   const state = { organizationPublicId, ...base };
   if (path === "/" || path === "/command") return { route: "command", ...state };
-  if (path === "/departments/sales") return { route: "salesDialogs", ...state };
+  // Устаревшие адреса разделённых чатов ведут в единый «Чат».
+  if (path === "/chat" || path === "/departments/sales" || path === "/departments/sales/dialogs" || path === "/departments/support/dialogs") {
+    return { route: "chat", ...state };
+  }
   if (path === "/departments/support") return { route: "supportOverview", ...state };
-  if (path === "/departments/support/dialogs") return { route: "supportDialogs", ...state };
   if (path === "/departments/sales/clients") return { route: "salesClients", ...state };
   if (path.startsWith("/departments/sales/clients/")) {
     const id = Number(path.split("/")[4]);
     return Number.isInteger(id) && id > 0 ? { ...state, route: "salesClientDetail", clientId: id } : { route: "salesClients", ...state };
   }
-  if (path === "/departments/sales/dialogs") return { route: "salesDialogs", ...state };
   if (path === "/employees") return { route: "employees", ...state };
   if (path.startsWith("/employees/")) {
     const id = Number(path.split("/")[2]);
@@ -76,10 +77,9 @@ export function pathFromRoute(route: RouteKey, entityId: number | null = null, p
   const prefix = organizationPublicId ? `/organizations/${organizationPublicId}` : "";
   if (route === "command") return `${prefix}/`;
   if (route === "supportOverview") return `${prefix}/departments/support`;
-  if (route === "supportDialogs") return `${prefix}/departments/support/dialogs`;
   if (route === "salesClients") return `${prefix}/departments/sales/clients`;
   if (route === "salesClientDetail") return entityId ? `${prefix}/departments/sales/clients/${entityId}` : `${prefix}/departments/sales/clients`;
-  if (route === "salesDialogs") return `${prefix}/departments/sales/dialogs`;
+  if (route === "chat") return `${prefix}/chat`;
   if (route === "employees") return `${prefix}/employees`;
   if (route === "employeeDetail") return entityId ? `${prefix}/employees/${entityId}` : `${prefix}/employees`;
   if (route === "supportPortals") return `${prefix}/departments/support/portals`;

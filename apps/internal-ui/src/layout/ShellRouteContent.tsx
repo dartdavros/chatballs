@@ -11,10 +11,11 @@ import { EmployeeDetailPage, EmployeesPage } from "../features/employees/Employe
 import { ProfilePage } from "../features/profile/ProfilePage";
 import { SettingsPage } from "../features/settings/SettingsPage";
 import { AdministrationPage } from "../features/administration/AdministrationPage";
+import { ChatPage } from "../features/chat/ChatPage";
+import type { DialogScope } from "../features/conversations/ConversationWorkspace";
+import type { ConversationCounters } from "../features/conversations/model";
 import { SalesClientDetailPage } from "../features/sales/client-detail/SalesClientDetailPage";
 import { SalesClientsPage } from "../features/sales/SalesClientsPage";
-import { SalesDialogsPage } from "../features/sales/SalesDialogsPage";
-import { SupportDialogsPage } from "../features/support/SupportDialogsPage";
 import { SupportOverviewPage } from "../features/support/SupportOverviewPage";
 import { LoadingState } from "../shared/ui";
 import type { AppData, Employee, RouteKey, SessionUser } from "../types";
@@ -27,7 +28,7 @@ const SupportPortalDetailPage = lazy(() => import("../features/support-portals/S
   (module) => ({ default: module.SupportPortalDetailPage }),
 ));
 
-export function ShellRouteContent({ route, data, currentEmployee, selectedProductCode, selectedAgentId, selectedKnowledgeId, selectedConversationId, selectedClientId, openClient, selectedChannelId, openChannel, selectedSupportPortalId, openSupportPortal, openConversation, openEmployee, openAgentCreate, openAgent, openKnowledge, onAgentLoaded, onChannelLoaded, reload, setRoute, user, onUserUpdated, onLogout }: { route: RouteKey; data: AppData; currentEmployee: Employee | null; selectedProductCode: string | null; selectedAgentId: number | null; selectedKnowledgeId: number | null; selectedConversationId: number | null; selectedClientId: number | null; openClient: (clientId: number) => void; selectedChannelId: number | null; openChannel: (channelId: number) => void; selectedSupportPortalId: number | null; openSupportPortal: (portalId: number) => void; openConversation: (conversationId: number) => void; openEmployee: (employee: Employee) => void; openAgentCreate: (productCode: string | null) => void; openAgent: (agentId: number) => void; openKnowledge: (knowledgeId: number) => void; onAgentLoaded: (name: string | null) => void; onChannelLoaded: (name: string | null) => void; reload: () => void; setRoute: (route: RouteKey) => void; user: SessionUser; onUserUpdated: (user: SessionUser) => void; onLogout: () => void }) {
+export function ShellRouteContent({ chatScope, setChatScope, chatCounters, chatScopeSwitcher, route, data, currentEmployee, selectedProductCode, selectedAgentId, selectedKnowledgeId, selectedConversationId, selectedClientId, openClient, selectedChannelId, openChannel, selectedSupportPortalId, openSupportPortal, openConversation, openEmployee, openAgentCreate, openAgent, openKnowledge, onAgentLoaded, onChannelLoaded, reload, setRoute, user, onUserUpdated, onLogout }: { chatScope: DialogScope; setChatScope: (scope: DialogScope) => void; chatCounters: ConversationCounters | null; chatScopeSwitcher: boolean; route: RouteKey; data: AppData; currentEmployee: Employee | null; selectedProductCode: string | null; selectedAgentId: number | null; selectedKnowledgeId: number | null; selectedConversationId: number | null; selectedClientId: number | null; openClient: (clientId: number) => void; selectedChannelId: number | null; openChannel: (channelId: number) => void; selectedSupportPortalId: number | null; openSupportPortal: (portalId: number) => void; openConversation: (conversationId: number) => void; openEmployee: (employee: Employee) => void; openAgentCreate: (productCode: string | null) => void; openAgent: (agentId: number) => void; openKnowledge: (knowledgeId: number) => void; onAgentLoaded: (name: string | null) => void; onChannelLoaded: (name: string | null) => void; reload: () => void; setRoute: (route: RouteKey) => void; user: SessionUser; onUserUpdated: (user: SessionUser) => void; onLogout: () => void }) {
   return (
     <>
       {route === "command" && <CommandCenter data={data} setRoute={setRoute} />}
@@ -47,8 +48,18 @@ export function ShellRouteContent({ route, data, currentEmployee, selectedProduc
       {route === "salesClients" && <SalesClientsPage openClient={openClient} />}
       {route === "salesClientDetail" && <SalesClientDetailPage contactId={selectedClientId} openConversation={openConversation} />}
       {route === "supportOverview" && <SupportOverviewPage />}
-      {route === "supportDialogs" && <SupportDialogsPage initialConversationId={selectedConversationId} user={user} groups={data.groups} employees={dialogAssignees(data)} />}
-      {route === "salesDialogs" && <SalesDialogsPage initialConversationId={selectedConversationId} user={user} groups={data.groups} employees={dialogAssignees(data)} />}
+      {route === "chat" && (
+        <ChatPage
+          initialConversationId={selectedConversationId}
+          user={user}
+          groups={data.groups}
+          employees={dialogAssignees(data)}
+          scope={chatScope}
+          setScope={setChatScope}
+          counters={chatCounters}
+          showScopeSwitcher={chatScopeSwitcher}
+        />
+      )}
       {route === "agents" && <AgentsPage agents={data.agents} groups={data.groups} reload={reload} openAgent={openAgent} />}
       {route === "agentDetail" && (
         <AgentDetailPage

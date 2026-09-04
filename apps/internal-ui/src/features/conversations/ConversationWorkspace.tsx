@@ -9,7 +9,6 @@ import {
   closeConversation,
   controlModeOf,
   fetchConversation,
-  fetchConversationCounters,
   fetchConversations,
   markConversationAsSpam,
   releaseConversation,
@@ -46,16 +45,20 @@ import { useIncomingMessageSound } from "./useIncomingMessageSound";
 // Общий workspace диалогов (SPEC-HUB-0010 §8.2). Видимость inbox решает
 // backend по группам (ADR-HUB-0043); страница параметризуется заголовком,
 // placeholder поиска и правой панелью через render-prop.
-export function ConversationWorkspace({ isOwner = false, listTitle, searchPlaceholder, renderContextPanel, initialConversationId }: {
+export function ConversationWorkspace({ isOwner = false, listTitle, searchPlaceholder, renderContextPanel, initialConversationId, scope, setScope, counters, showScopeSwitcher = true }: {
   isOwner?: boolean;
   listTitle?: string;
   searchPlaceholder?: string;
   renderContextPanel: (ctx: { dialog: ConversationListItem | null; detail: ApiConversation | null; applyConversation: (updated: ApiConversation) => void }) => ReactNode;
   initialConversationId?: number | null;
+  // Охват (дерево фильтров) живёт в Shell: у сотрудника им управляет сайдбар,
+  // у менеджера — поповер в заголовке списка.
+  scope: DialogScope;
+  setScope: (scope: DialogScope) => void;
+  counters: ConversationCounters | null;
+  showScopeSwitcher?: boolean;
 }) {
   const [listTab, setListTab] = useState<ListTab>("all");
-  const [scope, setScope] = useState<DialogScope>({ kind: "all" });
-  const [counters, setCounters] = useState<ConversationCounters | null>(null);
   const [search, setSearch] = useState("");
   const [conversations, setConversations] = useState<ApiConversation[]>([]);
   const [listLoaded, setListLoaded] = useState(false);
@@ -98,23 +101,6 @@ export function ConversationWorkspace({ isOwner = false, listTitle, searchPlaceh
     const timer = setInterval(loadList, 4000);
     return () => clearInterval(timer);
   }, [loadList]);
-
-  // Счётчики дерева охвата (группы/агенты) обновляются реже списка.
-  useEffect(() => {
-    let cancelled = false;
-    const load = () =>
-      fetchConversationCounters()
-        .then((payload) => {
-          if (!cancelled) setCounters(payload);
-        })
-        .catch(() => undefined);
-    void load();
-    const timer = setInterval(load, 30000);
-    return () => {
-      cancelled = true;
-      clearInterval(timer);
-    };
-  }, []);
 
   useEffect(() => {
     if (initialConversationId != null) setSelectedId(initialConversationId);
@@ -187,6 +173,7 @@ export function ConversationWorkspace({ isOwner = false, listTitle, searchPlaceh
         scope={scope}
         counters={counters}
         setScope={setScope}
+        showScopeSwitcher={showScopeSwitcher}
         title={listTitle}
         searchPlaceholder={searchPlaceholder}
         dialogs={dialogs}

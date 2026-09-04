@@ -5,8 +5,7 @@ import type { RouteKey, SessionUser } from "../types";
 // фронтенд лишь скрывает недоступное.
 
 const EMPLOYEE_ROUTES: ReadonlySet<RouteKey> = new Set<RouteKey>([
-  "salesDialogs",
-  "supportDialogs",
+  "chat",
   "profile",
   "settings",
 ]);
@@ -27,5 +26,5 @@ export function canAccess(user: SessionUser, route: RouteKey): boolean {
 
 export function defaultRoute(user: SessionUser): RouteKey {
   if (isManager(user)) return "command";
-  return "salesDialogs";
+  return "chat";
 }

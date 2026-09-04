@@ -1,82 +1,75 @@
 import type { RouteKey, SessionUser } from "../types";
 import { Icon, LogoIcon } from "../shared/icons";
-import { canAccess, defaultRoute, isManager } from "../auth/access";
+import { defaultRoute, isManager } from "../auth/access";
+import type { DialogScope } from "../features/conversations/ConversationWorkspace";
+import type { ConversationCounters } from "../features/conversations/model";
 import { LaunchChecklist } from "./LaunchChecklist";
 import { SidebarNavSection, type SidebarNavSectionItem } from "./SidebarNavSection";
 import { SidebarUserMenu } from "./SidebarUserMenu";
 
+// Сайдбар по дизайн-базлайну v2: у менеджера — плоские шесть пунктов (A1) и
+// блок «Запуск»; у сотрудника разделов нет (§3) — сайдбар и есть фильтр списка
+// диалогов: дерево «Все диалоги · Группы · Агенты» + профиль внизу.
+
 type SidebarLinkProps = {
   activeRoutes?: RouteKey[];
-  disabled?: boolean;
+  badge?: string;
   icon: Parameters<typeof Icon>[0]["name"];
   label: string;
   route: RouteKey;
-  routeKey?: RouteKey;
+  routeKey: RouteKey;
   setRoute: (route: RouteKey) => void;
 };
 
-function SidebarLink({ activeRoutes, disabled, icon, label, route, routeKey, setRoute }: SidebarLinkProps) {
+function SidebarLink({ activeRoutes, badge, icon, label, route, routeKey, setRoute }: SidebarLinkProps) {
   const active = activeRoutes?.includes(route) ?? routeKey === route;
   return (
     <button
       className={`hub-nav-item ${active ? "is-active" : ""}`}
-      disabled={disabled}
       type="button"
-      onClick={() => routeKey && setRoute(routeKey)}
+      onClick={() => setRoute(routeKey)}
     >
       {active && <span className="active-bar" />}
       <Icon name={icon} />
       {label}
+      {badge && <b className="hub-nav-badge">{badge}</b>}
     </button>
   );
 }
 
-const SALES_ITEMS: SidebarNavSectionItem[] = [
-  { activeRoutes: ["salesDialogs"], key: "salesDialogs", label: "Диалоги" },
-  { activeRoutes: ["salesClients", "salesClientDetail"], key: "salesClients", label: "Контакты" },
-];
-
-const SUPPORT_ITEMS: SidebarNavSectionItem[] = [
-  { activeRoutes: ["supportOverview"], key: "supportOverview", label: "Обзор" },
-  { activeRoutes: ["supportDialogs"], key: "supportDialogs", label: "Диалоги" },
-  { activeRoutes: ["supportPortals", "supportPortalDetail"], key: "supportPortals", label: "Порталы" },
-];
-
-const AI_ITEMS: SidebarNavSectionItem[] = [
+const SERVICE_ITEMS: SidebarNavSectionItem[] = [
+  { activeRoutes: ["command"], key: "command", label: "Обзор" },
+  { activeRoutes: ["supportOverview"], key: "supportOverview", label: "Обзор поддержки" },
   { activeRoutes: ["aiKnowledge", "aiKnowledgeCreate", "aiKnowledgeDetail"], key: "aiKnowledge", label: "Знания" },
-  { activeRoutes: ["aiUsage"], disabled: true, key: "aiUsage", label: "Использование AI" },
+  { activeRoutes: ["aiUsage"], key: "aiUsage", label: "Использование AI" },
+  { activeRoutes: ["integrations"], key: "integrations", label: "Интеграции" },
+  { activeRoutes: ["administrationOrganization"], key: "administrationOrganization", label: "Организация" },
+  { activeRoutes: ["administrationAudit"], key: "administrationAudit", label: "Аудит" },
 ];
 
-const ADMINISTRATION_ITEMS: SidebarNavSectionItem[] = [
-  {
-    activeRoutes: ["administrationOrganization"],
-    key: "administrationOrganization",
-    label: "Организация",
-  },
-  {
-    activeRoutes: ["administrationAudit"],
-    key: "administrationAudit",
-    label: "Аудит",
-  },
-];
-
-function visibleItems(user: SessionUser, items: SidebarNavSectionItem[]) {
-  return items.filter((item) => canAccess(user, item.key));
-}
-
-export function Sidebar({ route, user, setRoute, onLogout, waitingCount = 0 }: { route: RouteKey; user: SessionUser; setRoute: (route: RouteKey) => void; onLogout: () => void; waitingCount?: number }) {
+export function Sidebar({
+  route,
+  user,
+  setRoute,
+  onLogout,
+  waitingCount = 0,
+  chatScope,
+  setChatScope,
+  chatCounters,
+}: {
+  route: RouteKey;
+  user: SessionUser;
+  setRoute: (route: RouteKey) => void;
+  onLogout: () => void;
+  waitingCount?: number;
+  chatScope: DialogScope;
+  setChatScope: (scope: DialogScope) => void;
+  chatCounters: ConversationCounters | null;
+}) {
+  const manager = isManager(user);
   const sectionStorageKey = (section: string) => (
     `chatbolls.sidebar.${user.organizationPublicId}.${section}.expanded`
   );
-  const salesItems = visibleItems(user, SALES_ITEMS).map((item) => (
-    item.key === "salesDialogs" && waitingCount > 0
-      ? { ...item, badge: String(waitingCount) }
-      : item
-  ));
-  const supportItems = visibleItems(user, SUPPORT_ITEMS);
-  const aiItems = visibleItems(user, AI_ITEMS);
-  const administrationItems = visibleItems(user, ADMINISTRATION_ITEMS);
-  const isManagerUser = isManager(user);
 
   return (
     <aside className="hub-sidebar">
@@ -86,30 +79,118 @@ export function Sidebar({ route, user, setRoute, onLogout, waitingCount = 0 }: {
             ? <img src={user.organizationLogoUrl} alt="" />
             : <LogoIcon />}
         </div>
-        <div><strong>Chatbolls</strong><span>Управление компанией</span></div>
+        <div><strong>{user.organizationName || "Chatbolls"}</strong><span>Chatbolls</span></div>
       </button>
-      <nav className="hub-nav">
-        {canAccess(user, "command") && <SidebarLink icon="grid" label="Обзор" route={route} routeKey="command" setRoute={setRoute} />}
-        <div className="hub-nav-group">КОМПАНИЯ</div>
-        <SidebarNavSection icon="shop" items={salesItems} label="Клиенты" route={route} setRoute={setRoute} storageKey={sectionStorageKey("sales")} />
-        <SidebarNavSection icon="wrench" items={supportItems} label="Поддержка" route={route} setRoute={setRoute} storageKey={sectionStorageKey("support")} />
-        {canAccess(user, "employees") && <SidebarLink activeRoutes={["employees", "employeeDetail"]} icon="team" label="Сотрудники" route={route} routeKey="employees" setRoute={setRoute} />}
-        {canAccess(user, "agents") && <SidebarLink activeRoutes={["agents", "agentDetail"]} icon="robot" label="Агенты" route={route} routeKey="agents" setRoute={setRoute} />}
-        <div className="hub-nav-group">ПЛАТФОРМА</div>
-        <SidebarNavSection icon="robot" items={aiItems} label="AI" route={route} setRoute={setRoute} storageKey={sectionStorageKey("ai")} />
-        {canAccess(user, "integrations") && <SidebarLink icon="plug" label="Интеграции" route={route} routeKey="integrations" setRoute={setRoute} />}
-        <div className="hub-nav-divider" />
-        <SidebarNavSection
-          icon="settings"
-          items={administrationItems}
-          label="Администрирование"
+      {manager ? (
+        <nav className="hub-nav">
+          <SidebarLink icon="message" label="Чат" badge={waitingCount > 0 ? String(waitingCount) : undefined} route={route} routeKey="chat" setRoute={setRoute} />
+          <SidebarLink activeRoutes={["salesClients", "salesClientDetail"]} icon="user" label="Контакты" route={route} routeKey="salesClients" setRoute={setRoute} />
+          <SidebarLink activeRoutes={["agents", "agentDetail"]} icon="robot" label="Агенты" route={route} routeKey="agents" setRoute={setRoute} />
+          <SidebarLink activeRoutes={["employees", "employeeDetail"]} icon="team" label="Сотрудники" route={route} routeKey="employees" setRoute={setRoute} />
+          <SidebarLink activeRoutes={["supportPortals", "supportPortalDetail"]} icon="columns" label="Доска" route={route} routeKey="supportPortals" setRoute={setRoute} />
+          <SidebarLink icon="settings" label="Настройки" route={route} routeKey="settings" setRoute={setRoute} />
+          <div className="hub-nav-divider" />
+          {/* Служебные разделы до их переезда в «Настройки» (SPEC-HUB-0031 §8.6). */}
+          <SidebarNavSection
+            icon="wrench"
+            items={SERVICE_ITEMS}
+            label="Ещё"
+            route={route}
+            setRoute={setRoute}
+            storageKey={sectionStorageKey("service")}
+          />
+        </nav>
+      ) : (
+        <ChatScopeTree
           route={route}
-          setRoute={setRoute}
-          storageKey={sectionStorageKey("administration")}
+          scope={chatScope}
+          counters={chatCounters}
+          setScope={(scope) => {
+            setChatScope(scope);
+            setRoute("chat");
+          }}
         />
-      </nav>
-      {isManagerUser && <LaunchChecklist user={user} setRoute={setRoute} />}
+      )}
+      {manager && <LaunchChecklist user={user} setRoute={setRoute} />}
       <SidebarUserMenu user={user} route={route} setRoute={setRoute} onLogout={onLogout} />
     </aside>
+  );
+}
+
+// Дерево «Диалоги» сотрудника (кадры A-H): пункты — это охват списка чата.
+function ChatScopeTree({
+  route,
+  scope,
+  counters,
+  setScope,
+}: {
+  route: RouteKey;
+  scope: DialogScope;
+  counters: ConversationCounters | null;
+  setScope: (scope: DialogScope) => void;
+}) {
+  const inChat = route === "chat";
+  const isActive = (candidate: DialogScope) =>
+    inChat
+    && scope.kind === candidate.kind
+    && (scope.kind !== "group" || candidate.kind !== "group" || scope.id === candidate.id)
+    && (scope.kind !== "agent" || candidate.kind !== "agent" || scope.id === candidate.id);
+
+  return (
+    <nav className="hub-nav chat-scope-tree">
+      <div className="chat-scope-head"><Icon name="message" size={17} /><span>Диалоги</span></div>
+      <button
+        className={`chat-scope-item is-top ${isActive({ kind: "all" }) ? "is-active" : ""}`}
+        type="button"
+        onClick={() => setScope({ kind: "all" })}
+      >
+        <Icon name="inbox" size={15} />
+        <span>Все диалоги</span>
+        {counters && <small>{counters.all}</small>}
+      </button>
+      {counters && counters.groups.length > 0 && (
+        <>
+          <div className="chat-scope-section"><Icon name="team" size={15} /><span>Группы</span></div>
+          {counters.groups.map((group) => (
+            <button
+              className={`chat-scope-item is-nested ${isActive({ kind: "group", id: group.id, label: group.name }) ? "is-active" : ""}`}
+              key={group.id}
+              type="button"
+              onClick={() => setScope({ kind: "group", id: group.id, label: group.name })}
+            >
+              <i className="chat-scope-dot" />
+              <span>{group.name}</span>
+              <small>{group.count}</small>
+            </button>
+          ))}
+          <button
+            className={`chat-scope-item is-nested ${isActive({ kind: "ungrouped" }) ? "is-active" : ""}`}
+            type="button"
+            onClick={() => setScope({ kind: "ungrouped" })}
+          >
+            <i className="chat-scope-dot is-muted" />
+            <span>Без группы</span>
+            {counters && <small>{counters.ungrouped}</small>}
+          </button>
+        </>
+      )}
+      {counters && counters.agents.length > 0 && (
+        <>
+          <div className="chat-scope-section"><Icon name="robot" size={15} /><span>Агенты</span></div>
+          {counters.agents.map((agent) => (
+            <button
+              className={`chat-scope-item is-nested ${isActive({ kind: "agent", id: agent.id, label: agent.name }) ? "is-active" : ""}`}
+              key={agent.id}
+              type="button"
+              onClick={() => setScope({ kind: "agent", id: agent.id, label: agent.name })}
+            >
+              <span className="chat-scope-agent"><Icon name="robot" size={11} /></span>
+              <span>{agent.name}</span>
+              <small>{agent.count}</small>
+            </button>
+          ))}
+        </>
+      )}
+    </nav>
   );
 }
