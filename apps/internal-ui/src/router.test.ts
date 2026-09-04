@@ -23,21 +23,19 @@ describe("sales detail routes", () => {
   });
 });
 
-describe("ai agent routes", () => {
-  it("parses an AI agent detail URL", () => {
-    expect(routeFromPath("/ai/agents/7")).toEqual({ route: "aiAgentDetail", ...empty, agentId: 7 });
+describe("agent routes", () => {
+  it("parses an agent detail URL", () => {
+    expect(routeFromPath("/agents/7")).toEqual({ route: "agentDetail", ...empty, agentId: 7 });
   });
 
-  it("creates an AI agent detail URL", () => {
-    expect(pathFromRoute("aiAgentDetail", 7)).toBe("/ai/agents/7");
+  it("creates an agent detail URL", () => {
+    expect(pathFromRoute("agentDetail", 7)).toBe("/agents/7");
+    expect(pathFromRoute("agentDetail", null)).toBe("/agents");
   });
 
-  it("parses an AI agent creation URL", () => {
-    expect(routeFromPath("/ai/agents/new", "?product=academy")).toEqual({ route: "aiAgentCreate", ...empty, productCode: "academy" });
-  });
-
-  it("creates an AI agent creation URL", () => {
-    expect(pathFromRoute("aiAgentCreate", null, "academy")).toBe("/ai/agents/new?product=academy");
+  it("redirects legacy ai agent URLs to the unified section", () => {
+    expect(routeFromPath("/ai/agents/7")).toEqual({ route: "agents", ...empty });
+    expect(routeFromPath("/ai/agents/new")).toEqual({ route: "agents", ...empty });
   });
 });
 
@@ -127,25 +125,16 @@ describe("organization routes", () => {
 
 describe("channel routes", () => {
   it("parses the list, wizard and card URLs", () => {
-    expect(routeFromPath("/channels")).toEqual({ route: "channels", ...empty });
-    expect(routeFromPath("/channels/new")).toEqual({ route: "channelCreate", ...empty });
-    expect(routeFromPath("/channels/12")).toEqual({ route: "channelDetail", ...empty, channelId: 12 });
+    expect(routeFromPath("/channels")).toEqual({ route: "agents", ...empty });
+    expect(routeFromPath("/channels/12")).toEqual({ route: "agentDetail", ...empty, agentId: 12 });
   });
 
   it("falls back to the list for a malformed channel id", () => {
-    expect(routeFromPath("/channels/abc")).toEqual({ route: "channels", ...empty });
-  });
-
-  it("builds channel paths", () => {
-    expect(pathFromRoute("channels")).toBe("/channels");
-    expect(pathFromRoute("channelCreate")).toBe("/channels/new");
-    expect(pathFromRoute("channelDetail", 12)).toBe("/channels/12");
-    expect(pathFromRoute("channelDetail", null)).toBe("/channels");
+    expect(routeFromPath("/channels/abc")).toEqual({ route: "agents", ...empty });
   });
 
   it("keeps AI routes untouched", () => {
-    expect(routeFromPath("/ai/agents")).toEqual({ route: "aiAgents", ...empty });
+    expect(routeFromPath("/ai/agents")).toEqual({ route: "agents", ...empty });
     expect(routeFromPath("/ai/knowledge")).toEqual({ route: "aiKnowledge", ...empty });
-    expect(pathFromRoute("aiAgentDetail", 7)).toBe("/ai/agents/7");
   });
 });

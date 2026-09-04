@@ -1,0 +1,177 @@
+/* Раздел «Агенты» (SPEC-HUB-0031 §8.3, §4.3). Токены и паттерны — из DS;
+   классы agent-* повторяют вид карточных секций каналов, чтобы раздел жил
+   после удаления features/channels. */
+
+.agent-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.agent-detail-title,
+.agent-detail-meta,
+.agent-detail-actions,
+.agent-section-actions,
+.agent-danger-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.agent-detail-title {
+  margin-bottom: 5px;
+}
+
+.agent-detail-meta {
+  color: var(--text-tertiary);
+  font-size: 12.5px;
+}
+
+.agent-detail-meta code {
+  font-family: var(--font-mono, ui-monospace, monospace);
+}
+
+.agent-detail-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.agent-detail-header h1 {
+  margin: 0;
+  color: var(--text-heading);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.agent-detail-actions {
+  flex: none;
+}
+
+.agent-danger-actions {
+  justify-content: flex-end;
+  margin-top: 8px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-default);
+}
+
+.agent-feedback {
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.agent-feedback.is-error {
+  border: 1px solid var(--error-border);
+  background: var(--error-bg);
+  color: var(--error-text);
+}
+
+.agent-feedback.is-warning {
+  border: 1px solid var(--warning-border);
+  background: var(--warning-bg-strong);
+  color: var(--warning-text);
+}
+
+.agent-card-section {
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-2xl);
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+  padding: 20px;
+}
+
+.agent-card-section > header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.agent-card-section > header h3 {
+  margin: 0 auto 0 0;
+  color: var(--text-heading);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.agent-card-section > header span {
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.agent-section-actions {
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.agent-assignment {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 24px;
+  font-size: 13px;
+}
+
+.agent-assignment .key-value {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--n-9);
+  color: var(--text-body);
+  font-size: 12.5px;
+}
+
+.agent-assignment .key-value > span {
+  color: var(--text-tertiary);
+}
+
+.agent-assignment .key-value > strong {
+  font-weight: 500;
+  text-align: right;
+}
+
+.agent-muted {
+  color: var(--text-tertiary);
+  font-size: 13px;
+}
+
+.agent-connections {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.agent-connection {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px 12px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+}
+
+.agent-connection-text {
+  flex: 1;
+  line-height: 1.3;
+}
+
+.agent-connection-text strong {
+  display: block;
+  color: var(--text-body);
+  font-size: 13px;
+}
+
+.agent-connection-text span {
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+}
+
+.agent-instructions-grid {
+  display: grid;
+  gap: 12px;
+}

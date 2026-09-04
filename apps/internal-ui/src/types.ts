@@ -1,4 +1,4 @@
-import type { AiAgent } from "./features/ai/model";
+import type { AgentCard } from "./features/agents/model";
 
 // Роли SPEC-HUB-0031 §3: OWNER и ADMIN идентичны (владельца нельзя удалить),
 // EMPLOYEE работает только в чате; видимость диалогов — по группам (ADR-HUB-0043).
@@ -113,11 +113,11 @@ export type Product = {
   updatedAt: string;
 };
 
-export type RouteKey = "administrationOrganization" | "administrationSubscription" | "administrationAudit" | "command" | "employeeDetail" | "employees" | "profile" | "settings" | "salesClientDetail" | "salesClients" | "salesDialogs" | "supportOverview" | "supportDialogs" | "supportPortals" | "supportPortalDetail" | "aiAgents" | "aiAgentCreate" | "aiAgentDetail" | "aiKnowledge" | "aiKnowledgeCreate" | "aiKnowledgeDetail" | "aiUsage" | "integrations" | "channels" | "channelCreate" | "channelDetail";
+export type RouteKey = "administrationOrganization" | "administrationSubscription" | "administrationAudit" | "command" | "employeeDetail" | "employees" | "profile" | "settings" | "salesClientDetail" | "salesClients" | "salesDialogs" | "supportOverview" | "supportDialogs" | "supportPortals" | "supportPortalDetail" | "agents" | "agentDetail" | "aiKnowledge" | "aiKnowledgeCreate" | "aiKnowledgeDetail" | "aiUsage" | "integrations";
 
 export type AppData = {
   employees: Employee[];
   groups: EmployeeGroup[];
   products: Product[];
-  agents: AiAgent[];
+  agents: AgentCard[];
 };

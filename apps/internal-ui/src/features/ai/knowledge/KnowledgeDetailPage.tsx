@@ -1,7 +1,7 @@
 import { Modal } from "antd";
 import { useCallback, useEffect, useState } from "react";
 
-import type { AiAgent } from "../model";
+import type { AgentCard } from "../../agents/model";
 import { Button } from "../../../shared/ui-controls";
 import { EmptyState, LoadingState } from "../../../shared/ui";
 import type { RouteKey } from "../../../types";
@@ -28,7 +28,7 @@ export function KnowledgeDetailPage({
   openAgent,
   setRoute,
 }: {
-  agents: AiAgent[];
+  agents: AgentCard[];
   canManage: boolean;
   knowledgeId: number | null;
   onLoaded: (title: string | null) => void;

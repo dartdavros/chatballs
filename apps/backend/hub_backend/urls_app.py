@@ -25,6 +25,10 @@ urlpatterns = [
     ),
     path("api/v1/organizations/<uuid:organization_public_id>/ai/", include("hub_platform.ai.urls")),
     path(
+        "api/v1/organizations/<uuid:organization_public_id>/agents/",
+        include("hub_platform.ai.agent_card_urls"),
+    ),
+    path(
         "api/v1/organizations/<uuid:organization_public_id>/integrations/",
         include("hub_platform.integrations.urls"),
     ),

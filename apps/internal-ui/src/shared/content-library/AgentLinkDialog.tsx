@@ -23,7 +23,7 @@ function outcomeText(outcome: AgentLinkOutcome, forms: [string, string, string])
   const verb = outcome.action === "attach" ? "Прикреплено" : "Откреплено";
   const main = `${verb}: ${outcome.changed} ${pluralize(outcome.changed, forms)}.`;
   if (outcome.skipped === 0) return main;
-  return `${main} Пропущено: ${outcome.skipped} — отдел агента не совпадает с областью доступности.`;
+  return `${main} Пропущено: ${outcome.skipped}.`;
 }
 
 /**

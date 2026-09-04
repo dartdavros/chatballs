@@ -83,7 +83,7 @@ export function Shell({ route, setRoute, selectedEmployeeId, selectedProductCode
   const isDialogsWorkspace = isSalesDialogs || isSupportDialogs;
   const isSalesClients = route === "salesClients";
   const isSalesClientDetail = route === "salesClientDetail";
-  const isAiFullWidth = route === "aiAgentCreate";
+  const isAiFullWidth = false;
   const isKnowledgeLibrary = route === "aiKnowledge";
   const isKnowledgeEditor = route === "aiKnowledgeCreate" || route === "aiKnowledgeDetail";
   return (

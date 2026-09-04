@@ -11,7 +11,7 @@ import { Shell } from "./layout/Shell";
 import { pathFromRoute, routeFromPath } from "./router";
 import { ErrorScreen, LoadingScreen, PermissionScreen } from "./shared/ui";
 import { useRouteNavigation } from "./useRouteNavigation";
-import type { AiAgent } from "./features/ai/model";
+import type { AgentCard } from "./features/agents/model";
 import type { AppData, AuthChallenge, AuthenticatedUser, Employee, EmployeeGroup, Product, SessionUser } from "./types";
 
 export function App() {
@@ -52,9 +52,9 @@ export function App() {
           ? api<{ items: Product[] }>("/api/v1/company/products/")
           : Promise.resolve({ items: [] }),
       ]);
-      let agents: AiAgent[] = [];
-      if (user && canAccess(user, "aiAgents")) {
-        const agentsResponse = await api<{ items: AiAgent[] }>("/api/v1/ai/agents/");
+      let agents: AgentCard[] = [];
+      if (user && canAccess(user, "agents")) {
+        const agentsResponse = await api<{ items: AgentCard[] }>("/api/v1/agents/");
         agents = agentsResponse.items;
       }
       setData({ employees: employees.items, groups: groups.items, products: products.items, agents });
@@ -152,7 +152,7 @@ export function App() {
       ) : !canAccess(user, navigation.route) ? (
         <PermissionScreen onReturn={() => navigate(defaultRoute(user), null, true)} />
       ) : (
-        <Shell route={navigation.route} setRoute={(nextRoute) => navigate(nextRoute)} selectedEmployeeId={navigation.selectedEmployeeId} selectedProductCode={navigation.selectedProductCode} selectedAgentId={navigation.selectedAgentId} selectedKnowledgeId={navigation.selectedKnowledgeId} selectedConversationId={navigation.selectedConversationId} selectedClientId={navigation.selectedClientId} openClientRoute={(clientId) => navigate("salesClientDetail", clientId)} selectedChannelId={navigation.selectedChannelId} openChannelRoute={(channelId) => navigate("channelDetail", channelId)} selectedSupportPortalId={navigation.selectedSupportPortalId} openSupportPortalRoute={(portalId) => navigate("supportPortalDetail", portalId)} openEmployeeRoute={(employeeId) => navigate("employeeDetail", employeeId)} openAgentCreateRoute={(productCode) => navigate("aiAgentCreate", null, false, productCode)} openAgentRoute={(agentId) => navigate("aiAgentDetail", agentId)} openKnowledgeRoute={(knowledgeId) => navigate("aiKnowledgeDetail", knowledgeId)} openConversationRoute={(conversationId) => navigate("salesDialogs", conversationId)} user={user} data={data} reload={loadData} onUserUpdated={refreshIdentity} onLogout={logout} />
+        <Shell route={navigation.route} setRoute={(nextRoute) => navigate(nextRoute)} selectedEmployeeId={navigation.selectedEmployeeId} selectedProductCode={navigation.selectedProductCode} selectedAgentId={navigation.selectedAgentId} selectedKnowledgeId={navigation.selectedKnowledgeId} selectedConversationId={navigation.selectedConversationId} selectedClientId={navigation.selectedClientId} openClientRoute={(clientId) => navigate("salesClientDetail", clientId)} selectedChannelId={navigation.selectedChannelId} openChannelRoute={(channelId) => navigate("agentDetail", channelId)} selectedSupportPortalId={navigation.selectedSupportPortalId} openSupportPortalRoute={(portalId) => navigate("supportPortalDetail", portalId)} openEmployeeRoute={(employeeId) => navigate("employeeDetail", employeeId)} openAgentCreateRoute={() => navigate("agents")} openAgentRoute={(agentId) => navigate("agentDetail", agentId)} openKnowledgeRoute={(knowledgeId) => navigate("aiKnowledgeDetail", knowledgeId)} openConversationRoute={(conversationId) => navigate("salesDialogs", conversationId)} user={user} data={data} reload={loadData} onUserUpdated={refreshIdentity} onLogout={logout} />
       )}
     </ConfigProvider>
   );

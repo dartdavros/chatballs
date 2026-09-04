@@ -86,7 +86,7 @@ export function commandCenterModel(data: ApiCommandOverview) {
       name: department.name,
       route: department.route,
       icon: department.name === "Поддержка" ? "wrench" : "shop",
-      subtitle: `Сотрудники: ${department.employees} · AI-агенты: ${department.aiAgents}`,
+      subtitle: `Сотрудники: ${department.employees} · Агенты: ${department.aiAgents}`,
       status: d.waiting > 0 ? STATUS_META.attention : STATUS_META.ok,
       summary: d.waiting > 0 ? `В очереди ${d.waiting} — нужен оператор.` : "Очередь оператора пуста.",
       dialogItems: [

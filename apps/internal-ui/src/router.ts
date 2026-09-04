@@ -39,21 +39,19 @@ export function routeFromPath(pathname: string, search = ""): RouteState {
     const id = Number(path.split("/")[4]);
     return Number.isInteger(id) && id > 0 ? { ...state, route: "supportPortalDetail", supportPortalId: id } : { route: "supportPortals", ...state };
   }
-  if (path === "/channels") return { route: "channels", ...state };
-  if (path === "/channels/new") return { route: "channelCreate", ...state };
+  // Устаревшие адреса каналов и AI-агентов ведут в объединённый раздел.
+  if (path === "/agents" || path === "/channels" || path === "/ai" || path === "/ai/agents") {
+    return { route: "agents", ...state };
+  }
+  if (path.startsWith("/agents/")) {
+    const id = Number(path.split("/")[2]);
+    return Number.isInteger(id) && id > 0 ? { ...state, route: "agentDetail", agentId: id } : { route: "agents", ...state };
+  }
   if (path.startsWith("/channels/")) {
     const id = Number(path.split("/")[2]);
-    return Number.isInteger(id) && id > 0 ? { ...state, route: "channelDetail", channelId: id } : { route: "channels", ...state };
+    return Number.isInteger(id) && id > 0 ? { ...state, route: "agentDetail", agentId: id } : { route: "agents", ...state };
   }
-  if (path === "/ai" || path === "/ai/agents") return { route: "aiAgents", ...state };
-  if (path === "/ai/agents/new") {
-    const productCode = new URLSearchParams(search).get("product");
-    return { route: "aiAgentCreate", ...state, productCode };
-  }
-  if (path.startsWith("/ai/agents/")) {
-    const id = Number(path.split("/")[3]);
-    return Number.isInteger(id) && id > 0 ? { ...state, route: "aiAgentDetail", agentId: id } : { route: "aiAgents", ...state };
-  }
+  if (path.startsWith("/ai/agents/")) return { route: "agents", ...state };
   if (path === "/ai/knowledge") return { route: "aiKnowledge", ...state };
   if (path === "/ai/knowledge/new") return { route: "aiKnowledgeCreate", ...state };
   if (path.startsWith("/ai/knowledge/")) {
@@ -88,16 +86,12 @@ export function pathFromRoute(route: RouteKey, entityId: number | null = null, p
   if (route === "employeeDetail") return entityId ? `${prefix}/employees/${entityId}` : `${prefix}/employees`;
   if (route === "supportPortals") return `${prefix}/departments/support/portals`;
   if (route === "supportPortalDetail") return entityId ? `${prefix}/departments/support/portals/${entityId}` : `${prefix}/departments/support/portals`;
-  if (route === "aiAgents") return `${prefix}/ai/agents`;
-  if (route === "aiAgentCreate") return productCode ? `${prefix}/ai/agents/new?product=${encodeURIComponent(productCode)}` : `${prefix}/ai/agents/new`;
+  if (route === "agents") return `${prefix}/agents`;
+  if (route === "agentDetail") return entityId ? `${prefix}/agents/${entityId}` : `${prefix}/agents`;
   if (route === "aiUsage") return `${prefix}/ai/usage`;
-  if (route === "aiAgentDetail") return entityId ? `${prefix}/ai/agents/${entityId}` : `${prefix}/ai/agents`;
   if (route === "aiKnowledge") return `${prefix}/ai/knowledge`;
   if (route === "aiKnowledgeCreate") return `${prefix}/ai/knowledge/new`;
   if (route === "aiKnowledgeDetail") return entityId ? `${prefix}/ai/knowledge/${entityId}` : `${prefix}/ai/knowledge`;
-  if (route === "channels") return `${prefix}/channels`;
-  if (route === "channelCreate") return `${prefix}/channels/new`;
-  if (route === "channelDetail") return entityId ? `${prefix}/channels/${entityId}` : `${prefix}/channels`;
   if (route === "integrations") return `${prefix}/integrations`;
   if (route === "administrationOrganization") return `${prefix}/administration/organization`;
   if (route === "administrationSubscription") return `${prefix}/administration/subscription`;

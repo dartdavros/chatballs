@@ -32,6 +32,7 @@ class TenantAPIClient(APIClient):
 
     tenant_namespaces = {
         "access-profiles",
+        "agents",
         "ai",
         "calls",
         "channels",

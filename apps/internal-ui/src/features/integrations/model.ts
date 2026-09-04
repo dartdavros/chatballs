@@ -91,7 +91,8 @@ export const KIND_LABEL: Record<IntegrationKind, string> = {
 
 export type ChannelOption = { id: number; code: string; name: string };
 
-export const fetchChannels = () => api<{ items: ChannelOption[] }>("/api/v1/channels/").then((r) => r.items);
+// Привязка подключения выбирает агента; id карточки агента = id канала.
+export const fetchChannels = () => api<{ items: ChannelOption[] }>("/api/v1/agents/").then((r) => r.items);
 
 export const fetchLlmProviders = () =>
   api<{ items: Integration[] }>("/api/v1/integrations/").then((response) =>

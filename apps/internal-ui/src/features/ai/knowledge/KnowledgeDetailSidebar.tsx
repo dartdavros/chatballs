@@ -1,4 +1,4 @@
-import type { AiAgent } from "../model";
+import type { AgentCard } from "../../agents/model";
 import { Icon } from "../../../shared/icons";
 import { formatDate } from "../../../shared/utils";
 import type { KnowledgeItem } from "./types";
@@ -8,7 +8,7 @@ export function KnowledgeDetailSidebar({
   item,
   openAgent,
 }: {
-  agents: AiAgent[];
+  agents: AgentCard[];
   item: KnowledgeItem;
   openAgent: (agentId: number) => void;
 }) {
@@ -23,7 +23,7 @@ export function KnowledgeDetailSidebar({
           {assignedAgents.map((agent) => (
             <button type="button" onClick={() => openAgent(agent.id)} key={agent.id}>
               <span><Icon name="robot" size={16} /></span>
-              <div><strong>{agent.name}</strong><small>{agent.channel.name}</small></div>
+              <div><strong>{agent.name}</strong><small>{agent.groupName ?? "Без группы"}</small></div>
             </button>
           ))}
         </div>

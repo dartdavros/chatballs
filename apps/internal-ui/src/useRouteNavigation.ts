@@ -40,11 +40,11 @@ export function useRouteNavigation(
       organizationPublicId: organizationId,
       route: nextRoute,
       employeeId: nextRoute === "employeeDetail" ? entityId : null,
-      productCode: nextRoute === "aiAgentCreate" ? productCode : null,
-      agentId: nextRoute === "aiAgentDetail" ? entityId : null,
+      productCode,
+      agentId: nextRoute === "agentDetail" ? entityId : null,
       knowledgeId: nextRoute === "aiKnowledgeDetail" ? entityId : null,
       clientId: nextRoute === "salesClientDetail" ? entityId : null,
-      channelId: nextRoute === "channelDetail" ? entityId : null,
+      channelId: null,
       supportPortalId: nextRoute === "supportPortalDetail" ? entityId : null,
     };
     applyRouteState(nextState);

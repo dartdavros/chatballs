@@ -42,7 +42,6 @@ const SUPPORT_ITEMS: SidebarNavSectionItem[] = [
 ];
 
 const AI_ITEMS: SidebarNavSectionItem[] = [
-  { activeRoutes: ["aiAgents", "aiAgentCreate", "aiAgentDetail"], key: "aiAgents", label: "AI-агенты" },
   { activeRoutes: ["aiKnowledge", "aiKnowledgeCreate", "aiKnowledgeDetail"], key: "aiKnowledge", label: "Знания" },
   { activeRoutes: ["aiUsage"], disabled: true, key: "aiUsage", label: "Использование AI" },
 ];
@@ -98,7 +97,7 @@ export function Sidebar({ route, user, setRoute, onLogout, waitingCount = 0 }: {
         <SidebarNavSection icon="shop" items={salesItems} label="Клиенты" route={route} setRoute={setRoute} storageKey={sectionStorageKey("sales")} />
         <SidebarNavSection icon="wrench" items={supportItems} label="Поддержка" route={route} setRoute={setRoute} storageKey={sectionStorageKey("support")} />
         {canAccess(user, "employees") && <SidebarLink activeRoutes={["employees", "employeeDetail"]} icon="team" label="Сотрудники" route={route} routeKey="employees" setRoute={setRoute} />}
-        {canAccess(user, "channels") && <SidebarLink activeRoutes={["channels", "channelCreate", "channelDetail"]} icon="route" label="Каналы" route={route} routeKey="channels" setRoute={setRoute} />}
+        {canAccess(user, "agents") && <SidebarLink activeRoutes={["agents", "agentDetail"]} icon="robot" label="Агенты" route={route} routeKey="agents" setRoute={setRoute} />}
         <div className="hub-nav-group">ПЛАТФОРМА</div>
         <SidebarNavSection icon="robot" items={aiItems} label="AI" route={route} setRoute={setRoute} storageKey={sectionStorageKey("ai")} />
         {canAccess(user, "integrations") && <SidebarLink icon="plug" label="Интеграции" route={route} routeKey="integrations" setRoute={setRoute} />}

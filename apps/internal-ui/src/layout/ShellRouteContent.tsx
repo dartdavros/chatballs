@@ -1,15 +1,11 @@
 import { lazy, Suspense } from "react";
 
-import { AiAgentsPage } from "../features/ai/AiAgentsPage";
-import { AiAgentCreatePage } from "../features/ai/create/AiAgentCreatePage";
-import { AiAgentDetailPage } from "../features/ai/detail/AiAgentDetailPage";
+import { AgentsPage } from "../features/agents/AgentsPage";
+import { AgentDetailPage } from "../features/agents/AgentDetailPage";
 import { KnowledgeDetailPage } from "../features/ai/knowledge/KnowledgeDetailPage";
 import { KnowledgeCreatePage } from "../features/ai/knowledge/KnowledgeCreatePage";
 import { KnowledgePage } from "../features/ai/knowledge/KnowledgePage";
 import { CommandCenter } from "../features/command/CommandCenter";
-import { ChannelsPage } from "../features/channels/ChannelsPage";
-import { ChannelDetailPage } from "../features/channels/ChannelDetailPage";
-import { ChannelCreateWizard } from "../features/channels/ChannelCreateWizard";
 import { IntegrationsPage } from "../features/integrations/IntegrationsPage";
 import { EmployeeDetailPage, EmployeesPage } from "../features/employees/EmployeesPage";
 import { ProfilePage } from "../features/profile/ProfilePage";
@@ -54,15 +50,23 @@ export function ShellRouteContent({ route, data, currentEmployee, selectedProduc
       {route === "supportOverview" && <SupportOverviewPage />}
       {route === "supportDialogs" && <SupportDialogsPage initialConversationId={selectedConversationId} user={user} />}
       {route === "salesDialogs" && <SalesDialogsPage initialConversationId={selectedConversationId} user={user} />}
-      {route === "aiAgents" && <AiAgentsPage agents={data.agents} reload={reload} openAgentCreate={openAgentCreate} openAgent={openAgent} />}
-      {route === "aiAgentCreate" && <AiAgentCreatePage selectedProductCode={selectedProductCode} reload={reload} setRoute={setRoute} openAgent={openAgent} />}
-      {route === "aiAgentDetail" && <AiAgentDetailPage agentId={selectedAgentId} openKnowledge={openKnowledge} openChannel={openChannel} onAgentLoaded={onAgentLoaded} setRoute={setRoute} />}
+      {route === "agents" && <AgentsPage agents={data.agents} groups={data.groups} reload={reload} openAgent={openAgent} />}
+      {route === "agentDetail" && (
+        <AgentDetailPage
+          agentId={selectedAgentId}
+          groups={data.groups}
+          canManage={hasCapability(user, "ai.manage")}
+          canManageConnections={hasCapability(user, "integrations.manage")}
+          openAgents={() => setRoute("agents")}
+          openKnowledge={openKnowledge}
+          openIntegrations={() => setRoute("integrations")}
+          setRoute={setRoute}
+          onLoaded={onAgentLoaded}
+        />
+      )}
       {route === "aiKnowledge" && <KnowledgePage openAgent={openAgent} openKnowledge={openKnowledge} setRoute={setRoute} user={user} />}
       {route === "aiKnowledgeCreate" && <KnowledgeCreatePage openKnowledge={openKnowledge} setRoute={setRoute} />}
       {route === "aiKnowledgeDetail" && <KnowledgeDetailPage agents={data.agents} canManage={hasCapability(user, "ai.manage")} knowledgeId={selectedKnowledgeId} openAgent={openAgent} setRoute={setRoute} onLoaded={onAgentLoaded} />}
-      {route === "channels" && <ChannelsPage user={user} groups={data.groups} openChannel={openChannel} openChannelCreate={() => setRoute("channelCreate")} openAgent={openAgent} />}
-      {route === "channelDetail" && <ChannelDetailPage channelId={selectedChannelId} groups={data.groups} products={data.products} user={user} setRoute={setRoute} openAgent={openAgent} openChannels={() => setRoute("channels")} onChannelLoaded={onChannelLoaded} />}
-      {route === "channelCreate" && <ChannelCreateWizard groups={data.groups} products={data.products} openChannel={openChannel} openChannels={() => setRoute("channels")} openAgentCreate={() => openAgentCreate(null)} openIntegrations={() => setRoute("integrations")} />}
       {route === "integrations" && <IntegrationsPage />}
       {route === "supportPortals" && <Suspense fallback={<LoadingState />}><SupportPortalsPage user={user} openPortal={openSupportPortal} /></Suspense>}
       {route === "supportPortalDetail" && <Suspense fallback={<LoadingState />}><SupportPortalDetailPage portalId={selectedSupportPortalId} products={data.products} user={user} openPortals={() => setRoute("supportPortals")} /></Suspense>}

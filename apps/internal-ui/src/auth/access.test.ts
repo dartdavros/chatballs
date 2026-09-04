@@ -31,7 +31,7 @@ describe("role-based navigation (SPEC-HUB-0031 §3)", () => {
       expect(isManager(user)).toBe(true);
       expect(canAccess(user, "command")).toBe(true);
       expect(canAccess(user, "employees")).toBe(true);
-      expect(canAccess(user, "channels")).toBe(true);
+      expect(canAccess(user, "agents")).toBe(true);
       expect(canAccess(user, "aiKnowledge")).toBe(true);
       expect(canAccess(user, "administrationOrganization")).toBe(true);
       expect(defaultRoute(user)).toBe("command");
@@ -46,8 +46,8 @@ describe("role-based navigation (SPEC-HUB-0031 §3)", () => {
     expect(canAccess(user, "profile")).toBe(true);
     expect(canAccess(user, "settings")).toBe(true);
     expect(canAccess(user, "employees")).toBe(false);
-    expect(canAccess(user, "channels")).toBe(false);
-    expect(canAccess(user, "aiAgents")).toBe(false);
+    expect(canAccess(user, "agents")).toBe(false);
+    expect(canAccess(user, "aiKnowledge")).toBe(false);
     expect(canAccess(user, "salesClients")).toBe(false);
     expect(defaultRoute(user)).toBe("salesDialogs");
   });

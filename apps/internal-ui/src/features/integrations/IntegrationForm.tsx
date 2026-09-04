@@ -160,12 +160,12 @@ export function IntegrationForm({ initial, kind, onClose, onSaved }: { initial: 
         {isMessenger && !isWeb && !isEmail && (
           <label className="integration-notifier-toggle">
             <input type="checkbox" checked={isNotifier} onChange={(event) => setIsNotifier(event.target.checked)} />
-            Бот уведомлений для сотрудников (не участвует в продажах, привязка в профиле)
+            Бот уведомлений для сотрудников (сервисный, клиентам не отвечает; привязка в профиле)
           </label>
         )}
         {isMessenger && !isNotifier && (
           <SelectField
-            label="Канал обработки"
+            label="Агент"
             value={channelId}
             onChange={setChannelId}
             options={[["", "— не привязан —"], ...channels.map((c) => [String(c.id), c.name] as [string, string])]}
