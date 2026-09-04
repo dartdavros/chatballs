@@ -20,7 +20,6 @@ export function DialogList({ title = "Диалоги", searchPlaceholder = "По
   setSelectedId: (id: number) => void;
 }) {
   const waitCount = dialogs.filter((dialog) => dialog.mode === "wait").length;
-  const unreadCount = dialogs.filter((dialog) => dialog.unread > 0).length;
   return (
     <section className="sales-dialog-list">
       <div className="sales-dialog-list-head">
@@ -29,10 +28,8 @@ export function DialogList({ title = "Диалоги", searchPlaceholder = "По
       </div>
       <div className="sales-dialog-tabs">
         <DialogTab active={listTab === "all"} onClick={() => setListTab("all")}>Все</DialogTab>
+        <DialogTab active={listTab === "mine"} onClick={() => setListTab("mine")}>Мои</DialogTab>
         <DialogTab active={listTab === "wait"} onClick={() => setListTab("wait")}>Ждут оператора {waitCount > 0 && <b>{waitCount}</b>}</DialogTab>
-        <DialogTab active={listTab === "ai"} onClick={() => setListTab("ai")}>AI</DialogTab>
-        <DialogTab active={listTab === "operator"} onClick={() => setListTab("operator")}>Оператор</DialogTab>
-        <DialogTab active={listTab === "unread"} onClick={() => setListTab("unread")}>Непрочитанные {unreadCount > 0 && <b>{unreadCount}</b>}</DialogTab>
       </div>
       <div className="sales-dialog-list-body">
         {errorText && <div className="sales-wait-note sales-load-error">{errorText}</div>}
@@ -59,7 +56,32 @@ function DialogListItem({ dialog, active, setSelectedId }: { dialog: Conversatio
         <span className="sales-dialog-row-title"><strong>{dialog.name}</strong><em>{dialog.time}</em></span>
         <span className="sales-dialog-row-meta"><small>{dialog.product}</small><b style={{ background: channel.bg, color: channel.color }}><i style={{ background: channel.color }} />{channel.label}</b></span>
         <span className="sales-dialog-row-preview"><small className={dialog.unread ? "unread" : ""}>{dialog.preview}</small>{dialog.unread > 0 && <b>{dialog.unread}</b>}</span>
+        {(dialog.priority !== "NONE" || dialog.labels.length > 0) && (
+          <span className="sales-dialog-row-badges">
+            {dialog.priority !== "NONE" && <PriorityBars priority={dialog.priority} />}
+            {dialog.labels.map((label) => (
+              <b className="sales-dialog-label" key={label.id}><i style={{ background: label.color || "var(--n-5)" }} />{label.name}</b>
+            ))}
+          </span>
+        )}
       </span>
     </button>
+  );
+}
+
+const PRIORITY_TITLE: Record<string, string> = { HIGH: "Высокий", MEDIUM: "Средний", LOW: "Низкий" };
+const PRIORITY_ON: Record<string, number> = { HIGH: 3, MEDIUM: 2, LOW: 1 };
+const PRIORITY_COLOR: Record<string, string> = { HIGH: "#ff4d4f", MEDIUM: "#fa8c16", LOW: "#1677ff" };
+
+export function PriorityBars({ priority }: { priority: "HIGH" | "MEDIUM" | "LOW" | "NONE" }) {
+  if (priority === "NONE") return null;
+  const on = PRIORITY_ON[priority] ?? 0;
+  const color = PRIORITY_COLOR[priority];
+  return (
+    <span className="sales-priority-bars" title={PRIORITY_TITLE[priority]}>
+      {[5, 8, 11].map((height, index) => (
+        <i key={height} style={{ height, background: index < on ? color : "var(--n-7)" }} />
+      ))}
+    </span>
   );
 }

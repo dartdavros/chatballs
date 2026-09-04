@@ -1,0 +1,345 @@
+"""Дизайн-базлайн v2: приоритет, метки, заметка, архив, шаблоны, счётчики.
+
+Решения владельца (2026-09-04): метки и приоритет входят в модель; «удалить
+диалог» = архив, архив видят только администраторы; шаблоны ответов общие на
+организацию (редактируют администраторы, используют все).
+"""
+
+from __future__ import annotations
+
+from django.db.models import Count
+from django.utils import timezone
+from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from hub_platform.api.permissions import HasCapability
+from hub_platform.conversations.models import (
+    Conversation,
+    ConversationLabel,
+    ConversationPriority,
+    ControlMode,
+    LifecycleState,
+    ReplyTemplate,
+)
+from hub_platform.conversations.selectors import apply_conversation_visibility
+from hub_platform.conversations.serializers import conversation_payload
+from hub_platform.conversations.view_base import ConversationViewBase
+from hub_platform.identity.policy import can_administer_access
+
+
+def _label_payload(label: ConversationLabel) -> dict[str, object]:
+    return {"id": label.id, "name": label.name, "color": label.color}
+
+
+def _template_payload(template: ReplyTemplate) -> dict[str, object]:
+    return {
+        "id": template.id,
+        "title": template.title,
+        "text": template.text,
+        "updatedAt": template.updated_at.isoformat(),
+    }
+
+
+class ConversationPriorityView(ConversationViewBase):
+    required_capability = "conversations.operate"
+
+    def post(self, request: Request, conversation_id: int) -> Response:
+        try:
+            conversation = self._conversation(
+                request, conversation_id, self.required_capability
+            )
+        except Conversation.DoesNotExist:
+            return Response({"detail": "Диалог не найден"}, status=404)
+        priority = str(request.data.get("priority", "")).strip().upper()
+        if priority not in ConversationPriority.values:
+            return Response({"detail": "Неизвестный приоритет"}, status=400)
+        conversation.priority = priority
+        conversation.save(update_fields=["priority"])
+        self._audit(request, "priority_changed", conversation)
+        return Response(
+            {
+                "conversation": conversation_payload(
+                    conversation, with_messages=True, viewer_id=request.user.id
+                )
+            }
+        )
+
+
+class ConversationNoteView(ConversationViewBase):
+    required_capability = "conversations.operate"
+
+    def post(self, request: Request, conversation_id: int) -> Response:
+        try:
+            conversation = self._conversation(
+                request, conversation_id, self.required_capability
+            )
+        except Conversation.DoesNotExist:
+            return Response({"detail": "Диалог не найден"}, status=404)
+        note = str(request.data.get("note", ""))
+        if len(note) > 4000:
+            return Response({"detail": "Заметка длиннее 4000 символов"}, status=400)
+        conversation.note = note
+        conversation.save(update_fields=["note"])
+        return Response(
+            {
+                "conversation": conversation_payload(
+                    conversation, with_messages=True, viewer_id=request.user.id
+                )
+            }
+        )
+
+
+class ConversationLabelsView(ConversationViewBase):
+    """Полная замена набора меток диалога (чипы в карточке)."""
+
+    required_capability = "conversations.operate"
+
+    def post(self, request: Request, conversation_id: int) -> Response:
+        try:
+            conversation = self._conversation(
+                request, conversation_id, self.required_capability
+            )
+        except Conversation.DoesNotExist:
+            return Response({"detail": "Диалог не найден"}, status=404)
+        label_ids = request.data.get("labelIds")
+        if not isinstance(label_ids, list) or not all(
+            isinstance(item, int) for item in label_ids
+        ):
+            return Response({"detail": "labelIds must be a list of ids"}, status=400)
+        labels = list(
+            ConversationLabel.objects.filter(
+                organization_id=request.tenant_context.organization_id,
+                id__in=set(label_ids),
+            )
+        )
+        if len(labels) != len(set(label_ids)):
+            return Response({"detail": "Неизвестная метка"}, status=400)
+        conversation.labels.set(labels)
+        return Response(
+            {
+                "conversation": conversation_payload(
+                    conversation, with_messages=True, viewer_id=request.user.id
+                )
+            }
+        )
+
+
+class ConversationArchiveView(ConversationViewBase):
+    """«Удалить диалог» = архив: скрыт из списков, восстановить может только
+    администратор."""
+
+    required_capability = "conversations.operate"
+
+    def post(self, request: Request, conversation_id: int) -> Response:
+        try:
+            conversation = self._conversation(
+                request, conversation_id, self.required_capability
+            )
+        except Conversation.DoesNotExist:
+            return Response({"detail": "Диалог не найден"}, status=404)
+        archived = request.data.get("archived")
+        if not isinstance(archived, bool):
+            return Response({"detail": "archived must be a boolean"}, status=400)
+        if not archived and not can_administer_access(request.tenant_context.membership):
+            return Response(
+                {"detail": "Восстановить диалог может только администратор"}, status=403
+            )
+        conversation.archived_at = timezone.now() if archived else None
+        conversation.save(update_fields=["archived_at"])
+        self._audit(request, "archived" if archived else "unarchived", conversation)
+        return Response(
+            {
+                "conversation": conversation_payload(
+                    conversation, with_messages=True, viewer_id=request.user.id
+                )
+            }
+        )
+
+
+class ConversationCountersView(ConversationViewBase):
+    """Счётчики для дерева фильтров (сайдбар сотрудника / охват админа)."""
+
+    def get(self, request: Request) -> Response:
+        # Чистый queryset без инбокс-аннотаций: values().annotate() иначе
+        # группировал бы по _last_message_at.
+        base = (
+            apply_conversation_visibility(
+                Conversation.objects.filter(
+                    organization_id=request.tenant_context.organization_id
+                ),
+                request.tenant_context,
+            )
+            .filter(archived_at__isnull=True)
+            .exclude(lifecycle=LifecycleState.SPAM)
+            .order_by()
+        )
+        open_qs = base.filter(lifecycle=LifecycleState.OPEN)
+        groups = [
+            {"id": row["group_id"], "name": row["group__name"], "count": row["count"]}
+            for row in open_qs.filter(group__isnull=False)
+            .values("group_id", "group__name")
+            .annotate(count=Count("id"))
+            .order_by("group__name")
+        ]
+        ungrouped = open_qs.filter(group__isnull=True).count()
+        agents = [
+            {
+                "id": row["channel_id"],
+                "name": row["channel__name"],
+                "count": row["count"],
+            }
+            for row in open_qs.values("channel_id", "channel__name")
+            .annotate(count=Count("id"))
+            .order_by("channel__name")
+        ]
+        return Response(
+            {
+                "all": open_qs.count(),
+                "waiting": open_qs.filter(control_mode=ControlMode.PAUSED).count(),
+                "mine": base.filter(assigned_operator_id=request.user.id).count(),
+                "ungrouped": ungrouped,
+                "groups": groups,
+                "agents": agents,
+            }
+        )
+
+
+class LabelListView(APIView):
+    """Словарь меток организации. Создание — лёгкое действие оператора
+    («+ Добавить» в карточке), правка/удаление — администратора."""
+
+    permission_classes = [HasCapability]
+    required_capabilities = {
+        "GET": "conversations.view",
+        "POST": "conversations.operate",
+    }
+
+    def get(self, request: Request) -> Response:
+        labels = ConversationLabel.objects.filter(
+            organization_id=request.tenant_context.organization_id
+        )
+        return Response({"items": [_label_payload(label) for label in labels]})
+
+    def post(self, request: Request) -> Response:
+        name = str(request.data.get("name", "")).strip()
+        color = str(request.data.get("color", "")).strip()
+        if not name or len(name) > 60:
+            return Response({"detail": "Название метки: 1-60 символов"}, status=400)
+        if len(color) > 20:
+            return Response({"detail": "Некорректный цвет"}, status=400)
+        existing = ConversationLabel.objects.filter(
+            organization_id=request.tenant_context.organization_id, name__iexact=name
+        ).first()
+        if existing is not None:
+            return Response({"label": _label_payload(existing)})
+        label = ConversationLabel.objects.create(
+            organization_id=request.tenant_context.organization_id,
+            name=name,
+            color=color,
+        )
+        return Response({"label": _label_payload(label)}, status=201)
+
+
+class LabelDetailView(APIView):
+    permission_classes = [HasCapability]
+    required_capabilities = {"PATCH": "settings.manage", "DELETE": "settings.manage"}
+
+    def _label(self, request: Request, label_id: int) -> ConversationLabel:
+        return ConversationLabel.objects.get(
+            organization_id=request.tenant_context.organization_id, id=label_id
+        )
+
+    def patch(self, request: Request, label_id: int) -> Response:
+        try:
+            label = self._label(request, label_id)
+        except ConversationLabel.DoesNotExist:
+            return Response({"detail": "Метка не найдена"}, status=404)
+        if "name" in request.data:
+            name = str(request.data.get("name", "")).strip()
+            if not name or len(name) > 60:
+                return Response({"detail": "Название метки: 1-60 символов"}, status=400)
+            label.name = name
+        if "color" in request.data:
+            color = str(request.data.get("color", "")).strip()
+            if len(color) > 20:
+                return Response({"detail": "Некорректный цвет"}, status=400)
+            label.color = color
+        label.save()
+        return Response({"label": _label_payload(label)})
+
+    def delete(self, request: Request, label_id: int) -> Response:
+        try:
+            label = self._label(request, label_id)
+        except ConversationLabel.DoesNotExist:
+            return Response({"detail": "Метка не найдена"}, status=404)
+        label.delete()
+        return Response(status=204)
+
+
+class ReplyTemplateListView(APIView):
+    permission_classes = [HasCapability]
+    required_capabilities = {
+        "GET": "conversations.view",
+        "POST": "settings.manage",
+    }
+
+    def get(self, request: Request) -> Response:
+        templates = ReplyTemplate.objects.filter(
+            organization_id=request.tenant_context.organization_id
+        )
+        return Response({"items": [_template_payload(item) for item in templates]})
+
+    def post(self, request: Request) -> Response:
+        title = str(request.data.get("title", "")).strip()
+        text = str(request.data.get("text", "")).strip()
+        if not title or len(title) > 120:
+            return Response({"detail": "Название шаблона: 1-120 символов"}, status=400)
+        if not text:
+            return Response({"detail": "Текст шаблона обязателен"}, status=400)
+        if ReplyTemplate.objects.filter(
+            organization_id=request.tenant_context.organization_id, title__iexact=title
+        ).exists():
+            return Response({"detail": "Шаблон с таким названием уже есть"}, status=409)
+        template = ReplyTemplate.objects.create(
+            organization_id=request.tenant_context.organization_id,
+            title=title,
+            text=text,
+        )
+        return Response({"template": _template_payload(template)}, status=201)
+
+
+class ReplyTemplateDetailView(APIView):
+    permission_classes = [HasCapability]
+    required_capabilities = {"PATCH": "settings.manage", "DELETE": "settings.manage"}
+
+    def _template(self, request: Request, template_id: int) -> ReplyTemplate:
+        return ReplyTemplate.objects.get(
+            organization_id=request.tenant_context.organization_id, id=template_id
+        )
+
+    def patch(self, request: Request, template_id: int) -> Response:
+        try:
+            template = self._template(request, template_id)
+        except ReplyTemplate.DoesNotExist:
+            return Response({"detail": "Шаблон не найден"}, status=404)
+        if "title" in request.data:
+            title = str(request.data.get("title", "")).strip()
+            if not title or len(title) > 120:
+                return Response({"detail": "Название шаблона: 1-120 символов"}, status=400)
+            template.title = title
+        if "text" in request.data:
+            text = str(request.data.get("text", "")).strip()
+            if not text:
+                return Response({"detail": "Текст шаблона обязателен"}, status=400)
+            template.text = text
+        template.save()
+        return Response({"template": _template_payload(template)})
+
+    def delete(self, request: Request, template_id: int) -> Response:
+        try:
+            template = self._template(request, template_id)
+        except ReplyTemplate.DoesNotExist:
+            return Response({"detail": "Шаблон не найден"}, status=404)
+        template.delete()
+        return Response(status=204)

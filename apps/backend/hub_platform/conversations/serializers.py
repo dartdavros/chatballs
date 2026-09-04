@@ -155,6 +155,21 @@ def conversation_payload(
         "isAssignedToViewer": bool(
             viewer_id and conversation.assigned_operator_id == viewer_id
         ),
+        "group": (
+            {"id": conversation.group_id, "name": conversation.group.name}
+            if conversation.group_id
+            else None
+        ),
+        # Дизайн-базлайн v2: приоритет, метки, заметка, архив.
+        "priority": conversation.priority,
+        "labels": [
+            {"id": label.id, "name": label.name, "color": label.color}
+            for label in conversation.labels.all()
+        ],
+        "note": conversation.note,
+        "archivedAt": (
+            conversation.archived_at.isoformat() if conversation.archived_at else None
+        ),
         "lastActivityAt": conversation.last_activity_at.isoformat(),
         "createdAt": conversation.created_at.isoformat(),
     }

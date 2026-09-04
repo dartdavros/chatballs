@@ -17,6 +17,7 @@ def conversations_for_context(context: TenantContext) -> QuerySet[Conversation]:
             "support_identity_snapshot",
             "group",
         )
+        .prefetch_related("labels")
         # Инбокс сортируется по времени последнего сообщения (а не по служебной
         # активности вроде claim/takeover); fallback — last_activity_at для
         # диалогов без сообщений.

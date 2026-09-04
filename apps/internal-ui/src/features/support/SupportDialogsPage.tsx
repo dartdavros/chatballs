@@ -1,10 +1,10 @@
 import { useState } from "react";
 
 import { ConversationWorkspace } from "../conversations/ConversationWorkspace";
-import type { SessionUser } from "../../types";
+import type { EmployeeGroup, SessionUser } from "../../types";
 import { SupportContextPanel, type SupportRightTab } from "./context/SupportContextPanel";
 
-export function SupportDialogsPage({ initialConversationId, user }: { initialConversationId?: number | null; user: SessionUser }) {
+export function SupportDialogsPage({ initialConversationId, user, groups = [], employees = [] }: { initialConversationId?: number | null; user: SessionUser; groups?: EmployeeGroup[]; employees?: Array<{ id: number; name: string }> }) {
   const [rightTab, setRightTab] = useState<SupportRightTab>("client");
   return (
     <ConversationWorkspace
@@ -12,8 +12,8 @@ export function SupportDialogsPage({ initialConversationId, user }: { initialCon
       listTitle="Обращения"
       searchPlaceholder="Поиск по клиенту, продукту…"
       initialConversationId={initialConversationId}
-      renderContextPanel={({ detail }) => (
-        <SupportContextPanel rightTab={rightTab} setRightTab={setRightTab} detail={detail} />
+      renderContextPanel={({ detail, applyConversation }) => (
+        <SupportContextPanel rightTab={rightTab} setRightTab={setRightTab} detail={detail} groups={groups} employees={employees} applyConversation={applyConversation} />
       )}
     />
   );

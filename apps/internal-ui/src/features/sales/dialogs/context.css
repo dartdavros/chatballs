@@ -395,3 +395,182 @@
   line-height: 1.45;
 }
 
+
+/* --- Блок «Диалог» контекст-панели (дизайн-базлайн v2 §5) --- */
+
+.dialog-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dialog-controls-error {
+  margin: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--error-border);
+  border-radius: 8px;
+  background: var(--error-bg);
+  color: var(--error-text);
+  font-size: 12px;
+}
+
+.dialog-controls-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.dialog-controls-field > span {
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.dialog-controls-field > b {
+  color: var(--text-body);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.dialog-controls-field select,
+.dialog-controls-field textarea,
+.dialog-controls-new-label input {
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid var(--border-input);
+  border-radius: 8px;
+  background: var(--surface-card);
+  color: var(--text-body);
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.dialog-controls-field textarea {
+  resize: vertical;
+  line-height: 1.45;
+}
+
+.dialog-controls-priority {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dialog-controls-priority select {
+  flex: 1;
+}
+
+.sales-priority-bars {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 11px;
+  flex: none;
+}
+
+.sales-priority-bars i {
+  display: block;
+  width: 3px;
+  border-radius: 1px;
+}
+
+.dialog-controls-labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  align-items: center;
+}
+
+.sales-dialog-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 22px;
+  padding: 0 7px;
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+  background: var(--surface-card);
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  font-weight: 500;
+}
+
+.sales-dialog-label i {
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+  flex: none;
+}
+
+.sales-dialog-label button {
+  border: none;
+  background: transparent;
+  color: var(--text-disabled);
+  cursor: pointer;
+  padding: 0 2px;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.sales-dialog-label button:hover {
+  color: var(--text-body);
+}
+
+.dialog-controls-add-label {
+  width: auto !important;
+  padding: 3px 6px !important;
+  font-size: 12px !important;
+}
+
+.dialog-controls-new-label {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.dialog-controls-new-label button {
+  flex: none;
+  padding: 0 12px;
+  border: 1px solid var(--border-input);
+  border-radius: 8px;
+  background: var(--surface-card);
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.dialog-controls-new-label button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.dialog-controls-note-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.dialog-controls-note-actions button {
+  padding: 5px 12px;
+  border: 1px solid var(--border-input);
+  border-radius: 8px;
+  background: var(--surface-card);
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.dialog-controls-note-actions button.primary {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: #fff;
+}
+
+.sales-dialog-row-badges {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-top: 3px;
+}

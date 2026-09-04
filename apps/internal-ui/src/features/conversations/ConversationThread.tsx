@@ -14,7 +14,7 @@ function fmtTime(value: string): string {
   return new Date(value).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
 }
 
-export function ConversationThread({ controlMode, dialog, detail, isOwner = false, onClaim, onCall, onClose, onSpam }: { controlMode: ControlMode; dialog: ConversationListItem | null; detail: ApiConversation | null; isOwner?: boolean; onClaim: () => void; onCall: (kind: "AUDIO" | "VIDEO") => void; onClose: () => void; onSpam: () => Promise<boolean> }) {
+export function ConversationThread({ controlMode, dialog, detail, isOwner = false, onClaim, onCall, onClose, onSpam, onReturnQueue, onArchive }: { controlMode: ControlMode; dialog: ConversationListItem | null; detail: ApiConversation | null; isOwner?: boolean; onClaim: () => void; onCall: (kind: "AUDIO" | "VIDEO") => void; onClose: () => void; onSpam: () => Promise<boolean>; onReturnQueue: () => void; onArchive: () => Promise<boolean> }) {
   const timelineRef = useRef<HTMLDivElement>(null);
   const messages = detail?.messages ?? [];
   const lastMessageId = messages.length ? messages[messages.length - 1].id : 0;
@@ -54,7 +54,7 @@ export function ConversationThread({ controlMode, dialog, detail, isOwner = fals
               <IconButton icon="video" label="Запросить видеозвонок" className="is-video" onClick={() => onCall("VIDEO")} />
             </>
           )}
-          <ConversationActions open={detail?.lifecycle === "OPEN"} onClose={onClose} onSpam={onSpam} />
+          <ConversationActions open={detail?.lifecycle === "OPEN"} canReturnQueue={controlMode === "human"} onClose={onClose} onSpam={onSpam} onReturnQueue={onReturnQueue} onArchive={onArchive} />
         </div>
       </div>
       <div className="sales-timeline" ref={timelineRef}>

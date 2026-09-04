@@ -4,7 +4,9 @@ import { providerMeta } from "../../../../shared/providers";
 import { FieldRow } from "../../../conversations/FieldRow";
 import { ContextSection } from "../../../conversations/ContextSection";
 import { requestContact, type ApiConversation } from "../../../conversations/model";
+import { DialogControls } from "../../../conversations/DialogControls";
 import type { ConversationListItem } from "../../../conversations/types";
+import type { EmployeeGroupRef } from "../../../../types";
 
 const LIFECYCLE_LABEL: Record<string, string> = { OPEN: "Открыт", CLOSED: "Закрыт", SPAM: "Спам" };
 const CONTROL_LABEL: Record<string, string> = { AI: "AI ведёт", HUMAN: "Человек", PAUSED: "Пауза" };
@@ -14,7 +16,7 @@ function fmt(value?: string): string {
   return new Date(value).toLocaleString("ru-RU", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
 }
 
-export function ClientContext({ dialog, detail }: { dialog: ConversationListItem | null; detail: ApiConversation | null }) {
+export function ClientContext({ dialog, detail, groups = [], employees = [], applyConversation }: { dialog: ConversationListItem | null; detail: ApiConversation | null; groups?: EmployeeGroupRef[]; employees?: Array<{ id: number; name: string }>; applyConversation?: (updated: ApiConversation) => void }) {
   const [requesting, setRequesting] = useState(false);
   const [justRequested, setJustRequested] = useState(false);
   const [requestError, setRequestError] = useState(false);
@@ -79,7 +81,16 @@ export function ClientContext({ dialog, detail }: { dialog: ConversationListItem
         <FieldRow dot={channel.color} title={channel.label} text={detail?.connection?.name ?? "—"} note={dialog.product} />
       </ContextSection>
 
-      <ContextSection title="ДИАЛОГ">
+      {detail && applyConversation && (
+        <DialogControls
+          detail={detail}
+          groups={groups}
+          employees={employees}
+          applyConversation={applyConversation}
+        />
+      )}
+
+      <ContextSection title="СВЕДЕНИЯ">
         <div className="sales-summary-grid">
           <div><span>Статус</span><b>{LIFECYCLE_LABEL[detail?.lifecycle ?? ""] ?? "—"}</b></div>
           <div><span>Режим</span><b>{CONTROL_LABEL[detail?.controlMode ?? ""] ?? "—"}</b></div>

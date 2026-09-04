@@ -50,6 +50,38 @@ class LifecycleState(models.TextChoices):
     SPAM = "SPAM", "Спам"
 
 
+class ConversationPriority(models.TextChoices):
+    # Приоритет диалога (дизайн-базлайн v2, решение владельца 2026-09-04).
+    HIGH = "HIGH", "Высокий"
+    MEDIUM = "MEDIUM", "Средний"
+    LOW = "LOW", "Низкий"
+    NONE = "NONE", "Не задан"
+
+
+class ConversationLabel(models.Model):
+    """Метка диалога: цветной чип, общий словарь организации."""
+
+    organization = models.ForeignKey(
+        "identity.Organization", on_delete=models.PROTECT, related_name="conversation_labels"
+    )
+    name = models.CharField(max_length=60)
+    # HEX-цвет чипа; палитру предлагает клиент.
+    color = models.CharField(max_length=20, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["name"]
+        constraints = [
+            models.UniqueConstraint(
+                models.functions.Lower("name"), "organization",
+                name="uniq_conversation_label_org_name_ci",
+            )
+        ]
+
+    def __str__(self) -> str:
+        return f"label:{self.organization_id}/{self.name}"
+
+
 class ControlMode(models.TextChoices):
     AI = "AI", "AI"
     HUMAN = "HUMAN", "Оператор"
@@ -97,6 +129,15 @@ class Conversation(models.Model):
     )
     # «Ответственный» (ADR-HUB-0043): видит диалог независимо от групп.
     assigned_operator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="assigned_conversations")
+    # Дизайн-базлайн v2: приоритет, метки и заметка оператора.
+    priority = models.CharField(
+        max_length=8, choices=ConversationPriority.choices, default=ConversationPriority.NONE
+    )
+    labels = models.ManyToManyField(ConversationLabel, blank=True, related_name="conversations")
+    note = models.TextField(blank=True)
+    # «Удалить диалог» = архив (решение владельца): скрыт из списков, видят
+    # только администраторы; данные не удаляются.
+    archived_at = models.DateTimeField(null=True, blank=True)
     previous_conversation = models.ForeignKey("self", on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
     created_at = models.DateTimeField(auto_now_add=True)
     last_activity_at = models.DateTimeField(auto_now_add=True, db_index=True)
@@ -171,3 +212,28 @@ class Message(TenantRelationModel):
 
     def __str__(self) -> str:
         return f"msg:{self.conversation_id}/{self.author_type}"
+
+
+class ReplyTemplate(models.Model):
+    """Шаблон ответа оператора («/» в композере). Общий на организацию:
+    редактируют администраторы, используют все сотрудники."""
+
+    organization = models.ForeignKey(
+        "identity.Organization", on_delete=models.PROTECT, related_name="reply_templates"
+    )
+    title = models.CharField(max_length=120)
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["title"]
+        constraints = [
+            models.UniqueConstraint(
+                models.functions.Lower("title"), "organization",
+                name="uniq_reply_template_org_title_ci",
+            )
+        ]
+
+    def __str__(self) -> str:
+        return f"template:{self.organization_id}/{self.title}"

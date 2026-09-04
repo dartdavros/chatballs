@@ -38,6 +38,21 @@ export type OperatorCard = {
   fields: OperatorCardField[];
 };
 
+export type ConversationPriority = "HIGH" | "MEDIUM" | "LOW" | "NONE";
+
+export type ConversationLabelRef = { id: number; name: string; color: string };
+
+export type ConversationCounters = {
+  all: number;
+  waiting: number;
+  mine: number;
+  ungrouped: number;
+  groups: Array<{ id: number; name: string; count: number }>;
+  agents: Array<{ id: number; name: string; count: number }>;
+};
+
+export type ReplyTemplateRef = { id: number; title: string; text: string; updatedAt: string };
+
 export type ApiConversation = {
   id: number;
   channel: { code: string; name: string; product: { code: string; name: string } | null };
@@ -53,6 +68,12 @@ export type ApiConversation = {
   assignedOperatorId: number | null;
   assignedOperator: { id: number; name: string } | null;
   isAssignedToViewer: boolean;
+  group: { id: number; name: string } | null;
+  // Дизайн-базлайн v2: приоритет, метки, заметка, архив.
+  priority: ConversationPriority;
+  labels: ConversationLabelRef[];
+  note: string;
+  archivedAt: string | null;
   lastActivityAt: string;
   createdAt: string;
   lastMessage: ApiMessage | null;
@@ -116,13 +137,36 @@ export function toConversationListItem(conversation: ApiConversation): Conversat
     preview: conversation.lastMessage?.text.replace(/\s+/g, " ").slice(0, 80) ?? "—",
     time: new Date(conversation.lastActivityAt).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }),
     unread: conversation.pendingCount ?? 0,
+    isMine: conversation.isAssignedToViewer,
+    priority: conversation.priority ?? "NONE",
+    labels: conversation.labels ?? [],
   };
 }
 
 // Видимость inbox решает backend (ADR-HUB-0043): группы сотрудника + без группы
-// + назначенные ему; владелец и админ видят всё.
-export const fetchConversations = () =>
-  api<{ items: ApiConversation[] }>("/api/v1/conversations/").then((r) => r.items);
+// + назначенные ему; владелец и админ видят всё. Фильтры — серверные.
+export type ConversationListFilters = Partial<{
+  group: string; // id | "none"
+  agent: number; // id канала-агента
+  assigned: "me";
+  waiting: boolean;
+  lifecycle: "OPEN" | "CLOSED" | "SPAM";
+  archived: boolean;
+  q: string;
+}>;
+
+export const fetchConversations = (filters: ConversationListFilters = {}) => {
+  const params = new URLSearchParams();
+  if (filters.group) params.set("group", filters.group);
+  if (filters.agent) params.set("agent", String(filters.agent));
+  if (filters.assigned) params.set("assigned", filters.assigned);
+  if (filters.waiting) params.set("waiting", "1");
+  if (filters.lifecycle) params.set("lifecycle", filters.lifecycle);
+  if (filters.archived) params.set("archived", "1");
+  if (filters.q) params.set("q", filters.q);
+  const suffix = params.size ? `?${params.toString()}` : "";
+  return api<{ items: ApiConversation[] }>(`/api/v1/conversations/${suffix}`).then((r) => r.items);
+};
 export const fetchConversation = (id: number) => api<{ conversation: ApiConversation }>(`/api/v1/conversations/${id}/`).then((r) => r.conversation);
 export const claimConversation = (id: number) => api<{ conversation: ApiConversation }>(`/api/v1/conversations/${id}/claim/`, { method: "POST" }).then((r) => r.conversation);
 export const releaseConversation = (id: number) => api<{ conversation: ApiConversation }>(`/api/v1/conversations/${id}/release/`, { method: "POST" }).then((r) => r.conversation);
@@ -135,6 +179,39 @@ export const markConversationAsSpam = (id: number) => api<{ conversation: ApiCon
 // Бейдж ожидающих диалогов. ConversationStatsView сейчас sales-only (SPEC §12:
 // support-метрики — отдельный endpoint); department-параметр backend не использует.
 export const fetchWaitingCount = () => api<{ waiting: number }>("/api/v1/conversations/stats/").then((r) => r.waiting);
+
+// --- Дизайн-базлайн v2: карточка «Диалог», метки, шаблоны, счётчики ---
+
+const conversationAction = (id: number, suffix: string, body: object) =>
+  api<{ conversation: ApiConversation }>(`/api/v1/conversations/${id}/${suffix}/`, {
+    method: "POST",
+    body: JSON.stringify(body),
+  }).then((r) => r.conversation);
+
+export const setConversationPriority = (id: number, priority: ConversationPriority) =>
+  conversationAction(id, "priority", { priority });
+export const setConversationNote = (id: number, note: string) =>
+  conversationAction(id, "note", { note });
+export const setConversationLabels = (id: number, labelIds: number[]) =>
+  conversationAction(id, "labels", { labelIds });
+export const setConversationArchived = (id: number, archived: boolean) =>
+  conversationAction(id, "archive", { archived });
+export const setConversationGroup = (id: number, groupId: number | null) =>
+  conversationAction(id, "group", { groupId });
+export const setConversationAssignee = (id: number, userId: number | null) =>
+  conversationAction(id, "assignee", { userId });
+
+export const fetchConversationCounters = () =>
+  api<ConversationCounters>("/api/v1/conversations/counters/");
+export const fetchConversationLabels = () =>
+  api<{ items: ConversationLabelRef[] }>("/api/v1/conversations/labels/").then((r) => r.items);
+export const createConversationLabel = (name: string, color = "") =>
+  api<{ label: ConversationLabelRef }>("/api/v1/conversations/labels/", {
+    method: "POST",
+    body: JSON.stringify({ name, color }),
+  }).then((r) => r.label);
+export const fetchReplyTemplates = () =>
+  api<{ items: ReplyTemplateRef[] }>("/api/v1/conversations/templates/").then((r) => r.items);
 
 // --- Онлайн-звонки (SPEC-HUB-0013): запрос из диалога, ожидание, отмена ---
 

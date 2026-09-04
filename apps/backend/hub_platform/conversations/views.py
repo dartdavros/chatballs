@@ -22,20 +22,49 @@ from hub_platform.conversations.services import (
 from hub_platform.conversations.view_base import ConversationViewBase
 from hub_platform.identity.group_models import EmployeeGroup
 from hub_platform.identity.models import OrganizationMembership
-from hub_platform.identity.policy import ResourceScope, authorize
+from hub_platform.identity.policy import ResourceScope, authorize, can_administer_access
 
 
 class ConversationListView(ConversationViewBase):
     def get(self, request: Request) -> Response:
+        from django.db.models import Q
+
+        params = request.query_params
         items = visible_conversations_for(request.tenant_context)
-        group = request.query_params.get("group")
+        # «Удалённые» (архив) скрыты; просмотр архива — только администратор.
+        if params.get("archived") == "1":
+            if not can_administer_access(request.tenant_context.membership):
+                return Response({"detail": "Архив доступен администраторам"}, status=403)
+            items = items.filter(archived_at__isnull=False)
+        else:
+            items = items.filter(archived_at__isnull=True)
+        group = params.get("group")
         if group == "none":
             items = items.filter(group__isnull=True)
         elif group:
             items = items.filter(group_id=group)
-        lifecycle = request.query_params.get("lifecycle")
+        agent = params.get("agent")
+        if agent:
+            items = items.filter(channel_id=agent)
+        lifecycle = params.get("lifecycle")
         if lifecycle:
             items = items.filter(lifecycle=lifecycle)
+        else:
+            # Спам не показывается в обычных вкладках (дизайн-базлайн v2).
+            items = items.exclude(lifecycle=LifecycleState.SPAM)
+        if params.get("assigned") == "me":
+            items = items.filter(assigned_operator_id=request.user.id)
+        if params.get("waiting") == "1":
+            items = items.filter(
+                lifecycle=LifecycleState.OPEN, control_mode=ControlMode.PAUSED
+            )
+        query = params.get("q", "").strip()
+        if query:
+            items = items.filter(
+                Q(contact__name__icontains=query)
+                | Q(support_identity_snapshot__display_name__icontains=query)
+                | Q(messages__text__icontains=query)
+            ).distinct()
         items = list(items)
         # Отметки прочтения просматривающего: бейдж считается персонально.
         read_map = dict(

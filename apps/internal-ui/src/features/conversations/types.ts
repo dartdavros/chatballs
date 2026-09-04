@@ -3,7 +3,7 @@
 
 export type DialogMode = "ai" | "closed" | "operator" | "wait";
 export type ControlMode = "ai" | "assigned" | "closed" | "human" | "waiting";
-export type ListTab = "ai" | "all" | "operator" | "unread" | "wait";
+export type ListTab = "all" | "mine" | "wait";
 export type ChannelKey = "EMAIL" | "MAX" | "TG" | "WEB";
 
 // Элемент списка диалогов (бывш. SalesDialog). Полностью generic.
@@ -20,6 +20,10 @@ export type ConversationListItem = {
   preview: string;
   time: string;
   unread: number;
+  // Дизайн-базлайн v2: вкладка «Мои», приоритет и бейджи строки.
+  isMine: boolean;
+  priority: "HIGH" | "MEDIUM" | "LOW" | "NONE";
+  labels: Array<{ id: number; name: string; color: string }>;
 };
 
 export type StatusInfo = {

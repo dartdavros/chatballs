@@ -37,7 +37,6 @@ export function ShellRouteContent({ route, data, currentEmployee, selectedProduc
       {route === "profile" && <ProfilePage user={user} onUserUpdated={onUserUpdated} reload={reload} onLogout={onLogout} />}
       {route === "settings" && <SettingsPage user={user} onUserUpdated={onUserUpdated} reload={reload} />}
       {(route === "administrationOrganization"
-        || route === "administrationSubscription"
         || route === "administrationAudit") && (
         <AdministrationPage
           route={route}
@@ -48,8 +47,8 @@ export function ShellRouteContent({ route, data, currentEmployee, selectedProduc
       {route === "salesClients" && <SalesClientsPage openClient={openClient} />}
       {route === "salesClientDetail" && <SalesClientDetailPage contactId={selectedClientId} openConversation={openConversation} />}
       {route === "supportOverview" && <SupportOverviewPage />}
-      {route === "supportDialogs" && <SupportDialogsPage initialConversationId={selectedConversationId} user={user} />}
-      {route === "salesDialogs" && <SalesDialogsPage initialConversationId={selectedConversationId} user={user} />}
+      {route === "supportDialogs" && <SupportDialogsPage initialConversationId={selectedConversationId} user={user} groups={data.groups} employees={dialogAssignees(data)} />}
+      {route === "salesDialogs" && <SalesDialogsPage initialConversationId={selectedConversationId} user={user} groups={data.groups} employees={dialogAssignees(data)} />}
       {route === "agents" && <AgentsPage agents={data.agents} groups={data.groups} reload={reload} openAgent={openAgent} />}
       {route === "agentDetail" && (
         <AgentDetailPage
@@ -72,4 +71,12 @@ export function ShellRouteContent({ route, data, currentEmployee, selectedProduc
       {route === "supportPortalDetail" && <Suspense fallback={<LoadingState />}><SupportPortalDetailPage portalId={selectedSupportPortalId} products={data.products} user={user} openPortals={() => setRoute("supportPortals")} /></Suspense>}
     </>
   );
+}
+
+// Кандидаты в «Ответственные»: id сотрудника в employee-API — это id пользователя.
+function dialogAssignees(data: AppData): Array<{ id: number; name: string }> {
+  return data.employees.map((employee) => ({
+    id: employee.id,
+    name: employee.fullName || employee.email,
+  }));
 }

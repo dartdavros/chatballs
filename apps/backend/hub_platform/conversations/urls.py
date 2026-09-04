@@ -1,6 +1,6 @@
 from django.urls import path
 
-from hub_platform.conversations import reporting_views, views
+from hub_platform.conversations import chat_extras_views, reporting_views, views
 
 urlpatterns = [
     path("", views.ConversationListView.as_view(), name="conversation-list"),
@@ -18,4 +18,13 @@ urlpatterns = [
     path("<int:conversation_id>/spam/", views.ConversationSpamView.as_view(), name="conversation-spam"),
     path("<int:conversation_id>/group/", views.ConversationGroupView.as_view(), name="conversation-group"),
     path("<int:conversation_id>/assignee/", views.ConversationAssigneeView.as_view(), name="conversation-assignee"),
+    path("<int:conversation_id>/priority/", chat_extras_views.ConversationPriorityView.as_view(), name="conversation-priority"),
+    path("<int:conversation_id>/note/", chat_extras_views.ConversationNoteView.as_view(), name="conversation-note"),
+    path("<int:conversation_id>/labels/", chat_extras_views.ConversationLabelsView.as_view(), name="conversation-labels"),
+    path("<int:conversation_id>/archive/", chat_extras_views.ConversationArchiveView.as_view(), name="conversation-archive"),
+    path("counters/", chat_extras_views.ConversationCountersView.as_view(), name="conversation-counters"),
+    path("labels/", chat_extras_views.LabelListView.as_view(), name="conversation-label-list"),
+    path("labels/<int:label_id>/", chat_extras_views.LabelDetailView.as_view(), name="conversation-label-detail"),
+    path("templates/", chat_extras_views.ReplyTemplateListView.as_view(), name="reply-template-list"),
+    path("templates/<int:template_id>/", chat_extras_views.ReplyTemplateDetailView.as_view(), name="reply-template-detail"),
 ]

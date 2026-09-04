@@ -12,6 +12,7 @@ import {
   fetchConversations,
   markConversationAsSpam,
   releaseConversation,
+  setConversationArchived,
   returnToQueue,
   toConversationListItem,
   type ApiConversation,
@@ -27,7 +28,7 @@ export function ConversationWorkspace({ isOwner = false, listTitle, searchPlaceh
   isOwner?: boolean;
   listTitle?: string;
   searchPlaceholder?: string;
-  renderContextPanel: (ctx: { dialog: ConversationListItem | null; detail: ApiConversation | null }) => ReactNode;
+  renderContextPanel: (ctx: { dialog: ConversationListItem | null; detail: ApiConversation | null; applyConversation: (updated: ApiConversation) => void }) => ReactNode;
   initialConversationId?: number | null;
 }) {
   const [listTab, setListTab] = useState<ListTab>("all");
@@ -100,9 +101,7 @@ export function ConversationWorkspace({ isOwner = false, listTitle, searchPlaceh
     return dialogs.filter((dialog) => {
       if (query && !`${dialog.name} ${dialog.email} ${dialog.product} ${dialog.preview}`.toLowerCase().includes(query)) return false;
       if (listTab === "wait") return dialog.mode === "wait";
-      if (listTab === "ai") return dialog.mode === "ai";
-      if (listTab === "operator") return dialog.mode === "operator";
-      if (listTab === "unread") return dialog.unread > 0;
+      if (listTab === "mine") return dialog.isMine;
       return true;
     });
   }, [dialogs, listTab, search]);
@@ -134,6 +133,12 @@ export function ConversationWorkspace({ isOwner = false, listTitle, searchPlaceh
   const onReturnQueue = () => { void updateConversation(returnToQueue); };
   const onClose = () => { void updateConversation(closeConversation); };
   const onSpam = () => updateConversation(markConversationAsSpam);
+  const onArchive = async () => {
+    const done = await updateConversation((id) => setConversationArchived(id, true));
+    // Архивный диалог исчезает из списка — снимаем выбор.
+    if (done) setSelectedId(null);
+    return done;
+  };
 
   return (
     <div className="sales-dialogs">
@@ -151,7 +156,7 @@ export function ConversationWorkspace({ isOwner = false, listTitle, searchPlaceh
         setSelectedId={setSelectedId}
       />
       <section className="sales-conversation">
-        <ConversationThread controlMode={controlMode} dialog={selectedDialog} detail={detail} isOwner={isOwner} onClaim={onClaim} onCall={(kind) => void callController.start(kind)} onClose={onClose} onSpam={onSpam} />
+        <ConversationThread controlMode={controlMode} dialog={selectedDialog} detail={detail} isOwner={isOwner} onClaim={onClaim} onCall={(kind) => void callController.start(kind)} onClose={onClose} onSpam={onSpam} onReturnQueue={onReturnQueue} onArchive={onArchive} />
         {(detailError || actionError) && <div className="sales-conversation-error">{detailError || actionError}</div>}
         <CallOverlay
           open={callController.open}
@@ -177,7 +182,7 @@ export function ConversationWorkspace({ isOwner = false, listTitle, searchPlaceh
           onSent={() => selectedId != null && loadDetail(selectedId)}
         />
       </section>
-      {renderContextPanel({ dialog: selectedDialog, detail })}
+      {renderContextPanel({ dialog: selectedDialog, detail, applyConversation: applyUpdated })}
     </div>
   );
 }
