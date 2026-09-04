@@ -1,4 +1,6 @@
 from django.conf import settings
+from django.contrib.postgres.indexes import GinIndex
+from django.contrib.postgres.search import SearchVector
 from django.db import models
 
 from hub_platform.tenancy.models import TenantRelationModel
@@ -235,6 +237,13 @@ class Message(TenantRelationModel):
 
     class Meta:
         ordering = ["created_at"]
+        indexes = [
+            # Полнотекстовый поиск по сообщениям (поиск в списке диалогов).
+            GinIndex(
+                SearchVector("text", config="russian"),
+                name="conv_message_text_fts",
+            ),
+        ]
 
     def __str__(self) -> str:
         return f"msg:{self.conversation_id}/{self.author_type}"

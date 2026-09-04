@@ -6,6 +6,7 @@ from hub_platform.conversations.models import (
     Conversation,
     ConversationRead,
     LifecycleState,
+    Message,
 )
 from hub_platform.conversations.selectors import visible_conversations_for
 from hub_platform.conversations.serializers import conversation_payload, message_payload
@@ -60,11 +61,22 @@ class ConversationListView(ConversationViewBase):
             )
         query = params.get("q", "").strip()
         if query:
+            from django.contrib.postgres.search import SearchQuery, SearchVector
+            from django.db.models import Exists, OuterRef
+
+            # Имена — по подстроке; тексты сообщений — полнотекстовым поиском
+            # (russian-конфиг, GIN-индекс conv_message_text_fts).
+            search = SearchQuery(query, config="russian", search_type="websearch")
+            message_match = (
+                Message.objects.filter(conversation=OuterRef("pk"))
+                .annotate(fts=SearchVector("text", config="russian"))
+                .filter(fts=search)
+            )
             items = items.filter(
                 Q(contact__name__icontains=query)
                 | Q(support_identity_snapshot__display_name__icontains=query)
-                | Q(messages__text__icontains=query)
-            ).distinct()
+                | Q(Exists(message_match))
+            )
         items = list(items)
         # Отметки прочтения просматривающего: бейдж считается персонально.
         read_map = dict(

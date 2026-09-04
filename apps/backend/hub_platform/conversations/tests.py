@@ -305,6 +305,42 @@ class ConversationReadTests(TestCase):
         self.assertEqual(self._pending(), 1)
 
 
+class ConversationSearchTests(TestCase):
+    """Поиск в списке диалогов: имена — подстрокой, тексты сообщений —
+    полнотекстово (russian, websearch)."""
+
+    def setUp(self) -> None:
+        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
+        self.organization = Organization.objects.get(slug="edevs")
+        self.channel = Channel.objects.create(organization=self.organization, code="line", name="Линия")
+        self.integration = _messenger_connection(self.channel)
+        self.client = APIClient()
+        self.client.login(username="owner@edevs.tech", password="temporary-password")
+
+    def _conversation(self, name: str, text: str) -> Conversation:
+        contact = Contact.objects.create(organization=self.organization, name=name)
+        conversation = Conversation.objects.create(
+            organization=self.organization, channel=self.channel, connection=self.integration, contact=contact
+        )
+        Message.objects.create(conversation=conversation, author_type=MessageAuthor.CONTACT, text=text)
+        return conversation
+
+    def _search(self, query: str) -> list[int]:
+        items = self.client.get(f"/api/v1/conversations/?q={query}").json()["items"]
+        return [item["id"] for item in items]
+
+    def test_fulltext_matches_message_words_with_morphology(self) -> None:
+        order = self._conversation("Мария", "Хочу оформить заказ на костюм")
+        self._conversation("Иван", "Когда работает шоурум?")
+        # Морфология: «заказы» находит «заказ».
+        self.assertEqual(self._search("заказы"), [order.id])
+
+    def test_contact_name_matches_by_substring(self) -> None:
+        maria = self._conversation("Мария Соколова", "Добрый день")
+        self._conversation("Иван", "Здравствуйте")
+        self.assertEqual(self._search("соколов"), [maria.id])
+
+
 class CommandOverviewTests(TestCase):
     """Сводка командного центра: карточки по группам, реальные метрики, доступ OWNER."""
 
