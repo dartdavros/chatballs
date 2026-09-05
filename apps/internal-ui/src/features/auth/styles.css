@@ -17,9 +17,10 @@
   width: 400px;
   max-width: 100%;
   padding: 26px 26px 24px;
-  background: color-mix(in srgb, var(--surface-card) 90%, transparent);
-  -webkit-backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
+  /* Матовое стекло поверх обоев (как палитра макета: 72% + blur 14). */
+  background: color-mix(in srgb, var(--surface-card) 72%, transparent);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
   border: 1px solid var(--n-8);
   border-radius: 14px;
   box-shadow: var(--shadow-lg);
@@ -33,8 +34,8 @@
 }
 
 .auth-logo {
-  width: 48px;
-  height: 48px;
+  width: 56px;
+  height: 56px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -43,8 +44,8 @@
 }
 
 .auth-logo svg {
-  width: 44px;
-  height: 44px;
+  width: 52px;
+  height: 52px;
 }
 
 .auth-brand h1 {
@@ -153,11 +154,9 @@
   margin: 0;
 }
 
-.password-row a {
-  color: var(--primary);
+.password-row .link {
   font-size: 12px;
   font-weight: 500;
-  text-decoration: none;
 }
 
 .auth-password {
