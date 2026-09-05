@@ -4,7 +4,7 @@ import type { RouteKey, SessionUser } from "../types";
 import { Icon, LogoIcon } from "../shared/icons";
 import { defaultRoute, isManager } from "../auth/access";
 import type { DialogScope } from "../features/conversations/ConversationWorkspace";
-import type { ConversationCounters } from "../features/conversations/model";
+import { agentColorOf, groupColorOf, type ConversationCounters } from "../features/conversations/model";
 import { LaunchChecklist } from "./LaunchChecklist";
 import { SidebarNavSection, type SidebarNavSectionItem } from "./SidebarNavSection";
 import { SidebarUserMenu } from "./SidebarUserMenu";
@@ -207,7 +207,7 @@ function ChatScopeTree({
               type="button"
               onClick={() => setScope({ kind: "group", id: group.id, label: group.name })}
             >
-              <i className="chat-scope-dot" />
+              <i className="chat-scope-dot" style={{ background: groupColorOf(group.id) }} />
               <span>{group.name}</span>
               <small>{group.count}</small>
             </button>
@@ -235,7 +235,7 @@ function ChatScopeTree({
               type="button"
               onClick={() => setScope({ kind: "agent", id: agent.id, label: agent.name })}
             >
-              <span className="chat-scope-agent"><Icon name="robot" size={11} /></span>
+              <span className="chat-scope-agent" style={{ color: agentColorOf(agent.code), background: `color-mix(in srgb, ${agentColorOf(agent.code)} 16%, var(--surface-card))` }}><Icon name="robot" size={11} /></span>
               <span>{agent.name}</span>
               <small>{agent.count}</small>
             </button>

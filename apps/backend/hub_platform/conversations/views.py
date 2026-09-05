@@ -54,8 +54,12 @@ class ConversationListView(ConversationViewBase):
         else:
             # Спам не показывается в обычных вкладках (дизайн-базлайн v2).
             items = items.exclude(lifecycle=LifecycleState.SPAM)
-        if params.get("assigned") == "me":
+        assigned = params.get("assigned")
+        if assigned == "me":
             items = items.filter(assigned_operator_id=request.user.id)
+        elif assigned and assigned.isdigit():
+            # Охват «Ответственный» в поповере админа (дизайн-базлайн v2, A1).
+            items = items.filter(assigned_operator_id=int(assigned))
         if params.get("waiting") == "1":
             items = items.filter(
                 lifecycle=LifecycleState.OPEN, control_mode=ControlMode.PAUSED

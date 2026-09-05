@@ -251,6 +251,15 @@ class CountersTests(ChatExtrasTestCase):
         admin = self.admin_client.get("/api/v1/conversations/counters/").json()
         self.assertEqual(admin["all"], 5)
         self.assertEqual(len(admin["groups"]), 2)
+        self.assertEqual(
+            admin["assignees"],
+            [{"id": self.employee.user_id, "name": "employee@chat.test", "count": 1}],
+        )
+        by_assignee = self.admin_client.get(
+            f"/api/v1/conversations/?assigned={self.employee.user_id}"
+        ).json()
+        self.assertEqual(len(by_assignee["items"]), 1)
+        self.assertEqual(by_assignee["items"][0]["assignedOperator"]["id"], self.employee.user_id)
 
 
 class ReplyTemplateTests(ChatExtrasTestCase):

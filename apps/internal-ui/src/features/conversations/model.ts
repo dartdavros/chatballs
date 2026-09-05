@@ -62,7 +62,8 @@ export type ConversationCounters = {
   mine: number;
   ungrouped: number;
   groups: Array<{ id: number; name: string; count: number }>;
-  agents: Array<{ id: number; name: string; count: number }>;
+  agents: Array<{ id: number; code: string; name: string; count: number }>;
+  assignees: Array<{ id: number; name: string; count: number }>;
 };
 
 export type ReplyTemplateRef = { id: number; title: string; text: string; updatedAt: string };
@@ -218,7 +219,7 @@ export function toConversationListItem(conversation: ApiConversation): Conversat
 export type ConversationListFilters = Partial<{
   group: string; // id | "none"
   agent: number; // id канала-агента
-  assigned: "me";
+  assigned: "me" | number;
   waiting: boolean;
   lifecycle: "OPEN" | "CLOSED" | "SPAM";
   archived: boolean;
@@ -229,7 +230,7 @@ export const fetchConversations = (filters: ConversationListFilters = {}) => {
   const params = new URLSearchParams();
   if (filters.group) params.set("group", filters.group);
   if (filters.agent) params.set("agent", String(filters.agent));
-  if (filters.assigned) params.set("assigned", filters.assigned);
+  if (filters.assigned) params.set("assigned", String(filters.assigned));
   if (filters.waiting) params.set("waiting", "1");
   if (filters.lifecycle) params.set("lifecycle", filters.lifecycle);
   if (filters.archived) params.set("archived", "1");

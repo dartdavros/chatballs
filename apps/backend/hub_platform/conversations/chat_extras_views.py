@@ -188,12 +188,25 @@ class ConversationCountersView(ConversationViewBase):
         agents = [
             {
                 "id": row["channel_id"],
+                "code": row["channel__code"],
                 "name": row["channel__name"],
                 "count": row["count"],
             }
-            for row in open_qs.values("channel_id", "channel__name")
+            for row in open_qs.values("channel_id", "channel__code", "channel__name")
             .annotate(count=Count("id"))
             .order_by("channel__name")
+        ]
+        # Секция «Ответственный» поповера охвата (A1): кто сколько ведёт.
+        assignees = [
+            {
+                "id": row["assigned_operator_id"],
+                "name": row["assigned_operator__full_name"] or row["assigned_operator__email"],
+                "count": row["count"],
+            }
+            for row in open_qs.filter(assigned_operator__isnull=False)
+            .values("assigned_operator_id", "assigned_operator__full_name", "assigned_operator__email")
+            .annotate(count=Count("id"))
+            .order_by("-count", "assigned_operator__full_name")
         ]
         return Response(
             {
@@ -203,6 +216,7 @@ class ConversationCountersView(ConversationViewBase):
                 "ungrouped": ungrouped,
                 "groups": groups,
                 "agents": agents,
+                "assignees": assignees,
             }
         )
 

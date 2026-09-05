@@ -23,12 +23,14 @@ export type DialogScope =
   | { kind: "all" }
   | { kind: "group"; id: number; label: string }
   | { kind: "ungrouped" }
-  | { kind: "agent"; id: number; label: string };
+  | { kind: "agent"; id: number; label: string }
+  | { kind: "assignee"; id: number; label: string };
 
 function scopeFilters(scope: DialogScope): ConversationListFilters {
   if (scope.kind === "group") return { group: String(scope.id) };
   if (scope.kind === "ungrouped") return { group: "none" };
   if (scope.kind === "agent") return { agent: scope.id };
+  if (scope.kind === "assignee") return { assigned: scope.id };
   return {};
 }
 
@@ -36,6 +38,7 @@ export function scopeLabel(scope: DialogScope): string {
   if (scope.kind === "group") return scope.label;
   if (scope.kind === "ungrouped") return "Без группы";
   if (scope.kind === "agent") return scope.label;
+  if (scope.kind === "assignee") return scope.label;
   return "Все диалоги";
 }
 import type { ConversationListItem, ListTab } from "./types";
@@ -226,6 +229,7 @@ export function ConversationWorkspace({ isOwner = false, viewerId = null, listTi
   return (
     <div className={`sales-dialogs ${ctxOpen ? "is-ctx-open" : ""} ${mobileDialogOpen ? "is-mobile-dialog" : ""} ${listCollapsed ? "is-list-collapsed" : ""}`}>
       <DialogList
+        viewerId={viewerId}
         sort={sort}
         setSort={setSort}
         onCollapse={() => setListCollapsed(true)}

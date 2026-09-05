@@ -6,13 +6,14 @@ import { ContactAvatar } from "./ContactAvatar";
 import { Icon } from "../../shared/icons";
 import { ChannelGlyph } from "../../shared/badges";
 import { scopeLabel, type DialogScope } from "./ConversationWorkspace";
+import { agentColorOf, groupColorOf } from "./model";
 import type { ConversationCounters } from "./model";
 import type { ConversationListItem, ListTab } from "./types";
 import { SearchInput } from "../../shared/ui-controls";
 
 export type ListSort = "activity" | "waiting";
 
-export function DialogList({ title = "Диалоги", searchPlaceholder = "Поиск по контакту, сообщению…", scope, counters, setScope, showScopeSwitcher = true, mobileHeader, hint, searchRef, dialogs, filtered, listTab, selectedId, search, errorText, sort, setSort, onCollapse, setSearch, setListTab, setSelectedId }: {
+export function DialogList({ title = "Диалоги", searchPlaceholder = "Поиск по контакту, сообщению…", viewerId = null, scope, counters, setScope, showScopeSwitcher = true, mobileHeader, hint, searchRef, dialogs, filtered, listTab, selectedId, search, errorText, sort, setSort, onCollapse, setSearch, setListTab, setSelectedId }: {
   title?: string;
   searchPlaceholder?: string;
   sort: ListSort;
@@ -23,6 +24,7 @@ export function DialogList({ title = "Диалоги", searchPlaceholder = "По
   setScope: (scope: DialogScope) => void;
   showScopeSwitcher?: boolean;
   mobileHeader?: (info: { total: number }) => ReactNode;
+  viewerId?: number | null;
   hint?: ReactNode;
   searchRef?: RefObject<HTMLInputElement | null>;
   dialogs: ConversationListItem[];
@@ -42,7 +44,7 @@ export function DialogList({ title = "Диалоги", searchPlaceholder = "По
       <div className="sales-dialog-list-head">
         <div>
           {showScopeSwitcher
-            ? <ScopeSwitcher scope={scope} counters={counters} setScope={setScope} fallbackTitle={title} total={dialogs.length} />
+            ? <ScopeSwitcher scope={scope} counters={counters} setScope={setScope} fallbackTitle={title} total={dialogs.length} viewerId={viewerId} />
             : <h2 className="sales-dialog-list-title">{scope.kind === "all" ? title : scopeLabel(scope)}<small>{dialogs.length}</small></h2>}
           <span className="sales-dialog-list-tools">
             <Dropdown
@@ -137,46 +139,42 @@ export function PriorityBars({ priority, placeholder = false }: { priority: "HIG
   );
 }
 
-// Переключатель охвата (дизайн-базлайн v2 A1): Все диалоги · Группы · Агенты.
-// Дерево фильтров живёт в заголовке списка, сайдбар остаётся плоским.
-function ScopeSwitcher({ scope, counters, setScope, fallbackTitle, total }: { scope: DialogScope; counters: ConversationCounters | null; setScope: (scope: DialogScope) => void; fallbackTitle: string; total: number }) {
+// Переключатель охвата (дизайн-базлайн v2 A1): Все диалоги · Группы · Агенты ·
+// Ответственный. Дерево фильтров живёт в заголовке списка, сайдбар остаётся плоским.
+function ScopeSwitcher({ scope, counters, setScope, fallbackTitle, total, viewerId }: { scope: DialogScope; counters: ConversationCounters | null; setScope: (scope: DialogScope) => void; fallbackTitle: string; total: number; viewerId: number | null }) {
   const heading = scope.kind === "all" ? (counters ? "Все диалоги" : fallbackTitle) : scopeLabel(scope);
-  if (!counters || (counters.groups.length === 0 && counters.agents.length <= 1)) {
+  if (!counters || (counters.groups.length === 0 && counters.agents.length <= 1 && counters.assignees.length === 0)) {
     return <h2 className="sales-dialog-list-title">{heading}<small>{total}</small></h2>;
   }
+  const checked = (candidate: DialogScope) =>
+    scope.kind === candidate.kind && ("id" in scope && "id" in candidate ? scope.id === candidate.id : true) ? "is-checked" : "";
+  const item = (key: string, target: DialogScope, icon: ReactNode, label: string, count: number) => ({
+    key,
+    label: <button type="button" className={checked(target)} onClick={() => setScope(target)}>{icon}<span>{label}</span><small>{count}</small></button>,
+  });
+  const head = (key: string, label: string) => ({ key, type: "group" as const, label });
   const items = [
-    {
-      key: "all",
-      label: <button type="button" onClick={() => setScope({ kind: "all" })}><Icon name="box" size={15} />Все диалоги<small>{counters.all}</small></button>,
-    },
+    item("all", { kind: "all" }, <Icon name="inbox" size={15} />, "Все диалоги", counters.all),
     ...(counters.groups.length > 0
       ? [
-          { key: "groups-head", type: "group" as const, label: "ГРУППЫ" },
-          ...counters.groups.map((group) => ({
-            key: `group-${group.id}`,
-            label: (
-              <button type="button" onClick={() => setScope({ kind: "group", id: group.id, label: group.name })}>
-                <i className="scope-dot" />{group.name}<small>{group.count}</small>
-              </button>
-            ),
-          })),
-          {
-            key: "ungrouped",
-            label: <button type="button" onClick={() => setScope({ kind: "ungrouped" })}><i className="scope-dot is-muted" />Без группы<small>{counters.ungrouped}</small></button>,
-          },
+          head("groups-head", "Группы"),
+          ...counters.groups.map((group) => item(`group-${group.id}`, { kind: "group", id: group.id, label: group.name }, <i className="scope-dot" style={{ background: groupColorOf(group.id) }} />, group.name, group.count)),
+          item("ungrouped", { kind: "ungrouped" }, <i className="scope-dot is-muted" />, "Без группы", counters.ungrouped),
         ]
       : []),
     ...(counters.agents.length > 0
       ? [
-          { key: "agents-head", type: "group" as const, label: "АГЕНТЫ" },
-          ...counters.agents.map((agent) => ({
-            key: `agent-${agent.id}`,
-            label: (
-              <button type="button" onClick={() => setScope({ kind: "agent", id: agent.id, label: agent.name })}>
-                <Icon name="robot" size={14} />{agent.name}<small>{agent.count}</small>
-              </button>
-            ),
-          })),
+          head("agents-head", "Агенты"),
+          ...counters.agents.map((agent) => {
+            const color = agentColorOf(agent.code);
+            return item(`agent-${agent.id}`, { kind: "agent", id: agent.id, label: agent.name }, <span className="scope-agent" style={{ color, background: `color-mix(in srgb, ${color} 16%, var(--surface-card))` }}><Icon name="robot" size={11} /></span>, agent.name, agent.count);
+          }),
+        ]
+      : []),
+    ...(counters.assignees.length > 0
+      ? [
+          head("assignees-head", "Ответственный"),
+          ...counters.assignees.map((assignee) => item(`assignee-${assignee.id}`, { kind: "assignee", id: assignee.id, label: assignee.name }, <span className="scope-avatar">{initialsOf(assignee.name)}</span>, assignee.id === viewerId ? `${assignee.name} · вы` : assignee.name, assignee.count)),
         ]
       : []),
   ];
@@ -188,4 +186,8 @@ function ScopeSwitcher({ scope, counters, setScope, fallbackTitle, total }: { sc
       </button>
     </Dropdown>
   );
+}
+
+function initialsOf(name: string): string {
+  return name.split(/\s+/).map((part) => part[0] ?? "").join("").slice(0, 2).toUpperCase();
 }
