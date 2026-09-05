@@ -49,9 +49,9 @@ export function ConversationWorkspace({ isOwner = false, viewerId = null, listTi
   isOwner?: boolean;
   listTitle?: string;
   searchPlaceholder?: string;
-  renderContextPanel: (ctx: { dialog: ConversationListItem | null; detail: ApiConversation | null; applyConversation: (updated: ApiConversation) => void; startCall: ((kind: "AUDIO" | "VIDEO") => void) | null }) => ReactNode;
+  renderContextPanel: (ctx: { dialog: ConversationListItem | null; detail: ApiConversation | null; applyConversation: (updated: ApiConversation) => void; startCall: ((kind: "AUDIO" | "VIDEO") => void) | null; closeContext: () => void }) => ReactNode;
   viewerId?: number | null;
-  mobileHeader?: ReactNode;
+  mobileHeader?: (info: { total: number }) => ReactNode;
   hint?: ReactNode;
   initialConversationId?: number | null;
   // Охват (дерево фильтров) живёт в Shell: у сотрудника им управляет сайдбар,
@@ -251,7 +251,12 @@ export function ConversationWorkspace({ isOwner = false, viewerId = null, listTi
         hint={hint}
         searchRef={searchRef}
       />
+      {!selectedDialog && (
+        <section className="sales-conversation"><div className="sales-conversation-empty">Выберите диалог</div></section>
+      )}
+      {selectedDialog && (
       <section className="sales-conversation">
+        {ctxOpen && <button className="ctx-backdrop" type="button" aria-label="Закрыть панель" onClick={() => setCtxOpen(false)} />}
         <ConversationThread controlMode={controlMode} dialog={selectedDialog} detail={detail} isOwner={isOwner} onExpandList={listCollapsed ? () => setListCollapsed(false) : undefined} viewerId={viewerId} onClaim={onClaim} onRelease={onRelease} onClose={onClose} onSpam={onSpam} onReturnQueue={onReturnQueue} onArchive={onArchive} onToggleContext={() => setCtxOpen((open) => !open)} onMobileBack={() => setMobileDialogOpen(false)} />
         {(detailError || actionError) && <div className="sales-conversation-error">{detailError || actionError}</div>}
         <CallOverlay
@@ -279,12 +284,15 @@ export function ConversationWorkspace({ isOwner = false, viewerId = null, listTi
           onSent={() => selectedId != null && loadDetail(selectedId)}
         />
       </section>
-      {renderContextPanel({
+      )}
+      {selectedDialog && renderContextPanel({
         dialog: selectedDialog,
         detail,
         applyConversation: applyUpdated,
         // Звонки — в карточке контакта (решение 5); почта звонков не поддерживает.
         startCall: detail?.lifecycle === "OPEN" && selectedDialog && selectedDialog.channel !== "EMAIL" ? (kind) => void callController.start(kind) : null,
+        // Кадр S2: выдвижная панель закрывается крестиком в её шапке.
+        closeContext: () => setCtxOpen(false),
       })}
     </div>
   );

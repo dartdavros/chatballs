@@ -112,7 +112,6 @@
 html,
 body,
 #root {
-  min-width: 1024px;
   min-height: 100%;
   margin: 0;
 }
@@ -125,7 +124,9 @@ body {
 }
 
 button,
-input {
+input,
+textarea,
+select {
   font: inherit;
 }
 

@@ -1,6 +1,7 @@
 import json
 
 from django.test import TestCase
+from django.utils import timezone
 from hub_platform.testing import TenantAPIClient as APIClient
 
 from hub_platform.channels.models import Channel
@@ -205,6 +206,25 @@ class ListFilterTests(ChatExtrasTestCase):
 
 
 class CountersTests(ChatExtrasTestCase):
+    def test_directory_lists_all_groups_and_colleagues_for_employee(self) -> None:
+        support = EmployeeGroup.objects.create(
+            organization=self.organization, name="Поддержка"
+        )
+        blocked = self._member("blocked@chat.test", EmployeeRole.EMPLOYEE)
+        blocked.blocked_at = timezone.now()
+        blocked.save(update_fields=["blocked_at"])
+
+        payload = self.client.get("/api/v1/conversations/directory/").json()
+        # Сотрудник видит все группы — иначе не перенести диалог (кадр G).
+        self.assertEqual(
+            [group["name"] for group in payload["groups"]], ["Операторы", "Поддержка"]
+        )
+        self.assertEqual(payload["groups"][1]["id"], support.id)
+        names = {employee["id"]: employee["name"] for employee in payload["employees"]}
+        self.assertIn(self.owner.user_id, names)
+        self.assertIn(self.employee.user_id, names)
+        self.assertNotIn(blocked.user_id, names)
+
     def test_counters_reflect_visibility(self) -> None:
         support = EmployeeGroup.objects.create(
             organization=self.organization, name="Поддержка"

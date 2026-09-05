@@ -252,6 +252,15 @@ export const fetchWaitingCount = () => api<{ waiting: number }>("/api/v1/convers
 
 // --- Дизайн-базлайн v2: карточка «Диалог», метки, шаблоны, счётчики ---
 
+// Справочник блока «Диалог» (кадр G): все группы для переноса и коллеги для
+// назначения — доступен и сотруднику, у которого нет менеджерских списков.
+export type ChatDirectory = {
+  groups: Array<{ id: number; name: string }>;
+  employees: Array<{ id: number; name: string }>;
+};
+
+export const fetchChatDirectory = () => api<ChatDirectory>("/api/v1/conversations/directory/");
+
 const conversationAction = (id: number, suffix: string, body: object) =>
   api<{ conversation: ApiConversation }>(`/api/v1/conversations/${id}/${suffix}/`, {
     method: "POST",

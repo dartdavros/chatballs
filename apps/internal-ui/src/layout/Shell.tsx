@@ -18,6 +18,8 @@ export function Shell({ route, setRoute, selectedEmployeeId, selectedProductCode
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifOpen, setNotifOpen] = useState(false);
   const [waitingCount, setWaitingCount] = useState(0);
+  // Кадры S2/M1: рейка или ☰ раскрывают сайдбар поверх контента.
+  const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const prevUnread = useRef<number | null>(null);
   const manager = isManager(user);
   // Охват чата живёт здесь: сотрудницкий сайдбар и страница чата делят одно
@@ -96,7 +98,7 @@ export function Shell({ route, setRoute, selectedEmployeeId, selectedProductCode
   const isKnowledgeEditor = route === "aiKnowledgeCreate" || route === "aiKnowledgeDetail";
   return (
     <div className={`hub-shell ${isDialogsWorkspace ? "is-chat-route" : ""}`}>
-      <Sidebar route={route} user={user} setRoute={setRoute} onLogout={onLogout} waitingCount={waitingCount} chatScope={chatScope.scope} setChatScope={chatScope.setScope} chatCounters={chatScope.counters} unreadCount={unreadCount} onOpenNotifications={() => { setNotifOpen(true); void loadNotifications(); }} />
+      <Sidebar route={route} user={user} setRoute={setRoute} onLogout={onLogout} waitingCount={waitingCount} chatScope={chatScope.scope} setChatScope={chatScope.setScope} chatCounters={chatScope.counters} unreadCount={unreadCount} onOpenNotifications={() => { setNotifOpen(true); void loadNotifications(); }} expanded={sidebarExpanded} setExpanded={setSidebarExpanded} />
       <div className="hub-main">
         {/* У сотрудника верхней панели нет (дизайн-базлайн v2 §4.1). */}
         {/* Дизайн-базлайн v2 (A1/A2): верхней панели в чате нет и у менеджера;
@@ -104,7 +106,7 @@ export function Shell({ route, setRoute, selectedEmployeeId, selectedProductCode
         {manager && !isDialogsWorkspace && <TopBar route={route} user={user} currentEmployee={currentEmployee} currentAgentName={agentName} currentChannelName={channelName} setRoute={setRoute} unreadCount={unreadCount} onOpenNotifications={() => { setNotifOpen(true); void loadNotifications(); }} />}
         <main className={`hub-scroll ${isDialogsWorkspace ? "sales-dialogs-scroll" : ""} ${isAiFullWidth ? "ai-fullwidth-scroll" : ""}`}>
           <div className={`hub-page ${isSalesWorkspace || isSupportWorkspace ? "sales-workspace-page" : ""} ${isDialogsWorkspace ? "sales-dialogs-page" : ""} ${isSalesClients ? "sales-clients-page" : ""} ${isSalesClientDetail ? "sales-client-detail-page" : ""} ${isAiFullWidth ? "ai-fullwidth-page" : ""} ${isKnowledgeLibrary ? "ai-knowledge-library-page" : ""} ${isKnowledgeEditor ? "ai-knowledge-editor-page" : ""}`}>
-            <ShellRouteContent chatScope={chatScope.scope} setChatScope={chatScope.setScope} chatCounters={chatScope.counters} chatScopeSwitcher={manager} route={route} data={data} currentEmployee={currentEmployee} selectedProductCode={selectedProductCode} selectedAgentId={selectedAgentId} selectedKnowledgeId={selectedKnowledgeId} selectedConversationId={selectedConversationId} selectedClientId={selectedClientId} openClient={openClientRoute} selectedChannelId={selectedChannelId} openChannel={openChannelRoute} selectedSupportPortalId={selectedSupportPortalId} openSupportPortal={openSupportPortalRoute} openConversation={openConversationRoute} openEmployee={openEmployee} openAgentCreate={openAgentCreateRoute} openAgent={openAgentRoute} openKnowledge={openKnowledgeRoute} onAgentLoaded={setAgentName} onChannelLoaded={setChannelName} reload={reload} setRoute={setRoute} user={user} onUserUpdated={onUserUpdated} onLogout={onLogout} />
+            <ShellRouteContent chatScope={chatScope.scope} setChatScope={chatScope.setScope} chatCounters={chatScope.counters} chatScopeSwitcher={manager} route={route} data={data} currentEmployee={currentEmployee} selectedProductCode={selectedProductCode} selectedAgentId={selectedAgentId} selectedKnowledgeId={selectedKnowledgeId} selectedConversationId={selectedConversationId} selectedClientId={selectedClientId} openClient={openClientRoute} selectedChannelId={selectedChannelId} openChannel={openChannelRoute} selectedSupportPortalId={selectedSupportPortalId} openSupportPortal={openSupportPortalRoute} openConversation={openConversationRoute} openEmployee={openEmployee} openAgentCreate={openAgentCreateRoute} openAgent={openAgentRoute} openKnowledge={openKnowledgeRoute} onAgentLoaded={setAgentName} onChannelLoaded={setChannelName} reload={reload} setRoute={setRoute} user={user} onUserUpdated={onUserUpdated} onLogout={onLogout} onOpenSidebar={() => setSidebarExpanded(true)} />
           </div>
         </main>
       </div>

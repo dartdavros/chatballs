@@ -5,6 +5,12 @@
   background: var(--n-11);
 }
 
+/* Страницы вне чата не адаптированы под мобильный — держат десктопную ширину.
+   Чат (кадры M1/M2) адаптивен и ограничение снимает. */
+.hub-shell:not(.is-chat-route) {
+  min-width: 1024px;
+}
+
 /* Сайдбар 220px (дизайн-базлайн v2, решение 1): фон surface2, без верхней панели. */
 .hub-sidebar {
   width: 220px;
@@ -124,13 +130,46 @@
   flex: none;
   gap: 10px;
   padding: 14px 14px 10px;
+}
+
+.hub-brand-mark {
+  border: 0;
+  padding: 0;
+}
+
+/* Переключатель организации (A1): имя + шеврон, 32px. */
+.hub-brand-switch {
+  flex: 1;
+  min-width: 0;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 0 6px 0 8px;
+  border: 0;
+  border-radius: 8px;
   background: transparent;
-  border: none;
+  color: var(--n-1);
+  font-size: 14px;
+  font-weight: 700;
   text-align: left;
 }
 
-.hub-brand:hover {
+.hub-brand-switch:hover {
   background: var(--n-9);
+}
+
+.hub-brand-switch span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hub-brand-switch svg {
+  flex: none;
+  color: var(--n-4);
 }
 
 .hub-brand-mark {
@@ -157,18 +196,6 @@
   height: 100%;
   display: block;
   object-fit: contain;
-}
-
-.hub-brand strong {
-  display: block;
-  min-width: 0;
-  overflow: hidden;
-  color: var(--n-1);
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 1.35;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .profile-link strong {
@@ -342,6 +369,10 @@
 }
 
 /* Дерево «Диалоги» сотрудника (дизайн-базлайн v2 §3): сайдбар = фильтр чата. */
+.chat-scope-tree {
+  padding-bottom: 12px;
+}
+
 .chat-scope-head {
   display: flex;
   align-items: center;

@@ -25,7 +25,7 @@ const SupportPortalDetailPage = lazy(() => import("../features/support-portals/S
   (module) => ({ default: module.SupportPortalDetailPage }),
 ));
 
-export function ShellRouteContent({ chatScope, setChatScope, chatCounters, chatScopeSwitcher, route, data, currentEmployee, selectedProductCode, selectedAgentId, selectedKnowledgeId, selectedConversationId, selectedClientId, openClient, selectedChannelId, openChannel, selectedSupportPortalId, openSupportPortal, openConversation, openEmployee, openAgentCreate, openAgent, openKnowledge, onAgentLoaded, onChannelLoaded, reload, setRoute, user, onUserUpdated, onLogout }: { chatScope: DialogScope; setChatScope: (scope: DialogScope) => void; chatCounters: ConversationCounters | null; chatScopeSwitcher: boolean; route: RouteKey; data: AppData; currentEmployee: Employee | null; selectedProductCode: string | null; selectedAgentId: number | null; selectedKnowledgeId: number | null; selectedConversationId: number | null; selectedClientId: number | null; openClient: (clientId: number) => void; selectedChannelId: number | null; openChannel: (channelId: number) => void; selectedSupportPortalId: number | null; openSupportPortal: (portalId: number) => void; openConversation: (conversationId: number) => void; openEmployee: (employee: Employee) => void; openAgentCreate: (productCode: string | null) => void; openAgent: (agentId: number) => void; openKnowledge: (knowledgeId: number) => void; onAgentLoaded: (name: string | null) => void; onChannelLoaded: (name: string | null) => void; reload: () => void; setRoute: (route: RouteKey) => void; user: SessionUser; onUserUpdated: (user: SessionUser) => void; onLogout: () => void }) {
+export function ShellRouteContent({ chatScope, setChatScope, chatCounters, chatScopeSwitcher, route, data, currentEmployee, selectedProductCode, selectedAgentId, selectedKnowledgeId, selectedConversationId, selectedClientId, openClient, selectedChannelId, openChannel, selectedSupportPortalId, openSupportPortal, openConversation, openEmployee, openAgentCreate, openAgent, openKnowledge, onAgentLoaded, onChannelLoaded, reload, setRoute, user, onUserUpdated, onLogout, onOpenSidebar }: { chatScope: DialogScope; setChatScope: (scope: DialogScope) => void; chatCounters: ConversationCounters | null; chatScopeSwitcher: boolean; route: RouteKey; data: AppData; currentEmployee: Employee | null; selectedProductCode: string | null; selectedAgentId: number | null; selectedKnowledgeId: number | null; selectedConversationId: number | null; selectedClientId: number | null; openClient: (clientId: number) => void; selectedChannelId: number | null; openChannel: (channelId: number) => void; selectedSupportPortalId: number | null; openSupportPortal: (portalId: number) => void; openConversation: (conversationId: number) => void; openEmployee: (employee: Employee) => void; openAgentCreate: (productCode: string | null) => void; openAgent: (agentId: number) => void; openKnowledge: (knowledgeId: number) => void; onAgentLoaded: (name: string | null) => void; onChannelLoaded: (name: string | null) => void; reload: () => void; setRoute: (route: RouteKey) => void; user: SessionUser; onUserUpdated: (user: SessionUser) => void; onLogout: () => void; onOpenSidebar: () => void }) {
   return (
     <>
       {route === "employees" && <EmployeesPage groups={data.groups} employees={data.employees} reload={reload} openEmployee={openEmployee} setRoute={setRoute} user={user} />}
@@ -46,14 +46,13 @@ export function ShellRouteContent({ chatScope, setChatScope, chatCounters, chatS
         <ChatPage
           initialConversationId={selectedConversationId}
           user={user}
-          groups={data.groups}
-          employees={dialogAssignees(data)}
           scope={chatScope}
           setScope={setChatScope}
           counters={chatCounters}
           showScopeSwitcher={chatScopeSwitcher}
           setRoute={setRoute}
           onLogout={onLogout}
+          onOpenMenu={onOpenSidebar}
         />
       )}
       {route === "agents" && <AgentsPage agents={data.agents} groups={data.groups} reload={reload} openAgent={openAgent} />}
@@ -80,9 +79,3 @@ export function ShellRouteContent({ chatScope, setChatScope, chatCounters, chatS
 }
 
 // Кандидаты в «Ответственные»: id сотрудника в employee-API — это id пользователя.
-function dialogAssignees(data: AppData): Array<{ id: number; name: string }> {
-  return data.employees.map((employee) => ({
-    id: employee.id,
-    name: employee.fullName || employee.email,
-  }));
-}

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Icon } from "../../shared/icons";
+import { useMediaQuery } from "../../shared/useMediaQuery";
 import { fetchReplyTemplates, sendOperatorMessage, sendVoiceMessage, type ReplyTemplateRef } from "./model";
 import { formatDuration } from "./VoiceMessage";
 import { useVoiceRecorder } from "./useVoiceRecorder";
@@ -8,6 +9,7 @@ import type { ChannelKey, ControlMode } from "./types";
 
 export function Composer({ mode, loaded, assignedOperatorName, conversationId, channel, onClaim, onRelease, onReturnQueue, onClose, onSent }: { mode: ControlMode; loaded: boolean; assignedOperatorName?: string; conversationId: number | null; channel?: ChannelKey; onClaim: () => void; onRelease: () => void; onReturnQueue: () => void; onClose: () => void; onSent: () => void }) {
   const [text, setText] = useState("");
+  const compact = useMediaQuery("(max-width: 768px)");
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState("");
   const [templates, setTemplates] = useState<ReplyTemplateRef[]>([]);
@@ -137,7 +139,7 @@ export function Composer({ mode, loaded, assignedOperatorName, conversationId, c
           <textarea
             ref={textareaRef}
             rows={1}
-            placeholder="Введите сообщение… Shift+Enter — перенос строки, «/» — шаблон ответа"
+            placeholder={compact ? "Сообщение…" : "Введите сообщение… Shift+Enter — перенос строки, «/» — шаблон ответа"}
             value={text}
             onChange={(event) => setText(event.target.value)}
             onKeyDown={(event) => {
@@ -162,7 +164,7 @@ export function Composer({ mode, loaded, assignedOperatorName, conversationId, c
               </button>
             )}
             <span className="composer-spacer" />
-            <button className="composer-send" type="button" onClick={() => void send()} disabled={sending}>Отправить<kbd>⏎</kbd></button>
+            <button className="composer-send" type="button" onClick={() => void send()} disabled={sending}><span>Отправить</span><kbd>⏎</kbd><Icon name="send" size={17} /></button>
           </div>
         </div>
       </div>

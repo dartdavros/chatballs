@@ -32,9 +32,27 @@
 
   .sales-conversation-actions .ctx-toggle {
     display: inline-flex;
+  }
+
+  .sales-dialogs.is-ctx-open .sales-conversation-actions .ctx-toggle {
     color: var(--primary-text);
     background: var(--primary-bg);
     border-color: var(--primary-border);
+  }
+
+  /* Кадр S2: при открытой панели лента затемняется, клик по ней закрывает панель. */
+  .sales-dialogs .ctx-backdrop {
+    display: none;
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    border: 0;
+    padding: 0;
+    background: rgba(0, 0, 0, 0.18);
+  }
+
+  .sales-dialogs.is-ctx-open .ctx-backdrop {
+    display: block;
   }
 
   .sales-dialogs .sales-context {
@@ -56,8 +74,186 @@
 /* Кадры M1/M2 (≤768px): список и лента — отдельные экраны; сайдбар скрыт,
    шапка бренда живёт в списке. */
 @media (max-width: 768px) {
+  /* Сайдбар на мобильном чате — выезжающее меню (☰ в шапке списка): сама
+     колонка схлопнута, раскрытое тело сайдбара и подложка — fixed. */
   .hub-shell.is-chat-route .hub-sidebar {
+    width: 0;
+    border-right: 0;
+    overflow: visible;
+  }
+
+  .hub-shell.is-chat-route .hub-sidebar .hub-rail {
     display: none;
+  }
+
+  .hub-shell.is-chat-route .hub-sidebar.is-rail-expanded .hub-sidebar-body {
+    width: 280px;
+  }
+
+  .sales-dialogs .sales-dialog-list-head > div {
+    display: none;
+  }
+
+  .sales-dialogs .sales-dialog-list-head {
+    padding: 0 16px 10px;
+  }
+
+  .sales-dialogs .sales-dialog-search {
+    height: 36px;
+    border-radius: 9px;
+  }
+
+  .sales-dialogs .sales-dialog-search kbd {
+    display: none;
+  }
+
+  .sales-dialogs .sales-dialog-search input {
+    font-size: 13.5px;
+  }
+
+  .sales-dialogs .sales-dialog-tabs button {
+    padding: 10px 9px 9px;
+  }
+
+  .sales-dialogs .sales-dialog-row {
+    gap: 11px;
+    padding: 12px 16px;
+  }
+
+  .sales-dialogs .sales-dialog-avatar {
+    width: 42px;
+    height: 42px;
+    font-size: 14px;
+  }
+
+  .sales-dialogs .sales-dialog-row-main {
+    gap: 3px;
+  }
+
+  .sales-dialogs .sales-dialog-row-title strong {
+    font-size: 14.5px;
+  }
+
+  .sales-dialogs .sales-dialog-row-title em,
+  .sales-dialogs .sales-dialog-row-agent small {
+    font-size: 11.5px;
+  }
+
+  .sales-dialogs .sales-dialog-row-preview small {
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  /* Кадр M2: шапка ленты — назад · аватар 36 · имя/статус · контакт · ⋯. */
+  .sales-dialogs .sales-conversation-head {
+    gap: 10px;
+    padding: 10px 12px 10px 8px;
+  }
+
+  .sales-dialogs .sales-conversation-person {
+    flex: 1;
+    min-width: 0;
+    gap: 10px;
+  }
+
+  .sales-dialogs .sales-conversation-avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 13px;
+  }
+
+  .sales-dialogs .sales-conversation-avatar-wrap i {
+    display: none;
+  }
+
+  .sales-dialogs .sales-conversation-person strong {
+    font-size: 14.5px;
+  }
+
+  .sales-dialogs .sales-conversation-person p {
+    font-size: 11.5px;
+  }
+
+  .sales-dialogs .sales-conversation-person p > span:not(.is-status),
+  .sales-dialogs .sales-conversation-person p > i {
+    display: none;
+  }
+
+  .sales-dialogs .sales-conversation-actions {
+    gap: 10px;
+  }
+
+  .sales-dialogs .sales-conversation-actions .sales-claim-button,
+  .sales-dialogs .sales-conversation-actions .sales-secondary-action {
+    display: none;
+  }
+
+  .sales-dialogs .sales-conversation-actions .ctx-toggle,
+  .sales-dialogs .sales-conversation-actions .sales-more-button {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    color: var(--n-3);
+    background: var(--surface-card);
+    border: 1px solid var(--n-8);
+  }
+
+  .sales-dialogs.is-ctx-open .sales-conversation-actions .ctx-toggle {
+    color: var(--primary-text);
+    background: var(--primary-bg);
+    border-color: var(--primary-border);
+  }
+
+  .sales-dialogs .sales-timeline {
+    padding: 16px 14px 8px;
+  }
+
+  /* Кадр M2: компактный композер — поле и круглая кнопка отправки в одной строке. */
+  .sales-dialogs .sales-composer {
+    padding: 8px 12px 14px;
+  }
+
+  .sales-dialogs .composer-warning {
+    margin: 0 6px 6px;
+  }
+
+  .sales-dialogs .composer-box {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    padding: 6px 6px 6px 14px;
+    border-radius: 14px;
+  }
+
+  .sales-dialogs .composer-box textarea {
+    flex: 1;
+    min-height: 35px;
+    padding: 8px 0;
+    font-size: 14px;
+  }
+
+  .sales-dialogs .composer-toolbar {
+    padding: 0;
+    gap: 0;
+  }
+
+  .sales-dialogs .composer-tool,
+  .sales-dialogs .composer-spacer,
+  .sales-dialogs .composer-send > span,
+  .sales-dialogs .composer-send kbd {
+    display: none;
+  }
+
+  .sales-dialogs .composer-send {
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 10px;
+  }
+
+  .sales-dialogs .composer-send svg {
+    display: block;
   }
 
   .sales-dialogs .sales-dialog-list {
@@ -81,7 +277,10 @@
     width: min(320px, 100%);
   }
 
-  .sales-conversation-head .mobile-back {
+}
+
+@media (max-width: 768px) {
+  .sales-dialogs .sales-conversation-head .mobile-back {
     display: flex;
   }
 }
@@ -89,6 +288,7 @@
 .sales-conversation-head .mobile-back {
   display: none;
   align-items: center;
+  margin-right: -2px;
   justify-content: center;
   width: 36px;
   height: 36px;
@@ -103,31 +303,71 @@
   transform: rotate(180deg);
 }
 
-/* Мобильная шапка списка (кадр M1). */
+/* Мобильная шапка списка (кадр M1): ☰ · заголовок охвата с подписью · аватар. */
 .chat-mobile-header {
   display: none;
   align-items: center;
-  justify-content: space-between;
   gap: 10px;
-  padding: 10px 14px 4px;
+  height: 56px;
+  padding: 12px 12px 8px 8px;
 }
 
-.chat-mobile-brand {
+.chat-mobile-menu {
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
+  flex: none;
+  border: 0;
+  border-radius: 8px;
+  padding: 0;
+  color: var(--n-3);
+  background: transparent;
+}
+
+.chat-mobile-menu:hover {
+  background: var(--n-9);
+}
+
+.chat-mobile-title {
+  flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
   border: 0;
   padding: 0;
   background: transparent;
+  text-align: left;
+}
+
+.chat-mobile-title strong {
+  max-width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 5px;
   color: var(--n-1);
   font-size: 14.5px;
   font-weight: 700;
 }
 
-.chat-mobile-brand strong {
+.chat-mobile-title strong span {
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat-mobile-title strong svg {
+  flex: none;
+  color: var(--n-4);
+}
+
+.chat-mobile-title small {
+  color: var(--n-4);
+  font-size: 11px;
+  font-weight: 400;
   white-space: nowrap;
 }
 
@@ -136,6 +376,12 @@
   padding: 0;
   flex: none;
   background: transparent;
+}
+
+.chat-mobile-avatar .avatar {
+  width: 32px;
+  height: 32px;
+  font-size: 11px;
 }
 
 @media (max-width: 768px) {

@@ -22,6 +22,7 @@ urlpatterns = [
     path("<int:conversation_id>/labels/", chat_extras_views.ConversationLabelsView.as_view(), name="conversation-labels"),
     path("<int:conversation_id>/archive/", chat_extras_views.ConversationArchiveView.as_view(), name="conversation-archive"),
     path("counters/", chat_extras_views.ConversationCountersView.as_view(), name="conversation-counters"),
+    path("directory/", chat_extras_views.ConversationDirectoryView.as_view(), name="conversation-directory"),
     path("labels/", chat_extras_views.LabelListView.as_view(), name="conversation-label-list"),
     path("labels/<int:label_id>/", chat_extras_views.LabelDetailView.as_view(), name="conversation-label-detail"),
     path("templates/", chat_extras_views.ReplyTemplateListView.as_view(), name="reply-template-list"),

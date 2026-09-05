@@ -5,11 +5,20 @@
    больше нет — портал antd сам закрывается по клику вне и по Esc и не
    обрезается overflow-контейнерами. */
 
+/* Геометрия по дизайн-базлайну v2 (кадр C, меню ⋯): 220px, отступ 5,
+   скругление 10, пункты 33px r7, разделитель n-9. */
 .app-dropdown .ant-dropdown-menu {
-  width: 200px;
+  width: 220px;
   padding: 5px;
+  background: var(--surface-card);
   border: 1px solid var(--n-8);
   border-radius: 10px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+.app-dropdown .ant-dropdown-menu .ant-dropdown-menu-item-divider {
+  margin: 4px 8px;
+  background: var(--n-9);
 }
 
 .app-dropdown.is-wide .ant-dropdown-menu {
@@ -26,7 +35,7 @@
 
 .app-dropdown .ant-dropdown-menu-item button {
   width: 100%;
-  min-height: 32px;
+  min-height: 33px;
   display: flex;
   align-items: center;
   gap: 9px;
@@ -34,9 +43,10 @@
   color: var(--n-2);
   background: transparent;
   border: 0;
-  border-radius: 6px;
+  border-radius: 7px;
   font-size: 13px;
   font-weight: 500;
+  line-height: 17px;
   text-align: left;
   cursor: pointer;
   white-space: nowrap;

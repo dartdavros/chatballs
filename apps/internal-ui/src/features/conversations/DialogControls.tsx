@@ -129,13 +129,13 @@ export function DialogControls({
             <Dropdown
               disabled={busy || employees.length === 0}
               trigger={["click"]}
-              overlayClassName="app-dropdown is-wide"
+              overlayClassName="app-dropdown ctx-menu"
               menu={{
                 items: [
-                  { key: "none", label: <button type="button" className={assignee ? "" : "is-checked"} onClick={() => void run(() => setConversationAssignee(detail.id, null))}><span className="ctx-avatar-empty" />Не назначен</button> },
+                  { key: "none", label: <button type="button" className={assignee ? "" : "is-checked"} onClick={() => void run(() => setConversationAssignee(detail.id, null))}><span className="ctx-avatar-empty" /><span>Не назначен</span>{!assignee && <Icon name="check" size={15} />}</button> },
                   ...employees.map((employee) => ({
                     key: employee.id,
-                    label: <button type="button" className={assignee?.id === employee.id ? "is-checked" : ""} onClick={() => void run(() => setConversationAssignee(detail.id, employee.id))}><span className="ctx-avatar-small">{initials(employee.name)}</span>{employee.name}{viewerId === employee.id ? " · вы" : ""}</button>,
+                    label: <button type="button" className={assignee?.id === employee.id ? "is-checked" : ""} onClick={() => void run(() => setConversationAssignee(detail.id, employee.id))}><span className="ctx-avatar-small">{initials(employee.name)}</span><span>{employee.name}{viewerId === employee.id ? " · вы" : ""}</span>{assignee?.id === employee.id && <Icon name="check" size={15} />}</button>,
                   })),
                 ],
               }}
@@ -151,14 +151,17 @@ export function DialogControls({
             <Dropdown
               disabled={busy || groups.length === 0}
               trigger={["click"]}
-              overlayClassName="app-dropdown is-wide"
+              overlayClassName="app-dropdown ctx-menu"
               menu={{
+                // Кадр G: заголовок «Перенести в группу», отмеченный пункт с галочкой, подпись внизу.
                 items: [
-                  { key: "none", label: <button type="button" className={detail.group ? "" : "is-checked"} onClick={() => void run(() => setConversationGroup(detail.id, null))}><i className="ctx-dot is-muted" />Без группы<small>видят все сотрудники</small></button> },
+                  { key: "title", type: "group" as const, label: "Перенести в группу" },
+                  { key: "none", label: <button type="button" className={detail.group ? "" : "is-checked"} onClick={() => void run(() => setConversationGroup(detail.id, null))}><i className="ctx-dot is-muted" /><span>Без группы</span>{!detail.group && <Icon name="check" size={15} />}</button> },
                   ...groups.map((group) => ({
                     key: group.id,
-                    label: <button type="button" className={detail.group?.id === group.id ? "is-checked" : ""} onClick={() => void run(() => setConversationGroup(detail.id, group.id))}><i className="ctx-dot" style={{ background: groupColorOf(group.id) }} />{group.name}</button>,
+                    label: <button type="button" className={detail.group?.id === group.id ? "is-checked" : ""} onClick={() => void run(() => setConversationGroup(detail.id, group.id))}><i className="ctx-dot" style={{ background: groupColorOf(group.id) }} /><span>{group.name}</span>{detail.group?.id === group.id && <Icon name="check" size={15} />}</button>,
                   })),
+                  { key: "note", type: "group" as const, className: "ctx-menu-note", label: "Диалог без группы видят все сотрудники." },
                 ],
               }}
             >
@@ -173,11 +176,11 @@ export function DialogControls({
             <Dropdown
               disabled={busy}
               trigger={["click"]}
-              overlayClassName="app-dropdown is-wide"
+              overlayClassName="app-dropdown ctx-menu"
               menu={{
                 items: PRIORITY_OPTIONS.map(([value, label]) => ({
                   key: value,
-                  label: <button type="button" className={detail.priority === value ? "is-checked" : ""} onClick={() => void run(() => setConversationPriority(detail.id, value))}><PriorityBars priority={value} placeholder />{label}</button>,
+                  label: <button type="button" className={detail.priority === value ? "is-checked" : ""} onClick={() => void run(() => setConversationPriority(detail.id, value))}><PriorityBars priority={value} placeholder /><span>{label}</span>{detail.priority === value && <Icon name="check" size={15} />}</button>,
                 })),
               }}
             >

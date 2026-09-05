@@ -25,6 +25,8 @@ from hub_platform.conversations.models import (
 from hub_platform.conversations.selectors import apply_conversation_visibility
 from hub_platform.conversations.serializers import conversation_payload
 from hub_platform.conversations.view_base import ConversationViewBase
+from hub_platform.identity.group_models import EmployeeGroup
+from hub_platform.identity.models import OrganizationMembership
 from hub_platform.identity.policy import can_administer_access
 
 
@@ -201,6 +203,34 @@ class ConversationCountersView(ConversationViewBase):
                 "ungrouped": ungrouped,
                 "groups": groups,
                 "agents": agents,
+            }
+        )
+
+
+class ConversationDirectoryView(APIView):
+    """Справочник блока «Диалог» для оператора (дизайн-базлайн v2, кадр G):
+    все группы организации — для переноса, активные коллеги — для назначения.
+    Доступен любому, кто видит чат: менеджерские списки сотрудников и групп
+    сотруднику закрыты, а переносить и назначать он может."""
+
+    permission_classes = [HasCapability]
+    required_capabilities = {"GET": "conversations.view"}
+
+    def get(self, request: Request) -> Response:
+        organization_id = request.tenant_context.organization_id
+        groups = EmployeeGroup.objects.filter(organization_id=organization_id).order_by("name")
+        members = (
+            OrganizationMembership.objects.select_related("user")
+            .filter(organization_id=organization_id, blocked_at__isnull=True, user__is_active=True)
+            .order_by("user__full_name", "user__email")
+        )
+        return Response(
+            {
+                "groups": [{"id": group.id, "name": group.name} for group in groups],
+                "employees": [
+                    {"id": member.user_id, "name": member.user.full_name or member.user.email}
+                    for member in members
+                ],
             }
         )
 

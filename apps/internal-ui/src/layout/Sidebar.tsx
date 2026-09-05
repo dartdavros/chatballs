@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Dropdown } from "antd";
 
 import type { RouteKey, SessionUser } from "../types";
 import { Icon, LogoIcon } from "../shared/icons";
@@ -55,6 +55,8 @@ export function Sidebar({
   chatCounters,
   unreadCount = 0,
   onOpenNotifications,
+  expanded: railExpanded,
+  setExpanded: setRailExpanded,
 }: {
   route: RouteKey;
   user: SessionUser;
@@ -66,11 +68,13 @@ export function Sidebar({
   chatCounters: ConversationCounters | null;
   unreadCount?: number;
   onOpenNotifications?: () => void;
+  expanded: boolean;
+  setExpanded: (expanded: boolean) => void;
 }) {
   const manager = isManager(user);
   // Кадр S2: на ≤1024px сайдбар сжимается в рейку 60px; «развернуть»
-  // раскрывает полный сайдбар поверх контента.
-  const [railExpanded, setRailExpanded] = useState(false);
+  // раскрывает полный сайдбар поверх контента (состояние — в Shell, его же
+  // открывает ☰ мобильной шапки чата, кадр M1).
   const sectionStorageKey = (section: string) => (
     `chatbolls.sidebar.${user.organizationPublicId}.${section}.expanded`
   );
@@ -105,14 +109,26 @@ export function Sidebar({
       </div>
       {railExpanded && <button className="hub-rail-backdrop" aria-label="Свернуть меню" type="button" onClick={() => setRailExpanded(false)} />}
       <div className="hub-sidebar-body" onClick={() => setRailExpanded(false)}>
-      <button className="hub-brand" type="button" onClick={() => setRoute(defaultRoute(user))}>
-        <div className={`hub-brand-mark ${user.organizationLogoUrl ? "has-logo" : ""}`}>
+      <div className="hub-brand">
+        <button className={`hub-brand-mark ${user.organizationLogoUrl ? "has-logo" : ""}`} type="button" aria-label="На главную" onClick={() => setRoute(defaultRoute(user))}>
           {user.organizationLogoUrl
             ? <img src={user.organizationLogoUrl} alt="" />
             : <LogoIcon />}
-        </div>
-        <strong>{user.organizationName || "Chatbolls"}</strong>
-      </button>
+        </button>
+        {/* Переключатель организации (дизайн-базлайн v2, A1): пока у пользователя
+            одна организация — в списке она одна, отмечена. */}
+        <Dropdown
+          trigger={["click"]}
+          placement="bottomLeft"
+          overlayClassName="app-dropdown is-wide"
+          menu={{ items: [{ key: "current", label: <button type="button" className="is-checked"><Icon name="building" size={15} />{user.organizationName || "Chatbolls"}</button> }] }}
+        >
+          <button className="hub-brand-switch" type="button">
+            <span>{user.organizationName || "Chatbolls"}</span>
+            <Icon name="chevron" size={14} />
+          </button>
+        </Dropdown>
+      </div>
       {manager ? (
         <nav className="hub-nav">
           <SidebarLink icon="message" label="Чат" badge={waitingCount > 0 ? String(waitingCount) : undefined} route={route} routeKey="chat" setRoute={setRoute} />
@@ -181,7 +197,7 @@ function ChatScopeTree({
         <span>Все диалоги</span>
         {counters && <small>{counters.all}</small>}
       </button>
-      {counters && counters.groups.length > 0 && (
+      {counters && (
         <>
           <div className="chat-scope-section"><Icon name="team" size={15} /><span>Группы</span></div>
           {counters.groups.map((group) => (
@@ -196,18 +212,20 @@ function ChatScopeTree({
               <small>{group.count}</small>
             </button>
           ))}
-          <button
-            className={`chat-scope-item is-nested ${isActive({ kind: "ungrouped" }) ? "is-active" : ""}`}
-            type="button"
-            onClick={() => setScope({ kind: "ungrouped" })}
-          >
-            <i className="chat-scope-dot is-muted" />
-            <span>Без группы</span>
-            {counters && <small>{counters.ungrouped}</small>}
-          </button>
+          {counters.groups.length > 0 && (
+            <button
+              className={`chat-scope-item is-nested ${isActive({ kind: "ungrouped" }) ? "is-active" : ""}`}
+              type="button"
+              onClick={() => setScope({ kind: "ungrouped" })}
+            >
+              <i className="chat-scope-dot is-muted" />
+              <span>Без группы</span>
+              <small>{counters.ungrouped}</small>
+            </button>
+          )}
         </>
       )}
-      {counters && counters.agents.length > 0 && (
+      {counters && (
         <>
           <div className="chat-scope-section"><Icon name="robot" size={15} /><span>Агенты</span></div>
           {counters.agents.map((agent) => (

@@ -22,7 +22,7 @@ export function DialogList({ title = "Диалоги", searchPlaceholder = "По
   counters: ConversationCounters | null;
   setScope: (scope: DialogScope) => void;
   showScopeSwitcher?: boolean;
-  mobileHeader?: ReactNode;
+  mobileHeader?: (info: { total: number }) => ReactNode;
   hint?: ReactNode;
   searchRef?: RefObject<HTMLInputElement | null>;
   dialogs: ConversationListItem[];
@@ -38,7 +38,7 @@ export function DialogList({ title = "Диалоги", searchPlaceholder = "По
   const waitCount = dialogs.filter((dialog) => dialog.mode === "wait").length;
   return (
     <section className="sales-dialog-list">
-      {mobileHeader}
+      {mobileHeader?.({ total: dialogs.length })}
       <div className="sales-dialog-list-head">
         <div>
           {showScopeSwitcher
@@ -72,7 +72,9 @@ export function DialogList({ title = "Диалоги", searchPlaceholder = "По
       <div className="sales-dialog-list-body">
         {errorText && <div className="sales-wait-note sales-load-error">{errorText}</div>}
         {/* Кадр S1: пустой список без призыва к действию. */}
-        {!errorText && dialogs.length === 0 && <div className="sales-wait-note">Диалоги появятся, когда клиенты напишут вашему агенту</div>}
+        {!errorText && dialogs.length === 0 && (
+          <div className="sales-dialog-list-empty"><span><Icon name="message" size={20} /></span><p>Диалоги появятся, когда клиенты напишут вашему агенту</p></div>
+        )}
         {filtered.map((dialog) => <DialogListItem dialog={dialog} active={dialog.id === selectedId} setSelectedId={setSelectedId} key={dialog.id} />)}
       </div>
     </section>

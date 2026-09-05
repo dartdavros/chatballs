@@ -232,6 +232,16 @@
   font-weight: 500;
 }
 
+/* Кадр S1: ничего не выбрано. */
+.sales-conversation-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--n-5);
+  font-size: 13px;
+}
+
 .sales-wait-note {
   margin: -8px 0 8px;
   color: var(--n-5);
