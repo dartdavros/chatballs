@@ -1,7 +1,21 @@
+"""Хранилища файлов инстанса.
+
+Куда писать (локальный диск или внешнее S3) решают настройки в БД
+(``tenancy.storage_settings``), которые админ меняет в «Настройках» — без .env.
+Динамический бэкенд делегирует операции текущему хранилищу; чтение и удаление
+при включённом S3 дополнительно смотрят локальный диск, чтобы файлы, загруженные
+до переключения, оставались доступны до завершения переноса.
+
+Ограждения ключей остались прежними: тенантные файлы — только под
+``organizations/<public_id>/`` своей организации, пользовательские — под ``users/``.
+"""
+
 from __future__ import annotations
 
-from django.core.exceptions import ImproperlyConfigured, SuspiciousFileOperation
-from django.core.files.storage import FileSystemStorage
+from django.conf import settings
+from django.core.exceptions import SuspiciousFileOperation
+from django.core.files.storage import FileSystemStorage, Storage
+from django.utils.deconstruct import deconstructible
 
 from chatballs.tenancy.database import current_tenant_id
 
@@ -25,98 +39,133 @@ def _assert_tenant_key(name: str) -> None:
         raise SuspiciousFileOperation("Storage key belongs to another organization")
 
 
-class TenantStorageGuardMixin:
-    def open(self, name, mode="rb"):
-        _assert_tenant_key(name)
-        return super().open(name, mode)
-
-    def save(self, name, content, max_length=None):
-        _assert_tenant_key(name)
-        return super().save(name, content, max_length=max_length)
-
-    def delete(self, name):
-        _assert_tenant_key(name)
-        return super().delete(name)
-
-    def exists(self, name):
-        _assert_tenant_key(name)
-        return super().exists(name)
-
-    def size(self, name):
-        _assert_tenant_key(name)
-        return super().size(name)
-
-    def url(self, name, *args, **kwargs):
-        _assert_tenant_key(name)
-        return super().url(name, *args, **kwargs)
-
-    def path(self, name):
-        _assert_tenant_key(name)
-        return super().path(name)
-
-
-class TenantFileSystemStorage(TenantStorageGuardMixin, FileSystemStorage):
-    pass
-
-
 def _assert_user_key(name: str) -> None:
     normalized = str(name).replace("\\", "/").lstrip("/")
     if not normalized.startswith("users/"):
         raise SuspiciousFileOperation("User storage key must live under users/")
 
 
-class UserStorageGuardMixin:
-    """Хранилище файлов пользователя (фото профиля): ключи только под users/,
-    без тенантного контекста — пользователь общий для организаций."""
+def local_storage() -> FileSystemStorage:
+    return FileSystemStorage(location=settings.MEDIA_ROOT)
+
+
+class _DynamicStorage(Storage):
+    """Делегирует операции текущему бэкенду из настроек инстанса."""
+
+    _s3_cache: tuple[object, object] | None = None
+
+    def _guard(self, name: str) -> None:  # переопределяется наследниками
+        raise NotImplementedError
+
+    def _s3(self, config):
+        from chatballs.tenancy import storage_settings
+
+        cached = type(self)._s3_cache
+        if cached is not None and cached[0] == config:
+            return cached[1]
+        backend = storage_settings.build_s3_storage(config)
+        type(self)._s3_cache = (config, backend)
+        return backend
+
+    def _active(self):
+        from chatballs.tenancy import storage_settings
+
+        config = storage_settings.current_config()
+        return self._s3(config) if config.is_s3 else local_storage()
+
+    def _secondary(self):
+        """Второе хранилище, где могут лежать файлы (до/после переноса), или None."""
+        from chatballs.tenancy import storage_settings
+
+        config = storage_settings.current_config()
+        if config.is_s3:
+            return local_storage()
+        if config.s3_configured:
+            return self._s3(config)
+        return None
+
+    def _reader_for(self, name: str):
+        """Хранилище, где файл реально лежит: активное, иначе второе."""
+        active = self._active()
+        if active.exists(name):
+            return active
+        secondary = self._secondary()
+        if secondary is not None and secondary.exists(name):
+            return secondary
+        return active
+
+    # --- Storage API ---------------------------------------------------------
+    def _open(self, name, mode="rb"):
+        return self._reader_for(name).open(name, mode)
+
+    def _save(self, name, content):
+        return self._active().save(name, content)
 
     def open(self, name, mode="rb"):
-        _assert_user_key(name)
-        return super().open(name, mode)
+        self._guard(name)
+        return self._open(name, mode)
 
     def save(self, name, content, max_length=None):
-        _assert_user_key(name)
-        return super().save(name, content, max_length=max_length)
+        self._guard(name)
+        return self._active().save(name, content, max_length=max_length)
 
     def delete(self, name):
-        _assert_user_key(name)
-        return super().delete(name)
+        self._guard(name)
+        for storage in (self._active(), self._secondary()):
+            if storage is not None and storage.exists(name):
+                storage.delete(name)
 
     def exists(self, name):
-        _assert_user_key(name)
-        return super().exists(name)
+        self._guard(name)
+        if self._active().exists(name):
+            return True
+        secondary = self._secondary()
+        return secondary is not None and secondary.exists(name)
 
     def size(self, name):
-        _assert_user_key(name)
-        return super().size(name)
+        self._guard(name)
+        return self._reader_for(name).size(name)
+
+    def url(self, name):
+        self._guard(name)
+        return self._reader_for(name).url(name)
 
     def path(self, name):
+        self._guard(name)
+        return self._reader_for(name).path(name)
+
+    def get_available_name(self, name, max_length=None):
+        return self._active().get_available_name(name, max_length=max_length)
+
+    def listdir(self, path):
+        return self._active().listdir(path)
+
+    def get_accessed_time(self, name):
+        return self._reader_for(name).get_accessed_time(name)
+
+    def get_created_time(self, name):
+        return self._reader_for(name).get_created_time(name)
+
+    def get_modified_time(self, name):
+        return self._reader_for(name).get_modified_time(name)
+
+
+@deconstructible
+class DynamicTenantStorage(_DynamicStorage):
+    def _guard(self, name: str) -> None:
+        _assert_tenant_key(name)
+
+
+@deconstructible
+class DynamicUserStorage(_DynamicStorage):
+    _s3_cache = None
+
+    def _guard(self, name: str) -> None:
         _assert_user_key(name)
-        return super().path(name)
 
 
-class UserFileSystemStorage(UserStorageGuardMixin, FileSystemStorage):
-    pass
-
-
-try:
-    from storages.backends.s3 import S3Storage
-except ImportError:  # pragma: no cover - deployment configuration guard
-    S3Storage = None
-
-
-if S3Storage is not None:
-
-    class TenantS3Storage(TenantStorageGuardMixin, S3Storage):
-        pass
-
-    class UserS3Storage(UserStorageGuardMixin, S3Storage):
-        pass
-
-else:
-
-    class TenantS3Storage:
-        def __init__(self, *args, **kwargs) -> None:
-            raise ImproperlyConfigured("django-storages[s3] is required for S3 storage")
-
-    class UserS3Storage(TenantS3Storage):
-        pass
+# Обратная совместимость имён (миграции/настройки старых установок).
+TenantFileSystemStorage = DynamicTenantStorage
+UserFileSystemStorage = DynamicUserStorage
+TenantS3Storage = DynamicTenantStorage
+UserS3Storage = DynamicUserStorage

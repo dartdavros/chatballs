@@ -27,7 +27,6 @@ RUN cd apps/backend && CHATBALLS_SECRET_KEY=collectstatic-build CHATBALLS_DEBUG=
     POSTGRES_APP_USER=build-app \
     POSTGRES_PLATFORM_USER=build-platform \
     POSTGRES_MIGRATION_USER=build-migration \
-    CHATBALLS_S3_BUCKET=build-placeholder \
     python manage.py collectstatic --noinput
 
 RUN chown -R hub:hub /app

@@ -17,6 +17,7 @@ import { EmptyState, LoadingState, PageHeader } from "../../shared/ui";
 import type { RouteKey } from "../../types";
 import { Icon } from "../../shared/icons";
 import { DemoDataCard } from "./DemoDataCard";
+import { StorageSettingsCard } from "./StorageSettingsCard";
 import { GroupsSettingsCard } from "./GroupsSettingsCard";
 
 // «Настройки» (SPEC-HUB-0031 §8.6): один экран с вертикальными секциями —
@@ -57,6 +58,9 @@ export function SettingsPage({ user, onUserUpdated, reload, groups = [], setRout
       </SettingsSection>
       <SettingsSection title="Интеграции" note="Боты, почта и Web-виджет — точки входа диалогов">
         <IntegrationsSection kind="MESSENGER" />
+      </SettingsSection>
+      <SettingsSection title="Хранилище файлов" note="Вложения, голосовые, фото и логотипы — на диске установки или во внешнем S3">
+        <StorageSettingsCard canManage={canManageSettings(user)} />
       </SettingsSection>
       <SettingsSection title="Знания и аудит" note="База знаний агентов и журнал действий — отдельными экранами">
         <div className="settings-links">

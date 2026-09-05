@@ -117,3 +117,7 @@ class StorageReservation(models.Model):
     def __str__(self) -> str:
         state = "finalized" if self.finalized else "released" if self.released else "active"
         return f"{self.organization_id}:{self.idempotency_key}:{state}"
+
+
+# Настройки хранилища инстанса живут в отдельном модуле; импорт нужен, чтобы Django увидел модель.
+from chatballs.tenancy.storage_settings import StorageSettings  # noqa: E402,F401

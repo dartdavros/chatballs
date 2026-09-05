@@ -198,3 +198,16 @@
 .settings-group-colors {
   margin: 10px 0 4px;
 }
+
+/* Хранилище файлов */
+.storage-card .appearance-row {
+  margin-bottom: 8px;
+}
+
+.storage-fields {
+  grid-template-columns: minmax(280px, 460px) minmax(220px, 320px);
+}
+
+.storage-actions {
+  gap: 8px;
+}

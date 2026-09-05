@@ -43,6 +43,8 @@ COVERAGE_EXEMPT = {
     ("identity", "organization"),
     ("identity", "demodataset"),
     ("identity", "demorecord"),
+    # Настройки хранилища — одна строка на инстанс, не данные организации.
+    ("tenancy", "storagesettings"),
 }
 COVERAGE_EXEMPT_APPS = {"platform", "events"}
 

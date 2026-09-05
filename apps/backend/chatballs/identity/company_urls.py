@@ -1,6 +1,7 @@
 from django.urls import path
 
 from chatballs.identity import administration_views, demo_views, group_views
+from chatballs.tenancy import storage_views
 
 urlpatterns = [
     path("groups/", group_views.GroupListView.as_view(), name="group-list"),
@@ -21,6 +22,9 @@ urlpatterns = [
         name="launch-checklist",
     ),
     path("demo/", demo_views.DemoDataView.as_view(), name="organization-demo-data"),
+    path("administration/storage/", storage_views.StorageSettingsView.as_view(), name="storage-settings"),
+    path("administration/storage/check/", storage_views.StorageCheckView.as_view(), name="storage-check"),
+    path("administration/storage/migrate/", storage_views.StorageMigrateView.as_view(), name="storage-migrate"),
     path(
         "administration/audit/",
         administration_views.AuditListView.as_view(),
