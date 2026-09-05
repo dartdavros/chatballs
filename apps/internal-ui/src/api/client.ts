@@ -8,10 +8,9 @@ const CSRF_COOKIE_NAME =
   typeof window !== "undefined" && window.location.protocol === "https:" ? "__Host-custocrm-app-csrf" : "custocrm_app_csrftoken";
 
 const tenantNamespaces = [
-  "access-profiles",
+  "agents",
   "ai",
   "calls",
-  "channels",
   "company",
   "conversations",
   "employees",
