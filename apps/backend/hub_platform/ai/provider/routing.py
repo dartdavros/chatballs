@@ -23,6 +23,7 @@ from __future__ import annotations
 
 from hub_platform.ai.provider.base import LLMProvider, ProviderError
 from hub_platform.ai.provider.custom import CustomProvider
+from hub_platform.ai.provider.demo import DemoProvider
 from hub_platform.ai.provider.openrouter import OpenRouterProvider
 from hub_platform.integrations.models import Integration, IntegrationProvider
 
@@ -83,6 +84,8 @@ def _provider_from_integration(integration: Integration) -> LLMProvider:
             timeout=settings.CUS_AI_REQUEST_TIMEOUT,
             proxy_url=integration.config.get("proxy_url", ""),
         )
+    if integration.provider == IntegrationProvider.DEMO:
+        return DemoProvider()
     if integration.provider == IntegrationProvider.CUSTOM:
         return CustomProvider(
             api_key=integration.secret,

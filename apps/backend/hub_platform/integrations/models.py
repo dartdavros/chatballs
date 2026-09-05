@@ -14,6 +14,8 @@ class IntegrationKind(models.TextChoices):
 class IntegrationProvider(models.TextChoices):
     OPENROUTER = "OPENROUTER", "OpenRouter"
     CUSTOM = "CUSTOM", "Custom (OpenAI-compatible)"
+    # Демо-провайдер: живой AI без ключей и сети — для знакомства с системой.
+    DEMO = "DEMO", "Демо-провайдер (без ключа)"
     MAX = "MAX", "MAX"
     TELEGRAM = "TELEGRAM", "Telegram"
     WEB = "WEB", "Web-виджет"
@@ -31,6 +33,7 @@ PROVIDER_KIND = {
     IntegrationProvider.OPENROUTER: IntegrationKind.LLM_PROVIDER,
     # Custom — generic BYOK для любого OpenAI-compatible endpoint (ADR-HUB-0034).
     IntegrationProvider.CUSTOM: IntegrationKind.LLM_PROVIDER,
+    IntegrationProvider.DEMO: IntegrationKind.LLM_PROVIDER,
     IntegrationProvider.MAX: IntegrationKind.MESSENGER,
     IntegrationProvider.TELEGRAM: IntegrationKind.MESSENGER,
     IntegrationProvider.WEB: IntegrationKind.MESSENGER,

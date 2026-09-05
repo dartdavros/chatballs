@@ -186,3 +186,8 @@ def check_telegram(*, secret: str, base_url: str, proxy_url: str = "") -> CheckR
         return True, detail, meta
 
     return _safe(run)
+
+
+def check_demo(*, secret: str, base_url: str, proxy_url: str = "") -> CheckResult:
+    """Демо-провайдер не ходит в сеть — всегда готов."""
+    return True, "Демо-провайдер: отвечает по знаниям агента, без внешних запросов и ключей", {}

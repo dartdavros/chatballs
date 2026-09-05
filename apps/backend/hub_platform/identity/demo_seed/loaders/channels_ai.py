@@ -86,7 +86,7 @@ def _ensure_agent(context: TenantContext, refs: DemoRefs, item: dict, llm: Integ
         agent.limits = item.get("limits", {})
         if agent.status in ("ACTIVE", "DISABLED"):
             agent.provider_integration = llm
-            agent.model = (llm.config or {}).get("defaultModel", "")
+            agent.model = (llm.config or {}).get("default_model", "demo")
         agent.save()
         when = current - timedelta(days=item.get("createdDaysAgo", 30))
         backdate(channel, when, "created_at", "updated_at")

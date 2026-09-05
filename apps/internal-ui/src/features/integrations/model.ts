@@ -1,6 +1,6 @@
 import { api } from "../../api/client";
 
-export type IntegrationProvider = "OPENROUTER" | "CUSTOM" | "MAX" | "TELEGRAM" | "WEB" | "EMAIL";
+export type IntegrationProvider = "OPENROUTER" | "CUSTOM" | "DEMO" | "MAX" | "TELEGRAM" | "WEB" | "EMAIL";
 export type IntegrationKind = "LLM_PROVIDER" | "MESSENGER";
 export type IntegrationStatus = "UNCHECKED" | "OK" | "ERROR";
 export type WebChatWidgetSummary = {
@@ -71,6 +71,8 @@ export const PROVIDERS: Record<IntegrationProvider, ProviderMeta> = {
   // Custom — generic BYOK для любого OpenAI-compatible endpoint (ADR-HUB-0034).
   // Каталога нет: модель вводится свободным текстом и читается в рантайме.
   CUSTOM: { label: "Custom (OpenAI-compatible)", kind: "LLM_PROVIDER", secretLabel: "API-ключ", defaultBaseUrl: "", hasModel: true, testable: true, checkable: true },
+  // Демо-провайдер — живой AI без ключей и сети для знакомства с системой: отвечает по знаниям агента.
+  DEMO: { label: "Демо-провайдер (без ключа)", kind: "LLM_PROVIDER", secretLabel: "", defaultBaseUrl: "", hasModel: false, testable: false, checkable: true },
   MAX: { label: "MAX", kind: "MESSENGER", secretLabel: "Токен бота", defaultBaseUrl: "https://platform-api.max.ru", hasModel: false, testable: true, checkable: true },
   TELEGRAM: { label: "Telegram", kind: "MESSENGER", secretLabel: "Токен бота", defaultBaseUrl: "https://api.telegram.org", hasModel: false, testable: true, checkable: true },
   WEB: { label: "Web-виджет", kind: "MESSENGER", secretLabel: "", defaultBaseUrl: "", hasModel: false, testable: false, checkable: true },

@@ -103,10 +103,12 @@ def _normalized_config(provider: str, config: dict) -> dict:
     # LLM-провайдеры (OpenRouter, Custom) хранят модель по умолчанию свободным текстом.
     # Для OpenRouter поле исторически декоративно (SPEC-HUB-0005:388); для Custom оно
     # читается в рантайме (ADR-HUB-0034 §4). Версионирование модели — дорожка ADR-0034.
-    if provider in (IntegrationProvider.OPENROUTER, IntegrationProvider.CUSTOM):
+    if provider in (IntegrationProvider.OPENROUTER, IntegrationProvider.CUSTOM, IntegrationProvider.DEMO):
         default_model = str(config.get("defaultModel", config.get("default_model", ""))).strip()
         if default_model:
             result["default_model"] = default_model
+        elif provider == IntegrationProvider.DEMO:
+            result["default_model"] = "demo"
     else:
         # Мессенджер-подключения (MAX/Telegram/Web): идентификатор бота.
         bot_username = str(config.get("botUsername", config.get("bot_username", ""))).strip()
@@ -159,7 +161,8 @@ def create_integration(*, context: TenantContext, data: IntegrationInput) -> Int
         kind=PROVIDER_KIND[provider],
         provider=provider,
         name=name,
-        secret=(data.secret or "").strip(),
+        # У демо-провайдера ключа нет; маркер нужен резолверу (routing требует secret).
+        secret=(data.secret or "").strip() or ("demo" if provider == IntegrationProvider.DEMO else ""),
         config=_normalized_config(provider, data.config),
         channel=_resolve_channel(organization, data.channel_id),
         is_active=True if data.is_active is None else data.is_active,
@@ -209,6 +212,7 @@ def delete_integration(*, context: TenantContext, integration: Integration) -> N
 _CHECKS = {
     IntegrationProvider.OPENROUTER: checks.check_openrouter,
     IntegrationProvider.CUSTOM: checks.check_custom,
+    IntegrationProvider.DEMO: checks.check_demo,
     IntegrationProvider.MAX: checks.check_max,
     IntegrationProvider.TELEGRAM: checks.check_telegram,
 }

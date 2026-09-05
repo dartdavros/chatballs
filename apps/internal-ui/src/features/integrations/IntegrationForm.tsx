@@ -48,6 +48,7 @@ export function IntegrationForm({ initial, kind, onClose, onSaved }: { initial: 
   const isMessenger = meta.kind === "MESSENGER";
   const isWeb = provider === "WEB";
   const isEmail = provider === "EMAIL";
+  const isDemo = provider === "DEMO";
   const widgetSnippet = isWeb && initial?.webChatWidget
     ? webWidgetSnippet(initial.webChatWidget.publicKey)
     : "";
@@ -135,7 +136,8 @@ export function IntegrationForm({ initial, kind, onClose, onSaved }: { initial: 
         {isEmail && !isEdit && (
           <div className="integration-form-hint">Для Gmail и Яндекс используйте пароль приложения, не основной пароль аккаунта</div>
         )}
-        {!isEmail && !isWeb && <FormField label="Base URL" value={baseUrl} onChange={setBaseUrl} placeholder={meta.defaultBaseUrl || "—"} />}
+        {isDemo && <div className="integration-form-hint">Отвечает по знаниям агента без внешних запросов и ключей. Качество ответов ограничено — для реальной работы подключите OpenRouter или совместимый провайдер.</div>}
+        {!isEmail && !isWeb && !isDemo && <FormField label="Base URL" value={baseUrl} onChange={setBaseUrl} placeholder={meta.defaultBaseUrl || "—"} />}
         {isWeb && (
           <>
             <FormField
@@ -148,7 +150,7 @@ export function IntegrationForm({ initial, kind, onClose, onSaved }: { initial: 
             <div className="integration-form-hint">Сайты, на которых виджету разрешено открываться: домен, поддомены через «*.» или полный origin с портом. На остальных чат ответит «Чат временно недоступен»</div>
           </>
         )}
-        {!isWeb && !isEmail && (
+        {!isWeb && !isEmail && !isDemo && (
           <FormField label="Прокси" value={proxyUrl} onChange={setProxyUrl} placeholder="http://host:port или socks5://user:pass@host:port — пусто, если без прокси" />
         )}
         {meta.hasModel && (
