@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from chatballs.conversations.models import Message, MessageKind
+from chatballs.conversations.attachment_views import MAX_FILE_BYTES, attachment_response, validate_upload
 from chatballs.conversations.voice_views import ALLOWED_AUDIO_TYPES, MAX_VOICE_BYTES
 from chatballs.identity.models import Organization
 from chatballs.integrations.models import IntegrationStatus
@@ -173,6 +174,19 @@ class WebchatMessagesView(_Public):
                     duration=duration,
                 )
                 return Response({"ok": True}, status=201)
+            attachment = request.FILES.get("file")
+            if attachment is not None:
+                problem = validate_upload(attachment)
+                if problem:
+                    return Response({"detail": problem}, status=400)
+                services.post_file(
+                    session,
+                    content=attachment.read(),
+                    filename=attachment.name or "file",
+                    content_type=(attachment.content_type or "").split(";")[0],
+                    caption=str(request.data.get("text", "")).strip()[:4000],
+                )
+                return Response({"ok": True}, status=201)
             text = str(request.data.get("text", "")).strip()
             if not text:
                 return Response({"detail": "Пустое сообщение"}, status=400)
@@ -211,6 +225,28 @@ class WebchatMessageAudioView(_Public):
                 message.audio.open("rb"),
                 content_type=message.audio_content_type or "audio/ogg",
             )
+            response["Cache-Control"] = "private, max-age=3600"
+            return response
+
+
+class WebchatMessageAttachmentView(_Public):
+    def get(self, request: Request, message_id: int) -> Response | FileResponse:
+        with _resolved_web_session(request) as (_context, session):
+            if session is None:
+                return Response({"detail": "Сессия не найдена"}, status=401)
+            message = (
+                Message.objects.filter(
+                    id=message_id,
+                    kind=MessageKind.FILE,
+                    conversation__channel=session.connection.channel,
+                    conversation__contact=session.identity.contact,
+                )
+                .exclude(attachment="")
+                .first()
+            )
+            if message is None:
+                return Response({"detail": "Сообщение не найдено"}, status=404)
+            response = attachment_response(message, inline="inline" in request.GET)
             response["Cache-Control"] = "private, max-age=3600"
             return response
 

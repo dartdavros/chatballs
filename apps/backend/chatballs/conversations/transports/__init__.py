@@ -88,6 +88,52 @@ _VOICE_SEND = {
 }
 
 
+# Файлы и фото: приём — TG (file_id), MAX (url), почта и web-виджет (байты);
+# отправка — Telegram (sendDocument/sendPhoto), MAX (/uploads), почта (вложение),
+# Web (доставка поллингом виджета).
+
+def _web_file_noop(integration, *, chat_id: str, user_id: str, content: bytes, filename: str, content_type: str, caption: str = "") -> bool:
+    return True
+
+
+_FILE_SEND = {
+    IntegrationProvider.TELEGRAM: _telegram.send_file,
+    IntegrationProvider.MAX: _max.send_file,
+    IntegrationProvider.EMAIL: _email.send_file,
+    IntegrationProvider.WEB: _web_file_noop,
+}
+
+
+def download_file(integration, inbound_file) -> tuple[bytes, str]:
+    if inbound_file.content:
+        return inbound_file.content, inbound_file.content_type or "application/octet-stream"
+    if integration.provider == IntegrationProvider.TELEGRAM and inbound_file.file_id:
+        content, guessed = _telegram.download_file(integration, inbound_file.file_id)
+        return content, inbound_file.content_type or guessed
+    if integration.provider == IntegrationProvider.MAX and inbound_file.url:
+        return _max.download_file(integration, inbound_file.url, inbound_file.content_type)
+    raise ValueError("File download is not supported for this provider")
+
+
+def supports_file_send(integration) -> bool:
+    return integration.provider in _FILE_SEND
+
+
+def send_file(integration, *, chat_id: str, user_id: str, content: bytes, filename: str, content_type: str, caption: str = "") -> bool:
+    sender = _FILE_SEND.get(integration.provider)
+    if sender is None:
+        return False
+    return sender(
+        integration,
+        chat_id=chat_id,
+        user_id=user_id,
+        content=content,
+        filename=filename,
+        content_type=content_type,
+        caption=caption,
+    )
+
+
 def download_voice(integration, inbound) -> tuple[bytes, str]:
     if inbound.voice_content:
         return inbound.voice_content, inbound.voice_mime or "audio/webm"

@@ -1,6 +1,6 @@
 from django.urls import path
 
-from chatballs.conversations import chat_extras_views, reporting_views, views, voice_views
+from chatballs.conversations import attachment_views, chat_extras_views, reporting_views, views, voice_views
 
 urlpatterns = [
     path("", views.ConversationListView.as_view(), name="conversation-list"),
@@ -29,6 +29,8 @@ urlpatterns = [
     path("templates/", chat_extras_views.ReplyTemplateListView.as_view(), name="reply-template-list"),
     path("templates/<int:template_id>/", chat_extras_views.ReplyTemplateDetailView.as_view(), name="reply-template-detail"),
     path("<int:conversation_id>/voice/", voice_views.ConversationVoiceView.as_view(), name="conversation-voice"),
+    path("<int:conversation_id>/attachments/", attachment_views.ConversationAttachmentView.as_view(), name="conversation-attachments"),
+    path("messages/<int:message_id>/attachment/", attachment_views.MessageAttachmentView.as_view(), name="message-attachment"),
     path("messages/<int:message_id>/audio/", voice_views.MessageAudioView.as_view(), name="message-audio"),
     path("messages/<int:message_id>/transcribe/", voice_views.MessageTranscribeView.as_view(), name="message-transcribe"),
 ]

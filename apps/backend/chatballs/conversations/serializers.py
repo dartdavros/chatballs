@@ -23,6 +23,13 @@ def message_payload(message: Message) -> dict[str, object]:
         payload["durationSeconds"] = message.duration_seconds
         payload["transcript"] = message.transcript
         payload["transcriptStatus"] = message.transcript_status
+    if message.kind == "file":
+        payload["attachmentUrl"] = (
+            f"/api/v1/conversations/messages/{message.id}/attachment/" if message.attachment else None
+        )
+        payload["attachmentName"] = message.attachment_name
+        payload["attachmentContentType"] = message.attachment_content_type
+        payload["attachmentSize"] = message.attachment_size
     return payload
 
 

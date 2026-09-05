@@ -15,7 +15,8 @@ export type WebConfig = {
 
 // kind: "" — текст, "contact_request" — виджет рисует форму телефона,
 // "contact" — клиент поделился номером, "VOICE" — голосовое (см. hasAudio).
-export type WebMessage = { id: number; author: "client" | "ai" | "operator" | "system"; kind?: string; text: string; createdAt: string; durationSeconds?: number; hasAudio?: boolean };
+export type WebAttachment = { name: string; contentType: string; size: number; available: boolean };
+export type WebMessage = { id: number; author: "client" | "ai" | "operator" | "system"; kind?: string; text: string; createdAt: string; durationSeconds?: number; hasAudio?: boolean; attachment?: WebAttachment };
 
 // Приглашение/состояние онлайн-звонка (SPEC-HUB-0013).
 export type CallKind = "AUDIO" | "VIDEO";
@@ -78,6 +79,22 @@ export async function sendVoice(token: string, audio: Blob, durationSeconds: num
   body.append("duration", String(Math.round(durationSeconds)));
   const r = await fetch(`${API}/messages/`, { method: "POST", headers: { Authorization: `Bearer ${token}` }, body });
   return r.ok;
+}
+
+export const MAX_FILE_BYTES = 20 * 1024 * 1024;
+
+// Файл или фото из виджета: multipart file + подпись text.
+export async function sendFile(token: string, file: File, caption: string): Promise<boolean> {
+  const body = new FormData();
+  body.append("file", file, file.name);
+  if (caption) body.append("text", caption);
+  const r = await fetch(`${API}/messages/`, { method: "POST", headers: { Authorization: `Bearer ${token}` }, body });
+  return r.ok;
+}
+
+// URL вложения: <img src>/<a href> не умеют заголовки — токен идёт параметром.
+export function attachmentUrl(token: string, messageId: number, inline = false): string {
+  return `${API}/messages/${messageId}/attachment/?token=${encodeURIComponent(token)}${inline ? "&inline" : ""}`;
 }
 
 // URL аудио голосового: <audio src> не умеет заголовки — токен идёт параметром.

@@ -198,6 +198,7 @@ class MessageKind(models.TextChoices):
     CONTACT_REQUEST = "contact_request", "Запрос контакта"
     CONTACT = "contact", "Контакт"
     VOICE = "voice", "Голосовое сообщение"
+    FILE = "file", "Файл"
 
 
 class TranscriptStatus(models.TextChoices):
@@ -215,6 +216,15 @@ def message_audio_upload_path(instance: "Message", filename: str) -> str:
     suffix = Path(filename).suffix.lower() or ".ogg"
     organization = instance.conversation.organization
     return f"organizations/{organization.public_id}/voice/{uuid.uuid4().hex}{suffix}"
+
+
+def message_attachment_upload_path(instance: "Message", filename: str) -> str:
+    import uuid
+    from pathlib import Path
+
+    suffix = Path(filename).suffix.lower()[:16]
+    organization = instance.conversation.organization
+    return f"organizations/{organization.public_id}/files/{uuid.uuid4().hex}{suffix}"
 
 
 class Message(TenantRelationModel):
@@ -237,6 +247,11 @@ class Message(TenantRelationModel):
     transcript_status = models.CharField(
         max_length=8, choices=TranscriptStatus.choices, default=TranscriptStatus.NONE
     )
+    # Файл/фото (kind=FILE): вложение с исходным именем, типом и размером.
+    attachment = models.FileField(upload_to=message_attachment_upload_path, max_length=512, blank=True)
+    attachment_name = models.CharField(max_length=255, blank=True)
+    attachment_content_type = models.CharField(max_length=128, blank=True)
+    attachment_size = models.PositiveBigIntegerField(default=0)
     external_id = models.CharField(max_length=128, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 

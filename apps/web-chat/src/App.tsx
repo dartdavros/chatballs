@@ -7,7 +7,10 @@ import {
   poll,
   sendContact,
   sendMessage,
+  sendFile,
   sendVoice,
+  attachmentUrl,
+  MAX_FILE_BYTES,
   startSession,
   voiceAudioUrl,
   type CallInfo,
@@ -42,6 +45,8 @@ export function App() {
   const [input, setInput] = useState("");
   const [starting, setStarting] = useState(false);
   const [contactSent, setContactSent] = useState(false);
+  const [attachment, setAttachment] = useState<File | null>(null);
+  const [attachmentError, setAttachmentError] = useState("");
   const [call, setCall] = useState<CallInfo | null>(null);
   const lastId = useRef(0);
   const openedCallId = useRef("");
@@ -113,11 +118,19 @@ export function App() {
 
   async function send() {
     const text = input.trim();
-    if (!text || !token || awaiting) return;
+    if ((!text && !attachment) || !token || awaiting) return;
     setInput("");
-    setPending((previous) => [...previous, text]);
+    const file = attachment;
+    setAttachment(null);
+    setAttachmentError("");
+    setPending((previous) => [...previous, file ? `${file.name}${text ? ` · ${text}` : ""}` : text]);
     setAwaiting(true);
-    await sendMessage(token, text).catch(() => undefined);
+    if (file) {
+      const ok = await sendFile(token, file, text).catch(() => false);
+      if (!ok) setAttachmentError("Не удалось отправить файл");
+    } else {
+      await sendMessage(token, text).catch(() => undefined);
+    }
     try { ingestPoll(await poll(token, lastId.current)); } catch { /* polling loop will retry */ }
     setPending([]);
     setAwaiting(false);
@@ -160,10 +173,10 @@ export function App() {
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", width: "100%", background: "#fff", fontFamily: "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif", color: "#1f1f1f", overflow: "hidden" }}>
       <ChatHeader accent={accent} letter={letter} title={title} statusLabel={status.label} statusDot={status.dot} unavailable={unavailable} onClose={closePanel} />
-      <ChatBody bodyRef={bodyRef} config={config} unavailable={unavailable} accepted={accepted} accent={accent} letter={letter} title={title} messages={messages} pending={pending} awaiting={awaiting} lastContactRequestId={lastContactRequestId} showPhoneForm={showPhoneForm} onSubmitContact={submitContact} audioUrlFor={token ? (id) => voiceAudioUrl(token, id) : undefined} />
+      <ChatBody bodyRef={bodyRef} config={config} unavailable={unavailable} accepted={accepted} accent={accent} letter={letter} title={title} messages={messages} pending={pending} awaiting={awaiting} lastContactRequestId={lastContactRequestId} showPhoneForm={showPhoneForm} onSubmitContact={submitContact} audioUrlFor={token ? (id) => voiceAudioUrl(token, id) : undefined} attachmentUrlFor={token ? (id, inline) => attachmentUrl(token, id, inline) : undefined} />
       {config?.available && accepted && call && (call.status === "REQUESTED" || call.status === "RINGING") && <CallInviteBanner call={call} accent={accent} onAccept={() => void acceptCallInvite()} onDecline={() => void declineCallInvite()} />}
       {config?.available && !accepted && <StartChatFooter accent={accent} starting={starting} onAccept={() => void accept()} />}
-      {config?.available && accepted && <ChatComposer accent={accent} state={state} quickReplies={config.quickReplies ?? []} pendingCount={pending.length} messageCount={messages.length} input={input} onInput={setInput} onSend={() => void send()} voice={recorder} />}
+      {config?.available && accepted && <ChatComposer accent={accent} state={state} quickReplies={config.quickReplies ?? []} pendingCount={pending.length} messageCount={messages.length} input={input} onInput={setInput} onSend={() => void send()} voice={recorder} attachment={{ file: attachment, errorText: attachmentError, pick: (file) => { if (!file) return; if (file.size > MAX_FILE_BYTES) { setAttachmentError("Файл больше 20 МБ"); return; } setAttachmentError(""); setAttachment(file); }, clear: () => setAttachment(null) }} />}
     </div>
   );
 }

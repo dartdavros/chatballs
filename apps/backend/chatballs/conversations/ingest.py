@@ -81,9 +81,14 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
     # Явный шаринг контакта: сообщение без текста, но с телефоном.
     is_contact_share = bool(inbound.phone)
     is_voice = bool(inbound.voice_file_id or inbound.voice_url or inbound.voice_content)
+    files = tuple(inbound.files or ())
+    # Файлы без текста: сообщение-контейнер не создаём, каждый файл — своя реплика.
+    files_only = bool(files) and not inbound.text and not is_contact_share and not is_voice
     message_text = inbound.text or (
         f"Поделился контактом: {inbound.phone}" if is_contact_share else ""
-    ) or ("Голосовое сообщение" if is_voice else "")
+    ) or ("Голосовое сообщение" if is_voice else "") or (
+        ("Фото" if files[0].is_image else f"Файл: {files[0].name}") if files else ""
+    )
 
     with transaction.atomic():
         identity = (
@@ -142,22 +147,31 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
         elif inbound.chat_id and not conversation.external_chat_id:
             conversation.external_chat_id = inbound.chat_id
 
-        message = Message.objects.create(
-            conversation=conversation,
-            author_type=MessageAuthor.CONTACT,
-            kind=(
-                MessageKind.CONTACT
-                if is_contact_share
-                else MessageKind.VOICE
-                if is_voice
-                else MessageKind.TEXT
-            ),
-            text="" if is_voice else message_text,
-            content_html=inbound.content_html,
-            external_id=inbound.external_id,
-        )
-        if is_voice:
-            _store_voice(integration, inbound, message)
+        if not files_only:
+            message = Message.objects.create(
+                conversation=conversation,
+                author_type=MessageAuthor.CONTACT,
+                kind=(
+                    MessageKind.CONTACT
+                    if is_contact_share
+                    else MessageKind.VOICE
+                    if is_voice
+                    else MessageKind.TEXT
+                ),
+                text="" if is_voice else message_text,
+                content_html=inbound.content_html,
+                external_id=inbound.external_id,
+            )
+            if is_voice:
+                _store_voice(integration, inbound, message)
+        for index, inbound_file in enumerate(files):
+            file_message = Message.objects.create(
+                conversation=conversation,
+                author_type=MessageAuthor.CONTACT,
+                kind=MessageKind.FILE,
+                external_id=f"{inbound.external_id}:file:{index}" if not files_only or index else inbound.external_id,
+            )
+            _store_attachment(integration, inbound_file, file_message)
         conversation.last_activity_at = timezone.now()
         update_fields = ["external_chat_id", "last_activity_at"]
         if conversation.control_mode == ControlMode.AI and not ai_available:
@@ -214,9 +228,10 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
         transports.send_contact_ack(integration, chat_id=conversation.external_chat_id, user_id=inbound.user_id, text=ack)
         return
 
-    # Голосовое AI не разбирает (расшифровка — по кнопке оператора): диалог
-    # уходит оператору, как при недоступном AI, но без имитации сбоя.
-    if is_voice:
+    # Голосовое AI не разбирает (расшифровка — по кнопке оператора), файлы без
+    # текста — тоже: диалог уходит оператору, как при недоступном AI, но без
+    # имитации сбоя.
+    if is_voice or files_only:
         if conversation.control_mode == ControlMode.AI:
             conversation.control_mode = ControlMode.PAUSED
             conversation.expected_responder = ExpectedResponder.OPERATOR
@@ -298,6 +313,27 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
         transports.send_reply(
             integration, chat_id=conversation.external_chat_id, user_id=inbound.user_id, text=reply
         )
+
+
+def _store_attachment(integration, inbound_file, message: Message) -> None:
+    """Скачивание и сохранение файла/фото. Сбой скачивания не теряет сообщение:
+    остаётся текстовая заглушка с именем файла."""
+    from django.core.files.base import ContentFile
+
+    try:
+        content, content_type = transports.download_file(integration, inbound_file)
+    except Exception as error:  # noqa: BLE001 - провайдер/сеть, деградация мягкая
+        logger.warning("Attachment download failed for message %s: %s", message.id, error)
+        message.kind = MessageKind.TEXT
+        message.text = f"Файл «{inbound_file.name or 'без имени'}» (не удалось загрузить)"
+        message.save(update_fields=["kind", "text"])
+        return
+    name = inbound_file.name or ("photo.jpg" if inbound_file.is_image else "file")
+    message.attachment_name = name
+    message.attachment_content_type = content_type
+    message.attachment_size = len(content)
+    message.attachment.save(name, ContentFile(content), save=False)
+    message.save(update_fields=["attachment", "attachment_name", "attachment_content_type", "attachment_size"])
 
 
 def _store_voice(integration, inbound: InboundMessage, message: Message) -> None:

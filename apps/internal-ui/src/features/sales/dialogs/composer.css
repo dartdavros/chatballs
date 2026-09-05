@@ -323,6 +323,123 @@
   background: var(--primary-hover);
 }
 
+/* --- Вложение в композере: чип над полем ввода --- */
+
+.composer-attachment {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 14px 0;
+  padding: 6px 8px 6px 10px;
+  border: 1px solid var(--n-8);
+  border-radius: 8px;
+  background: var(--n-9);
+  color: var(--n-3);
+  font-size: 12.5px;
+  max-width: 420px;
+}
+
+.composer-attachment strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+  color: var(--n-2);
+}
+
+.composer-attachment small {
+  flex: none;
+  color: var(--n-5);
+  font-size: 11.5px;
+}
+
+.composer-attachment button {
+  flex: none;
+  display: inline-flex;
+  padding: 0;
+  margin-left: auto;
+  border: 0;
+  background: transparent;
+  color: var(--n-4);
+}
+
+.composer-attachment button:hover {
+  color: var(--n-2);
+}
+
+/* --- Файлы и фото в ленте --- */
+
+.file-message.is-image {
+  margin: -4px -8px;
+}
+
+.file-message-image {
+  display: block;
+  max-width: 320px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.file-message-image img {
+  display: block;
+  width: 100%;
+  max-height: 320px;
+  object-fit: cover;
+}
+
+.file-message-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 240px;
+}
+
+.file-message-icon {
+  width: 36px;
+  height: 36px;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--primary) 14%, transparent);
+  color: var(--primary);
+}
+
+.file-message-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.file-message-meta strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.file-message-meta small {
+  margin: 0;
+  font-size: 11.5px;
+  color: var(--n-5);
+}
+
+.file-message-caption {
+  margin: 8px 0 0;
+}
+
+.file-message.is-image .file-message-caption {
+  margin: 8px 8px 4px;
+}
+
+.file-message-missing {
+  color: var(--n-5);
+  font-style: italic;
+}
+
 /* --- Голосовые в ленте: плеер, волна, расшифровка --- */
 
 .voice-message {

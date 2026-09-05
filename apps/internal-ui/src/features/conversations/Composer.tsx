@@ -3,10 +3,13 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Icon } from "../../shared/icons";
 import { EmojiPicker } from "./EmojiPicker";
 import { useMediaQuery } from "../../shared/useMediaQuery";
-import { fetchReplyTemplates, sendOperatorMessage, sendVoiceMessage, type ReplyTemplateRef } from "./model";
+import { fetchReplyTemplates, sendFileMessage, sendOperatorMessage, sendVoiceMessage, type ReplyTemplateRef } from "./model";
+import { formatSize } from "../ai/knowledge/model";
 import { formatDuration } from "./VoiceMessage";
 import { useVoiceRecorder } from "./useVoiceRecorder";
 import type { ChannelKey, ControlMode } from "./types";
+
+const MAX_FILE_BYTES = 20 * 1024 * 1024;
 
 export function Composer({ mode, loaded, assignedOperatorName, conversationId, channel, onClaim, onRelease, onReturnQueue, onClose, onSent }: { mode: ControlMode; loaded: boolean; assignedOperatorName?: string; conversationId: number | null; channel?: ChannelKey; onClaim: () => void; onRelease: () => void; onReturnQueue: () => void; onClose: () => void; onSent: () => void }) {
   const [text, setText] = useState("");
@@ -15,7 +18,12 @@ export function Composer({ mode, loaded, assignedOperatorName, conversationId, c
   const [sendError, setSendError] = useState("");
   const [templates, setTemplates] = useState<ReplyTemplateRef[]>([]);
   const [templatesOpen, setTemplatesOpen] = useState(false);
+  const [attachment, setAttachment] = useState<File | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Сброс черновика вложения при смене диалога.
+  useEffect(() => { setAttachment(null); setSendError(""); }, [conversationId]);
 
   useEffect(() => {
     fetchReplyTemplates().then(setTemplates).catch(() => setTemplates([]));
@@ -93,11 +101,17 @@ export function Composer({ mode, loaded, assignedOperatorName, conversationId, c
 
   async function send() {
     const value = text.trim();
-    if (!value || conversationId == null || sending) return;
+    if ((!value && !attachment) || conversationId == null || sending) return;
     setSending(true);
     setSendError("");
     try {
-      await sendOperatorMessage(conversationId, value);
+      if (attachment) {
+        // Файл уходит с подписью — текст поля становится подписью к файлу.
+        await sendFileMessage(conversationId, attachment, value);
+        setAttachment(null);
+      } else {
+        await sendOperatorMessage(conversationId, value);
+      }
       setText("");
       onSent();
     } catch (error) {
@@ -105,6 +119,17 @@ export function Composer({ mode, loaded, assignedOperatorName, conversationId, c
     } finally {
       setSending(false);
     }
+  }
+
+  function pickFile(file: File | null) {
+    if (!file) return;
+    if (file.size > MAX_FILE_BYTES) {
+      setSendError("Файл больше 20 МБ");
+      return;
+    }
+    setSendError("");
+    setAttachment(file);
+    textareaRef.current?.focus();
   }
 
   if (recorder.state !== "idle") {
@@ -151,10 +176,20 @@ export function Composer({ mode, loaded, assignedOperatorName, conversationId, c
               ))}
             </div>
           )}
+          {attachment && (
+            <div className="composer-attachment">
+              <Icon name="paperclip" size={14} />
+              <strong title={attachment.name}>{attachment.name}</strong>
+              <small>{formatSize(attachment.size)}</small>
+              <button aria-label="Убрать файл" title="Убрать файл" type="button" disabled={sending} onClick={() => { setAttachment(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}>
+                <Icon name="xCircle" size={15} />
+              </button>
+            </div>
+          )}
           <textarea
             ref={textareaRef}
             rows={1}
-            placeholder={compact ? "Сообщение…" : "Введите сообщение… Shift+Enter — перенос строки, «/» — шаблон ответа"}
+            placeholder={attachment ? "Подпись к файлу (необязательно)…" : compact ? "Сообщение…" : "Введите сообщение… Shift+Enter — перенос строки, «/» — шаблон ответа"}
             value={text}
             onChange={(event) => setText(event.target.value)}
             onKeyDown={(event) => {
@@ -166,9 +201,17 @@ export function Composer({ mode, loaded, assignedOperatorName, conversationId, c
               }
             }}
             onBlur={() => setTemplatesOpen(false)}
+            onPaste={(event) => {
+              const file = Array.from(event.clipboardData?.files ?? [])[0];
+              if (file) { event.preventDefault(); pickFile(file); }
+            }}
           />
           <div className="composer-toolbar">
             <EmojiPicker onPick={insertEmoji} disabled={sending} />
+            <button className="composer-tool" title="Прикрепить" aria-label="Прикрепить файл" type="button" disabled={sending} onClick={() => fileInputRef.current?.click()}>
+              <Icon name="paperclip" size={17} />
+            </button>
+            <input ref={fileInputRef} type="file" hidden onChange={(event) => { pickFile(event.target.files?.[0] ?? null); event.target.value = ""; }} />
             {voiceAvailable && (
               <button className="composer-tool" title="Записать голосовое" aria-label="Записать голосовое" type="button" onClick={() => void recorder.start()}>
                 <Icon name="mic" size={17} />
@@ -180,7 +223,7 @@ export function Composer({ mode, loaded, assignedOperatorName, conversationId, c
               </button>
             )}
             <span className="composer-spacer" />
-            <button className="composer-send" type="button" onClick={() => void send()} disabled={sending}><span>Отправить</span><kbd>⏎</kbd><Icon name="send" size={17} /></button>
+            <button className="composer-send" type="button" onClick={() => void send()} disabled={sending || (!text.trim() && !attachment)}><span>Отправить</span><kbd>⏎</kbd><Icon name="send" size={17} /></button>
           </div>
         </div>
       </div>

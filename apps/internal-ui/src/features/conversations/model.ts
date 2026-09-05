@@ -17,7 +17,15 @@ export type ApiMessage = {
   durationSeconds?: number;
   transcript?: string;
   transcriptStatus?: "NONE" | "READY" | "FAILED";
+  // Файл или фото (kind="file"): text — подпись.
+  attachmentUrl?: string | null;
+  attachmentName?: string;
+  attachmentContentType?: string;
+  attachmentSize?: number;
 };
+
+export const isImageAttachment = (message: Pick<ApiMessage, "attachmentContentType">) =>
+  /^image\/(jpeg|png|gif|webp)$/.test(message.attachmentContentType ?? "");
 
 export type HistoryItem = {
   id: number;
@@ -200,7 +208,9 @@ export function toConversationListItem(conversation: ApiConversation): Conversat
     preview:
       conversation.lastMessage?.kind === "voice"
         ? `Голосовое сообщение · ${formatPreviewDuration(conversation.lastMessage.durationSeconds ?? 0)}`
-        : conversation.lastMessage?.text.replace(/\s+/g, " ").slice(0, 80) ?? "—",
+        : conversation.lastMessage?.kind === "file"
+          ? (isImageAttachment(conversation.lastMessage) ? "Фото" : `Файл · ${conversation.lastMessage.attachmentName || ""}`) + (conversation.lastMessage.text ? ` · ${conversation.lastMessage.text.replace(/\s+/g, " ").slice(0, 60)}` : "")
+          : conversation.lastMessage?.text.replace(/\s+/g, " ").slice(0, 80) ?? "—",
     time: listTime(conversation.lastActivityAt),
     unread: conversation.pendingCount ?? 0,
     isMine: conversation.isAssignedToViewer,
@@ -310,6 +320,14 @@ export const sendVoiceMessage = (conversationId: number, audio: Blob, durationSe
   form.append("audio", audio, `voice.${extension}`);
   form.append("duration", String(Math.round(durationSeconds)));
   return apiUpload<{ message: ApiMessage }>(`/api/v1/conversations/${conversationId}/voice/`, form).then((r) => r.message);
+};
+
+// Файл из композера («Прикрепить»): multipart file + подпись text.
+export const sendFileMessage = (conversationId: number, file: File, caption: string) => {
+  const form = new FormData();
+  form.append("file", file, file.name);
+  if (caption) form.append("text", caption);
+  return apiUpload<{ message: ApiMessage }>(`/api/v1/conversations/${conversationId}/attachments/`, form).then((r) => r.message);
 };
 
 // --- Онлайн-звонки (SPEC-HUB-0013): запрос из диалога, ожидание, отмена ---

@@ -226,7 +226,7 @@ class EmailNormalizeTests(TestCase):
 
 
 
-    def test_attachments_add_note(self) -> None:
+    def test_attachments_become_inbound_files(self) -> None:
 
         inbound, _ = email_transport._normalize(
 
@@ -234,7 +234,27 @@ class EmailNormalizeTests(TestCase):
 
         )
 
-        self.assertIn("[Вложения не поддерживаются: 1 файл(ов)]", inbound.text)
+        self.assertEqual(inbound.text, "Здравствуйте!")
+
+        self.assertEqual(len(inbound.files), 1)
+
+        self.assertEqual(inbound.files[0].name, "doc.pdf")
+
+        self.assertEqual(inbound.files[0].content_type, "application/pdf")
+
+        self.assertEqual(inbound.files[0].content, b"%PDF")
+
+        # Письмо только с вложением — тоже сообщение.
+
+        inbound, _ = email_transport._normalize(
+
+            _parsed(_raw(text="", attach=True)), own_address="support@example.com", fallback_id="7:101"
+
+        )
+
+        self.assertIsNotNone(inbound)
+
+        self.assertEqual(len(inbound.files), 1)
 
 
 

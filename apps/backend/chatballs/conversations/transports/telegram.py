@@ -14,7 +14,15 @@ import urllib.error
 
 from django.conf import settings
 
-from chatballs.conversations.transports.base import InboundMessage, download_bytes, request_json, request_json_multipart
+from chatballs.conversations.transports.base import (
+    InboundFile,
+    InboundMessage,
+    download_bytes,
+    guess_content_type,
+    request_json,
+    request_json_multipart,
+    safe_filename,
+)
 from chatballs.integrations.checks import DEFAULT_TELEGRAM_BASE_URL
 
 logger = logging.getLogger(__name__)
@@ -38,7 +46,11 @@ def _normalize(update: dict) -> InboundMessage | None:
     # Голосовое (дизайн-базлайн v2): file_id скачивается в ingest через getFile.
     voice = message.get("voice") or {}
     voice_file_id = str(voice.get("file_id") or "")
-    if (not text and not phone and not voice_file_id) or "id" not in sender or "id" not in chat:
+    files = _files(message)
+    if files and not text:
+        # Подпись к файлу/фото — текст сообщения.
+        text = message.get("caption") or ""
+    if (not text and not phone and not voice_file_id and not files) or "id" not in sender or "id" not in chat:
         return None
     name = " ".join(p for p in [sender.get("first_name"), sender.get("last_name")] if p) or sender.get("username") or ""
     return InboundMessage(
@@ -52,7 +64,39 @@ def _normalize(update: dict) -> InboundMessage | None:
         voice_file_id=voice_file_id,
         voice_duration=int(voice.get("duration") or 0),
         voice_mime=str(voice.get("mime_type") or "audio/ogg"),
+        files=files,
     )
+
+
+def _files(message: dict) -> tuple[InboundFile, ...]:
+    """Документ или фото (берём самый крупный размер из массива photo)."""
+    document = message.get("document") or {}
+    if document.get("file_id"):
+        name = safe_filename(document.get("file_name"), "document")
+        mime = str(document.get("mime_type") or guess_content_type(name))
+        return (
+            InboundFile(
+                name=name,
+                content_type=mime,
+                size=int(document.get("file_size") or 0),
+                file_id=str(document["file_id"]),
+                is_image=mime.startswith("image/"),
+            ),
+        )
+    photos = message.get("photo") or []
+    if photos:
+        best = photos[-1]
+        if best.get("file_id"):
+            return (
+                InboundFile(
+                    name="photo.jpg",
+                    content_type="image/jpeg",
+                    size=int(best.get("file_size") or 0),
+                    file_id=str(best["file_id"]),
+                    is_image=True,
+                ),
+            )
+    return ()
 
 
 def poll_updates(integration) -> tuple[list[InboundMessage], str]:
@@ -114,6 +158,47 @@ def send_call_invite(integration, *, chat_id: str, user_id: str, text: str, url:
     # Приглашение на онлайн-звонок: inline-кнопка со ссылкой /calls/<token>.
     keyboard = {"inline_keyboard": [[{"text": "Перейти к звонку", "url": url}]]}
     return _send(integration, chat_id=chat_id, user_id=user_id, body={"text": text, "reply_markup": keyboard})
+
+
+def download_file(integration, file_id: str) -> tuple[bytes, str]:
+    """Скачивание файла по file_id: getFile -> file_path -> /file/bot<token>/<path>."""
+    token = integration.secret
+    data = request_json(
+        f"{_base(integration)}/bot{token}/getFile?file_id={file_id}",
+        proxy_url=_proxy(integration),
+    )
+    file_path = ((data.get("result") or {}).get("file_path") or "")
+    if not data.get("ok") or not file_path:
+        raise ValueError("Telegram getFile failed")
+    content = download_bytes(
+        f"{_base(integration)}/file/bot{token}/{file_path}",
+        proxy_url=_proxy(integration),
+    )
+    return content, guess_content_type(file_path)
+
+
+def send_file(integration, *, chat_id: str, user_id: str, content: bytes, filename: str, content_type: str, caption: str = "") -> bool:
+    """Отправка файла оператора: фото — sendPhoto (превью у клиента), остальное — sendDocument."""
+    token = integration.secret
+    target = chat_id or user_id
+    if not token or not target:
+        return False
+    as_photo = content_type in ("image/jpeg", "image/png") and len(content) <= 10 * 1024 * 1024
+    method, field_name = ("sendPhoto", "photo") if as_photo else ("sendDocument", "document")
+    try:
+        data = request_json_multipart(
+            f"{_base(integration)}/bot{token}/{method}",
+            fields={"chat_id": target, **({"caption": caption[:1024]} if caption else {})},
+            file_field=field_name,
+            filename=filename,
+            content=content,
+            content_type=content_type,
+            proxy_url=_proxy(integration),
+        )
+        return bool(data.get("ok"))
+    except (urllib.error.URLError, TimeoutError, OSError, http.client.HTTPException, json.JSONDecodeError) as error:
+        logger.warning("Telegram %s failed for integration %s: %s", method, integration.id, error)
+        return False
 
 
 def download_voice(integration, file_id: str) -> tuple[bytes, str]:

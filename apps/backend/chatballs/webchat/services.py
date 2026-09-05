@@ -13,6 +13,7 @@ from chatballs.conversations.models import (
     Conversation,
     ControlMode,
     LifecycleState,
+    MessageKind,
 )
 from chatballs.conversations.transports.base import InboundMessage
 from chatballs.integrations.models import Integration, IntegrationProvider
@@ -191,6 +192,24 @@ def post_voice(session: WebSession, *, content: bytes, content_type: str, durati
     _remember_widget(session)
 
 
+def post_file(session: WebSession, *, content: bytes, filename: str, content_type: str, caption: str = "") -> None:
+    """Файл из виджета: байты приходят телом запроса, подпись — текстом."""
+    from chatballs.conversations.transports.base import InboundFile, guess_content_type, safe_filename
+
+    name = safe_filename(filename)
+    mime = content_type or guess_content_type(name)
+    inbound = InboundMessage(
+        external_id=uuid.uuid4().hex,
+        user_id=session.identity.external_user_id,
+        chat_id="",
+        text=caption,
+        display_name=session.identity.display_name,
+        files=(InboundFile(name=name, content_type=mime, size=len(content), content=content, is_image=mime.startswith("image/")),),
+    )
+    ingest_inbound(session.connection, inbound)
+    _remember_widget(session)
+
+
 def _remember_widget(session: WebSession) -> None:
     conversation = (
         Conversation.objects.filter(
@@ -271,6 +290,18 @@ def messages_payload(session: WebSession, since: int) -> dict:
                 "createdAt": m.created_at.isoformat(),
                 "durationSeconds": m.duration_seconds,
                 "hasAudio": bool(m.audio),
+                **(
+                    {
+                        "attachment": {
+                            "name": m.attachment_name,
+                            "contentType": m.attachment_content_type,
+                            "size": m.attachment_size,
+                            "available": bool(m.attachment),
+                        }
+                    }
+                    if m.kind == MessageKind.FILE
+                    else {}
+                ),
             }
             for m in items
         ],

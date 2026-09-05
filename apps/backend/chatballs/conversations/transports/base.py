@@ -6,11 +6,29 @@ from __future__ import annotations
 
 import json
 import urllib.request
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from django.conf import settings
 
 from chatballs.integrations.proxy import build_opener
+
+
+MAX_ATTACHMENT_BYTES = 20 * 1024 * 1024
+
+
+@dataclass(frozen=True)
+class InboundFile:
+    """Файл/фото во входящем сообщении: у провайдера (file_id или url) либо
+    телом запроса (web-виджет, письмо)."""
+
+    name: str = ""
+    content_type: str = ""
+    size: int = 0
+    file_id: str = ""
+    url: str = ""
+    content: bytes = b""
+    # Фото (превью в ленте) vs документ.
+    is_image: bool = False
 
 
 @dataclass(frozen=True)
@@ -41,6 +59,8 @@ class InboundMessage:
     voice_content: bytes = b""
     voice_duration: int = 0
     voice_mime: str = ""
+    # Файлы и фото: каждый становится отдельным сообщением kind=file.
+    files: tuple[InboundFile, ...] = field(default_factory=tuple)
 
 
 def request_json(url: str, *, headers: dict | None = None, method: str = "GET", body: dict | None = None, proxy_url: str = "") -> dict:
@@ -59,7 +79,7 @@ def first(d: dict, *keys, default=None):
     return default
 
 
-def download_bytes(url: str, *, proxy_url: str = "", max_bytes: int = 20 * 1024 * 1024) -> bytes:
+def download_bytes(url: str, *, proxy_url: str = "", max_bytes: int = MAX_ATTACHMENT_BYTES) -> bytes:
     """Скачивание файла провайдера (голосовые ~десятки КБ; жёсткий предел 20МБ)."""
     request = urllib.request.Request(url)
     with build_opener(proxy_url).open(request, timeout=settings.CHATBALLS_AI_REQUEST_TIMEOUT) as response:
@@ -94,6 +114,20 @@ def multipart_body(
     parts.append(content)
     parts.append((crlf + "--" + boundary + "--" + crlf).encode("utf-8"))
     return b"".join(parts), "multipart/form-data; boundary=" + boundary
+
+
+def guess_content_type(filename: str, fallback: str = "application/octet-stream") -> str:
+    import mimetypes
+
+    guessed, _encoding = mimetypes.guess_type(filename)
+    return guessed or fallback
+
+
+def safe_filename(name: str, fallback: str = "file") -> str:
+    """Имя файла без путей и управляющих символов; пустое → fallback."""
+    cleaned = str(name or "").replace("\\", "/").rsplit("/", 1)[-1]
+    cleaned = "".join(ch for ch in cleaned if ch.isprintable() and ch != chr(34)).strip()
+    return cleaned[:200] or fallback
 
 
 def request_json_multipart(

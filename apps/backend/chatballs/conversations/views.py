@@ -207,6 +207,29 @@ class ConversationReturnQueueView(ConversationViewBase):
         )
 
 
+def claim_for_reply(view: ConversationViewBase, request: Request, conversation: Conversation) -> Conversation | Response:
+    """Одно действие взятия (дизайн-базлайн v2, решение 2; ADR-HUB-0003): первая
+    реплика сотрудника (текст или файл) атомарно перехватывает диалог у
+    AI/очереди. Возвращает диалог или готовый ответ с ошибкой."""
+    if conversation.control_mode != ControlMode.HUMAN:
+        try:
+            with transaction.atomic():
+                conversation = claim_conversation(
+                    context=request.tenant_context, conversation_id=conversation.id
+                )
+        except ClaimError as error:
+            return Response({"detail": str(error)}, status=409)
+        view._audit(request, "claimed", conversation)
+    manager_override = authorize(
+        request.tenant_context.membership,
+        view.required_capability,
+        ResourceScope(conversation.organization_id),
+    )
+    if conversation.assigned_operator_id != request.user.id and not manager_override:
+        return Response({"detail": "Диалог ведёт другой оператор"}, status=409)
+    return conversation
+
+
 class ConversationMessageView(ConversationViewBase):
     required_capability = "conversations.operate"
 
@@ -220,24 +243,10 @@ class ConversationMessageView(ConversationViewBase):
             return Response({"detail": "Пустое сообщение"}, status=400)
         if conversation.lifecycle != LifecycleState.OPEN:
             return Response({"detail": "Диалог закрыт"}, status=409)
-        if conversation.control_mode != ControlMode.HUMAN:
-            # Одно действие взятия (дизайн-базлайн v2, решение 2; ADR-HUB-0003):
-            # первое сообщение сотрудника атомарно перехватывает диалог у AI/очереди.
-            try:
-                with transaction.atomic():
-                    conversation = claim_conversation(
-                        context=request.tenant_context, conversation_id=conversation.id
-                    )
-            except ClaimError as error:
-                return Response({"detail": str(error)}, status=409)
-            self._audit(request, "claimed", conversation)
-        manager_override = authorize(
-            request.tenant_context.membership,
-            self.required_capability,
-            ResourceScope(conversation.organization_id),
-        )
-        if conversation.assigned_operator_id != request.user.id and not manager_override:
-            return Response({"detail": "Диалог ведёт другой оператор"}, status=409)
+        claimed = claim_for_reply(self, request, conversation)
+        if isinstance(claimed, Response):
+            return claimed
+        conversation = claimed
         try:
             message = post_operator_message(
                 context=request.tenant_context, conversation=conversation, text=text

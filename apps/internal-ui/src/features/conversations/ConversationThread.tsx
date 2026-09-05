@@ -5,6 +5,7 @@ import { IconButton } from "../../shared/ui-controls";
 import { ConversationActions } from "./ConversationActions";
 import { ContactAvatar } from "./ContactAvatar";
 import { EmailMessageBody } from "./EmailMessageBody";
+import { FileMessage } from "./FileMessage";
 import { VoiceMessage } from "./VoiceMessage";
 import { statusFor } from "./data";
 import { providerMeta } from "../../shared/providers";
@@ -102,6 +103,8 @@ function MessageRow({ message, dialog, viewerId }: { message: ApiMessage; dialog
     <Message side={side} actor={actor} actorColor={message.author === "AI" ? dialog.agentColor : undefined} time={fmtTime(message.createdAt)} authorInitials={message.authorName ? initialsOf(message.authorName) : ""} authorAvatarUrl={message.authorAvatarUrl ?? null}>
       {message.kind === "voice"
         ? <VoiceMessage message={message} />
+        : message.kind === "file"
+          ? <FileMessage message={message} />
         : message.author === "CONTACT" && dialog.channel === "EMAIL"
           ? <EmailMessageBody html={message.contentHtml} text={message.text} />
           : message.text}

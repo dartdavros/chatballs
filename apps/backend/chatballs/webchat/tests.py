@@ -122,6 +122,65 @@ class PublicWebChatWidgetTests(TestCase):
         denied = self.client.get(f"/api/v1/webchat/messages/{message.id}/audio/?token={foreign_token}")
         self.assertEqual(denied.status_code, 404)
 
+    def test_file_message_round_trip(self) -> None:
+        # Файл из виджета: multipart → FILE-сообщение с подписью; вложение
+        # отдаётся только владельцу токена сессии.
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        from chatballs.conversations.models import ControlMode, Conversation, MessageKind
+
+        widget = create_web_widget(self.channel, name="Виджет")
+        token = self._session(widget.public_key).json()["token"]
+
+        posted = self.client.post(
+            "/api/v1/webchat/messages/",
+            data={"file": SimpleUploadedFile("чек.png", b"PNGDATA", content_type="image/png"), "text": "Чек"},
+            format="multipart",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        self.assertEqual(posted.status_code, 201, posted.content)
+
+        conversation = Conversation.objects.get(channel=self.channel)
+        kinds = [m.kind for m in conversation.messages.order_by("id")]
+        self.assertEqual(kinds[:2], [MessageKind.TEXT, MessageKind.FILE])
+        message = conversation.messages.get(kind=MessageKind.FILE)
+        self.assertEqual(message.attachment_name, "чек.png")
+        self.assertEqual(message.attachment_content_type, "image/png")
+        self.assertTrue(message.attachment)
+
+        payload = self.client.get(
+            "/api/v1/webchat/messages/?since=0",
+            headers={"Authorization": f"Bearer {token}"},
+        ).json()
+        item = next(m for m in payload["messages"] if m["kind"] == MessageKind.FILE)
+        self.assertEqual(item["attachment"]["name"], "чек.png")
+        self.assertTrue(item["attachment"]["available"])
+
+        served = self.client.get(f"/api/v1/webchat/messages/{message.id}/attachment/?token={token}&inline")
+        self.assertEqual(served.status_code, 200)
+        self.assertEqual(served.headers["Content-Type"], "image/png")
+
+        foreign_token = self._session(widget.public_key).json()["token"]
+        denied = self.client.get(f"/api/v1/webchat/messages/{message.id}/attachment/?token={foreign_token}")
+        self.assertEqual(denied.status_code, 404)
+
+        blocked = self.client.post(
+            "/api/v1/webchat/messages/",
+            data={"file": SimpleUploadedFile("run.exe", b"MZ", content_type="application/octet-stream")},
+            format="multipart",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        self.assertEqual(blocked.status_code, 400)
+        # Файл без текста — диалог уходит оператору (AI файлы не разбирает).
+        self.client.post(
+            "/api/v1/webchat/messages/",
+            data={"file": SimpleUploadedFile("a.txt", b"12", content_type="text/plain")},
+            format="multipart",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        conversation.refresh_from_db()
+        self.assertEqual(conversation.control_mode, ControlMode.PAUSED)
+
     def test_widget_origin_policy_is_scoped_per_widget(self) -> None:
         allowed = create_web_widget(
             self.channel,

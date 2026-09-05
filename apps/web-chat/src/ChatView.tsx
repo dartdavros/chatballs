@@ -27,7 +27,7 @@ export function ChatHeader({ accent, letter, title, statusLabel, statusDot, unav
   );
 }
 
-export function ChatBody({ bodyRef, config, unavailable, accepted, accent, letter, title, messages, pending, awaiting, lastContactRequestId, showPhoneForm, onSubmitContact, audioUrlFor }: {
+export function ChatBody({ bodyRef, config, unavailable, accepted, accent, letter, title, messages, pending, awaiting, lastContactRequestId, showPhoneForm, onSubmitContact, audioUrlFor, attachmentUrlFor }: {
   bodyRef: RefObject<HTMLDivElement | null>;
   config: WebConfig | null;
   unavailable: boolean;
@@ -42,6 +42,7 @@ export function ChatBody({ bodyRef, config, unavailable, accepted, accent, lette
   showPhoneForm: boolean;
   onSubmitContact: (phone: string) => Promise<boolean>;
   audioUrlFor?: (messageId: number) => string;
+  attachmentUrlFor?: (messageId: number, inline: boolean) => string;
 }) {
   return (
     <div ref={bodyRef} style={{ flex: 1, minHeight: 0, overflowY: "auto", background: "#f7f8fa", padding: "18px 16px" }}>
@@ -54,7 +55,7 @@ export function ChatBody({ bodyRef, config, unavailable, accepted, accent, lette
           {config.greeting && <Bubble author="ai" text={config.greeting} accent={accent} />}
           {messages.map((message) => message.author === "system"
             ? <SystemMessage key={message.id} text={message.text} />
-            : <div key={message.id}><Bubble author={message.author} text={message.hasAudio ? "" : message.text || "Голосовое сообщение"} accent={accent} time={message.createdAt} audioUrl={message.hasAudio && audioUrlFor ? audioUrlFor(message.id) : undefined} />{message.kind === "contact_request" && message.id === lastContactRequestId && showPhoneForm && <PhoneForm accent={accent} onSubmit={onSubmitContact} />}</div>)}
+            : <div key={message.id}><Bubble author={message.author} text={message.hasAudio ? "" : message.text || (message.kind === "voice" ? "Голосовое сообщение" : "")} accent={accent} time={message.createdAt} audioUrl={message.hasAudio && audioUrlFor ? audioUrlFor(message.id) : undefined} attachment={message.kind === "file" && message.attachment ? { ...message.attachment, url: message.attachment.available && attachmentUrlFor ? attachmentUrlFor(message.id, false) : "", inlineUrl: message.attachment.available && attachmentUrlFor ? attachmentUrlFor(message.id, true) : "" } : undefined} />{message.kind === "contact_request" && message.id === lastContactRequestId && showPhoneForm && <PhoneForm accent={accent} onSubmit={onSubmitContact} />}</div>)}
           {pending.map((text, index) => <Bubble key={`p${index}`} author="client" text={text} accent={accent} pendingState />)}
           {awaiting && <Typing />}
         </>
@@ -81,8 +82,11 @@ export function StartChatFooter({ accent, starting, onAccept }: { accent: string
 
 const COMPOSER_MAX_HEIGHT = 132;
 
-export function ChatComposer({ accent, state, quickReplies, pendingCount, messageCount, input, placeholder, onInput, onSend, voice }: { accent: string; state: "ai" | "operator" | "waiting"; quickReplies: string[]; pendingCount: number; messageCount: number; input: string; placeholder?: string; onInput: (value: string) => void; onSend: () => void; voice?: ComposerVoice }) {
+export type ComposerAttachment = { file: File | null; errorText: string; pick: (file: File | null) => void; clear: () => void };
+
+export function ChatComposer({ accent, state, quickReplies, pendingCount, messageCount, input, placeholder, onInput, onSend, voice, attachment }: { accent: string; state: "ai" | "operator" | "waiting"; quickReplies: string[]; pendingCount: number; messageCount: number; input: string; placeholder?: string; onInput: (value: string) => void; onSend: () => void; voice?: ComposerVoice; attachment?: ComposerAttachment }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Поле растёт под текст, как в мессенджере (до COMPOSER_MAX_HEIGHT, дальше скролл).
   useEffect(() => {
@@ -113,10 +117,25 @@ export function ChatComposer({ accent, state, quickReplies, pendingCount, messag
   return (
     <div style={{ flex: "none", background: "#fff", borderTop: "1px solid #f0f0f0", padding: "12px 14px 14px" }}>
       {voice?.errorText && <div style={{ marginBottom: 8, fontSize: 12, color: "#cf1322" }}>{voice.errorText}</div>}
+      {attachment?.errorText && <div style={{ marginBottom: 8, fontSize: 12, color: "#cf1322" }}>{attachment.errorText}</div>}
+      {attachment?.file && (
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, padding: "6px 8px 6px 10px", border: "1px solid #e8e8e8", borderRadius: 10, background: "#fafafa", fontSize: 12.5, color: "#434343" }}>
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#8c8c8c" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48" /></svg>
+          <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 600 }}>{attachment.file.name}</span>
+          <span style={{ color: "#8c8c8c", fontSize: 11.5, flex: "none" }}>{formatBytes(attachment.file.size)}</span>
+          <button onClick={attachment.clear} aria-label="Убрать файл" style={{ border: "none", background: "transparent", padding: 0, display: "flex", cursor: "pointer", color: "#8c8c8c", flex: "none" }}><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="m15 9-6 6M9 9l6 6" /></svg></button>
+        </div>
+      )}
       {state === "ai" && quickReplies.length > 0 && pendingCount === 0 && messageCount === 0 && <div style={{ display: "flex", gap: 7, flexWrap: "wrap", marginBottom: 10 }}>{quickReplies.map((reply) => <button key={reply} onClick={() => onInput(reply)} style={{ padding: "7px 13px", borderRadius: 16, border: "1px solid #d6e4ff", background: "#f0f7ff", color: "#0958d9", fontSize: 12.5, fontWeight: 500, cursor: "pointer" }}>{reply}</button>)}</div>}
       <div style={{ display: "flex", alignItems: "flex-end", gap: 8, border: "1px solid #e8e8e8", borderRadius: 14, padding: "6px 6px 6px 14px", background: "#fff" }}>
         <textarea ref={textareaRef} rows={1} value={input} onChange={(event) => onInput(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); onSend(); } }} placeholder={placeholder ?? "Напишите сообщение…"} style={{ flex: 1, border: "none", outline: "none", resize: "none", fontSize: 14, lineHeight: 1.5, color: "#262626", fontFamily: "inherit", padding: "7px 0", maxHeight: COMPOSER_MAX_HEIGHT }} />
-        {voice?.supported && !input.trim() && (
+        {attachment && (
+          <>
+            <button onClick={() => fileInputRef.current?.click()} aria-label="Прикрепить файл" style={{ width: 36, height: 36, borderRadius: 10, border: "none", background: "transparent", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flex: "none" }}><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="#8c8c8c" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48" /></svg></button>
+            <input ref={fileInputRef} type="file" hidden onChange={(event) => { attachment.pick(event.target.files?.[0] ?? null); event.target.value = ""; }} />
+          </>
+        )}
+        {voice?.supported && !input.trim() && !attachment?.file && (
           <button onClick={() => void voice.start()} aria-label="Записать голосовое" style={{ width: 36, height: 36, borderRadius: 10, border: "none", background: "transparent", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flex: "none" }}><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="#8c8c8c" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" /><path d="M19 10v2a7 7 0 0 1-14 0v-2" /><line x1="12" y1="19" x2="12" y2="22" /></svg></button>
         )}
         <button onClick={onSend} aria-label="Отправить" style={{ width: 36, height: 36, borderRadius: 10, border: "none", background: accent, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flex: "none" }}><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg></button>
@@ -143,11 +162,51 @@ function formatTime(iso: string | undefined): string {
 
 const META: React.CSSProperties = { fontSize: 11, color: "#bfbfbf", marginTop: 4 };
 
-export function Bubble({ author, text, accent, time, pendingState, audioUrl }: { author: "client" | "ai" | "operator"; text: string; accent: string; time?: string; pendingState?: boolean; audioUrl?: string }) {
+export function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} Б`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} КБ`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} МБ`;
+}
+
+export type BubbleAttachment = { name: string; contentType: string; size: number; available: boolean; url: string; inlineUrl: string };
+
+// Фото догружается после появления пузыря: лента, прижатая к низу, доезжает до него.
+function scrollFeedToLatest(event: React.SyntheticEvent<HTMLImageElement>) {
+  let node: HTMLElement | null = event.currentTarget.parentElement;
+  while (node && !(node.scrollHeight > node.clientHeight && /(auto|scroll)/.test(getComputedStyle(node).overflowY))) node = node.parentElement;
+  if (node && node.scrollHeight - node.scrollTop - node.clientHeight < 400) node.scrollTop = node.scrollHeight;
+}
+
+function AttachmentContent({ attachment, text, light }: { attachment: BubbleAttachment; text: string; light: boolean }) {
+  const color = light ? "#fff" : "#262626";
+  const muted = light ? "rgba(255,255,255,.75)" : "#8c8c8c";
+  const image = /^image\/(jpeg|png|gif|webp)$/.test(attachment.contentType) && attachment.inlineUrl;
+  return (
+    <div>
+      {image
+        ? <a href={attachment.inlineUrl} target="_blank" rel="noreferrer" style={{ display: "block", borderRadius: 10, overflow: "hidden", maxWidth: 240 }}><img src={attachment.inlineUrl} alt={attachment.name} onLoad={scrollFeedToLatest} style={{ display: "block", width: "100%", maxHeight: 240, objectFit: "cover" }} /></a>
+        : (
+          <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 200 }}>
+            <span style={{ width: 34, height: 34, flex: "none", display: "inline-flex", alignItems: "center", justifyContent: "center", borderRadius: 9, background: light ? "rgba(255,255,255,.2)" : "#f0f5ff", color: light ? "#fff" : "#1677ff" }}><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48" /></svg></span>
+            <span style={{ display: "flex", flexDirection: "column", minWidth: 0, flex: 1 }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{attachment.name}</span>
+              <span style={{ fontSize: 11.5, color: muted }}>{attachment.size ? formatBytes(attachment.size) : ""}</span>
+            </span>
+            {attachment.url ? <a href={attachment.url} download={attachment.name} style={{ fontSize: 12.5, fontWeight: 600, color: light ? "#fff" : "#1677ff", textDecoration: "none", flex: "none" }}>Скачать</a> : <span style={{ fontSize: 12, color: muted }}>недоступен</span>}
+          </div>
+        )}
+      {text && <div style={{ marginTop: 6 }}>{text}</div>}
+    </div>
+  );
+}
+
+export function Bubble({ author, text, accent, time, pendingState, audioUrl, attachment }: { author: "client" | "ai" | "operator"; text: string; accent: string; time?: string; pendingState?: boolean; audioUrl?: string; attachment?: BubbleAttachment }) {
   const at = formatTime(time);
   const content = audioUrl
     ? <audio controls preload="none" src={audioUrl} style={{ width: 216, height: 36, display: "block" }} />
-    : text;
+    : attachment
+      ? <AttachmentContent attachment={attachment} text={text} light={author === "client"} />
+      : text;
   if (author === "client") return <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}><div style={{ maxWidth: "82%" }}><div style={{ background: accent, color: "#fff", borderRadius: "16px 16px 4px 16px", padding: audioUrl ? "8px" : "10px 14px", fontSize: 14.5, lineHeight: 1.5, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{content}</div><div style={{ ...META, marginRight: 4, textAlign: "right" }}>{pendingState ? "отправка…" : [at, "доставлено"].filter(Boolean).join(" · ")}</div></div></div>;
   const isOperator = author === "operator";
   return <div style={{ display: "flex", gap: 9, marginBottom: 12 }}><div style={{ width: 30, height: 30, borderRadius: "50%", background: isOperator ? accent : "#eef0f2", border: isOperator ? "none" : "1px solid #e3e6ea", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", flex: "none" }}>{isOperator ? <span style={{ fontSize: 11.5, fontWeight: 600 }}>О</span> : <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#8c8c8c" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="3.2" /><path d="M5.5 20a6.5 6.5 0 0 1 13 0" /></svg>}</div><div style={{ maxWidth: "82%" }}><div style={{ background: "#fff", border: "1px solid #eee", borderRadius: "16px 16px 16px 4px", padding: audioUrl ? "8px" : "10px 14px", fontSize: 14.5, lineHeight: 1.5, color: "#262626", whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{content}</div><div style={{ ...META, marginLeft: 4 }}>{[isOperator ? "Специалист" : "Виртуальный помощник", at].filter(Boolean).join(" · ")}</div></div></div>;
