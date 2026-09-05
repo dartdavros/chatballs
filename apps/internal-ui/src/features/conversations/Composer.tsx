@@ -46,47 +46,30 @@ export function Composer({ mode, loaded, assignedOperatorName, conversationId, c
   const voiceAvailable = recorder.supported && (channel === "TG" || channel === "MAX" || channel === "WEB");
 
   if (conversationId == null) {
-    return <div className="sales-composer"><div className="sales-waiting-composer"><div><strong>Выберите диалог</strong></div></div></div>;
+    return <div className="sales-composer"><div className="composer-locked"><div><strong>Выберите диалог</strong></div></div></div>;
   }
 
   if (!loaded) {
-    return <div className="sales-composer"><div className="sales-waiting-composer"><div><strong>Загрузка диалога…</strong></div></div></div>;
+    return <div className="sales-composer"><div className="composer-locked"><div><strong>Загрузка диалога…</strong></div></div></div>;
   }
 
+  // Кадр E: закрытый диалог — композер заменён сообщением о закрытии.
   if (mode === "closed") {
     return (
-      <div className="sales-composer"><div className="sales-waiting-composer">
+      <div className="sales-composer"><div className="composer-locked">
         <span><Icon name="lock" size={19} /></span>
         <div><strong>Диалог закрыт</strong><p>История сохранена. Новое обращение клиента создаст новый диалог.</p></div>
       </div></div>
     );
   }
 
+  // Кадр D: ведёт другой сотрудник — композер заблокирован, взять можно явно.
   if (mode === "assigned") {
     return (
-      <div className="sales-composer"><div className="sales-waiting-composer">
+      <div className="sales-composer"><div className="composer-locked">
         <span><Icon name="lock" size={19} /></span>
-        <div><strong>{assignedOperatorName ? `Диалог ведёт ${assignedOperatorName}` : "Диалог ведёт другой оператор"}</strong><p>Отправка сообщений доступна назначенному оператору.</p></div>
-      </div></div>
-    );
-  }
-
-  if (mode === "waiting") {
-    return (
-      <div className="sales-composer"><div className="sales-waiting-composer">
-        <span><Icon name="lock" size={19} /></span>
-        <div><strong>Диалог ждёт оператора</strong><p>Возьмите диалог, чтобы ответить клиенту. AI поставлен на паузу.</p></div>
-        <button className="sales-claim-button" onClick={onClaim}><Icon name="check" size={15} />Забрать диалог</button>
-      </div></div>
-    );
-  }
-
-  if (mode === "ai") {
-    return (
-      <div className="sales-composer"><div className="sales-ai-composer">
-        <span><Icon name="robot" size={19} /></span>
-        <div><strong>AI ведёт диалог</strong><p>Перехватите, чтобы ответить вручную. Контроль перейдёт к вам.</p></div>
-        <button className="sales-ai-button" onClick={onClaim}>Перехватить AI</button>
+        <div><strong>{assignedOperatorName ? `Диалог ведёт ${assignedOperatorName}` : "Диалог ведёт другого сотрудника"}</strong><p>Отвечать может ответственный. Возьмите диалог, чтобы продолжить самостоятельно.</p></div>
+        <button className="composer-locked-action" type="button" onClick={onClaim}>Взять диалог</button>
       </div></div>
     );
   }
@@ -127,63 +110,61 @@ export function Composer({ mode, loaded, assignedOperatorName, conversationId, c
     );
   }
 
+  // Кадры A–C: композер активен всегда (решение 2) — первое сообщение
+  // перехватывает диалог; над полем одна строка-предупреждение.
+  const warning = mode === "ai"
+    ? { color: "var(--ai)", text: "AI ведёт диалог. Ваше сообщение перехватит его — AI перестанет отвечать" }
+    : mode === "waiting"
+      ? { color: "var(--warning-text)", dot: "var(--warning)", text: "Клиент ждёт. Ваше сообщение возьмёт диалог на вас" }
+      : null;
+
   return (
     <div className="sales-composer">
-      <div className="sales-human-tools">
-        <button onClick={onReturnQueue}>Вернуть в очередь</button>
-        <span />
-        <button className="ai" onClick={onRelease}>Вернуть AI</button>
-        <button onClick={onClose}>Закрыть</button>
-      </div>
-      <div className="sales-message-input">
-        {menuOpen && (
-          <div className="composer-templates-menu">
-            {visibleTemplates.length === 0 && <p>Нет подходящих шаблонов</p>}
-            {visibleTemplates.map((template) => (
-              <button key={template.id} type="button" onMouseDown={(event) => { event.preventDefault(); applyTemplate(template); }}>
-                <strong>{template.title}</strong>
-                <small>{template.text.replace(/\s+/g, " ").slice(0, 80)}</small>
+      <div className="composer-wrap">
+        {warning && <div className="composer-warning" style={{ color: warning.color }}><i style={{ background: warning.dot ?? warning.color }} />{warning.text}</div>}
+        <div className="composer-box">
+          {menuOpen && (
+            <div className="composer-templates-menu">
+              {visibleTemplates.length === 0 && <p>Нет подходящих шаблонов</p>}
+              {visibleTemplates.map((template) => (
+                <button key={template.id} type="button" onMouseDown={(event) => { event.preventDefault(); applyTemplate(template); }}>
+                  <strong>{template.title}</strong>
+                  <small>{template.text.replace(/\s+/g, " ").slice(0, 80)}</small>
+                </button>
+              ))}
+            </div>
+          )}
+          <textarea
+            ref={textareaRef}
+            rows={1}
+            placeholder="Введите сообщение… Shift+Enter — перенос строки, «/» — шаблон ответа"
+            value={text}
+            onChange={(event) => setText(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Escape" && menuOpen) { setTemplatesOpen(false); if (slashQuery !== null) setText(""); return; }
+              if (event.key === "Enter" && !event.shiftKey) {
+                if (slashQuery !== null && visibleTemplates.length > 0) { event.preventDefault(); applyTemplate(visibleTemplates[0]); return; }
+                event.preventDefault();
+                void send();
+              }
+            }}
+            onBlur={() => setTemplatesOpen(false)}
+          />
+          <div className="composer-toolbar">
+            {voiceAvailable && (
+              <button className="composer-tool" title="Записать голосовое" aria-label="Записать голосовое" type="button" onClick={() => void recorder.start()}>
+                <Icon name="mic" size={17} />
               </button>
-            ))}
+            )}
+            {templates.length > 0 && (
+              <button className="composer-tool is-labeled" title="Шаблоны ответов · /" type="button" onClick={() => setTemplatesOpen((open) => !open)}>
+                <Icon name="text" size={16} />Шаблоны
+              </button>
+            )}
+            <span className="composer-spacer" />
+            <button className="composer-send" type="button" onClick={() => void send()} disabled={sending}>Отправить<kbd>⏎</kbd></button>
           </div>
-        )}
-        {templates.length > 0 && (
-          <button
-            className="composer-templates-button"
-            title="Шаблоны ответов · /"
-            type="button"
-            onClick={() => setTemplatesOpen((open) => !open)}
-          >
-            <Icon name="list" size={16} />
-          </button>
-        )}
-        {voiceAvailable && (
-          <button
-            className="composer-templates-button"
-            title="Записать голосовое"
-            type="button"
-            onClick={() => void recorder.start()}
-          >
-            <Icon name="message" size={16} />
-          </button>
-        )}
-        <textarea
-          ref={textareaRef}
-          rows={1}
-          placeholder={templates.length > 0 ? "Введите сообщение… («/» — шаблоны)" : "Введите сообщение…"}
-          value={text}
-          onChange={(event) => setText(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === "Escape" && menuOpen) { setTemplatesOpen(false); if (slashQuery !== null) setText(""); return; }
-            if (event.key === "Enter" && !event.shiftKey) {
-              if (slashQuery !== null && visibleTemplates.length > 0) { event.preventDefault(); applyTemplate(visibleTemplates[0]); return; }
-              event.preventDefault();
-              void send();
-            }
-          }}
-          onBlur={() => setTemplatesOpen(false)}
-        />
-        <button onClick={() => void send()} disabled={sending}>Отправить<Icon name="send" size={15} /></button>
+        </div>
       </div>
       {sendError && <div className="sales-composer-error">{sendError}</div>}
     </div>

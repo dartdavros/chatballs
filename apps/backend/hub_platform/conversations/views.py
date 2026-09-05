@@ -1,3 +1,4 @@
+from django.db import transaction
 from rest_framework.request import Request
 from rest_framework.response import Response
 
@@ -213,10 +214,19 @@ class ConversationMessageView(ConversationViewBase):
         text = str(request.data.get("text", "")).strip()
         if not text:
             return Response({"detail": "Пустое сообщение"}, status=400)
-        if conversation.control_mode != ControlMode.HUMAN:
-            return Response({"detail": "Сначала перехватите диалог"}, status=409)
         if conversation.lifecycle != LifecycleState.OPEN:
             return Response({"detail": "Диалог закрыт"}, status=409)
+        if conversation.control_mode != ControlMode.HUMAN:
+            # Одно действие взятия (дизайн-базлайн v2, решение 2; ADR-HUB-0003):
+            # первое сообщение сотрудника атомарно перехватывает диалог у AI/очереди.
+            try:
+                with transaction.atomic():
+                    conversation = claim_conversation(
+                        context=request.tenant_context, conversation_id=conversation.id
+                    )
+            except ClaimError as error:
+                return Response({"detail": str(error)}, status=409)
+            self._audit(request, "claimed", conversation)
         manager_override = authorize(
             request.tenant_context.membership,
             self.required_capability,

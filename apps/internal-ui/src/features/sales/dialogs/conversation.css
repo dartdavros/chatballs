@@ -1,5 +1,5 @@
 .sales-conversation {
-  min-width: 0;
+  min-width: 320px;
   min-height: 0;
   display: flex;
   flex: 1;
@@ -25,7 +25,13 @@
   gap: 12px;
 }
 
-.sales-conversation-person > span,
+/* Аватар 40 с точкой режима (кадры A–E). */
+.sales-conversation-avatar-wrap {
+  position: relative;
+  flex: none;
+  display: inline-flex;
+}
+
 .sales-conversation-avatar {
   width: 40px;
   height: 40px;
@@ -37,40 +43,63 @@
   border-radius: 50%;
   font-size: 14px;
   font-weight: 600;
+  object-fit: cover;
 }
 
-.sales-conversation-avatar {
-  object-fit: cover;
+.sales-conversation-avatar-wrap i {
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  width: 13px;
+  height: 13px;
+  border: 2px solid var(--surface-card);
+  border-radius: 50%;
 }
 
 .sales-conversation-person > div {
   min-width: 0;
 }
 
-.sales-conversation-person div div {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-}
-
 .sales-conversation-person strong {
+  display: block;
+  overflow: hidden;
   color: var(--n-1);
   font-size: 15px;
   font-weight: 700;
+  line-height: 20px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
+/* Статус · канал · агент · группа — одной строкой 12px. */
 .sales-conversation-person p {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin: 2px 0 0;
+  gap: 7px;
+  margin: 3px 0 0;
   color: var(--n-4);
   font-size: 12px;
+  white-space: nowrap;
 }
 
-.sales-conversation-person p i {
-  width: 1px;
-  height: 1px;
+.sales-conversation-person p > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.sales-conversation-person p > span.is-status {
+  font-weight: 600;
+}
+
+.sales-conversation-person p > span.is-agent {
+  gap: 4px;
+  font-weight: 500;
+}
+
+.sales-conversation-person p > i {
+  width: 3px;
+  height: 3px;
   background: var(--n-6);
   border-radius: 50%;
 }
@@ -81,23 +110,6 @@
   border-radius: 50%;
 }
 
-.sales-status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 2px 9px;
-  border: 1px solid;
-  border-radius: 20px;
-  font-size: 11.5px;
-  font-weight: 600;
-}
-
-.sales-status-badge i {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-}
-
 .sales-conversation-actions {
   display: flex;
   align-items: center;
@@ -105,8 +117,11 @@
   flex: none;
 }
 
+.sales-conversation-actions .list-expand {
+  color: var(--n-4);
+}
+
 .sales-claim-button,
-.sales-ai-button,
 .sales-secondary-action,
 .sales-more-button {
   height: 36px;
@@ -131,17 +146,6 @@
   background: var(--primary-hover);
 }
 
-.sales-ai-button {
-  padding: 0 16px;
-  color: var(--ai);
-  background: var(--surface-card);
-  border: 1px solid var(--ai-border);
-}
-
-.sales-ai-button:hover {
-  background: var(--ai-bg);
-}
-
 .sales-secondary-action {
   padding: 0 14px;
   color: var(--n-3);
@@ -150,12 +154,20 @@
   font-weight: 500;
 }
 
+.sales-secondary-action:hover {
+  background: var(--n-10);
+}
+
 .sales-more-button {
   width: 36px;
   padding: 0;
   color: var(--n-3);
   background: var(--surface-card);
   border: 1px solid var(--n-8);
+}
+
+.sales-more-button:hover {
+  background: var(--n-10);
 }
 
 .sales-timeline {
@@ -183,7 +195,7 @@
 .sales-day-divider span {
   height: 1px;
   flex: 1;
-  background: var(--n-7);
+  background: var(--n-8);
 }
 
 .sales-event-chip {
@@ -194,9 +206,16 @@
   margin: 0 auto 16px;
   padding: 4px 12px;
   color: var(--n-4);
-  background: var(--n-11);
+  background: var(--n-9);
+  border: 1px solid var(--n-8);
   border-radius: 20px;
   font-size: 11.5px;
+  font-weight: 500;
+}
+
+.sales-event-chip > span {
+  color: inherit;
+  opacity: 0.6;
 }
 
 .sales-event-chip.warning {
@@ -220,6 +239,8 @@
   text-align: center;
 }
 
+/* Сообщения (решение 4a): у клиента аватара нет; исходящие справа с аватаром
+   AI/сотрудника, подписью и отметкой доставки. */
 .sales-message {
   display: flex;
   gap: 10px;
@@ -232,41 +253,24 @@
 }
 
 .sales-message-avatar {
-  flex: none;
-}
-
-.sales-message-avatar > span,
-.sales-message-avatar-img {
   width: 30px;
   height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffffff;
+  flex: none;
+  color: var(--ai);
+  background: var(--ai-bg);
+  border: 1px solid var(--ai-border);
   border-radius: 50%;
   font-size: 11px;
   font-weight: 600;
 }
 
-.sales-message-avatar-img {
-  object-fit: cover;
-}
-
-.sales-message.ai .sales-message-avatar {
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--ai);
-  background: var(--ai-bg);
-  border: 1px solid var(--ai-border);
-  border-radius: 50%;
-}
-
-.sales-message.ai .sales-message-avatar svg {
-  width: 16px;
-  height: 16px;
+.sales-message.operator .sales-message-avatar {
+  color: #ffffff;
+  background: var(--primary);
+  border-color: transparent;
 }
 
 .sales-message-content {
@@ -293,8 +297,7 @@
 .sales-message-content > div {
   padding: 10px 14px;
   color: var(--n-2);
-  background: var(--surface-card);
-  border: 1px solid var(--n-8);
+  background: var(--msg-in);
   border-radius: 4px 14px 14px;
   font-size: 13.5px;
   line-height: 1.5;
@@ -302,19 +305,19 @@
 }
 
 .sales-message.ai .sales-message-content > div {
-  background: var(--ai-bg);
-  border-color: var(--ai-border);
+  background: color-mix(in srgb, var(--ai) 16%, var(--surface-feed));
   border-radius: 14px 4px 14px 14px;
 }
 
 .sales-message.operator .sales-message-content > div {
-  background: var(--primary-bg);
-  border-color: var(--primary-border);
+  background: color-mix(in srgb, var(--primary) 22%, var(--surface-feed));
   border-radius: 14px 4px 14px 14px;
 }
 
 .sales-message-content small {
-  display: block;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   margin: 4px 0 0 4px;
   color: var(--n-5);
   font-size: 11px;
@@ -322,8 +325,11 @@
 
 .sales-message.ai .sales-message-content small,
 .sales-message.operator .sales-message-content small {
-  margin-right: 4px;
-  text-align: right;
+  margin: 4px 4px 0 0;
+}
+
+.sales-message-content small svg {
+  color: var(--n-5);
 }
 
 .sales-typing-bubble {

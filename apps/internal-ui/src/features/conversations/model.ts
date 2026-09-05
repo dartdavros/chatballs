@@ -5,6 +5,8 @@ import type { ChannelKey, ConversationListItem, ControlMode, DialogMode } from "
 export type ApiMessage = {
   id: number;
   author: "CONTACT" | "AI" | "OPERATOR" | "SYSTEM";
+  authorUserId?: number | null;
+  authorName?: string;
   kind?: string;
   text: string;
   contentHtml?: string;
@@ -95,6 +97,45 @@ export type ApiConversation = {
 };
 
 const AVATAR_PALETTE = ["#eb6f4b", "#3b82c4", "#9254de", "#13a8a8", "#d4860b", "#52a838", "#c4413b", "#6b5be0"];
+// Цвет агента (решение 6a: Консультант — фиолетовый, Поддержка сайта — бирюзовый)
+// и цвет точки группы — стабильно из идентификатора.
+const AGENT_PALETTE = ["var(--ai)", "#0f9b8e", "#6d5dfc", "#e8590c", "#d4860b"];
+const GROUP_PALETTE = ["var(--primary)", "#2aa876", "#e8590c", "#6d5dfc", "#d4860b"];
+
+function hashCode(value: string): number {
+  let hash = 0;
+  for (let index = 0; index < value.length; index += 1) hash = (hash * 31 + value.charCodeAt(index)) >>> 0;
+  return hash;
+}
+
+export function agentColorOf(code: string): string {
+  return AGENT_PALETTE[hashCode(code) % AGENT_PALETTE.length];
+}
+
+export function groupColorOf(groupId: number): string {
+  return GROUP_PALETTE[groupId % GROUP_PALETTE.length];
+}
+
+// Время в строке списка: сегодня — часы, вчера — «вчера», дальше — дата.
+export function listTime(iso: string, now = new Date()): string {
+  const date = new Date(iso);
+  const sameDay = date.toDateString() === now.toDateString();
+  if (sameDay) return date.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  if (date.toDateString() === yesterday.toDateString()) return "вчера";
+  return date.toLocaleDateString("ru-RU", { day: "numeric", month: "short" }).replace(".", "");
+}
+
+// Таймер ожидания оператора: «6 мин», «1 ч 50 мин» — без слова «ждёт» (решение 4).
+export function waitLabelOf(sinceIso: string, now = new Date()): string {
+  const minutes = Math.max(0, Math.round((now.getTime() - new Date(sinceIso).getTime()) / 60000));
+  if (minutes < 60) return `${minutes} мин`;
+  const hours = Math.floor(minutes / 60);
+  if (hours >= 24) return `${Math.floor(hours / 24)} д`;
+  const rest = minutes % 60;
+  return rest ? `${hours} ч ${rest} мин` : `${hours} ч`;
+}
 const PROVIDER_CHANNEL: Record<string, ChannelKey> = {
   EMAIL: "EMAIL",
   MAX: "MAX",
@@ -155,11 +196,20 @@ export function toConversationListItem(conversation: ApiConversation): Conversat
       conversation.lastMessage?.kind === "voice"
         ? `Голосовое сообщение · ${formatPreviewDuration(conversation.lastMessage.durationSeconds ?? 0)}`
         : conversation.lastMessage?.text.replace(/\s+/g, " ").slice(0, 80) ?? "—",
-    time: new Date(conversation.lastActivityAt).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }),
+    time: listTime(conversation.lastActivityAt),
     unread: conversation.pendingCount ?? 0,
     isMine: conversation.isAssignedToViewer,
     priority: conversation.priority ?? "NONE",
     labels: conversation.labels ?? [],
+    agentName: conversation.channel.name,
+    agentColor: agentColorOf(conversation.channel.code),
+    groupName: conversation.group?.name ?? null,
+    groupColor: conversation.group ? groupColorOf(conversation.group.id) : "var(--n-5)",
+    waitLabel:
+      conversation.lifecycle === "OPEN" && conversation.controlMode === "PAUSED"
+        ? waitLabelOf(conversation.lastActivityAt)
+        : null,
+    lastIsOurs: conversation.lastMessage?.author === "OPERATOR" || conversation.lastMessage?.author === "AI",
   };
 }
 

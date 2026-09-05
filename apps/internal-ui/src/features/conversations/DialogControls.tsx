@@ -1,10 +1,15 @@
+import { Dropdown } from "antd";
 import { useEffect, useState } from "react";
 
-import { ContextSection } from "./ContextSection";
+import { Icon } from "../../shared/icons";
 import { PriorityBars } from "./DialogList";
+import { statusFor } from "./data";
 import {
+  agentColorOf,
+  controlModeOf,
   createConversationLabel,
   fetchConversationLabels,
+  groupColorOf,
   setConversationArchived,
   setConversationAssignee,
   setConversationGroup,
@@ -17,39 +22,51 @@ import {
 } from "./model";
 import type { EmployeeGroupRef } from "../../types";
 
-// Блок «Диалог» контекст-панели (дизайн-базлайн v2 §5): ответственный, группа,
-// приоритет, метки, заметка. Селекты группы/ответственного заполняются данными
-// менеджера; у сотрудника значения read-only, взятие диалога — в шапке ленты.
+// Блок «Диалог» контекст-панели (дизайн-базлайн v2, решение 5): Ответственный,
+// Группа, Приоритет — полноширинные селекты; Агент и Режим — read-only в две
+// колонки; Метки — чипы с «+ Добавить»; Начат. Заметка — отдельная жёлтая карточка.
 
 const PRIORITY_OPTIONS: Array<[ConversationPriority, string]> = [
-  ["NONE", "Не задан"],
-  ["LOW", "Низкий"],
-  ["MEDIUM", "Средний"],
   ["HIGH", "Высокий"],
+  ["MEDIUM", "Средний"],
+  ["LOW", "Низкий"],
+  ["NONE", "Не задан"],
 ];
+const PRIORITY_TEXT: Record<ConversationPriority, string> = {
+  HIGH: "var(--error-text)",
+  MEDIUM: "#d46b08",
+  LOW: "var(--primary-text)",
+  NONE: "var(--n-4)",
+};
+
+function initials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  return ((parts[0]?.[0] ?? "") + (parts[1]?.[0] ?? "")).toUpperCase();
+}
 
 export function DialogControls({
   detail,
   groups,
   employees,
   applyConversation,
+  viewerId = null,
 }: {
   detail: ApiConversation;
   groups: EmployeeGroupRef[];
   employees: Array<{ id: number; name: string }>;
   applyConversation: (updated: ApiConversation) => void;
+  viewerId?: number | null;
 }) {
   const [busy, setBusy] = useState(false);
   const [errorText, setErrorText] = useState("");
-  const onError = (text: string) => setErrorText(text);
-  const [note, setNote] = useState(detail.note);
+  const [collapsed, setCollapsed] = useState(false);
   const [labels, setLabels] = useState<ConversationLabelRef[]>([]);
   const [newLabel, setNewLabel] = useState("");
 
   useEffect(() => {
-    setNote(detail.note);
     setNewLabel("");
-  }, [detail.id, detail.note]);
+    setErrorText("");
+  }, [detail.id]);
 
   useEffect(() => {
     fetchConversationLabels().then(setLabels).catch(() => setLabels([]));
@@ -61,26 +78,29 @@ export function DialogControls({
     try {
       applyConversation(await action());
     } catch (error) {
-      onError(error instanceof Error ? error.message : "Не удалось сохранить");
+      setErrorText(error instanceof Error ? error.message : "Не удалось сохранить");
     } finally {
       setBusy(false);
     }
   }
 
-  async function addLabel() {
-    const name = newLabel.trim();
-    if (!name) return;
+  async function addLabel(id?: number) {
+    let labelId = id;
     setBusy(true);
+    setErrorText("");
     try {
-      const label = await createConversationLabel(name);
-      setLabels((current) =>
-        current.some((item) => item.id === label.id) ? current : [...current, label],
-      );
-      const ids = [...detail.labels.map((item) => item.id), label.id];
-      applyConversation(await setConversationLabels(detail.id, [...new Set(ids)]));
-      setNewLabel("");
+      if (labelId === undefined) {
+        const name = newLabel.trim();
+        if (!name) return;
+        const label = await createConversationLabel(name);
+        setLabels((current) => (current.some((item) => item.id === label.id) ? current : [...current, label]));
+        labelId = label.id;
+        setNewLabel("");
+      }
+      const ids = [...new Set([...detail.labels.map((item) => item.id), labelId])];
+      applyConversation(await setConversationLabels(detail.id, ids));
     } catch (error) {
-      onError(error instanceof Error ? error.message : "Не удалось добавить метку");
+      setErrorText(error instanceof Error ? error.message : "Не удалось добавить метку");
     } finally {
       setBusy(false);
     }
@@ -88,179 +108,199 @@ export function DialogControls({
 
   const assignedIds = new Set(detail.labels.map((item) => item.id));
   const availableLabels = labels.filter((item) => !assignedIds.has(item.id));
-  const noteDirty = note !== detail.note;
+  const assignee = detail.assignedOperator;
+  const assigneeLabel = assignee ? `${assignee.name}${viewerId != null && assignee.id === viewerId ? " · вы" : ""}` : "Не назначен";
+  const status = statusFor(controlModeOf(detail), assignee?.name);
+  const priorityLabel = PRIORITY_OPTIONS.find(([value]) => value === detail.priority)?.[1] ?? "Не задан";
+  const canEdit = employees.length > 0 || groups.length > 0;
 
   return (
-    <ContextSection title="ДИАЛОГ">
-      <div className="dialog-controls">
-        {errorText && <p className="dialog-controls-error">{errorText}</p>}
-        <label className="dialog-controls-field">
-          <span>Ответственный</span>
-          {employees.length > 0 ? (
-            <select
-              disabled={busy}
-              value={detail.assignedOperatorId ?? ""}
-              onChange={(event) =>
-                void run(() =>
-                  setConversationAssignee(
-                    detail.id,
-                    event.target.value ? Number(event.target.value) : null,
-                  ),
-                )
-              }
-            >
-              <option value="">Не назначен</option>
-              {employees.map((employee) => (
-                <option value={employee.id} key={employee.id}>{employee.name}</option>
-              ))}
-            </select>
-          ) : (
-            <b>{detail.assignedOperator?.name ?? "Не назначен"}</b>
-          )}
-        </label>
+    <>
+      <section className="ctx-section">
+        <div className="ctx-section-head">
+          <h4>Диалог</h4>
+          <button type="button" aria-label={collapsed ? "Развернуть" : "Свернуть"} className={collapsed ? "is-collapsed" : ""} onClick={() => setCollapsed((value) => !value)}><Icon name="chevron" size={14} /></button>
+        </div>
+        {!collapsed && (
+          <div className="ctx-fields">
+            {errorText && <p className="ctx-error">{errorText}</p>}
 
-        <label className="dialog-controls-field">
-          <span>Группа</span>
-          {groups.length > 0 ? (
-            <select
-              disabled={busy}
-              value={detail.group?.id ?? ""}
-              onChange={(event) =>
-                void run(() =>
-                  setConversationGroup(
-                    detail.id,
-                    event.target.value ? Number(event.target.value) : null,
-                  ),
-                )
-              }
+            <label className="ctx-label">Ответственный</label>
+            <Dropdown
+              disabled={busy || employees.length === 0}
+              trigger={["click"]}
+              overlayClassName="app-dropdown is-wide"
+              menu={{
+                items: [
+                  { key: "none", label: <button type="button" className={assignee ? "" : "is-checked"} onClick={() => void run(() => setConversationAssignee(detail.id, null))}><span className="ctx-avatar-empty" />Не назначен</button> },
+                  ...employees.map((employee) => ({
+                    key: employee.id,
+                    label: <button type="button" className={assignee?.id === employee.id ? "is-checked" : ""} onClick={() => void run(() => setConversationAssignee(detail.id, employee.id))}><span className="ctx-avatar-small">{initials(employee.name)}</span>{employee.name}{viewerId === employee.id ? " · вы" : ""}</button>,
+                  })),
+                ],
+              }}
             >
-              <option value="">Без группы — видят все</option>
-              {groups.map((group) => (
-                <option value={group.id} key={group.id}>{group.name}</option>
-              ))}
-            </select>
-          ) : (
-            <b>{detail.group?.name ?? "Без группы"}</b>
-          )}
-        </label>
+              <button type="button" className={`ctx-select ${assignee ? "" : "is-empty"}`}>
+                {assignee ? <span className="ctx-avatar-small">{initials(assignee.name)}</span> : <span className="ctx-avatar-empty" />}
+                <span>{assigneeLabel}</span>
+                {canEdit && <Icon name="chevron" size={14} />}
+              </button>
+            </Dropdown>
 
-        <label className="dialog-controls-field">
-          <span>Приоритет</span>
-          <span className="dialog-controls-priority">
-            <PriorityBars priority={detail.priority} />
-            <select
-              disabled={busy}
-              value={detail.priority}
-              onChange={(event) =>
-                void run(() =>
-                  setConversationPriority(
-                    detail.id,
-                    event.target.value as ConversationPriority,
-                  ),
-                )
-              }
+            <label className="ctx-label">Группа</label>
+            <Dropdown
+              disabled={busy || groups.length === 0}
+              trigger={["click"]}
+              overlayClassName="app-dropdown is-wide"
+              menu={{
+                items: [
+                  { key: "none", label: <button type="button" className={detail.group ? "" : "is-checked"} onClick={() => void run(() => setConversationGroup(detail.id, null))}><i className="ctx-dot is-muted" />Без группы<small>видят все сотрудники</small></button> },
+                  ...groups.map((group) => ({
+                    key: group.id,
+                    label: <button type="button" className={detail.group?.id === group.id ? "is-checked" : ""} onClick={() => void run(() => setConversationGroup(detail.id, group.id))}><i className="ctx-dot" style={{ background: groupColorOf(group.id) }} />{group.name}</button>,
+                  })),
+                ],
+              }}
             >
-              {PRIORITY_OPTIONS.map(([value, label]) => (
-                <option value={value} key={value}>{label}</option>
-              ))}
-            </select>
-          </span>
-        </label>
+              <button type="button" className="ctx-select">
+                <i className={`ctx-dot ${detail.group ? "" : "is-muted"}`} style={detail.group ? { background: groupColorOf(detail.group.id) } : undefined} />
+                <span>{detail.group?.name ?? "Без группы"}</span>
+                {canEdit && <Icon name="chevron" size={14} />}
+              </button>
+            </Dropdown>
 
-        <div className="dialog-controls-field">
-          <span>Метки</span>
-          <div className="dialog-controls-labels">
-            {detail.labels.map((label) => (
-              <b className="sales-dialog-label" key={label.id}>
-                <i style={{ background: label.color || "var(--n-5)" }} />
-                {label.name}
-                <button
-                  aria-label={`Снять метку ${label.name}`}
-                  disabled={busy}
-                  type="button"
-                  onClick={() =>
-                    void run(() =>
-                      setConversationLabels(
-                        detail.id,
-                        detail.labels
-                          .filter((item) => item.id !== label.id)
-                          .map((item) => item.id),
-                      ),
-                    )
-                  }
-                >
-                  ×
-                </button>
-              </b>
-            ))}
-            {availableLabels.length > 0 && (
-              <select
-                className="dialog-controls-add-label"
+            <label className="ctx-label">Приоритет</label>
+            <Dropdown
+              disabled={busy}
+              trigger={["click"]}
+              overlayClassName="app-dropdown is-wide"
+              menu={{
+                items: PRIORITY_OPTIONS.map(([value, label]) => ({
+                  key: value,
+                  label: <button type="button" className={detail.priority === value ? "is-checked" : ""} onClick={() => void run(() => setConversationPriority(detail.id, value))}><PriorityBars priority={value} placeholder />{label}</button>,
+                })),
+              }}
+            >
+              <button type="button" className="ctx-select">
+                <PriorityBars priority={detail.priority} placeholder />
+                <span style={{ color: PRIORITY_TEXT[detail.priority], fontWeight: detail.priority === "NONE" ? 500 : 600 }}>{priorityLabel}</span>
+                <Icon name="chevron" size={14} />
+              </button>
+            </Dropdown>
+
+            <div className="ctx-grid">
+              <div>
+                <label className="ctx-label">Агент</label>
+                <div className="ctx-readonly" style={{ color: agentColorOf(detail.channel.code) }}><Icon name="robot" size={14} />{detail.channel.name}</div>
+              </div>
+              <div>
+                <label className="ctx-label">Режим</label>
+                <div className="ctx-readonly is-mode" style={{ color: status.color, background: status.bg, borderColor: status.border }}><i style={{ background: status.dot }} />{status.label}</div>
+              </div>
+            </div>
+
+            <label className="ctx-label">Метки</label>
+            <div className="ctx-labels">
+              <Dropdown
                 disabled={busy}
-                value=""
-                onChange={(event) => {
-                  const id = Number(event.target.value);
-                  if (!id) return;
-                  void run(() =>
-                    setConversationLabels(detail.id, [
-                      ...detail.labels.map((item) => item.id),
-                      id,
-                    ]),
-                  );
+                trigger={["click"]}
+                overlayClassName="app-dropdown is-wide ctx-labels-menu"
+                menu={{
+                  items: [
+                    ...availableLabels.map((label) => ({
+                      key: label.id,
+                      label: <button type="button" onClick={() => void addLabel(label.id)}><i className="ctx-dot is-square" style={{ background: label.color || "var(--n-5)" }} />{label.name}</button>,
+                    })),
+                    {
+                      key: "new",
+                      label: (
+                        <div className="ctx-new-label" onClick={(event) => event.stopPropagation()}>
+                          <input
+                            placeholder="Новая метка"
+                            value={newLabel}
+                            onChange={(event) => setNewLabel(event.target.value)}
+                            onKeyDown={(event) => {
+                              if (event.key === "Enter") {
+                                event.preventDefault();
+                                void addLabel();
+                              }
+                            }}
+                          />
+                          <button type="button" disabled={busy || !newLabel.trim()} onClick={() => void addLabel()}><Icon name="plus" size={13} /></button>
+                        </div>
+                      ),
+                    },
+                  ],
                 }}
               >
-                <option value="">+ Метка</option>
-                {availableLabels.map((label) => (
-                  <option value={label.id} key={label.id}>{label.name}</option>
-                ))}
-              </select>
-            )}
-          </div>
-          <div className="dialog-controls-new-label">
-            <input
-              disabled={busy}
-              placeholder="Новая метка"
-              value={newLabel}
-              onChange={(event) => setNewLabel(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter") {
-                  event.preventDefault();
-                  void addLabel();
-                }
-              }}
-            />
-            <button disabled={busy || !newLabel.trim()} type="button" onClick={() => void addLabel()}>
-              Добавить
-            </button>
-          </div>
-        </div>
-
-        <div className="dialog-controls-field">
-          <span>Заметка</span>
-          <textarea
-            disabled={busy}
-            placeholder="Внутренняя заметка — клиент её не видит"
-            rows={3}
-            value={note}
-            onChange={(event) => setNote(event.target.value)}
-          />
-          {noteDirty && (
-            <div className="dialog-controls-note-actions">
-              <button disabled={busy} type="button" onClick={() => setNote(detail.note)}>Отменить</button>
-              <button
-                className="primary"
-                disabled={busy}
-                type="button"
-                onClick={() => void run(() => setConversationNote(detail.id, note))}
-              >
-                Сохранить
-              </button>
+                <button type="button" className="ctx-add-label"><Icon name="plus" size={13} />Добавить</button>
+              </Dropdown>
+              {detail.labels.map((label) => (
+                <b className="ctx-label-chip" key={label.id}>
+                  <i style={{ background: label.color || "var(--n-5)" }} />
+                  {label.name}
+                  <button
+                    aria-label={`Снять метку ${label.name}`}
+                    disabled={busy}
+                    type="button"
+                    onClick={() => void run(() => setConversationLabels(detail.id, detail.labels.filter((item) => item.id !== label.id).map((item) => item.id)))}
+                  >
+                    ×
+                  </button>
+                </b>
+              ))}
             </div>
-          )}
-        </div>
-      </div>
-    </ContextSection>
+
+            <div className="ctx-meta-row"><span>Начат</span><span>{startedLabel(detail.createdAt)}</span></div>
+          </div>
+        )}
+      </section>
+
+      <NoteSection detail={detail} busy={busy} onSave={(note) => run(() => setConversationNote(detail.id, note))} />
+    </>
   );
+}
+
+function NoteSection({ detail, busy, onSave }: { detail: ApiConversation; busy: boolean; onSave: (note: string) => Promise<void> }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(detail.note);
+
+  useEffect(() => {
+    setEditing(false);
+    setDraft(detail.note);
+  }, [detail.id, detail.note]);
+
+  return (
+    <section className="ctx-section is-note">
+      <div className="ctx-section-head">
+        <h4>Заметка</h4>
+        <button type="button" aria-label="Редактировать заметку" onClick={() => setEditing(true)}><Icon name="edit" size={14} /></button>
+      </div>
+      {editing ? (
+        <div className="ctx-note is-editing">
+          <textarea autoFocus disabled={busy} placeholder="Внутренняя заметка — клиент её не видит" rows={3} value={draft} onChange={(event) => setDraft(event.target.value)} />
+          <div className="ctx-note-actions">
+            <button type="button" disabled={busy} onClick={() => { setDraft(detail.note); setEditing(false); }}>Отмена</button>
+            <button type="button" className="primary" disabled={busy} onClick={() => void onSave(draft).then(() => setEditing(false))}>Сохранить</button>
+          </div>
+        </div>
+      ) : (
+        <div className={`ctx-note ${detail.note ? "" : "is-empty"}`} onClick={() => setEditing(true)}>{detail.note || "Заметок нет"}</div>
+      )}
+    </section>
+  );
+}
+
+// «сегодня, 17:02» · «вчера, 11:05» · «12 авг, 09:30»
+export function startedLabel(iso: string): string {
+  const date = new Date(iso);
+  const now = new Date();
+  const time = date.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+  if (date.toDateString() === now.toDateString()) return `сегодня, ${time}`;
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  if (date.toDateString() === yesterday.toDateString()) return `вчера, ${time}`;
+  return `${date.toLocaleDateString("ru-RU", { day: "numeric", month: "short" }).replace(".", "")}, ${time}`;
 }
 
 export function archiveConversationAction(

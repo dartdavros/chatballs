@@ -76,11 +76,12 @@ export function IconButton({ icon, iconSize = 16, label, bare = false, className
   );
 }
 
-export function SearchInput({ className = "", placeholder, value, onChange, inputRef }: SearchInputProps) {
+export function SearchInput({ className = "", placeholder, value, onChange, inputRef, hotkey }: SearchInputProps & { hotkey?: string }) {
   return (
     <label className={`ui-search-input ${className}`.trim()}>
       <Icon name="search" size={15} />
       <input ref={inputRef} value={value} onChange={(event) => onChange?.(event.target.value)} placeholder={placeholder} />
+      {hotkey && !value && <kbd>{hotkey}</kbd>}
     </label>
   );
 }

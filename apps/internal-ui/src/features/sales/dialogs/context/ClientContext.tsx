@@ -1,22 +1,34 @@
 import { useEffect, useState } from "react";
 
+import { Icon } from "../../../../shared/icons";
 import { providerMeta } from "../../../../shared/providers";
-import { FieldRow } from "../../../conversations/FieldRow";
-import { ContextSection } from "../../../conversations/ContextSection";
-import { requestContact, type ApiConversation } from "../../../conversations/model";
+import { ContactAvatar } from "../../../conversations/ContactAvatar";
 import { DialogControls } from "../../../conversations/DialogControls";
+import { requestContact, type ApiConversation } from "../../../conversations/model";
 import type { ConversationListItem } from "../../../conversations/types";
 import type { EmployeeGroupRef } from "../../../../types";
 
-const LIFECYCLE_LABEL: Record<string, string> = { OPEN: "Открыт", CLOSED: "Закрыт", SPAM: "Спам" };
-const CONTROL_LABEL: Record<string, string> = { AI: "AI ведёт", HUMAN: "Человек", PAUSED: "Пауза" };
+// Карточка контакта (дизайн-базлайн v2, решение 5): аватар 64 · канал · имя ·
+// описание · поля с иконками и «копировать» · «Позвонить» / «Видеозвонок» под
+// полями. Ниже — блок «Диалог» и «Заметка» (DialogControls).
 
-function fmt(value?: string): string {
-  if (!value) return "—";
-  return new Date(value).toLocaleString("ru-RU", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
-}
-
-export function ClientContext({ dialog, detail, groups = [], employees = [], applyConversation }: { dialog: ConversationListItem | null; detail: ApiConversation | null; groups?: EmployeeGroupRef[]; employees?: Array<{ id: number; name: string }>; applyConversation?: (updated: ApiConversation) => void }) {
+export function ClientContext({
+  dialog,
+  detail,
+  groups = [],
+  employees = [],
+  applyConversation,
+  startCall,
+  viewerId = null,
+}: {
+  dialog: ConversationListItem | null;
+  detail: ApiConversation | null;
+  groups?: EmployeeGroupRef[];
+  employees?: Array<{ id: number; name: string }>;
+  applyConversation?: (updated: ApiConversation) => void;
+  startCall?: ((kind: "AUDIO" | "VIDEO") => void) | null;
+  viewerId?: number | null;
+}) {
   const [requesting, setRequesting] = useState(false);
   const [justRequested, setJustRequested] = useState(false);
   const [requestError, setRequestError] = useState(false);
@@ -32,8 +44,6 @@ export function ClientContext({ dialog, detail, groups = [], employees = [], app
     return <div className="sales-client-context"><p className="sales-context-muted">Выберите диалог</p></div>;
   }
   const channel = providerMeta[dialog.channel];
-  const messageCount = detail?.messages?.length ?? 0;
-
   const contact = detail?.contact ?? null;
   const email = contact?.email ?? "";
   const phone = contact?.phone ?? "";
@@ -41,6 +51,7 @@ export function ClientContext({ dialog, detail, groups = [], employees = [], app
   // Запрос уже отправлен, если в диалоге есть сообщение kind=contact_request (detail поллится каждые 3 с).
   const alreadyRequested = justRequested || (detail?.messages ?? []).some((m) => m.kind === "contact_request");
   const canRequest = Boolean(detail && contact && detail.connection && !phone && detail.lifecycle === "OPEN");
+  const isGuest = dialog.channel === "WEB" && !username && !email;
 
   async function onRequestContact() {
     if (!detail || requesting) return;
@@ -56,48 +67,71 @@ export function ClientContext({ dialog, detail, groups = [], employees = [], app
     }
   }
 
+  const fields: Array<{ key: string; icon: Parameters<typeof Icon>[0]["name"]; text: string; copy?: string; muted?: boolean }> = [];
+  if (phone) fields.push({ key: "phone", icon: "phone", text: phone, copy: phone });
+  if (dialog.channel === "EMAIL" && email) fields.push({ key: "email", icon: "mail", text: email, copy: email });
+  if (username) fields.push({ key: "username", icon: "send", text: `@${username} · ${channel.label}`, copy: `@${username}` });
+  if (isGuest) fields.push({ key: "guest", icon: "message", text: `${channel.label} · ${detail?.connection?.name ?? "виджет"}, анонимная сессия`, muted: true });
+  if (fields.length === 0 && detail?.connection) fields.push({ key: "connection", icon: "plug", text: `${channel.label} · ${detail.connection.name}`, muted: true });
+
   return (
     <div className="sales-client-context">
-      <div className="sales-client-hero"><span style={{ background: dialog.avatarBg }}>{dialog.initials}</span><strong>{dialog.name}</strong></div>
-
-      <ContextSection title="КОНТАКТ">
-        {dialog.channel === "EMAIL" ? (
-          <FieldRow icon="mail" title={email || "—"} text="Email" mono={Boolean(email)} muted={!email} />
-        ) : (
-          <FieldRow dot={channel.color} title={username ? `@${username}` : "—"} text={`Логин · ${channel.label}`} />
+      <div className="ctx-contact">
+        <div className="ctx-contact-hero">
+          <ContactAvatar avatarUrl={dialog.avatarUrl} initials={dialog.initials} background={dialog.avatarBg} className="ctx-contact-avatar" />
+          <span className="ctx-channel-pill" style={{ color: channel.color, background: `color-mix(in srgb, ${channel.color} 14%, var(--surface-card))` }}><i style={{ background: channel.color }} />{channel.label}</span>
+        </div>
+        <div className="ctx-contact-name"><strong>{dialog.name}</strong></div>
+        {/* Описание контакта — поле модели ещё нет (см. список расхождений), пока пустое состояние макета. */}
+        <p className="ctx-contact-description is-empty">Описания нет</p>
+        <div className="ctx-contact-fields">
+          {fields.map((field) => (
+            <div className={`ctx-contact-field ${field.muted ? "is-muted" : ""}`} key={field.key}>
+              <span><Icon name={field.icon} size={15} /></span>
+              <span>{field.text}</span>
+              {field.copy && <CopyButton value={field.copy} />}
+            </div>
+          ))}
+        </div>
+        {startCall && (
+          <div className="ctx-call-buttons">
+            <button type="button" onClick={() => startCall("AUDIO")}><Icon name="phone" size={15} />Позвонить</button>
+            <button type="button" onClick={() => startCall("VIDEO")}><Icon name="video" size={15} />Видеозвонок</button>
+          </div>
         )}
-        <FieldRow icon="phone" title={phone || "—"} text="Телефон" mono={Boolean(phone)} muted={!phone} />
         {contact && !phone && (
           <>
-            <button className="sales-secondary-action" style={{ width: "100%", marginTop: 8 }} onClick={() => void onRequestContact()} disabled={!canRequest || requesting || alreadyRequested}>
+            <button className="ctx-request-contact" type="button" onClick={() => void onRequestContact()} disabled={!canRequest || requesting || alreadyRequested}>
               {requesting ? "Отправка…" : alreadyRequested ? "Контакт запрошен" : "Запросить контакт"}
             </button>
-            {requestError && <p className="sales-context-muted" style={{ color: "var(--error-text)" }}>Не удалось отправить запрос — попробуйте ещё раз</p>}
+            {requestError && <p className="ctx-error">Не удалось отправить запрос — попробуйте ещё раз</p>}
           </>
         )}
-      </ContextSection>
-
-      <ContextSection title="КАНАЛ">
-        <FieldRow dot={channel.color} title={channel.label} text={detail?.connection?.name ?? "—"} note={dialog.product} />
-      </ContextSection>
+      </div>
 
       {detail && applyConversation && (
-        <DialogControls
-          detail={detail}
-          groups={groups}
-          employees={employees}
-          applyConversation={applyConversation}
-        />
+        <DialogControls detail={detail} groups={groups} employees={employees} applyConversation={applyConversation} viewerId={viewerId} />
       )}
-
-      <ContextSection title="СВЕДЕНИЯ">
-        <div className="sales-summary-grid">
-          <div><span>Статус</span><b>{LIFECYCLE_LABEL[detail?.lifecycle ?? ""] ?? "—"}</b></div>
-          <div><span>Режим</span><b>{CONTROL_LABEL[detail?.controlMode ?? ""] ?? "—"}</b></div>
-          <div><span>Сообщений</span><b>{messageCount}</b></div>
-        </div>
-        <p className="sales-context-muted">Начат: {fmt(detail?.createdAt)} · активность: {fmt(detail?.lastActivityAt)}</p>
-      </ContextSection>
     </div>
+  );
+}
+
+function CopyButton({ value }: { value: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      type="button"
+      className={copied ? "is-copied" : ""}
+      aria-label="Скопировать"
+      title={copied ? "Скопировано" : "Скопировать"}
+      onClick={() => {
+        void navigator.clipboard?.writeText(value).then(() => {
+          setCopied(true);
+          window.setTimeout(() => setCopied(false), 1200);
+        });
+      }}
+    >
+      <Icon name={copied ? "check" : "copy"} size={13} />
+    </button>
   );
 }

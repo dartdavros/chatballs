@@ -5,13 +5,14 @@
   background: var(--n-11);
 }
 
+/* Сайдбар 220px (дизайн-базлайн v2, решение 1): фон surface2, без верхней панели. */
 .hub-sidebar {
-  width: 248px;
+  width: 220px;
   height: 100vh;
   display: flex;
   flex: none;
   flex-direction: column;
-  background: var(--surface-card);
+  background: var(--surface-sidebar);
   border-right: 1px solid var(--n-8);
 }
 
@@ -121,21 +122,20 @@
   display: flex;
   align-items: center;
   flex: none;
-  gap: 11px;
-  padding: 0 20px;
+  gap: 10px;
+  padding: 14px 14px 10px;
   background: transparent;
   border: none;
-  border-bottom: 1px solid var(--n-9);
   text-align: left;
 }
 
 .hub-brand:hover {
-  background: var(--n-10);
+  background: var(--n-9);
 }
 
 .hub-brand-mark {
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -159,41 +159,59 @@
   object-fit: contain;
 }
 
-.hub-brand strong,
-.profile-link strong {
+.hub-brand strong {
   display: block;
+  min-width: 0;
+  overflow: hidden;
   color: var(--n-1);
   font-size: 14px;
-  font-weight: 600;
-  line-height: 1.15;
+  font-weight: 700;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.hub-brand span,
+.profile-link strong {
+  display: block;
+  overflow: hidden;
+  color: var(--n-1);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .profile-link small {
   display: block;
-  margin-top: 2px;
+  overflow: hidden;
   color: var(--n-4);
-  font-size: 11px;
-  line-height: 1.15;
+  font-size: 11.5px;
+  font-weight: 400;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .hub-nav {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
   overflow-y: auto;
-  padding: 12px 12px 8px;
+  padding: 4px 10px 8px;
 }
 
-.hub-nav-item,
-.profile-link {
+.hub-nav-item {
   position: relative;
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 11px;
-  min-height: 36px;
-  padding: 9px 12px;
-  margin-bottom: 2px;
-  color: var(--n-3);
+  flex: none;
+  gap: 10px;
+  height: 36px;
+  padding: 0 10px;
+  color: var(--n-2);
   background: transparent;
   border: none;
   border-radius: 8px;
@@ -201,6 +219,18 @@
   font-weight: 500;
   text-align: left;
   text-decoration: none;
+}
+
+.profile-link {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--n-3);
+  background: transparent;
+  border: none;
+  text-align: left;
 }
 
 .hub-nav-item:not(:disabled):hover,
@@ -279,14 +309,21 @@
   font-weight: 700;
 }
 
-.active-bar {
-  position: absolute;
-  left: 0;
-  top: 8px;
-  bottom: 8px;
-  width: 3px;
-  border-radius: 0 3px 3px 0;
-  background: var(--primary);
+/* Бейдж очереди у «Чат» (A1): жёлтая плашка 20px. */
+.hub-nav-badge {
+  min-width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  padding: 0 6px;
+  color: var(--warning-text);
+  background: var(--warning-bg);
+  border: 1px solid var(--warning-border);
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
 }
 
 .hub-nav-group {
@@ -298,9 +335,10 @@
 }
 
 .hub-nav-divider {
+  flex: none;
   height: 1px;
-  margin: 14px 12px 10px;
-  background: var(--n-9);
+  margin: 8px 2px 4px;
+  background: var(--n-8);
 }
 
 /* Дерево «Диалоги» сотрудника (дизайн-базлайн v2 §3): сайдбар = фильтр чата. */
@@ -405,19 +443,87 @@
 
 .profile-link {
   margin: 0;
-  padding: 8px 10px;
-  border-top: 1px solid var(--n-9);
+  padding: 12px 14px;
+  border-top: 1px solid var(--n-8);
   border-radius: 0;
 }
 
-.profile-link > span:last-child {
+.profile-link:hover {
+  background: var(--n-9);
+}
+
+.profile-link > span:nth-child(2) {
   min-width: 0;
   flex: 1;
 }
 
-.profile-link > svg:last-child {
+.profile-avatar {
+  position: relative;
   flex: none;
-  color: var(--n-5);
+  display: inline-flex;
+}
+
+.profile-avatar .avatar {
+  width: 34px;
+  height: 34px;
+}
+
+/* Онлайн-точка: сотрудник в системе. */
+.profile-avatar i {
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--surface-sidebar);
+  border-radius: 50%;
+  background: var(--success);
+}
+
+.profile-more {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  color: var(--n-4);
+  border-radius: 7px;
+}
+
+.profile-link:hover .profile-more {
+  background: var(--n-8);
+}
+
+.profile-more {
+  position: relative;
+}
+
+/* Непрочитанные уведомления — точка на кнопке меню профиля. */
+.profile-unread {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 7px;
+  height: 7px;
+  background: var(--error);
+  border: 1.5px solid var(--surface-sidebar);
+  border-radius: 50%;
+}
+
+.profile-menu-badge {
+  min-width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  padding: 0 5px;
+  color: #ffffff;
+  background: var(--error);
+  border-radius: 9px;
+  font-size: 10.5px;
+  font-weight: 700;
 }
 
 .avatar {

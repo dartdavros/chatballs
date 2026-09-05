@@ -13,7 +13,7 @@
 
 .sales-dialogs {
   height: 100%;
-  min-width: 1160px;
+  min-width: 0;
   min-height: 0;
   display: flex;
   overflow: hidden;
@@ -142,4 +142,9 @@
   .chat-mobile-header {
     display: flex;
   }
+}
+
+/* «Скрыть список» (заголовок списка, кадр A1): лента занимает освободившееся место. */
+.sales-dialogs.is-list-collapsed .sales-dialog-list {
+  display: none;
 }

@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { CallOverlay } from "./CallOverlay";
 import { Composer } from "./Composer";
 import { ConversationThread } from "./ConversationThread";
-import { DialogList } from "./DialogList";
+import { DialogList, type ListSort } from "./DialogList";
 import {
   claimConversation,
   closeConversation,
@@ -45,11 +45,12 @@ import { useIncomingMessageSound } from "./useIncomingMessageSound";
 // Общий workspace диалогов (SPEC-HUB-0010 §8.2). Видимость inbox решает
 // backend по группам (ADR-HUB-0043); страница параметризуется заголовком,
 // placeholder поиска и правой панелью через render-prop.
-export function ConversationWorkspace({ isOwner = false, listTitle, searchPlaceholder, renderContextPanel, mobileHeader, hint, initialConversationId, scope, setScope, counters, showScopeSwitcher = true }: {
+export function ConversationWorkspace({ isOwner = false, viewerId = null, listTitle, searchPlaceholder, renderContextPanel, mobileHeader, hint, initialConversationId, scope, setScope, counters, showScopeSwitcher = true }: {
   isOwner?: boolean;
   listTitle?: string;
   searchPlaceholder?: string;
-  renderContextPanel: (ctx: { dialog: ConversationListItem | null; detail: ApiConversation | null; applyConversation: (updated: ApiConversation) => void }) => ReactNode;
+  renderContextPanel: (ctx: { dialog: ConversationListItem | null; detail: ApiConversation | null; applyConversation: (updated: ApiConversation) => void; startCall: ((kind: "AUDIO" | "VIDEO") => void) | null }) => ReactNode;
+  viewerId?: number | null;
   mobileHeader?: ReactNode;
   hint?: ReactNode;
   initialConversationId?: number | null;
@@ -164,16 +165,28 @@ export function ConversationWorkspace({ isOwner = false, listTitle, searchPlaceh
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
+  // Сортировка и сворачивание списка (заголовок списка, кадр A1).
+  const [sort, setSort] = useState<ListSort>("activity");
+  const [listCollapsed, setListCollapsed] = useState(false);
   const dialogs = useMemo(() => conversations.map(toConversationListItem), [conversations]);
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
-    return dialogs.filter((dialog) => {
+    const items = dialogs.filter((dialog) => {
       if (query && !`${dialog.name} ${dialog.email} ${dialog.product} ${dialog.preview}`.toLowerCase().includes(query)) return false;
       if (listTab === "wait") return dialog.mode === "wait";
       if (listTab === "mine") return dialog.isMine;
       return true;
     });
-  }, [dialogs, listTab, search]);
+    if (sort === "waiting") {
+      // Ждущие оператора — первыми, дольше всех ждущие — выше; остальные по активности.
+      const activity = (dialog: ConversationListItem) => conversations.find((c) => c.id === dialog.id)?.lastActivityAt ?? "";
+      return [...items].sort((a, b) => {
+        if ((a.mode === "wait") !== (b.mode === "wait")) return a.mode === "wait" ? -1 : 1;
+        return a.mode === "wait" ? activity(a).localeCompare(activity(b)) : activity(b).localeCompare(activity(a));
+      });
+    }
+    return items;
+  }, [conversations, dialogs, listTab, search, sort]);
 
   filteredRef.current = filtered;
   const selectedDialog = dialogs.find((dialog) => dialog.id === selectedId) ?? null;
@@ -211,8 +224,11 @@ export function ConversationWorkspace({ isOwner = false, listTitle, searchPlaceh
   };
 
   return (
-    <div className={`sales-dialogs ${ctxOpen ? "is-ctx-open" : ""} ${mobileDialogOpen ? "is-mobile-dialog" : ""}`}>
+    <div className={`sales-dialogs ${ctxOpen ? "is-ctx-open" : ""} ${mobileDialogOpen ? "is-mobile-dialog" : ""} ${listCollapsed ? "is-list-collapsed" : ""}`}>
       <DialogList
+        sort={sort}
+        setSort={setSort}
+        onCollapse={() => setListCollapsed(true)}
         scope={scope}
         counters={counters}
         setScope={setScope}
@@ -236,7 +252,7 @@ export function ConversationWorkspace({ isOwner = false, listTitle, searchPlaceh
         searchRef={searchRef}
       />
       <section className="sales-conversation">
-        <ConversationThread controlMode={controlMode} dialog={selectedDialog} detail={detail} isOwner={isOwner} onClaim={onClaim} onCall={(kind) => void callController.start(kind)} onClose={onClose} onSpam={onSpam} onReturnQueue={onReturnQueue} onArchive={onArchive} onToggleContext={() => setCtxOpen((open) => !open)} onMobileBack={() => setMobileDialogOpen(false)} />
+        <ConversationThread controlMode={controlMode} dialog={selectedDialog} detail={detail} isOwner={isOwner} onExpandList={listCollapsed ? () => setListCollapsed(false) : undefined} viewerId={viewerId} onClaim={onClaim} onRelease={onRelease} onClose={onClose} onSpam={onSpam} onReturnQueue={onReturnQueue} onArchive={onArchive} onToggleContext={() => setCtxOpen((open) => !open)} onMobileBack={() => setMobileDialogOpen(false)} />
         {(detailError || actionError) && <div className="sales-conversation-error">{detailError || actionError}</div>}
         <CallOverlay
           open={callController.open}
@@ -263,7 +279,13 @@ export function ConversationWorkspace({ isOwner = false, listTitle, searchPlaceh
           onSent={() => selectedId != null && loadDetail(selectedId)}
         />
       </section>
-      {renderContextPanel({ dialog: selectedDialog, detail, applyConversation: applyUpdated })}
+      {renderContextPanel({
+        dialog: selectedDialog,
+        detail,
+        applyConversation: applyUpdated,
+        // Звонки — в карточке контакта (решение 5); почта звонков не поддерживает.
+        startCall: detail?.lifecycle === "OPEN" && selectedDialog && selectedDialog.channel !== "EMAIL" ? (kind) => void callController.start(kind) : null,
+      })}
     </div>
   );
 }

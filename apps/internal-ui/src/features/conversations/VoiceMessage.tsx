@@ -104,16 +104,16 @@ export function VoiceMessage({ message: incoming }: { message: ApiMessage }) {
             type="button"
             onClick={() => void transcribe()}
           >
-            <Icon name="list" size={14} />
+            <Icon name="text" size={13} />Расшифровать
           </button>
         )}
-        {transcribing && <span className="voice-message-busy" title="Расшифровываем…"><i /><i /><i /></span>}
+        {transcribing && <span className="voice-message-busy" title="Расшифровываем…"><i /><i /><i /><em>Расшифровываем…</em></span>}
         <em>{formatDuration(message.durationSeconds ?? 0)}</em>
       </div>
       {message.transcriptStatus === "READY" && message.transcript && showTranscript && (
         <p className="voice-message-transcript">
           {message.transcript}
-          <button className="link" type="button" onClick={() => setShowTranscript(false)}>Скрыть</button>
+          <span className="voice-message-caption">Расшифровка AI · <button className="link" type="button" onClick={() => setShowTranscript(false)}>Скрыть</button></span>
         </p>
       )}
       {message.transcriptStatus === "READY" && !showTranscript && (

@@ -55,7 +55,8 @@ export function ChatPage({
       hint={showScopeSwitcher
         ? <Hint id="chat-visibility">Вы видите все диалоги организации. Сотрудники видят только диалоги своих групп, без группы и те, где они ответственные.</Hint>
         : undefined}
-      renderContextPanel={({ dialog, detail, applyConversation }) => (
+      viewerId={user.id}
+      renderContextPanel={({ dialog, detail, applyConversation, startCall }) => (
         <ChatContextPanel
           rightTab={rightTab}
           setRightTab={setRightTab}
@@ -64,6 +65,8 @@ export function ChatPage({
           groups={groups}
           employees={employees}
           applyConversation={applyConversation}
+          startCall={startCall}
+          viewerId={user.id}
         />
       )}
     />
@@ -78,6 +81,8 @@ function ChatContextPanel({
   groups,
   employees,
   applyConversation,
+  startCall,
+  viewerId,
 }: {
   rightTab: ChatRightTab;
   setRightTab: (tab: ChatRightTab) => void;
@@ -86,6 +91,8 @@ function ChatContextPanel({
   groups: EmployeeGroup[];
   employees: Array<{ id: number; name: string }>;
   applyConversation: (updated: ApiConversation) => void;
+  startCall: ((kind: "AUDIO" | "VIDEO") => void) | null;
+  viewerId: number;
 }) {
   const isSupport = Boolean(detail?.supportIdentitySnapshot);
   return (
@@ -99,12 +106,12 @@ function ChatContextPanel({
           isSupport ? (
             <>
               {detail && (
-                <DialogControls detail={detail} groups={groups} employees={employees} applyConversation={applyConversation} />
+                <DialogControls detail={detail} groups={groups} employees={employees} applyConversation={applyConversation} viewerId={viewerId} />
               )}
               <OperatorCards detail={detail} />
             </>
           ) : (
-            <ClientContext dialog={dialog} detail={detail} groups={groups} employees={employees} applyConversation={applyConversation} />
+            <ClientContext dialog={dialog} detail={detail} groups={groups} employees={employees} applyConversation={applyConversation} startCall={startCall} viewerId={viewerId} />
           )
         )}
         {rightTab === "history" && (isSupport ? <SupportHistory detail={detail} /> : <HistoryContext detail={detail} />)}

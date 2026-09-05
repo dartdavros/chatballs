@@ -1,5 +1,5 @@
 .sales-context {
-  width: 336px;
+  width: 320px;
   min-height: 0;
   display: flex;
   flex: none;
@@ -17,19 +17,19 @@
 
 .sales-context-tabs button {
   flex: 1;
-  margin-bottom: -1px;
   padding: 13px 0;
   color: var(--n-4);
   background: transparent;
-  border: none;
+  border: 0;
   border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
   font-size: 13px;
   font-weight: 500;
 }
 
 .sales-context-tabs button.active {
-  color: var(--primary);
-  border-bottom-color: var(--primary);
+  color: var(--primary-text);
+  border-bottom-color: var(--primary-text);
   font-weight: 600;
 }
 
@@ -39,7 +39,10 @@
   overflow-y: auto;
 }
 
-.sales-client-context,
+.sales-client-context {
+  padding: 0;
+}
+
 .sales-product-context,
 .sales-history-context {
   padding: 18px 18px 24px;
@@ -573,4 +576,659 @@
   gap: 5px;
   flex-wrap: wrap;
   margin-top: 3px;
+}
+
+
+/* ===== Карточка контакта (решение 5) ===== */
+.ctx-contact {
+  padding: 20px 18px 16px;
+  border-bottom: 1px solid var(--n-8);
+}
+
+.ctx-contact-hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.ctx-contact-avatar {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  border-radius: 50%;
+  font-size: 22px;
+  font-weight: 600;
+  object-fit: cover;
+}
+
+.ctx-channel-pill {
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 2px;
+  padding: 0 9px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.ctx-channel-pill i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.ctx-contact-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.ctx-contact-name strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--n-1);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ctx-contact-description {
+  margin: 6px 0 0;
+  color: var(--n-3);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.ctx-contact-description.is-empty {
+  color: var(--n-5);
+}
+
+.ctx-contact-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 14px -6px 0;
+}
+
+.ctx-contact-field {
+  height: 32px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 6px;
+  border-radius: 7px;
+  color: var(--n-2);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.ctx-contact-field:hover {
+  background: var(--n-10);
+}
+
+.ctx-contact-field.is-muted {
+  color: var(--n-4);
+  font-weight: 400;
+}
+
+.ctx-contact-field > span:first-child {
+  display: inline-flex;
+  flex: none;
+  color: var(--n-4);
+}
+
+.ctx-contact-field > span:nth-child(2) {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ctx-contact-field button {
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  border: 0;
+  border-radius: 5px;
+  color: var(--n-5);
+  background: transparent;
+  opacity: 0;
+}
+
+.ctx-contact-field:hover button,
+.ctx-contact-field button.is-copied {
+  opacity: 1;
+}
+
+.ctx-contact-field button:hover {
+  color: var(--n-2);
+  background: var(--n-8);
+}
+
+.ctx-call-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.ctx-call-buttons button {
+  height: 36px;
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  color: var(--n-2);
+  background: var(--surface-card);
+  border: 1px solid var(--n-7);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.ctx-call-buttons button:hover {
+  background: var(--n-10);
+}
+
+.ctx-request-contact {
+  width: 100%;
+  height: 34px;
+  margin-top: 8px;
+  color: var(--n-3);
+  background: var(--surface-card);
+  border: 1px solid var(--n-6);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.ctx-request-contact:disabled {
+  color: var(--n-5);
+  cursor: default;
+}
+
+/* ===== Секции «Диалог», «Заметка» ===== */
+.ctx-section {
+  position: relative;
+  padding: 14px 18px 16px;
+  border-bottom: 1px solid var(--n-8);
+}
+
+.ctx-section.is-note {
+  padding-bottom: 20px;
+  border-bottom: 0;
+}
+
+.ctx-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 24px;
+}
+
+.ctx-section-head h4 {
+  margin: 0;
+  color: var(--n-1);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.ctx-section-head button {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 6px;
+  color: var(--n-4);
+  background: transparent;
+  transition: transform 0.15s ease;
+}
+
+.ctx-section-head button.is-collapsed {
+  transform: rotate(-90deg);
+}
+
+.ctx-section-head button:hover {
+  color: var(--n-2);
+  background: var(--n-9);
+}
+
+.ctx-fields {
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px;
+}
+
+.ctx-error {
+  margin: 0 0 8px;
+  color: var(--error-text);
+  font-size: 12px;
+}
+
+.ctx-label {
+  display: block;
+  margin: 12px 0 5px;
+  color: var(--n-4);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+}
+
+.ctx-fields > .ctx-label:first-child,
+.ctx-error + .ctx-label {
+  margin-top: 0;
+}
+
+.ctx-select,
+.ctx-readonly {
+  width: 100%;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  color: var(--n-2);
+  background: var(--surface-card);
+  border: 1px solid var(--n-7);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: left;
+}
+
+.ctx-select {
+  padding-left: 8px;
+}
+
+.ctx-select:hover {
+  border-color: var(--n-6);
+}
+
+.ctx-select:disabled {
+  cursor: default;
+}
+
+.ctx-select > span:not(.ctx-avatar-small):not(.ctx-avatar-empty):not(.sales-priority-bars) {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ctx-select.is-empty > span {
+  color: var(--n-4);
+}
+
+.ctx-select > svg {
+  flex: none;
+  color: var(--n-4);
+}
+
+.ctx-avatar-small {
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  color: #ffffff;
+  background: var(--primary);
+  border-radius: 50%;
+  font-size: 9.5px;
+  font-weight: 600;
+}
+
+.ctx-avatar-empty {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  border: 1px dashed var(--n-6);
+  border-radius: 50%;
+}
+
+.ctx-dot {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  background: var(--primary);
+  border-radius: 50%;
+}
+
+.ctx-dot.is-muted {
+  background: var(--n-5);
+}
+
+.ctx-dot.is-square {
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+}
+
+.ctx-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.ctx-grid .ctx-label {
+  margin-top: 12px;
+}
+
+.ctx-readonly {
+  gap: 7px;
+  background: var(--n-10);
+  border-color: var(--n-9);
+}
+
+.ctx-readonly.is-mode {
+  font-weight: 600;
+}
+
+.ctx-readonly.is-mode i {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: 50%;
+}
+
+.ctx-labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ctx-add-label {
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 9px 0 7px;
+  color: var(--n-3);
+  background: var(--surface-card);
+  border: 1px dashed var(--n-6);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.ctx-add-label:hover {
+  color: var(--n-2);
+  border-color: var(--n-5);
+}
+
+.ctx-label-chip {
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 4px 0 9px;
+  color: var(--n-3);
+  background: var(--surface-card);
+  border: 1px solid var(--n-8);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.ctx-label-chip i {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: 2px;
+}
+
+.ctx-label-chip button {
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 4px;
+  color: var(--n-5);
+  background: transparent;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.ctx-label-chip button:hover {
+  color: var(--error-text);
+  background: var(--n-9);
+}
+
+.ctx-new-label {
+  display: flex;
+  gap: 6px;
+  padding: 4px;
+}
+
+.ctx-new-label input {
+  min-width: 0;
+  flex: 1;
+  height: 30px;
+  padding: 0 9px;
+  color: var(--n-2);
+  background: var(--surface-card);
+  border: 1px solid var(--n-7);
+  border-radius: 7px;
+  font-size: 12.5px;
+  outline: 0;
+}
+
+.ctx-new-label input:focus {
+  border-color: var(--primary);
+}
+
+.ctx-new-label button {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  color: #ffffff;
+  background: var(--primary);
+  border: 0;
+  border-radius: 7px;
+}
+
+.ctx-new-label button:disabled {
+  opacity: 0.4;
+}
+
+.ctx-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 14px;
+  font-size: 12px;
+}
+
+.ctx-meta-row span:first-child {
+  color: var(--n-4);
+}
+
+.ctx-meta-row span:last-child {
+  color: var(--n-3);
+}
+
+/* Заметка — жёлтая карточка (решение 5). */
+.ctx-note {
+  margin-top: 10px;
+  padding: 11px 13px;
+  color: var(--n-2);
+  background: var(--warning-bg);
+  border: 1px solid var(--warning-border);
+  border-radius: 9px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  cursor: text;
+}
+
+.ctx-note.is-empty {
+  color: var(--n-5);
+}
+
+.ctx-note.is-editing {
+  padding: 8px;
+  cursor: default;
+}
+
+.ctx-note textarea {
+  width: 100%;
+  min-height: 72px;
+  padding: 6px 8px;
+  color: var(--n-2);
+  background: var(--surface-card);
+  border: 1px solid var(--warning-border);
+  border-radius: 7px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  outline: 0;
+  resize: vertical;
+}
+
+.ctx-note-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.ctx-note-actions button {
+  height: 28px;
+  padding: 0 10px;
+  color: var(--n-3);
+  background: var(--surface-card);
+  border: 1px solid var(--n-7);
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.ctx-note-actions button.primary {
+  color: #ffffff;
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+/* Меню выбора: отмеченный пункт. */
+.app-dropdown .ant-dropdown-menu-item button.is-checked {
+  color: var(--primary-text);
+  background: var(--primary-bg);
+}
+
+
+/* ===== История контакта (кадр F) ===== */
+.sales-history-context {
+  padding: 18px 18px 24px;
+}
+
+.history-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.history-head h4 {
+  margin: 0;
+  color: var(--n-1);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.history-head span {
+  color: var(--n-4);
+  font-size: 11.5px;
+}
+
+.history-card {
+  margin-bottom: 10px;
+  padding: 12px 13px;
+  background: var(--surface-card);
+  border: 1px solid var(--n-8);
+  border-radius: 10px;
+}
+
+.history-card.is-current {
+  background: var(--primary-bg);
+  border-color: var(--primary-border);
+}
+
+.history-card-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.history-card-title strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--n-2);
+  font-size: 13px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.history-card-title span {
+  flex: none;
+  color: var(--n-5);
+  font-size: 11px;
+}
+
+.history-card-title span.is-open {
+  color: var(--warning-text);
+  font-weight: 600;
+}
+
+.history-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  color: var(--n-4);
+  font-size: 11px;
+}
+
+.history-channel {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 7px;
+  border-radius: 5px;
+  font-size: 10.5px;
+  font-weight: 600;
+}
+
+.history-channel i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+
+.history-card p {
+  margin: 6px 0 0;
+  color: var(--n-4);
+  font-size: 12px;
+  line-height: 1.45;
 }

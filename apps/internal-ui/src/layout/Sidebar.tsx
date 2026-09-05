@@ -31,7 +31,6 @@ function SidebarLink({ activeRoutes, badge, icon, label, route, routeKey, setRou
       type="button"
       onClick={() => setRoute(routeKey)}
     >
-      {active && <span className="active-bar" />}
       <Icon name={icon} />
       {label}
       {badge && <b className="hub-nav-badge">{badge}</b>}
@@ -54,6 +53,8 @@ export function Sidebar({
   chatScope,
   setChatScope,
   chatCounters,
+  unreadCount = 0,
+  onOpenNotifications,
 }: {
   route: RouteKey;
   user: SessionUser;
@@ -63,6 +64,8 @@ export function Sidebar({
   chatScope: DialogScope;
   setChatScope: (scope: DialogScope) => void;
   chatCounters: ConversationCounters | null;
+  unreadCount?: number;
+  onOpenNotifications?: () => void;
 }) {
   const manager = isManager(user);
   // Кадр S2: на ≤1024px сайдбар сжимается в рейку 60px; «развернуть»
@@ -108,7 +111,7 @@ export function Sidebar({
             ? <img src={user.organizationLogoUrl} alt="" />
             : <LogoIcon />}
         </div>
-        <div><strong>{user.organizationName || "Chatbolls"}</strong><span>Chatbolls</span></div>
+        <strong>{user.organizationName || "Chatbolls"}</strong>
       </button>
       {manager ? (
         <nav className="hub-nav">
@@ -141,7 +144,7 @@ export function Sidebar({
         />
       )}
       {manager && <LaunchChecklist user={user} setRoute={setRoute} />}
-      <SidebarUserMenu user={user} route={route} setRoute={setRoute} onLogout={onLogout} />
+      <SidebarUserMenu user={user} route={route} setRoute={setRoute} onLogout={onLogout} unreadCount={unreadCount} onOpenNotifications={onOpenNotifications} />
       </div>
     </aside>
   );

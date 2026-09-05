@@ -1,172 +1,191 @@
+/* Композер (решение 9): поле сверху, инструменты снизу, «Отправить ⏎». Над
+   полем — одна строка-предупреждение о режиме. */
 .sales-composer {
   flex: none;
-  padding: 14px 24px 16px;
-  background: var(--surface-card);
-  border-top: 1px solid var(--n-8);
+  padding: 10px 24px 16px;
 }
 
-.sales-composer > div {
+.composer-wrap {
   max-width: 760px;
   margin: 0 auto;
 }
 
-.sales-waiting-composer,
-.sales-ai-composer {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 14px 18px;
-  border-radius: 12px;
-}
-
-.sales-waiting-composer {
-  background: #fffdf5;
-  border: 1px dashed #ffd591;
-}
-
-.sales-ai-composer {
-  background: #fcfaff;
-  border: 1px solid var(--ai-border);
-}
-
-.sales-waiting-composer > span,
-.sales-ai-composer > span {
-  width: 38px;
-  height: 38px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: none;
-  border-radius: 10px;
-}
-
-.sales-waiting-composer > span {
-  color: var(--warning-text);
-  background: var(--warning-bg-strong);
-}
-
-.sales-ai-composer > span {
-  color: var(--ai);
-  background: var(--ai-bg);
-}
-
-.sales-waiting-composer div,
-.sales-ai-composer div {
-  min-width: 0;
-  flex: 1;
-}
-
-.sales-waiting-composer strong,
-.sales-ai-composer strong {
-  color: var(--n-2);
-  font-size: 13.5px;
-  font-weight: 600;
-}
-
-.sales-waiting-composer p,
-.sales-ai-composer p {
-  margin: 1px 0 0;
-  color: var(--n-4);
-  font-size: 12px;
-}
-
-.sales-human-tools {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding-bottom: 10px;
-}
-
-.sales-human-tools button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 28px;
-  padding: 0 11px;
-  color: var(--n-3);
-  background: var(--n-10);
-  border: 1px solid var(--n-7);
-  border-radius: 14px;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.sales-human-tools button.ai {
-  color: var(--ai);
-  background: var(--ai-bg);
-  border-color: var(--ai-border);
-  font-weight: 600;
-}
-
-.sales-human-tools span {
-  flex: 1;
-}
-
-.sales-message-input {
-  display: flex;
-  align-items: flex-end;
-  gap: 10px;
-  padding: 8px 8px 8px 14px;
-  background: var(--surface-card);
-  border: 1px solid var(--n-7);
-  border-radius: 12px;
-}
-
-.sales-message-input:focus-within {
-  border-color: var(--primary);
-}
-
-.sales-message-input textarea {
-  flex: 1;
-  max-height: 120px;
-  padding: 7px 0;
-  border: none;
-  outline: none;
-  resize: none;
-  color: var(--n-2);
-  font-size: 13.5px;
-  line-height: 1.5;
-}
-
-.sales-message-input button:last-child {
-  height: 38px;
+.composer-warning {
   display: flex;
   align-items: center;
   gap: 7px;
+  margin: 0 4px 7px;
+  font-size: 12px;
+}
+
+.composer-warning i {
   flex: none;
-  padding: 0 16px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.composer-box {
+  position: relative;
+  background: var(--surface-card);
+  border: 1px solid var(--n-7);
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+}
+
+.composer-box:focus-within {
+  border-color: var(--primary-border);
+}
+
+.composer-box textarea {
+  width: 100%;
+  min-height: 52px;
+  max-height: 160px;
+  padding: 12px 14px 6px;
+  border: 0;
+  outline: 0;
+  color: var(--n-2);
+  background: transparent;
+  font-size: 13.5px;
+  line-height: 1.4;
+  resize: none;
+}
+
+.composer-box textarea::placeholder {
+  color: var(--n-5);
+}
+
+.composer-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 8px 8px;
+}
+
+.composer-tool {
+  height: 32px;
+  min-width: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  color: var(--n-4);
+  background: transparent;
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+.composer-tool.is-labeled {
+  padding: 0 9px;
+  color: var(--n-3);
+}
+
+.composer-tool:hover {
+  color: var(--n-2);
+  background: var(--n-9);
+}
+
+.composer-spacer {
+  flex: 1;
+}
+
+.composer-send {
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 8px;
   color: #ffffff;
   background: var(--primary);
-  border: none;
-  border-radius: 9px;
   font-size: 13px;
   font-weight: 600;
 }
 
-/* --- Шаблоны ответов «/» (дизайн-базлайн v2 §9) --- */
-
-.sales-message-input {
-  position: relative;
+.composer-send:hover {
+  background: var(--primary-hover);
 }
 
-.composer-templates-button {
-  flex: none;
-  align-self: flex-end;
-  width: 34px;
-  height: 34px;
-  border: none;
-  border-radius: 8px;
-  background: transparent;
-  color: var(--text-tertiary);
-  display: inline-flex;
+.composer-send:disabled {
+  opacity: 0.6;
+}
+
+.composer-send kbd {
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 500;
+  opacity: 0.75;
+}
+
+/* Кадры D, E: композер заменён карточкой-сообщением. */
+.composer-locked {
+  max-width: 760px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0 auto;
+  padding: 14px 18px;
+  background: var(--surface-card);
+  border: 1px solid var(--n-8);
+  border-radius: 12px;
+}
+
+.composer-locked > span {
+  width: 36px;
+  height: 36px;
+  display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+  flex: none;
+  color: var(--n-3);
+  background: var(--n-9);
+  border-radius: 9px;
 }
 
-.composer-templates-button:hover {
-  background: var(--n-9);
-  color: var(--text-body);
+.composer-locked > div {
+  min-width: 0;
+  flex: 1;
+}
+
+.composer-locked strong {
+  display: block;
+  color: var(--n-2);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.composer-locked p {
+  margin: 2px 0 0;
+  color: var(--n-4);
+  font-size: 12.5px;
+  line-height: 1.3;
+}
+
+.composer-locked-action {
+  height: 34px;
+  flex: none;
+  padding: 0 14px;
+  color: var(--n-3);
+  background: var(--surface-card);
+  border: 1px solid var(--n-6);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.composer-locked-action:hover {
+  background: var(--n-10);
+}
+
+.sales-composer-error {
+  max-width: 760px;
+  margin: 6px auto 0;
+  color: var(--error-text);
+  font-size: 12px;
 }
 
 .composer-templates-menu {
@@ -312,8 +331,8 @@
 }
 
 .voice-message-play {
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   flex: none;
   border: none;
   border-radius: 50%;
@@ -341,7 +360,7 @@
   display: block;
   width: 3px;
   border-radius: 1.5px;
-  background: color-mix(in srgb, var(--primary) 45%, var(--surface-card));
+  background: var(--n-6);
   flex: none;
 }
 
@@ -350,16 +369,18 @@
 }
 
 .voice-message-transcribe {
-  width: 26px;
   height: 26px;
   flex: none;
+  padding: 0 8px;
   border: none;
   border-radius: 7px;
   background: transparent;
   color: var(--primary-text);
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .voice-message-transcribe:hover {
@@ -386,8 +407,9 @@
 
 .voice-message-player em {
   flex: none;
-  color: var(--text-tertiary);
+  color: var(--n-4);
   font-size: 12px;
+  font-weight: 500;
   font-style: normal;
   font-variant-numeric: tabular-nums;
 }
@@ -409,4 +431,18 @@
   margin: 6px 0 0;
   color: var(--error-text);
   font-size: 12px;
+}
+
+.voice-message-busy em {
+  margin-left: 4px;
+  color: var(--n-4);
+  font-size: 12px;
+  font-style: normal;
+}
+
+.voice-message-caption {
+  display: block;
+  margin-top: 4px;
+  color: var(--n-4);
+  font-size: 11.5px;
 }

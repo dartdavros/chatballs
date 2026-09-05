@@ -1,5 +1,5 @@
 .sales-dialog-list {
-  width: 344px;
+  width: 323px;
   min-height: 0;
   display: flex;
   flex: none;
@@ -8,29 +8,60 @@
   border-right: 1px solid var(--n-8);
 }
 
+/* Заголовок списка (кадр A1): переключатель охвата со счётчиком, сортировка,
+   «Скрыть список»; поиск с подсказкой «/». */
 .sales-dialog-list-head {
   flex: none;
-  padding: 14px 16px 10px;
-  border-bottom: 1px solid var(--n-9);
+  padding: 13px 16px 10px;
+  border-bottom: 1px solid var(--n-8);
 }
 
 .sales-dialog-list-head > div {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 11px;
+  gap: 8px;
+  margin-bottom: 10px;
 }
 
-.sales-dialog-list-head h2 {
+.sales-dialog-list-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   margin: 0;
   color: var(--n-1);
   font-size: 16px;
   font-weight: 700;
+  white-space: nowrap;
 }
 
-.sales-dialog-list-head span {
+.sales-dialog-list-title small {
   color: var(--n-4);
   font-size: 12px;
+  font-weight: 500;
+}
+
+.sales-dialog-list-tools {
+  display: flex;
+  flex: none;
+  gap: 4px;
+}
+
+.sales-dialog-list-tools button {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 7px;
+  color: var(--n-4);
+  background: transparent;
+}
+
+.sales-dialog-list-tools button:hover {
+  color: var(--n-2);
+  background: var(--n-9);
 }
 
 .sales-dialog-search {
@@ -51,43 +82,61 @@
   font-size: 13px;
 }
 
+.sales-dialog-search kbd {
+  flex: none;
+  padding: 1px 5px;
+  color: var(--n-4);
+  background: var(--surface-card);
+  border: 1px solid var(--n-7);
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 10.5px;
+}
+
+/* Вкладки статусов — UnderlineTabs (решение 3). */
 .sales-dialog-tabs {
   display: flex;
   flex: none;
-  gap: 4px;
-  padding: 10px 12px;
+  gap: 2px;
+  padding: 0 10px;
   overflow-x: auto;
-  border-bottom: 1px solid var(--n-9);
+  border-bottom: 1px solid var(--n-8);
 }
 
 .sales-dialog-tabs button {
   flex: none;
   display: inline-flex;
   align-items: center;
-  padding: 6px 12px;
-  color: var(--n-3);
+  gap: 5px;
+  padding: 9px 8px 8px;
+  color: var(--n-4);
   background: transparent;
-  border: none;
-  border-radius: 7px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
   font-size: 12.5px;
   font-weight: 500;
   white-space: nowrap;
 }
 
+.sales-dialog-tabs button:hover {
+  color: var(--n-2);
+}
+
 .sales-dialog-tabs button.active {
   color: var(--primary-text);
-  background: var(--primary-bg);
+  border-bottom-color: var(--primary-text);
   font-weight: 600;
 }
 
 .sales-dialog-tabs b {
-  margin-left: 5px;
   padding: 0 5px;
   color: var(--warning-text);
-  background: var(--warning-bg-strong);
+  background: var(--warning-bg);
   border-radius: 8px;
   font-size: 11px;
   font-weight: 700;
+  line-height: 12px;
 }
 
 .sales-dialog-list-body {
@@ -96,12 +145,13 @@
   overflow-y: auto;
 }
 
+/* Строка диалога (решение 4). Активная — фон n9, без акцентной полосы. */
 .sales-dialog-row {
   position: relative;
   width: 100%;
   display: flex;
   gap: 11px;
-  padding: 12px 16px;
+  padding: 11px 14px 11px 16px;
   background: transparent;
   border: none;
   border-bottom: 1px solid var(--n-9);
@@ -113,25 +163,13 @@
 }
 
 .sales-dialog-row.active {
-  background: var(--primary-bg);
-}
-
-.sales-dialog-row-bar {
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: transparent;
-}
-
-.sales-dialog-row.active .sales-dialog-row-bar {
-  background: var(--primary);
+  background: var(--n-9);
 }
 
 .sales-dialog-avatar-wrap {
   position: relative;
   flex: none;
+  margin-top: 20px;
 }
 
 .sales-dialog-avatar {
@@ -150,23 +188,57 @@ img.sales-dialog-avatar {
   object-fit: cover;
 }
 
+/* Точка режима диалога: ждёт · AI · сотрудник · закрыт. */
 .sales-dialog-avatar-wrap i {
   position: absolute;
   right: -1px;
   bottom: -1px;
-  width: 11px;
-  height: 11px;
+  width: 12px;
+  height: 12px;
   border: 2px solid var(--surface-card);
   border-radius: 50%;
 }
 
+.sales-dialog-row.active .sales-dialog-avatar-wrap i {
+  border-color: var(--n-9);
+}
+
 .sales-dialog-row-main {
   min-width: 0;
+  display: flex;
   flex: 1;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.sales-dialog-row-agent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.sales-dialog-row-agent small {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--n-4);
+  font-size: 11.5px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.sales-dialog-row-agent small svg {
+  flex: none;
+}
+
+.sales-dialog-row-agent small span {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .sales-dialog-row-title,
-.sales-dialog-row-meta,
 .sales-dialog-row-preview {
   display: flex;
   align-items: center;
@@ -177,8 +249,8 @@ img.sales-dialog-avatar {
   min-width: 0;
   flex: 1;
   overflow: hidden;
-  color: var(--n-2);
-  font-size: 13.5px;
+  color: var(--n-1);
+  font-size: 14px;
   font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -191,29 +263,9 @@ img.sales-dialog-avatar {
   font-style: normal;
 }
 
-.sales-dialog-row-meta {
-  margin: 3px 0 4px;
-}
-
-.sales-dialog-row-meta small {
-  color: var(--n-4);
-  font-size: 11px;
-}
-
-.sales-dialog-row-meta b {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 1px 7px;
-  border-radius: 5px;
-  font-size: 10.5px;
-  font-weight: 600;
-}
-
-.sales-dialog-row-meta b i {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
+.sales-dialog-row-preview > svg {
+  flex: none;
+  color: var(--n-5);
 }
 
 .sales-dialog-row-preview small {
@@ -228,6 +280,7 @@ img.sales-dialog-avatar {
 
 .sales-dialog-row-preview small.unread {
   color: var(--n-2);
+  font-weight: 500;
 }
 
 .sales-dialog-row-preview b {
@@ -245,24 +298,74 @@ img.sales-dialog-avatar {
   font-weight: 700;
 }
 
+.sales-dialog-row-badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  margin-top: 3px;
+}
+
+/* Бейджи строки: таймер ожидания · группа (круглая точка) · метки (квадратная). */
+.sales-dialog-badge {
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 7px;
+  color: var(--n-3);
+  background: var(--surface-card);
+  border: 1px solid var(--n-8);
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.sales-dialog-badge i {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+}
+
+.sales-dialog-badge i.is-round {
+  border-radius: 50%;
+}
+
+.sales-dialog-badge.is-wait {
+  gap: 4px;
+  color: var(--warning-text);
+  background: var(--warning-bg);
+  border-color: var(--warning-border);
+  font-weight: 600;
+}
+
 /* --- Переключатель охвата (дизайн-базлайн v2 A1) --- */
 
 .sales-scope-switcher {
+  min-width: 0;
+  height: 30px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
   margin-left: -6px;
-  padding: 2px 8px 2px 6px;
+  padding: 0 8px 0 6px;
   border: none;
   border-radius: 8px;
-  background: transparent;
+  background: var(--n-9);
   color: var(--text-heading);
   cursor: pointer;
   font-family: inherit;
 }
 
 .sales-scope-switcher:hover {
-  background: var(--n-9);
+  background: var(--n-8);
+}
+
+.sales-scope-switcher > svg {
+  flex: none;
+  color: var(--n-4);
 }
 
 .sales-scope-switcher h2 {
@@ -297,7 +400,7 @@ img.sales-dialog-avatar {
   display: flex;
   align-items: flex-start;
   gap: 9px;
-  margin: 10px 12px 2px;
+  margin: 10px 12px 0;
   padding: 9px 10px 9px 12px;
   border: 1px solid var(--primary-border);
   border-radius: 8px;

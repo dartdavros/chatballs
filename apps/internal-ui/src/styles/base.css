@@ -22,6 +22,7 @@
   --surface-card: #ffffff;
   --surface-sidebar: #fafafa;
   --surface-feed: #f5f6f8;
+  --msg-in: #ffffff;
   --primary: #1677ff;
   --primary-hover: color-mix(in srgb, var(--primary) 88%, black);
   --primary-bg: color-mix(in srgb, var(--primary) 10%, var(--surface-card));
@@ -82,6 +83,7 @@
   --surface-card: #1b1c1f;
   --surface-sidebar: #181a1d;
   --surface-feed: #15161a;
+  --msg-in: #1e2025;
   --primary-hover: color-mix(in srgb, var(--primary) 92%, white);
   --primary-bg: color-mix(in srgb, var(--primary) 16%, var(--surface-card));
   --primary-border: color-mix(in srgb, var(--primary) 40%, var(--surface-card));

@@ -7,6 +7,8 @@ def message_payload(message: Message) -> dict[str, object]:
         "id": message.id,
         "author": message.author_type,
         "authorUserId": message.author_user_id,
+        # Подпись исходящего сообщения сотрудника (дизайн-базлайн v2, 4a).
+        "authorName": (message.author_user.full_name or message.author_user.email) if message.author_user_id and message.author_user else "",
         "kind": message.kind,
         "text": message.text,
         "contentHtml": message.content_html,
@@ -23,7 +25,7 @@ def message_payload(message: Message) -> dict[str, object]:
 
 
 def _last_message(conversation: Conversation) -> Message | None:
-    return conversation.messages.order_by("-created_at").first()
+    return conversation.messages.select_related("author_user").order_by("-created_at").first()
 
 
 def _pending_count(conversation: Conversation, last_read_id: int = 0) -> int:
@@ -182,7 +184,7 @@ def conversation_payload(
         "createdAt": conversation.created_at.isoformat(),
     }
     if with_messages:
-        payload["messages"] = [message_payload(m) for m in conversation.messages.order_by("created_at")]
+        payload["messages"] = [message_payload(m) for m in conversation.messages.select_related("author_user").order_by("created_at")]
         history = _conversation_history(conversation)
         payload["history"] = [_history_item(c) for c in history]
     else:

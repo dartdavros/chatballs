@@ -61,7 +61,6 @@ export function SidebarNavSection({
         type="button"
         onClick={toggleExpanded}
       >
-        {active && <span className="active-bar" />}
         <Icon name={icon} />
         {label}
         <span className="hub-nav-chevron"><Icon name="chevron" size={14} /></span>

@@ -24,6 +24,14 @@ export type ConversationListItem = {
   isMine: boolean;
   priority: "HIGH" | "MEDIUM" | "LOW" | "NONE";
   labels: Array<{ id: number; name: string; color: string }>;
+  // Строка диалога (решение 4): агент в цвете, группа с точкой, таймер ожидания,
+  // «↩» — последнее сообщение наше.
+  agentName: string;
+  agentColor: string;
+  groupName: string | null;
+  groupColor: string;
+  waitLabel: string | null;
+  lastIsOurs: boolean;
 };
 
 export type StatusInfo = {

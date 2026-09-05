@@ -35,7 +35,7 @@ export function MaxLogo({ size = 24 }: { size?: number }) {
   );
 }
 
-export function Icon({ name, size = 17 }: { name: "grid" | "building" | "team" | "box" | "robot" | "plug" | "settings" | "bell" | "chevron" | "plus" | "arrow" | "paperclip" | "send" | "phone" | "video" | "lock" | "mail" | "eye" | "eyeOff" | "logout" | "user" | "refresh" | "transfer" | "warning" | "bolt" | "shop" | "search" | "more" | "external" | "key" | "pause" | "play" | "percent" | "save" | "check" | "copy" | "clock" | "message" | "inbox" | "cart" | "columns" | "download" | "list" | "split" | "gitBranch" | "route" | "expand" | "edit" | "trash" | "wrench" | "xCircle" | "folder" | "grip"; size?: number }) {
+export function Icon({ name, size = 17 }: { name: "grid" | "building" | "team" | "box" | "robot" | "plug" | "settings" | "bell" | "chevron" | "plus" | "arrow" | "paperclip" | "send" | "phone" | "video" | "lock" | "mail" | "eye" | "eyeOff" | "logout" | "user" | "refresh" | "transfer" | "warning" | "bolt" | "shop" | "search" | "more" | "external" | "key" | "pause" | "play" | "percent" | "save" | "check" | "copy" | "clock" | "message" | "inbox" | "cart" | "columns" | "download" | "list" | "split" | "gitBranch" | "route" | "expand" | "edit" | "trash" | "wrench" | "xCircle" | "folder" | "grip" | "reply" | "sort" | "collapseLeft" | "mic" | "text"; size?: number }) {
   const common = { width: size, height: size, fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round", strokeLinejoin: "round" } as const;
   const paths: Record<typeof name, ReactNode> = {
     grid: <><rect x="3" y="3" width="7" height="9" rx="1.4" /><rect x="14" y="3" width="7" height="5" rx="1.4" /><rect x="14" y="12" width="7" height="9" rx="1.4" /><rect x="3" y="16" width="7" height="5" rx="1.4" /></>,
@@ -92,6 +92,11 @@ export function Icon({ name, size = 17 }: { name: "grid" | "building" | "team" |
     check: <path d="M20 6 9 17l-5-5" />,
     copy: <><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></>,
     clock: <><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></>,
+    reply: <><polyline points="9 17 4 12 9 7" /><path d="M20 18v-2a4 4 0 0 0-4-4H4" /></>,
+    mic: <><rect x="9" y="3" width="6" height="12" rx="3" /><path d="M5 11a7 7 0 0 0 14 0" /><path d="M12 18v3" /><path d="M8 21h8" /></>,
+    text: <><path d="M5 5h14" /><path d="M12 5v14" /><path d="M8 19h8" /></>,
+    sort: <><path d="M11 5h10" /><path d="M11 9h7" /><path d="M11 13h4" /><path d="M3 17l3 3 3-3" /><path d="M6 18V4" /></>,
+    collapseLeft: <><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M9 4v16" /><path d="m15 10-2 2 2 2" /></>,
     lock: <><rect x="4" y="10" width="16" height="10" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></>,
     mail: <><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 7 9 6 9-6" /></>,
     eye: <><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z" /><circle cx="12" cy="12" r="3" /></>,
