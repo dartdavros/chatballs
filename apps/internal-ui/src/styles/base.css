@@ -21,7 +21,7 @@
   --surface-page: var(--n-11);
   --surface-card: #ffffff;
   --surface-sidebar: #fafafa;
-  --surface-feed: #dedfd9;
+  --surface-feed: #f5f6f8;
   --wallpaper-bg: #dedfd9;
   --wallpaper-ink: #5d635d;
   --msg-in: #ffffff;
@@ -84,7 +84,7 @@
   --surface-page: #101113;
   --surface-card: #1b1c1f;
   --surface-sidebar: #181a1d;
-  --surface-feed: #25292e;
+  --surface-feed: #15161a;
   --wallpaper-bg: #25292e;
   --wallpaper-ink: #f1f2f3;
   --msg-in: #1e2025;

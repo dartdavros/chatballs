@@ -8,12 +8,6 @@
   background: var(--surface-feed);
 }
 
-/* Обои ленты (макет владельца): за сообщениями, шапка и композер — поверх. */
-.sales-conversation > *:not(.icon-wallpaper) {
-  position: relative;
-  z-index: 1;
-}
-
 .sales-conversation-head {
   display: flex;
   align-items: center;

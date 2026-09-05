@@ -41,7 +41,6 @@ export function scopeLabel(scope: DialogScope): string {
   if (scope.kind === "assignee") return scope.label;
   return "Все диалоги";
 }
-import { IconWallpaper } from "../../shared/IconWallpaper";
 import type { ConversationListItem, ListTab } from "./types";
 import { useConversationCall } from "./useConversationCall";
 import { useIncomingMessageSound } from "./useIncomingMessageSound";
@@ -257,11 +256,10 @@ export function ConversationWorkspace({ isOwner = false, viewerId = null, listTi
         searchRef={searchRef}
       />
       {!selectedDialog && (
-        <section className="sales-conversation"><IconWallpaper /><div className="sales-conversation-empty">Выберите диалог</div></section>
+        <section className="sales-conversation"><div className="sales-conversation-empty">Выберите диалог</div></section>
       )}
       {selectedDialog && (
       <section className="sales-conversation">
-        <IconWallpaper />
         {ctxOpen && <button className="ctx-backdrop" type="button" aria-label="Закрыть панель" onClick={() => setCtxOpen(false)} />}
         <ConversationThread controlMode={controlMode} dialog={selectedDialog} detail={detail} isOwner={isOwner} onExpandList={listCollapsed ? () => setListCollapsed(false) : undefined} viewerId={viewerId} onClaim={onClaim} onRelease={onRelease} onClose={onClose} onSpam={onSpam} onReturnQueue={onReturnQueue} onArchive={onArchive} onToggleContext={() => setCtxOpen((open) => !open)} onMobileBack={() => setMobileDialogOpen(false)} />
         {(detailError || actionError) && <div className="sales-conversation-error">{detailError || actionError}</div>}
