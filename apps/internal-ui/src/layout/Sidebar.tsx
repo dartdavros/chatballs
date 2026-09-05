@@ -111,10 +111,10 @@ export function Sidebar({
           trigger={["click"]}
           placement="bottomLeft"
           overlayClassName="app-dropdown is-wide"
-          menu={{ items: [{ key: "current", label: <button type="button" className="is-checked"><Icon name="building" size={15} />{user.organizationName || "Chatbolls"}</button> }] }}
+          menu={{ items: [{ key: "current", label: <button type="button" className="is-checked"><Icon name="building" size={15} />{user.organizationName || "Chatballs"}</button> }] }}
         >
           <button className="hub-brand-switch" type="button">
-            <span>{user.organizationName || "Chatbolls"}</span>
+            <span>{user.organizationName || "Chatballs"}</span>
             <Icon name="chevron" size={14} />
           </button>
         </Dropdown>

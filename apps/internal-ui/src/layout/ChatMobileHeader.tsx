@@ -32,7 +32,7 @@ export function ChatMobileHeader({ user, scope, total, setRoute, onLogout, onOpe
       <button className="chat-mobile-menu" type="button" aria-label="Меню" onClick={onOpenMenu}><Icon name="list" size={20} /></button>
       <button className="chat-mobile-title" type="button" onClick={onOpenMenu}>
         <strong><span>{title}</span><Icon name="chevron" size={14} /></strong>
-        <small>{user.organizationName || "Chatbolls"} · {pluralDialogs(total)}</small>
+        <small>{user.organizationName || "Chatballs"} · {pluralDialogs(total)}</small>
       </button>
       <Dropdown menu={{ items: menuItems }} open={open} onOpenChange={setOpen} trigger={["click"]} placement="bottomRight" overlayClassName="app-dropdown is-wide">
         <button className="chat-mobile-avatar" type="button" aria-label="Меню пользователя"><Avatar user={user} /></button>

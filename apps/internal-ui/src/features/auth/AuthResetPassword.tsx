@@ -85,7 +85,7 @@ export function AuthResetPassword({ onDone }: { onDone: () => void }) {
           <div className="auth-recovery-sent">
             <div className="auth-recovery-sent-icon success"><Icon name="check" size={26} /></div>
             <h3>Готово</h3>
-            <p>Пароль успешно изменён. Войдите в Chatbolls, используя новый пароль.</p>
+            <p>Пароль успешно изменён. Войдите в Chatballs, используя новый пароль.</p>
           </div>
           <Button className="auth-submit" variant="primary" onClick={onDone}>Войти</Button>
         </div>

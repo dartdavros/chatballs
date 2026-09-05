@@ -82,7 +82,7 @@ export function AuthPasswordRecovery({ onBackToLogin }: { onBackToLogin: () => v
           <div className="auth-recovery-sent">
             <div className="auth-recovery-sent-icon"><Icon name="mail" size={26} /></div>
             <h3>Проверьте почту</h3>
-            <p>Если <b>{sentEmail}</b> зарегистрирован в Chatbolls, на него отправлено письмо со ссылкой для сброса пароля.</p>
+            <p>Если <b>{sentEmail}</b> зарегистрирован в Chatballs, на него отправлено письмо со ссылкой для сброса пароля.</p>
           </div>
           <div className="auth-recovery-info">
             <Icon name="clock" size={15} />

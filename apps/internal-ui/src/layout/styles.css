@@ -172,6 +172,7 @@
   color: var(--n-4);
 }
 
+/* Логотип — сам по себе, без подложки: цвет текста темы. */
 .hub-brand-mark {
   width: 28px;
   height: 28px;
@@ -179,9 +180,14 @@
   align-items: center;
   justify-content: center;
   flex: none;
-  color: #ffffff;
-  background: var(--primary);
+  color: var(--n-1);
+  background: transparent;
   border-radius: 8px;
+}
+
+.hub-brand-mark svg {
+  width: 26px;
+  height: 26px;
 }
 
 .hub-brand-mark.has-logo {

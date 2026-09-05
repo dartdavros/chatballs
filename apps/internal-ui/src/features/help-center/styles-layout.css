@@ -58,14 +58,12 @@ html.help-center-document body {
   width: 31px;
   height: 31px;
   place-items: center;
-  border-radius: 50%;
-  background: var(--n-1);
-  color: var(--surface-card);
+  color: var(--n-1);
 }
 
 .help-brand-mark svg {
-  width: 18px;
-  height: 18px;
+  width: 28px;
+  height: 28px;
 }
 
 .help-products {
@@ -179,8 +177,8 @@ html.help-center-document body {
 }
 
 .help-footer-brand svg {
-  width: 14px;
-  height: 14px;
+  width: 22px;
+  height: 22px;
 }
 
 .help-support-launcher {

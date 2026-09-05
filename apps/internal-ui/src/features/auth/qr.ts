@@ -11,7 +11,7 @@ export type QrMatrix = {
 };
 
 export function createQrMatrix(text: string): QrMatrix {
-  const bytes = Array.from(new TextEncoder().encode(text || "Chatbolls"));
+  const bytes = Array.from(new TextEncoder().encode(text || "Chatballs"));
   const version = chooseVersion(bytes.length);
   const size = version * 4 + 17;
   const dataCodewords = encodeData(bytes, version);

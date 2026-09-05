@@ -73,7 +73,7 @@ export function PortalCreateDialog({
         <p>Портал — это публичный центр помощи с инструкциями и ответами для клиентов.</p>
         <FormField error={fieldErrors.name} label="Название портала" value={name} onChange={setName} placeholder="Например, Центр помощи Foxray" wide />
         <label className={`portal-address-field${fieldErrors.slug ? " is-invalid" : ""}`}>
-          <span>Адрес Chatbolls</span>
+          <span>Адрес Chatballs</span>
           <div>
             <input
               type="text"

@@ -77,7 +77,7 @@ export function PortalSettings({
         </div>
         <div className="portal-settings-fields">
           <FormField disabled={!canManage} label="Название портала" value={name} onChange={canManage ? setName : undefined} wide />
-          <FormField disabled={!canManage} label="Адрес Chatbolls" value={slug} onChange={canManage ? setSlug : undefined} mono wide />
+          <FormField disabled={!canManage} label="Адрес Chatballs" value={slug} onChange={canManage ? setSlug : undefined} mono wide />
           <p className="portal-address-preview">{portal.publicUrl}</p>
           <SelectField
             disabled={!canManage}

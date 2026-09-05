@@ -5,7 +5,7 @@ import {
   Server, Sparkles, Terminal, User, Video, createElement, type IconNode,
 } from "lucide";
 
-// Фоновый узор из lucide-иконок (макет владельца «Chatbolls — Lucide Pattern»):
+// Фоновый узор из lucide-иконок (макет владельца «Chatballs — Lucide Pattern»):
 // филлотаксис по золотому углу с тремя вихрями, размер/прозрачность/поворот —
 // квазислучайные ряды. Алгоритм и константы повторяют макет один в один; цвета
 // фона и штриха — токены --wallpaper-bg / --wallpaper-ink (две темы).

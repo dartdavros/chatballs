@@ -39,15 +39,12 @@
   align-items: center;
   justify-content: center;
   margin-bottom: 14px;
-  color: #ffffff;
-  background: var(--primary);
-  border-radius: 13px;
-  box-shadow: 0 4px 12px color-mix(in srgb, var(--primary) 30%, transparent);
+  color: var(--n-1);
 }
 
 .auth-logo svg {
-  width: 26px;
-  height: 26px;
+  width: 44px;
+  height: 44px;
 }
 
 .auth-brand h1 {

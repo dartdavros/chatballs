@@ -53,7 +53,7 @@ export function AuthSetup({ onDone }: { onDone: (user: AuthenticatedUser) => voi
   }
 
   return (
-    <AuthFrame title="Chatbolls" subtitle="Первый запуск: создайте организацию и учётную запись владельца" logo="pulse" width={420}>
+    <AuthFrame title="Chatballs" subtitle="Первый запуск: создайте организацию и учётную запись владельца" logo="pulse" width={420}>
       <form className="auth-card" onSubmit={submit}>
         {error && <div className="auth-error"><span className="auth-error-dot">!</span><span>{error}</span></div>}
         <label className="field-label">Название организации</label>
