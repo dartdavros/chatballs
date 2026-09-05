@@ -105,6 +105,7 @@ function DialogListItem({ dialog, active, setSelectedId }: { dialog: Conversatio
         <span className="sales-dialog-row-title"><strong>{dialog.name}</strong><em>{dialog.time}</em></span>
         <span className="sales-dialog-row-preview">
           {dialog.lastIsOurs && <Icon name="reply" size={13} />}
+          {dialog.lastIsVoice && <Icon name="mic" size={13} />}
           <small className={dialog.unread ? "unread" : ""}>{dialog.preview}</small>
           {dialog.unread > 0 && <b>{dialog.unread}</b>}
         </span>

@@ -32,6 +32,8 @@ export type ConversationListItem = {
   groupColor: string;
   waitLabel: string | null;
   lastIsOurs: boolean;
+  // Последнее сообщение — голосовое: в превью иконка микрофона (макет).
+  lastIsVoice: boolean;
 };
 
 export type StatusInfo = {

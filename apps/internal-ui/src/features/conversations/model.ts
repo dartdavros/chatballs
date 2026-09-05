@@ -225,6 +225,7 @@ export function toConversationListItem(conversation: ApiConversation): Conversat
         ? waitLabelOf(conversation.lastActivityAt)
         : null,
     lastIsOurs: conversation.lastMessage?.author === "OPERATOR" || conversation.lastMessage?.author === "AI",
+    lastIsVoice: conversation.lastMessage?.kind === "voice",
   };
 }
 

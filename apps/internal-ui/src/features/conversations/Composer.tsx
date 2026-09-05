@@ -45,7 +45,7 @@ export function Composer({ mode, loaded, assignedOperatorName, conversationId, c
     textareaRef.current?.focus();
   }
 
-  // Запись голосового: поддержана в Telegram-диалогах (отправка sendVoice).
+  // Запись голосового: во всех каналах (TG/MAX sendVoice, почта — вложением, Web — поллингом).
   const recorder = useVoiceRecorder({
     onSend: async (audio, duration) => {
       if (conversationId == null) return;
@@ -53,8 +53,7 @@ export function Composer({ mode, loaded, assignedOperatorName, conversationId, c
       onSent();
     },
   });
-  // Каналы с транспортом отправки голосовых (transports.supports_voice_send).
-  const voiceAvailable = recorder.supported && (channel === "TG" || channel === "MAX" || channel === "WEB");
+  const voiceAvailable = recorder.supported;
 
   if (conversationId == null) {
     return <div className="sales-composer"><div className="composer-locked"><div><strong>Выберите диалог</strong></div></div></div>;

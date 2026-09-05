@@ -214,5 +214,11 @@ def send_text(integration, *, chat_id: str, user_id: str, text: str, attachments
         return False
 
 
+def send_voice(integration, *, chat_id: str, user_id: str, content: bytes, content_type: str, duration: int) -> bool:
+    """Голосовое оператора уходит письмом с аудио-вложением."""
+    suffix = "ogg" if "ogg" in content_type else (content_type.rsplit("/", 1)[-1] or "webm").split(";")[0]
+    return send_text(integration, chat_id=chat_id, user_id=user_id, text="Голосовое сообщение", attachments=[(content, f"voice.{suffix}", content_type)])
+
+
 def send_file(integration, *, chat_id: str, user_id: str, content: bytes, filename: str, content_type: str, caption: str = "") -> bool:
     return send_text(integration, chat_id=chat_id, user_id=user_id, text=caption or f"Файл: {filename}", attachments=[(content, filename, content_type)])

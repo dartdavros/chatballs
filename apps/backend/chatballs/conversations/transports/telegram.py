@@ -68,18 +68,30 @@ def _normalize(update: dict) -> InboundMessage | None:
     )
 
 
+# Медиа Telegram, которые принимаем файлом: (поле, имя по умолчанию, mime по умолчанию).
+_MEDIA_FIELDS = (
+    ("document", "document", ""),
+    ("audio", "audio.mp3", "audio/mpeg"),
+    ("video", "video.mp4", "video/mp4"),
+    ("video_note", "video-note.mp4", "video/mp4"),
+    ("animation", "animation.mp4", "video/mp4"),
+)
+
+
 def _files(message: dict) -> tuple[InboundFile, ...]:
-    """Документ или фото (берём самый крупный размер из массива photo)."""
-    document = message.get("document") or {}
-    if document.get("file_id"):
-        name = safe_filename(document.get("file_name"), "document")
-        mime = str(document.get("mime_type") or guess_content_type(name))
+    """Документ/аудио/видео или фото (берём самый крупный размер из массива photo)."""
+    for field, default_name, default_mime in _MEDIA_FIELDS:
+        media = message.get(field) or {}
+        if not media.get("file_id"):
+            continue
+        name = safe_filename(media.get("file_name") or (media.get("title") and f"{media['title']}.mp3") or "", default_name)
+        mime = str(media.get("mime_type") or default_mime or guess_content_type(name))
         return (
             InboundFile(
                 name=name,
                 content_type=mime,
-                size=int(document.get("file_size") or 0),
-                file_id=str(document["file_id"]),
+                size=int(media.get("file_size") or 0),
+                file_id=str(media["file_id"]),
                 is_image=mime.startswith("image/"),
             ),
         )

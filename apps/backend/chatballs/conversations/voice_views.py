@@ -17,8 +17,9 @@ from rest_framework.response import Response
 from chatballs.ai.provider.base import ProviderError
 from chatballs.conversations import transports
 from chatballs.conversations.models import (
-    ControlMode,
+    ConnectionIdentity,
     Conversation,
+    ExpectedResponder,
     LifecycleState,
     Message,
     MessageAuthor,
@@ -98,12 +99,15 @@ class MessageTranscribeView(ConversationViewBase):
 
 
 class ConversationVoiceView(ConversationViewBase):
-    """Отправка голосового оператором: файл из записи в композере."""
+    """Отправка голосового оператором: файл из записи в композере. Правила те
+    же, что у текста и файла: первая реплика перехватывает диалог у AI/очереди."""
 
     required_capability = "conversations.operate"
     parser_classes = [MultiPartParser, FormParser]
 
     def post(self, request: Request, conversation_id: int) -> Response:
+        from chatballs.conversations.views import claim_for_reply
+
         try:
             conversation = self._conversation(
                 request, conversation_id, self.required_capability
@@ -112,12 +116,6 @@ class ConversationVoiceView(ConversationViewBase):
             return Response({"detail": "Диалог не найден"}, status=404)
         if conversation.lifecycle != LifecycleState.OPEN:
             return Response({"detail": "Диалог закрыт"}, status=409)
-        if conversation.control_mode != ControlMode.HUMAN or (
-            conversation.assigned_operator_id != request.user.id
-        ):
-            return Response(
-                {"detail": "Отправка доступна назначенному оператору"}, status=403
-            )
         connection = conversation.connection
         if connection is None or not transports.supports_voice_send(connection):
             return Response(
@@ -136,11 +134,17 @@ class ConversationVoiceView(ConversationViewBase):
         except (TypeError, ValueError):
             duration = 0
 
+        claimed = claim_for_reply(self, request, conversation)
+        if isinstance(claimed, Response):
+            return claimed
+        conversation = claimed
+
+        identity = ConnectionIdentity.objects.filter(connection=connection, contact=conversation.contact).first()
         content = upload.read()
         sent = transports.send_voice(
             connection,
             chat_id=conversation.external_chat_id,
-            user_id="",
+            user_id=identity.external_user_id if identity else "",
             content=content,
             content_type=content_type,
             duration=duration,
@@ -161,6 +165,7 @@ class ConversationVoiceView(ConversationViewBase):
         message.audio.save(f"voice.{suffix}", ContentFile(content), save=False)
         message.save(update_fields=["audio"])
         conversation.last_activity_at = timezone.now()
-        conversation.save(update_fields=["last_activity_at"])
+        conversation.expected_responder = ExpectedResponder.CUSTOMER
+        conversation.save(update_fields=["last_activity_at", "expected_responder"])
         self._audit(request, "voice_sent", conversation)
         return Response({"message": message_payload(message)}, status=201)

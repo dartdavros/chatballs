@@ -85,6 +85,8 @@ _VOICE_SEND = {
     IntegrationProvider.TELEGRAM: _telegram.send_voice,
     IntegrationProvider.MAX: _max.send_voice,
     IntegrationProvider.WEB: _web_voice_noop,
+    # Почта: письмо с аудио-вложением.
+    IntegrationProvider.EMAIL: _email.send_voice,
 }
 
 

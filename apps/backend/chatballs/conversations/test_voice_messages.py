@@ -239,20 +239,72 @@ class VoiceApiTests(VoiceTestCase):
             {"attachments": [{"type": "audio", "payload": {"token": "att-1"}}]},
         )
 
-    def test_voice_send_requires_assignment_and_supported_channel(self) -> None:
+    def test_voice_send_claims_dialog_like_text(self) -> None:
+        # Как у текста и файла: первая реплика перехватывает диалог у AI/очереди.
         message = self._voice_message()
         conversation = message.conversation
         conversation.external_chat_id = "c-1"
         conversation.save(update_fields=["external_chat_id"])
+        self.assertNotEqual(conversation.control_mode, ControlMode.HUMAN)
 
-        # Диалог не взят — 403.
-        denied = self.client.post(
-            f"/api/v1/conversations/{conversation.id}/voice/",
-            data={
-                "audio": SimpleUploadedFile(
-                    "voice.webm", b"WEBMDATA", content_type="audio/webm"
-                )
-            },
-            format="multipart",
+        with mock.patch("chatballs.conversations.transports.send_voice", return_value=True):
+            response = self.client.post(
+                f"/api/v1/conversations/{conversation.id}/voice/",
+                data={"audio": SimpleUploadedFile("voice.webm", b"WEBMDATA", content_type="audio/webm")},
+                format="multipart",
+            )
+        self.assertEqual(response.status_code, 201, response.content)
+        conversation.refresh_from_db()
+        self.assertEqual(conversation.control_mode, ControlMode.HUMAN)
+        self.assertEqual(conversation.assigned_operator.email, "owner@example.com")
+
+    def test_email_voice_goes_as_audio_attachment(self) -> None:
+        from chatballs.conversations.transports import email as email_transport
+
+        integration = Integration.objects.create(
+            organization=self.organization,
+            kind=IntegrationKind.MESSENGER,
+            provider=IntegrationProvider.EMAIL,
+            name="Почта",
+            secret="pass",
+            channel=self.channel,
+            config={"email": "support@example.com", "smtp_host": "smtp.example.com", "smtp_ssl": True},
         )
-        self.assertEqual(denied.status_code, 403)
+        sent: list = []
+
+        class FakeSMTP:
+            def __init__(self, *args, **kwargs):
+                pass
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *args):
+                return False
+
+            def login(self, *args):
+                pass
+
+            def send_message(self, message):
+                sent.append(message)
+
+        with mock.patch("chatballs.conversations.transports.email.smtplib.SMTP_SSL", FakeSMTP):
+            self.assertTrue(email_transport.send_voice(integration, chat_id="client@example.com", user_id="", content=b"OGG", content_type="audio/ogg", duration=3))
+        attachments = list(sent[0].iter_attachments())
+        self.assertEqual(attachments[0].get_filename(), "voice.ogg")
+        self.assertEqual(attachments[0].get_content_type(), "audio/ogg")
+        self.assertIn("Голосовое сообщение", sent[0].get_body(preferencelist=("plain",)).get_content())
+
+    def test_telegram_audio_and_video_arrive_as_files(self) -> None:
+        from chatballs.conversations.transports.telegram import _normalize
+
+        base = {"from": {"id": 5, "first_name": "A"}, "chat": {"id": 5}}
+        audio = _normalize({"update_id": 1, "message": {**base, "audio": {"file_id": "a1", "title": "Песня", "mime_type": "audio/mpeg", "file_size": 10}}})
+        self.assertEqual(audio.files[0].name, "Песня.mp3")
+        self.assertEqual(audio.files[0].content_type, "audio/mpeg")
+        self.assertFalse(audio.voice_file_id)
+        note = _normalize({"update_id": 2, "message": {**base, "video_note": {"file_id": "v1"}}})
+        self.assertEqual(note.files[0].content_type, "video/mp4")
+        voice = _normalize({"update_id": 3, "message": {**base, "voice": {"file_id": "vc", "duration": 4}}})
+        self.assertEqual(voice.voice_file_id, "vc")
+        self.assertEqual(voice.files, ())

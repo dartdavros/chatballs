@@ -130,6 +130,10 @@ def _file_attachments(inner: dict) -> tuple[InboundFile, ...]:
             name = safe_filename(first(attachment, "filename", "name", default="") or first(payload, "filename", "name", default=""), "document")
             mime = guess_content_type(name)
             files.append(InboundFile(name=name, content_type=mime, size=int(first(attachment, "size", default=0) or payload.get("size") or 0), url=url, is_image=mime.startswith("image/")))
+        elif kind == "video":
+            url = str(first(payload, "url", "download_url", default=""))
+            if url:
+                files.append(InboundFile(name="video.mp4", content_type="video/mp4", url=url))
         elif kind == "image":
             url = str(first(payload, "url", "download_url", default=""))
             if not url:
