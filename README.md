@@ -1,6 +1,6 @@
 # Chatballs
 
-Canonical implementation workspace for `hub.edevs.tech`.
+Canonical implementation workspace for Chatballs.
 
 ## Быстрый старт (одна минута)
 
@@ -60,15 +60,15 @@ docker compose run --rm backend-app python manage.py seed_demo --organization <s
 сообщения читаются из `media/voice/` (см. README там); если файла нет, сообщение
 пропускается.
 
-### Обновление установки со старым именем (CustoCRM / hub → Chatballs)
+### Обновление установки со старым именем (Chatballs / hub → Chatballs)
 
-Установки, развёрнутые до переименования (compose-проект `edevs_hub`, база
-`edevs_hub`, роли Postgres `custocrm_*`, переменные `CUS_*`/`CUSTOCRM_*`),
+Установки, развёрнутые до переименования (compose-проект `chatballs`, база
+`chatballs`, роли Postgres `chatballs_*`, переменные `CHATBALLS_*`/`CHATBALLS_*`),
 переводятся на новые имена одним скриптом — данные остаются на месте:
 
 ```bash
 # prod: сначала переместите каталог релизов и инстанса
-mv /opt/custocrm /opt/chatballs
+mv /opt/chatballs /opt/chatballs
 CHATBALLS_INSTANCE_DIR=/opt/chatballs/instance ./deploy/migrate/rename-to-chatballs.sh
 ./chatballs deploy
 ```
