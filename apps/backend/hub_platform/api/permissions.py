@@ -29,9 +29,9 @@ class HasCapability(BasePermission):
 
 
 class CloudDeliveryOnly(BasePermission):
-    """Guard tenant APIs that exist only in the managed Chatbolls Cloud."""
+    """Guard tenant APIs that exist only in the managed Chatballs Cloud."""
 
-    message = "This operation is available only in Chatbolls Cloud"
+    message = "This operation is available only in Chatballs Cloud"
 
     def has_permission(self, request: Request, view: APIView) -> bool:
         return settings.CUS_DELIVERY_MODE == "CLOUD"

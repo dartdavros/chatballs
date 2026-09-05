@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "_comment": "Демо «Ателье Норд» (дизайн-базлайн v2, каст кадров A1/A2 и A–H). Ставится в организацию установщика: организация и её владелец здесь не создаются. Пароль всех демо-сотрудников один — см. demoPassword.",
-  "demoPassword": "Chatbolls-Demo-2026",
+  "demoPassword": "Chatballs-Demo-2026",
   "showcaseAccounts": [
     "elena",
     "svetlana",

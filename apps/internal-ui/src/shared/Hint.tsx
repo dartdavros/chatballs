@@ -6,7 +6,7 @@ import { Icon } from "./icons";
 // сотрудникам подсказки не показываются, это решает вызывающая сторона).
 // Закрытие запоминается на устройстве по ключу `id`.
 
-const STORAGE_PREFIX = "chatbolls.hint.";
+const STORAGE_PREFIX = "chatballs.hint.";
 
 function isDismissed(id: string): boolean {
   try {

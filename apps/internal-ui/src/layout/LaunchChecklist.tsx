@@ -31,7 +31,7 @@ const STEPS: Step[] = [
 ];
 
 function storageKey(user: SessionUser): string {
-  return `chatbolls.launch.${user.organizationPublicId}.hidden`;
+  return `chatballs.launch.${user.organizationPublicId}.hidden`;
 }
 
 function isHidden(user: SessionUser): boolean {

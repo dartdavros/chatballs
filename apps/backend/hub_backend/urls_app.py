@@ -8,7 +8,7 @@ urlpatterns = [
     path("chat-widget.js", WidgetLoaderView.as_view(), name="chat-widget-loader"),
     path(
         "api/v1/schema/",
-        get_schema_view(title="Chatbolls API", version="0.1.0"),
+        get_schema_view(title="Chatballs API", version="0.1.0"),
         name="openapi-schema",
     ),
     path("api/v1/auth/", include("hub_platform.identity.auth_urls")),

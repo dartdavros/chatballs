@@ -16,10 +16,10 @@ def _password_setup_url(user: HumanUser) -> str:
 def send_initial_access_email(user: HumanUser) -> None:
     setup_url = _password_setup_url(user)
     send_mail(
-        subject="Первичный доступ к Chatbolls",
+        subject="Первичный доступ к Chatballs",
         message=(
             f"Здравствуйте, {user.full_name or user.email}.\n\n"
-            "Для вас создана учётная запись Chatbolls. Чтобы задать пароль первичного доступа, "
+            "Для вас создана учётная запись Chatballs. Чтобы задать пароль первичного доступа, "
             "перейдите по ссылке:\n"
             f"{setup_url}\n\n"
             "Ссылка действует 30 минут. Если вы не ожидали это письмо, обратитесь к владельцу организации."
@@ -32,10 +32,10 @@ def send_initial_access_email(user: HumanUser) -> None:
 def send_password_reset_email(user: HumanUser) -> None:
     reset_url = _password_setup_url(user)
     send_mail(
-        subject="Восстановление доступа к Chatbolls",
+        subject="Восстановление доступа к Chatballs",
         message=(
             f"Здравствуйте, {user.full_name or user.email}.\n\n"
-            "Вы запросили сброс пароля для Chatbolls. Чтобы задать новый пароль, перейдите по ссылке:\n"
+            "Вы запросили сброс пароля для Chatballs. Чтобы задать новый пароль, перейдите по ссылке:\n"
             f"{reset_url}\n\n"
             "Ссылка действует 30 минут. Если вы не запрашивали сброс, просто проигнорируйте это письмо."
         ),

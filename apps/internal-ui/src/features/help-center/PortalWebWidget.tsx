@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-const SCRIPT_ID = "chatbolls-help-widget-loader";
+const SCRIPT_ID = "chatballs-help-widget-loader";
 
 export function PortalWebWidget({ widgetKey }: { widgetKey: string }) {
   useEffect(() => {

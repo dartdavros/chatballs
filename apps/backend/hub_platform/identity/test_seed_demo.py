@@ -104,7 +104,7 @@ class DemoDatasetTests(TestCase):
         self.assertEqual(memberships.count(), 7)
         self.assertEqual(memberships.filter(blocked_at__isnull=False).count(), 1)
         anna = HumanUser.objects.get(email="a.kim@atelie-nord.ru")
-        self.assertTrue(anna.check_password("Chatbolls-Demo-2026"))
+        self.assertTrue(anna.check_password("Chatballs-Demo-2026"))
         self.assertTrue(HumanUser.objects.get(email="k.volkov@atelie-nord.ru").totp_enabled)
 
         # Агенты: активный с AI, черновик без AI, выключенный канал.
@@ -198,7 +198,7 @@ class DemoDatasetApiTests(TestCase):
         self.assertEqual([a["email"] for a in accounts], ["e.kuznetsova@atelie-nord.ru", "s.petrova@atelie-nord.ru", "i.saveliev@atelie-nord.ru"])
         self.assertEqual(accounts[1]["groups"], ["Операторы"])
         self.assertEqual(accounts[2]["groups"], ["Поддержка"])
-        self.assertTrue(all(a["password"] == "Chatbolls-Demo-2026" for a in accounts))
+        self.assertTrue(all(a["password"] == "Chatballs-Demo-2026" for a in accounts))
         self.assertEqual(self.client.post("/api/v1/company/demo/").status_code, 400)
 
         removing = self.client.delete("/api/v1/company/demo/")
@@ -212,7 +212,7 @@ class DemoDatasetApiTests(TestCase):
         self.client.post("/api/v1/company/demo/")
         self._dispatch_pending()
         employee = APIClient()
-        employee.login(username="s.petrova@atelie-nord.ru", password="Chatbolls-Demo-2026")
+        employee.login(username="s.petrova@atelie-nord.ru", password="Chatballs-Demo-2026")
         self.assertEqual(employee.post("/api/v1/company/demo/").status_code, 403)
         self.assertEqual(employee.delete("/api/v1/company/demo/").status_code, 403)
 

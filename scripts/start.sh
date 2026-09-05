@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# Локальный запуск Chatbolls (Linux/macOS): canonical compose.yaml + dev override.
+# Локальный запуск Chatballs (Linux/macOS): canonical compose.yaml + dev override.
 # Параметры не нужны: владельца и демо-данные создаёт мастер первого запуска
 # в браузере (http://localhost). Режим поставки: ./scripts/start.sh [cloud|self-hosted]
 set -eu

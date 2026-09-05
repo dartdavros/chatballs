@@ -118,7 +118,7 @@
     {
       "type": "RELEASE_PUBLISHED",
       "level": "SUCCESS",
-      "title": "Обновление Chatbolls: голосовые сообщения",
+      "title": "Обновление Chatballs: голосовые сообщения",
       "body": "Операторы могут отправлять голосовые в Telegram и MAX, входящие расшифровываются одной кнопкой.",
       "targetRoute": "chat",
       "audience": "ALL",

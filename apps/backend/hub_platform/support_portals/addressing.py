@@ -46,7 +46,7 @@ def clean_portal_domains(portal) -> None:
             )
         if portal.custom_domain == portal.hosted_domain:
             raise ValidationError(
-                {"custom_domain": "Свой домен должен отличаться от адреса Chatbolls"}
+                {"custom_domain": "Свой домен должен отличаться от адреса Chatballs"}
             )
         collision = portal.__class__.objects.exclude(pk=portal.pk).filter(
             models.Q(hosted_domain=portal.custom_domain)

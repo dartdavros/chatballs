@@ -115,7 +115,7 @@ def complete_setup(data: SetupInput) -> SetupResult:
         # Блокировка от гонки двух вкладок: второй запрос дождётся первого и
         # увидит созданную организацию.
         with connections[INSTANCE_DB_ALIAS].cursor() as cursor:
-            cursor.execute("SELECT pg_advisory_xact_lock(hashtext('chatbolls.instance_setup'))")
+            cursor.execute("SELECT pg_advisory_xact_lock(hashtext('chatballs.instance_setup'))")
         if Organization.objects.exists():
             raise SetupAlreadyCompleted()
 

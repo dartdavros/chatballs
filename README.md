@@ -1,4 +1,4 @@
-# Chatbolls
+# Chatballs
 
 Canonical implementation workspace for `hub.edevs.tech`.
 
@@ -10,16 +10,16 @@ Canonical implementation workspace for `hub.edevs.tech`.
 Windows (PowerShell):
 
 ```powershell
-git clone <URL репозитория> chatbolls
-cd chatbolls/code/custocrm
+git clone <URL репозитория> chatballs
+cd chatballs/code/custocrm
 .\scripts\start.ps1
 ```
 
 Linux / macOS:
 
 ```bash
-git clone <URL репозитория> chatbolls
-cd chatbolls/code/custocrm
+git clone <URL репозитория> chatballs
+cd chatballs/code/custocrm
 ./scripts/start.sh
 ```
 
@@ -45,7 +45,7 @@ cd chatbolls/code/custocrm
 Демо ставится в вашу организацию и удаляется целиком одной кнопкой: **Настройки →
 Демо-данные**. Там же — учётные записи демо-сотрудников из разных групп, чтобы
 посмотреть систему их глазами (пароль общий и намеренно публичный —
-`Chatbolls-Demo-2026`). Ваши данные при удалении не затрагиваются: сид ведёт
+`Chatballs-Demo-2026`). Ваши данные при удалении не затрагиваются: сид ведёт
 реестр созданных записей и удаляет ровно их.
 
 Для разработки то же доступно из командной строки:
