@@ -918,8 +918,8 @@ class EmployeeGovernanceTests(TestCase):
     def test_admin_has_normal_capabilities(self) -> None:
         self._make("admin@edevs.tech", EmployeeRole.ADMIN)
         client = self._client("admin@edevs.tech")
-        overview = client.get("/api/v1/conversations/command-overview/?period=today")
-        self.assertEqual(overview.status_code, 200)
+        audit = client.get("/api/v1/company/administration/audit/")
+        self.assertEqual(audit.status_code, 200)
         product = client.post(
             "/api/v1/company/products/create/",
             data=json.dumps({"code": "academy", "name": "Academy"}),
@@ -927,9 +927,9 @@ class EmployeeGovernanceTests(TestCase):
         )
         self.assertEqual(product.status_code, 201)
 
-    def test_employee_denied_command_overview(self) -> None:
+    def test_employee_denied_audit(self) -> None:
         self._make("emp@edevs.tech", EmployeeRole.EMPLOYEE)
-        response = self._client("emp@edevs.tech").get("/api/v1/conversations/command-overview/?period=today")
+        response = self._client("emp@edevs.tech").get("/api/v1/company/administration/audit/")
         self.assertEqual(response.status_code, 403)
 
     def test_payload_permissions_reflect_actor(self) -> None:

@@ -19,12 +19,13 @@ export function routeFromPath(pathname: string, search = ""): RouteState {
   const path = match ? match[2] || "/" : normalized;
   const base = { employeeId: null, productCode: null, agentId: null, knowledgeId: null, clientId: null, channelId: null, supportPortalId: null };
   const state = { organizationPublicId, ...base };
-  if (path === "/" || path === "/command") return { route: "command", ...state };
-  // Устаревшие адреса разделённых чатов ведут в единый «Чат».
-  if (path === "/chat" || path === "/departments/sales" || path === "/departments/sales/dialogs" || path === "/departments/support/dialogs") {
+  // Chat-first (SPEC-HUB-0031): корень и устаревшие адреса командного центра и
+  // разделённых чатов ведут в единый «Чат».
+  if (path === "/" || path === "/command" || path === "/chat" || path === "/departments/sales" || path === "/departments/sales/dialogs" || path === "/departments/support/dialogs") {
     return { route: "chat", ...state };
   }
-  if (path === "/departments/support") return { route: "supportOverview", ...state };
+  // Устаревший «Обзор поддержки» ведёт на «Доску».
+  if (path === "/departments/support") return { route: "supportPortals", ...state };
   if (path === "/departments/sales/clients") return { route: "salesClients", ...state };
   if (path.startsWith("/departments/sales/clients/")) {
     const id = Number(path.split("/")[4]);
@@ -71,13 +72,11 @@ export function routeFromPath(pathname: string, search = ""): RouteState {
   }
   if (path === "/profile") return { route: "profile", ...state };
   if (path === "/settings") return { route: "settings", ...state };
-  return { route: "command", ...state };
+  return { route: "chat", ...state };
 }
 
 export function pathFromRoute(route: RouteKey, entityId: number | null = null, productCode: string | null = null, organizationPublicId: string | null = null): string {
   const prefix = organizationPublicId ? `/organizations/${organizationPublicId}` : "";
-  if (route === "command") return `${prefix}/`;
-  if (route === "supportOverview") return `${prefix}/departments/support`;
   if (route === "salesClients") return `${prefix}/departments/sales/clients`;
   if (route === "salesClientDetail") return entityId ? `${prefix}/departments/sales/clients/${entityId}` : `${prefix}/departments/sales/clients`;
   if (route === "chat") return `${prefix}/chat`;

@@ -128,14 +128,14 @@ export function App() {
     setActiveOrganization(null);
     clearOrganizationPreference();
     setTotpChallenge(null);
-    navigate("command", null, true, null, null);
+    navigate("chat", null, true, null, null);
     setData({ employees: [], groups: [], products: [], agents: [] });
   }
 
   if (resetting) {
     return (
       <ConfigProvider theme={antdTheme}>
-        <AuthResetPassword onDone={() => { setResetting(false); window.history.replaceState({}, "", pathFromRoute("command")); }} />
+        <AuthResetPassword onDone={() => { setResetting(false); window.history.replaceState({}, "", pathFromRoute("chat")); }} />
       </ConfigProvider>
     );
   }

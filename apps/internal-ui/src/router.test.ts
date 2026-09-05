@@ -54,12 +54,8 @@ describe("ai knowledge routes", () => {
 });
 
 describe("support routes", () => {
-  it("parses the support overview URL", () => {
-    expect(routeFromPath("/departments/support")).toEqual({ route: "supportOverview", ...empty });
-  });
-
-  it("creates the support overview URL", () => {
-    expect(pathFromRoute("supportOverview")).toBe("/departments/support");
+  it("redirects the legacy support overview URL to the board", () => {
+    expect(routeFromPath("/departments/support")).toEqual({ route: "supportPortals", ...empty });
   });
 });
 

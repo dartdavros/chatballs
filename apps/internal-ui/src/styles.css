@@ -6,7 +6,6 @@
 @import "./layout/styles.css";
 @import "./layout/topbar.css";
 @import "./layout/page.css";
-@import "./features/command/center/styles.css";
 @import "./features/sales/clients/styles.css";
 @import "./features/sales/client-detail/styles.css";
 @import "./features/sales/dialogs/styles.css";

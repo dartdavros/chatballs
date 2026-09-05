@@ -25,6 +25,5 @@ export function canAccess(user: SessionUser, route: RouteKey): boolean {
 }
 
 export function defaultRoute(user: SessionUser): RouteKey {
-  if (isManager(user)) return "command";
   return "chat";
 }

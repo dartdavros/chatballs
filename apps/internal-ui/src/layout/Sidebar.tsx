@@ -40,8 +40,6 @@ function SidebarLink({ activeRoutes, badge, icon, label, route, routeKey, setRou
 }
 
 const SERVICE_ITEMS: SidebarNavSectionItem[] = [
-  { activeRoutes: ["command"], key: "command", label: "Обзор" },
-  { activeRoutes: ["supportOverview"], key: "supportOverview", label: "Обзор поддержки" },
   { activeRoutes: ["aiKnowledge", "aiKnowledgeCreate", "aiKnowledgeDetail"], key: "aiKnowledge", label: "Знания" },
   { activeRoutes: ["aiUsage"], key: "aiUsage", label: "Использование AI" },
   { activeRoutes: ["administrationAudit"], key: "administrationAudit", label: "Аудит" },

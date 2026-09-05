@@ -87,7 +87,7 @@ export function Shell({ route, setRoute, selectedEmployeeId, selectedProductCode
     openEmployeeRoute(employee.id);
   }
   const isSalesWorkspace = route === "salesClientDetail" || route === "salesClients" || route === "chat";
-  const isSupportWorkspace = route === "supportOverview" || route === "supportPortals" || route === "supportPortalDetail";
+  const isSupportWorkspace = route === "supportPortals" || route === "supportPortalDetail";
   const isDialogsWorkspace = route === "chat";
   const isSalesClients = route === "salesClients";
   const isSalesClientDetail = route === "salesClientDetail";

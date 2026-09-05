@@ -2,7 +2,6 @@ import type { RouteKey } from "./types";
 
 export const routes: Record<RouteKey, string> = {
   administrationAudit: "Аудит",
-  command: "Обзор",
   employeeDetail: "Сотрудники",
   employees: "Сотрудники",
   profile: "Профиль",
@@ -10,7 +9,6 @@ export const routes: Record<RouteKey, string> = {
   salesClientDetail: "Контакт",
   salesClients: "Контакты",
   chat: "Чат",
-  supportOverview: "Обзор",
   supportPortals: "Порталы",
   supportPortalDetail: "Портал поддержки",
   agents: "Агенты",

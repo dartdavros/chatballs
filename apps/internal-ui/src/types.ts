@@ -115,7 +115,7 @@ export type Product = {
   updatedAt: string;
 };
 
-export type RouteKey = "administrationAudit" | "command" | "employeeDetail" | "employees" | "profile" | "settings" | "salesClientDetail" | "salesClients" | "chat" | "supportOverview" | "supportPortals" | "supportPortalDetail" | "agents" | "agentDetail" | "aiKnowledge" | "aiKnowledgeCreate" | "aiKnowledgeDetail" | "aiUsage";
+export type RouteKey = "administrationAudit" | "employeeDetail" | "employees" | "profile" | "settings" | "salesClientDetail" | "salesClients" | "chat" | "supportPortals" | "supportPortalDetail" | "agents" | "agentDetail" | "aiKnowledge" | "aiKnowledgeCreate" | "aiKnowledgeDetail" | "aiUsage";
 
 export type AppData = {
   employees: Employee[];

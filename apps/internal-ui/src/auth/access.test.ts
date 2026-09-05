@@ -31,12 +31,11 @@ describe("role-based navigation (SPEC-HUB-0031 §3)", () => {
     for (const role of ["OWNER", "ADMIN"] as const) {
       const user = userWith(role);
       expect(isManager(user)).toBe(true);
-      expect(canAccess(user, "command")).toBe(true);
       expect(canAccess(user, "employees")).toBe(true);
       expect(canAccess(user, "agents")).toBe(true);
       expect(canAccess(user, "aiKnowledge")).toBe(true);
       expect(canAccess(user, "administrationAudit")).toBe(true);
-      expect(defaultRoute(user)).toBe("command");
+      expect(defaultRoute(user)).toBe("chat");
     }
   });
 
