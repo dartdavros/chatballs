@@ -1,25 +1,34 @@
 {
   "schemaVersion": 1,
-  "_comment": "Диалоги «Ателье Норд» по кадрам дизайн-базлайна v2. Время — относительное (minutesAgo/daysAgo) от момента установки. Аватары контактов — media/avatars, отдаются публичным роутом демо-медиа. Голосовые: file — из media/voice (см. README сида), если файла нет — сообщение пропускается с предупреждением.",
+  "_comment": "Диалоги демо (дизайн-базлайн v2): семь видимых диалогов повторяют кадры A–H и A1 один в один; история контакта Марии — кадр F. Покрытие остальных функций (VIP-группа, почта с HTML, портал и снапшот личного кабинета, спам) — в архивных и спам-диалогах, которых нет в основном списке. Время относительное: «сейчас» = момент установки.",
   "contacts": [
     {
       "key": "maria",
       "name": "Мария Соколова",
       "phone": "+7 917 254-18-40",
       "avatar": "maria-sokolova.jpg",
+      "description": "Заказ 4471 — комплект штор. Постоянный клиент с августа, предпочитает Telegram.",
       "createdDaysAgo": 34
     },
     {
       "key": "irina",
       "name": "Ирина Левина",
-      "phone": "+7 921 118-77-03",
+      "phone": "",
       "avatar": "irina-levina.jpg",
+      "description": "Закупщик текстиля для гостиницы. Просила писать на почту, не звонить.",
+      "company": "Гостиница «Волга»",
       "createdDaysAgo": 60
+    },
+    {
+      "key": "artem",
+      "name": "Артём Гусев",
+      "phone": "",
+      "createdDaysAgo": 3
     },
     {
       "key": "olga",
       "name": "Ольга Мельник",
-      "phone": "",
+      "phone": "+7 903 655-77-31",
       "avatar": "olga-melnik.jpg",
       "createdDaysAgo": 12
     },
@@ -28,19 +37,16 @@
       "name": "Сергей Крылов",
       "phone": "+7 903 445-90-12",
       "avatar": "sergey-krylov.jpg",
+      "city": "Казань",
       "createdDaysAgo": 9
     },
     {
-      "key": "darya",
-      "name": "Дарья Волкова",
-      "phone": "",
-      "avatar": "darya-volkova.jpg",
-      "createdDaysAgo": 2
-    },
-    {
       "key": "viktor",
-      "name": "Виктор Панов · ООО «Дом текстиля»",
+      "name": "Виктор Панов",
       "phone": "+7 812 640-22-10",
+      "company": "ООО «Дом текстиля»",
+      "city": "Санкт-Петербург",
+      "description": "Оптовый заказчик: гостиница на 46 номеров. Ведёт Кирилл Волков.",
       "createdDaysAgo": 90
     },
     {
@@ -63,29 +69,37 @@
       "connection": "tg",
       "externalUserId": "482913001",
       "displayName": "Мария Соколова",
-      "username": "m_sokolova"
+      "username": "maria_s"
     },
     {
-      "key": "irina_tg",
+      "key": "irina_email",
       "contact": "irina",
-      "connection": "tg",
-      "externalUserId": "482913002",
-      "displayName": "Ирина Л.",
-      "username": "irina_levina"
-    },
-    {
-      "key": "irina_max",
-      "contact": "irina",
-      "connection": "max",
-      "externalUserId": "max-77103",
+      "connection": "email",
+      "externalUserId": "irina@domtextil.ru",
       "displayName": "Ирина Левина"
     },
     {
-      "key": "olga_max",
-      "contact": "olga",
+      "key": "artem_max",
+      "contact": "artem",
       "connection": "max",
-      "externalUserId": "max-88214",
-      "displayName": "Ольга Мельник"
+      "externalUserId": "58102277",
+      "displayName": "Артём Гусев"
+    },
+    {
+      "key": "olga_tg",
+      "contact": "olga",
+      "connection": "tg",
+      "externalUserId": "482913004",
+      "displayName": "Ольга Мельник",
+      "username": "olga_s"
+    },
+    {
+      "key": "sergey_tg",
+      "contact": "sergey",
+      "connection": "tg",
+      "externalUserId": "482913007",
+      "displayName": "Сергей Крылов",
+      "username": "sergey_s"
     },
     {
       "key": "sergey_web",
@@ -93,14 +107,6 @@
       "connection": "web_account",
       "externalUserId": "web-sess-4402a",
       "displayName": "Сергей Крылов"
-    },
-    {
-      "key": "darya_tg",
-      "contact": "darya",
-      "connection": "tg",
-      "externalUserId": "482913005",
-      "displayName": "Даша",
-      "username": "dvolkova"
     },
     {
       "key": "viktor_tg",
@@ -128,28 +134,48 @@
   ],
   "labels": [
     {
-      "key": "urgent",
-      "name": "Срочно",
-      "color": "#d6336c"
-    },
-    {
-      "key": "vip",
-      "name": "VIP",
-      "color": "#b8860b"
-    },
-    {
-      "key": "return",
-      "name": "Возврат",
-      "color": "#7c3aed"
-    },
-    {
       "key": "delivery",
-      "name": "Доставка",
+      "name": "доставка",
       "color": "#1677ff"
     },
     {
+      "key": "return",
+      "name": "возврат",
+      "color": "#eb2f96"
+    },
+    {
+      "key": "account",
+      "name": "кабинет",
+      "color": "#13c2c2"
+    },
+    {
+      "key": "address",
+      "name": "адрес",
+      "color": "#fa8c16"
+    },
+    {
+      "key": "mail",
+      "name": "почта",
+      "color": "#722ed1"
+    },
+    {
+      "key": "order4390",
+      "name": "заказ 4390",
+      "color": "#52c41a"
+    },
+    {
+      "key": "urgent",
+      "name": "срочно",
+      "color": "#f5222d"
+    },
+    {
+      "key": "vip",
+      "name": "vip",
+      "color": "#b8860b"
+    },
+    {
       "key": "wholesale",
-      "name": "Оптовый",
+      "name": "оптовый",
       "color": "#0f9d58"
     }
   ],
@@ -192,18 +218,392 @@
       "identity": "maria_tg",
       "externalChatId": "482913001",
       "lifecycle": "OPEN",
-      "controlMode": "HUMAN",
-      "expectedResponder": "OPERATOR",
-      "assignedOperator": "anna",
-      "group": "consultants",
+      "controlMode": "AI",
+      "expectedResponder": "CUSTOMER",
+      "group": "operators",
       "priority": "HIGH",
       "labels": [
         "delivery",
         "urgent"
       ],
-      "note": "Заказ 4471 — комплект штор. Постоянный клиент с августа, предпочитает Telegram.",
-      "createdMinutesAgo": 95,
+      "note": "",
+      "createdMinutesAgo": 12,
       "lastActivityMinutesAgo": 4,
+      "readBy": [],
+      "previousConversation": "maria_measure",
+      "messages": [
+        {
+          "author": "CONTACT",
+          "text": "Здравствуйте! Заказала у вас комплект штор, номер заказа 4471. Подскажите, сколько занимает доставка в Казань?",
+          "minutesAgo": 12
+        },
+        {
+          "author": "AI",
+          "text": "Здравствуйте, Мария. Доставка в Казань занимает 3–5 рабочих дней с момента отправки. Заказ 4471 сейчас на этапе пошива — отправим ориентировочно в четверг.",
+          "minutesAgo": 12
+        },
+        {
+          "author": "CONTACT",
+          "text": "А можно ускорить? Нужно к субботе.",
+          "minutesAgo": 5
+        },
+        {
+          "author": "AI",
+          "text": "Понимаю. Ускоренная доставка возможна, но её условия лучше уточнить у специалиста — передаю вопрос коллегам.",
+          "minutesAgo": 5
+        },
+        {
+          "author": "CONTACT",
+          "text": "Хорошо, жду",
+          "minutesAgo": 4
+        }
+      ]
+    },
+    {
+      "key": "dmitry_custom",
+      "agent": "consultant",
+      "connection": "web",
+      "webGuest": true,
+      "guestName": "Дмитрий Орлов",
+      "guestAvatar": "dmitry-orlov.png",
+      "lifecycle": "OPEN",
+      "controlMode": "PAUSED",
+      "expectedResponder": "OPERATOR",
+      "group": "operators",
+      "priority": "MEDIUM",
+      "labels": [],
+      "note": "",
+      "createdMinutesAgo": 16,
+      "lastActivityMinutesAgo": 10,
+      "readBy": [],
+      "messages": [
+        {
+          "author": "CONTACT",
+          "text": "Добрый день. У вас можно заказать шторы по своим размерам?",
+          "minutesAgo": 16
+        },
+        {
+          "author": "AI",
+          "text": "Добрый день! Да, шьём по индивидуальным размерам. Подскажите ширину и высоту окна — рассчитаю стоимость.",
+          "minutesAgo": 16
+        },
+        {
+          "author": "CONTACT",
+          "text": "Хочу поговорить с человеком",
+          "minutesAgo": 10
+        },
+        {
+          "author": "SYSTEM",
+          "text": "AI передал диалог: клиент попросил сотрудника",
+          "minutesAgo": 10
+        }
+      ]
+    },
+    {
+      "key": "irina_status",
+      "agent": "support",
+      "connection": "email",
+      "contact": "irina",
+      "identity": "irina_email",
+      "externalChatId": "irina@domtextil.ru",
+      "lifecycle": "OPEN",
+      "controlMode": "HUMAN",
+      "expectedResponder": "CUSTOMER",
+      "assignedOperator": "elena",
+      "group": "support",
+      "priority": "HIGH",
+      "labels": [
+        "order4390",
+        "mail"
+      ],
+      "note": "Постоянный клиент, заказ 4390. Просила писать на почту, не звонить.",
+      "createdMinutesAgo": 54,
+      "lastActivityMinutesAgo": 26,
+      "readBy": [
+        "elena"
+      ],
+      "transportMeta": {
+        "subject": "Заказ 4390 — статус не меняется"
+      },
+      "messages": [
+        {
+          "author": "CONTACT",
+          "text": "Здравствуйте. Заказ 4390 оплачен неделю назад, статус не меняется. Что происходит?",
+          "minutesAgo": 54,
+          "contentHtml": "<p>Здравствуйте.</p><p>Заказ <b>4390</b> оплачен неделю назад, статус не меняется. Что происходит?</p><p>— Ирина Левина, отдел закупок</p>"
+        },
+        {
+          "author": "AI",
+          "text": "Здравствуйте, Ирина. Вижу заказ 4390 в статусе «В производстве». Уточню сроки у коллег — передаю вопрос.",
+          "minutesAgo": 54,
+          "contentHtml": "<p>Здравствуйте, Ирина.</p><p>Вижу заказ 4390 в статусе «В производстве». Уточню сроки у коллег — передаю вопрос.</p>"
+        },
+        {
+          "author": "SYSTEM",
+          "text": "Елена Кузнецова взяла диалог",
+          "minutesAgo": 43
+        },
+        {
+          "author": "OPERATOR",
+          "text": "Ирина, добрый день. Проверил: заказ уже передан в службу доставки, трек-номер придёт на почту сегодня до 19:00.",
+          "minutesAgo": 26,
+          "authorUser": "elena",
+          "contentHtml": "<p>Ирина, добрый день.</p><p>Проверил: заказ уже передан в службу доставки, трек-номер придёт на почту сегодня до 19:00.</p>"
+        }
+      ]
+    },
+    {
+      "key": "artem_prepay",
+      "agent": "consultant",
+      "connection": "max",
+      "contact": "artem",
+      "identity": "artem_max",
+      "externalChatId": "58102277",
+      "lifecycle": "OPEN",
+      "controlMode": "AI",
+      "expectedResponder": "CUSTOMER",
+      "priority": "NONE",
+      "labels": [],
+      "note": "",
+      "createdMinutesAgo": 52,
+      "lastActivityMinutesAgo": 43,
+      "readBy": [
+        "elena",
+        "anna"
+      ],
+      "messages": [
+        {
+          "author": "CONTACT",
+          "text": "Здравствуйте! Хочу заказать римские шторы на кухню, два окна. Как у вас с оплатой?",
+          "minutesAgo": 52
+        },
+        {
+          "author": "CONTACT",
+          "kind": "voice",
+          "voice": {
+            "file": "artem-prepayment.ogg",
+            "contentType": "audio/ogg",
+            "transcriptStatus": "READY",
+            "transcript": "Предоплата какая? Желательно, чтобы вы указали в процентах."
+          },
+          "minutesAgo": 50
+        },
+        {
+          "author": "AI",
+          "text": "Здравствуйте, Артём! Предоплата 50% при оформлении заказа, остаток — после примерки перед доставкой. Оплатить можно картой или по СБП.",
+          "minutesAgo": 49
+        },
+        {
+          "author": "CONTACT",
+          "text": "Спасибо, понял",
+          "minutesAgo": 43
+        }
+      ]
+    },
+    {
+      "key": "guest_password",
+      "agent": "support",
+      "connection": "web_help",
+      "webGuest": true,
+      "lifecycle": "OPEN",
+      "controlMode": "HUMAN",
+      "expectedResponder": "CUSTOMER",
+      "assignedOperator": "anna",
+      "group": "support",
+      "priority": "LOW",
+      "labels": [
+        "account"
+      ],
+      "note": "",
+      "createdMinutesAgo": 94,
+      "lastActivityMinutesAgo": 77,
+      "readBy": [
+        "anna"
+      ],
+      "messages": [
+        {
+          "author": "CONTACT",
+          "text": "Не приходит письмо для сброса пароля в личном кабинете",
+          "minutesAgo": 94
+        },
+        {
+          "author": "AI",
+          "text": "Проверьте папку «Спам». Если письма нет, передам запрос сотруднику.",
+          "minutesAgo": 94
+        },
+        {
+          "author": "CONTACT",
+          "text": "Нет ничего",
+          "minutesAgo": 82
+        },
+        {
+          "author": "SYSTEM",
+          "text": "Анна Ким взяла диалог",
+          "minutesAgo": 79
+        },
+        {
+          "author": "OPERATOR",
+          "text": "Сейчас уточню у коллег, какой адрес указан в кабинете.",
+          "minutesAgo": 77,
+          "authorUser": "anna"
+        }
+      ]
+    },
+    {
+      "key": "olga_return",
+      "agent": "consultant",
+      "connection": "tg",
+      "contact": "olga",
+      "identity": "olga_tg",
+      "externalChatId": "482913004",
+      "lifecycle": "OPEN",
+      "controlMode": "HUMAN",
+      "expectedResponder": "CUSTOMER",
+      "assignedOperator": "elena",
+      "group": "operators",
+      "priority": "NONE",
+      "labels": [
+        "return"
+      ],
+      "note": "",
+      "createdMinutesAgo": 122,
+      "lastActivityMinutesAgo": 105,
+      "readBy": [
+        "elena"
+      ],
+      "messages": [
+        {
+          "author": "CONTACT",
+          "text": "Здравствуйте! Получила шторы, но ширина не та, что заказывала.",
+          "minutesAgo": 122
+        },
+        {
+          "author": "AI",
+          "text": "Здравствуйте, Ольга. Сожалею. Обмен и возврат возможны в течение 14 дней — передаю вопрос сотруднику.",
+          "minutesAgo": 122
+        },
+        {
+          "author": "CONTACT",
+          "kind": "voice",
+          "voice": {
+            "file": "olga-eighty-cm.ogg",
+            "contentType": "audio/ogg",
+            "transcriptStatus": "READY",
+            "transcript": "Вы видите? Ровно восемьдесят сантиметров!"
+          },
+          "minutesAgo": 114
+        },
+        {
+          "author": "SYSTEM",
+          "text": "Елена Кузнецова взяла диалог",
+          "minutesAgo": 110
+        },
+        {
+          "author": "OPERATOR",
+          "kind": "voice",
+          "voice": {
+            "file": "elena-start-with-numbers.ogg",
+            "contentType": "audio/ogg",
+            "transcriptStatus": "NONE"
+          },
+          "minutesAgo": 108,
+          "authorUser": "elena"
+        },
+        {
+          "author": "CONTACT",
+          "kind": "voice",
+          "voice": {
+            "file": "olga-saturday-post.ogg",
+            "contentType": "audio/ogg",
+            "transcriptStatus": "READY",
+            "transcript": "А по субботам почта доставляет посылки?"
+          },
+          "minutesAgo": 105
+        }
+      ]
+    },
+    {
+      "key": "sergey_address",
+      "agent": "consultant",
+      "connection": "tg",
+      "contact": "sergey",
+      "identity": "sergey_tg",
+      "externalChatId": "482913007",
+      "lifecycle": "CLOSED",
+      "controlMode": "HUMAN",
+      "expectedResponder": "NOBODY",
+      "assignedOperator": "elena",
+      "group": "operators",
+      "priority": "NONE",
+      "labels": [
+        "address"
+      ],
+      "note": "",
+      "createdHoursAgo": 30,
+      "createdMinutesAgo": 9,
+      "lastActivityHoursAgo": 30,
+      "lastActivityMinutesAgo": 2,
+      "readBy": [
+        "elena"
+      ],
+      "messages": [
+        {
+          "author": "CONTACT",
+          "text": "Здравствуйте, хочу изменить адрес доставки по заказу 4402",
+          "hoursAgo": 30,
+          "minutesAgo": 9
+        },
+        {
+          "author": "SYSTEM",
+          "text": "Елена Кузнецова взяла диалог",
+          "hoursAgo": 30,
+          "minutesAgo": 8
+        },
+        {
+          "author": "OPERATOR",
+          "authorUser": "elena",
+          "text": "Здравствуйте, Сергей. Напишите новый адрес — поменяю.",
+          "hoursAgo": 30,
+          "minutesAgo": 7
+        },
+        {
+          "author": "CONTACT",
+          "text": "Казань, ул. Баумана 12, кв. 40",
+          "hoursAgo": 30,
+          "minutesAgo": 5
+        },
+        {
+          "author": "OPERATOR",
+          "authorUser": "elena",
+          "text": "Готово, адрес обновлён. Хорошего дня!",
+          "hoursAgo": 30,
+          "minutesAgo": 3
+        },
+        {
+          "author": "SYSTEM",
+          "text": "Диалог закрыт",
+          "hoursAgo": 30,
+          "minutesAgo": 2
+        }
+      ]
+    },
+    {
+      "key": "maria_measure",
+      "agent": "consultant",
+      "connection": "tg",
+      "contact": "maria",
+      "identity": "maria_tg",
+      "externalChatId": "482913001",
+      "lifecycle": "CLOSED",
+      "controlMode": "HUMAN",
+      "expectedResponder": "NOBODY",
+      "assignedOperator": "anna",
+      "group": "operators",
+      "priority": "NONE",
+      "labels": [],
+      "note": "",
+      "createdDaysAgo": 24,
+      "lastActivityDaysAgo": 24,
       "readBy": [
         "anna"
       ],
@@ -211,355 +611,85 @@
       "messages": [
         {
           "author": "CONTACT",
-          "text": "Здравствуйте! Заказ 4471 — когда доставка? Обещали до среды.",
-          "minutesAgo": 95
-        },
-        {
-          "author": "AI",
-          "text": "Здравствуйте, Мария. Доставка в Казань занимает 3–5 рабочих дней с момента отправки. Заказ 4471 сейчас на этапе пошива — отправим ориентировочно в четверг.",
-          "minutesAgo": 94
-        },
-        {
-          "author": "CONTACT",
-          "text": "А можно ускорить? Нужно к субботе.",
-          "minutesAgo": 90
-        },
-        {
-          "author": "AI",
-          "text": "Понимаю. Ускоренная доставка возможна, но её условия лучше уточнить у специалиста — передаю вопрос коллегам.",
-          "minutesAgo": 90
-        },
-        {
-          "author": "SYSTEM",
-          "text": "AI передал диалог: клиент просит ускорить доставку",
-          "minutesAgo": 90
-        },
-        {
-          "author": "OPERATOR",
-          "authorUser": "anna",
-          "text": "Мария, добрый день! Анна Ким, консультант. Уточняю у производства, можно ли отправить завтра.",
-          "minutesAgo": 48
+          "text": "Здравствуйте! Окна 2.4 на 2.7, три штуки. Сколько будет стоить комплект штор с тюлем?",
+          "daysAgo": 24,
+          "hoursAgo": 3
         },
         {
           "author": "SYSTEM",
           "text": "Анна Ким взяла диалог",
-          "minutesAgo": 48
-        },
-        {
-          "author": "CONTACT",
-          "kind": "voice",
-          "voice": {
-            "file": "maria-hurry.ogg",
-            "contentType": "audio/ogg",
-            "durationSeconds": 14,
-            "transcriptStatus": "READY",
-            "transcript": "Анна, спасибо! Если получится отправить завтра, будет идеально — в субботу приезжают гости, хочу успеть повесить."
-          },
-          "minutesAgo": 30
+          "daysAgo": 24,
+          "hoursAgo": 3
         },
         {
           "author": "OPERATOR",
           "authorUser": "anna",
-          "text": "Здравствуйте, Мария. Заказ 4471 собран и передан курьеру, доставка сегодня до 20:00. Курьер позвонит за час.",
-          "minutesAgo": 6
+          "text": "Мария, здравствуйте! Анна Ким. На три окна 2.4 × 2.7: портьеры блэкаут «Норд» и тюль-вуаль — 48 600 ₽ с пошивом. Отправляю расчёт файлом.",
+          "daysAgo": 24,
+          "hoursAgo": 2
         },
         {
           "author": "CONTACT",
-          "text": "Спасибо, понял",
-          "minutesAgo": 4
-        }
-      ]
-    },
-    {
-      "key": "irina_status",
-      "agent": "consultant",
-      "connection": "tg",
-      "contact": "irina",
-      "identity": "irina_tg",
-      "externalChatId": "482913002",
-      "lifecycle": "OPEN",
-      "controlMode": "PAUSED",
-      "expectedResponder": "OPERATOR",
-      "group": "support",
-      "priority": "MEDIUM",
-      "labels": [
-        "delivery"
-      ],
-      "note": "Постоянный клиент, заказ 4390. Просила писать на почту, не звонить.",
-      "createdMinutesAgo": 130,
-      "lastActivityMinutesAgo": 110,
-      "readBy": [],
-      "previousConversation": "irina_first",
-      "messages": [
-        {
-          "author": "CONTACT",
-          "text": "Здравствуйте. Заказ 4390 оплачен неделю назад, статус не меняется. Что происходит?",
-          "minutesAgo": 130
-        },
-        {
-          "author": "AI",
-          "text": "Здравствуйте, Ирина. Вижу заказ 4390 в статусе «В производстве». Уточню сроки у коллег — передаю вопрос.",
-          "minutesAgo": 129
-        },
-        {
-          "author": "SYSTEM",
-          "text": "AI передал диалог: вопрос по статусу заказа",
-          "minutesAgo": 129
-        },
-        {
-          "author": "CONTACT",
-          "text": "Хочу поговорить с человеком",
-          "minutesAgo": 110
-        }
-      ]
-    },
-    {
-      "key": "olga_return",
-      "agent": "consultant",
-      "connection": "max",
-      "contact": "olga",
-      "identity": "olga_max",
-      "externalChatId": "max-88214",
-      "lifecycle": "OPEN",
-      "controlMode": "PAUSED",
-      "expectedResponder": "OPERATOR",
-      "group": "consultants",
-      "priority": "HIGH",
-      "labels": [
-        "return"
-      ],
-      "note": "",
-      "createdMinutesAgo": 22,
-      "lastActivityMinutesAgo": 6,
-      "readBy": [],
-      "messages": [
-        {
-          "author": "CONTACT",
-          "text": "Здравствуйте! Получила шторы, но цвет не тот, что на сайте.",
-          "minutesAgo": 22
-        },
-        {
-          "author": "AI",
-          "text": "Здравствуйте, Ольга. Сожалею. Возврат возможен в течение 14 дней — передаю вопрос сотруднику.",
-          "minutesAgo": 21
-        },
-        {
-          "author": "SYSTEM",
-          "text": "AI передал диалог: жалоба на качество",
-          "minutesAgo": 21
-        },
-        {
-          "author": "CONTACT",
-          "text": "Можно оформить возврат? Я бы хотела заменить на бежевый, если он есть в наличии, а не возвращать деньги.",
-          "minutesAgo": 12
-        },
-        {
-          "author": "CONTACT",
-          "kind": "voice",
-          "voice": {
-            "file": "olga-color.ogg",
-            "contentType": "audio/ogg",
-            "durationSeconds": 9,
-            "transcriptStatus": "NONE",
-            "transcript": ""
-          },
-          "minutesAgo": 6
-        }
-      ]
-    },
-    {
-      "key": "sergey_address",
-      "agent": "support",
-      "connection": "web_account",
-      "contact": "sergey",
-      "identity": "sergey_web",
-      "externalChatId": "web-sess-4402a",
-      "lifecycle": "OPEN",
-      "controlMode": "AI",
-      "expectedResponder": "CUSTOMER",
-      "group": "support",
-      "priority": "NONE",
-      "labels": [
-        "delivery"
-      ],
-      "note": "",
-      "createdMinutesAgo": 40,
-      "lastActivityMinutesAgo": 33,
-      "readBy": [
-        "artem"
-      ],
-      "messages": [
-        {
-          "author": "CONTACT",
-          "text": "Здравствуйте, хочу изменить адрес доставки по заказу 4402",
-          "minutesAgo": 40
-        },
-        {
-          "author": "AI",
-          "text": "Здравствуйте, Сергей. Напишите новый адрес — поменяю.",
-          "minutesAgo": 40
-        },
-        {
-          "author": "CONTACT",
-          "text": "Казань, ул. Баумана 12, кв. 40",
-          "minutesAgo": 36
-        },
-        {
-          "author": "AI",
-          "text": "Сейчас уточню у коллег, какой адрес указан в кабинете.",
-          "minutesAgo": 36
-        },
-        {
-          "author": "AI",
-          "text": "Готово, адрес обновлён. Хорошего дня!",
-          "minutesAgo": 34
-        },
-        {
-          "author": "CONTACT",
-          "kind": "contact",
-          "text": "+7 903 445-90-12",
-          "minutesAgo": 33
-        }
-      ],
-      "supportIdentitySnapshot": "sergey_account"
-    },
-    {
-      "key": "darya_measure",
-      "agent": "consultant",
-      "connection": "tg",
-      "contact": "darya",
-      "identity": "darya_tg",
-      "externalChatId": "482913005",
-      "lifecycle": "OPEN",
-      "controlMode": "HUMAN",
-      "expectedResponder": "CUSTOMER",
-      "assignedOperator": "dmitry",
-      "group": "consultants",
-      "priority": "LOW",
-      "labels": [],
-      "note": "Спрашивала о тканях и сроках пошива. Передан каталог.",
-      "createdMinutesAgo": 1500,
-      "lastActivityMinutesAgo": 1380,
-      "readBy": [
-        "dmitry"
-      ],
-      "messages": [
-        {
-          "author": "CONTACT",
-          "text": "Добрый день. У вас можно заказать шторы по своим размерам?",
-          "minutesAgo": 1500
-        },
-        {
-          "author": "AI",
-          "text": "Добрый день! Да, шьём по индивидуальным размерам. Подскажите ширину и высоту окна — рассчитаю стоимость.",
-          "minutesAgo": 1499
-        },
-        {
-          "author": "CONTACT",
-          "text": "Карниз 3 метра, высота 2,6. Хочу блэкаут, серый или графит.",
-          "minutesAgo": 1490
-        },
-        {
-          "author": "AI",
-          "text": "Блэкаут «Норд» есть в графите и дымчато-сером. Две полотна на карниз 3 м с коэффициентом 1.5 — примерно 9 270 ₽ с пошивом и лентой. Передаю консультанту, он пришлёт образцы.",
-          "minutesAgo": 1489
-        },
-        {
-          "author": "SYSTEM",
-          "text": "Дмитрий Орлов взял диалог",
-          "minutesAgo": 1420
+          "text": "Подходит! Оформляйте, оплачу сегодня.",
+          "daysAgo": 24,
+          "hoursAgo": 1
         },
         {
           "author": "OPERATOR",
-          "authorUser": "dmitry",
-          "kind": "voice",
-          "voice": {
-            "file": "dmitry-samples.ogg",
-            "contentType": "audio/ogg",
-            "durationSeconds": 18,
-            "transcriptStatus": "READY",
-            "transcript": "Дарья, добрый день, это Дмитрий из ателье. Отправлю вам три образца блэкаута: графит, дымчатый и тёмно-серый. Напишите адрес с индексом, уйдут завтра почтой."
-          },
-          "minutesAgo": 1400
-        },
-        {
-          "author": "CONTACT",
-          "text": "Уточняла размеры окон, получила расчёт стоимости, оформила заказ.",
-          "minutesAgo": 1380
-        }
-      ]
-    },
-    {
-      "key": "guest_curtains",
-      "agent": "consultant",
-      "connection": "web",
-      "webGuest": true,
-      "lifecycle": "OPEN",
-      "controlMode": "AI",
-      "expectedResponder": "CUSTOMER",
-      "group": "consultants",
-      "priority": "NONE",
-      "labels": [],
-      "note": "",
-      "createdMinutesAgo": 9,
-      "lastActivityMinutesAgo": 8,
-      "readBy": [],
-      "messages": [
-        {
-          "author": "CONTACT",
-          "text": "Сколько стоит тюль на окно 2 метра?",
-          "minutesAgo": 9
-        },
-        {
-          "author": "AI",
-          "text": "Здравствуйте! Тюль-вуаль на карниз 2 м с коэффициентом 2.0 — 4 м ткани по 390 ₽ плюс пошив 350 ₽/м: около 2 960 ₽. Минимальный заказ 3 000 ₽ — можно добавить шторную ленту. Подсказать по другим тканям?",
-          "minutesAgo": 8
-        }
-      ]
-    },
-    {
-      "key": "polina_password",
-      "agent": "support",
-      "connection": "email",
-      "contact": "polina",
-      "identity": "polina_email",
-      "externalChatId": "polina.rakitina@mail.ru",
-      "lifecycle": "OPEN",
-      "controlMode": "PAUSED",
-      "expectedResponder": "OPERATOR",
-      "group": "support",
-      "priority": "MEDIUM",
-      "labels": [],
-      "note": "",
-      "createdMinutesAgo": 240,
-      "lastActivityMinutesAgo": 200,
-      "readBy": [],
-      "transportMeta": {
-        "subject": "Не приходит письмо для сброса пароля"
-      },
-      "messages": [
-        {
-          "author": "CONTACT",
-          "text": "Не приходит письмо для сброса пароля в личном кабинете",
-          "contentHtml": "<p>Здравствуйте!</p><p>Пытаюсь восстановить пароль от личного кабинета на <b>atelie-nord.ru</b> — письмо не приходит уже час. Адрес правильный, проверила.</p><p>С уважением,<br>Полина Ракитина</p>",
-          "minutesAgo": 240
-        },
-        {
-          "author": "AI",
-          "text": "Проверьте папку «Спам». Если письма нет, передам запрос сотруднику.",
-          "contentHtml": "<p>Здравствуйте, Полина!</p><p>Письмо приходит с адреса <b>no-reply@atelie-nord.ru</b> в течение 5 минут. Проверьте, пожалуйста, папку «Спам». Если письма нет — передам запрос сотруднику.</p>",
-          "minutesAgo": 238
-        },
-        {
-          "author": "CONTACT",
-          "text": "В спаме тоже нет. Помогите, пожалуйста.",
-          "contentHtml": "<p>В спаме тоже нет. Помогите, пожалуйста.</p>",
-          "minutesAgo": 200
+          "authorUser": "anna",
+          "text": "Оформила заказ 4471. Ссылка на оплату придёт в этот чат. Спасибо!",
+          "daysAgo": 24,
+          "hoursAgo": 1
         },
         {
           "author": "SYSTEM",
-          "text": "AI передал диалог: клиент просит сотрудника",
-          "minutesAgo": 200
+          "text": "Диалог закрыт · вела Анна Ким",
+          "daysAgo": 24
+        }
+      ]
+    },
+    {
+      "key": "maria_first",
+      "agent": "consultant",
+      "connection": "tg",
+      "contact": "maria",
+      "identity": "maria_tg",
+      "externalChatId": "482913001",
+      "lifecycle": "CLOSED",
+      "controlMode": "AI",
+      "expectedResponder": "NOBODY",
+      "group": "operators",
+      "priority": "NONE",
+      "labels": [],
+      "note": "",
+      "createdDaysAgo": 33,
+      "lastActivityDaysAgo": 33,
+      "readBy": [
+        "anna"
+      ],
+      "messages": [
+        {
+          "author": "CONTACT",
+          "text": "Здравствуйте, какие ткани есть для гостиной и сколько занимает пошив?",
+          "daysAgo": 33,
+          "hoursAgo": 5
+        },
+        {
+          "author": "AI",
+          "text": "Здравствуйте, Мария! Для гостиной чаще берут блэкаут «Норд» (14 цветов) и лён «Скандия». Пошив — 5–7 рабочих дней после оплаты. Отправляю каталог тканей.",
+          "daysAgo": 33,
+          "hoursAgo": 5
+        },
+        {
+          "author": "CONTACT",
+          "text": "Спасибо, посмотрю!",
+          "daysAgo": 33,
+          "hoursAgo": 4
+        },
+        {
+          "author": "SYSTEM",
+          "text": "Диалог закрыт · AI",
+          "daysAgo": 33
         }
       ]
     },
@@ -573,8 +703,8 @@
       "lifecycle": "OPEN",
       "controlMode": "HUMAN",
       "expectedResponder": "CUSTOMER",
-      "assignedOperator": "svetlana",
-      "group": "consultants",
+      "assignedOperator": "kirill",
+      "group": "vip",
       "priority": "LOW",
       "labels": [
         "vip",
@@ -584,213 +714,118 @@
       "createdMinutesAgo": 4300,
       "lastActivityMinutesAgo": 2900,
       "readBy": [
-        "svetlana",
-        "anna"
+        "kirill",
+        "elena"
       ],
       "messages": [
         {
           "author": "CONTACT",
           "text": "Добрый день. Гостиница «Дом текстиля», 46 номеров. Нужны блэкаут и тюль на все окна, единый размер 1.8 × 2.5. Есть оптовые условия?",
-          "minutesAgo": 4300
+          "daysAgo": 3
         },
         {
           "author": "AI",
-          "text": "Добрый день, Виктор! Оптовые условия обсуждает старший консультант — передаю диалог.",
-          "minutesAgo": 4299
+          "text": "Добрый день, Виктор! Оптовые условия обсуждает менеджер VIP-клиентов — передаю диалог.",
+          "daysAgo": 3
         },
         {
           "author": "SYSTEM",
-          "text": "Светлана Петрова взяла диалог",
-          "minutesAgo": 4200
+          "text": "Кирилл Волков взял диалог",
+          "daysAgo": 3
         },
         {
           "author": "OPERATOR",
-          "authorUser": "svetlana",
-          "text": "Виктор, здравствуйте! Светлана Петрова. На 46 комплектов даём 12% на ткань и пошив, срок 3 недели. Отправлю КП на почту сегодня.",
-          "minutesAgo": 4190
+          "authorUser": "kirill",
+          "text": "Виктор, здравствуйте! Кирилл Волков. На 46 комплектов даём 12% на ткань и пошив, срок 3 недели. Отправлю КП на почту сегодня.",
+          "daysAgo": 3
         },
         {
           "author": "CONTACT",
           "text": "Отлично, жду КП. Почта на визитке.",
-          "minutesAgo": 2900
+          "daysAgo": 2
+        },
+        {
+          "author": "CONTACT",
+          "kind": "contact",
+          "text": "+7 812 640-22-10",
+          "daysAgo": 2
         }
-      ]
+      ],
+      "archivedDaysAgo": 1,
+      "createdDaysAgo": 3,
+      "lastActivityDaysAgo": 2
     },
     {
-      "key": "maria_first",
-      "agent": "consultant",
-      "connection": "tg",
-      "contact": "maria",
-      "identity": "maria_tg",
-      "externalChatId": "482913001",
+      "key": "polina_password",
+      "agent": "support",
+      "connection": "email",
+      "contact": "polina",
+      "identity": "polina_email",
+      "externalChatId": "polina.rakitina@mail.ru",
       "lifecycle": "CLOSED",
       "controlMode": "HUMAN",
       "expectedResponder": "NOBODY",
-      "assignedOperator": "anna",
-      "group": "consultants",
-      "priority": "NONE",
+      "group": "support",
+      "priority": "MEDIUM",
       "labels": [],
       "note": "",
-      "createdDaysAgo": 34,
-      "lastActivityDaysAgo": 33,
+      "createdMinutesAgo": 240,
+      "lastActivityMinutesAgo": 200,
       "readBy": [
-        "anna"
+        "igor"
       ],
+      "transportMeta": {
+        "subject": "Не приходит письмо для сброса пароля"
+      },
       "messages": [
         {
           "author": "CONTACT",
-          "text": "Здравствуйте! Заказала у вас комплект штор, номер заказа 4471. Подскажите, сколько занимает доставка в Казань?",
-          "daysAgo": 34
+          "text": "Не приходит письмо для сброса пароля в личном кабинете",
+          "contentHtml": "<p>Здравствуйте!</p><p>Пытаюсь восстановить пароль от личного кабинета на <b>atelie-nord.ru</b> — письмо не приходит уже час. Адрес правильный, проверила.</p><p>С уважением,<br>Полина Ракитина</p>",
+          "minutesAgo": 240,
+          "daysAgo": 2
         },
         {
           "author": "AI",
-          "text": "Здравствуйте, Мария! Доставка в Казань СДЭК — 3–5 рабочих дней с момента отправки, трек-номер придёт на почту.",
-          "daysAgo": 34
+          "text": "Проверьте папку «Спам». Если письма нет, передам запрос сотруднику.",
+          "contentHtml": "<p>Здравствуйте, Полина!</p><p>Письмо приходит с адреса <b>no-reply@atelie-nord.ru</b> в течение 5 минут. Проверьте, пожалуйста, папку «Спам». Если письма нет — передам запрос сотруднику.</p>",
+          "minutesAgo": 238,
+          "daysAgo": 2
         },
         {
           "author": "CONTACT",
-          "text": "Спасибо! А можно перенести на завтра утро? Сегодня меня не будет дома.",
-          "daysAgo": 33
+          "text": "В спаме тоже нет. Помогите, пожалуйста.",
+          "contentHtml": "<p>В спаме тоже нет. Помогите, пожалуйста.</p>",
+          "minutesAgo": 200,
+          "daysAgo": 2
         },
         {
           "author": "SYSTEM",
-          "text": "Анна Ким взяла диалог",
-          "daysAgo": 33
+          "text": "AI передал диалог: клиент просит сотрудника",
+          "minutesAgo": 200,
+          "daysAgo": 2
         },
         {
           "author": "OPERATOR",
-          "authorUser": "anna",
-          "text": "Конечно. Перенесла доставку на завтра, 10:00–13:00. Подтвердите, пожалуйста, что интервал подходит.",
-          "daysAgo": 33
-        },
-        {
-          "author": "CONTACT",
-          "text": "Подходит, спасибо!",
-          "daysAgo": 33
+          "authorUser": "igor",
+          "text": "Полина, здравствуйте! Игорь Савельев. Письма уходили на адрес с опечаткой — исправил, ссылка на сброс отправлена повторно.",
+          "daysAgo": 2,
+          "contentHtml": "<p>Полина, здравствуйте!</p><p>Письма уходили на адрес с опечаткой — исправил, ссылка на сброс отправлена повторно.</p><p>Игорь Савельев, поддержка</p>"
         },
         {
           "author": "SYSTEM",
-          "text": "Диалог закрыт · вела Анна Ким",
-          "daysAgo": 33
+          "text": "Диалог закрыт · вёл Игорь Савельев",
+          "daysAgo": 2
         }
-      ]
-    },
-    {
-      "key": "irina_first",
-      "agent": "consultant",
-      "connection": "max",
-      "contact": "irina",
-      "identity": "irina_max",
-      "externalChatId": "max-77103",
-      "lifecycle": "CLOSED",
-      "controlMode": "AI",
-      "expectedResponder": "NOBODY",
-      "group": "consultants",
-      "priority": "NONE",
-      "labels": [],
-      "note": "",
-      "createdDaysAgo": 60,
-      "lastActivityDaysAgo": 60,
-      "readBy": [
-        "anna",
-        "dmitry"
       ],
-      "messages": [
-        {
-          "author": "CONTACT",
-          "text": "Здравствуйте, какие ткани есть для спальни, чтобы полностью затемняли?",
-          "daysAgo": 60
-        },
-        {
-          "author": "AI",
-          "text": "Здравствуйте, Ирина! Для полного затемнения подойдёт блэкаут «Норд» — 100% затемнение, 14 цветов, 1 490 ₽/м. Могу отправить образцы почтой бесплатно.",
-          "daysAgo": 60
-        },
-        {
-          "author": "CONTACT",
-          "text": "Спасибо, понятно, подумаю.",
-          "daysAgo": 60
-        },
-        {
-          "author": "SYSTEM",
-          "text": "Диалог закрыт · AI",
-          "daysAgo": 59
-        }
-      ]
-    },
-    {
-      "key": "olga_archived",
-      "agent": "consultant",
-      "connection": "max",
-      "contact": "olga",
-      "identity": "olga_max",
-      "externalChatId": "max-88214",
-      "lifecycle": "CLOSED",
-      "controlMode": "AI",
-      "expectedResponder": "NOBODY",
-      "group": "consultants",
-      "priority": "NONE",
-      "labels": [],
-      "note": "",
-      "archivedDaysAgo": 5,
-      "createdDaysAgo": 12,
-      "lastActivityDaysAgo": 12,
-      "readBy": [
-        "anna"
-      ],
-      "messages": [
-        {
-          "author": "CONTACT",
-          "text": "Здравствуйте, работаете ли вы в выходные?",
-          "daysAgo": 12
-        },
-        {
-          "author": "AI",
-          "text": "Здравствуйте! Консультанты отвечают ежедневно с 10:00 до 20:00, производство — по будням.",
-          "daysAgo": 12
-        },
-        {
-          "author": "SYSTEM",
-          "text": "Диалог закрыт · AI",
-          "daysAgo": 11
-        }
-      ]
-    },
-    {
-      "key": "spam_credit",
-      "agent": "consultant",
-      "connection": "tg",
-      "contact": "spammer",
-      "identity": "spam_tg",
-      "externalChatId": "900000001",
-      "lifecycle": "SPAM",
-      "controlMode": "PAUSED",
-      "expectedResponder": "NOBODY",
-      "group": "consultants",
-      "priority": "NONE",
-      "labels": [],
-      "note": "",
-      "createdMinutesAgo": 600,
-      "lastActivityMinutesAgo": 600,
-      "readBy": [
-        "anna"
-      ],
-      "messages": [
-        {
-          "author": "CONTACT",
-          "text": "ВЫГОДНЫЙ КРЕДИТ ДЛЯ БИЗНЕСА до 5 000 000 ₽ без справок! Жми: credit-fast24.example",
-          "minutesAgo": 600
-        },
-        {
-          "author": "SYSTEM",
-          "text": "Анна Ким пометила диалог как спам",
-          "minutesAgo": 590
-        }
-      ]
+      "archivedDaysAgo": 1,
+      "createdDaysAgo": 2,
+      "lastActivityDaysAgo": 2,
+      "assignedOperator": "igor"
     },
     {
       "key": "portal_sergey",
-      "agent": "support",
+      "agent": "portal",
       "connection": "web_account",
       "contact": "sergey",
       "identity": "sergey_web",
@@ -799,7 +834,7 @@
       "lifecycle": "CLOSED",
       "controlMode": "HUMAN",
       "expectedResponder": "NOBODY",
-      "assignedOperator": "artem",
+      "assignedOperator": "igor",
       "group": "support",
       "priority": "NONE",
       "labels": [],
@@ -822,19 +857,52 @@
         },
         {
           "author": "SYSTEM",
-          "text": "Артём Гусев взял диалог",
+          "text": "Игорь Савельев взял диалог",
           "daysAgo": 6
         },
         {
           "author": "OPERATOR",
-          "authorUser": "artem",
+          "authorUser": "igor",
           "text": "Сергей, платёж нашёл и провёл вручную — заказ 4402 в статусе «В производстве». Спасибо за терпение!",
           "daysAgo": 6
         },
         {
           "author": "SYSTEM",
-          "text": "Диалог закрыт · вёл Артём Гусев",
+          "text": "Диалог закрыт · вёл Игорь Савельев",
           "daysAgo": 6
+        }
+      ],
+      "archivedDaysAgo": 4
+    },
+    {
+      "key": "spam_credit",
+      "agent": "consultant",
+      "connection": "tg",
+      "contact": "spammer",
+      "identity": "spam_tg",
+      "externalChatId": "900000001",
+      "lifecycle": "SPAM",
+      "controlMode": "PAUSED",
+      "expectedResponder": "NOBODY",
+      "group": "operators",
+      "priority": "NONE",
+      "labels": [],
+      "note": "",
+      "createdMinutesAgo": 600,
+      "lastActivityMinutesAgo": 600,
+      "readBy": [
+        "elena"
+      ],
+      "messages": [
+        {
+          "author": "CONTACT",
+          "text": "ВЫГОДНЫЙ КРЕДИТ ДЛЯ БИЗНЕСА до 5 000 000 ₽ без справок! Жми: credit-fast24.example",
+          "minutesAgo": 600
+        },
+        {
+          "author": "SYSTEM",
+          "text": "Елена Кузнецова пометила диалог как спам",
+          "minutesAgo": 590
         }
       ]
     }

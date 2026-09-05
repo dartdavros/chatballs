@@ -1,14 +1,46 @@
 {
   "schemaVersion": 1,
-  "_comment": "Демо «Ателье Норд» (дизайн-базлайн v2). Ставится в организацию установщика: организация и её владелец здесь не создаются. Пароль всех демо-сотрудников один — см. demoPassword.",
+  "_comment": "Демо «Ателье Норд» (дизайн-базлайн v2, каст кадров A1/A2 и A–H). Ставится в организацию установщика: организация и её владелец здесь не создаются. Пароль всех демо-сотрудников один — см. demoPassword.",
   "demoPassword": "Chatbolls-Demo-2026",
-  "showcaseAccounts": ["anna", "dmitry", "artem"],
+  "showcaseAccounts": [
+    "elena",
+    "svetlana",
+    "igor"
+  ],
   "groups": [
-    {"key": "consultants", "name": "Консультанты"},
-    {"key": "support", "name": "Поддержка"},
-    {"key": "operators", "name": "Операторы"}
+    {
+      "key": "operators",
+      "name": "Операторы",
+      "color": "#1677ff"
+    },
+    {
+      "key": "support",
+      "name": "Поддержка",
+      "color": "#2aa876"
+    },
+    {
+      "key": "vip",
+      "name": "VIP-клиенты",
+      "color": "#eb2f96"
+    }
   ],
   "accounts": [
+    {
+      "key": "elena",
+      "email": "e.kuznetsova@atelie-nord.ru",
+      "fullName": "Елена Кузнецова",
+      "role": "ADMIN",
+      "positionTitle": "Администратор",
+      "phone": "+7 921 300-41-16",
+      "groups": [
+        "operators",
+        "support"
+      ],
+      "avatar": "elena-kuznetsova.png",
+      "uiTheme": "LIGHT",
+      "uiAccent": "#1677ff",
+      "createdDaysAgo": 120
+    },
     {
       "key": "anna",
       "email": "a.kim@atelie-nord.ru",
@@ -16,70 +48,87 @@
       "role": "ADMIN",
       "positionTitle": "Администратор",
       "phone": "+7 921 300-41-17",
-      "groups": ["consultants", "support"],
+      "groups": [
+        "operators",
+        "support"
+      ],
+      "avatar": "anna-kim.png",
       "uiTheme": "LIGHT",
-      "uiAccent": "#1677ff"
-    },
-    {
-      "key": "dmitry",
-      "email": "d.orlov@atelie-nord.ru",
-      "fullName": "Дмитрий Орлов",
-      "role": "EMPLOYEE",
-      "positionTitle": "Консультант",
-      "phone": "+7 921 300-41-18",
-      "groups": ["consultants"],
-      "uiTheme": "DARK",
-      "uiAccent": "#7c3aed"
-    },
-    {
-      "key": "artem",
-      "email": "a.gusev@atelie-nord.ru",
-      "fullName": "Артём Гусев",
-      "role": "EMPLOYEE",
-      "positionTitle": "Специалист поддержки",
-      "phone": "+7 921 300-41-19",
-      "groups": ["support"],
-      "uiTheme": "SYSTEM",
-      "uiAccent": "#0f9d58"
+      "uiAccent": "#1677ff",
+      "createdDaysAgo": 110
     },
     {
       "key": "svetlana",
       "email": "s.petrova@atelie-nord.ru",
       "fullName": "Светлана Петрова",
       "role": "EMPLOYEE",
-      "positionTitle": "Старший консультант",
+      "positionTitle": "Оператор",
       "phone": "+7 921 300-41-20",
-      "groups": ["consultants", "support", "operators"],
-      "uiTheme": "LIGHT",
-      "uiAccent": "#d6336c"
+      "groups": [
+        "operators"
+      ],
+      "avatar": "svetlana-petrova.jpg",
+      "uiTheme": "DARK",
+      "uiAccent": "#7c3aed",
+      "createdDaysAgo": 80
     },
     {
       "key": "igor",
       "email": "i.saveliev@atelie-nord.ru",
       "fullName": "Игорь Савельев",
       "role": "EMPLOYEE",
-      "positionTitle": "Оператор",
-      "phone": "",
-      "groups": [],
-      "totpEnabled": true,
+      "positionTitle": "Специалист поддержки",
+      "phone": "+7 921 300-41-19",
+      "groups": [
+        "support"
+      ],
       "uiTheme": "SYSTEM",
-      "uiAccent": "#1677ff"
+      "uiAccent": "#0f9d58",
+      "createdDaysAgo": 60
+    },
+    {
+      "key": "kirill",
+      "email": "k.volkov@atelie-nord.ru",
+      "fullName": "Кирилл Волков",
+      "role": "EMPLOYEE",
+      "positionTitle": "Менеджер VIP-клиентов",
+      "phone": "",
+      "groups": [
+        "vip"
+      ],
+      "totpEnabled": true,
+      "uiTheme": "LIGHT",
+      "uiAccent": "#d6336c",
+      "createdDaysAgo": 40
     },
     {
       "key": "natalia",
       "email": "n.frolova@atelie-nord.ru",
       "fullName": "Наталья Фролова",
       "role": "EMPLOYEE",
-      "positionTitle": "Консультант (уволена)",
+      "positionTitle": "Оператор (уволена)",
       "phone": "",
-      "groups": ["consultants"],
+      "groups": [
+        "operators"
+      ],
       "blocked": true,
       "uiTheme": "SYSTEM",
-      "uiAccent": "#1677ff"
+      "uiAccent": "#1677ff",
+      "createdDaysAgo": 200
     }
   ],
   "invitations": [
-    {"email": "v.kotova@atelie-nord.ru", "role": "EMPLOYEE", "createdBy": "anna", "expiresInDays": 6},
-    {"email": "old.invite@atelie-nord.ru", "role": "EMPLOYEE", "createdBy": "anna", "expiresInDays": -2}
+    {
+      "email": "v.kotova@atelie-nord.ru",
+      "role": "EMPLOYEE",
+      "createdBy": "elena",
+      "expiresInDays": 6
+    },
+    {
+      "email": "old.invite@atelie-nord.ru",
+      "role": "EMPLOYEE",
+      "createdBy": "elena",
+      "expiresInDays": -2
+    }
   ]
 }

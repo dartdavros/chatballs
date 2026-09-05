@@ -206,6 +206,23 @@ class ListFilterTests(ChatExtrasTestCase):
 
 
 class CountersTests(ChatExtrasTestCase):
+    def test_contact_card_edit_from_dialog(self) -> None:
+        response = self.client.post(
+            f"/api/v1/conversations/{self.conversation.id}/contact/",
+            {"description": "Постоянный клиент", "company": "ООО «Дом текстиля»", "city": "Казань", "phone": "+7 900 000-00-01"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+        contact = response.json()["conversation"]["contact"]
+        self.assertEqual(contact["description"], "Постоянный клиент")
+        self.assertEqual(contact["company"], "ООО «Дом текстиля»")
+        self.assertEqual(contact["city"], "Казань")
+        self.assertEqual(contact["phone"], "+7 900 000-00-01")
+        empty_name = self.client.post(
+            f"/api/v1/conversations/{self.conversation.id}/contact/", {"name": ""}, format="json"
+        )
+        self.assertEqual(empty_name.status_code, 400)
+
     def test_directory_lists_all_groups_and_colleagues_for_employee(self) -> None:
         support = EmployeeGroup.objects.create(
             organization=self.organization, name="Поддержка"
@@ -244,7 +261,7 @@ class CountersTests(ChatExtrasTestCase):
         self.assertEqual(payload["mine"], 1)
         self.assertEqual(
             payload["groups"],
-            [{"id": self.operators.id, "name": "Операторы", "count": 2}],
+            [{"id": self.operators.id, "name": "Операторы", "color": "", "count": 2}],
         )
         self.assertEqual(payload["ungrouped"], 2)
 
@@ -253,7 +270,7 @@ class CountersTests(ChatExtrasTestCase):
         self.assertEqual(len(admin["groups"]), 2)
         self.assertEqual(
             admin["assignees"],
-            [{"id": self.employee.user_id, "name": "employee@chat.test", "count": 1}],
+            [{"id": self.employee.user_id, "name": "employee@chat.test", "count": 1, "avatarUrl": None}],
         )
         by_assignee = self.admin_client.get(
             f"/api/v1/conversations/?assigned={self.employee.user_id}"

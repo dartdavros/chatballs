@@ -12,6 +12,7 @@ urlpatterns = [
     # обратной совместимости; поле role в теле выбирает системную роль.
     path("operators/", employee_views.EmployeeCreateView.as_view(), name="employee-create"),
     path("<int:user_id>/", employee_views.EmployeeDetailView.as_view(), name="employee-detail"),
+    path("<int:user_id>/avatar/", employee_views.EmployeeAvatarView.as_view(), name="employee-avatar"),
     path("<int:user_id>/update/", employee_views.EmployeeUpdateView.as_view(), name="employee-update"),
     path("<int:user_id>/reset-password/", employee_security_views.EmployeeResetPasswordView.as_view(), name="employee-reset-password"),
     path("<int:user_id>/revoke-sessions/", employee_security_views.EmployeeRevokeSessionsView.as_view(), name="employee-revoke-sessions"),

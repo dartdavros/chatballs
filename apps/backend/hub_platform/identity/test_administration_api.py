@@ -130,6 +130,38 @@ class AdministrationApiTests(TestCase):
         self.assertEqual(deleted.status_code, 200)
         self.assertIsNone(deleted.json()["organization"]["logoUrl"])
 
+    def test_profile_avatar_upload_visible_to_colleagues(self) -> None:
+        png = b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01"
+        uploaded = self.client.post(
+            "/api/v1/auth/profile/avatar/",
+            {"file": SimpleUploadedFile("me.png", png, content_type="image/png")},
+            format="multipart",
+        )
+        self.assertEqual(uploaded.status_code, 200)
+        own_url = uploaded.json()["user"]["avatarUrl"]
+        self.assertTrue(own_url.startswith("/api/v1/auth/profile/avatar/?v="))
+        self.assertEqual(self.client.get("/api/v1/auth/profile/avatar/").status_code, 200)
+
+        # Коллеги видят фото через тенантный эндпоинт; ссылка приходит в списке сотрудников.
+        employees = self.client.get("/api/v1/employees/").json()["items"]
+        colleague_url = employees[0]["avatarUrl"]
+        self.assertIn(f"/employees/{self.owner.id}/avatar/", colleague_url)
+        self.assertEqual(self.client.get(colleague_url.split("?")[0]).status_code, 200)
+
+        removed = self.client.delete("/api/v1/auth/profile/avatar/")
+        self.assertEqual(removed.status_code, 200)
+        self.assertIsNone(removed.json()["user"]["avatarUrl"])
+        self.assertEqual(self.client.get("/api/v1/auth/profile/avatar/").status_code, 404)
+
+    def test_group_color_is_stored_and_validated(self) -> None:
+        created = self.client.post(
+            "/api/v1/company/groups/", {"name": "Операторы", "color": "#2AA876"}, format="json"
+        )
+        self.assertEqual(created.status_code, 201)
+        self.assertEqual(created.json()["group"]["color"], "#2aa876")
+        bad = self.client.post("/api/v1/company/groups/", {"name": "Плохая", "color": "red"}, format="json")
+        self.assertEqual(bad.status_code, 400)
+
     def test_non_image_logo_is_rejected(self) -> None:
         response = self.client.post(
             "/api/v1/company/administration/logo/",

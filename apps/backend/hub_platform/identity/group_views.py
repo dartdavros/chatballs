@@ -1,3 +1,5 @@
+import re
+
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
 from django.db.models import Count
@@ -14,12 +16,24 @@ from hub_platform.identity.models import OrganizationMembership
 # диалогов. Управляют OWNER/ADMIN; сотрудник видит свои группы в session payload.
 
 
+_COLOR_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
+
+
+def _clean_color(value: object) -> str | None:
+    """Цвет группы — HEX вида #rrggbb или пусто (палитра по умолчанию)."""
+    text = str(value or "").strip()
+    if not text:
+        return ""
+    return text.lower() if _COLOR_RE.match(text) else None
+
+
 def _group_payload(group: EmployeeGroup, member_count: int | None = None) -> dict[str, object]:
     if member_count is None:
         member_count = group.member_links.count()
     return {
         "id": group.id,
         "name": group.name,
+        "color": group.color,
         "memberCount": member_count,
         "memberIds": sorted(
             group.member_links.values_list("employee__user_id", flat=True)
@@ -65,8 +79,11 @@ class GroupListView(APIView):
         members, members_error = _resolve_members(organization, request.data.get("memberIds"))
         if members_error:
             return Response({"detail": members_error}, status=400)
+        color = _clean_color(request.data.get("color"))
+        if color is None:
+            return Response({"detail": "Некорректный цвет"}, status=400)
         try:
-            group = EmployeeGroup.objects.create(organization=organization, name=name)
+            group = EmployeeGroup.objects.create(organization=organization, name=name, color=color)
         except (ValidationError, IntegrityError):
             return Response({"detail": "Группа с таким именем уже есть"}, status=400)
         if members:
@@ -104,8 +121,14 @@ class GroupDetailView(APIView):
         group = self._group(request, group_id)
         if group is None:
             return Response({"detail": "Group not found"}, status=404)
-        if "name" in request.data:
-            group.name = str(request.data.get("name", "")).strip()
+        if "color" in request.data:
+            color = _clean_color(request.data.get("color"))
+            if color is None:
+                return Response({"detail": "Некорректный цвет"}, status=400)
+            group.color = color
+        if "name" in request.data or "color" in request.data:
+            if "name" in request.data:
+                group.name = str(request.data.get("name", "")).strip()
             try:
                 group.save()
             except (ValidationError, IntegrityError):

@@ -25,8 +25,9 @@ from hub_platform.conversations.models import (
 from hub_platform.conversations.selectors import apply_conversation_visibility
 from hub_platform.conversations.serializers import conversation_payload
 from hub_platform.conversations.view_base import ConversationViewBase
+from hub_platform.identity.avatars import user_avatar_url
 from hub_platform.identity.group_models import EmployeeGroup
-from hub_platform.identity.models import OrganizationMembership
+from hub_platform.identity.models import HumanUser, OrganizationMembership
 from hub_platform.identity.policy import can_administer_access
 
 
@@ -59,6 +60,46 @@ class ConversationPriorityView(ConversationViewBase):
         conversation.priority = priority
         conversation.save(update_fields=["priority"])
         self._audit(request, "priority_changed", conversation)
+        return Response(
+            {
+                "conversation": conversation_payload(
+                    conversation, with_messages=True, viewer_id=request.user.id
+                )
+            }
+        )
+
+
+class ConversationContactView(ConversationViewBase):
+    """Карточка контакта из диалога (дизайн-базлайн v2, карандаш у имени):
+    имя, описание, телефон, компания, город."""
+
+    required_capability = "conversations.operate"
+    LIMITS = {"name": 255, "description": 2000, "phone": 32, "company": 160, "city": 120}
+
+    def post(self, request: Request, conversation_id: int) -> Response:
+        try:
+            conversation = self._conversation(
+                request, conversation_id, self.required_capability
+            )
+        except Conversation.DoesNotExist:
+            return Response({"detail": "Диалог не найден"}, status=404)
+        contact = conversation.contact
+        if contact is None:
+            return Response({"detail": "У диалога нет контакта"}, status=400)
+        changed: list[str] = []
+        for field, limit in self.LIMITS.items():
+            if field not in request.data:
+                continue
+            value = str(request.data.get(field) or "").strip()
+            if len(value) > limit:
+                return Response({"detail": f"Поле {field}: не длиннее {limit} символов"}, status=400)
+            if field == "name" and not value:
+                return Response({"detail": "Имя контакта не может быть пустым"}, status=400)
+            setattr(contact, field, value)
+            changed.append(field)
+        if changed:
+            contact.save(update_fields=changed)
+            self._audit(request, "contact_updated", conversation)
         return Response(
             {
                 "conversation": conversation_payload(
@@ -178,9 +219,9 @@ class ConversationCountersView(ConversationViewBase):
         )
         open_qs = base.filter(lifecycle=LifecycleState.OPEN)
         groups = [
-            {"id": row["group_id"], "name": row["group__name"], "count": row["count"]}
+            {"id": row["group_id"], "name": row["group__name"], "color": row["group__color"], "count": row["count"]}
             for row in open_qs.filter(group__isnull=False)
-            .values("group_id", "group__name")
+            .values("group_id", "group__name", "group__color")
             .annotate(count=Count("id"))
             .order_by("group__name")
         ]
@@ -208,6 +249,12 @@ class ConversationCountersView(ConversationViewBase):
             .annotate(count=Count("id"))
             .order_by("-count", "assigned_operator__full_name")
         ]
+        avatars = {
+            user.id: user
+            for user in HumanUser.objects.filter(id__in=[a["id"] for a in assignees]).exclude(avatar="")
+        }
+        for assignee in assignees:
+            assignee["avatarUrl"] = user_avatar_url(avatars.get(assignee["id"]), request.tenant_context.organization.public_id)
         return Response(
             {
                 "all": open_qs.count(),
@@ -240,9 +287,13 @@ class ConversationDirectoryView(APIView):
         )
         return Response(
             {
-                "groups": [{"id": group.id, "name": group.name} for group in groups],
+                "groups": [{"id": group.id, "name": group.name, "color": group.color} for group in groups],
                 "employees": [
-                    {"id": member.user_id, "name": member.user.full_name or member.user.email}
+                    {
+                        "id": member.user_id,
+                        "name": member.user.full_name or member.user.email,
+                        "avatarUrl": user_avatar_url(member.user, request.tenant_context.organization.public_id),
+                    }
                     for member in members
                 ],
             }

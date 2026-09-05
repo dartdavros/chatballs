@@ -113,7 +113,7 @@ def issue_session(*, context: TenantContext, widget: WebChatWidget) -> dict | No
     if integration is None or integration.channel_id is None:
         return None
     session_id = uuid.uuid4().hex
-    guest_name = f"Веб-гость · {session_id[:6]}"
+    guest_name = f"Гость · {session_id[:6]}"
     contact = Contact.objects.create(organization=integration.channel.organization, name=guest_name)
     identity = ConnectionIdentity.objects.create(
         organization=context.organization,

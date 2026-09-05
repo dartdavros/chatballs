@@ -1,25 +1,161 @@
 {
   "schemaVersion": 1,
   "calls": [
-    {"key": "call_maria", "conversation": "maria_first", "initiatedBy": "anna", "contactIdentity": "maria_tg", "deliveryConnection": "tg", "kind": "AUDIO", "status": "ENDED", "endedBy": "STAFF", "daysAgo": 33, "durationSeconds": 262, "metrics": {"connectionType": "RELAY", "localCandidateType": "relay", "remoteCandidateType": "relay", "roundTripMs": 64}},
-    {"key": "call_darya", "conversation": "darya_measure", "initiatedBy": "dmitry", "contactIdentity": "darya_tg", "deliveryConnection": "tg", "kind": "VIDEO", "status": "ENDED", "endedBy": "CUSTOMER", "minutesAgo": 1395, "durationSeconds": 540, "metrics": {"connectionType": "DIRECT", "localCandidateType": "srflx", "remoteCandidateType": "srflx", "roundTripMs": 31}},
-    {"key": "call_olga_missed", "conversation": "olga_archived", "initiatedBy": "anna", "contactIdentity": "olga_max", "deliveryConnection": "max", "kind": "AUDIO", "status": "MISSED", "daysAgo": 12},
-    {"key": "call_viktor_declined", "conversation": "viktor_wholesale", "initiatedBy": "svetlana", "contactIdentity": "viktor_tg", "deliveryConnection": "tg", "kind": "AUDIO", "status": "DECLINED", "endedBy": "CUSTOMER", "minutesAgo": 4185},
-    {"key": "call_sergey_expired", "conversation": "portal_sergey", "initiatedBy": "artem", "contactIdentity": "sergey_web", "deliveryConnection": "web", "kind": "AUDIO", "status": "EXPIRED", "daysAgo": 6, "invite": {"deliveryStatus": "DELIVERED", "expiredMinutesAfter": 2}}
+    {
+      "key": "call_maria",
+      "conversation": "maria_measure",
+      "initiatedBy": "anna",
+      "contactIdentity": "maria_tg",
+      "deliveryConnection": "tg",
+      "kind": "AUDIO",
+      "status": "ENDED",
+      "endedBy": "STAFF",
+      "daysAgo": 24,
+      "durationSeconds": 262,
+      "metrics": {
+        "connectionType": "RELAY",
+        "localCandidateType": "relay",
+        "remoteCandidateType": "relay",
+        "roundTripMs": 64
+      }
+    },
+    {
+      "key": "call_olga_video",
+      "conversation": "olga_return",
+      "initiatedBy": "elena",
+      "contactIdentity": "olga_tg",
+      "deliveryConnection": "tg",
+      "kind": "VIDEO",
+      "status": "ENDED",
+      "endedBy": "CUSTOMER",
+      "minutesAgo": 107,
+      "durationSeconds": 95,
+      "metrics": {
+        "connectionType": "DIRECT",
+        "localCandidateType": "srflx",
+        "remoteCandidateType": "srflx",
+        "roundTripMs": 31
+      }
+    },
+    {
+      "key": "call_sergey_missed",
+      "conversation": "sergey_address",
+      "initiatedBy": "elena",
+      "contactIdentity": "sergey_tg",
+      "deliveryConnection": "tg",
+      "kind": "AUDIO",
+      "status": "MISSED",
+      "hoursAgo": 30,
+      "minutesAgo": 6
+    },
+    {
+      "key": "call_viktor_declined",
+      "conversation": "viktor_wholesale",
+      "initiatedBy": "kirill",
+      "contactIdentity": "viktor_tg",
+      "deliveryConnection": "tg",
+      "kind": "AUDIO",
+      "status": "DECLINED",
+      "endedBy": "CUSTOMER",
+      "daysAgo": 3
+    },
+    {
+      "key": "call_sergey_expired",
+      "conversation": "portal_sergey",
+      "initiatedBy": "igor",
+      "contactIdentity": "sergey_web",
+      "deliveryConnection": "web_account",
+      "kind": "AUDIO",
+      "status": "EXPIRED",
+      "daysAgo": 6,
+      "invite": {
+        "deliveryStatus": "DELIVERED",
+        "expiredMinutesAfter": 2
+      }
+    }
   ],
   "notifications": [
-    {"type": "DIALOG_WAITING", "level": "WARNING", "title": "Ирина Левина ждёт оператора", "body": "Заказ 4390: клиент попросил человека. Ждёт 1 ч 50 мин.", "targetRoute": "chat", "targetConversation": "irina_status", "audience": "ALL", "minutesAgo": 110},
-    {"type": "DIALOG_WAITING", "level": "WARNING", "title": "Ольга Мельник ждёт оператора", "body": "Возврат: цвет не совпал с сайтом.", "targetRoute": "chat", "targetConversation": "olga_return", "audience": "ALL", "minutesAgo": 21},
-    {"type": "DIALOG_WAITING", "level": "WARNING", "title": "Полина Ракитина ждёт оператора", "body": "Почта: не приходит письмо для сброса пароля.", "targetRoute": "chat", "targetConversation": "polina_password", "audience": "ALL", "minutesAgo": 200, "readBy": ["anna", "artem"]},
-    {"type": "DIALOG_NEW_MESSAGE", "level": "INFO", "title": "Новое сообщение от Марии Соколовой", "body": "«Спасибо, понял»", "targetRoute": "chat", "targetConversation": "maria_delivery", "audience": "USER", "recipientUser": "anna", "minutesAgo": 4},
-    {"type": "INTEGRATION_ERROR", "level": "CRITICAL", "title": "Telegram · бот доставки: ошибка подключения", "body": "401 Unauthorized: bot token was revoked in @BotFather. Проверьте токен в настройках подключения.", "targetRoute": "settings", "audience": "OWNER", "minutesAgo": 4200},
-    {"type": "RELEASE_PUBLISHED", "level": "SUCCESS", "title": "Обновление Chatbolls: голосовые сообщения", "body": "Операторы могут отправлять голосовые в Telegram и MAX, входящие расшифровываются одной кнопкой.", "targetRoute": "chat", "audience": "ALL", "daysAgo": 2, "readBy": ["anna", "dmitry", "svetlana"]}
+    {
+      "type": "DIALOG_WAITING",
+      "level": "WARNING",
+      "title": "Дмитрий Орлов ждёт оператора",
+      "body": "Web Chat: клиент попросил сотрудника. Ждёт 6 мин.",
+      "targetRoute": "chat",
+      "targetConversation": "dmitry_custom",
+      "audience": "ALL",
+      "minutesAgo": 10
+    },
+    {
+      "type": "DIALOG_NEW_MESSAGE",
+      "level": "INFO",
+      "title": "Новое голосовое от Ольги Мельник",
+      "body": "«А по субботам почта доставляет посылки?»",
+      "targetRoute": "chat",
+      "targetConversation": "olga_return",
+      "audience": "USER",
+      "recipientUser": "elena",
+      "minutesAgo": 105
+    },
+    {
+      "type": "DIALOG_NEW_MESSAGE",
+      "level": "INFO",
+      "title": "Новое сообщение от Марии Соколовой",
+      "body": "«Хорошо, жду»",
+      "targetRoute": "chat",
+      "targetConversation": "maria_delivery",
+      "audience": "ALL",
+      "minutesAgo": 4
+    },
+    {
+      "type": "INTEGRATION_ERROR",
+      "level": "CRITICAL",
+      "title": "Telegram · бот доставки: ошибка подключения",
+      "body": "401 Unauthorized: bot token was revoked in @BotFather. Проверьте токен в настройках подключения.",
+      "targetRoute": "settings",
+      "audience": "OWNER",
+      "minutesAgo": 4200
+    },
+    {
+      "type": "RELEASE_PUBLISHED",
+      "level": "SUCCESS",
+      "title": "Обновление Chatbolls: голосовые сообщения",
+      "body": "Операторы могут отправлять голосовые в Telegram и MAX, входящие расшифровываются одной кнопкой.",
+      "targetRoute": "chat",
+      "audience": "ALL",
+      "daysAgo": 2,
+      "readBy": [
+        "elena",
+        "anna",
+        "svetlana"
+      ]
+    }
   ],
   "messengerBindings": [
-    {"user": "anna", "connection": "tg", "externalChatId": "482900010", "pushTypes": ["DIALOG_WAITING", "DIALOG_NEW_MESSAGE", "INTEGRATION_ERROR"]},
-    {"user": "svetlana", "connection": "tg", "externalChatId": "482900011", "pushTypes": ["DIALOG_WAITING"]}
+    {
+      "user": "elena",
+      "connection": "tg",
+      "externalChatId": "482900010",
+      "pushTypes": [
+        "DIALOG_WAITING",
+        "DIALOG_NEW_MESSAGE",
+        "INTEGRATION_ERROR"
+      ]
+    },
+    {
+      "user": "svetlana",
+      "connection": "tg",
+      "externalChatId": "482900011",
+      "pushTypes": [
+        "DIALOG_WAITING"
+      ]
+    }
   ],
   "messengerBindingCodes": [
-    {"user": "dmitry", "connection": "tg", "code": "DEMO-7K2P", "expiresInMinutes": 25}
+    {
+      "user": "igor",
+      "connection": "tg",
+      "code": "DEMO-7K2P",
+      "expiresInMinutes": 25
+    }
   ]
 }

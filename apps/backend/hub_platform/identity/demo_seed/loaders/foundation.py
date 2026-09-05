@@ -11,6 +11,7 @@ from datetime import timedelta
 
 from hub_platform.identity.audit import record_audit_event
 from hub_platform.identity.auth.totp_utils import _generate_totp_secret
+from hub_platform.identity.avatars import image_type, set_user_avatar
 from hub_platform.identity.demo_seed import manifest
 from hub_platform.identity.demo_seed.loaders.common import backdate, moment, now
 from hub_platform.identity.demo_seed.refs import DemoRefs
@@ -26,7 +27,9 @@ def load(context: TenantContext, refs: DemoRefs) -> None:
     current = now()
 
     for item in data.get("groups", []):
-        group, _ = EmployeeGroup.objects.get_or_create(organization=organization, name=item["name"])
+        group, _ = EmployeeGroup.objects.get_or_create(
+            organization=organization, name=item["name"], defaults={"color": item.get("color", "")}
+        )
         refs.groups[item["key"]] = group
 
     password = data["demoPassword"]
@@ -82,6 +85,13 @@ def _ensure_account(refs: DemoRefs, item: dict, password: str, current) -> None:
             user.totp_enabled = True
             user.totp_secret = _generate_totp_secret()
         user.save()
+        # Фото сотрудника (дизайн-базлайн v2) — из медиа демо.
+        avatar = item.get("avatar")
+        if avatar and manifest.media_exists(f"avatars/{avatar}"):
+            payload = manifest.media_bytes(f"avatars/{avatar}")
+            detected = image_type(payload)
+            if detected is not None:
+                set_user_avatar(user, payload, detected[0], detected[1])
     refs.users[item["key"]] = user
 
     membership, membership_created = OrganizationMembership.objects.get_or_create(

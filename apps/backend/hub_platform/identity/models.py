@@ -47,6 +47,17 @@ class UiTheme(models.TextChoices):
     SYSTEM = "SYSTEM", "Как в системе"
 
 
+def user_storage():
+    from django.core.files.storage import storages
+
+    return storages["users"]
+
+
+def user_avatar_upload_path(instance: "HumanUser", filename: str) -> str:
+    suffix = Path(filename).suffix.lower()
+    return f"users/{instance.id}/avatar-{uuid.uuid4()}{suffix}"
+
+
 class HumanUser(AbstractUser):
     username = None
     email = models.EmailField(unique=True)
@@ -58,6 +69,10 @@ class HumanUser(AbstractUser):
     # тема и акцентный HEX-цвет; пустой акцент — дефолтный синий #1677ff.
     ui_theme = models.CharField(max_length=8, choices=UiTheme.choices, default=UiTheme.SYSTEM)
     ui_accent = models.CharField(max_length=9, blank=True)
+    # Фото сотрудника (дизайн-базлайн v2): видно коллегам в сайдбаре, подписи
+    # сообщений, выборе ответственного. Загружается в профиле.
+    avatar = models.FileField(upload_to=user_avatar_upload_path, storage=user_storage, max_length=512, blank=True, default="")
+    avatar_content_type = models.CharField(max_length=64, blank=True, default="")
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS: list[str] = []

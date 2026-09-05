@@ -17,6 +17,8 @@ class EmployeeGroup(models.Model):
         Organization, on_delete=models.PROTECT, related_name="employee_groups"
     )
     name = models.CharField(max_length=120)
+    # Цвет точки группы в чате (дизайн-базлайн v2); пустой — палитра по id.
+    color = models.CharField(max_length=20, blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

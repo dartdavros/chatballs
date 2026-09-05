@@ -22,6 +22,7 @@ from hub_platform.events.handlers import dispatch
 from hub_platform.events.models import OutboxEvent
 from hub_platform.identity.demo_models import DemoDataset, DemoDatasetStatus, DemoRecord
 from hub_platform.identity.demo_seed import service
+from hub_platform.identity.group_models import EmployeeGroup
 from hub_platform.identity.models import HumanUser, Organization, OrganizationMembership
 from hub_platform.identity.setup import SetupInput, complete_setup
 from hub_platform.tenancy.context import TenantActorKind, TenantContext
@@ -63,6 +64,11 @@ def _counts() -> dict[str, int]:
 
 
 @override_settings(MEDIA_ROOT=_MEDIA_ROOT)
+def maria_contact_fields(organization) -> tuple[str, str, str]:
+    contact = Contact.objects.get(organization=organization, name="Мария Соколова")
+    return contact.description, contact.company, contact.city
+
+
 class DemoDatasetTests(TestCase):
     def setUp(self) -> None:
         result = complete_setup(SetupInput(**OWNER))
@@ -99,11 +105,11 @@ class DemoDatasetTests(TestCase):
         self.assertEqual(memberships.filter(blocked_at__isnull=False).count(), 1)
         anna = HumanUser.objects.get(email="a.kim@atelie-nord.ru")
         self.assertTrue(anna.check_password("Chatbolls-Demo-2026"))
-        self.assertTrue(HumanUser.objects.get(email="i.saveliev@atelie-nord.ru").totp_enabled)
+        self.assertTrue(HumanUser.objects.get(email="k.volkov@atelie-nord.ru").totp_enabled)
 
         # Агенты: активный с AI, черновик без AI, выключенный канал.
         agents = AIAgent.objects.filter(channel__organization=organization)
-        self.assertEqual(agents.filter(status=AIAgentStatus.ACTIVE).count(), 2)
+        self.assertEqual(agents.filter(status=AIAgentStatus.ACTIVE).count(), 3)
         self.assertEqual(agents.filter(status=AIAgentStatus.DRAFT).count(), 1)
         self.assertEqual(organization.channels.filter(is_active=False).count(), 1)
 
@@ -115,17 +121,26 @@ class DemoDatasetTests(TestCase):
         conversations = Conversation.objects.filter(organization=organization)
         self.assertEqual(conversations.filter(lifecycle=LifecycleState.SPAM).count(), 1)
         self.assertGreaterEqual(conversations.filter(lifecycle=LifecycleState.CLOSED).count(), 3)
-        self.assertEqual(conversations.filter(archived_at__isnull=False).count(), 1)
-        self.assertGreaterEqual(conversations.filter(control_mode="PAUSED", lifecycle="OPEN").count(), 3)
+        self.assertEqual(conversations.filter(archived_at__isnull=False).count(), 3)
+        self.assertEqual(conversations.filter(control_mode="PAUSED", lifecycle="OPEN").count(), 1)
+        # Основной список — ровно семь диалогов кадров (архив и спам скрыты).
+        self.assertEqual(conversations.filter(archived_at__isnull=True).exclude(lifecycle=LifecycleState.SPAM).exclude(contact=Contact.objects.get(organization=organization, name="Мария Соколова"), lifecycle=LifecycleState.CLOSED).count(), 7)
         self.assertTrue(conversations.filter(assigned_operator=anna).exists())
+        elena = HumanUser.objects.get(email="e.kuznetsova@atelie-nord.ru")
+        self.assertTrue(elena.avatar, "фото сотрудника из медиа демо")
+        self.assertEqual(conversations.filter(assigned_operator=elena, lifecycle="OPEN").count(), 2)
         self.assertTrue(conversations.filter(previous_conversation__isnull=False).exists())
-        self.assertTrue(conversations.filter(labels__name="Срочно").exists())
-        # История контакта: у Марии два диалога.
+        self.assertTrue(conversations.filter(labels__name="срочно").exists())
+        self.assertEqual(EmployeeGroup.objects.get(organization=organization, name="Поддержка").color, "#2aa876")
+        self.assertEqual(maria_contact_fields(organization), ("Заказ 4471 — комплект штор. Постоянный клиент с августа, предпочитает Telegram.", "", ""))
+        # История контакта: у Марии три диалога (кадр F).
         maria = Contact.objects.get(organization=organization, name="Мария Соколова")
-        self.assertEqual(conversations.filter(contact=maria).count(), 2)
+        self.assertEqual(conversations.filter(contact=maria).count(), 3)
         self.assertTrue(maria.avatar_url.startswith("/api/v1/demo-media/avatars/"))
         # Веб-гость получил настоящую сессию виджета.
-        self.assertTrue(conversations.filter(contact__name__startswith="Веб-гость").exists())
+        self.assertTrue(conversations.filter(contact__name__startswith="Гость ·").exists())
+        # Гость, который представился (кадр B): имя и фото у анонимной сессии.
+        self.assertTrue(conversations.filter(contact__name="Дмитрий Орлов", connection__provider="WEB").exists())
         # Сообщения: контакт-шаринг и системные события есть; голосовые — при наличии файлов.
         messages = Message.objects.filter(conversation__organization=organization)
         self.assertTrue(messages.filter(kind=MessageKind.CONTACT).exists())
@@ -180,8 +195,8 @@ class DemoDatasetApiTests(TestCase):
         self.assertGreater(installed["recordsCount"], 200)
         # Витринные учётки: админ и сотрудники из разных групп, с паролем.
         accounts = installed["accounts"]
-        self.assertEqual([a["email"] for a in accounts], ["a.kim@atelie-nord.ru", "d.orlov@atelie-nord.ru", "a.gusev@atelie-nord.ru"])
-        self.assertEqual(accounts[1]["groups"], ["Консультанты"])
+        self.assertEqual([a["email"] for a in accounts], ["e.kuznetsova@atelie-nord.ru", "s.petrova@atelie-nord.ru", "i.saveliev@atelie-nord.ru"])
+        self.assertEqual(accounts[1]["groups"], ["Операторы"])
         self.assertEqual(accounts[2]["groups"], ["Поддержка"])
         self.assertTrue(all(a["password"] == "Chatbolls-Demo-2026" for a in accounts))
         self.assertEqual(self.client.post("/api/v1/company/demo/").status_code, 400)
@@ -197,7 +212,7 @@ class DemoDatasetApiTests(TestCase):
         self.client.post("/api/v1/company/demo/")
         self._dispatch_pending()
         employee = APIClient()
-        employee.login(username="d.orlov@atelie-nord.ru", password="Chatbolls-Demo-2026")
+        employee.login(username="s.petrova@atelie-nord.ru", password="Chatbolls-Demo-2026")
         self.assertEqual(employee.post("/api/v1/company/demo/").status_code, 403)
         self.assertEqual(employee.delete("/api/v1/company/demo/").status_code, 403)
 

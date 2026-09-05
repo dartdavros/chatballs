@@ -1,6 +1,7 @@
 from rest_framework.request import Request
 
 from hub_platform.identity.governance import employee_management_flags
+from hub_platform.identity.avatars import user_avatar_url
 from hub_platform.identity.models import AuditEvent, OrganizationMembership
 
 
@@ -18,6 +19,7 @@ def employee_payload(
         "id": profile.user_id,
         "email": profile.user.email,
         "fullName": profile.user.full_name,
+        "avatarUrl": user_avatar_url(profile.user, profile.organization.public_id),
         "role": profile.role,
         "positionTitle": profile.position_title,
         "phone": profile.phone,

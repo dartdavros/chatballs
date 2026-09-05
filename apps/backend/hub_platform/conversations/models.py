@@ -20,6 +20,11 @@ class Contact(models.Model):
     # getUpdates, поэтому для него поле остаётся пустым. Хранится только URL —
     # само изображение живёт на стороне провайдера.
     avatar_url = models.URLField(max_length=512, blank=True, default="")
+    # Карточка контакта (дизайн-базлайн v2, решение 5): описание, компания, город —
+    # заполняет оператор.
+    description = models.TextField(blank=True, default="")
+    company = models.CharField(max_length=160, blank=True, default="")
+    city = models.CharField(max_length=120, blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:

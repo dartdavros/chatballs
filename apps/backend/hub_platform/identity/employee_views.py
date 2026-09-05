@@ -1,4 +1,5 @@
 from django.db import transaction
+from django.http import FileResponse
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -32,6 +33,28 @@ def _set_groups(profile: OrganizationMembership, groups) -> None:
             for group in groups
         ]
     )
+
+
+class EmployeeAvatarView(APIView):
+    """Фото коллеги — любому участнику организации (сайдбар, подписи, выбор ответственного)."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request, user_id: int) -> Response | FileResponse:
+        membership = (
+            OrganizationMembership.objects.select_related("user")
+            .filter(organization=request.tenant_context.organization, user_id=user_id)
+            .first()
+        )
+        if membership is None or not membership.user.avatar:
+            return Response({"detail": "Фото не найдено"}, status=404)
+        response = FileResponse(
+            membership.user.avatar.open("rb"),
+            content_type=membership.user.avatar_content_type or "application/octet-stream",
+            filename="avatar",
+        )
+        response["Cache-Control"] = "private, max-age=86400"
+        return response
 
 
 class EmployeeListView(APIView):

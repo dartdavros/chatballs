@@ -1,4 +1,5 @@
 from hub_platform.conversations.models import ConnectionIdentity, Conversation, Message, MessageAuthor
+from hub_platform.identity.avatars import user_avatar_url_in
 from hub_platform.integrations.models import IntegrationProvider
 
 
@@ -9,6 +10,7 @@ def message_payload(message: Message) -> dict[str, object]:
         "authorUserId": message.author_user_id,
         # Подпись исходящего сообщения сотрудника (дизайн-базлайн v2, 4a).
         "authorName": (message.author_user.full_name or message.author_user.email) if message.author_user_id and message.author_user else "",
+        "authorAvatarUrl": user_avatar_url_in(message.author_user, message.organization_id) if message.author_user_id and message.author_user else None,
         "kind": message.kind,
         "text": message.text,
         "contentHtml": message.content_html,
@@ -140,6 +142,9 @@ def conversation_payload(
                 "name": conversation.contact.name,
                 "phone": conversation.contact.phone,
                 "avatarUrl": conversation.contact.avatar_url,
+                "description": conversation.contact.description,
+                "company": conversation.contact.company,
+                "city": conversation.contact.city,
                 "email": _contact_email(conversation),
                 "username": _contact_username(conversation) if with_messages else "",
             }
@@ -158,6 +163,7 @@ def conversation_payload(
                     conversation.assigned_operator.full_name
                     or conversation.assigned_operator.email
                 ),
+                "avatarUrl": user_avatar_url_in(conversation.assigned_operator, conversation.organization_id),
             }
             if conversation.assigned_operator_id
             else None
@@ -166,7 +172,7 @@ def conversation_payload(
             viewer_id and conversation.assigned_operator_id == viewer_id
         ),
         "group": (
-            {"id": conversation.group_id, "name": conversation.group.name}
+            {"id": conversation.group_id, "name": conversation.group.name, "color": conversation.group.color}
             if conversation.group_id
             else None
         ),

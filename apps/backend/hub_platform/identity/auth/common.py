@@ -1,6 +1,7 @@
 from django.conf import settings
 from rest_framework.request import Request
 
+from hub_platform.identity.avatars import own_avatar_url
 from hub_platform.identity.models import HumanUser, Organization, OrganizationMembership
 from hub_platform.identity.policy import get_effective_access
 from hub_platform.identity.sessions import revoke_user_sessions
@@ -58,6 +59,7 @@ def _user_payload(user: HumanUser) -> dict[str, object]:
         "deliveryMode": settings.CUS_DELIVERY_MODE,
         "uiTheme": user.ui_theme,
         "uiAccent": user.ui_accent,
+        "avatarUrl": own_avatar_url(user),
         "memberships": memberships,
     }
 

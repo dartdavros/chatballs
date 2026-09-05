@@ -59,6 +59,45 @@ class TenantFileSystemStorage(TenantStorageGuardMixin, FileSystemStorage):
     pass
 
 
+def _assert_user_key(name: str) -> None:
+    normalized = str(name).replace("\\", "/").lstrip("/")
+    if not normalized.startswith("users/"):
+        raise SuspiciousFileOperation("User storage key must live under users/")
+
+
+class UserStorageGuardMixin:
+    """Хранилище файлов пользователя (фото профиля): ключи только под users/,
+    без тенантного контекста — пользователь общий для организаций."""
+
+    def open(self, name, mode="rb"):
+        _assert_user_key(name)
+        return super().open(name, mode)
+
+    def save(self, name, content, max_length=None):
+        _assert_user_key(name)
+        return super().save(name, content, max_length=max_length)
+
+    def delete(self, name):
+        _assert_user_key(name)
+        return super().delete(name)
+
+    def exists(self, name):
+        _assert_user_key(name)
+        return super().exists(name)
+
+    def size(self, name):
+        _assert_user_key(name)
+        return super().size(name)
+
+    def path(self, name):
+        _assert_user_key(name)
+        return super().path(name)
+
+
+class UserFileSystemStorage(UserStorageGuardMixin, FileSystemStorage):
+    pass
+
+
 try:
     from storages.backends.s3 import S3Storage
 except ImportError:  # pragma: no cover - deployment configuration guard
@@ -70,8 +109,14 @@ if S3Storage is not None:
     class TenantS3Storage(TenantStorageGuardMixin, S3Storage):
         pass
 
+    class UserS3Storage(UserStorageGuardMixin, S3Storage):
+        pass
+
 else:
 
     class TenantS3Storage:
         def __init__(self, *args, **kwargs) -> None:
             raise ImproperlyConfigured("django-storages[s3] is required for S3 storage")
+
+    class UserS3Storage(TenantS3Storage):
+        pass

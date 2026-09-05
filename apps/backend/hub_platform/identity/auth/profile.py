@@ -1,6 +1,8 @@
 from django.contrib.auth import login
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
+from django.http import FileResponse
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -9,6 +11,7 @@ from rest_framework.views import APIView
 from hub_platform.identity.audit import record_audit_event
 from hub_platform.identity.auth.common import _revoke_other_user_sessions, _user_payload
 from hub_platform.tenancy.ingress import user_requires_totp
+from hub_platform.identity.avatars import delete_user_avatar, replace_user_avatar
 from hub_platform.identity.models import HumanUser
 
 
@@ -31,6 +34,48 @@ class ProfileUpdateView(APIView):
         request.user.save(update_fields=["full_name", "email"])
         record_audit_event(
             action="identity.profile_updated",
+            actor=request.user,
+            object_type="HumanUser",
+            object_id=str(request.user.id),
+            request=request,
+        )
+        return Response({"authenticated": True, "user": _user_payload(request.user)})
+
+
+class ProfileAvatarView(APIView):
+    """Фото профиля: показать, заменить, удалить (дизайн-базлайн v2)."""
+
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def get(self, request: Request) -> Response | FileResponse:
+        user = request.user
+        if not user.avatar:
+            return Response({"detail": "Фото не задано"}, status=404)
+        return FileResponse(
+            user.avatar.open("rb"),
+            content_type=user.avatar_content_type or "application/octet-stream",
+            filename="avatar",
+        )
+
+    def post(self, request: Request) -> Response:
+        upload = request.FILES.get("file")
+        if upload is None:
+            return Response({"detail": "Выберите файл фото"}, status=400)
+        replace_user_avatar(request.user, upload)
+        record_audit_event(
+            action="identity.avatar_updated",
+            actor=request.user,
+            object_type="HumanUser",
+            object_id=str(request.user.id),
+            request=request,
+        )
+        return Response({"authenticated": True, "user": _user_payload(request.user)})
+
+    def delete(self, request: Request) -> Response:
+        delete_user_avatar(request.user)
+        record_audit_event(
+            action="identity.avatar_deleted",
             actor=request.user,
             object_type="HumanUser",
             object_id=str(request.user.id),

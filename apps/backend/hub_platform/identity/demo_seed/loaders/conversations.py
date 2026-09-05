@@ -43,6 +43,9 @@ def load(context: TenantContext, refs: DemoRefs) -> None:
             defaults={
                 "phone": item.get("phone", ""),
                 "avatar_url": AVATAR_URL.format(name=item["avatar"]) if item.get("avatar") else "",
+                "description": item.get("description", ""),
+                "company": item.get("company", ""),
+                "city": item.get("city", ""),
             },
         )
         if created:
@@ -107,7 +110,15 @@ def _web_guest(context: TenantContext, refs: DemoRefs, item: dict) -> tuple[Cont
     identity = ConnectionIdentity.objects.get(
         connection=refs.integrations[item["connection"]], external_user_id=session["sessionId"]
     )
-    return identity.contact, identity, session["sessionId"]
+    contact = identity.contact
+    # Гость, который представился в виджете (кадр B: «Дмитрий Орлов», Web Chat).
+    if item.get("guestName") or item.get("guestAvatar"):
+        if item.get("guestName"):
+            contact.name = item["guestName"]
+        if item.get("guestAvatar"):
+            contact.avatar_url = AVATAR_URL.format(name=item["guestAvatar"])
+        contact.save(update_fields=["name", "avatar_url"])
+    return contact, identity, session["sessionId"]
 
 
 def _ensure_conversation(context: TenantContext, refs: DemoRefs, item: dict, current) -> None:

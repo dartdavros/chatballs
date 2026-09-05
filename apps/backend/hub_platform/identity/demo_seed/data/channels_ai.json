@@ -14,7 +14,7 @@
       "key": "consultant",
       "code": "consultant",
       "name": "Консультант",
-      "group": "consultants",
+      "group": "operators",
       "aiStatus": "ACTIVE",
       "persona": "Ты — консультант ателье «Норд». Ателье шьёт шторы, тюль и текстиль для дома по индивидуальным размерам, доставляет по России.",
       "tone": "Дружелюбно, коротко, без канцелярита. Обращайся по имени, если клиент представился.",
@@ -40,7 +40,6 @@
       "code": "site-support",
       "name": "Поддержка сайта",
       "group": "support",
-      "product": "atelie-nord-site",
       "aiStatus": "ACTIVE",
       "persona": "Ты — помощник службы поддержки сайта ателье «Норд»: личный кабинет, заказы, оплата, доставка, возвраты.",
       "tone": "Спокойно и по делу.",
@@ -56,6 +55,33 @@
       ],
       "limits": {},
       "createdDaysAgo": 30,
+      "policy": {
+        "requires_authenticated_product_identity": false,
+        "allow_anonymous_sessions": true,
+        "allow_self_reported_contact": true
+      }
+    },
+    {
+      "key": "portal",
+      "code": "portal",
+      "name": "Личный кабинет",
+      "group": "support",
+      "product": "atelie-nord-site",
+      "aiStatus": "ACTIVE",
+      "persona": "Ты — помощник личного кабинета ателье «Норд»: заказы, оплата, статусы, доставка, возвраты. Клиент авторизован — его заказы известны.",
+      "tone": "Спокойно и по делу.",
+      "instructions": "Опирайся на данные заказа клиента и знания о кабинете. Жалобы на оплату — передай сотруднику.",
+      "knowledge": [
+        "account",
+        "delivery",
+        "returns"
+      ],
+      "portalArticles": [
+        "lichnyj-kabinet",
+        "vozvrat-i-obmen"
+      ],
+      "limits": {},
+      "createdDaysAgo": 28,
       "policy": {
         "requires_authenticated_product_identity": true,
         "allow_anonymous_sessions": false,
@@ -80,7 +106,7 @@
       "key": "legacy",
       "code": "old-line",
       "name": "Старая линия (Instagram)",
-      "group": "operators",
+      "group": "vip",
       "isActive": false,
       "aiStatus": "DISABLED",
       "persona": "Консультант ателье.",
@@ -134,8 +160,28 @@
     {
       "key": "web",
       "provider": "WEB",
-      "name": "Виджет сайта atelie-nord.ru",
+      "name": "Web Chat · atelie-nord.ru",
       "agent": "consultant",
+      "status": "OK",
+      "config": {
+        "title": "Ателье Норд",
+        "greeting": "Здравствуйте! Подскажем по тканям, срокам и заказам.",
+        "quick_replies": [
+          "Сроки пошива",
+          "Статус заказа",
+          "Возврат"
+        ],
+        "allowed_origins": [
+          "https://atelie-nord.ru"
+        ]
+      },
+      "createdDaysAgo": 28
+    },
+    {
+      "key": "web_help",
+      "provider": "WEB",
+      "name": "Web Chat · раздел «Помощь»",
+      "agent": "support",
       "status": "OK",
       "config": {
         "title": "Ателье Норд",
@@ -154,8 +200,8 @@
     {
       "key": "web_account",
       "provider": "WEB",
-      "name": "Виджет личного кабинета",
-      "agent": "support",
+      "name": "Web Chat · личный кабинет",
+      "agent": "portal",
       "status": "OK",
       "config": {
         "title": "Поддержка · Ателье Норд",
@@ -316,6 +362,10 @@
       "support": [
         3,
         9
+      ],
+      "portal": [
+        1,
+        4
       ]
     },
     "embeddingPerDay": [
