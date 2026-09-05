@@ -16,7 +16,7 @@ from chatballs.notifications.services import notify
 from chatballs.notifications.selectors import visible_for
 
 
-def _notifier(organization, provider=IntegrationProvider.TELEGRAM, username="edevs_notify_bot"):
+def _notifier(organization, provider=IntegrationProvider.TELEGRAM, username="chatballs_notify_bot"):
     return Integration.objects.create(
         organization=organization,
         kind=IntegrationKind.MESSENGER,
@@ -39,9 +39,9 @@ class NotifierTestBase(TestCase):
 class BindingTests(NotifierTestBase):
     def test_deep_link_for_telegram_and_max(self) -> None:
         code = issue_binding_code(context=self.context, integration=self.integration)
-        self.assertEqual(deep_link(self.integration, code.code), f"https://t.me/edevs_notify_bot?start={code.code}")
-        max_bot = _notifier(self.organization, provider=IntegrationProvider.MAX, username="edevs_max_bot")
-        self.assertEqual(deep_link(max_bot, "abc"), "https://max.ru/edevs_max_bot?start=abc")
+        self.assertEqual(deep_link(self.integration, code.code), f"https://t.me/chatballs_notify_bot?start={code.code}")
+        max_bot = _notifier(self.organization, provider=IntegrationProvider.MAX, username="chatballs_max_bot")
+        self.assertEqual(deep_link(max_bot, "abc"), "https://max.ru/chatballs_max_bot?start=abc")
 
     def test_start_code_creates_binding_and_confirms(self) -> None:
         code = issue_binding_code(context=self.context, integration=self.integration)
@@ -63,7 +63,7 @@ class BindingTests(NotifierTestBase):
     def test_binding_is_exclusive_across_messengers(self) -> None:
         # Уведомления идут в один мессенджер: привязка MAX заменяет привязку TG.
         MessengerBinding.objects.create(user=self.owner, integration=self.integration, external_chat_id="111")
-        max_bot = _notifier(self.organization, provider=IntegrationProvider.MAX, username="edevs_max_bot")
+        max_bot = _notifier(self.organization, provider=IntegrationProvider.MAX, username="chatballs_max_bot")
         code = issue_binding_code(context=self.context, integration=max_bot)
         inbound = InboundMessage(external_id="3", user_id="9", chat_id="9", text=f"/start {code.code}", display_name="Андрей")
         with mock.patch("chatballs.notifications.binding.transports.send_reply", return_value=True):
@@ -93,7 +93,7 @@ class DeliveryTests(NotifierTestBase):
                 context=self.context,
                 type=NotificationType.DIALOG_WAITING,
                 audience=NotificationAudience.OPERATORS,
-                title="Новый диалог · Edevs — сайт",
+                title="Новый диалог · Acme — сайт",
                 body="Гость · TELEGRAM: Привет",
             )
             self._dispatch_last_event()
@@ -156,7 +156,7 @@ class PollerSelectionTests(NotifierTestBase):
         from chatballs.channels.models import Channel
         from chatballs.conversations import poller
 
-        channel = Channel.objects.create(organization=self.organization, code="app-sales", name="FoxRay — продажи")
+        channel = Channel.objects.create(organization=self.organization, code="app-sales", name="Acme — продажи")
         client_bot = Integration.objects.create(
             organization=self.organization, kind=IntegrationKind.MESSENGER,
             provider=IntegrationProvider.TELEGRAM, name="client-bot", secret="token", channel=channel,
@@ -227,7 +227,7 @@ class BindingApiTests(NotifierTestBase):
         issued = self.client.post(f"/api/v1/notifications/messenger-bindings/{self.integration.id}/")
         self.assertEqual(issued.status_code, 201)
         payload = issued.json()
-        self.assertTrue(payload["deepLink"].startswith("https://t.me/edevs_notify_bot?start="))
+        self.assertTrue(payload["deepLink"].startswith("https://t.me/chatballs_notify_bot?start="))
 
         MessengerBinding.objects.create(user=self.owner, integration=self.integration, external_chat_id="777")
         self.assertTrue(self.client.get("/api/v1/notifications/messenger-bindings/").json()["items"][0]["bound"])

@@ -15,7 +15,7 @@ from chatballs.support.models import (
     ProductSupportContract,
     SupportIdentitySnapshot,
 )
-from chatballs.support.test_helpers import FOXRAY_DATA, make_support_token
+from chatballs.support.test_helpers import ACME_DATA, make_support_token
 from chatballs.webchat.models import WebChatWidgetMode
 from chatballs.webchat.testing import create_web_widget
 
@@ -87,7 +87,7 @@ class SupportSessionTests(TestCase):
         self.channel = Channel.objects.create(
             organization=self.organization,
             code="app-support",
-            name="FoxRay — поддержка",
+            name="Acme — поддержка",
             product=self.product,
             requires_authenticated_product_identity=True,
             allow_anonymous_sessions=False,
@@ -96,7 +96,7 @@ class SupportSessionTests(TestCase):
             allow_checkout_actions=False,
         )
         self.contract.allowed_channels.add(self.channel)
-        self.widget = create_web_widget(self.channel, name="FoxRay support widget")
+        self.widget = create_web_widget(self.channel, name="Acme support widget")
         self.client = APIClient()
 
     def _start(self, token: str, widget_key: str | None = None):
@@ -107,7 +107,7 @@ class SupportSessionTests(TestCase):
         )
 
     def test_happy_path_creates_snapshot_and_conversation(self) -> None:
-        token = make_support_token(secret=SECRET, data=FOXRAY_DATA)
+        token = make_support_token(secret=SECRET, data=ACME_DATA)
         response = self._start(token)
         self.assertEqual(response.status_code, 201, response.content)
         body = response.json()
@@ -133,14 +133,14 @@ class SupportSessionTests(TestCase):
         )
 
     def test_invalid_signature_denied(self) -> None:
-        token = make_support_token(secret="wrong-secret", data=FOXRAY_DATA)
+        token = make_support_token(secret="wrong-secret", data=ACME_DATA)
         response = self._start(token)
         self.assertEqual(response.status_code, 422)
         self.assertEqual(response.json()["error"], "support_unavailable")
         self._assert_denied_audit("TOKEN_SIGNATURE_INVALID")
 
     def test_expired_token_denied(self) -> None:
-        token = make_support_token(secret=SECRET, data=FOXRAY_DATA, exp_delta=-100)
+        token = make_support_token(secret=SECRET, data=ACME_DATA, exp_delta=-100)
         response = self._start(token)
         self.assertEqual(response.status_code, 422)
         self._assert_denied_audit("TOKEN_EXPIRED")
@@ -164,7 +164,7 @@ class SupportSessionTests(TestCase):
     def test_disabled_contract_denied(self) -> None:
         self.contract.status = ContractStatus.DISABLED
         self.contract.save(update_fields=["status"])
-        token = make_support_token(secret=SECRET, data=FOXRAY_DATA)
+        token = make_support_token(secret=SECRET, data=ACME_DATA)
         response = self._start(token)
         self.assertEqual(response.status_code, 422)
         self._assert_denied_audit("CONTRACT_DISABLED")
@@ -174,21 +174,21 @@ class SupportSessionTests(TestCase):
         # принимать support-токен.
         sales_channel = Channel.objects.create(
             organization=self.organization, code="app-sales-x",
-            name="FoxRay sales", product=self.product,
+            name="Acme sales", product=self.product,
         )
         invalid_widget = create_web_widget(
             sales_channel,
             name="Invalid support widget",
             mode=WebChatWidgetMode.AUTHENTICATED_PRODUCT,
         )
-        token = make_support_token(secret=SECRET, data=FOXRAY_DATA)
+        token = make_support_token(secret=SECRET, data=ACME_DATA)
         response = self._start(token, widget_key=invalid_widget.public_key)
         self.assertEqual(response.status_code, 422)
         self._assert_denied_audit("CHANNEL_NOT_SUPPORT")
 
     def test_channel_product_mismatch_denied(self) -> None:
         # iss=site, но канал привязан к app.
-        token = make_support_token(secret=SECRET, iss="site", data=FOXRAY_DATA)
+        token = make_support_token(secret=SECRET, iss="site", data=ACME_DATA)
         response = self._start(token)
         self.assertEqual(response.status_code, 422)
         self._assert_denied_audit("CHANNEL_PRODUCT_MISMATCH")
@@ -203,18 +203,18 @@ class SupportSessionTests(TestCase):
         self.assertEqual(response.json()["error"], "support_unavailable")
 
     def test_continue_session_reuses_open_conversation(self) -> None:
-        token1 = make_support_token(secret=SECRET, data=FOXRAY_DATA, jti="jti-1")
+        token1 = make_support_token(secret=SECRET, data=ACME_DATA, jti="jti-1")
         first = self._start(token1)
         self.assertEqual(first.status_code, 201)
         conv_id = first.json()["conversation"]["id"]
         # Повторный старт тем же subject → тот же открытый диалог.
-        token2 = make_support_token(secret=SECRET, data=FOXRAY_DATA, jti="jti-2")
+        token2 = make_support_token(secret=SECRET, data=ACME_DATA, jti="jti-2")
         second = self._start(token2)
         self.assertEqual(second.status_code, 201)
         self.assertEqual(second.json()["conversation"]["id"], conv_id)
 
     def test_raw_token_not_in_audit(self) -> None:
-        token = make_support_token(secret="wrong-secret", data=FOXRAY_DATA, jti="secret-jti-xyz")
+        token = make_support_token(secret="wrong-secret", data=ACME_DATA, jti="secret-jti-xyz")
         self._start(token)
         denied = AuditEvent.objects.filter(action="support.session_denied").first()
         self.assertIsNotNone(denied)

@@ -22,7 +22,7 @@ class ProductApiTests(TestCase):
                 {
                     "code": "academy",
                     "name": "Academy",
-                    "siteUrl": "https://academy.edevs.tech",
+                    "siteUrl": "https://academy.example.com",
                 }
             ),
             content_type="application/json",

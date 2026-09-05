@@ -74,7 +74,7 @@ class WebIntegrationCheckTests(TestCase):
 
 
 
-        self.channel = Channel.objects.create(organization=self.organization, code="edevs", name="Edevs — главный сайт")
+        self.channel = Channel.objects.create(organization=self.organization, code="acme", name="Acme — главный сайт")
 
 
 

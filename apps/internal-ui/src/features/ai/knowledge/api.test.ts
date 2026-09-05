@@ -48,7 +48,7 @@ describe("knowledge API", () => {
     await fetchKnowledgeList({
       category: 7,
       isEnabled: false,
-      search: "тариф FoxRay",
+      search: "тариф Acme",
     });
 
     const url = new URL(fetchMock.mock.calls[0][0], "https://app.example");
@@ -58,7 +58,7 @@ describe("knowledge API", () => {
     expect(Object.fromEntries(url.searchParams)).toEqual({
       category: "7",
       isEnabled: "false",
-      search: "тариф FoxRay",
+      search: "тариф Acme",
     });
   });
 
@@ -66,8 +66,8 @@ describe("knowledge API", () => {
     const fetchMock = mockSuccess({ items: [] });
 
     await fetchKnowledgeCategories();
-    await createKnowledgeCategory({ name: "FoxRay", parentId: 3, sortOrder: 20 });
-    await updateKnowledgeCategory(7, { name: "FoxRay Pro", parentId: null, sortOrder: 30 });
+    await createKnowledgeCategory({ name: "Acme", parentId: 3, sortOrder: 20 });
+    await updateKnowledgeCategory(7, { name: "Acme Pro", parentId: null, sortOrder: 30 });
 
     expect(fetchMock.mock.calls.map(([path]) => path)).toEqual([
       `/api/v1/organizations/${organizationPublicId}/ai/knowledge/categories/`,
@@ -75,12 +75,12 @@ describe("knowledge API", () => {
       `/api/v1/organizations/${organizationPublicId}/ai/knowledge/categories/7/`,
     ]);
     expect(JSON.parse(fetchMock.mock.calls[1][1].body)).toEqual({
-      name: "FoxRay",
+      name: "Acme",
       parentId: 3,
       sortOrder: 20,
     });
     expect(JSON.parse(fetchMock.mock.calls[2][1].body)).toEqual({
-      name: "FoxRay Pro",
+      name: "Acme Pro",
       parentId: null,
       sortOrder: 30,
     });

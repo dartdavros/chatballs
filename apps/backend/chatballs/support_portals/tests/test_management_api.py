@@ -21,13 +21,13 @@ class SupportPortalManagementTests(SupportPortalTestCase):
         widget_channel = Channel.objects.create(
             organization=self.organization,
             code="app-portal-chat",
-            name="FoxRay — чат портала",
+            name="Acme — чат портала",
             product=self.product,
             requires_authenticated_product_identity=False,
             allow_anonymous_sessions=True,
             allow_self_reported_contact=True,
         )
-        widget = create_web_widget(widget_channel, name="FoxRay portal widget")
+        widget = create_web_widget(widget_channel, name="Acme portal widget")
 
         options = self.client.get(
             f"/api/v1/support/portals/{portal_id}/support-channels/"

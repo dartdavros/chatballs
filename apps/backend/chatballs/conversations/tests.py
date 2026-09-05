@@ -52,10 +52,10 @@ class IngestLimitHandlingTests(TestCase):
     def setUp(self) -> None:
         bootstrap_owner(email="owner@example.com", password="temporary-password")
         self.organization = Organization.objects.get(slug="demo")
-        self.channel = Channel.objects.create(organization=self.organization, code="app-sales", name="FoxRay — продажи")
+        self.channel = Channel.objects.create(organization=self.organization, code="app-sales", name="Acme — продажи")
         AIAgent.objects.create(
             channel=self.channel,
-            name="FoxRay Agent",
+            name="Acme Agent",
             model="openai/gpt-4o-mini",
             status=AIAgentStatus.ACTIVE,
         )
@@ -179,10 +179,10 @@ class ContactShareIngestTests(TestCase):
     def setUp(self) -> None:
         bootstrap_owner(email="owner@example.com", password="temporary-password")
         self.organization = Organization.objects.get(slug="demo")
-        self.channel = Channel.objects.create(organization=self.organization, code="app-sales", name="FoxRay — продажи")
+        self.channel = Channel.objects.create(organization=self.organization, code="app-sales", name="Acme — продажи")
         AIAgent.objects.create(
             channel=self.channel,
-            name="FoxRay Agent",
+            name="Acme Agent",
             model="openai/gpt-4o-mini",
             status=AIAgentStatus.ACTIVE,
         )
@@ -233,7 +233,7 @@ class RequestContactApiTests(TestCase):
     def setUp(self) -> None:
         bootstrap_owner(email="owner@example.com", password="temporary-password")
         self.organization = Organization.objects.get(slug="demo")
-        self.channel = Channel.objects.create(organization=self.organization, code="app-sales", name="FoxRay — продажи")
+        self.channel = Channel.objects.create(organization=self.organization, code="app-sales", name="Acme — продажи")
         self.integration = _messenger_connection(self.channel)
         self.contact = Contact.objects.create(organization=self.organization, name="Иван")
         ConnectionIdentity.objects.create(
@@ -281,7 +281,7 @@ class ConversationReadTests(TestCase):
     def setUp(self) -> None:
         bootstrap_owner(email="owner@example.com", password="temporary-password")
         self.organization = Organization.objects.get(slug="demo")
-        self.channel = Channel.objects.create(organization=self.organization, code="app-sales", name="FoxRay — продажи")
+        self.channel = Channel.objects.create(organization=self.organization, code="app-sales", name="Acme — продажи")
         self.integration = _messenger_connection(self.channel)
         contact = Contact.objects.create(organization=self.organization, name="Иван")
         self.conversation = Conversation.objects.create(
@@ -348,7 +348,7 @@ class WebchatContactTests(TestCase):
     def setUp(self) -> None:
         bootstrap_owner(email="owner@example.com", password="temporary-password")
         self.organization = Organization.objects.get(slug="demo")
-        self.channel = Channel.objects.create(organization=self.organization, code="edevs-web", name="Веб-чат")
+        self.channel = Channel.objects.create(organization=self.organization, code="demo-web", name="Веб-чат")
         AIAgent.objects.create(
             channel=self.channel,
             name="Web Agent",

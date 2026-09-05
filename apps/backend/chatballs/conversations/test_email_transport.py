@@ -54,7 +54,7 @@ EMAIL_CONFIG = {
 
 
 
-def _raw(*, from_="Иван Петров <Ivan@example.com>", subject="Вопрос по FoxRay", text="Здравствуйте!", message_id="<m1@example.com>", html=None, attach=False) -> bytes:
+def _raw(*, from_="Иван Петров <Ivan@example.com>", subject="Вопрос по Acme", text="Здравствуйте!", message_id="<m1@example.com>", html=None, attach=False) -> bytes:
 
     message = MimeMessage()
 
@@ -140,7 +140,7 @@ class EmailNormalizeTests(TestCase):
 
         self.assertEqual(inbound.text, "Здравствуйте!")
 
-        self.assertEqual(inbound.thread_meta, {"subject": "Вопрос по FoxRay", "last_message_id": "<m1@example.com>"})
+        self.assertEqual(inbound.thread_meta, {"subject": "Вопрос по Acme", "last_message_id": "<m1@example.com>"})
 
         self.assertEqual(message_id, "<m1@example.com>")
 
@@ -162,7 +162,7 @@ class EmailNormalizeTests(TestCase):
 
         inbound, _ = email_transport._normalize(
 
-            _parsed(_raw(html="<p>Добрый день!</p><p>Сколько стоит &laquo;FoxRay&raquo;?</p>")),
+            _parsed(_raw(html="<p>Добрый день!</p><p>Сколько стоит &laquo;Acme&raquo;?</p>")),
 
             own_address="support@example.com",
 
@@ -174,7 +174,7 @@ class EmailNormalizeTests(TestCase):
 
         self.assertIn("Добрый день!", inbound.text)
 
-        self.assertIn("«FoxRay»", inbound.text)
+        self.assertIn("«Acme»", inbound.text)
 
         self.assertNotIn("<p>", inbound.text)
 
@@ -370,7 +370,7 @@ class EmailSendTests(TestCase):
 
         self.organization = Organization.objects.get(slug="demo")
 
-        self.channel = Channel.objects.create(organization=self.organization, code="edevs", name="Edevs — главный сайт")
+        self.channel = Channel.objects.create(organization=self.organization, code="acme", name="Acme — главный сайт")
 
         self.integration = _integration(organization=self.organization, channel=self.channel)
 
@@ -390,7 +390,7 @@ class EmailSendTests(TestCase):
 
             external_chat_id="ivan@example.com",
 
-            transport_meta={"subject": "Вопрос по FoxRay", "last_message_id": "<m1@example.com>"},
+            transport_meta={"subject": "Вопрос по Acme", "last_message_id": "<m1@example.com>"},
 
         )
 
@@ -412,7 +412,7 @@ class EmailSendTests(TestCase):
 
         self.assertEqual(outgoing["To"], "ivan@example.com")
 
-        self.assertEqual(outgoing["Subject"], "Re: Вопрос по FoxRay")
+        self.assertEqual(outgoing["Subject"], "Re: Вопрос по Acme")
 
         self.assertEqual(outgoing["In-Reply-To"], "<m1@example.com>")
 
@@ -464,7 +464,7 @@ class EmailIngestThreadMetaTests(TestCase):
 
         self.organization = Organization.objects.get(slug="demo")
 
-        self.channel = Channel.objects.create(organization=self.organization, code="edevs", name="Edevs — главный сайт")
+        self.channel = Channel.objects.create(organization=self.organization, code="acme", name="Acme — главный сайт")
 
         self.integration = _integration(organization=self.organization, channel=self.channel)
 
@@ -510,13 +510,13 @@ class EmailIngestThreadMetaTests(TestCase):
 
     def test_subject_pinned_to_first_message_id_follows_last(self) -> None:
 
-        self._ingest(external_id="<m1@example.com>", subject="Вопрос по FoxRay", message_id="<m1@example.com>")
+        self._ingest(external_id="<m1@example.com>", subject="Вопрос по Acme", message_id="<m1@example.com>")
 
-        self._ingest(external_id="<m2@example.com>", subject="Re: Вопрос по FoxRay", message_id="<m2@example.com>")
+        self._ingest(external_id="<m2@example.com>", subject="Re: Вопрос по Acme", message_id="<m2@example.com>")
 
         conversation = Conversation.objects.get(channel=self.channel)
 
-        self.assertEqual(conversation.transport_meta["subject"], "Вопрос по FoxRay")
+        self.assertEqual(conversation.transport_meta["subject"], "Вопрос по Acme")
 
         self.assertEqual(conversation.transport_meta["last_message_id"], "<m2@example.com>")
 

@@ -5,20 +5,20 @@ import { supportHref } from "./SupportLauncher";
 describe("supportHref", () => {
   it("passes the selected support channel to the product", () => {
     expect(supportHref({
-      code: "foxray",
-      name: "Foxray",
-      siteUrl: "https://foxray.example/account?from=help",
+      code: "acme",
+      name: "Acme",
+      siteUrl: "https://acme.example/account?from=help",
       supportAvailable: true,
-      supportWidgetKey: "wgt_foxray_support",
-      supportChannelCode: "foxray-support",
-    })).toBe("https://foxray.example/account?from=help&chatballsSupportWidget=wgt_foxray_support");
+      supportWidgetKey: "wgt_acme_support",
+      supportChannelCode: "acme-support",
+    })).toBe("https://acme.example/account?from=help&chatballsSupportWidget=wgt_acme_support");
   });
 
   it("does not build an unauthenticated fallback without a channel", () => {
     expect(supportHref({
-      code: "foxray",
-      name: "Foxray",
-      siteUrl: "https://foxray.example",
+      code: "acme",
+      name: "Acme",
+      siteUrl: "https://acme.example",
       supportAvailable: false,
       supportChannelCode: null,
       supportWidgetKey: null,

@@ -52,7 +52,7 @@ class PolicyInvariantMigrationTests(TestCase):
 
         self.product = Product.objects.create(
 
-            organization=self.organization, code="app", name="FoxRay"
+            organization=self.organization, code="app", name="Acme"
 
         )
 

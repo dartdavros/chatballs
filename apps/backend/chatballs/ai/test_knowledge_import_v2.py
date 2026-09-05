@@ -25,7 +25,7 @@ class KnowledgeMetadataImportTests(TestCase):
         )
         self.app = create_category(
             context=self.context,
-            name="FoxRay",
+            name="Acme",
             parent=self.products,
         )
         self.client = TenantAPIClient()
@@ -53,16 +53,16 @@ class KnowledgeMetadataImportTests(TestCase):
         response = self._import(
             [
                 {
-                    "title": "FoxRay support",
+                    "title": "Acme support",
                     "description": "Support rules",
-                    "categoryPath": ["Products", "FoxRay"],
+                    "categoryPath": ["Products", "Acme"],
                     "content": "Procedure",
                 }
             ]
         )
 
         self.assertEqual(response.json()["created"], 1)
-        knowledge = Knowledge.objects.get(title="FoxRay support")
+        knowledge = Knowledge.objects.get(title="Acme support")
         self.assertEqual(knowledge.category_id, self.app.id)
 
     def test_unknown_category_path_fails_per_document(self) -> None:
@@ -93,7 +93,7 @@ class KnowledgeMetadataImportTests(TestCase):
             [
                 {
                     "title": "Preserved",
-                    "categoryPath": ["Products", "FoxRay"],
+                    "categoryPath": ["Products", "Acme"],
                     "content": "Version one",
                 }
             ]
@@ -127,7 +127,7 @@ class KnowledgeMetadataImportTests(TestCase):
             [
                 {
                     "title": "Metadata",
-                    "categoryPath": ["Products", "FoxRay"],
+                    "categoryPath": ["Products", "Acme"],
                     "content": "Stable content",
                 }
             ]

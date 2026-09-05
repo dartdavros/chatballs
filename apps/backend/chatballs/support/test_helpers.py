@@ -47,8 +47,8 @@ def make_support_token(
     return f"{header_b64}.{payload_b64}.{signature_b64}"
 
 
-# Пример payload FoxRay (SPEC-HUB-0011 §4.1 / §5.2).
-FOXRAY_DATA = {
+# Пример payload Acme (SPEC-HUB-0011 §4.1 / §5.2).
+ACME_DATA = {
     "doctor": {"id": "u_456", "name": "Иван Петров", "email": "doctor@example.com"},
     "clinic": {"id": "c_123", "name": "Клиника Альфа"},
     "subscription": {"tariff": "pro", "status": "active"},

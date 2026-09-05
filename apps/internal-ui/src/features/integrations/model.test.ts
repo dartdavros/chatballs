@@ -22,8 +22,8 @@ describe("webWidgetSnippet", () => {
     vi.stubGlobal("window", { location: { origin: "https://acme.test" } });
     const { webWidgetSnippet } = await import("./model");
 
-    expect(webWidgetSnippet("wgt_foxray")).toBe(
-      `<script src="https://acme.test/chat-widget.js" data-widget-key="wgt_foxray" async></script>`,
+    expect(webWidgetSnippet("wgt_acme")).toBe(
+      `<script src="https://acme.test/chat-widget.js" data-widget-key="wgt_acme" async></script>`,
     );
   });
 

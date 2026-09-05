@@ -15,7 +15,7 @@ const categories: KnowledgeCategory[] = [
   { id: 1, name: "Без категории", parentId: null, sortOrder: 0, isSystem: true, knowledgeCount: 4 },
   { id: 3, name: "Продажи", parentId: null, sortOrder: 20, isSystem: false, knowledgeCount: 9 },
   { id: 2, name: "Продукты", parentId: null, sortOrder: 10, isSystem: false, knowledgeCount: 14 },
-  { id: 5, name: "FoxRay", parentId: 2, sortOrder: 10, isSystem: false, knowledgeCount: 8 },
+  { id: 5, name: "Acme", parentId: 2, sortOrder: 10, isSystem: false, knowledgeCount: 8 },
 ];
 
 describe("knowledge category tree", () => {

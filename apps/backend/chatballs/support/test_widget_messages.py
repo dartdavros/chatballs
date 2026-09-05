@@ -12,7 +12,7 @@ from chatballs.identity.bootstrap import bootstrap_owner
 from chatballs.identity.models import Organization
 from chatballs.products.models import Product
 from chatballs.support.models import ContractStatus, ProductSupportContract
-from chatballs.support.test_helpers import FOXRAY_DATA, make_support_token
+from chatballs.support.test_helpers import ACME_DATA, make_support_token
 from chatballs.webchat.testing import create_web_widget
 
 SECRET = "test-support-secret-very-long-32bytes!!"
@@ -57,7 +57,7 @@ def _setup_support_channel(
     channel = Channel.objects.create(
         organization=organization,
         code="app-support",
-        name="FoxRay — поддержка",
+        name="Acme — поддержка",
         product=product,
         requires_authenticated_product_identity=True,
         allow_anonymous_sessions=False,
@@ -77,11 +77,11 @@ class SupportWidgetMessagesTests(TestCase):
         self.channel, self.contract = _setup_support_channel(
             self.organization, self.product
         )
-        self.widget = create_web_widget(self.channel, name="FoxRay support widget")
+        self.widget = create_web_widget(self.channel, name="Acme support widget")
         self.client = APIClient()
 
     def _start_session(self) -> dict:
-        token = make_support_token(secret=SECRET, data=FOXRAY_DATA)
+        token = make_support_token(secret=SECRET, data=ACME_DATA)
         response = self.client.post(
             "/api/v1/support/sessions/",
             data=json.dumps({"widgetKey": self.widget.public_key, "token": token}),

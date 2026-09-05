@@ -18,19 +18,19 @@ class PublicSupportPortalTests(TestCase):
         self.client.force_authenticate(result.owner)
         portal = self.client.post(
             "/api/v1/support/portals/",
-            {"slug": "edevs-help", "name": "Edevs Help"},
+            {"slug": "demo-help", "name": "Acme Help"},
             format="json",
         ).json()["portal"]
         self.portal_id = portal["id"]
         self.portal_host = portal["hostedDomain"]
         widget_channel = Channel.objects.create(
             organization=result.organization,
-            code="edevs-help-chat",
-            name="Edevs Help — чат",
+            code="demo-help-chat",
+            name="Acme Help — чат",
             requires_authenticated_product_identity=False,
             allow_anonymous_sessions=True,
         )
-        self.widget = create_web_widget(widget_channel, name="Edevs Help widget")
+        self.widget = create_web_widget(widget_channel, name="Acme Help widget")
         self.client.patch(
             f"/api/v1/support/portals/{self.portal_id}/",
             {"widgetId": self.widget.id},
@@ -85,7 +85,7 @@ class PublicSupportPortalTests(TestCase):
 
         portal = self.client.get("/api/v1/help/", HTTP_HOST=self.portal_host)
         self.assertEqual(portal.status_code, 200, portal.content)
-        self.assertEqual(portal.json()["portal"]["name"], "Edevs Help")
+        self.assertEqual(portal.json()["portal"]["name"], "Acme Help")
         self.assertEqual(
             portal.json()["portal"]["webWidgetKey"],
             self.widget.public_key,
@@ -146,7 +146,7 @@ class PublicSupportPortalTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 200, response.content)
-        self.assertEqual(response.json()["portal"]["name"], "Edevs Help")
+        self.assertEqual(response.json()["portal"]["name"], "Acme Help")
 
     @override_settings(ROOT_URLCONF="chatballs_backend.urls_platform")
     def test_gateway_authorizes_only_published_portal_domains(self) -> None:
