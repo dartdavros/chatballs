@@ -29,6 +29,7 @@ from chatballs.conversations.models import (
 from chatballs.conversations.selectors import conversation_for_context
 from chatballs.conversations.serializers import message_payload
 from chatballs.conversations.view_base import ConversationViewBase
+from chatballs.integrations.features import voice_messages_allowed
 
 MAX_VOICE_BYTES = 10 * 1024 * 1024
 ALLOWED_AUDIO_TYPES = ("audio/ogg", "audio/webm", "audio/mpeg", "audio/mp4", "audio/wav")
@@ -74,27 +75,14 @@ class MessageTranscribeView(ConversationViewBase):
         if message.transcript_status == TranscriptStatus.READY:
             return Response({"message": message_payload(message)})
 
-        from django.conf import settings
-
-        from chatballs.ai.provider.factory import get_provider
+        from chatballs.conversations.ingest import transcribe_voice_message
 
         try:
-            provider = get_provider(channel=message.conversation.channel)
-            with message.audio.open("rb") as handle:
-                audio = handle.read()
-            transcript = provider.transcribe(
-                audio=audio,
-                filename=message.audio.name.rsplit("/", 1)[-1],
-                content_type=message.audio_content_type or "audio/ogg",
-                model=settings.CHATBALLS_AI_TRANSCRIPTION_MODEL,
-            )
+            transcript = transcribe_voice_message(message.conversation.channel, message, raise_errors=True)
         except ProviderError as error:
-            message.transcript_status = TranscriptStatus.FAILED
-            message.save(update_fields=["transcript_status"])
             return Response({"detail": str(error)}, status=502)
-        message.transcript = transcript
-        message.transcript_status = TranscriptStatus.READY
-        message.save(update_fields=["transcript", "transcript_status"])
+        if not transcript:
+            return Response({"detail": "Провайдер вернул пустую расшифровку"}, status=502)
         return Response({"message": message_payload(message)})
 
 
@@ -121,6 +109,8 @@ class ConversationVoiceView(ConversationViewBase):
             return Response(
                 {"detail": "Голосовые сообщения недоступны в этом канале"}, status=400
             )
+        if not voice_messages_allowed(connection):
+            return Response({"detail": "Голосовые отключены для этой точки входа"}, status=400)
         upload = request.FILES.get("audio")
         if upload is None:
             return Response({"detail": "Прикрепите аудио"}, status=400)

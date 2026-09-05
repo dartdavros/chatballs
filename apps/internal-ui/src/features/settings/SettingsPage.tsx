@@ -17,6 +17,7 @@ import { EmptyState, LoadingState, PageHeader } from "../../shared/ui";
 import type { RouteKey } from "../../types";
 import { Icon } from "../../shared/icons";
 import { DemoDataCard } from "./DemoDataCard";
+import { CommunicationSettingsCard } from "./CommunicationSettingsCard";
 import { StorageSettingsCard } from "./StorageSettingsCard";
 import { GroupsSettingsCard } from "./GroupsSettingsCard";
 
@@ -58,6 +59,9 @@ export function SettingsPage({ user, onUserUpdated, reload, groups = [], setRout
       </SettingsSection>
       <SettingsSection title="Интеграции" note="Боты, почта и Web-виджет — точки входа диалогов">
         <IntegrationsSection kind="MESSENGER" />
+      </SettingsSection>
+      <SettingsSection title="Голосовые и звонки" note="Где разрешены голосовые сообщения, аудио- и видеозвонки">
+        <CommunicationSettingsCard canManage={canManageSettings(user)} />
       </SettingsSection>
       <SettingsSection title="Хранилище файлов" note="Вложения, голосовые, фото и логотипы — на диске установки или во внешнем S3">
         <StorageSettingsCard canManage={canManageSettings(user)} />

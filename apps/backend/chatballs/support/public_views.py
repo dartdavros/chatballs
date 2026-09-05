@@ -1,14 +1,20 @@
 from django.db import models
+from django.http import FileResponse
+from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from chatballs.conversations.models import Conversation
+from chatballs.conversations.attachment_views import attachment_response, validate_upload
+from chatballs.conversations.models import Conversation, Message, MessageKind
 from chatballs.conversations.serializers import conversation_payload
+from chatballs.conversations.transports.base import guess_content_type, safe_filename
+from chatballs.conversations.voice_views import ALLOWED_AUDIO_TYPES, MAX_VOICE_BYTES
+from chatballs.integrations.features import features_payload, voice_messages_allowed
 from chatballs.identity.models import Organization
 from chatballs.support import errors
-from chatballs.support.messages import post_support_message, support_messages_since
+from chatballs.support.messages import post_support_file, post_support_message, post_support_voice, support_messages_since
 from chatballs.support.serializers import support_identity_snapshot_payload
 from chatballs.support.session import start_support_session
 from chatballs.support.token import verify_support_token
@@ -118,6 +124,8 @@ class SupportSessionStartView(_Public):
                 ),
                 "snapshot": support_identity_snapshot_payload(result["snapshot"]),
                 "widgetCredential": result["widget_credential"],
+                # Что разрешено в этой точке входа: виджет прячет микрофон при запрете.
+                "features": features_payload(widget.integration),
             },
             status=201,
         )
@@ -125,9 +133,11 @@ class SupportSessionStartView(_Public):
 
 def _widget_context(request: Request):
     auth = request.headers.get("Authorization", "")
-    if not auth.startswith("Bearer "):
+    # <audio src>/<img src> не умеют заголовки — credential может прийти параметром.
+    credential = auth[7:] if auth.startswith("Bearer ") else (request.GET.get("credential", "") if request.method == "GET" else "")
+    if not credential:
         return None
-    claims = verify_widget_credential(auth[7:])
+    claims = verify_widget_credential(credential)
     if claims is None:
         return None
     route = support_conversation_route(
@@ -163,6 +173,9 @@ def _resolve_widget_conversation(
 
 
 class SupportSessionMessagesView(_Public):
+    # JSON — текст, multipart — голосовое или файл.
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
+
     def get(self, request: Request) -> Response:
         resolved = _widget_context(request)
         if resolved is None:
@@ -183,19 +196,92 @@ class SupportSessionMessagesView(_Public):
         if resolved is None:
             return Response({"detail": "Сессия не найдена"}, status=401)
         text = str(request.data.get("text", "")).strip()
-        if not text:
+        audio = request.FILES.get("audio")
+        upload = request.FILES.get("file")
+        if not text and audio is None and upload is None:
             return Response({"detail": "Пустое сообщение"}, status=400)
         context, claims = resolved
         with tenant_atomic(context):
             conversation = _resolve_widget_conversation(context, claims)
             if conversation is None:
                 return Response({"detail": "Сессия не найдена"}, status=401)
+            if audio is not None:
+                if not voice_messages_allowed(conversation.connection):
+                    return Response({"detail": "Голосовые отключены"}, status=400)
+                if audio.size > MAX_VOICE_BYTES:
+                    return Response({"detail": "Аудио больше 10 МБ"}, status=400)
+                content_type = (audio.content_type or "audio/webm").split(";")[0]
+                if content_type not in ALLOWED_AUDIO_TYPES:
+                    return Response({"detail": "Неподдерживаемый формат аудио"}, status=400)
+                try:
+                    duration = max(0, int(request.data.get("duration", 0)))
+                except (TypeError, ValueError):
+                    duration = 0
+                post_support_voice(context=context, conversation=conversation, content=audio.read(), content_type=content_type, duration=duration)
+                return Response({"ok": True}, status=201)
+            if upload is not None:
+                problem = validate_upload(upload)
+                if problem:
+                    return Response({"detail": problem}, status=400)
+                name = safe_filename(upload.name or "")
+                post_support_file(
+                    context=context,
+                    conversation=conversation,
+                    content=upload.read(),
+                    filename=name,
+                    content_type=(upload.content_type or "").split(";")[0] or guess_content_type(name),
+                    caption=text[:4000],
+                )
+                return Response({"ok": True}, status=201)
             post_support_message(
                 context=context,
                 conversation=conversation,
                 text=text[:4000],
             )
             return Response({"ok": True}, status=201)
+
+
+def _session_message(request: Request, message_id: int, kind: str):
+    resolved = _widget_context(request)
+    if resolved is None:
+        return None, Response({"detail": "Сессия не найдена"}, status=401)
+    context, claims = resolved
+    with tenant_atomic(context):
+        conversation = _resolve_widget_conversation(context, claims)
+        if conversation is None:
+            return None, Response({"detail": "Сессия не найдена"}, status=401)
+        message = Message.objects.filter(id=message_id, conversation=conversation, kind=kind).first()
+    if message is None:
+        return None, Response({"detail": "Сообщение не найдено"}, status=404)
+    return (context, message), None
+
+
+class SupportSessionAudioView(_Public):
+    def get(self, request: Request, message_id: int) -> Response | FileResponse:
+        found, error = _session_message(request, message_id, MessageKind.VOICE)
+        if error is not None:
+            return error
+        context, message = found
+        if not message.audio:
+            return Response({"detail": "Аудио недоступно"}, status=404)
+        with tenant_atomic(context):
+            response = FileResponse(message.audio.open("rb"), content_type=message.audio_content_type or "audio/ogg")
+        response["Cache-Control"] = "private, max-age=3600"
+        return response
+
+
+class SupportSessionAttachmentView(_Public):
+    def get(self, request: Request, message_id: int) -> Response | FileResponse:
+        found, error = _session_message(request, message_id, MessageKind.FILE)
+        if error is not None:
+            return error
+        context, message = found
+        if not message.attachment:
+            return Response({"detail": "Файл недоступен"}, status=404)
+        with tenant_atomic(context):
+            response = attachment_response(message, inline="inline" in request.GET)
+        response["Cache-Control"] = "private, max-age=3600"
+        return response
 
 
 def _denied() -> Response:

@@ -1,3 +1,4 @@
+from chatballs.integrations.features import features_payload
 from chatballs.conversations.models import ConnectionIdentity, Conversation, Message, MessageAuthor
 from chatballs.identity.avatars import user_avatar_url_in
 from chatballs.integrations.models import IntegrationProvider
@@ -154,7 +155,13 @@ def conversation_payload(
             "product": {"code": channel.product.code, "name": channel.product.name} if channel.product_id else None,
         },
         "connection": (
-            {"id": conversation.connection_id, "provider": conversation.connection.provider, "name": conversation.connection.name}
+            {
+                "id": conversation.connection_id,
+                "provider": conversation.connection.provider,
+                "name": conversation.connection.name,
+                # Что разрешено в этой точке входа («Настройки → Голосовые и звонки»).
+                **features_payload(conversation.connection),
+            }
             if conversation.connection_id
             else None
         ),

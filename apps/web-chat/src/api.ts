@@ -1,6 +1,7 @@
 const API = "/api/v1/webchat";
 
 export type WebConfig = {
+  features?: WidgetFeatures;
   available: boolean;
   reason?: string;
   widgetKey?: string;
@@ -178,10 +179,19 @@ export const endCall = (accessToken: string) => callAccessAction("end", accessTo
 
 const SUPPORT_API = "/api/v1/support";
 
+export type WidgetFeatures = { voiceMessages: boolean; audioCalls: boolean; videoCalls: boolean };
+
 export type SupportSession = {
   conversation: { id: number; controlMode: string; messages: WebMessage[] };
   snapshot: { displayName: string; displayEmail: string; subjectKey: string };
   widgetCredential: string;
+  features: WidgetFeatures;
+};
+
+type SupportStartMessage = {
+  id: number; author: string; kind?: string; text: string; createdAt: string;
+  audioUrl?: string | null; durationSeconds?: number;
+  attachmentName?: string; attachmentContentType?: string; attachmentSize?: number; attachmentUrl?: string | null;
 };
 
 // Старт сессии: verify Product Support Token → conversation + widget-credential.
@@ -200,16 +210,47 @@ export async function startSupportSession(widgetKey: string, token: string, host
     conversation: {
       id: conv.id,
       controlMode: conv.controlMode,
-      messages: (conv.messages ?? []).map((m: { id: number; author: string; text: string; createdAt: string }) => ({
+      messages: (conv.messages ?? []).map((m: SupportStartMessage): WebMessage => ({
         id: m.id,
         author: (m.author === "CONTACT" ? "client" : m.author === "OPERATOR" ? "operator" : m.author === "SYSTEM" ? "system" : "ai") as WebMessage["author"],
+        kind: m.kind,
         text: m.text,
         createdAt: m.createdAt,
+        durationSeconds: m.durationSeconds,
+        hasAudio: Boolean(m.audioUrl),
+        ...(m.kind === "file" ? { attachment: { name: m.attachmentName ?? "", contentType: m.attachmentContentType ?? "", size: m.attachmentSize ?? 0, available: Boolean(m.attachmentUrl) } } : {}),
       })),
     },
     snapshot: { displayName: data.snapshot?.displayName ?? "", displayEmail: data.snapshot?.displayEmail ?? "", subjectKey: data.snapshot?.subjectKey ?? "" },
     widgetCredential: data.widgetCredential,
+    features: { voiceMessages: true, audioCalls: false, videoCalls: false, ...(data.features ?? {}) },
   };
+}
+
+export async function sendSupportVoice(credential: string, audio: Blob, durationSeconds: number): Promise<boolean> {
+  const body = new FormData();
+  const type = (audio.type || "audio/webm").split(";")[0];
+  body.append("audio", audio, `voice.${type.split("/")[1] || "webm"}`);
+  body.append("duration", String(Math.round(durationSeconds)));
+  const r = await fetch(`${SUPPORT_API}/sessions/messages/`, { method: "POST", headers: { Authorization: `Bearer ${credential}` }, body });
+  return r.ok;
+}
+
+export async function sendSupportFile(credential: string, file: File, caption: string): Promise<boolean> {
+  const body = new FormData();
+  body.append("file", file, file.name);
+  if (caption) body.append("text", caption);
+  const r = await fetch(`${SUPPORT_API}/sessions/messages/`, { method: "POST", headers: { Authorization: `Bearer ${credential}` }, body });
+  return r.ok;
+}
+
+// URL медиа портала поддержки: <audio>/<img> не умеют заголовки — credential параметром.
+export function supportAudioUrl(credential: string, messageId: number): string {
+  return `${SUPPORT_API}/sessions/messages/${messageId}/audio/?credential=${encodeURIComponent(credential)}`;
+}
+
+export function supportAttachmentUrl(credential: string, messageId: number, inline = false): string {
+  return `${SUPPORT_API}/sessions/messages/${messageId}/attachment/?credential=${encodeURIComponent(credential)}${inline ? "&inline" : ""}`;
 }
 
 export async function pollSupport(credential: string, since: number): Promise<Poll> {

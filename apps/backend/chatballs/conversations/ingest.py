@@ -27,6 +27,7 @@ from chatballs.conversations.models import (
     Message,
     MessageAuthor,
     MessageKind,
+    TranscriptStatus,
 )
 from chatballs.conversations.transports.base import InboundMessage
 from chatballs.events.models import EventOwnership, InboxEvent
@@ -63,7 +64,40 @@ def _already_processed(context: TenantContext, source: str, external_id: str, te
 def _history(conversation: Conversation) -> list[dict]:
     messages = list(conversation.messages.order_by("created_at"))
     prior = messages[:-1][-_HISTORY_LIMIT:]  # без только что сохранённого входящего
-    return [{"role": _ROLE.get(m.author_type, "user"), "content": m.text} for m in prior if m.text]
+    # Голосовые попадают в контекст стенограммой.
+    return [{"role": _ROLE.get(m.author_type, "user"), "content": m.text or m.transcript} for m in prior if m.text or m.transcript]
+
+
+def transcribe_voice_message(channel, message: Message, *, raise_errors: bool = False) -> str:
+    """Стенограмма голосового через BYOK-провайдера организации; пустая строка,
+    если провайдер не умеет или недоступен (статус FAILED — оператор повторит кнопкой)."""
+    from django.conf import settings
+
+    from chatballs.ai.provider.factory import get_provider
+
+    if not message.audio:
+        return ""
+    try:
+        provider = get_provider(channel=channel)
+        with message.audio.open("rb") as handle:
+            audio = handle.read()
+        transcript = provider.transcribe(
+            audio=audio,
+            filename=message.audio.name.rsplit("/", 1)[-1],
+            content_type=message.audio_content_type or "audio/ogg",
+            model=settings.CHATBALLS_AI_TRANSCRIPTION_MODEL,
+        ).strip()
+    except ProviderError as error:
+        logger.info("Voice transcription unavailable for message %s: %s", message.id, error)
+        message.transcript_status = TranscriptStatus.FAILED
+        message.save(update_fields=["transcript_status"])
+        if raise_errors:
+            raise
+        return ""
+    message.transcript = transcript
+    message.transcript_status = TranscriptStatus.READY if transcript else TranscriptStatus.FAILED
+    message.save(update_fields=["transcript", "transcript_status"])
+    return transcript
 
 
 def ingest_inbound(integration, inbound: InboundMessage) -> None:
@@ -228,14 +262,30 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
         transports.send_contact_ack(integration, chat_id=conversation.external_chat_id, user_id=inbound.user_id, text=ack)
         return
 
-    # Голосовое AI не разбирает (расшифровка — по кнопке оператора), файлы без
-    # текста — тоже: диалог уходит оператору, как при недоступном AI, но без
-    # имитации сбоя.
-    if is_voice or files_only:
+    # Голосовое: AI отвечает текстом по стенограмме (BYOK-провайдер). Если
+    # расшифровка недоступна, а также для файлов без текста — диалог уходит
+    # оператору, как при недоступном AI, но без имитации сбоя.
+    ai_input = inbound.text
+    if is_voice and conversation.control_mode == ControlMode.AI and ai_available:
+        ai_input = transcribe_voice_message(channel, message)
+    if (is_voice and not ai_input) or files_only:
         if conversation.control_mode == ControlMode.AI:
             conversation.control_mode = ControlMode.PAUSED
             conversation.expected_responder = ExpectedResponder.OPERATOR
             conversation.save(update_fields=["control_mode", "expected_responder"])
+            if is_new:
+                return
+            notify(
+                context=context,
+                type=NotificationType.DIALOG_WAITING,
+                audience=NotificationAudience.OPERATORS,
+                title=f"Нужен оператор · {contact.name or 'Гость'}",
+                body="Голосовое без расшифровки" if is_voice else message_text[:120],
+                target_id=conversation.id,
+                source_type="Conversation",
+                source_id=conversation.id,
+                dedup_key=f"media:{conversation.id}",
+            )
         return
 
     # Операторский канал без активного агента сразу создаёт очередь и не
@@ -244,7 +294,7 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
         return
 
     try:
-        result = run_channel_turn(channel=channel, message=inbound.text, history=_history(conversation))
+        result = run_channel_turn(channel=channel, message=ai_input, history=_history(conversation))
     except (ProviderError, LimitExceeded) as error:
         # Сбой AI (провайдер недоступен) или срабатывание лимита стоимости не должны
         # «терять» сообщение: переводим диалог в очередь к оператору, уведомляем и
@@ -302,7 +352,7 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
             type=NotificationType.DIALOG_WAITING,
             audience=NotificationAudience.OPERATORS,
             title=f"AI передал диалог · {contact.name or 'Гость'}",
-            body=inbound.text[:120],
+            body=ai_input[:120],
             target_id=conversation.id,
             source_type="Conversation",
             source_id=conversation.id,

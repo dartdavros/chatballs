@@ -12,6 +12,7 @@ from chatballs.conversations.models import Message, MessageKind
 from chatballs.conversations.attachment_views import MAX_FILE_BYTES, attachment_response, validate_upload
 from chatballs.conversations.voice_views import ALLOWED_AUDIO_TYPES, MAX_VOICE_BYTES
 from chatballs.identity.models import Organization
+from chatballs.integrations.features import voice_messages_allowed
 from chatballs.integrations.models import IntegrationStatus
 from chatballs.tenancy.context import TenantContext
 from chatballs.tenancy.database import tenant_atomic
@@ -158,6 +159,8 @@ class WebchatMessagesView(_Public):
             upload = request.FILES.get("audio")
             if upload is not None:
                 # Голосовое из виджета (дизайн-базлайн v2, кадр H).
+                if not voice_messages_allowed(session.connection):
+                    return Response({"detail": "Голосовые отключены"}, status=400)
                 if upload.size > MAX_VOICE_BYTES:
                     return Response({"detail": "Аудио больше 10 МБ"}, status=400)
                 content_type = (upload.content_type or "audio/webm").split(";")[0]

@@ -55,6 +55,11 @@ class Integration(models.Model):
     # Операционное состояние подключения. В отличие от status (результата
     # последней проверки), is_active явно разрешает или запрещает runtime.
     is_active = models.BooleanField(default=True)
+    # Что разрешено в этой точке входа (админ, «Настройки → Голосовые и звонки»):
+    # голосовые сообщения (запись в композере/виджете) и онлайн-звонки.
+    voice_messages_enabled = models.BooleanField(default=True)
+    audio_calls_enabled = models.BooleanField(default=True)
+    video_calls_enabled = models.BooleanField(default=True)
     # Подключение (бот/виджет) привязано к каналу обработки (ADR-HUB-0019, M2).
     channel = models.ForeignKey("channels.Channel", on_delete=models.SET_NULL, null=True, blank=True, related_name="connections")
     # Курсор Long Polling (marker MAX / offset Telegram).

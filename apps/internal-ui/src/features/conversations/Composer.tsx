@@ -11,7 +11,7 @@ import type { ChannelKey, ControlMode } from "./types";
 
 const MAX_FILE_BYTES = 20 * 1024 * 1024;
 
-export function Composer({ mode, loaded, assignedOperatorName, conversationId, channel, onClaim, onRelease, onReturnQueue, onClose, onSent }: { mode: ControlMode; loaded: boolean; assignedOperatorName?: string; conversationId: number | null; channel?: ChannelKey; onClaim: () => void; onRelease: () => void; onReturnQueue: () => void; onClose: () => void; onSent: () => void }) {
+export function Composer({ mode, loaded, assignedOperatorName, conversationId, channel, voiceAllowed = true, onClaim, onRelease, onReturnQueue, onClose, onSent }: { mode: ControlMode; loaded: boolean; assignedOperatorName?: string; conversationId: number | null; channel?: ChannelKey; voiceAllowed?: boolean; onClaim: () => void; onRelease: () => void; onReturnQueue: () => void; onClose: () => void; onSent: () => void }) {
   const [text, setText] = useState("");
   const compact = useMediaQuery("(max-width: 768px)");
   const [sending, setSending] = useState(false);
@@ -53,7 +53,8 @@ export function Composer({ mode, loaded, assignedOperatorName, conversationId, c
       onSent();
     },
   });
-  const voiceAvailable = recorder.supported;
+  // Микрофон — если браузер умеет запись и голосовые разрешены в точке входа.
+  const voiceAvailable = recorder.supported && voiceAllowed;
 
   if (conversationId == null) {
     return <div className="sales-composer"><div className="composer-locked"><div><strong>Выберите диалог</strong></div></div></div>;

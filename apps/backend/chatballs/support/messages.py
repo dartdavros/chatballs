@@ -22,6 +22,7 @@ from chatballs.conversations.models import (
     ExpectedResponder,
     Message,
     MessageAuthor,
+    MessageKind,
 )
 from chatballs.notifications.models import NotificationAudience, NotificationType
 from chatballs.notifications.services import notify, notify_management
@@ -52,7 +53,8 @@ _AUTHOR = {
 def _history(conversation: Conversation) -> list[dict]:
     messages = list(conversation.messages.order_by("created_at"))
     prior = messages[:-1][-_HISTORY_LIMIT:]
-    return [{"role": _ROLE.get(m.author_type, "user"), "content": m.text} for m in prior if m.text]
+    # Голосовые попадают в контекст стенограммой.
+    return [{"role": _ROLE.get(m.author_type, "user"), "content": m.text or m.transcript} for m in prior if m.text or m.transcript]
 
 
 def support_messages_since(conversation: Conversation, since: int) -> dict:
@@ -64,8 +66,23 @@ def support_messages_since(conversation: Conversation, since: int) -> dict:
             {
                 "id": m.id,
                 "author": _AUTHOR.get(m.author_type, "ai"),
+                "kind": m.kind,
                 "text": m.text,
                 "createdAt": m.created_at.isoformat(),
+                "durationSeconds": m.duration_seconds,
+                "hasAudio": bool(m.audio),
+                **(
+                    {
+                        "attachment": {
+                            "name": m.attachment_name,
+                            "contentType": m.attachment_content_type,
+                            "size": m.attachment_size,
+                            "available": bool(m.attachment),
+                        }
+                    }
+                    if m.kind == MessageKind.FILE
+                    else {}
+                ),
             }
             for m in items
         ],
@@ -84,11 +101,99 @@ def post_support_message(
     if conversation.organization_id != context.organization_id:
         raise ValueError("Support conversation is outside tenant context")
     Message.objects.create(conversation=conversation, author_type=MessageAuthor.CONTACT, text=text)
-    snapshot = conversation.support_identity_snapshot
-    client_label = (snapshot.display_name if snapshot else "") or "Клиент"
     conversation.last_activity_at = timezone.now()
     conversation.save(update_fields=["last_activity_at"])
+    _run_support_ai(context=context, conversation=conversation, text=text)
 
+
+def _client_label(conversation: Conversation) -> str:
+    snapshot = conversation.support_identity_snapshot
+    return (snapshot.display_name if snapshot else "") or "Клиент"
+
+
+def _hand_to_operator(*, context: TenantContext, conversation: Conversation, reason: str) -> None:
+    """Диалог уходит оператору без имитации сбоя AI (голосовое без стенограммы, файл)."""
+    if conversation.control_mode != ControlMode.AI:
+        return
+    conversation.control_mode = ControlMode.PAUSED
+    conversation.expected_responder = ExpectedResponder.OPERATOR
+    conversation.save(update_fields=["control_mode", "expected_responder"])
+    notify(
+        context=context,
+        type=NotificationType.DIALOG_WAITING,
+        audience=NotificationAudience.OPERATORS,
+        title=f"Нужен оператор · {_client_label(conversation)}",
+        body=reason,
+        target_id=conversation.id,
+        source_type="Conversation",
+        source_id=conversation.id,
+        dedup_key=f"media:{conversation.id}",
+    )
+
+
+@transaction.atomic
+def post_support_voice(*, context: TenantContext, conversation: Conversation, content: bytes, content_type: str, duration: int) -> Message:
+    """Голосовое из портала поддержки: сохраняем, AI отвечает текстом по
+    стенограмме; без расшифровки — диалог оператору."""
+    from django.core.files.base import ContentFile
+
+    from chatballs.conversations.ingest import transcribe_voice_message
+
+    if conversation.organization_id != context.organization_id:
+        raise ValueError("Support conversation is outside tenant context")
+    message = Message.objects.create(
+        conversation=conversation,
+        author_type=MessageAuthor.CONTACT,
+        kind=MessageKind.VOICE,
+        audio_content_type=content_type,
+        duration_seconds=duration,
+    )
+    suffix = "ogg" if "ogg" in content_type else content_type.rsplit("/", 1)[-1]
+    message.audio.save(f"voice.{suffix}", ContentFile(content), save=False)
+    message.save(update_fields=["audio"])
+    conversation.last_activity_at = timezone.now()
+    conversation.save(update_fields=["last_activity_at"])
+    if conversation.control_mode != ControlMode.AI:
+        return message
+    transcript = transcribe_voice_message(conversation.channel, message)
+    if transcript:
+        _run_support_ai(context=context, conversation=conversation, text=transcript)
+    else:
+        _hand_to_operator(context=context, conversation=conversation, reason="Голосовое без расшифровки")
+    return message
+
+
+@transaction.atomic
+def post_support_file(*, context: TenantContext, conversation: Conversation, content: bytes, filename: str, content_type: str, caption: str = "") -> Message:
+    """Файл из портала поддержки: подпись — обычное сообщение (с ответом AI),
+    сам файл — отдельная реплика; файл без подписи уводит диалог оператору."""
+    from django.core.files.base import ContentFile
+
+    if conversation.organization_id != context.organization_id:
+        raise ValueError("Support conversation is outside tenant context")
+    if caption:
+        Message.objects.create(conversation=conversation, author_type=MessageAuthor.CONTACT, text=caption)
+    message = Message.objects.create(
+        conversation=conversation,
+        author_type=MessageAuthor.CONTACT,
+        kind=MessageKind.FILE,
+        attachment_name=filename,
+        attachment_content_type=content_type,
+        attachment_size=len(content),
+    )
+    message.attachment.save(filename, ContentFile(content), save=False)
+    message.save(update_fields=["attachment"])
+    conversation.last_activity_at = timezone.now()
+    conversation.save(update_fields=["last_activity_at"])
+    if caption:
+        _run_support_ai(context=context, conversation=conversation, text=caption)
+    else:
+        _hand_to_operator(context=context, conversation=conversation, reason=f"Файл: {filename}")
+    return message
+
+
+def _run_support_ai(*, context: TenantContext, conversation: Conversation, text: str) -> None:
+    client_label = _client_label(conversation)
     # AI отвечает только когда диалог ведёт AI (ADR-HUB-0003).
     if conversation.control_mode != ControlMode.AI:
         return

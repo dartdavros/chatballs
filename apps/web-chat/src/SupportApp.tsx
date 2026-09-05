@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 
-import { pollSupport, sendSupport, startSupportSession, type WebMessage } from "./api";
+import { MAX_FILE_BYTES, pollSupport, sendSupport, sendSupportFile, sendSupportVoice, startSupportSession, supportAttachmentUrl, supportAudioUrl, type WebMessage } from "./api";
 import { Bubble, ChatComposer, ChatHeader, SystemMessage, Typing } from "./ChatView";
 import { SUPPORT_ACCENT, SupportStatusScreen, supportShell } from "./SupportStatusScreen";
 import { useScrollToLatest } from "./useScrollToLatest";
+import { useVoiceRecorder } from "./useVoiceRecorder";
 import { useWidgetActivity } from "./widgetActivity";
 
 // Support-режим виджета (SPEC-HUB-0010 §7): authenticated in-product чат.
@@ -57,10 +58,40 @@ export function SupportApp() {
   const [state, setState] = useState<"ai" | "operator" | "waiting">("ai");
   const [awaiting, setAwaiting] = useState(false);
   const [input, setInput] = useState("");
+  const [attachment, setAttachment] = useState<File | null>(null);
+  const [attachmentError, setAttachmentError] = useState("");
   const lastId = useRef(0);
   const bodyRef = useRef<HTMLDivElement>(null);
   const scrollToLatest = useScrollToLatest(bodyRef);
   const notifyNewMessage = useWidgetActivity(false);
+  const sessionRef = useRef<Awaited<ReturnType<typeof startSupportSession>>>(null);
+  sessionRef.current = session;
+  const recorder = useVoiceRecorder({
+    onSend: async (audio, durationSeconds) => {
+      const current = sessionRef.current;
+      if (!current) return;
+      const ok = await sendSupportVoice(current.widgetCredential, audio, durationSeconds);
+      if (!ok) throw new Error("Не удалось отправить голосовое");
+      setAwaiting(true);
+      await refresh(current.widgetCredential);
+    },
+  });
+
+  async function refresh(credential: string) {
+    try {
+      const data = await pollSupport(credential, lastId.current);
+      setState(data.state);
+      if (data.messages.length) {
+        if (data.messages.some((m) => m.author === "ai" || m.author === "operator")) notifyNewMessage();
+        lastId.current = Math.max(lastId.current, ...data.messages.map((m) => m.id));
+        setMessages((prev) => [...prev, ...data.messages.filter((m) => !prev.some((p) => p.id === m.id))]);
+        if (data.messages.some((m) => m.author !== "client")) setAwaiting(false);
+        setPending([]);
+      }
+    } catch {
+      /* polling loop will retry */
+    }
+  }
 
   // Старт сессии один раз (SPEC §7.2: нет consent/accept flow).
   useEffect(() => {
@@ -124,24 +155,20 @@ export function SupportApp() {
 
   async function send() {
     const text = input.trim();
-    if (!text || !session || awaiting) return;
+    if ((!text && !attachment) || !session || awaiting) return;
     setInput("");
-    setPending((p) => [...p, text]);
+    const file = attachment;
+    setAttachment(null);
+    setAttachmentError("");
+    setPending((p) => [...p, file ? `${file.name}${text ? ` · ${text}` : ""}` : text]);
     setAwaiting(true);
-    await sendSupport(session.widgetCredential, text).catch(() => undefined);
-    try {
-      const data = await pollSupport(session.widgetCredential, lastId.current);
-      setState(data.state);
-      if (data.messages.length) {
-        if (data.messages.some((m) => m.author === "ai" || m.author === "operator")) notifyNewMessage();
-        lastId.current = Math.max(lastId.current, ...data.messages.map((m) => m.id));
-        setMessages((prev) => [...prev, ...data.messages.filter((m) => !prev.some((p) => p.id === m.id))]);
-        setAwaiting(false);
-        setPending([]);
-      }
-    } catch {
-      /* polling loop will retry */
+    if (file) {
+      const ok = await sendSupportFile(session.widgetCredential, file, text).catch(() => false);
+      if (!ok) setAttachmentError("Не удалось отправить файл");
+    } else {
+      await sendSupport(session.widgetCredential, text).catch(() => undefined);
     }
+    await refresh(session.widgetCredential);
   }
 
   const displayName = session?.snapshot.displayName || "";
@@ -168,12 +195,32 @@ export function SupportApp() {
         <Bubble author="ai" text={greeting + " Чем помочь?"} accent={accent} />
         {messages.map((m) => (m.author === "system"
           ? <SystemMessage key={m.id} text={m.text} />
-          : <Bubble key={m.id} author={m.author} text={m.text} accent={accent} time={m.createdAt} />))}
+          : <Bubble
+              key={m.id}
+              author={m.author}
+              text={m.hasAudio ? "" : m.text || (m.kind === "voice" ? "Голосовое сообщение" : "")}
+              accent={accent}
+              time={m.createdAt}
+              audioUrl={m.hasAudio ? supportAudioUrl(session.widgetCredential, m.id) : undefined}
+              attachment={m.kind === "file" && m.attachment ? { ...m.attachment, url: m.attachment.available ? supportAttachmentUrl(session.widgetCredential, m.id) : "", inlineUrl: m.attachment.available ? supportAttachmentUrl(session.widgetCredential, m.id, true) : "" } : undefined}
+            />))}
         {pending.map((t, i) => <Bubble key={`p${i}`} author="client" text={t} accent={accent} pendingState />)}
         {awaiting && <Typing />}
       </div>
 
-      <ChatComposer accent={accent} state={state} quickReplies={[]} pendingCount={pending.length} messageCount={messages.length} input={input} placeholder="Опишите вопрос…" onInput={setInput} onSend={() => void send()} />
+      <ChatComposer
+        accent={accent}
+        state={state}
+        quickReplies={[]}
+        pendingCount={pending.length}
+        messageCount={messages.length}
+        input={input}
+        placeholder="Опишите вопрос…"
+        onInput={setInput}
+        onSend={() => void send()}
+        voice={session.features.voiceMessages ? recorder : undefined}
+        attachment={{ file: attachment, errorText: attachmentError, pick: (file) => { if (!file) return; if (file.size > MAX_FILE_BYTES) { setAttachmentError("Файл больше 20 МБ"); return; } setAttachmentError(""); setAttachment(file); }, clear: () => setAttachment(null) }}
+      />
     </div>
   );
 }

@@ -13,4 +13,14 @@ urlpatterns = [
         public_views.SupportSessionMessagesView.as_view(),
         name="support-session-messages",
     ),
+    path(
+        "sessions/messages/<int:message_id>/audio/",
+        public_views.SupportSessionAudioView.as_view(),
+        name="support-session-audio",
+    ),
+    path(
+        "sessions/messages/<int:message_id>/attachment/",
+        public_views.SupportSessionAttachmentView.as_view(),
+        name="support-session-attachment",
+    ),
 ]

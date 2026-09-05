@@ -82,7 +82,8 @@ export type ReplyTemplateRef = { id: number; title: string; text: string; update
 export type ApiConversation = {
   id: number;
   channel: { code: string; name: string; product: { code: string; name: string } | null };
-  connection: { id: number; provider: "EMAIL" | "MAX" | "TELEGRAM" | "WEB"; name: string } | null;
+  // voiceMessages/audioCalls/videoCalls — что разрешено в точке входа («Настройки → Голосовые и звонки»).
+  connection: { id: number; provider: "EMAIL" | "MAX" | "TELEGRAM" | "WEB"; name: string; voiceMessages?: boolean; audioCalls?: boolean; videoCalls?: boolean } | null;
   // Источник identity: sales Contact (лид) ИЛИ verified SupportIdentitySnapshot.
   // ADR-HUB-0022: ровно один заполнен.
   // phone появляется после явного шаринга контакта; username (@логин TG/MAX) — только в detail-режиме.

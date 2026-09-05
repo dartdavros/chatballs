@@ -16,6 +16,7 @@ from chatballs.conversations.models import (
     MessageKind,
 )
 from chatballs.conversations.transports.base import InboundMessage
+from chatballs.integrations.features import features_payload
 from chatballs.integrations.models import Integration, IntegrationProvider
 from chatballs.tenancy.context import TenantContext
 from chatballs.webchat.models import WebChatWidget, WebSession
@@ -96,6 +97,8 @@ def public_config(*, context: TenantContext, widget: WebChatWidget, origin: str)
         "available": True,
         "widgetKey": widget.public_key,
         "mode": widget.mode,
+        # Что разрешено в этой точке входа: виджет прячет микрофон при запрете.
+        "features": features_payload(integration),
         "title": cfg.get("title") or channel.name,
         "accent": cfg.get("accent") or DEFAULT_ACCENT,
         "greeting": cfg.get("greeting") or DEFAULT_GREETING,

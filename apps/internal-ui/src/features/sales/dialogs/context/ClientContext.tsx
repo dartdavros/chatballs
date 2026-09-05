@@ -114,8 +114,8 @@ export function ClientContext({
         </div>
         {startCall && (
           <div className="ctx-call-buttons">
-            <button type="button" onClick={() => startCall("AUDIO")}><Icon name="phone" size={15} />Позвонить</button>
-            <button type="button" onClick={() => startCall("VIDEO")}><Icon name="video" size={15} />Видеозвонок</button>
+            {detail?.connection?.audioCalls && <button type="button" onClick={() => startCall("AUDIO")}><Icon name="phone" size={15} />Позвонить</button>}
+            {detail?.connection?.videoCalls && <button type="button" onClick={() => startCall("VIDEO")}><Icon name="video" size={15} />Видеозвонок</button>}
           </div>
         )}
         {contact && !phone && (

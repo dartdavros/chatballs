@@ -14,6 +14,7 @@ from chatballs.calls.errors import (
     CallTokenError,
 )
 from chatballs.calls.lifecycle import transition_call
+from chatballs.integrations.features import call_allowed
 from chatballs.calls.metrics import record_call_metric
 from chatballs.calls.models import (
     TERMINAL_CALL_STATUSES,
@@ -126,6 +127,10 @@ def create_call_request(
         .get(id=conversation_id, organization=context.organization)
     )
     ensure_conversation_call_access(user=context.membership, conversation=conversation)
+    if not call_allowed(conversation.connection, kind):
+        raise CallAccessDenied(
+            "Видеозвонки отключены для этой точки входа" if kind == CallKind.VIDEO else "Звонки отключены для этой точки входа"
+        )
     identity = _conversation_identity(conversation)
     _check_call_creation_conflicts(conversation=conversation, initiator=initiator)
 

@@ -140,3 +140,72 @@ class SupportWidgetMessagesTests(TestCase):
         body = self._start_session()
         resp = self._send(body["widgetCredential"], body["conversation"]["id"], "  ")
         self.assertEqual(resp.status_code, 400)
+
+    def test_voice_and_file_round_trip(self) -> None:
+        from unittest import mock
+
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        from chatballs.conversations.models import ControlMode, Conversation, MessageKind
+
+        body = self._start_session()
+        self.assertTrue(body["features"]["voiceMessages"])
+        credential = body["widgetCredential"]
+        # Голосовое: стенограмма → AI отвечает текстом.
+        with (
+            mock.patch("chatballs.ai.provider.local.LocalProvider.transcribe", return_value="Не работает импорт"),
+            mock.patch("chatballs.support.messages.run_channel_turn", return_value=mock.Mock(text="Проверьте формат файла.")) as run,
+        ):
+            posted = self.client.post(
+                "/api/v1/support/sessions/messages/",
+                data={"audio": SimpleUploadedFile("voice.webm", b"WEBMDATA", content_type="audio/webm"), "duration": "3"},
+                format="multipart",
+                HTTP_AUTHORIZATION=f"Bearer {credential}",
+            )
+        self.assertEqual(posted.status_code, 201, posted.content)
+        self.assertEqual(run.call_args.kwargs["message"], "Не работает импорт")
+        conversation = Conversation.objects.get(id=body["conversation"]["id"])
+        voice = conversation.messages.get(kind=MessageKind.VOICE)
+        self.assertEqual(voice.transcript, "Не работает импорт")
+        items = self._poll(credential).json()["messages"]
+        voice_item = next(m for m in items if m["kind"] == MessageKind.VOICE)
+        self.assertTrue(voice_item["hasAudio"])
+        self.assertEqual(voice_item["durationSeconds"], 3)
+        self.assertIn("Проверьте формат файла.", [m["text"] for m in items])
+        audio = self.client.get(f"/api/v1/support/sessions/messages/{voice.id}/audio/?credential={credential}")
+        self.assertEqual(audio.status_code, 200)
+        self.assertEqual(audio.headers["Content-Type"], "audio/webm")
+        self.assertEqual(self.client.get(f"/api/v1/support/sessions/messages/{voice.id}/audio/?credential=bad").status_code, 401)
+
+        # Файл без подписи — диалог оператору; вложение отдаётся по credential.
+        posted = self.client.post(
+            "/api/v1/support/sessions/messages/",
+            data={"file": SimpleUploadedFile("лог.txt", b"error", content_type="text/plain")},
+            format="multipart",
+            HTTP_AUTHORIZATION=f"Bearer {credential}",
+        )
+        self.assertEqual(posted.status_code, 201, posted.content)
+        conversation.refresh_from_db()
+        self.assertEqual(conversation.control_mode, ControlMode.PAUSED)
+        attachment = conversation.messages.get(kind=MessageKind.FILE)
+        item = next(m for m in self._poll(credential).json()["messages"] if m["kind"] == MessageKind.FILE)
+        self.assertEqual(item["attachment"]["name"], "лог.txt")
+        served = self.client.get(f"/api/v1/support/sessions/messages/{attachment.id}/attachment/?credential={credential}")
+        self.assertEqual(served.status_code, 200)
+        self.assertEqual(b"".join(served.streaming_content), b"error")
+
+    def test_voice_disabled_for_entry_point(self) -> None:
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        self.widget.integration.voice_messages_enabled = False
+        self.widget.integration.save(update_fields=["voice_messages_enabled"])
+        body = self._start_session()
+        self.assertFalse(body["features"]["voiceMessages"])
+        posted = self.client.post(
+            "/api/v1/support/sessions/messages/",
+            data={"audio": SimpleUploadedFile("voice.webm", b"WEBMDATA", content_type="audio/webm")},
+            format="multipart",
+            HTTP_AUTHORIZATION=f"Bearer {body['widgetCredential']}",
+        )
+        self.assertEqual(posted.status_code, 400)
+

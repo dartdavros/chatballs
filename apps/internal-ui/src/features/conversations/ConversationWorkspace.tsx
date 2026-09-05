@@ -278,6 +278,7 @@ export function ConversationWorkspace({ isOwner = false, viewerId = null, listTi
         <Composer
           mode={controlMode}
           channel={selectedDialog?.channel}
+          voiceAllowed={detail?.connection?.voiceMessages ?? false}
           loaded={detailLoaded}
           assignedOperatorName={detail?.assignedOperator?.name}
           conversationId={selectedId}
@@ -293,8 +294,9 @@ export function ConversationWorkspace({ isOwner = false, viewerId = null, listTi
         dialog: selectedDialog,
         detail,
         applyConversation: applyUpdated,
-        // Звонки — в карточке контакта (решение 5); почта звонков не поддерживает.
-        startCall: detail?.lifecycle === "OPEN" && selectedDialog && selectedDialog.channel !== "EMAIL" ? (kind) => void callController.start(kind) : null,
+        // Звонки — в карточке контакта (решение 5); доступность по точке входа
+        // («Настройки → Голосовые и звонки»), почта звонков не поддерживает.
+        startCall: detail?.lifecycle === "OPEN" && (detail.connection?.audioCalls || detail.connection?.videoCalls) ? (kind) => void callController.start(kind) : null,
         // Кадр S2: выдвижная панель закрывается крестиком в её шапке.
         closeContext: () => setCtxOpen(false),
       })}
