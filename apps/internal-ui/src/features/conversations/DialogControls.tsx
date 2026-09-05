@@ -52,8 +52,8 @@ export function DialogControls({
   viewerId = null,
 }: {
   detail: ApiConversation;
-  groups: EmployeeGroupRef[];
-  employees: Array<{ id: number; name: string }>;
+  groups: Array<EmployeeGroupRef & { color?: string }>;
+  employees: Array<{ id: number; name: string; avatarUrl?: string | null }>;
   applyConversation: (updated: ApiConversation) => void;
   viewerId?: number | null;
 }) {
@@ -135,13 +135,13 @@ export function DialogControls({
                   { key: "none", label: <button type="button" className={assignee ? "" : "is-checked"} onClick={() => void run(() => setConversationAssignee(detail.id, null))}><span className="ctx-avatar-empty" /><span>Не назначен</span>{!assignee && <Icon name="check" size={15} />}</button> },
                   ...employees.map((employee) => ({
                     key: employee.id,
-                    label: <button type="button" className={assignee?.id === employee.id ? "is-checked" : ""} onClick={() => void run(() => setConversationAssignee(detail.id, employee.id))}><span className="ctx-avatar-small">{initials(employee.name)}</span><span>{employee.name}{viewerId === employee.id ? " · вы" : ""}</span>{assignee?.id === employee.id && <Icon name="check" size={15} />}</button>,
+                    label: <button type="button" className={assignee?.id === employee.id ? "is-checked" : ""} onClick={() => void run(() => setConversationAssignee(detail.id, employee.id))}><SmallAvatar name={employee.name} avatarUrl={employee.avatarUrl} /><span>{employee.name}{viewerId === employee.id ? " · вы" : ""}</span>{assignee?.id === employee.id && <Icon name="check" size={15} />}</button>,
                   })),
                 ],
               }}
             >
               <button type="button" className={`ctx-select ${assignee ? "" : "is-empty"}`}>
-                {assignee ? <span className="ctx-avatar-small">{initials(assignee.name)}</span> : <span className="ctx-avatar-empty" />}
+                {assignee ? <SmallAvatar name={assignee.name} avatarUrl={assignee.avatarUrl} /> : <span className="ctx-avatar-empty" />}
                 <span>{assigneeLabel}</span>
                 {canEdit && <Icon name="chevron" size={14} />}
               </button>
@@ -159,14 +159,14 @@ export function DialogControls({
                   { key: "none", label: <button type="button" className={detail.group ? "" : "is-checked"} onClick={() => void run(() => setConversationGroup(detail.id, null))}><i className="ctx-dot is-muted" /><span>Без группы</span>{!detail.group && <Icon name="check" size={15} />}</button> },
                   ...groups.map((group) => ({
                     key: group.id,
-                    label: <button type="button" className={detail.group?.id === group.id ? "is-checked" : ""} onClick={() => void run(() => setConversationGroup(detail.id, group.id))}><i className="ctx-dot" style={{ background: groupColorOf(group.id) }} /><span>{group.name}</span>{detail.group?.id === group.id && <Icon name="check" size={15} />}</button>,
+                    label: <button type="button" className={detail.group?.id === group.id ? "is-checked" : ""} onClick={() => void run(() => setConversationGroup(detail.id, group.id))}><i className="ctx-dot" style={{ background: groupColorOf(group.id, group.color) }} /><span>{group.name}</span>{detail.group?.id === group.id && <Icon name="check" size={15} />}</button>,
                   })),
                   { key: "note", type: "group" as const, className: "ctx-menu-note", label: "Диалог без группы видят все сотрудники." },
                 ],
               }}
             >
               <button type="button" className="ctx-select">
-                <i className={`ctx-dot ${detail.group ? "" : "is-muted"}`} style={detail.group ? { background: groupColorOf(detail.group.id) } : undefined} />
+                <i className={`ctx-dot ${detail.group ? "" : "is-muted"}`} style={detail.group ? { background: groupColorOf(detail.group.id, detail.group.color) } : undefined} />
                 <span>{detail.group?.name ?? "Без группы"}</span>
                 {canEdit && <Icon name="chevron" size={14} />}
               </button>
@@ -320,4 +320,10 @@ export function archiveConversationAction(
       onError(error instanceof Error ? error.message : "Не удалось удалить диалог");
       return false;
     });
+}
+
+// Аватар 22px в поле «Ответственный»: фото сотрудника или инициалы.
+function SmallAvatar({ name, avatarUrl }: { name: string; avatarUrl?: string | null }) {
+  if (avatarUrl) return <span className="ctx-avatar-small has-photo"><img src={avatarUrl} alt="" /></span>;
+  return <span className="ctx-avatar-small">{initials(name)}</span>;
 }

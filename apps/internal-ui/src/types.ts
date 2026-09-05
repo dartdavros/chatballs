@@ -12,6 +12,7 @@ export type EmployeeGroupRef = {
 };
 
 export type EmployeeGroup = EmployeeGroupRef & {
+  color: string;
   memberCount: number;
   memberIds: number[];
   createdAt: string;
@@ -34,6 +35,7 @@ export type AuthenticatedUser = {
   id: number;
   email: string;
   fullName: string;
+  avatarUrl?: string | null;
   mustChangePassword: boolean;
   totpEnabled: boolean;
   deliveryMode: DeliveryMode;
@@ -71,6 +73,7 @@ export type Employee = {
   id: number;
   email: string;
   fullName: string;
+  avatarUrl?: string | null;
   role: Role;
   positionTitle: string;
   phone: string;

@@ -414,3 +414,15 @@
   color: var(--text-tertiary);
   font-size: 12px;
 }
+
+/* Фото профиля: превью 56px, без нижней границы поля логотипа. */
+.profile-avatar-field {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.profile-avatar-preview .avatar {
+  width: 56px;
+  height: 56px;
+  font-size: 18px;
+}

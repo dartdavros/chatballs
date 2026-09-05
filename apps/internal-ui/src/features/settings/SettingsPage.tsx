@@ -7,12 +7,15 @@ import { canManageSettings } from "../administration/model";
 import { useAdministration } from "../administration/useAdministration";
 import { IntegrationsSection } from "../integrations/IntegrationsSection";
 import { ProfileAppearanceCard } from "../profile/ProfileAppearanceCard";
+import { ProfileAvatarCard } from "../profile/ProfileAvatarCard";
 import { ProfileNotificationsCard } from "../profile/ProfileNotificationsCard";
 import { ProfilePasswordForm } from "../profile/ProfilePasswordForm";
 import { ProfileSessionsCard } from "../profile/ProfileSessionsCard";
 import { ProfileTotpCard } from "../profile/ProfileTotpCard";
 import { useProfilePage } from "../profile/useProfilePage";
-import { EmptyState, LoadingState } from "../../shared/ui";
+import { EmptyState, LoadingState, PageHeader } from "../../shared/ui";
+import type { RouteKey } from "../../types";
+import { Icon } from "../../shared/icons";
 import { DemoDataCard } from "./DemoDataCard";
 import { GroupsSettingsCard } from "./GroupsSettingsCard";
 
@@ -21,12 +24,13 @@ import { GroupsSettingsCard } from "./GroupsSettingsCard";
 // разделы «Организация» и «Интеграции» упразднены. Сотруднику доступна
 // только профильная часть (тема, акцент, безопасность).
 
-export function SettingsPage({ user, onUserUpdated, reload, groups = [] }: { user: SessionUser; onUserUpdated: (user: SessionUser) => void; reload: () => void; groups?: EmployeeGroup[] }) {
+export function SettingsPage({ user, onUserUpdated, reload, groups = [], setRoute }: { user: SessionUser; onUserUpdated: (user: SessionUser) => void; reload: () => void; groups?: EmployeeGroup[]; setRoute: (route: RouteKey) => void }) {
   const profilePage = useProfilePage({ user, onUserUpdated, reload });
   const manager = isManager(user);
 
   const profileSections = (
     <>
+      <ProfileAvatarCard user={user} onUserUpdated={onUserUpdated} />
       <ProfileAppearanceCard user={user} onUserUpdated={onUserUpdated} />
       <ProfilePasswordForm passwords={profilePage.passwords} message={profilePage.passwordMessage} mismatch={profilePage.passwordMismatch} ready={profilePage.passwordReady} saving={profilePage.savingPassword} setPasswords={profilePage.setPasswords} onSubmit={profilePage.updatePassword} />
       <ProfileNotificationsCard />
@@ -36,11 +40,12 @@ export function SettingsPage({ user, onUserUpdated, reload, groups = [] }: { use
   );
 
   if (!manager) {
-    return <div className="profile-stack">{profileSections}</div>;
+    return <div className="profile-stack"><PageHeader title="Настройки" />{profileSections}</div>;
   }
 
   return (
     <div className="profile-stack settings-screen">
+      <PageHeader title="Настройки" />
       <SettingsSection title="Организация">
         <OrganizationSection user={user} onUserUpdated={onUserUpdated} />
       </SettingsSection>
@@ -52,6 +57,12 @@ export function SettingsPage({ user, onUserUpdated, reload, groups = [] }: { use
       </SettingsSection>
       <SettingsSection title="Интеграции" note="Боты, почта и Web-виджет — точки входа диалогов">
         <IntegrationsSection kind="MESSENGER" />
+      </SettingsSection>
+      <SettingsSection title="Знания и аудит" note="База знаний агентов и журнал действий — отдельными экранами">
+        <div className="settings-links">
+          <button className="link has-icon" type="button" onClick={() => setRoute("aiKnowledge")}><Icon name="folder" size={15} />База знаний</button>
+          <button className="link has-icon" type="button" onClick={() => setRoute("administrationAudit")}><Icon name="list" size={15} />Аудит действий</button>
+        </div>
       </SettingsSection>
       <SettingsSection title="Демо-данные" note="Посмотреть систему в работе на вымышленной организации">
         <DemoDataCard reload={reload} />

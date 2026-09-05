@@ -66,7 +66,6 @@
       "code": "portal",
       "name": "Личный кабинет",
       "group": "support",
-      "product": "atelie-nord-site",
       "aiStatus": "ACTIVE",
       "persona": "Ты — помощник личного кабинета ателье «Норд»: заказы, оплата, статусы, доставка, возвраты. Клиент авторизован — его заказы известны.",
       "tone": "Спокойно и по делу.",
@@ -86,7 +85,8 @@
         "requires_authenticated_product_identity": true,
         "allow_anonymous_sessions": false,
         "allow_self_reported_contact": false
-      }
+      },
+      "product": "atelie-nord-site"
     },
     {
       "key": "reception",

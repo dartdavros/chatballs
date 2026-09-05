@@ -1,0 +1,30 @@
+/* Фоновый узор из lucide-иконок (макет «Chatbolls — Lucide Pattern»). */
+.icon-wallpaper {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--wallpaper-bg);
+  transition: background-color 160ms ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.wallpaper-pattern {
+  position: absolute;
+  inset: -120px;
+  overflow: hidden;
+  color: var(--wallpaper-ink);
+}
+
+.wallpaper-glyph {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  transform-origin: center;
+  will-change: transform;
+}
+
+.wallpaper-glyph svg {
+  width: 100%;
+  height: 100%;
+}

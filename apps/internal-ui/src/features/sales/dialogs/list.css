@@ -476,11 +476,18 @@ img.sales-dialog-avatar {
   justify-content: center;
   width: 18px;
   height: 18px;
+  overflow: hidden;
   color: #ffffff;
   background: var(--primary);
   border-radius: 50%;
   font-size: 8px;
   font-weight: 600;
+}
+
+.app-dropdown.scope-dropdown .scope-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 /* Inline-подсказка первого визита (кадр A1). */

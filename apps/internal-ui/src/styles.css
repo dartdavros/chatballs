@@ -4,7 +4,7 @@
 @import "./shared/design-components.css";
 @import "./features/auth/styles.css";
 @import "./layout/styles.css";
-@import "./layout/topbar.css";
+@import "./shared/wallpaper.css";
 @import "./layout/page.css";
 @import "./features/sales/clients/styles.css";
 @import "./features/sales/client-detail/styles.css";

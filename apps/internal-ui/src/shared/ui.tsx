@@ -8,6 +8,9 @@ import { initials, productAccent } from "./utils";
 
 export function Avatar({ user, employee }: { user?: SessionUser; employee?: Employee }) {
   const label = employee ? initials(employee.fullName, employee.email) : initials(user?.fullName ?? "", user?.email ?? "");
+  const photo = employee ? employee.avatarUrl : user?.avatarUrl;
+  // Фото сотрудника (дизайн-базлайн v2); без фото — инициалы на акценте.
+  if (photo) return <span className="avatar has-photo"><img src={photo} alt="" /></span>;
   return <span className="avatar">{label}</span>;
 }
 

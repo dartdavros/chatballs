@@ -3,6 +3,7 @@ import { useState } from "react";
 
 import { api } from "../../api/client";
 import { Icon } from "../../shared/icons";
+import { groupColorOf } from "../conversations/model";
 import { Button } from "../../shared/ui-controls";
 import type { EmployeeGroup } from "../../types";
 
@@ -10,8 +11,20 @@ import type { EmployeeGroup } from "../../types";
 // участников, создание — одно поле, переименование и удаление. Состав группы
 // редактируется на карточке сотрудника.
 
+const GROUP_COLORS: Array<[string, string]> = [
+  ["#1677ff", "Синий"],
+  ["#2aa876", "Зелёный"],
+  ["#eb2f96", "Розовый"],
+  ["#fa8c16", "Оранжевый"],
+  ["#722ed1", "Фиолетовый"],
+  ["#13c2c2", "Бирюзовый"],
+  ["#52c41a", "Салатовый"],
+  ["#f5222d", "Красный"],
+];
+
 export function GroupsSettingsCard({ groups, reload }: { groups: EmployeeGroup[]; reload: () => void }) {
   const [name, setName] = useState("");
+  const [renameColor, setRenameColor] = useState("");
   const [creating, setCreating] = useState(false);
   const [errorText, setErrorText] = useState("");
   const [renaming, setRenaming] = useState<EmployeeGroup | null>(null);
@@ -39,7 +52,7 @@ export function GroupsSettingsCard({ groups, reload }: { groups: EmployeeGroup[]
     if (!renaming) return;
     setModalError("");
     try {
-      await api(`/api/v1/company/groups/${renaming.id}/`, { method: "PATCH", body: JSON.stringify({ name: renameValue.trim() }) });
+      await api(`/api/v1/company/groups/${renaming.id}/`, { method: "PATCH", body: JSON.stringify({ name: renameValue.trim(), color: renameColor }) });
       setRenaming(null);
       reload();
     } catch (caught) {
@@ -67,10 +80,10 @@ export function GroupsSettingsCard({ groups, reload }: { groups: EmployeeGroup[]
         {groups.length === 0 && <p className="settings-section-note">Групп пока нет — все видят все диалоги.</p>}
         {groups.map((group) => (
           <div className="settings-group-row" key={group.id}>
-            <i className="chat-scope-dot" />
+            <i className="chat-scope-dot" style={{ background: groupColorOf(group.id, group.color) }} />
             <strong>{group.name}</strong>
             <small>{group.memberCount} чел.</small>
-            <button aria-label="Переименовать" type="button" onClick={() => { setModalError(""); setRenaming(group); setRenameValue(group.name); }}><Icon name="edit" size={14} /></button>
+            <button aria-label="Изменить" type="button" onClick={() => { setModalError(""); setRenaming(group); setRenameValue(group.name); setRenameColor(group.color || groupColorOf(group.id)); }}><Icon name="edit" size={14} /></button>
             <button aria-label="Удалить" type="button" onClick={() => { setModalError(""); setDeleting(group); }}><Icon name="trash" size={14} /></button>
           </div>
         ))}
@@ -86,9 +99,15 @@ export function GroupsSettingsCard({ groups, reload }: { groups: EmployeeGroup[]
       </div>
       {errorText && <div className="settings-section-error">{errorText}</div>}
       {renaming && (
-        <Modal open title="Переименовать группу" onCancel={() => setRenaming(null)} footer={null} destroyOnClose>
+        <Modal open title="Группа" onCancel={() => setRenaming(null)} footer={null} destroyOnClose>
           <div className="integration-form">
             <input className="settings-modal-input" value={renameValue} onChange={(event) => setRenameValue(event.target.value)} />
+            {/* Цвет точки группы в чате (дизайн-базлайн v2) — тот же стандарт свотчей, что у акцента. */}
+            <div className="appearance-accents settings-group-colors">
+              {GROUP_COLORS.map(([value, label]) => (
+                <button aria-label={label} className={renameColor === value ? "active" : ""} key={value} type="button" style={{ background: value }} onClick={() => setRenameColor(value)} />
+              ))}
+            </div>
             {modalError && <div className="integration-form-error">{modalError}</div>}
             <div className="integration-form-actions">
               <Button variant="secondary" onClick={() => setRenaming(null)}>Отмена</Button>

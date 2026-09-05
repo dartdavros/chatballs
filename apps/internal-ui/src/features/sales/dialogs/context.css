@@ -668,7 +668,57 @@
   margin: 6px 0 0;
   color: var(--n-3);
   font-size: 13px;
-  line-height: 1.4;
+  line-height: 1.5;
+}
+
+/* Карандаш у имени (макет: 24px, r6, иконка 14). */
+.ctx-edit-contact {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  border: 0;
+  border-radius: 6px;
+  padding: 0;
+  color: var(--n-5);
+  background: transparent;
+}
+
+.ctx-edit-contact:hover {
+  color: var(--n-2);
+  background: var(--n-9);
+}
+
+/* Inline-правка карточки контакта — тот же стандарт полей, что у заметки. */
+.ctx-contact-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.ctx-contact-edit input,
+.ctx-contact-edit textarea {
+  width: 100%;
+  padding: 6px 8px;
+  color: var(--n-2);
+  background: var(--surface-card);
+  border: 1px solid var(--n-7);
+  border-radius: 7px;
+  font-size: 13px;
+  outline: 0;
+  resize: vertical;
+}
+
+.ctx-contact-edit input:focus,
+.ctx-contact-edit textarea:focus {
+  border-color: var(--primary);
+}
+
+.ctx-contact-edit .ctx-note-actions {
+  margin-top: 2px;
 }
 
 .ctx-contact-description.is-empty {
@@ -910,11 +960,18 @@
   align-items: center;
   justify-content: center;
   flex: none;
+  overflow: hidden;
   color: #ffffff;
   background: var(--primary);
   border-radius: 50%;
   font-size: 9.5px;
   font-weight: 600;
+}
+
+.ctx-avatar-small img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .ctx-avatar-empty {

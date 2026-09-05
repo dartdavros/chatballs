@@ -1,10 +1,17 @@
 .sales-conversation {
+  position: relative;
   min-width: 320px;
   min-height: 0;
   display: flex;
   flex: 1;
   flex-direction: column;
   background: var(--surface-feed);
+}
+
+/* Обои ленты (макет владельца): за сообщениями, шапка и композер — поверх. */
+.sales-conversation > *:not(.icon-wallpaper) {
+  position: relative;
+  z-index: 1;
 }
 
 .sales-conversation-head {
@@ -278,9 +285,16 @@
 }
 
 .sales-message.operator .sales-message-avatar {
+  overflow: hidden;
   color: #ffffff;
   background: var(--primary);
   border-color: transparent;
+}
+
+.sales-message-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .sales-message-content {

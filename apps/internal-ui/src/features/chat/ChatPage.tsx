@@ -95,8 +95,8 @@ function ChatContextPanel({
   setRightTab: (tab: ChatRightTab) => void;
   dialog: ConversationListItem | null;
   detail: ApiConversation | null;
-  groups: EmployeeGroupRef[];
-  employees: Array<{ id: number; name: string }>;
+  groups: Array<EmployeeGroupRef & { color?: string }>;
+  employees: Array<{ id: number; name: string; avatarUrl?: string | null }>;
   applyConversation: (updated: ApiConversation) => void;
   startCall: ((kind: "AUDIO" | "VIDEO") => void) | null;
   closeContext: () => void;

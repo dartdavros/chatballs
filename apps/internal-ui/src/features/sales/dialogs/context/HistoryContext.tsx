@@ -43,7 +43,7 @@ export function HistoryContext({ detail }: { detail: ApiConversation | null }) {
           <div className="history-card-title"><strong>Текущий диалог</strong><span className="is-open">{LIFECYCLE[detail.lifecycle] ?? detail.lifecycle}</span></div>
           <div className="history-card-meta">
             <ChannelPill provider={detail.connection?.provider ?? null} />
-            <span>{detail.channel.name}{detail.group ? ` · ${detail.group.name}` : ""}</span>
+            <span>{detail.channel.name} · {detail.group ? detail.group.name : "без группы"}</span>
           </div>
           {detail.lastMessage?.text && <p>{detail.lastMessage.text.replace(/\s+/g, " ").slice(0, 120)}</p>}
         </div>
@@ -51,14 +51,21 @@ export function HistoryContext({ detail }: { detail: ApiConversation | null }) {
       {history.length === 0 && <p className="sales-context-muted">Других диалогов с этим контактом нет</p>}
       {history.map((item, index) => (
         <div className="history-card" key={item.id}>
-          <div className="history-card-title"><strong>{index === history.length - 1 ? "Первое обращение" : item.channelName}</strong><span>{fmtDate(item.lastActivityAt)}</span></div>
+          {/* Кадр F: тема — первая реплика клиента, последнее — «Первое обращение»; мета: агент · статус · кто вёл. */}
+          <div className="history-card-title"><strong>{index === history.length - 1 ? "Первое обращение" : (item.topic || item.channelName)}</strong><span>{fmtDate(item.lastActivityAt)}</span></div>
           <div className="history-card-meta">
             <ChannelPill provider={item.provider} />
-            <span>{item.channelName} · {LIFECYCLE[item.lifecycle] ?? item.lifecycle}{item.provider && !providerKey(item.provider) ? ` · ${providerLabel(item.provider)}` : ""}</span>
+            <span>{item.channelName} · {LIFECYCLE[item.lifecycle] ?? item.lifecycle} · {item.handledBy ? `${handledVerb(item.handledBy)} ${item.handledBy}` : "AI"}{item.provider && !providerKey(item.provider) ? ` · ${providerLabel(item.provider)}` : ""}</span>
           </div>
           {item.preview && <p>{item.preview}</p>}
         </div>
       ))}
     </div>
   );
+}
+
+// «вела Анна Ким» / «вёл Игорь Савельев» — по окончанию имени (женские имена на -а/-я).
+function handledVerb(name: string): string {
+  const first = name.trim().split(/\s+/)[0] ?? "";
+  return /[ая]$/i.test(first) && !/^(Никита|Илья|Кузьма|Савва|Лука|Фома)$/i.test(first) ? "вела" : "вёл";
 }

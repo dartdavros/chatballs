@@ -564,11 +564,23 @@
   align-items: center;
   justify-content: center;
   flex: none;
+  overflow: hidden;
   color: #ffffff;
   background: var(--primary);
   border-radius: 50%;
   font-size: 13px;
   font-weight: 600;
+}
+
+.avatar.has-photo {
+  background: var(--n-9);
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
 }
 
 .hub-main {

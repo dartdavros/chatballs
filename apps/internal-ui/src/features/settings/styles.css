@@ -188,3 +188,13 @@
     gap: 6px;
   }
 }
+
+.settings-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+}
+
+.settings-group-colors {
+  margin: 10px 0 4px;
+}

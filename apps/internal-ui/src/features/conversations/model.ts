@@ -7,6 +7,7 @@ export type ApiMessage = {
   author: "CONTACT" | "AI" | "OPERATOR" | "SYSTEM";
   authorUserId?: number | null;
   authorName?: string;
+  authorAvatarUrl?: string | null;
   kind?: string;
   text: string;
   contentHtml?: string;
@@ -25,6 +26,8 @@ export type HistoryItem = {
   lifecycle: "OPEN" | "CLOSED" | "SPAM";
   createdAt: string;
   lastActivityAt: string;
+  topic?: string;
+  handledBy?: string | null;
   preview: string;
 };
 
@@ -61,9 +64,9 @@ export type ConversationCounters = {
   waiting: number;
   mine: number;
   ungrouped: number;
-  groups: Array<{ id: number; name: string; count: number }>;
+  groups: Array<{ id: number; name: string; color?: string; count: number }>;
   agents: Array<{ id: number; code: string; name: string; count: number }>;
-  assignees: Array<{ id: number; name: string; count: number }>;
+  assignees: Array<{ id: number; name: string; count: number; avatarUrl?: string | null }>;
 };
 
 export type ReplyTemplateRef = { id: number; title: string; text: string; updatedAt: string };
@@ -75,15 +78,15 @@ export type ApiConversation = {
   // Источник identity: sales Contact (лид) ИЛИ verified SupportIdentitySnapshot.
   // ADR-HUB-0022: ровно один заполнен.
   // phone появляется после явного шаринга контакта; username (@логин TG/MAX) — только в detail-режиме.
-  contact: { id: number; name: string; email?: string; phone?: string; username?: string; avatarUrl?: string } | null;
+  contact: { id: number; name: string; email?: string; phone?: string; username?: string; avatarUrl?: string; description?: string; company?: string; city?: string } | null;
   supportIdentitySnapshot: SupportIdentitySnapshotRef | null;
   lifecycle: "OPEN" | "CLOSED" | "SPAM";
   controlMode: "AI" | "HUMAN" | "PAUSED";
   expectedResponder: string;
   assignedOperatorId: number | null;
-  assignedOperator: { id: number; name: string } | null;
+  assignedOperator: { id: number; name: string; avatarUrl?: string | null } | null;
   isAssignedToViewer: boolean;
-  group: { id: number; name: string } | null;
+  group: { id: number; name: string; color?: string } | null;
   // Дизайн-базлайн v2: приоритет, метки, заметка, архив.
   priority: ConversationPriority;
   labels: ConversationLabelRef[];
@@ -113,8 +116,9 @@ export function agentColorOf(code: string): string {
   return AGENT_PALETTE[hashCode(code) % AGENT_PALETTE.length];
 }
 
-export function groupColorOf(groupId: number): string {
-  return GROUP_PALETTE[groupId % GROUP_PALETTE.length];
+// Цвет группы — заданный в настройках (дизайн-базлайн v2), иначе палитра по id.
+export function groupColorOf(groupId: number, color?: string | null): string {
+  return color || GROUP_PALETTE[groupId % GROUP_PALETTE.length];
 }
 
 // Время в строке списка: сегодня — часы, вчера — «вчера», дальше — дата.
@@ -205,7 +209,7 @@ export function toConversationListItem(conversation: ApiConversation): Conversat
     agentName: conversation.channel.name,
     agentColor: agentColorOf(conversation.channel.code),
     groupName: conversation.group?.name ?? null,
-    groupColor: conversation.group ? groupColorOf(conversation.group.id) : "var(--n-5)",
+    groupColor: conversation.group ? groupColorOf(conversation.group.id, conversation.group.color) : "var(--n-5)",
     waitLabel:
       conversation.lifecycle === "OPEN" && conversation.controlMode === "PAUSED"
         ? waitLabelOf(conversation.lastActivityAt)
@@ -256,9 +260,13 @@ export const fetchWaitingCount = () => api<{ waiting: number }>("/api/v1/convers
 // Справочник блока «Диалог» (кадр G): все группы для переноса и коллеги для
 // назначения — доступен и сотруднику, у которого нет менеджерских списков.
 export type ChatDirectory = {
-  groups: Array<{ id: number; name: string }>;
-  employees: Array<{ id: number; name: string }>;
+  groups: Array<{ id: number; name: string; color?: string }>;
+  employees: Array<{ id: number; name: string; avatarUrl?: string | null }>;
 };
+
+// Карточка контакта из диалога (карандаш у имени, дизайн-базлайн v2).
+export const updateContactCard = (conversationId: number, fields: Partial<{ name: string; description: string; phone: string; company: string; city: string }>) =>
+  conversationAction(conversationId, "contact", fields);
 
 export const fetchChatDirectory = () => api<ChatDirectory>("/api/v1/conversations/directory/");
 

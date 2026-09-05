@@ -27,7 +27,14 @@ def message_payload(message: Message) -> dict[str, object]:
 
 
 def _last_message(conversation: Conversation) -> Message | None:
-    return conversation.messages.select_related("author_user").order_by("-created_at").first()
+    # Превью строки списка — последняя реплика клиента/AI/сотрудника; системные
+    # события («AI передал диалог») в превью не показываются (дизайн-базлайн v2, B).
+    return (
+        conversation.messages.exclude(author_type=MessageAuthor.SYSTEM)
+        .select_related("author_user")
+        .order_by("-created_at", "-id")
+        .first()
+    )
 
 
 def _pending_count(conversation: Conversation, last_read_id: int = 0) -> int:
@@ -45,6 +52,14 @@ def _pending_count(conversation: Conversation, last_read_id: int = 0) -> int:
 
 def _history_item(conversation: Conversation) -> dict[str, object]:
     last = _last_message(conversation)
+    # Тема карточки истории (кадр F) — первая реплика клиента; кто вёл — ответственный или AI.
+    first = (
+        conversation.messages.filter(author_type=MessageAuthor.CONTACT)
+        .order_by("created_at", "id")
+        .values_list("text", flat=True)
+        .first()
+    )
+    operator = conversation.assigned_operator
     return {
         "id": conversation.id,
         "channelName": conversation.channel.name,
@@ -52,6 +67,8 @@ def _history_item(conversation: Conversation) -> dict[str, object]:
         "lifecycle": conversation.lifecycle,
         "createdAt": conversation.created_at.isoformat(),
         "lastActivityAt": conversation.last_activity_at.isoformat(),
+        "topic": (first or "").replace("\n", " ")[:80],
+        "handledBy": (operator.full_name or operator.email) if operator else None,
         "preview": last.text.replace("\n", " ")[:80] if last else "",
     }
 
@@ -108,7 +125,7 @@ def _conversation_history(conversation: Conversation) -> list[Conversation]:
         qs = Conversation.objects.filter(contact_id=conversation.contact_id)
     return list(
         qs.exclude(id=conversation.id)
-        .select_related("channel", "connection")
+        .select_related("channel", "connection", "assigned_operator")
         .order_by("-last_activity_at")[:10]
     )
 
@@ -190,7 +207,7 @@ def conversation_payload(
         "createdAt": conversation.created_at.isoformat(),
     }
     if with_messages:
-        payload["messages"] = [message_payload(m) for m in conversation.messages.select_related("author_user").order_by("created_at")]
+        payload["messages"] = [message_payload(m) for m in conversation.messages.select_related("author_user").order_by("created_at", "id")]
         history = _conversation_history(conversation)
         payload["history"] = [_history_item(c) for c in history]
     else:

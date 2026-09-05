@@ -6,7 +6,6 @@ import { defaultRoute, isManager } from "../auth/access";
 import type { DialogScope } from "../features/conversations/ConversationWorkspace";
 import { agentColorOf, groupColorOf, type ConversationCounters } from "../features/conversations/model";
 import { LaunchChecklist } from "./LaunchChecklist";
-import { SidebarNavSection, type SidebarNavSectionItem } from "./SidebarNavSection";
 import { SidebarUserMenu } from "./SidebarUserMenu";
 
 // Сайдбар по дизайн-базлайну v2: у менеджера — плоские шесть пунктов (A1) и
@@ -37,12 +36,6 @@ function SidebarLink({ activeRoutes, badge, icon, label, route, routeKey, setRou
     </button>
   );
 }
-
-const SERVICE_ITEMS: SidebarNavSectionItem[] = [
-  { activeRoutes: ["aiKnowledge", "aiKnowledgeCreate", "aiKnowledgeDetail"], key: "aiKnowledge", label: "Знания" },
-  { activeRoutes: ["aiUsage"], key: "aiUsage", label: "Использование AI" },
-  { activeRoutes: ["administrationAudit"], key: "administrationAudit", label: "Аудит" },
-];
 
 export function Sidebar({
   route,
@@ -75,9 +68,6 @@ export function Sidebar({
   // Кадр S2: на ≤1024px сайдбар сжимается в рейку 60px; «развернуть»
   // раскрывает полный сайдбар поверх контента (состояние — в Shell, его же
   // открывает ☰ мобильной шапки чата, кадр M1).
-  const sectionStorageKey = (section: string) => (
-    `chatbolls.sidebar.${user.organizationPublicId}.${section}.expanded`
-  );
   const initials = (user.fullName || user.email)
     .split(/\s+/)
     .map((part) => part[0] ?? "")
@@ -136,17 +126,7 @@ export function Sidebar({
           <SidebarLink activeRoutes={["agents", "agentDetail"]} icon="robot" label="Агенты" route={route} routeKey="agents" setRoute={setRoute} />
           <SidebarLink activeRoutes={["employees", "employeeDetail"]} icon="team" label="Сотрудники" route={route} routeKey="employees" setRoute={setRoute} />
           <SidebarLink activeRoutes={["supportPortals", "supportPortalDetail"]} icon="columns" label="Доска" route={route} routeKey="supportPortals" setRoute={setRoute} />
-          <SidebarLink icon="settings" label="Настройки" route={route} routeKey="settings" setRoute={setRoute} />
-          <div className="hub-nav-divider" />
-          {/* Служебные разделы до их переезда в «Настройки» (SPEC-HUB-0031 §8.6). */}
-          <SidebarNavSection
-            icon="wrench"
-            items={SERVICE_ITEMS}
-            label="Ещё"
-            route={route}
-            setRoute={setRoute}
-            storageKey={sectionStorageKey("service")}
-          />
+          <SidebarLink activeRoutes={["settings", "aiKnowledge", "aiKnowledgeCreate", "aiKnowledgeDetail", "administrationAudit", "profile"]} icon="settings" label="Настройки" route={route} routeKey="settings" setRoute={setRoute} />
         </nav>
       ) : (
         <ChatScopeTree
@@ -207,7 +187,7 @@ function ChatScopeTree({
               type="button"
               onClick={() => setScope({ kind: "group", id: group.id, label: group.name })}
             >
-              <i className="chat-scope-dot" style={{ background: groupColorOf(group.id) }} />
+              <i className="chat-scope-dot" style={{ background: groupColorOf(group.id, group.color) }} />
               <span>{group.name}</span>
               <small>{group.count}</small>
             </button>

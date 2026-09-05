@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Icon } from "../../shared/icons";
+import { EmojiPicker } from "./EmojiPicker";
 import { useMediaQuery } from "../../shared/useMediaQuery";
 import { fetchReplyTemplates, sendOperatorMessage, sendVoiceMessage, type ReplyTemplateRef } from "./model";
 import { formatDuration } from "./VoiceMessage";
@@ -74,6 +75,20 @@ export function Composer({ mode, loaded, assignedOperatorName, conversationId, c
         <button className="composer-locked-action" type="button" onClick={onClaim}>Взять диалог</button>
       </div></div>
     );
+  }
+
+  // Вставка эмодзи в позицию курсора; фокус возвращается в поле.
+  function insertEmoji(emoji: string) {
+    const area = textareaRef.current;
+    const start = area?.selectionStart ?? text.length;
+    const end = area?.selectionEnd ?? text.length;
+    const next = text.slice(0, start) + emoji + text.slice(end);
+    setText(next);
+    window.requestAnimationFrame(() => {
+      if (!area) return;
+      area.focus();
+      area.setSelectionRange(start + emoji.length, start + emoji.length);
+    });
   }
 
   async function send() {
@@ -153,6 +168,7 @@ export function Composer({ mode, loaded, assignedOperatorName, conversationId, c
             onBlur={() => setTemplatesOpen(false)}
           />
           <div className="composer-toolbar">
+            <EmojiPicker onPick={insertEmoji} disabled={sending} />
             {voiceAvailable && (
               <button className="composer-tool" title="Записать голосовое" aria-label="Записать голосовое" type="button" onClick={() => void recorder.start()}>
                 <Icon name="mic" size={17} />

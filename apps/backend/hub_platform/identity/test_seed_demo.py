@@ -121,10 +121,10 @@ class DemoDatasetTests(TestCase):
         conversations = Conversation.objects.filter(organization=organization)
         self.assertEqual(conversations.filter(lifecycle=LifecycleState.SPAM).count(), 1)
         self.assertGreaterEqual(conversations.filter(lifecycle=LifecycleState.CLOSED).count(), 3)
-        self.assertEqual(conversations.filter(archived_at__isnull=False).count(), 3)
+        self.assertEqual(conversations.filter(archived_at__isnull=False).count(), 5)
         self.assertEqual(conversations.filter(control_mode="PAUSED", lifecycle="OPEN").count(), 1)
         # Основной список — ровно семь диалогов кадров (архив и спам скрыты).
-        self.assertEqual(conversations.filter(archived_at__isnull=True).exclude(lifecycle=LifecycleState.SPAM).exclude(contact=Contact.objects.get(organization=organization, name="Мария Соколова"), lifecycle=LifecycleState.CLOSED).count(), 7)
+        self.assertEqual(conversations.filter(archived_at__isnull=True).exclude(lifecycle=LifecycleState.SPAM).count(), 7)
         self.assertTrue(conversations.filter(assigned_operator=anna).exists())
         elena = HumanUser.objects.get(email="e.kuznetsova@atelie-nord.ru")
         self.assertTrue(elena.avatar, "фото сотрудника из медиа демо")

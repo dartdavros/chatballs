@@ -99,7 +99,7 @@ function MessageRow({ message, dialog, viewerId }: { message: ApiMessage; dialog
       ? `${message.authorName || "Сотрудник"}${viewerId != null && message.authorUserId === viewerId ? " · вы" : ""}`
       : undefined;
   return (
-    <Message side={side} actor={actor} actorColor={message.author === "AI" ? dialog.agentColor : undefined} time={fmtTime(message.createdAt)} authorInitials={message.authorName ? initialsOf(message.authorName) : ""}>
+    <Message side={side} actor={actor} actorColor={message.author === "AI" ? dialog.agentColor : undefined} time={fmtTime(message.createdAt)} authorInitials={message.authorName ? initialsOf(message.authorName) : ""} authorAvatarUrl={message.authorAvatarUrl ?? null}>
       {message.kind === "voice"
         ? <VoiceMessage message={message} />
         : message.author === "CONTACT" && dialog.channel === "EMAIL"
@@ -115,12 +115,12 @@ function StatusBadge({ status }: { status: StatusInfo }) {
 
 // Сообщения (решение 4a): у клиента аватара нет — он в шапке; исходящие справа
 // с аватаром AI/сотрудника, подписью и отметкой доставки.
-function Message({ side, actor, actorColor, authorInitials, time, children }: { side: "ai" | "client" | "operator"; actor?: string; actorColor?: string; authorInitials?: string; time: string; children: ReactNode }) {
+function Message({ side, actor, actorColor, authorInitials, authorAvatarUrl, time, children }: { side: "ai" | "client" | "operator"; actor?: string; actorColor?: string; authorInitials?: string; authorAvatarUrl?: string | null; time: string; children: ReactNode }) {
   return (
     <div className={`sales-message ${side}`}>
       {side !== "client" && (
         <div className="sales-message-avatar" style={side === "ai" && actorColor ? { color: actorColor, background: `color-mix(in srgb, ${actorColor} 14%, var(--surface-card))`, borderColor: `color-mix(in srgb, ${actorColor} 30%, var(--surface-card))` } : undefined}>
-          {side === "ai" ? <Icon name="robot" size={16} /> : <span>{authorInitials}</span>}
+          {side === "ai" ? <Icon name="robot" size={16} /> : authorAvatarUrl ? <img src={authorAvatarUrl} alt="" /> : <span>{authorInitials}</span>}
         </div>
       )}
       <div className="sales-message-content">

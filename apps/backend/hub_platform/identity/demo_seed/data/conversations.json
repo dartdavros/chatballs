@@ -273,29 +273,29 @@
       "priority": "MEDIUM",
       "labels": [],
       "note": "",
-      "createdMinutesAgo": 16,
-      "lastActivityMinutesAgo": 10,
+      "createdMinutesAgo": 12,
+      "lastActivityMinutesAgo": 6,
       "readBy": [],
       "messages": [
         {
           "author": "CONTACT",
           "text": "Добрый день. У вас можно заказать шторы по своим размерам?",
-          "minutesAgo": 16
+          "minutesAgo": 12
         },
         {
           "author": "AI",
           "text": "Добрый день! Да, шьём по индивидуальным размерам. Подскажите ширину и высоту окна — рассчитаю стоимость.",
-          "minutesAgo": 16
+          "minutesAgo": 11.7
         },
         {
           "author": "CONTACT",
           "text": "Хочу поговорить с человеком",
-          "minutesAgo": 10
+          "minutesAgo": 6
         },
         {
           "author": "SYSTEM",
           "text": "AI передал диалог: клиент попросил сотрудника",
-          "minutesAgo": 10
+          "minutesAgo": 6
         }
       ]
     },
@@ -383,6 +383,7 @@
           "voice": {
             "file": "artem-prepayment.ogg",
             "contentType": "audio/ogg",
+            "durationSeconds": 4,
             "transcriptStatus": "READY",
             "transcript": "Предоплата какая? Желательно, чтобы вы указали в процентах."
           },
@@ -488,6 +489,7 @@
           "voice": {
             "file": "olga-eighty-cm.ogg",
             "contentType": "audio/ogg",
+            "durationSeconds": 3,
             "transcriptStatus": "READY",
             "transcript": "Вы видите? Ровно восемьдесят сантиметров!"
           },
@@ -504,6 +506,7 @@
           "voice": {
             "file": "elena-start-with-numbers.ogg",
             "contentType": "audio/ogg",
+            "durationSeconds": 7,
             "transcriptStatus": "NONE"
           },
           "minutesAgo": 108,
@@ -515,6 +518,7 @@
           "voice": {
             "file": "olga-saturday-post.ogg",
             "contentType": "audio/ogg",
+            "durationSeconds": 3,
             "transcriptStatus": "READY",
             "transcript": "А по субботам почта доставляет посылки?"
           },
@@ -602,6 +606,7 @@
       "priority": "NONE",
       "labels": [],
       "note": "",
+      "archivedDaysAgo": 20,
       "createdDaysAgo": 24,
       "lastActivityDaysAgo": 24,
       "readBy": [
@@ -662,6 +667,7 @@
       "priority": "NONE",
       "labels": [],
       "note": "",
+      "archivedDaysAgo": 30,
       "createdDaysAgo": 33,
       "lastActivityDaysAgo": 33,
       "readBy": [
@@ -803,6 +809,30 @@
           "author": "SYSTEM",
           "text": "AI передал диалог: клиент просит сотрудника",
           "minutesAgo": 200,
+          "daysAgo": 2
+        },
+        {
+          "author": "OPERATOR",
+          "authorUser": "igor",
+          "text": "Полина, здравствуйте! Игорь Савельев. Письма уходили на адрес с опечаткой — исправил, ссылка на сброс отправлена повторно.",
+          "daysAgo": 2,
+          "contentHtml": "<p>Полина, здравствуйте!</p><p>Письма уходили на адрес с опечаткой — исправил, ссылка на сброс отправлена повторно.</p><p>Игорь Савельев, поддержка</p>"
+        },
+        {
+          "author": "SYSTEM",
+          "text": "Диалог закрыт · вёл Игорь Савельев",
+          "daysAgo": 2
+        },
+        {
+          "author": "OPERATOR",
+          "authorUser": "igor",
+          "text": "Полина, здравствуйте! Игорь Савельев. Письма уходили на адрес с опечаткой — исправил, ссылка на сброс отправлена повторно.",
+          "daysAgo": 2,
+          "contentHtml": "<p>Полина, здравствуйте!</p><p>Письма уходили на адрес с опечаткой — исправил, ссылка на сброс отправлена повторно.</p><p>Игорь Савельев, поддержка</p>"
+        },
+        {
+          "author": "SYSTEM",
+          "text": "Диалог закрыт · вёл Игорь Савельев",
           "daysAgo": 2
         },
         {

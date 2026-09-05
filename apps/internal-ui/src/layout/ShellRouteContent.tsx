@@ -32,7 +32,7 @@ export function ShellRouteContent({ chatScope, setChatScope, chatCounters, chatS
       {route === "employeeDetail" && currentEmployee && <EmployeeDetailPage groups={data.groups} employee={currentEmployee} reload={reload} setRoute={setRoute} user={user} />}
       {route === "employeeDetail" && !currentEmployee && <EmployeesPage groups={data.groups} employees={data.employees} reload={reload} openEmployee={openEmployee} setRoute={setRoute} user={user} />}
       {route === "profile" && <ProfilePage user={user} onUserUpdated={onUserUpdated} reload={reload} onLogout={onLogout} />}
-      {route === "settings" && <SettingsPage user={user} onUserUpdated={onUserUpdated} reload={reload} groups={data.groups} />}
+      {route === "settings" && <SettingsPage user={user} onUserUpdated={onUserUpdated} reload={reload} groups={data.groups} setRoute={setRoute} />}
       {route === "administrationAudit" && (
         <AdministrationPage
           route={route}

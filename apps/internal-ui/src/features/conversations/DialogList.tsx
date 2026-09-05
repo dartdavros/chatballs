@@ -158,7 +158,7 @@ function ScopeSwitcher({ scope, counters, setScope, fallbackTitle, total, viewer
     ...(counters.groups.length > 0
       ? [
           head("groups-head", "Группы"),
-          ...counters.groups.map((group) => item(`group-${group.id}`, { kind: "group", id: group.id, label: group.name }, <i className="scope-dot" style={{ background: groupColorOf(group.id) }} />, group.name, group.count)),
+          ...counters.groups.map((group) => item(`group-${group.id}`, { kind: "group", id: group.id, label: group.name }, <i className="scope-dot" style={{ background: groupColorOf(group.id, group.color) }} />, group.name, group.count)),
           item("ungrouped", { kind: "ungrouped" }, <i className="scope-dot is-muted" />, "Без группы", counters.ungrouped),
         ]
       : []),
@@ -174,7 +174,7 @@ function ScopeSwitcher({ scope, counters, setScope, fallbackTitle, total, viewer
     ...(counters.assignees.length > 0
       ? [
           head("assignees-head", "Ответственный"),
-          ...counters.assignees.map((assignee) => item(`assignee-${assignee.id}`, { kind: "assignee", id: assignee.id, label: assignee.name }, <span className="scope-avatar">{initialsOf(assignee.name)}</span>, assignee.id === viewerId ? `${assignee.name} · вы` : assignee.name, assignee.count)),
+          ...counters.assignees.map((assignee) => item(`assignee-${assignee.id}`, { kind: "assignee", id: assignee.id, label: assignee.name }, <span className={`scope-avatar ${assignee.avatarUrl ? "has-photo" : ""}`}>{assignee.avatarUrl ? <img src={assignee.avatarUrl} alt="" /> : initialsOf(assignee.name)}</span>, assignee.id === viewerId ? `${assignee.name} · вы` : assignee.name, assignee.count)),
         ]
       : []),
   ];
