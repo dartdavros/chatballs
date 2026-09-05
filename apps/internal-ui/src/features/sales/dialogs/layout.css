@@ -208,6 +208,20 @@
     padding: 16px 14px 8px;
   }
 
+  /* Кадр M2: пузырь до 84% ширины; волна голосового ужимается, а не вылезает. */
+  .sales-dialogs .sales-message-content {
+    max-width: 84%;
+  }
+
+  .sales-dialogs .voice-message {
+    min-width: 0;
+  }
+
+  .sales-dialogs .voice-message-wave {
+    min-width: 60px;
+    overflow: hidden;
+  }
+
   /* Кадр M2: компактный композер — поле и круглая кнопка отправки в одной строке. */
   .sales-dialogs .sales-composer {
     padding: 8px 12px 14px;
