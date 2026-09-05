@@ -7,14 +7,14 @@ from chatballs.ai.knowledge_policy_test_base import KnowledgePolicyTestBase
 from chatballs.ai.knowledge_types import UNCATEGORIZED_CATEGORY_NAME
 from chatballs.ai.models import AIAgent, AIAgentStatus, Knowledge, KnowledgeCategory
 from chatballs.channels.models import Channel
-from chatballs.identity.bootstrap import bootstrap_edevs_owner
+from chatballs.identity.bootstrap import bootstrap_owner
 from chatballs.testing import TenantAPIClient, system_tenant_context
 
 
 class KnowledgeMetadataImportTests(TestCase):
     def setUp(self) -> None:
-        result = bootstrap_edevs_owner(
-            email="owner@edevs.tech",
+        result = bootstrap_owner(
+            email="owner@example.com",
             password="temporary-password",
         )
         self.organization = result.organization
@@ -23,14 +23,14 @@ class KnowledgeMetadataImportTests(TestCase):
             context=self.context,
             name="Products",
         )
-        self.foxray = create_category(
+        self.app = create_category(
             context=self.context,
             name="FoxRay",
             parent=self.products,
         )
         self.client = TenantAPIClient()
         self.client.login(
-            username="owner@edevs.tech",
+            username="owner@example.com",
             password="temporary-password",
         )
 
@@ -63,7 +63,7 @@ class KnowledgeMetadataImportTests(TestCase):
 
         self.assertEqual(response.json()["created"], 1)
         knowledge = Knowledge.objects.get(title="FoxRay support")
-        self.assertEqual(knowledge.category_id, self.foxray.id)
+        self.assertEqual(knowledge.category_id, self.app.id)
 
     def test_unknown_category_path_fails_per_document(self) -> None:
         response = self._import(
@@ -115,7 +115,7 @@ class KnowledgeMetadataImportTests(TestCase):
 
         self.assertEqual(response.json()["updated"], 1)
         knowledge.refresh_from_db()
-        self.assertEqual(knowledge.category_id, self.foxray.id)
+        self.assertEqual(knowledge.category_id, self.app.id)
         self.assertTrue(agent.knowledge_items.filter(id=knowledge.id).exists())
 
     def test_metadata_only_update_keeps_existing_fragments(self) -> None:
@@ -135,7 +135,7 @@ class KnowledgeMetadataImportTests(TestCase):
 
         self.assertEqual(response.json()["updated"], 1)
         knowledge.refresh_from_db()
-        self.assertEqual(knowledge.category_id, self.foxray.id)
+        self.assertEqual(knowledge.category_id, self.app.id)
         self.assertEqual(
             list(knowledge.fragments.values_list("id", flat=True)),
             fragment_ids,

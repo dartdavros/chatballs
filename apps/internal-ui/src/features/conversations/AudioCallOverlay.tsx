@@ -2,7 +2,7 @@
 // Видео не запрашивается. Флоу: incoming/ringing → connecting → active → терминал,
 // без pre-call (нет этапа проверки камеры). Параллель VideoCallOverlay, но под аудио.
 
-import { AudioCallView, type AudioCallMode, buildAudioStatus, useCallRtcSession, useLoopingAudio } from "@edevs/ui";
+import { AudioCallView, type AudioCallMode, buildAudioStatus, useCallRtcSession, useLoopingAudio } from "@chatballs/ui";
 import { Modal } from "antd";
 import { useEffect, useState } from "react";
 

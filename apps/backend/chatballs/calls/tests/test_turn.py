@@ -9,8 +9,8 @@ from chatballs.calls.serializers import ice_servers_payload
 from chatballs.calls.turn import turn_credentials
 
 SECRET = "coturn-shared-secret"
-TURN_URLS = ["turn:hub.edevs.tech:3478?transport=udp", "turn:hub.edevs.tech:3478?transport=tcp"]
-STUN_URLS = ["stun:hub.edevs.tech:3478"]
+TURN_URLS = ["turn:example.com:3478?transport=udp", "turn:example.com:3478?transport=tcp"]
+STUN_URLS = ["stun:example.com:3478"]
 
 
 def _expected_credential(username: str, secret: str = SECRET) -> str:

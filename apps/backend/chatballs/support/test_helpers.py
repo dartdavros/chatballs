@@ -20,12 +20,12 @@ def _b64url_encode(raw: bytes) -> str:
 def make_support_token(
     *,
     secret: str,
-    iss: str = "foxray",
-    contract: str = "foxray.support.v1",
+    iss: str = "app",
+    contract: str = "app.support.v1",
     data: dict[str, Any] | None = None,
     exp_delta: int = 600,
     jti: str = "test_jti_001",
-    aud: str = "edevshub.support",
+    aud: str = "chatballs.support",
 ) -> str:
     """Подписанный HS256 Product Support Token для тестов."""
     header = {"alg": "HS256", "typ": "JWT"}

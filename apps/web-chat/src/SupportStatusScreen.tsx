@@ -3,7 +3,7 @@ import { ChatHeader } from "./ChatView";
 export const SUPPORT_ACCENT = "#1677ff";
 
 function closePanel() {
-  window.parent.postMessage({ type: "edevs-chat-close" }, "*");
+  window.parent.postMessage({ type: "chatballs-chat-close" }, "*");
 }
 
 export function supportShell(): React.CSSProperties {

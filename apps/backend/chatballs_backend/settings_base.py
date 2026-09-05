@@ -28,7 +28,7 @@ if _delivery_mode not in {"CLOUD", "SELF_HOSTED"}:
 CHATBALLS_DELIVERY_MODE = _delivery_mode
 ALLOWED_HOSTS = env_list("CHATBALLS_ALLOWED_HOSTS", ["localhost", "127.0.0.1"])
 if TESTING:
-    ALLOWED_HOSTS.extend(["testserver", ".help.custocrm.ru", ".localhost"])
+    ALLOWED_HOSTS.extend(["testserver", ".localhost"])
 CSRF_TRUSTED_ORIGINS = env_list("CHATBALLS_CSRF_TRUSTED_ORIGINS", [])
 
 # Запрещаем запуск в production с дефолтным/пустым ключом подписи.
@@ -139,14 +139,14 @@ TIME_ZONE = "Europe/Moscow"
 USE_I18N = True
 USE_TZ = True
 
-# Email (env-driven; console backend is the safe local default until SMTP Edevs is wired in E02).
+# Email (env-driven; console backend — безопасный локальный дефолт, SMTP задаётся установщиком).
 EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "")
 EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "true").lower() == "true"
-DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "Chatballs <no-reply@edevs.tech>")
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "Chatballs <no-reply@localhost>")
 
 # Base URL of the internal UI, used to build links inside transactional emails.
 INTERNAL_UI_BASE_URL = os.environ.get("INTERNAL_UI_BASE_URL", "http://localhost:5173")
@@ -214,9 +214,11 @@ CHATBALLS_STORAGE_BACKEND, MEDIA_ROOT, STORAGES = build_storage_settings(
 CHATBALLS_PUBLIC_BASE_URL = os.environ.get("CHATBALLS_PUBLIC_BASE_URL", "http://localhost:8000")
 
 # Публичные порталы поддержки размещаются на отдельных хостах.
+# Базовый домен порталов помощи задаёт установщик (CHATBALLS_HELP_BASE_DOMAIN);
+# по умолчанию — localhost, никаких зашитых доменов.
 CHATBALLS_HELP_BASE_DOMAIN = os.environ.get(
     "CHATBALLS_HELP_BASE_DOMAIN",
-    "help.custocrm.ru",
+    "localhost",
 ).strip().lower().rstrip(".")
 CHATBALLS_HELP_PUBLIC_SCHEME = os.environ.get("CHATBALLS_HELP_PUBLIC_SCHEME", "https").strip().lower()
 CHATBALLS_HELP_PUBLIC_PORT = os.environ.get("CHATBALLS_HELP_PUBLIC_PORT", "").strip()

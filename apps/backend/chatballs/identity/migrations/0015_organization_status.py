@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
                 max_length=32,
             ),
         ),
-        # Existing organizations (e.g. Edevs) are treated as already active.
+        # Existing organizations are treated as already active.
         migrations.RunSQL(
             sql="UPDATE identity_organization SET status = 'ACTIVE' WHERE status IS NULL;",
             reverse_sql=migrations.RunSQL.noop,

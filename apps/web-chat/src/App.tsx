@@ -25,10 +25,10 @@ const WIDGET_KEY = PARAMS.get("widgetKey") || "";
 const LEGACY_CHANNEL = PARAMS.get("channel") || "";
 const ENTRY = WIDGET_KEY ? { widgetKey: WIDGET_KEY } : { channel: LEGACY_CHANNEL };
 const HOST_ORIGIN = document.referrer ? new URL(document.referrer).origin : location.origin;
-const TOKEN_KEY = `edevs-chat-token:${WIDGET_KEY || `channel:${LEGACY_CHANNEL}`}`;
+const TOKEN_KEY = `chatballs-chat-token:${WIDGET_KEY || `channel:${LEGACY_CHANNEL}`}`;
 
 function closePanel() {
-  window.parent.postMessage({ type: "edevs-chat-close" }, "*");
+  window.parent.postMessage({ type: "chatballs-chat-close" }, "*");
 }
 
 export function App() {

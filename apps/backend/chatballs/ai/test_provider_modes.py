@@ -16,7 +16,7 @@ from chatballs.ai.provider.routing import (
 )
 from chatballs.ai.provider_selection import configure_agent_provider
 from chatballs.ai.tests import make_channel_with_agent
-from chatballs.identity.bootstrap import bootstrap_edevs_owner
+from chatballs.identity.bootstrap import bootstrap_owner
 from chatballs.identity.models import Organization
 from chatballs.integrations.models import Integration, IntegrationProvider
 from chatballs.integrations.services import IntegrationInput, create_integration
@@ -28,14 +28,14 @@ class ProviderModeTests(TestCase):
     """BYOK — единственный режим работы AI (ADR-HUB-0042 §3)."""
 
     def setUp(self) -> None:
-        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
-        self.organization = Organization.objects.get(slug="edevs")
+        bootstrap_owner(email="owner@example.com", password="temporary-password")
+        self.organization = Organization.objects.get(slug="demo")
         self.context = system_tenant_context(self.organization)
         self.channel, self.agent = make_channel_with_agent(
             self.organization,
             code="provider-mode-sales",
             name="Provider mode — продажи",
-            product=Product.objects.get(code="firepage"),
+            product=Product.objects.get(code="site"),
         )
 
     def _link_integration(
@@ -132,8 +132,8 @@ class AgentProviderOwnershipTests(TestCase):
     """SPEC-HUB-0027 §9 — провайдер живёт на агенте, канал не изменяется."""
 
     def setUp(self) -> None:
-        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
-        self.organization = Organization.objects.get(slug="edevs")
+        bootstrap_owner(email="owner@example.com", password="temporary-password")
+        self.organization = Organization.objects.get(slug="demo")
         self.context = system_tenant_context(self.organization)
         self.channel, self.agent = make_channel_with_agent(
             self.organization, code="byok", name="BYOK"

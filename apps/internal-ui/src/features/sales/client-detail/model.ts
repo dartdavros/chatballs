@@ -1,4 +1,4 @@
-import { avatarColor, channelMap, initialsOf, productMap, relativeTime, type ClientChannelCode, type ClientProductCode } from "../clients/model";
+import { avatarColor, channelMap, initialsOf, productStyle, relativeTime, type ClientChannelCode, type ClientProductRef } from "../clients/model";
 
 export type ClientDetailTab = "overview" | "dialogs" | "ids" | "consent" | "audit";
 
@@ -20,7 +20,7 @@ export type ApiClientDetail = {
   email: string;
   phone: string;
   channels: ClientChannelCode[];
-  products: ClientProductCode[];
+  products: ClientProductRef[];
   openDialogs: number;
   totalDialogs: number;
   firstContactAt: string;
@@ -67,7 +67,7 @@ export function toClientDetailVm(api: ApiClientDetail): ClientDetailVm {
     email: api.email || (isGuest ? "без контакта" : "—"),
     phone: api.phone || "—",
     channels: api.channels.map((code) => ({ label: channelMap[code].label, color: channelMap[code].color, bg: channelMap[code].bg })),
-    products: api.products.map((code) => ({ name: productMap[code].name, color: productMap[code].color, bg: productMap[code].bg })),
+    products: api.products.map((product) => ({ name: product.name, ...productStyle(product.code) })),
     summary: [
       { label: "Диалоги", value: String(api.totalDialogs) },
       { label: "Открытые", value: String(api.openDialogs) },

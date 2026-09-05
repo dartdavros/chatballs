@@ -1,6 +1,6 @@
 # Публичный JS-лоадер виджета (SPEC-HUB-0003 §3, SPEC-HUB-0010 §7.1). Подключается
 # одним тегом:
-#   <script src="https://hub.edevs.tech/chat-widget.js"
+#   <script src="https://<ваш-домен>/chat-widget.js"
 #           data-widget-key="wgt_public_key" async></script>
 # Authenticated host регистрирует async token provider через ChatballsChat.init;
 # Product Support Token никогда не попадает в URL или data-*.
@@ -8,7 +8,7 @@
 #
 # TODO (SPEC-HUB-0010 §7.3, security): для production настроить CSP
 # `frame-ancestors` для /chat/ (раздаётся vite/nginx, не Django — настраивается в
-# infra/deploy), разрешив домены продуктов Edevs (foxray.pro, firepage.ru и т.д.).
+# infra/deploy), разрешив домены сайтов, где стоит виджет.
 # Только origin недостаточен — support-виджет дополнительно проверяется signed
 # Product Support Token. Домены — у владельца.
 
@@ -40,13 +40,13 @@ LOADER_JS = r"""
   };
 
   var style = document.createElement("style");
-  style.textContent = "@keyframes edevs-chat-message-bump{0%,100%{transform:translateY(0)}35%{transform:translateY(-6px)}70%{transform:translateY(-2px)}}@keyframes edevs-chat-call-shake{0%,18%,100%{transform:translateX(0)}3%{transform:translateX(-5px)}6%{transform:translateX(5px)}9%{transform:translateX(-4px)}12%{transform:translateX(4px)}15%{transform:translateX(-2px)}}.edevs-chat-message-bump{animation:edevs-chat-message-bump .42s ease-out}.edevs-chat-call-shake{animation:edevs-chat-call-shake 3.2s ease-in-out infinite}.edevs-chat-launcher:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(22,119,255,0.45)}.edevs-chat-launcher:focus-visible{outline:3px solid rgba(22,119,255,0.45);outline-offset:2px}";
+  style.textContent = "@keyframes chatballs-chat-message-bump{0%,100%{transform:translateY(0)}35%{transform:translateY(-6px)}70%{transform:translateY(-2px)}}@keyframes chatballs-chat-call-shake{0%,18%,100%{transform:translateX(0)}3%{transform:translateX(-5px)}6%{transform:translateX(5px)}9%{transform:translateX(-4px)}12%{transform:translateX(4px)}15%{transform:translateX(-2px)}}.chatballs-chat-message-bump{animation:chatballs-chat-message-bump .42s ease-out}.chatballs-chat-call-shake{animation:chatballs-chat-call-shake 3.2s ease-in-out infinite}.chatballs-chat-launcher:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(22,119,255,0.45)}.chatballs-chat-launcher:focus-visible{outline:3px solid rgba(22,119,255,0.45);outline-offset:2px}";
   (document.head || document.documentElement).appendChild(style);
 
   // Launcher — «пилюля» с иконкой (Tabler brand-hipchat) и подписью. Иконка
   // вшита как inline SVG: на сайте продукта шрифта Tabler нет.
   var btn = document.createElement("button");
-  btn.className = "edevs-chat-launcher";
+  btn.className = "chatballs-chat-launcher";
   btn.type = "button";
   btn.setAttribute("aria-label", "Открыть чат");
   btn.style.cssText = "position:fixed;right:24px;bottom:24px;height:52px;padding:0 20px;border:none;border-radius:999px;background:#1677ff;box-shadow:0 8px 24px rgba(22,119,255,0.35);cursor:pointer;z-index:2147483000;display:flex;align-items:center;gap:9px;color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;font-size:15px;font-weight:600;line-height:1;letter-spacing:0;transition:transform .18s ease,box-shadow .18s ease;";
@@ -73,15 +73,15 @@ LOADER_JS = r"""
   }
 
   function bumpLauncher() {
-    btn.classList.remove("edevs-chat-message-bump");
+    btn.classList.remove("chatballs-chat-message-bump");
     void btn.offsetWidth;
-    btn.classList.add("edevs-chat-message-bump");
-    window.setTimeout(function () { btn.classList.remove("edevs-chat-message-bump"); }, 450);
+    btn.classList.add("chatballs-chat-message-bump");
+    window.setTimeout(function () { btn.classList.remove("chatballs-chat-message-bump"); }, 450);
   }
 
   function setCallActive(active) {
     callActive = active;
-    btn.classList.toggle("edevs-chat-call-shake", active);
+    btn.classList.toggle("chatballs-chat-call-shake", active);
     if (active) play(ringtone);
     else {
       ringtone.pause();
@@ -105,19 +105,19 @@ LOADER_JS = r"""
       if (e.origin !== origin || !frame || e.source !== frame.contentWindow) return;
       var d = e.data || {};
       if (d.instanceId && d.instanceId !== instanceId) return;
-      if (d.type === "edevs-chat-close") setOpen(false);
-      if (d.type === "edevs-chat-unread") {
+      if (d.type === "chatballs-chat-close") setOpen(false);
+      if (d.type === "chatballs-chat-unread") {
         unread = Boolean(d.unread);
         updateDot();
       }
-      if (d.type === "edevs-chat-activity" && d.kind === "message") {
+      if (d.type === "chatballs-chat-activity" && d.kind === "message") {
         unread = !open;
         updateDot();
         if (!open && !callActive) bumpLauncher();
         notification.currentTime = 0;
         play(notification);
       }
-      if (d.type === "edevs-chat-activity" && d.kind === "call") setCallActive(Boolean(d.active));
+      if (d.type === "chatballs-chat-activity" && d.kind === "call") setCallActive(Boolean(d.active));
       if (d.type === "chatballs-chat-token-request" && tokenProvider) {
         Promise.resolve().then(tokenProvider).then(function (token) {
           frame.contentWindow.postMessage({
@@ -151,7 +151,7 @@ LOADER_JS = r"""
   if (widgetKey && api._providers[widgetKey]) enableAuthenticated(api._providers[widgetKey]);
 
   function notifyOpened() {
-    try { frame.contentWindow.postMessage({ type: "edevs-chat-opened" }, origin); } catch (_) {}
+    try { frame.contentWindow.postMessage({ type: "chatballs-chat-opened" }, origin); } catch (_) {}
   }
 
   function setOpen(next) {

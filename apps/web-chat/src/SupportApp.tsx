@@ -46,7 +46,7 @@ function requestSupportToken(): Promise<string> {
 }
 
 function closePanel() {
-  window.parent.postMessage({ type: "edevs-chat-close" }, "*");
+  window.parent.postMessage({ type: "chatballs-chat-close" }, "*");
 }
 
 export function SupportApp() {

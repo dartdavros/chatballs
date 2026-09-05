@@ -1,4 +1,4 @@
-export { buildHubTheme, edevsHubTheme } from "./theme";
+export { buildTheme, chatballsTheme } from "./theme";
 export { CallView, type CallViewMode, type CallViewStatus } from "./call/CallView";
 export { AudioCallView } from "./call/AudioCallView";
 export { type AudioCallMode, type AudioCallStatus, buildAudioStatus, isAudioTerminal, formatDuration as formatAudioDuration } from "./call/audioCallStates";

@@ -3,8 +3,8 @@ import type { ThemeConfig } from "antd";
 
 // Персональная тема и акцент (SPEC-HUB-0031 §7): antd-конфиг собирается из
 // выбранных пользователем режима (light/dark) и акцентного цвета.
-export function buildHubTheme(dark: boolean, accent: string): ThemeConfig {
-  const base = edevsHubTheme;
+export function buildTheme(dark: boolean, accent: string): ThemeConfig {
+  const base = chatballsTheme;
   if (!dark) {
     return {
       ...base,
@@ -33,7 +33,7 @@ export function buildHubTheme(dark: boolean, accent: string): ThemeConfig {
   };
 }
 
-export const edevsHubTheme: ThemeConfig = {
+export const chatballsTheme: ThemeConfig = {
   token: {
     colorPrimary: "#1677ff",
     colorSuccess: "#52c41a",

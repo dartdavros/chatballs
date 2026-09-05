@@ -21,7 +21,7 @@ from typing import Any
 
 from chatballs.support import errors
 
-SUPPORT_AUDIENCE = "edevshub.support"
+SUPPORT_AUDIENCE = "chatballs.support"
 
 
 @dataclass(frozen=True)

@@ -2,7 +2,7 @@ from django.test import TestCase
 
 from chatballs.channels.models import Channel
 from chatballs.conversations.models import ConnectionIdentity, Contact, Conversation
-from chatballs.identity.bootstrap import bootstrap_edevs_owner
+from chatballs.identity.bootstrap import bootstrap_owner
 from chatballs.identity.models import (
     EmployeeRole,
     HumanUser,
@@ -44,12 +44,12 @@ class CallDomainMixin:
     могли использовать TransactionTestCase (consumer работает в потоках)."""
 
     def setUp(self) -> None:
-        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
-        self.organization = Organization.objects.get(slug="edevs")
+        bootstrap_owner(email="owner@example.com", password="temporary-password")
+        self.organization = Organization.objects.get(slug="demo")
         self.operators_group = self.organization.employee_groups.get(name="Операторы")
         self.support_group = self.organization.employee_groups.get(name="Поддержка")
-        self.owner = HumanUser.objects.get(email="owner@edevs.tech")
-        self.operator = HumanUser.objects.get(email="a.kotova@edevs.tech")
+        self.owner = HumanUser.objects.get(email="owner@example.com")
+        self.operator = HumanUser.objects.get(email="staff.member@example.org")
         self.channel = Channel.objects.create(
             organization=self.organization,
             group=self.operators_group,
@@ -80,7 +80,7 @@ class CallDomainMixin:
 
     def create_support_operator(self) -> HumanUser:
         user = HumanUser.objects.create_user(
-            email="support-operator@edevs.tech",
+            email="support-operator@example.com",
             password="support-password",
         )
         OrganizationMembership.objects.create(

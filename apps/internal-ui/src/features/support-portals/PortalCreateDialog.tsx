@@ -71,7 +71,7 @@ export function PortalCreateDialog({
     <Modal open={open} title="Новый портал поддержки" footer={null} onCancel={onClose}>
       <div className="portal-dialog-form">
         <p>Портал — это публичный центр помощи с инструкциями и ответами для клиентов.</p>
-        <FormField error={fieldErrors.name} label="Название портала" value={name} onChange={setName} placeholder="Например, Центр помощи Foxray" wide />
+        <FormField error={fieldErrors.name} label="Название портала" value={name} onChange={setName} placeholder="Например, Центр помощи" wide />
         <label className={`portal-address-field${fieldErrors.slug ? " is-invalid" : ""}`}>
           <span>Адрес Chatballs</span>
           <div>
@@ -79,7 +79,7 @@ export function PortalCreateDialog({
               type="text"
               value={slug}
               onChange={(event) => setSlug(event.target.value.toLocaleLowerCase())}
-              placeholder="foxray"
+              placeholder="help"
               autoComplete="off"
               maxLength={63}
               pattern="[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?"

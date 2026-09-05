@@ -21,7 +21,7 @@ export function useSalesClients(salesClients: SalesClient[]) {
     const normalizedQuery = query.trim().toLowerCase();
     const filtered = salesClients.filter((client) => {
       return (!normalizedQuery || client.name.toLowerCase().includes(normalizedQuery) || client.email.toLowerCase().includes(normalizedQuery) || client.phone.includes(normalizedQuery) || client.username.toLowerCase().includes(normalizedQuery))
-        && (productFilter.length === 0 || client.products.some((product) => productFilter.includes(product)))
+        && (productFilter.length === 0 || client.products.some((product) => productFilter.includes(product.code)))
         && (channelFilter.length === 0 || client.channels.some((channel) => channelFilter.includes(channel)))
         && (!openOnly || client.openDialogs > 0);
     });
@@ -48,7 +48,7 @@ export function useSalesClients(salesClients: SalesClient[]) {
 
   function toggleProduct(code: string) {
     setPage(1);
-    setProductFilter((current) => current.includes(code as ClientProductCode) ? current.filter((item) => item !== code) : [...current, code as ClientProductCode]);
+    setProductFilter((current) => current.includes(code) ? current.filter((item) => item !== code) : [...current, code]);
   }
 
   function toggleChannel(code: string) {

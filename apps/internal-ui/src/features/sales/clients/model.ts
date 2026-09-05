@@ -1,4 +1,6 @@
-export type ClientProductCode = "FP" | "FX";
+// Код продукта организации (любой) — справочник строится из данных, а не зашит.
+export type ClientProductCode = string;
+export type ClientProductRef = { code: ClientProductCode; name: string };
 export type ClientChannelCode = "EMAIL" | "MAX" | "TG" | "WEB";
 export type ClientSortKey = "last" | "open";
 export type ClientDropdown = "products" | "channels";
@@ -14,7 +16,7 @@ export type SalesClient = {
   username: string;
   anon?: boolean;
   channels: ClientChannelCode[];
-  products: ClientProductCode[];
+  products: ClientProductRef[];
   last: number;
   lastLabel: string;
   mode: "wait" | "ai" | "operator" | "closed";
@@ -35,21 +37,23 @@ export const channelMap = {
   WEB: { label: "Web", full: "Web Chat", color: "#0f9b8e", bg: "#e8f7f4" },
 } satisfies Record<ClientChannelCode, { label: string; full: string; color: string; bg: string }>;
 
-export const productMap = {
-  FP: { name: "FirePage", color: "#0958d9", bg: "#e6f4ff" },
-  FX: { name: "Foxray", color: "#722ed1", bg: "#f9f0ff" },
-} satisfies Record<ClientProductCode, { name: string; color: string; bg: string }>;
+// Цвет продукта — детерминированно по коду (одна палитра с аватарами).
+export function productStyle(code: string): { color: string; bg: string } {
+  const color = avatarColor(`product:${code}`);
+  return { color, bg: `color-mix(in srgb, ${color} 12%, var(--surface-card))` };
+}
+
+export function productOptionsOf(clients: SalesClient[]): Array<{ code: ClientProductCode; name: string }> {
+  const seen = new Map<string, string>();
+  for (const client of clients) for (const product of client.products) seen.set(product.code, product.name);
+  return [...seen.entries()].map(([code, name]) => ({ code, name })).sort((a, b) => a.name.localeCompare(b.name, "ru"));
+}
 
 export const channelOptions: Array<{ code: ClientChannelCode; name: string; color: string }> = [
   { code: "EMAIL", name: "Email", color: channelMap.EMAIL.color },
   { code: "MAX", name: "MAX", color: channelMap.MAX.color },
   { code: "TG", name: "Telegram", color: channelMap.TG.color },
   { code: "WEB", name: "Web Chat", color: channelMap.WEB.color },
-];
-
-export const productOptions: Array<{ code: ClientProductCode; name: string }> = [
-  { code: "FP", name: "FirePage" },
-  { code: "FX", name: "Foxray" },
 ];
 
 const statusDot = {
@@ -68,7 +72,7 @@ export type ApiClient = {
   email: string;
   username: string;
   channels: ClientChannelCode[];
-  products: ClientProductCode[];
+  products: ClientProductRef[];
   openDialogs: number;
   totalDialogs: number;
   lastActivityAt: string;
@@ -123,7 +127,7 @@ export function toSalesClientRow(client: SalesClient): SalesClientRowVm {
   return {
     ...client,
     channels: client.channels.map((channel) => channelMap[channel]),
-    products: client.products.map((product) => productMap[product]),
+    products: client.products.map((product) => ({ name: product.name, ...productStyle(product.code) })),
     lastDot: statusDot[client.mode],
     openColor: client.openDialogs > 0 ? "#d48806" : "#bfbfbf",
   };

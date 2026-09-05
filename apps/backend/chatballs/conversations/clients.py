@@ -24,7 +24,6 @@ PROVIDER_CODE = {
     "WEB": "WEB",
     "EMAIL": "EMAIL",
 }
-PRODUCT_CODE = {"firepage": "FP", "foxray": "FX"}
 
 # Понятные подписи для аудита диалогов.
 AUDIT_LABELS = {
@@ -64,14 +63,14 @@ def clients_overview(organization_id: int) -> list[dict]:
         if not conversations:
             continue  # клиенты — те, кто писал
         channels: set[str] = set()
-        products: set[str] = set()
+        products: dict[str, str] = {}
         open_dialogs = 0
         for conversation in conversations:
             provider = conversation.connection.provider if conversation.connection_id else None
             if provider in PROVIDER_CODE:
                 channels.add(PROVIDER_CODE[provider])
-            if conversation.channel.product_id and conversation.channel.product.code in PRODUCT_CODE:
-                products.add(PRODUCT_CODE[conversation.channel.product.code])
+            if conversation.channel.product_id:
+                products[conversation.channel.product.code] = conversation.channel.product.name
             if conversation.lifecycle == LifecycleState.OPEN:
                 open_dialogs += 1
         latest = conversations[0]
@@ -93,7 +92,7 @@ def clients_overview(organization_id: int) -> list[dict]:
                 # Первый непустой @логин среди identity каналов (остальные — в карточке).
                 "username": next((identity.username for identity in contact.identities.all() if identity.username), ""),
                 "channels": sorted(channels),
-                "products": sorted(products),
+                "products": [{"code": code, "name": name} for code, name in sorted(products.items())],
                 "openDialogs": open_dialogs,
                 "totalDialogs": len(conversations),
                 "lastActivityAt": latest.last_activity_at.isoformat(),
@@ -118,15 +117,15 @@ def client_detail(organization_id: int, contact_id: int) -> dict:
         raise Contact.DoesNotExist
 
     channels: set[str] = set()
-    products: set[str] = set()
+    products: dict[str, str] = {}
     open_dialogs = 0
     dialogs: list[dict] = []
     for conversation in conversations:
         provider = conversation.connection.provider if conversation.connection_id else None
         if provider in PROVIDER_CODE:
             channels.add(PROVIDER_CODE[provider])
-        if conversation.channel.product_id and conversation.channel.product.code in PRODUCT_CODE:
-            products.add(PRODUCT_CODE[conversation.channel.product.code])
+        if conversation.channel.product_id:
+            products[conversation.channel.product.code] = conversation.channel.product.name
         if conversation.lifecycle == LifecycleState.OPEN:
             open_dialogs += 1
         last = conversation.messages.order_by("-created_at").first()
@@ -202,7 +201,7 @@ def client_detail(organization_id: int, contact_id: int) -> dict:
             "",
         ),
         "channels": sorted(channels),
-        "products": sorted(products),
+        "products": [{"code": code, "name": name} for code, name in sorted(products.items())],
         "openDialogs": open_dialogs,
         "totalDialogs": len(conversations),
         "firstContactAt": contact.created_at.isoformat(),

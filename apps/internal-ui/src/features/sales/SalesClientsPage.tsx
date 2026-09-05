@@ -19,7 +19,7 @@ export function SalesClientsPage({ openClient }: { openClient: (id: number) => v
         <EmptyState title="Не удалось загрузить контакты" />
       ) : (
         <>
-          <SalesClientsFilters clients={clients} />
+          <SalesClientsFilters clients={clients} salesClients={data} />
           <SalesClientsTable clients={clients} openClient={openClient} />
         </>
       )}

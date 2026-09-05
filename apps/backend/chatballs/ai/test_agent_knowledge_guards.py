@@ -8,7 +8,7 @@ from chatballs.ai.models import AIAgent, AIAgentStatus
 from chatballs.ai.retrieval import lexical_search, semantic_search
 from chatballs.ai.runtime import knowledge_catalog
 from chatballs.channels.models import Channel
-from chatballs.identity.bootstrap import bootstrap_edevs_owner
+from chatballs.identity.bootstrap import bootstrap_owner
 from chatballs.identity.models import Organization
 from chatballs.tenancy.context import TenantContext
 from chatballs.testing import TenantAPIClient, system_tenant_context
@@ -16,8 +16,8 @@ from chatballs.testing import TenantAPIClient, system_tenant_context
 
 class AgentKnowledgeAssignmentTests(TestCase):
     def setUp(self) -> None:
-        result = bootstrap_edevs_owner(
-            email="owner@edevs.tech",
+        result = bootstrap_owner(
+            email="owner@example.com",
             password="temporary-password",
         )
         self.organization = result.organization
@@ -47,7 +47,7 @@ class AgentKnowledgeAssignmentTests(TestCase):
         )
         self.client = TenantAPIClient()
         self.client.login(
-            username="owner@edevs.tech",
+            username="owner@example.com",
             password="temporary-password",
         )
 
@@ -114,8 +114,8 @@ class AgentKnowledgeAssignmentTests(TestCase):
 
 class AgentKnowledgeRuntimeDefenseTests(TestCase):
     def setUp(self) -> None:
-        result = bootstrap_edevs_owner(
-            email="owner@edevs.tech",
+        result = bootstrap_owner(
+            email="owner@example.com",
             password="temporary-password",
         )
         self.context = system_tenant_context(result.organization)

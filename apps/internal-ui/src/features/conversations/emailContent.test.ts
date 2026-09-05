@@ -18,10 +18,10 @@ describe("splitQuotedEmail", () => {
   });
 
   it("separates an inline localized reply header", () => {
-    const text = "Держись\nСр, 22 июля 2026 г. в 21:10, Foxray <foxray@edevs.tech>: > Старое письмо";
+    const text = "Держись\nСр, 22 июля 2026 г. в 21:10, Foxray <foxray@example.com>: > Старое письмо";
     expect(splitQuotedEmail(text)).toEqual({
       latest: "Держись",
-      quoted: "Ср, 22 июля 2026 г. в 21:10, Foxray <foxray@edevs.tech>: > Старое письмо",
+      quoted: "Ср, 22 июля 2026 г. в 21:10, Foxray <foxray@example.com>: > Старое письмо",
     });
   });
 });

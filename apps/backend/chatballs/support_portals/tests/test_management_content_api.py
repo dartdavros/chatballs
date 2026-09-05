@@ -111,7 +111,7 @@ class SupportPortalContentManagementTests(SupportPortalTestCase):
 
     def test_support_operator_uses_portal_scoped_widget_options(self) -> None:
         portal_id = self.create_portal().json()["portal"]["id"]
-        widget = create_web_widget(self.channel, name="Foxray support widget")
+        widget = create_web_widget(self.channel, name="Приложение support widget")
         response = self.client.get(
             f"/api/v1/support/portals/{portal_id}/support-channels/"
         )

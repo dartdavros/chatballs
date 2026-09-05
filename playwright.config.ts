@@ -9,7 +9,7 @@ export default defineConfig({
     trace: "on-first-retry",
   },
   webServer: {
-    command: "npm --workspace @edevs/internal-ui run dev",
+    command: "npm --workspace @chatballs/internal-ui run dev",
     url: "http://localhost:5173",
     reuseExistingServer: true,
     timeout: 120_000,

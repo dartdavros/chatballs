@@ -22,7 +22,7 @@ from chatballs.conversations.models import (
 from chatballs.conversations.transports.base import InboundMessage
 from chatballs.conversations.transports import max as max_transport
 from chatballs.conversations.transports import telegram as telegram_transport
-from chatballs.identity.bootstrap import bootstrap_edevs_owner
+from chatballs.identity.bootstrap import bootstrap_owner
 from chatballs.identity.models import (
     EmployeeRole,
     HumanUser,
@@ -50,9 +50,9 @@ class IngestLimitHandlingTests(TestCase):
     """
 
     def setUp(self) -> None:
-        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
-        self.organization = Organization.objects.get(slug="edevs")
-        self.channel = Channel.objects.create(organization=self.organization, code="foxray-sales", name="FoxRay — продажи")
+        bootstrap_owner(email="owner@example.com", password="temporary-password")
+        self.organization = Organization.objects.get(slug="demo")
+        self.channel = Channel.objects.create(organization=self.organization, code="app-sales", name="FoxRay — продажи")
         AIAgent.objects.create(
             channel=self.channel,
             name="FoxRay Agent",
@@ -177,9 +177,9 @@ class ContactShareIngestTests(TestCase):
     клиенту уходит подтверждение (в TG — со снятием клавиатуры)."""
 
     def setUp(self) -> None:
-        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
-        self.organization = Organization.objects.get(slug="edevs")
-        self.channel = Channel.objects.create(organization=self.organization, code="foxray-sales", name="FoxRay — продажи")
+        bootstrap_owner(email="owner@example.com", password="temporary-password")
+        self.organization = Organization.objects.get(slug="demo")
+        self.channel = Channel.objects.create(organization=self.organization, code="app-sales", name="FoxRay — продажи")
         AIAgent.objects.create(
             channel=self.channel,
             name="FoxRay Agent",
@@ -231,9 +231,9 @@ class RequestContactApiTests(TestCase):
     и отправка кнопки в мессенджер; повторный запрос при известном телефоне — 409."""
 
     def setUp(self) -> None:
-        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
-        self.organization = Organization.objects.get(slug="edevs")
-        self.channel = Channel.objects.create(organization=self.organization, code="foxray-sales", name="FoxRay — продажи")
+        bootstrap_owner(email="owner@example.com", password="temporary-password")
+        self.organization = Organization.objects.get(slug="demo")
+        self.channel = Channel.objects.create(organization=self.organization, code="app-sales", name="FoxRay — продажи")
         self.integration = _messenger_connection(self.channel)
         self.contact = Contact.objects.create(organization=self.organization, name="Иван")
         ConnectionIdentity.objects.create(
@@ -244,7 +244,7 @@ class RequestContactApiTests(TestCase):
             contact=self.contact, external_chat_id="c1",
         )
         self.client = APIClient()
-        self.client.login(username="owner@edevs.tech", password="temporary-password")
+        self.client.login(username="owner@example.com", password="temporary-password")
 
     def test_request_contact_creates_message_and_sends_button(self) -> None:
         with mock.patch("chatballs.conversations.services.transports.send_contact_request", return_value=True) as send:
@@ -279,9 +279,9 @@ class ConversationReadTests(TestCase):
     непрочитанных (pendingCount) в списке гаснет без ответа оператора."""
 
     def setUp(self) -> None:
-        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
-        self.organization = Organization.objects.get(slug="edevs")
-        self.channel = Channel.objects.create(organization=self.organization, code="foxray-sales", name="FoxRay — продажи")
+        bootstrap_owner(email="owner@example.com", password="temporary-password")
+        self.organization = Organization.objects.get(slug="demo")
+        self.channel = Channel.objects.create(organization=self.organization, code="app-sales", name="FoxRay — продажи")
         self.integration = _messenger_connection(self.channel)
         contact = Contact.objects.create(organization=self.organization, name="Иван")
         self.conversation = Conversation.objects.create(
@@ -289,7 +289,7 @@ class ConversationReadTests(TestCase):
         )
         Message.objects.create(conversation=self.conversation, author_type=MessageAuthor.CONTACT, text="Хорошо")
         self.client = APIClient()
-        self.client.login(username="owner@edevs.tech", password="temporary-password")
+        self.client.login(username="owner@example.com", password="temporary-password")
 
     def _pending(self) -> int:
         items = self.client.get("/api/v1/conversations/").json()["items"]
@@ -310,12 +310,12 @@ class ConversationSearchTests(TestCase):
     полнотекстово (russian, websearch)."""
 
     def setUp(self) -> None:
-        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
-        self.organization = Organization.objects.get(slug="edevs")
+        bootstrap_owner(email="owner@example.com", password="temporary-password")
+        self.organization = Organization.objects.get(slug="demo")
         self.channel = Channel.objects.create(organization=self.organization, code="line", name="Линия")
         self.integration = _messenger_connection(self.channel)
         self.client = APIClient()
-        self.client.login(username="owner@edevs.tech", password="temporary-password")
+        self.client.login(username="owner@example.com", password="temporary-password")
 
     def _conversation(self, name: str, text: str) -> Conversation:
         contact = Contact.objects.create(organization=self.organization, name=name)
@@ -346,8 +346,8 @@ class WebchatContactTests(TestCase):
     в переписке появляются kind=contact и подтверждение."""
 
     def setUp(self) -> None:
-        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
-        self.organization = Organization.objects.get(slug="edevs")
+        bootstrap_owner(email="owner@example.com", password="temporary-password")
+        self.organization = Organization.objects.get(slug="demo")
         self.channel = Channel.objects.create(organization=self.organization, code="edevs-web", name="Веб-чат")
         AIAgent.objects.create(
             channel=self.channel,
@@ -402,7 +402,7 @@ class WebchatContactTests(TestCase):
     ) -> None:
         # Агент без BYOK-интеграции: IntegrationNotConfigured (ProviderError)
         # переводит диалог оператору вместо 500 (ADR-HUB-0042 §3).
-        admin = HumanUser.objects.create_user(email="admin@edevs.tech", password="temporary")
+        admin = HumanUser.objects.create_user(email="admin@example.com", password="temporary")
         OrganizationMembership.objects.create(
             user=admin,
             organization=self.organization,
@@ -437,7 +437,7 @@ class WebchatContactTests(TestCase):
                     target_id=str(conversation.id),
                 ).values_list("recipient_user__email", flat=True)
             ),
-            {"owner@edevs.tech", "admin@edevs.tech"},
+            {"owner@example.com", "admin@example.com"},
         )
 
     def test_provider_error_hands_off_without_500(self) -> None:

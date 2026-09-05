@@ -81,7 +81,7 @@ export function Shell({ route, setRoute, selectedEmployeeId, selectedProductCode
 
   const currentEmployee = route === "employeeDetail"
     ? data.employees.find((employee) => employee.id === selectedEmployeeId) ?? null
-    : data.employees.find((employee) => employee.email === "a.kotova@edevs.tech") ?? data.employees[0] ?? null;
+    : data.employees[0] ?? null;
   function openEmployee(employee: Employee) {
     openEmployeeRoute(employee.id);
   }

@@ -1,5 +1,5 @@
 {
-  "name": "@edevs/hub-workspace",
+  "name": "@chatballs/workspace",
   "private": true,
   "version": "0.1.0",
   "packageManager": "npm@10.0.0",
@@ -11,8 +11,8 @@
     "packages/shared"
   ],
   "scripts": {
-    "dev:internal-ui": "npm --workspace @edevs/internal-ui run dev",
-    "dev:web-chat": "npm --workspace @edevs/web-chat run dev",
+    "dev:internal-ui": "npm --workspace @chatballs/internal-ui run dev",
+    "dev:web-chat": "npm --workspace @chatballs/web-chat run dev",
     "build": "npm run build --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",

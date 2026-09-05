@@ -20,7 +20,7 @@ import {
 import { AudioCallStage } from "./AudioCallStage";
 import { VideoCallStage } from "./VideoCallStage";
 
-function storageKey() { return `edevs-call:${location.pathname}`; }
+function storageKey() { return `chatballs-call:${location.pathname}`; }
 function inviteTokenFromPath() { return location.pathname.match(/\/calls\/([^/]+)/)?.[1] ?? ""; }
 function accessTokenFromHash() { return location.hash.startsWith("#") ? location.hash.slice(1) : ""; }
 function kindFromQuery(): CallKind | null {

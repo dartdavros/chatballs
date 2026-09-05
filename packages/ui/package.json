@@ -1,5 +1,5 @@
 {
-  "name": "@edevs/ui",
+  "name": "@chatballs/ui",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -9,7 +9,7 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "peerDependencies": {
-    "@edevs/shared": "0.1.0",
+    "@chatballs/shared": "0.1.0",
     "antd": "^5.26.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

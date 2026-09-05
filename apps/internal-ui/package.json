@@ -1,5 +1,5 @@
 {
-  "name": "@edevs/internal-ui",
+  "name": "@chatballs/internal-ui",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -11,9 +11,9 @@
   },
   "dependencies": {
     "@ant-design/icons": "^6.0.0",
-    "@edevs/contracts": "0.1.0",
-    "@edevs/shared": "0.1.0",
-    "@edevs/ui": "0.1.0",
+    "@chatballs/contracts": "0.1.0",
+    "@chatballs/shared": "0.1.0",
+    "@chatballs/ui": "0.1.0",
     "antd": "^5.26.0",
     "js-yaml": "^5.2.1",
     "lucide": "^1.41.0",

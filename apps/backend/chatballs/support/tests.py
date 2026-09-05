@@ -7,7 +7,7 @@ from chatballs.testing import TenantAPIClient as APIClient
 
 from chatballs.channels.models import Channel
 from chatballs.identity.audit import AuditResult
-from chatballs.identity.bootstrap import bootstrap_edevs_owner
+from chatballs.identity.bootstrap import bootstrap_owner
 from chatballs.identity.models import AuditEvent, Organization
 from chatballs.products.models import Product
 from chatballs.support.models import (
@@ -22,11 +22,11 @@ from chatballs.webchat.testing import create_web_widget
 SECRET = "test-support-secret-very-long-32bytes!!"
 
 
-def _foxray_contract(organization, product) -> ProductSupportContract:
+def _app_contract(organization, product) -> ProductSupportContract:
     contract = ProductSupportContract.objects.create(
         organization=organization,
         product=product,
-        code="foxray.support.v1",
+        code="app.support.v1",
         version=1,
         status=ContractStatus.ACTIVE,
         schema_json={
@@ -78,15 +78,15 @@ def _foxray_contract(organization, product) -> ProductSupportContract:
 
 class SupportSessionTests(TestCase):
     def setUp(self) -> None:
-        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
-        self.organization = Organization.objects.get(slug="edevs")
-        self.product = Product.objects.get(organization=self.organization, code="foxray")
+        bootstrap_owner(email="owner@example.com", password="temporary-password")
+        self.organization = Organization.objects.get(slug="demo")
+        self.product = Product.objects.get(organization=self.organization, code="app")
         self.product.support_token_secret = SECRET
         self.product.save(update_fields=["support_token_secret"])
-        self.contract = _foxray_contract(self.organization, self.product)
+        self.contract = _app_contract(self.organization, self.product)
         self.channel = Channel.objects.create(
             organization=self.organization,
-            code="foxray-support",
+            code="app-support",
             name="FoxRay — поддержка",
             product=self.product,
             requires_authenticated_product_identity=True,
@@ -114,7 +114,7 @@ class SupportSessionTests(TestCase):
         self.assertIn("conversation", body)
         self.assertIn("snapshot", body)
         snapshot = SupportIdentitySnapshot.objects.get(subject_key="u_456")
-        self.assertEqual(snapshot.contract_code, "foxray.support.v1")
+        self.assertEqual(snapshot.contract_code, "app.support.v1")
         self.assertEqual(snapshot.display_name, "Иван Петров")
         self.assertEqual(snapshot.display_email, "doctor@example.com")
         self.assertEqual(snapshot.account_key, "c_123")
@@ -173,7 +173,7 @@ class SupportSessionTests(TestCase):
         # Канал без support-политики (анонимные сессии разрешены) не может
         # принимать support-токен.
         sales_channel = Channel.objects.create(
-            organization=self.organization, code="foxray-sales-x",
+            organization=self.organization, code="app-sales-x",
             name="FoxRay sales", product=self.product,
         )
         invalid_widget = create_web_widget(
@@ -187,8 +187,8 @@ class SupportSessionTests(TestCase):
         self._assert_denied_audit("CHANNEL_NOT_SUPPORT")
 
     def test_channel_product_mismatch_denied(self) -> None:
-        # iss=firepage, но канал привязан к foxray.
-        token = make_support_token(secret=SECRET, iss="firepage", data=FOXRAY_DATA)
+        # iss=site, но канал привязан к app.
+        token = make_support_token(secret=SECRET, iss="site", data=FOXRAY_DATA)
         response = self._start(token)
         self.assertEqual(response.status_code, 422)
         self._assert_denied_audit("CHANNEL_PRODUCT_MISMATCH")
@@ -236,17 +236,17 @@ class SupportSessionTests(TestCase):
 
 class SupportContractApiTests(TestCase):
     def setUp(self) -> None:
-        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
-        self.organization = Organization.objects.get(slug="edevs")
-        self.product = Product.objects.get(organization=self.organization, code="foxray")
+        bootstrap_owner(email="owner@example.com", password="temporary-password")
+        self.organization = Organization.objects.get(slug="demo")
+        self.product = Product.objects.get(organization=self.organization, code="app")
         self.client = APIClient()
-        self.client.login(username="owner@edevs.tech", password="temporary-password")
+        self.client.login(username="owner@example.com", password="temporary-password")
 
     def test_owner_registers_contract(self) -> None:
         response = self.client.post(
             "/api/v1/support/contracts/",
             data=json.dumps({
-                "code": "foxray.support.v2",
+                "code": "app.support.v2",
                 "productId": self.product.id,
                 "status": "DRAFT",
                 "schemaJson": {},
@@ -255,15 +255,15 @@ class SupportContractApiTests(TestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 201, response.content)
-        self.assertEqual(response.json()["contract"]["code"], "foxray.support.v2")
+        self.assertEqual(response.json()["contract"]["code"], "app.support.v2")
         self.assertEqual(response.json()["contract"]["version"], 2)
 
     def test_operator_cannot_register_contract(self) -> None:
         # Оператор (роль EMPLOYEE) не имеет прав на управление контрактами.
-        self.client.login(username="a.kotova@edevs.tech", password="Operator-Local-2026")
+        self.client.login(username="staff.member@example.org", password="Operator-Local-2026")
         response = self.client.post(
             "/api/v1/support/contracts/",
-            data=json.dumps({"code": "foxray.support.v3", "productId": self.product.id}),
+            data=json.dumps({"code": "app.support.v3", "productId": self.product.id}),
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 403)
@@ -271,7 +271,7 @@ class SupportContractApiTests(TestCase):
     def test_contract_code_must_match_product(self) -> None:
         response = self.client.post(
             "/api/v1/support/contracts/",
-            data=json.dumps({"code": "firepage.support.v1", "productId": self.product.id}),
+            data=json.dumps({"code": "site.support.v1", "productId": self.product.id}),
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)

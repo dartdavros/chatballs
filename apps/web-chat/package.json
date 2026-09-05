@@ -1,5 +1,5 @@
 {
-  "name": "@edevs/web-chat",
+  "name": "@chatballs/web-chat",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -10,9 +10,9 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@edevs/contracts": "0.1.0",
-    "@edevs/shared": "0.1.0",
-    "@edevs/ui": "0.1.0",
+    "@chatballs/contracts": "0.1.0",
+    "@chatballs/shared": "0.1.0",
+    "@chatballs/ui": "0.1.0",
     "antd": "^5.26.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"

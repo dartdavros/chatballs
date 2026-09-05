@@ -10,7 +10,8 @@ describe("surfaceForHost", () => {
 
   it("routes hosted help domains independently of their path", () => {
     expect(surfaceForHost("docs.localhost")).toBe("help");
-    expect(surfaceForHost("docs.help.custocrm.ru")).toBe("help");
+    expect(surfaceForHost("docs.help.localhost")).toBe("help");
+    expect(surfaceForHost("docs.help.example.com")).toBe("loading");
   });
 
   it("probes unknown hosts so verified custom domains can resolve", () => {

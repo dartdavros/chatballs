@@ -20,7 +20,7 @@ class SupportPortalManagementTests(SupportPortalTestCase):
         portal_id = self.create_portal().json()["portal"]["id"]
         widget_channel = Channel.objects.create(
             organization=self.organization,
-            code="foxray-portal-chat",
+            code="app-portal-chat",
             name="FoxRay — чат портала",
             product=self.product,
             requires_authenticated_product_identity=False,
@@ -51,7 +51,7 @@ class SupportPortalManagementTests(SupportPortalTestCase):
 
         config = self.client.get(
             f"/api/v1/webchat/config/?widgetKey={widget.public_key}",
-            HTTP_ORIGIN="http://foxray-help.localhost",
+            HTTP_ORIGIN="http://app-help.localhost",
         )
         self.assertEqual(config.status_code, 200, config.content)
         self.assertTrue(config.json()["available"])
@@ -78,10 +78,10 @@ class SupportPortalManagementTests(SupportPortalTestCase):
         self.assertEqual(first.status_code, 201, first.content)
         self.assertEqual(
             first.json()["portal"]["hostedDomain"],
-            f"foxray-help.{settings.CHATBALLS_HELP_BASE_DOMAIN}",
+            f"app-help.{settings.CHATBALLS_HELP_BASE_DOMAIN}",
         )
         self.assertTrue(first.json()["portal"]["publicUrl"].endswith(
-            f"foxray-help.{settings.CHATBALLS_HELP_BASE_DOMAIN}"
+            f"app-help.{settings.CHATBALLS_HELP_BASE_DOMAIN}"
         ))
 
         listed = self.client.get("/api/v1/support/portals/")

@@ -12,7 +12,7 @@ class InternalCallApiTests(CallTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.client = APIClient()
-        self.client.login(username="owner@edevs.tech", password="temporary-password")
+        self.client.login(username="owner@example.com", password="temporary-password")
 
     def test_create_call_returns_staff_token_but_not_invite_token(self) -> None:
         response = self.client.post(

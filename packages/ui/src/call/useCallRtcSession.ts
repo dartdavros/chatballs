@@ -1,4 +1,4 @@
-import { CallRtcClient, type CallSide, type PublicCallState, type RtcConnectionPhase } from "@edevs/shared";
+import { CallRtcClient, type CallSide, type PublicCallState, type RtcConnectionPhase } from "@chatballs/shared";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export type CallMediaIssue = "none" | "video" | "devices" | "unsupported";

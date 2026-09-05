@@ -17,7 +17,7 @@ _IDEMPOTENCY_HEADER = "Idempotency-Key"
 
 
 class OrganizationProvisionView(APIView):
-    """POST platform.custocrm.ru/api/v1/organizations (SPEC-HUB-0021 §12).
+    """POST <platform-host>/api/v1/organizations (SPEC-HUB-0021 §12).
 
     The first Platform API adapter: machine-to-machine provisioning via an
     opaque platform token. Does not reuse tenant HasCapability (no membership

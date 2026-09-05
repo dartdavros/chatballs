@@ -3,17 +3,17 @@ import json
 from django.test import TestCase
 from chatballs.testing import TenantAPIClient as APIClient
 
-from chatballs.identity.bootstrap import bootstrap_edevs_owner
+from chatballs.identity.bootstrap import bootstrap_owner
 from chatballs.identity.models import Organization
 from chatballs.products.models import Product, ProductStatus
 
 
 class ProductApiTests(TestCase):
     def setUp(self) -> None:
-        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
-        self.organization = Organization.objects.get(slug="edevs")
+        bootstrap_owner(email="owner@example.com", password="temporary-password")
+        self.organization = Organization.objects.get(slug="demo")
         self.client = APIClient()
-        self.client.login(username="owner@edevs.tech", password="temporary-password")
+        self.client.login(username="owner@example.com", password="temporary-password")
 
     def test_create_product_is_active(self) -> None:
         response = self.client.post(
@@ -33,13 +33,13 @@ class ProductApiTests(TestCase):
         self.assertEqual(payload["status"], ProductStatus.ACTIVE)
 
     def test_update_does_not_change_product_code(self) -> None:
-        product = Product.objects.get(code="firepage")
+        product = Product.objects.get(code="site")
         response = self.client.patch(
             f"/api/v1/company/products/{product.id}/update/",
             data=json.dumps(
                 {
                     "code": "changed-code",
-                    "name": "FirePage Updated",
+                    "name": "Сайт Updated",
                 }
             ),
             content_type="application/json",
@@ -47,8 +47,8 @@ class ProductApiTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         product.refresh_from_db()
-        self.assertEqual(product.code, "firepage")
-        self.assertEqual(product.name, "FirePage Updated")
+        self.assertEqual(product.code, "site")
+        self.assertEqual(product.name, "Сайт Updated")
 
     def test_product_detail_is_limited_to_user_organization(self) -> None:
         other = Organization.objects.create(name="Other", slug="other")
@@ -61,7 +61,7 @@ class ProductApiTests(TestCase):
     def test_product_payload_exposes_assigned_channels(self) -> None:
         from chatballs.channels.models import Channel
 
-        product = Product.objects.get(code="firepage")
+        product = Product.objects.get(code="site")
         Channel.objects.create(organization=self.organization, code="site", name="Сайт", product=product)
 
         response = self.client.get("/api/v1/company/products/")

@@ -6,7 +6,7 @@ from chatballs.testing import TenantAPIClient as APIClient, tenant_context_for
 from chatballs.conversations.transports.base import InboundMessage
 from chatballs.events.handlers import dispatch
 from chatballs.events.models import OutboxEvent
-from chatballs.identity.bootstrap import bootstrap_edevs_owner
+from chatballs.identity.bootstrap import bootstrap_owner
 from chatballs.identity.models import HumanUser, Organization
 from chatballs.integrations.models import Integration, IntegrationKind, IntegrationProvider
 from chatballs.notifications.binding import deep_link, handle_notifier_inbound, issue_binding_code
@@ -29,9 +29,9 @@ def _notifier(organization, provider=IntegrationProvider.TELEGRAM, username="ede
 
 class NotifierTestBase(TestCase):
     def setUp(self) -> None:
-        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
-        self.organization = Organization.objects.get(slug="edevs")
-        self.owner = HumanUser.objects.get(email="owner@edevs.tech")
+        bootstrap_owner(email="owner@example.com", password="temporary-password")
+        self.organization = Organization.objects.get(slug="demo")
+        self.owner = HumanUser.objects.get(email="owner@example.com")
         self.context = tenant_context_for(self.owner, self.organization)
         self.integration = _notifier(self.organization)
 
@@ -114,7 +114,7 @@ class DeliveryTests(NotifierTestBase):
         send.assert_not_called()
 
     def test_user_audience_only_reaches_recipient(self) -> None:
-        operator = HumanUser.objects.get(email="a.kotova@edevs.tech")
+        operator = HumanUser.objects.get(email="staff.member@example.org")
         with mock.patch("chatballs.notifications.delivery.transports.send_reply", return_value=True) as send:
             notify(
                 context=self.context,
@@ -127,7 +127,7 @@ class DeliveryTests(NotifierTestBase):
         send.assert_not_called()  # у оператора нет привязки; owner не адресат
 
     def test_operator_sees_operator_audience_but_not_owner_audience(self) -> None:
-        operator = HumanUser.objects.get(email="a.kotova@edevs.tech")
+        operator = HumanUser.objects.get(email="staff.member@example.org")
         operators_notification = notify(
             context=self.context,
             type=NotificationType.DIALOG_WAITING,
@@ -156,7 +156,7 @@ class PollerSelectionTests(NotifierTestBase):
         from chatballs.channels.models import Channel
         from chatballs.conversations import poller
 
-        channel = Channel.objects.create(organization=self.organization, code="foxray-sales", name="FoxRay — продажи")
+        channel = Channel.objects.create(organization=self.organization, code="app-sales", name="FoxRay — продажи")
         client_bot = Integration.objects.create(
             organization=self.organization, kind=IntegrationKind.MESSENGER,
             provider=IntegrationProvider.TELEGRAM, name="client-bot", secret="token", channel=channel,
@@ -215,7 +215,7 @@ class BindingApiTests(NotifierTestBase):
     def setUp(self) -> None:
         super().setUp()
         self.client = APIClient()
-        self.client.login(username="owner@edevs.tech", password="temporary-password")
+        self.client.login(username="owner@example.com", password="temporary-password")
 
     def test_list_issue_and_unbind(self) -> None:
         listed = self.client.get("/api/v1/notifications/messenger-bindings/")

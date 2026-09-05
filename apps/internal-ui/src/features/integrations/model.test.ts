@@ -13,8 +13,8 @@ describe("webWidgetSnippet", () => {
     vi.stubGlobal("window", { location: { origin: "https://hub.example.com" } });
     const { webWidgetSnippet } = await import("./model");
 
-    expect(webWidgetSnippet("wgt_edeves")).toBe(
-      `<script src="https://hub.example.com/chat-widget.js" data-widget-key="wgt_edeves" async></script>`,
+    expect(webWidgetSnippet("wgt_demo")).toBe(
+      `<script src="https://hub.example.com/chat-widget.js" data-widget-key="wgt_demo" async></script>`,
     );
   });
 
@@ -31,8 +31,8 @@ describe("webWidgetSnippet", () => {
     vi.stubGlobal("window", { location: { origin: "https://hub.example.com:8443" } });
     const { webWidgetSnippet } = await import("./model");
 
-    expect(webWidgetSnippet("wgt_edeves")).toBe(
-      `<script src="https://hub.example.com:8443/chat-widget.js" data-widget-key="wgt_edeves" async></script>`,
+    expect(webWidgetSnippet("wgt_demo")).toBe(
+      `<script src="https://hub.example.com:8443/chat-widget.js" data-widget-key="wgt_demo" async></script>`,
     );
   });
 });
@@ -41,18 +41,18 @@ describe("parseAllowedOrigins", () => {
   it("splits on commas, semicolons and newlines and trims each entry", async () => {
     const { parseAllowedOrigins } = await import("./model");
 
-    expect(parseAllowedOrigins(` edevs.tech ,
-*.edevs.tech; foxray.pro `)).toEqual([
-      "edevs.tech",
-      "*.edevs.tech",
-      "foxray.pro",
+    expect(parseAllowedOrigins(` example.com ,
+*.example.com; shop.example `)).toEqual([
+      "example.com",
+      "*.example.com",
+      "shop.example",
     ]);
   });
 
   it("drops empty entries, trailing slashes and case-insensitive duplicates", async () => {
     const { parseAllowedOrigins } = await import("./model");
 
-    expect(parseAllowedOrigins("edevs.tech/, ,, EDEVS.TECH, edevs.tech")).toEqual(["edevs.tech"]);
+    expect(parseAllowedOrigins("example.com/, ,, EXAMPLE.COM, example.com")).toEqual(["example.com"]);
   });
 
   it("returns an empty list for blank input so the form can require a domain", async () => {
@@ -68,14 +68,14 @@ describe("invalidAllowedOrigin", () => {
     const { invalidAllowedOrigin } = await import("./model");
 
     expect(
-      invalidAllowedOrigin(["edevs.tech", "*.edevs.tech", "https://app.custocrm.ru", "localhost:5173"]),
+      invalidAllowedOrigin(["example.com", "*.example.com", "https://app.example.com", "localhost:5173"]),
     ).toBeUndefined();
   });
 
   it("reports the first entry that is not a domain", async () => {
     const { invalidAllowedOrigin } = await import("./model");
 
-    expect(invalidAllowedOrigin(["edevs.tech", "https://edevs.tech/chat"])).toBe("https://edevs.tech/chat");
+    expect(invalidAllowedOrigin(["example.com", "https://example.com/chat"])).toBe("https://example.com/chat");
     expect(invalidAllowedOrigin(["не домен"])).toBe("не домен");
   });
 });

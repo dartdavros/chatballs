@@ -1,5 +1,5 @@
 # Канонический production-манифест Chatballs (ADR-HUB-0028).
-# Один Compose для: box-установки клиента, hub.edevs.tech, staging, smoke.
+# Один Compose для: установки клиента, staging, smoke.
 # Локальная разработка — через override compose.dev.yaml; этот файл не содержит
 # dev source mounts, dev-команд и host-портов (кроме public 80/443 у gateway).
 #

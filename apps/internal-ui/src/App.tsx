@@ -1,7 +1,7 @@
 import { ConfigProvider } from "antd";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { buildHubTheme } from "@edevs/ui";
+import { buildTheme } from "@chatballs/ui";
 
 import { applyAppearance, DEFAULT_ACCENT, resolvedDark } from "./shared/appearance";
 
@@ -26,7 +26,7 @@ export function App() {
     applyAppearance(appearanceTheme, appearanceAccent);
   }, [appearanceTheme, appearanceAccent]);
   const antdTheme = useMemo(
-    () => buildHubTheme(resolvedDark(appearanceTheme), appearanceAccent),
+    () => buildTheme(resolvedDark(appearanceTheme), appearanceAccent),
     [appearanceTheme, appearanceAccent],
   );
   const [user, setUser] = useState<SessionUser | null>(null);

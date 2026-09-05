@@ -6,14 +6,14 @@ from chatballs.ai.knowledge_categories import create_category
 from chatballs.ai.knowledge_services import KnowledgeInput, create_knowledge
 from chatballs.ai.models import AIAgent, AIAgentStatus
 from chatballs.channels.models import Channel
-from chatballs.identity.bootstrap import bootstrap_edevs_owner
+from chatballs.identity.bootstrap import bootstrap_owner
 from chatballs.testing import TenantAPIClient, system_tenant_context
 
 
 class KnowledgeBulkApiTests(TestCase):
     def setUp(self) -> None:
-        result = bootstrap_edevs_owner(
-            email="owner@edevs.tech",
+        result = bootstrap_owner(
+            email="owner@example.com",
             password="temporary-password",
         )
         self.organization = result.organization
@@ -32,7 +32,7 @@ class KnowledgeBulkApiTests(TestCase):
         self.second = self._knowledge("Second")
         self.client = TenantAPIClient()
         self.client.login(
-            username="owner@edevs.tech",
+            username="owner@example.com",
             password="temporary-password",
         )
 
@@ -102,8 +102,8 @@ class KnowledgeBulkApiTests(TestCase):
 
 class AgentCategoryKnowledgeSelectionTests(TestCase):
     def setUp(self) -> None:
-        result = bootstrap_edevs_owner(
-            email="owner@edevs.tech",
+        result = bootstrap_owner(
+            email="owner@example.com",
             password="temporary-password",
         )
         self.organization = result.organization
@@ -132,7 +132,7 @@ class AgentCategoryKnowledgeSelectionTests(TestCase):
         )
         self.client = TenantAPIClient()
         self.client.login(
-            username="owner@edevs.tech",
+            username="owner@example.com",
             password="temporary-password",
         )
 

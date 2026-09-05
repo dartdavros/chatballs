@@ -23,11 +23,11 @@ class BootstrapResult:
 
 
 @transaction.atomic
-def bootstrap_edevs_owner(*, email: str, password: str, full_name: str = "") -> BootstrapResult:
+def bootstrap_owner(*, email: str, password: str, full_name: str = "") -> BootstrapResult:
     organization, _ = Organization.objects.get_or_create(
-        slug="edevs",
+        slug="demo",
         defaults={
-            "name": "Edevs",
+            "name": "Demo",
             "timezone": "Europe/Moscow",
             "currency": "RUB",
         },
@@ -43,7 +43,7 @@ def bootstrap_edevs_owner(*, email: str, password: str, full_name: str = "") -> 
     support_group, _ = EmployeeGroup.objects.get_or_create(
         organization=organization, name="Поддержка"
     )
-    for code, name in (("firepage", "FirePage"), ("foxray", "Foxray")):
+    for code, name in (("site", "Сайт"), ("app", "Приложение")):
         Product.objects.get_or_create(organization=organization, code=code, defaults={"name": name})
     # Каналы обработки и их агенты (ADR-HUB-0019) создаются через API каналов.
 
@@ -73,7 +73,7 @@ def bootstrap_edevs_owner(*, email: str, password: str, full_name: str = "") -> 
         },
     )
     operator, created_operator = HumanUser.objects.get_or_create(
-        email=HumanUser.objects.normalize_email("a.kotova@edevs.tech"),
+        email=HumanUser.objects.normalize_email("staff.member@example.org"),
         defaults={
             "full_name": "Анна Котова",
             "is_staff": False,

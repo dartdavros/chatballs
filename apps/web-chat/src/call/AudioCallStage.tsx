@@ -2,7 +2,7 @@
 // (он выполнен в CallApp) — переиспользует загруженные call/accessToken/iceServers,
 // держит свой аудио-RTC (videoEnabled:false) и поллинг состояния до терминала.
 
-import { AudioCallView, type AudioCallMode, type AudioCallStatus, useCallRtcSession, useLoopingAudio } from "@edevs/ui";
+import { AudioCallView, type AudioCallMode, type AudioCallStatus, useCallRtcSession, useLoopingAudio } from "@chatballs/ui";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { acceptCall, declineCall, endCall, fetchCallState, type CallInfo } from "../api";

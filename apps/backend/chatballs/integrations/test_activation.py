@@ -2,7 +2,7 @@ from django.core.exceptions import ValidationError
 from django.test import TestCase
 
 from chatballs.channels.models import Channel
-from chatballs.identity.bootstrap import bootstrap_edevs_owner
+from chatballs.identity.bootstrap import bootstrap_owner
 from chatballs.identity.models import Organization
 from chatballs.integrations.models import IntegrationProvider
 from chatballs.integrations.serializers import integration_payload
@@ -16,10 +16,10 @@ from chatballs.testing import system_tenant_context
 
 class IntegrationActivationTests(TestCase):
     def setUp(self) -> None:
-        bootstrap_edevs_owner(
-            email="owner@edevs.tech", password="temporary-password"
+        bootstrap_owner(
+            email="owner@example.com", password="temporary-password"
         )
-        organization = Organization.objects.get(slug="edevs")
+        organization = Organization.objects.get(slug="demo")
         self.context = system_tenant_context(organization)
         self.channel = Channel.objects.create(
             organization=organization,

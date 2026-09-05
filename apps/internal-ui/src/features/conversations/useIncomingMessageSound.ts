@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 
-import { useAudioCue } from "@edevs/ui";
+import { useAudioCue } from "@chatballs/ui";
 
 import type { ApiConversation } from "./model";
 

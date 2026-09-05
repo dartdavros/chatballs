@@ -2,7 +2,7 @@
 // из CallOverlay при добавлении аудиозвонка, чтобы CallOverlay остался тонким
 // диспетчером по call.kind (NO GOD / separation of concerns).
 
-import { CallView, type CallViewMode, type CallViewStatus, useCallRtcSession, useLoopingAudio } from "@edevs/ui";
+import { CallView, type CallViewMode, type CallViewStatus, useCallRtcSession, useLoopingAudio } from "@chatballs/ui";
 import { Modal } from "antd";
 import { useEffect, useMemo, useState } from "react";
 

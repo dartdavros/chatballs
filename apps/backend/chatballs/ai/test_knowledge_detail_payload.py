@@ -3,16 +3,16 @@ import json
 from django.test import TestCase
 from rest_framework.test import APIClient
 
-from chatballs.identity.bootstrap import bootstrap_edevs_owner
+from chatballs.identity.bootstrap import bootstrap_owner
 from chatballs.identity.models import Organization
 
 
 class KnowledgeDetailPayloadTests(TestCase):
     def setUp(self) -> None:
-        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
+        bootstrap_owner(email="owner@example.com", password="temporary-password")
         self.client = APIClient()
-        self.client.login(username="owner@edevs.tech", password="temporary-password")
-        organization = Organization.objects.get(slug="edevs")
+        self.client.login(username="owner@example.com", password="temporary-password")
+        organization = Organization.objects.get(slug="demo")
         self.base = f"/api/v1/organizations/{organization.public_id}/ai/knowledge"
 
     def test_detail_exposes_baseline_information_without_expanding_list_payload(self) -> None:

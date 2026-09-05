@@ -21,7 +21,7 @@ class MembershipMigrationTests(TransactionTestCase):
             "identity", "EmployeeAccessAssignment"
         )
 
-        organization = Organization.objects.create(name="Edevs", slug="edevs")
+        organization = Organization.objects.create(name="Acme", slug="acme")
         owner_user = HumanUser.objects.create(email="owner@example.test", password="hash")
         employee_user = HumanUser.objects.create(email="employee@example.test", password="hash")
         owner = EmployeeProfile.objects.create(

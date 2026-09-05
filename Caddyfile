@@ -40,7 +40,7 @@ https:// {
 	}
 }
 
-# Edevs platform surface. На C01 опубликован только health endpoint; API
+# Platform surface. На C01 опубликован только health endpoint; API
 # управления tenant'ами появится на C06.
 {$CHATBALLS_PLATFORM_DOMAIN} {
 	encode gzip zstd

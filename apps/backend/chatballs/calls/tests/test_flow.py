@@ -32,7 +32,7 @@ class CancelCallApiTests(CallTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.client = APIClient()
-        self.client.login(username="owner@edevs.tech", password="temporary-password")
+        self.client.login(username="owner@example.com", password="temporary-password")
 
     def test_initiator_cancels_pending_call(self) -> None:
         created = create_call_request(conversation_id=self.conversation.id, initiator=self.owner)

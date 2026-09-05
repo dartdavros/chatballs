@@ -1,9 +1,10 @@
 import { Icon } from "../../../shared/icons";
 import { SearchInput } from "../../../shared/ui-controls";
-import { channelOptions, productOptions } from "./model";
+import { channelOptions, productOptionsOf, type SalesClient } from "./model";
 import type { SalesClientsState } from "./useSalesClients";
 
-export function SalesClientsFilters({ clients }: { clients: SalesClientsState }) {
+export function SalesClientsFilters({ clients, salesClients }: { clients: SalesClientsState; salesClients: SalesClient[] }) {
+  const productOptions = productOptionsOf(salesClients);
   return (
     <div className="sales-clients-filterbar">
       <SearchInput className="sales-clients-search" value={clients.query} onChange={clients.setQuery} placeholder="Поиск по имени, email, телефону или логину…" />

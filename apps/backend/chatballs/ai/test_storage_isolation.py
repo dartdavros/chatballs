@@ -7,7 +7,7 @@ from django.test import TestCase, override_settings
 
 from chatballs.ai.knowledge_categories import ensure_uncategorized_category
 from chatballs.ai.models import Knowledge
-from chatballs.identity.bootstrap import bootstrap_edevs_owner
+from chatballs.identity.bootstrap import bootstrap_owner
 from chatballs.identity.models import Organization
 from chatballs.tenancy.database import tenant_atomic
 from chatballs.tenancy.models import OrganizationStorageUsage
@@ -19,11 +19,11 @@ _MEDIA_ROOT = tempfile.mkdtemp(prefix="c04-storage-isolation-")
 @override_settings(MEDIA_ROOT=_MEDIA_ROOT)
 class TenantStorageIsolationTests(TestCase):
     def setUp(self) -> None:
-        bootstrap_edevs_owner(
-            email="owner@edevs.tech",
+        bootstrap_owner(
+            email="owner@example.com",
             password="temporary-password",
         )
-        self.organization = Organization.objects.get(slug="edevs")
+        self.organization = Organization.objects.get(slug="demo")
         self.knowledge = Knowledge.objects.create(
             organization=self.organization,
             category=ensure_uncategorized_category(self.organization),
@@ -31,7 +31,7 @@ class TenantStorageIsolationTests(TestCase):
         )
         self.client = TenantAPIClient()
         self.client.login(
-            username="owner@edevs.tech",
+            username="owner@example.com",
             password="temporary-password",
         )
 

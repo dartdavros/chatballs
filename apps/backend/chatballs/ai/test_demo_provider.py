@@ -6,7 +6,7 @@ from chatballs.ai.provider.base import ChatMessage
 from chatballs.ai.provider.demo import DemoProvider
 from chatballs.ai.provider.routing import _provider_from_integration
 from chatballs.ai.runtime import HANDOFF_TOKEN
-from chatballs.identity.bootstrap import bootstrap_edevs_owner
+from chatballs.identity.bootstrap import bootstrap_owner
 from chatballs.identity.models import Organization
 from chatballs.integrations.models import Integration, IntegrationKind, IntegrationProvider, IntegrationStatus
 from chatballs.integrations.services import IntegrationInput, create_integration, test_integration
@@ -61,8 +61,8 @@ class DemoProviderTests(TestCase):
 
 class DemoIntegrationTests(TestCase):
     def setUp(self) -> None:
-        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
-        self.organization = Organization.objects.get(slug="edevs")
+        bootstrap_owner(email="owner@example.com", password="temporary-password")
+        self.organization = Organization.objects.get(slug="demo")
         self.context = system_tenant_context(self.organization)
 
     def test_demo_integration_needs_no_key_and_checks_ok(self) -> None:

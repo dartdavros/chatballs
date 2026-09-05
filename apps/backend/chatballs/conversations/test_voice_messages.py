@@ -17,7 +17,7 @@ from chatballs.conversations.models import (
     TranscriptStatus,
 )
 from chatballs.conversations.transports.base import InboundMessage
-from chatballs.identity.bootstrap import bootstrap_edevs_owner
+from chatballs.identity.bootstrap import bootstrap_owner
 from chatballs.tenancy.database import tenant_atomic
 from chatballs.identity.models import (
     EmployeeRole,
@@ -37,8 +37,8 @@ class VoiceTestCase(TestCase):
     расшифровка через BYOK, отправка оператором в Telegram и MAX."""
 
     def setUp(self) -> None:
-        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
-        self.organization = Organization.objects.get(slug="edevs")
+        bootstrap_owner(email="owner@example.com", password="temporary-password")
+        self.organization = Organization.objects.get(slug="demo")
         self.channel = Channel.objects.create(
             organization=self.organization, code="line", name="Линия"
         )
@@ -51,7 +51,7 @@ class VoiceTestCase(TestCase):
             channel=self.channel,
         )
         self.client = APIClient()
-        self.client.login(username="owner@edevs.tech", password="temporary-password")
+        self.client.login(username="owner@example.com", password="temporary-password")
 
     def _voice_inbound(self, external_id: str = "v-1") -> InboundMessage:
         return InboundMessage(
@@ -127,7 +127,7 @@ class VoiceApiTests(VoiceTestCase):
         self.assertEqual(response.headers["Content-Type"], "audio/ogg")
 
         outsider = HumanUser.objects.create_user(
-            email="stranger@edevs.tech", password="Password-123"
+            email="stranger@example.com", password="Password-123"
         )
         other = Organization.objects.create(name="Other", slug="voice-other")
         OrganizationMembership.objects.create(
@@ -168,7 +168,7 @@ class VoiceApiTests(VoiceTestCase):
         message = self._voice_message()
         conversation = message.conversation
         conversation.control_mode = ControlMode.HUMAN
-        conversation.assigned_operator = HumanUser.objects.get(email="owner@edevs.tech")
+        conversation.assigned_operator = HumanUser.objects.get(email="owner@example.com")
         conversation.external_chat_id = "c-1"
         conversation.save(
             update_fields=["control_mode", "assigned_operator", "external_chat_id"]

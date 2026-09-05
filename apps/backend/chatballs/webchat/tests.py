@@ -4,7 +4,7 @@ from django.test import TestCase
 from rest_framework.test import APIClient
 
 from chatballs.channels.models import Channel
-from chatballs.identity.bootstrap import bootstrap_edevs_owner
+from chatballs.identity.bootstrap import bootstrap_owner
 from chatballs.identity.models import Organization
 from chatballs.webchat.models import WebSession
 from chatballs.webchat.testing import create_web_widget
@@ -12,11 +12,11 @@ from chatballs.webchat.testing import create_web_widget
 
 class PublicWebChatWidgetTests(TestCase):
     def setUp(self) -> None:
-        bootstrap_edevs_owner(
-            email="webchat-owner@edevs.tech",
+        bootstrap_owner(
+            email="webchat-owner@example.com",
             password="temporary-password",
         )
-        self.organization = Organization.objects.get(slug="edevs")
+        self.organization = Organization.objects.get(slug="demo")
         self.channel = Channel.objects.create(
             organization=self.organization,
             code="website-chat",

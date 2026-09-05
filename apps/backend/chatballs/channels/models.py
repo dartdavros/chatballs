@@ -12,7 +12,7 @@ class Channel(models.Model):
     # Группа видимости (ADR-HUB-0043): новые диалоги канала попадают в неё.
     # NULL — диалоги видны всем сотрудникам.
     group = models.ForeignKey("identity.EmployeeGroup", on_delete=models.SET_NULL, related_name="channels", null=True, blank=True)
-    # Продукт опционален: непродуктовый канал — главный сайт edevs.
+    # Продукт опционален: непродуктовый канал — сайт компании.
     product = models.ForeignKey("products.Product", on_delete=models.PROTECT, related_name="channels", null=True, blank=True)
     # LLM-провайдер канала (ADR-HUB-0020).
     provider_integration = models.ForeignKey("integrations.Integration", on_delete=models.PROTECT, related_name="channels", null=True, blank=True)

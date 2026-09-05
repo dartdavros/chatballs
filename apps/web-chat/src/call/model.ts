@@ -1,4 +1,4 @@
-import { type AudioCallMode, type AudioCallStatus, type CallViewMode, type CallViewStatus, buildAudioStatus } from "@edevs/ui";
+import { type AudioCallMode, type AudioCallStatus, type CallViewMode, type CallViewStatus, buildAudioStatus } from "@chatballs/ui";
 
 import type { CallInfo } from "../api";
 
@@ -44,7 +44,7 @@ export function callViewSubtitle(mode: CallViewMode, status?: CallViewStatus) {
 }
 
 // --- Аудиозвонок (baseline «Аудиозвонок.dc.html»): incoming → active → терминал,
-// без pre-call. Статус-центр — через общий buildAudioStatus из @edevs/ui. ---
+// без pre-call. Статус-центр — через общий buildAudioStatus из @chatballs/ui. ---
 
 export function resolveAudioCallViewMode(state: { loading: boolean; invalid: boolean; call: CallInfo | null; started: boolean; connection: string; mediaIssue: string; errorText?: string }): AudioCallMode {
   if (state.loading || state.invalid || state.errorText || !state.call) return "status";

@@ -8,7 +8,7 @@ from chatballs.ai.knowledge_services import KnowledgeInput, create_knowledge
 from chatballs.ai.models import AIAgent, AIAgentStatus, KnowledgeFragment
 from chatballs.ai.retrieval import lexical_search
 from chatballs.channels.models import Channel
-from chatballs.identity.bootstrap import bootstrap_edevs_owner
+from chatballs.identity.bootstrap import bootstrap_owner
 from chatballs.support_portals.content_services import (
     add_revision,
     archive_article,
@@ -26,8 +26,8 @@ from chatballs.testing import TenantAPIClient, system_tenant_context
 
 class AgentAttachmentTestCase(TestCase):
     def setUp(self) -> None:
-        result = bootstrap_edevs_owner(
-            email="owner@edevs.tech",
+        result = bootstrap_owner(
+            email="owner@example.com",
             password="temporary-password",
         )
         self.organization = result.organization

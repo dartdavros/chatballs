@@ -8,7 +8,7 @@ from chatballs.testing import TenantAPIClient as APIClient, system_tenant_contex
 from chatballs.ai.knowledge_categories import ensure_uncategorized_category
 from chatballs.ai.models import AIAgent, AIAgentStatus, Knowledge, KnowledgeFragment
 from chatballs.channels.models import Channel
-from chatballs.identity.bootstrap import bootstrap_edevs_owner
+from chatballs.identity.bootstrap import bootstrap_owner
 from chatballs.identity.models import EmployeeRole, HumanUser, Organization, OrganizationMembership
 from chatballs.products.models import Product
 
@@ -39,8 +39,8 @@ def make_knowledge(organization, *, title, content=""):
 
 class AIAgentInvariantTests(TestCase):
     def setUp(self) -> None:
-        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
-        self.organization = Organization.objects.get(slug="edevs")
+        bootstrap_owner(email="owner@example.com", password="temporary-password")
+        self.organization = Organization.objects.get(slug="demo")
 
     def test_channel_has_at_most_one_agent(self) -> None:
         from django.core.exceptions import ValidationError
@@ -48,8 +48,8 @@ class AIAgentInvariantTests(TestCase):
         from chatballs.ai.services import AgentCreateInput, create_agent
 
         channel, _ = make_channel_with_agent(
-            self.organization, code="firepage-sales", name="FirePage — продажи",
-            product=Product.objects.get(code="firepage"),
+            self.organization, code="site-sales", name="Сайт — продажи",
+            product=Product.objects.get(code="site"),
         )
         with self.assertRaises(ValidationError):
             create_agent(
@@ -71,16 +71,16 @@ class AIAgentInvariantTests(TestCase):
 
 class AIAgentPermissionTests(TestCase):
     def setUp(self) -> None:
-        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
-        operator = HumanUser.objects.create_user(email="operator@edevs.tech", password="operator-password")
+        bootstrap_owner(email="owner@example.com", password="temporary-password")
+        operator = HumanUser.objects.create_user(email="operator@example.com", password="operator-password")
         OrganizationMembership.objects.create(
             user=operator,
-            organization=Organization.objects.get(slug="edevs"),
+            organization=Organization.objects.get(slug="demo"),
             role=EmployeeRole.EMPLOYEE,
             position_title="Оператор",
         )
         self.client = APIClient()
-        self.client.login(username="operator@edevs.tech", password="operator-password")
+        self.client.login(username="operator@example.com", password="operator-password")
 
     def test_operator_cannot_access_knowledge(self) -> None:
         response = self.client.get("/api/v1/ai/knowledge/")
@@ -89,10 +89,10 @@ class AIAgentPermissionTests(TestCase):
 
 class KnowledgeApiTests(TestCase):
     def setUp(self) -> None:
-        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
-        self.organization = Organization.objects.get(slug="edevs")
+        bootstrap_owner(email="owner@example.com", password="temporary-password")
+        self.organization = Organization.objects.get(slug="demo")
         self.client = APIClient()
-        self.client.login(username="owner@edevs.tech", password="temporary-password")
+        self.client.login(username="owner@example.com", password="temporary-password")
 
     def _create(self, **overrides):
         payload = {"title": "FAQ", "description": "Ответы на вопросы", "content": "Refund policy details here."}
@@ -153,10 +153,10 @@ class KnowledgeApiTests(TestCase):
 @override_settings(MEDIA_ROOT=_MEDIA_ROOT)
 class KnowledgeAttachmentTests(TestCase):
     def setUp(self) -> None:
-        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
-        self.organization = Organization.objects.get(slug="edevs")
+        bootstrap_owner(email="owner@example.com", password="temporary-password")
+        self.organization = Organization.objects.get(slug="demo")
         self.client = APIClient()
-        self.client.login(username="owner@edevs.tech", password="temporary-password")
+        self.client.login(username="owner@example.com", password="temporary-password")
         self.knowledge = make_knowledge(
             self.organization,
             title="FAQ",
@@ -211,10 +211,10 @@ class KnowledgeAttachmentTests(TestCase):
 
 class KnowledgeImportTests(TestCase):
     def setUp(self) -> None:
-        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
-        self.organization = Organization.objects.get(slug="edevs")
+        bootstrap_owner(email="owner@example.com", password="temporary-password")
+        self.organization = Organization.objects.get(slug="demo")
         self.client = APIClient()
-        self.client.login(username="owner@edevs.tech", password="temporary-password")
+        self.client.login(username="owner@example.com", password="temporary-password")
 
     def _import(self, documents):
         return self.client.post(
@@ -265,8 +265,8 @@ class PiiRedactionTests(TestCase):
     def test_redacts_email_phone_and_long_numbers(self) -> None:
         from chatballs.ai.pii import redact
 
-        cleaned = redact("Пишите a.kotova@edevs.tech, тел +7 916 245 14 02, карта 4111 1111 1111 1111")
-        self.assertNotIn("a.kotova@edevs.tech", cleaned)
+        cleaned = redact("Пишите a.kotova@example.com, тел +7 916 245 14 02, карта 4111 1111 1111 1111")
+        self.assertNotIn("a.kotova@example.com", cleaned)
         self.assertNotIn("4111", cleaned)
         self.assertNotIn("916 245", cleaned)
         self.assertIn("[email]", cleaned)
@@ -324,11 +324,11 @@ class ProviderFactoryTests(TestCase):
 
 class ChatInvocationTests(TestCase):
     def setUp(self) -> None:
-        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
-        self.organization = Organization.objects.get(slug="edevs")
+        bootstrap_owner(email="owner@example.com", password="temporary-password")
+        self.organization = Organization.objects.get(slug="demo")
         self.channel, self.agent = make_channel_with_agent(
-            self.organization, code="firepage-sales", name="FirePage — продажи",
-            product=Product.objects.get(code="firepage"),
+            self.organization, code="site-sales", name="Сайт — продажи",
+            product=Product.objects.get(code="site"),
         )
 
     def test_chat_records_invocation_with_cost(self) -> None:
@@ -443,11 +443,11 @@ class TextExtractionTests(TestCase):
 
 class KnowledgeRetrievalTests(TestCase):
     def setUp(self) -> None:
-        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
-        self.organization = Organization.objects.get(slug="edevs")
+        bootstrap_owner(email="owner@example.com", password="temporary-password")
+        self.organization = Organization.objects.get(slug="demo")
         self.channel, self.agent = make_channel_with_agent(
-            self.organization, code="firepage-sales", name="FirePage — продажи",
-            product=Product.objects.get(code="firepage"),
+            self.organization, code="site-sales", name="Сайт — продажи",
+            product=Product.objects.get(code="site"),
         )
         from chatballs.ai.services import KnowledgeInput, create_knowledge
 
@@ -490,13 +490,13 @@ class KnowledgeRetrievalTests(TestCase):
 
 class AgentRuntimeTests(TestCase):
     def setUp(self) -> None:
-        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
-        self.organization = Organization.objects.get(slug="edevs")
+        bootstrap_owner(email="owner@example.com", password="temporary-password")
+        self.organization = Organization.objects.get(slug="demo")
         self.channel, self.agent = make_channel_with_agent(
-            self.organization, code="firepage-sales", name="FirePage — продажи",
-            product=Product.objects.get(code="firepage"),
+            self.organization, code="site-sales", name="Сайт — продажи",
+            product=Product.objects.get(code="site"),
         )
-        self.agent.persona = "Ты — ассистент FirePage."
+        self.agent.persona = "Ты — ассистент Сайт."
         self.agent.tone = "Коротко."
         self.agent.instructions = "Отвечай только по знаниям."
         self.agent.save()
@@ -545,7 +545,7 @@ class AgentRuntimeTests(TestCase):
 
     def test_agent_card_test_chat_endpoint(self) -> None:
         client = APIClient()
-        client.login(username="owner@edevs.tech", password="temporary-password")
+        client.login(username="owner@example.com", password="temporary-password")
 
         response = client.post(
             f"/api/v1/agents/{self.channel.id}/test-chat/",

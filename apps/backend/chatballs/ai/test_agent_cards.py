@@ -5,7 +5,7 @@ from chatballs.testing import TenantAPIClient as APIClient
 
 from chatballs.ai.models import AIAgent, AIAgentStatus
 from chatballs.channels.models import Channel
-from chatballs.identity.bootstrap import bootstrap_edevs_owner
+from chatballs.identity.bootstrap import bootstrap_owner
 from chatballs.identity.models import (
     EmployeeRole,
     HumanUser,
@@ -23,11 +23,11 @@ class AgentCardTestCase(TestCase):
     """Единая сущность «Агент» = канал + AI-конфигурация (ADR-HUB-0041 §4)."""
 
     def setUp(self) -> None:
-        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
-        self.organization = Organization.objects.get(slug="edevs")
+        bootstrap_owner(email="owner@example.com", password="temporary-password")
+        self.organization = Organization.objects.get(slug="demo")
         self.operators = self.organization.employee_groups.get(name="Операторы")
         self.client = APIClient()
-        self.client.login(username="owner@edevs.tech", password="temporary-password")
+        self.client.login(username="owner@example.com", password="temporary-password")
 
     def create_agent(self, name: str = "Приёмная", group_id: int | None = None):
         return self.client.post(
@@ -110,7 +110,7 @@ class AgentCardListDetailTests(AgentCardTestCase):
 
     def test_employee_is_denied(self) -> None:
         user = HumanUser.objects.create_user(
-            email="employee@edevs.tech", password="employee-password"
+            email="employee@example.com", password="employee-password"
         )
         OrganizationMembership.objects.create(
             user=user,
@@ -119,7 +119,7 @@ class AgentCardListDetailTests(AgentCardTestCase):
             position_title="Оператор",
         )
         client = APIClient()
-        client.login(username="employee@edevs.tech", password="employee-password")
+        client.login(username="employee@example.com", password="employee-password")
         self.assertEqual(client.get("/api/v1/agents/").status_code, 403)
 
     def test_other_organization_card_is_not_found(self) -> None:

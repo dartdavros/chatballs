@@ -8,7 +8,7 @@ from django.test import TestCase
 from chatballs.testing import TenantAPIClient as APIClient
 
 from chatballs.channels.models import Channel
-from chatballs.identity.bootstrap import bootstrap_edevs_owner
+from chatballs.identity.bootstrap import bootstrap_owner
 from chatballs.identity.models import Organization
 from chatballs.products.models import Product
 from chatballs.support.models import ContractStatus, ProductSupportContract
@@ -26,7 +26,7 @@ def _setup_support_channel(
     contract = ProductSupportContract.objects.create(
         organization=organization,
         product=product,
-        code="foxray.support.v1",
+        code="app.support.v1",
         version=1,
         status=ContractStatus.ACTIVE,
         schema_json={
@@ -56,7 +56,7 @@ def _setup_support_channel(
     )
     channel = Channel.objects.create(
         organization=organization,
-        code="foxray-support",
+        code="app-support",
         name="FoxRay — поддержка",
         product=product,
         requires_authenticated_product_identity=True,
@@ -71,9 +71,9 @@ def _setup_support_channel(
 
 class SupportWidgetMessagesTests(TestCase):
     def setUp(self) -> None:
-        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
-        self.organization = Organization.objects.get(slug="edevs")
-        self.product = Product.objects.get(organization=self.organization, code="foxray")
+        bootstrap_owner(email="owner@example.com", password="temporary-password")
+        self.organization = Organization.objects.get(slug="demo")
+        self.product = Product.objects.get(organization=self.organization, code="app")
         self.channel, self.contract = _setup_support_channel(
             self.organization, self.product
         )

@@ -10,7 +10,7 @@ test.beforeEach(({}, testInfo) => {
 
 const OWNER = {
   id: 1,
-  email: "owner@edevs.tech",
+  email: "owner@example.com",
   fullName: "Владелец",
   role: "OWNER",
   positionTitle: "Владелец",
@@ -42,7 +42,7 @@ const OPERATOR_CAPABILITIES = ["conversations.view", "conversations.operate", "c
 const OPERATOR = {
   ...OWNER,
   id: 2,
-  email: "operator@edevs.tech",
+  email: "operator@example.com",
   fullName: "Оператор",
   role: "EMPLOYEE",
   positionTitle: "Оператор отдела продаж",
@@ -86,7 +86,7 @@ async function mockData(page: Page) {
     canTerminateSessions: true, canTransferOwnership: false,
   };
   const employee = {
-    id: 7, email: "d.sokolov@edevs.tech", fullName: "Дмитрий Соколов", phone: "+7 903 118 77 51",
+    id: 7, email: "d.sokolov@example.com", fullName: "Дмитрий Соколов", phone: "+7 903 118 77 51",
     role: "EMPLOYEE", positionTitle: "Менеджер по продажам", department: "sales", departmentName: "Отдел продаж",
     createdAt: "2026-05-20T10:00:00Z", lastLogin: "2026-07-13T08:30:00Z", isActive: true, isBlocked: false,
     mustChangePassword: false, totpRequired: false, totpEnabled: true, permissions,
@@ -140,7 +140,7 @@ async function login(page: Page, user: object) {
   await mockData(page);
   await page.route("**/api/v1/auth/login/", (route) => route.fulfill({ json: { authenticated: true, user } }));
   await page.goto("/");
-  await page.getByPlaceholder("you@domain.ru").fill("user@edevs.tech");
+  await page.getByPlaceholder("you@domain.ru").fill("user@example.com");
   await page.getByPlaceholder("Пароль").fill("Password-123");
   await page.getByRole("button", { name: "Войти" }).click();
 }

@@ -19,8 +19,8 @@ COPY packages ./packages
 ARG VITE_API_BASE_URL=
 ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
 
-RUN npm --workspace @edevs/internal-ui run build
-RUN npm --workspace @edevs/web-chat run build
+RUN npm --workspace @chatballs/internal-ui run build
+RUN npm --workspace @chatballs/web-chat run build
 
 FROM nginx:1.27-alpine
 

@@ -1,7 +1,7 @@
 from django.test import TestCase, override_settings
 from django.utils import timezone
 
-from chatballs.identity.bootstrap import bootstrap_edevs_owner
+from chatballs.identity.bootstrap import bootstrap_owner
 from chatballs.channels.models import Channel
 from chatballs.support_portals.models import PortalArticleFeedback, SupportPortal
 from chatballs.testing import TenantAPIClient
@@ -10,8 +10,8 @@ from chatballs.webchat.testing import create_web_widget
 
 class PublicSupportPortalTests(TestCase):
     def setUp(self) -> None:
-        result = bootstrap_edevs_owner(
-            email="public-portal-owner@edevs.tech",
+        result = bootstrap_owner(
+            email="public-portal-owner@example.com",
             password="temporary-password",
         )
         self.client = TenantAPIClient()
@@ -70,8 +70,8 @@ class PublicSupportPortalTests(TestCase):
 
     def test_published_portal_exposes_search_article_and_feedback(self) -> None:
         self.client.force_authenticate(
-            bootstrap_edevs_owner(
-                email="public-portal-owner@edevs.tech",
+            bootstrap_owner(
+                email="public-portal-owner@example.com",
                 password="temporary-password",
             ).owner
         )
@@ -121,11 +121,11 @@ class PublicSupportPortalTests(TestCase):
         self.assertEqual(feedback.status_code, 201, feedback.content)
         self.assertEqual(PortalArticleFeedback.objects.filter(helpful=True).count(), 1)
 
-    @override_settings(ALLOWED_HOSTS=["testserver", "help.foxray.example"])
+    @override_settings(ALLOWED_HOSTS=["testserver", "help.app.example"])
     def test_verified_custom_domain_resolves_the_same_portal(self) -> None:
         self.client.force_authenticate(
-            bootstrap_edevs_owner(
-                email="public-portal-owner@edevs.tech",
+            bootstrap_owner(
+                email="public-portal-owner@example.com",
                 password="temporary-password",
             ).owner
         )
@@ -135,14 +135,14 @@ class PublicSupportPortalTests(TestCase):
             format="json",
         )
         SupportPortal.objects.filter(id=self.portal_id).update(
-            custom_domain="help.foxray.example",
+            custom_domain="help.app.example",
             custom_domain_verified_at=timezone.now(),
         )
         self.client.logout()
 
         response = self.client.get(
             "/api/v1/help/",
-            HTTP_HOST="help.foxray.example",
+            HTTP_HOST="help.app.example",
         )
 
         self.assertEqual(response.status_code, 200, response.content)
@@ -150,7 +150,7 @@ class PublicSupportPortalTests(TestCase):
 
     @override_settings(ROOT_URLCONF="chatballs_backend.urls_platform")
     def test_gateway_authorizes_only_published_portal_domains(self) -> None:
-        custom_domain = "help.foxray.example"
+        custom_domain = "help.app.example"
         SupportPortal.objects.filter(id=self.portal_id).update(
             status="PUBLISHED",
             custom_domain=custom_domain,
