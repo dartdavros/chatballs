@@ -1,59 +1,25 @@
 {
   "schemaVersion": 1,
   "calls": [
-    {
-      "conversation": "reper-support-identity",
-      "initiatedBy": "support_lead",
-      "contactIdentity": "p.gusev-tg",
-      "status": "ENDED",
-      "endedBy": "STAFF",
-      "minutesAgo": 30,
-      "durationSeconds": 240,
-      "deliveryConnection": "reper-support-web",
-      "metrics": {
-        "connectionType": "DIRECT",
-        "localCandidateType": "host",
-        "remoteCandidateType": "srflx",
-        "roundTripMs": 42
-      }
-    },
-    {
-      "conversation": "vektor-queue",
-      "initiatedBy": "sales_lead",
-      "contactIdentity": "s.orlov-tg",
-      "status": "DECLINED",
-      "minutesAgo": 90
-    }
+    {"key": "call_maria", "conversation": "maria_first", "initiatedBy": "anna", "contactIdentity": "maria_tg", "deliveryConnection": "tg", "kind": "AUDIO", "status": "ENDED", "endedBy": "STAFF", "daysAgo": 33, "durationSeconds": 262, "metrics": {"connectionType": "RELAY", "localCandidateType": "relay", "remoteCandidateType": "relay", "roundTripMs": 64}},
+    {"key": "call_darya", "conversation": "darya_measure", "initiatedBy": "dmitry", "contactIdentity": "darya_tg", "deliveryConnection": "tg", "kind": "VIDEO", "status": "ENDED", "endedBy": "CUSTOMER", "minutesAgo": 1395, "durationSeconds": 540, "metrics": {"connectionType": "DIRECT", "localCandidateType": "srflx", "remoteCandidateType": "srflx", "roundTripMs": 31}},
+    {"key": "call_olga_missed", "conversation": "olga_archived", "initiatedBy": "anna", "contactIdentity": "olga_max", "deliveryConnection": "max", "kind": "AUDIO", "status": "MISSED", "daysAgo": 12},
+    {"key": "call_viktor_declined", "conversation": "viktor_wholesale", "initiatedBy": "svetlana", "contactIdentity": "viktor_tg", "deliveryConnection": "tg", "kind": "AUDIO", "status": "DECLINED", "endedBy": "CUSTOMER", "minutesAgo": 4185},
+    {"key": "call_sergey_expired", "conversation": "portal_sergey", "initiatedBy": "artem", "contactIdentity": "sergey_web", "deliveryConnection": "web", "kind": "AUDIO", "status": "EXPIRED", "daysAgo": 6, "invite": {"deliveryStatus": "DELIVERED", "expiredMinutesAfter": 2}}
   ],
   "notifications": [
-    {
-      "type": "DIALOG_WAITING",
-      "level": "WARNING",
-      "title": "Диалог ожидает оператора",
-      "body": "Сергей Орлов ждёт ответа в канале продаж Вектора.",
-      "targetRoute": "chat",
-      "targetId": "vektor-queue",
-      "audience": "OPERATORS",
-      "sourceId": "vektor-queue",
-      "readBy": "sales_lead"
-    },
-    {
-      "type": "DIALOG_NEW_MESSAGE",
-      "level": "INFO",
-      "title": "Новое сообщение в диалоге",
-      "body": "Наталья Кузнецова написала в продажи Вектора.",
-      "targetRoute": "chat",
-      "targetId": "vektor-lead-active",
-      "audience": "OPERATORS",
-      "sourceId": "vektor-lead-active"
-    },
-    {
-      "type": "INTEGRATION_ERROR",
-      "level": "CRITICAL",
-      "title": "Проблема с интеграцией",
-      "body": "Подключение Репер MAX не проверено. Данные могут не доходить.",
-      "audience": "OWNER",
-      "sourceId": "reper-sales-max"
-    }
+    {"type": "DIALOG_WAITING", "level": "WARNING", "title": "Ирина Левина ждёт оператора", "body": "Заказ 4390: клиент попросил человека. Ждёт 1 ч 50 мин.", "targetRoute": "chat", "targetConversation": "irina_status", "audience": "ALL", "minutesAgo": 110},
+    {"type": "DIALOG_WAITING", "level": "WARNING", "title": "Ольга Мельник ждёт оператора", "body": "Возврат: цвет не совпал с сайтом.", "targetRoute": "chat", "targetConversation": "olga_return", "audience": "ALL", "minutesAgo": 21},
+    {"type": "DIALOG_WAITING", "level": "WARNING", "title": "Полина Ракитина ждёт оператора", "body": "Почта: не приходит письмо для сброса пароля.", "targetRoute": "chat", "targetConversation": "polina_password", "audience": "ALL", "minutesAgo": 200, "readBy": ["anna", "artem"]},
+    {"type": "DIALOG_NEW_MESSAGE", "level": "INFO", "title": "Новое сообщение от Марии Соколовой", "body": "«Спасибо, понял»", "targetRoute": "chat", "targetConversation": "maria_delivery", "audience": "USER", "recipientUser": "anna", "minutesAgo": 4},
+    {"type": "INTEGRATION_ERROR", "level": "CRITICAL", "title": "Telegram · бот доставки: ошибка подключения", "body": "401 Unauthorized: bot token was revoked in @BotFather. Проверьте токен в настройках подключения.", "targetRoute": "settings", "audience": "OWNER", "minutesAgo": 4200},
+    {"type": "RELEASE_PUBLISHED", "level": "SUCCESS", "title": "Обновление Chatbolls: голосовые сообщения", "body": "Операторы могут отправлять голосовые в Telegram и MAX, входящие расшифровываются одной кнопкой.", "targetRoute": "chat", "audience": "ALL", "daysAgo": 2, "readBy": ["anna", "dmitry", "svetlana"]}
+  ],
+  "messengerBindings": [
+    {"user": "anna", "connection": "tg", "externalChatId": "482900010", "pushTypes": ["DIALOG_WAITING", "DIALOG_NEW_MESSAGE", "INTEGRATION_ERROR"]},
+    {"user": "svetlana", "connection": "tg", "externalChatId": "482900011", "pushTypes": ["DIALOG_WAITING"]}
+  ],
+  "messengerBindingCodes": [
+    {"user": "dmitry", "connection": "tg", "code": "DEMO-7K2P", "expiresInMinutes": 25}
   ]
 }

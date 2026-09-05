@@ -118,32 +118,6 @@ services:
       - /app/node_modules
       - /app/apps/web-chat/node_modules
 
-  # Явный одноразовый импорт демонстрационных данных. Сервис существует только
-  # в compose.dev.yaml, профилем не включается в обычный `up`. Данные живут в
-  # backend image (management-команда seed_demo), отдельный bind-mount не нужен.
-  demo-seed:
-    profiles: ["demo-seed"]
-    build:
-      context: .
-      dockerfile: apps/backend/Dockerfile
-    env_file:
-      - .env
-    command: ["python", "manage.py", "seed_demo", "--apply"]
-    working_dir: /app/apps/backend
-    environment:
-      CUS_DB_ROLE: migration
-      CUS_DELIVERY_MODE: ${CUS_DELIVERY_MODE:-CLOUD}
-      CUS_HELP_BASE_DOMAIN: localhost
-      CUS_HELP_PUBLIC_SCHEME: http
-      CUS_HELP_PUBLIC_PORT: ""
-    volumes:
-      - ./apps/backend:/app/apps/backend
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-
   # Dev: gateway — nginx с local.conf вместо Caddy (та же маршрутизация, HMR-friendly).
   gateway:
     image: nginx:1.27-alpine

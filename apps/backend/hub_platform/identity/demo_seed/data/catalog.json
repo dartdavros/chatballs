@@ -1,15 +1,7 @@
 {
   "schemaVersion": 1,
+  "_comment": "Product — скрытая техническая ось (ADR-HUB-0041): нужен порталу поддержки и веб-виджету.",
   "products": [
-    {
-      "code": "vektor",
-      "name": "Вектор",
-      "siteUrl": "https://vektor.severnayaverf.ru"
-    },
-    {
-      "code": "reper",
-      "name": "Репер",
-      "siteUrl": "https://reper.severnayaverf.ru"
-    }
+    {"code": "atelie-nord-site", "name": "Сайт ателье", "siteUrl": "https://atelie-nord.ru"}
   ]
 }

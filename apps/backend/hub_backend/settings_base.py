@@ -121,6 +121,8 @@ CHANNEL_LAYERS = {
     }
 }
 
+DATABASE_ROUTERS = ["hub_platform.tenancy.routing.ForcedAliasRouter"]
+
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {

@@ -8,7 +8,7 @@ import { applyAppearance, DEFAULT_ACCENT, resolvedDark } from "./shared/appearan
 import { api, setActiveOrganization } from "./api/client";
 import { canAccess, defaultRoute, isManager } from "./auth/access";
 import { activateOrganization, clearOrganizationPreference } from "./auth/session";
-import { AuthChangePassword, AuthLogin, AuthPasswordRecovery, AuthResetPassword, AuthTotpCode, AuthTotpSetup } from "./features/auth/AuthScreens";
+import { AuthChangePassword, AuthLogin, AuthPasswordRecovery, AuthResetPassword, AuthSetup, AuthTotpCode, AuthTotpSetup } from "./features/auth/AuthScreens";
 import { Shell } from "./layout/Shell";
 import { pathFromRoute, routeFromPath } from "./router";
 import { ErrorScreen, LoadingScreen, PermissionScreen } from "./shared/ui";
@@ -34,6 +34,8 @@ export function App() {
   const [totpChallenge, setTotpChallenge] = useState<AuthChallenge | null>(null);
   const [recovering, setRecovering] = useState(false);
   const [resetting, setResetting] = useState(() => window.location.pathname === "/reset-password");
+  // Мастер первого запуска: пока в инстансе нет организации, вместо входа — форма создания.
+  const [needsSetup, setNeedsSetup] = useState(false);
   const [data, setData] = useState<AppData>({ employees: [], groups: [], products: [], agents: [] });
   const [dataError, setDataError] = useState(false);
   const navigation = useRouteNavigation(initialRoute, organizationPublicId);
@@ -88,8 +90,11 @@ export function App() {
             );
             window.history.replaceState({}, "", nextPath);
           }
+          return undefined;
         }
+        return api<{ needsSetup: boolean }>("/api/v1/setup/").then((setup) => setNeedsSetup(setup.needsSetup));
       })
+      .catch(() => undefined)
       .finally(() => setSessionLoading(false));
   }, [initialRoute, useIdentity]);
 
@@ -147,7 +152,9 @@ export function App() {
       {totpChallenge ? (
         <AuthTotpCode challenge={totpChallenge} onVerified={(nextUser) => { setTotpChallenge(null); landAfterAuth(nextUser); }} />
       ) : !identity ? (
-        recovering ? (
+        needsSetup ? (
+          <AuthSetup onDone={(nextUser) => { setNeedsSetup(false); landAfterAuth(nextUser); }} />
+        ) : recovering ? (
           <AuthPasswordRecovery onBackToLogin={() => setRecovering(false)} />
         ) : (
           <AuthLogin onLogin={landAfterAuth} onTotpChallenge={setTotpChallenge} onRecover={() => setRecovering(true)} />

@@ -1,90 +1,69 @@
-"""Загружает полный набор демонстрационных данных организации «Северная Верфь».
+"""Демо-данные «Ателье Норд» из командной строки (для разработки и CI).
 
-Данные — выдуманные (РФ-наполнение), полностью покрывают значимые домены
-системы. Источник — редактируемые JSON-манифесты в
-``hub_platform/identity/demo_seed/data/``.
-
-Идемпотентен: повторный запуск не дублирует и не затирает записи. По умолчанию
-работает в режиме dry-run (ничего не пишет); запуск с ``--apply`` применяет сид.
-Вне режима отладки требует явного ``--force`` (например, при установке облака).
+Штатный путь — мастер первого запуска и карточка «Демо-данные» в «Настройках».
+Команда делает то же самое синхронно: ``--apply`` ставит набор в организацию
+по slug, ``--remove`` удаляет его по реестру. Без флагов — сухой прогон.
 """
 
 from __future__ import annotations
 
-from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
-from hub_platform.identity.demo_seed import manifest
-from hub_platform.identity.demo_seed.orchestrator import run_demo_seed
+from hub_platform.identity.demo_models import DemoDataset, DemoDatasetStatus
+from hub_platform.identity.demo_seed import service
+from hub_platform.identity.models import Organization
 from hub_platform.tenancy.context import TenantActorKind, TenantContext
 from hub_platform.tenancy.database import tenant_atomic
 
 
 class Command(BaseCommand):
-    help = "Seeds the demo organization «Северная Верфь» with full fictional data."
+    help = "Installs or removes the «Ателье Норд» demo dataset for an organization."
 
     def add_arguments(self, parser) -> None:
-        parser.add_argument(
-            "--apply",
-            action="store_true",
-            help="Apply the seed. Without it, only a dry-run summary is printed.",
-        )
-        parser.add_argument(
-            "--force",
-            action="store_true",
-            help="Allow running outside DEBUG (e.g. cloud installation).",
-        )
+        parser.add_argument("--organization", required=True, help="Organization slug")
+        group = parser.add_mutually_exclusive_group()
+        group.add_argument("--apply", action="store_true", help="Install the demo dataset")
+        group.add_argument("--remove", action="store_true", help="Remove the installed demo dataset")
 
     def handle(self, *args: object, **options: object) -> None:
-        if not settings.DEBUG and not options["force"]:
-            raise CommandError(
-                "Demo seed is for local/cloud installation only. Pass --force to run outside DEBUG."
-            )
+        try:
+            organization = Organization.objects.get(slug=options["organization"])
+        except Organization.DoesNotExist as error:
+            raise CommandError(f"Organization {options['organization']!r} not found") from error
+        context = TenantContext.for_resource(organization, actor_kind=TenantActorKind.SYSTEM)
 
-        org_data = manifest.load("organization")["organization"]
-
-        if not options["apply"]:
+        if not options["apply"] and not options["remove"]:
+            status = service.demo_status(organization)
             self.stdout.write(
                 self.style.WARNING(
-                    f"Dry-run: would seed demo organization «{org_data['name']}» "
-                    f"({org_data['slug']}). Pass --apply to create the data."
+                    f"Dry-run: demo dataset for «{organization.name}» is {status['status']} "
+                    f"({status['recordsCount']} records). Pass --apply or --remove."
                 )
             )
             return
 
-        context = TenantContext.for_resource(
-            _resolve_organization(org_data),
-            actor_kind=TenantActorKind.SYSTEM,
-        )
         with tenant_atomic(context):
-            refs = run_demo_seed(context)
-
-        self.stdout.write(
-            self.style.SUCCESS(
-                "Demo seed applied: "
-                f"org={refs.organization.slug}; "
-                f"users={len(refs.users)}; "
-                f"products={len(refs.products)}; "
-                f"channels={len(refs.channels)}; "
-                f"conversations={len(refs.conversations)}"
-            )
-        )
-
-
-def _resolve_organization(org_data: dict):
-    """Возвращает организацию сида, создавая её, если нужно.
-
-    ``run_demo_seed`` (foundation-загрузчик) идемпотентно донастроит её поля;
-    здесь нужна только оболочка, чтобы построить TenantContext до старта.
-    """
-    from hub_platform.identity.models import Organization
-
-    organization, _ = Organization.objects.get_or_create(
-        slug=org_data["slug"],
-        defaults={
-            "name": org_data["name"],
-            "timezone": org_data["timezone"],
-            "currency": org_data["currency"],
-        },
-    )
-    return organization
+            dataset = DemoDataset.objects.select_for_update().filter(organization=organization).first()
+            if options["apply"]:
+                if dataset is None:
+                    dataset = DemoDataset.objects.create(
+                        organization=organization, status=DemoDatasetStatus.INSTALLING
+                    )
+                elif dataset.status == DemoDatasetStatus.INSTALLED:
+                    raise CommandError("Demo dataset is already installed; remove it first")
+                else:
+                    dataset.status = DemoDatasetStatus.INSTALLING
+                    dataset.save(update_fields=["status"])
+                dataset = service.install(context=context, dataset=dataset)
+                if dataset.status != DemoDatasetStatus.INSTALLED:
+                    raise CommandError(f"Demo install failed: {dataset.error}")
+                self.stdout.write(
+                    self.style.SUCCESS(
+                        f"Demo installed for «{organization.name}»: {dataset.records_count} records"
+                    )
+                )
+            else:
+                if dataset is None:
+                    raise CommandError("Demo dataset is not installed")
+                service.remove(context=context, dataset=dataset)
+                self.stdout.write(self.style.SUCCESS(f"Demo removed for «{organization.name}»"))

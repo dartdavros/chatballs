@@ -1,6 +1,7 @@
 from django.urls import include, path
 from rest_framework.schemas import get_schema_view
 
+from hub_platform.identity.demo_views import DemoMediaView
 from hub_platform.webchat.views import WidgetLoaderView
 
 urlpatterns = [
@@ -11,6 +12,12 @@ urlpatterns = [
         name="openapi-schema",
     ),
     path("api/v1/auth/", include("hub_platform.identity.auth_urls")),
+    path("api/v1/setup/", include("hub_platform.identity.setup_urls")),
+    path(
+        "api/v1/demo-media/avatars/<str:name>",
+        DemoMediaView.as_view(),
+        name="demo-media",
+    ),
     path(
         "api/v1/organizations/<uuid:organization_public_id>/company/",
         include("hub_platform.identity.company_urls"),

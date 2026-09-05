@@ -63,8 +63,17 @@ def media_path(filename: str) -> Path:
 
 
 def media_text(filename: str) -> str:
-    """Текстовое содержимое вложения (для SVG/Markdown)."""
+    """Текстовое содержимое вложения (для Markdown/текста)."""
     return media_path(filename).read_text(encoding="utf-8")
+
+
+def media_bytes(filename: str) -> bytes:
+    """Бинарное содержимое вложения (PDF, аудио, изображения)."""
+    return media_path(filename).read_bytes()
+
+
+def media_exists(filename: str) -> bool:
+    return (MEDIA_DIR / filename).is_file()
 
 
 def _validate_organization(payload: dict) -> None:
@@ -72,12 +81,8 @@ def _validate_organization(payload: dict) -> None:
         raise ManifestError("organization manifest must be a JSON object")
     if payload.get("schemaVersion") != SCHEMA_VERSION:
         raise ManifestError(f"organization manifest schemaVersion must be {SCHEMA_VERSION}")
-    org = payload.get("organization")
-    if not isinstance(org, dict):
-        raise ManifestError("organization block is required")
-    for key in ("slug", "name", "timezone", "currency"):
-        if not org.get(key):
-            raise ManifestError(f"organization.{key} is required")
+    if not payload.get("demoPassword") or not isinstance(payload.get("accounts"), list):
+        raise ManifestError("organization manifest requires demoPassword and accounts")
 
 
 def _validate_section(payload: dict | list, name: str) -> None:

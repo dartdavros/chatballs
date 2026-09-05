@@ -239,6 +239,44 @@
   color: var(--success-text);
 }
 
+.auth-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0 0 20px;
+  padding: 13px 14px;
+  background: var(--n-10);
+  border: 1px solid var(--n-8);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.auth-checkbox input {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin: 2px 0 0;
+  accent-color: var(--primary);
+}
+
+.auth-checkbox span {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.auth-checkbox strong {
+  color: var(--n-2);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.auth-checkbox small {
+  color: var(--n-4);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
 .auth-totp-setup-card {
   padding: 26px;
 }

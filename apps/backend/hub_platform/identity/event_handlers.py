@@ -37,3 +37,43 @@ def handle_password_reset_requested(payload: dict, context: TenantContext | None
     user = HumanUser.objects.filter(pk=payload.get("userId"), is_active=True).first()
     if user is not None:
         send_password_reset_email(user)
+
+
+# --- Демо-данные (мастер первого запуска и «Настройки») -----------------------
+
+DEMO_INSTALL_REQUESTED = "demo.install_requested"
+DEMO_REMOVE_REQUESTED = "demo.remove_requested"
+
+
+def _demo_dataset(payload: dict, context: TenantContext | None):
+    from hub_platform.identity.demo_models import DemoDataset
+
+    if context is None:
+        raise ValueError("Demo dataset events are tenant events")
+    return (
+        DemoDataset.objects.select_for_update()
+        .filter(pk=payload.get("datasetId"), organization_id=context.organization_id)
+        .first()
+    )
+
+
+@register(DEMO_INSTALL_REQUESTED)
+def handle_demo_install_requested(payload: dict, context: TenantContext | None) -> None:
+    from hub_platform.identity.demo_models import DemoDatasetStatus
+    from hub_platform.identity.demo_seed import service
+
+    dataset = _demo_dataset(payload, context)
+    if dataset is None or dataset.status != DemoDatasetStatus.INSTALLING:
+        return
+    service.install(context=context, dataset=dataset)
+
+
+@register(DEMO_REMOVE_REQUESTED)
+def handle_demo_remove_requested(payload: dict, context: TenantContext | None) -> None:
+    from hub_platform.identity.demo_models import DemoDatasetStatus
+    from hub_platform.identity.demo_seed import service
+
+    dataset = _demo_dataset(payload, context)
+    if dataset is None or dataset.status != DemoDatasetStatus.REMOVING:
+        return
+    service.remove(context=context, dataset=dataset)

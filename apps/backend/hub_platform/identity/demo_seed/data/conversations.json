@@ -1,208 +1,840 @@
 {
   "schemaVersion": 1,
+  "_comment": "Диалоги «Ателье Норд» по кадрам дизайн-базлайна v2. Время — относительное (minutesAgo/daysAgo) от момента установки. Аватары контактов — media/avatars, отдаются публичным роутом демо-медиа. Голосовые: file — из media/voice (см. README сида), если файла нет — сообщение пропускается с предупреждением.",
   "contacts": [
-    { "key": "n.kuznetsova", "name": "Наталья Кузнецова", "phone": "+7 812 445 90 12" },
-    { "key": "s.orlov", "name": "Сергей Орлов", "phone": "+7 343 261 04 77", "avatarUrl": "https://i.pravatar.cc/200?img=12" },
-    { "key": "v.lebedeva", "name": "Виктория Лебедева", "phone": "+7 846 230 58 90", "avatarUrl": "https://i.pravatar.cc/200?img=5" },
-    { "key": "p.gusev", "name": "Павел Гусев", "phone": "" },
-    { "key": "o.frolova", "name": "Ольга Фролова", "phone": "+7 495 120 33 18" },
-    { "key": "a.makarov", "name": "Антон Макаров", "phone": "+7 861 200 41 55" },
-    { "key": "e.zaitseva", "name": "Екатерина Зайцева", "phone": "+7 831 410 76 22" },
-    { "key": "r.borisov", "name": "Роман Борисов", "phone": "+7 846 300 88 04" },
-    { "key": "f.grigorev", "name": "Фёдор Григорьев", "phone": "+7 495 778 12 09" }
+    {
+      "key": "maria",
+      "name": "Мария Соколова",
+      "phone": "+7 917 254-18-40",
+      "avatar": "maria-sokolova.jpg",
+      "createdDaysAgo": 34
+    },
+    {
+      "key": "irina",
+      "name": "Ирина Левина",
+      "phone": "+7 921 118-77-03",
+      "avatar": "irina-levina.jpg",
+      "createdDaysAgo": 60
+    },
+    {
+      "key": "olga",
+      "name": "Ольга Мельник",
+      "phone": "",
+      "avatar": "olga-melnik.jpg",
+      "createdDaysAgo": 12
+    },
+    {
+      "key": "sergey",
+      "name": "Сергей Крылов",
+      "phone": "+7 903 445-90-12",
+      "avatar": "sergey-krylov.jpg",
+      "createdDaysAgo": 9
+    },
+    {
+      "key": "darya",
+      "name": "Дарья Волкова",
+      "phone": "",
+      "avatar": "darya-volkova.jpg",
+      "createdDaysAgo": 2
+    },
+    {
+      "key": "viktor",
+      "name": "Виктор Панов · ООО «Дом текстиля»",
+      "phone": "+7 812 640-22-10",
+      "createdDaysAgo": 90
+    },
+    {
+      "key": "polina",
+      "name": "Полина Ракитина",
+      "phone": "",
+      "createdDaysAgo": 1
+    },
+    {
+      "key": "spammer",
+      "name": "",
+      "phone": "",
+      "createdDaysAgo": 0
+    }
   ],
   "connectionIdentities": [
-    { "key": "n.kuznetsova-tg", "contact": "n.kuznetsova", "connection": "vektor-sales-tg", "externalUserId": "demo-nkuznetsova", "displayName": "Наталья Кузнецова", "username": "nkuznetsova_plant" },
-    { "key": "s.orlov-tg", "contact": "s.orlov", "connection": "vektor-sales-tg", "externalUserId": "demo-sorlov", "displayName": "Сергей Орлов", "username": "sorlov_ural" },
-    { "key": "v.lebedeva-max", "contact": "v.lebedeva", "connection": "reper-sales-max", "externalUserId": "demo-vlebedeva", "displayName": "Виктория Лебедева", "username": "vlebedeva" },
-    { "key": "p.gusev-tg", "contact": "p.gusev", "connection": "reper-sales-tg", "externalUserId": "demo-pgusev", "displayName": "Павел Гусев", "username": "pgusev_logistics" },
-    { "key": "o.frolova-web", "contact": "o.frolova", "connection": "site-web", "externalUserId": "demo-ofrolova", "displayName": "Ольга Фролова" },
-    { "key": "a.makarov-tg", "contact": "a.makarov", "connection": "site-tg", "externalUserId": "demo-amakarov", "displayName": "Антон Макаров", "username": "amakarov_int" },
-    { "key": "r.borisov-max", "contact": "r.borisov", "connection": "site-max", "externalUserId": "demo-rborisov", "displayName": "Роман Борисов", "username": "rborisov" },
-    { "key": "e.zaitseva-tg", "contact": "e.zaitseva", "connection": "vektor-sales-tg", "externalUserId": "demo-ezaitseva", "displayName": "Екатерина Зайцева", "username": "ezaitseva_nnp" },
-    { "key": "f.grigorev-email", "contact": "f.grigorev", "connection": "support-email", "externalUserId": "f.grigorev@technosoft.ru", "displayName": "Фёдор Григорьев", "username": "f.grigorev@technosoft.ru" }
+    {
+      "key": "maria_tg",
+      "contact": "maria",
+      "connection": "tg",
+      "externalUserId": "482913001",
+      "displayName": "Мария Соколова",
+      "username": "m_sokolova"
+    },
+    {
+      "key": "irina_tg",
+      "contact": "irina",
+      "connection": "tg",
+      "externalUserId": "482913002",
+      "displayName": "Ирина Л.",
+      "username": "irina_levina"
+    },
+    {
+      "key": "irina_max",
+      "contact": "irina",
+      "connection": "max",
+      "externalUserId": "max-77103",
+      "displayName": "Ирина Левина"
+    },
+    {
+      "key": "olga_max",
+      "contact": "olga",
+      "connection": "max",
+      "externalUserId": "max-88214",
+      "displayName": "Ольга Мельник"
+    },
+    {
+      "key": "sergey_web",
+      "contact": "sergey",
+      "connection": "web_account",
+      "externalUserId": "web-sess-4402a",
+      "displayName": "Сергей Крылов"
+    },
+    {
+      "key": "darya_tg",
+      "contact": "darya",
+      "connection": "tg",
+      "externalUserId": "482913005",
+      "displayName": "Даша",
+      "username": "dvolkova"
+    },
+    {
+      "key": "viktor_tg",
+      "contact": "viktor",
+      "connection": "tg",
+      "externalUserId": "482913006",
+      "displayName": "Виктор Панов",
+      "username": "v_panov"
+    },
+    {
+      "key": "polina_email",
+      "contact": "polina",
+      "connection": "email",
+      "externalUserId": "polina.rakitina@mail.ru",
+      "displayName": "Полина Ракитина"
+    },
+    {
+      "key": "spam_tg",
+      "contact": "spammer",
+      "connection": "tg",
+      "externalUserId": "900000001",
+      "displayName": "Кредит Онлайн",
+      "username": "credit_fast_24"
+    }
+  ],
+  "labels": [
+    {
+      "key": "urgent",
+      "name": "Срочно",
+      "color": "#d6336c"
+    },
+    {
+      "key": "vip",
+      "name": "VIP",
+      "color": "#b8860b"
+    },
+    {
+      "key": "return",
+      "name": "Возврат",
+      "color": "#7c3aed"
+    },
+    {
+      "key": "delivery",
+      "name": "Доставка",
+      "color": "#1677ff"
+    },
+    {
+      "key": "wholesale",
+      "name": "Оптовый",
+      "color": "#0f9d58"
+    }
+  ],
+  "replyTemplates": [
+    {
+      "title": "Приветствие",
+      "text": "Здравствуйте! Меня зовут {имя}, я консультант ателье «Норд». Подскажите, пожалуйста, ширину карниза и высоту окна — сделаю расчёт."
+    },
+    {
+      "title": "Сроки пошива",
+      "text": "Пошив занимает 5–7 рабочих дней после оплаты. Срочный вариант за 3 дня возможен при наличии ткани, +30% к стоимости пошива."
+    },
+    {
+      "title": "Доставка СДЭК",
+      "text": "Отправляем СДЭК до пункта выдачи или до двери, 3–5 рабочих дней. Трек-номер придёт на почту в день отправки до 19:00."
+    },
+    {
+      "title": "Перенос доставки",
+      "text": "Перенесли доставку на {дата}, интервал {интервал}. Курьер позвонит за час. Подтвердите, пожалуйста, что интервал подходит."
+    },
+    {
+      "title": "Возврат — запрос фото",
+      "text": "Сожалею, что так вышло. Пришлите, пожалуйста, номер заказа и фото изделия при дневном свете — оформлю заявку на переделку или обмен."
+    },
+    {
+      "title": "Образцы тканей",
+      "text": "Отправим до 5 образцов почтой бесплатно. Напишите, какие ткани и цвета интересуют, и адрес с индексом."
+    },
+    {
+      "title": "Закрытие диалога",
+      "text": "Рада была помочь! Если появятся вопросы — пишите, отвечу в рабочее время с 10:00 до 20:00."
+    }
   ],
   "conversations": [
     {
-      "key": "vektor-lead-active",
-      "channel": "vektor-sales",
-      "connection": "vektor-sales-tg",
-      "contact": "n.kuznetsova",
-      "externalChatId": "demo-vektor-lead-active",
-      "controlMode": "AI",
-      "expectedResponder": "AI",
-      "lastActivityMinutesAgo": 3,
-      "messages": [
-        { "externalId": "m1", "author": "CONTACT", "text": "Добрый день! Нас интересует мониторинг оборудования для литейного цеха. Что по Вектору?" },
-        { "externalId": "m2", "author": "AI", "text": "Здравствуйте, Наталья! Вектор хорошо подходит для цехов с разнородными контроллерами — опрашивает их по OPC UA и Modbus. Подскажу конфигурацию под ваш масштаб." }
-      ]
-    },
-    {
-      "key": "vektor-queue",
-      "channel": "vektor-sales",
-      "connection": "vektor-sales-tg",
-      "contact": "s.orlov",
-      "externalChatId": "demo-vektor-queue",
-      "controlMode": "PAUSED",
-      "expectedResponder": "OPERATOR",
-      "lastActivityMinutesAgo": 14,
-      "assignedOperator": "sales_lead",
-      "readBy": "sales_lead",
-      "messages": [
-        { "externalId": "m1", "author": "CONTACT", "text": "Нужен расчёт лицензий на 3 производственных участка. Скидка за объём есть?" }
-      ]
-    },
-    {
-      "key": "vektor-closed-deal",
-      "channel": "vektor-sales",
-      "connection": "vektor-sales-tg",
-      "contact": "e.zaitseva",
-      "externalChatId": "demo-vektor-closed-deal",
-      "controlMode": "HUMAN",
-      "expectedResponder": "NOBODY",
-      "lifecycle": "CLOSED",
-      "assignedOperator": "sales_lead",
-      "readBy": "sales_lead",
-      "lastActivityMinutesAgo": 1800,
-      "messages": [
-        { "externalId": "m1", "author": "CONTACT", "text": "Добрый день! Берём Вектор на основной цех плюс продление поддержки." },
-        { "externalId": "m2", "author": "OPERATOR", "authorUser": "sales_lead", "text": "Отлично, Екатерина! Готовлю счёт на лицензию и год поддержки. Пришлю на почту сегодня." },
-        { "externalId": "m3", "author": "CONTACT", "text": "Спасибо, жду." }
-      ]
-    },
-    {
-      "key": "reper-lead-active",
-      "channel": "reper-sales",
-      "connection": "reper-sales-tg",
-      "contact": "p.gusev",
-      "externalChatId": "demo-reper-lead-active",
-      "controlMode": "AI",
-      "expectedResponder": "CUSTOMER",
-      "lastActivityMinutesAgo": 8,
-      "messages": [
-        { "externalId": "m1", "author": "CONTACT", "text": "Здравствуйте! У нас автопарк 60 машин, интересна телематика Репер." },
-        { "externalId": "m2", "author": "AI", "text": "Здравствуйте, Павел! Для 60 единиц выгоднее годовая подписка. Уточните, пожалуйста, типы транспорта — есть ли спецтехника?" }
-      ]
-    },
-    {
-      "key": "reper-quote",
-      "channel": "reper-sales",
-      "connection": "reper-sales-max",
-      "contact": "v.lebedeva",
-      "externalChatId": "demo-reper-quote",
-      "controlMode": "PAUSED",
-      "expectedResponder": "OPERATOR",
-      "lastActivityMinutesAgo": 22,
-      "assignedOperator": "sales_junior",
-      "readBy": "sales_junior",
-      "messages": [
-        { "externalId": "m1", "author": "CONTACT", "text": "Пришлите КП на телематику для парка спецтехники, 32 единицы." }
-      ]
-    },
-    {
-      "key": "site-general",
-      "channel": "site-main",
-      "connection": "site-web",
-      "contact": "o.frolova",
-      "externalChatId": "demo-site-general",
-      "controlMode": "AI",
-      "expectedResponder": "AI",
-      "lastActivityMinutesAgo": 1,
-      "messages": [
-        { "externalId": "m1", "author": "CONTACT", "text": "Здравствуйте! Не пойму, какой продукт мне подходит — у меня небольшой завод." },
-        { "externalId": "m2", "author": "AI", "text": "Здравствуйте! Подскажу. Если нужно следить за оборудованием в цеху — это Вектор. Если техника и автопарк — Репер. Расскажите чуть подробнее о задаче?" }
-      ]
-    },
-    {
-      "key": "site-partner",
-      "channel": "site-main",
-      "connection": "site-tg",
-      "contact": "a.makarov",
-      "externalChatId": "demo-site-partner",
-      "controlMode": "HUMAN",
-      "expectedResponder": "OPERATOR",
+      "key": "maria_delivery",
+      "agent": "consultant",
+      "connection": "tg",
+      "contact": "maria",
+      "identity": "maria_tg",
+      "externalChatId": "482913001",
       "lifecycle": "OPEN",
-      "lastActivityMinutesAgo": 35,
-      "assignedOperator": "admin",
-      "readBy": "admin",
-      "messages": [
-        { "externalId": "m1", "author": "CONTACT", "text": "Мы системный интегратор, обсуждаем партнёрство по вашим продуктам." },
-        { "externalId": "m2", "author": "OPERATOR", "authorUser": "admin", "text": "Антон, спасибо за интерес! Подключу вас к партнёрской программе, отправлю условия на почту." }
-      ]
-    },
-    {
-      "key": "site-spam",
-      "channel": "site-main",
-      "connection": "site-max",
-      "contact": "r.borisov",
-      "externalChatId": "demo-site-spam",
-      "controlMode": "AI",
-      "expectedResponder": "NOBODY",
-      "lifecycle": "SPAM",
-      "lastActivityMinutesAgo": 120,
-      "messages": [
-        { "externalId": "m1", "author": "CONTACT", "text": "Куплю ваш бизнес, пишите на этот номер" }
-      ]
-    },
-    {
-      "key": "reper-support-identity",
-      "channel": "reper-support",
-      "connection": "reper-support-web",
-      "contact": "p.gusev",
-      "supportIdentitySnapshot": "reper-p-gusev",
-      "externalChatId": "demo-reper-support-identity",
       "controlMode": "HUMAN",
       "expectedResponder": "OPERATOR",
-      "lastActivityMinutesAgo": 6,
-      "assignedOperator": "support_lead",
-      "readBy": "support_lead",
-      "messages": [
-        { "externalId": "m1", "author": "CONTACT", "text": "Не отображается топливный датчик на одной из машин." },
-        { "externalId": "m2", "author": "OPERATOR", "authorUser": "support_lead", "text": "Проверяю статус опроса контроллера. Какой госномер машины?" },
-        { "externalId": "m3", "author": "CONTACT", "text": "В 477 ОР 63" }
-      ]
-    },
-    {
-      "key": "vektor-support-identity",
-      "channel": "vektor-support",
-      "connection": "vektor-support-web",
-      "contact": "n.kuznetsova",
-      "supportIdentitySnapshot": "vektor-n-kuznetsova",
-      "externalChatId": "demo-vektor-support-identity",
-      "controlMode": "AI",
-      "expectedResponder": "AI",
-      "lifecycle": "OPEN",
-      "lastActivityMinutesAgo": 11,
-      "messages": [
-        { "externalId": "m1", "author": "CONTACT", "text": "После обновления Вектора пропали тревоги по давлению." },
-        { "externalId": "m2", "author": "AI", "text": "Проверю настройки порогов после обновления. Уточните версию сборки в правом нижнем углу консоли." }
-      ]
-    },
-    {
-      "key": "support-email-thread",
-      "channel": "site-main",
-      "connection": "support-email",
-      "contact": "f.grigorev",
-      "externalChatId": "f.grigorev@technosoft.ru",
-      "controlMode": "HUMAN",
-      "expectedResponder": "OPERATOR",
-      "lifecycle": "OPEN",
-      "lastActivityMinutesAgo": 42,
-      "assignedOperator": "support_engineer",
-      "readBy": "support_engineer",
-      "transportMeta": { "subject": "Вопрос по продлению поддержки Вектор", "last_message_id": "<abc123.def456@technosoft.ru>" },
+      "assignedOperator": "anna",
+      "group": "consultants",
+      "priority": "HIGH",
+      "labels": [
+        "delivery",
+        "urgent"
+      ],
+      "note": "Заказ 4471 — комплект штор. Постоянный клиент с августа, предпочитает Telegram.",
+      "createdMinutesAgo": 95,
+      "lastActivityMinutesAgo": 4,
+      "readBy": [
+        "anna"
+      ],
+      "previousConversation": "maria_first",
       "messages": [
         {
-          "externalId": "<abc123.def456@technosoft.ru>",
           "author": "CONTACT",
-          "text": "Добрый день!\n\nПодскажите, пожалуйста, условия продления технической поддержки Вектор на следующий год. Лицензия В-4712, срок поддержки заканчивается в августе.\n\nС уважением,\nФёдор Григорьев\nООО «ТехноСофт»",
-          "contentHtml": "<div><p>Добрый день!</p><p>Подскажите, пожалуйста, условия продления технической поддержки Вектор на следующий год. Лицензия В-4712, срок поддержки заканчивается в августе.</p><p>С уважением,<br>Фёдор Григорьев<br>ООО «ТехноСофт»</p></div>"
+          "text": "Здравствуйте! Заказ 4471 — когда доставка? Обещали до среды.",
+          "minutesAgo": 95
         },
         {
-          "externalId": "demo-email-reply-1",
+          "author": "AI",
+          "text": "Здравствуйте, Мария. Доставка в Казань занимает 3–5 рабочих дней с момента отправки. Заказ 4471 сейчас на этапе пошива — отправим ориентировочно в четверг.",
+          "minutesAgo": 94
+        },
+        {
+          "author": "CONTACT",
+          "text": "А можно ускорить? Нужно к субботе.",
+          "minutesAgo": 90
+        },
+        {
+          "author": "AI",
+          "text": "Понимаю. Ускоренная доставка возможна, но её условия лучше уточнить у специалиста — передаю вопрос коллегам.",
+          "minutesAgo": 90
+        },
+        {
+          "author": "SYSTEM",
+          "text": "AI передал диалог: клиент просит ускорить доставку",
+          "minutesAgo": 90
+        },
+        {
           "author": "OPERATOR",
-          "authorUser": "support_engineer",
-          "text": "Здравствуйте, Фёдор! Продление поддержки на 12 месяцев для лицензии В-4712 — 189 000 ₽. Подготовлю счёт, на какую почту направить?"
+          "authorUser": "anna",
+          "text": "Мария, добрый день! Анна Ким, консультант. Уточняю у производства, можно ли отправить завтра.",
+          "minutesAgo": 48
+        },
+        {
+          "author": "SYSTEM",
+          "text": "Анна Ким взяла диалог",
+          "minutesAgo": 48
+        },
+        {
+          "author": "CONTACT",
+          "kind": "voice",
+          "voice": {
+            "file": "maria-hurry.ogg",
+            "contentType": "audio/ogg",
+            "durationSeconds": 14,
+            "transcriptStatus": "READY",
+            "transcript": "Анна, спасибо! Если получится отправить завтра, будет идеально — в субботу приезжают гости, хочу успеть повесить."
+          },
+          "minutesAgo": 30
+        },
+        {
+          "author": "OPERATOR",
+          "authorUser": "anna",
+          "text": "Здравствуйте, Мария. Заказ 4471 собран и передан курьеру, доставка сегодня до 20:00. Курьер позвонит за час.",
+          "minutesAgo": 6
+        },
+        {
+          "author": "CONTACT",
+          "text": "Спасибо, понял",
+          "minutesAgo": 4
+        }
+      ]
+    },
+    {
+      "key": "irina_status",
+      "agent": "consultant",
+      "connection": "tg",
+      "contact": "irina",
+      "identity": "irina_tg",
+      "externalChatId": "482913002",
+      "lifecycle": "OPEN",
+      "controlMode": "PAUSED",
+      "expectedResponder": "OPERATOR",
+      "group": "support",
+      "priority": "MEDIUM",
+      "labels": [
+        "delivery"
+      ],
+      "note": "Постоянный клиент, заказ 4390. Просила писать на почту, не звонить.",
+      "createdMinutesAgo": 130,
+      "lastActivityMinutesAgo": 110,
+      "readBy": [],
+      "previousConversation": "irina_first",
+      "messages": [
+        {
+          "author": "CONTACT",
+          "text": "Здравствуйте. Заказ 4390 оплачен неделю назад, статус не меняется. Что происходит?",
+          "minutesAgo": 130
+        },
+        {
+          "author": "AI",
+          "text": "Здравствуйте, Ирина. Вижу заказ 4390 в статусе «В производстве». Уточню сроки у коллег — передаю вопрос.",
+          "minutesAgo": 129
+        },
+        {
+          "author": "SYSTEM",
+          "text": "AI передал диалог: вопрос по статусу заказа",
+          "minutesAgo": 129
+        },
+        {
+          "author": "CONTACT",
+          "text": "Хочу поговорить с человеком",
+          "minutesAgo": 110
+        }
+      ]
+    },
+    {
+      "key": "olga_return",
+      "agent": "consultant",
+      "connection": "max",
+      "contact": "olga",
+      "identity": "olga_max",
+      "externalChatId": "max-88214",
+      "lifecycle": "OPEN",
+      "controlMode": "PAUSED",
+      "expectedResponder": "OPERATOR",
+      "group": "consultants",
+      "priority": "HIGH",
+      "labels": [
+        "return"
+      ],
+      "note": "",
+      "createdMinutesAgo": 22,
+      "lastActivityMinutesAgo": 6,
+      "readBy": [],
+      "messages": [
+        {
+          "author": "CONTACT",
+          "text": "Здравствуйте! Получила шторы, но цвет не тот, что на сайте.",
+          "minutesAgo": 22
+        },
+        {
+          "author": "AI",
+          "text": "Здравствуйте, Ольга. Сожалею. Возврат возможен в течение 14 дней — передаю вопрос сотруднику.",
+          "minutesAgo": 21
+        },
+        {
+          "author": "SYSTEM",
+          "text": "AI передал диалог: жалоба на качество",
+          "minutesAgo": 21
+        },
+        {
+          "author": "CONTACT",
+          "text": "Можно оформить возврат? Я бы хотела заменить на бежевый, если он есть в наличии, а не возвращать деньги.",
+          "minutesAgo": 12
+        },
+        {
+          "author": "CONTACT",
+          "kind": "voice",
+          "voice": {
+            "file": "olga-color.ogg",
+            "contentType": "audio/ogg",
+            "durationSeconds": 9,
+            "transcriptStatus": "NONE",
+            "transcript": ""
+          },
+          "minutesAgo": 6
+        }
+      ]
+    },
+    {
+      "key": "sergey_address",
+      "agent": "support",
+      "connection": "web_account",
+      "contact": "sergey",
+      "identity": "sergey_web",
+      "externalChatId": "web-sess-4402a",
+      "lifecycle": "OPEN",
+      "controlMode": "AI",
+      "expectedResponder": "CUSTOMER",
+      "group": "support",
+      "priority": "NONE",
+      "labels": [
+        "delivery"
+      ],
+      "note": "",
+      "createdMinutesAgo": 40,
+      "lastActivityMinutesAgo": 33,
+      "readBy": [
+        "artem"
+      ],
+      "messages": [
+        {
+          "author": "CONTACT",
+          "text": "Здравствуйте, хочу изменить адрес доставки по заказу 4402",
+          "minutesAgo": 40
+        },
+        {
+          "author": "AI",
+          "text": "Здравствуйте, Сергей. Напишите новый адрес — поменяю.",
+          "minutesAgo": 40
+        },
+        {
+          "author": "CONTACT",
+          "text": "Казань, ул. Баумана 12, кв. 40",
+          "minutesAgo": 36
+        },
+        {
+          "author": "AI",
+          "text": "Сейчас уточню у коллег, какой адрес указан в кабинете.",
+          "minutesAgo": 36
+        },
+        {
+          "author": "AI",
+          "text": "Готово, адрес обновлён. Хорошего дня!",
+          "minutesAgo": 34
+        },
+        {
+          "author": "CONTACT",
+          "kind": "contact",
+          "text": "+7 903 445-90-12",
+          "minutesAgo": 33
+        }
+      ],
+      "supportIdentitySnapshot": "sergey_account"
+    },
+    {
+      "key": "darya_measure",
+      "agent": "consultant",
+      "connection": "tg",
+      "contact": "darya",
+      "identity": "darya_tg",
+      "externalChatId": "482913005",
+      "lifecycle": "OPEN",
+      "controlMode": "HUMAN",
+      "expectedResponder": "CUSTOMER",
+      "assignedOperator": "dmitry",
+      "group": "consultants",
+      "priority": "LOW",
+      "labels": [],
+      "note": "Спрашивала о тканях и сроках пошива. Передан каталог.",
+      "createdMinutesAgo": 1500,
+      "lastActivityMinutesAgo": 1380,
+      "readBy": [
+        "dmitry"
+      ],
+      "messages": [
+        {
+          "author": "CONTACT",
+          "text": "Добрый день. У вас можно заказать шторы по своим размерам?",
+          "minutesAgo": 1500
+        },
+        {
+          "author": "AI",
+          "text": "Добрый день! Да, шьём по индивидуальным размерам. Подскажите ширину и высоту окна — рассчитаю стоимость.",
+          "minutesAgo": 1499
+        },
+        {
+          "author": "CONTACT",
+          "text": "Карниз 3 метра, высота 2,6. Хочу блэкаут, серый или графит.",
+          "minutesAgo": 1490
+        },
+        {
+          "author": "AI",
+          "text": "Блэкаут «Норд» есть в графите и дымчато-сером. Две полотна на карниз 3 м с коэффициентом 1.5 — примерно 9 270 ₽ с пошивом и лентой. Передаю консультанту, он пришлёт образцы.",
+          "minutesAgo": 1489
+        },
+        {
+          "author": "SYSTEM",
+          "text": "Дмитрий Орлов взял диалог",
+          "minutesAgo": 1420
+        },
+        {
+          "author": "OPERATOR",
+          "authorUser": "dmitry",
+          "kind": "voice",
+          "voice": {
+            "file": "dmitry-samples.ogg",
+            "contentType": "audio/ogg",
+            "durationSeconds": 18,
+            "transcriptStatus": "READY",
+            "transcript": "Дарья, добрый день, это Дмитрий из ателье. Отправлю вам три образца блэкаута: графит, дымчатый и тёмно-серый. Напишите адрес с индексом, уйдут завтра почтой."
+          },
+          "minutesAgo": 1400
+        },
+        {
+          "author": "CONTACT",
+          "text": "Уточняла размеры окон, получила расчёт стоимости, оформила заказ.",
+          "minutesAgo": 1380
+        }
+      ]
+    },
+    {
+      "key": "guest_curtains",
+      "agent": "consultant",
+      "connection": "web",
+      "webGuest": true,
+      "lifecycle": "OPEN",
+      "controlMode": "AI",
+      "expectedResponder": "CUSTOMER",
+      "group": "consultants",
+      "priority": "NONE",
+      "labels": [],
+      "note": "",
+      "createdMinutesAgo": 9,
+      "lastActivityMinutesAgo": 8,
+      "readBy": [],
+      "messages": [
+        {
+          "author": "CONTACT",
+          "text": "Сколько стоит тюль на окно 2 метра?",
+          "minutesAgo": 9
+        },
+        {
+          "author": "AI",
+          "text": "Здравствуйте! Тюль-вуаль на карниз 2 м с коэффициентом 2.0 — 4 м ткани по 390 ₽ плюс пошив 350 ₽/м: около 2 960 ₽. Минимальный заказ 3 000 ₽ — можно добавить шторную ленту. Подсказать по другим тканям?",
+          "minutesAgo": 8
+        }
+      ]
+    },
+    {
+      "key": "polina_password",
+      "agent": "support",
+      "connection": "email",
+      "contact": "polina",
+      "identity": "polina_email",
+      "externalChatId": "polina.rakitina@mail.ru",
+      "lifecycle": "OPEN",
+      "controlMode": "PAUSED",
+      "expectedResponder": "OPERATOR",
+      "group": "support",
+      "priority": "MEDIUM",
+      "labels": [],
+      "note": "",
+      "createdMinutesAgo": 240,
+      "lastActivityMinutesAgo": 200,
+      "readBy": [],
+      "transportMeta": {
+        "subject": "Не приходит письмо для сброса пароля"
+      },
+      "messages": [
+        {
+          "author": "CONTACT",
+          "text": "Не приходит письмо для сброса пароля в личном кабинете",
+          "contentHtml": "<p>Здравствуйте!</p><p>Пытаюсь восстановить пароль от личного кабинета на <b>atelie-nord.ru</b> — письмо не приходит уже час. Адрес правильный, проверила.</p><p>С уважением,<br>Полина Ракитина</p>",
+          "minutesAgo": 240
+        },
+        {
+          "author": "AI",
+          "text": "Проверьте папку «Спам». Если письма нет, передам запрос сотруднику.",
+          "contentHtml": "<p>Здравствуйте, Полина!</p><p>Письмо приходит с адреса <b>no-reply@atelie-nord.ru</b> в течение 5 минут. Проверьте, пожалуйста, папку «Спам». Если письма нет — передам запрос сотруднику.</p>",
+          "minutesAgo": 238
+        },
+        {
+          "author": "CONTACT",
+          "text": "В спаме тоже нет. Помогите, пожалуйста.",
+          "contentHtml": "<p>В спаме тоже нет. Помогите, пожалуйста.</p>",
+          "minutesAgo": 200
+        },
+        {
+          "author": "SYSTEM",
+          "text": "AI передал диалог: клиент просит сотрудника",
+          "minutesAgo": 200
+        }
+      ]
+    },
+    {
+      "key": "viktor_wholesale",
+      "agent": "consultant",
+      "connection": "tg",
+      "contact": "viktor",
+      "identity": "viktor_tg",
+      "externalChatId": "482913006",
+      "lifecycle": "OPEN",
+      "controlMode": "HUMAN",
+      "expectedResponder": "CUSTOMER",
+      "assignedOperator": "svetlana",
+      "group": "consultants",
+      "priority": "LOW",
+      "labels": [
+        "vip",
+        "wholesale"
+      ],
+      "note": "Закупщик текстиля для гостиницы. Просил писать на почту, не звонить.",
+      "createdMinutesAgo": 4300,
+      "lastActivityMinutesAgo": 2900,
+      "readBy": [
+        "svetlana",
+        "anna"
+      ],
+      "messages": [
+        {
+          "author": "CONTACT",
+          "text": "Добрый день. Гостиница «Дом текстиля», 46 номеров. Нужны блэкаут и тюль на все окна, единый размер 1.8 × 2.5. Есть оптовые условия?",
+          "minutesAgo": 4300
+        },
+        {
+          "author": "AI",
+          "text": "Добрый день, Виктор! Оптовые условия обсуждает старший консультант — передаю диалог.",
+          "minutesAgo": 4299
+        },
+        {
+          "author": "SYSTEM",
+          "text": "Светлана Петрова взяла диалог",
+          "minutesAgo": 4200
+        },
+        {
+          "author": "OPERATOR",
+          "authorUser": "svetlana",
+          "text": "Виктор, здравствуйте! Светлана Петрова. На 46 комплектов даём 12% на ткань и пошив, срок 3 недели. Отправлю КП на почту сегодня.",
+          "minutesAgo": 4190
+        },
+        {
+          "author": "CONTACT",
+          "text": "Отлично, жду КП. Почта на визитке.",
+          "minutesAgo": 2900
+        }
+      ]
+    },
+    {
+      "key": "maria_first",
+      "agent": "consultant",
+      "connection": "tg",
+      "contact": "maria",
+      "identity": "maria_tg",
+      "externalChatId": "482913001",
+      "lifecycle": "CLOSED",
+      "controlMode": "HUMAN",
+      "expectedResponder": "NOBODY",
+      "assignedOperator": "anna",
+      "group": "consultants",
+      "priority": "NONE",
+      "labels": [],
+      "note": "",
+      "createdDaysAgo": 34,
+      "lastActivityDaysAgo": 33,
+      "readBy": [
+        "anna"
+      ],
+      "messages": [
+        {
+          "author": "CONTACT",
+          "text": "Здравствуйте! Заказала у вас комплект штор, номер заказа 4471. Подскажите, сколько занимает доставка в Казань?",
+          "daysAgo": 34
+        },
+        {
+          "author": "AI",
+          "text": "Здравствуйте, Мария! Доставка в Казань СДЭК — 3–5 рабочих дней с момента отправки, трек-номер придёт на почту.",
+          "daysAgo": 34
+        },
+        {
+          "author": "CONTACT",
+          "text": "Спасибо! А можно перенести на завтра утро? Сегодня меня не будет дома.",
+          "daysAgo": 33
+        },
+        {
+          "author": "SYSTEM",
+          "text": "Анна Ким взяла диалог",
+          "daysAgo": 33
+        },
+        {
+          "author": "OPERATOR",
+          "authorUser": "anna",
+          "text": "Конечно. Перенесла доставку на завтра, 10:00–13:00. Подтвердите, пожалуйста, что интервал подходит.",
+          "daysAgo": 33
+        },
+        {
+          "author": "CONTACT",
+          "text": "Подходит, спасибо!",
+          "daysAgo": 33
+        },
+        {
+          "author": "SYSTEM",
+          "text": "Диалог закрыт · вела Анна Ким",
+          "daysAgo": 33
+        }
+      ]
+    },
+    {
+      "key": "irina_first",
+      "agent": "consultant",
+      "connection": "max",
+      "contact": "irina",
+      "identity": "irina_max",
+      "externalChatId": "max-77103",
+      "lifecycle": "CLOSED",
+      "controlMode": "AI",
+      "expectedResponder": "NOBODY",
+      "group": "consultants",
+      "priority": "NONE",
+      "labels": [],
+      "note": "",
+      "createdDaysAgo": 60,
+      "lastActivityDaysAgo": 60,
+      "readBy": [
+        "anna",
+        "dmitry"
+      ],
+      "messages": [
+        {
+          "author": "CONTACT",
+          "text": "Здравствуйте, какие ткани есть для спальни, чтобы полностью затемняли?",
+          "daysAgo": 60
+        },
+        {
+          "author": "AI",
+          "text": "Здравствуйте, Ирина! Для полного затемнения подойдёт блэкаут «Норд» — 100% затемнение, 14 цветов, 1 490 ₽/м. Могу отправить образцы почтой бесплатно.",
+          "daysAgo": 60
+        },
+        {
+          "author": "CONTACT",
+          "text": "Спасибо, понятно, подумаю.",
+          "daysAgo": 60
+        },
+        {
+          "author": "SYSTEM",
+          "text": "Диалог закрыт · AI",
+          "daysAgo": 59
+        }
+      ]
+    },
+    {
+      "key": "olga_archived",
+      "agent": "consultant",
+      "connection": "max",
+      "contact": "olga",
+      "identity": "olga_max",
+      "externalChatId": "max-88214",
+      "lifecycle": "CLOSED",
+      "controlMode": "AI",
+      "expectedResponder": "NOBODY",
+      "group": "consultants",
+      "priority": "NONE",
+      "labels": [],
+      "note": "",
+      "archivedDaysAgo": 5,
+      "createdDaysAgo": 12,
+      "lastActivityDaysAgo": 12,
+      "readBy": [
+        "anna"
+      ],
+      "messages": [
+        {
+          "author": "CONTACT",
+          "text": "Здравствуйте, работаете ли вы в выходные?",
+          "daysAgo": 12
+        },
+        {
+          "author": "AI",
+          "text": "Здравствуйте! Консультанты отвечают ежедневно с 10:00 до 20:00, производство — по будням.",
+          "daysAgo": 12
+        },
+        {
+          "author": "SYSTEM",
+          "text": "Диалог закрыт · AI",
+          "daysAgo": 11
+        }
+      ]
+    },
+    {
+      "key": "spam_credit",
+      "agent": "consultant",
+      "connection": "tg",
+      "contact": "spammer",
+      "identity": "spam_tg",
+      "externalChatId": "900000001",
+      "lifecycle": "SPAM",
+      "controlMode": "PAUSED",
+      "expectedResponder": "NOBODY",
+      "group": "consultants",
+      "priority": "NONE",
+      "labels": [],
+      "note": "",
+      "createdMinutesAgo": 600,
+      "lastActivityMinutesAgo": 600,
+      "readBy": [
+        "anna"
+      ],
+      "messages": [
+        {
+          "author": "CONTACT",
+          "text": "ВЫГОДНЫЙ КРЕДИТ ДЛЯ БИЗНЕСА до 5 000 000 ₽ без справок! Жми: credit-fast24.example",
+          "minutesAgo": 600
+        },
+        {
+          "author": "SYSTEM",
+          "text": "Анна Ким пометила диалог как спам",
+          "minutesAgo": 590
+        }
+      ]
+    },
+    {
+      "key": "portal_sergey",
+      "agent": "support",
+      "connection": "web_account",
+      "contact": "sergey",
+      "identity": "sergey_web",
+      "supportIdentitySnapshot": "sergey_account",
+      "externalChatId": "portal-sergey-1",
+      "lifecycle": "CLOSED",
+      "controlMode": "HUMAN",
+      "expectedResponder": "NOBODY",
+      "assignedOperator": "artem",
+      "group": "support",
+      "priority": "NONE",
+      "labels": [],
+      "note": "Авторизованное обращение из личного кабинета (портал поддержки).",
+      "createdDaysAgo": 6,
+      "lastActivityDaysAgo": 6,
+      "readBy": [
+        "artem"
+      ],
+      "messages": [
+        {
+          "author": "CONTACT",
+          "text": "Оплатил заказ 4402 по СБП, а статус «Ожидает оплаты». Чек прикладываю.",
+          "daysAgo": 6
+        },
+        {
+          "author": "AI",
+          "text": "Здравствуйте, Сергей. Платёж по СБП отражается до 30 минут. Если статус не изменится — передам сотруднику.",
+          "daysAgo": 6
+        },
+        {
+          "author": "SYSTEM",
+          "text": "Артём Гусев взял диалог",
+          "daysAgo": 6
+        },
+        {
+          "author": "OPERATOR",
+          "authorUser": "artem",
+          "text": "Сергей, платёж нашёл и провёл вручную — заказ 4402 в статусе «В производстве». Спасибо за терпение!",
+          "daysAgo": 6
+        },
+        {
+          "author": "SYSTEM",
+          "text": "Диалог закрыт · вёл Артём Гусев",
+          "daysAgo": 6
         }
       ]
     }

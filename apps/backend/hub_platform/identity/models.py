@@ -239,3 +239,7 @@ from hub_platform.identity.group_models import (  # noqa: E402, F401
 from hub_platform.identity.invitation_models import (  # noqa: E402, F401
     OrganizationInvitation,
 )
+from hub_platform.identity.demo_models import (  # noqa: E402, F401
+    DemoDataset,
+    DemoRecord,
+)

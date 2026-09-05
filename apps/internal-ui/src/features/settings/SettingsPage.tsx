@@ -13,6 +13,7 @@ import { ProfileSessionsCard } from "../profile/ProfileSessionsCard";
 import { ProfileTotpCard } from "../profile/ProfileTotpCard";
 import { useProfilePage } from "../profile/useProfilePage";
 import { EmptyState, LoadingState } from "../../shared/ui";
+import { DemoDataCard } from "./DemoDataCard";
 import { GroupsSettingsCard } from "./GroupsSettingsCard";
 
 // «Настройки» (SPEC-HUB-0031 §8.6): один экран с вертикальными секциями —
@@ -51,6 +52,9 @@ export function SettingsPage({ user, onUserUpdated, reload, groups = [] }: { use
       </SettingsSection>
       <SettingsSection title="Интеграции" note="Боты, почта и Web-виджет — точки входа диалогов">
         <IntegrationsSection kind="MESSENGER" />
+      </SettingsSection>
+      <SettingsSection title="Демо-данные" note="Посмотреть систему в работе на вымышленной организации">
+        <DemoDataCard reload={reload} />
       </SettingsSection>
       <SettingsSection title="Профиль">{profileSections}</SettingsSection>
     </div>

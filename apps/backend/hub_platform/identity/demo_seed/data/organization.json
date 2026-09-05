@@ -1,82 +1,85 @@
 {
   "schemaVersion": 1,
-  "organization": {
-    "slug": "severnaya-verf",
-    "name": "Северная Верфь",
-    "timezone": "Europe/Moscow",
-    "currency": "RUB"
-  },
+  "_comment": "Демо «Ателье Норд» (дизайн-базлайн v2). Ставится в организацию установщика: организация и её владелец здесь не создаются. Пароль всех демо-сотрудников один — см. demoPassword.",
+  "demoPassword": "Chatbolls-Demo-2026",
+  "showcaseAccounts": ["anna", "dmitry", "artem"],
+  "groups": [
+    {"key": "consultants", "name": "Консультанты"},
+    {"key": "support", "name": "Поддержка"},
+    {"key": "operators", "name": "Операторы"}
+  ],
   "accounts": [
     {
-      "key": "owner",
-      "email": "i.volkov@severnayaverf.ru",
-      "password": "Demo-Owner-2026",
-      "fullName": "Игорь Волков",
-      "role": "OWNER",
-      "positionTitle": "Генеральный директор",
-      "phone": "+7 812 240 19 00",
-      "isStaff": true,
-      "isSuperuser": true
-    },
-    {
-      "key": "admin",
-      "email": "e.sokolova@severnayaverf.ru",
-      "password": "Demo-Admin-2026",
-      "fullName": "Елена Соколова",
+      "key": "anna",
+      "email": "a.kim@atelie-nord.ru",
+      "fullName": "Анна Ким",
       "role": "ADMIN",
-      "positionTitle": "Руководитель клиентского сервиса",
-      "phone": "+7 812 240 19 01",
-      "isStaff": true
+      "positionTitle": "Администратор",
+      "phone": "+7 921 300-41-17",
+      "groups": ["consultants", "support"],
+      "uiTheme": "LIGHT",
+      "uiAccent": "#1677ff"
     },
     {
-      "key": "sales_lead",
-      "email": "d.morozov@severnayaverf.ru",
-      "password": "Demo-Sales-2026",
-      "fullName": "Дмитрий Морозов",
+      "key": "dmitry",
+      "email": "d.orlov@atelie-nord.ru",
+      "fullName": "Дмитрий Орлов",
       "role": "EMPLOYEE",
-      "positionTitle": "Старший менеджер по продажам",
-      "phone": "+7 921 330 11 45",
-      "group": "sales"
+      "positionTitle": "Консультант",
+      "phone": "+7 921 300-41-18",
+      "groups": ["consultants"],
+      "uiTheme": "DARK",
+      "uiAccent": "#7c3aed"
     },
     {
-      "key": "sales_junior",
-      "email": "k.belaya@severnayaverf.ru",
-      "password": "Demo-Sales-2026",
-      "fullName": "Кристина Белая",
+      "key": "artem",
+      "email": "a.gusev@atelie-nord.ru",
+      "fullName": "Артём Гусев",
       "role": "EMPLOYEE",
-      "positionTitle": "Менеджер по продажам",
-      "phone": "+7 921 778 02 19",
-      "group": "sales"
+      "positionTitle": "Специалист поддержки",
+      "phone": "+7 921 300-41-19",
+      "groups": ["support"],
+      "uiTheme": "SYSTEM",
+      "uiAccent": "#0f9d58"
     },
     {
-      "key": "support_lead",
-      "email": "a.novikov@severnayaverf.ru",
-      "password": "Demo-Support-2026",
-      "fullName": "Андрей Новиков",
+      "key": "svetlana",
+      "email": "s.petrova@atelie-nord.ru",
+      "fullName": "Светлана Петрова",
       "role": "EMPLOYEE",
-      "positionTitle": "Старший инженер поддержки",
-      "phone": "+7 812 240 19 50",
-      "group": "support"
+      "positionTitle": "Старший консультант",
+      "phone": "+7 921 300-41-20",
+      "groups": ["consultants", "support", "operators"],
+      "uiTheme": "LIGHT",
+      "uiAccent": "#d6336c"
     },
     {
-      "key": "support_engineer",
-      "email": "m.zhukova@severnayaverf.ru",
-      "password": "Demo-Support-2026",
-      "fullName": "Марина Жукова",
+      "key": "igor",
+      "email": "i.saveliev@atelie-nord.ru",
+      "fullName": "Игорь Савельев",
       "role": "EMPLOYEE",
-      "positionTitle": "Инженер технической поддержки",
-      "phone": "+7 812 240 19 51",
-      "group": "support"
+      "positionTitle": "Оператор",
+      "phone": "",
+      "groups": [],
+      "totpEnabled": true,
+      "uiTheme": "SYSTEM",
+      "uiAccent": "#1677ff"
+    },
+    {
+      "key": "natalia",
+      "email": "n.frolova@atelie-nord.ru",
+      "fullName": "Наталья Фролова",
+      "role": "EMPLOYEE",
+      "positionTitle": "Консультант (уволена)",
+      "phone": "",
+      "groups": ["consultants"],
+      "blocked": true,
+      "uiTheme": "SYSTEM",
+      "uiAccent": "#1677ff"
     }
   ],
-  "groups": [
-    {
-      "key": "sales",
-      "name": "Операторы"
-    },
-    {
-      "key": "support",
-      "name": "Поддержка"
-    }
+  "invitations": [
+    {"email": "v.kotova@atelie-nord.ru", "role": "EMPLOYEE", "createdBy": "anna", "expiresInDays": 6},
+    {"email": "old.invite@atelie-nord.ru", "role": "EMPLOYEE", "createdBy": "anna", "expiresInDays": -2}
   ]
 }

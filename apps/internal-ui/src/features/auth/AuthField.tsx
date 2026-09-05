@@ -14,7 +14,7 @@ export function AuthField({
 }: {
   children?: ReactNode;
   error?: boolean;
-  icon: "lock" | "mail";
+  icon: "lock" | "mail" | "building" | "user";
   onChange: (value: string) => void;
   placeholder: string;
   type?: "password" | "text";

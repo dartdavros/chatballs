@@ -49,8 +49,8 @@ services:
       retries: 10
       start_period: 20s
 
-  # One-shot init: миграции (ADR-HUB-0028 §one-shot init). Не запускает Edevs seed,
-  # не создаёт OWNER, не трогает demo — это отдельные ответственности (этап 2).
+  # One-shot init: только миграции (ADR-HUB-0028 §one-shot init). Владельца и
+  # демо-данные создаёт мастер первого запуска в браузере (/api/v1/setup/).
   # collectstatic испечён в backend-образ, здесь не вызывается.
   init:
     image: ${CUSTOCRM_BACKEND_IMAGE:-custocrm-backend:dev}

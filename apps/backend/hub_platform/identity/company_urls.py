@@ -1,6 +1,6 @@
 from django.urls import path
 
-from hub_platform.identity import administration_views, group_views
+from hub_platform.identity import administration_views, demo_views, group_views
 
 urlpatterns = [
     path("groups/", group_views.GroupListView.as_view(), name="group-list"),
@@ -20,6 +20,7 @@ urlpatterns = [
         administration_views.LaunchChecklistView.as_view(),
         name="launch-checklist",
     ),
+    path("demo/", demo_views.DemoDataView.as_view(), name="organization-demo-data"),
     path(
         "administration/audit/",
         administration_views.AuditListView.as_view(),

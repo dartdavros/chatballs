@@ -2,88 +2,96 @@
 
 Canonical implementation workspace for `hub.edevs.tech`.
 
-## Local start
+## Быстрый старт (одна минута)
+
+Нужен только Docker (Docker Desktop на Windows/macOS или Docker Engine с Compose
+на Linux). Никаких параметров заранее задавать не нужно — всё спросит браузер.
+
+Windows (PowerShell):
 
 ```powershell
-Copy-Item .env.example .env
+git clone <URL репозитория> chatbolls
+cd chatbolls/code/custocrm
 .\scripts\start.ps1
 ```
 
-По умолчанию локально запускается облачный режим. Коробочный режим запускается
-тем же штатным контуром, но с явным признаком поставки:
+Linux / macOS:
+
+```bash
+git clone <URL репозитория> chatbolls
+cd chatbolls/code/custocrm
+./scripts/start.sh
+```
+
+Скрипт копирует `.env.example` в `.env` (если его нет), собирает образы и
+поднимает стек. Когда в логах появится готовность, откройте
+**http://localhost** — вместо входа система покажет **мастер первого запуска**:
+название организации, ваше имя, e-mail и пароль владельца, переключатель
+«Установить демо-данные». После кнопки «Начать» вы сразу в приложении под
+владельцем. Мастер доступен только пока в системе нет ни одной организации;
+после создания владельца он закрывается навсегда.
+
+### Демо-данные
+
+Демо — вымышленное ателье «Норд» (дизайн-базлайн v2): сотрудники и группы,
+агенты с подключениями Telegram/MAX/почта/веб-виджет, база знаний с
+вложениями, диалоги во всех состояниях (AI ведёт, ждёт оператора, ведёт
+сотрудник, закрыт, спам, архив), метки, приоритеты, заметки, шаблоны
+ответов, голосовые, портал поддержки со статьями, звонки, уведомления и
+история использования AI за 30 дней. Набор покрывает каждую модель системы —
+это проверяет тест `identity.test_seed_demo`.
+
+Демо ставится в вашу организацию и удаляется целиком одной кнопкой: **Настройки →
+Демо-данные**. Там же — учётные записи демо-сотрудников из разных групп, чтобы
+посмотреть систему их глазами (пароль общий и намеренно публичный —
+`Chatbolls-Demo-2026`). Ваши данные при удалении не затрагиваются: сид ведёт
+реестр созданных записей и удаляет ровно их.
+
+Для разработки то же доступно из командной строки:
+
+```bash
+docker compose run --rm backend-app python manage.py seed_demo --organization <slug> --apply
+docker compose run --rm backend-app python manage.py seed_demo --organization <slug> --remove
+```
+
+Редактируемые данные — `apps/backend/hub_platform/identity/demo_seed/data/`
+(JSON-манифест на домен, `media/` — вложения, аватары, голосовые). Голосовые
+сообщения читаются из `media/voice/` (см. README там); если файла нет, сообщение
+пропускается.
+
+### Режим поставки
+
+По умолчанию локально запускается облачный режим. Коробочный режим — тем же
+контуром с явным признаком поставки:
 
 ```powershell
 .\scripts\start.ps1 -Mode Cloud
 .\scripts\start.ps1 -Mode SelfHosted
 ```
 
-Приложение не определяет режим по домену, числу организаций или данным тарифа.
+Приложение не определяет режим по домену, числу организаций или данным.
 Единственный источник — `CUS_DELIVERY_MODE` со значением `CLOUD` или
 `SELF_HOSTED`. В production переменная обязательна; шаблон коробочного
 экземпляра `env.example` уже содержит `SELF_HOSTED`.
 
-The local compose stack contains:
+### Что поднимается
 
-- isolated app, platform, and loopback-only admin Django runtimes;
-- background worker;
-- PostgreSQL;
-- Redis;
-- Internal Hub UI;
-- Web Chat UI;
-- local Nginx reverse proxy.
+- изолированные Django-рантаймы app, platform и loopback-only admin;
+- фоновый worker (outbox, поллинг мессенджеров, установка демо);
+- PostgreSQL и Redis;
+- Internal Hub UI и Web Chat UI;
+- локальный Nginx reverse proxy.
 
-No production secrets are stored in the repository.
+Секретов production в репозитории нет.
 
-Default local URLs:
+Локальные адреса:
 
-- App gateway: `http://app.localhost/`
-- Platform health: `http://platform.localhost/api/v1/health/live/`
-- Django admin (loopback only): `http://127.0.0.1:18001/admin/`
-- Internal Hub UI (direct Vite): `http://localhost:5173`
+- Приложение: `http://localhost` (то же — `http://app.localhost/`)
+- Health платформы: `http://platform.localhost/api/v1/health/live/`
+- Django admin (только loopback): `http://127.0.0.1:18001/admin/`
+- Internal Hub UI напрямую (Vite): `http://localhost:5173`
 - Web Chat: `http://localhost:5175`
-- App API (direct): `http://localhost:8010/api/v1`
-
-Local accounts (TOTP disabled). These credentials are fixed — do not change them:
-
-- OWNER — `owner@edevs.tech` / `Owner-Local-2026`
-- OPERATOR — `a.kotova@edevs.tech` / `Operator-Local-2026`
-
-Bootstrap the organization and both accounts:
-
-```powershell
-docker compose run --rm backend-app python manage.py bootstrap_owner --email owner@edevs.tech --password Owner-Local-2026 --name "Иван Петров"
-```
-
-## Optional demo seed
-
-The demo seed is a Django management command (`seed_demo`) that loads a full
-fictional dataset for a Russian IIoT vendor company «Северная Верфь» (products
-«Вектор» and «Репер»): organization with logo, staff with access profiles,
-product catalog with offers and prices, channels and AI agents, knowledge base
-with file attachments, conversations, orders, external sales, support contracts
-and a public help-center portal, calls, and notifications. It is idempotent and
-never runs during `start.ps1`, `docker compose up`, or migrations.
-
-The editable data lives in
-`apps/backend/hub_platform/identity/demo_seed/data/` (one JSON manifest per
-domain, plus `media/` for attachments). The command is baked into the backend
-image, so the same dataset works for local testing and cloud installation.
-
-Run it only after the local dev stack is running:
-
-```powershell
-.\scripts\seed-demo.ps1
-```
-
-Or directly via management command (dry-run by default, `--apply` to write):
-
-```
-python manage.py seed_demo --apply
-```
-
-The `demo-seed` one-shot service is defined only by `compose.dev.yaml`. Outside
-`DEBUG` (e.g. cloud installation) the command requires `--force`. Production
-compose has no seed service.
+- App API напрямую: `http://localhost:8010/api/v1`
 
 ## Tests
 

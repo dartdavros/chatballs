@@ -1,305 +1,340 @@
 {
   "schemaVersion": 1,
-  "integrations": [
-    {
-      "key": "llm-provider",
-      "provider": "OPENROUTER",
-      "name": "OpenRouter (CustoAI)",
-      "kind": "LLM_PROVIDER",
-      "channel": null,
-      "status": "OK"
+  "_comment": "Агенты = карточки поверх Channel+AIAgent (ADR-HUB-0041 §4). Подключения — точки входа диалогов; LLM-провайдер общий на организацию (BYOK). Веб-виджетов два: анонимный на сайте (агент «Консультант») и авторизованный в личном кабинете (агент «Поддержка сайта», политика обязательной идентичности — SPEC-HUB-0027 P4/P5).",
+  "llmProvider": {
+    "key": "llm",
+    "provider": "OPENROUTER",
+    "name": "OpenRouter (демо-ключ)",
+    "secret": "sk-or-demo-not-a-real-key",
+    "config": {
+      "baseUrl": "https://openrouter.ai/api/v1",
+      "defaultModel": "openai/gpt-4o-mini"
     },
-    {
-      "key": "site-max",
-      "provider": "MAX",
-      "name": "Сайт — MAX",
-      "channel": "site-main",
-      "status": "OK"
-    },
-    {
-      "key": "site-tg",
-      "provider": "TELEGRAM",
-      "name": "Сайт — Telegram",
-      "channel": "site-main",
-      "status": "OK"
-    },
-    {
-      "key": "site-web",
-      "provider": "WEB",
-      "name": "Сайт — веб-чат",
-      "channel": "site-main",
-      "status": "OK"
-    },
-    {
-      "key": "vektor-sales-tg",
-      "provider": "TELEGRAM",
-      "name": "Вектор продажи — Telegram",
-      "channel": "vektor-sales",
-      "status": "OK"
-    },
-    {
-      "key": "vektor-sales-web",
-      "provider": "WEB",
-      "name": "Вектор продажи — веб-чат",
-      "channel": "vektor-sales",
-      "status": "OK"
-    },
-    {
-      "key": "reper-sales-tg",
-      "provider": "TELEGRAM",
-      "name": "Репер продажи — Telegram",
-      "channel": "reper-sales",
-      "status": "OK"
-    },
-    {
-      "key": "reper-sales-max",
-      "provider": "MAX",
-      "name": "Репер продажи — MAX",
-      "channel": "reper-sales",
-      "status": "UNCHECKED"
-    },
-    {
-      "key": "vektor-support-web",
-      "provider": "WEB",
-      "name": "Вектор поддержка — веб-чат",
-      "channel": "vektor-support",
-      "status": "OK"
-    },
-    {
-      "key": "reper-support-web",
-      "provider": "WEB",
-      "name": "Репер поддержка — веб-чат",
-      "channel": "reper-support",
-      "status": "OK"
-    },
-    {
-      "key": "partners-tg",
-      "provider": "TELEGRAM",
-      "name": "Партнёрская линия — Telegram",
-      "channel": "partners",
-      "status": "OK"
-    },
-    {
-      "key": "support-email",
-      "provider": "EMAIL",
-      "name": "Почта поддержки",
-      "channel": "site-main",
-      "status": "OK",
-      "config": {
-        "imap_host": "imap.yandex.ru",
-        "imap_port": 993,
-        "imap_ssl": true,
-        "smtp_host": "smtp.yandex.ru",
-        "smtp_port": 465,
-        "smtp_ssl": true,
-        "email": "support@severnayaverf.ru"
-      }
-    }
-  ],
-  "channels": [
-    {
-      "code": "site-main",
-      "name": "Северная Верфь — главный сайт",
-      "product": null,
-      "providerIntegration": "llm-provider",
-      "policy": {
-        "requires_authenticated_product_identity": false,
-        "allow_anonymous_sessions": true,
-        "allow_self_reported_contact": true,
-        "allow_sales_attribution": false,
-        "allow_checkout_actions": false
-      },
-      "group": "sales"
-    },
-    {
-      "code": "vektor-sales",
-      "name": "Вектор — продажи",
-      "product": "vektor",
-      "providerIntegration": "llm-provider",
-      "policy": {
-        "requires_authenticated_product_identity": false,
-        "allow_anonymous_sessions": true,
-        "allow_self_reported_contact": true,
-        "allow_sales_attribution": true,
-        "allow_checkout_actions": true
-      },
-      "group": "sales"
-    },
-    {
-      "code": "reper-sales",
-      "name": "Репер — продажи",
-      "product": "reper",
-      "providerIntegration": "llm-provider",
-      "policy": {
-        "requires_authenticated_product_identity": false,
-        "allow_anonymous_sessions": true,
-        "allow_self_reported_contact": true,
-        "allow_sales_attribution": true,
-        "allow_checkout_actions": true
-      },
-      "group": "sales"
-    },
-    {
-      "code": "vektor-support",
-      "name": "Вектор — поддержка",
-      "product": "vektor",
-      "policy": {
-        "requires_authenticated_product_identity": true,
-        "allow_anonymous_sessions": false,
-        "allow_self_reported_contact": false,
-        "allow_sales_attribution": false,
-        "allow_checkout_actions": false
-      },
-      "group": "support"
-    },
-    {
-      "code": "reper-support",
-      "name": "Репер — поддержка",
-      "product": "reper",
-      "policy": {
-        "requires_authenticated_product_identity": true,
-        "allow_anonymous_sessions": false,
-        "allow_self_reported_contact": false,
-        "allow_sales_attribution": false,
-        "allow_checkout_actions": false
-      },
-      "group": "support"
-    },
-    {
-      "code": "partners",
-      "name": "Партнёрская линия",
-      "product": null,
-      "isActive": false,
-      "policy": {
-        "requires_authenticated_product_identity": false,
-        "allow_anonymous_sessions": true,
-        "allow_self_reported_contact": true,
-        "allow_sales_attribution": false,
-        "allow_checkout_actions": false
-      },
-      "group": null
-    },
-    {
-      "code": "reper-help-widget",
-      "name": "Репер — виджет Help-центра",
-      "product": "reper",
-      "policy": {
-        "requires_authenticated_product_identity": false,
-        "allow_anonymous_sessions": true,
-        "allow_self_reported_contact": true,
-        "allow_sales_attribution": false,
-        "allow_checkout_actions": false
-      },
-      "group": "support"
-    }
-  ],
+    "status": "UNCHECKED"
+  },
   "agents": [
     {
-      "channel": "site-main",
-      "name": "Главный ассистент сайта",
-      "model": "anthropic/claude-sonnet-4.6",
-      "status": "ACTIVE",
-      "persona": "Виртуальный ассистент компании «Северная Верфь» — производителя промышленной телеметрии. Помогает посетителям сайта сориентироваться в продуктах Вектор и Репер.",
-      "tone": "Дружелюбный, деловой, без излишней фамильярности. Обращается на «вы».",
-      "instructions": "Если вопрос касается конкретного продукта или условий покупки — переключай диалог на менеджера продаж. Не обещай скидки и сроки, которых нет в базе знаний.",
+      "key": "consultant",
+      "code": "consultant",
+      "name": "Консультант",
+      "group": "consultants",
+      "aiStatus": "ACTIVE",
+      "persona": "Ты — консультант ателье «Норд». Ателье шьёт шторы, тюль и текстиль для дома по индивидуальным размерам, доставляет по России.",
+      "tone": "Дружелюбно, коротко, без канцелярита. Обращайся по имени, если клиент представился.",
+      "instructions": "Отвечай только по знаниям ателье. Сроки, цены и статус заказа называй только из базы знаний; если ответа нет — скажи, что уточнишь у коллег, и передай диалог сотруднику. Не обещай скидок. Если клиент просит человека — сразу передавай диалог.",
       "knowledge": [
-        "vektor-overview",
-        "reper-overview"
+        "pricing",
+        "fabrics",
+        "measure",
+        "delivery",
+        "care"
+      ],
+      "portalArticles": [
+        "kak-snyat-merki",
+        "sroki-dostavki"
+      ],
+      "limits": {
+        "dailyCostUsd": 300
+      },
+      "createdDaysAgo": 41
+    },
+    {
+      "key": "support",
+      "code": "site-support",
+      "name": "Поддержка сайта",
+      "group": "support",
+      "product": "atelie-nord-site",
+      "aiStatus": "ACTIVE",
+      "persona": "Ты — помощник службы поддержки сайта ателье «Норд»: личный кабинет, заказы, оплата, доставка, возвраты.",
+      "tone": "Спокойно и по делу.",
+      "instructions": "Сначала проверь знания о личном кабинете и возвратах. Вопросы по конкретному заказу без номера заказа — попроси номер. Жалобы на качество — передай сотруднику с пометкой.",
+      "knowledge": [
+        "delivery",
+        "returns",
+        "account"
+      ],
+      "portalArticles": [
+        "vozvrat-i-obmen",
+        "lichnyj-kabinet"
+      ],
+      "limits": {},
+      "createdDaysAgo": 30,
+      "policy": {
+        "requires_authenticated_product_identity": true,
+        "allow_anonymous_sessions": false,
+        "allow_self_reported_contact": false
+      }
+    },
+    {
+      "key": "reception",
+      "code": "reception",
+      "name": "Приёмная",
+      "group": null,
+      "aiStatus": "DRAFT",
+      "persona": "",
+      "tone": "",
+      "instructions": "",
+      "knowledge": [],
+      "portalArticles": [],
+      "limits": {},
+      "createdDaysAgo": 3
+    },
+    {
+      "key": "legacy",
+      "code": "old-line",
+      "name": "Старая линия (Instagram)",
+      "group": "operators",
+      "isActive": false,
+      "aiStatus": "DISABLED",
+      "persona": "Консультант ателье.",
+      "tone": "",
+      "instructions": "Канал закрыт весной 2026.",
+      "knowledge": [
+        "pricing"
+      ],
+      "portalArticles": [],
+      "limits": {},
+      "createdDaysAgo": 180
+    }
+  ],
+  "connections": [
+    {
+      "key": "tg",
+      "provider": "TELEGRAM",
+      "name": "Telegram · @AtelieNordBot",
+      "agent": "consultant",
+      "status": "OK",
+      "secret": "0000000000:DEMO-token-not-real",
+      "config": {
+        "username": "AtelieNordBot"
+      },
+      "createdDaysAgo": 40
+    },
+    {
+      "key": "max",
+      "provider": "MAX",
+      "name": "MAX · Ателье Норд",
+      "agent": "consultant",
+      "status": "OK",
+      "secret": "demo-max-token",
+      "config": {},
+      "createdDaysAgo": 25
+    },
+    {
+      "key": "email",
+      "provider": "EMAIL",
+      "name": "Почта · info@atelie-nord.ru",
+      "agent": "support",
+      "status": "OK",
+      "secret": "demo-imap-password",
+      "config": {
+        "email": "info@atelie-nord.ru",
+        "imapHost": "imap.atelie-nord.ru",
+        "smtpHost": "smtp.atelie-nord.ru"
+      },
+      "createdDaysAgo": 29
+    },
+    {
+      "key": "web",
+      "provider": "WEB",
+      "name": "Виджет сайта atelie-nord.ru",
+      "agent": "consultant",
+      "status": "OK",
+      "config": {
+        "title": "Ателье Норд",
+        "greeting": "Здравствуйте! Подскажем по тканям, срокам и заказам.",
+        "quick_replies": [
+          "Сроки пошива",
+          "Статус заказа",
+          "Возврат"
+        ],
+        "allowed_origins": [
+          "https://atelie-nord.ru"
+        ]
+      },
+      "createdDaysAgo": 28
+    },
+    {
+      "key": "web_account",
+      "provider": "WEB",
+      "name": "Виджет личного кабинета",
+      "agent": "support",
+      "status": "OK",
+      "config": {
+        "title": "Поддержка · Ателье Норд",
+        "greeting": "Здравствуйте! Мы видим ваш заказ — чем помочь?",
+        "quick_replies": [
+          "Статус заказа",
+          "Изменить адрес",
+          "Возврат"
+        ],
+        "allowed_origins": [
+          "https://atelie-nord.ru",
+          "https://lk.atelie-nord.ru"
+        ]
+      },
+      "createdDaysAgo": 27
+    },
+    {
+      "key": "tg_delivery",
+      "provider": "TELEGRAM",
+      "name": "Telegram · бот доставки",
+      "agent": "reception",
+      "status": "ERROR",
+      "lastError": "401 Unauthorized: bot token was revoked in @BotFather",
+      "secret": "1111111111:DEMO-revoked",
+      "config": {
+        "username": "AtelieNordDeliveryBot"
+      },
+      "createdDaysAgo": 3
+    }
+  ],
+  "knowledgeCategories": [
+    {
+      "key": "sewing",
+      "name": "Пошив и ткани",
+      "children": [
+        {
+          "key": "measure",
+          "name": "Замер и расчёт"
+        },
+        {
+          "key": "fabrics",
+          "name": "Ткани"
+        }
       ]
     },
     {
-      "channel": "vektor-sales",
-      "name": "Менеджер продаж Вектора",
-      "model": "anthropic/claude-sonnet-4.6",
-      "status": "ACTIVE",
-      "persona": "Отвечает за продажи коробочной лицензии Вектор производственным предприятиям.",
-      "tone": "Деловой, экспертный, по сути.",
-      "instructions": "Уточняй масштаб производства и число участков — от этого зависит конфигурация. Предлагай продление поддержки как сопутствующую услугу.",
-      "knowledge": [
-        "vektor-overview",
-        "vektor-deploy"
+      "key": "orders",
+      "name": "Заказ и доставка",
+      "children": [
+        {
+          "key": "delivery",
+          "name": "Доставка"
+        },
+        {
+          "key": "returns",
+          "name": "Возврат и обмен"
+        }
       ]
     },
     {
-      "channel": "reper-sales",
-      "name": "Менеджер продаж Репера",
-      "model": "anthropic/claude-sonnet-4.6",
-      "status": "ACTIVE",
-      "persona": "Отвечает за продажи облачной подписки на телематику Репер.",
-      "tone": "Деловой, ориентируется на выгоду клиента.",
-      "instructions": "Уточняй размер парка техники и типы транспорта. Для парков от 50 единиц предлагай годовую оплату — она выгоднее помесячной.",
-      "knowledge": [
-        "reper-overview",
-        "reper-telematics"
-      ]
+      "key": "site",
+      "name": "Сайт и личный кабинет"
     }
   ],
   "knowledge": [
     {
-      "key": "vektor-overview",
-      "title": "Вектор — обзор продукта",
-      "description": "Краткое описание SCADA-системы Вектор для предпродажных консультаций.",
-      "content": "Вектор — сервер SCADA-мониторинга промышленного оборудования. Разворачивается на площадке заказчика, поставляется коробочной лицензией на один производственный участок. Поддерживает опрос контроллеров по OPC UA и Modbus, сбор метрик в реальном времени, алёртинг при выходе параметров за допуск.",
-      "visibility": "ORGANIZATION"
-    },
-    {
-      "key": "vektor-deploy",
-      "title": "Вектор — руководство по развёртыванию",
-      "description": "Требования к серверу и шаги развёртывания коробочной лицензии. Приложен файл с детальным руководством.",
-      "content": "Подробное руководство по развёртыванию коробочной лицензии Вектор приведено во вложении. Требуется сервер с ОС Linux, 8 ГБ ОЗУ, доступ к контроллерам по сети.",
-      "visibility": "DEPARTMENTS",
+      "key": "pricing",
+      "category": "measure",
+      "title": "Расчёт стоимости пошива штор",
+      "description": "Формула расчёта, коэффициенты сборки, минимальный заказ",
+      "content": "Стоимость = ткань (метраж × цена за метр) + пошив (по ширине изделия) + фурнитура.\n\nКоэффициент сборки: 1.5 для плотных портьер, 2.0–2.5 для тюля. Ширина ткани с учётом сборки = ширина карниза × коэффициент.\n\nПошив: 450 ₽ за погонный метр готовой ширины для портьер, 350 ₽ — для тюля. Подгиб по низу входит. Люверсы — 90 ₽ за штуку, шторная лента — 120 ₽ за метр.\n\nМинимальный заказ — 3 000 ₽. Расчёт консультант делает по ширине и высоте окна; замер выезд по Санкт-Петербургу бесплатный при заказе от 15 000 ₽.",
       "attachments": [
-        "vektor-deploy-guide.md"
-      ]
+        "raschet-stoimosti.md"
+      ],
+      "createdDaysAgo": 40
     },
     {
-      "key": "reper-overview",
-      "title": "Репер — обзор продукта",
-      "description": "Краткое описание телематики транспорта для предпродажных консультаций.",
-      "content": "Репер — облачная платформа телематики для транспорта и спецтехники. Сбор данных с бортовых контроллеров, контроль топлива, моточасов, геозон. Оплата по подписке за единицу техники.",
-      "visibility": "ORGANIZATION"
-    },
-    {
-      "key": "reper-telematics",
-      "title": "Репер — спецификация телематики",
-      "description": "Поддерживаемые протоколы и бортовые контроллеры. Приложен файл со спецификацией.",
-      "content": "Поддерживаемые протоколы обмена с бортовыми контроллерами и список совместимого оборудования приведены во вложении.",
-      "visibility": "DEPARTMENTS",
+      "key": "fabrics",
+      "category": "fabrics",
+      "title": "Каталог тканей 2026",
+      "description": "Портьерные и тюлевые ткани в наличии, цены за метр",
+      "content": "Портьерные: блэкаут «Норд» (100% затемнение, 1 490 ₽/м, 14 цветов), лён смесовый (890 ₽/м, 9 цветов), бархат «Верона» (2 190 ₽/м, 6 цветов), канвас (690 ₽/м, 12 цветов).\n\nТюль: вуаль (390 ₽/м), сетка «Грек» (520 ₽/м), лён-тюль (740 ₽/м).\n\nВсе ткани ширина 280–300 см. Образцы отправляем почтой бесплатно — до 5 штук.",
       "attachments": [
-        "reper-telematics-spec.md"
-      ]
+        {
+          "file": "katalog-tkanej-2026.pdf",
+          "text": "katalog-tkanej-2026.txt",
+          "contentType": "application/pdf"
+        }
+      ],
+      "createdDaysAgo": 38
+    },
+    {
+      "key": "measure",
+      "category": "measure",
+      "title": "Как снять мерки самостоятельно",
+      "description": "Инструкция для клиента: карниз, высота, припуски",
+      "content": "1. Измерьте длину карниза от края до края (не окна!).\n2. Высоту измеряйте от крючка карниза (или верха трубы) до желаемой длины: до подоконника (минус 1 см), до пола (минус 1–2 см) или «в пол» с напуском (+3–5 см).\n3. Для штор на люверсах прибавьте 3 см сверху.\n4. Сфотографируйте окно целиком — консультант проверит расчёт.",
+      "attachments": [],
+      "createdDaysAgo": 36
+    },
+    {
+      "key": "delivery",
+      "category": "delivery",
+      "title": "Сроки пошива и доставка",
+      "description": "Пошив 5–7 рабочих дней, доставка СДЭК и курьером",
+      "content": "Пошив занимает 5–7 рабочих дней после согласования расчёта и оплаты. Срочный пошив (3 рабочих дня) +30% к стоимости пошива, только при наличии ткани.\n\nДоставка: по Санкт-Петербургу курьер 400 ₽ (бесплатно от 10 000 ₽), интервалы 10:00–13:00, 13:00–17:00, 17:00–20:00; курьер звонит за час. По России — СДЭК до пункта выдачи или до двери, 3–5 рабочих дней с момента отправки, трек-номер приходит на почту в день отправки. Казань, Москва, Нижний Новгород — обычно 3 дня.\n\nПеренос интервала доставки — бесплатно, не позднее 18:00 накануне.",
+      "attachments": [
+        "dostavka-i-oplata.txt"
+      ],
+      "createdDaysAgo": 35
+    },
+    {
+      "key": "returns",
+      "category": "returns",
+      "title": "Возврат и обмен",
+      "description": "14 дней, условия для изделий по индивидуальным размерам",
+      "content": "Готовые изделия (подушки, покрывала из каталога) — возврат 14 дней без объяснения причин, если не были в использовании.\n\nИзделия по индивидуальным размерам возврату не подлежат (ст. 26.1 ЗоЗПП), кроме брака и несоответствия согласованному заказу: неверный цвет или размер, дефекты пошива. В этом случае — бесплатная переделка или обмен на другой цвет ткани в наличии, срок 5–7 рабочих дней; деньги возвращаем по желанию клиента в течение 10 дней.\n\nДля заявки нужны номер заказа и фото изделия. Заявку оформляет сотрудник, не AI.",
+      "attachments": [],
+      "createdDaysAgo": 33
+    },
+    {
+      "key": "care",
+      "category": "fabrics",
+      "title": "Уход за шторами",
+      "description": "Стирка, глажка, чистка по типам тканей",
+      "content": "Блэкаут: деликатная стирка 30°, без отжима, гладить с изнанки на минимальной температуре. Лён: стирка 40°, усадка до 3% заложена в расчёт. Бархат: только сухая чистка. Тюль: стирка 30° в мешке, сушить на карнизе.",
+      "attachments": [],
+      "createdDaysAgo": 20
+    },
+    {
+      "key": "account",
+      "category": "site",
+      "title": "Личный кабинет на сайте",
+      "description": "Регистрация, восстановление пароля, статусы заказов",
+      "content": "Вход по e-mail. Письмо для сброса пароля приходит с адреса no-reply@atelie-nord.ru в течение 5 минут; если письма нет — проверьте «Спам» и правильность адреса. Повторный запрос возможен через 10 минут.\n\nСтатусы заказа в кабинете: «Ожидает оплаты» → «В производстве» → «Готов» → «Передан в доставку» → «Доставлен». Изменить адрес доставки можно до статуса «Передан в доставку» — через сотрудника поддержки.",
+      "attachments": [],
+      "createdDaysAgo": 28
+    },
+    {
+      "key": "old_prices",
+      "category": "measure",
+      "title": "Прайс 2024 (устарел)",
+      "description": "Старые цены — отключено, оставлено для истории",
+      "content": "Пошив 380 ₽/м, тюль 290 ₽/м. Не использовать.",
+      "attachments": [],
+      "isEnabled": false,
+      "createdDaysAgo": 400
     }
   ],
-  "llmInvocations": [
-    {
-      "channel": "vektor-sales",
-      "product": "vektor",
-      "purpose": "demo-chat-sales",
-      "model": "anthropic/claude-sonnet-4.6",
-      "promptTokens": 5200,
-      "completionTokens": 1380,
-      "costMicros": 312000,
-      "status": "SUCCESS"
+  "usage": {
+    "_comment": "История вызовов LLM за 30 дней для раздела «Использование AI»: генерируется по шаблону.",
+    "days": 30,
+    "chatPerDay": {
+      "consultant": [
+        6,
+        14
+      ],
+      "support": [
+        3,
+        9
+      ]
     },
-    {
-      "channel": "reper-sales",
-      "product": "reper",
-      "purpose": "demo-chat-sales",
-      "model": "anthropic/claude-sonnet-4.6",
-      "promptTokens": 4100,
-      "completionTokens": 980,
-      "costMicros": 198000,
-      "status": "SUCCESS"
-    },
-    {
-      "channel": "vektor-sales",
-      "product": "vektor",
-      "purpose": "demo-chat-sales",
-      "model": "anthropic/claude-sonnet-4.6",
-      "promptTokens": 3300,
-      "completionTokens": 420,
-      "costMicros": 88000,
-      "status": "BLOCKED"
-    }
-  ]
+    "embeddingPerDay": [
+      0,
+      2
+    ],
+    "model": "openai/gpt-4o-mini",
+    "promptTokens": [
+      600,
+      1800
+    ],
+    "completionTokens": [
+      80,
+      260
+    ],
+    "costMicrosPerToken": 0.6,
+    "failuresTotal": 3
+  }
 }

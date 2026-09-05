@@ -1,105 +1,46 @@
 {
   "schemaVersion": 1,
   "contracts": [
-    { "key": "vektor-contract", "product": "vektor", "code": "vektor.support.v1", "version": 1, "status": "ACTIVE" },
-    { "key": "reper-contract", "product": "reper", "code": "reper.support.v1", "version": 1, "status": "ACTIVE" }
+    {"key": "site_contract", "code": "SITE-2026", "product": "atelie-nord-site", "version": 1, "status": "ACTIVE"}
   ],
   "identitySnapshots": [
     {
-      "key": "vektor-n-kuznetsova",
-      "contract": "vektor-contract",
-      "subjectKey": "vektor-customer:nkuznetsova",
-      "accountKey": "plant-4712",
-      "displayName": "Наталья Кузнецова — ООО «Литейный завод №4»",
-      "displayEmail": "n.kuznetsova@lz4.ru",
-      "operatorContext": { "license_id": "V-4712", "site": "Литейный цех №4, Санкт-Петербург" },
-      "aiContext": { "product": "Вектор", "version": "3.4" },
-      "searchText": "Литейный завод 4 Наталья Кузнецова лицензия V-4712",
-      "issuedDaysAgo": 2,
-      "expiresInDays": 28
-    },
-    {
-      "key": "reper-p-gusev",
-      "contract": "reper-contract",
-      "subjectKey": "reper-customer:pgusev",
-      "accountKey": "fleet-0091",
-      "displayName": "Павел Гусев — ООО «ТрансЛогистик»",
-      "displayEmail": "p.gusev@translogistic.ru",
-      "operatorContext": { "fleet_id": "TL-0091", "units": 60 },
-      "aiContext": { "product": "Репер", "tariff": "year" },
-      "searchText": "ТрансЛогистик Павел Гусев автопарк 60",
-      "issuedDaysAgo": 5,
-      "expiresInDays": 25
+      "key": "sergey_account",
+      "contract": "site_contract",
+      "subjectKey": "user:4402",
+      "accountKey": "acc-4402",
+      "displayName": "Сергей Крылов",
+      "displayEmail": "s.krylov@example.ru",
+      "payload": {"orders": [{"number": "4402", "status": "В производстве", "total": 12480}], "city": "Казань"},
+      "operatorContext": {"Клиент с": "апрель 2026", "Заказов": "2", "Последний заказ": "4402 — комплект штор, 12 480 ₽"},
+      "aiContext": {"orders": "4402 in production"},
+      "searchText": "Сергей Крылов s.krylov@example.ru 4402 Казань",
+      "issuedDaysAgo": 6,
+      "expiresInDays": 24
     }
   ],
   "portal": {
-    "slug": "reper",
-    "name": "Репер — центр помощи",
+    "slug": "atelie-nord",
+    "name": "Помощь · Ателье Норд",
     "locale": "ru",
     "status": "PUBLISHED",
-    "widgetChannel": "reper-help-widget",
-    "products": ["reper"],
+    "widgetConnection": "web",
+    "accountWidgetConnection": "web_account",
+    "products": ["atelie-nord-site"],
     "categories": [
-      { "slug": "getting-started", "name": "Начало работы", "description": "Подключение техники и первые шаги в Репер", "sortOrder": 10 },
-      { "slug": "devices", "name": "Оборудование и датчики", "description": "Совместимые бортовые контроллеры и датчики", "sortOrder": 20 },
-      { "slug": "reports", "name": "Отчёты", "description": "Отчёты по топливу, моточасам и геозонам", "sortOrder": 30 },
-      { "slug": "billing", "name": "Оплата и подписка", "description": "Тарифы, счета и продление подписки", "sortOrder": 40 }
+      {"slug": "zakaz", "name": "Заказ и оплата", "description": "Как оформить заказ, оплата, статусы", "sortOrder": 1},
+      {"slug": "dostavka", "name": "Доставка", "description": "Сроки, курьер, СДЭК", "sortOrder": 2},
+      {"slug": "vozvrat", "name": "Возврат и обмен", "description": "Условия возврата изделий", "sortOrder": 3},
+      {"slug": "uhod", "name": "Уход за изделиями", "description": "Стирка и глажка по типам тканей", "sortOrder": 4}
     ],
     "articles": [
-      {
-        "slug": "how-to-connect-first-unit",
-        "category": "getting-started",
-        "title": "Как подключить первую единицу техники",
-        "summary": "Пошаговая инструкция по добавлению транспортного средства в Репер.",
-        "content": "# Подключение первой единицы техники\n\n1. В разделе «Парк» нажмите «Добавить технику».\n2. Укажите госномер и модель.\n3. Выберите подключенный бортовой контроллер.\n4. Дождитесь первого пакета данных — он придёт в течение нескольких минут.\n\nЕсли данные не появляются дольше 15 минут, проверьте питание контроллера.",
-        "status": "PUBLISHED",
-        "helpfulVotes": 14
-      },
-      {
-        "slug": "supported-trackers",
-        "category": "devices",
-        "title": "Поддерживаемые бортовые контроллеры",
-        "summary": "Список совместимых контроллеров и протоколов обмена данными.",
-        "content": "# Поддерживаемые контроллеры\n\nРепер поддерживает устройства по протоколам: Teltonika, Wialon IPS, Galileosky.\n\nПолная спецификация протоколов приведена в базе знаний операторов поддержки.",
-        "status": "PUBLISHED",
-        "helpfulVotes": 8
-      },
-      {
-        "slug": "fuel-report",
-        "category": "reports",
-        "title": "Отчёт по расходу топлива",
-        "summary": "Как построить отчёт о заправках и сливах топлива.",
-        "content": "# Отчёт по топливу\n\nОткройте «Отчёты → Топливо», выберите период и технику. Отчёт покажет заправки, сливы и средний расход.\n\nДля корректных данных нужен исправный ДУТ.",
-        "status": "PUBLISHED",
-        "helpfulVotes": 11
-      },
-      {
-        "slug": "geozone-setup",
-        "category": "reports",
-        "title": "Настройка геозон",
-        "summary": "Создание геозон и контроль въезда/выезда.",
-        "content": "# Геозоны\n\nВ разделе «Геозоны» создайте область на карте. К ней можно привязать уведомления о въезде и выезде техники.",
-        "status": "PUBLISHED",
-        "helpfulVotes": 5
-      },
-      {
-        "slug": "tariffs-and-payment",
-        "category": "billing",
-        "title": "Тарифы и оплата подписки",
-        "summary": "Помесячная и годовая оплата, как получить счёт.",
-        "content": "# Тарифы и оплата\n\nДоступны два варианта оплаты: помесячно и за год. Годовая подписка выгоднее для парков от 50 единиц техники.\n\nСчёт на оплату можно запросить у вашего менеджера или в этом чате.",
-        "status": "PUBLISHED",
-        "helpfulVotes": 9
-      },
-      {
-        "slug": "change-fleet-size",
-        "category": "billing",
-        "title": "Изменение размера парка",
-        "summary": "Как добавить или убрать технику из подписки.",
-        "content": "# Изменение парка\n\nПодписка пересчитывается по числу активных единиц техники. Чтобы убрать технику — переведите её в статус «Неактивна».",
-        "status": "PUBLISHED",
-        "helpfulVotes": 3
-      }
+      {"slug": "kak-snyat-merki", "category": "zakaz", "title": "Как снять мерки для штор", "summary": "Карниз, высота, припуски — за пять минут", "content": "## Длина карниза\n\nИзмерьте карниз от края до края — не окно. Шторы должны закрывать окно с запасом 15–20 см с каждой стороны.\n\n## Высота\n\nОт крючка карниза (или верха трубы) до желаемой длины: до подоконника минус 1 см, до пола минус 1–2 см, «в пол» с напуском плюс 3–5 см.\n\n## Люверсы\n\nДля штор на люверсах прибавьте 3 см сверху.\n\nСфотографируйте окно целиком и пришлите консультанту — проверим расчёт бесплатно.", "status": "PUBLISHED", "helpfulVotes": 14, "unhelpfulVotes": 1, "publishedDaysAgo": 27},
+      {"slug": "sroki-dostavki", "category": "dostavka", "title": "Сроки пошива и доставки", "summary": "5–7 рабочих дней на пошив, 3–5 — на доставку по России", "content": "Пошив занимает **5–7 рабочих дней** после согласования расчёта и оплаты.\n\n### По Санкт-Петербургу\n\nКурьер — 400 ₽, бесплатно при заказе от 10 000 ₽. Интервалы 10:00–13:00, 13:00–17:00, 17:00–20:00. Курьер звонит за час.\n\n### По России\n\nСДЭК до пункта выдачи или до двери, 3–5 рабочих дней. Трек-номер приходит на почту в день отправки.", "status": "PUBLISHED", "helpfulVotes": 22, "unhelpfulVotes": 3, "publishedDaysAgo": 26, "secondRevision": {"summary": "5–7 рабочих дней на пошив, 3–5 — на доставку по России. Перенос интервала — бесплатно", "contentAppend": "\n\n### Перенос доставки\n\nИнтервал можно перенести бесплатно до 18:00 накануне — напишите в чат или на info@atelie-nord.ru.", "daysAgo": 9}},
+      {"slug": "vozvrat-i-obmen", "category": "vozvrat", "title": "Возврат и обмен изделий", "summary": "Готовые изделия — 14 дней; индивидуальный пошив — переделка при браке", "content": "Готовые изделия из каталога возвращаются в течение **14 дней**, если не были в использовании.\n\nИзделия по индивидуальным размерам возврату не подлежат (ст. 26.1 ЗоЗПП), кроме брака и несоответствия заказу: неверный цвет или размер, дефекты пошива. В этом случае — бесплатная переделка или обмен, срок 5–7 рабочих дней.\n\nДля заявки пришлите номер заказа и фото изделия в чат.", "status": "PUBLISHED", "helpfulVotes": 9, "unhelpfulVotes": 4, "publishedDaysAgo": 25},
+      {"slug": "lichnyj-kabinet", "category": "zakaz", "title": "Личный кабинет: вход и восстановление пароля", "summary": "Письмо для сброса приходит в течение 5 минут", "content": "Вход — по e-mail. Письмо для сброса пароля приходит с адреса no-reply@atelie-nord.ru в течение 5 минут. Если письма нет — проверьте «Спам». Повторный запрос доступен через 10 минут.\n\nСтатусы заказа: «Ожидает оплаты» → «В производстве» → «Готов» → «Передан в доставку» → «Доставлен».", "status": "PUBLISHED", "helpfulVotes": 6, "unhelpfulVotes": 0, "publishedDaysAgo": 20},
+      {"slug": "uhod-za-shtorami", "category": "uhod", "title": "Как ухаживать за шторами", "summary": "Стирка и глажка по типам тканей", "content": "**Блэкаут** — деликатная стирка 30°, без отжима, глажка с изнанки на минимуме.\n\n**Лён** — стирка 40°; усадка до 3% заложена в расчёт.\n\n**Бархат** — только сухая чистка.\n\n**Тюль** — стирка 30° в мешке, сушить прямо на карнизе.", "status": "PUBLISHED", "helpfulVotes": 11, "unhelpfulVotes": 0, "publishedDaysAgo": 15},
+      {"slug": "oplata-chastyami", "category": "zakaz", "title": "Оплата частями", "summary": "Черновик: условия 50/50 для заказов от 30 000 ₽", "content": "Для заказов от 30 000 ₽ возможна оплата 50% при заказе и 50% перед отправкой. Черновик — согласовать с бухгалтерией.", "status": "DRAFT", "helpfulVotes": 0, "unhelpfulVotes": 0},
+      {"slug": "akciya-leto-2026", "category": "zakaz", "title": "Летняя акция 2026", "summary": "Скидка 10% на тюль до 31 августа", "content": "Акция завершена.", "status": "ARCHIVED", "helpfulVotes": 3, "unhelpfulVotes": 0, "publishedDaysAgo": 70}
     ]
   }
 }
