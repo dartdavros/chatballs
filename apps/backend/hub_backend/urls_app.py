@@ -33,10 +33,6 @@ urlpatterns = [
         include("hub_platform.integrations.urls"),
     ),
     path(
-        "api/v1/organizations/<uuid:organization_public_id>/channels/",
-        include("hub_platform.channels.urls"),
-    ),
-    path(
         "api/v1/organizations/<uuid:organization_public_id>/conversations/",
         include("hub_platform.conversations.urls"),
     ),

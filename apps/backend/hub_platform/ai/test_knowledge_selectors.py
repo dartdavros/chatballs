@@ -8,7 +8,6 @@ from hub_platform.ai.selectors import (
     agents_for_employee,
     apply_knowledge_filters,
     category_tree_for_employee,
-    channel_for_ai_capability,
     knowledge_available_to_agent,
     knowledge_for_employee,
 )
@@ -133,18 +132,4 @@ class KnowledgeSelectorTests(KnowledgePolicyTestBase):
                 context=self.employee_context,
                 agent_id=agent.id,
                 capability="ai.view",
-            )
-        self.assertEqual(
-            channel_for_ai_capability(
-                context=self.admin_context,
-                channel_code=channel.code,
-                capability="ai.manage",
-            ),
-            channel,
-        )
-        with self.assertRaises(Channel.DoesNotExist):
-            channel_for_ai_capability(
-                context=self.employee_context,
-                channel_code=channel.code,
-                capability="ai.manage",
             )

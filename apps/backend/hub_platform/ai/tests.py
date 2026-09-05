@@ -28,30 +28,6 @@ def make_channel_with_agent(organization, *, code, name, product=None, model="op
     return channel, agent
 
 
-def seed_sales_channels(organization):
-    firepage = Product.objects.get(organization=organization, code="firepage")
-    foxray = Product.objects.get(organization=organization, code="foxray")
-    make_channel_with_agent(organization, code="firepage-sales", name="FirePage — продажи", product=firepage)
-    make_channel_with_agent(organization, code="foxray-sales", name="FoxRay — продажи", product=foxray)
-
-
-def _byok_integration(organization, *, default_model="byok-model"):
-    """LLM-интеграция организации: единственный источник провайдера агента
-    после удаления managed-режима (ADR-HUB-0042 §3)."""
-    from hub_platform.integrations.models import IntegrationProvider
-    from hub_platform.integrations.services import IntegrationInput, create_integration
-
-    return create_integration(
-        context=system_tenant_context(organization),
-        data=IntegrationInput(
-            provider=IntegrationProvider.OPENROUTER,
-            name="BYOK",
-            secret="sk-byok",
-            config={"baseUrl": "https://openrouter.ai/api/v1", "defaultModel": default_model},
-        ),
-    )
-
-
 def make_knowledge(organization, *, title, content=""):
     return Knowledge.objects.create(
         organization=organization,
@@ -93,148 +69,6 @@ class AIAgentInvariantTests(TestCase):
         self.assertFalse(AIAgent.objects.filter(channel__product=product).exists())
 
 
-class AIAgentApiTests(TestCase):
-    def setUp(self) -> None:
-        bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
-        self.organization = Organization.objects.get(slug="edevs")
-        seed_sales_channels(self.organization)
-        self.client = APIClient()
-        self.client.login(username="owner@edevs.tech", password="temporary-password")
-
-    def test_owner_lists_agents(self) -> None:
-        response = self.client.get("/api/v1/ai/agents/")
-
-        self.assertEqual(response.status_code, 200)
-        codes = {item["channel"]["product"]["code"] for item in response.json()["items"]}
-        self.assertEqual(codes, {"firepage", "foxray"})
-
-    def test_owner_creates_agent_with_instructions_and_knowledge(self) -> None:
-        academy = Product.objects.create(organization=self.organization, code="academy", name="Academy")
-        Channel.objects.create(organization=self.organization, code="academy-sales", name="Academy", product=academy)
-        knowledge = make_knowledge(self.organization, title="FAQ", content="v1")
-
-        response = self.client.post(
-            "/api/v1/ai/agents/",
-            data=json.dumps(
-                {
-                    "channel": "academy-sales",
-                    "persona": "Ты — ассистент Academy.",
-                    "tone": "Коротко и по делу.",
-                    "instructions": "Отвечай по делу.",
-                    "knowledgeIds": [knowledge.id],
-                }
-            ),
-            content_type="application/json",
-        )
-
-        self.assertEqual(response.status_code, 201)
-        body = response.json()["agent"]
-        self.assertEqual(body["channel"]["code"], "academy-sales")
-        self.assertFalse(body["isActive"])
-        self.assertEqual(body["persona"], "Ты — ассистент Academy.")
-        self.assertEqual([item["id"] for item in body["knowledge"]], [knowledge.id])
-
-    def test_owner_cannot_create_second_agent_for_channel(self) -> None:
-        response = self.client.post(
-            "/api/v1/ai/agents/",
-            data=json.dumps({"channel": "firepage-sales", "knowledgeIds": []}),
-            content_type="application/json",
-        )
-
-        self.assertEqual(response.status_code, 400)
-
-    def test_owner_updates_agent_provider_and_instructions(self) -> None:
-        agent = AIAgent.objects.get(channel__code="firepage-sales")
-        integration = _byok_integration(self.organization)
-
-        response = self.client.patch(
-            f"/api/v1/ai/agents/{agent.id}/update/",
-            data=json.dumps(
-                {
-                    "providerIntegrationId": integration.id,
-                    "modelParams": {"temperature": 0.3},
-                    "tone": "Дружелюбно.",
-                }
-            ),
-            content_type="application/json",
-        )
-
-        self.assertEqual(response.status_code, 200)
-        # Модель принадлежит интеграции: агент получает её default_model.
-        self.assertEqual(response.json()["agent"]["providerIntegrationId"], integration.id)
-        self.assertNotIn("credentialMode", response.json()["agent"])
-        agent.refresh_from_db()
-        self.assertEqual(agent.provider_integration_id, integration.id)
-        self.assertEqual(agent.model, "byok-model")
-        self.assertEqual(agent.model_params, {"temperature": 0.3})
-        self.assertEqual(agent.tone, "Дружелюбно.")
-
-    def test_owner_updates_agent_knowledge_selection(self) -> None:
-        agent = AIAgent.objects.get(channel__code="firepage-sales")
-        knowledge = make_knowledge(self.organization, title="FAQ", content="v1")
-
-        response = self.client.patch(
-            f"/api/v1/ai/agents/{agent.id}/update/",
-            data=json.dumps({"knowledgeIds": [knowledge.id]}),
-            content_type="application/json",
-        )
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(list(agent.knowledge_items.values_list("id", flat=True)), [knowledge.id])
-
-        # Пустой список снимает выбор; отсутствие ключа — не трогает.
-        self.client.patch(
-            f"/api/v1/ai/agents/{agent.id}/update/",
-            data=json.dumps({"name": "Renamed"}),
-            content_type="application/json",
-        )
-        self.assertEqual(agent.knowledge_items.count(), 1)
-        self.client.patch(
-            f"/api/v1/ai/agents/{agent.id}/update/",
-            data=json.dumps({"knowledgeIds": []}),
-            content_type="application/json",
-        )
-        self.assertEqual(agent.knowledge_items.count(), 0)
-
-    def test_owner_deactivates_and_activates_agent(self) -> None:
-        agent = AIAgent.objects.get(channel__code="foxray-sales")
-        integration = _byok_integration(self.organization)
-        agent.provider_integration = integration
-        agent.save(update_fields=["provider_integration"])
-
-        deactivated = self.client.post(f"/api/v1/ai/agents/{agent.id}/deactivate/")
-        self.assertEqual(deactivated.status_code, 200)
-        self.assertFalse(deactivated.json()["agent"]["isActive"])
-
-        activated = self.client.post(f"/api/v1/ai/agents/{agent.id}/activate/")
-        self.assertEqual(activated.status_code, 200)
-        self.assertTrue(activated.json()["agent"]["isActive"])
-
-    def test_activation_without_provider_integration_is_rejected(self) -> None:
-        # Активация требует выбранного провайдера организации (ADR-HUB-0042 §2);
-        # деактивация свободна.
-        agent = AIAgent.objects.get(channel__code="foxray-sales")
-        self.client.post(f"/api/v1/ai/agents/{agent.id}/deactivate/")
-
-        response = self.client.post(f"/api/v1/ai/agents/{agent.id}/activate/")
-
-        self.assertEqual(response.status_code, 400)
-        self.assertIn("провайдера", response.json()["detail"])
-        agent.refresh_from_db()
-        self.assertFalse(agent.is_active)
-
-    def test_update_rejects_invalid_model_params(self) -> None:
-        agent = AIAgent.objects.get(channel__code="firepage-sales")
-
-        response = self.client.patch(
-            f"/api/v1/ai/agents/{agent.id}/update/",
-            data=json.dumps({"modelParams": "not-an-object"}),
-            content_type="application/json",
-        )
-
-        self.assertEqual(response.status_code, 400)
-
-
 class AIAgentPermissionTests(TestCase):
     def setUp(self) -> None:
         bootstrap_edevs_owner(email="owner@edevs.tech", password="temporary-password")
@@ -247,10 +81,6 @@ class AIAgentPermissionTests(TestCase):
         )
         self.client = APIClient()
         self.client.login(username="operator@edevs.tech", password="operator-password")
-
-    def test_operator_cannot_access_agents(self) -> None:
-        response = self.client.get("/api/v1/ai/agents/")
-        self.assertEqual(response.status_code, 403)
 
     def test_operator_cannot_access_knowledge(self) -> None:
         response = self.client.get("/api/v1/ai/knowledge/")
@@ -713,12 +543,12 @@ class AgentRuntimeTests(TestCase):
         with self.assertRaises(ProviderError):
             run_channel_turn(channel=self.channel, message="hi")
 
-    def test_channel_test_chat_endpoint(self) -> None:
+    def test_agent_card_test_chat_endpoint(self) -> None:
         client = APIClient()
         client.login(username="owner@edevs.tech", password="temporary-password")
 
         response = client.post(
-            f"/api/v1/channels/{self.channel.id}/test-chat/",
+            f"/api/v1/agents/{self.channel.id}/test-chat/",
             data=json.dumps({"message": "refund"}),
             content_type="application/json",
         )

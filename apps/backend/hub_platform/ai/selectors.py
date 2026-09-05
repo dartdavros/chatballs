@@ -38,18 +38,6 @@ def agent_for_employee(*, context: TenantContext, agent_id: int, capability: str
     return agents_for_employee(context=context, capability=capability).get(id=agent_id)
 
 
-def channel_for_ai_capability(
-    *, context: TenantContext, channel_code: str, capability: str
-) -> Channel:
-    queryset = Channel.objects.filter(
-        organization_id=context.organization_id,
-        code=channel_code,
-    )
-    if has_capability_any_scope(context.membership, capability):
-        return queryset.get()
-    return queryset.none().get()
-
-
 def knowledge_for_context(context: TenantContext) -> QuerySet[Knowledge]:
     return knowledge_for_employee(context=context)
 

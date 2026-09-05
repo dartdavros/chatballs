@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import re
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -18,7 +17,6 @@ from hub_platform.products.models import Product
 from hub_platform.tenancy.context import TenantContext
 
 # SPEC §3.1: slug 1-64, входит в embed-URL web-виджета и после создания immutable.
-CODE_PATTERN = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 CODE_MAX_LENGTH = 64
 NAME_MAX_LENGTH = 255
 
@@ -31,12 +29,6 @@ class Unset:
 
 
 UNSET = Unset()
-
-
-class ChannelCodeConflict(Exception):
-    def __init__(self, code: str) -> None:
-        self.code = code
-        super().__init__(f"Канал с кодом {code} уже существует")
 
 
 class ChannelHasReferences(Exception):
@@ -81,15 +73,6 @@ class ChannelUpdate:
     policy: dict[str, bool] = field(default_factory=dict)
 
 
-def _clean_code(raw: object) -> str:
-    code = str(raw or "").strip()
-    if not code or len(code) > CODE_MAX_LENGTH or not CODE_PATTERN.match(code):
-        raise ValidationError(
-            {"code": "Код канала: 1-64 символа, латиница в нижнем регистре, цифры и дефис"}
-        )
-    return code
-
-
 def _clean_name(raw: object) -> str:
     name = str(raw or "").strip()
     if not name:
@@ -124,43 +107,6 @@ def _product_for_channel(
         )
     except Product.DoesNotExist as error:
         raise ValidationError({"productId": "Unknown product"}) from error
-
-
-@transaction.atomic
-def create_channel(
-    *,
-    context: TenantContext,
-    code: object,
-    name: object,
-    group_id: int | None,
-    product_id: int | None,
-    policy: ChannelPolicy,
-    connection_ids: list[int] | None = None,
-) -> Channel:
-    authorization.require_organization_manage(context, operation="Создание канала")
-    clean_code = _clean_code(code)
-    clean_name = _clean_name(name)
-    group = _group_for_channel(context=context, group_id=group_id)
-    product = _product_for_channel(context=context, product_id=product_id)
-    # Инварианты проверяются до записи: частичное применение запрещено (§3.2).
-    require_valid_policy(policy=policy, has_product=product is not None)
-
-    if Channel.objects.filter(
-        organization_id=context.organization_id, code=clean_code
-    ).exists():
-        raise ChannelCodeConflict(clean_code)
-
-    channel = Channel.objects.create(
-        organization_id=context.organization_id,
-        code=clean_code,
-        name=clean_name,
-        group=group,
-        product=product,
-        **policy.as_model_fields(),
-    )
-    for integration_id in connection_ids or []:
-        bind_connection(context=context, channel=channel, integration_id=integration_id)
-    return channel
 
 
 @transaction.atomic
@@ -226,28 +172,6 @@ def update_channel(
     if changed:
         locked.save(update_fields=[*changed, "updated_at"])
     return locked
-
-
-def deletion_blockers(channel: Channel) -> list[dict[str, Any]]:
-    """§7.2. Каскадное удаление агента запрещено, поэтому SET_NULL и CASCADE
-    тоже блокируют."""
-    counts = (
-        ("conversations", channel.conversations.count()),
-        ("connections", channel.connections.count()),
-        ("supportContracts", channel.allowed_support_contracts.count()),
-        ("agent", 1 if hasattr(channel, "ai_agent") else 0),
-        ("llmInvocations", channel.ai_invocations.count()),
-    )
-    return [{"type": name, "count": count} for name, count in counts if count]
-
-
-@transaction.atomic
-def delete_channel(*, context: TenantContext, channel: Channel) -> None:
-    authorization.require_organization_manage(context, operation="Удаление канала")
-    blockers = deletion_blockers(channel)
-    if blockers:
-        raise ChannelHasReferences(blockers)
-    channel.delete()
 
 
 def _messenger_integration(*, context: TenantContext, integration_id: int) -> Integration:

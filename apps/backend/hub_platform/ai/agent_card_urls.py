@@ -3,7 +3,6 @@
 from django.urls import path
 
 from hub_platform.ai import agent_card_views as views
-from hub_platform.channels.views import ChannelTestChatView
 
 urlpatterns = [
     path("", views.AgentCardListView.as_view(), name="agent-card-list"),
@@ -28,11 +27,9 @@ urlpatterns = [
         views.AgentCardConnectionDetailView.as_view(),
         name="agent-card-connection-detail",
     ),
-    # Тестовый чат исполняет агента канала; вьюха принимает channel_id — id
-    # карточки и канала совпадают по построению.
     path(
-        "<int:channel_id>/test-chat/",
-        ChannelTestChatView.as_view(),
+        "<int:agent_id>/test-chat/",
+        views.AgentCardTestChatView.as_view(),
         name="agent-card-test-chat",
     ),
 ]

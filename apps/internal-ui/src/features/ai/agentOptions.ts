@@ -1,13 +1,13 @@
 import type { AgentLinkOption } from "../../shared/content-library/AgentLinkDialog";
-import type { AiAgent } from "./model";
+import type { AgentCard } from "../agents/model";
 
 /** Агенты для массового прикрепления материалов (библиотека знаний общая,
- * ADR-HUB-0041 §8 — фильтров по отделам больше нет). */
-export function agentLinkOptions(agents: AiAgent[]): AgentLinkOption[] {
+ * ADR-HUB-0041 §8). Bulk-эндпоинты знаний адресуют AIAgent, поэтому id —
+ * aiAgentId карточки. */
+export function agentLinkOptions(agents: AgentCard[]): AgentLinkOption[] {
   return agents.map((agent) => ({
-    id: agent.id,
+    id: agent.aiAgentId,
     name: agent.name,
-    channelName: agent.channel.name,
-    groupName: agent.channel.group?.name ?? null,
+    groupName: agent.groupName,
   }));
 }

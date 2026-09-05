@@ -213,7 +213,7 @@ class AgentPortalArticleLinkApiTests(AgentAttachmentTestCase):
         article = self.article(self.portal(), title="Refund policy")
         self.support_agent.portal_articles.add(article)
 
-        response = self.client.get(f"/api/v1/ai/agents/{self.support_agent.id}/")
+        response = self.client.get(f"/api/v1/agents/{self.support_channel.id}/")
 
         self.assertEqual(response.status_code, 200)
         articles = response.json()["agent"]["portalArticles"]

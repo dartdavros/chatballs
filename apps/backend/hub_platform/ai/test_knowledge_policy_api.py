@@ -74,18 +74,18 @@ class KnowledgePolicyApiTests(KnowledgePolicyTestBase):
         )
         agent = AIAgent.objects.create(channel=channel, name="Agent")
 
-        response = self.client.get("/api/v1/ai/agents/")
+        response = self.client.get("/api/v1/agents/")
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
-            [item["id"] for item in response.json()["items"]],
+            [item["aiAgentId"] for item in response.json()["items"]],
             [agent.id],
         )
-        detail = self.client.get(f"/api/v1/ai/agents/{agent.id}/")
+        detail = self.client.get(f"/api/v1/agents/{channel.id}/")
         self.assertEqual(detail.status_code, 200)
 
         self.client.force_authenticate(self.employee.user)
-        self.assertEqual(self.client.get("/api/v1/ai/agents/").status_code, 403)
+        self.assertEqual(self.client.get("/api/v1/agents/").status_code, 403)
         self.assertEqual(
-            self.client.get(f"/api/v1/ai/agents/{agent.id}/").status_code, 403
+            self.client.get(f"/api/v1/agents/{channel.id}/").status_code, 403
         )

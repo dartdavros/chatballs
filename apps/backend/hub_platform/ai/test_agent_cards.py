@@ -175,6 +175,76 @@ class AgentCardUpdateTests(AgentCardTestCase):
         agent = AIAgent.objects.get(id=self.card["aiAgentId"])
         self.assertEqual(agent.persona, "")
 
+    def test_knowledge_selection_semantics(self) -> None:
+        # Пустой список снимает выбор; отсутствие ключа — не трогает.
+        from hub_platform.ai.knowledge_categories import ensure_uncategorized_category
+        from hub_platform.ai.models import Knowledge
+
+        knowledge = Knowledge.objects.create(
+            organization=self.organization,
+            category=ensure_uncategorized_category(self.organization),
+            title="FAQ",
+            content="v1",
+        )
+        agent = AIAgent.objects.get(id=self.card["aiAgentId"])
+
+        self.assertEqual(self.patch(knowledgeIds=[knowledge.id]).status_code, 200)
+        self.assertEqual(agent.knowledge_items.count(), 1)
+        self.patch(name="Renamed")
+        self.assertEqual(agent.knowledge_items.count(), 1)
+        self.patch(knowledgeIds=[])
+        self.assertEqual(agent.knowledge_items.count(), 0)
+
+
+class AgentCardActivationTests(AgentCardTestCase):
+    def setUp(self) -> None:
+        super().setUp()
+        self.card = self.create_agent().json()["agent"]
+
+    def _byok_integration(self) -> Integration:
+        from hub_platform.integrations.models import IntegrationProvider
+        from hub_platform.integrations.services import IntegrationInput, create_integration
+        from hub_platform.testing import system_tenant_context
+
+        return create_integration(
+            context=system_tenant_context(self.organization),
+            data=IntegrationInput(
+                provider=IntegrationProvider.OPENROUTER,
+                name="BYOK",
+                secret="sk-byok",
+                config={"baseUrl": "https://openrouter.ai/api/v1", "defaultModel": "byok-model"},
+            ),
+        )
+
+    def test_activation_without_provider_integration_is_rejected(self) -> None:
+        # Активация требует выбранного провайдера организации (ADR-HUB-0042 §2);
+        # деактивация свободна.
+        response = self.client.post(f"/api/v1/agents/{self.card['id']}/activate/")
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("провайдера", response.json()["detail"])
+        agent = AIAgent.objects.get(id=self.card["aiAgentId"])
+        self.assertNotEqual(agent.status, AIAgentStatus.ACTIVE)
+
+    def test_activates_and_deactivates_with_provider(self) -> None:
+        integration = self._byok_integration()
+        patched = self.client.patch(
+            f"/api/v1/agents/{self.card['id']}/",
+            data=json.dumps({"providerIntegrationId": integration.id}),
+            content_type="application/json",
+        )
+        self.assertEqual(patched.status_code, 200)
+        # Модель принадлежит интеграции: агент получает её default_model.
+        self.assertEqual(patched.json()["agent"]["model"], "byok-model")
+
+        activated = self.client.post(f"/api/v1/agents/{self.card['id']}/activate/")
+        self.assertEqual(activated.status_code, 200)
+        self.assertEqual(activated.json()["agent"]["aiStatus"], AIAgentStatus.ACTIVE)
+
+        deactivated = self.client.post(f"/api/v1/agents/{self.card['id']}/deactivate/")
+        self.assertEqual(deactivated.status_code, 200)
+        self.assertEqual(deactivated.json()["agent"]["aiStatus"], AIAgentStatus.DISABLED)
+
 
 class AgentCardDeleteTests(AgentCardTestCase):
     def test_deletes_card_with_agent(self) -> None:

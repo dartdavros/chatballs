@@ -51,33 +51,34 @@ class AgentKnowledgeAssignmentTests(TestCase):
             password="temporary-password",
         )
 
-    def _create(self, channel: Channel, knowledge_ids: list[int]):
-        return self.client.post(
-            "/api/v1/ai/agents/",
-            data=json.dumps({"channel": channel.code, "knowledgeIds": knowledge_ids}),
-            content_type="application/json",
+    def _create(self, channel: Channel, knowledge_ids: list[int]) -> AIAgent:
+        from hub_platform.ai.services import AgentCreateInput, create_agent
+
+        return create_agent(
+            context=self.context,
+            data=AgentCreateInput(
+                channel_code=channel.code,
+                provider_integration_id=None,
+                persona="",
+                tone="",
+                instructions="",
+                knowledge_ids=knowledge_ids,
+            ),
         )
 
     def test_create_accepts_organization_knowledge(self) -> None:
-        response = self._create(
-            self.channel,
-            [self.shared.id, self.second.id],
-        )
+        agent = self._create(self.channel, [self.shared.id, self.second.id])
 
-        self.assertEqual(response.status_code, 201)
-        agent = AIAgent.objects.get(channel=self.channel)
         self.assertEqual(
             set(agent.knowledge_items.values_list("id", flat=True)),
             {self.shared.id, self.second.id},
         )
 
     def test_create_rejects_selection_with_unknown_knowledge_id(self) -> None:
-        response = self._create(
-            self.channel,
-            [self.shared.id, 999999],
-        )
+        from django.core.exceptions import ValidationError
 
-        self.assertEqual(response.status_code, 400)
+        with self.assertRaises(ValidationError):
+            self._create(self.channel, [self.shared.id, 999999])
         self.assertFalse(AIAgent.objects.filter(channel=self.channel).exists())
 
     def test_update_rolls_back_agent_fields_and_selection_on_invalid_id(self) -> None:
@@ -88,8 +89,9 @@ class AgentKnowledgeAssignmentTests(TestCase):
         )
         agent.knowledge_items.add(self.shared)
 
+        # PATCH карточки атомарен: канал и AI-поля откатываются вместе.
         response = self.client.patch(
-            f"/api/v1/ai/agents/{agent.id}/update/",
+            f"/api/v1/agents/{self.channel.id}/",
             data=json.dumps(
                 {
                     "name": "Changed",
@@ -101,7 +103,9 @@ class AgentKnowledgeAssignmentTests(TestCase):
 
         self.assertEqual(response.status_code, 400)
         agent.refresh_from_db()
+        self.channel.refresh_from_db()
         self.assertEqual(agent.name, "Original")
+        self.assertEqual(self.channel.name, "Org")
         self.assertEqual(
             list(agent.knowledge_items.values_list("id", flat=True)),
             [self.shared.id],

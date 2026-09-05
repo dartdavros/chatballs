@@ -16,9 +16,12 @@ from hub_platform.ai.agent_card import (
     set_agent_card_active,
     update_agent_card,
 )
+from hub_platform.ai.provider.base import ProviderError
 from hub_platform.api.permissions import HasCapability
 from hub_platform.channels import services as channel_services
 from hub_platform.channels.models import Channel
+from hub_platform.channels.runtime import run_channel_turn
+from hub_platform.channels.selectors import channel_for_context
 from hub_platform.identity.audit import record_audit_event
 
 AGENT_NOT_FOUND = {"detail": "Агент не найден"}
@@ -170,6 +173,41 @@ class AgentCardActivateView(_AgentCardStatusView):
 
 class AgentCardDeactivateView(_AgentCardStatusView):
     target_active = False
+
+
+class AgentCardTestChatView(APIView):
+    permission_classes = [HasCapability]
+    # Исполняет агента, а не изменяет канал: остаётся на ai.manage (ADR-HUB-0037 §9).
+    required_capability = "ai.manage"
+    require_organization_scope = True
+
+    def post(self, request: Request, agent_id: int) -> Response:
+        try:
+            channel = channel_for_context(
+                context=request.tenant_context,
+                channel_id=agent_id,
+                capability="ai.view",
+            )
+        except Channel.DoesNotExist:
+            return Response(AGENT_NOT_FOUND, status=404)
+        message = str(request.data.get("message", "")).strip()
+        if not message:
+            return Response({"detail": "Пустое сообщение"}, status=400)
+        history = request.data.get("history") or []
+        if not isinstance(history, list):
+            return Response({"detail": "history must be a list"}, status=400)
+        try:
+            result = run_channel_turn(channel=channel, message=message, history=history)
+        except ProviderError as error:
+            return Response({"detail": f"Ошибка провайдера: {error}"}, status=502)
+        return Response(
+            {
+                "reply": result.text,
+                "model": result.model,
+                "promptTokens": result.prompt_tokens,
+                "completionTokens": result.completion_tokens,
+            }
+        )
 
 
 class AgentCardConnectionsView(APIView):

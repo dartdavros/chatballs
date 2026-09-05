@@ -9,7 +9,6 @@ export type AgentLinkAction = "attach" | "detach";
 export type AgentLinkOption = {
   id: number;
   name: string;
-  channelName: string;
   groupName: string | null;
 };
 
@@ -73,7 +72,7 @@ export function AgentLinkDialog({
                   <option value="">Выберите агента</option>
                   {agents.map((agent) => (
                     <option value={agent.id} key={agent.id}>
-                      {agent.name} · {agent.channelName}{agent.groupName ? ` · ${agent.groupName}` : ""}
+                      {agent.name}{agent.groupName ? ` · ${agent.groupName}` : ""}
                     </option>
                   ))}
                 </select>
