@@ -11,9 +11,9 @@ cmd_doctor() {
     shift
     local msg="$*"
     if [[ "$ok" == "1" ]]; then
-      [[ "$CUSTOCRM_JSON" == "1" ]] || log_ok "$msg"
+      [[ "$CHATBALLS_JSON" == "1" ]] || log_ok "$msg"
     else
-      [[ "$CUSTOCRM_JSON" == "1" ]] || log_err "$msg"
+      [[ "$CHATBALLS_JSON" == "1" ]] || log_err "$msg"
       failures=$((failures + 1))
     fi
   }
@@ -86,17 +86,17 @@ cmd_doctor() {
   fi
 
   local app_domain platform_domain
-  app_domain="$(env_get "$(instance_env_file)" CUSTOCRM_APP_DOMAIN)"
-  platform_domain="$(env_get "$(instance_env_file)" CUSTOCRM_PLATFORM_DOMAIN)"
+  app_domain="$(env_get "$(instance_env_file)" CHATBALLS_APP_DOMAIN)"
+  platform_domain="$(env_get "$(instance_env_file)" CHATBALLS_PLATFORM_DOMAIN)"
   if [[ -n "$app_domain" ]]; then
-    _doctor_report 1 "CUSTOCRM_APP_DOMAIN set: $app_domain"
+    _doctor_report 1 "CHATBALLS_APP_DOMAIN set: $app_domain"
   else
-    _doctor_report 0 "CUSTOCRM_APP_DOMAIN not set"
+    _doctor_report 0 "CHATBALLS_APP_DOMAIN not set"
   fi
   if [[ -n "$platform_domain" ]]; then
-    _doctor_report 1 "CUSTOCRM_PLATFORM_DOMAIN set: $platform_domain"
+    _doctor_report 1 "CHATBALLS_PLATFORM_DOMAIN set: $platform_domain"
   else
-    _doctor_report 0 "CUSTOCRM_PLATFORM_DOMAIN not set"
+    _doctor_report 0 "CHATBALLS_PLATFORM_DOMAIN not set"
   fi
   if [[ -n "$app_domain" ]] && [[ "$app_domain" != "$platform_domain" ]]; then
     _doctor_report 1 "app and platform domains are distinct"
@@ -105,11 +105,11 @@ cmd_doctor() {
   fi
 
   local acme_email
-  acme_email="$(env_get "$(instance_env_file)" CUSTOCRM_ACME_EMAIL)"
+  acme_email="$(env_get "$(instance_env_file)" CHATBALLS_ACME_EMAIL)"
   if [[ -n "$acme_email" ]]; then
-    _doctor_report 1 "CUSTOCRM_ACME_EMAIL set"
+    _doctor_report 1 "CHATBALLS_ACME_EMAIL set"
   else
-    _doctor_report 0 "CUSTOCRM_ACME_EMAIL not set"
+    _doctor_report 0 "CHATBALLS_ACME_EMAIL not set"
   fi
 
   local pg_pwd
@@ -121,16 +121,16 @@ cmd_doctor() {
   fi
 
   local secret
-  secret="$(env_get "$(instance_env_file)" CUS_SECRET_KEY)"
+  secret="$(env_get "$(instance_env_file)" CHATBALLS_SECRET_KEY)"
   if [[ -n "$secret" ]] && [[ "$secret" != "change-me-long-random-secret" ]]; then
-    _doctor_report 1 "CUS_SECRET_KEY set"
+    _doctor_report 1 "CHATBALLS_SECRET_KEY set"
   else
-    _doctor_report 0 "CUS_SECRET_KEY default/empty"
+    _doctor_report 0 "CHATBALLS_SECRET_KEY default/empty"
   fi
 
   if profile_enabled calls; then
     local missing=0 k
-    for k in CUS_CALL_TURN_SECRET CUS_CALL_TURN_REALM CUS_TURN_EXTERNAL_IP CUS_TURN_LISTENING_IP; do
+    for k in CHATBALLS_CALL_TURN_SECRET CHATBALLS_CALL_TURN_REALM CHATBALLS_TURN_EXTERNAL_IP CHATBALLS_TURN_LISTENING_IP; do
       if [[ -z "$(env_get "$(instance_env_file)" "$k")" ]]; then
         _doctor_report 0 "$k required for calls profile"
         missing=1
@@ -159,7 +159,7 @@ cmd_doctor() {
     die "doctor: $failures check(s) failed" 1
   fi
 
-  if [[ "$CUSTOCRM_JSON" == "1" ]]; then
+  if [[ "$CHATBALLS_JSON" == "1" ]]; then
     printf '{"status":"ok","checks":"passed"}\n'
   else
     log_ok "doctor: all checks passed"

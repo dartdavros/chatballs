@@ -1,0 +1,22 @@
+from __future__ import annotations
+
+from chatballs.platform.capabilities import is_valid_platform_capability
+from chatballs.platform.models import PlatformOperator
+from chatballs.platform.tokens import issue_platform_token
+
+
+def create_platform_operator(
+    *, name: str = "Test operator", capabilities: list[str] | None = None
+) -> tuple[PlatformOperator, str]:
+    caps = (
+        ["platform.organizations.provision"]
+        if capabilities is None
+        else capabilities
+    )
+    for code in caps:
+        assert is_valid_platform_capability(code), f"unknown capability {code}"
+    operator = PlatformOperator.objects.create(name=name)
+    _token, plaintext = issue_platform_token(operator=operator, name="default", capabilities=caps)
+    return operator, plaintext
+
+

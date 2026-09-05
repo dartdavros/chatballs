@@ -20,14 +20,14 @@ COPY content /app/content
 # Build-time dummy values satisfy C04 runtime guards (distinct DB users in
 # settings_database, S3 bucket in settings_storage) that only matter at runtime;
 # collectstatic touches neither. Runtime values come from instance .env.
-RUN cd apps/backend && CUS_SECRET_KEY=collectstatic-build CUS_DEBUG=false CUS_ENV=production \
-    CUS_DELIVERY_MODE=CLOUD \
-    CUSTOCRM_APP_ALLOWED_HOSTS=collectstatic.invalid \
-    CUS_HELP_PUBLIC_IPV4=127.0.0.1 \
+RUN cd apps/backend && CHATBALLS_SECRET_KEY=collectstatic-build CHATBALLS_DEBUG=false CHATBALLS_ENV=production \
+    CHATBALLS_DELIVERY_MODE=CLOUD \
+    CHATBALLS_APP_ALLOWED_HOSTS=collectstatic.invalid \
+    CHATBALLS_HELP_PUBLIC_IPV4=127.0.0.1 \
     POSTGRES_APP_USER=build-app \
     POSTGRES_PLATFORM_USER=build-platform \
     POSTGRES_MIGRATION_USER=build-migration \
-    CUS_S3_BUCKET=build-placeholder \
+    CHATBALLS_S3_BUCKET=build-placeholder \
     python manage.py collectstatic --noinput
 
 RUN chown -R hub:hub /app
@@ -37,4 +37,4 @@ WORKDIR /app/apps/backend
 USER hub
 EXPOSE 8000
 
-CMD ["gunicorn", "hub_backend.wsgi_app:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "60"]
+CMD ["gunicorn", "chatballs_backend.wsgi_app:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "60"]

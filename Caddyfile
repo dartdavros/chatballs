@@ -1,11 +1,11 @@
-# Caddyfile — единый HTTP/HTTPS public boundary CustoCRM (ADR-HUB-0028 §gateway).
+# Caddyfile — единый HTTP/HTTPS public boundary Chatballs (ADR-HUB-0028 §gateway).
 # Подставляется в release bundle и монтируется в контейнер gateway.
 # Caddy: TLS termination + ACME, HTTP->HTTPS redirect, WebSocket upgrade (native).
 # App-маршрутизация делегирована frontend-контейнеру, platform API идёт в
 # отдельный backend. Admin принципиально отсутствует в public gateway.
 
 {
-	email {$CUSTOCRM_ACME_EMAIL:}
+	email {$CHATBALLS_ACME_EMAIL:}
 	# Caddy admin API не публикуется наружу (default localhost:2019).
 	on_demand_tls {
 		ask http://backend-platform:8000/api/v1/gateway/help-domain/
@@ -29,7 +29,7 @@ https:// {
 }
 
 # Tenant-facing application surface.
-{$CUSTOCRM_APP_DOMAIN} {
+{$CHATBALLS_APP_DOMAIN} {
 	encode gzip zstd
 
 	reverse_proxy frontend:80 {
@@ -42,7 +42,7 @@ https:// {
 
 # Edevs platform surface. На C01 опубликован только health endpoint; API
 # управления tenant'ами появится на C06.
-{$CUSTOCRM_PLATFORM_DOMAIN} {
+{$CHATBALLS_PLATFORM_DOMAIN} {
 	encode gzip zstd
 
 	reverse_proxy backend-platform:8000 {

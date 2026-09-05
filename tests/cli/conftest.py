@@ -1,6 +1,6 @@
-"""Pytest fixtures для custocrm CLI-харнесса.
+"""Pytest fixtures для chatballs CLI-харнесса.
 
-Тесты запускают реальный bash-скрипт custocrm против временного layout'а
+Тесты запускают реальный bash-скрипт chatballs против временного layout'а
 instance + release, с замоканными `docker` и `flock` на PATH. Реальный Docker
 не требуется (ADR-HUB-0028 §testing — machine-readable, без внешних зависимостей).
 
@@ -19,7 +19,7 @@ from pathlib import Path
 
 import pytest
 
-REPO_RELEASE_ROOT = Path(__file__).resolve().parents[2]  # code/custocrm
+REPO_RELEASE_ROOT = Path(__file__).resolve().parents[2]  # code/chatballs
 
 RELEASE_FILES = ["compose.yaml", "Caddyfile"]
 LIB_GLOB_DIR = "deploy/cli/lib"
@@ -123,13 +123,13 @@ def fake_env(tmp_path: Path):
     digest = "a" * 64
     _write_lf(
         release / "release.env",
-        "CUSTOCRM_VERSION=1.0.0-test\n"
-        f"CUSTOCRM_BACKEND_IMAGE=registry.test/backend:1.0.0@sha256:{digest}\n"
-        f"CUSTOCRM_FRONTEND_IMAGE=registry.test/frontend:1.0.0@sha256:{digest}\n"
-        f"CUSTOCRM_POSTGRES_IMAGE=pgvector/pgvector:pg16@sha256:{digest}\n"
-        f"CUSTOCRM_REDIS_IMAGE=redis:7-alpine@sha256:{digest}\n"
-        f"CUSTOCRM_GATEWAY_IMAGE=caddy:2.8.4@sha256:{digest}\n"
-        f"CUSTOCRM_COTURN_IMAGE=coturn/coturn:4.6@sha256:{digest}\n",
+        "CHATBALLS_VERSION=1.0.0-test\n"
+        f"CHATBALLS_BACKEND_IMAGE=registry.test/backend:1.0.0@sha256:{digest}\n"
+        f"CHATBALLS_FRONTEND_IMAGE=registry.test/frontend:1.0.0@sha256:{digest}\n"
+        f"CHATBALLS_POSTGRES_IMAGE=pgvector/pgvector:pg16@sha256:{digest}\n"
+        f"CHATBALLS_REDIS_IMAGE=redis:7-alpine@sha256:{digest}\n"
+        f"CHATBALLS_GATEWAY_IMAGE=caddy:2.8.4@sha256:{digest}\n"
+        f"CHATBALLS_COTURN_IMAGE=coturn/coturn:4.6@sha256:{digest}\n",
     )
 
     checksum_lines = []
@@ -143,22 +143,22 @@ def fake_env(tmp_path: Path):
 
     def write_env(**overrides) -> Path:
         lines = {
-            "COMPOSE_PROJECT_NAME": "custocrm_test",
-            "CUSTOCRM_APP_DOMAIN": "app.test",
-            "CUSTOCRM_PLATFORM_DOMAIN": "platform.test",
-            "CUSTOCRM_ACME_EMAIL": "admin@test",
-            "CUS_SECRET_KEY": "test-secret-not-default",
-            "CUS_FIELD_ENCRYPTION_KEY": "",
-            "POSTGRES_DB": "custocrm",
-            "POSTGRES_USER": "custocrm",
+            "COMPOSE_PROJECT_NAME": "chatballs_test",
+            "CHATBALLS_APP_DOMAIN": "app.test",
+            "CHATBALLS_PLATFORM_DOMAIN": "platform.test",
+            "CHATBALLS_ACME_EMAIL": "admin@test",
+            "CHATBALLS_SECRET_KEY": "test-secret-not-default",
+            "CHATBALLS_FIELD_ENCRYPTION_KEY": "",
+            "POSTGRES_DB": "chatballs",
+            "POSTGRES_USER": "chatballs",
             "POSTGRES_PASSWORD": "pg-secret",
             "POSTGRES_HOST": "postgres",
             "POSTGRES_PORT": "5432",
             "REDIS_URL": "redis://redis:6379/0",
-            "CUSTOCRM_APP_ALLOWED_HOSTS": "app.test",
-            "CUSTOCRM_PLATFORM_ALLOWED_HOSTS": "platform.test",
-            "CUSTOCRM_APP_HEALTHCHECK_HOST": "app.test",
-            "CUSTOCRM_PLATFORM_HEALTHCHECK_HOST": "platform.test",
+            "CHATBALLS_APP_ALLOWED_HOSTS": "app.test",
+            "CHATBALLS_PLATFORM_ALLOWED_HOSTS": "platform.test",
+            "CHATBALLS_APP_HEALTHCHECK_HOST": "app.test",
+            "CHATBALLS_PLATFORM_HEALTHCHECK_HOST": "platform.test",
         }
         lines.update(overrides)
         body = "".join(f"{k}={v}\n" for k, v in lines.items())
@@ -175,14 +175,14 @@ def fake_env(tmp_path: Path):
         _write_lf(docker, FAKE_DOCKER)
         _chmod_x(docker)
 
-    custocrm = REPO_RELEASE_ROOT / "custocrm"
+    chatballs = REPO_RELEASE_ROOT / "chatballs"
 
     def make_env() -> dict:
         env = os.environ.copy()
         sys_path = os.environ.get("PATH", "")
         env["PATH"] = str(bin_dir) + os.pathsep + sys_path
-        env["CUSTOCRM_RELEASE_DIR"] = str(release)
-        env["CUSTOCRM_INSTANCE_DIR"] = str(instance)
+        env["CHATBALLS_RELEASE_DIR"] = str(release)
+        env["CHATBALLS_INSTANCE_DIR"] = str(instance)
         env["FAKE_DOCKER_LOG"] = str(log_file)
         # BASH-интерпретатор для скриптов-моков (env bash резолвится из PATH баша).
         return env
@@ -196,7 +196,7 @@ def fake_env(tmp_path: Path):
     e.instance = instance
     e.bin = bin_dir
     e.log = log_file
-    e.custocrm = custocrm
+    e.chatballs = chatballs
     e.bash = BASH_EXECUTABLE
     e.write_env = write_env
     e.install_flock = install_flock

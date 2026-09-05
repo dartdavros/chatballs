@@ -56,10 +56,10 @@ _deploy_validate() {
   validate_release_image_refs || return 1
 
   local app_domain platform_domain
-  app_domain="$(env_get "$(instance_env_file)" CUSTOCRM_APP_DOMAIN)"
-  platform_domain="$(env_get "$(instance_env_file)" CUSTOCRM_PLATFORM_DOMAIN)"
-  [[ -n "$app_domain" ]] || { log_err "CUSTOCRM_APP_DOMAIN not set"; return 1; }
-  [[ -n "$platform_domain" ]] || { log_err "CUSTOCRM_PLATFORM_DOMAIN not set"; return 1; }
+  app_domain="$(env_get "$(instance_env_file)" CHATBALLS_APP_DOMAIN)"
+  platform_domain="$(env_get "$(instance_env_file)" CHATBALLS_PLATFORM_DOMAIN)"
+  [[ -n "$app_domain" ]] || { log_err "CHATBALLS_APP_DOMAIN not set"; return 1; }
+  [[ -n "$platform_domain" ]] || { log_err "CHATBALLS_PLATFORM_DOMAIN not set"; return 1; }
   [[ "$app_domain" != "$platform_domain" ]] || {
     log_err "app and platform domains must be distinct"
     return 1
@@ -100,7 +100,7 @@ _wait_running() {
 }
 
 _normalize_schema_ownership() {
-  # Приводит владение объектов public-схемы к роли custocrm_schema, в которую
+  # Приводит владение объектов public-схемы к роли chatballs_schema, в которую
   # входит migration-user. Идемпотентно: безопасно на каждом деплое. Без этого
   # миграции от migration-user падают на таблицах, созданных не им
   # («must be owner of table …»). Выполняется под суперпользователем POSTGRES_USER.
@@ -112,7 +112,7 @@ _normalize_schema_ownership() {
   [[ -n "$pg_db" ]] || { log_err "POSTGRES_DB not set"; return 1; }
   run_compose exec -T postgres \
     psql -v ON_ERROR_STOP=1 -U "$pg_user" -d "$pg_db" \
-    -f /custocrm-reassign-ownership.sql >/dev/null
+    -f /chatballs-reassign-ownership.sql >/dev/null
 }
 
 _first_json_service_state() {
@@ -129,18 +129,18 @@ _first_json_service_state() {
 
 _smoke() {
   local app_domain platform_domain
-  app_domain="$(env_get "$(instance_env_file)" CUSTOCRM_APP_DOMAIN)"
-  platform_domain="$(env_get "$(instance_env_file)" CUSTOCRM_PLATFORM_DOMAIN)"
+  app_domain="$(env_get "$(instance_env_file)" CHATBALLS_APP_DOMAIN)"
+  platform_domain="$(env_get "$(instance_env_file)" CHATBALLS_PLATFORM_DOMAIN)"
 
   run_compose exec -T backend-app python - <<'PY' >/dev/null 2>&1 || {
 import os
 import urllib.error
 import urllib.request
 
-app_domain = os.environ["CUSTOCRM_APP_DOMAIN"]
-platform_domain = os.environ["CUSTOCRM_PLATFORM_DOMAIN"]
-app_health_host = os.environ.get("CUSTOCRM_APP_HEALTHCHECK_HOST") or app_domain
-platform_health_host = os.environ.get("CUSTOCRM_PLATFORM_HEALTHCHECK_HOST") or platform_domain
+app_domain = os.environ["CHATBALLS_APP_DOMAIN"]
+platform_domain = os.environ["CHATBALLS_PLATFORM_DOMAIN"]
+app_health_host = os.environ.get("CHATBALLS_APP_HEALTHCHECK_HOST") or app_domain
+platform_health_host = os.environ.get("CHATBALLS_PLATFORM_HEALTHCHECK_HOST") or platform_domain
 app_health_request = urllib.request.Request(
     "http://127.0.0.1:8000/api/v1/health/ready/",
     headers={"Host": app_health_host, "X-Forwarded-Proto": "https"},
@@ -194,11 +194,11 @@ _state_file() { printf '%s/applied_release' "$(state_dir)"; }
 
 _record_release() {
   local ver
-  ver="$(env_get "$(release_env_file)" CUSTOCRM_VERSION)"
+  ver="$(env_get "$(release_env_file)" CHATBALLS_VERSION)"
   printf 'applied_version=%s\napplied_at=%s\n' "${ver:-unknown}" \
     "$(date -u +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date)" > "$(_state_file)"
 }
 
 _applied_version_target() {
-  env_get "$(release_env_file)" CUSTOCRM_VERSION || printf 'unknown'
+  env_get "$(release_env_file)" CHATBALLS_VERSION || printf 'unknown'
 }

@@ -6,17 +6,17 @@ cmd_status() {
   local inst rel applied target
   inst="$(instance_dir)"
   rel="$(release_dir)"
-  target="$(env_get "$(release_env_file)" CUSTOCRM_VERSION)"
+  target="$(env_get "$(release_env_file)" CHATBALLS_VERSION)"
   applied="$(env_get "$(_state_file)" applied_version)"
 
-  if [[ "$CUSTOCRM_JSON" == "1" ]]; then
+  if [[ "$CHATBALLS_JSON" == "1" ]]; then
     printf '{"status":"info","instance":%s,"release_dir":%s,"target_version":%s,"applied_version":%s}\n' \
       "$(json_escape "$inst")" "$(json_escape "$rel")" \
       "$(json_escape "${target:-unknown}")" "$(json_escape "${applied:-none}")"
     return 0
   fi
 
-  printf 'CustoCRM status\n'
+  printf 'Chatballs status\n'
   printf '  instance dir: %s\n' "$inst"
   printf '  release dir: %s\n' "$rel"
   printf '  target version:  %s\n' "${target:-unknown}"

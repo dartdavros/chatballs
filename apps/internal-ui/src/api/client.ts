@@ -2,10 +2,10 @@ const configuredApiBase = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/+
 let activeOrganizationPublicId: string | null = null;
 
 // Имя CSRF-cookie должно совпадать с backend CSRF_COOKIE_NAME (settings_app):
-// secure-режим (https) → "__Host-custocrm-app-csrf", dev по http → fallback-имя
+// secure-режим (https) → "__Host-chatballs-app-csrf", dev по http → fallback-имя
 // (CSRF_COOKIE_SECURE выключен, префикс __Host- недоступен без Secure).
 const CSRF_COOKIE_NAME =
-  typeof window !== "undefined" && window.location.protocol === "https:" ? "__Host-custocrm-app-csrf" : "custocrm_app_csrftoken";
+  typeof window !== "undefined" && window.location.protocol === "https:" ? "__Host-chatballs-app-csrf" : "chatballs_app_csrftoken";
 
 const tenantNamespaces = [
   "agents",

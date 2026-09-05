@@ -11,7 +11,7 @@ Windows (PowerShell):
 
 ```powershell
 git clone <URL репозитория> chatballs
-cd chatballs/code/custocrm
+cd chatballs/code/chatballs
 .\scripts\start.ps1
 ```
 
@@ -19,7 +19,7 @@ Linux / macOS:
 
 ```bash
 git clone <URL репозитория> chatballs
-cd chatballs/code/custocrm
+cd chatballs/code/chatballs
 ./scripts/start.sh
 ```
 
@@ -55,10 +55,34 @@ docker compose run --rm backend-app python manage.py seed_demo --organization <s
 docker compose run --rm backend-app python manage.py seed_demo --organization <slug> --remove
 ```
 
-Редактируемые данные — `apps/backend/hub_platform/identity/demo_seed/data/`
+Редактируемые данные — `apps/backend/chatballs/identity/demo_seed/data/`
 (JSON-манифест на домен, `media/` — вложения, аватары, голосовые). Голосовые
 сообщения читаются из `media/voice/` (см. README там); если файла нет, сообщение
 пропускается.
+
+### Обновление установки со старым именем (CustoCRM / hub → Chatballs)
+
+Установки, развёрнутые до переименования (compose-проект `edevs_hub`, база
+`edevs_hub`, роли Postgres `custocrm_*`, переменные `CUS_*`/`CUSTOCRM_*`),
+переводятся на новые имена одним скриптом — данные остаются на месте:
+
+```bash
+# prod: сначала переместите каталог релизов и инстанса
+mv /opt/custocrm /opt/chatballs
+CHATBALLS_INSTANCE_DIR=/opt/chatballs/instance ./deploy/migrate/rename-to-chatballs.sh
+./chatballs deploy
+```
+
+```bash
+# dev-стек из каталога репозитория
+CHATBALLS_INSTANCE_DIR="$PWD" CHATBALLS_COMPOSE_ARGS="-f compose.dev.yaml --env-file .env.example"   deploy/migrate/rename-to-chatballs.sh
+docker compose -f compose.yaml -f compose.dev.yaml --env-file .env.example --env-file .env up -d
+```
+
+Скрипт останавливает старый compose-проект, переписывает `.env` (резервная
+копия рядом, `.env.bak-custocrm`), переименовывает роли, схему RLS (и её GUC),
+базу и печатает итог. Cookie сессий меняют имя — пользователи входят заново.
+В CI/CD корень деплоя теперь `/opt/chatballs`.
 
 ### Режим поставки
 
@@ -71,7 +95,7 @@ docker compose run --rm backend-app python manage.py seed_demo --organization <s
 ```
 
 Приложение не определяет режим по домену, числу организаций или данным.
-Единственный источник — `CUS_DELIVERY_MODE` со значением `CLOUD` или
+Единственный источник — `CHATBALLS_DELIVERY_MODE` со значением `CLOUD` или
 `SELF_HOSTED`. В production переменная обязательна; шаблон коробочного
 экземпляра `env.example` уже содержит `SELF_HOSTED`.
 

@@ -1,4 +1,4 @@
-# Канонический production-манифест CustoCRM (ADR-HUB-0028).
+# Канонический production-манифест Chatballs (ADR-HUB-0028).
 # Один Compose для: box-установки клиента, hub.edevs.tech, staging, smoke.
 # Локальная разработка — через override compose.dev.yaml; этот файл не содержит
 # dev source mounts, dev-команд и host-портов (кроме public 80/443 у gateway).
@@ -14,7 +14,7 @@
 
 services:
   postgres:
-    image: ${CUSTOCRM_POSTGRES_IMAGE:-pgvector/pgvector:pg16}
+    image: ${CHATBALLS_POSTGRES_IMAGE:-pgvector/pgvector:pg16}
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is required}
@@ -27,9 +27,9 @@ services:
       POSTGRES_MIGRATION_USER: ${POSTGRES_MIGRATION_USER:?POSTGRES_MIGRATION_USER is required}
       POSTGRES_MIGRATION_PASSWORD: ${POSTGRES_MIGRATION_PASSWORD:?POSTGRES_MIGRATION_PASSWORD is required}
     volumes:
-      - ${CUSTOCRM_INSTANCE_DIR:-.}/data/postgres:/var/lib/postgresql/data
-      - ${CUSTOCRM_RELEASE_DIR:-.}/deploy/postgres/init-runtime-roles.sh:/docker-entrypoint-initdb.d/20-custocrm-runtime-roles.sh:ro
-      - ${CUSTOCRM_RELEASE_DIR:-.}/deploy/postgres/reassign-schema-ownership.sql:/custocrm-reassign-ownership.sql:ro
+      - ${CHATBALLS_INSTANCE_DIR:-.}/data/postgres:/var/lib/postgresql/data
+      - ${CHATBALLS_RELEASE_DIR:-.}/deploy/postgres/init-runtime-roles.sh:/docker-entrypoint-initdb.d/20-chatballs-runtime-roles.sh:ro
+      - ${CHATBALLS_RELEASE_DIR:-.}/deploy/postgres/reassign-schema-ownership.sql:/chatballs-reassign-ownership.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
@@ -37,11 +37,11 @@ services:
       retries: 10
 
   redis:
-    image: ${CUSTOCRM_REDIS_IMAGE:-redis:7-alpine}
+    image: ${CHATBALLS_REDIS_IMAGE:-redis:7-alpine}
     restart: unless-stopped
     command: ["redis-server", "--appendonly", "yes"]
     volumes:
-      - ${CUSTOCRM_INSTANCE_DIR:-.}/data/redis:/data
+      - ${CHATBALLS_INSTANCE_DIR:-.}/data/redis:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -53,12 +53,12 @@ services:
   # демо-данные создаёт мастер первого запуска в браузере (/api/v1/setup/).
   # collectstatic испечён в backend-образ, здесь не вызывается.
   init:
-    image: ${CUSTOCRM_BACKEND_IMAGE:-custocrm-backend:dev}
+    image: ${CHATBALLS_BACKEND_IMAGE:-chatballs-backend:dev}
     env_file:
-      - ${CUSTOCRM_INSTANCE_DIR:-.}/.env
+      - ${CHATBALLS_INSTANCE_DIR:-.}/.env
     command: ["python", "manage.py", "migrate", "--noinput"]
     environment:
-      CUS_DB_ROLE: migration
+      CHATBALLS_DB_ROLE: migration
     restart: "no"
     depends_on:
       postgres:
@@ -67,22 +67,22 @@ services:
         condition: service_healthy
 
   backend-app:
-    image: ${CUSTOCRM_BACKEND_IMAGE:-custocrm-backend:dev}
+    image: ${CHATBALLS_BACKEND_IMAGE:-chatballs-backend:dev}
     restart: unless-stopped
     env_file:
-      - ${CUSTOCRM_INSTANCE_DIR:-.}/.env
+      - ${CHATBALLS_INSTANCE_DIR:-.}/.env
     command: >
-      sh -c "gunicorn hub_backend.asgi_app:application
+      sh -c "gunicorn chatballs_backend.asgi_app:application
       --worker-class uvicorn.workers.UvicornWorker
       --bind 0.0.0.0:8000
-      --workers $${CUS_GUNICORN_WORKERS:-3}
-      --timeout $${CUS_GUNICORN_TIMEOUT:-60}"
+      --workers $${CHATBALLS_GUNICORN_WORKERS:-3}
+      --timeout $${CHATBALLS_GUNICORN_TIMEOUT:-60}"
     environment:
-      CUS_DB_ROLE: app
+      CHATBALLS_DB_ROLE: app
     volumes:
       # Legacy source media retained for the separately approved copy/hash
       # migration. Production writes use the required S3 backend in C04.
-      - ${CUSTOCRM_INSTANCE_DIR:-.}/data/media:/app/apps/backend/media
+      - ${CHATBALLS_INSTANCE_DIR:-.}/data/media:/app/apps/backend/media
     depends_on:
       init:
         condition: service_completed_successfully
@@ -96,7 +96,7 @@ services:
           "CMD",
           "python",
           "-c",
-          "import os, urllib.request; req = urllib.request.Request('http://127.0.0.1:8000/api/v1/health/live/', headers={'Host': os.environ.get('CUSTOCRM_APP_HEALTHCHECK_HOST', 'app.localhost'), 'X-Forwarded-Proto': 'https'}); urllib.request.urlopen(req, timeout=3)",
+          "import os, urllib.request; req = urllib.request.Request('http://127.0.0.1:8000/api/v1/health/live/', headers={'Host': os.environ.get('CHATBALLS_APP_HEALTHCHECK_HOST', 'app.localhost'), 'X-Forwarded-Proto': 'https'}); urllib.request.urlopen(req, timeout=3)",
         ]
       interval: 10s
       timeout: 5s
@@ -104,18 +104,18 @@ services:
       start_period: 20s
 
   backend-platform:
-    image: ${CUSTOCRM_BACKEND_IMAGE:-custocrm-backend:dev}
+    image: ${CHATBALLS_BACKEND_IMAGE:-chatballs-backend:dev}
     restart: unless-stopped
     env_file:
-      - ${CUSTOCRM_INSTANCE_DIR:-.}/.env
+      - ${CHATBALLS_INSTANCE_DIR:-.}/.env
     command: >
-      sh -c "gunicorn hub_backend.asgi_platform:application
+      sh -c "gunicorn chatballs_backend.asgi_platform:application
       --worker-class uvicorn.workers.UvicornWorker
       --bind 0.0.0.0:8000
-      --workers $${CUS_GUNICORN_WORKERS:-3}
-      --timeout $${CUS_GUNICORN_TIMEOUT:-60}"
+      --workers $${CHATBALLS_GUNICORN_WORKERS:-3}
+      --timeout $${CHATBALLS_GUNICORN_TIMEOUT:-60}"
     environment:
-      CUS_DB_ROLE: platform
+      CHATBALLS_DB_ROLE: platform
     depends_on:
       init:
         condition: service_completed_successfully
@@ -129,7 +129,7 @@ services:
           "CMD",
           "python",
           "-c",
-          "import os, urllib.request; req = urllib.request.Request('http://127.0.0.1:8000/api/v1/health/live/', headers={'Host': os.environ.get('CUSTOCRM_PLATFORM_HEALTHCHECK_HOST', 'platform.localhost'), 'X-Forwarded-Proto': 'https'}); urllib.request.urlopen(req, timeout=3)",
+          "import os, urllib.request; req = urllib.request.Request('http://127.0.0.1:8000/api/v1/health/live/', headers={'Host': os.environ.get('CHATBALLS_PLATFORM_HEALTHCHECK_HOST', 'platform.localhost'), 'X-Forwarded-Proto': 'https'}); urllib.request.urlopen(req, timeout=3)",
         ]
       interval: 10s
       timeout: 5s
@@ -139,22 +139,22 @@ services:
   # Django admin не подключён к gateway. Единственный host bind — loopback;
   # удалённый доступ допускается только через SSH tunnel (ADR-HUB-0031).
   backend-admin:
-    image: ${CUSTOCRM_BACKEND_IMAGE:-custocrm-backend:dev}
+    image: ${CHATBALLS_BACKEND_IMAGE:-chatballs-backend:dev}
     restart: unless-stopped
     env_file:
-      - ${CUSTOCRM_INSTANCE_DIR:-.}/.env
+      - ${CHATBALLS_INSTANCE_DIR:-.}/.env
     command: >
-      sh -c "gunicorn hub_backend.asgi_admin:application
+      sh -c "gunicorn chatballs_backend.asgi_admin:application
       --worker-class uvicorn.workers.UvicornWorker
       --bind 0.0.0.0:8000
-      --workers $${CUS_GUNICORN_WORKERS:-2}
-      --timeout $${CUS_GUNICORN_TIMEOUT:-60}"
+      --workers $${CHATBALLS_GUNICORN_WORKERS:-2}
+      --timeout $${CHATBALLS_GUNICORN_TIMEOUT:-60}"
     # Break-glass technical surface only: schema credentials are never used by
     # public app/platform runtimes and this service remains loopback-only.
     environment:
-      CUS_DB_ROLE: migration
+      CHATBALLS_DB_ROLE: migration
     ports:
-      - "127.0.0.1:${CUSTOCRM_ADMIN_PORT:-18001}:8000"
+      - "127.0.0.1:${CHATBALLS_ADMIN_PORT:-18001}:8000"
     depends_on:
       init:
         condition: service_completed_successfully
@@ -164,15 +164,15 @@ services:
         condition: service_healthy
 
   worker:
-    image: ${CUSTOCRM_BACKEND_IMAGE:-custocrm-backend:dev}
+    image: ${CHATBALLS_BACKEND_IMAGE:-chatballs-backend:dev}
     restart: unless-stopped
     env_file:
-      - ${CUSTOCRM_INSTANCE_DIR:-.}/.env
+      - ${CHATBALLS_INSTANCE_DIR:-.}/.env
     command: ["python", "manage.py", "run_worker"]
     environment:
-      CUS_DB_ROLE: app
+      CHATBALLS_DB_ROLE: app
     volumes:
-      - ${CUSTOCRM_INSTANCE_DIR:-.}/data/media:/app/apps/backend/media
+      - ${CHATBALLS_INSTANCE_DIR:-.}/data/media:/app/apps/backend/media
     depends_on:
       backend-app:
         condition: service_healthy
@@ -182,7 +182,7 @@ services:
   # /chat/, /calls/) — в deploy/nginx/frontend.production.conf. Не публикует
   # host-порт: public boundary — gateway (Caddy).
   frontend:
-    image: ${CUSTOCRM_FRONTEND_IMAGE:-custocrm-frontend:dev}
+    image: ${CHATBALLS_FRONTEND_IMAGE:-chatballs-frontend:dev}
     restart: unless-stopped
     depends_on:
       backend-app:
@@ -193,19 +193,19 @@ services:
   # Маршрутизация публичных путей делегируется frontend (internal). Coturn не
   # проксируется через Caddy — отдельная network boundary (profile calls).
   gateway:
-    image: ${CUSTOCRM_GATEWAY_IMAGE:-caddy:2.8.4}
+    image: ${CHATBALLS_GATEWAY_IMAGE:-caddy:2.8.4}
     restart: unless-stopped
     environment:
-      CUSTOCRM_APP_DOMAIN: ${CUSTOCRM_APP_DOMAIN:?CUSTOCRM_APP_DOMAIN is required}
-      CUSTOCRM_PLATFORM_DOMAIN: ${CUSTOCRM_PLATFORM_DOMAIN:?CUSTOCRM_PLATFORM_DOMAIN is required}
-      CUSTOCRM_ACME_EMAIL: ${CUSTOCRM_ACME_EMAIL:?CUSTOCRM_ACME_EMAIL is required}
+      CHATBALLS_APP_DOMAIN: ${CHATBALLS_APP_DOMAIN:?CHATBALLS_APP_DOMAIN is required}
+      CHATBALLS_PLATFORM_DOMAIN: ${CHATBALLS_PLATFORM_DOMAIN:?CHATBALLS_PLATFORM_DOMAIN is required}
+      CHATBALLS_ACME_EMAIL: ${CHATBALLS_ACME_EMAIL:?CHATBALLS_ACME_EMAIL is required}
     ports:
-      - "${CUSTOCRM_WEB_LISTENING_IP:-0.0.0.0}:80:80"
-      - "${CUSTOCRM_WEB_LISTENING_IP:-0.0.0.0}:443:443"
+      - "${CHATBALLS_WEB_LISTENING_IP:-0.0.0.0}:80:80"
+      - "${CHATBALLS_WEB_LISTENING_IP:-0.0.0.0}:443:443"
     volumes:
-      - ${CUSTOCRM_RELEASE_DIR:-.}/Caddyfile:/etc/caddy/Caddyfile:ro
-      - ${CUSTOCRM_INSTANCE_DIR:-.}/data/caddy:/data
-      - ${CUSTOCRM_INSTANCE_DIR:-.}/data/caddy-config:/config
+      - ${CHATBALLS_RELEASE_DIR:-.}/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ${CHATBALLS_INSTANCE_DIR:-.}/data/caddy:/data
+      - ${CHATBALLS_INSTANCE_DIR:-.}/data/caddy-config:/config
     depends_on:
       frontend:
         condition: service_started
@@ -218,10 +218,10 @@ services:
   # Опциональный profile `calls` (ADR-HUB-0028): включается через COMPOSE_PROFILES=calls.
   # Host networking: relay использует широкий UDP-диапазон и реальный внешний IP,
   # публикуется напрямую и не проходит через HTTP reverse proxy. credentials
-  # выдаёт backend по общему CUS_CALL_TURN_SECRET (static-auth-secret).
+  # выдаёт backend по общему CHATBALLS_CALL_TURN_SECRET (static-auth-secret).
   coturn:
     profiles: ["calls"]
-    image: ${CUSTOCRM_COTURN_IMAGE:-coturn/coturn:4.6}
+    image: ${CHATBALLS_COTURN_IMAGE:-coturn/coturn:4.6}
     restart: unless-stopped
     network_mode: host
     command:
@@ -230,24 +230,24 @@ services:
       - --no-cli
       - --fingerprint
       - --use-auth-secret
-      - --static-auth-secret=${CUS_CALL_TURN_SECRET}
-      - --realm=${CUS_CALL_TURN_REALM}
+      - --static-auth-secret=${CHATBALLS_CALL_TURN_SECRET}
+      - --realm=${CHATBALLS_CALL_TURN_REALM}
       # Весь TURN живёт на выделенном публичном IP (отдельный порт/NIC), Caddy — на
       # основном IP. Это освобождает 443 под TURN-over-TLS без конфликта с web.
-      - --listening-ip=${CUS_TURN_LISTENING_IP}
-      - --relay-ip=${CUS_TURN_EXTERNAL_IP}
-      - --external-ip=${CUS_TURN_EXTERNAL_IP}
-      - --listening-port=${CUS_TURN_LISTENING_PORT:-3478}
+      - --listening-ip=${CHATBALLS_TURN_LISTENING_IP}
+      - --relay-ip=${CHATBALLS_TURN_EXTERNAL_IP}
+      - --external-ip=${CHATBALLS_TURN_EXTERNAL_IP}
+      - --listening-port=${CHATBALLS_TURN_LISTENING_PORT:-3478}
       # TURN-over-TLS на 443: проходит через VPN/строгие сети, где UDP и 3478 режут.
-      - --tls-listening-port=${CUS_TURN_TLS_PORT:-443}
+      - --tls-listening-port=${CHATBALLS_TURN_TLS_PORT:-443}
       - --cert=/etc/coturn/certs/fullchain.pem
       - --pkey=/etc/coturn/certs/privkey.pem
-      - --min-port=${CUS_TURN_MIN_PORT:-49160}
+      - --min-port=${CHATBALLS_TURN_MIN_PORT:-49160}
       # Relay-диапазон UDP (1 порт на media-endpoint; ~2 порта на звонок).
       # 49160-49999 = 840 портов ≈ 420 одновременных TURN-звонков на хосте.
-      # Расширяется через CUS_TURN_MIN_PORT/CUS_TURN_MAX_PORT; все порты диапазона
+      # Расширяется через CHATBALLS_TURN_MIN_PORT/CHATBALLS_TURN_MAX_PORT; все порты диапазона
       # должны быть открыты на firewall и не пересекаться с ephemeral-диапазоном ОС.
-      - --max-port=${CUS_TURN_MAX_PORT:-49999}
+      - --max-port=${CHATBALLS_TURN_MAX_PORT:-49999}
       # Запрет анонимного и внутрисетевого relay (SPEC §11: без пересечения с хостом).
       - --no-multicast-peers
       - --no-tcp-relay
@@ -259,10 +259,10 @@ services:
     volumes:
       # LE-сертификат TURN-хоста (turns:), скопированный под uid coturn (nobody)
       # renewal deploy-hook'ом. См. docs по развёртыванию TURN-over-TLS.
-      - ${CUSTOCRM_INSTANCE_DIR:-.}/data/coturn-certs:/etc/coturn/certs:ro
+      - ${CHATBALLS_INSTANCE_DIR:-.}/data/coturn-certs:/etc/coturn/certs:ro
     healthcheck:
       # Allocation smoke: STUN binding к собственному listener на выделенном IP.
-      test: ["CMD", "turnutils_stunclient", "-p", "${CUS_TURN_LISTENING_PORT:-3478}", "${CUS_TURN_LISTENING_IP}"]
+      test: ["CMD", "turnutils_stunclient", "-p", "${CHATBALLS_TURN_LISTENING_PORT:-3478}", "${CHATBALLS_TURN_LISTENING_IP}"]
       interval: 30s
       timeout: 5s
       retries: 5

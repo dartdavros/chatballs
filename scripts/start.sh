@@ -12,8 +12,8 @@ fi
 
 MODE="${1:-cloud}"
 case "$MODE" in
-  cloud) export CUS_DELIVERY_MODE=CLOUD ;;
-  self-hosted) export CUS_DELIVERY_MODE=SELF_HOSTED ;;
+  cloud) export CHATBALLS_DELIVERY_MODE=CLOUD ;;
+  self-hosted) export CHATBALLS_DELIVERY_MODE=SELF_HOSTED ;;
   *) echo "usage: $0 [cloud|self-hosted]" >&2; exit 2 ;;
 esac
 

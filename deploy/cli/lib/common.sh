@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
-# common.sh — shared helpers for the CustoCRM deployment CLI.
+# common.sh — shared helpers for the Chatballs deployment CLI.
 
-CUSTOCRM_NON_INTERACTIVE=0
-CUSTOCRM_JSON=0
+CHATBALLS_NON_INTERACTIVE=0
+CHATBALLS_JSON=0
 
-log() { printf '[custocrm] %s\n' "$*" >&2; }
-log_ok() { printf '[custocrm] OK: %s\n' "$*" >&2; }
-log_warn() { printf '[custocrm] WARN: %s\n' "$*" >&2; }
-log_err() { printf '[custocrm] ERROR: %s\n' "$*" >&2; }
+log() { printf '[chatballs] %s\n' "$*" >&2; }
+log_ok() { printf '[chatballs] OK: %s\n' "$*" >&2; }
+log_warn() { printf '[chatballs] WARN: %s\n' "$*" >&2; }
+log_err() { printf '[chatballs] ERROR: %s\n' "$*" >&2; }
 
 die() {
   local msg="$1"
   local code="${2:-1}"
-  if [[ "$CUSTOCRM_JSON" == "1" ]]; then
+  if [[ "$CHATBALLS_JSON" == "1" ]]; then
     printf '{"status":"error","error":%s}\n' "$(json_escape "$msg")"
   else
     log_err "$msg"
@@ -35,11 +35,11 @@ require_cmd() {
 }
 
 release_dir() {
-  printf '%s' "${CUSTOCRM_RELEASE_DIR:?CUSTOCRM_RELEASE_DIR is not set}"
+  printf '%s' "${CHATBALLS_RELEASE_DIR:?CHATBALLS_RELEASE_DIR is not set}"
 }
 
 instance_dir() {
-  printf '%s' "${CUSTOCRM_INSTANCE_DIR:?CUSTOCRM_INSTANCE_DIR is not set}"
+  printf '%s' "${CHATBALLS_INSTANCE_DIR:?CHATBALLS_INSTANCE_DIR is not set}"
 }
 
 instance_env_file() { printf '%s/.env' "$(instance_dir)"; }
@@ -100,15 +100,15 @@ verify_release_checksums() {
 
 validate_calls_network_boundary() {
   local web_ip turn_ip
-  web_ip="$(env_get "$(instance_env_file)" CUSTOCRM_WEB_LISTENING_IP)"
-  turn_ip="$(env_get "$(instance_env_file)" CUS_TURN_LISTENING_IP)"
+  web_ip="$(env_get "$(instance_env_file)" CHATBALLS_WEB_LISTENING_IP)"
+  turn_ip="$(env_get "$(instance_env_file)" CHATBALLS_TURN_LISTENING_IP)"
 
   [[ -n "$web_ip" ]] || {
-    log_err "CUSTOCRM_WEB_LISTENING_IP is required for calls profile"
+    log_err "CHATBALLS_WEB_LISTENING_IP is required for calls profile"
     return 1
   }
   [[ "$web_ip" != "0.0.0.0" ]] || {
-    log_err "CUSTOCRM_WEB_LISTENING_IP cannot be 0.0.0.0 when calls profile uses TURN TLS on 443"
+    log_err "CHATBALLS_WEB_LISTENING_IP cannot be 0.0.0.0 when calls profile uses TURN TLS on 443"
     return 1
   }
   [[ "$web_ip" != "$turn_ip" ]] || {
@@ -119,12 +119,12 @@ validate_calls_network_boundary() {
 
 release_image_keys() {
   printf '%s\n' \
-    CUSTOCRM_BACKEND_IMAGE \
-    CUSTOCRM_FRONTEND_IMAGE \
-    CUSTOCRM_POSTGRES_IMAGE \
-    CUSTOCRM_REDIS_IMAGE \
-    CUSTOCRM_GATEWAY_IMAGE \
-    CUSTOCRM_COTURN_IMAGE
+    CHATBALLS_BACKEND_IMAGE \
+    CHATBALLS_FRONTEND_IMAGE \
+    CHATBALLS_POSTGRES_IMAGE \
+    CHATBALLS_REDIS_IMAGE \
+    CHATBALLS_GATEWAY_IMAGE \
+    CHATBALLS_COTURN_IMAGE
 }
 
 validate_release_image_refs() {
