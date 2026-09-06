@@ -41,7 +41,7 @@ export function ShellRouteContent({ chatScope, setChatScope, chatCounters, chatS
         />
       )}
       {route === "salesClients" && <SalesClientsPage openClient={openClient} />}
-      {route === "salesClientDetail" && <SalesClientDetailPage contactId={selectedClientId} openConversation={openConversation} />}
+      {route === "salesClientDetail" && <SalesClientDetailPage contactId={selectedClientId} canEdit={hasCapability(user, "customers.manage")} openConversation={openConversation} />}
       {route === "chat" && (
         <ChatPage
           initialConversationId={selectedConversationId}

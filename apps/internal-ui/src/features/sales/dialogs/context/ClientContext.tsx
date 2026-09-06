@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Icon } from "../../../../shared/icons";
 import { providerMeta } from "../../../../shared/providers";
 import { ContactAvatar } from "../../../conversations/ContactAvatar";
+import { ContactEditForm } from "../../../conversations/ContactEditForm";
 import { DialogControls } from "../../../conversations/DialogControls";
 import { requestContact, updateContactCard, type ApiConversation } from "../../../conversations/model";
 import type { ConversationListItem } from "../../../conversations/types";
@@ -89,9 +90,8 @@ export function ClientContext({
         </div>
         {editing && detail && contact && applyConversation ? (
           <ContactEditForm
-            conversationId={detail.id}
             initial={{ name: contact.name, description: contact.description ?? "", phone: contact.phone ?? "", company: contact.company ?? "", city: contact.city ?? "" }}
-            onSaved={(updated) => { applyConversation(updated); setEditing(false); }}
+            onSubmit={async (fields) => { applyConversation(await updateContactCard(detail.id, fields)); setEditing(false); }}
             onCancel={() => setEditing(false)}
           />
         ) : (
@@ -156,50 +156,3 @@ function CopyButton({ value }: { value: string }) {
 }
 
 // Правка карточки контакта (карандаш у имени): имя, описание, телефон, компания, город.
-function ContactEditForm({
-  conversationId,
-  initial,
-  onSaved,
-  onCancel,
-}: {
-  conversationId: number;
-  initial: { name: string; description: string; phone: string; company: string; city: string };
-  onSaved: (updated: ApiConversation) => void;
-  onCancel: () => void;
-}) {
-  const [form, setForm] = useState(initial);
-  const [saving, setSaving] = useState(false);
-  const [errorText, setErrorText] = useState("");
-  const set = (key: keyof typeof form) => (event: { target: { value: string } }) => setForm((prev) => ({ ...prev, [key]: event.target.value }));
-
-  async function save() {
-    if (!form.name.trim()) {
-      setErrorText("Имя не может быть пустым");
-      return;
-    }
-    setSaving(true);
-    setErrorText("");
-    try {
-      onSaved(await updateContactCard(conversationId, form));
-    } catch (error) {
-      setErrorText(error instanceof Error ? error.message : "Не удалось сохранить");
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  return (
-    <form className="ctx-contact-edit" onSubmit={(event) => { event.preventDefault(); void save(); }}>
-      <input value={form.name} onChange={set("name")} placeholder="Имя" aria-label="Имя" autoFocus />
-      <textarea value={form.description} onChange={set("description")} placeholder="Описание" aria-label="Описание" rows={2} />
-      <input value={form.phone} onChange={set("phone")} placeholder="Телефон" aria-label="Телефон" />
-      <input value={form.company} onChange={set("company")} placeholder="Компания" aria-label="Компания" />
-      <input value={form.city} onChange={set("city")} placeholder="Город" aria-label="Город" />
-      {errorText && <p className="ctx-error">{errorText}</p>}
-      <div className="ctx-note-actions">
-        <button type="button" onClick={onCancel} disabled={saving}>Отмена</button>
-        <button type="submit" className="primary" disabled={saving}>Сохранить</button>
-      </div>
-    </form>
-  );
-}

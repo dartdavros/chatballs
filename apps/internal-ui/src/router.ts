@@ -26,7 +26,11 @@ export function routeFromPath(pathname: string, search = ""): RouteState {
   }
   // Устаревший «Обзор поддержки» ведёт на «Доску».
   if (path === "/departments/support") return { route: "supportPortals", ...state };
-  if (path === "/departments/sales/clients") return { route: "salesClients", ...state };
+  if (path === "/contacts" || path === "/departments/sales/clients") return { route: "salesClients", ...state };
+  if (path.startsWith("/contacts/")) {
+    const id = Number(path.slice("/contacts/".length));
+    return Number.isInteger(id) && id > 0 ? { ...state, route: "salesClientDetail", clientId: id } : { route: "salesClients", ...state };
+  }
   if (path.startsWith("/departments/sales/clients/")) {
     const id = Number(path.split("/")[4]);
     return Number.isInteger(id) && id > 0 ? { ...state, route: "salesClientDetail", clientId: id } : { route: "salesClients", ...state };
@@ -36,7 +40,11 @@ export function routeFromPath(pathname: string, search = ""): RouteState {
     const id = Number(path.split("/")[2]);
     return Number.isInteger(id) && id > 0 ? { ...state, route: "employeeDetail", employeeId: id } : { route: "employees", ...state };
   }
-  if (path === "/departments/support/portals") return { route: "supportPortals", ...state };
+  if (path === "/portals" || path === "/departments/support/portals") return { route: "supportPortals", ...state };
+  if (path.startsWith("/portals/")) {
+    const id = Number(path.slice("/portals/".length));
+    return Number.isInteger(id) && id > 0 ? { ...state, route: "supportPortalDetail", supportPortalId: id } : { route: "supportPortals", ...state };
+  }
   if (path.startsWith("/departments/support/portals/")) {
     const id = Number(path.split("/")[4]);
     return Number.isInteger(id) && id > 0 ? { ...state, route: "supportPortalDetail", supportPortalId: id } : { route: "supportPortals", ...state };
@@ -77,13 +85,13 @@ export function routeFromPath(pathname: string, search = ""): RouteState {
 
 export function pathFromRoute(route: RouteKey, entityId: number | null = null, productCode: string | null = null, organizationPublicId: string | null = null): string {
   const prefix = organizationPublicId ? `/organizations/${organizationPublicId}` : "";
-  if (route === "salesClients") return `${prefix}/departments/sales/clients`;
-  if (route === "salesClientDetail") return entityId ? `${prefix}/departments/sales/clients/${entityId}` : `${prefix}/departments/sales/clients`;
+  if (route === "salesClients") return `${prefix}/contacts`;
+  if (route === "salesClientDetail") return entityId ? `${prefix}/contacts/${entityId}` : `${prefix}/contacts`;
   if (route === "chat") return `${prefix}/chat`;
   if (route === "employees") return `${prefix}/employees`;
   if (route === "employeeDetail") return entityId ? `${prefix}/employees/${entityId}` : `${prefix}/employees`;
-  if (route === "supportPortals") return `${prefix}/departments/support/portals`;
-  if (route === "supportPortalDetail") return entityId ? `${prefix}/departments/support/portals/${entityId}` : `${prefix}/departments/support/portals`;
+  if (route === "supportPortals") return `${prefix}/portals`;
+  if (route === "supportPortalDetail") return entityId ? `${prefix}/portals/${entityId}` : `${prefix}/portals`;
   if (route === "agents") return `${prefix}/agents`;
   if (route === "agentDetail") return entityId ? `${prefix}/agents/${entityId}` : `${prefix}/agents`;
   if (route === "aiUsage") return `${prefix}/ai/usage`;

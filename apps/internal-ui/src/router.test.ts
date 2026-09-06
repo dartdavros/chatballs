@@ -19,7 +19,10 @@ describe("sales detail routes", () => {
   });
 
   it("creates a client detail URL", () => {
-    expect(pathFromRoute("salesClientDetail", 15)).toBe("/departments/sales/clients/15");
+    expect(pathFromRoute("salesClientDetail", 15)).toBe("/contacts/15");
+    expect(routeFromPath("/contacts/15")).toEqual({ route: "salesClientDetail", ...empty, clientId: 15 });
+    expect(pathFromRoute("supportPortalDetail", 3)).toBe("/portals/3");
+    expect(routeFromPath("/portals/3")).toEqual({ route: "supportPortalDetail", ...empty, supportPortalId: 3 });
   });
 });
 
@@ -108,8 +111,8 @@ describe("support portal routes", () => {
   });
 
   it("creates support portal URLs", () => {
-    expect(pathFromRoute("supportPortals")).toBe("/departments/support/portals");
-    expect(pathFromRoute("supportPortalDetail", 9)).toBe("/departments/support/portals/9");
+    expect(pathFromRoute("supportPortals")).toBe("/portals");
+    expect(pathFromRoute("supportPortalDetail", 9)).toBe("/portals/9");
   });
 });
 
@@ -127,7 +130,7 @@ describe("organization routes", () => {
 
   it("creates navigation URLs inside the selected organization", () => {
     expect(pathFromRoute("salesClients", null, null, organizationPublicId)).toBe(
-      `/organizations/${organizationPublicId}/departments/sales/clients`,
+      `/organizations/${organizationPublicId}/contacts`,
     );
   });
 });

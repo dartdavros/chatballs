@@ -78,7 +78,7 @@
 .employee-create-profiles > label.selected > button > i { background: var(--primary); border-color: var(--primary); }
 .employee-create-profiles strong,
 .employee-create-profiles small { display: block; }
-.employee-create-profiles strong { font-size: 13px; }
+.employee-create-profiles strong { display: flex; align-items: center; gap: 7px; font-size: 13px; }
 .employee-create-profiles small { margin-top: 2px; overflow: hidden; color: var(--n-4); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
 .employee-create-profiles select { height: 30px; padding: 0 8px; color: var(--n-3); background: var(--surface-card); border: 1px solid var(--n-7); border-radius: 7px; font-size: 11.5px; }
 .employee-create-profiles > p { margin: 5px 0 0; padding: 10px 12px; color: var(--n-4); background: var(--n-10); border: 1px solid var(--n-8); border-radius: 8px; font-size: 11.5px; line-height: 1.45; }

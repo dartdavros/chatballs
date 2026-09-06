@@ -389,7 +389,7 @@ function ModelSection({
     <section className="agent-card-section">
       <header>
         <h3>Модель и провайдер</h3>
-        <span>AI отвечает через провайдера вашей организации — добавьте ключ в разделе «Интеграции»</span>
+        <span>AI отвечает через провайдера вашей организации — ключ добавляется в «Настройках», раздел «AI-провайдер»</span>
       </header>
       <div className="agent-assignment">
         <KeyValue label="Модель" value={<code>{card.model}</code>} />
@@ -482,13 +482,13 @@ function ConnectionsSection({
         <h3>Подключения</h3>
         {canManage && (
           <button className="link has-icon" type="button" onClick={openIntegrations}>
-            Открыть интеграции
+            Открыть настройки
             <Icon name="arrow" size={14} />
           </button>
         )}
       </header>
       {card.connections.length === 0 ? (
-        <p className="agent-muted">Подключений нет. Добавьте Telegram-бота или веб-виджет в разделе «Интеграции» и привяжите к агенту.</p>
+        <p className="agent-muted">Подключений нет. Добавьте бота, почту или веб-виджет в «Настройках», раздел «Интеграции», и привяжите к агенту.</p>
       ) : (
         <div className="agent-connections">
           {card.connections.map((connection) => (

@@ -223,6 +223,25 @@ class CountersTests(ChatExtrasTestCase):
         )
         self.assertEqual(empty_name.status_code, 400)
 
+    def test_contact_card_edit_from_contacts_page(self) -> None:
+        # Карточка в «Контактах»: те же поля, что в чате; правит customers.manage (админ).
+        contact_id = self.conversation.contact_id
+        detail = self.admin_client.get(f"/api/v1/conversations/clients/{contact_id}/").json()["client"]
+        self.assertIn("description", detail)
+        response = self.admin_client.patch(
+            f"/api/v1/conversations/clients/{contact_id}/",
+            {"name": "Иван Петров", "description": "VIP", "company": "Acme", "city": "Тула"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200, response.content)
+        client = response.json()["client"]
+        self.assertEqual(client["name"], "Иван Петров")
+        self.assertEqual(client["company"], "Acme")
+        self.assertEqual(client["city"], "Тула")
+        self.assertEqual(self.admin_client.patch(f"/api/v1/conversations/clients/{contact_id}/", {"name": ""}, format="json").status_code, 400)
+        # Сотрудник без customers.manage — 403.
+        self.assertEqual(self.client.patch(f"/api/v1/conversations/clients/{contact_id}/", {"city": "x"}, format="json").status_code, 403)
+
     def test_directory_lists_all_groups_and_colleagues_for_employee(self) -> None:
         support = EmployeeGroup.objects.create(
             organization=self.organization, name="Поддержка"

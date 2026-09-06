@@ -192,6 +192,10 @@ def client_detail(organization_id: int, contact_id: int) -> dict:
         "name": contact.name or "Гость",
         "phone": contact.phone,
         "avatarUrl": contact.avatar_url,
+        # Поля карточки из чата (описание, компания, город).
+        "description": contact.description,
+        "company": contact.company,
+        "city": contact.city,
         "email": next(
             (
                 identity.external_user_id

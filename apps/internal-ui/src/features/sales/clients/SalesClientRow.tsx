@@ -1,6 +1,7 @@
 import { Dropdown } from "antd";
 
 import { Icon } from "../../../shared/icons";
+import { ContactAvatar } from "../../conversations/ContactAvatar";
 import type { SalesClientRowVm } from "./model";
 
 export function SalesClientRow({ client, menu, openClient, setMenu }: { client: SalesClientRowVm; menu: string | null; openClient: (id: number) => void; setMenu: (menu: string | null) => void }) {
@@ -12,7 +13,7 @@ export function SalesClientRow({ client, menu, openClient, setMenu }: { client: 
     <tr>
       <td>
         <div className="sales-client-person">
-          <div style={{ background: client.avatarBg }}>{client.initials}</div>
+          <ContactAvatar avatarUrl={client.avatarUrl || undefined} initials={client.initials} background={client.avatarBg} className="sales-client-avatar" />
           <span>
             <button className="link" type="button" onClick={() => openClient(client.id)}>{client.name}</button>
             <small>{client.cid}</small>

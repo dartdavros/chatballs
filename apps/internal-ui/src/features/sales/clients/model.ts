@@ -9,6 +9,7 @@ export type SalesClient = {
   id: number;
   name: string;
   initials: string;
+  avatarUrl: string;
   avatarBg: string;
   cid: string;
   phone: string;
@@ -66,6 +67,7 @@ const statusDot = {
 // Реальный контакт с бэкенда (conversations/clients.py).
 export type ApiClient = {
   id: number;
+  avatarUrl?: string;
   cid: string;
   name: string;
   phone: string;
@@ -108,6 +110,7 @@ export function toSalesClient(api: ApiClient): SalesClient {
     id: api.id,
     name: api.name,
     initials: initialsOf(api.name),
+    avatarUrl: api.avatarUrl ?? "",
     avatarBg: isGuest ? "#8c8c8c" : avatarColor(api.cid),
     cid: api.cid,
     phone: api.phone,

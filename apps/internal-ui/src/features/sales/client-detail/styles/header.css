@@ -19,8 +19,21 @@
   flex: none;
   color: #ffffff;
   border-radius: 50%;
+  object-fit: cover;
   font-size: 19px;
   font-weight: 600;
+}
+
+.sales-client-detail-description {
+  margin: 2px 0 6px;
+  color: var(--n-3);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.sales-client-detail-title .ctx-contact-edit {
+  max-width: 520px;
+  margin-top: 0;
 }
 
 .sales-client-detail-title {

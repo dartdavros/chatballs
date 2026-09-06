@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { api } from "../../../api/client";
+import type { ContactCardFields } from "../../conversations/ContactEditForm";
 import { toClientDetailVm, type ApiClientDetail, type ClientDetailVm } from "./model";
 
 export function useClientDetail(contactId: number | null) {
@@ -32,5 +33,11 @@ export function useClientDetail(contactId: number | null) {
     };
   }, [contactId]);
 
-  return { client, loading, error };
+  async function save(fields: ContactCardFields) {
+    if (contactId === null) return;
+    const data = await api<{ client: ApiClientDetail }>(`/api/v1/conversations/clients/${contactId}/`, { method: "PATCH", body: JSON.stringify(fields) });
+    setClient(toClientDetailVm(data.client));
+  }
+
+  return { client, loading, error, save };
 }

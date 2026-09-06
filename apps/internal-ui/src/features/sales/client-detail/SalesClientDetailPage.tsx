@@ -11,16 +11,16 @@ import { SalesClientOverviewTab } from "./SalesClientOverviewTab";
 import { SalesClientTabs } from "./SalesClientTabs";
 import { useClientDetail } from "./useClientDetail";
 
-export function SalesClientDetailPage({ contactId, openConversation }: { contactId: number | null; openConversation: (conversationId: number) => void }) {
+export function SalesClientDetailPage({ contactId, canEdit = false, openConversation }: { contactId: number | null; canEdit?: boolean; openConversation: (conversationId: number) => void }) {
   const [tab, setTab] = useState<ClientDetailTab>("overview");
-  const { client, loading, error } = useClientDetail(contactId);
+  const { client, loading, error, save } = useClientDetail(contactId);
 
   if (loading) return <LoadingState />;
   if (error || !client) return <EmptyState title="Не удалось загрузить контакт" />;
 
   return (
     <>
-      <SalesClientHeader client={client} openConversation={openConversation} />
+      <SalesClientHeader client={client} canEdit={canEdit} openConversation={openConversation} onSave={save} />
       <SalesClientTabs activeTab={tab} setActiveTab={setTab} />
       {tab === "overview" && <SalesClientOverviewTab client={client} openConversation={openConversation} />}
       {tab === "dialogs" && <SalesClientDialogsTab dialogs={client.dialogs} openConversation={openConversation} />}

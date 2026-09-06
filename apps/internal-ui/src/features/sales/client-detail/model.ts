@@ -6,7 +6,7 @@ export const clientDetailTabs: Array<{ key: ClientDetailTab; label: string }> = 
   { key: "overview", label: "Обзор" },
   { key: "dialogs", label: "Диалоги" },
   { key: "ids", label: "Идентификаторы каналов" },
-  { key: "consent", label: "Consent" },
+  { key: "consent", label: "Согласие" },
   { key: "audit", label: "Аудит" },
 ];
 
@@ -17,6 +17,10 @@ export type ApiClientDetail = {
   id: number;
   cid: string;
   name: string;
+  avatarUrl?: string;
+  description?: string;
+  company?: string;
+  city?: string;
   email: string;
   phone: string;
   channels: ClientChannelCode[];
@@ -37,8 +41,13 @@ export type ClientDetailVm = {
   name: string;
   initials: string;
   avatarBg: string;
+  avatarUrl: string;
+  description: string;
+  company: string;
+  city: string;
   email: string;
   phone: string;
+  rawPhone: string;
   channels: Array<{ label: string; color: string; bg: string }>;
   products: Array<{ name: string; color: string; bg: string }>;
   summary: Array<{ label: string; value: string; accent?: boolean; compact?: boolean }>;
@@ -64,8 +73,13 @@ export function toClientDetailVm(api: ApiClientDetail): ClientDetailVm {
     name: api.name,
     initials: initialsOf(api.name),
     avatarBg: isGuest ? "#8c8c8c" : avatarColor(api.cid),
+    avatarUrl: api.avatarUrl ?? "",
+    description: api.description ?? "",
+    company: api.company ?? "",
+    city: api.city ?? "",
     email: api.email || (isGuest ? "без контакта" : "—"),
     phone: api.phone || "—",
+    rawPhone: api.phone ?? "",
     channels: api.channels.map((code) => ({ label: channelMap[code].label, color: channelMap[code].color, bg: channelMap[code].bg })),
     products: api.products.map((product) => ({ name: product.name, ...productStyle(product.code) })),
     summary: [

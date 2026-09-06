@@ -254,7 +254,7 @@
   gap: 11px;
 }
 
-.sales-client-person > div {
+.sales-client-person > .sales-client-avatar {
   width: 34px;
   height: 34px;
   display: flex;
@@ -263,6 +263,7 @@
   flex: none;
   color: #ffffff;
   border-radius: 50%;
+  object-fit: cover;
   font-size: 12px;
   font-weight: 600;
 }
