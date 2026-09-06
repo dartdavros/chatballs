@@ -10,6 +10,7 @@ import {
   type PortalWidgetOption,
   type SupportPortal,
 } from "./model";
+import { PortalAppearanceSettings } from "./PortalAppearanceSettings";
 import { PortalDomainSettings } from "./PortalDomainSettings";
 import { PortalProductSettings } from "./PortalProductSettings";
 import { PortalWidgetSettings } from "./PortalWidgetSettings";
@@ -90,6 +91,11 @@ export function PortalSettings({
         {canManage && <Button variant="primary" disabled={busy} onClick={() => void saveBasics()}>Сохранить настройки</Button>}
       </section>
 
+      <PortalAppearanceSettings
+        canManage={canManage}
+        portal={portal}
+        onChanged={onChanged}
+      />
       <PortalProductSettings
         canManage={canManage}
         widgets={supportWidgets}

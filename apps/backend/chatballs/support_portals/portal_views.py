@@ -21,6 +21,10 @@ from chatballs.support_portals.portal_services import (
     update_portal,
 )
 from chatballs.support_portals.selectors import portal_for_context, portals_for_context
+from chatballs.support_portals.themes import (
+    DEFAULT_PORTAL_THEME,
+    PortalThemeScheme,
+)
 from chatballs.support_portals.serializers import portal_payload
 from chatballs.webchat.models import (
     WebChatWidget,
@@ -89,6 +93,19 @@ def _input(request: Request, current: SupportPortal | None = None) -> PortalInpu
         ),
         widget_id=widget_id,
         widget_channel_id=widget_channel_id,
+        theme=str(
+            request.data.get("theme", current.theme if current else DEFAULT_PORTAL_THEME)
+        ),
+        theme_scheme=str(
+            request.data.get(
+                "themeScheme",
+                current.theme_scheme if current else PortalThemeScheme.LIGHT,
+            )
+        ),
+        theme_settings=request.data.get(
+            "themeSettings",
+            current.theme_settings if current else {},
+        ),
     )
 
 

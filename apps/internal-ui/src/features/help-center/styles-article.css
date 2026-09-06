@@ -9,13 +9,13 @@
   align-items: center;
   gap: 7px;
   overflow: hidden;
-  color: var(--n-3);
+  color: var(--help-text-muted);
   font-size: 14px;
   white-space: nowrap;
 }
 
 .help-breadcrumbs a {
-  color: var(--n-3);
+  color: var(--help-text-muted);
   text-decoration: none;
 }
 
@@ -39,15 +39,16 @@
 
 .help-article > header h1 {
   margin: 0;
+  font-family: var(--help-font-heading);
   font-size: clamp(38px, 4.2vw, 54px);
-  font-weight: 650;
+  font-weight: var(--help-heading-weight);
   letter-spacing: -0.055em;
   line-height: 1.08;
 }
 
 .help-article > header > p {
   margin: 16px 0 0;
-  color: var(--help-muted);
+  color: var(--help-text-muted);
   font-size: 18px;
   line-height: 1.5;
 }
@@ -55,7 +56,7 @@
 .help-article > header time {
   display: block;
   margin-top: 14px;
-  color: var(--n-4);
+  color: var(--help-text-subtle);
   font-size: 14px;
 }
 
@@ -72,7 +73,8 @@
 .help-markdown h6 {
   scroll-margin-top: 28px;
   color: var(--help-ink);
-  font-weight: 650;
+  font-family: var(--help-font-heading);
+  font-weight: var(--help-heading-weight);
   letter-spacing: -0.035em;
   line-height: 1.25;
 }
@@ -123,9 +125,9 @@
 
 .help-markdown code {
   padding: 2px 5px;
-  border-radius: 5px;
-  background: var(--n-9);
-  font-family: var(--font-mono);
+  border-radius: var(--help-radius-xs);
+  background: var(--help-code-inline-bg);
+  font-family: var(--help-font-mono);
   font-size: 0.9em;
 }
 
@@ -133,9 +135,9 @@
   margin: 26px 0;
   padding: 20px;
   overflow: auto;
-  border-radius: 12px;
-  background: var(--n-1);
-  color: var(--n-9);
+  border-radius: var(--help-radius-lg);
+  background: var(--help-code-bg);
+  color: var(--help-code-ink);
 }
 
 .help-markdown pre code {
@@ -146,8 +148,8 @@
 .help-markdown blockquote {
   margin: 26px 0;
   padding: 2px 0 2px 20px;
-  border-left: 3px solid var(--n-6);
-  color: var(--n-3);
+  border-left: 3px solid var(--help-line);
+  color: var(--help-text-muted);
 }
 
 .help-markdown blockquote p:last-child {
@@ -164,14 +166,14 @@
 .help-markdown th,
 .help-markdown td {
   padding: 10px 12px;
-  border: 1px solid var(--n-6);
+  border: 1px solid var(--help-line);
   text-align: left;
   vertical-align: top;
 }
 
 .help-markdown th {
-  background: var(--n-9);
-  font-weight: 650;
+  background: var(--help-surface-soft);
+  font-weight: var(--help-heading-weight);
 }
 
 .help-markdown img {
@@ -179,13 +181,13 @@
   max-width: 100%;
   height: auto;
   margin: 26px 0;
-  border-radius: 12px;
+  border-radius: var(--help-radius-lg);
 }
 
 .help-markdown hr {
   margin: 38px 0;
   border: 0;
-  border-top: 1px solid var(--n-6);
+  border-top: 1px solid var(--help-line);
 }
 
 .help-markdown input[type="checkbox"] {
@@ -202,7 +204,7 @@
   display: block;
   margin-bottom: 14px;
   font-size: 14px;
-  font-weight: 650;
+  font-weight: var(--help-heading-weight);
 }
 
 .help-toc nav {
@@ -211,14 +213,14 @@
 }
 
 .help-toc a {
-  color: var(--n-3);
+  color: var(--help-text-muted);
   font-size: 13px;
   line-height: 1.35;
   text-decoration: none;
 }
 
 .help-toc a:hover {
-  color: var(--n-1);
+  color: var(--help-ink);
 }
 
 .help-toc a.is-nested {
@@ -231,8 +233,8 @@
   margin-top: 68px;
   place-content: center;
   justify-items: center;
-  border-top: 1px solid var(--n-6);
-  border-bottom: 1px solid var(--n-6);
+  border-top: 1px solid var(--help-line);
+  border-bottom: 1px solid var(--help-line);
 }
 
 .help-feedback h2 {
@@ -251,15 +253,15 @@
   width: 48px;
   height: 48px;
   place-items: center;
-  border: 1px solid var(--n-6);
+  border: 1px solid var(--help-line);
   border-radius: 50%;
-  background: var(--surface-card);
-  color: var(--n-2);
+  background: var(--help-surface);
+  color: var(--help-text);
 }
 
 .help-feedback button:hover {
-  border-color: var(--n-1);
-  background: var(--n-9);
+  border-color: var(--help-ink);
+  background: var(--help-surface-soft);
 }
 
 .help-feedback-thanks {
@@ -273,7 +275,7 @@
 }
 
 .help-feedback-thanks span {
-  color: var(--help-muted);
+  color: var(--help-text-muted);
 }
 
 .help-article-loading,
@@ -288,8 +290,8 @@
 
 .help-article-loading i {
   height: 26px;
-  border-radius: 6px;
-  background: var(--n-8);
+  border-radius: var(--help-radius-xs);
+  background: var(--help-skeleton);
 }
 
 .help-article-loading i:first-child {
@@ -306,5 +308,5 @@
 }
 
 .help-article-error a {
-  color: var(--n-2);
+  color: var(--help-text);
 }

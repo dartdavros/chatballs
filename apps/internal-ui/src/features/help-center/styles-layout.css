@@ -3,7 +3,7 @@ html.help-center-document body,
 html.help-center-document #root {
   min-width: 0;
   min-height: 100%;
-  background: var(--surface-card);
+  background: var(--help-bg);
 }
 
 html.help-center-document {
@@ -11,19 +11,17 @@ html.help-center-document {
 }
 
 html.help-center-document body {
-  color: var(--n-1);
-  font-family: Inter, "Segoe UI", Helvetica, Arial, sans-serif;
+  color: var(--help-ink);
+  font-family: var(--help-font-body);
 }
 
+/* Токены темы приходят из themes/contract.css и перекрываются файлом
+   выбранной темы; собственных значений цвета здесь быть не должно. */
 .help-center {
-  --help-ink: var(--n-1);
-  --help-muted: var(--n-3);
-  --help-soft: var(--n-9);
-  --help-line: var(--n-6);
   display: flex;
   min-height: 100vh;
   flex-direction: column;
-  background: var(--surface-card);
+  background: var(--help-bg);
   color: var(--help-ink);
 }
 
@@ -47,8 +45,9 @@ html.help-center-document body {
   align-items: center;
   gap: 12px;
   color: var(--help-ink);
+  font-family: var(--help-font-heading);
   font-size: 22px;
-  font-weight: 650;
+  font-weight: var(--help-heading-weight);
   letter-spacing: -0.03em;
   text-decoration: none;
 }
@@ -58,7 +57,7 @@ html.help-center-document body {
   width: 31px;
   height: 31px;
   place-items: center;
-  color: var(--n-1);
+  color: var(--help-ink);
 }
 
 .help-brand-mark svg {
@@ -73,7 +72,7 @@ html.help-center-document body {
 }
 
 .help-products a {
-  color: var(--n-3);
+  color: var(--help-text-muted);
   font-size: 14px;
   text-underline-offset: 4px;
 }
@@ -87,14 +86,14 @@ html.help-center-document body {
   display: flex;
   height: 65px;
   align-items: center;
-  border-bottom: 1.5px solid var(--n-1);
+  border-bottom: 1.5px solid var(--help-ink);
   transition: border-color 160ms ease;
 }
 
 .help-search > svg {
   position: absolute;
   left: 16px;
-  color: var(--n-2);
+  color: var(--help-text);
   pointer-events: none;
 }
 
@@ -111,12 +110,12 @@ html.help-center-document body {
 }
 
 .help-search input::placeholder {
-  color: var(--n-3);
+  color: var(--help-text-muted);
   opacity: 1;
 }
 
 .help-search.is-focused {
-  border-color: var(--n-4);
+  border-color: var(--help-text-subtle);
 }
 
 .help-search input::-webkit-search-cancel-button {
@@ -127,8 +126,8 @@ html.help-center-document body {
   width: min(420px, 46vw);
   height: 44px;
   border: 1px solid var(--help-line);
-  border-radius: 999px;
-  background: var(--n-10);
+  border-radius: var(--help-radius-pill);
+  background: var(--help-surface-raised);
 }
 
 .help-search.is-compact > svg {
@@ -146,7 +145,7 @@ html.help-center-document body {
   align-items: center;
   justify-content: space-between;
   padding-bottom: 28px;
-  border-bottom: 1px solid var(--n-7);
+  border-bottom: 1px solid var(--help-line-soft);
 }
 
 .help-center.has-compact-header .help-header-row {
@@ -160,8 +159,8 @@ html.help-center-document body {
   padding: 34px 0 42px;
   align-items: center;
   justify-content: space-between;
-  border-top: 1px solid var(--n-7);
-  color: var(--help-muted);
+  border-top: 1px solid var(--help-line-soft);
+  color: var(--help-text-muted);
   font-size: 14px;
 }
 
@@ -195,26 +194,26 @@ html.help-center-document body {
   margin-left: auto;
   place-items: center;
   border: 0;
-  border-radius: 18px;
-  background: var(--n-1);
-  box-shadow: var(--shadow-lg);
-  color: var(--surface-card);
+  border-radius: var(--help-radius-2xl);
+  background: var(--help-accent);
+  box-shadow: var(--help-shadow-panel);
+  color: var(--help-accent-ink);
   transition: transform 160ms ease, background 160ms ease;
 }
 
 .help-support-button:hover {
   transform: translateY(-2px);
-  background: #000;
+  background: var(--help-accent-hover);
 }
 
 .help-support-panel {
   width: 310px;
   margin-bottom: 12px;
   padding: 22px;
-  border: 1px solid var(--n-7);
-  border-radius: 16px;
-  background: var(--surface-card);
-  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--help-line-soft);
+  border-radius: var(--help-radius-xl);
+  background: var(--help-surface);
+  box-shadow: var(--help-shadow-panel);
 }
 
 .help-support-panel > strong {
@@ -224,7 +223,7 @@ html.help-center-document body {
 
 .help-support-panel > p {
   margin: 8px 0 18px;
-  color: var(--help-muted);
+  color: var(--help-text-muted);
   font-size: 14px;
   line-height: 1.45;
 }
@@ -239,14 +238,14 @@ html.help-center-document body {
   padding: 12px 13px;
   align-items: center;
   justify-content: space-between;
-  border-radius: 10px;
-  background: var(--n-9);
+  border-radius: var(--help-radius-md);
+  background: var(--help-surface-soft);
   color: var(--help-ink);
   text-decoration: none;
 }
 
 .help-support-products a:hover {
-  background: var(--n-7);
+  background: var(--help-surface-strong);
 }
 
 .help-support-products span {
@@ -254,7 +253,7 @@ html.help-center-document body {
 }
 
 .help-support-products small {
-  color: var(--help-muted);
+  color: var(--help-text-muted);
 }
 
 .help-fatal,
@@ -264,8 +263,8 @@ html.help-center-document body {
   place-content: center;
   justify-items: center;
   gap: 10px;
-  background: var(--surface-card);
-  color: var(--n-1);
+  background: var(--help-bg);
+  color: var(--help-ink);
 }
 
 .help-fatal strong {
@@ -273,7 +272,7 @@ html.help-center-document body {
 }
 
 .help-fatal span {
-  color: var(--n-3);
+  color: var(--help-text-muted);
 }
 
 .help-boot-loading {
@@ -284,7 +283,7 @@ html.help-center-document body {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--n-1);
+  background: var(--help-ink);
   animation: helpPulse 900ms ease-in-out infinite alternate;
 }
 

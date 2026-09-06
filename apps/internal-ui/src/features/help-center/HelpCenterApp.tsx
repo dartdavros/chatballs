@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { fetchHelpManifest } from "./api";
 import { HelpArticle } from "./HelpArticle";
 import { HelpHome } from "./HelpHome";
+import { usePortalTheme } from "./themes/usePortalTheme";
 import type { HelpManifest } from "./types";
 import "./styles-layout.css";
 import "./styles-home.css";
@@ -24,6 +25,12 @@ export function HelpCenterApp() {
   const route = useMemo(currentRoute, []);
   const [manifest, setManifest] = useState<HelpManifest | null>(null);
   const [failed, setFailed] = useState(false);
+  // Тема применяется до первого кадра контента, иначе портал моргнёт
+  // базовым оформлением (SPEC-HUB-0028 §6).
+  const themeReady = usePortalTheme(
+    manifest ? manifest.portal.theme : null,
+    manifest ? manifest.portal.themeScheme : "LIGHT",
+  );
 
   useEffect(() => {
     if (!route) {
@@ -43,7 +50,7 @@ export function HelpCenterApp() {
       </main>
     );
   }
-  if (!manifest) {
+  if (!manifest || !themeReady) {
     return <main className="help-boot-loading"><i /><i /><i /></main>;
   }
   return route.articleSlug

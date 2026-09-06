@@ -6,6 +6,10 @@ from django.db import models
 
 from chatballs.tenancy.models import TenantRelationModel
 from chatballs.support_portals.statuses import ArticleStatus, PortalStatus
+from chatballs.support_portals.themes import (
+    DEFAULT_PORTAL_THEME,
+    PortalThemeScheme,
+)
 
 
 class SupportPortal(TenantRelationModel):
@@ -27,6 +31,16 @@ class SupportPortal(TenantRelationModel):
         choices=PortalStatus.choices,
         default=PortalStatus.DRAFT,
     )
+    # Тема хранится идентификатором из каталога фронтенда (ADR-HUB-0044):
+    # список тем в БД не фиксируется, неизвестное значение деградирует до
+    # темы по умолчанию при рендере публичной страницы.
+    theme = models.CharField(max_length=64, default=DEFAULT_PORTAL_THEME)
+    theme_scheme = models.CharField(
+        max_length=16,
+        choices=PortalThemeScheme.choices,
+        default=PortalThemeScheme.LIGHT,
+    )
+    theme_settings = models.JSONField(default=dict, blank=True)
     transition_version = models.PositiveIntegerField(default=0)
     published_at = models.DateTimeField(null=True, blank=True)
     widget_channel = models.ForeignKey(
@@ -59,6 +73,10 @@ class SupportPortal(TenantRelationModel):
                 condition=models.Q(status__in=PortalStatus.values),
                 name="support_portal_status_valid",
             ),
+            models.CheckConstraint(
+                condition=models.Q(theme_scheme__in=PortalThemeScheme.values),
+                name="support_portal_theme_scheme_valid",
+            ),
             models.UniqueConstraint(
                 fields=["custom_domain"],
                 condition=~models.Q(custom_domain=""),
@@ -72,9 +90,15 @@ class SupportPortal(TenantRelationModel):
     def clean(self) -> None:
         super().clean()
         from chatballs.support_portals.addressing import clean_portal_domains
+        from chatballs.support_portals.themes import (
+            validate_theme,
+            validate_theme_settings,
+        )
         from chatballs.support_portals.widget_validation import validate_portal_widget
 
         clean_portal_domains(self)
+        validate_theme(self.theme)
+        self.theme_settings = validate_theme_settings(self.theme_settings)
         validate_portal_widget(self)
 
 

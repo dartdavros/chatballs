@@ -13,6 +13,14 @@ from chatballs.support_portals.models import (
     SupportPortalProduct,
 )
 from chatballs.support_portals.statuses import PortalStatus
+from chatballs.support_portals.themes import (
+    DEFAULT_PORTAL_THEME,
+    PortalThemeScheme,
+    normalize_theme,
+    normalize_theme_scheme,
+    validate_theme_scheme,
+    validate_theme_settings,
+)
 from chatballs.tenancy.context import TenantContext
 from chatballs.webchat.models import (
     WebChatWidget,
@@ -28,6 +36,15 @@ class PortalInput:
     default_locale: str = "ru"
     widget_id: int | None = None
     widget_channel_id: int | None = None
+    theme: str = DEFAULT_PORTAL_THEME
+    theme_scheme: str = PortalThemeScheme.LIGHT
+    theme_settings: dict | None = None
+
+
+def _theme_scheme(value: str | None) -> str:
+    scheme = normalize_theme_scheme(value)
+    validate_theme_scheme(scheme)
+    return scheme
 
 
 @transaction.atomic
@@ -39,6 +56,9 @@ def create_portal(*, context: TenantContext, data: PortalInput) -> SupportPortal
         hosted_domain=hosted_domain(data.slug.strip().lower()),
         name=data.name.strip(),
         default_locale=data.default_locale.strip().lower() or "ru",
+        theme=normalize_theme(data.theme),
+        theme_scheme=_theme_scheme(data.theme_scheme),
+        theme_settings=validate_theme_settings(data.theme_settings),
         widget=widget,
         widget_channel=widget.integration.channel if widget else None,
     )
@@ -57,6 +77,9 @@ def update_portal(
     portal.hosted_domain = hosted_domain(portal.slug)
     portal.name = data.name.strip()
     portal.default_locale = data.default_locale.strip().lower() or "ru"
+    portal.theme = normalize_theme(data.theme)
+    portal.theme_scheme = _theme_scheme(data.theme_scheme)
+    portal.theme_settings = validate_theme_settings(data.theme_settings)
     widget = _widget(context, data.widget_id, data.widget_channel_id)
     portal.widget = widget
     portal.widget_channel = widget.integration.channel if widget else None

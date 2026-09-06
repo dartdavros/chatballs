@@ -1,0 +1,67 @@
+/* Контракт токенов темы портала (SPEC-HUB-0028 §6, ADR-HUB-0044).
+
+   Здесь заданы значения по умолчанию — ровно текущий вид Help Center. Тема
+   переопределяет нужные токены в своём файле themes/<id>/theme.css под
+   селектором html[data-portal-theme="<id>"]; всё, что тема не тронула,
+   продолжает работать из этого файла. Вёрстка Help Center читает ТОЛЬКО
+   токены из этого списка — никаких --n-*, --surface-* в help-CSS быть не
+   должно, иначе тема не сможет их перекрыть. */
+
+:root {
+  /* Типографика */
+  --help-font-body: Inter, "Segoe UI", Helvetica, Arial, sans-serif;
+  --help-font-heading: var(--help-font-body);
+  --help-font-mono: var(--font-mono);
+  --help-heading-weight: 650;
+
+  /* Поверхности */
+  --help-bg: var(--surface-card);
+  --help-surface: var(--surface-card);
+  --help-surface-soft: var(--n-9);
+  --help-surface-raised: var(--n-10);
+  --help-surface-strong: var(--n-7);
+  --help-skeleton: var(--n-8);
+
+  /* Текст */
+  --help-ink: var(--n-1);
+  --help-text: var(--n-2);
+  --help-text-muted: var(--n-3);
+  --help-text-subtle: var(--n-4);
+
+  /* Линии */
+  --help-line: var(--n-6);
+  --help-line-soft: var(--n-7);
+
+  /* Акцент — фон иконок разделов и кнопки поддержки. В базовой теме это
+     чернильный цвет, тема может сделать его цветным. */
+  --help-accent: var(--n-1);
+  --help-accent-hover: color-mix(in srgb, var(--help-accent) 85%, black);
+  --help-accent-ink: var(--surface-card);
+
+  /* Блок кода */
+  --help-code-bg: var(--n-1);
+  --help-code-ink: var(--n-9);
+  --help-code-inline-bg: var(--n-9);
+
+  /* Скругления: xs — инлайн-код, sm — иконка раздела, md — строки списка,
+     lg — карточки, блоки кода и картинки, xl — панель поддержки,
+     2xl — плавающая кнопка поддержки. */
+  --help-radius-xs: 5px;
+  --help-radius-sm: 7px;
+  --help-radius-md: 10px;
+  --help-radius-lg: 12px;
+  --help-radius-xl: 16px;
+  --help-radius-2xl: 18px;
+  --help-radius-pill: 999px;
+
+  /* Тень всплывающих панелей */
+  --help-shadow-panel: var(--shadow-lg);
+}
+
+/* Тёмная схема базовых значений. Нейтрали --n-* хаб уже переключает по
+   data-theme, поэтому здесь правятся только токены, которым инверсия
+   нейтралей не подходит. */
+html[data-theme="dark"] {
+  --help-code-bg: var(--n-10);
+  --help-code-ink: var(--n-1);
+}

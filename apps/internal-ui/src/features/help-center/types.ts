@@ -1,3 +1,5 @@
+import type { PortalThemeSchemeSetting } from "./themes/types";
+
 export type HelpProduct = {
   code: string;
   name: string;
@@ -39,6 +41,9 @@ export type HelpPortal = {
   slug: string;
   name: string;
   defaultLocale: string;
+  theme: string;
+  themeScheme: PortalThemeSchemeSetting;
+  themeSettings: Record<string, string>;
   webWidgetKey: string | null;
   webWidgetChannelCode: string | null;
   products: HelpProduct[];

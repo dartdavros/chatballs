@@ -1,4 +1,5 @@
 import { ApiError } from "../../api/client";
+import type { PortalThemeSchemeSetting } from "../help-center/themes/types";
 
 export type PortalStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
 export type ArticleStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
@@ -48,6 +49,9 @@ export type SupportPortal = {
   publicUrl: string;
   name: string;
   defaultLocale: string;
+  theme: string;
+  themeScheme: PortalThemeSchemeSetting;
+  themeSettings: Record<string, string>;
   status: PortalStatus;
   publishedAt: string | null;
   widgetId: number | null;
@@ -97,6 +101,9 @@ export type PortalInput = {
   name: string;
   defaultLocale: string;
   widgetId?: number | null;
+  theme?: string;
+  themeScheme?: PortalThemeSchemeSetting;
+  themeSettings?: Record<string, string>;
 };
 
 export type PortalAddressConfig = {

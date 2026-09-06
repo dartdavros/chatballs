@@ -22,15 +22,15 @@
   align-items: flex-start;
   gap: 16px;
   border: 0;
-  border-radius: 12px;
-  background: var(--surface-card);
+  border-radius: var(--help-radius-lg);
+  background: var(--help-surface);
   color: var(--help-ink);
   text-align: left;
   transition: background 150ms ease, transform 150ms ease;
 }
 
 .help-category-grid > button:hover {
-  background: var(--n-9);
+  background: var(--help-surface-soft);
   transform: translateY(-1px);
 }
 
@@ -40,9 +40,9 @@
   height: 64px;
   flex: 0 0 64px;
   place-items: center;
-  border-radius: 7px;
-  background: var(--n-1);
-  color: var(--surface-card);
+  border-radius: var(--help-radius-sm);
+  background: var(--help-accent);
+  color: var(--help-accent-ink);
 }
 
 .help-category-copy {
@@ -53,8 +53,9 @@
 .help-category-copy strong {
   display: block;
   margin: 0 0 5px;
+  font-family: var(--help-font-heading);
   font-size: 19px;
-  font-weight: 650;
+  font-weight: var(--help-heading-weight);
   letter-spacing: -0.025em;
   line-height: 1.3;
 }
@@ -63,7 +64,7 @@
   display: -webkit-box;
   margin: 0 0 8px;
   overflow: hidden;
-  color: var(--help-muted);
+  color: var(--help-text-muted);
   font-size: 14px;
   line-height: 1.4;
   -webkit-box-orient: vertical;
@@ -71,7 +72,7 @@
 }
 
 .help-category-copy small {
-  color: var(--n-4);
+  color: var(--help-text-subtle);
   font-size: 12px;
 }
 
@@ -86,28 +87,29 @@
 .help-results-heading span {
   display: block;
   margin-bottom: 7px;
-  color: var(--help-muted);
+  color: var(--help-text-muted);
   font-size: 14px;
 }
 
 .help-results-heading h1 {
   margin: 0;
+  font-family: var(--help-font-heading);
   font-size: clamp(28px, 3.4vw, 42px);
-  font-weight: 650;
+  font-weight: var(--help-heading-weight);
   letter-spacing: -0.045em;
 }
 
 .help-results-heading button {
   padding: 8px 0;
   border: 0;
-  border-bottom: 1px solid var(--n-4);
+  border-bottom: 1px solid var(--help-text-subtle);
   background: transparent;
   color: var(--help-ink);
   font-size: 14px;
 }
 
 .help-article-results {
-  border-top: 1px solid var(--n-6);
+  border-top: 1px solid var(--help-line);
 }
 
 .help-article-results > a {
@@ -115,7 +117,7 @@
   display: block;
   min-height: 128px;
   padding: 24px 52px 24px 4px;
-  border-bottom: 1px solid var(--n-7);
+  border-bottom: 1px solid var(--help-line-soft);
   color: var(--help-ink);
   text-decoration: none;
   transition: padding-left 150ms ease;
@@ -128,7 +130,7 @@
 .help-article-results > a > span {
   display: block;
   margin-bottom: 6px;
-  color: var(--help-muted);
+  color: var(--help-text-muted);
   font-size: 13px;
 }
 
@@ -140,7 +142,7 @@
 
 .help-article-results > a > p {
   margin: 7px 0 0;
-  color: var(--help-muted);
+  color: var(--help-text-muted);
   line-height: 1.45;
 }
 
@@ -155,10 +157,10 @@
   display: block;
   margin: 24px auto 0;
   padding: 9px 18px;
-  border: 1px solid var(--n-6);
-  border-radius: 999px;
+  border: 1px solid var(--help-line);
+  border-radius: var(--help-radius-pill);
   color: var(--help-ink);
-  background: var(--surface-card);
+  background: var(--help-surface);
   font: inherit;
   cursor: pointer;
 }
@@ -173,8 +175,8 @@
   place-content: center;
   justify-items: center;
   gap: 7px;
-  border-top: 1px solid var(--n-6);
-  border-bottom: 1px solid var(--n-6);
+  border-top: 1px solid var(--help-line);
+  border-bottom: 1px solid var(--help-line);
 }
 
 .help-empty strong {
@@ -182,7 +184,7 @@
 }
 
 .help-empty span {
-  color: var(--help-muted);
+  color: var(--help-text-muted);
 }
 
 .help-loading-lines {
@@ -193,8 +195,13 @@
 
 .help-loading-lines i {
   height: 74px;
-  border-radius: 8px;
-  background: linear-gradient(90deg, var(--n-9), var(--n-10), var(--n-9));
+  border-radius: var(--help-radius-sm);
+  background: linear-gradient(
+    90deg,
+    var(--help-surface-soft),
+    var(--help-surface-raised),
+    var(--help-surface-soft)
+  );
   background-size: 200% 100%;
   animation: helpShimmer 1.2s linear infinite;
 }
