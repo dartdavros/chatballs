@@ -180,3 +180,55 @@ button:disabled {
     transform: translateY(-2px);
   }
 }
+
+/* Загрузчик-логотип: круги расходятся из центра и сходятся обратно,
+   перемычка растёт между ними. Единицы — координаты viewBox (0–100). */
+.logo-spinner {
+  display: inline-block;
+  flex: none;
+}
+
+.logo-spinner-left,
+.logo-spinner-right,
+.logo-spinner-bridge {
+  animation: 2.2s ease-in-out infinite;
+}
+
+.logo-spinner-left {
+  animation-name: logo-spinner-left;
+}
+
+.logo-spinner-right {
+  animation-name: logo-spinner-right;
+}
+
+.logo-spinner-bridge {
+  transform-origin: 50px 50px;
+  animation-name: logo-spinner-bridge;
+}
+
+@keyframes logo-spinner-left {
+  0%, 100% { transform: translateX(21px); }
+  40%, 55% { transform: translateX(0); }
+  95% { transform: translateX(21px); }
+}
+
+@keyframes logo-spinner-right {
+  0%, 100% { transform: translateX(-21px); }
+  40%, 55% { transform: translateX(0); }
+  95% { transform: translateX(-21px); }
+}
+
+@keyframes logo-spinner-bridge {
+  0%, 100% { transform: scaleX(0); }
+  40%, 55% { transform: scaleX(1); }
+  95% { transform: scaleX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo-spinner-left,
+  .logo-spinner-right,
+  .logo-spinner-bridge {
+    animation: none;
+  }
+}

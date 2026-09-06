@@ -21,6 +21,28 @@ export function LogoIcon({ size = 17 }: { size?: number }) {
   );
 }
 
+// Загрузчик: логотип «дышит» — один круг делится на два с перемычкой и
+// сходится обратно (CSS-анимация, зациклено; стили в base.css). Ставится
+// везде вместо текста «Загрузка…».
+export function LogoSpinner({ size = 28, className = "" }: { size?: number; className?: string }) {
+  return (
+    <svg className={`logo-spinner ${className}`.trim()} viewBox="0 0 100 100" width={size} height={size} fill="currentColor" role="status" aria-label="Загрузка">
+      <defs>
+        <mask id="chatballs-logo-spinner-mask">
+          <rect width="100" height="100" fill="white" />
+          <circle cx="50" cy="24.54" r="9" fill="black" />
+          <circle cx="50" cy="75.46" r="9" fill="black" />
+        </mask>
+      </defs>
+      <g mask="url(#chatballs-logo-spinner-mask)">
+        <circle className="logo-spinner-left" cx="29" cy="50" r="24" />
+        <circle className="logo-spinner-right" cx="71" cy="50" r="24" />
+        <rect className="logo-spinner-bridge" x="44.2" y="31.4" width="11.6" height="37.2" />
+      </g>
+    </svg>
+  );
+}
+
 export function ShieldIcon() {
   return (
     <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -48,7 +70,7 @@ export function MaxLogo({ size = 24 }: { size?: number }) {
   );
 }
 
-export function Icon({ name, size = 17 }: { name: "grid" | "building" | "team" | "box" | "robot" | "plug" | "settings" | "bell" | "chevron" | "plus" | "arrow" | "paperclip" | "send" | "phone" | "video" | "lock" | "mail" | "eye" | "eyeOff" | "logout" | "user" | "refresh" | "transfer" | "warning" | "bolt" | "shop" | "search" | "more" | "external" | "key" | "pause" | "play" | "percent" | "save" | "check" | "copy" | "clock" | "message" | "inbox" | "cart" | "columns" | "download" | "list" | "split" | "gitBranch" | "route" | "expand" | "edit" | "trash" | "wrench" | "xCircle" | "folder" | "grip" | "reply" | "sort" | "collapseLeft" | "mic" | "text" | "pin" | "smile"; size?: number }) {
+export function Icon({ name, size = 17 }: { name: "grid" | "building" | "team" | "box" | "robot" | "plug" | "settings" | "bell" | "chevron" | "plus" | "arrow" | "paperclip" | "send" | "phone" | "video" | "lock" | "mail" | "eye" | "eyeOff" | "logout" | "user" | "refresh" | "transfer" | "warning" | "bolt" | "shop" | "search" | "more" | "external" | "key" | "pause" | "play" | "percent" | "save" | "check" | "copy" | "clock" | "message" | "inbox" | "cart" | "columns" | "download" | "list" | "split" | "gitBranch" | "route" | "expand" | "edit" | "trash" | "wrench" | "xCircle" | "folder" | "grip" | "reply" | "sort" | "collapseLeft" | "mic" | "text" | "pin" | "smile" | "globe"; size?: number }) {
   const common = { width: size, height: size, fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round", strokeLinejoin: "round" } as const;
   const paths: Record<typeof name, ReactNode> = {
     grid: <><rect x="3" y="3" width="7" height="9" rx="1.4" /><rect x="14" y="3" width="7" height="5" rx="1.4" /><rect x="14" y="12" width="7" height="9" rx="1.4" /><rect x="3" y="16" width="7" height="5" rx="1.4" /></>,
@@ -65,6 +87,7 @@ export function Icon({ name, size = 17 }: { name: "grid" | "building" | "team" |
     bell: <><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></>,
     message: <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z" />,
     cart: <><path d="M2 3h2l2.6 12.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6" /><circle cx="9" cy="20" r="1" /><circle cx="18" cy="20" r="1" /></>,
+    globe: <><circle cx="12" cy="12" r="10" /><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" /><path d="M2 12h20" /></>,
     columns: <><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /></>,
     download: <><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></>,
     list: <><path d="M8 6h10M8 12h10M8 18h10" /><circle cx="4" cy="6" r="1" /><circle cx="4" cy="12" r="1" /><circle cx="4" cy="18" r="1" /></>,

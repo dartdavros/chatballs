@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { Icon } from "../../shared/icons";
+import { Icon, LogoSpinner } from "../../shared/icons";
 import { EmojiPicker } from "./EmojiPicker";
 import { useMediaQuery } from "../../shared/useMediaQuery";
 import { fetchReplyTemplates, sendFileMessage, sendOperatorMessage, sendVoiceMessage, type ReplyTemplateRef } from "./model";
@@ -70,7 +70,7 @@ export function Composer({ mode, loaded, assignedOperatorName, conversationId, c
   }
 
   if (!loaded) {
-    return <div className="sales-composer"><div className="composer-locked"><div><strong>Загрузка диалога…</strong></div></div></div>;
+    return <div className="sales-composer"><div className="composer-locked is-loading"><LogoSpinner size={22} /></div></div>;
   }
 
   // Кадр E: закрытый диалог — композер заменён сообщением о закрытии.

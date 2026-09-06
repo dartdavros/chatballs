@@ -312,8 +312,7 @@
   min-height: 34px;
 }
 
-.loading-state strong {
-  font-size: 13px;
-  font-weight: 600;
+.loading-state .logo-spinner {
+  color: var(--n-4);
 }
 

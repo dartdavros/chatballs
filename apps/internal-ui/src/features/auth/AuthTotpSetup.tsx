@@ -2,7 +2,7 @@ import { type FormEvent, useEffect, useState } from "react";
 
 import { api } from "../../api/client";
 import type { AuthenticatedUser, SessionUser } from "../../types";
-import { Icon } from "../../shared/icons";
+import { Icon, LogoSpinner } from "../../shared/icons";
 import { Button } from "../../shared/ui-controls";
 import { AuthCodeInput } from "./AuthCodeInput";
 import { AuthFrame } from "./AuthFrame";
@@ -60,7 +60,7 @@ export function AuthTotpSetup({ user: _user, onConfirmed }: { user: SessionUser;
         <TotpQr value={otpauthUrl || secret} />
         <p className="auth-secret-caption">Не получается отсканировать? Введите ключ вручную:</p>
         <div className="auth-secret-row">
-          <code>{secret || "Загрузка ключа"}</code>
+          <code>{secret || <LogoSpinner size={16} />}</code>
           <button type="button" onClick={copySecret} title="Скопировать" disabled={!secret}><Icon name={copied ? "check" : "copy"} size={15} /></button>
         </div>
         <div className="auth-totp-divider" />

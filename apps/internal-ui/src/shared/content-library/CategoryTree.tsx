@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { Icon } from "../icons";
+import { Icon, LogoSpinner } from "../icons";
 
 export type ContentCategory = {
   id: number;
@@ -143,7 +143,7 @@ export function CategoryTree({
           <span>{allLabel}</span>
           <b>{total}</b>
         </button>
-        {loading ? <div className="knowledge-category-state">Загрузка…</div>
+        {loading ? <div className="knowledge-category-state"><LogoSpinner size={22} /></div>
           : error ? <div className="knowledge-category-state"><span>Не удалось загрузить категории</span><button type="button" onClick={onRetry}>Повторить</button></div>
             : tree.length === 0 ? <div className="knowledge-category-state">Категорий пока нет</div>
               : <Rows expanded={expanded} level={0} nodes={tree} onSelect={onSelect} selectedId={selectedId} toggle={toggle} />}

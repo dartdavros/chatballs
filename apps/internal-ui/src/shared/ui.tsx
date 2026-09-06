@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 import type { Employee, Product, Role, SessionUser } from "../types";
 import { FormField } from "./form-controls";
-import { Icon } from "./icons";
+import { Icon, LogoSpinner } from "./icons";
 import { Button } from "./ui-controls";
 import { initials, productAccent } from "./utils";
 
@@ -104,7 +104,7 @@ export function EmptyState({ title }: { title: string }) {
 }
 
 export function LoadingState({ variant = "page" }: { variant?: "page" | "inline" }) {
-  return <div className={`loading-state ${variant}`}><strong>Загрузка…</strong></div>;
+  return <div className={`loading-state ${variant}`}><LogoSpinner size={variant === "inline" ? 22 : 32} /></div>;
 }
 
 export function LoadingScreen() {

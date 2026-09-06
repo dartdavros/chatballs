@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { api } from "../../api/client";
+import { LogoSpinner } from "../../shared/icons";
 import { Button } from "../../shared/ui-controls";
 
 type BindingItem = { integrationId: number; provider: "TELEGRAM" | "MAX"; name: string; botUsername: string; bound: boolean; pushTypes: string[] };
@@ -94,7 +95,7 @@ export function ProfileNotificationsCard() {
             ) : links[item.integrationId]?.deepLink ? (
               <a className="profile-notifications-bind" href={links[item.integrationId].deepLink} target="_blank" rel="noreferrer">Привязать бота</a>
             ) : (
-              <span className="profile-notifications-status wait">{loaded ? "Готовим ссылку…" : "Загрузка…"}</span>
+              <span className="profile-notifications-status wait">{loaded ? "Готовим ссылку…" : <LogoSpinner size={16} />}</span>
             )}
           </div>
           {item.bound && types.length > 0 && (

@@ -129,6 +129,11 @@
 }
 
 /* Кадры D, E: композер заменён карточкой-сообщением. */
+.composer-locked.is-loading {
+  justify-content: center;
+  color: var(--n-4);
+}
+
 .composer-locked {
   max-width: 760px;
   display: flex;
