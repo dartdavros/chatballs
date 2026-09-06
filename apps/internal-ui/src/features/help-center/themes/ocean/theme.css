@@ -1,0 +1,143 @@
+/* Тема Ocean — мягкое океаническое оформление публичных страниц портала.
+   Значения по умолчанию — themes/contract.css; здесь только переопределения
+   под собственным скоупом html[data-portal-theme="ocean"]. */
+
+/* Nunito (переменное начертание 400–800), SIL Open Font License 1.1 —
+   fonts/OFL.txt. Файлы лежат в репозитории и раздаются со своего домена:
+   загрузка шрифта со стороннего CDN на публичной странице портала запрещена.
+   Субсеты и unicode-range — как у Google Fonts: браузер тянет только тот
+   файл, символы которого реально встретились на странице. */
+
+@font-face {
+  font-family: "Nunito Portal";
+  src: url("./fonts/nunito-cyrillic-ext.woff2") format("woff2");
+  font-weight: 400 800;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F,
+    U+FE2E-FE2F;
+}
+
+@font-face {
+  font-family: "Nunito Portal";
+  src: url("./fonts/nunito-cyrillic.woff2") format("woff2");
+  font-weight: 400 800;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+
+@font-face {
+  font-family: "Nunito Portal";
+  src: url("./fonts/nunito-latin-ext.woff2") format("woff2");
+  font-weight: 400 800;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7,
+    U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F,
+    U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
+    U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "Nunito Portal";
+  src: url("./fonts/nunito-latin.woff2") format("woff2");
+  font-weight: 400 800;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6,
+    U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122,
+    U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+html[data-portal-theme="ocean"] {
+  /* Типографика: заголовки — скруглённый гротеск, текст остаётся базовым */
+  --help-font-heading: "Nunito Portal", "Segoe UI", Helvetica, Arial, sans-serif;
+  --help-heading-weight: 700;
+
+  /* Поверхности: подложка белая, карточки — едва тонированные в холодный */
+  --help-bg: #ffffff;
+  --help-surface: #f7fbfd;
+  --help-surface-soft: #edf5fa;
+  --help-surface-raised: #ffffff;
+  --help-surface-strong: #e3eff7;
+  --help-skeleton: #e8f1f8;
+
+  /* Текст: чернильный тёмно-синий вместо нейтрального */
+  --help-ink: #10283d;
+  --help-text: #1d425f;
+  --help-text-muted: #56748c;
+  --help-text-subtle: #8aa4b8;
+
+  /* Линии */
+  --help-line: #d3e2ee;
+  --help-line-soft: #e6eff6;
+
+  /* Акцент */
+  --help-accent: #1b5e8f;
+  --help-accent-hover: #17527d;
+  --help-accent-ink: #ffffff;
+
+  /* Код */
+  --help-code-bg: #0d2c44;
+  --help-code-ink: #dceaf4;
+  --help-code-inline-bg: #eaf3f9;
+
+  /* Форма: скругления крупнее базовых */
+  --help-radius-xs: 8px;
+  --help-radius-sm: 12px;
+  --help-radius-md: 14px;
+  --help-radius-lg: 16px;
+  --help-radius-xl: 22px;
+  --help-radius-2xl: 26px;
+
+  --help-shadow-panel: 0 14px 34px rgba(16, 60, 94, 0.16);
+}
+
+/* Тёмная схема — глубокая морская */
+html[data-portal-theme="ocean"][data-theme="dark"] {
+  --help-bg: #0b1b28;
+  --help-surface: #12293a;
+  --help-surface-soft: #17344a;
+  --help-surface-raised: #163044;
+  --help-surface-strong: #1d4159;
+  --help-skeleton: #17313f;
+
+  --help-ink: #e5f0f7;
+  --help-text: #c6dae8;
+  --help-text-muted: #93aec2;
+  --help-text-subtle: #6f8b9f;
+
+  --help-line: #25455c;
+  --help-line-soft: #1c3747;
+
+  --help-accent: #4b9fd0;
+  --help-accent-hover: #62b0dc;
+  --help-accent-ink: #05141f;
+
+  --help-code-bg: #071620;
+  --help-code-ink: #d8e8f2;
+  --help-code-inline-bg: #17313f;
+
+  --help-shadow-panel: 0 14px 34px rgba(0, 0, 0, 0.55);
+}
+
+/* Собственные правила темы — только в своём скоупе */
+
+/* Плитка иконки раздела приподнята мягкой тенью акцента */
+html[data-portal-theme="ocean"] .help-category-icon {
+  box-shadow: 0 6px 16px rgba(27, 94, 143, 0.26);
+}
+
+html[data-portal-theme="ocean"][data-theme="dark"] .help-category-icon {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
+}
+
+/* Мягкий ховер карточки раздела: подложка + тень вместо резкого сдвига */
+html[data-portal-theme="ocean"] .help-category-grid > button {
+  transition: background 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+}
+
+html[data-portal-theme="ocean"] .help-category-grid > button:hover {
+  box-shadow: 0 10px 26px rgba(16, 60, 94, 0.1);
+}
