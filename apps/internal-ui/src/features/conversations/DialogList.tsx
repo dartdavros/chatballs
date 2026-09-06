@@ -1,9 +1,10 @@
 import { Dropdown } from "antd";
-import type { ReactNode, RefObject } from "react";
+import type { CSSProperties, ReactNode, RefObject } from "react";
 
 import { modeDots } from "./data";
 import { ContactAvatar } from "./ContactAvatar";
 import { Icon } from "../../shared/icons";
+import { useResizableWidth } from "../../shared/useResizableWidth";
 import { ChannelGlyph } from "../../shared/badges";
 import { scopeLabel, type DialogScope } from "./ConversationWorkspace";
 import { agentColorOf, groupColorOf } from "./model";
@@ -38,8 +39,11 @@ export function DialogList({ title = "Диалоги", searchPlaceholder = "По
   setSelectedId: (id: number) => void;
 }) {
   const waitCount = dialogs.filter((dialog) => dialog.mode === "wait").length;
+  // Ширина списка: тянется за правый край (280–520px), запоминается в браузере.
+  const listWidth = useResizableWidth("dialogList", { fallback: 323, min: 280, max: 520 });
   return (
-    <section className="sales-dialog-list">
+    <section className={`sales-dialog-list ${listWidth.dragging ? "is-resizing" : ""}`} style={{ "--dialog-list-width": `${listWidth.width}px` } as CSSProperties}>
+      <div className="pane-resizer" role="separator" aria-orientation="vertical" aria-label="Ширина списка диалогов" title="Потяните, двойной клик — сбросить" onPointerDown={listWidth.onPointerDown} onDoubleClick={listWidth.reset} />
       {mobileHeader?.({ total: dialogs.length })}
       <div className="sales-dialog-list-head">
         <div>

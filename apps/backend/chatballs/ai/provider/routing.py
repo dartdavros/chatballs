@@ -60,6 +60,16 @@ def resolve_model(channel, *, fallback_model: str) -> str:
     return str(integration.config.get("default_model") or "").strip() or fallback_model
 
 
+DEFAULT_TRANSCRIPTION_MODEL = "whisper-1"
+
+
+def resolve_transcription_model(channel) -> str:
+    """Модель расшифровки голосовых из настроек AI-провайдера («Настройки →
+    AI-провайдер», поле «Модель расшифровки»); по умолчанию whisper-1."""
+    integration = _channel_integration(channel)
+    return str(integration.config.get("transcription_model") or "").strip() or DEFAULT_TRANSCRIPTION_MODEL
+
+
 def _channel_integration(channel) -> Integration:
     agent = getattr(channel, "ai_agent", None)
     integration = getattr(agent, "provider_integration", None) if agent else None

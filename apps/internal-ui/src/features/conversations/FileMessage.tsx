@@ -1,6 +1,7 @@
-import type React from "react";
+import { useState, type SyntheticEvent } from "react";
 
 import { Icon } from "../../shared/icons";
+import { ImageLightbox } from "./ImageLightbox";
 import { resolveApiUrl } from "../../api/client";
 import { formatSize } from "../ai/knowledge/model";
 import { isImageAttachment, type ApiMessage } from "./model";
@@ -9,13 +10,14 @@ import { isImageAttachment, type ApiMessage } from "./model";
 // карточка с именем, размером и ссылкой «Скачать» (единый `.link`).
 
 // Фото догружается после появления пузыря: лента, прижатая к низу, доезжает до него.
-function scrollFeedToLatest(event: React.SyntheticEvent<HTMLImageElement>) {
+function scrollFeedToLatest(event: SyntheticEvent<HTMLImageElement>) {
   let node: HTMLElement | null = event.currentTarget.parentElement;
   while (node && !(node.scrollHeight > node.clientHeight && /(auto|scroll)/.test(getComputedStyle(node).overflowY))) node = node.parentElement;
   if (node && node.scrollHeight - node.scrollTop - node.clientHeight < 400) node.scrollTop = node.scrollHeight;
 }
 
 export function FileMessage({ message }: { message: ApiMessage }) {
+  const [lightbox, setLightbox] = useState(false);
   const url = message.attachmentUrl ? resolveApiUrl(message.attachmentUrl) : "";
   const name = message.attachmentName || "Файл";
   if (!url) {
@@ -26,9 +28,12 @@ export function FileMessage({ message }: { message: ApiMessage }) {
     <div className={`file-message${image ? " is-image" : ""}`}>
       {image
         ? (
-          <a className="file-message-image" href={`${url}?inline`} target="_blank" rel="noreferrer" title={name}>
-            <img src={`${url}?inline`} alt={name} onLoad={scrollFeedToLatest} />
-          </a>
+          <>
+            <button className="file-message-image" type="button" title={name} onClick={() => setLightbox(true)}>
+              <img src={`${url}?inline`} alt={name} onLoad={scrollFeedToLatest} />
+            </button>
+            <ImageLightbox open={lightbox} url={`${url}?inline`} downloadUrl={url} name={name} size={message.attachmentSize} onClose={() => setLightbox(false)} />
+          </>
         )
         : (
           <div className="file-message-card">

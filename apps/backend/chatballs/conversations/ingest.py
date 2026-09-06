@@ -71,21 +71,24 @@ def _history(conversation: Conversation) -> list[dict]:
 def transcribe_voice_message(channel, message: Message, *, raise_errors: bool = False) -> str:
     """Стенограмма голосового через BYOK-провайдера организации; пустая строка,
     если провайдер не умеет или недоступен (статус FAILED — оператор повторит кнопкой)."""
-    from django.conf import settings
-
     from chatballs.ai.provider.factory import get_provider
+    from chatballs.ai.provider.routing import DEFAULT_TRANSCRIPTION_MODEL, resolve_transcription_model
 
     if not message.audio:
         return ""
     try:
         provider = get_provider(channel=channel)
+        try:
+            model = resolve_transcription_model(channel)
+        except ProviderError:
+            model = DEFAULT_TRANSCRIPTION_MODEL  # тестовый провайдер без интеграции
         with message.audio.open("rb") as handle:
             audio = handle.read()
         transcript = provider.transcribe(
             audio=audio,
             filename=message.audio.name.rsplit("/", 1)[-1],
             content_type=message.audio_content_type or "audio/ogg",
-            model=settings.CHATBALLS_AI_TRANSCRIPTION_MODEL,
+            model=model,
         ).strip()
     except ProviderError as error:
         logger.info("Voice transcription unavailable for message %s: %s", message.id, error)

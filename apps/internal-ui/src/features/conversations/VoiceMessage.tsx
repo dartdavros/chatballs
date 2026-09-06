@@ -117,9 +117,7 @@ export function VoiceMessage({ message: incoming }: { message: ApiMessage }) {
         </p>
       )}
       {message.transcriptStatus === "READY" && !showTranscript && (
-        <button className="link voice-message-show" type="button" onClick={() => setShowTranscript(true)}>
-          Показать расшифровку
-        </button>
+        <span className="voice-message-caption voice-message-show">Расшифровка AI · <button className="link" type="button" onClick={() => setShowTranscript(true)}>Показать</button></span>
       )}
       {errorText && <p className="voice-message-error">{errorText}</p>}
     </div>

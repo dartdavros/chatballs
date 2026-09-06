@@ -168,7 +168,6 @@ CHATBALLS_AI_GLOBAL_DAILY_COST_LIMIT_MICROS = int(
 CHATBALLS_AI_PRICING: dict = {}  # переопределение цен micro-USD/токен по модели
 CHATBALLS_AI_EMBEDDING_MODEL = os.environ.get("CHATBALLS_AI_EMBEDDING_MODEL", "openai/text-embedding-3-small")
 # Модель расшифровки голосовых (OpenAI-совместимый /audio/transcriptions).
-CHATBALLS_AI_TRANSCRIPTION_MODEL = os.environ.get("CHATBALLS_AI_TRANSCRIPTION_MODEL", "whisper-1")
 
 # Managed-провайдер CustoAI удалён (ADR-HUB-0042 §3): AI — только через
 # интеграцию организации (BYOK).

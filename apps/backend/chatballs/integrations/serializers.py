@@ -13,6 +13,7 @@ def integration_payload(integration: Integration) -> dict[str, object]:
         "config": {
             "baseUrl": integration.config.get("base_url", ""),
             "defaultModel": integration.config.get("default_model", ""),
+            "transcriptionModel": integration.config.get("transcription_model", ""),
             "proxyUrl": integration.config.get("proxy_url", ""),
             "botId": integration.config.get("bot_id", ""),
             "botUsername": integration.config.get("bot_username", ""),

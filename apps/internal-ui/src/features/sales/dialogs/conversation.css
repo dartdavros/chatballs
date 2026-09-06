@@ -6,6 +6,26 @@
   flex: 1;
   flex-direction: column;
   background: var(--surface-feed);
+  /* Смена диалога (key по id): короткое появление вместо резкой подмены. */
+  animation: conversation-enter 180ms ease-out;
+}
+
+@keyframes conversation-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sales-conversation {
+    animation: none;
+  }
 }
 
 .sales-conversation-head {

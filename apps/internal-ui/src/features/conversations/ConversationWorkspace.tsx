@@ -259,7 +259,7 @@ export function ConversationWorkspace({ isOwner = false, viewerId = null, listTi
         <section className="sales-conversation"><div className="sales-conversation-empty">Выберите диалог</div></section>
       )}
       {selectedDialog && (
-      <section className="sales-conversation">
+      <section className="sales-conversation" key={selectedDialog.id}>
         {ctxOpen && <button className="ctx-backdrop" type="button" aria-label="Закрыть панель" onClick={() => setCtxOpen(false)} />}
         <ConversationThread controlMode={controlMode} dialog={selectedDialog} detail={detail} isOwner={isOwner} onExpandList={listCollapsed ? () => setListCollapsed(false) : undefined} viewerId={viewerId} onClaim={onClaim} onRelease={onRelease} onClose={onClose} onSpam={onSpam} onReturnQueue={onReturnQueue} onArchive={onArchive} onToggleContext={() => setCtxOpen((open) => !open)} onMobileBack={() => setMobileDialogOpen(false)} />
         {(detailError || actionError) && <div className="sales-conversation-error">{detailError || actionError}</div>}

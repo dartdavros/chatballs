@@ -25,6 +25,7 @@ export type Integration = {
   config: {
     baseUrl: string;
     defaultModel: string;
+    transcriptionModel: string;
     proxyUrl: string;
     botId: string;
     botUsername: string;

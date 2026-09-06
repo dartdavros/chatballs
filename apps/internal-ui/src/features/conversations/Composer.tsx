@@ -22,6 +22,15 @@ export function Composer({ mode, loaded, assignedOperatorName, conversationId, c
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Поле растёт под текст, как в мессенджере: до 7 строк, дальше скролл.
+  // Композер прижат к низу ленты, поэтому рост идёт вверх.
+  useEffect(() => {
+    const node = textareaRef.current;
+    if (!node) return;
+    node.style.height = "auto";
+    node.style.height = node.scrollHeight > 0 ? `${node.scrollHeight}px` : "";
+  }, [text, attachment]);
+
   // Сброс черновика вложения при смене диалога.
   useEffect(() => { setAttachment(null); setSendError(""); }, [conversationId]);
 

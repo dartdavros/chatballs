@@ -109,6 +109,10 @@ def _normalized_config(provider: str, config: dict) -> dict:
             result["default_model"] = default_model
         elif provider == IntegrationProvider.DEMO:
             result["default_model"] = "demo"
+        # Модель расшифровки голосовых (POST /audio/transcriptions); пусто — whisper-1.
+        transcription_model = str(config.get("transcriptionModel", config.get("transcription_model", ""))).strip()
+        if transcription_model:
+            result["transcription_model"] = transcription_model
     else:
         # Мессенджер-подключения (MAX/Telegram/Web): идентификатор бота.
         bot_username = str(config.get("botUsername", config.get("bot_username", ""))).strip()

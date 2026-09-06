@@ -22,7 +22,6 @@ export function ChatMobileHeader({ user, scope, total, setRoute, onLogout, onOpe
   const [open, setOpen] = useState(false);
   const menuItems = [
     { key: "profile", label: <button type="button" onClick={() => setRoute("profile")}><Icon name="user" size={15} />Профиль</button> },
-    { key: "settings", label: <button type="button" onClick={() => setRoute("settings")}><Icon name="settings" size={15} />Настройки</button> },
     { type: "divider" as const },
     { key: "logout", label: <button type="button" className="danger" onClick={onLogout}><Icon name="logout" size={15} />Выйти</button> },
   ];

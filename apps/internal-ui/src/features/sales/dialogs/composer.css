@@ -38,9 +38,11 @@
 }
 
 .composer-box textarea {
+  display: block;
   width: 100%;
   min-height: 52px;
-  max-height: 160px;
+  /* До 7 строк (line-height 1.4 × 13.5px ≈ 19px + отступы), дальше — скролл. */
+  max-height: 151px;
   padding: 12px 14px 6px;
   border: 0;
   outline: 0;
@@ -376,8 +378,102 @@
 .file-message-image {
   display: block;
   max-width: 320px;
+  padding: 0;
+  border: 0;
   border-radius: 10px;
+  background: transparent;
   overflow: hidden;
+  cursor: zoom-in;
+}
+
+/* Попап фото: тёмная сцена, шапка с именем, размером и «Скачать». */
+.image-lightbox .ant-modal-content {
+  padding: 0;
+  overflow: hidden;
+  border-radius: 16px;
+  background: var(--n-1);
+  color: #fff;
+}
+
+.image-lightbox-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px 12px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.image-lightbox-meta {
+  display: flex;
+  flex: 1;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.image-lightbox-meta strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.image-lightbox-meta small {
+  flex: none;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 12px;
+}
+
+.image-lightbox-download {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.image-lightbox-download:hover {
+  background: var(--primary-hover);
+  color: #fff;
+}
+
+.image-lightbox-close {
+  display: inline-flex;
+  padding: 6px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.image-lightbox-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.image-lightbox-body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 240px;
+  max-height: 82vh;
+  padding: 16px;
+  cursor: zoom-out;
+}
+
+.image-lightbox-body img {
+  max-width: 100%;
+  max-height: calc(82vh - 32px);
+  border-radius: 8px;
+  object-fit: contain;
+  cursor: default;
 }
 
 .file-message-image img {
@@ -543,10 +639,14 @@
   color: var(--text-body);
 }
 
-.voice-message-transcript .link,
-.voice-message-show {
-  margin-left: 8px;
-  font-size: 12px;
+/* «Скрыть» и «Показать» — одна подпись «Расшифровка AI · …», один размер. */
+.voice-message-caption .link {
+  margin-left: 0;
+  font-size: inherit;
+}
+
+.voice-message-caption.voice-message-show {
+  margin-top: 8px;
 }
 
 .voice-message-error {

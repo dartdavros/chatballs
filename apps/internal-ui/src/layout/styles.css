@@ -13,13 +13,49 @@
 
 /* Сайдбар 220px (дизайн-базлайн v2, решение 1): фон surface2, без верхней панели. */
 .hub-sidebar {
-  width: 220px;
+  position: relative;
+  width: var(--sidebar-width, 220px);
   height: 100vh;
   display: flex;
   flex: none;
   flex-direction: column;
   background: var(--surface-sidebar);
   border-right: 1px solid var(--n-8);
+}
+
+/* Ручка изменения ширины панели (сайдбар, список диалогов): невидимая полоса
+   на правом крае, подсвечивается при наведении и во время перетаскивания. */
+.pane-resizer {
+  position: absolute;
+  top: 0;
+  right: -3px;
+  bottom: 0;
+  width: 6px;
+  z-index: 5;
+  cursor: col-resize;
+}
+
+.pane-resizer::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 2px;
+  width: 2px;
+  background: var(--primary);
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+
+.pane-resizer:hover::after,
+.is-resizing > .pane-resizer::after {
+  opacity: 1;
+}
+
+@media (max-width: 1024px) {
+  .pane-resizer {
+    display: none;
+  }
 }
 
 .hub-sidebar-body {
@@ -93,7 +129,7 @@
 
 @media (max-width: 1024px) {
   .hub-sidebar {
-    width: 60px;
+    width: 60px !important;
   }
 
   .hub-rail {

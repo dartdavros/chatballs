@@ -1,5 +1,6 @@
 .sales-dialog-list {
-  width: 323px;
+  position: relative;
+  width: var(--dialog-list-width, 323px);
   min-height: 0;
   display: flex;
   flex: none;

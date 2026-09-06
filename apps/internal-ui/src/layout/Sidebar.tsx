@@ -1,6 +1,8 @@
 import { Dropdown } from "antd";
+import type { CSSProperties } from "react";
 
 import type { RouteKey, SessionUser } from "../types";
+import { useResizableWidth } from "../shared/useResizableWidth";
 import { Icon, LogoIcon } from "../shared/icons";
 import { defaultRoute, isManager } from "../auth/access";
 import type { DialogScope } from "../features/conversations/ConversationWorkspace";
@@ -64,6 +66,8 @@ export function Sidebar({
   expanded: boolean;
   setExpanded: (expanded: boolean) => void;
 }) {
+  // Ширина сайдбара: тянется за правый край (180–320px), запоминается в браузере.
+  const sidebarWidth = useResizableWidth("sidebar", { fallback: 220, min: 180, max: 320 });
   const manager = isManager(user);
   // Кадр S2: на ≤1024px сайдбар сжимается в рейку 60px; «развернуть»
   // раскрывает полный сайдбар поверх контента (состояние — в Shell, его же
@@ -76,7 +80,8 @@ export function Sidebar({
     .toUpperCase();
 
   return (
-    <aside className={`hub-sidebar ${railExpanded ? "is-rail-expanded" : ""}`}>
+    <aside className={`hub-sidebar ${railExpanded ? "is-rail-expanded" : ""} ${sidebarWidth.dragging ? "is-resizing" : ""}`} style={{ "--sidebar-width": `${sidebarWidth.width}px` } as CSSProperties}>
+      <div className="pane-resizer" role="separator" aria-orientation="vertical" aria-label="Ширина сайдбара" title="Потяните, двойной клик — сбросить" onPointerDown={sidebarWidth.onPointerDown} onDoubleClick={sidebarWidth.reset} />
       <div className="hub-rail">
         <div className={`hub-brand-mark ${user.organizationLogoUrl ? "has-logo" : ""}`}>
           {user.organizationLogoUrl ? <img src={user.organizationLogoUrl} alt="" /> : <LogoIcon />}

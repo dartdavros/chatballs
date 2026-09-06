@@ -34,6 +34,7 @@ export function IntegrationForm({ initial, kind, onClose, onSaved }: { initial: 
   const [secret, setSecret] = useState("");
   const [baseUrl, setBaseUrl] = useState(initial?.config.baseUrl ?? "");
   const [defaultModel, setDefaultModel] = useState(initial?.config.defaultModel ?? "");
+  const [transcriptionModel, setTranscriptionModel] = useState(initial?.config.transcriptionModel ?? "");
   const [proxyUrl, setProxyUrl] = useState(initial?.config.proxyUrl ?? "");
   const [allowedOrigins, setAllowedOrigins] = useState(formatAllowedOrigins(initial?.config.allowedOrigins ?? []));
   const [emailConfig, setEmailConfig] = useState(initial ? emailConfigFromIntegration(initial.config) : EMAIL_CONFIG_DEFAULTS);
@@ -91,7 +92,7 @@ export function IntegrationForm({ initial, kind, onClose, onSaved }: { initial: 
             consentText: initial?.config.consentText ?? "",
             consentVersion: initial?.config.consentVersion ?? "",
           }
-        : { baseUrl: baseUrl.trim(), defaultModel: defaultModel.trim(), proxyUrl: proxyUrl.trim(), purpose: isNotifier ? "notifications" : "" };
+        : { baseUrl: baseUrl.trim(), defaultModel: defaultModel.trim(), transcriptionModel: transcriptionModel.trim(), proxyUrl: proxyUrl.trim(), purpose: isNotifier ? "notifications" : "" };
     // Сервисный бот уведомлений не привязывается к каналу продаж.
     const channel = isMessenger ? { channelId: channelId && !isNotifier ? Number(channelId) : null } : {};
     try {
@@ -155,6 +156,9 @@ export function IntegrationForm({ initial, kind, onClose, onSaved }: { initial: 
         )}
         {meta.hasModel && (
           <FormField label="Модель по умолчанию" value={defaultModel} onChange={setDefaultModel} placeholder={provider === "OPENROUTER" ? "anthropic/claude-sonnet-4.6" : ""} />
+        )}
+        {meta.hasModel && !isDemo && (
+          <FormField label="Модель расшифровки голосовых" value={transcriptionModel} onChange={setTranscriptionModel} placeholder="whisper-1" />
         )}
         {isEdit && initial.config.botUsername && (
           <FormField label="Бот" value={`${initial.config.botName || initial.config.botUsername}${initial.config.botUsername ? ` · @${initial.config.botUsername}` : ""}${initial.config.botId ? ` · id ${initial.config.botId}` : ""}`} />
