@@ -18,3 +18,11 @@ export function productAccent(code: string): { bg: string; color: string } {
 export function formatDate(value: string): string {
   return new Intl.DateTimeFormat("ru-RU", { day: "2-digit", month: "long", year: "numeric" }).format(new Date(value));
 }
+
+/** Склонение по числу: pluralRu(3, ["портал", "портала", "порталов"]) → «3 портала». */
+export function pluralRu(count: number, forms: [string, string, string]): string {
+  const n = Math.abs(count) % 100;
+  const n1 = n % 10;
+  const form = n > 10 && n < 20 ? forms[2] : n1 > 1 && n1 < 5 ? forms[1] : n1 === 1 ? forms[0] : forms[2];
+  return `${count} ${form}`;
+}

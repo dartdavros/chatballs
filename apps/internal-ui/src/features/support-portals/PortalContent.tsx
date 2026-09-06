@@ -12,6 +12,8 @@ import { ContentLibraryToolbar } from "../../shared/content-library/ContentLibra
 import { DecisionDialog } from "../../shared/DecisionDialog";
 import { Icon } from "../../shared/icons";
 import { Button } from "../../shared/ui-controls";
+import { pluralRu } from "../../shared/utils";
+import { ARTICLE_STATUS_LABEL } from "./model";
 import { agentLinkOptions } from "../ai/agentOptions";
 import { linkPortalArticlesToAgent } from "../ai/knowledge/model";
 import { useAiAgents } from "../ai/useAiAgents";
@@ -198,7 +200,7 @@ export function PortalContent({
             )}
           >
             <label className="knowledge-filter-select"><span>Язык:</span><select value={language} onChange={(event) => setLanguage(event.target.value)}><option value="">Все</option><option value="ru">Русский</option><option value="en">English</option></select></label>
-            <label className="knowledge-filter-select"><span>Статус:</span><select value={status} onChange={(event) => setStatus(event.target.value)}><option value="">Все</option><option value="DRAFT">Черновик</option><option value="PUBLISHED">Опубликована</option><option value="ARCHIVED">Архив</option></select></label>
+            <label className="knowledge-filter-select"><span>Статус:</span><select value={status} onChange={(event) => setStatus(event.target.value)}><option value="">Все</option><option value="DRAFT">{ARTICLE_STATUS_LABEL.DRAFT}</option><option value="PUBLISHED">{ARTICLE_STATUS_LABEL.PUBLISHED}</option><option value="ARCHIVED">{ARTICLE_STATUS_LABEL.ARCHIVED}</option></select></label>
           </ContentLibraryToolbar>
           )}
           {error && <div className="portal-form-error">{error}</div>}
@@ -213,7 +215,7 @@ export function PortalContent({
             loading={false}
             onCreate={() => setEditing(null)}
             onRetry={() => void reload()}
-            footer={<div className="ai-table-footer"><span>{filtered.length} материалов</span></div>}
+            footer={<div className="ai-table-footer"><span>{pluralRu(filtered.length, ["материал", "материала", "материалов"])}</span></div>}
           >
             <PortalArticleTable
               articles={filtered}

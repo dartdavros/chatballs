@@ -2,6 +2,7 @@ import { ContentLibraryTable } from "../../../shared/content-library/ContentLibr
 import { formatDate } from "../../../shared/utils";
 import { knowledgeCategoryPath } from "./knowledgeTree";
 import type { KnowledgeCategory, KnowledgeItem } from "./model";
+import { pluralRu } from "../../../shared/utils";
 
 type KnowledgeTableProps = {
   bulkMode: boolean;
@@ -54,7 +55,7 @@ export function KnowledgeTable({
       onCreate={onCreate}
       onRetry={onRetry}
       footer={!bulkMode && <div className="ai-table-footer">
-        <span>{items.length} знаний</span>
+        <span>{pluralRu(items.length, ["знание", "знания", "знаний"])}</span>
         <span>{selectedIds.size > 0 ? `Выбрано: ${selectedIds.size}` : "Изменения знаний применяются к агентам сразу"}</span>
       </div>}
     >

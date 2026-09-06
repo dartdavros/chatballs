@@ -6,6 +6,7 @@ import { ContentLibraryToolbar } from "../../shared/content-library/ContentLibra
 import { Icon } from "../../shared/icons";
 import { ContentState, ErrorScreen, LoadingState, PageHeader, StatusPill } from "../../shared/ui";
 import { Button } from "../../shared/ui-controls";
+import { pluralRu } from "../../shared/utils";
 import type { SessionUser } from "../../types";
 import {
   listSupportPortals,
@@ -65,8 +66,8 @@ export function SupportPortalsPage({
   return (
     <div className="support-portals-page">
       <PageHeader
-        title="Порталы поддержки"
-        text="Публичные базы знаний отдела поддержки"
+        title="Порталы"
+        text="Публичные базы знаний для клиентов"
         action={createAction}
       />
       {portals.length === 0 ? (
@@ -90,7 +91,7 @@ export function SupportPortalsPage({
               hasItems={filtered.length > 0}
               loading={false}
               onRetry={() => void load()}
-              footer={<div className="ai-table-footer"><span>{filtered.length} порталов</span></div>}
+              footer={<div className="ai-table-footer"><span>{pluralRu(filtered.length, ["портал", "портала", "порталов"])}</span></div>}
             >
               <table className="baseline-table knowledge-table">
               <thead><tr><th>ПОРТАЛ</th><th>СТАТУС</th><th>ПРОДУКТЫ</th><th /></tr></thead>

@@ -1,4 +1,5 @@
 import type { AgentCard } from "../../agents/model";
+import { agentColorOf } from "../../conversations/model";
 import { Icon } from "../../../shared/icons";
 import { formatDate } from "../../../shared/utils";
 import type { KnowledgeItem } from "./types";
@@ -22,7 +23,7 @@ export function KnowledgeDetailSidebar({
         <div className="knowledge-agent-list">
           {assignedAgents.map((agent) => (
             <button type="button" onClick={() => openAgent(agent.id)} key={agent.id}>
-              <span><Icon name="robot" size={16} /></span>
+              <span style={{ color: agentColorOf(agent.code), background: `color-mix(in srgb, ${agentColorOf(agent.code)} 14%, var(--surface-card))` }}><Icon name="robot" size={16} /></span>
               <div><strong>{agent.name}</strong><small>{agent.groupName ?? "Без группы"}</small></div>
             </button>
           ))}

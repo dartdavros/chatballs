@@ -68,11 +68,11 @@
 
 .knowledge-table { table-layout: fixed; }
 .knowledge-col-select { width: 38px; }
-.knowledge-col-title { width: 32%; }
-.knowledge-col-category { width: 27%; }
-.knowledge-col-attachments { width: 6%; }
-.knowledge-col-agents { width: 6%; }
-.knowledge-col-status { width: 9%; }
+.knowledge-col-title { width: 30%; }
+.knowledge-col-category { width: 24%; }
+.knowledge-col-attachments { width: 8%; }
+.knowledge-col-agents { width: 9%; }
+.knowledge-col-status { width: 13%; }
 .knowledge-col-updated { width: 14%; }
 
 .knowledge-table th,

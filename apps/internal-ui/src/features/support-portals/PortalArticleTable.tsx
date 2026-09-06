@@ -4,6 +4,7 @@ import { Icon } from "../../shared/icons";
 import { StatusPill } from "../../shared/ui";
 import { formatDate } from "../../shared/utils";
 import type { PortalArticle } from "./model";
+import { ARTICLE_STATUS_LABEL } from "./model";
 
 export function PortalArticleTable({
   articles,
@@ -88,7 +89,7 @@ export function PortalArticleTable({
               <td className="knowledge-category-path">{article.category.name}</td>
               <td>{article.locale.toLocaleUpperCase()}</td>
               <td>{article.publishedRevision ? article.publishedRevision.revision : "—"}</td>
-              <td><StatusPill status={article.status === "PUBLISHED" ? "published" : article.status === "ARCHIVED" ? "archived" : "draft"} /></td>
+              <td><StatusPill status={article.status === "PUBLISHED" ? "published" : article.status === "ARCHIVED" ? "archived" : "draft"} label={ARTICLE_STATUS_LABEL[article.status]} /></td>
               <td>{formatDate(article.updatedAt)}</td>
               <td className="row-actions" onClick={(event) => event.stopPropagation()}>
                 {canManage && (

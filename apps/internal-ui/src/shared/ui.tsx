@@ -25,7 +25,7 @@ export function PageHeader({ title, text, action }: { title: string; text?: Reac
 
 export type StatusPillKey = "normal" | "active" | "published" | "blocked" | "disabled" | "invited" | "archived" | "draft" | "healthy" | "error" | "pending" | "unchecked";
 
-export function StatusPill({ status }: { status: StatusPillKey }) {
+export function StatusPill({ status, label: labelOverride }: { status: StatusPillKey; label?: string }) {
   const map = {
     normal: ["var(--success-bg)", "var(--success-border)", "var(--success-text)", "Работает"],
     active: ["transparent", "transparent", "var(--success-text)", "Активен"],
@@ -44,7 +44,7 @@ export function StatusPill({ status }: { status: StatusPillKey }) {
   const dotStyle = status === "archived"
     ? { background: "transparent", border: `1.5px solid ${color}` }
     : { background: color };
-  return <span className={`status-pill ${status}`} style={{ background: bg, borderColor: border, color }}><span style={dotStyle} />{label}</span>;
+  return <span className={`status-pill ${status}`} style={{ background: bg, borderColor: border, color }}><span style={dotStyle} />{labelOverride ?? label}</span>;
 }
 
 const ROLE_LABELS: Record<Role, string> = {
