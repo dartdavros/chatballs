@@ -100,7 +100,10 @@
   flex: none;
   gap: 2px;
   padding: 0 10px;
+  /* Горизонтальный скролл только на узком экране; overflow-x: auto без
+     overflow-y давал вертикальную полосу из-за margin-bottom: -1px у вкладок. */
   overflow-x: auto;
+  overflow-y: hidden;
   border-bottom: 1px solid var(--n-8);
 }
 
