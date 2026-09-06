@@ -539,16 +539,41 @@ class EmployeeEndpointTests(TestCase):
         self.assertEqual(operator.memberships.get().phone, "+7 916 245 14 03")
         self.assertFalse(operator.totp_enabled)
 
-    def test_owner_cannot_reset_operator_global_password(self) -> None:
+    def test_owner_resets_operator_password(self) -> None:
+        """Кадр E8: владелец сбрасывает пароль и получает его один раз."""
         operator = HumanUser.objects.get(email="staff.member@example.org")
         password_hash = operator.password
 
-        response = self.client.post(f"/api/v1/employees/{operator.id}/reset-password/")
+        response = self.client.post(
+            f"/api/v1/employees/{operator.id}/reset-password/",
+            data=json.dumps({"mode": "show"}),
+            content_type="application/json",
+        )
 
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 200)
+        operator.refresh_from_db()
+        self.assertNotEqual(operator.password, password_hash)
+        self.assertTrue(operator.must_change_password)
+        self.assertTrue(operator.check_password(response.json()["password"]))
+
+    def test_reset_is_refused_for_multi_organization_user(self) -> None:
+        """Пароль общий для всех организаций человека — сбрасывать его из одной нельзя."""
+        operator = HumanUser.objects.get(email="staff.member@example.org")
+        other = Organization.objects.create(name="Другая", slug="other-org")
+        OrganizationMembership.objects.create(
+            user=operator, organization=other, role=EmployeeRole.EMPLOYEE, position_title="Оператор"
+        )
+        password_hash = operator.password
+
+        response = self.client.post(
+            f"/api/v1/employees/{operator.id}/reset-password/",
+            data=json.dumps({"mode": "show"}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 409)
         operator.refresh_from_db()
         self.assertEqual(operator.password, password_hash)
-        self.assertFalse(operator.must_change_password)
 
     def test_owner_unblocks_operator(self) -> None:
         operator = HumanUser.objects.get(email="staff.member@example.org")

@@ -1,6 +1,7 @@
 // Применение персональной темы и акцента (SPEC-HUB-0031 §7, дизайн-базлайн v2).
-// Тема ставится атрибутом data-theme на <html>; акцент — переменной --primary,
-// производные оттенки считаются в CSS через color-mix и работают в обеих темах.
+// Тема ставится атрибутом data-theme на <html>; акцент — переменной --accent,
+// из неё в CSS считаются --primary (в тёмной теме приглушён подложкой, как в
+// дизайн-базлайне) и производные оттенки через color-mix.
 
 export type UiTheme = "LIGHT" | "DARK" | "SYSTEM";
 
@@ -31,7 +32,7 @@ export function applyAppearance(theme: UiTheme, accent: string): void {
   currentTheme = theme;
   const root = document.documentElement;
   root.dataset.theme = resolvedDark(theme) ? "dark" : "light";
-  root.style.setProperty("--primary", accent || DEFAULT_ACCENT);
+  root.style.setProperty("--accent", accent || DEFAULT_ACCENT);
   if (media && !listenerBound) {
     listenerBound = true;
     media.addEventListener("change", () => {

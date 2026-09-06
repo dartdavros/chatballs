@@ -19,6 +19,8 @@ export type Integration = {
   provider: IntegrationProvider;
   name: string;
   hasSecret: boolean;
+  // Публичный префикс ключа + маска («sk-or-••••••••») для колонки «Секрет».
+  secretMasked: string;
   isActive: boolean;
   // purpose="notifications" — сервисный бот уведомлений сотрудников (не привязан к каналу продаж).
   // email/imap*/smtp* — Email-подключение (SPEC-HUB-0025 §3.1).

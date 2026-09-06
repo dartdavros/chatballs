@@ -11,6 +11,7 @@ const empty = {
   clientId: null,
   channelId: null,
   supportPortalId: null,
+  settingsSection: null,
 };
 
 describe("sales detail routes", () => {
@@ -77,24 +78,28 @@ describe("chat route", () => {
 describe("administration route", () => {
   it("sends legacy administration URLs to settings (§8.6)", () => {
     expect(routeFromPath("/administration")).toEqual({
-      route: "settings",
       ...empty,
+      route: "settings",
+      settingsSection: "organization",
     });
     expect(routeFromPath("/integrations")).toEqual({
-      route: "settings",
       ...empty,
+      route: "settings",
+      settingsSection: "integrations",
     });
   });
 
   it("parses and creates administration subsection URLs", () => {
     // Организация переехала в «Настройки» (§8.6); тарифы — устаревший адрес (ADR-HUB-0042).
     expect(routeFromPath("/administration/organization")).toEqual({
-      route: "settings",
       ...empty,
+      route: "settings",
+      settingsSection: "organization",
     });
     expect(routeFromPath("/administration/subscription")).toEqual({
-      route: "settings",
       ...empty,
+      route: "settings",
+      settingsSection: "organization",
     });
     expect(routeFromPath("/administration/audit")).toEqual({
       route: "administrationAudit",
@@ -148,5 +153,20 @@ describe("channel routes", () => {
   it("keeps AI routes untouched", () => {
     expect(routeFromPath("/ai/agents")).toEqual({ route: "agents", ...empty });
     expect(routeFromPath("/ai/knowledge")).toEqual({ route: "aiKnowledge", ...empty });
+  });
+});
+
+describe("settings routes", () => {
+  it("parses the settings screen and its submenu sections", () => {
+    expect(routeFromPath("/settings")).toEqual({ route: "settings", ...empty });
+    expect(routeFromPath("/settings/groups")).toEqual({ ...empty, route: "settings", settingsSection: "groups" });
+    // Неизвестный раздел открывает «Настройки» с разделом по умолчанию.
+    expect(routeFromPath("/settings/nope")).toEqual({ route: "settings", ...empty });
+  });
+
+  it("creates settings URLs", () => {
+    expect(pathFromRoute("settings")).toBe("/settings");
+    expect(pathFromRoute("settings", "integrations")).toBe("/settings/integrations");
+    expect(pathFromRoute("settings", "nope")).toBe("/settings");
   });
 });

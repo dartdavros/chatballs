@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { Icon } from "../../../../shared/icons";
+import { CopyButton } from "../../../../shared/ui-controls";
 import { providerMeta } from "../../../../shared/providers";
 import { ContactAvatar } from "../../../conversations/ContactAvatar";
 import { ContactEditForm } from "../../../conversations/ContactEditForm";
@@ -132,26 +133,6 @@ export function ClientContext({
         <DialogControls detail={detail} groups={groups} employees={employees} applyConversation={applyConversation} viewerId={viewerId} />
       )}
     </div>
-  );
-}
-
-function CopyButton({ value }: { value: string }) {
-  const [copied, setCopied] = useState(false);
-  return (
-    <button
-      type="button"
-      className={copied ? "is-copied" : ""}
-      aria-label="Скопировать"
-      title={copied ? "Скопировано" : "Скопировать"}
-      onClick={() => {
-        void navigator.clipboard?.writeText(value).then(() => {
-          setCopied(true);
-          window.setTimeout(() => setCopied(false), 1200);
-        });
-      }}
-    >
-      <Icon name={copied ? "check" : "copy"} size={13} />
-    </button>
   );
 }
 

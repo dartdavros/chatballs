@@ -10,6 +10,8 @@ export type OrganizationSettings = {
   timezone: string;
   currency: string;
   logoUrl: string | null;
+  // Когда настройки сохраняли в последний раз — подпись у кнопки (кадр N1).
+  updatedAt: string | null;
 };
 
 export type AuditEvent = {

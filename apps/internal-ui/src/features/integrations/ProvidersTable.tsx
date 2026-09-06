@@ -34,7 +34,7 @@ export function ProvidersTable({ items, testingId, onTest, onEdit, onToggleActiv
                     <span><strong>{item.name}</strong><small>{meta.label}</small></span>
                   </div>
                 </td>
-                <td>{item.hasSecret ? <code className="ai-mono">••••••••</code> : <span className="product-empty-value">—</span>}</td>
+                <td>{item.hasSecret ? <code className="ai-mono">{item.secretMasked || "••••••••"}</code> : <span className="product-empty-value">—</span>}</td>
                 <td className="integration-config">
                   <span>{item.config.baseUrl || meta.defaultBaseUrl || "—"}</span>
                   {item.config.defaultModel && <small>{item.config.defaultModel}</small>}

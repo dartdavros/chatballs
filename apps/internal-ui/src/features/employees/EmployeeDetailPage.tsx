@@ -1,23 +1,33 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { api } from "../../api/client";
-import type { Employee, EmployeeGroup, RouteKey, SessionUser } from "../../types";
+import { Icon } from "../../shared/icons";
+import type { Employee, EmployeeGroup, RouteKey } from "../../types";
+import { blockEmployee, resetEmployeePassword, terminateEmployeeSessions, type IssuedPassword } from "./api";
 import { EmployeeDetailHeader } from "./EmployeeDetailHeader";
 import { EmployeeDetailRail } from "./EmployeeDetailRail";
-import { EmployeeDetailSections } from "./EmployeeDetailSections";
+import { EmployeeIdentitySections } from "./EmployeeIdentitySections";
+import { EmployeePasswordDialog } from "./EmployeePasswordDialog";
+import { EmployeeSecuritySections } from "./EmployeeSecuritySections";
+import { OwnershipTransferModal } from "./OwnershipTransferModal";
 import { employeeForm, employeeStatusKey, type EmployeeForm } from "./model";
 
-export function EmployeeDetailPage({ groups, employee, reload, setRoute, user }: {
+// Карточка сотрудника (дизайн-базлайн v2, кадры E3/E4).
+
+export function EmployeeDetailPage({ groups, employee, employees, reload, setRoute }: {
   groups: EmployeeGroup[];
   employee: Employee;
+  employees: Employee[];
   reload: () => void;
   setRoute: (route: RouteKey) => void;
-  user: SessionUser;
 }) {
   const [currentEmployee, setCurrentEmployee] = useState(employee);
   const [form, setForm] = useState<EmployeeForm>(() => employeeForm(employee));
   const [saving, setSaving] = useState(false);
+  const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  const [issued, setIssued] = useState<IssuedPassword | null>(null);
+  const [transferOpen, setTransferOpen] = useState(false);
   const status = employeeStatusKey(currentEmployee);
 
   const refresh = useCallback(async () => {
@@ -35,7 +45,8 @@ export function EmployeeDetailPage({ groups, employee, reload, setRoute, user }:
   }
 
   async function saveEmployee() {
-    setSaving(true); setMessage("");
+    setSaving(true);
+    setMessage("");
     try {
       await api(`/api/v1/employees/${currentEmployee.id}/update/`, { method: "POST", body: JSON.stringify(form) });
       await refresh();
@@ -47,11 +58,56 @@ export function EmployeeDetailPage({ groups, employee, reload, setRoute, user }:
     }
   }
 
-  const ownerReadOnly = currentEmployee.role === "OWNER" && user.id !== currentEmployee.id;
-  return <div className="employee-detail-page">
-    <EmployeeDetailHeader employee={currentEmployee} form={form} saveEmployee={saveEmployee} saving={saving} setRoute={setRoute} status={status} />
-    {ownerReadOnly && <div className="employee-readonly-banner">Владельца нельзя удалить, заблокировать или сменить ему роль — единственный путь изменения роли владельца это передача владения.</div>}
-    {message && <div className="employee-action-message">{message}</div>}
-    <div className="employee-detail-grid"><EmployeeDetailSections blocked={status === "blocked"} groups={groups} employee={currentEmployee} form={form} updateForm={updateForm} /><EmployeeDetailRail employee={currentEmployee} /></div>
-  </div>;
+  async function run(action: () => Promise<void>) {
+    setBusy(true);
+    setMessage("");
+    try {
+      await action();
+      await refresh();
+      reload();
+    } catch (reason) {
+      setMessage(reason instanceof Error ? reason.message : "Не удалось выполнить действие");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  // Кадр E4: на карточке владельца всегда стоит напоминание о правиле роли —
+  // сменить её можно только передачей владения.
+  const isOwnerCard = currentEmployee.role === "OWNER";
+
+  return (
+    <div className="employee-page">
+      <EmployeeDetailHeader employee={currentEmployee} form={form} saveEmployee={() => void saveEmployee()} saving={saving} setRoute={setRoute} />
+
+      {isOwnerCard && (
+        <div className="employee-owner-banner">
+          <Icon name="lock" size={16} strokeWidth={1.8} />
+          <span>Владельца нельзя удалить, заблокировать или сменить ему роль — единственный путь изменения роли владельца это передача владения.</span>
+        </div>
+      )}
+      {message && <div className="employees-error"><Icon name="alert" size={16} strokeWidth={1.8} />{message}</div>}
+
+      <div className="employee-grid">
+        <div className="employee-column">
+          <EmployeeIdentitySections groups={groups} employee={currentEmployee} form={form} updateForm={updateForm} />
+          <EmployeeSecuritySections
+            blocked={status === "blocked"}
+            busy={busy}
+            employee={currentEmployee}
+            form={form}
+            updateForm={updateForm}
+            onResetPassword={() => void run(async () => { setIssued(await resetEmployeePassword(currentEmployee.id, "show")); })}
+            onTerminateSessions={() => void run(() => terminateEmployeeSessions(currentEmployee.id))}
+            onToggleBlock={() => void run(() => blockEmployee(currentEmployee.id, !currentEmployee.isBlocked))}
+            onTransferOwnership={() => setTransferOpen(true)}
+          />
+        </div>
+        <EmployeeDetailRail employee={currentEmployee} />
+      </div>
+
+      {issued && <EmployeePasswordDialog issued={issued} onClose={() => setIssued(null)} />}
+      {transferOpen && <OwnershipTransferModal employees={employees} onClose={() => setTransferOpen(false)} />}
+    </div>
+  );
 }

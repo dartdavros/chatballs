@@ -11,10 +11,12 @@ from django.db.models import Prefetch, Q
 from chatballs.conversations.models import (
     ConnectionIdentity,
     Contact,
+    ContactMerge,
     Conversation,
     ControlMode,
     LifecycleState,
 )
+from chatballs.identity.avatars import user_avatar_url_in
 from chatballs.identity.models import AuditEvent
 
 # Короткие коды для UI (совпадают с фронтовыми справочниками).
@@ -35,6 +37,10 @@ AUDIT_LABELS = {
 }
 
 
+def _actor_name(user) -> str:
+    return (user.full_name or user.email) if user is not None else ""
+
+
 def _mode(latest: Conversation) -> str:
     if latest.lifecycle != LifecycleState.OPEN:
         return "closed"
@@ -47,10 +53,10 @@ def _mode(latest: Conversation) -> str:
 
 def clients_overview(organization_id: int) -> list[dict]:
     conversation_qs = Conversation.objects.select_related(
-        "channel", "channel__product", "connection"
+        "channel", "channel__product", "connection", "assigned_operator"
     ).order_by("-last_activity_at")
     identity_qs = ConnectionIdentity.objects.select_related("connection")
-    contacts = Contact.objects.filter(organization_id=organization_id).prefetch_related(
+    contacts = Contact.objects.filter(organization_id=organization_id, merged_into__isnull=True).prefetch_related(
         Prefetch(
             "conversations",
             queryset=conversation_qs,
@@ -64,6 +70,7 @@ def clients_overview(organization_id: int) -> list[dict]:
             continue  # клиенты — те, кто писал
         channels: set[str] = set()
         products: dict[str, str] = {}
+        agents: dict[int, dict[str, object]] = {}
         open_dialogs = 0
         for conversation in conversations:
             provider = conversation.connection.provider if conversation.connection_id else None
@@ -71,6 +78,11 @@ def clients_overview(organization_id: int) -> list[dict]:
                 channels.add(PROVIDER_CODE[provider])
             if conversation.channel.product_id:
                 products[conversation.channel.product.code] = conversation.channel.product.name
+            # Агент = карточка канала обработки: по нему фильтруется список (кадр K1).
+            agents.setdefault(
+                conversation.channel_id,
+                {"id": conversation.channel_id, "code": conversation.channel.code, "name": conversation.channel.name},
+            )
             if conversation.lifecycle == LifecycleState.OPEN:
                 open_dialogs += 1
         latest = conversations[0]
@@ -97,6 +109,11 @@ def clients_overview(organization_id: int) -> list[dict]:
                 "totalDialogs": len(conversations),
                 "lastActivityAt": latest.last_activity_at.isoformat(),
                 "mode": _mode(latest),
+                # Колонка «Последний диалог» (кадр K1): кто ведёт — агент или сотрудник.
+                "lastAgentName": latest.channel.name,
+                "lastAgentCode": latest.channel.code,
+                "lastAssignee": _actor_name(latest.assigned_operator),
+                "agents": sorted(agents.values(), key=lambda item: str(item["name"])),
             }
         )
     rows.sort(key=lambda row: row["lastActivityAt"], reverse=True)
@@ -111,7 +128,7 @@ def client_detail(organization_id: int, contact_id: int) -> dict:
     contact = Contact.objects.get(organization_id=organization_id, id=contact_id)
     conversation_qs = Conversation.objects.filter(
         organization_id=organization_id, contact=contact
-    ).select_related("channel", "channel__product", "connection")
+    ).select_related("channel", "channel__product", "connection", "group", "assigned_operator", "note_author")
     conversations = list(conversation_qs.order_by("-last_activity_at"))
     if not conversations:
         raise Contact.DoesNotExist
@@ -128,14 +145,29 @@ def client_detail(organization_id: int, contact_id: int) -> dict:
             products[conversation.channel.product.code] = conversation.channel.product.name
         if conversation.lifecycle == LifecycleState.OPEN:
             open_dialogs += 1
+        # Тема диалога — первое сообщение, превью — последнее (кадр K4).
+        first = conversation.messages.order_by("created_at").first()
         last = conversation.messages.order_by("-created_at").first()
-        title = (last.text.replace("\n", " ")[:80] if last and last.text else conversation.channel.name)
+        title = (first.text.replace("\n", " ")[:80] if first and first.text else conversation.channel.name)
+        preview = (last.text.replace("\n", " ")[:120] if last and last.text else "")
         dialogs.append(
             {
                 "id": conversation.id,
                 "title": title,
+                "preview": preview,
                 "channelName": conversation.channel.name,
+                "agentName": conversation.channel.name,
+                "agentId": conversation.channel_id,
+                "agentCode": conversation.channel.code,
+                "groupName": conversation.group.name if conversation.group_id else "",
+                "groupColor": conversation.group.color if conversation.group_id else "",
+                "assignee": _actor_name(conversation.assigned_operator),
+                "assigneeAvatarUrl": user_avatar_url_in(conversation.assigned_operator, organization_id),
+                "note": conversation.note,
+                "noteAuthor": _actor_name(conversation.note_author),
+                "noteUpdatedAt": conversation.note_updated_at.isoformat() if conversation.note_updated_at else None,
                 "provider": provider,
+                "mode": _mode(conversation),
                 "status": _dialog_status(conversation),
                 "active": conversation.lifecycle == LifecycleState.OPEN,
                 "lastActivityAt": conversation.last_activity_at.isoformat(),
@@ -151,8 +183,11 @@ def client_detail(organization_id: int, contact_id: int) -> dict:
                 if identity.connection.provider == "EMAIL"
                 else identity.display_name or identity.external_user_id
             ),
+            "externalUserId": identity.external_user_id,
             "username": identity.username,
             "createdAt": identity.created_at.isoformat(),
+            # Подтверждённой считается идентичность, отдавшая телефон (ADR-HUB-0006).
+            "phoneVerifiedAt": identity.phone_verified_at.isoformat() if identity.phone_verified_at else None,
         }
         for identity in identity_qs.order_by("created_at")
     ]
@@ -214,4 +249,57 @@ def client_detail(organization_id: int, contact_id: int) -> dict:
         "identities": identities,
         "activity": activity[:8],
         "audit": audit,
+        "duplicate": _duplicate_candidate(organization_id, contact),
+        "merges": _merges(organization_id, contact),
+    }
+
+
+def _merges(organization_id: int, contact: Contact) -> list[dict]:
+    """Действующие объединения этого контакта — их можно разъединить."""
+    rows = (
+        ContactMerge.objects.filter(organization_id=organization_id, target=contact, reverted_at__isnull=True)
+        .select_related("source", "actor")
+        .order_by("-created_at")
+    )
+    return [
+        {
+            "id": row.id,
+            "sourceId": row.source_id,
+            "sourceName": row.source.name or "Гость",
+            "sourceCid": f"CUS-{row.source_id}",
+            "reason": row.reason,
+            "actor": _actor_name(row.actor),
+            "at": row.created_at.isoformat(),
+            "identities": len(row.moved_identity_ids),
+            "conversations": len(row.moved_conversation_ids),
+        }
+        for row in rows
+    ]
+
+
+def _duplicate_candidate(organization_id: int, contact: Contact) -> dict | None:
+    """Другой контакт с тем же телефоном. Автоматически ничего не объединяем
+    (ADR-HUB-0006) — это только предложение владельцу."""
+    if not contact.phone:
+        return None
+    other = (
+        Contact.objects.filter(organization_id=organization_id, phone=contact.phone, merged_into__isnull=True)
+        .exclude(id=contact.id)
+        .prefetch_related("identities__connection", "conversations")
+        .first()
+    )
+    if other is None:
+        return None
+    identities = list(other.identities.all())
+    return {
+        "id": other.id,
+        "cid": f"CUS-{other.id}",
+        "name": other.name or "Гость",
+        "avatarUrl": other.avatar_url,
+        "dialogs": other.conversations.count(),
+        "sources": sorted({identity.connection.provider for identity in identities}),
+        "phone": other.phone,
+        # Однозначным совпадение считается, только если телефон подтверждён
+        # подключением хотя бы у одной стороны (ADR-HUB-0006).
+        "phoneVerified": any(identity.phone_verified_at is not None for identity in identities),
     }

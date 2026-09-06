@@ -1,67 +1,48 @@
 import { Modal } from "antd";
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 
 import { api } from "../../api/client";
-import { EmptyState, LoadingState } from "../../shared/ui";
+import { EmptyState } from "../../shared/ui";
 import { Button } from "../../shared/ui-controls";
 import { ConnectionsTable } from "./ConnectionsTable";
-import { IntegrationForm } from "./IntegrationForm";
 import type { Integration, IntegrationKind } from "./model";
 import { ProvidersTable } from "./ProvidersTable";
 
-// Секция интеграций одного рода — блок экрана «Настройки» (SPEC-HUB-0031
-// §8.6): подключения (MESSENGER) и AI-провайдеры (LLM_PROVIDER) — отдельные
-// вертикальные секции, отдельный раздел «Интеграции» упразднён.
+// Таблица интеграций одного рода — раздел экрана «Настройки» (дизайн-базлайн v2,
+// кадры N3/N4): подключения (MESSENGER) и AI-провайдеры (LLM_PROVIDER) — два
+// раздела субменю. Список грузит страница настроек (счётчики в субменю), форма
+// создания открывается primary-кнопкой в шапке раздела.
 
-export function IntegrationsSection({ kind }: { kind: IntegrationKind }) {
-  const [items, setItems] = useState<Integration[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-  const [form, setForm] = useState<{ initial: Integration | null } | null>(null);
+export function IntegrationsSection({ kind, items, reload, onEdit }: {
+  kind: IntegrationKind;
+  items: Integration[];
+  reload: () => void;
+  onEdit: (integration: Integration) => void;
+}) {
   const [testingId, setTestingId] = useState<number | null>(null);
   const [deleting, setDeleting] = useState<Integration | null>(null);
   const [deletingError, setDeletingError] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(false);
-    try {
-      const payload = await api<{ items: Integration[] }>("/api/v1/integrations/");
-      setItems(payload.items.filter((item) => item.kind === kind));
-    } catch {
-      setError(true);
-    } finally {
-      setLoading(false);
-    }
-  }, [kind]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
-
   async function test(integration: Integration) {
     setTestingId(integration.id);
     try {
-      const payload = await api<{ integration: Integration }>(`/api/v1/integrations/${integration.id}/test/`, { method: "POST" });
-      setItems((current) => current.map((item) => (item.id === integration.id ? payload.integration : item)));
+      await api(`/api/v1/integrations/${integration.id}/test/`, { method: "POST" });
     } catch {
-      void load();
+      /* статус придёт из перезагрузки списка */
     } finally {
       setTestingId(null);
+      reload();
     }
   }
 
   async function toggleActive(integration: Integration) {
     try {
-      const payload = await api<{ integration: Integration }>(`/api/v1/integrations/${integration.id}/`, {
+      await api(`/api/v1/integrations/${integration.id}/`, {
         method: "PATCH",
         body: JSON.stringify({ isActive: !integration.isActive }),
       });
-      setItems((current) => current.map((item) => (
-        item.id === integration.id ? payload.integration : item
-      )));
-    } catch {
-      void load();
+    } finally {
+      reload();
     }
   }
 
@@ -70,7 +51,7 @@ export function IntegrationsSection({ kind }: { kind: IntegrationKind }) {
     try {
       await api(`/api/v1/integrations/${deleting.id}/`, { method: "DELETE" });
       setDeleting(null);
-      void load();
+      reload();
     } catch (caught) {
       setDeletingError(caught instanceof Error ? caught.message : "Не удалось удалить");
     }
@@ -80,21 +61,13 @@ export function IntegrationsSection({ kind }: { kind: IntegrationKind }) {
   const rowHandlers = {
     testingId,
     onTest: test,
-    onEdit: (item: Integration) => setForm({ initial: item }),
+    onEdit,
     onToggleActive: toggleActive,
     onDelete: (item: Integration) => { setDeletingError(null); setDeleting(item); },
   };
 
-  if (loading) return <LoadingState />;
-  if (error) return <EmptyState title="Не удалось загрузить интеграции" />;
-
   return (
     <div className="integrations-section">
-      <div className="integrations-section-actions">
-        <Button variant="primary" icon="plus" onClick={() => setForm({ initial: null })}>
-          {isConnections ? "Добавить подключение" : "Добавить провайдера"}
-        </Button>
-      </div>
       {items.length === 0 ? (
         <EmptyState title={isConnections ? "Подключений пока нет. Добавьте бота, почту или Web-виджет." : "Провайдеров пока нет. Добавьте OpenRouter или Custom endpoint."} />
       ) : isConnections ? (
@@ -102,13 +75,8 @@ export function IntegrationsSection({ kind }: { kind: IntegrationKind }) {
       ) : (
         <ProvidersTable items={items} {...rowHandlers} />
       )}
-      {form && (
-        <IntegrationForm
-          initial={form.initial}
-          kind={kind}
-          onClose={() => setForm(null)}
-          onSaved={() => { setForm(null); void load(); }}
-        />
+      {isConnections && items.length > 0 && (
+        <p className="settings-section-note">Код вставки Web-виджета копируется на карточке его агента.</p>
       )}
       {deleting && (
         <Modal open title="Удалить интеграцию?" onCancel={() => setDeleting(null)} footer={null} destroyOnClose>

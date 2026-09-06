@@ -1,21 +1,42 @@
-.profile-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+/* Страница «Профиль» (дизайн-базлайн v2, кадры P1/P2, M). Значения — из макета
+   «Профиль Baseline»: карточки 20px 24px, поля 36px, кнопки 30–34px. */
+
+.hub-scroll.profile-scroll {
+  padding: 0;
+  background: var(--surface-feed);
 }
 
-.profile-header-card {
+.hub-page.profile-page-shell {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+
+.profile-page {
+  max-width: 1120px;
+  padding: 28px 40px 48px;
+}
+
+/* --- Шапка --- */
+
+.profile-header {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 20px 22px;
-  box-shadow: var(--shadow-sm);
+  gap: 18px;
+  margin-bottom: 24px;
 }
 
-.profile-header-card .avatar {
-  width: 60px;
-  height: 60px;
-  font-size: 21px;
+.profile-header-photo {
+  flex: none;
+  display: flex;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px var(--surface-card);
+}
+
+.profile-header-photo .avatar {
+  width: 72px;
+  height: 72px;
+  font-size: 25px;
 }
 
 .profile-header-main {
@@ -26,403 +47,895 @@
 .profile-header-main > div {
   display: flex;
   align-items: center;
-  gap: 11px;
+  gap: 10px;
 }
 
-.profile-header-main h1 {
-  display: inline-block;
+.profile-header-main h2 {
   margin: 0;
   color: var(--n-1);
-  font-size: 21px;
+  font-size: 22px;
   font-weight: 700;
   letter-spacing: -0.01em;
+}
+
+.profile-role {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 6px;
+  background: var(--primary-bg);
+  color: var(--primary-text);
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.profile-role.is-muted {
+  background: var(--n-9);
+  color: var(--n-3);
 }
 
 .profile-header-main p {
   margin: 5px 0 0;
   color: var(--n-4);
-  font-family: "SF Mono", ui-monospace, Menlo, monospace;
-  font-size: 12.5px;
+  font-size: 13px;
 }
+
+.profile-header .danger-outline {
+  height: 34px;
+  padding: 0 14px;
+  gap: 7px;
+  border-radius: 8px;
+  border-color: #ff4d4f;
+  color: #ff4d4f;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.profile-header .danger-outline:hover {
+  background: color-mix(in srgb, #ff4d4f 8%, var(--surface-card));
+}
+
+/* --- Две колонки --- */
+
+.profile-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.profile-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+/* --- Карточка --- */
 
 .profile-card {
-  padding: 18px 20px;
-  box-shadow: var(--shadow-sm);
+  padding: 20px 24px;
+  border: 1px solid var(--n-8);
+  border-radius: 12px;
+  background: var(--surface-card);
 }
 
-.profile-card h3 {
+.profile-card > h3 {
   margin: 0 0 16px;
   color: var(--n-1);
   font-size: 14px;
   font-weight: 700;
 }
 
-.profile-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 14px;
+.profile-card > h3:has(+ .profile-card-lead) {
+  margin-bottom: 4px;
 }
 
-.profile-actions {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 16px;
+.profile-card-lead {
+  margin: 0 0 18px;
+  color: var(--n-4);
+  font-size: 12.5px;
+  line-height: 1.5;
 }
 
 .profile-message {
   margin-top: 12px;
-  padding: 9px 12px;
-  color: var(--primary-text);
-  background: var(--primary-bg);
-  border: 1px solid var(--primary-border);
-  border-radius: 9px;
+  color: var(--n-4);
   font-size: 12.5px;
-  font-weight: 500;
 }
 
 .profile-message.error {
   color: var(--error-text);
-  background: var(--error-bg);
-  border-color: var(--error-border);
 }
 
-.profile-message.sessions {
-  margin: 0 20px 12px;
+/* Поля профиля: подпись 12.5/600 --n-3, поле 36px на подложке --n-10. */
+
+.profile-page .readonly-field span {
+  margin-bottom: 6px;
+  color: var(--n-3);
+  font-size: 12.5px;
+  font-weight: 600;
 }
 
-.password-fields {
-  max-width: 380px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+.profile-page .readonly-field input,
+.profile-page .form-field.is-editable input {
+  height: 36px;
+  color: var(--n-1);
+  background: var(--n-10);
+  border-color: var(--n-7);
+  font-size: 13.5px;
 }
 
-.totp-card {
-  position: relative;
+.profile-page .readonly-field input.mono {
+  font-size: 13px;
+}
+
+.profile-page .primary-button,
+.profile-page .secondary-button,
+.profile-page .danger-outline {
+  min-height: 0;
+  height: 34px;
+  gap: 7px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: none;
+}
+
+.profile-page .primary-button {
+  padding: 0 16px;
+}
+
+.profile-page .secondary-button {
+  padding: 0 14px;
+  border-color: var(--n-7);
+}
+
+/* --- P1 Личные данные --- */
+
+.profile-photo-field {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 16px;
-  flex-wrap: wrap;
+  padding-bottom: 18px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--n-9);
 }
 
-.totp-card > div:first-child {
+.profile-photo-preview {
+  flex: none;
+  display: flex;
+  border-radius: 50%;
+}
+
+.profile-photo-preview .avatar {
+  width: 56px;
+  height: 56px;
+  font-size: 19px;
+}
+
+.profile-photo-copy {
   flex: 1;
   min-width: 0;
 }
 
-.totp-card p {
-  margin: 4px 0 0;
-  color: var(--n-4);
-  font-size: 12.5px;
-  line-height: 1.5;
-}
-
-.security-note {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 14px;
-  padding: 11px 14px;
-  border-radius: 9px;
-  font-size: 12.5px;
-}
-
-.security-note.ok {
-  color: var(--success-text);
-  background: var(--success-bg);
-  border: 1px solid var(--success-border);
-}
-
-.security-note.warn,
-.security-note.warning {
-  color: var(--warning-text);
-  background: var(--warning-bg);
-  border: 1px solid var(--warning-border);
-}
-
-.sessions-card {
-  overflow: hidden;
-  box-shadow: var(--shadow-sm);
-}
-
-.sessions-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 18px 20px 12px;
-}
-
-.sessions-card h3 {
-  margin: 0;
-  color: var(--n-1);
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.sessions-revoke {
-  height: 32px;
-  padding: 0 12px;
-  border-radius: 8px;
-  font-size: 12.5px;
-}
-
-.session-row {
-  display: flex;
-  align-items: center;
-  gap: 13px;
-  padding: 13px 20px;
-  border-top: 1px solid var(--n-9);
-}
-
-.session-icon {
-  width: 34px;
-  height: 34px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: none;
-  color: var(--n-4);
-  background: var(--n-9);
-  border-radius: 9px;
-}
-
-.session-row strong {
+.profile-photo-copy strong {
   display: block;
-  color: var(--n-2);
-  font-size: 13px;
-  font-weight: 500;
+  color: var(--n-1);
+  font-size: 13.5px;
 }
 
-.session-row small {
+.profile-photo-copy small {
   display: block;
   margin-top: 3px;
   color: var(--n-4);
-  font-size: 11.5px;
+  font-size: 12px;
+  line-height: 1.45;
 }
 
-.session-row b {
-  padding: 1px 8px;
-  color: var(--success-text);
-  background: var(--success-bg);
-  border-radius: 5px;
-  font-size: 10.5px;
+.profile-photo-error {
+  color: var(--error-text);
+}
+
+.profile-photo-actions {
+  display: flex;
+  flex: none;
+  gap: 8px;
+}
+
+.profile-page .profile-photo-actions .secondary-button {
+  height: 32px;
+  padding: 0 12px;
+  font-size: 12.5px;
+}
+
+.profile-photo-remove {
+  height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--n-4);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.profile-photo-remove:hover:not(:disabled) {
+  background: var(--n-9);
+  color: #ff4d4f;
+}
+
+.profile-photo-remove:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.profile-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px 20px;
+}
+
+.profile-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+/* --- P1 Внешний вид --- */
+
+.appearance-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0;
+  padding: 12px 0;
+  border-top: 1px solid var(--n-9);
+}
+
+.appearance-row:last-of-type {
+  padding: 12px 0 4px;
+}
+
+.appearance-row > span {
+  color: var(--n-2);
+  font-size: 13px;
   font-weight: 600;
 }
 
+/* Сегмент-контрол темы (кадр P1): подложка --n-9, активная кнопка — карточка
+   с тенью. Тот же стандарт у «Настройки» → «Хранилище файлов». */
+.appearance-theme-options {
+  display: inline-flex;
+  width: fit-content;
+  gap: 0;
+  padding: 3px;
+  border-radius: 9px;
+  background: var(--n-9);
+}
 
-/* Уведомления в мессенджер: привязка к сервисному боту (TG/MAX). */
-.profile-notifications-note {
-  margin: 0 0 10px;
-  color: var(--n-4);
+.appearance-theme-options button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--n-3);
+  font-family: inherit;
   font-size: 12.5px;
-  line-height: 1.5;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.appearance-theme-options button.active {
+  background: var(--surface-card);
+  color: var(--n-1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.appearance-accents {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.appearance-accents > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: 50%;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.appearance-accents > button.active {
+  box-shadow: 0 0 0 2px var(--surface-card), 0 0 0 4px var(--accent-ring, var(--n-6));
+}
+
+.appearance-separator {
+  width: 1px;
+  height: 22px;
+  margin: 0 2px;
+  background: var(--n-8);
+}
+
+.appearance-custom {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 4px 0 10px;
+  border: 1px solid var(--n-7);
+  border-radius: 8px;
+  background: var(--n-10);
+}
+
+.appearance-custom-swatch {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  border-radius: 4px;
+  background: var(--n-6);
+}
+
+.appearance-custom input {
+  width: 64px;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--n-5);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+}
+
+.appearance-custom button {
+  height: 24px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--n-8);
+  color: var(--n-3);
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* --- P1 Уведомления в мессенджер --- */
+
+.profile-notifications-block {
+  padding: 14px 0 12px;
+  border-top: 1px solid var(--n-9);
 }
 
 .profile-notifications-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
-  padding: 10px 0;
-  border-top: 1px solid var(--n-8);
 }
 
-.profile-notifications-row > div:first-child strong {
+.profile-notifications-tile {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+}
+
+.profile-notifications-name {
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-notifications-name strong {
   display: block;
+  color: var(--n-1);
   font-size: 13.5px;
 }
 
-.profile-notifications-row > div:first-child small {
+.profile-notifications-name small {
+  display: block;
+  margin-top: 2px;
   color: var(--n-4);
   font-size: 12px;
 }
 
-.profile-notifications-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.profile-notifications-actions code {
-  padding: 3px 8px;
-  border-radius: 6px;
-  background: var(--n-9);
-  font-size: 12px;
-}
-
 .profile-notifications-status {
-  font-size: 12.5px;
-  font-weight: 600;
-}
-
-.profile-notifications-status.ok {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 6px;
+  background: var(--success-bg);
   color: var(--success-text);
-}
-
-.profile-notifications-status.wait {
-  color: var(--warning-text);
-}
-
-.profile-notifications-link {
-  color: var(--primary);
-  font-size: 13px;
+  font-size: 11.5px;
   font-weight: 600;
 }
 
-.profile-notifications-block + .profile-notifications-block .profile-notifications-row {
-  border-top: 1px solid var(--n-8);
+.profile-page .profile-notifications-row .secondary-button {
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 7px;
+  font-size: 12.5px;
 }
 
 .profile-notifications-bind {
   display: inline-flex;
   align-items: center;
-  height: 34px;
-  padding: 0 16px;
-  border-radius: 8px;
+  gap: 6px;
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 7px;
   background: var(--primary);
   color: #ffffff;
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 600;
-  text-decoration: none;
 }
 
-.profile-notifications-bind:hover {
-  background: var(--primary-hover);
-  color: #ffffff;
+.profile-notifications-wait {
+  color: var(--n-4);
+  font-size: 12.5px;
 }
 
 .profile-notifications-types {
   display: flex;
   flex-wrap: wrap;
   gap: 8px 18px;
-  padding: 2px 0 10px;
+  margin: 12px 0 0 46px;
 }
 
 .profile-notifications-types label {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 7px;
-  color: var(--n-3);
+  color: var(--n-2);
   font-size: 12.5px;
   cursor: pointer;
 }
 
 .profile-notifications-types input {
-  accent-color: var(--primary);
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
 }
 
-/* --- «Внешний вид» (SPEC-HUB-0031 §7) --- */
-
-.appearance-card h3 {
-  margin: 0 0 14px;
+.profile-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex: none;
+  border: 1px solid var(--n-6);
+  border-radius: 4px;
+  background: var(--surface-card);
+  color: #ffffff;
 }
 
-.appearance-row {
+.profile-check.is-on {
+  border-color: var(--primary);
+  background: var(--primary);
+}
+
+.profile-notifications-types input:focus-visible + .profile-check {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+
+.profile-notifications-note {
+  margin: 6px 0 0;
+  color: var(--n-4);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* --- P1 Смена пароля --- */
+
+.password-fields {
   display: flex;
   flex-direction: column;
-  gap: 7px;
-  margin-bottom: 14px;
+  gap: 12px;
 }
 
-.appearance-row > span {
-  color: var(--text-tertiary);
+.password-fields + .profile-actions,
+.profile-message + .profile-actions {
+  margin-top: 16px;
+}
+
+/* --- P1 Двухфакторная аутентификация --- */
+
+.totp-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.totp-card > .totp-head h3 {
+  margin: 0 0 4px;
+  color: var(--n-1);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.totp-card p {
+  margin: 0;
+  color: var(--n-4);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.totp-head .ui-switch {
+  margin-top: 2px;
+}
+
+.security-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 10px 12px;
+  border-radius: 8px;
   font-size: 12.5px;
   font-weight: 500;
 }
 
-.appearance-theme-options {
-  display: inline-flex;
-  gap: 0;
-  border: 1px solid var(--border-input);
-  border-radius: 9px;
-  overflow: hidden;
-  width: fit-content;
+.security-note.ok {
+  border: 1px solid var(--success-border);
+  background: var(--success-bg);
+  color: var(--success-text);
 }
 
-.appearance-theme-options button {
-  padding: 7px 14px;
-  border: none;
-  background: var(--surface-card);
-  color: var(--text-secondary);
+.security-note.warning {
+  border: 1px solid var(--warning-border);
+  background: var(--warning-bg);
+  color: var(--warning-text);
+}
+
+/* --- P1 Активные сессии --- */
+
+.sessions-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.sessions-head h3 {
+  margin: 0;
+  color: var(--n-1);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.profile-page .sessions-revoke {
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 7px;
+  border-color: #ff4d4f;
+  color: #ff4d4f;
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.profile-page .sessions-revoke:hover:not(:disabled) {
+  background: color-mix(in srgb, #ff4d4f 8%, var(--surface-card));
+}
+
+.session-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--n-9);
+}
+
+.session-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border-radius: 8px;
+  background: var(--n-9);
+  color: var(--n-3);
+}
+
+.session-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.session-main strong {
+  display: block;
+  color: var(--n-1);
   font-size: 13px;
-  cursor: pointer;
-  font-family: inherit;
 }
 
-.appearance-theme-options button + button {
-  border-left: 1px solid var(--border-input);
+.session-main small {
+  display: block;
+  margin-top: 2px;
+  color: var(--n-4);
+  font-size: 11.5px;
 }
 
-.appearance-theme-options button.active {
-  background: var(--primary);
-  color: #fff;
+.session-current {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 7px;
+  border-radius: 5px;
+  background: var(--primary-bg);
+  color: var(--primary-text);
+  font-size: 11px;
   font-weight: 600;
 }
 
-.appearance-accents {
+.session-time {
+  color: var(--n-5);
+  font-size: 11.5px;
+}
+
+/* --- Кадр M: мобильный профиль --- */
+
+.profile-mobile-bar {
   display: flex;
   align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.appearance-accents > button {
-  width: 28px;
-  height: 28px;
-  border: 2px solid transparent;
-  border-radius: 50%;
-  cursor: pointer;
-  padding: 0;
-}
-
-.appearance-accents > button.active {
-  border-color: var(--text-heading);
-  box-shadow: inset 0 0 0 2px var(--surface-card);
-}
-
-.appearance-custom {
-  display: flex;
   gap: 6px;
-  margin-left: 6px;
+  padding: 14px 12px 10px;
+  background: var(--surface-card);
+  border-bottom: 1px solid var(--n-8);
 }
 
-.appearance-custom input {
-  width: 96px;
-  padding: 5px 9px;
-  border: 1px solid var(--border-input);
+.profile-mobile-bar > button:first-child {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
   border-radius: 8px;
-  background: var(--surface-card);
-  color: var(--text-body);
-  font-family: var(--font-mono, ui-monospace, monospace);
-  font-size: 12.5px;
-}
-
-.appearance-custom button {
-  padding: 0 11px;
-  border: 1px solid var(--border-input);
-  border-radius: 8px;
-  background: var(--surface-card);
-  color: var(--text-secondary);
-  font-size: 12.5px;
+  background: transparent;
+  color: var(--n-2);
   cursor: pointer;
 }
 
-.appearance-note {
-  margin: 0;
-  color: var(--text-tertiary);
-  font-size: 12px;
+.profile-mobile-bar > button:first-child svg {
+  transform: rotate(90deg);
 }
 
-/* Фото профиля: превью 56px, без нижней границы поля логотипа. */
-.profile-avatar-field {
-  padding-bottom: 0;
+.profile-mobile-bar > button:first-child:disabled {
+  opacity: 0.35;
+}
+
+.profile-mobile-bar h2 {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  color: var(--n-1);
+  font-size: 17px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-mobile-logout {
+  height: 32px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #ff4d4f;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.profile-mobile-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+}
+
+.profile-mobile-list {
+  border: 1px solid var(--n-8);
+  border-radius: 12px;
+  background: var(--surface-card);
+  overflow: hidden;
+}
+
+.profile-mobile-list button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  height: 52px;
+  padding: 0 16px;
+  border: 0;
+  border-bottom: 1px solid var(--n-9);
+  background: transparent;
+  color: var(--n-1);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+}
+
+.profile-mobile-list button:last-child {
   border-bottom: 0;
 }
 
-.profile-avatar-preview .avatar {
-  width: 56px;
-  height: 56px;
-  font-size: 18px;
+.profile-mobile-list button > span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-mobile-list small {
+  color: var(--n-4);
+  font-size: 12.5px;
+}
+
+.profile-mobile-list small.ok {
+  color: var(--success-text);
+}
+
+.profile-mobile-list svg {
+  flex: none;
+  color: var(--n-5);
+  transform: rotate(-90deg);
+}
+
+@media (max-width: 900px) {
+  .hub-shell.is-profile-route {
+    min-width: 0;
+  }
+
+  /* Кадр M: профиль занимает весь экран, сайдбара нет — возврат кнопкой в шапке. */
+  .hub-shell.is-profile-route .hub-sidebar {
+    display: none;
+  }
+
+  .profile-page.is-mobile {
+    max-width: none;
+    padding: 0;
+  }
+
+  .profile-page.is-mobile .profile-header {
+    gap: 14px;
+    margin: 0;
+    padding: 4px 0 6px;
+  }
+
+  .profile-page.is-mobile .profile-header-photo {
+    box-shadow: none;
+  }
+
+  .profile-page.is-mobile .profile-header-photo .avatar {
+    width: 60px;
+    height: 60px;
+    font-size: 21px;
+  }
+
+  .profile-page.is-mobile .profile-header-main h2 {
+    font-size: 18px;
+  }
+
+  .profile-page.is-mobile .profile-header-main p {
+    font-size: 12.5px;
+  }
+
+  .profile-page.is-mobile .profile-header .danger-outline {
+    display: none;
+  }
+
+  .profile-page.is-mobile .profile-card {
+    padding: 16px;
+  }
+
+  .profile-page.is-mobile .profile-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .profile-page.is-mobile .readonly-field input {
+    height: 44px;
+    font-size: 15px;
+  }
+
+  .profile-page.is-mobile .readonly-field input.mono {
+    font-size: 14px;
+  }
+
+  .profile-page.is-mobile .profile-actions {
+    margin-top: 14px;
+  }
+
+  .profile-page.is-mobile .profile-actions .primary-button {
+    flex: 1;
+    height: 44px;
+    border-radius: 10px;
+    font-size: 15px;
+  }
+
+  /* Кадр M: сегмент темы во всю ширину, акцент остаётся строкой. */
+  .profile-page.is-mobile .appearance-row {
+    gap: 10px;
+    border-top: 0;
+    padding: 0;
+  }
+
+  .profile-page.is-mobile .appearance-row:first-of-type {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .profile-page.is-mobile .appearance-theme-options {
+    width: 100%;
+  }
+
+  .profile-page.is-mobile .appearance-theme-options button {
+    flex: 1;
+    min-width: 0;
+    height: 36px;
+    padding: 0 8px;
+    font-size: 13px;
+  }
+
+  .profile-page.is-mobile .appearance-accents {
+    justify-content: flex-end;
+    gap: 12px;
+  }
+
+  .profile-page.is-mobile .appearance-accents > button {
+    width: 32px;
+    height: 32px;
+  }
+
+  /* Кадр M: фото и подпись строкой, кнопки — под ними во всю ширину. */
+  .profile-page.is-mobile .profile-photo-field {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 12px 14px;
+    align-items: center;
+  }
+
+  .profile-page.is-mobile .profile-photo-actions {
+    grid-column: 1 / -1;
+  }
+
+  .profile-page.is-mobile .appearance-row > span {
+    white-space: nowrap;
+  }
+
+  .profile-page.is-mobile .profile-notifications-types {
+    margin-left: 0;
+  }
 }

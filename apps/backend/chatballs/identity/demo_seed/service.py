@@ -16,6 +16,7 @@ from django.utils import timezone
 
 from chatballs.events.services import DomainEvent, enqueue_event
 from chatballs.identity.audit import record_audit_event
+from chatballs.identity.avatars import user_avatar_url_in
 from chatballs.identity.demo_models import DemoDataset, DemoDatasetStatus
 from chatballs.identity.demo_seed.orchestrator import run_demo_seed
 from chatballs.identity.demo_seed.registry import recording, remove_records
@@ -34,7 +35,7 @@ class DemoBusy(ValidationError):
     """Установка или удаление уже идут."""
 
 
-def showcase_accounts() -> list[dict[str, object]]:
+def showcase_accounts(organization_id: int) -> list[dict[str, object]]:
     """Учётки для входа «посмотреть глазами сотрудника»: админ и по одному
     сотруднику из разных групп. Пароль общий и намеренно публичный — это демо."""
     from chatballs.identity.demo_seed import manifest
@@ -42,9 +43,13 @@ def showcase_accounts() -> list[dict[str, object]]:
     data = manifest.load("organization")
     by_key = {item["key"]: item for item in data["accounts"]}
     groups = {item["key"]: item["name"] for item in data.get("groups", [])}
+    keys = data.get("showcaseAccounts", [])
+    emails = [by_key[key]["email"] for key in keys]
+    users = {user.email: user for user in HumanUser.objects.filter(email__in=emails)}
     accounts = []
-    for key in data.get("showcaseAccounts", []):
+    for key in keys:
         item = by_key[key]
+        user = users.get(item["email"])
         accounts.append(
             {
                 "fullName": item["fullName"],
@@ -53,6 +58,8 @@ def showcase_accounts() -> list[dict[str, object]]:
                 "role": item["role"],
                 "positionTitle": item.get("positionTitle", ""),
                 "groups": [groups[g] for g in item.get("groups", []) if g in groups],
+                # Фото сотрудника — кадр N7 показывает его в строке учётки.
+                "avatarUrl": user_avatar_url_in(user, organization_id) if user else None,
             }
         )
     return accounts
@@ -76,7 +83,7 @@ def demo_status(organization: Organization) -> dict[str, object]:
         "error": dataset.error,
         "startedAt": dataset.started_at.isoformat(),
         "finishedAt": dataset.finished_at.isoformat() if dataset.finished_at else None,
-        "accounts": showcase_accounts() if installed else [],
+        "accounts": showcase_accounts(organization.id) if installed else [],
     }
 
 

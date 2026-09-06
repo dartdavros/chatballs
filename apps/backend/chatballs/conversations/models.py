@@ -25,10 +25,47 @@ class Contact(models.Model):
     description = models.TextField(blank=True, default="")
     company = models.CharField(max_length=160, blank=True, default="")
     city = models.CharField(max_length=120, blank=True, default="")
+    # Контакт, в который этот был объединён (ADR-HUB-0006). Строка не удаляется:
+    # объединение обратимо, поэтому исходный контакт остаётся для разъединения.
+    merged_into = models.ForeignKey(
+        "self",
+        on_delete=models.SET_NULL,
+        related_name="merged_contacts",
+        null=True,
+        blank=True,
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
         return self.name or f"contact:{self.id}"
+
+
+class ContactMerge(models.Model):
+    """Журнал объединения контактов (ADR-HUB-0006).
+
+    Хранит, что именно переехало, чтобы объединение можно было развернуть
+    обратно: перенесённые идентичности и диалоги и поля карточки, которые были
+    заполнены из исходного контакта.
+    """
+
+    organization = models.ForeignKey("identity.Organization", on_delete=models.PROTECT, related_name="contact_merges")
+    target = models.ForeignKey(Contact, on_delete=models.PROTECT, related_name="merges_in")
+    source = models.ForeignKey(Contact, on_delete=models.PROTECT, related_name="merges_out")
+    reason = models.TextField()
+    actor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
+    moved_identity_ids = models.JSONField(default=list, blank=True)
+    moved_conversation_ids = models.JSONField(default=list, blank=True)
+    filled_fields = models.JSONField(default=list, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    reverted_at = models.DateTimeField(null=True, blank=True)
+    reverted_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
+    revert_reason = models.TextField(blank=True, default="")
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return f"merge:{self.source_id}->{self.target_id}"
 
 
 class ConnectionIdentity(TenantRelationModel):
@@ -40,6 +77,10 @@ class ConnectionIdentity(TenantRelationModel):
     display_name = models.CharField(max_length=255, blank=True)
     # Публичный логин в мессенджере (@username в TG/MAX); пустой, если не задан.
     username = models.CharField(max_length=128, blank=True)
+    # Когда подключение отдало подтверждённый телефон (кнопка «поделиться
+    # контактом»). Только такая идентичность считается подтверждённой
+    # (ADR-HUB-0006) — колонка «Статус» на вкладке «Идентификаторы».
+    phone_verified_at = models.DateTimeField(null=True, blank=True, db_default=None)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -142,6 +183,16 @@ class Conversation(models.Model):
     )
     labels = models.ManyToManyField(ConversationLabel, blank=True, related_name="conversations")
     note = models.TextField(blank=True)
+    # Кто и когда оставил заметку — подпись «Анна Ким · 2 сен» на карточке
+    # контакта (дизайн-базлайн v2, кадр K3).
+    note_author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+    )
+    note_updated_at = models.DateTimeField(null=True, blank=True, db_default=None)
     # «Удалить диалог» = архив (решение владельца): скрыт из списков, видят
     # только администраторы; данные не удаляются.
     archived_at = models.DateTimeField(null=True, blank=True)

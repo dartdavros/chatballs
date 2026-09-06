@@ -3,6 +3,7 @@ import { useState } from "react";
 
 import { Icon, MaxLogo, TelegramLogo } from "../../shared/icons";
 import { Button, ToneBadge } from "../../shared/ui-controls";
+import { shortDateTime } from "../../shared/utils";
 import { PROVIDERS, STATUS_META, type Integration, type IntegrationProvider } from "./model";
 
 // Плитка подключения: фирменная марка на фирменном фоне (SPEC-HUB-0025 §2.3).
@@ -16,20 +17,28 @@ const TILE_CLASS: Partial<Record<IntegrationProvider, string>> = {
 
 export function ConnectionIcon({ provider }: { provider: IntegrationProvider }) {
   const tile = TILE_CLASS[provider];
-  if (!tile) return <span className="product-icon"><Icon name="robot" size={20} /></span>;
+  // AI-провайдеры (кадр N3): знак «искры» на подложке цвета AI, у остальных —
+  // нейтральная плитка.
+  if (!tile) {
+    return (
+      <span className={`product-icon integration-tile ${provider === "OPENROUTER" ? "integration-tile--ai" : "integration-tile--neutral"}`}>
+        <Icon name="sparkles" size={20} strokeWidth={1.9} />
+      </span>
+    );
+  }
   return (
     <span className={`product-icon integration-tile ${tile}`}>
-      {provider === "TELEGRAM" && <TelegramLogo size={24} />}
-      {provider === "MAX" && <MaxLogo size={24} />}
-      {provider === "WEB" && <Icon name="message" size={22} />}
-      {provider === "EMAIL" && <Icon name="mail" size={21} />}
+      {provider === "TELEGRAM" && <TelegramLogo size={20} />}
+      {provider === "MAX" && <MaxLogo size={20} />}
+      {provider === "WEB" && <Icon name="message" size={20} strokeWidth={1.9} />}
+      {provider === "EMAIL" && <Icon name="mail" size={20} strokeWidth={1.9} />}
     </span>
   );
 }
 
 export function formatChecked(value: string | null): string {
   if (!value) return "ещё не проверялось";
-  return new Date(value).toLocaleString("ru-RU", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+  return shortDateTime(value);
 }
 
 export function StatusCell({ integration }: { integration: Integration }) {
@@ -78,7 +87,7 @@ export function RowActions({ integration, testing, onTest, onEdit, onToggleActiv
   ];
   return (
     <div className="ai-row-actions">
-      <Button variant="secondary" icon="refresh" iconSize={14} disabled={!meta.checkable || testing} onClick={() => onTest(integration)}>
+      <Button variant="secondary" icon="refresh" iconSize={13} disabled={!meta.checkable || testing} onClick={() => onTest(integration)}>
         {testing ? "Проверка…" : "Проверить"}
       </Button>
       <Dropdown menu={{ items: menuItems }} open={open} onOpenChange={setOpen} trigger={["click"]} overlayClassName="app-dropdown">

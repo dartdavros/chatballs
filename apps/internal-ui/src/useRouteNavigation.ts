@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 
 import { pathFromRoute, type RouteState } from "./router";
+import { settingsSectionKey } from "./features/settings/sections";
 import type { RouteKey } from "./types";
 
 export function useRouteNavigation(
@@ -16,6 +17,7 @@ export function useRouteNavigation(
   const [selectedClientId, setSelectedClientId] = useState(initialRoute.clientId);
   const [selectedChannelId, setSelectedChannelId] = useState(initialRoute.channelId);
   const [selectedSupportPortalId, setSelectedSupportPortalId] = useState(initialRoute.supportPortalId);
+  const [selectedSettingsSection, setSelectedSettingsSection] = useState(initialRoute.settingsSection);
 
   const applyRouteState = useCallback((next: RouteState) => {
     setRoute(next.route);
@@ -27,11 +29,13 @@ export function useRouteNavigation(
     setSelectedClientId(next.clientId);
     setSelectedChannelId(next.channelId);
     setSelectedSupportPortalId(next.supportPortalId);
+    setSelectedSettingsSection(next.settingsSection);
   }, []);
 
+  // У «Настроек» второй аргумент — ключ раздела субменю, а не id сущности.
   const navigate = useCallback((
     nextRoute: RouteKey,
-    entityId: number | null = null,
+    entityId: number | string | null = null,
     replace = false,
     productCode: string | null = null,
     organizationId: string | null = organizationPublicId,
@@ -39,17 +43,18 @@ export function useRouteNavigation(
     const nextState: RouteState = {
       organizationPublicId: organizationId,
       route: nextRoute,
-      employeeId: nextRoute === "employeeDetail" ? entityId : null,
+      employeeId: nextRoute === "employeeDetail" && typeof entityId === "number" ? entityId : null,
       productCode,
-      agentId: nextRoute === "agentDetail" ? entityId : null,
-      knowledgeId: nextRoute === "aiKnowledgeDetail" ? entityId : null,
-      clientId: nextRoute === "salesClientDetail" ? entityId : null,
+      agentId: nextRoute === "agentDetail" && typeof entityId === "number" ? entityId : null,
+      knowledgeId: nextRoute === "aiKnowledgeDetail" && typeof entityId === "number" ? entityId : null,
+      clientId: nextRoute === "salesClientDetail" && typeof entityId === "number" ? entityId : null,
       channelId: null,
-      supportPortalId: nextRoute === "supportPortalDetail" ? entityId : null,
+      supportPortalId: nextRoute === "supportPortalDetail" && typeof entityId === "number" ? entityId : null,
+      settingsSection: nextRoute === "settings" ? settingsSectionKey(String(entityId)) : null,
     };
     applyRouteState(nextState);
     setSelectedConversationId(
-      nextRoute === "chat" ? entityId : null,
+      nextRoute === "chat" && typeof entityId === "number" ? entityId : null,
     );
     const nextPath = pathFromRoute(
       nextRoute,
@@ -72,6 +77,7 @@ export function useRouteNavigation(
     selectedClientId,
     selectedChannelId,
     selectedSupportPortalId,
+    selectedSettingsSection,
     applyRouteState,
     navigate,
   };

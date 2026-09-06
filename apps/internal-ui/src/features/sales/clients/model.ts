@@ -1,9 +1,17 @@
-// Код продукта организации (любой) — справочник строится из данных, а не зашит.
-export type ClientProductCode = string;
-export type ClientProductRef = { code: ClientProductCode; name: string };
+// Список контактов (дизайн-базлайн v2, кадры K1/K2): контакт · как связаться ·
+// каналы · последний диалог · открытые. Коммерции здесь нет — колонка
+// «Продукты» и фильтр по продуктам убраны (ADR-HUB-0041).
+
+import { waitLabelOf } from "../../conversations/model";
+import { channelMap } from "../../../shared/providers";
+import { shortDate } from "../../../shared/utils";
+
+export { channelMap };
+
 export type ClientChannelCode = "EMAIL" | "MAX" | "TG" | "WEB";
 export type ClientSortKey = "last" | "open";
-export type ClientDropdown = "products" | "channels";
+export type ClientDropdown = "agents" | "channels";
+export type ClientAgentRef = { id: number; code: string; name: string };
 
 export type SalesClient = {
   id: number;
@@ -17,51 +25,43 @@ export type SalesClient = {
   username: string;
   anon?: boolean;
   channels: ClientChannelCode[];
-  products: ClientProductRef[];
+  agents: ClientAgentRef[];
   last: number;
-  lastLabel: string;
+  lastAt: string;
   mode: "wait" | "ai" | "operator" | "closed";
+  lastAgentName: string;
+  lastAssignee: string;
   openDialogs: number;
 };
 
-export type SalesClientRowVm = Omit<SalesClient, "channels" | "products"> & {
+export type SalesClientRowVm = Omit<SalesClient, "channels"> & {
   lastDot: string;
+  lastWho: string;
+  lastWhen: string;
   openColor: string;
-  channels: Array<{ label: string; full: string; color: string; bg: string }>;
-  products: Array<{ name: string; color: string; bg: string }>;
+  contactLine: string;
+  contactSub: string;
+  channels: Array<{ code: ClientChannelCode; full: string; color: string; bg: string }>;
 };
-
-export const channelMap = {
-  EMAIL: { label: "Email", full: "Email", color: "#d48806", bg: "#fff7e6" },
-  MAX: { label: "MAX", full: "MAX", color: "#6b5be0", bg: "#f2f0ff" },
-  TG: { label: "TG", full: "Telegram", color: "#2f8fd0", bg: "#eaf6fd" },
-  WEB: { label: "Web", full: "Web Chat", color: "#0f9b8e", bg: "#e8f7f4" },
-} satisfies Record<ClientChannelCode, { label: string; full: string; color: string; bg: string }>;
-
-// Цвет продукта — детерминированно по коду (одна палитра с аватарами).
-export function productStyle(code: string): { color: string; bg: string } {
-  const color = avatarColor(`product:${code}`);
-  return { color, bg: `color-mix(in srgb, ${color} 12%, var(--surface-card))` };
-}
-
-export function productOptionsOf(clients: SalesClient[]): Array<{ code: ClientProductCode; name: string }> {
-  const seen = new Map<string, string>();
-  for (const client of clients) for (const product of client.products) seen.set(product.code, product.name);
-  return [...seen.entries()].map(([code, name]) => ({ code, name })).sort((a, b) => a.name.localeCompare(b.name, "ru"));
-}
 
 export const channelOptions: Array<{ code: ClientChannelCode; name: string; color: string }> = [
   { code: "EMAIL", name: "Email", color: channelMap.EMAIL.color },
   { code: "MAX", name: "MAX", color: channelMap.MAX.color },
   { code: "TG", name: "Telegram", color: channelMap.TG.color },
-  { code: "WEB", name: "Web Chat", color: channelMap.WEB.color },
+  { code: "WEB", name: "Web-виджет", color: channelMap.WEB.color },
 ];
+
+export function agentOptionsOf(clients: SalesClient[]): ClientAgentRef[] {
+  const seen = new Map<number, ClientAgentRef>();
+  for (const client of clients) for (const agent of client.agents) seen.set(agent.id, agent);
+  return [...seen.values()].sort((a, b) => a.name.localeCompare(b.name, "ru"));
+}
 
 const statusDot = {
   wait: "#faad14",
-  ai: "#722ed1",
-  operator: "#1677ff",
-  closed: "#bfbfbf",
+  ai: "var(--ai)",
+  operator: "var(--primary)",
+  closed: "var(--n-5)",
 } satisfies Record<SalesClient["mode"], string>;
 
 // Реальный контакт с бэкенда (conversations/clients.py).
@@ -74,11 +74,14 @@ export type ApiClient = {
   email: string;
   username: string;
   channels: ClientChannelCode[];
-  products: ClientProductRef[];
+  agents: ClientAgentRef[];
   openDialogs: number;
   totalDialogs: number;
   lastActivityAt: string;
   mode: SalesClient["mode"];
+  lastAgentName: string;
+  lastAgentCode: string;
+  lastAssignee: string;
 };
 
 const AVATAR_COLORS = ["#eb6f4b", "#3b82c4", "#9254de", "#13a8a8", "#d4860b", "#52a838", "#c4456b", "#4c6ef0", "#7048b6"];
@@ -103,35 +106,74 @@ export function relativeTime(iso: string): { minutes: number; label: string } {
   return { minutes, label: `${Math.floor(hours / 24)} д назад` };
 }
 
+// «17:10 · сегодня» · «вчера, 18:02» · «3 сен» (кадр K1).
+export function contactTime(iso: string, now = new Date()): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  const time = date.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+  const days = Math.round((startOfDay(now).getTime() - startOfDay(date).getTime()) / 86400000);
+  if (days === 0) return `${time} · сегодня`;
+  if (days === 1) return `вчера, ${time}`;
+  return shortDate(date);
+}
+
+function startOfDay(date: Date): Date {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+// Кто ведёт последний диалог (кадр K1): AI с именем агента, ожидание с
+// таймером, сотрудник по имени, закрытый — кем закрыт.
+export function lastDialogWho(client: SalesClient): string {
+  if (client.mode === "ai") return `AI · ${client.lastAgentName}`;
+  if (client.mode === "wait") return `Ждёт человека · ${waitLabelOf(client.lastAt)}`;
+  if (client.mode === "operator") return client.lastAssignee || "Ведёт сотрудник";
+  return `Закрыт · ${client.lastAssignee || "AI"}`;
+}
+
 export function toSalesClient(api: ApiClient): SalesClient {
   const isGuest = /гость/i.test(api.name);
-  const { minutes, label } = relativeTime(api.lastActivityAt);
+  const { minutes } = relativeTime(api.lastActivityAt);
   return {
     id: api.id,
     name: api.name,
     initials: initialsOf(api.name),
     avatarUrl: api.avatarUrl ?? "",
-    avatarBg: isGuest ? "#8c8c8c" : avatarColor(api.cid),
+    avatarBg: isGuest ? "var(--n-4)" : avatarColor(api.cid),
     cid: api.cid,
     phone: api.phone,
     email: api.email,
     username: api.username,
     anon: isGuest,
     channels: api.channels,
-    products: api.products,
+    agents: api.agents ?? [],
     last: minutes,
-    lastLabel: label,
+    lastAt: api.lastActivityAt,
     mode: api.mode,
+    lastAgentName: api.lastAgentName ?? "",
+    lastAssignee: api.lastAssignee ?? "",
     openDialogs: api.openDialogs,
   };
 }
 
 export function toSalesClientRow(client: SalesClient): SalesClientRowVm {
+  // «Как связаться»: телефон или email первой строкой, второй — логин либо
+  // оставшийся контакт; у анонимной сессии виджета контактов нет.
+  const contactLine = client.phone || client.email || "—";
+  const contactSub = client.phone && client.email
+    ? client.email
+    : client.username
+      ? `@${client.username}`
+      : client.anon
+        ? "анонимная сессия виджета"
+        : "";
   return {
     ...client,
-    channels: client.channels.map((channel) => channelMap[channel]),
-    products: client.products.map((product) => ({ name: product.name, ...productStyle(product.code) })),
+    channels: client.channels.map((code) => ({ code, ...channelMap[code] })),
     lastDot: statusDot[client.mode],
-    openColor: client.openDialogs > 0 ? "#d48806" : "#bfbfbf",
+    lastWho: lastDialogWho(client),
+    lastWhen: contactTime(client.lastAt),
+    contactLine,
+    contactSub,
+    openColor: client.openDialogs > 0 ? "var(--warning-text)" : "var(--n-5)",
   };
 }

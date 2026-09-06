@@ -1,17 +1,26 @@
 import { Dropdown, Modal } from "antd";
 import { useState } from "react";
 
-import { Icon } from "../../shared/icons";
-import { ChannelBadge } from "../../shared/badges";
+import { ChannelGlyph } from "../../shared/badges";
 import { FormField, SelectField } from "../../shared/form-controls";
-import { EmptyState, PageHeader, StatusPill } from "../../shared/ui";
+import { Icon } from "../../shared/icons";
 import { Button } from "../../shared/ui-controls";
 import type { EmployeeGroup } from "../../types";
-import { agentStatusLabel, createAgent, setAgentAiActive, type AgentCard } from "./model";
+import { groupColorOf } from "../conversations/model";
+import {
+  agentModelLabel,
+  agentStatusMeta,
+  agentTile,
+  agentTint,
+  createAgent,
+  setAgentAiActive,
+  type AgentCard,
+} from "./model";
 
-const STATUS_PILL = { active: "active", paused: "draft", disabled: "disabled" } as const;
+// Список агентов (дизайн-базлайн v2, «Агенты Baseline», кадры G1, G2, S1):
+// агент · группа · статус · модель · подключения · открытые · ⋯.
 
-/** Мастер одного шага (SPEC-HUB-0031 §4.3): имя и необязательная группа. */
+/** Мастер одного шага (SPEC-HUB-0031 §4.3, кадр G2): имя и группа. */
 function CreateAgentModal({ groups, onClose, onCreated }: { groups: EmployeeGroup[]; onClose: () => void; onCreated: (agentId: number) => void }) {
   const [name, setName] = useState("");
   const [groupId, setGroupId] = useState<number | null>(null);
@@ -32,8 +41,9 @@ function CreateAgentModal({ groups, onClose, onCreated }: { groups: EmployeeGrou
   }
 
   return (
-    <Modal open title="Создать агента" onCancel={onClose} footer={null} destroyOnClose>
-      <div className="integration-form">
+    <Modal className="agent-create-modal" open width={440} title="Создать агента" onCancel={onClose} footer={null} destroyOnClose>
+      <p className="agent-create-lead">Один шаг. Инструкции, модель, знания и подключения — потом, на карточке агента.</p>
+      <div className="agent-create-fields">
         <FormField label="Название" value={name} onChange={setName} placeholder="Например: Приёмная" />
         <SelectField
           label="Группа"
@@ -41,15 +51,73 @@ function CreateAgentModal({ groups, onClose, onCreated }: { groups: EmployeeGrou
           onChange={(value) => setGroupId(value ? Number(value) : null)}
           options={[["", "Без группы — диалоги видны всем"], ...groups.map((item) => [String(item.id), item.name] as [string, string])]}
         />
-        {error && <div className="integration-form-error">{error}</div>}
-        <div className="integration-form-actions">
-          <Button variant="secondary" onClick={onClose}>Отмена</Button>
-          <Button variant="primary" disabled={!name.trim() || submitting} onClick={() => void submit()}>
-            {submitting ? "Создание…" : "Создать"}
-          </Button>
-        </div>
+        {error && <div className="agent-form-error">{error}</div>}
+      </div>
+      <div className="agent-create-actions">
+        <Button variant="secondary" onClick={onClose}>Отмена</Button>
+        <Button variant="primary" disabled={!name.trim() || submitting} onClick={() => void submit()}>
+          {submitting ? "Создание…" : "Создать"}
+        </Button>
       </div>
     </Modal>
+  );
+}
+
+/** Строка списка (кадр G1). Вся строка открывает карточку. */
+function AgentRow({ card, openAgent, onToggleAi }: { card: AgentCard; openAgent: (agentId: number) => void; onToggleAi: (card: AgentCard) => void }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const tile = agentTile(card);
+  const status = agentStatusMeta(card);
+  const open = card.counters.openConversations;
+  const menuItems = [
+    { key: "open", label: <button type="button" onClick={() => { setMenuOpen(false); openAgent(card.id); }}><Icon name="external" size={15} />Открыть карточку</button> },
+    { type: "divider" as const },
+    {
+      key: "toggle",
+      label: (
+        <button type="button" className={card.aiStatus === "ACTIVE" ? "warning" : ""} onClick={() => { setMenuOpen(false); onToggleAi(card); }}>
+          <Icon name={card.aiStatus === "ACTIVE" ? "pause" : "bolt"} size={15} />
+          {card.aiStatus === "ACTIVE" ? "Остановить AI" : "Запустить AI"}
+        </button>
+      ),
+    },
+  ];
+
+  return (
+    <div className={`agents-row ${card.isActive ? "" : "is-off"}`} role="button" tabIndex={0} onClick={() => openAgent(card.id)} onKeyDown={(event) => { if (event.key === "Enter") openAgent(card.id); }}>
+      <div className="agents-row-agent">
+        <span className="agents-tile" style={{ background: tile.background, color: tile.color }}>
+          <Icon name="robot" size={20} strokeWidth={1.9} />
+        </span>
+        <span>
+          <strong>{card.name}</strong>
+          <small>{card.code}</small>
+        </span>
+      </div>
+      <span className={`agents-row-group ${card.groupId === null ? "is-none" : ""}`}>
+        {card.groupId !== null && <i style={{ background: groupColorOf(card.groupId, card.groupColor) }} />}
+        {card.groupName ?? "Без группы"}
+      </span>
+      <b className="agents-status" style={{ background: status.bg, color: status.color }}><i />{status.text}</b>
+      <span className="agents-row-model">{agentModelLabel(card)}</span>
+      <div className="agents-row-conns">
+        {card.connections.length === 0
+          ? <span className="agents-row-dash">—</span>
+          : card.connections.map((connection) => {
+            const tint = agentTint(connection.provider);
+            return (
+              <span className="agents-conn-tile" style={{ background: tint.bg, color: tint.color }} title={tint.full} key={connection.id}>
+                <ChannelGlyph provider={connection.provider} size={14} />
+                {connection.status === "ERROR" && <i />}
+              </span>
+            );
+          })}
+      </div>
+      <div className="agents-row-open" style={{ color: open ? "var(--warning-text)" : "var(--n-5)" }}>{open || "—"}</div>
+      <Dropdown menu={{ items: menuItems }} open={menuOpen} onOpenChange={setMenuOpen} trigger={["click"]} overlayClassName="app-dropdown">
+        <button className="agents-row-menu" type="button" aria-label="Действия агента" title="Действия" onClick={(event) => event.stopPropagation()}><Icon name="more" size={16} strokeWidth={2} /></button>
+      </Dropdown>
+    </div>
   );
 }
 
@@ -65,87 +133,44 @@ export function AgentsPage({
   openAgent: (agentId: number) => void;
 }) {
   const [creating, setCreating] = useState(false);
-  const [menuId, setMenuId] = useState<number | null>(null);
 
   async function toggleAi(card: AgentCard) {
-    setMenuId(null);
     await setAgentAiActive(card.id, card.aiStatus !== "ACTIVE").catch(() => undefined);
     reload();
   }
 
   return (
-    <div className="ai-page">
-      <PageHeader
-        title="Агенты"
-        text="Агент отвечает клиентам и собирает диалоги в группу"
-        action={<Button variant="primary" icon="plus" onClick={() => setCreating(true)}>Создать агента</Button>}
-      />
+    <div className="agents-page">
+      <header className="agents-header">
+        <div>
+          <h2>Агенты</h2>
+          <p>Агент отвечает клиентам первым и собирает диалоги в группу</p>
+        </div>
+        <Button variant="primary" className="agents-create" icon="plus" iconSize={15} onClick={() => setCreating(true)}>Создать агента</Button>
+      </header>
       {agents.length === 0 ? (
-        <EmptyState title="Агент отвечает клиентам первым. Создайте первого" />
+        <div className="agents-empty">
+          <span><Icon name="robot" size={24} strokeWidth={1.8} /></span>
+          <div>
+            <strong>Агент отвечает клиентам первым. Создайте первого</strong>
+            <p>Имя и группа — всё, что нужно для старта. Инструкции, знания и подключения настраиваются потом на карточке.</p>
+          </div>
+          <Button variant="primary" className="agents-create is-wide" onClick={() => setCreating(true)}>Создать агента</Button>
+        </div>
       ) : (
-        <div className="table-card">
-          <table className="baseline-table">
-            <thead>
-              <tr>
-                <th>АГЕНТ</th>
-                <th>ГРУППА</th>
-                <th>СТАТУС</th>
-                <th>ПОДКЛЮЧЕНИЯ</th>
-                <th className="numeric">ОТКРЫТЫЕ ДИАЛОГИ</th>
-                <th />
-              </tr>
-            </thead>
-            <tbody>
-              {agents.map((card) => {
-                const status = agentStatusLabel(card);
-                const menuItems = [
-                  { key: "open", label: <button type="button" onClick={() => { setMenuId(null); openAgent(card.id); }}><Icon name="external" size={15} />Открыть карточку</button> },
-                  { type: "divider" as const },
-                  {
-                    key: "toggle",
-                    label: (
-                      <button type="button" className={card.aiStatus === "ACTIVE" ? "warning" : ""} onClick={() => void toggleAi(card)}>
-                        <Icon name={card.aiStatus === "ACTIVE" ? "pause" : "bolt"} size={15} />
-                        {card.aiStatus === "ACTIVE" ? "Остановить AI" : "Запустить AI"}
-                      </button>
-                    ),
-                  },
-                ];
-                return (
-                  <tr key={card.id}>
-                    <td>
-                      <button className="link is-strong is-neutral" type="button" onClick={() => openAgent(card.id)}>{card.name}</button>
-                    </td>
-                    <td>{card.groupName ?? <span className="agent-muted">Без группы</span>}</td>
-                    <td><StatusPill status={STATUS_PILL[status.tone]} /></td>
-                    <td>
-                      {card.connections.length === 0 ? (
-                        <span className="agent-muted">—</span>
-                      ) : (
-                        <span style={{ display: "inline-flex", gap: 6 }}>
-                          {card.connections.map((connection) => (
-                            <ChannelBadge key={connection.id} provider={connection.provider} />
-                          ))}
-                        </span>
-                      )}
-                    </td>
-                    <td className="numeric">{card.counters.openConversations || <span className="agent-muted">—</span>}</td>
-                    <td className="row-actions">
-                      <Dropdown
-                        menu={{ items: menuItems }}
-                        open={menuId === card.id}
-                        onOpenChange={(open) => setMenuId(open ? card.id : null)}
-                        trigger={["click"]}
-                        overlayClassName="app-dropdown"
-                      >
-                        <button className="row-menu-button" type="button" aria-label="Действия агента"><Icon name="more" /></button>
-                      </Dropdown>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+        <div className="agents-table">
+          <div className="agents-thead">
+            <span>Агент</span>
+            <span>Группа</span>
+            <span>Статус</span>
+            <span>Модель</span>
+            <span>Подключения</span>
+            <span className="is-right">Открытые</span>
+            <span />
+          </div>
+          {agents.map((card) => (
+            <AgentRow card={card} openAgent={openAgent} onToggleAi={(item) => void toggleAi(item)} key={card.id} />
+          ))}
         </div>
       )}
       {creating && (

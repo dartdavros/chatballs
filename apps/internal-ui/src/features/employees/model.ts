@@ -1,3 +1,4 @@
+import { shortDateYear } from "../../shared/utils";
 import type { Employee, EmployeeAuditEvent, Role } from "../../types";
 
 export type EmployeeStatus = "active" | "blocked" | "invited";
@@ -24,6 +25,38 @@ const AUDIT_LABELS: Record<string, string> = {
   "identity.employee_updated": "Данные сотрудника изменены",
   "identity.ownership_transferred": "Передано владение организацией",
 };
+
+// Бейджи роли и статуса (дизайн-базлайн v2, «Сотрудники Baseline», таблицы
+// ROLE и STATUS): владелец — акцентом, администратор — цветом AI, сотрудник —
+// нейтральный; статус — полутон своего цвета с точкой.
+const ROLE_BADGE: Record<Role, { text: string; bg: string; color: string }> = {
+  OWNER: { text: "Владелец", bg: "var(--primary-bg)", color: "var(--primary-text)" },
+  ADMIN: { text: "Администратор", bg: "color-mix(in srgb, var(--ai) 14%, var(--surface-card))", color: "var(--ai)" },
+  EMPLOYEE: { text: "Сотрудник", bg: "var(--n-9)", color: "var(--n-3)" },
+};
+
+const STATUS_BADGE: Record<EmployeeStatus, { text: string; bg: string; color: string }> = {
+  active: { text: "Активен", bg: "var(--success-bg)", color: "var(--success-text)" },
+  invited: { text: "Приглашён", bg: "var(--warning-bg)", color: "var(--warning-text)" },
+  blocked: { text: "Заблокирован", bg: "var(--error-bg)", color: "var(--error-text)" },
+};
+
+// Цвет аватара без фото — по порядку сотрудников, как в касте дизайн-базлайна;
+// у заблокированного серый (кадр E1).
+const AVATAR_PALETTE = ["#c4456b", "#4c6ef0", "#3b82c4", "#13a8a8", "#d4860b"];
+
+export function employeeAvatarColor(employee: Employee): string {
+  if (employee.isBlocked) return "#8c8c8c";
+  return AVATAR_PALETTE[(employee.id - 1) % AVATAR_PALETTE.length];
+}
+
+export function roleBadge(role: Role) {
+  return ROLE_BADGE[role];
+}
+
+export function statusBadge(employee: Employee) {
+  return STATUS_BADGE[employeeStatusKey(employee)];
+}
 
 export function employeeStatusKey(employee: Employee): EmployeeStatus {
   if (employee.isBlocked) return "blocked";
@@ -72,11 +105,7 @@ export function roleAccessLabel(employee: Employee) {
 
 export function formatDate(value?: string | null, empty = "—") {
   if (!value) return empty;
-  return new Intl.DateTimeFormat("ru-RU", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }).format(new Date(value)).replace(/\s?г\.$/u, "");
+  return shortDateYear(value) || empty;
 }
 
 export function formatLastLogin(value?: string | null, empty = "не входил") {

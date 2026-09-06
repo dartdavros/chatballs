@@ -1,77 +1,3 @@
-.filter-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 12px 14px;
-  margin-bottom: 14px;
-  background: var(--surface-card);
-  border: 1px solid var(--n-8);
-  border-radius: 10px;
-}
-
-.employees-filter {
-  justify-content: flex-start;
-  gap: 14px;
-  flex-wrap: wrap;
-  padding: 11px 14px;
-  margin-bottom: 16px;
-  border-radius: 11px;
-  box-shadow: var(--shadow-xs);
-}
-
-.employee-search {
-  width: 260px;
-  height: 34px;
-  padding: 0 11px;
-  color: var(--n-5);
-  background: var(--n-10);
-  border: 1px solid var(--n-7);
-  border-radius: 8px;
-}
-
-.employee-search:focus-within {
-  border-color: var(--primary);
-}
-
-.employee-search input {
-  color: var(--n-2);
-  font-size: 13px;
-}
-
-.employee-search input::placeholder {
-  color: var(--n-5);
-}
-
-.filter-group {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.filter-group > span {
-  color: var(--n-4);
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.reset-filter {
-  height: 34px;
-  margin-left: auto;
-  padding: 0 12px;
-  color: var(--n-4);
-  background: transparent;
-  border: 0;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.reset-filter:hover {
-  color: var(--primary);
-  background: var(--n-9);
-}
-
 .segmented {
   display: flex;
   align-items: center;
@@ -100,9 +26,19 @@
   font-weight: 600;
 }
 
+/* Карточка таблицы — один стандарт для всех списков (дизайн-базлайн v2):
+   подложка, рамка и скругление 12px, строки — до краёв. */
 .table-card {
   overflow-x: auto;
-  border-radius: 10px;
+  border: 1px solid var(--n-8);
+  border-radius: 12px;
+  background: var(--surface-card);
+  box-shadow: var(--shadow-xs);
+}
+
+.table-card > :last-child,
+.table-card .baseline-table tbody tr:last-child td {
+  border-bottom: 0;
 }
 
 .employees-card {

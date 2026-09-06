@@ -1,6 +1,7 @@
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ValidationError as DjangoValidationError
+from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
@@ -95,7 +96,8 @@ class PasswordResetConfirmView(APIView):
 
         user.set_password(new_password)
         user.must_change_password = False
-        user.save(update_fields=["password", "must_change_password"])
+        user.password_changed_at = timezone.now()
+        user.save(update_fields=["password", "must_change_password", "password_changed_at"])
         record_audit_event(
             action="identity.password_reset_completed",
             actor=user,

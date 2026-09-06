@@ -1,32 +1,33 @@
 import { useState } from "react";
 
 import { EmptyState, LoadingState } from "../../../shared/ui";
-import { type ClientDetailTab } from "./model";
+import { BackLink, UnderlineTabs } from "../../../shared/ui-controls";
+import { clientDetailTabsOf, type ClientDetailTab } from "./model";
 import { SalesClientAuditTab } from "./SalesClientAuditTab";
-import { SalesClientConsentTab } from "./SalesClientConsentTab";
 import { SalesClientDialogsTab } from "./SalesClientDialogsTab";
 import { SalesClientHeader } from "./SalesClientHeader";
 import { SalesClientIdentitiesTab } from "./SalesClientIdentitiesTab";
 import { SalesClientOverviewTab } from "./SalesClientOverviewTab";
-import { SalesClientTabs } from "./SalesClientTabs";
 import { useClientDetail } from "./useClientDetail";
 
-export function SalesClientDetailPage({ contactId, canEdit = false, openConversation }: { contactId: number | null; canEdit?: boolean; openConversation: (conversationId: number) => void }) {
+// Карточка контакта (кадры K3–K5): возврат к списку, шапка, вкладки
+// Обзор · Диалоги · Идентификаторы · Аудит.
+export function SalesClientDetailPage({ contactId, canEdit = false, canMerge = false, openConversation, openClient, openClients }: { contactId: number | null; canEdit?: boolean; canMerge?: boolean; openConversation: (conversationId: number) => void; openClient: (id: number) => void; openClients: () => void }) {
   const [tab, setTab] = useState<ClientDetailTab>("overview");
-  const { client, loading, error, save } = useClientDetail(contactId);
+  const { client, loading, error, save, merge, unmerge } = useClientDetail(contactId);
 
-  if (loading) return <LoadingState />;
-  if (error || !client) return <EmptyState title="Не удалось загрузить контакт" />;
+  if (loading) return <div className="sales-client-page"><LoadingState /></div>;
+  if (error || !client) return <div className="sales-client-page"><EmptyState title="Не удалось загрузить контакт" /></div>;
 
   return (
-    <>
+    <div className="sales-client-page">
+      <BackLink label="Контакты" onClick={openClients} />
       <SalesClientHeader client={client} canEdit={canEdit} openConversation={openConversation} onSave={save} />
-      <SalesClientTabs activeTab={tab} setActiveTab={setTab} />
+      <UnderlineTabs className="sales-client-detail-tabs" items={clientDetailTabsOf(client)} value={tab} onChange={setTab} />
       {tab === "overview" && <SalesClientOverviewTab client={client} openConversation={openConversation} />}
       {tab === "dialogs" && <SalesClientDialogsTab dialogs={client.dialogs} openConversation={openConversation} />}
-      {tab === "ids" && <SalesClientIdentitiesTab identities={client.identities} />}
-      {tab === "consent" && <SalesClientConsentTab />}
+      {tab === "ids" && <SalesClientIdentitiesTab client={client} canMerge={canMerge} openClient={openClient} onMerge={merge} onUnmerge={unmerge} />}
       {tab === "audit" && <SalesClientAuditTab audit={client.audit} />}
-    </>
+    </div>
   );
 }

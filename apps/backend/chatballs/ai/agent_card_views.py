@@ -69,13 +69,17 @@ class AgentCardListView(APIView):
                 cards = cards.filter(group_id=int(group))
             except ValueError:
                 return Response({"detail": "group must be an id or none"}, status=400)
-        from chatballs.ai.agent_card import ensure_channel_agent
+        from chatballs.ai.agent_card import (
+            ensure_channel_agent,
+            knowledge_total_for_organization,
+        )
 
+        total = knowledge_total_for_organization(request.tenant_context.organization_id)
         items = []
         for channel in cards:
             # Страховка для каналов, созданных в обход мастера.
             ensure_channel_agent(channel)
-            items.append(agent_card_payload(channel))
+            items.append(agent_card_payload(channel, knowledge_total=total))
         return Response({"items": items})
 
     def post(self, request: Request) -> Response:

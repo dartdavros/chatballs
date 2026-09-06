@@ -81,7 +81,7 @@ export type ReplyTemplateRef = { id: number; title: string; text: string; update
 
 export type ApiConversation = {
   id: number;
-  channel: { code: string; name: string; product: { code: string; name: string } | null };
+  channel: { id: number; code: string; name: string; product: { code: string; name: string } | null };
   // voiceMessages/audioCalls/videoCalls — что разрешено в точке входа («Настройки → Голосовые и звонки»).
   connection: { id: number; provider: "EMAIL" | "MAX" | "TELEGRAM" | "WEB"; name: string; voiceMessages?: boolean; audioCalls?: boolean; videoCalls?: boolean } | null;
   // Источник identity: sales Contact (лид) ИЛИ verified SupportIdentitySnapshot.
@@ -110,19 +110,16 @@ export type ApiConversation = {
 };
 
 const AVATAR_PALETTE = ["#eb6f4b", "#3b82c4", "#9254de", "#13a8a8", "#d4860b", "#52a838", "#c4413b", "#6b5be0"];
-// Цвет агента (решение 6a: Консультант — фиолетовый, Поддержка сайта — бирюзовый)
-// и цвет точки группы — стабильно из идентификатора.
+// Цвет агента и цвет точки группы — стабильно из идентификатора. Палитра идёт
+// по порядку создания агентов, как в дизайн-базлайне (решение 6a): первый
+// агент «Консультант» — фиолетовый, второй «Поддержка сайта» — бирюзовый,
+// четвёртый «Приёмная» — оранжевый. Хеш кода здесь не годился: он давал
+// и другие цвета, и совпадения у разных агентов.
 const AGENT_PALETTE = ["var(--ai)", "#0f9b8e", "#6d5dfc", "#e8590c", "#d4860b"];
 const GROUP_PALETTE = ["var(--primary)", "#2aa876", "#e8590c", "#6d5dfc", "#d4860b"];
 
-function hashCode(value: string): number {
-  let hash = 0;
-  for (let index = 0; index < value.length; index += 1) hash = (hash * 31 + value.charCodeAt(index)) >>> 0;
-  return hash;
-}
-
-export function agentColorOf(code: string): string {
-  return AGENT_PALETTE[hashCode(code) % AGENT_PALETTE.length];
+export function agentColorOf(agentId: number): string {
+  return AGENT_PALETTE[(agentId - 1) % AGENT_PALETTE.length];
 }
 
 // Цвет группы — заданный в настройках (дизайн-базлайн v2), иначе палитра по id.
@@ -218,7 +215,7 @@ export function toConversationListItem(conversation: ApiConversation): Conversat
     priority: conversation.priority ?? "NONE",
     labels: conversation.labels ?? [],
     agentName: conversation.channel.name,
-    agentColor: agentColorOf(conversation.channel.code),
+    agentColor: agentColorOf(conversation.channel.id),
     groupName: conversation.group?.name ?? null,
     groupColor: conversation.group ? groupColorOf(conversation.group.id, conversation.group.color) : "var(--n-5)",
     waitLabel:

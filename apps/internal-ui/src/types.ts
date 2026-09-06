@@ -29,6 +29,8 @@ export type OrganizationMembership = {
   totpRequired: boolean;
   capabilities: string[];
   groups: EmployeeGroupRef[];
+  // «в организации с …» в шапке «Профиля» (дизайн-базлайн v2, кадр P1).
+  joinedAt: string;
 };
 
 export type AuthenticatedUser = {
@@ -38,6 +40,8 @@ export type AuthenticatedUser = {
   avatarUrl?: string | null;
   mustChangePassword: boolean;
   totpEnabled: boolean;
+  // Когда последний раз принимался код аутентификатора (кадр P1).
+  totpLastUsedAt: string | null;
   deliveryMode: DeliveryMode;
   memberships: OrganizationMembership[];
   uiTheme: "LIGHT" | "DARK" | "SYSTEM";
@@ -87,6 +91,8 @@ export type Employee = {
   totpEnabled: boolean;
   permissions?: EmployeePermissions;
   activeSessionCount?: number;
+  // «Последняя смена» пароля в карточке сотрудника (кадр E3).
+  passwordChangedAt?: string | null;
   auditEvents?: EmployeeAuditEvent[];
 };
 

@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<style>
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+a{color:inherit;text-decoration:none;}
+a:hover{opacity:0.85;}
+*{scrollbar-width:none;}
+*::-webkit-scrollbar{display:none;width:0;height:0;}
+</style>
+</helmet>
+
+<section style="{{ themeVars }}min-height:100vh;background:var(--c-canvas);padding:32px 40px 60px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;color:var(--c-n2);-webkit-font-smoothing:antialiased;">
+  <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:6px;">
+    <h1 style="margin:0;font-size:22px;font-weight:700;letter-spacing:-0.02em;color:var(--c-n1);">Chatbolls · Агенты</h1>
+    <span style="font-size:13px;color:var(--c-n4);">design baseline · OWNER = ADMIN · SPEC-HUB-0031 §4.3, §8.3; ADR-0017, ADR-0023, ADR-0041</span>
+  </div>
+  <p style="margin:0 0 28px;font-size:13px;color:var(--c-n3);max-width:960px;line-height:1.55;">Агент — главный объект настройки: один экран с именем и статусом, группой, инструкциями из трёх частей, моделью, знаниями и подключениями. Изменения применяются сразу, без публикации (ADR-0023). Создание — мастер одного шага: имя и группа. Код вставки виджета копируется в один клик прямо в блоке подключений.</p>
+
+  <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start;">
+  <sc-for list="{{ frames }}" as="f" hint-placeholder-count="1">
+    <div id="{{ f.id }}" style="flex:none;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+        <span style="display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:22px;padding:0 7px;border-radius:6px;background:var(--c-n1);color:var(--c-surface);font-size:11.5px;font-weight:700;letter-spacing:0.02em;">{{ f.badge }}</span>
+        <strong style="font-size:13.5px;color:var(--c-n1);">{{ f.title }}</strong>
+        <span style="font-size:12px;color:var(--c-n4);">{{ f.note }}</span>
+      </div>
+
+      <div style="width:1440px;height:{{ f.h }};display:flex;overflow:hidden;background:var(--c-surface);border-radius:6px;box-shadow:0 2px 12px rgba(0,0,0,0.08);position:relative;">
+        <aside style="position:relative;width:220px;flex:none;background:var(--c-surface2);border-right:1px solid var(--c-n8);display:flex;flex-direction:column;min-height:0;">
+          <div title="Потяните, двойной клик — сбросить" style="position:absolute;top:0;right:-3px;bottom:0;width:6px;z-index:5;cursor:col-resize;"><i style="position:absolute;top:0;bottom:0;left:2px;width:2px;background:var(--c-accent);opacity:0;"></i></div>
+          <div style="flex:none;height:56px;display:flex;align-items:center;gap:10px;padding:14px 14px 10px;">
+            <span style="width:28px;height:28px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:8px;color:var(--c-n1);"><svg viewBox="0 0 100 100" width="26" height="26" fill="currentColor"><defs><mask id="lg-ag"><rect width="100" height="100" fill="#fff"/><circle cx="50" cy="24.54" r="9" fill="#000"/><circle cx="50" cy="75.46" r="9" fill="#000"/></mask></defs><g mask="url(#lg-ag)"><circle cx="29" cy="50" r="24"/><circle cx="71" cy="50" r="24"/><rect x="44.2" y="31.4" width="11.6" height="37.2"/></g></svg></span>
+            <button style="flex:1;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:6px;height:32px;padding:0 6px 0 8px;border:none;border-radius:8px;background:transparent;color:var(--c-n1);font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;" style-hover="background:var(--c-n9);"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Ателье Норд</span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--c-n4)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button>
+          </div>
+          <nav style="flex:none;padding:4px 10px 8px;display:flex;flex-direction:column;gap:2px;">
+            <sc-for list="{{ nav }}" as="n" hint-placeholder-count="6">
+              <button style="display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border:none;border-radius:8px;background:{{ n.bg }};color:{{ n.color }};font-size:13.5px;font-weight:{{ n.weight }};cursor:pointer;text-align:left;font-family:inherit;" style-hover="background:var(--c-n8);"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="{{ n.icon }}"/></svg><span style="flex:1;">{{ n.label }}</span><sc-if value="{{ n.badge }}" hint-placeholder-val="{{ false }}"><b style="min-width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;padding:0 6px;border-radius:10px;background:var(--c-warn-bg);border:1px solid var(--c-warn-border);color:var(--c-warn-text);font-size:11px;font-weight:700;">{{ n.badge }}</b></sc-if></button>
+            </sc-for>
+          </nav>
+          <div style="flex:1;"></div>
+          <div style="flex:none;display:flex;align-items:center;gap:10px;padding:12px 14px;border-top:1px solid var(--c-n8);">
+            <span style="position:relative;flex:none;display:flex;"><span style="width:34px;height:34px;border-radius:50%;background:url(assets/av-4.png) center/cover;"></span><i style="position:absolute;right:-1px;bottom:-1px;width:10px;height:10px;border:2px solid var(--c-surface2);border-radius:50%;background:#52c41a;"></i></span>
+            <div style="flex:1;min-width:0;line-height:1.2;"><strong style="display:block;font-size:13px;font-weight:600;color:var(--c-n1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Елена Кузнецова</strong><small style="display:block;font-size:11.5px;color:var(--c-n4);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Владелец · e.kuznetsova@atelie-nord.ru</small></div>
+            <button style="width:28px;height:28px;flex:none;border:none;border-radius:7px;background:transparent;color:var(--c-n4);display:flex;align-items:center;justify-content:center;cursor:pointer;" style-hover="background:var(--c-n9);color:var(--c-n2);"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button>
+          </div>
+        </aside>
+
+        <section style="flex:1;min-width:0;min-height:0;overflow-y:auto;background:var(--c-feed);position:relative;">
+          <!-- LIST -->
+          <sc-if value="{{ f.isList }}" hint-placeholder-val="{{ true }}">
+          <div style="padding:26px 32px 40px;display:flex;flex-direction:column;gap:16px;">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;">
+              <div><h2 style="margin:0;font-size:20px;font-weight:700;letter-spacing:-0.01em;color:var(--c-n1);">Агенты</h2><p style="margin:5px 0 0;font-size:13px;color:var(--c-n4);">Агент отвечает клиентам первым и собирает диалоги в группу</p></div>
+              <button style="height:34px;padding:0 14px;border-radius:8px;border:none;background:var(--c-accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:7px;font-family:inherit;" style-hover="background:var(--c-accent-hover);"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Создать агента</button>
+            </div>
+            <sc-if value="{{ f.hasRows }}" hint-placeholder-val="{{ true }}">
+            <div style="background:var(--c-surface);border:1px solid var(--c-n8);border-radius:12px;overflow:hidden;">
+              <div style="display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,0.9fr) minmax(0,1fr) minmax(0,1.8fr) minmax(0,1.1fr) 90px 44px;gap:16px;align-items:center;padding:10px 20px;border-bottom:1px solid var(--c-n8);background:var(--c-surface2);">
+                <sc-for list="{{ listHead }}" as="h" hint-placeholder-count="6"><span style="font-size:11px;font-weight:600;color:var(--c-n4);letter-spacing:0.05em;text-transform:uppercase;text-align:{{ h.align }};">{{ h.label }}</span></sc-for>
+              </div>
+              <sc-for list="{{ agents }}" as="a" hint-placeholder-count="3">
+                <div style="display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,0.9fr) minmax(0,1fr) minmax(0,1.8fr) minmax(0,1.1fr) 90px 44px;gap:16px;align-items:center;height:62px;padding:0 20px;border-bottom:1px solid var(--c-n9);cursor:pointer;opacity:{{ a.opacity }};" style-hover="background:var(--c-n10);">
+                  <div style="display:flex;align-items:center;gap:12px;min-width:0;"><span style="width:36px;height:36px;flex:none;border-radius:9px;background:{{ a.tileBg }};color:{{ a.color }};display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2zM12 2v2M9 12v9M15 12v9M9 18h6M10 8v.01M14 8v.01"/></svg></span><span style="min-width:0;"><strong style="display:block;font-size:13.5px;font-weight:600;color:var(--c-n1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ a.name }}</strong><small style="display:block;margin-top:2px;font-size:11.5px;color:var(--c-n4);font-family:'SF Mono',ui-monospace,Menlo,monospace;">{{ a.code }}</small></span></div>
+                  <span style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:{{ a.groupColor }};"><sc-if value="{{ a.groupDot }}" hint-placeholder-val="{{ true }}"><i style="width:7px;height:7px;border-radius:50%;background:{{ a.groupDot }};"></i></sc-if>{{ a.group }}</span>
+                  <b style="display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border-radius:6px;background:{{ a.stBg }};color:{{ a.stColor }};font-size:11.5px;font-weight:600;justify-self:start;"><i style="width:6px;height:6px;border-radius:50%;background:currentColor;"></i>{{ a.status }}</b>
+                  <span style="font-size:12.5px;color:var(--c-n3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:'SF Mono',ui-monospace,Menlo,monospace;">{{ a.model }}</span>
+                  <div style="display:flex;gap:6px;"><sc-for list="{{ a.conns }}" as="c" hint-placeholder-count="1"><span title="{{ c.full }}" style="position:relative;width:26px;height:26px;border-radius:7px;background:{{ c.bg }};color:{{ c.color }};display:inline-flex;align-items:center;justify-content:center;"><svg viewBox="{{ c.view }}" width="14" height="14" fill="{{ c.fill }}" stroke="{{ c.stroke }}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="{{ c.path }}"/></svg><sc-if value="{{ c.err }}" hint-placeholder-val="{{ false }}"><i style="position:absolute;right:-3px;top:-3px;width:9px;height:9px;border-radius:50%;background:#ff4d4f;border:2px solid var(--c-surface);"></i></sc-if></span></sc-for><sc-if value="{{ a.noConns }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px;color:var(--c-n5);">—</span></sc-if></div>
+                  <div style="text-align:right;font-size:14px;font-weight:600;color:{{ a.openColor }};">{{ a.open }}</div>
+                  <button title="Действия" style="width:30px;height:30px;border:none;border-radius:7px;background:transparent;color:var(--c-n4);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;justify-self:end;" style-hover="background:var(--c-n9);color:var(--c-n2);"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button>
+                </div>
+              </sc-for>
+            </div>
+            </sc-if>
+            <sc-if value="{{ f.isEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="background:var(--c-surface);border:1px solid var(--c-n8);border-radius:12px;padding:80px 24px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;">
+              <span style="width:48px;height:48px;border-radius:14px;background:color-mix(in srgb,var(--c-ai) 12%,var(--c-surface));color:var(--c-ai);display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2zM12 2v2M9 12v9M15 12v9M9 18h6M10 8v.01M14 8v.01"/></svg></span>
+              <div><strong style="display:block;font-size:15px;color:var(--c-n1);">Агент отвечает клиентам первым. Создайте первого</strong><p style="margin:6px 0 0;font-size:13px;color:var(--c-n4);line-height:1.5;max-width:420px;">Имя и группа — всё, что нужно для старта. Инструкции, знания и подключения настраиваются потом на карточке.</p></div>
+              <button style="height:34px;padding:0 16px;border-radius:8px;border:none;background:var(--c-accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;" style-hover="background:var(--c-accent-hover);">Создать агента</button>
+            </div>
+            </sc-if>
+          </div>
+
+          <!-- CREATE MODAL -->
+          <sc-if value="{{ f.modal }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;">
+            <div style="width:440px;background:var(--c-surface);border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,0.3);padding:22px 24px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;"><h3 style="margin:0;font-size:16px;font-weight:700;color:var(--c-n1);">Создать агента</h3><button style="width:28px;height:28px;border:none;border-radius:7px;background:transparent;color:var(--c-n4);display:flex;align-items:center;justify-content:center;cursor:pointer;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+              <p style="margin:0 0 18px;font-size:12.5px;color:var(--c-n4);line-height:1.5;">Один шаг. Инструкции, модель, знания и подключения — потом, на карточке агента.</p>
+              <div style="display:flex;flex-direction:column;gap:14px;">
+                <label style="display:flex;flex-direction:column;gap:6px;"><span style="font-size:12.5px;font-weight:600;color:var(--c-n3);">Название</span><span style="display:flex;align-items:center;height:36px;padding:0 12px;border:1px solid var(--c-accent);border-radius:8px;background:var(--c-surface);font-size:13.5px;color:var(--c-n1);box-shadow:0 0 0 3px var(--c-accent-bg);">Приёмная<i style="width:1px;height:16px;background:var(--c-n1);margin-left:1px;"></i></span></label>
+                <label style="display:flex;flex-direction:column;gap:6px;"><span style="font-size:12.5px;font-weight:600;color:var(--c-n3);">Группа</span><span style="display:flex;align-items:center;justify-content:space-between;height:36px;padding:0 12px;border:1px solid var(--c-n7);border-radius:8px;background:var(--c-n10);font-size:13.5px;color:var(--c-n1);">Без группы — диалоги видны всем<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--c-n4)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span></label>
+              </div>
+              <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:22px;">
+                <button style="height:34px;padding:0 14px;border-radius:8px;border:1px solid var(--c-n7);background:var(--c-surface);color:var(--c-n2);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Отмена</button>
+                <button style="height:34px;padding:0 16px;border-radius:8px;border:none;background:var(--c-accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Создать</button>
+              </div>
+            </div>
+          </div>
+          </sc-if>
+          </sc-if>
+
+          <!-- CARD -->
+          <sc-if value="{{ f.isCard }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:22px 32px 40px;display:flex;flex-direction:column;gap:16px;max-width:1160px;">
+            <button style="align-self:flex-start;display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 8px;margin-left:-8px;border:none;border-radius:7px;background:transparent;color:var(--c-n4);font-size:12.5px;font-weight:500;cursor:pointer;font-family:inherit;" style-hover="background:var(--c-n9);color:var(--c-n2);"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 6 9 12 15 18"/></svg>Агенты</button>
+            <div style="display:flex;align-items:center;gap:16px;">
+              <span style="width:52px;height:52px;flex:none;border-radius:14px;background:{{ f.c.tileBg }};color:{{ f.c.color }};display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2zM12 2v2M9 12v9M15 12v9M9 18h6M10 8v.01M14 8v.01"/></svg></span>
+              <div style="flex:1;min-width:0;">
+                <div style="display:flex;align-items:center;gap:10px;"><h2 style="margin:0;font-size:22px;font-weight:700;letter-spacing:-0.01em;color:var(--c-n1);">{{ f.c.name }}</h2><b style="display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border-radius:6px;background:{{ f.c.stBg }};color:{{ f.c.stColor }};font-size:11.5px;font-weight:600;"><i style="width:6px;height:6px;border-radius:50%;background:currentColor;"></i>{{ f.c.status }}</b></div>
+                <p style="display:flex;align-items:center;gap:7px;margin:5px 0 0;font-size:13px;color:var(--c-n4);"><span style="display:inline-flex;align-items:center;gap:5px;"><i style="width:7px;height:7px;border-radius:50%;background:{{ f.c.groupDot }};"></i>{{ f.c.group }}</span><i style="width:3px;height:3px;border-radius:50%;background:var(--c-n6);"></i><code style="font-family:'SF Mono',ui-monospace,Menlo,monospace;font-size:12px;">{{ f.c.code }}</code><i style="width:3px;height:3px;border-radius:50%;background:var(--c-n6);"></i>{{ f.c.openLine }}<i style="width:3px;height:3px;border-radius:50%;background:var(--c-n6);"></i>создан {{ f.c.created }}</p>
+              </div>
+              <div style="display:flex;gap:8px;flex:none;">
+                <button style="height:34px;padding:0 14px;border-radius:8px;border:1px solid var(--c-n7);background:var(--c-surface);color:var(--c-n2);font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:7px;font-family:inherit;" style-hover="background:var(--c-n9);"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="{{ f.c.toggleIcon }}"/></svg>{{ f.c.toggle }}</button>
+                <button title="Действия" style="width:34px;height:34px;border-radius:8px;border:1px solid var(--c-n7);background:var(--c-surface);color:var(--c-n3);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;" style-hover="background:var(--c-n9);"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button>
+              </div>
+            </div>
+
+            <sc-if value="{{ f.c.blocker }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:10px;background:var(--c-err-bg);border:1px solid var(--c-err-border);">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--c-err-text)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
+              <div style="flex:1;min-width:0;"><strong style="display:block;font-size:13px;color:var(--c-err-text);">AI не может отвечать: провайдер не выбран</strong><small style="display:block;margin-top:2px;font-size:12.5px;color:var(--c-n3);">Добавьте ключ в «Настройки → AI-провайдер» и выберите провайдера в блоке «Модель». До этого диалоги агента ждут человека.</small></div>
+              <button style="height:32px;padding:0 12px;border-radius:8px;border:1px solid var(--c-err-border);background:var(--c-surface);color:var(--c-err-text);font-size:12.5px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:inherit;white-space:nowrap;">Открыть настройки<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg></button>
+            </div>
+            </sc-if>
+
+            <div style="display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:16px;align-items:start;">
+              <div style="display:flex;flex-direction:column;gap:16px;min-width:0;">
+                <!-- INSTRUCTIONS -->
+                <div style="background:var(--c-surface);border:1px solid var(--c-n8);border-radius:12px;padding:20px 24px;">
+                  <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:16px;"><h3 style="margin:0;font-size:14px;font-weight:700;color:var(--c-n1);">Инструкции</h3><small style="font-size:12px;color:var(--c-n4);">Системный промпт собирается из трёх частей в этом порядке</small></div>
+                  <div style="display:flex;flex-direction:column;gap:14px;">
+                    <sc-for list="{{ f.c.instr }}" as="i" hint-placeholder-count="3">
+                      <label style="display:flex;flex-direction:column;gap:6px;"><span style="display:flex;align-items:baseline;gap:8px;font-size:12.5px;font-weight:600;color:var(--c-n3);">{{ i.label }}<small style="font-weight:400;color:var(--c-n5);">{{ i.hint }}</small></span><span style="display:block;min-height:{{ i.h }};padding:9px 12px;border:1px solid var(--c-n7);border-radius:8px;background:var(--c-n10);font-size:13px;line-height:1.55;color:{{ i.color }};white-space:pre-wrap;">{{ i.value }}</span></label>
+                    </sc-for>
+                  </div>
+                  <sc-if value="{{ f.c.dirty }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid var(--c-n9);"><small style="flex:1;font-size:12px;color:var(--c-warn-text);">Есть несохранённые изменения — применятся в runtime сразу</small><button style="height:32px;padding:0 12px;border-radius:8px;border:1px solid var(--c-n7);background:var(--c-surface);color:var(--c-n2);font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;">Отменить</button><button style="height:32px;padding:0 14px;border-radius:8px;border:none;background:var(--c-accent);color:#fff;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;">Сохранить</button></div>
+                  </sc-if>
+                </div>
+                <!-- KNOWLEDGE -->
+                <div style="background:var(--c-surface);border:1px solid var(--c-n8);border-radius:12px;padding:20px 24px;">
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;"><div style="display:flex;align-items:baseline;gap:8px;"><h3 style="margin:0;font-size:14px;font-weight:700;color:var(--c-n1);">Знания</h3><small style="font-size:12px;color:var(--c-n4);">{{ f.c.knowLine }}</small></div><button style="height:30px;padding:0 10px;border-radius:7px;border:1px solid var(--c-n7);background:var(--c-surface);color:var(--c-n2);font-size:12.5px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:inherit;" style-hover="background:var(--c-n9);"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Выбрать</button></div>
+                  <sc-if value="{{ f.c.hasKnow }}" hint-placeholder-val="{{ true }}">
+                  <div style="display:flex;flex-direction:column;">
+                    <sc-for list="{{ knowledge }}" as="k" hint-placeholder-count="4">
+                      <div style="display:flex;align-items:center;gap:10px;height:42px;border-top:1px solid var(--c-n9);"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="var(--c-n4)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="{{ k.icon }}"/></svg><strong style="flex:1;min-width:0;font-size:13px;font-weight:500;color:var(--c-n1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ k.title }}</strong><sc-if value="{{ k.chip }}" hint-placeholder-val="{{ false }}"><small style="height:20px;padding:0 7px;border-radius:5px;background:{{ k.chipBg }};color:{{ k.chipColor }};font-size:11px;font-weight:600;display:inline-flex;align-items:center;">{{ k.chip }}</small></sc-if><small style="font-size:11.5px;color:var(--c-n5);">{{ k.meta }}</small><button title="Убрать" style="width:24px;height:24px;border:none;border-radius:6px;background:transparent;color:var(--c-n5);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;" style-hover="background:var(--c-n9);color:var(--c-n2);"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+                    </sc-for>
+                  </div>
+                  </sc-if>
+                  <sc-if value="{{ f.c.noKnow }}" hint-placeholder-val="{{ false }}"><p style="margin:0;padding:14px 0 4px;border-top:1px solid var(--c-n9);font-size:12.5px;color:var(--c-n4);line-height:1.5;">Знания не прикреплены — агент отвечает только по инструкциям. Выберите статьи из библиотеки или портала поддержки.</p></sc-if>
+                </div>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:16px;min-width:0;">
+                <!-- ASSIGNMENT -->
+                <div style="background:var(--c-surface);border:1px solid var(--c-n8);border-radius:12px;padding:20px 22px;">
+                  <h3 style="margin:0 0 4px;font-size:14px;font-weight:700;color:var(--c-n1);">Назначение</h3>
+                  <p style="margin:0 0 14px;font-size:12px;color:var(--c-n4);line-height:1.5;">Группа определяет, кто из сотрудников видит диалоги агента; без группы — видны всем.</p>
+                  <div style="display:flex;flex-direction:column;gap:12px;">
+                    <label style="display:flex;flex-direction:column;gap:6px;"><span style="font-size:12.5px;font-weight:600;color:var(--c-n3);">Название</span><span style="display:flex;align-items:center;height:36px;padding:0 12px;border:1px solid var(--c-n7);border-radius:8px;background:var(--c-n10);font-size:13.5px;color:var(--c-n1);">{{ f.c.name }}</span></label>
+                    <label style="display:flex;flex-direction:column;gap:6px;"><span style="font-size:12.5px;font-weight:600;color:var(--c-n3);">Группа</span><span style="display:flex;align-items:center;justify-content:space-between;height:36px;padding:0 12px;border:1px solid var(--c-n7);border-radius:8px;background:var(--c-n10);font-size:13.5px;color:var(--c-n1);"><span style="display:inline-flex;align-items:center;gap:7px;"><i style="width:8px;height:8px;border-radius:50%;background:{{ f.c.groupDot }};"></i>{{ f.c.group }}</span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--c-n4)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span></label>
+                  </div>
+                </div>
+                <!-- MODEL -->
+                <div style="order:3;background:var(--c-surface);border:1px solid var(--c-n8);border-radius:12px;padding:20px 22px;">
+                  <h3 style="margin:0 0 4px;font-size:14px;font-weight:700;color:var(--c-n1);">Модель</h3>
+                  <p style="margin:0 0 14px;font-size:12px;color:var(--c-n4);line-height:1.5;">Ключ провайдера — в «Настройки → AI-провайдер». Модель выбирается из каталога провайдера.</p>
+                  <div style="display:flex;flex-direction:column;gap:12px;">
+                    <label style="display:flex;flex-direction:column;gap:6px;"><span style="font-size:12.5px;font-weight:600;color:var(--c-n3);">Провайдер</span><span style="display:flex;align-items:center;justify-content:space-between;height:36px;padding:0 12px;border:1px solid {{ f.c.provBorder }};border-radius:8px;background:var(--c-n10);font-size:13.5px;color:{{ f.c.provColor }};">{{ f.c.provider }}<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--c-n4)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span></label>
+                    <label style="display:flex;flex-direction:column;gap:6px;"><span style="font-size:12.5px;font-weight:600;color:var(--c-n3);">Модель</span><span style="display:flex;align-items:center;justify-content:space-between;height:36px;padding:0 12px;border:1px solid var(--c-n7);border-radius:8px;background:var(--c-n10);font-size:13px;color:{{ f.c.modelColor }};font-family:'SF Mono',ui-monospace,Menlo,monospace;">{{ f.c.model }}<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--c-n5)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span></label>
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:6px;"><span style="font-size:12.5px;font-weight:600;color:var(--c-n3);">Лимит в день</span><span style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--c-n1);"><span style="display:inline-flex;align-items:center;height:30px;padding:0 10px;border:1px solid var(--c-n7);border-radius:7px;background:var(--c-n10);font-family:'SF Mono',ui-monospace,Menlo,monospace;font-size:12.5px;">{{ f.c.limit }}</span><small style="color:var(--c-n4);">USD</small></span></div>
+                  </div>
+                </div>
+                <!-- CONNECTIONS -->
+                <div style="order:2;background:var(--c-surface);border:1px solid var(--c-n8);border-radius:12px;padding:20px 22px;">
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:4px;"><h3 style="margin:0;font-size:14px;font-weight:700;color:var(--c-n1);">Подключения</h3><button style="display:inline-flex;align-items:center;gap:4px;border:none;background:transparent;color:var(--c-accent-text);font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;padding:0;">Интеграции<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg></button></div>
+                  <p style="margin:0 0 10px;font-size:12px;color:var(--c-n4);line-height:1.5;">Через них клиенты попадают к агенту. Одно подключение — один агент.</p>
+                  <sc-for list="{{ f.c.conns }}" as="c" hint-placeholder-count="2">
+                    <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--c-n9);">
+                      <span style="width:30px;height:30px;flex:none;border-radius:8px;background:{{ c.bg }};color:{{ c.color }};display:flex;align-items:center;justify-content:center;"><svg viewBox="{{ c.view }}" width="16" height="16" fill="{{ c.fill }}" stroke="{{ c.stroke }}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="{{ c.path }}"/></svg></span>
+                      <div style="flex:1;min-width:0;"><strong style="display:block;font-size:13px;color:var(--c-n1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ c.name }}</strong><small style="display:block;margin-top:1px;font-size:11.5px;color:var(--c-n4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ c.sub }}</small></div>
+                      <b style="display:inline-flex;align-items:center;height:20px;padding:0 7px;border-radius:5px;background:{{ c.stBg }};color:{{ c.stColor }};font-size:11px;font-weight:600;white-space:nowrap;">{{ c.status }}</b>
+                      <button style="height:28px;padding:0 10px;border-radius:7px;border:1px solid var(--c-n7);background:var(--c-surface);color:var(--c-n2);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;" style-hover="background:var(--c-n9);">{{ c.action }}</button>
+                    </div>
+                  </sc-for>
+                  <sc-if value="{{ f.c.widget }}" hint-placeholder-val="{{ true }}">
+                  <div style="margin-top:10px;padding:12px 12px 10px;border-radius:9px;background:var(--c-n10);border:1px solid var(--c-n8);">
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;"><small style="font-size:12px;font-weight:600;color:var(--c-n3);">Код вставки виджета</small><button style="height:26px;padding:0 9px;border-radius:6px;border:1px solid var(--c-n7);background:var(--c-surface);color:var(--c-n2);font-size:11.5px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:5px;font-family:inherit;" style-hover="background:var(--c-n9);"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Копировать</button></div>
+                    <code style="display:block;font-family:'SF Mono',ui-monospace,Menlo,monospace;font-size:11.5px;line-height:1.5;color:var(--c-n2);white-space:pre-wrap;word-break:break-all;">&lt;script src="https://chat.atelie-nord.ru/widget.js" data-key="wk_9f3a12c4"&gt;&lt;/script&gt;</code>
+                    <small style="display:block;margin-top:6px;font-size:11.5px;color:var(--c-n4);">Вставьте перед &lt;/body&gt; на сайте</small>
+                  </div>
+                  </sc-if>
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:8px;padding-top:6px;">
+              <button style="height:32px;padding:0 12px;border-radius:8px;border:1px solid var(--c-n7);background:transparent;color:var(--c-n3);font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;" style-hover="background:var(--c-n9);">Выключить агента</button>
+              <button style="height:32px;padding:0 12px;border-radius:8px;border:1px solid #ff4d4f;background:transparent;color:#ff4d4f;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;" style-hover="background:color-mix(in srgb,#ff4d4f 8%,var(--c-surface));">Удалить</button>
+              <small style="font-size:12px;color:var(--c-n5);">Удалить можно только без диалогов и подключений</small>
+            </div>
+          </div>
+          </sc-if>
+        </section>
+      </div>
+    </div>
+  </sc-for>
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;'light' | 'dark'&quot;,&quot;section&quot;:&quot;Тема&quot;},&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;options&quot;:[&quot;#1677ff&quot;,&quot;#6d5dfc&quot;,&quot;#0f9b8e&quot;,&quot;#e8590c&quot;],&quot;default&quot;:&quot;#1677ff&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Тема&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const dark = (this.props.theme ?? "light") === "dark";
+    const accent = this.props.accent ?? "#1677ff";
+    const T = dark
+      ? { canvas: "#101113", surface: "#1b1c1f", surface2: "#181a1d", feed: "#15161a", n1: "#d6d7db", n2: "#c3c5ca", n3: "#9a9ca3", n4: "#767881", n5: "#5b5d66", n6: "#45474f", n7: "#37393f", n8: "#2d2f35", n9: "#27292e", n10: "#212327", ai: "#a98be0", warnText: "#d9a441", okText: "#5fbf7a", errText: "#ff7875", accentText: `color-mix(in srgb,${accent} 62%,white)`, accentHover: `color-mix(in srgb,${accent} 92%,white)`, accentBgPct: 16, tintPct: 12, accentMuted: `color-mix(in srgb,${accent} 84%,#1b1c1f)` }
+      : { canvas: "#e4e6ea", surface: "#ffffff", surface2: "#fafafa", feed: "#f5f6f8", n1: "#1f1f1f", n2: "#262626", n3: "#595959", n4: "#8c8c8c", n5: "#bfbfbf", n6: "#d9d9d9", n7: "#e8e8e8", n8: "#f0f0f0", n9: "#f5f5f5", n10: "#fafafa", ai: "#722ed1", warnText: "#d48806", okText: "#237a3f", errText: "#cf1322", accentText: `color-mix(in srgb,${accent} 82%,black)`, accentHover: `color-mix(in srgb,${accent} 88%,black)`, accentBgPct: 10, tintPct: 11, accentMuted: accent };
+    const themeVars = `--c-canvas:${T.canvas};--c-surface:${T.surface};--c-surface2:${T.surface2};--c-feed:${T.feed};--c-n1:${T.n1};--c-n2:${T.n2};--c-n3:${T.n3};--c-n4:${T.n4};--c-n5:${T.n5};--c-n6:${T.n6};--c-n7:${T.n7};--c-n8:${T.n8};--c-n9:${T.n9};--c-n10:${T.n10};--c-ai:${T.ai};--c-accent:${T.accentMuted};--c-accent-text:${T.accentText};--c-accent-hover:${T.accentHover};--c-accent-bg:color-mix(in srgb,${accent} ${T.accentBgPct}%,${T.surface});--c-warn-bg:color-mix(in srgb,#faad14 ${T.tintPct}%,${T.surface});--c-warn-border:color-mix(in srgb,#faad14 ${T.tintPct + 25}%,${T.surface});--c-warn-text:${T.warnText};--c-ok-bg:color-mix(in srgb,#52c41a ${T.tintPct}%,${T.surface});--c-ok-text:${T.okText};--c-err-bg:color-mix(in srgb,#ff4d4f ${T.tintPct}%,${T.surface});--c-err-border:color-mix(in srgb,#ff4d4f ${T.tintPct + 25}%,${T.surface});--c-err-text:${T.errText};`;
+
+    const ICON = {
+      chat: "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z",
+      contacts: "M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0z",
+      agents: "M6 6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2zM12 2v2M9 12v9M15 12v9M9 18h6M10 8v.01M14 8v.01",
+      team: "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75",
+      portals: "M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM2 12h20M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20",
+      settings: "M21 6H9M3 6h2M9 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM21 12h-8M3 12h6M13 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM21 18h-6M3 18h8M15 18a2 2 0 1 1-4 0 2 2 0 0 1 4 0z",
+      mail: "M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM3 7l9 6 9-6",
+      doc: "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M8 13h8M8 17h5",
+      globe: "M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20",
+      pause: "M10 4H6v16h4zM18 4h-4v16h4z",
+      bolt: "M13 2 3 14h9l-1 8 10-12h-9z",
+    };
+    const nav = [
+      { key: "chat", label: "Чат", icon: ICON.chat, badge: 2 }, { key: "contacts", label: "Контакты", icon: ICON.contacts }, { key: "agents", label: "Агенты", icon: ICON.agents },
+      { key: "employees", label: "Сотрудники", icon: ICON.team }, { key: "portals", label: "Порталы", icon: ICON.portals }, { key: "settings", label: "Настройки", icon: ICON.settings },
+    ].map((n) => ({ ...n, bg: n.key === "agents" ? "var(--c-accent-bg)" : "transparent", color: n.key === "agents" ? "var(--c-accent-text)" : "var(--c-n2)", weight: n.key === "agents" ? 600 : 500 }));
+
+    const TG = "M512 256C512 114.62 397.38 0 256 0S0 114.62 0 256s114.62 256 256 256 256-114.62 256-256zm-396.12-2.7c74.63-32.52 124.39-53.95 149.29-64.31 71.1-29.57 85.87-34.71 95.5-34.88 2.12-.03 6.85.49 9.92 2.98 2.59 2.1 3.3 4.94 3.64 6.93.34 2 .77 6.53.43 10.08-3.85 40.48-20.52 138.71-29 184.05-3.59 19.19-10.66 25.62-17.5 26.25-14.86 1.37-26.15-9.83-40.55-19.27-22.53-14.76-35.26-23.96-57.13-38.37-25.28-16.66-8.89-25.81 5.51-40.77 3.77-3.92 69.27-63.5 70.54-68.9.16-.68.31-3.2-1.19-4.53s-3.71-.87-5.3-.51c-2.26.51-38.25 24.3-107.98 71.37-10.22 7.02-19.48 10.43-27.77 10.26-9.14-.2-26.72-5.17-39.79-9.42-16.03-5.21-28.77-7.97-27.66-16.82.57-4.61 6.92-9.32 19.04-14.14z";
+    const MAX = "M350.4,9.6C141.8,20.5,4.1,184.1,12.8,390.4c3.8,90.3,40.1,168,48.7,253.7,2.2,22.2-4.2,49.6,21.4,59.3,31.5,11.9,79.8-8.1,106.2-26.4,9-6.1,17.6-13.2,24.2-22,27.3,18.1,53.2,35.6,85.7,43.4,143.1,34.3,299.9-44.2,369.6-170.3C799.6,291.2,622.5-4.6,350.4,9.6h0ZM269.4,504c-11.3,8.8-22.2,20.8-34.7,27.7-18.1,9.7-23.7-.4-30.5-16.4-21.4-50.9-24-137.6-11.5-190.9,16.8-72.5,72.9-136.3,150-143.1,78-6.9,150.4,32.7,183.1,104.2,72.4,159.1-112.9,316.2-256.4,218.6h0Z";
+    const CH = {
+      TG: { full: "Telegram", view: "0 0 512 512", fill: "currentColor", stroke: "none", path: TG, color: "#229ED9", bg: "color-mix(in srgb,#229ED9 14%,var(--c-surface))" },
+      MAX: { full: "MAX", view: "0 0 720 720", fill: "currentColor", stroke: "none", path: MAX, color: "#5b5bd6", bg: "color-mix(in srgb,#5b5bd6 14%,var(--c-surface))" },
+      EMAIL: { full: "Email", view: "0 0 24 24", fill: "none", stroke: "currentColor", path: ICON.mail, color: "#d48806", bg: "color-mix(in srgb,#fa8c16 14%,var(--c-surface))" },
+      WEB: { full: "Web-виджет", view: "0 0 24 24", fill: "none", stroke: "currentColor", path: ICON.chat, color: "#0f9b8e", bg: "color-mix(in srgb,#0f9b8e 14%,var(--c-surface))" },
+    };
+    const ST = {
+      active: ["AI отвечает", "color-mix(in srgb,var(--c-ai) 14%,var(--c-surface))", "var(--c-ai)"],
+      paused: ["Без AI", "var(--c-warn-bg)", "var(--c-warn-text)"],
+      disabled: ["Выключен", "var(--c-n9)", "var(--c-n4)"],
+    };
+    const CS = { OK: ["Подключено", "var(--c-ok-bg)", "var(--c-ok-text)"], ERROR: ["Ошибка", "var(--c-err-bg)", "var(--c-err-text)"], UNCHECKED: ["Не проверено", "var(--c-n9)", "var(--c-n4)"] };
+    const GROUP = { "Операторы": "var(--c-accent)", "Поддержка": "#2aa876" };
+
+    const listHead = [["Агент"], ["Группа"], ["Статус"], ["Модель"], ["Подключения"], ["Открытые", "right"], [""]].map(([label, align]) => ({ label, align: align || "left" }));
+    const agentRow = (a) => ({ ...a, tileBg: `color-mix(in srgb,${a.color} 12%,var(--c-surface))`, group: a.group || "Без группы", groupDot: GROUP[a.group] || "", groupColor: a.group ? "var(--c-n2)" : "var(--c-n5)", status: ST[a.st][0], stBg: ST[a.st][1], stColor: ST[a.st][2], conns: a.ch.map((k) => ({ ...CH[k.split(":")[0]], err: k.endsWith(":err") })), noConns: a.ch.length === 0, openColor: a.open ? "var(--c-warn-text)" : "var(--c-n5)", open: a.open || "—", opacity: a.st === "disabled" ? 0.6 : 1 });
+    const agents = [
+      agentRow({ name: "Консультант", code: "consultant", color: "var(--c-ai)", group: "Операторы", st: "active", model: "anthropic/claude-sonnet-4", ch: ["TG", "MAX"], open: 5 }),
+      agentRow({ name: "Поддержка сайта", code: "site-support", color: "#0f9b8e", group: "Поддержка", st: "active", model: "anthropic/claude-sonnet-4", ch: ["WEB", "EMAIL:err"], open: 2 }),
+      agentRow({ name: "Приёмная", code: "reception", color: "#e8590c", group: "", st: "paused", model: "—", ch: [], open: 0 }),
+      agentRow({ name: "Архив · Летняя акция", code: "summer-promo", color: "#8c8c8c", group: "Операторы", st: "disabled", model: "openai/gpt-4o-mini", ch: [], open: 0 }),
+    ];
+
+    const knowledge = [
+      { title: "Прайс на пошив и ремонт 2026", icon: ICON.doc, meta: "обновлено 3 сен" },
+      { title: "Сроки, доставка и примерки", icon: ICON.doc, meta: "обновлено 28 авг" },
+      { title: "Возвраты и гарантия", icon: ICON.doc, chip: "Выключено", chipBg: "var(--c-n9)", chipColor: "var(--c-n4)", meta: "обновлено 12 июл" },
+      { title: "Как ухаживать за шерстью", icon: ICON.globe, chip: "Портал · Помощь", chipBg: "var(--c-accent-bg)", chipColor: "var(--c-accent-text)", meta: "статья" },
+    ];
+    const instr = (persona, tone, rules, empty) => [
+      { label: "Кто он и что делает", hint: "персонализация", value: persona, h: "60px" },
+      { label: "Как он должен говорить", hint: "тон", value: tone, h: "44px" },
+      { label: "Правила работы", hint: "инструкции", value: rules, h: "88px" },
+    ].map((i) => ({ ...i, color: empty ? "var(--c-n5)" : "var(--c-n1)" }));
+
+    const conn = (k, name, sub, st, action) => ({ ...CH[k], name, sub, status: CS[st][0], stBg: CS[st][1], stColor: CS[st][2], action });
+    const cardBase = { toggle: "Остановить AI", toggleIcon: ICON.pause, dirty: false, blocker: false, provBorder: "var(--c-n7)", provColor: "var(--c-n1)", modelColor: "var(--c-n1)", limit: "25.00" };
+    const consultant = { ...cardBase, name: "Консультант", code: "consultant", color: "var(--c-ai)", tileBg: "color-mix(in srgb,var(--c-ai) 12%,var(--c-surface))", group: "Операторы", groupDot: GROUP["Операторы"], status: ST.active[0], stBg: ST.active[1], stColor: ST.active[2], openLine: "5 открытых диалогов", created: "12 мар 2026",
+      instr: instr("Ты — консультант ателье «Норд». Помогаешь клиентам выбрать услугу, записаться на примерку и узнать статус заказа.", "Дружелюбно и по делу, на «вы». Короткие абзацы, без канцелярита и восклицаний.", "Цены называй только из знаний. Если вопрос про возврат или жалобу — передай оператору. Не обещай сроки короче указанных в знаниях. Статус заказа уточняй по номеру.", false),
+      provider: "OpenRouter · основной", model: "anthropic/claude-sonnet-4", knowLine: "4 из 18 · 3 знания + 1 статья", hasKnow: true, noKnow: false,
+      conns: [conn("TG", "Бот Ателье Норд", "Telegram · @atelie_nord_bot", "OK", "Отвязать"), conn("MAX", "MAX · Норд", "MAX", "OK", "Отвязать"), { ...CH.WEB, name: "Виджет · лендинг", sub: "Свободное подключение", status: "Свободно", stBg: "var(--c-n9)", stColor: "var(--c-n4)", action: "Привязать" }], widget: false };
+    const reception = { ...cardBase, name: "Приёмная", code: "reception", color: "#e8590c", tileBg: "color-mix(in srgb,#e8590c 12%,var(--c-surface))", group: "Без группы", groupDot: "var(--c-n5)", status: ST.paused[0], stBg: ST.paused[1], stColor: ST.paused[2], openLine: "нет диалогов", created: "сегодня", toggle: "Запустить AI", toggleIcon: ICON.bolt, blocker: true, dirty: true,
+      instr: instr("Ты — администратор приёмной ателье «Норд». Отвечаешь на первые вопросы и записываешь на визит.", "", "", false).map((i, n) => n ? { ...i, value: n === 1 ? "Например: спокойно и вежливо, на «вы»" : "Например: не называй цены, направляй к консультанту", color: "var(--c-n5)" } : i),
+      provider: "Не выбран", provBorder: "var(--c-err-border)", provColor: "var(--c-err-text)", model: "выберите провайдера", modelColor: "var(--c-n5)", knowLine: "ничего не выбрано", hasKnow: false, noKnow: true, limit: "10.00",
+      conns: [{ ...CH.WEB, name: "Виджет · лендинг", sub: "Свободное подключение", status: "Свободно", stBg: "var(--c-n9)", stColor: "var(--c-n4)", action: "Привязать" }], widget: false };
+    const support = { ...cardBase, name: "Поддержка сайта", code: "site-support", color: "#0f9b8e", tileBg: "color-mix(in srgb,#0f9b8e 12%,var(--c-surface))", group: "Поддержка", groupDot: GROUP["Поддержка"], status: ST.active[0], stBg: ST.active[1], stColor: ST.active[2], openLine: "2 открытых диалога", created: "20 мая 2026",
+      instr: instr("Ты — поддержка сайта ателье «Норд»: помогаешь с личным кабинетом, оплатой и письмами.", "Спокойно, коротко, без эмодзи.", "Проблемы с оплатой — сразу оператору. Не запрашивай данные карты.", false),
+      provider: "OpenRouter · основной", model: "anthropic/claude-sonnet-4", knowLine: "2 из 18", hasKnow: true, noKnow: false,
+      conns: [conn("WEB", "Виджет на сайте", "atelie-nord.ru", "OK", "Отвязать"), conn("EMAIL", "Почта поддержки", "help@atelie-nord.ru", "ERROR", "Отвязать")], widget: true };
+
+    const frames = [
+      { id: "g1", badge: "G1", title: "Список", note: "строки: агент · группа · статус · модель · подключения (маркер ошибки) · открытые", isList: true, hasRows: true, isEmpty: false, modal: false },
+      { id: "g2", badge: "G2", title: "Создание", note: "мастер одного шага (§4.3): имя и группа", isList: true, hasRows: true, isEmpty: false, modal: true },
+      { id: "g3", badge: "G3", title: "Карточка · Консультант", note: "рабочий агент: инструкции · знания · назначение · модель · подключения со свободным для привязки", isCard: true, c: consultant },
+      { id: "g4", badge: "G4", title: "Карточка · Поддержка сайта", note: "виджет привязан — код вставки с копированием; почта в ошибке", isCard: true, c: support },
+      { id: "g5", badge: "G5", title: "Карточка · новый агент", note: "blocker: провайдер не выбран (ADR-0017) · плейсхолдеры инструкций · несохранённые изменения", isCard: true, c: reception },
+      { id: "s1", badge: "S1", title: "Пустой список", note: "§5.2", isList: true, hasRows: false, isEmpty: true, modal: false },
+    ];
+    for (const f of frames) f.h = f.isCard ? "1160px" : "880px";
+    return { themeVars, nav, listHead, agents, knowledge, frames };
+  }
+}
+</script>
+</body>
+</html>

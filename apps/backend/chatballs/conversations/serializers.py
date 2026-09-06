@@ -150,6 +150,7 @@ def conversation_payload(
     payload = {
         "id": conversation.id,
         "channel": {
+            "id": channel.id,
             "code": channel.code,
             "name": channel.name,
             "product": {"code": channel.product.code, "name": channel.product.name} if channel.product_id else None,

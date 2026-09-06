@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
-from django.db.models import Count, Q, QuerySet
+from django.db.models import Case, Count, IntegerField, Q, QuerySet, Value, When
 from django.utils.text import slugify
 
 from chatballs.ai.models import AIAgent, AIAgentStatus
@@ -30,15 +30,27 @@ def agent_cards_for_context(context: TenantContext) -> QuerySet[Channel]:
     return (
         Channel.objects.filter(organization_id=context.organization_id)
         .select_related("group", "ai_agent", "ai_agent__provider_integration")
-        .prefetch_related("connections", "ai_agent__knowledge_items", "ai_agent__portal_articles")
+        .prefetch_related(
+            "connections__web_chat_widget",
+            "ai_agent__knowledge_items",
+            "ai_agent__portal_articles__portal",
+            "ai_agent__portal_articles__published_revision",
+        )
         .annotate(
             open_conversations_count=Count(
                 "conversations",
                 filter=Q(conversations__lifecycle=LifecycleState.OPEN),
                 distinct=True,
-            )
+            ),
+            # Кадр G1: сверху отвечающие агенты, ниже «Без AI», выключенные — в конце.
+            status_rank=Case(
+                When(is_active=False, then=Value(2)),
+                When(ai_agent__status=AIAgentStatus.ACTIVE, then=Value(0)),
+                default=Value(1),
+                output_field=IntegerField(),
+            ),
         )
-        .order_by("name")
+        .order_by("status_rank", "name")
     )
 
 
@@ -46,19 +58,57 @@ def agent_card_for_context(*, context: TenantContext, agent_id: int) -> Channel:
     return agent_cards_for_context(context).get(id=agent_id)
 
 
+def _connection_payload(connection) -> dict[str, object]:
+    """Подключение в карточке агента.
+
+    Подпись строки собирается на фронте из этих полей: у Telegram — имя бота,
+    у Web — домен сайта и публичный ключ виджета (из него собирается код
+    вставки), у Email — адрес ящика.
+    """
+    config = connection.config or {}
+    payload = {
+        "id": connection.id,
+        "provider": connection.provider,
+        "name": connection.name,
+        "status": connection.status,
+        "botUsername": config.get("bot_username", ""),
+        "email": config.get("email", ""),
+        "allowedOrigins": config.get("allowed_domains", []),
+        "widgetPublicKey": "",
+    }
+    if connection.provider == "WEB":
+        from chatballs.webchat.widgets import widget_for_integration
+
+        widget = widget_for_integration(connection)
+        payload["widgetPublicKey"] = widget.public_key if widget is not None else ""
+    return payload
+
+
 def _connections_payload(channel: Channel) -> list[dict[str, object]]:
     return [
-        {
-            "id": connection.id,
-            "provider": connection.provider,
-            "name": connection.name,
-            "status": connection.status,
-        }
+        _connection_payload(connection)
         for connection in sorted(channel.connections.all(), key=lambda item: item.id)
     ]
 
 
-def agent_card_payload(channel: Channel) -> dict[str, object]:
+def knowledge_total_for_organization(organization_id: int) -> int:
+    """Сколько всего материалов можно выбрать агенту — знаний библиотеки и
+    опубликованных статей порталов («4 из 18» в шапке блока «Знания»).
+    Библиотека общая для организации (ADR-HUB-0041 §8), поэтому число одно
+    на всех агентов — список считает его один раз."""
+    from chatballs.ai.models import Knowledge
+    from chatballs.support_portals.models import PortalArticle
+    from chatballs.support_portals.statuses import ArticleStatus
+
+    return (
+        Knowledge.objects.filter(organization_id=organization_id).count()
+        + PortalArticle.objects.filter(
+            organization_id=organization_id, status=ArticleStatus.PUBLISHED
+        ).count()
+    )
+
+
+def agent_card_payload(channel: Channel, *, knowledge_total: int | None = None) -> dict[str, object]:
     agent: AIAgent = channel.ai_agent
     connections = _connections_payload(channel)
     open_count = getattr(channel, "open_conversations_count", None)
@@ -72,6 +122,8 @@ def agent_card_payload(channel: Channel) -> dict[str, object]:
         "isActive": channel.is_active,
         "groupId": channel.group_id,
         "groupName": channel.group.name if channel.group_id else None,
+        # Цвет группы задаётся в настройках — точка у названия (кадры G1/G3).
+        "groupColor": channel.group.color if channel.group_id else "",
         "aiStatus": agent.status,
         "model": agent.model,
         "providerIntegrationId": agent.provider_integration_id,
@@ -81,9 +133,17 @@ def agent_card_payload(channel: Channel) -> dict[str, object]:
         "tone": agent.tone,
         "instructions": agent.instructions,
         "knowledge": [
-            {"id": item.id, "title": item.title, "isEnabled": item.is_enabled}
+            {
+                "id": item.id,
+                "title": item.title,
+                "isEnabled": item.is_enabled,
+                "updatedAt": item.updated_at.isoformat(),
+            }
             for item in agent.knowledge_items.all()
         ],
+        "knowledgeTotal": knowledge_total
+        if knowledge_total is not None
+        else knowledge_total_for_organization(channel.organization_id),
         "portalArticles": [
             agent_portal_article_payload(article)
             for article in agent.portal_articles.all()

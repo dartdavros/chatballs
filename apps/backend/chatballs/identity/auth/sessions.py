@@ -11,6 +11,7 @@ from chatballs.identity.audit import record_audit_event
 from chatballs.identity.auth.common import _challenge_payload, _user_payload
 from chatballs.identity.auth.totp_utils import TOTP_SESSION_KEY
 from chatballs.identity.models import AuditResult
+from chatballs.identity.sessions import remember_device
 
 
 @method_decorator(ensure_csrf_cookie, name="dispatch")
@@ -56,6 +57,7 @@ class LoginView(APIView):
             )
 
         login(request, user)
+        remember_device(request)
         record_audit_event(
             action="identity.login_succeeded",
             actor=user,

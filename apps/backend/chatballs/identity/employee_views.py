@@ -14,6 +14,7 @@ from chatballs.identity.employee_validation import (
     deny_employee_action,
     resolve_groups,
 )
+from chatballs.identity.employee_password import clean_password_mode, issue_initial_password
 from chatballs.identity.event_handlers import INITIAL_ACCESS_REQUESTED
 from chatballs.identity.governance import EmployeeAction, can_create_role, can_manage_employee
 from chatballs.identity.group_models import EmployeeGroupMember
@@ -90,6 +91,8 @@ class EmployeeCreateView(APIView):
         full_name = str(body.get("fullName", "")).strip()
         phone = str(body.get("phone", "")).strip()
         provided_password = str(body.get("temporaryPassword", ""))
+        # Кадры E5/E6: пароль первичного доступа письмом либо показать один раз.
+        password_mode = clean_password_mode(body.get("passwordMode"))
         position_title, position_error = clean_position_title(body.get("positionTitle"))
         requested_role = str(body.get("role", EmployeeRole.EMPLOYEE))
 
@@ -107,6 +110,8 @@ class EmployeeCreateView(APIView):
             return Response({"detail": position_error}, status=400)
         if provided_password:
             return Response({"detail": "Temporary passwords are not supported"}, status=400)
+        if password_mode is None:
+            return Response({"detail": "Unknown password mode"}, status=400)
         if HumanUser.objects.filter(email=email).exists():
             return Response({"detail": "Email is already used"}, status=400)
 
@@ -131,25 +136,30 @@ class EmployeeCreateView(APIView):
         )
         if groups:
             _set_groups(profile, groups)
+        password = issue_initial_password(user) if password_mode == "show" else None
         record_audit_event(
             action="identity.employee_created",
             actor=request.user,
             organization=actor.organization,
             object_type="HumanUser",
             object_id=str(user.id),
-            payload={"role": requested_role},
+            payload={"role": requested_role, "passwordMode": password_mode},
             request=request,
         )
-        enqueue_event(
-            DomainEvent(
-                aggregate_type="HumanUser",
-                aggregate_id=str(user.id),
-                event_type=INITIAL_ACCESS_REQUESTED,
-                payload={"userId": user.id},
-                tenant_context=request.tenant_context,
+        if password_mode == "mail":
+            enqueue_event(
+                DomainEvent(
+                    aggregate_type="HumanUser",
+                    aggregate_id=str(user.id),
+                    event_type=INITIAL_ACCESS_REQUESTED,
+                    payload={"userId": user.id},
+                    tenant_context=request.tenant_context,
+                )
             )
+        return Response(
+            {"employee": employee_payload(profile, actor), "password": password},
+            status=201,
         )
-        return Response({"employee": employee_payload(profile, actor)}, status=201)
 
 
 class EmployeeDetailView(APIView):

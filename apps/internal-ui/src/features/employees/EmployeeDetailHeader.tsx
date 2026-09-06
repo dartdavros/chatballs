@@ -1,28 +1,50 @@
 import type { Employee, RouteKey } from "../../types";
 import { Icon } from "../../shared/icons";
-import { Avatar, RoleBadge, StatusPill } from "../../shared/ui";
-import { Button } from "../../shared/ui-controls";
-import { groupsLabel, type EmployeeForm, type EmployeeStatus } from "./model";
+import { Avatar } from "../../shared/ui";
+import { BackLink, Button } from "../../shared/ui-controls";
+import { employeeAvatarColor, groupsLabel, roleBadge, statusBadge, type EmployeeForm } from "./model";
 
-export function EmployeeDetailHeader({ employee, form, saveEmployee, saving, setRoute, status }: {
+// Шапка карточки сотрудника (дизайн-базлайн v2, кадры E3/E4): аватар 60px,
+// имя, бейджи роли и статуса, строка «email · должность · группы».
+// У владельца правки закрыты — вместо кнопок «Только просмотр».
+
+export function EmployeeDetailHeader({ employee, form, saveEmployee, saving, setRoute }: {
   employee: Employee;
   form: EmployeeForm;
   saveEmployee: () => void;
   saving: boolean;
   setRoute: (route: RouteKey) => void;
-  status: EmployeeStatus;
 }) {
   const editable = employee.permissions?.canUpdateProfile ?? false;
-  return <>
-    <button className="link is-muted has-icon" type="button" onClick={() => setRoute("employees")}><Icon name="arrow" size={15} />Все сотрудники</button>
-    <section className="employee-detail-header">
-      <div className="employee-detail-main">
-        <Avatar employee={employee} />
-        <div className="employee-title"><div><h1>{form.fullName || form.email}</h1><RoleBadge role={form.role} /><StatusPill status={status} /></div><p><span className="employee-title-email">{form.email}</span> · {form.positionTitle} · {groupsLabel(employee)}</p></div>
-      </div>
-      <div className="employee-header-actions">
-        {!editable ? <span className="employee-readonly-label"><Icon name="lock" size={14} />Только просмотр</span> : <><Button type="button" variant="secondary" onClick={() => setRoute("employees")}>Отмена</Button><Button icon="save" type="button" variant="primary" onClick={saveEmployee} disabled={saving}>{saving ? "Сохранение" : "Сохранить"}</Button></>}
-      </div>
-    </section>
-  </>;
+  const role = roleBadge(form.role);
+  const status = statusBadge(employee);
+
+  return (
+    <>
+      <BackLink label="Все сотрудники" onClick={() => setRoute("employees")} />
+      <header className="employee-head">
+        <Avatar employee={employee} background={employeeAvatarColor(employee)} />
+        <div className="employee-head-text">
+          <div>
+            <h2>{form.fullName || form.email}</h2>
+            <b className="employees-badge" style={{ background: role.bg, color: role.color }}>{role.text}</b>
+            <b className="employees-badge has-dot" style={{ background: status.bg, color: status.color }}><i />{status.text}</b>
+          </div>
+          <p><span>{form.email}</span> · {form.positionTitle} · {groupsLabel(employee)}</p>
+        </div>
+        <div className="employee-head-actions">
+          {editable ? (
+            <>
+              <Button variant="secondary" type="button" onClick={() => setRoute("employees")}>Отмена</Button>
+              <Button variant="primary" type="button" icon="save" iconSize={15} disabled={saving} onClick={saveEmployee}>
+                {saving ? "Сохранение" : "Сохранить"}
+              </Button>
+            </>
+          ) : (
+            <span className="employee-readonly-label"><Icon name="lock" size={14} strokeWidth={1.8} />Только просмотр</span>
+          )}
+        </div>
+      </header>
+    </>
+  );
 }

@@ -61,6 +61,8 @@ class AdministrationApiTests(TestCase):
                 "timezone": "Europe/Moscow",
                 "currency": "RUB",
                 "logoUrl": None,
+                # Подпись «Сохранено …» у кнопки (кадр N1): пока правок не было — null.
+                "updatedAt": None,
             },
         )
         self.assertIn("Europe/Moscow", response.json()["timezones"])

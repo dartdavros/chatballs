@@ -6,12 +6,13 @@ import { Icon, LogoSpinner } from "./icons";
 import { Button } from "./ui-controls";
 import { initials, productAccent } from "./utils";
 
-export function Avatar({ user, employee }: { user?: SessionUser; employee?: Employee }) {
+export function Avatar({ user, employee, background }: { user?: SessionUser; employee?: Employee; background?: string }) {
   const label = employee ? initials(employee.fullName, employee.email) : initials(user?.fullName ?? "", user?.email ?? "");
   const photo = employee ? employee.avatarUrl : user?.avatarUrl;
-  // Фото сотрудника (дизайн-базлайн v2); без фото — инициалы на акценте.
+  // Фото сотрудника (дизайн-базлайн v2); без фото — инициалы на подложке:
+  // по умолчанию акцент, в списке сотрудников — цвет из палитры (кадр E1).
   if (photo) return <span className="avatar has-photo"><img src={photo} alt="" /></span>;
-  return <span className="avatar">{label}</span>;
+  return <span className="avatar" style={background ? { background } : undefined}>{label}</span>;
 }
 
 export function PageHeader({ title, text, action }: { title: string; text?: ReactNode; action?: ReactNode }) {

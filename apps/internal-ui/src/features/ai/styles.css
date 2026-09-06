@@ -31,10 +31,6 @@
   color: var(--n-2);
 }
 
-.ai-agents-scroll {
-  overflow-x: auto;
-}
-
 .ai-mono {
   font-family: "SF Mono", ui-monospace, Menlo, monospace;
   font-size: 12px;

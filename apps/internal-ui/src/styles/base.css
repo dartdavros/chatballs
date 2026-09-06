@@ -25,28 +25,35 @@
   --wallpaper-bg: #dedfd9;
   --wallpaper-ink: #5d635d;
   --msg-in: #ffffff;
-  --primary: #1677ff;
-  --primary-hover: color-mix(in srgb, var(--primary) 88%, black);
-  --primary-bg: color-mix(in srgb, var(--primary) 10%, var(--surface-card));
-  --primary-border: color-mix(in srgb, var(--primary) 40%, var(--surface-card));
-  --primary-text: color-mix(in srgb, var(--primary) 82%, black);
+  /* --accent — выбранный акцент как есть (ставится из «Внешнего вида»),
+     --primary — акцент на экране: в тёмной теме он приглушён подложкой
+     карточки, как в дизайн-базлайне v2 (accentMuted). Производные оттенки
+     считаются от сырого акцента, а не от приглушённого. */
+  --accent: #1677ff;
+  --primary: var(--accent);
+  --primary-hover: color-mix(in srgb, var(--accent) 88%, black);
+  --primary-bg: color-mix(in srgb, var(--accent) 10%, var(--surface-card));
+  --primary-border: color-mix(in srgb, var(--accent) 40%, var(--surface-card));
+  --primary-text: color-mix(in srgb, var(--accent) 82%, black);
   --border-strong: var(--n-6);
+  /* Полутона считаются по формуле дизайн-базлайна v2: подложка — цвет в 11%
+     от подложки карточки (в тёмной теме 12%), рамка — +20/+25 п.п. */
   --warning: #faad14;
   --success: #52c41a;
-  --success-text: #389e0d;
-  --success-bg: #f6ffed;
-  --success-border: #b7eb8f;
+  --success-text: #237a3f;
+  --success-bg: color-mix(in srgb, #52c41a 11%, var(--surface-card));
+  --success-border: color-mix(in srgb, #52c41a 31%, var(--surface-card));
   --warning-text: #d48806;
-  --warning-bg: #fffbe6;
-  --warning-bg-strong: #fff7e6;
-  --warning-border: #ffe58f;
+  --warning-bg: color-mix(in srgb, #faad14 11%, var(--surface-card));
+  --warning-bg-strong: color-mix(in srgb, #faad14 16%, var(--surface-card));
+  --warning-border: color-mix(in srgb, #faad14 36%, var(--surface-card));
   --error: #ff4d4f;
   --error-text: #cf1322;
-  --error-bg: #fff2f0;
-  --error-border: #ffccc7;
+  --error-bg: color-mix(in srgb, #ff4d4f 11%, var(--surface-card));
+  --error-border: color-mix(in srgb, #ff4d4f 36%, var(--surface-card));
   --ai: #722ed1;
-  --ai-bg: #f9f0ff;
-  --ai-border: #e4d4fb;
+  --ai-bg: color-mix(in srgb, #722ed1 11%, var(--surface-card));
+  --ai-border: color-mix(in srgb, #722ed1 31%, var(--surface-card));
   --text-heading: var(--n-1);
   --text-body: var(--n-2);
   --text-secondary: var(--n-3);
@@ -88,23 +95,24 @@
   --wallpaper-bg: #25292e;
   --wallpaper-ink: #f1f2f3;
   --msg-in: #1e2025;
-  --primary-hover: color-mix(in srgb, var(--primary) 92%, white);
-  --primary-bg: color-mix(in srgb, var(--primary) 16%, var(--surface-card));
-  --primary-border: color-mix(in srgb, var(--primary) 40%, var(--surface-card));
-  --primary-text: color-mix(in srgb, var(--primary) 62%, white);
+  --primary: color-mix(in srgb, var(--accent) 84%, var(--surface-card));
+  --primary-hover: color-mix(in srgb, var(--accent) 92%, white);
+  --primary-bg: color-mix(in srgb, var(--accent) 16%, var(--surface-card));
+  --primary-border: color-mix(in srgb, var(--accent) 40%, var(--surface-card));
+  --primary-text: color-mix(in srgb, var(--accent) 62%, white);
   --border-strong: var(--n-6);
   --warning: #faad14;
   --success: #52c41a;
-  --success-text: #6fbf4a;
+  --success-text: #5fbf7a;
   --success-bg: color-mix(in srgb, #52c41a 12%, var(--surface-card));
-  --success-border: color-mix(in srgb, #52c41a 35%, var(--surface-card));
+  --success-border: color-mix(in srgb, #52c41a 32%, var(--surface-card));
   --warning-text: #d9a441;
   --warning-bg: color-mix(in srgb, #faad14 12%, var(--surface-card));
   --warning-bg-strong: color-mix(in srgb, #faad14 16%, var(--surface-card));
   --warning-border: color-mix(in srgb, #faad14 37%, var(--surface-card));
-  --error-text: #d9736f;
+  --error-text: #ff7875;
   --error-bg: color-mix(in srgb, #ff4d4f 12%, var(--surface-card));
-  --error-border: color-mix(in srgb, #ff4d4f 35%, var(--surface-card));
+  --error-border: color-mix(in srgb, #ff4d4f 37%, var(--surface-card));
   --ai: #a98be0;
   --ai-bg: color-mix(in srgb, #a98be0 12%, var(--surface-card));
   --ai-border: color-mix(in srgb, #a98be0 32%, var(--surface-card));

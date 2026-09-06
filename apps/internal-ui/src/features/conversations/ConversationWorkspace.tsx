@@ -69,7 +69,6 @@ export function ConversationWorkspace({ isOwner = false, viewerId = null, listTi
   const [ctxOpen, setCtxOpen] = useState(false);
   // Кадры M1/M2: на ≤768px список и лента — отдельные экраны.
   const [mobileDialogOpen, setMobileDialogOpen] = useState(false);
-  const searchRef = useRef<HTMLInputElement | null>(null);
   const [search, setSearch] = useState("");
   const [conversations, setConversations] = useState<ApiConversation[]>([]);
   const [listLoaded, setListLoaded] = useState(false);
@@ -137,18 +136,13 @@ export function ConversationWorkspace({ isOwner = false, viewerId = null, listTi
   const callController = useConversationCall({ conversationId: selectedId, onConversationChanged });
   useIncomingMessageSound(conversations, listLoaded);
 
-  // Клавиатура (SPEC-HUB-0031 §9): ↑/↓ — по списку, Enter — открыть (мобайл),
-  // «/» — фокус в поиск. Не перехватываем ввод в полях.
+  // Клавиатура (SPEC-HUB-0031 §9): ↑/↓ — по списку, Enter — открыть (мобайл).
+  // «/» — фокус в поиск, эту клавишу держит сам SearchInput.
   const filteredRef = useRef<ConversationListItem[]>([]);
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
       const target = event.target as HTMLElement | null;
       if (target?.closest("input, textarea, [contenteditable], .ant-dropdown")) return;
-      if (event.key === "/") {
-        event.preventDefault();
-        searchRef.current?.focus();
-        return;
-      }
       if (event.key === "ArrowDown" || event.key === "ArrowUp") {
         const list = filteredRef.current;
         if (!list.length) return;
@@ -253,7 +247,6 @@ export function ConversationWorkspace({ isOwner = false, viewerId = null, listTi
         }}
         mobileHeader={mobileHeader}
         hint={hint}
-        searchRef={searchRef}
       />
       {!selectedDialog && (
         <section className="sales-conversation"><div className="sales-conversation-empty">Выберите диалог</div></section>

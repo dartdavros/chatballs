@@ -65,33 +65,18 @@
   background: var(--n-9);
 }
 
+/* Поиск боковой панели — общий контрол на фоне панели (кадр «Чат сотрудника»). */
 .sales-dialog-search {
-  height: 34px;
-  padding: 0 11px;
-  color: var(--n-5);
   background: var(--n-10);
-  border: 1px solid var(--n-7);
-  border-radius: 8px;
-}
-
-.sales-dialog-search:focus-within {
-  border-color: var(--primary);
 }
 
 .sales-dialog-search input {
   color: var(--n-2);
-  font-size: 13px;
 }
 
 .sales-dialog-search kbd {
-  flex: none;
-  padding: 1px 5px;
-  color: var(--n-4);
   background: var(--surface-card);
-  border: 1px solid var(--n-7);
-  border-radius: 4px;
   font-family: inherit;
-  font-size: 10.5px;
 }
 
 /* Вкладки статусов — UnderlineTabs (решение 3). */

@@ -46,6 +46,8 @@ def _user_payload(user: HumanUser) -> dict[str, object]:
                 "role": membership.role,
                 "positionTitle": membership.position_title,
                 "totpRequired": membership.totp_required,
+                # «в организации с …» в шапке «Профиля» (кадр P1).
+                "joinedAt": membership.created_at.isoformat(),
             }
             membership_payload.update(get_effective_access(membership))
             memberships.append(membership_payload)
@@ -56,6 +58,7 @@ def _user_payload(user: HumanUser) -> dict[str, object]:
         "fullName": user.full_name,
         "mustChangePassword": user.must_change_password,
         "totpEnabled": user.totp_enabled,
+        "totpLastUsedAt": user.totp_last_used_at.isoformat() if user.totp_last_used_at else None,
         "deliveryMode": settings.CHATBALLS_DELIVERY_MODE,
         "uiTheme": user.ui_theme,
         "uiAccent": user.ui_accent,

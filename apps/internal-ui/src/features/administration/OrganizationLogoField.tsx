@@ -30,39 +30,38 @@ export function OrganizationLogoField({
       </div>
       <div className="administration-logo-copy">
         <strong>Логотип</strong>
-        <span>PNG, JPEG или WebP · до 2 МБ</span>
-        {!disabled && (
-          <div className="administration-logo-actions">
-            <input
-              ref={input}
-              type="file"
-              accept="image/png,image/jpeg,image/webp"
-              hidden
-              onChange={(event) => {
-                const file = event.target.files?.[0];
-                if (file) onUpload(file);
-                event.target.value = "";
-              }}
-            />
-            <Button
-              variant="secondary"
-              disabled={saving}
-              onClick={() => input.current?.click()}
-            >
-              {logoUrl ? "Заменить" : "Загрузить"}
-            </Button>
-            {logoUrl && (
-              <Button
-                variant="danger-outline"
-                disabled={saving}
-                onClick={() => setConfirmingRemoval(true)}
-              >
-                Удалить
-              </Button>
-            )}
-          </div>
-        )}
+        <span>PNG, JPEG или WebP · до 2 МБ. Виден в сайдбаре, виджете и письмах.</span>
       </div>
+      {!disabled && (
+        <div className="administration-logo-actions">
+          <input
+            ref={input}
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            hidden
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              if (file) onUpload(file);
+              event.target.value = "";
+            }}
+          />
+          <Button
+            variant="secondary"
+            disabled={saving}
+            onClick={() => input.current?.click()}
+          >
+            Загрузить
+          </Button>
+          <button
+            className="administration-logo-remove"
+            type="button"
+            disabled={saving || !logoUrl}
+            onClick={() => setConfirmingRemoval(true)}
+          >
+            Убрать
+          </button>
+        </div>
+      )}
       <DecisionDialog
         open={confirmingRemoval}
         onClose={() => setConfirmingRemoval(false)}

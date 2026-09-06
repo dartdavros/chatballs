@@ -11,6 +11,13 @@
       "createdDaysAgo": 34
     },
     {
+      "key": "maria-duplicate",
+      "name": "Мария С.",
+      "phone": "+7 917 254-18-40",
+      "description": "Дубль: обратилась с сайта, пока не узнали по телефону.",
+      "createdDaysAgo": 12
+    },
+    {
       "key": "irina",
       "name": "Ирина Левина",
       "phone": "",
@@ -935,6 +942,14 @@
           "minutesAgo": 590
         }
       ]
+    }
+  ],
+  "contactMerges": [
+    {
+      "target": "maria",
+      "source": "maria-duplicate",
+      "reason": "Один и тот же человек: совпал телефон, подтвердили в диалоге",
+      "actor": "elena"
     }
   ]
 }

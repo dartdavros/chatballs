@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { api } from "../api/client";
 import { Icon } from "../shared/icons";
 import type { RouteKey, SessionUser } from "../types";
+import type { SettingsSectionKey } from "../features/settings/sections";
 
 // Блок «Запуск» в сайдбаре (SPEC-HUB-0031 §5, дизайн-базлайн v2 A1): три шага
 // с автоотметкой по факту, прогресс и primary-действие текущего шага.
@@ -21,12 +22,14 @@ type Step = {
   label: string;
   action: string;
   route: RouteKey;
+  // Раздел «Настроек», если шаг ведёт в субменю (кадры N1–N7).
+  section?: SettingsSectionKey;
   icon: Parameters<typeof Icon>[0]["name"];
 };
 
 const STEPS: Step[] = [
   { key: "agentCreated", label: "Создать агента", action: "Создать агента", route: "agents", icon: "robot" },
-  { key: "connectionBound", label: "Подключить точку входа", action: "Подключить", route: "settings", icon: "plug" },
+  { key: "connectionBound", label: "Подключить точку входа", action: "Подключить", route: "settings", section: "integrations", icon: "plug" },
   { key: "employeeInvited", label: "Пригласить сотрудников", action: "Пригласить", route: "employees", icon: "team" },
 ];
 
@@ -42,7 +45,7 @@ function isHidden(user: SessionUser): boolean {
   }
 }
 
-export function LaunchChecklist({ user, setRoute }: { user: SessionUser; setRoute: (route: RouteKey) => void }) {
+export function LaunchChecklist({ user, setRoute, openSettings }: { user: SessionUser; setRoute: (route: RouteKey) => void; openSettings: (section: SettingsSectionKey) => void }) {
   const [checklist, setChecklist] = useState<Checklist | null>(null);
   const [hidden, setHidden] = useState(() => isHidden(user));
 
@@ -93,7 +96,7 @@ export function LaunchChecklist({ user, setRoute }: { user: SessionUser; setRout
         })}
       </div>
       {current && (
-        <button className="launch-checklist-action" type="button" onClick={() => setRoute(current.route)}>
+        <button className="launch-checklist-action" type="button" onClick={() => (current.section ? openSettings(current.section) : setRoute(current.route))}>
           <Icon name={current.icon} size={13} />
           {current.action}
         </button>

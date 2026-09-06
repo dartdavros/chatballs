@@ -1,3 +1,4 @@
+import { settingsSectionKey, type SettingsSectionKey } from "./features/settings/sections";
 import type { RouteKey } from "./types";
 
 export type RouteState = {
@@ -10,6 +11,7 @@ export type RouteState = {
   clientId: number | null;
   channelId: number | null;
   supportPortalId: number | null;
+  settingsSection: SettingsSectionKey | null;
 };
 
 export function routeFromPath(pathname: string, search = ""): RouteState {
@@ -17,7 +19,7 @@ export function routeFromPath(pathname: string, search = ""): RouteState {
   const match = normalized.match(/^\/organizations\/([0-9a-f-]{36})(\/.*)?$/i);
   const organizationPublicId = match?.[1] ?? null;
   const path = match ? match[2] || "/" : normalized;
-  const base = { employeeId: null, productCode: null, agentId: null, knowledgeId: null, clientId: null, channelId: null, supportPortalId: null };
+  const base = { employeeId: null, productCode: null, agentId: null, knowledgeId: null, clientId: null, channelId: null, supportPortalId: null, settingsSection: null };
   const state = { organizationPublicId, ...base };
   // Chat-first (SPEC-HUB-0031): корень и устаревшие адреса командного центра и
   // разделённых чатов ведут в единый «Чат».
@@ -70,20 +72,23 @@ export function routeFromPath(pathname: string, search = ""): RouteState {
   }
   if (path === "/ai/usage") return { route: "aiUsage", ...state };
   // Устаревшие адреса: интеграции и организация переехали в «Настройки» (§8.6).
-  if (path === "/integrations") return { route: "settings", ...state };
+  if (path === "/integrations") return { ...state, route: "settings", settingsSection: "integrations" };
   // /administration/subscription — устаревший адрес тарифов (ADR-HUB-0042).
   if (path === "/administration" || path === "/administration/organization" || path === "/administration/subscription") {
-    return { route: "settings", ...state };
+    return { ...state, route: "settings", settingsSection: "organization" };
   }
   if (path === "/administration/audit") {
     return { route: "administrationAudit", ...state };
   }
   if (path === "/profile") return { route: "profile", ...state };
   if (path === "/settings") return { route: "settings", ...state };
+  if (path.startsWith("/settings/")) {
+    return { ...state, route: "settings", settingsSection: settingsSectionKey(path.slice("/settings/".length)) };
+  }
   return { route: "chat", ...state };
 }
 
-export function pathFromRoute(route: RouteKey, entityId: number | null = null, productCode: string | null = null, organizationPublicId: string | null = null): string {
+export function pathFromRoute(route: RouteKey, entityId: number | string | null = null, productCode: string | null = null, organizationPublicId: string | null = null): string {
   const prefix = organizationPublicId ? `/organizations/${organizationPublicId}` : "";
   if (route === "salesClients") return `${prefix}/contacts`;
   if (route === "salesClientDetail") return entityId ? `${prefix}/contacts/${entityId}` : `${prefix}/contacts`;
@@ -100,6 +105,7 @@ export function pathFromRoute(route: RouteKey, entityId: number | null = null, p
   if (route === "aiKnowledgeDetail") return entityId ? `${prefix}/ai/knowledge/${entityId}` : `${prefix}/ai/knowledge`;
   if (route === "administrationAudit") return `${prefix}/administration/audit`;
   if (route === "profile") return `${prefix}/profile`;
-  if (route === "settings") return `${prefix}/settings`;
+  // У «Настроек» вместо id — ключ раздела субменю (кадры N1–N7).
+  if (route === "settings") return settingsSectionKey(String(entityId)) ? `${prefix}/settings/${entityId}` : `${prefix}/settings`;
   return `${prefix}/profile`;
 }

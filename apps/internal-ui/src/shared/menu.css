@@ -29,6 +29,23 @@
   width: 246px;
 }
 
+/* Меню строки сотрудника (дизайн-базлайн v2, кадр E2): 246px, отступ 6,
+   пункты 32px, тень глубже — карточка перекрывает таблицу. */
+.app-dropdown.is-employee-menu .ant-dropdown-menu {
+  width: 246px;
+  padding: 6px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+}
+
+.app-dropdown.is-employee-menu .ant-dropdown-menu-item button {
+  min-height: 32px;
+  padding: 0 10px;
+}
+
+.app-dropdown.is-employee-menu .ant-dropdown-menu .ant-dropdown-menu-item-divider {
+  margin: 4px 6px;
+}
+
 .app-dropdown .ant-dropdown-menu-item {
   padding: 0 !important;
 }

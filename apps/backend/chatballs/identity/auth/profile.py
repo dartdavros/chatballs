@@ -2,6 +2,7 @@ from django.contrib.auth import login
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.http import FileResponse
+from django.utils import timezone
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -10,6 +11,7 @@ from rest_framework.views import APIView
 
 from chatballs.identity.audit import record_audit_event
 from chatballs.identity.auth.common import _revoke_other_user_sessions, _user_payload
+from chatballs.identity.sessions import list_user_sessions
 from chatballs.tenancy.ingress import user_requires_totp
 from chatballs.identity.avatars import delete_user_avatar, replace_user_avatar
 from chatballs.identity.models import HumanUser
@@ -99,7 +101,8 @@ class ProfilePasswordView(APIView):
             return Response({"detail": " ".join(error.messages)}, status=400)
 
         request.user.set_password(new_password)
-        request.user.save(update_fields=["password"])
+        request.user.password_changed_at = timezone.now()
+        request.user.save(update_fields=["password", "password_changed_at"])
         login(request, request.user)
         revoked = _revoke_other_user_sessions(request)
         record_audit_event(
@@ -149,6 +152,16 @@ class ProfileTotpDisableView(APIView):
         return Response({"authenticated": True, "user": _user_payload(request.user), "revoked": revoked})
 
 
+class ProfileSessionsView(APIView):
+    """Список активных сессий учётной записи (кадр P1)."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request) -> Response:
+        items = list_user_sessions(request.user.id, request.session.session_key)
+        return Response({"items": items})
+
+
 class ProfileRevokeOtherSessionsView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -179,7 +192,8 @@ class ChangeTemporaryPasswordView(APIView):
 
         request.user.set_password(new_password)
         request.user.must_change_password = False
-        request.user.save(update_fields=["password", "must_change_password"])
+        request.user.password_changed_at = timezone.now()
+        request.user.save(update_fields=["password", "must_change_password", "password_changed_at"])
         login(request, request.user)
         record_audit_event(
             action="identity.temporary_password_changed",

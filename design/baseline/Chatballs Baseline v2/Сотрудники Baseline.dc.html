@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<style>
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+a{color:inherit;text-decoration:none;}
+a:hover{opacity:0.85;}
+*{scrollbar-width:none;}
+*::-webkit-scrollbar{display:none;width:0;height:0;}
+</style>
+</helmet>
+
+<section style="{{ themeVars }}min-height:100vh;background:var(--c-canvas);padding:32px 40px 60px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;color:var(--c-n2);-webkit-font-smoothing:antialiased;">
+  <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:6px;">
+    <h1 style="margin:0;font-size:22px;font-weight:700;letter-spacing:-0.02em;color:var(--c-n1);">Chatbolls · Сотрудники</h1>
+    <span style="font-size:13px;color:var(--c-n4);">design baseline · OWNER = ADMIN · SPEC-HUB-0031 §3, §8.4; ADR-0027, ADR-0029, ADR-0043</span>
+  </div>
+  <p style="margin:0 0 28px;font-size:13px;color:var(--c-n3);max-width:960px;line-height:1.55;">Таблица: человек · роль · должность · группы · доступ · статус · последний вход. Роль решает права: владелец и админ идентичны, сотрудник работает только в чате; группа задаёт лишь видимость диалогов. Роль владельца меняется единственным способом — передачей владения. Сайдбар приведён к коду: знак Chatballs (два круга с перемычкой), пункты Чат · Контакты · Агенты · Сотрудники · Порталы · Настройки, ручка изменения ширины на правом крае (180–320px), блок «Запуск», меню пользователя.</p>
+
+  <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start;">
+  <sc-for list="{{ frames }}" as="f" hint-placeholder-count="1">
+    <div id="{{ f.id }}" style="flex:none;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+        <span style="display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:22px;padding:0 7px;border-radius:6px;background:var(--c-n1);color:var(--c-surface);font-size:11.5px;font-weight:700;letter-spacing:0.02em;">{{ f.badge }}</span>
+        <strong style="font-size:13.5px;color:var(--c-n1);">{{ f.title }}</strong>
+        <span style="font-size:12px;color:var(--c-n4);">{{ f.note }}</span>
+      </div>
+
+      <div style="width:{{ f.w }};height:{{ f.h }};display:flex;overflow:hidden;background:var(--c-surface);border-radius:6px;box-shadow:0 2px 12px rgba(0,0,0,0.08);position:relative;">
+
+        <!-- RAIL 60px (≤1024) -->
+        <sc-if value="{{ f.rail }}" hint-placeholder-val="{{ false }}">
+        <aside style="width:60px;flex:none;background:var(--c-surface2);border-right:1px solid var(--c-n8);display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 0 12px;">
+          <span style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;color:var(--c-n1);"><svg viewBox="0 0 100 100" width="26" height="26" fill="currentColor"><defs><mask id="lg-rail"><rect width="100" height="100" fill="#fff"/><circle cx="50" cy="24.54" r="9" fill="#000"/><circle cx="50" cy="75.46" r="9" fill="#000"/></mask></defs><g mask="url(#lg-rail)"><circle cx="29" cy="50" r="24"/><circle cx="71" cy="50" r="24"/><rect x="44.2" y="31.4" width="11.6" height="37.2"/></g></svg></span>
+          <button title="Чат" style="width:36px;height:36px;border:none;border-radius:9px;background:transparent;color:var(--c-n3);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;" style-hover="background:var(--c-n9);color:var(--c-n1);"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/></svg></button>
+          <button title="Развернуть" style="width:36px;height:36px;border:none;border-radius:9px;background:transparent;color:var(--c-n3);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;" style-hover="background:var(--c-n9);color:var(--c-n1);"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate(-90deg);"><polyline points="6 9 12 15 18 9"/></svg></button>
+          <div style="flex:1;"></div>
+          <span title="Елена Кузнецова" style="width:34px;height:34px;border-radius:50%;background:url(assets/av-4.png) center/cover;"></span>
+        </aside>
+        </sc-if>
+
+        <!-- FULL SIDEBAR -->
+        <sc-if value="{{ f.sidebar }}" hint-placeholder-val="{{ true }}">
+        <aside style="position:relative;width:220px;flex:none;background:var(--c-surface2);border-right:1px solid var(--c-n8);display:flex;flex-direction:column;min-height:0;">
+          <!-- pane-resizer: правый край, 6px, подсветка акцентом -->
+          <div title="Потяните, двойной клик — сбросить" style="position:absolute;top:0;right:-3px;bottom:0;width:6px;z-index:5;cursor:col-resize;"><i style="position:absolute;top:0;bottom:0;left:2px;width:2px;background:var(--c-accent);opacity:{{ f.resizerOpacity }};"></i></div>
+          <div style="flex:none;height:56px;display:flex;align-items:center;gap:10px;padding:14px 14px 10px;">
+            <span style="width:28px;height:28px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:8px;color:var(--c-n1);"><svg viewBox="0 0 100 100" width="26" height="26" fill="currentColor"><defs><mask id="{{ f.maskId }}"><rect width="100" height="100" fill="#fff"/><circle cx="50" cy="24.54" r="9" fill="#000"/><circle cx="50" cy="75.46" r="9" fill="#000"/></mask></defs><g mask="url(#{{ f.maskUrl }})"><circle cx="29" cy="50" r="24"/><circle cx="71" cy="50" r="24"/><rect x="44.2" y="31.4" width="11.6" height="37.2"/></g></svg></span>
+            <button style="flex:1;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:6px;height:32px;padding:0 6px 0 8px;border:none;border-radius:8px;background:transparent;color:var(--c-n1);font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;text-align:left;" style-hover="background:var(--c-n9);"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Ателье Норд</span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--c-n4)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><polyline points="6 9 12 15 18 9"/></svg></button>
+          </div>
+          <nav style="flex:1;min-height:0;overflow-y:auto;padding:4px 10px 8px;display:flex;flex-direction:column;gap:2px;">
+            <sc-for list="{{ nav }}" as="n" hint-placeholder-count="6">
+              <button style="position:relative;width:100%;display:flex;align-items:center;flex:none;gap:10px;height:36px;padding:0 10px;border:none;border-radius:8px;background:{{ n.bg }};color:{{ n.color }};font-size:13.5px;font-weight:{{ n.weight }};cursor:pointer;text-align:left;font-family:inherit;" style-hover="background:var(--c-n8);">
+                <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none;">
+                  <sc-for list="{{ n.paths }}" as="p" hint-placeholder-count="1"><path d="{{ p }}"/></sc-for>
+                  <sc-for list="{{ n.circles }}" as="c" hint-placeholder-count="0"><circle cx="{{ c.cx }}" cy="{{ c.cy }}" r="{{ c.r }}"/></sc-for>
+                </svg>
+                <span style="flex:1;">{{ n.label }}</span>
+                <sc-if value="{{ n.badge }}" hint-placeholder-val="{{ false }}"><b style="min-width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;padding:0 6px;border-radius:10px;background:var(--c-warn-bg);border:1px solid var(--c-warn-border);color:var(--c-warn-text);font-size:11px;font-weight:700;">{{ n.badge }}</b></sc-if>
+              </button>
+            </sc-for>
+          </nav>
+          <sc-if value="{{ f.launch }}" hint-placeholder-val="{{ false }}">
+          <div style="flex:none;margin:6px 10px 0;padding:12px 12px 10px;border-radius:10px;background:var(--c-surface);border:1px solid var(--c-n8);">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;">
+              <div style="display:flex;align-items:baseline;gap:7px;"><strong style="font-size:13px;font-weight:700;color:var(--c-n1);">Запуск</strong><small style="font-size:11.5px;color:var(--c-n4);font-weight:500;">2 из 3</small></div>
+              <button title="Скрыть" style="width:22px;height:22px;border:none;border-radius:6px;background:transparent;color:var(--c-n5);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;line-height:1;font-family:inherit;" style-hover="background:var(--c-n9);color:var(--c-n2);">×</button>
+            </div>
+            <div style="height:3px;border-radius:2px;background:var(--c-n8);margin-bottom:12px;overflow:hidden;"><i style="display:block;width:66%;height:100%;background:var(--c-accent);"></i></div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <div style="display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--c-n4);"><span style="width:16px;height:16px;flex:none;border-radius:50%;background:var(--c-accent);color:#fff;display:inline-flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span style="text-decoration:line-through;">Создать агента</span></div>
+              <div style="display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--c-n4);"><span style="width:16px;height:16px;flex:none;border-radius:50%;background:var(--c-accent);color:#fff;display:inline-flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span style="text-decoration:line-through;">Подключить точку входа</span></div>
+              <div style="display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--c-n1);font-weight:600;"><span style="width:16px;height:16px;flex:none;border-radius:50%;border:1.5px solid var(--c-n6);display:inline-flex;"></span><span>Пригласить сотрудников</span></div>
+            </div>
+            <button style="margin-top:11px;width:100%;height:30px;border-radius:7px;border:none;background:var(--c-accent);color:#fff;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;justify-content:center;gap:6px;" style-hover="background:var(--c-accent-hover);"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Пригласить</button>
+          </div>
+          </sc-if>
+          <div style="flex:none;display:flex;align-items:center;gap:10px;padding:12px 14px;border-top:1px solid var(--c-n8);">
+            <span style="position:relative;flex:none;display:flex;"><span style="width:34px;height:34px;border-radius:50%;background:url(assets/av-4.png) center/cover;"></span><i style="position:absolute;right:-1px;bottom:-1px;width:10px;height:10px;border:2px solid var(--c-surface2);border-radius:50%;background:#52c41a;"></i></span>
+            <div style="flex:1;min-width:0;line-height:1.3;"><strong style="display:block;font-size:13px;font-weight:600;color:var(--c-n1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Елена Кузнецова</strong><small style="display:block;font-size:11.5px;color:var(--c-n4);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">e.kuznetsova@atelie-nord.ru</small></div>
+            <span style="display:flex;align-items:center;gap:5px;flex:none;"><i title="Непрочитанные уведомления" style="width:7px;height:7px;border-radius:50%;background:var(--c-accent);"></i><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--c-n4)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></span>
+          </div>
+        </aside>
+        </sc-if>
+
+        <section style="flex:1;min-width:0;min-height:0;overflow-y:auto;background:var(--c-feed);position:relative;">
+          <!-- LIST -->
+          <sc-if value="{{ f.isList }}" hint-placeholder-val="{{ true }}">
+          <div style="padding:26px 32px 40px;display:flex;flex-direction:column;gap:16px;">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;">
+              <div><h2 style="margin:0;font-size:20px;font-weight:700;letter-spacing:-0.01em;color:var(--c-n1);">Сотрудники</h2><p style="margin:5px 0 0;font-size:13px;color:var(--c-n4);">Роли и группы · показано <b style="color:var(--c-n2);">{{ f.shown }}</b> из {{ f.total }}</p></div>
+              <button style="height:34px;padding:0 14px;border-radius:8px;border:none;background:var(--c-accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:7px;font-family:inherit;" style-hover="background:var(--c-accent-hover);"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Добавить сотрудника</button>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:14px;">
+              <div style="display:flex;align-items:center;gap:8px;width:300px;height:34px;padding:0 11px;border:1px solid var(--c-n7);border-radius:8px;background:var(--c-surface);"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="var(--c-n5)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><span style="flex:1;font-size:13px;color:var(--c-n5);">Поиск по имени, email, должности…</span></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:12.5px;color:var(--c-n4);">Роль</span><div style="display:inline-flex;padding:3px;border-radius:9px;background:var(--c-n9);"><sc-for list="{{ f.roleTabs }}" as="t" hint-placeholder-count="4"><button style="height:28px;padding:0 11px;border-radius:7px;border:none;background:{{ t.bg }};color:{{ t.color }};font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;box-shadow:{{ t.shadow }};">{{ t.label }}</button></sc-for></div></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:12.5px;color:var(--c-n4);">Группа</span><span style="display:inline-flex;align-items:center;justify-content:space-between;gap:8px;height:34px;padding:0 10px;border:1px solid var(--c-n7);border-radius:8px;background:var(--c-surface);font-size:13px;color:var(--c-n2);min-width:120px;">{{ f.groupFilter }}<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--c-n4)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span></div>
+              <div style="flex:1;"></div>
+              <button style="height:34px;padding:0 10px;border:none;border-radius:8px;background:transparent;color:{{ f.resetColor }};font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;" style-hover="background:var(--c-n9);">Сбросить</button>
+            </div>
+
+            <div style="background:var(--c-surface);border:1px solid var(--c-n8);border-radius:12px;overflow:hidden;">
+              <div style="display:grid;grid-template-columns:{{ cols }};gap:14px;align-items:center;padding:10px 20px;border-bottom:1px solid var(--c-n8);background:var(--c-surface2);">
+                <sc-for list="{{ listHead }}" as="h" hint-placeholder-count="8"><span style="font-size:11px;font-weight:600;color:var(--c-n4);letter-spacing:0.05em;text-transform:uppercase;">{{ h }}</span></sc-for>
+              </div>
+              <sc-for list="{{ f.rows }}" as="r" hint-placeholder-count="5">
+                <div style="display:grid;grid-template-columns:{{ cols }};gap:14px;align-items:center;height:62px;padding:0 20px;border-bottom:1px solid var(--c-n9);cursor:pointer;opacity:{{ r.opacity }};" style-hover="background:var(--c-n10);">
+                  <div style="display:flex;align-items:center;gap:12px;min-width:0;"><span style="width:36px;height:36px;flex:none;border-radius:50%;background:{{ r.avBg }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:600;">{{ r.initials }}</span><span style="min-width:0;"><strong style="display:block;font-size:13.5px;font-weight:600;color:var(--c-n1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ r.name }}</strong><small style="display:block;margin-top:2px;font-size:11.5px;color:var(--c-n4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ r.email }}</small></span></div>
+                  <b style="display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:6px;background:{{ r.roleBg }};color:{{ r.roleColor }};font-size:11.5px;font-weight:600;justify-self:start;white-space:nowrap;">{{ r.role }}</b>
+                  <span style="font-size:13px;color:var(--c-n2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ r.position }}</span>
+                  <div style="display:flex;gap:5px;flex-wrap:wrap;min-width:0;"><sc-for list="{{ r.groups }}" as="g" hint-placeholder-count="1"><span style="display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 8px;border-radius:6px;background:var(--c-n9);color:var(--c-n2);font-size:11.5px;font-weight:500;white-space:nowrap;"><i style="width:7px;height:7px;border-radius:50%;background:{{ g.dot }};"></i>{{ g.name }}</span></sc-for><sc-if value="{{ r.noGroups }}" hint-placeholder-val="{{ false }}"><span style="font-size:12.5px;color:var(--c-n5);">Без группы</span></sc-if></div>
+                  <span style="font-size:12.5px;color:{{ r.accessColor }};white-space:nowrap;">{{ r.access }}</span>
+                  <b style="display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border-radius:6px;background:{{ r.stBg }};color:{{ r.stColor }};font-size:11.5px;font-weight:600;justify-self:start;white-space:nowrap;"><i style="width:6px;height:6px;border-radius:50%;background:currentColor;"></i>{{ r.status }}</b>
+                  <span style="font-size:12.5px;color:var(--c-n4);white-space:nowrap;">{{ r.login }}</span>
+                  <button title="Действия" style="width:30px;height:30px;border:none;border-radius:7px;background:{{ r.menuBg }};color:var(--c-n4);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;justify-self:end;" style-hover="background:var(--c-n9);color:var(--c-n2);"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button>
+                </div>
+              </sc-for>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 20px;background:var(--c-surface2);">
+                <small style="font-size:12px;color:var(--c-n4);">Показано {{ f.shown }} из {{ f.total }}</small>
+                <small style="font-size:12px;color:var(--c-n4);">Группа задаёт только видимость диалогов и не выдаёт прав</small>
+              </div>
+            </div>
+          </div>
+
+          <sc-if value="{{ f.menu }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;right:36px;top:300px;width:246px;background:var(--c-surface);border:1px solid var(--c-n8);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,0.18);padding:6px;z-index:6;">
+            <sc-for list="{{ rowMenu }}" as="m" hint-placeholder-count="5">
+              <sc-if value="{{ m.divider }}" hint-placeholder-val="{{ false }}"><div style="height:1px;background:var(--c-n9);margin:4px 6px;"></div></sc-if>
+              <sc-if value="{{ m.label }}" hint-placeholder-val="{{ true }}">
+              <button style="width:100%;display:flex;align-items:center;gap:9px;height:32px;padding:0 10px;border:none;border-radius:7px;background:transparent;color:{{ m.color }};font-size:13px;font-weight:500;cursor:{{ m.cursor }};text-align:left;font-family:inherit;opacity:{{ m.opacity }};" style-hover="background:var(--c-n9);"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="{{ m.icon }}"/></svg>{{ m.label }}</button>
+              </sc-if>
+            </sc-for>
+          </div>
+          </sc-if>
+          </sc-if>
+
+          <!-- DETAIL -->
+          <sc-if value="{{ f.isCard }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:22px 32px 40px;display:flex;flex-direction:column;gap:16px;max-width:1160px;">
+            <button style="align-self:flex-start;display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 8px;margin-left:-8px;border:none;border-radius:7px;background:transparent;color:var(--c-n4);font-size:12.5px;font-weight:500;cursor:pointer;font-family:inherit;" style-hover="background:var(--c-n9);color:var(--c-n2);"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate(180deg);"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>Все сотрудники</button>
+            <div style="display:flex;align-items:center;gap:16px;">
+              <span style="width:60px;height:60px;flex:none;border-radius:50%;background:{{ f.p.avBg }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:600;">{{ f.p.initials }}</span>
+              <div style="flex:1;min-width:0;">
+                <div style="display:flex;align-items:center;gap:10px;"><h2 style="margin:0;font-size:22px;font-weight:700;letter-spacing:-0.01em;color:var(--c-n1);">{{ f.p.name }}</h2><b style="display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:6px;background:{{ f.p.roleBg }};color:{{ f.p.roleColor }};font-size:11.5px;font-weight:600;">{{ f.p.role }}</b><b style="display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border-radius:6px;background:{{ f.p.stBg }};color:{{ f.p.stColor }};font-size:11.5px;font-weight:600;"><i style="width:6px;height:6px;border-radius:50%;background:currentColor;"></i>{{ f.p.status }}</b></div>
+                <p style="margin:5px 0 0;font-size:13px;color:var(--c-n4);"><span style="color:var(--c-n2);">{{ f.p.email }}</span> · {{ f.p.position }} · {{ f.p.groupLine }}</p>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;flex:none;">
+                <sc-if value="{{ f.p.readonly }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--c-n4);"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>Только просмотр</span></sc-if>
+                <sc-if value="{{ f.p.editable }}" hint-placeholder-val="{{ true }}"><button style="height:34px;padding:0 14px;border-radius:8px;border:1px solid var(--c-n7);background:var(--c-surface);color:var(--c-n2);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;" style-hover="background:var(--c-n9);">Отмена</button><button style="height:34px;padding:0 14px;border-radius:8px;border:none;background:var(--c-accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:7px;font-family:inherit;" style-hover="background:var(--c-accent-hover);"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Сохранить</button></sc-if>
+              </div>
+            </div>
+
+            <sc-if value="{{ f.p.banner }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:10px;background:var(--c-warn-bg);border:1px solid var(--c-warn-border);"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--c-warn-text)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><span style="font-size:12.5px;color:var(--c-n2);line-height:1.5;">Владельца нельзя удалить, заблокировать или сменить ему роль — единственный путь изменения роли владельца это передача владения.</span></div>
+            </sc-if>
+
+            <div style="display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:16px;align-items:start;">
+              <div style="display:flex;flex-direction:column;gap:16px;min-width:0;">
+                <div style="background:var(--c-surface);border:1px solid var(--c-n8);border-radius:12px;padding:20px 24px;">
+                  <h3 style="margin:0 0 14px;font-size:14px;font-weight:700;color:var(--c-n1);">Основные данные</h3>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px 18px;">
+                    <label style="display:flex;flex-direction:column;gap:6px;"><span style="font-size:12.5px;font-weight:600;color:var(--c-n3);">Имя</span><span style="display:flex;align-items:center;height:36px;padding:0 12px;border:1px solid var(--c-n7);border-radius:8px;background:{{ f.p.fieldBg }};font-size:13.5px;color:{{ f.p.fieldColor }};">{{ f.p.name }}</span></label>
+                    <label style="display:flex;flex-direction:column;gap:6px;"><span style="font-size:12.5px;font-weight:600;color:var(--c-n3);">Телефон</span><span style="display:flex;align-items:center;height:36px;padding:0 12px;border:1px solid var(--c-n7);border-radius:8px;background:{{ f.p.fieldBg }};font-size:13.5px;color:{{ f.p.fieldColor }};">{{ f.p.phone }}</span></label>
+                    <label style="grid-column:1 / -1;display:flex;flex-direction:column;gap:6px;"><span style="font-size:12.5px;font-weight:600;color:var(--c-n3);">Email · используется для входа</span><span style="display:flex;align-items:center;height:36px;padding:0 12px;border:1px solid var(--c-n7);border-radius:8px;background:{{ f.p.fieldBg }};font-size:13px;color:{{ f.p.fieldColor }};font-family:'SF Mono',ui-monospace,Menlo,monospace;">{{ f.p.email }}</span></label>
+                  </div>
+                </div>
+                <div style="background:var(--c-surface);border:1px solid var(--c-n8);border-radius:12px;padding:20px 24px;">
+                  <h3 style="margin:0 0 4px;font-size:14px;font-weight:700;color:var(--c-n1);">Должность и группы</h3>
+                  <p style="margin:0 0 14px;font-size:12px;color:var(--c-n4);line-height:1.5;">Группа задаёт только видимость диалогов и не выдаёт прав.</p>
+                  <label style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;"><span style="font-size:12.5px;font-weight:600;color:var(--c-n3);">Должность</span><span style="display:flex;align-items:center;height:36px;padding:0 12px;border:1px solid var(--c-n7);border-radius:8px;background:{{ f.p.fieldBg }};font-size:13.5px;color:{{ f.p.fieldColor }};">{{ f.p.position }}</span></label>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                    <sc-for list="{{ f.p.groupPicks }}" as="g" hint-placeholder-count="2">
+                      <button style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid {{ g.border }};border-radius:9px;background:{{ g.bg }};cursor:pointer;text-align:left;font-family:inherit;"><i style="width:16px;height:16px;flex:none;border-radius:5px;border:1px solid {{ g.markBorder }};background:{{ g.markBg }};display:inline-flex;align-items:center;justify-content:center;color:#fff;"><sc-if value="{{ g.on }}" hint-placeholder-val="{{ true }}"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></sc-if></i><span style="min-width:0;"><strong style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--c-n1);"><i style="width:7px;height:7px;border-radius:50%;background:{{ g.dot }};"></i>{{ g.name }}</strong><small style="display:block;margin-top:2px;font-size:11.5px;color:var(--c-n4);">{{ g.count }}</small></span></button>
+                    </sc-for>
+                  </div>
+                </div>
+                <div style="background:var(--c-surface);border:1px solid var(--c-n8);border-radius:12px;padding:20px 24px;">
+                  <h3 style="margin:0 0 4px;font-size:14px;font-weight:700;color:var(--c-n1);">Системная роль</h3>
+                  <p style="margin:0 0 14px;font-size:12px;color:var(--c-n4);line-height:1.5;">{{ f.p.roleNote }}</p>
+                  <div style="display:flex;flex-direction:column;gap:8px;">
+                    <sc-for list="{{ f.p.roleOptions }}" as="o" hint-placeholder-count="3">
+                      <button style="display:flex;align-items:flex-start;gap:11px;padding:11px 13px;border:1px solid {{ o.border }};border-radius:10px;background:{{ o.bg }};cursor:{{ o.cursor }};text-align:left;font-family:inherit;opacity:{{ o.opacity }};"><i style="width:16px;height:16px;flex:none;margin-top:1px;border-radius:50%;border:1.5px solid {{ o.dotBorder }};display:inline-flex;align-items:center;justify-content:center;"><sc-if value="{{ o.on }}" hint-placeholder-val="{{ false }}"><span style="width:8px;height:8px;border-radius:50%;background:var(--c-accent);"></span></sc-if></i><span style="min-width:0;"><strong style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--c-n1);">{{ o.label }}<sc-if value="{{ o.locked }}" hint-placeholder-val="{{ false }}"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--c-n4)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></sc-if></strong><small style="display:block;margin-top:3px;font-size:12px;color:var(--c-n4);line-height:1.45;">{{ o.desc }}</small></span></button>
+                    </sc-for>
+                  </div>
+                </div>
+                <div style="background:var(--c-surface);border:1px solid var(--c-n8);border-radius:12px;padding:20px 24px;">
+                  <h3 style="margin:0 0 12px;font-size:14px;font-weight:700;color:var(--c-n1);">Статус и безопасность</h3>
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--c-n9);"><div><strong style="display:block;font-size:13px;color:var(--c-n1);">Пароль</strong><small style="display:block;margin-top:2px;font-size:12px;color:var(--c-n4);">Последняя смена: {{ f.p.pwd }} · новый можно отправить письмом или показать и скопировать</small></div><button style="height:32px;padding:0 12px;border-radius:8px;border:1px solid var(--c-n7);background:var(--c-surface);color:{{ f.p.secColor }};font-size:12.5px;font-weight:600;cursor:{{ f.p.secCursor }};font-family:inherit;white-space:nowrap;">Сбросить пароль</button></div>
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--c-n9);"><div><strong style="display:block;font-size:13px;color:var(--c-n1);">Двухфакторная аутентификация (TOTP)</strong><small style="display:block;margin-top:2px;font-size:12px;color:var(--c-n4);">{{ f.p.totpText }}</small></div><span style="position:relative;flex:none;width:44px;height:24px;border-radius:12px;background:{{ f.p.totpBg }};display:inline-block;cursor:pointer;"><i style="position:absolute;top:2px;left:{{ f.p.totpKnob }};width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.25);"></i></span></div>
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0 0;border-top:1px solid var(--c-n9);"><div><strong style="display:block;font-size:13px;color:var(--c-n1);">Активные сессии</strong><small style="display:block;margin-top:2px;font-size:12px;color:var(--c-n4);">{{ f.p.sessions }}</small></div><button style="height:32px;padding:0 12px;border-radius:8px;border:1px solid var(--c-n7);background:var(--c-surface);color:{{ f.p.secColor }};font-size:12.5px;font-weight:600;cursor:{{ f.p.secCursor }};font-family:inherit;">Завершить все</button></div>
+                </div>
+                <sc-if value="{{ f.p.danger }}" hint-placeholder-val="{{ true }}">
+                <div style="background:var(--c-err-bg);border:1px solid var(--c-err-border);border-radius:12px;padding:18px 22px;">
+                  <h3 style="margin:0 0 12px;font-size:14px;font-weight:700;color:var(--c-err-text);">Опасная зона</h3>
+                  <sc-for list="{{ f.p.dangerActions }}" as="d" hint-placeholder-count="1">
+                    <div style="padding:12px 0;border-top:1px solid var(--c-err-border);">
+                      <strong style="display:block;margin-bottom:5px;font-size:13px;color:var(--c-n1);">{{ d.title }}</strong>
+                      <p style="margin:0 0 12px;font-size:12.5px;color:var(--c-n2);line-height:1.5;">{{ d.text }}</p>
+                      <button style="height:32px;padding:0 14px;border-radius:8px;border:1px solid #ff4d4f;background:transparent;color:#ff4d4f;font-size:12.5px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:7px;font-family:inherit;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="{{ d.icon }}"/></svg>{{ d.action }}</button>
+                      <sc-if value="{{ d.note }}" hint-placeholder-val="{{ false }}"><small style="display:block;margin-top:8px;font-size:12px;color:var(--c-n4);line-height:1.45;">{{ d.note }}</small></sc-if>
+                    </div>
+                  </sc-for>
+                </div>
+                </sc-if>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:16px;min-width:0;">
+                <div style="background:var(--c-surface);border:1px solid var(--c-n8);border-radius:12px;padding:18px 22px;">
+                  <h3 style="margin:0 0 12px;font-size:14px;font-weight:700;color:var(--c-n1);">Учётная запись</h3>
+                  <sc-for list="{{ f.p.account }}" as="a" hint-placeholder-count="4">
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid var(--c-n9);"><small style="font-size:12.5px;color:var(--c-n4);">{{ a.label }}</small><span style="font-size:13px;color:var(--c-n1);font-weight:500;">{{ a.value }}</span></div>
+                  </sc-for>
+                </div>
+                <div style="background:var(--c-surface);border:1px solid var(--c-n8);border-radius:12px;padding:18px 22px;">
+                  <h3 style="margin:0 0 12px;font-size:14px;font-weight:700;color:var(--c-n1);">Аудит</h3>
+                  <sc-for list="{{ f.p.audit }}" as="a" hint-placeholder-count="4">
+                    <div style="display:flex;gap:10px;padding:8px 0;"><i style="width:8px;height:8px;flex:none;margin-top:5px;border-radius:50%;background:{{ a.dot }};"></i><div style="min-width:0;"><strong style="display:block;font-size:12.5px;font-weight:600;color:var(--c-n1);line-height:1.4;">{{ a.text }}</strong><small style="display:block;margin-top:2px;font-size:11px;color:var(--c-n4);font-family:'SF Mono',ui-monospace,Menlo,monospace;">{{ a.code }} · {{ a.time }}</small></div></div>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+          </div>
+          </sc-if>
+
+          <!-- CREATE DRAWER -->
+          <sc-if value="{{ f.drawer }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;inset:0;background:rgba(0,0,0,0.4);"></div>
+          <aside style="position:absolute;top:0;right:0;bottom:0;width:520px;background:var(--c-surface);border-left:1px solid var(--c-n8);box-shadow:-12px 0 40px rgba(0,0,0,0.18);display:flex;flex-direction:column;z-index:7;">
+            <header style="flex:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 22px;border-bottom:1px solid var(--c-n8);"><div><strong style="display:block;font-size:16px;font-weight:700;color:var(--c-n1);">Новый сотрудник</strong><span style="display:block;margin-top:3px;font-size:12.5px;color:var(--c-n4);">Учётные данные · роль · группы</span></div><button style="width:30px;height:30px;border:none;border-radius:8px;background:transparent;color:var(--c-n4);display:flex;align-items:center;justify-content:center;cursor:pointer;" style-hover="background:var(--c-n9);color:var(--c-n2);"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></svg></button></header>
+            <div style="flex:1;min-height:0;overflow-y:auto;padding:20px 22px;display:flex;flex-direction:column;gap:22px;">
+              <section>
+                <h3 style="display:flex;align-items:center;gap:9px;margin:0 0 12px;font-size:13.5px;font-weight:700;color:var(--c-n1);"><i style="width:20px;height:20px;border-radius:50%;background:var(--c-accent-bg);color:var(--c-accent-text);display:inline-flex;align-items:center;justify-content:center;font-size:11.5px;font-style:normal;font-weight:700;">1</i>Учётные данные</h3>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;">
+                  <label style="display:flex;flex-direction:column;gap:6px;"><span style="font-size:12.5px;font-weight:600;color:var(--c-n3);">Имя</span><span style="display:flex;align-items:center;height:36px;padding:0 12px;border:1px solid var(--c-accent);border-radius:8px;background:var(--c-surface);font-size:13.5px;color:var(--c-n1);box-shadow:0 0 0 3px var(--c-accent-bg);">Ольга Титова</span></label>
+                  <label style="display:flex;flex-direction:column;gap:6px;"><span style="font-size:12.5px;font-weight:600;color:var(--c-n3);">Телефон</span><span style="display:flex;align-items:center;height:36px;padding:0 12px;border:1px solid var(--c-n7);border-radius:8px;background:var(--c-n10);font-size:13.5px;color:var(--c-n5);">+7 …</span></label>
+                  <label style="grid-column:1 / -1;display:flex;flex-direction:column;gap:6px;"><span style="font-size:12.5px;font-weight:600;color:var(--c-n3);">Рабочий email · используется для входа</span><span style="display:flex;align-items:center;height:36px;padding:0 12px;border:1px solid var(--c-n7);border-radius:8px;background:var(--c-n10);font-size:13px;color:var(--c-n1);font-family:'SF Mono',ui-monospace,Menlo,monospace;">o.titova@atelie-nord.ru</span></label>
+                </div>
+              </section>
+              <section>
+                <h3 style="display:flex;align-items:center;gap:9px;margin:0 0 12px;font-size:13.5px;font-weight:700;color:var(--c-n1);"><i style="width:20px;height:20px;border-radius:50%;background:var(--c-accent-bg);color:var(--c-accent-text);display:inline-flex;align-items:center;justify-content:center;font-size:11.5px;font-style:normal;font-weight:700;">2</i>Роль</h3>
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                  <sc-for list="{{ drawerRoles }}" as="o" hint-placeholder-count="2">
+                    <button style="display:flex;align-items:flex-start;gap:11px;padding:11px 13px;border:1px solid {{ o.border }};border-radius:10px;background:{{ o.bg }};cursor:pointer;text-align:left;font-family:inherit;"><i style="width:16px;height:16px;flex:none;margin-top:1px;border-radius:50%;border:1.5px solid {{ o.dotBorder }};display:inline-flex;align-items:center;justify-content:center;"><sc-if value="{{ o.on }}" hint-placeholder-val="{{ false }}"><span style="width:8px;height:8px;border-radius:50%;background:var(--c-accent);"></span></sc-if></i><span style="min-width:0;"><strong style="display:block;font-size:13px;font-weight:600;color:var(--c-n1);">{{ o.label }}</strong><small style="display:block;margin-top:3px;font-size:12px;color:var(--c-n4);line-height:1.45;">{{ o.desc }}</small></span></button>
+                  </sc-for>
+                </div>
+              </section>
+              <section>
+                <h3 style="display:flex;align-items:center;gap:9px;margin:0 0 12px;font-size:13.5px;font-weight:700;color:var(--c-n1);"><i style="width:20px;height:20px;border-radius:50%;background:var(--c-accent-bg);color:var(--c-accent-text);display:inline-flex;align-items:center;justify-content:center;font-size:11.5px;font-style:normal;font-weight:700;">3</i>Должность и группы</h3>
+                <label style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px;"><span style="font-size:12.5px;font-weight:600;color:var(--c-n3);">Должность</span><span style="display:flex;align-items:center;height:36px;padding:0 12px;border:1px solid var(--c-n7);border-radius:8px;background:var(--c-n10);font-size:13.5px;color:var(--c-n1);">Оператор</span></label>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                  <sc-for list="{{ drawerGroups }}" as="g" hint-placeholder-count="2">
+                    <button style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid {{ g.border }};border-radius:9px;background:{{ g.bg }};cursor:pointer;text-align:left;font-family:inherit;"><i style="width:16px;height:16px;flex:none;border-radius:5px;border:1px solid {{ g.markBorder }};background:{{ g.markBg }};display:inline-flex;align-items:center;justify-content:center;color:#fff;"><sc-if value="{{ g.on }}" hint-placeholder-val="{{ false }}"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></sc-if></i><span style="min-width:0;"><strong style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--c-n1);"><i style="width:7px;height:7px;border-radius:50%;background:{{ g.dot }};"></i>{{ g.name }}</strong><small style="display:block;margin-top:2px;font-size:11.5px;color:var(--c-n4);">{{ g.count }}</small></span></button>
+                  </sc-for>
+                </div>
+                <p style="margin:10px 0 0;font-size:12px;color:var(--c-n4);line-height:1.5;">Без групп сотрудник видит только диалоги без группы. Группы можно изменить позже.</p>
+              </section>
+              <section>
+                <h3 style="display:flex;align-items:center;gap:9px;margin:0 0 12px;font-size:13.5px;font-weight:700;color:var(--c-n1);"><i style="width:20px;height:20px;border-radius:50%;background:var(--c-accent-bg);color:var(--c-accent-text);display:inline-flex;align-items:center;justify-content:center;font-size:11.5px;font-style:normal;font-weight:700;">4</i>Пароль первичного доступа</h3>
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                  <sc-for list="{{ f.pwdModes }}" as="o" hint-placeholder-count="2">
+                    <button style="display:flex;align-items:flex-start;gap:11px;padding:11px 13px;border:1px solid {{ o.border }};border-radius:10px;background:{{ o.bg }};cursor:pointer;text-align:left;font-family:inherit;"><i style="width:16px;height:16px;flex:none;margin-top:1px;border-radius:50%;border:1.5px solid {{ o.dotBorder }};display:inline-flex;align-items:center;justify-content:center;"><sc-if value="{{ o.on }}" hint-placeholder-val="{{ false }}"><span style="width:8px;height:8px;border-radius:50%;background:var(--c-accent);"></span></sc-if></i><span style="min-width:0;"><strong style="display:block;font-size:13px;font-weight:600;color:var(--c-n1);">{{ o.label }}</strong><small style="display:block;margin-top:3px;font-size:12px;color:var(--c-n4);line-height:1.45;">{{ o.desc }}</small></span></button>
+                  </sc-for>
+                </div>
+              </section>
+            </div>
+            <footer style="flex:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 22px;border-top:1px solid var(--c-n8);background:var(--c-surface2);"><span style="font-size:12px;color:var(--c-n4);">{{ f.drawerFooter }}</span><div style="display:flex;gap:8px;"><button style="height:34px;padding:0 14px;border-radius:8px;border:1px solid var(--c-n7);background:var(--c-surface);color:var(--c-n2);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Отмена</button><button style="height:34px;padding:0 16px;border-radius:8px;border:none;background:var(--c-accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Создать сотрудника</button></div></footer>
+          </aside>
+          </sc-if>
+
+          <!-- PASSWORD DIALOG -->
+          <sc-if value="{{ f.pwdDialog }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;z-index:8;">
+            <section style="width:520px;background:var(--c-surface);border-radius:14px;box-shadow:0 24px 70px rgba(0,0,0,0.32);overflow:hidden;">
+              <header style="display:flex;align-items:flex-start;gap:14px;padding:20px 24px;border-bottom:1px solid var(--c-n8);"><i style="width:40px;height:40px;flex:none;border-radius:11px;background:var(--c-accent-bg);color:var(--c-accent-text);display:inline-flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></i><div><h2 style="margin:0;font-size:17px;font-weight:700;color:var(--c-n1);">{{ f.pwd.title }}</h2><p style="margin:4px 0 0;font-size:12.5px;color:var(--c-n4);line-height:1.5;">{{ f.pwd.sub }}</p></div></header>
+              <div style="padding:20px 24px;display:flex;flex-direction:column;gap:14px;">
+                <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border:1px solid var(--c-n8);border-radius:10px;background:var(--c-n10);"><span style="width:32px;height:32px;flex:none;border-radius:50%;background:{{ f.pwd.avBg }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;">{{ f.pwd.initials }}</span><span style="min-width:0;"><strong style="display:block;font-size:13px;color:var(--c-n1);">{{ f.pwd.name }}</strong><small style="display:block;font-size:11.5px;color:var(--c-n4);font-family:'SF Mono',ui-monospace,Menlo,monospace;">{{ f.pwd.email }}</small></span></div>
+                <label style="display:flex;flex-direction:column;gap:6px;"><span style="font-size:12.5px;font-weight:600;color:var(--c-n3);">Пароль первичного доступа</span><span style="display:flex;align-items:center;gap:8px;height:44px;padding:0 8px 0 14px;border:1px solid var(--c-accent);border-radius:9px;background:var(--c-accent-bg);"><code style="flex:1;font-family:'SF Mono',ui-monospace,Menlo,monospace;font-size:16px;font-weight:600;letter-spacing:0.06em;color:var(--c-n1);">{{ f.pwd.value }}</code><button title="Показать/скрыть" style="width:30px;height:30px;border:none;border-radius:7px;background:transparent;color:var(--c-n4);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;" style-hover="background:var(--c-n9);color:var(--c-n2);"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"/><circle cx="12" cy="12" r="3"/></svg></button><button style="height:30px;padding:0 11px;border-radius:7px;border:none;background:var(--c-accent);color:#fff;font-size:12.5px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:inherit;" style-hover="background:var(--c-accent-hover);"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Копировать</button></span></label>
+                <div style="display:flex;gap:10px;padding:12px 14px;border-radius:10px;background:var(--c-warn-bg);border:1px solid var(--c-warn-border);"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="var(--c-warn-text)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px;"><path d="m21.7 18-8-14a2 2 0 0 0-3.5 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.7-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><p style="margin:0;font-size:12.5px;color:var(--c-n2);line-height:1.5;">Пароль показывается один раз и на сервере не хранится в открытом виде. Скопируйте и передайте сотруднику лично — при первом входе он сменит его сам. Если окно закрыть, останется только сбросить пароль заново.</p></div>
+                <button style="display:inline-flex;align-items:center;gap:7px;align-self:flex-start;height:32px;padding:0 12px;border-radius:8px;border:1px solid var(--c-n7);background:var(--c-surface);color:var(--c-n2);font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;" style-hover="background:var(--c-n9);"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM3 7l9 6 9-6"/></svg>Отправить на почту вместо этого</button>
+              </div>
+              <footer style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 24px;border-top:1px solid var(--c-n8);background:var(--c-surface2);"><small style="font-size:12px;color:var(--c-n4);">Действие записано в аудит</small><button style="height:34px;padding:0 16px;border-radius:8px;border:none;background:var(--c-accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Скопировал, закрыть</button></footer>
+            </section>
+          </div>
+          </sc-if>
+
+          <!-- OWNERSHIP TRANSFER -->
+          <sc-if value="{{ f.transfer }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;z-index:8;">
+            <section style="width:560px;background:var(--c-surface);border-radius:14px;box-shadow:0 24px 70px rgba(0,0,0,0.32);overflow:hidden;">
+              <header style="display:flex;align-items:flex-start;gap:14px;padding:20px 24px;border-bottom:1px solid var(--c-n8);"><i style="width:40px;height:40px;flex:none;border-radius:11px;background:var(--c-warn-bg);color:var(--c-warn-text);display:inline-flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h7m11 0h-7M7 8l-4 4 4 4m10-8 4 4-4 4"/></svg></i><div><h2 style="margin:0;font-size:17px;font-weight:700;color:var(--c-n1);">Передача владения</h2><p style="margin:4px 0 0;font-size:12.5px;color:var(--c-n4);">Атомарная операция · в организации остаётся ровно один владелец</p></div></header>
+              <div style="padding:20px 24px;display:flex;flex-direction:column;gap:16px;">
+                <label style="display:flex;flex-direction:column;gap:6px;"><span style="font-size:12.5px;font-weight:600;color:var(--c-n3);">Новый владелец · только администраторы</span><span style="display:flex;align-items:center;justify-content:space-between;height:36px;padding:0 12px;border:1px solid var(--c-n7);border-radius:8px;background:var(--c-n10);font-size:13.5px;color:var(--c-n1);">Анна Ким · Администратор · Старший оператор<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--c-n4)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span><small style="font-size:12px;color:var(--c-n4);line-height:1.45;">В списке только активные администраторы. Чтобы передать владение сотруднику, сначала сделайте его администратором.</small></label>
+                <div style="display:flex;align-items:center;gap:16px;padding:14px;border:1px solid var(--c-n8);border-radius:10px;background:var(--c-n10);">
+                  <div style="flex:1;display:flex;align-items:center;gap:10px;min-width:0;"><span style="width:34px;height:34px;flex:none;border-radius:50%;background:url(assets/av-4.png) center/cover;"></span><span style="min-width:0;"><strong style="display:block;font-size:13px;color:var(--c-n1);">Елена Кузнецова</strong><small style="display:block;font-size:11.5px;color:var(--c-n4);">Владелец</small></span></div>
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--c-n4)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                  <div style="flex:1;display:flex;align-items:center;gap:10px;min-width:0;"><span style="width:34px;height:34px;flex:none;border-radius:50%;background:url(assets/av-2.png) center/cover;"></span><span style="min-width:0;"><strong style="display:block;font-size:13px;color:var(--c-n1);">Анна Ким</strong><small style="display:block;font-size:11.5px;color:var(--c-accent-text);font-weight:600;">→ Владелец</small></span></div>
+                </div>
+                <div><span style="display:block;margin-bottom:8px;font-size:12.5px;font-weight:600;color:var(--c-n3);">Новая роль прежнего владельца</span><div style="display:flex;gap:8px;"><button style="flex:1;display:flex;align-items:center;gap:9px;padding:10px 12px;border:1px solid var(--c-accent);border-radius:9px;background:var(--c-accent-bg);cursor:pointer;font-size:13px;font-weight:600;color:var(--c-n1);font-family:inherit;"><i style="width:15px;height:15px;border-radius:50%;border:1.5px solid var(--c-accent);display:inline-flex;align-items:center;justify-content:center;"><span style="width:7px;height:7px;border-radius:50%;background:var(--c-accent);"></span></i>Администратор</button><button style="flex:1;display:flex;align-items:center;gap:9px;padding:10px 12px;border:1px solid var(--c-n7);border-radius:9px;background:var(--c-surface);cursor:pointer;font-size:13px;font-weight:500;color:var(--c-n2);font-family:inherit;"><i style="width:15px;height:15px;border-radius:50%;border:1.5px solid var(--c-n6);display:inline-flex;"></i>Сотрудник</button></div></div>
+                <div style="display:flex;gap:10px;padding:12px 14px;border-radius:10px;background:var(--c-warn-bg);border:1px solid var(--c-warn-border);"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="var(--c-warn-text)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px;"><path d="m21.7 18-8-14a2 2 0 0 0-3.5 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.7-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><p style="margin:0;font-size:12.5px;color:var(--c-n2);line-height:1.5;">Новый владелец получит полный доступ. Вы потеряете права владельца, включая передачу владения и управление администраторами. Операция аудируется и необратима без повторной передачи.</p></div>
+                <button style="display:flex;align-items:flex-start;gap:10px;padding:0;border:none;background:transparent;cursor:pointer;text-align:left;font-family:inherit;"><i style="width:17px;height:17px;flex:none;margin-top:1px;border-radius:5px;border:1px solid var(--c-accent);background:var(--c-accent);display:inline-flex;align-items:center;justify-content:center;color:#fff;"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></i><span style="font-size:12.5px;color:var(--c-n2);line-height:1.5;">Я понимаю последствия и подтверждаю передачу владения организацией.</span></button>
+              </div>
+              <footer style="display:flex;justify-content:flex-end;gap:8px;padding:14px 24px;border-top:1px solid var(--c-n8);background:var(--c-surface2);"><button style="height:34px;padding:0 14px;border-radius:8px;border:1px solid var(--c-n7);background:var(--c-surface);color:var(--c-n2);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Отмена</button><button style="height:34px;padding:0 16px;border-radius:8px;border:none;background:#ff4d4f;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Передать владение</button></footer>
+            </section>
+          </div>
+          </sc-if>
+        </section>
+      </div>
+    </div>
+  </sc-for>
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;'light' | 'dark'&quot;,&quot;section&quot;:&quot;Тема&quot;},&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;options&quot;:[&quot;#1677ff&quot;,&quot;#6d5dfc&quot;,&quot;#0f9b8e&quot;,&quot;#e8590c&quot;],&quot;default&quot;:&quot;#1677ff&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Тема&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const dark = (this.props.theme ?? "light") === "dark";
+    const accent = this.props.accent ?? "#1677ff";
+    const T = dark
+      ? { canvas: "#101113", surface: "#1b1c1f", surface2: "#181a1d", feed: "#15161a", n1: "#d6d7db", n2: "#c3c5ca", n3: "#9a9ca3", n4: "#767881", n5: "#5b5d66", n6: "#45474f", n7: "#37393f", n8: "#2d2f35", n9: "#27292e", n10: "#212327", ai: "#a98be0", warnText: "#d9a441", okText: "#5fbf7a", errText: "#ff7875", accentText: `color-mix(in srgb,${accent} 62%,white)`, accentHover: `color-mix(in srgb,${accent} 92%,white)`, accentBgPct: 16, tintPct: 12, accentMuted: `color-mix(in srgb,${accent} 84%,#1b1c1f)` }
+      : { canvas: "#e4e6ea", surface: "#ffffff", surface2: "#fafafa", feed: "#f5f6f8", n1: "#1f1f1f", n2: "#262626", n3: "#595959", n4: "#8c8c8c", n5: "#bfbfbf", n6: "#d9d9d9", n7: "#e8e8e8", n8: "#f0f0f0", n9: "#f5f5f5", n10: "#fafafa", ai: "#722ed1", warnText: "#d48806", okText: "#237a3f", errText: "#cf1322", accentText: `color-mix(in srgb,${accent} 82%,black)`, accentHover: `color-mix(in srgb,${accent} 88%,black)`, accentBgPct: 10, tintPct: 11, accentMuted: accent };
+    const themeVars = `--c-canvas:${T.canvas};--c-surface:${T.surface};--c-surface2:${T.surface2};--c-feed:${T.feed};--c-n1:${T.n1};--c-n2:${T.n2};--c-n3:${T.n3};--c-n4:${T.n4};--c-n5:${T.n5};--c-n6:${T.n6};--c-n7:${T.n7};--c-n8:${T.n8};--c-n9:${T.n9};--c-n10:${T.n10};--c-ai:${T.ai};--c-accent:${T.accentMuted};--c-accent-text:${T.accentText};--c-accent-hover:${T.accentHover};--c-accent-bg:color-mix(in srgb,${accent} ${T.accentBgPct}%,${T.surface});--c-warn-bg:color-mix(in srgb,#faad14 ${T.tintPct}%,${T.surface});--c-warn-border:color-mix(in srgb,#faad14 ${T.tintPct + 25}%,${T.surface});--c-warn-text:${T.warnText};--c-ok-bg:color-mix(in srgb,#52c41a ${T.tintPct}%,${T.surface});--c-ok-text:${T.okText};--c-err-bg:color-mix(in srgb,#ff4d4f ${T.tintPct}%,${T.surface});--c-err-border:color-mix(in srgb,#ff4d4f ${T.tintPct + 25}%,${T.surface});--c-err-text:${T.errText};`;
+
+    // Иконки сайдбара — ровно из shared/icons.tsx (Icon: message · user · robot · team · globe · settings).
+    const nav = [
+      { key: "chat", label: "Чат", badge: 2, paths: ["M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"], circles: [] },
+      { key: "contacts", label: "Контакты", paths: ["M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"], circles: [{ cx: 12, cy: 7, r: 4 }] },
+      { key: "agents", label: "Агенты", paths: ["M6 6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2zM12 2v2M9 12v9M15 12v9M9 18h6M10 8v.01M14 8v.01"], circles: [] },
+      { key: "employees", label: "Сотрудники", paths: ["M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"], circles: [] },
+      { key: "portals", label: "Порталы", paths: ["M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20", "M2 12h20"], circles: [{ cx: 12, cy: 12, r: 10 }] },
+      { key: "settings", label: "Настройки", paths: ["M21 6H9M3 6h2", "M21 12h-8M3 12h6", "M21 18h-6M3 18h8"], circles: [{ cx: 7, cy: 6, r: 2 }, { cx: 11, cy: 12, r: 2 }, { cx: 13, cy: 18, r: 2 }] },
+    ].map((n) => ({ ...n, bg: n.key === "employees" ? "var(--c-accent-bg)" : "transparent", color: n.key === "employees" ? "var(--c-accent-text)" : "var(--c-n2)", weight: n.key === "employees" ? 600 : 500 }));
+
+    const listHead = ["Сотрудник", "Роль", "Должность", "Группы", "Доступ", "Статус", "Последний вход", ""];
+    const cols = "minmax(0,1.9fr) minmax(0,1fr) minmax(0,1.1fr) minmax(0,1.5fr) minmax(0,0.9fr) minmax(0,1fr) minmax(0,1fr) 44px";
+    const ROLE = { OWNER: ["Владелец", "var(--c-accent-bg)", "var(--c-accent-text)"], ADMIN: ["Администратор", "color-mix(in srgb,var(--c-ai) 14%,var(--c-surface))", "var(--c-ai)"], EMPLOYEE: ["Сотрудник", "var(--c-n9)", "var(--c-n3)"] };
+    const STATUS = { active: ["Активен", "var(--c-ok-bg)", "var(--c-ok-text)"], invited: ["Приглашён", "var(--c-warn-bg)", "var(--c-warn-text)"], blocked: ["Заблокирован", "var(--c-err-bg)", "var(--c-err-text)"] };
+    const GD = { "Операторы": "var(--c-accent)", "Поддержка": "#2aa876" };
+    const row = (r) => ({ ...r, role: ROLE[r.r][0], roleBg: ROLE[r.r][1], roleColor: ROLE[r.r][2], status: STATUS[r.st][0], stBg: STATUS[r.st][1], stColor: STATUS[r.st][2], groups: (r.g || []).map((name) => ({ name, dot: GD[name] })), noGroups: !(r.g || []).length, access: r.r === "EMPLOYEE" ? "Только чат" : "Полный доступ", accessColor: r.r === "EMPLOYEE" ? "var(--c-n4)" : "var(--c-n2)", opacity: r.st === "blocked" ? 0.6 : 1, menuBg: r.menuOpen ? "var(--c-n9)" : "transparent" });
+    const rows = [
+      row({ name: "Елена Кузнецова", email: "e.kuznetsova@atelie-nord.ru", initials: "ЕК", avBg: "#c4456b", r: "OWNER", position: "Директор", g: [], st: "active", login: "сейчас" }),
+      row({ name: "Анна Ким", email: "a.kim@atelie-nord.ru", initials: "АК", avBg: "#4c6ef0", r: "ADMIN", position: "Старший оператор", g: ["Операторы", "Поддержка"], st: "active", login: "12 мин назад", menuOpen: true }),
+      row({ name: "Дмитрий Орлов", email: "d.orlov@atelie-nord.ru", initials: "ДО", avBg: "#3b82c4", r: "EMPLOYEE", position: "Оператор", g: ["Операторы"], st: "active", login: "2 ч назад" }),
+      row({ name: "Сергей Крылов", email: "s.krylov@atelie-nord.ru", initials: "СК", avBg: "#13a8a8", r: "EMPLOYEE", position: "Специалист поддержки", g: ["Поддержка"], st: "active", login: "3 дн. назад" }),
+      row({ name: "Ольга Титова", email: "o.titova@atelie-nord.ru", initials: "ОТ", avBg: "#d4860b", r: "EMPLOYEE", position: "Оператор", g: [], st: "invited", login: "не входил" }),
+      row({ name: "Павел Зайцев", email: "p.zaitsev@atelie-nord.ru", initials: "ПЗ", avBg: "#8c8c8c", r: "EMPLOYEE", position: "Оператор", g: ["Операторы"], st: "blocked", login: "12 авг 2026" }),
+    ];
+    const roleTabs = (on) => [["all", "Все"], ["OWNER", "Владелец"], ["ADMIN", "Администратор"], ["EMPLOYEE", "Сотрудник"]].map(([k, label]) => ({ label, bg: k === on ? "var(--c-surface)" : "transparent", color: k === on ? "var(--c-n1)" : "var(--c-n3)", shadow: k === on ? "0 1px 2px rgba(0,0,0,0.08)" : "none" }));
+
+    const mi = (label, icon, o = {}) => ({ label, icon, color: o.color || "var(--c-n2)", cursor: o.off ? "default" : "pointer", opacity: o.off ? 0.45 : 1 });
+    const rowMenu = [
+      mi("Открыть карточку", "M7 17 17 7M8 7h9v9"),
+      mi("Завершить сессии", "M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"),
+      mi("Сбросить пароль", "M4 10h16v10H4zM8 10V7a4 4 0 0 1 8 0v3"),
+      { divider: true },
+      mi("Заблокировать", "M4 10h16v10H4zM8 10V7a4 4 0 0 1 8 0v3", { color: "#ff4d4f" }),
+    ];
+
+    const gpick = (name, count, on) => ({ name, count, on, dot: GD[name], border: on ? "var(--c-accent)" : "var(--c-n7)", bg: on ? "var(--c-accent-bg)" : "var(--c-surface)", markBorder: on ? "var(--c-accent)" : "var(--c-n6)", markBg: on ? "var(--c-accent)" : "transparent" });
+    const ropt = (label, desc, on, o = {}) => ({ label, desc, on, locked: !!o.locked, cursor: o.locked ? "default" : "pointer", opacity: o.locked ? 0.55 : 1, border: on ? "var(--c-accent)" : "var(--c-n7)", bg: on ? "var(--c-accent-bg)" : "var(--c-surface)", dotBorder: on ? "var(--c-accent)" : "var(--c-n6)" });
+    const OWNER_DESC = "Полный доступ. Ровно один в организации. Изменяется только через передачу владения.";
+    const ADMIN_DESC = "Полный доступ, идентичен владельцу. Единственное отличие владельца — его нельзя удалить.";
+    const EMP_DESC = "Работает в чате. Видит диалоги своих групп, диалоги без группы и назначенные ему.";
+    const drawerRoles = [ropt("Сотрудник", EMP_DESC, true), ropt("Администратор", ADMIN_DESC, false)];
+    const drawerGroups = [gpick("Операторы", "4 сотр.", true), gpick("Поддержка", "2 сотр.", false)];
+
+    const audit = (items) => items.map(([text, code, time, denied]) => ({ text, code, time, dot: denied ? "#ff4d4f" : "var(--c-accent)" }));
+    const person = (p) => ({
+      readonly: !p.editable, editable: !!p.editable, danger: !!p.danger, banner: !!p.banner,
+      role: ROLE[p.r][0], roleBg: ROLE[p.r][1], roleColor: ROLE[p.r][2],
+      status: STATUS[p.st][0], stBg: STATUS[p.st][1], stColor: STATUS[p.st][2],
+      fieldBg: p.editable ? "var(--c-n10)" : "var(--c-n9)", fieldColor: p.editable ? "var(--c-n1)" : "var(--c-n4)",
+      secColor: p.editable ? "var(--c-n2)" : "var(--c-n5)", secCursor: p.editable ? "pointer" : "default",
+      ...p,
+    });
+    const orlov = person({
+      name: "Дмитрий Орлов", email: "d.orlov@atelie-nord.ru", initials: "ДО", avBg: "#3b82c4", phone: "+7 916 330-88-04",
+      position: "Оператор", groupLine: "Операторы", r: "EMPLOYEE", st: "active", editable: true, danger: true,
+      dangerActions: [{ title: "Блокировка доступа", text: "Немедленно завершит все сессии и прекратит HTTP и realtime actions. Аудит и авторство сохраняются. Требует подтверждения.", action: "Заблокировать сотрудника", icon: "M4 10h16v10H4zM8 10V7a4 4 0 0 1 8 0v3" }],
+      groupPicks: [gpick("Операторы", "4 сотр.", true), gpick("Поддержка", "2 сотр.", false)],
+      roleNote: "OWNER и ADMIN идентичны по правам; EMPLOYEE работает только в чате.",
+      roleOptions: [ropt("Владелец", OWNER_DESC, false, { locked: true }), ropt("Администратор", ADMIN_DESC, false), ropt("Сотрудник", EMP_DESC, true)],
+      pwd: "14 авг 2026", totpText: "Отключена для этого сотрудника", totpBg: "var(--c-n6)", totpKnob: "2px", sessions: "2 устройств",
+      account: [{ label: "Статус", value: "Активен" }, { label: "Роль", value: "Сотрудник" }, { label: "Создан", value: "18 мар 2026" }, { label: "Последний вход", value: "2 ч назад" }],
+      audit: audit([["Изменены группы сотрудника", "identity.employee_groups_changed", "3 дн. назад"], ["Активные сессии завершены", "identity.employee_sessions_terminated", "12 авг 2026"], ["Пароль сотрудника сброшен", "identity.employee_password_reset", "14 авг 2026"], ["Сотрудник создан", "identity.employee_created", "18 мар 2026"]]),
+    });
+    const owner = person({
+      name: "Елена Кузнецова", email: "e.kuznetsova@atelie-nord.ru", initials: "ЕК", avBg: "#c4456b", phone: "+7 985 210-64-77",
+      position: "Директор", groupLine: "Без группы", r: "OWNER", st: "active", editable: false, danger: true, banner: true,
+      dangerActions: [{ title: "Передача владения", text: "Владение передаётся только администратору: у него уже полный доступ, и после передачи он получит защищённые действия владельца. Операция атомарна, аудируется и требует подтверждения.", action: "Передать владение", icon: "M3 12h7m11 0h-7M7 8l-4 4 4 4m10-8 4 4-4 4", note: "Владельца нельзя заблокировать или удалить, поэтому других опасных действий на его карточке нет." }],
+      groupPicks: [gpick("Операторы", "4 сотр.", false), gpick("Поддержка", "2 сотр.", false)],
+      roleNote: "Роль владельца меняется только через передачу владения.",
+      roleOptions: [ropt("Владелец", OWNER_DESC, true, { locked: true }), ropt("Администратор", ADMIN_DESC, false, { locked: true }), ropt("Сотрудник", EMP_DESC, false, { locked: true })],
+      pwd: "—", totpText: "Включена · требуется при каждом входе", totpBg: "var(--c-accent)", totpKnob: "22px", sessions: "3 устройств",
+      account: [{ label: "Статус", value: "Активен" }, { label: "Роль", value: "Владелец" }, { label: "Создан", value: "12 янв 2026" }, { label: "Последний вход", value: "сейчас" }],
+      audit: audit([["Передано владение организацией", "identity.ownership_transferred", "12 янв 2026"], ["Изменена системная роль", "identity.employee_role_changed", "12 янв 2026", true]]),
+    });
+
+    const pwdMode = (on) => [
+      ropt("Отправить на рабочую почту", "Сотрудник получит письмо со ссылкой первого входа. Подходит, когда почта организации настроена и работает.", on === "mail"),
+      ropt("Сгенерировать и показать мне", "Пароль покажется один раз после создания — скопируйте и передайте лично. Нужен, когда письма не доходят или ящик ещё не работает.", on === "show"),
+    ];
+    const listFrame = (o) => ({ isList: true, isCard: false, sidebar: true, rail: false, w: "1440px", h: "880px", shown: rows.length, total: rows.length, roleTabs: roleTabs("all"), groupFilter: "Все", resetColor: "var(--c-n4)", resizerOpacity: 0, launch: false, menu: false, drawer: false, transfer: false, pwdDialog: false, drawerFooter: "Пароль первичного доступа отправится на o.titova@atelie-nord.ru", rows, ...o });
+    const cardFrame = (o) => ({ isList: false, isCard: true, sidebar: true, rail: false, w: "1440px", h: "1560px", resizerOpacity: 0, launch: false, drawer: false, transfer: false, menu: false, pwdDialog: false, ...o });
+    const frames = [
+      listFrame({ id: "e1", badge: "E1", title: "Список", note: "сайдбар по коду: знак Chatballs, 6 пунктов (Порталы вместо «Доски»), блок «Запуск», ручка ширины подсвечена", launch: true, resizerOpacity: 1 }),
+      listFrame({ id: "e2", badge: "E2", title: "Список · меню строки", note: "фильтр «Администратор» · действия: карточка, сессии, пароль, блокировка — передачи владения здесь нет", menu: true, rows: rows.filter((r) => r.r === "ADMIN" || r.r === "OWNER"), shown: 2, roleTabs: roleTabs("ADMIN"), resetColor: "var(--c-accent-text)" }),
+      cardFrame({ id: "e3", badge: "E3", title: "Карточка сотрудника", note: "основные данные · должность и группы · системная роль · безопасность · опасная зона; справа учётная запись и аудит", p: orlov }),
+      cardFrame({ id: "e4", badge: "E4", title: "Карточка владельца", note: "только просмотр: блокировки нет; передача владения — в опасной зоне, кандидаты только администраторы", p: owner }),
+      listFrame({ id: "e5", badge: "E5", title: "Новый сотрудник", note: "четыре шага: учётные данные · роль · должность и группы · пароль (по умолчанию письмом)", drawer: true, pwdModes: pwdMode("mail"), h: "1040px" }),
+      listFrame({ id: "e6", badge: "E6", title: "Новый сотрудник · пароль показать", note: "выбран второй вариант — на случай проблем с почтой; подпись футера меняется", drawer: true, pwdModes: pwdMode("show"), drawerFooter: "Пароль покажем сразу после создания — скопируйте его", h: "1040px" }),
+      listFrame({ id: "e7", badge: "E7", title: "Пароль показан", note: "после создания или сброса: один раз, с копированием, маскированием и переходом на письмо", pwdDialog: true, pwd: { title: "Сотрудник создан", sub: "Пароль сгенерирован и показан один раз — скопируйте его сейчас.", name: "Ольга Титова", email: "o.titova@atelie-nord.ru", initials: "ОТ", avBg: "#d4860b", value: "kv7-Rt94-Xmz2" } }),
+      listFrame({ id: "e8", badge: "E8", title: "Сброс пароля", note: "владелец и админ сбрасывают пароль сотруднику из карточки или меню строки и копируют новый", pwdDialog: true, pwd: { title: "Пароль сброшен", sub: "Активные сессии сотрудника завершены, при первом входе он задаст свой пароль.", name: "Дмитрий Орлов", email: "d.orlov@atelie-nord.ru", initials: "ДО", avBg: "#3b82c4", value: "qa5-Lb27-Wnd8" } }),
+      listFrame({ id: "e9", badge: "E9", title: "Передача владения", note: "открывается из опасной зоны карточки владельца; кандидаты — только администраторы", transfer: true }),
+      listFrame({ id: "e10", badge: "E10", title: "Сайдбар · рейка 1024", note: "≤1024px: рейка 60px (знак · чат · развернуть · аватар), полный сайдбар выезжает поверх", sidebar: false, rail: true, w: "1024px" }),
+    ];
+    for (const f of frames) { f.maskId = `lg-${f.id}`; f.maskUrl = f.maskId; }
+    return { themeVars, nav, listHead, cols, rowMenu, drawerRoles, drawerGroups, frames };
+  }
+}
+</script>
+</body>
+</html>

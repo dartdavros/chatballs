@@ -2,6 +2,7 @@ import { Dropdown } from "antd";
 import type { CSSProperties } from "react";
 
 import type { RouteKey, SessionUser } from "../types";
+import type { SettingsSectionKey } from "../features/settings/sections";
 import { useResizableWidth } from "../shared/useResizableWidth";
 import { Icon, LogoIcon } from "../shared/icons";
 import { defaultRoute, isManager } from "../auth/access";
@@ -43,6 +44,7 @@ export function Sidebar({
   route,
   user,
   setRoute,
+  openSettings,
   onLogout,
   waitingCount = 0,
   chatScope,
@@ -56,6 +58,7 @@ export function Sidebar({
   route: RouteKey;
   user: SessionUser;
   setRoute: (route: RouteKey) => void;
+  openSettings: (section: SettingsSectionKey | null) => void;
   onLogout: () => void;
   waitingCount?: number;
   chatScope: DialogScope;
@@ -131,8 +134,12 @@ export function Sidebar({
           <SidebarLink activeRoutes={["agents", "agentDetail"]} icon="robot" label="Агенты" route={route} routeKey="agents" setRoute={setRoute} />
           <SidebarLink activeRoutes={["employees", "employeeDetail"]} icon="team" label="Сотрудники" route={route} routeKey="employees" setRoute={setRoute} />
           <SidebarLink activeRoutes={["supportPortals", "supportPortalDetail"]} icon="globe" label="Порталы" route={route} routeKey="supportPortals" setRoute={setRoute} />
-          <SidebarLink activeRoutes={["settings", "aiKnowledge", "aiKnowledgeCreate", "aiKnowledgeDetail", "administrationAudit", "profile"]} icon="settings" label="Настройки" route={route} routeKey="settings" setRoute={setRoute} />
+          <SidebarLink activeRoutes={["settings", "aiKnowledge", "aiKnowledgeCreate", "aiKnowledgeDetail", "administrationAudit"]} icon="settings" label="Настройки" route={route} routeKey="settings" setRoute={setRoute} />
         </nav>
+      ) : route === "profile" ? (
+        /* Кадр P2: на «Профиле» у сотрудника сайдбар без навигации — фильтровать
+           нечего, дерево диалогов относится только к чату. */
+        null
       ) : (
         <ChatScopeTree
           route={route}
@@ -144,7 +151,7 @@ export function Sidebar({
           }}
         />
       )}
-      {manager && <LaunchChecklist user={user} setRoute={setRoute} />}
+      {manager && <LaunchChecklist user={user} setRoute={setRoute} openSettings={openSettings} />}
       <SidebarUserMenu user={user} route={route} setRoute={setRoute} onLogout={onLogout} unreadCount={unreadCount} onOpenNotifications={onOpenNotifications} />
       </div>
     </aside>
@@ -220,7 +227,7 @@ function ChatScopeTree({
               type="button"
               onClick={() => setScope({ kind: "agent", id: agent.id, label: agent.name })}
             >
-              <span className="chat-scope-agent" style={{ color: agentColorOf(agent.code), background: `color-mix(in srgb, ${agentColorOf(agent.code)} 16%, var(--surface-card))` }}><Icon name="robot" size={11} /></span>
+              <span className="chat-scope-agent" style={{ color: agentColorOf(agent.id), background: `color-mix(in srgb, ${agentColorOf(agent.id)} 16%, var(--surface-card))` }}><Icon name="robot" size={11} /></span>
               <span>{agent.name}</span>
               <small>{agent.count}</small>
             </button>

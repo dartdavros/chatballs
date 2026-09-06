@@ -52,24 +52,42 @@
 
 /* Плитки подключений: белая фирменная марка на фирменном фоне (SPEC-HUB-0025 §2.3).
    Цвета — из семейства channel-* дизайн-системы; Web — цвет кнопки-лончера виджета. */
-.integrations-page .integration-tile {
-  color: #ffffff;
+/* Плитка подключения (кадры N3/N4): 36×36, радиус 9, подложка — марка
+   в 14%, сам глиф — цветом марки. */
+.integration-tile {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
 }
 
-.integrations-page .integration-tile--telegram {
-  background: #2f8fd0;
+.integration-tile--telegram {
+  color: #229ed9;
+  background: color-mix(in srgb, #229ed9 14%, var(--surface-card));
 }
 
-.integrations-page .integration-tile--max {
-  background: #6b5be0;
+.integration-tile--max {
+  color: #5b5bd6;
+  background: color-mix(in srgb, #5b5bd6 14%, var(--surface-card));
 }
 
-.integrations-page .integration-tile--web {
-  background: var(--primary);
+.integration-tile--web {
+  color: var(--primary-text);
+  background: var(--primary-bg);
 }
 
-.integrations-page .integration-tile--email {
-  background: var(--warning-text);
+.integration-tile--email {
+  color: #fa8c16;
+  background: color-mix(in srgb, #fa8c16 14%, var(--surface-card));
+}
+
+.integration-tile--ai {
+  color: var(--ai);
+  background: color-mix(in srgb, var(--ai) 12%, var(--surface-card));
+}
+
+.integration-tile--neutral {
+  color: var(--n-3);
+  background: var(--n-9);
 }
 
 .integration-config {
@@ -187,4 +205,13 @@
 
 .integration-snippet .form-field input.mono {
   font-size: 12px;
+}
+
+/* Колонка «Агент» таблицы подключений (кадр N4): бот в цвете агента. */
+.integration-agent {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
 }

@@ -51,11 +51,10 @@ export function CommunicationSettingsCard({ canManage }: { canManage: boolean })
   }
 
   return (
-    <div className="profile-card">
-      <p className="settings-section-note">Клиент и сотрудник могут записывать голосовые и начинать звонки только там, где это разрешено. Голосовые, присланные клиентом из мессенджера, принимаются всегда.</p>
+    <>
       {items.length === 0 && <p className="settings-section-note">Точек входа пока нет — подключите бота, почту или Web-виджет в «Интеграциях».</p>}
       {items.length > 0 && (
-        <div className="communication-matrix">
+        <div className="table-card communication-matrix">
           <div className="communication-row is-head">
             <span>Точка входа</span>
             {COLUMNS.map(([flag, label]) => <span key={flag}>{label}</span>)}
@@ -63,14 +62,14 @@ export function CommunicationSettingsCard({ canManage }: { canManage: boolean })
           {items.map((item) => (
             <div className={`communication-row${item.isActive ? "" : " is-inactive"}`} key={item.id}>
               <span className="communication-entry">
-                <ChannelGlyph provider={item.provider} size={14} />
+                <ChannelGlyph provider={item.provider} size={16} />
                 <strong>{item.name}</strong>
                 <small>{item.agentName || "без агента"}{item.isActive ? "" : " · выключена"}</small>
               </span>
               {COLUMNS.map(([flag, label]) => (
                 <span key={flag}>
                   {flag === "voiceMessages" || item.supportsCalls
-                    ? <SwitchButton checked={item[flag]} className="ui-switch" label={`${label}: ${item.name}`} disabled={!canManage || busyId != null} onClick={() => void toggle(item, flag)} />
+                    ? <SwitchButton checked={item[flag]} className="ui-switch is-compact" label={`${label}: ${item.name}`} disabled={!canManage || busyId != null} onClick={() => void toggle(item, flag)} />
                     : <small className="communication-na">недоступно</small>}
                 </span>
               ))}
@@ -79,6 +78,9 @@ export function CommunicationSettingsCard({ canManage }: { canManage: boolean })
         </div>
       )}
       {errorText && <div className="settings-section-error">{errorText}</div>}
-    </div>
+      {items.length > 0 && (
+        <p className="settings-section-note">Голосовые, присланные клиентом из мессенджера, принимаются всегда. Почта звонки не поддерживает. Изменения применяются сразу.</p>
+      )}
+    </>
   );
 }

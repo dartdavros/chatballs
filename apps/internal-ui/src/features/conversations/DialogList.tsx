@@ -1,5 +1,5 @@
 import { Dropdown } from "antd";
-import type { CSSProperties, ReactNode, RefObject } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 import { modeDots } from "./data";
 import { ContactAvatar } from "./ContactAvatar";
@@ -14,7 +14,7 @@ import { SearchInput } from "../../shared/ui-controls";
 
 export type ListSort = "activity" | "waiting";
 
-export function DialogList({ title = "Диалоги", searchPlaceholder = "Поиск по контакту, сообщению…", viewerId = null, scope, counters, setScope, showScopeSwitcher = true, mobileHeader, hint, searchRef, dialogs, filtered, listTab, selectedId, search, errorText, sort, setSort, onCollapse, setSearch, setListTab, setSelectedId }: {
+export function DialogList({ title = "Диалоги", searchPlaceholder = "Поиск по контакту, сообщению…", viewerId = null, scope, counters, setScope, showScopeSwitcher = true, mobileHeader, hint, dialogs, filtered, listTab, selectedId, search, errorText, sort, setSort, onCollapse, setSearch, setListTab, setSelectedId }: {
   title?: string;
   searchPlaceholder?: string;
   sort: ListSort;
@@ -27,7 +27,6 @@ export function DialogList({ title = "Диалоги", searchPlaceholder = "По
   mobileHeader?: (info: { total: number }) => ReactNode;
   viewerId?: number | null;
   hint?: ReactNode;
-  searchRef?: RefObject<HTMLInputElement | null>;
   dialogs: ConversationListItem[];
   filtered: ConversationListItem[];
   listTab: ListTab;
@@ -67,7 +66,7 @@ export function DialogList({ title = "Диалоги", searchPlaceholder = "По
             {onCollapse && <button type="button" aria-label="Скрыть список" title="Скрыть список" onClick={onCollapse}><Icon name="collapseLeft" size={15} /></button>}
           </span>
         </div>
-        <SearchInput className="sales-dialog-search" inputRef={searchRef} placeholder={searchPlaceholder} value={search} onChange={setSearch} hotkey="/" />
+        <SearchInput className="sales-dialog-search" placeholder={searchPlaceholder} value={search} onChange={setSearch} hotkey="/" />
       </div>
       <div className="sales-dialog-tabs">
         <DialogTab active={listTab === "all"} onClick={() => setListTab("all")}>Все</DialogTab>
@@ -171,7 +170,7 @@ function ScopeSwitcher({ scope, counters, setScope, fallbackTitle, total, viewer
       ? [
           head("agents-head", "Агенты"),
           ...counters.agents.map((agent) => {
-            const color = agentColorOf(agent.code);
+            const color = agentColorOf(agent.id);
             return item(`agent-${agent.id}`, { kind: "agent", id: agent.id, label: agent.name }, <span className="scope-agent" style={{ color, background: `color-mix(in srgb, ${color} 16%, var(--surface-card))` }}><Icon name="robot" size={11} /></span>, agent.name, agent.count);
           }),
         ]

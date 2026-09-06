@@ -10,6 +10,7 @@ function userWith(role: Role, capabilities: string[] = []): SessionUser {
     fullName: "Test User",
     mustChangePassword: false,
     totpEnabled: false,
+    totpLastUsedAt: null,
     deliveryMode: "CLOUD",
   uiTheme: "SYSTEM",
   uiAccent: "",
@@ -23,6 +24,7 @@ function userWith(role: Role, capabilities: string[] = []): SessionUser {
     totpRequired: false,
     capabilities,
     groups: [],
+    joinedAt: "2026-01-01T00:00:00Z",
   };
 }
 
@@ -44,7 +46,8 @@ describe("role-based navigation (SPEC-HUB-0031 §3)", () => {
     expect(isManager(user)).toBe(false);
     expect(canAccess(user, "chat")).toBe(true);
     expect(canAccess(user, "profile")).toBe(true);
-    expect(canAccess(user, "settings")).toBe(true);
+    // «Настройки» — настройки организации, сотруднику недоступны (дизайн-базлайн v2).
+    expect(canAccess(user, "settings")).toBe(false);
     expect(canAccess(user, "employees")).toBe(false);
     expect(canAccess(user, "agents")).toBe(false);
     expect(canAccess(user, "aiKnowledge")).toBe(false);

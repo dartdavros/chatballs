@@ -59,13 +59,6 @@
   font-weight: 600;
 }
 
-.knowledge-table-card {
-  border: 1px solid var(--n-8);
-  border-radius: 12px;
-  background: var(--surface-card);
-  box-shadow: var(--shadow-xs);
-}
-
 .knowledge-table { table-layout: fixed; }
 .knowledge-col-select { width: 38px; }
 .knowledge-col-title { width: 30%; }

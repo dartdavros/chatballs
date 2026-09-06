@@ -150,9 +150,14 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
             identity.username = inbound.username
             identity.save(update_fields=["username"])
         contact = identity.contact
-        if is_contact_share and contact.phone != inbound.phone:
-            contact.phone = inbound.phone
-            contact.save(update_fields=["phone"])
+        if is_contact_share and inbound.phone:
+            if contact.phone != inbound.phone:
+                contact.phone = inbound.phone
+                contact.save(update_fields=["phone"])
+            # Телефон подтвердило именно это подключение (ADR-HUB-0006).
+            if identity.phone_verified_at is None:
+                identity.phone_verified_at = timezone.now()
+                identity.save(update_fields=["phone_verified_at"])
         # Аватар обновляем при каждом заходе: провайдер может сменить фото,
         # а контакт ещё не шарил телефон (is_contact_share=False).
         if inbound.avatar_url and contact.avatar_url != inbound.avatar_url:

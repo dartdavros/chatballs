@@ -1,8 +1,12 @@
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from django.core.exceptions import ValidationError
+
 from chatballs.conversations.clients import client_detail, clients_overview
+from chatballs.conversations.contacts_merge import merge_contacts, revert_merge
 from chatballs.conversations.models import Contact
+from chatballs.identity.models import EmployeeRole
 from chatballs.conversations.stats import sales_overview_stats
 from chatballs.conversations.view_base import ConversationViewBase
 from chatballs.identity.audit import record_audit_event
@@ -62,4 +66,55 @@ class ClientDetailView(ConversationViewBase):
                 payload={"fields": changed},
                 request=request,
             )
+        return Response({"client": client_detail(organization.id, contact_id)})
+
+
+class ClientMergeView(ConversationViewBase):
+    """Объединение контактов и обратное разъединение (ADR-HUB-0006).
+
+    Доступно только владельцу, требует причины и полностью аудируется;
+    предложение объединения на карточке видят и администраторы.
+    """
+
+    required_capabilities = {"POST": "customers.manage", "DELETE": "customers.manage"}
+
+    def _owner_only(self, request: Request) -> Response | None:
+        membership = request.tenant_context.membership
+        if membership is None or membership.role != EmployeeRole.OWNER:
+            return Response({"detail": "Объединять контакты может только владелец"}, status=403)
+        return None
+
+    def post(self, request: Request, contact_id: int) -> Response:
+        denied = self._owner_only(request)
+        if denied is not None:
+            return denied
+        organization = self._org(request)
+        try:
+            merge_contacts(
+                organization=organization,
+                target_id=contact_id,
+                source_id=int(request.data.get("sourceId") or 0),
+                reason=str(request.data.get("reason", "")),
+                actor=request.user,
+                request=request,
+            )
+        except ValidationError as error:
+            return Response({"detail": "; ".join(error.messages)}, status=400)
+        return Response({"client": client_detail(organization.id, contact_id)})
+
+    def delete(self, request: Request, contact_id: int) -> Response:
+        denied = self._owner_only(request)
+        if denied is not None:
+            return denied
+        organization = self._org(request)
+        try:
+            revert_merge(
+                organization=organization,
+                merge_id=int(request.data.get("mergeId") or 0),
+                reason=str(request.data.get("reason", "")),
+                actor=request.user,
+                request=request,
+            )
+        except ValidationError as error:
+            return Response({"detail": "; ".join(error.messages)}, status=400)
         return Response({"client": client_detail(organization.id, contact_id)})

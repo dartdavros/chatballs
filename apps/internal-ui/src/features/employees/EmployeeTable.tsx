@@ -1,88 +1,131 @@
 import { Dropdown } from "antd";
 
-import type { Employee } from "../../types";
+import type { Employee, EmployeeGroup } from "../../types";
 import { Icon } from "../../shared/icons";
-import { Avatar, EmptyState, RoleBadge, StatusPill } from "../../shared/ui";
-import { employeeStatusKey, formatLastLogin, groupsLabel, roleAccessLabel } from "./model";
+import { Avatar, EmptyState } from "../../shared/ui";
+import { groupColorOf } from "../conversations/model";
+import { employeeAvatarColor, formatLastLogin, roleAccessLabel, roleBadge, statusBadge } from "./model";
+
+// Таблица сотрудников (дизайн-базлайн v2, «Сотрудники Baseline», кадры E1/E2):
+// сотрудник · роль · должность · группы · доступ · статус · последний вход · ⋯.
 
 export function EmployeeTable({
   employees,
+  groups,
   menuId,
-  onTransfer,
+  onBlock,
+  onResetPassword,
+  onTerminateSessions,
   openEmployee,
   setMenuId,
   total,
 }: {
   employees: Employee[];
+  groups: EmployeeGroup[];
   menuId: number | null;
-  onTransfer: () => void;
+  onBlock: (employee: Employee) => void;
+  onResetPassword: (employee: Employee) => void;
+  onTerminateSessions: (employee: Employee) => void;
   openEmployee: (employee: Employee) => void;
   setMenuId: (id: number | null) => void;
   total: number;
 }) {
   return (
-    <div className="table-card employees-card">
-      <div className="table-scroll">
-        <table className="baseline-table employees-table">
-          <thead><tr><th>СОТРУДНИК</th><th>РОЛЬ</th><th>ДОЛЖНОСТЬ</th><th>ГРУППЫ</th><th>ДОСТУП</th><th>СТАТУС</th><th>ПОСЛЕДНИЙ ВХОД</th><th /></tr></thead>
-          <tbody>
-            {employees.map((employee) => (
-              <EmployeeRow
-                employee={employee}
-                menuOpen={menuId === employee.id}
-                onTransfer={onTransfer}
-                openEmployee={openEmployee}
-                setMenuId={setMenuId}
-                key={employee.id}
-              />
-            ))}
-          </tbody>
-        </table>
+    <div className="employees-table">
+      <div className="employees-thead">
+        <span>Сотрудник</span>
+        <span>Роль</span>
+        <span>Должность</span>
+        <span>Группы</span>
+        <span>Доступ</span>
+        <span>Статус</span>
+        <span>Последний вход</span>
+        <span />
       </div>
+      {employees.map((employee) => (
+        <EmployeeRow
+          employee={employee}
+          groups={groups}
+          menuOpen={menuId === employee.id}
+          onBlock={onBlock}
+          onResetPassword={onResetPassword}
+          onTerminateSessions={onTerminateSessions}
+          openEmployee={openEmployee}
+          setMenuId={setMenuId}
+          key={employee.id}
+        />
+      ))}
       {!employees.length && <EmptyState title="Сотрудники не найдены" />}
-      <div className="employees-footer">
-        <span>Показано {employees.length} из {total}</span>
-        <span>Группа задаёт только видимость диалогов и не выдаёт прав</span>
+      <div className="employees-foot">
+        <small>Показано {employees.length} из {total}</small>
+        <small>Группа задаёт только видимость диалогов и не выдаёт прав</small>
       </div>
     </div>
   );
 }
 
-function EmployeeRow({ employee, menuOpen, onTransfer, openEmployee, setMenuId }: {
+function EmployeeRow({ employee, groups, menuOpen, onBlock, onResetPassword, onTerminateSessions, openEmployee, setMenuId }: {
   employee: Employee;
+  groups: EmployeeGroup[];
   menuOpen: boolean;
-  onTransfer: () => void;
+  onBlock: (employee: Employee) => void;
+  onResetPassword: (employee: Employee) => void;
+  onTerminateSessions: (employee: Employee) => void;
   openEmployee: (employee: Employee) => void;
   setMenuId: (id: number | null) => void;
 }) {
-  // Destructive row actions stay visual until their baseline confirmation states are approved.
   const permissions = employee.permissions;
-  const manageable = Boolean(permissions?.canBlock || permissions?.canUnblock || permissions?.canResetPassword || permissions?.canTerminateSessions);
+  const role = roleBadge(employee.role);
+  const status = statusBadge(employee);
   const open = () => { setMenuId(null); openEmployee(employee); };
+  const act = (run: () => void) => { setMenuId(null); run(); };
+  // Кадр E2: карточка · сессии · пароль · разделитель · блокировка.
+  // Передачи владения в меню строки нет — она только в опасной зоне владельца.
   const menuItems = [
     { key: "open", label: <button type="button" onClick={open}><Icon name="external" size={15} />Открыть карточку</button> },
-    ...(permissions?.canTransferOwnership ? [{ key: "transfer", label: <button type="button" onClick={onTransfer}><Icon name="split" size={15} />Передать владение</button> }] : []),
-    ...(manageable ? [
-      { key: "sessions", disabled: !permissions?.canTerminateSessions, label: <button type="button"><Icon name="logout" size={15} />Завершить сессии</button> },
-      { key: "password", disabled: !permissions?.canResetPassword, label: <button type="button"><Icon name="lock" size={15} />Сбросить пароль</button> },
-      { type: "divider" as const },
-      { key: "block", disabled: employee.isBlocked ? !permissions?.canUnblock : !permissions?.canBlock, label: <button className={employee.isBlocked ? "success" : "danger"} type="button">{employee.isBlocked ? "Разблокировать" : "Заблокировать"}</button> },
-    ] : []),
+    { key: "sessions", disabled: !permissions?.canTerminateSessions, label: <button type="button" onClick={() => act(() => onTerminateSessions(employee))}><Icon name="logout" size={15} />Завершить сессии</button> },
+    { key: "password", disabled: !permissions?.canResetPassword, label: <button type="button" onClick={() => act(() => onResetPassword(employee))}><Icon name="lock" size={15} />Сбросить пароль</button> },
+    { type: "divider" as const },
+    {
+      key: "block",
+      disabled: employee.isBlocked ? !permissions?.canUnblock : !permissions?.canBlock,
+      label: (
+        <button className={employee.isBlocked ? "success" : "danger"} type="button" onClick={() => act(() => onBlock(employee))}>
+          <Icon name="lock" size={15} />{employee.isBlocked ? "Разблокировать" : "Заблокировать"}
+        </button>
+      ),
+    },
   ];
+
   return (
-    <tr>
-      <td><div className="person-cell"><Avatar employee={employee} /><button className="person-link" type="button" onClick={open}><strong>{employee.fullName || employee.email}</strong><small>{employee.email}</small></button></div></td>
-      <td><RoleBadge role={employee.role} /></td>
-      <td>{employee.positionTitle}</td>
-      <td>{groupsLabel(employee)}</td>
-      <td>{roleAccessLabel(employee)}</td>
-      <td><StatusPill status={employeeStatusKey(employee)} /></td>
-      <td className="employee-last-login">{formatLastLogin(employee.lastLogin)}</td>
-      <td className="row-actions">
-        <Dropdown menu={{ items: menuItems }} open={menuOpen} onOpenChange={(next) => setMenuId(next ? employee.id : null)} trigger={["click"]} overlayClassName="app-dropdown is-wide">
-          <button className="row-menu-button" type="button" aria-label={`Действия: ${employee.fullName || employee.email}`}><Icon name="more" /></button>
-        </Dropdown>
-      </td>
-    </tr>
+    <div className={`employees-row ${employee.isBlocked ? "is-blocked" : ""}`} role="button" tabIndex={0} onClick={open} onKeyDown={(event) => { if (event.key === "Enter") open(); }}>
+      <div className="employees-person">
+        <Avatar employee={employee} background={employeeAvatarColor(employee)} />
+        <span>
+          <strong>{employee.fullName || employee.email}</strong>
+          <small>{employee.email}</small>
+        </span>
+      </div>
+      <b className="employees-badge" style={{ background: role.bg, color: role.color }}>{role.text}</b>
+      <span className="employees-position">{employee.positionTitle}</span>
+      <div className="employees-groups">
+        {employee.groups.length === 0
+          ? <span className="employees-nogroup">Без группы</span>
+          : employee.groups.map((group) => (
+            <span className="employees-group" key={group.id}>
+              <i style={{ background: groupColorOf(group.id, groups.find((item) => item.id === group.id)?.color) }} />
+              {group.name}
+            </span>
+          ))}
+      </div>
+      <span className={`employees-access ${employee.role === "EMPLOYEE" ? "is-limited" : ""}`}>{roleAccessLabel(employee)}</span>
+      <b className="employees-badge has-dot" style={{ background: status.bg, color: status.color }}><i />{status.text}</b>
+      <span className="employees-login">{formatLastLogin(employee.lastLogin)}</span>
+      <Dropdown menu={{ items: menuItems }} open={menuOpen} onOpenChange={(next) => setMenuId(next ? employee.id : null)} trigger={["click"]} overlayClassName="app-dropdown is-employee-menu">
+        <button className={`employees-row-menu ${menuOpen ? "is-open" : ""}`} type="button" aria-label={`Действия: ${employee.fullName || employee.email}`} title="Действия" onClick={(event) => event.stopPropagation()}>
+          <Icon name="more" size={16} />
+        </button>
+      </Dropdown>
+    </div>
   );
 }

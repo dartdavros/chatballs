@@ -1,6 +1,7 @@
 from urllib.parse import quote
 
 from django.contrib.auth import login
+from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_protect
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -19,6 +20,7 @@ from chatballs.identity.auth.totp_utils import (
     _verify_totp,
 )
 from chatballs.identity.models import AuditResult, HumanUser
+from chatballs.identity.sessions import remember_device
 
 
 class TotpSetupView(APIView):
@@ -60,7 +62,8 @@ class TotpConfirmView(APIView):
             return Response({"detail": "Invalid TOTP code"}, status=400)
 
         request.user.totp_enabled = True
-        request.user.save(update_fields=["totp_enabled"])
+        request.user.totp_last_used_at = timezone.now()
+        request.user.save(update_fields=["totp_enabled", "totp_last_used_at"])
         record_audit_event(
             action="identity.totp_enabled",
             actor=request.user,
@@ -103,7 +106,11 @@ class TotpVerifyView(APIView):
             return Response({"detail": "Invalid TOTP code"}, status=400)
 
         request.session.pop(TOTP_SESSION_KEY, None)
+        # Отметка «последний код принят …» в карточке 2FA (кадр P1).
+        user.totp_last_used_at = timezone.now()
+        user.save(update_fields=["totp_last_used_at"])
         login(request, user)
+        remember_device(request)
         record_audit_event(
             action="identity.login_succeeded",
             actor=user,

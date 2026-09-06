@@ -7,7 +7,6 @@ import type { RouteKey, SessionUser } from "../types";
 const EMPLOYEE_ROUTES: ReadonlySet<RouteKey> = new Set<RouteKey>([
   "chat",
   "profile",
-  "settings",
 ]);
 
 export function isManager(user: SessionUser): boolean {
@@ -19,7 +18,9 @@ export function hasCapability(user: SessionUser, capability: string): boolean {
 }
 
 export function canAccess(user: SessionUser, route: RouteKey): boolean {
-  if (route === "profile" || route === "settings") return true;
+  // «Настройки» — настройки организации: только владелец и админ. Личные
+  // параметры сотрудника живут на странице «Профиль» (дизайн-базлайн v2).
+  if (route === "profile") return true;
   if (isManager(user)) return true;
   return EMPLOYEE_ROUTES.has(route);
 }

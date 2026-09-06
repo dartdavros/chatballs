@@ -1,9 +1,13 @@
+/* Новый сотрудник и пароль первичного доступа (дизайн-базлайн v2, кадры
+   E5–E8): панель 520px, четыре шага, диалог с паролем 520px. */
+
 .employee-drawer-scrim {
   position: fixed;
   inset: 0;
   z-index: 60;
-  background: rgba(0, 0, 0, 0.32);
   border: 0;
+  background: rgba(0, 0, 0, 0.4);
+  cursor: default;
 }
 
 .employee-create-drawer {
@@ -12,78 +16,569 @@
   right: 0;
   bottom: 0;
   z-index: 61;
+  display: flex;
   width: 520px;
-  max-width: 94vw;
-  display: flex;
+  max-width: 100%;
   flex-direction: column;
+  border-left: 1px solid var(--n-8);
   background: var(--surface-card);
-  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.12);
-}
-
-.employee-create-drawer > header,
-.employee-create-drawer > footer,
-.employee-create-drawer > footer > div {
-  display: flex;
-  align-items: center;
+  box-shadow: -12px 0 40px rgba(0, 0, 0, 0.18);
 }
 
 .employee-create-drawer > header {
-  height: 60px;
-  justify-content: space-between;
+  display: flex;
   flex: none;
-  padding: 0 22px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 22px;
   border-bottom: 1px solid var(--n-8);
 }
 
-.employee-create-drawer > header strong,
-.employee-create-drawer > header span { display: block; }
-.employee-create-drawer > header strong { color: var(--n-1); font-size: 16px; }
-.employee-create-drawer > header span { margin-top: 1px; color: var(--n-4); font-size: 11.5px; }
-.employee-create-drawer > header button { width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; color: var(--n-4); background: transparent; border: 0; border-radius: 8px; }
-.employee-create-drawer > header button:hover { color: var(--n-2); background: var(--n-9); }
+.employee-create-drawer > header strong {
+  display: block;
+  color: var(--n-1);
+  font-size: 16px;
+  font-weight: 700;
+}
 
-.employee-create-body { flex: 1; overflow-y: auto; padding: 20px 22px 24px; }
-.employee-create-step { margin-bottom: 22px; }
-.employee-create-step:last-child { margin-bottom: 6px; }
-.employee-create-step h3 { display: flex; align-items: center; gap: 9px; margin: 0 0 13px; color: var(--n-1); font-size: 13.5px; }
-.employee-create-step h3 > i { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; color: #fff; background: var(--primary); border-radius: 50%; font-size: 11px; font-style: normal; }
-.employee-create-step.muted h3 { color: var(--n-5); }
-.employee-create-step.muted h3 > i { color: var(--n-5); background: var(--n-8); }
-.employee-create-step > p { margin: 9px 0 0; color: var(--n-4); font-size: 11.5px; line-height: 1.45; }
-.employee-create-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.employee-create-field.wide { grid-column: span 2; }
-.employee-create-field > span { display: block; margin-bottom: 6px; color: var(--n-4); font-size: 12px; font-weight: 500; }
-.employee-create-field input,
-.employee-create-field select { width: 100%; height: 38px; padding: 0 12px; color: var(--n-2); background: var(--surface-card); border: 1px solid var(--n-7); border-radius: 8px; font-size: 13px; outline: none; }
-.employee-create-field input:focus,
-.employee-create-field select:focus { border-color: var(--primary); }
-.employee-create-field .mono { font-family: "SF Mono", ui-monospace, Menlo, monospace; }
+.employee-create-drawer > header span {
+  display: block;
+  margin-top: 3px;
+  color: var(--n-4);
+  font-size: 12.5px;
+}
 
-.employee-role-options { display: flex; flex-direction: column; gap: 9px; }
-.employee-role-options > button { display: flex; align-items: flex-start; gap: 11px; padding: 12px 13px; color: var(--n-2); background: var(--surface-card); border: 1px solid var(--n-8); border-radius: 9px; text-align: left; }
-.employee-role-options > button.active { background: var(--primary-bg); border-color: var(--primary-border); }
-.employee-role-options > button > i { width: 17px; height: 17px; display: flex; align-items: center; justify-content: center; flex: none; margin-top: 1px; border: 1.6px solid var(--n-6); border-radius: 50%; }
-.employee-role-options > button.active > i { border-color: var(--primary); }
-.employee-role-options > button > i span { width: 7px; height: 7px; background: var(--primary); border-radius: 50%; }
-.employee-role-options strong,
-.employee-role-options small { display: block; }
-.employee-role-options strong { font-size: 13px; }
-.employee-role-options small { margin-top: 3px; color: var(--n-4); font-size: 11.5px; line-height: 1.45; }
+.employee-create-drawer > header button {
+  display: flex;
+  width: 30px;
+  height: 30px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--n-4);
+  cursor: pointer;
+}
 
-.employee-create-profiles { display: flex; flex-direction: column; gap: 8px; }
-.employee-create-profiles > label { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: var(--surface-card); border: 1px solid var(--n-8); border-radius: 9px; }
-.employee-create-profiles > label.selected { background: var(--primary-bg); border-color: var(--primary-border); }
-.employee-create-profiles > label > button { min-width: 0; display: flex; align-items: center; flex: 1; gap: 11px; padding: 0; color: var(--n-2); background: transparent; border: 0; text-align: left; }
-.employee-create-profiles > label > button > i { width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; flex: none; color: var(--surface-card); background: var(--surface-card); border: 1.6px solid var(--n-6); border-radius: 5px; }
-.employee-create-profiles > label.selected > button > i { background: var(--primary); border-color: var(--primary); }
-.employee-create-profiles strong,
-.employee-create-profiles small { display: block; }
-.employee-create-profiles strong { display: flex; align-items: center; gap: 7px; font-size: 13px; }
-.employee-create-profiles small { margin-top: 2px; overflow: hidden; color: var(--n-4); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
-.employee-create-profiles select { height: 30px; padding: 0 8px; color: var(--n-3); background: var(--surface-card); border: 1px solid var(--n-7); border-radius: 7px; font-size: 11.5px; }
-.employee-create-profiles > p { margin: 5px 0 0; padding: 10px 12px; color: var(--n-4); background: var(--n-10); border: 1px solid var(--n-8); border-radius: 8px; font-size: 11.5px; line-height: 1.45; }
+.employee-create-drawer > header button:hover {
+  background: var(--n-9);
+  color: var(--n-2);
+}
 
-.employee-create-drawer > footer { justify-content: space-between; gap: 12px; flex: none; padding: 14px 22px; border-top: 1px solid var(--n-8); }
-.employee-create-drawer > footer > span { color: var(--n-5); font-size: 11.5px; }
-.employee-create-drawer > footer > div { gap: 9px; }
-.employee-create-drawer > footer button { height: 38px; border-radius: 9px; }
+.employee-create-body {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 22px;
+  padding: 20px 22px;
+  overflow-y: auto;
+}
+
+.employee-create-step h3 {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0 0 12px;
+  color: var(--n-1);
+  font-size: 13.5px;
+  font-weight: 700;
+}
+
+.employee-create-step h3 i {
+  display: inline-flex;
+  width: 20px;
+  height: 20px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--primary-bg);
+  color: var(--primary-text);
+  font-size: 11.5px;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.employee-create-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 16px;
+}
+
+.employee-create-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.employee-create-field.wide {
+  grid-column: 1 / -1;
+}
+
+/* Отдельное поле вне сетки — «Должность» на шаге 3 (кадр E5). */
+.employee-create-field.is-single {
+  margin-bottom: 12px;
+}
+
+.employee-create-field > span {
+  color: var(--n-3);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.employee-create-field input {
+  width: 100%;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--n-7);
+  border-radius: 8px;
+  outline: none;
+  background: var(--n-10);
+  color: var(--n-1);
+  font-family: inherit;
+  font-size: 13.5px;
+}
+
+.employee-create-field input.mono {
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.employee-create-field input::placeholder {
+  color: var(--n-5);
+}
+
+.employee-create-field input:focus {
+  border-color: var(--primary);
+  background: var(--surface-card);
+  box-shadow: 0 0 0 3px var(--primary-bg);
+}
+
+/* Радио-варианты: роль и режим пароля. */
+
+.employee-choice-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.employee-choice {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 11px 13px;
+  border: 1px solid var(--n-7);
+  border-radius: 10px;
+  background: var(--surface-card);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.employee-choice.is-on {
+  border-color: var(--primary);
+  background: var(--primary-bg);
+}
+
+.employee-choice.is-locked {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.employee-choice > i {
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
+  border: 1.5px solid var(--n-6);
+  border-radius: 50%;
+}
+
+.employee-choice.is-on > i {
+  border-color: var(--primary);
+}
+
+.employee-choice > i span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--primary);
+}
+
+.employee-choice > span {
+  min-width: 0;
+}
+
+.employee-choice strong {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--n-1);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.employee-choice small {
+  display: block;
+  margin-top: 3px;
+  color: var(--n-4);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+/* Выбор групп — чекбоксы плитками. */
+
+.employee-group-picks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.employee-group-pick {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--n-7);
+  border-radius: 9px;
+  background: var(--surface-card);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.employee-group-pick.is-on {
+  border-color: var(--primary);
+  background: var(--primary-bg);
+}
+
+.employee-group-pick > i {
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--n-6);
+  border-radius: 5px;
+  color: #fff;
+}
+
+.employee-group-pick.is-on > i {
+  border-color: var(--primary);
+  background: var(--primary);
+}
+
+.employee-group-pick > span {
+  min-width: 0;
+}
+
+.employee-group-pick strong {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--n-1);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.employee-group-dot {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: 50%;
+}
+
+.employee-group-pick small {
+  display: block;
+  margin-top: 2px;
+  color: var(--n-4);
+  font-size: 11.5px;
+}
+
+.employee-create-note {
+  margin: 10px 0 0;
+  color: var(--n-4);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.employee-create-drawer > footer {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 22px;
+  border-top: 1px solid var(--n-8);
+  background: var(--surface-sidebar);
+}
+
+.employee-create-drawer > footer > span {
+  color: var(--n-4);
+  font-size: 12px;
+}
+
+.employee-create-drawer > footer > span.is-error {
+  color: var(--error-text);
+}
+
+.employee-create-drawer > footer > div {
+  display: flex;
+  gap: 8px;
+}
+
+.employee-create-drawer > footer button {
+  min-height: 0;
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 8px;
+  box-shadow: none;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.employee-create-drawer > footer .secondary-button {
+  border-color: var(--n-7);
+  color: var(--n-2);
+}
+
+.employee-create-drawer > footer .primary-button {
+  padding: 0 16px;
+}
+
+/* --- Пароль первичного доступа (кадры E7/E8) --- */
+
+.employee-dialog-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.employee-password-dialog {
+  width: 520px;
+  max-width: calc(100% - 32px);
+  overflow: hidden;
+  border-radius: 14px;
+  background: var(--surface-card);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.32);
+}
+
+.employee-password-dialog > header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--n-8);
+}
+
+.employee-password-dialog > header > i {
+  display: inline-flex;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 11px;
+  background: var(--primary-bg);
+  color: var(--primary-text);
+}
+
+.employee-password-dialog h2 {
+  margin: 0;
+  color: var(--n-1);
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.employee-password-dialog > header p {
+  margin: 4px 0 0;
+  color: var(--n-4);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.employee-password-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px 24px;
+}
+
+.employee-password-person {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--n-8);
+  border-radius: 10px;
+  background: var(--n-10);
+}
+
+.employee-password-person .avatar {
+  width: 32px;
+  height: 32px;
+  font-size: 12px;
+}
+
+.employee-password-person strong {
+  display: block;
+  color: var(--n-1);
+  font-size: 13px;
+}
+
+.employee-password-person small {
+  display: block;
+  color: var(--n-4);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+}
+
+.employee-password-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.employee-password-field > span:first-child {
+  color: var(--n-3);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.employee-password-value {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 8px 0 14px;
+  border: 1px solid var(--primary);
+  border-radius: 9px;
+  background: var(--primary-bg);
+}
+
+.employee-password-value code {
+  flex: 1;
+  color: var(--n-1);
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+
+.employee-password-mask {
+  display: inline-flex;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--n-4);
+  cursor: pointer;
+}
+
+.employee-password-mask:hover {
+  background: var(--surface-card);
+}
+
+.employee-password-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  flex: none;
+  padding: 0 11px;
+  border: 0;
+  border-radius: 7px;
+  background: var(--primary);
+  color: #fff;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.employee-password-warning {
+  display: flex;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--warning-border);
+  border-radius: 10px;
+  background: var(--warning-bg);
+}
+
+.employee-password-warning svg {
+  flex: none;
+  margin-top: 1px;
+  color: var(--warning-text);
+}
+
+.employee-password-warning p {
+  margin: 0;
+  color: var(--n-2);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.employee-password-mail {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 7px;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--n-7);
+  border-radius: 8px;
+  background: var(--surface-card);
+  color: var(--n-2);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.employee-password-mail:hover:not(:disabled) {
+  background: var(--n-9);
+}
+
+.employee-password-mail:disabled {
+  color: var(--n-5);
+  cursor: default;
+}
+
+.employee-password-dialog > footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 24px;
+  border-top: 1px solid var(--n-8);
+  background: var(--surface-sidebar);
+}
+
+.employee-password-dialog > footer small {
+  color: var(--n-4);
+  font-size: 12px;
+}
+
+.employee-dialog-primary {
+  min-height: 0;
+  height: 34px;
+  padding: 0 16px;
+  border-radius: 8px;
+  box-shadow: none;
+  font-size: 13px;
+  font-weight: 600;
+}

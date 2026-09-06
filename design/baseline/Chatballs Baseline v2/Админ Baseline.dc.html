@@ -38,9 +38,10 @@ a:hover{opacity:0.85;}
       <div style="width:1440px;height:880px;display:flex;overflow:hidden;background:var(--c-surface);border-radius:6px;box-shadow:0 2px 12px rgba(0,0,0,0.08);position:relative;">
 
         <!-- SIDEBAR: admin nav -->
-        <aside style="width:220px;flex:none;background:var(--c-surface2);border-right:1px solid var(--c-n8);display:flex;flex-direction:column;min-height:0;">
-          <div style="flex:none;display:flex;align-items:center;gap:10px;padding:14px 14px 10px;">
-            <img src="assets/logo-mark.svg" width="28" height="28" style="display:block;border-radius:8px;" alt="">
+        <aside style="position:relative;width:220px;flex:none;background:var(--c-surface2);border-right:1px solid var(--c-n8);display:flex;flex-direction:column;min-height:0;">
+          <div title="Потяните, двойной клик — сбросить" style="position:absolute;top:0;right:-3px;bottom:0;width:6px;z-index:5;cursor:col-resize;"><i style="position:absolute;top:0;bottom:0;left:2px;width:2px;background:var(--c-accent);opacity:0;"></i></div>
+          <div style="flex:none;height:56px;display:flex;align-items:center;gap:10px;padding:14px 14px 10px;">
+            <span style="width:28px;height:28px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:8px;color:var(--c-n1);"><svg viewBox="0 0 100 100" width="26" height="26" fill="currentColor"><defs><mask id="lg-adm"><rect width="100" height="100" fill="#fff"/><circle cx="50" cy="24.54" r="9" fill="#000"/><circle cx="50" cy="75.46" r="9" fill="#000"/></mask></defs><g mask="url(#lg-adm)"><circle cx="29" cy="50" r="24"/><circle cx="71" cy="50" r="24"/><rect x="44.2" y="31.4" width="11.6" height="37.2"/></g></svg></span>
             <button title="Переключить организацию" style="flex:1;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:6px;height:32px;padding:0 6px 0 8px;border:none;border-radius:8px;background:transparent;color:var(--c-n1);font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;" style-hover="background:var(--c-n9);"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Ателье Норд</span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--c-n4)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button>
           </div>
           <nav style="flex:none;padding:4px 10px 8px;display:flex;flex-direction:column;gap:2px;">
@@ -208,12 +209,12 @@ class Component extends DCLogic {
       contacts: "M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0z",
       agents: "M6 6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2zM12 2v2M9 12v9M15 12v9M9 18h6M10 8v.01M14 8v.01",
       team: "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75",
-      board: "M4 4h16a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1zM3 9h18M9 9v11",
+      portals: "M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM2 12h20M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20",
       settings: "M21 6H9M3 6h2M9 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM21 12h-8M3 12h6M13 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM21 18h-6M3 18h8M15 18a2 2 0 1 1-4 0 2 2 0 0 1 4 0z",
     };
     const nav = (active) => [
       { key: "chat", label: "Чат", icon: ICON.chat, badge: 2 }, { key: "contacts", label: "Контакты", icon: ICON.contacts }, { key: "agents", label: "Агенты", icon: ICON.agents },
-      { key: "team", label: "Сотрудники", icon: ICON.team }, { key: "board", label: "Доска", icon: ICON.board }, { key: "settings", label: "Настройки", icon: ICON.settings },
+      { key: "employees", label: "Сотрудники", icon: ICON.team }, { key: "portals", label: "Порталы", icon: ICON.portals }, { key: "settings", label: "Настройки", icon: ICON.settings },
     ].map((n) => ({ ...n, bg: n.key === active ? "var(--c-accent-bg)" : "transparent", color: n.key === active ? "var(--c-accent-text)" : "var(--c-n2)", weight: n.key === active ? 600 : 500 }));
 
     const CH_ICON = {

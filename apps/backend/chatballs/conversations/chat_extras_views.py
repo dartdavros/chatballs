@@ -123,7 +123,9 @@ class ConversationNoteView(ConversationViewBase):
         if len(note) > 4000:
             return Response({"detail": "Заметка длиннее 4000 символов"}, status=400)
         conversation.note = note
-        conversation.save(update_fields=["note"])
+        conversation.note_author = request.user if note else None
+        conversation.note_updated_at = timezone.now() if note else None
+        conversation.save(update_fields=["note", "note_author", "note_updated_at"])
         return Response(
             {
                 "conversation": conversation_payload(

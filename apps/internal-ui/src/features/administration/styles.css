@@ -12,34 +12,37 @@
 
 .administration-card {
   width: 100%;
-  padding: 20px;
+  padding: 22px 24px;
   background: var(--surface-card);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-2xl);
   box-shadow: var(--shadow-sm);
 }
 
+/* Логотип организации (дизайн-базлайн v2, кадр N1): плитка · подпись ·
+   «Загрузить»/«Убрать» справа, снизу — разделитель. */
 .administration-logo-field {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding-bottom: 18px;
-  border-bottom: 1px solid var(--border-default);
+  gap: 16px;
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--n-9);
 }
 
 .administration-logo-preview {
-  width: 56px;
-  height: 56px;
+  width: 64px;
+  height: 64px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex: none;
   overflow: hidden;
-  color: var(--primary);
-  background: var(--primary-bg);
-  border: 1px solid var(--primary-border);
-  border-radius: var(--radius-xl);
-  font-size: 17px;
+  color: var(--n-1);
+  background: var(--n-9);
+  border: 1px dashed var(--n-6);
+  border-radius: var(--radius-4xl);
+  font-size: 22px;
   font-weight: 700;
 }
 
@@ -51,43 +54,62 @@
 }
 
 .administration-logo-copy {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 3px;
 }
 
 .administration-logo-copy > strong {
-  color: var(--text-body);
-  font-size: 13px;
+  color: var(--n-1);
+  font-size: 13.5px;
 }
 
 .administration-logo-copy > span {
-  color: var(--text-tertiary);
-  font-size: 11.5px;
+  color: var(--n-4);
+  font-size: 12px;
+  line-height: 1.45;
 }
 
 .administration-logo-actions {
   display: flex;
+  flex: none;
   gap: 8px;
-  margin-top: 7px;
 }
 
 .administration-logo-actions button {
-  height: 30px;
-  padding-inline: 10px;
-  font-size: 12px;
+  height: 32px;
+  padding-inline: 12px;
+  font-size: 12.5px;
+}
+
+.administration-logo-remove {
+  height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--n-4);
+  font-family: inherit;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.administration-logo-remove:hover {
+  background: var(--n-9);
+  color: var(--n-2);
 }
 
 .administration-fields {
   display: grid;
-  grid-template-columns: minmax(280px, 460px) 220px;
-  gap: 14px;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px 20px;
   align-items: end;
-  margin-top: 18px;
 }
 
-.administration-currency {
-  width: 220px;
+.administration-field-wide {
+  grid-column: 1 / -1;
 }
 
 .administration-message {
@@ -108,8 +130,17 @@
 
 .administration-actions {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
-  margin-top: 18px;
+  gap: 12px;
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--n-9);
+}
+
+.administration-saved {
+  color: var(--n-4);
+  font-size: 12px;
 }
 
 .administration-audit {

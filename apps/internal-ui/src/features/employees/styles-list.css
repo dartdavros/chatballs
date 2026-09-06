@@ -1,41 +1,368 @@
-.employee-page-actions {
+/* Список сотрудников (дизайн-базлайн v2, «Сотрудники Baseline», кадры E1/E2).
+   Значения — из макета: строки 62px, бейджи 22px, фильтры 34px. */
+
+.hub-scroll.employees-scroll {
+  padding: 0;
+  background: var(--surface-feed);
+}
+
+/* Колонка контента — как в макете (кадр 1440px минус боковая панель 220px):
+   лист держится читаемой ширины и центрируется, фон раздела остаётся на всю
+   ширину окна. */
+.hub-page.employees-page-shell {
+  width: 100%;
+  max-width: 1220px;
+  margin: 0 auto;
+}
+
+.employees-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 26px 32px 40px;
+}
+
+/* --- Шапка --- */
+
+.employees-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.employees-header h2 {
+  margin: 0;
+  color: var(--n-1);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.employees-header p {
+  margin: 5px 0 0;
+  color: var(--n-4);
+  font-size: 13px;
+}
+
+.employees-header p b {
+  color: var(--n-2);
+}
+
+.employees-page .employees-create {
+  flex: none;
+  justify-content: normal;
+  gap: 7px;
+  min-height: 0;
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 8px;
+  box-shadow: none;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* --- Фильтры --- */
+
+.employees-filters {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.employees-page .employees-search {
+  width: 300px;
+}
+
+.employees-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.employees-filter-group > span:first-child {
+  color: var(--n-4);
+  font-size: 12.5px;
+}
+
+.employees-filters-spacer {
+  flex: 1;
+}
+
+.employees-filters .segmented {
+  align-items: normal;
+  gap: normal;
+  padding: 3px;
+  border-radius: 9px;
+  background: var(--n-9);
+}
+
+.employees-filters .segmented button {
+  height: 28px;
+  padding: 0 11px;
+  border-radius: 7px;
+  font-weight: 600;
+}
+
+.employees-filters .segmented button.active {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+/* Фильтр «Группа» — общий селект списка, ширина из макета. */
+.employees-group-filter {
+  min-width: 120px;
+  justify-content: space-between;
+  padding: 0 10px;
+}
+
+.employees-reset {
+  height: 34px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--n-4);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.employees-reset.is-dirty {
+  color: var(--primary-text);
+}
+
+.employees-reset:hover {
+  background: var(--n-9);
+}
+
+.employees-error {
   display: flex;
   align-items: center;
   gap: 9px;
+  padding: 11px 14px;
+  border: 1px solid var(--error-border);
+  border-radius: 10px;
+  background: var(--error-bg);
+  color: var(--error-text);
+  font-size: 12.5px;
 }
 
-.employee-page-actions .secondary-button,
-.employee-page-actions .primary-button {
-  height: 38px;
-  border-radius: 9px;
-}
+/* --- Таблица --- */
 
 .employees-table {
-  min-width: 1040px;
+  overflow: hidden;
+  background: var(--surface-card);
+  border: 1px solid var(--n-8);
+  border-radius: 12px;
+}
+
+.employees-thead,
+.employees-row {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1.9fr) minmax(0, 1fr) minmax(0, 1.1fr) minmax(0, 1.5fr)
+    minmax(0, 0.9fr) minmax(0, 1fr) minmax(0, 1fr) 44px;
+  gap: 14px;
+  align-items: center;
+}
+
+.employees-thead {
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--n-8);
+  background: var(--surface-sidebar);
+}
+
+.employees-thead span {
+  color: var(--n-4);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.employees-row {
+  height: 62px;
+  padding: 0 20px;
+  border: 0;
+  border-bottom: 1px solid var(--n-9);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.employees-row:hover {
+  background: var(--n-10);
+}
+
+.employees-row.is-blocked {
+  opacity: 0.6;
+}
+
+.employees-person {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
 }
 
 .employees-table .avatar {
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.employees-person > span {
+  min-width: 0;
+}
+
+.employees-person strong {
+  display: block;
+  overflow: hidden;
+  color: var(--n-1);
+  font-size: 13.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.employees-person small {
+  display: block;
+  margin-top: 2px;
+  overflow: hidden;
+  color: var(--n-4);
+  font-size: 11.5px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Бейджи роли и статуса — одна форма, цвета приходят данными. */
+.employees-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  justify-self: start;
+}
+
+.employees-badge.has-dot {
+  gap: 6px;
+}
+
+.employees-badge i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.employees-position {
+  overflow: hidden;
+  color: var(--n-2);
+  font-size: 13px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.employees-groups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  min-width: 0;
+}
+
+.employees-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 6px;
+  background: var(--n-9);
+  color: var(--n-2);
+  font-size: 11.5px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.employees-group i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.employees-nogroup {
+  color: var(--n-5);
+  font-size: 12.5px;
+}
+
+.employees-access {
+  color: var(--n-2);
+  font-size: 12.5px;
+  white-space: nowrap;
+}
+
+.employees-access.is-limited {
+  color: var(--n-4);
+}
+
+.employees-login {
+  color: var(--n-4);
+  font-size: 12.5px;
+  white-space: nowrap;
+}
+
+.employees-row-menu {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--n-4);
+  cursor: pointer;
+  justify-self: end;
+}
+
+.employees-row-menu.is-open,
+.employees-row-menu:hover {
+  background: var(--n-9);
+  color: var(--n-2);
+}
+
+.employees-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 20px;
+  background: var(--surface-sidebar);
+}
+
+.employees-foot small {
+  color: var(--n-4);
   font-size: 12px;
 }
 
-.employees-table .role-badge.owner {
-  color: var(--error-text);
-  background: var(--error-bg);
-}
+@media (max-width: 1200px) {
+  .employees-page {
+    padding-right: 20px;
+    padding-left: 20px;
+  }
 
-.employees-table .role-badge.admin {
-  color: var(--primary-text);
-  background: var(--primary-bg);
-}
+  .employees-table {
+    overflow-x: auto;
+  }
 
-.employees-table .role-badge.employee {
-  color: var(--n-3);
-  background: var(--n-8);
-}
-
-.employee-last-login {
-  color: var(--n-3) !important;
-  white-space: nowrap;
+  .employees-thead,
+  .employees-row {
+    min-width: 1040px;
+  }
 }

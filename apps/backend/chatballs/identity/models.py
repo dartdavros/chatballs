@@ -63,8 +63,13 @@ class HumanUser(AbstractUser):
     email = models.EmailField(unique=True)
     full_name = models.CharField(max_length=255, blank=True)
     must_change_password = models.BooleanField(default=False)
+    # «Последняя смена пароля» в карточке сотрудника (кадр E3).
+    password_changed_at = models.DateTimeField(null=True, blank=True, db_default=None)
     totp_enabled = models.BooleanField(default=False)
     totp_secret = EncryptedCharField(max_length=255, blank=True)
+    # Когда последний раз принимался код аутентификатора — подпись в карточке
+    # «Двухфакторная аутентификация» (дизайн-базлайн v2, кадр P1).
+    totp_last_used_at = models.DateTimeField(null=True, blank=True, db_default=None)
     # Внешний вид — глобальная настройка пользователя (не membership):
     # тема и акцентный HEX-цвет; пустой акцент — дефолтный синий #1677ff.
     ui_theme = models.CharField(max_length=8, choices=UiTheme.choices, default=UiTheme.SYSTEM)

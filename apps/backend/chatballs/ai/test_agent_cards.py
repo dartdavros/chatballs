@@ -98,6 +98,64 @@ class AgentCardListDetailTests(AgentCardTestCase):
             [item["name"] for item in ungrouped.json()["items"]], ["Без группы"]
         )
 
+    def test_list_puts_answering_agents_first_and_disabled_last(self) -> None:
+        """Кадр G1: сверху агенты с AI, ниже «Без AI», выключенные — в конце."""
+        from chatballs.ai.models import AIAgent, AIAgentStatus
+        from chatballs.channels.models import Channel
+
+        draft_id = self.create_agent(name="Бета").json()["agent"]["id"]
+        answering_id = self.create_agent(name="Альфа").json()["agent"]["id"]
+        AIAgent.objects.filter(channel_id=answering_id).update(status=AIAgentStatus.ACTIVE)
+        off_id = self.create_agent(name="Ааа выключенный").json()["agent"]["id"]
+        Channel.objects.filter(id=off_id).update(is_active=False)
+
+        listed = self.client.get("/api/v1/agents/").json()["items"]
+        order = [item["id"] for item in listed]
+        self.assertEqual(order[0], answering_id)
+        self.assertEqual(order[-1], off_id)
+        self.assertLess(order.index(draft_id), order.index(off_id))
+
+    def test_card_carries_group_color_and_knowledge_total(self) -> None:
+        """Кадры G1/G3: точка группы красится цветом группы, а в шапке блока
+        «Знания» стоит «N из M» — оба значения приходят с карточкой."""
+        from chatballs.ai.models import Knowledge, KnowledgeCategory
+
+        self.operators.color = "#2aa876"
+        self.operators.save(update_fields=["color"])
+        category = KnowledgeCategory.objects.filter(
+            organization=self.organization
+        ).first() or KnowledgeCategory.objects.create(
+            organization=self.organization, name="Общие"
+        )
+        Knowledge.objects.create(
+            organization=self.organization, category=category, title="Прайс"
+        )
+
+        card = self.client.get(f"/api/v1/agents/{self.card_id}/").json()["agent"]
+        self.assertEqual(card["groupColor"], "#2aa876")
+        self.assertEqual(card["knowledgeTotal"], 1)
+        self.assertEqual(card["knowledge"], [])
+
+    def test_connection_row_carries_fields_for_its_subtitle(self) -> None:
+        """Кадры G3/G4: подпись строки подключения и код вставки виджета
+        собираются из полей подключения."""
+        integration = Integration.objects.create(
+            organization=self.organization,
+            kind=IntegrationKind.MESSENGER,
+            provider=IntegrationProvider.TELEGRAM,
+            name="Бот",
+            channel_id=self.card_id,
+            config={"bot_username": "atelie_nord_bot"},
+        )
+
+        card = self.client.get(f"/api/v1/agents/{self.card_id}/").json()["agent"]
+        connection = card["connections"][0]
+        self.assertEqual(connection["id"], integration.id)
+        self.assertEqual(connection["botUsername"], "atelie_nord_bot")
+        self.assertEqual(connection["email"], "")
+        self.assertEqual(connection["allowedOrigins"], [])
+        self.assertEqual(connection["widgetPublicKey"], "")
+
     def test_legacy_channel_without_agent_gets_draft_agent_in_list(self) -> None:
         channel = Channel.objects.create(
             organization=self.organization, code="legacy", name="Legacy"

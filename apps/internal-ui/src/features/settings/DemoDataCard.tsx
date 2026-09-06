@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { api } from "../../api/client";
 import { Button } from "../../shared/ui-controls";
+import { shortDate } from "../../shared/utils";
 
 // Секция «Демо-данные» экрана настроек: владелец или админ ставит и удаляет
 // вымышленную организацию «Ателье Норд» одной кнопкой. Работу выполняет
@@ -17,6 +18,7 @@ export type DemoAccount = {
   role: "OWNER" | "ADMIN" | "EMPLOYEE";
   positionTitle: string;
   groups: string[];
+  avatarUrl: string | null;
 };
 
 export type DemoState = {
@@ -110,46 +112,59 @@ export function DemoDataCard({ reload }: { reload: () => void }) {
   const installed = state?.status === "INSTALLED";
 
   return (
-    <div className="profile-card">
+    <div className="administration-card">
       <div className="settings-demo-head">
-        <h3>Демо-данные</h3>
-        {label && <small className={`settings-demo-status is-${state?.status.toLowerCase()}`}>{label}</small>}
+        <div className="settings-demo-title">
+        <strong>Ателье «Норд»</strong>
+        {label && <b className={`settings-demo-status is-${state?.status.toLowerCase()}`}>{label}</b>}
+        {installed && state && (
+          <small>
+            {state.recordsCount.toLocaleString("ru-RU")} записей
+            {state.finishedAt ? ` · ${shortDate(state.finishedAt)}` : ""}
+          </small>
+        )}
+        </div>
+        <div className="settings-demo-actions">
+          {!installed && (
+            <Button variant="primary" disabled={busy || submitting || state === null} onClick={() => void install()}>
+              {state?.status === "INSTALLING" ? "Устанавливаются…" : state?.status === "FAILED" ? "Повторить установку" : "Установить"}
+            </Button>
+          )}
+          {(installed || state?.status === "REMOVING") && (
+            <Button variant="danger-outline" disabled={busy || submitting} onClick={() => setConfirmRemove(true)}>
+              {state?.status === "REMOVING" ? "Удаляются…" : "Удалить демо-данные"}
+            </Button>
+          )}
+        </div>
       </div>
       <p className="settings-section-note">
-        Вымышленное ателье «Норд»: сотрудники и группы, агенты с подключениями, знания, диалоги во всех состояниях,
-        голосовые, шаблоны ответов, портал поддержки, звонки и уведомления. Удаляются целиком — ваши данные не затрагиваются.
+        Сотрудники и группы, агенты с подключениями, знания, диалоги во всех состояниях, голосовые, шаблоны ответов,
+        портал поддержки, звонки и уведомления. Удаляются целиком — ваши данные не затрагиваются.
       </p>
       {state?.status === "INSTALLED" && (
-        <>
-          <p className="settings-section-note">Записей: {state.recordsCount}. Войдите под демо-сотрудником в другом браузере или приватном окне, чтобы увидеть систему его глазами:</p>
+        <div className="settings-demo-logins">
+          <small>Войдите под демо-сотрудником в приватном окне, чтобы увидеть систему его глазами:</small>
           <div className="settings-demo-accounts">
             {state.accounts.map((account) => (
               <div className="settings-demo-account" key={account.email}>
-                <div>
-                  <strong>{account.fullName}</strong>
-                  <small>{account.role === "EMPLOYEE" ? "Сотрудник" : "Администратор"} · {account.groups.length ? account.groups.join(", ") : "без групп"}</small>
+                <div className="settings-demo-person">
+                  {account.avatarUrl
+                    ? <img src={account.avatarUrl} alt="" />
+                    : <span className="settings-demo-avatar">{account.fullName.trim().slice(0, 1).toUpperCase()}</span>}
+                  <span>
+                    <strong>{account.fullName}</strong>
+                    <small>{account.role === "EMPLOYEE" ? "Сотрудник" : "Администратор"} · {account.groups.length ? account.groups.join(", ") : "без групп"}</small>
+                  </span>
                 </div>
                 <code>{account.email}</code>
                 <code>{account.password}</code>
               </div>
             ))}
           </div>
-        </>
+        </div>
       )}
       {state?.status === "FAILED" && state.error && <div className="settings-section-error">{state.error}</div>}
       {error && <div className="settings-section-error">{error}</div>}
-      <div className="settings-demo-actions">
-        {!installed && (
-          <Button variant="primary" disabled={busy || submitting || state === null} onClick={() => void install()}>
-            {state?.status === "INSTALLING" ? "Устанавливаются…" : state?.status === "FAILED" ? "Повторить установку" : "Установить"}
-          </Button>
-        )}
-        {(installed || state?.status === "REMOVING") && (
-          <Button variant="danger-outline" disabled={busy || submitting} onClick={() => setConfirmRemove(true)}>
-            {state?.status === "REMOVING" ? "Удаляются…" : "Удалить демо-данные"}
-          </Button>
-        )}
-      </div>
       {confirmRemove && (
         <Modal open title="Удалить демо-данные?" onCancel={() => setConfirmRemove(false)} footer={null} destroyOnClose>
           <div className="integration-form">

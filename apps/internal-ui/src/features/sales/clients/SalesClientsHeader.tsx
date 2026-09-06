@@ -1,15 +1,16 @@
-import { ActionButton } from "../../../shared/ui-controls";
+import { Icon } from "../../../shared/icons";
 
-export function SalesClientsHeader({ shownCount, totalCount, onExport }: { shownCount: number; totalCount: number; onExport: () => void }) {
+// Шапка списка (кадр K1): «Контакты» и счётчик; при фильтре — «6 из 128».
+export function SalesClientsHeader({ shownCount, totalCount, filtered, onExport }: { shownCount: number; totalCount: number; filtered: boolean; onExport: () => void }) {
   return (
     <div className="sales-clients-header">
       <div>
-        <h1>Контакты</h1>
-        <p>Контакты клиентов · показано <b>{shownCount}</b> из {totalCount}</p>
+        <h2>Контакты</h2>
+        <span>{filtered ? `${shownCount} из ${totalCount}` : totalCount}</span>
       </div>
-      <div className="sales-clients-header-actions">
-        <ActionButton icon="download" disabled={shownCount === 0} onClick={onExport}>Экспорт</ActionButton>
-      </div>
+      <button className="sales-clients-export" type="button" disabled={shownCount === 0} onClick={onExport}>
+        <Icon name="download" size={15} strokeWidth={2} />Экспорт CSV
+      </button>
     </div>
   );
 }

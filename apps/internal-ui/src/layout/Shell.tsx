@@ -2,6 +2,7 @@ import { notification as antToast } from "antd";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { AppData, Employee, RouteKey, SessionUser } from "../types";
+import type { SettingsSectionKey } from "../features/settings/sections";
 import { NotificationDrawer } from "../features/notifications/NotificationDrawer";
 import { fetchNotifications, markAllRead, markRead, type AppNotification } from "../features/notifications/model";
 import { fetchWaitingCount } from "../features/conversations/model";
@@ -10,7 +11,7 @@ import { isManager } from "../auth/access";
 import { Sidebar } from "./Sidebar";
 import { ShellRouteContent } from "./ShellRouteContent";
 
-export function Shell({ route, setRoute, selectedEmployeeId, selectedProductCode, selectedAgentId, selectedKnowledgeId, selectedConversationId, selectedClientId, selectedChannelId, selectedSupportPortalId, openChannelRoute, openSupportPortalRoute, openEmployeeRoute, openAgentCreateRoute, openAgentRoute, openKnowledgeRoute, openConversationRoute, openClientRoute, user, data, reload, onUserUpdated, onLogout }: { route: RouteKey; setRoute: (route: RouteKey) => void; selectedEmployeeId: number | null; selectedProductCode: string | null; selectedAgentId: number | null; selectedKnowledgeId: number | null; selectedConversationId: number | null; selectedClientId: number | null; selectedChannelId: number | null; selectedSupportPortalId: number | null; openEmployeeRoute: (employeeId: number) => void; openAgentCreateRoute: (productCode: string | null) => void; openAgentRoute: (agentId: number) => void; openKnowledgeRoute: (knowledgeId: number) => void; openConversationRoute: (conversationId: number) => void; openClientRoute: (clientId: number) => void; openChannelRoute: (channelId: number) => void; openSupportPortalRoute: (portalId: number) => void; user: SessionUser; data: AppData; reload: () => void; onUserUpdated: (user: SessionUser) => void; onLogout: () => void }) {
+export function Shell({ route, setRoute, settingsSection, openSettingsRoute, selectedEmployeeId, selectedProductCode, selectedAgentId, selectedKnowledgeId, selectedConversationId, selectedClientId, selectedChannelId, selectedSupportPortalId, openChannelRoute, openSupportPortalRoute, openEmployeeRoute, openAgentCreateRoute, openAgentRoute, openKnowledgeRoute, openConversationRoute, openClientRoute, user, data, reload, onUserUpdated, onLogout }: { route: RouteKey; setRoute: (route: RouteKey) => void; settingsSection: SettingsSectionKey | null; openSettingsRoute: (section: SettingsSectionKey | null) => void; selectedEmployeeId: number | null; selectedProductCode: string | null; selectedAgentId: number | null; selectedKnowledgeId: number | null; selectedConversationId: number | null; selectedClientId: number | null; selectedChannelId: number | null; selectedSupportPortalId: number | null; openEmployeeRoute: (employeeId: number) => void; openAgentCreateRoute: (productCode: string | null) => void; openAgentRoute: (agentId: number) => void; openKnowledgeRoute: (knowledgeId: number) => void; openConversationRoute: (conversationId: number) => void; openClientRoute: (clientId: number) => void; openChannelRoute: (channelId: number) => void; openSupportPortalRoute: (portalId: number) => void; user: SessionUser; data: AppData; reload: () => void; onUserUpdated: (user: SessionUser) => void; onLogout: () => void }) {
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifOpen, setNotifOpen] = useState(false);
@@ -85,23 +86,31 @@ export function Shell({ route, setRoute, selectedEmployeeId, selectedProductCode
   function openEmployee(employee: Employee) {
     openEmployeeRoute(employee.id);
   }
-  const isSalesWorkspace = route === "salesClientDetail" || route === "salesClients" || route === "chat";
+  const isSalesWorkspace = route === "chat";
   const isSupportWorkspace = route === "supportPortals" || route === "supportPortalDetail";
   const isDialogsWorkspace = route === "chat";
-  const isSalesClients = route === "salesClients";
-  const isSalesClientDetail = route === "salesClientDetail";
   const isAiFullWidth = false;
   const isKnowledgeLibrary = route === "aiKnowledge";
   const isKnowledgeEditor = route === "aiKnowledgeCreate" || route === "aiKnowledgeDetail";
+  // «Настройки» занимают всю область как чат: своё субменю 240px и своя лента.
+  const isSettings = route === "settings";
+  // «Профиль» — своя лента на --surface-feed и мобильные подэкраны (кадр M).
+  const isProfile = route === "profile";
+  // «Контакты» — своя лента на --surface-feed (кадры K1–K5).
+  const isContacts = route === "salesClients" || route === "salesClientDetail";
+  // «Агенты» — своя лента на --surface-feed (кадры G1–G5, S1).
+  const isAgents = route === "agents" || route === "agentDetail";
+  // «Сотрудники» — своя лента на --surface-feed (кадры E1–E4).
+  const isEmployees = route === "employees" || route === "employeeDetail";
   return (
-    <div className={`hub-shell ${isDialogsWorkspace ? "is-chat-route" : ""}`}>
-      <Sidebar route={route} user={user} setRoute={setRoute} onLogout={onLogout} waitingCount={waitingCount} chatScope={chatScope.scope} setChatScope={chatScope.setScope} chatCounters={chatScope.counters} unreadCount={unreadCount} onOpenNotifications={() => { setNotifOpen(true); void loadNotifications(); }} expanded={sidebarExpanded} setExpanded={setSidebarExpanded} />
+    <div className={`hub-shell ${isDialogsWorkspace ? "is-chat-route" : ""} ${isSettings ? "is-settings-route" : ""} ${isProfile ? "is-profile-route" : ""} ${isContacts ? "is-contacts-route" : ""}`}>
+      <Sidebar route={route} user={user} setRoute={setRoute} openSettings={openSettingsRoute} onLogout={onLogout} waitingCount={waitingCount} chatScope={chatScope.scope} setChatScope={chatScope.setScope} chatCounters={chatScope.counters} unreadCount={unreadCount} onOpenNotifications={() => { setNotifOpen(true); void loadNotifications(); }} expanded={sidebarExpanded} setExpanded={setSidebarExpanded} />
       <div className="hub-main">
         {/* Верхней панели нет ни у одной роли (дизайн-базлайн v2): заголовок и
             «назад» живут в самой странице, уведомления — в меню профиля сайдбара. */}
-        <main className={`hub-scroll ${isDialogsWorkspace ? "sales-dialogs-scroll" : ""} ${isAiFullWidth ? "ai-fullwidth-scroll" : ""}`}>
-          <div className={`hub-page ${isSalesWorkspace || isSupportWorkspace ? "sales-workspace-page" : ""} ${isDialogsWorkspace ? "sales-dialogs-page" : ""} ${isSalesClients ? "sales-clients-page" : ""} ${isSalesClientDetail ? "sales-client-detail-page" : ""} ${isAiFullWidth ? "ai-fullwidth-page" : ""} ${isKnowledgeLibrary ? "ai-knowledge-library-page" : ""} ${isKnowledgeEditor ? "ai-knowledge-editor-page" : ""}`}>
-            <ShellRouteContent chatScope={chatScope.scope} setChatScope={chatScope.setScope} chatCounters={chatScope.counters} chatScopeSwitcher={manager} route={route} data={data} currentEmployee={currentEmployee} selectedProductCode={selectedProductCode} selectedAgentId={selectedAgentId} selectedKnowledgeId={selectedKnowledgeId} selectedConversationId={selectedConversationId} selectedClientId={selectedClientId} openClient={openClientRoute} selectedChannelId={selectedChannelId} openChannel={openChannelRoute} selectedSupportPortalId={selectedSupportPortalId} openSupportPortal={openSupportPortalRoute} openConversation={openConversationRoute} openEmployee={openEmployee} openAgentCreate={openAgentCreateRoute} openAgent={openAgentRoute} openKnowledge={openKnowledgeRoute} onAgentLoaded={() => undefined} onChannelLoaded={() => undefined} reload={reload} setRoute={setRoute} user={user} onUserUpdated={onUserUpdated} onLogout={onLogout} onOpenSidebar={() => setSidebarExpanded(true)} />
+        <main className={`hub-scroll ${isDialogsWorkspace ? "sales-dialogs-scroll" : ""} ${isAiFullWidth ? "ai-fullwidth-scroll" : ""} ${isSettings ? "settings-scroll" : ""} ${isProfile ? "profile-scroll" : ""} ${isContacts ? "contacts-scroll" : ""} ${isAgents ? "agents-scroll" : ""} ${isEmployees ? "employees-scroll" : ""}`}>
+          <div className={`hub-page ${isSalesWorkspace || isSupportWorkspace ? "sales-workspace-page" : ""} ${isDialogsWorkspace ? "sales-dialogs-page" : ""} ${isAiFullWidth ? "ai-fullwidth-page" : ""} ${isSettings ? "settings-page" : ""} ${isProfile ? "profile-page-shell" : ""} ${isContacts ? "contacts-page-shell" : ""} ${isAgents ? "agents-page-shell" : ""} ${isEmployees ? "employees-page-shell" : ""} ${isKnowledgeLibrary ? "ai-knowledge-library-page" : ""} ${isKnowledgeEditor ? "ai-knowledge-editor-page" : ""}`}>
+            <ShellRouteContent settingsSection={settingsSection} openSettings={openSettingsRoute} chatScope={chatScope.scope} setChatScope={chatScope.setScope} chatCounters={chatScope.counters} chatScopeSwitcher={manager} route={route} data={data} currentEmployee={currentEmployee} selectedProductCode={selectedProductCode} selectedAgentId={selectedAgentId} selectedKnowledgeId={selectedKnowledgeId} selectedConversationId={selectedConversationId} selectedClientId={selectedClientId} openClient={openClientRoute} selectedChannelId={selectedChannelId} openChannel={openChannelRoute} selectedSupportPortalId={selectedSupportPortalId} openSupportPortal={openSupportPortalRoute} openConversation={openConversationRoute} openEmployee={openEmployee} openAgentCreate={openAgentCreateRoute} openAgent={openAgentRoute} openKnowledge={openKnowledgeRoute} onAgentLoaded={() => undefined} onChannelLoaded={() => undefined} reload={reload} setRoute={setRoute} user={user} onUserUpdated={onUserUpdated} onLogout={onLogout} onOpenSidebar={() => setSidebarExpanded(true)} />
           </div>
         </main>
       </div>

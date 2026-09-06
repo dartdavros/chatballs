@@ -1,70 +1,46 @@
-import { Icon } from "../../../shared/icons";
-import { SearchInput } from "../../../shared/ui-controls";
-import { channelOptions, productOptionsOf, type SalesClient } from "./model";
+import { FilterDropdown, SearchInput } from "../../../shared/ui-controls";
+import { agentOptionsOf, channelOptions, type SalesClient } from "./model";
 import type { SalesClientsState } from "./useSalesClients";
 
+// Фильтры списка (кадры K1/K2): поиск, «Все каналы», «Все агенты», чип
+// «С открытым диалогом»; «Сбросить» появляется только когда фильтр применён.
+
 export function SalesClientsFilters({ clients, salesClients }: { clients: SalesClientsState; salesClients: SalesClient[] }) {
-  const productOptions = productOptionsOf(salesClients);
+  const agents = agentOptionsOf(salesClients);
   return (
     <div className="sales-clients-filterbar">
-      <SearchInput className="sales-clients-search" value={clients.query} onChange={clients.setQuery} placeholder="Поиск по имени, email, телефону или логину…" />
-      <SalesFilterDropdown
-        active={clients.productFilter.length > 0 || clients.dropdown === "products"}
-        count={clients.productFilter.length}
-        icon="box"
-        label={clients.productFilter.length ? "Продукты" : "Все продукты"}
-        open={clients.dropdown === "products"}
-        options={productOptions.map((option) => ({ ...option, checked: clients.productFilter.includes(option.code), dot: undefined }))}
-        onOpenChange={(open) => clients.setDropdown(open ? "products" : null)}
-        onToggleOption={(code) => clients.toggleProduct(code)}
+      <SearchInput
+        className="sales-clients-search"
+        value={clients.query}
+        onChange={clients.setQuery}
+        hotkey="/"
+        placeholder="Имя, email, телефон или логин…"
       />
-      <SalesFilterDropdown
-        active={clients.channelFilter.length > 0 || clients.dropdown === "channels"}
-        count={clients.channelFilter.length}
+      <FilterDropdown
         icon="message"
         label={clients.channelFilter.length ? "Каналы" : "Все каналы"}
+        multiple
         open={clients.dropdown === "channels"}
-        options={channelOptions.map((option) => ({ ...option, checked: clients.channelFilter.includes(option.code), dot: option.color }))}
+        options={channelOptions.map((option) => ({ value: String(option.code), label: option.name, dot: option.color }))}
+        selected={clients.channelFilter.map(String)}
         onOpenChange={(open) => clients.setDropdown(open ? "channels" : null)}
-        onToggleOption={(code) => clients.toggleChannel(code)}
+        onSelect={(value) => clients.toggleChannel(value)}
       />
-      <button className={`sales-clients-chip ${clients.openOnly ? "active" : ""}`} type="button" onClick={clients.toggleOpenOnly}><span />С открытым диалогом</button>
-      <div className="sales-clients-filter-spacer" />
-      <button className="sales-clients-reset" type="button" onClick={clients.reset}>Сбросить</button>
-    </div>
-  );
-}
-
-function SalesFilterDropdown({ active, count, icon, label, open, options, onOpenChange, onToggleOption }: { active: boolean; count: number; icon: "box" | "message"; label: string; open: boolean; options: Array<{ code: string; name: string; checked: boolean; dot?: string }>; onOpenChange: (open: boolean) => void; onToggleOption: (code: string) => void }) {
-  const items = options.map((option) => ({
-    key: option.code,
-    label: (
-      <button
-        type="button"
-        onClick={(event) => {
-          event.stopPropagation();
-          onToggleOption(option.code);
-        }}
-      >
-        <span className={`sales-clients-check ${option.checked ? "checked" : ""}`}>
-          {option.checked && <Icon name="check" size={12} />}
-        </span>
-        {option.dot && <i className="sales-filter-dot" style={{ background: option.dot }} />}
-        {option.name}
+      <FilterDropdown
+        icon="robot"
+        label={clients.agentFilter.length ? "Агенты" : "Все агенты"}
+        multiple
+        open={clients.dropdown === "agents"}
+        options={agents.map((agent) => ({ value: String(agent.id), label: agent.name }))}
+        selected={clients.agentFilter.map(String)}
+        onOpenChange={(open) => clients.setDropdown(open ? "agents" : null)}
+        onSelect={(value) => clients.toggleAgent(Number(value))}
+      />
+      <button className={`sales-clients-chip ${clients.openOnly ? "active" : ""}`} type="button" onClick={clients.toggleOpenOnly}>
+        <i />С открытым диалогом
       </button>
-    ),
-  }));
-  return (
-    <div className="sales-clients-dd">
-      <Dropdown menu={{ items }} open={open} onOpenChange={onOpenChange} trigger={["click"]} overlayClassName="app-dropdown is-wide">
-        <button className={`sales-clients-dd-button ${active ? "active" : ""} ${open ? "open" : ""}`} type="button">
-          <Icon name={icon} size={15} />
-          {label}
-          {count > 0 && <span>{count}</span>}
-          <Icon name="chevron" size={13} />
-        </button>
-      </Dropdown>
+      <div className="sales-clients-filter-spacer" />
+      {clients.filtered && <button className="sales-clients-reset" type="button" onClick={clients.reset}>Сбросить</button>}
     </div>
   );
 }
-import { Dropdown } from "antd";

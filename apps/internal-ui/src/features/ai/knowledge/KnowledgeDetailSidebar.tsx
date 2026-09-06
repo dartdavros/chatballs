@@ -23,7 +23,7 @@ export function KnowledgeDetailSidebar({
         <div className="knowledge-agent-list">
           {assignedAgents.map((agent) => (
             <button type="button" onClick={() => openAgent(agent.id)} key={agent.id}>
-              <span style={{ color: agentColorOf(agent.code), background: `color-mix(in srgb, ${agentColorOf(agent.code)} 14%, var(--surface-card))` }}><Icon name="robot" size={16} /></span>
+              <span style={{ color: agentColorOf(agent.id), background: `color-mix(in srgb, ${agentColorOf(agent.id)} 14%, var(--surface-card))` }}><Icon name="robot" size={16} /></span>
               <div><strong>{agent.name}</strong><small>{agent.groupName ?? "Без группы"}</small></div>
             </button>
           ))}

@@ -1,3 +1,5 @@
+import { agentColorOf } from "../conversations/model";
+import { Icon } from "../../shared/icons";
 import { PROVIDERS, type Integration } from "./model";
 import { ConnectionIcon, RowActions, StatusCell } from "./rows";
 
@@ -28,7 +30,7 @@ export function ConnectionsTable({ items, testingId, onTest, onEdit, onToggleAct
         <thead>
           <tr>
             <th>НАЗВАНИЕ</th>
-            <th>КАНАЛ ОБРАБОТКИ</th>
+            <th>АГЕНТ</th>
             <th>СТАТУС</th>
             <th />
           </tr>
@@ -42,7 +44,15 @@ export function ConnectionsTable({ items, testingId, onTest, onEdit, onToggleAct
                   <span><strong>{item.name}</strong><small>{subtitle(item)}</small></span>
                 </div>
               </td>
-              <td>{item.channel ? item.channel.name : <span className="product-empty-value">—</span>}</td>
+              <td>
+                {item.channel
+                  ? (
+                    <span className="integration-agent" style={{ color: agentColorOf(item.channel.id) }}>
+                      <Icon name="robot" size={14} />{item.channel.name}
+                    </span>
+                  )
+                  : <span className="product-empty-value">—</span>}
+              </td>
               <td><StatusCell integration={item} /></td>
               <td className="row-actions">
                 <RowActions integration={item} testing={testingId === item.id} onTest={onTest} onEdit={onEdit} onToggleActive={onToggleActive} onDelete={onDelete} />

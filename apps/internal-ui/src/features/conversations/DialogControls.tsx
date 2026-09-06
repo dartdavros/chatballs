@@ -194,7 +194,7 @@ export function DialogControls({
             <div className="ctx-grid">
               <div>
                 <label className="ctx-label">Агент</label>
-                <div className="ctx-readonly" style={{ color: agentColorOf(detail.channel.code) }}><Icon name="robot" size={14} />{detail.channel.name}</div>
+                <div className="ctx-readonly" style={{ color: agentColorOf(detail.channel.id) }}><Icon name="robot" size={14} />{detail.channel.name}</div>
               </div>
               <div>
                 <label className="ctx-label">Режим</label>

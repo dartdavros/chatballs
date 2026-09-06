@@ -1,4 +1,4 @@
-export type AgentKnowledgeRef = { id: number; title: string; isEnabled: boolean };
+export type AgentKnowledgeRef = { id: number; title: string; isEnabled: boolean; updatedAt: string };
 
 export type AgentPortalArticleRef = {
   id: number;

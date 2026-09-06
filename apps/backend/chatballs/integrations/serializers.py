@@ -1,14 +1,26 @@
 from chatballs.integrations.models import Integration
 
 
+def secret_mask(secret: str) -> str:
+    """Маска секрета для колонки «Секрет» (кадр N3): только публичный префикс
+    ключа («sk-or-»), сам секрет наружу не отдаётся."""
+    if not secret:
+        return ""
+    head = secret[:8]
+    cut = head.rfind("-")
+    prefix = head[: cut + 1] if cut > 0 else ""
+    return f"{prefix}••••••••"
+
+
 def integration_payload(integration: Integration) -> dict[str, object]:
-    # Секрет не возвращаем; отдаём только признак его наличия.
+    # Секрет не возвращаем; отдаём признак его наличия и маску префикса.
     payload = {
         "id": integration.id,
         "kind": integration.kind,
         "provider": integration.provider,
         "name": integration.name,
         "hasSecret": bool(integration.secret),
+        "secretMasked": secret_mask(integration.secret),
         "isActive": integration.is_active,
         "config": {
             "baseUrl": integration.config.get("base_url", ""),

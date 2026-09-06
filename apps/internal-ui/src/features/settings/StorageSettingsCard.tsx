@@ -2,6 +2,8 @@ import { useEffect, useState, type FormEvent } from "react";
 
 import { api } from "../../api/client";
 import { FormField, SelectField } from "../../shared/form-controls";
+import { Icon } from "../../shared/icons";
+import { shortDateTime } from "../../shared/utils";
 import { Button } from "../../shared/ui-controls";
 
 // «Хранилище файлов» (Настройки): по умолчанию локальный диск установки, по
@@ -130,8 +132,11 @@ export function StorageSettingsCard({ canManage }: { canManage: boolean }) {
 
   return (
     <form className="administration-card storage-card" onSubmit={submit}>
-      <div className="appearance-row">
-        <span>Где хранить файлы</span>
+      <div className="settings-storage-head">
+        <div>
+          <strong>Где хранить файлы</strong>
+          <small>Вложения знаний, голосовые, фото и логотипы</small>
+        </div>
         <div className="appearance-theme-options">
           {([["LOCAL", "На диске установки"], ["S3", "Внешнее S3"]] as Array<[StorageBackend, string]>).map(([value, label]) => (
             <button key={value} type="button" className={draft.backend === value ? "active" : ""} disabled={!canManage || Boolean(busy)} onClick={() => set("backend")(value)}>{label}</button>
@@ -146,23 +151,26 @@ export function StorageSettingsCard({ canManage }: { canManage: boolean }) {
       {isS3 && (
         <div className="administration-fields storage-fields">
           <FormField label="Бакет" value={draft.s3Bucket} error={fieldErrors.s3Bucket} disabled={!canManage} onChange={set("s3Bucket")} placeholder="chatballs-files" />
-          <FormField label="Endpoint (для не-AWS провайдеров)" value={draft.s3EndpointUrl} error={fieldErrors.s3EndpointUrl} disabled={!canManage} onChange={set("s3EndpointUrl")} placeholder="https://storage.example.com" />
           <FormField label="Регион" value={draft.s3Region} error={fieldErrors.s3Region} disabled={!canManage} onChange={set("s3Region")} placeholder="ru-central1" />
+          <FormField label="Endpoint (для не-AWS провайдеров)" value={draft.s3EndpointUrl} error={fieldErrors.s3EndpointUrl} disabled={!canManage} onChange={set("s3EndpointUrl")} placeholder="https://storage.example.com" wide />
           <SelectField label="Адресация" value={draft.s3AddressingStyle} disabled={!canManage} onChange={set("s3AddressingStyle")} options={[["path", "path (bucket в пути)"], ["virtual", "virtual-host (bucket в домене)"]]} />
           <FormField label="Access Key" value={draft.s3AccessKey} error={fieldErrors.s3AccessKey} disabled={!canManage} onChange={set("s3AccessKey")} placeholder={current.s3AccessKeyMasked || "AKIA…"} mono />
           <FormField label="Secret Key" type="password" value={draft.s3SecretKey} error={fieldErrors.s3SecretKey} disabled={!canManage} onChange={set("s3SecretKey")} placeholder={current.s3HasSecretKey ? "•••••••• (сохранён)" : ""} mono />
         </div>
       )}
       {isS3 && current.s3VerifiedAt && !current.s3LastError && (
-        <p className="settings-section-note">Доступ проверен {new Date(current.s3VerifiedAt).toLocaleString("ru-RU")}.</p>
+        <div className="settings-storage-status">
+          <Icon name="check" size={15} />
+          <span>Доступ проверен {shortDateTime(current.s3VerifiedAt)}{migrationLabel ? ` · ${migrationLabel.toLocaleLowerCase("ru-RU")}` : ""}</span>
+        </div>
       )}
-      {migrationLabel && <p className="settings-section-note">{migrationLabel}</p>}
+      {migrationLabel && (!isS3 || !current.s3VerifiedAt || Boolean(current.s3LastError)) && <p className="settings-section-note">{migrationLabel}</p>}
       {errorText && <div className="administration-message error" role="alert">{errorText}</div>}
       {message && <div className="administration-message">{message}</div>}
       {canManage && (
         <div className="administration-actions storage-actions">
           {isS3 && current.backend === "S3" && current.s3Configured && migration.status !== "RUNNING" && (
-            <Button variant="secondary" disabled={Boolean(busy)} onClick={() => void run("migrate")}>Перенести файлы с диска в S3</Button>
+            <Button variant="secondary" disabled={Boolean(busy)} onClick={() => void run("migrate")}>Перенести файлы с диска</Button>
           )}
           {isS3 && <Button variant="secondary" disabled={Boolean(busy)} onClick={() => void run("check")}>{busy === "check" ? "Проверяем…" : "Проверить доступ"}</Button>}
           <Button type="submit" variant="primary" disabled={Boolean(busy)}>{busy === "save" ? "Сохранение" : "Сохранить"}</Button>

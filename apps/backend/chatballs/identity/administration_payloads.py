@@ -34,6 +34,8 @@ AUDIT_ACTION_LABELS = {
     "ai.knowledge_created": "Добавлено знание",
     "ai.knowledge_updated": "Изменено знание",
     "ai.knowledge_deleted": "Удалено знание",
+    "contacts.merged": "Объединение контактов",
+    "contacts.unmerged": "Разъединение контактов",
 }
 
 AUDIT_RESULT_LABELS = {
@@ -43,11 +45,36 @@ AUDIT_RESULT_LABELS = {
 }
 
 
+ORGANIZATION_CHANGE_ACTIONS = (
+    "administration.organization_updated",
+    "administration.logo_updated",
+    "administration.logo_deleted",
+)
+
+
+def organization_updated_at(organization: Organization) -> str | None:
+    """Когда настройки организации сохраняли в последний раз (кадр N1:
+    «Сохранено 2 сен, 14:12»). Берём из журнала аудита — отдельного поля
+    в модели нет."""
+    event = (
+        AuditEvent.objects.filter(
+            organization=organization,
+            action__in=ORGANIZATION_CHANGE_ACTIONS,
+            result="SUCCESS",
+        )
+        .order_by("-created_at")
+        .values_list("created_at", flat=True)
+        .first()
+    )
+    return event.isoformat() if event else None
+
+
 def organization_settings_payload(organization: Organization) -> dict[str, object]:
     return {
         "name": organization.name,
         "timezone": organization.timezone,
         "currency": organization.currency,
+        "updatedAt": organization_updated_at(organization),
         "logoUrl": (
             reverse(
                 "organization-logo",

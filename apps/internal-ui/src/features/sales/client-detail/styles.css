@@ -1,7 +1,978 @@
-@import "./styles/base.css";
-@import "./styles/header.css";
-@import "./styles/tabs.css";
-@import "./styles/overview.css";
-@import "./styles/content.css";
-@import "./styles/tables.css";
-@import "./styles/responsive.css";
+/* Карточка контакта (дизайн-базлайн v2, кадры K3–K5). Значения — из макета
+   «Контакты Baseline»: карточки 18–20px, строки 60px, вкладки с счётчиками. */
+
+.sales-client-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 22px 32px 40px;
+}
+
+/* --- Шапка карточки --- */
+
+.sales-client-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  padding: 20px 24px;
+  border: 1px solid var(--n-8);
+  border-radius: 12px;
+  background: var(--surface-card);
+}
+
+.sales-client-detail-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  flex: none;
+  border-radius: 50%;
+  object-fit: cover;
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.sales-client-detail-title {
+  flex: 1;
+  min-width: 0;
+}
+
+.sales-client-detail-name-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sales-client-detail-name-row h2 {
+  margin: 0;
+  color: var(--n-1);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.sales-client-detail-name-row code {
+  padding: 2px 6px;
+  border-radius: 5px;
+  background: var(--n-9);
+  color: var(--n-4);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+}
+
+.sales-client-edit,
+.sales-client-copy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: var(--n-4);
+  cursor: pointer;
+}
+
+.sales-client-edit {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+}
+
+.sales-client-copy {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  color: var(--n-5);
+}
+
+.sales-client-edit:hover,
+.sales-client-copy:hover {
+  background: var(--n-9);
+  color: var(--n-2);
+}
+
+.sales-client-copy.is-copied {
+  color: var(--success-text);
+}
+
+.sales-client-detail-title > p {
+  margin: 4px 0 10px;
+  color: var(--n-3);
+  font-size: 13px;
+}
+
+.sales-client-detail-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 18px;
+  color: var(--n-2);
+  font-size: 13px;
+}
+
+.sales-client-detail-meta > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sales-client-detail-meta > span > svg {
+  color: var(--n-4);
+}
+
+.sales-client-detail-channels {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.sales-client-detail-channels i {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 24px;
+  padding: 0 8px 0 6px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-style: normal;
+  font-weight: 600;
+}
+
+.sales-client-detail-actions {
+  display: flex;
+  flex: none;
+  gap: 8px;
+}
+
+.sales-client-page .primary-button {
+  min-height: 0;
+  height: 34px;
+  padding: 0 14px;
+  gap: 7px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: none;
+}
+
+.sales-client-more {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border: 1px solid var(--n-7);
+  border-radius: 8px;
+  background: var(--surface-card);
+  color: var(--n-3);
+  cursor: pointer;
+}
+
+.sales-client-more:hover {
+  background: var(--n-9);
+}
+
+/* --- Вкладки --- */
+
+.sales-client-detail-tabs {
+  gap: 2px;
+  border-bottom: 1px solid var(--n-8);
+}
+
+.sales-client-detail-tabs button {
+  padding: 9px 10px 8px;
+  color: var(--n-4);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.sales-client-detail-tabs button.active {
+  color: var(--primary-text);
+  font-weight: 600;
+}
+
+/* --- K3 Обзор --- */
+
+.sales-client-overview {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.sales-client-overview-main,
+.sales-client-overview-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.sales-client-summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  border: 1px solid var(--n-8);
+  border-radius: 12px;
+  background: var(--n-8);
+  overflow: hidden;
+}
+
+.sales-client-summary > div {
+  padding: 14px 18px;
+  background: var(--surface-card);
+}
+
+.sales-client-summary small {
+  display: block;
+  color: var(--n-4);
+  font-size: 11.5px;
+}
+
+.sales-client-summary strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--n-1);
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.sales-client-summary strong.accent {
+  color: var(--warning-text);
+}
+
+.sales-client-summary strong.compact {
+  font-size: 14px;
+}
+
+.sales-client-section-card {
+  padding: 18px 22px;
+  border: 1px solid var(--n-8);
+  border-radius: 12px;
+  background: var(--surface-card);
+}
+
+.sales-client-section-card h3 {
+  margin: 0 0 14px;
+  color: var(--n-1);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.sales-client-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.sales-client-section-head h3 {
+  margin: 0;
+}
+
+.sales-client-mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.sales-client-mode > i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.sales-client-current-title {
+  margin: 0 0 4px;
+  color: var(--n-2);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.sales-client-current-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 14px;
+  color: var(--n-4);
+  font-size: 12px;
+}
+
+.sales-client-current-meta > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 500;
+}
+
+.sales-client-current-meta > i {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--n-6);
+}
+
+.sales-client-group {
+  gap: 5px;
+}
+
+.sales-client-group em {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.sales-client-page .sales-client-outline-action {
+  width: 100%;
+  height: 32px;
+  padding: 0;
+  border-radius: 8px;
+  border-color: var(--n-7);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.sales-client-assignee {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sales-client-assignee-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border-radius: 50%;
+  object-fit: cover;
+  color: #ffffff;
+  font-size: 11px;
+}
+
+.sales-client-assignee > span {
+  flex: 1;
+  min-width: 0;
+}
+
+.sales-client-assignee strong {
+  display: block;
+  color: var(--n-1);
+  font-size: 13px;
+}
+
+.sales-client-assignee small {
+  display: block;
+  color: var(--n-4);
+  font-size: 11.5px;
+}
+
+.sales-client-note {
+  padding: 16px 20px;
+  border: 1px solid var(--warning-border);
+  border-radius: 12px;
+  background: var(--warning-bg);
+}
+
+.sales-client-note > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.sales-client-note h3 {
+  margin: 0;
+  color: var(--n-1);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.sales-client-note small {
+  color: var(--n-4);
+  font-size: 11.5px;
+}
+
+.sales-client-note p {
+  margin: 0;
+  color: var(--n-2);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.sales-client-timeline {
+  display: flex;
+  flex-direction: column;
+}
+
+.sales-client-timeline-row {
+  display: flex;
+  gap: 12px;
+}
+
+.sales-client-timeline-mark {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 10px;
+  flex: none;
+}
+
+.sales-client-timeline-mark > span {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  margin-top: 5px;
+  border-radius: 50%;
+}
+
+.sales-client-timeline-mark > i {
+  flex: 1;
+  width: 1px;
+  margin: 4px 0;
+  background: var(--n-8);
+}
+
+.sales-client-timeline-text {
+  flex: 1;
+  min-width: 0;
+  padding-bottom: 14px;
+}
+
+.sales-client-timeline-text > div {
+  color: var(--n-2);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.sales-client-timeline-text time {
+  display: block;
+  margin-top: 2px;
+  color: var(--n-4);
+  font-size: 11.5px;
+}
+
+.sales-client-related-empty {
+  color: var(--n-4);
+  font-size: 12.5px;
+}
+
+/* --- K4 Диалоги --- */
+
+.sales-client-dialogs {
+  border: 1px solid var(--n-8);
+  border-radius: 12px;
+  background: var(--surface-card);
+  overflow: hidden;
+}
+
+.sales-client-dialog-row {
+  display: grid;
+  grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.4fr) minmax(0, 1fr) 110px 90px;
+  gap: 16px;
+  align-items: center;
+  width: 100%;
+  height: 60px;
+  padding: 0 20px;
+  border: 0;
+  border-bottom: 1px solid var(--n-9);
+  background: transparent;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sales-client-dialog-row:last-child {
+  border-bottom: 0;
+}
+
+.sales-client-dialog-row:hover {
+  background: var(--n-10);
+}
+
+.sales-client-dialog-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.sales-client-dialog-main > i {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 50%;
+}
+
+.sales-client-dialog-main > span {
+  min-width: 0;
+}
+
+.sales-client-dialog-main strong {
+  display: block;
+  color: var(--n-1);
+  font-size: 13.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sales-client-dialog-main small {
+  display: block;
+  margin-top: 2px;
+  color: var(--n-4);
+  font-size: 11.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sales-client-dialog-agent {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: 12.5px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.sales-client-dialog-agent em {
+  color: var(--n-4);
+  font-style: normal;
+  font-weight: 400;
+}
+
+.sales-client-dialog-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--n-3);
+  font-size: 12.5px;
+}
+
+.sales-client-dialog-group > i {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: 50%;
+}
+
+.sales-client-dialog-group em {
+  color: var(--n-5);
+  font-style: normal;
+}
+
+.sales-client-dialog-row > b {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  justify-self: start;
+}
+
+.sales-client-dialog-row > small {
+  color: var(--n-4);
+  font-size: 12px;
+  text-align: right;
+}
+
+/* --- K5 Идентификаторы --- */
+
+.sales-client-ids {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+/* Без предложения объединения список занимает всю ширину. */
+.sales-client-ids.is-single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.sales-client-ids-card {
+  border: 1px solid var(--n-8);
+  border-radius: 12px;
+  background: var(--surface-card);
+  overflow: hidden;
+}
+
+.sales-client-identity-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 60px;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--n-9);
+}
+
+.sales-client-identity-tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: 9px;
+}
+
+.sales-client-identity-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.sales-client-identity-main strong {
+  display: block;
+  color: var(--n-1);
+  font-size: 13.5px;
+}
+
+.sales-client-identity-main small {
+  display: block;
+  margin-top: 2px;
+  color: var(--n-4);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sales-client-identity-since {
+  color: var(--n-4);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.sales-client-identity-row > b {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 6px;
+  background: var(--n-9);
+  color: var(--n-4);
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.sales-client-identity-row > b.is-ok {
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+
+.sales-client-ids-card > p {
+  margin: 0;
+  padding: 12px 20px;
+  background: var(--surface-sidebar);
+  color: var(--n-4);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.sales-client-duplicate-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.sales-client-duplicate-head h3 {
+  margin: 0;
+}
+
+.sales-client-duplicate-head b {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 7px;
+  border-radius: 5px;
+  background: var(--warning-bg);
+  color: var(--warning-text);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.sales-client-duplicate > p {
+  margin: 0 0 14px;
+  color: var(--n-4);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.sales-client-duplicate-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--n-8);
+  border-radius: 10px;
+}
+
+.sales-client-duplicate-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border-radius: 50%;
+  object-fit: cover;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Текстовый блок строки — последним, иначе правило растянуло бы и аватар. */
+.sales-client-duplicate-row > span:last-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.sales-client-duplicate-row strong {
+  display: block;
+  color: var(--n-1);
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sales-client-duplicate-row small {
+  display: block;
+  color: var(--n-4);
+  font-size: 11.5px;
+}
+
+.sales-client-duplicate-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.sales-client-page .sales-client-duplicate-actions .primary-button {
+  flex: 1;
+  height: 32px;
+  padding: 0;
+  border-radius: 8px;
+  font-size: 12.5px;
+}
+
+.sales-client-duplicate-note {
+  display: block;
+  margin-top: 10px;
+  color: var(--n-4);
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+
+.sales-client-ids-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+/* Список действующих объединений — их может разъединить владелец. */
+.sales-client-merge-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--n-9);
+}
+
+.sales-client-merge-row:first-of-type {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.sales-client-merge-row > div {
+  min-width: 0;
+}
+
+.sales-client-merge-row strong {
+  display: block;
+  color: var(--n-1);
+  font-size: 13px;
+}
+
+.sales-client-merge-row small {
+  display: block;
+  margin-top: 2px;
+  color: var(--n-4);
+  font-size: 11.5px;
+}
+
+.sales-client-merge-row em {
+  display: block;
+  margin-top: 4px;
+  color: var(--n-3);
+  font-size: 12.5px;
+  font-style: normal;
+  line-height: 1.4;
+}
+
+.sales-client-merge-row > button {
+  flex: none;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--n-7);
+  border-radius: 7px;
+  background: var(--surface-card);
+  color: var(--n-2);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.sales-client-merge-row > button:hover {
+  background: var(--n-9);
+}
+
+/* Диалог сравнения и объединения (ADR-HUB-0006). */
+.sales-client-merge-compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.sales-client-merge-compare > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+  border: 1px solid var(--n-8);
+  border-radius: 10px;
+  background: var(--surface-card);
+}
+
+.sales-client-merge-compare > div.is-source {
+  border-color: var(--warning-border);
+  background: var(--warning-bg);
+}
+
+.sales-client-merge-compare small {
+  color: var(--n-4);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.sales-client-merge-compare strong {
+  color: var(--n-1);
+  font-size: 14px;
+}
+
+.sales-client-merge-compare span {
+  color: var(--n-3);
+  font-size: 12.5px;
+}
+
+.sales-client-merge-reason {
+  display: block;
+  margin-top: 14px;
+}
+
+.sales-client-merge-reason > span {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--n-3);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.sales-client-merge-reason textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--n-7);
+  border-radius: 8px;
+  outline: none;
+  resize: vertical;
+  background: var(--n-10);
+  color: var(--n-1);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.sales-client-merge-reason textarea:focus {
+  border-color: var(--primary);
+}
+
+.sales-client-merge-error {
+  margin-top: 10px;
+  color: var(--error-text);
+  font-size: 12.5px;
+}
+
+/* --- Аудит --- */
+
+.sales-client-table-card {
+  border: 1px solid var(--n-8);
+  border-radius: 12px;
+  background: var(--surface-card);
+  overflow: hidden;
+}
+
+.sales-client-detail-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.sales-client-detail-table th {
+  padding: 10px 12px;
+  background: var(--surface-sidebar);
+  border-bottom: 1px solid var(--n-8);
+  color: var(--n-4);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.sales-client-detail-table th:first-child,
+.sales-client-detail-table td:first-child {
+  padding-left: 20px;
+}
+
+.sales-client-detail-table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--n-9);
+  color: var(--n-2);
+}
+
+.sales-client-detail-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.sales-client-detail-table code {
+  color: var(--n-4);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+@media (max-width: 1180px) {
+  .sales-client-overview,
+  .sales-client-ids {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -66,6 +66,10 @@ def load(context: TenantContext, refs: DemoRefs) -> None:
             organization=organization, title=item["title"], defaults={"text": item["text"]}
         )
 
+    # Объединение контактов (ADR-HUB-0006): демо показывает и историю слияний.
+    for item in data.get("contactMerges", []):
+        _merge_contacts(context, refs, item)
+
     # Диалоги с previousConversation ссылаются на более ранние — создаём в два прохода.
     pending = list(data["conversations"])
     created_keys: set[str] = set()
@@ -83,6 +87,23 @@ def load(context: TenantContext, refs: DemoRefs) -> None:
             raise manifest.ManifestError(
                 "conversations: previousConversation forms a cycle or points to an unknown key"
             )
+
+
+def _merge_contacts(context: TenantContext, refs: DemoRefs, item: dict) -> None:
+    from chatballs.conversations.contacts_merge import merge_contacts
+    from chatballs.conversations.models import ContactMerge
+
+    target = refs.contacts[item["target"]]
+    source = refs.contacts[item["source"]]
+    if ContactMerge.objects.filter(target=target, source=source).exists():
+        return
+    merge_contacts(
+        organization=refs.organization,
+        target_id=target.id,
+        source_id=source.id,
+        reason=item["reason"],
+        actor=refs.users.get(item.get("actor")),
+    )
 
 
 def _ensure_identity(refs: DemoRefs, item: dict) -> None:

@@ -6,8 +6,8 @@ const HEADERS = [
   "Email",
   "Логин",
   "Каналы",
-  "Продукты",
   "Последний диалог",
+  "Когда",
   "Открытые диалоги",
 ];
 
@@ -23,8 +23,8 @@ export function exportClientsCsv(rows: SalesClientRowVm[]): void {
     client.email,
     client.username,
     client.channels.map((channel) => channel.full).join(", "),
-    client.products.map((product) => product.name).join(", "),
-    client.lastLabel,
+    client.lastWho,
+    client.lastWhen,
     client.openDialogs,
   ]);
   const csv = [HEADERS, ...data]

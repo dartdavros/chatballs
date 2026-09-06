@@ -1,13 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 
-import type { ClientChannelCode, ClientDropdown, ClientProductCode, ClientSortKey, SalesClient } from "./model";
+import type { ClientChannelCode, ClientDropdown, ClientSortKey, SalesClient } from "./model";
 import { toSalesClientRow } from "./model";
 
 export type SalesClientsState = ReturnType<typeof useSalesClients>;
 
+// Фильтры списка контактов (кадры K1/K2): поиск, каналы, агенты и чип
+// «С открытым диалогом». Фильтра по продуктам нет (ADR-HUB-0041).
+
 export function useSalesClients(salesClients: SalesClient[]) {
   const [query, setQueryState] = useState("");
-  const [productFilter, setProductFilter] = useState<ClientProductCode[]>([]);
+  const [agentFilter, setAgentFilter] = useState<number[]>([]);
   const [channelFilter, setChannelFilter] = useState<ClientChannelCode[]>([]);
   const [openOnly, setOpenOnly] = useState(false);
   const [sortKey, setSortKey] = useState<ClientSortKey>("last");
@@ -21,7 +24,7 @@ export function useSalesClients(salesClients: SalesClient[]) {
     const normalizedQuery = query.trim().toLowerCase();
     const filtered = salesClients.filter((client) => {
       return (!normalizedQuery || client.name.toLowerCase().includes(normalizedQuery) || client.email.toLowerCase().includes(normalizedQuery) || client.phone.includes(normalizedQuery) || client.username.toLowerCase().includes(normalizedQuery))
-        && (productFilter.length === 0 || client.products.some((product) => productFilter.includes(product.code)))
+        && (agentFilter.length === 0 || client.agents.some((agent) => agentFilter.includes(agent.id)))
         && (channelFilter.length === 0 || client.channels.some((channel) => channelFilter.includes(channel)))
         && (!openOnly || client.openDialogs > 0);
     });
@@ -29,7 +32,7 @@ export function useSalesClients(salesClients: SalesClient[]) {
     return [...filtered]
       .sort((left, right) => sortDir === "asc" ? Number(left[key[sortKey]]) - Number(right[key[sortKey]]) : Number(right[key[sortKey]]) - Number(left[key[sortKey]]))
       .map(toSalesClientRow);
-  }, [salesClients, channelFilter, openOnly, productFilter, query, sortDir, sortKey]);
+  }, [salesClients, agentFilter, channelFilter, openOnly, query, sortDir, sortKey]);
   const pageCount = Math.max(1, Math.ceil(filteredRows.length / pageSize));
   const rows = useMemo(
     () => filteredRows.slice((page - 1) * pageSize, page * pageSize),
@@ -46,9 +49,9 @@ export function useSalesClients(salesClients: SalesClient[]) {
     setMenu(null);
   }
 
-  function toggleProduct(code: string) {
+  function toggleAgent(id: number) {
     setPage(1);
-    setProductFilter((current) => current.includes(code) ? current.filter((item) => item !== code) : [...current, code]);
+    setAgentFilter((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]);
   }
 
   function toggleChannel(code: string) {
@@ -69,7 +72,7 @@ export function useSalesClients(salesClients: SalesClient[]) {
 
   function reset() {
     setQueryState("");
-    setProductFilter([]);
+    setAgentFilter([]);
     setChannelFilter([]);
     setOpenOnly(false);
     setPage(1);
@@ -81,25 +84,29 @@ export function useSalesClients(salesClients: SalesClient[]) {
     rows,
     filteredRows,
     filteredCount: filteredRows.length,
+    // Кадр K2: «Сбросить» и счётчик «6 из 128» показываются только при фильтре.
+    filtered: Boolean(query.trim()) || agentFilter.length > 0 || channelFilter.length > 0 || openOnly,
     page,
     pageCount,
+    pageSize,
     setPage,
     query,
-    productFilter,
+    agentFilter,
     channelFilter,
     openOnly,
     dropdown,
     menu,
+    sortKey,
+    sortDir,
     setMenu,
     setQuery,
-    toggleProduct,
+    toggleAgent,
     toggleChannel,
     toggleDropdown,
     setDropdown,
     closeDropdown: () => setDropdown(null),
     toggleOpenOnly: () => { setOpenOnly((current) => !current); setPage(1); setMenu(null); setDropdown(null); },
     sortBy,
-    sortArrow: (key: ClientSortKey) => sortKey === key ? (sortDir === "asc" ? "↑" : "↓") : "",
     reset,
   };
 }

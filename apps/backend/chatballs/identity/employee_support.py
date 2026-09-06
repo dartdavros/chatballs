@@ -29,6 +29,12 @@ def employee_payload(
         "isActive": profile.user.is_active,
         "isBlocked": profile.is_blocked,
         "mustChangePassword": profile.user.must_change_password,
+        # «Последняя смена» пароля в карточке сотрудника (кадр E3).
+        "passwordChangedAt": (
+            profile.user.password_changed_at.isoformat()
+            if profile.user.password_changed_at
+            else None
+        ),
         "totpRequired": profile.totp_required,
         "totpEnabled": profile.user.totp_enabled,
     }

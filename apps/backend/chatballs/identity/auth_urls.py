@@ -15,6 +15,7 @@ urlpatterns = [
     path("profile/password/", auth.ProfilePasswordView.as_view(), name="auth-profile-password"),
     path("profile/totp/start/", auth.ProfileTotpStartView.as_view(), name="auth-profile-totp-start"),
     path("profile/totp/disable/", auth.ProfileTotpDisableView.as_view(), name="auth-profile-totp-disable"),
+    path("profile/sessions/", auth.ProfileSessionsView.as_view(), name="auth-profile-sessions"),
     path("profile/sessions/revoke-other/", auth.ProfileRevokeOtherSessionsView.as_view(), name="auth-profile-revoke-other-sessions"),
     path("change-temporary-password/", auth.ChangeTemporaryPasswordView.as_view(), name="auth-change-temp-password"),
     path("totp/setup/", auth.TotpSetupView.as_view(), name="auth-totp-setup"),

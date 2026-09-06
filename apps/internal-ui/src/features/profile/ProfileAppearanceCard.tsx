@@ -2,26 +2,26 @@ import { useState } from "react";
 
 import { api } from "../../api/client";
 import { ACCENT_PRESETS, DEFAULT_ACCENT, type UiTheme } from "../../shared/appearance";
+import { Icon } from "../../shared/icons";
 import type { AuthenticatedUser, SessionUser } from "../../types";
 
-// «Внешний вид» (SPEC-HUB-0031 §7): тема (светлая/тёмная/системная) и акцентный
-// цвет — пресеты плюс произвольный HEX. Настройка глобальная для пользователя;
-// применение мгновенное через App (uiTheme/uiAccent в session-payload).
+// «Внешний вид» (дизайн-базлайн v2, кадр P1; SPEC-HUB-0031 §7): тема сегментом
+// со значками, акцент — четыре пресета и произвольный HEX. Настройка личная и
+// хранится в учётной записи (ADR-0029).
 
-const THEME_OPTIONS: Array<[UiTheme, string]> = [
-  ["LIGHT", "Светлая"],
-  ["DARK", "Тёмная"],
-  ["SYSTEM", "Как в системе"],
+const THEME_OPTIONS: Array<[UiTheme, string, Parameters<typeof Icon>[0]["name"]]> = [
+  ["LIGHT", "Светлая", "sunny"],
+  ["DARK", "Тёмная", "moon"],
+  ["SYSTEM", "Как в системе", "monitor"],
 ];
 
 export function ProfileAppearanceCard({ user, onUserUpdated }: { user: SessionUser; onUserUpdated: (user: SessionUser) => void }) {
   const [saving, setSaving] = useState(false);
   const [errorText, setErrorText] = useState("");
-  const [customAccent, setCustomAccent] = useState(
-    ACCENT_PRESETS.some(([value]) => value === (user.uiAccent || DEFAULT_ACCENT)) ? "" : user.uiAccent,
-  );
-
   const accent = user.uiAccent || DEFAULT_ACCENT;
+  const [customAccent, setCustomAccent] = useState(
+    ACCENT_PRESETS.some(([value]) => value === accent) ? "" : accent,
+  );
 
   async function save(theme: UiTheme, nextAccent: string) {
     setSaving(true);
@@ -51,11 +51,12 @@ export function ProfileAppearanceCard({ user, onUserUpdated }: { user: SessionUs
   return (
     <section className="profile-card appearance-card">
       <h3>Внешний вид</h3>
-      {errorText && <div className="profile-message">{errorText}</div>}
+      <p className="profile-card-lead">Настройка личная и хранится в учётной записи: применяется на всех ваших устройствах, без перезагрузки.</p>
+      {errorText && <div className="profile-message error">{errorText}</div>}
       <div className="appearance-row">
         <span>Тема</span>
         <div className="appearance-theme-options">
-          {THEME_OPTIONS.map(([value, label]) => (
+          {THEME_OPTIONS.map(([value, label, icon]) => (
             <button
               className={user.uiTheme === value ? "active" : ""}
               disabled={saving}
@@ -63,6 +64,7 @@ export function ProfileAppearanceCard({ user, onUserUpdated }: { user: SessionUs
               type="button"
               onClick={() => void save(value, user.uiAccent)}
             >
+              <Icon name={icon} size={13} strokeWidth={2} />
               {label}
             </button>
           ))}
@@ -77,13 +79,17 @@ export function ProfileAppearanceCard({ user, onUserUpdated }: { user: SessionUs
               className={accent === value ? "active" : ""}
               disabled={saving}
               key={value}
-              style={{ background: value }}
+              style={{ background: value, "--accent-ring": value } as Record<string, string>}
               title={label}
               type="button"
               onClick={() => void save(user.uiTheme, value)}
-            />
+            >
+              {accent === value && <Icon name="check" size={13} strokeWidth={3} />}
+            </button>
           ))}
+          <i className="appearance-separator" />
           <div className="appearance-custom">
+            <i className="appearance-custom-swatch" style={{ background: /^#[0-9a-f]{6}$/i.test(customAccent.trim()) ? customAccent.trim() : undefined }} />
             <input
               disabled={saving}
               maxLength={7}
@@ -94,13 +100,10 @@ export function ProfileAppearanceCard({ user, onUserUpdated }: { user: SessionUs
                 if (event.key === "Enter") submitCustomAccent();
               }}
             />
-            <button disabled={saving || !customAccent.trim()} type="button" onClick={submitCustomAccent}>
-              Применить
-            </button>
+            <button disabled={saving || !customAccent.trim()} type="button" onClick={submitCustomAccent}>Применить</button>
           </div>
         </div>
       </div>
-      <p className="appearance-note">Настройка личная: тема и цвет применяются только к вашему интерфейсу.</p>
     </section>
   );
 }

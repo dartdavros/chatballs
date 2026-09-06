@@ -1,4 +1,5 @@
-import type { ButtonHTMLAttributes, ReactNode, RefObject } from "react";
+import { Dropdown } from "antd";
+import { useEffect, useRef, useState, type ButtonHTMLAttributes, type ReactNode, type RefObject } from "react";
 
 import { Icon } from "./icons";
 
@@ -63,6 +64,40 @@ export function Button({ children, className = "", icon, iconSize = 15, type = "
   );
 }
 
+/** Кнопка «копировать» рядом со значением (контекст-панель чата и карточка
+ *  контакта): на 1.2 с превращается в галочку. */
+export function CopyButton({ value, className = "", label }: { value: string; className?: string; label?: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      type="button"
+      className={`${className} ${copied ? "is-copied" : ""}`.trim()}
+      aria-label="Скопировать"
+      title={copied ? "Скопировано" : "Скопировать"}
+      onClick={(event) => {
+        event.stopPropagation();
+        void navigator.clipboard?.writeText(value).then(() => {
+          setCopied(true);
+          window.setTimeout(() => setCopied(false), 1200);
+        });
+      }}
+    >
+      <Icon name={copied ? "check" : "copy"} size={13} strokeWidth={label ? 2 : 1.8} />
+      {label && (copied ? "Скопировано" : label)}
+    </button>
+  );
+}
+
+/** «Назад» над карточкой сущности: шеврон и название раздела (дизайн-базлайн
+ *  v2 — кадры K3 «Контакты», G3 «Агенты»). */
+export function BackLink({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <button className="ui-back-link" type="button" onClick={onClick}>
+      <Icon name="chevron" size={14} strokeWidth={2.2} />{label}
+    </button>
+  );
+}
+
 export function ActionButton(props: ActionButtonProps) {
   return <Button {...props} variant="action" />;
 }
@@ -76,13 +111,82 @@ export function IconButton({ icon, iconSize = 16, label, bare = false, className
   );
 }
 
+/** Поиск списка — один на всё приложение: иконка, поле, подсказка горячей
+ *  клавиши. С `hotkey` клавиша ставит фокус в поле, если пользователь не пишет
+ *  в другом поле и не открыл меню (SPEC-HUB-0031 §9). */
 export function SearchInput({ className = "", placeholder, value, onChange, inputRef, hotkey }: SearchInputProps & { hotkey?: string }) {
+  const ownRef = useRef<HTMLInputElement | null>(null);
+  const field = inputRef ?? ownRef;
+
+  useEffect(() => {
+    if (!hotkey) return undefined;
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key !== hotkey || event.metaKey || event.ctrlKey || event.altKey) return;
+      const target = event.target;
+      // Не перехватываем клавишу, когда человек пишет в другом поле или открыл меню.
+      if (target instanceof Element && target.closest("input, textarea, [contenteditable], .ant-dropdown")) return;
+      event.preventDefault();
+      field.current?.focus();
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [field, hotkey]);
+
   return (
     <label className={`ui-search-input ${className}`.trim()}>
       <Icon name="search" size={15} />
-      <input ref={inputRef} value={value} onChange={(event) => onChange?.(event.target.value)} placeholder={placeholder} />
+      <input ref={field} value={value} onChange={(event) => onChange?.(event.target.value)} placeholder={placeholder} />
       {hotkey && !value && <kbd>{hotkey}</kbd>}
     </label>
+  );
+}
+
+export type FilterOption = { value: string; label: string; dot?: string };
+
+/** Фильтр-селект списка — один на всё приложение: кнопка с текущим значением и
+ *  шевроном, меню — общий `app-dropdown`. `multiple` включает галочки и счётчик
+ *  выбранных (кадры K1 «Контакты», E1 «Сотрудники»). */
+export function FilterDropdown({ className = "", icon, label, options, selected, multiple = false, open, onOpenChange, onSelect }: {
+  className?: string;
+  icon?: IconName;
+  label: string;
+  options: FilterOption[];
+  selected: string[];
+  multiple?: boolean;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSelect: (value: string) => void;
+}) {
+  const items = options.map((option) => ({
+    key: option.value,
+    label: (
+      <button
+        type="button"
+        onClick={(event) => {
+          if (multiple) event.stopPropagation();
+          onSelect(option.value);
+        }}
+      >
+        {multiple && (
+          <span className={`ui-filter-check ${selected.includes(option.value) ? "is-on" : ""}`}>
+            {selected.includes(option.value) && <Icon name="check" size={12} />}
+          </span>
+        )}
+        {option.dot && <i className="ui-filter-dot" style={{ background: option.dot }} />}
+        {option.label}
+      </button>
+    ),
+  }));
+  const active = selected.length > 0;
+  return (
+    <Dropdown menu={{ items }} open={open} onOpenChange={onOpenChange} trigger={["click"]} overlayClassName="app-dropdown is-wide">
+      <button className={`ui-filter-button ${active ? "is-active" : ""} ${className}`.trim()} type="button">
+        {icon && <Icon name={icon} size={14} strokeWidth={2} />}
+        {label}
+        {multiple && selected.length > 0 && <span>{selected.length}</span>}
+        <Icon name="chevron" size={13} strokeWidth={2.2} />
+      </button>
+    </Dropdown>
   );
 }
 

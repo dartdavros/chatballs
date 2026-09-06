@@ -1,14 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { api } from "../../api/client";
-import { LogoSpinner } from "../../shared/icons";
+import { Icon, LogoSpinner, MaxLogo, TelegramLogo } from "../../shared/icons";
 import { Button } from "../../shared/ui-controls";
+
+// «Уведомления в мессенджер» (дизайн-базлайн v2, кадр P1): по строке на бота —
+// фирменная плитка, статус привязки и типы событий галочками (ADR-0015).
+// Мессенджер один: привязка нового заменяет текущий.
 
 type BindingItem = { integrationId: number; provider: "TELEGRAM" | "MAX"; name: string; botUsername: string; bound: boolean; pushTypes: string[] };
 type TypeOption = { code: string; label: string };
 type BindingsResponse = { items: BindingItem[]; availableTypes: TypeOption[] };
 
 const PROVIDER_LABEL: Record<BindingItem["provider"], string> = { TELEGRAM: "Telegram", MAX: "MAX" };
+const PROVIDER_TILE: Record<BindingItem["provider"], string> = { TELEGRAM: "integration-tile--telegram", MAX: "integration-tile--max" };
 
 const fetchBindings = () => api<BindingsResponse>("/api/v1/notifications/messenger-bindings/");
 
@@ -77,41 +82,51 @@ export function ProfileNotificationsCard() {
   return (
     <section className="profile-card">
       <h3>Уведомления в мессенджер</h3>
+      <p className="profile-card-lead">Рабочие события приходят и при закрытом браузере. Один мессенджер: привязка нового заменяет текущий.</p>
       {loaded && items.length === 0 && (
-        <p className="profile-notifications-note">Боты уведомлений не настроены. Владелец может добавить бота в разделе «Интеграции» (флажок «Бот уведомлений для сотрудников»).</p>
+        <p className="profile-notifications-note">Боты уведомлений не настроены. Владелец может добавить бота в «Настройках» → «Интеграции» (флажок «Бот уведомлений для сотрудников»).</p>
       )}
       {items.map((item) => (
         <div className="profile-notifications-block" key={item.integrationId}>
           <div className="profile-notifications-row">
-            <div>
+            <span className={`profile-notifications-tile integration-tile ${PROVIDER_TILE[item.provider]}`}>
+              {item.provider === "TELEGRAM" ? <TelegramLogo size={19} /> : <MaxLogo size={19} />}
+            </span>
+            <div className="profile-notifications-name">
               <strong>{PROVIDER_LABEL[item.provider] ?? item.provider}</strong>
-              <small>{item.botUsername ? `@${item.botUsername}` : item.name}</small>
+              <small>{item.botUsername ? `@${item.botUsername} · сервисный бот уведомлений` : item.name}</small>
             </div>
             {item.bound ? (
-              <div className="profile-notifications-actions">
-                <span className="profile-notifications-status ok">Подключено</span>
+              <>
+                <b className="profile-notifications-status">Подключено</b>
                 <Button variant="secondary" disabled={busy} onClick={() => void disconnect(item)}>Отключить</Button>
-              </div>
+              </>
             ) : links[item.integrationId]?.deepLink ? (
-              <a className="profile-notifications-bind" href={links[item.integrationId].deepLink} target="_blank" rel="noreferrer">Привязать бота</a>
+              <a className="profile-notifications-bind" href={links[item.integrationId].deepLink} target="_blank" rel="noreferrer">
+                Привязать бота<Icon name="external" size={12} strokeWidth={2.2} />
+              </a>
             ) : (
-              <span className="profile-notifications-status wait">{loaded ? "Готовим ссылку…" : <LogoSpinner size={16} />}</span>
+              <span className="profile-notifications-wait">{loaded ? "Готовим ссылку…" : <LogoSpinner size={16} />}</span>
             )}
           </div>
           {item.bound && types.length > 0 && (
             <div className="profile-notifications-types">
-              {types.map((type) => (
-                <label key={type.code}>
-                  <input type="checkbox" checked={item.pushTypes.includes(type.code)} onChange={() => void toggleType(item, type.code)} />
-                  {type.label}
-                </label>
-              ))}
+              {types.map((type) => {
+                const on = item.pushTypes.includes(type.code);
+                return (
+                  <label key={type.code}>
+                    <input type="checkbox" checked={on} onChange={() => void toggleType(item, type.code)} />
+                    <span className={`profile-check ${on ? "is-on" : ""}`}>{on && <Icon name="check" size={11} strokeWidth={3} />}</span>
+                    {type.label}
+                  </label>
+                );
+              })}
             </div>
           )}
         </div>
       ))}
       {hasUnbound && (
-        <p className="profile-notifications-note">Нажмите «Привязать бота» и в открывшемся чате нажмите «Начать» — привязка подтвердится автоматически. Уведомления приходят в один мессенджер: привязка нового заменяет текущий.</p>
+        <p className="profile-notifications-note">Нажмите «Привязать бота» и в открывшемся чате — «Начать»: привязка подтвердится сама.</p>
       )}
     </section>
   );

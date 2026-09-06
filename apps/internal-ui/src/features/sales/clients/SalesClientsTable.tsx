@@ -1,52 +1,44 @@
 import { Icon } from "../../../shared/icons";
 import { SalesClientRow } from "./SalesClientRow";
 import { SalesClientsPagination } from "./SalesClientsPagination";
-import type { ClientSortKey } from "./model";
 import type { SalesClientsState } from "./useSalesClients";
 
+// Таблица контактов (кадр K1): шапка · строки 60px · подвал со страницами.
+// Колонки: Контакт · Как связаться · Каналы · Последний диалог · Открытые · ⋯
+
 export function SalesClientsTable({ clients, openClient }: { clients: SalesClientsState; openClient: (id: number) => void }) {
+  const from = (clients.page - 1) * clients.pageSize + 1;
+  const to = from + clients.rows.length - 1;
   return (
-    <>
-      <div className="sales-clients-card">
-        <div className="sales-clients-table-scroll">
-          <table className="sales-clients-table">
-            <thead>
-              <tr>
-                <th>КОНТАКТ</th>
-                <th>ТЕЛЕФОН / EMAIL / ЛОГИН</th>
-                <th>КАНАЛЫ</th>
-                <th>ПРОДУКТЫ</th>
-                <SortableTh label="ПОСЛ. ДИАЛОГ" sortKey="last" clients={clients} />
-                <SortableTh label="ОТКР." sortKey="open" clients={clients} numeric />
-                <th />
-              </tr>
-            </thead>
-            <tbody>
-              {clients.rows.map((client) => <SalesClientRow client={client} menu={clients.menu} openClient={openClient} setMenu={clients.setMenu} key={client.cid} />)}
-            </tbody>
-          </table>
-        </div>
-        {clients.rows.length === 0 && <SalesClientsEmpty />}
-        <SalesClientsPagination page={clients.page} pageCount={clients.pageCount} shownCount={clients.rows.length} totalCount={clients.filteredCount} setPage={clients.setPage} />
+    <div className="sales-clients-card">
+      <div className="sales-clients-head">
+        <span>Контакт</span>
+        <span>Как связаться</span>
+        <span>Каналы</span>
+        <button className={clients.sortKey === "last" ? "is-active" : ""} type="button" onClick={() => clients.sortBy("last")}>
+          Последний диалог
+          <i className={`sales-clients-sort ${clients.sortKey === "last" && clients.sortDir === "desc" ? "is-up" : ""}`}><Icon name="arrowDown" size={11} strokeWidth={2.5} /></i>
+        </button>
+        <button className={`is-numeric ${clients.sortKey === "open" ? "is-active" : ""}`} type="button" onClick={() => clients.sortBy("open")}>
+          Открытые
+          {clients.sortKey === "open" && <i className={`sales-clients-sort ${clients.sortDir === "desc" ? "is-up" : ""}`}><Icon name="arrowDown" size={11} strokeWidth={2.5} /></i>}
+        </button>
+        <span />
       </div>
-    </>
-  );
-}
-
-function SortableTh({ label, sortKey, clients, numeric = false }: { label: string; sortKey: ClientSortKey; clients: SalesClientsState; numeric?: boolean }) {
-  return (
-    <th className={numeric ? "numeric" : ""}>
-      <button type="button" onClick={() => clients.sortBy(sortKey)}>{label} {clients.sortArrow(sortKey)}</button>
-    </th>
-  );
-}
-
-function SalesClientsEmpty() {
-  return (
-    <div className="sales-clients-empty">
-      <div><Icon name="search" size={22} /></div>
-      <strong>Контакты не найдены</strong>
-      <span>Измените условия фильтра или сбросьте их.</span>
+      {clients.rows.map((client) => (
+        <SalesClientRow client={client} menu={clients.menu} openClient={openClient} setMenu={clients.setMenu} key={client.cid} />
+      ))}
+      {clients.rows.length === 0 && (
+        <div className="sales-clients-empty">
+          <Icon name="search" size={20} />
+          <strong>Контакты не найдены</strong>
+          <span>Измените условия фильтра или сбросьте их.</span>
+        </div>
+      )}
+      <div className="sales-clients-foot">
+        <small>{clients.filteredCount === 0 ? "Ничего не найдено" : `${from}–${to} из ${clients.filteredCount}`}</small>
+        {clients.pageCount > 1 && <SalesClientsPagination page={clients.page} pageCount={clients.pageCount} setPage={clients.setPage} />}
+      </div>
     </div>
   );
 }

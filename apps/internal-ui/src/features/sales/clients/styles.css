@@ -1,161 +1,123 @@
-.sales-clients-page {
-  width: min(1340px, 100%);
-  max-width: 1340px;
+/* Список контактов (дизайн-базлайн v2, кадры K1/K2/S1). Значения — из макета
+   «Контакты Baseline»: строки 60px, кнопки 34px, шапка таблицы 11px капсом. */
+
+.hub-scroll.contacts-scroll {
+  padding: 0;
+  background: var(--surface-feed);
 }
+
+/* Колонка контента — как в макете (кадр 1440px минус боковая панель 220px):
+   лист держится читаемой ширины и центрируется, фон раздела остаётся на всю
+   ширину окна. */
+.hub-page.contacts-page-shell {
+  width: 100%;
+  max-width: 1220px;
+  margin: 0 auto;
+}
+
+.sales-clients-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 26px 32px 40px;
+}
+
+/* --- Шапка --- */
 
 .sales-clients-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: 24px;
-  margin-bottom: 18px;
+  gap: 16px;
 }
 
-.sales-clients-header h1 {
+.sales-clients-header > div {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.sales-clients-header h2 {
   margin: 0;
   color: var(--n-1);
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
+  letter-spacing: -0.01em;
 }
 
-.sales-clients-header p {
-  margin: 6px 0 0;
+.sales-clients-header span {
   color: var(--n-4);
-  font-size: 13.5px;
+  font-size: 13px;
 }
 
-.sales-clients-header p b {
-  color: var(--n-3);
-}
-
-.sales-clients-header-actions {
-  display: flex;
+.sales-clients-export {
+  display: inline-flex;
   align-items: center;
-  flex: none;
-  gap: 9px;
+  gap: 7px;
+  height: 34px;
+  padding: 0 14px;
+  border: 1px solid var(--n-7);
+  border-radius: 8px;
+  background: var(--surface-card);
+  color: var(--n-2);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
 }
+
+.sales-clients-export:hover:not(:disabled) {
+  background: var(--n-9);
+}
+
+.sales-clients-export:disabled {
+  color: var(--n-5);
+  cursor: default;
+}
+
+/* --- Фильтры --- */
 
 .sales-clients-filterbar {
-  position: relative;
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 16px;
-  padding: 11px 14px;
-  background: var(--surface-card);
-  border: 1px solid var(--n-8);
-  border-radius: 11px;
-  box-shadow: var(--shadow-xs);
+  gap: 8px;
 }
 
 .sales-clients-search {
-  width: 280px;
-  height: 34px;
-  padding: 0 11px;
-  color: var(--n-5);
-  background: var(--n-10);
-  border: 1px solid var(--n-7);
-  border-radius: 8px;
+  width: 360px;
 }
 
-.sales-clients-search:focus-within {
-  border-color: var(--primary);
-}
-
-.sales-clients-search input {
-  color: var(--n-2);
-  font-size: 13px;
-}
-
-.sales-clients-dd {
-  display: inline-flex;
-}
-
-.sales-clients-dd-button,
 .sales-clients-chip {
-  height: 34px;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
+  height: 34px;
   padding: 0 12px;
-  color: var(--n-3);
-  background: var(--surface-card);
   border: 1px solid var(--n-7);
   border-radius: 8px;
+  background: var(--surface-card);
+  color: var(--n-2);
+  font-family: inherit;
   font-size: 13px;
   font-weight: 500;
-  white-space: nowrap;
+  cursor: pointer;
 }
 
-.sales-clients-dd-button.active,
-.sales-clients-chip.active {
-  color: var(--primary-text);
-  background: var(--primary-bg);
-  border-color: var(--primary);
-  font-weight: 600;
+.sales-clients-chip:hover {
+  background: var(--n-9);
 }
 
-.sales-clients-dd-button > span {
-  min-width: 17px;
-  height: 17px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 5px;
-  color: #ffffff;
-  background: var(--primary);
-  border-radius: 9px;
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.sales-clients-dd-button svg:last-child {
-  opacity: 0.55;
-}
-
-.sales-clients-dd-button.open svg:last-child {
-  transform: rotate(180deg);
-}
-
-.sales-filter-dot {
+.sales-clients-chip > i {
   width: 8px;
   height: 8px;
-  flex: none;
   border-radius: 50%;
+  background: var(--warning-text);
 }
 
-.sales-clients-check {
-  width: 17px;
-  height: 17px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: none;
-  color: #ffffff;
-  background: var(--surface-card);
-  border: 1.5px solid var(--n-6);
-  border-radius: 5px;
-}
-
-.sales-clients-check.checked {
-  background: var(--primary);
+.sales-clients-chip.active {
   border-color: var(--primary);
-}
-
-.sales-clients-chip {
-  gap: 6px;
-  padding: 0 13px;
-  font-size: 12.5px;
-}
-
-.sales-clients-chip > span {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--warning);
+  background: var(--primary-bg);
+  color: var(--primary-text);
 }
 
 .sales-clients-filter-spacer {
@@ -164,244 +126,369 @@
 
 .sales-clients-reset {
   height: 34px;
-  padding: 0 12px;
-  color: var(--n-4);
-  background: transparent;
+  padding: 0 10px;
   border: 0;
   border-radius: 8px;
+  background: transparent;
+  color: var(--n-4);
+  font-family: inherit;
   font-size: 13px;
   font-weight: 500;
+  cursor: pointer;
 }
 
 .sales-clients-reset:hover {
-  color: var(--primary);
   background: var(--n-9);
+  color: var(--n-2);
 }
+
+/* --- Таблица --- */
 
 .sales-clients-card {
-  overflow: visible;
-  background: var(--surface-card);
   border: 1px solid var(--n-8);
   border-radius: 12px;
-  box-shadow: var(--shadow-sm);
+  background: var(--surface-card);
+  overflow: hidden;
 }
 
-.sales-clients-table-scroll {
-  overflow-x: auto;
-  border-radius: 12px 12px 0 0;
+.sales-clients-head,
+.sales-client-row {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 1.6fr) 80px 44px;
+  gap: 16px;
+  align-items: center;
 }
 
-.sales-clients-table {
-  width: 100%;
-  min-width: 1080px;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-
-.sales-clients-table th {
-  position: sticky;
-  top: 0;
-  padding: 11px 12px;
-  color: var(--n-4);
-  background: var(--n-10);
+.sales-clients-head {
+  padding: 10px 20px;
   border-bottom: 1px solid var(--n-8);
+  background: var(--surface-sidebar);
+}
+
+.sales-clients-head > span,
+.sales-clients-head > button {
+  color: var(--n-4);
+  font-family: inherit;
   font-size: 11px;
   font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   text-align: left;
-  white-space: nowrap;
 }
 
-.sales-clients-table th:first-child,
-.sales-clients-table td:first-child {
-  padding-left: 16px;
-}
-
-.sales-clients-table th:first-child {
-  letter-spacing: 0.03em;
-}
-
-.sales-clients-table th.numeric {
-  text-align: right;
-}
-
-.sales-clients-table th button {
+.sales-clients-head > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   padding: 0;
-  color: inherit;
-  background: transparent;
   border: 0;
-  font: inherit;
-  white-space: nowrap;
+  background: transparent;
+  cursor: pointer;
 }
 
-.sales-clients-table th.numeric button {
-  text-align: right;
-}
-
-.sales-clients-table td {
-  padding: 12px;
-  border-bottom: 1px solid var(--n-9);
+.sales-clients-head > button.is-active {
   color: var(--n-2);
-  vertical-align: middle;
 }
 
-.sales-clients-table tbody tr:hover {
+.sales-clients-head > button.is-numeric {
+  justify-content: flex-end;
+}
+
+.sales-clients-sort {
+  display: inline-flex;
+}
+
+.sales-clients-sort.is-up {
+  transform: rotate(180deg);
+}
+
+.sales-client-row {
+  height: 60px;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--n-9);
+  cursor: pointer;
+}
+
+.sales-client-row:hover {
   background: var(--n-10);
 }
 
 .sales-client-person {
   display: flex;
   align-items: center;
-  gap: 11px;
-}
-
-.sales-client-person > .sales-client-avatar {
-  width: 34px;
-  height: 34px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: none;
-  color: #ffffff;
-  border-radius: 50%;
-  object-fit: cover;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.sales-client-person span {
+  gap: 12px;
   min-width: 0;
 }
 
-.sales-client-person a {
-  display: block;
-  color: var(--primary);
-  font-size: 13.5px;
-  font-weight: 600;
-  text-decoration: none;
+.sales-client-person > span {
+  min-width: 0;
 }
 
-.sales-client-person small,
-.sales-client-contact {
-  font-family: "SF Mono", ui-monospace, Menlo, monospace;
+.sales-client-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border-radius: 50%;
+  object-fit: cover;
+  color: #ffffff;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.sales-client-person strong {
+  display: block;
+  color: var(--n-1);
+  font-size: 13.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .sales-client-person small {
   display: block;
-  color: var(--n-5);
-  font-size: 11px;
-}
-
-.sales-client-contact {
-  color: var(--n-3);
-  font-size: 12.5px;
-}
-
-.sales-client-contact.muted {
-  color: var(--n-5);
-}
-
-.sales-client-phone {
-  display: block;
   margin-top: 2px;
-  color: var(--n-5);
+  color: var(--n-4);
+  font-family: var(--font-mono);
   font-size: 11.5px;
 }
 
-/* Статус контакта: Лид / Клиент (цвета — statusMap в model.ts). */
-.sales-client-status {
-  display: inline-block;
-  padding: 3px 10px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 600;
+.sales-client-contact {
+  min-width: 0;
+}
+
+.sales-client-contact > span {
+  display: block;
+  color: var(--n-1);
+  font-size: 13px;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.sales-client-tags,
-.sales-client-products {
+.sales-client-contact > span.is-muted {
+  color: var(--n-5);
+}
+
+.sales-client-contact small {
+  display: block;
+  margin-top: 2px;
+  color: var(--n-4);
+  font-size: 11.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sales-client-channels {
   display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
+  gap: 6px;
 }
 
-.sales-client-tags span {
+.sales-client-channels > span {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 2px 7px;
-  border-radius: 5px;
-}
-
-.sales-client-tags i {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-}
-
-.sales-client-tags b {
-  font-size: 10.5px;
-  font-weight: 600;
-}
-
-.sales-client-products span {
-  padding: 2px 8px;
-  border-radius: 5px;
-  font-size: 11px;
-  font-weight: 500;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  flex: none;
+  border-radius: 7px;
 }
 
 .sales-client-last {
   display: flex;
   align-items: center;
-  gap: 7px;
-  color: var(--n-3);
-  font-size: 12.5px;
-  white-space: nowrap;
+  gap: 8px;
+  min-width: 0;
 }
 
-.sales-client-last i {
-  width: 7px;
-  height: 7px;
+.sales-client-last > i {
+  width: 8px;
+  height: 8px;
   flex: none;
   border-radius: 50%;
 }
 
-.sales-clients-table .numeric {
-  text-align: right;
+.sales-client-last > span {
+  min-width: 0;
 }
 
-.sales-clients-empty {
-  padding: 54px 20px;
-  text-align: center;
-}
-
-.sales-clients-empty div {
-  width: 48px;
-  height: 48px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 14px;
-  color: var(--n-5);
-  background: var(--n-9);
-  border-radius: 50%;
-}
-
-.sales-clients-empty strong {
+.sales-client-last > span > span {
   display: block;
-  color: var(--n-3);
+  color: var(--n-2);
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sales-client-last small {
+  display: block;
+  margin-top: 2px;
+  color: var(--n-4);
+  font-size: 11.5px;
+  white-space: nowrap;
+}
+
+.sales-client-open {
+  text-align: right;
   font-size: 14px;
   font-weight: 600;
 }
 
-.sales-clients-empty span {
-  display: block;
-  margin-top: 4px;
+.sales-client-menu {
+  justify-self: end;
+}
+
+.sales-clients-card .row-menu-button {
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  color: var(--n-4);
+}
+
+/* --- Подвал со страницами --- */
+
+.sales-clients-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 20px;
+  background: var(--surface-sidebar);
+}
+
+.sales-clients-foot small {
+  color: var(--n-4);
+  font-size: 12px;
+}
+
+.sales-clients-pager {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sales-clients-pager button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 6px;
+  border: 1px solid var(--n-7);
+  border-radius: 7px;
+  background: var(--surface-card);
+  color: var(--n-2);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.sales-clients-pager button:hover:not(:disabled) {
+  background: var(--n-9);
+}
+
+.sales-clients-pager button:disabled {
+  color: var(--n-5);
+  cursor: default;
+}
+
+.sales-clients-pager button.is-active {
+  border-color: var(--primary);
+  background: var(--primary-bg);
+  color: var(--primary-text);
+}
+
+.sales-clients-pager button:first-child svg {
+  transform: rotate(90deg);
+}
+
+.sales-clients-pager button.is-next svg {
+  transform: rotate(-90deg);
+}
+
+.sales-clients-pager > span {
   color: var(--n-5);
   font-size: 12.5px;
 }
 
-.sales-clients-pagination {
-  padding: 12px 18px;
-  border-top: 1px solid var(--n-9);
+/* --- Пустые состояния --- */
+
+.sales-clients-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 48px 24px;
+  color: var(--n-4);
+  text-align: center;
+}
+
+.sales-clients-empty strong {
+  color: var(--n-1);
+  font-size: 14px;
+}
+
+.sales-clients-empty span {
+  font-size: 13px;
+}
+
+/* Кадр S1: что это, зачем и что нажать. */
+.sales-clients-blank {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 80px 24px;
+  border: 1px solid var(--n-8);
+  border-radius: 12px;
+  background: var(--surface-card);
+  text-align: center;
+}
+
+.sales-clients-blank > span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: var(--n-9);
+  color: var(--n-4);
+}
+
+.sales-clients-blank strong {
+  display: block;
+  color: var(--n-1);
+  font-size: 15px;
+}
+
+.sales-clients-blank p {
+  max-width: 420px;
+  margin: 6px 0 0;
+  color: var(--n-4);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.sales-clients-blank > button {
+  height: 34px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--primary);
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.sales-clients-blank > button:hover {
+  background: var(--primary-hover);
 }
