@@ -5,7 +5,6 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
     dependencies = [
         ("channels", "0005_enforce_policy_invariants"),
-        ("products", "0010_alter_marketplacepublication_organization_and_more"),
         ("support_portals", "0001_portals"),
     ]
 
@@ -122,58 +121,6 @@ class Migration(migrations.Migration):
             ],
             options={"ordering": ["-created_at"]},
         ),
-        migrations.CreateModel(
-            name="SupportPortalProduct",
-            fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-                ("sort_order", models.PositiveIntegerField(default=0)),
-                (
-                    "organization",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.PROTECT,
-                        related_name="+",
-                        to="identity.organization",
-                    ),
-                ),
-                (
-                    "portal",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE,
-                        related_name="product_links",
-                        to="support_portals.supportportal",
-                    ),
-                ),
-                (
-                    "product",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.PROTECT,
-                        related_name="support_portal_links",
-                        to="products.product",
-                    ),
-                ),
-                (
-                    "support_channel",
-                    models.ForeignKey(
-                        blank=True,
-                        null=True,
-                        on_delete=django.db.models.deletion.PROTECT,
-                        related_name="support_portal_routes",
-                        to="channels.channel",
-                    ),
-                ),
-            ],
-            options={"ordering": ["sort_order", "product__name", "id"]},
-        ),
-        migrations.AddField(
-            model_name="supportportal",
-            name="products",
-            field=models.ManyToManyField(
-                blank=True,
-                related_name="support_portals",
-                through="support_portals.SupportPortalProduct",
-                to="products.product",
-            ),
-        ),
         migrations.AddConstraint(
             model_name="portalarticle",
             constraint=models.UniqueConstraint(
@@ -200,13 +147,6 @@ class Migration(migrations.Migration):
             constraint=models.CheckConstraint(
                 condition=models.Q(revision__gt=0),
                 name="support_portal_article_revision_positive",
-            ),
-        ),
-        migrations.AddConstraint(
-            model_name="supportportalproduct",
-            constraint=models.UniqueConstraint(
-                fields=("portal", "product"),
-                name="uniq_support_portal_product",
             ),
         ),
     ]

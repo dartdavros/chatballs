@@ -164,14 +164,11 @@ def _ensure_conversation(context: TenantContext, refs: DemoRefs, item: dict, cur
         refs.conversations[item["key"]] = conversation
         return
 
-    snapshot = refs.identity_snapshots.get(item.get("supportIdentitySnapshot"))
     conversation = Conversation.objects.create(
         organization=organization,
         channel=channel,
         connection=connection,
-        # Ровно одна личность: снимок из личного кабинета либо контакт.
-        contact=None if snapshot is not None else contact,
-        support_identity_snapshot=snapshot,
+        contact=contact,
         external_chat_id=external_chat_id,
         transport_meta=item.get("transportMeta", {}),
         lifecycle=item.get("lifecycle", "OPEN"),

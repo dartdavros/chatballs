@@ -30,6 +30,8 @@ export type KnowledgeItem = {
   attachments: KnowledgeAttachment[];
   agentsCount: number | null;
   createdBy?: string;
+  // Кто последним правил знание — подпись под датой в колонке «Обновлено».
+  updatedBy?: string;
   fragmentsCount: number | null;
   createdAt: string;
   updatedAt: string;

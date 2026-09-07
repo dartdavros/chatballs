@@ -35,7 +35,7 @@ describe("role-based navigation (SPEC-HUB-0031 §3)", () => {
       expect(isManager(user)).toBe(true);
       expect(canAccess(user, "employees")).toBe(true);
       expect(canAccess(user, "agents")).toBe(true);
-      expect(canAccess(user, "aiKnowledge")).toBe(true);
+      expect(canAccess(user, "knowledge")).toBe(true);
       expect(canAccess(user, "administrationAudit")).toBe(true);
       expect(defaultRoute(user)).toBe("chat");
     }
@@ -50,7 +50,7 @@ describe("role-based navigation (SPEC-HUB-0031 §3)", () => {
     expect(canAccess(user, "settings")).toBe(false);
     expect(canAccess(user, "employees")).toBe(false);
     expect(canAccess(user, "agents")).toBe(false);
-    expect(canAccess(user, "aiKnowledge")).toBe(false);
+    expect(canAccess(user, "knowledge")).toBe(false);
     expect(canAccess(user, "salesClients")).toBe(false);
     expect(defaultRoute(user)).toBe("chat");
   });

@@ -14,7 +14,7 @@ import { pathFromRoute, routeFromPath } from "./router";
 import { ErrorScreen, LoadingScreen, PermissionScreen } from "./shared/ui";
 import { useRouteNavigation } from "./useRouteNavigation";
 import type { AgentCard } from "./features/agents/model";
-import type { AppData, AuthChallenge, AuthenticatedUser, Employee, EmployeeGroup, Product, SessionUser } from "./types";
+import type { AppData, AuthChallenge, AuthenticatedUser, Employee, EmployeeGroup, SessionUser } from "./types";
 
 export function App() {
   const initialRoute = useMemo(() => routeFromPath(window.location.pathname, window.location.search), []);
@@ -36,7 +36,7 @@ export function App() {
   const [resetting, setResetting] = useState(() => window.location.pathname === "/reset-password");
   // Мастер первого запуска: пока в инстансе нет организации, вместо входа — форма создания.
   const [needsSetup, setNeedsSetup] = useState(false);
-  const [data, setData] = useState<AppData>({ employees: [], groups: [], products: [], agents: [] });
+  const [data, setData] = useState<AppData>({ employees: [], groups: [], agents: [] });
   const [dataError, setDataError] = useState(false);
   const navigation = useRouteNavigation(initialRoute, organizationPublicId);
   const { navigate } = navigation;
@@ -54,15 +54,12 @@ export function App() {
     setDataError(false);
     try {
       const manager = Boolean(user && isManager(user));
-      const [employees, groups, products] = await Promise.all([
+      const [employees, groups] = await Promise.all([
         manager
           ? api<{ items: Employee[] }>("/api/v1/employees/")
           : Promise.resolve({ items: [] }),
         manager
           ? api<{ items: EmployeeGroup[] }>("/api/v1/company/groups/")
-          : Promise.resolve({ items: [] }),
-        manager
-          ? api<{ items: Product[] }>("/api/v1/company/products/")
           : Promise.resolve({ items: [] }),
       ]);
       let agents: AgentCard[] = [];
@@ -70,7 +67,7 @@ export function App() {
         const agentsResponse = await api<{ items: AgentCard[] }>("/api/v1/agents/");
         agents = agentsResponse.items;
       }
-      setData({ employees: employees.items, groups: groups.items, products: products.items, agents });
+      setData({ employees: employees.items, groups: groups.items, agents });
     } catch {
       setDataError(true);
     }
@@ -85,7 +82,6 @@ export function App() {
             const nextPath = pathFromRoute(
               initialRoute.route,
               initialRoute.employeeId || initialRoute.agentId || initialRoute.knowledgeId || initialRoute.clientId || initialRoute.channelId || initialRoute.supportPortalId || initialRoute.portalSettingsSection || initialRoute.settingsSection,
-              initialRoute.productCode,
               activeUser.organizationPublicId,
             );
             window.history.replaceState({}, "", nextPath);
@@ -117,7 +113,7 @@ export function App() {
   const landAfterAuth = useCallback((nextIdentity: AuthenticatedUser) => {
     const activeUser = useIdentity(nextIdentity, initialRoute.organizationPublicId);
     if (activeUser) {
-      navigate(defaultRoute(activeUser), null, true, null, activeUser.organizationPublicId);
+      navigate(defaultRoute(activeUser), null, true, activeUser.organizationPublicId);
     }
   }, [initialRoute.organizationPublicId, navigate, useIdentity]);
 
@@ -133,8 +129,8 @@ export function App() {
     setActiveOrganization(null);
     clearOrganizationPreference();
     setTotpChallenge(null);
-    navigate("chat", null, true, null, null);
-    setData({ employees: [], groups: [], products: [], agents: [] });
+    navigate("chat", null, true, null);
+    setData({ employees: [], groups: [], agents: [] });
   }
 
   if (resetting) {
@@ -170,7 +166,7 @@ export function App() {
       ) : !canAccess(user, navigation.route) ? (
         <PermissionScreen onReturn={() => navigate(defaultRoute(user), null, true)} />
       ) : (
-        <Shell route={navigation.route} setRoute={(nextRoute) => navigate(nextRoute)} selectedEmployeeId={navigation.selectedEmployeeId} selectedProductCode={navigation.selectedProductCode} selectedAgentId={navigation.selectedAgentId} selectedKnowledgeId={navigation.selectedKnowledgeId} selectedConversationId={navigation.selectedConversationId} selectedClientId={navigation.selectedClientId} openClientRoute={(clientId) => navigate("salesClientDetail", clientId)} selectedChannelId={navigation.selectedChannelId} openChannelRoute={(channelId) => navigate("agentDetail", channelId)} selectedSupportPortalId={navigation.selectedSupportPortalId} openSupportPortalRoute={(portalId) => navigate("supportPortalDetail", portalId)} portalSettingsSection={navigation.selectedPortalSection} openPortalSettingsRoute={(portalId, section) => navigate("supportPortalSettings", `${portalId}/${section ?? ""}`)} settingsSection={navigation.selectedSettingsSection} openSettingsRoute={(section) => navigate("settings", section)} openEmployeeRoute={(employeeId) => navigate("employeeDetail", employeeId)} openAgentCreateRoute={() => navigate("agents")} openAgentRoute={(agentId) => navigate("agentDetail", agentId)} openKnowledgeRoute={(knowledgeId) => navigate("aiKnowledgeDetail", knowledgeId)} openConversationRoute={(conversationId) => navigate("chat", conversationId)} user={user} data={data} reload={loadData} onUserUpdated={refreshIdentity} onLogout={logout} />
+        <Shell route={navigation.route} setRoute={(nextRoute) => navigate(nextRoute)} selectedEmployeeId={navigation.selectedEmployeeId} selectedAgentId={navigation.selectedAgentId} selectedKnowledgeId={navigation.selectedKnowledgeId} selectedConversationId={navigation.selectedConversationId} selectedClientId={navigation.selectedClientId} openClientRoute={(clientId) => navigate("salesClientDetail", clientId)} selectedChannelId={navigation.selectedChannelId} openChannelRoute={(channelId) => navigate("agentDetail", channelId)} selectedSupportPortalId={navigation.selectedSupportPortalId} openSupportPortalRoute={(portalId) => navigate("supportPortalDetail", portalId)} portalSettingsSection={navigation.selectedPortalSection} openPortalSettingsRoute={(portalId, section) => navigate("supportPortalSettings", `${portalId}/${section ?? ""}`)} settingsSection={navigation.selectedSettingsSection} openSettingsRoute={(section) => navigate("settings", section)} openEmployeeRoute={(employeeId) => navigate("employeeDetail", employeeId)} openAgentRoute={(agentId) => navigate("agentDetail", agentId)} openKnowledgeRoute={(knowledgeId) => navigate("knowledgeDetail", knowledgeId)} openKnowledgeEditorRoute={(knowledgeId) => (knowledgeId === null ? navigate("knowledgeCreate") : navigate("knowledgeEdit", knowledgeId))} openConversationRoute={(conversationId) => navigate("chat", conversationId)} user={user} data={data} reload={loadData} onUserUpdated={refreshIdentity} onLogout={logout} />
       )}
     </ConfigProvider>
   );

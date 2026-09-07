@@ -13,7 +13,6 @@ from chatballs.identity.models import (
     Organization,
     OrganizationMembership,
 )
-from chatballs.products.models import Product
 from chatballs.tenancy.database import current_tenant_id, set_local_tenant
 from chatballs.tenancy.models import StorageReservation
 from chatballs.testing import TenantAPIClient
@@ -25,15 +24,9 @@ class RowLevelSecurityTests(TransactionTestCase):
     def setUp(self) -> None:
         self.first = Organization.objects.create(name="First", slug="rls-first")
         self.second = Organization.objects.create(name="Second", slug="rls-second")
-        self.first_product = Product.objects.create(
+        self.first_group = EmployeeGroup.objects.create(
             organization=self.first,
-            code="first",
-            name="First product",
-        )
-        self.second_product = Product.objects.create(
-            organization=self.second,
-            code="second",
-            name="Second product",
+            name="First",
         )
         self.second_group = EmployeeGroup.objects.create(
             organization=self.second,
@@ -65,7 +58,7 @@ class RowLevelSecurityTests(TransactionTestCase):
             roles = cursor.fetchall()
             cursor.execute(
                 "SELECT tableowner FROM pg_tables "
-                "WHERE schemaname = 'public' AND tablename = 'identity_product'"
+                "WHERE schemaname = 'public' AND tablename = 'identity_employeegroup'"
             )
             owner = cursor.fetchone()[0]
         self.assertEqual(len(roles), 2)
@@ -80,30 +73,28 @@ class RowLevelSecurityTests(TransactionTestCase):
     def test_app_role_is_fail_closed_and_scoped(self) -> None:
         with transaction.atomic():
             self._set_role("chatballs_runtime_app")
-            self.assertEqual(Product.objects.count(), 0)
+            self.assertEqual(EmployeeGroup.objects.count(), 0)
 
         with transaction.atomic():
             self._set_role("chatballs_runtime_app")
             set_local_tenant(self.first.id)
             self.assertEqual(
-                list(Product.objects.values_list("code", flat=True)), ["first"]
+                list(EmployeeGroup.objects.values_list("name", flat=True)), ["First"]
             )
-            Product.objects.create(
+            EmployeeGroup.objects.create(
                 organization_id=self.first.id,
-                code="created",
                 name="Created",
             )
             self.assertEqual(
-                Product.objects.filter(code="created").update(name="Updated"), 1
+                EmployeeGroup.objects.filter(name="Created").update(color="#123456"), 1
             )
-            self.assertEqual(Product.objects.filter(code="created").delete()[0], 1)
+            self.assertEqual(EmployeeGroup.objects.filter(name="Created").delete()[0], 1)
 
         with self.assertRaises(DatabaseError), transaction.atomic():
             self._set_role("chatballs_runtime_app")
             set_local_tenant(self.first.id)
-            Product.objects.create(
+            EmployeeGroup.objects.create(
                 organization_id=self.second.id,
-                code="forged",
                 name="Forged",
             )
 
@@ -219,23 +210,23 @@ class RowLevelSecurityTests(TransactionTestCase):
             cursor.execute("SET ROLE chatballs_runtime_app")
         try:
             own = client.get(
-                f"/api/v1/organizations/{self.first.public_id}/company/products/"
+                f"/api/v1/organizations/{self.first.public_id}/company/groups/"
             )
             foreign = client.get(
-                f"/api/v1/organizations/{self.second.public_id}/company/products/"
+                f"/api/v1/organizations/{self.second.public_id}/company/groups/"
             )
         finally:
             with connection.cursor() as cursor:
                 cursor.execute("RESET ROLE")
         self.assertEqual(own.status_code, 200)
-        self.assertEqual([item["code"] for item in own.json()["items"]], ["first"])
+        self.assertEqual([item["name"] for item in own.json()["items"]], ["First"])
         self.assertEqual(foreign.status_code, 404)
 
     def test_platform_role_can_only_use_ingress_directory(self) -> None:
         with self.assertRaises(DatabaseError), transaction.atomic():
             self._set_role("chatballs_runtime_platform")
             with connection.cursor() as cursor:
-                cursor.execute("SELECT id FROM identity_product LIMIT 1")
+                cursor.execute("SELECT id FROM identity_employeegroup LIMIT 1")
 
         # Ingress-вьюха продаж удалена (ADR-HUB-0041) — используем membership_directory.
         with transaction.atomic():

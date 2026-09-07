@@ -6,18 +6,12 @@ from typing import Any
 from django.conf import settings
 from django.db import connections
 
-from chatballs.identity.crypto import decrypt_secret
 
 
 @dataclass(frozen=True, slots=True)
 class IngressRoute:
     organization_id: int
     resource_id: int | str
-
-
-@dataclass(frozen=True, slots=True)
-class SupportIngressRoute(IngressRoute):
-    support_secret: str
 
 
 def _rows(query: str, parameters: list[Any]) -> list[tuple]:
@@ -91,31 +85,3 @@ def support_portal_route(hostname: str) -> IngressRoute | None:
     return _unique_route("support_portal_directory", hostname.strip().lower().rstrip("."))
 
 
-def support_channel_routes(channel_code: str) -> list[SupportIngressRoute]:
-    return [
-        SupportIngressRoute(
-            organization_id=int(row[0]),
-            resource_id=int(row[1]),
-            support_secret=decrypt_secret(row[2]),
-        )
-        for row in _rows(
-            "SELECT organization_id, resource_id, support_token_secret "
-            "FROM chatballs.support_channel_directory WHERE lookup_key = %s "
-            "ORDER BY resource_id",
-            [channel_code],
-        )
-    ]
-
-
-def support_conversation_route(
-    conversation_id: int,
-    snapshot_id: int,
-) -> IngressRoute | None:
-    rows = _rows(
-        "SELECT organization_id, resource_id FROM chatballs.support_conversation_directory "
-        "WHERE resource_id = %s AND snapshot_id = %s LIMIT 2",
-        [conversation_id, snapshot_id],
-    )
-    if len(rows) != 1:
-        return None
-    return IngressRoute(organization_id=int(rows[0][0]), resource_id=int(rows[0][1]))

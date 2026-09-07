@@ -13,7 +13,6 @@ from chatballs.channels.models import Channel
 from chatballs.channels.policy import ChannelPolicy, require_valid_policy
 from chatballs.identity.group_models import EmployeeGroup
 from chatballs.integrations.models import Integration, IntegrationKind
-from chatballs.products.models import Product
 from chatballs.tenancy.context import TenantContext
 
 # SPEC §3.1: slug 1-64, входит в embed-URL web-виджета и после создания immutable.
@@ -68,7 +67,6 @@ class ChannelUpdate:
 
     name: Any = UNSET
     group_id: Any = UNSET
-    product_id: Any = UNSET
     is_active: Any = UNSET
     policy: dict[str, bool] = field(default_factory=dict)
 
@@ -96,19 +94,6 @@ def _group_for_channel(
         raise ValidationError({"groupId": "Unknown group"}) from error
 
 
-def _product_for_channel(
-    *, context: TenantContext, product_id: int | None
-) -> Product | None:
-    if product_id is None:
-        return None
-    try:
-        return Product.objects.get(
-            id=product_id, organization_id=context.organization_id
-        )
-    except Product.DoesNotExist as error:
-        raise ValidationError({"productId": "Unknown product"}) from error
-
-
 @transaction.atomic
 def update_channel(
     *, context: TenantContext, channel: Channel, update: ChannelUpdate
@@ -117,8 +102,7 @@ def update_channel(
     состояние, инварианты, конфликты, одна транзакция.
 
     Инварианты проверяются по итоговому состоянию, а не по переданным полям:
-    выключить продукт и коммерческие флаги можно одним запросом, а вот запрос,
-    оставляющий канал в запрещённой комбинации, отклоняется целиком.
+    запрос, оставляющий канал в запрещённой комбинации, отклоняется целиком.
     """
     locked = Channel.objects.select_for_update().get(
         id=channel.id, organization_id=context.organization_id
@@ -128,10 +112,6 @@ def update_channel(
         authorization.require_channel_manage(context)
     if update.group_id is not UNSET and update.group_id != locked.group_id:
         authorization.require_channel_manage(context)
-    if update.product_id is not UNSET and update.product_id != locked.product_id:
-        authorization.require_organization_manage(
-            context, operation="Изменение продукта канала"
-        )
     if update.is_active is not UNSET and update.is_active != locked.is_active:
         authorization.require_organization_manage(
             context, operation="Изменение статуса канала"
@@ -150,10 +130,6 @@ def update_channel(
     if update.group_id is not UNSET and update.group_id != locked.group_id:
         locked.group = _group_for_channel(context=context, group_id=update.group_id)
         changed.append("group")
-    if update.product_id is not UNSET and update.product_id != locked.product_id:
-        product = _product_for_channel(context=context, product_id=update.product_id)
-        locked.product = product
-        changed.append("product")
     if update.is_active is not UNSET and update.is_active != locked.is_active:
         locked.is_active = bool(update.is_active)
         changed.append("is_active")
@@ -164,10 +140,7 @@ def update_channel(
 
     # Инварианты по целевому состоянию — до записи: нарушение отклоняет запрос
     # целиком, частичного применения не остаётся даже в памяти (§3.2, §6.5).
-    require_valid_policy(
-        policy=ChannelPolicy.from_channel(locked),
-        has_product=locked.product_id is not None,
-    )
+    require_valid_policy(policy=ChannelPolicy.from_channel(locked))
 
     if changed:
         locked.save(update_fields=[*changed, "updated_at"])

@@ -3,7 +3,6 @@ import type { AgentCard } from "./features/agents/model";
 // Роли SPEC-HUB-0031 §3: OWNER и ADMIN идентичны (владельца нельзя удалить),
 // EMPLOYEE работает только в чате; видимость диалогов — по группам (ADR-HUB-0043).
 export type Role = "OWNER" | "ADMIN" | "EMPLOYEE";
-export type ProductStatus = "ACTIVE" | "DISABLED";
 export type DeliveryMode = "CLOUD" | "SELF_HOSTED";
 
 export type EmployeeGroupRef = {
@@ -102,33 +101,10 @@ export type EmployeeAuditEvent = {
   createdAt: string;
 };
 
-export type ProductChannelRef = {
-  id: number;
-  code: string;
-  name: string;
-  isActive: boolean;
-  agentId: number | null;
-  // provider/status — значения enum интеграций (см. features/integrations/model.ts);
-  // объявлены литералами, чтобы корневой тип не зависел от feature-модуля.
-  connections: Array<{ id: number; provider: string; name: string; status: string }>;
-};
-
-export type Product = {
-  id: number;
-  code: string;
-  name: string;
-  status: ProductStatus;
-  siteUrl: string;
-  channels: ProductChannelRef[];
-  createdAt: string;
-  updatedAt: string;
-};
-
-export type RouteKey = "administrationAudit" | "employeeDetail" | "employees" | "profile" | "settings" | "salesClientDetail" | "salesClients" | "chat" | "supportPortals" | "supportPortalDetail" | "supportPortalSettings" | "agents" | "agentDetail" | "aiKnowledge" | "aiKnowledgeCreate" | "aiKnowledgeDetail" | "aiUsage";
+export type RouteKey = "administrationAudit" | "employeeDetail" | "employees" | "profile" | "settings" | "salesClientDetail" | "salesClients" | "chat" | "supportPortals" | "supportPortalDetail" | "supportPortalSettings" | "agents" | "agentDetail" | "knowledge" | "knowledgeDetail" | "knowledgeCreate" | "knowledgeEdit" | "knowledgeCategories" | "knowledgeImport" | "aiUsage";
 
 export type AppData = {
   employees: Employee[];
   groups: EmployeeGroup[];
-  products: Product[];
   agents: AgentCard[];
 };

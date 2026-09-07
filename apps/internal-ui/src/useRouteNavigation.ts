@@ -14,7 +14,6 @@ export function useRouteNavigation(
 ) {
   const [route, setRoute] = useState<RouteKey>(initialRoute.route);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState(initialRoute.employeeId);
-  const [selectedProductCode, setSelectedProductCode] = useState(initialRoute.productCode);
   const [selectedAgentId, setSelectedAgentId] = useState(initialRoute.agentId);
   const [selectedKnowledgeId, setSelectedKnowledgeId] = useState(initialRoute.knowledgeId);
   const [selectedConversationId, setSelectedConversationId] = useState<number | null>(null);
@@ -27,7 +26,6 @@ export function useRouteNavigation(
   const applyRouteState = useCallback((next: RouteState) => {
     setRoute(next.route);
     setSelectedEmployeeId(next.employeeId);
-    setSelectedProductCode(next.productCode);
     setSelectedAgentId(next.agentId);
     setSelectedKnowledgeId(next.knowledgeId);
     setSelectedConversationId(null);
@@ -43,16 +41,14 @@ export function useRouteNavigation(
     nextRoute: RouteKey,
     entityId: number | string | null = null,
     replace = false,
-    productCode: string | null = null,
     organizationId: string | null = organizationPublicId,
   ) => {
     const nextState: RouteState = {
       organizationPublicId: organizationId,
       route: nextRoute,
       employeeId: nextRoute === "employeeDetail" && typeof entityId === "number" ? entityId : null,
-      productCode,
       agentId: nextRoute === "agentDetail" && typeof entityId === "number" ? entityId : null,
-      knowledgeId: nextRoute === "aiKnowledgeDetail" && typeof entityId === "number" ? entityId : null,
+      knowledgeId: (nextRoute === "knowledgeDetail" || nextRoute === "knowledgeEdit") && typeof entityId === "number" ? entityId : null,
       clientId: nextRoute === "salesClientDetail" && typeof entityId === "number" ? entityId : null,
       channelId: null,
       supportPortalId: nextRoute === "supportPortalDetail" && typeof entityId === "number"
@@ -68,12 +64,7 @@ export function useRouteNavigation(
     setSelectedConversationId(
       nextRoute === "chat" && typeof entityId === "number" ? entityId : null,
     );
-    const nextPath = pathFromRoute(
-      nextRoute,
-      entityId,
-      nextState.productCode,
-      organizationId,
-    );
+    const nextPath = pathFromRoute(nextRoute, entityId, organizationId);
     if (`${window.location.pathname}${window.location.search}` === nextPath) return;
     const method = replace ? "replaceState" : "pushState";
     window.history[method](nextState, "", nextPath);
@@ -82,7 +73,6 @@ export function useRouteNavigation(
   return {
     route,
     selectedEmployeeId,
-    selectedProductCode,
     selectedAgentId,
     selectedKnowledgeId,
     selectedConversationId,

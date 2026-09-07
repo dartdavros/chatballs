@@ -34,7 +34,6 @@ class Migration(migrations.Migration):
         ('channels', '0006_remove_channel_department'),
         ('identity', '0019_drop_sales_capabilities'),
         ('notifications', '0008_remove_notification_department'),
-        ('products', '0012_delete_productdepartment'),
         ('support_portals', '0008_remove_supportportal_department'),
     ]
 

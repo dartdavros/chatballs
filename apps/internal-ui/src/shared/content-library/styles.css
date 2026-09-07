@@ -1,0 +1,197 @@
+/* Общие диалоги библиотеки материалов: управление категориями и прикрепление
+   к агенту. Ими пользуется портал поддержки; у «Базы знаний» после редизайна
+   (кадры KB3/KB7) свои экраны. Стили переехали сюда вместе с компонентами. */
+
+.content-category-modal .ant-modal-content { padding: 0; overflow: hidden; border-radius: 16px; }
+.content-category-modal .ant-modal-header { margin: 0; padding: 18px 20px; border-bottom: 1px solid var(--n-8); }
+.content-category-modal .ant-modal-close { top: 18px; right: 18px; }
+.content-category-modal .ant-modal-body { padding: 12px 12px 8px; }
+.content-category-modal .ant-modal-footer { margin: 0; padding: 14px 20px; border-top: 1px solid var(--n-8); }
+
+.content-category-modal-title { display: flex; flex-direction: column; gap: 2px; }
+.content-category-modal-title strong { color: var(--n-1); font-size: 16px; }
+.content-category-modal-title span { color: var(--n-4); font-size: 12px; font-weight: 400; }
+
+.content-category-modal-footer { display: flex; align-items: center; justify-content: space-between; }
+
+.content-category-list { max-height: 400px; overflow-y: auto; }
+
+.content-category-row {
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  color: var(--n-3);
+  font-size: 13px;
+}
+
+.content-category-row:hover { background: var(--n-10); }
+
+.content-category-grip { display: flex; color: var(--n-5); cursor: grab; }
+.content-category-grip-spacer { width: 14px; }
+
+.content-category-name {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  text-overflow: ellipsis;
+  cursor: text;
+}
+
+.content-category-name:disabled { cursor: default; }
+
+.content-category-count {
+  min-width: 16px;
+  color: var(--n-4);
+  font-size: 12px;
+  text-align: right;
+}
+
+.content-system-badge {
+  padding: 1px 6px;
+  border-radius: 999px;
+  color: var(--n-5);
+  background: var(--n-10);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.content-category-action,
+.content-category-delete {
+  display: flex;
+  width: 26px;
+  height: 26px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid var(--n-7);
+  border-radius: 6px;
+  color: var(--n-3);
+  background: var(--surface-card);
+  cursor: pointer;
+}
+
+.content-category-delete { border-color: transparent; color: var(--error-text); }
+.content-category-delete:disabled { color: var(--n-5); cursor: not-allowed; }
+
+.content-category-edit,
+.content-category-create {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  gap: 8px;
+}
+
+.content-category-create { min-height: 42px; margin-right: 10px; }
+.content-category-create.root { margin-left: 50px; }
+
+.content-category-edit input,
+.content-category-create input {
+  min-width: 0;
+  height: 34px;
+  flex: 1;
+  padding: 0 10px;
+  border: 1px solid var(--primary);
+  border-radius: 8px;
+  outline: none;
+  box-shadow: 0 0 0 3px var(--primary-bg);
+  font-size: 13px;
+}
+
+.content-category-edit button,
+.content-category-create button {
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--n-6);
+  border-radius: 8px;
+  color: var(--n-3);
+  background: var(--surface-card);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.content-category-edit button.save,
+.content-category-create button.save { border-color: var(--primary); color: #fff; background: var(--primary); }
+.content-category-edit button:disabled,
+.content-category-create button:disabled { opacity: 0.55; }
+
+.content-category-error { padding: 8px 10px; color: var(--error-text); font-size: 12.5px; }
+
+/* Диалог «Прикрепить к агенту» портала поддержки. */
+
+.content-dialog-body { display: flex; flex-direction: column; gap: 14px; }
+.content-dialog-outcome { margin: 0; color: var(--n-2); font-size: 13.5px; line-height: 1.5; }
+.content-dialog-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 4px; }
+
+.content-dialog-field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 5px;
+  color: var(--n-3);
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+.content-dialog-select > div {
+  display: flex;
+  height: 42px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 13px;
+  border: 1px solid var(--n-7);
+  border-radius: 9px;
+  color: var(--n-4);
+  background: var(--surface-card);
+}
+
+.content-dialog-select select {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  outline: 0;
+  color: var(--n-2);
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+}
+
+.content-dialog-segmented {
+  display: inline-flex;
+  gap: 3px;
+  padding: 3px;
+  border-radius: 8px;
+  background: var(--n-10);
+}
+
+.content-dialog-segmented button {
+  height: 30px;
+  padding: 0 13px;
+  border: 0;
+  border-radius: 6px;
+  color: var(--n-3);
+  background: transparent;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.content-dialog-segmented button.active {
+  color: var(--n-1);
+  background: var(--surface-card);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  font-weight: 600;
+}
+
+.content-dialog-error { padding-top: 10px; color: var(--error-text); font-size: 12.5px; }

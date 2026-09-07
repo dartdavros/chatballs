@@ -10,20 +10,22 @@
 }
 
 .portal-card-error {
-  margin: 12px 28px 0;
+  margin: 12px 24px 0;
 }
 
 /* --- Шапка --- */
 
 .portal-card-head {
   flex: none;
-  padding: 18px 28px 16px;
+  padding: 18px 24px 16px;
   border-bottom: 1px solid var(--n-8);
   background: var(--surface-card);
 }
 
+/* Ширину не ограничиваем: правый край шапки должен совпадать с правым краем
+   тулбара библиотеки и таблицы статей — все они держат отступ 24px. */
 .portal-card-head-inner {
-  max-width: 1500px;
+  width: 100%;
 }
 
 .portal-breadcrumbs {

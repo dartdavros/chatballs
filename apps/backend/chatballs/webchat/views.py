@@ -23,11 +23,7 @@ from chatballs.tenancy.ingress import (
 )
 from chatballs.webchat import services
 from chatballs.webchat.loader import LOADER_JS
-from chatballs.webchat.models import (
-    WebChatWidget,
-    WebChatWidgetMode,
-    WebChatWidgetStatus,
-)
+from chatballs.webchat.models import WebChatWidget, WebChatWidgetStatus
 
 
 def _origin(request: Request) -> str:
@@ -136,9 +132,7 @@ class WebchatSessionView(_Public):
             if context is None or widget is None:
                 return Response({"detail": "Виджет недоступен"}, status=404)
             if (
-                widget.mode != WebChatWidgetMode.ANONYMOUS
-                or widget.integration.channel.requires_authenticated_product_identity
-                or not widget.integration.channel.allow_anonymous_sessions
+                not widget.integration.channel.allow_anonymous_sessions
                 or not services.origin_allowed(widget, _origin(request))
             ):
                 return Response({"detail": "Виджет недоступен"}, status=404)

@@ -95,13 +95,13 @@ export function CategoryManagementDialog({
   return (
     <>
       <Modal
-        className="knowledge-category-modal"
+        className="content-category-modal"
         destroyOnHidden
-        footer={<div className="knowledge-category-modal-footer"><Button variant="secondary" icon="plus" disabled={busy} onClick={() => { setEditingId(null); setCreateParentId(null); setDraftName(""); }}>{createLabel}</Button><Button variant="primary" disabled={busy} onClick={onClose}>Готово</Button></div>}
-        open title={<div className="knowledge-category-modal-title"><strong>{title}</strong><span>{subtitle}</span></div>}
+        footer={<div className="content-category-modal-footer"><Button variant="secondary" icon="plus" disabled={busy} onClick={() => { setEditingId(null); setCreateParentId(null); setDraftName(""); }}>{createLabel}</Button><Button variant="primary" disabled={busy} onClick={onClose}>Готово</Button></div>}
+        open title={<div className="content-category-modal-title"><strong>{title}</strong><span>{subtitle}</span></div>}
         width={560} onCancel={onClose}
       >
-        <div className="knowledge-category-manage-list" aria-busy={busy}>
+        <div className="content-category-list" aria-busy={busy}>
           {tree.map((category) => <CategoryManagementRow
             category={category} createParentId={createParentId} draftName={draftName}
             editingId={editingId} level={0} onCancel={cancel}
@@ -116,7 +116,7 @@ export function CategoryManagementDialog({
             onStartEdit={(item) => { setCreateParentId(undefined); setEditingId(item.id); setDraftName(item.name); }}
             key={category.id}
           />)}
-          {createParentId === null && <div className="knowledge-category-create-row root">
+          {createParentId === null && <div className="content-category-create root">
             <input autoFocus placeholder="Название категории" value={draftName} onChange={(event) => setDraftName(event.target.value)} onKeyDown={(event) => {
               if (event.key === "Enter") saveCreate();
               if (event.key === "Escape") cancel();
@@ -124,7 +124,7 @@ export function CategoryManagementDialog({
             <button className="save" disabled={!draftName.trim()} type="button" onClick={saveCreate}>Сохранить</button>
             <button type="button" onClick={cancel}>Отмена</button>
           </div>}
-          {error && <div className="knowledge-category-error">{error}</div>}
+          {error && <div className="content-category-error">{error}</div>}
         </div>
       </Modal>
       <DecisionDialog

@@ -5,7 +5,6 @@ import { pathFromRoute, routeFromPath } from "./router";
 const empty = {
   organizationPublicId: null,
   employeeId: null,
-  productCode: null,
   agentId: null,
   knowledgeId: null,
   clientId: null,
@@ -69,17 +68,29 @@ describe("agent routes", () => {
   });
 });
 
-describe("ai knowledge routes", () => {
-  it("parses knowledge list and detail URLs", () => {
-    expect(routeFromPath("/ai/knowledge")).toEqual({ route: "aiKnowledge", ...empty });
-    expect(routeFromPath("/ai/knowledge/new")).toEqual({ route: "aiKnowledgeCreate", ...empty });
-    expect(routeFromPath("/ai/knowledge/12")).toEqual({ route: "aiKnowledgeDetail", ...empty, knowledgeId: 12 });
+describe("knowledge routes", () => {
+  it("parses the library, card, editor, categories and import URLs", () => {
+    expect(routeFromPath("/knowledge")).toEqual({ route: "knowledge", ...empty });
+    expect(routeFromPath("/knowledge/new")).toEqual({ route: "knowledgeCreate", ...empty });
+    expect(routeFromPath("/knowledge/categories")).toEqual({ route: "knowledgeCategories", ...empty });
+    expect(routeFromPath("/knowledge/import")).toEqual({ route: "knowledgeImport", ...empty });
+    expect(routeFromPath("/knowledge/12")).toEqual({ ...empty, route: "knowledgeDetail", knowledgeId: 12 });
+    expect(routeFromPath("/knowledge/12/edit")).toEqual({ ...empty, route: "knowledgeEdit", knowledgeId: 12 });
+  });
+
+  it("keeps the legacy /ai/knowledge addresses working", () => {
+    expect(routeFromPath("/ai/knowledge")).toEqual({ route: "knowledge", ...empty });
+    expect(routeFromPath("/ai/knowledge/new")).toEqual({ route: "knowledgeCreate", ...empty });
+    expect(routeFromPath("/ai/knowledge/12")).toEqual({ ...empty, route: "knowledgeDetail", knowledgeId: 12 });
   });
 
   it("creates knowledge URLs", () => {
-    expect(pathFromRoute("aiKnowledge")).toBe("/ai/knowledge");
-    expect(pathFromRoute("aiKnowledgeCreate")).toBe("/ai/knowledge/new");
-    expect(pathFromRoute("aiKnowledgeDetail", 12)).toBe("/ai/knowledge/12");
+    expect(pathFromRoute("knowledge")).toBe("/knowledge");
+    expect(pathFromRoute("knowledgeCreate")).toBe("/knowledge/new");
+    expect(pathFromRoute("knowledgeCategories")).toBe("/knowledge/categories");
+    expect(pathFromRoute("knowledgeImport")).toBe("/knowledge/import");
+    expect(pathFromRoute("knowledgeDetail", 12)).toBe("/knowledge/12");
+    expect(pathFromRoute("knowledgeEdit", 12)).toBe("/knowledge/12/edit");
   });
 });
 
@@ -160,7 +171,7 @@ describe("organization routes", () => {
   });
 
   it("creates navigation URLs inside the selected organization", () => {
-    expect(pathFromRoute("salesClients", null, null, organizationPublicId)).toBe(
+    expect(pathFromRoute("salesClients", null, organizationPublicId)).toBe(
       `/organizations/${organizationPublicId}/contacts`,
     );
   });
@@ -178,7 +189,7 @@ describe("channel routes", () => {
 
   it("keeps AI routes untouched", () => {
     expect(routeFromPath("/ai/agents")).toEqual({ route: "agents", ...empty });
-    expect(routeFromPath("/ai/knowledge")).toEqual({ route: "aiKnowledge", ...empty });
+    expect(routeFromPath("/ai/knowledge")).toEqual({ route: "knowledge", ...empty });
   });
 });
 

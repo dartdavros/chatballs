@@ -72,7 +72,6 @@ def _ensure_agent(context: TenantContext, refs: DemoRefs, item: dict, llm: Integ
         defaults={
             "name": item["name"],
             "group": refs.groups.get(item.get("group")),
-            "product": refs.products.get(item.get("product")),
             "is_active": item.get("isActive", True),
             **item.get("policy", {}),
         },
@@ -250,7 +249,6 @@ def _generate_usage(refs: DemoRefs, spec: dict | None, current) -> None:
                     failures_left -= 1
                 invocation = LlmInvocation.objects.create(
                     channel=channel,
-                    product=channel.product,
                     purpose="agent_chat",
                     operation="chat",
                     model=spec["model"],
@@ -269,7 +267,6 @@ def _generate_usage(refs: DemoRefs, spec: dict | None, current) -> None:
             tokens = random.randint(200, 900)
             invocation = LlmInvocation.objects.create(
                 channel=channel,
-                product=None,
                 purpose="knowledge_index",
                 operation="embedding",
                 model="text-embedding-3-small",

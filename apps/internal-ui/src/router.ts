@@ -10,7 +10,6 @@ export type RouteState = {
   organizationPublicId: string | null;
   route: RouteKey;
   employeeId: number | null;
-  productCode: string | null;
   agentId: number | null;
   knowledgeId: number | null;
   clientId: number | null;
@@ -25,7 +24,7 @@ export function routeFromPath(pathname: string, search = ""): RouteState {
   const match = normalized.match(/^\/organizations\/([0-9a-f-]{36})(\/.*)?$/i);
   const organizationPublicId = match?.[1] ?? null;
   const path = match ? match[2] || "/" : normalized;
-  const base = { employeeId: null, productCode: null, agentId: null, knowledgeId: null, clientId: null, channelId: null, supportPortalId: null, portalSettingsSection: null, settingsSection: null };
+  const base = { employeeId: null, agentId: null, knowledgeId: null, clientId: null, channelId: null, supportPortalId: null, portalSettingsSection: null, settingsSection: null };
   const state = { organizationPublicId, ...base };
   // Chat-first (SPEC-HUB-0031): корень и устаревшие адреса командного центра и
   // разделённых чатов ведут в единый «Чат».
@@ -81,11 +80,19 @@ export function routeFromPath(pathname: string, search = ""): RouteState {
     return Number.isInteger(id) && id > 0 ? { ...state, route: "agentDetail", agentId: id } : { route: "agents", ...state };
   }
   if (path.startsWith("/ai/agents/")) return { route: "agents", ...state };
-  if (path === "/ai/knowledge") return { route: "aiKnowledge", ...state };
-  if (path === "/ai/knowledge/new") return { route: "aiKnowledgeCreate", ...state };
-  if (path.startsWith("/ai/knowledge/")) {
-    const id = Number(path.split("/")[3]);
-    return Number.isInteger(id) && id > 0 ? { ...state, route: "aiKnowledgeDetail", knowledgeId: id } : { route: "aiKnowledge", ...state };
+  // «База знаний» — самостоятельный раздел сайдбара, а не ссылка из «Настроек»
+  // (дизайн-базлайн v2, кадры KB1–KB9). Старые адреса /ai/knowledge ведут сюда.
+  if (path === "/knowledge" || path === "/ai/knowledge") return { route: "knowledge", ...state };
+  if (path === "/knowledge/new" || path === "/ai/knowledge/new") return { route: "knowledgeCreate", ...state };
+  if (path === "/knowledge/categories") return { route: "knowledgeCategories", ...state };
+  if (path === "/knowledge/import") return { route: "knowledgeImport", ...state };
+  if (path.startsWith("/knowledge/") || path.startsWith("/ai/knowledge/")) {
+    const parts = path.split("/");
+    const legacy = parts[1] === "ai";
+    const id = Number(parts[legacy ? 3 : 2]);
+    if (!Number.isInteger(id) || id <= 0) return { route: "knowledge", ...state };
+    const tail = parts[legacy ? 4 : 3];
+    return { ...state, route: tail === "edit" ? "knowledgeEdit" : "knowledgeDetail", knowledgeId: id };
   }
   if (path === "/ai/usage") return { route: "aiUsage", ...state };
   // Устаревшие адреса: интеграции и организация переехали в «Настройки» (§8.6).
@@ -105,7 +112,7 @@ export function routeFromPath(pathname: string, search = ""): RouteState {
   return { route: "chat", ...state };
 }
 
-export function pathFromRoute(route: RouteKey, entityId: number | string | null = null, productCode: string | null = null, organizationPublicId: string | null = null): string {
+export function pathFromRoute(route: RouteKey, entityId: number | string | null = null, organizationPublicId: string | null = null): string {
   const prefix = organizationPublicId ? `/organizations/${organizationPublicId}` : "";
   if (route === "salesClients") return `${prefix}/contacts`;
   if (route === "salesClientDetail") return entityId ? `${prefix}/contacts/${entityId}` : `${prefix}/contacts`;
@@ -123,9 +130,12 @@ export function pathFromRoute(route: RouteKey, entityId: number | string | null 
   if (route === "agents") return `${prefix}/agents`;
   if (route === "agentDetail") return entityId ? `${prefix}/agents/${entityId}` : `${prefix}/agents`;
   if (route === "aiUsage") return `${prefix}/ai/usage`;
-  if (route === "aiKnowledge") return `${prefix}/ai/knowledge`;
-  if (route === "aiKnowledgeCreate") return `${prefix}/ai/knowledge/new`;
-  if (route === "aiKnowledgeDetail") return entityId ? `${prefix}/ai/knowledge/${entityId}` : `${prefix}/ai/knowledge`;
+  if (route === "knowledge") return `${prefix}/knowledge`;
+  if (route === "knowledgeCreate") return `${prefix}/knowledge/new`;
+  if (route === "knowledgeCategories") return `${prefix}/knowledge/categories`;
+  if (route === "knowledgeImport") return `${prefix}/knowledge/import`;
+  if (route === "knowledgeDetail") return entityId ? `${prefix}/knowledge/${entityId}` : `${prefix}/knowledge`;
+  if (route === "knowledgeEdit") return entityId ? `${prefix}/knowledge/${entityId}/edit` : `${prefix}/knowledge/new`;
   if (route === "administrationAudit") return `${prefix}/administration/audit`;
   if (route === "profile") return `${prefix}/profile`;
   // У «Настроек» вместо id — ключ раздела субменю (кадры N1–N7).

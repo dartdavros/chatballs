@@ -96,7 +96,6 @@ def public_config(*, context: TenantContext, widget: WebChatWidget, origin: str)
     return {
         "available": True,
         "widgetKey": widget.public_key,
-        "mode": widget.mode,
         # Что разрешено в этой точке входа: виджет прячет микрофон при запрете.
         "features": features_payload(integration),
         "title": cfg.get("title") or channel.name,

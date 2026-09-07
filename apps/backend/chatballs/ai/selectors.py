@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from dataclasses import dataclass
 
 from django.db.models import Count, Prefetch, Q, QuerySet
@@ -6,13 +7,46 @@ from chatballs.ai.agent_knowledge import knowledge_available_to_channel
 from chatballs.ai.knowledge_policy import readable_knowledge, writable_knowledge
 from chatballs.ai.models import AIAgent, Knowledge, KnowledgeCategory
 from chatballs.channels.models import Channel
+from chatballs.identity.models import AuditEvent
 from chatballs.identity.policy import has_capability_any_scope
 from chatballs.tenancy.context import TenantContext
+
+KNOWLEDGE_EDIT_ACTIONS = ("ai.knowledge_created", "ai.knowledge_updated")
+
+
+def knowledge_editors(
+    *, organization_id: int, knowledge_ids: Sequence[int]
+) -> dict[int, str]:
+    """Кто последним правил каждое знание — подпись под датой в колонке
+    «Обновлено» (дизайн-базлайн v2, кадр KB1). Один запрос на весь список:
+    события создания и правки уже пишутся в журнал."""
+    if not knowledge_ids:
+        return {}
+    events = (
+        AuditEvent.objects.filter(
+            organization_id=organization_id,
+            action__in=KNOWLEDGE_EDIT_ACTIONS,
+            object_type="Knowledge",
+            object_id__in=[str(knowledge_id) for knowledge_id in knowledge_ids],
+        )
+        .select_related("actor")
+        .order_by("object_id", "-created_at")
+    )
+    editors: dict[int, str] = {}
+    for event in events:
+        if event.actor is None:
+            continue
+        try:
+            knowledge_id = int(event.object_id)
+        except (TypeError, ValueError):
+            continue
+        editors.setdefault(knowledge_id, event.actor.full_name or event.actor.email)
+    return editors
 
 
 def agents_for_context(context: TenantContext) -> QuerySet[AIAgent]:
     return (
-        AIAgent.objects.select_related("channel", "channel__group", "channel__product")
+        AIAgent.objects.select_related("channel", "channel__group")
         .prefetch_related(
             "knowledge_items",
             "portal_articles__portal",

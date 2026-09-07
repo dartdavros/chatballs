@@ -99,6 +99,9 @@ export function useKnowledgeLibrary() {
 
   const clearSelected = useCallback(() => setSelectedIds(new Set()), []);
 
+  /** Действие из меню строки работает над одним знанием: выбор заменяется. */
+  const selectOnly = useCallback((knowledgeId: number) => setSelectedIds(new Set([knowledgeId])), []);
+
   const toggleVisible = useCallback(() => {
     setSelectedIds((current) => {
       const visibleIds = items.map((item) => item.id);
@@ -131,6 +134,7 @@ export function useKnowledgeLibrary() {
     itemsLoading,
     reload,
     reloadCategories,
+    selectOnly,
     selectedIds,
     toggleSelected,
     toggleVisible,

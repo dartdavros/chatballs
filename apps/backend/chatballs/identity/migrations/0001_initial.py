@@ -136,28 +136,6 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.CreateModel(
-            name="Product",
-            fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-                ("code", models.SlugField(max_length=64)),
-                ("name", models.CharField(max_length=255)),
-                (
-                    "status",
-                    models.CharField(choices=[("ACTIVE", "Active"), ("DISABLED", "Disabled")], default="ACTIVE", max_length=32),
-                ),
-                ("site_url", models.URLField(blank=True)),
-                ("created_at", models.DateTimeField(auto_now_add=True)),
-                (
-                    "organization",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.PROTECT,
-                        related_name="products",
-                        to="identity.organization",
-                    ),
-                ),
-            ],
-        ),
-        migrations.CreateModel(
             name="EmployeeProfile",
             fields=[
                 ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
@@ -210,9 +188,5 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="department",
             constraint=models.UniqueConstraint(fields=("organization", "code"), name="uniq_department_org_code"),
-        ),
-        migrations.AddConstraint(
-            model_name="product",
-            constraint=models.UniqueConstraint(fields=("organization", "code"), name="uniq_product_org_code"),
         ),
     ]

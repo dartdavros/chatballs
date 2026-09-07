@@ -1,14 +1,5 @@
 import type { PortalThemeSchemeSetting } from "./themes/types";
 
-export type HelpProduct = {
-  code: string;
-  name: string;
-  siteUrl: string;
-  supportAvailable: boolean;
-  supportWidgetKey: string | null;
-  supportChannelCode: string | null;
-};
-
 export type HelpCategory = {
   id: number;
   slug: string;
@@ -55,7 +46,6 @@ export type HelpPortal = {
   themeSettings: Record<string, string>;
   webWidgetKey: string | null;
   webWidgetChannelCode: string | null;
-  products: HelpProduct[];
 };
 
 export type HelpManifest = {

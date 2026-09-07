@@ -48,7 +48,7 @@ export function CategoryManagementRow({
   const locked = Boolean(category.isSystem);
   const deletable = !locked && category.children.length === 0 && category.count === 0;
   const editor = (
-    <div className="knowledge-category-inline-edit">
+    <div className="content-category-edit">
       <input autoFocus value={draftName} onChange={(event) => onDraftChange(event.target.value)} onKeyDown={(event) => {
         if (event.key === "Enter") onSaveEdit(category);
         if (event.key === "Escape") onCancel();
@@ -60,7 +60,7 @@ export function CategoryManagementRow({
   return (
     <>
       <div
-        className="knowledge-category-manage-row"
+        className="content-category-row"
         draggable={!locked && editingId !== category.id}
         style={{ paddingLeft: 10 + level * 20 }}
         onDragOver={(event) => event.preventDefault()}
@@ -71,18 +71,18 @@ export function CategoryManagementRow({
           onDrop(category.id, dropPosition(event, locked));
         }}
       >
-        {locked ? <span className="knowledge-category-drag-spacer" /> : <span className="knowledge-category-drag-handle"><Icon name="grip" size={14} /></span>}
+        {locked ? <span className="content-category-grip-spacer" /> : <span className="content-category-grip"><Icon name="grip" size={14} /></span>}
         <Icon name={category.children.length ? "chevron" : "folder"} size={14} />
         {editingId === category.id ? editor : <>
-          <button className="knowledge-category-manage-name" disabled={locked} type="button" onClick={() => onStartEdit(category)}>{category.name}</button>
-          {locked && <span className="knowledge-system-badge">СИСТ.</span>}
-          <span className="knowledge-category-count">{category.count}</span>
-          {!locked && <button aria-label={`Создать подкатегорию в ${category.name}`} className="knowledge-category-action" type="button" onClick={() => onCreateChild(category.id)}><Icon name="plus" size={14} /></button>}
-          <button aria-label={`Удалить ${category.name}`} className="knowledge-category-delete" disabled={!deletable} type="button" onClick={() => onDelete(category)}><Icon name="trash" size={14} /></button>
+          <button className="content-category-name" disabled={locked} type="button" onClick={() => onStartEdit(category)}>{category.name}</button>
+          {locked && <span className="content-system-badge">СИСТ.</span>}
+          <span className="content-category-count">{category.count}</span>
+          {!locked && <button aria-label={`Создать подкатегорию в ${category.name}`} className="content-category-action" type="button" onClick={() => onCreateChild(category.id)}><Icon name="plus" size={14} /></button>}
+          <button aria-label={`Удалить ${category.name}`} className="content-category-delete" disabled={!deletable} type="button" onClick={() => onDelete(category)}><Icon name="trash" size={14} /></button>
         </>}
       </div>
       {createParentId === category.id && (
-        <div className="knowledge-category-create-row" style={{ marginLeft: 50 + level * 20 }}>
+        <div className="content-category-create" style={{ marginLeft: 50 + level * 20 }}>
           <input autoFocus placeholder="Название категории" value={draftName} onChange={(event) => onDraftChange(event.target.value)} onKeyDown={(event) => {
             if (event.key === "Enter") onSaveCreate();
             if (event.key === "Escape") onCancel();

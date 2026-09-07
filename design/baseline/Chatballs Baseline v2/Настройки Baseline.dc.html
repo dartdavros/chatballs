@@ -275,6 +275,7 @@ class Component extends DCLogic {
       agents: "M6 6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2zM12 2v2M9 12v9M15 12v9M9 18h6M10 8v.01M14 8v.01",
       team: "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75",
       portals: "M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM2 12h20M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20",
+      knowledge: "M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5A2.5 2.5 0 0 0 6.5 22H20V2H6.5A2.5 2.5 0 0 0 4 4.5z",
       settings: "M21 6H9M3 6h2M9 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM21 12h-8M3 12h6M13 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM21 18h-6M3 18h8M15 18a2 2 0 1 1-4 0 2 2 0 0 1 4 0z",
       org: "M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6M9 10h.01M15 10h.01",
       groups: "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75",
@@ -289,7 +290,7 @@ class Component extends DCLogic {
     };
     const nav = [
       { key: "chat", label: "Чат", icon: ICON.chat, badge: 2 }, { key: "contacts", label: "Контакты", icon: ICON.contacts }, { key: "agents", label: "Агенты", icon: ICON.agents },
-      { key: "employees", label: "Сотрудники", icon: ICON.team }, { key: "portals", label: "Порталы", icon: ICON.portals }, { key: "settings", label: "Настройки", icon: ICON.settings },
+      { key: "employees", label: "Сотрудники", icon: ICON.team }, { key: "portals", label: "Порталы", icon: ICON.portals }, { key: "knowledge", label: "База знаний", icon: ICON.knowledge }, { key: "settings", label: "Настройки", icon: ICON.settings },
     ].map((n) => ({ ...n, bg: n.key === "settings" ? "var(--c-accent-bg)" : "transparent", color: n.key === "settings" ? "var(--c-accent-text)" : "var(--c-n2)", weight: n.key === "settings" ? 600 : 500 }));
 
     const SECTIONS = [

@@ -56,7 +56,6 @@
       "limits": {},
       "createdDaysAgo": 30,
       "policy": {
-        "requires_authenticated_product_identity": false,
         "allow_anonymous_sessions": true,
         "allow_self_reported_contact": true
       }
@@ -67,9 +66,9 @@
       "name": "Личный кабинет",
       "group": "support",
       "aiStatus": "ACTIVE",
-      "persona": "Ты — помощник личного кабинета ателье «Норд»: заказы, оплата, статусы, доставка, возвраты. Клиент авторизован — его заказы известны.",
+      "persona": "Ты — помощник раздела «Личный кабинет» ателье «Норд»: заказы, оплата, статусы, доставка, возвраты.",
       "tone": "Спокойно и по делу.",
-      "instructions": "Опирайся на данные заказа клиента и знания о кабинете. Жалобы на оплату — передай сотруднику.",
+      "instructions": "Опирайся на знания о кабинете и заказах. Номер заказа спрашивай, если его не назвали. Жалобы на оплату — передай сотруднику.",
       "knowledge": [
         "account",
         "delivery",
@@ -82,11 +81,9 @@
       "limits": {},
       "createdDaysAgo": 28,
       "policy": {
-        "requires_authenticated_product_identity": true,
-        "allow_anonymous_sessions": false,
-        "allow_self_reported_contact": false
-      },
-      "product": "atelie-nord-site"
+        "allow_anonymous_sessions": true,
+        "allow_self_reported_contact": true
+      }
     },
     {
       "key": "reception",

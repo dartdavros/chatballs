@@ -1,7 +1,7 @@
 import react from "@vitejs/plugin-react";
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [react()],
   // Панель отдаётся с домена hub под путём /chat/ (nginx).
   base: "/chat/",
@@ -17,7 +17,9 @@ export default defineConfig({
   },
   server: {
     port: 5175,
+    // См. apps/internal-ui/vite.config.ts: опрос файлов в контейнере.
+    watch: loadEnv(mode, ".", "").VITE_DEV_POLL ? { usePolling: true, interval: 300 } : undefined,
     host: true,
     allowedHosts: true,
   },
-});
+}));

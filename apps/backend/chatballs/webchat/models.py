@@ -10,11 +10,6 @@ def generate_widget_public_key() -> str:
     return f"wgt_{secrets.token_urlsafe(24)}"
 
 
-class WebChatWidgetMode(models.TextChoices):
-    ANONYMOUS = "ANONYMOUS", "Анонимный"
-    AUTHENTICATED_PRODUCT = "AUTHENTICATED_PRODUCT", "Авторизованный продукт"
-
-
 class WebChatWidgetStatus(models.TextChoices):
     DRAFT = "DRAFT", "Черновик"
     PUBLISHED = "PUBLISHED", "Опубликован"
@@ -38,11 +33,6 @@ class WebChatWidget(TenantRelationModel):
         editable=False,
     )
     name = models.CharField(max_length=255)
-    mode = models.CharField(
-        max_length=32,
-        choices=WebChatWidgetMode.choices,
-        default=WebChatWidgetMode.ANONYMOUS,
-    )
     status = models.CharField(
         max_length=16,
         choices=WebChatWidgetStatus.choices,
@@ -75,16 +65,8 @@ class WebChatWidget(TenantRelationModel):
         channel = integration.channel
         if channel is None:
             raise ValidationError({"integration": "Web Chat widget requires a channel"})
-        if self.mode == WebChatWidgetMode.AUTHENTICATED_PRODUCT:
-            if (
-                channel.product_id is None
-                or not channel.requires_authenticated_product_identity
-                or channel.allow_anonymous_sessions
-                or channel.allow_self_reported_contact
-            ):
-                raise ValidationError({"mode": "Authenticated widget requires a product support channel"})
-        elif channel.requires_authenticated_product_identity or not channel.allow_anonymous_sessions:
-            raise ValidationError({"mode": "Anonymous widget requires an anonymous channel"})
+        if not channel.allow_anonymous_sessions:
+            raise ValidationError({"integration": "Widget requires a channel with anonymous sessions"})
 
 # Анонимная браузерная сессия Web Chat (SPEC-HUB-0003 §7). Храним только hash
 # токена; токен живёт в браузере и идентифицирует ConnectionIdentity канала.

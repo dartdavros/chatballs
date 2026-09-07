@@ -20,7 +20,6 @@ from chatballs.identity.bootstrap import bootstrap_owner
 from chatballs.identity.models import Organization
 from chatballs.integrations.models import Integration, IntegrationProvider
 from chatballs.integrations.services import IntegrationInput, create_integration
-from chatballs.products.models import Product
 from chatballs.testing import system_tenant_context
 
 
@@ -35,7 +34,6 @@ class ProviderModeTests(TestCase):
             self.organization,
             code="provider-mode-sales",
             name="Provider mode — продажи",
-            product=Product.objects.get(code="site"),
         )
 
     def _link_integration(

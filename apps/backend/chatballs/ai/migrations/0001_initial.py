@@ -14,7 +14,6 @@ class Migration(migrations.Migration):
     dependencies = [
         ('channels', '0002_channel_system_prompt'),
         ('identity', '0006_alter_employeeprofile_totp_secret'),
-        ('products', '0005_remove_price_price_amount_positive_and_more'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
@@ -69,7 +68,6 @@ class Migration(migrations.Migration):
                 ('category', models.CharField(choices=[('OVERVIEW', 'Обзор продукта'), ('AUDIENCE', 'Целевая аудитория'), ('COMMERCIAL', 'Коммерческая модель'), ('TECHNICAL', 'Техническая информация'), ('FAQ', 'FAQ'), ('OBJECTIONS', 'Возражения'), ('LIMITATIONS', 'Ограничения')], max_length=32)),
                 ('inclusion_mode', models.CharField(choices=[('MANDATORY', 'Обязательное включение'), ('RETRIEVAL', 'Доступно для retrieval')], default='RETRIEVAL', max_length=16)),
                 ('organization', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='%(class)ss', to='identity.organization')),
-                ('product', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='%(class)ss', to='products.product')),
             ],
         ),
         migrations.CreateModel(
@@ -120,7 +118,6 @@ class Migration(migrations.Migration):
                 ('used_fragment_ids', models.JSONField(blank=True, default=list)),
                 ('created_at', models.DateTimeField(auto_now_add=True, db_index=True)),
                 ('channel', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='ai_invocations', to='channels.channel')),
-                ('product', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='ai_invocations', to='products.product')),
                 ('release', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='invocations', to='ai.channelairelease')),
             ],
             options={
@@ -139,7 +136,6 @@ class Migration(migrations.Migration):
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('category', models.CharField(choices=[('SYSTEM', 'Системный промпт'), ('QUALIFICATION', 'Квалификация'), ('SALES_BEHAVIOR', 'Поведение в продаже'), ('OPERATOR_HANDOFF', 'Передача оператору')], max_length=32)),
                 ('organization', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='%(class)ss', to='identity.organization')),
-                ('product', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='%(class)ss', to='products.product')),
             ],
         ),
         migrations.CreateModel(
@@ -183,10 +179,6 @@ class Migration(migrations.Migration):
             constraint=models.UniqueConstraint(condition=models.Q(('status', 'PUBLISHED')), fields=('channel',), name='uniq_active_release_per_channel'),
         ),
         migrations.AddConstraint(
-            model_name='knowledgedocument',
-            constraint=models.UniqueConstraint(fields=('organization', 'product', 'code'), name='uniq_knowledge_doc_org_product_code'),
-        ),
-        migrations.AddConstraint(
             model_name='knowledgedocumentversion',
             constraint=models.UniqueConstraint(fields=('document', 'version'), name='uniq_knowledge_version'),
         ),
@@ -197,10 +189,6 @@ class Migration(migrations.Migration):
         migrations.AddIndex(
             model_name='llminvocation',
             index=models.Index(fields=['channel', 'created_at'], name='ai_llminvoc_channel_dbf239_idx'),
-        ),
-        migrations.AddConstraint(
-            model_name='promptdocument',
-            constraint=models.UniqueConstraint(fields=('organization', 'product', 'code'), name='uniq_prompt_doc_org_product_code'),
         ),
         migrations.AddConstraint(
             model_name='promptdocumentversion',

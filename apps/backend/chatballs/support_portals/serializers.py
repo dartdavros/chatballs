@@ -9,24 +9,7 @@ from chatballs.support_portals.models import (
     PortalArticleRevision,
     PortalCategory,
     SupportPortal,
-    SupportPortalProduct,
 )
-
-
-def product_link_payload(link: SupportPortalProduct) -> dict:
-    widget_key = _public_widget_key(link.support_widget, "AUTHENTICATED_PRODUCT")
-    return {
-        "productId": link.product_id,
-        "code": link.product.code,
-        "name": link.product.name,
-        "supportChannelId": link.support_channel_id,
-        "supportChannelCode": (
-            link.support_channel.code if link.support_channel_id else None
-        ),
-        "supportWidgetId": link.support_widget_id,
-        "supportWidgetKey": widget_key,
-        "sortOrder": link.sort_order,
-    }
 
 
 def portal_payload(portal: SupportPortal, *, counts: dict | None = None) -> dict:
@@ -60,10 +43,9 @@ def portal_payload(portal: SupportPortal, *, counts: dict | None = None) -> dict
         "status": portal.status,
         "publishedAt": portal.published_at,
         "widgetId": portal.widget_id,
-        "widgetKey": _public_widget_key(portal.widget, "ANONYMOUS"),
+        "widgetKey": _public_widget_key(portal.widget),
         "widgetChannelId": portal.widget_channel_id,
         "widgetChannelCode": _public_widget_channel_code(portal),
-        "products": [product_link_payload(link) for link in portal.product_links.all()],
         "createdAt": portal.created_at,
         "updatedAt": portal.updated_at,
         # Колонка «Материалы» списка порталов (кадр PT1) и подзаголовок карточки.
@@ -184,7 +166,7 @@ def _author_name(user) -> str:
 
 
 def public_portal_payload(portal: SupportPortal) -> dict:
-    widget_key = _public_widget_key(portal.widget, "ANONYMOUS")
+    widget_key = _public_widget_key(portal.widget)
     return {
         "slug": portal.slug,
         "name": portal.name,
@@ -194,37 +176,17 @@ def public_portal_payload(portal: SupportPortal) -> dict:
         "themeSettings": portal.theme_settings or {},
         "webWidgetKey": widget_key,
         "webWidgetChannelCode": _public_widget_channel_code(portal),
-        "products": [
-            {
-                "code": link.product.code,
-                "name": link.product.name,
-                "siteUrl": link.product.site_url,
-                "supportAvailable": _public_widget_key(
-                    link.support_widget,
-                    "AUTHENTICATED_PRODUCT",
-                ) is not None,
-                "supportWidgetKey": _public_widget_key(
-                    link.support_widget,
-                    "AUTHENTICATED_PRODUCT",
-                ),
-                "supportChannelCode": (
-                    link.support_channel.code if link.support_channel_id else None
-                ),
-            }
-            for link in portal.product_links.all()
-        ],
     }
 
 
 def _public_widget_channel_code(portal: SupportPortal) -> str | None:
     widget = portal.widget
-    if _public_widget_key(widget, "ANONYMOUS") is None:
+    if _public_widget_key(widget) is None:
         return None
     channel = widget.integration.channel
     if (
         channel is None
         or not channel.is_active
-        or channel.requires_authenticated_product_identity
         or not channel.allow_anonymous_sessions
     ):
         return None
@@ -236,8 +198,8 @@ def _public_widget_channel_code(portal: SupportPortal) -> str | None:
     return channel.code if available else None
 
 
-def _public_widget_key(widget, expected_mode: str) -> str | None:
-    if widget is None or widget.mode != expected_mode or widget.status != "PUBLISHED":
+def _public_widget_key(widget) -> str | None:
+    if widget is None or widget.status != "PUBLISHED":
         return None
     integration = widget.integration
     channel = integration.channel

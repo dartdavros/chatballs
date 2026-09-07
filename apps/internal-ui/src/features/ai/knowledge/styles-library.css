@@ -1,158 +1,970 @@
-.knowledge-header-actions,
-.knowledge-toolbar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+/* База знаний — библиотека (дизайн-базлайн v2, кадры KB1, KB2, KB3, KB9).
+   Раздел сверстан как карточка портала: шапка с состоянием индекса, дерево
+   категорий 260px, таблица материалов. Метрики — из «База знаний Baseline». */
 
-.knowledge-library-layout {
-  display: grid;
-  grid-template-columns: 288px minmax(0, 1fr);
-  align-items: start;
-  gap: 18px;
-}
-
-.knowledge-library-layout.bulk-mode { grid-template-columns: minmax(0, 1fr); }
-
-.knowledge-library-list {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.knowledge-toolbar {
-  flex-wrap: wrap;
-}
-
-.knowledge-toolbar .ui-search-input {
-  flex: 1;
-  min-width: 240px;
-  max-width: none;
-  height: 36px;
-}
-
-.knowledge-filter-select {
-  display: inline-flex;
-  flex: 0 0 auto;
-  align-items: center;
-  height: 36px;
-  padding: 0 8px 0 12px;
-  border: 1px solid var(--n-6);
-  border-radius: 8px;
-  color: var(--n-3);
-  background: var(--surface-card);
-  font-size: 13px;
-  white-space: nowrap;
-}
-
-.knowledge-filter-select select {
-  width: auto;
-  max-width: 100%;
-  flex: 0 0 auto;
-  padding: 0 20px 0 6px;
-  border: 0;
-  outline: 0;
-  color: var(--n-2);
-  background: transparent;
-  font: inherit;
-  font-weight: 600;
-}
-
-.knowledge-table { table-layout: fixed; }
-.knowledge-col-select { width: 38px; }
-.knowledge-col-title { width: 30%; }
-.knowledge-col-category { width: 24%; }
-.knowledge-col-attachments { width: 8%; }
-.knowledge-col-agents { width: 9%; }
-.knowledge-col-status { width: 13%; }
-.knowledge-col-updated { width: 14%; }
-
-.knowledge-table th,
-.knowledge-table td {
-  padding: 10px 12px;
-}
-
-.knowledge-table .knowledge-select-cell {
-  width: 38px;
-  padding-right: 0;
-  text-align: center;
-}
-
-.knowledge-select-cell input {
-  width: 17px;
-  height: 17px;
-  margin: 0;
-  accent-color: var(--primary);
-  cursor: pointer;
-}
-
-.knowledge-row {
-  cursor: pointer;
-}
-
-.knowledge-description {
-  display: block;
-  max-width: 300px;
-  margin-top: 2px;
+/* Раздел занимает всю область как карточка портала: без полей оболочки и без
+   ограничения ширины — иначе экран сжимается в лист по центру. */
+.hub-scroll.knowledge-scroll {
+  min-height: 0;
+  padding: 0;
   overflow: hidden;
-  color: var(--n-4);
-  font-size: 12px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  background: var(--surface-feed);
 }
 
-.knowledge-category-path {
-  color: var(--n-3) !important;
-  overflow-wrap: anywhere;
+.hub-page.knowledge-page-shell,
+.hub-page.knowledge-editor-shell {
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  margin: 0;
 }
 
-.knowledge-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+.knowledge-card {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+  flex-direction: column;
+  background: var(--surface-feed);
+  position: relative;
+}
+
+.knowledge-form-error {
+  margin: 12px 24px 0;
+  padding: 9px 11px;
+  border-radius: var(--radius-md);
+  background: var(--error-bg);
+  color: var(--error-text);
   font-size: 12.5px;
 }
 
-.knowledge-status i {
-  width: 7px;
-  height: 7px;
+/* --- Шапка --- */
+
+.knowledge-card-head {
+  flex: none;
+  padding: 18px 24px 16px;
+  border-bottom: 1px solid var(--n-8);
+  background: var(--surface-card);
+}
+
+.knowledge-card-head-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.knowledge-card-identity {
+  min-width: 0;
+  flex: 1;
+}
+
+.knowledge-card-title {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-bottom: 8px;
+}
+
+.knowledge-card-title h2 {
+  margin: 0;
+  color: var(--n-1);
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+.knowledge-card-title > span:last-child {
+  color: var(--n-4);
+  font-size: 12.5px;
+}
+
+.knowledge-card-identity > p {
+  margin: 0;
+  max-width: 760px;
+  color: var(--n-3);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.knowledge-index-pill {
+  display: inline-flex;
+  height: 23px;
+  align-items: center;
+  gap: 6px;
+  padding: 0 9px;
+  border-radius: 6px;
+  background: var(--success-bg);
+  color: var(--success-text);
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.knowledge-index-pill i {
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background: currentColor;
 }
 
-.knowledge-status.active { color: var(--success-text); }
-.knowledge-status.disabled { color: var(--n-4); }
-
-.knowledge-table-state,
-.knowledge-empty-category {
+.knowledge-card-actions {
   display: flex;
-  min-height: 240px;
-  flex-direction: column;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.knowledge-card-actions .secondary-button,
+.knowledge-card-actions .primary-button {
+  height: 34px;
+  /* У .primary-button базовая высота задана min-height — её и перебиваем. */
+  min-height: 34px;
+  gap: 7px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.knowledge-card-actions .secondary-button {
+  padding: 0 13px;
+  font-weight: 500;
+}
+
+.knowledge-card-actions .primary-button {
+  padding: 0 14px;
+  font-weight: 600;
+}
+
+.knowledge-more-button {
+  display: flex;
+  width: 34px;
+  height: 34px;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 32px 24px;
-  border: 1px solid var(--n-8);
-  border-radius: 12px;
-  color: var(--n-3);
+  border: 1px solid var(--n-7);
+  border-radius: 8px;
   background: var(--surface-card);
-  box-shadow: var(--shadow-xs);
+  color: var(--n-4);
+  cursor: pointer;
 }
 
-.knowledge-empty-category > span {
+.knowledge-more-button:hover { border-color: var(--n-6); color: var(--n-2); }
+
+/* --- Дерево категорий --- */
+
+.knowledge-library {
   display: flex;
-  width: 46px;
-  height: 46px;
-  align-items: center;
-  justify-content: center;
-  border-radius: 12px;
-  color: var(--n-5);
-  background: var(--n-10);
+  flex: 1;
+  min-height: 0;
 }
 
-.knowledge-empty-category p {
-  margin: -7px 0 4px;
+.knowledge-sections {
+  display: flex;
+  width: 260px;
+  flex: none;
+  flex-direction: column;
+  min-height: 0;
+  border-right: 1px solid var(--n-8);
+  background: var(--surface-card);
+}
+
+.knowledge-sections > header {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 14px 8px;
+}
+
+.knowledge-sections > header > span {
+  color: var(--n-4);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.knowledge-sections > header button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--primary-text);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.knowledge-sections > nav {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 1px;
+  min-height: 0;
+  padding: 0 8px 12px;
+  overflow-y: auto;
+}
+
+.knowledge-section-row {
+  display: flex;
+  min-height: 32px;
+  align-items: center;
+  gap: 8px;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-right: 9px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--n-2);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+}
+
+.knowledge-section-row:hover { background: var(--n-9); }
+
+.knowledge-section-row.is-active {
+  background: var(--primary-bg);
+  color: var(--primary-text);
+  font-weight: 600;
+}
+
+.knowledge-section-row > span {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.knowledge-section-row small {
+  color: var(--n-5);
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.knowledge-section-row.is-active small { color: var(--primary-text); }
+
+.knowledge-sections-foot {
+  flex: none;
+  padding: 10px 14px;
+  border-top: 1px solid var(--n-8);
+}
+
+.knowledge-sections-foot button {
+  display: flex;
+  width: 100%;
+  height: 32px;
+  align-items: center;
+  gap: 7px;
+  padding: 0 10px;
+  border: 1px dashed var(--n-6);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--n-3);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.knowledge-sections-foot button:hover {
+  border-color: var(--primary);
+  color: var(--primary-text);
+}
+
+/* --- Тулбар и таблица --- */
+
+.knowledge-library-main {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.knowledge-library-inner {
+  display: flex;
+  width: 100%;
+  min-height: 100%;
+  flex-direction: column;
+}
+
+.knowledge-library-toolbar {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--n-8);
+  background: var(--surface-card);
+}
+
+.knowledge-library-toolbar .ui-search-input {
+  width: 280px;
+  max-width: none;
+  height: 34px;
+  flex: none;
+  gap: 8px;
+  padding: 0 11px;
+  border-radius: 8px;
+}
+
+.knowledge-library-toolbar-gap { flex: 1; }
+
+.knowledge-scope-note {
   color: var(--n-4);
   font-size: 12.5px;
+  white-space: nowrap;
+}
+
+.knowledge-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--surface-card);
+}
+
+/* Шапка таблицы в макете 40px: её высоту задаёт колонка с чекбоксом. */
+.knowledge-table thead tr { height: 40px; background: var(--n-10); }
+
+.knowledge-table th {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--n-7);
+  color: var(--n-4);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-align: left;
+}
+
+.knowledge-table th:nth-child(2) { padding: 9px 14px; }
+.knowledge-table th:last-child { width: 44px; }
+
+.knowledge-table td {
+  padding: 11px 12px;
+  border-bottom: 1px solid var(--n-8);
+  vertical-align: middle;
+}
+
+/* Чекбокс и меню строки прижаты к верху: строка знания двухэтажная. */
+.knowledge-table td.knowledge-check-cell,
+.knowledge-table td.row-actions { vertical-align: top; }
+
+.knowledge-table td:nth-child(2) { padding: 11px 14px; }
+
+.knowledge-check-cell {
+  width: 42px;
+  padding-right: 0 !important;
+  padding-left: 24px !important;
+}
+
+.knowledge-check {
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--n-6);
+  border-radius: 4px;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+}
+
+.knowledge-check.is-checked {
+  border-color: var(--primary);
+  background: var(--primary);
+}
+
+.knowledge-table thead .knowledge-check { margin-top: 0; }
+
+.knowledge-row { cursor: pointer; }
+.knowledge-row:hover > td { background: var(--n-10); }
+.knowledge-row.is-checked > td { background: var(--primary-bg); }
+.knowledge-row.is-off { opacity: 0.72; }
+
+.knowledge-name {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.knowledge-name > i {
+  display: flex;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+  background: var(--n-9);
+  color: var(--n-4);
+}
+
+.knowledge-name > span {
+  min-width: 0;
+  line-height: 1.4;
+}
+
+.knowledge-name strong {
+  display: block;
+  color: var(--n-1);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.knowledge-name > span small {
+  display: block;
+  max-width: 420px;
+  color: var(--n-4);
+  font-size: 11.5px;
+}
+
+.knowledge-name-files {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-top: 6px;
+  color: var(--n-4);
+  font-size: 11px;
+}
+
+.knowledge-cell-category {
+  color: var(--n-2);
+  font-size: 13px;
+}
+
+.knowledge-cell-category small {
+  display: block;
+  color: var(--n-5);
+  font-size: 11px;
+}
+
+.knowledge-cell-fragments {
+  color: var(--n-3);
+  font-size: 13px;
+}
+
+.knowledge-agents-tag {
+  display: inline-flex;
+  height: 22px;
+  align-items: center;
+  gap: 5px;
+  padding: 0 8px;
+  border-radius: 6px;
+  background: var(--n-9);
+  color: var(--n-2);
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.knowledge-agents-empty {
+  color: var(--n-5);
+  font-size: 12px;
+}
+
+.knowledge-answer-pill {
+  display: inline-flex;
+  height: 22px;
+  align-items: center;
+  gap: 6px;
+  padding: 0 9px;
+  border-radius: 6px;
+  background: var(--n-9);
+  color: var(--n-4);
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.knowledge-answer-pill.is-on {
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+
+.knowledge-answer-pill i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.knowledge-cell-updated {
+  color: var(--n-4);
+  font-size: 12.5px;
+  white-space: nowrap;
+}
+
+.knowledge-cell-updated small {
+  display: block;
+  color: var(--n-5);
+  font-size: 11px;
+}
+
+.knowledge-table .row-actions { text-align: right; }
+
+/* --- Подвал таблицы --- */
+
+.knowledge-table-footer {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 11px 24px;
+  border-top: 1px solid var(--n-8);
+  background: var(--n-10);
+  color: var(--n-4);
+  font-size: 12.5px;
+}
+
+.knowledge-pages {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.knowledge-pages b {
+  display: inline-flex;
+  min-width: 28px;
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+  background: var(--primary-bg);
+  color: var(--primary-text);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.knowledge-page-number,
+.knowledge-page-step {
+  display: inline-flex;
+  min-width: 28px;
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+  border: 1px solid var(--n-7);
+  border-radius: 7px;
+  background: var(--surface-card);
+  color: var(--n-3);
+  font-family: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.knowledge-page-step { width: 28px; padding: 0; }
+.knowledge-page-step:first-child svg { transform: rotate(90deg); }
+.knowledge-page-step:last-child svg { transform: rotate(-90deg); }
+
+.knowledge-page-number:hover,
+.knowledge-page-step:not(:disabled):hover { border-color: var(--n-6); color: var(--n-2); }
+
+.knowledge-page-step:disabled { opacity: 0.45; cursor: default; }
+
+/* --- Пустая категория (кадр KB9) --- */
+
+.knowledge-empty {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+.knowledge-empty > div {
+  width: 480px;
+  text-align: center;
+}
+
+.knowledge-empty-icon {
+  display: flex;
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 15px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 15px;
+  background: var(--n-9);
+  color: var(--n-4);
+}
+
+.knowledge-empty h3 {
+  margin: 0 0 7px;
+  color: var(--n-1);
+  font-size: 16.5px;
+  font-weight: 700;
+}
+
+.knowledge-empty p {
+  margin: 0 0 18px;
+  color: var(--n-3);
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+.knowledge-empty-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.knowledge-empty-actions .primary-button,
+.knowledge-empty-actions .secondary-button {
+  height: 34px;
+  min-height: 34px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+/* --- Панель массовых операций (кадр KB2) --- */
+
+.knowledge-bulk-bar {
+  position: absolute;
+  left: 50%;
+  bottom: 22px;
+  z-index: 15;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 11px 9px 15px;
+  border-radius: 12px;
+  background: var(--n-1);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.28);
+  transform: translateX(-50%);
+}
+
+.knowledge-bulk-count {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  margin-right: 5px;
+}
+
+.knowledge-bulk-count strong {
+  color: var(--surface-card);
+  font-size: 13.5px;
+  font-weight: 700;
+}
+
+.knowledge-bulk-count small {
+  color: var(--n-5);
+  font-size: 11.5px;
+}
+
+.knowledge-bulk-bar > button {
+  display: flex;
+  height: 32px;
+  align-items: center;
+  gap: 7px;
+  padding: 0 12px;
+  border: 1px solid color-mix(in srgb, var(--surface-card) 22%, transparent);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--surface-card);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.knowledge-bulk-bar > button:hover { opacity: 0.88; }
+.knowledge-bulk-bar > button:disabled { opacity: 0.55; cursor: default; }
+
+.knowledge-bulk-bar > button.is-primary {
+  border-color: var(--surface-card);
+  background: var(--surface-card);
+  color: var(--n-1);
+  font-weight: 600;
+}
+
+.knowledge-bulk-bar > button.is-danger {
+  border-color: color-mix(in srgb, #ff4d4f 35%, transparent);
+  color: color-mix(in srgb, #ff4d4f 55%, var(--surface-card));
+}
+
+.knowledge-bulk-divider {
+  width: 1px;
+  height: 22px;
+  margin: 0 3px;
+  background: color-mix(in srgb, var(--surface-card) 18%, transparent);
+}
+
+.knowledge-bulk-close {
+  display: flex;
+  width: 30px;
+  height: 30px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--n-5);
+  cursor: pointer;
+}
+
+.knowledge-bulk-close:hover {
+  background: color-mix(in srgb, var(--surface-card) 10%, transparent);
+  color: var(--surface-card);
+}
+
+/* --- Диалоги «Прикрепить к агенту» и «Переместить» (кадр KB3) --- */
+
+.knowledge-agent-dialog .ant-modal-content,
+.knowledge-move-dialog .ant-modal-content {
+  padding: 0;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.knowledge-agent-dialog-head {
+  padding: 20px 22px 14px;
+  border-bottom: 1px solid var(--n-8);
+}
+
+.knowledge-agent-dialog-title {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.knowledge-agent-dialog-title > div { flex: 1; min-width: 0; }
+
+.knowledge-agent-dialog-title h3 {
+  margin: 0 0 4px;
+  color: var(--n-1);
+  font-size: 16.5px;
+  font-weight: 700;
+}
+
+.knowledge-agent-dialog-title p {
+  margin: 0;
+  color: var(--n-3);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.knowledge-dialog-close {
+  display: flex;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--n-4);
+  cursor: pointer;
+}
+
+.knowledge-dialog-close:hover { background: var(--n-9); color: var(--n-2); }
+
+.knowledge-agent-modes.segmented {
+  display: inline-flex;
+  margin-top: 13px;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 9px;
+  background: var(--n-9);
+}
+
+.knowledge-agent-modes.segmented button {
+  height: 30px;
+  padding: 0 15px;
+  border-radius: 7px;
+  color: var(--n-4);
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+.knowledge-agent-modes.segmented button.active {
+  color: var(--n-1);
+  background: var(--surface-card);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  font-weight: 600;
+}
+
+.knowledge-agent-dialog-body { padding: 14px 22px 6px; }
+
+.knowledge-agent-dialog-label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--n-4);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.knowledge-agent-picks,
+.knowledge-move-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.knowledge-move-list {
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.knowledge-agent-pick,
+.knowledge-move-row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 9px 11px;
+  border: 1.5px solid var(--n-7);
+  border-radius: 10px;
+  background: var(--surface-card);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.knowledge-agent-pick:hover,
+.knowledge-move-row:hover { border-color: var(--primary); }
+
+.knowledge-agent-pick.is-picked,
+.knowledge-move-row.is-picked {
+  border-color: var(--primary);
+  background: var(--primary-bg);
+}
+
+.knowledge-agent-radio {
+  display: flex;
+  width: 16px;
+  height: 16px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--n-6);
+  border-radius: 50%;
+}
+
+.knowledge-agent-pick.is-picked .knowledge-agent-radio,
+.knowledge-move-row.is-picked .knowledge-agent-radio { border-color: var(--primary); }
+
+.knowledge-agent-radio b {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: transparent;
+}
+
+.knowledge-agent-pick.is-picked .knowledge-agent-radio b,
+.knowledge-move-row.is-picked .knowledge-agent-radio b { background: var(--primary); }
+
+.knowledge-agent-pick > span {
+  min-width: 0;
+  flex: 1;
+  line-height: 1.35;
+}
+
+.knowledge-agent-pick strong {
+  display: block;
+  color: var(--n-1);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.knowledge-agent-pick small { color: var(--n-4); font-size: 11.5px; }
+
+.knowledge-agent-tag {
+  display: inline-flex;
+  height: 20px;
+  align-items: center;
+  padding: 0 8px;
+  border-radius: 6px;
+  background: var(--n-9);
+  color: var(--n-4);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.knowledge-agent-pick.is-picked .knowledge-agent-tag {
+  background: var(--primary-bg);
+  color: var(--primary-text);
+}
+
+.knowledge-agent-empty,
+.knowledge-rail-empty {
+  margin: 0;
+  color: var(--n-4);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.knowledge-move-row > span {
+  min-width: 0;
+  flex: 1;
+  color: var(--n-1);
+  font-size: 13.5px;
+}
+
+.knowledge-move-row small { color: var(--n-5); font-size: 11.5px; font-weight: 600; }
+
+.knowledge-agent-warning {
+  display: flex;
+  gap: 10px;
+  margin: 14px 22px 0;
+  padding: 11px 13px;
+  border: 1px solid var(--warning-border);
+  border-radius: 10px;
+  background: var(--warning-bg);
+  color: var(--n-2);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.knowledge-agent-warning svg { flex: none; margin-top: 1px; color: var(--warning-text); }
+.knowledge-agent-warning b { font-weight: 600; }
+
+.knowledge-agent-dialog-foot {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 16px 22px 18px;
+}
+
+.knowledge-agent-dialog-foot > span {
+  flex: 1;
+  color: var(--n-4);
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+
+.knowledge-agent-dialog-foot code { font-family: var(--font-mono); }
+
+.knowledge-agent-dialog-foot .primary-button,
+.knowledge-agent-dialog-foot .secondary-button {
+  height: 34px;
+  min-height: 34px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+/* Меню строки знания (кадр KB1): 244px, пункты 32px — как в макете. */
+.app-dropdown.is-knowledge-menu .ant-dropdown-menu {
+  width: 244px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.16);
+}
+
+.app-dropdown.is-knowledge-menu .ant-dropdown-menu-item button {
+  min-height: 32px;
+  gap: 9px;
+  padding: 0 9px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.app-dropdown.is-knowledge-menu .ant-dropdown-menu .ant-dropdown-menu-item-divider {
+  margin: 5px 4px;
+  background: var(--n-8);
 }

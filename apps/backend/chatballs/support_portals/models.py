@@ -61,12 +61,6 @@ class SupportPortal(TenantRelationModel):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    products = models.ManyToManyField(
-        "products.Product",
-        through="SupportPortalProduct",
-        related_name="support_portals",
-        blank=True,
-    )
 
     class Meta:
         ordering = ["name", "id"]
@@ -102,68 +96,6 @@ class SupportPortal(TenantRelationModel):
         validate_theme(self.theme)
         self.theme_settings = validate_theme_settings(self.theme_settings)
         validate_portal_widget(self)
-
-
-class SupportPortalProduct(TenantRelationModel):
-    """Продукт портала и его authenticated support-маршрут."""
-
-    tenant_relation_fields = ("portal", "product", "support_channel", "support_widget")
-    portal = models.ForeignKey(
-        SupportPortal,
-        on_delete=models.CASCADE,
-        related_name="product_links",
-    )
-    product = models.ForeignKey(
-        "products.Product",
-        on_delete=models.PROTECT,
-        related_name="support_portal_links",
-    )
-    support_channel = models.ForeignKey(
-        "channels.Channel",
-        on_delete=models.PROTECT,
-        related_name="support_portal_routes",
-        null=True,
-        blank=True,
-    )
-    support_widget = models.ForeignKey(
-        "webchat.WebChatWidget",
-        on_delete=models.PROTECT,
-        related_name="support_portal_routes",
-        null=True,
-        blank=True,
-    )
-    sort_order = models.PositiveIntegerField(default=0)
-
-    class Meta:
-        ordering = ["sort_order", "product__name", "id"]
-        constraints = [
-            models.UniqueConstraint(
-                fields=["portal", "product"],
-                name="uniq_support_portal_product",
-            ),
-        ]
-
-    def clean(self) -> None:
-        super().clean()
-        from chatballs.support_portals.widget_validation import (
-            validate_product_support_widget,
-        )
-
-        validate_product_support_widget(self)
-        if self.support_channel_id is None:
-            return
-        channel = self.support_channel
-        if channel.product_id != self.product_id:
-            raise ValidationError(
-                {"support_channel": "Support channel must belong to the linked product"}
-            )
-        if (
-            not channel.requires_authenticated_product_identity
-            or channel.allow_anonymous_sessions
-        ):
-            raise ValidationError(
-                {"support_channel": "Portal support route must require product identity"}
-            )
 
 
 class PortalCategory(TenantRelationModel):

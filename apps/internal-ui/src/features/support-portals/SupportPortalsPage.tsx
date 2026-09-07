@@ -19,7 +19,6 @@ import {
 import {
   contentSummary,
   portalSubtitle,
-  productsSummary,
   publicHost,
   updatedAt,
 } from "./portalText";
@@ -233,7 +232,6 @@ export function SupportPortalsPage({
               <th>ПУБЛИЧНЫЙ АДРЕС</th>
               <th>СТАТУС</th>
               <th>МАТЕРИАЛЫ</th>
-              <th>ПРОДУКТЫ</th>
               <th>ОБНОВЛЁН</th>
               <th />
             </tr>
@@ -278,7 +276,6 @@ export function SupportPortalsPage({
                   </td>
                   <td><StatusPill status={pillStatus(portal.status)} label={PORTAL_STATUS_LABEL[portal.status]} /></td>
                   <td className="portals-content-cell">{contentSummary(portal)}</td>
-                  <td className="portals-products-cell">{productsSummary(portal)}</td>
                   <td className="portals-updated-cell">{updatedAt(portal.updatedAt)}</td>
                   <td className="row-actions" onClick={(event) => event.stopPropagation()}>
                     <Dropdown menu={{ items: menuItems }} overlayClassName="app-dropdown is-portal-menu" placement="bottomRight" trigger={["click"]}>

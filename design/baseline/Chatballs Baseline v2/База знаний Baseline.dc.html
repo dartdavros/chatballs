@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<style>
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+a{color:inherit;text-decoration:none;}
+a:hover{opacity:0.85;}
+*{scrollbar-width:none;}
+*::-webkit-scrollbar{display:none;width:0;height:0;}
+</style>
+</helmet>
+
+<section style="{{ themeVars }}min-height:100vh;background:var(--c-canvas);padding:32px 40px 60px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;color:var(--c-n1);">
+  <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:6px;">
+    <h1 style="margin:0;font-size:22px;font-weight:700;letter-spacing:-0.02em;color:var(--c-n1);">Chatbolls · База знаний</h1>
+    <span style="font-size:13px;color:var(--c-n4);">design baseline · OWNER = ADMIN · SPEC-HUB-0026 §9, SPEC-HUB-0029 §7</span>
+  </div>
+  <p style="margin:0 0 28px;font-size:13px;color:var(--c-n3);max-width:1040px;line-height:1.55;">Внутренняя база знаний агентов сверстана как карточка портала: дерево категорий слева, таблица материалов справа, шапка с состоянием индекса. Редактор знания — тот же полноэкранный split, что и у статьи портала. Отделы упразднены (ADR-0041), поэтому область доступности заменена состоянием «в ответах агента» и явным списком агентов.</p>
+
+  <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start;">
+  <sc-for list="{{ frames }}" as="f" hint-placeholder-count="9">
+    <div id="{{ f.id }}" style="flex:none;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+        <span style="display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:22px;padding:0 7px;border-radius:6px;background:var(--c-n1);color:var(--c-surface);font-size:11px;font-weight:700;">{{ f.id }}</span>
+        <strong style="font-size:13.5px;color:var(--c-n1);">{{ f.title }}</strong>
+        <span style="font-size:12px;color:var(--c-n4);">{{ f.note }}</span>
+      </div>
+
+      <div data-screen-label="{{ f.id }}" style="width:1440px;height:880px;display:flex;overflow:hidden;background:var(--c-surface);border-radius:6px;box-shadow:0 2px 12px rgba(0,0,0,0.08);position:relative;">
+
+        <aside style="position:relative;width:220px;flex:none;background:var(--c-surface2);border-right:1px solid var(--c-n8);display:flex;flex-direction:column;min-height:0;">
+          <div style="flex:none;height:56px;display:flex;align-items:center;gap:10px;padding:14px 14px 10px;">
+            <span style="width:28px;height:28px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:8px;color:var(--c-n1);"><svg viewBox="0 0 100 100" width="26" height="26" fill="currentColor"><defs><mask id="lg-kb"><rect width="100" height="100" fill="#fff"/><circle cx="50" cy="24.54" r="9" fill="#000"/><circle cx="50" cy="75.46" r="9" fill="#000"/></mask></defs><g mask="url(#lg-kb)"><circle cx="29" cy="50" r="24"/><circle cx="71" cy="50" r="24"/><rect x="44.2" y="31.4" width="11.6" height="37.2"/></g></svg></span>
+            <button style="flex:1;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:6px;height:32px;padding:0 6px 0 8px;border:none;border-radius:8px;background:transparent;color:var(--c-n1);font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;" style-hover="background:var(--c-n9);"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Ателье Норд</span><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--c-n4)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button>
+          </div>
+          <nav style="flex:none;padding:4px 10px 8px;display:flex;flex-direction:column;gap:2px;">
+            <sc-for list="{{ nav }}" as="n" hint-placeholder-count="7">
+              <button style="display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border:none;border-radius:8px;background:{{ n.bg }};color:{{ n.color }};font-size:13.5px;font-weight:{{ n.weight }};cursor:pointer;text-align:left;font-family:inherit;" style-hover="background:var(--c-n8);"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="{{ n.icon }}"/></svg><span style="flex:1;">{{ n.label }}</span><sc-if value="{{ n.badge }}" hint-placeholder-val="{{ false }}"><b style="min-width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;padding:0 6px;border-radius:10px;background:var(--c-warn-bg);border:1px solid var(--c-warn-border);color:var(--c-warn-text);font-size:11px;font-weight:700;">{{ n.badge }}</b></sc-if></button>
+            </sc-for>
+          </nav>
+          <div style="flex:1;"></div>
+          <div style="flex:none;display:flex;align-items:center;gap:10px;padding:12px 14px;border-top:1px solid var(--c-n8);">
+            <span style="position:relative;flex:none;display:flex;"><span style="width:34px;height:34px;border-radius:50%;background:url(assets/av-4.png) center/cover;"></span><i style="position:absolute;right:-1px;bottom:-1px;width:10px;height:10px;border:2px solid var(--c-surface2);border-radius:50%;background:#52c41a;"></i></span>
+            <div style="flex:1;min-width:0;line-height:1.2;"><strong style="display:block;font-size:13px;font-weight:600;color:var(--c-n1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Елена Кузнецова</strong><small style="display:block;font-size:11.5px;color:var(--c-n4);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Владелец · e.kuznetsova@atelie-nord.ru</small></div>
+            <button title="Меню пользователя" style="width:28px;height:28px;flex:none;border:none;border-radius:7px;background:transparent;color:var(--c-n4);display:flex;align-items:center;justify-content:center;cursor:pointer;" style-hover="background:var(--c-n9);color:var(--c-n2);"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button>
+          </div>
+        </aside>
+
+        <!-- ===== БИБЛИОТЕКА (дерево + таблица) ===== -->
+        <sc-if value="{{ f.isLibrary }}" hint-placeholder-val="{{ false }}">
+        <section style="flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;background:var(--c-feed);position:relative;">
+
+          <div style="flex:none;padding:18px 28px 16px;background:var(--c-surface);border-bottom:1px solid var(--c-n8);">
+            <div style="max-width:1500px;display:flex;align-items:flex-start;gap:20px;">
+              <div style="flex:1;min-width:0;">
+                <div style="display:flex;align-items:center;gap:11px;margin-bottom:8px;">
+                  <h2 style="margin:0;font-size:21px;font-weight:700;letter-spacing:-0.015em;color:var(--c-n1);">База знаний</h2>
+                  <span style="display:inline-flex;align-items:center;gap:6px;height:23px;padding:0 9px;border-radius:6px;background:var(--c-ok-bg);color:var(--c-ok-text);font-size:11.5px;font-weight:600;"><i style="width:6px;height:6px;border-radius:50%;background:currentColor;"></i>Индекс актуален</span>
+                  <span style="font-size:12.5px;color:var(--c-n4);">9 категорий · 84 знания · 1 240 фрагментов</span>
+                </div>
+                <p style="margin:0;font-size:13px;color:var(--c-n3);max-width:760px;line-height:1.5;">Материалы для AI-агентов: регламенты, прайсы, скрипты. Агент отвечает только по включённым знаниям, которые к нему прикреплены. Клиент их не видит — публичное живёт в порталах.</p>
+              </div>
+              <div style="flex:none;display:flex;align-items:center;gap:8px;padding-top:4px;">
+                <button style="display:flex;align-items:center;gap:7px;height:34px;padding:0 13px;border:1px solid var(--c-n7);border-radius:8px;background:var(--c-surface);color:var(--c-n2);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;" style-hover="border-color:var(--c-n6);"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M4 20h16"/></svg>Импорт YAML</button>
+                <button style="display:flex;align-items:center;gap:7px;height:34px;padding:0 14px;border:none;border-radius:8px;background:var(--c-accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;" style-hover="background:var(--c-accent-hover);"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Добавить знание</button>
+                <button title="Ещё" style="width:34px;height:34px;border:1px solid var(--c-n7);border-radius:8px;background:var(--c-surface);color:var(--c-n4);display:flex;align-items:center;justify-content:center;cursor:pointer;" style-hover="border-color:var(--c-n6);color:var(--c-n2);"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button>
+              </div>
+            </div>
+          </div>
+
+          <div style="flex:1;min-height:0;display:flex;">
+            <div style="width:260px;flex:none;display:flex;flex-direction:column;min-height:0;background:var(--c-surface);border-right:1px solid var(--c-n8);">
+              <div style="flex:none;display:flex;align-items:center;justify-content:space-between;padding:15px 14px 8px;"><span style="font-size:11.5px;font-weight:600;letter-spacing:0.04em;color:var(--c-n4);">КАТЕГОРИИ</span><button style="border:none;background:transparent;padding:0;color:var(--c-accent-text);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">Управлять</button></div>
+              <nav style="flex:1;min-height:0;overflow-y:auto;padding:0 8px 12px;display:flex;flex-direction:column;gap:1px;">
+                <sc-for list="{{ f.cats }}" as="c" hint-placeholder-count="9">
+                  <button style="display:flex;align-items:center;gap:8px;min-height:32px;padding:0 9px 0 {{ c.pad }};border:none;border-radius:8px;background:{{ c.bg }};color:{{ c.color }};font-size:13px;font-weight:{{ c.weight }};cursor:pointer;text-align:left;font-family:inherit;" style-hover="background:var(--c-n9);">
+                    <sc-if value="{{ c.icon }}" hint-placeholder-val="{{ false }}"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="{{ c.icon }}"/></svg></sc-if>
+                    <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ c.label }}</span>
+                    <small style="font-size:11.5px;font-weight:600;color:{{ c.countColor }};">{{ c.count }}</small>
+                  </button>
+                </sc-for>
+              </nav>
+              <div style="flex:none;padding:10px 14px;border-top:1px solid var(--c-n8);">
+                <button style="display:flex;align-items:center;gap:7px;width:100%;height:32px;padding:0 10px;border:1px dashed var(--c-n6);border-radius:8px;background:transparent;color:var(--c-n3);font-size:12.5px;font-weight:500;cursor:pointer;font-family:inherit;" style-hover="border-color:var(--c-accent);color:var(--c-accent-text);"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Добавить категорию</button>
+              </div>
+            </div>
+
+            <div style="flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;overflow-y:auto;">
+              <div style="width:100%;max-width:1240px;margin:0 auto;display:flex;flex-direction:column;min-height:100%;">
+                <div style="flex:none;display:flex;align-items:center;gap:10px;padding:14px 24px;border-bottom:1px solid var(--c-n8);background:var(--c-surface);">
+                  <label style="display:flex;align-items:center;gap:8px;width:280px;height:34px;padding:0 11px;border:1px solid var(--c-n7);border-radius:8px;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="var(--c-n4)" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span style="font-size:13px;color:var(--c-n5);">Поиск по заголовку и описанию</span></label>
+                  <label style="display:flex;align-items:center;gap:7px;height:34px;padding:0 11px;border:1px solid var(--c-n7);border-radius:8px;font-size:13px;color:var(--c-n2);"><span style="color:var(--c-n4);">В ответах:</span>Все<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--c-n4)" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></label>
+                  <label style="display:flex;align-items:center;gap:7px;height:34px;padding:0 11px;border:1px solid var(--c-n7);border-radius:8px;font-size:13px;color:var(--c-n2);"><span style="color:var(--c-n4);">Агент:</span>Любой<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--c-n4)" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></label>
+                  <span style="flex:1;"></span>
+                  <span style="font-size:12.5px;color:var(--c-n4);white-space:nowrap;">{{ f.scopeNote }}</span>
+                </div>
+
+                <sc-if value="{{ f.isEmptyCat }}" hint-placeholder-val="{{ false }}">
+                <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:40px;">
+                  <div style="width:480px;text-align:center;">
+                    <span style="width:52px;height:52px;margin:0 auto 15px;border-radius:15px;background:var(--c-n9);color:var(--c-n4);display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" width="25" height="25" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5A2.5 2.5 0 0 0 6.5 22H20V2H6.5A2.5 2.5 0 0 0 4 4.5z"/></svg></span>
+                    <h3 style="margin:0 0 7px;font-size:16.5px;font-weight:700;color:var(--c-n1);">В категории «Обучение» пока нет знаний</h3>
+                    <p style="margin:0 0 18px;font-size:13.5px;color:var(--c-n3);line-height:1.6;">Добавьте материал вручную или загрузите пачкой из YAML. Пустую категорию без вложенных можно удалить в «Управлять».</p>
+                    <div style="display:flex;gap:10px;justify-content:center;">
+                      <button style="height:34px;padding:0 14px;border:none;border-radius:8px;background:var(--c-accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Добавить знание</button>
+                      <button style="height:34px;padding:0 13px;border:1px solid var(--c-n7);border-radius:8px;background:var(--c-surface);color:var(--c-n2);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;">Импорт YAML</button>
+                    </div>
+                  </div>
+                </div>
+                </sc-if>
+
+                <sc-if value="{{ f.rows }}" hint-placeholder-val="{{ true }}">
+                <table style="width:100%;border-collapse:collapse;background:var(--c-surface);">
+                  <thead><tr style="background:var(--c-n10);">
+                    <th style="width:42px;padding:9px 0 9px 24px;border-bottom:1px solid var(--c-n7);"><span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border:1.5px solid {{ f.allBorder }};border-radius:4px;background:{{ f.allBg }};color:#fff;"><sc-if value="{{ f.allChecked }}" hint-placeholder-val="{{ false }}"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"><path d="m4 12 5 5L20 6"/></svg></sc-if></span></th>
+                    <th style="text-align:left;padding:9px 14px;font-size:11px;font-weight:600;letter-spacing:0.04em;color:var(--c-n4);border-bottom:1px solid var(--c-n7);">ЗНАНИЕ</th>
+                    <th style="text-align:left;padding:9px 12px;font-size:11px;font-weight:600;letter-spacing:0.04em;color:var(--c-n4);border-bottom:1px solid var(--c-n7);">КАТЕГОРИЯ</th>
+                    <th style="text-align:left;padding:9px 12px;font-size:11px;font-weight:600;letter-spacing:0.04em;color:var(--c-n4);border-bottom:1px solid var(--c-n7);">ФРАГМЕНТЫ</th>
+                    <th style="text-align:left;padding:9px 12px;font-size:11px;font-weight:600;letter-spacing:0.04em;color:var(--c-n4);border-bottom:1px solid var(--c-n7);">АГЕНТЫ</th>
+                    <th style="text-align:left;padding:9px 12px;font-size:11px;font-weight:600;letter-spacing:0.04em;color:var(--c-n4);border-bottom:1px solid var(--c-n7);">В ОТВЕТАХ</th>
+                    <th style="text-align:left;padding:9px 12px;font-size:11px;font-weight:600;letter-spacing:0.04em;color:var(--c-n4);border-bottom:1px solid var(--c-n7);">ОБНОВЛЕНО</th>
+                    <th style="width:44px;border-bottom:1px solid var(--c-n7);"></th>
+                  </tr></thead>
+                  <tbody>
+                    <sc-for list="{{ f.rows }}" as="k" hint-placeholder-count="7">
+                      <tr style="border-bottom:1px solid var(--c-n8);background:{{ k.rowBg }};opacity:{{ k.opacity }};">
+                        <td style="padding:11px 0 11px 24px;vertical-align:top;"><span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;margin-top:2px;border:1.5px solid {{ k.cbBorder }};border-radius:4px;background:{{ k.cbBg }};color:#fff;"><sc-if value="{{ k.checked }}" hint-placeholder-val="{{ false }}"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"><path d="m4 12 5 5L20 6"/></svg></sc-if></span></td>
+                        <td style="padding:11px 14px;">
+                          <span style="display:flex;align-items:flex-start;gap:10px;">
+                            <i style="width:28px;height:28px;flex:none;border-radius:7px;background:var(--c-n9);color:var(--c-n4);display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="{{ k.icon }}"/></svg></i>
+                            <span style="min-width:0;line-height:1.4;">
+                              <strong style="display:block;font-size:13.5px;font-weight:600;color:var(--c-n1);">{{ k.title }}</strong>
+                              <small style="display:block;font-size:11.5px;color:var(--c-n4);max-width:420px;">{{ k.desc }}</small>
+                            </span>
+                            <sc-if value="{{ k.attach }}" hint-placeholder-val="{{ false }}"><small title="Вложения" style="display:inline-flex;align-items:center;gap:3px;margin-top:6px;font-size:11px;color:var(--c-n4);"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.5 12.5 21a4.95 4.95 0 0 1-7-7l8-8a3.5 3.5 0 0 1 5 5l-8 8a1.95 1.95 0 0 1-3-3l7-7"/></svg>{{ k.attach }}</small></sc-if>
+                          </span>
+                        </td>
+                        <td style="padding:11px 12px;font-size:13px;color:var(--c-n2);">{{ k.cat }}<sc-if value="{{ k.catParent }}" hint-placeholder-val="{{ false }}"><small style="display:block;font-size:11px;color:var(--c-n5);">{{ k.catParent }}</small></sc-if></td>
+                        <td style="padding:11px 12px;font-size:13px;color:var(--c-n3);">{{ k.frags }}<sc-if value="{{ k.fragNote }}" hint-placeholder-val="{{ false }}"><small style="display:block;font-size:11px;color:{{ k.fragNoteColor }};">{{ k.fragNote }}</small></sc-if></td>
+                        <td style="padding:11px 12px;"><sc-if value="{{ k.agents }}" hint-placeholder-val="{{ true }}"><span style="display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 8px;border-radius:6px;background:var(--c-n9);color:var(--c-n2);font-size:11.5px;font-weight:600;"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2zM12 2v2M9 12v9M15 12v9M9 18h6"/></svg>{{ k.agents }}</span></sc-if><sc-if value="{{ k.noAgents }}" hint-placeholder-val="{{ false }}"><small style="font-size:12px;color:var(--c-n5);">не прикреплено</small></sc-if></td>
+                        <td style="padding:11px 12px;"><span style="display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 9px;border-radius:6px;background:{{ k.stBg }};color:{{ k.stColor }};font-size:11.5px;font-weight:600;"><i style="width:6px;height:6px;border-radius:50%;background:currentColor;"></i>{{ k.status }}</span></td>
+                        <td style="padding:11px 12px;font-size:12.5px;color:var(--c-n4);">{{ k.updated }}<small style="display:block;font-size:11px;color:var(--c-n5);">{{ k.author }}</small></td>
+                        <td style="padding:11px 12px;position:relative;vertical-align:top;">
+                          <button title="Действия" style="width:28px;height:28px;border:none;border-radius:7px;background:{{ k.menuBg }};color:var(--c-n4);display:flex;align-items:center;justify-content:center;cursor:pointer;" style-hover="background:var(--c-n9);color:var(--c-n2);"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button>
+                          <sc-if value="{{ k.menuOpen }}" hint-placeholder-val="{{ false }}">
+                          <div style="position:absolute;top:38px;right:14px;z-index:20;width:244px;padding:5px;background:var(--c-surface);border:1px solid var(--c-n7);border-radius:10px;box-shadow:0 10px 28px rgba(0,0,0,0.16);">
+                            <sc-for list="{{ rowMenu }}" as="m" hint-placeholder-count="6">
+                              <sc-if value="{{ m.divider }}" hint-placeholder-val="{{ false }}"><div style="height:1px;background:var(--c-n8);margin:5px 4px;"></div></sc-if>
+                              <sc-if value="{{ m.label }}" hint-placeholder-val="{{ true }}">
+                              <button style="display:flex;align-items:center;gap:9px;width:100%;height:32px;padding:0 9px;border:none;border-radius:7px;background:transparent;color:{{ m.color }};font-size:13px;font-weight:500;cursor:pointer;text-align:left;font-family:inherit;" style-hover="background:var(--c-n9);"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="{{ m.icon }}"/></svg>{{ m.label }}</button>
+                              </sc-if>
+                            </sc-for>
+                          </div>
+                          </sc-if>
+                        </td>
+                      </tr>
+                    </sc-for>
+                  </tbody>
+                </table>
+                <div style="flex:none;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:11px 24px;background:var(--c-n10);border-top:1px solid var(--c-n8);">
+                  <span style="font-size:12.5px;color:var(--c-n4);">84 знания · показаны 7 · агент отвечает только по включённым и прикреплённым</span>
+                  <span style="display:flex;align-items:center;gap:6px;">
+                    <b style="min-width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;border-radius:7px;background:var(--c-accent-bg);color:var(--c-accent-text);font-size:12.5px;">1</b>
+                    <button style="min-width:28px;height:28px;padding:0 8px;border:1px solid var(--c-n7);border-radius:7px;background:var(--c-surface);color:var(--c-n3);font-size:12.5px;cursor:pointer;font-family:inherit;">2</button>
+                    <button style="min-width:28px;height:28px;padding:0 8px;border:1px solid var(--c-n7);border-radius:7px;background:var(--c-surface);color:var(--c-n3);font-size:12.5px;cursor:pointer;font-family:inherit;">3</button>
+                    <button style="width:28px;height:28px;border:1px solid var(--c-n7);border-radius:7px;background:var(--c-surface);color:var(--c-n3);display:flex;align-items:center;justify-content:center;cursor:pointer;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+                  </span>
+                </div>
+                </sc-if>
+              </div>
+            </div>
+          </div>
+
+          <sc-if value="{{ f.isBulk }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;left:50%;transform:translateX(-50%);bottom:22px;z-index:15;display:flex;align-items:center;gap:8px;padding:9px 11px 9px 15px;background:var(--c-n1);border-radius:12px;box-shadow:0 12px 34px rgba(0,0,0,0.28);">
+            <span style="display:flex;align-items:baseline;gap:7px;margin-right:5px;"><strong style="font-size:13.5px;font-weight:700;color:var(--c-surface);">Выбрано 3</strong><small style="font-size:11.5px;color:var(--c-n5);">знания</small></span>
+            <sc-for list="{{ bulkActions }}" as="b" hint-placeholder-count="5">
+              <button style="display:flex;align-items:center;gap:7px;height:32px;padding:0 12px;border:1px solid {{ b.border }};border-radius:8px;background:{{ b.bg }};color:{{ b.color }};font-size:12.5px;font-weight:{{ b.weight }};cursor:pointer;font-family:inherit;white-space:nowrap;" style-hover="opacity:0.88;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="{{ b.icon }}"/></svg>{{ b.label }}</button>
+            </sc-for>
+            <i style="width:1px;height:22px;background:rgba(255,255,255,0.18);margin:0 3px;"></i>
+            <button title="Снять выделение" style="width:30px;height:30px;border:none;border-radius:8px;background:transparent;color:var(--c-n5);display:flex;align-items:center;justify-content:center;cursor:pointer;" style-hover="background:rgba(255,255,255,0.1);color:var(--c-surface);"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ f.isDialog }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;inset:0;z-index:30;background:rgba(15,17,20,0.42);display:flex;align-items:center;justify-content:center;padding:40px;">
+            <div style="width:560px;background:var(--c-surface);border-radius:14px;box-shadow:0 24px 60px rgba(0,0,0,0.3);overflow:hidden;">
+              <div style="padding:20px 22px 14px;border-bottom:1px solid var(--c-n8);">
+                <div style="display:flex;align-items:flex-start;gap:12px;">
+                  <div style="flex:1;min-width:0;"><h3 style="margin:0 0 4px;font-size:16.5px;font-weight:700;color:var(--c-n1);">Прикрепить к агенту</h3><p style="margin:0;font-size:12.5px;color:var(--c-n3);line-height:1.5;">Выбрано 3 знания. Один агент за операцию — так видно, что именно изменилось.</p></div>
+                  <button title="Закрыть" style="width:28px;height:28px;flex:none;border:none;border-radius:7px;background:transparent;color:var(--c-n4);display:flex;align-items:center;justify-content:center;cursor:pointer;" style-hover="background:var(--c-n9);color:var(--c-n2);"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+                </div>
+                <span style="display:inline-flex;gap:2px;margin-top:13px;padding:2px;border-radius:9px;background:var(--c-n9);">
+                  <sc-for list="{{ attachModes }}" as="m" hint-placeholder-count="2">
+                    <button style="height:30px;padding:0 15px;border:none;border-radius:7px;background:{{ m.bg }};color:{{ m.color }};font-size:12.5px;font-weight:{{ m.weight }};cursor:pointer;font-family:inherit;box-shadow:{{ m.shadow }};">{{ m.label }}</button>
+                  </sc-for>
+                </span>
+              </div>
+              <div style="padding:14px 22px 6px;">
+                <span style="display:block;margin-bottom:8px;font-size:11.5px;font-weight:600;letter-spacing:0.03em;color:var(--c-n4);">АГЕНТ</span>
+                <div style="display:flex;flex-direction:column;gap:5px;">
+                  <sc-for list="{{ agentPicks }}" as="a" hint-placeholder-count="3">
+                    <button style="display:flex;align-items:center;gap:11px;padding:9px 11px;border:1.5px solid {{ a.border }};border-radius:10px;background:{{ a.bg }};text-align:left;cursor:pointer;font-family:inherit;" style-hover="border-color:var(--c-accent);">
+                      <i style="width:16px;height:16px;flex:none;border-radius:50%;border:1.5px solid {{ a.radioBorder }};display:flex;align-items:center;justify-content:center;"><b style="width:8px;height:8px;border-radius:50%;background:{{ a.radioDot }};"></b></i>
+                      <span style="flex:1;min-width:0;line-height:1.35;"><strong style="display:block;font-size:13.5px;font-weight:600;color:var(--c-n1);">{{ a.name }}</strong><small style="font-size:11.5px;color:var(--c-n4);">{{ a.meta }}</small></span>
+                      <small style="height:20px;padding:0 8px;display:inline-flex;align-items:center;border-radius:6px;background:{{ a.tagBg }};color:{{ a.tagColor }};font-size:11px;font-weight:600;white-space:nowrap;">{{ a.tag }}</small>
+                    </button>
+                  </sc-for>
+                </div>
+              </div>
+              <div style="margin:14px 22px 0;padding:11px 13px;border-radius:10px;background:var(--c-warn-bg);border:1px solid var(--c-warn-border);display:flex;gap:10px;">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--c-warn-text)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px;"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16v.01"/></svg>
+                <span style="font-size:12px;line-height:1.5;color:var(--c-n2);"><b style="font-weight:600;">2 из 3 будут пропущены:</b> «Прайс-лист 2026» уже прикреплён к этому агенту, «Скрипт: недовольная посадка» выключен в ответах. Состав знаний агента не изменится по этим двум.</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:9px;padding:16px 22px 18px;">
+                <span style="font-size:11.5px;color:var(--c-n4);flex:1;line-height:1.45;">Операция атомарна: при недоступном идентификаторе не меняется ничего. Требуется право <code style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;">ai.manage</code>.</span>
+                <button style="height:34px;padding:0 13px;border:1px solid var(--c-n7);border-radius:8px;background:var(--c-surface);color:var(--c-n2);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;">Отмена</button>
+                <button style="height:34px;padding:0 15px;border:none;border-radius:8px;background:var(--c-accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;" style-hover="background:var(--c-accent-hover);">Прикрепить 1</button>
+              </div>
+            </div>
+          </div>
+          </sc-if>
+        </section>
+        </sc-if>
+
+        <!-- ===== КАРТОЧКА ЗНАНИЯ ===== -->
+        <sc-if value="{{ f.isCard }}" hint-placeholder-val="{{ false }}">
+        <section style="flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;background:var(--c-feed);">
+          <div style="flex:none;padding:18px 28px 16px;background:var(--c-surface);border-bottom:1px solid var(--c-n8);">
+            <div style="max-width:1500px;">
+              <div style="display:flex;align-items:center;gap:7px;margin-bottom:9px;font-size:12.5px;color:var(--c-n4);">
+                <button style="border:none;background:transparent;padding:0;color:var(--c-accent-text);font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;">База знаний</button><span>/</span><span>Регламенты</span><span>/</span><span style="color:var(--c-n2);">Пошив</span>
+              </div>
+              <div style="display:flex;align-items:flex-start;gap:20px;">
+                <div style="flex:1;min-width:0;">
+                  <div style="display:flex;align-items:center;gap:11px;margin-bottom:9px;">
+                    <h2 style="margin:0;font-size:21px;font-weight:700;letter-spacing:-0.015em;color:var(--c-n1);">Срок пошива и переносы примерок</h2>
+                    <span style="display:inline-flex;align-items:center;gap:6px;height:23px;padding:0 9px;border-radius:6px;background:var(--c-ok-bg);color:var(--c-ok-text);font-size:11.5px;font-weight:600;"><i style="width:6px;height:6px;border-radius:50%;background:currentColor;"></i>В ответах агента</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                    <span style="display:flex;align-items:center;gap:9px;height:32px;padding:0 11px;border:1px solid var(--c-n7);border-radius:9px;background:var(--c-surface2);font-size:12.5px;color:var(--c-n2);">
+                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--c-n4)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"/></svg>
+                      12 фрагментов · переиндексировано сегодня, 11:24
+                    </span>
+                    <span style="display:flex;align-items:center;gap:9px;height:32px;padding:0 11px;border:1px solid var(--c-n7);border-radius:9px;background:var(--c-surface2);font-size:12.5px;color:var(--c-n2);">
+                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--c-n4)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2zM12 2v2M9 12v9M15 12v9M9 18h6"/></svg>
+                      3 агента
+                    </span>
+                    <span style="font-size:12px;color:var(--c-n4);">обновила Анна Ким · 5 сентября, 11:20</span>
+                  </div>
+                </div>
+                <div style="flex:none;display:flex;align-items:center;gap:8px;padding-top:4px;">
+                  <button style="display:flex;align-items:center;gap:7px;height:34px;padding:0 13px;border:1px solid var(--c-n7);border-radius:8px;background:var(--c-surface);color:var(--c-n2);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;" style-hover="border-color:var(--c-n6);"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2zM12 2v2M9 12v9M15 12v9M9 18h6"/></svg>Прикрепить к агенту</button>
+                  <button style="display:flex;align-items:center;gap:7px;height:34px;padding:0 14px;border:none;border-radius:8px;background:var(--c-accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;" style-hover="background:var(--c-accent-hover);"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>Редактировать</button>
+                  <button title="Ещё" style="width:34px;height:34px;border:1px solid var(--c-n7);border-radius:8px;background:var(--c-surface);color:var(--c-n4);display:flex;align-items:center;justify-content:center;cursor:pointer;" style-hover="border-color:var(--c-n6);color:var(--c-n2);"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="flex:1;min-height:0;display:flex;">
+            <div style="flex:1;min-width:0;min-height:0;overflow-y:auto;padding:26px 34px 44px;">
+              <div style="max-width:720px;">
+                <p style="margin:0 0 20px;font-size:14.5px;line-height:1.7;color:var(--c-n3);">Как агент отвечает на вопросы о сроках: базовые сроки по типам изделий, правила переноса примерки и что делать при задержке мастера.</p>
+                <h3 style="margin:0 0 10px;font-size:17px;font-weight:700;color:var(--c-n1);">Базовые сроки</h3>
+                <table style="width:100%;border-collapse:collapse;font-size:13.5px;color:var(--c-n2);margin-bottom:22px;">
+                  <thead><tr><th style="text-align:left;padding:8px 10px;border-bottom:1px solid var(--c-n7);font-weight:600;">Изделие</th><th style="text-align:left;padding:8px 10px;border-bottom:1px solid var(--c-n7);font-weight:600;">Срок</th><th style="text-align:left;padding:8px 10px;border-bottom:1px solid var(--c-n7);font-weight:600;">Примерок</th></tr></thead>
+                  <tbody>
+                    <tr><td style="padding:8px 10px;border-bottom:1px solid var(--c-n8);">Рубашка</td><td style="padding:8px 10px;border-bottom:1px solid var(--c-n8);">10 рабочих дней</td><td style="padding:8px 10px;border-bottom:1px solid var(--c-n8);">1</td></tr>
+                    <tr><td style="padding:8px 10px;border-bottom:1px solid var(--c-n8);">Пальто</td><td style="padding:8px 10px;border-bottom:1px solid var(--c-n8);">25 рабочих дней</td><td style="padding:8px 10px;border-bottom:1px solid var(--c-n8);">2</td></tr>
+                    <tr><td style="padding:8px 10px;border-bottom:1px solid var(--c-n8);">Костюм-тройка</td><td style="padding:8px 10px;border-bottom:1px solid var(--c-n8);">35 рабочих дней</td><td style="padding:8px 10px;border-bottom:1px solid var(--c-n8);">3</td></tr>
+                  </tbody>
+                </table>
+                <h3 style="margin:0 0 10px;font-size:17px;font-weight:700;color:var(--c-n1);">Перенос примерки</h3>
+                <ol style="margin:0 0 20px;padding-left:22px;font-size:14.5px;line-height:1.75;color:var(--c-n2);">
+                  <li>Клиент предупредил за сутки — переносим бесплатно, срок сдвигается на те же дни.</li>
+                  <li>Меньше суток или не пришёл — предлагаем ближайшее окно, срок пересчитывает мастер.</li>
+                  <li>Третий перенос подряд — заказ ставится на паузу до звонка администратора.</li>
+                </ol>
+                <blockquote style="margin:0 0 22px;padding:12px 16px;border-left:3px solid var(--c-accent);border-radius:0 8px 8px 0;background:var(--c-accent-bg);font-size:14px;line-height:1.65;color:var(--c-n2);">Агент не называет точную дату сдачи — только диапазон из таблицы и ближайшее окно примерки. Дату подтверждает мастер.</blockquote>
+                <h3 style="margin:0 0 10px;font-size:17px;font-weight:700;color:var(--c-n1);">Если срок сорван</h3>
+                <ul style="margin:0;padding-left:22px;font-size:14.5px;line-height:1.75;color:var(--c-n2);">
+                  <li>Извиняемся и называем новый срок одной фразой, без объяснения внутренних причин.</li>
+                  <li>Задержка больше 5 дней — скидка 10 % и передача администратору.</li>
+                </ul>
+              </div>
+            </div>
+
+            <div style="width:320px;flex:none;display:flex;flex-direction:column;min-height:0;background:var(--c-surface);border-left:1px solid var(--c-n8);overflow-y:auto;">
+              <div style="padding:16px 16px 12px;display:flex;flex-direction:column;gap:12px;border-bottom:1px solid var(--c-n8);">
+                <div><span style="display:block;margin-bottom:5px;font-size:11.5px;font-weight:600;color:var(--c-n4);">КАТЕГОРИЯ</span><span style="display:inline-flex;align-items:center;gap:7px;height:28px;padding:0 10px;border-radius:8px;background:var(--c-n9);font-size:12.5px;color:var(--c-n2);"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--c-n4)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>Регламенты / Пошив</span></div>
+                <div style="display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:10px;background:var(--c-n10);border:1px solid var(--c-n8);">
+                  <span style="flex:1;min-width:0;line-height:1.4;"><strong style="display:block;font-size:12.5px;font-weight:600;color:var(--c-n1);">Участвует в ответах</strong><small style="font-size:11px;color:var(--c-n4);">выключенное знание не попадает в retrieval</small></span>
+                  <span style="flex:none;width:38px;height:22px;border-radius:11px;background:var(--c-accent);position:relative;"><i style="position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:#fff;"></i></span>
+                </div>
+              </div>
+
+              <div style="padding:14px 16px 12px;border-bottom:1px solid var(--c-n8);">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;"><span style="font-size:11.5px;font-weight:600;color:var(--c-n4);">ВЛОЖЕНИЯ</span><span style="font-size:11.5px;color:var(--c-n5);">ссылки уходят в ответ агента</span></div>
+                <div style="display:flex;flex-direction:column;gap:6px;">
+                  <sc-for list="{{ cardFiles }}" as="file" hint-placeholder-count="2">
+                    <div style="display:flex;align-items:center;gap:9px;padding:8px 9px;border:1px solid var(--c-n8);border-radius:9px;">
+                      <i style="width:28px;height:28px;flex:none;border-radius:7px;background:var(--c-n9);color:var(--c-n3);display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="{{ file.icon }}"/></svg></i>
+                      <span style="flex:1;min-width:0;line-height:1.3;"><strong style="display:block;font-size:12.5px;font-weight:600;color:var(--c-n1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ file.name }}</strong><small style="font-size:11px;color:var(--c-n4);">{{ file.meta }}</small></span>
+                      <button title="Копировать публичную ссылку" style="width:26px;height:26px;flex:none;border:none;border-radius:7px;background:transparent;color:var(--c-n4);display:flex;align-items:center;justify-content:center;cursor:pointer;" style-hover="background:var(--c-n9);color:var(--c-n2);"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></svg></button>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+
+              <div style="padding:14px 16px 12px;border-bottom:1px solid var(--c-n8);">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;"><span style="font-size:11.5px;font-weight:600;color:var(--c-n4);">АГЕНТЫ</span><button style="border:none;background:transparent;padding:0;color:var(--c-accent-text);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">Изменить</button></div>
+                <div style="display:flex;flex-direction:column;gap:5px;">
+                  <sc-for list="{{ cardAgents }}" as="a" hint-placeholder-count="3">
+                    <div style="display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:9px;background:var(--c-n10);">
+                      <i style="width:26px;height:26px;flex:none;border-radius:7px;background:{{ a.tileBg }};color:{{ a.tileColor }};display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2zM12 2v2M9 12v9M15 12v9M9 18h6"/></svg></i>
+                      <span style="flex:1;min-width:0;line-height:1.3;"><strong style="display:block;font-size:12.5px;font-weight:600;color:var(--c-n1);">{{ a.name }}</strong><small style="font-size:11px;color:var(--c-n4);">{{ a.meta }}</small></span>
+                      <small style="height:19px;padding:0 7px;display:inline-flex;align-items:center;border-radius:5px;background:{{ a.tagBg }};color:{{ a.tagColor }};font-size:10.5px;font-weight:600;">{{ a.tag }}</small>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+
+              <div style="padding:14px 16px 20px;">
+                <span style="display:block;margin-bottom:8px;font-size:11.5px;font-weight:600;color:var(--c-n4);">ИНДЕКСАЦИЯ</span>
+                <div style="padding:11px 12px;border-radius:10px;background:var(--c-n10);border:1px solid var(--c-n8);">
+                  <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px;"><strong style="font-size:19px;font-weight:700;color:var(--c-n1);">12</strong><span style="font-size:12px;color:var(--c-n3);">фрагментов · 4 280 знаков</span></div>
+                  <p style="margin:0 0 9px;font-size:11.5px;line-height:1.5;color:var(--c-n4);">Фрагменты пересобираются при сохранении. Пока идёт пересборка, агент отвечает по прежней версии.</p>
+                  <button style="display:flex;align-items:center;gap:7px;height:30px;padding:0 11px;border:1px solid var(--c-n7);border-radius:8px;background:var(--c-surface);color:var(--c-n2);font-size:12.5px;font-weight:500;cursor:pointer;font-family:inherit;" style-hover="border-color:var(--c-n6);"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5M4 9h11a5 5 0 0 1 0 10h-3"/></svg>Переиндексировать</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        </sc-if>
+
+        <!-- ===== РЕДАКТОР ЗНАНИЯ ===== -->
+        <sc-if value="{{ f.isEditor }}" hint-placeholder-val="{{ false }}">
+        <section style="flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;background:var(--c-feed);">
+          <div style="flex:none;display:flex;align-items:center;gap:14px;height:54px;padding:0 20px;background:var(--c-surface);border-bottom:1px solid var(--c-n8);">
+            <button style="display:flex;align-items:center;gap:7px;height:30px;padding:0 10px 0 7px;border:none;border-radius:7px;background:transparent;color:var(--c-n2);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;" style-hover="background:var(--c-n9);"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>База знаний</button>
+            <span style="font-size:12.5px;color:var(--c-n4);white-space:nowrap;">Регламенты / Пошив</span>
+            <span style="flex:1;"></span>
+            <span style="display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 9px;border-radius:6px;background:{{ f.indexBg }};color:{{ f.indexColor }};font-size:11.5px;font-weight:600;white-space:nowrap;"><i style="width:6px;height:6px;border-radius:50%;background:currentColor;"></i>{{ f.indexLabel }}</span>
+            <span style="display:flex;align-items:center;gap:2px;padding:2px;border-radius:8px;background:var(--c-n9);">
+              <sc-for list="{{ f.modes }}" as="m" hint-placeholder-count="3">
+                <button title="{{ m.title }}" style="display:flex;align-items:center;gap:6px;height:28px;padding:0 10px;border:none;border-radius:6px;background:{{ m.bg }};color:{{ m.color }};font-size:12.5px;font-weight:{{ m.weight }};cursor:pointer;font-family:inherit;box-shadow:{{ m.shadow }};white-space:nowrap;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="{{ m.icon }}"/></svg>{{ m.label }}</button>
+              </sc-for>
+            </span>
+            <button style="height:32px;padding:0 13px;border:1px solid var(--c-n7);border-radius:8px;background:var(--c-surface);color:var(--c-n2);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;" style-hover="border-color:var(--c-n6);">Отменить правки</button>
+            <button style="display:flex;align-items:center;gap:7px;height:32px;padding:0 14px;border:none;border-radius:8px;background:var(--c-accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;" style-hover="background:var(--c-accent-hover);"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m4 12 5 5L20 6"/></svg>Сохранить и переиндексировать</button>
+          </div>
+
+          <div style="flex:1;min-height:0;display:flex;">
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;border-right:1px solid var(--c-n8);background:var(--c-surface);">
+              <div style="flex:none;padding:18px 22px 10px;">
+                <input value="Срок пошива и переносы примерок" style="width:100%;border:none;outline:none;background:transparent;padding:0;font-family:inherit;font-size:21px;font-weight:700;letter-spacing:-0.01em;color:var(--c-n1);">
+                <div style="display:flex;align-items:center;gap:8px;margin-top:7px;font-size:12px;color:var(--c-n4);"><span>Заголовок цитируется агентом в ответе клиенту — пишите его как ответ, не как папку.</span></div>
+              </div>
+              <div style="flex:none;display:flex;align-items:center;gap:2px;padding:6px 14px;border-top:1px solid var(--c-n8);border-bottom:1px solid var(--c-n8);background:var(--c-surface2);">
+                <sc-for list="{{ mdTools }}" as="t" hint-placeholder-count="12">
+                  <sc-if value="{{ t.divider }}" hint-placeholder-val="{{ false }}"><i style="width:1px;height:20px;background:var(--c-n7);margin:0 5px;"></i></sc-if>
+                  <sc-if value="{{ t.title }}" hint-placeholder-val="{{ true }}">
+                  <button title="{{ t.title }}" style="min-width:30px;height:30px;padding:0 7px;border:none;border-radius:7px;background:{{ t.bg }};color:{{ t.color }};display:flex;align-items:center;justify-content:center;gap:5px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;" style-hover="background:var(--c-n8);">
+                    <sc-if value="{{ t.text }}" hint-placeholder-val="{{ false }}"><span>{{ t.text }}</span></sc-if>
+                    <sc-if value="{{ t.icon }}" hint-placeholder-val="{{ false }}"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="{{ t.icon }}"/></svg></sc-if>
+                  </button>
+                  </sc-if>
+                </sc-for>
+                <span style="flex:1;"></span>
+                <span style="font-size:11.5px;color:var(--c-n4);white-space:nowrap;">GFM</span>
+              </div>
+              <div style="flex:1;min-height:0;overflow:hidden;position:relative;">
+                <pre style="margin:0;height:100%;max-width:900px;padding:16px 22px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;line-height:1.75;color:var(--c-n2);white-space:pre-wrap;">{{ mdSource }}</pre>
+                <sc-if value="{{ f.dropping }}" hint-placeholder-val="{{ false }}">
+                <div style="position:absolute;inset:10px;border:2px dashed var(--c-accent);border-radius:12px;background:var(--c-accent-bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;">
+                  <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="var(--c-accent-text)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+                  <strong style="font-size:15px;color:var(--c-accent-text);">Отпустите, чтобы приложить к знанию</strong>
+                  <span style="font-size:12.5px;color:var(--c-n3);">Файл станет вложением и ссылкой в тексте — агент отдаёт её клиенту. PNG, JPG, PDF, DOCX, XLSX · до 25 МБ</span>
+                </div>
+                </sc-if>
+              </div>
+              <div style="flex:none;display:flex;align-items:center;gap:14px;padding:8px 22px;border-top:1px solid var(--c-n8);background:var(--c-surface2);font-size:11.5px;color:var(--c-n4);">
+                <span>4 280 знаков · ≈12 фрагментов</span><span>Строка 22, столбец 18</span><span style="flex:1;"></span><span>{{ f.saveNote }}</span>
+              </div>
+            </div>
+
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;background:var(--c-feed);">
+              <div style="flex:none;display:flex;align-items:center;gap:10px;height:37px;padding:0 18px;border-bottom:1px solid var(--c-n8);background:var(--c-surface2);">
+                <span style="font-size:11.5px;font-weight:600;letter-spacing:0.04em;color:var(--c-n4);">ПРЕДПРОСМОТР · ВНУТРЕННИЙ МАТЕРИАЛ</span>
+                <span style="flex:1;"></span>
+                <button title="Как это цитирует агент" style="display:flex;align-items:center;gap:6px;height:24px;padding:0 8px;border:none;border-radius:6px;background:transparent;color:var(--c-n3);font-size:12px;cursor:pointer;font-family:inherit;" style-hover="background:var(--c-n9);"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/></svg>Как ответит агент</button>
+              </div>
+              <div style="flex:1;min-height:0;overflow-y:auto;padding:26px 34px 40px;">
+                <div style="max-width:620px;margin:0 auto;">
+                  <h1 style="margin:0 0 8px;font-size:24px;font-weight:700;letter-spacing:-0.02em;line-height:1.25;color:var(--c-n1);">Срок пошива и переносы примерок</h1>
+                  <p style="margin:0 0 20px;font-size:14.5px;line-height:1.7;color:var(--c-n3);">Базовые сроки по типам изделий, правила переноса примерки и что делать при задержке.</p>
+                  <h2 style="margin:0 0 10px;font-size:18px;font-weight:700;color:var(--c-n1);">Базовые сроки</h2>
+                  <table style="width:100%;border-collapse:collapse;font-size:13.5px;color:var(--c-n2);margin-bottom:20px;">
+                    <thead><tr><th style="text-align:left;padding:8px 10px;border-bottom:1px solid var(--c-n7);font-weight:600;">Изделие</th><th style="text-align:left;padding:8px 10px;border-bottom:1px solid var(--c-n7);font-weight:600;">Срок</th><th style="text-align:left;padding:8px 10px;border-bottom:1px solid var(--c-n7);font-weight:600;">Примерок</th></tr></thead>
+                    <tbody>
+                      <tr><td style="padding:8px 10px;border-bottom:1px solid var(--c-n8);">Рубашка</td><td style="padding:8px 10px;border-bottom:1px solid var(--c-n8);">10 рабочих дней</td><td style="padding:8px 10px;border-bottom:1px solid var(--c-n8);">1</td></tr>
+                      <tr><td style="padding:8px 10px;border-bottom:1px solid var(--c-n8);">Пальто</td><td style="padding:8px 10px;border-bottom:1px solid var(--c-n8);">25 рабочих дней</td><td style="padding:8px 10px;border-bottom:1px solid var(--c-n8);">2</td></tr>
+                    </tbody>
+                  </table>
+                  <h2 style="margin:0 0 10px;font-size:18px;font-weight:700;color:var(--c-n1);">Перенос примерки</h2>
+                  <ol style="margin:0 0 20px;padding-left:22px;font-size:14.5px;line-height:1.75;color:var(--c-n2);">
+                    <li>Предупредил за сутки — переносим бесплатно.</li>
+                    <li>Меньше суток — ближайшее свободное окно.</li>
+                    <li>Третий перенос — пауза до звонка администратора.</li>
+                  </ol>
+                  <blockquote style="margin:0 0 20px;padding:12px 16px;border-left:3px solid var(--c-accent);border-radius:0 8px 8px 0;background:var(--c-accent-bg);font-size:14px;line-height:1.65;color:var(--c-n2);">Агент не называет точную дату сдачи — только диапазон и ближайшее окно примерки.</blockquote>
+                  <div style="display:flex;align-items:center;gap:10px;padding:11px 13px;border:1px solid var(--c-n8);border-radius:10px;background:var(--c-surface);">
+                    <i style="width:30px;height:30px;flex:none;border-radius:8px;background:var(--c-n9);color:var(--c-n3);display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5"/></svg></i>
+                    <span style="flex:1;min-width:0;line-height:1.35;"><strong style="display:block;font-size:13px;font-weight:600;color:var(--c-n1);">Регламент сроков 2026.pdf</strong><small style="font-size:11.5px;color:var(--c-n4);">вложение · ссылку агент отдаёт клиенту</small></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div style="width:300px;flex:none;display:flex;flex-direction:column;min-height:0;background:var(--c-surface);border-left:1px solid var(--c-n8);overflow-y:auto;">
+              <div style="padding:16px 16px 10px;display:flex;flex-direction:column;gap:12px;">
+                <label style="display:block;"><span style="display:block;margin-bottom:5px;font-size:11.5px;font-weight:600;color:var(--c-n4);">Категория</span><span style="display:flex;align-items:center;justify-content:space-between;height:34px;padding:0 10px;border:1px solid var(--c-n7);border-radius:8px;font-size:13px;color:var(--c-n1);">Регламенты / Пошив<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--c-n4)" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></span></label>
+                <label style="display:block;"><span style="display:block;margin-bottom:5px;font-size:11.5px;font-weight:600;color:var(--c-n4);">Краткое описание <small style="font-weight:500;color:var(--c-n5);">· помогает поиску и агенту</small></span><span style="display:block;min-height:58px;padding:8px 10px;border:1px solid var(--c-n7);border-radius:8px;font-size:12.5px;line-height:1.5;color:var(--c-n2);">Сроки по типам изделий, правила переноса примерки, действия при задержке.</span></label>
+                <div style="display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:10px;background:var(--c-n10);border:1px solid var(--c-n8);">
+                  <span style="flex:1;min-width:0;line-height:1.4;"><strong style="display:block;font-size:12.5px;font-weight:600;color:var(--c-n1);">Участвует в ответах</strong><small style="font-size:11px;color:var(--c-n4);">можно выключить, не удаляя</small></span>
+                  <span style="flex:none;width:38px;height:22px;border-radius:11px;background:var(--c-accent);position:relative;"><i style="position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:#fff;"></i></span>
+                </div>
+              </div>
+
+              <div style="padding:6px 16px 10px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;"><span style="font-size:11.5px;font-weight:600;color:var(--c-n4);">ВЛОЖЕНИЯ</span><button style="border:none;background:transparent;padding:0;color:var(--c-accent-text);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">Загрузить</button></div>
+                <div style="border:1px dashed {{ f.dropBorder }};border-radius:10px;background:{{ f.dropBg }};padding:12px;text-align:center;">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="{{ f.dropIcon }}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+                  <p style="margin:5px 0 2px;font-size:12.5px;font-weight:600;color:var(--c-n2);">Перетащите файлы</p>
+                  <p style="margin:0;font-size:11.5px;color:var(--c-n4);">или <span style="color:var(--c-accent-text);font-weight:600;">выберите на диске</span> · до 25 МБ</p>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:6px;margin-top:10px;">
+                  <sc-for list="{{ f.files }}" as="file" hint-placeholder-count="3">
+                    <div style="display:flex;align-items:center;gap:9px;padding:8px 9px;border:1px solid {{ file.border }};border-radius:9px;background:{{ file.bg }};">
+                      <i style="width:28px;height:28px;flex:none;border-radius:7px;background:var(--c-n9);color:var(--c-n3);display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="{{ file.icon }}"/></svg></i>
+                      <span style="flex:1;min-width:0;line-height:1.3;"><strong style="display:block;font-size:12.5px;font-weight:600;color:var(--c-n1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ file.name }}</strong><small style="font-size:11px;color:{{ file.metaColor }};">{{ file.meta }}</small>
+                        <sc-if value="{{ file.progress }}" hint-placeholder-val="{{ false }}"><span style="display:block;height:3px;margin-top:5px;border-radius:2px;background:var(--c-n8);overflow:hidden;"><i style="display:block;height:3px;width:{{ file.progress }};background:var(--c-accent);"></i></span></sc-if>
+                      </span>
+                      <sc-if value="{{ file.done }}" hint-placeholder-val="{{ true }}">
+                      <button title="Вставить ссылку в текст" style="width:26px;height:26px;flex:none;border:none;border-radius:7px;background:transparent;color:var(--c-accent-text);display:flex;align-items:center;justify-content:center;cursor:pointer;" style-hover="background:var(--c-accent-bg);"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+                      <button title="Копировать Markdown" style="width:26px;height:26px;flex:none;border:none;border-radius:7px;background:transparent;color:var(--c-n4);display:flex;align-items:center;justify-content:center;cursor:pointer;" style-hover="background:var(--c-n9);color:var(--c-n2);"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></svg></button>
+                      </sc-if>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+
+              <div style="padding:6px 16px 20px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;"><span style="font-size:11.5px;font-weight:600;color:var(--c-n4);">АГЕНТЫ</span><small style="font-size:11.5px;color:var(--c-n5);">меняется массовым действием</small></div>
+                <div style="display:flex;flex-direction:column;gap:5px;">
+                  <sc-for list="{{ cardAgents }}" as="a" hint-placeholder-count="3">
+                    <div style="display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:9px;background:var(--c-n10);">
+                      <i style="width:24px;height:24px;flex:none;border-radius:7px;background:{{ a.tileBg }};color:{{ a.tileColor }};display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2zM12 2v2M9 12v9M15 12v9M9 18h6"/></svg></i>
+                      <span style="flex:1;min-width:0;line-height:1.25;"><strong style="display:block;font-size:12px;font-weight:600;color:var(--c-n1);">{{ a.name }}</strong><small style="font-size:10.5px;color:var(--c-n4);">{{ a.meta }}</small></span>
+                    </div>
+                  </sc-for>
+                </div>
+                <p style="margin:9px 0 0;font-size:11.5px;line-height:1.5;color:var(--c-n4);">Прикрепление и открепление — только через «Прикрепить к агенту»: операция атомарна и пишется в журнал.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+        </sc-if>
+
+        <!-- ===== УПРАВЛЕНИЕ КАТЕГОРИЯМИ ===== -->
+        <sc-if value="{{ f.isCats }}" hint-placeholder-val="{{ false }}">
+        <section style="flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;background:var(--c-feed);">
+          <div style="flex:none;padding:18px 28px 16px;background:var(--c-surface);border-bottom:1px solid var(--c-n8);">
+            <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px;font-size:12.5px;color:var(--c-n4);"><button style="border:none;background:transparent;padding:0;color:var(--c-accent-text);font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;">База знаний</button><span>/</span><span style="color:var(--c-n2);">Категории</span></div>
+            <h2 style="margin:0 0 5px;font-size:20px;font-weight:700;color:var(--c-n1);">Категории</h2>
+            <p style="margin:0;font-size:13px;color:var(--c-n3);">Дерево до трёх уровней. Перетащите строку, чтобы сменить родителя или порядок.</p>
+          </div>
+          <div style="flex:1;min-height:0;overflow-y:auto;padding:24px 34px 40px;">
+            <div style="display:flex;gap:22px;align-items:flex-start;max-width:1180px;">
+              <div style="flex:1;min-width:0;background:var(--c-surface);border:1px solid var(--c-n7);border-radius:10px;overflow:hidden;">
+                <sc-for list="{{ catRows }}" as="c" hint-placeholder-count="9">
+                  <div style="display:flex;align-items:center;gap:10px;padding:0 12px 0 {{ c.pad }};height:44px;border-bottom:1px solid var(--c-n8);background:{{ c.bg }};">
+                    <span title="Перетащить" style="width:18px;flex:none;color:var(--c-n5);display:flex;cursor:grab;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6h.01M9 12h.01M9 18h.01M15 6h.01M15 12h.01M15 18h.01"/></svg></span>
+                    <sc-if value="{{ c.editing }}" hint-placeholder-val="{{ false }}">
+                    <input value="Возвраты и переделки" style="flex:1;min-width:0;height:30px;padding:0 10px;border:1.5px solid var(--c-accent);border-radius:7px;background:var(--c-surface);font-family:inherit;font-size:13.5px;color:var(--c-n1);outline:none;">
+                    <button style="height:30px;padding:0 12px;border:none;border-radius:7px;background:var(--c-accent);color:#fff;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;">Готово</button>
+                    <button style="height:30px;padding:0 11px;border:1px solid var(--c-n7);border-radius:7px;background:var(--c-surface);color:var(--c-n3);font-size:12.5px;cursor:pointer;font-family:inherit;">Отмена</button>
+                    </sc-if>
+                    <sc-if value="{{ c.name }}" hint-placeholder-val="{{ true }}">
+                    <span style="flex:1;min-width:0;display:flex;align-items:center;gap:8px;">
+                      <strong style="font-size:13.5px;font-weight:{{ c.weight }};color:var(--c-n1);">{{ c.name }}</strong>
+                      <sc-if value="{{ c.tag }}" hint-placeholder-val="{{ false }}"><small style="height:19px;padding:0 7px;display:inline-flex;align-items:center;border-radius:5px;background:var(--c-n9);color:var(--c-n4);font-size:10.5px;font-weight:600;">{{ c.tag }}</small></sc-if>
+                    </span>
+                    <small style="font-size:12px;color:var(--c-n4);white-space:nowrap;">{{ c.count }}</small>
+                    <span style="display:flex;align-items:center;gap:3px;">
+                      <button title="Добавить вложенную" style="width:28px;height:28px;border:none;border-radius:7px;background:transparent;color:var(--c-n4);display:flex;align-items:center;justify-content:center;cursor:pointer;" style-hover="background:var(--c-n9);color:var(--c-n2);"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+                      <button title="Переименовать" style="width:28px;height:28px;border:none;border-radius:7px;background:transparent;color:var(--c-n4);display:flex;align-items:center;justify-content:center;cursor:pointer;" style-hover="background:var(--c-n9);color:var(--c-n2);"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
+                      <button title="{{ c.delTitle }}" disabled="{{ c.delDisabled }}" style="width:28px;height:28px;border:none;border-radius:7px;background:transparent;color:{{ c.delColor }};display:flex;align-items:center;justify-content:center;cursor:{{ c.delCursor }};"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13"/></svg></button>
+                    </span>
+                    </sc-if>
+                  </div>
+                </sc-for>
+                <div style="padding:11px 12px;">
+                  <button style="display:flex;align-items:center;gap:7px;height:32px;padding:0 12px;border:1px dashed var(--c-n6);border-radius:8px;background:transparent;color:var(--c-n3);font-size:12.5px;font-weight:500;cursor:pointer;font-family:inherit;" style-hover="border-color:var(--c-accent);color:var(--c-accent-text);"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Категория верхнего уровня</button>
+                </div>
+              </div>
+              <div style="width:320px;flex:none;display:flex;flex-direction:column;gap:12px;">
+                <div style="padding:14px 16px;background:var(--c-surface);border:1px solid var(--c-n7);border-radius:10px;">
+                  <strong style="display:block;margin-bottom:8px;font-size:13px;font-weight:700;color:var(--c-n1);">Правила</strong>
+                  <ul style="margin:0;padding-left:18px;font-size:12.5px;line-height:1.65;color:var(--c-n3);">
+                    <li>Имя уникально внутри родителя.</li>
+                    <li>Категорию нельзя перенести внутрь себя.</li>
+                    <li>Удаление — только для пустой категории без вложенных.</li>
+                    <li>«Без категории» системная: не переименовывается и не удаляется.</li>
+                  </ul>
+                </div>
+                <div style="padding:12px 14px;background:var(--c-warn-bg);border:1px solid var(--c-warn-border);border-radius:10px;display:flex;gap:10px;">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--c-warn-text)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px;"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16v.01"/></svg>
+                  <span style="font-size:12px;line-height:1.5;color:var(--c-n2);">«Прайсы и оплата» удалить нельзя: 12 знаний и 2 вложенные категории. Сначала перенесите содержимое.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        </sc-if>
+
+        <!-- ===== ИМПОРТ YAML ===== -->
+        <sc-if value="{{ f.isImport }}" hint-placeholder-val="{{ false }}">
+        <section style="flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;background:var(--c-feed);">
+          <div style="flex:none;padding:18px 28px 16px;background:var(--c-surface);border-bottom:1px solid var(--c-n8);">
+            <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px;font-size:12.5px;color:var(--c-n4);"><button style="border:none;background:transparent;padding:0;color:var(--c-accent-text);font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;">База знаний</button><span>/</span><span style="color:var(--c-n2);">Импорт YAML</span></div>
+            <h2 style="margin:0 0 5px;font-size:20px;font-weight:700;color:var(--c-n1);">Импорт материалов</h2>
+            <p style="margin:0;font-size:13px;color:var(--c-n3);">Файл разбирается до применения: видно, что создастся, что обновится и где ошибка.</p>
+          </div>
+          <div style="flex:1;min-height:0;overflow-y:auto;padding:24px 34px 40px;">
+            <div style="max-width:1180px;display:flex;flex-direction:column;gap:16px;">
+              <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--c-surface);border:1px solid var(--c-n7);border-radius:10px;">
+                <i style="width:38px;height:38px;flex:none;border-radius:10px;background:var(--c-n9);color:var(--c-n3);display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5"/></svg></i>
+                <span style="flex:1;min-width:0;line-height:1.4;"><strong style="display:block;font-size:13.5px;font-weight:600;color:var(--c-n1);">knowledge-atelie-2026.yaml</strong><small style="font-size:12px;color:var(--c-n4);">42 КБ · 7 документов · разобран без ошибок формата</small></span>
+                <button style="height:32px;padding:0 12px;border:1px solid var(--c-n7);border-radius:8px;background:var(--c-surface);color:var(--c-n2);font-size:12.5px;font-weight:500;cursor:pointer;font-family:inherit;">Выбрать другой файл</button>
+              </div>
+
+              <div style="background:var(--c-surface);border:1px solid var(--c-n7);border-radius:10px;overflow:hidden;">
+                <div style="display:flex;align-items:center;gap:14px;padding:12px 16px;border-bottom:1px solid var(--c-n8);">
+                  <strong style="font-size:13px;font-weight:700;color:var(--c-n1);">Что произойдёт</strong>
+                  <span style="display:flex;align-items:center;gap:8px;">
+                    <sc-for list="{{ importStats }}" as="s" hint-placeholder-count="3">
+                      <small style="display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 9px;border-radius:6px;background:{{ s.bg }};color:{{ s.color }};font-size:11.5px;font-weight:600;">{{ s.label }}</small>
+                    </sc-for>
+                  </span>
+                </div>
+                <table style="width:100%;border-collapse:collapse;">
+                  <thead><tr style="background:var(--c-n10);">
+                    <th style="text-align:left;padding:9px 16px;font-size:11px;font-weight:600;letter-spacing:0.04em;color:var(--c-n4);border-bottom:1px solid var(--c-n7);">ДОКУМЕНТ</th>
+                    <th style="text-align:left;padding:9px 12px;font-size:11px;font-weight:600;letter-spacing:0.04em;color:var(--c-n4);border-bottom:1px solid var(--c-n7);">CATEGORYPATH</th>
+                    <th style="text-align:left;padding:9px 12px;font-size:11px;font-weight:600;letter-spacing:0.04em;color:var(--c-n4);border-bottom:1px solid var(--c-n7);">ДЕЙСТВИЕ</th>
+                    <th style="text-align:left;padding:9px 12px;font-size:11px;font-weight:600;letter-spacing:0.04em;color:var(--c-n4);border-bottom:1px solid var(--c-n7);">ЗАМЕЧАНИЕ</th>
+                  </tr></thead>
+                  <tbody>
+                    <sc-for list="{{ importRows }}" as="d" hint-placeholder-count="7">
+                      <tr style="border-bottom:1px solid var(--c-n8);background:{{ d.rowBg }};">
+                        <td style="padding:10px 16px;"><code style="font-size:12.5px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--c-n1);">{{ d.title }}</code></td>
+                        <td style="padding:10px 12px;font-size:12.5px;color:var(--c-n3);">{{ d.path }}</td>
+                        <td style="padding:10px 12px;"><span style="display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 9px;border-radius:6px;background:{{ d.actBg }};color:{{ d.actColor }};font-size:11.5px;font-weight:600;">{{ d.action }}</span></td>
+                        <td style="padding:10px 12px;font-size:12px;line-height:1.45;color:{{ d.noteColor }};max-width:420px;">{{ d.note }}</td>
+                      </tr>
+                    </sc-for>
+                  </tbody>
+                </table>
+              </div>
+
+              <div style="display:flex;align-items:center;gap:12px;">
+                <span style="flex:1;font-size:12px;line-height:1.5;color:var(--c-n4);max-width:640px;">Импорт не создаёт категории неявно: документ с несуществующим <code style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;">categoryPath</code> отклоняется отдельно, остальные применяются. Без указания пути документ попадает в «Без категории».</span>
+                <button style="height:34px;padding:0 13px;border:1px solid var(--c-n7);border-radius:8px;background:var(--c-surface);color:var(--c-n2);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;">Отмена</button>
+                <button style="height:34px;padding:0 15px;border:none;border-radius:8px;background:var(--c-accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;" style-hover="background:var(--c-accent-hover);">Импортировать 6 документов</button>
+              </div>
+            </div>
+          </div>
+        </section>
+        </sc-if>
+
+      </div>
+    </div>
+  </sc-for>
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;'light' | 'dark'&quot;,&quot;section&quot;:&quot;Тема&quot;},&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;options&quot;:[&quot;#1677ff&quot;,&quot;#5b5bd6&quot;,&quot;#0f9b8e&quot;,&quot;#fa8c16&quot;],&quot;default&quot;:&quot;#1677ff&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Тема&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const dark = (this.props.theme ?? "light") === "dark";
+    const accent = this.props.accent ?? "#1677ff";
+    const T = dark
+      ? { canvas: "#101113", surface: "#1b1c1f", surface2: "#181a1d", feed: "#15161a", n1: "#d6d7db", n2: "#c3c5ca", n3: "#9a9ca3", n4: "#767881", n5: "#5b5d66", n6: "#45474f", n7: "#37393f", n8: "#2d2f35", n9: "#27292e", n10: "#212327", ai: "#a98be0", warnText: "#d9a441", okText: "#5fbf7a", errText: "#ff7875", accentText: `color-mix(in srgb,${accent} 62%,white)`, accentHover: `color-mix(in srgb,${accent} 92%,white)`, accentBgPct: 16, tintPct: 12, accentMuted: `color-mix(in srgb,${accent} 84%,#1b1c1f)` }
+      : { canvas: "#e4e6ea", surface: "#ffffff", surface2: "#fafafa", feed: "#f5f6f8", n1: "#1f1f1f", n2: "#262626", n3: "#595959", n4: "#8c8c8c", n5: "#bfbfbf", n6: "#d9d9d9", n7: "#e8e8e8", n8: "#f0f0f0", n9: "#f5f5f5", n10: "#fafafa", ai: "#722ed1", warnText: "#d48806", okText: "#237a3f", errText: "#cf1322", accentText: `color-mix(in srgb,${accent} 82%,black)`, accentHover: `color-mix(in srgb,${accent} 88%,black)`, accentBgPct: 10, tintPct: 11, accentMuted: accent };
+    const themeVars = `--c-canvas:${T.canvas};--c-surface:${T.surface};--c-surface2:${T.surface2};--c-feed:${T.feed};--c-n1:${T.n1};--c-n2:${T.n2};--c-n3:${T.n3};--c-n4:${T.n4};--c-n5:${T.n5};--c-n6:${T.n6};--c-n7:${T.n7};--c-n8:${T.n8};--c-n9:${T.n9};--c-n10:${T.n10};--c-ai:${T.ai};--c-accent:${T.accentMuted};--c-accent-text:${T.accentText};--c-accent-hover:${T.accentHover};--c-accent-bg:color-mix(in srgb,${accent} ${T.accentBgPct}%,${T.surface});--c-warn-bg:color-mix(in srgb,#faad14 ${T.tintPct}%,${T.surface});--c-warn-border:color-mix(in srgb,#faad14 ${T.tintPct + 25}%,${T.surface});--c-warn-text:${T.warnText};--c-ok-bg:color-mix(in srgb,#52c41a ${T.tintPct}%,${T.surface});--c-ok-border:color-mix(in srgb,#52c41a ${T.tintPct + 20}%,${T.surface});--c-ok-text:${T.okText};--c-err-bg:color-mix(in srgb,#ff4d4f ${T.tintPct}%,${T.surface});--c-err-text:${T.errText};`;
+
+    const ICON = {
+      chat: "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z",
+      contacts: "M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0z",
+      agents: "M6 6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2zM12 2v2M9 12v9M15 12v9M9 18h6M10 8v.01M14 8v.01",
+      team: "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75",
+      portals: "M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM2 12h20M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20",
+      knowledge: "M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5A2.5 2.5 0 0 0 6.5 22H20V2H6.5A2.5 2.5 0 0 0 4 4.5z",
+      settings: "M21 6H9M3 6h2M9 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM21 12h-8M3 12h6M13 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM21 18h-6M3 18h8M15 18a2 2 0 1 1-4 0 2 2 0 0 1 4 0z",
+      folder: "M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z",
+      file: "M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5",
+      image: "M3 6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM8.5 10a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zM4 17l5-5 4 4 3-3 4 4",
+      doc: "M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5A2.5 2.5 0 0 0 6.5 22H20V2H6.5A2.5 2.5 0 0 0 4 4.5z",
+      script: "M8 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3M9 8h7M9 12h5M16 3l5 5-8 8-5 1 1-5z",
+      price: "M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6",
+      box: "M21 8 12 3 3 8v8l9 5 9-5zM3 8l9 5 9-5M12 13v8",
+      trash: "M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13",
+      copy: "M11 9h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-8a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2zM5 15V5a2 2 0 0 1 2-2h8",
+      edit: "M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z",
+      eye: "M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7zM15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z",
+      eyeOff: "M3 3l18 18M10.6 10.6a3 3 0 0 0 4.2 4.2M6.6 6.6C4 8.3 2 12 2 12s3.6 7 10 7c1.7 0 3.2-.4 4.5-1.1M14 5.3A9.7 9.7 0 0 1 22 12s-.7 1.4-2 3",
+      split: "M4 4h16v16H4zM12 4v16",
+      code: "m9 18-6-6 6-6M15 6l6 6-6 6",
+      bold: "M7 5h6a3.5 3.5 0 0 1 0 7H7zM7 12h7a3.5 3.5 0 0 1 0 7H7z",
+      italic: "M15 5h-5M14 19H9M14.5 5 10 19",
+      link: "M10 13a5 5 0 0 0 7 0l2-2a5 5 0 0 0-7-7l-1 1M14 11a5 5 0 0 0-7 0l-2 2a5 5 0 0 0 7 7l1-1",
+      list: "M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01",
+      numlist: "M10 6h11M10 12h11M10 18h11M4 5h1v4M4 15h2v1H4v2h2",
+      quote: "M7 7H4v5h3l-1 5M17 7h-3v5h3l-1 5",
+      table: "M3 5h18v14H3zM3 10h18M9 10v9",
+      attach: "M21 12.5 12.5 21a4.95 4.95 0 0 1-7-7l8-8a3.5 3.5 0 0 1 5 5l-8 8a1.95 1.95 0 0 1-3-3l7-7",
+      reindex: "M9 14 4 9l5-5M4 9h11a5 5 0 0 1 0 10h-3",
+      move: "M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20",
+      external: "M7 17 17 7M8 7h9v9",
+    };
+
+    const nav = [
+      { key: "chat", label: "Чат", icon: ICON.chat, badge: 2 }, { key: "contacts", label: "Контакты", icon: ICON.contacts }, { key: "agents", label: "Агенты", icon: ICON.agents },
+      { key: "employees", label: "Сотрудники", icon: ICON.team }, { key: "portals", label: "Порталы", icon: ICON.portals }, { key: "knowledge", label: "База знаний", icon: ICON.knowledge }, { key: "settings", label: "Настройки", icon: ICON.settings },
+    ].map((n) => ({ ...n, bg: n.key === "knowledge" ? "var(--c-accent-bg)" : "transparent", color: n.key === "knowledge" ? "var(--c-accent-text)" : "var(--c-n2)", weight: n.key === "knowledge" ? 600 : 500 }));
+
+    // ---- дерево категорий сайдбара библиотеки
+    const catRow = (label, count, depth, active, icon) => ({
+      label, count, icon, pad: `${9 + depth * 16}px`,
+      bg: active ? "var(--c-accent-bg)" : "transparent",
+      color: active ? "var(--c-accent-text)" : "var(--c-n2)",
+      weight: active ? 600 : 500,
+      countColor: active ? "var(--c-accent-text)" : "var(--c-n5)",
+    });
+    const catsFor = (activeLabel) => [
+      ["Все знания", 84, 0, ICON.folder], ["Без категории", 3, 0, null],
+      ["Регламенты", 18, 0, null], ["Пошив", 7, 1, null], ["Возвраты", 5, 1, null],
+      ["Прайсы и оплата", 12, 0, null], ["Скрипты общения", 9, 0, null],
+      ["Продукты", 24, 0, null], ["FoxRay", 11, 1, null], ["Обучение", 0, 0, null],
+    ].map(([l, c, d, i]) => catRow(l, c, d, l === activeLabel, i));
+
+    // ---- строки таблицы знаний
+    const S = {
+      on: { status: "Включено", stBg: "var(--c-ok-bg)", stColor: "var(--c-ok-text)" },
+      off: { status: "Выключено", stBg: "var(--c-n9)", stColor: "var(--c-n4)" },
+      idx: { status: "Индексируется", stBg: "var(--c-warn-bg)", stColor: "var(--c-warn-text)" },
+    };
+    const K = [
+      { title: "Срок пошива и переносы примерок", desc: "Сроки по типам изделий, правила переноса, действия при задержке", icon: ICON.doc, cat: "Пошив", catParent: "Регламенты", frags: 12, agents: 3, ...S.on, updated: "5 сен, 11:20", author: "Анна Ким", attach: 2 },
+      { title: "Прайс-лист 2026", desc: "Базовые цены, надбавки за ткань и срочность", icon: ICON.price, cat: "Прайсы и оплата", frags: 24, agents: 4, ...S.on, updated: "4 сен, 18:02", author: "Елена Кузнецова", attach: 1 },
+      { title: "Скрипт: клиент недоволен посадкой", desc: "Что спросить, что предложить, когда звать мастера", icon: ICON.script, cat: "Скрипты общения", frags: 8, agents: 2, ...S.off, updated: "4 сен, 10:05", author: "Анна Ким" },
+      { title: "Условия рассрочки и возврата денег", desc: "Порядок оплаты частями, сроки возврата, документы", icon: ICON.doc, cat: "Возвраты", catParent: "Регламенты", frags: 15, agents: 3, ...S.on, updated: "2 сен, 12:30", author: "Елена Кузнецова", attach: 1 },
+      { title: "FoxRay — лицензирование", desc: "Типы лицензий, продление, перенос на другое устройство", icon: ICON.box, cat: "FoxRay", catParent: "Продукты", frags: 19, agents: 2, ...S.idx, fragNote: "пересборка 60 %", fragNoteColor: "var(--c-warn-text)", updated: "1 сен, 19:12", author: "Импорт YAML" },
+      { title: "Уход за шерстью и кашемиром", desc: "Стирка, сушка, хранение; что отвечать про катышки", icon: ICON.doc, cat: "Без категории", frags: 6, noAgents: true, ...S.on, updated: "20 авг, 08:55", author: "Анна Ким" },
+      { title: "Договор оказания услуг (шаблон)", desc: "Актуальная редакция для физлиц; агент даёт ссылку на PDF", icon: ICON.file, cat: "Регламенты", frags: 4, agents: 1, ...S.on, updated: "12 авг, 14:40", author: "Елена Кузнецова", attach: 1 },
+    ];
+    const rows = (opts = {}) => K.map((k, i) => {
+      const checked = (opts.checked || []).includes(i);
+      return {
+        ...k,
+        opacity: k.status === "Выключено" ? 0.72 : 1,
+        checked,
+        cbBorder: checked ? "var(--c-accent)" : "var(--c-n6)",
+        cbBg: checked ? "var(--c-accent)" : "transparent",
+        rowBg: checked ? "var(--c-accent-bg)" : (i === 0 && opts.menu ? "var(--c-n10)" : "transparent"),
+        menuOpen: opts.menu === i,
+        menuBg: opts.menu === i ? "var(--c-n9)" : "transparent",
+      };
+    });
+
+    const rowMenu = [
+      { label: "Открыть знание", icon: ICON.doc, color: "var(--c-n2)" },
+      { label: "Редактировать", icon: ICON.edit, color: "var(--c-n2)" },
+      { divider: true },
+      { label: "Прикрепить к агенту", icon: ICON.agents, color: "var(--c-n2)" },
+      { label: "Переместить в категорию", icon: ICON.move, color: "var(--c-n2)" },
+      { label: "Выключить в ответах", icon: ICON.eyeOff, color: "var(--c-n2)" },
+      { label: "Переиндексировать", icon: ICON.reindex, color: "var(--c-n2)" },
+      { divider: true },
+      { label: "Удалить знание", icon: ICON.trash, color: "var(--c-err-text)" },
+    ];
+
+    const bulkActions = [
+      { label: "Прикрепить к агенту", icon: ICON.agents, bg: "var(--c-surface)", color: "var(--c-n1)", border: "var(--c-surface)", weight: 600 },
+      { label: "Переместить", icon: ICON.move, bg: "transparent", color: "var(--c-surface)", border: "rgba(255,255,255,0.22)", weight: 500 },
+      { label: "Включить", icon: ICON.eye, bg: "transparent", color: "var(--c-surface)", border: "rgba(255,255,255,0.22)", weight: 500 },
+      { label: "Выключить", icon: ICON.eyeOff, bg: "transparent", color: "var(--c-surface)", border: "rgba(255,255,255,0.22)", weight: 500 },
+      { label: "Удалить", icon: ICON.trash, bg: "transparent", color: "#ff9c9e", border: "rgba(255,156,158,0.35)", weight: 500 },
+    ];
+
+    const seg = (items, activeKey) => items.map((i) => ({
+      ...i,
+      bg: i.key === activeKey ? "var(--c-surface)" : "transparent",
+      color: i.key === activeKey ? "var(--c-n1)" : "var(--c-n4)",
+      weight: i.key === activeKey ? 600 : 500,
+      shadow: i.key === activeKey ? "0 1px 3px rgba(0,0,0,0.12)" : "none",
+    }));
+    const attachModes = seg([{ key: "attach", label: "Прикрепить" }, { key: "detach", label: "Открепить" }], "attach");
+    const modes = (active) => seg([
+      { key: "edit", label: "Текст", title: "Только редактор", icon: ICON.edit },
+      { key: "split", label: "Вместе", title: "Текст и предпросмотр", icon: ICON.split },
+      { key: "view", label: "Просмотр", title: "Только предпросмотр", icon: ICON.eye },
+    ], active);
+
+    const agentPicks = [
+      { name: "Поддержка · Telegram", meta: "AI отвечает · 18 знаний прикреплено", tag: "выбран", picked: true },
+      { name: "Ателье · WhatsApp", meta: "AI отвечает · 11 знаний", tag: "доступен" },
+      { name: "Продажи · Сайт", meta: "Без AI — знания не используются", tag: "без AI", muted: true },
+    ].map((a) => ({
+      ...a,
+      border: a.picked ? "var(--c-accent)" : "var(--c-n7)",
+      bg: a.picked ? "var(--c-accent-bg)" : "var(--c-surface)",
+      radioBorder: a.picked ? "var(--c-accent)" : "var(--c-n6)",
+      radioDot: a.picked ? "var(--c-accent)" : "transparent",
+      tagBg: a.picked ? "var(--c-accent-bg)" : "var(--c-n9)",
+      tagColor: a.picked ? "var(--c-accent-text)" : "var(--c-n4)",
+    }));
+
+    const cardAgents = [
+      { name: "Поддержка · Telegram", meta: "AI отвечает", tag: "активен", tagBg: "var(--c-ok-bg)", tagColor: "var(--c-ok-text)", tileBg: "var(--c-accent-bg)", tileColor: "var(--c-accent-text)" },
+      { name: "Ателье · WhatsApp", meta: "AI отвечает", tag: "активен", tagBg: "var(--c-ok-bg)", tagColor: "var(--c-ok-text)", tileBg: "var(--c-n9)", tileColor: "var(--c-n4)" },
+      { name: "Продажи · Сайт", meta: "AI выключен у агента", tag: "не в ответах", tagBg: "var(--c-n9)", tagColor: "var(--c-n4)", tileBg: "var(--c-n9)", tileColor: "var(--c-n4)" },
+    ];
+
+    const cardFiles = [
+      { name: "Регламент сроков 2026.pdf", meta: "PDF · 1,1 МБ · ссылка в тексте", icon: ICON.file },
+      { name: "tablica-srokov.png", meta: "PNG · 240 КБ", icon: ICON.image },
+    ];
+
+    const mdTools = [
+      { title: "Заголовок 1", text: "H1", bg: "transparent", color: "var(--c-n3)" },
+      { title: "Заголовок 2", text: "H2", bg: "transparent", color: "var(--c-n3)" },
+      { divider: true },
+      { title: "Полужирный", icon: ICON.bold, bg: "transparent", color: "var(--c-n3)" },
+      { title: "Курсив", icon: ICON.italic, bg: "transparent", color: "var(--c-n3)" },
+      { title: "Ссылка", icon: ICON.link, bg: "transparent", color: "var(--c-n3)" },
+      { title: "Код", icon: ICON.code, bg: "transparent", color: "var(--c-n3)" },
+      { divider: true },
+      { title: "Список", icon: ICON.list, bg: "transparent", color: "var(--c-n3)" },
+      { title: "Нумерованный список", icon: ICON.numlist, bg: "transparent", color: "var(--c-n3)" },
+      { title: "Цитата", icon: ICON.quote, bg: "transparent", color: "var(--c-n3)" },
+      { title: "Таблица", icon: ICON.table, bg: "transparent", color: "var(--c-n3)" },
+      { divider: true },
+      { title: "Прикрепить файл", icon: ICON.attach, bg: "var(--c-accent-bg)", color: "var(--c-accent-text)" },
+    ];
+
+    const mdSource = [
+      "# Срок пошива и переносы примерок",
+      "",
+      "Базовые сроки по типам изделий, правила переноса примерки",
+      "и что делать при задержке.",
+      "",
+      "## Базовые сроки",
+      "",
+      "| Изделие        | Срок              | Примерок |",
+      "| -------------- | ----------------- | -------- |",
+      "| Рубашка        | 10 рабочих дней   | 1        |",
+      "| Пальто         | 25 рабочих дней   | 2        |",
+      "| Костюм-тройка  | 35 рабочих дней   | 3        |",
+      "",
+      "## Перенос примерки",
+      "",
+      "1. Предупредил за сутки — переносим бесплатно.",
+      "2. Меньше суток — ближайшее свободное окно.",
+      "3. Третий перенос — пауза до звонка администратора.",
+      "",
+      "> Агент не называет точную дату сдачи — только диапазон",
+      "> и ближайшее окно примерки.",
+      "",
+      "[Регламент сроков 2026.pdf](files/reglament-srokov-2026.pdf)",
+    ].join("\n");
+
+    const fileRow = (name, meta, icon, opts = {}) => ({
+      name, meta, icon,
+      done: opts.progress ? false : true,
+      progress: opts.progress || false,
+      metaColor: opts.progress ? "var(--c-accent-text)" : "var(--c-n4)",
+      border: opts.fresh ? "var(--c-accent)" : "var(--c-n8)",
+      bg: opts.fresh ? "var(--c-accent-bg)" : "var(--c-surface)",
+    });
+    const filesCalm = [
+      fileRow("Регламент сроков 2026.pdf", "PDF · 1,1 МБ · ссылка в тексте", ICON.file),
+      fileRow("tablica-srokov.png", "PNG · 240 КБ", ICON.image),
+    ];
+    const filesDrop = [
+      fileRow("primerka-okna.xlsx", "загружаем… 68 %", ICON.file, { progress: "68%", fresh: true }),
+      fileRow("Регламент сроков 2026.pdf", "PDF · 1,1 МБ · ссылка в тексте", ICON.file),
+      fileRow("tablica-srokov.png", "PNG · 240 КБ", ICON.image),
+    ];
+
+    const catRows = [
+      { name: "Без категории", count: "3 знания", tag: "системная", depth: 0, locked: true },
+      { name: "Регламенты", count: "18 знаний · 2 вложенные", depth: 0, locked: true, delNote: "есть вложенные категории" },
+      { name: "Пошив", count: "7 знаний", depth: 1, locked: true, delNote: "категория не пуста" },
+      { name: "Возвраты", count: "5 знаний", depth: 1, editing: true },
+      { name: "Прайсы и оплата", count: "12 знаний", depth: 0, locked: true, delNote: "категория не пуста" },
+      { name: "Скрипты общения", count: "9 знаний", depth: 0, locked: true, delNote: "категория не пуста" },
+      { name: "Продукты", count: "24 знания · 1 вложенная", depth: 0, locked: true, delNote: "есть вложенные категории" },
+      { name: "FoxRay", count: "11 знаний", depth: 1, locked: true, delNote: "категория не пуста" },
+      { name: "Обучение", count: "пусто", depth: 0 },
+    ].map((c) => ({
+      ...c,
+      pad: `${12 + c.depth * 22}px`,
+      weight: c.depth === 0 ? 600 : 500,
+      bg: c.editing ? "var(--c-accent-bg)" : "transparent",
+      delDisabled: c.locked ? "disabled" : false,
+      delColor: c.locked ? "var(--c-n6)" : "var(--c-err-text)",
+      delCursor: c.locked ? "not-allowed" : "pointer",
+      delTitle: c.locked ? `Удалить нельзя: ${c.delNote || "системная категория"}` : "Удалить категорию",
+    }));
+
+    const importStats = [
+      { label: "создать 4", bg: "var(--c-ok-bg)", color: "var(--c-ok-text)" },
+      { label: "обновить 2", bg: "var(--c-accent-bg)", color: "var(--c-accent-text)" },
+      { label: "ошибка 1", bg: "var(--c-err-bg)", color: "var(--c-err-text)" },
+    ];
+    const IA = {
+      new: { action: "создать", actBg: "var(--c-ok-bg)", actColor: "var(--c-ok-text)" },
+      upd: { action: "обновить", actBg: "var(--c-accent-bg)", actColor: "var(--c-accent-text)" },
+      err: { action: "ошибка", actBg: "var(--c-err-bg)", actColor: "var(--c-err-text)" },
+    };
+    const importRows = [
+      { title: "srok-poshiva", path: "Регламенты / Пошив", ...IA.upd, note: "совпал заголовок — заменим текст и пересоберём фрагменты" },
+      { title: "perenos-primerki", path: "Регламенты / Пошив", ...IA.new, note: "" },
+      { title: "price-2026", path: "Прайсы и оплата", ...IA.upd, note: "категория в файле совпадает с текущей" },
+      { title: "foxray-licensing", path: "Продукты / FoxRay / Лицензирование", ...IA.err, note: "категории «Лицензирование» нет — импорт не создаёт категории. Создайте её или уберите последний уровень пути.", err: true },
+      { title: "foxray-update", path: "Продукты / FoxRay", ...IA.new, note: "" },
+      { title: "uhod-za-shelkom", path: "не указана", ...IA.new, note: "попадёт в «Без категории»" },
+      { title: "script-otkaz", path: "Скрипты общения", ...IA.new, note: "" },
+    ].map((d) => ({
+      ...d,
+      rowBg: d.err ? "var(--c-err-bg)" : "transparent",
+      noteColor: d.err ? "var(--c-err-text)" : "var(--c-n4)",
+    }));
+
+    const dropCalm = { dropBorder: "var(--c-n6)", dropBg: "transparent", dropIcon: "var(--c-n4)" };
+    const dropHot = { dropBorder: "var(--c-accent)", dropBg: "var(--c-accent-bg)", dropIcon: "var(--c-accent-text)" };
+    const allBox = (checked) => ({ allChecked: checked, allBorder: checked ? "var(--c-accent)" : "var(--c-n6)", allBg: checked ? "var(--c-accent)" : "transparent" });
+    const idxOk = { indexLabel: "Индекс актуален", indexBg: "var(--c-ok-bg)", indexColor: "var(--c-ok-text)" };
+    const idxDirty = { indexLabel: "Есть несохранённые правки", indexBg: "var(--c-warn-bg)", indexColor: "var(--c-warn-text)" };
+
+    const frames = [
+      { id: "KB1", title: "База знаний · библиотека", note: "дерево категорий + таблица; вложения, агенты и фрагменты в строке", isLibrary: true, cats: catsFor("Все знания"), rows: rows({ menu: 0 }), scopeNote: "показаны все категории", ...allBox(false) },
+      { id: "KB2", title: "Библиотека · массовый выбор", note: "панель операций, пока выделение живо (SPEC-0029 §7)", isLibrary: true, isBulk: true, cats: catsFor("Все знания"), rows: rows({ checked: [0, 1, 2] }), scopeNote: "выбрано 3 из 84", ...allBox(false) },
+      { id: "KB3", title: "Прикрепить к агенту", note: "один агент за операцию + честный список пропусков", isLibrary: true, isBulk: true, isDialog: true, cats: catsFor("Все знания"), rows: rows({ checked: [0, 1, 2] }), scopeNote: "выбрано 3 из 84", ...allBox(false) },
+      { id: "KB4", title: "Карточка знания", note: "шапка как у портала: состояние, фрагменты, агенты; рейка справа", isCard: true },
+      { id: "KB5", title: "Редактор знания", note: "тот же split, что у статьи портала; вложения и агенты в рейке", isEditor: true, modes: modes("split"), files: filesCalm, saveNote: "Сохранено автоматически в 11:24", ...idxOk, ...dropCalm },
+      { id: "KB6", title: "Редактор · перетаскивание файла", note: "drop прямо в текст: файл становится вложением и ссылкой", isEditor: true, dropping: true, modes: modes("split"), files: filesDrop, saveNote: "Правки не сохранены — фрагменты пересоберутся после «Сохранить»", ...idxDirty, ...dropHot },
+      { id: "KB7", title: "Категории", note: "инлайн-переименование, reorder, безопасное удаление", isCats: true },
+      { id: "KB8", title: "Импорт YAML", note: "разбор до применения: создать / обновить / ошибка пути", isImport: true },
+      { id: "KB9", title: "Пустая категория", note: "состояние без материалов и без ложных цифр", isLibrary: true, isEmptyCat: true, cats: catsFor("Обучение"), scopeNote: "категория «Обучение»", ...allBox(false) },
+    ];
+
+    return { themeVars, nav, frames, rowMenu, bulkActions, attachModes, agentPicks, cardAgents, cardFiles, mdTools, mdSource, catRows, importStats, importRows };
+  }
+}
+</script>
+</body>
+</html>

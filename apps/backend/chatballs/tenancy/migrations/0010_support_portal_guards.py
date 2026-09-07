@@ -1,9 +1,10 @@
 from django.db import migrations
 
 
+# Таблица support_portals_supportportalproduct удалена вместе с сущностью
+# Product (ADR-HUB-0045); на старых БД её снимает 0029_drop_product_support.
 TABLES = (
     "support_portals_supportportal",
-    "support_portals_supportportalproduct",
     "support_portals_portalcategory",
     "support_portals_portalarticle",
     "support_portals_portalarticlerevision",
@@ -12,16 +13,13 @@ TABLES = (
 
 RELATIONS = (
     ("sp_portal_department", TABLES[0], "identity_department", "department_id"),
-    ("sp_product_portal", TABLES[1], TABLES[0], "portal_id"),
-    ("sp_product_product", TABLES[1], "identity_product", "product_id"),
-    ("sp_product_channel", TABLES[1], "channels_channel", "support_channel_id"),
-    ("sp_category_portal", TABLES[2], TABLES[0], "portal_id"),
-    ("sp_category_parent", TABLES[2], TABLES[2], "parent_id"),
-    ("sp_article_portal", TABLES[3], TABLES[0], "portal_id"),
-    ("sp_article_category", TABLES[3], TABLES[2], "category_id"),
-    ("sp_article_revision", TABLES[3], TABLES[4], "published_revision_id"),
-    ("sp_revision_article", TABLES[4], TABLES[3], "article_id"),
-    ("sp_feedback_article", TABLES[5], TABLES[3], "article_id"),
+    ("sp_category_portal", TABLES[1], TABLES[0], "portal_id"),
+    ("sp_category_parent", TABLES[1], TABLES[1], "parent_id"),
+    ("sp_article_portal", TABLES[2], TABLES[0], "portal_id"),
+    ("sp_article_category", TABLES[2], TABLES[1], "category_id"),
+    ("sp_article_revision", TABLES[2], TABLES[3], "published_revision_id"),
+    ("sp_revision_article", TABLES[3], TABLES[2], "article_id"),
+    ("sp_feedback_article", TABLES[4], TABLES[2], "article_id"),
 )
 
 

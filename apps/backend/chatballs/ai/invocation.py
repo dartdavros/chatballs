@@ -23,7 +23,6 @@ def _record_blocked(*, channel, purpose: str, model: str, error: Exception) -> N
     LlmInvocation.objects.create(
         organization=channel.organization,
         channel=channel,
-        product=channel.product,
         purpose=purpose,
         operation="chat",
         model=model,
@@ -78,7 +77,6 @@ def invoke_chat(
         LlmInvocation.objects.create(
             organization=channel.organization,
             channel=channel,
-            product=channel.product,
             purpose=purpose,
             operation="chat",
             model=model,
@@ -92,7 +90,6 @@ def invoke_chat(
     LlmInvocation.objects.create(
         organization=channel.organization,
         channel=channel,
-        product=channel.product,
         purpose=purpose,
         operation="chat",
         model=result.model,
@@ -126,7 +123,6 @@ def embed_texts(
     LlmInvocation.objects.create(
         organization=channel.organization if channel else organization,
         channel=channel,
-        product=(channel.product if channel else None),
         purpose=purpose,
         operation="embedding",
         model=model,

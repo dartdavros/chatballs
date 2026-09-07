@@ -79,7 +79,6 @@ class ConversationListView(ConversationViewBase):
             )
             items = items.filter(
                 Q(contact__name__icontains=query)
-                | Q(support_identity_snapshot__display_name__icontains=query)
                 | Q(Exists(message_match))
             )
         items = list(items)

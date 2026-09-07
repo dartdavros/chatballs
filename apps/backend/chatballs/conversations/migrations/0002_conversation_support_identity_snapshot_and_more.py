@@ -12,16 +12,10 @@ class Migration(migrations.Migration):
         ('conversations', '0001_initial'),
         ('identity', '0006_alter_employeeprofile_totp_secret'),
         ('integrations', '0002_integration_channel_integration_poll_marker'),
-        ('support', '0001_initial'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
-        migrations.AddField(
-            model_name='conversation',
-            name='support_identity_snapshot',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='conversations', to='support.supportidentitysnapshot'),
-        ),
         migrations.AlterField(
             model_name='conversation',
             name='contact',
@@ -29,6 +23,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AddConstraint(
             model_name='conversation',
-            constraint=models.CheckConstraint(condition=models.Q(models.Q(('contact__isnull', True), ('support_identity_snapshot__isnull', False)), models.Q(('contact__isnull', False), ('support_identity_snapshot__isnull', True)), _connector='OR'), name='conversation_exactly_one_identity'),
+            constraint=models.CheckConstraint(condition=models.Q(('contact__isnull', False)), name='conversation_requires_contact'),
         ),
     ]

@@ -9,7 +9,7 @@ from chatballs.tenancy.context import TenantContext
 
 def _with_relations(queryset: QuerySet[Channel]) -> QuerySet[Channel]:
     return queryset.select_related(
-        "product", "group", "ai_agent", "ai_agent__provider_integration"
+        "group", "ai_agent", "ai_agent__provider_integration"
     ).prefetch_related(
         Prefetch("connections", queryset=Integration.objects.order_by("id"))
     ).annotate(
@@ -32,7 +32,7 @@ def channels_in_organization(context: TenantContext) -> QuerySet[Channel]:
     """
     return (
         Channel.objects.filter(organization_id=context.organization_id)
-        .select_related("product", "group", "ai_agent", "ai_agent__provider_integration")
+        .select_related("group", "ai_agent", "ai_agent__provider_integration")
         .order_by("name")
     )
 

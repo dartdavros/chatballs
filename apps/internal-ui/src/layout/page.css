@@ -22,25 +22,6 @@
   margin: 0;
 }
 
-.hub-page.ai-knowledge-library-page {
-  width: 100%;
-  max-width: none;
-  margin: 0;
-}
-
-.hub-page.ai-knowledge-library-page .ai-page {
-  max-width: none;
-}
-
-.hub-page.ai-knowledge-editor-page {
-  width: min(1180px, 100%);
-  max-width: 1180px;
-}
-
-.hub-page.ai-knowledge-editor-page .ai-page {
-  max-width: none;
-}
-
 .page-header {
   display: flex;
   align-items: flex-start;

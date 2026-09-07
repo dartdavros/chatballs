@@ -866,7 +866,6 @@
       "connection": "web_account",
       "contact": "sergey",
       "identity": "sergey_web",
-      "supportIdentitySnapshot": "sergey_account",
       "externalChatId": "portal-sergey-1",
       "lifecycle": "CLOSED",
       "controlMode": "HUMAN",

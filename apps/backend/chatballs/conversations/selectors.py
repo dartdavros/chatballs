@@ -10,11 +10,9 @@ def conversations_for_context(context: TenantContext) -> QuerySet[Conversation]:
         Conversation.objects.filter(organization_id=context.organization_id)
         .select_related(
             "channel",
-            "channel__product",
             "contact",
             "connection",
             "assigned_operator",
-            "support_identity_snapshot",
             "group",
         )
         .prefetch_related("labels")

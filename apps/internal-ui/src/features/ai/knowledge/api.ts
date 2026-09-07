@@ -52,6 +52,13 @@ export function deleteKnowledgeItem(id: number) {
   return api<void>(`/api/v1/ai/knowledge/${id}/`, { method: "DELETE" });
 }
 
+/** Пересобрать фрагменты знания вручную (кадры KB1/KB4). */
+export function reindexKnowledge(id: number) {
+  return api<{ knowledge: KnowledgeItem }>(`/api/v1/ai/knowledge/${id}/reindex/`, {
+    method: "POST",
+  });
+}
+
 export function fetchKnowledgeCategories() {
   return api<{ items: KnowledgeCategory[] }>("/api/v1/ai/knowledge/categories/");
 }

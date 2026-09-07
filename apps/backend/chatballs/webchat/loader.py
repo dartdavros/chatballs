@@ -1,16 +1,11 @@
-# Публичный JS-лоадер виджета (SPEC-HUB-0003 §3, SPEC-HUB-0010 §7.1). Подключается
-# одним тегом:
+# Публичный JS-лоадер виджета (SPEC-HUB-0003 §3). Подключается одним тегом:
 #   <script src="https://<ваш-домен>/chat-widget.js"
 #           data-widget-key="wgt_public_key" async></script>
-# Authenticated host регистрирует async token provider через ChatballsChat.init;
-# Product Support Token никогда не попадает в URL или data-*.
 # Лоадер рисует launcher и открывает панель в изолированном iframe (/chat/).
 #
-# TODO (SPEC-HUB-0010 §7.3, security): для production настроить CSP
-# `frame-ancestors` для /chat/ (раздаётся vite/nginx, не Django — настраивается в
-# infra/deploy), разрешив домены сайтов, где стоит виджет.
-# Только origin недостаточен — support-виджет дополнительно проверяется signed
-# Product Support Token. Домены — у владельца.
+# TODO (security): для production настроить CSP `frame-ancestors` для /chat/
+# (раздаётся vite/nginx, не Django — настраивается в infra/deploy), разрешив
+# домены сайтов, где стоит виджет. Домены — у владельца.
 
 LOADER_JS = r"""
 (function () {
@@ -26,18 +21,9 @@ LOADER_JS = r"""
     : "channel=" + encodeURIComponent(legacyChannel);
   var panelUrl = origin + "/chat/?" + entryQuery + "&instanceId=" + encodeURIComponent(instanceId);
 
-  var open = false, frame = null, unread = false, callActive = false, tokenProvider = null;
+  var open = false, frame = null, unread = false, callActive = false;
   var api = window.ChatballsChat = window.ChatballsChat || {};
   window.ChatballsChat = api; // legacy alias для уже встроенных хостов
-  api._instances = api._instances || [];
-  api._providers = api._providers || {};
-  api.init = function (options) {
-    if (!options || !options.widgetKey || typeof options.getSupportToken !== "function") return;
-    api._providers[options.widgetKey] = options.getSupportToken;
-    api._instances.forEach(function (instance) {
-      if (instance.widgetKey === options.widgetKey) instance.enableAuthenticated(options.getSupportToken);
-    });
-  };
 
   var style = document.createElement("style");
   style.textContent = "@keyframes chatballs-chat-message-bump{0%,100%{transform:translateY(0)}35%{transform:translateY(-6px)}70%{transform:translateY(-2px)}}@keyframes chatballs-chat-call-shake{0%,18%,100%{transform:translateX(0)}3%{transform:translateX(-5px)}6%{transform:translateX(5px)}9%{transform:translateX(-4px)}12%{transform:translateX(4px)}15%{transform:translateX(-2px)}}.chatballs-chat-message-bump{animation:chatballs-chat-message-bump .42s ease-out}.chatballs-chat-call-shake{animation:chatballs-chat-call-shake 3.2s ease-in-out infinite}.chatballs-chat-launcher:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(22,119,255,0.45)}.chatballs-chat-launcher:focus-visible{outline:3px solid rgba(22,119,255,0.45);outline-offset:2px}";
@@ -118,37 +104,8 @@ LOADER_JS = r"""
         play(notification);
       }
       if (d.type === "chatballs-chat-activity" && d.kind === "call") setCallActive(Boolean(d.active));
-      if (d.type === "chatballs-chat-token-request" && tokenProvider) {
-        Promise.resolve().then(tokenProvider).then(function (token) {
-          frame.contentWindow.postMessage({
-            type: "chatballs-chat-token-response",
-            instanceId: instanceId,
-            requestId: d.requestId,
-            token: String(token || "")
-          }, origin);
-        }).catch(function () {
-          frame.contentWindow.postMessage({
-            type: "chatballs-chat-token-response",
-            instanceId: instanceId,
-            requestId: d.requestId,
-            token: ""
-          }, origin);
-        });
-      }
     });
   }
-
-  function enableAuthenticated(provider) {
-    tokenProvider = provider;
-    panelUrl = origin + "/chat/?" + entryQuery + "&mode=support&instanceId=" + encodeURIComponent(instanceId);
-    if (frame && frame.src !== panelUrl) frame.src = panelUrl;
-  }
-
-  api._instances.push({
-    widgetKey: widgetKey,
-    enableAuthenticated: enableAuthenticated
-  });
-  if (widgetKey && api._providers[widgetKey]) enableAuthenticated(api._providers[widgetKey]);
 
   function notifyOpened() {
     try { frame.contentWindow.postMessage({ type: "chatballs-chat-opened" }, origin); } catch (_) {}

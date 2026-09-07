@@ -8,7 +8,6 @@ export type WebChatWidgetSummary = {
   code: string;
   publicKey: string;
   name: string;
-  mode: "ANONYMOUS" | "AUTHENTICATED_PRODUCT";
   status: "DRAFT" | "PUBLISHED" | "DISABLED";
   channel: { id: number; code: string; name: string } | null;
 };

@@ -22,7 +22,6 @@ class DemoRefs:
     groups: dict[str, object] = field(default_factory=dict)
     memberships: dict[str, object] = field(default_factory=dict)
     users: dict[str, object] = field(default_factory=dict)
-    products: dict[str, object] = field(default_factory=dict)
     integrations: dict[str, object] = field(default_factory=dict)
     channels: dict[str, object] = field(default_factory=dict)
     agents: dict[str, object] = field(default_factory=dict)
@@ -35,7 +34,5 @@ class DemoRefs:
     contacts: dict[str, object] = field(default_factory=dict)
     identities: dict[str, object] = field(default_factory=dict)
     conversations: dict[str, object] = field(default_factory=dict)
-    support_contracts: dict[str, object] = field(default_factory=dict)
-    identity_snapshots: dict[str, object] = field(default_factory=dict)
     calls: dict[str, object] = field(default_factory=dict)
     portal: object | None = None

@@ -517,36 +517,3 @@
 }
 
 .portal-status-row small { color: var(--n-4); font-size: 12.5px; }
-
-/* --- Продукты (раздел субменю) --- */
-
-.portal-product-list {
-  display: grid;
-  gap: 8px;
-}
-
-.portal-product-list > div {
-  display: grid;
-  min-height: 62px;
-  grid-template-columns: 38px minmax(160px, 1fr) minmax(240px, 0.8fr);
-  align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  border: 1px solid var(--n-8);
-  border-radius: 9px;
-}
-
-.portal-product-list > div.is-enabled {
-  border-color: var(--primary-border);
-  background: var(--primary-bg);
-}
-
-.portal-product-list strong,
-.portal-product-list small { display: block; }
-
-.portal-product-list small {
-  margin-top: 2px;
-  color: var(--n-4);
-  font-family: var(--font-mono);
-  font-size: 11px;
-}

@@ -21,7 +21,7 @@ const OWNER = {
   totpRequired: false,
   totpEnabled: false,
   capabilities: [
-    "company.view", "departments.view", "employees.view", "employees.manage", "employees.manage_privileged", "ownership.transfer", "products.view", "ai.view",
+    "company.view", "departments.view", "employees.view", "employees.manage", "employees.manage_privileged", "ownership.transfer", "ai.view",
     "ai.manage", "integrations.view", "conversations.view", "customers.view", "sales.view",
     "support.view",
   ],
@@ -30,7 +30,7 @@ const OWNER = {
     departmentId: null,
     departmentCode: null,
     capabilities: [
-      "company.view", "departments.view", "employees.view", "employees.manage", "employees.manage_privileged", "ownership.transfer", "products.view", "ai.view",
+      "company.view", "departments.view", "employees.view", "employees.manage", "employees.manage_privileged", "ownership.transfer", "ai.view",
       "ai.manage", "integrations.view", "conversations.view", "customers.view", "sales.view",
       "support.view",
     ],
@@ -125,7 +125,6 @@ async function mockData(page: Page) {
     return route.fulfill({ json: { items: [ownerEmployee, employee] } });
   });
   await page.route("**/api/v1/organizations/*/company/departments/**", (route) => route.fulfill({ json: { items: [{ id: 1, code: "sales", name: "Отдел продаж", status: "ACTIVE", memberCount: 1, operatorCount: 1, activeOperatorCount: 1, agentCount: 0, products: [] }] } }));
-  await page.route("**/api/v1/organizations/*/company/products/**", (route) => route.fulfill({ json: { items: [] } }));
   await page.route("**/api/v1/organizations/*/ai/agents/**", (route) => route.fulfill({ json: { items: [] } }));
 }
 

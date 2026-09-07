@@ -112,36 +112,21 @@ def sales_overview_stats(context, period: str) -> dict:
     period_by_channel = dict(period_qs.values_list("channel_id").annotate(c=Count("id")))
 
     by_channel: list[dict] = []
-    by_product: dict[str, dict] = {}
     channels = channels_in_organization(context)
     for channel in channels:
         open_count = open_by_channel.get(channel.id, 0)
         period_count = period_by_channel.get(channel.id, 0)
         by_channel.append({"code": channel.code, "name": channel.name, "openDialogs": open_count, "dialogs": period_count})
-        if channel.product_id:
-            bucket = by_product.setdefault(
-                channel.product.code,
-                {"code": channel.product.code, "name": channel.product.name, "openDialogs": 0, "dialogs": 0},
-            )
-            bucket["openDialogs"] += open_count
-            bucket["dialogs"] += period_count
 
     problems = []
     for conversation in (
         open_qs.filter(expected_responder=ExpectedResponder.OPERATOR)
-        .select_related("contact", "support_identity_snapshot", "channel", "channel__product")
+        .select_related("contact", "channel")
         .order_by("last_activity_at")[:5]
     ):
         minutes = int((now - conversation.last_activity_at).total_seconds() // 60)
         meta = conversation.channel.name
-        # Имя клиента: sales Contact.name либо display_name support-снапшота.
-        snapshot = conversation.support_identity_snapshot
-        if conversation.contact_id:
-            title = conversation.contact.name or "Гость"
-        elif snapshot is not None:
-            title = snapshot.display_name or f"client:{snapshot.subject_key[:8]}"
-        else:
-            title = "Гость"
+        title = (conversation.contact.name if conversation.contact_id else "") or "Гость"
         problems.append(
             {
                 "conversationId": conversation.id,
@@ -156,7 +141,6 @@ def sales_overview_stats(context, period: str) -> dict:
         "ops": ops,
         "period": period_block,
         "byChannel": by_channel,
-        "byProduct": list(by_product.values()),
         "chart": _chart(organization_id, period, start, now),
         "problems": problems,
     }

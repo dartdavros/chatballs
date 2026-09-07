@@ -11,7 +11,6 @@ class Migration(migrations.Migration):
     dependencies = [
         ('identity', '0006_alter_employeeprofile_totp_secret'),
         ('integrations', '0001_initial'),
-        ('products', '0005_remove_price_price_amount_positive_and_more'),
     ]
 
     operations = [
@@ -28,7 +27,6 @@ class Migration(migrations.Migration):
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('department', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='channels', to='identity.department')),
                 ('organization', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='channels', to='identity.organization')),
-                ('product', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='channels', to='products.product')),
                 ('provider_integration', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='channels', to='integrations.integration')),
             ],
             options={

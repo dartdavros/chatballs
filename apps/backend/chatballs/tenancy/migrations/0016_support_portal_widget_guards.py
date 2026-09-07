@@ -6,17 +6,10 @@ CREATE CONSTRAINT TRIGGER sp_portal_widget
 AFTER INSERT OR UPDATE ON support_portals_supportportal
 DEFERRABLE INITIALLY IMMEDIATE FOR EACH ROW EXECUTE FUNCTION
 chatballs.enforce_tenant_fk('webchat_webchatwidget', 'widget_id');
-
-CREATE CONSTRAINT TRIGGER sp_product_support_widget
-AFTER INSERT OR UPDATE ON support_portals_supportportalproduct
-DEFERRABLE INITIALLY IMMEDIATE FOR EACH ROW EXECUTE FUNCTION
-chatballs.enforce_tenant_fk('webchat_webchatwidget', 'support_widget_id');
 """
 
 
 REVERSE_SQL = """
-DROP TRIGGER IF EXISTS sp_product_support_widget
-    ON support_portals_supportportalproduct;
 DROP TRIGGER IF EXISTS sp_portal_widget ON support_portals_supportportal;
 """
 

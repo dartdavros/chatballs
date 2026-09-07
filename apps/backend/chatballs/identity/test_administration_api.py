@@ -181,9 +181,9 @@ class AdministrationApiTests(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn("PNG, JPEG и WebP", response.json()["detail"])
 
-    def test_audit_returns_product_text_instead_of_internal_action_codes(self) -> None:
+    def test_audit_returns_readable_text_instead_of_internal_action_codes(self) -> None:
         record_audit_event(
-            action="products.product_created",
+            action="administration.organization_updated",
             actor=self.owner,
             organization=self.organization,
         )
@@ -192,8 +192,8 @@ class AdministrationApiTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         event = response.json()["items"][0]
-        self.assertEqual(event["action"], "Добавлен продукт")
-        self.assertNotIn("products.", event["action"])
+        self.assertEqual(event["action"], "Изменены данные организации")
+        self.assertNotIn("administration.", event["action"])
 
 
 class InstanceAddressTests(TestCase):

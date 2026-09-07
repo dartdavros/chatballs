@@ -47,16 +47,6 @@ export function changePortalStatus(
   });
 }
 
-export function replacePortalProducts(
-  id: number,
-  items: Array<{ productId: number; supportWidgetId: number | null; sortOrder: number }>,
-): Promise<{ portal: SupportPortal }> {
-  return api(`/api/v1/support/portals/${id}/products/`, {
-    method: "PUT",
-    body: JSON.stringify({ items }),
-  });
-}
-
 export function listPortalCategories(id: number): Promise<{ items: PortalCategory[] }> {
   return api(`/api/v1/support/portals/${id}/categories/`);
 }
@@ -91,10 +81,10 @@ export function deletePortalCategory(
   });
 }
 
-export function listPortalSupportChannels(
+export function listPortalWidgets(
   portalId: number,
-): Promise<{ items: PortalWidgetOption[]; widgetItems: PortalWidgetOption[] }> {
-  return api(`/api/v1/support/portals/${portalId}/support-channels/`);
+): Promise<{ items: PortalWidgetOption[] }> {
+  return api(`/api/v1/support/portals/${portalId}/widgets/`);
 }
 
 export function setPortalCustomDomain(

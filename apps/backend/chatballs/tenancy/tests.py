@@ -13,7 +13,6 @@ from chatballs.identity.models import (
     Organization,
     OrganizationMembership,
 )
-from chatballs.products.models import Product
 from chatballs.tenancy.context import TenantContext
 from chatballs.testing import TenantAPIClient
 
@@ -29,16 +28,10 @@ class TenantHttpBoundaryTests(TestCase):
         self.first_membership = self._membership(self.first)
         self.second_membership = self._membership(self.second)
         self.first_group = EmployeeGroup.objects.create(
-            organization=self.first, name="Операторы"
+            organization=self.first, name="Первая группа"
         )
         self.second_group = EmployeeGroup.objects.create(
-            organization=self.second, name="Операторы"
-        )
-        self.first_product = Product.objects.create(
-            organization=self.first, code="first-product", name="First Product"
-        )
-        self.second_product = Product.objects.create(
-            organization=self.second, code="second-product", name="Second Product"
+            organization=self.second, name="Вторая группа"
         )
         self.client = TenantAPIClient()
         self.client.force_authenticate(self.user)
@@ -51,56 +44,58 @@ class TenantHttpBoundaryTests(TestCase):
             position_title="Owner",
         )
 
-    def _products_path(self, organization: Organization, suffix: str = "") -> str:
+    def _groups_path(self, organization: Organization, suffix: str = "") -> str:
         return (
-            f"/api/v1/organizations/{organization.public_id}/company/products/{suffix}"
+            f"/api/v1/organizations/{organization.public_id}/company/groups/{suffix}"
         )
 
     def test_same_user_can_open_each_membership_without_session_singleton(self) -> None:
-        first = self.client.get(self._products_path(self.first))
-        second = self.client.get(self._products_path(self.second))
+        first = self.client.get(self._groups_path(self.first))
+        second = self.client.get(self._groups_path(self.second))
 
         self.assertEqual(first.status_code, 200)
         self.assertEqual(second.status_code, 200)
         self.assertEqual(
-            [item["code"] for item in first.json()["items"]], ["first-product"]
+            [item["name"] for item in first.json()["items"]], ["Первая группа"]
         )
         self.assertEqual(
-            [item["code"] for item in second.json()["items"]], ["second-product"]
+            [item["name"] for item in second.json()["items"]], ["Вторая группа"]
         )
 
     def test_foreign_resource_id_is_not_visible_in_selected_organization(self) -> None:
-        response = self.client.get(
-            self._products_path(self.first, f"{self.second_product.id}/")
+        response = self.client.patch(
+            self._groups_path(self.first, f"{self.second_group.id}/"),
+            {"name": "Захват"},
+            format="json",
         )
         self.assertEqual(response.status_code, 404)
 
     def test_absent_blocked_and_mfa_unsatisfied_memberships_fail_closed(self) -> None:
-        absent = self.client.get(self._products_path(self.outside))
+        absent = self.client.get(self._groups_path(self.outside))
         self.assertEqual(absent.status_code, 404)
 
         self.second_membership.block()
-        blocked = self.client.get(self._products_path(self.second))
+        blocked = self.client.get(self._groups_path(self.second))
         self.assertEqual(blocked.status_code, 404)
 
         self.second_membership.unblock()
         self.second_membership.totp_required = True
         self.second_membership.save(update_fields=["totp_required"])
-        missing_mfa = self.client.get(self._products_path(self.second))
+        missing_mfa = self.client.get(self._groups_path(self.second))
         self.assertEqual(missing_mfa.status_code, 404)
 
         self.user.totp_enabled = True
         self.user.save(update_fields=["totp_enabled"])
-        allowed = self.client.get(self._products_path(self.second))
+        allowed = self.client.get(self._groups_path(self.second))
         self.assertEqual(allowed.status_code, 200)
 
     def test_legacy_and_malformed_tenant_routes_are_not_runtime_aliases(self) -> None:
         raw_client = RawAPIClient()
         raw_client.force_login(self.user)
 
-        self.assertEqual(raw_client.get("/api/v1/company/products/").status_code, 404)
+        self.assertEqual(raw_client.get("/api/v1/company/groups/").status_code, 404)
         self.assertEqual(
-            raw_client.get("/api/v1/organizations/not-a-uuid/company/products/").status_code,
+            raw_client.get("/api/v1/organizations/not-a-uuid/company/groups/").status_code,
             404,
         )
 

@@ -39,30 +39,6 @@ export type HistoryItem = {
   preview: string;
 };
 
-// Краткая карточка support-снапшота в conversation_payload (list-режим).
-export type SupportIdentitySnapshotRef = {
-  id: number;
-  subjectKey: string;
-  displayName: string;
-  displayEmail: string;
-  contractCode: string;
-  // Расширяется в detail-режиме (operatorContextJson для правой панели оператора).
-  operatorContextJson?: { operator_cards: OperatorCard[] };
-  accountKey?: string | null;
-};
-
-export type OperatorCardField = {
-  label: string;
-  value: unknown;
-  type: string; // text|email|phone|url|code|badge|datetime|boolean|number; unknown→text
-  visibility?: string;
-};
-
-export type OperatorCard = {
-  title: string;
-  fields: OperatorCardField[];
-};
-
 export type ConversationPriority = "HIGH" | "MEDIUM" | "LOW" | "NONE";
 
 export type ConversationLabelRef = { id: number; name: string; color: string };
@@ -81,14 +57,12 @@ export type ReplyTemplateRef = { id: number; title: string; text: string; update
 
 export type ApiConversation = {
   id: number;
-  channel: { id: number; code: string; name: string; product: { code: string; name: string } | null };
+  channel: { id: number; code: string; name: string };
   // voiceMessages/audioCalls/videoCalls — что разрешено в точке входа («Настройки → Голосовые и звонки»).
   connection: { id: number; provider: "EMAIL" | "MAX" | "TELEGRAM" | "WEB"; name: string; voiceMessages?: boolean; audioCalls?: boolean; videoCalls?: boolean } | null;
-  // Источник identity: sales Contact (лид) ИЛИ verified SupportIdentitySnapshot.
-  // ADR-HUB-0022: ровно один заполнен.
+  // Контакт — единственный источник identity диалога.
   // phone появляется после явного шаринга контакта; username (@логин TG/MAX) — только в detail-режиме.
   contact: { id: number; name: string; email?: string; phone?: string; username?: string; avatarUrl?: string; description?: string; company?: string; city?: string } | null;
-  supportIdentitySnapshot: SupportIdentitySnapshotRef | null;
   lifecycle: "OPEN" | "CLOSED" | "SPAM";
   controlMode: "AI" | "HUMAN" | "PAUSED";
   expectedResponder: string;
@@ -181,25 +155,21 @@ function initialsOf(name: string): string {
   return (parts[0][0] + (parts[1]?.[0] ?? "")).toUpperCase();
 }
 
-// Имя клиента: sales contact ИЛИ snapshot displayName, fallback на subject_key.
 export function conversationName(conversation: ApiConversation): string {
   if (conversation.contact) return conversation.contact.name || `Гость ${conversation.contact.id}`;
-  const snapshot = conversation.supportIdentitySnapshot;
-  if (snapshot) return snapshot.displayName || `client:${snapshot.subjectKey.slice(0, 8)}`;
   return "Гость";
 }
 
 export function toConversationListItem(conversation: ApiConversation): ConversationListItem {
   const name = conversationName(conversation);
-  // avatarBg: стабильно из id источника identity.
-  const seed = conversation.contact?.id ?? conversation.supportIdentitySnapshot?.id ?? conversation.id;
+  // avatarBg: стабильно из id контакта.
+  const seed = conversation.contact?.id ?? conversation.id;
   return {
     id: conversation.id,
     name,
     initials: initialsOf(name),
     avatarBg: AVATAR_PALETTE[seed % AVATAR_PALETTE.length],
     avatarUrl: conversation.contact?.avatarUrl || undefined,
-    product: conversation.channel.name,
     channel: PROVIDER_CHANNEL[conversation.connection?.provider ?? "WEB"] ?? "WEB",
     email: conversation.contact?.email ?? "",
     mode: dialogMode(conversation),

@@ -18,9 +18,11 @@ from chatballs.ai.knowledge_services import (
     delete_knowledge,
     update_knowledge,
 )
+from chatballs.ai.indexing import reindex_knowledge
 from chatballs.ai.models import Knowledge
 from chatballs.ai.selectors import (
     apply_knowledge_filters,
+    knowledge_editors,
     knowledge_for_context,
     knowledge_item_for_context,
     writable_knowledge_item_for_employee,
@@ -71,10 +73,21 @@ class KnowledgeListCreateView(_KnowledgeBaseView):
             filters = knowledge_filters(request)
         except ValidationError as error:
             return _validation_error(error)
-        items = apply_knowledge_filters(knowledge_for_context(request.tenant_context), filters)
-        return Response(
-            {"items": [knowledge_payload(item, include_content=False) for item in items]}
+        items = list(apply_knowledge_filters(knowledge_for_context(request.tenant_context), filters))
+        # Автор последней правки нужен в списке: он стоит под датой в колонке
+        # «Обновлено» (кадр KB1). Один запрос на всю страницу, не N+1.
+        editors = knowledge_editors(
+            organization_id=self._org(request).id,
+            knowledge_ids=[item.id for item in items],
         )
+        payloads = []
+        for item in items:
+            payload = knowledge_payload(item, include_content=False)
+            editor = editors.get(item.id)
+            if editor:
+                payload["updatedBy"] = editor
+            payloads.append(payload)
+        return Response({"items": payloads})
 
     def post(self, request: Request) -> Response:
         try:
@@ -111,6 +124,12 @@ class KnowledgeDetailView(_KnowledgeBaseView):
         )
         if created_event and created_event.actor:
             payload["createdBy"] = created_event.actor.full_name or created_event.actor.email
+        editor = knowledge_editors(
+            organization_id=knowledge.organization_id,
+            knowledge_ids=[knowledge.id],
+        ).get(knowledge.id)
+        if editor:
+            payload["updatedBy"] = editor
         return Response({"knowledge": payload})
 
     def patch(self, request: Request, knowledge_id: int) -> Response:
@@ -166,6 +185,22 @@ class KnowledgeImportView(_KnowledgeBaseView):
             request=request,
         )
         return Response(payload, status=201)
+
+
+class KnowledgeReindexView(_KnowledgeBaseView):
+    """Пересборка фрагментов знания по требованию (дизайн-базлайн v2, кадры
+    KB1/KB4). Обычно индекс перестраивается при сохранении; кнопка нужна, когда
+    агент отвечает старым текстом после сбоя или правки вложения."""
+
+    def post(self, request: Request, knowledge_id: int) -> Response:
+        try:
+            knowledge = self._write_knowledge(request, knowledge_id)
+        except Knowledge.DoesNotExist:
+            return Response({"detail": "Knowledge not found"}, status=404)
+        reindex_knowledge(knowledge)
+        self._audit(request, "reindexed", knowledge)
+        knowledge = self._write_knowledge(request, knowledge_id)
+        return Response({"knowledge": knowledge_payload(knowledge)})
 
 
 class KnowledgeAttachmentUploadView(_KnowledgeBaseView):

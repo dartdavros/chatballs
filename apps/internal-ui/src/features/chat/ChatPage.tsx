@@ -5,13 +5,10 @@ import { Hint } from "../../shared/Hint";
 import { Icon } from "../../shared/icons";
 
 import { ConversationWorkspace, type DialogScope } from "../conversations/ConversationWorkspace";
-import { DialogControls } from "../conversations/DialogControls";
 import { fetchChatDirectory, type ApiConversation, type ChatDirectory, type ConversationCounters } from "../conversations/model";
 import type { ConversationListItem } from "../conversations/types";
 import { ClientContext } from "../sales/dialogs/context/ClientContext";
 import { HistoryContext } from "../sales/dialogs/context/HistoryContext";
-import { OperatorCards } from "../support/context/OperatorCards";
-import { SupportHistory } from "../support/context/SupportHistory";
 import type { EmployeeGroupRef, RouteKey, SessionUser } from "../../types";
 
 // Единый «Чат» (дизайн-базлайн v2 §8.1): один экран для всех диалогов
@@ -102,7 +99,6 @@ function ChatContextPanel({
   closeContext: () => void;
   viewerId: number;
 }) {
-  const isSupport = Boolean(detail?.supportIdentitySnapshot);
   return (
     <section className="sales-context">
       <div className="sales-context-tabs">
@@ -112,18 +108,9 @@ function ChatContextPanel({
       </div>
       <div className="sales-context-body">
         {rightTab === "client" && (
-          isSupport ? (
-            <>
-              {detail && (
-                <DialogControls detail={detail} groups={groups} employees={employees} applyConversation={applyConversation} viewerId={viewerId} />
-              )}
-              <OperatorCards detail={detail} />
-            </>
-          ) : (
-            <ClientContext dialog={dialog} detail={detail} groups={groups} employees={employees} applyConversation={applyConversation} startCall={startCall} viewerId={viewerId} />
-          )
+          <ClientContext dialog={dialog} detail={detail} groups={groups} employees={employees} applyConversation={applyConversation} startCall={startCall} viewerId={viewerId} />
         )}
-        {rightTab === "history" && (isSupport ? <SupportHistory detail={detail} /> : <HistoryContext detail={detail} />)}
+        {rightTab === "history" && <HistoryContext detail={detail} />}
       </div>
     </section>
   );

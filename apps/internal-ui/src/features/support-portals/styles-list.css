@@ -282,7 +282,6 @@
 }
 
 .portals-content-cell { color: var(--n-2); font-size: 13px; }
-.portals-products-cell { color: var(--n-3); font-size: 13px; }
 .portals-updated-cell { color: var(--n-4); font-size: 12.5px; }
 
 /* Пилюли статуса раздела мельче общих: 22px, 11.5/600, без рамки (макет). */

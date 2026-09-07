@@ -1,7 +1,0 @@
-.knowledge-import-file {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  color: var(--n-3);
-  font-size: 12.5px;
-}

@@ -9,35 +9,23 @@ TENANT_FOREIGN_KEYS = (
     ("identity_employeeaccessassignment", "identity_department", "department_id"),
     ("identity_employeeaccessassignment", "identity_employeeprofile", "assigned_by_id"),
     ("identity_organizationinvitation", "identity_employeeprofile", "created_by_id"),
-    ("products_productdepartment", "identity_product", "product_id"),
-    ("products_productdepartment", "identity_department", "department_id"),
-    ("products_offer", "identity_product", "product_id"),
-    ("products_offer", "products_offer", "primary_box_offer_id"),
-    ("products_price", "products_offer", "offer_id"),
-    ("products_marketplacepublication", "products_price", "price_id"),
     ("ai_knowledgeattachment", "ai_knowledge", "knowledge_id"),
     ("ai_knowledgefragment", "ai_knowledge", "knowledge_id"),
     ("ai_aiagent", "channels_channel", "channel_id"),
     ("ai_llminvocation", "channels_channel", "channel_id"),
-    ("ai_llminvocation", "identity_product", "product_id"),
     ("integrations_integration", "channels_channel", "channel_id"),
     ("channels_channel", "identity_department", "department_id"),
-    ("channels_channel", "identity_product", "product_id"),
     ("channels_channel", "integrations_integration", "provider_integration_id"),
     ("conversations_connectionidentity", "conversations_contact", "contact_id"),
     ("conversations_connectionidentity", "integrations_integration", "connection_id"),
     ("conversations_conversation", "channels_channel", "channel_id"),
     ("conversations_conversation", "integrations_integration", "connection_id"),
     ("conversations_conversation", "conversations_contact", "contact_id"),
-    ("conversations_conversation", "support_supportidentitysnapshot", "support_identity_snapshot_id"),
     ("conversations_conversation", "conversations_conversation", "previous_conversation_id"),
     ("conversations_conversationread", "conversations_conversation", "conversation_id"),
     ("conversations_message", "conversations_conversation", "conversation_id"),
-    # Ссылки orders_*/sales_* удалены вместе с приложениями (ADR-HUB-0041):
-    # на чистой установке этих таблиц не существует.
-    ("support_productsupportcontract", "identity_product", "product_id"),
-    ("support_supportidentitysnapshot", "identity_product", "product_id"),
-    ("support_supportidentitysnapshot", "support_productsupportcontract", "contract_id"),
+    # Ссылки orders_*/sales_*/products_*/support_* удалены вместе с
+    # приложениями (ADR-HUB-0041/0045): на чистой установке этих таблиц не существует.
     ("calls_callsession", "conversations_conversation", "conversation_id"),
     ("calls_callsession", "integrations_integration", "delivery_connection_id"),
     ("calls_callinvite", "calls_callsession", "call_session_id"),
@@ -68,7 +56,6 @@ TENANT_USER_FIELDS = (
 
 TENANT_PAIRS = (
     ("ai_aiagent_knowledge_items", "ai_aiagent", "aiagent_id", "ai_knowledge", "knowledge_id"),
-    ("support_productsupportcontract_allowed_channels", "support_productsupportcontract", "productsupportcontract_id", "channels_channel", "channel_id"),
 )
 
 
@@ -184,12 +171,10 @@ class Migration(migrations.Migration):
     dependencies = [
         ("tenancy", "0001_initial"),
         ("identity", "0014_alter_accessprofilecapability_organization_and_more"),
-        ("products", "0010_alter_marketplacepublication_organization_and_more"),
         ("ai", "0006_alter_aiagent_organization_and_more"),
         ("integrations", "0002_integration_channel_integration_poll_marker"),
         ("channels", "0004_remove_channel_ai_fields"),
         ("conversations", "0006_alter_connectionidentity_organization_and_more"),
-        ("support", "0002_alter_productsupportcontract_code"),
         ("calls", "0004_alter_callinvite_organization_and_more"),
         ("notifications", "0006_alter_messengerbinding_organization_and_more"),
         ("webchat", "0003_alter_websession_organization"),

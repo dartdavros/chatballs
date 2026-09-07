@@ -1,12 +1,12 @@
 import type { ReactNode } from "react";
 
-import type { Employee, Product, Role, SessionUser } from "../types";
+import type { Employee, Role, SessionUser } from "../types";
 import { FormField } from "./form-controls";
 import { Icon, LogoSpinner } from "./icons";
 
 type IconName = Parameters<typeof Icon>[0]["name"];
 import { Button } from "./ui-controls";
-import { initials, productAccent } from "./utils";
+import { initials } from "./utils";
 
 export function Avatar({ user, employee, background }: { user?: SessionUser; employee?: Employee; background?: string }) {
   const label = employee ? initials(employee.fullName, employee.email) : initials(user?.fullName ?? "", user?.email ?? "");
@@ -62,21 +62,6 @@ export function roleLabel(role: Role): string {
 
 export function RoleBadge({ role }: { role: Role }) {
   return <span className={`role-badge ${role.toLowerCase()}`}>{roleLabel(role)}</span>;
-}
-
-export function ProductTag({ product }: { product: Pick<Product, "code" | "name"> }) {
-  const accent = productAccent(product.code);
-  return (
-    <span className="product-tag" style={{ background: accent.bg, color: accent.color }}>
-      <i style={{ background: accent.color }} />
-      {product.name}
-    </span>
-  );
-}
-
-export function ProductMark({ product }: { product: Pick<Product, "code" | "name"> }) {
-  const accent = productAccent(product.code);
-  return <span className="product-mark"><i style={{ background: accent.color }} />{product.name}</span>;
 }
 
 export function ContentState({ icon, tone = "primary", title, text, action, className = "" }: { icon: ReactNode; tone?: "primary" | "warning"; title: string; text: ReactNode; action?: ReactNode; className?: string }) {

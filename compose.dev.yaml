@@ -109,6 +109,9 @@ services:
       # Direct Vite remains same-origin for cookies/CSRF and proxies only to the
       # real local Django service. This variable exists only in dev compose.
       VITE_DEV_API_TARGET: http://backend-app:8000
+      # Bind-mounts from the Windows host do not deliver inotify events into the
+      # container, so the watcher polls instead — otherwise HMR never fires.
+      VITE_DEV_POLL: "1"
     ports:
       - "${INTERNAL_UI_PORT:-5173}:5173"
     volumes:
@@ -123,6 +126,8 @@ services:
       context: .
       dockerfile: apps/web-chat/Dockerfile
     command: npm run dev -- --host 0.0.0.0 --port 5175
+    environment:
+      VITE_DEV_POLL: "1"
     ports:
       - "${WEB_CHAT_PORT:-5175}:5175"
     volumes:

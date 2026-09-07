@@ -10,7 +10,6 @@ from chatballs.identity.models import (
     Organization,
     OrganizationMembership,
 )
-from chatballs.products.models import Product
 
 
 @dataclass(frozen=True)
@@ -43,8 +42,6 @@ def bootstrap_owner(*, email: str, password: str, full_name: str = "") -> Bootst
     support_group, _ = EmployeeGroup.objects.get_or_create(
         organization=organization, name="Поддержка"
     )
-    for code, name in (("site", "Сайт"), ("app", "Приложение")):
-        Product.objects.get_or_create(organization=organization, code=code, defaults={"name": name})
     # Каналы обработки и их агенты (ADR-HUB-0019) создаются через API каналов.
 
     owner, created_owner = HumanUser.objects.get_or_create(

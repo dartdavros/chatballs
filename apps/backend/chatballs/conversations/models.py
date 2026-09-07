@@ -147,17 +147,10 @@ class Conversation(models.Model):
     organization = models.ForeignKey("identity.Organization", on_delete=models.PROTECT, related_name="conversations")
     channel = models.ForeignKey("channels.Channel", on_delete=models.PROTECT, related_name="conversations")
     connection = models.ForeignKey("integrations.Integration", on_delete=models.PROTECT, related_name="conversations", null=True, blank=True)
-    # Источник identity диалога: sales Contact (лид/аноним) ИЛИ verified
-    # SupportIdentitySnapshot (authenticated клиент продукта). ADR-HUB-0022:
-    # sales-identity и support-identity разделены, ровно один источник на диалог.
+    # Единственный источник identity диалога — контакт. Авторизованный
+    # in-product клиент (SupportIdentitySnapshot) удалён вместе с сущностью
+    # Product (ADR-HUB-0045).
     contact = models.ForeignKey(Contact, on_delete=models.PROTECT, related_name="conversations", null=True, blank=True)
-    support_identity_snapshot = models.ForeignKey(
-        "support.SupportIdentitySnapshot",
-        on_delete=models.PROTECT,
-        related_name="conversations",
-        null=True,
-        blank=True,
-    )
     # Внешний идентификатор чата (для отправки ответа в канал).
     external_chat_id = models.CharField(max_length=128, blank=True)
     # Транспортная мета диалога (ADR-HUB-0035): для email — тема исходного
@@ -204,13 +197,10 @@ class Conversation(models.Model):
         ordering = ["-last_activity_at"]
         indexes = [models.Index(fields=["channel", "lifecycle"])]
         constraints = [
-            # Ровно один источник identity: sales Contact XOR SupportIdentitySnapshot.
+            # Диалог всегда принадлежит контакту.
             models.CheckConstraint(
-                condition=(
-                    models.Q(contact__isnull=True, support_identity_snapshot__isnull=False)
-                    | models.Q(contact__isnull=False, support_identity_snapshot__isnull=True)
-                ),
-                name="conversation_exactly_one_identity",
+                condition=models.Q(contact__isnull=False),
+                name="conversation_requires_contact",
             ),
         ]
 

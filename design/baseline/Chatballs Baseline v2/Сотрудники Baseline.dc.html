@@ -337,6 +337,7 @@ class Component extends DCLogic {
       { key: "agents", label: "Агенты", paths: ["M6 6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2zM12 2v2M9 12v9M15 12v9M9 18h6M10 8v.01M14 8v.01"], circles: [] },
       { key: "employees", label: "Сотрудники", paths: ["M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"], circles: [] },
       { key: "portals", label: "Порталы", paths: ["M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20", "M2 12h20"], circles: [{ cx: 12, cy: 12, r: 10 }] },
+      { key: "knowledge", label: "База знаний", paths: ["M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5A2.5 2.5 0 0 0 6.5 22H20V2H6.5A2.5 2.5 0 0 0 4 4.5z"], circles: [] },
       { key: "settings", label: "Настройки", paths: ["M21 6H9M3 6h2", "M21 12h-8M3 12h6", "M21 18h-6M3 18h8"], circles: [{ cx: 7, cy: 6, r: 2 }, { cx: 11, cy: 12, r: 2 }, { cx: 13, cy: 18, r: 2 }] },
     ].map((n) => ({ ...n, bg: n.key === "employees" ? "var(--c-accent-bg)" : "transparent", color: n.key === "employees" ? "var(--c-accent-text)" : "var(--c-n2)", weight: n.key === "employees" ? 600 : 500 }));
 

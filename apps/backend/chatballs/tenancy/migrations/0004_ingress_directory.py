@@ -44,22 +44,9 @@ VIEWS = {
         JOIN channels_channel channel ON channel.id = integration.channel_id
         WHERE integration.provider = 'WEB' AND channel.is_active
     """,
-    "support_channel_directory": """
-        SELECT channel.id AS resource_id,
-               channel.organization_id,
-               channel.code AS lookup_key,
-               product.support_token_secret
-        FROM channels_channel channel
-        JOIN identity_product product ON product.id = channel.product_id
-        WHERE channel.is_active
-    """,
-    "support_conversation_directory": """
-        SELECT conversation.id AS resource_id,
-               conversation.organization_id,
-               conversation.support_identity_snapshot_id AS snapshot_id
-        FROM conversations_conversation conversation
-        WHERE conversation.support_identity_snapshot_id IS NOT NULL
-    """,
+    # Вьюхи support_channel_directory/support_conversation_directory удалены
+    # вместе с сущностью Product и авторизованным in-product чатом
+    # (ADR-HUB-0045); на старых БД их снимает 0029_drop_product_support.
 }
 
 

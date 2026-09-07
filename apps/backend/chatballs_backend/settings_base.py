@@ -55,7 +55,6 @@ INSTALLED_APPS = [
     "chatballs.identity",
     "chatballs.tenancy",
     "chatballs.platform",
-    "chatballs.products",
     "chatballs.ai",
     "chatballs.integrations",
     "chatballs.channels",
@@ -64,7 +63,6 @@ INSTALLED_APPS = [
     "chatballs.webchat",
     "chatballs.health",
     "chatballs.events",
-    "chatballs.support",
     "chatballs.support_portals",
     "chatballs.calls",
     # django-channels НЕ добавляется в INSTALLED_APPS: его app label «channels»

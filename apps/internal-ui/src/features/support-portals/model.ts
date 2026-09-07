@@ -8,25 +8,8 @@ export type PortalWidgetOption = {
   code: string;
   publicKey: string;
   name: string;
-  mode: "ANONYMOUS" | "AUTHENTICATED_PRODUCT";
   status: "DRAFT" | "PUBLISHED" | "DISABLED";
-  channel: {
-    id: number;
-    code: string;
-    name: string;
-    productId: number | null;
-  } | null;
-};
-
-export type PortalProductLink = {
-  productId: number;
-  code: string;
-  name: string;
-  supportChannelId: number | null;
-  supportChannelCode: string | null;
-  supportWidgetId: number | null;
-  supportWidgetKey: string | null;
-  sortOrder: number;
+  channel: { id: number; code: string; name: string } | null;
 };
 
 export type SupportPortal = {
@@ -53,7 +36,6 @@ export type SupportPortal = {
   widgetKey: string | null;
   widgetChannelId: number | null;
   widgetChannelCode: string | null;
-  products: PortalProductLink[];
   createdAt: string;
   updatedAt: string;
   // Колонка «Материалы» списка порталов и подзаголовок карточки (кадры PT1/PT3).
@@ -145,12 +127,11 @@ export {
   listArticleFiles,
   listPortalArticles,
   listPortalCategories,
-  listPortalSupportChannels,
+  listPortalWidgets,
   listSupportPortals,
   loadPortalArticle,
   loadSupportPortal,
   publishArticleRevision,
-  replacePortalProducts,
   setPortalCustomDomain,
   updatePortalArticle,
   updatePortalCategory,

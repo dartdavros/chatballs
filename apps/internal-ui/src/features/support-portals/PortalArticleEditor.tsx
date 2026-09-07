@@ -26,8 +26,8 @@ import {
   fileMarkdown,
   fileMeta,
   isImageFile,
-  MARKDOWN_TOOLS,
-} from "./markdownTools";
+} from "../../shared/markdown/markdownTools";
+import { MARKDOWN_TOOLS } from "./markdownTools";
 import { LOCALE_OPTIONS } from "./portalText";
 
 // Редактор статьи (дизайн-базлайн v2, кадры PT7/PT8): полноэкранный split —

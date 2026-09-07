@@ -286,7 +286,6 @@ def agent_deletion_blockers(channel: Channel) -> list[dict[str, object]]:
     counts = (
         ("conversations", channel.conversations.count()),
         ("connections", channel.connections.count()),
-        ("supportContracts", channel.allowed_support_contracts.count()),
         ("llmInvocations", channel.ai_invocations.count()),
     )
     return [{"type": name, "count": count} for name, count in counts if count]

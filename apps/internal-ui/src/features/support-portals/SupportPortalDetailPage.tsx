@@ -4,7 +4,7 @@ import { hasCapability } from "../../auth/access";
 import { DecisionDialog } from "../../shared/DecisionDialog";
 import { ErrorScreen, LoadingState } from "../../shared/ui";
 import { Button } from "../../shared/ui-controls";
-import type { Product, SessionUser } from "../../types";
+import type { SessionUser } from "../../types";
 import {
   changePortalStatus,
   listPortalArticles,
@@ -33,7 +33,6 @@ type Publishing = { article: PortalArticle; revisionId: number };
 
 export function SupportPortalDetailPage({
   portalId,
-  products,
   section,
   user,
   openPortals,
@@ -41,7 +40,6 @@ export function SupportPortalDetailPage({
   openPortalSettings,
 }: {
   portalId: number | null;
-  products: Product[];
   section: PortalSettingsSectionKey | null;
   user: SessionUser;
   openPortals: () => void;
@@ -179,7 +177,6 @@ export function SupportPortalDetailPage({
           address={address}
           canManage={canManage && portal.status !== "ARCHIVED"}
           portal={portal}
-          products={products}
           section={section}
           onChanged={setPortal}
           openSection={(next) => openPortalSettings(portal.id, next)}

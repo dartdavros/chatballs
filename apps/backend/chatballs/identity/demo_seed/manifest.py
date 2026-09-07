@@ -21,7 +21,6 @@ SCHEMA_VERSION = 1
 #: Файлы манифестов по доменам (имя файла без расширения).
 MANIFEST_FILES: tuple[str, ...] = (
     "organization",
-    "catalog",
     "channels_ai",
     "conversations",
     "support",

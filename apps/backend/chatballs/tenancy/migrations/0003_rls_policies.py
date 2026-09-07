@@ -9,12 +9,7 @@ TENANT_TABLES = (
     "identity_employeeaccessassignment",
     "identity_organizationinvitation",
     "identity_auditevent",
-    "identity_product",
     "tenancy_organizationstorageusage",
-    "products_productdepartment",
-    "products_offer",
-    "products_price",
-    "products_marketplacepublication",
     "ai_knowledge",
     "ai_knowledgeattachment",
     "ai_knowledgefragment",
@@ -27,9 +22,8 @@ TENANT_TABLES = (
     "conversations_conversation",
     "conversations_conversationread",
     "conversations_message",
-    # Таблицы orders_*/sales_* удалены вместе с приложениями (ADR-HUB-0041).
-    "support_productsupportcontract",
-    "support_supportidentitysnapshot",
+    # Таблицы orders_*/sales_*/products_*/support_* удалены вместе с
+    # приложениями (ADR-HUB-0041/0045).
     "calls_callsession",
     "calls_callinvite",
     "calls_callparticipant",
@@ -51,15 +45,6 @@ INDIRECT_TABLE_POLICIES = {
             WHERE agent.id = aiagent_id
               AND agent.organization_id = chatballs.current_organization_id()
               AND knowledge.organization_id = agent.organization_id
-        )
-    """,
-    "support_productsupportcontract_allowed_channels": """
-        EXISTS (
-            SELECT 1 FROM support_productsupportcontract contract
-            JOIN channels_channel channel ON channel.id = channel_id
-            WHERE contract.id = productsupportcontract_id
-              AND contract.organization_id = chatballs.current_organization_id()
-              AND channel.organization_id = contract.organization_id
         )
     """,
 }

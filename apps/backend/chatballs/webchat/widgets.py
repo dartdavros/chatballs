@@ -1,25 +1,9 @@
 from __future__ import annotations
 
-from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.core.exceptions import ObjectDoesNotExist
 
 from chatballs.integrations.models import Integration, IntegrationProvider
-from chatballs.webchat.models import (
-    WebChatWidget,
-    WebChatWidgetMode,
-    WebChatWidgetStatus,
-)
-
-
-def mode_for_integration(integration: Integration) -> str:
-    channel = integration.channel
-    if channel is None:
-        return WebChatWidgetMode.ANONYMOUS
-    if (
-        channel.requires_authenticated_product_identity
-        and not channel.allow_anonymous_sessions
-    ):
-        return WebChatWidgetMode.AUTHENTICATED_PRODUCT
-    return WebChatWidgetMode.ANONYMOUS
+from chatballs.webchat.models import WebChatWidget, WebChatWidgetStatus
 
 
 def widget_for_integration(integration: Integration) -> WebChatWidget | None:
@@ -52,7 +36,6 @@ def ensure_widget(integration: Integration) -> WebChatWidget | None:
             widget.save(update_fields=["status", "updated_at"])
         return widget
 
-    target_mode = mode_for_integration(integration)
     config = integration.config if isinstance(integration.config, dict) else {}
     presentation = {
         key: config[key]
@@ -70,7 +53,6 @@ def ensure_widget(integration: Integration) -> WebChatWidget | None:
             integration=integration,
             code=_next_code(integration),
             name=integration.name,
-            mode=target_mode,
             status=(
                 WebChatWidgetStatus.DISABLED
                 if not integration.is_active
@@ -81,12 +63,7 @@ def ensure_widget(integration: Integration) -> WebChatWidget | None:
             consent_config=consent,
         )
     else:
-        if widget.mode != target_mode and widget.sessions.exists():
-            raise ValidationError(
-                {"channel": "Widget with existing sessions cannot change identity mode"}
-            )
         widget.name = integration.name
-        widget.mode = target_mode
         widget.allowed_origins = config.get("allowed_domains", [])
         widget.presentation_config = presentation
         widget.consent_config = consent
@@ -123,14 +100,12 @@ def widget_payload(widget: WebChatWidget | None) -> dict[str, object] | None:
         "code": widget.code,
         "publicKey": widget.public_key,
         "name": widget.name,
-        "mode": widget.mode,
         "status": widget.status,
         "channel": (
             {
                 "id": channel.id,
                 "code": channel.code,
                 "name": channel.name,
-                "productId": channel.product_id,
             }
             if channel is not None
             else None

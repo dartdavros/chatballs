@@ -20,12 +20,9 @@ class Migration(migrations.Migration):
                         SELECT 1
                         FROM ai_llminvocation invocation
                         LEFT JOIN channels_channel channel ON channel.id = invocation.channel_id
-                        LEFT JOIN identity_product product ON product.id = invocation.product_id
-                        WHERE (channel.id IS NULL AND product.id IS NULL)
-                           OR (channel.id IS NOT NULL AND product.id IS NOT NULL
-                               AND channel.organization_id <> product.organization_id)
+                        WHERE channel.id IS NULL
                     ) THEN
-                        RAISE EXCEPTION 'C04 preflight: ambiguous or cross-tenant LLM invocation exists';
+                        RAISE EXCEPTION 'C04 preflight: ambiguous LLM invocation exists';
                     END IF;
                 END $$;
 
@@ -48,12 +45,6 @@ class Migration(migrations.Migration):
                 SET organization_id = channel.organization_id
                 FROM channels_channel channel
                 WHERE channel.id = invocation.channel_id;
-
-                UPDATE ai_llminvocation invocation
-                SET organization_id = product.organization_id
-                FROM identity_product product
-                WHERE invocation.organization_id IS NULL
-                  AND product.id = invocation.product_id;
             """,
             reverse_sql=migrations.RunSQL.noop,
         ),

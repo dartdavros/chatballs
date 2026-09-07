@@ -11,7 +11,7 @@ import { agentColorOf, groupColorOf, type ConversationCounters } from "../featur
 import { LaunchChecklist } from "./LaunchChecklist";
 import { SidebarUserMenu } from "./SidebarUserMenu";
 
-// Сайдбар по дизайн-базлайну v2: у менеджера — плоские шесть пунктов (A1) и
+// Сайдбар по дизайн-базлайну v2: у менеджера — плоские семь пунктов (A1, KB1) и
 // блок «Запуск»; у сотрудника разделов нет (§3) — сайдбар и есть фильтр списка
 // диалогов: дерево «Все диалоги · Группы · Агенты» + профиль внизу.
 
@@ -134,7 +134,8 @@ export function Sidebar({
           <SidebarLink activeRoutes={["agents", "agentDetail"]} icon="robot" label="Агенты" route={route} routeKey="agents" setRoute={setRoute} />
           <SidebarLink activeRoutes={["employees", "employeeDetail"]} icon="team" label="Сотрудники" route={route} routeKey="employees" setRoute={setRoute} />
           <SidebarLink activeRoutes={["supportPortals", "supportPortalDetail", "supportPortalSettings"]} icon="globe" label="Порталы" route={route} routeKey="supportPortals" setRoute={setRoute} />
-          <SidebarLink activeRoutes={["settings", "aiKnowledge", "aiKnowledgeCreate", "aiKnowledgeDetail", "administrationAudit"]} icon="settings" label="Настройки" route={route} routeKey="settings" setRoute={setRoute} />
+          <SidebarLink activeRoutes={["knowledge", "knowledgeDetail", "knowledgeCreate", "knowledgeEdit", "knowledgeCategories", "knowledgeImport"]} icon="book" label="База знаний" route={route} routeKey="knowledge" setRoute={setRoute} />
+          <SidebarLink activeRoutes={["settings", "administrationAudit"]} icon="settings" label="Настройки" route={route} routeKey="settings" setRoute={setRoute} />
         </nav>
       ) : route === "profile" ? (
         /* Кадр P2: на «Профиле» у сотрудника сайдбар без навигации — фильтровать

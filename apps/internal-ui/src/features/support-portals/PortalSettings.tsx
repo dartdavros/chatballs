@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 
 import { Icon } from "../../shared/icons";
-import type { Product } from "../../types";
 import {
-  listPortalSupportChannels,
+  listPortalWidgets,
   type PortalAddressConfig,
   type PortalWidgetOption,
   type SupportPortal,
@@ -11,7 +10,6 @@ import {
 import { PortalAppearanceSettings } from "./PortalAppearanceSettings";
 import { PortalBasicsSettings } from "./PortalBasicsSettings";
 import { PortalDomainSettings } from "./PortalDomainSettings";
-import { PortalProductSettings } from "./PortalProductSettings";
 import { PortalPublishSettings } from "./PortalPublishSettings";
 import { PortalWidgetSettings } from "./PortalWidgetSettings";
 import {
@@ -26,7 +24,6 @@ export function PortalSettings({
   address,
   canManage,
   portal,
-  products,
   section,
   onChanged,
   openSection,
@@ -34,24 +31,16 @@ export function PortalSettings({
   address: PortalAddressConfig;
   canManage: boolean;
   portal: SupportPortal;
-  products: Product[];
   section: PortalSettingsSectionKey;
   onChanged: (portal: SupportPortal) => void;
   openSection: (section: PortalSettingsSectionKey) => void;
 }) {
-  const [supportWidgets, setSupportWidgets] = useState<PortalWidgetOption[]>([]);
   const [anonymousWidgets, setAnonymousWidgets] = useState<PortalWidgetOption[]>([]);
 
   useEffect(() => {
-    listPortalSupportChannels(portal.id)
-      .then((payload) => {
-        setSupportWidgets(payload.items);
-        setAnonymousWidgets(payload.widgetItems);
-      })
-      .catch(() => {
-        setSupportWidgets([]);
-        setAnonymousWidgets([]);
-      });
+    listPortalWidgets(portal.id)
+      .then((payload) => setAnonymousWidgets(payload.items))
+      .catch(() => setAnonymousWidgets([]));
   }, [portal.id]);
 
   const current = PORTAL_SETTINGS_SECTIONS.find((item) => item.key === section)
@@ -59,7 +48,6 @@ export function PortalSettings({
   const domainLive = Boolean(portal.customDomain && portal.customDomainVerifiedAt);
   const hints: Partial<Record<PortalSettingsSectionKey, { text: string; tone: "ok" | "muted" }>> = {
     domain: domainLive ? { text: "работает", tone: "ok" } : undefined,
-    products: portal.products.length ? { text: String(portal.products.length), tone: "muted" } : undefined,
   };
 
   return (
@@ -103,9 +91,6 @@ export function PortalSettings({
           )}
           {current.key === "widget" && (
             <PortalWidgetSettings canManage={canManage} portal={portal} widgets={anonymousWidgets} onChanged={onChanged} />
-          )}
-          {current.key === "products" && (
-            <PortalProductSettings canManage={canManage} portal={portal} products={products} widgets={supportWidgets} onChanged={onChanged} />
           )}
           {current.key === "danger" && (
             <PortalPublishSettings canManage={canManage} portal={portal} onChanged={onChanged} />

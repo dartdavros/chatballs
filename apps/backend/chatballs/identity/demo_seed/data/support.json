@@ -1,55 +1,11 @@
 {
   "schemaVersion": 1,
-  "contracts": [
-    {
-      "key": "site_contract",
-      "code": "SITE-2026",
-      "product": "atelie-nord-site",
-      "version": 1,
-      "status": "ACTIVE"
-    }
-  ],
-  "identitySnapshots": [
-    {
-      "key": "sergey_account",
-      "contract": "site_contract",
-      "subjectKey": "user:4402",
-      "accountKey": "acc-4402",
-      "displayName": "Сергей Крылов",
-      "displayEmail": "s.krylov@example.ru",
-      "payload": {
-        "orders": [
-          {
-            "number": "4402",
-            "status": "В производстве",
-            "total": 12480
-          }
-        ],
-        "city": "Казань"
-      },
-      "operatorContext": {
-        "Клиент с": "апрель 2026",
-        "Заказов": "2",
-        "Последний заказ": "4402 — комплект штор, 12 480 ₽"
-      },
-      "aiContext": {
-        "orders": "4402 in production"
-      },
-      "searchText": "Сергей Крылов s.krylov@example.ru 4402 Казань",
-      "issuedDaysAgo": 6,
-      "expiresInDays": 24
-    }
-  ],
   "portal": {
     "slug": "atelie-nord",
     "name": "Помощь · Ателье Норд",
     "locale": "ru",
     "status": "PUBLISHED",
     "widgetConnection": "web_help",
-    "accountWidgetConnection": "web_account",
-    "products": [
-      "atelie-nord-site"
-    ],
     "categories": [
       {
         "slug": "zakaz",
@@ -87,7 +43,9 @@
         "helpfulVotes": 14,
         "unhelpfulVotes": 1,
         "publishedDaysAgo": 27,
-        "files": ["katalog-tkanej-2026.pdf"]
+        "files": [
+          "katalog-tkanej-2026.pdf"
+        ]
       },
       {
         "slug": "sroki-dostavki",

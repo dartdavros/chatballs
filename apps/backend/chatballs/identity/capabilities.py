@@ -12,8 +12,6 @@ ALL_CAPABILITIES: frozenset[str] = frozenset(
         "employees.view",
         "employees.manage",
         "groups.manage",
-        "products.view",
-        "products.manage",
         "channels.view",
         "channels.manage",
         "ai.view",

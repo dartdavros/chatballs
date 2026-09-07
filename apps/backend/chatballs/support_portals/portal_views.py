@@ -16,7 +16,6 @@ from chatballs.support_portals.models import SupportPortal
 from chatballs.support_portals.portal_services import (
     PortalInput,
     create_portal,
-    replace_product_links,
     set_portal_status,
     update_portal,
 )
@@ -30,11 +29,7 @@ from chatballs.support_portals.themes import (
     DEFAULT_PORTAL_THEME,
     PortalThemeScheme,
 )
-from chatballs.webchat.models import (
-    WebChatWidget,
-    WebChatWidgetMode,
-    WebChatWidgetStatus,
-)
+from chatballs.webchat.models import WebChatWidget, WebChatWidgetStatus
 from chatballs.webchat.widgets import widget_payload
 
 
@@ -212,30 +207,8 @@ class PortalStatusView(PortalBaseView):
         return Response({"portal": portal_payload(portal)})
 
 
-class PortalProductsView(PortalBaseView):
-    def put(self, request: Request, portal_id: int) -> Response:
-        portal = self.portal(request, portal_id)
-        if portal is None:
-            return Response({"detail": "Портал не найден"}, status=404)
-        links = request.data.get("items")
-        if not isinstance(links, list):
-            return Response({"detail": "items должен быть списком"}, status=400)
-        try:
-            replace_product_links(
-                context=request.tenant_context,
-                portal=portal,
-                links=links,
-            )
-        except (ValidationError, TypeError, ValueError) as error:
-            if isinstance(error, ValidationError):
-                return validation_response(error)
-            return Response({"detail": "Некорректная привязка продукта"}, status=400)
-        portal = portal_for_context(request.tenant_context, portal.id)
-        return Response({"portal": portal_payload(portal)})
-
-
-class PortalSupportChannelsView(PortalBaseView):
-    """Portal-scoped widget options available to support operators."""
+class PortalWidgetOptionsView(PortalBaseView):
+    """Анонимные веб-виджеты, доступные порталу."""
 
     def get(self, request: Request, portal_id: int) -> Response:
         portal = self.portal(request, portal_id)
@@ -245,45 +218,19 @@ class PortalSupportChannelsView(PortalBaseView):
             WebChatWidget.objects.select_related(
                 "integration",
                 "integration__channel",
-                "integration__channel__product",
             )
             .filter(
                 organization=request.tenant_context.organization,
-                mode=WebChatWidgetMode.AUTHENTICATED_PRODUCT,
-                status=WebChatWidgetStatus.PUBLISHED,
-                integration__provider=IntegrationProvider.WEB,
-                integration__status=IntegrationStatus.OK,
-                integration__is_active=True,
-                integration__channel__product__isnull=False,
-                integration__channel__is_active=True,
-            )
-            .order_by("integration__channel__product__name", "name", "id")
-        )
-        anonymous_widgets = (
-            WebChatWidget.objects.select_related(
-                "integration",
-                "integration__channel",
-                "integration__channel__product",
-            )
-            .filter(
-                organization=request.tenant_context.organization,
-                mode=WebChatWidgetMode.ANONYMOUS,
                 status=WebChatWidgetStatus.PUBLISHED,
                 integration__provider=IntegrationProvider.WEB,
                 integration__status=IntegrationStatus.OK,
                 integration__is_active=True,
                 integration__channel__is_active=True,
-                integration__channel__requires_authenticated_product_identity=False,
                 integration__channel__allow_anonymous_sessions=True,
             )
             .order_by("name", "id")
         )
-        return Response(
-            {
-                "items": [widget_payload(widget) for widget in widgets],
-                "widgetItems": [widget_payload(widget) for widget in anonymous_widgets],
-            }
-        )
+        return Response({"items": [widget_payload(widget) for widget in widgets]})
 
 
 class PortalDomainView(PortalBaseView):

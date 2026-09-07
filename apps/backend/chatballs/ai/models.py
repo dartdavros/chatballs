@@ -232,10 +232,9 @@ class LlmInvocationStatus(models.TextChoices):
 
 
 class LlmInvocation(TenantRelationModel):
-    tenant_relation_fields = ("channel", "product")
-    # Учёт по каналу (ADR-HUB-0019) и/или продукту, если канал продуктовый.
+    tenant_relation_fields = ("channel",)
+    # Учёт по каналу (ADR-HUB-0019).
     channel = models.ForeignKey("channels.Channel", on_delete=models.SET_NULL, null=True, blank=True, related_name="ai_invocations")
-    product = models.ForeignKey("products.Product", on_delete=models.PROTECT, related_name="ai_invocations", null=True, blank=True)
     purpose = models.CharField(max_length=64)
     operation = models.CharField(max_length=16)  # chat | embedding
     model = models.CharField(max_length=128, blank=True)

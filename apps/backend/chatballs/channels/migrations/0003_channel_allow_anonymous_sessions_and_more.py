@@ -30,9 +30,4 @@ class Migration(migrations.Migration):
             name='allow_self_reported_contact',
             field=models.BooleanField(default=True),
         ),
-        migrations.AddField(
-            model_name='channel',
-            name='requires_authenticated_product_identity',
-            field=models.BooleanField(default=False),
-        ),
     ]

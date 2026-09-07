@@ -4,14 +4,9 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils import timezone
 
-from chatballs.channels.models import Channel
 from chatballs.integrations.models import IntegrationProvider, IntegrationStatus
-from chatballs.products.models import Product
 from chatballs.support_portals.addressing import hosted_domain
-from chatballs.support_portals.models import (
-    SupportPortal,
-    SupportPortalProduct,
-)
+from chatballs.support_portals.models import SupportPortal
 from chatballs.support_portals.statuses import PortalStatus
 from chatballs.support_portals.themes import (
     DEFAULT_PORTAL_THEME,
@@ -22,11 +17,7 @@ from chatballs.support_portals.themes import (
     validate_theme_settings,
 )
 from chatballs.tenancy.context import TenantContext
-from chatballs.webchat.models import (
-    WebChatWidget,
-    WebChatWidgetMode,
-    WebChatWidgetStatus,
-)
+from chatballs.webchat.models import WebChatWidget, WebChatWidgetStatus
 
 
 @dataclass(frozen=True)
@@ -100,13 +91,11 @@ def _widget(
         "integration__channel",
     ).filter(
         organization=context.organization,
-        mode=WebChatWidgetMode.ANONYMOUS,
         status=WebChatWidgetStatus.PUBLISHED,
         integration__provider=IntegrationProvider.WEB,
         integration__status=IntegrationStatus.OK,
         integration__is_active=True,
         integration__channel__is_active=True,
-        integration__channel__requires_authenticated_product_identity=False,
         integration__channel__allow_anonymous_sessions=True,
     )
     if widget_id is not None:
@@ -144,107 +133,6 @@ def set_portal_status(
         portal.published_at = None
     portal.status = status
     portal.save(update_fields=["status", "transition_version", "published_at", "updated_at"])
-    return portal
-
-
-@transaction.atomic
-def replace_product_links(
-    *, context: TenantContext, portal: SupportPortal, links: list[dict]
-) -> SupportPortal:
-    _check_tenant(context, portal)
-    if portal.status == PortalStatus.ARCHIVED:
-        raise ValidationError(
-            {"portal": "Восстановите портал, чтобы изменить его продукты"}
-        )
-    product_ids = [int(item.get("productId", 0)) for item in links]
-    channel_ids = [
-        int(item["supportChannelId"])
-        for item in links
-        if item.get("supportChannelId") is not None
-    ]
-    widget_ids = [
-        int(item["supportWidgetId"])
-        for item in links
-        if item.get("supportWidgetId") is not None
-    ]
-    if len(product_ids) != len(set(product_ids)):
-        raise ValidationError({"products": "Один продукт нельзя добавить дважды"})
-    products = {
-        item.id: item
-        for item in Product.objects.filter(
-            organization=context.organization,
-            id__in=product_ids,
-        )
-    }
-    channels = {
-        item.id: item
-        for item in Channel.objects.filter(
-            organization=context.organization,
-            id__in=channel_ids,
-        )
-    }
-    widgets = {
-        item.id: item
-        for item in WebChatWidget.objects.select_related(
-            "integration",
-            "integration__channel",
-        ).filter(
-            organization=context.organization,
-            id__in=widget_ids,
-            mode=WebChatWidgetMode.AUTHENTICATED_PRODUCT,
-            status=WebChatWidgetStatus.PUBLISHED,
-            integration__provider=IntegrationProvider.WEB,
-            integration__status=IntegrationStatus.OK,
-            integration__is_active=True,
-            integration__channel__is_active=True,
-        )
-    }
-    legacy_widgets = list(
-        WebChatWidget.objects.select_related("integration__channel").filter(
-            organization=context.organization,
-            mode=WebChatWidgetMode.AUTHENTICATED_PRODUCT,
-            status=WebChatWidgetStatus.PUBLISHED,
-            integration__provider=IntegrationProvider.WEB,
-            integration__status=IntegrationStatus.OK,
-            integration__is_active=True,
-            integration__channel_id__in=channel_ids,
-        )
-    )
-    if (
-        len(products) != len(product_ids)
-        or len(channels) != len(set(channel_ids))
-        or len(widgets) != len(set(widget_ids))
-    ):
-        raise ValidationError({"products": "Продукт или канал поддержки не найден"})
-    replacements = []
-    for position, item in enumerate(links):
-        channel_id = item.get("supportChannelId")
-        widget_id = item.get("supportWidgetId")
-        widget = widgets.get(int(widget_id)) if widget_id is not None else None
-        if widget is None and channel_id is not None:
-            candidates = [
-                candidate
-                for candidate in legacy_widgets
-                if candidate.integration.channel_id == int(channel_id)
-            ]
-            widget = candidates[0] if len(candidates) == 1 else None
-            if widget is None:
-                raise ValidationError(
-                    {"products": "Для канала нужен один опубликованный Web-виджет"}
-                )
-        channel = widget.integration.channel if widget is not None else None
-        link = SupportPortalProduct(
-            organization=context.organization,
-            portal=portal,
-            product=products[int(item["productId"])],
-            support_channel=channel,
-            support_widget=widget,
-            sort_order=int(item.get("sortOrder", position)),
-        )
-        link.full_clean()
-        replacements.append(link)
-    portal.product_links.all().delete()
-    SupportPortalProduct.objects.bulk_create(replacements)
     return portal
 
 

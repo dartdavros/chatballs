@@ -3,7 +3,6 @@ import type { ReactNode } from "react";
 import { LogoIcon } from "../../shared/icons";
 import { HelpSearch } from "./HelpSearch";
 import { PortalWebWidget } from "./PortalWebWidget";
-import { SupportLauncher } from "./SupportLauncher";
 import type { HelpPortal } from "./types";
 
 export function HelpLayout({
@@ -30,11 +29,6 @@ export function HelpLayout({
             <span className="help-brand-mark"><LogoIcon /></span>
             <span>{portal.name}</span>
           </a>
-          <div className="help-products">
-            {portal.products.filter((product) => product.siteUrl).map((product) => (
-              <a href={product.siteUrl} key={product.code} rel="noreferrer">{product.name}</a>
-            ))}
-          </div>
         </div>
         {compactHeader && (
           <HelpSearch
@@ -53,9 +47,7 @@ export function HelpLayout({
         </a>
         <span>База знаний и поддержка</span>
       </footer>
-      {portal.webWidgetKey
-        ? <PortalWebWidget widgetKey={portal.webWidgetKey} />
-        : <SupportLauncher products={portal.products} />}
+      {portal.webWidgetKey && <PortalWebWidget widgetKey={portal.webWidgetKey} />}
     </div>
   );
 }

@@ -169,7 +169,7 @@ export function ConversationWorkspace({ isOwner = false, viewerId = null, listTi
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
     const items = dialogs.filter((dialog) => {
-      if (query && !`${dialog.name} ${dialog.email} ${dialog.product} ${dialog.preview}`.toLowerCase().includes(query)) return false;
+      if (query && !`${dialog.name} ${dialog.email} ${dialog.agentName} ${dialog.preview}`.toLowerCase().includes(query)) return false;
       if (listTab === "wait") return dialog.mode === "wait";
       if (listTab === "mine") return dialog.isMine;
       return true;

@@ -57,9 +57,6 @@ export function SettingsPage({ user, onUserUpdated, reload, groups = [], section
     <>
       <div className="settings-subnav-divider" />
       <div className="settings-subnav-caption">Отдельные экраны</div>
-      <button className="settings-subnav-link" type="button" onClick={() => setRoute("aiKnowledge")}>
-        <Icon name="folder" size={16} strokeWidth={1.9} /><span>База знаний</span><Icon name="external" size={13} strokeWidth={2} />
-      </button>
       <button className="settings-subnav-link" type="button" onClick={() => setRoute("administrationAudit")}>
         <Icon name="list" size={16} strokeWidth={1.9} /><span>Аудит действий</span><Icon name="external" size={13} strokeWidth={2} />
       </button>

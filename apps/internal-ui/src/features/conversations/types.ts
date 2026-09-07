@@ -13,7 +13,6 @@ export type ConversationListItem = {
   initials: string;
   avatarBg: string;
   avatarUrl?: string;
-  product: string;
   channel: ChannelKey;
   email: string;
   mode: DialogMode;

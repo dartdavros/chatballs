@@ -6,14 +6,12 @@ from chatballs.support_portals.models import (
     PortalArticleRevision,
     PortalCategory,
     SupportPortal,
-    SupportPortalProduct,
 )
 
 
 admin.site.register(
     (
         SupportPortal,
-        SupportPortalProduct,
         PortalCategory,
         PortalArticle,
         PortalArticleRevision,

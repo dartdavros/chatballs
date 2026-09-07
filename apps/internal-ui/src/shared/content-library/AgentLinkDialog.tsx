@@ -2,7 +2,7 @@ import { Modal } from "antd";
 import { useState } from "react";
 
 import { Button } from "../ui-controls";
-import { pluralize } from "./BulkSelectionBar";
+import { pluralRu } from "../utils";
 
 export type AgentLinkAction = "attach" | "detach";
 
@@ -20,14 +20,15 @@ export type AgentLinkOutcome = {
 
 function outcomeText(outcome: AgentLinkOutcome, forms: [string, string, string]): string {
   const verb = outcome.action === "attach" ? "Прикреплено" : "Откреплено";
-  const main = `${verb}: ${outcome.changed} ${pluralize(outcome.changed, forms)}.`;
+  const main = `${verb}: ${pluralRu(outcome.changed, forms)}.`;
   if (outcome.skipped === 0) return main;
   return `${main} Пропущено: ${outcome.skipped}.`;
 }
 
 /**
- * Выбор одного агента для массового прикрепления или открепления материалов.
- * Общий для библиотеки знаний и для статей портала поддержки.
+ * Выбор одного агента для массового прикрепления или открепления статей
+ * портала поддержки. У «Базы знаний» после редизайна свой диалог (кадр KB3)
+ * с честным списком пропусков.
  */
 export function AgentLinkDialog({
   agents,
@@ -52,20 +53,20 @@ export function AgentLinkDialog({
   const [action, setAction] = useState<AgentLinkAction>("attach");
 
   return (
-    <Modal className="knowledge-bulk-modal" open title={title} onCancel={onCancel} footer={null} destroyOnClose>
-      <div className="knowledge-bulk-dialog-body">
+    <Modal className="content-link-modal" open title={title} onCancel={onCancel} footer={null} destroyOnClose>
+      <div className="content-dialog-body">
         {outcome ? (
-          <p className="knowledge-bulk-outcome">{outcomeText(outcome, forms)}</p>
+          <p className="content-dialog-outcome">{outcomeText(outcome, forms)}</p>
         ) : (
           <>
-            <div className="knowledge-editor-field">
+            <div className="content-dialog-field">
               <span>Действие</span>
-              <div className="knowledge-visibility-segmented">
+              <div className="content-dialog-segmented">
                 <button className={action === "attach" ? "active" : ""} disabled={busy} type="button" onClick={() => setAction("attach")}>Прикрепить</button>
                 <button className={action === "detach" ? "active" : ""} disabled={busy} type="button" onClick={() => setAction("detach")}>Открепить</button>
               </div>
             </div>
-            <label className="knowledge-editor-field knowledge-category-select">
+            <label className="content-dialog-field content-dialog-select">
               <span>Агент</span>
               <div>
                 <select disabled={busy || agents.length === 0} value={agentId ?? ""} onChange={(event) => setAgentId(event.target.value ? Number(event.target.value) : null)}>
@@ -78,11 +79,11 @@ export function AgentLinkDialog({
                 </select>
               </div>
             </label>
-            {agents.length === 0 && <div className="knowledge-editor-error">Нет агентов, которым можно прикрепить материалы.</div>}
+            {agents.length === 0 && <div className="content-dialog-error">Нет агентов, которым можно прикрепить материалы.</div>}
           </>
         )}
-        {error && <div className="knowledge-editor-error">{error}</div>}
-        <div className="knowledge-bulk-dialog-actions">
+        {error && <div className="content-dialog-error">{error}</div>}
+        <div className="content-dialog-actions">
           <Button variant="secondary" disabled={busy} onClick={onCancel}>{outcome ? "Закрыть" : "Отмена"}</Button>
           {!outcome && (
             <Button variant="primary" disabled={busy || agentId === null} onClick={() => agentId !== null && onSubmit(agentId, action)}>

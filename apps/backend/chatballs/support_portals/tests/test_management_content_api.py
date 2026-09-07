@@ -200,11 +200,6 @@ class SupportPortalContentManagementTests(SupportPortalTestCase):
                 },
                 format="json",
             ),
-            self.client.put(
-                f"/api/v1/support/portals/{portal_id}/products/",
-                {"items": []},
-                format="json",
-            ),
         ]
 
         self.assertTrue(all(response.status_code == 400 for response in responses))
@@ -237,9 +232,7 @@ class SupportPortalContentManagementTests(SupportPortalTestCase):
     def test_support_operator_uses_portal_scoped_widget_options(self) -> None:
         portal_id = self.create_portal().json()["portal"]["id"]
         widget = create_web_widget(self.channel, name="Приложение support widget")
-        response = self.client.get(
-            f"/api/v1/support/portals/{portal_id}/support-channels/"
-        )
+        response = self.client.get(f"/api/v1/support/portals/{portal_id}/widgets/")
         self.assertEqual(response.status_code, 200, response.content)
         self.assertEqual([item["id"] for item in response.json()["items"]], [widget.id])
         self.assertEqual(response.json()["items"][0]["channel"]["id"], self.channel.id)

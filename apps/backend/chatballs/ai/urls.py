@@ -42,6 +42,11 @@ urlpatterns = [
         name="ai-knowledge-detail",
     ),
     path(
+        "knowledge/<int:knowledge_id>/reindex/",
+        views.KnowledgeReindexView.as_view(),
+        name="ai-knowledge-reindex",
+    ),
+    path(
         "knowledge/<int:knowledge_id>/attachments/",
         views.KnowledgeAttachmentUploadView.as_view(),
         name="ai-knowledge-attachment-upload",

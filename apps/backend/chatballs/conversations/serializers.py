@@ -81,27 +81,6 @@ def _history_item(conversation: Conversation) -> dict[str, object]:
     }
 
 
-def _support_identity_snapshot(
-    conversation: Conversation, *, detailed: bool = False
-) -> dict[str, object] | None:
-    snapshot = conversation.support_identity_snapshot
-    if snapshot is None:
-        return None
-    # Краткая карточка для списка диалогов; в detail-режиме — operator_context_json
-    # + account_key для правой панели оператора (ADR-HUB-0022 §8.3: рендер по контракту).
-    payload: dict[str, object] = {
-        "id": snapshot.id,
-        "subjectKey": snapshot.subject_key,
-        "displayName": snapshot.display_name,
-        "displayEmail": snapshot.display_email,
-        "contractCode": snapshot.contract_code,
-    }
-    if detailed:
-        payload["accountKey"] = snapshot.account_key
-        payload["operatorContextJson"] = snapshot.operator_context_json
-    return payload
-
-
 def _contact_username(conversation: Conversation) -> str:
     # Username живёт на identity подключения (у контакта их может быть несколько).
     # Только в detail-режиме — в списках это лишний запрос на каждый диалог.
@@ -123,14 +102,8 @@ def _contact_email(conversation: Conversation) -> str:
 
 
 def _conversation_history(conversation: Conversation) -> list[Conversation]:
-    # История по тому же источнику identity: для sales — по contact, для
-    # support — по snapshot (ADR-HUB-0002: цепочка прошлых обращений).
-    if conversation.support_identity_snapshot_id:
-        qs = Conversation.objects.filter(
-            support_identity_snapshot_id=conversation.support_identity_snapshot_id
-        )
-    else:
-        qs = Conversation.objects.filter(contact_id=conversation.contact_id)
+    # Цепочка прошлых обращений того же контакта (ADR-HUB-0002).
+    qs = Conversation.objects.filter(contact_id=conversation.contact_id)
     return list(
         qs.exclude(id=conversation.id)
         .select_related("channel", "connection", "assigned_operator")
@@ -153,7 +126,6 @@ def conversation_payload(
             "id": channel.id,
             "code": channel.code,
             "name": channel.name,
-            "product": {"code": channel.product.code, "name": channel.product.name} if channel.product_id else None,
         },
         "connection": (
             {
@@ -166,8 +138,6 @@ def conversation_payload(
             if conversation.connection_id
             else None
         ),
-        # Источник identity: sales Contact ИЛИ verified SupportIdentitySnapshot.
-        # Для support-диалогов contact=None, клиент представлен snapshot'ом.
         "contact": (
             {
                 "id": conversation.contact_id,
@@ -183,7 +153,6 @@ def conversation_payload(
             if conversation.contact_id
             else None
         ),
-        "supportIdentitySnapshot": _support_identity_snapshot(conversation, detailed=with_messages),
         "lifecycle": conversation.lifecycle,
         "controlMode": conversation.control_mode,
         "expectedResponder": conversation.expected_responder,

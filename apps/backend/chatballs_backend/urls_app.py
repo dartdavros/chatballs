@@ -23,10 +23,6 @@ urlpatterns = [
         include("chatballs.identity.company_urls"),
     ),
     path(
-        "api/v1/organizations/<uuid:organization_public_id>/company/",
-        include("chatballs.products.urls"),
-    ),
-    path(
         "api/v1/organizations/<uuid:organization_public_id>/employees/",
         include("chatballs.identity.employee_urls"),
     ),
@@ -48,14 +44,13 @@ urlpatterns = [
         include("chatballs.notifications.urls"),
     ),
     path(
-        "api/v1/organizations/<uuid:organization_public_id>/support/",
-        include("chatballs.support.urls"),
+        "api/v1/organizations/<uuid:organization_public_id>/support/portals/",
+        include("chatballs.support_portals.urls"),
     ),
     path("api/v1/organizations/<uuid:organization_public_id>/calls/", include("chatballs.calls.urls")),
     path("api/v1/webchat/", include("chatballs.webchat.urls")),
     path("api/v1/health/", include("chatballs.health.urls")),
     path("api/v1/ai/", include("chatballs.ai.public_urls")),
-    path("api/v1/support/", include("chatballs.support.public_urls")),
     path("api/v1/help/", include("chatballs.support_portals.public_urls")),
     path("api/v1/calls/", include("chatballs.calls.public_urls")),
 ]

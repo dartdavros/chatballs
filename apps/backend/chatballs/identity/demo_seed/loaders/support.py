@@ -1,5 +1,5 @@
-"""Поддержка: контракты, снимки личности, портал помощи, статьи (опубликованные,
-черновик, архив, вторая ревизия), оценки читателей, статьи у агентов."""
+"""Поддержка: портал помощи, статьи (опубликованные, черновик, архив, вторая
+ревизия), оценки читателей, статьи у агентов."""
 
 from __future__ import annotations
 
@@ -10,11 +10,6 @@ from django.core.files.base import ContentFile
 from chatballs.identity.demo_seed import manifest
 from chatballs.identity.demo_seed.loaders.common import backdate, now
 from chatballs.identity.demo_seed.refs import DemoRefs
-from chatballs.support.models import (
-    ContractStatus,
-    ProductSupportContract,
-    SupportIdentitySnapshot,
-)
 from chatballs.support_portals.content_services import (
     add_revision,
     archive_article,
@@ -31,7 +26,6 @@ from chatballs.support_portals.models import (
 from chatballs.support_portals.portal_services import (
     PortalInput,
     create_portal,
-    replace_product_links,
     set_portal_status,
 )
 from chatballs.support_portals.statuses import ArticleStatus, PortalStatus
@@ -42,51 +36,8 @@ from chatballs.tenancy.storage import adjust_storage_usage
 def load(context: TenantContext, refs: DemoRefs) -> None:
     data = manifest.load("support")
     current = now()
-    _ensure_contracts(refs, data.get("contracts", []))
-    _ensure_snapshots(refs, data.get("identitySnapshots", []), current)
     _ensure_portal(context, refs, data.get("portal"), current)
     _link_agent_articles(refs)
-
-
-def _ensure_contracts(refs: DemoRefs, items: list[dict]) -> None:
-    for item in items:
-        contract, _ = ProductSupportContract.objects.get_or_create(
-            organization=refs.organization,
-            code=item["code"],
-            defaults={
-                "product": refs.products[item["product"]],
-                "version": item["version"],
-                "status": item.get("status", ContractStatus.ACTIVE),
-            },
-        )
-        support_channel = refs.channels.get("support")
-        if support_channel is not None:
-            contract.allowed_channels.add(support_channel)
-        refs.support_contracts[item["key"]] = contract
-
-
-def _ensure_snapshots(refs: DemoRefs, items: list[dict], current) -> None:
-    for item in items:
-        contract = refs.support_contracts[item["contract"]]
-        snapshot, _ = SupportIdentitySnapshot.objects.get_or_create(
-            organization=refs.organization,
-            contract=contract,
-            subject_key=item["subjectKey"],
-            defaults={
-                "product": contract.product,
-                "contract_code": contract.code,
-                "account_key": item.get("accountKey"),
-                "display_name": item.get("displayName", ""),
-                "display_email": item.get("displayEmail", ""),
-                "payload_json": item.get("payload", {}),
-                "operator_context_json": item.get("operatorContext", {}),
-                "ai_context_json": item.get("aiContext", {}),
-                "search_text": item.get("searchText", ""),
-                "token_issued_at": current - timedelta(days=item.get("issuedDaysAgo", 1)),
-                "token_expires_at": current + timedelta(days=item.get("expiresInDays", 30)),
-            },
-        )
-        refs.identity_snapshots[item["key"]] = snapshot
 
 
 def _ensure_portal(context: TenantContext, refs: DemoRefs, portal_data: dict | None, current) -> None:
@@ -105,20 +56,6 @@ def _ensure_portal(context: TenantContext, refs: DemoRefs, portal_data: dict | N
             ),
         )
         backdate(portal, current - timedelta(days=28), "created_at")
-        # Виджет портала — анонимный (чат на странице помощи); виджет продукта —
-        # авторизованный (личный кабинет), через него идут обращения с личностью.
-        account_widget = refs.widgets.get(portal_data.get("accountWidgetConnection"))
-        links = []
-        for product_code in portal_data.get("products", []):
-            product = refs.products[product_code]
-            links.append(
-                {
-                    "productId": product.id,
-                    "supportWidgetId": account_widget.id if account_widget is not None else None,
-                }
-            )
-        if links:
-            replace_product_links(context=context, portal=portal, links=links)
 
     categories: dict[str, PortalCategory] = {}
     for item in portal_data.get("categories", []):

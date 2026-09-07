@@ -1,7 +1,0 @@
-{
-  "schemaVersion": 1,
-  "_comment": "Product — скрытая техническая ось (ADR-HUB-0041): нужен порталу поддержки и веб-виджету.",
-  "products": [
-    {"code": "atelie-nord-site", "name": "Сайт ателье", "siteUrl": "https://atelie-nord.ru"}
-  ]
-}

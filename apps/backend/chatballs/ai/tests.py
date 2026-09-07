@@ -10,15 +10,14 @@ from chatballs.ai.models import AIAgent, AIAgentStatus, Knowledge, KnowledgeFrag
 from chatballs.channels.models import Channel
 from chatballs.identity.bootstrap import bootstrap_owner
 from chatballs.identity.models import EmployeeRole, HumanUser, Organization, OrganizationMembership
-from chatballs.products.models import Product
 
 _MEDIA_ROOT = tempfile.mkdtemp(prefix="hub-test-media-")
 
 
-def make_channel_with_agent(organization, *, code, name, product=None, model="openai/gpt-4o-mini"):
+def make_channel_with_agent(organization, *, code, name, model="openai/gpt-4o-mini"):
     """Канал обработки + его агент (ADR-HUB-0019/0023). Bootstrap не создаёт
     каналы/агентов — в тестах их собирает этот helper."""
-    channel = Channel.objects.create(organization=organization, code=code, name=name, product=product)
+    channel = Channel.objects.create(organization=organization, code=code, name=name)
     agent = AIAgent.objects.create(
         channel=channel,
         name=f"{name} Agent",
@@ -49,7 +48,6 @@ class AIAgentInvariantTests(TestCase):
 
         channel, _ = make_channel_with_agent(
             self.organization, code="site-sales", name="Сайт — продажи",
-            product=Product.objects.get(code="site"),
         )
         with self.assertRaises(ValidationError):
             create_agent(
@@ -63,11 +61,6 @@ class AIAgentInvariantTests(TestCase):
                     knowledge_ids=[],
                 ),
             )
-
-    def test_new_product_does_not_get_an_agent_automatically(self) -> None:
-        product = Product.objects.create(organization=self.organization, code="academy", name="Academy")
-        self.assertFalse(AIAgent.objects.filter(channel__product=product).exists())
-
 
 class AIAgentPermissionTests(TestCase):
     def setUp(self) -> None:
@@ -328,7 +321,6 @@ class ChatInvocationTests(TestCase):
         self.organization = Organization.objects.get(slug="demo")
         self.channel, self.agent = make_channel_with_agent(
             self.organization, code="site-sales", name="Сайт — продажи",
-            product=Product.objects.get(code="site"),
         )
 
     def test_chat_records_invocation_with_cost(self) -> None:
@@ -447,7 +439,6 @@ class KnowledgeRetrievalTests(TestCase):
         self.organization = Organization.objects.get(slug="demo")
         self.channel, self.agent = make_channel_with_agent(
             self.organization, code="site-sales", name="Сайт — продажи",
-            product=Product.objects.get(code="site"),
         )
         from chatballs.ai.services import KnowledgeInput, create_knowledge
 
@@ -494,7 +485,6 @@ class AgentRuntimeTests(TestCase):
         self.organization = Organization.objects.get(slug="demo")
         self.channel, self.agent = make_channel_with_agent(
             self.organization, code="site-sales", name="Сайт — продажи",
-            product=Product.objects.get(code="site"),
         )
         self.agent.persona = "Ты — ассистент Сайт."
         self.agent.tone = "Коротко."

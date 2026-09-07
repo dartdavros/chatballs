@@ -7,7 +7,6 @@ export type PortalSettingsSectionKey =
   | "domain"
   | "theme"
   | "widget"
-  | "products"
   | "danger";
 
 export type PortalSettingsSection = {
@@ -50,13 +49,6 @@ export const PORTAL_SETTINGS_SECTIONS: PortalSettingsSection[] = [
     icon: "widget",
     heading: "Веб-виджет",
     lead: "Публичный чат отображается на всех страницах портала.",
-  },
-  {
-    key: "products",
-    label: "Продукты и поддержка",
-    icon: "box",
-    heading: "Продукты и поддержка",
-    lead: "Выберите продукты и виджеты, через которые клиенты смогут обратиться в поддержку.",
   },
   {
     key: "danger",

@@ -22,7 +22,6 @@ from chatballs.identity.models import (
     OrganizationMembership,
 )
 from chatballs.identity.policy import ResourceScope, authorize
-from chatballs.products.models import Product
 
 _LOCMEM_CACHE = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
 
@@ -43,7 +42,6 @@ class BootstrapOwnerTests(TestCase):
             {"Операторы", "Поддержка"},
         )
         self.assertEqual(result.support_group.name, "Поддержка")
-        self.assertEqual(set(Product.objects.values_list("code", flat=True)), {"site", "app"})
         self.assertEqual(result.owner.memberships.get().role, EmployeeRole.OWNER)
         # TOTP выключен по умолчанию (намеренно, локальная разработка).
         self.assertFalse(result.owner.memberships.get().totp_required)
@@ -67,7 +65,6 @@ class BootstrapOwnerTests(TestCase):
         self.assertFalse(second.created_owner)
         self.assertEqual(HumanUser.objects.count(), 2)
         self.assertEqual(Organization.objects.count(), 1)
-        self.assertEqual(Product.objects.count(), 2)
 
     def test_bootstrap_promotes_existing_owner_to_django_admin_access(self) -> None:
         user = HumanUser.objects.create_user(email="owner@example.com", password="temporary-password")
@@ -595,55 +592,14 @@ class CompanyEndpointTests(TestCase):
         self.client = APIClient()
         self.client.login(username="owner@example.com", password="temporary-password")
 
-    def test_owner_reads_groups_and_products(self) -> None:
+    def test_owner_reads_groups(self) -> None:
         groups_response = self.client.get("/api/v1/company/groups/")
-        products_response = self.client.get("/api/v1/company/products/")
 
         self.assertEqual(groups_response.status_code, 200)
-        self.assertEqual(products_response.status_code, 200)
         self.assertEqual(
             set(group["name"] for group in groups_response.json()["items"]),
             {"Операторы", "Поддержка"},
         )
-        self.assertEqual(
-            set(product["code"] for product in products_response.json()["items"]),
-            {"site", "app"},
-        )
-
-    def test_owner_creates_and_deactivates_product(self) -> None:
-        create_response = self.client.post(
-            "/api/v1/company/products/create/",
-            data=json.dumps({"code": "academy", "name": "Academy"}),
-            content_type="application/json",
-        )
-
-        self.assertEqual(create_response.status_code, 201)
-        product_id = create_response.json()["product"]["id"]
-
-        deactivate_response = self.client.post(f"/api/v1/company/products/{product_id}/deactivate/")
-
-        self.assertEqual(deactivate_response.status_code, 200)
-        self.assertEqual(deactivate_response.json()["product"]["status"], "DISABLED")
-        self.assertTrue(AuditEvent.objects.filter(action="products.product_created").exists())
-        self.assertTrue(AuditEvent.objects.filter(action="products.product_disabled").exists())
-
-    def test_operator_cannot_create_product(self) -> None:
-        operator = HumanUser.objects.create_user(email="operator@example.com", password="operator-password")
-        OrganizationMembership.objects.create(
-            user=operator,
-            organization=self.organization,
-            role=EmployeeRole.EMPLOYEE,
-        )
-        self.client.logout()
-        self.client.login(username="operator@example.com", password="operator-password")
-
-        response = self.client.post(
-            "/api/v1/company/products/create/",
-            data=json.dumps({"code": "academy", "name": "Academy"}),
-            content_type="application/json",
-        )
-
-        self.assertEqual(response.status_code, 403)
 
 
 class TotpSecretEncryptionTests(TestCase):
@@ -945,12 +901,6 @@ class EmployeeGovernanceTests(TestCase):
         client = self._client("admin@example.com")
         audit = client.get("/api/v1/company/administration/audit/")
         self.assertEqual(audit.status_code, 200)
-        product = client.post(
-            "/api/v1/company/products/create/",
-            data=json.dumps({"code": "academy", "name": "Academy"}),
-            content_type="application/json",
-        )
-        self.assertEqual(product.status_code, 201)
 
     def test_employee_denied_audit(self) -> None:
         self._make("emp@example.com", EmployeeRole.EMPLOYEE)

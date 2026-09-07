@@ -53,7 +53,7 @@ def _mode(latest: Conversation) -> str:
 
 def clients_overview(organization_id: int) -> list[dict]:
     conversation_qs = Conversation.objects.select_related(
-        "channel", "channel__product", "connection", "assigned_operator"
+        "channel", "connection", "assigned_operator"
     ).order_by("-last_activity_at")
     identity_qs = ConnectionIdentity.objects.select_related("connection")
     contacts = Contact.objects.filter(organization_id=organization_id, merged_into__isnull=True).prefetch_related(
@@ -69,15 +69,12 @@ def clients_overview(organization_id: int) -> list[dict]:
         if not conversations:
             continue  # клиенты — те, кто писал
         channels: set[str] = set()
-        products: dict[str, str] = {}
         agents: dict[int, dict[str, object]] = {}
         open_dialogs = 0
         for conversation in conversations:
             provider = conversation.connection.provider if conversation.connection_id else None
             if provider in PROVIDER_CODE:
                 channels.add(PROVIDER_CODE[provider])
-            if conversation.channel.product_id:
-                products[conversation.channel.product.code] = conversation.channel.product.name
             # Агент = карточка канала обработки: по нему фильтруется список (кадр K1).
             agents.setdefault(
                 conversation.channel_id,
@@ -104,7 +101,6 @@ def clients_overview(organization_id: int) -> list[dict]:
                 # Первый непустой @логин среди identity каналов (остальные — в карточке).
                 "username": next((identity.username for identity in contact.identities.all() if identity.username), ""),
                 "channels": sorted(channels),
-                "products": [{"code": code, "name": name} for code, name in sorted(products.items())],
                 "openDialogs": open_dialogs,
                 "totalDialogs": len(conversations),
                 "lastActivityAt": latest.last_activity_at.isoformat(),
@@ -128,21 +124,18 @@ def client_detail(organization_id: int, contact_id: int) -> dict:
     contact = Contact.objects.get(organization_id=organization_id, id=contact_id)
     conversation_qs = Conversation.objects.filter(
         organization_id=organization_id, contact=contact
-    ).select_related("channel", "channel__product", "connection", "group", "assigned_operator", "note_author")
+    ).select_related("channel", "connection", "group", "assigned_operator", "note_author")
     conversations = list(conversation_qs.order_by("-last_activity_at"))
     if not conversations:
         raise Contact.DoesNotExist
 
     channels: set[str] = set()
-    products: dict[str, str] = {}
     open_dialogs = 0
     dialogs: list[dict] = []
     for conversation in conversations:
         provider = conversation.connection.provider if conversation.connection_id else None
         if provider in PROVIDER_CODE:
             channels.add(PROVIDER_CODE[provider])
-        if conversation.channel.product_id:
-            products[conversation.channel.product.code] = conversation.channel.product.name
         if conversation.lifecycle == LifecycleState.OPEN:
             open_dialogs += 1
         # Тема диалога — первое сообщение, превью — последнее (кадр K4).
@@ -240,7 +233,6 @@ def client_detail(organization_id: int, contact_id: int) -> dict:
             "",
         ),
         "channels": sorted(channels),
-        "products": [{"code": code, "name": name} for code, name in sorted(products.items())],
         "openDialogs": open_dialogs,
         "totalDialogs": len(conversations),
         "firstContactAt": contact.created_at.isoformat(),

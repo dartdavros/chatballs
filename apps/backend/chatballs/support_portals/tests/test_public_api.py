@@ -28,8 +28,6 @@ class PublicSupportPortalTests(TestCase):
             organization=result.organization,
             code="demo-help-chat",
             name="Acme Help — чат",
-            requires_authenticated_product_identity=False,
-            allow_anonymous_sessions=True,
         )
         self.widget = create_web_widget(widget_channel, name="Acme Help widget")
         self.client.patch(

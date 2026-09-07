@@ -30,12 +30,6 @@ export function contentSummary(portal: SupportPortal): string {
   ].join(" · ");
 }
 
-export function productsSummary(portal: SupportPortal): string {
-  return portal.products.length
-    ? pluralRu(portal.products.length, ["продукт", "продукта", "продуктов"])
-    : "—";
-}
-
 /** Публичный адрес без схемы: в макете колонка и шапка показывают только хост. */
 export function publicHost(portal: SupportPortal): string {
   return portal.publicUrl.replace(/^https?:\/\//, "").replace(/\/$/, "");
