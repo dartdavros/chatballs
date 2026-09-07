@@ -4,6 +4,8 @@
 
 import type { ReactNode } from "react";
 
+import { Loader } from "../loader/Loader";
+
 export type DeviceName = "mic" | "speaker";
 
 const svg =
@@ -41,8 +43,7 @@ export function PhoneIcon({ rotated = false, width = 26 }: { rotated?: boolean; 
 }
 
 export function SpinnerIcon({ width = 34 }: { width?: number }) {
-  const s = svg(width);
-  return s(<path style={{ animation: "hub-audio-spin .9s linear infinite" }} d="M21 12a9 9 0 1 1-6.219-8.56" strokeWidth={2} />);
+  return <Loader size={width} />;
 }
 
 export type AudioStatusIconName = "spinner" | "declined" | "missed" | "clock" | "alert" | "nodevice" | "unsupported";

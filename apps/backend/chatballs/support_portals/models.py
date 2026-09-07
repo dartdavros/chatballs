@@ -1,15 +1,17 @@
 from __future__ import annotations
 
 import uuid
+
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 
-from chatballs.tenancy.models import TenantRelationModel
 from chatballs.support_portals.statuses import ArticleStatus, PortalStatus
 from chatballs.support_portals.themes import (
     DEFAULT_PORTAL_THEME,
     PortalThemeScheme,
 )
+from chatballs.tenancy.models import TenantRelationModel
 
 
 class SupportPortal(TenantRelationModel):
@@ -20,10 +22,10 @@ class SupportPortal(TenantRelationModel):
     slug = models.SlugField(max_length=64, unique=True)
     hosted_domain = models.CharField(max_length=253, unique=True)
     custom_domain = models.CharField(max_length=253, blank=True, default="")
+    # Отметка технической проверки «домен ведёт на этот сервер». Подтверждения
+    # владения доменом нет: домен и установка у одного владельца (README
+    # дизайн-базлайна «Порталы», решение 6).
     custom_domain_verified_at = models.DateTimeField(null=True, blank=True)
-    custom_domain_verification_token = models.UUIDField(
-        default=uuid.uuid4, editable=False
-    )
     name = models.CharField(max_length=255)
     default_locale = models.CharField(max_length=16, default="ru")
     status = models.CharField(
@@ -271,6 +273,14 @@ class PortalArticleRevision(TenantRelationModel):
     title = models.CharField(max_length=255)
     summary = models.CharField(max_length=500, blank=True)
     content = models.TextField()
+    # Автор редакции показывается в рейке версий редактора статьи (кадр PT7).
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        related_name="+",
+        null=True,
+        blank=True,
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     published_at = models.DateTimeField(null=True, blank=True)
 
@@ -286,6 +296,76 @@ class PortalArticleRevision(TenantRelationModel):
                 name="support_portal_article_revision_positive",
             ),
         ]
+
+
+def article_file_upload_path(instance: PortalArticleFile, filename: str) -> str:
+    organization = instance.article.organization
+    return (
+        f"organizations/{organization.public_id}/portal-articles/"
+        f"{instance.article_id}/{instance.public_id}/{filename}"
+    )
+
+
+class PortalArticleFile(TenantRelationModel):
+    """Файл статьи портала: картинка или документ, вставленный в Markdown.
+
+    Ссылка публичная и защищена непредсказуемым UUID: файл открывается
+    посетителем портала, у которого нет аутентификации хаба (как у вложений
+    знаний, ADR-HUB-0023).
+    """
+
+    tenant_relation_fields = ("article",)
+    article = models.ForeignKey(
+        PortalArticle,
+        on_delete=models.CASCADE,
+        related_name="files",
+    )
+    public_id = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    file = models.FileField(upload_to=article_file_upload_path, max_length=512)
+    # Оригинальное имя уникально в рамках статьи: текст статьи ссылается на файл
+    # по ссылке, а редактор показывает имя в рейке файлов.
+    original_name = models.CharField(max_length=255)
+    content_type = models.CharField(max_length=128, blank=True)
+    size = models.PositiveBigIntegerField(default=0)
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        related_name="+",
+        null=True,
+        blank=True,
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at", "-id"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["article", "original_name"],
+                name="uniq_portal_article_file_name",
+            )
+        ]
+
+    def __str__(self) -> str:
+        return f"portal-file:{self.article_id}/{self.original_name}"
+
+    def public_path(self) -> str:
+        """Ссылка для Markdown статьи — относительная.
+
+        Портал открывается на своём домене, а страница отдаётся с CSP
+        ``img-src 'self'``: абсолютная ссылка на домен установки была бы для
+        неё чужим origin и картинка не отобразилась бы. Относительный путь
+        работает и на портале, и в предпросмотре редактора.
+        """
+        from django.urls import reverse
+
+        return reverse("portal-article-file", kwargs={"public_id": self.public_id})
+
+    def public_url(self) -> str:
+        # Абсолютная ссылка — для мест, где нужен полный адрес (письма,
+        # сообщения в мессенджер): там относительный путь бесполезен.
+        from chatballs.identity.instance_settings import public_base_url
+
+        return public_base_url() + self.public_path()
 
 
 class PortalArticleFeedback(TenantRelationModel):

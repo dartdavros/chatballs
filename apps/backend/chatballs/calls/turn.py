@@ -8,7 +8,9 @@ import time
 from django.conf import settings
 
 
-def turn_credentials(*, label: str = "hub", now: int | None = None) -> tuple[str, str]:
+def turn_credentials(
+    *, label: str = "hub", now: int | None = None, ttl_seconds: int | None = None
+) -> tuple[str, str]:
     """Краткоживущие TURN REST credentials для Coturn (SPEC-HUB-0013 §11).
 
     Схема coturn `use-auth-secret`:
@@ -20,7 +22,7 @@ def turn_credentials(*, label: str = "hub", now: int | None = None) -> tuple[str
     coturn и наружу не отдаётся — клиент получает только производные credentials.
     """
     moment = int(time.time()) if now is None else int(now)
-    expiry = moment + settings.CHATBALLS_CALL_TURN_TTL_SECONDS
+    expiry = moment + (ttl_seconds or settings.CHATBALLS_CALL_TURN_TTL_SECONDS)
     username = f"{expiry}:{label}"
     digest = hmac.new(
         settings.CHATBALLS_CALL_TURN_SECRET.encode("utf-8"),

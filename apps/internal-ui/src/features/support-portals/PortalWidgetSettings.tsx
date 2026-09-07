@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { SelectField } from "../../shared/form-controls";
+import { Icon } from "../../shared/icons";
 import { Button } from "../../shared/ui-controls";
 import {
   portalErrorMessage,
@@ -30,9 +30,7 @@ export function PortalWidgetSettings({
     setBusy(true);
     setFeedback("");
     try {
-      const payload = await updateSupportPortal(portal.id, {
-        widgetId,
-      });
+      const payload = await updateSupportPortal(portal.id, { widgetId });
       onChanged(payload.portal);
       setFeedback("Веб-виджет обновлён");
     } catch (caught) {
@@ -43,34 +41,28 @@ export function PortalWidgetSettings({
   }
 
   return (
-    <section className="portal-section">
-      <div className="portal-section-heading">
-        <div>
-          <h2>Веб-виджет</h2>
-          <p>Публичный чат отображается на всех страницах портала.</p>
-        </div>
-      </div>
-      <div className="portal-settings-fields">
-        <SelectField
-          disabled={!canManage}
-          label="Веб-виджет"
-          value={String(widgetId ?? "")}
-          onChange={(value) => setWidgetId(value ? Number(value) : null)}
-          options={[
-            ["", "Не показывать"],
-            ...widgets.map((widget): [string, string] => [
-              String(widget.id),
-              widget.name,
-            ]),
-          ]}
-        />
-      </div>
+    <div className="portal-settings-card">
+      <label className="portal-field is-narrow">
+        <span className="portal-field-label">Веб-виджет</span>
+        <span className="portal-select">
+          <select
+            disabled={!canManage}
+            value={String(widgetId ?? "")}
+            onChange={(event) => setWidgetId(event.target.value ? Number(event.target.value) : null)}
+          >
+            <option value="">Не показывать</option>
+            {widgets.map((widget) => <option key={widget.id} value={widget.id}>{widget.name}</option>)}
+          </select>
+          <Icon name="chevron" size={14} strokeWidth={2} />
+        </span>
+        <small>Виджет доступен только анонимным посетителям портала.</small>
+      </label>
       {canManage && (
-        <Button variant="secondary" disabled={busy} onClick={() => void save()}>
-          Сохранить виджет
-        </Button>
+        <div className="portal-settings-actions">
+          <Button variant="primary" disabled={busy} onClick={() => void save()}>Сохранить виджет</Button>
+          {feedback && <span className="portal-settings-note">{feedback}</span>}
+        </div>
       )}
-      {feedback && <div className="portal-save-feedback">{feedback}</div>}
-    </section>
+    </div>
   );
 }

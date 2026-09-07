@@ -5,7 +5,9 @@ Canonical implementation workspace for Chatballs.
 ## Быстрый старт (одна минута)
 
 Нужен только Docker (Docker Desktop на Windows/macOS или Docker Engine с Compose
-на Linux). Никаких параметров заранее задавать не нужно — всё спросит браузер.
+на Linux). Ни одной переменной задавать не нужно и негде: у продукта нет `.env`.
+Организацию, владельца, домены, интеграции, почту и хранилище человек настраивает
+в интерфейсе.
 
 Windows (PowerShell):
 
@@ -23,13 +25,28 @@ cd chatballs/code/chatballs
 ./scripts/start.sh
 ```
 
-Скрипт копирует `.env.example` в `.env` (если его нет), собирает образы и
-поднимает стек. Когда в логах появится готовность, откройте
+Настраивать нечего: файла `.env` у продукта нет, секреты инстанса (ключ
+подписи, пароли ролей БД) генерирует сам первый старт и держит их в томе
+`chatballs-secrets`.
+
+Если положить рядом со скриптом `release.env` со страницы релиза, образы
+скачаются из реестра по digest и сборки не будет — это самый быстрый путь.
+Без `release.env` стек собирается из исходников: так работают те, кто правит
+код. Когда в логах появится готовность, откройте
 **http://localhost** — вместо входа система покажет **мастер первого запуска**:
 название организации, ваше имя, e-mail и пароль владельца, переключатель
 «Установить демо-данные». После кнопки «Начать» вы сразу в приложении под
 владельцем. Мастер доступен только пока в системе нет ни одной организации;
 после создания владельца он закрывается навсегда.
+
+### Доступ по http и переход на TLS
+
+Свежая установка отвечает по обычному http — по адресу сервера, пока домена и
+сертификата ещё нет. Продукт не уводит себя на https принудительно: этим
+занимается шлюз, когда у него появляется настоящий домен и сертификат.
+Жёсткость транспорта включается сама по факту TLS: запрос пришёл по https —
+cookie получают префикс `__Host-`, флаг `Secure` и HSTS; по http — обычные
+имена без `Secure`. Настраивать для этого нечего.
 
 ### Демо-данные
 
@@ -75,8 +92,8 @@ CHATBALLS_INSTANCE_DIR=/opt/chatballs/instance ./deploy/migrate/rename-to-chatba
 
 ```bash
 # dev-стек из каталога репозитория
-CHATBALLS_INSTANCE_DIR="$PWD" CHATBALLS_COMPOSE_ARGS="-f compose.dev.yaml --env-file .env.example"   deploy/migrate/rename-to-chatballs.sh
-docker compose -f compose.yaml -f compose.dev.yaml --env-file .env.example --env-file .env up -d
+CHATBALLS_INSTANCE_DIR="$PWD" CHATBALLS_COMPOSE_ARGS="-f compose.dev.yaml" deploy/migrate/rename-to-chatballs.sh
+docker compose -f compose.yaml -f compose.dev.yaml up -d
 ```
 
 Скрипт останавливает старый compose-проект, переписывает `.env` (резервная

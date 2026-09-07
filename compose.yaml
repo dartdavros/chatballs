@@ -7,26 +7,44 @@
 # В dev они не задаются — срабатывают безопасные defaults, а override подменяет
 # image на build.
 #
+# У продукта нет .env: секреты инстанса генерирует сервис secrets при первом
+# старте, всё остальное человек настраивает в UI.
 # Запуск production/box:
-#   docker compose --env-file .env --env-file release.env up -d
+#   docker compose --env-file release.env up -d
 # Запуск разработки:
-#   docker compose -f compose.yaml -f compose.dev.yaml --env-file .env.example --env-file .env up
+#   docker compose -f compose.yaml -f compose.dev.yaml up
 
 services:
+  # Секреты инстанса (ключ подписи, пароли ролей БД) генерирует первый старт;
+  # они живут в томе chatballs-secrets. Человек их не вводит и не хранит:
+  # установка — одна команда, всё остальное настраивается в UI. Скрипт
+  # идемпотентен — перезапуск не меняет пароли работающей базы.
+  secrets:
+    image: ${CHATBALLS_POSTGRES_IMAGE:-pgvector/pgvector:pg16}
+    entrypoint: ["/bin/sh", "/chatballs-generate-secrets.sh"]
+    restart: "no"
+    volumes:
+      - ${CHATBALLS_RELEASE_DIR:-.}/deploy/secrets/generate-instance-secrets.sh:/chatballs-generate-secrets.sh:ro
+      - chatballs-secrets:/run/chatballs/secrets
+
   postgres:
     image: ${CHATBALLS_POSTGRES_IMAGE:-pgvector/pgvector:pg16}
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is required}
-      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
-      POSTGRES_APP_USER: ${POSTGRES_APP_USER:?POSTGRES_APP_USER is required}
-      POSTGRES_APP_PASSWORD: ${POSTGRES_APP_PASSWORD:?POSTGRES_APP_PASSWORD is required}
-      POSTGRES_PLATFORM_USER: ${POSTGRES_PLATFORM_USER:?POSTGRES_PLATFORM_USER is required}
-      POSTGRES_PLATFORM_PASSWORD: ${POSTGRES_PLATFORM_PASSWORD:?POSTGRES_PLATFORM_PASSWORD is required}
-      POSTGRES_MIGRATION_USER: ${POSTGRES_MIGRATION_USER:?POSTGRES_MIGRATION_USER is required}
-      POSTGRES_MIGRATION_PASSWORD: ${POSTGRES_MIGRATION_PASSWORD:?POSTGRES_MIGRATION_PASSWORD is required}
+      POSTGRES_DB: ${POSTGRES_DB:-chatballs}
+      POSTGRES_USER: ${POSTGRES_USER:-chatballs_bootstrap}
+      POSTGRES_PASSWORD_FILE: /run/chatballs/secrets/postgres_password
+      POSTGRES_APP_USER: ${POSTGRES_APP_USER:-chatballs_app}
+      POSTGRES_APP_PASSWORD_FILE: /run/chatballs/secrets/postgres_app_password
+      POSTGRES_PLATFORM_USER: ${POSTGRES_PLATFORM_USER:-chatballs_platform}
+      POSTGRES_PLATFORM_PASSWORD_FILE: /run/chatballs/secrets/postgres_platform_password
+      POSTGRES_MIGRATION_USER: ${POSTGRES_MIGRATION_USER:-chatballs_migration}
+      POSTGRES_MIGRATION_PASSWORD_FILE: /run/chatballs/secrets/postgres_migration_password
+    depends_on:
+      secrets:
+        condition: service_completed_successfully
     volumes:
+      - chatballs-secrets:/run/chatballs/secrets:ro
       - ${CHATBALLS_INSTANCE_DIR:-.}/data/postgres:/var/lib/postgresql/data
       - ${CHATBALLS_RELEASE_DIR:-.}/deploy/postgres/init-runtime-roles.sh:/docker-entrypoint-initdb.d/20-chatballs-runtime-roles.sh:ro
       - ${CHATBALLS_RELEASE_DIR:-.}/deploy/postgres/reassign-schema-ownership.sql:/chatballs-reassign-ownership.sql:ro
@@ -54,8 +72,8 @@ services:
   # collectstatic испечён в backend-образ, здесь не вызывается.
   init:
     image: ${CHATBALLS_BACKEND_IMAGE:-chatballs-backend:dev}
-    env_file:
-      - ${CHATBALLS_INSTANCE_DIR:-.}/.env
+    volumes:
+      - chatballs-secrets:/run/chatballs/secrets:ro
     command: ["python", "manage.py", "migrate", "--noinput"]
     environment:
       CHATBALLS_DB_ROLE: migration
@@ -69,8 +87,6 @@ services:
   backend-app:
     image: ${CHATBALLS_BACKEND_IMAGE:-chatballs-backend:dev}
     restart: unless-stopped
-    env_file:
-      - ${CHATBALLS_INSTANCE_DIR:-.}/.env
     command: >
       sh -c "gunicorn chatballs_backend.asgi_app:application
       --worker-class uvicorn.workers.UvicornWorker
@@ -80,6 +96,7 @@ services:
     environment:
       CHATBALLS_DB_ROLE: app
     volumes:
+      - chatballs-secrets:/run/chatballs/secrets:ro
       # Legacy source media retained for the separately approved copy/hash
       # migration. Production writes use the required S3 backend in C04.
       - ${CHATBALLS_INSTANCE_DIR:-.}/data/media:/app/apps/backend/media
@@ -105,9 +122,9 @@ services:
 
   backend-platform:
     image: ${CHATBALLS_BACKEND_IMAGE:-chatballs-backend:dev}
+    volumes:
+      - chatballs-secrets:/run/chatballs/secrets:ro
     restart: unless-stopped
-    env_file:
-      - ${CHATBALLS_INSTANCE_DIR:-.}/.env
     command: >
       sh -c "gunicorn chatballs_backend.asgi_platform:application
       --worker-class uvicorn.workers.UvicornWorker
@@ -140,9 +157,9 @@ services:
   # удалённый доступ допускается только через SSH tunnel (ADR-HUB-0031).
   backend-admin:
     image: ${CHATBALLS_BACKEND_IMAGE:-chatballs-backend:dev}
+    volumes:
+      - chatballs-secrets:/run/chatballs/secrets:ro
     restart: unless-stopped
-    env_file:
-      - ${CHATBALLS_INSTANCE_DIR:-.}/.env
     command: >
       sh -c "gunicorn chatballs_backend.asgi_admin:application
       --worker-class uvicorn.workers.UvicornWorker
@@ -166,12 +183,11 @@ services:
   worker:
     image: ${CHATBALLS_BACKEND_IMAGE:-chatballs-backend:dev}
     restart: unless-stopped
-    env_file:
-      - ${CHATBALLS_INSTANCE_DIR:-.}/.env
     command: ["python", "manage.py", "run_worker"]
     environment:
       CHATBALLS_DB_ROLE: app
     volumes:
+      - chatballs-secrets:/run/chatballs/secrets:ro
       - ${CHATBALLS_INSTANCE_DIR:-.}/data/media:/app/apps/backend/media
     depends_on:
       backend-app:
@@ -196,9 +212,9 @@ services:
     image: ${CHATBALLS_GATEWAY_IMAGE:-caddy:2.8.4}
     restart: unless-stopped
     environment:
-      CHATBALLS_APP_DOMAIN: ${CHATBALLS_APP_DOMAIN:?CHATBALLS_APP_DOMAIN is required}
-      CHATBALLS_PLATFORM_DOMAIN: ${CHATBALLS_PLATFORM_DOMAIN:?CHATBALLS_PLATFORM_DOMAIN is required}
-      CHATBALLS_ACME_EMAIL: ${CHATBALLS_ACME_EMAIL:?CHATBALLS_ACME_EMAIL is required}
+      CHATBALLS_APP_DOMAIN: ${CHATBALLS_APP_DOMAIN:-localhost}
+      CHATBALLS_PLATFORM_DOMAIN: ${CHATBALLS_PLATFORM_DOMAIN:-platform.localhost}
+      CHATBALLS_ACME_EMAIL: ${CHATBALLS_ACME_EMAIL:-}
     ports:
       - "${CHATBALLS_WEB_LISTENING_IP:-0.0.0.0}:80:80"
       - "${CHATBALLS_WEB_LISTENING_IP:-0.0.0.0}:443:443"
@@ -230,13 +246,16 @@ services:
       - --no-cli
       - --fingerprint
       - --use-auth-secret
-      - --static-auth-secret=${CHATBALLS_CALL_TURN_SECRET}
-      - --realm=${CHATBALLS_CALL_TURN_REALM}
+      # Общий секрет приходит файлом из тома секретов: его генерирует первый
+      # старт, человек его не вводит и не дублирует в двух местах.
+      - -c
+      - /run/chatballs/secrets/turnserver-secret.conf
+      - --realm=${CHATBALLS_CALL_TURN_REALM:-}
       # Весь TURN живёт на выделенном публичном IP (отдельный порт/NIC), Caddy — на
       # основном IP. Это освобождает 443 под TURN-over-TLS без конфликта с web.
-      - --listening-ip=${CHATBALLS_TURN_LISTENING_IP}
-      - --relay-ip=${CHATBALLS_TURN_EXTERNAL_IP}
-      - --external-ip=${CHATBALLS_TURN_EXTERNAL_IP}
+      - --listening-ip=${CHATBALLS_TURN_LISTENING_IP:-0.0.0.0}
+      - --relay-ip=${CHATBALLS_TURN_EXTERNAL_IP:-}
+      - --external-ip=${CHATBALLS_TURN_EXTERNAL_IP:-}
       - --listening-port=${CHATBALLS_TURN_LISTENING_PORT:-3478}
       # TURN-over-TLS на 443: проходит через VPN/строгие сети, где UDP и 3478 режут.
       - --tls-listening-port=${CHATBALLS_TURN_TLS_PORT:-443}
@@ -259,11 +278,16 @@ services:
     volumes:
       # LE-сертификат TURN-хоста (turns:), скопированный под uid coturn (nobody)
       # renewal deploy-hook'ом. См. docs по развёртыванию TURN-over-TLS.
+      - chatballs-secrets:/run/chatballs/secrets:ro
       - ${CHATBALLS_INSTANCE_DIR:-.}/data/coturn-certs:/etc/coturn/certs:ro
     healthcheck:
       # Allocation smoke: STUN binding к собственному listener на выделенном IP.
-      test: ["CMD", "turnutils_stunclient", "-p", "${CHATBALLS_TURN_LISTENING_PORT:-3478}", "${CHATBALLS_TURN_LISTENING_IP}"]
+      test: ["CMD", "turnutils_stunclient", "-p", "${CHATBALLS_TURN_LISTENING_PORT:-3478}", "${CHATBALLS_TURN_LISTENING_IP:-0.0.0.0}"]
       interval: 30s
       timeout: 5s
       retries: 5
       start_period: 15s
+
+volumes:
+  # Секреты инстанса: генерируются при первом старте, живут только здесь.
+  chatballs-secrets:

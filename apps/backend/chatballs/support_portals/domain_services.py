@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import uuid
-
 import dns.exception
 import dns.resolver
 from django.conf import settings
@@ -13,14 +11,6 @@ from chatballs.support_portals.models import SupportPortal
 from chatballs.support_portals.statuses import PortalStatus
 
 
-def domain_verification_name(portal: SupportPortal) -> str:
-    return f"_chatballs.{portal.custom_domain}" if portal.custom_domain else ""
-
-
-def domain_verification_value(portal: SupportPortal) -> str:
-    return f"chatballs-verification={portal.custom_domain_verification_token}"
-
-
 def set_custom_domain(portal: SupportPortal, value: str) -> SupportPortal:
     if portal.status == PortalStatus.ARCHIVED:
         raise ValidationError(
@@ -29,15 +19,9 @@ def set_custom_domain(portal: SupportPortal, value: str) -> SupportPortal:
     normalized = normalize_domain(value)
     portal.custom_domain = validate_domain(normalized) if normalized else ""
     portal.custom_domain_verified_at = None
-    portal.custom_domain_verification_token = uuid.uuid4()
     portal.full_clean()
     portal.save(
-        update_fields=[
-            "custom_domain",
-            "custom_domain_verified_at",
-            "custom_domain_verification_token",
-            "updated_at",
-        ]
+        update_fields=["custom_domain", "custom_domain_verified_at", "updated_at"]
     )
     return portal
 
@@ -49,6 +33,10 @@ def verify_custom_domain(portal: SupportPortal) -> SupportPortal:
         )
     if not portal.custom_domain:
         raise ValidationError({"customDomain": "Сначала укажите домен"})
+    # Подтверждать владение доменом нечем и незачем: продукт self-hosted, домен
+    # и установка принадлежат одному владельцу (README дизайн-базлайна, решение
+    # 6). Остаётся техническая проверка «ведёт ли домен на этот сервер» — она
+    # нужна, чтобы выписать сертификат.
     if settings.CHATBALLS_HELP_PUBLIC_IPV4:
         try:
             address_answers = dns.resolver.resolve(portal.custom_domain, "A")
@@ -70,26 +58,6 @@ def verify_custom_domain(portal: SupportPortal) -> SupportPortal:
                 {"customDomain": "A-запись домена указывает не на сервер Chatballs"}
             )
 
-    expected = domain_verification_value(portal)
-    try:
-        answers = dns.resolver.resolve(domain_verification_name(portal), "TXT")
-        values = {
-            b"".join(answer.strings).decode("utf-8", errors="replace")
-            for answer in answers
-        }
-    except (
-        dns.resolver.NoAnswer,
-        dns.resolver.NXDOMAIN,
-        dns.resolver.NoNameservers,
-        dns.exception.Timeout,
-    ) as error:
-        raise ValidationError(
-            {"customDomain": "TXT-запись пока не найдена"}
-        ) from error
-    if expected not in values:
-        raise ValidationError(
-            {"customDomain": "TXT-запись не содержит код подтверждения"}
-        )
     portal.custom_domain_verified_at = timezone.now()
     portal.full_clean()
     portal.save(update_fields=["custom_domain_verified_at", "updated_at"])

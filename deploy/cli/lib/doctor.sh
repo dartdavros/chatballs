@@ -61,10 +61,11 @@ cmd_doctor() {
     _doctor_report 0 "compose.yaml missing in release: $rel"
   fi
 
+  # .env не требуется: продукт поднимается без переменных окружения.
   if [[ -f "$(instance_env_file)" ]]; then
-    _doctor_report 1 "instance .env present"
+    _doctor_report 1 "instance .env present (overrides)"
   else
-    _doctor_report 0 "instance .env missing: $(instance_env_file)"
+    _doctor_report 1 "instance .env absent (not required)"
   fi
 
   if [[ -f "$(release_env_file)" ]]; then

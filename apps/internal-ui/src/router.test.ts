@@ -11,6 +11,7 @@ const empty = {
   clientId: null,
   channelId: null,
   supportPortalId: null,
+  portalSettingsSection: null,
   settingsSection: null,
 };
 
@@ -24,6 +25,31 @@ describe("sales detail routes", () => {
     expect(routeFromPath("/contacts/15")).toEqual({ route: "salesClientDetail", ...empty, clientId: 15 });
     expect(pathFromRoute("supportPortalDetail", 3)).toBe("/portals/3");
     expect(routeFromPath("/portals/3")).toEqual({ route: "supportPortalDetail", ...empty, supportPortalId: 3 });
+  });
+
+  // Настройки портала — страница с субменю разделов, а не модалка (кадры PT4–PT6).
+  it("parses and builds portal settings URLs", () => {
+    expect(routeFromPath("/portals/3/settings")).toEqual({
+      ...empty,
+      route: "supportPortalSettings",
+      supportPortalId: 3,
+      portalSettingsSection: "basics",
+    });
+    expect(routeFromPath("/portals/3/settings/theme")).toEqual({
+      ...empty,
+      route: "supportPortalSettings",
+      supportPortalId: 3,
+      portalSettingsSection: "theme",
+    });
+    // Неизвестный раздел открывает первый.
+    expect(routeFromPath("/portals/3/settings/nope")).toEqual({
+      ...empty,
+      route: "supportPortalSettings",
+      supportPortalId: 3,
+      portalSettingsSection: "basics",
+    });
+    expect(pathFromRoute("supportPortalSettings", "3/domain")).toBe("/portals/3/settings/domain");
+    expect(pathFromRoute("supportPortalSettings", "3/")).toBe("/portals/3/settings/basics");
   });
 });
 

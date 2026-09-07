@@ -1,54 +1,61 @@
 # Caddyfile — единый HTTP/HTTPS public boundary Chatballs (ADR-HUB-0028 §gateway).
 # Подставляется в release bundle и монтируется в контейнер gateway.
-# Caddy: TLS termination + ACME, HTTP->HTTPS redirect, WebSocket upgrade (native).
-# App-маршрутизация делегирована frontend-контейнеру, platform API идёт в
-# отдельный backend. Admin принципиально отсутствует в public gateway.
+#
+# Свежая установка не знает своего домена: человек поднимает докер на сервере и
+# открывает её по IP. Поэтому здесь нет блоков с зашитым именем хоста — они бы
+# заставили Caddy выпускать сертификат и уводить http на https до того, как
+# домен вообще появился. Вместо них: :80 отвечает по http на любом адресе, а
+# https обслуживает любой хост, который одобрил ask-эндпоинт (домены порталов и
+# домен установки, заданный в UI). Сертификаты выписываются по мере надобности,
+# без перезапуска шлюза.
 
 {
-	email {$CHATBALLS_ACME_EMAIL:}
+	# ACME-контакт не задаётся при установке: пока домена нет, нет и выпуска
+	# сертификатов. Адрес для уведомлений добавляется вместе с доменом в UI.
 	# Caddy admin API не публикуется наружу (default localhost:2019).
 	on_demand_tls {
 		ask http://backend-platform:8000/api/v1/gateway/help-domain/
 	}
 }
 
-# Published hosted and verified custom Help Center domains. Certificate
-# issuance is authorized against the platform ingress directory above.
+(surfaces) {
+	# Платформенная поверхность живёт на своём домене; пока он не задан,
+	# матчер намеренно не совпадает ни с чем.
+	@platform host {$CHATBALLS_PLATFORM_DOMAIN:platform.invalid}
+	handle @platform {
+		reverse_proxy backend-platform:8000 {
+			header_up Host {host}
+			header_up X-Real-IP {remote_host}
+			header_up X-Forwarded-For {remote_host}
+			header_up X-Forwarded-Proto {scheme}
+		}
+	}
+
+	# Всё остальное — приложение и публичные порталы: маршрутизация внутри
+	# frontend-контейнера.
+	handle {
+		reverse_proxy frontend:80 {
+			header_up Host {host}
+			header_up X-Real-IP {remote_host}
+			header_up X-Forwarded-For {remote_host}
+			header_up X-Forwarded-Proto {scheme}
+		}
+	}
+}
+
+# Обычный http на любом адресе: IP сервера, localhost, ещё не подтверждённый
+# домен. Редиректа на https здесь нет намеренно — его делает блок ниже, когда
+# для хоста реально выписан сертификат.
+:80 {
+	encode gzip zstd
+	import surfaces
+}
+
+# Любой хост, которому ask-эндпоинт разрешил сертификат.
 https:// {
 	encode gzip zstd
 	tls {
 		on_demand
 	}
-
-	reverse_proxy frontend:80 {
-		header_up Host {host}
-		header_up X-Real-IP {remote_host}
-		header_up X-Forwarded-For {remote_host}
-		header_up X-Forwarded-Proto {scheme}
-	}
-}
-
-# Tenant-facing application surface.
-{$CHATBALLS_APP_DOMAIN} {
-	encode gzip zstd
-
-	reverse_proxy frontend:80 {
-		header_up Host {host}
-		header_up X-Real-IP {remote_host}
-		header_up X-Forwarded-For {remote_host}
-		header_up X-Forwarded-Proto {scheme}
-	}
-}
-
-# Platform surface. На C01 опубликован только health endpoint; API
-# управления tenant'ами появится на C06.
-{$CHATBALLS_PLATFORM_DOMAIN} {
-	encode gzip zstd
-
-	reverse_proxy backend-platform:8000 {
-		header_up Host {host}
-		header_up X-Real-IP {remote_host}
-		header_up X-Forwarded-For {remote_host}
-		header_up X-Forwarded-Proto {scheme}
-	}
+	import surfaces
 }

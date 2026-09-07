@@ -63,7 +63,9 @@ class SetupView(APIView):
                     email=str(body.get("email", "")),
                     password=str(body.get("password", "")),
                     install_demo=bool(body.get("installDemo", False)),
-                )
+                ),
+                public_host=request.get_host(),
+                public_scheme=request.scheme,
             )
         except SetupAlreadyCompleted:
             return Response(SETUP_CLOSED, status=409)

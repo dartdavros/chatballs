@@ -1,6 +1,8 @@
 import React, { lazy, Suspense, useEffect, useState } from "react";
 import ReactDOM from "react-dom/client";
 
+import { Loader } from "@chatballs/ui";
+
 import { App } from "./App";
 import { surfaceForHost, type Surface } from "./surface";
 import "./styles.css";
@@ -27,10 +29,10 @@ function SurfaceApp() {
   }, [surface]);
 
   if (surface === "loading") {
-    return <main className="help-boot-loading"><i /><i /><i /></main>;
+    return <main className="help-boot-loading"><Loader size={44} /></main>;
   }
   return surface === "help"
-    ? <Suspense fallback={<main className="help-boot-loading"><i /><i /><i /></main>}><HelpCenterApp /></Suspense>
+    ? <Suspense fallback={<main className="help-boot-loading"><Loader size={44} /></main>}><HelpCenterApp /></Suspense>
     : <App />;
 }
 

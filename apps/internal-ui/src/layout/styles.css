@@ -758,3 +758,59 @@
 .launch-checklist-action:hover {
   background: var(--primary-hover);
 }
+
+/* Полоса установки демо-данных: пока worker наполняет организацию, человек
+   видит причину пустых разделов, а не гадает. */
+.demo-install-banner {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 20px;
+  border-bottom: 1px solid var(--n-8);
+  background: var(--primary-bg);
+  color: var(--primary-text);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.demo-install-banner.is-done {
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+
+.demo-install-banner > svg {
+  flex: none;
+}
+
+.demo-install-banner > span {
+  flex: 1;
+  min-width: 0;
+}
+
+.demo-install-banner button {
+  height: 26px;
+  padding: 0 11px;
+  border: 1px solid currentColor;
+  border-radius: 7px;
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.demo-install-banner .demo-install-close {
+  display: flex;
+  width: 24px;
+  height: 24px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  opacity: 0.65;
+}
+
+.demo-install-banner .demo-install-close:hover { opacity: 1; }
+

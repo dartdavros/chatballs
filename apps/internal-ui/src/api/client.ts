@@ -97,13 +97,35 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   return response.json() as Promise<T>;
 }
 
-// Multipart-загрузка (вложения знаний): Content-Type выставляет браузер (boundary).
-export async function apiUpload<T>(path: string, form: FormData): Promise<T> {
-  const headers = new Headers({ Accept: "application/json", "X-CSRFToken": getCookie(CSRF_COOKIE_NAME) });
-  const response = await fetch(resolveApiUrl(path), { method: "POST", body: form, credentials: "include", headers });
-  if (!response.ok) {
-    const payload = await response.json().catch(() => ({ detail: "Ошибка запроса" })) as ApiErrorPayload;
-    throw new ApiError(response.status, payload);
-  }
-  return response.json() as Promise<T>;
+// Multipart-загрузка (вложения знаний, файлы статей портала): Content-Type
+// выставляет браузер (boundary). На XHR, а не на fetch, потому что прогресс
+// отправки нужен рейке файлов редактора статьи (кадр PT8) — у fetch его нет.
+export function apiUpload<T>(path: string, form: FormData, onProgress?: (percent: number) => void): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const request = new XMLHttpRequest();
+    request.open("POST", resolveApiUrl(path));
+    request.withCredentials = true;
+    request.setRequestHeader("Accept", "application/json");
+    request.setRequestHeader("X-CSRFToken", getCookie(CSRF_COOKIE_NAME));
+    if (onProgress) {
+      request.upload.onprogress = (event) => {
+        if (event.lengthComputable) onProgress(Math.round((event.loaded / event.total) * 100));
+      };
+    }
+    request.onerror = () => reject(new ApiError(0, { detail: "Ошибка сети" }));
+    request.onload = () => {
+      let payload: unknown = null;
+      try {
+        payload = request.responseText ? JSON.parse(request.responseText) : null;
+      } catch {
+        payload = null;
+      }
+      if (request.status >= 200 && request.status < 300) {
+        resolve(payload as T);
+        return;
+      }
+      reject(new ApiError(request.status, (payload ?? { detail: "Ошибка запроса" }) as ApiErrorPayload));
+    };
+    request.send(form);
+  });
 }

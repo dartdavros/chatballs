@@ -53,7 +53,7 @@ def user_storage():
     return storages["users"]
 
 
-def user_avatar_upload_path(instance: "HumanUser", filename: str) -> str:
+def user_avatar_upload_path(instance: HumanUser, filename: str) -> str:
     suffix = Path(filename).suffix.lower()
     return f"users/{instance.id}/avatar-{uuid.uuid4()}{suffix}"
 
@@ -100,7 +100,7 @@ class OrganizationStatus(models.TextChoices):
     PENDING_OWNER = "PENDING_OWNER", "Pending owner"
 
 
-def organization_logo_upload_path(instance: "Organization", filename: str) -> str:
+def organization_logo_upload_path(instance: Organization, filename: str) -> str:
     suffix = Path(filename).suffix.lower()
     return (
         f"organizations/{instance.public_id}/branding/"
@@ -252,14 +252,17 @@ class AuditEvent(models.Model):
 
 # Django imports only models.py by convention. Re-export related models after the core
 # identity entities are defined so they are registered without growing this file.
+from chatballs.identity.demo_models import (  # noqa: E402, F401
+    DemoDataset,
+    DemoRecord,
+)
 from chatballs.identity.group_models import (  # noqa: E402, F401
     EmployeeGroup,
     EmployeeGroupMember,
 )
+from chatballs.identity.instance_settings import (  # noqa: E402, F401
+    InstanceSettings,
+)
 from chatballs.identity.invitation_models import (  # noqa: E402, F401
     OrganizationInvitation,
-)
-from chatballs.identity.demo_models import (  # noqa: E402, F401
-    DemoDataset,
-    DemoRecord,
 )

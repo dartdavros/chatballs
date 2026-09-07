@@ -45,6 +45,9 @@ COVERAGE_EXEMPT = {
     ("identity", "demorecord"),
     # Настройки хранилища — одна строка на инстанс, не данные организации.
     ("tenancy", "storagesettings"),
+    # Настройки установки (адрес, по которому её открывают) — тоже одна
+    # строка на инстанс: их пишет мастер первого запуска, а не демо.
+    ("identity", "instancesettings"),
 }
 COVERAGE_EXEMPT_APPS = {"platform", "events"}
 

@@ -1,16 +1,22 @@
-from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
+from chatballs.identity.instance_settings import (
+    email_connection,
+    email_from_address,
+    public_base_url,
+)
 from chatballs.identity.models import HumanUser
 
 
 def _password_setup_url(user: HumanUser) -> str:
     uid = urlsafe_base64_encode(force_bytes(user.pk))
     token = default_token_generator.make_token(user)
-    return f"{settings.INTERNAL_UI_BASE_URL.rstrip('/')}/reset-password?uid={uid}&token={token}"
+    # Ссылка уходит человеку в почту, поэтому строится от адреса установки,
+    # который знает сама система, а не от адреса dev-сервера в переменной.
+    return f"{public_base_url()}/reset-password?uid={uid}&token={token}"
 
 
 def send_initial_access_email(user: HumanUser) -> None:
@@ -24,8 +30,9 @@ def send_initial_access_email(user: HumanUser) -> None:
             f"{setup_url}\n\n"
             "Ссылка действует 30 минут. Если вы не ожидали это письмо, обратитесь к владельцу организации."
         ),
-        from_email=settings.DEFAULT_FROM_EMAIL,
+        from_email=email_from_address(),
         recipient_list=[user.email],
+        connection=email_connection(),
     )
 
 
@@ -39,6 +46,7 @@ def send_password_reset_email(user: HumanUser) -> None:
             f"{reset_url}\n\n"
             "Ссылка действует 30 минут. Если вы не запрашивали сброс, просто проигнорируйте это письмо."
         ),
-        from_email=settings.DEFAULT_FROM_EMAIL,
+        from_email=email_from_address(),
         recipient_list=[user.email],
+        connection=email_connection(),
     )

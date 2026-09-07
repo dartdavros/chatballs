@@ -6,7 +6,7 @@ from pathlib import Path
 from django.core.exceptions import ImproperlyConfigured
 
 from chatballs_backend.settings_database import build_databases
-from chatballs_backend.settings_env import env_bool, env_list
+from chatballs_backend.settings_env import env_bool, env_list, env_secret
 from chatballs_backend.settings_storage import build_storage_settings
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -16,11 +16,16 @@ INSECURE_SECRET_KEY = "local-development-only"
 # Автоопределение тестового прогона, чтобы manage.py test / pytest работали
 # без ручного выставления production-окружения.
 TESTING = "test" in sys.argv or "pytest" in sys.modules
-SECRET_KEY = os.environ.get("CHATBALLS_SECRET_KEY", INSECURE_SECRET_KEY)
+# Ключ подписи не задаётся человеком: его генерирует первый старт стека в том
+# с секретами (deploy/secrets). Переменная окружения остаётся как переопределение
+# для установок, которые ведут конфигурацию сами.
+SECRET_KEY = env_secret("CHATBALLS_SECRET_KEY", "secret_key", INSECURE_SECRET_KEY)
 DEBUG = env_bool("CHATBALLS_DEBUG")
+# Режим поставки — свойство установки, а не переменной окружения: коробку
+# ставят self-hosted, облако выставляет режим явно.
 _delivery_mode = os.environ.get("CHATBALLS_DELIVERY_MODE", "").strip().upper()
-if not _delivery_mode and (DEBUG or TESTING):
-    _delivery_mode = "CLOUD"
+if not _delivery_mode:
+    _delivery_mode = "CLOUD" if (DEBUG or TESTING) else "SELF_HOSTED"
 if _delivery_mode not in {"CLOUD", "SELF_HOSTED"}:
     raise ImproperlyConfigured(
         "CHATBALLS_DELIVERY_MODE must be CLOUD or SELF_HOSTED"
@@ -31,10 +36,12 @@ if TESTING:
     ALLOWED_HOSTS.extend(["testserver", ".localhost"])
 CSRF_TRUSTED_ORIGINS = env_list("CHATBALLS_CSRF_TRUSTED_ORIGINS", [])
 
-# Запрещаем запуск в production с дефолтным/пустым ключом подписи.
+# Слабый ключ подписи в production недопустим. При пустом томе секретов это
+# означает сломанную установку, а не забытую человеком переменную.
 if not DEBUG and not TESTING and SECRET_KEY in {"", INSECURE_SECRET_KEY}:
     raise ImproperlyConfigured(
-        "CHATBALLS_SECRET_KEY must be set to a strong value when CHATBALLS_DEBUG is disabled"
+        "Не удалось прочитать ключ подписи инстанса: том с секретами пуст или "
+        "недоступен (deploy/secrets/generate-instance-secrets.sh)"
     )
 
 INSTALLED_APPS = [
@@ -67,6 +74,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "chatballs.http.middleware.TlsAwareCookieMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "chatballs.http.middleware.ContentSecurityPolicyMiddleware",
     "chatballs.http.middleware.LocalCorsMiddleware",
@@ -182,16 +190,25 @@ CHATBALLS_MESSENGER_POLL_TIMEOUT_SECONDS = int(os.environ.get("CHATBALLS_MESSENG
 # Password reset link lifetime. UI обещает 30 минут (default_token_generator uses this setting).
 PASSWORD_RESET_TIMEOUT = int(os.environ.get("PASSWORD_RESET_TIMEOUT", str(30 * 60)))
 
-# Транспорт и cookie. По умолчанию безопасно вне DEBUG; локальная разработка и тесты не ломаются.
+# Транспорт и cookie.
+#
+# Коробку ставят одной командой и первый раз открывают по http — по адресу
+# сервера, когда домена и сертификата ещё нет. Поэтому жёсткость транспорта
+# не включается настройкой «вне DEBUG»: редирект на https делает шлюз, когда
+# у него реально есть сертификат, а Secure-cookie и префикс __Host- ставит
+# TlsAwareCookieMiddleware по факту TLS у конкретного запроса. Так установка
+# работает сразу и ужесточается сама, как только перед ней появляется TLS.
 _secure_default = not DEBUG and not TESTING
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = os.environ.get("CHATBALLS_COOKIE_SAMESITE", "Lax")
 CSRF_COOKIE_SAMESITE = SESSION_COOKIE_SAMESITE
-SESSION_COOKIE_SECURE = env_bool("CHATBALLS_COOKIE_SECURE", _secure_default)
-CSRF_COOKIE_SECURE = env_bool("CHATBALLS_COOKIE_SECURE", _secure_default)
-SECURE_SSL_REDIRECT = env_bool("CHATBALLS_SSL_REDIRECT", _secure_default)
+SESSION_COOKIE_SECURE = env_bool("CHATBALLS_COOKIE_SECURE", False)
+CSRF_COOKIE_SECURE = env_bool("CHATBALLS_COOKIE_SECURE", False)
+SECURE_SSL_REDIRECT = env_bool("CHATBALLS_SSL_REDIRECT", False)
+# HSTS Django отдаёт только на запросах, пришедших по TLS, поэтому установка
+# на голом http его не получает и не «залипает» на несуществующий https.
 SECURE_HSTS_SECONDS = int(
     os.environ.get("CHATBALLS_HSTS_SECONDS", str(60 * 60 * 24 * 365) if _secure_default else "0")
 )
@@ -269,8 +286,11 @@ if (
 CHATBALLS_CALL_STUN_URLS = env_list("CHATBALLS_CALL_STUN_URLS", [])
 # TURN (Coturn, SPEC-HUB-0013 §11): backend выдаёт краткоживущие REST-credentials
 # по общему static-auth-secret. Пусто локально -> только STUN/direct ICE.
+# Адреса TURN владелец задаёт в «Настройках» (там же, где адрес установки);
+# переменная остаётся переопределением для установок, ведущих конфигурацию сами.
 CHATBALLS_CALL_TURN_URLS = env_list("CHATBALLS_CALL_TURN_URLS", [])
-CHATBALLS_CALL_TURN_SECRET = os.environ.get("CHATBALLS_CALL_TURN_SECRET", "")
+# Общий с coturn секрет генерирует первый старт стека — человек его не вводит.
+CHATBALLS_CALL_TURN_SECRET = env_secret("CHATBALLS_CALL_TURN_SECRET", "turn_secret", "")
 CHATBALLS_CALL_TURN_TTL_SECONDS = int(os.environ.get("CHATBALLS_CALL_TURN_TTL_SECONDS", str(60 * 60)))
 if CHATBALLS_CALL_TURN_TTL_SECONDS <= 0:
     raise ImproperlyConfigured("CHATBALLS_CALL_TURN_TTL_SECONDS must be positive")

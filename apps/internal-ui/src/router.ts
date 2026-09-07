@@ -1,4 +1,9 @@
 import { settingsSectionKey, type SettingsSectionKey } from "./features/settings/sections";
+import {
+  DEFAULT_PORTAL_SETTINGS_SECTION,
+  portalSettingsSectionKey,
+  type PortalSettingsSectionKey,
+} from "./features/support-portals/sections";
 import type { RouteKey } from "./types";
 
 export type RouteState = {
@@ -11,6 +16,7 @@ export type RouteState = {
   clientId: number | null;
   channelId: number | null;
   supportPortalId: number | null;
+  portalSettingsSection: PortalSettingsSectionKey | null;
   settingsSection: SettingsSectionKey | null;
 };
 
@@ -19,7 +25,7 @@ export function routeFromPath(pathname: string, search = ""): RouteState {
   const match = normalized.match(/^\/organizations\/([0-9a-f-]{36})(\/.*)?$/i);
   const organizationPublicId = match?.[1] ?? null;
   const path = match ? match[2] || "/" : normalized;
-  const base = { employeeId: null, productCode: null, agentId: null, knowledgeId: null, clientId: null, channelId: null, supportPortalId: null, settingsSection: null };
+  const base = { employeeId: null, productCode: null, agentId: null, knowledgeId: null, clientId: null, channelId: null, supportPortalId: null, portalSettingsSection: null, settingsSection: null };
   const state = { organizationPublicId, ...base };
   // Chat-first (SPEC-HUB-0031): корень и устаревшие адреса командного центра и
   // разделённых чатов ведут в единый «Чат».
@@ -44,8 +50,19 @@ export function routeFromPath(pathname: string, search = ""): RouteState {
   }
   if (path === "/portals" || path === "/departments/support/portals") return { route: "supportPortals", ...state };
   if (path.startsWith("/portals/")) {
-    const id = Number(path.slice("/portals/".length));
-    return Number.isInteger(id) && id > 0 ? { ...state, route: "supportPortalDetail", supportPortalId: id } : { route: "supportPortals", ...state };
+    const [, , rawId, subPath, subSection] = path.split("/");
+    const id = Number(rawId);
+    if (!Number.isInteger(id) || id <= 0) return { route: "supportPortals", ...state };
+    // Настройки портала — страница с субменю разделов, а не модалка.
+    if (subPath === "settings") {
+      return {
+        ...state,
+        route: "supportPortalSettings",
+        supportPortalId: id,
+        portalSettingsSection: portalSettingsSectionKey(subSection ?? "") ?? DEFAULT_PORTAL_SETTINGS_SECTION,
+      };
+    }
+    return { ...state, route: "supportPortalDetail", supportPortalId: id };
   }
   if (path.startsWith("/departments/support/portals/")) {
     const id = Number(path.split("/")[4]);
@@ -97,6 +114,12 @@ export function pathFromRoute(route: RouteKey, entityId: number | string | null 
   if (route === "employeeDetail") return entityId ? `${prefix}/employees/${entityId}` : `${prefix}/employees`;
   if (route === "supportPortals") return `${prefix}/portals`;
   if (route === "supportPortalDetail") return entityId ? `${prefix}/portals/${entityId}` : `${prefix}/portals`;
+  // У настроек портала в адресе и id портала, и ключ раздела: «12/basics».
+  if (route === "supportPortalSettings") {
+    const [portalId, section] = String(entityId ?? "").split("/");
+    if (!portalId) return `${prefix}/portals`;
+    return `${prefix}/portals/${portalId}/settings/${portalSettingsSectionKey(section ?? "") ?? DEFAULT_PORTAL_SETTINGS_SECTION}`;
+  }
   if (route === "agents") return `${prefix}/agents`;
   if (route === "agentDetail") return entityId ? `${prefix}/agents/${entityId}` : `${prefix}/agents`;
   if (route === "aiUsage") return `${prefix}/ai/usage`;

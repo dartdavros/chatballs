@@ -1,3 +1,5 @@
+from django.core.files.uploadedfile import SimpleUploadedFile
+
 from chatballs.support_portals.tests.base import SupportPortalTestCase
 from chatballs.webchat.testing import create_web_widget
 
@@ -40,6 +42,129 @@ class SupportPortalContentManagementTests(SupportPortalTestCase):
         body = published.json()["article"]
         self.assertEqual(len(body["revisions"]), 2)
         self.assertEqual(body["publishedRevision"]["content"], "Версия 2")
+
+    def test_article_files_are_uploaded_listed_and_deleted(self) -> None:
+        # Файлы статьи — рейка редактора и drop в текст (кадры PT7/PT8).
+        portal_id = self.create_portal().json()["portal"]["id"]
+        category = self.client.post(
+            f"/api/v1/support/portals/{portal_id}/categories/",
+            {"name": "Мерки"},
+            format="json",
+        ).json()["category"]
+        article_id = self.client.post(
+            f"/api/v1/support/portals/{portal_id}/articles/",
+            {
+                "categoryId": category["id"],
+                "slug": "kak-snyat-merki",
+                "title": "Как снять мерки",
+                "summary": "",
+                "content": "# Как снять мерки",
+            },
+            format="json",
+        ).json()["article"]["id"]
+
+        upload = self.client.post(
+            f"/api/v1/support/portals/{portal_id}/articles/{article_id}/files/",
+            {
+                "file": SimpleUploadedFile(
+                    "measure-points.png", b"png-bytes", content_type="image/png"
+                )
+            },
+            format="multipart",
+        )
+        self.assertEqual(upload.status_code, 201, upload.content)
+        uploaded = upload.json()["file"]
+        self.assertEqual(uploaded["name"], "measure-points.png")
+        self.assertEqual(uploaded["size"], len(b"png-bytes"))
+        self.assertIn("/api/v1/help/files/", uploaded["url"])
+
+        detail = self.client.get(
+            f"/api/v1/support/portals/{portal_id}/articles/{article_id}/"
+        )
+        self.assertEqual(detail.status_code, 200, detail.content)
+        self.assertEqual(
+            [item["name"] for item in detail.json()["article"]["files"]],
+            ["measure-points.png"],
+        )
+        self.assertEqual(detail.json()["article"]["fileCount"], 1)
+
+        removed = self.client.delete(
+            f"/api/v1/support/portals/{portal_id}/articles/{article_id}"
+            f"/files/{uploaded['id']}/"
+        )
+        self.assertEqual(removed.status_code, 204, removed.content)
+        listing = self.client.get(
+            f"/api/v1/support/portals/{portal_id}/articles/{article_id}/files/"
+        )
+        self.assertEqual(listing.json()["items"], [])
+
+    def test_absolute_file_links_become_relative(self) -> None:
+        """CSP портала (img-src 'self') режет картинку с чужим хостом.
+
+        Ссылка на файл статьи всегда относительная: и в новой редакции, и в
+        отдаче старых — иначе изображение просто не появляется на портале.
+        """
+        portal_id = self.create_portal().json()["portal"]["id"]
+        category = self.client.post(
+            f"/api/v1/support/portals/{portal_id}/categories/",
+            {"name": "Доставка"},
+            format="json",
+        )
+        path = "/api/v1/help/files/4ecee829-30d2-4a2a-904e-a09be28d7708/"
+        article = self.client.post(
+            f"/api/v1/support/portals/{portal_id}/articles/",
+            {
+                "categoryId": category.json()["category"]["id"],
+                "slug": "delivery",
+                "title": "Доставка",
+                "summary": "Сроки",
+                "content": f"![кот](http://localhost{path})",
+            },
+            format="json",
+        )
+        self.assertEqual(article.status_code, 201, article.content)
+        content = article.json()["article"]["revisions"][0]["content"]
+        self.assertEqual(content, f"![кот]({path})")
+
+        article_id = article.json()["article"]["id"]
+        revision = self.client.post(
+            f"/api/v1/support/portals/{portal_id}/articles/{article_id}/revisions/",
+            {
+                "title": "Доставка",
+                "summary": "Сроки",
+                "content": f"![кот](https://help.example.com:8443{path})",
+            },
+            format="json",
+        )
+        self.assertEqual(revision.status_code, 201, revision.content)
+        self.assertEqual(revision.json()["revision"]["content"], f"![кот]({path})")
+
+    def test_revision_keeps_its_author(self) -> None:
+        # Рейка версий показывает автора редакции (кадр PT7).
+        portal_id = self.create_portal().json()["portal"]["id"]
+        category = self.client.post(
+            f"/api/v1/support/portals/{portal_id}/categories/",
+            {"name": "Аккаунт"},
+            format="json",
+        ).json()["category"]
+        article_id = self.client.post(
+            f"/api/v1/support/portals/{portal_id}/articles/",
+            {
+                "categoryId": category["id"],
+                "slug": "sign-in",
+                "title": "Вход",
+                "summary": "",
+                "content": "Версия 1",
+            },
+            format="json",
+        ).json()["article"]["id"]
+        revision = self.client.post(
+            f"/api/v1/support/portals/{portal_id}/articles/{article_id}/revisions/",
+            {"title": "Вход", "summary": "", "content": "Версия 2"},
+            format="json",
+        )
+        self.assertEqual(revision.status_code, 201, revision.content)
+        self.assertTrue(revision.json()["revision"]["authorName"])
 
     def test_archived_portal_rejects_every_content_mutation(self) -> None:
         portal_id = self.create_portal().json()["portal"]["id"]

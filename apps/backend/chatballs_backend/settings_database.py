@@ -2,28 +2,30 @@ import os
 
 from django.core.exceptions import ImproperlyConfigured
 
+from chatballs_backend.settings_env import env_secret
+
 
 def _credentials() -> tuple[dict[str, str], dict[str, str]]:
+    # Имена ролей — константы продукта, а не настройка установки: их создаёт
+    # deploy/postgres/init-runtime-roles.sh при первом старте. Переменные
+    # окружения остаются переопределением для нестандартных установок.
     users = {
-        "app": os.environ.get(
-            "POSTGRES_APP_USER", os.environ.get("POSTGRES_USER", "chatballs")
-        ),
-        "platform": os.environ.get(
-            "POSTGRES_PLATFORM_USER", os.environ.get("POSTGRES_USER", "chatballs")
-        ),
+        "app": os.environ.get("POSTGRES_APP_USER", "chatballs_app"),
+        "platform": os.environ.get("POSTGRES_PLATFORM_USER", "chatballs_platform"),
         "migration": os.environ.get(
-            "POSTGRES_MIGRATION_USER", os.environ.get("POSTGRES_USER", "chatballs")
+            "POSTGRES_MIGRATION_USER", "chatballs_migration"
         ),
     }
+    # Пароли ролей генерирует первый старт стека в том с секретами; человек их
+    # не вводит и не хранит. Переменные окружения остаются переопределением.
+    fallback = env_secret("POSTGRES_PASSWORD", "postgres_password", "chatballs")
     passwords = {
-        "app": os.environ.get(
-            "POSTGRES_APP_PASSWORD", os.environ.get("POSTGRES_PASSWORD", "chatballs")
+        "app": env_secret("POSTGRES_APP_PASSWORD", "postgres_app_password", fallback),
+        "platform": env_secret(
+            "POSTGRES_PLATFORM_PASSWORD", "postgres_platform_password", fallback
         ),
-        "platform": os.environ.get(
-            "POSTGRES_PLATFORM_PASSWORD", os.environ.get("POSTGRES_PASSWORD", "chatballs")
-        ),
-        "migration": os.environ.get(
-            "POSTGRES_MIGRATION_PASSWORD", os.environ.get("POSTGRES_PASSWORD", "chatballs")
+        "migration": env_secret(
+            "POSTGRES_MIGRATION_PASSWORD", "postgres_migration_password", fallback
         ),
     }
     return users, passwords
@@ -78,9 +80,14 @@ def build_databases(*, debug: bool, testing: bool) -> dict[str, dict]:
         "platform": config("platform"),
     }
     if testing:
-        databases["default"]["USER"] = os.environ.get("POSTGRES_USER", "chatballs")
-        databases["default"]["PASSWORD"] = os.environ.get(
-            "POSTGRES_PASSWORD", "chatballs"
+        # Тесты создают свою БД и подключаются владельцем кластера. Его пароль
+        # приходит оттуда же, откуда у остальных ролей: файл секрета инстанса,
+        # переменная окружения — переопределение.
+        databases["default"]["USER"] = os.environ.get(
+            "POSTGRES_USER", "chatballs_bootstrap"
+        )
+        databases["default"]["PASSWORD"] = env_secret(
+            "POSTGRES_PASSWORD", "postgres_password", "chatballs"
         )
         databases["platform"]["TEST"] = {"MIRROR": "default"}
     return databases

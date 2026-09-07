@@ -5,5 +5,5 @@ export const manifest: PortalThemeManifest = {
   name: "Ocean",
   description: "Мягкое океаническое оформление: синий акцент, крупные скругления.",
   schemes: ["light", "dark"],
-  preview: { bg: "#ffffff", ink: "#10283d", accent: "#1b5e8f" },
+  preview: { bg: "#ffffff", ink: "#10283d", accent: "#1b5e8f", radius: "9px" },
 };

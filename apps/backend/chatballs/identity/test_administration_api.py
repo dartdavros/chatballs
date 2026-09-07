@@ -6,6 +6,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 
 from chatballs.identity.audit import record_audit_event
+from chatballs.identity.bootstrap import bootstrap_owner
 from chatballs.identity.models import (
     EmployeeRole,
     HumanUser,
@@ -193,3 +194,104 @@ class AdministrationApiTests(TestCase):
         event = response.json()["items"][0]
         self.assertEqual(event["action"], "Добавлен продукт")
         self.assertNotIn("products.", event["action"])
+
+
+class InstanceAddressTests(TestCase):
+    """Адрес установки правится в «Настройках», а не в переменных окружения."""
+
+    def setUp(self) -> None:
+        result = bootstrap_owner(email="owner@example.com", password="temporary-password")
+        self.organization = result.organization
+        self.client = TenantAPIClient()
+        self.client.force_authenticate(result.owner)
+
+    def test_owner_sets_domain_and_scheme(self) -> None:
+        response = self.client.patch(
+            "/api/v1/company/administration/instance/",
+            {"publicHost": "crm.example.com", "publicScheme": "https"},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 200, response.content)
+        body = response.json()["instance"]
+        self.assertEqual(body["publicHost"], "crm.example.com")
+        self.assertEqual(body["publicUrl"], "https://crm.example.com")
+
+    def test_address_may_be_a_bare_ip(self) -> None:
+        # Коробку часто так и оставляют: сервер по IP, без домена.
+        response = self.client.patch(
+            "/api/v1/company/administration/instance/",
+            {"publicHost": "203.0.113.10", "publicScheme": "http"},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(response.json()["instance"]["publicUrl"], "http://203.0.113.10")
+
+    def test_url_is_accepted_and_trimmed_to_host(self) -> None:
+        response = self.client.patch(
+            "/api/v1/company/administration/instance/",
+            {"publicHost": "https://crm.example.com/settings", "publicScheme": "https"},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(response.json()["instance"]["publicHost"], "crm.example.com")
+
+    def test_garbage_is_rejected(self) -> None:
+        response = self.client.patch(
+            "/api/v1/company/administration/instance/",
+            {"publicHost": "не адрес!", "publicScheme": "ftp"},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+
+class InstanceEmailTests(TestCase):
+    """Почта установки задаётся в «Настройках»: без неё некого приглашать."""
+
+    def setUp(self) -> None:
+        result = bootstrap_owner(email="owner@example.com", password="temporary-password")
+        self.client = TenantAPIClient()
+        self.client.force_authenticate(result.owner)
+
+    def patch(self, **email):
+        return self.client.patch(
+            "/api/v1/company/administration/instance/",
+            {"publicHost": "crm.example.com", "publicScheme": "https", "email": email},
+            format="json",
+        )
+
+    def test_smtp_is_saved_and_password_is_not_returned(self) -> None:
+        response = self.patch(
+            host="smtp.example.com",
+            port=465,
+            user="robot@example.com",
+            password="s3cret",
+            useTls=True,
+            **{"from": "Chatballs <robot@example.com>"},
+        )
+
+        self.assertEqual(response.status_code, 200, response.content)
+        email = response.json()["instance"]["email"]
+        self.assertEqual(email["host"], "smtp.example.com")
+        self.assertEqual(email["port"], 465)
+        self.assertTrue(email["configured"])
+        self.assertTrue(email["hasPassword"])
+        self.assertNotIn("password", email)
+
+    def test_empty_password_keeps_the_stored_one(self) -> None:
+        self.patch(host="smtp.example.com", password="s3cret")
+
+        response = self.patch(host="smtp.example.com", password="")
+
+        self.assertTrue(response.json()["instance"]["email"]["hasPassword"])
+
+    def test_check_without_smtp_explains_itself(self) -> None:
+        response = self.client.post(
+            "/api/v1/company/administration/instance/email-check/", {}, format="json"
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("сервер исходящей почты", response.json()["detail"])

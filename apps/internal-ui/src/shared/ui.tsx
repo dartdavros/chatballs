@@ -3,6 +3,8 @@ import type { ReactNode } from "react";
 import type { Employee, Product, Role, SessionUser } from "../types";
 import { FormField } from "./form-controls";
 import { Icon, LogoSpinner } from "./icons";
+
+type IconName = Parameters<typeof Icon>[0]["name"];
 import { Button } from "./ui-controls";
 import { initials, productAccent } from "./utils";
 
@@ -96,8 +98,19 @@ export function PasswordField({ label, value = "", placeholder = "" }: { label: 
   return <FormField label={label} value={value} placeholder={placeholder} type="password" />;
 }
 
-export function Segmented<T extends string>({ value, setValue, items }: { value: T; setValue: (value: T) => void; items: Array<[T, string]> }) {
-  return <div className="segmented">{items.map(([key, label]) => <button className={value === key ? "active" : ""} onClick={() => setValue(key)} key={key}>{label}</button>)}</div>;
+/** Сегмент-переключатель. Третий и четвёртый элементы кортежа — иконка пункта
+ *  и подсказка (кадр PT7: «Текст / Вместе / Просмотр»). */
+export function Segmented<T extends string>({ className = "", value, setValue, items }: { className?: string; value: T; setValue: (value: T) => void; items: Array<[T, string] | [T, string, IconName, string]> }) {
+  return (
+    <div className={`segmented ${className}`.trim()}>
+      {items.map(([key, label, icon, title]) => (
+        <button className={value === key ? "active" : ""} key={key} title={title} type="button" onClick={() => setValue(key)}>
+          {icon && <Icon name={icon} size={14} strokeWidth={1.9} />}
+          {label}
+        </button>
+      ))}
+    </div>
+  );
 }
 
 export function EmptyState({ title }: { title: string }) {

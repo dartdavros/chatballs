@@ -11,6 +11,7 @@ export const routes: Record<RouteKey, string> = {
   chat: "Чат",
   supportPortals: "Порталы",
   supportPortalDetail: "Портал поддержки",
+  supportPortalSettings: "Настройки портала",
   agents: "Агенты",
   agentDetail: "Карточка агента",
   aiKnowledge: "Знания",

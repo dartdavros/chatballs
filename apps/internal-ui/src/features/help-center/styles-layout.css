@@ -275,22 +275,3 @@ html.help-center-document body {
   color: var(--help-text-muted);
 }
 
-.help-boot-loading {
-  grid-template-columns: repeat(3, 8px);
-}
-
-.help-boot-loading i {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--help-ink);
-  animation: helpPulse 900ms ease-in-out infinite alternate;
-}
-
-.help-boot-loading i:nth-child(2) { animation-delay: 150ms; }
-.help-boot-loading i:nth-child(3) { animation-delay: 300ms; }
-
-@keyframes helpPulse {
-  from { opacity: 0.2; transform: translateY(2px); }
-  to { opacity: 1; transform: translateY(-2px); }
-}

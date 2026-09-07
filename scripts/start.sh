@@ -1,20 +1,21 @@
 #!/usr/bin/env sh
-# Локальный запуск Chatballs (Linux/macOS): canonical compose.yaml + dev override.
-# Параметры не нужны: владельца и демо-данные создаёт мастер первого запуска
-# в браузере (http://localhost). Режим поставки: ./scripts/start.sh [cloud|self-hosted]
+# Локальный запуск Chatballs (Linux/macOS).
+#
+# Ни одной переменной задавать не нужно и негде: .env у продукта нет. Секреты
+# инстанса генерирует первый старт (сервис secrets), всё остальное — организацию,
+# владельца, домены, почту, интеграции — человек настраивает в UI.
+#
+# Если рядом лежит release.env (скачан со страницы релиза), образы берутся из
+# реестра по digest — запуск занимает минуты вместо сборки. Без него стек
+# собирается из исходников: так работают те, кто правит код.
 set -eu
 
 cd "$(dirname "$0")/.."
 
-if [ ! -f .env ]; then
-  cp .env.example .env
+if [ -f release.env ]; then
+  echo "release.env найден: образы берутся из реестра, сборки не будет."
+  exec docker compose --env-file release.env -f compose.yaml up
 fi
 
-MODE="${1:-cloud}"
-case "$MODE" in
-  cloud) export CHATBALLS_DELIVERY_MODE=CLOUD ;;
-  self-hosted) export CHATBALLS_DELIVERY_MODE=SELF_HOSTED ;;
-  *) echo "usage: $0 [cloud|self-hosted]" >&2; exit 2 ;;
-esac
-
-exec docker compose -f compose.yaml -f compose.dev.yaml --env-file .env.example --env-file .env up --build
+echo "release.env нет: собираем из исходников (для готовых образов скачайте release.env со страницы релиза)."
+exec docker compose -f compose.yaml -f compose.dev.yaml up --build

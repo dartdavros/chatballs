@@ -86,6 +86,44 @@ class StorageSettingsTests(TestCase):
             storage.delete(self.key)
             self.assertFalse(storage.exists(self.key))
 
+    def test_unreachable_secondary_storage_does_not_break_local_writes(self) -> None:
+        """Недоступное второе хранилище не должно ронять работу с активным.
+
+        Реквизиты S3 остаются в строке настроек и после возврата на локальный
+        диск (чтобы дочитать файлы из бакета). Если бакет недоступен —
+        выключенный MinIO, устаревшие ключи, — перезапись и удаление файла на
+        локальном диске обязаны продолжать работать.
+        """
+        row = ss.StorageSettings.load()
+        row.backend = ss.StorageBackend.LOCAL
+        row.s3_bucket = "demo"
+        row.s3_access_key = "AKIA-demo-access"
+        row.s3_secret_key = "very-secret"
+        row.save()
+        DynamicTenantStorage._s3_cache = None
+
+        class _DeadS3:
+            def exists(self, name):
+                raise OSError("Could not connect to the endpoint URL")
+
+            def delete(self, name):
+                raise OSError("Could not connect to the endpoint URL")
+
+        patcher = mock.patch.object(ss, "build_s3_storage", lambda *args, **kwargs: _DeadS3())
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+        with tenant_atomic(self.organization.id):
+            storage = storages["default"]
+            storage.save(self.key, ContentFile(b"local"))
+            self.assertTrue(storage.exists(self.key))
+            # Перезапись одноимённого файла: сначала удаление, потом запись.
+            storage.delete(self.key)
+            self.assertFalse(storage.exists(self.key))
+            storage.save(self.key, ContentFile(b"replaced"))
+            with storage.open(self.key) as handle:
+                self.assertEqual(handle.read(), b"replaced")
+
     def test_secrets_are_encrypted_at_rest_and_masked_in_api(self) -> None:
         self._enable_s3()
         from django.db import connection

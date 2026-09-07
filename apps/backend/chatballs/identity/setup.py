@@ -23,6 +23,7 @@ from django.utils.text import slugify
 
 from chatballs.ai.knowledge_categories import ensure_uncategorized_category
 from chatballs.identity.audit import record_audit_event
+from chatballs.identity.instance_settings import remember_public_host
 from chatballs.identity.models import (
     EmployeeRole,
     HumanUser,
@@ -109,9 +110,15 @@ def _unique_slug(name: str) -> str:
     return candidate
 
 
-def complete_setup(data: SetupInput) -> SetupResult:
+def complete_setup(
+    data: SetupInput, public_host: str = "", public_scheme: str = "http"
+) -> SetupResult:
     clean = _clean(data)
     with use_database(INSTANCE_DB_ALIAS), transaction.atomic(using=INSTANCE_DB_ALIAS):
+        # Адрес, на котором человек прошёл мастер, и есть публичный адрес
+        # установки: другого источника у коробки нет.
+        if public_host:
+            remember_public_host(public_host, public_scheme)
         # Блокировка от гонки двух вкладок: второй запрос дождётся первого и
         # увидит созданную организацию.
         with connections[INSTANCE_DB_ALIAS].cursor() as cursor:

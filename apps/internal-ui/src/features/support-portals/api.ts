@@ -1,8 +1,9 @@
-import { api } from "../../api/client";
+import { api, apiUpload } from "../../api/client";
 import type { ArticleImportDocument } from "./parseArticleYaml";
 import type {
   ArticleRevision,
   PortalArticle,
+  PortalArticleFile,
   PortalCategory,
   PortalInput,
   PortalStatus,
@@ -173,6 +174,40 @@ export function publishArticleRevision(
     method: "POST",
     body: JSON.stringify({ revisionId }),
   });
+}
+
+export function listArticleFiles(
+  portalId: number,
+  articleId: number,
+): Promise<{ items: PortalArticleFile[] }> {
+  return api(`/api/v1/support/portals/${portalId}/articles/${articleId}/files/`);
+}
+
+/** Загрузка файла статьи с прогрессом: рейка редактора показывает проценты. */
+export function uploadArticleFile(
+  portalId: number,
+  articleId: number,
+  file: File,
+  onProgress?: (percent: number) => void,
+): Promise<{ file: PortalArticleFile }> {
+  const body = new FormData();
+  body.append("file", file);
+  return apiUpload(
+    `/api/v1/support/portals/${portalId}/articles/${articleId}/files/`,
+    body,
+    onProgress,
+  );
+}
+
+export function deleteArticleFile(
+  portalId: number,
+  articleId: number,
+  fileId: number,
+): Promise<void> {
+  return api(
+    `/api/v1/support/portals/${portalId}/articles/${articleId}/files/${fileId}/`,
+    { method: "DELETE" },
+  );
 }
 
 export function archivePortalArticle(

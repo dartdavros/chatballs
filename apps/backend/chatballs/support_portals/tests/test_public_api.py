@@ -1,3 +1,4 @@
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.utils import timezone
 
@@ -56,6 +57,8 @@ class PublicSupportPortalTests(TestCase):
             },
             format="json",
         ).json()["article"]
+        self.owner = result.owner
+        self.article_id = article["id"]
         revision_id = article["revisions"][0]["id"]
         self.client.post(
             f"/api/v1/support/portals/{self.portal_id}/articles/{article['id']}/publish/",
@@ -147,6 +150,62 @@ class PublicSupportPortalTests(TestCase):
 
         self.assertEqual(response.status_code, 200, response.content)
         self.assertEqual(response.json()["portal"]["name"], "Acme Help")
+
+    def test_attachments_list_every_file_absent_from_the_text(self) -> None:
+        """Картинка, вставленная в статью, видна в тексте; всё остальное —
+
+        вложение под статьёй, независимо от типа файла: посетитель должен
+        как-то добраться до прикреплённого PDF и до прикреплённой картинки.
+        """
+        self.client.force_authenticate(self.owner)
+        published = self.client.post(
+            f"/api/v1/support/portals/{self.portal_id}/status/",
+            {"status": "PUBLISHED"},
+            format="json",
+        )
+        self.assertEqual(published.status_code, 200, published.content)
+        article_id = self.article_id
+        inserted = self.client.post(
+            f"/api/v1/support/portals/{self.portal_id}/articles/{article_id}/files/",
+            {"file": SimpleUploadedFile("scheme.png", b"png-bytes", content_type="image/png")},
+            format="multipart",
+        ).json()["file"]
+        attached_image = self.client.post(
+            f"/api/v1/support/portals/{self.portal_id}/articles/{article_id}/files/",
+            {"file": SimpleUploadedFile("logo.svg", b"<svg/>", content_type="image/svg+xml")},
+            format="multipart",
+        ).json()["file"]
+        attached_doc = self.client.post(
+            f"/api/v1/support/portals/{self.portal_id}/articles/{article_id}/files/",
+            {"file": SimpleUploadedFile("price.pdf", b"%PDF-", content_type="application/pdf")},
+            format="multipart",
+        ).json()["file"]
+        revision = self.client.post(
+            f"/api/v1/support/portals/{self.portal_id}/articles/{article_id}/revisions/",
+            {
+                "title": "Первые шаги",
+                "summary": "Начало работы с продуктом",
+                "content": "Схема: ![схема](" + inserted["path"] + ")",
+            },
+            format="json",
+        ).json()["revision"]
+        self.client.post(
+            f"/api/v1/support/portals/{self.portal_id}/articles/{article_id}/publish/",
+            {"revisionId": revision["id"]},
+            format="json",
+        )
+        self.client.logout()
+
+        response = self.client.get(
+            "/api/v1/help/articles/first-steps/", HTTP_HOST=self.portal_host
+        )
+        self.assertEqual(response.status_code, 200, response.content)
+        payload = response.json()["article"]
+        self.assertIn(inserted["path"], payload["revision"]["content"])
+        self.assertEqual(
+            sorted(item["name"] for item in payload["attachments"]),
+            sorted([attached_doc["name"], attached_image["name"]]),
+        )
 
     @override_settings(ROOT_URLCONF="chatballs_backend.urls_platform")
     def test_gateway_authorizes_only_published_portal_domains(self) -> None:

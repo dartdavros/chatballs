@@ -1,58 +1,79 @@
-import { Modal } from "antd";
 import { useCallback, useEffect, useState } from "react";
 
 import { hasCapability } from "../../auth/access";
 import { DecisionDialog } from "../../shared/DecisionDialog";
-import { ErrorScreen, LoadingState, PageHeader, StatusPill } from "../../shared/ui";
+import { ErrorScreen, LoadingState } from "../../shared/ui";
 import { Button } from "../../shared/ui-controls";
 import type { Product, SessionUser } from "../../types";
 import {
   changePortalStatus,
   listPortalArticles,
   listPortalCategories,
+  listSupportPortals,
   loadSupportPortal,
   portalErrorMessage,
+  publishArticleRevision,
+  type PortalAddressConfig,
   type PortalArticle,
   type PortalCategory,
+  type PortalStatus,
   type SupportPortal,
 } from "./model";
-import { PortalContent } from "./PortalContent";
+import { PortalArticleEditor } from "./PortalArticleEditor";
+import { PortalHeader } from "./PortalHeader";
+import { PortalLibrary } from "./PortalLibrary";
 import { PortalSettings } from "./PortalSettings";
+import type { PortalSettingsSectionKey } from "./sections";
 import "./styles";
+
+// Карточка портала (дизайн-базлайн v2, кадры PT3–PT8): общая шапка с публичным
+// адресом, под ней — библиотека материалов, настройки или редактор статьи.
+
+type Publishing = { article: PortalArticle; revisionId: number };
 
 export function SupportPortalDetailPage({
   portalId,
   products,
+  section,
   user,
   openPortals,
+  openPortalContent,
+  openPortalSettings,
 }: {
   portalId: number | null;
   products: Product[];
+  section: PortalSettingsSectionKey | null;
   user: SessionUser;
   openPortals: () => void;
+  openPortalContent: (portalId: number) => void;
+  openPortalSettings: (portalId: number, section?: PortalSettingsSectionKey) => void;
 }) {
   const [portal, setPortal] = useState<SupportPortal | null>(null);
+  const [address, setAddress] = useState<PortalAddressConfig | null>(null);
   const [categories, setCategories] = useState<PortalCategory[]>([]);
   const [articles, setArticles] = useState<PortalArticle[]>([]);
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [editing, setEditing] = useState<PortalArticle | null | undefined>(undefined);
+  const [publishing, setPublishing] = useState<Publishing | null>(null);
+  const [pendingStatus, setPendingStatus] = useState<PortalStatus | null>(null);
   const [failed, setFailed] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [pendingStatus, setPendingStatus] = useState<"DRAFT" | "PUBLISHED" | "ARCHIVED" | null>(null);
-  const [actionError, setActionError] = useState("");
+  const [error, setError] = useState("");
   const canManage = hasCapability(user, "support.operate");
 
   const load = useCallback(async () => {
     if (!portalId) return;
     setFailed(false);
     try {
-      const [portalPayload, categoryPayload, articlePayload] = await Promise.all([
+      const [portalPayload, categoryPayload, articlePayload, listPayload] = await Promise.all([
         loadSupportPortal(portalId),
         listPortalCategories(portalId),
         listPortalArticles(portalId),
+        listSupportPortals(),
       ]);
       setPortal(portalPayload.portal);
       setCategories(categoryPayload.items);
       setArticles(articlePayload.items);
+      setAddress(listPayload.address);
     } catch {
       setFailed(true);
     }
@@ -62,16 +83,34 @@ export function SupportPortalDetailPage({
     void load();
   }, [load]);
 
-  async function setStatus(status: "DRAFT" | "PUBLISHED" | "ARCHIVED") {
+  async function setStatus(status: PortalStatus) {
     if (!portal) return;
     setBusy(true);
-    setActionError("");
+    setError("");
     try {
       const payload = await changePortalStatus(portal.id, status);
       setPortal(payload.portal);
       setPendingStatus(null);
     } catch (caught) {
-      setActionError(portalErrorMessage(caught, "Не удалось изменить статус портала"));
+      setError(portalErrorMessage(caught, "Не удалось изменить статус портала"));
+      setPendingStatus(null);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function publish() {
+    if (!publishing || !portal) return;
+    setBusy(true);
+    setError("");
+    try {
+      await publishArticleRevision(portal.id, publishing.article.id, publishing.revisionId);
+      setPublishing(null);
+      setEditing(undefined);
+      await load();
+    } catch (caught) {
+      setError(portalErrorMessage(caught, "Не удалось опубликовать статью"));
+      setPublishing(null);
     } finally {
       setBusy(false);
     }
@@ -79,56 +118,86 @@ export function SupportPortalDetailPage({
 
   if (!portalId) return <ErrorScreen retry={openPortals} />;
   if (failed) return <ErrorScreen retry={() => void load()} />;
-  if (!portal) return <LoadingState />;
+  if (!portal || !address) return <LoadingState />;
 
-  const action = portal.status === "PUBLISHED" || canManage ? (
-    <div className="portal-header-actions">
-      {portal.status === "PUBLISHED" && <a className="link has-icon" href={portal.publicUrl} target="_blank" rel="noreferrer">Открыть портал</a>}
-      {canManage && <Button variant="secondary" icon="settings" onClick={() => setSettingsOpen(true)}>Настройки</Button>}
-      {canManage && portal.status !== "PUBLISHED" && portal.status !== "ARCHIVED" && <Button variant="primary" disabled={busy} onClick={() => setPendingStatus("PUBLISHED")}>Опубликовать</Button>}
-      {canManage && portal.status === "ARCHIVED" && <Button variant="secondary" disabled={busy} onClick={() => void setStatus("DRAFT")}>Вернуть из архива</Button>}
-      {canManage && portal.status !== "ARCHIVED" && <Button variant="secondary" disabled={busy} onClick={() => setPendingStatus("ARCHIVED")}>В архив</Button>}
-    </div>
-  ) : undefined;
+  // Редактор статьи занимает всю область раздела: шапки портала в нём нет.
+  if (editing !== undefined) {
+    return (
+      <>
+        <PortalArticleEditor
+          article={editing}
+          canManage={canManage && portal.status !== "ARCHIVED"}
+          categories={categories}
+          portal={portal}
+          onClose={() => setEditing(undefined)}
+          onPublish={(article, revisionId) => setPublishing({ article, revisionId })}
+          onSaved={load}
+        />
+        <DecisionDialog
+          open={publishing !== null}
+          onClose={() => setPublishing(null)}
+          tone="warning"
+          icon="check"
+          title="Опубликовать выбранную версию?"
+          description="Эта версия станет доступна посетителям портала."
+          actions={<>
+            <Button variant="secondary" onClick={() => setPublishing(null)}>Отмена</Button>
+            <Button variant="primary" disabled={busy} onClick={() => void publish()}>Опубликовать</Button>
+          </>}
+        />
+      </>
+    );
+  }
 
   return (
-    <div className="support-portal-detail">
-      <PageHeader
-        title={portal.name}
-        text={<span><StatusPill status={portal.status === "PUBLISHED" ? "published" : portal.status === "ARCHIVED" ? "archived" : "draft"} /><code>{portal.publicUrl}</code></span>}
-        action={action}
+    <section className="portal-card">
+      <PortalHeader
+        canManage={canManage}
+        portal={portal}
+        settingsActive={section !== null}
+        onOpenPortals={openPortals}
+        onOpenContent={() => openPortalContent(portal.id)}
+        onOpenSettings={() => (section === null ? openPortalSettings(portal.id) : openPortalContent(portal.id))}
+        onCreateArticle={() => setEditing(null)}
+        onChangeStatus={(status) => (status === "ARCHIVED" ? setPendingStatus(status) : void setStatus(status))}
       />
-      <PortalContent
-        articles={articles}
-        canManage={canManage && portal.status !== "ARCHIVED"}
-        canLinkAgents={hasCapability(user, "ai.manage")}
-        categories={categories}
-        locale={portal.defaultLocale}
-        portalId={portal.id}
-        reload={load}
-      />
-      <Modal
-        destroyOnHidden
-        footer={null}
-        open={settingsOpen}
-        title="Настройки портала"
-        width={960}
-        onCancel={() => setSettingsOpen(false)}
-      >
-        <PortalSettings portal={portal} products={products} canManage={canManage && portal.status !== "ARCHIVED"} onChanged={setPortal} />
-      </Modal>
-      {actionError && <div className="portal-form-error">{actionError}</div>}
+
+      {error && <div className="portal-form-error portal-card-error">{error}</div>}
+
+      {section === null ? (
+        <PortalLibrary
+          articles={articles}
+          canLinkAgents={hasCapability(user, "ai.manage")}
+          canManage={canManage && portal.status !== "ARCHIVED"}
+          categories={categories}
+          portalId={portal.id}
+          reload={load}
+          onEditArticle={setEditing}
+        />
+      ) : (
+        <PortalSettings
+          address={address}
+          canManage={canManage && portal.status !== "ARCHIVED"}
+          portal={portal}
+          products={products}
+          section={section}
+          onChanged={setPortal}
+          openSection={(next) => openPortalSettings(portal.id, next)}
+        />
+      )}
+
       <DecisionDialog
         open={pendingStatus !== null}
         onClose={() => setPendingStatus(null)}
-        tone={pendingStatus === "ARCHIVED" ? "danger" : "warning"}
-        icon={pendingStatus === "ARCHIVED" ? "trash" : "check"}
-        title={pendingStatus === "ARCHIVED" ? "Перенести портал в архив?" : "Опубликовать портал?"}
-        description={pendingStatus === "ARCHIVED"
-          ? "Портал и его материалы станут недоступны посетителям до восстановления."
-          : "Опубликованные статьи станут доступны по публичному адресу."}
-        actions={<><Button variant="secondary" onClick={() => setPendingStatus(null)}>Отмена</Button><Button variant={pendingStatus === "ARCHIVED" ? "danger-outline" : "primary"} disabled={busy} onClick={() => pendingStatus && void setStatus(pendingStatus)}>{pendingStatus === "ARCHIVED" ? "В архив" : "Опубликовать"}</Button></>}
+        tone="danger"
+        icon="trash"
+        title="Перенести портал в архив?"
+        description="Портал и его материалы станут недоступны посетителям до восстановления."
+        actions={<>
+          <Button variant="secondary" onClick={() => setPendingStatus(null)}>Отмена</Button>
+          <Button variant="danger-outline" disabled={busy} onClick={() => pendingStatus && void setStatus(pendingStatus)}>В архив</Button>
+        </>}
       />
-    </div>
+    </section>
   );
 }

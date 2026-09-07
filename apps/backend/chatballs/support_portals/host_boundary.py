@@ -11,7 +11,15 @@ from chatballs.tenancy.ingress import support_portal_route
 
 
 class SupportPortalHostBoundaryMiddleware:
-    """Accept app hosts and hosts present in the published portal directory."""
+    """Accept app hosts and hosts present in the published portal directory.
+
+    Пока установка не прошла мастер первого запуска, адрес себе она не знает:
+    человек поднял докер на сервере и открывает её по IP или по своему домену.
+    Отвечать на это «Invalid host» — значит не дать дойти до мастера, поэтому
+    до создания первой организации принимается любой хост: данных, порталов и
+    ссылок, которые можно было бы отравить чужим Host, ещё нет. После
+    установки список хостов снова закрыт.
+    """
 
     def __init__(self, get_response):
         self.get_response = get_response
@@ -19,7 +27,7 @@ class SupportPortalHostBoundaryMiddleware:
     def __call__(self, request: HttpRequest):
         raw_host = request.META.get("HTTP_HOST") or request.META.get("SERVER_NAME", "")
         host = normalize_domain(raw_host.partition(":")[0])
-        if not self._allowed(host):
+        if not self._allowed(host) and not _instance_is_unconfigured():
             return HttpResponseBadRequest("Invalid host")
         return self.get_response(request)
 
@@ -31,6 +39,15 @@ class SupportPortalHostBoundaryMiddleware:
             or str(connections["default"].settings_dict["NAME"]).startswith("test_")
         ):
             return True
+        # Адрес, который человек ввёл в браузере на первом запуске: продукт
+        # запомнил его в настройках установки и признаёт своим.
+        from chatballs.identity.instance_settings import public_host
+
+        try:
+            if host and host == public_host():
+                return True
+        except Exception:
+            pass
         for allowed in settings.CHATBALLS_APP_PRIMARY_HOSTS:
             normalized = normalize_domain(allowed.lstrip("."))
             if host == normalized or (
@@ -41,3 +58,24 @@ class SupportPortalHostBoundaryMiddleware:
             return support_portal_route(host) is not None
         except Exception:
             return False
+
+
+# Признак «мастер ещё не пройден» кэшируется: до установки его спрашивает
+# каждый запрос, а после установки он больше не меняется.
+_configured = False
+
+
+def _instance_is_unconfigured() -> bool:
+    global _configured
+    if _configured:
+        return False
+    from chatballs.identity.setup import instance_needs_setup
+
+    try:
+        needs_setup = instance_needs_setup()
+    except Exception:
+        # База ещё не поднялась: на этом этапе хост тем более не проверить.
+        return True
+    if not needs_setup:
+        _configured = True
+    return needs_setup

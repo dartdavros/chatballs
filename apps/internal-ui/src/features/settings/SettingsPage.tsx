@@ -14,6 +14,7 @@ import { Icon } from "../../shared/icons";
 import { useMediaQuery } from "../../shared/useMediaQuery";
 import { DemoDataCard } from "./DemoDataCard";
 import { CommunicationSettingsCard } from "./CommunicationSettingsCard";
+import { InstanceAddressCard } from "./InstanceAddressCard";
 import { StorageSettingsCard } from "./StorageSettingsCard";
 import { GroupsSettingsCard } from "./GroupsSettingsCard";
 import { DEFAULT_SETTINGS_SECTION, SETTINGS_SECTIONS, type SettingsSectionKey } from "./sections";
@@ -172,17 +173,22 @@ function OrganizationSection({ user, onUserUpdated }: { user: SessionUser; onUse
   if (page.loading) return <LoadingState />;
   if (!page.organization) return <EmptyState title={page.error || "Не удалось загрузить настройки"} />;
   return (
-    <OrganizationSettingsForm
-      organization={page.organization}
-      canManage={canManageSettings(user)}
-      saving={page.saving}
-      message={page.message}
-      error={page.error}
-      timezones={page.timezones}
-      onChange={page.setOrganization}
-      onSave={() => void page.save()}
-      onUploadLogo={(file) => void page.uploadLogo(file)}
-      onRemoveLogo={() => void page.removeLogo()}
-    />
+    <>
+      <OrganizationSettingsForm
+        organization={page.organization}
+        canManage={canManageSettings(user)}
+        saving={page.saving}
+        message={page.message}
+        error={page.error}
+        timezones={page.timezones}
+        onChange={page.setOrganization}
+        onSave={() => void page.save()}
+        onUploadLogo={(file) => void page.uploadLogo(file)}
+        onRemoveLogo={() => void page.removeLogo()}
+      />
+      {/* Адрес установки — свойство инсталляции, а не организации, но живёт
+          рядом: в облаке он один на всех, в коробке организация одна. */}
+      <InstanceAddressCard canManage={canManageSettings(user)} />
+    </>
   );
 }

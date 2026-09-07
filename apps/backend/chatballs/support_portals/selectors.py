@@ -1,6 +1,10 @@
 from django.db.models import Count, Q, QuerySet
 
-from chatballs.support_portals.models import PortalArticle, SupportPortal
+from chatballs.support_portals.models import (
+    PortalArticle,
+    PortalCategory,
+    SupportPortal,
+)
 from chatballs.tenancy.context import TenantContext
 
 
@@ -44,6 +48,7 @@ def public_articles(
             published_revision__isnull=False,
         )
         .select_related("category", "published_revision")
+        .prefetch_related("files")
         .order_by("category__sort_order", "published_revision__title")
     )
     if category:
@@ -106,3 +111,24 @@ def category_article_counts(
     for category in categories:
         total(category.id)
     return totals
+
+
+def portal_content_counts(context: TenantContext) -> dict[int, dict[str, int]]:
+    """Разделы и статьи по порталам — колонка «Материалы» списка (кадр PT1)."""
+
+    counts: dict[int, dict[str, int]] = {}
+    categories = (
+        PortalCategory.objects.filter(organization=context.organization)
+        .values("portal_id")
+        .annotate(total=Count("id"))
+    )
+    for row in categories:
+        counts.setdefault(row["portal_id"], {})["categories"] = row["total"]
+    articles = (
+        PortalArticle.objects.filter(organization=context.organization)
+        .values("portal_id")
+        .annotate(total=Count("id"))
+    )
+    for row in articles:
+        counts.setdefault(row["portal_id"], {})["articles"] = row["total"]
+    return counts

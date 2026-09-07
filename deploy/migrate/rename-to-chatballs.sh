@@ -11,7 +11,7 @@
 #
 # Запуск из каталога релиза (где compose.yaml), инстанс — каталог с .env и data/:
 #   CHATBALLS_INSTANCE_DIR=/opt/chatballs/instance deploy/migrate/rename-to-chatballs.sh
-# Для dev-стека: CHATBALLS_COMPOSE_ARGS="-f compose.dev.yaml --env-file .env.example" …
+# Для dev-стека: CHATBALLS_COMPOSE_ARGS="-f compose.dev.yaml" …
 #
 # На проде перед запуском: mv /opt/custocrm /opt/chatballs (каталог релизов и инстанса).
 set -euo pipefail

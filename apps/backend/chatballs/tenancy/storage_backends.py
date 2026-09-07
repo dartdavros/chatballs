@@ -12,12 +12,16 @@
 
 from __future__ import annotations
 
+import logging
+
 from django.conf import settings
 from django.core.exceptions import SuspiciousFileOperation
 from django.core.files.storage import FileSystemStorage, Storage
 from django.utils.deconstruct import deconstructible
 
 from chatballs.tenancy.database import current_tenant_id
+
+logger = logging.getLogger(__name__)
 
 
 def _assert_tenant_key(name: str) -> None:
@@ -84,15 +88,31 @@ class _DynamicStorage(Storage):
             return self._s3(config)
         return None
 
+    def _secondary_has(self, name: str) -> object | None:
+        """Второе хранилище, если файл лежит там.
+
+        Второе хранилище — необязательный запасной путь для файлов, оставшихся
+        после переключения бэкенда. Оно может быть недоступно (выключенный
+        MinIO, устаревшие реквизиты, сеть), и это не должно ронять операцию над
+        активным хранилищем: недоступное второе считаем пустым и пишем в лог.
+        """
+        secondary = self._secondary()
+        if secondary is None:
+            return None
+        try:
+            return secondary if secondary.exists(name) else None
+        except Exception as error:  # boto/сетевые ошибки разнообразны
+            logger.warning(
+                "secondary storage unavailable, ignoring: %s", error, exc_info=False
+            )
+            return None
+
     def _reader_for(self, name: str):
         """Хранилище, где файл реально лежит: активное, иначе второе."""
         active = self._active()
         if active.exists(name):
             return active
-        secondary = self._secondary()
-        if secondary is not None and secondary.exists(name):
-            return secondary
-        return active
+        return self._secondary_has(name) or active
 
     # --- Storage API ---------------------------------------------------------
     def _open(self, name, mode="rb"):
@@ -111,16 +131,23 @@ class _DynamicStorage(Storage):
 
     def delete(self, name):
         self._guard(name)
-        for storage in (self._active(), self._secondary()):
-            if storage is not None and storage.exists(name):
-                storage.delete(name)
+        active = self._active()
+        if active.exists(name):
+            active.delete(name)
+        secondary = self._secondary_has(name)
+        if secondary is not None:
+            try:
+                secondary.delete(name)
+            except Exception as error:
+                logger.warning(
+                    "secondary storage delete failed, ignoring: %s", error, exc_info=False
+                )
 
     def exists(self, name):
         self._guard(name)
         if self._active().exists(name):
             return True
-        secondary = self._secondary()
-        return secondary is not None and secondary.exists(name)
+        return self._secondary_has(name) is not None
 
     def size(self, name):
         self._guard(name)

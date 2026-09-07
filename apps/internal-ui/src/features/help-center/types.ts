@@ -29,12 +29,21 @@ export type HelpRevision = {
   publishedAt: string | null;
 };
 
+export type HelpAttachment = {
+  name: string;
+  path: string;
+  size: number;
+  contentType: string;
+};
+
 export type HelpArticle = {
   slug: string;
   locale: string;
   category: HelpCategory;
   revision: HelpRevision;
   updatedAt: string;
+  // Файлы статьи: картинки вставлены в текст, остальное посетитель скачивает.
+  attachments?: HelpAttachment[];
 };
 
 export type HelpPortal = {

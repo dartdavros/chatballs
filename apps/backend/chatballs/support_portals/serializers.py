@@ -1,17 +1,15 @@
 from django.conf import settings
 
+from chatballs.integrations.models import IntegrationProvider, IntegrationStatus
+from chatballs.support_portals.addressing import portal_public_url
+from chatballs.support_portals.content_markdown import normalize_file_links
 from chatballs.support_portals.models import (
     PortalArticle,
+    PortalArticleFile,
     PortalArticleRevision,
     PortalCategory,
     SupportPortal,
     SupportPortalProduct,
-)
-from chatballs.integrations.models import IntegrationProvider, IntegrationStatus
-from chatballs.support_portals.addressing import portal_public_url
-from chatballs.support_portals.domain_services import (
-    domain_verification_name,
-    domain_verification_value,
 )
 
 
@@ -31,7 +29,7 @@ def product_link_payload(link: SupportPortalProduct) -> dict:
     }
 
 
-def portal_payload(portal: SupportPortal) -> dict:
+def portal_payload(portal: SupportPortal, *, counts: dict | None = None) -> dict:
     public_url = portal_public_url(
         hosted=portal.hosted_domain,
         custom=portal.custom_domain,
@@ -53,15 +51,6 @@ def portal_payload(portal: SupportPortal) -> dict:
             else None
         ),
         "customDomainVerifiedAt": portal.custom_domain_verified_at,
-        "customDomainVerification": (
-            {
-                "name": domain_verification_name(portal),
-                "type": "TXT",
-                "value": domain_verification_value(portal),
-            }
-            if portal.custom_domain and portal.custom_domain_verified_at is None
-            else None
-        ),
         "publicUrl": public_url,
         "name": portal.name,
         "defaultLocale": portal.default_locale,
@@ -77,6 +66,19 @@ def portal_payload(portal: SupportPortal) -> dict:
         "products": [product_link_payload(link) for link in portal.product_links.all()],
         "createdAt": portal.created_at,
         "updatedAt": portal.updated_at,
+        # Колонка «Материалы» списка порталов (кадр PT1) и подзаголовок карточки.
+        # В списке счётчики приходят одним запросом, для одиночного ответа
+        # считаются здесь — иначе после сохранения настроек шапка обнулилась бы.
+        "categoryCount": (
+            counts["categories"]
+            if counts and "categories" in counts
+            else portal.categories.count()
+        ),
+        "articleCount": (
+            counts["articles"]
+            if counts and "articles" in counts
+            else portal.articles.count()
+        ),
     }
 
 
@@ -104,13 +106,19 @@ def revision_payload(revision: PortalArticleRevision, *, content: bool = True) -
         "summary": revision.summary,
         "createdAt": revision.created_at,
         "publishedAt": revision.published_at,
+        "authorName": _author_name(revision.created_by),
     }
     if content:
-        payload["content"] = revision.content
+        # Ссылки на файлы приводятся к относительным и на отдаче: тексты,
+        # написанные до этого правила, иначе остались бы с абсолютным хостом
+        # и картинки резал бы CSP портала.
+        payload["content"] = normalize_file_links(revision.content)
     return payload
 
 
-def article_payload(article: PortalArticle, *, revisions: bool = False) -> dict:
+def article_payload(
+    article: PortalArticle, *, revisions: bool = False, files: bool = False
+) -> dict:
     latest_revision = next(iter(article.revisions.all()), None)
     payload = {
         "id": article.id,
@@ -131,11 +139,48 @@ def article_payload(article: PortalArticle, *, revisions: bool = False) -> dict:
         "createdAt": article.created_at,
         "updatedAt": article.updated_at,
     }
+    # files всегда prefetch-нуты в селекторах статей: без этого счётчик
+    # скрепки в списке дал бы запрос на строку.
+    # Оценки посетителей: две кнопки под статьёй на портале. Автору важно
+    # видеть их сумму, иначе кнопки собирают отзывы в никуда.
+    votes = list(article.feedback.all())
+    payload["feedback"] = {
+        "helpful": sum(1 for vote in votes if vote.helpful),
+        "unhelpful": sum(1 for vote in votes if not vote.helpful),
+    }
+    payload["fileCount"] = len(article.files.all())
+    if files:
+        payload["files"] = [
+            article_file_payload(item) for item in article.files.all()
+        ]
     if revisions:
         payload["revisions"] = [
             revision_payload(revision) for revision in article.revisions.all()
         ]
     return payload
+
+
+def article_file_payload(article_file: PortalArticleFile) -> dict:
+    return {
+        "id": article_file.id,
+        "name": article_file.original_name,
+        "contentType": article_file.content_type,
+        "size": article_file.size,
+        # path — для вставки в Markdown (тот же origin, что и страница),
+        # url — полный адрес для мест, где нужен абсолютный.
+        "path": article_file.public_path(),
+        "url": article_file.public_url(),
+        "createdAt": article_file.created_at,
+    }
+
+
+def _author_name(user) -> str:
+    if user is None:
+        return ""
+    full_name = " ".join(
+        part for part in (user.first_name, user.last_name) if part
+    ).strip()
+    return full_name or user.get_username()
 
 
 def public_portal_payload(portal: SupportPortal) -> dict:
@@ -208,10 +253,26 @@ def _public_widget_key(widget, expected_mode: str) -> str | None:
 
 
 def public_article_payload(article: PortalArticle, *, content: bool = True) -> dict:
-    return {
+    payload = {
         "slug": article.slug,
         "locale": article.locale,
         "category": category_payload(article.category),
         "revision": revision_payload(article.published_revision, content=content),
         "updatedAt": article.updated_at,
     }
+    if content:
+        # Вложения статьи — всё, чего нет в самом тексте. Картинку, вставленную
+        # в статью, посетитель уже видит; остальное (в том числе картинку,
+        # просто прикреплённую к статье) он скачивает списком под текстом.
+        body = payload["revision"]["content"]
+        payload["attachments"] = [
+            {
+                "name": item.original_name,
+                "path": item.public_path(),
+                "size": item.size,
+                "contentType": item.content_type,
+            }
+            for item in article.files.all()
+            if item.public_path() not in body
+        ]
+    return payload

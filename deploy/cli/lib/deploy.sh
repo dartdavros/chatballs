@@ -49,7 +49,6 @@ cmd_deploy() {
 
 _deploy_validate() {
   [[ -f "$(compose_file)" ]] || { log_err "compose.yaml missing"; return 1; }
-  [[ -f "$(instance_env_file)" ]] || { log_err "instance .env missing"; return 1; }
   [[ -f "$(release_env_file)" ]] || { log_err "release.env missing"; return 1; }
 
   verify_release_checksums || return 1
@@ -58,12 +57,13 @@ _deploy_validate() {
   local app_domain platform_domain
   app_domain="$(env_get "$(instance_env_file)" CHATBALLS_APP_DOMAIN)"
   platform_domain="$(env_get "$(instance_env_file)" CHATBALLS_PLATFORM_DOMAIN)"
-  [[ -n "$app_domain" ]] || { log_err "CHATBALLS_APP_DOMAIN not set"; return 1; }
-  [[ -n "$platform_domain" ]] || { log_err "CHATBALLS_PLATFORM_DOMAIN not set"; return 1; }
-  [[ "$app_domain" != "$platform_domain" ]] || {
+  # Домены знать необязательно: свежая установка отвечает по адресу сервера,
+  # а свой домен владелец задаёт потом в «Настройках». Проверяем только то,
+  # что если домены заданы оба — они разные.
+  if [[ -n "$app_domain" && -n "$platform_domain" && "$app_domain" == "$platform_domain" ]]; then
     log_err "app and platform domains must be distinct"
     return 1
-  }
+  fi
 
   if profile_enabled calls; then
     validate_calls_network_boundary || return 1
@@ -131,54 +131,53 @@ _smoke() {
   local app_domain platform_domain
   app_domain="$(env_get "$(instance_env_file)" CHATBALLS_APP_DOMAIN)"
   platform_domain="$(env_get "$(instance_env_file)" CHATBALLS_PLATFORM_DOMAIN)"
+  # Свежая установка домена не знает: проверяем её так же, как её открывает
+  # человек — по адресу сервера, без домена и без https.
+  [[ -n "$app_domain" ]] || app_domain="localhost"
+  [[ -n "$platform_domain" ]] || platform_domain="localhost"
 
-  run_compose exec -T backend-app python - <<'PY' >/dev/null 2>&1 || {
+  # Значения передаём через env внутри контейнера, а не флагами -e: так
+  # команда остаётся привычной формы «exec -T backend-app …».
+  run_compose exec -T backend-app \
+    env SMOKE_APP_HOST="$app_domain" SMOKE_PLATFORM_HOST="$platform_domain" \
+    python - <<'PY' >/dev/null 2>&1 || {
 import os
-import urllib.error
 import urllib.request
 
-app_domain = os.environ["CHATBALLS_APP_DOMAIN"]
-platform_domain = os.environ["CHATBALLS_PLATFORM_DOMAIN"]
-app_health_host = os.environ.get("CHATBALLS_APP_HEALTHCHECK_HOST") or app_domain
-platform_health_host = os.environ.get("CHATBALLS_PLATFORM_HEALTHCHECK_HOST") or platform_domain
-app_health_request = urllib.request.Request(
+app_host = os.environ["SMOKE_APP_HOST"]
+platform_host = os.environ["SMOKE_PLATFORM_HOST"]
+
+app_health = urllib.request.Request(
     "http://127.0.0.1:8000/api/v1/health/ready/",
-    headers={"Host": app_health_host, "X-Forwarded-Proto": "https"},
+    headers={"Host": app_host},
 )
-with urllib.request.urlopen(app_health_request, timeout=5) as response:
+with urllib.request.urlopen(app_health, timeout=5) as response:
     assert response.status == 200
 
-platform_health_request = urllib.request.Request(
+platform_health = urllib.request.Request(
     "http://backend-platform:8000/api/v1/health/ready/",
-    headers={"Host": platform_health_host, "X-Forwarded-Proto": "https"},
+    headers={"Host": platform_host},
 )
-with urllib.request.urlopen(platform_health_request, timeout=5) as response:
+with urllib.request.urlopen(platform_health, timeout=5) as response:
     assert response.status == 200
 
 with urllib.request.urlopen("http://frontend/", timeout=5) as response:
     assert response.status == 200
 
-class NoRedirect(urllib.request.HTTPRedirectHandler):
-    def redirect_request(self, request, file_pointer, code, message, headers, new_url):
-        return None
-
-opener = urllib.request.build_opener(NoRedirect)
-for domain in (app_domain, platform_domain):
-    gateway_request = urllib.request.Request("http://gateway/", headers={"Host": domain})
-    try:
-        opener.open(gateway_request, timeout=5)
-    except urllib.error.HTTPError as error:
-        assert error.code in {301, 302, 303, 307, 308}
-        assert error.headers.get("Location", "").startswith(f"https://{domain}")
-    else:
-        raise AssertionError(f"gateway did not redirect HTTP to HTTPS for {domain}")
+# Шлюз обязан отвечать по http на любом адресе: домена и сертификата у свежей
+# установки нет, а человек открывает её сразу после docker compose up.
+gateway = urllib.request.Request("http://gateway/", headers={"Host": app_host})
+with urllib.request.urlopen(gateway, timeout=5) as response:
+    assert response.status == 200
 PY
     log_err "smoke: internal app/platform/frontend/gateway checks failed"
     return 1
   }
   log_ok "smoke: app, platform, frontend and gateway"
 
-  if command -v curl >/dev/null 2>&1; then
+  # Публичные https-адреса проверяем, только если домен задан: у свежей
+  # установки его нет, и «недоступен» здесь ничего не значит.
+  if [[ "$app_domain" != "localhost" ]] && command -v curl >/dev/null 2>&1; then
     local app_code platform_code
     app_code="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 10 "https://$app_domain/" 2>/dev/null || true)"
     platform_code="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 10 "https://$platform_domain/api/v1/health/live/" 2>/dev/null || true)"

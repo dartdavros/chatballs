@@ -133,7 +133,7 @@ export function Sidebar({
           <SidebarLink activeRoutes={["salesClients", "salesClientDetail"]} icon="user" label="Контакты" route={route} routeKey="salesClients" setRoute={setRoute} />
           <SidebarLink activeRoutes={["agents", "agentDetail"]} icon="robot" label="Агенты" route={route} routeKey="agents" setRoute={setRoute} />
           <SidebarLink activeRoutes={["employees", "employeeDetail"]} icon="team" label="Сотрудники" route={route} routeKey="employees" setRoute={setRoute} />
-          <SidebarLink activeRoutes={["supportPortals", "supportPortalDetail"]} icon="globe" label="Порталы" route={route} routeKey="supportPortals" setRoute={setRoute} />
+          <SidebarLink activeRoutes={["supportPortals", "supportPortalDetail", "supportPortalSettings"]} icon="globe" label="Порталы" route={route} routeKey="supportPortals" setRoute={setRoute} />
           <SidebarLink activeRoutes={["settings", "aiKnowledge", "aiKnowledgeCreate", "aiKnowledgeDetail", "administrationAudit"]} icon="settings" label="Настройки" route={route} routeKey="settings" setRoute={setRoute} />
         </nav>
       ) : route === "profile" ? (

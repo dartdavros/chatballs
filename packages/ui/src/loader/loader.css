@@ -1,0 +1,11 @@
+.cb-loader {
+  display: inline-block;
+  flex: none;
+}
+
+/* При отключённой анимации остаётся первый кадр — цельная капля. */
+@media (prefers-reduced-motion: reduce) {
+  .cb-loader animate {
+    display: none;
+  }
+}

@@ -1,44 +1,46 @@
 import { useEffect, useState } from "react";
 
-import { FormField, SelectField } from "../../shared/form-controls";
-import { Button } from "../../shared/ui-controls";
+import { Icon } from "../../shared/icons";
 import type { Product } from "../../types";
 import {
   listPortalSupportChannels,
-  portalErrorMessage,
-  updateSupportPortal,
+  type PortalAddressConfig,
   type PortalWidgetOption,
   type SupportPortal,
 } from "./model";
 import { PortalAppearanceSettings } from "./PortalAppearanceSettings";
+import { PortalBasicsSettings } from "./PortalBasicsSettings";
 import { PortalDomainSettings } from "./PortalDomainSettings";
 import { PortalProductSettings } from "./PortalProductSettings";
+import { PortalPublishSettings } from "./PortalPublishSettings";
 import { PortalWidgetSettings } from "./PortalWidgetSettings";
+import {
+  PORTAL_SETTINGS_SECTIONS,
+  type PortalSettingsSectionKey,
+} from "./sections";
+
+// Настройки портала (дизайн-базлайн v2, кадры PT4–PT6): не модалка на 960px с
+// пятью секциями подряд, а страница с субменю разделов 250px.
 
 export function PortalSettings({
+  address,
+  canManage,
   portal,
   products,
-  canManage,
+  section,
   onChanged,
+  openSection,
 }: {
+  address: PortalAddressConfig;
+  canManage: boolean;
   portal: SupportPortal;
   products: Product[];
-  canManage: boolean;
+  section: PortalSettingsSectionKey;
   onChanged: (portal: SupportPortal) => void;
+  openSection: (section: PortalSettingsSectionKey) => void;
 }) {
-  const [name, setName] = useState(portal.name);
-  const [slug, setSlug] = useState(portal.slug);
-  const [locale, setLocale] = useState(portal.defaultLocale);
   const [supportWidgets, setSupportWidgets] = useState<PortalWidgetOption[]>([]);
   const [anonymousWidgets, setAnonymousWidgets] = useState<PortalWidgetOption[]>([]);
-  const [busy, setBusy] = useState(false);
-  const [feedback, setFeedback] = useState("");
-
-  useEffect(() => {
-    setName(portal.name);
-    setSlug(portal.slug);
-    setLocale(portal.defaultLocale);
-  }, [portal]);
 
   useEffect(() => {
     listPortalSupportChannels(portal.id)
@@ -52,65 +54,64 @@ export function PortalSettings({
       });
   }, [portal.id]);
 
-  async function saveBasics() {
-    setBusy(true);
-    setFeedback("");
-    try {
-      const payload = await updateSupportPortal(portal.id, {
-        name,
-        slug,
-        defaultLocale: locale,
-      });
-      onChanged(payload.portal);
-      setFeedback("Настройки сохранены");
-    } catch (caught) {
-      setFeedback(portalErrorMessage(caught, "Не удалось сохранить настройки"));
-    } finally {
-      setBusy(false);
-    }
-  }
+  const current = PORTAL_SETTINGS_SECTIONS.find((item) => item.key === section)
+    ?? PORTAL_SETTINGS_SECTIONS[0];
+  const domainLive = Boolean(portal.customDomain && portal.customDomainVerifiedAt);
+  const hints: Partial<Record<PortalSettingsSectionKey, { text: string; tone: "ok" | "muted" }>> = {
+    domain: domainLive ? { text: "работает", tone: "ok" } : undefined,
+    products: portal.products.length ? { text: String(portal.products.length), tone: "muted" } : undefined,
+  };
 
   return (
-    <div className="portal-settings-grid">
-      <section className="portal-section">
-        <div className="portal-section-heading">
-          <div><h2>Основные настройки</h2><p>Название, публичный адрес и язык материалов.</p></div>
-        </div>
-        <div className="portal-settings-fields">
-          <FormField disabled={!canManage} label="Название портала" value={name} onChange={canManage ? setName : undefined} wide />
-          <FormField disabled={!canManage} label="Адрес портала" value={slug} onChange={canManage ? setSlug : undefined} mono wide />
-          <p className="portal-address-preview">{portal.publicUrl}</p>
-          <SelectField
-            disabled={!canManage}
-            label="Язык по умолчанию"
-            value={locale}
-            onChange={setLocale}
-            options={[["ru", "Русский"], ["en", "English"]]}
-          />
-        </div>
-        {canManage && <Button variant="primary" disabled={busy} onClick={() => void saveBasics()}>Сохранить настройки</Button>}
-      </section>
+    <div className="portal-settings-layout">
+      <nav className="portal-settings-nav">
+        {PORTAL_SETTINGS_SECTIONS.map((item) => (
+          <span key={item.key}>
+            <button
+              className={`portal-settings-nav-item${item.key === current.key ? " is-active" : ""}`}
+              type="button"
+              onClick={() => openSection(item.key)}
+            >
+              <Icon name={item.icon} size={16} strokeWidth={1.9} />
+              <span>{item.label}</span>
+              {hints[item.key] && (
+                <small className={hints[item.key]!.tone === "ok" ? "is-ok" : ""}>{hints[item.key]!.text}</small>
+              )}
+            </button>
+            {item.divider && <i className="portal-settings-nav-divider" />}
+          </span>
+        ))}
+        <span className="portal-settings-nav-gap" />
+        <p>Изменения применяются к публичным страницам сразу после сохранения.</p>
+      </nav>
 
-      <PortalAppearanceSettings
-        canManage={canManage}
-        portal={portal}
-        onChanged={onChanged}
-      />
-      <PortalProductSettings
-        canManage={canManage}
-        widgets={supportWidgets}
-        portal={portal}
-        products={products}
-        onChanged={onChanged}
-      />
-      <PortalWidgetSettings
-        canManage={canManage}
-        widgets={anonymousWidgets}
-        portal={portal}
-        onChanged={onChanged}
-      />
-      <PortalDomainSettings portal={portal} canManage={canManage} onChanged={onChanged} />
-      {feedback && <div className="portal-save-feedback">{feedback}</div>}
+      <div className="portal-settings-content">
+        <div className="portal-settings-inner">
+          <div className="portal-settings-heading">
+            <h3>{current.heading}</h3>
+            <p>{current.lead}</p>
+          </div>
+
+          {current.key === "basics" && (
+            <PortalBasicsSettings address={address} canManage={canManage} portal={portal} onChanged={onChanged} />
+          )}
+          {current.key === "domain" && (
+            <PortalDomainSettings canManage={canManage} portal={portal} onChanged={onChanged} />
+          )}
+          {current.key === "theme" && (
+            <PortalAppearanceSettings canManage={canManage} portal={portal} onChanged={onChanged} />
+          )}
+          {current.key === "widget" && (
+            <PortalWidgetSettings canManage={canManage} portal={portal} widgets={anonymousWidgets} onChanged={onChanged} />
+          )}
+          {current.key === "products" && (
+            <PortalProductSettings canManage={canManage} portal={portal} products={products} widgets={supportWidgets} onChanged={onChanged} />
+          )}
+          {current.key === "danger" && (
+            <PortalPublishSettings canManage={canManage} portal={portal} onChanged={onChanged} />
+          )}
+        </div>
+      </div>
     </div>
   );
 }

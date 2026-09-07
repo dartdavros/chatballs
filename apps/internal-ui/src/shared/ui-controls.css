@@ -220,6 +220,15 @@
   color: var(--n-4);
 }
 
+.ui-filter-caption {
+  color: var(--n-4);
+  font-style: normal;
+}
+
+.ui-filter-button.is-active .ui-filter-caption {
+  color: inherit;
+}
+
 .ui-filter-button.is-active > svg:last-child {
   color: inherit;
 }

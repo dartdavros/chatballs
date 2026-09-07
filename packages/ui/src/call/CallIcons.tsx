@@ -1,3 +1,5 @@
+import { Loader } from "../loader/Loader";
+
 type IconProps = { kind: "mic" | "cam"; on?: boolean };
 
 const common = {
@@ -39,13 +41,13 @@ export function FullscreenIcon() {
 }
 
 export function SpinnerIcon() {
-  return <svg {...common} width="16" height="16" strokeWidth={2} className="hub-call-spin"><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>;
+  return <Loader size={16} />;
 }
 
 export type StatusIconName = "spinner" | "alert" | "declined" | "missed" | "clock" | "unsupported";
 
 export function StatusIcon({ name }: { name: StatusIconName }) {
-  if (name === "spinner") return <svg {...common} width="26" height="26" strokeWidth={2} className="hub-call-spin"><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>;
+  if (name === "spinner") return <Loader size={26} />;
   if (name === "alert") return <svg {...common} width="26" height="26"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>;
   if (name === "declined") return <svg {...common} width="26" height="26"><path transform="rotate(135 12 12)" d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.81.36 1.6.7 2.34a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.74-1.27a2 2 0 0 1 2.11-.45c.74.34 1.53.57 2.34.7A2 2 0 0 1 22 16.92z" /></svg>;
   if (name === "missed") return <svg {...common} width="26" height="26"><path d="M23 7l-8 8-4-4-9 9" /><polyline points="17 7 23 7 23 13" /></svg>;

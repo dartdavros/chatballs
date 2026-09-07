@@ -63,6 +63,10 @@ def attachment_route(public_id: str) -> IngressRoute | None:
     return _unique_route("attachment_directory", public_id)
 
 
+def portal_article_file_route(public_id: str) -> IngressRoute | None:
+    return _unique_route("portal_article_file_directory", public_id)
+
+
 def call_invite_route(token_hash: str) -> IngressRoute | None:
     return _unique_route("call_invite_directory", token_hash)
 

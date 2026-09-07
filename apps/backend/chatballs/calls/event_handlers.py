@@ -7,7 +7,6 @@
 
 import logging
 
-from django.conf import settings
 from django.db import transaction
 
 from chatballs.calls.lifecycle import transition_call
@@ -16,6 +15,7 @@ from chatballs.calls.services import CALL_INVITE_SEND
 from chatballs.calls.tokens import issue_invite_token
 from chatballs.conversations import transports
 from chatballs.events.handlers import register
+from chatballs.identity.instance_settings import public_base_url
 from chatballs.tenancy.context import TenantContext
 
 logger = logging.getLogger(__name__)
@@ -51,7 +51,7 @@ def handle_call_invite_send(payload: dict, context: TenantContext | None) -> Non
         invite.save(update_fields=["token_hash"])
         call_label = "аудиозвонок" if call.kind == "AUDIO" else "видеозвонок"
         invite_text = f"Приглашаем вас на {call_label}. Нажмите кнопку, чтобы перейти к звонку."
-        url = f"{settings.CHATBALLS_PUBLIC_BASE_URL.rstrip('/')}/calls/{token}?kind={call.kind}"
+        url = f"{public_base_url()}/calls/{token}?kind={call.kind}"
         sent = transports.send_call_invite(
             call.delivery_connection,
             chat_id=call.conversation.external_chat_id,

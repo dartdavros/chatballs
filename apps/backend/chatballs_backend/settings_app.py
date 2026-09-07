@@ -1,8 +1,6 @@
 # ruff: noqa: F403,F405
 import os
 
-from django.core.exceptions import ImproperlyConfigured
-
 from chatballs_backend.settings_base import *
 
 CHATBALLS_RUNTIME_SURFACE = "app"
@@ -10,9 +8,9 @@ ROOT_URLCONF = "chatballs_backend.urls_app"
 ASGI_APPLICATION = "chatballs_backend.asgi_app.application"
 WSGI_APPLICATION = "chatballs_backend.wsgi_app.application"
 
-_app_hosts = os.environ.get("CHATBALLS_APP_ALLOWED_HOSTS", "")
-if not DEBUG and not TESTING and not _app_hosts:
-    raise ImproperlyConfigured("CHATBALLS_APP_ALLOWED_HOSTS is required for the app surface")
+# Домены установки задаются в UI (мастер первого запуска), а не переменной
+# окружения: коробка поднимается одной командой и до настройки отвечает на
+# локальные адреса. Проверку хоста несёт middleware/список ниже.
 CHATBALLS_APP_PRIMARY_HOSTS = env_list(
     "CHATBALLS_APP_ALLOWED_HOSTS",
     env_list("CHATBALLS_ALLOWED_HOSTS", ["localhost", "127.0.0.1", "app.localhost"]),
@@ -42,6 +40,14 @@ CSRF_COOKIE_NAME = os.environ.get(
     "CHATBALLS_APP_CSRF_COOKIE_NAME",
     "__Host-chatballs-app-csrf" if CSRF_COOKIE_SECURE else "chatballs_app_csrftoken",
 )
+# Имя cookie по http и его защищённая пара для запросов по TLS.
+# Переключает TlsAwareCookieMiddleware по факту протокола запроса — тем же
+# правилом, что и фронтенд (api/client.ts).
+CHATBALLS_TLS_COOKIE_NAMES = {
+    SESSION_COOKIE_NAME: "__Host-chatballs-app-session",
+    CSRF_COOKIE_NAME: "__Host-chatballs-app-csrf",
+}
+
 SESSION_COOKIE_DOMAIN = None
 CSRF_COOKIE_DOMAIN = None
 SESSION_COOKIE_PATH = "/"

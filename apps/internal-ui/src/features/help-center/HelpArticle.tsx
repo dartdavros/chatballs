@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { fetchHelpArticle, sendArticleFeedback } from "./api";
 import { HelpChevronIcon, HelpThumbIcon } from "./HelpIcons";
 import { HelpLayout } from "./HelpLayout";
+import { HelpAttachments } from "./HelpAttachments";
 import { MarkdownContent, parseMarkdown } from "./MarkdownContent";
 import type { HelpArticle as HelpArticleType, HelpManifest } from "./types";
 
@@ -94,6 +95,7 @@ export function HelpArticle({
                 </time>
               </header>
               <MarkdownContent content={article.revision.content ?? ""} />
+              <HelpAttachments attachments={article.attachments ?? []} />
               <section className="help-feedback">
                 {feedback === "sent" ? (
                   <div className="help-feedback-thanks">

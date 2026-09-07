@@ -140,7 +140,9 @@ class SupportPortalManagementTests(SupportPortalTestCase):
         self.assertEqual(link.support_channel, self.channel)
 
     @override_settings(CHATBALLS_HELP_PUBLIC_IPV4="203.0.113.42")
-    def test_custom_domain_requires_matching_dns_records(self) -> None:
+    def test_custom_domain_checks_only_the_address_record(self) -> None:
+        # Подтверждения владения доменом нет — только «ведёт ли домен сюда»
+        # (README дизайн-базлайна «Порталы», решение 6).
         portal_id = self.create_portal().json()["portal"]["id"]
         configured = self.client.put(
             f"/api/v1/support/portals/{portal_id}/domain/",
@@ -148,7 +150,7 @@ class SupportPortalManagementTests(SupportPortalTestCase):
             format="json",
         )
         self.assertEqual(configured.status_code, 200, configured.content)
-        verification = configured.json()["portal"]["customDomainVerification"]
+        self.assertNotIn("customDomainVerification", configured.json()["portal"])
         self.assertEqual(
             configured.json()["portal"]["customDomainAddress"],
             {
@@ -158,13 +160,10 @@ class SupportPortalManagementTests(SupportPortalTestCase):
             },
         )
         address_answer = mock.Mock(address="203.0.113.42")
-        verification_answer = mock.Mock(
-            strings=[verification["value"].encode("utf-8")]
-        )
 
         with mock.patch(
             "dns.resolver.resolve",
-            side_effect=[[address_answer], [verification_answer]],
+            return_value=[address_answer],
         ) as resolve:
             verified = self.client.post(
                 f"/api/v1/support/portals/{portal_id}/domain/verify/",
@@ -174,13 +173,9 @@ class SupportPortalManagementTests(SupportPortalTestCase):
 
         self.assertEqual(verified.status_code, 200, verified.content)
         self.assertIsNotNone(verified.json()["portal"]["customDomainVerifiedAt"])
-        self.assertIsNone(verified.json()["portal"]["customDomainVerification"])
         self.assertEqual(
             resolve.call_args_list,
-            [
-                mock.call("help.customer.example", "A"),
-                mock.call("_chatballs.help.customer.example", "TXT"),
-            ],
+            [mock.call("help.customer.example", "A")],
         )
 
     @override_settings(CHATBALLS_HELP_PUBLIC_IPV4="203.0.113.42")

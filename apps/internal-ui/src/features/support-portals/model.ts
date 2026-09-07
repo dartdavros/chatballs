@@ -41,11 +41,6 @@ export type SupportPortal = {
     value: string;
   } | null;
   customDomainVerifiedAt: string | null;
-  customDomainVerification: {
-    name: string;
-    type: "TXT";
-    value: string;
-  } | null;
   publicUrl: string;
   name: string;
   defaultLocale: string;
@@ -61,6 +56,9 @@ export type SupportPortal = {
   products: PortalProductLink[];
   createdAt: string;
   updatedAt: string;
+  // Колонка «Материалы» списка порталов и подзаголовок карточки (кадры PT1/PT3).
+  categoryCount: number;
+  articleCount: number;
 };
 
 export type PortalCategory = {
@@ -81,6 +79,19 @@ export type ArticleRevision = {
   content: string;
   createdAt: string;
   publishedAt: string | null;
+  authorName: string;
+};
+
+export type PortalArticleFile = {
+  id: number;
+  name: string;
+  contentType: string;
+  size: number;
+  // Относительный путь — для вставки в Markdown: страница портала отдаётся
+  // с CSP img-src 'self', и абсолютная ссылка была бы чужим origin.
+  path: string;
+  url: string;
+  createdAt: string;
 };
 
 export type PortalArticle = {
@@ -92,6 +103,10 @@ export type PortalArticle = {
   publishedRevision: ArticleRevision | null;
   latestRevision: Omit<ArticleRevision, "content"> | null;
   revisions?: ArticleRevision[];
+  files?: PortalArticleFile[];
+  fileCount: number;
+  // Оценки посетителей: две кнопки под статьёй на публичном портале.
+  feedback: { helpful: number; unhelpful: number };
   createdAt: string;
   updatedAt: string;
 };
@@ -124,8 +139,10 @@ export {
   createPortalArticle,
   createPortalCategory,
   createSupportPortal,
+  deleteArticleFile,
   deletePortalCategory,
   importPortalArticles,
+  listArticleFiles,
   listPortalArticles,
   listPortalCategories,
   listPortalSupportChannels,
@@ -138,6 +155,7 @@ export {
   updatePortalArticle,
   updatePortalCategory,
   updateSupportPortal,
+  uploadArticleFile,
   verifyPortalCustomDomain,
 } from "./api";
 

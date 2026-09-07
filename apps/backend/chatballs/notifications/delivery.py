@@ -12,6 +12,7 @@ import logging
 
 from django.conf import settings
 
+from chatballs.identity.instance_settings import public_base_url
 from chatballs.conversations import transports
 from chatballs.identity.models import OrganizationMembership
 from chatballs.notifications.models import (
@@ -55,7 +56,7 @@ def _message_text(notification: Notification) -> str:
     lines = [f"{mark} {notification.title}"]
     if notification.body:
         lines.append(notification.body)
-    base_url = getattr(settings, "INTERNAL_UI_BASE_URL", "") or ""
+    base_url = public_base_url()
     if base_url:
         lines.append(base_url)
     return "\n".join(lines)

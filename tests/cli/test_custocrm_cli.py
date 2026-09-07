@@ -31,7 +31,11 @@ def _rewrite_checksums(env):
         digest = hashlib.sha256(path.read_bytes()).hexdigest()
         relative = path.relative_to(env.release).as_posix()
         lines.append(f"{digest}  ./{relative}\n")
-    (env.release / "checksums.txt").write_text("".join(lines), encoding="utf-8")
+    # newline="" обязателен: на Windows write_text заменил бы перевод строки
+    # на CRLF, и sha256sum получил бы имена файлов с лишним символом на конце.
+    (env.release / "checksums.txt").write_text(
+        "".join(lines), encoding="utf-8", newline=""
+    )
 
 
 def _log_lines(env):

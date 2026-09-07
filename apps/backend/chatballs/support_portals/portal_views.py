@@ -8,11 +8,11 @@ from chatballs.api.permissions import HasCapability
 from chatballs.identity.audit import record_audit_event
 from chatballs.integrations.models import IntegrationProvider, IntegrationStatus
 from chatballs.support_portals.api import validation_response
-from chatballs.support_portals.models import SupportPortal
 from chatballs.support_portals.domain_services import (
     set_custom_domain,
     verify_custom_domain,
 )
+from chatballs.support_portals.models import SupportPortal
 from chatballs.support_portals.portal_services import (
     PortalInput,
     create_portal,
@@ -20,12 +20,16 @@ from chatballs.support_portals.portal_services import (
     set_portal_status,
     update_portal,
 )
-from chatballs.support_portals.selectors import portal_for_context, portals_for_context
+from chatballs.support_portals.selectors import (
+    portal_content_counts,
+    portal_for_context,
+    portals_for_context,
+)
+from chatballs.support_portals.serializers import portal_payload
 from chatballs.support_portals.themes import (
     DEFAULT_PORTAL_THEME,
     PortalThemeScheme,
 )
-from chatballs.support_portals.serializers import portal_payload
 from chatballs.webchat.models import (
     WebChatWidget,
     WebChatWidgetMode,
@@ -112,11 +116,22 @@ def _input(request: Request, current: SupportPortal | None = None) -> PortalInpu
 class PortalListView(PortalBaseView):
     def get(self, request: Request) -> Response:
         portals = list(portals_for_context(request.tenant_context))
+        counts = portal_content_counts(request.tenant_context)
         # Тарифные лимиты порталов удалены (ADR-HUB-0042 §2): создание доступно всегда.
         active_count = sum(item.status != "ARCHIVED" for item in portals)
         return Response(
             {
-                "items": [portal_payload(item) for item in portals],
+                "items": [
+                    portal_payload(
+                        item,
+                        counts={
+                            "categories": 0,
+                            "articles": 0,
+                            **counts.get(item.id, {}),
+                        },
+                    )
+                    for item in portals
+                ],
                 "creation": {
                     "available": True,
                     "canCreate": True,
@@ -153,7 +168,8 @@ class PortalDetailView(PortalBaseView):
         portal = self.portal(request, portal_id)
         if portal is None:
             return Response({"detail": "Портал не найден"}, status=404)
-        return Response({"portal": portal_payload(portal)})
+        counts = portal_content_counts(request.tenant_context).get(portal.id, {})
+        return Response({"portal": portal_payload(portal, counts=counts)})
 
     def patch(self, request: Request, portal_id: int) -> Response:
         portal = self.portal(request, portal_id)

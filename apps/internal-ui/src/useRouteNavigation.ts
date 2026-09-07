@@ -2,6 +2,10 @@ import { useCallback, useState } from "react";
 
 import { pathFromRoute, type RouteState } from "./router";
 import { settingsSectionKey } from "./features/settings/sections";
+import {
+  DEFAULT_PORTAL_SETTINGS_SECTION,
+  portalSettingsSectionKey,
+} from "./features/support-portals/sections";
 import type { RouteKey } from "./types";
 
 export function useRouteNavigation(
@@ -17,6 +21,7 @@ export function useRouteNavigation(
   const [selectedClientId, setSelectedClientId] = useState(initialRoute.clientId);
   const [selectedChannelId, setSelectedChannelId] = useState(initialRoute.channelId);
   const [selectedSupportPortalId, setSelectedSupportPortalId] = useState(initialRoute.supportPortalId);
+  const [selectedPortalSection, setSelectedPortalSection] = useState(initialRoute.portalSettingsSection);
   const [selectedSettingsSection, setSelectedSettingsSection] = useState(initialRoute.settingsSection);
 
   const applyRouteState = useCallback((next: RouteState) => {
@@ -29,6 +34,7 @@ export function useRouteNavigation(
     setSelectedClientId(next.clientId);
     setSelectedChannelId(next.channelId);
     setSelectedSupportPortalId(next.supportPortalId);
+    setSelectedPortalSection(next.portalSettingsSection);
     setSelectedSettingsSection(next.settingsSection);
   }, []);
 
@@ -49,7 +55,13 @@ export function useRouteNavigation(
       knowledgeId: nextRoute === "aiKnowledgeDetail" && typeof entityId === "number" ? entityId : null,
       clientId: nextRoute === "salesClientDetail" && typeof entityId === "number" ? entityId : null,
       channelId: null,
-      supportPortalId: nextRoute === "supportPortalDetail" && typeof entityId === "number" ? entityId : null,
+      supportPortalId: nextRoute === "supportPortalDetail" && typeof entityId === "number"
+        ? entityId
+        // У настроек портала entityId — «id/раздел»: id портала и ключ раздела.
+        : nextRoute === "supportPortalSettings" ? Number(String(entityId).split("/")[0]) || null : null,
+      portalSettingsSection: nextRoute === "supportPortalSettings"
+        ? portalSettingsSectionKey(String(entityId).split("/")[1] ?? "") ?? DEFAULT_PORTAL_SETTINGS_SECTION
+        : null,
       settingsSection: nextRoute === "settings" ? settingsSectionKey(String(entityId)) : null,
     };
     applyRouteState(nextState);
@@ -77,6 +89,7 @@ export function useRouteNavigation(
     selectedClientId,
     selectedChannelId,
     selectedSupportPortalId,
+    selectedPortalSection,
     selectedSettingsSection,
     applyRouteState,
     navigate,

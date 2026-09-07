@@ -1,19 +1,32 @@
 from django.core.exceptions import ValidationError
+from django.core.files.base import ContentFile
+from django.core.files.uploadedfile import UploadedFile
 from django.db import transaction
 from django.db.models import Max
 from django.utils import timezone
 from django.utils.text import slugify
 
 from chatballs.ai.indexing import reindex_portal_article
+from chatballs.support_portals.content_markdown import normalize_file_links
 from chatballs.support_portals.models import (
     PortalArticle,
     PortalArticleFeedback,
+    PortalArticleFile,
     PortalArticleRevision,
     PortalCategory,
     SupportPortal,
 )
 from chatballs.support_portals.statuses import ArticleStatus, PortalStatus
 from chatballs.tenancy.context import TenantContext
+from chatballs.tenancy.storage import adjust_storage_usage
+from chatballs.tenancy.storage_quota import (
+    finalize_storage,
+    release_storage,
+    reserve_storage,
+)
+
+# Лимит на файл статьи — как у вложений знаний и подпись в drop-зоне редактора.
+MAX_ARTICLE_FILE_BYTES = 25 * 1024 * 1024
 
 
 def create_category(
@@ -97,7 +110,7 @@ def create_article(
 
 
 def add_revision(
-    *, context: TenantContext, article: PortalArticle, data: dict
+    *, context: TenantContext, article: PortalArticle, data: dict, author=None
 ) -> PortalArticleRevision:
     ensure_portal_editable(article.portal)
     if article.status == ArticleStatus.ARCHIVED:
@@ -109,7 +122,8 @@ def add_revision(
         revision=last + 1,
         title=str(data.get("title", "")).strip(),
         summary=str(data.get("summary", "")).strip(),
-        content=str(data.get("content", "")),
+        content=normalize_file_links(str(data.get("content", ""))),
+        created_by=author,
     )
     revision.full_clean()
     revision.save()
@@ -186,3 +200,62 @@ def ensure_portal_editable(portal: SupportPortal) -> None:
         raise ValidationError(
             {"portal": "Восстановите портал, чтобы изменить его содержимое"}
         )
+
+
+def add_article_file(
+    *,
+    context: TenantContext,
+    article: PortalArticle,
+    upload: UploadedFile,
+    author=None,
+) -> PortalArticleFile:
+    """Загрузка файла статьи: одноимённый файл заменяется, квота учитывается."""
+
+    ensure_portal_editable(article.portal)
+    if article.status == ArticleStatus.ARCHIVED:
+        raise ValidationError({"article": "Архивную статью нельзя изменять"})
+    original_name = (upload.name or "").strip()
+    if not original_name:
+        raise ValidationError({"file": "Имя файла обязательно"})
+    if upload.size and upload.size > MAX_ARTICLE_FILE_BYTES:
+        raise ValidationError({"file": "Файл больше 25 МБ"})
+    existing = article.files.filter(original_name=original_name).first()
+    existing_size = existing.size if existing is not None else 0
+    data = upload.read()
+    reservation_key = f"portal-article-file:{article.id}:{original_name}"
+    reserve_storage(
+        context=context, expected_bytes=len(data), idempotency_key=reservation_key
+    )
+    try:
+        if existing is not None:
+            existing.file.delete(save=False)
+            existing.delete()
+            if existing_size:
+                adjust_storage_usage(context=context, delta_bytes=-existing_size)
+        article_file = PortalArticleFile(
+            organization=context.organization,
+            article=article,
+            original_name=original_name,
+            content_type=upload.content_type or "",
+            size=len(data),
+            uploaded_by=author,
+        )
+        article_file.file.save(original_name, ContentFile(data), save=True)
+    except Exception:
+        release_storage(context=context, idempotency_key=reservation_key)
+        raise
+    finalize_storage(
+        context=context, idempotency_key=reservation_key, actual_bytes=len(data)
+    )
+    return article_file
+
+
+def delete_article_file(
+    *, context: TenantContext, article_file: PortalArticleFile
+) -> None:
+    ensure_portal_editable(article_file.article.portal)
+    released_bytes = article_file.size
+    article_file.file.delete(save=False)
+    article_file.delete()
+    if released_bytes:
+        adjust_storage_usage(context=context, delta_bytes=-released_bytes)

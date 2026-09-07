@@ -15,7 +15,8 @@ export type PortalThemeManifest = {
   // Схемы, которые тема реально поддерживает. Первая — основная: на неё
   // деградирует портал, если сохранённая схема темой не поддержана.
   schemes: PortalThemeScheme[];
-  // Три цвета для превью в настройках портала: подложка, текст, акцент.
-  preview: { bg: string; ink: string; accent: string };
+  // Превью в настройках портала (кадр PT6): подложка, текст, акцент и
+  // скругление плиток — тем же радиусом, каким тема скругляет карточки.
+  preview: { bg: string; ink: string; accent: string; radius?: string };
   author?: string;
 };

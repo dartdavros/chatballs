@@ -2,6 +2,7 @@ from django.conf import settings
 
 from chatballs.calls.models import CallSession
 from chatballs.calls.turn import turn_credentials
+from chatballs.identity.instance_settings import turn_config
 
 
 def _iso(value):
@@ -68,11 +69,12 @@ def ice_servers_payload() -> list[dict]:
     servers: list[dict] = []
     if settings.CHATBALLS_CALL_STUN_URLS:
         servers.append({"urls": list(settings.CHATBALLS_CALL_STUN_URLS)})
-    if settings.CHATBALLS_CALL_TURN_URLS and settings.CHATBALLS_CALL_TURN_SECRET:
-        username, credential = turn_credentials()
+    turn_urls, ttl = turn_config()
+    if turn_urls and settings.CHATBALLS_CALL_TURN_SECRET:
+        username, credential = turn_credentials(ttl_seconds=ttl)
         servers.append(
             {
-                "urls": list(settings.CHATBALLS_CALL_TURN_URLS),
+                "urls": turn_urls,
                 "username": username,
                 "credential": credential,
             }

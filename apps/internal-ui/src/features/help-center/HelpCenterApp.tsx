@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
+import { Loader } from "@chatballs/ui";
+
 import { fetchHelpManifest } from "./api";
 import { HelpArticle } from "./HelpArticle";
 import { HelpHome } from "./HelpHome";
@@ -51,7 +53,7 @@ export function HelpCenterApp() {
     );
   }
   if (!manifest || !themeReady) {
-    return <main className="help-boot-loading"><i /><i /><i /></main>;
+    return <main className="help-boot-loading"><Loader size={44} /></main>;
   }
   return route.articleSlug
     ? <HelpArticle manifest={manifest} articleSlug={route.articleSlug} />

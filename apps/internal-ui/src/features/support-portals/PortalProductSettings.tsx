@@ -67,10 +67,7 @@ export function PortalProductSettings({
   }
 
   return (
-    <section className="portal-section">
-      <div className="portal-section-heading">
-        <div><h2>Продукты и поддержка</h2><p>Выберите продукты и виджеты, через которые клиенты смогут обратиться в поддержку.</p></div>
-      </div>
+    <div className="portal-settings-card">
       <div className="portal-product-list">
         {products.map((product) => {
           const enabled = product.id in selected;
@@ -106,8 +103,12 @@ export function PortalProductSettings({
           );
         })}
       </div>
-      {canManage && <Button variant="secondary" disabled={busy} onClick={() => void save()}>Сохранить продукты</Button>}
-      {feedback && <div className="portal-save-feedback">{feedback}</div>}
-    </section>
+      {canManage && (
+        <div className="portal-settings-actions">
+          <Button variant="primary" disabled={busy} onClick={() => void save()}>Сохранить продукты</Button>
+          {feedback && <span className="portal-settings-note">{feedback}</span>}
+        </div>
+      )}
+    </div>
   );
 }

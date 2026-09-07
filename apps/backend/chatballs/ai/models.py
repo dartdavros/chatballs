@@ -97,11 +97,12 @@ class KnowledgeAttachment(TenantRelationModel):
     def public_url(self) -> str:
         # Абсолютная ссылка скачивания: уходит клиентам в мессенджеры, поэтому
         # строится от публичного адреса Hub, а не от request.
-        from django.conf import settings
         from django.urls import reverse
 
+        from chatballs.identity.instance_settings import public_base_url
+
         path = reverse("ai-attachment-download", kwargs={"public_id": self.public_id})
-        return settings.CHATBALLS_PUBLIC_BASE_URL.rstrip("/") + path
+        return public_base_url() + path
 
 
 class KnowledgeFragment(TenantRelationModel):

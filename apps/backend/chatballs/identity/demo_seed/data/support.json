@@ -86,7 +86,8 @@
         "status": "PUBLISHED",
         "helpfulVotes": 14,
         "unhelpfulVotes": 1,
-        "publishedDaysAgo": 27
+        "publishedDaysAgo": 27,
+        "files": ["katalog-tkanej-2026.pdf"]
       },
       {
         "slug": "sroki-dostavki",

@@ -146,7 +146,9 @@ export type FilterOption = { value: string; label: string; dot?: string };
 /** Фильтр-селект списка — один на всё приложение: кнопка с текущим значением и
  *  шевроном, меню — общий `app-dropdown`. `multiple` включает галочки и счётчик
  *  выбранных (кадры K1 «Контакты», E1 «Сотрудники»). */
-export function FilterDropdown({ className = "", icon, label, options, selected, multiple = false, open, onOpenChange, onSelect }: {
+export function FilterDropdown({ caption, className = "", icon, label, options, selected, multiple = false, open, onOpenChange, onSelect }: {
+  /** Приглушённая подпись перед значением: «Статус: Все» (кадры PT1/PT3). */
+  caption?: string;
   className?: string;
   icon?: IconName;
   label: string;
@@ -182,6 +184,7 @@ export function FilterDropdown({ className = "", icon, label, options, selected,
     <Dropdown menu={{ items }} open={open} onOpenChange={onOpenChange} trigger={["click"]} overlayClassName="app-dropdown is-wide">
       <button className={`ui-filter-button ${active ? "is-active" : ""} ${className}`.trim()} type="button">
         {icon && <Icon name={icon} size={14} strokeWidth={2} />}
+        {caption && <i className="ui-filter-caption">{caption}</i>}
         {label}
         {multiple && selected.length > 0 && <span>{selected.length}</span>}
         <Icon name="chevron" size={13} strokeWidth={2.2} />

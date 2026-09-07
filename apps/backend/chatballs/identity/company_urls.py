@@ -1,6 +1,11 @@
 from django.urls import path
 
-from chatballs.identity import administration_views, demo_views, group_views
+from chatballs.identity import (
+    administration_views,
+    demo_views,
+    group_views,
+    instance_views,
+)
 from chatballs.integrations import feature_views
 from chatballs.tenancy import storage_views
 
@@ -11,6 +16,16 @@ urlpatterns = [
         "administration/",
         administration_views.OrganizationSettingsView.as_view(),
         name="organization-settings",
+    ),
+    path(
+        "administration/instance/",
+        instance_views.InstanceAddressView.as_view(),
+        name="instance-address",
+    ),
+    path(
+        "administration/instance/email-check/",
+        instance_views.InstanceEmailCheckView.as_view(),
+        name="instance-email-check",
     ),
     path(
         "administration/logo/",

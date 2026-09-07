@@ -1,12 +1,24 @@
 #!/bin/sh
 set -eu
 
+# Пароли ролей приходят файлами из тома секретов (их генерирует первый старт
+# стека), либо переменными — для установок, которые ведут конфигурацию сами.
+read_secret() {
+  var="$1"; file_var="${1}_FILE"
+  eval "value=\${$var:-}"
+  if [ -n "$value" ]; then printf %s "$value"; return 0; fi
+  eval "file=\${$file_var:-}"
+  if [ -n "$file" ] && [ -s "$file" ]; then cat "$file"; return 0; fi
+  echo "$var or $file_var is required" >&2
+  exit 1
+}
+
 : "${POSTGRES_APP_USER:?POSTGRES_APP_USER is required}"
-: "${POSTGRES_APP_PASSWORD:?POSTGRES_APP_PASSWORD is required}"
 : "${POSTGRES_PLATFORM_USER:?POSTGRES_PLATFORM_USER is required}"
-: "${POSTGRES_PLATFORM_PASSWORD:?POSTGRES_PLATFORM_PASSWORD is required}"
 : "${POSTGRES_MIGRATION_USER:?POSTGRES_MIGRATION_USER is required}"
-: "${POSTGRES_MIGRATION_PASSWORD:?POSTGRES_MIGRATION_PASSWORD is required}"
+POSTGRES_APP_PASSWORD="$(read_secret POSTGRES_APP_PASSWORD)"
+POSTGRES_PLATFORM_PASSWORD="$(read_secret POSTGRES_PLATFORM_PASSWORD)"
+POSTGRES_MIGRATION_PASSWORD="$(read_secret POSTGRES_MIGRATION_PASSWORD)"
 
 psql --set=ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" \
   --set=app_user="$POSTGRES_APP_USER" \
