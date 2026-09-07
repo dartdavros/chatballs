@@ -37,7 +37,6 @@
 }
 
 .portal-editor-back:hover { background: var(--n-9); }
-.portal-editor-back svg { transform: rotate(90deg); }
 
 .portal-editor-crumb {
   color: var(--n-4);

@@ -81,7 +81,7 @@ export function SettingsPage({ user, onUserUpdated, reload, groups = [], section
             {counts[item.key] !== undefined && counts[item.key]! > 0 && <small>{counts[item.key]}</small>}
             {item.key === "integrations" && connectionsFailed && item.key !== active && <i className="settings-subnav-warn" title="Есть ошибка" />}
             {/* Кадр M: на узком экране у пункта — шеврон перехода. */}
-            <span className="settings-subnav-chevron"><Icon name="chevron" size={16} strokeWidth={2} /></span>
+            <span className="settings-subnav-chevron"><Icon name="chevronRight" size={16} strokeWidth={2} /></span>
           </button>
         ))}
         {links}
@@ -104,7 +104,7 @@ export function SettingsPage({ user, onUserUpdated, reload, groups = [], section
             <header className="settings-head">
               {mobile && (
                 <button className="settings-head-back" type="button" aria-label="К списку разделов" onClick={() => openSection(null)}>
-                  <Icon name="chevron" size={18} />
+                  <Icon name="chevronLeft" size={18} />
                 </button>
               )}
               <div>

@@ -27,7 +27,7 @@ export function KnowledgeTableFooter({
           type="button"
           onClick={() => onPageChange(page - 1)}
         >
-          <Icon name="chevron" size={14} strokeWidth={2} />
+          <Icon name="chevronLeft" size={14} strokeWidth={2} />
         </button>
         {pages.map((item) => (item === page
           ? <b key={item}>{item}</b>
@@ -39,7 +39,7 @@ export function KnowledgeTableFooter({
           type="button"
           onClick={() => onPageChange(page + 1)}
         >
-          <Icon name="chevron" size={14} strokeWidth={2} />
+          <Icon name="chevronRight" size={14} strokeWidth={2} />
         </button>
       </span>
     </div>

@@ -46,7 +46,7 @@ export function ProfilePage({ user, onUserUpdated, reload, onLogout, onBack }: {
     return (
       <div className="profile-page is-mobile">
         <div className="profile-mobile-bar">
-          <button type="button" aria-label="Назад" onClick={() => (section ? setSection(null) : onBack())}><Icon name="chevron" size={20} strokeWidth={2} /></button>
+          <button type="button" aria-label="Назад" onClick={() => (section ? setSection(null) : onBack())}><Icon name="chevronLeft" size={20} strokeWidth={2} /></button>
           <h2>{section ? MOBILE_TITLE[section] : "Профиль"}</h2>
           {!section && <button className="profile-mobile-logout" type="button" onClick={onLogout}>Выйти</button>}
         </div>
@@ -93,7 +93,7 @@ function MobileLink({ label, value = "", tone = "", onOpen }: { label: string; v
     <button type="button" onClick={onOpen}>
       <span>{label}</span>
       {value && <small className={tone}>{value}</small>}
-      <Icon name="chevron" size={16} strokeWidth={2} />
+      <Icon name="chevronRight" size={16} strokeWidth={2} />
     </button>
   );
 }

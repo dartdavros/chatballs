@@ -304,7 +304,7 @@ export function PortalArticleEditor({
     <div className="portal-editor">
       <div className="portal-editor-head">
         <button className="portal-editor-back" type="button" onClick={onClose}>
-          <Icon name="chevron" size={16} strokeWidth={2} />Материалы
+          <Icon name="chevronLeft" size={16} strokeWidth={2} />Материалы
         </button>
         <span className="portal-editor-crumb">{category?.name ?? ""}</span>
         <span className="portal-editor-gap" />

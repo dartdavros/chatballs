@@ -557,8 +557,6 @@
 }
 
 .knowledge-page-step { width: 28px; padding: 0; }
-.knowledge-page-step:first-child svg { transform: rotate(90deg); }
-.knowledge-page-step:last-child svg { transform: rotate(-90deg); }
 
 .knowledge-page-number:hover,
 .knowledge-page-step:not(:disabled):hover { border-color: var(--n-6); color: var(--n-2); }

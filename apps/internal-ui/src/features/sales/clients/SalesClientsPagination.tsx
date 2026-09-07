@@ -6,7 +6,7 @@ export function SalesClientsPagination({ page, pageCount, setPage }: { page: num
   return (
     <div className="sales-clients-pager">
       <button type="button" aria-label="Предыдущая страница" disabled={page === 1} onClick={() => setPage(page - 1)}>
-        <Icon name="chevron" size={13} strokeWidth={2.2} />
+        <Icon name="chevronLeft" size={13} strokeWidth={2.2} />
       </button>
       {paginationItems(page, pageCount).map((item, index) => (
         item === "ellipsis"
@@ -14,7 +14,7 @@ export function SalesClientsPagination({ page, pageCount, setPage }: { page: num
           : <button className={item === page ? "is-active" : ""} type="button" key={item} onClick={() => setPage(item)}>{item}</button>
       ))}
       <button className="is-next" type="button" aria-label="Следующая страница" disabled={page === pageCount} onClick={() => setPage(page + 1)}>
-        <Icon name="chevron" size={13} strokeWidth={2.2} />
+        <Icon name="chevronRight" size={13} strokeWidth={2.2} />
       </button>
     </div>
   );

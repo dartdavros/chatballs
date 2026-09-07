@@ -282,7 +282,7 @@ export function KnowledgeEditorPage({
     <div className="knowledge-editor">
       <div className="knowledge-editor-head">
         <button className="knowledge-editor-back" type="button" onClick={() => (loaded ? openKnowledge(loaded.id) : setRoute("knowledge"))}>
-          <Icon name="chevron" size={16} strokeWidth={2} />База знаний
+          <Icon name="chevronLeft" size={16} strokeWidth={2} />База знаний
         </button>
         <span className="knowledge-editor-crumb">{categoryPath}</span>
         <span className="knowledge-editor-gap" />

@@ -726,9 +726,6 @@
   cursor: pointer;
 }
 
-.profile-mobile-bar > button:first-child svg {
-  transform: rotate(90deg);
-}
 
 .profile-mobile-bar > button:first-child:disabled {
   opacity: 0.35;
@@ -815,7 +812,6 @@
 .profile-mobile-list svg {
   flex: none;
   color: var(--n-5);
-  transform: rotate(-90deg);
 }
 
 @media (max-width: 900px) {

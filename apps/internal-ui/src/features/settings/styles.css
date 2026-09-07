@@ -121,7 +121,6 @@
   display: none;
   flex: none;
   color: var(--n-5);
-  transform: rotate(-90deg);
 }
 
 .settings-subnav-divider {
@@ -211,9 +210,6 @@
   cursor: pointer;
 }
 
-.settings-head-back svg {
-  transform: rotate(90deg);
-}
 
 .settings-section-note {
   margin: 12px 4px 0;

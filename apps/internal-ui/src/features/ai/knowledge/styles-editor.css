@@ -38,7 +38,6 @@
 }
 
 .knowledge-editor-back:hover { background: var(--n-9); }
-.knowledge-editor-back svg { transform: rotate(0deg); }
 
 .knowledge-editor-crumb {
   color: var(--n-4);

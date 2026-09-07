@@ -404,13 +404,6 @@
   color: var(--primary-text);
 }
 
-.sales-clients-pager button:first-child svg {
-  transform: rotate(90deg);
-}
-
-.sales-clients-pager button.is-next svg {
-  transform: rotate(-90deg);
-}
 
 .sales-clients-pager > span {
   color: var(--n-5);

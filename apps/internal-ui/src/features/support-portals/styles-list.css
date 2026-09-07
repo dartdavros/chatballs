@@ -357,8 +357,6 @@
 }
 
 .portal-page-step { width: 28px; padding: 0; }
-.portal-page-step:first-child svg { transform: rotate(90deg); }
-.portal-page-step:last-child svg { transform: rotate(-90deg); }
 
 .portal-page-step:disabled {
   color: var(--n-6);
