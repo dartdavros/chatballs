@@ -280,10 +280,19 @@
 .ui-underline-tabs button {
   position: relative;
   display: inline-flex;
+  gap: 6px;
   align-items: center;
   background: transparent;
   border: 0;
   white-space: nowrap;
+}
+
+/* Счётчик у подписи вкладки — отдельным весом и цветом, а не продолжением
+   подписи (дизайн-базлайн v2, кадр K3). */
+.ui-underline-tabs button > span {
+  color: var(--n-4);
+  font-size: 11.5px;
+  font-weight: 600;
 }
 
 .ui-underline-tabs button.active::after {
@@ -393,6 +402,3 @@
   color: var(--n-2);
 }
 
-.ui-back-link svg {
-  transform: rotate(90deg);
-}

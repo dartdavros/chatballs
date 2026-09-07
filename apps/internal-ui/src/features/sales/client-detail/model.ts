@@ -108,8 +108,6 @@ export type ClientDetailVm = {
   activity: Array<{ title: string; time: string; color: string }>;
   audit: Array<{ time: string; action: string; object: string; actor: string; result: string }>;
   duplicate: ApiClientDetail["duplicate"] & { initials: string; sourceLabel: string } | null;
-  // Действующие объединения — их можно разъединить (ADR-HUB-0006).
-  merges: Array<ApiClientDetail["merges"][number] & { atLabel: string }>;
 };
 
 export const clientDetailTabsOf = (client: ClientDetailVm): Array<{ key: ClientDetailTab; label: string; count?: number }> => [
@@ -206,7 +204,6 @@ export function toClientDetailVm(api: ApiClientDetail): ClientDetailVm {
         ].filter(Boolean).join(" · "),
       }
       : null,
-    merges: (api.merges ?? []).map((merge) => ({ ...merge, atLabel: shortDateTime(merge.at) })),
   };
 }
 

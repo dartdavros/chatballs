@@ -16,6 +16,11 @@ from chatballs.conversations.models import (
     ControlMode,
     LifecycleState,
 )
+from chatballs.identity.audit_catalog import (
+    AUDIT_RESULT_LABELS,
+    audit_action_label,
+    audit_object_label,
+)
 from chatballs.identity.avatars import user_avatar_url_in
 from chatballs.identity.models import AuditEvent
 
@@ -25,15 +30,6 @@ PROVIDER_CODE = {
     "TELEGRAM": "TG",
     "WEB": "WEB",
     "EMAIL": "EMAIL",
-}
-
-# Понятные подписи для аудита диалогов.
-AUDIT_LABELS = {
-    "conversations.claimed": "Перехват оператором",
-    "conversations.released_to_ai": "Возврат к AI",
-    "conversations.returned_to_queue": "Возврат в очередь",
-    "conversations.closed": "Диалог закрыт",
-    "conversations.marked_spam": "Диалог помечен как спам",
 }
 
 
@@ -207,10 +203,14 @@ def client_detail(organization_id: int, contact_id: int) -> dict:
         audit.append(
             {
                 "time": event.created_at.isoformat(),
-                "action": AUDIT_LABELS.get(event.action, event.action),
-                "object": f"{event.object_type} {event.object_id}".strip(),
-                "actor": (event.actor.full_name or event.actor.email) if event.actor_id else "система",
-                "result": event.result,
+                # Подписи, типы объектов и результаты — из общего каталога
+                # журнала действий: коды действий и enum-значения на экран
+                # карточки не попадают. Пустая подпись означает «её ещё нет»,
+                # тогда показываем код — как в журнале.
+                "action": audit_action_label(event.action) or event.action,
+                "object": audit_object_label(event.object_type, event.object_id),
+                "actor": (event.actor.full_name or event.actor.email) if event.actor_id else "Система",
+                "result": AUDIT_RESULT_LABELS.get(event.result, "Неизвестно"),
             }
         )
 

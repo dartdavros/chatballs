@@ -57,7 +57,7 @@ export function MaxLogo({ size = 24 }: { size?: number }) {
   );
 }
 
-export function Icon({ name, size = 17, strokeWidth = 1.8 }: { name: "grid" | "building" | "team" | "box" | "robot" | "plug" | "settings" | "bell" | "chevron" | "plus" | "arrow" | "paperclip" | "send" | "phone" | "video" | "lock" | "mail" | "eye" | "eyeOff" | "logout" | "user" | "refresh" | "transfer" | "warning" | "alert" | "bolt" | "shop" | "search" | "more" | "external" | "key" | "pause" | "play" | "percent" | "save" | "check" | "copy" | "clock" | "message" | "inbox" | "cart" | "columns" | "download" | "list" | "split" | "gitBranch" | "route" | "expand" | "edit" | "trash" | "wrench" | "xCircle" | "close" | "folder" | "grip" | "reply" | "sort" | "collapseLeft" | "mic" | "text" | "pin" | "smile" | "globe" | "doc" | "sparkles" | "database" | "sun" | "sunny" | "moon" | "monitor" | "laptop" | "smartphone" | "arrowDown" | "link" | "paint" | "widget" | "danger" | "image" | "file" | "bold" | "italic" | "code" | "numlist" | "quote" | "table" | "attach" | "undo" | "upload" | "import" | "thumbUp" | "thumbDown" | "book" | "move"; size?: number; strokeWidth?: number }) {
+export function Icon({ name, size = 17, strokeWidth = 1.8 }: { name: "grid" | "building" | "team" | "box" | "robot" | "plug" | "settings" | "bell" | "chevron" | "chevronLeft" | "plus" | "arrow" | "paperclip" | "send" | "phone" | "video" | "lock" | "mail" | "eye" | "eyeOff" | "logout" | "user" | "refresh" | "transfer" | "warning" | "alert" | "bolt" | "shop" | "search" | "more" | "external" | "key" | "pause" | "play" | "percent" | "save" | "check" | "copy" | "clock" | "message" | "inbox" | "cart" | "columns" | "download" | "list" | "split" | "gitBranch" | "route" | "expand" | "edit" | "trash" | "wrench" | "xCircle" | "close" | "folder" | "grip" | "reply" | "sort" | "collapseLeft" | "mic" | "text" | "pin" | "smile" | "globe" | "doc" | "sparkles" | "database" | "sun" | "sunny" | "moon" | "monitor" | "laptop" | "smartphone" | "arrowDown" | "link" | "paint" | "widget" | "danger" | "image" | "file" | "bold" | "italic" | "code" | "numlist" | "quote" | "table" | "attach" | "undo" | "upload" | "import" | "thumbUp" | "thumbDown" | "book" | "move"; size?: number; strokeWidth?: number }) {
   const common = { width: size, height: size, fill: "none", stroke: "currentColor", strokeWidth, strokeLinecap: "round", strokeLinejoin: "round" } as const;
   const paths: Record<typeof name, ReactNode> = {
     thumbUp: <><path d="M7 10v11H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3z" /><path d="M7 10 11 3a2.2 2.2 0 0 1 4 1.8L14.5 8H20a2 2 0 0 1 2 2.4l-1.4 7A4 4 0 0 1 16.7 21H7" /></>,
@@ -101,6 +101,7 @@ export function Icon({ name, size = 17, strokeWidth = 1.8 }: { name: "grid" | "b
     close: <path d="M18 6 6 18M6 6l12 12" />,
     xCircle: <><circle cx="12" cy="12" r="9" /><line x1="9" y1="9" x2="15" y2="15" /><line x1="15" y1="9" x2="9" y2="15" /></>,
     chevron: <polyline points="6 9 12 15 18 9" />,
+    chevronLeft: <polyline points="15 6 9 12 15 18" />,
     plus: <><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></>,
     arrow: <><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></>,
     paperclip: <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48" />,

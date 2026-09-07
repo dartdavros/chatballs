@@ -93,7 +93,7 @@ export function CopyButton({ value, className = "", label }: { value: string; cl
 export function BackLink({ label, onClick }: { label: string; onClick: () => void }) {
   return (
     <button className="ui-back-link" type="button" onClick={onClick}>
-      <Icon name="chevron" size={14} strokeWidth={2.2} />{label}
+      <Icon name="chevronLeft" size={14} strokeWidth={2.2} />{label}
     </button>
   );
 }

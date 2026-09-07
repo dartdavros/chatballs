@@ -4,22 +4,20 @@ import { ChannelGlyph } from "../../../shared/badges";
 import { ContactAvatar } from "../../conversations/ContactAvatar";
 import { Button } from "../../../shared/ui-controls";
 import { EmptyState } from "../../../shared/ui";
-import { SalesClientMergeDialog, SalesClientUnmergeDialog } from "./SalesClientMergeDialog";
+import { SalesClientMergeDialog } from "./SalesClientMergeDialog";
 import type { ClientDetailVm } from "./model";
 
 // Вкладка «Идентификаторы» (кадр K5): идентичности по подключениям и, справа,
-// предложение объединения. Объединять и разъединять может только владелец
-// (ADR-HUB-0006) — оператор и админ видят предложение и открывают сравнение.
+// предложение объединения. Объединять может только владелец (ADR-HUB-0006) —
+// оператор и админ видят предложение и открывают сравнение.
 
-export function SalesClientIdentitiesTab({ client, canMerge, openClient, onMerge, onUnmerge }: {
+export function SalesClientIdentitiesTab({ client, canMerge, openClient, onMerge }: {
   client: ClientDetailVm;
   canMerge: boolean;
   openClient: (id: number) => void;
   onMerge: (sourceId: number, reason: string) => Promise<void>;
-  onUnmerge: (mergeId: number, reason: string) => Promise<void>;
 }) {
   const [merging, setMerging] = useState(false);
-  const [reverting, setReverting] = useState<ClientDetailVm["merges"][number] | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -36,11 +34,11 @@ export function SalesClientIdentitiesTab({ client, canMerge, openClient, onMerge
     }
   }
 
-  if (client.identities.length === 0 && client.merges.length === 0) {
+  if (client.identities.length === 0) {
     return <EmptyState title="Нет идентификаторов подключений" />;
   }
 
-  const rail = client.duplicate || client.merges.length > 0;
+  const rail = Boolean(client.duplicate);
   return (
     <div className={`sales-client-ids ${rail ? "" : "is-single"}`}>
       <div className="sales-client-ids-card">
@@ -57,7 +55,7 @@ export function SalesClientIdentitiesTab({ client, canMerge, openClient, onMerge
             <b className={identity.confirmed ? "is-ok" : ""}>{identity.status}</b>
           </div>
         ))}
-        <p>Идентичности разных подключений не объединяются автоматически (ADR-0006). Подтверждённой считается только та, что подключение отдало с проверенным телефоном.</p>
+        <p>Идентичности разных подключений не объединяются автоматически. Подтверждённой считается только та, что подключение отдало с проверенным телефоном.</p>
       </div>
       {rail && (
         <div className="sales-client-ids-rail">
@@ -81,24 +79,7 @@ export function SalesClientIdentitiesTab({ client, canMerge, openClient, onMerge
                   : <Button variant="primary" onClick={() => openClient(client.duplicate!.id)}>Открыть и сравнить</Button>}
                 <Button variant="secondary" onClick={() => openClient(client.duplicate!.id)}>Не то</Button>
               </div>
-              {!canMerge && <small className="sales-client-duplicate-note">Объединять контакты может только владелец (ADR-0006).</small>}
-            </section>
-          )}
-          {client.merges.length > 0 && (
-            <section className="sales-client-section-card">
-              <h3>Объединённые контакты</h3>
-              {client.merges.map((merge) => (
-                <div className="sales-client-merge-row" key={merge.id}>
-                  <div>
-                    <strong>{merge.sourceName} · {merge.sourceCid}</strong>
-                    <small>{merge.identities} идентичн. · {merge.conversations} диал. · {merge.actor || "система"} · {merge.atLabel}</small>
-                    <em>{merge.reason}</em>
-                  </div>
-                  {canMerge && (
-                    <button type="button" onClick={() => { setError(""); setReverting(merge); }}>Разъединить</button>
-                  )}
-                </div>
-              ))}
+              {!canMerge && <small className="sales-client-duplicate-note">Объединять контакты может только владелец.</small>}
             </section>
           )}
         </div>
@@ -113,14 +94,6 @@ export function SalesClientIdentitiesTab({ client, canMerge, openClient, onMerge
           onMerge={(reason) => void run(() => onMerge(client.duplicate!.id, reason), () => setMerging(false))}
         />
       )}
-      <SalesClientUnmergeDialog
-        merge={reverting}
-        open={Boolean(reverting)}
-        saving={saving}
-        error={error}
-        onClose={() => setReverting(null)}
-        onRevert={(reason) => void run(() => onUnmerge(reverting!.id, reason), () => setReverting(null))}
-      />
     </div>
   );
 }

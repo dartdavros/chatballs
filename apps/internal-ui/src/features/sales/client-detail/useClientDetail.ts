@@ -39,8 +39,8 @@ export function useClientDetail(contactId: number | null) {
     setClient(toClientDetailVm(data.client));
   }
 
-  // Объединение и разъединение контактов (ADR-HUB-0006): только владелец,
-  // с причиной; ответ содержит уже пересобранную карточку.
+  // Объединение контактов (ADR-HUB-0006): только владелец, с причиной;
+  // ответ содержит уже пересобранную карточку.
   async function merge(sourceId: number, reason: string) {
     if (contactId === null) return;
     const data = await api<{ client: ApiClientDetail }>(`/api/v1/conversations/clients/${contactId}/merge/`, {
@@ -50,14 +50,5 @@ export function useClientDetail(contactId: number | null) {
     setClient(toClientDetailVm(data.client));
   }
 
-  async function unmerge(mergeId: number, reason: string) {
-    if (contactId === null) return;
-    const data = await api<{ client: ApiClientDetail }>(`/api/v1/conversations/clients/${contactId}/merge/`, {
-      method: "DELETE",
-      body: JSON.stringify({ mergeId, reason }),
-    });
-    setClient(toClientDetailVm(data.client));
-  }
-
-  return { client, loading, error, save, merge, unmerge };
+  return { client, loading, error, save, merge };
 }

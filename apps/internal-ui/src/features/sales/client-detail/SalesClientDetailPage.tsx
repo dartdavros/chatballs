@@ -14,7 +14,7 @@ import { useClientDetail } from "./useClientDetail";
 // Обзор · Диалоги · Идентификаторы · Аудит.
 export function SalesClientDetailPage({ contactId, canEdit = false, canMerge = false, openConversation, openClient, openClients }: { contactId: number | null; canEdit?: boolean; canMerge?: boolean; openConversation: (conversationId: number) => void; openClient: (id: number) => void; openClients: () => void }) {
   const [tab, setTab] = useState<ClientDetailTab>("overview");
-  const { client, loading, error, save, merge, unmerge } = useClientDetail(contactId);
+  const { client, loading, error, save, merge } = useClientDetail(contactId);
 
   if (loading) return <div className="sales-client-page"><LoadingState /></div>;
   if (error || !client) return <div className="sales-client-page"><EmptyState title="Не удалось загрузить контакт" /></div>;
@@ -26,7 +26,7 @@ export function SalesClientDetailPage({ contactId, canEdit = false, canMerge = f
       <UnderlineTabs className="sales-client-detail-tabs" items={clientDetailTabsOf(client)} value={tab} onChange={setTab} />
       {tab === "overview" && <SalesClientOverviewTab client={client} openConversation={openConversation} />}
       {tab === "dialogs" && <SalesClientDialogsTab dialogs={client.dialogs} openConversation={openConversation} />}
-      {tab === "ids" && <SalesClientIdentitiesTab client={client} canMerge={canMerge} openClient={openClient} onMerge={merge} onUnmerge={unmerge} />}
+      {tab === "ids" && <SalesClientIdentitiesTab client={client} canMerge={canMerge} openClient={openClient} onMerge={merge} />}
       {tab === "audit" && <SalesClientAuditTab audit={client.audit} />}
     </div>
   );

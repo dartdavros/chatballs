@@ -186,6 +186,22 @@ class ContactsMergeApiTests(TestCase):
         self.assertEqual(reverted.json()["client"]["merges"], [])
         self.assertEqual(reverted.json()["client"]["totalDialogs"], 1)
 
+    def test_card_audit_has_no_raw_codes(self) -> None:
+        """В карточке контакта журнал читаемый: ни кода действия, ни enum-а."""
+
+        self.owner_client.post(
+            self._merge_url(),
+            {"sourceId": self.source.id, "reason": "Один человек, совпал телефон"},
+            format="json",
+        )
+        card = self.owner_client.get(f"/api/v1/conversations/clients/{self.target.id}/")
+        self.assertEqual(card.status_code, 200)
+        events = card.json()["client"]["audit"]
+        self.assertTrue(events)
+        merged = next(event for event in events if event["action"] == "Объединение контактов")
+        self.assertEqual(merged["object"], f"Контакт · {self.target.id}")
+        self.assertEqual(merged["result"], "Выполнено")
+
     def test_admin_cannot_merge(self) -> None:
         response = self.admin_client.post(
             self._merge_url(),
