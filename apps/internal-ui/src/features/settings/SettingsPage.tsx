@@ -100,7 +100,7 @@ export function SettingsPage({ user, onUserUpdated, reload, groups = [], section
       {subnav}
       {current && (
         <section className={`settings-content ${mobile ? "is-single" : ""}`}>
-          <div className={`settings-content-inner ${current.wide ? "is-wide" : ""}`}>
+          <div className="settings-content-inner">
             <header className="settings-head">
               {mobile && (
                 <button className="settings-head-back" type="button" aria-label="К списку разделов" onClick={() => openSection(null)}>

@@ -149,8 +149,14 @@
   background: var(--surface-feed);
 }
 
+/* Одна ширина на все разделы и по центру области — как у списков Агентов,
+   Сотрудников, Контактов и Порталов («один ритм на все списки раздела»).
+   Раньше ширина зависела от раздела (820px формы, 1000px таблицы) и была
+   прибита к левому краю: на широком мониторе блок скакал при переключении
+   пунктов и жался в угол. 1000px — решение владельца 2026-09-08. */
 .settings-content-inner {
-  max-width: 820px;
+  max-width: 1000px;
+  margin-inline: auto;
   padding: 28px 40px 48px;
 }
 
@@ -161,10 +167,6 @@
 .settings-content-inner > .table-card ~ .administration-card,
 .settings-content-inner > .settings-section-note ~ .administration-card {
   margin-top: 18px;
-}
-
-.settings-content-inner.is-wide {
-  max-width: 1000px;
 }
 
 .settings-head {
@@ -834,8 +836,7 @@
     flex: 1;
   }
 
-  .settings-content-inner,
-  .settings-content-inner.is-wide {
+  .settings-content-inner {
     max-width: none;
     padding: 16px 16px 32px;
   }

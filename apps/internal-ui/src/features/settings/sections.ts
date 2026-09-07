@@ -20,8 +20,6 @@ export type SettingsSection = {
   icon: Parameters<typeof Icon>[0]["name"];
   heading: string;
   lead: string;
-  // Табличные разделы шире: 1000px против 820px у остальных (кадры N3–N5).
-  wide?: boolean;
 };
 
 export const SETTINGS_SECTIONS: SettingsSection[] = [
@@ -47,7 +45,6 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     icon: "sparkles",
     heading: "AI-провайдер",
     lead: "Ключи вашей организации для ответов агентов и расшифровки голосовых. Модель выбирается на карточке агента.",
-    wide: true,
   },
   {
     key: "integrations",
@@ -55,7 +52,6 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     icon: "plug",
     heading: "Интеграции",
     lead: "Боты, почта и Web-виджет — точки входа диалогов. Каждая привязана к агенту, который отвечает первым.",
-    wide: true,
   },
   {
     key: "communication",
@@ -63,7 +59,6 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     icon: "mic",
     heading: "Голосовые и звонки",
     lead: "Где клиент и сотрудник могут записывать голосовые и начинать аудио- и видеозвонки.",
-    wide: true,
   },
   {
     key: "storage",
