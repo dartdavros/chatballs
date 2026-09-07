@@ -14,7 +14,7 @@ import { Icon } from "../../shared/icons";
 import { useMediaQuery } from "../../shared/useMediaQuery";
 import { DemoDataCard } from "./DemoDataCard";
 import { CommunicationSettingsCard } from "./CommunicationSettingsCard";
-import { InstanceAddressCard } from "./InstanceAddressCard";
+import { PlatformSettingsCard } from "./PlatformSettingsCard";
 import { StorageSettingsCard } from "./StorageSettingsCard";
 import { GroupsSettingsCard } from "./GroupsSettingsCard";
 import { DEFAULT_SETTINGS_SECTION, SETTINGS_SECTIONS, type SettingsSectionKey } from "./sections";
@@ -24,6 +24,8 @@ import { useIntegrations } from "./useIntegrations";
 // раздел на экране; ниже субменю — переходы на отдельные экраны «База знаний» и
 // «Аудит действий». Профиль пользователя сюда не входит — это отдельная
 // страница из меню пользователя. OWNER и ADMIN видят одно и то же (§3).
+// «Платформа» кадра в базлайне не имеет — раздел собран по стандарту N6
+// («Хранилище файлов»): заголовок карточки, поля, ряд действий.
 
 export function SettingsPage({ user, onUserUpdated, reload, groups = [], section, openSection, setRoute }: {
   user: SessionUser;
@@ -151,6 +153,7 @@ function SectionBody({ section, user, onUserUpdated, reload, groups, integration
   if (section === "organization") return <OrganizationSection user={user} onUserUpdated={onUserUpdated} />;
   if (section === "groups") return <GroupsSettingsCard groups={groups} reload={reload} />;
   if (section === "communication") return <CommunicationSettingsCard canManage={canManageSettings(user)} />;
+  if (section === "platform") return <PlatformSettingsCard canManage={canManageSettings(user)} />;
   if (section === "storage") return <StorageSettingsCard canManage={canManageSettings(user)} />;
   if (section === "demo") return <DemoDataCard reload={reload} />;
   if (integrations.loading) return <LoadingState />;
@@ -169,23 +172,20 @@ function OrganizationSection({ user, onUserUpdated }: { user: SessionUser; onUse
   const page = useAdministration({ section: "organization", user, onUserUpdated });
   if (page.loading) return <LoadingState />;
   if (!page.organization) return <EmptyState title={page.error || "Не удалось загрузить настройки"} />;
+  // Раздел равен кадру N1: одна карточка. Адрес установки, почта и relay —
+  // свойства инсталляции и живут в «Платформе» и «Голосовых и звонках».
   return (
-    <>
-      <OrganizationSettingsForm
-        organization={page.organization}
-        canManage={canManageSettings(user)}
-        saving={page.saving}
-        message={page.message}
-        error={page.error}
-        timezones={page.timezones}
-        onChange={page.setOrganization}
-        onSave={() => void page.save()}
-        onUploadLogo={(file) => void page.uploadLogo(file)}
-        onRemoveLogo={() => void page.removeLogo()}
-      />
-      {/* Адрес установки — свойство инсталляции, а не организации, но живёт
-          рядом: в облаке он один на всех, в коробке организация одна. */}
-      <InstanceAddressCard canManage={canManageSettings(user)} />
-    </>
+    <OrganizationSettingsForm
+      organization={page.organization}
+      canManage={canManageSettings(user)}
+      saving={page.saving}
+      message={page.message}
+      error={page.error}
+      timezones={page.timezones}
+      onChange={page.setOrganization}
+      onSave={() => void page.save()}
+      onUploadLogo={(file) => void page.uploadLogo(file)}
+      onRemoveLogo={() => void page.removeLogo()}
+    />
   );
 }

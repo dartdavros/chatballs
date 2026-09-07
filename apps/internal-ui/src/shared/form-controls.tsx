@@ -56,11 +56,12 @@ export function SelectField({ disabled = false, label, value, onChange, options 
   );
 }
 
-export function TextAreaField({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
+export function TextAreaField({ disabled = false, label, value, onChange }: { disabled?: boolean; label: string; value: string; onChange: (value: string) => void }) {
+  const className = ["readonly-field", "form-field", "wide", disabled ? "is-readonly is-disabled" : "is-editable"].join(" ");
   return (
-    <label className="readonly-field form-field is-editable wide">
+    <label className={className}>
       <span>{label}</span>
-      <textarea value={value} onChange={(event) => onChange(event.target.value)} />
+      <textarea value={value} disabled={disabled} readOnly={disabled} onChange={(event) => onChange(event.target.value)} />
     </label>
   );
 }

@@ -3,10 +3,13 @@ import { useEffect, useState } from "react";
 import { api } from "../../api/client";
 import { ChannelGlyph } from "../../shared/badges";
 import { SwitchButton } from "../../shared/form-controls";
+import { CallsRelayCard } from "./CallsRelayCard";
 
 // «Голосовые и звонки» (Настройки): матрица точек входа × функции. Что
 // разрешено клиенту и сотруднику в диалогах через каждую интеграцию —
 // голосовые сообщения, аудио- и видеозвонки. Почта звонки не поддерживает.
+// Ниже матрицы — relay TURN: включать звонки и чинить их прохождение через
+// строгий NAT это одна задача, поэтому настройка живёт здесь же.
 
 type EntryPoint = {
   id: number;
@@ -81,6 +84,7 @@ export function CommunicationSettingsCard({ canManage }: { canManage: boolean })
       {items.length > 0 && (
         <p className="settings-section-note">Голосовые, присланные клиентом из мессенджера, принимаются всегда. Почта звонки не поддерживает. Изменения применяются сразу.</p>
       )}
+      <CallsRelayCard canManage={canManage} />
     </>
   );
 }

@@ -11,6 +11,7 @@ export type SettingsSectionKey =
   | "integrations"
   | "communication"
   | "storage"
+  | "platform"
   | "demo";
 
 export type SettingsSection = {
@@ -30,6 +31,8 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     icon: "building",
     heading: "Организация",
     lead: "Название, логотип и региональные параметры. Видны сотрудникам, в виджете и письмах.",
+    // Адрес установки и почта сюда не входят — это свойства инсталляции, а не
+    // организации, и живут в разделе «Платформа». Раздел равен кадру N1.
   },
   {
     key: "groups",
@@ -68,6 +71,13 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     icon: "database",
     heading: "Хранилище файлов",
     lead: "Вложения, голосовые, фото и логотипы — на диске установки или во внешнем S3-совместимом хранилище.",
+  },
+  {
+    key: "platform",
+    label: "Платформа",
+    icon: "globe",
+    heading: "Платформа",
+    lead: "Свойства самой установки: адрес, по которому её открывают и по которому строятся ссылки на файлы, и почтовый сервер для приглашений и сброса пароля.",
   },
   {
     key: "demo",

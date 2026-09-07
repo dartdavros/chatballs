@@ -132,7 +132,7 @@ export function StorageSettingsCard({ canManage }: { canManage: boolean }) {
 
   return (
     <form className="administration-card storage-card" onSubmit={submit}>
-      <div className="settings-storage-head">
+      <div className="settings-card-head">
         <div>
           <strong>Где хранить файлы</strong>
           <small>Вложения знаний, голосовые, фото и логотипы</small>

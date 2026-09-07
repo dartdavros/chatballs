@@ -154,6 +154,15 @@
   padding: 28px 40px 48px;
 }
 
+/* Раздел может состоять из нескольких карточек («Платформа» — адрес и почта,
+   «Голосовые и звонки» — матрица и relay). Без этого они шли встык и рамки
+   складывались в двойную линию. */
+.settings-content-inner > .administration-card ~ .administration-card,
+.settings-content-inner > .table-card ~ .administration-card,
+.settings-content-inner > .settings-section-note ~ .administration-card {
+  margin-top: 18px;
+}
+
 .settings-content-inner.is-wide {
   max-width: 1000px;
 }
@@ -571,9 +580,11 @@
   font-size: 12px;
 }
 
-/* --- N6 Хранилище файлов --- */
+/* Заголовок карточки раздела: имя · пояснение слева, управляющий элемент
+   справа, снизу разделитель (кадр N6). Один стандарт на все разделы —
+   «Хранилище файлов», «Платформа», relay в «Голосовых и звонках». */
 
-.settings-storage-head {
+.settings-card-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -582,19 +593,31 @@
   border-bottom: 1px solid var(--n-9);
 }
 
-.settings-storage-head strong {
+.settings-card-head strong {
   display: block;
   color: var(--n-1);
   font-size: 13.5px;
   font-weight: 700;
 }
 
-.settings-storage-head small {
+.settings-card-head small {
   display: block;
   margin-top: 3px;
   color: var(--n-4);
   font-size: 12px;
 }
+
+.settings-card-head-switch {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  color: var(--n-2);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+/* --- N6 Хранилище файлов --- */
 
 .storage-card .settings-section-note {
   margin: 16px 0 18px;
@@ -867,6 +890,7 @@
     font-size: 15px;
   }
 
+  /* Липкая панель действий рассчитана на раздел из одной формы (кадры N1/N6). */
   .settings-content .administration-actions {
     position: sticky;
     bottom: 0;
@@ -874,6 +898,18 @@
     padding: 12px 16px 20px;
     background: var(--surface-card);
     border-top: 1px solid var(--n-8);
+  }
+
+  /* В разделе из нескольких карточек она врёт: висит под всеми, а сохраняет
+     свою. Плюс отрицательный margin вылезал за карточку и накрывал соседнюю.
+     Там кнопка остаётся в потоке. */
+  .settings-content .administration-card:has(~ .administration-card) .administration-actions,
+  .settings-content .administration-card ~ .administration-card .administration-actions {
+    position: static;
+    margin: 18px 0 0;
+    padding: 14px 0 0;
+    background: none;
+    border-top: 1px solid var(--n-9);
   }
 
   .settings-content .administration-actions .primary-button {
