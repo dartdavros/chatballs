@@ -1,20 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { api, ApiError } from "../../api/client";
-import { hasCapability } from "../../auth/access";
 import type { SessionUser } from "../../types";
 import {
-  loadAudit,
   loadOrganizationSettings,
   removeOrganizationLogo,
   saveOrganizationSettings,
   uploadOrganizationLogo,
 } from "./api";
-import type {
-  AdministrationSection,
-  AuditEvent,
-  OrganizationSettings,
-} from "./model";
+import type { AdministrationSection, OrganizationSettings } from "./model";
 
 export function useAdministration({
   section,
@@ -27,7 +21,6 @@ export function useAdministration({
 }) {
   const [organization, setOrganization] = useState<OrganizationSettings | null>(null);
   const [timezones, setTimezones] = useState<string[]>([]);
-  const [audit, setAudit] = useState<AuditEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
@@ -44,19 +37,15 @@ export function useAdministration({
     setLoading(true);
     setError("");
     try {
-      if (section === "organization") {
-        const settings = await loadOrganizationSettings();
-        setOrganization(settings.organization);
-        setTimezones(settings.timezones);
-      } else if (section === "audit" && hasCapability(user, "audit.view")) {
-        setAudit(await loadAudit());
-      }
+      const settings = await loadOrganizationSettings();
+      setOrganization(settings.organization);
+      setTimezones(settings.timezones);
     } catch (loadError) {
       setError(loadError instanceof ApiError ? loadError.message : "Не удалось загрузить данные");
     } finally {
       setLoading(false);
     }
-  }, [section, user]);
+  }, [section]);
 
   useEffect(() => {
     void load();
@@ -82,7 +71,6 @@ export function useAdministration({
   }, [refreshIdentity]);
 
   return {
-    audit,
     error,
     loading,
     message,

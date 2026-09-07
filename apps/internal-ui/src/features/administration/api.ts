@@ -1,5 +1,5 @@
 import { api, apiUpload } from "../../api/client";
-import type { AuditEvent, OrganizationSettings } from "./model";
+import type { AuditPayload, AuditQuery, OrganizationSettings } from "./model";
 
 const BASE = "/api/v1/company/administration/";
 
@@ -42,7 +42,15 @@ export async function removeOrganizationLogo(): Promise<OrganizationSettings> {
   return payload.organization;
 }
 
-export async function loadAudit(): Promise<AuditEvent[]> {
-  const payload = await api<{ items: AuditEvent[] }>(`${BASE}audit/`);
-  return payload.items;
+export async function loadAudit(query: AuditQuery): Promise<AuditPayload> {
+  const params = new URLSearchParams();
+  if (query.q.trim()) params.set("q", query.q.trim());
+  // «Всё время» — это отсутствие периода, а не отдельный период на сервере.
+  if (query.period !== "all") params.set("period", query.period);
+  if (query.category) params.set("category", query.category);
+  if (query.actor) params.set("actor", query.actor);
+  if (query.result) params.set("result", query.result);
+  if (query.page > 1) params.set("page", String(query.page));
+  const suffix = params.toString();
+  return api<AuditPayload>(`${BASE}audit/${suffix ? `?${suffix}` : ""}`);
 }

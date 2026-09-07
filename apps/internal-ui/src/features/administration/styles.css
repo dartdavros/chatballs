@@ -143,37 +143,242 @@
   font-size: 12px;
 }
 
-.administration-audit {
+/* ================= «Аудит действий» ================= */
+
+/* Экран в общем ритме списков раздела: лента на --surface-feed и колонка
+   1220px по центру — как Агенты, Сотрудники, Контакты и Порталы. */
+
+.hub-scroll.audit-scroll {
   padding: 0;
-  overflow-x: auto;
+  background: var(--surface-feed);
 }
 
-.administration-audit .baseline-table {
-  min-width: 720px;
+.hub-page.audit-page-shell {
+  width: 100%;
+  max-width: 1220px;
+  margin: 0 auto;
 }
 
-.administration-audit td {
-  padding: 12px;
+.audit-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 26px 32px 40px;
 }
 
-.administration-audit td:first-child span,
-.administration-audit td:first-child small {
+.audit-page .page-header {
+  margin-bottom: 0;
+}
+
+/* --- Фильтры --- */
+
+.audit-filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+}
+
+.audit-page .audit-search {
+  width: 300px;
+}
+
+.audit-filters-spacer {
+  flex: 1;
+}
+
+.audit-filters .segmented {
+  align-items: normal;
+  gap: normal;
+  padding: 3px;
+  border-radius: 9px;
+  background: var(--n-9);
+}
+
+.audit-reset {
+  height: 34px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--n-4);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.audit-reset.is-dirty {
+  color: var(--primary-text);
+}
+
+.audit-reset:hover {
+  background: var(--n-9);
+}
+
+/* Пока идёт запрос, прошлая страница остаётся на месте приглушённой: иначе
+   таблица моргает пустотой на каждую букву в поиске. */
+.audit-results.is-loading {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+/* --- Таблица --- */
+
+.audit-table {
+  min-width: 940px;
+}
+
+.audit-table th,
+.audit-table td {
+  padding: 10px 14px;
+}
+
+.audit-col-time {
+  width: 74px;
+  white-space: nowrap;
+}
+
+.audit-col-actor {
+  width: 200px;
+}
+
+.audit-col-object {
+  width: 210px;
+  color: var(--n-3);
+}
+
+.audit-col-result {
+  width: 120px;
+}
+
+.audit-col-toggle {
+  width: 40px;
+}
+
+/* Отбивка дня: без неё сотни строк идут сплошняком и глазу не за что зацепиться. */
+.audit-day td {
+  padding: 14px 14px 6px;
+  color: var(--n-4);
+  background: var(--surface-feed);
+  border-bottom: 1px solid var(--n-9);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.audit-row {
+  cursor: pointer;
+}
+
+.audit-row:hover {
+  background: var(--n-10);
+}
+
+.audit-row.is-open {
+  background: var(--n-10);
+}
+
+.audit-row td strong {
   display: block;
+  color: var(--n-1);
+  font-size: 13px;
+  font-weight: 600;
 }
 
-.administration-audit td:first-child small {
+.audit-row td small {
+  display: block;
   margin-top: 2px;
-  color: var(--text-tertiary);
+  color: var(--n-4);
+  font-size: 11.5px;
 }
 
-.administration-audit-result {
+.audit-row .audit-col-actor span {
+  color: var(--n-2);
+}
+
+/* Действие без подписи показываем кодом — по нему видно, что произошло. */
+.audit-action-code {
+  display: block;
+  color: var(--n-2);
+  font-family: "SF Mono", ui-monospace, Menlo, monospace;
+  font-size: 12.5px;
+}
+
+.audit-result {
   color: var(--success-text);
   font-weight: 600;
 }
 
-.administration-audit-result.is-denied,
-.administration-audit-result.is-failed {
+.audit-result.is-denied,
+.audit-result.is-failed {
   color: var(--error-text);
+}
+
+.audit-toggle {
+  display: inline-flex;
+  color: var(--n-5);
+  transition: transform 0.15s ease;
+}
+
+.audit-row.is-open .audit-toggle {
+  transform: rotate(180deg);
+  color: var(--n-3);
+}
+
+/* --- Подробности события --- */
+
+.audit-details > td {
+  padding: 0 14px 14px;
+  background: var(--n-10);
+}
+
+.audit-details dl {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 8px 20px;
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid var(--n-8);
+  border-radius: 8px;
+  background: var(--surface-card);
+}
+
+.audit-details dl > div {
+  display: flex;
+  gap: 10px;
+  min-width: 0;
+}
+
+.audit-details dt {
+  flex: none;
+  width: 120px;
+  color: var(--n-4);
+  font-size: 12px;
+}
+
+.audit-details dd {
+  min-width: 0;
+  margin: 0;
+  color: var(--n-2);
+  font-family: "SF Mono", ui-monospace, Menlo, monospace;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.audit-pagination {
+  padding: 0 2px;
+}
+
+@media (max-width: 900px) {
+  .audit-page {
+    padding: 16px 16px 32px;
+  }
+
+  .audit-page .audit-search {
+    width: 100%;
+  }
 }
 
 @media (max-width: 1120px) {

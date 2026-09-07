@@ -4,41 +4,14 @@ from zoneinfo import available_timezones
 
 from django.urls import reverse
 
+from chatballs.identity.audit_catalog import (
+    AUDIT_RESULT_LABELS,
+    audit_action_label,
+    audit_category,
+    audit_category_label,
+    audit_object_label,
+)
 from chatballs.identity.models import AuditEvent, Organization
-
-
-AUDIT_ACTION_LABELS = {
-    "identity.profile_updated": "Изменён профиль сотрудника",
-    "identity.profile_password_changed": "Изменён пароль",
-    "identity.employee_created": "Добавлен сотрудник",
-    "identity.employee_blocked": "Сотрудник заблокирован",
-    "identity.employee_unblocked": "Сотрудник разблокирован",
-    "identity.ownership_transferred": "Передано владение организацией",
-    "identity.access_profile_created": "Создан профиль доступа",
-    "identity.access_profile_updated": "Изменён профиль доступа",
-    "identity.access_assignment_created": "Назначен доступ сотруднику",
-    "identity.access_assignment_revoked": "Отозван доступ сотрудника",
-    "administration.organization_updated": "Изменены данные организации",
-    "administration.logo_updated": "Изменён логотип организации",
-    "administration.logo_deleted": "Удалён логотип организации",
-    "integrations.integration_created": "Добавлена интеграция",
-    "integrations.integration_updated": "Изменена интеграция",
-    "integrations.integration_deleted": "Удалена интеграция",
-    "channels.channel_created": "Создан канал",
-    "channels.channel_updated": "Изменён канал",
-    "channels.channel_deleted": "Удалён канал",
-    "ai.knowledge_created": "Добавлено знание",
-    "ai.knowledge_updated": "Изменено знание",
-    "ai.knowledge_deleted": "Удалено знание",
-    "contacts.merged": "Объединение контактов",
-    "contacts.unmerged": "Разъединение контактов",
-}
-
-AUDIT_RESULT_LABELS = {
-    "SUCCESS": "Выполнено",
-    "DENIED": "Отклонено",
-    "FAILED": "Ошибка",
-}
 
 
 ORGANIZATION_CHANGE_ACTIONS = (
@@ -87,12 +60,27 @@ def administration_timezones() -> list[str]:
 
 
 def audit_event_payload(event: AuditEvent) -> dict[str, object]:
+    """Событие журнала. Отдаём и код действия, и подпись: подписи может не быть
+    (тогда интерфейс показывает код), а код нужен для поиска в любом случае."""
+
     actor = event.actor
+    category = audit_category(event.action)
     return {
         "id": event.id,
         "createdAt": event.created_at.isoformat(),
+        "actorId": actor.id if actor is not None else None,
         "actor": ((actor.full_name or actor.email) if actor is not None else "Система"),
-        "action": AUDIT_ACTION_LABELS.get(event.action, "Системное действие"),
+        "actorEmail": (actor.email if actor is not None else ""),
+        "action": event.action,
+        "actionLabel": audit_action_label(event.action),
+        "category": category,
+        "categoryLabel": audit_category_label(category),
+        "object": audit_object_label(event.object_type, event.object_id),
+        "objectType": event.object_type,
+        "objectId": event.object_id,
         "result": event.result,
         "resultLabel": AUDIT_RESULT_LABELS.get(event.result, "Неизвестно"),
+        "sourceIp": event.source_ip or "",
+        "correlationId": event.correlation_id,
+        "details": event.payload or {},
     }

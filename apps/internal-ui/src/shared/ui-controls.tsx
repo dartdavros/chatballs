@@ -210,6 +210,20 @@ export function ToneBadge({ bg, className = "", color, children }: ToneBadgeProp
   return <span className={`ui-tone-badge ${className}`.trim()} style={{ background: bg, color }}>{children}</span>;
 }
 
+/** Номера страниц с многоточиями: 1 … 4 5 6 … 20. Один расчёт на приложение —
+ *  им живут пагинаторы контактов и журнала аудита. */
+export function paginationItems(page: number, pageCount: number): Array<number | "ellipsis"> {
+  if (pageCount <= 7) return Array.from({ length: pageCount }, (_, index) => index + 1);
+  const pages = new Set([1, pageCount, page - 1, page, page + 1]);
+  const visible = [...pages].filter((item) => item >= 1 && item <= pageCount).sort((a, b) => a - b);
+  const result: Array<number | "ellipsis"> = [];
+  visible.forEach((item, index) => {
+    if (index > 0 && item - visible[index - 1] > 1) result.push("ellipsis");
+    result.push(item);
+  });
+  return result;
+}
+
 export function TablePagination({ className = "", currentPage = 1, onPageChange, pageSizeLabel, pages, shown, total }: TablePaginationProps) {
   const numericPages = pages.filter((page): page is number => page !== "ellipsis");
   const lastPage = Math.max(...numericPages, 1);

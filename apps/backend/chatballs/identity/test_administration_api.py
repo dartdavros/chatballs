@@ -181,19 +181,136 @@ class AdministrationApiTests(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn("PNG, JPEG и WebP", response.json()["detail"])
 
-    def test_audit_returns_readable_text_instead_of_internal_action_codes(self) -> None:
+    def test_audit_returns_readable_label_next_to_the_action_code(self) -> None:
         record_audit_event(
             action="administration.organization_updated",
             actor=self.owner,
             organization=self.organization,
+            object_type="Organization",
+            object_id="42",
         )
 
         response = self.client.get("/api/v1/company/administration/audit/")
 
         self.assertEqual(response.status_code, 200)
         event = response.json()["items"][0]
-        self.assertEqual(event["action"], "Изменены данные организации")
-        self.assertNotIn("administration.", event["action"])
+        self.assertEqual(event["actionLabel"], "Изменены данные организации")
+        # Код действия нужен для поиска, поэтому уезжает рядом с подписью.
+        self.assertEqual(event["action"], "administration.organization_updated")
+        self.assertEqual(event["categoryLabel"], "Настройки")
+        self.assertEqual(event["object"], "Организация · 42")
+
+    def test_audit_shows_the_raw_code_when_the_action_has_no_label(self) -> None:
+        """Действие без подписи должно быть видно кодом, а не схлопываться в
+        «Системное действие» вместе со всеми остальными."""
+
+        record_audit_event(
+            action="ai.brand_new_thing",
+            actor=self.owner,
+            organization=self.organization,
+        )
+
+        event = self.client.get("/api/v1/company/administration/audit/").json()["items"][0]
+
+        self.assertEqual(event["actionLabel"], "")
+        self.assertEqual(event["action"], "ai.brand_new_thing")
+        self.assertEqual(event["categoryLabel"], "AI и знания")
+
+    def test_audit_filters_by_category_result_actor_and_search(self) -> None:
+        record_audit_event(
+            action="administration.organization_updated",
+            actor=self.owner,
+            organization=self.organization,
+        )
+        record_audit_event(
+            action="ai.knowledge_created",
+            organization=self.organization,
+            object_type="Knowledge",
+            object_id="7",
+        )
+        record_audit_event(
+            action="identity.login_failed",
+            actor=self.owner,
+            organization=self.organization,
+            result="FAILED",
+        )
+        url = "/api/v1/company/administration/audit/"
+
+        by_category = self.client.get(url, {"category": "ai"}).json()
+        self.assertEqual(by_category["total"], 1)
+        self.assertEqual(by_category["items"][0]["action"], "ai.knowledge_created")
+
+        by_result = self.client.get(url, {"result": "FAILED"}).json()
+        self.assertEqual(by_result["total"], 1)
+        self.assertEqual(by_result["items"][0]["action"], "identity.login_failed")
+
+        by_system_actor = self.client.get(url, {"actor": "system"}).json()
+        self.assertEqual(by_system_actor["total"], 1)
+        self.assertEqual(by_system_actor["items"][0]["actor"], "Система")
+
+        by_search = self.client.get(url, {"q": "knowledge"}).json()
+        self.assertEqual(by_search["total"], 1)
+        self.assertEqual(by_search["items"][0]["action"], "ai.knowledge_created")
+
+    def test_audit_conversation_prefix_synonym_lands_in_the_dialogs_category(self) -> None:
+        """Часть кода пишет conversation.*, часть conversations.* — в фильтре
+        «Диалоги» должны быть оба."""
+
+        record_audit_event(
+            action="conversation.contact_updated",
+            organization=self.organization,
+        )
+        record_audit_event(
+            action="conversations.claimed",
+            organization=self.organization,
+        )
+
+        payload = self.client.get(
+            "/api/v1/company/administration/audit/", {"category": "conversations"}
+        ).json()
+
+        self.assertEqual(payload["total"], 2)
+
+    def test_audit_pages_through_the_whole_journal(self) -> None:
+        """Раньше отдавались последние 50 событий и дальше журнала не было."""
+
+        for index in range(60):
+            record_audit_event(
+                action="identity.login_succeeded",
+                actor=self.owner,
+                organization=self.organization,
+                object_id=str(index),
+            )
+        url = "/api/v1/company/administration/audit/"
+
+        first = self.client.get(url, {"pageSize": 25}).json()
+        self.assertEqual(first["total"], 60)
+        self.assertEqual(first["pageCount"], 3)
+        self.assertEqual(len(first["items"]), 25)
+
+        last = self.client.get(url, {"pageSize": 25, "page": 3}).json()
+        self.assertEqual(len(last["items"]), 10)
+        # Страница за пределами журнала возвращает последнюю, а не пустоту.
+        self.assertEqual(self.client.get(url, {"pageSize": 25, "page": 99}).json()["page"], 3)
+
+    def test_audit_filter_lists_cover_the_whole_journal_not_the_current_page(self) -> None:
+        record_audit_event(
+            action="ai.knowledge_created", organization=self.organization
+        )
+        record_audit_event(
+            action="identity.login_succeeded", actor=self.owner, organization=self.organization
+        )
+
+        filters = self.client.get(
+            "/api/v1/company/administration/audit/", {"category": "ai"}
+        ).json()["filters"]
+
+        actor_labels = {actor["label"] for actor in filters["actors"]}
+        self.assertIn("Система", actor_labels)
+        self.assertTrue(any(actor["value"].isdigit() for actor in filters["actors"]))
+        self.assertIn(
+            "Диалоги", {category["label"] for category in filters["categories"]}
+        )
 
 
 class InstanceAddressTests(TestCase):

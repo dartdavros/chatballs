@@ -1,49 +1,122 @@
-import { formatDate } from "../../shared/utils";
+import { Fragment, useState } from "react";
+
+import { Icon } from "../../shared/icons";
+import { shortDate, shortDateYear } from "../../shared/utils";
 import type { AuditEvent } from "./model";
 
+// Журнал действий. Три вещи, без которых он был нечитаем:
+// * день отбивается заголовком — иначе сотни строк идут сплошняком;
+// * у действия есть подпись, раздел и объект, а не одна строка на всё;
+// * строка раскрывается: IP, correlation id и payload события. Раньше эти поля
+//   были в базе, но наружу не отдавались, и разобраться в событии было нечем.
+
 function formatTime(value: string): string {
-  return new Intl.DateTimeFormat("ru-RU", {
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(value));
+  return new Intl.DateTimeFormat("ru-RU", { hour: "2-digit", minute: "2-digit" }).format(new Date(value));
+}
+
+function dayKey(value: string): string {
+  const date = new Date(value);
+  return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+}
+
+/** «Сегодня» · «Вчера» · «5 сен» · «5 сен 2025» — заголовок дня. Год только у
+ *  прошлых лет: в заголовке он лишний шум, а журнал почти всегда свежий. */
+function dayLabel(value: string): string {
+  const date = new Date(value);
+  const today = new Date();
+  const yesterday = new Date();
+  yesterday.setDate(today.getDate() - 1);
+  if (dayKey(value) === dayKey(today.toISOString())) return "Сегодня";
+  if (dayKey(value) === dayKey(yesterday.toISOString())) return "Вчера";
+  return date.getFullYear() === today.getFullYear() ? shortDate(date) : shortDateYear(date);
+}
+
+function detailLines(event: AuditEvent): Array<[string, string]> {
+  const lines: Array<[string, string]> = [];
+  if (event.actorEmail) lines.push(["Сотрудник", `${event.actor} · ${event.actorEmail}`]);
+  lines.push(["Код действия", event.action]);
+  if (event.objectType) lines.push(["Объект", `${event.objectType}${event.objectId ? ` · ${event.objectId}` : ""}`]);
+  if (event.sourceIp) lines.push(["IP", event.sourceIp]);
+  if (event.correlationId) lines.push(["Correlation id", event.correlationId]);
+  Object.entries(event.details ?? {}).forEach(([key, value]) => {
+    lines.push([key, typeof value === "object" && value !== null ? JSON.stringify(value) : String(value)]);
+  });
+  return lines;
 }
 
 export function AuditTable({ events }: { events: AuditEvent[] }) {
-  if (events.length === 0) {
-    return (
-      <div className="administration-card">
-        <div className="empty-state"><strong>Событий пока нет</strong></div>
-      </div>
-    );
-  }
+  const [openId, setOpenId] = useState<number | null>(null);
+  let lastDay = "";
 
   return (
-    <div className="administration-card administration-audit">
-      <table className="baseline-table">
+    <div className="table-card audit-card">
+      <table className="baseline-table audit-table">
         <thead>
           <tr>
-            <th>Дата</th>
-            <th>Сотрудник</th>
+            <th className="audit-col-time">Время</th>
+            <th className="audit-col-actor">Сотрудник</th>
             <th>Действие</th>
-            <th>Результат</th>
+            <th className="audit-col-object">Объект</th>
+            <th className="audit-col-result">Результат</th>
+            <th className="audit-col-toggle" />
           </tr>
         </thead>
         <tbody>
-          {events.map((event) => (
-            <tr key={event.id}>
-              <td>
-                <span>{formatDate(event.createdAt)}</span>
-                <small>{formatTime(event.createdAt)}</small>
-              </td>
-              <td>{event.actor}</td>
-              <td>{event.action}</td>
-              <td>
-                <span className={`administration-audit-result is-${event.result.toLowerCase()}`}>
-                  {event.resultLabel}
-                </span>
-              </td>
-            </tr>
-          ))}
+          {events.map((event) => {
+            const day = dayKey(event.createdAt);
+            const newDay = day !== lastDay;
+            lastDay = day;
+            const open = openId === event.id;
+            return (
+              <Fragment key={event.id}>
+                {newDay && (
+                  <tr className="audit-day">
+                    <td colSpan={6}>{dayLabel(event.createdAt)}</td>
+                  </tr>
+                )}
+                <tr
+                  className={`audit-row ${open ? "is-open" : ""}`}
+                  onClick={() => setOpenId(open ? null : event.id)}
+                >
+                  <td className="audit-col-time">{formatTime(event.createdAt)}</td>
+                  <td className="audit-col-actor">
+                    <span>{event.actor}</span>
+                  </td>
+                  <td>
+                    {/* Подписи может не быть — тогда показываем код действия,
+                        а не заглушку: по коду видно, что произошло. */}
+                    {event.actionLabel
+                      ? <strong>{event.actionLabel}</strong>
+                      : <code className="audit-action-code">{event.action}</code>}
+                    <small>{event.categoryLabel}</small>
+                  </td>
+                  <td className="audit-col-object">{event.object || "—"}</td>
+                  <td className="audit-col-result">
+                    <span className={`audit-result is-${event.result.toLowerCase()}`}>{event.resultLabel}</span>
+                  </td>
+                  <td className="audit-col-toggle">
+                    <span className="audit-toggle" aria-hidden="true">
+                      <Icon name="chevron" size={14} strokeWidth={2.2} />
+                    </span>
+                  </td>
+                </tr>
+                {open && (
+                  <tr className="audit-details">
+                    <td colSpan={6}>
+                      <dl>
+                        {detailLines(event).map(([label, value]) => (
+                          <div key={label}>
+                            <dt>{label}</dt>
+                            <dd>{value}</dd>
+                          </div>
+                        ))}
+                      </dl>
+                    </td>
+                  </tr>
+                )}
+              </Fragment>
+            );
+          })}
         </tbody>
       </table>
     </div>

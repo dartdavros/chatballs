@@ -5,7 +5,7 @@ import { AgentDetailPage } from "../features/agents/AgentDetailPage";
 import { EmployeeDetailPage, EmployeesPage } from "../features/employees/EmployeesPage";
 import { ProfilePage } from "../features/profile/ProfilePage";
 import { SettingsPage } from "../features/settings/SettingsPage";
-import { AdministrationPage } from "../features/administration/AdministrationPage";
+import { AuditPage } from "../features/administration/AuditPage";
 import { ChatPage } from "../features/chat/ChatPage";
 import type { DialogScope } from "../features/conversations/ConversationWorkspace";
 import type { ConversationCounters } from "../features/conversations/model";
@@ -50,13 +50,7 @@ export function ShellRouteContent({ settingsSection, openSettings, chatScope, se
       {route === "employeeDetail" && !currentEmployee && <EmployeesPage groups={data.groups} employees={data.employees} reload={reload} openEmployee={openEmployee} setRoute={setRoute} user={user} />}
       {route === "profile" && <ProfilePage user={user} onUserUpdated={onUserUpdated} reload={reload} onLogout={onLogout} onBack={() => setRoute("chat")} />}
       {route === "settings" && <SettingsPage user={user} onUserUpdated={onUserUpdated} reload={reload} groups={data.groups} section={settingsSection} openSection={openSettings} setRoute={setRoute} />}
-      {route === "administrationAudit" && (
-        <AdministrationPage
-          route={route}
-          user={user}
-          onUserUpdated={onUserUpdated}
-        />
-      )}
+      {route === "administrationAudit" && <AuditPage />}
       {route === "salesClients" && <SalesClientsPage openClient={openClient} openIntegrations={() => openSettings("integrations")} />}
       {route === "salesClientDetail" && <SalesClientDetailPage contactId={selectedClientId} canEdit={hasCapability(user, "customers.manage")} canMerge={user.role === "OWNER"} openConversation={openConversation} openClient={openClient} openClients={() => setRoute("salesClients")} />}
       {route === "chat" && (
