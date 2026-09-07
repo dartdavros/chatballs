@@ -1,28 +1,55 @@
+/* Шторка уведомлений (antd Drawer). Список слипался: у элементов не было
+   зазора вовсе, поэтому два непрочитанных подряд сливались в один цветной
+   блок, а внутри карточки заголовок, текст и время шли в 2–4 px друг от друга
+   с line-height: normal. Ниже — ритм: 6 px между уведомлениями, интерлиньяж у
+   каждой строки, секции разделены линией. */
+
 .notif-mark-all {
+  height: 26px;
+  padding: 0 8px;
   border: none;
+  border-radius: 7px;
   background: none;
   color: var(--primary);
+  font-family: inherit;
   font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
 }
 
-.notif-empty {
-  color: var(--n-4);
-  text-align: center;
-  padding: 32px 0;
+.notif-mark-all:hover {
+  background: var(--primary-bg);
 }
 
+.notif-empty {
+  padding: 32px 0;
+  color: var(--n-4);
+  text-align: center;
+}
+
+.notif-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Между секциями линия, а не просто воздух: «Сегодня» и «Ранее» — разные
+   пачки, и на глаз это должно быть видно сразу. */
 .notif-section + .notif-section {
-  margin-top: 18px;
+  margin-top: 14px;
+  padding-top: 14px;
+  /* --n-8, а не --n-9: на подложке карточки (--surface-card) девятка почти не
+     видна — тем же цветом отбиты шапки таблиц и .table-card. */
+  border-top: 1px solid var(--n-8);
 }
 
 .notif-section-title {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  margin-bottom: 2px;
   color: var(--n-4);
-  margin-bottom: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 .notif-item {
@@ -30,11 +57,11 @@
   gap: 12px;
   align-items: flex-start;
   width: 100%;
-  text-align: left;
-  border: none;
-  background: none;
-  padding: 10px 8px;
+  padding: 11px 10px;
+  border: 1px solid transparent;
   border-radius: 10px;
+  background: none;
+  text-align: left;
   cursor: pointer;
 }
 
@@ -42,50 +69,58 @@
   background: var(--n-9);
 }
 
+/* Непрочитанное — подложка и рамка. Рамка нужна именно потому, что подряд идут
+   несколько непрочитанных: без неё их подложки читаются как один блок. */
 .notif-item.unread {
   background: var(--primary-bg);
+  border-color: var(--primary-border);
 }
 
 .notif-item-icon {
   display: inline-flex;
+  flex: none;
   align-items: center;
   justify-content: center;
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  flex: none;
 }
 
 .notif-item-body {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
   flex: 1;
+  flex-direction: column;
+  gap: 3px;
   min-width: 0;
 }
 
 .notif-item-title {
-  font-weight: 600;
-  font-size: 13px;
   color: var(--n-1);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
 }
 
 .notif-item-text {
-  font-size: 12px;
   color: var(--n-3);
+  font-size: 12px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
 }
 
 .notif-item-time {
-  font-size: 11px;
+  margin-top: 5px;
   color: var(--n-4);
-  margin-top: 2px;
+  font-size: 11px;
+  line-height: 1;
 }
 
+/* Точка выравнена по первой строке заголовка: 13px × 1.35 ≈ 17.5, (17.5−8)/2. */
 .notif-item-dot {
+  flex: none;
   width: 8px;
   height: 8px;
+  margin-top: 5px;
   border-radius: 50%;
   background: var(--primary);
-  flex: none;
-  margin-top: 6px;
 }
