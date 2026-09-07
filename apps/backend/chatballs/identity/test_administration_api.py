@@ -316,6 +316,27 @@ class AdministrationApiTests(TestCase):
         self.assertEqual(values.count(str(self.owner.id)), 1)
         self.assertEqual(values.count("system"), 1)
 
+    def test_audit_filter_lists_have_no_duplicates(self) -> None:
+        """Все три списка фильтров — без повторов. Сотрудники считаются из базы
+        и однажды дублировались (см. тест выше); разделы и результаты приходят
+        из каталога, и повтор там означал бы задвоенный ключ в словаре."""
+
+        for action in ("identity.login_succeeded", "ai.knowledge_created", "demo.installed"):
+            for _ in range(3):
+                record_audit_event(
+                    action=action, actor=self.owner, organization=self.organization
+                )
+
+        filters = self.client.get(
+            "/api/v1/company/administration/audit/"
+        ).json()["filters"]
+
+        for name, options in filters.items():
+            values = [option["value"] for option in options]
+            labels = [option["label"] for option in options]
+            self.assertEqual(len(values), len(set(values)), f"повторы значений в {name}")
+            self.assertEqual(len(labels), len(set(labels)), f"повторы подписей в {name}")
+
     def test_audit_filter_lists_cover_the_whole_journal_not_the_current_page(self) -> None:
         record_audit_event(
             action="ai.knowledge_created", organization=self.organization
