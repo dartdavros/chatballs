@@ -189,3 +189,27 @@ button:disabled {
   }
 }
 
+/* Появление содержимого раздела: один стандарт на всё приложение. Узел с этим
+   классом монтируется заново (key по разделу или по диалогу), поэтому вместо
+   резкой подмены получается короткое появление. */
+@keyframes surface-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.enter-surface {
+  animation: surface-enter 180ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .enter-surface {
+    animation: none;
+  }
+}
