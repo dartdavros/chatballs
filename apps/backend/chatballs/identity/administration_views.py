@@ -257,10 +257,17 @@ class AuditListView(APIView):
 
 
 def _audit_actors(base) -> list[dict[str, object]]:
-    """Кто вообще что-то делал в этой организации — для фильтра «Сотрудник»."""
+    """Кто вообще что-то делал в этой организации — для фильтра «Сотрудник».
+
+    `order_by()` обязателен: у AuditEvent есть Meta.ordering, а поля сортировки
+    Django подмешивает в SELECT перед DISTINCT. Без сброса уникальность считается
+    по паре «сотрудник + время события», и сотрудник попадает в фильтр столько
+    раз, сколько совершил действий.
+    """
 
     rows = (
         base.filter(actor__isnull=False)
+        .order_by()
         .values("actor_id", "actor__full_name", "actor__email")
         .distinct()
     )

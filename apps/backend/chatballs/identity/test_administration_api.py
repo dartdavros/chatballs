@@ -293,6 +293,29 @@ class AdministrationApiTests(TestCase):
         # Страница за пределами журнала возвращает последнюю, а не пустоту.
         self.assertEqual(self.client.get(url, {"pageSize": 25, "page": 99}).json()["page"], 3)
 
+    def test_audit_actor_filter_lists_every_employee_once(self) -> None:
+        """У AuditEvent есть Meta.ordering, и без её сброса DISTINCT считает
+        уникальность вместе с created_at — сотрудник попадал в фильтр столько
+        раз, сколько совершил действий."""
+
+        for index in range(5):
+            record_audit_event(
+                action="identity.login_succeeded",
+                actor=self.owner,
+                organization=self.organization,
+                object_id=str(index),
+            )
+        record_audit_event(action="demo.installed", organization=self.organization)
+
+        actors = self.client.get(
+            "/api/v1/company/administration/audit/"
+        ).json()["filters"]["actors"]
+
+        values = [actor["value"] for actor in actors]
+        self.assertEqual(len(values), len(set(values)))
+        self.assertEqual(values.count(str(self.owner.id)), 1)
+        self.assertEqual(values.count("system"), 1)
+
     def test_audit_filter_lists_cover_the_whole_journal_not_the_current_page(self) -> None:
         record_audit_event(
             action="ai.knowledge_created", organization=self.organization
