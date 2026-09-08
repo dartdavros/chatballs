@@ -9,6 +9,7 @@
 @import "./features/sales/clients/styles.css";
 @import "./features/sales/client-detail/styles.css";
 @import "./features/sales/dialogs/styles.css";
+@import "./features/conversations/contact-edit.css";
 @import "./shared/table-controls.css";
 @import "./shared/menu.css";
 @import "./shared/content-library/styles.css";

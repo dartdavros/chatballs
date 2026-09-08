@@ -29,21 +29,22 @@ export function SalesClientHeader({ client, canEdit = false, openConversation, o
 
   return (
     <div className="sales-client-card">
-      {editing && onSave ? (
-        <ContactEditForm
-          initial={{ name: client.name, description: client.description, phone: client.rawPhone, company: client.company, city: client.city }}
-          onSubmit={async (fields) => { await onSave(fields); setEditing(false); }}
-          onCancel={() => setEditing(false)}
-        />
-      ) : (
-        <>
-          <ContactAvatar avatarUrl={client.avatarUrl || undefined} initials={client.initials} background={client.avatarBg} className="sales-client-detail-avatar" />
-          <div className="sales-client-detail-title">
-            <div className="sales-client-detail-name-row">
-              <h2>{client.name}</h2>
-              <code>{client.cid}</code>
-              {canEdit && onSave && <button className="sales-client-edit" type="button" title="Редактировать" aria-label="Редактировать контакт" onClick={() => setEditing(true)}><Icon name="edit" size={14} /></button>}
-            </div>
+      <ContactAvatar avatarUrl={client.avatarUrl || undefined} initials={client.initials} background={client.avatarBg} className="sales-client-detail-avatar" />
+      <div className="sales-client-detail-title">
+        <div className="sales-client-detail-name-row">
+          <h2>{client.name}</h2>
+          <code>{client.cid}</code>
+          {canEdit && onSave && !editing && <button className="sales-client-edit" type="button" title="Редактировать" aria-label="Редактировать контакт" onClick={() => setEditing(true)}><Icon name="edit" size={14} /></button>}
+        </div>
+        {editing && onSave ? (
+          <ContactEditForm
+            layout="card"
+            initial={{ name: client.name, description: client.description, phone: client.rawPhone, company: client.company, city: client.city }}
+            onSubmit={async (fields) => { await onSave(fields); setEditing(false); }}
+            onCancel={() => setEditing(false)}
+          />
+        ) : (
+          <>
             {client.description && <p>{client.description}</p>}
             <div className="sales-client-detail-meta">
               {meta.map((item) => (
@@ -61,14 +62,16 @@ export function SalesClientHeader({ client, canEdit = false, openConversation, o
                 ))}
               </span>
             </div>
-          </div>
-          <div className="sales-client-detail-actions">
-            <Button icon="message" variant="primary" disabled={!targetDialog} onClick={() => targetDialog && openConversation(targetDialog.id)}>Открыть диалог</Button>
-            <Dropdown menu={{ items: menuItems }} open={menuOpen} onOpenChange={setMenuOpen} trigger={["click"]} overlayClassName="app-dropdown is-wide">
-              <button className="sales-client-more" type="button" aria-label="Действия контакта"><Icon name="more" size={17} /></button>
-            </Dropdown>
-          </div>
-        </>
+          </>
+        )}
+      </div>
+      {!editing && (
+        <div className="sales-client-detail-actions">
+          <Button icon="message" variant="primary" disabled={!targetDialog} onClick={() => targetDialog && openConversation(targetDialog.id)}>Открыть диалог</Button>
+          <Dropdown menu={{ items: menuItems }} open={menuOpen} onOpenChange={setMenuOpen} trigger={["click"]} overlayClassName="app-dropdown is-wide">
+            <button className="sales-client-more" type="button" aria-label="Действия контакта"><Icon name="more" size={17} /></button>
+          </Dropdown>
+        </div>
       )}
     </div>
   );
