@@ -77,30 +77,6 @@ docker compose run --rm backend-app python manage.py seed_demo --organization <s
 сообщения читаются из `media/voice/` (см. README там); если файла нет, сообщение
 пропускается.
 
-### Обновление установки со старым именем (Chatballs / hub → Chatballs)
-
-Установки, развёрнутые до переименования (compose-проект `chatballs`, база
-`chatballs`, роли Postgres `chatballs_*`, переменные `CHATBALLS_*`/`CHATBALLS_*`),
-переводятся на новые имена одним скриптом — данные остаются на месте:
-
-```bash
-# prod: сначала переместите каталог релизов и инстанса
-mv /opt/chatballs /opt/chatballs
-CHATBALLS_INSTANCE_DIR=/opt/chatballs/instance ./deploy/migrate/rename-to-chatballs.sh
-./chatballs deploy
-```
-
-```bash
-# dev-стек из каталога репозитория
-CHATBALLS_INSTANCE_DIR="$PWD" CHATBALLS_COMPOSE_ARGS="-f compose.dev.yaml" deploy/migrate/rename-to-chatballs.sh
-docker compose -f compose.yaml -f compose.dev.yaml up -d
-```
-
-Скрипт останавливает старый compose-проект, переписывает `.env` (резервная
-копия рядом, `.env.bak-custocrm`), переименовывает роли, схему RLS (и её GUC),
-базу и печатает итог. Cookie сессий меняют имя — пользователи входят заново.
-В CI/CD корень деплоя теперь `/opt/chatballs`.
-
 ### Режим поставки
 
 По умолчанию локально запускается облачный режим. Коробочный режим — тем же
