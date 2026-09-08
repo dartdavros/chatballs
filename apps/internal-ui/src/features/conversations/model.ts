@@ -270,16 +270,22 @@ export const fetchWaitingCount = () => api<{ waiting: number }>("/api/v1/convers
 
 // Справочник блока «Диалог» (кадр G): все группы для переноса и коллеги для
 // назначения — доступен и сотруднику, у которого нет менеджерских списков.
+export type ChatDirectoryEmployee = { id: number; name: string; avatarUrl?: string | null };
+
 export type ChatDirectory = {
   groups: Array<{ id: number; name: string; color?: string }>;
-  employees: Array<{ id: number; name: string; avatarUrl?: string | null }>;
+  // Выдача коллег ограничена, поиск — на сервере: ростер организации может
+  // быть каким угодно, а выбор ответственного — не список.
+  employees: ChatDirectoryEmployee[];
+  hasMoreEmployees?: boolean;
 };
 
 // Карточка контакта из диалога (карандаш у имени, дизайн-базлайн v2).
 export const updateContactCard = (conversationId: number, fields: Partial<{ name: string; description: string; phone: string; company: string; city: string }>) =>
   conversationAction(conversationId, "contact", fields);
 
-export const fetchChatDirectory = () => api<ChatDirectory>("/api/v1/conversations/directory/");
+export const fetchChatDirectory = (query = "") =>
+  api<ChatDirectory>(`/api/v1/conversations/directory/${query.trim() ? `?q=${encodeURIComponent(query.trim())}` : ""}`);
 
 const conversationAction = (id: number, suffix: string, body: object) =>
   api<{ conversation: ApiConversation }>(`/api/v1/conversations/${id}/${suffix}/`, {

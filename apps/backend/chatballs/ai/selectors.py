@@ -1,13 +1,12 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-from django.db.models import Count, IntegerField, OuterRef, Prefetch, Q, QuerySet, Subquery, Value
+from django.db.models import Count, IntegerField, OuterRef, Q, QuerySet, Subquery, Value
 from django.db.models.functions import Coalesce
 
 from chatballs.ai.agent_knowledge import knowledge_available_to_channel
 from chatballs.ai.knowledge_policy import readable_knowledge, writable_knowledge
 from chatballs.ai.models import AIAgent, Knowledge, KnowledgeCategory, KnowledgeFragment
-from chatballs.channels.models import Channel
 from chatballs.identity.models import AuditEvent
 from chatballs.identity.policy import has_capability_any_scope
 from chatballs.tenancy.context import TenantContext

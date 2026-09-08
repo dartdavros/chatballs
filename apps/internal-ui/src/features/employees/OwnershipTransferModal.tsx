@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { api } from "../../api/client";
 import { Icon } from "../../shared/icons";
 import { Avatar } from "../../shared/ui";
+import { SearchInput } from "../../shared/ui-controls";
+import { useDebounced } from "../../shared/useDebounced";
 import type { Employee, Role } from "../../types";
 import { fetchOwner, fetchOwnershipCandidates } from "./api";
 import { employeeAvatarColor, roleBadge } from "./model";
@@ -22,6 +24,11 @@ export function OwnershipTransferModal({ onClose }: { onClose: () => void }) {
   const [owner, setOwner] = useState<Employee | null>(null);
   const [candidates, setCandidates] = useState<Employee[]>([]);
   const [targetId, setTargetId] = useState<number | null>(null);
+  // Поиск по кандидатам появляется, только если администраторов больше, чем
+  // вернула страница: у обычной команды выбор остаётся простым списком.
+  const [query, setQuery] = useState("");
+  const [hasMore, setHasMore] = useState(false);
+  const settledQuery = useDebounced(query);
   const [previousOwnerRole, setPreviousOwnerRole] = useState<Extract<Role, "ADMIN" | "EMPLOYEE">>("ADMIN");
 
   const [confirmed, setConfirmed] = useState(false);
@@ -30,13 +37,16 @@ export function OwnershipTransferModal({ onClose }: { onClose: () => void }) {
 
   useEffect(() => {
     let active = true;
-    void Promise.all([fetchOwner(), fetchOwnershipCandidates()])
+    void Promise.all([fetchOwner(), fetchOwnershipCandidates(settledQuery)])
       .then(([owners, admins]) => {
         if (!active) return;
         const activeAdmins = admins.items.filter((employee) => employee.isActive && !employee.isBlocked);
         setOwner(owners.items[0] ?? null);
         setCandidates(activeAdmins);
-        setTargetId(activeAdmins[0]?.id ?? null);
+        setHasMore(admins.total > admins.items.length);
+        setTargetId((current) => (
+          activeAdmins.some((employee) => employee.id === current) ? current : activeAdmins[0]?.id ?? null
+        ));
       })
       .catch(() => {
         if (active) setError("Не удалось загрузить кандидатов");
@@ -44,7 +54,7 @@ export function OwnershipTransferModal({ onClose }: { onClose: () => void }) {
     return () => {
       active = false;
     };
-  }, []);
+  }, [settledQuery]);
 
   if (!owner) return null;
   const target = candidates.find((employee) => employee.id === targetId) ?? null;
@@ -77,6 +87,14 @@ export function OwnershipTransferModal({ onClose }: { onClose: () => void }) {
         </header>
 
         <div className="employee-transfer-body">
+          {(hasMore || query) && (
+            <SearchInput
+              className="employee-transfer-search"
+              placeholder="Имя, почта или должность"
+              value={query}
+              onChange={setQuery}
+            />
+          )}
           {candidates.length === 0 ? (
             <p className="employee-create-note">Активных администраторов нет. Чтобы передать владение сотруднику, сначала сделайте его администратором.</p>
           ) : (

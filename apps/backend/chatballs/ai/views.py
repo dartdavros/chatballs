@@ -21,9 +21,6 @@ from chatballs.ai.knowledge_services import (
 )
 from chatballs.ai.indexing import reindex_knowledge
 from chatballs.ai.models import Knowledge
-
-# Библиотека знаний плотная — своя страница (кадр KB1).
-KNOWLEDGE_PAGE_SIZE = 25
 from chatballs.ai.selectors import (
     apply_knowledge_filters,
     knowledge_editors,
@@ -35,6 +32,9 @@ from chatballs.ai.serializers import attachment_payload, knowledge_payload
 from chatballs.api.permissions import HasCapability
 from chatballs.identity.audit import record_audit_event
 from chatballs.identity.models import AuditEvent
+
+# Библиотека знаний плотная — своя страница (кадр KB1).
+KNOWLEDGE_PAGE_SIZE = 25
 
 _validation_error = validation_error_response
 

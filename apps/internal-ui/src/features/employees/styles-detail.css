@@ -667,3 +667,10 @@
     padding-left: 20px;
   }
 }
+
+/* Поиск по кандидатам передачи владения (кадр E9): показывается, только если
+   администраторов больше, чем вернула страница. */
+.employee-transfer-body .employee-transfer-search {
+  width: 100%;
+  margin-bottom: 12px;
+}

@@ -2,7 +2,9 @@ import { Dropdown } from "antd";
 import { useEffect, useState } from "react";
 
 import { Icon } from "../../shared/icons";
+import { SearchInput } from "../../shared/ui-controls";
 import { PriorityBars } from "./DialogList";
+import { useEmployeeDirectory } from "./useEmployeeDirectory";
 import { statusFor } from "./data";
 import {
   agentColorOf,
@@ -47,16 +49,15 @@ function initials(name: string): string {
 export function DialogControls({
   detail,
   groups,
-  employees,
   applyConversation,
   viewerId = null,
 }: {
   detail: ApiConversation;
   groups: Array<EmployeeGroupRef & { color?: string }>;
-  employees: Array<{ id: number; name: string; avatarUrl?: string | null }>;
   applyConversation: (updated: ApiConversation) => void;
   viewerId?: number | null;
 }) {
+  const directory = useEmployeeDirectory();
   const [busy, setBusy] = useState(false);
   const [errorText, setErrorText] = useState("");
   const [collapsed, setCollapsed] = useState(false);
@@ -112,7 +113,7 @@ export function DialogControls({
   const assigneeLabel = assignee ? `${assignee.name}${viewerId != null && assignee.id === viewerId ? " · вы" : ""}` : "Не назначен";
   const status = statusFor(controlModeOf(detail), assignee?.name);
   const priorityLabel = PRIORITY_OPTIONS.find(([value]) => value === detail.priority)?.[1] ?? "Не задан";
-  const canEdit = employees.length > 0 || groups.length > 0;
+  const canEdit = directory.employees.length > 0 || groups.length > 0;
 
   return (
     <>
@@ -127,13 +128,29 @@ export function DialogControls({
 
             <label className="ctx-label">Ответственный</label>
             <Dropdown
-              disabled={busy || employees.length === 0}
+              disabled={busy || (directory.employees.length === 0 && !directory.query)}
               trigger={["click"]}
               overlayClassName="app-dropdown ctx-menu"
               menu={{
                 items: [
+                  // Строка поиска появляется, когда коллег больше, чем помещается
+                  // в выдачу справочника: маленькой команде она не нужна.
+                  ...(directory.hasMore || directory.query
+                    ? [{
+                      key: "search",
+                      type: "group" as const,
+                      label: (
+                        <SearchInput
+                          className="ctx-menu-search"
+                          placeholder="Имя или почта"
+                          value={directory.query}
+                          onChange={directory.setQuery}
+                        />
+                      ),
+                    }]
+                    : []),
                   { key: "none", label: <button type="button" className={assignee ? "" : "is-checked"} onClick={() => void run(() => setConversationAssignee(detail.id, null))}><span className="ctx-avatar-empty" /><span>Не назначен</span>{!assignee && <Icon name="check" size={15} />}</button> },
-                  ...employees.map((employee) => ({
+                  ...directory.employees.map((employee) => ({
                     key: employee.id,
                     label: <button type="button" className={assignee?.id === employee.id ? "is-checked" : ""} onClick={() => void run(() => setConversationAssignee(detail.id, employee.id))}><SmallAvatar name={employee.name} avatarUrl={employee.avatarUrl} /><span>{employee.name}{viewerId === employee.id ? " · вы" : ""}</span>{assignee?.id === employee.id && <Icon name="check" size={15} />}</button>,
                   })),

@@ -7,7 +7,7 @@
 
 from __future__ import annotations
 
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.utils import timezone
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -270,6 +270,11 @@ class ConversationCountersView(ConversationViewBase):
         )
 
 
+# Справочник выбора: ростер организации может быть большим, поэтому список
+# коллег ограничен и ищется на сервере — в выборе стоит строка поиска (кадр G).
+DIRECTORY_LIMIT = 50
+
+
 class ConversationDirectoryView(APIView):
     """Справочник блока «Диалог» для оператора (дизайн-базлайн v2, кадр G):
     все группы организации — для переноса, активные коллеги — для назначения.
@@ -287,6 +292,14 @@ class ConversationDirectoryView(APIView):
             .filter(organization_id=organization_id, blocked_at__isnull=True, user__is_active=True)
             .order_by("user__full_name", "user__email")
         )
+        query = request.query_params.get("q", "").strip()
+        if query:
+            members = members.filter(
+                Q(user__full_name__icontains=query) | Q(user__email__icontains=query)
+            )
+        # Ответственного можно назначить и вне выдачи — по поиску, поэтому
+        # оставшихся не прячем молча, а сообщаем признаком hasMore.
+        rows = list(members[: DIRECTORY_LIMIT + 1])
         return Response(
             {
                 "groups": [{"id": group.id, "name": group.name, "color": group.color} for group in groups],
@@ -296,8 +309,9 @@ class ConversationDirectoryView(APIView):
                         "name": member.user.full_name or member.user.email,
                         "avatarUrl": user_avatar_url(member.user, request.tenant_context.organization.public_id),
                     }
-                    for member in members
+                    for member in rows[:DIRECTORY_LIMIT]
                 ],
+                "hasMoreEmployees": len(rows) > DIRECTORY_LIMIT,
             }
         )
 

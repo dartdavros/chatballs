@@ -65,7 +65,6 @@ export function ChatPage({
           dialog={dialog}
           detail={detail}
           groups={directory.groups}
-          employees={directory.employees}
           applyConversation={applyConversation}
           startCall={startCall}
           closeContext={closeContext}
@@ -82,7 +81,6 @@ function ChatContextPanel({
   dialog,
   detail,
   groups,
-  employees,
   applyConversation,
   startCall,
   closeContext,
@@ -93,7 +91,6 @@ function ChatContextPanel({
   dialog: ConversationListItem | null;
   detail: ApiConversation | null;
   groups: Array<EmployeeGroupRef & { color?: string }>;
-  employees: Array<{ id: number; name: string; avatarUrl?: string | null }>;
   applyConversation: (updated: ApiConversation) => void;
   startCall: ((kind: "AUDIO" | "VIDEO") => void) | null;
   closeContext: () => void;
@@ -108,7 +105,7 @@ function ChatContextPanel({
       </div>
       <div className="sales-context-body">
         {rightTab === "client" && (
-          <ClientContext dialog={dialog} detail={detail} groups={groups} employees={employees} applyConversation={applyConversation} startCall={startCall} viewerId={viewerId} />
+          <ClientContext dialog={dialog} detail={detail} groups={groups} applyConversation={applyConversation} startCall={startCall} viewerId={viewerId} />
         )}
         {rightTab === "history" && <HistoryContext detail={detail} />}
       </div>

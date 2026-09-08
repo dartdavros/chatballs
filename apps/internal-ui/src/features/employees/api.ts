@@ -68,9 +68,12 @@ export function fetchEmployees(
 }
 
 /** Кандидаты на владение (кадр E9) — только действующие администраторы.
- *  Их единицы, поэтому берётся одна страница; роль отбирает сервер. */
-export function fetchOwnershipCandidates(): Promise<PagedPayload<Employee>> {
-  return api<PagedPayload<Employee>>("/api/v1/employees/?role=ADMIN&pageSize=100");
+ *  Роль и поиск отбирает сервер; если админов больше страницы, у выбора
+ *  появляется строка поиска. */
+export function fetchOwnershipCandidates(query = ""): Promise<PagedPayload<Employee>> {
+  const params = new URLSearchParams({ role: "ADMIN", pageSize: "100" });
+  if (query.trim()) params.set("q", query.trim());
+  return api<PagedPayload<Employee>>(`/api/v1/employees/?${params.toString()}`);
 }
 
 export function fetchOwner(): Promise<PagedPayload<Employee>> {

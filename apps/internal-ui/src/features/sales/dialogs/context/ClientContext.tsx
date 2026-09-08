@@ -18,7 +18,6 @@ export function ClientContext({
   dialog,
   detail,
   groups = [],
-  employees = [],
   applyConversation,
   startCall,
   viewerId = null,
@@ -26,7 +25,6 @@ export function ClientContext({
   dialog: ConversationListItem | null;
   detail: ApiConversation | null;
   groups?: Array<EmployeeGroupRef & { color?: string }>;
-  employees?: Array<{ id: number; name: string; avatarUrl?: string | null }>;
   applyConversation?: (updated: ApiConversation) => void;
   startCall?: ((kind: "AUDIO" | "VIDEO") => void) | null;
   viewerId?: number | null;
@@ -131,7 +129,7 @@ export function ClientContext({
       </div>
 
       {detail && applyConversation && (
-        <DialogControls detail={detail} groups={groups} employees={employees} applyConversation={applyConversation} viewerId={viewerId} />
+        <DialogControls detail={detail} groups={groups} applyConversation={applyConversation} viewerId={viewerId} />
       )}
     </div>
   );
