@@ -98,7 +98,16 @@ def touch_session(request) -> None:
 
 
 def _decoded_sessions(user_id: int):
-    for session in Session.objects.all():
+    """Живые сессии пользователя.
+
+    Владельца сессии хранит её подписанное содержимое, отдельной колонки у
+    django_session нет — приходится расшифровывать строки и сравнивать. Отбор
+    по expire_date держит перебор в размере одновременно открытых сессий:
+    просроченные строки Django сам не удаляет, и без фильтра стоимость
+    просмотра карточки сотрудника росла бы вместе с историей входов за всё
+    время (чистит их maintenance-цикл воркера, clearsessions).
+    """
+    for session in Session.objects.filter(expire_date__gt=timezone.now()):
         data = session.get_decoded()
         if str(data.get("_auth_user_id")) == str(user_id):
             yield session, data
@@ -133,11 +142,9 @@ def list_user_sessions(user_id: int, current_session_key: str | None = None) -> 
 def revoke_user_sessions(user_id: int, *, except_session_key: str | None = None) -> int:
     """Delete all server-side sessions of a user, optionally keeping one (e.g. the current request)."""
     revoked = 0
-    for session in Session.objects.all():
+    for session, _data in _decoded_sessions(user_id):
         if except_session_key is not None and session.session_key == except_session_key:
             continue
-        data = session.get_decoded()
-        if str(data.get("_auth_user_id")) == str(user_id):
-            session.delete()
-            revoked += 1
+        session.delete()
+        revoked += 1
     return revoked

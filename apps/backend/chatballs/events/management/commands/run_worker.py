@@ -1,6 +1,7 @@
 import logging
 import time
 
+from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
@@ -60,8 +61,12 @@ class Command(BaseCommand):
                 except Exception as exc:  # pragma: no cover
                     logger.exception("Outbox event failed: %s", event.id)
                     mark_retry(event, str(exc))
-                continue
 
+            # Дальше идут периодические работы. Раньше обработка события
+            # обрывала цикл на `continue`, и при непрерывном потоке событий —
+            # а породить его может кто угодно через публичный виджет —
+            # переставали забираться входящие сообщения и истекать приглашения
+            # на звонки. Проверки дешёвые: почти всегда это сравнение времени.
             now = time.monotonic()
             if now - last_poll >= MESSENGER_POLL_INTERVAL:
                 last_poll = now
@@ -93,4 +98,14 @@ class Command(BaseCommand):
                             close_stale_conversations(context)
                 except Exception:  # pragma: no cover
                     logger.exception("Maintenance cycle failed")
-            time.sleep(1)
+                try:
+                    # Просроченные сессии Django сам не удаляет, а их накопление
+                    # утяжеляет карточку сотрудника: владельца сессии видно
+                    # только внутри её содержимого (chatballs.identity.sessions).
+                    call_command("clearsessions")
+                except Exception:  # pragma: no cover
+                    logger.exception("Session cleanup failed")
+            # Спим только когда работы нет: иначе очередь событий разбиралась бы
+            # по одному событию в секунду.
+            if event is None:
+                time.sleep(1)
