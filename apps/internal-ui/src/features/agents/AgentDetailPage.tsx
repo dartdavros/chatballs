@@ -213,8 +213,29 @@ export function AgentDetailPage({
   const tile = agentTile(card);
   const status = agentStatusMeta(card);
   const running = card.aiStatus === "ACTIVE";
+  // Выключение агента и удаление живут в этом меню, а не отдельными кнопками
+  // под карточкой: на странице остаётся один переключатель AI.
   const menuItems = [
     { key: "copy-code", label: <button type="button" onClick={() => { setMenuOpen(false); void navigator.clipboard?.writeText(card.code); }}><Icon name="copy" size={15} />Скопировать код</button> },
+    { type: "divider" as const },
+    {
+      key: "active",
+      disabled: busy,
+      label: (
+        <button type="button" onClick={() => { setMenuOpen(false); void apply({ isActive: !card.isActive }); }}>
+          <Icon name={card.isActive ? "xCircle" : "check"} size={15} />{card.isActive ? "Выключить агента" : "Включить агента"}
+        </button>
+      ),
+    },
+    {
+      key: "delete",
+      disabled: busy,
+      label: (
+        <button className="danger" type="button" onClick={() => { setMenuOpen(false); setDeleting(true); }}>
+          <Icon name="trash" size={15} />Удалить агента
+        </button>
+      ),
+    },
   ];
 
   return (
@@ -286,16 +307,6 @@ export function AgentDetailPage({
           <ModelCard card={card} providers={providers} canManage={canManage} busy={busy} apply={apply} />
         </div>
       </div>
-
-      {canManage && (
-        <footer className="agent-footer">
-          <button className="agent-footer-button" type="button" disabled={busy} onClick={() => void apply({ isActive: !card.isActive })}>
-            {card.isActive ? "Выключить агента" : "Включить агента"}
-          </button>
-          <button className="agent-footer-button is-danger" type="button" disabled={busy} onClick={() => setDeleting(true)}>Удалить</button>
-          <small>Удалить можно только без диалогов и подключений</small>
-        </footer>
-      )}
 
       {deleting && (
         <Modal

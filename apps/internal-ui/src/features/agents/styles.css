@@ -1239,44 +1239,6 @@
 
 /* Низ карточки. */
 
-.agent-footer {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding-top: 6px;
-}
-
-.agent-footer-button {
-  height: 32px;
-  padding: 0 12px;
-  border: 1px solid var(--n-7);
-  border-radius: 8px;
-  background: transparent;
-  color: var(--n-3);
-  font-family: inherit;
-  font-size: 12.5px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.agent-footer-button:hover:not(:disabled) {
-  background: var(--n-9);
-}
-
-.agent-footer-button.is-danger {
-  border-color: var(--error);
-  color: var(--error);
-}
-
-.agent-footer-button.is-danger:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--error) 8%, var(--surface-card));
-}
-
-.agent-footer small {
-  color: var(--n-5);
-  font-size: 12px;
-}
-
 @media (max-width: 1100px) {
   .agent-grid {
     grid-template-columns: minmax(0, 1fr);
