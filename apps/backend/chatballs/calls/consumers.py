@@ -9,6 +9,7 @@
 - reconnect WebSocket не создаёт новую CallSession — только presence-статусы.
 """
 
+import asyncio
 import logging
 
 from channels.db import database_sync_to_async
@@ -25,6 +26,11 @@ from chatballs.tenancy.database import run_tenant_operation
 logger = logging.getLogger(__name__)
 
 AUTH_TIMEOUT_CLOSE = 4401
+# Сколько ждём первое сообщение {"type": "auth"}. Соединение принимается до
+# аутентификации (иначе клиенту некуда прислать токен), поэтому без срока
+# неаутентифицированный клиент держал бы сокет и запись в channel layer
+# сколько угодно долго.
+AUTH_TIMEOUT_SECONDS = 10
 # События, которые сервер только ретранслирует второму участнику.
 RELAY_TYPES = {"webrtc.offer", "webrtc.answer", "webrtc.ice_candidate", "participant.media_state"}
 SEEN_COMMANDS_LIMIT = 512
@@ -38,6 +44,21 @@ class CallSignalingConsumer(AsyncJsonWebsocketConsumer):
         self.group = None
         self._seen_commands: set[str] = set()
         await self.accept()
+        self._auth_deadline = asyncio.create_task(self._close_unless_authenticated())
+
+    async def _close_unless_authenticated(self) -> None:
+        try:
+            await asyncio.sleep(AUTH_TIMEOUT_SECONDS)
+        except asyncio.CancelledError:
+            return
+        if self.call_id is None:
+            await self.close(code=AUTH_TIMEOUT_CLOSE)
+
+    def _cancel_auth_deadline(self) -> None:
+        deadline = getattr(self, "_auth_deadline", None)
+        if deadline is not None and not deadline.done():
+            deadline.cancel()
+        self._auth_deadline = None
 
     async def receive_json(self, content: dict, **kwargs) -> None:
         msg_type = content.get("type")
@@ -81,6 +102,7 @@ class CallSignalingConsumer(AsyncJsonWebsocketConsumer):
         # незнакомые типы игнорируются без разрыва соединения
 
     async def disconnect(self, code: int) -> None:
+        self._cancel_auth_deadline()
         if self.group is None:
             return
         await self.channel_layer.group_discard(self.group, self.channel_name)
@@ -94,6 +116,7 @@ class CallSignalingConsumer(AsyncJsonWebsocketConsumer):
 
     async def _authenticate(self, msg_type, content: dict) -> None:
         if msg_type != "auth":
+            self._cancel_auth_deadline()
             await self.close(code=AUTH_TIMEOUT_CLOSE)
             return
         token = str(content.get("token", ""))
@@ -102,9 +125,11 @@ class CallSignalingConsumer(AsyncJsonWebsocketConsumer):
                 lambda: authorize_call_access_context(token=token)
             )()
         except CallTokenError:
+            self._cancel_auth_deadline()
             await self.send_json({"type": "error", "code": "AUTH_FAILED"})
             await self.close(code=AUTH_TIMEOUT_CLOSE)
             return
+        self._cancel_auth_deadline()
         self.call_id = call.id
         self.side = claims.side
         self.tenant_context = context

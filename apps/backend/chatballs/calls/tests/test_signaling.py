@@ -2,14 +2,16 @@
 relay только между участниками звонка, переходы CONNECTING/ACTIVE/ENDED,
 reconnect без новой CallSession, поздние события игнорируются."""
 
+import asyncio
 from datetime import timedelta
+from unittest import mock
 
 from asgiref.sync import async_to_sync
 from channels.testing import WebsocketCommunicator
 from django.test import TransactionTestCase
 from django.utils import timezone
 
-from chatballs_backend.asgi import application
+from chatballs.calls import consumers
 from chatballs.calls.models import (
     CallParticipant,
     CallSession,
@@ -23,6 +25,7 @@ from chatballs.calls.services import (
 )
 from chatballs.calls.tests.helpers import CallDomainMixin, create_call_request, expire_stale_calls
 from chatballs.conversations.models import Message
+from chatballs_backend.asgi import application
 
 WS_PATH = "/ws/calls/"
 
@@ -245,3 +248,50 @@ class ReconnectSweepTests(SignalingTestCase):
         expire_stale_calls(self.organization)
         call = CallSession.objects.get()
         self.assertEqual(call.status, CallStatus.ACTIVE)
+
+
+class AuthDeadlineTests(CallDomainMixin, TransactionTestCase):
+    """Соединение принимается до аутентификации — значит, ждать оно должно не вечно."""
+
+    def test_unauthenticated_socket_is_closed_on_deadline(self) -> None:
+        async def scenario():
+            communicator = WebsocketCommunicator(application, WS_PATH)
+            connected, _ = await communicator.connect()
+            assert connected
+            # Токен не присылаем вовсе: сокет обязан закрыться сам.
+            output = await communicator.receive_output(timeout=5)
+            await communicator.disconnect()
+            return output
+
+        with mock.patch.object(consumers, "AUTH_TIMEOUT_SECONDS", 0.1):
+            output = async_to_sync(scenario)()
+
+        self.assertEqual(output["type"], "websocket.close")
+        self.assertEqual(output["code"], consumers.AUTH_TIMEOUT_CLOSE)
+
+    def test_authenticated_socket_survives_the_deadline(self) -> None:
+        created, customer_token = None, None
+
+        def prepare():
+            create_call_request(conversation_id=self.conversation.id, initiator=self.owner)
+            return open_call_for_identity(identity=self.identity).customer_access_token
+
+        customer_token = prepare()
+
+        async def scenario(token: str):
+            communicator = WebsocketCommunicator(application, WS_PATH)
+            connected, _ = await communicator.connect()
+            assert connected
+            await communicator.send_json_to({"type": "auth", "token": token})
+            state = await communicator.receive_json_from()
+            # Пережидаем срок: у аутентифицированного соединения он снят.
+            await asyncio.sleep(0.3)
+            nothing_left = await communicator.receive_nothing(timeout=0.2)
+            await communicator.disconnect()
+            return state, nothing_left
+
+        with mock.patch.object(consumers, "AUTH_TIMEOUT_SECONDS", 0.1):
+            state, nothing_left = async_to_sync(scenario)(customer_token)
+
+        self.assertEqual(state["type"], "call.state")
+        self.assertTrue(nothing_left)
