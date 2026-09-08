@@ -8,12 +8,22 @@ export default defineConfig({
   use: {
     trace: "on-first-retry",
   },
-  webServer: {
-    command: "npm --workspace @chatballs/internal-ui run dev",
-    url: "http://localhost:5173",
-    reuseExistingServer: true,
-    timeout: 120_000,
-  },
+  // Оба проекта должны подниматься сами: web-chat-mobile ходит на :5175, и без
+  // второго сервера прогон падал везде, где dev-стек не был поднят заранее.
+  webServer: [
+    {
+      command: "npm --workspace @chatballs/internal-ui run dev",
+      url: "http://localhost:5173",
+      reuseExistingServer: true,
+      timeout: 120_000,
+    },
+    {
+      command: "npm --workspace @chatballs/web-chat run dev",
+      url: "http://localhost:5175",
+      reuseExistingServer: true,
+      timeout: 120_000,
+    },
+  ],
   projects: [
     {
       name: "internal-ui",
