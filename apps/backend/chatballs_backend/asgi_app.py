@@ -9,11 +9,14 @@ django_asgi_app = get_asgi_application()
 
 from channels.routing import ProtocolTypeRouter, URLRouter  # noqa: E402
 
-from chatballs.calls.routing import websocket_urlpatterns  # noqa: E402
+from chatballs.calls.routing import websocket_urlpatterns as call_routes  # noqa: E402
+from chatballs.conversations.routing import (  # noqa: E402
+    websocket_urlpatterns as conversation_routes,
+)
 
 application = ProtocolTypeRouter(
     {
         "http": django_asgi_app,
-        "websocket": URLRouter(websocket_urlpatterns),
+        "websocket": URLRouter(call_routes + conversation_routes),
     }
 )

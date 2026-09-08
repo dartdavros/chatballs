@@ -11,6 +11,8 @@ import {
 // активность) и вклеивает её в уже загруженное, не сбрасывая прокрутку.
 const LIST_WINDOW = 30;
 const REFRESH_INTERVAL_MS = 4000;
+// С живыми оповещениями опрос остаётся только страховкой.
+const REFRESH_IDLE_INTERVAL_MS = 30000;
 
 export type ConversationListState = {
   conversations: ApiConversation[];
@@ -33,7 +35,10 @@ export function mergeHead(
   return [...head, ...tail.filter((conversation) => !fresh.has(conversation.id))];
 }
 
-export function useConversationList(query: ConversationListQuery): ConversationListState {
+export function useConversationList(
+  query: ConversationListQuery,
+  { live = false }: { live?: boolean } = {},
+): ConversationListState {
   const [conversations, setConversations] = useState<ApiConversation[]>([]);
   const [total, setTotal] = useState(0);
   const [loaded, setLoaded] = useState(false);
@@ -86,9 +91,12 @@ export function useConversationList(query: ConversationListQuery): ConversationL
   }, [stableQuery]);
 
   useEffect(() => {
-    const timer = setInterval(() => void refresh(), REFRESH_INTERVAL_MS);
+    const timer = setInterval(
+      () => void refresh(),
+      live ? REFRESH_IDLE_INTERVAL_MS : REFRESH_INTERVAL_MS,
+    );
     return () => clearInterval(timer);
-  }, [refresh]);
+  }, [live, refresh]);
 
   const loadMore = useCallback(() => {
     if (cursor == null || loadingMoreRef.current) return;

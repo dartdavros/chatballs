@@ -6,7 +6,9 @@ import { fetchMessages, type ApiMessage } from "./model";
 // прокрутке, вниз — дельтой обновления. Целиком лента не запрашивается никогда:
 // в диалоге может быть сколько угодно сообщений.
 const HISTORY_WINDOW = 50;
+// Пока оповещения живы, опрос — только страховка на случай потерянного события.
 const DELTA_INTERVAL_MS = 3000;
+const DELTA_IDLE_INTERVAL_MS = 30000;
 
 export type ConversationHistory = {
   messages: ApiMessage[];
@@ -26,7 +28,10 @@ function mergeNewer(current: ApiMessage[], incoming: ApiMessage[]): ApiMessage[]
   return fresh.length ? [...current, ...fresh] : current;
 }
 
-export function useConversationHistory(conversationId: number | null): ConversationHistory {
+export function useConversationHistory(
+  conversationId: number | null,
+  { live = false }: { live?: boolean } = {},
+): ConversationHistory {
   const [messages, setMessages] = useState<ApiMessage[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [hasOlder, setHasOlder] = useState(false);
@@ -88,9 +93,12 @@ export function useConversationHistory(conversationId: number | null): Conversat
 
   useEffect(() => {
     if (conversationId == null || !loaded) return;
-    const timer = setInterval(() => void catchUp(), DELTA_INTERVAL_MS);
+    const timer = setInterval(
+      () => void catchUp(),
+      live ? DELTA_IDLE_INTERVAL_MS : DELTA_INTERVAL_MS,
+    );
     return () => clearInterval(timer);
-  }, [catchUp, conversationId, loaded]);
+  }, [catchUp, conversationId, live, loaded]);
 
   const loadOlder = useCallback(() => {
     const id = conversationRef.current;

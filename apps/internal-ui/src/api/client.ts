@@ -69,6 +69,17 @@ export function resolveApiUrl(path: string): string {
   return `${configuredApiBase}${path}`;
 }
 
+/** Адрес WebSocket-канала организации: та же схема адресов, что у REST, и та
+ *  же сессия. Без активной организации канала нет — вернётся null. */
+export function resolveWebSocketUrl(path: string): string | null {
+  if (typeof window === "undefined" || !activeOrganizationPublicId) return null;
+  const base = configuredApiBase
+    ? new URL(configuredApiBase, window.location.origin)
+    : new URL(window.location.origin);
+  const protocol = base.protocol === "https:" ? "wss:" : "ws:";
+  return `${protocol}//${base.host}/ws/organizations/${activeOrganizationPublicId}${path}`;
+}
+
 function getCookie(name: string): string {
   const cookie = document.cookie
     .split("; ")

@@ -42,6 +42,7 @@ export function scopeLabel(scope: DialogScope): string {
 }
 import type { ConversationListItem, ListSort, ListTab } from "./types";
 import { useConversationCall } from "./useConversationCall";
+import { useConversationEvents } from "./useConversationEvents";
 import { useDebounced } from "../../shared/useDebounced";
 import { useConversationHistory } from "./useConversationHistory";
 import { useConversationList } from "./useConversationList";
@@ -94,8 +95,19 @@ export function ConversationWorkspace({ isOwner = false, viewerId = null, listTi
     ...(settledSearch ? { q: settledSearch } : {}),
     sort,
   }), [listTab, scope, settledSearch, sort]);
-  const list = useConversationList(query);
-  const history = useConversationHistory(selectedId);
+  // Оповещения ведут обновление, опрос остаётся страховкой: при обрыве сокета
+  // всё возвращается к прежним интервалам само.
+  const events = useConversationEvents({
+    conversationId: selectedId,
+    onInboxChanged: () => void list.refresh(),
+    onConversationChanged: (changedId) => {
+      if (changedId !== selectedIdRef.current) return;
+      void history.catchUp();
+      void loadDetail(changedId);
+    },
+  });
+  const list = useConversationList(query, { live: events.connected });
+  const history = useConversationHistory(selectedId, { live: events.connected });
 
   const loadDetail = useCallback(async (id: number) => {
     try {
@@ -128,10 +140,11 @@ export function ConversationWorkspace({ isOwner = false, viewerId = null, listTi
     setActionError("");
     void loadDetail(selectedId);
     // Карточка диалога (статус, ответственный, метки) обновляется отдельно от
-    // ленты: сообщений она больше не несёт.
-    const timer = setInterval(() => loadDetail(selectedId), 3000);
+    // ленты: сообщений она больше не несёт. С живыми оповещениями опрос — тоже
+    // страховка.
+    const timer = setInterval(() => loadDetail(selectedId), events.connected ? 30000 : 3000);
     return () => clearInterval(timer);
-  }, [selectedId, loadDetail]);
+  }, [events.connected, selectedId, loadDetail]);
 
   const onConversationChanged = useCallback(() => {
     if (selectedId != null) void loadDetail(selectedId);
