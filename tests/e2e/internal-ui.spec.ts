@@ -8,124 +8,183 @@ test.beforeEach(({}, testInfo) => {
   test.skip(testInfo.project.name !== "internal-ui", "internal-ui only");
 });
 
-const OWNER = {
-  id: 1,
-  email: "owner@example.com",
-  fullName: "Владелец",
-  role: "OWNER",
-  positionTitle: "Владелец",
-  organization: "acme",
-  organizationName: "Acme",
-  department: null,
+// Навигация владельца и администратора — ровно эти семь пунктов
+// (SPEC-CHATBALLS-0031 §4). У сотрудника навигации нет вовсе: его единственный
+// экран — чат.
+const MANAGER_NAV = ["Чат", "Контакты", "Агенты", "Сотрудники", "Порталы", "База знаний", "Настройки"];
+
+// Понятия, снесённые пивотом в контакт-центр (ADR-CHATBALLS-0041) и удалением
+// сущности Product (ADR-CHATBALLS-0045). Проверяем, что они не вернулись в
+// интерфейс: именно их ждали прежние редакции этих тестов.
+const REMOVED_FROM_UI = ["Командный центр", "Отделы", "Продажи", "Каналы", "Подключения", "Продукты"];
+
+const GROUPS = [
+  { id: 1, name: "Операторы", color: "#1677ff", memberCount: 1, memberIds: [7], createdAt: "2026-02-02T10:00:00Z" },
+  { id: 2, name: "Поддержка", color: "#2aa876", memberCount: 0, memberIds: [], createdAt: "2026-02-02T10:00:00Z" },
+];
+
+type Role = "OWNER" | "ADMIN" | "EMPLOYEE";
+
+// Права выводятся только из роли (ADR-CHATBALLS-0041 §5). Каталог — зеркало
+// backend'а, `chatballs/identity/capabilities.py`: OWNER получает всё, ADMIN —
+// всё, кроме передачи владения, EMPLOYEE — фиксированный набор для чата.
+const OWNER_ONLY_CAPABILITIES = ["ownership.transfer"];
+const EMPLOYEE_CAPABILITIES = [
+  "conversations.view", "conversations.operate", "conversations.call",
+  "customers.view", "support.view", "support.operate",
+];
+const ALL_CAPABILITIES = [
+  "ai.manage", "ai.publish", "ai.view", "audit.view", "channels.manage", "channels.view",
+  "company.manage", "company.view", "conversations.call", "conversations.operate",
+  "conversations.view", "customers.manage", "customers.view", "employees.manage",
+  "employees.manage_privileged", "employees.view", "groups.manage", "integrations.manage",
+  "integrations.view", "notifications.manage", "ownership.transfer", "secrets.manage",
+  "settings.manage", "settings.view", "support.operate", "support.view",
+];
+
+function capabilitiesFor(role: Role): string[] {
+  if (role === "EMPLOYEE") return EMPLOYEE_CAPABILITIES;
+  if (role === "ADMIN") return ALL_CAPABILITIES.filter((item) => !OWNER_ONLY_CAPABILITIES.includes(item));
+  return ALL_CAPABILITIES;
+}
+
+function membershipFor(role: Role, overrides: Record<string, unknown> = {}) {
+  return {
+    id: 1,
+    organizationPublicId: ORGANIZATION_PUBLIC_ID,
+    organization: "atelier-nord",
+    organizationName: "Ателье Норд",
+    organizationLogoUrl: null,
+    role,
+    positionTitle: role === "EMPLOYEE" ? "Оператор" : "Владелец",
+    totpRequired: false,
+    capabilities: capabilitiesFor(role),
+    groups: role === "EMPLOYEE" ? [{ id: 1, name: "Операторы" }] : [],
+    joinedAt: "2026-02-02T10:00:00Z",
+    ...overrides,
+  };
+}
+
+function identityFor(role: Role, memberships = [membershipFor(role)]) {
+  return {
+    id: role === "EMPLOYEE" ? 7 : 1,
+    email: role === "EMPLOYEE" ? "operator@example.com" : "owner@example.com",
+    fullName: role === "EMPLOYEE" ? "Светлана Петрова" : "Елена Кузнецова",
+    avatarUrl: null,
+    mustChangePassword: false,
+    totpEnabled: false,
+    totpLastUsedAt: null,
+    deliveryMode: "SELF_HOSTED",
+    memberships,
+    uiTheme: "LIGHT",
+    uiAccent: "#1677ff",
+  };
+}
+
+const OWNER_IDENTITY = identityFor("OWNER");
+const EMPLOYEE_IDENTITY = identityFor("EMPLOYEE");
+
+const EMPLOYEE_PERMISSIONS = {
+  canView: true,
+  canUpdateProfile: true,
+  canChangeRole: true,
+  canChangeGroups: true,
+  canBlock: true,
+  canUnblock: false,
+  canResetPassword: true,
+  canTerminateSessions: true,
+  canTransferOwnership: false,
+};
+
+const STAFF = {
+  id: 7,
+  email: "s.petrova@example.com",
+  fullName: "Светлана Петрова",
+  avatarUrl: null,
+  role: "EMPLOYEE",
+  positionTitle: "Оператор",
+  phone: "+7 903 118 77 51",
+  groups: [{ id: 1, name: "Операторы" }],
+  createdAt: "2026-05-20T10:00:00Z",
+  lastLogin: "2026-09-01T08:30:00Z",
+  isActive: true,
+  isBlocked: false,
   mustChangePassword: false,
   totpRequired: false,
-  totpEnabled: false,
-  capabilities: [
-    "company.view", "departments.view", "employees.view", "employees.manage", "employees.manage_privileged", "ownership.transfer", "ai.view",
-    "ai.manage", "integrations.view", "conversations.view", "customers.view", "sales.view",
-    "support.view",
-  ],
-  accessScopes: [{
-    scopeType: "ORGANIZATION",
-    departmentId: null,
-    departmentCode: null,
-    capabilities: [
-      "company.view", "departments.view", "employees.view", "employees.manage", "employees.manage_privileged", "ownership.transfer", "ai.view",
-      "ai.manage", "integrations.view", "conversations.view", "customers.view", "sales.view",
-      "support.view",
-    ],
-  }],
+  totpEnabled: true,
+  permissions: EMPLOYEE_PERMISSIONS,
 };
 
-// «Оператор» — рабочая функция обычного сотрудника (EMPLOYEE) в отделе (ADR-HUB-0027).
-const OPERATOR_CAPABILITIES = ["conversations.view", "conversations.operate", "customers.view", "sales.view", "sales.operate"];
-const OPERATOR = {
-  ...OWNER,
-  id: 2,
-  email: "operator@example.com",
-  fullName: "Оператор",
-  role: "EMPLOYEE",
-  positionTitle: "Оператор отдела продаж",
-  department: "sales",
-  capabilities: OPERATOR_CAPABILITIES,
-  accessScopes: [{
-    scopeType: "DEPARTMENT",
-    departmentId: 1,
-    departmentCode: "sales",
-    capabilities: OPERATOR_CAPABILITIES,
-  }],
+// Администратор нужен списку кандидатов на передачу владения: без него диалог
+// показывает пустое состояние, и проверять в нём нечего.
+const ADMIN_STAFF = {
+  ...STAFF,
+  id: 4,
+  email: "a.kim@example.com",
+  fullName: "Анна Ким",
+  role: "ADMIN",
+  positionTitle: "Администратор",
+  groups: [],
 };
 
-const identityFor = (membership: typeof OWNER) => ({
-  id: membership.id,
-  email: membership.email,
-  fullName: membership.fullName,
-  mustChangePassword: membership.mustChangePassword,
-  totpEnabled: membership.totpEnabled,
-  memberships: [{
-    id: membership.id,
-    organizationPublicId: ORGANIZATION_PUBLIC_ID,
-    organization: membership.organization,
-    organizationName: membership.organizationName,
-    role: membership.role,
-    positionTitle: membership.positionTitle,
-    department: membership.department,
-    totpRequired: membership.totpRequired,
-    capabilities: membership.capabilities,
-    accessScopes: membership.accessScopes,
-  }],
-});
+const OWNER_STAFF = {
+  ...STAFF,
+  id: 1,
+  email: "owner@example.com",
+  fullName: "Елена Кузнецова",
+  role: "OWNER",
+  positionTitle: "Владелец",
+  groups: [],
+  // Владельца нельзя удалить и заблокировать; единственное опасное действие на
+  // его карточке — передача владения (SPEC-CHATBALLS-0031 §3).
+  permissions: { ...EMPLOYEE_PERMISSIONS, canBlock: false, canChangeRole: false, canTransferOwnership: true },
+};
 
-const OWNER_IDENTITY = identityFor(OWNER);
-const OPERATOR_IDENTITY = identityFor(OPERATOR);
+// Пустое, но валидное окружение экрана: чат, справочники и чек-лист запуска.
+// Без него любой экран падает в состояние ошибки и проверять на нём нечего.
+async function mockInstance(page: Page) {
+  await page.route("**/api/v1/setup/", (route) => route.fulfill({ json: { needsSetup: false } }));
+  await page.route("**/api/v1/organizations/*/conversations/**", (route) => {
+    const path = new URL(route.request().url()).pathname;
+    if (path.endsWith("/conversations/counters/")) {
+      return route.fulfill({ json: { all: 0, waiting: 0, mine: 0, ungrouped: 0, groups: [], agents: [], assignees: [] } });
+    }
+    if (path.endsWith("/conversations/directory/")) {
+      return route.fulfill({ json: { groups: GROUPS.map((group) => ({ id: group.id, name: group.name, color: group.color })), employees: [] } });
+    }
+    if (path.endsWith("/conversations/stats/")) return route.fulfill({ json: { waiting: 0 } });
+    return route.fulfill({ json: { items: [] } });
+  });
+  await page.route("**/api/v1/organizations/*/company/**", (route) => {
+    const path = new URL(route.request().url()).pathname;
+    if (path.endsWith("/company/launch-checklist/")) {
+      return route.fulfill({ json: { agentCreated: true, connectionBound: true, employeeInvited: true, done: true } });
+    }
+    return route.fulfill({ json: { items: GROUPS } });
+  });
+  await page.route("**/api/v1/organizations/*/agents/**", (route) => route.fulfill({ json: { items: [] } }));
+  await page.route("**/api/v1/organizations/*/notifications/**", (route) => route.fulfill({ json: { items: [] } }));
+}
 
-async function mockData(page: Page) {
-  const permissions = {
-    canView: true, canUpdateProfile: true, canChangeRole: true, canChangePlacement: true,
-    canChangeAccess: true, canBlock: true, canUnblock: false, canResetPassword: true,
-    canTerminateSessions: true, canTransferOwnership: false,
-  };
-  const employee = {
-    id: 7, email: "d.sokolov@example.com", fullName: "Дмитрий Соколов", phone: "+7 903 118 77 51",
-    role: "EMPLOYEE", positionTitle: "Менеджер по продажам", department: "sales", departmentName: "Отдел продаж",
-    createdAt: "2026-05-20T10:00:00Z", lastLogin: "2026-07-13T08:30:00Z", isActive: true, isBlocked: false,
-    mustChangePassword: false, totpRequired: false, totpEnabled: true, permissions,
-    accessAssignments: [{
-      id: 11, profileId: 1, profileName: "Продажи · оператор", scopeType: "DEPARTMENT",
-      departmentId: 1, departmentCode: "sales", departmentName: "Отдел продаж",
-      capabilities: ["sales.view", "sales.operate", "customers.view", "conversations.view"],
-    }],
-  };
-  const ownerEmployee = {
-    id: 1, email: OWNER.email, fullName: OWNER.fullName, phone: "+7 916 000 11 22",
-    role: "OWNER", positionTitle: OWNER.positionTitle, department: null, departmentName: null,
-    createdAt: "2026-02-02T10:00:00Z", lastLogin: "2026-07-13T08:40:00Z", isActive: true, isBlocked: false,
-    mustChangePassword: false, totpRequired: false, totpEnabled: true,
-    permissions: { ...permissions, canChangeRole: false, canChangePlacement: false, canTransferOwnership: true },
-    accessAssignments: [],
-  };
-  const profiles = [{
-    id: 1, name: "Продажи · оператор", description: "Работа с диалогами, клиентами и продажами отдела.",
-    isSystem: false, isActive: true, capabilities: ["sales.view", "sales.operate", "customers.view", "conversations.view"],
-    allowedScopes: ["DEPARTMENT", "ORGANIZATION"], assignedCount: 1,
-  }];
-  const capabilities = [
-    { code: "sales.view", name: "Просмотр продаж", description: "", allowedScopes: ["DEPARTMENT", "ORGANIZATION"], assignable: true, protected: false },
-    { code: "sales.operate", name: "Работа с продажами", description: "", allowedScopes: ["DEPARTMENT", "ORGANIZATION"], assignable: true, protected: false },
-    { code: "employees.manage_privileged", name: "Управление привилегированными сотрудниками", description: "", allowedScopes: ["ORGANIZATION"], assignable: false, protected: true },
-    { code: "ownership.transfer", name: "Передача владения", description: "", allowedScopes: ["ORGANIZATION"], assignable: false, protected: true },
-  ];
-  await page.route("**/api/v1/organizations/*/access-profiles/capabilities/", (route) => route.fulfill({ json: { items: capabilities } }));
-  await page.route("**/api/v1/organizations/*/access-profiles/", (route) => route.fulfill({ json: { items: profiles } }));
+async function mockEmployees(page: Page) {
   await page.route("**/api/v1/organizations/*/employees/**", (route) => {
     const path = new URL(route.request().url()).pathname;
-    if (path.endsWith("/employees/7/")) {
-      return route.fulfill({ json: { employee: { ...employee, activeSessionCount: 1, auditEvents: [{ action: "identity.employee_created", result: "SUCCESS", createdAt: "2026-05-20T10:00:00Z" }] } } });
+    const detail = path.match(/\/employees\/(\d+)\/$/);
+    if (detail) {
+      const employee = { "1": OWNER_STAFF, "4": ADMIN_STAFF }[detail[1]] ?? STAFF;
+      return route.fulfill({
+        json: {
+          employee: {
+            ...employee,
+            activeSessionCount: 1,
+            passwordChangedAt: "2026-08-01T10:00:00Z",
+            auditEvents: [{ action: "identity.employee_created", result: "SUCCESS", createdAt: "2026-05-20T10:00:00Z" }],
+          },
+        },
+      });
     }
-    return route.fulfill({ json: { items: [ownerEmployee, employee] } });
+    return route.fulfill({ json: { items: [OWNER_STAFF, ADMIN_STAFF, STAFF] } });
   });
-  await page.route("**/api/v1/organizations/*/company/departments/**", (route) => route.fulfill({ json: { items: [{ id: 1, code: "sales", name: "Отдел продаж", status: "ACTIVE", memberCount: 1, operatorCount: 1, activeOperatorCount: 1, agentCount: 0, products: [] }] } }));
-  await page.route("**/api/v1/organizations/*/ai/agents/**", (route) => route.fulfill({ json: { items: [] } }));
 }
 
 async function mockSession(page: Page, user: object | null) {
@@ -136,7 +195,8 @@ async function mockSession(page: Page, user: object | null) {
 
 async function login(page: Page, user: object) {
   await mockSession(page, null);
-  await mockData(page);
+  await mockInstance(page);
+  await mockEmployees(page);
   await page.route("**/api/v1/auth/login/", (route) => route.fulfill({ json: { authenticated: true, user } }));
   await page.goto("/");
   await page.getByPlaceholder("you@domain.ru").fill("user@example.com");
@@ -144,28 +204,40 @@ async function login(page: Page, user: object) {
   await page.getByRole("button", { name: "Войти" }).click();
 }
 
-test("OWNER logs in and sees every available sidebar section collapsed", async ({ page }) => {
+const managerNav = (page: Page) => page.locator("nav.hub-nav button.hub-nav-item");
+
+test("владелец после входа попадает в чат и видит семь пунктов навигации", async ({ page }) => {
   await login(page, OWNER_IDENTITY);
 
-  await expect(page).toHaveURL(new RegExp(`/organizations/${ORGANIZATION_PUBLIC_ID}/`));
-  await expect(page.getByRole("heading", { name: "Командный центр" })).toBeVisible();
-  await expect(page.locator(".hub-nav-section-toggle", { hasText: "Продажи" })).toHaveAttribute("aria-expanded", "false");
-  await expect(page.locator(".hub-nav-section-toggle", { hasText: "Поддержка" })).toHaveAttribute("aria-expanded", "false");
-  await expect(page.locator(".hub-nav-section-toggle", { hasText: "AI" })).toHaveAttribute("aria-expanded", "false");
-  await expect(page.getByRole("button", { name: "Отделы", exact: true })).toHaveCount(0);
+  await expect(page).toHaveURL(new RegExp(`/organizations/${ORGANIZATION_PUBLIC_ID}/chat`));
+  await expect(managerNav(page)).toHaveCount(MANAGER_NAV.length);
+  for (const label of MANAGER_NAV) {
+    await expect(page.locator("nav.hub-nav").getByRole("button", { name: label, exact: true })).toBeVisible();
+  }
+  for (const removed of REMOVED_FROM_UI) {
+    await expect(page.getByRole("button", { name: removed, exact: true })).toHaveCount(0);
+  }
 });
 
-test("OPERATOR logs in and sees the accessible department in the main sidebar", async ({ page }) => {
-  await login(page, OPERATOR_IDENTITY);
+test("сотрудник после входа попадает в чат, и навигации у него нет", async ({ page }) => {
+  await login(page, EMPLOYEE_IDENTITY);
 
-  await expect(page).toHaveURL(/\/departments\/sales\/dialogs/);
-  await expect(page.locator(".hub-nav-section-toggle", { hasText: "Продажи" })).toHaveAttribute("aria-expanded", "false");
-  await expect(page.getByRole("button", { name: "Поддержка", exact: true })).toHaveCount(0);
+  await expect(page).toHaveURL(new RegExp(`/organizations/${ORGANIZATION_PUBLIC_ID}/chat`));
+  await expect(page.locator(".sales-conversation-empty")).toBeVisible();
+  // Единственный экран сотрудника: сайдбар сведён к дереву диалогов, пунктов
+  // администрирования нет ни одного. Дерево тоже лежит в nav.hub-nav, поэтому
+  // проверяем именно пункты навигации.
+  await expect(page.locator("nav.chat-scope-tree")).toBeVisible();
+  await expect(managerNav(page)).toHaveCount(0);
+  for (const label of MANAGER_NAV.filter((item) => item !== "Чат")) {
+    await expect(page.getByRole("button", { name: label, exact: true })).toHaveCount(0);
+  }
 });
 
-test("OPERATOR opening an owner-only route sees the 403 permission screen", async ({ page }) => {
-  await mockSession(page, OPERATOR_IDENTITY);
-  await mockData(page);
+test("сотрудник на менеджерском маршруте видит экран 403", async ({ page }) => {
+  await mockSession(page, EMPLOYEE_IDENTITY);
+  await mockInstance(page);
+  await mockEmployees(page);
 
   await page.goto("/employees");
 
@@ -173,75 +245,97 @@ test("OPERATOR opening an owner-only route sees the 403 permission screen", asyn
   await expect(page.getByRole("button", { name: "Вернуться" })).toBeVisible();
 });
 
-test("the organization URL selects one membership without a global session tenant", async ({ page }) => {
-  const secondMembership = {
-    ...OWNER_IDENTITY.memberships[0],
+test("организация выбирается адресом, а не сохранённой сессией", async ({ page }) => {
+  const secondMembership = membershipFor("OWNER", {
     id: 3,
     organizationPublicId: SECOND_ORGANIZATION_PUBLIC_ID,
     organization: "second",
-    organizationName: "Second",
-  };
+    organizationName: "Вторая организация",
+  });
   const requests: string[] = [];
   page.on("request", (request) => {
     if (request.url().includes("/api/v1/organizations/")) requests.push(request.url());
   });
-  await mockSession(page, {
-    ...OWNER_IDENTITY,
-    memberships: [...OWNER_IDENTITY.memberships, secondMembership],
-  });
-  await mockData(page);
+  await mockInstance(page);
+  await mockEmployees(page);
+  await mockSession(page, identityFor("OWNER", [membershipFor("OWNER"), secondMembership]));
 
   await page.goto(`/organizations/${SECOND_ORGANIZATION_PUBLIC_ID}/`);
 
-  await expect(page.getByRole("heading", { name: "Командный центр" })).toBeVisible();
+  await expect(managerNav(page)).toHaveCount(MANAGER_NAV.length);
+  // Организация берётся из адреса: запросы уходят только во вторую организацию,
+  // хотя членство в первой тоже есть.
   await expect.poll(() => requests.some((url) => url.includes(SECOND_ORGANIZATION_PUBLIC_ID))).toBe(true);
+  expect(requests.filter((url) => url.includes(ORGANIZATION_PUBLIC_ID))).toEqual([]);
 });
 
-test("internal UI renders at the minimum supported width of 1024px", async ({ page }) => {
+test("интерфейс работает на минимальной поддерживаемой ширине 1024px", async ({ page }) => {
   await page.setViewportSize({ width: 1024, height: 768 });
+  await mockInstance(page);
+  await mockEmployees(page);
   await mockSession(page, OWNER_IDENTITY);
-  await mockData(page);
 
   await page.goto("/");
 
-  await expect(page.getByRole("heading", { name: "Командный центр" })).toBeVisible();
+  await expect(managerNav(page)).toHaveCount(MANAGER_NAV.length);
+  await expect(page.locator(".sales-conversation-empty")).toBeVisible();
+  // На минимальной ширине страница не должна прокручиваться по горизонтали
+  // (SPEC-CHATBALLS-0031 §8).
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  );
+  expect(overflow).toBeLessThanOrEqual(0);
   await page.screenshot({ path: "test-results/internal-ui-owner-1024.png" });
 });
 
-test("employee stage 3 screens follow the approved baseline", async ({ page }) => {
+test("экран сотрудников: список, создание, карточка и передача владения", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 940 });
+  await mockInstance(page);
+  await mockEmployees(page);
   await mockSession(page, OWNER_IDENTITY);
-  await mockData(page);
 
   await page.goto("/employees");
   await expect(page.getByRole("heading", { name: "Сотрудники" })).toBeVisible();
-  await expect(page.getByText("Дмитрий Соколов")).toBeVisible();
-  await expect(page.getByRole("columnheader", { name: "ДОСТУП" })).toBeVisible();
-  await page.screenshot({ path: "test-results/employees-stage-3-list.png", fullPage: true });
+  await expect(page.getByText("Светлана Петрова").first()).toBeVisible();
+
+  // Состав колонок текущего списка. Прежняя редакция теста искала колонку
+  // «ДОСТУП» ролью columnheader — список не является семантической таблицей.
+  const head = page.locator(".employees-thead");
+  for (const column of ["Сотрудник", "Роль", "Должность", "Группы", "Доступ", "Статус", "Последний вход"]) {
+    await expect(head.getByText(column, { exact: true })).toBeVisible();
+  }
+  await page.screenshot({ path: "test-results/employees-list.png", fullPage: true });
 
   await page.getByRole("button", { name: "Добавить сотрудника" }).click();
   await expect(page.getByRole("complementary", { name: "Новый сотрудник" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "1 Учётные данные" })).toBeVisible();
-  await page.screenshot({ path: "test-results/employees-stage-3-create.png", fullPage: true });
+  await page.screenshot({ path: "test-results/employees-create.png", fullPage: true });
   await page.getByRole("button", { name: "Закрыть", exact: true }).click();
 
-  await page.getByRole("button", { name: "Действия: Владелец" }).click();
+  // Карточка сотрудника: должность и группы вместо прежних профилей доступа и
+  // отделов.
+  await page.getByRole("button", { name: /Светлана Петрова/ }).first().click();
+  await expect(page).toHaveURL(/\/employees\/7$/);
+  await expect(page.getByRole("heading", { name: "Светлана Петрова" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Должность и группы" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Системная роль" })).toBeVisible();
+  await expect(page.getByText("Профили доступа")).toHaveCount(0);
+  await page.screenshot({ path: "test-results/employees-detail.png", fullPage: true });
+
+  // Передача владения живёт в «Опасной зоне» карточки владельца, а не в меню
+  // строки списка.
+  await page.getByRole("button", { name: "Все сотрудники" }).click();
+  await page.getByRole("button", { name: /Елена Кузнецова/ }).first().click();
+  await expect(page).toHaveURL(/\/employees\/1$/);
+  await expect(page.getByRole("heading", { name: "Опасная зона" })).toBeVisible();
   await page.getByRole("button", { name: "Передать владение" }).click();
   const transferDialog = page.getByRole("dialog", { name: "Передача владения" });
   await expect(transferDialog).toBeVisible();
-  await page.screenshot({ path: "test-results/employees-stage-3-ownership.png", fullPage: true });
+  // Кандидатами могут быть только активные администраторы: сотрудника в списке
+  // быть не должно.
+  const candidates = transferDialog.locator("select");
+  await expect(candidates.locator("option")).toHaveCount(1);
+  await expect(candidates.locator("option")).toContainText("Анна Ким");
+  await page.screenshot({ path: "test-results/employees-ownership.png", fullPage: true });
   await transferDialog.getByRole("button", { name: "Отмена" }).click();
-
-  await page.getByRole("button", { name: /^Дмитрий Соколов d\.sokolov/ }).click();
-  await expect(page).toHaveURL(/\/employees\/7$/);
-  await expect(page.getByRole("heading", { name: "Дмитрий Соколов" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Профили доступа и scopes" })).toBeVisible();
-  await page.screenshot({ path: "test-results/employees-stage-3-detail.png", fullPage: true });
-
-  await page.getByRole("button", { name: "Все сотрудники" }).click();
-  await page.getByRole("button", { name: "Профили доступа" }).click();
-  await expect(page).toHaveURL(/\/employees\/access-profiles$/);
-  await expect(page.getByRole("heading", { name: "Профили доступа", exact: true })).toBeVisible();
-  await expect(page.getByText("Продажи · оператор").first()).toBeVisible();
-  await page.screenshot({ path: "test-results/employees-stage-3-profiles.png", fullPage: true });
+  await expect(transferDialog).toHaveCount(0);
 });
