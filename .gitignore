@@ -18,3 +18,8 @@ coverage/
 playwright-report/
 test-results/
 .DS_Store
+
+# Перенесено из корневого .gitignore при переносе корня репозитория в code/chatballs
+data/
+.env.bak-*
+**/staticfiles/

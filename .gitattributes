@@ -1,0 +1,18 @@
+* text=auto
+
+# Shell-скрипты исполняются в Linux-контейнерах и на серверах: CRLF в шебанге
+# ломает exec (например, postgres init-runtime-roles.sh на Windows-чекауте).
+*.sh text eol=lf
+chatballs text eol=lf
+
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary

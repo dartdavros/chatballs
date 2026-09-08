@@ -1,0 +1,123 @@
+# Публикация образов Chatballs в GitHub Container Registry.
+#
+# Смысл: человек не должен собирать продукт, чтобы его запустить. По тегу vX.Y.Z
+# workflow собирает backend и frontend, публикует их в ghcr.io и прикладывает к
+# релизу release.env — файл со ссылками на образы по digest. С ним запуск
+# сводится к «docker compose up» без единой сборки.
+#
+# Ничего настраивать не нужно: путь образов выводится из github.repository,
+# публикация идёт встроенным GITHUB_TOKEN.
+
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Версия релиза (например 1.0.0)"
+        required: true
+
+permissions:
+  contents: write
+  packages: write
+
+env:
+  APP_DIR: .
+  REGISTRY: ghcr.io
+  # Сторонние образы пинуются тем же способом, что и свои: по digest.
+  POSTGRES_IMAGE: pgvector/pgvector:pg16
+  REDIS_IMAGE: redis:7-alpine
+  GATEWAY_IMAGE: caddy:2.8.4
+  COTURN_IMAGE: coturn/coturn:4.6
+
+jobs:
+  images:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Версия релиза
+        id: version
+        run: |
+          version="${{ inputs.version }}"
+          [ -n "$version" ] || version="${GITHUB_REF_NAME#v}"
+          case "$version" in
+            *[!A-Za-z0-9._-]*|"") echo "Недопустимая версия: $version" >&2; exit 1 ;;
+          esac
+          echo "value=$version" >> "$GITHUB_OUTPUT"
+          echo "repo=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Backend
+        id: backend
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ env.APP_DIR }}
+          file: ${{ env.APP_DIR }}/apps/backend/Dockerfile.production
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ steps.version.outputs.repo }}/backend:${{ steps.version.outputs.value }}
+            ${{ env.REGISTRY }}/${{ steps.version.outputs.repo }}/backend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Frontend
+        id: frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ env.APP_DIR }}
+          file: ${{ env.APP_DIR }}/deploy/docker/frontend.Dockerfile
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ steps.version.outputs.repo }}/frontend:${{ steps.version.outputs.value }}
+            ${{ env.REGISTRY }}/${{ steps.version.outputs.repo }}/frontend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: release.env со ссылками по digest
+        run: |
+          set -eu
+          version="${{ steps.version.outputs.value }}"
+          repo="${{ steps.version.outputs.repo }}"
+          prefix="${{ env.REGISTRY }}/$repo"
+
+          # Digest своих образов отдаёт сам build-push-action; сторонние
+          # спрашиваем у реестра — :latest в релизе недопустим.
+          third_party_digest() {
+            docker buildx imagetools inspect "$1" --format '{{ "{{json .Manifest.Digest}}" }}' | tr -d '"'
+          }
+
+          {
+            echo "# release.env — сгенерирован ${{ github.workflow }} для $version."
+            echo "# Все образы закреплены по digest: :latest источником релиза не является."
+            echo "CHATBALLS_VERSION=$version"
+            echo "CHATBALLS_BACKEND_IMAGE=$prefix/backend:$version@${{ steps.backend.outputs.digest }}"
+            echo "CHATBALLS_FRONTEND_IMAGE=$prefix/frontend:$version@${{ steps.frontend.outputs.digest }}"
+            echo "CHATBALLS_POSTGRES_IMAGE=${POSTGRES_IMAGE}@$(third_party_digest "$POSTGRES_IMAGE")"
+            echo "CHATBALLS_REDIS_IMAGE=${REDIS_IMAGE}@$(third_party_digest "$REDIS_IMAGE")"
+            echo "CHATBALLS_GATEWAY_IMAGE=${GATEWAY_IMAGE}@$(third_party_digest "$GATEWAY_IMAGE")"
+            echo "CHATBALLS_COTURN_IMAGE=${COTURN_IMAGE}@$(third_party_digest "$COTURN_IMAGE")"
+          } > release.env
+
+          cat release.env
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release.env
+          path: release.env
+
+      - name: Приложить release.env к релизу
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release.env

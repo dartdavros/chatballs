@@ -1,0 +1,129 @@
+deploy:production:
+  stage: deploy
+  image: alpine:3.20
+  needs:
+    - job: release:bundle
+      artifacts: true
+  resource_group: production
+  interruptible: false
+  variables:
+    DEPLOY_ROOT: "/opt/chatballs"
+  before_script:
+    - apk add --no-cache bash openssh-client
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - printf '%s\n' "$DEPLOY_SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+    - chmod 600 ~/.ssh/id_ed25519
+    - ssh-keyscan -p "${DEPLOY_PORT:-22}" "$DEPLOY_HOST" >> ~/.ssh/known_hosts
+  script:
+    - |
+      set -eu
+      REMOTE_ARCHIVE="/tmp/chatballs-${CI_PIPELINE_ID}-${CI_JOB_ID}.tar.gz"
+      scp -P "${DEPLOY_PORT:-22}" \
+        "$CHATBALLS_RELEASE_ARCHIVE" \
+        "$DEPLOY_USER@$DEPLOY_HOST:$REMOTE_ARCHIVE"
+
+      ssh -p "${DEPLOY_PORT:-22}" "$DEPLOY_USER@$DEPLOY_HOST" \
+        bash -s -- "$DEPLOY_ROOT" "$CHATBALLS_RELEASE_VERSION" "$REMOTE_ARCHIVE" <<'REMOTE'
+      set -Eeuo pipefail
+
+      root="$1"
+      version="$2"
+      archive="$3"
+      release_name="chatballs-$version"
+      target="$root/releases/$release_name"
+      incoming=""
+
+      cleanup() {
+        if [[ -n "$incoming" ]]; then
+          rm -rf "$incoming"
+        fi
+        rm -f "$archive"
+      }
+      trap cleanup EXIT
+
+      sudo mkdir -p \
+        "$root/releases" \
+        "$root/instance/state" \
+        "$root/instance/data" \
+        "$root/instance/backups" \
+        "$root/instance/logs"
+      sudo chown "$(id -u):$(id -g)" \
+        "$root" \
+        "$root/releases" \
+        "$root/instance" \
+        "$root/instance/state" \
+        "$root/instance/data" \
+        "$root/instance/backups" \
+        "$root/instance/logs"
+
+      incoming="$(mktemp -d "$root/releases/.incoming-${release_name}.XXXXXX")"
+      tar -xzf "$archive" -C "$incoming"
+      source_dir="$incoming/$release_name"
+
+      [[ -d "$source_dir" ]] || {
+        echo "Release directory is missing in bundle: $release_name" >&2
+        exit 1
+      }
+      [[ -f "$source_dir/checksums.txt" ]] || {
+        echo "checksums.txt is missing in release bundle" >&2
+        exit 1
+      }
+      (
+        cd "$source_dir"
+        sha256sum -c checksums.txt
+      )
+
+      if [[ -e "$target" ]]; then
+        [[ -f "$target/checksums.txt" ]] || {
+          echo "Existing release has no checksums: $target" >&2
+          exit 1
+        }
+        (
+          cd "$target"
+          sha256sum -c checksums.txt
+        )
+        incoming_manifest="$(sha256sum "$source_dir/checksums.txt" | awk '{print $1}')"
+        target_manifest="$(sha256sum "$target/checksums.txt" | awk '{print $1}')"
+        [[ "$incoming_manifest" = "$target_manifest" ]] || {
+          echo "Release $version already exists with different content" >&2
+          exit 1
+        }
+      else
+        mv "$source_dir" "$target"
+      fi
+
+      chmod +x "$target/chatballs"
+      REMOTE
+
+    - |
+      set -eu
+      printf '%s' "$CI_REGISTRY_PASSWORD" \
+        | ssh -p "${DEPLOY_PORT:-22}" "$DEPLOY_USER@$DEPLOY_HOST" \
+            "docker login '$CI_REGISTRY' -u '$CI_REGISTRY_USER' --password-stdin"
+
+    - |
+      set -eu
+      ssh -p "${DEPLOY_PORT:-22}" "$DEPLOY_USER@$DEPLOY_HOST" \
+        bash -s -- "$DEPLOY_ROOT" "$CHATBALLS_RELEASE_VERSION" <<'REMOTE'
+      set -Eeuo pipefail
+
+      root="$1"
+      version="$2"
+      release_dir="$root/releases/chatballs-$version"
+
+      CHATBALLS_INSTANCE_DIR="$root/instance" \
+        "$release_dir/chatballs" deploy --non-interactive
+
+      ln -sfnT "releases/chatballs-$version" "$root/current"
+      REMOTE
+  after_script:
+    - |
+      ssh -p "${DEPLOY_PORT:-22}" "$DEPLOY_USER@$DEPLOY_HOST" \
+        "docker logout '$CI_REGISTRY' >/dev/null 2>&1 || true" || true
+  environment:
+    name: production
+    url: https://${CHATBALLS_APP_DOMAIN}
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+      when: manual

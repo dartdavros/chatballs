@@ -1,0 +1,125 @@
+images:build:
+  stage: build
+  image: docker:27
+  services:
+    - name: docker:27-dind
+      alias: docker
+  needs:
+    - backend:test
+    - frontend:build
+    - gateway:validate
+    - cli:test
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login "$CI_REGISTRY" -u "$CI_REGISTRY_USER" --password-stdin
+    - docker buildx version
+  script:
+    - |
+      set -eu
+      VERSION="${CI_COMMIT_TAG:-$CI_COMMIT_SHA}"
+      case "$VERSION" in
+        *[!A-Za-z0-9._-]*|'')
+          echo "Unsupported release version: $VERSION" >&2
+          exit 1
+          ;;
+      esac
+
+      docker build \
+        -f "$APP_DIR/apps/backend/Dockerfile.production" \
+        -t "$BACKEND_IMAGE" \
+        -t "$BACKEND_LATEST_IMAGE" \
+        "$APP_DIR"
+      docker build \
+        -f "$APP_DIR/deploy/docker/frontend.Dockerfile" \
+        -t "$FRONTEND_IMAGE" \
+        -t "$FRONTEND_LATEST_IMAGE" \
+        "$APP_DIR"
+
+      docker push "$BACKEND_IMAGE"
+      docker push "$FRONTEND_IMAGE"
+
+      if [ "$CI_COMMIT_BRANCH" = "$CI_DEFAULT_BRANCH" ]; then
+        docker push "$BACKEND_LATEST_IMAGE"
+        docker push "$FRONTEND_LATEST_IMAGE"
+      fi
+
+      resolve_digest_ref() {
+        image="$1"
+        manifest="$(mktemp)"
+        docker buildx imagetools inspect --raw "$image" > "$manifest"
+        test -s "$manifest"
+        digest="sha256:$(sha256sum "$manifest" | awk '{print $1}')"
+        rm -f "$manifest"
+        printf '%s@%s' "$image" "$digest"
+      }
+
+      mkdir -p "$APP_DIR/.ci"
+      cat > "$APP_DIR/.ci/release.env" <<EOF
+      CHATBALLS_VERSION=$VERSION
+      CHATBALLS_BACKEND_IMAGE=$(resolve_digest_ref "$BACKEND_IMAGE")
+      CHATBALLS_FRONTEND_IMAGE=$(resolve_digest_ref "$FRONTEND_IMAGE")
+      CHATBALLS_POSTGRES_IMAGE=$(resolve_digest_ref "$POSTGRES_IMAGE")
+      CHATBALLS_REDIS_IMAGE=$(resolve_digest_ref "$REDIS_IMAGE")
+      CHATBALLS_GATEWAY_IMAGE=$(resolve_digest_ref "$GATEWAY_IMAGE")
+      CHATBALLS_COTURN_IMAGE=$(resolve_digest_ref "$COTURN_IMAGE")
+      EOF
+  artifacts:
+    paths:
+      - "$APP_DIR/.ci/release.env"
+    expire_in: 1 day
+    when: on_success
+  rules:
+    - if: '$CI_COMMIT_BRANCH'
+    - if: '$CI_COMMIT_TAG'
+
+release:bundle:
+  stage: release
+  image: alpine:3.20
+  needs:
+    - job: images:build
+      artifacts: true
+  before_script:
+    - apk add --no-cache coreutils findutils tar
+  script:
+    - |
+      set -eu
+      cd "$APP_DIR"
+
+      VERSION="${CI_COMMIT_TAG:-$CI_COMMIT_SHA}"
+      BUNDLE_DIR="chatballs-${VERSION}"
+      DIST_DIR="dist"
+
+      test "$(awk -F= '$1 == "CHATBALLS_VERSION" {print $2; exit}' .ci/release.env)" = "$VERSION"
+
+      rm -rf "$BUNDLE_DIR" "$DIST_DIR"
+      mkdir -p "$BUNDLE_DIR/deploy/cli" "$BUNDLE_DIR/deploy/postgres" "$DIST_DIR"
+
+      cp compose.yaml compose.dev.yaml Caddyfile "$BUNDLE_DIR/"
+      cp .ci/release.env "$BUNDLE_DIR/release.env"
+      cp chatballs "$BUNDLE_DIR/"
+      chmod +x "$BUNDLE_DIR/chatballs"
+      cp -R deploy/cli/lib "$BUNDLE_DIR/deploy/cli/"
+      cp -R deploy/postgres/. "$BUNDLE_DIR/deploy/postgres/"
+
+      (
+        cd "$BUNDLE_DIR"
+        find . -type f ! -name checksums.txt -print0 \
+          | LC_ALL=C sort -z \
+          | xargs -0 sha256sum > checksums.txt
+        sha256sum -c checksums.txt
+      )
+
+      tar -czf "$DIST_DIR/chatballs-release.tar.gz" "$BUNDLE_DIR"
+      printf 'CHATBALLS_RELEASE_VERSION=%s\n' "$VERSION" > "$DIST_DIR/release-metadata.env"
+      printf 'CHATBALLS_RELEASE_ARCHIVE=%s/dist/chatballs-release.tar.gz\n' "$APP_DIR" >> "$DIST_DIR/release-metadata.env"
+  artifacts:
+    name: "chatballs-$CI_COMMIT_REF_SLUG"
+    paths:
+      - "$APP_DIR/dist/chatballs-release.tar.gz"
+      - "$APP_DIR/dist/release-metadata.env"
+    reports:
+      dotenv: "$APP_DIR/dist/release-metadata.env"
+    expire_in: 1 year
+    when: on_success
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+    - if: '$CI_COMMIT_TAG'
