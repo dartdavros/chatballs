@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from django.core.exceptions import ValidationError
-from django.db.models import Q
+from django.db.models import Count, Q
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -55,6 +55,41 @@ def _audit(request: Request, action: str, channel: Channel, **payload: object) -
         payload=payload or None,
         request=request,
     )
+
+
+# Справочник агентов для выпадающих выборов: фильтр библиотеки знаний, привязка
+# материалов к агенту. Только идентификаторы и имя — карточки целиком этим
+# экранам не нужны. Потолок защищает выбор от организации на тысячу агентов:
+# при его достижении выбору нужен серверный поиск, а не молчаливая обрезка.
+AGENT_DIRECTORY_LIMIT = 200
+
+
+class AgentDirectoryView(APIView):
+    permission_classes = [HasCapability]
+    required_capabilities = {"GET": "ai.view"}
+
+    def get(self, request: Request) -> Response:
+        cards = agent_cards_for_context(request.tenant_context).annotate(
+            knowledge_count=Count("ai_agent__knowledge_items", distinct=True)
+        )
+        query = request.query_params.get("q", "").strip()
+        if query:
+            cards = cards.filter(Q(name__icontains=query) | Q(code__icontains=query))
+        items = [
+            {
+                "id": channel.id,
+                "aiAgentId": channel.ai_agent.id if hasattr(channel, "ai_agent") else None,
+                "name": channel.name,
+                "groupName": channel.group.name if channel.group_id else None,
+                "aiStatus": channel.ai_agent.status if hasattr(channel, "ai_agent") else None,
+                "isActive": channel.is_active,
+                "knowledgeCount": channel.knowledge_count,
+            }
+            for channel in cards.order_by("name")[: AGENT_DIRECTORY_LIMIT + 1]
+        ]
+        return Response(
+            {"items": items[:AGENT_DIRECTORY_LIMIT], "hasMore": len(items) > AGENT_DIRECTORY_LIMIT}
+        )
 
 
 class AgentCardListView(APIView):

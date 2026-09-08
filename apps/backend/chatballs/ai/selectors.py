@@ -1,11 +1,12 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-from django.db.models import Count, Prefetch, Q, QuerySet
+from django.db.models import Count, IntegerField, OuterRef, Prefetch, Q, QuerySet, Subquery, Value
+from django.db.models.functions import Coalesce
 
 from chatballs.ai.agent_knowledge import knowledge_available_to_channel
 from chatballs.ai.knowledge_policy import readable_knowledge, writable_knowledge
-from chatballs.ai.models import AIAgent, Knowledge, KnowledgeCategory
+from chatballs.ai.models import AIAgent, Knowledge, KnowledgeCategory, KnowledgeFragment
 from chatballs.channels.models import Channel
 from chatballs.identity.models import AuditEvent
 from chatballs.identity.policy import has_capability_any_scope
@@ -81,12 +82,32 @@ def _knowledge_base(context: TenantContext) -> QuerySet[Knowledge]:
 
 
 def _with_knowledge_relations(queryset: QuerySet[Knowledge]) -> QuerySet[Knowledge]:
+    # Счётчики — подзапросами, а не join-агрегатами: фильтр по агенту идёт по
+    # той же связи и урезал бы «прикреплено к N агентам» до отфильтрованных.
+    agents_count = Subquery(
+        AIAgent.objects.filter(knowledge_items=OuterRef("pk"))
+        .order_by()
+        .values("knowledge_items")
+        .annotate(total=Count("pk", distinct=True))
+        .values("total"),
+        output_field=IntegerField(),
+    )
+    fragments_count = Subquery(
+        KnowledgeFragment.objects.filter(knowledge_id=OuterRef("pk"))
+        .order_by()
+        .values("knowledge_id")
+        .annotate(total=Count("pk"))
+        .values("total"),
+        output_field=IntegerField(),
+    )
     return (
         queryset.select_related("category")
-        .prefetch_related("attachments")
+        # agents — чтобы диалог прикрепления знал, где материал уже стоит, не
+        # выгружая ради этого все карточки агентов организации.
+        .prefetch_related("attachments", "agents")
         .annotate(
-            agents_count=Count("agents", distinct=True),
-            fragments_count=Count("fragments", distinct=True),
+            agents_count=Coalesce(agents_count, Value(0)),
+            fragments_count=Coalesce(fragments_count, Value(0)),
         )
         .order_by("title")
     )
@@ -173,13 +194,41 @@ class KnowledgeFilters:
     category_id: int | None = None
     is_enabled: bool | None = None
     search: str = ""
+    # Идентификаторы AIAgent из фильтра «Агент» (кадр KB1).
+    agent_ids: tuple[int, ...] = ()
+
+
+def descendant_category_ids(organization_id: int, root_id: int) -> set[int]:
+    """Категория и все вложенные: фильтр библиотеки охватывает ветку целиком."""
+    children: dict[int | None, list[int]] = {}
+    for category_id, parent_id in KnowledgeCategory.objects.filter(
+        organization_id=organization_id
+    ).values_list("id", "parent_id"):
+        children.setdefault(parent_id, []).append(category_id)
+    found: set[int] = set()
+    pending = [root_id]
+    while pending:
+        current = pending.pop()
+        if current in found:
+            continue
+        found.add(current)
+        pending.extend(children.get(current, []))
+    return found
 
 
 def apply_knowledge_filters(
-    queryset: QuerySet[Knowledge], filters: KnowledgeFilters
+    queryset: QuerySet[Knowledge], filters: KnowledgeFilters, *, organization_id: int
 ) -> QuerySet[Knowledge]:
+    """Фильтры библиотеки знаний целиком на сервере: ветка категорий, агент,
+    состояние и поиск. Раньше ветку и агента отбирал браузер по всему набору."""
     if filters.category_id is not None:
-        queryset = queryset.filter(category_id=filters.category_id)
+        queryset = queryset.filter(
+            category_id__in=descendant_category_ids(
+                organization_id=organization_id, root_id=filters.category_id
+            )
+        )
+    if filters.agent_ids:
+        queryset = queryset.filter(agents__id__in=filters.agent_ids)
     if filters.is_enabled is not None:
         queryset = queryset.filter(is_enabled=filters.is_enabled)
     search = filters.search.strip()

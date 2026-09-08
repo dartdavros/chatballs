@@ -1,4 +1,5 @@
 import { api, apiUpload } from "../../../api/client";
+import type { PagedPayload } from "../../../shared/usePagedResource";
 import type {
   AgentCategoryKnowledgeSelectionResult,
   AgentLinkRequest,
@@ -17,17 +18,21 @@ import type {
   KnowledgeUpdateRequest,
 } from "./types";
 
-function knowledgeListPath(filters: KnowledgeListFilters): string {
+function knowledgeListPath(filters: KnowledgeListFilters, page?: number): string {
   const query = new URLSearchParams();
   if (filters.category !== undefined) query.set("category", String(filters.category));
   if (filters.isEnabled !== undefined) query.set("isEnabled", String(filters.isEnabled));
   if (filters.search !== undefined && filters.search !== "") query.set("search", filters.search);
+  for (const agent of filters.agents ?? []) query.append("agent", String(agent));
+  if (page !== undefined) query.set("page", String(page));
   const suffix = query.toString();
   return `/api/v1/ai/knowledge/${suffix ? `?${suffix}` : ""}`;
 }
 
-export function fetchKnowledgeList(filters: KnowledgeListFilters = {}) {
-  return api<{ items: KnowledgeItem[] }>(knowledgeListPath(filters));
+// Библиотека знаний приходит страницей: фильтры и ветка категорий отрабатывают
+// на сервере (кадр KB1).
+export function fetchKnowledgeList(filters: KnowledgeListFilters = {}, page = 1) {
+  return api<PagedPayload<KnowledgeItem>>(knowledgeListPath(filters, page));
 }
 
 export function fetchKnowledgeItem(id: number) {

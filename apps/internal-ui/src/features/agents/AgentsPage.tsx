@@ -180,7 +180,6 @@ export function AgentsPage({
           ))}
           {agents.pageCount > 1 && (
             <Pagination
-              note={`Показано ${agents.items.length} из ${agents.total}`}
               page={agents.page}
               pageCount={agents.pageCount}
               onPage={agents.setPage}

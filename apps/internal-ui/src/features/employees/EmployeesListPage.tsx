@@ -93,7 +93,6 @@ export function EmployeesPage({ groups, openEmployee, user }: {
       {employees.pageCount > 1 && (
         <Pagination
           className="employees-pagination"
-          note={`Показано ${employees.items.length} из ${employees.total}`}
           page={employees.page}
           pageCount={employees.pageCount}
           onPage={employees.setPage}

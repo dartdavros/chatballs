@@ -1,6 +1,5 @@
-import type { AgentCard } from "../../agents/model";
 import { pluralRu, shortDateTime } from "../../../shared/utils";
-import type { KnowledgeAttachment, KnowledgeCategory, KnowledgeItem } from "./types";
+import type { KnowledgeAgentRef, KnowledgeAttachment, KnowledgeCategory, KnowledgeItem } from "./types";
 
 // Экранная модель раздела «База знаний» (дизайн-базлайн v2, кадры KB1–KB9).
 // Отделы упразднены ADR-CHATBALLS-0041, поэтому доступность знания — это флаг
@@ -63,20 +62,18 @@ export function libraryTotals(categories: KnowledgeCategory[], items: KnowledgeI
 }
 
 /** Агенты, которым знание прикреплено явно (карточка и рейка редактора). */
-export function agentsOfKnowledge(agents: AgentCard[], knowledgeId: number): AgentCard[] {
-  return agents.filter((agent) => agent.knowledge.some((item) => item.id === knowledgeId));
-}
-
 export type AgentState = {
-  agent: AgentCard;
+  agent: KnowledgeAgentRef;
   /** «AI отвечает» / «AI выключен у агента» — подпись строки агента. */
   meta: string;
   /** Участвует ли знание в ответах именно этого агента. */
   answering: boolean;
 };
 
-export function agentStates(agents: AgentCard[], knowledgeId: number): AgentState[] {
-  return agentsOfKnowledge(agents, knowledgeId).map((agent) => ({
+/** Агенты материала приходят из его карточки: считать их по всем карточкам
+ *  агентов организации больше не нужно. */
+export function agentStates(agents: KnowledgeAgentRef[]): AgentState[] {
+  return agents.map((agent) => ({
     agent,
     meta: agent.aiStatus === "ACTIVE" ? "AI отвечает" : "AI выключен у агента",
     answering: agent.aiStatus === "ACTIVE",

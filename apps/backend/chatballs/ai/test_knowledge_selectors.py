@@ -19,19 +19,19 @@ class KnowledgeSelectorTests(KnowledgePolicyTestBase):
         base = knowledge_for_employee(context=self.admin_context)
         search_ids = set(
             apply_knowledge_filters(
-                base, KnowledgeFilters(search="support")
+                base, KnowledgeFilters(search="support"), organization_id=self.organization.id
             ).values_list("id", flat=True)
         )
         self.assertEqual(search_ids, {self.support_only.id})
         disabled_ids = set(
             apply_knowledge_filters(
-                base, KnowledgeFilters(is_enabled=False)
+                base, KnowledgeFilters(is_enabled=False), organization_id=self.organization.id
             ).values_list("id", flat=True)
         )
         self.assertEqual(disabled_ids, {self.disabled.id})
         category_ids = set(
             apply_knowledge_filters(
-                base, KnowledgeFilters(category_id=self.products.id)
+                base, KnowledgeFilters(category_id=self.products.id), organization_id=self.organization.id
             ).values_list("id", flat=True)
         )
         self.assertEqual(
@@ -45,7 +45,7 @@ class KnowledgeSelectorTests(KnowledgePolicyTestBase):
         )
         employee_base = knowledge_for_employee(context=self.employee_context)
         self.assertEqual(
-            list(apply_knowledge_filters(employee_base, KnowledgeFilters())), []
+            list(apply_knowledge_filters(employee_base, KnowledgeFilters(), organization_id=self.organization.id)), []
         )
 
     def test_category_counts_are_computed_after_authorization(self) -> None:

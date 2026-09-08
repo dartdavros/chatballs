@@ -1,5 +1,8 @@
 import { FilterDropdown, SearchInput } from "../../../shared/ui-controls";
-import { channelOptions, type ClientAgentRef } from "./model";
+import { channelOptions } from "./model";
+
+/** Агент в фильтре: только то, что рисует выпадающий список. */
+export type AgentFilterOption = { id: number; name: string };
 import type { SalesClientsState } from "./useSalesClients";
 
 // Фильтры списка (кадры K1/K2): поиск, «Все каналы», «Все агенты», чип
@@ -7,7 +10,7 @@ import type { SalesClientsState } from "./useSalesClients";
 
 // Агенты для фильтра приходят из справочника агентов: список контактов теперь
 // постраничный, и собрать их по загруженной странице нельзя.
-export function SalesClientsFilters({ clients, agents }: { clients: SalesClientsState; agents: ClientAgentRef[] }) {
+export function SalesClientsFilters({ clients, agents }: { clients: SalesClientsState; agents: AgentFilterOption[] }) {
   return (
     <div className="sales-clients-filterbar">
       <SearchInput

@@ -49,15 +49,19 @@ describe("knowledge API", () => {
       category: 7,
       isEnabled: false,
       search: "тариф Acme",
-    });
+      agents: [3],
+    }, 2);
 
     const url = new URL(fetchMock.mock.calls[0][0], "https://app.example");
     expect(url.pathname).toBe(
       `/api/v1/organizations/${organizationPublicId}/ai/knowledge/`,
     );
+    // Страница и фильтр по агенту тоже уходят на сервер: библиотека постраничная.
     expect(Object.fromEntries(url.searchParams)).toEqual({
       category: "7",
       isEnabled: "false",
+      agent: "3",
+      page: "2",
       search: "тариф Acme",
     });
   });

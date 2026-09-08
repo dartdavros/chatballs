@@ -9,7 +9,7 @@ import {
 import { EmptyState, LoadingState, Segmented } from "../../../shared/ui";
 import { Button } from "../../../shared/ui-controls";
 import type { RouteKey } from "../../../types";
-import type { AgentCard } from "../../agents/model";
+import type { AgentRef } from "../../agents/model";
 import { MarkdownContent } from "../../help-center/MarkdownContent";
 import {
   agentStates,
@@ -77,7 +77,7 @@ export function KnowledgeEditorPage({
   reloadAgents,
   setRoute,
 }: {
-  agents: AgentCard[];
+  agents: AgentRef[];
   canManage: boolean;
   knowledgeId: number | null;
   openKnowledge: (knowledgeId: number) => void;
@@ -158,10 +158,7 @@ export function KnowledgeEditorPage({
 
   const category = catalog.categories.find((item) => item.id === Number(categoryId)) ?? null;
   const categoryPath = category ? knowledgeCategoryPath(catalog.categories, category.id) : "";
-  const attached = useMemo(
-    () => (loaded ? agentStates(agents, loaded.id) : []),
-    [agents, loaded],
-  );
+  const attached = useMemo(() => agentStates(loaded?.agents ?? []), [loaded]);
   const dirty = baseline === null
     ? Boolean(title.trim() || content.trim())
     : baseline.title !== title

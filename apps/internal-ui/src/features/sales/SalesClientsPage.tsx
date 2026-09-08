@@ -49,7 +49,7 @@ export function SalesClientsPage({ openClient, openIntegrations }: { openClient:
         <SalesClientsEmpty onOpenIntegrations={openIntegrations} />
       ) : (
         <>
-          <SalesClientsFilters clients={clients} agents={agents.map((agent) => ({ id: agent.id, code: agent.code, name: agent.name }))} />
+          <SalesClientsFilters clients={clients} agents={agents.map((agent) => ({ id: agent.id, name: agent.name }))} />
           <SalesClientsTable clients={clients} openClient={openClient} />
         </>
       )}

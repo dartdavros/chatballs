@@ -29,6 +29,11 @@ export type KnowledgeItem = {
   isEnabled: boolean;
   attachments: KnowledgeAttachment[];
   agentsCount: number | null;
+  // К каким агентам материал прикреплён — считает сервер: диалогу прикрепления
+  // больше не нужен весь список карточек агентов.
+  agentIds?: number[];
+  // Только в карточке материала: агенты с их состоянием AI.
+  agents?: KnowledgeAgentRef[];
   createdBy?: string;
   // Кто последним правил знание — подпись под датой в колонке «Обновлено».
   updatedBy?: string;
@@ -37,10 +42,19 @@ export type KnowledgeItem = {
   updatedAt: string;
 };
 
+export type KnowledgeAgentRef = {
+  id: number;
+  name: string;
+  groupName: string | null;
+  aiStatus: string | null;
+};
+
 export type KnowledgeListFilters = {
   category?: number;
   isEnabled?: boolean;
   search?: string;
+  // Идентификаторы AIAgent: ветка категорий и агент отбираются на сервере.
+  agents?: number[];
 };
 
 export type KnowledgeCreateRequest = {

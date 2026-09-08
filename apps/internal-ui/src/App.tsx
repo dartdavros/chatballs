@@ -6,7 +6,7 @@ import { buildTheme } from "@chatballs/ui";
 import { applyAppearance, DEFAULT_ACCENT, resolvedDark } from "./shared/appearance";
 
 import { api, setActiveOrganization } from "./api/client";
-import { fetchAllAgents } from "./features/agents/model";
+import { fetchAgentDirectory } from "./features/agents/model";
 import { canAccess, defaultRoute, isManager } from "./auth/access";
 import { activateOrganization, clearOrganizationPreference } from "./auth/session";
 import { AuthChangePassword, AuthLogin, AuthPasswordRecovery, AuthResetPassword, AuthSetup, AuthTotpCode, AuthTotpSetup } from "./features/auth/AuthScreens";
@@ -14,7 +14,7 @@ import { Shell } from "./layout/Shell";
 import { pathFromRoute, routeFromPath } from "./router";
 import { ErrorScreen, LoadingScreen, PermissionScreen } from "./shared/ui";
 import { useRouteNavigation } from "./useRouteNavigation";
-import type { AgentCard } from "./features/agents/model";
+import type { AgentRef } from "./features/agents/model";
 import type { AppData, AuthChallenge, AuthenticatedUser, EmployeeGroup, SessionUser } from "./types";
 
 export function App() {
@@ -61,9 +61,9 @@ export function App() {
       const groups = manager
         ? await api<{ items: EmployeeGroup[] }>("/api/v1/company/groups/")
         : { items: [] };
-      let agents: AgentCard[] = [];
+      let agents: AgentRef[] = [];
       if (user && canAccess(user, "agents")) {
-        agents = (await fetchAllAgents()).items;
+        agents = (await fetchAgentDirectory()).items;
       }
       setData({ groups: groups.items, agents });
     } catch {

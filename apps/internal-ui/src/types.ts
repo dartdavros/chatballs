@@ -1,4 +1,4 @@
-import type { AgentCard } from "./features/agents/model";
+import type { AgentRef } from "./features/agents/model";
 
 // Роли SPEC-CHATBALLS-0031 §3: OWNER и ADMIN идентичны (владельца нельзя удалить),
 // EMPLOYEE работает только в чате; видимость диалогов — по группам (ADR-CHATBALLS-0043).
@@ -105,5 +105,5 @@ export type RouteKey = "administrationAudit" | "employeeDetail" | "employees" | 
 
 export type AppData = {
   groups: EmployeeGroup[];
-  agents: AgentCard[];
+  agents: AgentRef[];
 };

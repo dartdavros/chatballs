@@ -6,6 +6,7 @@ from chatballs.ai import agent_card_views as views
 
 urlpatterns = [
     path("", views.AgentCardListView.as_view(), name="agent-card-list"),
+    path("directory/", views.AgentDirectoryView.as_view(), name="agent-directory"),
     path("<int:agent_id>/", views.AgentCardDetailView.as_view(), name="agent-card-detail"),
     path(
         "<int:agent_id>/activate/",

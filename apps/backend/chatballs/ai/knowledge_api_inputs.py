@@ -60,10 +60,14 @@ def knowledge_filters(request: Request) -> KnowledgeFilters:
         is_enabled = False
     else:
         raise ValidationError({"isEnabled": "Boolean required"})
+    agents = tuple(
+        int(value) for value in request.query_params.getlist("agent") if value.isdigit()
+    )
     return KnowledgeFilters(
         category_id=_optional_query_id(
             request.query_params.get("category"), "category"
         ),
         is_enabled=is_enabled,
         search=request.query_params.get("search", ""),
+        agent_ids=agents,
     )

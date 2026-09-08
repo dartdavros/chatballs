@@ -44,6 +44,9 @@ def knowledge_payload(knowledge: Knowledge, *, include_content: bool = True) -> 
         "isEnabled": knowledge.is_enabled,
         "attachments": [attachment_payload(attachment) for attachment in knowledge.attachments.all()],
         "agentsCount": getattr(knowledge, "agents_count", None),
+        # Идентификаторы агентов, к которым материал прикреплён: по ним диалог
+        # показывает, что будет пропущено, ещё до применения.
+        "agentIds": [agent.id for agent in knowledge.agents.all()],
         "fragmentsCount": getattr(knowledge, "fragments_count", None),
         "createdAt": knowledge.created_at.isoformat(),
         "updatedAt": knowledge.updated_at.isoformat(),

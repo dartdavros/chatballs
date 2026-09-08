@@ -1,35 +1,34 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { useDebounced } from "../../../shared/useDebounced";
+import { usePagedResource } from "../../../shared/usePagedResource";
 import {
   fetchKnowledgeCategories,
   fetchKnowledgeList,
   type KnowledgeCategory,
-  type KnowledgeItem,
-  type KnowledgeListFilters,
 } from "./model";
+
+// Библиотека знаний: страница, ветка категорий, агент, состояние и поиск —
+// всё на сервере. Раньше ветку и агента отбирал браузер по всему набору,
+// поэтому список приходилось запрашивать целиком.
 
 export type KnowledgeLibraryFilterState = {
   category?: number;
   isEnabled?: boolean;
   search: string;
+  /** Идентификаторы AIAgent из фильтра «Агент». */
+  agents: number[];
 };
 
+const EMPTY_FILTERS: KnowledgeLibraryFilterState = { search: "", agents: [] };
+
 export function useKnowledgeLibrary() {
-  const [items, setItems] = useState<KnowledgeItem[]>([]);
   const [categories, setCategories] = useState<KnowledgeCategory[]>([]);
-  const [filters, setFilters] = useState<KnowledgeLibraryFilterState>({ search: "" });
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [itemsLoading, setItemsLoading] = useState(true);
+  const [filters, setFilters] = useState<KnowledgeLibraryFilterState>(EMPTY_FILTERS);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
-  const [itemsError, setItemsError] = useState(false);
   const [categoriesError, setCategoriesError] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(() => new Set());
-  const requestId = useRef(0);
-
-  useEffect(() => {
-    const timeout = window.setTimeout(() => setDebouncedSearch(filters.search.trim()), 250);
-    return () => window.clearTimeout(timeout);
-  }, [filters.search]);
+  const settledSearch = useDebounced(filters.search.trim());
 
   const reloadCategories = useCallback(async () => {
     setCategoriesLoading(true);
@@ -44,20 +43,17 @@ export function useKnowledgeLibrary() {
     }
   }, []);
 
-  const reloadItems = useCallback(async (activeFilters: KnowledgeListFilters) => {
-    const activeRequest = ++requestId.current;
-    setItemsLoading(true);
-    setItemsError(false);
-    try {
-      const payload = await fetchKnowledgeList(activeFilters);
-      if (activeRequest !== requestId.current) return;
-      setItems(payload.items);
-    } catch {
-      if (activeRequest === requestId.current) setItemsError(true);
-    } finally {
-      if (activeRequest === requestId.current) setItemsLoading(false);
-    }
-  }, []);
+  const request = useMemo(
+    () => ({
+      category: filters.category,
+      isEnabled: filters.isEnabled,
+      search: settledSearch,
+      agents: filters.agents,
+    }),
+    [filters.agents, filters.category, filters.isEnabled, settledSearch],
+  );
+  const load = useCallback((page: number) => fetchKnowledgeList(request, page), [request]);
+  const page = usePagedResource(load, request, "Не удалось загрузить знания");
 
   useEffect(() => {
     void reloadCategories();
@@ -72,14 +68,6 @@ export function useKnowledgeLibrary() {
       setFilters((current) => ({ ...current, category: undefined }));
     }
   }, [categories, categoriesLoading, filters.category]);
-
-  useEffect(() => {
-    void reloadItems({
-      category: filters.category,
-      isEnabled: filters.isEnabled,
-      search: debouncedSearch,
-    });
-  }, [debouncedSearch, filters.category, filters.isEnabled, reloadItems]);
 
   const updateFilter = useCallback(<TKey extends keyof KnowledgeLibraryFilterState>(
     key: TKey,
@@ -102,6 +90,7 @@ export function useKnowledgeLibrary() {
   /** Действие из меню строки работает над одним знанием: выбор заменяется. */
   const selectOnly = useCallback((knowledgeId: number) => setSelectedIds(new Set([knowledgeId])), []);
 
+  const items = page.items;
   const toggleVisible = useCallback(() => {
     setSelectedIds((current) => {
       const visibleIds = items.map((item) => item.id);
@@ -113,15 +102,8 @@ export function useKnowledgeLibrary() {
   }, [items]);
 
   const reload = useCallback(async () => {
-    await Promise.all([
-      reloadCategories(),
-      reloadItems({
-        category: filters.category,
-        isEnabled: filters.isEnabled,
-        search: debouncedSearch,
-      }),
-    ]);
-  }, [debouncedSearch, filters, reloadCategories, reloadItems]);
+    await Promise.all([reloadCategories(), page.reload()]);
+  }, [page, reloadCategories]);
 
   return {
     categories,
@@ -130,8 +112,12 @@ export function useKnowledgeLibrary() {
     clearSelected,
     filters,
     items,
-    itemsError,
-    itemsLoading,
+    itemsError: Boolean(page.errorText),
+    itemsLoading: page.loading,
+    page: page.page,
+    pageCount: page.pageCount,
+    total: page.total,
+    setPage: page.setPage,
     reload,
     reloadCategories,
     selectOnly,

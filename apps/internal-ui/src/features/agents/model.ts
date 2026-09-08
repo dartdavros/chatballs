@@ -75,12 +75,23 @@ export function fetchAgentsPage(
   return api<PagedPayload<AgentCard>>(`/api/v1/agents/?${params.toString()}`);
 }
 
-/** Полный набор карточек для экранов, которым нужны связи агентов со знаниями
- *  (библиотека знаний считает по ним прикрепления). Ограничен одной страницей
- *  предельного размера: этим экранам нужен серверный контракт со счётчиками,
- *  пока он не сделан — держим потолок явным, а не молчаливым. */
-export function fetchAllAgents(): Promise<{ items: AgentCard[] }> {
-  return api<PagedPayload<AgentCard>>("/api/v1/agents/?pageSize=100");
+/** Справочник агентов для выпадающих выборов: фильтр библиотеки знаний,
+ *  привязка материалов, выбор агента в диалогах. Карточки целиком этим экранам
+ *  не нужны — им хватает имени и состояния AI. */
+export type AgentRef = {
+  id: number;
+  aiAgentId: number | null;
+  name: string;
+  groupName: string | null;
+  aiStatus: string | null;
+  isActive: boolean;
+  /** Сколько материалов прикреплено к агенту — считает сервер. */
+  knowledgeCount: number;
+};
+
+export function fetchAgentDirectory(query = ""): Promise<{ items: AgentRef[]; hasMore: boolean }> {
+  const suffix = query.trim() ? `?q=${encodeURIComponent(query.trim())}` : "";
+  return api<{ items: AgentRef[]; hasMore: boolean }>(`/api/v1/agents/directory/${suffix}`);
 }
 
 export function fetchAgent(agentId: number): Promise<{ agent: AgentCard }> {

@@ -5,7 +5,7 @@ import { Icon } from "../../../shared/icons";
 import { Segmented } from "../../../shared/ui";
 import { Button } from "../../../shared/ui-controls";
 import { pluralRu } from "../../../shared/utils";
-import type { AgentCard } from "../../agents/model";
+import type { AgentRef } from "../../agents/model";
 import type { KnowledgeItem } from "./types";
 
 // Прикрепление знаний к агенту (дизайн-базлайн v2, кадр KB3). Один агент за
@@ -20,24 +20,27 @@ const KNOWLEDGE_FORMS: [string, string, string] = ["знание", "знания
 
 type Skip = { item: KnowledgeItem; reason: string };
 
-function skipsFor(items: KnowledgeItem[], agent: AgentCard | null, mode: Mode): Skip[] {
-  if (!agent) return [];
-  const attached = new Set(agent.knowledge.map((item) => item.id));
+// Где материал уже стоит, знает сам материал: список agentIds приходит вместе
+// со страницей библиотеки, а не собирается по карточкам всех агентов.
+function skipsFor(items: KnowledgeItem[], agent: AgentRef | null, mode: Mode): Skip[] {
+  if (!agent || agent.aiAgentId === null) return [];
+  const agentId = agent.aiAgentId;
   const skips: Skip[] = [];
   items.forEach((item) => {
+    const attached = (item.agentIds ?? []).includes(agentId);
     if (mode === "attach") {
-      if (attached.has(item.id)) skips.push({ item, reason: "уже прикреплён к этому агенту" });
+      if (attached) skips.push({ item, reason: "уже прикреплён к этому агенту" });
       else if (!item.isEnabled) skips.push({ item, reason: "выключен в ответах" });
-    } else if (!attached.has(item.id)) {
+    } else if (!attached) {
       skips.push({ item, reason: "не прикреплён к этому агенту" });
     }
   });
   return skips;
 }
 
-function agentMeta(agent: AgentCard): string {
+function agentMeta(agent: AgentRef): string {
   if (agent.aiStatus !== "ACTIVE") return "Без AI — знания не используются";
-  return `AI отвечает · ${pluralRu(agent.knowledge.length, KNOWLEDGE_FORMS)} прикреплено`;
+  return `AI отвечает · ${pluralRu(agent.knowledgeCount, KNOWLEDGE_FORMS)} прикреплено`;
 }
 
 export function KnowledgeAgentDialog({
@@ -47,7 +50,7 @@ export function KnowledgeAgentDialog({
   onCancel,
   onSubmit,
 }: {
-  agents: AgentCard[];
+  agents: AgentRef[];
   busy: boolean;
   items: KnowledgeItem[];
   onCancel: () => void;

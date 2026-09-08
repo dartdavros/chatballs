@@ -2,19 +2,18 @@ import { Dropdown } from "antd";
 import { useMemo, useState } from "react";
 
 import { hasCapability } from "../../../auth/access";
+import { Pagination } from "../../../shared/Pagination";
 import { DecisionDialog } from "../../../shared/DecisionDialog";
 import { Icon } from "../../../shared/icons";
 import { LoadingState } from "../../../shared/ui";
 import { Button, FilterDropdown, SearchInput } from "../../../shared/ui-controls";
 import { pluralRu } from "../../../shared/utils";
 import type { RouteKey, SessionUser } from "../../../types";
-import type { AgentCard } from "../../agents/model";
+import type { AgentRef } from "../../agents/model";
 import { KnowledgeAgentDialog } from "./KnowledgeAgentDialog";
 import { KnowledgeBulkBar } from "./KnowledgeBulkBar";
 import { KnowledgeCategoryDialog } from "./KnowledgeCategoryDialog";
-import { KnowledgeTableFooter } from "./KnowledgeTableFooter";
 import {
-  agentsOfKnowledge,
   answerStateLabel,
   categoryBranch,
   categoryRows,
@@ -36,7 +35,6 @@ import { useKnowledgeLibrary } from "./useKnowledgeLibrary";
 // состоянием индекса, дерево категорий 260px, таблица материалов. Панель
 // массовых операций живёт, пока живо выделение.
 
-const PAGE_SIZE = 25;
 const KNOWLEDGE_FORMS: [string, string, string] = ["знание", "знания", "знаний"];
 
 const ANSWER_FILTER = [
@@ -51,7 +49,7 @@ export function KnowledgeLibraryPage({
   setRoute,
   user,
 }: {
-  agents: AgentCard[];
+  agents: AgentRef[];
   openKnowledge: (knowledgeId: number) => void;
   openKnowledgeEditor: (knowledgeId: number | null) => void;
   setRoute: (route: RouteKey) => void;
@@ -59,10 +57,8 @@ export function KnowledgeLibraryPage({
 }) {
   const library = useKnowledgeLibrary();
   const canManage = hasCapability(user, "ai.manage");
-  const [page, setPage] = useState(1);
   const [answerOpen, setAnswerOpen] = useState(false);
   const [agentOpen, setAgentOpen] = useState(false);
-  const [agentFilter, setAgentFilter] = useState<number[]>([]);
   const [attachOpen, setAttachOpen] = useState(false);
   const [movingOpen, setMovingOpen] = useState(false);
   const [deleting, setDeleting] = useState<{ ids: number[]; text: string } | null>(null);
@@ -72,38 +68,19 @@ export function KnowledgeLibraryPage({
   const rows = useMemo(() => categoryRows(library.categories), [library.categories]);
   const selectedCategory = library.filters.category;
 
-  // Фильтр «Агент» и охват вложенных категорий считаются на клиенте: API
-  // знаний фильтрует по одной категории и по состоянию в ответах.
-  const filtered = useMemo(() => {
-    const branch = selectedCategory === undefined
-      ? null
-      : categoryBranch(library.categories, selectedCategory);
-    const attached = agentFilter.length === 0
-      ? null
-      : new Set(agents
-        .filter((agent) => agentFilter.includes(agent.aiAgentId))
-        .flatMap((agent) => agent.knowledge.map((item) => item.id)));
-    return library.items.filter((item) => (
-      (branch === null || branch.has(item.category.id))
-      && (attached === null || attached.has(item.id))
-    ));
-  }, [agentFilter, agents, library.categories, library.items, selectedCategory]);
-
-  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const currentPage = Math.min(page, pageCount);
-  const visible = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
   const selected = [...library.selectedIds];
   const selectedItems = library.items.filter((item) => library.selectedIds.has(item.id));
-  const allVisibleChecked = visible.length > 0 && visible.every((item) => library.selectedIds.has(item.id));
+  const allVisibleChecked = library.items.length > 0 && library.items.every((item) => library.selectedIds.has(item.id));
   const activeCategory = selectedCategory === undefined
     ? null
     : library.categories.find((category) => category.id === selectedCategory) ?? null;
+  const agentFilter = library.filters.agents;
   const filtersActive = Boolean(library.filters.search.trim())
     || library.filters.isEnabled !== undefined
     || agentFilter.length > 0;
 
   const scopeNote = selected.length > 0
-    ? `выбрано ${selected.length} из ${filtered.length}`
+    ? `выбрано ${selected.length} из ${library.total}`
     : activeCategory
       ? `категория «${activeCategory.name}»`
       : "показаны все категории";
@@ -206,7 +183,7 @@ export function KnowledgeLibraryPage({
               className={`knowledge-section-row${selectedCategory === undefined ? " is-active" : ""}`}
               style={{ paddingLeft: 9 }}
               type="button"
-              onClick={() => { library.updateFilter("category", undefined); setPage(1); }}
+              onClick={() => library.updateFilter("category", undefined)}
             >
               <Icon name="folder" size={15} strokeWidth={1.8} />
               <span>Все знания</span>
@@ -218,7 +195,7 @@ export function KnowledgeLibraryPage({
                 key={category.id}
                 style={{ paddingLeft: 9 + depth * 16 }}
                 type="button"
-                onClick={() => { library.updateFilter("category", category.id); setPage(1); }}
+                onClick={() => library.updateFilter("category", category.id)}
               >
                 <span>{category.name}</span>
                 <small>{count}</small>
@@ -241,7 +218,7 @@ export function KnowledgeLibraryPage({
                 className="knowledge-library-search"
                 placeholder="Поиск по заголовку и описанию"
                 value={library.filters.search}
-                onChange={(value) => { library.updateFilter("search", value); setPage(1); }}
+                onChange={(value) => library.updateFilter("search", value)}
               />
               <FilterDropdown
                 caption="В ответах:"
@@ -251,7 +228,6 @@ export function KnowledgeLibraryPage({
                 selected={library.filters.isEnabled === undefined ? [] : [String(library.filters.isEnabled)]}
                 onOpenChange={setAnswerOpen}
                 onSelect={(value) => {
-                  setPage(1);
                   library.updateFilter("isEnabled", library.filters.isEnabled === (value === "true") ? undefined : value === "true");
                 }}
               />
@@ -260,15 +236,14 @@ export function KnowledgeLibraryPage({
                 label={agentFilter.length === 1 ? agents.find((agent) => agent.aiAgentId === agentFilter[0])?.name ?? "Любой" : "Любой"}
                 multiple
                 open={agentOpen}
-                options={agents.map((agent) => ({ value: String(agent.aiAgentId), label: agent.name }))}
+                options={agents.filter((agent) => agent.aiAgentId != null).map((agent) => ({ value: String(agent.aiAgentId), label: agent.name }))}
                 selected={agentFilter.map(String)}
                 onOpenChange={setAgentOpen}
                 onSelect={(value) => {
-                  setPage(1);
                   const id = Number(value);
-                  setAgentFilter((current) => (current.includes(id)
-                    ? current.filter((item) => item !== id)
-                    : [...current, id]));
+                  library.updateFilter("agents", agentFilter.includes(id)
+                    ? agentFilter.filter((item) => item !== id)
+                    : [...agentFilter, id]);
                 }}
               />
               <span className="knowledge-library-toolbar-gap" />
@@ -277,7 +252,7 @@ export function KnowledgeLibraryPage({
 
             {library.itemsLoading ? (
               <LoadingState />
-            ) : visible.length === 0 ? (
+            ) : library.items.length === 0 ? (
               <div className="knowledge-empty">
                 <div>
                   <span className="knowledge-empty-icon"><Icon name="book" size={25} strokeWidth={1.7} /></span>
@@ -326,11 +301,12 @@ export function KnowledgeLibraryPage({
                     </tr>
                   </thead>
                   <tbody>
-                    {visible.map((item) => {
+                    {library.items.map((item) => {
                       const checked = library.selectedIds.has(item.id);
                       const path = knowledgeCategoryPath(library.categories, item.category.id);
                       const parent = path.includes(" / ") ? path.slice(0, path.lastIndexOf(" / ")) : "";
-                      const attachedAgents = agentsOfKnowledge(agents, item.id).length;
+                      // Сколько агентов используют материал — считает сервер.
+                      const attachedAgents = item.agentsCount ?? 0;
                       const menuItems = [
                         { key: "open", label: <button type="button" onClick={() => openKnowledge(item.id)}><Icon name="book" size={15} strokeWidth={1.8} />Открыть знание</button> },
                         ...(canManage ? [
@@ -404,11 +380,11 @@ export function KnowledgeLibraryPage({
                   </tbody>
                 </table>
 
-                <KnowledgeTableFooter
-                  note={`${pluralRu(filtered.length, KNOWLEDGE_FORMS)} · показаны ${visible.length} · агент отвечает только по включённым и прикреплённым`}
-                  page={currentPage}
-                  pageCount={pageCount}
-                  onPageChange={setPage}
+                <Pagination
+                  note={`${pluralRu(library.total, KNOWLEDGE_FORMS)} · показаны ${library.items.length} · агент отвечает только по включённым и прикреплённым`}
+                  page={library.page}
+                  pageCount={library.pageCount}
+                  onPage={library.setPage}
                 />
               </>
             )}

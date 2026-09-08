@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from chatballs.ai.api_errors import validation_error_response
+from chatballs.api.pagination import page_payload, paginate
 from chatballs.ai.knowledge_api_inputs import knowledge_filters, knowledge_input
 from chatballs.ai.knowledge_import import import_knowledge_documents
 from chatballs.ai.knowledge_policy import (
@@ -20,6 +21,9 @@ from chatballs.ai.knowledge_services import (
 )
 from chatballs.ai.indexing import reindex_knowledge
 from chatballs.ai.models import Knowledge
+
+# Библиотека знаний плотная — своя страница (кадр KB1).
+KNOWLEDGE_PAGE_SIZE = 25
 from chatballs.ai.selectors import (
     apply_knowledge_filters,
     knowledge_editors,
@@ -73,21 +77,30 @@ class KnowledgeListCreateView(_KnowledgeBaseView):
             filters = knowledge_filters(request)
         except ValidationError as error:
             return _validation_error(error)
-        items = list(apply_knowledge_filters(knowledge_for_context(request.tenant_context), filters))
+        page = paginate(
+            apply_knowledge_filters(
+                knowledge_for_context(request.tenant_context),
+                filters,
+                organization_id=self._org(request).id,
+            ),
+            request.query_params,
+            default_size=KNOWLEDGE_PAGE_SIZE,
+        )
         # Автор последней правки нужен в списке: он стоит под датой в колонке
         # «Обновлено» (кадр KB1). Один запрос на всю страницу, не N+1.
         editors = knowledge_editors(
             organization_id=self._org(request).id,
-            knowledge_ids=[item.id for item in items],
+            knowledge_ids=[item.id for item in page.items],
         )
-        payloads = []
-        for item in items:
-            payload = knowledge_payload(item, include_content=False)
+
+        def payload(item):
+            data = knowledge_payload(item, include_content=False)
             editor = editors.get(item.id)
             if editor:
-                payload["updatedBy"] = editor
-            payloads.append(payload)
-        return Response({"items": payloads})
+                data["updatedBy"] = editor
+            return data
+
+        return Response(page_payload(page, payload))
 
     def post(self, request: Request) -> Response:
         try:
@@ -130,6 +143,19 @@ class KnowledgeDetailView(_KnowledgeBaseView):
         ).get(knowledge.id)
         if editor:
             payload["updatedBy"] = editor
+        # К каким агентам знание прикреплено — считает сервер: карточке больше
+        # не нужен весь список агентов организации, чтобы это выяснить.
+        payload["agents"] = [
+            {
+                "id": agent.id,
+                "name": agent.channel.name,
+                "groupName": agent.channel.group.name if agent.channel.group_id else None,
+                "aiStatus": agent.status,
+            }
+            for agent in knowledge.agents.select_related("channel", "channel__group").order_by(
+                "channel__name"
+            )
+        ]
         return Response({"knowledge": payload})
 
     def patch(self, request: Request, knowledge_id: int) -> Response:

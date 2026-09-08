@@ -7,7 +7,7 @@ import { EmptyState, LoadingState } from "../../../shared/ui";
 import { Button, CopyButton } from "../../../shared/ui-controls";
 import { pluralRu, shortDateTime } from "../../../shared/utils";
 import type { RouteKey } from "../../../types";
-import type { AgentCard } from "../../agents/model";
+import type { AgentRef } from "../../agents/model";
 import { MarkdownContent } from "../../help-center/MarkdownContent";
 import { KnowledgeAgentDialog } from "./KnowledgeAgentDialog";
 import { KnowledgeCategoryDialog } from "./KnowledgeCategoryDialog";
@@ -40,7 +40,7 @@ export function KnowledgeCardPage({
   reloadAgents,
   setRoute,
 }: {
-  agents: AgentCard[];
+  agents: AgentRef[];
   canManage: boolean;
   knowledgeId: number | null;
   openKnowledgeEditor: (knowledgeId: number | null) => void;
@@ -93,7 +93,7 @@ export function KnowledgeCardPage({
 
   const path = knowledgeCategoryPath(catalog.categories, item.category.id);
   const crumbs = path ? path.split(" / ") : [item.category.name];
-  const attached = agentStates(agents, item.id);
+  const attached = agentStates(item.agents ?? []);
   const fragments = item.fragmentsCount ?? 0;
   const characters = (item.content ?? "").length;
 
