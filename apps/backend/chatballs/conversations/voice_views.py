@@ -30,6 +30,7 @@ from chatballs.conversations.selectors import conversation_for_context
 from chatballs.conversations.serializers import message_payload
 from chatballs.conversations.view_base import ConversationViewBase
 from chatballs.integrations.features import voice_messages_allowed
+from chatballs.tenancy.database import tenant_atomic
 
 MAX_VOICE_BYTES = 10 * 1024 * 1024
 ALLOWED_AUDIO_TYPES = ("audio/ogg", "audio/webm", "audio/mpeg", "audio/mp4", "audio/wav")
@@ -64,26 +65,53 @@ class MessageAudioView(ConversationViewBase):
 
 class MessageTranscribeView(ConversationViewBase):
     required_capability = "conversations.view"
+    # Расшифровка идёт к провайдеру организации и ждёт ответа десятки секунд.
+    # Держать на это время транзакцию нельзя: вместе с ней занято соединение из
+    # пула, а пул на процесс небольшой — несколько операторов, нажавших
+    # «расшифровать», встали бы поперёк всех остальных запросов. Поэтому здесь
+    # транзакции открываются вручную: вокруг чтения и вокруг записи, а вызов
+    # провайдера остаётся между ними (chatballs.tenancy.middleware).
+    tenant_manages_own_transaction = True
 
     def post(self, request: Request, message_id: int) -> Response:
-        try:
-            message = _visible_message(request, message_id)
-        except (Message.DoesNotExist, Conversation.DoesNotExist):
-            return Response({"detail": "Сообщение не найдено"}, status=404)
-        if message.kind != MessageKind.VOICE or not message.audio:
-            return Response({"detail": "Это не голосовое сообщение"}, status=400)
-        if message.transcript_status == TranscriptStatus.READY:
-            return Response({"message": message_payload(message)})
+        from chatballs.conversations.ingest import (
+            mark_transcription_failed,
+            prepare_transcription,
+            run_transcription,
+            store_transcription,
+        )
 
-        from chatballs.conversations.ingest import transcribe_voice_message
+        context = request.tenant_context
+        with tenant_atomic(context):
+            try:
+                message = _visible_message(request, message_id)
+            except (Message.DoesNotExist, Conversation.DoesNotExist):
+                return Response({"detail": "Сообщение не найдено"}, status=404)
+            if message.kind != MessageKind.VOICE or not message.audio:
+                return Response({"detail": "Это не голосовое сообщение"}, status=400)
+            if message.transcript_status == TranscriptStatus.READY:
+                return Response({"message": message_payload(message)})
+            try:
+                job = prepare_transcription(message.conversation.channel, message)
+            except ProviderError as error:
+                mark_transcription_failed(message)
+                return Response({"detail": str(error)}, status=502)
+            if job is None:
+                return Response({"detail": "Аудио недоступно"}, status=404)
 
         try:
-            transcript = transcribe_voice_message(message.conversation.channel, message, raise_errors=True)
+            transcript = run_transcription(job)
         except ProviderError as error:
+            with tenant_atomic(context):
+                mark_transcription_failed(message)
             return Response({"detail": str(error)}, status=502)
+
+        with tenant_atomic(context):
+            store_transcription(message, transcript)
+            payload = message_payload(message)
         if not transcript:
             return Response({"detail": "Провайдер вернул пустую расшифровку"}, status=502)
-        return Response({"message": message_payload(message)})
+        return Response({"message": payload})
 
 
 class ConversationVoiceView(ConversationViewBase):

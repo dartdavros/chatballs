@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import hashlib
 import logging
+from dataclasses import dataclass
 
 from django.db import IntegrityError, transaction
 from django.utils import timezone
@@ -68,38 +69,89 @@ def _history(conversation: Conversation) -> list[dict]:
     return [{"role": _ROLE.get(m.author_type, "user"), "content": m.text or m.transcript} for m in prior if m.text or m.transcript]
 
 
-def transcribe_voice_message(channel, message: Message, *, raise_errors: bool = False) -> str:
-    """Стенограмма голосового через BYOK-провайдера организации; пустая строка,
-    если провайдер не умеет или недоступен (статус FAILED — оператор повторит кнопкой)."""
+@dataclass(frozen=True, slots=True)
+class TranscriptionJob:
+    """Всё, что нужно провайдеру, — уже прочитанное из базы и хранилища.
+
+    Разложено на три шага (``prepare`` → ``run`` → ``store``), чтобы вызывающий
+    мог держать транзакцию только вокруг первого и третьего: обращение к
+    провайдеру ждёт ответа десятки секунд, и всё это время транзакция занимала
+    бы соединение из пула (chatballs.tenancy.middleware).
+    """
+
+    provider: object
+    model: str
+    audio: bytes
+    filename: str
+    content_type: str
+
+
+def prepare_transcription(channel, message: Message) -> TranscriptionJob | None:
+    """Шаг в транзакции: провайдер организации, модель и байты аудио."""
     from chatballs.ai.provider.factory import get_provider
     from chatballs.ai.provider.routing import DEFAULT_TRANSCRIPTION_MODEL, resolve_transcription_model
 
     if not message.audio:
-        return ""
+        return None
+    provider = get_provider(channel=channel)
     try:
-        provider = get_provider(channel=channel)
-        try:
-            model = resolve_transcription_model(channel)
-        except ProviderError:
-            model = DEFAULT_TRANSCRIPTION_MODEL  # тестовый провайдер без интеграции
-        with message.audio.open("rb") as handle:
-            audio = handle.read()
-        transcript = provider.transcribe(
-            audio=audio,
-            filename=message.audio.name.rsplit("/", 1)[-1],
-            content_type=message.audio_content_type or "audio/ogg",
-            model=model,
-        ).strip()
-    except ProviderError as error:
-        logger.info("Voice transcription unavailable for message %s: %s", message.id, error)
-        message.transcript_status = TranscriptStatus.FAILED
-        message.save(update_fields=["transcript_status"])
-        if raise_errors:
-            raise
-        return ""
+        model = resolve_transcription_model(channel)
+    except ProviderError:
+        model = DEFAULT_TRANSCRIPTION_MODEL  # тестовый провайдер без интеграции
+    with message.audio.open("rb") as handle:
+        audio = handle.read()
+    return TranscriptionJob(
+        provider=provider,
+        model=model,
+        audio=audio,
+        filename=message.audio.name.rsplit("/", 1)[-1],
+        content_type=message.audio_content_type or "audio/ogg",
+    )
+
+
+def run_transcription(job: TranscriptionJob) -> str:
+    """Шаг без транзакции: обращение к провайдеру."""
+    return job.provider.transcribe(
+        audio=job.audio,
+        filename=job.filename,
+        content_type=job.content_type,
+        model=job.model,
+    ).strip()
+
+
+def store_transcription(message: Message, transcript: str) -> None:
+    """Шаг в транзакции: сохранить стенограмму и статус."""
     message.transcript = transcript
     message.transcript_status = TranscriptStatus.READY if transcript else TranscriptStatus.FAILED
     message.save(update_fields=["transcript", "transcript_status"])
+
+
+def mark_transcription_failed(message: Message) -> None:
+    """Статус FAILED — оператор повторит кнопкой."""
+    message.transcript_status = TranscriptStatus.FAILED
+    message.save(update_fields=["transcript_status"])
+
+
+def transcribe_voice_message(channel, message: Message, *, raise_errors: bool = False) -> str:
+    """Стенограмма голосового через BYOK-провайдера организации; пустая строка,
+    если провайдер не умеет или недоступен (статус FAILED — оператор повторит кнопкой).
+
+    Три шага подряд, в транзакции вызывающего: так входящее сообщение
+    обрабатывается целиком (ingest_inbound). Оператору, нажавшему «расшифровать»,
+    ждать под транзакцией незачем — там шаги разнесены (voice_views).
+    """
+    try:
+        job = prepare_transcription(channel, message)
+        if job is None:
+            return ""
+        transcript = run_transcription(job)
+    except ProviderError as error:
+        logger.info("Voice transcription unavailable for message %s: %s", message.id, error)
+        mark_transcription_failed(message)
+        if raise_errors:
+            raise
+        return ""
+    store_transcription(message, transcript)
     return transcript
 
 

@@ -1,10 +1,12 @@
 from unittest import mock
 
 from django.core.files.base import ContentFile
+from django.db import connections
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TestCase
+from django.test import TestCase, TransactionTestCase
 from chatballs.testing import TenantAPIClient as APIClient
 
+from chatballs.ai.provider.local import LocalProvider
 from chatballs.channels.models import Channel
 from chatballs.conversations.ingest import ingest_inbound
 from chatballs.conversations.models import (
@@ -18,7 +20,7 @@ from chatballs.conversations.models import (
 )
 from chatballs.conversations.transports.base import InboundMessage
 from chatballs.identity.bootstrap import bootstrap_owner
-from chatballs.tenancy.database import tenant_atomic
+from chatballs.tenancy.database import current_tenant_id, tenant_atomic
 from chatballs.identity.models import (
     EmployeeRole,
     HumanUser,
@@ -32,7 +34,7 @@ from chatballs.integrations.models import (
 )
 
 
-class VoiceTestCase(TestCase):
+class VoiceFixtureMixin:
     """Голосовые сообщения (дизайн-базлайн v2, кадр H): приём, отдача,
     расшифровка через BYOK, отправка оператором в Telegram и MAX."""
 
@@ -64,6 +66,30 @@ class VoiceTestCase(TestCase):
             voice_duration=14,
             voice_mime="audio/ogg",
         )
+
+    def _voice_message(self) -> Message:
+        contact = Contact.objects.create(organization=self.organization, name="Ольга")
+        conversation = Conversation.objects.create(
+            organization=self.organization,
+            channel=self.channel,
+            connection=self.integration,
+            contact=contact,
+        )
+        message = Message.objects.create(
+            conversation=conversation,
+            author_type=MessageAuthor.CONTACT,
+            kind=MessageKind.VOICE,
+            audio_content_type="audio/ogg",
+            duration_seconds=14,
+        )
+        with tenant_atomic(self.organization.id):
+            message.audio.save("voice.ogg", ContentFile(b"OGGDATA"), save=False)
+        message.save(update_fields=["audio"])
+        return message
+
+
+class VoiceTestCase(VoiceFixtureMixin, TestCase):
+    pass
 
 
 class VoiceIngestTests(VoiceTestCase):
@@ -98,26 +124,6 @@ class VoiceIngestTests(VoiceTestCase):
 
 
 class VoiceApiTests(VoiceTestCase):
-    def _voice_message(self) -> Message:
-        contact = Contact.objects.create(organization=self.organization, name="Ольга")
-        conversation = Conversation.objects.create(
-            organization=self.organization,
-            channel=self.channel,
-            connection=self.integration,
-            contact=contact,
-        )
-        message = Message.objects.create(
-            conversation=conversation,
-            author_type=MessageAuthor.CONTACT,
-            kind=MessageKind.VOICE,
-            audio_content_type="audio/ogg",
-            duration_seconds=14,
-        )
-        with tenant_atomic(self.organization.id):
-            message.audio.save("voice.ogg", ContentFile(b"OGGDATA"), save=False)
-        message.save(update_fields=["audio"])
-        return message
-
     def test_audio_is_served_to_visible_viewer_only(self) -> None:
         message = self._voice_message()
         response = self.client.get(
@@ -308,3 +314,34 @@ class VoiceApiTests(VoiceTestCase):
         voice = _normalize({"update_id": 3, "message": {**base, "voice": {"file_id": "vc", "duration": 4}}})
         self.assertEqual(voice.voice_file_id, "vc")
         self.assertEqual(voice.files, ())
+
+
+class TranscriptionTransactionTests(VoiceFixtureMixin, TransactionTestCase):
+    """TransactionTestCase намеренно: обычный TestCase сам держит транзакцию на
+    весь тест, и проверять под ним in_atomic_block бессмысленно."""
+
+    def test_provider_is_awaited_without_holding_a_transaction(self) -> None:
+        # Ответа провайдера ждут десятки секунд. Транзакция всё это время
+        # занимала бы соединение из пула, а пул на процесс небольшой: несколько
+        # операторов, нажавших «расшифровать», встали бы поперёк всех остальных
+        # запросов процесса (chatballs.tenancy.middleware).
+        message = self._voice_message()
+        seen = {}
+        original = LocalProvider.transcribe
+
+        def spy(provider_self, **kwargs):
+            seen["in_atomic_block"] = connections["default"].in_atomic_block
+            seen["tenant"] = current_tenant_id()
+            return original(provider_self, **kwargs)
+
+        with mock.patch.object(LocalProvider, "transcribe", spy):
+            response = self.client.post(
+                f"/api/v1/conversations/messages/{message.id}/transcribe/"
+            )
+
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertIs(seen["in_atomic_block"], False)
+        self.assertIsNone(seen["tenant"])
+        # Результат при этом сохранён: вокруг записи транзакция своя.
+        message.refresh_from_db()
+        self.assertEqual(message.transcript_status, TranscriptStatus.READY)

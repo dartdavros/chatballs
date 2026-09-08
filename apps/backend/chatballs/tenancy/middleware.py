@@ -5,6 +5,7 @@ import re
 import uuid
 
 from django.http import Http404, HttpRequest, HttpResponse
+from django.urls import Resolver404, resolve
 
 from chatballs.events.context import get_correlation_id
 from chatballs.identity.models import Organization, OrganizationMembership
@@ -13,7 +14,20 @@ from chatballs.tenancy.database import tenant_atomic
 
 
 class TenantContextMiddleware:
-    """Resolve an authenticated membership from the organization URL UUID."""
+    """Resolve an authenticated membership from the organization URL UUID.
+
+    По умолчанию весь вызов view проходит в одной транзакции: RLS-контекст
+    ставится через ``SET LOCAL`` и живёт ровно столько же, сколько она. Это
+    удобно и даёт запросу атомарность, но у этого есть цена — пока идёт
+    обращение наружу (провайдер AI, мессенджер), запрос держит соединение из
+    пула, а пул на процесс небольшой.
+
+    Поэтому вьюха, которая ходит наружу и умеет разложить работу на «прочитать
+    — сходить — записать», может выставить ``tenant_manages_own_transaction`` и
+    открывать ``tenant_atomic`` сама, вокруг обращений к базе. Забытый блок не
+    опасен: без транзакции RLS-настройка пуста и строки просто не видны —
+    ошибка проявится сразу, а не утечкой в чужую организацию.
+    """
 
     route_kwarg = "organization_public_id"
     route_pattern = re.compile(
@@ -57,7 +71,18 @@ class TenantContextMiddleware:
                 membership,
                 correlation_id=get_correlation_id(),
             )
-            return self.get_response(request)
+            if not self._view_manages_own_transaction(request):
+                return self.get_response(request)
+        return self.get_response(request)
+
+    @staticmethod
+    def _view_manages_own_transaction(request: HttpRequest) -> bool:
+        try:
+            view = resolve(request.path_info).func
+        except Resolver404:
+            return False
+        # DRF кладёт класс вьюхи в атрибут cls у результата as_view().
+        return bool(getattr(getattr(view, "cls", None), "tenant_manages_own_transaction", False))
 
     def process_view(self, request: HttpRequest, view_func, view_args, view_kwargs):
         public_id = view_kwargs.get(self.route_kwarg)
