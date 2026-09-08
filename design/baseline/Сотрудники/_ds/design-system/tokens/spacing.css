@@ -1,0 +1,36 @@
+/* Chatballs — spacing tokens. Compact-enterprise density (ADR-HUB-0013):
+   "большие пустые поля и oversized-карточки запрещены". Values are the exact
+   paddings/gaps observed in the baseline, not snapped to a rounder grid. */
+
+:root {
+  --space-1: 2px;
+  --space-2: 4px;
+  --space-3: 6px;
+  --space-4: 8px;
+  --space-5: 9px;
+  --space-6: 10px;
+  --space-7: 11px;
+  --space-8: 12px;
+  --space-9: 14px;
+  --space-10: 16px;
+  --space-11: 18px;
+  --space-12: 20px;
+  --space-13: 22px;
+  --space-14: 24px;
+  --space-15: 28px;
+  --space-16: 32px;
+  --space-17: 36px;
+
+  /* control heights */
+  --h-control-sm: 30px;
+  --h-control-md: 34px;
+  --h-control: 36px;
+  --h-control-lg: 42px;
+  --h-control-xl: 44px;
+  --h-control-2xl: 48px;
+  --h-topbar: 56px;
+
+  /* layout */
+  --sidebar-width: 248px;
+  --content-max: 1340px;
+}
