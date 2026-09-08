@@ -1,7 +1,7 @@
+import time
 from urllib.parse import quote
 
 from django.contrib.auth import login
-from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_protect
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -13,14 +13,29 @@ from rest_framework.views import APIView
 from chatballs.identity.audit import record_audit_event
 from chatballs.identity.auth.common import _user_payload
 from chatballs.identity.auth.totp_utils import (
+    TOTP_CHALLENGE_TTL_SECONDS,
     TOTP_ISSUER,
     TOTP_PERIOD_SECONDS,
     TOTP_SESSION_KEY,
+    TOTP_STARTED_KEY,
     _ensure_totp_secret,
-    _verify_totp,
+    accept_totp_code,
 )
 from chatballs.identity.models import AuditResult, HumanUser
 from chatballs.identity.sessions import remember_device
+
+
+def _drop_challenge(request: Request) -> None:
+    request.session.pop(TOTP_SESSION_KEY, None)
+    request.session.pop(TOTP_STARTED_KEY, None)
+
+
+def _challenge_expired(request: Request) -> bool:
+    """Начатый вход, к которому не вернулись, перестаёт ждать код."""
+    started = request.session.get(TOTP_STARTED_KEY)
+    if not isinstance(started, int | float):
+        return True
+    return time.time() - started > TOTP_CHALLENGE_TTL_SECONDS
 
 
 class TotpSetupView(APIView):
@@ -51,8 +66,10 @@ class TotpConfirmView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request: Request) -> Response:
-        secret = _ensure_totp_secret(request.user)
-        if not _verify_totp(secret, str(request.data.get("code", ""))):
+        _ensure_totp_secret(request.user)
+        # Тот же приём кода, что и при входе: интервал запоминается, поэтому
+        # код, которым включили 2FA, не сработает ещё раз на входе.
+        if not accept_totp_code(request.user, str(request.data.get("code", ""))):
             record_audit_event(
                 action="identity.totp_setup_failed",
                 actor=request.user,
@@ -62,8 +79,7 @@ class TotpConfirmView(APIView):
             return Response({"detail": "Invalid TOTP code"}, status=400)
 
         request.user.totp_enabled = True
-        request.user.totp_last_used_at = timezone.now()
-        request.user.save(update_fields=["totp_enabled", "totp_last_used_at"])
+        request.user.save(update_fields=["totp_enabled"])
         record_audit_event(
             action="identity.totp_enabled",
             actor=request.user,
@@ -81,21 +97,22 @@ class TotpVerifyView(APIView):
 
     def post(self, request: Request) -> Response:
         pending_user_id = request.session.get(TOTP_SESSION_KEY)
-        if not pending_user_id:
+        if not pending_user_id or _challenge_expired(request):
+            _drop_challenge(request)
             return Response({"detail": "TOTP challenge is not active"}, status=401)
 
         try:
+            # is_active обязателен: пароль приняли раньше, и без этой проверки
+            # отключённый между шагами сотрудник всё равно вошёл бы.
             user = HumanUser.objects.prefetch_related("memberships__organization").get(
-                id=pending_user_id
+                id=pending_user_id, is_active=True
             )
         except HumanUser.DoesNotExist:
-            request.session.pop(TOTP_SESSION_KEY, None)
+            _drop_challenge(request)
             return Response({"detail": "TOTP challenge is not active"}, status=401)
 
-        if (
-            not user.totp_enabled
-            or not user.totp_secret
-            or not _verify_totp(user.totp_secret, str(request.data.get("code", "")))
+        if not user.totp_enabled or not accept_totp_code(
+            user, str(request.data.get("code", ""))
         ):
             record_audit_event(
                 action="identity.totp_verify_failed",
@@ -105,10 +122,9 @@ class TotpVerifyView(APIView):
             )
             return Response({"detail": "Invalid TOTP code"}, status=400)
 
-        request.session.pop(TOTP_SESSION_KEY, None)
-        # Отметка «последний код принят …» в карточке 2FA (кадр P1).
-        user.totp_last_used_at = timezone.now()
-        user.save(update_fields=["totp_last_used_at"])
+        # Отметку «последний код принят …» для карточки 2FA (кадр P1) уже
+        # проставил accept_totp_code вместе с номером интервала.
+        _drop_challenge(request)
         login(request, user)
         remember_device(request)
         record_audit_event(

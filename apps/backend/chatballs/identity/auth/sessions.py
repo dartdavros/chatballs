@@ -1,3 +1,5 @@
+import time
+
 from django.contrib.auth import authenticate, login, logout
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
@@ -9,7 +11,7 @@ from rest_framework.views import APIView
 
 from chatballs.identity.audit import record_audit_event
 from chatballs.identity.auth.common import _challenge_payload, _user_payload
-from chatballs.identity.auth.totp_utils import TOTP_SESSION_KEY
+from chatballs.identity.auth.totp_utils import TOTP_SESSION_KEY, TOTP_STARTED_KEY
 from chatballs.identity.models import AuditResult
 from chatballs.identity.sessions import remember_device
 
@@ -36,12 +38,15 @@ class LoginView(APIView):
         email = str(body.get("email", ""))
         password = str(body.get("password", ""))
         request.session.pop(TOTP_SESSION_KEY, None)
+        request.session.pop(TOTP_STARTED_KEY, None)
         user = authenticate(request, username=email, password=password)
         if user is None:
             record_audit_event(action="identity.login_failed", result=AuditResult.DENIED, request=request)
             return Response({"detail": "Invalid credentials"}, status=401)
         if user.totp_enabled:
             request.session[TOTP_SESSION_KEY] = user.id
+            # Шаг с кодом ждёт не вечно: см. TOTP_CHALLENGE_TTL_SECONDS.
+            request.session[TOTP_STARTED_KEY] = time.time()
             record_audit_event(
                 action="identity.login_totp_required",
                 actor=user,

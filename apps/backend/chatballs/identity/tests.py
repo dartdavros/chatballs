@@ -1,4 +1,5 @@
 import json
+import time
 from unittest import mock
 
 from django.conf import settings
@@ -12,7 +13,11 @@ from chatballs.testing import TenantAPIClient as APIClient
 from rest_framework.throttling import ScopedRateThrottle
 
 from chatballs.identity.bootstrap import bootstrap_owner
-from chatballs.identity.auth.totp_utils import _totp_code
+from chatballs.identity.auth.totp_utils import (
+    TOTP_CHALLENGE_TTL_SECONDS,
+    TOTP_STARTED_KEY,
+    _totp_code,
+)
 from chatballs.identity.models import (
     AuditEvent,
     EmployeeGroup,
@@ -429,6 +434,82 @@ class AuthEndpointTests(TestCase):
 
         self.assertEqual(verify_response.status_code, 200)
         self.assertTrue(verify_response.json()["authenticated"])
+
+    def test_totp_code_is_not_accepted_twice(self) -> None:
+        # Код живёт 30 секунд и принимается с окном ±1 интервал: без отметки
+        # использованного интервала подсмотренный код работал бы ещё полторы
+        # минуты (RFC 6238 §5.2).
+        owner = HumanUser.objects.get(email="owner@example.com")
+        owner.totp_secret = "JBSWY3DPEHPK3PXP"
+        owner.totp_enabled = True
+        owner.save(update_fields=["totp_secret", "totp_enabled"])
+        code = _totp_code(owner.totp_secret)
+
+        def attempt():
+            self.client.post(
+                "/api/v1/auth/login/",
+                data=json.dumps({"email": "owner@example.com", "password": "temporary-password"}),
+                content_type="application/json",
+            )
+            return self.client.post(
+                "/api/v1/auth/totp/verify/",
+                data=json.dumps({"code": code}),
+                content_type="application/json",
+            )
+
+        self.assertEqual(attempt().status_code, 200)
+        self.client.post("/api/v1/auth/logout/")
+
+        replayed = attempt()
+
+        self.assertEqual(replayed.status_code, 400)
+        self.assertFalse(replayed.json().get("authenticated", False))
+
+    def test_totp_step_does_not_let_in_a_deactivated_user(self) -> None:
+        # Пароль приняли раньше; если между шагами сотрудника отключили,
+        # второй шаг обязан это заметить.
+        owner = HumanUser.objects.get(email="owner@example.com")
+        owner.totp_secret = "JBSWY3DPEHPK3PXP"
+        owner.totp_enabled = True
+        owner.save(update_fields=["totp_secret", "totp_enabled"])
+        self.client.post(
+            "/api/v1/auth/login/",
+            data=json.dumps({"email": "owner@example.com", "password": "temporary-password"}),
+            content_type="application/json",
+        )
+
+        HumanUser.objects.filter(pk=owner.pk).update(is_active=False)
+
+        verify_response = self.client.post(
+            "/api/v1/auth/totp/verify/",
+            data=json.dumps({"code": _totp_code(owner.totp_secret)}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(verify_response.status_code, 401)
+
+    def test_abandoned_totp_challenge_expires(self) -> None:
+        owner = HumanUser.objects.get(email="owner@example.com")
+        owner.totp_secret = "JBSWY3DPEHPK3PXP"
+        owner.totp_enabled = True
+        owner.save(update_fields=["totp_secret", "totp_enabled"])
+        self.client.post(
+            "/api/v1/auth/login/",
+            data=json.dumps({"email": "owner@example.com", "password": "temporary-password"}),
+            content_type="application/json",
+        )
+
+        session = self.client.session
+        session[TOTP_STARTED_KEY] = time.time() - TOTP_CHALLENGE_TTL_SECONDS - 1
+        session.save()
+
+        verify_response = self.client.post(
+            "/api/v1/auth/totp/verify/",
+            data=json.dumps({"code": _totp_code(owner.totp_secret)}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(verify_response.status_code, 401)
 
 
 @override_settings(ROOT_URLCONF="chatballs_backend.urls_admin")
