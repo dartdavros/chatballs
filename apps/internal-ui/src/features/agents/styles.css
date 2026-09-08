@@ -818,30 +818,33 @@
   white-space: pre-wrap;
 }
 
-/* Высота полей инструкций — из макета (44 / 60 / 88). У textarea собственная
-   высота по числу строк перебивает min-height, поэтому она задана явно. */
+/* Высота полей инструкций. В макете было 44 / 60 / 88 — по решению владельца
+   2026-09-08 поля выше: инструкции пишут абзацами, и в три строки правила не
+   помещались. Шаг кратен строке (13px × 1.55 + паддинги): 3, 4 и 7 строк.
+   У textarea собственная высота по числу строк перебивает min-height, поэтому
+   она задана явно; ручное растягивание по вертикали остаётся. */
 .agent-field.is-rows-1 textarea {
-  height: 44px;
+  height: 80px;
 }
 
 .agent-field.is-rows-1 .agent-field-static {
-  min-height: 44px;
+  min-height: 80px;
 }
 
 .agent-field.is-rows-2 textarea {
-  height: 60px;
+  height: 100px;
 }
 
 .agent-field.is-rows-2 .agent-field-static {
-  min-height: 60px;
+  min-height: 100px;
 }
 
 .agent-field.is-rows-3 textarea {
-  height: 88px;
+  height: 160px;
 }
 
 .agent-field.is-rows-3 .agent-field-static {
-  min-height: 88px;
+  min-height: 160px;
 }
 
 .agent-field textarea::placeholder {
