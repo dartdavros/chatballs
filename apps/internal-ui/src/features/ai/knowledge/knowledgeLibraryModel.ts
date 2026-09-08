@@ -3,7 +3,7 @@ import { pluralRu, shortDateTime } from "../../../shared/utils";
 import type { KnowledgeAttachment, KnowledgeCategory, KnowledgeItem } from "./types";
 
 // Экранная модель раздела «База знаний» (дизайн-базлайн v2, кадры KB1–KB9).
-// Отделы упразднены ADR-HUB-0041, поэтому доступность знания — это флаг
+// Отделы упразднены ADR-CHATBALLS-0041, поэтому доступность знания — это флаг
 // «участвует в ответах» плюс явный список прикреплённых агентов.
 
 export type CategoryRow = {

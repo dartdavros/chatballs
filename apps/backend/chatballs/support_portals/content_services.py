@@ -165,7 +165,7 @@ def publish_revision(
     article.full_clean()
     article.save(update_fields=["published_revision", "status", "updated_at"])
     # Агенты отвечают по опубликованной ревизии, поэтому индекс перестраивается
-    # ровно в момент публикации (ADR-HUB-0016).
+    # ровно в момент публикации (ADR-CHATBALLS-0016).
     reindex_portal_article(article)
     return article
 

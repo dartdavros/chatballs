@@ -1,4 +1,4 @@
-# ADR-HUB-0023: снос версионируемых документов и релизов после переноса данных (0003).
+# ADR-CHATBALLS-0023: снос версионируемых документов и релизов после переноса данных (0003).
 
 import django.db.models.deletion
 from django.db import migrations, models

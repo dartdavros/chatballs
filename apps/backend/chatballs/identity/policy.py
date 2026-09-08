@@ -9,7 +9,7 @@ from chatballs.identity.capabilities import (
 )
 from chatballs.identity.models import EmployeeRole, OrganizationMembership
 
-# Ролевая авторизация (SPEC-HUB-0031 §3, ADR-HUB-0043): OWNER и ADMIN идентичны
+# Ролевая авторизация (SPEC-CHATBALLS-0031 §3, ADR-CHATBALLS-0043): OWNER и ADMIN идентичны
 # (кроме ownership.transfer и невозможности удалить/заблокировать владельца —
 # это проверяют employee-сервисы), EMPLOYEE ограничен чатом. Deny-by-default
 # сохраняется; scope-модель и отделы упразднены.
@@ -60,7 +60,7 @@ def can_administer_access(actor) -> bool:
 
 
 def conversation_visibility(actor) -> dict | None:
-    """Видимость диалогов (ADR-HUB-0043 §4).
+    """Видимость диалогов (ADR-CHATBALLS-0043 §4).
 
     None — без ограничений (OWNER/ADMIN). Иначе словарь для построения фильтра:
     диалоги групп сотрудника + диалоги без группы + назначенные ему.

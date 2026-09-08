@@ -23,7 +23,7 @@ TENANT_TABLES = (
     "conversations_conversationread",
     "conversations_message",
     # Таблицы orders_*/sales_*/products_*/support_* удалены вместе с
-    # приложениями (ADR-HUB-0041/0045).
+    # приложениями (ADR-CHATBALLS-0041/0045).
     "calls_callsession",
     "calls_callinvite",
     "calls_callparticipant",
@@ -187,7 +187,7 @@ def disable_rls(apps, schema_editor):
 class Migration(migrations.Migration):
     # sessions/auth/contenttypes — явно: миграция выдаёт GRANT на django_session,
     # auth_permission и django_content_type; раньше порядок обеспечивался
-    # транзитивно через удалённые приложения orders/sales (ADR-HUB-0041).
+    # транзитивно через удалённые приложения orders/sales (ADR-CHATBALLS-0041).
     dependencies = [
         ("tenancy", "0002_cross_tenant_constraints"),
         ("sessions", "0001_initial"),

@@ -113,7 +113,7 @@ export function IconButton({ icon, iconSize = 16, label, bare = false, className
 
 /** Поиск списка — один на всё приложение: иконка, поле, подсказка горячей
  *  клавиши. С `hotkey` клавиша ставит фокус в поле, если пользователь не пишет
- *  в другом поле и не открыл меню (SPEC-HUB-0031 §9). */
+ *  в другом поле и не открыл меню (SPEC-CHATBALLS-0031 §9). */
 export function SearchInput({ className = "", placeholder, value, onChange, inputRef, hotkey }: SearchInputProps & { hotkey?: string }) {
   const ownRef = useRef<HTMLInputElement | null>(null);
   const field = inputRef ?? ownRef;

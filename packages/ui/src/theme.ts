@@ -1,7 +1,7 @@
 import { theme as antdTheme } from "antd";
 import type { ThemeConfig } from "antd";
 
-// Персональная тема и акцент (SPEC-HUB-0031 §7): antd-конфиг собирается из
+// Персональная тема и акцент (SPEC-CHATBALLS-0031 §7): antd-конфиг собирается из
 // выбранных пользователем режима (light/dark) и акцентного цвета.
 export function buildTheme(dark: boolean, accent: string): ThemeConfig {
   const base = chatballsTheme;

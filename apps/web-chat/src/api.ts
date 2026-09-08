@@ -20,7 +20,7 @@ export type WebConfig = {
 export type WebAttachment = { name: string; contentType: string; size: number; available: boolean };
 export type WebMessage = { id: number; author: "client" | "ai" | "operator" | "system"; kind?: string; text: string; createdAt: string; durationSeconds?: number; hasAudio?: boolean; attachment?: WebAttachment };
 
-// Приглашение/состояние онлайн-звонка (SPEC-HUB-0013).
+// Приглашение/состояние онлайн-звонка (SPEC-CHATBALLS-0013).
 export type CallKind = "AUDIO" | "VIDEO";
 export type CallInfo = {
   callId: string;
@@ -126,7 +126,7 @@ export async function poll(token: string, since: number): Promise<Poll> {
   return r.json();
 }
 
-// --- Онлайн-звонки (SPEC-HUB-0013): доставка приглашения и клиентские действия ---
+// --- Онлайн-звонки (SPEC-CHATBALLS-0013): доставка приглашения и клиентские действия ---
 
 const CALLS_API = "/api/v1/calls";
 

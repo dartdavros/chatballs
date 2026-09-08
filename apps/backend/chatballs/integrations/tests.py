@@ -514,7 +514,7 @@ class BuildOpenerSocksTests(TestCase):
 
 class CustomIntegrationTests(TestCase):
 
-    """Generic OpenAI-compatible BYOK provider (ADR-HUB-0034, SPEC-HUB-0024 §5).
+    """Generic OpenAI-compatible BYOK provider (ADR-CHATBALLS-0034, SPEC-CHATBALLS-0024 §5).
 
 
 
@@ -566,7 +566,7 @@ class CustomIntegrationTests(TestCase):
 
         )
 
-        # Модель — отдельное рабочее поле (ADR-HUB-0034 §4), читается в рантайме.
+        # Модель — отдельное рабочее поле (ADR-CHATBALLS-0034 §4), читается в рантайме.
 
         self.assertEqual(integration.config["base_url"], "https://api.example.com/v1")
 

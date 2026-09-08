@@ -207,7 +207,7 @@ class ConversationReturnQueueView(ConversationViewBase):
 
 
 def claim_for_reply(view: ConversationViewBase, request: Request, conversation: Conversation) -> Conversation | Response:
-    """Одно действие взятия (дизайн-базлайн v2, решение 2; ADR-HUB-0003): первая
+    """Одно действие взятия (дизайн-базлайн v2, решение 2; ADR-CHATBALLS-0003): первая
     реплика сотрудника (текст или файл) атомарно перехватывает диалог у
     AI/очереди. Возвращает диалог или готовый ответ с ошибкой."""
     if conversation.control_mode != ControlMode.HUMAN:
@@ -333,7 +333,7 @@ class ConversationSpamView(ConversationViewBase):
 
 
 class ConversationGroupView(ConversationViewBase):
-    """Перенос диалога в группу и снятие группы (ADR-HUB-0043 §3)."""
+    """Перенос диалога в группу и снятие группы (ADR-CHATBALLS-0043 §3)."""
 
     required_capability = "conversations.operate"
 
@@ -363,7 +363,7 @@ class ConversationGroupView(ConversationViewBase):
 
 
 class ConversationAssigneeView(ConversationViewBase):
-    """Назначение и переназначение ответственного (ADR-HUB-0043 §3)."""
+    """Назначение и переназначение ответственного (ADR-CHATBALLS-0043 §3)."""
 
     required_capability = "conversations.operate"
 

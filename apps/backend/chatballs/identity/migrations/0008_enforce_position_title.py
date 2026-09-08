@@ -1,6 +1,6 @@
 # ADR-HUB-0027 / SPEC-HUB-0018 фаза M2 (этап 1): после явного заполнения должностей
 # включается обязательность. Оставшиеся незаполненные значения нормализуются в "";
-# непустая должность гарантируется application contract (SPEC-HUB-0016 §5).
+# непустая должность гарантируется application contract (SPEC-CHATBALLS-0016 §5).
 from django.db import migrations, models
 
 

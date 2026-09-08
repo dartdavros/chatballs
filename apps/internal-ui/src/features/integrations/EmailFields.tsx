@@ -1,7 +1,7 @@
 import { FormField } from "../../shared/form-controls";
 import type { Integration } from "./model";
 
-// Поля Email-подключения (SPEC-HUB-0025 §3.2): адрес + секции IMAP и SMTP.
+// Поля Email-подключения (SPEC-CHATBALLS-0025 §3.2): адрес + секции IMAP и SMTP.
 // Порты — строками в состоянии формы; в конфиг уходят числами.
 export type EmailConfigState = {
   email: string;

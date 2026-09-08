@@ -1,4 +1,4 @@
-// Контракт визуальной темы портала (SPEC-HUB-0028 §6, ADR-HUB-0044).
+// Контракт визуальной темы портала (SPEC-CHATBALLS-0028 §6, ADR-CHATBALLS-0044).
 // Как сделать свою тему — themes/README.md.
 
 export type PortalThemeScheme = "light" | "dark";

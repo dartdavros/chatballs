@@ -1,6 +1,6 @@
 """Real group overview aggregates (no fabricated numbers).
 
-Commerce metrics were removed with the sales domain (ADR-HUB-0041). Everything
+Commerce metrics were removed with the sales domain (ADR-CHATBALLS-0041). Everything
 here is derived from real conversations, messages and LLM usage.
 """
 

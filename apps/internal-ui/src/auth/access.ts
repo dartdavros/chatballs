@@ -1,6 +1,6 @@
 import type { RouteKey, SessionUser } from "../types";
 
-// Ролевая модель SPEC-HUB-0031 §3: OWNER и ADMIN идентичны и видят всё,
+// Ролевая модель SPEC-CHATBALLS-0031 §3: OWNER и ADMIN идентичны и видят всё,
 // EMPLOYEE работает только в чате. Backend — источник истины (deny-by-default);
 // фронтенд лишь скрывает недоступное.
 

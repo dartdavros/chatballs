@@ -6,7 +6,7 @@ import { toSalesClientRow } from "./model";
 export type SalesClientsState = ReturnType<typeof useSalesClients>;
 
 // Фильтры списка контактов (кадры K1/K2): поиск, каналы, агенты и чип
-// «С открытым диалогом». Фильтра по продуктам нет (ADR-HUB-0041).
+// «С открытым диалогом». Фильтра по продуктам нет (ADR-CHATBALLS-0041).
 
 export function useSalesClients(salesClients: SalesClient[]) {
   const [query, setQueryState] = useState("");

@@ -15,7 +15,7 @@ def reserve_storage(
     before the object is persisted. Idempotent on (organization, idempotency_key):
     a replay returns the existing reservation without reserving a second time.
 
-    Тарифная ёмкость удалена (ADR-HUB-0042 §2): резервирование остаётся
+    Тарифная ёмкость удалена (ADR-CHATBALLS-0042 §2): резервирование остаётся
     техническим учётом занятого места без отказов по лимиту.
     """
     usage = _locked_usage(context)

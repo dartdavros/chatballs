@@ -6,7 +6,7 @@
 #
 # Решение владельца по унаследованным каналам: выключить checkout и
 # attribution. Продуктовая часть инвариантов (P3-P5) снята вместе с сущностью
-# Product (ADR-HUB-0041).
+# Product (ADR-CHATBALLS-0041).
 from django.db import migrations, models
 
 

@@ -22,7 +22,7 @@ export type Integration = {
   secretMasked: string;
   isActive: boolean;
   // purpose="notifications" — сервисный бот уведомлений сотрудников (не привязан к каналу продаж).
-  // email/imap*/smtp* — Email-подключение (SPEC-HUB-0025 §3.1).
+  // email/imap*/smtp* — Email-подключение (SPEC-CHATBALLS-0025 §3.1).
   config: {
     baseUrl: string;
     defaultModel: string;
@@ -70,7 +70,7 @@ type ProviderMeta = {
 
 export const PROVIDERS: Record<IntegrationProvider, ProviderMeta> = {
   OPENROUTER: { label: "OpenRouter", kind: "LLM_PROVIDER", secretLabel: "API-ключ", defaultBaseUrl: "https://openrouter.ai/api/v1", hasModel: true, testable: true, checkable: true },
-  // Custom — generic BYOK для любого OpenAI-compatible endpoint (ADR-HUB-0034).
+  // Custom — generic BYOK для любого OpenAI-compatible endpoint (ADR-CHATBALLS-0034).
   // Каталога нет: модель вводится свободным текстом и читается в рантайме.
   CUSTOM: { label: "Custom (OpenAI-compatible)", kind: "LLM_PROVIDER", secretLabel: "API-ключ", defaultBaseUrl: "", hasModel: true, testable: true, checkable: true },
   // Демо-провайдер — живой AI без ключей и сети для знакомства с системой: отвечает по знаниям агента.
@@ -78,7 +78,7 @@ export const PROVIDERS: Record<IntegrationProvider, ProviderMeta> = {
   MAX: { label: "MAX", kind: "MESSENGER", secretLabel: "Токен бота", defaultBaseUrl: "https://platform-api.max.ru", hasModel: false, testable: true, checkable: true },
   TELEGRAM: { label: "Telegram", kind: "MESSENGER", secretLabel: "Токен бота", defaultBaseUrl: "https://api.telegram.org", hasModel: false, testable: true, checkable: true },
   WEB: { label: "Web-виджет", kind: "MESSENGER", secretLabel: "", defaultBaseUrl: "", hasModel: false, testable: false, checkable: true },
-  // Email — подключение-ящик IMAP/SMTP (ADR-HUB-0035); секрет — пароль приложения.
+  // Email — подключение-ящик IMAP/SMTP (ADR-CHATBALLS-0035); секрет — пароль приложения.
   EMAIL: { label: "Email (IMAP/SMTP)", kind: "MESSENGER", secretLabel: "Пароль", defaultBaseUrl: "", hasModel: false, testable: true, checkable: true },
 };
 
@@ -129,8 +129,8 @@ export const formatAllowedOrigins = (origins: string[]): string => origins.join(
 export const invalidAllowedOrigin = (origins: string[]): string | undefined =>
   origins.find((item) => !ORIGIN_RULE.test(item));
 
-// Публичный домен Hub для встраивания Web-виджета (SPEC-HUB-0003 §3).
-// Один frontend-образ работает на любом домене (ADR-HUB-0028 §runtime frontend):
+// Публичный домен Hub для встраивания Web-виджета (SPEC-CHATBALLS-0003 §3).
+// Один frontend-образ работает на любом домене (ADR-CHATBALLS-0028 §runtime frontend):
 // сниппет генерируется от текущего origin в рантайме, а не от build-time аргумента.
 export function webWidgetSnippet(widgetKey: string): string {
   return `<script src="${window.location.origin}/chat-widget.js" data-widget-key="${widgetKey}" async></script>`;

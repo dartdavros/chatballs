@@ -11,7 +11,7 @@ VIEWS = {
         FROM identity_employeeprofile membership
     """,
     # Вьюхи product_ingest_directory/sales_source_directory удалены вместе с
-    # доменом продаж (ADR-HUB-0041); на старых БД их снимает 0017_drop_commerce.
+    # доменом продаж (ADR-CHATBALLS-0041); на старых БД их снимает 0017_drop_commerce.
     "attachment_directory": """
         SELECT attachment.id AS resource_id,
                attachment.organization_id,
@@ -46,7 +46,7 @@ VIEWS = {
     """,
     # Вьюхи support_channel_directory/support_conversation_directory удалены
     # вместе с сущностью Product и авторизованным in-product чатом
-    # (ADR-HUB-0045); на старых БД их снимает 0029_drop_product_support.
+    # (ADR-CHATBALLS-0045); на старых БД их снимает 0029_drop_product_support.
 }
 
 

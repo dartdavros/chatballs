@@ -66,7 +66,7 @@ def load(context: TenantContext, refs: DemoRefs) -> None:
             organization=organization, title=item["title"], defaults={"text": item["text"]}
         )
 
-    # Объединение контактов (ADR-HUB-0006): демо показывает и историю слияний.
+    # Объединение контактов (ADR-CHATBALLS-0006): демо показывает и историю слияний.
     for item in data.get("contactMerges", []):
         _merge_contacts(context, refs, item)
 

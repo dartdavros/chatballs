@@ -1,4 +1,4 @@
-"""MAX bot transport (M2, ADR-HUB-0020).
+"""MAX bot transport (M2, ADR-CHATBALLS-0020).
 
 Long polling for inbound updates and text sending. MAX (TamTam heritage) field
 naming is not fully documented, so inbound parsing is defensive and the raw

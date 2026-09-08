@@ -338,7 +338,7 @@ class ChatInvocationTests(TestCase):
         invocation = LlmInvocation.objects.get(channel=self.channel, operation="chat")
         self.assertEqual(invocation.status, LlmInvocationStatus.SUCCESS)
         self.assertGreater(invocation.total_tokens, 0)
-        # Технический учёт стоимости (ADR-HUB-0042 §2): считается по прайсу модели.
+        # Технический учёт стоимости (ADR-CHATBALLS-0042 §2): считается по прайсу модели.
         from chatballs.ai import pricing
 
         self.assertEqual(

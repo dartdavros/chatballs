@@ -8,7 +8,7 @@ import { SalesClientMergeDialog } from "./SalesClientMergeDialog";
 import type { ClientDetailVm } from "./model";
 
 // Вкладка «Идентификаторы» (кадр K5): идентичности по подключениям и, справа,
-// предложение объединения. Объединять может только владелец (ADR-HUB-0006) —
+// предложение объединения. Объединять может только владелец (ADR-CHATBALLS-0006) —
 // оператор и админ видят предложение и открывают сравнение.
 
 export function SalesClientIdentitiesTab({ client, canMerge, openClient, onMerge }: {

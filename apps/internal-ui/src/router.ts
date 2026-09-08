@@ -26,7 +26,7 @@ export function routeFromPath(pathname: string, search = ""): RouteState {
   const path = match ? match[2] || "/" : normalized;
   const base = { employeeId: null, agentId: null, knowledgeId: null, clientId: null, channelId: null, supportPortalId: null, portalSettingsSection: null, settingsSection: null };
   const state = { organizationPublicId, ...base };
-  // Chat-first (SPEC-HUB-0031): корень и устаревшие адреса командного центра и
+  // Chat-first (SPEC-CHATBALLS-0031): корень и устаревшие адреса командного центра и
   // разделённых чатов ведут в единый «Чат».
   if (path === "/" || path === "/command" || path === "/chat" || path === "/departments/sales" || path === "/departments/sales/dialogs" || path === "/departments/support/dialogs") {
     return { route: "chat", ...state };
@@ -97,7 +97,7 @@ export function routeFromPath(pathname: string, search = ""): RouteState {
   if (path === "/ai/usage") return { route: "aiUsage", ...state };
   // Устаревшие адреса: интеграции и организация переехали в «Настройки» (§8.6).
   if (path === "/integrations") return { ...state, route: "settings", settingsSection: "integrations" };
-  // /administration/subscription — устаревший адрес тарифов (ADR-HUB-0042).
+  // /administration/subscription — устаревший адрес тарифов (ADR-CHATBALLS-0042).
   if (path === "/administration" || path === "/administration/organization" || path === "/administration/subscription") {
     return { ...state, route: "settings", settingsSection: "organization" };
   }

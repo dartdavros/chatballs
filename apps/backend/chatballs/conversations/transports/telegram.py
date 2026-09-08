@@ -1,4 +1,4 @@
-"""Telegram bot transport (M2, ADR-HUB-0020).
+"""Telegram bot transport (M2, ADR-CHATBALLS-0020).
 
 Long polling via getUpdates (offset cursor) and sendMessage. Token goes in the
 path. Optional per-connection proxy via config["proxy_url"] (Telegram is often

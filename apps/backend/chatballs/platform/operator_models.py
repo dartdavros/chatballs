@@ -4,7 +4,7 @@ from django.db import models
 
 
 class PlatformOperator(models.Model):
-    """Global platform principal (ADR-HUB-0031 §9). Not derived from tenant
+    """Global platform principal (ADR-CHATBALLS-0031 §9). Not derived from tenant
     membership; never becomes an Organization OWNER. Authenticated via
     PlatformToken (machine-to-machine)."""
 

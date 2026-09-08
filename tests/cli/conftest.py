@@ -2,7 +2,7 @@
 
 Тесты запускают реальный bash-скрипт chatballs против временного layout'а
 instance + release, с замоканными `docker` и `flock` на PATH. Реальный Docker
-не требуется (ADR-HUB-0028 §testing — machine-readable, без внешних зависимостей).
+не требуется (ADR-CHATBALLS-0028 §testing — machine-readable, без внешних зависимостей).
 
 На Windows pytest запускает скрипт через Git Bash (не WSL), поэтому бинарник
 bash детектится явно. Все генерируемые файлы пишутся с LF, чтобы `\r` не ломал

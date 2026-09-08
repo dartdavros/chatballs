@@ -6,7 +6,7 @@ import { Button, ToneBadge } from "../../shared/ui-controls";
 import { shortDateTime } from "../../shared/utils";
 import { PROVIDERS, STATUS_META, type Integration, type IntegrationProvider } from "./model";
 
-// Плитка подключения: фирменная марка на фирменном фоне (SPEC-HUB-0025 §2.3).
+// Плитка подключения: фирменная марка на фирменном фоне (SPEC-CHATBALLS-0025 §2.3).
 // Web использует глиф и цвет кнопки-лончера виджета (webchat/loader.py).
 const TILE_CLASS: Partial<Record<IntegrationProvider, string>> = {
   TELEGRAM: "integration-tile--telegram",

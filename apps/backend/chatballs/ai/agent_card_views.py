@@ -1,4 +1,4 @@
-"""HTTP-слой карточек агентов (/api/v1/agents/, ADR-HUB-0041 §4)."""
+"""HTTP-слой карточек агентов (/api/v1/agents/, ADR-CHATBALLS-0041 §4)."""
 
 from __future__ import annotations
 

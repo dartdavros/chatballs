@@ -51,7 +51,7 @@ def _resolve_channel(
 
 
 def _email_config(config: dict) -> dict:
-    """Email-подключение (ADR-HUB-0035): адрес и хосты IMAP/SMTP обязательны,
+    """Email-подключение (ADR-CHATBALLS-0035): адрес и хосты IMAP/SMTP обязательны,
     порты/SSL имеют значения по умолчанию, purpose не поддерживается."""
     if str(config.get("purpose", "")).strip():
         raise ValidationError({"config": "Email cannot be a notifications bot"})
@@ -118,7 +118,7 @@ def _normalized_config(provider: str, config: dict) -> dict:
             raise ValidationError({"config": f"Proxy URL: {error}"}) from error
     # LLM-провайдеры (OpenRouter, Custom) хранят модель по умолчанию свободным текстом.
     # Для OpenRouter поле исторически декоративно (SPEC-HUB-0005:388); для Custom оно
-    # читается в рантайме (ADR-HUB-0034 §4). Версионирование модели — дорожка ADR-0034.
+    # читается в рантайме (ADR-CHATBALLS-0034 §4). Версионирование модели — дорожка ADR-0034.
     if provider in (IntegrationProvider.OPENROUTER, IntegrationProvider.CUSTOM, IntegrationProvider.DEMO):
         default_model = str(config.get("defaultModel", config.get("default_model", ""))).strip()
         if default_model:

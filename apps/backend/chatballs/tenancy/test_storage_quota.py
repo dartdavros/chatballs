@@ -14,7 +14,7 @@ from chatballs.testing import system_tenant_context
 
 class StorageReserveFinalizeReleaseTests(TestCase):
     """SPEC-HUB-0022 §10: reserve/finalize/release — идемпотентный технический
-    учёт занятого места. Лимитов больше нет (ADR-HUB-0042 §2): сервис никогда
+    учёт занятого места. Лимитов больше нет (ADR-CHATBALLS-0042 §2): сервис никогда
     не отказывает по квоте."""
 
     def setUp(self) -> None:

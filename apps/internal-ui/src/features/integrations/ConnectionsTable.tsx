@@ -3,7 +3,7 @@ import { Icon } from "../../shared/icons";
 import { PROVIDERS, type Integration } from "./model";
 import { ConnectionIcon, RowActions, StatusCell } from "./rows";
 
-// Подстрока подключения (SPEC-HUB-0025 §2.4): провайдер + идентификатор.
+// Подстрока подключения (SPEC-CHATBALLS-0025 §2.4): провайдер + идентификатор.
 function subtitle(integration: Integration): string {
   const label = PROVIDERS[integration.provider].label;
   const { config } = integration;

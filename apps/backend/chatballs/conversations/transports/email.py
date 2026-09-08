@@ -1,4 +1,4 @@
-"""Email (IMAP/SMTP) transport (ADR-HUB-0035, SPEC-HUB-0025 §3.3–3.4).
+"""Email (IMAP/SMTP) transport (ADR-CHATBALLS-0035, SPEC-CHATBALLS-0025 §3.3–3.4).
 
 Polling IMAP with a UID cursor in poll_marker («uidvalidity:last_uid»), replies
 via SMTP into the same thread (Re:/In-Reply-To/References from the dialog's
@@ -137,7 +137,7 @@ def poll_updates(integration) -> tuple[list[InboundMessage], str]:
         known_validity, last_uid = _parse_marker(integration.poll_marker)
         if validity != known_validity:
             # Первый запуск или смена UIDVALIDITY: курсор — на текущий конец
-            # ящика, история не импортируется (SPEC-HUB-0025 §3.3).
+            # ящика, история не импортируется (SPEC-CHATBALLS-0025 §3.3).
             return [], f"{validity}:{max(next_uid - 1, 0)}"
         _, found = client.uid("SEARCH", None, f"UID {last_uid + 1}:*")
         # IMAP-диапазон N:* всегда включает старшее письмо — отсекаем уже виденные.

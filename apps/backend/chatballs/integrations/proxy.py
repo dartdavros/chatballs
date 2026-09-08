@@ -1,4 +1,4 @@
-"""Единый HTTP-opener с поддержкой прокси для всех интеграций (ADR-HUB-0020).
+"""Единый HTTP-opener с поддержкой прокси для всех интеграций (ADR-CHATBALLS-0020).
 
 Поддерживаемые схемы proxy_url:
 - http://[user:pass@]host:port

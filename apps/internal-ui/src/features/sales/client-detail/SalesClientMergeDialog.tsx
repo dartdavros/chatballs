@@ -4,7 +4,7 @@ import { DecisionDialog } from "../../../shared/DecisionDialog";
 import { Button } from "../../../shared/ui-controls";
 import type { ClientDetailVm } from "./model";
 
-// Сравнение и объединение контактов (ADR-HUB-0006, кадр K5): владелец видит,
+// Сравнение и объединение контактов (ADR-CHATBALLS-0006, кадр K5): владелец видит,
 // что именно переедет, и обязан указать причину — она попадёт в журнал.
 
 export function SalesClientMergeDialog({ client, open, saving, error, onClose, onMerge }: {

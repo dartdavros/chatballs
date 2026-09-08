@@ -41,7 +41,7 @@ class HumanUserManager(UserManager):
 
 
 class UiTheme(models.TextChoices):
-    # Персональная тема интерфейса (дизайн-базлайн v2, SPEC-HUB-0031 §7).
+    # Персональная тема интерфейса (дизайн-базлайн v2, SPEC-CHATBALLS-0031 §7).
     LIGHT = "LIGHT", "Светлая"
     DARK = "DARK", "Тёмная"
     SYSTEM = "SYSTEM", "Как в системе"
@@ -150,7 +150,7 @@ class Organization(models.Model):
         super().save(*args, **kwargs)
 
 
-# SPEC-HUB-0016 §5: лимит должности задаётся backend-константой.
+# SPEC-CHATBALLS-0016 §5: лимит должности задаётся backend-константой.
 POSITION_TITLE_MAX_LENGTH = 120
 
 
@@ -172,7 +172,7 @@ class OrganizationMembership(models.Model):
         related_name="memberships",
     )
     role = models.CharField(max_length=32, choices=EmployeeRole.choices)
-    # Должность вводится вручную; обязательна для новых записей (SPEC-HUB-0016 §5).
+    # Должность вводится вручную; обязательна для новых записей (SPEC-CHATBALLS-0016 §5).
     # Пустая строка допускается на уровне БД только для legacy-записей до backfill.
     position_title = models.CharField(max_length=POSITION_TITLE_MAX_LENGTH, blank=True, default="")
     phone = models.CharField(max_length=32, blank=True)
@@ -188,7 +188,7 @@ class OrganizationMembership(models.Model):
                 fields=["user", "organization"],
                 name="uniq_membership_user_organization",
             ),
-            # В организации ровно один владелец (SPEC-HUB-0031 §3).
+            # В организации ровно один владелец (SPEC-CHATBALLS-0031 §3).
             models.UniqueConstraint(
                 fields=["organization"],
                 condition=Q(role=EmployeeRole.OWNER),

@@ -12,7 +12,7 @@ from chatballs.identity.audit import record_audit_event
 from chatballs.identity.group_models import EmployeeGroup, EmployeeGroupMember
 from chatballs.identity.models import OrganizationMembership
 
-# Группы сотрудников (ADR-HUB-0043): имя + состав, только граница видимости
+# Группы сотрудников (ADR-CHATBALLS-0043): имя + состав, только граница видимости
 # диалогов. Управляют OWNER/ADMIN; сотрудник видит свои группы в session payload.
 
 

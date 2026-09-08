@@ -50,7 +50,7 @@ class InboundMessage:
     # обязательным fallback для AI, поиска, уведомлений и превью.
     content_html: str = ""
     # Транспортная мета для тредирования ответа (email: subject/last_message_id).
-    # Пишется в Conversation.transport_meta при ingest (ADR-HUB-0035).
+    # Пишется в Conversation.transport_meta при ingest (ADR-CHATBALLS-0035).
     thread_meta: dict | None = None
     # Голосовое сообщение (дизайн-базлайн v2, кадр H): идентификатор файла у
     # провайдера (TG file_id) ИЛИ прямой URL (MAX), длительность и mime.

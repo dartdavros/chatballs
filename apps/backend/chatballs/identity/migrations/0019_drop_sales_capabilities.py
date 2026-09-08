@@ -1,4 +1,4 @@
-# ADR-HUB-0041: домен продаж удалён — capabilities sales.* исключаются из
+# ADR-CHATBALLS-0041: домен продаж удалён — capabilities sales.* исключаются из
 # реестра. Строки профилей с этими кодами удаляются до установки нового
 # check-constraint, иначе constraint невыполним на существующих данных.
 from django.db import migrations, models

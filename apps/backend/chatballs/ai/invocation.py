@@ -32,7 +32,7 @@ def _record_blocked(*, channel, purpose: str, model: str, error: Exception) -> N
 
 
 def _prepare_invocation(*, channel, requested_model: str | None) -> tuple[LLMProvider, str]:
-    # BYOK — единственный режим (ADR-HUB-0042 §3): модель берётся из интеграции
+    # BYOK — единственный режим (ADR-CHATBALLS-0042 §3): модель берётся из интеграции
     # организации с fallback на модель агента. Без интеграции модель остаётся
     # агентской: тестовый провайдер работает, прод упадёт в get_provider штатно.
     agent = channel.ai_agent

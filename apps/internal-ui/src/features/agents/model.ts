@@ -1,4 +1,4 @@
-// Единая сущность «Агент» = канал + AI-конфигурация (ADR-HUB-0041 §4).
+// Единая сущность «Агент» = канал + AI-конфигурация (ADR-CHATBALLS-0041 §4).
 // Источник данных — агрегированный API /api/v1/agents/.
 // Экранная модель — дизайн-базлайн v2, «Агенты Baseline», кадры G1–G5, S1.
 import { api } from "../../api/client";
@@ -223,7 +223,7 @@ export function knowledgeLine(card: AgentCard): string {
 }
 
 // Дневной бюджет агента хранится в целых центах USD (limits.dailyCostUsd,
-// ADR-HUB-0023); на экране — доллары с двумя знаками.
+// ADR-CHATBALLS-0023); на экране — доллары с двумя знаками.
 export function dailyCostInput(limits: Record<string, unknown>): string {
   const cents = Number(limits.dailyCostUsd ?? 0);
   return Number.isFinite(cents) && cents > 0 ? (cents / 100).toFixed(2) : "";

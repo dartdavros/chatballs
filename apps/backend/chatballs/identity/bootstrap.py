@@ -34,7 +34,7 @@ def bootstrap_owner(*, email: str, password: str, full_name: str = "") -> Bootst
     from chatballs.ai.knowledge_categories import ensure_uncategorized_category
 
     ensure_uncategorized_category(organization)
-    # Группы сотрудников (ADR-HUB-0043): не обязательны для запуска, но дают
+    # Группы сотрудников (ADR-CHATBALLS-0043): не обязательны для запуска, но дают
     # локальному контуру и тестам готовое разделение потоков.
     operators_group, _ = EmployeeGroup.objects.get_or_create(
         organization=organization, name="Операторы"

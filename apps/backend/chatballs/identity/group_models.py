@@ -7,7 +7,7 @@ from django.db.models.functions import Lower
 from chatballs.identity.models import Organization, OrganizationMembership
 from chatballs.tenancy.models import TenantRelationModel
 
-# Настраиваемые группы сотрудников (ADR-HUB-0043): граница видимости диалогов
+# Настраиваемые группы сотрудников (ADR-CHATBALLS-0043): граница видимости диалогов
 # и ничего больше — без прав, знаний, должностей и иерархии. Организация сама
 # решает, какие группы ей нужны; групп может не быть вообще.
 

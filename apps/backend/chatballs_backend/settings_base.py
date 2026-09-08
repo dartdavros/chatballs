@@ -116,7 +116,7 @@ CACHES = {
 }
 
 # Signaling звонков: Redis только fan-out/presence, source of truth lifecycle —
-# PostgreSQL (SPEC-HUB-0013 §9). В тестах — InMemory layer.
+# PostgreSQL (SPEC-CHATBALLS-0013 §9). В тестах — InMemory layer.
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels.layers.InMemoryChannelLayer",
@@ -180,7 +180,7 @@ CHATBALLS_AI_PRICING: dict = {}  # переопределение цен micro-U
 CHATBALLS_AI_EMBEDDING_MODEL = os.environ.get("CHATBALLS_AI_EMBEDDING_MODEL", "openai/text-embedding-3-small")
 # Модель расшифровки голосовых (OpenAI-совместимый /audio/transcriptions).
 
-# Managed-провайдер CustoAI удалён (ADR-HUB-0042 §3): AI — только через
+# Managed-провайдер CustoAI удалён (ADR-CHATBALLS-0042 §3): AI — только через
 # интеграцию организации (BYOK).
 
 # Long-poll hold-time мессенджеров (сек). Держим малым: единый воркер выполняет
@@ -230,7 +230,7 @@ SECURE_HSTS_PRELOAD = SECURE_HSTS_SECONDS > 0
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-# Файловые вложения знаний (ADR-HUB-0023). Файлы отдаются только через
+# Файловые вложения знаний (ADR-CHATBALLS-0023). Файлы отдаются только через
 # download-endpoint (FileResponse), прямого статик-роутинга MEDIA нет.
 MEDIA_URL = "media/"
 CHATBALLS_STORAGE_BACKEND, MEDIA_ROOT, STORAGES = build_storage_settings(
@@ -293,10 +293,10 @@ if (
 ):
     raise ImproperlyConfigured("HUB call token TTL values must be positive")
 
-# ICE-серверы для WebRTC (SPEC-HUB-0013 §10): direct-first через STUN, TURN как
+# ICE-серверы для WebRTC (SPEC-CHATBALLS-0013 §10): direct-first через STUN, TURN как
 # fallback. Формат URL через запятую (stun:host:port / turn:host:3478?transport=udp).
 CHATBALLS_CALL_STUN_URLS = env_list("CHATBALLS_CALL_STUN_URLS", [])
-# TURN (Coturn, SPEC-HUB-0013 §11): backend выдаёт краткоживущие REST-credentials
+# TURN (Coturn, SPEC-CHATBALLS-0013 §11): backend выдаёт краткоживущие REST-credentials
 # по общему static-auth-secret. Пусто локально -> только STUN/direct ICE.
 # Адреса TURN владелец задаёт в «Настройках» (там же, где адрес установки);
 # переменная остаётся переопределением для установок, ведущих конфигурацию сами.

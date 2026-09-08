@@ -1,4 +1,4 @@
-"""Агент как единая сущность (ADR-HUB-0041 §4, SPEC-HUB-0031 §4.3).
+"""Агент как единая сущность (ADR-CHATBALLS-0041 §4, SPEC-CHATBALLS-0031 §4.3).
 
 Для администратора существует только «Агент»: имя, группа, инструкции, знания,
 подключения, активность. Физически карточка агрегирует Channel (несущая ось
@@ -94,7 +94,7 @@ def _connections_payload(channel: Channel) -> list[dict[str, object]]:
 def knowledge_total_for_organization(organization_id: int) -> int:
     """Сколько всего материалов можно выбрать агенту — знаний библиотеки и
     опубликованных статей порталов («4 из 18» в шапке блока «Знания»).
-    Библиотека общая для организации (ADR-HUB-0041 §8), поэтому число одно
+    Библиотека общая для организации (ADR-CHATBALLS-0041 §8), поэтому число одно
     на всех агентов — список считает его один раз."""
     from chatballs.ai.models import Knowledge
     from chatballs.support_portals.models import PortalArticle
@@ -193,7 +193,7 @@ def ensure_channel_agent(channel: Channel) -> AIAgent:
 def create_agent_card(
     *, context: TenantContext, name: object, group_id: int | None
 ) -> Channel:
-    """Мастер одного шага (SPEC-HUB-0031 §4.3): имя и необязательная группа.
+    """Мастер одного шага (SPEC-CHATBALLS-0031 §4.3): имя и необязательная группа.
 
     Канал создаётся без продукта с безопасной операторской политикой (дефолты
     модели удовлетворяют P1-P5); код генерируется из имени и неизменен.

@@ -28,7 +28,7 @@ export function HelpCenterApp() {
   const [manifest, setManifest] = useState<HelpManifest | null>(null);
   const [failed, setFailed] = useState(false);
   // Тема применяется до первого кадра контента, иначе портал моргнёт
-  // базовым оформлением (SPEC-HUB-0028 §6).
+  // базовым оформлением (SPEC-CHATBALLS-0028 §6).
   const themeReady = usePortalTheme(
     manifest ? manifest.portal.theme : null,
     manifest ? manifest.portal.themeScheme : "LIGHT",

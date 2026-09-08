@@ -5,7 +5,7 @@ from chatballs.channels.models import Channel
 from chatballs.support_portals.models import PortalArticle
 from chatballs.support_portals.statuses import ArticleStatus, PortalStatus
 
-# Библиотека знаний — общая для организации (ADR-HUB-0041 §8): агент использует
+# Библиотека знаний — общая для организации (ADR-CHATBALLS-0041 §8): агент использует
 # только явно выбранные и включённые знания, областей видимости нет.
 
 

@@ -20,7 +20,7 @@ import {
 // Список агентов (дизайн-базлайн v2, «Агенты Baseline», кадры G1, G2, S1):
 // агент · группа · статус · модель · подключения · открытые · ⋯.
 
-/** Мастер одного шага (SPEC-HUB-0031 §4.3, кадр G2): имя и группа. */
+/** Мастер одного шага (SPEC-CHATBALLS-0031 §4.3, кадр G2): имя и группа. */
 function CreateAgentModal({ groups, onClose, onCreated }: { groups: EmployeeGroup[]; onClose: () => void; onCreated: (agentId: number) => void }) {
   const [name, setName] = useState("");
   const [groupId, setGroupId] = useState<number | null>(null);

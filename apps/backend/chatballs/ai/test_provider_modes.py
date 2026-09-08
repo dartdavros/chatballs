@@ -24,7 +24,7 @@ from chatballs.testing import system_tenant_context
 
 
 class ProviderModeTests(TestCase):
-    """BYOK — единственный режим работы AI (ADR-HUB-0042 §3)."""
+    """BYOK — единственный режим работы AI (ADR-CHATBALLS-0042 §3)."""
 
     def setUp(self) -> None:
         bootstrap_owner(email="owner@example.com", password="temporary-password")

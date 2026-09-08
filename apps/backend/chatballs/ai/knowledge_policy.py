@@ -10,7 +10,7 @@ from chatballs.tenancy.context import TenantContext
 AI_VIEW = "ai.view"
 AI_MANAGE = "ai.manage"
 
-# Библиотека знаний — общая для организации (ADR-HUB-0041 §8): областей
+# Библиотека знаний — общая для организации (ADR-CHATBALLS-0041 §8): областей
 # видимости нет, доступ определяется ролью (ai.view/ai.manage у OWNER/ADMIN).
 
 

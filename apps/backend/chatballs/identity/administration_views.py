@@ -285,7 +285,7 @@ def _audit_actors(base) -> list[dict[str, object]]:
 
 
 class LaunchChecklistView(APIView):
-    """Чек-лист «Запуск» (SPEC-HUB-0031 §5, дизайн-базлайн v2): три шага с
+    """Чек-лист «Запуск» (SPEC-CHATBALLS-0031 §5, дизайн-базлайн v2): три шага с
     автоотметкой по факту. Скрытие блока — предпочтение клиента (localStorage)."""
 
     permission_classes = [HasCapability]

@@ -1,4 +1,4 @@
-# ADR-HUB-0043: у портала больше нет отдела. Дроп колонки department_id
+# ADR-CHATBALLS-0043: у портала больше нет отдела. Дроп колонки department_id
 # (support_portals/0008) каскадно унёс вьюху chatballs.support_portal_directory —
 # пересоздаём её без join на отделы и снимаем стейл-триггер sp_portal_department.
 from django.db import migrations

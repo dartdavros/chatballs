@@ -68,7 +68,7 @@ class WebChatWidget(TenantRelationModel):
         if not channel.allow_anonymous_sessions:
             raise ValidationError({"integration": "Widget requires a channel with anonymous sessions"})
 
-# Анонимная браузерная сессия Web Chat (SPEC-HUB-0003 §7). Храним только hash
+# Анонимная браузерная сессия Web Chat (SPEC-CHATBALLS-0003 §7). Храним только hash
 # токена; токен живёт в браузере и идентифицирует ConnectionIdentity канала.
 
 

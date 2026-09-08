@@ -1,4 +1,4 @@
-# Override для локальной разработки (ADR-HUB-0028 §compose.dev).
+# Override для локальной разработки (ADR-CHATBALLS-0028 §compose.dev).
 # Применяется поверх canonical compose.yaml:
 #   docker compose -f compose.yaml -f compose.dev.yaml up
 # Переопределяет image на build, dev-команды, bind mounts и host-порты.

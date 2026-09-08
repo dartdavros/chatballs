@@ -112,7 +112,7 @@ class PortalListView(PortalBaseView):
     def get(self, request: Request) -> Response:
         portals = list(portals_for_context(request.tenant_context))
         counts = portal_content_counts(request.tenant_context)
-        # Тарифные лимиты порталов удалены (ADR-HUB-0042 §2): создание доступно всегда.
+        # Тарифные лимиты порталов удалены (ADR-CHATBALLS-0042 §2): создание доступно всегда.
         active_count = sum(item.status != "ARCHIVED" for item in portals)
         return Response(
             {

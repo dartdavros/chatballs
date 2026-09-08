@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# deploy.sh — canonical deployment workflow (ADR-HUB-0028 / SPEC-HUB-0019).
+# deploy.sh — canonical deployment workflow (ADR-CHATBALLS-0028 / SPEC-CHATBALLS-0019).
 
 cmd_deploy() {
   ensure_instance_dirs

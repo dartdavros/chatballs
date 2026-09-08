@@ -1,4 +1,4 @@
-"""Email-подключение: конфигурация, проверка и сериализация (SPEC-HUB-0025 §5)."""
+"""Email-подключение: конфигурация, проверка и сериализация (SPEC-CHATBALLS-0025 §5)."""
 
 
 
@@ -116,7 +116,7 @@ class EmailConfigTests(TestCase):
 
     def test_notifications_purpose_rejected(self) -> None:
 
-        # Email не может быть сервисным ботом уведомлений (ADR-HUB-0035, границы).
+        # Email не может быть сервисным ботом уведомлений (ADR-CHATBALLS-0035, границы).
 
         with self.assertRaises(ValidationError):
 

@@ -1,4 +1,4 @@
-"""WebSocket signaling (проход B, SPEC-HUB-0013 §9): auth по access token,
+"""WebSocket signaling (проход B, SPEC-CHATBALLS-0013 §9): auth по access token,
 relay только между участниками звонка, переходы CONNECTING/ACTIVE/ENDED,
 reconnect без новой CallSession, поздние события игнорируются."""
 

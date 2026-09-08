@@ -46,7 +46,7 @@ import { useConversationCall } from "./useConversationCall";
 import { useIncomingMessageSound } from "./useIncomingMessageSound";
 
 // Общий workspace диалогов (SPEC-HUB-0010 §8.2). Видимость inbox решает
-// backend по группам (ADR-HUB-0043); страница параметризуется заголовком,
+// backend по группам (ADR-CHATBALLS-0043); страница параметризуется заголовком,
 // placeholder поиска и правой панелью через render-prop.
 export function ConversationWorkspace({ isOwner = false, viewerId = null, listTitle, searchPlaceholder, renderContextPanel, mobileHeader, hint, initialConversationId, scope, setScope, counters, showScopeSwitcher = true }: {
   isOwner?: boolean;
@@ -136,7 +136,7 @@ export function ConversationWorkspace({ isOwner = false, viewerId = null, listTi
   const callController = useConversationCall({ conversationId: selectedId, onConversationChanged });
   useIncomingMessageSound(conversations, listLoaded);
 
-  // Клавиатура (SPEC-HUB-0031 §9): ↑/↓ — по списку, Enter — открыть (мобайл).
+  // Клавиатура (SPEC-CHATBALLS-0031 §9): ↑/↓ — по списку, Enter — открыть (мобайл).
   // «/» — фокус в поиск, эту клавишу держит сам SearchInput.
   const filteredRef = useRef<ConversationListItem[]>([]);
   useEffect(() => {

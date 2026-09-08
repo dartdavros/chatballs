@@ -9,7 +9,7 @@ from chatballs.platform.tokens import authenticate_token
 class PlatformTokenAuthentication(BaseAuthentication):
     """Machine-to-machine auth via `Authorization: Token <opaque>`.
 
-    The platform surface is non-browser (ADR-HUB-0031 §4): there is no CORS and
+    The platform surface is non-browser (ADR-CHATBALLS-0031 §4): there is no CORS and
     session cookies are not used. On success, request.platform_operator and the
     authenticating PlatformToken are attached for capability checks and audit.
     """

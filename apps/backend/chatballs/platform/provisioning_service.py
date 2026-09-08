@@ -47,7 +47,7 @@ def provision_organization(
     """Single write boundary for tenant provisioning (SPEC-HUB-0021 §4).
 
     Coordinates identity, audit and outbox in one
-    transaction (тариф удалён, ADR-HUB-0042 §2: организация создаётся без подписки). Tenant-owned rows are written under set_local_tenant(new_org.id)
+    transaction (тариф удалён, ADR-CHATBALLS-0042 §2: организация создаётся без подписки). Tenant-owned rows are written under set_local_tenant(new_org.id)
     via tenant_atomic. No email/provider calls happen before commit (SPEC §4).
     """
     with transaction.atomic():

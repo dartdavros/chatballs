@@ -1,4 +1,4 @@
-"""WebSocket signaling звонков (SPEC-HUB-0013 §9).
+"""WebSocket signaling звонков (SPEC-CHATBALLS-0013 §9).
 
 Правила:
 - аутентификация первым сообщением {"type": "auth", "token": <call access token>}

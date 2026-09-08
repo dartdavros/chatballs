@@ -1,4 +1,4 @@
-# Generated for CustoAI / BYOK credential mode (ADR-HUB-0033 §4, SPEC-HUB-0024 §2).
+# Generated for CustoAI / BYOK credential mode (ADR-HUB-0033 §4, SPEC-CHATBALLS-0024 §2).
 
 from django.db import migrations, models
 

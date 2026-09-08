@@ -13,7 +13,7 @@ def _test_provider() -> LLMProvider:
 
 
 def get_provider(*, channel=None) -> LLMProvider:
-    """Resolve the organization's own provider (BYOK, ADR-HUB-0042 §3).
+    """Resolve the organization's own provider (BYOK, ADR-CHATBALLS-0042 §3).
 
     The test adapter is an explicit test-surface override. Managed platform
     credentials were removed with the billing domain: every invocation uses the

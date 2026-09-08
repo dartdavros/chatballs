@@ -38,7 +38,7 @@ def integration_payload(integration: Integration) -> dict[str, object]:
             "quickReplies": integration.config.get("quick_replies", []),
             "consentText": integration.config.get("consent_text", ""),
             "consentVersion": integration.config.get("consent_version", ""),
-            # Email-подключение (ADR-HUB-0035).
+            # Email-подключение (ADR-CHATBALLS-0035).
             "email": integration.config.get("email", ""),
             "imapHost": integration.config.get("imap_host", ""),
             "imapPort": integration.config.get("imap_port", 993),

@@ -13,7 +13,7 @@ from chatballs.identity.models import (
 
 
 class ConversationVisibilityTests(TestCase):
-    """Видимость диалогов по группам (ADR-HUB-0043 §4): диалоги групп сотрудника
+    """Видимость диалогов по группам (ADR-CHATBALLS-0043 §4): диалоги групп сотрудника
     + диалоги без группы + назначенные ему; OWNER/ADMIN видят всё."""
 
     def setUp(self) -> None:

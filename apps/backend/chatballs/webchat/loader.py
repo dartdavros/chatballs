@@ -1,4 +1,4 @@
-# Публичный JS-лоадер виджета (SPEC-HUB-0003 §3). Подключается одним тегом:
+# Публичный JS-лоадер виджета (SPEC-CHATBALLS-0003 §3). Подключается одним тегом:
 #   <script src="https://<ваш-домен>/chat-widget.js"
 #           data-widget-key="wgt_public_key" async></script>
 # Лоадер рисует launcher и открывает панель в изолированном iframe (/chat/).

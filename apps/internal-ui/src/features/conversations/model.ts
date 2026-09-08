@@ -197,7 +197,7 @@ export function toConversationListItem(conversation: ApiConversation): Conversat
   };
 }
 
-// Видимость inbox решает backend (ADR-HUB-0043): группы сотрудника + без группы
+// Видимость inbox решает backend (ADR-CHATBALLS-0043): группы сотрудника + без группы
 // + назначенные ему; владелец и админ видят всё. Фильтры — серверные.
 export type ConversationListFilters = Partial<{
   group: string; // id | "none"
@@ -299,7 +299,7 @@ export const sendFileMessage = (conversationId: number, file: File, caption: str
   return apiUpload<{ message: ApiMessage }>(`/api/v1/conversations/${conversationId}/attachments/`, form).then((r) => r.message);
 };
 
-// --- Онлайн-звонки (SPEC-HUB-0013): запрос из диалога, ожидание, отмена ---
+// --- Онлайн-звонки (SPEC-CHATBALLS-0013): запрос из диалога, ожидание, отмена ---
 
 export type CallKind = "AUDIO" | "VIDEO";
 

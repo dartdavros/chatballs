@@ -28,7 +28,7 @@ function userWith(role: Role, capabilities: string[] = []): SessionUser {
   };
 }
 
-describe("role-based navigation (SPEC-HUB-0031 §3)", () => {
+describe("role-based navigation (SPEC-CHATBALLS-0031 §3)", () => {
   it("gives owner and admin identical full access", () => {
     for (const role of ["OWNER", "ADMIN"] as const) {
       const user = userWith(role);

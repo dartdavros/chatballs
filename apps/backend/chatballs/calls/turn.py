@@ -11,7 +11,7 @@ from django.conf import settings
 def turn_credentials(
     *, label: str = "hub", now: int | None = None, ttl_seconds: int | None = None
 ) -> tuple[str, str]:
-    """Краткоживущие TURN REST credentials для Coturn (SPEC-HUB-0013 §11).
+    """Краткоживущие TURN REST credentials для Coturn (SPEC-CHATBALLS-0013 §11).
 
     Схема coturn `use-auth-secret`:
         username   = "<expiry_unix_ts>:<label>"

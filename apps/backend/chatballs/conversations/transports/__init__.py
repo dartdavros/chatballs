@@ -39,7 +39,7 @@ _CONTACT_ACK = {
 }
 
 # Приглашение на онлайн-звонок: сообщение с кнопкой-ссылкой /calls/<token>
-# (SPEC-HUB-0013 §7.2). Web доставляется поллингом виджета, отправки нет.
+# (SPEC-CHATBALLS-0013 §7.2). Web доставляется поллингом виджета, отправки нет.
 _CALL_INVITE = {
     IntegrationProvider.MAX: _max.send_call_invite,
     IntegrationProvider.TELEGRAM: _telegram.send_call_invite,

@@ -10,7 +10,7 @@ class PlatformCapabilitySpec:
     description: str
 
 
-# Global platform capabilities (ADR-HUB-0031 §9). Distinct from the tenant
+# Global platform capabilities (ADR-CHATBALLS-0031 §9). Distinct from the tenant
 # capability registry (identity/capabilities.py): a platform capability is held
 # by a PlatformOperator/token and is never derived from an OrganizationMembership.
 _PLATFORM_CAPABILITIES = (

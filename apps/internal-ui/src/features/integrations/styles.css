@@ -4,7 +4,7 @@
   gap: 20px;
 }
 
-/* Табы «Подключения / Провайдеры» (SPEC-HUB-0025 §2.1) — по образцу sales-orders-tabs. */
+/* Табы «Подключения / Провайдеры» (SPEC-CHATBALLS-0025 §2.1) — по образцу sales-orders-tabs. */
 .integrations-tabs {
   gap: 4px;
   border-bottom: 1px solid var(--n-7);
@@ -50,7 +50,7 @@
   color: var(--n-3);
 }
 
-/* Плитки подключений: белая фирменная марка на фирменном фоне (SPEC-HUB-0025 §2.3).
+/* Плитки подключений: белая фирменная марка на фирменном фоне (SPEC-CHATBALLS-0025 §2.3).
    Цвета — из семейства channel-* дизайн-системы; Web — цвет кнопки-лончера виджета. */
 /* Плитка подключения (кадры N3/N4): 36×36, радиус 9, подложка — марка
    в 14%, сам глиф — цветом марки. */
@@ -133,7 +133,7 @@
   font-size: 11.5px;
 }
 
-/* Секции Email-формы: IMAP / SMTP (SPEC-HUB-0025 §3.2). */
+/* Секции Email-формы: IMAP / SMTP (SPEC-CHATBALLS-0025 §3.2). */
 .integration-email-section {
   display: flex;
   flex-direction: column;

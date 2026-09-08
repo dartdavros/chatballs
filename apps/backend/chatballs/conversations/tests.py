@@ -401,7 +401,7 @@ class WebchatContactTests(TestCase):
         self,
     ) -> None:
         # Агент без BYOK-интеграции: IntegrationNotConfigured (ProviderError)
-        # переводит диалог оператору вместо 500 (ADR-HUB-0042 §3).
+        # переводит диалог оператору вместо 500 (ADR-CHATBALLS-0042 §3).
         admin = HumanUser.objects.create_user(email="admin@example.com", password="temporary")
         OrganizationMembership.objects.create(
             user=admin,

@@ -1,4 +1,4 @@
-"""Доменные операции WebSocket-signaling (SPEC-HUB-0013 §9).
+"""Доменные операции WebSocket-signaling (SPEC-CHATBALLS-0013 §9).
 
 Вызываются consumer'ом через database_sync_to_async и возвращают готовые
 payload-словари: ORM не утекает в async-контекст. Source of truth lifecycle —

@@ -2,7 +2,7 @@ from django.db import migrations
 
 
 # Таблица support_portals_supportportalproduct удалена вместе с сущностью
-# Product (ADR-HUB-0045); на старых БД её снимает 0029_drop_product_support.
+# Product (ADR-CHATBALLS-0045); на старых БД её снимает 0029_drop_product_support.
 TABLES = (
     "support_portals_supportportal",
     "support_portals_portalcategory",

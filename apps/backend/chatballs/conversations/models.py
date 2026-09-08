@@ -25,7 +25,7 @@ class Contact(models.Model):
     description = models.TextField(blank=True, default="")
     company = models.CharField(max_length=160, blank=True, default="")
     city = models.CharField(max_length=120, blank=True, default="")
-    # Контакт, в который этот был объединён (ADR-HUB-0006). Строка не удаляется:
+    # Контакт, в который этот был объединён (ADR-CHATBALLS-0006). Строка не удаляется:
     # объединение обратимо, поэтому исходный контакт остаётся для разъединения.
     merged_into = models.ForeignKey(
         "self",
@@ -41,7 +41,7 @@ class Contact(models.Model):
 
 
 class ContactMerge(models.Model):
-    """Журнал объединения контактов (ADR-HUB-0006).
+    """Журнал объединения контактов (ADR-CHATBALLS-0006).
 
     Хранит, что именно переехало, чтобы объединение можно было развернуть
     обратно: перенесённые идентичности и диалоги и поля карточки, которые были
@@ -70,7 +70,7 @@ class ContactMerge(models.Model):
 
 class ConnectionIdentity(TenantRelationModel):
     tenant_relation_fields = ("contact", "connection")
-    # Устойчивая идентичность контакта внутри конкретного подключения (ADR-HUB-0006).
+    # Устойчивая идентичность контакта внутри конкретного подключения (ADR-CHATBALLS-0006).
     contact = models.ForeignKey(Contact, on_delete=models.CASCADE, related_name="identities")
     connection = models.ForeignKey("integrations.Integration", on_delete=models.PROTECT, related_name="identities")
     external_user_id = models.CharField(max_length=128)
@@ -79,7 +79,7 @@ class ConnectionIdentity(TenantRelationModel):
     username = models.CharField(max_length=128, blank=True)
     # Когда подключение отдало подтверждённый телефон (кнопка «поделиться
     # контактом»). Только такая идентичность считается подтверждённой
-    # (ADR-HUB-0006) — колонка «Статус» на вкладке «Идентификаторы».
+    # (ADR-CHATBALLS-0006) — колонка «Статус» на вкладке «Идентификаторы».
     phone_verified_at = models.DateTimeField(null=True, blank=True, db_default=None)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -149,17 +149,17 @@ class Conversation(models.Model):
     connection = models.ForeignKey("integrations.Integration", on_delete=models.PROTECT, related_name="conversations", null=True, blank=True)
     # Единственный источник identity диалога — контакт. Авторизованный
     # in-product клиент (SupportIdentitySnapshot) удалён вместе с сущностью
-    # Product (ADR-HUB-0045).
+    # Product (ADR-CHATBALLS-0045).
     contact = models.ForeignKey(Contact, on_delete=models.PROTECT, related_name="conversations", null=True, blank=True)
     # Внешний идентификатор чата (для отправки ответа в канал).
     external_chat_id = models.CharField(max_length=128, blank=True)
-    # Транспортная мета диалога (ADR-HUB-0035): для email — тема исходного
+    # Транспортная мета диалога (ADR-CHATBALLS-0035): для email — тема исходного
     # письма и Message-ID последнего входящего (тредирование Re:/In-Reply-To).
     transport_meta = models.JSONField(default=dict, blank=True)
     lifecycle = models.CharField(max_length=16, choices=LifecycleState.choices, default=LifecycleState.OPEN)
     control_mode = models.CharField(max_length=16, choices=ControlMode.choices, default=ControlMode.AI)
     expected_responder = models.CharField(max_length=16, choices=ExpectedResponder.choices, default=ExpectedResponder.AI)
-    # Группа видимости (ADR-HUB-0043): наследуется от group агента/канала при
+    # Группа видимости (ADR-CHATBALLS-0043): наследуется от group агента/канала при
     # создании, переносится вручную. NULL — диалог виден всем сотрудникам.
     group = models.ForeignKey(
         "identity.EmployeeGroup",
@@ -168,7 +168,7 @@ class Conversation(models.Model):
         null=True,
         blank=True,
     )
-    # «Ответственный» (ADR-HUB-0043): видит диалог независимо от групп.
+    # «Ответственный» (ADR-CHATBALLS-0043): видит диалог независимо от групп.
     assigned_operator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="assigned_conversations")
     # Дизайн-базлайн v2: приоритет, метки и заметка оператора.
     priority = models.CharField(

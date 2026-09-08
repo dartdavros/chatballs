@@ -41,7 +41,7 @@ class BootstrapOwnerTests(TestCase):
 
         self.assertTrue(result.created_owner)
         self.assertEqual(Organization.objects.get().slug, "demo")
-        # Seed создаёт стартовые группы (ADR-HUB-0043).
+        # Seed создаёт стартовые группы (ADR-CHATBALLS-0043).
         self.assertEqual(
             set(EmployeeGroup.objects.values_list("name", flat=True)),
             {"Операторы", "Поддержка"},
@@ -291,7 +291,7 @@ class AuthEndpointTests(TestCase):
         self.assertTrue(AuditEvent.objects.filter(action="identity.profile_updated").exists())
 
     def test_profile_appearance_saves_theme_and_accent(self) -> None:
-        """Тема и акцент — глобальные настройки пользователя (SPEC-HUB-0031 §7)."""
+        """Тема и акцент — глобальные настройки пользователя (SPEC-CHATBALLS-0031 §7)."""
         self.client.login(username="owner@example.com", password="temporary-password")
 
         response = self.client.post(
@@ -731,7 +731,7 @@ class ThrottlingTests(TestCase):
 
 
 class EmployeeModelInvariantTests(TestCase):
-    """ADR-HUB-0027 / SPEC-HUB-0016 §5,§7 — инварианты модели сотрудника после
+    """ADR-HUB-0027 / SPEC-CHATBALLS-0016 §5,§7 — инварианты модели сотрудника после
     миграции этапа 1: роли OWNER/ADMIN/EMPLOYEE, обязательная должность,
     размещение владельца на уровне компании и ровно один владелец на организацию."""
 
@@ -784,7 +784,7 @@ class EmployeeModelInvariantTests(TestCase):
 
 
 class EmployeeGovernanceTests(TestCase):
-    """ADR-HUB-0027 этап 2 / SPEC-HUB-0016 §8,§12: административная иерархия
+    """ADR-HUB-0027 этап 2 / SPEC-CHATBALLS-0016 §8,§12: административная иерархия
     OWNER/ADMIN/EMPLOYEE, target-aware управление и передача владения."""
 
     def setUp(self) -> None:
@@ -831,7 +831,7 @@ class EmployeeGovernanceTests(TestCase):
         self.assertTrue(AuditEvent.objects.filter(action="identity.employee_created").exists())
 
     def test_admin_creates_admin(self) -> None:
-        # SPEC-HUB-0031 §3: ADMIN идентичен OWNER и может создавать админов.
+        # SPEC-CHATBALLS-0031 §3: ADMIN идентичен OWNER и может создавать админов.
         self._make("admin@example.com", EmployeeRole.ADMIN)
         response = self._create(self._client("admin@example.com"), "admin2@example.com", EmployeeRole.ADMIN)
         self.assertEqual(response.status_code, 201)
@@ -867,7 +867,7 @@ class EmployeeGovernanceTests(TestCase):
         self.assertTrue(emp.memberships.get().is_blocked)
 
     def test_admin_blocks_another_admin(self) -> None:
-        # SPEC-HUB-0031 §3: админы управляют друг другом; защищён только владелец.
+        # SPEC-CHATBALLS-0031 §3: админы управляют друг другом; защищён только владелец.
         other = self._make("admin2@example.com", EmployeeRole.ADMIN)
         self._make("admin@example.com", EmployeeRole.ADMIN)
         response = self._client("admin@example.com").post(f"/api/v1/employees/{other.id}/block/")

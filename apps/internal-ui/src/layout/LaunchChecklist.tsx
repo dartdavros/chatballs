@@ -5,7 +5,7 @@ import { Icon } from "../shared/icons";
 import type { RouteKey, SessionUser } from "../types";
 import type { SettingsSectionKey } from "../features/settings/sections";
 
-// Блок «Запуск» в сайдбаре (SPEC-HUB-0031 §5, дизайн-базлайн v2 A1): три шага
+// Блок «Запуск» в сайдбаре (SPEC-CHATBALLS-0031 §5, дизайн-базлайн v2 A1): три шага
 // с автоотметкой по факту, прогресс и primary-действие текущего шага.
 // «Скрыть» — предпочтение клиента (localStorage); при полном прохождении блок
 // исчезает сам.

@@ -1,4 +1,4 @@
-"""BYOK provider routing for AI invocations (ADR-HUB-0020:45, ADR-HUB-0034).
+"""BYOK provider routing for AI invocations (ADR-CHATBALLS-0020:45, ADR-CHATBALLS-0034).
 
 Resolves an LLM provider and the effective model from the channel agent's
 `provider_integration`. This is the BYOK path: the organization supplies its
@@ -10,11 +10,11 @@ managed AI credits are not consumed.
 попавших в data-миграцию; после удаления поля канала fallback уходит.
 
 Selecting the first OpenRouter integration of the org or globally overriding
-the owner's choice is forbidden (ADR-HUB-0020:45). The integration MUST be
+the owner's choice is forbidden (ADR-CHATBALLS-0020:45). The integration MUST be
 the one the agent points at.
 
 This module also closes the as-built gap where the OpenRouter «Модель по
-умолчанию» field was decorative (SPEC-HUB-0005:388, SPEC-HUB-0024 §4.3, §6):
+умолчанию» field was decorative (SPEC-HUB-0005:388, SPEC-CHATBALLS-0024 §4.3, §6):
 for OpenRouter and Custom integrations the configured `default_model` is read
 at runtime and overrides `AIAgent.model`.
 """
@@ -32,8 +32,8 @@ class IntegrationNotConfigured(ProviderError):
     """Raised when a channel has no provider_integration.
 
     Surfaces a clear configuration error instead of silently falling back to a
-    global/first integration (forbidden by ADR-HUB-0020:45). Наследует
-    ProviderError: после удаления managed-режима (ADR-HUB-0042 §3) отсутствие
+    global/first integration (forbidden by ADR-CHATBALLS-0020:45). Наследует
+    ProviderError: после удаления managed-режима (ADR-CHATBALLS-0042 §3) отсутствие
     интеграции — штатное «провайдера нет», а не 500: индексация знаний пишет
     фрагменты без эмбеддингов, ретривер работает лексически.
     """

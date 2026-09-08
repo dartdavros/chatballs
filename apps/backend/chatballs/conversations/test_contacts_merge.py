@@ -1,4 +1,4 @@
-"""Объединение и разъединение контактов (ADR-HUB-0006)."""
+"""Объединение и разъединение контактов (ADR-CHATBALLS-0006)."""
 
 from django.core.exceptions import ValidationError
 from django.test import TestCase
@@ -143,7 +143,7 @@ class ContactsMergeTests(TestCase):
 
 
 class ContactsMergeApiTests(TestCase):
-    """Объединять и разъединять может только владелец (ADR-HUB-0006)."""
+    """Объединять и разъединять может только владелец (ADR-CHATBALLS-0006)."""
 
     def setUp(self) -> None:
         self.organization = Organization.objects.create(name="Ателье", slug="atelie-api")

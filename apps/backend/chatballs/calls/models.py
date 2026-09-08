@@ -190,7 +190,7 @@ class CallParticipant(TenantRelationModel):
 
 
 class CallMetric(TenantRelationModel):
-    """Технические метрики соединения без медиаконтента (SPEC-HUB-0013 §13).
+    """Технические метрики соединения без медиаконтента (SPEC-CHATBALLS-0013 §13).
 
     Хранится только КАТЕГОРИЯ ICE-кандидата (host/srflx/prflx/relay) и RTT, но
     никогда сам ICE candidate, его адрес, SDP или медиапоток. Позволяет считать

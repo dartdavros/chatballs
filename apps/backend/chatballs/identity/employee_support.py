@@ -39,7 +39,7 @@ def employee_payload(
         "totpEnabled": profile.user.totp_enabled,
     }
     # Backend — источник истины для того, какие действия над сотрудником доступны
-    # запрашивающему (SPEC-HUB-0031 §3): фронтенд скрывает недоступное.
+    # запрашивающему (SPEC-CHATBALLS-0031 §3): фронтенд скрывает недоступное.
     if actor is not None:
         payload["permissions"] = employee_management_flags(actor, profile)
     if include_detail:

@@ -1,4 +1,4 @@
-# Канонический production-манифест Chatballs (ADR-HUB-0028).
+# Канонический production-манифест Chatballs (ADR-CHATBALLS-0028).
 # Один Compose для: установки клиента, staging, smoke.
 # Локальная разработка — через override compose.dev.yaml; этот файл не содержит
 # dev source mounts, dev-команд и host-портов (кроме public 80/443 у gateway).
@@ -67,7 +67,7 @@ services:
       retries: 10
       start_period: 20s
 
-  # One-shot init: только миграции (ADR-HUB-0028 §one-shot init). Владельца и
+  # One-shot init: только миграции (ADR-CHATBALLS-0028 §one-shot init). Владельца и
   # демо-данные создаёт мастер первого запуска в браузере (/api/v1/setup/).
   # collectstatic испечён в backend-образ, здесь не вызывается.
   init:
@@ -154,7 +154,7 @@ services:
       start_period: 20s
 
   # Django admin не подключён к gateway. Единственный host bind — loopback;
-  # удалённый доступ допускается только через SSH tunnel (ADR-HUB-0031).
+  # удалённый доступ допускается только через SSH tunnel (ADR-CHATBALLS-0031).
   backend-admin:
     image: ${CHATBALLS_BACKEND_IMAGE:-chatballs-backend:dev}
     volumes:
@@ -204,7 +204,7 @@ services:
       backend-app:
         condition: service_healthy
 
-  # Gateway: единственный HTTP/HTTPS public boundary (ADR-HUB-0028 §gateway).
+  # Gateway: единственный HTTP/HTTPS public boundary (ADR-CHATBALLS-0028 §gateway).
   # Caddy: TLS termination, ACME, HTTP->HTTPS redirect, WebSocket upgrade (native).
   # Маршрутизация публичных путей делегируется frontend (internal). Coturn не
   # проксируется через Caddy — отдельная network boundary (profile calls).
@@ -230,8 +230,8 @@ services:
       backend-platform:
         condition: service_healthy
 
-  # Coturn — медиа-relay для TURN fallback (SPEC-HUB-0013 §11).
-  # Опциональный profile `calls` (ADR-HUB-0028): включается через COMPOSE_PROFILES=calls.
+  # Coturn — медиа-relay для TURN fallback (SPEC-CHATBALLS-0013 §11).
+  # Опциональный profile `calls` (ADR-CHATBALLS-0028): включается через COMPOSE_PROFILES=calls.
   # Host networking: relay использует широкий UDP-диапазон и реальный внешний IP,
   # публикуется напрямую и не проходит через HTTP reverse proxy. credentials
   # выдаёт backend по общему CHATBALLS_CALL_TURN_SECRET (static-auth-secret).

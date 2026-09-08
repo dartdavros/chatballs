@@ -20,7 +20,7 @@ from chatballs.integrations.models import (
 
 
 class AgentCardTestCase(TestCase):
-    """Единая сущность «Агент» = канал + AI-конфигурация (ADR-HUB-0041 §4)."""
+    """Единая сущность «Агент» = канал + AI-конфигурация (ADR-CHATBALLS-0041 §4)."""
 
     def setUp(self) -> None:
         bootstrap_owner(email="owner@example.com", password="temporary-password")
@@ -275,7 +275,7 @@ class AgentCardActivationTests(AgentCardTestCase):
         )
 
     def test_activation_without_provider_integration_is_rejected(self) -> None:
-        # Активация требует выбранного провайдера организации (ADR-HUB-0042 §2);
+        # Активация требует выбранного провайдера организации (ADR-CHATBALLS-0042 §2);
         # деактивация свободна.
         response = self.client.post(f"/api/v1/agents/{self.card['id']}/activate/")
 

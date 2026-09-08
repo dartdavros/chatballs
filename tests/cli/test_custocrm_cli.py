@@ -3,7 +3,7 @@
 
 Запускают реальный bash-скрипт против замоканного docker/flock (см. conftest.py).
 
-Покрывают: SPEC-HUB-0019 §11 (lock), §12 (doctor), §17 (deploy workflow),
+Покрывают: SPEC-CHATBALLS-0019 §11 (lock), §12 (doctor), §17 (deploy workflow),
 
 §29 (observability). Не требуют Docker daemon.
 
@@ -105,7 +105,7 @@ def test_deploy_success_orders_canonical_workflow(fake_env):
     joined = "\n".join(log)
 
 
-    # Канонический порядок (ADR-HUB-0028 §workflow).
+    # Канонический порядок (ADR-CHATBALLS-0028 §workflow).
 
     idx_pull = _index_of(log, " pull")
 

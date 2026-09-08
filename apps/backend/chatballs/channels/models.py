@@ -2,21 +2,21 @@ from django.db import models
 
 # Канал обработки — якорь AI-контекста (ADR-HUB-0019). Группа видимости и
 # ссылка на провайдер-интеграцию. Поведение AI (модель, инструкции, знания)
-# живёт на агенте канала (ADR-HUB-0023).
+# живёт на агенте канала (ADR-CHATBALLS-0023).
 
 
 class Channel(models.Model):
     organization = models.ForeignKey("identity.Organization", on_delete=models.PROTECT, related_name="channels")
     code = models.SlugField(max_length=64)
     name = models.CharField(max_length=255)
-    # Группа видимости (ADR-HUB-0043): новые диалоги канала попадают в неё.
+    # Группа видимости (ADR-CHATBALLS-0043): новые диалоги канала попадают в неё.
     # NULL — диалоги видны всем сотрудникам.
     group = models.ForeignKey("identity.EmployeeGroup", on_delete=models.SET_NULL, related_name="channels", null=True, blank=True)
-    # LLM-провайдер канала (ADR-HUB-0020).
+    # LLM-провайдер канала (ADR-CHATBALLS-0020).
     provider_integration = models.ForeignKey("integrations.Integration", on_delete=models.PROTECT, related_name="channels", null=True, blank=True)
     is_active = models.BooleanField(default=True)
     # Политика канала: остаток от домена продаж — коммерческие флаги всегда
-    # выключены (ADR-HUB-0041/0045), анонимные сессии и самозаявленный контакт
+    # выключены (ADR-CHATBALLS-0041/0045), анонимные сессии и самозаявленный контакт
     # используются веб-виджетом и порталом.
     allow_anonymous_sessions = models.BooleanField(default=True)
     allow_self_reported_contact = models.BooleanField(default=True)

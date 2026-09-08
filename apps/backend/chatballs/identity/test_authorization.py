@@ -17,7 +17,7 @@ from chatballs.identity.policy import (
 
 
 class RolePolicyTests(TestCase):
-    """Ролевая авторизация SPEC-HUB-0031 §3 + видимость по группам ADR-HUB-0043."""
+    """Ролевая авторизация SPEC-CHATBALLS-0031 §3 + видимость по группам ADR-CHATBALLS-0043."""
 
     def setUp(self) -> None:
         self.organization = Organization.objects.create(name="Example", slug="example")

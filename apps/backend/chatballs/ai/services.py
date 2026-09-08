@@ -169,7 +169,7 @@ def update_agent(*, context: TenantContext, agent: AIAgent, data: AgentInput) ->
 
 @transaction.atomic
 def set_agent_active(*, context: TenantContext, agent: AIAgent, is_active: bool) -> AIAgent:
-    """Смена статуса AI без тарифных слотов (ADR-HUB-0042 §2): количество
+    """Смена статуса AI без тарифных слотов (ADR-CHATBALLS-0042 §2): количество
     активных агентов не ограничено; активация требует настроенного провайдера."""
     if agent.channel.organization_id != context.organization_id:
         raise ValidationError({"agent": "Agent belongs to another organization"})

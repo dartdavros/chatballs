@@ -1,4 +1,4 @@
-"""Connectivity checks for integrations (ADR-HUB-0020).
+"""Connectivity checks for integrations (ADR-CHATBALLS-0020).
 
 Stdlib-only HTTP. Each provider has a DIFFERENT API — auth, base URL and the
 identity method are not interchangeable:
@@ -70,7 +70,7 @@ def check_openrouter(*, secret: str, base_url: str, proxy_url: str = "") -> Chec
 
 
 def check_custom(*, secret: str, base_url: str, proxy_url: str = "") -> CheckResult:
-    """Connectivity check for a generic OpenAI-compatible endpoint (ADR-HUB-0034).
+    """Connectivity check for a generic OpenAI-compatible endpoint (ADR-CHATBALLS-0034).
 
     Unlike OpenRouter there is no /key identity endpoint and no model catalog we
     can trust as authoritative; we only verify the endpoint speaks the OpenAI
@@ -88,8 +88,8 @@ def check_custom(*, secret: str, base_url: str, proxy_url: str = "") -> CheckRes
         if status != 200:
             return False, f"Эндпоинт ответил {status}", {}
         # OpenAI shape: {"data": [{"id": "..."}, ...]}. Каталог не является
-        # разрешительным списком (ADR-HUB-0020:89), ответственность за model
-        # identifier лежит на владельце (ADR-HUB-0034 §4).
+        # разрешительным списком (ADR-CHATBALLS-0020:89), ответственность за model
+        # identifier лежит на владельце (ADR-CHATBALLS-0034 §4).
         count = len(data.get("data") or [])
         return True, f"Эндпоинт отвечает: {count} моделей", {}
 
@@ -123,7 +123,7 @@ def _describe_mail_error(error: Exception) -> str:
 
 
 def check_email(*, secret: str, config: dict) -> CheckResult:
-    """Email-подключение (ADR-HUB-0035): проверка проходит только если успешны
+    """Email-подключение (ADR-CHATBALLS-0035): проверка проходит только если успешны
     ОБЕ стороны — IMAP (login + SELECT INBOX) и SMTP (EHLO + login)."""
     address = str(config.get("email", "")).strip().lower()
     imap_host = str(config.get("imap_host", "")).strip()

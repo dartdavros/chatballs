@@ -41,7 +41,7 @@ def _format_duration(seconds: int) -> str:
 
 
 def _timeline_text(call: CallSession, target_status: str) -> str | None:
-    # Системные события звонка в timeline диалога (SPEC-HUB-0013 §13).
+    # Системные события звонка в timeline диалога (SPEC-CHATBALLS-0013 §13).
     # Вызывается только при фактической смене статуса — retry дублей не даёт.
     if target_status == CallStatus.ACCEPTED:
         return "Клиент принял приглашение на звонок"

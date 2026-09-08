@@ -19,7 +19,7 @@ import {
   type IntegrationProvider,
 } from "./model";
 
-// Селектор «Тип» показывает только провайдеров рода активного таба (SPEC-HUB-0025 §2.2).
+// Селектор «Тип» показывает только провайдеров рода активного таба (SPEC-CHATBALLS-0025 §2.2).
 function providerOptions(kind: IntegrationKind): Array<[string, string]> {
   return (Object.keys(PROVIDERS) as IntegrationProvider[])
     .filter((key) => PROVIDERS[key].kind === kind)

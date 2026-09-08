@@ -4,7 +4,7 @@ import { avatarColor, channelMap, contactTime, initialsOf, type ClientChannelCod
 
 // Карточка контакта (дизайн-базлайн v2, кадры K3–K5). Вкладка «Согласия»
 // убрана — журнал согласий отдельной сущностью не ведётся; блока «Связанные
-// продукты» нет (ADR-HUB-0041).
+// продукты» нет (ADR-CHATBALLS-0041).
 
 export type ClientDetailTab = "overview" | "dialogs" | "ids" | "audit";
 

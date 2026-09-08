@@ -1,4 +1,4 @@
-"""Target-aware governance для управления сотрудниками (SPEC-HUB-0031 §3).
+"""Target-aware governance для управления сотрудниками (SPEC-CHATBALLS-0031 §3).
 
 OWNER и ADMIN идентичны по правам: оба управляют любыми сотрудниками, включая
 других администраторов. Отличия ровно два:
@@ -27,7 +27,7 @@ class EmployeeAction:
     TRANSFER_OWNERSHIP = "transfer_ownership"
 
 
-# Действия, запрещённые над владельцем для всех (SPEC-HUB-0031 §3);
+# Действия, запрещённые над владельцем для всех (SPEC-CHATBALLS-0031 §3);
 # смена его роли возможна только через ownership flow.
 _OWNER_PROTECTED_ACTIONS = frozenset(
     {
@@ -73,7 +73,7 @@ def can_manage_employee(
     target: OrganizationMembership | None,
     action: str,
 ) -> bool:
-    """Может ли actor выполнить action над target (SPEC-HUB-0031 §3)."""
+    """Может ли actor выполнить action над target (SPEC-CHATBALLS-0031 §3)."""
     if not _is_active_manager(actor):
         return False
 

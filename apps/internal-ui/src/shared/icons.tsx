@@ -39,7 +39,7 @@ export function ShieldIcon() {
   );
 }
 
-// Фирменные марки каналов (SPEC-HUB-0025 §2.3): официальные SVG-глифы, залитые
+// Фирменные марки каналов (SPEC-CHATBALLS-0025 §2.3): официальные SVG-глифы, залитые
 // currentColor — цвет задаёт плитка подключения. Не перерисовывать.
 export function TelegramLogo({ size = 24 }: { size?: number }) {
   return (

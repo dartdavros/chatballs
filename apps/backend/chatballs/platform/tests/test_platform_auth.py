@@ -36,7 +36,7 @@ class PlatformAuthTests(TestCase):
         self.assertEqual(response.status_code, 201, response.content)
         self.assertIn("organization", response.json())
         self.assertIn("publicId", response.json()["organization"])
-        # Тарифный контур удалён (ADR-HUB-0042): ответ без ключа subscription.
+        # Тарифный контур удалён (ADR-CHATBALLS-0042): ответ без ключа subscription.
         self.assertNotIn("subscription", response.json())
 
     def test_missing_token_is_unauthenticated(self) -> None:

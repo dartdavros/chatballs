@@ -15,7 +15,7 @@ from chatballs.tenancy.context import TenantContext
 
 
 class KnowledgePolicyTestBase(TestCase):
-    """База knowledge-тестов: библиотека общая для организации (ADR-HUB-0041 §8),
+    """База knowledge-тестов: библиотека общая для организации (ADR-CHATBALLS-0041 §8),
     доступ ролевой — у EMPLOYEE нет ai.*, у OWNER/ADMIN есть всё."""
 
     def setUp(self) -> None:

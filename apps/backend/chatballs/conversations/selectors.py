@@ -27,7 +27,7 @@ def conversations_for_context(context: TenantContext) -> QuerySet[Conversation]:
 def apply_conversation_visibility(
     queryset: QuerySet[Conversation], context: TenantContext
 ) -> QuerySet[Conversation]:
-    """Видимость диалогов (ADR-HUB-0043 §4): OWNER/ADMIN — все; сотрудник —
+    """Видимость диалогов (ADR-CHATBALLS-0043 §4): OWNER/ADMIN — все; сотрудник —
     диалоги своих групп + без группы + где он ответственный."""
     scope = conversation_visibility(context.membership)
     if scope is None:

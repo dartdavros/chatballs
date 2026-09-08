@@ -8,7 +8,7 @@ ROOT_URLCONF = "chatballs_backend.urls_admin"
 ASGI_APPLICATION = "chatballs_backend.asgi_admin.application"
 WSGI_APPLICATION = "chatballs_backend.wsgi_admin.application"
 
-# ADR-HUB-0031: admin доступен только через loopback bind и SSH tunnel.
+# ADR-CHATBALLS-0031: admin доступен только через loopback bind и SSH tunnel.
 ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 CSRF_TRUSTED_ORIGINS = []
 CORS_ALLOWED_ORIGINS = []

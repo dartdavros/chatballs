@@ -2,7 +2,7 @@ from django.db import models
 
 from chatballs.identity.crypto import EncryptedCharField
 
-# Интеграции: провайдеры (LLM) и подключения (боты/виджеты). ADR-HUB-0020.
+# Интеграции: провайдеры (LLM) и подключения (боты/виджеты). ADR-CHATBALLS-0020.
 # Привязка подключения к каналу обработки появляется в M1 (ADR-HUB-0019).
 
 
@@ -31,13 +31,13 @@ class IntegrationStatus(models.TextChoices):
 # Какой провайдер к какому роду относится.
 PROVIDER_KIND = {
     IntegrationProvider.OPENROUTER: IntegrationKind.LLM_PROVIDER,
-    # Custom — generic BYOK для любого OpenAI-compatible endpoint (ADR-HUB-0034).
+    # Custom — generic BYOK для любого OpenAI-compatible endpoint (ADR-CHATBALLS-0034).
     IntegrationProvider.CUSTOM: IntegrationKind.LLM_PROVIDER,
     IntegrationProvider.DEMO: IntegrationKind.LLM_PROVIDER,
     IntegrationProvider.MAX: IntegrationKind.MESSENGER,
     IntegrationProvider.TELEGRAM: IntegrationKind.MESSENGER,
     IntegrationProvider.WEB: IntegrationKind.MESSENGER,
-    # Email-ящик — транспорт диалогов наравне с ботами (ADR-HUB-0035).
+    # Email-ящик — транспорт диалогов наравне с ботами (ADR-CHATBALLS-0035).
     IntegrationProvider.EMAIL: IntegrationKind.MESSENGER,
 }
 

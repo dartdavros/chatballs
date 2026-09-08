@@ -25,7 +25,7 @@ TENANT_FOREIGN_KEYS = (
     ("conversations_conversationread", "conversations_conversation", "conversation_id"),
     ("conversations_message", "conversations_conversation", "conversation_id"),
     # Ссылки orders_*/sales_*/products_*/support_* удалены вместе с
-    # приложениями (ADR-HUB-0041/0045): на чистой установке этих таблиц не существует.
+    # приложениями (ADR-CHATBALLS-0041/0045): на чистой установке этих таблиц не существует.
     ("calls_callsession", "conversations_conversation", "conversation_id"),
     ("calls_callsession", "integrations_integration", "delivery_connection_id"),
     ("calls_callinvite", "calls_callsession", "call_session_id"),

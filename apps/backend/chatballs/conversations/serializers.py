@@ -102,7 +102,7 @@ def _contact_email(conversation: Conversation) -> str:
 
 
 def _conversation_history(conversation: Conversation) -> list[Conversation]:
-    # Цепочка прошлых обращений того же контакта (ADR-HUB-0002).
+    # Цепочка прошлых обращений того же контакта (ADR-CHATBALLS-0002).
     qs = Conversation.objects.filter(contact_id=conversation.contact_id)
     return list(
         qs.exclude(id=conversation.id)

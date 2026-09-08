@@ -280,7 +280,7 @@ def post_contact(session: WebSession, phone: str) -> None:
 
 
 def _call_payload(session: WebSession) -> dict | None:
-    # Приглашение на звонок для активной session (SPEC-HUB-0013 §7.1):
+    # Приглашение на звонок для активной session (SPEC-CHATBALLS-0013 §7.1):
     # виджет получает его этим же поллингом, без отдельного realtime-канала.
     from chatballs.calls.serializers import public_invite_payload
     from chatballs.calls.services import webchat_active_call

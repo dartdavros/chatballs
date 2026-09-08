@@ -39,7 +39,7 @@ export function useClientDetail(contactId: number | null) {
     setClient(toClientDetailVm(data.client));
   }
 
-  // Объединение контактов (ADR-HUB-0006): только владелец, с причиной;
+  // Объединение контактов (ADR-CHATBALLS-0006): только владелец, с причиной;
   // ответ содержит уже пересобранную карточку.
   async function merge(sourceId: number, reason: string) {
     if (contactId === null) return;

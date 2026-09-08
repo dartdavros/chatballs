@@ -1,4 +1,4 @@
-# C06 tenant provisioning DB boundary (SPEC-HUB-0021 §10, ADR-HUB-0029 §6).
+# C06 tenant provisioning DB boundary (SPEC-HUB-0021 §10, ADR-CHATBALLS-0029 §6).
 #
 # Provisioning runs on the platform connection (chatballs_runtime_platform) and must
 # both INSERT a new Organization and create tenant-owned rows (departments, the

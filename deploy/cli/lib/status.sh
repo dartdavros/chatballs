@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # status.sh — observability: версия, состояние сервисов, profiles, последняя
-# ошибка (SPEC-HUB-0019 §29). Installation-status (NEW/READY/…) — этап 2.
+# ошибка (SPEC-CHATBALLS-0019 §29). Installation-status (NEW/READY/…) — этап 2.
 
 cmd_status() {
   local inst rel applied target

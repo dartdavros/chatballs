@@ -1,6 +1,6 @@
 /**
  * Клиент P2P-звонка: собственный WebSocket signaling Hub + RTCPeerConnection
- * (SPEC-HUB-0013 §9–10). Общий для internal-ui (оператор) и web-chat (клиент).
+ * (SPEC-CHATBALLS-0013 §9–10). Общий для internal-ui (оператор) и web-chat (клиент).
  *
  * Роли детерминированы: offer всегда создаёт STAFF (инициатор), CUSTOMER
  * только отвечает — glare исключён. Mute/выключение камеры — track.enabled,

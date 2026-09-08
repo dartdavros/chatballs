@@ -4,7 +4,7 @@ export type ParsedKnowledgeYaml = {
   documents: Array<{ title: string; description?: string; content: string; categoryPath?: string[] }>;
 };
 
-// Парсит YAML импорта знаний (SPEC-HUB-0012, плоский формат ADR-HUB-0023):
+// Парсит YAML импорта знаний (SPEC-CHATBALLS-0012, плоский формат ADR-CHATBALLS-0023):
 // { documents: [{ title, description?, content, categoryPath? }] }. Бросает
 // Error с человекочитаемым сообщением при невалидном YAML или структуре.
 // Путь категории разбирается, но не проверяется: несуществующий путь — это

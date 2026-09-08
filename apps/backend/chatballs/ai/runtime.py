@@ -20,7 +20,7 @@ MESSENGER_STYLE_GUARD = (
 )
 
 # Протокол передачи оператору: модель добавляет технический токен, система его
-# ловит, ставит диалог в очередь и уведомляет операторов (ADR-HUB-0003).
+# ловит, ставит диалог в очередь и уведомляет операторов (ADR-CHATBALLS-0003).
 HANDOFF_TOKEN = "<<HANDOFF>>"
 HANDOFF_PROTOCOL = (
     "Если по правилам нужно подключить живого оператора (клиент просит человека; "
@@ -39,7 +39,7 @@ class AgentTurnResult:
 
 
 def agent_system_prompt(agent: AIAgent) -> str:
-    # Порядок частей фиксирован (ADR-HUB-0023): Персонализация -> Тон -> Инструкции.
+    # Порядок частей фиксирован (ADR-CHATBALLS-0023): Персонализация -> Тон -> Инструкции.
     parts = [
         part.strip() for part in (agent.persona, agent.tone, agent.instructions) if part.strip()
     ]
@@ -131,5 +131,5 @@ def run_agent_turn(
         used_fragment_ids=[fragment.id for fragment in fragments],
     )
 
-    # Нет основания в знаниях -> кандидат на передачу оператору (ADR-HUB-0003).
+    # Нет основания в знаниях -> кандидат на передачу оператору (ADR-CHATBALLS-0003).
     return AgentTurnResult(result=result, fragments=fragments, handoff_suggested=not fragments)

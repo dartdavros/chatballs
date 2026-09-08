@@ -205,7 +205,7 @@ class ChangeTemporaryPasswordView(APIView):
 
 class ProfileAppearanceView(APIView):
     """Тема и акцентный цвет — глобальные настройки пользователя
-    (SPEC-HUB-0031 §7, дизайн-базлайн v2)."""
+    (SPEC-CHATBALLS-0031 §7, дизайн-базлайн v2)."""
 
     permission_classes = [IsAuthenticated]
 

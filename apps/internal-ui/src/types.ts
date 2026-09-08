@@ -1,7 +1,7 @@
 import type { AgentCard } from "./features/agents/model";
 
-// Роли SPEC-HUB-0031 §3: OWNER и ADMIN идентичны (владельца нельзя удалить),
-// EMPLOYEE работает только в чате; видимость диалогов — по группам (ADR-HUB-0043).
+// Роли SPEC-CHATBALLS-0031 §3: OWNER и ADMIN идентичны (владельца нельзя удалить),
+// EMPLOYEE работает только в чате; видимость диалогов — по группам (ADR-CHATBALLS-0043).
 export type Role = "OWNER" | "ADMIN" | "EMPLOYEE";
 export type DeliveryMode = "CLOUD" | "SELF_HOSTED";
 
@@ -59,7 +59,7 @@ export type LoginPayload =
   | { authenticated: false; totpRequired: true; totpEnabled: true; challenge: AuthChallenge };
 
 // Флаги доступных действий над сотрудником для текущего пользователя. Backend —
-// источник истины (SPEC-HUB-0031 §3); фронтенд скрывает недоступное.
+// источник истины (SPEC-CHATBALLS-0031 §3); фронтенд скрывает недоступное.
 export type EmployeePermissions = {
   canView: boolean;
   canUpdateProfile: boolean;

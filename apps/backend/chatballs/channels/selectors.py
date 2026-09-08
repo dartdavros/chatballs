@@ -40,7 +40,7 @@ def channels_in_organization(context: TenantContext) -> QuerySet[Channel]:
 def channels_for_context(
     context: TenantContext, *, capability: str = CHANNELS_VIEW
 ) -> QuerySet[Channel]:
-    """Каналы организации, видимые актору: доступ ролевой (SPEC-HUB-0031 §3),
+    """Каналы организации, видимые актору: доступ ролевой (SPEC-CHATBALLS-0031 §3),
     у EMPLOYEE нет channels.view — список пуст."""
     queryset = _with_relations(
         Channel.objects.filter(organization_id=context.organization_id)

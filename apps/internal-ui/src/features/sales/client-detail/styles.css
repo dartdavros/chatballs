@@ -786,7 +786,7 @@
   min-width: 0;
 }
 
-/* Диалог сравнения и объединения (ADR-HUB-0006). */
+/* Диалог сравнения и объединения (ADR-CHATBALLS-0006). */
 .sales-client-merge-compare {
   display: grid;
   grid-template-columns: 1fr 1fr;

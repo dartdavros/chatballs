@@ -48,7 +48,7 @@ class SupportPortalManagementTests(SupportPortalTestCase):
         self.assertTrue(config.json()["available"])
 
     def test_multiple_active_portals_without_limits(self) -> None:
-        # Лимитов на порталы нет (ADR-HUB-0042): creation всегда canCreate=true.
+        # Лимитов на порталы нет (ADR-CHATBALLS-0042): creation всегда canCreate=true.
         first = self.create_portal()
         self.assertEqual(first.status_code, 201, first.content)
         self.assertEqual(

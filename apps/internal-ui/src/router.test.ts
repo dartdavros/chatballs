@@ -127,7 +127,7 @@ describe("administration route", () => {
   });
 
   it("parses and creates administration subsection URLs", () => {
-    // Организация переехала в «Настройки» (§8.6); тарифы — устаревший адрес (ADR-HUB-0042).
+    // Организация переехала в «Настройки» (§8.6); тарифы — устаревший адрес (ADR-CHATBALLS-0042).
     expect(routeFromPath("/administration/organization")).toEqual({
       ...empty,
       route: "settings",

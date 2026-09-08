@@ -7,7 +7,7 @@ from chatballs.identity.policy import has_capability_any_scope
 
 
 class HasCapability(BasePermission):
-    """DRF entry-point guard backed by the shared role policy (SPEC-HUB-0031 §3).
+    """DRF entry-point guard backed by the shared role policy (SPEC-CHATBALLS-0031 §3).
 
     Views declare ``required_capability`` or a method keyed
     ``required_capabilities`` mapping. Object/resource scope is still checked by the

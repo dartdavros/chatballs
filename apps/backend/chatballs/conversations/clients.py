@@ -1,7 +1,7 @@
 """Real clients list (contacts + their conversations).
 
 A "client" is a Contact. Commerce data was removed with the sales domain
-(ADR-HUB-0041) — no orders or revenue here.
+(ADR-CHATBALLS-0041) — no orders or revenue here.
 """
 
 from __future__ import annotations
@@ -175,7 +175,7 @@ def client_detail(organization_id: int, contact_id: int) -> dict:
             "externalUserId": identity.external_user_id,
             "username": identity.username,
             "createdAt": identity.created_at.isoformat(),
-            # Подтверждённой считается идентичность, отдавшая телефон (ADR-HUB-0006).
+            # Подтверждённой считается идентичность, отдавшая телефон (ADR-CHATBALLS-0006).
             "phoneVerifiedAt": identity.phone_verified_at.isoformat() if identity.phone_verified_at else None,
         }
         for identity in identity_qs.order_by("created_at")
@@ -271,7 +271,7 @@ def _merges(organization_id: int, contact: Contact) -> list[dict]:
 
 def _duplicate_candidate(organization_id: int, contact: Contact) -> dict | None:
     """Другой контакт с тем же телефоном. Автоматически ничего не объединяем
-    (ADR-HUB-0006) — это только предложение владельцу."""
+    (ADR-CHATBALLS-0006) — это только предложение владельцу."""
     if not contact.phone:
         return None
     other = (
@@ -292,6 +292,6 @@ def _duplicate_candidate(organization_id: int, contact: Contact) -> dict | None:
         "sources": sorted({identity.connection.provider for identity in identities}),
         "phone": other.phone,
         # Однозначным совпадение считается, только если телефон подтверждён
-        # подключением хотя бы у одной стороны (ADR-HUB-0006).
+        # подключением хотя бы у одной стороны (ADR-CHATBALLS-0006).
         "phoneVerified": any(identity.phone_verified_at is not None for identity in identities),
     }

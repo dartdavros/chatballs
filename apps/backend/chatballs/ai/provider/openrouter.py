@@ -7,7 +7,7 @@ class OpenRouterProvider(LLMProvider):
 
     OpenAI Chat Completions shape with usage.include=true (returns the actual
     USD cost in usage.cost). Delegates HTTP/parsing to the shared openai_http
-    layer (ADR-HUB-0033 §7, ADR-HUB-0034 §3); this adapter only carries the
+    layer (ADR-HUB-0033 §7, ADR-CHATBALLS-0034 §3); this adapter only carries the
     OpenRouter product semantics (cost reporting). Exercised with a real key;
     tests use the LocalProvider.
     """

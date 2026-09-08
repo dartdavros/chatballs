@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-# Возможности как словарь операций backend'а (ADR-HUB-0041, SPEC-HUB-0031 §3).
+# Возможности как словарь операций backend'а (ADR-CHATBALLS-0041, SPEC-CHATBALLS-0031 §3).
 # Права выводятся ТОЛЬКО из роли: OWNER и ADMIN идентичны и получают всё;
 # EMPLOYEE получает фиксированный набор для работы в чате. Профили доступа,
-# scope-модель и отделы упразднены (ADR-HUB-0043).
+# scope-модель и отделы упразднены (ADR-CHATBALLS-0043).
 
 ALL_CAPABILITIES: frozenset[str] = frozenset(
     {
@@ -48,5 +48,5 @@ EMPLOYEE_CAPABILITIES: frozenset[str] = frozenset(
     }
 )
 
-# Операции, доступные только владельцу (SPEC-HUB-0031 §3: передача владения).
+# Операции, доступные только владельцу (SPEC-CHATBALLS-0031 §3: передача владения).
 OWNER_ONLY_CAPABILITIES: frozenset[str] = frozenset({"ownership.transfer"})

@@ -5,7 +5,7 @@ import { ACCENT_PRESETS, DEFAULT_ACCENT, type UiTheme } from "../../shared/appea
 import { Icon } from "../../shared/icons";
 import type { AuthenticatedUser, SessionUser } from "../../types";
 
-// «Внешний вид» (дизайн-базлайн v2, кадр P1; SPEC-HUB-0031 §7): тема сегментом
+// «Внешний вид» (дизайн-базлайн v2, кадр P1; SPEC-CHATBALLS-0031 §7): тема сегментом
 // со значками, акцент — четыре пресета и произвольный HEX. Настройка личная и
 // хранится в учётной записи (ADR-0029).
 

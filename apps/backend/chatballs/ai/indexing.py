@@ -36,7 +36,7 @@ def _store_fragments(*, organization, chunks: list[str], **source) -> list[Knowl
 
 
 def reindex_knowledge(knowledge: Knowledge) -> list[KnowledgeFragment]:
-    """Rebuild fragments for a knowledge item (ADR-HUB-0016/0023): content plus
+    """Rebuild fragments for a knowledge item (ADR-CHATBALLS-0016/0023): content plus
     extracted text of its attachments."""
     KnowledgeFragment.objects.filter(knowledge=knowledge).delete()
     sources = [knowledge.content]

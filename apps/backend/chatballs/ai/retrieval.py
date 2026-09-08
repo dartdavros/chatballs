@@ -14,7 +14,7 @@ from chatballs.ai.provider.base import ProviderError
 
 def _agent_fragments(agent: AIAgent):
     # Оба источника знаний агента живут в одной таблице фрагментов, поэтому
-    # поиск остаётся одним запросом (ADR-HUB-0016).
+    # поиск остаётся одним запросом (ADR-CHATBALLS-0016).
     return KnowledgeFragment.objects.filter(
         Q(knowledge_id__in=runtime_knowledge_for_agent(agent).values("id"))
         | Q(portal_article_id__in=runtime_portal_articles_for_agent(agent).values("id"))

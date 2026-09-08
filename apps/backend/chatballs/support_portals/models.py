@@ -33,7 +33,7 @@ class SupportPortal(TenantRelationModel):
         choices=PortalStatus.choices,
         default=PortalStatus.DRAFT,
     )
-    # Тема хранится идентификатором из каталога фронтенда (ADR-HUB-0044):
+    # Тема хранится идентификатором из каталога фронтенда (ADR-CHATBALLS-0044):
     # список тем в БД не фиксируется, неизвестное значение деградирует до
     # темы по умолчанию при рендере публичной страницы.
     theme = models.CharField(max_length=64, default=DEFAULT_PORTAL_THEME)
@@ -243,7 +243,7 @@ class PortalArticleFile(TenantRelationModel):
 
     Ссылка публичная и защищена непредсказуемым UUID: файл открывается
     посетителем портала, у которого нет аутентификации хаба (как у вложений
-    знаний, ADR-HUB-0023).
+    знаний, ADR-CHATBALLS-0023).
     """
 
     tenant_relation_fields = ("article",)

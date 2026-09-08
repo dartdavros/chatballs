@@ -206,7 +206,7 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
             if contact.phone != inbound.phone:
                 contact.phone = inbound.phone
                 contact.save(update_fields=["phone"])
-            # Телефон подтвердило именно это подключение (ADR-HUB-0006).
+            # Телефон подтвердило именно это подключение (ADR-CHATBALLS-0006).
             if identity.phone_verified_at is None:
                 identity.phone_verified_at = timezone.now()
                 identity.save(update_fields=["phone_verified_at"])
@@ -223,13 +223,13 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
         )
         is_new = conversation is None
         if conversation is None:
-            # ADR-HUB-0002: новое сообщение после закрытия создаёт новый диалог,
+            # ADR-CHATBALLS-0002: новое сообщение после закрытия создаёт новый диалог,
             # связанный с предыдущим для навигации по истории.
             previous = Conversation.objects.filter(channel=channel, contact=contact).order_by("-created_at").first()
             conversation = Conversation.objects.create(
                 organization=channel.organization,
                 channel=channel,
-                # Диалог наследует группу канала при создании (ADR-HUB-0043 §3).
+                # Диалог наследует группу канала при создании (ADR-CHATBALLS-0043 §3).
                 group=channel.group,
                 connection=integration,
                 contact=contact,
@@ -274,7 +274,7 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
             update_fields.extend(["control_mode", "expected_responder"])
         if inbound.thread_meta:
             # Email: Message-ID последнего входящего — для ответа в тред;
-            # тема диалога фиксируется по первому письму (ADR-HUB-0035).
+            # тема диалога фиксируется по первому письму (ADR-CHATBALLS-0035).
             current = conversation.transport_meta or {}
             conversation.transport_meta = {
                 **current,
