@@ -49,6 +49,36 @@ ensure_secret postgres_migration_password
 # иначе пришлось бы вписывать одно и то же значение в двух местах.
 ensure_secret turn_secret
 
+# Ключ шифрования секретов в БД (Fernet): им зашифрованы секреты TOTP
+# сотрудников, токены интеграций, пароль SMTP и ключи S3.
+#
+# Значение выводится из ключа подписи ровно тем же способом, каким его выводил
+# сам продукт, пока отдельного файла не было. Поэтому работающая установка
+# ничего не теряет: ключ тот же, просто теперь он живёт своим файлом и больше
+# не следует за secret_key. До этого смена ключа подписи молча делала всё
+# зашифрованное нечитаемым — Fernet без ключа не расшифровать.
+ensure_field_encryption_key() {
+  file="$DIR/field_encryption_key"
+  if [ -s "$file" ]; then
+    return 0
+  fi
+  if ! command -v openssl >/dev/null 2>&1; then
+    # Вывести ключ нечем. Файла не будет, продукт выведет его сам — значение то
+    # же самое, просто связка с secret_key сохранится до появления openssl.
+    echo "openssl not found — field_encryption_key left derived from secret_key"
+    return 0
+  fi
+  # base64url(sha256(secret_key)) — совпадает с chatballs.identity.crypto.
+  printf %s "$(cat "$DIR/secret_key")" \
+    | openssl dgst -sha256 -binary \
+    | openssl base64 -A \
+    | tr '+/' '-_' > "$file"
+  chmod 444 "$file"
+  echo "generated field_encryption_key"
+}
+
+ensure_field_encryption_key
+
 # Coturn читает секрет не из аргумента, а из конфига: значение не светится
 # в списке процессов и не дублируется в compose.
 if [ ! -s "$DIR/turnserver-secret.conf" ]; then

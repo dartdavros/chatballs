@@ -158,9 +158,13 @@ DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "Chatballs <no-reply@l
 # Base URL of the internal UI, used to build links inside transactional emails.
 INTERNAL_UI_BASE_URL = os.environ.get("INTERNAL_UI_BASE_URL", "http://localhost:5173")
 
-# Ключ шифрования секретов в БД (Fernet). В production задаётся явно; иначе
-# детерминированно выводится из SECRET_KEY (см. chatballs.identity.crypto).
-CHATBALLS_FIELD_ENCRYPTION_KEY = os.environ.get("CHATBALLS_FIELD_ENCRYPTION_KEY", "")
+# Ключ шифрования секретов в БД (Fernet). Как и остальные секреты инстанса —
+# из тома, куда его кладёт первый старт стека; человек его не вводит. Пустое
+# значение означает установку, до которой файл ещё не доехал: тогда ключ
+# выводится из SECRET_KEY тем же способом (см. chatballs.identity.crypto).
+CHATBALLS_FIELD_ENCRYPTION_KEY = env_secret(
+    "CHATBALLS_FIELD_ENCRYPTION_KEY", "field_encryption_key", ""
+)
 
 # AI provider runtime. The local adapter is explicit and test-only.
 CHATBALLS_AI_PROVIDER = os.environ.get("CHATBALLS_AI_PROVIDER", "")
