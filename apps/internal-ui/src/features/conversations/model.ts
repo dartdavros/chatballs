@@ -1,5 +1,5 @@
 import { api, apiUpload } from "../../api/client";
-import type { ChannelKey, ConversationListItem, ControlMode, DialogMode } from "./types";
+import type { ChannelKey, ConversationListItem, ControlMode, DialogMode, ListSort } from "./types";
 
 // kind: "" — текст, "contact_request" — запрос контакта, "contact" — клиент поделился номером.
 export type ApiMessage = {
@@ -79,9 +79,15 @@ export type ApiConversation = {
   createdAt: string;
   lastMessage: ApiMessage | null;
   pendingCount?: number;
-  messages?: ApiMessage[];
+  // Сообщений в карточке нет: история — отдельная лента с окном (fetchMessages).
   history?: HistoryItem[];
+  // Запрос контакта мог уйти вне загруженного окна истории — факт считает сервер.
+  contactRequested?: boolean;
 };
+
+// Живые ленты (инбокс, история диалога) приходят окном: записи, признак
+// продолжения и курсор на следующее окно.
+export type WindowPage<T> = { items: T[]; hasMore: boolean; cursor: number | null };
 
 const AVATAR_PALETTE = ["#eb6f4b", "#3b82c4", "#9254de", "#13a8a8", "#d4860b", "#52a838", "#c4413b", "#6b5be0"];
 // Цвет агента и цвет точки группы — стабильно из идентификатора. Палитра идёт
@@ -209,18 +215,44 @@ export type ConversationListFilters = Partial<{
   q: string;
 }>;
 
-export const fetchConversations = (filters: ConversationListFilters = {}) => {
-  const params = new URLSearchParams();
-  if (filters.group) params.set("group", filters.group);
-  if (filters.agent) params.set("agent", String(filters.agent));
-  if (filters.assigned) params.set("assigned", String(filters.assigned));
-  if (filters.waiting) params.set("waiting", "1");
-  if (filters.lifecycle) params.set("lifecycle", filters.lifecycle);
-  if (filters.archived) params.set("archived", "1");
-  if (filters.q) params.set("q", filters.q);
-  const suffix = params.size ? `?${params.toString()}` : "";
-  return api<{ items: ApiConversation[] }>(`/api/v1/conversations/${suffix}`).then((r) => r.items);
+// Запрос окна инбокса: фильтры, порядок и курсор — всё серверное.
+export type ConversationListQuery = ConversationListFilters & {
+  sort?: ListSort;
+  cursor?: number | null;
+  limit?: number;
 };
+
+export type ConversationWindow = WindowPage<ApiConversation> & { total: number };
+
+export const fetchConversations = (query: ConversationListQuery = {}) => {
+  const params = new URLSearchParams();
+  if (query.group) params.set("group", query.group);
+  if (query.agent) params.set("agent", String(query.agent));
+  if (query.assigned) params.set("assigned", String(query.assigned));
+  if (query.waiting) params.set("waiting", "1");
+  if (query.lifecycle) params.set("lifecycle", query.lifecycle);
+  if (query.archived) params.set("archived", "1");
+  if (query.q) params.set("q", query.q);
+  if (query.sort) params.set("sort", query.sort);
+  if (query.cursor) params.set("cursor", String(query.cursor));
+  if (query.limit) params.set("limit", String(query.limit));
+  const suffix = params.size ? `?${params.toString()}` : "";
+  return api<ConversationWindow>(`/api/v1/conversations/${suffix}`);
+};
+
+// Окно истории: без курсора — хвост переписки; before — вверх по ленте;
+// after — то, что появилось после последнего показанного сообщения.
+export type MessageWindowQuery = { before?: number | null; after?: number | null; limit?: number };
+
+export const fetchMessages = (conversationId: number, query: MessageWindowQuery = {}) => {
+  const params = new URLSearchParams();
+  if (query.before) params.set("before", String(query.before));
+  if (query.after) params.set("after", String(query.after));
+  if (query.limit) params.set("limit", String(query.limit));
+  const suffix = params.size ? `?${params.toString()}` : "";
+  return api<WindowPage<ApiMessage>>(`/api/v1/conversations/${conversationId}/messages/${suffix}`);
+};
+
 export const fetchConversation = (id: number) => api<{ conversation: ApiConversation }>(`/api/v1/conversations/${id}/`).then((r) => r.conversation);
 export const claimConversation = (id: number) => api<{ conversation: ApiConversation }>(`/api/v1/conversations/${id}/claim/`, { method: "POST" }).then((r) => r.conversation);
 export const releaseConversation = (id: number) => api<{ conversation: ApiConversation }>(`/api/v1/conversations/${id}/release/`, { method: "POST" }).then((r) => r.conversation);

@@ -1,5 +1,5 @@
 import { Dropdown } from "antd";
-import type { CSSProperties, ReactNode } from "react";
+import { useCallback, type CSSProperties, type ReactNode, type UIEvent } from "react";
 
 import { modeDots } from "./data";
 import { ContactAvatar } from "./ContactAvatar";
@@ -9,12 +9,10 @@ import { ChannelGlyph } from "../../shared/badges";
 import { scopeLabel, type DialogScope } from "./ConversationWorkspace";
 import { agentColorOf, groupColorOf } from "./model";
 import type { ConversationCounters } from "./model";
-import type { ConversationListItem, ListTab } from "./types";
+import type { ConversationListItem, ListSort, ListTab } from "./types";
 import { SearchInput } from "../../shared/ui-controls";
 
-export type ListSort = "activity" | "waiting";
-
-export function DialogList({ title = "Диалоги", searchPlaceholder = "Поиск по контакту, сообщению…", viewerId = null, scope, counters, setScope, showScopeSwitcher = true, mobileHeader, hint, dialogs, filtered, listTab, selectedId, search, errorText, sort, setSort, onCollapse, setSearch, setListTab, setSelectedId }: {
+export function DialogList({ title = "Диалоги", searchPlaceholder = "Поиск по контакту, сообщению…", viewerId = null, scope, counters, setScope, showScopeSwitcher = true, mobileHeader, hint, dialogs, total, hasMore, onLoadMore, listTab, selectedId, search, errorText, sort, setSort, onCollapse, setSearch, setListTab, setSelectedId }: {
   title?: string;
   searchPlaceholder?: string;
   sort: ListSort;
@@ -28,7 +26,11 @@ export function DialogList({ title = "Диалоги", searchPlaceholder = "По
   viewerId?: number | null;
   hint?: ReactNode;
   dialogs: ConversationListItem[];
-  filtered: ConversationListItem[];
+  // Размер всего охвата с учётом фильтров — считает сервер; dialogs держит лишь
+  // загруженное окно.
+  total: number;
+  hasMore: boolean;
+  onLoadMore: () => void;
   listTab: ListTab;
   selectedId: number;
   search: string;
@@ -37,18 +39,25 @@ export function DialogList({ title = "Диалоги", searchPlaceholder = "По
   setListTab: (tab: ListTab) => void;
   setSelectedId: (id: number) => void;
 }) {
-  const waitCount = dialogs.filter((dialog) => dialog.mode === "wait").length;
+  // Счётчик ждущих — из счётчиков охвата, а не из загруженного окна.
+  const waitCount = counters?.waiting ?? 0;
+  // Лента догружается прокруткой: следующее окно запрашивается на подходе к низу.
+  const onScroll = useCallback((event: UIEvent<HTMLDivElement>) => {
+    if (!hasMore) return;
+    const node = event.currentTarget;
+    if (node.scrollHeight - node.scrollTop - node.clientHeight < LOAD_TRIGGER_PX) onLoadMore();
+  }, [hasMore, onLoadMore]);
   // Ширина списка: тянется за правый край (280–520px), запоминается в браузере.
   const listWidth = useResizableWidth("dialogList", { fallback: 323, min: 280, max: 520 });
   return (
     <section className={`sales-dialog-list ${listWidth.dragging ? "is-resizing" : ""}`} style={{ "--dialog-list-width": `${listWidth.width}px` } as CSSProperties}>
       <div className="pane-resizer" role="separator" aria-orientation="vertical" aria-label="Ширина списка диалогов" title="Потяните, двойной клик — сбросить" onPointerDown={listWidth.onPointerDown} onDoubleClick={listWidth.reset} />
-      {mobileHeader?.({ total: dialogs.length })}
+      {mobileHeader?.({ total })}
       <div className="sales-dialog-list-head">
         <div>
           {showScopeSwitcher
-            ? <ScopeSwitcher scope={scope} counters={counters} setScope={setScope} fallbackTitle={title} total={dialogs.length} viewerId={viewerId} />
-            : <h2 className="sales-dialog-list-title">{scope.kind === "all" ? title : scopeLabel(scope)}<small>{dialogs.length}</small></h2>}
+            ? <ScopeSwitcher scope={scope} counters={counters} setScope={setScope} fallbackTitle={title} total={total} viewerId={viewerId} />
+            : <h2 className="sales-dialog-list-title">{scope.kind === "all" ? title : scopeLabel(scope)}<small>{total}</small></h2>}
           <span className="sales-dialog-list-tools">
             <Dropdown
               trigger={["click"]}
@@ -74,17 +83,20 @@ export function DialogList({ title = "Диалоги", searchPlaceholder = "По
         <DialogTab active={listTab === "wait"} onClick={() => setListTab("wait")}>Ждут оператора{waitCount > 0 && <b>{waitCount}</b>}</DialogTab>
       </div>
       {hint}
-      <div className="sales-dialog-list-body">
+      <div className="sales-dialog-list-body" onScroll={onScroll}>
         {errorText && <div className="sales-wait-note sales-load-error">{errorText}</div>}
         {/* Кадр S1: пустой список без призыва к действию. */}
         {!errorText && dialogs.length === 0 && (
           <div className="sales-dialog-list-empty"><span><Icon name="message" size={20} /></span><p>Диалоги появятся, когда клиенты напишут вашему агенту</p></div>
         )}
-        {filtered.map((dialog) => <DialogListItem dialog={dialog} active={dialog.id === selectedId} setSelectedId={setSelectedId} key={dialog.id} />)}
+        {dialogs.map((dialog) => <DialogListItem dialog={dialog} active={dialog.id === selectedId} setSelectedId={setSelectedId} key={dialog.id} />)}
       </div>
     </section>
   );
 }
+
+// Ближе этого к низу списка — запрашиваем следующее окно.
+const LOAD_TRIGGER_PX = 320;
 
 function DialogTab({ active, onClick, children }: { active: boolean; onClick: () => void; children: ReactNode }) {
   return <button className={active ? "active" : ""} onClick={onClick}>{children}</button>;

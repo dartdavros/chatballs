@@ -3,13 +3,12 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { CallOverlay } from "./CallOverlay";
 import { Composer } from "./Composer";
 import { ConversationThread } from "./ConversationThread";
-import { DialogList, type ListSort } from "./DialogList";
+import { DialogList } from "./DialogList";
 import {
   claimConversation,
   closeConversation,
   controlModeOf,
   fetchConversation,
-  fetchConversations,
   markConversationAsSpam,
   releaseConversation,
   setConversationArchived,
@@ -41,13 +40,17 @@ export function scopeLabel(scope: DialogScope): string {
   if (scope.kind === "assignee") return scope.label;
   return "Все диалоги";
 }
-import type { ConversationListItem, ListTab } from "./types";
+import type { ConversationListItem, ListSort, ListTab } from "./types";
 import { useConversationCall } from "./useConversationCall";
+import { useConversationHistory } from "./useConversationHistory";
+import { useConversationList, useDebounced } from "./useConversationList";
+import { useDialogKeyboardNav } from "./useDialogKeyboardNav";
 import { useIncomingMessageSound } from "./useIncomingMessageSound";
 
 // Общий workspace диалогов (SPEC-HUB-0010 §8.2). Видимость inbox решает
 // backend по группам (ADR-CHATBALLS-0043); страница параметризуется заголовком,
-// placeholder поиска и правой панелью через render-prop.
+// placeholder поиска и правой панелью через render-prop. Список и история —
+// серверные окна: ни то, ни другое целиком не запрашивается.
 export function ConversationWorkspace({ isOwner = false, viewerId = null, listTitle, searchPlaceholder, renderContextPanel, mobileHeader, hint, initialConversationId, scope, setScope, counters, showScopeSwitcher = true }: {
   isOwner?: boolean;
   listTitle?: string;
@@ -65,14 +68,13 @@ export function ConversationWorkspace({ isOwner = false, viewerId = null, listTi
   showScopeSwitcher?: boolean;
 }) {
   const [listTab, setListTab] = useState<ListTab>("all");
+  const [sort, setSort] = useState<ListSort>("activity");
   // Кадр S2: на ≤1024px контекст-панель — выдвижная поверх ленты.
   const [ctxOpen, setCtxOpen] = useState(false);
   // Кадры M1/M2: на ≤768px список и лента — отдельные экраны.
   const [mobileDialogOpen, setMobileDialogOpen] = useState(false);
+  const [listCollapsed, setListCollapsed] = useState(false);
   const [search, setSearch] = useState("");
-  const [conversations, setConversations] = useState<ApiConversation[]>([]);
-  const [listLoaded, setListLoaded] = useState(false);
-  const [listError, setListError] = useState("");
   const [selectedId, setSelectedId] = useState<number | null>(initialConversationId ?? null);
   const [detail, setDetail] = useState<ApiConversation | null>(null);
   const [detailError, setDetailError] = useState("");
@@ -80,17 +82,19 @@ export function ConversationWorkspace({ isOwner = false, viewerId = null, listTi
   const selectedIdRef = useRef<number | null>(selectedId);
   selectedIdRef.current = selectedId;
 
-  const loadList = useCallback(async () => {
-    try {
-      const items = await fetchConversations(scopeFilters(scope));
-      setConversations(items);
-      setListLoaded(true);
-      setListError("");
-      setSelectedId((current) => current ?? items[0]?.id ?? null);
-    } catch {
-      setListError("Не удалось обновить список диалогов");
-    }
-  }, [scope]);
+  // Поиск, вкладка и порядок — параметры запроса: список приходит окном, и
+  // фильтровать в браузере было бы нечего.
+  // Ввод в поиске придерживается: запрос уходит, когда человек перестал печатать.
+  const settledSearch = useDebounced(search.trim());
+  const query = useMemo(() => ({
+    ...scopeFilters(scope),
+    ...(listTab === "wait" ? { waiting: true } : {}),
+    ...(listTab === "mine" ? { assigned: "me" as const } : {}),
+    ...(settledSearch ? { q: settledSearch } : {}),
+    sort,
+  }), [listTab, scope, settledSearch, sort]);
+  const list = useConversationList(query);
+  const history = useConversationHistory(selectedId);
 
   const loadDetail = useCallback(async (id: number) => {
     try {
@@ -100,21 +104,17 @@ export function ConversationWorkspace({ isOwner = false, viewerId = null, listTi
         setDetailError("");
       }
     } catch {
-      if (selectedIdRef.current === id) {
-        setDetailError("Не удалось загрузить диалог");
-      }
+      if (selectedIdRef.current === id) setDetailError("Не удалось загрузить диалог");
     }
   }, []);
 
   useEffect(() => {
-    void loadList();
-    const timer = setInterval(loadList, 4000);
-    return () => clearInterval(timer);
-  }, [loadList]);
-
-  useEffect(() => {
     if (initialConversationId != null) setSelectedId(initialConversationId);
   }, [initialConversationId]);
+
+  useEffect(() => {
+    setSelectedId((current) => current ?? list.conversations[0]?.id ?? null);
+  }, [list.conversations]);
 
   useEffect(() => {
     setCtxOpen(false);
@@ -126,6 +126,8 @@ export function ConversationWorkspace({ isOwner = false, viewerId = null, listTi
     setDetailError("");
     setActionError("");
     void loadDetail(selectedId);
+    // Карточка диалога (статус, ответственный, метки) обновляется отдельно от
+    // ленты: сообщений она больше не несёт.
     const timer = setInterval(() => loadDetail(selectedId), 3000);
     return () => clearInterval(timer);
   }, [selectedId, loadDetail]);
@@ -134,58 +136,16 @@ export function ConversationWorkspace({ isOwner = false, viewerId = null, listTi
     if (selectedId != null) void loadDetail(selectedId);
   }, [loadDetail, selectedId]);
   const callController = useConversationCall({ conversationId: selectedId, onConversationChanged });
-  useIncomingMessageSound(conversations, listLoaded);
+  useIncomingMessageSound(list.conversations, list.loaded);
 
-  // Клавиатура (SPEC-CHATBALLS-0031 §9): ↑/↓ — по списку, Enter — открыть (мобайл).
-  // «/» — фокус в поиск, эту клавишу держит сам SearchInput.
-  const filteredRef = useRef<ConversationListItem[]>([]);
-  useEffect(() => {
-    function onKeyDown(event: KeyboardEvent) {
-      const target = event.target as HTMLElement | null;
-      if (target?.closest("input, textarea, [contenteditable], .ant-dropdown")) return;
-      if (event.key === "ArrowDown" || event.key === "ArrowUp") {
-        const list = filteredRef.current;
-        if (!list.length) return;
-        event.preventDefault();
-        const index = list.findIndex((dialog) => dialog.id === selectedIdRef.current);
-        const next = event.key === "ArrowDown"
-          ? list[Math.min(index + 1, list.length - 1)]
-          : list[Math.max(index - 1, 0)];
-        if (next) setSelectedId(next.id);
-        return;
-      }
-      if (event.key === "Enter" && selectedIdRef.current != null) {
-        setMobileDialogOpen(true);
-      }
-    }
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, []);
+  const dialogs = useMemo(() => list.conversations.map(toConversationListItem), [list.conversations]);
+  useDialogKeyboardNav({
+    dialogs,
+    selectedId,
+    setSelectedId,
+    onOpen: () => setMobileDialogOpen(true),
+  });
 
-  // Сортировка и сворачивание списка (заголовок списка, кадр A1).
-  const [sort, setSort] = useState<ListSort>("activity");
-  const [listCollapsed, setListCollapsed] = useState(false);
-  const dialogs = useMemo(() => conversations.map(toConversationListItem), [conversations]);
-  const filtered = useMemo(() => {
-    const query = search.trim().toLowerCase();
-    const items = dialogs.filter((dialog) => {
-      if (query && !`${dialog.name} ${dialog.email} ${dialog.agentName} ${dialog.preview}`.toLowerCase().includes(query)) return false;
-      if (listTab === "wait") return dialog.mode === "wait";
-      if (listTab === "mine") return dialog.isMine;
-      return true;
-    });
-    if (sort === "waiting") {
-      // Ждущие оператора — первыми, дольше всех ждущие — выше; остальные по активности.
-      const activity = (dialog: ConversationListItem) => conversations.find((c) => c.id === dialog.id)?.lastActivityAt ?? "";
-      return [...items].sort((a, b) => {
-        if ((a.mode === "wait") !== (b.mode === "wait")) return a.mode === "wait" ? -1 : 1;
-        return a.mode === "wait" ? activity(a).localeCompare(activity(b)) : activity(b).localeCompare(activity(a));
-      });
-    }
-    return items;
-  }, [conversations, dialogs, listTab, search, sort]);
-
-  filteredRef.current = filtered;
   const selectedDialog = dialogs.find((dialog) => dialog.id === selectedId) ?? null;
   const detailLoaded = detail?.id === selectedId;
   const controlMode = detailLoaded ? controlModeOf(detail) : "waiting";
@@ -193,7 +153,7 @@ export function ConversationWorkspace({ isOwner = false, viewerId = null, listTi
   function applyUpdated(updated: ApiConversation) {
     setDetail(updated);
     setActionError("");
-    void loadList();
+    void list.refresh();
   }
 
   async function updateConversation(action: (id: number) => Promise<ApiConversation>): Promise<boolean> {
@@ -234,11 +194,13 @@ export function ConversationWorkspace({ isOwner = false, viewerId = null, listTi
         title={listTitle}
         searchPlaceholder={searchPlaceholder}
         dialogs={dialogs}
-        filtered={filtered}
+        total={list.total}
+        hasMore={list.hasMore}
+        onLoadMore={list.loadMore}
         listTab={listTab}
         selectedId={selectedId ?? -1}
         search={search}
-        errorText={listError}
+        errorText={list.errorText}
         setSearch={setSearch}
         setListTab={setListTab}
         setSelectedId={(id) => {
@@ -254,8 +216,8 @@ export function ConversationWorkspace({ isOwner = false, viewerId = null, listTi
       {selectedDialog && (
       <section className="sales-conversation enter-surface" key={selectedDialog.id}>
         {ctxOpen && <button className="ctx-backdrop" type="button" aria-label="Закрыть панель" onClick={() => setCtxOpen(false)} />}
-        <ConversationThread controlMode={controlMode} dialog={selectedDialog} detail={detail} isOwner={isOwner} onExpandList={listCollapsed ? () => setListCollapsed(false) : undefined} viewerId={viewerId} onClaim={onClaim} onRelease={onRelease} onClose={onClose} onSpam={onSpam} onReturnQueue={onReturnQueue} onArchive={onArchive} onToggleContext={() => setCtxOpen((open) => !open)} onMobileBack={() => setMobileDialogOpen(false)} />
-        {(detailError || actionError) && <div className="sales-conversation-error">{detailError || actionError}</div>}
+        <ConversationThread controlMode={controlMode} dialog={selectedDialog} detail={detail} history={history} isOwner={isOwner} onExpandList={listCollapsed ? () => setListCollapsed(false) : undefined} viewerId={viewerId} onClaim={onClaim} onRelease={onRelease} onClose={onClose} onSpam={onSpam} onReturnQueue={onReturnQueue} onArchive={onArchive} onToggleContext={() => setCtxOpen((open) => !open)} onMobileBack={() => setMobileDialogOpen(false)} />
+        {(detailError || actionError || history.errorText) && <div className="sales-conversation-error">{detailError || actionError || history.errorText}</div>}
         <CallOverlay
           open={callController.open}
           dialog={selectedDialog}
@@ -279,7 +241,7 @@ export function ConversationWorkspace({ isOwner = false, viewerId = null, listTi
           onRelease={onRelease}
           onReturnQueue={onReturnQueue}
           onClose={onClose}
-          onSent={() => selectedId != null && loadDetail(selectedId)}
+          onSent={() => { void history.catchUp(); void list.refresh(); }}
         />
       </section>
       )}

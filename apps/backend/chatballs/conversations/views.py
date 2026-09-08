@@ -9,8 +9,25 @@ from chatballs.conversations.models import (
     LifecycleState,
     Message,
 )
-from chatballs.conversations.selectors import visible_conversations_for
+from chatballs.api.pagination import (
+    cursor_id,
+    window,
+    window_payload,
+    window_size,
+)
+from chatballs.conversations.selectors import (
+    MESSAGES_NEWER_KEYS,
+    MESSAGES_OLDER_KEYS,
+    conversation_messages,
+    order_conversations,
+    visible_conversations_for,
+)
 from chatballs.conversations.serializers import conversation_payload, message_payload
+
+# Окно инбокса и окно истории: размеры продуктовые, клиент может запросить
+# меньше, больше — только до потолка api.pagination.
+LIST_WINDOW_SIZE = 30
+MESSAGE_WINDOW_SIZE = 50
 from chatballs.conversations.services import (
     ClaimError,
     claim_conversation,
@@ -81,23 +98,33 @@ class ConversationListView(ConversationViewBase):
                 Q(contact__name__icontains=query)
                 | Q(Exists(message_match))
             )
-        items = list(items)
+        # Инбокс — живая лента: окно по курсору, а не номера страниц. Сортировка
+        # серверная, иначе окно и порядок разъезжаются.
+        ordered, keys = order_conversations(items, params.get("sort", "activity"))
+        page = window(
+            ordered,
+            keys=keys,
+            limit=window_size(params, default=LIST_WINDOW_SIZE),
+            after=cursor_id(params),
+        )
         # Отметки прочтения просматривающего: бейдж считается персонально.
         read_map = dict(
-            ConversationRead.objects.filter(user=request.user, conversation__in=items)
-            .values_list("conversation_id", "last_read_message_id")
+            ConversationRead.objects.filter(
+                user=request.user, conversation__in=page.items
+            ).values_list("conversation_id", "last_read_message_id")
         )
         return Response(
-            {
-                "items": [
-                    conversation_payload(
-                        c,
-                        last_read_id=read_map.get(c.id, 0),
-                        viewer_id=request.user.id,
-                    )
-                    for c in items
-                ]
-            }
+            window_payload(
+                page,
+                lambda c: conversation_payload(
+                    c,
+                    last_read_id=read_map.get(c.id, 0),
+                    viewer_id=request.user.id,
+                ),
+                # Счётчик над списком показывает весь охват с учётом фильтров,
+                # а не число уже загруженных строк.
+                total=ordered.order_by().count(),
+            )
         )
 
 
@@ -121,7 +148,7 @@ class ConversationDetailView(ConversationViewBase):
             {
                 "conversation": conversation_payload(
                     conversation,
-                    with_messages=True,
+                    detailed=True,
                     viewer_id=request.user.id,
                 )
             }
@@ -147,7 +174,7 @@ class ConversationClaimView(ConversationViewBase):
             {
                 "conversation": conversation_payload(
                     conversation,
-                    with_messages=True,
+                    detailed=True,
                     viewer_id=request.user.id,
                 )
             }
@@ -173,7 +200,7 @@ class ConversationReleaseView(ConversationViewBase):
             {
                 "conversation": conversation_payload(
                     conversation,
-                    with_messages=True,
+                    detailed=True,
                     viewer_id=request.user.id,
                 )
             }
@@ -199,7 +226,7 @@ class ConversationReturnQueueView(ConversationViewBase):
             {
                 "conversation": conversation_payload(
                     conversation,
-                    with_messages=True,
+                    detailed=True,
                     viewer_id=request.user.id,
                 )
             }
@@ -230,7 +257,45 @@ def claim_for_reply(view: ConversationViewBase, request: Request, conversation: 
 
 
 class ConversationMessageView(ConversationViewBase):
+    # Читает историю тот, кто видит диалог; пишет — тот, кто его ведёт.
+    required_capabilities = {"GET": "conversations.view", "POST": "conversations.operate"}
     required_capability = "conversations.operate"
+
+    def get(self, request: Request, conversation_id: int) -> Response:
+        """Окно истории.
+
+        `after` — что появилось после последнего показанного сообщения (этим
+        живёт обновление открытого диалога); `before` — что было до самого
+        раннего показанного (этим живёт прокрутка вверх). Без курсора — хвост
+        переписки, то есть последние сообщения.
+        """
+        try:
+            conversation = self._conversation(request, conversation_id)
+        except Conversation.DoesNotExist:
+            return Response({"detail": "Диалог не найден"}, status=404)
+        params = request.query_params
+        limit = window_size(params, default=MESSAGE_WINDOW_SIZE)
+        messages = conversation_messages(conversation)
+        after = cursor_id(params, "after")
+        if after is not None:
+            return Response(
+                window_payload(
+                    window(messages, keys=MESSAGES_NEWER_KEYS, limit=limit, after=after),
+                    message_payload,
+                )
+            )
+        page = window(
+            messages,
+            keys=MESSAGES_OLDER_KEYS,
+            limit=limit,
+            after=cursor_id(params, "before"),
+        )
+        # Курсор считается по окну «от свежих к старым» — это самое раннее
+        # сообщение окна, с него продолжится прокрутка вверх. Наружу список
+        # уходит в хронологическом порядке, как его рисует лента.
+        payload = window_payload(page, message_payload)
+        payload["items"].reverse()
+        return Response(payload)
 
     def post(self, request: Request, conversation_id: int) -> Response:
         try:
@@ -299,7 +364,7 @@ class ConversationCloseView(ConversationViewBase):
             {
                 "conversation": conversation_payload(
                     conversation,
-                    with_messages=True,
+                    detailed=True,
                     viewer_id=request.user.id,
                 )
             }
@@ -325,7 +390,7 @@ class ConversationSpamView(ConversationViewBase):
             {
                 "conversation": conversation_payload(
                     conversation,
-                    with_messages=True,
+                    detailed=True,
                     viewer_id=request.user.id,
                 )
             }

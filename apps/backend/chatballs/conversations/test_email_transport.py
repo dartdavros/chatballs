@@ -20,7 +20,9 @@ from chatballs.conversations.models import Contact, Conversation, MessageAuthor
 
 from chatballs.conversations.clients import client_detail, clients_overview
 
-from chatballs.conversations.serializers import conversation_payload
+from chatballs.conversations.selectors import conversation_messages
+
+from chatballs.conversations.serializers import conversation_payload, message_payload
 
 from chatballs.conversations.transports import email as email_transport
 
@@ -560,13 +562,15 @@ class EmailIngestThreadMetaTests(TestCase):
 
         conversation = Conversation.objects.get(channel=self.channel)
 
-        dialog = conversation_payload(conversation, with_messages=True)
+        dialog = conversation_payload(conversation, detailed=True)
 
         self.assertEqual(dialog["connection"]["provider"], "EMAIL")
 
         self.assertEqual(dialog["contact"]["email"], "ivan@example.com")
 
-        self.assertEqual(dialog["messages"][0]["contentHtml"], "")
+        first = conversation_messages(conversation).order_by("created_at", "id").first()
+
+        self.assertEqual(message_payload(first)["contentHtml"], "")
 
 
 

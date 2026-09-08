@@ -1,6 +1,25 @@
-from django.db.models import F, Max, Q, QuerySet
+from datetime import UTC, datetime
 
-from chatballs.conversations.models import Conversation
+from django.db.models import (
+    Case,
+    DateTimeField,
+    F,
+    IntegerField,
+    Max,
+    Q,
+    QuerySet,
+    Value,
+    When,
+)
+from django.db.models.functions import Coalesce
+
+from chatballs.api.pagination import SortKey
+from chatballs.conversations.models import (
+    ControlMode,
+    Conversation,
+    LifecycleState,
+    Message,
+)
 from chatballs.identity.policy import conversation_visibility
 from chatballs.tenancy.context import TenantContext
 
@@ -18,10 +37,65 @@ def conversations_for_context(context: TenantContext) -> QuerySet[Conversation]:
         .prefetch_related("labels")
         # Инбокс сортируется по времени последнего сообщения (а не по служебной
         # активности вроде claim/takeover); fallback — last_activity_at для
-        # диалогов без сообщений.
-        .annotate(_last_message_at=Max("messages__created_at"))
-        .order_by(F("_last_message_at").desc(nulls_last=True), "-last_activity_at")
+        # диалогов без сообщений. Coalesce вместо nulls_last: ключ сортировки
+        # обязан быть непустым, иначе курсор окна не сравнить (api.pagination).
+        .annotate(sort_at=Coalesce(Max("messages__created_at"), F("last_activity_at")))
+        .order_by("-sort_at", "-id")
     )
+
+
+# Ключи сортировки инбокса. Порядок и правило сравнения курсора — одно и то же
+# знание, поэтому оно живёт здесь, а не разъезжается по view.
+ACTIVITY_KEYS = (SortKey("sort_at"), SortKey("id"))
+WAITING_KEYS = (
+    SortKey("_waiting_rank", descending=False),
+    SortKey("_wait_at", descending=False),
+    SortKey("sort_at"),
+    SortKey("id"),
+)
+# Заглушка ключа ожидания для диалогов, которые человека не ждут: ключ окна
+# обязан быть непустым, а эти строки всё равно упорядочены следующим ключом.
+_NOT_WAITING_AT = datetime(1970, 1, 1, tzinfo=UTC)
+
+
+def order_conversations(
+    queryset: QuerySet[Conversation], sort: str
+) -> tuple[QuerySet[Conversation], tuple[SortKey, ...]]:
+    """Порядок инбокса и ключи его курсора.
+
+    Сортировка живёт на сервере вместе с окном: клиент видит не весь набор, и
+    переставлять в браузере ему нечего. `waiting` — «ждущие человека первыми,
+    дольше всех ждущий выше», остальные — по убыванию активности.
+    """
+    if sort != "waiting":
+        return queryset.order_by("-sort_at", "-id"), ACTIVITY_KEYS
+    waits = Q(lifecycle=LifecycleState.OPEN, control_mode=ControlMode.PAUSED)
+    ordered = queryset.annotate(
+        _waiting_rank=Case(
+            When(waits, then=Value(0)), default=Value(1), output_field=IntegerField()
+        ),
+        _wait_at=Case(
+            When(waits, then=F("sort_at")),
+            default=Value(_NOT_WAITING_AT),
+            output_field=DateTimeField(),
+        ),
+    ).order_by("_waiting_rank", "_wait_at", "-sort_at", "-id")
+    return ordered, WAITING_KEYS
+
+
+def conversation_messages(conversation: Conversation) -> QuerySet[Message]:
+    """Лента сообщений диалога. Окно и направление задаёт вызывающий."""
+    return Message.objects.filter(conversation=conversation).select_related("author_user")
+
+
+# История читается в двух направлениях: вверх по ленте (от свежих к старым —
+# открытие диалога и подгрузка при прокрутке) и вперёд от последнего известного
+# сообщения (дельта обновления).
+MESSAGES_OLDER_KEYS = (SortKey("created_at"), SortKey("id"))
+MESSAGES_NEWER_KEYS = (
+    SortKey("created_at", descending=False),
+    SortKey("id", descending=False),
+)
 
 
 def apply_conversation_visibility(

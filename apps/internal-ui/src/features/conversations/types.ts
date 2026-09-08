@@ -4,6 +4,9 @@
 export type DialogMode = "ai" | "closed" | "operator" | "wait";
 export type ControlMode = "ai" | "assigned" | "closed" | "human" | "waiting";
 export type ListTab = "all" | "mine" | "wait";
+// Порядок инбокса. Считает его сервер: список приходит окном, и сортировать в
+// браузере было бы нечего.
+export type ListSort = "activity" | "waiting";
 export type ChannelKey = "EMAIL" | "MAX" | "TG" | "WEB";
 
 // Элемент списка диалогов (бывш. SalesDialog). Полностью generic.

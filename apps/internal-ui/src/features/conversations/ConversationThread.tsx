@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, type ReactNode } from "react";
+import { Fragment, useRef, type ReactNode } from "react";
 
 import { Icon } from "../../shared/icons";
 import { IconButton } from "../../shared/ui-controls";
@@ -10,22 +10,26 @@ import { VoiceMessage } from "./VoiceMessage";
 import { statusFor } from "./data";
 import { providerMeta } from "../../shared/providers";
 import type { ApiConversation, ApiMessage } from "./model";
+import type { ConversationHistory } from "./useConversationHistory";
+import { useHistoryScroll } from "./useHistoryScroll";
 import type { ConversationListItem, ControlMode, StatusInfo } from "./types";
 
 function fmtTime(value: string): string {
   return new Date(value).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
 }
 
-export function ConversationThread({ controlMode, dialog, detail, isOwner = false, onClaim, onRelease, onClose, onSpam, onReturnQueue, onArchive, onToggleContext, onMobileBack, onExpandList, viewerId = null }: { controlMode: ControlMode; dialog: ConversationListItem | null; detail: ApiConversation | null; isOwner?: boolean; onClaim: () => void; onRelease: () => void; onClose: () => void; onSpam: () => Promise<boolean>; onReturnQueue: () => void; onArchive: () => Promise<boolean>; onToggleContext?: () => void; onMobileBack?: () => void; onExpandList?: () => void; viewerId?: number | null }) {
+export function ConversationThread({ controlMode, dialog, detail, history, isOwner = false, onClaim, onRelease, onClose, onSpam, onReturnQueue, onArchive, onToggleContext, onMobileBack, onExpandList, viewerId = null }: { controlMode: ControlMode; dialog: ConversationListItem | null; detail: ApiConversation | null; history: ConversationHistory; isOwner?: boolean; onClaim: () => void; onRelease: () => void; onClose: () => void; onSpam: () => Promise<boolean>; onReturnQueue: () => void; onArchive: () => Promise<boolean>; onToggleContext?: () => void; onMobileBack?: () => void; onExpandList?: () => void; viewerId?: number | null }) {
   const timelineRef = useRef<HTMLDivElement>(null);
-  const messages = detail?.messages ?? [];
-  const lastMessageId = messages.length ? messages[messages.length - 1].id : 0;
-
-  // Скролл к свежим сообщениям при открытии диалога и при новых сообщениях.
-  useEffect(() => {
-    const node = timelineRef.current;
-    if (node) node.scrollTop = node.scrollHeight;
-  }, [detail?.id, lastMessageId]);
+  const messages = history.messages;
+  // Лента держит низ при новых репликах и догружает предыдущие при подходе к
+  // верху, сохраняя место чтения.
+  const { onScroll } = useHistoryScroll(timelineRef, {
+    conversationId: dialog?.id ?? null,
+    messages,
+    hasOlder: history.hasOlder,
+    loadingOlder: history.loadingOlder,
+    loadOlder: history.loadOlder,
+  });
 
   if (!dialog) {
     return <div className="sales-timeline"><div className="sales-timeline-inner"><div className="sales-wait-note">Выберите диалог</div></div></div>;
@@ -69,9 +73,9 @@ export function ConversationThread({ controlMode, dialog, detail, isOwner = fals
           <ConversationActions open={detail?.lifecycle === "OPEN"} canReturnQueue={controlMode === "human"} onClose={onClose} onSpam={onSpam} onReturnQueue={onReturnQueue} onArchive={onArchive} />
         </div>
       </div>
-      <div className="sales-timeline" ref={timelineRef}>
+      <div className="sales-timeline" ref={timelineRef} onScroll={onScroll}>
         <div className="sales-timeline-inner">
-          {messages.length === 0 && <div className="sales-wait-note">Пока нет сообщений</div>}
+          {history.loaded && messages.length === 0 && <div className="sales-wait-note">Пока нет сообщений</div>}
           {messages.map((message, index) => (
             <Fragment key={message.id}>
               {(index === 0 || !sameDay(messages[index - 1].createdAt, message.createdAt)) && (

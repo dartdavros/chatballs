@@ -63,7 +63,7 @@ class ConversationPriorityView(ConversationViewBase):
         return Response(
             {
                 "conversation": conversation_payload(
-                    conversation, with_messages=True, viewer_id=request.user.id
+                    conversation, detailed=True, viewer_id=request.user.id
                 )
             }
         )
@@ -103,7 +103,7 @@ class ConversationContactView(ConversationViewBase):
         return Response(
             {
                 "conversation": conversation_payload(
-                    conversation, with_messages=True, viewer_id=request.user.id
+                    conversation, detailed=True, viewer_id=request.user.id
                 )
             }
         )
@@ -129,7 +129,7 @@ class ConversationNoteView(ConversationViewBase):
         return Response(
             {
                 "conversation": conversation_payload(
-                    conversation, with_messages=True, viewer_id=request.user.id
+                    conversation, detailed=True, viewer_id=request.user.id
                 )
             }
         )
@@ -164,7 +164,7 @@ class ConversationLabelsView(ConversationViewBase):
         return Response(
             {
                 "conversation": conversation_payload(
-                    conversation, with_messages=True, viewer_id=request.user.id
+                    conversation, detailed=True, viewer_id=request.user.id
                 )
             }
         )
@@ -196,7 +196,7 @@ class ConversationArchiveView(ConversationViewBase):
         return Response(
             {
                 "conversation": conversation_payload(
-                    conversation, with_messages=True, viewer_id=request.user.id
+                    conversation, detailed=True, viewer_id=request.user.id
                 )
             }
         )

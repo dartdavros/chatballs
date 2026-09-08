@@ -151,8 +151,10 @@ class AttachmentApiTests(AttachmentTestCase):
         inline = self.client.get(f"/api/v1/conversations/messages/{message.id}/attachment/?inline")
         self.assertIn("inline", inline.headers["Content-Disposition"])
 
-        detail = self.client.get(f"/api/v1/conversations/{message.conversation_id}/").json()
-        payload = next(m for m in detail["conversation"]["messages"] if m["id"] == message.id)
+        history = self.client.get(
+            f"/api/v1/conversations/{message.conversation_id}/messages/"
+        ).json()
+        payload = next(m for m in history["items"] if m["id"] == message.id)
         self.assertEqual(payload["kind"], "file")
         self.assertEqual(payload["attachmentName"], "смета.pdf")
         self.assertEqual(payload["attachmentSize"], 4)

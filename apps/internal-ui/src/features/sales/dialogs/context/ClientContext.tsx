@@ -52,8 +52,9 @@ export function ClientContext({
   const email = contact?.email ?? "";
   const phone = contact?.phone ?? "";
   const username = contact?.username ?? "";
-  // Запрос уже отправлен, если в диалоге есть сообщение kind=contact_request (detail поллится каждые 3 с).
-  const alreadyRequested = justRequested || (detail?.messages ?? []).some((m) => m.kind === "contact_request");
+  // Факт запроса контакта считает сервер: сообщение могло уйти вне окна истории,
+  // загруженного лентой.
+  const alreadyRequested = justRequested || Boolean(detail?.contactRequested);
   const canRequest = Boolean(detail && contact && detail.connection && !phone && detail.lifecycle === "OPEN");
   const isGuest = dialog.channel === "WEB" && !username && !email;
 

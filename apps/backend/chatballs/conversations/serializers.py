@@ -1,5 +1,11 @@
 from chatballs.integrations.features import features_payload
-from chatballs.conversations.models import ConnectionIdentity, Conversation, Message, MessageAuthor
+from chatballs.conversations.models import (
+    ConnectionIdentity,
+    Conversation,
+    Message,
+    MessageAuthor,
+    MessageKind,
+)
 from chatballs.identity.avatars import user_avatar_url_in
 from chatballs.integrations.models import IntegrationProvider
 
@@ -114,11 +120,17 @@ def _conversation_history(conversation: Conversation) -> list[Conversation]:
 def conversation_payload(
     conversation: Conversation,
     *,
-    with_messages: bool = False,
+    detailed: bool = False,
     last_read_id: int = 0,
     viewer_id: int | None = None,
 ) -> dict[str, object]:
-    last = None if with_messages else _last_message(conversation)
+    """Карточка диалога.
+
+    Сообщения в неё не входят ни в одном режиме: история — отдельная лента с
+    собственным окном (`/messages/`), иначе открытие диалога с тысячей реплик
+    тянуло бы их все, да ещё и на каждом обновлении карточки.
+    """
+    last = None if detailed else _last_message(conversation)
     channel = conversation.channel
     payload = {
         "id": conversation.id,
@@ -148,7 +160,7 @@ def conversation_payload(
                 "company": conversation.contact.company,
                 "city": conversation.contact.city,
                 "email": _contact_email(conversation),
-                "username": _contact_username(conversation) if with_messages else "",
+                "username": _contact_username(conversation) if detailed else "",
             }
             if conversation.contact_id
             else None
@@ -190,10 +202,14 @@ def conversation_payload(
         "lastActivityAt": conversation.last_activity_at.isoformat(),
         "createdAt": conversation.created_at.isoformat(),
     }
-    if with_messages:
-        payload["messages"] = [message_payload(m) for m in conversation.messages.select_related("author_user").order_by("created_at", "id")]
+    if detailed:
         history = _conversation_history(conversation)
         payload["history"] = [_history_item(c) for c in history]
+        # Запрос контакта мог уйти когда угодно — в загруженном окне истории его
+        # может не быть, поэтому факт запроса считает сервер, а не лента.
+        payload["contactRequested"] = conversation.messages.filter(
+            kind=MessageKind.CONTACT_REQUEST
+        ).exists()
     else:
         payload["lastMessage"] = message_payload(last) if last else None
         payload["pendingCount"] = _pending_count(conversation, last_read_id)
