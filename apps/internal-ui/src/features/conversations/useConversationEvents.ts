@@ -8,6 +8,9 @@ import { resolveWebSocketUrl } from "../../api/client";
 
 const RECONNECT_MIN_MS = 1000;
 const RECONNECT_MAX_MS = 30000;
+// Поток событий в оживлённой организации плотнее прежнего опроса: несколько
+// сообщений подряд должны приводить к одному обновлению, а не к пяти.
+const COALESCE_MS = 700;
 
 export type ConversationEvents = {
   /** Сокет открыт: поллинг можно замедлить. */
@@ -32,6 +35,11 @@ export function useConversationEvents({
   conversationRef.current = onConversationChanged;
   const socketRef = useRef<WebSocket | null>(null);
   const watchedRef = useRef<number | null>(null);
+  const pendingRef = useRef<{ inbox: boolean; conversation: number | null }>({
+    inbox: false,
+    conversation: null,
+  });
+  const flushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const url = resolveWebSocketUrl("/conversations/");
@@ -54,10 +62,18 @@ export function useConversationEvents({
       };
       socket.onmessage = (event) => {
         const payload = JSON.parse(String(event.data)) as { type?: string; conversationId?: number };
-        if (payload.type === "inbox.changed") inboxRef.current();
+        if (payload.type === "inbox.changed") pendingRef.current.inbox = true;
         if (payload.type === "conversation.changed" && typeof payload.conversationId === "number") {
-          conversationRef.current(payload.conversationId);
+          pendingRef.current.conversation = payload.conversationId;
         }
+        if (flushTimerRef.current !== null) return;
+        flushTimerRef.current = setTimeout(() => {
+          flushTimerRef.current = null;
+          const pending = pendingRef.current;
+          pendingRef.current = { inbox: false, conversation: null };
+          if (pending.inbox) inboxRef.current();
+          if (pending.conversation !== null) conversationRef.current(pending.conversation);
+        }, COALESCE_MS);
       };
       socket.onclose = () => {
         setConnected(false);
@@ -74,6 +90,8 @@ export function useConversationEvents({
     return () => {
       closed = true;
       if (reconnectTimer) clearTimeout(reconnectTimer);
+      if (flushTimerRef.current !== null) clearTimeout(flushTimerRef.current);
+      flushTimerRef.current = null;
       socketRef.current?.close();
       socketRef.current = null;
     };
