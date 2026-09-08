@@ -5,6 +5,7 @@ import {
   getConfig,
   openWebchatCall,
   poll,
+  SessionExpired,
   sendContact,
   sendMessage,
   sendFile,
@@ -89,8 +90,10 @@ export function App() {
           ingestPoll(data, pollingReady.current);
           pollingReady.current = true;
         }
-      } catch {
-        /* keep trying */
+      } catch (error) {
+        // Сессия истекла — иначе виджет молча висел бы с мёртвым токеном.
+        if (alive && error instanceof SessionExpired) forgetSession();
+        /* остальное — сеть или лимит: продолжаем опрашивать */
       }
     };
     void tick();
@@ -105,6 +108,19 @@ export function App() {
   const accent = config?.accent || "#1677ff";
   const title = config?.title || "Чат";
   const letter = title.trim()[0]?.toUpperCase() || "E";
+
+  function forgetSession() {
+    localStorage.removeItem(TOKEN_KEY);
+    lastId.current = 0;
+    pollingReady.current = false;
+    setToken(null);
+    setAccepted(false);
+    setMessages([]);
+    setPending([]);
+    setAwaiting(false);
+    setCall(null);
+    setContactSent(false);
+  }
 
   async function accept() {
     setStarting(true);

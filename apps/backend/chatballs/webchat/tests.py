@@ -1,7 +1,13 @@
 import json
+from contextlib import contextmanager
+from datetime import timedelta
 
-from django.test import TestCase
+from django.conf import settings
+from django.core.cache import cache
+from django.test import TestCase, override_settings
+from django.utils import timezone
 from rest_framework.test import APIClient
+from rest_framework.throttling import SimpleRateThrottle
 
 from chatballs.channels.models import Channel
 from chatballs.identity.bootstrap import bootstrap_owner
@@ -202,3 +208,170 @@ class PublicWebChatWidgetTests(TestCase):
             404,
         )
 
+
+    def test_declared_host_origin_cannot_override_browser_origin(self) -> None:
+        # hostOrigin вычисляет iframe из document.referrer — это заявление
+        # клиента. Origin ставит браузер, и заявление его не перебивает.
+        widget = create_web_widget(
+            self.channel,
+            name="Портал",
+            allowed_origins=["https://help.example.test"],
+        )
+
+        spoofed = self.client.post(
+            "/api/v1/webchat/session/",
+            data=json.dumps(
+                {
+                    "widgetKey": widget.public_key,
+                    "hostOrigin": "https://help.example.test",
+                }
+            ),
+            content_type="application/json",
+            headers={"Origin": "https://evil.example.test"},
+        )
+
+        self.assertEqual(spoofed.status_code, 404)
+        self.assertFalse(WebSession.objects.exists())
+
+    def test_browser_origin_header_is_enough_without_declared_host_origin(self) -> None:
+        widget = create_web_widget(
+            self.channel,
+            name="Портал",
+            allowed_origins=["https://help.example.test"],
+        )
+
+        response = self.client.post(
+            "/api/v1/webchat/session/",
+            data=json.dumps({"widgetKey": widget.public_key}),
+            content_type="application/json",
+            headers={"Referer": "https://help.example.test/article"},
+        )
+
+        self.assertEqual(response.status_code, 201)
+
+    def test_idle_session_stops_being_accepted(self) -> None:
+        # Токен живёт в localStorage браузера: на общем компьютере бессрочный
+        # открывал бы чужую переписку сколько угодно долго.
+        widget = create_web_widget(self.channel, name="Виджет")
+        token = self._session(widget.public_key).json()["token"]
+        headers = {"Authorization": f"Bearer {token}"}
+        self.assertEqual(
+            self.client.get("/api/v1/webchat/messages/", headers=headers).status_code, 200
+        )
+
+        idle = timedelta(seconds=settings.CHATBALLS_WEBCHAT_SESSION_IDLE_SECONDS + 60)
+        WebSession.objects.update(last_seen_at=timezone.now() - idle)
+
+        self.assertEqual(
+            self.client.get("/api/v1/webchat/messages/", headers=headers).status_code, 401
+        )
+
+    def test_active_session_keeps_renewing_itself(self) -> None:
+        # Срок отсчитывается от последней активности: посетитель, который
+        # переписывается неделями, историю не теряет.
+        widget = create_web_widget(self.channel, name="Виджет")
+        token = self._session(widget.public_key).json()["token"]
+        headers = {"Authorization": f"Bearer {token}"}
+        WebSession.objects.update(last_seen_at=timezone.now() - timedelta(days=20))
+
+        self.assertEqual(
+            self.client.get("/api/v1/webchat/messages/", headers=headers).status_code, 200
+        )
+        self.assertGreater(
+            WebSession.objects.get().last_seen_at, timezone.now() - timedelta(minutes=1)
+        )
+
+
+@override_settings(
+    CACHES={"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
+)
+class PublicWebChatThrottlingTests(TestCase):
+    """Лимиты публичных endpoint'ов виджета.
+
+    В тестовом окружении ставки обнулены (settings_base), поэтому здесь они
+    подставляются классу throttle'а напрямую: api_settings читает их один раз
+    при импорте, и override_settings до них не достаёт.
+    """
+
+    def setUp(self) -> None:
+        bootstrap_owner(
+            email="webchat-throttle-owner@example.com",
+            password="temporary-password",
+        )
+        self.organization = Organization.objects.get(slug="demo")
+        self.channel = Channel.objects.create(
+            organization=self.organization,
+            code="website-chat",
+            name="Чат сайта",
+        )
+        self.widget = create_web_widget(self.channel, name="Виджет")
+        self.client = APIClient()
+
+    @contextmanager
+    def _rates(self, **rates: str):
+        original = SimpleRateThrottle.THROTTLE_RATES
+        SimpleRateThrottle.THROTTLE_RATES = {**original, **rates}
+        cache.clear()
+        try:
+            yield
+        finally:
+            SimpleRateThrottle.THROTTLE_RATES = original
+            cache.clear()
+
+    def _issue_session(self):
+        return self.client.post(
+            "/api/v1/webchat/session/",
+            data=json.dumps({"widgetKey": self.widget.public_key}),
+            content_type="application/json",
+        )
+
+    def test_anonymous_session_issue_is_capped_per_client(self) -> None:
+        # Каждая выданная сессия — новые Contact, ConnectionIdentity и
+        # WebSession: без потолка их наливают сколько угодно.
+        with self._rates(webchat_session="2/hour"):
+            self.assertEqual(self._issue_session().status_code, 201)
+            self.assertEqual(self._issue_session().status_code, 201)
+            self.assertEqual(self._issue_session().status_code, 429)
+
+        self.assertEqual(WebSession.objects.count(), 2)
+
+    def test_messages_are_capped_per_session(self) -> None:
+        # Смена адреса не должна обнулять лимит: счётчик привязан к токену.
+        with self._rates(webchat_session_write="2/min"):
+            token = self._issue_session().json()["token"]
+
+            def send(remote_addr: str):
+                return self.client.post(
+                    "/api/v1/webchat/messages/",
+                    data=json.dumps({"text": "Здравствуйте"}),
+                    content_type="application/json",
+                    headers={"Authorization": f"Bearer {token}"},
+                    REMOTE_ADDR=remote_addr,
+                )
+
+            self.assertEqual(send("203.0.113.10").status_code, 201)
+            self.assertEqual(send("203.0.113.11").status_code, 201)
+            self.assertEqual(send("203.0.113.12").status_code, 429)
+
+    def test_polling_is_not_starved_by_the_send_limit(self) -> None:
+        # Отправка и чтение считаются раздельно: исчерпанная отправка не
+        # должна ронять поллинг ленты, иначе виджет слепнет.
+        with self._rates(webchat_session_write="1/min", webchat_session_read="10/min"):
+            token = self._issue_session().json()["token"]
+            headers = {"Authorization": f"Bearer {token}"}
+            self.client.post(
+                "/api/v1/webchat/messages/",
+                data=json.dumps({"text": "Первое"}),
+                content_type="application/json",
+                headers=headers,
+            )
+            blocked = self.client.post(
+                "/api/v1/webchat/messages/",
+                data=json.dumps({"text": "Второе"}),
+                content_type="application/json",
+                headers=headers,
+            )
+            poll = self.client.get("/api/v1/webchat/messages/?since=0", headers=headers)
+
+        self.assertEqual(blocked.status_code, 429)
+        self.assertEqual(poll.status_code, 200)

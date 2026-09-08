@@ -22,31 +22,30 @@ from chatballs.tenancy.ingress import (
     web_widget_route,
 )
 from chatballs.webchat import services
+from chatballs.webchat.api_inputs import host_origin, session_token
 from chatballs.webchat.loader import LOADER_JS
 from chatballs.webchat.models import WebChatWidget, WebChatWidgetStatus
-
-
-def _origin(request: Request) -> str:
-    explicit = (
-        request.data.get("hostOrigin", "")
-        if request.method == "POST"
-        else request.GET.get("hostOrigin", "")
-    )
-    return str(explicit or request.headers.get("Origin") or request.headers.get("Referer") or "")
-
-
-def _token(request: Request) -> str:
-    auth = request.headers.get("Authorization", "")
-    if auth.startswith("Bearer "):
-        return auth[7:]
-    if request.method == "POST":
-        return str(request.data.get("token", ""))
-    return request.GET.get("token", "")
+from chatballs.webchat.throttling import (
+    WebchatConfigThrottle,
+    WebchatSessionIssueThrottle,
+    WebchatSessionTrafficThrottle,
+    WebchatTrafficThrottle,
+)
 
 
 class _Public(APIView):
     authentication_classes: list = []  # публичные endpoint'ы: токен сессии, без CSRF/сессии Django
     permission_classes = [AllowAny]
+
+
+class _PublicSession(_Public):
+    """Публичный endpoint, работающий по токену анонимной сессии.
+
+    Два контура лимитов: по адресу клиента и по самой сессии — см.
+    ``webchat/throttling.py``.
+    """
+
+    throttle_classes = [WebchatTrafficThrottle, WebchatSessionTrafficThrottle]
 
 
 @contextmanager
@@ -88,7 +87,7 @@ def _resolved_web_widget(widget_key: str, channel_code: str = ""):
 
 @contextmanager
 def _resolved_web_session(request: Request):
-    token = _token(request)
+    token = session_token(request)
     route = web_session_route(services.hash_session_token(token)) if token else None
     if route is None:
         yield None, None
@@ -109,6 +108,8 @@ def _resolved_web_session(request: Request):
 
 
 class WebchatConfigView(_Public):
+    throttle_classes = [WebchatConfigThrottle]
+
     def get(self, request: Request) -> Response:
         widget_key = request.GET.get("widgetKey", "")
         channel_code = request.GET.get("channel", "")
@@ -119,12 +120,14 @@ class WebchatConfigView(_Public):
                 services.public_config(
                     context=context,
                     widget=widget,
-                    origin=_origin(request),
+                    origin=host_origin(request),
                 )
             )
 
 
 class WebchatSessionView(_Public):
+    throttle_classes = [WebchatSessionIssueThrottle]
+
     def post(self, request: Request) -> Response:
         widget_key = str(request.data.get("widgetKey", ""))
         channel_code = str(request.data.get("channel", ""))
@@ -133,7 +136,7 @@ class WebchatSessionView(_Public):
                 return Response({"detail": "Виджет недоступен"}, status=404)
             if (
                 not widget.integration.channel.allow_anonymous_sessions
-                or not services.origin_allowed(widget, _origin(request))
+                or not services.origin_allowed(widget, host_origin(request))
             ):
                 return Response({"detail": "Виджет недоступен"}, status=404)
             result = services.issue_session(context=context, widget=widget)
@@ -142,7 +145,7 @@ class WebchatSessionView(_Public):
             return Response(result, status=201)
 
 
-class WebchatMessagesView(_Public):
+class WebchatMessagesView(_PublicSession):
     # JSON — текст, multipart — голосовое из записи в виджете.
     parser_classes = [JSONParser, MultiPartParser, FormParser]
 
@@ -201,7 +204,7 @@ class WebchatMessagesView(_Public):
             return Response(services.messages_payload(session, since))
 
 
-class WebchatMessageAudioView(_Public):
+class WebchatMessageAudioView(_PublicSession):
     def get(self, request: Request, message_id: int) -> Response | FileResponse:
         with _resolved_web_session(request) as (_context, session):
             if session is None:
@@ -226,7 +229,7 @@ class WebchatMessageAudioView(_Public):
             return response
 
 
-class WebchatMessageAttachmentView(_Public):
+class WebchatMessageAttachmentView(_PublicSession):
     def get(self, request: Request, message_id: int) -> Response | FileResponse:
         with _resolved_web_session(request) as (_context, session):
             if session is None:
@@ -248,7 +251,7 @@ class WebchatMessageAttachmentView(_Public):
             return response
 
 
-class WebchatContactView(_Public):
+class WebchatContactView(_PublicSession):
     def post(self, request: Request) -> Response:
         with _resolved_web_session(request) as (_context, session):
             if session is None:
@@ -260,7 +263,7 @@ class WebchatContactView(_Public):
             return Response({"ok": True}, status=201)
 
 
-class WebchatCallOpenView(_Public):
+class WebchatCallOpenView(_PublicSession):
     def post(self, request: Request) -> Response:
         from chatballs.calls.errors import CallTokenError
         from chatballs.calls.serializers import ice_servers_payload, public_invite_payload
@@ -284,7 +287,7 @@ class WebchatCallOpenView(_Public):
             return response
 
 
-class WebchatCallDeclineView(_Public):
+class WebchatCallDeclineView(_PublicSession):
     def post(self, request: Request) -> Response:
         from chatballs.calls.errors import CallConflict, CallTokenError
         from chatballs.calls.services import decline_call_for_identity

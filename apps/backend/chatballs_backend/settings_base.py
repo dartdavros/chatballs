@@ -185,6 +185,16 @@ CHATBALLS_AI_EMBEDDING_MODEL = os.environ.get("CHATBALLS_AI_EMBEDDING_MODEL", "o
 # ответы AI) уходит с задержкой в размер long-poll на каждое подключение.
 CHATBALLS_MESSENGER_POLL_TIMEOUT_SECONDS = int(os.environ.get("CHATBALLS_MESSENGER_POLL_TIMEOUT_SECONDS", "2"))
 
+# Срок жизни анонимной сессии виджета: отсчёт от последней активности, а не от
+# выдачи, — посетитель, который переписывается неделями, историю не теряет.
+# Токен лежит в localStorage браузера, поэтому бессрочным он быть не должен:
+# на общем компьютере он открывал бы чужую переписку сколько угодно долго.
+CHATBALLS_WEBCHAT_SESSION_IDLE_SECONDS = int(
+    os.environ.get("CHATBALLS_WEBCHAT_SESSION_IDLE_SECONDS", str(30 * 24 * 60 * 60))
+)
+if CHATBALLS_WEBCHAT_SESSION_IDLE_SECONDS <= 0:
+    raise ImproperlyConfigured("CHATBALLS_WEBCHAT_SESSION_IDLE_SECONDS must be positive")
+
 # Password reset link lifetime. UI обещает 30 минут (default_token_generator uses this setting).
 PASSWORD_RESET_TIMEOUT = int(os.environ.get("PASSWORD_RESET_TIMEOUT", str(30 * 60)))
 
@@ -303,6 +313,25 @@ _THROTTLE_RATES = {
     # Страница звонка поллит состояние по access token — лимит с запасом.
     "call_access": "120/min",
     "help_feedback": "20/hour",
+    # Публичный виджет (chatballs.webchat.throttling): аноним заводит сессию,
+    # шлёт сообщения и файлы. Первые четыре ставки считаются по адресу клиента,
+    # остальные — по токену сессии.
+    #
+    # По адресу потолки нарочно высокие: за одним адресом мобильного оператора
+    # (CGNAT) сидят тысячи посетителей сайта, и жёсткий лимит выключил бы виджет
+    # живым людям, а не скрипту. Их дело — потолок на вал, точный счёт ведут
+    # ставки по сессии. Виджет тянет config на каждую загрузку страницы и
+    # опрашивает ленту раз в 2.5 с (~24 запроса в минуту на сессию).
+    "webchat_config": "600/min",
+    "webchat_session": "120/hour",
+    "webchat_read": "1200/min",
+    "webchat_write": "300/min",
+    "webchat_session_read": "120/min",
+    # Каждое сообщение — ход AI по ключу организации, каждый файл — место в её
+    # хранилище. Здесь считается конкретный собеседник, поэтому строго: живой
+    # человек в чате не пишет по двадцать реплик в минуту.
+    "webchat_session_write": "20/min",
+    "webchat_session_upload": "10/min",
 }
 if TESTING:
     _THROTTLE_RATES = {scope: None for scope in _THROTTLE_RATES}

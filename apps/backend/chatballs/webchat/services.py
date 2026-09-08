@@ -1,10 +1,12 @@
 import hashlib
 import secrets
 import uuid
+from datetime import timedelta
 from urllib.parse import urlsplit
 
 from django.conf import settings
 from django.db import models, transaction
+from django.utils import timezone
 
 from chatballs.conversations.ingest import ingest_inbound
 from chatballs.conversations.models import (
@@ -144,7 +146,7 @@ def resolve_session(
 ) -> WebSession | None:
     if not token:
         return None
-    return (
+    session = (
         WebSession.objects.select_related(
             "connection",
             "connection__channel",
@@ -161,9 +163,29 @@ def resolve_session(
             widget__integration_id=models.F("connection_id"),
             connection__organization_id=models.F("identity__contact__organization_id"),
             connection__channel__organization_id=models.F("connection__organization_id"),
+            last_seen_at__gt=timezone.now() - _session_idle_ttl(),
         )
         .first()
     )
+    if session is not None:
+        _touch_session(session)
+    return session
+
+
+def _session_idle_ttl() -> timedelta:
+    return timedelta(seconds=settings.CHATBALLS_WEBCHAT_SESSION_IDLE_SECONDS)
+
+
+# Отметку активности обновляем редко: виджет опрашивает ленту раз в 2.5 с, и
+# запись на каждый опрос — это UPDATE строки сессии четыре раза в минуту на
+# каждую открытую вкладку. Час загрубления на сроке в недели ничего не решает.
+SESSION_TOUCH_THROTTLE = timedelta(hours=1)
+
+
+def _touch_session(session: WebSession) -> None:
+    if timezone.now() - session.last_seen_at >= SESSION_TOUCH_THROTTLE:
+        # last_seen_at — auto_now, значение проставит сам Django.
+        session.save(update_fields=["last_seen_at"])
 
 
 def post_message(session: WebSession, text: str) -> None:

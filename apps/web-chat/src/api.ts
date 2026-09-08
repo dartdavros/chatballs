@@ -113,8 +113,16 @@ export async function sendContact(token: string, phone: string): Promise<boolean
   return r.ok;
 }
 
+// Сессия виджета живёт, пока ей пользуются; после долгого простоя сервер её
+// не признаёт, и виджету надо не «зависнуть», а предложить начать заново.
+export class SessionExpired extends Error {}
+
 export async function poll(token: string, since: number): Promise<Poll> {
   const r = await fetch(`${API}/messages/?since=${since}`, { headers: { Authorization: `Bearer ${token}` } });
+  // 401 (сессии нет) и 429 (лимит) отвечают {"detail": ...}, а не лентой:
+  // без этой проверки тело уходило бы в ingestPoll как пустой Poll.
+  if (r.status === 401) throw new SessionExpired("webchat session is gone");
+  if (!r.ok) throw new Error(`poll failed: ${r.status}`);
   return r.json();
 }
 
