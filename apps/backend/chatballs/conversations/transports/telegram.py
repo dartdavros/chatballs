@@ -24,6 +24,7 @@ from chatballs.conversations.transports.base import (
     safe_filename,
 )
 from chatballs.integrations.checks import DEFAULT_TELEGRAM_BASE_URL
+from chatballs.integrations.outbound import host_of
 
 logger = logging.getLogger(__name__)
 
@@ -185,6 +186,9 @@ def download_file(integration, file_id: str) -> tuple[bytes, str]:
     content = download_bytes(
         f"{_base(integration)}/file/bot{token}/{file_path}",
         proxy_url=_proxy(integration),
+        # Адрес собран из base_url подключения, а его владелец задал сам:
+        # у self-hosted Bot API он может быть и внутри сети.
+        allowed_host=host_of(_base(integration)),
     )
     return content, guess_content_type(file_path)
 
@@ -226,6 +230,9 @@ def download_voice(integration, file_id: str) -> tuple[bytes, str]:
     content = download_bytes(
         f"{_base(integration)}/file/bot{token}/{file_path}",
         proxy_url=_proxy(integration),
+        # Адрес собран из base_url подключения, а его владелец задал сам:
+        # у self-hosted Bot API он может быть и внутри сети.
+        allowed_host=host_of(_base(integration)),
     )
     suffix = file_path.rsplit(".", 1)[-1].lower() if "." in file_path else "oga"
     return content, f"audio/{'ogg' if suffix in ('oga', 'ogg') else suffix}"

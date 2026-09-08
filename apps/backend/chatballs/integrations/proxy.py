@@ -18,17 +18,49 @@ import ssl
 import urllib.parse
 import urllib.request
 
+from chatballs.integrations.outbound import OutboundUrlRejected
+
 SOCKS_SCHEMES = ("socks5", "socks5h")
+
+
+class _RefusedFileHandler(urllib.request.FileHandler):
+    def file_open(self, req):
+        raise OutboundUrlRejected("Схема file:// в исходящих запросах запрещена")
+
+
+class _RefusedFTPHandler(urllib.request.FTPHandler):
+    def ftp_open(self, req):
+        raise OutboundUrlRejected("Схема ftp:// в исходящих запросах запрещена")
+
+
+class _RefusedDataHandler(urllib.request.DataHandler):
+    def data_open(self, req):
+        raise OutboundUrlRejected("Схема data: в исходящих запросах запрещена")
+
+
+def _blocked_scheme_handlers() -> list[urllib.request.BaseHandler]:
+    """Заглушки вместо file/ftp/data.
+
+    ``build_opener`` ставит эти обработчики всегда, и убрать их нельзя — можно
+    только подменить: наследника он предпочитает штатному классу. Без подмены
+    любой адрес из ответа провайдера открывает локальный файл, а редирект на
+    ``ftp://`` штатный urllib пропускает. Проверка схемы в вызывающем коде
+    остаётся, но опирается на неё одну не стоит: сюда ходят четыре модуля.
+    """
+    return [_RefusedFileHandler(), _RefusedFTPHandler(), _RefusedDataHandler()]
 
 
 def build_opener(proxy_url: str):
     """urllib opener, проксирующий http/https/socks5 запросы. Пустой proxy_url → без прокси."""
+    blocked = _blocked_scheme_handlers()
     if not proxy_url:
-        return urllib.request.build_opener()
+        return urllib.request.build_opener(*blocked)
     scheme = urllib.parse.urlparse(proxy_url).scheme.lower()
     if scheme in SOCKS_SCHEMES:
-        return urllib.request.build_opener(_SocksProxyHandler(proxy_url))
-    return urllib.request.build_opener(urllib.request.ProxyHandler({"http": proxy_url, "https": proxy_url}))
+        return urllib.request.build_opener(_SocksProxyHandler(proxy_url), *blocked)
+    return urllib.request.build_opener(
+        urllib.request.ProxyHandler({"http": proxy_url, "https": proxy_url}), *blocked
+    )
 
 
 class _SocksProxyHandler(urllib.request.HTTPHandler, urllib.request.HTTPSHandler):

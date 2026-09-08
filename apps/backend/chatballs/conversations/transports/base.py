@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 
 from django.conf import settings
 
+from chatballs.integrations.outbound import ensure_downloadable
 from chatballs.integrations.proxy import build_opener
 
 
@@ -79,8 +80,21 @@ def first(d: dict, *keys, default=None):
     return default
 
 
-def download_bytes(url: str, *, proxy_url: str = "", max_bytes: int = MAX_ATTACHMENT_BYTES) -> bytes:
-    """Скачивание файла провайдера (голосовые ~десятки КБ; жёсткий предел 20МБ)."""
+def download_bytes(
+    url: str,
+    *,
+    proxy_url: str = "",
+    max_bytes: int = MAX_ATTACHMENT_BYTES,
+    allowed_host: str = "",
+) -> bytes:
+    """Скачивание файла провайдера (голосовые ~десятки КБ; жёсткий предел 20МБ).
+
+    Адрес приходит ответом провайдера, то есть данными, а не настройкой: его
+    проверяет политика исходящих запросов (``integrations.outbound``).
+    ``allowed_host`` — хост из ``base_url`` подключения, который владелец
+    назвал сам.
+    """
+    ensure_downloadable(url, allowed_host=allowed_host, via_proxy=bool(proxy_url))
     request = urllib.request.Request(url)
     with build_opener(proxy_url).open(request, timeout=settings.CHATBALLS_AI_REQUEST_TIMEOUT) as response:
         data = response.read(max_bytes + 1)

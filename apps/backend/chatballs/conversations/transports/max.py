@@ -28,6 +28,7 @@ from chatballs.conversations.transports.base import (
     safe_filename,
 )
 from chatballs.integrations.checks import DEFAULT_MAX_BASE_URL
+from chatballs.integrations.outbound import host_of
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +39,16 @@ def _base(integration) -> str:
 
 def _proxy(integration) -> str:
     return integration.config.get("proxy_url", "")
+
+
+def _download_host(integration) -> str:
+    """Хост подключения: ссылки вложений разрешено брать и с него.
+
+    MAX отдаёт вложения с адреса в ответе, и по умолчанию это публичный CDN.
+    Но self-hosted мог указать в base_url собственный сервер внутри сети —
+    этот хост владелец назвал сам, поэтому он остаётся разрешённым.
+    """
+    return host_of(_base(integration))
 
 
 def _contact_phone(inner: dict, msg: dict) -> str:
@@ -151,7 +162,10 @@ def _file_attachments(inner: dict) -> tuple[InboundFile, ...]:
 
 def download_file(integration, url: str, content_type: str) -> tuple[bytes, str]:
     """Скачивание файла/фото MAX по прямому URL вложения."""
-    return download_bytes(url, proxy_url=_proxy(integration)), content_type or "application/octet-stream"
+    return (
+        download_bytes(url, proxy_url=_proxy(integration), allowed_host=_download_host(integration)),
+        content_type or "application/octet-stream",
+    )
 
 
 def send_file(integration, *, chat_id: str, user_id: str, content: bytes, filename: str, content_type: str, caption: str = "") -> bool:
@@ -277,7 +291,9 @@ def send_call_invite(integration, *, chat_id: str, user_id: str, text: str, url:
 
 def download_voice(integration, url: str) -> tuple[bytes, str]:
     """Скачивание голосового MAX по прямому URL вложения."""
-    content = download_bytes(url, proxy_url=_proxy(integration))
+    content = download_bytes(
+        url, proxy_url=_proxy(integration), allowed_host=_download_host(integration)
+    )
     return content, "audio/ogg"
 
 

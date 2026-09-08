@@ -12,6 +12,12 @@ from chatballs.integrations.models import (
     IntegrationProvider,
     IntegrationStatus,
 )
+from chatballs.integrations.outbound import (
+    HTTP_SCHEMES,
+    PROXY_SCHEMES,
+    OutboundUrlRejected,
+    clean_config_url,
+)
 from chatballs.tenancy.context import TenantContext
 
 
@@ -95,11 +101,21 @@ def _normalized_config(provider: str, config: dict) -> dict:
         }
     base_url = str(config.get("baseUrl", config.get("base_url", ""))).strip()
     result: dict[str, str] = {}
+    # Схему проверяем на входе: без неё в base_url принимался, например,
+    # file:///, и первый же ответ провайдера уводил скачивание в локальный
+    # диск. Приватные адреса здесь разрешены намеренно — self-hosted ставит
+    # свой Bot API или LLM-сервер рядом (chatballs.integrations.outbound).
     if base_url:
-        result["base_url"] = base_url
+        try:
+            result["base_url"] = clean_config_url(base_url, schemes=HTTP_SCHEMES)
+        except OutboundUrlRejected as error:
+            raise ValidationError({"config": f"Base URL: {error}"}) from error
     proxy_url = str(config.get("proxyUrl", config.get("proxy_url", ""))).strip()
     if proxy_url:
-        result["proxy_url"] = proxy_url
+        try:
+            result["proxy_url"] = clean_config_url(proxy_url, schemes=PROXY_SCHEMES)
+        except OutboundUrlRejected as error:
+            raise ValidationError({"config": f"Proxy URL: {error}"}) from error
     # LLM-провайдеры (OpenRouter, Custom) хранят модель по умолчанию свободным текстом.
     # Для OpenRouter поле исторически декоративно (SPEC-HUB-0005:388); для Custom оно
     # читается в рантайме (ADR-HUB-0034 §4). Версионирование модели — дорожка ADR-0034.
