@@ -3,8 +3,11 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { hasCapability } from "../../auth/access";
 import { Icon } from "../../shared/icons";
+import { Pagination } from "../../shared/Pagination";
 import { ErrorScreen, LoadingState, StatusPill } from "../../shared/ui";
 import { Button, CopyButton, FilterDropdown, SearchInput } from "../../shared/ui-controls";
+import { useDebounced } from "../../shared/useDebounced";
+import { usePagedResource } from "../../shared/usePagedResource";
 import { pluralRu } from "../../shared/utils";
 import type { SessionUser } from "../../types";
 import {
@@ -23,15 +26,12 @@ import {
   updatedAt,
 } from "./portalText";
 import { PortalCreateDialog } from "./PortalCreateDialog";
-import { PortalTableFooter } from "./PortalTableFooter";
 import { DecisionDialog } from "../../shared/DecisionDialog";
 import "./styles";
 
 // Список порталов (дизайн-базлайн v2, кадры PT1/PT2). Адрес — колонка со
 // ссылкой и копированием, действия строки — в меню ⋯, архивные приглушены и
 // уходят в конец списка.
-
-const PAGE_SIZE = 20;
 
 const STATUS_FILTER: Array<{ value: string; label: string }> = [
   { value: "PUBLISHED", label: PORTAL_STATUS_LABEL.PUBLISHED },
@@ -54,50 +54,30 @@ export function SupportPortalsPage({
   openPortal: (portalId: number) => void;
   openPortalSettings: (portalId: number) => void;
 }) {
-  const [portals, setPortals] = useState<SupportPortal[] | null>(null);
   const [address, setAddress] = useState<PortalAddressConfig | null>(null);
   const [failed, setFailed] = useState(false);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<string[]>([]);
   const [statusOpen, setStatusOpen] = useState(false);
-  const [page, setPage] = useState(1);
   const [creating, setCreating] = useState(false);
   const [archiving, setArchiving] = useState<SupportPortal | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const canManage = hasCapability(user, "support.operate");
 
-  const load = useCallback(async () => {
+  // Страницу, фильтр по статусу и поиск считает сервер: порталов может быть
+  // сколько угодно, и резать список в браузере нельзя.
+  const settledSearch = useDebounced(search);
+  const query = useMemo(() => ({ status, search: settledSearch }), [settledSearch, status]);
+  const loadPage = useCallback(async (page: number) => {
+    const payload = await listSupportPortals(query, page);
+    setAddress(payload.address);
     setFailed(false);
-    try {
-      const payload = await listSupportPortals();
-      setPortals(payload.items);
-      setAddress(payload.address);
-    } catch {
-      setFailed(true);
-    }
-  }, []);
+    return payload;
+  }, [query]);
+  const portals = usePagedResource(loadPage, query, "Не удалось загрузить порталы");
+  const load = portals.reload;
 
-  useEffect(() => {
-    void load();
-  }, [load]);
-
-  const filtered = useMemo(() => {
-    const query = search.trim().toLocaleLowerCase();
-    return (portals ?? [])
-      .filter((portal) => (
-        (status.length === 0 || status.includes(portal.status))
-        && (!query
-          || portal.name.toLocaleLowerCase().includes(query)
-          || publicHost(portal).toLocaleLowerCase().includes(query))
-      ))
-      // Архивные показываются последними (подпись в подвале кадра PT1).
-      .sort((left, right) => Number(left.status === "ARCHIVED") - Number(right.status === "ARCHIVED"));
-  }, [portals, search, status]);
-
-  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const currentPage = Math.min(page, pageCount);
-  const visible = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   async function archive(portal: SupportPortal) {
     setBusy(true);
@@ -114,8 +94,8 @@ export function SupportPortalsPage({
     }
   }
 
-  if (failed) return <ErrorScreen retry={() => void load()} />;
-  if (!portals || !address) return <LoadingState />;
+  if (failed || portals.errorText) return <ErrorScreen retry={() => void load()} />;
+  if (!address) return <LoadingState />;
 
   const createButton = canManage ? (
     <Button variant="primary" icon="plus" iconSize={16} onClick={() => setCreating(true)}>
@@ -151,7 +131,8 @@ export function SupportPortalsPage({
     </>
   );
 
-  if (portals.length === 0) {
+  // Пустое состояние — только когда порталов нет вовсе, а не когда их скрыл фильтр.
+  if (portals.total === 0 && status.length === 0 && !settledSearch.trim()) {
     // Кадр PT2: создание доступно всегда, тарифных лимитов нет.
     return (
       <section className="portals-page is-empty">
@@ -205,7 +186,7 @@ export function SupportPortalsPage({
             className="portals-search"
             placeholder="Поиск по названию и адресу"
             value={search}
-            onChange={(value) => { setSearch(value); setPage(1); }}
+            onChange={setSearch}
           />
           <FilterDropdown
             caption="Статус:"
@@ -217,7 +198,6 @@ export function SupportPortalsPage({
             className="portals-status-filter"
             onOpenChange={setStatusOpen}
             onSelect={(value) => {
-              setPage(1);
               setStatus((current) => (current.includes(value)
                 ? current.filter((item) => item !== value)
                 : [...current, value]));
@@ -237,7 +217,7 @@ export function SupportPortalsPage({
             </tr>
           </thead>
           <tbody>
-            {visible.map((portal) => {
+            {portals.items.map((portal) => {
               const host = publicHost(portal);
               const ownDomain = Boolean(portal.customDomain && portal.customDomainVerifiedAt);
               const archived = portal.status === "ARCHIVED";
@@ -288,11 +268,11 @@ export function SupportPortalsPage({
           </tbody>
         </table>
 
-        <PortalTableFooter
-          note={`${pluralRu(filtered.length, ["портал", "портала", "порталов"])} · архивные показываются последними`}
-          page={currentPage}
-          pageCount={pageCount}
-          onPageChange={setPage}
+        <Pagination
+          note={`${pluralRu(portals.total, ["портал", "портала", "порталов"])} · архивные показываются последними`}
+          page={portals.page}
+          pageCount={portals.pageCount}
+          onPage={portals.setPage}
         />
       </div>
       {dialogs}

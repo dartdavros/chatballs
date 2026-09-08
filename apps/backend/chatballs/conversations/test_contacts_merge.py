@@ -129,7 +129,9 @@ class ContactsMergeTests(TestCase):
             revert_merge(organization=self.organization, merge_id=merge.id, reason="Ещё раз", actor=self.owner)
 
     def test_contact_merged_away_disappears_from_the_list(self) -> None:
-        from chatballs.conversations.clients import clients_overview
+        from django.http import QueryDict
+
+        from chatballs.conversations.clients import client_row, clients_queryset
 
         merge_contacts(
             organization=self.organization,
@@ -138,7 +140,7 @@ class ContactsMergeTests(TestCase):
             reason="Совпал телефон",
             actor=self.owner,
         )
-        rows = clients_overview(self.organization.id)
+        rows = [client_row(contact) for contact in clients_queryset(self.organization.id, QueryDict())]
         self.assertEqual([row["id"] for row in rows], [self.target.id])
 
 

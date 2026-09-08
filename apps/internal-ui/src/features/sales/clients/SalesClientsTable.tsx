@@ -1,6 +1,6 @@
 import { Icon } from "../../../shared/icons";
 import { SalesClientRow } from "./SalesClientRow";
-import { SalesClientsPagination } from "./SalesClientsPagination";
+import { Pagination } from "../../../shared/Pagination";
 import type { SalesClientsState } from "./useSalesClients";
 
 // Таблица контактов (кадр K1): шапка · строки 60px · подвал со страницами.
@@ -9,6 +9,7 @@ import type { SalesClientsState } from "./useSalesClients";
 export function SalesClientsTable({ clients, openClient }: { clients: SalesClientsState; openClient: (id: number) => void }) {
   const from = (clients.page - 1) * clients.pageSize + 1;
   const to = from + clients.rows.length - 1;
+  const shown = clients.total === 0 ? "Ничего не найдено" : `${from}–${to} из ${clients.total}`;
   return (
     <div className="sales-clients-card">
       <div className="sales-clients-head">
@@ -35,10 +36,13 @@ export function SalesClientsTable({ clients, openClient }: { clients: SalesClien
           <span>Измените условия фильтра или сбросьте их.</span>
         </div>
       )}
-      <div className="sales-clients-foot">
-        <small>{clients.filteredCount === 0 ? "Ничего не найдено" : `${from}–${to} из ${clients.filteredCount}`}</small>
-        {clients.pageCount > 1 && <SalesClientsPagination page={clients.page} pageCount={clients.pageCount} setPage={clients.setPage} />}
-      </div>
+      <Pagination
+        className="sales-clients-foot"
+        note={shown}
+        page={clients.page}
+        pageCount={clients.pageCount}
+        onPage={clients.setPage}
+      />
     </div>
   );
 }

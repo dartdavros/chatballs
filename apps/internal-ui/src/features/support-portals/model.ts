@@ -1,4 +1,5 @@
 import { ApiError } from "../../api/client";
+import type { PagedPayload } from "../../shared/usePagedResource";
 import type { PortalThemeSchemeSetting } from "../help-center/themes/types";
 
 export type PortalStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
@@ -109,9 +110,10 @@ export type PortalAddressConfig = {
   port: string | null;
 };
 
-export type SupportPortalList = {
-  items: SupportPortal[];
+// Ответ списка порталов: страница плюс блоки, общие для всего раздела.
+export type SupportPortalList = PagedPayload<SupportPortal> & {
   address: PortalAddressConfig;
+  creation: { available: boolean; canCreate: boolean; limit: number | null; used: number };
 };
 
 export {

@@ -1,12 +1,13 @@
 import { FilterDropdown, SearchInput } from "../../../shared/ui-controls";
-import { agentOptionsOf, channelOptions, type SalesClient } from "./model";
+import { channelOptions, type ClientAgentRef } from "./model";
 import type { SalesClientsState } from "./useSalesClients";
 
 // Фильтры списка (кадры K1/K2): поиск, «Все каналы», «Все агенты», чип
 // «С открытым диалогом»; «Сбросить» появляется только когда фильтр применён.
 
-export function SalesClientsFilters({ clients, salesClients }: { clients: SalesClientsState; salesClients: SalesClient[] }) {
-  const agents = agentOptionsOf(salesClients);
+// Агенты для фильтра приходят из справочника агентов: список контактов теперь
+// постраничный, и собрать их по загруженной странице нельзя.
+export function SalesClientsFilters({ clients, agents }: { clients: SalesClientsState; agents: ClientAgentRef[] }) {
   return (
     <div className="sales-clients-filterbar">
       <SearchInput

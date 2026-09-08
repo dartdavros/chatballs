@@ -1,5 +1,5 @@
 import { Dropdown } from "antd";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import {
   AgentLinkDialog,
@@ -13,9 +13,13 @@ import { Button, FilterDropdown, SearchInput } from "../../shared/ui-controls";
 import { pluralRu } from "../../shared/utils";
 import { agentLinkOptions } from "../ai/agentOptions";
 import { linkPortalArticlesToAgent } from "../ai/knowledge/model";
+import { Pagination } from "../../shared/Pagination";
+import { useDebounced } from "../../shared/useDebounced";
+import { usePagedResource } from "../../shared/usePagedResource";
 import { useAiAgents } from "../ai/useAiAgents";
 import {
   archivePortalArticle,
+  listPortalArticles,
   portalErrorMessage,
   ARTICLE_STATUS_LABEL,
   type ArticleStatus,
@@ -24,13 +28,11 @@ import {
 } from "./model";
 import { PortalArticleImportModal } from "./PortalArticleImportModal";
 import { PortalCategoryManagement } from "./PortalCategoryManagement";
-import { PortalTableFooter } from "./PortalTableFooter";
 import { LOCALE_OPTIONS, revisionSummary, updatedAt } from "./portalText";
 
 // Библиотека материалов портала (дизайн-базлайн v2, кадр PT3): дерево разделов
 // 260px с вложенностью и счётчиками, тулбар и таблица статей — без вкладок.
 
-const PAGE_SIZE = 25;
 const ARTICLE_FORMS: [string, string, string] = ["статья", "статьи", "статей"];
 
 const STATUS_FILTER = [
@@ -70,7 +72,6 @@ function sectionRows(categories: PortalCategory[]): SectionRow[] {
 }
 
 export function PortalLibrary({
-  articles,
   canLinkAgents,
   canManage,
   categories,
@@ -78,7 +79,6 @@ export function PortalLibrary({
   reload,
   onEditArticle,
 }: {
-  articles: PortalArticle[];
   canLinkAgents: boolean;
   canManage: boolean;
   categories: PortalCategory[];
@@ -92,7 +92,6 @@ export function PortalLibrary({
   const [languageOpen, setLanguageOpen] = useState(false);
   const [status, setStatus] = useState<string[]>([]);
   const [statusOpen, setStatusOpen] = useState(false);
-  const [page, setPage] = useState(1);
   const [managingCategories, setManagingCategories] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [linking, setLinking] = useState<PortalArticle | null>(null);
@@ -108,32 +107,21 @@ export function PortalLibrary({
     .filter((category) => category.parentId === null)
     .reduce((sum, category) => sum + category.articleCount, 0);
 
-  const filtered = useMemo(() => {
-    const childIds = new Set<number>();
-    if (selectedCategory !== undefined) {
-      const pending = [selectedCategory];
-      while (pending.length) {
-        const id = pending.pop()!;
-        childIds.add(id);
-        categories.filter((item) => item.parentId === id).forEach((item) => pending.push(item.id));
-      }
-    }
-    const normalized = query.trim().toLocaleLowerCase();
-    return articles.filter((article) => (
-      (selectedCategory === undefined || childIds.has(article.category.id))
-      && (language.length === 0 || language.includes(article.locale))
-      && (status.length === 0 || status.includes(article.status))
-      && (!normalized || [
-        article.slug,
-        article.latestRevision?.title,
-        article.latestRevision?.summary,
-      ].some((value) => value?.toLocaleLowerCase().includes(normalized)))
-    ));
-  }, [articles, categories, language, query, selectedCategory, status]);
-
-  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const currentPage = Math.min(page, pageCount);
-  const visible = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  // Категория (вместе с вложенными), язык, статус, поиск и страница — запрос к
+  // серверу: статей в библиотеке может быть сколько угодно.
+  const settledQuery = useDebounced(query);
+  const request = useMemo(
+    () => ({ category: selectedCategory, locale: language, status, search: settledQuery }),
+    [language, selectedCategory, settledQuery, status],
+  );
+  const loadArticles = useCallback(
+    (page: number) => listPortalArticles(portalId, request, page),
+    [portalId, request],
+  );
+  const articles = usePagedResource(loadArticles, request, "Не удалось загрузить статьи");
+  const reloadAll = useCallback(async () => {
+    await Promise.all([reload(), articles.reload()]);
+  }, [articles, reload]);
 
   async function submitAgentLink(agentId: number, action: AgentLinkAction) {
     if (!linking) return;
@@ -156,7 +144,7 @@ export function PortalLibrary({
     try {
       await archivePortalArticle(portalId, archiving.id);
       setArchiving(null);
-      await reload();
+      await reloadAll();
     } catch (caught) {
       setError(portalErrorMessage(caught, "Не удалось изменить статью"));
       setArchiving(null);
@@ -177,7 +165,7 @@ export function PortalLibrary({
             className={`portal-section-row${selectedCategory === undefined ? " is-active" : ""}`}
             style={{ paddingLeft: 9 }}
             type="button"
-            onClick={() => { setSelectedCategory(undefined); setPage(1); }}
+            onClick={() => { setSelectedCategory(undefined); }}
           >
             <Icon name="folder" size={15} strokeWidth={1.8} />
             <span>Все материалы</span>
@@ -189,7 +177,7 @@ export function PortalLibrary({
               key={category.id}
               style={{ paddingLeft: 9 + depth * 16 }}
               type="button"
-              onClick={() => { setSelectedCategory(category.id); setPage(1); }}
+              onClick={() => { setSelectedCategory(category.id); }}
             >
               <span>{category.name}</span>
               <small>{count}</small>
@@ -212,7 +200,7 @@ export function PortalLibrary({
               className="portal-library-search"
               placeholder="Поиск по статьям"
               value={query}
-              onChange={(value) => { setQuery(value); setPage(1); }}
+              onChange={setQuery}
             />
             <FilterDropdown
               caption="Язык:"
@@ -223,7 +211,6 @@ export function PortalLibrary({
               selected={language}
               onOpenChange={setLanguageOpen}
               onSelect={(value) => {
-                setPage(1);
                 setLanguage((current) => (current.includes(value)
                   ? current.filter((item) => item !== value)
                   : [...current, value]));
@@ -238,7 +225,6 @@ export function PortalLibrary({
               selected={status}
               onOpenChange={setStatusOpen}
               onSelect={(value) => {
-                setPage(1);
                 setStatus((current) => (current.includes(value)
                   ? current.filter((item) => item !== value)
                   : [...current, value]));
@@ -268,7 +254,7 @@ export function PortalLibrary({
               </tr>
             </thead>
             <tbody>
-              {visible.map((article) => {
+              {articles.items.map((article) => {
                 const title = article.latestRevision?.title || article.slug;
                 const { revision, note } = revisionSummary(article);
                 const helpful = article.feedback?.helpful ?? 0;
@@ -334,11 +320,11 @@ export function PortalLibrary({
             </tbody>
           </table>
 
-          <PortalTableFooter
-            note={`${pluralRu(articles.length, ARTICLE_FORMS)} · показаны ${visible.length} · агент отвечает только по опубликованным`}
-            page={currentPage}
-            pageCount={pageCount}
-            onPageChange={setPage}
+          <Pagination
+            note={`${pluralRu(articles.total, ARTICLE_FORMS)} · показаны ${articles.items.length} · агент отвечает только по опубликованным`}
+            page={articles.page}
+            pageCount={articles.pageCount}
+            onPage={articles.setPage}
           />
         </div>
       </div>
@@ -367,7 +353,7 @@ export function PortalLibrary({
         <PortalArticleImportModal
           portalId={portalId}
           onClose={() => setImportOpen(false)}
-          onImported={() => void reload()}
+          onImported={() => void reloadAll()}
         />
       )}
       <DecisionDialog

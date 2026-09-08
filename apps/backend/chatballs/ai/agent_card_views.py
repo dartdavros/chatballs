@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from django.core.exceptions import ValidationError
+from django.db.models import Q
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -17,6 +18,7 @@ from chatballs.ai.agent_card import (
     update_agent_card,
 )
 from chatballs.ai.provider.base import ProviderError
+from chatballs.api.pagination import page_payload, paginate
 from chatballs.api.permissions import HasCapability
 from chatballs.channels import services as channel_services
 from chatballs.channels.models import Channel
@@ -74,13 +76,18 @@ class AgentCardListView(APIView):
             knowledge_total_for_organization,
         )
 
+        query = request.query_params.get("q", "").strip()
+        if query:
+            cards = cards.filter(Q(name__icontains=query) | Q(code__icontains=query))
         total = knowledge_total_for_organization(request.tenant_context.organization_id)
-        items = []
-        for channel in cards:
+        page = paginate(cards, request.query_params)
+
+        def payload(channel):
             # Страховка для каналов, созданных в обход мастера.
             ensure_channel_agent(channel)
-            items.append(agent_card_payload(channel, knowledge_total=total))
-        return Response({"items": items})
+            return agent_card_payload(channel, knowledge_total=total)
+
+        return Response(page_payload(page, payload))
 
     def post(self, request: Request) -> Response:
         data = request.data if isinstance(request.data, dict) else {}

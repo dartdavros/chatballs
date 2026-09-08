@@ -42,8 +42,9 @@ export function scopeLabel(scope: DialogScope): string {
 }
 import type { ConversationListItem, ListSort, ListTab } from "./types";
 import { useConversationCall } from "./useConversationCall";
+import { useDebounced } from "../../shared/useDebounced";
 import { useConversationHistory } from "./useConversationHistory";
-import { useConversationList, useDebounced } from "./useConversationList";
+import { useConversationList } from "./useConversationList";
 import { useDialogKeyboardNav } from "./useDialogKeyboardNav";
 import { useIncomingMessageSound } from "./useIncomingMessageSound";
 
@@ -197,6 +198,7 @@ export function ConversationWorkspace({ isOwner = false, viewerId = null, listTi
         total={list.total}
         hasMore={list.hasMore}
         onLoadMore={list.loadMore}
+        narrowed={Boolean(settledSearch) || listTab !== "all"}
         listTab={listTab}
         selectedId={selectedId ?? -1}
         search={search}

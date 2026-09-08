@@ -3,6 +3,7 @@ from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from chatballs.api.pagination import page_payload, paginate
 from chatballs.support_portals.api import validation_response
 from chatballs.support_portals.content_services import (
     add_article_file,
@@ -18,7 +19,13 @@ from chatballs.support_portals.content_services import (
 )
 from chatballs.support_portals.models import PortalArticle
 from chatballs.support_portals.portal_views import PortalBaseView
-from chatballs.support_portals.selectors import category_article_counts
+
+# Библиотека статей плотнее списка порталов — своя страница (кадр PT3).
+ARTICLES_PAGE_SIZE = 25
+from chatballs.support_portals.selectors import (
+    category_article_counts,
+    portal_articles_queryset,
+)
 from chatballs.support_portals.serializers import (
     article_file_payload,
     article_payload,
@@ -113,10 +120,13 @@ class ArticleListView(PortalBaseView):
         portal = self.portal(request, portal_id)
         if portal is None:
             return Response({"detail": "Портал не найден"}, status=404)
-        articles = portal.articles.select_related(
-            "category", "published_revision"
-        ).prefetch_related("revisions", "files", "feedback").all()
-        return Response({"items": [article_payload(item) for item in articles]})
+        """Страница библиотеки: категория, язык, статус и поиск — на сервере."""
+        page = paginate(
+            portal_articles_queryset(portal, request.query_params),
+            request.query_params,
+            default_size=ARTICLES_PAGE_SIZE,
+        )
+        return Response(page_payload(page, article_payload))
 
     def post(self, request: Request, portal_id: int) -> Response:
         portal = self.portal(request, portal_id)

@@ -12,7 +12,7 @@ import type { ConversationCounters } from "./model";
 import type { ConversationListItem, ListSort, ListTab } from "./types";
 import { SearchInput } from "../../shared/ui-controls";
 
-export function DialogList({ title = "Диалоги", searchPlaceholder = "Поиск по контакту, сообщению…", viewerId = null, scope, counters, setScope, showScopeSwitcher = true, mobileHeader, hint, dialogs, total, hasMore, onLoadMore, listTab, selectedId, search, errorText, sort, setSort, onCollapse, setSearch, setListTab, setSelectedId }: {
+export function DialogList({ title = "Диалоги", searchPlaceholder = "Поиск по контакту, сообщению…", viewerId = null, scope, counters, setScope, showScopeSwitcher = true, mobileHeader, hint, dialogs, total, hasMore, onLoadMore, narrowed, listTab, selectedId, search, errorText, sort, setSort, onCollapse, setSearch, setListTab, setSelectedId }: {
   title?: string;
   searchPlaceholder?: string;
   sort: ListSort;
@@ -31,6 +31,8 @@ export function DialogList({ title = "Диалоги", searchPlaceholder = "По
   total: number;
   hasMore: boolean;
   onLoadMore: () => void;
+  /** Список сужен поиском или вкладкой — пустота означает «не найдено». */
+  narrowed: boolean;
   listTab: ListTab;
   selectedId: number;
   search: string;
@@ -85,9 +87,13 @@ export function DialogList({ title = "Диалоги", searchPlaceholder = "По
       {hint}
       <div className="sales-dialog-list-body" onScroll={onScroll}>
         {errorText && <div className="sales-wait-note sales-load-error">{errorText}</div>}
-        {/* Кадр S1: пустой список без призыва к действию. */}
+        {/* Кадр S1: пустой список без призыва к действию. Под фильтром и
+            поиском показывается, что ничего не нашлось, а не что диалогов нет. */}
         {!errorText && dialogs.length === 0 && (
-          <div className="sales-dialog-list-empty"><span><Icon name="message" size={20} /></span><p>Диалоги появятся, когда клиенты напишут вашему агенту</p></div>
+          <div className="sales-dialog-list-empty">
+            <span><Icon name={narrowed ? "search" : "message"} size={20} /></span>
+            <p>{narrowed ? "Диалоги не найдены" : "Диалоги появятся, когда клиенты напишут вашему агенту"}</p>
+          </div>
         )}
         {dialogs.map((dialog) => <DialogListItem dialog={dialog} active={dialog.id === selectedId} setSelectedId={setSelectedId} key={dialog.id} />)}
       </div>

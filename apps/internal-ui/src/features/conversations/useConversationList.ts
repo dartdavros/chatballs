@@ -11,7 +11,6 @@ import {
 // активность) и вклеивает её в уже загруженное, не сбрасывая прокрутку.
 const LIST_WINDOW = 30;
 const REFRESH_INTERVAL_MS = 4000;
-const SEARCH_DEBOUNCE_MS = 300;
 
 export type ConversationListState = {
   conversations: ApiConversation[];
@@ -32,15 +31,6 @@ export function mergeHead(
 ): ApiConversation[] {
   const fresh = new Set(head.map((conversation) => conversation.id));
   return [...head, ...tail.filter((conversation) => !fresh.has(conversation.id))];
-}
-
-export function useDebounced<T>(value: T, delay = SEARCH_DEBOUNCE_MS): T {
-  const [settled, setSettled] = useState(value);
-  useEffect(() => {
-    const timer = setTimeout(() => setSettled(value), delay);
-    return () => clearTimeout(timer);
-  }, [delay, value]);
-  return settled;
 }
 
 export function useConversationList(query: ConversationListQuery): ConversationListState {

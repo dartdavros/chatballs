@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
-import { fetchAgents, type AgentCard } from "../agents/model";
+import { fetchAllAgents, type AgentCard } from "../agents/model";
 
 export function useAiAgents() {
   const [agents, setAgents] = useState<AgentCard[]>([]);
@@ -11,7 +11,7 @@ export function useAiAgents() {
     setLoading(true);
     setError(false);
     try {
-      const agentsResponse = await fetchAgents();
+      const agentsResponse = await fetchAllAgents();
       setAgents(agentsResponse.items);
     } catch {
       setError(true);

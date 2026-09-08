@@ -104,7 +104,6 @@ export type EmployeeAuditEvent = {
 export type RouteKey = "administrationAudit" | "employeeDetail" | "employees" | "profile" | "settings" | "salesClientDetail" | "salesClients" | "chat" | "supportPortals" | "supportPortalDetail" | "supportPortalSettings" | "agents" | "agentDetail" | "knowledge" | "knowledgeDetail" | "knowledgeCreate" | "knowledgeEdit" | "knowledgeCategories" | "knowledgeImport" | "aiUsage";
 
 export type AppData = {
-  employees: Employee[];
   groups: EmployeeGroup[];
   agents: AgentCard[];
 };

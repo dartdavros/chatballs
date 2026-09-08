@@ -162,7 +162,7 @@ async function mockInstance(page: Page) {
     }
     return route.fulfill({ json: { items: GROUPS } });
   });
-  await page.route("**/api/v1/organizations/*/agents/**", (route) => route.fulfill({ json: { items: [] } }));
+  await page.route("**/api/v1/organizations/*/agents/**", (route) => route.fulfill({ json: { items: [], page: 1, pageSize: 20, total: 0, pageCount: 1 } }));
   await page.route("**/api/v1/organizations/*/notifications/**", (route) => route.fulfill({ json: { items: [] } }));
 }
 
@@ -183,7 +183,17 @@ async function mockEmployees(page: Page) {
         },
       });
     }
-    return route.fulfill({ json: { items: [OWNER_STAFF, ADMIN_STAFF, STAFF] } });
+    // Список сотрудников постраничный, роль и поиск отбирает сервер — мок
+    // повторяет этот контракт, иначе он проверял бы несуществующее поведение.
+    const params = new URL(route.request().url()).searchParams;
+    const role = params.get("role");
+    const query = (params.get("q") ?? "").toLowerCase();
+    const items = [OWNER_STAFF, ADMIN_STAFF, STAFF]
+      .filter((employee) => !role || employee.role === role)
+      .filter((employee) => !query || `${employee.fullName} ${employee.email} ${employee.positionTitle}`.toLowerCase().includes(query));
+    return route.fulfill({
+      json: { items, page: 1, pageSize: 20, total: items.length, pageCount: 1 },
+    });
   });
 }
 

@@ -5,8 +5,10 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from chatballs.api.pagination import page_payload, paginate
 from chatballs.events.services import DomainEvent, enqueue_event
 from chatballs.identity.audit import record_audit_event
+from chatballs.identity.employee_selectors import employees_for
 from chatballs.identity.employee_support import employee_payload, get_owned_profile
 from chatballs.identity.employee_validation import (
     ASSIGNABLE_ROLES,
@@ -65,19 +67,11 @@ class EmployeeListView(APIView):
         actor = request.tenant_context.membership
         if not has_capability_any_scope(actor, "employees.view"):
             return Response({"detail": "Not allowed"}, status=403)
-        employees = (
-            OrganizationMembership.objects.select_related("user")
-            .prefetch_related("group_links__group")
-            .filter(organization=actor.organization)
+        page = paginate(
+            employees_for(actor.organization_id, request.query_params),
+            request.query_params,
         )
-        return Response(
-            {
-                "items": [
-                    employee_payload(employee, actor)
-                    for employee in employees.order_by("user__email")
-                ]
-            }
-        )
+        return Response(page_payload(page, lambda employee: employee_payload(employee, actor)))
 
 
 class EmployeeCreateView(APIView):

@@ -64,22 +64,6 @@ export function employeeStatusKey(employee: Employee): EmployeeStatus {
   return "active";
 }
 
-export function filterEmployees(
-  employees: Employee[],
-  role: EmployeeRoleFilter,
-  groupId: number | "all",
-  query: string,
-) {
-  const q = query.trim().toLowerCase();
-  return employees.filter((employee) => (
-    (role === "all" || employee.role === role)
-    && (groupId === "all" || employee.groups.some((group) => group.id === groupId))
-    && (!q
-      || employee.fullName.toLowerCase().includes(q)
-      || employee.email.toLowerCase().includes(q)
-      || employee.positionTitle.toLowerCase().includes(q))
-  ));
-}
 
 export function employeeForm(employee: Employee): EmployeeForm {
   return {

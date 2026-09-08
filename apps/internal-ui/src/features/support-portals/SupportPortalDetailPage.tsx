@@ -7,7 +7,6 @@ import { Button } from "../../shared/ui-controls";
 import type { SessionUser } from "../../types";
 import {
   changePortalStatus,
-  listPortalArticles,
   listPortalCategories,
   listSupportPortals,
   loadSupportPortal,
@@ -49,7 +48,6 @@ export function SupportPortalDetailPage({
   const [portal, setPortal] = useState<SupportPortal | null>(null);
   const [address, setAddress] = useState<PortalAddressConfig | null>(null);
   const [categories, setCategories] = useState<PortalCategory[]>([]);
-  const [articles, setArticles] = useState<PortalArticle[]>([]);
   const [editing, setEditing] = useState<PortalArticle | null | undefined>(undefined);
   const [publishing, setPublishing] = useState<Publishing | null>(null);
   const [pendingStatus, setPendingStatus] = useState<PortalStatus | null>(null);
@@ -62,15 +60,14 @@ export function SupportPortalDetailPage({
     if (!portalId) return;
     setFailed(false);
     try {
-      const [portalPayload, categoryPayload, articlePayload, listPayload] = await Promise.all([
+      // Статьи грузит сама библиотека — постранично, со своими фильтрами.
+      const [portalPayload, categoryPayload, listPayload] = await Promise.all([
         loadSupportPortal(portalId),
         listPortalCategories(portalId),
-        listPortalArticles(portalId),
         listSupportPortals(),
       ]);
       setPortal(portalPayload.portal);
       setCategories(categoryPayload.items);
-      setArticles(articlePayload.items);
       setAddress(listPayload.address);
     } catch {
       setFailed(true);
@@ -164,7 +161,6 @@ export function SupportPortalDetailPage({
 
       {section === null ? (
         <PortalLibrary
-          articles={articles}
           canLinkAgents={hasCapability(user, "ai.manage")}
           canManage={canManage && portal.status !== "ARCHIVED"}
           categories={categories}

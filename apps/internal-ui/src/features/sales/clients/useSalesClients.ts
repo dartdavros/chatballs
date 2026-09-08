@@ -1,14 +1,18 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
-import type { ClientChannelCode, ClientDropdown, ClientSortKey, SalesClient } from "./model";
-import { toSalesClientRow } from "./model";
+import { useDebounced } from "../../../shared/useDebounced";
+import { usePagedResource } from "../../../shared/usePagedResource";
+import { fetchClients, type ClientsQuery } from "./api";
+import type { ClientChannelCode, ClientDropdown, ClientSortKey } from "./model";
+import { toSalesClient, toSalesClientRow } from "./model";
 
 export type SalesClientsState = ReturnType<typeof useSalesClients>;
 
 // Фильтры списка контактов (кадры K1/K2): поиск, каналы, агенты и чип
 // «С открытым диалогом». Фильтра по продуктам нет (ADR-CHATBALLS-0041).
+// Всё это — параметры запроса: страница приходит с сервера уже отобранной.
 
-export function useSalesClients(salesClients: SalesClient[]) {
+export function useSalesClients() {
   const [query, setQueryState] = useState("");
   const [agentFilter, setAgentFilter] = useState<number[]>([]);
   const [channelFilter, setChannelFilter] = useState<ClientChannelCode[]>([]);
@@ -17,45 +21,29 @@ export function useSalesClients(salesClients: SalesClient[]) {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [menu, setMenu] = useState<string | null>(null);
   const [dropdown, setDropdown] = useState<ClientDropdown | null>(null);
-  const [page, setPage] = useState(1);
-  const pageSize = 20;
+  const settledQuery = useDebounced(query);
 
-  const filteredRows = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
-    const filtered = salesClients.filter((client) => {
-      return (!normalizedQuery || client.name.toLowerCase().includes(normalizedQuery) || client.email.toLowerCase().includes(normalizedQuery) || client.phone.includes(normalizedQuery) || client.username.toLowerCase().includes(normalizedQuery))
-        && (agentFilter.length === 0 || client.agents.some((agent) => agentFilter.includes(agent.id)))
-        && (channelFilter.length === 0 || client.channels.some((channel) => channelFilter.includes(channel)))
-        && (!openOnly || client.openDialogs > 0);
-    });
-    const key = { last: "last", open: "openDialogs" } satisfies Record<ClientSortKey, keyof typeof salesClients[number]>;
-    return [...filtered]
-      .sort((left, right) => sortDir === "asc" ? Number(left[key[sortKey]]) - Number(right[key[sortKey]]) : Number(right[key[sortKey]]) - Number(left[key[sortKey]]))
-      .map(toSalesClientRow);
-  }, [salesClients, agentFilter, channelFilter, openOnly, query, sortDir, sortKey]);
-  const pageCount = Math.max(1, Math.ceil(filteredRows.length / pageSize));
-  const rows = useMemo(
-    () => filteredRows.slice((page - 1) * pageSize, page * pageSize),
-    [filteredRows, page],
+  const request: ClientsQuery = useMemo(
+    () => ({ query: settledQuery, agentFilter, channelFilter, openOnly, sortKey, sortDir }),
+    [agentFilter, channelFilter, openOnly, settledQuery, sortDir, sortKey],
   );
-
-  useEffect(() => {
-    setPage((current) => Math.min(current, pageCount));
-  }, [pageCount]);
+  const load = useCallback((page: number) => fetchClients(request, page), [request]);
+  const page = usePagedResource(load, request, "Не удалось загрузить контакты");
+  const rows = useMemo(
+    () => page.items.map((item) => toSalesClientRow(toSalesClient(item))),
+    [page.items],
+  );
 
   function setQuery(value: string) {
     setQueryState(value);
-    setPage(1);
     setMenu(null);
   }
 
   function toggleAgent(id: number) {
-    setPage(1);
     setAgentFilter((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]);
   }
 
   function toggleChannel(code: string) {
-    setPage(1);
     setChannelFilter((current) => current.includes(code as ClientChannelCode) ? current.filter((item) => item !== code) : [...current, code as ClientChannelCode]);
   }
 
@@ -75,21 +63,23 @@ export function useSalesClients(salesClients: SalesClient[]) {
     setAgentFilter([]);
     setChannelFilter([]);
     setOpenOnly(false);
-    setPage(1);
     setMenu(null);
     setDropdown(null);
   }
 
   return {
     rows,
-    filteredRows,
-    filteredCount: filteredRows.length,
+    request,
+    loading: page.loading,
+    errorText: page.errorText,
+    total: page.total,
     // Кадр K2: «Сбросить» и счётчик «6 из 128» показываются только при фильтре.
     filtered: Boolean(query.trim()) || agentFilter.length > 0 || channelFilter.length > 0 || openOnly,
-    page,
-    pageCount,
-    pageSize,
-    setPage,
+    page: page.page,
+    pageCount: page.pageCount,
+    pageSize: page.pageSize,
+    setPage: page.setPage,
+    reload: page.reload,
     query,
     agentFilter,
     channelFilter,
@@ -105,7 +95,7 @@ export function useSalesClients(salesClients: SalesClient[]) {
     toggleDropdown,
     setDropdown,
     closeDropdown: () => setDropdown(null),
-    toggleOpenOnly: () => { setOpenOnly((current) => !current); setPage(1); setMenu(null); setDropdown(null); },
+    toggleOpenOnly: () => { setOpenOnly((current) => !current); setMenu(null); setDropdown(null); },
     sortBy,
     reset,
   };

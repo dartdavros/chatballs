@@ -14,33 +14,34 @@ import { employeeForm, employeeStatusKey, type EmployeeForm } from "./model";
 
 // Карточка сотрудника (дизайн-базлайн v2, кадры E3/E4).
 
-export function EmployeeDetailPage({ groups, employee, employees, reload, setRoute }: {
+// Карточка грузится по идентификатору: список сотрудников постраничный, и
+// открытый по ссылке человек может быть не на загруженной странице.
+export function EmployeeDetailPage({ groups, employeeId, setRoute }: {
   groups: EmployeeGroup[];
-  employee: Employee;
-  employees: Employee[];
-  reload: () => void;
+  employeeId: number;
   setRoute: (route: RouteKey) => void;
 }) {
-  const [currentEmployee, setCurrentEmployee] = useState(employee);
-  const [form, setForm] = useState<EmployeeForm>(() => employeeForm(employee));
+  const [currentEmployee, setCurrentEmployee] = useState<Employee | null>(null);
+  const [form, setForm] = useState<EmployeeForm | null>(null);
   const [saving, setSaving] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [issued, setIssued] = useState<IssuedPassword | null>(null);
   const [transferOpen, setTransferOpen] = useState(false);
-  const status = employeeStatusKey(currentEmployee);
 
   const refresh = useCallback(async () => {
-    const payload = await api<{ employee: Employee }>(`/api/v1/employees/${employee.id}/`);
+    const payload = await api<{ employee: Employee }>(`/api/v1/employees/${employeeId}/`);
     setCurrentEmployee(payload.employee);
     setForm(employeeForm(payload.employee));
-  }, [employee.id]);
+  }, [employeeId]);
 
-  useEffect(() => { void refresh().catch(() => undefined); }, [refresh]);
-  useEffect(() => { setCurrentEmployee(employee); setForm(employeeForm(employee)); setMessage(""); }, [employee]);
+  useEffect(() => {
+    setMessage("");
+    void refresh().catch(() => setMessage("Не удалось загрузить карточку сотрудника"));
+  }, [refresh]);
 
   function updateForm(field: keyof EmployeeForm, value: string | boolean | number[]) {
-    setForm((current) => ({ ...current, [field]: value }));
+    setForm((current) => (current ? { ...current, [field]: value } : current));
     setMessage("");
   }
 
@@ -48,9 +49,8 @@ export function EmployeeDetailPage({ groups, employee, employees, reload, setRou
     setSaving(true);
     setMessage("");
     try {
-      await api(`/api/v1/employees/${currentEmployee.id}/update/`, { method: "POST", body: JSON.stringify(form) });
+      await api(`/api/v1/employees/${employeeId}/update/`, { method: "POST", body: JSON.stringify(form) });
       await refresh();
-      reload();
     } catch (reason) {
       setMessage(reason instanceof Error ? reason.message : "Не удалось сохранить изменения");
     } finally {
@@ -64,7 +64,6 @@ export function EmployeeDetailPage({ groups, employee, employees, reload, setRou
     try {
       await action();
       await refresh();
-      reload();
     } catch (reason) {
       setMessage(reason instanceof Error ? reason.message : "Не удалось выполнить действие");
     } finally {
@@ -72,6 +71,14 @@ export function EmployeeDetailPage({ groups, employee, employees, reload, setRou
     }
   }
 
+  if (!currentEmployee || !form) {
+    return (
+      <div className="employee-page">
+        {message && <div className="employees-error"><Icon name="alert" size={16} strokeWidth={1.8} />{message}</div>}
+      </div>
+    );
+  }
+  const status = employeeStatusKey(currentEmployee);
   // Кадр E4: на карточке владельца всегда стоит напоминание о правиле роли —
   // сменить её можно только передачей владения.
   const isOwnerCard = currentEmployee.role === "OWNER";
@@ -107,7 +114,7 @@ export function EmployeeDetailPage({ groups, employee, employees, reload, setRou
       </div>
 
       {issued && <EmployeePasswordDialog issued={issued} onClose={() => setIssued(null)} />}
-      {transferOpen && <OwnershipTransferModal employees={employees} onClose={() => setTransferOpen(false)} />}
+      {transferOpen && <OwnershipTransferModal onClose={() => setTransferOpen(false)} />}
     </div>
   );
 }

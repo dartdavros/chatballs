@@ -1,10 +1,12 @@
 import { Dropdown, Modal } from "antd";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 import { ChannelGlyph } from "../../shared/badges";
 import { FormField, SelectField } from "../../shared/form-controls";
 import { Icon } from "../../shared/icons";
+import { Pagination } from "../../shared/Pagination";
 import { Button } from "../../shared/ui-controls";
+import { usePagedResource } from "../../shared/usePagedResource";
 import type { EmployeeGroup } from "../../types";
 import { groupColorOf } from "../conversations/model";
 import {
@@ -13,6 +15,7 @@ import {
   agentTile,
   agentTint,
   createAgent,
+  fetchAgentsPage,
   setAgentAiActive,
   type AgentCard,
 } from "./model";
@@ -122,21 +125,24 @@ function AgentRow({ card, openAgent, onToggleAi }: { card: AgentCard; openAgent:
 }
 
 export function AgentsPage({
-  agents,
   groups,
-  reload,
   openAgent,
 }: {
-  agents: AgentCard[];
   groups: EmployeeGroup[];
-  reload: () => void;
   openAgent: (agentId: number) => void;
 }) {
   const [creating, setCreating] = useState(false);
+  // Страницу считает сервер: агентов у крупной организации столько же, сколько
+  // точек входа, и отдавать их одним списком нельзя.
+  const load = useCallback(
+    (page: number) => fetchAgentsPage({ group: "all", query: "" }, page),
+    [],
+  );
+  const agents = usePagedResource(load, null, "Не удалось загрузить агентов");
 
   async function toggleAi(card: AgentCard) {
     await setAgentAiActive(card.id, card.aiStatus !== "ACTIVE").catch(() => undefined);
-    reload();
+    void agents.reload();
   }
 
   return (
@@ -148,7 +154,8 @@ export function AgentsPage({
         </div>
         <Button variant="primary" className="agents-create" icon="plus" iconSize={15} onClick={() => setCreating(true)}>Создать агента</Button>
       </header>
-      {agents.length === 0 ? (
+      {agents.errorText && <div className="agents-error">{agents.errorText}</div>}
+      {agents.total === 0 ? (
         <div className="agents-empty">
           <span><Icon name="robot" size={24} strokeWidth={1.8} /></span>
           <div>
@@ -168,9 +175,17 @@ export function AgentsPage({
             <span className="is-right">Открытые</span>
             <span />
           </div>
-          {agents.map((card) => (
+          {agents.items.map((card) => (
             <AgentRow card={card} openAgent={openAgent} onToggleAi={(item) => void toggleAi(item)} key={card.id} />
           ))}
+          {agents.pageCount > 1 && (
+            <Pagination
+              note={`Показано ${agents.items.length} из ${agents.total}`}
+              page={agents.page}
+              pageCount={agents.pageCount}
+              onPage={agents.setPage}
+            />
+          )}
         </div>
       )}
       {creating && (
@@ -179,7 +194,7 @@ export function AgentsPage({
           onClose={() => setCreating(false)}
           onCreated={(agentId) => {
             setCreating(false);
-            reload();
+            void agents.reload();
             openAgent(agentId);
           }}
         />

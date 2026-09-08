@@ -45,16 +45,6 @@ type ToneBadgeProps = {
   color: string;
 };
 
-type TablePaginationProps = {
-  className?: string;
-  currentPage?: number;
-  onPageChange?: (page: number) => void;
-  pageSizeLabel: string;
-  pages: Array<number | "ellipsis">;
-  shown: number;
-  total: number;
-};
-
 export function Button({ children, className = "", icon, iconSize = 15, type = "button", variant, ...buttonProps }: ButtonProps) {
   return (
     <button className={`${buttonVariantClass[variant]} ${className}`.trim()} type={type} {...buttonProps}>
@@ -224,19 +214,3 @@ export function paginationItems(page: number, pageCount: number): Array<number |
   return result;
 }
 
-export function TablePagination({ className = "", currentPage = 1, onPageChange, pageSizeLabel, pages, shown, total }: TablePaginationProps) {
-  const numericPages = pages.filter((page): page is number => page !== "ellipsis");
-  const lastPage = Math.max(...numericPages, 1);
-  return (
-    <div className={`ui-table-pagination ${className}`.trim()}>
-      <div>Показано {shown} из {total}</div>
-      <div>
-        <button type="button" disabled={!onPageChange || currentPage <= 1} onClick={() => onPageChange?.(currentPage - 1)}>‹</button>
-        {pages.map((page, index) => page === "ellipsis" ? <span key={`ellipsis-${index}`}>…</span> : <button className={page === currentPage ? "active" : ""} type="button" disabled={!onPageChange} onClick={() => onPageChange?.(page)} key={page}>{page}</button>)}
-        <button type="button" disabled={!onPageChange || currentPage >= lastPage} onClick={() => onPageChange?.(currentPage + 1)}>›</button>
-        <i />
-        <em>{pageSizeLabel}</em>
-      </div>
-    </div>
-  );
-}

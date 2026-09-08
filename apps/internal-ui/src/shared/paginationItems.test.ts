@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { paginationItems } from "../../../shared/ui-controls";
+import { paginationItems } from "./ui-controls";
 
 describe("paginationItems", () => {
   it("returns every page for a short list", () => {

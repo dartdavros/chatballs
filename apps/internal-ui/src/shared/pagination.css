@@ -1,0 +1,71 @@
+/* Подвал со страницами — один на всё приложение (порталы, библиотека статей,
+   контакты, сотрудники, агенты, журнал аудита). Раньше у каждого списка была
+   своя разметка и свои классы; вид взят из кадров PT1/PT3, где он утверждён. */
+
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 11px 16px;
+  border-top: 1px solid var(--n-8);
+  background: var(--n-10);
+  color: var(--n-4);
+  font-size: 12.5px;
+}
+
+.pager-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pager-pages {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pager-pages > span {
+  color: var(--n-5);
+}
+
+.pager-step,
+.pager-number {
+  display: inline-flex;
+  min-width: 28px;
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+  border: 1px solid var(--n-7);
+  border-radius: 7px;
+  background: var(--surface-card);
+  color: var(--n-3);
+  font-family: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.pager-step {
+  width: 28px;
+  padding: 0;
+}
+
+.pager-step:disabled {
+  color: var(--n-6);
+  cursor: default;
+}
+
+.pager-number:hover,
+.pager-step:not(:disabled):hover {
+  background: var(--n-9);
+}
+
+.pager-number.is-current {
+  border-color: transparent;
+  background: var(--primary-bg);
+  color: var(--primary-text);
+  font-weight: 600;
+  cursor: default;
+}

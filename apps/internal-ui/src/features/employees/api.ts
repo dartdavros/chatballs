@@ -1,5 +1,7 @@
 import { api } from "../../api/client";
+import type { PagedPayload } from "../../shared/usePagedResource";
 import type { Employee, Role } from "../../types";
+import type { EmployeeRoleFilter } from "./model";
 
 // Действия над сотрудником (дизайн-базлайн v2, кадры E2, E3, E5–E8).
 // Пароль первичного доступа сервер отдаёт ровно один раз — открытым он нигде
@@ -45,4 +47,32 @@ export async function terminateEmployeeSessions(userId: number): Promise<void> {
 
 export async function blockEmployee(userId: number, block: boolean): Promise<void> {
   await api(`/api/v1/employees/${userId}/${block ? "block" : "unblock"}/`, { method: "POST" });
+}
+
+// Список сотрудников: страница, роль, группа и поиск считает сервер (кадры E1/E2).
+export type EmployeeListQuery = {
+  role: EmployeeRoleFilter;
+  groupId: number | "all";
+  query: string;
+};
+
+export function fetchEmployees(
+  { role, groupId, query }: EmployeeListQuery,
+  page: number,
+): Promise<PagedPayload<Employee>> {
+  const params = new URLSearchParams({ page: String(page) });
+  if (role !== "all") params.set("role", role);
+  if (groupId !== "all") params.set("group", String(groupId));
+  if (query.trim()) params.set("q", query.trim());
+  return api<PagedPayload<Employee>>(`/api/v1/employees/?${params.toString()}`);
+}
+
+/** Кандидаты на владение (кадр E9) — только действующие администраторы.
+ *  Их единицы, поэтому берётся одна страница; роль отбирает сервер. */
+export function fetchOwnershipCandidates(): Promise<PagedPayload<Employee>> {
+  return api<PagedPayload<Employee>>("/api/v1/employees/?role=ADMIN&pageSize=100");
+}
+
+export function fetchOwner(): Promise<PagedPayload<Employee>> {
+  return api<PagedPayload<Employee>>("/api/v1/employees/?role=OWNER");
 }

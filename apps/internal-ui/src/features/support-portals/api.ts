@@ -1,4 +1,5 @@
 import { api, apiUpload } from "../../api/client";
+import type { PagedPayload } from "../../shared/usePagedResource";
 import type { ArticleImportDocument } from "./parseArticleYaml";
 import type {
   ArticleRevision,
@@ -12,8 +13,18 @@ import type {
   SupportPortalList,
 } from "./model";
 
-export function listSupportPortals(): Promise<SupportPortalList> {
-  return api("/api/v1/support/portals/");
+// Страница списка порталов (кадр PT1): статус, поиск и номер страницы —
+// параметры запроса, фильтровать в браузере нечего.
+export type PortalListQuery = { status: string[]; search: string };
+
+export function listSupportPortals(
+  { status, search }: PortalListQuery = { status: [], search: "" },
+  page = 1,
+): Promise<SupportPortalList> {
+  const params = new URLSearchParams({ page: String(page) });
+  for (const value of status) params.append("status", value);
+  if (search.trim()) params.set("q", search.trim());
+  return api(`/api/v1/support/portals/?${params.toString()}`);
 }
 
 export function createSupportPortal(input: PortalInput): Promise<{ portal: SupportPortal }> {
@@ -105,8 +116,26 @@ export function verifyPortalCustomDomain(
   });
 }
 
-export function listPortalArticles(id: number): Promise<{ items: PortalArticle[] }> {
-  return api(`/api/v1/support/portals/${id}/articles/`);
+// Страница библиотеки статей (кадр PT3): категория, язык, статус и поиск —
+// тоже параметры запроса.
+export type ArticleListQuery = {
+  category?: number;
+  locale: string[];
+  status: string[];
+  search: string;
+};
+
+export function listPortalArticles(
+  id: number,
+  { category, locale, status, search }: ArticleListQuery = { locale: [], status: [], search: "" },
+  page = 1,
+): Promise<PagedPayload<PortalArticle>> {
+  const params = new URLSearchParams({ page: String(page) });
+  if (category !== undefined) params.set("category", String(category));
+  for (const value of locale) params.append("locale", value);
+  for (const value of status) params.append("status", value);
+  if (search.trim()) params.set("q", search.trim());
+  return api(`/api/v1/support/portals/${id}/articles/?${params.toString()}`);
 }
 
 export function createPortalArticle(

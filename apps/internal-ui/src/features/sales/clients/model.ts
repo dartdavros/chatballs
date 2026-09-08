@@ -51,11 +51,6 @@ export const channelOptions: Array<{ code: ClientChannelCode; name: string; colo
   { code: "WEB", name: "Web-виджет", color: channelMap.WEB.color },
 ];
 
-export function agentOptionsOf(clients: SalesClient[]): ClientAgentRef[] {
-  const seen = new Map<number, ClientAgentRef>();
-  for (const client of clients) for (const agent of client.agents) seen.set(agent.id, agent);
-  return [...seen.values()].sort((a, b) => a.name.localeCompare(b.name, "ru"));
-}
 
 const statusDot = {
   wait: "#faad14",

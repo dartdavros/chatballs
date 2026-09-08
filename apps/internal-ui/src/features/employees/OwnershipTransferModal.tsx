@@ -1,9 +1,10 @@
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { api } from "../../api/client";
 import { Icon } from "../../shared/icons";
 import { Avatar } from "../../shared/ui";
 import type { Employee, Role } from "../../types";
+import { fetchOwner, fetchOwnershipCandidates } from "./api";
 import { employeeAvatarColor, roleBadge } from "./model";
 
 // Передача владения (дизайн-базлайн v2, кадр E9). Кандидаты — только активные
@@ -14,17 +15,36 @@ const PREVIOUS_ROLES: Array<{ value: Extract<Role, "ADMIN" | "EMPLOYEE">; label:
   { value: "EMPLOYEE", label: "Сотрудник" },
 ];
 
-export function OwnershipTransferModal({ employees, onClose }: { employees: Employee[]; onClose: () => void }) {
-  const owner = employees.find((employee) => employee.role === "OWNER") ?? null;
-  const candidates = useMemo(
-    () => employees.filter((employee) => employee.role === "ADMIN" && employee.isActive && !employee.isBlocked),
-    [employees],
-  );
-  const [targetId, setTargetId] = useState<number | null>(candidates[0]?.id ?? null);
+export function OwnershipTransferModal({ onClose }: { onClose: () => void }) {
+  // Владелец и кандидаты приходят с сервера отдельным запросом: список
+  // сотрудников теперь постраничный, и нужных людей может не быть на открытой
+  // странице. Роль отбирает сервер, действующих — фильтр ниже.
+  const [owner, setOwner] = useState<Employee | null>(null);
+  const [candidates, setCandidates] = useState<Employee[]>([]);
+  const [targetId, setTargetId] = useState<number | null>(null);
   const [previousOwnerRole, setPreviousOwnerRole] = useState<Extract<Role, "ADMIN" | "EMPLOYEE">>("ADMIN");
+
   const [confirmed, setConfirmed] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    void Promise.all([fetchOwner(), fetchOwnershipCandidates()])
+      .then(([owners, admins]) => {
+        if (!active) return;
+        const activeAdmins = admins.items.filter((employee) => employee.isActive && !employee.isBlocked);
+        setOwner(owners.items[0] ?? null);
+        setCandidates(activeAdmins);
+        setTargetId(activeAdmins[0]?.id ?? null);
+      })
+      .catch(() => {
+        if (active) setError("Не удалось загрузить кандидатов");
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   if (!owner) return null;
   const target = candidates.find((employee) => employee.id === targetId) ?? null;

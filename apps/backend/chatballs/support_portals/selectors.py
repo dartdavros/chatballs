@@ -1,10 +1,22 @@
-from django.db.models import Count, Q, QuerySet
+from django.db.models import (
+    Case,
+    Count,
+    IntegerField,
+    OuterRef,
+    Q,
+    QuerySet,
+    Subquery,
+    Value,
+    When,
+)
 
 from chatballs.support_portals.models import (
     PortalArticle,
+    PortalArticleRevision,
     PortalCategory,
     SupportPortal,
 )
+from chatballs.support_portals.statuses import PortalStatus
 from chatballs.tenancy.context import TenantContext
 
 
@@ -24,6 +36,70 @@ def portals_for_context(context: TenantContext) -> QuerySet[SupportPortal]:
 
 def portal_for_context(context: TenantContext, portal_id: int) -> SupportPortal:
     return portals_for_context(context).get(id=portal_id)
+
+
+def portals_page_queryset(context: TenantContext, params) -> QuerySet[SupportPortal]:
+    """Список порталов (кадр PT1): статус и поиск — параметры запроса.
+
+    Архивные всегда идут последними: страница отдаёт тот же порядок, который
+    раньше выстраивал браузер по полному списку.
+    """
+    portals = portals_for_context(context)
+    statuses = [value for value in params.getlist("status") if value]
+    if statuses:
+        portals = portals.filter(status__in=statuses)
+    query = params.get("q", "").strip()
+    if query:
+        portals = portals.filter(
+            Q(name__icontains=query)
+            | Q(hosted_domain__icontains=query)
+            | Q(custom_domain__icontains=query)
+        )
+    return portals.annotate(
+        _archived=Case(
+            When(status=PortalStatus.ARCHIVED, then=Value(1)),
+            default=Value(0),
+            output_field=IntegerField(),
+        )
+    ).order_by("_archived", "name", "id")
+
+
+def portal_articles_queryset(portal: SupportPortal, params) -> QuerySet[PortalArticle]:
+    """Библиотека статей портала (кадр PT3): категория, язык, статус и поиск.
+
+    Поиск идёт по последней редакции — заголовку и краткому описанию, — как и
+    в редакторе: сравнивать со старыми версиями было бы неожиданно.
+    """
+    latest = PortalArticleRevision.objects.filter(article_id=OuterRef("pk")).order_by("-revision")
+    articles = (
+        PortalArticle.objects.filter(portal=portal)
+        .select_related("category", "published_revision")
+        .prefetch_related("revisions", "files", "feedback")
+        .annotate(
+            latest_title=Subquery(latest.values("title")[:1]),
+            latest_summary=Subquery(latest.values("summary")[:1]),
+        )
+    )
+    category = params.get("category")
+    if category and str(category).isdigit():
+        # Фильтр охватывает поддерево категории — тем же обходом, что и публичный портал.
+        articles = articles.filter(
+            category_id__in=descendant_category_ids(portal, int(category))
+        )
+    locales = [value for value in params.getlist("locale") if value]
+    if locales:
+        articles = articles.filter(locale__in=locales)
+    statuses = [value for value in params.getlist("status") if value]
+    if statuses:
+        articles = articles.filter(status__in=statuses)
+    query = params.get("q", "").strip()
+    if query:
+        articles = articles.filter(
+            Q(slug__icontains=query)
+            | Q(latest_title__icontains=query)
+            | Q(latest_summary__icontains=query)
+        )
+    return articles.order_by("-id")
 
 
 def public_articles(

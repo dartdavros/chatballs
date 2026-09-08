@@ -2,6 +2,7 @@
 // Источник данных — агрегированный API /api/v1/agents/.
 // Экранная модель — дизайн-базлайн v2, «Агенты Baseline», кадры G1–G5, S1.
 import { api } from "../../api/client";
+import type { PagedPayload } from "../../shared/usePagedResource";
 import { agentColorOf } from "../conversations/model";
 import { channelMap, providerKey } from "../../shared/providers";
 import { pluralRu, shortDate } from "../../shared/utils";
@@ -61,8 +62,25 @@ export type AgentPatch = Partial<{
   limits: Record<string, unknown>;
 }>;
 
-export function fetchAgents(): Promise<{ items: AgentCard[] }> {
-  return api<{ items: AgentCard[] }>("/api/v1/agents/");
+// Страница списка агентов (кадр G1): группа, поиск и страница — на сервере.
+export type AgentListQuery = { group: number | "none" | "all"; query: string };
+
+export function fetchAgentsPage(
+  { group, query }: AgentListQuery,
+  page: number,
+): Promise<PagedPayload<AgentCard>> {
+  const params = new URLSearchParams({ page: String(page) });
+  if (group !== "all") params.set("group", String(group));
+  if (query.trim()) params.set("q", query.trim());
+  return api<PagedPayload<AgentCard>>(`/api/v1/agents/?${params.toString()}`);
+}
+
+/** Полный набор карточек для экранов, которым нужны связи агентов со знаниями
+ *  (библиотека знаний считает по ним прикрепления). Ограничен одной страницей
+ *  предельного размера: этим экранам нужен серверный контракт со счётчиками,
+ *  пока он не сделан — держим потолок явным, а не молчаливым. */
+export function fetchAllAgents(): Promise<{ items: AgentCard[] }> {
+  return api<PagedPayload<AgentCard>>("/api/v1/agents/?pageSize=100");
 }
 
 export function fetchAgent(agentId: number): Promise<{ agent: AgentCard }> {

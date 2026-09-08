@@ -3,7 +3,8 @@ from rest_framework.response import Response
 
 from django.core.exceptions import ValidationError
 
-from chatballs.conversations.clients import client_detail, clients_overview
+from chatballs.api.pagination import page_payload, paginate
+from chatballs.conversations.clients import client_detail, client_row, clients_queryset
 from chatballs.conversations.contacts_merge import merge_contacts, revert_merge
 from chatballs.conversations.models import Contact
 from chatballs.identity.models import EmployeeRole
@@ -24,7 +25,12 @@ class ClientsView(ConversationViewBase):
     required_capability = "customers.view"
 
     def get(self, request: Request) -> Response:
-        return Response({"items": clients_overview(self._org(request).id)})
+        """Страница списка контактов: фильтры, поиск и порядок отрабатывает база."""
+        page = paginate(
+            clients_queryset(self._org(request).id, request.query_params),
+            request.query_params,
+        )
+        return Response(page_payload(page, client_row))
 
 
 class ClientDetailView(ConversationViewBase):

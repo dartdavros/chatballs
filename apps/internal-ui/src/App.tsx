@@ -6,6 +6,7 @@ import { buildTheme } from "@chatballs/ui";
 import { applyAppearance, DEFAULT_ACCENT, resolvedDark } from "./shared/appearance";
 
 import { api, setActiveOrganization } from "./api/client";
+import { fetchAllAgents } from "./features/agents/model";
 import { canAccess, defaultRoute, isManager } from "./auth/access";
 import { activateOrganization, clearOrganizationPreference } from "./auth/session";
 import { AuthChangePassword, AuthLogin, AuthPasswordRecovery, AuthResetPassword, AuthSetup, AuthTotpCode, AuthTotpSetup } from "./features/auth/AuthScreens";
@@ -14,7 +15,7 @@ import { pathFromRoute, routeFromPath } from "./router";
 import { ErrorScreen, LoadingScreen, PermissionScreen } from "./shared/ui";
 import { useRouteNavigation } from "./useRouteNavigation";
 import type { AgentCard } from "./features/agents/model";
-import type { AppData, AuthChallenge, AuthenticatedUser, Employee, EmployeeGroup, SessionUser } from "./types";
+import type { AppData, AuthChallenge, AuthenticatedUser, EmployeeGroup, SessionUser } from "./types";
 
 export function App() {
   const initialRoute = useMemo(() => routeFromPath(window.location.pathname, window.location.search), []);
@@ -36,7 +37,7 @@ export function App() {
   const [resetting, setResetting] = useState(() => window.location.pathname === "/reset-password");
   // Мастер первого запуска: пока в инстансе нет организации, вместо входа — форма создания.
   const [needsSetup, setNeedsSetup] = useState(false);
-  const [data, setData] = useState<AppData>({ employees: [], groups: [], agents: [] });
+  const [data, setData] = useState<AppData>({ groups: [], agents: [] });
   const [dataError, setDataError] = useState(false);
   const navigation = useRouteNavigation(initialRoute, organizationPublicId);
   const { navigate } = navigation;
@@ -53,21 +54,18 @@ export function App() {
   const loadData = useCallback(async () => {
     setDataError(false);
     try {
+      // Списки сотрудников и агентов грузят сами страницы — постранично.
+      // Здесь остаются только группы: их немного, и они нужны формам и фильтрам
+      // по всему приложению.
       const manager = Boolean(user && isManager(user));
-      const [employees, groups] = await Promise.all([
-        manager
-          ? api<{ items: Employee[] }>("/api/v1/employees/")
-          : Promise.resolve({ items: [] }),
-        manager
-          ? api<{ items: EmployeeGroup[] }>("/api/v1/company/groups/")
-          : Promise.resolve({ items: [] }),
-      ]);
+      const groups = manager
+        ? await api<{ items: EmployeeGroup[] }>("/api/v1/company/groups/")
+        : { items: [] };
       let agents: AgentCard[] = [];
       if (user && canAccess(user, "agents")) {
-        const agentsResponse = await api<{ items: AgentCard[] }>("/api/v1/agents/");
-        agents = agentsResponse.items;
+        agents = (await fetchAllAgents()).items;
       }
-      setData({ employees: employees.items, groups: groups.items, agents });
+      setData({ groups: groups.items, agents });
     } catch {
       setDataError(true);
     }
@@ -130,7 +128,7 @@ export function App() {
     clearOrganizationPreference();
     setTotpChallenge(null);
     navigate("chat", null, true, null);
-    setData({ employees: [], groups: [], agents: [] });
+    setData({ groups: [], agents: [] });
   }
 
   if (resetting) {

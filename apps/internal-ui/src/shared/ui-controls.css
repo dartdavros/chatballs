@@ -316,67 +316,6 @@
   text-decoration: none;
 }
 
-.ui-table-pagination {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.ui-table-pagination > div:first-child,
-.ui-table-pagination em {
-  color: var(--n-4);
-  font-size: 12.5px;
-  font-style: normal;
-  font-weight: 400;
-}
-
-.ui-table-pagination > div:last-child {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.ui-table-pagination button {
-  min-width: 30px;
-  height: 30px;
-  padding: 0 9px;
-  color: var(--n-3);
-  background: var(--surface-card);
-  border: 1px solid var(--n-7);
-  border-radius: 7px;
-  font-size: 13px;
-}
-
-.ui-table-pagination button:not(:disabled):hover {
-  color: var(--primary);
-  border-color: var(--primary);
-}
-
-.ui-table-pagination button.active {
-  color: #ffffff;
-  background: var(--primary);
-  border-color: var(--primary);
-  font-weight: 600;
-}
-
-.ui-table-pagination button:disabled {
-  color: var(--n-5);
-  cursor: not-allowed;
-}
-
-.ui-table-pagination span {
-  padding: 0 2px;
-  color: var(--n-5);
-  font-size: 13px;
-}
-
-.ui-table-pagination i {
-  width: 1px;
-  height: 20px;
-  margin: 0 4px;
-  background: var(--n-8);
-}
-
 /* «Назад» над карточкой сущности (кадры K3 «Контакты», G3 «Агенты»). */
 
 .ui-back-link {

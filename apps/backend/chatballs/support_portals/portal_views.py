@@ -4,6 +4,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from chatballs.api.pagination import page_payload, paginate
 from chatballs.api.permissions import HasCapability
 from chatballs.identity.audit import record_audit_event
 from chatballs.integrations.models import IntegrationProvider, IntegrationStatus
@@ -23,8 +24,10 @@ from chatballs.support_portals.selectors import (
     portal_content_counts,
     portal_for_context,
     portals_for_context,
+    portals_page_queryset,
 )
 from chatballs.support_portals.serializers import portal_payload
+from chatballs.support_portals.statuses import PortalStatus
 from chatballs.support_portals.themes import (
     DEFAULT_PORTAL_THEME,
     PortalThemeScheme,
@@ -110,23 +113,31 @@ def _input(request: Request, current: SupportPortal | None = None) -> PortalInpu
 
 class PortalListView(PortalBaseView):
     def get(self, request: Request) -> Response:
-        portals = list(portals_for_context(request.tenant_context))
+        """Страница списка порталов: статус, поиск и порядок отрабатывает база."""
+        page = paginate(
+            portals_page_queryset(request.tenant_context, request.query_params),
+            request.query_params,
+        )
         counts = portal_content_counts(request.tenant_context)
         # Тарифные лимиты порталов удалены (ADR-CHATBALLS-0042 §2): создание доступно всегда.
-        active_count = sum(item.status != "ARCHIVED" for item in portals)
+        active_count = (
+            portals_for_context(request.tenant_context)
+            .exclude(status=PortalStatus.ARCHIVED)
+            .count()
+        )
         return Response(
             {
-                "items": [
-                    portal_payload(
+                **page_payload(
+                    page,
+                    lambda item: portal_payload(
                         item,
                         counts={
                             "categories": 0,
                             "articles": 0,
                             **counts.get(item.id, {}),
                         },
-                    )
-                    for item in portals
-                ],
+                    ),
+                ),
                 "creation": {
                     "available": True,
                     "canCreate": True,

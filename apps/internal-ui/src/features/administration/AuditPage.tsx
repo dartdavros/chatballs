@@ -1,5 +1,6 @@
 import { EmptyState, LoadingState, PageHeader } from "../../shared/ui";
-import { Button, TablePagination, paginationItems } from "../../shared/ui-controls";
+import { Pagination } from "../../shared/Pagination";
+import { Button } from "../../shared/ui-controls";
 import { pluralRu } from "../../shared/utils";
 import { AuditFilters } from "./AuditFilters";
 import { AuditTable } from "./AuditTable";
@@ -59,14 +60,12 @@ export function AuditPage() {
           : <AuditTable events={payload.items} />}
       </div>
       {payload.pageCount > 1 && (
-        <TablePagination
+        <Pagination
           className="audit-pagination"
-          currentPage={payload.page}
-          pageSizeLabel={`по ${payload.pageSize} на странице`}
-          pages={paginationItems(payload.page, payload.pageCount)}
-          shown={payload.items.length}
-          total={payload.total}
-          onPageChange={(page) => setQuery({ page })}
+          note={`Показано ${payload.items.length} из ${payload.total} · по ${payload.pageSize} на странице`}
+          page={payload.page}
+          pageCount={payload.pageCount}
+          onPage={(page) => setQuery({ page })}
         />
       )}
     </div>

@@ -10,6 +10,8 @@ from unittest import mock
 
 
 
+from django.http import QueryDict
+
 from django.test import TestCase
 
 
@@ -18,7 +20,7 @@ from chatballs.channels.models import Channel
 
 from chatballs.conversations.models import Contact, Conversation, MessageAuthor
 
-from chatballs.conversations.clients import client_detail, clients_overview
+from chatballs.conversations.clients import client_detail, client_row, clients_queryset
 
 from chatballs.conversations.selectors import conversation_messages
 
@@ -574,7 +576,13 @@ class EmailIngestThreadMetaTests(TestCase):
 
 
 
-        overview = clients_overview(self.organization.id)
+        overview = [
+
+            client_row(contact)
+
+            for contact in clients_queryset(self.organization.id, QueryDict())
+
+        ]
 
         self.assertEqual(overview[0]["email"], "ivan@example.com")
 
