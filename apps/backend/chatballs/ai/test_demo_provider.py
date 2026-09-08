@@ -9,7 +9,13 @@ from chatballs.ai.runtime import HANDOFF_TOKEN
 from chatballs.identity.bootstrap import bootstrap_owner
 from chatballs.identity.models import Organization
 from chatballs.integrations.models import Integration, IntegrationKind, IntegrationProvider, IntegrationStatus
-from chatballs.integrations.services import IntegrationInput, create_integration, test_integration
+from chatballs.integrations.services import (
+    IntegrationInput,
+    create_integration,
+    # Алиас обязателен: имя test_* на уровне модуля pytest собирает как тест
+    # и падает на ненайденных фикстурах (как в integrations/tests.py).
+    test_integration as run_integration_test,
+)
 from chatballs.testing import system_tenant_context
 
 KNOWLEDGE = (
@@ -73,6 +79,6 @@ class DemoIntegrationTests(TestCase):
         self.assertEqual(integration.kind, IntegrationKind.LLM_PROVIDER)
         self.assertEqual(integration.config["default_model"], "demo")
         self.assertTrue(integration.secret)
-        checked = test_integration(context=self.context, integration=integration)
+        checked = run_integration_test(context=self.context, integration=integration)
         self.assertEqual(checked.status, IntegrationStatus.OK)
         self.assertIsInstance(_provider_from_integration(Integration.objects.get(pk=integration.pk)), DemoProvider)
