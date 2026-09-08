@@ -54,16 +54,8 @@ _deploy_validate() {
   verify_release_checksums || return 1
   validate_release_image_refs || return 1
 
-  local app_domain platform_domain
-  app_domain="$(env_get "$(instance_env_file)" CHATBALLS_APP_DOMAIN)"
-  platform_domain="$(env_get "$(instance_env_file)" CHATBALLS_PLATFORM_DOMAIN)"
-  # Домены знать необязательно: свежая установка отвечает по адресу сервера,
-  # а свой домен владелец задаёт потом в «Настройках». Проверяем только то,
-  # что если домены заданы оба — они разные.
-  if [[ -n "$app_domain" && -n "$platform_domain" && "$app_domain" == "$platform_domain" ]]; then
-    log_err "app and platform domains must be distinct"
-    return 1
-  fi
+  # Домены здесь не проверяются: установка отвечает по адресу сервера, а свой
+  # домен владелец задаёт в «Настройках» — снаружи его знать неоткуда.
 
   if profile_enabled calls; then
     validate_calls_network_boundary || return 1
@@ -104,12 +96,12 @@ _normalize_schema_ownership() {
   # входит migration-user. Идемпотентно: безопасно на каждом деплое. Без этого
   # миграции от migration-user падают на таблицах, созданных не им
   # («must be owner of table …»). Выполняется под суперпользователем POSTGRES_USER.
-  local env_file pg_user pg_db
-  env_file="$(instance_env_file)"
-  pg_user="$(env_get "$env_file" POSTGRES_USER)"
-  pg_db="$(env_get "$env_file" POSTGRES_DB)"
-  [[ -n "$pg_user" ]] || { log_err "POSTGRES_USER not set"; return 1; }
-  [[ -n "$pg_db" ]] || { log_err "POSTGRES_DB not set"; return 1; }
+  # Те же значения по умолчанию, что и у compose: задавать их человеку негде
+  # и незачем. Раньше они читались из .env — и без него deploy падал здесь,
+  # хотя сама установка была исправна.
+  local pg_user pg_db
+  pg_user="${POSTGRES_USER:-chatballs_bootstrap}"
+  pg_db="${POSTGRES_DB:-chatballs}"
   run_compose exec -T postgres \
     psql -v ON_ERROR_STOP=1 -U "$pg_user" -d "$pg_db" \
     -f /chatballs-reassign-ownership.sql >/dev/null
@@ -128,13 +120,11 @@ _first_json_service_state() {
 }
 
 _smoke() {
+  # Установка домена не знает — он задаётся в «Настройках». Проверяем её так
+  # же, как её открывает человек до этого: по адресу сервера, без https.
   local app_domain platform_domain
-  app_domain="$(env_get "$(instance_env_file)" CHATBALLS_APP_DOMAIN)"
-  platform_domain="$(env_get "$(instance_env_file)" CHATBALLS_PLATFORM_DOMAIN)"
-  # Свежая установка домена не знает: проверяем её так же, как её открывает
-  # человек — по адресу сервера, без домена и без https.
-  [[ -n "$app_domain" ]] || app_domain="localhost"
-  [[ -n "$platform_domain" ]] || platform_domain="localhost"
+  app_domain="localhost"
+  platform_domain="localhost"
 
   # Значения передаём через env внутри контейнера, а не флагами -e: так
   # команда остаётся привычной формы «exec -T backend-app …».

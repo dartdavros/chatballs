@@ -61,13 +61,6 @@ cmd_doctor() {
     _doctor_report 0 "compose.yaml missing in release: $rel"
   fi
 
-  # .env не требуется: продукт поднимается без переменных окружения.
-  if [[ -f "$(instance_env_file)" ]]; then
-    _doctor_report 1 "instance .env present (overrides)"
-  else
-    _doctor_report 1 "instance .env absent (not required)"
-  fi
-
   if [[ -f "$(release_env_file)" ]]; then
     _doctor_report 1 "release.env present"
   else
@@ -86,53 +79,16 @@ cmd_doctor() {
     _doctor_report 0 "release image references are invalid"
   fi
 
-  local app_domain platform_domain
-  app_domain="$(env_get "$(instance_env_file)" CHATBALLS_APP_DOMAIN)"
-  platform_domain="$(env_get "$(instance_env_file)" CHATBALLS_PLATFORM_DOMAIN)"
-  if [[ -n "$app_domain" ]]; then
-    _doctor_report 1 "CHATBALLS_APP_DOMAIN set: $app_domain"
-  else
-    _doctor_report 0 "CHATBALLS_APP_DOMAIN not set"
-  fi
-  if [[ -n "$platform_domain" ]]; then
-    _doctor_report 1 "CHATBALLS_PLATFORM_DOMAIN set: $platform_domain"
-  else
-    _doctor_report 0 "CHATBALLS_PLATFORM_DOMAIN not set"
-  fi
-  if [[ -n "$app_domain" ]] && [[ "$app_domain" != "$platform_domain" ]]; then
-    _doctor_report 1 "app and platform domains are distinct"
-  else
-    _doctor_report 0 "app and platform domains must be distinct"
-  fi
-
-  local acme_email
-  acme_email="$(env_get "$(instance_env_file)" CHATBALLS_ACME_EMAIL)"
-  if [[ -n "$acme_email" ]]; then
-    _doctor_report 1 "CHATBALLS_ACME_EMAIL set"
-  else
-    _doctor_report 0 "CHATBALLS_ACME_EMAIL not set"
-  fi
-
-  local pg_pwd
-  pg_pwd="$(env_get "$(instance_env_file)" POSTGRES_PASSWORD)"
-  if [[ -n "$pg_pwd" ]]; then
-    _doctor_report 1 "POSTGRES_PASSWORD set"
-  else
-    _doctor_report 0 "POSTGRES_PASSWORD empty"
-  fi
-
-  local secret
-  secret="$(env_get "$(instance_env_file)" CHATBALLS_SECRET_KEY)"
-  if [[ -n "$secret" ]] && [[ "$secret" != "change-me-long-random-secret" ]]; then
-    _doctor_report 1 "CHATBALLS_SECRET_KEY set"
-  else
-    _doctor_report 0 "CHATBALLS_SECRET_KEY default/empty"
-  fi
+  # Ни доменов, ни ACME-почты, ни ключа подписи, ни паролей БД здесь не
+  # проверяем: первое задаёт владелец в «Настройках», второе генерирует в том
+  # с секретами первый старт стека. Снаружи, с хоста, этого не видно, и
+  # прежние проверки просто ругались на исправную установку — они читали
+  # instance .env, которого у продукта нет.
 
   if profile_enabled calls; then
     local missing=0 k
-    for k in CHATBALLS_CALL_TURN_SECRET CHATBALLS_CALL_TURN_REALM CHATBALLS_TURN_EXTERNAL_IP CHATBALLS_TURN_LISTENING_IP; do
-      if [[ -z "$(env_get "$(instance_env_file)" "$k")" ]]; then
+    for k in CHATBALLS_CALL_TURN_REALM CHATBALLS_TURN_EXTERNAL_IP CHATBALLS_TURN_LISTENING_IP; do
+      if [[ -z "${!k:-}" ]]; then
         _doctor_report 0 "$k required for calls profile"
         missing=1
       fi

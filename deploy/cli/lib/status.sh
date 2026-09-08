@@ -21,7 +21,7 @@ cmd_status() {
   printf '  release dir: %s\n' "$rel"
   printf '  target version:  %s\n' "${target:-unknown}"
   printf '  applied version: %s\n' "${applied:-none}"
-  printf '  profiles: %s\n' "$(env_get "$(instance_env_file)" COMPOSE_PROFILES || echo none)"
+  printf '  profiles: %s\n' "${COMPOSE_PROFILES:-none}"
 
   if [[ -f "$(_state_file)" ]]; then
     printf '  last applied at: %s\n' "$(env_get "$(_state_file)" applied_at)"

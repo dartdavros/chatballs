@@ -1,7 +1,8 @@
 .env
-# Instance dir holds production .env, runtime data, certs — never tracked.
+.env.*
+# Каталог инстанса: runtime-данные и сертификаты — не отслеживается.
 instance/
-# Cutover .env drafts carry live secrets (RLS passwords, TURN secret, S3 keys).
+# Черновики переезда несут живые секреты (пароли ролей, TURN, ключи S3).
 *.cutover-draft
 .venv/
 __pycache__/

@@ -42,7 +42,6 @@ instance_dir() {
   printf '%s' "${CHATBALLS_INSTANCE_DIR:?CHATBALLS_INSTANCE_DIR is not set}"
 }
 
-instance_env_file() { printf '%s/.env' "$(instance_dir)"; }
 release_env_file() { printf '%s/release.env' "$(release_dir)"; }
 release_checksums_file() { printf '%s/checksums.txt' "$(release_dir)"; }
 compose_file() { printf '%s/compose.yaml' "$(release_dir)"; }
@@ -99,9 +98,11 @@ verify_release_checksums() {
 }
 
 validate_calls_network_boundary() {
+  # Профиль calls включают переменной окружения — тем же способом, каким её
+  # читает сам compose. Файла с конфигурацией у установки нет.
   local web_ip turn_ip
-  web_ip="$(env_get "$(instance_env_file)" CHATBALLS_WEB_LISTENING_IP)"
-  turn_ip="$(env_get "$(instance_env_file)" CHATBALLS_TURN_LISTENING_IP)"
+  web_ip="${CHATBALLS_WEB_LISTENING_IP:-}"
+  turn_ip="${CHATBALLS_TURN_LISTENING_IP:-}"
 
   [[ -n "$web_ip" ]] || {
     log_err "CHATBALLS_WEB_LISTENING_IP is required for calls profile"

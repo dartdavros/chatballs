@@ -45,7 +45,7 @@ Global options:
 
 Environment:
   CHATBALLS_RELEASE_DIR   Release bundle dir (default: script dir).
-  CHATBALLS_INSTANCE_DIR   Instance dir with .env and data/ (default: $PWD).
+  CHATBALLS_INSTANCE_DIR   Instance dir with data/ and state/ (default: $PWD).
 USAGE
 }
 

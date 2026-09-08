@@ -19,7 +19,8 @@ COPY content /app/content
 # collectstatic не обращается к БД/Redis/S3. whitenoise раздаёт static в runtime.
 # Build-time dummy values satisfy C04 runtime guards (distinct DB users in
 # settings_database, S3 bucket in settings_storage) that only matter at runtime;
-# collectstatic touches neither. Runtime values come from instance .env.
+# collectstatic touches neither. В runtime секреты приходят из тома
+# (deploy/secrets), остальное человек задаёт в интерфейсе.
 RUN cd apps/backend && CHATBALLS_SECRET_KEY=collectstatic-build CHATBALLS_DEBUG=false CHATBALLS_ENV=production \
     CHATBALLS_DELIVERY_MODE=CLOUD \
     CHATBALLS_APP_ALLOWED_HOSTS=collectstatic.invalid \

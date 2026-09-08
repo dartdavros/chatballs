@@ -141,29 +141,13 @@ def fake_env(tmp_path: Path):
 
     log_file = tmp_path / "docker.log"
 
-    def write_env(**overrides) -> Path:
-        lines = {
-            "COMPOSE_PROJECT_NAME": "chatballs_test",
-            "CHATBALLS_APP_DOMAIN": "app.test",
-            "CHATBALLS_PLATFORM_DOMAIN": "platform.test",
-            "CHATBALLS_ACME_EMAIL": "admin@test",
-            "CHATBALLS_SECRET_KEY": "test-secret-not-default",
-            "CHATBALLS_FIELD_ENCRYPTION_KEY": "",
-            "POSTGRES_DB": "chatballs",
-            "POSTGRES_USER": "chatballs",
-            "POSTGRES_PASSWORD": "pg-secret",
-            "POSTGRES_HOST": "postgres",
-            "POSTGRES_PORT": "5432",
-            "REDIS_URL": "redis://redis:6379/0",
-            "CHATBALLS_APP_ALLOWED_HOSTS": "app.test",
-            "CHATBALLS_PLATFORM_ALLOWED_HOSTS": "platform.test",
-            "CHATBALLS_APP_HEALTHCHECK_HOST": "app.test",
-            "CHATBALLS_PLATFORM_HEALTHCHECK_HOST": "platform.test",
-        }
-        lines.update(overrides)
-        body = "".join(f"{k}={v}\n" for k, v in lines.items())
-        _write_lf(instance / ".env", body)
-        return instance / ".env"
+    # Файла с переменными у продукта нет: установка поднимается со значениями
+    # по умолчанию. То немногое, что ещё настраивается снаружи (профиль calls
+    # и его адреса), приходит переменными окружения — их и подставляем.
+    extra_env: dict[str, str] = {}
+
+    def set_env(**overrides) -> None:
+        extra_env.update({k: str(v) for k, v in overrides.items()})
 
     def install_flock(held: bool = False) -> None:
         flock = bin_dir / "flock"
@@ -184,6 +168,7 @@ def fake_env(tmp_path: Path):
         env["CHATBALLS_RELEASE_DIR"] = str(release)
         env["CHATBALLS_INSTANCE_DIR"] = str(instance)
         env["FAKE_DOCKER_LOG"] = str(log_file)
+        env.update(extra_env)
         # BASH-интерпретатор для скриптов-моков (env bash резолвится из PATH баша).
         return env
 
@@ -198,7 +183,7 @@ def fake_env(tmp_path: Path):
     e.log = log_file
     e.chatballs = chatballs
     e.bash = BASH_EXECUTABLE
-    e.write_env = write_env
+    e.set_env = set_env
     e.install_flock = install_flock
     e.install_docker = install_docker
     e.make_env = make_env
