@@ -1,8 +1,8 @@
-/* @ds-bundle: {"format":4,"namespace":"EdevsHubDesignSystem_e4c9df","components":[{"name":"CommerceStatusTimeline","sourcePath":"components/cards/CommerceStatusTimeline.jsx"},{"name":"DepartmentCard","sourcePath":"components/cards/DepartmentCard.jsx"},{"name":"IntegrationHealthCard","sourcePath":"components/cards/IntegrationHealthCard.jsx"},{"name":"MetricCard","sourcePath":"components/cards/MetricCard.jsx"},{"name":"ProductAIReleaseCard","sourcePath":"components/cards/ProductAIReleaseCard.jsx"},{"name":"Avatar","sourcePath":"components/core/Avatar.jsx"},{"name":"Button","sourcePath":"components/core/Button.jsx"},{"name":"Checkbox","sourcePath":"components/core/Checkbox.jsx"},{"name":"Icon","sourcePath":"components/core/Icon.jsx"},{"name":"ICON_NAMES","sourcePath":"components/core/Icon.jsx"},{"name":"IconButton","sourcePath":"components/core/IconButton.jsx"},{"name":"Input","sourcePath":"components/core/Input.jsx"},{"name":"Tag","sourcePath":"components/core/Tag.jsx"},{"name":"ConversationInbox","sourcePath":"components/inbox/ConversationInbox.jsx"},{"name":"KnowledgeDocumentEditor","sourcePath":"components/inbox/KnowledgeDocumentEditor.jsx"},{"name":"ActorBadge","sourcePath":"components/status/ActorBadge.jsx"},{"name":"AttentionStatus","sourcePath":"components/status/AttentionStatus.jsx"},{"name":"ChannelBadge","sourcePath":"components/status/ChannelBadge.jsx"}],"sourceHashes":{"components/cards/CommerceStatusTimeline.jsx":"a71f119a6bcb","components/cards/DepartmentCard.jsx":"743b4f9632ec","components/cards/IntegrationHealthCard.jsx":"4888c60e9532","components/cards/MetricCard.jsx":"4edb7590ee04","components/cards/ProductAIReleaseCard.jsx":"53de80d598b8","components/core/Avatar.jsx":"e963633b7162","components/core/Button.jsx":"52b57248ad92","components/core/Checkbox.jsx":"412f119cdbb2","components/core/Icon.jsx":"f6c5a199fcf5","components/core/IconButton.jsx":"e8c066b43714","components/core/Input.jsx":"4561efdc9997","components/core/Tag.jsx":"48a8a3543145","components/inbox/ConversationInbox.jsx":"ea2ad8f6a755","components/inbox/KnowledgeDocumentEditor.jsx":"f97e9057fb25","components/status/ActorBadge.jsx":"11e6274f6875","components/status/AttentionStatus.jsx":"a22cbb5b37d2","components/status/ChannelBadge.jsx":"e15a0c45d45f","ui_kits/checkout/CheckoutWidget.jsx":"6d563825a7e0","ui_kits/internal-hub/AuthLoginPage.jsx":"b3ee3d8ea9ab","ui_kits/internal-hub/ClientsPage.jsx":"0a9fb9f5b11d","ui_kits/internal-hub/CommandCenterPage.jsx":"870dd4cd0c22","ui_kits/internal-hub/HubShell.jsx":"ce0eb4d2dc70","ui_kits/web-chat/WebChatWidget.jsx":"e4099f49f9c0"},"inlinedExternals":[],"unexposedExports":[]} */
+/* @ds-bundle: {"format":4,"namespace":"ChatballsDesignSystem_e4c9df","components":[{"name":"CommerceStatusTimeline","sourcePath":"components/cards/CommerceStatusTimeline.jsx"},{"name":"DepartmentCard","sourcePath":"components/cards/DepartmentCard.jsx"},{"name":"IntegrationHealthCard","sourcePath":"components/cards/IntegrationHealthCard.jsx"},{"name":"MetricCard","sourcePath":"components/cards/MetricCard.jsx"},{"name":"ProductAIReleaseCard","sourcePath":"components/cards/ProductAIReleaseCard.jsx"},{"name":"Avatar","sourcePath":"components/core/Avatar.jsx"},{"name":"Button","sourcePath":"components/core/Button.jsx"},{"name":"Checkbox","sourcePath":"components/core/Checkbox.jsx"},{"name":"Icon","sourcePath":"components/core/Icon.jsx"},{"name":"ICON_NAMES","sourcePath":"components/core/Icon.jsx"},{"name":"IconButton","sourcePath":"components/core/IconButton.jsx"},{"name":"Input","sourcePath":"components/core/Input.jsx"},{"name":"Tag","sourcePath":"components/core/Tag.jsx"},{"name":"ConversationInbox","sourcePath":"components/inbox/ConversationInbox.jsx"},{"name":"KnowledgeDocumentEditor","sourcePath":"components/inbox/KnowledgeDocumentEditor.jsx"},{"name":"ActorBadge","sourcePath":"components/status/ActorBadge.jsx"},{"name":"AttentionStatus","sourcePath":"components/status/AttentionStatus.jsx"},{"name":"ChannelBadge","sourcePath":"components/status/ChannelBadge.jsx"}],"sourceHashes":{"components/cards/CommerceStatusTimeline.jsx":"a71f119a6bcb","components/cards/DepartmentCard.jsx":"743b4f9632ec","components/cards/IntegrationHealthCard.jsx":"4888c60e9532","components/cards/MetricCard.jsx":"4edb7590ee04","components/cards/ProductAIReleaseCard.jsx":"53de80d598b8","components/core/Avatar.jsx":"e963633b7162","components/core/Button.jsx":"52b57248ad92","components/core/Checkbox.jsx":"412f119cdbb2","components/core/Icon.jsx":"f6c5a199fcf5","components/core/IconButton.jsx":"e8c066b43714","components/core/Input.jsx":"4561efdc9997","components/core/Tag.jsx":"48a8a3543145","components/inbox/ConversationInbox.jsx":"ea2ad8f6a755","components/inbox/KnowledgeDocumentEditor.jsx":"f97e9057fb25","components/status/ActorBadge.jsx":"11e6274f6875","components/status/AttentionStatus.jsx":"a22cbb5b37d2","components/status/ChannelBadge.jsx":"e15a0c45d45f","ui_kits/checkout/CheckoutWidget.jsx":"6d563825a7e0","ui_kits/internal-hub/AuthLoginPage.jsx":"b3ee3d8ea9ab","ui_kits/internal-hub/ClientsPage.jsx":"0a9fb9f5b11d","ui_kits/internal-hub/CommandCenterPage.jsx":"870dd4cd0c22","ui_kits/internal-hub/HubShell.jsx":"ce0eb4d2dc70","ui_kits/web-chat/WebChatWidget.jsx":"e4099f49f9c0"},"inlinedExternals":[],"unexposedExports":[]} */
 
 (() => {
 
-const __ds_ns = (window.EdevsHubDesignSystem_e4c9df = window.EdevsHubDesignSystem_e4c9df || {});
+const __ds_ns = (window.ChatballsDesignSystem_e4c9df = window.ChatballsDesignSystem_e4c9df || {});
 
 const __ds_scope = {};
 
@@ -1094,10 +1094,10 @@ const {
   CommerceStatusTimeline,
   Icon,
   Checkbox
-} = window.EdevsHubDesignSystem_e4c9df;
+} = window.ChatballsDesignSystem_e4c9df;
 
 /* Recreation of design/baseline/CheckoutPanel.dc.html — the public
-   pay.hub.edevs.tech checkout flow (SPEC-HUB-0007). Mobile-first, no Hub chrome. */
+   pay.chatballs checkout flow (SPEC-HUB-0007). Mobile-first, no Hub chrome. */
 function CheckoutWidget() {
   const [st, setSt] = React.useState("checkout");
   const [buyer, setBuyer] = React.useState("person");
@@ -1823,7 +1823,7 @@ const {
   Input,
   Button,
   Icon
-} = window.EdevsHubDesignSystem_e4c9df;
+} = window.ChatballsDesignSystem_e4c9df;
 
 /* Recreation of design/baseline/AUTH · Вход.dc.html */
 function AuthLoginPage({
@@ -1872,7 +1872,7 @@ function AuthLoginPage({
       fontWeight: 700,
       letterSpacing: "-0.01em"
     }
-  }, "Edevs Hub"), /*#__PURE__*/React.createElement("p", {
+  }, "Chatballs"), /*#__PURE__*/React.createElement("p", {
     style: {
       margin: "5px 0 0",
       fontSize: 13,
@@ -1919,7 +1919,7 @@ function AuthLoginPage({
     }),
     value: email,
     onChange: e => setEmail(e.target.value),
-    placeholder: "you@edevs.tech"
+    placeholder: "you@chatballs"
   })), /*#__PURE__*/React.createElement("div", {
     style: {
       marginBottom: 22
@@ -1962,7 +1962,7 @@ function AuthLoginPage({
       fontSize: 12,
       color: "var(--n-5)"
     }
-  }, "\u0414\u043E\u0441\u0442\u0443\u043F \u0442\u043E\u043B\u044C\u043A\u043E \u0434\u043B\u044F \u0441\u043E\u0442\u0440\u0443\u0434\u043D\u0438\u043A\u043E\u0432 Edevs \xB7 \u0437\u0430\u0449\u0438\u0449\u0451\u043D\u043D\u043E\u0435 \u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u0435")));
+  }, "\u0414\u043E\u0441\u0442\u0443\u043F \u0442\u043E\u043B\u044C\u043A\u043E \u0434\u043B\u044F \u0441\u043E\u0442\u0440\u0443\u0434\u043D\u0438\u043A\u043E\u0432 Chatballs \xB7 \u0437\u0430\u0449\u0438\u0449\u0451\u043D\u043D\u043E\u0435 \u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u0435")));
 }
 })(); } catch (e) { __ds_ns.__errors.push({ path: "ui_kits/internal-hub/AuthLoginPage.jsx", error: String((e && e.message) || e) }); }
 
@@ -1972,7 +1972,7 @@ const {
   Avatar,
   Tag,
   Icon
-} = window.EdevsHubDesignSystem_e4c9df;
+} = window.ChatballsDesignSystem_e4c9df;
 const DATA = [{
   name: "Мария Соколова",
   initials: "МС",
@@ -2265,7 +2265,7 @@ const {
   MetricCard,
   IntegrationHealthCard,
   AttentionStatus
-} = window.EdevsHubDesignSystem_e4c9df;
+} = window.ChatballsDesignSystem_e4c9df;
 
 /* Recreation of design/baseline/Командный центр.dc.html */
 function CommandCenterPage({
@@ -2508,7 +2508,7 @@ try { (() => {
 const {
   Icon,
   Avatar
-} = window.EdevsHubDesignSystem_e4c9df;
+} = window.ChatballsDesignSystem_e4c9df;
 const NAV = [{
   key: "command",
   label: "Командный центр",
@@ -2597,7 +2597,7 @@ function HubShell({
       color: "var(--text-heading)",
       letterSpacing: "-0.01em"
     }
-  }, "Edevs Hub"), /*#__PURE__*/React.createElement("span", {
+  }, "Chatballs"), /*#__PURE__*/React.createElement("span", {
     style: {
       fontSize: 11,
       color: "var(--text-tertiary)"
@@ -2715,7 +2715,7 @@ function HubShell({
       fontWeight: 500,
       color: "var(--text-secondary)"
     }
-  }, "Edevs"), /*#__PURE__*/React.createElement("span", {
+  }, "Chatballs"), /*#__PURE__*/React.createElement("span", {
     style: {
       color: "var(--n-6)"
     }
@@ -2787,7 +2787,7 @@ try { (() => {
 const {
   ActorBadge,
   Icon
-} = window.EdevsHubDesignSystem_e4c9df;
+} = window.ChatballsDesignSystem_e4c9df;
 
 /* Recreation of design/baseline/ChatPanel.dc.html — Foxray's embedded web-chat
    widget. States: welcome (consent) / ai / operator handoff / checkout card / unavailable. */

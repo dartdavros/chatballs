@@ -1,4 +1,4 @@
-# CustoCRM Design System
+# Chatballs Design System
 
 Статический справочник текущего frontend UI. React, сборка и установка зависимостей не требуются.
 
@@ -7,13 +7,13 @@
 Из корня репозитория:
 
 ```powershell
-Start-Process .\apps\internal-ui\design-system\index.html
+Start-Process .\design\design-system\index.html
 ```
 
 Для просмотра через локальный HTTP-сервер:
 
 ```powershell
-python -m http.server 8080 --directory .\apps\internal-ui\design-system
+python -m http.server 8080 --directory .\design\design-system
 Start-Process http://localhost:8080
 ```
 

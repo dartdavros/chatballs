@@ -1,9 +1,9 @@
 function installIconSprite() {
-  if (!window.CUSTOCRM_ICON_SPRITE || document.querySelector("[data-custocrm-icon-sprite]")) return;
+  if (!window.CHATBALLS_ICON_SPRITE || document.querySelector("[data-chatballs-icon-sprite]")) return;
   const container = document.createElement("div");
   container.hidden = true;
-  container.dataset.custocrmIconSprite = "";
-  container.innerHTML = window.CUSTOCRM_ICON_SPRITE;
+  container.dataset.chatballsIconSprite = "";
+  container.innerHTML = window.CHATBALLS_ICON_SPRITE;
   document.body.prepend(container);
 }
 
@@ -34,7 +34,7 @@ function buildSidebar() {
   sidebar.innerHTML = `
     <a class="ds-brand" href="index.html">
       <span class="ds-brand-mark">C</span>
-      <span><strong>CustoCRM</strong><small>Design System</small></span>
+      <span><strong>Chatballs</strong><small>Design System</small></span>
     </a>
     <nav class="ds-nav" aria-label="Разделы дизайн-системы">${nav}</nav>
     <div class="ds-sidebar-footer">Статический каталог текущего frontend UI.<br>Источник: <code>apps/internal-ui/src</code></div>
@@ -124,7 +124,7 @@ function addCopyButtons() {
 
 function renderInventory() {
   const body = document.querySelector("[data-inventory-body]");
-  const payload = window.CUSTOCRM_INVENTORY;
+  const payload = window.CHATBALLS_INVENTORY;
   if (!body || !payload) return;
 
   body.innerHTML = payload.items.map((item) => {

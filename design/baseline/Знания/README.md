@@ -1,14 +1,14 @@
 # База знаний AI-агентов — design baseline (DG-01)
 
-Макет раздела **AI → Знания** (CustoCRM / ООО «Эдевс») по SPEC-HUB-0026 / ADR-HUB-0036.
+Макет раздела **AI → Знания** (Chatballs / ООО «Эдевс») по SPEC-HUB-0026 / ADR-HUB-0036.
 
 ## Состав
 
 ```
 Knowledge Library Baseline.dc.html   — макет (6 кадров: A–E + состояния)
 support.js                           — рантайм Design Component (шаблон + логика)
-_ds/edevs-hub-design-system-…/       — дизайн-система: токены, styles.css, _ds_bundle.js
-assets/custocrm-mark.svg             — логотип CustoCRM
+_ds/chatballs-hub-design-system-…/       — дизайн-система: токены, styles.css, _ds_bundle.js
+assets/chatballs-mark.svg             — логотип Chatballs
 ```
 
 ## Запуск
