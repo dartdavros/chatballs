@@ -317,9 +317,9 @@ export function AgentDetailPage({
 // --- Инструкции (кадры G3/G5) ---
 
 const INSTRUCTION_FIELDS = [
-  { key: "persona", label: "Кто он и что делает", hint: "персонализация", rows: 2, placeholder: "" },
-  { key: "tone", label: "Как он должен говорить", hint: "тон", rows: 1, placeholder: "Например: спокойно и вежливо, на «вы»" },
-  { key: "instructions", label: "Правила работы", hint: "инструкции", rows: 3, placeholder: "Например: не называй цены, направляй к консультанту" },
+  { key: "persona", label: "Кто он и что делает", hint: "персонализация", rows: 7, placeholder: "" },
+  { key: "tone", label: "Как он должен говорить", hint: "тон", rows: 7, placeholder: "Например: спокойно и вежливо, на «вы»" },
+  { key: "instructions", label: "Правила работы", hint: "инструкции", rows: 10, placeholder: "Например: не называй цены, направляй к консультанту" },
 ] as const;
 
 function InstructionsCard({ card, canManage, busy, apply }: {
