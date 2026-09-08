@@ -5,13 +5,11 @@ from django.db.models import (
     DateTimeField,
     F,
     IntegerField,
-    Max,
     Q,
     QuerySet,
     Value,
     When,
 )
-from django.db.models.functions import Coalesce
 
 from chatballs.api.pagination import SortKey
 from chatballs.conversations.models import (
@@ -36,21 +34,20 @@ def conversations_for_context(context: TenantContext) -> QuerySet[Conversation]:
         )
         .prefetch_related("labels")
         # Инбокс сортируется по времени последнего сообщения (а не по служебной
-        # активности вроде claim/takeover); fallback — last_activity_at для
-        # диалогов без сообщений. Coalesce вместо nulls_last: ключ сортировки
-        # обязан быть непустым, иначе курсор окна не сравнить (api.pagination).
-        .annotate(sort_at=Coalesce(Max("messages__created_at"), F("last_activity_at")))
-        .order_by("-sort_at", "-id")
+        # активности вроде claim/takeover). Поле денормализовано и держится
+        # сигналом: агрегат max(messages.created_at) не ложился ни в индекс, ни
+        # в курсор окна — на каждый запрос выходил GROUP BY по всей ленте.
+        .order_by("-last_message_at", "-id")
     )
 
 
 # Ключи сортировки инбокса. Порядок и правило сравнения курсора — одно и то же
 # знание, поэтому оно живёт здесь, а не разъезжается по view.
-ACTIVITY_KEYS = (SortKey("sort_at"), SortKey("id"))
+ACTIVITY_KEYS = (SortKey("last_message_at"), SortKey("id"))
 WAITING_KEYS = (
     SortKey("_waiting_rank", descending=False),
     SortKey("_wait_at", descending=False),
-    SortKey("sort_at"),
+    SortKey("last_message_at"),
     SortKey("id"),
 )
 # Заглушка ключа ожидания для диалогов, которые человека не ждут: ключ окна
@@ -68,18 +65,18 @@ def order_conversations(
     дольше всех ждущий выше», остальные — по убыванию активности.
     """
     if sort != "waiting":
-        return queryset.order_by("-sort_at", "-id"), ACTIVITY_KEYS
+        return queryset.order_by("-last_message_at", "-id"), ACTIVITY_KEYS
     waits = Q(lifecycle=LifecycleState.OPEN, control_mode=ControlMode.PAUSED)
     ordered = queryset.annotate(
         _waiting_rank=Case(
             When(waits, then=Value(0)), default=Value(1), output_field=IntegerField()
         ),
         _wait_at=Case(
-            When(waits, then=F("sort_at")),
+            When(waits, then=F("last_message_at")),
             default=Value(_NOT_WAITING_AT),
             output_field=DateTimeField(),
         ),
-    ).order_by("_waiting_rank", "_wait_at", "-sort_at", "-id")
+    ).order_by("_waiting_rank", "_wait_at", "-last_message_at", "-id")
     return ordered, WAITING_KEYS
 
 

@@ -11,9 +11,11 @@ def employee_payload(
     *,
     include_detail: bool = False,
 ) -> dict[str, object]:
+    # Порядок групп задаёт выборка (employees_for): своя сортировка здесь
+    # отменяла бы prefetch и давала запрос на каждого сотрудника в списке.
     groups = [
         {"id": link.group_id, "name": link.group.name}
-        for link in profile.group_links.select_related("group").order_by("group__name")
+        for link in profile.group_links.all()
     ]
     payload: dict[str, object] = {
         "id": profile.user_id,

@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib.postgres.indexes import GinIndex
 from django.contrib.postgres.search import SearchVector
 from django.db import models
+from django.utils import timezone
 
 from chatballs.tenancy.models import TenantRelationModel
 
@@ -35,6 +36,11 @@ class Contact(models.Model):
         blank=True,
     )
     created_at = models.DateTimeField(auto_now_add=True)
+
+    # Триграммные индексы для поиска подстрокой (имя, телефон) заведены в
+    # миграции 0020 сырым SQL: Django 5.2 рендерит функциональный индекс с
+    # opclass без внутренних скобок — «(UPPER(name) gin_trgm_ops)», и Postgres
+    # такой синтаксис не принимает.
 
     def __str__(self) -> str:
         return self.name or f"contact:{self.id}"
@@ -192,10 +198,27 @@ class Conversation(models.Model):
     previous_conversation = models.ForeignKey("self", on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
     created_at = models.DateTimeField(auto_now_add=True)
     last_activity_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    # Время последнего сообщения — порядок инбокса. Отдельно от last_activity_at,
+    # который двигают и служебные действия (перехват, возврат AI): по нему список
+    # сортировать нельзя. У диалога без сообщений — время создания, поэтому поле
+    # непустое и по нему работает и индекс, и курсор окна (api.pagination).
+    last_message_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
         ordering = ["-last_activity_at"]
-        indexes = [models.Index(fields=["channel", "lifecycle"])]
+        indexes = [
+            models.Index(fields=["channel", "lifecycle"]),
+            # Порядок инбокса: организация → свежесть. Раньше сортировка шла по
+            # агрегату max(messages.created_at) и в индекс не ложилась.
+            models.Index(
+                fields=["organization", "-last_message_at", "-id"], name="conv_inbox_order"
+            ),
+            # Список контактов спрашивает по каждому контакту его свежий диалог
+            # и число открытых — подзапросами по этой паре.
+            models.Index(
+                fields=["contact", "-last_activity_at"], name="conv_contact_recent"
+            ),
+        ]
         constraints = [
             # Диалог всегда принадлежит контакту.
             models.CheckConstraint(
@@ -303,6 +326,10 @@ class Message(TenantRelationModel):
             GinIndex(
                 SearchVector("text", config="russian"),
                 name="conv_message_text_fts",
+            ),
+            # Окно истории идёт ровно по этому ключу: диалог → время → id.
+            models.Index(
+                fields=["conversation", "created_at", "id"], name="conv_message_window"
             ),
         ]
 

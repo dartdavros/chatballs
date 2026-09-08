@@ -6,8 +6,9 @@
 
 from __future__ import annotations
 
-from django.db.models import Q, QuerySet
+from django.db.models import Prefetch, Q, QuerySet
 
+from chatballs.identity.group_models import EmployeeGroupMember
 from chatballs.identity.models import OrganizationMembership
 
 ROLE_ANY = "all"
@@ -15,8 +16,17 @@ ROLE_ANY = "all"
 
 def employees_for(organization_id: int, params) -> QuerySet[OrganizationMembership]:
     employees = (
-        OrganizationMembership.objects.select_related("user")
-        .prefetch_related("group_links__group")
+        # organization нужен для адреса аватара, группы — с их порядком: обе
+        # связи берутся здесь, иначе payload спрашивал бы их на каждую строку.
+        OrganizationMembership.objects.select_related("user", "organization")
+        .prefetch_related(
+            Prefetch(
+                "group_links",
+                queryset=EmployeeGroupMember.objects.select_related("group").order_by(
+                    "group__name"
+                ),
+            )
+        )
         .filter(organization_id=organization_id)
     )
     role = params.get("role")

@@ -15,7 +15,10 @@ export type PagedPayload<T> = {
 
 const EMPTY: PagedPayload<never> = { items: [], page: 1, pageSize: 0, total: 0, pageCount: 1 };
 
-export type PagedResource<T> = {
+export type PagedResource<T, P> = {
+  /** Ответ целиком: у некоторых списков в нём есть и свои блоки — например
+   *  справочники фильтров журнала аудита. */
+  payload: P | null;
   items: T[];
   page: number;
   pageCount: number;
@@ -27,12 +30,14 @@ export type PagedResource<T> = {
   reload: () => Promise<void>;
 };
 
-export function usePagedResource<T>(
-  load: (page: number) => Promise<PagedPayload<T>>,
+// Тип записи выводится из самого ответа: у части списков в нём есть и свои
+// блоки (например справочники фильтров журнала аудита), поэтому параметр — ответ.
+export function usePagedResource<P extends PagedPayload<unknown>>(
+  load: (page: number) => Promise<P>,
   filters: unknown,
   errorMessage = "Не удалось загрузить список",
-): PagedResource<T> {
-  const [payload, setPayload] = useState<PagedPayload<T>>(EMPTY as PagedPayload<T>);
+): PagedResource<P["items"][number], P> {
+  const [payload, setPayload] = useState<P | null>(null);
   const [loading, setLoading] = useState(true);
   const [errorText, setErrorText] = useState("");
   // Загрузчик пересоздаётся на каждый рендер — держим его в ref, чтобы эффект
@@ -76,14 +81,17 @@ export function usePagedResource<T>(
     void reload();
   }, [key, reload]);
 
+  // Пока ответа нет, список ведёт себя как пустая первая страница.
+  const current = payload ?? (EMPTY as PagedPayload<P["items"][number]>);
   return {
-    items: payload.items,
+    payload,
+    items: current.items,
     // Сервер возвращает существующую страницу: если записи удалили из-под
     // открытой страницы, он отдаст последнюю, и подвал покажет именно её.
-    page: payload.page,
-    pageCount: payload.pageCount,
-    pageSize: payload.pageSize,
-    total: payload.total,
+    page: current.page,
+    pageCount: current.pageCount,
+    pageSize: current.pageSize,
+    total: current.total,
     loading,
     errorText,
     setPage,

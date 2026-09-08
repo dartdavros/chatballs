@@ -1,3 +1,5 @@
+from django.db.models import Count, Max, Q
+
 from chatballs.integrations.features import features_payload
 from chatballs.conversations.models import (
     ConnectionIdentity,
@@ -38,6 +40,54 @@ def message_payload(message: Message) -> dict[str, object]:
         payload["attachmentContentType"] = message.attachment_content_type
         payload["attachmentSize"] = message.attachment_size
     return payload
+
+
+def last_messages_for(conversation_ids: list[int]) -> dict[int, Message]:
+    """Последняя реплика каждого диалога страницы — одним запросом.
+
+    Превью строки списка раньше спрашивалось на каждый диалог: тридцать строк
+    инбокса стоили тридцати запросов, и обновление списка раз в четыре секунды
+    множило их на число операторов.
+    """
+    if not conversation_ids:
+        return {}
+    rows = (
+        Message.objects.filter(conversation_id__in=conversation_ids)
+        .exclude(author_type=MessageAuthor.SYSTEM)
+        .select_related("author_user")
+        .order_by("conversation_id", "-created_at", "-id")
+        .distinct("conversation_id")
+    )
+    return {message.conversation_id: message for message in rows}
+
+
+def pending_counts_for(conversation_ids: list[int], read_map: dict[int, int]) -> dict[int, int]:
+    """Бейджи непрочитанных для страницы — двумя запросами вместо строки-на-строку.
+
+    Считается хвост клиентских сообщений: те, что пришли после последнего
+    ответа AI или оператора и которых просматривающий ещё не открывал.
+    """
+    if not conversation_ids:
+        return {}
+    answered = dict(
+        Message.objects.filter(conversation_id__in=conversation_ids)
+        .exclude(author_type=MessageAuthor.CONTACT)
+        .values("conversation_id")
+        .annotate(last_id=Max("id"))
+        .values_list("conversation_id", "last_id")
+    )
+    tail = Q()
+    for conversation_id in conversation_ids:
+        threshold = max(read_map.get(conversation_id, 0), answered.get(conversation_id, 0))
+        tail |= Q(conversation_id=conversation_id, id__gt=threshold)
+    counts = (
+        Message.objects.filter(author_type=MessageAuthor.CONTACT)
+        .filter(tail)
+        .values("conversation_id")
+        .annotate(total=Count("id"))
+        .values_list("conversation_id", "total")
+    )
+    return dict(counts)
 
 
 def _last_message(conversation: Conversation) -> Message | None:
@@ -123,6 +173,8 @@ def conversation_payload(
     detailed: bool = False,
     last_read_id: int = 0,
     viewer_id: int | None = None,
+    last_message: Message | None = None,
+    pending_count: int | None = None,
 ) -> dict[str, object]:
     """Карточка диалога.
 
@@ -130,7 +182,9 @@ def conversation_payload(
     собственным окном (`/messages/`), иначе открытие диалога с тысячей реплик
     тянуло бы их все, да ещё и на каждом обновлении карточки.
     """
-    last = None if detailed else _last_message(conversation)
+    # Списку превью и бейдж считает страница целиком (last_messages_for,
+    # pending_counts_for); поштучный расчёт остаётся для одиночных ответов.
+    last = None if detailed else (last_message or _last_message(conversation))
     channel = conversation.channel
     payload = {
         "id": conversation.id,
@@ -212,5 +266,7 @@ def conversation_payload(
         ).exists()
     else:
         payload["lastMessage"] = message_payload(last) if last else None
-        payload["pendingCount"] = _pending_count(conversation, last_read_id)
+        payload["pendingCount"] = (
+            pending_count if pending_count is not None else _pending_count(conversation, last_read_id)
+        )
     return payload

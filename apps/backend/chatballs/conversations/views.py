@@ -22,12 +22,12 @@ from chatballs.conversations.selectors import (
     order_conversations,
     visible_conversations_for,
 )
-from chatballs.conversations.serializers import conversation_payload, message_payload
-
-# Окно инбокса и окно истории: размеры продуктовые, клиент может запросить
-# меньше, больше — только до потолка api.pagination.
-LIST_WINDOW_SIZE = 30
-MESSAGE_WINDOW_SIZE = 50
+from chatballs.conversations.serializers import (
+    conversation_payload,
+    last_messages_for,
+    message_payload,
+    pending_counts_for,
+)
 from chatballs.conversations.services import (
     ClaimError,
     claim_conversation,
@@ -42,6 +42,11 @@ from chatballs.conversations.view_base import ConversationViewBase
 from chatballs.identity.group_models import EmployeeGroup
 from chatballs.identity.models import OrganizationMembership
 from chatballs.identity.policy import ResourceScope, authorize, can_administer_access
+
+# Окно инбокса и окно истории: размеры продуктовые, клиент может запросить
+# меньше, больше — только до потолка api.pagination.
+LIST_WINDOW_SIZE = 30
+MESSAGE_WINDOW_SIZE = 50
 
 
 class ConversationListView(ConversationViewBase):
@@ -113,6 +118,11 @@ class ConversationListView(ConversationViewBase):
                 user=request.user, conversation__in=page.items
             ).values_list("conversation_id", "last_read_message_id")
         )
+        # Превью и бейдж — на всю страницу разом: построчно это давало по два
+        # запроса на диалог при обновлении списка раз в четыре секунды.
+        conversation_ids = [conversation.id for conversation in page.items]
+        previews = last_messages_for(conversation_ids)
+        pending = pending_counts_for(conversation_ids, read_map)
         return Response(
             window_payload(
                 page,
@@ -120,6 +130,8 @@ class ConversationListView(ConversationViewBase):
                     c,
                     last_read_id=read_map.get(c.id, 0),
                     viewer_id=request.user.id,
+                    last_message=previews.get(c.id),
+                    pending_count=pending.get(c.id, 0),
                 ),
                 # Счётчик над списком показывает весь охват с учётом фильтров,
                 # а не число уже загруженных строк.
