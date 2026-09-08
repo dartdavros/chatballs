@@ -90,14 +90,6 @@ class HumanUser(AbstractUser):
     def __str__(self) -> str:
         return self.email
 
-class TaxRegime(models.TextChoices):
-    USN_INCOME = "USN_INCOME", "УСН доходы"
-
-
-class VatMode(models.TextChoices):
-    WITHOUT_VAT = "WITHOUT_VAT", "Без НДС"
-
-
 class OrganizationStatus(models.TextChoices):
     # SPEC-HUB-0021 §6/§8: PENDING_OWNER до принятия OWNER invitation, ACTIVE после.
     ACTIVE = "ACTIVE", "Active"
@@ -123,8 +115,6 @@ class Organization(models.Model):
     )
     timezone = models.CharField(max_length=64, default="Europe/Moscow")
     currency = models.CharField(max_length=3, default="RUB")
-    tax_regime = models.CharField(max_length=32, choices=TaxRegime.choices, default=TaxRegime.USN_INCOME)
-    vat_mode = models.CharField(max_length=32, choices=VatMode.choices, default=VatMode.WITHOUT_VAT)
     logo = models.FileField(
         upload_to=organization_logo_upload_path,
         max_length=512,

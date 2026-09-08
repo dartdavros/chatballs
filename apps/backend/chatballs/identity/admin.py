@@ -35,7 +35,7 @@ class HumanUserAdmin(UserAdmin):
 
 @admin.register(Organization)
 class OrganizationAdmin(admin.ModelAdmin):
-    list_display = ["slug", "name", "currency", "timezone", "tax_regime", "vat_mode"]
+    list_display = ["slug", "name", "currency", "timezone"]
     search_fields = ["slug", "name"]
 
 

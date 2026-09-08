@@ -10,7 +10,6 @@ from django.db import transaction
 
 from chatballs.channels import authorization
 from chatballs.channels.models import Channel
-from chatballs.channels.policy import ChannelPolicy, require_valid_policy
 from chatballs.identity.group_models import EmployeeGroup
 from chatballs.integrations.models import Integration, IntegrationKind
 from chatballs.tenancy.context import TenantContext
@@ -137,10 +136,6 @@ def update_channel(
         if getattr(locked, name) != value:
             setattr(locked, name, value)
             changed.append(name)
-
-    # Инварианты по целевому состоянию — до записи: нарушение отклоняет запрос
-    # целиком, частичного применения не остаётся даже в памяти (§3.2, §6.5).
-    require_valid_policy(policy=ChannelPolicy.from_channel(locked))
 
     if changed:
         locked.save(update_fields=[*changed, "updated_at"])

@@ -15,13 +15,11 @@ class Channel(models.Model):
     # LLM-провайдер канала (ADR-CHATBALLS-0020).
     provider_integration = models.ForeignKey("integrations.Integration", on_delete=models.PROTECT, related_name="channels", null=True, blank=True)
     is_active = models.BooleanField(default=True)
-    # Политика канала: остаток от домена продаж — коммерческие флаги всегда
-    # выключены (ADR-CHATBALLS-0041/0045), анонимные сессии и самозаявленный контакт
-    # используются веб-виджетом и порталом.
+    # Политика канала: анонимные сессии и самозаявленный контакт используются
+    # веб-виджетом и порталом. Коммерческие флаги удалены вместе с доменом
+    # продаж (ADR-CHATBALLS-0041) и сущностью Product (ADR-CHATBALLS-0045).
     allow_anonymous_sessions = models.BooleanField(default=True)
     allow_self_reported_contact = models.BooleanField(default=True)
-    allow_sales_attribution = models.BooleanField(default=False)
-    allow_checkout_actions = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
