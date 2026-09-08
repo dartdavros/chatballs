@@ -7,6 +7,7 @@ from django.utils import timezone
 from django.utils.text import slugify
 
 from chatballs.ai.indexing import reindex_portal_article
+from chatballs.conversations.transports.base import guess_content_type, safe_filename
 from chatballs.support_portals.content_markdown import normalize_file_links
 from chatballs.support_portals.models import (
     PortalArticle,
@@ -202,6 +203,34 @@ def ensure_portal_editable(portal: SupportPortal) -> None:
         )
 
 
+# Типы, которые файловый endpoint портала отдаёт inline: в статью их вставляют
+# тегом <img> (и ссылкой на PDF), поэтому вложением их отдавать нельзя.
+# Остальное — только скачиванием: тип приходит от загружающего, а страница
+# открывается на домене портала.
+INLINE_CONTENT_TYPES = frozenset(
+    {
+        "image/jpeg",
+        "image/png",
+        "image/gif",
+        "image/webp",
+        "image/svg+xml",
+        "application/pdf",
+    }
+)
+
+
+def _clean_content_type(raw: str | None, filename: str) -> str:
+    """Тип содержимого без параметров; незнакомый — угадываем по имени файла.
+
+    Значение попадает в заголовок ответа, поэтому брать его у клиента как есть
+    нельзя: параметры (``; charset=…``) и произвольные строки там не нужны.
+    """
+    candidate = str(raw or "").split(";")[0].strip().lower()
+    if candidate in INLINE_CONTENT_TYPES:
+        return candidate
+    return guess_content_type(filename)
+
+
 def add_article_file(
     *,
     context: TenantContext,
@@ -214,7 +243,7 @@ def add_article_file(
     ensure_portal_editable(article.portal)
     if article.status == ArticleStatus.ARCHIVED:
         raise ValidationError({"article": "Архивную статью нельзя изменять"})
-    original_name = (upload.name or "").strip()
+    original_name = safe_filename((upload.name or "").strip(), "")
     if not original_name:
         raise ValidationError({"file": "Имя файла обязательно"})
     if upload.size and upload.size > MAX_ARTICLE_FILE_BYTES:
@@ -236,7 +265,7 @@ def add_article_file(
             organization=context.organization,
             article=article,
             original_name=original_name,
-            content_type=upload.content_type or "",
+            content_type=_clean_content_type(upload.content_type, original_name),
             size=len(data),
             uploaded_by=author,
         )

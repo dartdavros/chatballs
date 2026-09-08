@@ -236,3 +236,69 @@ class SupportPortalContentManagementTests(SupportPortalTestCase):
         self.assertEqual(response.status_code, 200, response.content)
         self.assertEqual([item["id"] for item in response.json()["items"]], [widget.id])
         self.assertEqual(response.json()["items"][0]["channel"]["id"], self.channel.id)
+
+
+class ArticleFileServingTests(SupportPortalTestCase):
+    """Отдача файлов статьи посетителю портала.
+
+    Тип содержимого приходит от загружающего, а страница открывается на домене
+    портала: inline пускаем только картинки и PDF, остальное — скачиванием.
+    """
+
+    def setUp(self) -> None:
+        super().setUp()
+        portal_id = self.create_portal().json()["portal"]["id"]
+        category = self.client.post(
+            f"/api/v1/support/portals/{portal_id}/categories/",
+            {"name": "Раздел"},
+            format="json",
+        ).json()["category"]
+        article_id = self.client.post(
+            f"/api/v1/support/portals/{portal_id}/articles/",
+            {
+                "categoryId": category["id"],
+                "slug": "statya",
+                "title": "Статья",
+                "summary": "",
+                "content": "# Статья",
+            },
+            format="json",
+        ).json()["article"]["id"]
+        self.files_url = f"/api/v1/support/portals/{portal_id}/articles/{article_id}/files/"
+
+    def _upload(self, name: str, content_type: str) -> dict:
+        response = self.client.post(
+            self.files_url,
+            {"file": SimpleUploadedFile(name, b"bytes", content_type=content_type)},
+            format="multipart",
+        )
+        self.assertEqual(response.status_code, 201, response.content)
+        return response.json()["file"]
+
+    def test_image_is_served_inline_for_the_img_tag(self) -> None:
+        uploaded = self._upload("shema.png", "image/png")
+
+        served = self.client.get(uploaded["path"])
+
+        self.assertEqual(served.status_code, 200)
+        self.assertEqual(served.headers["Content-Type"], "image/png")
+        self.assertNotIn("attachment", served.headers.get("Content-Disposition", ""))
+        self.assertIn("default-src 'none'", served.headers["Content-Security-Policy"])
+
+    def test_html_disguised_as_upload_is_not_rendered_on_the_portal_domain(self) -> None:
+        uploaded = self._upload("payload.html", "text/html")
+
+        served = self.client.get(uploaded["path"])
+
+        self.assertEqual(served.status_code, 200)
+        self.assertIn("attachment", served.headers["Content-Disposition"])
+        self.assertIn("default-src 'none'", served.headers["Content-Security-Policy"])
+
+    def test_content_type_from_the_client_is_not_taken_as_is(self) -> None:
+        # image/png с параметрами и произвольная строка приводятся к типу,
+        # который мы готовы поставить в заголовок ответа.
+        with_parameters = self._upload("shema.png", "image/png; charset=utf-8")
+        self.assertEqual(with_parameters["contentType"], "image/png")
+
+        forged = self._upload("dogovor.pdf", "не тип вовсе")
+        self.assertEqual(forged["contentType"], "application/pdf")

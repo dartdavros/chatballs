@@ -4,6 +4,7 @@ from rest_framework.request import Request
 from rest_framework.views import APIView
 
 from chatballs.identity.models import Organization
+from chatballs.support_portals.content_services import INLINE_CONTENT_TYPES
 from chatballs.support_portals.models import PortalArticleFile
 from chatballs.tenancy.context import TenantContext
 from chatballs.tenancy.database import tenant_atomic
@@ -42,9 +43,16 @@ class PortalArticleFileView(APIView):
             opened_file = article_file.file.open("rb")
             original_name = article_file.original_name
             content_type = article_file.content_type
-        # Картинка встроена в статью тегом <img>, поэтому файл отдаётся inline;
-        # тип берётся сохранённым, чтобы браузер не угадывал по расширению.
-        response = FileResponse(opened_file, filename=original_name)
+        # Картинка встроена в статью тегом <img>, поэтому её отдаём inline. Но
+        # только её: тип пришёл от загружавшего, а страница открывается на
+        # домене портала — что-то вроде text/html здесь стало бы кодом на чужом
+        # домене. Всё, что не картинка и не PDF, уходит вложением.
+        inline = content_type in INLINE_CONTENT_TYPES
+        response = FileResponse(opened_file, filename=original_name, as_attachment=not inline)
         if content_type:
             response.headers["Content-Type"] = content_type
+        # Собственная политика поверх политики поверхности: файл посетителя не
+        # должен ничего исполнять и никуда ходить, даже если CSP установки
+        # когда-нибудь ослабят. Актуально для svg — картинки со скриптом внутри.
+        response.headers["Content-Security-Policy"] = "default-src 'none'; sandbox"
         return response
