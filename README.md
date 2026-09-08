@@ -13,7 +13,7 @@ Windows (PowerShell):
 
 ```powershell
 git clone <URL репозитория> chatballs
-cd chatballs/code/chatballs
+cd chatballs
 .\scripts\start.ps1
 ```
 
@@ -21,7 +21,7 @@ Linux / macOS:
 
 ```bash
 git clone <URL репозитория> chatballs
-cd chatballs/code/chatballs
+cd chatballs
 ./scripts/start.sh
 ```
 

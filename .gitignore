@@ -23,3 +23,6 @@ test-results/
 data/
 .env.bak-*
 **/staticfiles/
+
+# Архив, создаваемый pack.bat
+Chatballs.zip
