@@ -2,6 +2,7 @@ from collections.abc import Callable
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
+from django.utils.cache import patch_vary_headers
 
 
 class LocalCorsMiddleware:
@@ -23,7 +24,10 @@ class LocalCorsMiddleware:
             response["Access-Control-Allow-Credentials"] = "true"
             response["Access-Control-Allow-Headers"] = "Content-Type, X-Correlation-Id, X-CSRFToken"
             response["Access-Control-Allow-Methods"] = "GET, POST, PUT, PATCH, DELETE, OPTIONS"
-            response["Vary"] = "Origin"
+            # Именно patch_vary_headers, а не присваивание: на ответах с данными
+            # пользователя Django уже поставил «Vary: Cookie», и затирание его
+            # позволило бы общему кешу отдать ответ одного пользователя другому.
+            patch_vary_headers(response, ["Origin"])
         return response
 
 
@@ -76,9 +80,21 @@ class TlsAwareCookieMiddleware:
         pairs = self._pairs()
         if secure:
             # Браузер прислал защищённые имена — отдаём их Django под обычными.
+            # Защищённое имя всегда сильнее обычного: в этом весь смысл
+            # префикса ``__Host-``. Cookie с ним браузер принимает только с
+            # самого хоста, по TLS и без Domain, а обычное имя может выставить
+            # сосед по родительскому домену — и, будь у него приоритет, он
+            # подменял бы и сессию, и CSRF-токен.
+            #
+            # Обычное имя по TLS не просто уступает, а игнорируется: сами мы
+            # его по TLS не выдаём, значит пришло оно не от нас. Цена — один
+            # повторный вход в тот момент, когда перед установкой впервые
+            # появился сертификат: cookie, выданные по http, дальше не в счёт.
             for plain, hardened in pairs:
-                if hardened in request.COOKIES and plain not in request.COOKIES:
+                if hardened in request.COOKIES:
                     request.COOKIES[plain] = request.COOKIES[hardened]
+                elif plain in request.COOKIES:
+                    del request.COOKIES[plain]
         response = self.get_response(request)
         if not secure:
             return response
