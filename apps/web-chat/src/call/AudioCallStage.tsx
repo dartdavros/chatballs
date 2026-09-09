@@ -106,6 +106,15 @@ export function AudioCallStage({ call, accessToken, iceServers, loading, invalid
     () => buildAudioCallViewStatus({ loading, invalid, call, connection: rtc.connectionPhase, mediaIssue: rtc.mediaIssue, errorText, close }),
     [loading, invalid, call, rtc.connectionPhase, rtc.mediaIssue, errorText, close],
   );
+  // «Повторить» на статус-экране: при проблеме с микрофоном/браузером — перепроверка
+  // устройств, при сорвавшемся соединении — рестарт RTC (раньше и там, и там звался
+  // prepare, и кнопка на упавшем соединении ничего не чинила).
+  const onRetry = useCallback(() => {
+    setErrorText("");
+    if (rtc.mediaIssue === "devices" || rtc.mediaIssue === "unsupported") void rtc.prepare();
+    else void rtc.restart();
+  }, [rtc.mediaIssue, rtc.prepare, rtc.restart]);
+
   const elapsed = useConnectionTimer(rtc.connectionPhase === "connected");
   const peerName = call?.staffName || "Оператор";
   const initials = peerName.trim().split(/\s+/).map((part) => part[0]).slice(0, 2).join("").toUpperCase() || "ОП";
@@ -133,7 +142,7 @@ export function AudioCallStage({ call, accessToken, iceServers, loading, invalid
         onCancel={() => void onCancel()}
         onEnd={() => void onEnd()}
         onClose={() => void close()}
-        onRetry={() => { setErrorText(""); void rtc.prepare(); }}
+        onRetry={onRetry}
       />
     </main>
   );

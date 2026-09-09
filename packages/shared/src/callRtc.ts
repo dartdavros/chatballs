@@ -164,6 +164,10 @@ export class CallRtcClient {
       case "participant.connection_state":
         if (message.state === "DISCONNECTED" || message.state === "RECONNECTING") {
           this.options.handlers.onConnection?.("reconnecting");
+        } else if (message.state === "CONNECTED" && this.pc?.connectionState === "connected") {
+          // Обрыв был у собеседника: наш pc не менял состояния, и без этой ветки
+          // UI навсегда оставался в «Переподключении» после его возвращения.
+          this.options.handlers.onConnection?.("connected");
         }
         return;
       default:

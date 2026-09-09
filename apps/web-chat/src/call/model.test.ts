@@ -39,6 +39,31 @@ describe("call view model", () => {
     })).toBe("incoming");
   });
 
+  it("keeps a started audio call in reconnecting so the hang-up stays reachable", () => {
+    expect(resolveAudioCallViewMode({
+      loading: false,
+      invalid: false,
+      call: { ...call, kind: "AUDIO", status: "ACTIVE" },
+      started: true,
+      connection: "reconnecting",
+      mediaIssue: "none",
+    })).toBe("reconnecting");
+  });
+
+  it("never offers a call-back the customer cannot make", () => {
+    for (const status of ["DECLINED", "MISSED", "EXPIRED", "CANCELLED", "ENDED"]) {
+      const view = buildAudioCallViewStatus({
+        loading: false,
+        invalid: false,
+        call: { ...call, kind: "AUDIO", status },
+        connection: "idle",
+        mediaIssue: "none",
+        close: action,
+      });
+      expect(view?.bar, status).toBe("close");
+    }
+  });
+
   it("turns an audio action failure into a classified retry state", () => {
     const status = buildAudioCallViewStatus({
       loading: false,

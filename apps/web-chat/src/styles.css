@@ -41,6 +41,7 @@ body,
 
 .public-call-page {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -51,6 +52,15 @@ body,
 .public-call-page.is-audio {
   background: #0b0b12;
   font-family: var(--font-sans);
+}
+
+/* Портретная сцена 9:16 высотой 711px не влезает в низкое окно, и кнопки приёма
+   уезжали за фолд. Сжимаем по высоте вьюпорта — ширина ведущая, поэтому
+   пропорция остаётся ровно 9:16 (высоту считает aspect-ratio). */
+@media (min-width: 481px) {
+  .public-call-page.is-audio .hub-audio-view {
+    width: min(100%, calc((100dvh - 32px) * 9 / 16));
+  }
 }
 
 @media (max-width: 480px) {

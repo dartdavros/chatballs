@@ -65,8 +65,10 @@ export function AudioCallWaveform({ stream, micOn = true, active }: Props) {
       }
       const speaking = active && micOn;
       const t = ts / 1000;
-      const base = speaking ? SPEAK_AMP : IDLE_AMP;
-      const ampScale = speaking ? (0.35 + 0.65 * level) : 1;
+      // В тишине волна ровно такая же, как idle: амплитуда растёт от IDLE_AMP к
+      // SPEAK_AMP строго по громкости. Раньше базой всегда был SPEAK_AMP, и линия
+      // заметно колыхалась, даже когда собеседник молчал.
+      const base = speaking ? IDLE_AMP + (SPEAK_AMP - IDLE_AMP) * level : IDLE_AMP;
 
       ctx.lineWidth = 3;
       ctx.lineJoin = "round";
@@ -75,7 +77,7 @@ export function AudioCallWaveform({ stream, micOn = true, active }: Props) {
       for (let x = 0; x <= W; x += 4) {
         const p = x / W;
         const env = Math.sin(p * Math.PI); // taper ends
-        const amp = env * H * 0.36 * base * ampScale * (0.6 + 0.4 * Math.sin(t * 2.1 + p * 3));
+        const amp = env * H * 0.36 * base * (0.6 + 0.4 * Math.sin(t * 2.1 + p * 3));
         const y = mid + Math.sin(p * 22 + t * 6) * amp + Math.sin(p * 9 - t * 3.3) * amp * 0.5;
         if (x === 0) ctx.moveTo(x, y);
         else ctx.lineTo(x, y);

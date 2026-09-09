@@ -22,6 +22,10 @@
   max-width: none;
   max-height: none;
   aspect-ratio: 9 / 16;
+  /* Сцена внутри модалки всегда живёт по пропорции, а не по высоте вьюпорта:
+     на узком окне оператора мобильная ветка audio-call.css иначе растянула бы
+     карточку на весь экран прямо внутри antd Modal. */
+  height: auto;
   border-radius: 0;
   box-shadow: none;
 }
