@@ -72,7 +72,7 @@ jobs:
         run: |
           set -eu
           digest_of() {
-            docker buildx imagetools inspect "$1" --format '{{ "{{json .Manifest.Digest}}" }}' | tr -d '"'
+            docker buildx imagetools inspect "$1" --format '{{json .Manifest.Digest}}' | tr -d '"'
           }
           echo "postgres=${POSTGRES_BASE_IMAGE}@$(digest_of "$POSTGRES_BASE_IMAGE")" >> "$GITHUB_OUTPUT"
           echo "gateway=${GATEWAY_BASE_IMAGE}@$(digest_of "$GATEWAY_BASE_IMAGE")" >> "$GITHUB_OUTPUT"
