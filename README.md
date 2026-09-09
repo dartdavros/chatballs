@@ -18,6 +18,7 @@
   <img alt="Self-hosted" src="https://img.shields.io/badge/self--hosted-one%20command-1677ff">
   <img alt="Docker Compose" src="https://img.shields.io/badge/docker-compose-2496ED?logo=docker&logoColor=white">
   <img alt="Bring your own model" src="https://img.shields.io/badge/AI-bring%20your%20own%20model-6f42c1">
+  <img alt="License: AGPL-3.0" src="https://img.shields.io/badge/license-AGPL--3.0-blue">
 </p>
 
 ---
@@ -36,6 +37,7 @@
   - [Updating](#updating)
 - [Features](#features)
 - [Troubleshooting](#troubleshooting)
+- [License](#license)
 
 ---
 
@@ -321,3 +323,9 @@ Copy the `chatballs-postgres`, `chatballs-media` and `chatballs-secrets` volumes
 docker compose exec -T postgres pg_dump -U chatballs_bootstrap chatballs > backup.sql
 ```
 </details>
+
+---
+
+## License
+
+Chatballs is distributed under the [GNU Affero General Public License v3.0](LICENSE). You may use, modify and self-host it freely. If you modify it and offer it to others as a service, you must publish your changes under the same license.
