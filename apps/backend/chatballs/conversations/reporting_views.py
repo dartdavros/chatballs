@@ -8,6 +8,7 @@ from chatballs.conversations.contacts_merge import merge_contacts, revert_merge
 from chatballs.conversations.models import Contact
 from chatballs.conversations.stats import sales_overview_stats
 from chatballs.conversations.view_base import ConversationViewBase
+from chatballs.i18n import t
 from chatballs.identity.audit import record_audit_event
 from chatballs.identity.models import EmployeeRole
 
@@ -41,14 +42,14 @@ class ClientDetailView(ConversationViewBase):
         try:
             return Response({"client": client_detail(self._org(request).id, contact_id)})
         except Contact.DoesNotExist:
-            return Response({"detail": "Клиент не найден"}, status=404)
+            return Response({"detail": t("sales.client_not_found")}, status=404)
 
     def patch(self, request: Request, contact_id: int) -> Response:
         organization = self._org(request)
         try:
             contact = Contact.objects.get(id=contact_id, organization=organization)
         except Contact.DoesNotExist:
-            return Response({"detail": "Клиент не найден"}, status=404)
+            return Response({"detail": t("sales.client_not_found")}, status=404)
         changed: list[str] = []
         for field, limit in self.LIMITS.items():
             if field not in request.data:
@@ -57,7 +58,7 @@ class ClientDetailView(ConversationViewBase):
             if len(value) > limit:
                 return Response({"detail": f"Поле {field}: не длиннее {limit} символов"}, status=400)
             if field == "name" and not value:
-                return Response({"detail": "Имя контакта не может быть пустым"}, status=400)
+                return Response({"detail": t("conversations.contact_name_empty")}, status=400)
             setattr(contact, field, value)
             changed.append(field)
         if changed:
@@ -86,7 +87,7 @@ class ClientMergeView(ConversationViewBase):
     def _owner_only(self, request: Request) -> Response | None:
         membership = request.tenant_context.membership
         if membership is None or membership.role != EmployeeRole.OWNER:
-            return Response({"detail": "Объединять контакты может только владелец"}, status=403)
+            return Response({"detail": t("sales.merge_owner_only")}, status=403)
         return None
 
     def post(self, request: Request, contact_id: int) -> Response:

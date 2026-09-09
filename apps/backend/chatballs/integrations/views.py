@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from chatballs.api.permissions import HasCapability
+from chatballs.i18n import t
 from chatballs.identity.audit import record_audit_event
 from chatballs.integrations.models import Integration
 from chatballs.integrations.selectors import (
@@ -115,7 +116,7 @@ class IntegrationDetailView(APIView):
                 data=_input(request.data, current=integration),
             )
         except Integration.DoesNotExist:
-            return Response({"detail": "Интеграция не найдена"}, status=404)
+            return Response({"detail": t("settings.integration_not_found")}, status=404)
         except (ValidationError, IntegrityError) as error:
             return _validation_error(error)
         _audit(request, "integrations.integration_updated", integration)
@@ -125,7 +126,7 @@ class IntegrationDetailView(APIView):
         try:
             integration = self._get(request, integration_id)
         except Integration.DoesNotExist:
-            return Response({"detail": "Интеграция не найдена"}, status=404)
+            return Response({"detail": t("settings.integration_not_found")}, status=404)
         _audit(request, "integrations.integration_deleted", integration)
         delete_integration(context=request.tenant_context, integration=integration)
         return Response(status=204)
@@ -141,7 +142,7 @@ class IntegrationTestView(APIView):
                 context=request.tenant_context, integration_id=integration_id
             )
         except Integration.DoesNotExist:
-            return Response({"detail": "Интеграция не найдена"}, status=404)
+            return Response({"detail": t("settings.integration_not_found")}, status=404)
         integration = test_integration(
             context=request.tenant_context, integration=integration
         )

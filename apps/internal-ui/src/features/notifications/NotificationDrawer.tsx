@@ -2,6 +2,7 @@ import { Drawer } from "antd";
 
 import { Icon } from "../../shared/icons";
 import { LEVEL_META, type AppNotification } from "./model";
+import { t } from "../../i18n";
 
 function group(items: AppNotification[]): { today: AppNotification[]; earlier: AppNotification[] } {
   const now = new Date();
@@ -37,13 +38,13 @@ export function NotificationDrawer({ open, items, unreadCount, onClose, onItemCl
     <Drawer
       open={open}
       onClose={onClose}
-      title="Уведомления"
+      title={t("admin.notifications")}
       width={400}
-      extra={unreadCount > 0 ? <button className="notif-mark-all" type="button" onClick={onMarkAll}>Прочитать всё</button> : null}
+      extra={unreadCount > 0 ? <button className="notif-mark-all" type="button" onClick={onMarkAll}>{t("admin.mark_all_as_read")}</button> : null}
     >
-      {items.length === 0 && <div className="notif-empty">Уведомлений нет</div>}
-      {today.length > 0 && <Section title="Сегодня" items={today} onItemClick={onItemClick} />}
-      {earlier.length > 0 && <Section title="Ранее" items={earlier} onItemClick={onItemClick} />}
+      {items.length === 0 && <div className="notif-empty">{t("admin.no_notifications")}</div>}
+      {today.length > 0 && <Section title={t("common.today")} items={today} onItemClick={onItemClick} />}
+      {earlier.length > 0 && <Section title={t("admin.earlier")} items={earlier} onItemClick={onItemClick} />}
     </Drawer>
   );
 }

@@ -49,9 +49,11 @@ from chatballs.conversations.models import (
     LifecycleState,
     Message,
     MessageAuthor,
+    SystemEvent,
 )
 from chatballs.conversations.services import ClaimError, claim_locked_conversation
 from chatballs.events.services import DomainEvent, enqueue_event
+from chatballs.i18n import t
 from chatballs.integrations.features import call_allowed
 from chatballs.integrations.models import IntegrationProvider
 from chatballs.tenancy.context import TenantContext
@@ -80,7 +82,7 @@ class CreatedCall:
 
 def _conversation_identity(conversation: Conversation) -> ConnectionIdentity:
     if conversation.contact_id is None or conversation.connection_id is None:
-        raise CallConflict("У диалога нет клиентской identity для звонка")
+        raise CallConflict(t("calls.no_client_identity"))
     identities = list(
         ConnectionIdentity.objects.filter(
             contact_id=conversation.contact_id,
@@ -89,29 +91,29 @@ def _conversation_identity(conversation: Conversation) -> ConnectionIdentity:
         .order_by("id")[:2]
     )
     if len(identities) != 1:
-        raise CallConflict("Клиентская identity звонка отсутствует или неоднозначна")
+        raise CallConflict(t("calls.identity_missing_or_ambiguous"))
     return identities[0]
 
 
 def _check_call_creation_conflicts(*, conversation: Conversation, initiator) -> None:
     if conversation.lifecycle != LifecycleState.OPEN:
-        raise CallConflict("Звонок можно запросить только в открытом диалоге")
+        raise CallConflict(t("calls.only_in_open_conversation"))
     if CallSession.objects.filter(
         conversation=conversation,
         status__in=UNFINISHED_CALL_STATUSES,
     ).exists():
-        raise CallConflict("В диалоге уже есть незавершённый звонок")
+        raise CallConflict(t("calls.unfinished_call_exists"))
     if CallSession.objects.filter(
         initiated_by=initiator,
         status__in=UNFINISHED_CALL_STATUSES,
     ).exists():
-        raise CallConflict("Сотрудник уже участвует в другом звонке")
+        raise CallConflict(t("calls.operator_busy"))
     if (
         conversation.control_mode == ControlMode.HUMAN
         and conversation.assigned_operator_id
         and conversation.assigned_operator_id != initiator.id
     ):
-        raise CallConflict("Диалог уже ведёт другой оператор")
+        raise CallConflict(t("calls.conversation_taken"))
 
 
 @transaction.atomic
@@ -120,7 +122,7 @@ def create_call_request(
 ) -> CreatedCall:
     initiator = context.actor_user
     if initiator is None or context.membership is None:
-        raise CallAccessDenied("Для звонка требуется контекст сотрудника")
+        raise CallAccessDenied(t("calls.operator_context_required"))
     conversation = (
         Conversation.objects.select_for_update()
         .select_related("channel")
@@ -151,7 +153,7 @@ def create_call_request(
                 kind=kind,
             )
     except IntegrityError as error:
-        raise CallConflict("Не удалось создать второй незавершённый звонок") from error
+        raise CallConflict(t("calls.second_call_rejected")) from error
 
     CallInvite.objects.create(
         organization=context.organization,
@@ -181,6 +183,10 @@ def create_call_request(
     Message.objects.create(
         conversation=conversation,
         author_type=MessageAuthor.SYSTEM,
+        system_event=SystemEvent.CALL_REQUESTED,
+        # Вид звонка — параметр, а не часть кода: фразу собирает интерфейс, и
+        # «аудио» против «видео» там отдельным словом словаря.
+        system_params={"operator": initiator_label, "kind": call.kind},
         text=f"Оператор {initiator_label} запросил {call_word}",
     )
     if conversation.connection.provider == IntegrationProvider.WEB:
@@ -210,13 +216,13 @@ def create_call_request(
 def issue_staff_access_token(*, context: TenantContext, call_session: CallSession) -> str:
     user = context.actor_user
     if user is None or context.membership is None:
-        raise CallAccessDenied("Для звонка требуется контекст сотрудника")
+        raise CallAccessDenied(t("calls.operator_context_required"))
     ensure_call_access(user=context.membership, call_session=call_session)
     participant_exists = call_session.participants.filter(side=ParticipantSide.STAFF, user=user).exists()
     if not participant_exists:
-        raise CallConflict("Сотрудник не является участником звонка")
+        raise CallConflict(t("calls.not_a_participant"))
     if call_session.status in TERMINAL_CALL_STATUSES:
-        raise CallConflict("Звонок уже завершён")
+        raise CallConflict(t("calls.already_ended"))
     return issue_call_access_token(
         call_session_id=call_session.id,
         side=ParticipantSide.STAFF,
@@ -227,10 +233,10 @@ def issue_staff_access_token(*, context: TenantContext, call_session: CallSessio
 def cancel_call(*, context: TenantContext, call_session: CallSession) -> CallSession:
     user = context.actor_user
     if user is None or context.membership is None:
-        raise CallAccessDenied("Для звонка требуется контекст сотрудника")
+        raise CallAccessDenied(t("calls.operator_context_required"))
     ensure_call_access(user=context.membership, call_session=call_session)
     if not call_session.participants.filter(side=ParticipantSide.STAFF, user=user).exists():
-        raise CallConflict("Сотрудник не является участником звонка")
+        raise CallConflict(t("calls.not_a_participant"))
     try:
         # Повторная отмена идемпотентна: transition_call вернёт звонок без изменений.
         return transition_call(
@@ -239,7 +245,7 @@ def cancel_call(*, context: TenantContext, call_session: CallSession) -> CallSes
             ended_by=CallEndedBy.STAFF,
         )
     except CallInvalidTransition as error:
-        raise CallConflict("Звонок уже нельзя отменить") from error
+        raise CallConflict(t("calls.cannot_cancel")) from error
 
 
 def active_call_for_conversation(conversation: Conversation) -> CallSession | None:
@@ -272,10 +278,10 @@ def webchat_active_call(identity: ConnectionIdentity) -> CallSession | None:
 def open_call_for_identity(*, identity: ConnectionIdentity) -> ResolvedInvite:
     call = webchat_active_call(identity)
     if call is None:
-        raise CallTokenError("Активное приглашение не найдено")
+        raise CallTokenError(t("webchat.no_active_invite"))
     invite = CallInvite.objects.select_for_update().get(call_session=call)
     if invite.expires_at <= timezone.now():
-        raise CallTokenError("Активное приглашение не найдено")
+        raise CallTokenError(t("webchat.no_active_invite"))
     if invite.opened_at is None:
         invite.opened_at = timezone.now()
         invite.save(update_fields=["opened_at"])
@@ -290,7 +296,7 @@ def open_call_for_identity(*, identity: ConnectionIdentity) -> ResolvedInvite:
 def decline_call_for_identity(*, identity: ConnectionIdentity) -> CallSession:
     call = webchat_active_call(identity)
     if call is None:
-        raise CallTokenError("Активное приглашение не найдено")
+        raise CallTokenError(t("webchat.no_active_invite"))
     try:
         return transition_call(
             call_session_id=call.id,
@@ -298,4 +304,4 @@ def decline_call_for_identity(*, identity: ConnectionIdentity) -> CallSession:
             ended_by=CallEndedBy.CUSTOMER,
         )
     except CallInvalidTransition as error:
-        raise CallConflict("Приглашение уже нельзя отклонить") from error
+        raise CallConflict(t("calls.invite_cannot_decline")) from error

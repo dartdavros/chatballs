@@ -3,6 +3,7 @@ import { Icon } from "../../shared/icons";
 import { Avatar } from "../../shared/ui";
 import { BackLink, Button } from "../../shared/ui-controls";
 import { employeeAvatarColor, groupsLabel, roleBadge, statusBadge, type EmployeeForm } from "./model";
+import { t } from "../../i18n";
 
 // Шапка карточки сотрудника (дизайн-базлайн v2, кадры E3/E4): аватар 60px,
 // имя, бейджи роли и статуса, строка «email · должность · группы».
@@ -21,7 +22,7 @@ export function EmployeeDetailHeader({ employee, form, saveEmployee, saving, set
 
   return (
     <>
-      <BackLink label="Все сотрудники" onClick={() => setRoute("employees")} />
+      <BackLink label={t("admin.all_operators")} onClick={() => setRoute("employees")} />
       <header className="employee-head">
         <Avatar employee={employee} background={employeeAvatarColor(employee)} />
         <div className="employee-head-text">
@@ -35,13 +36,13 @@ export function EmployeeDetailHeader({ employee, form, saveEmployee, saving, set
         <div className="employee-head-actions">
           {editable ? (
             <>
-              <Button variant="secondary" type="button" onClick={() => setRoute("employees")}>Отмена</Button>
+              <Button variant="secondary" type="button" onClick={() => setRoute("employees")}>{t("common.cancel")}</Button>
               <Button variant="primary" type="button" icon="save" iconSize={15} disabled={saving} onClick={saveEmployee}>
-                {saving ? "Сохранение" : "Сохранить"}
+                {saving ? t("common.saving") : t("common.save")}
               </Button>
             </>
           ) : (
-            <span className="employee-readonly-label"><Icon name="lock" size={14} strokeWidth={1.8} />Только просмотр</span>
+            <span className="employee-readonly-label"><Icon name="lock" size={14} strokeWidth={1.8} />{t("admin.view_only")}</span>
           )}
         </div>
       </header>

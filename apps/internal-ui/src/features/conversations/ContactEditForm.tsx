@@ -2,6 +2,7 @@ import { useState } from "react";
 
 import { FormField, TextAreaField } from "../../shared/form-controls";
 import { Button } from "../../shared/ui-controls";
+import { t } from "../../i18n";
 
 // Форма карточки контакта (имя, описание, телефон, компания, город) — одна
 // для контекст-панели чата и для карточки в «Контактах». Раскладки две:
@@ -11,10 +12,10 @@ import { Button } from "../../shared/ui-controls";
 export type ContactCardFields = { name: string; description: string; phone: string; company: string; city: string };
 
 const FIELDS: Array<{ key: Exclude<keyof ContactCardFields, "description">; label: string }> = [
-  { key: "name", label: "Имя" },
-  { key: "phone", label: "Телефон" },
-  { key: "company", label: "Компания" },
-  { key: "city", label: "Город" },
+  { key: "name", label: t("common.name") },
+  { key: "phone", label: t("common.phone") },
+  { key: "company", label: t("common.company") },
+  { key: "city", label: t("common.city") },
 ];
 
 export function ContactEditForm({ initial, layout = "rail", onSubmit, onCancel }: { initial: ContactCardFields; layout?: "rail" | "card"; onSubmit: (fields: ContactCardFields) => Promise<void>; onCancel: () => void }) {
@@ -26,7 +27,7 @@ export function ContactEditForm({ initial, layout = "rail", onSubmit, onCancel }
 
   async function save() {
     if (!form.name.trim()) {
-      setErrorText("Имя не может быть пустым");
+      setErrorText(t("conversations.name_cannot_empty"));
       return;
     }
     setSaving(true);
@@ -34,7 +35,7 @@ export function ContactEditForm({ initial, layout = "rail", onSubmit, onCancel }
     try {
       await onSubmit(form);
     } catch (error) {
-      setErrorText(error instanceof Error ? error.message : "Не удалось сохранить");
+      setErrorText(error instanceof Error ? error.message : t("common.could_not_save"));
     } finally {
       setSaving(false);
     }
@@ -52,12 +53,12 @@ export function ContactEditForm({ initial, layout = "rail", onSubmit, onCancel }
           {FIELDS.map((field) => (
             <FormField key={field.key} label={field.label} value={form[field.key]} onChange={(value) => put(field.key, value)} />
           ))}
-          <TextAreaField label="Описание" value={form.description} onChange={(value) => put("description", value)} />
+          <TextAreaField label={t("common.description")} value={form.description} onChange={(value) => put("description", value)} />
         </div>
         {errorText && <p className="contact-edit-error" role="alert">{errorText}</p>}
         <div className="contact-edit-actions">
-          <Button variant="secondary" disabled={saving} onClick={onCancel}>Отмена</Button>
-          <Button variant="primary" type="submit" disabled={saving}>{saving ? "Сохранение" : "Сохранить"}</Button>
+          <Button variant="secondary" disabled={saving} onClick={onCancel}>{t("common.cancel")}</Button>
+          <Button variant="primary" type="submit" disabled={saving}>{saving ? t("common.saving") : t("common.save")}</Button>
         </div>
       </form>
     );
@@ -65,15 +66,15 @@ export function ContactEditForm({ initial, layout = "rail", onSubmit, onCancel }
 
   return (
     <form className="ctx-contact-edit" onSubmit={submit}>
-      <input value={form.name} onChange={set("name")} placeholder="Имя" aria-label="Имя" autoFocus />
-      <textarea value={form.description} onChange={set("description")} placeholder="Описание" aria-label="Описание" rows={2} />
-      <input value={form.phone} onChange={set("phone")} placeholder="Телефон" aria-label="Телефон" />
-      <input value={form.company} onChange={set("company")} placeholder="Компания" aria-label="Компания" />
-      <input value={form.city} onChange={set("city")} placeholder="Город" aria-label="Город" />
+      <input value={form.name} onChange={set("name")} placeholder={t("common.name")} aria-label={t("common.name")} autoFocus />
+      <textarea value={form.description} onChange={set("description")} placeholder={t("common.description")} aria-label={t("common.description")} rows={2} />
+      <input value={form.phone} onChange={set("phone")} placeholder={t("common.phone")} aria-label={t("common.phone")} />
+      <input value={form.company} onChange={set("company")} placeholder={t("common.company")} aria-label={t("common.company")} />
+      <input value={form.city} onChange={set("city")} placeholder={t("common.city")} aria-label={t("common.city")} />
       {errorText && <p className="ctx-error">{errorText}</p>}
       <div className="ctx-note-actions">
-        <button type="button" onClick={onCancel} disabled={saving}>Отмена</button>
-        <button type="submit" className="primary" disabled={saving}>Сохранить</button>
+        <button type="button" onClick={onCancel} disabled={saving}>{t("common.cancel")}</button>
+        <button type="submit" className="primary" disabled={saving}>{t("common.save")}</button>
       </div>
     </form>
   );

@@ -5,7 +5,7 @@ import { DecisionDialog } from "../../../shared/DecisionDialog";
 import { Icon } from "../../../shared/icons";
 import { EmptyState, LoadingState } from "../../../shared/ui";
 import { Button, CopyButton } from "../../../shared/ui-controls";
-import { pluralRu, shortDateTime } from "../../../shared/utils";
+import { shortDateTime } from "../../../shared/utils";
 import type { RouteKey } from "../../../types";
 import type { AgentRef } from "../../agents/model";
 import { MarkdownContent } from "../../help-center/MarkdownContent";
@@ -27,6 +27,7 @@ import {
   type KnowledgeItem,
 } from "./model";
 import { useKnowledgeCategories } from "./useKnowledgeCategories";
+import { fmt, t, tn } from "../../../i18n";
 
 // Карточка знания (дизайн-базлайн v2, кадр KB4): шапка как у портала —
 // состояние в ответах, фрагменты и агенты чипами; тело — содержимое до 720px
@@ -87,9 +88,9 @@ export function KnowledgeCardPage({
     }
   }
 
-  if (!knowledgeId) return <div className="knowledge-card"><EmptyState title="Знание не выбрано" /></div>;
+  if (!knowledgeId) return <div className="knowledge-card"><EmptyState title={t("ai.no_knowledge_item_selected")} /></div>;
   if (loading || catalog.loading) return <div className="knowledge-card"><LoadingState /></div>;
-  if (failed || catalog.error || !item) return <div className="knowledge-card"><EmptyState title="Не удалось загрузить знание" /></div>;
+  if (failed || catalog.error || !item) return <div className="knowledge-card"><EmptyState title={t("ai.could_not_load_knowledge_item")} /></div>;
 
   const path = knowledgeCategoryPath(catalog.categories, item.category.id);
   const crumbs = path ? path.split(" / ") : [item.category.name];
@@ -98,18 +99,18 @@ export function KnowledgeCardPage({
   const characters = (item.content ?? "").length;
 
   const menuItems = canManage ? [
-    { key: "move", label: <button type="button" onClick={() => setMovingOpen(true)}><Icon name="move" size={15} strokeWidth={1.9} />Переместить в категорию</button> },
-    { key: "answers", label: <button type="button" onClick={() => void run(() => updateKnowledgeItem(item.id, { isEnabled: !item.isEnabled }), "Не удалось изменить участие в ответах")}><Icon name={item.isEnabled ? "eyeOff" : "eye"} size={15} strokeWidth={1.9} />{item.isEnabled ? "Выключить в ответах" : "Включить в ответах"}</button> },
-    { key: "reindex", label: <button type="button" onClick={() => void run(() => reindexKnowledge(item.id), "Не удалось переиндексировать знание")}><Icon name="undo" size={15} strokeWidth={1.9} />Переиндексировать</button> },
+    { key: "move", label: <button type="button" onClick={() => setMovingOpen(true)}><Icon name="move" size={15} strokeWidth={1.9} />{t("ai.move_category")}</button> },
+    { key: "answers", label: <button type="button" onClick={() => void run(() => updateKnowledgeItem(item.id, { isEnabled: !item.isEnabled }), t("ai.could_not_change_participation_replies"))}><Icon name={item.isEnabled ? "eyeOff" : "eye"} size={15} strokeWidth={1.9} />{item.isEnabled ? t("ai.switch_off_replies") : t("ai.switch_replies")}</button> },
+    { key: "reindex", label: <button type="button" onClick={() => void run(() => reindexKnowledge(item.id), t("ai.could_not_reindex_knowledge_item"))}><Icon name="undo" size={15} strokeWidth={1.9} />{t("ai.reindex")}</button> },
     { key: "divider", type: "divider" as const },
-    { key: "delete", label: <button className="danger" type="button" onClick={() => setDeleteOpen(true)}><Icon name="trash" size={15} strokeWidth={1.9} />Удалить знание</button> },
+    { key: "delete", label: <button className="danger" type="button" onClick={() => setDeleteOpen(true)}><Icon name="trash" size={15} strokeWidth={1.9} />{t("ai.delete_knowledge_item")}</button> },
   ] : [];
 
   return (
     <section className="knowledge-card">
       <div className="knowledge-card-head">
         <nav className="knowledge-breadcrumbs">
-          <button className="link is-strong" type="button" onClick={() => setRoute("knowledge")}>База знаний</button>
+          <button className="link is-strong" type="button" onClick={() => setRoute("knowledge")}>{t("common.knowledge_base")}</button>
           {crumbs.map((crumb, index) => (
             <span key={`${crumb}-${index}`}>
               <span className="knowledge-crumb-sep">/</span>
@@ -122,35 +123,31 @@ export function KnowledgeCardPage({
             <div className="knowledge-card-title">
               <h2>{item.title}</h2>
               <span className={`knowledge-answer-pill${item.isEnabled ? " is-on" : ""}`}>
-                <i />{item.isEnabled ? "В ответах агента" : "Не участвует в ответах"}
+                <i />{item.isEnabled ? t("ai.agent_s_replies") : t("ai.not_used_replies")}
               </span>
             </div>
             <div className="knowledge-card-chips">
               <span className="knowledge-chip">
                 <Icon name="box" size={14} strokeWidth={1.9} />
-                {pluralRu(fragments, ["фрагмент", "фрагмента", "фрагментов"])} · пересобраны {shortDateTime(item.updatedAt)}
+                {t("ai.chunks_rebuilt_at", { chunks: tn("plural.chunks", fragments), date: shortDateTime(item.updatedAt) })}
               </span>
               <span className="knowledge-chip">
                 <Icon name="robot" size={14} strokeWidth={1.9} />
-                {pluralRu(attached.length, ["агент", "агента", "агентов"])}
+                {tn("plural.agents", attached.length)}
               </span>
-              {item.updatedBy && <span className="knowledge-card-author">обновил {item.updatedBy} · {shortDateTime(item.updatedAt)}</span>}
+              {item.updatedBy && <span className="knowledge-card-author">{t("ai.updated_by_at", { name: item.updatedBy, date: shortDateTime(item.updatedAt) })}</span>}
             </div>
           </div>
           <div className="knowledge-card-actions">
             {canManage && (
-              <Button variant="secondary" className="knowledge-secondary-action" icon="robot" onClick={() => setAttachOpen(true)}>
-                Прикрепить к агенту
-              </Button>
+              <Button variant="secondary" className="knowledge-secondary-action" icon="robot" onClick={() => setAttachOpen(true)}>{t("ai.attach_agent")}</Button>
             )}
             {canManage && (
-              <Button variant="primary" className="knowledge-primary-action" icon="edit" onClick={() => openKnowledgeEditor(item.id)}>
-                Редактировать
-              </Button>
+              <Button variant="primary" className="knowledge-primary-action" icon="edit" onClick={() => openKnowledgeEditor(item.id)}>{t("common.edit_item")}</Button>
             )}
             {canManage && (
               <Dropdown menu={{ items: menuItems }} overlayClassName="app-dropdown is-knowledge-menu" placement="bottomRight" trigger={["click"]}>
-                <button aria-label="Ещё" className="knowledge-more-button" title="Ещё" type="button">
+                <button aria-label={t("common.more")} className="knowledge-more-button" title={t("common.more")} type="button">
                   <Icon name="more" size={16} strokeWidth={2} />
                 </button>
               </Dropdown>
@@ -172,23 +169,23 @@ export function KnowledgeCardPage({
         <aside className="knowledge-rail">
           <div className="knowledge-rail-block is-top">
             <div>
-              <span className="knowledge-rail-label">КАТЕГОРИЯ</span>
+              <span className="knowledge-rail-label">{t("common.category")}</span>
               <span className="knowledge-rail-category">
                 <Icon name="folder" size={13} strokeWidth={1.8} />{path || item.category.name}
               </span>
             </div>
             <div className="knowledge-rail-toggle">
               <span>
-                <strong>Участвует в ответах</strong>
-                <small>выключенное знание не попадает в retrieval</small>
+                <strong>{t("ai.used_replies")}</strong>
+                <small>{t("ai.switched_off_item_never_reaches")}</small>
               </span>
               <button
-                aria-label="Участвует в ответах"
+                aria-label={t("ai.used_replies")}
                 aria-pressed={item.isEnabled}
                 className={`knowledge-switch${item.isEnabled ? " is-on" : ""}`}
                 disabled={!canManage || busy}
                 type="button"
-                onClick={() => void run(() => updateKnowledgeItem(item.id, { isEnabled: !item.isEnabled }), "Не удалось изменить участие в ответах")}
+                onClick={() => void run(() => updateKnowledgeItem(item.id, { isEnabled: !item.isEnabled }), t("ai.could_not_change_participation_replies"))}
               >
                 <i />
               </button>
@@ -197,8 +194,8 @@ export function KnowledgeCardPage({
 
           <div className="knowledge-rail-block">
             <div className="knowledge-rail-head">
-              <span>ВЛОЖЕНИЯ</span>
-              <small>ссылки уходят в ответ агента</small>
+              <span>{t("ai.attachments")}</span>
+              <small>{t("ai.links_go_out_agent_s")}</small>
             </div>
             <div className="knowledge-rail-files">
               {item.attachments.map((attachment) => (
@@ -211,14 +208,14 @@ export function KnowledgeCardPage({
                   <CopyButton className="knowledge-rail-file-copy" label="" value={attachment.url} />
                 </div>
               ))}
-              {item.attachments.length === 0 && <p className="knowledge-rail-empty">Вложений нет.</p>}
+              {item.attachments.length === 0 && <p className="knowledge-rail-empty">{t("ai.no_attachments")}</p>}
             </div>
           </div>
 
           <div className="knowledge-rail-block">
             <div className="knowledge-rail-head">
-              <span>АГЕНТЫ</span>
-              {canManage && <button type="button" onClick={() => setAttachOpen(true)}>Изменить</button>}
+              <span>{t("common.agents_2")}</span>
+              {canManage && <button type="button" onClick={() => setAttachOpen(true)}>{t("common.edit")}</button>}
             </div>
             <div className="knowledge-rail-agents">
               {attached.map(({ agent, meta, answering }) => (
@@ -228,30 +225,29 @@ export function KnowledgeCardPage({
                     <strong>{agent.name}</strong>
                     <small>{meta}</small>
                   </span>
-                  <small className={`knowledge-agent-state${answering ? " is-on" : ""}`}>{answering ? "активен" : "не в ответах"}</small>
+                  <small className={`knowledge-agent-state${answering ? " is-on" : ""}`}>{answering ? t("ai.active") : t("ai.not_replies")}</small>
                 </div>
               ))}
-              {attached.length === 0 && <p className="knowledge-rail-empty">Знание не прикреплено ни к одному агенту — в ответах оно не используется.</p>}
+              {attached.length === 0 && <p className="knowledge-rail-empty">{t("ai.item_attached_no_agent_so")}</p>}
             </div>
           </div>
 
           <div className="knowledge-rail-block">
-            <span className="knowledge-rail-label">ИНДЕКСАЦИЯ</span>
+            <span className="knowledge-rail-label">{t("ai.indexing")}</span>
             <div className="knowledge-index-box">
               <div className="knowledge-index-count">
                 <strong>{fragments}</strong>
-                <span>фрагментов · {characters.toLocaleString("ru-RU")} знаков</span>
+                <span>{t("ai.chunks_and_characters", { characters: fmt.number(characters) })}</span>
               </div>
-              <p>Фрагменты пересобираются при сохранении. Пока идёт пересборка, агент отвечает по прежней версии.</p>
+              <p>{t("ai.chunks_rebuilt_save_while_rebuild")}</p>
               {canManage && (
                 <button
                   className="knowledge-reindex-button"
                   disabled={busy}
                   type="button"
-                  onClick={() => void run(() => reindexKnowledge(item.id), "Не удалось переиндексировать знание")}
+                  onClick={() => void run(() => reindexKnowledge(item.id), t("ai.could_not_reindex_knowledge_item"))}
                 >
-                  <Icon name="undo" size={13} strokeWidth={1.9} />Переиндексировать
-                </button>
+                  <Icon name="undo" size={13} strokeWidth={1.9} />{t("ai.reindex")}</button>
               )}
             </div>
           </div>
@@ -268,7 +264,7 @@ export function KnowledgeCardPage({
             setAttachOpen(false);
             void run(
               () => linkKnowledgeToAgent({ agentId, action: mode, knowledgeIds: [item.id] }),
-              "Не удалось изменить знания агента",
+              t("ai.could_not_change_agent_s"),
             );
           }}
         />
@@ -287,7 +283,7 @@ export function KnowledgeCardPage({
                 await bulkMoveKnowledge({ knowledgeIds: [item.id], categoryId });
                 await catalog.reload();
               },
-              "Не удалось переместить знание",
+              t("ai.could_not_move_knowledge_item"),
             );
           }}
         />
@@ -298,10 +294,10 @@ export function KnowledgeCardPage({
         onClose={() => setDeleteOpen(false)}
         tone="danger"
         icon="trash"
-        title="Удалить знание?"
-        description={`«${item.title}» и его вложения будут удалены. У агентов, которым знание прикреплено, оно исчезнет из ответов.`}
+        title={t("ai.delete_knowledge_item_2")}
+        description={t("ai.item_and_files_deleted", { title: item.title })}
         actions={<>
-          <Button variant="secondary" onClick={() => setDeleteOpen(false)}>Отмена</Button>
+          <Button variant="secondary" onClick={() => setDeleteOpen(false)}>{t("common.cancel")}</Button>
           <Button
             variant="danger-outline"
             disabled={busy}
@@ -310,11 +306,9 @@ export function KnowledgeCardPage({
               setBusy(true);
               void deleteKnowledgeItem(item.id)
                 .then(() => setRoute("knowledge"))
-                .catch(() => { setError("Не удалось удалить знание"); setBusy(false); });
+                .catch(() => { setError(t("ai.could_not_delete_knowledge_item")); setBusy(false); });
             }}
-          >
-            Удалить
-          </Button>
+          >{t("common.delete")}</Button>
         </>}
       />
     </section>

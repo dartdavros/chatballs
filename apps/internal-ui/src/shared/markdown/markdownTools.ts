@@ -1,4 +1,6 @@
 import type { Icon } from "../icons";
+import { fmt, t, tn } from "../../i18n";
+import { readableSize } from "../utils";
 
 type IconName = Parameters<typeof Icon>[0]["name"];
 
@@ -31,7 +33,9 @@ const LINE_PREFIXES: Record<string, string> = {
   quote: "> ",
 };
 
-const TABLE_SNIPPET = "\n| Колонка | Колонка |\n| ------- | ------- |\n| Значение | Значение |\n";
+// Заголовки в шаблоне таблицы переводятся, поэтому это функция, а не
+// константа: константу посчитали бы один раз, ещё до выбора языка.
+const tableSnippet = () => t("shared.table_template");
 
 /** Применение кнопки панели к тексту с учётом выделения (кадр PT7). */
 export function applyMarkdownTool(
@@ -65,7 +69,7 @@ export function applyMarkdownTool(
   }
 
   if (key === "link") {
-    const label = selected || "текст ссылки";
+    const label = selected || t("shared.link_text");
     const snippet = `[${label}](https://)`;
     const next = `${value.slice(0, selectionStart)}${snippet}${value.slice(selectionEnd)}`;
     const linkStart = selectionStart + snippet.length - 9;
@@ -73,8 +77,8 @@ export function applyMarkdownTool(
   }
 
   if (key === "table") {
-    const next = `${value.slice(0, selectionStart)}${TABLE_SNIPPET}${value.slice(selectionEnd)}`;
-    const caret = selectionStart + TABLE_SNIPPET.length;
+    const next = `${value.slice(0, selectionStart)}${tableSnippet()}${value.slice(selectionEnd)}`;
+    const caret = selectionStart + tableSnippet().length;
     return { value: next, selectionStart: caret, selectionEnd: caret };
   }
 
@@ -92,12 +96,11 @@ export function isImageFile(contentType: string, name: string): boolean {
 
 /** «4 280 знаков · 12 абзацев» — статусная строка редактора. */
 export function editorStats(value: string): string {
-  const characters = value.length.toLocaleString("ru-RU");
   const paragraphs = value.split(/\n{2,}/).filter((block) => block.trim()).length;
-  const forms = paragraphs % 10 === 1 && paragraphs % 100 !== 11 ? "абзац"
-    : [2, 3, 4].includes(paragraphs % 10) && ![12, 13, 14].includes(paragraphs % 100) ? "абзаца"
-      : "абзацев";
-  return `${characters} знаков · ${paragraphs} ${forms}`;
+  return t("shared.characters_and_paragraphs", {
+    characters: fmt.number(value.length),
+    paragraphs: tn("plural.paragraphs", paragraphs),
+  });
 }
 
 /** «Строка 18, столбец 24» — позиция курсора в статусной строке. */
@@ -105,15 +108,12 @@ export function cursorPosition(value: string, caret: number): string {
   const before = value.slice(0, caret);
   const line = before.split("\n").length;
   const column = caret - (before.lastIndexOf("\n") + 1) + 1;
-  return `Строка ${line}, столбец ${column}`;
+  return t("shared.line_column", { line, column });
 }
 
 /** «PNG · 240 КБ» — метаданные файла в рейке. */
 export function fileMeta(name: string, size: number): string {
   const extension = (name.split(".").pop() ?? "").toLocaleUpperCase();
-  const kilobytes = size / 1024;
-  const readable = kilobytes >= 1024
-    ? `${(kilobytes / 1024).toLocaleString("ru-RU", { maximumFractionDigits: 1 })} МБ`
-    : `${Math.max(1, Math.round(kilobytes)).toLocaleString("ru-RU")} КБ`;
+  const readable = readableSize(size);
   return extension ? `${extension} · ${readable}` : readable;
 }

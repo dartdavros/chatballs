@@ -4,6 +4,7 @@ import { api } from "../../api/client";
 import { ChannelGlyph } from "../../shared/badges";
 import { SwitchButton } from "../../shared/form-controls";
 import { CallsRelayCard } from "./CallsRelayCard";
+import { t } from "../../i18n";
 
 // «Голосовые и звонки» (Настройки): матрица точек входа × функции. Что
 // разрешено клиенту и сотруднику в диалогах через каждую интеграцию —
@@ -26,7 +27,7 @@ type EntryPoint = {
 type Flag = "voiceMessages" | "audioCalls" | "videoCalls";
 
 const BASE = "/api/v1/company/administration/communication/";
-const COLUMNS: Array<[Flag, string]> = [["voiceMessages", "Голосовые"], ["audioCalls", "Аудиозвонки"], ["videoCalls", "Видеозвонки"]];
+const COLUMNS: Array<[Flag, string]> = [["voiceMessages", t("settings.voice_messages")], ["audioCalls", t("settings.audio_calls")], ["videoCalls", t("settings.video_calls")]];
 
 export function CommunicationSettingsCard({ canManage }: { canManage: boolean }) {
   const [items, setItems] = useState<EntryPoint[] | null>(null);
@@ -34,7 +35,7 @@ export function CommunicationSettingsCard({ canManage }: { canManage: boolean })
   const [errorText, setErrorText] = useState("");
 
   useEffect(() => {
-    api<{ items: EntryPoint[] }>(BASE).then((payload) => setItems(payload.items)).catch(() => setErrorText("Не удалось загрузить точки входа"));
+    api<{ items: EntryPoint[] }>(BASE).then((payload) => setItems(payload.items)).catch(() => setErrorText(t("settings.could_not_load_entry_points")));
   }, []);
 
   if (!items) return null;
@@ -47,7 +48,7 @@ export function CommunicationSettingsCard({ canManage }: { canManage: boolean })
       const payload = await api<{ items: EntryPoint[] }>(BASE, { method: "PATCH", body: JSON.stringify({ items: [{ id: item.id, [flag]: !item[flag] }] }) });
       setItems(payload.items);
     } catch (error) {
-      setErrorText(error instanceof Error ? error.message : "Не удалось сохранить");
+      setErrorText(error instanceof Error ? error.message : t("common.could_not_save"));
     } finally {
       setBusyId(null);
     }
@@ -55,11 +56,11 @@ export function CommunicationSettingsCard({ canManage }: { canManage: boolean })
 
   return (
     <>
-      {items.length === 0 && <p className="settings-section-note">Точек входа пока нет — подключите бота, почту или Web-виджет в «Интеграциях».</p>}
+      {items.length === 0 && <p className="settings-section-note">{t("settings.there_no_entry_points_yet")}</p>}
       {items.length > 0 && (
         <div className="table-card communication-matrix">
           <div className="communication-row is-head">
-            <span>Точка входа</span>
+            <span>{t("settings.entry_point")}</span>
             {COLUMNS.map(([flag, label]) => <span key={flag}>{label}</span>)}
           </div>
           {items.map((item) => (
@@ -67,13 +68,13 @@ export function CommunicationSettingsCard({ canManage }: { canManage: boolean })
               <span className="communication-entry">
                 <ChannelGlyph provider={item.provider} size={16} />
                 <strong>{item.name}</strong>
-                <small>{item.agentName || "без агента"}{item.isActive ? "" : " · выключена"}</small>
+                <small>{item.agentName || t("settings.no_agent")}{item.isActive ? "" : t("settings.entry_point_off")}</small>
               </span>
               {COLUMNS.map(([flag, label]) => (
                 <span key={flag}>
                   {flag === "voiceMessages" || item.supportsCalls
                     ? <SwitchButton checked={item[flag]} className="ui-switch is-compact" label={`${label}: ${item.name}`} disabled={!canManage || busyId != null} onClick={() => void toggle(item, flag)} />
-                    : <small className="communication-na">недоступно</small>}
+                    : <small className="communication-na">{t("settings.unavailable")}</small>}
                 </span>
               ))}
             </div>
@@ -82,7 +83,7 @@ export function CommunicationSettingsCard({ canManage }: { canManage: boolean })
       )}
       {errorText && <div className="settings-section-error">{errorText}</div>}
       {items.length > 0 && (
-        <p className="settings-section-note">Голосовые, присланные клиентом из мессенджера, принимаются всегда. Почта звонки не поддерживает. Изменения применяются сразу.</p>
+        <p className="settings-section-note">{t("settings.voice_messages_sent_by_customer")}</p>
       )}
       <CallsRelayCard canManage={canManage} />
     </>

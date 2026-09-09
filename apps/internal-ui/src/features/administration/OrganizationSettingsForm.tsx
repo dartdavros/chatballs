@@ -3,12 +3,14 @@ import type { FormEvent } from "react";
 import { FormField, SelectField } from "../../shared/form-controls";
 import { shortDateTime, timezoneLabel } from "../../shared/utils";
 import { Button } from "../../shared/ui-controls";
+import type { OrganizationLanguageOption } from "./api";
 import type { OrganizationSettings } from "./model";
 import { OrganizationLogoField } from "./OrganizationLogoField";
+import { t } from "../../i18n";
 
 function savedLabel(updatedAt: string | null): string {
-  if (!updatedAt) return "Ещё не сохранялось";
-  return `Сохранено ${shortDateTime(updatedAt)}`;
+  if (!updatedAt) return t("common.never_saved_yet");
+  return t("time.saved_at", { time: shortDateTime(updatedAt) });
 }
 
 export function OrganizationSettingsForm({
@@ -18,6 +20,7 @@ export function OrganizationSettingsForm({
   message,
   error,
   timezones,
+  languages,
   onChange,
   onSave,
   onUploadLogo,
@@ -29,6 +32,7 @@ export function OrganizationSettingsForm({
   message: string;
   error: string;
   timezones: string[];
+  languages: OrganizationLanguageOption[];
   onChange: (next: OrganizationSettings) => void;
   onSave: () => void;
   onUploadLogo: (file: File) => void;
@@ -52,7 +56,7 @@ export function OrganizationSettingsForm({
       <div className="administration-fields">
         <div className="administration-field-wide">
           <FormField
-            label="Название организации"
+            label={t("admin.organization_name")}
             value={organization.name}
             disabled={!canManage}
             onChange={canManage
@@ -61,18 +65,31 @@ export function OrganizationSettingsForm({
           />
         </div>
         <SelectField
-          label="Часовой пояс"
+          label={t("admin.time_zone")}
           value={organization.timezone}
           disabled={!canManage}
           onChange={(timezone) => onChange({ ...organization, timezone })}
           options={timezones.map((timezone) => [timezone, timezoneLabel(timezone)])}
         />
         <SelectField
-          label="Валюта"
+          label={t("settings.language")}
+          value={organization.language}
+          disabled={!canManage}
+          onChange={(language) => onChange({ ...organization, language })}
+          // Первый пункт — не язык, а отказ от выбора: организация без своего
+          // языка следует за установкой, и владелец видит это словами.
+          options={[
+            ["", t("settings.language_as_installation")],
+            ...languages.map((item): [string, string] => [item.code, item.label]),
+          ]}
+          hint={t("settings.language_org_hint")}
+        />
+        <SelectField
+          label={t("admin.currency")}
           value={organization.currency}
           disabled={!canManage}
           onChange={(currency) => onChange({ ...organization, currency })}
-          options={[["RUB", "Российский рубль (RUB)"]]}
+          options={[["RUB", t("admin.russian_rouble_rub")]]}
         />
       </div>
       {error && <div className="administration-message error" role="alert">{error}</div>}
@@ -85,7 +102,7 @@ export function OrganizationSettingsForm({
             variant="primary"
             disabled={saving || !organization.name.trim()}
           >
-            {saving ? "Сохранение" : "Сохранить"}
+            {saving ? t("common.saving") : t("common.save")}
           </Button>
         </div>
       )}

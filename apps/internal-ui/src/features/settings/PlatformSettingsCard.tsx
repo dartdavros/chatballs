@@ -11,6 +11,7 @@ import {
   type EmailPayload,
   type InstancePayload,
 } from "./instance";
+import { t } from "../../i18n";
 
 // «Платформа» (Настройки): свойства инсталляции, а не организации. Адрес
 // запомнил мастер первого запуска — по нему человек и зашёл, поднимая докер на
@@ -42,8 +43,8 @@ function emailDraftOf(email: EmailPayload): EmailDraft {
 }
 
 function savedLabel(updatedAt: string | null): string {
-  if (!updatedAt) return "Ещё не сохранялось";
-  return `Сохранено ${shortDateTime(updatedAt)}`;
+  if (!updatedAt) return t("common.never_saved_yet");
+  return t("time.saved_at", { time: shortDateTime(updatedAt) });
 }
 
 export function PlatformSettingsCard({ canManage }: { canManage: boolean }) {
@@ -53,7 +54,7 @@ export function PlatformSettingsCard({ canManage }: { canManage: boolean }) {
   useEffect(() => {
     loadInstance()
       .then(setCurrent)
-      .catch(() => setLoadError("Не удалось загрузить настройки установки"));
+      .catch(() => setLoadError(t("settings.could_not_load_installation_settings")));
   }, []);
 
   if (loadError) return <div className="settings-section-error">{loadError}</div>;
@@ -62,8 +63,66 @@ export function PlatformSettingsCard({ canManage }: { canManage: boolean }) {
   return (
     <>
       <AddressCard canManage={canManage} current={current} onSaved={setCurrent} />
+      <LanguageCard canManage={canManage} current={current} onSaved={setCurrent} />
       <EmailCard canManage={canManage} current={current} onSaved={setCurrent} />
     </>
+  );
+}
+
+// Язык установки — свойство инсталляции, а не организации: на нём открываются
+// экраны, где организации ещё нет. Отдельной карточкой рядом с адресом, потому
+// что и адрес, и язык здесь — про саму коробку.
+function LanguageCard({ canManage, current, onSaved }: {
+  canManage: boolean;
+  current: InstancePayload;
+  onSaved: (payload: InstancePayload) => void;
+}) {
+  const [busy, setBusy] = useState(false);
+  const [errorText, setErrorText] = useState("");
+
+  async function save(language: string) {
+    if (language === current.defaultLanguage) return;
+    setBusy(true);
+    setErrorText("");
+    try {
+      // Адрес уходит вместе с языком: PATCH проверяет его в любом случае, и
+      // без него сохранение языка упало бы на «Укажите адрес установки».
+      onSaved(await patchInstance({
+        publicHost: current.publicHost,
+        publicScheme: current.publicScheme,
+        defaultLanguage: language,
+      }));
+    } catch (error) {
+      setErrorText(instanceError(error).detail);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="administration-card">
+      <div className="settings-card-head">
+        <div>
+          <strong>{t("settings.language_instance")}</strong>
+          <small>{t("settings.language_instance_hint")}</small>
+        </div>
+        <div className="appearance-theme-options">
+          {current.languages.map((item) => (
+            <button
+              className={current.defaultLanguage === item.code ? "active" : ""}
+              disabled={!canManage || busy}
+              key={item.code}
+              lang={item.code}
+              type="button"
+              onClick={() => void save(item.code)}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      {errorText && <div className="administration-message error" role="alert">{errorText}</div>}
+    </div>
   );
 }
 
@@ -91,7 +150,7 @@ function AddressCard({ canManage, current, onSaved }: {
       onSaved(payload);
       setHost(payload.publicHost);
       setScheme(payload.publicScheme);
-      setMessage("Сохранено. Ссылки на файлы пойдут по этому адресу.");
+      setMessage(t("settings.saved_file_links_will_use"));
     } catch (error) {
       const { detail, errors } = instanceError(error);
       setErrorText(detail);
@@ -110,8 +169,8 @@ function AddressCard({ canManage, current, onSaved }: {
     <form className="administration-card" onSubmit={submit}>
       <div className="settings-card-head">
         <div>
-          <strong>Адрес установки</strong>
-          <small>По нему открывают систему и по нему строятся ссылки на файлы</small>
+          <strong>{t("settings.installation_address")}</strong>
+          <small>{t("settings.system_opened_at_file_links")}</small>
         </div>
         <div className="appearance-theme-options">
           {(["http", "https"] as const).map((value) => (
@@ -128,15 +187,13 @@ function AddressCard({ canManage, current, onSaved }: {
         </div>
       </div>
       <p className="settings-section-note">
-        Пока домена нет, здесь стоит адрес сервера — тот, на котором вы прошли первый запуск.
-        Заведёте домен и поставите перед установкой TLS — впишите его и переключите на https.
-        Ссылки будут вида <b>{scheme}://{host || "адрес"}/…</b>
+        {t("settings.address_hint")} <b>{scheme}://{host || t("settings.address_placeholder")}/…</b>
       </p>
       <div className="administration-fields">
         <FormField
           disabled={!canManage}
           error={fieldErrors.publicHost}
-          label="Домен или IP"
+          label={t("settings.domain_or_ip")}
           mono
           placeholder="crm.example.com"
           value={host}
@@ -149,7 +206,7 @@ function AddressCard({ canManage, current, onSaved }: {
         <div className="administration-actions">
           <small className="administration-saved">{message || savedLabel(current.updatedAt)}</small>
           <Button type="submit" variant="primary" disabled={busy || !host.trim()}>
-            {busy ? "Сохранение" : "Сохранить"}
+            {busy ? t("common.saving") : t("common.save")}
           </Button>
         </div>
       )}
@@ -189,7 +246,7 @@ function EmailCard({ canManage, current, onSaved }: {
       });
       onSaved(payload);
       setDraft(emailDraftOf(payload.email));
-      setMessage("Сохранено. Письма пойдут через этот сервер.");
+      setMessage(t("settings.saved_email_will_go_through"));
     } catch (error) {
       const { detail, errors } = instanceError(error);
       setErrorText(detail);
@@ -205,7 +262,7 @@ function EmailCard({ canManage, current, onSaved }: {
     setErrorText("");
     try {
       const sent = await checkInstanceEmail();
-      setMessage(`Письмо отправлено на ${sent}. Не пришло — проверьте папку «Спам».`);
+      setMessage(t("settings.email_sent_to", { email: sent }));
     } catch (error) {
       setErrorText(instanceError(error).detail);
     } finally {
@@ -222,8 +279,8 @@ function EmailCard({ canManage, current, onSaved }: {
     <form className="administration-card" onSubmit={submit}>
       <div className="settings-card-head">
         <div>
-          <strong>Исходящая почта</strong>
-          <small>Приглашения сотрудникам и сброс пароля</small>
+          <strong>{t("settings.outgoing_email")}</strong>
+          <small>{t("settings.operator_invitations_password_resets")}</small>
         </div>
         {/* Шифрование канала до SMTP — двоичный выбор, значит переключатель
             (тот же стандарт, что у точек входа в «Голосовых и звонках»). */}
@@ -233,21 +290,19 @@ function EmailCard({ canManage, current, onSaved }: {
             checked={draft.useTls}
             className="ui-switch is-compact"
             disabled={!canManage || Boolean(busy)}
-            label="Шифрование TLS до SMTP-сервера"
+            label={t("settings.tls_encryption_smtp_server")}
             onClick={() => { setDraft({ ...draft, useTls: !draft.useTls }); touch(); }}
           />
         </div>
       </div>
       {!current.email.configured && (
-        <p className="settings-section-note">
-          Почта не настроена: письма никуда не уходят, пригласить сотрудника не получится.
-        </p>
+        <p className="settings-section-note">{t("settings.email_not_configured_nothing_sent")}</p>
       )}
       <div className="administration-fields">
         <FormField
           disabled={!canManage}
           error={fieldErrors.emailHost}
-          label="SMTP-сервер"
+          label={t("settings.smtp_server")}
           mono
           placeholder="smtp.example.com"
           value={draft.host}
@@ -256,7 +311,7 @@ function EmailCard({ canManage, current, onSaved }: {
         <FormField
           disabled={!canManage}
           error={fieldErrors.emailPort}
-          label="Порт"
+          label={t("settings.port")}
           mono
           placeholder="587"
           value={draft.port}
@@ -264,7 +319,7 @@ function EmailCard({ canManage, current, onSaved }: {
         />
         <FormField
           disabled={!canManage}
-          label="Пользователь"
+          label={t("settings.user")}
           mono
           placeholder="robot@example.com"
           value={draft.user}
@@ -272,16 +327,16 @@ function EmailCard({ canManage, current, onSaved }: {
         />
         <FormField
           disabled={!canManage}
-          label="Пароль"
+          label={t("common.password")}
           mono
-          placeholder={current.email.hasPassword ? "•••••••• (сохранён)" : ""}
+          placeholder={current.email.hasPassword ? t("settings.saved") : ""}
           type="password"
           value={draft.password}
           onChange={set("password")}
         />
         <FormField
           disabled={!canManage}
-          label="Отправитель"
+          label={t("settings.sender")}
           placeholder="Chatballs <no-reply@example.com>"
           value={draft.from}
           wide
@@ -295,11 +350,11 @@ function EmailCard({ canManage, current, onSaved }: {
           <small className="administration-saved">{savedLabel(current.updatedAt)}</small>
           {current.email.configured && (
             <Button variant="secondary" disabled={Boolean(busy)} onClick={() => void check()}>
-              {busy === "check" ? "Отправляем…" : "Отправить тестовое письмо"}
+              {busy === "check" ? t("settings.sending") : t("settings.send_test_email")}
             </Button>
           )}
           <Button type="submit" variant="primary" disabled={Boolean(busy)}>
-            {busy === "save" ? "Сохранение" : "Сохранить"}
+            {busy === "save" ? t("common.saving") : t("common.save")}
           </Button>
         </div>
       )}

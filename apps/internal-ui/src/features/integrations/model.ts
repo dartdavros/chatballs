@@ -1,4 +1,5 @@
 import { api } from "../../api/client";
+import { t } from "../../i18n";
 
 export type IntegrationProvider = "OPENROUTER" | "CUSTOM" | "DEMO" | "MAX" | "TELEGRAM" | "WEB" | "EMAIL";
 export type IntegrationKind = "LLM_PROVIDER" | "MESSENGER";
@@ -69,28 +70,28 @@ type ProviderMeta = {
 };
 
 export const PROVIDERS: Record<IntegrationProvider, ProviderMeta> = {
-  OPENROUTER: { label: "OpenRouter", kind: "LLM_PROVIDER", secretLabel: "API-ключ", defaultBaseUrl: "https://openrouter.ai/api/v1", hasModel: true, testable: true, checkable: true },
+  OPENROUTER: { label: "OpenRouter", kind: "LLM_PROVIDER", secretLabel: t("settings.api_key"), defaultBaseUrl: "https://openrouter.ai/api/v1", hasModel: true, testable: true, checkable: true },
   // Custom — generic BYOK для любого OpenAI-compatible endpoint (ADR-CHATBALLS-0034).
   // Каталога нет: модель вводится свободным текстом и читается в рантайме.
-  CUSTOM: { label: "Custom (OpenAI-compatible)", kind: "LLM_PROVIDER", secretLabel: "API-ключ", defaultBaseUrl: "", hasModel: true, testable: true, checkable: true },
+  CUSTOM: { label: "Custom (OpenAI-compatible)", kind: "LLM_PROVIDER", secretLabel: t("settings.api_key"), defaultBaseUrl: "", hasModel: true, testable: true, checkable: true },
   // Демо-провайдер — живой AI без ключей и сети для знакомства с системой: отвечает по знаниям агента.
-  DEMO: { label: "Демо-провайдер (без ключа)", kind: "LLM_PROVIDER", secretLabel: "", defaultBaseUrl: "", hasModel: false, testable: false, checkable: true },
-  MAX: { label: "MAX", kind: "MESSENGER", secretLabel: "Токен бота", defaultBaseUrl: "https://platform-api.max.ru", hasModel: false, testable: true, checkable: true },
-  TELEGRAM: { label: "Telegram", kind: "MESSENGER", secretLabel: "Токен бота", defaultBaseUrl: "https://api.telegram.org", hasModel: false, testable: true, checkable: true },
-  WEB: { label: "Web-виджет", kind: "MESSENGER", secretLabel: "", defaultBaseUrl: "", hasModel: false, testable: false, checkable: true },
+  DEMO: { label: t("settings.demo_provider_no_key"), kind: "LLM_PROVIDER", secretLabel: "", defaultBaseUrl: "", hasModel: false, testable: false, checkable: true },
+  MAX: { label: "MAX", kind: "MESSENGER", secretLabel: t("settings.bot_token"), defaultBaseUrl: "https://platform-api.max.ru", hasModel: false, testable: true, checkable: true },
+  TELEGRAM: { label: "Telegram", kind: "MESSENGER", secretLabel: t("settings.bot_token"), defaultBaseUrl: "https://api.telegram.org", hasModel: false, testable: true, checkable: true },
+  WEB: { label: t("common.web_widget"), kind: "MESSENGER", secretLabel: "", defaultBaseUrl: "", hasModel: false, testable: false, checkable: true },
   // Email — подключение-ящик IMAP/SMTP (ADR-CHATBALLS-0035); секрет — пароль приложения.
-  EMAIL: { label: "Email (IMAP/SMTP)", kind: "MESSENGER", secretLabel: "Пароль", defaultBaseUrl: "", hasModel: false, testable: true, checkable: true },
+  EMAIL: { label: "Email (IMAP/SMTP)", kind: "MESSENGER", secretLabel: t("common.password"), defaultBaseUrl: "", hasModel: false, testable: true, checkable: true },
 };
 
 export const STATUS_META: Record<IntegrationStatus, { label: string; bg: string; color: string }> = {
-  OK: { label: "Подключено", bg: "var(--success-bg)", color: "var(--success-text)" },
-  ERROR: { label: "Ошибка", bg: "var(--error-bg)", color: "var(--error-text)" },
-  UNCHECKED: { label: "Не проверено", bg: "var(--n-9)", color: "var(--n-4)" },
+  OK: { label: t("common.connected"), bg: "var(--success-bg)", color: "var(--success-text)" },
+  ERROR: { label: t("common.error"), bg: "var(--error-bg)", color: "var(--error-text)" },
+  UNCHECKED: { label: t("ai.not_checked"), bg: "var(--n-9)", color: "var(--n-4)" },
 };
 
 export const KIND_LABEL: Record<IntegrationKind, string> = {
-  LLM_PROVIDER: "Провайдеры",
-  MESSENGER: "Подключения",
+  LLM_PROVIDER: t("settings.providers"),
+  MESSENGER: t("common.connections"),
 };
 
 export type ChannelOption = { id: number; code: string; name: string };

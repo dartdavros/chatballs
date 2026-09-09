@@ -7,6 +7,7 @@ import { Button } from "../../shared/ui-controls";
 import { AuthField } from "./AuthField";
 import { AuthFrame } from "./AuthFrame";
 import { passwordIsValid, passwordLabels, passwordScore } from "./password";
+import { t } from "../../i18n";
 
 export function AuthChangePassword({ onChanged }: { user: SessionUser; onChanged: (user: AuthenticatedUser) => void }) {
   const [password, setPassword] = useState("");
@@ -29,32 +30,32 @@ export function AuthChangePassword({ onChanged }: { user: SessionUser; onChanged
       });
       onChanged(payload.user);
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Не удалось сохранить пароль");
+      setError(requestError instanceof Error ? requestError.message : t("admin.could_not_save_password"));
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
-    <AuthFrame title="Смена временного пароля" subtitle="Вы вошли по временному паролю. Задайте постоянный пароль, чтобы продолжить." logo="shield" width={420}>
+    <AuthFrame title={t("admin.change_temporary_password")} subtitle={t("admin.signed_with_temporary_password_set")} logo="shield" width={420}>
       <form className="auth-card" onSubmit={submit}>
         {error && <div className="auth-error"><span className="auth-error-dot">!</span><span>{error}</span></div>}
-        <label className="field-label">Новый пароль</label>
-        <AuthField icon="lock" value={password} onChange={setPassword} placeholder="Минимум 10 символов" type="password" />
+        <label className="field-label">{t("common.new_password")}</label>
+        <AuthField icon="lock" value={password} onChange={setPassword} placeholder={t("common.at_least_10_characters")} type="password" />
         <div className={`password-strength score-${score}`}>
           <div>{[0, 1, 2, 3].map((item) => <span className={item < score ? "active" : ""} key={item} />)}</div>
           <p>{passwordLabels[score]}</p>
         </div>
-        <label className="field-label">Повторите пароль</label>
-        <AuthField icon="lock" value={confirm} onChange={setConfirm} placeholder="Повторите новый пароль" type="password" error={mismatch} />
-        {mismatch && <div className="auth-inline-error">Пароли не совпадают</div>}
+        <label className="field-label">{t("admin.repeat_password")}</label>
+        <AuthField icon="lock" value={confirm} onChange={setConfirm} placeholder={t("common.repeat_new_password")} type="password" error={mismatch} />
+        {mismatch && <div className="auth-inline-error">{t("common.passwords_do_not_match")}</div>}
         <div className="password-requirements">
-          <strong>ТРЕБОВАНИЯ К ПАРОЛЮ</strong>
-          <span className={password.length >= 10 ? "done" : ""}>Не менее 10 символов</span>
-          <span className={/\d/.test(password) ? "done" : ""}>Содержит цифру</span>
-          <span className={/[A-Za-zА-Яа-я]/.test(password) && /[^A-Za-zА-Яа-я0-9]/.test(password) ? "done" : ""}>Буквы и спецсимвол</span>
+          <strong>{t("common.password_requirements")}</strong>
+          <span className={password.length >= 10 ? "done" : ""}>{t("common.at_least_10_characters_long")}</span>
+          <span className={/\d/.test(password) ? "done" : ""}>{t("common.contains_digit")}</span>
+          <span className={/[A-Za-zА-Яа-я]/.test(password) && /[^A-Za-zА-Яа-я0-9]/.test(password) ? "done" : ""}>{t("common.letters_special_character")}</span>
         </div>
-        <Button className="auth-submit" type="submit" variant="primary" disabled={!valid || submitting}>Сохранить и войти</Button>
+        <Button className="auth-submit" type="submit" variant="primary" disabled={!valid || submitting}>{t("admin.save_sign")}</Button>
       </form>
     </AuthFrame>
   );

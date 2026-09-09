@@ -3,11 +3,18 @@ import type { AuditPayload, AuditQuery, OrganizationSettings } from "./model";
 
 const BASE = "/api/v1/company/administration/";
 
+export type OrganizationLanguageOption = { code: string; label: string };
+
 export async function loadOrganizationSettings(): Promise<{
   organization: OrganizationSettings;
   timezones: string[];
+  languages: OrganizationLanguageOption[];
 }> {
-  return api<{ organization: OrganizationSettings; timezones: string[] }>(BASE);
+  return api<{
+    organization: OrganizationSettings;
+    timezones: string[];
+    languages: OrganizationLanguageOption[];
+  }>(BASE);
 }
 
 export async function saveOrganizationSettings(
@@ -19,6 +26,7 @@ export async function saveOrganizationSettings(
       name: settings.name,
       timezone: settings.timezone,
       currency: settings.currency,
+      language: settings.language,
     }),
   });
   return payload.organization;

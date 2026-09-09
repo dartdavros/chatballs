@@ -163,6 +163,14 @@
   font-size: 11.5px;
 }
 
+/* Пояснение под полем: тем же кеглем, что и ошибка, но приглушённое —
+   это подсказка, а не сигнал. */
+.form-field-hint {
+  color: var(--n-4);
+  font-size: 11.5px;
+  line-height: 1.4;
+}
+
 .form-field.is-invalid input {
   border-color: var(--error);
 }

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { DecisionDialog } from "../../shared/DecisionDialog";
 import { Icon } from "../../shared/icons";
 import { Button } from "../../shared/ui-controls";
+import { t } from "../../i18n";
 
 export function ConversationActions({
   open,
@@ -48,39 +49,39 @@ export function ConversationActions({
     ...(canReturnQueue
       ? [{
           key: "queue",
-          label: <button type="button" onClick={onReturnQueue}><Icon name="refresh" size={15} />Вернуть в очередь</button>,
+          label: <button type="button" onClick={onReturnQueue}><Icon name="refresh" size={15} />{t("conversations.return_queue")}</button>,
         }]
       : []),
     {
       key: "close",
-      label: <button type="button" onClick={onClose}><Icon name="lock" size={15} />Закрыть диалог</button>,
+      label: <button type="button" onClick={onClose}><Icon name="lock" size={15} />{t("conversations.close_conversation")}</button>,
     },
     { type: "divider" as const },
     {
       key: "spam",
-      label: <button className="danger" type="button" onClick={() => setConfirmSpam(true)}><Icon name="warning" size={15} />Пометить как спам</button>,
+      label: <button className="danger" type="button" onClick={() => setConfirmSpam(true)}><Icon name="warning" size={15} />{t("conversations.mark_as_spam")}</button>,
     },
     {
       key: "archive",
-      label: <button className="danger" type="button" onClick={() => setConfirmArchive(true)}><Icon name="trash" size={15} />Удалить диалог</button>,
+      label: <button className="danger" type="button" onClick={() => setConfirmArchive(true)}><Icon name="trash" size={15} />{t("conversations.delete_conversation")}</button>,
     },
   ];
 
   return (
     <>
       <Dropdown menu={{ items }} trigger={["click"]} placement="bottomRight" overlayClassName="app-dropdown">
-        <button className="sales-more-button row-menu-button" type="button" aria-label="Действия диалога"><Icon name="more" size={18} /></button>
+        <button className="sales-more-button row-menu-button" type="button" aria-label={t("conversations.conversation_actions")}><Icon name="more" size={18} /></button>
       </Dropdown>
       <DecisionDialog
         open={confirmSpam}
         onClose={() => !busy && setConfirmSpam(false)}
         tone="danger"
         icon="warning"
-        title="Пометить диалог как спам?"
-        description="Диалог будет закрыт для ответов и останется в истории со статусом «Спам»."
+        title={t("conversations.mark_conversation_as_spam")}
+        description={t("conversations.conversation_will_closed_replies_stay")}
         actions={<>
-          <Button variant="secondary" disabled={busy} onClick={() => setConfirmSpam(false)}>Отмена</Button>
-          <Button variant="danger-outline" icon="warning" disabled={busy} onClick={() => void confirm()}>Пометить как спам</Button>
+          <Button variant="secondary" disabled={busy} onClick={() => setConfirmSpam(false)}>{t("common.cancel")}</Button>
+          <Button variant="danger-outline" icon="warning" disabled={busy} onClick={() => void confirm()}>{t("conversations.mark_as_spam")}</Button>
         </>}
       />
       <DecisionDialog
@@ -88,11 +89,11 @@ export function ConversationActions({
         onClose={() => !busy && setConfirmArchive(false)}
         tone="danger"
         icon="trash"
-        title="Удалить диалог?"
-        description="Диалог уйдёт в архив и исчезнет из списков. Архив видят только администраторы."
+        title={t("conversations.delete_conversation_2")}
+        description={t("conversations.conversation_moves_archive_leaves_lists")}
         actions={<>
-          <Button variant="secondary" disabled={busy} onClick={() => setConfirmArchive(false)}>Отмена</Button>
-          <Button variant="danger-outline" icon="trash" disabled={busy} onClick={() => void confirmArchiveAction()}>Удалить</Button>
+          <Button variant="secondary" disabled={busy} onClick={() => setConfirmArchive(false)}>{t("common.cancel")}</Button>
+          <Button variant="danger-outline" icon="trash" disabled={busy} onClick={() => void confirmArchiveAction()}>{t("common.delete")}</Button>
         </>}
       />
     </>

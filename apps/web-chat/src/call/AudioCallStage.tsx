@@ -8,6 +8,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { acceptCall, declineCall, endCall, fetchCallState, type CallInfo } from "../api";
 import { audioCallStatusLabel, buildAudioCallViewStatus, isTerminalCall, resolveAudioCallViewMode } from "./model";
 import { useConnectionTimer } from "./useConnectionTimer";
+import { t } from "../i18n";
 
 type Props = {
   call: CallInfo | null;
@@ -69,7 +70,7 @@ export function AudioCallStage({ call, accessToken, iceServers, loading, invalid
       setStarted(true);
       await rtc.start();
     } catch (error) {
-      setErrorText(error instanceof Error ? error.message : "Не удалось принять звонок");
+      setErrorText(error instanceof Error ? error.message : t("call.could_not_accept"));
     } finally {
       setJoining(false);
     }
@@ -85,7 +86,7 @@ export function AudioCallStage({ call, accessToken, iceServers, loading, invalid
       onCall(ended);
       rtc.stop();
     } catch (error) {
-      setErrorText(error instanceof Error ? error.message : "Не удалось завершить звонок");
+      setErrorText(error instanceof Error ? error.message : t("call.could_not_end"));
     }
   }, [accessToken, call?.status, onCall, rtc.stop]);
 
@@ -94,7 +95,7 @@ export function AudioCallStage({ call, accessToken, iceServers, loading, invalid
     try {
       onCall(await endCall(accessToken));
     } catch (error) {
-      setErrorText(error instanceof Error ? error.message : "Не удалось завершить звонок");
+      setErrorText(error instanceof Error ? error.message : t("call.could_not_end"));
     } finally {
       rtc.stop();
     }
@@ -116,8 +117,8 @@ export function AudioCallStage({ call, accessToken, iceServers, loading, invalid
   }, [rtc.mediaIssue, rtc.prepare, rtc.restart]);
 
   const elapsed = useConnectionTimer(rtc.connectionPhase === "connected");
-  const peerName = call?.staffName || "Оператор";
-  const initials = peerName.trim().split(/\s+/).map((part) => part[0]).slice(0, 2).join("").toUpperCase() || "ОП";
+  const peerName = call?.staffName || t("call.operator");
+  const initials = peerName.trim().split(/\s+/).map((part) => part[0]).slice(0, 2).join("").toUpperCase() || t("call.operator_initials");
 
   return (
     <main className="public-call-page is-audio">
@@ -134,7 +135,7 @@ export function AudioCallStage({ call, accessToken, iceServers, loading, invalid
         durationSeconds={call?.durationSeconds ?? null}
         mediaIssue={rtc.mediaIssue}
         statusLabel={audioCallStatusLabel(mode, status)}
-        subCaption={mode === "active" ? (rtc.micOn ? "Говорите" : "Ваш микрофон выключен") : undefined}
+        subCaption={mode === "active" ? (rtc.micOn ? t("call.speak") : t("call.mic_off")) : undefined}
         onToggleMic={rtc.toggleMic}
         onToggleSpeaker={() => setSpeakerOn((current) => !current)}
         onAccept={() => void join()}

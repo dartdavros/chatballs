@@ -1,4 +1,6 @@
 import type { HelpAttachment } from "./types";
+import { t } from "../../i18n";
+import { readableSize } from "../../shared/utils";
 
 // Вложения статьи портала: картинки вставлены в текст самой статьёй, а
 // документы посетитель скачивает списком под ней — с иконкой формата и
@@ -36,19 +38,14 @@ function extensionOf(name: string): string {
 
 function formatLabel(name: string): string {
   const extension = extensionOf(name);
-  return EXTENSION_LABEL[extension] ?? (extension ? extension.toUpperCase().slice(0, 4) : "ФАЙЛ");
-}
-
-function readableSize(bytes: number): string {
-  if (bytes >= 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1).replace(".", ",")} МБ`;
-  return `${Math.max(1, Math.round(bytes / 1024))} КБ`;
+  return EXTENSION_LABEL[extension] ?? (extension ? extension.toUpperCase().slice(0, 4) : t("portals.file"));
 }
 
 export function HelpAttachments({ attachments }: { attachments: HelpAttachment[] }) {
   if (attachments.length === 0) return null;
   return (
     <section className="help-attachments">
-      <h2>Файлы к статье</h2>
+      <h2>{t("portals.files_article_2")}</h2>
       <ul>
         {attachments.map((attachment) => (
           <li key={attachment.path}>

@@ -1,10 +1,13 @@
 import { ConfigProvider } from "antd";
+import enUS from "antd/locale/en_US";
+import ruRU from "antd/locale/ru_RU";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { buildTheme } from "@chatballs/ui";
 
 import { applyAppearance, DEFAULT_ACCENT, resolvedDark } from "./shared/appearance";
 
+import { acceptServerLanguage, language } from "./i18n";
 import { api, setActiveOrganization } from "./api/client";
 import { fetchAgentDirectory } from "./features/agents/model";
 import { canAccess, defaultRoute, isManager } from "./auth/access";
@@ -30,6 +33,10 @@ export function App() {
     () => buildTheme(resolvedDark(appearanceTheme), appearanceAccent),
     [appearanceTheme, appearanceAccent],
   );
+  // Свои строки antd — «Нет данных», подписи пагинации, календарь — берёт из
+  // собственных каталогов, и без locale остаётся английским посреди русского
+  // экрана. Язык здесь уже окончательный: смена приходит перезагрузкой.
+  const antdLocale = language() === "en" ? enUS : ruRU;
   const [user, setUser] = useState<SessionUser | null>(null);
   const [organizationPublicId, setOrganizationPublicId] = useState<string | null>(initialRoute.organizationPublicId);
   const [totpChallenge, setTotpChallenge] = useState<AuthChallenge | null>(null);
@@ -43,6 +50,10 @@ export function App() {
   const { navigate } = navigation;
 
   const useIdentity = useCallback((nextIdentity: AuthenticatedUser, requestedId: string | null) => {
+    // Язык приходит уже разрешённым сервером. Если он разошёлся с тем, на
+    // котором отрисован экран, страница перезагрузится — иначе половина
+    // подписей осталась бы на прежнем языке (см. комментарий в src/i18n).
+    acceptServerLanguage(nextIdentity.language);
     const activeUser = activateOrganization(nextIdentity, requestedId);
     setIdentity(nextIdentity);
     setUser(activeUser);
@@ -72,8 +83,11 @@ export function App() {
   }, [user]);
 
   useEffect(() => {
-    api<{ authenticated: boolean; user?: AuthenticatedUser }>("/api/v1/auth/session/")
+    api<{ authenticated: boolean; user?: AuthenticatedUser; language?: string }>("/api/v1/auth/session/")
       .then((payload) => {
+        // Язык установки приходит и для гостя: экран входа принадлежит коробке,
+        // и на английской машине он должен открываться на языке установки.
+        if (!payload.authenticated) acceptServerLanguage(payload.language);
         if (payload.authenticated && payload.user) {
           const activeUser = useIdentity(payload.user, initialRoute.organizationPublicId);
           if (activeUser && !initialRoute.organizationPublicId) {
@@ -133,16 +147,16 @@ export function App() {
 
   if (resetting) {
     return (
-      <ConfigProvider theme={antdTheme}>
+      <ConfigProvider theme={antdTheme} locale={antdLocale}>
         <AuthResetPassword onDone={() => { setResetting(false); window.history.replaceState({}, "", pathFromRoute("chat")); }} />
       </ConfigProvider>
     );
   }
 
-  if (sessionLoading) return <ConfigProvider theme={antdTheme}><LoadingScreen /></ConfigProvider>;
+  if (sessionLoading) return <ConfigProvider theme={antdTheme} locale={antdLocale}><LoadingScreen /></ConfigProvider>;
 
   return (
-    <ConfigProvider theme={antdTheme}>
+    <ConfigProvider theme={antdTheme} locale={antdLocale}>
       {totpChallenge ? (
         <AuthTotpCode challenge={totpChallenge} onVerified={(nextUser) => { setTotpChallenge(null); landAfterAuth(nextUser); }} />
       ) : !identity ? (

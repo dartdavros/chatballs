@@ -22,6 +22,7 @@ from chatballs.ai.provider.base import (
     LLMProvider,
     ProviderError,
 )
+from chatballs.i18n import t
 
 EMBEDDING_DIM = 16
 KNOWLEDGE_MARKER = "Отвечай только на основе этих знаний:"
@@ -131,4 +132,4 @@ class DemoProvider(LLMProvider):
         ]
 
     def transcribe(self, *, audio: bytes, filename: str, content_type: str, model: str) -> str:
-        raise ProviderError("Расшифровка голосовых недоступна в демо-провайдере: подключите OpenRouter или совместимый провайдер в «Настройках».")
+        raise ProviderError(t("ai.demo_no_transcription"))

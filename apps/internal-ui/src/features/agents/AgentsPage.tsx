@@ -19,6 +19,7 @@ import {
   setAgentAiActive,
   type AgentCard,
 } from "./model";
+import { t } from "../../i18n";
 
 // Список агентов (дизайн-базлайн v2, «Агенты Baseline», кадры G1, G2, S1):
 // агент · группа · статус · модель · подключения · открытые · ⋯.
@@ -38,28 +39,28 @@ function CreateAgentModal({ groups, onClose, onCreated }: { groups: EmployeeGrou
       const created = await createAgent({ name: name.trim(), groupId });
       onCreated(created.agent.id);
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Не удалось создать агента");
+      setError(caught instanceof Error ? caught.message : t("ai.could_not_create_agent"));
       setSubmitting(false);
     }
   }
 
   return (
-    <Modal className="agent-create-modal" open width={440} title="Создать агента" onCancel={onClose} footer={null} destroyOnClose>
-      <p className="agent-create-lead">Один шаг. Инструкции, модель, знания и подключения — потом, на карточке агента.</p>
+    <Modal className="agent-create-modal" open width={440} title={t("profile.create_agent")} onCancel={onClose} footer={null} destroyOnClose>
+      <p className="agent-create-lead">{t("ai.one_step_instructions_model_knowledge")}</p>
       <div className="agent-create-fields">
-        <FormField label="Название" value={name} onChange={setName} placeholder="Например: Приёмная" />
+        <FormField label={t("common.title")} value={name} onChange={setName} placeholder={t("ai.example_front_desk")} />
         <SelectField
-          label="Группа"
+          label={t("common.group")}
           value={groupId === null ? "" : String(groupId)}
           onChange={(value) => setGroupId(value ? Number(value) : null)}
-          options={[["", "Без группы — диалоги видны всем"], ...groups.map((item) => [String(item.id), item.name] as [string, string])]}
+          options={[["", t("ai.without_group_conversations_visible_everyone")], ...groups.map((item) => [String(item.id), item.name] as [string, string])]}
         />
         {error && <div className="agent-form-error">{error}</div>}
       </div>
       <div className="agent-create-actions">
-        <Button variant="secondary" onClick={onClose}>Отмена</Button>
+        <Button variant="secondary" onClick={onClose}>{t("common.cancel")}</Button>
         <Button variant="primary" disabled={!name.trim() || submitting} onClick={() => void submit()}>
-          {submitting ? "Создание…" : "Создать"}
+          {submitting ? t("ai.creating") : t("ai.create_2")}
         </Button>
       </div>
     </Modal>
@@ -73,14 +74,14 @@ function AgentRow({ card, openAgent, onToggleAi }: { card: AgentCard; openAgent:
   const status = agentStatusMeta(card);
   const open = card.counters.openConversations;
   const menuItems = [
-    { key: "open", label: <button type="button" onClick={() => { setMenuOpen(false); openAgent(card.id); }}><Icon name="external" size={15} />Открыть карточку</button> },
+    { key: "open", label: <button type="button" onClick={() => { setMenuOpen(false); openAgent(card.id); }}><Icon name="external" size={15} />{t("admin.open_card")}</button> },
     { type: "divider" as const },
     {
       key: "toggle",
       label: (
         <button type="button" className={card.aiStatus === "ACTIVE" ? "warning" : ""} onClick={() => { setMenuOpen(false); onToggleAi(card); }}>
           <Icon name={card.aiStatus === "ACTIVE" ? "pause" : "bolt"} size={15} />
-          {card.aiStatus === "ACTIVE" ? "Остановить AI" : "Запустить AI"}
+          {card.aiStatus === "ACTIVE" ? t("ai.stop_ai") : t("ai.start_ai")}
         </button>
       ),
     },
@@ -99,7 +100,7 @@ function AgentRow({ card, openAgent, onToggleAi }: { card: AgentCard; openAgent:
       </div>
       <span className={`agents-row-group ${card.groupId === null ? "is-none" : ""}`}>
         {card.groupId !== null && <i style={{ background: groupColorOf(card.groupId, card.groupColor) }} />}
-        {card.groupName ?? "Без группы"}
+        {card.groupName ?? t("common.no_group")}
       </span>
       <b className="agents-status" style={{ background: status.bg, color: status.color }}><i />{status.text}</b>
       <span className="agents-row-model">{agentModelLabel(card)}</span>
@@ -118,7 +119,7 @@ function AgentRow({ card, openAgent, onToggleAi }: { card: AgentCard; openAgent:
       </div>
       <div className="agents-row-open" style={{ color: open ? "var(--warning-text)" : "var(--n-5)" }}>{open || "—"}</div>
       <Dropdown menu={{ items: menuItems }} open={menuOpen} onOpenChange={setMenuOpen} trigger={["click"]} overlayClassName="app-dropdown">
-        <button className="agents-row-menu" type="button" aria-label="Действия агента" title="Действия" onClick={(event) => event.stopPropagation()}><Icon name="more" size={16} strokeWidth={2} /></button>
+        <button className="agents-row-menu" type="button" aria-label={t("ai.agent_actions")} title={t("common.actions")} onClick={(event) => event.stopPropagation()}><Icon name="more" size={16} strokeWidth={2} /></button>
       </Dropdown>
     </div>
   );
@@ -138,7 +139,7 @@ export function AgentsPage({
     (page: number) => fetchAgentsPage({ group: "all", query: "" }, page),
     [],
   );
-  const agents = usePagedResource(load, null, "Не удалось загрузить агентов");
+  const agents = usePagedResource(load, null, t("ai.could_not_load_agents"));
 
   async function toggleAi(card: AgentCard) {
     await setAgentAiActive(card.id, card.aiStatus !== "ACTIVE").catch(() => undefined);
@@ -149,30 +150,30 @@ export function AgentsPage({
     <div className="agents-page">
       <header className="agents-header">
         <div>
-          <h2>Агенты</h2>
-          <p>Агент отвечает клиентам первым и собирает диалоги в группу</p>
+          <h2>{t("common.agents")}</h2>
+          <p>{t("ai.agent_answers_customers_first_collects")}</p>
         </div>
-        <Button variant="primary" className="agents-create" icon="plus" iconSize={15} onClick={() => setCreating(true)}>Создать агента</Button>
+        <Button variant="primary" className="agents-create" icon="plus" iconSize={15} onClick={() => setCreating(true)}>{t("profile.create_agent")}</Button>
       </header>
       {agents.errorText && <div className="agents-error">{agents.errorText}</div>}
       {agents.total === 0 ? (
         <div className="agents-empty">
           <span><Icon name="robot" size={24} strokeWidth={1.8} /></span>
           <div>
-            <strong>Агент отвечает клиентам первым. Создайте первого</strong>
-            <p>Имя и группа — всё, что нужно для старта. Инструкции, знания и подключения настраиваются потом на карточке.</p>
+            <strong>{t("ai.agent_answers_customers_first_create")}</strong>
+            <p>{t("ai.name_group_all_takes_start")}</p>
           </div>
-          <Button variant="primary" className="agents-create is-wide" onClick={() => setCreating(true)}>Создать агента</Button>
+          <Button variant="primary" className="agents-create is-wide" onClick={() => setCreating(true)}>{t("profile.create_agent")}</Button>
         </div>
       ) : (
         <div className="agents-table">
           <div className="agents-thead">
-            <span>Агент</span>
-            <span>Группа</span>
-            <span>Статус</span>
-            <span>Модель</span>
-            <span>Подключения</span>
-            <span className="is-right">Открытые</span>
+            <span>{t("common.agent")}</span>
+            <span>{t("common.group")}</span>
+            <span>{t("common.status")}</span>
+            <span>{t("common.model")}</span>
+            <span>{t("common.connections")}</span>
+            <span className="is-right">{t("ai.open")}</span>
             <span />
           </div>
           {agents.items.map((card) => (

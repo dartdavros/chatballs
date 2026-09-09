@@ -17,6 +17,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 
+from chatballs.i18n import t
 from chatballs.identity.crypto import EncryptedCharField
 
 
@@ -158,7 +159,7 @@ def build_s3_storage(config: StorageConfig, *, probe: bool = False):
         from botocore.config import Config
         from storages.backends.s3 import S3Storage
     except ImportError as error:  # pragma: no cover - deployment guard
-        raise ValidationError("django-storages[s3] не установлен") from error
+        raise ValidationError(t("settings.storages_missing")) from error
     client_config = (
         Config(connect_timeout=5, read_timeout=10, retries={"max_attempts": 1})
         if probe

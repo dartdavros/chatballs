@@ -11,6 +11,7 @@ import {
   type CallAccess,
   type CallKind,
 } from "./model";
+import { t } from "../../i18n";
 
 type Options = {
   conversationId: number | null;
@@ -60,8 +61,8 @@ export function useConversationCall({ conversationId, onConversationChanged }: O
       const active = await fetchActiveCall(conversationId);
       if (active) {
         if (active.kind !== kind) {
-          const activeLabel = active.kind === "AUDIO" ? "аудиозвонок" : "видеозвонок";
-          throw new Error(`Сначала завершите текущий ${activeLabel}`);
+          const activeLabel = active.kind === "AUDIO" ? t("conversations.audio_call_2") : t("conversations.video_call");
+          throw new Error(t("conversations.finish_current_call_first", { kind: activeLabel }));
         }
         setCall(active);
         await ensureAccess(active.id);
@@ -74,7 +75,7 @@ export function useConversationCall({ conversationId, onConversationChanged }: O
     } catch (error) {
       setCall(null);
       setAccess(null);
-      setErrorText(error instanceof Error ? error.message : "Не удалось запросить звонок");
+      setErrorText(error instanceof Error ? error.message : t("conversations.could_not_request_call"));
     } finally {
       setBusy(false);
       setOpen(true);
@@ -88,7 +89,7 @@ export function useConversationCall({ conversationId, onConversationChanged }: O
       onConversationChanged();
       setOpen(false);
     } catch (error) {
-      setErrorText(error instanceof Error ? error.message : "Не удалось отменить звонок");
+      setErrorText(error instanceof Error ? error.message : t("conversations.could_not_cancel_call"));
     }
   }, [call, onConversationChanged]);
 
@@ -104,7 +105,7 @@ export function useConversationCall({ conversationId, onConversationChanged }: O
       setAccess(created.access);
       onConversationChanged();
     } catch (error) {
-      setErrorText(error instanceof Error ? error.message : "Не удалось запросить звонок");
+      setErrorText(error instanceof Error ? error.message : t("conversations.could_not_request_call"));
     }
   }, [conversationId, onConversationChanged]);
 

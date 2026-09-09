@@ -7,6 +7,7 @@ import { Button } from "../../shared/ui-controls";
 import { ConnectionsTable } from "./ConnectionsTable";
 import type { Integration, IntegrationKind } from "./model";
 import { ProvidersTable } from "./ProvidersTable";
+import { t } from "../../i18n";
 
 // Таблица интеграций одного рода — раздел экрана «Настройки» (дизайн-базлайн v2,
 // кадры N3/N4): подключения (MESSENGER) и AI-провайдеры (LLM_PROVIDER) — два
@@ -53,7 +54,7 @@ export function IntegrationsSection({ kind, items, reload, onEdit }: {
       setDeleting(null);
       reload();
     } catch (caught) {
-      setDeletingError(caught instanceof Error ? caught.message : "Не удалось удалить");
+      setDeletingError(caught instanceof Error ? caught.message : t("settings.could_not_delete"));
     }
   }
 
@@ -69,23 +70,23 @@ export function IntegrationsSection({ kind, items, reload, onEdit }: {
   return (
     <div className="integrations-section">
       {items.length === 0 ? (
-        <EmptyState title={isConnections ? "Подключений пока нет. Добавьте бота, почту или Web-виджет." : "Провайдеров пока нет. Добавьте OpenRouter или Custom endpoint."} />
+        <EmptyState title={isConnections ? t("settings.no_connections_yet_add_bot") : t("settings.no_providers_yet_add_openrouter")} />
       ) : isConnections ? (
         <ConnectionsTable items={items} {...rowHandlers} />
       ) : (
         <ProvidersTable items={items} {...rowHandlers} />
       )}
       {isConnections && items.length > 0 && (
-        <p className="settings-section-note">Код вставки Web-виджета копируется на карточке его агента.</p>
+        <p className="settings-section-note">{t("settings.web_widget_embed_snippet_copied")}</p>
       )}
       {deleting && (
-        <Modal open title="Удалить интеграцию?" onCancel={() => setDeleting(null)} footer={null} destroyOnClose>
+        <Modal open title={t("settings.delete_integration")} onCancel={() => setDeleting(null)} footer={null} destroyOnClose>
           <div className="integration-form">
-            <p>{`«${deleting.name}» будет удалена. Действие необратимо.`}</p>
+            <p>{t("settings.will_be_deleted_irreversible", { name: deleting.name })}</p>
             {deletingError && <div className="integration-form-error">{deletingError}</div>}
             <div className="integration-form-actions">
-              <Button variant="secondary" onClick={() => setDeleting(null)}>Отмена</Button>
-              <Button variant="danger-outline" onClick={() => void confirmDelete()}>Удалить</Button>
+              <Button variant="secondary" onClick={() => setDeleting(null)}>{t("common.cancel")}</Button>
+              <Button variant="danger-outline" onClick={() => void confirmDelete()}>{t("common.delete")}</Button>
             </div>
           </div>
         </Modal>

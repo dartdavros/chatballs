@@ -1,11 +1,11 @@
 import { EmptyState, LoadingState, PageHeader } from "../../shared/ui";
 import { Pagination } from "../../shared/Pagination";
 import { Button } from "../../shared/ui-controls";
-import { pluralRu } from "../../shared/utils";
 import { AuditFilters } from "./AuditFilters";
 import { AuditTable } from "./AuditTable";
 import { auditQueryIsDirty } from "./model";
 import { useAudit } from "./useAudit";
+import { t, tn } from "../../i18n";
 
 // «Аудит действий» — отдельный экран из субменю «Настроек». Журнал отдавался
 // последними 50 событиями без фильтров и без страниц: дальше пятидесятого
@@ -18,10 +18,10 @@ export function AuditPage() {
 
   const header = (
     <PageHeader
-      title="Аудит"
+      title={t("common.audit")}
       text={payload
-        ? `Журнал действий в организации · ${pluralRu(payload.total, ["событие", "события", "событий"])}`
-        : "Журнал действий в организации"}
+        ? t("admin.audit_log_with_total", { total: tn("plural.events", payload.total) })
+        : t("admin.log_actions_organization")}
     />
   );
 
@@ -30,7 +30,7 @@ export function AuditPage() {
       <div className="audit-page">
         {header}
         <EmptyState title={error} />
-        <Button variant="secondary" onClick={() => void audit.reload()}>Повторить</Button>
+        <Button variant="secondary" onClick={() => void audit.reload()}>{t("common.try_again")}</Button>
       </div>
     );
   }
@@ -56,13 +56,13 @@ export function AuditPage() {
           таблица моргает пустотой на каждый ввод в поиске. */}
       <div className={`audit-results ${loading ? "is-loading" : ""}`}>
         {payload.items.length === 0
-          ? <EmptyState title={dirty ? "Под фильтры ничего не подошло" : "Событий пока нет"} />
+          ? <EmptyState title={dirty ? t("admin.nothing_matched_filters") : t("admin.no_events_yet")} />
           : <AuditTable events={payload.items} />}
       </div>
       {payload.pageCount > 1 && (
         <Pagination
           className="audit-pagination"
-          note={`Показано ${payload.items.length} из ${payload.total} · по ${payload.pageSize} на странице`}
+          note={t("common.shown_of_page", { shown: payload.items.length, total: payload.total, size: payload.pageSize })}
           page={payload.page}
           pageCount={payload.pageCount}
           onPage={(page) => setQuery({ page })}

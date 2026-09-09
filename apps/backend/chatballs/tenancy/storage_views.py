@@ -18,6 +18,7 @@ from rest_framework.views import APIView
 
 from chatballs.api.permissions import HasCapability
 from chatballs.events.services import DomainEvent, enqueue_event
+from chatballs.i18n import t
 from chatballs.identity.audit import record_audit_event
 from chatballs.tenancy import storage_settings as ss
 
@@ -91,7 +92,7 @@ class StorageSettingsView(APIView):
         body = request.data
         backend = str(body.get("backend") or row.backend).upper()
         if backend not in ss.StorageBackend.values:
-            return Response({"detail": "Неизвестный тип хранилища", "errors": {"backend": "LOCAL или S3"}}, status=400)
+            return Response({"detail": t("settings.unknown_storage_kind"), "errors": {"backend": "LOCAL или S3"}}, status=400)
         config = _apply_fields(row, body)
         if backend == ss.StorageBackend.S3:
             try:
@@ -150,9 +151,9 @@ class StorageMigrateView(APIView):
     def post(self, request: Request) -> Response:
         row = ss.StorageSettings.load()
         if row.backend != ss.StorageBackend.S3 or not row.s3_configured:
-            return Response({"detail": "Сначала включите и сохраните S3-хранилище"}, status=400)
+            return Response({"detail": t("settings.enable_s3_first")}, status=400)
         if row.migration_status == ss.StorageMigrationStatus.RUNNING:
-            return Response({"detail": "Перенос уже идёт"}, status=409)
+            return Response({"detail": t("settings.migration_running")}, status=409)
         row.migration_status = ss.StorageMigrationStatus.RUNNING
         row.migration_total = 0
         row.migration_done = 0

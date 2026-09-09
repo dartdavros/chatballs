@@ -11,22 +11,23 @@ import {
   type PortalStatus,
   type SupportPortal,
 } from "./model";
+import { t } from "../../i18n";
 
 // Раздел «Публикация и архив» субменю настроек (кадры PT4–PT6): здесь живут
 // действия, которые в шапке карточки спрятаны в ⋯.
 
 const COPY: Record<Exclude<PortalStatus, "ARCHIVED"> | "ARCHIVED", { title: string; description: string }> = {
   PUBLISHED: {
-    title: "Опубликовать портал?",
-    description: "Опубликованные статьи станут доступны по публичному адресу.",
+    title: t("portals.publish_portal_2"),
+    description: t("portals.published_articles_will_become_available"),
   },
   DRAFT: {
-    title: "Снять портал с публикации?",
-    description: "Посетители перестанут видеть материалы, адрес останется за порталом.",
+    title: t("portals.unpublish_portal"),
+    description: t("portals.visitors_will_stop_seeing_material"),
   },
   ARCHIVED: {
-    title: "Перенести портал в архив?",
-    description: "Портал и его материалы станут недоступны посетителям до восстановления.",
+    title: t("portals.move_portal_archive"),
+    description: t("portals.portal_its_material_become_unavailable"),
   },
 };
 
@@ -51,7 +52,7 @@ export function PortalPublishSettings({
       onChanged(payload.portal);
       setPending(null);
     } catch (caught) {
-      setError(portalErrorMessage(caught, "Не удалось изменить статус портала"));
+      setError(portalErrorMessage(caught, t("portals.could_not_change_portal_status")));
       setPending(null);
     } finally {
       setBusy(false);
@@ -63,27 +64,26 @@ export function PortalPublishSettings({
     <div className="portal-settings-card">
       <div className="portal-status-row">
         <span>
-          <small>Текущее состояние</small>
+          <small>{t("portals.current_state")}</small>
           <StatusPill
             status={portal.status === "PUBLISHED" ? "published" : archived ? "archived" : "draft"}
             label={PORTAL_STATUS_LABEL[portal.status]}
           />
         </span>
-        {portal.publishedAt && <span className="portal-settings-note">опубликован {shortDateTime(portal.publishedAt)}</span>}
+        {portal.publishedAt && <span className="portal-settings-note">{t("portals.published_at_lower", { date: shortDateTime(portal.publishedAt) })}</span>}
       </div>
 
       {canManage && (
         <div className="portal-settings-actions">
-          {portal.status === "DRAFT" && <Button variant="primary" disabled={busy} onClick={() => setPending("PUBLISHED")}>Опубликовать портал</Button>}
-          {portal.status === "PUBLISHED" && <Button variant="secondary" disabled={busy} onClick={() => setPending("DRAFT")}>Снять с публикации</Button>}
-          {archived && <Button variant="secondary" disabled={busy} onClick={() => void apply("DRAFT")}>Вернуть из архива</Button>}
+          {portal.status === "DRAFT" && <Button variant="primary" disabled={busy} onClick={() => setPending("PUBLISHED")}>{t("portals.publish_portal")}</Button>}
+          {portal.status === "PUBLISHED" && <Button variant="secondary" disabled={busy} onClick={() => setPending("DRAFT")}>{t("portals.unpublish")}</Button>}
+          {archived && <Button variant="secondary" disabled={busy} onClick={() => void apply("DRAFT")}>{t("portals.restore_from_archive")}</Button>}
           <span className="portal-settings-gap" />
-          {!archived && <Button variant="danger-outline" disabled={busy} onClick={() => setPending("ARCHIVED")}>Перенести в архив</Button>}
+          {!archived && <Button variant="danger-outline" disabled={busy} onClick={() => setPending("ARCHIVED")}>{t("common.move_archive")}</Button>}
         </div>
       )}
       <p className="portal-dns-note">
-        Архивный портал перестаёт открываться по публичному адресу, а его материалы исчезают из
-        ответов агента. Ничего не удаляется: портал можно вернуть из архива.
+        {t("portals.archive_note")}
       </p>
       {error && <div className="portal-form-error">{error}</div>}
 
@@ -95,13 +95,13 @@ export function PortalPublishSettings({
         title={pending ? COPY[pending].title : ""}
         description={pending ? COPY[pending].description : ""}
         actions={<>
-          <Button variant="secondary" onClick={() => setPending(null)}>Отмена</Button>
+          <Button variant="secondary" onClick={() => setPending(null)}>{t("common.cancel")}</Button>
           <Button
             variant={pending === "ARCHIVED" ? "danger-outline" : "primary"}
             disabled={busy}
             onClick={() => pending && void apply(pending)}
           >
-            {pending === "ARCHIVED" ? "В архив" : pending === "DRAFT" ? "Снять" : "Опубликовать"}
+            {pending === "ARCHIVED" ? t("common.archive") : pending === "DRAFT" ? t("portals.unpublish_2") : t("common.publish")}
           </Button>
         </>}
       />

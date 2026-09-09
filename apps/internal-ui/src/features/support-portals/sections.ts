@@ -1,4 +1,5 @@
 import type { Icon } from "../../shared/icons";
+import { t } from "../../i18n";
 
 type IconName = Parameters<typeof Icon>[0]["name"];
 
@@ -24,38 +25,38 @@ export type PortalSettingsSection = {
 export const PORTAL_SETTINGS_SECTIONS: PortalSettingsSection[] = [
   {
     key: "basics",
-    label: "Основные",
+    label: t("portals.basics"),
     icon: "settings",
-    heading: "Основные",
-    lead: "Название, публичный адрес и язык материалов портала.",
+    heading: t("portals.basics"),
+    lead: t("portals.portal_s_name_public_address"),
   },
   {
     key: "domain",
-    label: "Адрес и домен",
+    label: t("portals.address_domain"),
     icon: "globe",
-    heading: "Свой домен",
-    lead: "Портал будет открываться по адресу вашей компании. Адрес установки продолжит работать.",
+    heading: t("portals.custom_domain"),
+    lead: t("portals.portal_will_open_at_company"),
   },
   {
     key: "theme",
-    label: "Оформление",
+    label: t("common.appearance"),
     icon: "paint",
-    heading: "Оформление",
-    lead: "Тема публичных страниц и цветовая схема. Применяется до первого кадра — посетитель не видит смены оформления. Список тем — из сборки установки.",
+    heading: t("common.appearance"),
+    lead: t("portals.theme_colour_scheme_public_pages"),
   },
   {
     key: "widget",
-    label: "Веб-виджет",
+    label: t("common.web_widget_2"),
     icon: "widget",
-    heading: "Веб-виджет",
-    lead: "Публичный чат отображается на всех страницах портала.",
+    heading: t("common.web_widget_2"),
+    lead: t("portals.public_chat_appears_every_portal"),
   },
   {
     key: "danger",
-    label: "Публикация и архив",
+    label: t("portals.publishing_archive"),
     icon: "danger",
-    heading: "Публикация и архив",
-    lead: "Публикация открывает материалы посетителям, архив прячет портал целиком.",
+    heading: t("portals.publishing_archive"),
+    lead: t("portals.publishing_opens_material_visitors_archive"),
     divider: true,
   },
 ];

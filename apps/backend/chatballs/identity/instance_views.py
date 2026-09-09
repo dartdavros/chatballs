@@ -13,6 +13,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from chatballs.api.permissions import HasCapability
+from chatballs.i18n import t
+from chatballs.i18n.languages import DEFAULT_LANGUAGE, LANGUAGES, normalize_language
 from chatballs.identity.instance_settings import (
     InstanceSettings,
     email_connection,
@@ -30,6 +32,9 @@ def instance_payload(row: InstanceSettings) -> dict:
         "publicHost": row.public_host,
         "publicScheme": row.public_scheme or "http",
         "publicUrl": public_base_url(),
+        # Язык экранов, где организации ещё нет: логин, сброс пароля, мастер.
+        "defaultLanguage": row.default_language or DEFAULT_LANGUAGE,
+        "languages": [{"code": code, "label": label} for code, label in LANGUAGES],
         "updatedAt": row.updated_at,
         "email": {
             "host": row.email_host,
@@ -70,31 +75,43 @@ class InstanceAddressView(APIView):
             raw_host = raw_host.split("//", 1)[1]
         host = normalize_domain(raw_host.split("/", 1)[0].split(":", 1)[0])
         if not host:
-            errors["publicHost"] = "Укажите адрес установки"
+            errors["publicHost"] = t("settings.address_required")
         else:
             try:
                 # IP-адрес — обычный случай коробки: домена может не быть вовсе.
                 if not _looks_like_ipv4(host):
                     validate_domain(host)
             except ValidationError:
-                errors["publicHost"] = "Некорректный адрес"
+                errors["publicHost"] = t("settings.invalid_address")
 
         scheme = str(body.get("publicScheme", row.public_scheme or "http")).lower()
         if scheme not in SCHEMES:
-            errors["publicScheme"] = "http или https"
+            errors["publicScheme"] = t("settings.http_or_https")
+
+        raw_language = str(body.get("defaultLanguage", row.default_language)).strip()
+        language = normalize_language(raw_language)
+        if raw_language and not language:
+            errors["defaultLanguage"] = t("settings.language_unsupported")
 
         if errors:
             return Response(
                 {"detail": next(iter(errors.values())), "errors": errors}, status=400
             )
 
-        fields = ["public_host", "public_scheme", "previous_public_host", "updated_at"]
+        fields = [
+            "public_host",
+            "public_scheme",
+            "previous_public_host",
+            "default_language",
+            "updated_at",
+        ]
         if host != row.public_host:
             # Прежний адрес остаётся принятым: владелец меняет адрес заранее,
             # сидя на старом, и не должен выпасть из установки в тот же миг.
             row.previous_public_host = row.public_host
         row.public_host = host
         row.public_scheme = scheme
+        row.default_language = language or DEFAULT_LANGUAGE
 
         email = body.get("email")
         if isinstance(email, dict):
@@ -106,7 +123,7 @@ class InstanceAddressView(APIView):
                 row.email_port = int(email.get("port", row.email_port))
             except (TypeError, ValueError):
                 return Response(
-                    {"detail": "Порт — число", "errors": {"emailPort": "Порт — число"}},
+                    {"detail": t("settings.port_is_number"), "errors": {"emailPort": t("settings.port_is_number")}},
                     status=400,
                 )
             # Пустой пароль означает «оставить прежний»: наружу он не отдаётся.
@@ -131,7 +148,7 @@ class InstanceAddressView(APIView):
                 row.turn_ttl_seconds = max(60, int(turn.get("ttlSeconds", row.turn_ttl_seconds)))
             except (TypeError, ValueError):
                 return Response(
-                    {"detail": "Время жизни — число секунд",
+                    {"detail": t("settings.ttl_is_seconds"),
                      "errors": {"turnTtlSeconds": "Число секунд"}},
                     status=400,
                 )
@@ -163,7 +180,7 @@ class InstanceEmailCheckView(APIView):
         connection = email_connection()
         if connection is None:
             return Response(
-                {"detail": "Сначала укажите сервер исходящей почты"}, status=400
+                {"detail": t("settings.smtp_required_first")}, status=400
             )
         recipient = str(request.data.get("email", "")).strip() or request.user.email
         try:

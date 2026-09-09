@@ -24,6 +24,7 @@ import { PortalLibrary } from "./PortalLibrary";
 import { PortalSettings } from "./PortalSettings";
 import type { PortalSettingsSectionKey } from "./sections";
 import "./styles";
+import { t } from "../../i18n";
 
 // Карточка портала (дизайн-базлайн v2, кадры PT3–PT8): общая шапка с публичным
 // адресом, под ней — библиотека материалов, настройки или редактор статьи.
@@ -87,7 +88,7 @@ export function SupportPortalDetailPage({
       setPortal(payload.portal);
       setPendingStatus(null);
     } catch (caught) {
-      setError(portalErrorMessage(caught, "Не удалось изменить статус портала"));
+      setError(portalErrorMessage(caught, t("portals.could_not_change_portal_status")));
       setPendingStatus(null);
     } finally {
       setBusy(false);
@@ -104,7 +105,7 @@ export function SupportPortalDetailPage({
       setEditing(undefined);
       await load();
     } catch (caught) {
-      setError(portalErrorMessage(caught, "Не удалось опубликовать статью"));
+      setError(portalErrorMessage(caught, t("portals.could_not_publish_article")));
       setPublishing(null);
     } finally {
       setBusy(false);
@@ -133,11 +134,11 @@ export function SupportPortalDetailPage({
           onClose={() => setPublishing(null)}
           tone="warning"
           icon="check"
-          title="Опубликовать выбранную версию?"
-          description="Эта версия станет доступна посетителям портала."
+          title={t("portals.publish_selected_version")}
+          description={t("portals.version_will_become_available_portal")}
           actions={<>
-            <Button variant="secondary" onClick={() => setPublishing(null)}>Отмена</Button>
-            <Button variant="primary" disabled={busy} onClick={() => void publish()}>Опубликовать</Button>
+            <Button variant="secondary" onClick={() => setPublishing(null)}>{t("common.cancel")}</Button>
+            <Button variant="primary" disabled={busy} onClick={() => void publish()}>{t("common.publish")}</Button>
           </>}
         />
       </>
@@ -184,11 +185,11 @@ export function SupportPortalDetailPage({
         onClose={() => setPendingStatus(null)}
         tone="danger"
         icon="trash"
-        title="Перенести портал в архив?"
-        description="Портал и его материалы станут недоступны посетителям до восстановления."
+        title={t("portals.move_portal_archive")}
+        description={t("portals.portal_its_material_become_unavailable")}
         actions={<>
-          <Button variant="secondary" onClick={() => setPendingStatus(null)}>Отмена</Button>
-          <Button variant="danger-outline" disabled={busy} onClick={() => pendingStatus && void setStatus(pendingStatus)}>В архив</Button>
+          <Button variant="secondary" onClick={() => setPendingStatus(null)}>{t("common.cancel")}</Button>
+          <Button variant="danger-outline" disabled={busy} onClick={() => pendingStatus && void setStatus(pendingStatus)}>{t("common.archive")}</Button>
         </>}
       />
     </section>

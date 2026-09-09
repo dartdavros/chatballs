@@ -9,6 +9,7 @@ import {
   type AuditPeriod,
   type AuditQuery,
 } from "./model";
+import { t } from "../../i18n";
 
 // Фильтры журнала: поиск · период · раздел · сотрудник · результат · «Сбросить».
 // Те же контролы, что у списков Сотрудников и Контактов — SearchInput,
@@ -27,20 +28,20 @@ export function AuditFilters({ actors, categories, query, setQuery, reset }: {
   const [actorOpen, setActorOpen] = useState(false);
 
   const periodLabel = AUDIT_PERIODS.find(([value]) => value === query.period)?.[1] ?? "";
-  const categoryLabel = categories.find((item) => item.value === query.category)?.label ?? "Все";
-  const actorLabel = actors.find((item) => item.value === query.actor)?.label ?? "Все";
+  const categoryLabel = categories.find((item) => item.value === query.category)?.label ?? t("common.all");
+  const actorLabel = actors.find((item) => item.value === query.actor)?.label ?? t("common.all");
 
   return (
     <div className="audit-filters">
       <SearchInput
         className="audit-search"
         hotkey="/"
-        placeholder="Поиск по действию, объекту или сотруднику…"
+        placeholder={t("admin.search_by_action_object_or")}
         value={query.q}
         onChange={(value) => setQuery({ q: value })}
       />
       <FilterDropdown
-        caption="Период"
+        caption={t("admin.period")}
         label={periodLabel}
         open={periodOpen}
         options={AUDIT_PERIODS.map(([value, label]) => ({ value, label }))}
@@ -49,27 +50,27 @@ export function AuditFilters({ actors, categories, query, setQuery, reset }: {
         onSelect={(value) => setQuery({ period: value as AuditPeriod })}
       />
       <FilterDropdown
-        caption="Раздел"
+        caption={t("admin.section")}
         label={categoryLabel}
         open={categoryOpen}
-        options={[{ value: "", label: "Все" }, ...categories]}
+        options={[{ value: "", label: t("common.all") }, ...categories]}
         selected={query.category ? [query.category] : []}
         onOpenChange={setCategoryOpen}
         onSelect={(value) => setQuery({ category: value })}
       />
       {actors.length > 1 && (
         <FilterDropdown
-          caption="Сотрудник"
+          caption={t("common.operator")}
           label={actorLabel}
           open={actorOpen}
-          options={[{ value: "", label: "Все" }, ...actors]}
+          options={[{ value: "", label: t("common.all") }, ...actors]}
           selected={query.actor ? [query.actor] : []}
           onOpenChange={setActorOpen}
           onSelect={(value) => setQuery({ actor: value })}
         />
       )}
       <Segmented
-        items={[["", "Все"], ["SUCCESS", "Выполнено"], ["DENIED", "Отклонено"], ["FAILED", "Ошибка"]]}
+        items={[["", t("common.all")], ["SUCCESS", t("admin.succeeded")], ["DENIED", t("admin.rejected")], ["FAILED", t("common.error")]]}
         value={query.result}
         setValue={(value) => setQuery({ result: value })}
       />
@@ -78,9 +79,7 @@ export function AuditFilters({ actors, categories, query, setQuery, reset }: {
         className={`audit-reset ${auditQueryIsDirty(query) ? "is-dirty" : ""}`}
         type="button"
         onClick={reset}
-      >
-        Сбросить
-      </button>
+      >{t("common.reset")}</button>
     </div>
   );
 }

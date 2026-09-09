@@ -1,13 +1,14 @@
-import { pluralRu, shortDateTime } from "../../shared/utils";
+import { shortDateTime } from "../../shared/utils";
 import type { PortalArticle, SupportPortal } from "./model";
+import { t, tn } from "../../i18n";
 
 const LOCALE_NAMES: Record<string, string> = {
-  ru: "русский",
-  en: "английский",
+  ru: t("portals.russian_2"),
+  en: t("portals.english"),
 };
 
 export const LOCALE_OPTIONS: Array<[string, string]> = [
-  ["ru", "Русский"],
+  ["ru", t("portals.russian")],
   ["en", "English"],
 ];
 
@@ -19,14 +20,14 @@ export function localeName(locale: string): string {
 export function portalSubtitle(portal: SupportPortal): string {
   const created = new Intl.DateTimeFormat("ru-RU", { day: "numeric", month: "long" })
     .format(new Date(portal.createdAt));
-  return `${localeName(portal.defaultLocale)} · создан ${created}`;
+  return t("portals.locale_created", { locale: localeName(portal.defaultLocale), date: created });
 }
 
 /** «6 разделов · 48 статей» — колонка «Материалы» и подзаголовок карточки. */
 export function contentSummary(portal: SupportPortal): string {
   return [
-    pluralRu(portal.categoryCount, ["раздел", "раздела", "разделов"]),
-    pluralRu(portal.articleCount, ["статья", "статьи", "статей"]),
+    tn("plural.sections", portal.categoryCount),
+    tn("plural.articles", portal.articleCount),
   ].join(" · ");
 }
 
@@ -51,10 +52,10 @@ export function revisionSummary(article: PortalArticle): {
   const published = article.publishedRevision?.revision ?? null;
   const latest = article.latestRevision?.revision ?? null;
   if (published === null) {
-    return { revision: latest === null ? "—" : String(latest), note: "не опубликована" };
+    return { revision: latest === null ? "—" : String(latest), note: t("portals.not_published") };
   }
   return {
     revision: String(published),
-    note: latest !== null && latest > published ? `черновая ${latest}` : "",
+    note: latest !== null && latest > published ? t("portals.draft_revision", { revision: latest }) : "",
   };
 }

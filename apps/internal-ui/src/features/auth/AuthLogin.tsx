@@ -6,6 +6,7 @@ import { Icon } from "../../shared/icons";
 import { Button } from "../../shared/ui-controls";
 import { AuthField } from "./AuthField";
 import { AuthFrame } from "./AuthFrame";
+import { t } from "../../i18n";
 
 export function AuthLogin({ onLogin, onTotpChallenge, onRecover }: { onLogin: (user: AuthenticatedUser) => void; onTotpChallenge: (challenge: AuthChallenge) => void; onRecover: () => void }) {
   const [email, setEmail] = useState("");
@@ -36,21 +37,21 @@ export function AuthLogin({ onLogin, onTotpChallenge, onRecover }: { onLogin: (u
   }
 
   return (
-    <AuthFrame title="Chatballs" subtitle="Рады вас видеть!" logo="pulse" note="Защищённое соединение">
+    <AuthFrame title="Chatballs" subtitle={t("admin.good_see")} logo="pulse" note={t("admin.secure_connection")}>
       <form className="auth-card" onSubmit={submit}>
-        {error && <div className="auth-error"><span className="auth-error-dot">!</span><span>Неверный email или пароль. Проверьте данные и попробуйте снова.</span></div>}
+        {error && <div className="auth-error"><span className="auth-error-dot">!</span><span>{t("admin.wrong_email_or_password_check")}</span></div>}
         <label className="field-label">Email</label>
         <AuthField icon="mail" value={email} onChange={(nextEmail) => { setEmail(nextEmail); setError(false); }} placeholder="you@domain.ru" error={error} />
         <div className="password-row">
-          <label className="field-label">Пароль</label>
-          <button className="link" type="button" onClick={onRecover}>Восстановить доступ</button>
+          <label className="field-label">{t("common.password")}</label>
+          <button className="link" type="button" onClick={onRecover}>{t("admin.recover_access")}</button>
         </div>
-        <AuthField icon="lock" value={password} onChange={(nextPassword) => { setPassword(nextPassword); setError(false); }} placeholder="Пароль" type={show ? "text" : "password"} variant="auth-password" error={error}>
-          <button type="button" onClick={() => setShow((value) => !value)} aria-label={show ? "Скрыть пароль" : "Показать пароль"}>
+        <AuthField icon="lock" value={password} onChange={(nextPassword) => { setPassword(nextPassword); setError(false); }} placeholder={t("common.password")} type={show ? "text" : "password"} variant="auth-password" error={error}>
+          <button type="button" onClick={() => setShow((value) => !value)} aria-label={show ? t("admin.hide_password") : t("admin.show_password")}>
             <Icon name={show ? "eyeOff" : "eye"} size={17} />
           </button>
         </AuthField>
-        <Button className="auth-submit" icon="arrow" iconSize={16} type="submit" variant="primary" disabled={submitting}>Войти</Button>
+        <Button className="auth-submit" icon="arrow" iconSize={16} type="submit" variant="primary" disabled={submitting}>{t("admin.sign")}</Button>
       </form>
     </AuthFrame>
   );

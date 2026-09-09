@@ -1,5 +1,6 @@
-import { pluralRu, shortDateTime } from "../../../shared/utils";
+import { readableSize, shortDateTime } from "../../../shared/utils";
 import type { KnowledgeAgentRef, KnowledgeAttachment, KnowledgeCategory, KnowledgeItem } from "./types";
+import { t, tn } from "../../../i18n";
 
 // Экранная модель раздела «База знаний» (дизайн-базлайн v2, кадры KB1–KB9).
 // Отделы упразднены ADR-CHATBALLS-0041, поэтому доступность знания — это флаг
@@ -52,11 +53,11 @@ export function libraryTotals(categories: KnowledgeCategory[], items: KnowledgeI
     .filter((category) => category.parentId === null)
     .reduce((total, category) => total + (category.knowledgeCount ?? 0), 0);
   const fragments = items.reduce((total, item) => total + (item.fragmentsCount ?? 0), 0);
-  const fragmentsText = pluralRu(fragments, ["фрагмент", "фрагмента", "фрагментов"])
+  const fragmentsText = tn("plural.chunks", fragments)
     .replace(String(fragments), fragments.toLocaleString("ru-RU"));
   return [
-    pluralRu(categories.length, ["категория", "категории", "категорий"]),
-    pluralRu(knowledge, ["знание", "знания", "знаний"]),
+    tn("plural.categories", categories.length),
+    tn("plural.knowledge", knowledge),
     fragmentsText,
   ].join(" · ");
 }
@@ -75,7 +76,7 @@ export type AgentState = {
 export function agentStates(agents: KnowledgeAgentRef[]): AgentState[] {
   return agents.map((agent) => ({
     agent,
-    meta: agent.aiStatus === "ACTIVE" ? "AI отвечает" : "AI выключен у агента",
+    meta: agent.aiStatus === "ACTIVE" ? t("conversations.ai_replying") : t("ai.ai_off_agent"),
     answering: agent.aiStatus === "ACTIVE",
   }));
 }
@@ -87,17 +88,14 @@ export function knowledgeUpdatedAt(item: KnowledgeItem): string {
 
 /** Подпись состояния знания в ответах агента (колонка «В ОТВЕТАХ»). */
 export function answerStateLabel(item: KnowledgeItem): string {
-  return item.isEnabled ? "Включено" : "Выключено";
+  return item.isEnabled ? t("common.on") : t("common.off");
 }
 
 /** «PDF · 1,1 МБ · ссылка в тексте» — подпись вложения (кадры KB4/KB5). */
 export function attachmentMeta(attachment: KnowledgeAttachment, content = ""): string {
   const extension = (attachment.name.split(".").pop() ?? "").toLocaleUpperCase();
-  const kilobytes = attachment.size / 1024;
-  const size = kilobytes >= 1024
-    ? `${(kilobytes / 1024).toLocaleString("ru-RU", { maximumFractionDigits: 1 })} МБ`
-    : `${Math.max(1, Math.round(kilobytes)).toLocaleString("ru-RU")} КБ`;
-  const linked = content.includes(attachment.url) ? " · ссылка в тексте" : "";
+  const size = readableSize(attachment.size);
+  const linked = content.includes(attachment.url) ? t("ai.link_text") : "";
   return `${extension ? `${extension} · ` : ""}${size}${linked}`;
 }
 
@@ -135,5 +133,5 @@ export function knowledgeChunks(content: string, maxChars = 800): string[] {
 /** «4 280 знаков · ≈12 фрагментов» — статусная строка редактора (кадр KB5). */
 export function knowledgeEditorStats(content: string): string {
   const characters = content.length.toLocaleString("ru-RU");
-  return `${characters} знаков · ≈${pluralRu(knowledgeChunks(content).length, ["фрагмент", "фрагмента", "фрагментов"])}`;
+  return t("ai.characters_and_chunks", { characters, chunks: tn("plural.chunks", knowledgeChunks(content).length) });
 }

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { fetchMessages, type ApiMessage } from "./model";
+import { t } from "../../i18n";
 
 // Открытие диалога показывает хвост переписки; вверх история догружается по
 // прокрутке, вниз — дельтой обновления. Целиком лента не запрашивается никогда:
@@ -70,7 +71,7 @@ export function useConversationHistory(
         lastIdRef.current = page.items.length ? page.items[page.items.length - 1].id : 0;
       })
       .catch(() => {
-        if (active && conversationRef.current === conversationId) setErrorText("Не удалось загрузить историю диалога");
+        if (active && conversationRef.current === conversationId) setErrorText(t("conversations.could_not_load_conversation_history"));
       });
     return () => {
       active = false;
@@ -87,7 +88,7 @@ export function useConversationHistory(
       setMessages((current) => mergeNewer(current, page.items));
       setErrorText("");
     } catch {
-      setErrorText("Не удалось обновить историю диалога");
+      setErrorText(t("conversations.could_not_refresh_conversation_history"));
     }
   }, []);
 
@@ -113,7 +114,7 @@ export function useConversationHistory(
         setErrorText("");
       })
       .catch(() => {
-        if (conversationRef.current === id) setErrorText("Не удалось загрузить предыдущие сообщения");
+        if (conversationRef.current === id) setErrorText(t("conversations.could_not_load_earlier_messages"));
       })
       .finally(() => {
         if (conversationRef.current === id) setLoadingOlder(false);

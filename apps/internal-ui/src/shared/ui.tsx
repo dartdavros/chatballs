@@ -7,6 +7,7 @@ import { Icon, LogoSpinner } from "./icons";
 type IconName = Parameters<typeof Icon>[0]["name"];
 import { Button } from "./ui-controls";
 import { initials } from "./utils";
+import { t } from "../i18n";
 
 export function Avatar({ user, employee, background }: { user?: SessionUser; employee?: Employee; background?: string }) {
   const label = employee ? initials(employee.fullName, employee.email) : initials(user?.fullName ?? "", user?.email ?? "");
@@ -30,18 +31,18 @@ export type StatusPillKey = "normal" | "active" | "published" | "blocked" | "dis
 
 export function StatusPill({ status, label: labelOverride }: { status: StatusPillKey; label?: string }) {
   const map = {
-    normal: ["var(--success-bg)", "var(--success-border)", "var(--success-text)", "Работает"],
-    active: ["transparent", "transparent", "var(--success-text)", "Активен"],
-    published: ["var(--success-bg)", "var(--success-border)", "var(--success-text)", "Опубликован"],
-    blocked: ["transparent", "transparent", "var(--error-text)", "Заблокирован"],
-    disabled: ["transparent", "transparent", "var(--warning-text)", "Неактивен"],
-    invited: ["transparent", "transparent", "var(--primary-text)", "Приглашён"],
-    archived: ["var(--n-9)", "var(--n-7)", "var(--n-4)", "Архивный"],
-    draft: ["var(--n-10)", "var(--n-7)", "var(--n-4)", "Черновик"],
-    healthy: ["var(--success-bg)", "var(--success-border)", "var(--success-text)", "Работает"],
-    error: ["var(--error-bg)", "var(--error-border)", "var(--error-text)", "Ошибка"],
-    pending: ["var(--warning-bg)", "var(--warning-border)", "var(--warning-text)", "Проверяется"],
-    unchecked: ["var(--n-10)", "var(--n-7)", "var(--n-4)", "Не проверялось"],
+    normal: ["var(--success-bg)", "var(--success-border)", "var(--success-text)", t("shared.running")],
+    active: ["transparent", "transparent", "var(--success-text)", t("shared.active")],
+    published: ["var(--success-bg)", "var(--success-border)", "var(--success-text)", t("shared.published")],
+    blocked: ["transparent", "transparent", "var(--error-text)", t("shared.blocked")],
+    disabled: ["transparent", "transparent", "var(--warning-text)", t("shared.inactive")],
+    invited: ["transparent", "transparent", "var(--primary-text)", t("shared.invited")],
+    archived: ["var(--n-9)", "var(--n-7)", "var(--n-4)", t("shared.archived")],
+    draft: ["var(--n-10)", "var(--n-7)", "var(--n-4)", t("common.draft")],
+    healthy: ["var(--success-bg)", "var(--success-border)", "var(--success-text)", t("shared.running")],
+    error: ["var(--error-bg)", "var(--error-border)", "var(--error-text)", t("common.error")],
+    pending: ["var(--warning-bg)", "var(--warning-border)", "var(--warning-text)", t("shared.checking")],
+    unchecked: ["var(--n-10)", "var(--n-7)", "var(--n-4)", t("shared.never_checked")],
   } as const;
   const [bg, border, color, label] = map[status];
   const dotStyle = status === "archived"
@@ -51,9 +52,9 @@ export function StatusPill({ status, label: labelOverride }: { status: StatusPil
 }
 
 const ROLE_LABELS: Record<Role, string> = {
-  OWNER: "Владелец",
-  ADMIN: "Администратор",
-  EMPLOYEE: "Сотрудник",
+  OWNER: t("common.owner"),
+  ADMIN: t("common.administrator"),
+  EMPLOYEE: t("common.operator"),
 };
 
 export function roleLabel(role: Role): string {
@@ -111,16 +112,16 @@ export function LoadingScreen() {
 }
 
 export function ErrorScreen({ retry }: { retry: () => void }) {
-  return <main className="state-screen"><div className="state-card"><strong>Ошибка загрузки</strong><Button variant="primary" onClick={retry}>Повторить</Button></div></main>;
+  return <main className="state-screen"><div className="state-card"><strong>{t("shared.loading_failed")}</strong><Button variant="primary" onClick={retry}>{t("common.try_again")}</Button></div></main>;
 }
 
 export function PermissionScreen({ onReturn }: { onReturn: () => void }) {
   return (
     <main className="state-screen">
       <div className="state-card">
-        <strong>403 · Доступ запрещён</strong>
-        <span>У вашей роли нет доступа к этому разделу.</span>
-        <Button variant="primary" onClick={onReturn}>Вернуться</Button>
+        <strong>{t("shared.403_access_denied")}</strong>
+        <span>{t("shared.role_has_no_access_section")}</span>
+        <Button variant="primary" onClick={onReturn}>{t("shared.go_back")}</Button>
       </div>
     </main>
   );

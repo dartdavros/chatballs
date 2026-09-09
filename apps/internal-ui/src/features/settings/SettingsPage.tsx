@@ -19,6 +19,7 @@ import { StorageSettingsCard } from "./StorageSettingsCard";
 import { GroupsSettingsCard } from "./GroupsSettingsCard";
 import { DEFAULT_SETTINGS_SECTION, SETTINGS_SECTIONS, type SettingsSectionKey } from "./sections";
 import { useIntegrations } from "./useIntegrations";
+import { t } from "../../i18n";
 
 // «Настройки» (дизайн-базлайн v2, кадры N1–N7): субменю разделов 240px и один
 // раздел на экране; ниже субменю — переходы на отдельные экраны «База знаний» и
@@ -42,7 +43,7 @@ export function SettingsPage({ user, onUserUpdated, reload, groups = [], section
   // Кадр M: на узком экране субменю и раздел — два отдельных экрана.
   const mobile = useMediaQuery("(max-width: 900px)");
 
-  if (!manager) return <EmptyState title="Настройки доступны владельцу и администратору" />;
+  if (!manager) return <EmptyState title={t("settings.settings_available_owner_administrators")} />;
 
   const providers = integrations.items.filter((item) => item.kind === "LLM_PROVIDER");
   const connections = integrations.items.filter((item) => item.kind === "MESSENGER");
@@ -58,16 +59,16 @@ export function SettingsPage({ user, onUserUpdated, reload, groups = [], section
   const links = (
     <>
       <div className="settings-subnav-divider" />
-      <div className="settings-subnav-caption">Отдельные экраны</div>
+      <div className="settings-subnav-caption">{t("settings.separate_screens")}</div>
       <button className="settings-subnav-link" type="button" onClick={() => setRoute("administrationAudit")}>
-        <Icon name="list" size={16} strokeWidth={1.9} /><span>Аудит действий</span><Icon name="external" size={13} strokeWidth={2} />
+        <Icon name="list" size={16} strokeWidth={1.9} /><span>{t("settings.action_audit")}</span><Icon name="external" size={13} strokeWidth={2} />
       </button>
     </>
   );
 
   const subnav = (
     <nav className={`settings-subnav ${mobile && current ? "is-hidden" : ""}`}>
-      <div className="settings-subnav-head"><h2>Настройки</h2></div>
+      <div className="settings-subnav-head"><h2>{t("common.settings")}</h2></div>
       <div className="settings-subnav-list">
         {SETTINGS_SECTIONS.map((item) => (
           <button
@@ -79,7 +80,7 @@ export function SettingsPage({ user, onUserUpdated, reload, groups = [], section
             <Icon name={item.icon} size={16} strokeWidth={1.9} />
             <span>{item.label}</span>
             {counts[item.key] !== undefined && counts[item.key]! > 0 && <small>{counts[item.key]}</small>}
-            {item.key === "integrations" && connectionsFailed && item.key !== active && <i className="settings-subnav-warn" title="Есть ошибка" />}
+            {item.key === "integrations" && connectionsFailed && item.key !== active && <i className="settings-subnav-warn" title={t("settings.there_error")} />}
             {/* Кадр M: на узком экране у пункта — шеврон перехода. */}
             <span className="settings-subnav-chevron"><Icon name="chevronRight" size={16} strokeWidth={2} /></span>
           </button>
@@ -90,9 +91,9 @@ export function SettingsPage({ user, onUserUpdated, reload, groups = [], section
   );
 
   const headAction = current?.key === "ai"
-    ? <Button variant="primary" icon="plus" onClick={() => setForm({ kind: "LLM_PROVIDER", initial: null })}>Добавить провайдера</Button>
+    ? <Button variant="primary" icon="plus" onClick={() => setForm({ kind: "LLM_PROVIDER", initial: null })}>{t("settings.add_provider")}</Button>
     : current?.key === "integrations"
-      ? <Button variant="primary" icon="plus" onClick={() => setForm({ kind: "MESSENGER", initial: null })}>Добавить подключение</Button>
+      ? <Button variant="primary" icon="plus" onClick={() => setForm({ kind: "MESSENGER", initial: null })}>{t("settings.add_connection")}</Button>
       : null;
 
   return (
@@ -103,7 +104,7 @@ export function SettingsPage({ user, onUserUpdated, reload, groups = [], section
           <div className="settings-content-inner">
             <header className="settings-head">
               {mobile && (
-                <button className="settings-head-back" type="button" aria-label="К списку разделов" onClick={() => openSection(null)}>
+                <button className="settings-head-back" type="button" aria-label={t("settings.back_section_list")} onClick={() => openSection(null)}>
                   <Icon name="chevronLeft" size={18} />
                 </button>
               )}
@@ -157,7 +158,7 @@ function SectionBody({ section, user, onUserUpdated, reload, groups, integration
   if (section === "storage") return <StorageSettingsCard canManage={canManageSettings(user)} />;
   if (section === "demo") return <DemoDataCard reload={reload} />;
   if (integrations.loading) return <LoadingState />;
-  if (integrations.failed) return <EmptyState title="Не удалось загрузить интеграции" />;
+  if (integrations.failed) return <EmptyState title={t("settings.could_not_load_integrations")} />;
   return (
     <IntegrationsSection
       kind={section === "ai" ? "LLM_PROVIDER" : "MESSENGER"}
@@ -171,7 +172,7 @@ function SectionBody({ section, user, onUserUpdated, reload, groups, integration
 function OrganizationSection({ user, onUserUpdated }: { user: SessionUser; onUserUpdated: (user: SessionUser) => void }) {
   const page = useAdministration({ section: "organization", user, onUserUpdated });
   if (page.loading) return <LoadingState />;
-  if (!page.organization) return <EmptyState title={page.error || "Не удалось загрузить настройки"} />;
+  if (!page.organization) return <EmptyState title={page.error || t("settings.could_not_load_settings")} />;
   // Раздел равен кадру N1: одна карточка. Адрес установки, почта и relay —
   // свойства инсталляции и живут в «Платформе» и «Голосовых и звонках».
   return (
@@ -182,6 +183,7 @@ function OrganizationSection({ user, onUserUpdated }: { user: SessionUser; onUse
       message={page.message}
       error={page.error}
       timezones={page.timezones}
+      languages={page.languages}
       onChange={page.setOrganization}
       onSave={() => void page.save()}
       onUploadLogo={(file) => void page.uploadLogo(file)}

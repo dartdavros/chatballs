@@ -4,6 +4,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from chatballs.api.pagination import page_payload, paginate
+from chatballs.i18n import t
 from chatballs.support_portals.api import validation_response
 from chatballs.support_portals.content_services import (
     add_article_file,
@@ -47,7 +48,7 @@ class CategoryListView(PortalBaseView):
     def get(self, request: Request, portal_id: int) -> Response:
         portal = self.portal(request, portal_id)
         if portal is None:
-            return Response({"detail": "Портал не найден"}, status=404)
+            return Response({"detail": t("portals.not_found")}, status=404)
         counts = category_article_counts(portal)
         return Response(
             {
@@ -61,7 +62,7 @@ class CategoryListView(PortalBaseView):
     def post(self, request: Request, portal_id: int) -> Response:
         portal = self.portal(request, portal_id)
         if portal is None:
-            return Response({"detail": "Портал не найден"}, status=404)
+            return Response({"detail": t("portals.not_found")}, status=404)
         try:
             category = create_category(
                 context=request.tenant_context,
@@ -71,7 +72,7 @@ class CategoryListView(PortalBaseView):
         except (ValidationError, TypeError, ValueError) as error:
             if isinstance(error, ValidationError):
                 return validation_response(error)
-            return Response({"detail": "Некорректная категория"}, status=400)
+            return Response({"detail": t("portals.invalid_category")}, status=400)
         return Response({"category": category_payload(category)}, status=201)
 
 
@@ -87,9 +88,9 @@ class CategoryDetailView(PortalBaseView):
     ) -> Response:
         portal, category = self._category(request, portal_id, category_id)
         if portal is None:
-            return Response({"detail": "Портал не найден"}, status=404)
+            return Response({"detail": t("portals.not_found")}, status=404)
         if category is None:
-            return Response({"detail": "Раздел не найден"}, status=404)
+            return Response({"detail": t("portals.section_not_found")}, status=404)
         try:
             category = update_category(
                 portal=portal, category=category, data=request.data
@@ -97,7 +98,7 @@ class CategoryDetailView(PortalBaseView):
         except (ValidationError, TypeError, ValueError) as error:
             if isinstance(error, ValidationError):
                 return validation_response(error)
-            return Response({"detail": "Некорректный раздел"}, status=400)
+            return Response({"detail": t("portals.invalid_section")}, status=400)
         return Response({"category": category_payload(category)})
 
     def delete(
@@ -105,9 +106,9 @@ class CategoryDetailView(PortalBaseView):
     ) -> Response:
         portal, category = self._category(request, portal_id, category_id)
         if portal is None:
-            return Response({"detail": "Портал не найден"}, status=404)
+            return Response({"detail": t("portals.not_found")}, status=404)
         if category is None:
-            return Response({"detail": "Раздел не найден"}, status=404)
+            return Response({"detail": t("portals.section_not_found")}, status=404)
         try:
             delete_category(portal=portal, category=category)
         except ValidationError as error:
@@ -119,7 +120,7 @@ class ArticleListView(PortalBaseView):
     def get(self, request: Request, portal_id: int) -> Response:
         portal = self.portal(request, portal_id)
         if portal is None:
-            return Response({"detail": "Портал не найден"}, status=404)
+            return Response({"detail": t("portals.not_found")}, status=404)
         """Страница библиотеки: категория, язык, статус и поиск — на сервере."""
         page = paginate(
             portal_articles_queryset(portal, request.query_params),
@@ -131,7 +132,7 @@ class ArticleListView(PortalBaseView):
     def post(self, request: Request, portal_id: int) -> Response:
         portal = self.portal(request, portal_id)
         if portal is None:
-            return Response({"detail": "Портал не найден"}, status=404)
+            return Response({"detail": t("portals.not_found")}, status=404)
         try:
             article = create_article(
                 context=request.tenant_context,
@@ -141,7 +142,7 @@ class ArticleListView(PortalBaseView):
         except (ValidationError, TypeError, ValueError) as error:
             if isinstance(error, ValidationError):
                 return validation_response(error)
-            return Response({"detail": "Некорректная статья"}, status=400)
+            return Response({"detail": t("portals.invalid_article")}, status=400)
         article = _article(portal, article.id)
         return Response(
             {"article": article_payload(article, revisions=True, files=True)},
@@ -153,25 +154,25 @@ class ArticleDetailView(PortalBaseView):
     def get(self, request: Request, portal_id: int, article_id: int) -> Response:
         portal = self.portal(request, portal_id)
         if portal is None:
-            return Response({"detail": "Портал не найден"}, status=404)
+            return Response({"detail": t("portals.not_found")}, status=404)
         article = _article(portal, article_id)
         if article is None:
-            return Response({"detail": "Статья не найдена"}, status=404)
+            return Response({"detail": t("portals.article_not_found")}, status=404)
         return Response({"article": article_payload(article, revisions=True, files=True)})
 
     def patch(self, request: Request, portal_id: int, article_id: int) -> Response:
         portal = self.portal(request, portal_id)
         if portal is None:
-            return Response({"detail": "Портал не найден"}, status=404)
+            return Response({"detail": t("portals.not_found")}, status=404)
         article = _article(portal, article_id)
         if article is None:
-            return Response({"detail": "Статья не найдена"}, status=404)
+            return Response({"detail": t("portals.article_not_found")}, status=404)
         try:
             article = update_article(article=article, data=request.data)
         except (ValidationError, TypeError, ValueError) as error:
             if isinstance(error, ValidationError):
                 return validation_response(error)
-            return Response({"detail": "Некорректные данные статьи"}, status=400)
+            return Response({"detail": t("portals.invalid_article_data")}, status=400)
         article = _article(portal, article.id)
         return Response({"article": article_payload(article, revisions=True, files=True)})
 
@@ -180,10 +181,10 @@ class ArticleRevisionListView(PortalBaseView):
     def post(self, request: Request, portal_id: int, article_id: int) -> Response:
         portal = self.portal(request, portal_id)
         if portal is None:
-            return Response({"detail": "Портал не найден"}, status=404)
+            return Response({"detail": t("portals.not_found")}, status=404)
         article = _article(portal, article_id)
         if article is None:
-            return Response({"detail": "Статья не найдена"}, status=404)
+            return Response({"detail": t("portals.article_not_found")}, status=404)
         try:
             revision = add_revision(
                 context=request.tenant_context,
@@ -200,10 +201,10 @@ class ArticlePublishView(PortalBaseView):
     def post(self, request: Request, portal_id: int, article_id: int) -> Response:
         portal = self.portal(request, portal_id)
         if portal is None:
-            return Response({"detail": "Портал не найден"}, status=404)
+            return Response({"detail": t("portals.not_found")}, status=404)
         article = _article(portal, article_id)
         if article is None:
-            return Response({"detail": "Статья не найдена"}, status=404)
+            return Response({"detail": t("portals.article_not_found")}, status=404)
         try:
             article = publish_revision(
                 article=article,
@@ -212,7 +213,7 @@ class ArticlePublishView(PortalBaseView):
         except (ValidationError, TypeError, ValueError) as error:
             if isinstance(error, ValidationError):
                 return validation_response(error)
-            return Response({"detail": "Некорректная версия"}, status=400)
+            return Response({"detail": t("portals.invalid_revision")}, status=400)
         article = _article(portal, article.id)
         return Response({"article": article_payload(article, revisions=True, files=True)})
 
@@ -221,10 +222,10 @@ class ArticleArchiveView(PortalBaseView):
     def post(self, request: Request, portal_id: int, article_id: int) -> Response:
         portal = self.portal(request, portal_id)
         if portal is None:
-            return Response({"detail": "Портал не найден"}, status=404)
+            return Response({"detail": t("portals.not_found")}, status=404)
         article = _article(portal, article_id)
         if article is None:
-            return Response({"detail": "Статья не найдена"}, status=404)
+            return Response({"detail": t("portals.article_not_found")}, status=404)
         article = archive_article(article)
         return Response({"article": article_payload(article, revisions=True, files=True)})
 
@@ -237,10 +238,10 @@ class ArticleFileListView(PortalBaseView):
     def get(self, request: Request, portal_id: int, article_id: int) -> Response:
         portal = self.portal(request, portal_id)
         if portal is None:
-            return Response({"detail": "Портал не найден"}, status=404)
+            return Response({"detail": t("portals.not_found")}, status=404)
         article = _article(portal, article_id)
         if article is None:
-            return Response({"detail": "Статья не найдена"}, status=404)
+            return Response({"detail": t("portals.article_not_found")}, status=404)
         return Response(
             {"items": [article_file_payload(item) for item in article.files.all()]}
         )
@@ -248,14 +249,14 @@ class ArticleFileListView(PortalBaseView):
     def post(self, request: Request, portal_id: int, article_id: int) -> Response:
         portal = self.portal(request, portal_id)
         if portal is None:
-            return Response({"detail": "Портал не найден"}, status=404)
+            return Response({"detail": t("portals.not_found")}, status=404)
         article = _article(portal, article_id)
         if article is None:
-            return Response({"detail": "Статья не найдена"}, status=404)
+            return Response({"detail": t("portals.article_not_found")}, status=404)
         upload = request.FILES.get("file")
         if upload is None:
             return Response(
-                {"detail": "Нужен файл в поле file (multipart/form-data)"}, status=400
+                {"detail": t("portals.file_field_required")}, status=400
             )
         try:
             article_file = add_article_file(
@@ -275,13 +276,13 @@ class ArticleFileDetailView(PortalBaseView):
     ) -> Response:
         portal = self.portal(request, portal_id)
         if portal is None:
-            return Response({"detail": "Портал не найден"}, status=404)
+            return Response({"detail": t("portals.not_found")}, status=404)
         article = _article(portal, article_id)
         if article is None:
-            return Response({"detail": "Статья не найдена"}, status=404)
+            return Response({"detail": t("portals.article_not_found")}, status=404)
         article_file = article.files.filter(id=file_id).first()
         if article_file is None:
-            return Response({"detail": "Файл не найден"}, status=404)
+            return Response({"detail": t("portals.file_not_found")}, status=404)
         try:
             delete_article_file(
                 context=request.tenant_context, article_file=article_file

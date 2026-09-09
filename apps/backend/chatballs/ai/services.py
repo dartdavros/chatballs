@@ -11,6 +11,7 @@ from chatballs.ai.models import (
 )
 from chatballs.ai.provider_selection import configure_agent_provider
 from chatballs.channels.models import Channel
+from chatballs.i18n import t
 from chatballs.tenancy.context import TenantContext
 
 
@@ -183,7 +184,7 @@ def set_agent_active(*, context: TenantContext, agent: AIAgent, is_active: bool)
         raise ValidationError({"agent": "Archived AI agent cannot change state"})
     if is_active and locked.provider_integration_id is None:
         raise ValidationError(
-            {"providerIntegrationId": "Для запуска AI выберите провайдера организации"}
+            {"providerIntegrationId": t("ai.pick_provider_first")}
         )
     locked.status = target_status
     locked.lifecycle_version += 1

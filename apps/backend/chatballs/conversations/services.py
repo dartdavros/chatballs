@@ -11,7 +11,9 @@ from chatballs.conversations.models import (
     Message,
     MessageAuthor,
     MessageKind,
+    SystemEvent,
 )
+from chatballs.i18n import t
 from chatballs.identity.models import EmployeeRole
 from chatballs.integrations.models import IntegrationProvider
 from chatballs.tenancy.context import TenantContext
@@ -36,7 +38,7 @@ def _require_open(conversation: Conversation) -> None:
 
     if conversation.lifecycle != LifecycleState.OPEN:
 
-        raise ClaimError("Диалог закрыт")
+        raise ClaimError(t("conversations.closed"))
 
 
 
@@ -76,7 +78,7 @@ def claim_locked_conversation(*, context: TenantContext, conversation: Conversat
 
     if operator is None or conversation.organization_id != context.organization_id:
 
-        raise ClaimError("Диалог недоступен")
+        raise ClaimError(t("conversations.unavailable"))
 
     _require_open(conversation)
 
@@ -98,7 +100,7 @@ def claim_locked_conversation(*, context: TenantContext, conversation: Conversat
 
     ):
 
-        raise ClaimError("Диалог уже ведёт другой оператор")
+        raise ClaimError(t("calls.conversation_taken"))
 
     conversation.control_mode = ControlMode.HUMAN
 
@@ -140,7 +142,7 @@ def release_to_ai(*, context: TenantContext, conversation_id: int) -> Conversati
 
     if agent is None or not agent.is_active:
 
-        raise ClaimError("У канала нет активного AI-агента")
+        raise ClaimError(t("channels.no_active_agent"))
 
     conversation.control_mode = ControlMode.AI
 
@@ -150,7 +152,12 @@ def release_to_ai(*, context: TenantContext, conversation_id: int) -> Conversati
 
     conversation.save(update_fields=["control_mode", "assigned_operator", "expected_responder"])
 
-    Message.objects.create(conversation=conversation, author_type=MessageAuthor.SYSTEM, text="Диалог возвращён AI")
+    Message.objects.create(
+        conversation=conversation,
+        author_type=MessageAuthor.SYSTEM,
+        system_event=SystemEvent.RETURNED_TO_AI,
+        text="Диалог возвращён AI",
+    )
 
     return conversation
 
@@ -180,7 +187,12 @@ def return_to_queue(*, context: TenantContext, conversation_id: int) -> Conversa
 
     conversation.save(update_fields=["control_mode", "assigned_operator", "expected_responder"])
 
-    Message.objects.create(conversation=conversation, author_type=MessageAuthor.SYSTEM, text="Диалог возвращён в очередь")
+    Message.objects.create(
+        conversation=conversation,
+        author_type=MessageAuthor.SYSTEM,
+        system_event=SystemEvent.RETURNED_TO_QUEUE,
+        text="Диалог возвращён в очередь",
+    )
 
     return conversation
 

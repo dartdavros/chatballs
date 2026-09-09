@@ -5,8 +5,9 @@ import { api } from "../../api/client";
 import type { PagedPayload } from "../../shared/usePagedResource";
 import { agentColorOf } from "../conversations/model";
 import { channelMap, providerKey } from "../../shared/providers";
-import { pluralRu, shortDate } from "../../shared/utils";
+import { shortDate } from "../../shared/utils";
 import type { AgentKnowledgeRef, AgentPortalArticleRef } from "../ai/model";
+import { t, tn } from "../../i18n";
 
 export type AgentConnection = {
   id: number;
@@ -131,9 +132,9 @@ export type AgentStatusTone = "active" | "paused" | "disabled";
 // таблица ST макета: «AI отвечает» на --ai, «Без AI» на предупреждении,
 // «Выключен» серым.
 const STATUS_META: Record<AgentStatusTone, { text: string; bg: string; color: string }> = {
-  active: { text: "AI отвечает", bg: "color-mix(in srgb, var(--ai) 14%, var(--surface-card))", color: "var(--ai)" },
-  paused: { text: "Без AI", bg: "var(--warning-bg)", color: "var(--warning-text)" },
-  disabled: { text: "Выключен", bg: "var(--n-9)", color: "var(--n-4)" },
+  active: { text: t("conversations.ai_replying"), bg: "color-mix(in srgb, var(--ai) 14%, var(--surface-card))", color: "var(--ai)" },
+  paused: { text: t("ai.no_ai_2"), bg: "var(--warning-bg)", color: "var(--warning-text)" },
+  disabled: { text: t("ai.off"), bg: "var(--n-9)", color: "var(--n-4)" },
 };
 
 export function agentStatusTone(card: AgentCard): AgentStatusTone {
@@ -168,31 +169,31 @@ export function agentTint(provider: string): { color: string; bg: string; full: 
 export function connectionSubtitle(connection: AgentConnection): string {
   const key = providerKey(connection.provider);
   if (key === "TG") return connection.botUsername ? `Telegram · @${connection.botUsername}` : "Telegram";
-  if (key === "WEB") return connection.allowedOrigins[0] ?? "Web-виджет";
+  if (key === "WEB") return connection.allowedOrigins[0] ?? t("common.web_widget");
   if (key === "EMAIL") return connection.email || "Email";
   return key ? channelMap[key].full : connection.provider;
 }
 
 // Таблица CS макета: подключено · ошибка · не проверено.
 const CONNECTION_STATUS_META: Record<string, { text: string; bg: string; color: string }> = {
-  OK: { text: "Подключено", bg: "var(--success-bg)", color: "var(--success-text)" },
-  ERROR: { text: "Ошибка", bg: "var(--error-bg)", color: "var(--error-text)" },
+  OK: { text: t("common.connected"), bg: "var(--success-bg)", color: "var(--success-text)" },
+  ERROR: { text: t("common.error"), bg: "var(--error-bg)", color: "var(--error-text)" },
 };
 
 export function connectionStatusMeta(status: string): { text: string; bg: string; color: string } {
-  return CONNECTION_STATUS_META[status] ?? { text: "Не проверено", bg: "var(--n-9)", color: "var(--n-4)" };
+  return CONNECTION_STATUS_META[status] ?? { text: t("ai.not_checked"), bg: "var(--n-9)", color: "var(--n-4)" };
 }
 
 /** «5 открытых диалогов» / «нет диалогов» — подзаголовок шапки карточки. */
 export function openDialogsLine(count: number): string {
-  return count === 0 ? "нет диалогов" : pluralRu(count, ["открытый диалог", "открытых диалога", "открытых диалогов"]);
+  return count === 0 ? t("ai.no_conversations") : tn("plural.open_conversations", count);
 }
 
 /** «создан 12 мар 2026»; созданный сегодня — «сегодня» (кадр G5). */
 export function createdLabel(value: string, now = new Date()): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "";
-  if (date.toDateString() === now.toDateString()) return "сегодня";
+  if (date.toDateString() === now.toDateString()) return t("ai.today");
   return `${shortDate(date)} ${date.getFullYear()}`;
 }
 
@@ -217,9 +218,9 @@ export function knowledgeRows(card: AgentCard): AgentKnowledgeRow[] {
       id: item.id,
       title: item.title,
       icon: "doc",
-      chip: item.isEnabled ? "" : "Выключено",
+      chip: item.isEnabled ? "" : t("common.off"),
       chipTone: "muted",
-      meta: item.updatedAt ? `обновлено ${shortDate(item.updatedAt)}` : "",
+      meta: item.updatedAt ? t("ai.updated_on", { date: shortDate(item.updatedAt) }) : "",
       href: "",
     })),
     ...card.portalArticles.map((article): AgentKnowledgeRow => ({
@@ -228,9 +229,9 @@ export function knowledgeRows(card: AgentCard): AgentKnowledgeRow[] {
       id: article.id,
       title: article.title,
       icon: "globe",
-      chip: `Портал · ${article.portal.name}`,
+      chip: t("ai.portal_named", { name: article.portal.name }),
       chipTone: "accent",
-      meta: "статья",
+      meta: t("ai.article_meta"),
       href: article.publicUrl,
     })),
   ];
@@ -241,12 +242,12 @@ export function knowledgeLine(card: AgentCard): string {
   const knowledge = card.knowledge.length;
   const articles = card.portalArticles.length;
   const selected = knowledge + articles;
-  if (selected === 0) return "ничего не выбрано";
-  const head = `${selected} из ${card.knowledgeTotal}`;
+  if (selected === 0) return t("ai.nothing_selected");
+  const head = t("common.n_of_m", { selected, total: card.knowledgeTotal });
   if (knowledge === 0 || articles === 0) return head;
   const parts = [
-    pluralRu(knowledge, ["знание", "знания", "знаний"]),
-    pluralRu(articles, ["статья", "статьи", "статей"]),
+    tn("plural.knowledge", knowledge),
+    tn("plural.articles", articles),
   ];
   return `${head} · ${parts.join(" + ")}`;
 }

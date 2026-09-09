@@ -1,4 +1,6 @@
-export const passwordLabels = ["Введите новый пароль", "Слабый пароль", "Средний пароль", "Хороший пароль", "Надёжный пароль"];
+import { t } from "../../i18n";
+
+export const passwordLabels = [t("admin.enter_new_password"), t("admin.weak_password"), t("admin.fair_password"), t("admin.good_password"), t("admin.strong_password")];
 
 export function passwordScore(password: string): number {
   if (!password) return 0;

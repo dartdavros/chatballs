@@ -22,6 +22,7 @@ from django.db import connections, transaction
 from django.utils.text import slugify
 
 from chatballs.ai.knowledge_categories import ensure_uncategorized_category
+from chatballs.i18n import t
 from chatballs.identity.audit import record_audit_event
 from chatballs.identity.instance_settings import remember_public_host
 from chatballs.identity.models import (
@@ -76,7 +77,7 @@ def _clean(data: SetupInput) -> SetupInput:
     errors: dict[str, str] = {}
     organization_name = data.organization_name.strip()
     if not organization_name:
-        errors["organizationName"] = "Укажите название организации"
+        errors["organizationName"] = t("admin.organization_name_required")
     elif len(organization_name) > ORGANIZATION_NAME_MAX_LENGTH:
         errors["organizationName"] = "Название длиннее 255 символов"
     full_name = " ".join(data.full_name.split())

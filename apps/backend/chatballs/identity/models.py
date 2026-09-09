@@ -78,6 +78,12 @@ class HumanUser(AbstractUser):
     # тема и акцентный HEX-цвет; пустой акцент — дефолтный синий #1677ff.
     ui_theme = models.CharField(max_length=8, choices=UiTheme.choices, default=UiTheme.SYSTEM)
     ui_accent = models.CharField(max_length=9, blank=True)
+    # Язык интерфейса — тоже глобальная настройка пользователя, а не
+    # membership: человек читает на одном языке во всех организациях, куда
+    # входит. Пустая строка — «как в организации»: это не английский и не
+    # русский, а отсутствие личного выбора, и она переживает смену языка
+    # организации, тогда как записанный при регистрации код — нет.
+    ui_language = models.CharField(max_length=5, blank=True, default="")
     # Фото сотрудника (дизайн-базлайн v2): видно коллегам в сайдбаре, подписи
     # сообщений, выборе ответственного. Загружается в профиле.
     avatar = models.FileField(upload_to=user_avatar_upload_path, storage=user_storage, max_length=512, blank=True, default="")
@@ -115,6 +121,11 @@ class Organization(models.Model):
     )
     timezone = models.CharField(max_length=64, default="Europe/Moscow")
     currency = models.CharField(max_length=3, default="RUB")
+    # Язык рабочего места по умолчанию: на нём организация открывается всем,
+    # кто не выбрал свой в профиле. Стоит рядом с часовым поясом и валютой —
+    # это такой же региональный параметр организации, и в «Настройках» они
+    # лежат в одном разделе.
+    language = models.CharField(max_length=5, blank=True, default="")
     logo = models.FileField(
         upload_to=organization_logo_upload_path,
         max_length=512,

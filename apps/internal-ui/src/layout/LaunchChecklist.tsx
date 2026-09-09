@@ -4,6 +4,7 @@ import { api } from "../api/client";
 import { Icon } from "../shared/icons";
 import type { RouteKey, SessionUser } from "../types";
 import type { SettingsSectionKey } from "../features/settings/sections";
+import { t } from "../i18n";
 
 // Блок «Запуск» в сайдбаре (SPEC-CHATBALLS-0031 §5, дизайн-базлайн v2 A1): три шага
 // с автоотметкой по факту, прогресс и primary-действие текущего шага.
@@ -28,9 +29,9 @@ type Step = {
 };
 
 const STEPS: Step[] = [
-  { key: "agentCreated", label: "Создать агента", action: "Создать агента", route: "agents", icon: "robot" },
-  { key: "connectionBound", label: "Подключить точку входа", action: "Подключить", route: "settings", section: "integrations", icon: "plug" },
-  { key: "employeeInvited", label: "Пригласить сотрудников", action: "Пригласить", route: "employees", icon: "team" },
+  { key: "agentCreated", label: t("profile.create_agent"), action: t("profile.create_agent"), route: "agents", icon: "robot" },
+  { key: "connectionBound", label: t("profile.connect_entry_point"), action: t("profile.connect"), route: "settings", section: "integrations", icon: "plug" },
+  { key: "employeeInvited", label: t("profile.invite_operators"), action: t("profile.invite"), route: "employees", icon: "team" },
 ];
 
 function storageKey(user: SessionUser): string {
@@ -79,8 +80,8 @@ export function LaunchChecklist({ user, setRoute, openSettings }: { user: Sessio
   return (
     <div className="launch-checklist">
       <div className="launch-checklist-head">
-        <div><strong>Запуск</strong><small>{doneCount} из {STEPS.length}</small></div>
-        <button aria-label="Скрыть" title="Скрыть" type="button" onClick={hide}>×</button>
+        <div><strong>{t("profile.getting_started")}</strong><small>{t("profile.getting_started_progress", { done: doneCount, total: STEPS.length })}</small></div>
+        <button aria-label={t("common.hide")} title={t("common.hide")} type="button" onClick={hide}>×</button>
       </div>
       <div className="launch-checklist-progress"><i style={{ width: `${Math.round((doneCount / STEPS.length) * 100)}%` }} /></div>
       <div className="launch-checklist-steps">

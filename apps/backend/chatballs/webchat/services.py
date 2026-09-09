@@ -18,6 +18,9 @@ from chatballs.conversations.models import (
     MessageKind,
 )
 from chatballs.conversations.transports.base import InboundMessage
+from chatballs.i18n import t
+from chatballs.i18n.languages import resolve_language
+from chatballs.identity.instance_settings import default_language
 from chatballs.integrations.features import features_payload
 from chatballs.integrations.models import Integration, IntegrationProvider
 from chatballs.tenancy.context import TenantContext
@@ -92,12 +95,20 @@ def public_config(*, context: TenantContext, widget: WebChatWidget, origin: str)
     for sib in Integration.objects.filter(channel=channel).exclude(id=integration.id):
         username = sib.config.get("bot_username")
         if sib.provider == IntegrationProvider.TELEGRAM and username:
-            fallback.append({"label": "Написать в Telegram", "url": f"https://t.me/{username}"})
+            fallback.append({"label": t("webchat.write_in_telegram"), "url": f"https://t.me/{username}"})
         elif sib.provider == IntegrationProvider.MAX and username:
-            fallback.append({"label": "Написать в MAX", "url": ""})
+            fallback.append({"label": t("webchat.write_in_max"), "url": ""})
     return {
         "available": True,
         "widgetKey": widget.public_key,
+        # Язык обвязки виджета — язык организации: на нём отвечают и агент, и
+        # оператор, и английская кнопка «Send» вокруг русских ответов выглядела
+        # бы ошибкой. Если организация языка не выбрала, берётся язык
+        # установки; пустое значение оставляет решение браузеру посетителя.
+        "language": resolve_language(
+            organization_language=context.organization.language,
+            instance_language=default_language(),
+        ),
         # Что разрешено в этой точке входа: виджет прячет микрофон при запрете.
         "features": features_payload(integration),
         "title": cfg.get("title") or channel.name,

@@ -7,9 +7,21 @@ from chatballs.conversations.models import (
     MessageAuthor,
     MessageKind,
 )
+from chatballs.i18n import t
 from chatballs.identity.avatars import user_avatar_url_in
 from chatballs.integrations.features import features_payload
 from chatballs.integrations.models import IntegrationProvider
+
+
+def _system_text(message: Message) -> str:
+    params = message.system_params or {}
+    # Вид звонка приходит кодом (AUDIO/VIDEO): слово для него — тоже в каталоге.
+    if params.get("kind"):
+        params = {**params, "kind": t(f"calls.kind_{str(params['kind']).lower()}")}
+    rendered = t(f"conversations.system.{message.system_event}", **params)
+    # Ключа нет в каталоге — t вернул сам ключ; тогда честнее показать то, что
+    # записано, чем служебный код.
+    return message.text if rendered.startswith("conversations.system.") else rendered
 
 
 def message_payload(message: Message) -> dict[str, object]:
@@ -21,7 +33,14 @@ def message_payload(message: Message) -> dict[str, object]:
         "authorName": (message.author_user.full_name or message.author_user.email) if message.author_user_id and message.author_user else "",
         "authorAvatarUrl": user_avatar_url_in(message.author_user, message.organization_id) if message.author_user_id and message.author_user else None,
         "kind": message.kind,
-        "text": message.text,
+        # Системное событие собирается по коду на языке запроса: историю
+        # диалога читают оба — и русскоязычный оператор, и англоязычный, — а
+        # записана она один раз. Код без перевода и записи, сделанные до его
+        # появления, приходят сохранённым текстом.
+        "text": _system_text(message) if message.system_event else message.text,
+        # Код нужен интерфейсу ещё и для тона строки: передача — предупреждение,
+        # взятие — акцент. Раньше тон угадывался регуляркой по русским словам.
+        "systemEvent": message.system_event,
         "contentHtml": message.content_html,
         "createdAt": message.created_at.isoformat(),
     }

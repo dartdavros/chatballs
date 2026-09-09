@@ -2,6 +2,7 @@ import { Dropdown } from "antd";
 import { useEffect, useRef, useState, type ButtonHTMLAttributes, type ReactNode, type RefObject } from "react";
 
 import { Icon } from "./icons";
+import { t } from "../i18n";
 
 type IconName = Parameters<typeof Icon>[0]["name"];
 
@@ -62,8 +63,8 @@ export function CopyButton({ value, className = "", label }: { value: string; cl
     <button
       type="button"
       className={`${className} ${copied ? "is-copied" : ""}`.trim()}
-      aria-label="Скопировать"
-      title={copied ? "Скопировано" : "Скопировать"}
+      aria-label={t("common.copy_clipboard")}
+      title={copied ? t("common.copied") : t("common.copy_clipboard")}
       onClick={(event) => {
         event.stopPropagation();
         void navigator.clipboard?.writeText(value).then(() => {
@@ -73,7 +74,7 @@ export function CopyButton({ value, className = "", label }: { value: string; cl
       }}
     >
       <Icon name={copied ? "check" : "copy"} size={13} strokeWidth={label ? 2 : 1.8} />
-      {label && (copied ? "Скопировано" : label)}
+      {label && (copied ? t("common.copied") : label)}
     </button>
   );
 }

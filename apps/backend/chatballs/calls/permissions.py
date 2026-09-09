@@ -1,6 +1,7 @@
 from chatballs.calls.errors import CallAccessDenied
 from chatballs.calls.models import CallSession
 from chatballs.conversations.models import Conversation
+from chatballs.i18n import t
 from chatballs.identity.models import OrganizationMembership
 from chatballs.identity.policy import require_capability
 from chatballs.tenancy.context import TenantContext
@@ -8,11 +9,11 @@ from chatballs.tenancy.context import TenantContext
 
 def ensure_conversation_call_access(*, user, conversation: Conversation) -> None:
     if not require_capability(user, "conversations.call", conversation):
-        raise CallAccessDenied("Нет доступа к звонкам")
+        raise CallAccessDenied(t("calls.no_access"))
     from chatballs.conversations.selectors import conversation_is_visible
 
     if not conversation_is_visible(actor=user, conversation=conversation):
-        raise CallAccessDenied("Диалог вне групп сотрудника")
+        raise CallAccessDenied(t("calls.conversation_outside_groups"))
 
 
 def ensure_call_access(*, user, call_session: CallSession) -> None:

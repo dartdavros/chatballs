@@ -29,6 +29,7 @@ from chatballs.conversations.models import (
 from chatballs.conversations.selectors import conversation_for_context
 from chatballs.conversations.serializers import message_payload
 from chatballs.conversations.view_base import ConversationViewBase
+from chatballs.i18n import t
 from chatballs.integrations.features import voice_messages_allowed
 from chatballs.tenancy.database import tenant_atomic
 
@@ -53,9 +54,9 @@ class MessageAudioView(ConversationViewBase):
         try:
             message = _visible_message(request, message_id)
         except (Message.DoesNotExist, Conversation.DoesNotExist):
-            return Response({"detail": "Сообщение не найдено"}, status=404)
+            return Response({"detail": t("conversations.message_not_found")}, status=404)
         if not message.audio:
-            return Response({"detail": "Аудио недоступно"}, status=404)
+            return Response({"detail": t("conversations.audio_unavailable")}, status=404)
         return FileResponse(
             message.audio.open("rb"),
             content_type=message.audio_content_type or "application/octet-stream",
@@ -86,9 +87,9 @@ class MessageTranscribeView(ConversationViewBase):
             try:
                 message = _visible_message(request, message_id)
             except (Message.DoesNotExist, Conversation.DoesNotExist):
-                return Response({"detail": "Сообщение не найдено"}, status=404)
+                return Response({"detail": t("conversations.message_not_found")}, status=404)
             if message.kind != MessageKind.VOICE or not message.audio:
-                return Response({"detail": "Это не голосовое сообщение"}, status=400)
+                return Response({"detail": t("conversations.not_a_voice_message")}, status=400)
             if message.transcript_status == TranscriptStatus.READY:
                 return Response({"message": message_payload(message)})
             try:
@@ -97,7 +98,7 @@ class MessageTranscribeView(ConversationViewBase):
                 mark_transcription_failed(message)
                 return Response({"detail": str(error)}, status=502)
             if job is None:
-                return Response({"detail": "Аудио недоступно"}, status=404)
+                return Response({"detail": t("conversations.audio_unavailable")}, status=404)
 
         try:
             transcript = run_transcription(job)
@@ -110,7 +111,7 @@ class MessageTranscribeView(ConversationViewBase):
             store_transcription(message, transcript)
             payload = message_payload(message)
         if not transcript:
-            return Response({"detail": "Провайдер вернул пустую расшифровку"}, status=502)
+            return Response({"detail": t("ai.empty_transcript")}, status=502)
         return Response({"message": payload})
 
 
@@ -129,24 +130,24 @@ class ConversationVoiceView(ConversationViewBase):
                 request, conversation_id, self.required_capability
             )
         except Conversation.DoesNotExist:
-            return Response({"detail": "Диалог не найден"}, status=404)
+            return Response({"detail": t("conversations.not_found")}, status=404)
         if conversation.lifecycle != LifecycleState.OPEN:
-            return Response({"detail": "Диалог закрыт"}, status=409)
+            return Response({"detail": t("conversations.closed")}, status=409)
         connection = conversation.connection
         if connection is None or not transports.supports_voice_send(connection):
             return Response(
-                {"detail": "Голосовые сообщения недоступны в этом канале"}, status=400
+                {"detail": t("conversations.voice_unavailable_channel")}, status=400
             )
         if not voice_messages_allowed(connection):
-            return Response({"detail": "Голосовые отключены для этой точки входа"}, status=400)
+            return Response({"detail": t("conversations.voice_off_entry_point")}, status=400)
         upload = request.FILES.get("audio")
         if upload is None:
-            return Response({"detail": "Прикрепите аудио"}, status=400)
+            return Response({"detail": t("conversations.attach_audio")}, status=400)
         if upload.size > MAX_VOICE_BYTES:
-            return Response({"detail": "Аудио больше 10 МБ"}, status=400)
+            return Response({"detail": t("conversations.audio_too_large")}, status=400)
         content_type = (upload.content_type or "audio/ogg").split(";")[0]
         if content_type not in ALLOWED_AUDIO_TYPES:
-            return Response({"detail": "Неподдерживаемый формат аудио"}, status=400)
+            return Response({"detail": t("conversations.audio_format_unsupported")}, status=400)
         try:
             duration = max(0, int(request.data.get("duration", 0)))
         except (TypeError, ValueError):
@@ -169,7 +170,7 @@ class ConversationVoiceView(ConversationViewBase):
         )
         if not sent:
             return Response(
-                {"detail": "Не удалось отправить голосовое в канал"}, status=502
+                {"detail": t("conversations.voice_send_failed")}, status=502
             )
         message = Message.objects.create(
             conversation=conversation,

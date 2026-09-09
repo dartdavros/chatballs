@@ -4,6 +4,7 @@ from django.core.exceptions import ImproperlyConfigured
 from chatballs.ai.provider import routing
 from chatballs.ai.provider.base import LLMProvider, ProviderError
 from chatballs.ai.provider.local import LocalProvider
+from chatballs.i18n import t
 
 
 def _test_provider() -> LLMProvider:
@@ -26,6 +27,6 @@ def get_provider(*, channel=None) -> LLMProvider:
 
     if channel is None:
         raise ProviderError(
-            "AI-провайдер не настроен: вызов без канала не может выбрать интеграцию"
+            t("ai.provider_not_configured")
         )
     return routing.resolve_provider(channel)

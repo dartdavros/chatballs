@@ -4,6 +4,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from chatballs.i18n import t
 from chatballs.identity.audit import record_audit_event
 from chatballs.identity.employee_password import clean_password_mode, reset_employee_password
 from chatballs.identity.employee_support import employee_payload, get_owned_profile
@@ -36,12 +37,7 @@ class EmployeeResetPasswordView(APIView):
         # организации, когда человек работает и в другой, нельзя.
         if profile.user.memberships.count() > 1:
             return Response(
-                {
-                    "detail": (
-                        "Сотрудник состоит в нескольких организациях — "
-                        "пароль сбрасывает он сам через восстановление доступа"
-                    )
-                },
+                {"detail": t("admin.multi_org_self_reset")},
                 status=409,
             )
         password = reset_employee_password(

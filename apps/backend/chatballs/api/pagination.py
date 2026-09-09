@@ -25,6 +25,8 @@ from typing import Any
 from django.db.models import Q, QuerySet
 from rest_framework.exceptions import ValidationError
 
+from chatballs.i18n import t
+
 DEFAULT_PAGE_SIZE = 20
 MAX_PAGE_SIZE = 100
 DEFAULT_WINDOW_SIZE = 50
@@ -192,7 +194,7 @@ def window(
     выпадать из ленты или повторяться на границе окна.
     """
     if not keys:
-        raise ValueError("окно требует хотя бы один ключ сортировки")
+        raise ValueError(t("api.window_needs_sort_key"))
     ordered = queryset.order_by(*[key.ordering for key in keys])
     if after is not None:
         condition = _after_cursor(ordered, keys, after)

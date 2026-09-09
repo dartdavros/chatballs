@@ -13,7 +13,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from chatballs.api.permissions import HasCapability
+from chatballs.i18n import t
 from chatballs.identity.administration_payloads import (
+    administration_languages,
     administration_timezones,
     audit_event_payload,
     organization_settings_payload,
@@ -29,6 +31,7 @@ from chatballs.identity.audit_catalog import (
     AUDIT_CATEGORY_ALIASES,
     AUDIT_RESULT_LABELS,
     audit_categories,
+    audit_result_label,
 )
 from chatballs.identity.models import AuditEvent
 
@@ -58,6 +61,7 @@ class OrganizationSettingsView(APIView):
                     request.tenant_context.organization
                 ),
                 "timezones": administration_timezones(),
+                "languages": administration_languages(),
             }
         )
 
@@ -71,6 +75,7 @@ class OrganizationSettingsView(APIView):
                     name=str(body.get("name", organization.name)),
                     timezone=str(body.get("timezone", organization.timezone)),
                     currency=str(body.get("currency", organization.currency)),
+                    language=str(body.get("language", organization.language)),
                 ),
             )
         except ValidationError as error:
@@ -101,7 +106,7 @@ class OrganizationLogoView(APIView):
     def get(self, request: Request):
         organization = request.tenant_context.organization
         if not organization.logo:
-            return Response({"detail": "Логотип не загружен"}, status=404)
+            return Response({"detail": t("admin.logo_not_uploaded")}, status=404)
         return FileResponse(
             organization.logo.open("rb"),
             content_type=organization.logo_content_type or "application/octet-stream",
@@ -111,7 +116,7 @@ class OrganizationLogoView(APIView):
     def post(self, request: Request) -> Response:
         upload = request.FILES.get("file")
         if upload is None:
-            return Response({"detail": "Выберите файл логотипа"}, status=400)
+            return Response({"detail": t("admin.choose_logo_file")}, status=400)
         try:
             organization = replace_organization_logo(
                 context=request.tenant_context,
@@ -244,8 +249,8 @@ class AuditListView(APIView):
                 "filters": {
                     "categories": audit_categories(),
                     "results": [
-                        {"value": key, "label": label}
-                        for key, label in AUDIT_RESULT_LABELS.items()
+                        {"value": key, "label": audit_result_label(key)}
+                        for key in AUDIT_RESULT_LABELS
                     ],
                     "actors": _audit_actors(base),
                 },

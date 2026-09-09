@@ -1,21 +1,22 @@
 import type { Employee } from "../../types";
 import { auditItem, formatDate, formatLastLogin, roleBadge, statusBadge } from "./model";
+import { t } from "../../i18n";
 
 // Правая колонка карточки (кадры E3/E4): учётная запись и аудит.
 
 export function EmployeeDetailRail({ employee }: { employee: Employee }) {
   const audit = (employee.auditEvents ?? []).map(auditItem);
   const account = [
-    { label: "Статус", value: statusBadge(employee).text },
-    { label: "Роль", value: roleBadge(employee.role).text },
-    { label: "Создан", value: formatDate(employee.createdAt) },
-    { label: "Последний вход", value: formatLastLogin(employee.lastLogin) },
+    { label: t("common.status"), value: statusBadge(employee).text },
+    { label: t("common.role"), value: roleBadge(employee.role).text },
+    { label: t("admin.created"), value: formatDate(employee.createdAt) },
+    { label: t("admin.last_sign"), value: formatLastLogin(employee.lastLogin) },
   ];
 
   return (
     <aside className="employee-rail">
       <section className="employee-card is-rail">
-        <h3>Учётная запись</h3>
+        <h3>{t("admin.account")}</h3>
         {account.map((row) => (
           <div className="employee-account-row" key={row.label}>
             <small>{row.label}</small>
@@ -24,7 +25,7 @@ export function EmployeeDetailRail({ employee }: { employee: Employee }) {
         ))}
       </section>
       <section className="employee-card is-rail">
-        <h3>Аудит</h3>
+        <h3>{t("common.audit")}</h3>
         {audit.map((item, index) => (
           <div className="employee-audit-row" key={`${item.code}-${index}`}>
             <i style={{ background: item.dot }} />
@@ -34,7 +35,7 @@ export function EmployeeDetailRail({ employee }: { employee: Employee }) {
             </div>
           </div>
         ))}
-        {audit.length === 0 && <p className="employee-create-note">Событий пока нет.</p>}
+        {audit.length === 0 && <p className="employee-create-note">{t("admin.no_events_yet_2")}</p>}
       </section>
     </aside>
   );

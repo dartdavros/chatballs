@@ -5,6 +5,7 @@ import {
   updatePortalCategory,
   type PortalCategory,
 } from "./model";
+import { t } from "../../i18n";
 
 export function PortalCategoryManagement({
   categories,
@@ -26,11 +27,11 @@ export function PortalCategoryManagement({
         sortOrder: item.sortOrder,
         count: item.articleCount,
       }))}
-      createLabel="Создать раздел"
-      deleteDescription="Раздел можно удалить только после переноса вложенных разделов и статей."
-      errorMessage="Не удалось изменить разделы"
-      subtitle="Раздел определяет расположение статей в публичном портале"
-      title="Управление разделами"
+      createLabel={t("portals.create_section")}
+      deleteDescription={t("portals.section_can_only_deleted_once")}
+      errorMessage={t("portals.could_not_change_sections")}
+      subtitle={t("portals.section_decides_where_articles_sit")}
+      title={t("portals.manage_sections")}
       onChanged={onChanged}
       onClose={onClose}
       onCreate={(input) => createPortalCategory(portalId, input)}

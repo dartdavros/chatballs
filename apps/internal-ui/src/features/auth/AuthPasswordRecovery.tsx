@@ -5,6 +5,7 @@ import { Icon } from "../../shared/icons";
 import { Button } from "../../shared/ui-controls";
 import { AuthField } from "./AuthField";
 import { AuthFrame } from "./AuthFrame";
+import { t } from "../../i18n";
 
 const RESEND_COOLDOWN = 30;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -71,39 +72,38 @@ export function AuthPasswordRecovery({ onBackToLogin }: { onBackToLogin: () => v
 
   const backLink = (
     <button type="button" className="auth-back-login" onClick={onBackToLogin}>
-      <Icon name="arrow" size={14} />Вернуться ко входу
-    </button>
+      <Icon name="arrow" size={14} />{t("common.back_sign")}</button>
   );
 
   if (step === "sent") {
     return (
-      <AuthFrame title="Письмо отправлено" subtitle="Перейдите по ссылке из письма, чтобы задать новый пароль." logo="pulse" note={backLink}>
+      <AuthFrame title={t("admin.email_sent")} subtitle={t("admin.follow_link_email_set_new")} logo="pulse" note={backLink}>
         <div className="auth-card">
           <div className="auth-recovery-sent">
             <div className="auth-recovery-sent-icon"><Icon name="mail" size={26} /></div>
-            <h3>Проверьте почту</h3>
-            <p>Если <b>{sentEmail}</b> зарегистрирован в Chatballs, на него отправлено письмо со ссылкой для сброса пароля.</p>
+            <h3>{t("admin.check_email")}</h3>
+            <p>{t("admin.if")}<b>{sentEmail}</b>{t("admin.registered_with_chatballs_email_with")}</p>
           </div>
           <div className="auth-recovery-info">
             <Icon name="clock" size={15} />
-            <span>Письмо не пришло за пару минут? Проверьте «Спам» или повторите запрос — ссылка действует 30 минут.</span>
+            <span>{t("admin.no_email_after_couple_minutes")}</span>
           </div>
           <Button className="auth-submit" variant="primary" onClick={resend} disabled={cooldown > 0 || submitting}>
-            {cooldown > 0 ? `Отправить повторно через ${cooldown} с` : "Отправить письмо ещё раз"}
+            {cooldown > 0 ? t("time.resend_in", { seconds: cooldown }) : t("admin.send_email_again")}
           </Button>
-          <Button className="auth-recovery-secondary" variant="secondary" onClick={changeAddress}>Изменить адрес</Button>
+          <Button className="auth-recovery-secondary" variant="secondary" onClick={changeAddress}>{t("admin.change_address")}</Button>
         </div>
       </AuthFrame>
     );
   }
 
   return (
-    <AuthFrame title="Восстановление доступа" subtitle="Укажите рабочий email — пришлём ссылку для создания нового пароля." logo="pulse" note={backLink}>
+    <AuthFrame title={t("admin.access_recovery")} subtitle={t("admin.enter_work_email_we_will")} logo="pulse" note={backLink}>
       <form className="auth-card" onSubmit={submit}>
-        <label className="field-label">Рабочий email</label>
+        <label className="field-label">{t("admin.work_email_2")}</label>
         <AuthField icon="mail" value={email} onChange={setEmail} placeholder="you@domain.ru" />
-        <p className="auth-recovery-hint">Если адрес зарегистрирован, отправим ссылку для сброса пароля. Ссылка действует 30 минут.</p>
-        <Button className="auth-submit" icon="arrow" iconSize={16} type="submit" variant="primary" disabled={!valid || submitting}>Отправить ссылку</Button>
+        <p className="auth-recovery-hint">{t("admin.if_address_registered_we_will")}</p>
+        <Button className="auth-submit" icon="arrow" iconSize={16} type="submit" variant="primary" disabled={!valid || submitting}>{t("admin.send_link")}</Button>
       </form>
     </AuthFrame>
   );

@@ -2,13 +2,14 @@ import { agentColorOf } from "../conversations/model";
 import { Icon } from "../../shared/icons";
 import { PROVIDERS, type Integration } from "./model";
 import { ConnectionIcon, RowActions, StatusCell } from "./rows";
+import { t } from "../../i18n";
 
 // Подстрока подключения (SPEC-CHATBALLS-0025 §2.4): провайдер + идентификатор.
 function subtitle(integration: Integration): string {
   const label = PROVIDERS[integration.provider].label;
   const { config } = integration;
   if (integration.provider === "EMAIL") return config.email ? `${label} · ${config.email}` : label;
-  if (config.purpose === "notifications") return `${label} · сервисный бот уведомлений`;
+  if (config.purpose === "notifications") return t("settings.service_notification_bot_named", { name: label });
   if (config.botUsername) return `${label} · @${config.botUsername}`;
   if (config.botName) return `${label} · ${config.botName}`;
   return label;
@@ -29,9 +30,9 @@ export function ConnectionsTable({ items, testingId, onTest, onEdit, onToggleAct
       <table className="baseline-table">
         <thead>
           <tr>
-            <th>НАЗВАНИЕ</th>
-            <th>АГЕНТ</th>
-            <th>СТАТУС</th>
+            <th>{t("settings.title")}</th>
+            <th>{t("ai.agent")}</th>
+            <th>{t("common.status_2")}</th>
             <th />
           </tr>
         </thead>

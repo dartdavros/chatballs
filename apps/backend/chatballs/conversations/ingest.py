@@ -28,10 +28,12 @@ from chatballs.conversations.models import (
     Message,
     MessageAuthor,
     MessageKind,
+    SystemEvent,
     TranscriptStatus,
 )
 from chatballs.conversations.transports.base import InboundMessage
 from chatballs.events.models import EventOwnership, InboxEvent
+from chatballs.i18n import t
 from chatballs.notifications.models import NotificationAudience, NotificationType
 from chatballs.notifications.services import notify, notify_management
 from chatballs.tenancy.context import TenantContext
@@ -303,6 +305,14 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
             audience=NotificationAudience.OPERATORS,
             title=f"Новый диалог · {channel.name}",
             body=f"{contact.name or 'Гость'} · {integration.provider}: {message_text[:80]}",
+            title_key="notifications.new_dialog",
+            body_key="notifications.new_dialog_body",
+            text_params={
+                "channel": channel.name,
+                "contact": contact.name or t("conversations.guest"),
+                "provider": integration.provider,
+                "preview": message_text[:80],
+            },
             target_id=conversation.id,
             source_type="Conversation",
             source_id=conversation.id,
@@ -318,6 +328,8 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
             recipient_user=operator,
             title=f"Новое сообщение · {contact.name or 'Гость'}",
             body=message_text[:120],
+            title_key="notifications.new_message",
+            text_params={"contact": contact.name or t("conversations.guest")},
             target_id=conversation.id,
             source_type="Conversation",
             source_id=conversation.id,
@@ -352,7 +364,10 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
                 type=NotificationType.DIALOG_WAITING,
                 audience=NotificationAudience.OPERATORS,
                 title=f"Нужен оператор · {contact.name or 'Гость'}",
+                title_key="notifications.operator_needed",
+                text_params={"contact": contact.name or t("conversations.guest")},
                 body="Голосовое без расшифровки" if is_voice else message_text[:120],
+                body_key="notifications.voice_without_transcript" if is_voice else "",
                 target_id=conversation.id,
                 source_type="Conversation",
                 source_id=conversation.id,
@@ -376,7 +391,12 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
         conversation.expected_responder = ExpectedResponder.OPERATOR
         conversation.last_activity_at = timezone.now()
         conversation.save(update_fields=["control_mode", "expected_responder", "last_activity_at"])
-        Message.objects.create(conversation=conversation, author_type=MessageAuthor.SYSTEM, text="AI недоступен — диалог передан оператору")
+        Message.objects.create(
+            conversation=conversation,
+            author_type=MessageAuthor.SYSTEM,
+            system_event=SystemEvent.AI_UNAVAILABLE,
+            text="AI недоступен — диалог передан оператору",
+        )
         fallback = "Извините, прямо сейчас не получается ответить. Я передал ваш вопрос специалисту — он скоро подключится."
         Message.objects.create(conversation=conversation, author_type=MessageAuthor.AI, text=fallback)
         notify(
@@ -384,7 +404,10 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
             type=NotificationType.DIALOG_WAITING,
             audience=NotificationAudience.OPERATORS,
             title=f"Нужен оператор · {contact.name or 'Гость'}",
+            title_key="notifications.operator_needed",
+            text_params={"contact": contact.name or t("conversations.guest")},
             body="AI временно недоступен, диалог ждёт ответа",
+            body_key="notifications.ai_unavailable_waiting",
             target_id=conversation.id,
             source_type="Conversation",
             source_id=conversation.id,
@@ -395,6 +418,9 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
             type=NotificationType.INTEGRATION_ERROR,
             title=f"Ошибка AI · {channel.name}",
             body="AI временно недоступен, диалог передан оператору",
+            title_key="notifications.ai_error",
+            body_key="notifications.ai_unavailable_handed_over",
+            text_params={"channel": channel.name},
             target_id=conversation.id,
             source_type="Conversation",
             source_id=conversation.id,
@@ -418,12 +444,19 @@ def ingest_inbound(integration, inbound: InboundMessage) -> None:
     conversation.save(update_fields=["control_mode", "last_activity_at", "expected_responder"])
 
     if handoff:
-        Message.objects.create(conversation=conversation, author_type=MessageAuthor.SYSTEM, text="AI передал диалог оператору")
+        Message.objects.create(
+            conversation=conversation,
+            author_type=MessageAuthor.SYSTEM,
+            system_event=SystemEvent.AI_HANDED_OVER,
+            text="AI передал диалог оператору",
+        )
         notify(
             context=context,
             type=NotificationType.DIALOG_WAITING,
             audience=NotificationAudience.OPERATORS,
             title=f"AI передал диалог · {contact.name or 'Гость'}",
+            title_key="notifications.ai_handed_over",
+            text_params={"contact": contact.name or t("conversations.guest")},
             body=ai_input[:120],
             target_id=conversation.id,
             source_type="Conversation",

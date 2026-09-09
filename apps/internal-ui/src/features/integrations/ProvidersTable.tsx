@@ -1,5 +1,6 @@
 import { PROVIDERS, type Integration } from "./model";
 import { ConnectionIcon, RowActions, StatusCell } from "./rows";
+import { t } from "../../i18n";
 
 type ProvidersTableProps = {
   items: Integration[];
@@ -16,10 +17,10 @@ export function ProvidersTable({ items, testingId, onTest, onEdit, onToggleActiv
       <table className="baseline-table">
         <thead>
           <tr>
-            <th>НАЗВАНИЕ</th>
-            <th>СЕКРЕТ</th>
-            <th>КОНФИГ</th>
-            <th>СТАТУС</th>
+            <th>{t("settings.title")}</th>
+            <th>{t("settings.secret")}</th>
+            <th>{t("settings.config")}</th>
+            <th>{t("common.status_2")}</th>
             <th />
           </tr>
         </thead>

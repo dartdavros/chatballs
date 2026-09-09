@@ -3,7 +3,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Icon } from "../../../shared/icons";
 import { LoadingState } from "../../../shared/ui";
 import { Button } from "../../../shared/ui-controls";
-import { pluralRu } from "../../../shared/utils";
 import type { RouteKey } from "../../../types";
 import { downloadKnowledgeTemplate } from "./downloadKnowledgeTemplate";
 import { parseKnowledgeYaml, type ParsedKnowledgeYaml } from "./parseKnowledgeYaml";
@@ -15,6 +14,8 @@ import {
   type KnowledgeImportReport,
   type KnowledgeItem,
 } from "./model";
+import { t, tn } from "../../../i18n";
+import { readableSize } from "../../../shared/utils";
 
 // Импорт YAML (дизайн-базлайн v2, кадр KB8): файл разбирается до применения —
 // видно, что создастся, что обновится и где ошибка пути. Импорт не создаёт
@@ -30,9 +31,9 @@ type ImportRow = {
 };
 
 const ACTION_LABEL: Record<ImportAction, string> = {
-  create: "создать",
-  update: "обновить",
-  error: "ошибка",
+  create: t("ai.create"),
+  update: t("ai.update"),
+  error: t("ai.error"),
 };
 
 /** Разрешает путь категории в дерево организации: путь ищется по уровням. */
@@ -63,17 +64,17 @@ function planRows(
           document,
           action: "error",
           path: document.categoryPath.join(" / "),
-          note: `категории «${missing}» нет — импорт не создаёт категории. Создайте её или уберите последний уровень пути.`,
+          note: t("ai.missing_category_path", { name: missing }),
         };
       }
     }
-    const path = document.categoryPath ? document.categoryPath.join(" / ") : "не указана";
+    const path = document.categoryPath ? document.categoryPath.join(" / ") : t("ai.not_given");
     if (!existing) {
       return {
         document,
         action: "create",
         path,
-        note: document.categoryPath ? "" : "попадёт в «Без категории»",
+        note: document.categoryPath ? "" : t("ai.will_land_no_category"),
       };
     }
     const samePlace = document.categoryPath
@@ -83,18 +84,10 @@ function planRows(
       action: "update",
       path,
       note: samePlace
-        ? "категория в файле совпадает с текущей"
-        : "совпал заголовок — заменим текст и пересоберём фрагменты",
+        ? t("ai.category_file_matches_current_one")
+        : t("ai.title_matched_text_will_replaced"),
     };
   });
-}
-
-/** «42 КБ» — размер выбранного файла в карточке. */
-function fileSize(size: number): string {
-  const kilobytes = size / 1024;
-  return kilobytes >= 1024
-    ? `${(kilobytes / 1024).toLocaleString("ru-RU", { maximumFractionDigits: 1 })} МБ`
-    : `${Math.max(1, Math.round(kilobytes)).toLocaleString("ru-RU")} КБ`;
 }
 
 export function KnowledgeImportPage({
@@ -120,7 +113,7 @@ export function KnowledgeImportPage({
         setCategories(categoryPayload.items);
         setItems(itemPayload.items);
       })
-      .catch(() => setError("Не удалось загрузить категории и знания"))
+      .catch(() => setError(t("ai.could_not_load_categories_knowledge")))
       .finally(() => setLoading(false));
   }, []);
 
@@ -143,7 +136,7 @@ export function KnowledgeImportPage({
       setParsed(parseKnowledgeYaml(await selected.text()));
     } catch (caught) {
       setParsed(null);
-      setError(caught instanceof Error ? caught.message : "Не удалось прочитать файл");
+      setError(caught instanceof Error ? caught.message : t("ai.could_not_read_file"));
     }
   }
 
@@ -156,7 +149,7 @@ export function KnowledgeImportPage({
       setParsed(null);
       setFile(null);
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Не удалось импортировать");
+      setError(caught instanceof Error ? caught.message : t("ai.could_not_import"));
     } finally {
       setBusy(false);
     }
@@ -166,11 +159,11 @@ export function KnowledgeImportPage({
     <section className="knowledge-card">
       <div className="knowledge-card-head is-plain">
         <nav className="knowledge-breadcrumbs">
-          <button className="link is-strong" type="button" onClick={() => setRoute("knowledge")}>База знаний</button>
-          <span><span className="knowledge-crumb-sep">/</span><b>Импорт YAML</b></span>
+          <button className="link is-strong" type="button" onClick={() => setRoute("knowledge")}>{t("common.knowledge_base")}</button>
+          <span><span className="knowledge-crumb-sep">/</span><b>{t("ai.yaml_import")}</b></span>
         </nav>
-        <h2>Импорт материалов</h2>
-        <p>Файл разбирается до применения: видно, что создастся, что обновится и где ошибка.</p>
+        <h2>{t("ai.material_import")}</h2>
+        <p>{t("ai.file_parsed_before_anything_applied")}</p>
       </div>
 
       <div className="knowledge-plain-body">
@@ -190,21 +183,20 @@ export function KnowledgeImportPage({
           <div className="knowledge-import-file">
             <i><Icon name="file" size={19} strokeWidth={1.8} /></i>
             <span>
-              <strong>{file ? file.name : "Файл не выбран"}</strong>
+              <strong>{file ? file.name : t("ai.no_file_selected")}</strong>
               <small>
                 {file && parsed
-                  ? `${fileSize(file.size)} · ${pluralRu(parsed.documents.length, ["документ", "документа", "документов"])} · разобран без ошибок формата`
+                  ? t("ai.file_parsed_ok", { size: readableSize(file.size), count: tn("plural.documents", parsed.documents.length) })
                   : file
-                    ? `${fileSize(file.size)} · файл не разобран`
-                    : "YAML вида documents: [{ title, description?, content, categoryPath? }]"}
+                    ? t("ai.file_not_parsed", { size: readableSize(file.size) })
+                    : t("ai.yaml_shaped_as_documents_title")}
               </small>
             </span>
             <button type="button" onClick={() => fileInputRef.current?.click()}>
-              {file ? "Выбрать другой файл" : "Выбрать файл"}
+              {file ? t("ai.pick_another_file") : t("ai.pick_file")}
             </button>
             <button className="knowledge-import-template" type="button" onClick={downloadKnowledgeTemplate}>
-              <Icon name="download" size={14} strokeWidth={1.9} />Шаблон
-            </button>
+              <Icon name="download" size={14} strokeWidth={1.9} />{t("ai.template")}</button>
           </div>
 
           {error && <div className="knowledge-form-error">{error}</div>}
@@ -213,9 +205,8 @@ export function KnowledgeImportPage({
 
           {report && (
             <div className="knowledge-import-report">
-              <strong>Импорт завершён</strong>
-              <span>
-                Создано: <b>{report.created}</b> · Обновлено: <b>{report.updated}</b> · Без изменений: <b>{report.unchanged}</b>
+              <strong>{t("ai.import_finished")}</strong>
+              <span>{t("ai.created")}<b>{report.created}</b>{t("ai.updated")}<b>{report.updated}</b>{t("ai.unchanged")}<b>{report.unchanged}</b>
               </span>
               {report.failed.length > 0 && (
                 <ul>
@@ -230,20 +221,20 @@ export function KnowledgeImportPage({
           {parsed && (
             <div className="knowledge-import-plan">
               <div className="knowledge-import-plan-head">
-                <strong>Что произойдёт</strong>
+                <strong>{t("ai.what_will_happen")}</strong>
                 <span>
-                  {counts.create > 0 && <small className="is-create">создать {counts.create}</small>}
-                  {counts.update > 0 && <small className="is-update">обновить {counts.update}</small>}
-                  {counts.error > 0 && <small className="is-error">ошибка {counts.error}</small>}
+                  {counts.create > 0 && <small className="is-create">{t("ai.count_create", { count: counts.create })}</small>}
+                  {counts.update > 0 && <small className="is-update">{t("ai.count_update", { count: counts.update })}</small>}
+                  {counts.error > 0 && <small className="is-error">{t("ai.count_error", { count: counts.error })}</small>}
                 </span>
               </div>
               <table className="knowledge-import-table">
                 <thead>
                   <tr>
-                    <th>ДОКУМЕНТ</th>
+                    <th>{t("ai.document")}</th>
                     <th>CATEGORYPATH</th>
-                    <th>ДЕЙСТВИЕ</th>
-                    <th>ЗАМЕЧАНИЕ</th>
+                    <th>{t("ai.action")}</th>
+                    <th>{t("ai.note")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -262,14 +253,12 @@ export function KnowledgeImportPage({
 
           {parsed && (
             <div className="knowledge-import-actions">
-              <span>
-                Импорт не создаёт категории неявно: документ с несуществующим <code>categoryPath</code>{" "}
-                отклоняется отдельно, остальные применяются. Без указания пути документ попадает в
-                «Без категории».
+              <span>{t("ai.import_never_creates_categories_implicitly")}<code>categoryPath</code>{" "}
+                {t("ai.import_path_tail")}
               </span>
-              <Button variant="secondary" disabled={busy} onClick={() => setRoute("knowledge")}>Отмена</Button>
+              <Button variant="secondary" disabled={busy} onClick={() => setRoute("knowledge")}>{t("common.cancel")}</Button>
               <Button variant="primary" disabled={busy || !canManage || importable.length === 0} onClick={() => void submit()}>
-                Импортировать {pluralRu(importable.length, ["документ", "документа", "документов"])}
+                {t("ai.import_documents", { count: tn("plural.documents", importable.length) })}
               </Button>
             </div>
           )}

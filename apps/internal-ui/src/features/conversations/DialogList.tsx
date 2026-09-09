@@ -11,8 +11,9 @@ import { agentColorOf, groupColorOf } from "./model";
 import type { ConversationCounters } from "./model";
 import type { ConversationListItem, ListSort, ListTab } from "./types";
 import { SearchInput } from "../../shared/ui-controls";
+import { t } from "../../i18n";
 
-export function DialogList({ title = "Диалоги", searchPlaceholder = "Поиск по контакту, сообщению…", viewerId = null, scope, counters, setScope, showScopeSwitcher = true, mobileHeader, hint, dialogs, total, hasMore, onLoadMore, narrowed, listTab, selectedId, search, errorText, sort, setSort, onCollapse, setSearch, setListTab, setSelectedId }: {
+export function DialogList({ title = t("common.conversations"), searchPlaceholder = t("conversations.search_by_contact_or_message"), viewerId = null, scope, counters, setScope, showScopeSwitcher = true, mobileHeader, hint, dialogs, total, hasMore, onLoadMore, narrowed, listTab, selectedId, search, errorText, sort, setSort, onCollapse, setSearch, setListTab, setSelectedId }: {
   title?: string;
   searchPlaceholder?: string;
   sort: ListSort;
@@ -53,7 +54,7 @@ export function DialogList({ title = "Диалоги", searchPlaceholder = "По
   const listWidth = useResizableWidth("dialogList", { fallback: 323, min: 280, max: 520 });
   return (
     <section className={`sales-dialog-list ${listWidth.dragging ? "is-resizing" : ""}`} style={{ "--dialog-list-width": `${listWidth.width}px` } as CSSProperties}>
-      <div className="pane-resizer" role="separator" aria-orientation="vertical" aria-label="Ширина списка диалогов" title="Потяните, двойной клик — сбросить" onPointerDown={listWidth.onPointerDown} onDoubleClick={listWidth.reset} />
+      <div className="pane-resizer" role="separator" aria-orientation="vertical" aria-label={t("conversations.conversation_list_width")} title={t("profile.drag_resize_double_click_reset")} onPointerDown={listWidth.onPointerDown} onDoubleClick={listWidth.reset} />
       {mobileHeader?.({ total })}
       <div className="sales-dialog-list-head">
         <div>
@@ -67,22 +68,22 @@ export function DialogList({ title = "Диалоги", searchPlaceholder = "По
               overlayClassName="app-dropdown"
               menu={{
                 items: [
-                  { key: "activity", label: <button type="button" className={sort === "activity" ? "is-checked" : ""} onClick={() => setSort("activity")}>По последнему сообщению</button> },
-                  { key: "waiting", label: <button type="button" className={sort === "waiting" ? "is-checked" : ""} onClick={() => setSort("waiting")}>По времени ожидания</button> },
+                  { key: "activity", label: <button type="button" className={sort === "activity" ? "is-checked" : ""} onClick={() => setSort("activity")}>{t("conversations.by_last_message")}</button> },
+                  { key: "waiting", label: <button type="button" className={sort === "waiting" ? "is-checked" : ""} onClick={() => setSort("waiting")}>{t("conversations.by_waiting_time")}</button> },
                 ],
               }}
             >
-              <button type="button" aria-label="Сортировка" title={sort === "activity" ? "Сортировка: по последнему сообщению" : "Сортировка: по времени ожидания"}><Icon name="sort" size={15} /></button>
+              <button type="button" aria-label={t("conversations.sorting")} title={sort === "activity" ? t("conversations.sorting_by_last_message") : t("conversations.sorting_by_waiting_time")}><Icon name="sort" size={15} /></button>
             </Dropdown>
-            {onCollapse && <button type="button" aria-label="Скрыть список" title="Скрыть список" onClick={onCollapse}><Icon name="collapseLeft" size={15} /></button>}
+            {onCollapse && <button type="button" aria-label={t("conversations.hide_list")} title={t("conversations.hide_list")} onClick={onCollapse}><Icon name="collapseLeft" size={15} /></button>}
           </span>
         </div>
         <SearchInput className="sales-dialog-search" placeholder={searchPlaceholder} value={search} onChange={setSearch} hotkey="/" />
       </div>
       <div className="sales-dialog-tabs">
-        <DialogTab active={listTab === "all"} onClick={() => setListTab("all")}>Все</DialogTab>
-        <DialogTab active={listTab === "mine"} onClick={() => setListTab("mine")}>Мои</DialogTab>
-        <DialogTab active={listTab === "wait"} onClick={() => setListTab("wait")}>Ждут оператора{waitCount > 0 && <b>{waitCount}</b>}</DialogTab>
+        <DialogTab active={listTab === "all"} onClick={() => setListTab("all")}>{t("common.all")}</DialogTab>
+        <DialogTab active={listTab === "mine"} onClick={() => setListTab("mine")}>{t("conversations.mine")}</DialogTab>
+        <DialogTab active={listTab === "wait"} onClick={() => setListTab("wait")}>{t("conversations.waiting_for_operator")}{waitCount > 0 && <b>{waitCount}</b>}</DialogTab>
       </div>
       {hint}
       <div className="sales-dialog-list-body" onScroll={onScroll}>
@@ -92,7 +93,7 @@ export function DialogList({ title = "Диалоги", searchPlaceholder = "По
         {!errorText && dialogs.length === 0 && (
           <div className="sales-dialog-list-empty">
             <span><Icon name={narrowed ? "search" : "message"} size={20} /></span>
-            <p>{narrowed ? "Диалоги не найдены" : "Диалоги появятся, когда клиенты напишут вашему агенту"}</p>
+            <p>{narrowed ? t("conversations.no_conversations_found") : t("conversations.conversations_appear_once_customers_write")}</p>
           </div>
         )}
         {dialogs.map((dialog) => <DialogListItem dialog={dialog} active={dialog.id === selectedId} setSelectedId={setSelectedId} key={dialog.id} />)}
@@ -144,7 +145,7 @@ function DialogListItem({ dialog, active, setSelectedId }: { dialog: Conversatio
   );
 }
 
-const PRIORITY_TITLE: Record<string, string> = { HIGH: "Высокий", MEDIUM: "Средний", LOW: "Низкий" };
+const PRIORITY_TITLE: Record<string, string> = { HIGH: t("conversations.high"), MEDIUM: t("conversations.medium"), LOW: t("conversations.low") };
 const PRIORITY_ON: Record<string, number> = { HIGH: 3, MEDIUM: 2, LOW: 1 };
 const PRIORITY_COLOR: Record<string, string> = { HIGH: "#ff4d4f", MEDIUM: "#fa8c16", LOW: "var(--primary)" };
 
@@ -164,7 +165,7 @@ export function PriorityBars({ priority, placeholder = false }: { priority: "HIG
 // Переключатель охвата (дизайн-базлайн v2 A1): Все диалоги · Группы · Агенты ·
 // Ответственный. Дерево фильтров живёт в заголовке списка, сайдбар остаётся плоским.
 function ScopeSwitcher({ scope, counters, setScope, fallbackTitle, total, viewerId }: { scope: DialogScope; counters: ConversationCounters | null; setScope: (scope: DialogScope) => void; fallbackTitle: string; total: number; viewerId: number | null }) {
-  const heading = scope.kind === "all" ? (counters ? "Все диалоги" : fallbackTitle) : scopeLabel(scope);
+  const heading = scope.kind === "all" ? (counters ? t("profile.all_conversations") : fallbackTitle) : scopeLabel(scope);
   if (!counters || (counters.groups.length === 0 && counters.agents.length <= 1 && counters.assignees.length === 0)) {
     return <h2 className="sales-dialog-list-title">{heading}<small>{total}</small></h2>;
   }
@@ -176,17 +177,17 @@ function ScopeSwitcher({ scope, counters, setScope, fallbackTitle, total, viewer
   });
   const head = (key: string, label: string) => ({ key, type: "group" as const, label });
   const items = [
-    item("all", { kind: "all" }, <Icon name="inbox" size={15} />, "Все диалоги", counters.all),
+    item("all", { kind: "all" }, <Icon name="inbox" size={15} />, t("profile.all_conversations"), counters.all),
     ...(counters.groups.length > 0
       ? [
-          head("groups-head", "Группы"),
+          head("groups-head", t("common.groups")),
           ...counters.groups.map((group) => item(`group-${group.id}`, { kind: "group", id: group.id, label: group.name }, <i className="scope-dot" style={{ background: groupColorOf(group.id, group.color) }} />, group.name, group.count)),
-          item("ungrouped", { kind: "ungrouped" }, <i className="scope-dot is-muted" />, "Без группы", counters.ungrouped),
+          item("ungrouped", { kind: "ungrouped" }, <i className="scope-dot is-muted" />, t("common.no_group"), counters.ungrouped),
         ]
       : []),
     ...(counters.agents.length > 0
       ? [
-          head("agents-head", "Агенты"),
+          head("agents-head", t("common.agents")),
           ...counters.agents.map((agent) => {
             const color = agentColorOf(agent.id);
             return item(`agent-${agent.id}`, { kind: "agent", id: agent.id, label: agent.name }, <span className="scope-agent" style={{ color, background: `color-mix(in srgb, ${color} 16%, var(--surface-card))` }}><Icon name="robot" size={11} /></span>, agent.name, agent.count);
@@ -195,8 +196,8 @@ function ScopeSwitcher({ scope, counters, setScope, fallbackTitle, total, viewer
       : []),
     ...(counters.assignees.length > 0
       ? [
-          head("assignees-head", "Ответственный"),
-          ...counters.assignees.map((assignee) => item(`assignee-${assignee.id}`, { kind: "assignee", id: assignee.id, label: assignee.name }, <span className={`scope-avatar ${assignee.avatarUrl ? "has-photo" : ""}`}>{assignee.avatarUrl ? <img src={assignee.avatarUrl} alt="" /> : initialsOf(assignee.name)}</span>, assignee.id === viewerId ? `${assignee.name} · вы` : assignee.name, assignee.count)),
+          head("assignees-head", t("common.assignee")),
+          ...counters.assignees.map((assignee) => item(`assignee-${assignee.id}`, { kind: "assignee", id: assignee.id, label: assignee.name }, <span className={`scope-avatar ${assignee.avatarUrl ? "has-photo" : ""}`}>{assignee.avatarUrl ? <img src={assignee.avatarUrl} alt="" /> : initialsOf(assignee.name)}</span>, assignee.id === viewerId ? `${assignee.name}${t("common.you_suffix")}` : assignee.name, assignee.count)),
         ]
       : []),
   ];

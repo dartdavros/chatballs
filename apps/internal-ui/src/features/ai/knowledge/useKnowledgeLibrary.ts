@@ -7,6 +7,7 @@ import {
   fetchKnowledgeList,
   type KnowledgeCategory,
 } from "./model";
+import { t } from "../../../i18n";
 
 // Библиотека знаний: страница, ветка категорий, агент, состояние и поиск —
 // всё на сервере. Раньше ветку и агента отбирал браузер по всему набору,
@@ -53,7 +54,7 @@ export function useKnowledgeLibrary() {
     [filters.agents, filters.category, filters.isEnabled, settledSearch],
   );
   const load = useCallback((page: number) => fetchKnowledgeList(request, page), [request]);
-  const page = usePagedResource(load, request, "Не удалось загрузить знания");
+  const page = usePagedResource(load, request, t("ai.could_not_load_knowledge"));
 
   useEffect(() => {
     void reloadCategories();

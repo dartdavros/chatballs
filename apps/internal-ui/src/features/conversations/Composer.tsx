@@ -8,6 +8,7 @@ import { formatSize } from "../ai/knowledge/model";
 import { formatDuration } from "./VoiceMessage";
 import { useVoiceRecorder } from "./useVoiceRecorder";
 import type { ChannelKey, ControlMode } from "./types";
+import { t } from "../../i18n";
 
 const MAX_FILE_BYTES = 20 * 1024 * 1024;
 
@@ -66,7 +67,7 @@ export function Composer({ mode, loaded, assignedOperatorName, conversationId, c
   const voiceAvailable = recorder.supported && voiceAllowed;
 
   if (conversationId == null) {
-    return <div className="sales-composer"><div className="composer-locked"><div><strong>Выберите диалог</strong></div></div></div>;
+    return <div className="sales-composer"><div className="composer-locked"><div><strong>{t("conversations.pick_conversation")}</strong></div></div></div>;
   }
 
   if (!loaded) {
@@ -78,7 +79,7 @@ export function Composer({ mode, loaded, assignedOperatorName, conversationId, c
     return (
       <div className="sales-composer"><div className="composer-locked">
         <span><Icon name="lock" size={19} /></span>
-        <div><strong>Диалог закрыт</strong><p>История сохранена. Новое обращение клиента создаст новый диалог.</p></div>
+        <div><strong>{t("conversations.conversation_closed")}</strong><p>{t("conversations.history_kept_next_time_customer")}</p></div>
       </div></div>
     );
   }
@@ -88,8 +89,8 @@ export function Composer({ mode, loaded, assignedOperatorName, conversationId, c
     return (
       <div className="sales-composer"><div className="composer-locked">
         <span><Icon name="lock" size={19} /></span>
-        <div><strong>{assignedOperatorName ? `Диалог ведёт ${assignedOperatorName}` : "Диалог ведёт другого сотрудника"}</strong><p>Отвечать может ответственный. Возьмите диалог, чтобы продолжить самостоятельно.</p></div>
-        <button className="composer-locked-action" type="button" onClick={onClaim}>Взять диалог</button>
+        <div><strong>{assignedOperatorName ? t("conversations.handled_by", { name: assignedOperatorName }) : t("conversations.another_operator_handling_conversation")}</strong><p>{t("conversations.only_assignee_can_reply_take")}</p></div>
+        <button className="composer-locked-action" type="button" onClick={onClaim}>{t("conversations.take_conversation")}</button>
       </div></div>
     );
   }
@@ -124,7 +125,7 @@ export function Composer({ mode, loaded, assignedOperatorName, conversationId, c
       setText("");
       onSent();
     } catch (error) {
-      setSendError(error instanceof Error ? error.message : "Не удалось отправить сообщение");
+      setSendError(error instanceof Error ? error.message : t("conversations.could_not_send_message"));
     } finally {
       setSending(false);
     }
@@ -133,7 +134,7 @@ export function Composer({ mode, loaded, assignedOperatorName, conversationId, c
   function pickFile(file: File | null) {
     if (!file) return;
     if (file.size > MAX_FILE_BYTES) {
-      setSendError("Файл больше 20 МБ");
+      setSendError(t("conversations.file_over_20_mb"));
       return;
     }
     setSendError("");
@@ -145,16 +146,15 @@ export function Composer({ mode, loaded, assignedOperatorName, conversationId, c
     return (
       <div className="sales-composer">
         <div className="voice-recorder">
-          <button aria-label="Отменить запись" className="voice-recorder-cancel" title="Отменить запись" type="button" onClick={recorder.cancel}>
+          <button aria-label={t("conversations.cancel_recording")} className="voice-recorder-cancel" title={t("conversations.cancel_recording")} type="button" onClick={recorder.cancel}>
             <Icon name="trash" size={16} />
           </button>
           <span className="voice-recorder-timer"><i />{formatDuration(recorder.seconds)}</span>
           <span className="voice-recorder-hint">
-            {recorder.state === "sending" ? "Отправка…" : "Идёт запись. Esc — отменить, Enter — отправить"}
+            {recorder.state === "sending" ? t("common.sending") : t("conversations.recording_esc_cancels_enter_sends")}
           </span>
           <button className="voice-recorder-send" disabled={recorder.state === "sending"} type="button" onClick={recorder.stopAndSend}>
-            <Icon name="send" size={14} />Отправить
-          </button>
+            <Icon name="send" size={14} />{t("conversations.send")}</button>
         </div>
         {recorder.errorText && <div className="sales-composer-error">{recorder.errorText}</div>}
       </div>
@@ -164,9 +164,9 @@ export function Composer({ mode, loaded, assignedOperatorName, conversationId, c
   // Кадры A–C: композер активен всегда (решение 2) — первое сообщение
   // перехватывает диалог; над полем одна строка-предупреждение.
   const warning = mode === "ai"
-    ? { color: "var(--ai)", text: "AI ведёт диалог. Ваше сообщение перехватит его — AI перестанет отвечать" }
+    ? { color: "var(--ai)", text: t("conversations.ai_handling_conversation_message_takes") }
     : mode === "waiting"
-      ? { color: "var(--warning-text)", dot: "var(--warning)", text: "Клиент ждёт. Ваше сообщение возьмёт диалог на вас" }
+      ? { color: "var(--warning-text)", dot: "var(--warning)", text: t("conversations.customer_waiting_message_assigns_conversation") }
       : null;
 
   return (
@@ -176,7 +176,7 @@ export function Composer({ mode, loaded, assignedOperatorName, conversationId, c
         <div className="composer-box">
           {menuOpen && (
             <div className="composer-templates-menu">
-              {visibleTemplates.length === 0 && <p>Нет подходящих шаблонов</p>}
+              {visibleTemplates.length === 0 && <p>{t("conversations.no_matching_templates")}</p>}
               {visibleTemplates.map((template) => (
                 <button key={template.id} type="button" onMouseDown={(event) => { event.preventDefault(); applyTemplate(template); }}>
                   <strong>{template.title}</strong>
@@ -190,7 +190,7 @@ export function Composer({ mode, loaded, assignedOperatorName, conversationId, c
               <Icon name="paperclip" size={14} />
               <strong title={attachment.name}>{attachment.name}</strong>
               <small>{formatSize(attachment.size)}</small>
-              <button aria-label="Убрать файл" title="Убрать файл" type="button" disabled={sending} onClick={() => { setAttachment(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}>
+              <button aria-label={t("common.remove_file")} title={t("common.remove_file")} type="button" disabled={sending} onClick={() => { setAttachment(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}>
                 <Icon name="xCircle" size={15} />
               </button>
             </div>
@@ -198,7 +198,7 @@ export function Composer({ mode, loaded, assignedOperatorName, conversationId, c
           <textarea
             ref={textareaRef}
             rows={1}
-            placeholder={attachment ? "Подпись к файлу (необязательно)…" : compact ? "Сообщение…" : "Введите сообщение… Shift+Enter — перенос строки, «/» — шаблон ответа"}
+            placeholder={attachment ? t("conversations.caption_file_optional") : compact ? t("conversations.message") : t("conversations.type_message_shift_enter_line")}
             value={text}
             onChange={(event) => setText(event.target.value)}
             onKeyDown={(event) => {
@@ -217,22 +217,21 @@ export function Composer({ mode, loaded, assignedOperatorName, conversationId, c
           />
           <div className="composer-toolbar">
             <EmojiPicker onPick={insertEmoji} disabled={sending} />
-            <button className="composer-tool" title="Прикрепить" aria-label="Прикрепить файл" type="button" disabled={sending} onClick={() => fileInputRef.current?.click()}>
+            <button className="composer-tool" title={t("common.attach")} aria-label={t("common.attach_file")} type="button" disabled={sending} onClick={() => fileInputRef.current?.click()}>
               <Icon name="paperclip" size={17} />
             </button>
             <input ref={fileInputRef} type="file" hidden onChange={(event) => { pickFile(event.target.files?.[0] ?? null); event.target.value = ""; }} />
             {voiceAvailable && (
-              <button className="composer-tool" title="Записать голосовое" aria-label="Записать голосовое" type="button" onClick={() => void recorder.start()}>
+              <button className="composer-tool" title={t("conversations.record_voice_message")} aria-label={t("conversations.record_voice_message")} type="button" onClick={() => void recorder.start()}>
                 <Icon name="mic" size={17} />
               </button>
             )}
             {templates.length > 0 && (
-              <button className="composer-tool is-labeled" title="Шаблоны ответов · /" type="button" onClick={() => setTemplatesOpen((open) => !open)}>
-                <Icon name="text" size={16} />Шаблоны
-              </button>
+              <button className="composer-tool is-labeled" title={t("conversations.reply_templates")} type="button" onClick={() => setTemplatesOpen((open) => !open)}>
+                <Icon name="text" size={16} />{t("conversations.templates")}</button>
             )}
             <span className="composer-spacer" />
-            <button className="composer-send" type="button" onClick={() => void send()} disabled={sending || (!text.trim() && !attachment)}><span>Отправить</span><kbd>⏎</kbd><Icon name="send" size={17} /></button>
+            <button className="composer-send" type="button" onClick={() => void send()} disabled={sending || (!text.trim() && !attachment)}><span>{t("conversations.send")}</span><kbd>⏎</kbd><Icon name="send" size={17} /></button>
           </div>
         </div>
       </div>

@@ -2,17 +2,20 @@ from django.contrib.auth import login
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.http import FileResponse
-from django.utils import timezone
+from django.utils import timezone, translation
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from chatballs.i18n import t
+from chatballs.i18n.languages import normalize_language, resolve_language
 from chatballs.identity.audit import record_audit_event
 from chatballs.identity.auth.common import _revoke_other_user_sessions, _user_payload
 from chatballs.identity.avatars import delete_user_avatar, replace_user_avatar
-from chatballs.identity.models import HumanUser
+from chatballs.identity.instance_settings import default_language
+from chatballs.identity.models import HumanUser, OrganizationMembership
 from chatballs.identity.sessions import list_user_sessions
 from chatballs.tenancy.ingress import user_requires_totp
 
@@ -53,7 +56,7 @@ class ProfileAvatarView(APIView):
     def get(self, request: Request) -> Response | FileResponse:
         user = request.user
         if not user.avatar:
-            return Response({"detail": "Фото не задано"}, status=404)
+            return Response({"detail": t("profile.photo_not_set")}, status=404)
         return FileResponse(
             user.avatar.open("rb"),
             content_type=user.avatar_content_type or "application/octet-stream",
@@ -63,7 +66,7 @@ class ProfileAvatarView(APIView):
     def post(self, request: Request) -> Response:
         upload = request.FILES.get("file")
         if upload is None:
-            return Response({"detail": "Выберите файл фото"}, status=400)
+            return Response({"detail": t("profile.choose_photo_file")}, status=400)
         replace_user_avatar(request.user, upload)
         record_audit_event(
             action="identity.avatar_updated",
@@ -128,7 +131,7 @@ class ProfileTotpStartView(APIView):
     def post(self, request: Request) -> Response:
         if request.user.totp_enabled:
             return Response(
-                {"detail": "TOTP уже включена: сначала отключите её текущим паролем"},
+                {"detail": t("profile.totp_already_on")},
                 status=409,
             )
         request.user.totp_secret = ""
@@ -230,10 +233,66 @@ class ProfileAppearanceView(APIView):
         theme = str(body.get("theme", request.user.ui_theme)).strip().upper()
         accent = str(body.get("accent", request.user.ui_accent)).strip().lower()
         if theme not in UiTheme.values:
-            return Response({"detail": "Неизвестная тема"}, status=400)
+            return Response({"detail": t("profile.unknown_theme")}, status=400)
         if accent and not re.fullmatch(r"#[0-9a-f]{6}", accent):
-            return Response({"detail": "Акцент — HEX-цвет вида #1677ff"}, status=400)
+            return Response({"detail": t("profile.accent_hex")}, status=400)
         request.user.ui_theme = theme
         request.user.ui_accent = accent
         request.user.save(update_fields=["ui_theme", "ui_accent"])
         return Response({"authenticated": True, "user": _user_payload(request.user)})
+
+
+class ProfileLanguageView(APIView):
+    """Язык интерфейса — личная настройка сотрудника.
+
+    Пустое значение возвращает человека к языку организации: это не «русский»,
+    а снятие личного выбора, и после смены языка организации такой сотрудник
+    поедет за ней, а тот, кто выбрал язык явно, — нет.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request: Request) -> Response:
+        raw = str(request.data.get("language", "")).strip()
+        language = normalize_language(raw)
+        if raw and not language:
+            return Response({"detail": t("settings.language_unsupported")}, status=400)
+        request.user.ui_language = language
+        request.user.save(update_fields=["ui_language"])
+        record_audit_event(
+            action="identity.profile_language_changed",
+            actor=request.user,
+            object_type="HumanUser",
+            object_id=str(request.user.id),
+            request=request,
+        )
+        # Ответ уже на новом языке: интерфейс перерисуется по нему сразу, не
+        # дожидаясь следующего запроса.
+        resolved = resolve_language(
+            user_language=language,
+            organization_language=_request_organization_language(request),
+            instance_language=default_language(),
+            accept_language=request.headers.get("Accept-Language"),
+        )
+        with translation.override(resolved):
+            return Response({"authenticated": True, "user": _user_payload(request.user)})
+
+
+def _request_organization_language(request: Request) -> str:
+    """Язык организации запроса, если он у этого запроса вообще есть.
+
+    Профиль открывается вне организации, поэтому tenant_context здесь обычно
+    пуст: тогда язык берётся из единственного членства, а при нескольких —
+    из того, что старше, чтобы ответ не зависел от порядка выборки.
+    """
+
+    context = getattr(request, "tenant_context", None)
+    if context is not None:
+        return context.organization.language or ""
+    membership = (
+        OrganizationMembership.objects.select_related("organization")
+        .filter(user=request.user, blocked_at__isnull=True)
+        .order_by("created_at", "id")
+        .first()
+    )
+    return membership.organization.language if membership is not None else ""

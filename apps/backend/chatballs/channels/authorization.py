@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from django.core.exceptions import PermissionDenied
 
+from chatballs.i18n import t
 from chatballs.identity.policy import has_capability_any_scope
 from chatballs.tenancy.context import TenantContext
 
@@ -38,9 +39,9 @@ def require_organization_manage(context: TenantContext, *, operation: str) -> No
 
 def require_channel_manage(context: TenantContext) -> None:
     if not has_organization_capability(context, CHANNELS_MANAGE):
-        raise PermissionDenied("Нет прав на изменение канала")
+        raise PermissionDenied(t("channels.no_rights_to_change"))
 
 
 def require_connections_manage(context: TenantContext) -> None:
     if not has_organization_capability(context, INTEGRATIONS_MANAGE):
-        raise PermissionDenied("Привязка подключения требует integrations.manage")
+        raise PermissionDenied(t("channels.binding_needs_manage"))

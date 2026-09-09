@@ -31,6 +31,7 @@ import {
   type KnowledgeItem,
 } from "./model";
 import { useKnowledgeCategories } from "./useKnowledgeCategories";
+import { fmt, t, tn } from "../../../i18n";
 
 // Редактор знания (дизайн-базлайн v2, кадры KB5/KB6): тот же полноэкранный
 // split, что у статьи портала, — текст с панелью Markdown, предпросмотр и
@@ -39,28 +40,28 @@ import { useKnowledgeCategories } from "./useKnowledgeCategories";
 type Mode = "edit" | "split" | "view";
 
 const MODES: Array<[Mode, string, "edit" | "split" | "eye", string]> = [
-  ["edit", "Текст", "edit", "Только редактор"],
-  ["split", "Вместе", "split", "Текст и предпросмотр"],
-  ["view", "Просмотр", "eye", "Только предпросмотр"],
+  ["edit", t("ai.text"), "edit", t("ai.editor_only")],
+  ["split", t("ai.side_by_side"), "split", t("ai.text_preview")],
+  ["view", t("ai.preview"), "eye", t("ai.preview_only")],
 ];
 
 // Панель Markdown знания (кадр KB5): без кнопки «изображение» — любой файл
 // прикрепляется к знанию и ставится в текст ссылкой.
 const KNOWLEDGE_MARKDOWN_TOOLS: MarkdownTool[] = [
-  { key: "h1", title: "Заголовок 1", text: "H1" },
-  { key: "h2", title: "Заголовок 2", text: "H2" },
+  { key: "h1", title: t("ai.heading_1"), text: "H1" },
+  { key: "h2", title: t("ai.heading_2"), text: "H2" },
   { key: "divider-1", title: "", divider: true },
-  { key: "bold", title: "Полужирный", icon: "bold" },
-  { key: "italic", title: "Курсив", icon: "italic" },
-  { key: "link", title: "Ссылка", icon: "link" },
-  { key: "code", title: "Код", icon: "code" },
+  { key: "bold", title: t("ai.bold"), icon: "bold" },
+  { key: "italic", title: t("ai.italic"), icon: "italic" },
+  { key: "link", title: t("ai.link"), icon: "link" },
+  { key: "code", title: t("ai.code"), icon: "code" },
   { key: "divider-2", title: "", divider: true },
-  { key: "list", title: "Список", icon: "list" },
-  { key: "numlist", title: "Нумерованный список", icon: "numlist" },
-  { key: "quote", title: "Цитата", icon: "quote" },
-  { key: "table", title: "Таблица", icon: "table" },
+  { key: "list", title: t("ai.list"), icon: "list" },
+  { key: "numlist", title: t("ai.numbered_list"), icon: "numlist" },
+  { key: "quote", title: t("ai.quote"), icon: "quote" },
+  { key: "table", title: t("ai.table"), icon: "table" },
   { key: "divider-3", title: "", divider: true },
-  { key: "attach", title: "Прикрепить файл", icon: "attach", accent: true },
+  { key: "attach", title: t("common.attach_file"), icon: "attach", accent: true },
 ];
 
 function draftKey(knowledgeId: number | null): string {
@@ -127,7 +128,7 @@ export function KnowledgeEditorPage({
         categoryId: String(knowledge.category.id),
       });
     } catch {
-      setError("Не удалось загрузить знание");
+      setError(t("ai.could_not_load_knowledge_item"));
     } finally {
       setBusy(false);
     }
@@ -205,7 +206,7 @@ export function KnowledgeEditorPage({
         setAttachments((current) => [attachment, ...current.filter((item) => item.id !== attachment.id)]);
         if (insert) insertText(`\n${attachmentMarkdown(attachment)}\n`);
       } catch (caught) {
-        setError(caught instanceof Error ? caught.message : `Не удалось загрузить ${file.name}`);
+        setError(caught instanceof Error ? caught.message : t("ai.could_not_upload_file", { name: file.name }));
       } finally {
         setUploading(null);
       }
@@ -219,12 +220,12 @@ export function KnowledgeEditorPage({
       await deleteAttachment(loaded.id, attachment.id);
       setAttachments((current) => current.filter((item) => item.id !== attachment.id));
     } catch {
-      setError("Не удалось удалить вложение");
+      setError(t("ai.could_not_delete_attachment"));
     }
   }
 
   async function save() {
-    if (!ready) { setError("Укажите заголовок и категорию"); return; }
+    if (!ready) { setError(t("ai.give_title_category")); return; }
     setBusy(true);
     setError("");
     try {
@@ -249,7 +250,7 @@ export function KnowledgeEditorPage({
         openKnowledge(knowledge.id);
       }
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Не удалось сохранить знание");
+      setError(caught instanceof Error ? caught.message : t("ai.could_not_save_knowledge_item"));
     } finally {
       setBusy(false);
     }
@@ -271,7 +272,7 @@ export function KnowledgeEditorPage({
   }
 
   if (catalog.loading) return <div className="knowledge-editor"><LoadingState /></div>;
-  if (catalog.error) return <div className="knowledge-editor"><EmptyState title="Не удалось загрузить категории" /></div>;
+  if (catalog.error) return <div className="knowledge-editor"><EmptyState title={t("ai.could_not_load_categories")} /></div>;
 
   const chunks = knowledgeChunks(content);
 
@@ -279,23 +280,18 @@ export function KnowledgeEditorPage({
     <div className="knowledge-editor">
       <div className="knowledge-editor-head">
         <button className="knowledge-editor-back" type="button" onClick={() => (loaded ? openKnowledge(loaded.id) : setRoute("knowledge"))}>
-          <Icon name="chevronLeft" size={16} strokeWidth={2} />База знаний
-        </button>
+          <Icon name="chevronLeft" size={16} strokeWidth={2} />{t("common.knowledge_base")}</button>
         <span className="knowledge-editor-crumb">{categoryPath}</span>
         <span className="knowledge-editor-gap" />
         <span className={`knowledge-editor-badge${dirty ? " is-dirty" : ""}`}>
-          <i />{dirty ? "Есть несохранённые правки" : "Индекс актуален"}
+          <i />{dirty ? t("ai.there_unsaved_edits") : t("ai.index_up_date")}
         </span>
         <Segmented className="knowledge-editor-modes" items={MODES} value={mode} setValue={setMode} />
         {canManage && (
-          <Button variant="secondary" className="knowledge-editor-revert" disabled={busy || !dirty} onClick={revert}>
-            Отменить правки
-          </Button>
+          <Button variant="secondary" className="knowledge-editor-revert" disabled={busy || !dirty} onClick={revert}>{t("ai.discard_edits")}</Button>
         )}
         {canManage && (
-          <Button variant="primary" className="knowledge-editor-save" icon="check" disabled={busy || !ready} onClick={() => void save()}>
-            Сохранить и переиндексировать
-          </Button>
+          <Button variant="primary" className="knowledge-editor-save" icon="check" disabled={busy || !ready} onClick={() => void save()}>{t("ai.save_reindex")}</Button>
         )}
       </div>
 
@@ -306,11 +302,11 @@ export function KnowledgeEditorPage({
           <div className="knowledge-editor-column">
             <div className="knowledge-editor-title">
               <input
-                placeholder="Заголовок знания"
+                placeholder={t("ai.knowledge_item_title_2")}
                 value={title}
                 onChange={(event) => setTitle(event.target.value)}
               />
-              <span>Заголовок цитируется агентом в ответе клиенту — пишите его как ответ, не как папку.</span>
+              <span>{t("ai.agent_quotes_title_its_reply")}</span>
             </div>
 
             <div className="knowledge-md-toolbar">
@@ -366,8 +362,8 @@ export function KnowledgeEditorPage({
               {dropping && (
                 <div className="knowledge-editor-drop">
                   <Icon name="upload" size={30} strokeWidth={1.8} />
-                  <strong>Отпустите, чтобы приложить к знанию</strong>
-                  <span>Файл станет вложением и ссылкой в тексте — агент отдаёт её клиенту. PNG, JPG, PDF, DOCX, XLSX · до 25 МБ</span>
+                  <strong>{t("ai.drop_attach_item")}</strong>
+                  <span>{t("ai.file_becomes_attachment_link_text")}</span>
                 </div>
               )}
             </div>
@@ -378,10 +374,10 @@ export function KnowledgeEditorPage({
               <span className="knowledge-editor-gap" />
               <span>
                 {dirty
-                  ? "Правки не сохранены — фрагменты пересоберутся после «Сохранить»"
+                  ? t("ai.edits_not_saved_chunks_rebuilt")
                   : autoSavedAt
-                    ? `Сохранено автоматически в ${autoSavedAt.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" })}`
-                    : "Всё сохранено"}
+                    ? t("time.autosaved_at", { time: fmt.time(autoSavedAt) })
+                    : t("ai.everything_saved")}
               </span>
             </div>
           </div>
@@ -390,35 +386,33 @@ export function KnowledgeEditorPage({
         {mode !== "edit" && (
           <div className="knowledge-preview-column">
             <div className="knowledge-preview-head">
-              <span>ПРЕДПРОСМОТР · {asAgent ? "КАК ОТВЕТИТ АГЕНТ" : "ВНУТРЕННИЙ МАТЕРИАЛ"}</span>
+              <span>{t("ai.preview_of", { what: asAgent ? t("ai.how_agent_will_answer") : t("ai.internal_material") })}</span>
               <span className="knowledge-editor-gap" />
               <button
                 className={asAgent ? "is-active" : ""}
-                title="Как это цитирует агент"
+                title={t("ai.how_agent_quotes")}
                 type="button"
                 onClick={() => setAsAgent((current) => !current)}
               >
-                <Icon name="message" size={13} strokeWidth={1.9} />Как ответит агент
-              </button>
+                <Icon name="message" size={13} strokeWidth={1.9} />{t("ai.how_agent_will_answer_2")}</button>
             </div>
             <div className="knowledge-preview-body">
               {asAgent ? (
                 <div className="knowledge-fragments">
                   <p className="knowledge-fragments-note">
-                    Агент отвечает не текстом целиком, а подходящими фрагментами. Так знание разойдётся
-                    на {chunks.length} {chunks.length === 1 ? "фрагмент" : "фрагментов"} при сохранении.
+                    {t("ai.fragments_note", { chunks: tn("plural.chunks", chunks.length) })}
                   </p>
                   {chunks.map((chunk, index) => (
                     <article className="knowledge-fragment" key={index}>
-                      <header><b>Фрагмент {index + 1}</b><small>{chunk.length} знаков</small></header>
+                      <header><b>{t("ai.fragment_number", { number: index + 1 })}</b><small>{t("ai.characters_count", { count: fmt.number(chunk.length) })}</small></header>
                       <p>{chunk}</p>
                     </article>
                   ))}
-                  {chunks.length === 0 && <p className="knowledge-rail-empty">Пустое знание в ответы не попадает.</p>}
+                  {chunks.length === 0 && <p className="knowledge-rail-empty">{t("ai.empty_item_never_reaches_replies")}</p>}
                 </div>
               ) : (
                 <article className="knowledge-preview-article">
-                  <h1>{title || "Без заголовка"}</h1>
+                  <h1>{title || t("ai.untitled")}</h1>
                   {description && <p className="knowledge-preview-lead">{description}</p>}
                   <MarkdownContent content={content} />
                   {attachments.map((attachment) => (
@@ -426,7 +420,7 @@ export function KnowledgeEditorPage({
                       <i><Icon name={isImageAttachment(attachment) ? "image" : "file"} size={15} strokeWidth={1.8} /></i>
                       <span>
                         <strong>{attachment.name}</strong>
-                        <small>вложение · ссылку агент отдаёт клиенту</small>
+                        <small>{t("ai.attachment_agent_hands_link_customer")}</small>
                       </span>
                     </div>
                   ))}
@@ -439,7 +433,7 @@ export function KnowledgeEditorPage({
         <aside className="knowledge-editor-rail">
           <div className="knowledge-rail-fields">
             <label>
-              <span>Категория</span>
+              <span>{t("ai.category")}</span>
               <span className="knowledge-select">
                 <select value={categoryId} onChange={(event) => setCategoryId(event.target.value)}>
                   {catalog.categories.map((item) => (
@@ -452,16 +446,16 @@ export function KnowledgeEditorPage({
               </span>
             </label>
             <label>
-              <span>Краткое описание <small>· помогает поиску и агенту</small></span>
+              <span>{t("ai.short_description")}<small>{t("ai.helps_search_agent")}</small></span>
               <textarea value={description} onChange={(event) => setDescription(event.target.value)} />
             </label>
             <div className="knowledge-rail-toggle">
               <span>
-                <strong>Участвует в ответах</strong>
-                <small>можно выключить, не удаляя</small>
+                <strong>{t("ai.used_replies")}</strong>
+                <small>{t("ai.can_switched_off_without_deleting")}</small>
               </span>
               <button
-                aria-label="Участвует в ответах"
+                aria-label={t("ai.used_replies")}
                 aria-pressed={isEnabled}
                 className={`knowledge-switch${isEnabled ? " is-on" : ""}`}
                 disabled={!canManage}
@@ -475,8 +469,8 @@ export function KnowledgeEditorPage({
 
           <div className="knowledge-rail-block">
             <div className="knowledge-rail-head">
-              <span>ВЛОЖЕНИЯ</span>
-              <button type="button" onClick={() => fileInputRef.current?.click()}>Загрузить</button>
+              <span>{t("ai.attachments")}</span>
+              <button type="button" onClick={() => fileInputRef.current?.click()}>{t("common.upload")}</button>
             </div>
             <input
               ref={fileInputRef}
@@ -500,8 +494,8 @@ export function KnowledgeEditorPage({
               }}
             >
               <Icon name="upload" size={20} strokeWidth={1.8} />
-              <p>Перетащите файлы</p>
-              <p>или <button type="button" onClick={() => fileInputRef.current?.click()}>выберите на диске</button> · до 25 МБ</p>
+              <p>{t("ai.drag_files_here")}</p>
+              <p>{t("ai.or")}<button type="button" onClick={() => fileInputRef.current?.click()}>{t("ai.pick_them_from_disk")}</button>{t("ai.up_25_mb")}</p>
             </div>
 
             <div className="knowledge-rail-files">
@@ -510,7 +504,7 @@ export function KnowledgeEditorPage({
                   <i><Icon name="file" size={14} strokeWidth={1.8} /></i>
                   <span>
                     <strong>{uploading.name}</strong>
-                    <small className="is-progress">загружаем… {uploading.percent} %</small>
+                    <small className="is-progress">{t("common.uploading_percent", { percent: uploading.percent })}</small>
                     <span className="knowledge-rail-progress"><i style={{ width: `${uploading.percent}%` }} /></span>
                   </span>
                 </div>
@@ -520,11 +514,11 @@ export function KnowledgeEditorPage({
                   <i><Icon name="file" size={14} strokeWidth={1.8} /></i>
                   <span>
                     <strong>{file.name}</strong>
-                    <small className="is-progress">приложится после сохранения</small>
+                    <small className="is-progress">{t("ai.will_attached_after_saving")}</small>
                   </span>
                   <button
                     className="knowledge-rail-file-remove"
-                    title="Убрать файл"
+                    title={t("common.remove_file")}
                     type="button"
                     onClick={() => setQueued((current) => current.filter((item) => item !== file))}
                   >
@@ -544,7 +538,7 @@ export function KnowledgeEditorPage({
                     {!inserted && (
                       <button
                         className="knowledge-rail-file-insert"
-                        title="Вставить ссылку в текст"
+                        title={t("ai.insert_link_into_text")}
                         type="button"
                         onClick={() => insertText(`\n${attachmentMarkdown(attachment)}\n`)}
                       >
@@ -552,14 +546,14 @@ export function KnowledgeEditorPage({
                       </button>
                     )}
                     <button
-                      title="Копировать Markdown"
+                      title={t("ai.copy_as_markdown")}
                       type="button"
                       onClick={() => void navigator.clipboard?.writeText(attachmentMarkdown(attachment))}
                     >
                       <Icon name="copy" size={13} strokeWidth={1.9} />
                     </button>
                     {canManage && (
-                      <button className="knowledge-rail-file-remove" title="Удалить вложение" type="button" onClick={() => void removeAttachment(attachment)}>
+                      <button className="knowledge-rail-file-remove" title={t("ai.delete_attachment")} type="button" onClick={() => void removeAttachment(attachment)}>
                         <Icon name="trash" size={13} strokeWidth={1.9} />
                       </button>
                     )}
@@ -571,8 +565,8 @@ export function KnowledgeEditorPage({
 
           <div className="knowledge-rail-block">
             <div className="knowledge-rail-head">
-              <span>АГЕНТЫ</span>
-              <small>меняется массовым действием</small>
+              <span>{t("common.agents_2")}</span>
+              <small>{t("ai.changed_by_bulk_action")}</small>
             </div>
             <div className="knowledge-rail-agents is-compact">
               {attached.map(({ agent, meta }) => (
@@ -584,21 +578,19 @@ export function KnowledgeEditorPage({
                   </span>
                 </div>
               ))}
-              {attached.length === 0 && <p className="knowledge-rail-empty">Пока ни одного агента.</p>}
+              {attached.length === 0 && <p className="knowledge-rail-empty">{t("ai.no_agents_yet")}</p>}
             </div>
             <p className="knowledge-rail-note">
-              Прикрепление и открепление — только через «Прикрепить к агенту»: операция атомарна и
-              пишется в журнал.
+              {t("ai.attach_detach_note")}
             </p>
             {loaded && canManage && (
               <button
                 className="knowledge-reindex-button"
                 disabled={busy}
                 type="button"
-                onClick={() => void reindexKnowledge(loaded.id).then(load).catch(() => setError("Не удалось переиндексировать знание"))}
+                onClick={() => void reindexKnowledge(loaded.id).then(load).catch(() => setError(t("ai.could_not_reindex_knowledge_item")))}
               >
-                <Icon name="undo" size={13} strokeWidth={1.9} />Переиндексировать
-              </button>
+                <Icon name="undo" size={13} strokeWidth={1.9} />{t("ai.reindex")}</button>
             )}
           </div>
         </aside>

@@ -10,6 +10,7 @@ import {
   type SupportPortal,
 } from "./model";
 import { LOCALE_OPTIONS } from "./portalText";
+import { t } from "../../i18n";
 
 // Кадр PT4: имя, ключ портала на этой установке и язык. Базовый домен —
 // из ответа API (`address.baseDomain`), в UI он никогда не зашивается.
@@ -48,10 +49,10 @@ export function PortalBasicsSettings({
     try {
       const payload = await updateSupportPortal(portal.id, { name, slug, defaultLocale: locale });
       onChanged(payload.portal);
-      setFeedback("Настройки сохранены");
+      setFeedback(t("portals.settings_saved"));
     } catch (caught) {
       setFieldErrors(portalFieldErrors(caught));
-      setFeedback(portalErrorMessage(caught, "Не удалось сохранить настройки"));
+      setFeedback(portalErrorMessage(caught, t("portals.could_not_save_settings")));
     } finally {
       setBusy(false);
     }
@@ -60,18 +61,18 @@ export function PortalBasicsSettings({
   return (
     <div className="portal-settings-card">
       <label className="portal-field">
-        <span className="portal-field-label">Название портала</span>
+        <span className="portal-field-label">{t("portals.portal_name")}</span>
         <input
           disabled={!canManage}
           value={name}
           onChange={(event) => setName(event.target.value)}
         />
-        <small>Показывается в шапке публичных страниц и в заголовке браузера.</small>
+        <small>{t("portals.shown_header_public_pages_browser")}</small>
         {fieldErrors.name && <small className="portal-field-error">{fieldErrors.name}</small>}
       </label>
 
       <div className="portal-field">
-        <span className="portal-field-label">Адрес на этой установке</span>
+        <span className="portal-field-label">{t("portals.address_installation")}</span>
         <span className="portal-key-input">
           <input
             disabled={!canManage}
@@ -81,39 +82,35 @@ export function PortalBasicsSettings({
           />
           <b>.{address.baseDomain}</b>
         </span>
-        <small>
-          Строчные латинские буквы, цифры и дефис. Базовый домен <b>{address.baseDomain}</b> задан
-          администратором при установке и одинаков для всех порталов этой инсталляции. Адрес входит
-          в ссылки на статьи — после смены старые ссылки перестанут работать.
+        <small>{t("portals.lowercase_latin_letters_digits_hyphens")}<b>{address.baseDomain}</b> {t("portals.base_domain_hint")}
         </small>
         {fieldErrors.slug && <small className="portal-field-error">{fieldErrors.slug}</small>}
       </div>
 
       <label className="portal-field is-narrow">
-        <span className="portal-field-label">Основной язык</span>
+        <span className="portal-field-label">{t("portals.primary_language")}</span>
         <span className="portal-select">
           <select disabled={!canManage} value={locale} onChange={(event) => setLocale(event.target.value)}>
             {LOCALE_OPTIONS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
           </select>
           <Icon name="chevron" size={14} strokeWidth={2} />
         </span>
-        <small>Язык, который подставляется новым статьям. Статьи на других языках остаются как есть.</small>
+        <small>{t("portals.language_filled_new_articles_articles")}</small>
       </label>
 
       <div className="portal-final-link">
         <span>
-          <small>Итоговая ссылка</small>
+          <small>{t("portals.resulting_link")}</small>
           <code>{finalUrl}</code>
         </span>
-        <CopyButton className="portal-inline-button" label="Копировать" value={finalUrl} />
+        <CopyButton className="portal-inline-button" label={t("common.copy")} value={finalUrl} />
         <a className="portal-inline-button is-accent" href={finalUrl} rel="noreferrer" target="_blank">
-          <Icon name="external" size={13} strokeWidth={2} />Открыть
-        </a>
+          <Icon name="external" size={13} strokeWidth={2} />{t("portals.open")}</a>
       </div>
 
       {canManage && (
         <div className="portal-settings-actions">
-          <Button variant="primary" disabled={busy} onClick={() => void save()}>Сохранить настройки</Button>
+          <Button variant="primary" disabled={busy} onClick={() => void save()}>{t("portals.save_settings")}</Button>
           {feedback && <span className="portal-settings-note">{feedback}</span>}
         </div>
       )}

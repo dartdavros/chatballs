@@ -13,6 +13,7 @@ from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
 from chatballs.events.services import DomainEvent, enqueue_event
+from chatballs.i18n import t
 from chatballs.identity.audit import record_audit_event
 from chatballs.identity.event_handlers import PASSWORD_RESET_REQUESTED
 from chatballs.identity.models import AuditResult, HumanUser
@@ -87,7 +88,7 @@ class PasswordResetConfirmView(APIView):
         user = _user_from_reset_link(str(body.get("uid", "")), str(body.get("token", "")))
         if user is None:
             record_audit_event(action="identity.password_reset_failed", result=AuditResult.DENIED, request=request)
-            return Response({"detail": "Ссылка недействительна или истекла"}, status=400)
+            return Response({"detail": t("identity.link_invalid_or_expired")}, status=400)
 
         new_password = str(body.get("newPassword", ""))
         try:

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { t } from "../../i18n";
 
 // Запись голосового в композере (дизайн-базлайн v2, кадр H): MediaRecorder,
 // таймер, отмена/отправка. Формат — opus (ogg в Firefox, webm в Chromium).
@@ -67,7 +68,7 @@ export function useVoiceRecorder({ onSend }: { onSend: (audio: Blob, durationSec
             setSeconds(0);
           })
           .catch((error) => {
-            setErrorText(error instanceof Error ? error.message : "Не удалось отправить голосовое");
+            setErrorText(error instanceof Error ? error.message : t("conversations.could_not_send_voice_message"));
             setState("idle");
             setSeconds(0);
           });
@@ -81,7 +82,7 @@ export function useVoiceRecorder({ onSend }: { onSend: (audio: Blob, durationSec
         setSeconds(Math.floor((Date.now() - startedAtRef.current) / 1000));
       }, 250);
     } catch {
-      setErrorText("Нет доступа к микрофону");
+      setErrorText(t("conversations.no_access_microphone"));
     }
   }, [cleanupStream, onSend, state, supported]);
 

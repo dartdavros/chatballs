@@ -5,6 +5,7 @@ import { DecisionDialog } from "../../shared/DecisionDialog";
 import { Avatar } from "../../shared/ui";
 import { Button } from "../../shared/ui-controls";
 import type { AuthenticatedUser, SessionUser } from "../../types";
+import { t } from "../../i18n";
 
 // Строка «Фото» внутри карточки «Личные данные» (дизайн-базлайн v2, кадр P1):
 // круглое превью 56 · подпись · «Заменить» и «Удалить». Видно коллегам в чате,
@@ -25,7 +26,7 @@ export function ProfilePhotoField({ user, onUserUpdated }: { user: SessionUser; 
       const payload = await apiUpload<{ user: AuthenticatedUser }>("/api/v1/auth/profile/avatar/", form);
       onUserUpdated({ ...user, ...payload.user });
     } catch (error) {
-      setErrorText(error instanceof Error ? error.message : "Не удалось загрузить фото");
+      setErrorText(error instanceof Error ? error.message : t("profile.could_not_upload_photo"));
     } finally {
       setSaving(false);
     }
@@ -38,7 +39,7 @@ export function ProfilePhotoField({ user, onUserUpdated }: { user: SessionUser; 
       const payload = await api<{ user: AuthenticatedUser }>("/api/v1/auth/profile/avatar/", { method: "DELETE" });
       onUserUpdated({ ...user, ...payload.user });
     } catch (error) {
-      setErrorText(error instanceof Error ? error.message : "Не удалось удалить фото");
+      setErrorText(error instanceof Error ? error.message : t("profile.could_not_remove_photo"));
     } finally {
       setSaving(false);
     }
@@ -48,8 +49,8 @@ export function ProfilePhotoField({ user, onUserUpdated }: { user: SessionUser; 
     <div className="profile-photo-field">
       <span className="profile-photo-preview"><Avatar user={user} /></span>
       <div className="profile-photo-copy">
-        <strong>Фото</strong>
-        <small>PNG, JPEG или WebP · до 2 МБ. Видно коллегам в чате, подписях сообщений и выборе ответственного.</small>
+        <strong>{t("common.photo")}</strong>
+        <small>{t("profile.png_jpeg_or_webp_up_2")}</small>
         {errorText && <small className="profile-photo-error">{errorText}</small>}
       </div>
       <div className="profile-photo-actions">
@@ -64,20 +65,20 @@ export function ProfilePhotoField({ user, onUserUpdated }: { user: SessionUser; 
             event.target.value = "";
           }}
         />
-        <Button variant="secondary" disabled={saving} onClick={() => input.current?.click()}>Заменить</Button>
-        <button className="profile-photo-remove" type="button" disabled={saving || !user.avatarUrl} onClick={() => setConfirmingRemoval(true)}>Удалить</button>
+        <Button variant="secondary" disabled={saving} onClick={() => input.current?.click()}>{t("profile.replace")}</Button>
+        <button className="profile-photo-remove" type="button" disabled={saving || !user.avatarUrl} onClick={() => setConfirmingRemoval(true)}>{t("common.delete")}</button>
       </div>
       <DecisionDialog
         open={confirmingRemoval}
         onClose={() => setConfirmingRemoval(false)}
         tone="danger"
         icon="trash"
-        title="Удалить фото?"
-        description="Вместо фото коллеги снова увидят ваши инициалы."
+        title={t("profile.remove_photo")}
+        description={t("profile.colleagues_will_see_initials_again")}
         actions={(
           <>
-            <Button variant="secondary" onClick={() => setConfirmingRemoval(false)}>Отмена</Button>
-            <Button variant="danger-outline" disabled={saving} onClick={() => { setConfirmingRemoval(false); void remove(); }}>Удалить</Button>
+            <Button variant="secondary" onClick={() => setConfirmingRemoval(false)}>{t("common.cancel")}</Button>
+            <Button variant="danger-outline" disabled={saving} onClick={() => { setConfirmingRemoval(false); void remove(); }}>{t("common.delete")}</Button>
           </>
         )}
       />

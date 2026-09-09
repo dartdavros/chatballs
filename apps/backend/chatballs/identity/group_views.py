@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from chatballs.api.permissions import HasCapability
+from chatballs.i18n import t
 from chatballs.identity.audit import record_audit_event
 from chatballs.identity.group_models import EmployeeGroup, EmployeeGroupMember
 from chatballs.identity.models import OrganizationMembership
@@ -81,11 +82,11 @@ class GroupListView(APIView):
             return Response({"detail": members_error}, status=400)
         color = _clean_color(request.data.get("color"))
         if color is None:
-            return Response({"detail": "Некорректный цвет"}, status=400)
+            return Response({"detail": t("conversations.invalid_colour")}, status=400)
         try:
             group = EmployeeGroup.objects.create(organization=organization, name=name, color=color)
         except (ValidationError, IntegrityError):
-            return Response({"detail": "Группа с таким именем уже есть"}, status=400)
+            return Response({"detail": t("admin.group_name_taken")}, status=400)
         if members:
             EmployeeGroupMember.objects.bulk_create(
                 [
@@ -124,7 +125,7 @@ class GroupDetailView(APIView):
         if "color" in request.data:
             color = _clean_color(request.data.get("color"))
             if color is None:
-                return Response({"detail": "Некорректный цвет"}, status=400)
+                return Response({"detail": t("conversations.invalid_colour")}, status=400)
             group.color = color
         if "name" in request.data or "color" in request.data:
             if "name" in request.data:
@@ -132,7 +133,7 @@ class GroupDetailView(APIView):
             try:
                 group.save()
             except (ValidationError, IntegrityError):
-                return Response({"detail": "Группа с таким именем уже есть"}, status=400)
+                return Response({"detail": t("admin.group_name_taken")}, status=400)
         members, members_error = _resolve_members(
             group.organization, request.data.get("memberIds")
         )

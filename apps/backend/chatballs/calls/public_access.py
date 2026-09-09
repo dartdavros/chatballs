@@ -26,6 +26,7 @@ from chatballs.calls.tokens import (
     issue_call_access_token,
     verify_call_access_token,
 )
+from chatballs.i18n import t
 from chatballs.identity.models import Organization, OrganizationMembership
 from chatballs.tenancy.context import TenantContext
 from chatballs.tenancy.database import tenant_atomic
@@ -39,7 +40,7 @@ class ResolvedInvite:
 
 
 def resolve_invite(*, token: str) -> ResolvedInvite:
-    message = "Недействительное или истёкшее приглашение"
+    message = t("calls.invite_invalid")
     token_hash = hash_invite_token(token)
     route = call_invite_route(token_hash)
     if route is None:
@@ -90,11 +91,11 @@ def _authorize_call_access(
     claims = verify_call_access_token(token)
     route = call_session_route(str(claims.call_session_id))
     if route is None:
-        raise CallTokenError("Недействительный или истёкший call access token")
+        raise CallTokenError(t("calls.token_invalid"))
     try:
         organization = Organization.objects.get(pk=route.organization_id)
     except Organization.DoesNotExist:
-        raise CallTokenError("Недействительный или истёкший call access token") from None
+        raise CallTokenError(t("calls.token_invalid")) from None
     resource_context = TenantContext.for_resource(organization)
     with tenant_atomic(resource_context):
         try:
@@ -102,9 +103,9 @@ def _authorize_call_access(
                 "conversation", "conversation__channel", "initiated_by", "organization"
             ).get(id=claims.call_session_id, organization=organization)
         except CallSession.DoesNotExist:
-            raise CallTokenError("Недействительный или истёкший call access token") from None
+            raise CallTokenError(t("calls.token_invalid")) from None
         if call.status in TERMINAL_CALL_STATUSES and not allow_terminal:
-            raise CallTokenError("Звонок уже завершён")
+            raise CallTokenError(t("calls.already_ended"))
         membership = None
         if claims.side == ParticipantSide.STAFF:
             participant = call.participants.select_related("user").filter(
@@ -133,7 +134,7 @@ def _authorize_call_access(
                 or call.status not in {CallStatus.REQUESTED, CallStatus.RINGING}
             )
         if not valid:
-            raise CallTokenError("Недействительный или истёкший call access token")
+            raise CallTokenError(t("calls.token_invalid"))
         context = (
             TenantContext.for_membership(membership)
             if membership is not None
@@ -170,7 +171,7 @@ def _customer_call(
         allow_terminal=allow_terminal,
     )
     if claims.side != ParticipantSide.CUSTOMER:
-        raise CallTokenError("Недействительный или истёкший call access token")
+        raise CallTokenError(t("calls.token_invalid"))
     return call, context
 
 
@@ -186,7 +187,7 @@ def accept_call_by_access_token(*, token: str) -> CallSession:
                 organization=context.organization,
             )
         except CallInvalidTransition as error:
-            raise CallConflict("Приглашение уже нельзя принять") from error
+            raise CallConflict(t("calls.invite_cannot_accept")) from error
 
 
 def decline_call_by_access_token(*, token: str) -> CallSession:
@@ -205,7 +206,7 @@ def decline_call_by_access_token(*, token: str) -> CallSession:
                 organization=context.organization,
             )
         except CallInvalidTransition as error:
-            raise CallConflict("Приглашение уже нельзя отклонить") from error
+            raise CallConflict(t("calls.invite_cannot_decline")) from error
 
 
 def end_call_by_access_token(*, token: str) -> CallSession:

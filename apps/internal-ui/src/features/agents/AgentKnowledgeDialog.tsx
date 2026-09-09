@@ -8,6 +8,7 @@ import { shortDate } from "../../shared/utils";
 import { fetchKnowledgeList } from "../ai/knowledge/api";
 import { listPortalArticles, listSupportPortals } from "../support-portals/api";
 import type { AgentCard } from "./model";
+import { t } from "../../i18n";
 
 // «Выбрать» в блоке «Знания» карточки агента (кадры G3/G5): один список из
 // материалов библиотеки и опубликованных статей порталов. Агент отвечает
@@ -56,7 +57,7 @@ export function AgentKnowledgeDialog({ card, onClose, onSave }: {
             id: article.id,
             title: article.publishedRevision?.title ?? article.slug,
             icon: "globe" as const,
-            meta: `Портал · ${portal.name}`,
+            meta: t("ai.portal_named", { name: portal.name }),
             disabled: false,
           })));
         setChoices([
@@ -66,7 +67,7 @@ export function AgentKnowledgeDialog({ card, onClose, onSave }: {
             id: item.id,
             title: item.title,
             icon: "doc",
-            meta: item.isEnabled ? `обновлено ${shortDate(item.updatedAt)}` : "Выключено",
+            meta: item.isEnabled ? t("ai.updated_on", { date: shortDate(item.updatedAt) }) : t("common.off"),
             disabled: false,
           })),
           ...articles,
@@ -105,20 +106,20 @@ export function AgentKnowledgeDialog({ card, onClose, onSave }: {
       });
       onClose();
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Не удалось сохранить выбор");
+      setError(caught instanceof Error ? caught.message : t("ai.could_not_save_selection"));
       setSaving(false);
     }
   }
 
   return (
-    <Modal className="agent-knowledge-modal" open width={560} title="Выбрать знания" onCancel={onClose} footer={null} destroyOnClose>
-      <p className="agent-create-lead">Агент отвечает только по выбранным материалам: знаниям библиотеки и опубликованным статьям порталов.</p>
-      <SearchInput className="agent-knowledge-search" placeholder="Поиск по названию" value={search} onChange={setSearch} />
+    <Modal className="agent-knowledge-modal" open width={560} title={t("ai.select_knowledge")} onCancel={onClose} footer={null} destroyOnClose>
+      <p className="agent-create-lead">{t("ai.agent_answers_only_from_selected")}</p>
+      <SearchInput className="agent-knowledge-search" placeholder={t("ai.search_by_title")} value={search} onChange={setSearch} />
       {choices === null && !failed && <LoadingState />}
-      {failed && <div className="agent-form-error">Не удалось загрузить список материалов</div>}
+      {failed && <div className="agent-form-error">{t("ai.could_not_load_material_list")}</div>}
       {choices !== null && (
         <div className="agent-knowledge-choices">
-          {visible.length === 0 && <p className="agent-knowledge-nothing">Ничего не найдено</p>}
+          {visible.length === 0 && <p className="agent-knowledge-nothing">{t("common.nothing_found")}</p>}
           {visible.map((choice) => (
             <label className={`agent-knowledge-choice ${picked.has(choice.key) ? "is-picked" : ""}`} key={choice.key}>
               <input type="checkbox" checked={picked.has(choice.key)} onChange={() => toggle(choice.key)} />
@@ -131,9 +132,9 @@ export function AgentKnowledgeDialog({ card, onClose, onSave }: {
       )}
       {error && <div className="agent-form-error">{error}</div>}
       <div className="agent-create-actions">
-        <Button variant="secondary" onClick={onClose}>Отмена</Button>
+        <Button variant="secondary" onClick={onClose}>{t("common.cancel")}</Button>
         <Button variant="primary" disabled={choices === null || saving} onClick={() => void submit()}>
-          {saving ? "Сохранение…" : "Сохранить"}
+          {saving ? t("ai.saving") : t("common.save")}
         </Button>
       </div>
     </Modal>

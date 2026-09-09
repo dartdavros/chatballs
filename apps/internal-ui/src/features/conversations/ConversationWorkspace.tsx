@@ -35,10 +35,10 @@ function scopeFilters(scope: DialogScope): ConversationListFilters {
 
 export function scopeLabel(scope: DialogScope): string {
   if (scope.kind === "group") return scope.label;
-  if (scope.kind === "ungrouped") return "Без группы";
+  if (scope.kind === "ungrouped") return t("common.no_group");
   if (scope.kind === "agent") return scope.label;
   if (scope.kind === "assignee") return scope.label;
-  return "Все диалоги";
+  return t("profile.all_conversations");
 }
 import type { ConversationListItem, ListSort, ListTab } from "./types";
 import { useConversationCall } from "./useConversationCall";
@@ -48,6 +48,7 @@ import { useConversationHistory } from "./useConversationHistory";
 import { useConversationList } from "./useConversationList";
 import { useDialogKeyboardNav } from "./useDialogKeyboardNav";
 import { useIncomingMessageSound } from "./useIncomingMessageSound";
+import { t } from "../../i18n";
 
 // Общий workspace диалогов (SPEC-HUB-0010 §8.2). Видимость inbox решает
 // backend по группам (ADR-CHATBALLS-0043); страница параметризуется заголовком,
@@ -117,7 +118,7 @@ export function ConversationWorkspace({ isOwner = false, viewerId = null, listTi
         setDetailError("");
       }
     } catch {
-      if (selectedIdRef.current === id) setDetailError("Не удалось загрузить диалог");
+      if (selectedIdRef.current === id) setDetailError(t("conversations.could_not_load_conversation"));
     }
   }, []);
 
@@ -177,7 +178,7 @@ export function ConversationWorkspace({ isOwner = false, viewerId = null, listTi
       applyUpdated(await action(selectedId));
       return true;
     } catch (error) {
-      setActionError(error instanceof Error ? error.message : "Не удалось выполнить действие");
+      setActionError(error instanceof Error ? error.message : t("common.could_not_complete_action"));
       return false;
     }
   }
@@ -226,11 +227,11 @@ export function ConversationWorkspace({ isOwner = false, viewerId = null, listTi
         hint={hint}
       />
       {!selectedDialog && (
-        <section className="sales-conversation"><div className="sales-conversation-empty">Выберите диалог</div></section>
+        <section className="sales-conversation"><div className="sales-conversation-empty">{t("conversations.pick_conversation")}</div></section>
       )}
       {selectedDialog && (
       <section className="sales-conversation enter-surface" key={selectedDialog.id}>
-        {ctxOpen && <button className="ctx-backdrop" type="button" aria-label="Закрыть панель" onClick={() => setCtxOpen(false)} />}
+        {ctxOpen && <button className="ctx-backdrop" type="button" aria-label={t("admin.close_panel")} onClick={() => setCtxOpen(false)} />}
         <ConversationThread controlMode={controlMode} dialog={selectedDialog} detail={detail} history={history} isOwner={isOwner} onExpandList={listCollapsed ? () => setListCollapsed(false) : undefined} viewerId={viewerId} onClaim={onClaim} onRelease={onRelease} onClose={onClose} onSpam={onSpam} onReturnQueue={onReturnQueue} onArchive={onArchive} onToggleContext={() => setCtxOpen((open) => !open)} onMobileBack={() => setMobileDialogOpen(false)} />
         {(detailError || actionError || history.errorText) && <div className="sales-conversation-error">{detailError || actionError || history.errorText}</div>}
         <CallOverlay

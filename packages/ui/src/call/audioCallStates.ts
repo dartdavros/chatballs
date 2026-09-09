@@ -2,6 +2,7 @@
 // Тексты/иконки/тоны вынесены отдельно, чтобы AudioCallView оставался
 // composition-only и не смешивал разметку со справочником состояний.
 
+import { t } from "../i18n";
 import type { AudioStatusIconName } from "./AudioCallIcons";
 
 export type AudioCallMode = "incoming" | "ringing" | "connecting" | "active" | "reconnecting" | "status";
@@ -39,35 +40,34 @@ export const TERMINAL_CALL_STATUSES = new Set([
 export const isTerminalCallStatus = (status?: string) => Boolean(status && TERMINAL_CALL_STATUSES.has(status));
 
 function dur(prefix: string, duration?: number | null) {
-  return duration != null && duration > 0 ? `${prefix}Длительность ${formatDuration(duration)}. ` : prefix;
+  return duration != null && duration > 0 ? `${prefix}${t("call.duration", { duration: formatDuration(duration) })} ` : prefix;
 }
 
 // Справочник статусов-центров: процессы + ошибки + терминалы.
 // `duration` подставляется только там, где разговор реально состоялся.
 export function buildAudioStatus(status: string, peerName: string, duration?: number | null): AudioStatusEntry | null {
-  const p = `${peerName} `;
   switch (status) {
     case "connecting":
     case "CONNECTING":
-      return { icon: "spinner", tone: "neutral", title: "Соединяем", caption: "Устанавливаем защищённое соединение…", bar: "ended" };
+      return { icon: "spinner", tone: "neutral", title: t("call.connecting"), caption: t("call.establishing"), bar: "ended" };
     case "reconnecting":
-      return { icon: "spinner", tone: "neutral", title: "Связь прервана", caption: "Восстанавливаем соединение…", bar: "reconnect" };
+      return { icon: "spinner", tone: "neutral", title: t("call.reconnecting_title"), caption: t("call.reconnecting_caption"), bar: "reconnect" };
     case "DECLINED":
-      return { icon: "declined", tone: "neutral", title: "Звонок отклонён", caption: `${p}отклонил(а) вызов.`, bar: "retrySingle" };
+      return { icon: "declined", tone: "neutral", title: t("call.call_declined"), caption: t("call.declined_by", { name: peerName }), bar: "retrySingle" };
     case "MISSED":
-      return { icon: "missed", tone: "warn", title: "Пропущенный звонок", caption: `${p}не ответил(а) на вызов.`, bar: "retrySingle" };
+      return { icon: "missed", tone: "warn", title: t("call.missed"), caption: t("call.unanswered_by", { name: peerName }), bar: "retrySingle" };
     case "EXPIRED":
-      return { icon: "clock", tone: "warn", title: "Время ожидания истекло", caption: "Никто не ответил вовремя. Попробуйте позвонить снова.", bar: "retrySingle" };
+      return { icon: "clock", tone: "warn", title: t("call.wait_timed_out"), caption: t("call.nobody_answered"), bar: "retrySingle" };
     case "CANCELLED":
-      return { icon: "declined", tone: "neutral", title: "Звонок отменён", caption: "Приглашение отменено.", bar: "ended" };
+      return { icon: "declined", tone: "neutral", title: t("call.call_cancelled"), caption: t("call.invitation_cancelled"), bar: "ended" };
     case "FAILED":
-      return { icon: "alert", tone: "error", title: "Не удалось соединиться", caption: `${dur("", duration)}Проверьте интернет-соединение и попробуйте снова.`, bar: "retryClose" };
+      return { icon: "alert", tone: "error", title: t("call.unable_to_connect"), caption: `${dur("", duration)}${t("call.check_connection")}`, bar: "retryClose" };
     case "ENDED":
-      return { icon: "clock", tone: "neutral", title: "Звонок завершён", caption: `${dur("", duration)}Разговор завершён.`, bar: "ended" };
+      return { icon: "clock", tone: "neutral", title: t("call.call_ended"), caption: `${dur("", duration)}${t("call.conversation_ended")}`, bar: "ended" };
     case "nodevice":
-      return { icon: "nodevice", tone: "error", title: "Нет доступа к микрофону", caption: "Разрешите доступ к микрофону в настройках браузера и повторите.", bar: "retryCheck" };
+      return { icon: "nodevice", tone: "error", title: t("call.no_mic_access"), caption: t("call.allow_mic"), bar: "retryCheck" };
     case "unsupported":
-      return { icon: "unsupported", tone: "error", title: "Аудиозвонки не поддерживаются", caption: "Обновите браузер или откройте ссылку в Chrome, Safari или Edge.", bar: "retryCheck" };
+      return { icon: "unsupported", tone: "error", title: t("call.audio_not_supported"), caption: t("call.link_unsupported_browser"), bar: "retryCheck" };
     default:
       return null;
   }

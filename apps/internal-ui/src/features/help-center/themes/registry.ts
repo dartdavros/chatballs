@@ -9,6 +9,7 @@ import type {
   PortalThemeScheme,
   PortalThemeSchemeSetting,
 } from "./types";
+import { t } from "../../../i18n";
 
 export const DEFAULT_PORTAL_THEME_ID = "classic";
 
@@ -53,7 +54,7 @@ export function resolvePortalTheme(id: string): PortalThemeManifest {
   // Каталог тем пуст только в тесте, который сам себе его подменил.
   return {
     id: DEFAULT_PORTAL_THEME_ID,
-    name: "Классическая",
+    name: t("portals.classic"),
     description: "",
     schemes: ["light"],
     preview: { bg: "#ffffff", ink: "#1f1f1f", accent: "#1f1f1f" },
@@ -80,12 +81,12 @@ export function schemeOptions(
   theme: PortalThemeManifest,
 ): Array<[PortalThemeSchemeSetting, string]> {
   const options: Array<[PortalThemeSchemeSetting, string]> = [];
-  if (theme.schemes.includes("light")) options.push(["LIGHT", "Светлая"]);
-  if (theme.schemes.includes("dark")) options.push(["DARK", "Тёмная"]);
+  if (theme.schemes.includes("light")) options.push(["LIGHT", t("profile.light")]);
+  if (theme.schemes.includes("dark")) options.push(["DARK", t("profile.dark")]);
   if (theme.schemes.includes("light") && theme.schemes.includes("dark")) {
-    options.push(["SYSTEM", "Как в системе"]);
+    options.push(["SYSTEM", t("profile.match_system")]);
   }
-  return options.length ? options : [["LIGHT", "Светлая"]];
+  return options.length ? options : [["LIGHT", t("profile.light")]];
 }
 
 export async function loadPortalThemeStyles(id: string): Promise<void> {

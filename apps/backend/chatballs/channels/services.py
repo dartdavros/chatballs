@@ -10,6 +10,7 @@ from django.db import transaction
 
 from chatballs.channels import authorization
 from chatballs.channels.models import Channel
+from chatballs.i18n import t
 from chatballs.identity.group_models import EmployeeGroup
 from chatballs.integrations.models import Integration, IntegrationKind
 from chatballs.tenancy.context import TenantContext
@@ -34,7 +35,7 @@ class ChannelHasReferences(Exception):
 
     def __init__(self, blockers: list[dict[str, Any]]) -> None:
         self.blockers = blockers
-        super().__init__("Канал нельзя удалить: есть связанные записи")
+        super().__init__(t("channels.cannot_delete_linked"))
 
     def payload(self) -> dict[str, Any]:
         return {"detail": str(self), "blockers": self.blockers}

@@ -5,6 +5,7 @@ import {
   type ApiConversation,
   type ConversationListQuery,
 } from "./model";
+import { t } from "../../i18n";
 
 // Инбокс — живая лента: сверху приходит окно, вниз оно догружается прокруткой.
 // Обновление перезапрашивает только голову списка (туда попадает вся свежая
@@ -62,7 +63,7 @@ export function useConversationList(
       setLoaded(true);
       setErrorText("");
     } catch {
-      setErrorText("Не удалось обновить список диалогов");
+      setErrorText(t("conversations.could_not_refresh_conversation_list"));
     }
   }, [stableQuery]);
 
@@ -83,7 +84,7 @@ export function useConversationList(
         setErrorText("");
       })
       .catch(() => {
-        if (active) setErrorText("Не удалось загрузить список диалогов");
+        if (active) setErrorText(t("conversations.could_not_load_conversation_list"));
       });
     return () => {
       active = false;
@@ -110,7 +111,7 @@ export function useConversationList(
         setTotal(page.total);
         setErrorText("");
       })
-      .catch(() => setErrorText("Не удалось загрузить следующие диалоги"))
+      .catch(() => setErrorText(t("conversations.could_not_load_more_conversations")))
       .finally(() => {
         loadingMoreRef.current = false;
         setLoadingMore(false);

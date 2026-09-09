@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import { CloseIcon, DeviceIcon, FullscreenIcon, PhoneIcon, SpinnerIcon, StatusIcon, type StatusIconName } from "./CallIcons";
 import "./call-view.css";
+import { t } from "../i18n";
 
 export type CallViewMode = "ringing" | "precall" | "connecting" | "active" | "reconnecting" | "status";
 
@@ -82,7 +83,7 @@ export function CallView(props: Props) {
           <span>{props.subtitle}</span>
         </div>
         {isLive && <span className={`hub-call-timer ${props.mode === "reconnecting" ? "warn" : ""}`}><i />{timer}</span>}
-        {props.onClose && <button className="hub-call-close" onClick={handleClose} aria-label={isFullscreen ? "Выйти из полноэкранного режима" : "Закрыть"}><CloseIcon /></button>}
+        {props.onClose && <button className="hub-call-close" onClick={handleClose} aria-label={isFullscreen ? t("call.exit_fullscreen") : t("call.close")}><CloseIcon /></button>}
       </header>
 
       <div className="hub-call-media">
@@ -92,26 +93,26 @@ export function CallView(props: Props) {
         {isLive && props.remoteStream != null && <Video stream={props.remoteStream} className="hub-call-remote-video" />}
 
         {props.mode === "ringing" && (
-          <CallAvatar name={props.peerName} initials={props.peerInitials} color={props.peerAvatarColor} caption="Вызываем…" rings />
+          <CallAvatar name={props.peerName} initials={props.peerInitials} color={props.peerAvatarColor} caption={t("call.calling")} rings />
         )}
 
         {props.mode === "precall" && (
           showLocalVideo
             ? <Video stream={props.localStream} muted mirrored className="hub-call-preview-video" />
-            : <CallAvatar name="Вы" initials="ВЫ" color="#595959" caption={props.mediaCaption ?? "Камера выключена"} />
+            : <CallAvatar name={t("call.you")} initials={t("call.you_initials")} color="#595959" caption={props.mediaCaption ?? t("call.camera_off")} />
         )}
 
         {isLive && !showRemoteVideo && (
-          <CallAvatar name={props.peerName} initials={props.peerInitials} color={props.peerAvatarColor} caption="Камера собеседника выключена" />
+          <CallAvatar name={props.peerName} initials={props.peerInitials} color={props.peerAvatarColor} caption={t("call.peer_camera_off")} />
         )}
 
         {isLive && (
           <>
-            {props.mode === "reconnecting" && <div className="hub-call-reconnect"><SpinnerIcon />Связь прервана · восстанавливаем соединение…</div>}
+            {props.mode === "reconnecting" && <div className="hub-call-reconnect"><SpinnerIcon />{t("call.reconnecting_inline")}</div>}
             <div className="hub-call-name-label">{props.remoteMicOn === false && <DeviceIcon kind="mic" on={false} />}<span>{props.peerName}</span></div>
             <div className="hub-call-pip">
-              {showLocalVideo ? <Video stream={props.localStream} muted mirrored className="hub-call-local-video" /> : <span className="hub-call-avatar pip">ВЫ</span>}
-              <b>Вы</b>
+              {showLocalVideo ? <Video stream={props.localStream} muted mirrored className="hub-call-local-video" /> : <span className="hub-call-avatar pip">{t("call.you_initials")}</span>}
+              <b>{t("call.you")}</b>
             </div>
           </>
         )}
@@ -119,16 +120,16 @@ export function CallView(props: Props) {
         {(props.mode === "connecting" || props.mode === "status") && props.status && <StatusView status={props.status} />}
       </div>
 
-      {props.mode === "ringing" && props.onCancel && <RingingBar label={props.cancelLabel ?? "Отменить"} onClick={props.onCancel} />}
+      {props.mode === "ringing" && props.onCancel && <RingingBar label={props.cancelLabel ?? t("call.cancel_call")} onClick={props.onCancel} />}
       {props.mode === "precall" && (
         <div className="hub-call-precall-bar">
           <div className="hub-call-device-row">
-            <DeviceControl label="Микрофон" kind="mic" on={props.micOn !== false} onClick={props.onToggleMic} />
-            <DeviceControl label="Камера" kind="cam" on={props.camOn !== false} onClick={props.onToggleCam} />
+            <DeviceControl label={t("call.mic")} kind="mic" on={props.micOn !== false} onClick={props.onToggleMic} />
+            <DeviceControl label={t("call.camera")} kind="cam" on={props.camOn !== false} onClick={props.onToggleCam} />
           </div>
           <div className="hub-call-join-row">
-            <button className="secondary" onClick={props.onCancel}>{props.cancelLabel ?? "Отмена"}</button>
-            <button className="primary" onClick={props.onJoin} disabled={props.joining}>{props.joining ? "Подключение…" : "Присоединиться"}</button>
+            <button className="secondary" onClick={props.onCancel}>{props.cancelLabel ?? t("call.cancel")}</button>
+            <button className="primary" onClick={props.onJoin} disabled={props.joining}>{props.joining ? t("call.joining") : t("call.join")}</button>
           </div>
         </div>
       )}
@@ -136,8 +137,8 @@ export function CallView(props: Props) {
         <div className="hub-call-active-bar">
           <DeviceButton kind="mic" on={props.micOn !== false} onClick={props.onToggleMic} />
           <DeviceButton kind="cam" on={props.camOn !== false} onClick={props.onToggleCam} />
-          <button className="hub-call-round" onClick={toggleFullscreen} aria-label={isFullscreen ? "Выйти из полноэкранного режима" : "Полный экран"}><FullscreenIcon /></button>
-          <button className="hub-call-end" onClick={props.onEnd} aria-label="Завершить"><PhoneIcon /></button>
+          <button className="hub-call-round" onClick={toggleFullscreen} aria-label={isFullscreen ? t("call.exit_fullscreen") : t("call.enter_fullscreen")}><FullscreenIcon /></button>
+          <button className="hub-call-end" onClick={props.onEnd} aria-label={t("call.end")}><PhoneIcon /></button>
         </div>
       )}
     </div>
@@ -153,7 +154,7 @@ function StatusView({ status }: { status: CallViewStatus }) {
 }
 
 function DeviceButton({ kind, on, onClick }: { kind: "mic" | "cam"; on: boolean; onClick?: () => void }) {
-  return <button className={`hub-call-device${on ? "" : " off"}`} onClick={onClick} aria-label={kind === "mic" ? "Микрофон" : "Камера"}><DeviceIcon kind={kind} on={on} /></button>;
+  return <button className={`hub-call-device${on ? "" : " off"}`} onClick={onClick} aria-label={kind === "mic" ? t("call.mic") : t("call.camera")}><DeviceIcon kind={kind} on={on} /></button>;
 }
 
 function DeviceControl({ label, kind, on, onClick }: { label: string; kind: "mic" | "cam"; on: boolean; onClick?: () => void }) {

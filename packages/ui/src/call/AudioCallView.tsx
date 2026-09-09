@@ -10,6 +10,7 @@ import { AudioStatusIcon } from "./AudioCallIcons";
 import { MicIcon, PhoneIcon, SpeakerIcon } from "./AudioCallIcons";
 import { type AudioCallMode, type AudioCallStatus, formatDuration } from "./audioCallStates";
 import "./audio-call.css";
+import { t } from "../i18n";
 
 type Props = {
   mode: AudioCallMode;
@@ -93,24 +94,24 @@ export function AudioCallView(props: Props) {
 
         <div className="hub-audio-bottom">
           {props.mode === "incoming" && (
-            <PairBar left={{ label: "Отклонить", tone: "decline", icon: <PhoneIcon rotated /> }} right={{ label: "Принять", tone: "accept", icon: <PhoneIcon /> }} onLeft={props.onDecline} onRight={props.onAccept} />
+            <PairBar left={{ label: t("call.decline"), tone: "decline", icon: <PhoneIcon rotated /> }} right={{ label: t("call.accept"), tone: "accept", icon: <PhoneIcon /> }} onLeft={props.onDecline} onRight={props.onAccept} />
           )}
           {props.mode === "ringing" && (
-            <SingleRoundBar label="Отменить" tone="decline" icon={<PhoneIcon rotated />} onClick={props.onCancel ?? props.onEnd} />
+            <SingleRoundBar label={t("call.cancel_call")} tone="decline" icon={<PhoneIcon rotated />} onClick={props.onCancel ?? props.onEnd} />
           )}
           {props.mode === "connecting" && (
-            <SingleRoundBar label="Отменить" tone="decline" icon={<PhoneIcon rotated />} onClick={props.onCancel ?? props.onEnd} />
+            <SingleRoundBar label={t("call.cancel_call")} tone="decline" icon={<PhoneIcon rotated />} onClick={props.onCancel ?? props.onEnd} />
           )}
           {props.mode === "reconnecting" && (
-            <SingleRoundBar label="Завершить" tone="decline" icon={<PhoneIcon rotated />} onClick={props.onEnd} />
+            <SingleRoundBar label={t("call.end")} tone="decline" icon={<PhoneIcon rotated />} onClick={props.onEnd} />
           )}
           {isActive && (
             <div className="hub-audio-active">
               <div className="hub-audio-device-row">
-                <DeviceControl label="Микрофон" icon={<MicIcon on={props.micOn !== false} />} on={props.micOn !== false} onClick={props.onToggleMic} />
-                <DeviceControl label="Динамик" icon={<SpeakerIcon on={props.speakerOn !== false} />} on={props.speakerOn !== false} onClick={props.onToggleSpeaker} />
+                <DeviceControl label={t("call.mic")} icon={<MicIcon on={props.micOn !== false} />} on={props.micOn !== false} onClick={props.onToggleMic} />
+                <DeviceControl label={t("call.speaker")} icon={<SpeakerIcon on={props.speakerOn !== false} />} on={props.speakerOn !== false} onClick={props.onToggleSpeaker} />
               </div>
-              <SingleRoundBar label="Завершить" tone="decline" icon={<PhoneIcon rotated />} onClick={props.onEnd} />
+              <SingleRoundBar label={t("call.end")} tone="decline" icon={<PhoneIcon rotated />} onClick={props.onEnd} />
             </div>
           )}
           {isStatus && status && (
@@ -186,43 +187,43 @@ function EndStack({ end, onClick }: { end: BarEnd; onClick?: () => void }) {
 function StatusBar({ status, onClose, onCallAgain, onRetry, onEnd }: { status: AudioCallStatus; onClose?: () => void; onCallAgain?: () => void; onRetry?: () => void; onEnd?: () => void }) {
   const bar = status.bar;
   if (bar === "reconnect") {
-    return <SingleRoundBar label="Завершить" tone="decline" icon={<PhoneIcon rotated />} onClick={onEnd} />;
+    return <SingleRoundBar label={t("call.end")} tone="decline" icon={<PhoneIcon rotated />} onClick={onEnd} />;
   }
   if (bar === "close") {
     return (
       <div className="hub-audio-pill-bar">
-        <PillButton kind="ghost" onClick={onClose}>Закрыть</PillButton>
+        <PillButton kind="ghost" onClick={onClose}>{t("call.close")}</PillButton>
       </div>
     );
   }
   if (bar === "retrySingle") {
     return (
       <div className="hub-audio-pill-bar">
-        <PillButton kind="solid" onClick={onCallAgain}>Позвонить снова</PillButton>
+        <PillButton kind="solid" onClick={onCallAgain}>{t("call.call_again")}</PillButton>
       </div>
     );
   }
   if (bar === "retryClose") {
     return (
       <div className="hub-audio-pill-bar two">
-        <PillButton kind="ghost" onClick={onClose}>Закрыть</PillButton>
-        <PillButton kind="solid" onClick={onRetry}>Повторить</PillButton>
+        <PillButton kind="ghost" onClick={onClose}>{t("call.close")}</PillButton>
+        <PillButton kind="solid" onClick={onRetry}>{t("call.retry")}</PillButton>
       </div>
     );
   }
   if (bar === "retryCheck") {
     return (
       <div className="hub-audio-pill-bar two">
-        <PillButton kind="ghost" onClick={onClose}>Закрыть</PillButton>
-        <PillButton kind="solid" onClick={onRetry}>Повторить проверку</PillButton>
+        <PillButton kind="ghost" onClick={onClose}>{t("call.close")}</PillButton>
+        <PillButton kind="solid" onClick={onRetry}>{t("call.retry_check")}</PillButton>
       </div>
     );
   }
   // ended / connecting
   return (
     <div className="hub-audio-pill-bar two">
-      <PillButton kind="ghost" onClick={onClose}>Закрыть</PillButton>
-      <PillButton kind="solid" onClick={onCallAgain}>Позвонить снова</PillButton>
+      <PillButton kind="ghost" onClick={onClose}>{t("call.close")}</PillButton>
+      <PillButton kind="solid" onClick={onCallAgain}>{t("call.call_again")}</PillButton>
     </div>
   );
 }
@@ -236,7 +237,7 @@ function durationPill(duration?: number | null) {
   return (
     <div className="hub-audio-duration-pill">
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
-      Длительность {formatDuration(duration)}
+      {t("call.duration", { duration: formatDuration(duration) })}
     </div>
   );
 }
@@ -249,16 +250,16 @@ function bgState(mode: AudioCallMode): string {
 
 function defaultStatusLabel(mode: AudioCallMode, status?: AudioCallStatus): string {
   if (status) return status.title;
-  if (mode === "incoming") return "Входящий звонок";
-  if (mode === "ringing") return "Исходящий звонок";
-  if (mode === "active") return "Аудиозвонок";
-  if (mode === "connecting") return "Соединение";
-  if (mode === "reconnecting") return "Переподключение";
-  return "Звонок завершён";
+  if (mode === "incoming") return t("call.incoming");
+  if (mode === "ringing") return t("call.outgoing");
+  if (mode === "active") return t("call.audio_call");
+  if (mode === "connecting") return t("call.connecting_status");
+  if (mode === "reconnecting") return t("call.reconnecting");
+  return t("call.call_ended");
 }
 
 function defaultSubCaption(mode: AudioCallMode, micOn?: boolean): string {
-  if (mode === "active") return micOn ? "Говорите" : "Ваш микрофон выключен";
+  if (mode === "active") return micOn ? t("call.speak") : t("call.mic_off");
   if (mode === "incoming" || mode === "ringing") return "";
   return "";
 }

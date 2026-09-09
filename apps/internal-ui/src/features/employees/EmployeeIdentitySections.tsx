@@ -2,14 +2,15 @@ import type { Employee, EmployeeGroup, Role } from "../../types";
 import { Icon } from "../../shared/icons";
 import { groupColorOf } from "../conversations/model";
 import type { EmployeeForm } from "./model";
+import { t } from "../../i18n";
 
 // Основные данные · Должность и группы · Системная роль (кадры E3/E4).
 // Владельцу все роли закрыты: роль владельца меняется только передачей владения.
 
 const ROLE_OPTIONS: Array<{ role: Role; label: string; description: string }> = [
-  { role: "OWNER", label: "Владелец", description: "Полный доступ. Ровно один в организации. Изменяется только через передачу владения." },
-  { role: "ADMIN", label: "Администратор", description: "Полный доступ, идентичен владельцу. Единственное отличие владельца — его нельзя удалить." },
-  { role: "EMPLOYEE", label: "Сотрудник", description: "Работает в чате. Видит диалоги своих групп, диалоги без группы и назначенные ему." },
+  { role: "OWNER", label: t("common.owner"), description: t("admin.full_access_exactly_one_per") },
+  { role: "ADMIN", label: t("common.administrator"), description: t("admin.full_access_identical_owner_owner") },
+  { role: "EMPLOYEE", label: t("common.operator"), description: t("admin.works_chat_sees_conversations_their") },
 ];
 
 export function EmployeeIdentitySections({ groups, employee, form, updateForm }: {
@@ -33,18 +34,18 @@ export function EmployeeIdentitySections({ groups, employee, form, updateForm }:
   return (
     <>
       <section className="employee-card">
-        <h3>Основные данные</h3>
+        <h3>{t("admin.main_details")}</h3>
         <div className="employee-field-grid">
-          <EmployeeField label="Имя" value={form.fullName} readOnly={!canProfile} onChange={(value) => updateForm("fullName", value)} />
-          <EmployeeField label="Телефон" value={form.phone} readOnly={!canProfile} onChange={(value) => updateForm("phone", value)} />
-          <EmployeeField className="is-wide" label="Email · используется для входа" value={form.email} readOnly={!canProfile} mono onChange={(value) => updateForm("email", value)} />
+          <EmployeeField label={t("common.name")} value={form.fullName} readOnly={!canProfile} onChange={(value) => updateForm("fullName", value)} />
+          <EmployeeField label={t("common.phone")} value={form.phone} readOnly={!canProfile} onChange={(value) => updateForm("phone", value)} />
+          <EmployeeField className="is-wide" label={t("profile.email_used_sign")} value={form.email} readOnly={!canProfile} mono onChange={(value) => updateForm("email", value)} />
         </div>
       </section>
 
       <section className="employee-card">
-        <h3>Должность и группы</h3>
-        <p>Группа задаёт только видимость диалогов и не выдаёт прав.</p>
-        <EmployeeField className="is-single" label="Должность" value={form.positionTitle} readOnly={!canProfile} placeholder="напр. Оператор" onChange={(value) => updateForm("positionTitle", value)} />
+        <h3>{t("admin.position_groups")}</h3>
+        <p>{t("admin.group_decides_which_conversations_visible")}</p>
+        <EmployeeField className="is-single" label={t("common.position")} value={form.positionTitle} readOnly={!canProfile} placeholder={t("admin.e_g_operator")} onChange={(value) => updateForm("positionTitle", value)} />
         {groups.length > 0 ? (
           <div className="employee-group-picks">
             {groups.map((group) => {
@@ -54,20 +55,20 @@ export function EmployeeIdentitySections({ groups, employee, form, updateForm }:
                   <i>{active && <Icon name="check" size={11} strokeWidth={3} />}</i>
                   <span>
                     <strong><i className="employee-group-dot" style={{ background: groupColorOf(group.id, group.color) }} />{group.name}</strong>
-                    <small>{group.memberCount} сотр.</small>
+                    <small>{t("admin.member_count", { count: group.memberCount })}</small>
                   </span>
                 </button>
               );
             })}
           </div>
         ) : (
-          <p className="employee-create-note">Групп пока нет — все сотрудники видят все диалоги.</p>
+          <p className="employee-create-note">{t("admin.there_no_groups_yet_so_2")}</p>
         )}
       </section>
 
       <section className="employee-card">
-        <h3>Системная роль</h3>
-        <p>{isOwner ? "Роль владельца меняется только через передачу владения." : "OWNER и ADMIN идентичны по правам; EMPLOYEE работает только в чате."}</p>
+        <h3>{t("admin.system_role")}</h3>
+        <p>{isOwner ? t("admin.owner_s_role_changes_only") : t("admin.owner_admin_have_identical_rights")}</p>
         <div className="employee-choice-list">
           {ROLE_OPTIONS.map((option) => {
             const active = form.role === option.role;

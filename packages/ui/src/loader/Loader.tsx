@@ -1,5 +1,6 @@
 import { LOADER_DURATION, LOADER_PATH, LOADER_VALUES } from "./loaderFrames";
 import "./loader.css";
+import { t } from "../i18n";
 
 // Общий прелоадер продукта (файл владельца, 2026-09-07): капля делится надвое
 // и сливается обратно — морфинг одного контура через SMIL. Цвет — currentColor,
@@ -14,7 +15,7 @@ export function Loader({ size = 28, className = "" }: { size?: number; className
       height={size}
       fill="currentColor"
       role="status"
-      aria-label="Загрузка"
+      aria-label={t("common.loading")}
     >
       <path d={LOADER_PATH}>
         <animate

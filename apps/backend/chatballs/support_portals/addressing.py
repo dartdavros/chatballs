@@ -6,6 +6,8 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 
+from chatballs.i18n import t
+
 HOST_LABEL_RE = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$")
 
 
@@ -16,10 +18,10 @@ def normalize_domain(value: str) -> str:
 def validate_domain(value: str) -> str:
     domain = normalize_domain(value)
     if not domain or len(domain) > 253:
-        raise ValidationError("Некорректное доменное имя")
+        raise ValidationError(t("portals.invalid_domain"))
     labels = domain.split(".")
     if len(labels) < 2 or any(not HOST_LABEL_RE.fullmatch(label) for label in labels):
-        raise ValidationError("Некорректное доменное имя")
+        raise ValidationError(t("portals.invalid_domain"))
     return domain
 
 

@@ -1,5 +1,6 @@
 from chatballs.ai.provider import openai_http
 from chatballs.ai.provider.base import ChatMessage, ChatResult, EmbeddingResult, LLMProvider
+from chatballs.i18n import t
 
 
 class OpenRouterProvider(LLMProvider):
@@ -70,5 +71,5 @@ class OpenRouterProvider(LLMProvider):
             raise ProviderError(f"Расшифровка не удалась: {error}") from error
         text = str(payload.get("text") or "").strip()
         if not text:
-            raise ProviderError("Провайдер вернул пустую расшифровку")
+            raise ProviderError(t("ai.empty_transcript"))
         return text

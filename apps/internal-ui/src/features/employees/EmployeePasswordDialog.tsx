@@ -5,13 +5,14 @@ import { Avatar } from "../../shared/ui";
 import { CopyButton } from "../../shared/ui-controls";
 import { resetEmployeePassword, type IssuedPassword } from "./api";
 import { employeeAvatarColor } from "./model";
+import { t } from "../../i18n";
 
 // Пароль первичного доступа (дизайн-базлайн v2, кадры E7/E8). Показывается один
 // раз: сервер отдал его в ответе и хранит только хеш.
 
 const TITLES = {
-  created: { title: "Сотрудник создан", sub: "Пароль сгенерирован и показан один раз — скопируйте его сейчас." },
-  reset: { title: "Пароль сброшен", sub: "Активные сессии сотрудника завершены, при первом входе он задаст свой пароль." },
+  created: { title: t("admin.operator_created"), sub: t("admin.password_was_generated_shown_once") },
+  reset: { title: t("admin.password_reset"), sub: t("admin.operator_s_active_sessions_were") },
 } as const;
 
 export function EmployeePasswordDialog({ issued, onClose }: { issued: IssuedPassword; onClose: () => void }) {
@@ -29,7 +30,7 @@ export function EmployeePasswordDialog({ issued, onClose }: { issued: IssuedPass
       await resetEmployeePassword(employee.id, "mail");
       setSent(true);
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Не удалось отправить письмо");
+      setError(caught instanceof Error ? caught.message : t("admin.could_not_send_email"));
     } finally {
       setSending(false);
     }
@@ -54,28 +55,28 @@ export function EmployeePasswordDialog({ issued, onClose }: { issued: IssuedPass
             </span>
           </div>
           <label className="employee-password-field">
-            <span>Пароль первичного доступа</span>
+            <span>{t("admin.first_access_password")}</span>
             <span className="employee-password-value">
               <code>{masked ? "•".repeat(issued.password.length) : issued.password}</code>
-              <button className="employee-password-mask" type="button" title={masked ? "Показать" : "Скрыть"} aria-label={masked ? "Показать" : "Скрыть"} onClick={() => setMasked((value) => !value)}>
+              <button className="employee-password-mask" type="button" title={masked ? t("common.show") : t("common.hide")} aria-label={masked ? t("common.show") : t("common.hide")} onClick={() => setMasked((value) => !value)}>
                 <Icon name={masked ? "eyeOff" : "eye"} size={16} strokeWidth={1.8} />
               </button>
-              <CopyButton className="employee-password-copy" label="Копировать" value={issued.password} />
+              <CopyButton className="employee-password-copy" label={t("common.copy")} value={issued.password} />
             </span>
           </label>
           <div className="employee-password-warning">
             <Icon name="warning" size={17} strokeWidth={1.9} />
-            <p>Пароль показывается один раз и на сервере не хранится в открытом виде. Скопируйте и передайте сотруднику лично — при первом входе он сменит его сам. Если окно закрыть, останется только сбросить пароль заново.</p>
+            <p>{t("admin.password_shown_once_not_stored")}</p>
           </div>
           <button className="employee-password-mail" type="button" disabled={sending || sent} onClick={() => void sendByMail()}>
             <Icon name="mail" size={14} strokeWidth={1.8} />
-            {sent ? "Письмо отправлено" : sending ? "Отправка…" : "Отправить на почту вместо этого"}
+            {sent ? t("admin.email_sent") : sending ? t("common.sending") : t("admin.send_by_email_instead")}
           </button>
           {error && <div className="employees-error"><Icon name="alert" size={16} strokeWidth={1.8} />{error}</div>}
         </div>
         <footer>
-          <small>Действие записано в аудит</small>
-          <button className="primary-button employee-dialog-primary" type="button" onClick={onClose}>Скопировал, закрыть</button>
+          <small>{t("admin.action_recorded_audit_log")}</small>
+          <button className="primary-button employee-dialog-primary" type="button" onClick={onClose}>{t("admin.copied_close")}</button>
         </footer>
       </section>
     </div>

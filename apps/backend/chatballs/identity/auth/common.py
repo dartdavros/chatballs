@@ -1,6 +1,7 @@
 from django.conf import settings
 from rest_framework.request import Request
 
+from chatballs.i18n import current_language
 from chatballs.identity.avatars import own_avatar_url
 from chatballs.identity.models import HumanUser, Organization, OrganizationMembership
 from chatballs.identity.policy import get_effective_access
@@ -62,6 +63,12 @@ def _user_payload(user: HumanUser) -> dict[str, object]:
         "deliveryMode": settings.CHATBALLS_DELIVERY_MODE,
         "uiTheme": user.ui_theme,
         "uiAccent": user.ui_accent,
+        # Личный выбор языка: пустая строка — «как в организации». Отдельно
+        # отдаётся язык, на котором интерфейс открывается прямо сейчас, — он
+        # уже разрешён по цепочке профиль → организация → установка, и
+        # фронтенду не нужно повторять это правило у себя.
+        "uiLanguage": user.ui_language,
+        "language": current_language(),
         "avatarUrl": own_avatar_url(user),
         "memberships": memberships,
     }

@@ -1,11 +1,12 @@
 import { Icon } from "../../../shared/icons";
 import { EmptyState } from "../../../shared/ui";
 import type { ClientDetailVm } from "./model";
+import { t } from "../../../i18n";
 
 // Вкладка «Диалоги» (кадр K4): тема и превью · агент · канал · группа ·
 // статус · дата. Клик открывает диалог в чате.
 export function SalesClientDialogsTab({ dialogs, openConversation }: { dialogs: ClientDetailVm["dialogs"]; openConversation: (conversationId: number) => void }) {
-  if (dialogs.length === 0) return <EmptyState title="У контакта ещё нет диалогов" />;
+  if (dialogs.length === 0) return <EmptyState title={t("sales.contact_has_no_conversations_yet")} />;
   return (
     <div className="sales-client-dialogs">
       {dialogs.map((dialog) => (
@@ -22,7 +23,7 @@ export function SalesClientDialogsTab({ dialogs, openConversation }: { dialogs: 
             {dialog.channelLabel && <em>· {dialog.channelLabel}</em>}
           </span>
           <span className="sales-client-dialog-group">
-            {dialog.groupName ? <><i style={{ background: dialog.groupColor }} />{dialog.groupName}</> : <em>Без группы</em>}
+            {dialog.groupName ? <><i style={{ background: dialog.groupColor }} />{dialog.groupName}</> : <em>{t("common.no_group")}</em>}
           </span>
           <b style={{ background: dialog.modeBg, color: dialog.modeColor }}>{dialog.modeLabel}</b>
           <small>{dialog.time}</small>

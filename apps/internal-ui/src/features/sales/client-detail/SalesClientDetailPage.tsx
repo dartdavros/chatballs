@@ -9,6 +9,7 @@ import { SalesClientHeader } from "./SalesClientHeader";
 import { SalesClientIdentitiesTab } from "./SalesClientIdentitiesTab";
 import { SalesClientOverviewTab } from "./SalesClientOverviewTab";
 import { useClientDetail } from "./useClientDetail";
+import { t } from "../../../i18n";
 
 // Карточка контакта (кадры K3–K5): возврат к списку, шапка, вкладки
 // Обзор · Диалоги · Идентификаторы · Аудит.
@@ -17,11 +18,11 @@ export function SalesClientDetailPage({ contactId, canEdit = false, canMerge = f
   const { client, loading, error, save, merge } = useClientDetail(contactId);
 
   if (loading) return <div className="sales-client-page"><LoadingState /></div>;
-  if (error || !client) return <div className="sales-client-page"><EmptyState title="Не удалось загрузить контакт" /></div>;
+  if (error || !client) return <div className="sales-client-page"><EmptyState title={t("sales.could_not_load_contact")} /></div>;
 
   return (
     <div className="sales-client-page">
-      <BackLink label="Контакты" onClick={openClients} />
+      <BackLink label={t("common.contacts")} onClick={openClients} />
       <SalesClientHeader client={client} canEdit={canEdit} openConversation={openConversation} onSave={save} />
       <UnderlineTabs className="sales-client-detail-tabs" items={clientDetailTabsOf(client)} value={tab} onChange={setTab} />
       {tab === "overview" && <SalesClientOverviewTab client={client} openConversation={openConversation} />}

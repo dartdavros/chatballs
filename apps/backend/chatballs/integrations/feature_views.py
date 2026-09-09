@@ -11,6 +11,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from chatballs.api.permissions import HasCapability
+from chatballs.i18n import t
 from chatballs.identity.audit import record_audit_event
 from chatballs.integrations.features import supports_calls
 from chatballs.integrations.models import Integration, IntegrationKind
@@ -50,7 +51,7 @@ class CommunicationSettingsView(APIView):
         organization = request.tenant_context.organization
         items = request.data.get("items")
         if not isinstance(items, list):
-            return Response({"detail": "Ожидается список items"}, status=400)
+            return Response({"detail": t("settings.items_list_expected")}, status=400)
         by_id = {i.id: i for i in _entry_points(organization)}
         changed: list[dict[str, object]] = []
         for raw in items:
@@ -58,7 +59,7 @@ class CommunicationSettingsView(APIView):
                 continue
             integration = by_id.get(raw.get("id"))
             if integration is None:
-                return Response({"detail": "Точка входа не найдена"}, status=404)
+                return Response({"detail": t("settings.entry_point_not_found")}, status=404)
             fields: list[str] = []
             for key, attr in (("voiceMessages", "voice_messages_enabled"), ("audioCalls", "audio_calls_enabled"), ("videoCalls", "video_calls_enabled")):
                 if key in raw:

@@ -4,7 +4,6 @@ import { DecisionDialog } from "../../../shared/DecisionDialog";
 import { Icon } from "../../../shared/icons";
 import { LoadingState } from "../../../shared/ui";
 import { Button } from "../../../shared/ui-controls";
-import { pluralRu } from "../../../shared/utils";
 import {
   buildCategoryTree,
   planCategoryDrop,
@@ -18,6 +17,7 @@ import {
   updateKnowledgeCategory,
 } from "./model";
 import { useKnowledgeCategories } from "./useKnowledgeCategories";
+import { t, tn } from "../../../i18n";
 
 // Категории знаний (дизайн-базлайн v2, кадр KB7): отдельный экран, а не
 // модалка — дерево строками с перетаскиванием, инлайн-переименованием и
@@ -31,17 +31,17 @@ function flatten(nodes: ManagedContentCategoryNode[], depth = 0): Row[] {
 
 /** «18 знаний · 2 вложенные» — подпись строки категории. */
 function countLabel(node: ManagedContentCategoryNode): string {
-  if (node.count === 0 && node.children.length === 0) return "пусто";
-  const knowledge = pluralRu(node.count, ["знание", "знания", "знаний"]);
+  if (node.count === 0 && node.children.length === 0) return t("ai.empty");
+  const knowledge = tn("plural.knowledge", node.count);
   if (node.children.length === 0) return knowledge;
-  return `${knowledge} · ${pluralRu(node.children.length, ["вложенная", "вложенные", "вложенных"])}`;
+  return `${knowledge} · ${tn("plural.nested", node.children.length)}`;
 }
 
 /** Почему нельзя удалить: системная, есть вложенные, есть материалы. */
 function deleteBlock(node: ManagedContentCategoryNode): string | null {
-  if (node.isSystem) return "системная категория";
-  if (node.children.length > 0) return "есть вложенные категории";
-  if (node.count > 0) return "категория не пуста";
+  if (node.isSystem) return t("ai.system_category");
+  if (node.children.length > 0) return t("ai.has_nested_categories");
+  if (node.count > 0) return t("ai.category_not_empty");
   return null;
 }
 
@@ -94,7 +94,7 @@ export function KnowledgeCategoriesPage({
       cancel();
       await catalog.reload();
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Не удалось изменить категории");
+      setError(caught instanceof Error ? caught.message : t("shared.could_not_change_categories"));
     } finally {
       setBusy(false);
     }
@@ -124,11 +124,11 @@ export function KnowledgeCategoriesPage({
     <section className="knowledge-card">
       <div className="knowledge-card-head is-plain">
         <nav className="knowledge-breadcrumbs">
-          <button className="link is-strong" type="button" onClick={() => setRoute("knowledge")}>База знаний</button>
-          <span><span className="knowledge-crumb-sep">/</span><b>Категории</b></span>
+          <button className="link is-strong" type="button" onClick={() => setRoute("knowledge")}>{t("common.knowledge_base")}</button>
+          <span><span className="knowledge-crumb-sep">/</span><b>{t("common.categories")}</b></span>
         </nav>
-        <h2>Категории</h2>
-        <p>Дерево до трёх уровней. Перетащите строку, чтобы сменить родителя или порядок.</p>
+        <h2>{t("common.categories")}</h2>
+        <p>{t("ai.tree_up_three_levels_deep")}</p>
       </div>
 
       <div className="knowledge-plain-body">
@@ -151,7 +151,7 @@ export function KnowledgeCategoriesPage({
                       drop(node.id, dropPosition(event, Boolean(node.isSystem)));
                     }}
                   >
-                    <span className="knowledge-category-grip" title="Перетащить"><Icon name="grip" size={15} strokeWidth={2} /></span>
+                    <span className="knowledge-category-grip" title={t("ai.drag")}><Icon name="grip" size={15} strokeWidth={2} /></span>
                     {editing ? (
                       <>
                         <input
@@ -176,23 +176,21 @@ export function KnowledgeCategoriesPage({
                             if (!name || name === node.name) cancel();
                             else void run(() => updateKnowledgeCategory(node.id, { name }));
                           }}
-                        >
-                          Готово
-                        </button>
-                        <button className="knowledge-category-cancel" type="button" onClick={cancel}>Отмена</button>
+                        >{t("common.done")}</button>
+                        <button className="knowledge-category-cancel" type="button" onClick={cancel}>{t("common.cancel")}</button>
                       </>
                     ) : (
                       <>
                         <span className="knowledge-category-name">
                           <strong style={{ fontWeight: depth === 0 ? 600 : 500 }}>{node.name}</strong>
-                          {node.isSystem && <small className="knowledge-category-tag">системная</small>}
+                          {node.isSystem && <small className="knowledge-category-tag">{t("ai.system")}</small>}
                         </span>
                         <small className="knowledge-category-count">{countLabel(node)}</small>
                         {canManage && (
                           <span className="knowledge-category-actions">
                             <button
                               disabled={depth >= 2}
-                              title={depth >= 2 ? "Глубже трёх уровней категории не вкладываются" : "Добавить вложенную"}
+                              title={depth >= 2 ? t("ai.categories_do_not_nest_deeper") : t("ai.add_nested_one")}
                               type="button"
                               onClick={() => { setEditingId(null); setCreateParentId(node.id); setDraftName(""); }}
                             >
@@ -200,7 +198,7 @@ export function KnowledgeCategoriesPage({
                             </button>
                             <button
                               disabled={Boolean(node.isSystem)}
-                              title={node.isSystem ? "Системную категорию нельзя переименовать" : "Переименовать"}
+                              title={node.isSystem ? t("ai.system_category_cannot_renamed") : t("ai.rename")}
                               type="button"
                               onClick={() => { setCreateParentId(undefined); setEditingId(node.id); setDraftName(node.name); }}
                             >
@@ -208,7 +206,7 @@ export function KnowledgeCategoriesPage({
                             </button>
                             <button
                               className={`knowledge-category-delete${block ? " is-blocked" : ""}`}
-                              title={block ? `Удалить нельзя: ${block}` : "Удалить категорию"}
+                              title={block ? t("ai.cannot_delete_because", { reason: block }) : t("ai.delete_category")}
                               type="button"
                               onClick={() => (block
                                 ? setBlocked({ name: node.name, reason: block })
@@ -226,7 +224,7 @@ export function KnowledgeCategoriesPage({
                       <span className="knowledge-category-grip" />
                       <input
                         autoFocus
-                        placeholder="Название категории"
+                        placeholder={t("shared.category_name")}
                         value={draftName}
                         onChange={(event) => setDraftName(event.target.value)}
                         onKeyDown={(event) => {
@@ -234,8 +232,8 @@ export function KnowledgeCategoriesPage({
                           if (event.key === "Escape") cancel();
                         }}
                       />
-                      <button className="knowledge-category-save" disabled={!draftName.trim()} type="button" onClick={saveCreate}>Готово</button>
-                      <button className="knowledge-category-cancel" type="button" onClick={cancel}>Отмена</button>
+                      <button className="knowledge-category-save" disabled={!draftName.trim()} type="button" onClick={saveCreate}>{t("common.done")}</button>
+                      <button className="knowledge-category-cancel" type="button" onClick={cancel}>{t("common.cancel")}</button>
                     </div>
                   )}
                 </div>
@@ -247,7 +245,7 @@ export function KnowledgeCategoriesPage({
                 <span className="knowledge-category-grip" />
                 <input
                   autoFocus
-                  placeholder="Название категории"
+                  placeholder={t("shared.category_name")}
                   value={draftName}
                   onChange={(event) => setDraftName(event.target.value)}
                   onKeyDown={(event) => {
@@ -255,35 +253,34 @@ export function KnowledgeCategoriesPage({
                     if (event.key === "Escape") cancel();
                   }}
                 />
-                <button className="knowledge-category-save" disabled={!draftName.trim()} type="button" onClick={saveCreate}>Готово</button>
-                <button className="knowledge-category-cancel" type="button" onClick={cancel}>Отмена</button>
+                <button className="knowledge-category-save" disabled={!draftName.trim()} type="button" onClick={saveCreate}>{t("common.done")}</button>
+                <button className="knowledge-category-cancel" type="button" onClick={cancel}>{t("common.cancel")}</button>
               </div>
             )}
 
             {canManage && (
               <div className="knowledge-categories-foot">
                 <button type="button" onClick={() => { setEditingId(null); setCreateParentId(null); setDraftName(""); }}>
-                  <Icon name="plus" size={14} strokeWidth={2} />Категория верхнего уровня
-                </button>
+                  <Icon name="plus" size={14} strokeWidth={2} />{t("ai.top_level_category")}</button>
               </div>
             )}
           </div>
 
           <div className="knowledge-categories-side">
             <div className="knowledge-rules-card">
-              <strong>Правила</strong>
+              <strong>{t("ai.rules")}</strong>
               <ul>
-                <li>Имя уникально внутри родителя.</li>
-                <li>Категорию нельзя перенести внутрь себя.</li>
-                <li>Удаление — только для пустой категории без вложенных.</li>
-                <li>«Без категории» системная: не переименовывается и не удаляется.</li>
+                <li>{t("ai.name_unique_within_its_parent")}</li>
+                <li>{t("ai.category_cannot_moved_inside_itself")}</li>
+                <li>{t("ai.only_empty_category_with_nothing")}</li>
+                <li>{t("ai.no_category_system_one_cannot")}</li>
               </ul>
             </div>
             {(blocked || error) && (
               <div className="knowledge-warning-card">
                 <Icon name="alert" size={16} strokeWidth={2} />
                 <span>
-                  {error || `«${blocked?.name}» удалить нельзя: ${blocked?.reason}. Сначала перенесите содержимое.`}
+                  {error || t("ai.cannot_delete_named", { name: blocked?.name ?? "", reason: blocked?.reason ?? "" })}
                 </span>
               </div>
             )}
@@ -296,10 +293,10 @@ export function KnowledgeCategoriesPage({
         onClose={() => setDeleting(null)}
         tone="danger"
         icon="trash"
-        title="Удалить категорию?"
-        description={deleting ? `Категория «${deleting.name}» пуста и будет удалена.` : ""}
+        title={t("shared.delete_category")}
+        description={deleting ? t("ai.category_empty_will_delete", { name: deleting.name }) : ""}
         actions={<>
-          <Button variant="secondary" onClick={() => setDeleting(null)}>Отмена</Button>
+          <Button variant="secondary" onClick={() => setDeleting(null)}>{t("common.cancel")}</Button>
           <Button
             variant="danger-outline"
             disabled={busy}
@@ -308,9 +305,7 @@ export function KnowledgeCategoriesPage({
               setDeleting(null);
               if (target) void run(() => deleteKnowledgeCategory(target.id));
             }}
-          >
-            Удалить
-          </Button>
+          >{t("common.delete")}</Button>
         </>}
       />
     </section>

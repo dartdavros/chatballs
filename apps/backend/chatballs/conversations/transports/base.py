@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 
 from django.conf import settings
 
+from chatballs.i18n import t
 from chatballs.integrations.outbound import ensure_downloadable
 from chatballs.integrations.proxy import build_opener
 
@@ -104,7 +105,7 @@ def download_bytes(
     with opener.open(request, timeout=settings.CHATBALLS_AI_REQUEST_TIMEOUT) as response:
         data = response.read(max_bytes + 1)
     if len(data) > max_bytes:
-        raise ValueError("Файл больше допустимого размера")
+        raise ValueError(t("conversations.file_too_large"))
     return data
 
 

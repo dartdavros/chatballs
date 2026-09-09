@@ -24,9 +24,14 @@ from chatballs.channels import services as channel_services
 from chatballs.channels.models import Channel
 from chatballs.channels.runtime import run_channel_turn
 from chatballs.channels.selectors import channel_for_context
+from chatballs.i18n import t
 from chatballs.identity.audit import record_audit_event
 
-AGENT_NOT_FOUND = {"detail": "Агент не найден"}
+
+# Функция, а не константа: язык у каждого запроса свой, а константа собралась бы
+# один раз при импорте — на языке, который случайно стоял в тот момент.
+def agent_not_found() -> dict[str, str]:
+    return {"detail": t("ai.agent_not_found")}
 
 
 def _validation_detail(error: ValidationError) -> str:
@@ -157,7 +162,7 @@ class AgentCardDetailView(APIView):
         try:
             channel = _load(request, agent_id)
         except Channel.DoesNotExist:
-            return Response(AGENT_NOT_FOUND, status=404)
+            return Response(agent_not_found(), status=404)
         from chatballs.ai.agent_card import ensure_channel_agent
 
         ensure_channel_agent(channel)
@@ -167,7 +172,7 @@ class AgentCardDetailView(APIView):
         try:
             channel = _load(request, agent_id)
         except Channel.DoesNotExist:
-            return Response(AGENT_NOT_FOUND, status=404)
+            return Response(agent_not_found(), status=404)
         body = request.data if isinstance(request.data, dict) else {}
         try:
             channel = update_agent_card(
@@ -182,7 +187,7 @@ class AgentCardDetailView(APIView):
         try:
             channel = _load(request, agent_id)
         except Channel.DoesNotExist:
-            return Response(AGENT_NOT_FOUND, status=404)
+            return Response(agent_not_found(), status=404)
         name = channel.name
         try:
             delete_agent_card(context=request.tenant_context, channel=channel)
@@ -201,7 +206,7 @@ class _AgentCardStatusView(APIView):
         try:
             channel = _load(request, agent_id)
         except Channel.DoesNotExist:
-            return Response(AGENT_NOT_FOUND, status=404)
+            return Response(agent_not_found(), status=404)
         try:
             channel = set_agent_card_active(
                 context=request.tenant_context,
@@ -234,10 +239,10 @@ class AgentCardTestChatView(APIView):
                 capability="ai.view",
             )
         except Channel.DoesNotExist:
-            return Response(AGENT_NOT_FOUND, status=404)
+            return Response(agent_not_found(), status=404)
         message = str(request.data.get("message", "")).strip()
         if not message:
-            return Response({"detail": "Пустое сообщение"}, status=400)
+            return Response({"detail": t("ai.empty_message")}, status=400)
         history = request.data.get("history") or []
         if not isinstance(history, list):
             return Response({"detail": "history must be a list"}, status=400)
@@ -263,7 +268,7 @@ class AgentCardConnectionsView(APIView):
         try:
             channel = _load(request, agent_id)
         except Channel.DoesNotExist:
-            return Response(AGENT_NOT_FOUND, status=404)
+            return Response(agent_not_found(), status=404)
         data = request.data if isinstance(request.data, dict) else {}
         integration_id = data.get("integrationId")
         if isinstance(integration_id, bool) or not isinstance(integration_id, int):
@@ -305,7 +310,7 @@ class AgentCardConnectionDetailView(APIView):
         try:
             channel = _load(request, agent_id)
         except Channel.DoesNotExist:
-            return Response(AGENT_NOT_FOUND, status=404)
+            return Response(agent_not_found(), status=404)
         try:
             channel_services.unbind_connection(
                 context=request.tenant_context,

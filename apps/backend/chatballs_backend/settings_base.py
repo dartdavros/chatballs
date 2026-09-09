@@ -5,6 +5,8 @@ from pathlib import Path
 
 from django.core.exceptions import ImproperlyConfigured
 
+from chatballs.i18n.languages import DEFAULT_LANGUAGE
+from chatballs.i18n.languages import LANGUAGES as CHATBALLS_LANGUAGES
 from chatballs_backend.settings_database import build_databases
 from chatballs_backend.settings_env import env_bool, env_list, env_secret
 from chatballs_backend.settings_storage import build_storage_settings
@@ -85,6 +87,9 @@ MIDDLEWARE = [
     "chatballs.identity.middleware.SessionActivityMiddleware",
     "chatballs.events.middleware.CorrelationIdMiddleware",
     "chatballs.tenancy.middleware.TenantContextMiddleware",
+    # Последней в цепочке — ближе всех к вьюхе: язык организации известен
+    # только после того, как TenantContextMiddleware её определил.
+    "chatballs.i18n.middleware.LanguageMiddleware",
 ]
 
 TEMPLATES = [
@@ -141,7 +146,13 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "chatballs.identity.password_validation.PasswordComplexityValidator"},
 ]
 
-LANGUAGE_CODE = "ru-ru"
+# Язык — настройка продукта, а не окружения: его выбирает владелец в
+# «Настройках» и каждый сотрудник в профиле, а LANGUAGE_CODE остаётся только
+# последним рубежом для кода, который выполняется вне запроса (команды,
+# фоновые задачи). Список языков общий с каталогом chatballs.i18n, чтобы
+# добавление языка не требовало править настройки в двух местах.
+LANGUAGE_CODE = DEFAULT_LANGUAGE
+LANGUAGES = CHATBALLS_LANGUAGES
 TIME_ZONE = "Europe/Moscow"
 USE_I18N = True
 USE_TZ = True

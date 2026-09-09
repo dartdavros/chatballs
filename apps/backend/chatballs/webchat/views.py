@@ -14,6 +14,7 @@ from chatballs.conversations.attachment_views import (
 )
 from chatballs.conversations.models import Message, MessageKind
 from chatballs.conversations.voice_views import ALLOWED_AUDIO_TYPES, MAX_VOICE_BYTES
+from chatballs.i18n import t
 from chatballs.identity.models import Organization
 from chatballs.integrations.features import voice_messages_allowed
 from chatballs.integrations.models import IntegrationStatus
@@ -136,15 +137,15 @@ class WebchatSessionView(_Public):
         channel_code = str(request.data.get("channel", ""))
         with _resolved_web_widget(widget_key, channel_code) as (context, widget):
             if context is None or widget is None:
-                return Response({"detail": "Виджет недоступен"}, status=404)
+                return Response({"detail": t("webchat.widget_unavailable")}, status=404)
             if (
                 not widget.integration.channel.allow_anonymous_sessions
                 or not services.origin_allowed(widget, host_origin(request))
             ):
-                return Response({"detail": "Виджет недоступен"}, status=404)
+                return Response({"detail": t("webchat.widget_unavailable")}, status=404)
             result = services.issue_session(context=context, widget=widget)
             if result is None:
-                return Response({"detail": "Виджет недоступен"}, status=404)
+                return Response({"detail": t("webchat.widget_unavailable")}, status=404)
             return Response(result, status=201)
 
 
@@ -155,17 +156,17 @@ class WebchatMessagesView(_PublicSession):
     def post(self, request: Request) -> Response:
         with _resolved_web_session(request) as (_context, session):
             if session is None:
-                return Response({"detail": "Сессия не найдена"}, status=401)
+                return Response({"detail": t("webchat.session_not_found")}, status=401)
             upload = request.FILES.get("audio")
             if upload is not None:
                 # Голосовое из виджета (дизайн-базлайн v2, кадр H).
                 if not voice_messages_allowed(session.connection):
-                    return Response({"detail": "Голосовые отключены"}, status=400)
+                    return Response({"detail": t("webchat.voice_off")}, status=400)
                 if upload.size > MAX_VOICE_BYTES:
-                    return Response({"detail": "Аудио больше 10 МБ"}, status=400)
+                    return Response({"detail": t("conversations.audio_too_large")}, status=400)
                 content_type = (upload.content_type or "audio/webm").split(";")[0]
                 if content_type not in ALLOWED_AUDIO_TYPES:
-                    return Response({"detail": "Неподдерживаемый формат аудио"}, status=400)
+                    return Response({"detail": t("conversations.audio_format_unsupported")}, status=400)
                 try:
                     duration = max(0, int(request.data.get("duration", 0)))
                 except (TypeError, ValueError):
@@ -192,14 +193,14 @@ class WebchatMessagesView(_PublicSession):
                 return Response({"ok": True}, status=201)
             text = str(request.data.get("text", "")).strip()
             if not text:
-                return Response({"detail": "Пустое сообщение"}, status=400)
+                return Response({"detail": t("ai.empty_message")}, status=400)
             services.post_message(session, text[:4000])
             return Response({"ok": True}, status=201)
 
     def get(self, request: Request) -> Response:
         with _resolved_web_session(request) as (_context, session):
             if session is None:
-                return Response({"detail": "Сессия не найдена"}, status=401)
+                return Response({"detail": t("webchat.session_not_found")}, status=401)
             try:
                 since = int(request.GET.get("since", "0") or 0)
             except ValueError:
@@ -211,7 +212,7 @@ class WebchatMessageAudioView(_PublicSession):
     def get(self, request: Request, message_id: int) -> Response | FileResponse:
         with _resolved_web_session(request) as (_context, session):
             if session is None:
-                return Response({"detail": "Сессия не найдена"}, status=401)
+                return Response({"detail": t("webchat.session_not_found")}, status=401)
             message = (
                 Message.objects.filter(
                     id=message_id,
@@ -223,7 +224,7 @@ class WebchatMessageAudioView(_PublicSession):
                 .first()
             )
             if message is None:
-                return Response({"detail": "Сообщение не найдено"}, status=404)
+                return Response({"detail": t("conversations.message_not_found")}, status=404)
             response = FileResponse(
                 message.audio.open("rb"),
                 content_type=message.audio_content_type or "audio/ogg",
@@ -236,7 +237,7 @@ class WebchatMessageAttachmentView(_PublicSession):
     def get(self, request: Request, message_id: int) -> Response | FileResponse:
         with _resolved_web_session(request) as (_context, session):
             if session is None:
-                return Response({"detail": "Сессия не найдена"}, status=401)
+                return Response({"detail": t("webchat.session_not_found")}, status=401)
             message = (
                 Message.objects.filter(
                     id=message_id,
@@ -248,7 +249,7 @@ class WebchatMessageAttachmentView(_PublicSession):
                 .first()
             )
             if message is None:
-                return Response({"detail": "Сообщение не найдено"}, status=404)
+                return Response({"detail": t("conversations.message_not_found")}, status=404)
             response = attachment_response(message, inline="inline" in request.GET)
             response["Cache-Control"] = "private, max-age=3600"
             return response
@@ -258,10 +259,10 @@ class WebchatContactView(_PublicSession):
     def post(self, request: Request) -> Response:
         with _resolved_web_session(request) as (_context, session):
             if session is None:
-                return Response({"detail": "Сессия не найдена"}, status=401)
+                return Response({"detail": t("webchat.session_not_found")}, status=401)
             phone = services.normalize_phone(str(request.data.get("phone", "")))
             if not phone:
-                return Response({"detail": "Некорректный номер телефона"}, status=400)
+                return Response({"detail": t("webchat.invalid_phone")}, status=400)
             services.post_contact(session, phone)
             return Response({"ok": True}, status=201)
 
@@ -274,11 +275,11 @@ class WebchatCallOpenView(_PublicSession):
 
         with _resolved_web_session(request) as (_context, session):
             if session is None:
-                return Response({"detail": "Сессия не найдена"}, status=401)
+                return Response({"detail": t("webchat.session_not_found")}, status=401)
             try:
                 resolved = open_call_for_identity(identity=session.identity)
             except CallTokenError:
-                return Response({"detail": "Активное приглашение не найдено"}, status=404)
+                return Response({"detail": t("webchat.no_active_invite")}, status=404)
             response = Response(
                 {
                     "call": public_invite_payload(resolved.invite.call_session, resolved.invite.expires_at),
@@ -297,11 +298,11 @@ class WebchatCallDeclineView(_PublicSession):
 
         with _resolved_web_session(request) as (_context, session):
             if session is None:
-                return Response({"detail": "Сессия не найдена"}, status=401)
+                return Response({"detail": t("webchat.session_not_found")}, status=401)
             try:
                 decline_call_for_identity(identity=session.identity)
             except CallTokenError:
-                return Response({"detail": "Активное приглашение не найдено"}, status=404)
+                return Response({"detail": t("webchat.no_active_invite")}, status=404)
             except CallConflict as error:
                 return Response({"detail": str(error)}, status=409)
             return Response({"ok": True})

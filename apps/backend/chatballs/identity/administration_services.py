@@ -9,6 +9,8 @@ from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import UploadedFile
 from django.db import transaction
 
+from chatballs.i18n import t
+from chatballs.i18n.languages import normalize_language
 from chatballs.identity.models import Organization
 from chatballs.tenancy.context import TenantContext
 from chatballs.tenancy.storage import adjust_storage_usage
@@ -26,27 +28,36 @@ class OrganizationSettingsInput:
     name: str
     timezone: str
     currency: str
+    # Пустая строка — «как в установке»: организация не обязана выбирать язык,
+    # и владелец, который его не трогал, не должен получить жёсткий русский
+    # после того, как язык установки сменили.
+    language: str = ""
 
 
 def _validate_input(data: OrganizationSettingsInput) -> OrganizationSettingsInput:
     name = data.name.strip()
     timezone = data.timezone.strip()
     currency = data.currency.strip().upper()
+    language = normalize_language(data.language)
+    if data.language.strip() and not language:
+        raise ValidationError({"language": t("settings.language_unsupported")})
     if not name:
-        raise ValidationError({"name": "Укажите название организации"})
+        raise ValidationError({"name": t("admin.organization_name_required")})
     if len(name) > 255:
-        raise ValidationError({"name": "Название не должно превышать 255 символов"})
+        raise ValidationError({"name": t("admin.name_too_long")})
     try:
         ZoneInfo(timezone)
     except (ValueError, ZoneInfoNotFoundError) as error:
         raise ValidationError(
-            {"timezone": "Укажите корректный часовой пояс"}
+            {"timezone": t("admin.invalid_timezone")}
         ) from error
     if currency != "RUB":
         raise ValidationError(
-            {"currency": "Поддерживается только российский рубль (RUB)"}
+            {"currency": t("admin.currency_rub_only")}
         )
-    return OrganizationSettingsInput(name=name, timezone=timezone, currency=currency)
+    return OrganizationSettingsInput(
+        name=name, timezone=timezone, currency=currency, language=language
+    )
 
 
 @transaction.atomic
@@ -62,7 +73,8 @@ def update_organization_settings(
     organization.name = clean.name
     organization.timezone = clean.timezone
     organization.currency = clean.currency
-    organization.save(update_fields=["name", "timezone", "currency"])
+    organization.language = clean.language
+    organization.save(update_fields=["name", "timezone", "currency", "language"])
     return organization
 
 
@@ -84,7 +96,7 @@ def replace_organization_logo(
 ) -> Organization:
     data = upload.read()
     if not data:
-        raise ValidationError({"file": "Выберите файл логотипа"})
+        raise ValidationError({"file": t("admin.choose_logo_file")})
     if len(data) > MAX_LOGO_BYTES:
         raise ValidationError({"file": "Размер логотипа не должен превышать 2 МБ"})
     detected = _image_type(data)

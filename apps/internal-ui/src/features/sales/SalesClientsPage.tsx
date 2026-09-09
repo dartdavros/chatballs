@@ -10,6 +10,7 @@ import { fetchClientsForExport, fetchClientsTotal } from "./clients/api";
 import { exportClientsCsv } from "./clients/exportClientsCsv";
 import { toSalesClient, toSalesClientRow } from "./clients/model";
 import { useSalesClients } from "./clients/useSalesClients";
+import { t } from "../../i18n";
 
 // «Контакты» (дизайн-базлайн v2, кадры K1/K2/S1). Страница списка — серверная.
 export function SalesClientsPage({ openClient, openIntegrations }: { openClient: (id: number) => void; openIntegrations: () => void }) {
@@ -34,7 +35,7 @@ export function SalesClientsPage({ openClient, openIntegrations }: { openClient:
     return <div className="sales-clients-page"><LoadingState /></div>;
   }
   if (clients.errorText) {
-    return <div className="sales-clients-page"><EmptyState title="Не удалось загрузить контакты" /></div>;
+    return <div className="sales-clients-page"><EmptyState title={t("sales.could_not_load_contacts")} /></div>;
   }
 
   return (

@@ -3,10 +3,10 @@ import { useState } from "react";
 
 import { Icon } from "../../../shared/icons";
 import { Button } from "../../../shared/ui-controls";
-import { pluralRu } from "../../../shared/utils";
 import { categoryRows } from "./knowledgeLibraryModel";
 import { knowledgeCategoryPath } from "./knowledgeTree";
 import type { KnowledgeCategory } from "./types";
+import { t, tn } from "../../../i18n";
 
 // «Переместить в категорию» из панели массовых операций (кадр KB2). Категории
 // не создаются на лету: список — то же дерево, что и слева в библиотеке.
@@ -32,17 +32,17 @@ export function KnowledgeCategoryDialog({
       <header className="knowledge-agent-dialog-head">
         <div className="knowledge-agent-dialog-title">
           <div>
-            <h3>Переместить в категорию</h3>
-            <p>Выбрано {pluralRu(count, ["знание", "знания", "знаний"])}. Категория задаёт размещение в дереве, на ответы агента она не влияет.</p>
+            <h3>{t("ai.move_category")}</h3>
+            <p>{t("ai.selected_category_note", { count: tn("plural.knowledge", count) })}</p>
           </div>
-          <button aria-label="Закрыть" className="knowledge-dialog-close" title="Закрыть" type="button" onClick={onCancel}>
+          <button aria-label={t("common.close")} className="knowledge-dialog-close" title={t("common.close")} type="button" onClick={onCancel}>
             <Icon name="close" size={15} strokeWidth={2.2} />
           </button>
         </div>
       </header>
 
       <div className="knowledge-agent-dialog-body">
-        <span className="knowledge-agent-dialog-label">КАТЕГОРИЯ</span>
+        <span className="knowledge-agent-dialog-label">{t("common.category")}</span>
         <div className="knowledge-move-list">
           {rows.map(({ category, depth, count: knowledgeCount }) => (
             <button
@@ -63,10 +63,8 @@ export function KnowledgeCategoryDialog({
 
       <footer className="knowledge-agent-dialog-foot">
         <span />
-        <Button variant="secondary" disabled={busy} onClick={onCancel}>Отмена</Button>
-        <Button variant="primary" disabled={busy || categoryId === null} onClick={() => categoryId !== null && onSubmit(categoryId)}>
-          Переместить
-        </Button>
+        <Button variant="secondary" disabled={busy} onClick={onCancel}>{t("common.cancel")}</Button>
+        <Button variant="primary" disabled={busy || categoryId === null} onClick={() => categoryId !== null && onSubmit(categoryId)}>{t("ai.move")}</Button>
       </footer>
     </Modal>
   );

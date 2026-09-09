@@ -18,6 +18,7 @@ import ssl
 import urllib.parse
 import urllib.request
 
+from chatballs.i18n import t
 from chatballs.integrations.outbound import OutboundUrlRejected
 
 SOCKS_SCHEMES = ("socks5", "socks5h")
@@ -158,7 +159,7 @@ def _import_socks():
 
         return socks
     except ImportError as error:
-        raise ValueError("Для SOCKS-прокси нужна зависимость PySocks (pip install PySocks)") from error
+        raise ValueError(t("settings.socks_needs_pysocks")) from error
 
 
 class _SocksHTTPConnection(http.client.HTTPConnection):

@@ -45,6 +45,11 @@ export type AuthenticatedUser = {
   memberships: OrganizationMembership[];
   uiTheme: "LIGHT" | "DARK" | "SYSTEM";
   uiAccent: string;
+  // Личный выбор языка: пустая строка — «как в организации».
+  uiLanguage: string;
+  // Язык, на котором сервер отвечает этому человеку прямо сейчас: уже
+  // разрешён по цепочке профиль → организация → установка.
+  language: string;
 };
 
 export type SessionUser = AuthenticatedUser & OrganizationMembership;

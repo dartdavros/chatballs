@@ -4,6 +4,7 @@ import { FormField, TextAreaField } from "../../shared/form-controls";
 import { Button } from "../../shared/ui-controls";
 import { shortDateTime } from "../../shared/utils";
 import { instanceError, loadInstance, patchInstance, type InstancePayload } from "./instance";
+import { t } from "../../i18n";
 
 // Relay для звонков (раздел «Голосовые и звонки»): TURN нужен, только когда
 // прямое ICE-соединение не проходит — сети со строгим NAT. Настройка живёт
@@ -27,7 +28,7 @@ export function CallsRelayCard({ canManage }: { canManage: boolean }) {
   }
 
   useEffect(() => {
-    loadInstance().then(apply).catch(() => setErrorText("Не удалось загрузить настройки relay"));
+    loadInstance().then(apply).catch(() => setErrorText(t("settings.could_not_load_relay_settings")));
   }, []);
 
   if (!current) return null;
@@ -47,7 +48,7 @@ export function CallsRelayCard({ canManage }: { canManage: boolean }) {
         },
       });
       apply(payload);
-      setMessage("Сохранено. Звонки будут использовать эти адреса relay.");
+      setMessage(t("settings.saved_calls_will_use_these"));
     } catch (error) {
       const { detail, errors } = instanceError(error);
       setErrorText(detail);
@@ -66,27 +67,26 @@ export function CallsRelayCard({ canManage }: { canManage: boolean }) {
     <form className="administration-card" onSubmit={submit}>
       <div className="settings-card-head">
         <div>
-          <strong>TURN для звонков</strong>
-          <small>Relay на случай, когда прямое соединение не проходит</small>
+          <strong>{t("settings.turn_calls")}</strong>
+          <small>{t("settings.relay_when_direct_connection_does")}</small>
         </div>
       </div>
       <p className="settings-section-note">
-        Нужен, только если звонки идут через сети со строгим NAT. Общий секрет с сервером
-        relay {current.turn.secretReady
-          ? "уже создан установкой — вводить его не нужно."
-          : "будет создан при следующем запуске стека."}
+        {t("settings.turn_note_prefix")} {current.turn.secretReady
+          ? t("settings.was_already_created_by_installation")
+          : t("settings.will_created_next_time_stack")}
       </p>
       <div className="administration-fields">
         <TextAreaField
           disabled={!canManage}
-          label="Адреса TURN — по одному в строке"
+          label={t("settings.turn_addresses_one_per_line")}
           value={urls}
           onChange={(value) => { setUrls(value); touch(); }}
         />
         <FormField
           disabled={!canManage}
           error={fieldErrors.turnTtlSeconds}
-          label="Время жизни доступа, секунд"
+          label={t("settings.access_lifetime_seconds")}
           mono
           value={ttl}
           onChange={(value) => { setTtl(value); touch(); }}
@@ -97,10 +97,10 @@ export function CallsRelayCard({ canManage }: { canManage: boolean }) {
       {canManage && (
         <div className="administration-actions">
           <small className="administration-saved">
-            {current.updatedAt ? `Сохранено ${shortDateTime(current.updatedAt)}` : "Ещё не сохранялось"}
+            {current.updatedAt ? t("time.saved_at", { time: shortDateTime(current.updatedAt) }) : t("common.never_saved_yet")}
           </small>
           <Button type="submit" variant="primary" disabled={busy}>
-            {busy ? "Сохранение" : "Сохранить"}
+            {busy ? t("common.saving") : t("common.save")}
           </Button>
         </div>
       )}

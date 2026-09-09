@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Icon } from "../../shared/icons";
 import { Button } from "../../shared/ui-controls";
 import { fetchProfileSessions, lastSeenLabel, type ProfileSession } from "./model";
+import { t } from "../../i18n";
 
 // «Активные сессии» (дизайн-базлайн v2, кадр P1): устройство, частично скрытый
 // адрес и когда сессия была активна; текущая помечена бейджем.
@@ -32,9 +33,9 @@ export function ProfileSessionsCard({ message, revoking, onRevoke }: { message: 
   return (
     <section className="profile-card sessions-card">
       <div className="sessions-head">
-        <h3>Активные сессии</h3>
+        <h3>{t("common.active_sessions")}</h3>
         <Button className="sessions-revoke" type="button" variant="danger-outline" onClick={onRevoke} disabled={revoking || items.length < 2}>
-          {revoking ? "Завершение" : "Завершить другие"}
+          {revoking ? t("profile.ending") : t("profile.end_others")}
         </Button>
       </div>
       {message && <div className="profile-message sessions">{message}</div>}
@@ -46,9 +47,9 @@ export function ProfileSessionsCard({ message, revoking, onRevoke }: { message: 
             <span className="session-icon"><Icon name={KIND_ICON[session.kind]} size={16} strokeWidth={1.9} /></span>
             <span className="session-main">
               <strong>{session.device}</strong>
-              <small>{where || "адрес неизвестен"}</small>
+              <small>{where || t("profile.address_unknown")}</small>
             </span>
-            {session.current ? <b className="session-current">текущая</b> : <small className="session-time">{seen}</small>}
+            {session.current ? <b className="session-current">{t("profile.current")}</b> : <small className="session-time">{seen}</small>}
           </div>
         );
       })}

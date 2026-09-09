@@ -10,6 +10,7 @@ import {
   type PortalAddressConfig,
   type SupportPortal,
 } from "./model";
+import { t } from "../../i18n";
 
 function configuredAddress(config: PortalAddressConfig, slug: string): string {
   const port = config.port ? `:${config.port}` : "";
@@ -23,10 +24,10 @@ function validPortalKey(value: string): boolean {
 function creationError(caught: unknown): string {
   if (caught instanceof ApiError) {
     if (caught.status === 400) {
-      return "Проверьте название и адрес портала.";
+      return t("portals.check_portal_name_address");
     }
   }
-  return "Не удалось создать портал. Повторите попытку позже.";
+  return t("portals.could_not_create_portal_try");
 }
 
 export function PortalCreateDialog({
@@ -68,12 +69,12 @@ export function PortalCreateDialog({
   }
 
   return (
-    <Modal open={open} title="Новый портал поддержки" footer={null} onCancel={onClose}>
+    <Modal open={open} title={t("portals.new_support_portal")} footer={null} onCancel={onClose}>
       <div className="portal-dialog-form">
-        <p>Портал — это публичный центр помощи с инструкциями и ответами для клиентов.</p>
-        <FormField error={fieldErrors.name} label="Название портала" value={name} onChange={setName} placeholder="Например, Центр помощи" wide />
+        <p>{t("portals.portal_public_help_centre_with")}</p>
+        <FormField error={fieldErrors.name} label={t("portals.portal_name")} value={name} onChange={setName} placeholder={t("portals.example_help_centre")} wide />
         <label className={`portal-address-field${fieldErrors.slug ? " is-invalid" : ""}`}>
-          <span>Адрес портала</span>
+          <span>{t("portals.portal_address")}</span>
           <div>
             <input
               type="text"
@@ -86,21 +87,21 @@ export function PortalCreateDialog({
             />
             <b>.{address.baseDomain}</b>
           </div>
-          <small>Используйте строчные латинские буквы, цифры и дефисы.</small>
+          <small>{t("portals.use_lowercase_latin_letters_digits")}</small>
           {fieldErrors.slug && <small className="form-field-error" role="alert">{fieldErrors.slug}</small>}
           {slug.trim() && <code>{configuredAddress(address, slug.trim())}</code>}
         </label>
         <SelectField
-          label="Основной язык"
+          label={t("portals.primary_language")}
           value={locale}
           onChange={setLocale}
-          options={[["ru", "Русский"], ["en", "English"]]}
+          options={[["ru", t("portals.russian")], ["en", "English"]]}
         />
         {error && <div className="portal-form-error">{error}</div>}
         <div className="portal-dialog-actions">
-          <Button variant="secondary" onClick={onClose}>Отмена</Button>
+          <Button variant="secondary" onClick={onClose}>{t("common.cancel")}</Button>
           <Button variant="primary" disabled={busy || !name.trim() || !portalKeyValid} onClick={() => void submit()}>
-            {busy ? "Создаём…" : "Создать портал"}
+            {busy ? t("portals.creating") : t("portals.create_portal")}
           </Button>
         </div>
       </div>

@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { Icon } from "./icons";
 import { paginationItems } from "./ui-controls";
 import "./pagination.css";
+import { t } from "../i18n";
 
 // Единственный подвал со страницами в приложении: списки порталов, статей,
 // контактов, сотрудников, агентов и журнал аудита. Страницу считает сервер —
@@ -27,7 +28,7 @@ export function Pagination({
       <span className="pager-note">{note}</span>
       <span className="pager-pages">
         <button
-          aria-label="Предыдущая страница"
+          aria-label={t("shared.previous_page")}
           className="pager-step"
           disabled={page <= 1}
           type="button"
@@ -52,7 +53,7 @@ export function Pagination({
             )
         ))}
         <button
-          aria-label="Следующая страница"
+          aria-label={t("shared.next_page")}
           className="pager-step"
           disabled={page >= pageCount}
           type="button"

@@ -8,6 +8,7 @@ from django.utils.text import slugify
 
 from chatballs.ai.indexing import reindex_portal_article
 from chatballs.conversations.transports.base import guess_content_type, safe_filename
+from chatballs.i18n import t
 from chatballs.support_portals.content_markdown import normalize_file_links
 from chatballs.support_portals.models import (
     PortalArticle,
@@ -193,7 +194,7 @@ def _category(portal: SupportPortal, category_id) -> PortalCategory:
     try:
         return portal.categories.get(id=int(category_id))
     except (PortalCategory.DoesNotExist, TypeError, ValueError) as error:
-        raise ValidationError({"categoryId": "Раздел не найден"}) from error
+        raise ValidationError({"categoryId": t("portals.section_not_found")}) from error
 
 
 def ensure_portal_editable(portal: SupportPortal) -> None:

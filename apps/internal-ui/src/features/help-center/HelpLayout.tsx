@@ -4,6 +4,7 @@ import { LogoIcon } from "../../shared/icons";
 import { HelpSearch } from "./HelpSearch";
 import { PortalWebWidget } from "./PortalWebWidget";
 import type { HelpPortal } from "./types";
+import { t } from "../../i18n";
 
 export function HelpLayout({
   portal,
@@ -45,7 +46,7 @@ export function HelpLayout({
           <span className="help-brand-mark"><LogoIcon /></span>
           <span>{portal.name}</span>
         </a>
-        <span>База знаний и поддержка</span>
+        <span>{t("portals.knowledge_base_support")}</span>
       </footer>
       {portal.webWidgetKey && <PortalWebWidget widgetKey={portal.webWidgetKey} />}
     </div>

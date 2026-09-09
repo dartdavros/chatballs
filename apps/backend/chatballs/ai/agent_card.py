@@ -22,6 +22,7 @@ from chatballs.channels.services import (
     update_channel,
 )
 from chatballs.conversations.models import LifecycleState
+from chatballs.i18n import t
 from chatballs.tenancy.context import TenantContext
 
 
@@ -170,7 +171,7 @@ def _unique_agent_code(organization_id: int, name: str) -> str:
         candidate = f"{base}-{suffix}"
         if candidate not in taken:
             return candidate
-    raise ValidationError({"name": "Не удалось подобрать уникальный код агента"})
+    raise ValidationError({"name": t("ai.agent_code_collision")})
 
 
 def ensure_channel_agent(channel: Channel) -> AIAgent:

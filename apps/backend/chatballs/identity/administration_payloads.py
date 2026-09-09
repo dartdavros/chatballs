@@ -4,12 +4,13 @@ from zoneinfo import available_timezones
 
 from django.urls import reverse
 
+from chatballs.i18n.languages import LANGUAGES
 from chatballs.identity.audit_catalog import (
-    AUDIT_RESULT_LABELS,
     audit_action_label,
     audit_category,
     audit_category_label,
     audit_object_label,
+    audit_result_label,
 )
 from chatballs.identity.models import AuditEvent, Organization
 
@@ -42,6 +43,9 @@ def organization_settings_payload(organization: Organization) -> dict[str, objec
         "name": organization.name,
         "timezone": organization.timezone,
         "currency": organization.currency,
+        # Пустая строка доезжает до интерфейса как есть: там это отдельный
+        # пункт «Как в установке», а не отсутствие значения.
+        "language": organization.language,
         "updatedAt": organization_updated_at(organization),
         "logoUrl": (
             reverse(
@@ -56,6 +60,17 @@ def organization_settings_payload(organization: Organization) -> dict[str, objec
 
 def administration_timezones() -> list[str]:
     return sorted(available_timezones())
+
+
+def administration_languages() -> list[dict[str, str]]:
+    """Языки для выпадающего списка в «Организации».
+
+    Подпись — на самом языке («Русский», «English»), а не переведённая:
+    человек ищет в списке свой язык, и «Русский» он узнает, даже когда
+    интерфейс сейчас английский.
+    """
+
+    return [{"code": code, "label": label} for code, label in LANGUAGES]
 
 
 def audit_event_payload(event: AuditEvent) -> dict[str, object]:
@@ -78,7 +93,7 @@ def audit_event_payload(event: AuditEvent) -> dict[str, object]:
         "objectType": event.object_type,
         "objectId": event.object_id,
         "result": event.result,
-        "resultLabel": AUDIT_RESULT_LABELS.get(event.result, "Неизвестно"),
+        "resultLabel": audit_result_label(event.result),
         "sourceIp": event.source_ip or "",
         "correlationId": event.correlation_id,
         "details": event.payload or {},

@@ -5,6 +5,7 @@ import { FormField, SelectField } from "../../shared/form-controls";
 import { Icon } from "../../shared/icons";
 import { shortDateTime } from "../../shared/utils";
 import { Button } from "../../shared/ui-controls";
+import { fmt, t } from "../../i18n";
 
 // «Хранилище файлов» (Настройки): по умолчанию локальный диск установки, по
 // желанию — внешнее S3-совместимое хранилище. Секреты не возвращаются с сервера:
@@ -53,9 +54,9 @@ function draftOf(payload: StoragePayload): Draft {
 function errorMessage(error: unknown): { detail: string; errors: Record<string, string> } {
   if (error && typeof error === "object" && "payload" in error) {
     const payload = (error as { payload?: { detail?: string; errors?: Record<string, string> } }).payload;
-    return { detail: payload?.detail ?? "Не удалось сохранить", errors: payload?.errors ?? {} };
+    return { detail: payload?.detail ?? t("common.could_not_save"), errors: payload?.errors ?? {} };
   }
-  return { detail: error instanceof Error ? error.message : "Не удалось сохранить", errors: {} };
+  return { detail: error instanceof Error ? error.message : t("common.could_not_save"), errors: {} };
 }
 
 export function StorageSettingsCard({ canManage }: { canManage: boolean }) {
@@ -73,7 +74,7 @@ export function StorageSettingsCard({ canManage }: { canManage: boolean }) {
     return payload.storage;
   }
 
-  useEffect(() => { void load().catch(() => setErrorText("Не удалось загрузить настройки хранилища")); }, []);
+  useEffect(() => { void load().catch(() => setErrorText(t("settings.could_not_load_storage_settings"))); }, []);
 
   // Пока идёт перенос — опрашиваем прогресс.
   useEffect(() => {
@@ -98,14 +99,14 @@ export function StorageSettingsCard({ canManage }: { canManage: boolean }) {
         const payload = await api<{ storage: StoragePayload }>(BASE, { method: "PATCH", body: JSON.stringify(draft) });
         setCurrent(payload.storage);
         setDraft(draftOf(payload.storage));
-        setMessage(payload.storage.backend === "S3" ? "Сохранено. Новые файлы пишутся в S3, доступ проверен." : "Сохранено. Файлы хранятся на диске установки.");
+        setMessage(payload.storage.backend === "S3" ? t("settings.saved_new_files_go_s3") : t("settings.saved_files_kept_installation_disk"));
       } else if (kind === "check") {
         await api<{ ok: boolean }>(`${BASE}check/`, { method: "POST", body: JSON.stringify(draft) });
-        setMessage("Хранилище доступно: пробный объект записан и удалён.");
+        setMessage(t("settings.storage_reachable_test_object_was"));
       } else {
         const payload = await api<{ storage: StoragePayload }>(`${BASE}migrate/`, { method: "POST" });
         setCurrent(payload.storage);
-        setMessage("Перенос запущен — идёт в фоне.");
+        setMessage(t("settings.migration_has_started_runs_background"));
       }
     } catch (error) {
       const { detail, errors } = errorMessage(error);
@@ -123,45 +124,45 @@ export function StorageSettingsCard({ canManage }: { canManage: boolean }) {
 
   const migration = current.migration;
   const migrationLabel = migration.status === "RUNNING"
-    ? `Перенос: ${migration.done} из ${migration.total || "…"}`
+    ? t("settings.migration_progress", { done: migration.done, total: migration.total || "…" })
     : migration.status === "DONE"
-      ? `Перенос завершён: ${migration.done} файлов`
+      ? t("settings.migration_done", { done: migration.done })
       : migration.status === "FAILED"
-        ? `Перенос прерван: ${migration.error}`
+        ? t("settings.migration_failed", { error: migration.error })
         : "";
 
   return (
     <form className="administration-card storage-card" onSubmit={submit}>
       <div className="settings-card-head">
         <div>
-          <strong>Где хранить файлы</strong>
-          <small>Вложения знаний, голосовые, фото и логотипы</small>
+          <strong>{t("settings.where_keep_files")}</strong>
+          <small>{t("settings.knowledge_attachments_voice_messages_photos")}</small>
         </div>
         <div className="appearance-theme-options">
-          {([["LOCAL", "На диске установки"], ["S3", "Внешнее S3"]] as Array<[StorageBackend, string]>).map(([value, label]) => (
+          {([["LOCAL", t("settings.installation_disk")], ["S3", t("settings.external_s3")]] as Array<[StorageBackend, string]>).map(([value, label]) => (
             <button key={value} type="button" className={draft.backend === value ? "active" : ""} disabled={!canManage || Boolean(busy)} onClick={() => set("backend")(value)}>{label}</button>
           ))}
         </div>
       </div>
       <p className="settings-section-note">
         {isS3
-          ? "Вложения знаний, голосовые, фото и логотипы будут записываться в бакет под префиксами организаций. Уже загруженные файлы остаются доступны с диска, пока не перенесены."
-          : "Файлы лежат в каталоге data/media установки. Подходит для одного сервера; для нескольких экземпляров или резервирования включите S3."}
+          ? t("settings.knowledge_attachments_voice_messages_photos_2")
+          : t("settings.files_live_installation_s_data")}
       </p>
       {isS3 && (
         <div className="administration-fields storage-fields">
-          <FormField label="Бакет" value={draft.s3Bucket} error={fieldErrors.s3Bucket} disabled={!canManage} onChange={set("s3Bucket")} placeholder="chatballs-files" />
-          <FormField label="Регион" value={draft.s3Region} error={fieldErrors.s3Region} disabled={!canManage} onChange={set("s3Region")} placeholder="ru-central1" />
-          <FormField label="Endpoint (для не-AWS провайдеров)" value={draft.s3EndpointUrl} error={fieldErrors.s3EndpointUrl} disabled={!canManage} onChange={set("s3EndpointUrl")} placeholder="https://storage.example.com" wide />
-          <SelectField label="Адресация" value={draft.s3AddressingStyle} disabled={!canManage} onChange={set("s3AddressingStyle")} options={[["path", "path (bucket в пути)"], ["virtual", "virtual-host (bucket в домене)"]]} />
+          <FormField label={t("settings.bucket")} value={draft.s3Bucket} error={fieldErrors.s3Bucket} disabled={!canManage} onChange={set("s3Bucket")} placeholder="chatballs-files" />
+          <FormField label={t("settings.region")} value={draft.s3Region} error={fieldErrors.s3Region} disabled={!canManage} onChange={set("s3Region")} placeholder="ru-central1" />
+          <FormField label={t("settings.endpoint_non_aws_providers")} value={draft.s3EndpointUrl} error={fieldErrors.s3EndpointUrl} disabled={!canManage} onChange={set("s3EndpointUrl")} placeholder="https://storage.example.com" wide />
+          <SelectField label={t("settings.addressing")} value={draft.s3AddressingStyle} disabled={!canManage} onChange={set("s3AddressingStyle")} options={[["path", t("settings.path_bucket_path")], ["virtual", t("settings.virtual_host_bucket_domain")]]} />
           <FormField label="Access Key" value={draft.s3AccessKey} error={fieldErrors.s3AccessKey} disabled={!canManage} onChange={set("s3AccessKey")} placeholder={current.s3AccessKeyMasked || "AKIA…"} mono />
-          <FormField label="Secret Key" type="password" value={draft.s3SecretKey} error={fieldErrors.s3SecretKey} disabled={!canManage} onChange={set("s3SecretKey")} placeholder={current.s3HasSecretKey ? "•••••••• (сохранён)" : ""} mono />
+          <FormField label="Secret Key" type="password" value={draft.s3SecretKey} error={fieldErrors.s3SecretKey} disabled={!canManage} onChange={set("s3SecretKey")} placeholder={current.s3HasSecretKey ? t("settings.saved") : ""} mono />
         </div>
       )}
       {isS3 && current.s3VerifiedAt && !current.s3LastError && (
         <div className="settings-storage-status">
           <Icon name="check" size={15} />
-          <span>Доступ проверен {shortDateTime(current.s3VerifiedAt)}{migrationLabel ? ` · ${migrationLabel.toLocaleLowerCase("ru-RU")}` : ""}</span>
+          <span>{t("settings.access_checked_at", { date: shortDateTime(current.s3VerifiedAt) })}{migrationLabel ? ` · ${migrationLabel.toLocaleLowerCase(fmt.tag())}` : ""}</span>
         </div>
       )}
       {migrationLabel && (!isS3 || !current.s3VerifiedAt || Boolean(current.s3LastError)) && <p className="settings-section-note">{migrationLabel}</p>}
@@ -170,10 +171,10 @@ export function StorageSettingsCard({ canManage }: { canManage: boolean }) {
       {canManage && (
         <div className="administration-actions storage-actions">
           {isS3 && current.backend === "S3" && current.s3Configured && migration.status !== "RUNNING" && (
-            <Button variant="secondary" disabled={Boolean(busy)} onClick={() => void run("migrate")}>Перенести файлы с диска</Button>
+            <Button variant="secondary" disabled={Boolean(busy)} onClick={() => void run("migrate")}>{t("settings.migrate_files_from_disk")}</Button>
           )}
-          {isS3 && <Button variant="secondary" disabled={Boolean(busy)} onClick={() => void run("check")}>{busy === "check" ? "Проверяем…" : "Проверить доступ"}</Button>}
-          <Button type="submit" variant="primary" disabled={Boolean(busy)}>{busy === "save" ? "Сохранение" : "Сохранить"}</Button>
+          {isS3 && <Button variant="secondary" disabled={Boolean(busy)} onClick={() => void run("check")}>{busy === "check" ? t("settings.checking") : t("settings.check_access")}</Button>}
+          <Button type="submit" variant="primary" disabled={Boolean(busy)}>{busy === "save" ? t("common.saving") : t("common.save")}</Button>
         </div>
       )}
     </form>

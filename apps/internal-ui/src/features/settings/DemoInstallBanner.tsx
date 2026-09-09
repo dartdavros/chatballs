@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "../../api/client";
 import { Icon, LogoSpinner } from "../../shared/icons";
 import type { DemoState } from "./DemoDataCard";
+import { t } from "../../i18n";
 
 // Полоса поверх рабочей области, пока worker ставит демо-данные. Без неё
 // человек, поставивший галочку в мастере, видит пустую систему и не понимает,
@@ -47,7 +48,7 @@ export function DemoInstallBanner({ reload }: { reload: () => void }) {
     return (
       <div className="demo-install-banner">
         <LogoSpinner size={17} />
-        <span>Демо-данные устанавливаются — разделы наполнятся через несколько секунд.</span>
+        <span>{t("settings.demo_data_being_installed_sections")}</span>
       </div>
     );
   }
@@ -55,9 +56,9 @@ export function DemoInstallBanner({ reload }: { reload: () => void }) {
     return (
       <div className="demo-install-banner is-done">
         <Icon name="check" size={15} strokeWidth={2.2} />
-        <span>Демо-данные готовы.</span>
-        <button type="button" onClick={() => window.location.reload()}>Показать</button>
-        <button className="demo-install-close" type="button" onClick={() => setDismissed(true)} aria-label="Скрыть">
+        <span>{t("settings.demo_data_ready")}</span>
+        <button type="button" onClick={() => window.location.reload()}>{t("common.show")}</button>
+        <button className="demo-install-close" type="button" onClick={() => setDismissed(true)} aria-label={t("common.hide")}>
           <Icon name="close" size={14} strokeWidth={2} />
         </button>
       </div>

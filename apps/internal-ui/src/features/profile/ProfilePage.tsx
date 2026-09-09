@@ -8,11 +8,13 @@ import { fetchProfileSessions } from "./model";
 import { ProfileAppearanceCard } from "./ProfileAppearanceCard";
 import { ProfileHeader } from "./ProfileHeader";
 import { ProfileInfoForm } from "./ProfileInfoForm";
+import { ProfileLanguageCard } from "./ProfileLanguageCard";
 import { ProfileNotificationsCard } from "./ProfileNotificationsCard";
 import { ProfilePasswordForm } from "./ProfilePasswordForm";
 import { ProfileSessionsCard } from "./ProfileSessionsCard";
 import { ProfileTotpCard } from "./ProfileTotpCard";
 import { useProfilePage } from "./useProfilePage";
+import { t } from "../../i18n";
 
 // «Профиль» — отдельная страница из меню пользователя (дизайн-базлайн v2,
 // кадры P1/P2): слева «кто я и как выглядит интерфейс», справа безопасность.
@@ -21,10 +23,10 @@ import { useProfilePage } from "./useProfilePage";
 type MobileSection = "notifications" | "password" | "totp" | "sessions";
 
 const MOBILE_TITLE: Record<MobileSection, string> = {
-  notifications: "Уведомления в мессенджер",
-  password: "Смена пароля",
-  totp: "Двухфакторная аутентификация",
-  sessions: "Активные сессии",
+  notifications: t("profile.messenger_notifications"),
+  password: t("profile.change_password"),
+  totp: t("profile.two_factor_authentication"),
+  sessions: t("common.active_sessions"),
 };
 
 export function ProfilePage({ user, onUserUpdated, reload, onLogout, onBack }: { user: SessionUser; onUserUpdated: (user: SessionUser) => void; reload: () => void; onLogout: () => void; onBack: () => void }) {
@@ -46,9 +48,9 @@ export function ProfilePage({ user, onUserUpdated, reload, onLogout, onBack }: {
     return (
       <div className="profile-page is-mobile">
         <div className="profile-mobile-bar">
-          <button type="button" aria-label="Назад" onClick={() => (section ? setSection(null) : onBack())}><Icon name="chevronLeft" size={20} strokeWidth={2} /></button>
-          <h2>{section ? MOBILE_TITLE[section] : "Профиль"}</h2>
-          {!section && <button className="profile-mobile-logout" type="button" onClick={onLogout}>Выйти</button>}
+          <button type="button" aria-label={t("profile.back")} onClick={() => (section ? setSection(null) : onBack())}><Icon name="chevronLeft" size={20} strokeWidth={2} /></button>
+          <h2>{section ? MOBILE_TITLE[section] : t("common.profile")}</h2>
+          {!section && <button className="profile-mobile-logout" type="button" onClick={onLogout}>{t("common.sign_out")}</button>}
         </div>
         <div className="profile-mobile-body">
           {section === "notifications" && <ProfileNotificationsCard />}
@@ -60,10 +62,11 @@ export function ProfilePage({ user, onUserUpdated, reload, onLogout, onBack }: {
               <ProfileHeader user={user} compact onLogout={onLogout} />
               <ProfileInfoForm profile={page.profile} user={user} message={page.profileMessage} saving={page.savingProfile} setProfile={page.setProfile} onUserUpdated={onUserUpdated} onSubmit={page.saveProfile} />
               <ProfileAppearanceCard user={user} onUserUpdated={onUserUpdated} />
+              <ProfileLanguageCard user={user} onUserUpdated={onUserUpdated} />
               <div className="profile-mobile-list">
                 <MobileLink label={MOBILE_TITLE.notifications} value={summary.messenger} tone="ok" onOpen={() => setSection("notifications")} />
                 <MobileLink label={MOBILE_TITLE.password} onOpen={() => setSection("password")} />
-                <MobileLink label={MOBILE_TITLE.totp} value={user.totpEnabled ? "Вкл" : "Выкл"} onOpen={() => setSection("totp")} />
+                <MobileLink label={MOBILE_TITLE.totp} value={user.totpEnabled ? t("common.on_2") : t("common.off_2")} onOpen={() => setSection("totp")} />
                 <MobileLink label={MOBILE_TITLE.sessions} value={summary.sessions ? String(summary.sessions) : ""} onOpen={() => setSection("sessions")} />
               </div>
             </>
@@ -80,6 +83,7 @@ export function ProfilePage({ user, onUserUpdated, reload, onLogout, onBack }: {
         <div className="profile-column">
           <ProfileInfoForm profile={page.profile} user={user} message={page.profileMessage} saving={page.savingProfile} setProfile={page.setProfile} onUserUpdated={onUserUpdated} onSubmit={page.saveProfile} />
           <ProfileAppearanceCard user={user} onUserUpdated={onUserUpdated} />
+          <ProfileLanguageCard user={user} onUserUpdated={onUserUpdated} />
           <ProfileNotificationsCard />
         </div>
         <div className="profile-column">{security}</div>

@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 
 import { foldQuotedHtml, splitQuotedEmail } from "./emailContent";
+import { t } from "../../i18n";
 
 const DOCUMENT_START = `<!doctype html>
 <html lang="ru">
@@ -37,7 +38,7 @@ export function EmailMessageBody({ html, text }: { html?: string; text: string }
         {textParts.latest && <div>{textParts.latest}</div>}
         {textParts.quoted && (
           <details className="sales-email-quoted">
-            <summary>Показать предыдущие сообщения</summary>
+            <summary>{t("conversations.show_earlier_messages")}</summary>
             <div>{textParts.quoted}</div>
           </details>
         )}
@@ -50,7 +51,7 @@ export function EmailMessageBody({ html, text }: { html?: string; text: string }
       referrerPolicy="no-referrer"
       sandbox=""
       srcDoc={srcDoc}
-      title="Содержимое письма"
+      title={t("conversations.email_content")}
     />
   );
 }

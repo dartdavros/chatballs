@@ -1,9 +1,13 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
+from django.utils import translation
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
+from chatballs.i18n import t
+from chatballs.i18n.languages import resolve_language
 from chatballs.identity.instance_settings import (
+    default_language,
     email_connection,
     email_from_address,
     public_base_url,
@@ -19,34 +23,54 @@ def _password_setup_url(user: HumanUser) -> str:
     return f"{public_base_url()}/reset-password?uid={uid}&token={token}"
 
 
+def _recipient_language(user: HumanUser) -> str:
+    """Язык получателя письма, а не того, кто нажал кнопку.
+
+    Приглашение сотруднику отправляет владелец, и язык запроса здесь не при
+    чём: письмо читает другой человек. Личный выбор получателя побеждает,
+    дальше — язык его организации, дальше — язык установки.
+    """
+
+    membership = (
+        user.memberships.select_related("organization")
+        .filter(blocked_at__isnull=True)
+        .order_by("created_at", "id")
+        .first()
+    )
+    return resolve_language(
+        user_language=user.ui_language,
+        organization_language=membership.organization.language if membership else "",
+        instance_language=default_language(),
+    )
+
+
 def send_initial_access_email(user: HumanUser) -> None:
     setup_url = _password_setup_url(user)
-    send_mail(
-        subject="Первичный доступ к Chatballs",
-        message=(
-            f"Здравствуйте, {user.full_name or user.email}.\n\n"
-            "Для вас создана учётная запись Chatballs. Чтобы задать пароль первичного доступа, "
-            "перейдите по ссылке:\n"
-            f"{setup_url}\n\n"
-            "Ссылка действует 30 минут. Если вы не ожидали это письмо, обратитесь к владельцу организации."
-        ),
-        from_email=email_from_address(),
-        recipient_list=[user.email],
-        connection=email_connection(),
-    )
+    with translation.override(_recipient_language(user)):
+        send_mail(
+            subject=t("emails.initial_access_subject"),
+            message=t(
+                "emails.initial_access_body",
+                name=user.full_name or user.email,
+                url=setup_url,
+            ),
+            from_email=email_from_address(),
+            recipient_list=[user.email],
+            connection=email_connection(),
+        )
 
 
 def send_password_reset_email(user: HumanUser) -> None:
     reset_url = _password_setup_url(user)
-    send_mail(
-        subject="Восстановление доступа к Chatballs",
-        message=(
-            f"Здравствуйте, {user.full_name or user.email}.\n\n"
-            "Вы запросили сброс пароля для Chatballs. Чтобы задать новый пароль, перейдите по ссылке:\n"
-            f"{reset_url}\n\n"
-            "Ссылка действует 30 минут. Если вы не запрашивали сброс, просто проигнорируйте это письмо."
-        ),
-        from_email=email_from_address(),
-        recipient_list=[user.email],
-        connection=email_connection(),
-    )
+    with translation.override(_recipient_language(user)):
+        send_mail(
+            subject=t("emails.password_reset_subject"),
+            message=t(
+                "emails.password_reset_body",
+                name=user.full_name or user.email,
+                url=reset_url,
+            ),
+            from_email=email_from_address(),
+            recipient_list=[user.email],
+            connection=email_connection(),
+        )

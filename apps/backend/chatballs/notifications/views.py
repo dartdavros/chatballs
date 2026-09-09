@@ -3,6 +3,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from chatballs.i18n import t
 from chatballs.notifications.binding import deep_link, issue_binding_code, notifier_integrations
 from chatballs.notifications.models import MessengerBinding, NotificationRead, NotificationType
 from chatballs.notifications.selectors import unread_for, visible_for
@@ -69,7 +70,7 @@ class MessengerBindingDetailView(APIView):
         """Выдать одноразовый код привязки и deep-link на бота."""
         integration = self._integration(request, integration_id)
         if integration is None:
-            return Response({"detail": "Бот уведомлений не найден"}, status=404)
+            return Response({"detail": t("profile.notification_bot_not_found")}, status=404)
         binding_code = issue_binding_code(
             context=request.tenant_context, integration=integration
         )
@@ -86,7 +87,7 @@ class MessengerBindingDetailView(APIView):
         """Обновить типы уведомлений, доставляемые в мессенджер."""
         binding = MessengerBinding.objects.filter(user=request.user, integration_id=integration_id).first()
         if binding is None:
-            return Response({"detail": "Привязка не найдена"}, status=404)
+            return Response({"detail": t("profile.link_not_found")}, status=404)
         types = request.data.get("pushTypes")
         if not isinstance(types, list):
             return Response({"detail": "pushTypes must be a list"}, status=400)

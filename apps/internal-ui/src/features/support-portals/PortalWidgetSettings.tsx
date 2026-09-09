@@ -8,6 +8,7 @@ import {
   type PortalWidgetOption,
   type SupportPortal,
 } from "./model";
+import { t } from "../../i18n";
 
 export function PortalWidgetSettings({
   canManage,
@@ -32,9 +33,9 @@ export function PortalWidgetSettings({
     try {
       const payload = await updateSupportPortal(portal.id, { widgetId });
       onChanged(payload.portal);
-      setFeedback("Веб-виджет обновлён");
+      setFeedback(t("portals.web_widget_updated"));
     } catch (caught) {
-      setFeedback(portalErrorMessage(caught, "Не удалось сохранить веб-виджет"));
+      setFeedback(portalErrorMessage(caught, t("portals.could_not_save_web_widget")));
     } finally {
       setBusy(false);
     }
@@ -43,23 +44,23 @@ export function PortalWidgetSettings({
   return (
     <div className="portal-settings-card">
       <label className="portal-field is-narrow">
-        <span className="portal-field-label">Веб-виджет</span>
+        <span className="portal-field-label">{t("common.web_widget_2")}</span>
         <span className="portal-select">
           <select
             disabled={!canManage}
             value={String(widgetId ?? "")}
             onChange={(event) => setWidgetId(event.target.value ? Number(event.target.value) : null)}
           >
-            <option value="">Не показывать</option>
+            <option value="">{t("portals.do_not_show")}</option>
             {widgets.map((widget) => <option key={widget.id} value={widget.id}>{widget.name}</option>)}
           </select>
           <Icon name="chevron" size={14} strokeWidth={2} />
         </span>
-        <small>Виджет доступен только анонимным посетителям портала.</small>
+        <small>{t("portals.widget_available_anonymous_portal_visitors")}</small>
       </label>
       {canManage && (
         <div className="portal-settings-actions">
-          <Button variant="primary" disabled={busy} onClick={() => void save()}>Сохранить виджет</Button>
+          <Button variant="primary" disabled={busy} onClick={() => void save()}>{t("portals.save_widget")}</Button>
           {feedback && <span className="portal-settings-note">{feedback}</span>}
         </div>
       )}

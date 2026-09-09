@@ -26,10 +26,11 @@ from chatballs.conversations.models import (
     Conversation,
     LifecycleState,
 )
+from chatballs.i18n import t
 from chatballs.identity.audit_catalog import (
-    AUDIT_RESULT_LABELS,
     audit_action_label,
     audit_object_label,
+    audit_result_label,
 )
 from chatballs.identity.avatars import user_avatar_url_in
 from chatballs.identity.models import AuditEvent
@@ -154,7 +155,11 @@ def client_row(contact: Contact) -> dict:
     return {
         "id": contact.id,
         "cid": f"CUS-{contact.id}",
-        "name": contact.name or "Гость",
+        "name": contact.name or t("conversations.guest"),
+        # Признак анонимного посетителя: интерфейс красит его аватар иначе.
+        # Раньше он выводился из самой подписи регуляркой по слову «Гость» —
+        # на другом языке это перестало бы работать.
+        "isGuest": not contact.name,
         "phone": contact.phone,
         "avatarUrl": contact.avatar_url,
         "email": next(
@@ -278,14 +283,18 @@ def client_detail(organization_id: int, contact_id: int) -> dict:
                 "action": audit_action_label(event.action) or event.action,
                 "object": audit_object_label(event.object_type, event.object_id),
                 "actor": (event.actor.full_name or event.actor.email) if event.actor_id else "Система",
-                "result": AUDIT_RESULT_LABELS.get(event.result, "Неизвестно"),
+                "result": audit_result_label(event.result),
             }
         )
 
     return {
         "id": contact.id,
         "cid": f"CUS-{contact.id}",
-        "name": contact.name or "Гость",
+        "name": contact.name or t("conversations.guest"),
+        # Признак анонимного посетителя: интерфейс красит его аватар иначе.
+        # Раньше он выводился из самой подписи регуляркой по слову «Гость» —
+        # на другом языке это перестало бы работать.
+        "isGuest": not contact.name,
         "phone": contact.phone,
         "avatarUrl": contact.avatar_url,
         # Поля карточки из чата (описание, компания, город).
@@ -325,7 +334,7 @@ def _merges(organization_id: int, contact: Contact) -> list[dict]:
         {
             "id": row.id,
             "sourceId": row.source_id,
-            "sourceName": row.source.name or "Гость",
+            "sourceName": row.source.name or t("conversations.guest"),
             "sourceCid": f"CUS-{row.source_id}",
             "reason": row.reason,
             "actor": _actor_name(row.actor),
@@ -354,7 +363,8 @@ def _duplicate_candidate(organization_id: int, contact: Contact) -> dict | None:
     return {
         "id": other.id,
         "cid": f"CUS-{other.id}",
-        "name": other.name or "Гость",
+        "name": other.name or t("conversations.guest"),
+        "isGuest": not other.name,
         "avatarUrl": other.avatar_url,
         "dialogs": other.conversations.count(),
         "sources": sorted({identity.connection.provider for identity in identities}),

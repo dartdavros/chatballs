@@ -39,6 +39,7 @@ from chatballs.conversations.services import (
     return_to_queue,
 )
 from chatballs.conversations.view_base import ConversationViewBase
+from chatballs.i18n import t
 from chatballs.identity.group_models import EmployeeGroup
 from chatballs.identity.models import OrganizationMembership
 from chatballs.identity.policy import ResourceScope, authorize, can_administer_access
@@ -58,7 +59,7 @@ class ConversationListView(ConversationViewBase):
         # «Удалённые» (архив) скрыты; просмотр архива — только администратор.
         if params.get("archived") == "1":
             if not can_administer_access(request.tenant_context.membership):
-                return Response({"detail": "Архив доступен администраторам"}, status=403)
+                return Response({"detail": t("conversations.archive_admin_only")}, status=403)
             items = items.filter(archived_at__isnull=False)
         else:
             items = items.filter(archived_at__isnull=True)
@@ -145,7 +146,7 @@ class ConversationDetailView(ConversationViewBase):
         try:
             conversation = self._conversation(request, conversation_id)
         except Conversation.DoesNotExist:
-            return Response({"detail": "Диалог не найден"}, status=404)
+            return Response({"detail": t("conversations.not_found")}, status=404)
         # Открытие диалога = прочтение: двигаем персональную отметку до последнего
         # сообщения (detail поллится каждые 3 с — пишем только при продвижении).
         last_id = conversation.messages.order_by("-id").values_list("id", flat=True).first() or 0
@@ -174,7 +175,7 @@ class ConversationClaimView(ConversationViewBase):
         try:
             self._conversation(request, conversation_id, self.required_capability)
         except Conversation.DoesNotExist:
-            return Response({"detail": "Диалог не найден"}, status=404)
+            return Response({"detail": t("conversations.not_found")}, status=404)
         try:
             conversation = claim_conversation(
                 context=request.tenant_context, conversation_id=conversation_id
@@ -200,7 +201,7 @@ class ConversationReleaseView(ConversationViewBase):
         try:
             self._conversation(request, conversation_id, self.required_capability)
         except Conversation.DoesNotExist:
-            return Response({"detail": "Диалог не найден"}, status=404)
+            return Response({"detail": t("conversations.not_found")}, status=404)
         try:
             conversation = release_to_ai(
                 context=request.tenant_context, conversation_id=conversation_id
@@ -226,7 +227,7 @@ class ConversationReturnQueueView(ConversationViewBase):
         try:
             self._conversation(request, conversation_id, self.required_capability)
         except Conversation.DoesNotExist:
-            return Response({"detail": "Диалог не найден"}, status=404)
+            return Response({"detail": t("conversations.not_found")}, status=404)
         try:
             conversation = return_to_queue(
                 context=request.tenant_context, conversation_id=conversation_id
@@ -264,7 +265,7 @@ def claim_for_reply(view: ConversationViewBase, request: Request, conversation: 
         ResourceScope(conversation.organization_id),
     )
     if conversation.assigned_operator_id != request.user.id and not manager_override:
-        return Response({"detail": "Диалог ведёт другой оператор"}, status=409)
+        return Response({"detail": t("conversations.handled_by_other")}, status=409)
     return conversation
 
 
@@ -284,7 +285,7 @@ class ConversationMessageView(ConversationViewBase):
         try:
             conversation = self._conversation(request, conversation_id)
         except Conversation.DoesNotExist:
-            return Response({"detail": "Диалог не найден"}, status=404)
+            return Response({"detail": t("conversations.not_found")}, status=404)
         params = request.query_params
         limit = window_size(params, default=MESSAGE_WINDOW_SIZE)
         messages = conversation_messages(conversation)
@@ -313,12 +314,12 @@ class ConversationMessageView(ConversationViewBase):
         try:
             conversation = self._conversation(request, conversation_id, self.required_capability)
         except Conversation.DoesNotExist:
-            return Response({"detail": "Диалог не найден"}, status=404)
+            return Response({"detail": t("conversations.not_found")}, status=404)
         text = str(request.data.get("text", "")).strip()
         if not text:
-            return Response({"detail": "Пустое сообщение"}, status=400)
+            return Response({"detail": t("ai.empty_message")}, status=400)
         if conversation.lifecycle != LifecycleState.OPEN:
-            return Response({"detail": "Диалог закрыт"}, status=409)
+            return Response({"detail": t("conversations.closed")}, status=409)
         claimed = claim_for_reply(self, request, conversation)
         if isinstance(claimed, Response):
             return claimed
@@ -339,13 +340,13 @@ class ConversationRequestContactView(ConversationViewBase):
         try:
             conversation = self._conversation(request, conversation_id, self.required_capability)
         except Conversation.DoesNotExist:
-            return Response({"detail": "Диалог не найден"}, status=404)
+            return Response({"detail": t("conversations.not_found")}, status=404)
         if not conversation.contact_id or not conversation.connection_id:
-            return Response({"detail": "У диалога нет канала для запроса контакта"}, status=409)
+            return Response({"detail": t("conversations.no_channel_for_contact")}, status=409)
         if conversation.lifecycle != LifecycleState.OPEN:
-            return Response({"detail": "Диалог закрыт"}, status=409)
+            return Response({"detail": t("conversations.closed")}, status=409)
         if conversation.contact.phone:
-            return Response({"detail": "Контакт уже получен"}, status=409)
+            return Response({"detail": t("conversations.contact_already_received")}, status=409)
         try:
             message = request_contact(
                 context=request.tenant_context,
@@ -364,7 +365,7 @@ class ConversationCloseView(ConversationViewBase):
         try:
             self._conversation(request, conversation_id, self.required_capability)
         except Conversation.DoesNotExist:
-            return Response({"detail": "Диалог не найден"}, status=404)
+            return Response({"detail": t("conversations.not_found")}, status=404)
         try:
             conversation = close_conversation(
                 context=request.tenant_context, conversation_id=conversation_id
@@ -390,7 +391,7 @@ class ConversationSpamView(ConversationViewBase):
         try:
             self._conversation(request, conversation_id, self.required_capability)
         except Conversation.DoesNotExist:
-            return Response({"detail": "Диалог не найден"}, status=404)
+            return Response({"detail": t("conversations.not_found")}, status=404)
         try:
             conversation = mark_conversation_as_spam(
                 context=request.tenant_context, conversation_id=conversation_id
@@ -418,7 +419,7 @@ class ConversationGroupView(ConversationViewBase):
         try:
             conversation = self._conversation(request, conversation_id, self.required_capability)
         except Conversation.DoesNotExist:
-            return Response({"detail": "Диалог не найден"}, status=404)
+            return Response({"detail": t("conversations.not_found")}, status=404)
         group_id = request.data.get("groupId")
         group = None
         if group_id is not None:
@@ -426,7 +427,7 @@ class ConversationGroupView(ConversationViewBase):
                 organization_id=conversation.organization_id, id=group_id
             ).first()
             if group is None:
-                return Response({"detail": "Группа не найдена"}, status=400)
+                return Response({"detail": t("admin.group_not_found")}, status=400)
         conversation.group = group
         conversation.save(update_fields=["group"])
         self._audit(request, "group_changed", conversation)
@@ -448,7 +449,7 @@ class ConversationAssigneeView(ConversationViewBase):
         try:
             conversation = self._conversation(request, conversation_id, self.required_capability)
         except Conversation.DoesNotExist:
-            return Response({"detail": "Диалог не найден"}, status=404)
+            return Response({"detail": t("conversations.not_found")}, status=404)
         user_id = request.data.get("userId")
         assignee = None
         if user_id is not None:
@@ -462,7 +463,7 @@ class ConversationAssigneeView(ConversationViewBase):
                 .first()
             )
             if membership is None:
-                return Response({"detail": "Сотрудник не найден"}, status=400)
+                return Response({"detail": t("admin.employee_not_found")}, status=400)
             assignee = membership.user
         conversation.assigned_operator = assignee
         conversation.save(update_fields=["assigned_operator"])

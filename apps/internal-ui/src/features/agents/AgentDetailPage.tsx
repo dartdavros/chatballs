@@ -33,6 +33,7 @@ import {
   type AgentConnection,
   type AgentPatch,
 } from "./model";
+import { t } from "../../i18n";
 
 // Карточка агента (дизайн-базлайн v2, «Агенты Baseline», кадры G3–G5): слева —
 // что агент знает и как говорит (инструкции, знания), справа — как он работает
@@ -118,7 +119,7 @@ export function AgentDetailPage({
     if (canManageConnections) void loadMessengers();
   }, [canManageConnections, loadMessengers]);
 
-  if (missing) return <EmptyState title="Агент не найден" />;
+  if (missing) return <EmptyState title={t("ai.agent_not_found")} />;
   if (failed) return <ErrorScreen retry={() => void reload()} />;
   if (!card) return <LoadingState />;
 
@@ -132,7 +133,7 @@ export function AgentDetailPage({
     } catch (caught) {
       setFeedback({
         kind: "error",
-        text: caught instanceof ApiError ? caught.payload.detail ?? "Не удалось сохранить" : "Не удалось сохранить",
+        text: caught instanceof ApiError ? caught.payload.detail ?? t("common.could_not_save") : t("common.could_not_save"),
       });
       return false;
     } finally {
@@ -151,7 +152,7 @@ export function AgentDetailPage({
         kind: "error",
         text: caught instanceof ApiError && caught.payload.detail
           ? caught.payload.detail
-          : "Не удалось изменить статус AI",
+          : t("ai.could_not_change_ai_status"),
       });
     } finally {
       setBusy(false);
@@ -169,8 +170,8 @@ export function AgentDetailPage({
         kind: "warning",
         text:
           caught instanceof ApiError && caught.status === 409
-            ? "Агента нельзя удалить: есть диалоги или подключения. Отвяжите подключения и закройте диалоги."
-            : "Не удалось удалить агента",
+            ? t("ai.agent_cannot_deleted_has_conversations")
+            : t("ai.could_not_delete_agent"),
       });
     } finally {
       setBusy(false);
@@ -184,7 +185,7 @@ export function AgentDetailPage({
       setCard(saved.agent);
       void loadMessengers();
     } catch {
-      setFeedback({ kind: "error", text: "Не удалось отвязать подключение" });
+      setFeedback({ kind: "error", text: t("ai.could_not_detach_connection") });
     } finally {
       setBusy(false);
     }
@@ -202,8 +203,8 @@ export function AgentDetailPage({
         kind: "error",
         text:
           caught instanceof ApiError && caught.status === 409
-            ? "Подключение уже привязано к другому агенту"
-            : "Не удалось привязать подключение",
+            ? t("ai.connection_already_bound_another_agent")
+            : t("ai.could_not_bind_connection"),
       });
     } finally {
       setBusy(false);
@@ -216,14 +217,14 @@ export function AgentDetailPage({
   // Выключение агента и удаление живут в этом меню, а не отдельными кнопками
   // под карточкой: на странице остаётся один переключатель AI.
   const menuItems = [
-    { key: "copy-code", label: <button type="button" onClick={() => { setMenuOpen(false); void navigator.clipboard?.writeText(card.code); }}><Icon name="copy" size={15} />Скопировать код</button> },
+    { key: "copy-code", label: <button type="button" onClick={() => { setMenuOpen(false); void navigator.clipboard?.writeText(card.code); }}><Icon name="copy" size={15} />{t("ai.copy_snippet")}</button> },
     { type: "divider" as const },
     {
       key: "active",
       disabled: busy,
       label: (
         <button type="button" onClick={() => { setMenuOpen(false); void apply({ isActive: !card.isActive }); }}>
-          <Icon name={card.isActive ? "xCircle" : "check"} size={15} />{card.isActive ? "Выключить агента" : "Включить агента"}
+          <Icon name={card.isActive ? "xCircle" : "check"} size={15} />{card.isActive ? t("ai.turn_agent_off") : t("ai.turn_agent")}
         </button>
       ),
     },
@@ -232,15 +233,14 @@ export function AgentDetailPage({
       disabled: busy,
       label: (
         <button className="danger" type="button" onClick={() => { setMenuOpen(false); setDeleting(true); }}>
-          <Icon name="trash" size={15} />Удалить агента
-        </button>
+          <Icon name="trash" size={15} />{t("ai.delete_agent")}</button>
       ),
     },
   ];
 
   return (
     <div className="agent-page">
-      <BackLink label="Агенты" onClick={openAgents} />
+      <BackLink label={t("common.agents")} onClick={openAgents} />
 
       <header className="agent-head">
         <span className="agent-head-tile" style={{ background: tile.background, color: tile.color }}>
@@ -252,22 +252,22 @@ export function AgentDetailPage({
             <b className="agents-status" style={{ background: status.bg, color: status.color }}><i />{status.text}</b>
           </div>
           <p>
-            <span><i style={{ background: card.groupId === null ? "var(--n-5)" : groupColorOf(card.groupId, card.groupColor) }} />{card.groupName ?? "Без группы"}</span>
+            <span><i style={{ background: card.groupId === null ? "var(--n-5)" : groupColorOf(card.groupId, card.groupColor) }} />{card.groupName ?? t("common.no_group")}</span>
             <i />
             <code>{card.code}</code>
             <i />
             {openDialogsLine(card.counters.openConversations)}
             <i />
-            создан {createdLabel(card.createdAt)}
+            {t("ai.created_on", { date: createdLabel(card.createdAt) })}
           </p>
         </div>
         {canManage && (
           <div className="agent-head-actions">
             <Button variant="secondary" className="agent-toggle" icon={running ? "pause" : "bolt"} disabled={busy} onClick={() => void toggleAi()}>
-              {running ? "Остановить AI" : "Запустить AI"}
+              {running ? t("ai.stop_ai") : t("ai.start_ai")}
             </Button>
             <Dropdown menu={{ items: menuItems }} open={menuOpen} onOpenChange={setMenuOpen} trigger={["click"]} overlayClassName="app-dropdown">
-              <button className="agent-head-menu" type="button" aria-label="Действия агента" title="Действия"><Icon name="more" size={17} strokeWidth={2} /></button>
+              <button className="agent-head-menu" type="button" aria-label={t("ai.agent_actions")} title={t("common.actions")}><Icon name="more" size={17} strokeWidth={2} /></button>
             </Dropdown>
           </div>
         )}
@@ -277,11 +277,11 @@ export function AgentDetailPage({
         <div className="agent-blocker">
           <Icon name="alert" size={18} strokeWidth={2.2} />
           <div>
-            <strong>AI не может отвечать: провайдер не выбран</strong>
-            <small>Добавьте ключ в «Настройки → AI-провайдер» и выберите провайдера в блоке «Модель». До этого диалоги агента ждут человека.</small>
+            <strong>{t("ai.ai_cannot_reply_no_provider")}</strong>
+            <small>{t("ai.add_key_under_settings_ai")}</small>
           </div>
           {canManage && (
-            <button type="button" onClick={openAiProvider}>Открыть настройки<Icon name="external" size={13} strokeWidth={2.2} /></button>
+            <button type="button" onClick={openAiProvider}>{t("ai.open_settings")}<Icon name="external" size={13} strokeWidth={2.2} /></button>
           )}
         </div>
       )}
@@ -311,14 +311,14 @@ export function AgentDetailPage({
       {deleting && (
         <Modal
           open
-          title="Удалить агента?"
-          okText="Удалить"
-          cancelText="Отмена"
+          title={t("ai.delete_agent_2")}
+          okText={t("common.delete")}
+          cancelText={t("common.cancel")}
           okButtonProps={{ danger: true, disabled: busy }}
           onOk={() => void removeAgent()}
           onCancel={() => setDeleting(false)}
         >
-          <p>Агент «{card.name}» будет удалён безвозвратно. Диалоги и подключения не дают удалить агента.</p>
+          <p>{t("ai.agent_will_be_deleted", { name: card.name })}</p>
         </Modal>
       )}
     </div>
@@ -328,9 +328,9 @@ export function AgentDetailPage({
 // --- Инструкции (кадры G3/G5) ---
 
 const INSTRUCTION_FIELDS = [
-  { key: "persona", label: "Кто он и что делает", hint: "персонализация", rows: 7, placeholder: "" },
-  { key: "tone", label: "Как он должен говорить", hint: "тон", rows: 7, placeholder: "Например: спокойно и вежливо, на «вы»" },
-  { key: "instructions", label: "Правила работы", hint: "инструкции", rows: 10, placeholder: "Например: не называй цены, направляй к консультанту" },
+  { key: "persona", label: t("ai.who_what_does"), hint: t("ai.persona"), rows: 7, placeholder: "" },
+  { key: "tone", label: t("ai.how_should_speak"), hint: t("ai.tone"), rows: 7, placeholder: t("ai.example_calmly_politely_formal_address") },
+  { key: "instructions", label: t("ai.working_rules"), hint: t("ai.instructions"), rows: 10, placeholder: t("ai.example_do_not_quote_prices") },
 ] as const;
 
 function InstructionsCard({ card, canManage, busy, apply }: {
@@ -348,8 +348,8 @@ function InstructionsCard({ card, canManage, busy, apply }: {
   return (
     <section className="agent-card">
       <div className="agent-card-head">
-        <h3>Инструкции</h3>
-        <small>Системный промпт собирается из трёх частей в этом порядке</small>
+        <h3>{t("ai.instructions_2")}</h3>
+        <small>{t("ai.system_prompt_assembled_from_three")}</small>
       </div>
       <div className="agent-instructions">
         {INSTRUCTION_FIELDS.map((field) => (
@@ -369,9 +369,9 @@ function InstructionsCard({ card, canManage, busy, apply }: {
       </div>
       {canManage && dirty && (
         <div className="agent-dirty">
-          <small>Есть несохранённые изменения — применятся в runtime сразу</small>
-          <button type="button" disabled={busy} onClick={() => setDraft({ persona: card.persona, tone: card.tone, instructions: card.instructions })}>Отменить</button>
-          <button className="is-primary" type="button" disabled={busy} onClick={() => void apply(draft)}>Сохранить</button>
+          <small>{t("ai.there_unsaved_changes_they_take")}</small>
+          <button type="button" disabled={busy} onClick={() => setDraft({ persona: card.persona, tone: card.tone, instructions: card.instructions })}>{t("ai.undo")}</button>
+          <button className="is-primary" type="button" disabled={busy} onClick={() => void apply(draft)}>{t("common.save")}</button>
         </div>
       )}
     </section>
@@ -398,15 +398,14 @@ function KnowledgeCard({ card, canManage, openKnowledge, reload }: {
   return (
     <section className="agent-card">
       <div className="agent-card-head is-row">
-        <div><h3>Знания</h3><small>{knowledgeLine(card)}</small></div>
+        <div><h3>{t("ai.knowledge")}</h3><small>{knowledgeLine(card)}</small></div>
         {canManage && (
           <button className="agent-inline-button" type="button" onClick={() => setPicking(true)}>
-            <Icon name="plus" size={13} strokeWidth={2.2} />Выбрать
-          </button>
+            <Icon name="plus" size={13} strokeWidth={2.2} />{t("ai.select")}</button>
         )}
       </div>
       {rows.length === 0 ? (
-        <p className="agent-knowledge-empty">Знания не прикреплены — агент отвечает только по инструкциям. Выберите статьи из библиотеки или портала поддержки.</p>
+        <p className="agent-knowledge-empty">{t("ai.no_knowledge_attached_so_agent")}</p>
       ) : (
         <div className="agent-knowledge-list">
           {rows.map((row) => (
@@ -418,7 +417,7 @@ function KnowledgeCard({ card, canManage, openKnowledge, reload }: {
               {row.chip && <small className={`agent-chip is-${row.chipTone}`}>{row.chip}</small>}
               <small className="agent-knowledge-meta">{row.meta}</small>
               {canManage && (
-                <button className="agent-knowledge-remove" type="button" aria-label="Убрать" title="Убрать" onClick={() => void detach(row.kind, row.id)}>
+                <button className="agent-knowledge-remove" type="button" aria-label={t("common.remove")} title={t("common.remove")} onClick={() => void detach(row.kind, row.id)}>
                   <Icon name="close" size={12} strokeWidth={2.4} />
                 </button>
               )}
@@ -460,17 +459,17 @@ function AssignmentCard({ card, groups, canManage, busy, apply }: {
 
   return (
     <section className="agent-card is-side">
-      <h3>Назначение</h3>
-      <p>Группа определяет, кто из сотрудников видит диалоги агента; без группы — видны всем.</p>
+      <h3>{t("ai.assignment")}</h3>
+      <p>{t("ai.group_decides_which_operators_see")}</p>
       <div className="agent-side-fields">
         <label className="agent-field">
-          <span>Название</span>
+          <span>{t("common.title")}</span>
           {canManage
             ? <input value={name} onChange={(event) => setName(event.target.value)} onBlur={() => { if (dirty) void apply({ name: name.trim() }); }} />
             : <span className="agent-field-static">{card.name}</span>}
         </label>
         <label className="agent-field is-select">
-          <span>Группа</span>
+          <span>{t("common.group")}</span>
           <span className="agent-field-control">
             <i className="agent-group-dot" style={{ background: card.groupId === null ? "var(--n-5)" : groupColorOf(card.groupId, card.groupColor) }} />
             {canManage ? (
@@ -479,11 +478,11 @@ function AssignmentCard({ card, groups, canManage, busy, apply }: {
                 value={card.groupId === null ? "" : String(card.groupId)}
                 onChange={(event) => void apply({ groupId: event.target.value ? Number(event.target.value) : null })}
               >
-                <option value="">Без группы</option>
+                <option value="">{t("common.no_group")}</option>
                 {groups.map((group) => <option value={String(group.id)} key={group.id}>{group.name}</option>)}
               </select>
             ) : (
-              <span className="agent-field-static">{card.groupName ?? "Без группы"}</span>
+              <span className="agent-field-static">{card.groupName ?? t("common.no_group")}</span>
             )}
             <Icon name="chevron" size={14} strokeWidth={2.2} />
           </span>
@@ -515,11 +514,11 @@ function ModelCard({ card, providers, canManage, busy, apply }: {
 
   return (
     <section className="agent-card is-side">
-      <h3>Модель</h3>
-      <p>Ключ провайдера — в «Настройки → AI-провайдер». Модель выбирается из каталога провайдера.</p>
+      <h3>{t("common.model")}</h3>
+      <p>{t("ai.provider_key_lives_under_settings")}</p>
       <div className="agent-side-fields">
         <label className={`agent-field is-select ${missingProvider ? "is-invalid" : ""}`}>
-          <span>Провайдер</span>
+          <span>{t("ai.provider")}</span>
           <span className="agent-field-control">
             {canManage ? (
               <select
@@ -527,24 +526,24 @@ function ModelCard({ card, providers, canManage, busy, apply }: {
                 value={card.providerIntegrationId ? String(card.providerIntegrationId) : ""}
                 onChange={(event) => void apply({ providerIntegrationId: event.target.value ? Number(event.target.value) : null })}
               >
-                <option value="">Не выбран</option>
+                <option value="">{t("ai.not_selected")}</option>
                 {providers.map((item) => <option value={String(item.id)} key={item.id}>{item.name}</option>)}
               </select>
             ) : (
-              <span className="agent-field-static">{providerName || "Не выбран"}</span>
+              <span className="agent-field-static">{providerName || t("ai.not_selected")}</span>
             )}
             <Icon name="chevron" size={14} strokeWidth={2.2} />
           </span>
         </label>
         <label className="agent-field is-model">
-          <span>Модель</span>
+          <span>{t("common.model")}</span>
           <span className="agent-field-control">
-            <span className={`agent-field-static ${missingProvider ? "is-placeholder" : ""}`}>{missingProvider ? "выберите провайдера" : card.model}</span>
+            <span className={`agent-field-static ${missingProvider ? "is-placeholder" : ""}`}>{missingProvider ? t("ai.pick_provider") : card.model}</span>
             <Icon name="search" size={14} strokeWidth={1.8} />
           </span>
         </label>
         <div className="agent-limit">
-          <span>Лимит в день</span>
+          <span>{t("ai.daily_limit")}</span>
           <span>
             {canManage
               ? <input value={limit} inputMode="decimal" placeholder="0.00" onChange={(event) => setLimit(event.target.value)} onBlur={saveLimit} />
@@ -572,17 +571,17 @@ function ConnectionsCard({ card, canManage, busy, available, openIntegrations, b
   return (
     <section className="agent-card is-side">
       <div className="agent-card-head is-tight">
-        <h3>Подключения</h3>
+        <h3>{t("common.connections")}</h3>
         {canManage && (
-          <button className="link has-icon" type="button" onClick={openIntegrations}>Интеграции<Icon name="external" size={13} strokeWidth={2.2} /></button>
+          <button className="link has-icon" type="button" onClick={openIntegrations}>{t("common.integrations")}<Icon name="external" size={13} strokeWidth={2.2} /></button>
         )}
       </div>
-      <p>Через них клиенты попадают к агенту. Одно подключение — один агент.</p>
+      <p>{t("ai.customers_reach_agent_through_these")}</p>
       {card.connections.map((connection) => (
         <ConnectionRow
           connection={connection}
           status={connectionStatusMeta(connection.status)}
-          action={canManage ? { label: "Отвязать", run: () => unbind(connection.id) } : null}
+          action={canManage ? { label: t("ai.unbind"), run: () => unbind(connection.id) } : null}
           busy={busy}
           key={connection.id}
         />
@@ -590,9 +589,9 @@ function ConnectionsCard({ card, canManage, busy, available, openIntegrations, b
       {canManage && available.map((integration) => (
         <ConnectionRow
           connection={{ id: integration.id, provider: integration.provider, name: integration.name, status: integration.status, botUsername: "", email: "", allowedOrigins: [], widgetPublicKey: "" }}
-          subtitle="Свободное подключение"
-          status={{ text: "Свободно", bg: "var(--n-9)", color: "var(--n-4)" }}
-          action={{ label: "Привязать", run: () => bind(integration.id) }}
+          subtitle={t("ai.free_connection")}
+          status={{ text: t("ai.free"), bg: "var(--n-9)", color: "var(--n-4)" }}
+          action={{ label: t("ai.bind"), run: () => bind(integration.id) }}
           busy={busy}
           key={`free-${integration.id}`}
         />
@@ -600,11 +599,11 @@ function ConnectionsCard({ card, canManage, busy, available, openIntegrations, b
       {widget && (
         <div className="agent-widget">
           <div>
-            <small>Код вставки виджета</small>
-            <CopyButton className="agent-widget-copy" label="Копировать" value={webWidgetSnippet(widget.widgetPublicKey)} />
+            <small>{t("ai.widget_embed_snippet")}</small>
+            <CopyButton className="agent-widget-copy" label={t("common.copy")} value={webWidgetSnippet(widget.widgetPublicKey)} />
           </div>
           <code>{webWidgetSnippet(widget.widgetPublicKey)}</code>
-          <small>Вставьте перед &lt;/body&gt; на сайте</small>
+          <small>{t("ai.paste_before_lt_body_gt")}</small>
         </div>
       )}
     </section>

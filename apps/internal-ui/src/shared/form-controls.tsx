@@ -44,7 +44,10 @@ export function FormField({
   );
 }
 
-export function SelectField({ disabled = false, label, value, onChange, options }: { disabled?: boolean; label: string; value: string; onChange: (value: string) => void; options: Array<[string, string]> }) {
+// hint — пояснение под полем: у части настроек выбор непонятен без одной
+// фразы («Как в установке» — это какой?), а класть её отдельным абзацем рядом
+// значит оторвать от поля, к которому она относится.
+export function SelectField({ disabled = false, label, value, onChange, options, hint }: { disabled?: boolean; label: string; value: string; onChange: (value: string) => void; options: Array<[string, string]>; hint?: string }) {
   return (
     <label className="readonly-field select-like">
       <span>{label}</span>
@@ -52,6 +55,7 @@ export function SelectField({ disabled = false, label, value, onChange, options 
         {options.map(([optionValue, labelText]) => <option value={optionValue} key={optionValue}>{labelText}</option>)}
       </select>
       <Icon name="chevron" size={14} />
+      {hint && <small className="form-field-hint">{hint}</small>}
     </label>
   );
 }

@@ -1,4 +1,5 @@
 import type { Icon } from "../../shared/icons";
+import { t } from "../../i18n";
 
 // Разделы «Настроек» (дизайн-базлайн v2, кадры N1–N7): субменю 240px и один
 // раздел на экране вместо сплошной ленты секций. Профиль пользователя сюда не
@@ -25,61 +26,61 @@ export type SettingsSection = {
 export const SETTINGS_SECTIONS: SettingsSection[] = [
   {
     key: "organization",
-    label: "Организация",
+    label: t("settings.organization"),
     icon: "building",
-    heading: "Организация",
-    lead: "Название, логотип и региональные параметры. Видны сотрудникам, в виджете и письмах.",
+    heading: t("settings.organization"),
+    lead: t("settings.name_logo_regional_settings_visible"),
     // Адрес установки и почта сюда не входят — это свойства инсталляции, а не
     // организации, и живут в разделе «Платформа». Раздел равен кадру N1.
   },
   {
     key: "groups",
-    label: "Группы",
+    label: t("common.groups"),
     icon: "team",
-    heading: "Группы",
-    lead: "Делят диалоги между сотрудниками: сотрудник видит диалоги своих групп, без группы и те, где он ответственный.",
+    heading: t("common.groups"),
+    lead: t("settings.they_split_conversations_between_operators"),
   },
   {
     key: "ai",
-    label: "AI-провайдер",
+    label: t("settings.ai_provider"),
     icon: "sparkles",
-    heading: "AI-провайдер",
-    lead: "Ключи вашей организации для ответов агентов и расшифровки голосовых. Модель выбирается на карточке агента.",
+    heading: t("settings.ai_provider"),
+    lead: t("settings.organization_s_keys_agent_replies"),
   },
   {
     key: "integrations",
-    label: "Интеграции",
+    label: t("common.integrations"),
     icon: "plug",
-    heading: "Интеграции",
-    lead: "Боты, почта и Web-виджет — точки входа диалогов. Каждая привязана к агенту, который отвечает первым.",
+    heading: t("common.integrations"),
+    lead: t("settings.bots_email_web_widget_entry"),
   },
   {
     key: "communication",
-    label: "Голосовые и звонки",
+    label: t("settings.voice_calls"),
     icon: "mic",
-    heading: "Голосовые и звонки",
-    lead: "Где клиент и сотрудник могут записывать голосовые и начинать аудио- и видеозвонки.",
+    heading: t("settings.voice_calls"),
+    lead: t("settings.where_customer_operator_can_record"),
   },
   {
     key: "storage",
-    label: "Хранилище файлов",
+    label: t("settings.file_storage"),
     icon: "database",
-    heading: "Хранилище файлов",
-    lead: "Вложения, голосовые, фото и логотипы — на диске установки или во внешнем S3-совместимом хранилище.",
+    heading: t("settings.file_storage"),
+    lead: t("settings.attachments_voice_messages_photos_logos"),
   },
   {
     key: "platform",
-    label: "Платформа",
+    label: t("settings.platform"),
     icon: "globe",
-    heading: "Платформа",
-    lead: "Свойства самой установки: адрес, по которому её открывают и по которому строятся ссылки на файлы, и почтовый сервер для приглашений и сброса пароля.",
+    heading: t("settings.platform"),
+    lead: t("settings.properties_installation_itself_address_opened"),
   },
   {
     key: "demo",
-    label: "Демо-данные",
+    label: t("settings.demo_data"),
     icon: "sun",
-    heading: "Демо-данные",
-    lead: "Посмотреть систему в работе на вымышленной организации.",
+    heading: t("settings.demo_data"),
+    lead: t("settings.see_system_at_work_fictional"),
   },
 ];
 

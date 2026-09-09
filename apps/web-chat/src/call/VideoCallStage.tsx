@@ -8,6 +8,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { acceptCall, declineCall, endCall, fetchCallState, type CallInfo } from "../api";
 import { buildCallViewStatus, callViewSubtitle, isTerminalCall, resolveCallViewMode } from "./model";
 import { useConnectionTimer } from "./useConnectionTimer";
+import { t } from "../i18n";
 
 type Props = {
   call: CallInfo | null;
@@ -66,7 +67,7 @@ export function VideoCallStage({ call, accessToken, iceServers, loading, invalid
       setStarted(true);
       await rtc.start();
     } catch (error) {
-      setErrorText(error instanceof Error ? error.message : "Не удалось принять звонок");
+      setErrorText(error instanceof Error ? error.message : t("call.could_not_accept"));
     } finally {
       setJoining(false);
     }
@@ -82,14 +83,14 @@ export function VideoCallStage({ call, accessToken, iceServers, loading, invalid
       onCall(ended);
       rtc.stop();
     } catch (error) {
-      setErrorText(error instanceof Error ? error.message : "Не удалось завершить звонок");
+      setErrorText(error instanceof Error ? error.message : t("call.could_not_end"));
     }
   }
 
   async function end() {
     if (!accessToken) return;
     try { onCall(await endCall(accessToken)); }
-    catch (error) { setErrorText(error instanceof Error ? error.message : "Не удалось завершить звонок"); }
+    catch (error) { setErrorText(error instanceof Error ? error.message : t("call.could_not_end")); }
     finally { rtc.stop(); }
   }
 
@@ -100,9 +101,9 @@ export function VideoCallStage({ call, accessToken, iceServers, loading, invalid
     [loading, invalid, call, joining, rtc.connectionPhase, rtc.mediaIssue, errorText, close, rtc.restart, rtc.prepare],
   );
   const elapsed = useConnectionTimer(rtc.connectionPhase === "connected");
-  const peerName = call?.staffName || "Оператор";
-  const initials = peerName.trim().split(/\s+/).map((part) => part[0]).slice(0, 2).join("").toUpperCase() || "ОП";
-  const mediaCaption = rtc.mediaIssue === "devices" ? "Нет доступа к камере и микрофону" : rtc.mediaIssue === "video" ? "Камера недоступна" : "Камера выключена";
+  const peerName = call?.staffName || t("call.operator");
+  const initials = peerName.trim().split(/\s+/).map((part) => part[0]).slice(0, 2).join("").toUpperCase() || t("call.operator_initials");
+  const mediaCaption = rtc.mediaIssue === "devices" ? t("call.no_camera_mic_access") : rtc.mediaIssue === "video" ? t("call.camera_unavailable") : t("call.camera_off");
 
   return (
     <main className="public-call-page">
@@ -121,7 +122,7 @@ export function VideoCallStage({ call, accessToken, iceServers, loading, invalid
         elapsedSeconds={elapsed}
         status={status}
         joining={joining || rtc.preparing}
-        cancelLabel="Отклонить"
+        cancelLabel={t("call.decline")}
         onToggleMic={rtc.toggleMic}
         onToggleCam={rtc.toggleCam}
         onJoin={() => void join()}

@@ -9,6 +9,7 @@ import { DialogControls } from "../../../conversations/DialogControls";
 import { requestContact, updateContactCard, type ApiConversation } from "../../../conversations/model";
 import type { ConversationListItem } from "../../../conversations/types";
 import type { EmployeeGroupRef } from "../../../../types";
+import { t } from "../../../../i18n";
 
 // Карточка контакта (дизайн-базлайн v2, решение 5): аватар 64 · канал · имя ·
 // описание · поля с иконками и «копировать» · «Позвонить» / «Видеозвонок» под
@@ -43,7 +44,7 @@ export function ClientContext({
   }, [detail?.id]);
 
   if (!dialog) {
-    return <div className="sales-client-context"><p className="sales-context-muted">Выберите диалог</p></div>;
+    return <div className="sales-client-context"><p className="sales-context-muted">{t("conversations.pick_conversation")}</p></div>;
   }
   const channel = providerMeta[dialog.channel];
   const contact = detail?.contact ?? null;
@@ -74,11 +75,11 @@ export function ClientContext({
   if (phone) fields.push({ key: "phone", icon: "phone", text: phone, copy: phone });
   if (dialog.channel === "EMAIL" && email) fields.push({ key: "email", icon: "mail", text: email, copy: email });
   if (username) fields.push({ key: "username", icon: "send", text: `@${username} · ${channel.label}`, copy: `@${username}` });
-  if (isGuest) fields.push({ key: "guest", icon: "message", text: `${channel.label} · ${detail?.connection?.name ?? "виджет"}, анонимная сессия`, muted: true });
+  if (isGuest) fields.push({ key: "guest", icon: "message", text: t("sales.anonymous_session", { channel: channel.label, connection: detail?.connection?.name ?? t("sales.widget") }), muted: true });
   if (fields.length === 0 && detail?.connection) fields.push({ key: "connection", icon: "plug", text: `${channel.label} · ${detail.connection.name}`, muted: true });
   // Компания и город — из карточки контакта (решение 5), без «копировать».
   if (contact?.company) fields.push({ key: "company", icon: "building", text: contact.company });
-  if (contact?.city) fields.push({ key: "city", icon: "pin", text: `${contact.city}, Россия` });
+  if (contact?.city) fields.push({ key: "city", icon: "pin", text: t("sales.city_country", { city: contact.city, country: t("sales.country_russia") }) });
   const canEdit = Boolean(detail && contact && applyConversation);
 
   return (
@@ -98,9 +99,9 @@ export function ClientContext({
           <>
             <div className="ctx-contact-name">
               <strong>{dialog.name}</strong>
-              {canEdit && <button className="ctx-edit-contact" type="button" title="Редактировать контакт" aria-label="Редактировать контакт" onClick={() => setEditing(true)}><Icon name="edit" size={14} /></button>}
+              {canEdit && <button className="ctx-edit-contact" type="button" title={t("sales.edit_contact")} aria-label={t("sales.edit_contact")} onClick={() => setEditing(true)}><Icon name="edit" size={14} /></button>}
             </div>
-            <p className={`ctx-contact-description ${contact?.description ? "" : "is-empty"}`}>{contact?.description || "Описания нет"}</p>
+            <p className={`ctx-contact-description ${contact?.description ? "" : "is-empty"}`}>{contact?.description || t("sales.no_description")}</p>
           </>
         )}
         <div className="ctx-contact-fields">
@@ -114,16 +115,16 @@ export function ClientContext({
         </div>
         {startCall && (
           <div className="ctx-call-buttons">
-            {detail?.connection?.audioCalls && <button type="button" onClick={() => startCall("AUDIO")}><Icon name="phone" size={15} />Позвонить</button>}
-            {detail?.connection?.videoCalls && <button type="button" onClick={() => startCall("VIDEO")}><Icon name="video" size={15} />Видеозвонок</button>}
+            {detail?.connection?.audioCalls && <button type="button" onClick={() => startCall("AUDIO")}><Icon name="phone" size={15} />{t("sales.call")}</button>}
+            {detail?.connection?.videoCalls && <button type="button" onClick={() => startCall("VIDEO")}><Icon name="video" size={15} />{t("sales.video_call")}</button>}
           </div>
         )}
         {contact && !phone && (
           <>
             <button className="ctx-request-contact" type="button" onClick={() => void onRequestContact()} disabled={!canRequest || requesting || alreadyRequested}>
-              {requesting ? "Отправка…" : alreadyRequested ? "Контакт запрошен" : "Запросить контакт"}
+              {requesting ? t("common.sending") : alreadyRequested ? t("sales.contact_details_requested") : t("sales.request_contact_details")}
             </button>
-            {requestError && <p className="ctx-error">Не удалось отправить запрос — попробуйте ещё раз</p>}
+            {requestError && <p className="ctx-error">{t("sales.could_not_send_request_try")}</p>}
           </>
         )}
       </div>

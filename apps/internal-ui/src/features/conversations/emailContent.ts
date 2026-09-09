@@ -1,3 +1,5 @@
+import { t } from "../../i18n";
+
 export type EmailTextParts = {
   latest: string;
   quoted: string;
@@ -44,5 +46,5 @@ export function foldQuotedHtml(html: string): string {
   if (quoteStart < 0) return html;
   const latest = html.slice(0, quoteStart);
   const quoted = html.slice(quoteStart);
-  return `${latest}<details class="email-quoted"><summary>Показать предыдущие сообщения</summary>${quoted}</details>`;
+  return `${latest}<details class="email-quoted"><summary>${t("conversations.show_earlier_messages")}</summary>${quoted}</details>`;
 }

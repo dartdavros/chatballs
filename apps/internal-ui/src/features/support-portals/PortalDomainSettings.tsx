@@ -10,6 +10,7 @@ import {
   type SupportPortal,
 } from "./model";
 import { hostedHost } from "./portalText";
+import { t } from "../../i18n";
 
 // Кадр PT5. Подтверждения владения доменом нет: продукт self-hosted, домен и
 // установка принадлежат одному владельцу. Остаётся одна A-запись на IP
@@ -47,12 +48,12 @@ export function PortalDomainSettings({
         : await verifyPortalCustomDomain(portal.id);
       onChanged(payload.portal);
       setFeedback(action === "verify"
-        ? "Домен ведёт сюда"
-        : domain.trim() ? "Домен сохранён. Добавьте A-запись и проверьте DNS." : "Свой домен отключён");
+        ? t("portals.domain_points_here")
+        : domain.trim() ? t("portals.domain_saved_add_record_check") : t("portals.custom_domain_off"));
     } catch (caught) {
       setFailure(portalErrorMessage(
         caught,
-        action === "verify" ? "Не удалось проверить домен" : "Не удалось сохранить домен",
+        action === "verify" ? t("portals.could_not_check_domain") : t("portals.could_not_save_domain"),
       ));
     } finally {
       setBusy(false);
@@ -67,9 +68,9 @@ export function PortalDomainSettings({
     try {
       const payload = await setPortalCustomDomain(portal.id, "");
       onChanged(payload.portal);
-      setFeedback("Свой домен отключён");
+      setFeedback(t("portals.custom_domain_off"));
     } catch (caught) {
-      setFailure(portalErrorMessage(caught, "Не удалось отключить домен"));
+      setFailure(portalErrorMessage(caught, t("portals.could_not_turn_domain_off")));
     } finally {
       setBusy(false);
     }
@@ -79,7 +80,7 @@ export function PortalDomainSettings({
     <div className="portal-settings-card">
       <div className="portal-domain-row">
         <label className="portal-field">
-          <span className="portal-field-label">Домен</span>
+          <span className="portal-field-label">{t("portals.domain")}</span>
           <input
             className="is-mono"
             disabled={!canManage}
@@ -92,8 +93,8 @@ export function PortalDomainSettings({
           <span className={`portal-domain-state${verifiedAt ? " is-live" : " is-pending"}`}>
             <Icon name={verifiedAt ? "check" : "clock"} size={14} strokeWidth={2.4} />
             {verifiedAt
-              ? `Домен ведёт сюда · проверено ${shortDate(verifiedAt)}`
-              : "Домен ещё не проверялся"}
+              ? t("portals.domain_points_here_checked", { date: shortDate(verifiedAt) })
+              : t("portals.domain_has_not_been_checked")}
           </span>
         )}
       </div>
@@ -101,45 +102,44 @@ export function PortalDomainSettings({
       {portal.customDomain && (
         <div>
           <div className="portal-dns-head">
-            <strong>Запись у регистратора домена</strong>
-            <span>обновление DNS занимает до 24 часов</span>
+            <strong>{t("portals.record_at_domain_registrar")}</strong>
+            <span>{t("portals.dns_update_takes_up_24")}</span>
           </div>
           <table className="portal-dns-table">
             <thead>
-              <tr><th>ТИП</th><th>ИМЯ</th><th>ЗНАЧЕНИЕ</th><th /></tr>
+              <tr><th>{t("portals.type")}</th><th>{t("portals.name")}</th><th>{t("portals.value")}</th><th /></tr>
             </thead>
             <tbody>
               {record ? (
                 <tr>
                   <td className="portal-dns-type">{record.type}</td>
                   <td><code>{record.name}</code></td>
-                  <td><code>{record.value} · IP этой установки</code></td>
+                  <td><code>{t("portals.ip_of_installation", { value: record.value })}</code></td>
                   <td><CopyButton className="portal-dns-copy" label="" value={record.value} /></td>
                 </tr>
               ) : (
                 <tr>
                   <td className="portal-dns-type">A</td>
                   <td><code>{portal.customDomain}</code></td>
-                  <td><code>IP этой установки не задан администратором</code></td>
+                  <td><code>{t("portals.administrator_has_not_set_installation")}</code></td>
                   <td />
                 </tr>
               )}
             </tbody>
           </table>
           <p className="portal-dns-note">
-            Больше ничего добавлять не нужно: домен ваш, установка ваша — проверка лишь смотрит,
-            ведёт ли запись на этот сервер, и выписывает сертификат.
+            {t("portals.domain_no_extra_setup")}
           </p>
         </div>
       )}
 
       {canManage && (
         <div className="portal-settings-actions">
-          <Button variant="primary" disabled={busy} onClick={() => void run("save")}>Сохранить домен</Button>
-          <Button variant="secondary" disabled={busy || !portal.customDomain} onClick={() => void run("verify")}>Проверить DNS</Button>
+          <Button variant="primary" disabled={busy} onClick={() => void run("save")}>{t("portals.save_domain")}</Button>
+          <Button variant="secondary" disabled={busy || !portal.customDomain} onClick={() => void run("verify")}>{t("portals.check_dns")}</Button>
           <span className="portal-settings-gap" />
           {portal.customDomain && (
-            <Button variant="danger-outline" disabled={busy} onClick={() => void disconnect()}>Отключить домен</Button>
+            <Button variant="danger-outline" disabled={busy} onClick={() => void disconnect()}>{t("portals.turn_domain_off")}</Button>
           )}
         </div>
       )}

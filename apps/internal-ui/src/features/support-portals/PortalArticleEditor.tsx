@@ -29,6 +29,7 @@ import {
 } from "../../shared/markdown/markdownTools";
 import { MARKDOWN_TOOLS } from "./markdownTools";
 import { LOCALE_OPTIONS } from "./portalText";
+import { fmt, t } from "../../i18n";
 
 // Редактор статьи (дизайн-базлайн v2, кадры PT7/PT8): полноэкранный split —
 // слева текст с панелью Markdown, в центре живой предпросмотр в теме портала,
@@ -39,9 +40,9 @@ type Mode = "edit" | "split" | "view";
 type UploadingFile = { name: string; percent: number };
 
 const MODES: Array<[Mode, string, "edit" | "split" | "eye", string]> = [
-  ["edit", "Текст", "edit", "Только редактор"],
-  ["split", "Вместе", "split", "Текст и предпросмотр"],
-  ["view", "Просмотр", "eye", "Только предпросмотр"],
+  ["edit", t("ai.text"), "edit", t("ai.editor_only")],
+  ["split", t("ai.side_by_side"), "split", t("ai.text_preview")],
+  ["view", t("ai.preview"), "eye", t("ai.preview_only")],
 ];
 
 function draftKey(portalId: number, articleId: number | null): string {
@@ -111,7 +112,7 @@ export function PortalArticleEditor({
           content: revision?.content ?? "",
         });
       })
-      .catch((caught) => setError(portalErrorMessage(caught, "Не удалось загрузить статью")))
+      .catch((caught) => setError(portalErrorMessage(caught, t("portals.could_not_load_article"))))
       .finally(() => setBusy(false));
   }, [article, portalId]);
 
@@ -169,7 +170,7 @@ export function PortalArticleEditor({
 
   const upload = useCallback(async (list: FileList | File[], insert: boolean) => {
     if (!loaded) {
-      setError("Сначала создайте статью — файлы прикрепляются к существующей статье");
+      setError(t("portals.create_article_first_files_attach"));
       return;
     }
     setError("");
@@ -186,7 +187,7 @@ export function PortalArticleEditor({
           insertText(`\n${fileMarkdown(payload.file.name, payload.file.path, true)}\n`);
         }
       } catch (caught) {
-        setError(portalErrorMessage(caught, `Не удалось загрузить ${file.name}`));
+        setError(portalErrorMessage(caught, t("portals.could_not_upload_file", { name: file.name })));
       } finally {
         setUploading(null);
       }
@@ -199,7 +200,7 @@ export function PortalArticleEditor({
       if (loaded) await deleteArticleFile(portalId, loaded.id, file.id);
       setFiles((current) => current.filter((item) => item.id !== file.id));
     } catch (caught) {
-      setError(portalErrorMessage(caught, "Не удалось удалить файл"));
+      setError(portalErrorMessage(caught, t("portals.could_not_delete_file")));
     }
   }
 
@@ -257,7 +258,7 @@ export function PortalArticleEditor({
         return createdRevisionId === null ? null : { article: created.article, revisionId: createdRevisionId };
       }
     } catch (caught) {
-      setError(portalErrorMessage(caught, "Не удалось сохранить статью"));
+      setError(portalErrorMessage(caught, t("portals.could_not_save_article")));
       return null;
     } finally {
       setBusy(false);
@@ -293,27 +294,24 @@ export function PortalArticleEditor({
   const dirty = baseline !== null
     && (baseline.title !== title || baseline.summary !== summary || baseline.content !== content);
   const badge = loaded === null
-    ? { tone: "draft", text: "Новая статья · не сохранена" }
+    ? { tone: "draft", text: t("portals.new_article_not_saved") }
     : dirty
-      ? { tone: "draft", text: "Есть несохранённые правки — их ещё нет на портале" }
+      ? { tone: "draft", text: t("portals.there_unsaved_edits_they_not") }
       : draftPending
-        ? { tone: "draft", text: `Редакция ${latestRevision!.revision} · черновик` }
-        : { tone: "live", text: `Редакция ${loaded.publishedRevision?.revision ?? "—"} · опубликована` };
+        ? { tone: "draft", text: t("portals.revision_draft", { revision: latestRevision!.revision }) }
+        : { tone: "live", text: t("portals.revision_published", { revision: loaded.publishedRevision?.revision ?? "—" }) };
 
   return (
     <div className="portal-editor">
       <div className="portal-editor-head">
         <button className="portal-editor-back" type="button" onClick={onClose}>
-          <Icon name="chevronLeft" size={16} strokeWidth={2} />Материалы
-        </button>
+          <Icon name="chevronLeft" size={16} strokeWidth={2} />{t("portals.material")}</button>
         <span className="portal-editor-crumb">{category?.name ?? ""}</span>
         <span className="portal-editor-gap" />
         <span className={`portal-editor-badge is-${badge.tone}`}><i />{badge.text}</span>
         <Segmented className="portal-editor-modes" items={MODES} value={mode} setValue={setMode} />
         {canManage && (
-          <Button variant="secondary" className="portal-editor-save" disabled={busy || !ready} onClick={() => void save()}>
-            Сохранить черновик
-          </Button>
+          <Button variant="secondary" className="portal-editor-save" disabled={busy || !ready} onClick={() => void save()}>{t("portals.save_draft")}</Button>
         )}
         {canManage && (
           <Button
@@ -322,9 +320,7 @@ export function PortalArticleEditor({
             icon="check"
             disabled={busy || !ready}
             onClick={() => void publish()}
-          >
-            Опубликовать
-          </Button>
+          >{t("common.publish")}</Button>
         )}
       </div>
 
@@ -335,12 +331,12 @@ export function PortalArticleEditor({
           <div className="portal-editor-column">
             <div className="portal-editor-title">
               <input
-                placeholder="Заголовок статьи"
+                placeholder={t("portals.article_title")}
                 value={title}
                 onChange={(event) => setTitle(event.target.value)}
               />
               <div className="portal-editor-slug">
-                <span>Адрес:</span>
+                <span>{t("portals.address")}</span>
                 {editingSlug
                   ? <input
                       autoFocus
@@ -349,7 +345,7 @@ export function PortalArticleEditor({
                       onChange={(event) => setSlug(event.target.value.toLocaleLowerCase())}
                     />
                   : <code>/articles/{slug}</code>}
-                {!editingSlug && <button type="button" onClick={() => setEditingSlug(true)}>изменить</button>}
+                {!editingSlug && <button type="button" onClick={() => setEditingSlug(true)}>{t("portals.change")}</button>}
               </div>
             </div>
 
@@ -410,8 +406,8 @@ export function PortalArticleEditor({
               {dropping && (
                 <div className="portal-editor-drop">
                   <Icon name="upload" size={30} strokeWidth={1.8} />
-                  <strong>Отпустите, чтобы добавить в статью</strong>
-                  <span>Изображение встанет в текст, остальные файлы прикрепятся вложением к статье. PNG, JPG, WebP, PDF, DOCX · до 25 МБ</span>
+                  <strong>{t("portals.drop_add_article")}</strong>
+                  <span>{t("portals.image_goes_into_text_other")}</span>
                 </div>
               )}
             </div>
@@ -420,7 +416,7 @@ export function PortalArticleEditor({
               <span>{editorStats(content)}</span>
               <span>{cursorPosition(content, caret)}</span>
               <span className="portal-editor-gap" />
-              {autoSavedAt && <span>Черновик сохранён автоматически в {autoSavedAt.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" })}</span>}
+              {autoSavedAt && <span>{t("portals.draft_autosaved_at", { time: fmt.time(autoSavedAt) })}</span>}
             </div>
           </div>
         )}
@@ -428,18 +424,17 @@ export function PortalArticleEditor({
         {mode !== "edit" && (
           <div className="portal-preview-column">
             <div className="portal-preview-head">
-              <span>ПРЕДПРОСМОТР · ТЕМА ПОРТАЛА {theme.name.toLocaleUpperCase()}</span>
+              <span>{t("portals.preview_theme", { theme: theme.name.toLocaleUpperCase() })}</span>
               <span className="portal-editor-gap" />
-              <a href={portal.publicUrl} rel="noreferrer" target="_blank" title="Открыть как посетитель">
-                <Icon name="external" size={13} strokeWidth={1.9} />Как у посетителя
-              </a>
+              <a href={portal.publicUrl} rel="noreferrer" target="_blank" title={t("portals.open_as_visitor")}>
+                <Icon name="external" size={13} strokeWidth={1.9} />{t("portals.visitor_s_view")}</a>
             </div>
             <div className="portal-preview-body">
               <article className="portal-preview-article">
                 <div className="portal-preview-crumbs">
-                  <span>Помощь</span><span>/</span><span>{category?.name ?? ""}</span>
+                  <span>{t("portals.help")}</span><span>/</span><span>{category?.name ?? ""}</span>
                 </div>
-                <h1>{title || "Без заголовка"}</h1>
+                <h1>{title || t("ai.untitled")}</h1>
                 {summary && <p className="portal-preview-lead">{summary}</p>}
                 <MarkdownContent content={content} />
               </article>
@@ -450,7 +445,7 @@ export function PortalArticleEditor({
         <aside className="portal-editor-rail">
           <div className="portal-rail-fields">
             <label>
-              <span>Раздел</span>
+              <span>{t("admin.section")}</span>
               <span className="portal-select">
                 <select value={categoryId} onChange={(event) => setCategoryId(event.target.value)}>
                   {categories.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
@@ -459,7 +454,7 @@ export function PortalArticleEditor({
               </span>
             </label>
             <label>
-              <span>Язык</span>
+              <span>{t("portals.language")}</span>
               <span className="portal-select">
                 <select value={locale} onChange={(event) => setLocale(event.target.value)}>
                   {LOCALE_OPTIONS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
@@ -468,15 +463,15 @@ export function PortalArticleEditor({
               </span>
             </label>
             <label>
-              <span>Краткое описание <small>· показывается в списке и поиске</small></span>
+              <span>{t("ai.short_description")}<small>{t("portals.shown_list_search")}</small></span>
               <textarea value={summary} onChange={(event) => setSummary(event.target.value)} />
             </label>
           </div>
 
           <div className="portal-rail-block">
             <div className="portal-rail-head">
-              <span>ФАЙЛЫ СТАТЬИ</span>
-              <button type="button" onClick={() => fileInputRef.current?.click()}>Загрузить</button>
+              <span>{t("portals.article_files")}</span>
+              <button type="button" onClick={() => fileInputRef.current?.click()}>{t("common.upload")}</button>
             </div>
             {/* Два механизма и два поля выбора: скрепка и рейка прикрепляют
                 файл к статье, кнопка «изображение» ставит картинку в текст. */}
@@ -513,8 +508,8 @@ export function PortalArticleEditor({
               }}
             >
               <Icon name="upload" size={20} strokeWidth={1.8} />
-              <p>Перетащите файлы</p>
-              <p>или <button type="button" onClick={() => fileInputRef.current?.click()}>выберите на диске</button> · до 25 МБ</p>
+              <p>{t("ai.drag_files_here")}</p>
+              <p>{t("ai.or")}<button type="button" onClick={() => fileInputRef.current?.click()}>{t("ai.pick_them_from_disk")}</button>{t("ai.up_25_mb")}</p>
             </div>
 
             <div className="portal-rail-files">
@@ -523,7 +518,7 @@ export function PortalArticleEditor({
                   <i><Icon name="image" size={14} strokeWidth={1.8} /></i>
                   <span>
                     <strong>{uploading.name}</strong>
-                    <small className="is-progress">загружаем… {uploading.percent} %</small>
+                    <small className="is-progress">{t("common.uploading_percent", { percent: uploading.percent })}</small>
                     <span className="portal-rail-progress"><i style={{ width: `${uploading.percent}%` }} /></span>
                   </span>
                 </div>
@@ -536,14 +531,14 @@ export function PortalArticleEditor({
                     <i><Icon name={image ? "image" : "file"} size={14} strokeWidth={1.8} /></i>
                     <span>
                       <strong>{file.name}</strong>
-                      <small>{fileMeta(file.name, file.size)}{inserted ? " · вставлен в текст" : " · вложение статьи"}</small>
+                      <small>{fileMeta(file.name, file.size)}{inserted ? ` ${t("portals.inserted_into_text")}` : ` ${t("portals.article_attachment")}`}</small>
                     </span>
                     {/* В текст вставляется только картинка: документ — вложение
                         статьи, посетитель скачивает его списком под текстом. */}
                     {image && !inserted && (
                       <button
                         className="portal-rail-file-insert"
-                        title="Вставить в текст"
+                        title={t("portals.insert_into_text")}
                         type="button"
                         onClick={() => insertText(`\n${fileMarkdown(file.name, file.path, true)}\n`)}
                       >
@@ -551,14 +546,14 @@ export function PortalArticleEditor({
                       </button>
                     )}
                     <button
-                      title="Копировать Markdown"
+                      title={t("ai.copy_as_markdown")}
                       type="button"
                       onClick={() => void navigator.clipboard?.writeText(fileMarkdown(file.name, file.path, image))}
                     >
                       <Icon name="copy" size={13} strokeWidth={1.9} />
                     </button>
                     {canManage && (
-                      <button className="portal-rail-file-remove" title="Удалить файл" type="button" onClick={() => void removeFile(file)}>
+                      <button className="portal-rail-file-remove" title={t("portals.delete_file")} type="button" onClick={() => void removeFile(file)}>
                         <Icon name="trash" size={13} strokeWidth={1.9} />
                       </button>
                     )}
@@ -571,18 +566,18 @@ export function PortalArticleEditor({
           {loaded && (
             <div className="portal-rail-block">
               <div className="portal-rail-head">
-                <span>ОЦЕНКИ ЧИТАТЕЛЕЙ</span>
+                <span>{t("portals.reader_ratings")}</span>
               </div>
               <div className="portal-rail-votes">
                 <span className="is-helpful">
                   <Icon name="check" size={13} strokeWidth={2.4} />
                   {loaded.feedback?.helpful ?? 0}
-                  <small>полезно</small>
+                  <small>{t("portals.helpful")}</small>
                 </span>
                 <span className="is-unhelpful">
                   <Icon name="close" size={13} strokeWidth={2.4} />
                   {loaded.feedback?.unhelpful ?? 0}
-                  <small>не помогло</small>
+                  <small>{t("portals.did_not_help")}</small>
                 </span>
               </div>
             </div>
@@ -590,8 +585,8 @@ export function PortalArticleEditor({
 
           <div className="portal-rail-block">
             <div className="portal-rail-head">
-              <span>ВЕРСИИ</span>
-              <span className="portal-rail-hint">неизменяемые</span>
+              <span>{t("portals.versions")}</span>
+              <span className="portal-rail-hint">{t("portals.immutable")}</span>
             </div>
             <div className="portal-rail-revisions">
               {revisions.map((revision) => {
@@ -605,16 +600,16 @@ export function PortalArticleEditor({
                   >
                     <i className={published ? "is-published" : revision.id === selectedRevisionId ? "is-draft" : ""} />
                     <span>
-                      <strong>Редакция {revision.revision}</strong>
-                      <small>{published ? "" : "черновик · "}{shortDateTime(revision.createdAt)}{revision.authorName ? ` · ${revision.authorName}` : ""}</small>
+                      <strong>{t("portals.revision_number", { revision: revision.revision })}</strong>
+                      <small>{published ? "" : t("portals.draft_prefix")}{shortDateTime(revision.createdAt)}{revision.authorName ? ` · ${revision.authorName}` : ""}</small>
                     </span>
-                    {revision.id === selectedRevisionId && !published && <small className="portal-rail-tag is-current">текущая</small>}
-                    {published && <small className="portal-rail-tag is-published">опубликована</small>}
+                    {revision.id === selectedRevisionId && !published && <small className="portal-rail-tag is-current">{t("profile.current")}</small>}
+                    {published && <small className="portal-rail-tag is-published">{t("portals.published_2")}</small>}
                   </button>
                 );
               })}
             </div>
-            <p>Публикация выбирает одну редакцию. Посетители видят только опубликованную.</p>
+            <p>{t("portals.publishing_picks_one_revision_visitors")}</p>
           </div>
         </aside>
       </div>

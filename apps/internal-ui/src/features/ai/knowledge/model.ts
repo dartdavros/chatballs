@@ -1,8 +1,11 @@
+import { readableSize } from "../../../shared/utils";
+import { t } from "../../../i18n";
+
 export * from "./api";
 export type * from "./types";
 
 export function formatSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} Б`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} КБ`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} МБ`;
+  // Байты показываются только у совсем маленьких вложений: ниже килобайта
+  // «1 КБ» врало бы заметнее, чем помогало.
+  return bytes < 1024 ? t("unit.b", { value: bytes }) : readableSize(bytes);
 }

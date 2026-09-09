@@ -11,6 +11,7 @@ import { EmployeePasswordDialog } from "./EmployeePasswordDialog";
 import { EmployeeSecuritySections } from "./EmployeeSecuritySections";
 import { OwnershipTransferModal } from "./OwnershipTransferModal";
 import { employeeForm, employeeStatusKey, type EmployeeForm } from "./model";
+import { t } from "../../i18n";
 
 // Карточка сотрудника (дизайн-базлайн v2, кадры E3/E4).
 
@@ -37,7 +38,7 @@ export function EmployeeDetailPage({ groups, employeeId, setRoute }: {
 
   useEffect(() => {
     setMessage("");
-    void refresh().catch(() => setMessage("Не удалось загрузить карточку сотрудника"));
+    void refresh().catch(() => setMessage(t("admin.could_not_load_operator_card")));
   }, [refresh]);
 
   function updateForm(field: keyof EmployeeForm, value: string | boolean | number[]) {
@@ -52,7 +53,7 @@ export function EmployeeDetailPage({ groups, employeeId, setRoute }: {
       await api(`/api/v1/employees/${employeeId}/update/`, { method: "POST", body: JSON.stringify(form) });
       await refresh();
     } catch (reason) {
-      setMessage(reason instanceof Error ? reason.message : "Не удалось сохранить изменения");
+      setMessage(reason instanceof Error ? reason.message : t("admin.could_not_save_changes"));
     } finally {
       setSaving(false);
     }
@@ -65,7 +66,7 @@ export function EmployeeDetailPage({ groups, employeeId, setRoute }: {
       await action();
       await refresh();
     } catch (reason) {
-      setMessage(reason instanceof Error ? reason.message : "Не удалось выполнить действие");
+      setMessage(reason instanceof Error ? reason.message : t("common.could_not_complete_action"));
     } finally {
       setBusy(false);
     }
@@ -90,7 +91,7 @@ export function EmployeeDetailPage({ groups, employeeId, setRoute }: {
       {isOwnerCard && (
         <div className="employee-owner-banner">
           <Icon name="lock" size={16} strokeWidth={1.8} />
-          <span>Владельца нельзя удалить, заблокировать или сменить ему роль — единственный путь изменения роли владельца это передача владения.</span>
+          <span>{t("admin.owner_cannot_deleted_blocked_or")}</span>
         </div>
       )}
       {message && <div className="employees-error"><Icon name="alert" size={16} strokeWidth={1.8} />{message}</div>}

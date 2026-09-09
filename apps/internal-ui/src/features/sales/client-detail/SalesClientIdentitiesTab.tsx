@@ -6,6 +6,7 @@ import { Button } from "../../../shared/ui-controls";
 import { EmptyState } from "../../../shared/ui";
 import { SalesClientMergeDialog } from "./SalesClientMergeDialog";
 import type { ClientDetailVm } from "./model";
+import { t } from "../../../i18n";
 
 // Вкладка «Идентификаторы» (кадр K5): идентичности по подключениям и, справа,
 // предложение объединения. Объединять может только владелец (ADR-CHATBALLS-0006) —
@@ -28,14 +29,14 @@ export function SalesClientIdentitiesTab({ client, canMerge, openClient, onMerge
       await action();
       done();
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Не удалось выполнить операцию");
+      setError(caught instanceof Error ? caught.message : t("sales.could_not_complete_operation"));
     } finally {
       setSaving(false);
     }
   }
 
   if (client.identities.length === 0) {
-    return <EmptyState title="Нет идентификаторов подключений" />;
+    return <EmptyState title={t("sales.no_connection_identities")} />;
   }
 
   const rail = Boolean(client.duplicate);
@@ -55,17 +56,17 @@ export function SalesClientIdentitiesTab({ client, canMerge, openClient, onMerge
             <b className={identity.confirmed ? "is-ok" : ""}>{identity.status}</b>
           </div>
         ))}
-        <p>Идентичности разных подключений не объединяются автоматически. Подтверждённой считается только та, что подключение отдало с проверенным телефоном.</p>
+        <p>{t("sales.identities_from_different_connections_not")}</p>
       </div>
       {rail && (
         <div className="sales-client-ids-rail">
           {client.duplicate && (
             <section className="sales-client-section-card sales-client-duplicate">
               <div className="sales-client-duplicate-head">
-                <h3>Возможный дубликат</h3>
-                <b>предложение</b>
+                <h3>{t("sales.possible_duplicate")}</h3>
+                <b>{t("sales.suggestion")}</b>
               </div>
-              <p>Совпадает телефон{client.duplicate.phoneVerified ? ", подтверждённый подключением" : " (не подтверждён подключением)"}. Объединение перенесёт идентичности и диалоги; операция аудируется и требует причины.</p>
+              <p>{t("sales.phone_matches", { confirmed: client.duplicate.phoneVerified ? t("sales.confirmed_by_connection") : ` ${t("sales.not_confirmed_by_connection")}` })}. Объединение перенесёт идентичности и диалоги; операция аудируется и требует причины.</p>
               <div className="sales-client-duplicate-row">
                 <ContactAvatar avatarUrl={client.duplicate.avatarUrl || undefined} initials={client.duplicate.initials} background="var(--n-4)" className="sales-client-duplicate-avatar" />
                 <span>
@@ -75,11 +76,11 @@ export function SalesClientIdentitiesTab({ client, canMerge, openClient, onMerge
               </div>
               <div className="sales-client-duplicate-actions">
                 {canMerge
-                  ? <Button variant="primary" onClick={() => { setError(""); setMerging(true); }}>Сравнить и объединить</Button>
-                  : <Button variant="primary" onClick={() => openClient(client.duplicate!.id)}>Открыть и сравнить</Button>}
-                <Button variant="secondary" onClick={() => openClient(client.duplicate!.id)}>Не то</Button>
+                  ? <Button variant="primary" onClick={() => { setError(""); setMerging(true); }}>{t("sales.compare_merge")}</Button>
+                  : <Button variant="primary" onClick={() => openClient(client.duplicate!.id)}>{t("sales.open_compare")}</Button>}
+                <Button variant="secondary" onClick={() => openClient(client.duplicate!.id)}>{t("sales.not_match")}</Button>
               </div>
-              {!canMerge && <small className="sales-client-duplicate-note">Объединять контакты может только владелец.</small>}
+              {!canMerge && <small className="sales-client-duplicate-note">{t("sales.only_owner_can_merge_contacts")}</small>}
             </section>
           )}
         </div>

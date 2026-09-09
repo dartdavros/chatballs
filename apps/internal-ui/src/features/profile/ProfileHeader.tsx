@@ -2,15 +2,16 @@ import type { SessionUser } from "../../types";
 import { Avatar } from "../../shared/ui";
 import { Button } from "../../shared/ui-controls";
 import { monthYear } from "../../shared/utils";
+import { t } from "../../i18n";
 
 // Шапка «Профиля» (дизайн-базлайн v2, кадры P1/P2): фото 72 · имя с бейджем
 // роли · email, дата вступления и группы · «Выйти». Роль показана бейджем,
 // отдельного поля «Роль» в форме нет.
 
 const ROLE_LABEL: Record<SessionUser["role"], string> = {
-  OWNER: "Владелец",
-  ADMIN: "Администратор",
-  EMPLOYEE: "Сотрудник",
+  OWNER: t("common.owner"),
+  ADMIN: t("common.administrator"),
+  EMPLOYEE: t("common.operator"),
 };
 
 export function ProfileHeader({ user, compact = false, onLogout }: { user: SessionUser; compact?: boolean; onLogout: () => void }) {
@@ -26,11 +27,11 @@ export function ProfileHeader({ user, compact = false, onLogout }: { user: Sessi
         {/* Кадр M: на узком экране под именем только email. */}
         <p>
           {user.email}
-          {!compact && user.joinedAt ? ` · в организации с ${monthYear(user.joinedAt)}` : ""}
-          {!compact && groups ? ` · группы: ${groups}` : ""}
+          {!compact && user.joinedAt ? ` ${t("profile.in_organization_since", { date: monthYear(user.joinedAt) })}` : ""}
+          {!compact && groups ? ` ${t("profile.groups_list", { groups })}` : ""}
         </p>
       </div>
-      <Button icon="logout" type="button" variant="danger-outline" onClick={onLogout}>Выйти</Button>
+      <Button icon="logout" type="button" variant="danger-outline" onClick={onLogout}>{t("common.sign_out")}</Button>
     </header>
   );
 }

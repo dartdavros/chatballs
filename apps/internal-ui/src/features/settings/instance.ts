@@ -1,4 +1,5 @@
 import { api } from "../../api/client";
+import { t } from "../../i18n";
 
 // Настройки инсталляции (раздел «Платформа» и карточка relay в «Голосовых и
 // звонках»). Один эндпоинт на всю установку: адрес, исходящая почта и TURN.
@@ -20,6 +21,9 @@ export type InstancePayload = {
   publicScheme: "http" | "https";
   publicUrl: string;
   updatedAt: string | null;
+  // Язык экранов до входа и умолчание для организаций без своего языка.
+  defaultLanguage: string;
+  languages: Array<{ code: string; label: string }>;
   email: EmailPayload;
   turn: { urls: string[]; ttlSeconds: number; secretReady: boolean };
 };
@@ -47,7 +51,7 @@ export function checkInstanceEmail(): Promise<string> {
 export function instanceError(error: unknown): { detail: string; errors: Record<string, string> } {
   if (error && typeof error === "object" && "payload" in error) {
     const payload = (error as { payload?: { detail?: string; errors?: Record<string, string> } }).payload;
-    return { detail: payload?.detail ?? "Не удалось сохранить", errors: payload?.errors ?? {} };
+    return { detail: payload?.detail ?? t("common.could_not_save"), errors: payload?.errors ?? {} };
   }
-  return { detail: error instanceof Error ? error.message : "Не удалось сохранить", errors: {} };
+  return { detail: error instanceof Error ? error.message : t("common.could_not_save"), errors: {} };
 }

@@ -1,6 +1,7 @@
 import { agentColorOf, groupColorOf } from "../../conversations/model";
 import { shortDate, shortDateTime } from "../../../shared/utils";
 import { avatarColor, channelMap, contactTime, initialsOf, type ClientChannelCode } from "../clients/model";
+import { t } from "../../../i18n";
 
 // Карточка контакта (дизайн-базлайн v2, кадры K3–K5). Вкладка «Согласия»
 // убрана — журнал согласий отдельной сущностью не ведётся; блока «Связанные
@@ -9,14 +10,14 @@ import { avatarColor, channelMap, contactTime, initialsOf, type ClientChannelCod
 export type ClientDetailTab = "overview" | "dialogs" | "ids" | "audit";
 
 const PROVIDER_TO_CHANNEL: Record<string, ClientChannelCode> = { EMAIL: "EMAIL", MAX: "MAX", TELEGRAM: "TG", WEB: "WEB" };
-const PROVIDER_LABEL: Record<string, string> = { EMAIL: "Email", MAX: "MAX", TELEGRAM: "Telegram", WEB: "Web-виджет" };
+const PROVIDER_LABEL: Record<string, string> = { EMAIL: "Email", MAX: "MAX", TELEGRAM: "Telegram", WEB: t("common.web_widget") };
 
 // Подпись и цвет режима диалога — те же, что в чате и в списке контактов.
 const MODE_META: Record<ClientDialogMode, { label: string; color: string; bg: string; dot: string }> = {
-  ai: { label: "AI отвечает", color: "var(--ai)", bg: "color-mix(in srgb, var(--ai) 14%, var(--surface-card))", dot: "var(--ai)" },
-  wait: { label: "Ждёт", color: "var(--warning-text)", bg: "var(--warning-bg)", dot: "#faad14" },
-  operator: { label: "Ведёт человек", color: "var(--primary-text)", bg: "var(--primary-bg)", dot: "var(--primary)" },
-  closed: { label: "Закрыт", color: "var(--n-4)", bg: "var(--n-9)", dot: "var(--n-5)" },
+  ai: { label: t("conversations.ai_replying"), color: "var(--ai)", bg: "color-mix(in srgb, var(--ai) 14%, var(--surface-card))", dot: "var(--ai)" },
+  wait: { label: t("sales.waiting"), color: "var(--warning-text)", bg: "var(--warning-bg)", dot: "#faad14" },
+  operator: { label: t("sales.person_handling"), color: "var(--primary-text)", bg: "var(--primary-bg)", dot: "var(--primary)" },
+  closed: { label: t("sales.closed"), color: "var(--n-4)", bg: "var(--n-9)", dot: "var(--n-5)" },
 };
 
 export type ClientDialogMode = "ai" | "wait" | "operator" | "closed";
@@ -25,6 +26,9 @@ export type ApiClientDetail = {
   id: number;
   cid: string;
   name: string;
+  // Признак анонимного посетителя приходит от сервера, а не угадывается по
+  // подписи: на английском слова «Гость» в ней уже не будет.
+  isGuest?: boolean;
   avatarUrl?: string;
   description?: string;
   company?: string;
@@ -111,14 +115,14 @@ export type ClientDetailVm = {
 };
 
 export const clientDetailTabsOf = (client: ClientDetailVm): Array<{ key: ClientDetailTab; label: string; count?: number }> => [
-  { key: "overview", label: "Обзор" },
-  { key: "dialogs", label: "Диалоги", count: client.totalDialogs },
-  { key: "ids", label: "Идентификаторы", count: client.identities.length },
-  { key: "audit", label: "Аудит" },
+  { key: "overview", label: t("sales.overview") },
+  { key: "dialogs", label: t("common.conversations"), count: client.totalDialogs },
+  { key: "ids", label: t("sales.identities"), count: client.identities.length },
+  { key: "audit", label: t("common.audit") },
 ];
 
 export function toClientDetailVm(api: ApiClientDetail): ClientDetailVm {
-  const isGuest = /гость/i.test(api.name);
+  const isGuest = Boolean(api.isGuest);
   const duplicate = api.duplicate;
   return {
     id: api.id,
@@ -136,10 +140,10 @@ export function toClientDetailVm(api: ApiClientDetail): ClientDetailVm {
     channels: api.channels.map((code) => ({ code, ...channelMap[code] })),
     totalDialogs: api.totalDialogs,
     summary: [
-      { label: "Диалогов", value: String(api.totalDialogs) },
-      { label: "Открытых", value: String(api.openDialogs), accent: api.openDialogs > 0 },
-      { label: "Первый контакт", value: shortDate(api.firstContactAt), compact: true },
-      { label: "Последняя активность", value: contactTime(api.lastActivityAt), compact: true },
+      { label: t("sales.conversations"), value: String(api.totalDialogs) },
+      { label: t("sales.open"), value: String(api.openDialogs), accent: api.openDialogs > 0 },
+      { label: t("sales.first_contact"), value: shortDate(api.firstContactAt), compact: true },
+      { label: t("sales.last_activity"), value: contactTime(api.lastActivityAt), compact: true },
     ],
     dialogs: api.dialogs.map((dialog) => {
       const meta = MODE_META[dialog.mode];
@@ -174,8 +178,8 @@ export function toClientDetailVm(api: ApiClientDetail): ClientDetailVm {
         code,
         name: PROVIDER_LABEL[identity.provider] ?? identity.provider,
         value: [identity.externalUserId, identity.username ? `@${identity.username}` : ""].filter(Boolean).join(" · "),
-        since: `с ${shortDate(identity.createdAt)}`,
-        status: confirmed ? "Подтверждён телефоном" : "Не подтверждён",
+        since: t("sales.identity_since", { date: shortDate(identity.createdAt) }),
+        status: confirmed ? t("sales.confirmed_by_phone") : t("sales.not_confirmed"),
         confirmed,
         color: meta.color,
         bg: meta.bg,
@@ -199,7 +203,7 @@ export function toClientDetailVm(api: ApiClientDetail): ClientDetailVm {
         initials: initialsOf(duplicate.name),
         sourceLabel: [
           duplicate.sources.map((provider) => PROVIDER_LABEL[provider] ?? provider).join(", "),
-          `${duplicate.dialogs} диал.`,
+          t("sales.duplicate_dialogs", { count: duplicate.dialogs }),
           maskPhone(duplicate.phone),
         ].filter(Boolean).join(" · "),
       }

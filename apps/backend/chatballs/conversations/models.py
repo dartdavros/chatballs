@@ -257,6 +257,33 @@ class MessageAuthor(models.TextChoices):
     SYSTEM = "SYSTEM", "Система"
 
 
+class SystemEvent(models.TextChoices):
+    """Код системного события диалога.
+
+    Текст события раньше писался в ``text`` по-русски и оставался таким
+    навсегда: история — записи, а не подписи, и перевести её задним числом
+    нельзя. Поэтому в базу идёт код, а фразу собирает интерфейс на языке того,
+    кто её читает. ``text`` продолжает заполняться: он остаётся и запасным
+    вариантом для строк, записанных до этого поля, и тем, что видно в базе
+    глазами.
+    """
+
+    OPERATOR_TOOK = "operator_took", "Оператор перехватил диалог"
+    RETURNED_TO_AI = "returned_to_ai", "Диалог возвращён AI"
+    RETURNED_TO_QUEUE = "returned_to_queue", "Диалог возвращён в очередь"
+    AI_UNAVAILABLE = "ai_unavailable", "AI недоступен"
+    AI_HANDED_OVER = "ai_handed_over", "AI передал диалог оператору"
+    CALL_REQUESTED = "call_requested", "Запрошен звонок"
+    CALL_ACCEPTED = "call_accepted", "Клиент принял приглашение"
+    CALL_DECLINED = "call_declined", "Клиент отклонил приглашение"
+    CALL_CANCELLED = "call_cancelled", "Приглашение отменено"
+    CALL_MISSED = "call_missed", "Звонок пропущен"
+    CALL_EXPIRED = "call_expired", "Приглашение истекло"
+    CALL_STARTED = "call_started", "Звонок начался"
+    CALL_ENDED = "call_ended", "Звонок завершён"
+    CALL_FAILED = "call_failed", "Звонок не состоялся"
+
+
 class MessageKind(models.TextChoices):
     TEXT = "", "Текст"
     CONTACT_REQUEST = "contact_request", "Запрос контакта"
@@ -300,6 +327,11 @@ class Message(TenantRelationModel):
     # телефона), полученный контакт. Пустая строка = текст.
     kind = models.CharField(max_length=32, choices=MessageKind.choices, default=MessageKind.TEXT, blank=True)
     text = models.TextField(blank=True)
+    # Системное событие: код и его параметры (имя оператора, длительность).
+    # Пустой код — обычное сообщение либо системная запись, сделанная до
+    # появления поля; такие показываются по сохранённому тексту.
+    system_event = models.CharField(max_length=32, choices=SystemEvent.choices, blank=True, default="")
+    system_params = models.JSONField(default=dict, blank=True)
     # Санитизированный HTML входящего email. Остальные транспорты и исходящие
     # ответы используют plain text.
     content_html = models.TextField(blank=True)

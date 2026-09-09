@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { t } from "../i18n";
 
 // Постраничный список: страницу и фильтры считает сервер, здесь — только
 // состояние страницы и защита от гонок. Смена любого фильтра возвращает на
@@ -35,7 +36,7 @@ export type PagedResource<T, P> = {
 export function usePagedResource<P extends PagedPayload<unknown>>(
   load: (page: number) => Promise<P>,
   filters: unknown,
-  errorMessage = "Не удалось загрузить список",
+  errorMessage = t("shared.could_not_load_list"),
 ): PagedResource<P["items"][number], P> {
   const [payload, setPayload] = useState<P | null>(null);
   const [loading, setLoading] = useState(true);

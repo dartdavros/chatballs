@@ -18,6 +18,7 @@ import {
   type IntegrationKind,
   type IntegrationProvider,
 } from "./model";
+import { t } from "../../i18n";
 
 // Селектор «Тип» показывает только провайдеров рода активного таба (SPEC-CHATBALLS-0025 §2.2).
 function providerOptions(kind: IntegrationKind): Array<[string, string]> {
@@ -109,21 +110,21 @@ export function IntegrationForm({ initial, kind, onClose, onSaved }: { initial: 
       }
       onSaved();
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Не удалось сохранить");
+      setError(caught instanceof Error ? caught.message : t("common.could_not_save"));
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
-    <Modal open title={isEdit ? "Изменить интеграцию" : "Новая интеграция"} onCancel={onClose} footer={null} destroyOnClose>
+    <Modal open title={isEdit ? t("settings.edit_integration") : t("settings.new_integration")} onCancel={onClose} footer={null} destroyOnClose>
       <div className="integration-form">
         {isEdit ? (
-          <FormField label="Тип" value={meta.label} />
+          <FormField label={t("settings.type")} value={meta.label} />
         ) : (
-          <SelectField label="Тип" value={provider} onChange={(value) => setProvider(value as IntegrationProvider)} options={options} />
+          <SelectField label={t("settings.type")} value={provider} onChange={(value) => setProvider(value as IntegrationProvider)} options={options} />
         )}
-        <FormField label="Название" value={name} onChange={setName} placeholder={isEmail ? "например, Почта поддержки" : "например, OpenRouter · основной"} />
+        <FormField label={t("common.title")} value={name} onChange={setName} placeholder={isEmail ? t("settings.e_g_support_mailbox") : t("settings.e_g_openrouter_primary")} />
         {isEmail && <EmailFields value={emailConfig} onChange={setEmailConfig} />}
         {meta.testable && (
           <FormField
@@ -131,67 +132,65 @@ export function IntegrationForm({ initial, kind, onClose, onSaved }: { initial: 
             value={secret}
             onChange={setSecret}
             type="password"
-            placeholder={isEdit ? "оставьте пустым, чтобы не менять" : ""}
+            placeholder={isEdit ? t("settings.leave_empty_keep_unchanged") : ""}
           />
         )}
         {isEmail && !isEdit && (
-          <div className="integration-form-hint">Для Gmail и Яндекс используйте пароль приложения, не основной пароль аккаунта</div>
+          <div className="integration-form-hint">{t("settings.gmail_yandex_use_app_password")}</div>
         )}
-        {isDemo && <div className="integration-form-hint">Отвечает по знаниям агента без внешних запросов и ключей. Качество ответов ограничено — для реальной работы подключите OpenRouter или совместимый провайдер.</div>}
+        {isDemo && <div className="integration-form-hint">{t("settings.answers_from_agent_s_knowledge")}</div>}
         {!isEmail && !isWeb && !isDemo && <FormField label="Base URL" value={baseUrl} onChange={setBaseUrl} placeholder={meta.defaultBaseUrl || "—"} />}
         {isWeb && (
           <>
             <FormField
-              label="Разрешённые домены"
+              label={t("settings.allowed_domains")}
               value={allowedOrigins}
               onChange={setAllowedOrigins}
-              error={badOrigin && `Непонятный домен: ${badOrigin}`}
-              placeholder="example.com, *.example.com — через запятую"
+              error={badOrigin && t("settings.unclear_domain", { domain: badOrigin })}
+              placeholder={t("settings.example_com_example_com_comma")}
             />
-            <div className="integration-form-hint">Сайты, на которых виджету разрешено открываться: домен, поддомены через «*.» или полный origin с портом. На остальных чат ответит «Чат временно недоступен»</div>
+            <div className="integration-form-hint">{t("settings.sites_where_widget_may_open")}</div>
           </>
         )}
         {!isWeb && !isEmail && !isDemo && (
           <>
-            <FormField label="Прокси" value={proxyUrl} onChange={setProxyUrl} placeholder="http://host:port или socks5://user:pass@host:port — пусто, если без прокси" />
-            <div className="integration-form-hint">Пароль прокси наружу не отдаётся: вместо него точки. Оставьте их как есть — прежний пароль сохранится; чтобы сменить, впишите новый целиком</div>
+            <FormField label={t("settings.proxy")} value={proxyUrl} onChange={setProxyUrl} placeholder={t("settings.http_host_port_or_socks5")} />
+            <div className="integration-form-hint">{t("settings.proxy_password_never_returned_dots")}</div>
           </>
         )}
         {meta.hasModel && (
-          <FormField label="Модель по умолчанию" value={defaultModel} onChange={setDefaultModel} placeholder={provider === "OPENROUTER" ? "anthropic/claude-sonnet-4.6" : ""} />
+          <FormField label={t("settings.default_model")} value={defaultModel} onChange={setDefaultModel} placeholder={provider === "OPENROUTER" ? "anthropic/claude-sonnet-4.6" : ""} />
         )}
         {meta.hasModel && !isDemo && (
-          <FormField label="Модель расшифровки голосовых" value={transcriptionModel} onChange={setTranscriptionModel} placeholder="whisper-1" />
+          <FormField label={t("settings.voice_transcription_model")} value={transcriptionModel} onChange={setTranscriptionModel} placeholder="whisper-1" />
         )}
         {isEdit && initial.config.botUsername && (
-          <FormField label="Бот" value={`${initial.config.botName || initial.config.botUsername}${initial.config.botUsername ? ` · @${initial.config.botUsername}` : ""}${initial.config.botId ? ` · id ${initial.config.botId}` : ""}`} />
+          <FormField label={t("settings.bot")} value={`${initial.config.botName || initial.config.botUsername}${initial.config.botUsername ? ` · @${initial.config.botUsername}` : ""}${initial.config.botId ? ` · id ${initial.config.botId}` : ""}`} />
         )}
         {isMessenger && !isWeb && !isEmail && (
           <label className="integration-notifier-toggle">
-            <input type="checkbox" checked={isNotifier} onChange={(event) => setIsNotifier(event.target.checked)} />
-            Бот уведомлений для сотрудников (сервисный, клиентам не отвечает; привязка в профиле)
-          </label>
+            <input type="checkbox" checked={isNotifier} onChange={(event) => setIsNotifier(event.target.checked)} />{t("settings.notification_bot_operators_service_bot")}</label>
         )}
         {isMessenger && !isNotifier && (
           <SelectField
-            label="Агент"
+            label={t("common.agent")}
             value={channelId}
             onChange={setChannelId}
-            options={[["", "— не привязан —"], ...channels.map((c) => [String(c.id), c.name] as [string, string])]}
+            options={[["", t("settings.not_linked")], ...channels.map((c) => [String(c.id), c.name] as [string, string])]}
           />
         )}
         {widgetSnippet && (
           <div className="integration-snippet">
-            <FormField label="Код вставки на сайт" mono value={widgetSnippet} />
+            <FormField label={t("settings.embed_snippet_site")} mono value={widgetSnippet} />
             <Button variant="secondary" icon={copied ? "check" : "copy"} iconSize={15} onClick={() => void copySnippet()}>
-              {copied ? "Скопировано" : "Копировать"}
+              {copied ? t("common.copied") : t("common.copy")}
             </Button>
           </div>
         )}
         {error && <div className="integration-form-error">{error}</div>}
         <div className="integration-form-actions">
-          <Button variant="secondary" onClick={onClose}>Отмена</Button>
-          <Button variant="primary" disabled={!ready || submitting} onClick={submit}>{submitting ? "Сохранение…" : "Сохранить"}</Button>
+          <Button variant="secondary" onClick={onClose}>{t("common.cancel")}</Button>
+          <Button variant="primary" disabled={!ready || submitting} onClick={submit}>{submitting ? t("ai.saving") : t("common.save")}</Button>
         </div>
       </div>
     </Modal>

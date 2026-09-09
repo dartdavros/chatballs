@@ -11,7 +11,8 @@ from chatballs.calls.models import (
     CallStatus,
     ParticipantSide,
 )
-from chatballs.conversations.models import Message, MessageAuthor
+from chatballs.conversations.models import Message, MessageAuthor, SystemEvent
+from chatballs.i18n import t
 
 ALLOWED_TRANSITIONS = {
     CallStatus.REQUESTED: {
@@ -37,6 +38,29 @@ FAILURE_CODE_PATTERN = re.compile(r"^[A-Z][A-Z0-9_]{0,63}$")
 
 def _format_duration(seconds: int) -> str:
     return f"{seconds // 60:02d}:{seconds % 60:02d}"
+
+
+# Код события и его параметры: интерфейс собирает фразу на языке читателя, а
+# текст остаётся в базе запасным вариантом и читаемой записью.
+_TIMELINE_EVENTS: dict[str, str] = {
+    CallStatus.ACCEPTED: SystemEvent.CALL_ACCEPTED,
+    CallStatus.DECLINED: SystemEvent.CALL_DECLINED,
+    CallStatus.CANCELLED: SystemEvent.CALL_CANCELLED,
+    CallStatus.MISSED: SystemEvent.CALL_MISSED,
+    CallStatus.EXPIRED: SystemEvent.CALL_EXPIRED,
+    CallStatus.ACTIVE: SystemEvent.CALL_STARTED,
+    CallStatus.ENDED: SystemEvent.CALL_ENDED,
+    CallStatus.FAILED: SystemEvent.CALL_FAILED,
+}
+
+
+def _timeline_event(call: CallSession, target_status: str) -> tuple[str, dict]:
+    """Код события и параметры для строки таймлайна."""
+
+    code = _TIMELINE_EVENTS.get(target_status, "")
+    if code == SystemEvent.CALL_ENDED and call.duration_seconds is not None:
+        return code, {"duration": _format_duration(call.duration_seconds)}
+    return code, {}
 
 
 def _timeline_text(call: CallSession, target_status: str) -> str | None:
@@ -76,7 +100,9 @@ def transition_call(
     if target_status == call.status:
         return call
     if target_status not in ALLOWED_TRANSITIONS.get(call.status, set()):
-        raise CallInvalidTransition(f"Переход {call.status} -> {target_status} запрещён")
+        raise CallInvalidTransition(
+            t("calls.transition_forbidden", current=call.status, target=target_status)
+        )
     normalized_failure_code = failure_code.strip()
     if target_status == CallStatus.FAILED and not FAILURE_CODE_PATTERN.fullmatch(normalized_failure_code):
         raise CallInvalidTransition("Для FAILED требуется нормализованный failure_code")
@@ -106,9 +132,12 @@ def transition_call(
     call.save(update_fields=update_fields)
     timeline_text = _timeline_text(call, target_status)
     if timeline_text is not None:
+        event, params = _timeline_event(call, target_status)
         Message.objects.create(
             conversation_id=call.conversation_id,
             author_type=MessageAuthor.SYSTEM,
+            system_event=event,
+            system_params=params,
             text=timeline_text,
         )
     return call

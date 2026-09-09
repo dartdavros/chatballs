@@ -4,6 +4,7 @@ import { channelOptions } from "./model";
 /** Агент в фильтре: только то, что рисует выпадающий список. */
 export type AgentFilterOption = { id: number; name: string };
 import type { SalesClientsState } from "./useSalesClients";
+import { t } from "../../../i18n";
 
 // Фильтры списка (кадры K1/K2): поиск, «Все каналы», «Все агенты», чип
 // «С открытым диалогом»; «Сбросить» появляется только когда фильтр применён.
@@ -18,11 +19,11 @@ export function SalesClientsFilters({ clients, agents }: { clients: SalesClients
         value={clients.query}
         onChange={clients.setQuery}
         hotkey="/"
-        placeholder="Имя, email, телефон или логин…"
+        placeholder={t("sales.name_email_phone_or_username")}
       />
       <FilterDropdown
         icon="message"
-        label={clients.channelFilter.length ? "Каналы" : "Все каналы"}
+        label={clients.channelFilter.length ? t("common.channels") : t("sales.all_channels")}
         multiple
         open={clients.dropdown === "channels"}
         options={channelOptions.map((option) => ({ value: String(option.code), label: option.name, dot: option.color }))}
@@ -32,7 +33,7 @@ export function SalesClientsFilters({ clients, agents }: { clients: SalesClients
       />
       <FilterDropdown
         icon="robot"
-        label={clients.agentFilter.length ? "Агенты" : "Все агенты"}
+        label={clients.agentFilter.length ? t("common.agents") : t("sales.all_agents")}
         multiple
         open={clients.dropdown === "agents"}
         options={agents.map((agent) => ({ value: String(agent.id), label: agent.name }))}
@@ -41,10 +42,9 @@ export function SalesClientsFilters({ clients, agents }: { clients: SalesClients
         onSelect={(value) => clients.toggleAgent(Number(value))}
       />
       <button className={`sales-clients-chip ${clients.openOnly ? "active" : ""}`} type="button" onClick={clients.toggleOpenOnly}>
-        <i />С открытым диалогом
-      </button>
+        <i />{t("sales.with_open_conversation")}</button>
       <div className="sales-clients-filter-spacer" />
-      {clients.filtered && <button className="sales-clients-reset" type="button" onClick={clients.reset}>Сбросить</button>}
+      {clients.filtered && <button className="sales-clients-reset" type="button" onClick={clients.reset}>{t("common.reset")}</button>}
     </div>
   );
 }

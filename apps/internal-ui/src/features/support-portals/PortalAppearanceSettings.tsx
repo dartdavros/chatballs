@@ -11,6 +11,7 @@ import {
 } from "../help-center/themes/registry";
 import type { PortalThemeManifest, PortalThemeSchemeSetting } from "../help-center/themes/types";
 import { portalErrorMessage, updateSupportPortal, type SupportPortal } from "./model";
+import { t } from "../../i18n";
 
 // Кадр PT6: тема выбирается карточкой с мини-превью на цветах манифеста. Ни
 // названия, ни описания, ни цвета в UI не придумываются — всё из манифеста
@@ -67,7 +68,7 @@ export function PortalAppearanceSettings({
       onChanged(payload.portal);
       setSavedAt(payload.portal.updatedAt);
     } catch (caught) {
-      setFeedback(portalErrorMessage(caught, "Не удалось сохранить оформление"));
+      setFeedback(portalErrorMessage(caught, t("portals.could_not_save_appearance")));
     } finally {
       setBusy(false);
     }
@@ -76,7 +77,7 @@ export function PortalAppearanceSettings({
   return (
     <div className="portal-settings-card">
       <div>
-        <span className="portal-field-label">Тема</span>
+        <span className="portal-field-label">{t("profile.theme")}</span>
         <div className="portal-theme-grid">
           {themes.map((item) => (
             <button
@@ -89,7 +90,7 @@ export function PortalAppearanceSettings({
               <ThemePreview theme={item} />
               <span className="portal-theme-name">
                 <strong>{item.name}</strong>
-                {item.id === theme && <small>выбрана</small>}
+                {item.id === theme && <small>{t("portals.selected")}</small>}
               </span>
               <small className="portal-theme-desc">{item.description}</small>
             </button>
@@ -98,15 +99,15 @@ export function PortalAppearanceSettings({
             // Темы больше нет в сборке: показываем как есть, чтобы сохранение
             // не подменило её молча.
             <span className="portal-theme-card is-missing">
-              <span className="portal-theme-name"><strong>{theme}</strong><small>недоступна</small></span>
-              <small className="portal-theme-desc">Темы нет в этой сборке установки. Выберите другую, чтобы сохранить оформление.</small>
+              <span className="portal-theme-name"><strong>{theme}</strong><small>{t("portals.unavailable")}</small></span>
+              <small className="portal-theme-desc">{t("portals.theme_not_installation_build_pick")}</small>
             </span>
           )}
         </div>
       </div>
 
       <div>
-        <span className="portal-field-label">Цветовая схема</span>
+        <span className="portal-field-label">{t("portals.colour_scheme")}</span>
         <Segmented
           className="portal-scheme-segment"
           items={schemes}
@@ -116,12 +117,11 @@ export function PortalAppearanceSettings({
       </div>
 
       <div className="portal-settings-actions">
-        {canManage && <Button variant="primary" disabled={busy} onClick={() => void save()}>Сохранить оформление</Button>}
+        {canManage && <Button variant="primary" disabled={busy} onClick={() => void save()}>{t("portals.save_appearance")}</Button>}
         <a className="secondary-button" href={portal.publicUrl} rel="noreferrer" target="_blank">
-          <Icon name="eye" size={15} strokeWidth={1.9} />Предпросмотр портала
-        </a>
+          <Icon name="eye" size={15} strokeWidth={1.9} />{t("portals.portal_preview")}</a>
         <span className="portal-settings-gap" />
-        {savedAt && <span className="portal-settings-note">сохранено {shortDateTime(savedAt)}</span>}
+        {savedAt && <span className="portal-settings-note">{t("portals.saved_at_lower", { date: shortDateTime(savedAt) })}</span>}
       </div>
       {feedback && <div className="portal-form-error">{feedback}</div>}
     </div>

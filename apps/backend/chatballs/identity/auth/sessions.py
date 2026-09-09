@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
+from chatballs.i18n import current_language
 from chatballs.identity.audit import record_audit_event
 from chatballs.identity.auth.common import _challenge_payload, _user_payload
 from chatballs.identity.auth.totp_utils import TOTP_SESSION_KEY, TOTP_STARTED_KEY
@@ -22,7 +23,12 @@ class SessionView(APIView):
 
     def get(self, request: Request) -> Response:
         if not request.user.is_authenticated:
-            return Response({"authenticated": False})
+            # Язык установки нужен и до входа: логин и сброс пароля — экраны
+            # самой коробки, и на английской машине они должны открываться на
+            # языке установки, а не на языке браузера. Без этого фронтенд знал
+            # бы только про браузер и расходился бы с бэкендом, который язык
+            # установки учитывает.
+            return Response({"authenticated": False, "language": current_language()})
         return Response({"authenticated": True, "user": _user_payload(request.user)})
 
 

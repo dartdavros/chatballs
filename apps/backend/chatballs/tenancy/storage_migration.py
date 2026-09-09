@@ -16,6 +16,7 @@ from django.core.files import File
 from django.utils import timezone
 
 from chatballs.events.handlers import register
+from chatballs.i18n import t
 from chatballs.tenancy import storage_settings as ss
 from chatballs.tenancy.context import TenantContext
 
@@ -38,7 +39,7 @@ def _local_keys(root: Path) -> list[str]:
 def migrate_local_to_s3(row: ss.StorageSettings, *, batch_progress: int = 25) -> int:
     config = ss.config_from_settings(row)
     if not config.s3_configured:
-        raise ValueError("S3 не настроено")
+        raise ValueError(t("settings.s3_not_configured"))
     s3 = ss.build_s3_storage(config)
     root = Path(settings.MEDIA_ROOT)
     keys = _local_keys(root)

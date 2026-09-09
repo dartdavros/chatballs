@@ -25,6 +25,7 @@ from chatballs.calls.services import (
     resolve_invite,
 )
 from chatballs.conversations.models import Conversation
+from chatballs.i18n import t
 from chatballs.identity.audit import record_audit_event
 
 
@@ -49,16 +50,16 @@ class CallCreateView(APIView):
 
     def post(self, request: Request, conversation_id: int) -> Response:
         if "kind" not in request.data:
-            return Response({"detail": "Укажите тип звонка"}, status=400)
+            return Response({"detail": t("calls.kind_required")}, status=400)
         kind = str(request.data.get("kind", ""))
         if kind not in CallKind.values:
-            return Response({"detail": "Недопустимый тип звонка"}, status=400)
+            return Response({"detail": t("calls.kind_invalid")}, status=400)
         try:
             created = create_call_request(
                 context=request.tenant_context, conversation_id=conversation_id, kind=kind
             )
         except Conversation.DoesNotExist:
-            return Response({"detail": "Диалог не найден"}, status=404)
+            return Response({"detail": t("conversations.not_found")}, status=404)
         except CallAccessDenied as error:
             return Response({"detail": str(error)}, status=403)
         except CallConflict as error:
@@ -95,7 +96,7 @@ class CallDetailView(APIView):
                 id=call_session_id, organization=request.tenant_context.organization
             )
         except CallSession.DoesNotExist:
-            return Response({"detail": "Звонок не найден"}, status=404)
+            return Response({"detail": t("calls.not_found")}, status=404)
         try:
             ensure_call_access(user=request.tenant_context.membership, call_session=call)
         except CallAccessDenied as error:
@@ -113,7 +114,7 @@ class StaffAccessTokenView(APIView):
             )
             token = issue_staff_access_token(context=request.tenant_context, call_session=call)
         except CallSession.DoesNotExist:
-            return Response({"detail": "Звонок не найден"}, status=404)
+            return Response({"detail": t("calls.not_found")}, status=404)
         except CallAccessDenied as error:
             return Response({"detail": str(error)}, status=403)
         except CallConflict as error:
@@ -131,7 +132,7 @@ class CallCancelView(APIView):
             )
             cancel_call(context=request.tenant_context, call_session=call)
         except CallSession.DoesNotExist:
-            return Response({"detail": "Звонок не найден"}, status=404)
+            return Response({"detail": t("calls.not_found")}, status=404)
         except CallAccessDenied as error:
             return Response({"detail": str(error)}, status=403)
         except CallConflict as error:
@@ -163,7 +164,7 @@ class ConversationActiveCallView(APIView):
                 user=request.tenant_context.membership, conversation=conversation
             )
         except Conversation.DoesNotExist:
-            return Response({"detail": "Диалог не найден"}, status=404)
+            return Response({"detail": t("conversations.not_found")}, status=404)
         except CallAccessDenied as error:
             return Response({"detail": str(error)}, status=403)
         call = active_call_for_conversation(conversation)
@@ -181,7 +182,7 @@ class InviteResolveView(APIView):
         try:
             resolved = resolve_invite(token=token)
         except CallTokenError:
-            return Response({"detail": "Недействительное или истёкшее приглашение"}, status=404)
+            return Response({"detail": t("calls.invite_invalid")}, status=404)
         return _token_response(
             {
                 "call": public_invite_payload(
@@ -214,7 +215,7 @@ class CallAccessStateView(_CallAccessView):
         try:
             call = call_state_by_access_token(token=_bearer_token(request))
         except CallTokenError:
-            return Response({"detail": "Недействительный или истёкший call access token"}, status=404)
+            return Response({"detail": t("calls.token_invalid")}, status=404)
         return _token_response(
             {"call": public_call_state_payload(call), "iceServers": ice_servers_payload()}
         )
@@ -225,7 +226,7 @@ class CallAccessAcceptView(_CallAccessView):
         try:
             call = accept_call_by_access_token(token=_bearer_token(request))
         except CallTokenError:
-            return Response({"detail": "Недействительный или истёкший call access token"}, status=404)
+            return Response({"detail": t("calls.token_invalid")}, status=404)
         except CallConflict as error:
             return Response({"detail": str(error)}, status=409)
         return _token_response({"call": public_call_state_payload(call)})
@@ -236,7 +237,7 @@ class CallAccessDeclineView(_CallAccessView):
         try:
             call = decline_call_by_access_token(token=_bearer_token(request))
         except CallTokenError:
-            return Response({"detail": "Недействительный или истёкший call access token"}, status=404)
+            return Response({"detail": t("calls.token_invalid")}, status=404)
         except CallConflict as error:
             return Response({"detail": str(error)}, status=409)
         return _token_response({"call": public_call_state_payload(call)})
@@ -247,5 +248,5 @@ class CallAccessEndView(_CallAccessView):
         try:
             call = end_call_by_access_token(token=_bearer_token(request))
         except CallTokenError:
-            return Response({"detail": "Недействительный или истёкший call access token"}, status=404)
+            return Response({"detail": t("calls.token_invalid")}, status=404)
         return _token_response({"call": public_call_state_payload(call)})

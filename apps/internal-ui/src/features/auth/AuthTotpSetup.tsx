@@ -7,6 +7,7 @@ import { Button } from "../../shared/ui-controls";
 import { AuthCodeInput } from "./AuthCodeInput";
 import { AuthFrame } from "./AuthFrame";
 import { TotpQr } from "./TotpQr";
+import { t } from "../../i18n";
 
 export function AuthTotpSetup({ user: _user, onConfirmed }: { user: SessionUser; onConfirmed: (user: AuthenticatedUser) => void }) {
   const [secret, setSecret] = useState("");
@@ -54,22 +55,22 @@ export function AuthTotpSetup({ user: _user, onConfirmed }: { user: SessionUser;
   }
 
   return (
-    <AuthFrame title="Подключение двухфакторной аутентификации" subtitle="Отсканируйте QR-код в приложении-аутентификаторе, затем подтвердите кодом" logo="shield" width={440}>
+    <AuthFrame title={t("admin.setting_up_two_factor_authentication")} subtitle={t("admin.scan_qr_code_authenticator_app")} logo="shield" width={440}>
       <form className="auth-card auth-totp-setup-card" onSubmit={submit}>
-        <div className="auth-totp-step"><span>1</span><strong>Отсканируйте QR-код</strong></div>
+        <div className="auth-totp-step"><span>1</span><strong>{t("admin.scan_qr_code")}</strong></div>
         <TotpQr value={otpauthUrl || secret} />
-        <p className="auth-secret-caption">Не получается отсканировать? Введите ключ вручную:</p>
+        <p className="auth-secret-caption">{t("admin.cannot_scan_enter_key_manually")}</p>
         <div className="auth-secret-row">
           <code>{secret || <LogoSpinner size={16} />}</code>
-          <button type="button" onClick={copySecret} title="Скопировать" disabled={!secret}><Icon name={copied ? "check" : "copy"} size={15} /></button>
+          <button type="button" onClick={copySecret} title={t("common.copy_clipboard")} disabled={!secret}><Icon name={copied ? "check" : "copy"} size={15} /></button>
         </div>
         <div className="auth-totp-divider" />
-        <div className="auth-totp-step second"><span>2</span><strong>Введите код из приложения</strong></div>
+        <div className="auth-totp-step second"><span>2</span><strong>{t("admin.enter_code_from_app")}</strong></div>
         <AuthCodeInput value={code} onChange={(nextCode) => { setCode(nextCode); setError(false); }} error={error} autoFocus />
-        {error && <div className="auth-inline-error setup-error"><Icon name="warning" size={14} />Код не совпал. Попробуйте ещё раз</div>}
-        <Button className="auth-submit" type="submit" variant="primary" disabled={code.length !== 6 || submitting}>Активировать</Button>
+        {error && <div className="auth-inline-error setup-error"><Icon name="warning" size={14} />{t("admin.code_did_not_match_try")}</div>}
+        <Button className="auth-submit" type="submit" variant="primary" disabled={code.length !== 6 || submitting}>{t("admin.activate")}</Button>
       </form>
-      <div className="auth-cancel-link"><button className="link is-muted" type="button">Отмена</button></div>
+      <div className="auth-cancel-link"><button className="link is-muted" type="button">{t("common.cancel")}</button></div>
     </AuthFrame>
   );
 }

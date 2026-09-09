@@ -11,6 +11,7 @@ urlpatterns = [
     path("password-reset/confirm/", auth.PasswordResetConfirmView.as_view(), name="auth-password-reset-confirm"),
     path("profile/update/", auth.ProfileUpdateView.as_view(), name="auth-profile-update"),
     path("profile/appearance/", auth.ProfileAppearanceView.as_view(), name="auth-profile-appearance"),
+    path("profile/language/", auth.ProfileLanguageView.as_view(), name="auth-profile-language"),
     path("profile/avatar/", auth.ProfileAvatarView.as_view(), name="auth-profile-avatar"),
     path("profile/password/", auth.ProfilePasswordView.as_view(), name="auth-profile-password"),
     path("profile/totp/start/", auth.ProfileTotpStartView.as_view(), name="auth-profile-totp-start"),

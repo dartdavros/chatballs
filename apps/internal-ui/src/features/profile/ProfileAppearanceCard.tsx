@@ -4,15 +4,16 @@ import { api } from "../../api/client";
 import { ACCENT_PRESETS, DEFAULT_ACCENT, type UiTheme } from "../../shared/appearance";
 import { Icon } from "../../shared/icons";
 import type { AuthenticatedUser, SessionUser } from "../../types";
+import { t } from "../../i18n";
 
 // «Внешний вид» (дизайн-базлайн v2, кадр P1; SPEC-CHATBALLS-0031 §7): тема сегментом
 // со значками, акцент — четыре пресета и произвольный HEX. Настройка личная и
 // хранится в учётной записи (ADR-0029).
 
 const THEME_OPTIONS: Array<[UiTheme, string, Parameters<typeof Icon>[0]["name"]]> = [
-  ["LIGHT", "Светлая", "sunny"],
-  ["DARK", "Тёмная", "moon"],
-  ["SYSTEM", "Как в системе", "monitor"],
+  ["LIGHT", t("profile.light"), "sunny"],
+  ["DARK", t("profile.dark"), "moon"],
+  ["SYSTEM", t("profile.match_system"), "monitor"],
 ];
 
 export function ProfileAppearanceCard({ user, onUserUpdated }: { user: SessionUser; onUserUpdated: (user: SessionUser) => void }) {
@@ -33,7 +34,7 @@ export function ProfileAppearanceCard({ user, onUserUpdated }: { user: SessionUs
       });
       onUserUpdated({ ...user, ...payload.user });
     } catch (error) {
-      setErrorText(error instanceof Error ? error.message : "Не удалось сохранить");
+      setErrorText(error instanceof Error ? error.message : t("common.could_not_save"));
     } finally {
       setSaving(false);
     }
@@ -42,7 +43,7 @@ export function ProfileAppearanceCard({ user, onUserUpdated }: { user: SessionUs
   function submitCustomAccent() {
     const value = customAccent.trim().toLowerCase();
     if (!/^#[0-9a-f]{6}$/.test(value)) {
-      setErrorText("Свой цвет — HEX вида #1677ff");
+      setErrorText(t("profile.custom_colour_hex_value_like"));
       return;
     }
     void save(user.uiTheme, value);
@@ -50,11 +51,11 @@ export function ProfileAppearanceCard({ user, onUserUpdated }: { user: SessionUs
 
   return (
     <section className="profile-card appearance-card">
-      <h3>Внешний вид</h3>
-      <p className="profile-card-lead">Настройка личная и хранится в учётной записи: применяется на всех ваших устройствах, без перезагрузки.</p>
+      <h3>{t("profile.appearance")}</h3>
+      <p className="profile-card-lead">{t("profile.personal_setting_stored_account_applies")}</p>
       {errorText && <div className="profile-message error">{errorText}</div>}
       <div className="appearance-row">
-        <span>Тема</span>
+        <span>{t("profile.theme")}</span>
         <div className="appearance-theme-options">
           {THEME_OPTIONS.map(([value, label, icon]) => (
             <button
@@ -71,7 +72,7 @@ export function ProfileAppearanceCard({ user, onUserUpdated }: { user: SessionUs
         </div>
       </div>
       <div className="appearance-row">
-        <span>Акцентный цвет</span>
+        <span>{t("profile.accent_colour")}</span>
         <div className="appearance-accents">
           {ACCENT_PRESETS.map(([value, label]) => (
             <button
@@ -100,7 +101,7 @@ export function ProfileAppearanceCard({ user, onUserUpdated }: { user: SessionUs
                 if (event.key === "Enter") submitCustomAccent();
               }}
             />
-            <button disabled={saving || !customAccent.trim()} type="button" onClick={submitCustomAccent}>Применить</button>
+            <button disabled={saving || !customAccent.trim()} type="button" onClick={submitCustomAccent}>{t("profile.apply")}</button>
           </div>
         </div>
       </div>

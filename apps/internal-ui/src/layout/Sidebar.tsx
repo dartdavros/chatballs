@@ -10,6 +10,7 @@ import type { DialogScope } from "../features/conversations/ConversationWorkspac
 import { agentColorOf, groupColorOf, type ConversationCounters } from "../features/conversations/model";
 import { LaunchChecklist } from "./LaunchChecklist";
 import { SidebarUserMenu } from "./SidebarUserMenu";
+import { t } from "../i18n";
 
 // Сайдбар по дизайн-базлайну v2: у менеджера — плоские семь пунктов (A1, KB1) и
 // блок «Запуск»; у сотрудника разделов нет (§3) — сайдбар и есть фильтр списка
@@ -84,20 +85,20 @@ export function Sidebar({
 
   return (
     <aside className={`hub-sidebar ${railExpanded ? "is-rail-expanded" : ""} ${sidebarWidth.dragging ? "is-resizing" : ""}`} style={{ "--sidebar-width": `${sidebarWidth.width}px` } as CSSProperties}>
-      <div className="pane-resizer" role="separator" aria-orientation="vertical" aria-label="Ширина сайдбара" title="Потяните, двойной клик — сбросить" onPointerDown={sidebarWidth.onPointerDown} onDoubleClick={sidebarWidth.reset} />
+      <div className="pane-resizer" role="separator" aria-orientation="vertical" aria-label={t("profile.sidebar_width")} title={t("profile.drag_resize_double_click_reset")} onPointerDown={sidebarWidth.onPointerDown} onDoubleClick={sidebarWidth.reset} />
       <div className="hub-rail">
         <div className={`hub-brand-mark ${user.organizationLogoUrl ? "has-logo" : ""}`}>
           {user.organizationLogoUrl ? <img src={user.organizationLogoUrl} alt="" /> : <LogoIcon />}
         </div>
         <button
           className={`hub-rail-button ${route === "chat" ? "is-active" : ""}`}
-          title="Чат"
+          title={t("common.chat")}
           type="button"
           onClick={() => setRoute("chat")}
         >
           <Icon name="message" size={18} />
         </button>
-        <button className="hub-rail-button" title="Развернуть" type="button" onClick={() => setRailExpanded(true)}>
+        <button className="hub-rail-button" title={t("profile.expand")} type="button" onClick={() => setRailExpanded(true)}>
           <Icon name="chevron" size={17} />
         </button>
         <div className="hub-rail-spacer" />
@@ -105,10 +106,10 @@ export function Sidebar({
           {initials}
         </button>
       </div>
-      {railExpanded && <button className="hub-rail-backdrop" aria-label="Свернуть меню" type="button" onClick={() => setRailExpanded(false)} />}
+      {railExpanded && <button className="hub-rail-backdrop" aria-label={t("profile.collapse_menu")} type="button" onClick={() => setRailExpanded(false)} />}
       <div className="hub-sidebar-body" onClick={() => setRailExpanded(false)}>
       <div className="hub-brand">
-        <button className={`hub-brand-mark ${user.organizationLogoUrl ? "has-logo" : ""}`} type="button" aria-label="На главную" onClick={() => setRoute(defaultRoute(user))}>
+        <button className={`hub-brand-mark ${user.organizationLogoUrl ? "has-logo" : ""}`} type="button" aria-label={t("profile.go_start_page")} onClick={() => setRoute(defaultRoute(user))}>
           {user.organizationLogoUrl
             ? <img src={user.organizationLogoUrl} alt="" />
             : <LogoIcon />}
@@ -129,13 +130,13 @@ export function Sidebar({
       </div>
       {manager ? (
         <nav className="hub-nav">
-          <SidebarLink icon="message" label="Чат" badge={waitingCount > 0 ? String(waitingCount) : undefined} route={route} routeKey="chat" setRoute={setRoute} />
-          <SidebarLink activeRoutes={["salesClients", "salesClientDetail"]} icon="user" label="Контакты" route={route} routeKey="salesClients" setRoute={setRoute} />
-          <SidebarLink activeRoutes={["agents", "agentDetail"]} icon="robot" label="Агенты" route={route} routeKey="agents" setRoute={setRoute} />
-          <SidebarLink activeRoutes={["employees", "employeeDetail"]} icon="team" label="Сотрудники" route={route} routeKey="employees" setRoute={setRoute} />
-          <SidebarLink activeRoutes={["supportPortals", "supportPortalDetail", "supportPortalSettings"]} icon="globe" label="Порталы" route={route} routeKey="supportPortals" setRoute={setRoute} />
-          <SidebarLink activeRoutes={["knowledge", "knowledgeDetail", "knowledgeCreate", "knowledgeEdit", "knowledgeCategories", "knowledgeImport"]} icon="book" label="База знаний" route={route} routeKey="knowledge" setRoute={setRoute} />
-          <SidebarLink activeRoutes={["settings", "administrationAudit"]} icon="settings" label="Настройки" route={route} routeKey="settings" setRoute={setRoute} />
+          <SidebarLink icon="message" label={t("common.chat")} badge={waitingCount > 0 ? String(waitingCount) : undefined} route={route} routeKey="chat" setRoute={setRoute} />
+          <SidebarLink activeRoutes={["salesClients", "salesClientDetail"]} icon="user" label={t("common.contacts")} route={route} routeKey="salesClients" setRoute={setRoute} />
+          <SidebarLink activeRoutes={["agents", "agentDetail"]} icon="robot" label={t("common.agents")} route={route} routeKey="agents" setRoute={setRoute} />
+          <SidebarLink activeRoutes={["employees", "employeeDetail"]} icon="team" label={t("common.operators")} route={route} routeKey="employees" setRoute={setRoute} />
+          <SidebarLink activeRoutes={["supportPortals", "supportPortalDetail", "supportPortalSettings"]} icon="globe" label={t("common.portals")} route={route} routeKey="supportPortals" setRoute={setRoute} />
+          <SidebarLink activeRoutes={["knowledge", "knowledgeDetail", "knowledgeCreate", "knowledgeEdit", "knowledgeCategories", "knowledgeImport"]} icon="book" label={t("common.knowledge_base")} route={route} routeKey="knowledge" setRoute={setRoute} />
+          <SidebarLink activeRoutes={["settings", "administrationAudit"]} icon="settings" label={t("common.settings")} route={route} routeKey="settings" setRoute={setRoute} />
         </nav>
       ) : route === "profile" ? (
         /* Кадр P2: на «Профиле» у сотрудника сайдбар без навигации — фильтровать
@@ -180,19 +181,19 @@ function ChatScopeTree({
 
   return (
     <nav className="hub-nav chat-scope-tree">
-      <div className="chat-scope-head"><Icon name="message" size={17} /><span>Диалоги</span></div>
+      <div className="chat-scope-head"><Icon name="message" size={17} /><span>{t("common.conversations")}</span></div>
       <button
         className={`chat-scope-item is-top ${isActive({ kind: "all" }) ? "is-active" : ""}`}
         type="button"
         onClick={() => setScope({ kind: "all" })}
       >
         <Icon name="inbox" size={15} />
-        <span>Все диалоги</span>
+        <span>{t("profile.all_conversations")}</span>
         {counters && <small>{counters.all}</small>}
       </button>
       {counters && (
         <>
-          <div className="chat-scope-section"><Icon name="team" size={15} /><span>Группы</span></div>
+          <div className="chat-scope-section"><Icon name="team" size={15} /><span>{t("common.groups")}</span></div>
           {counters.groups.map((group) => (
             <button
               className={`chat-scope-item is-nested ${isActive({ kind: "group", id: group.id, label: group.name }) ? "is-active" : ""}`}
@@ -212,7 +213,7 @@ function ChatScopeTree({
               onClick={() => setScope({ kind: "ungrouped" })}
             >
               <i className="chat-scope-dot is-muted" />
-              <span>Без группы</span>
+              <span>{t("common.no_group")}</span>
               <small>{counters.ungrouped}</small>
             </button>
           )}
@@ -220,7 +221,7 @@ function ChatScopeTree({
       )}
       {counters && (
         <>
-          <div className="chat-scope-section"><Icon name="robot" size={15} /><span>Агенты</span></div>
+          <div className="chat-scope-section"><Icon name="robot" size={15} /><span>{t("common.agents")}</span></div>
           {counters.agents.map((agent) => (
             <button
               className={`chat-scope-item is-nested ${isActive({ kind: "agent", id: agent.id, label: agent.name }) ? "is-active" : ""}`}

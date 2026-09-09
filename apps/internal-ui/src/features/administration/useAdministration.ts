@@ -8,7 +8,9 @@ import {
   saveOrganizationSettings,
   uploadOrganizationLogo,
 } from "./api";
+import type { OrganizationLanguageOption } from "./api";
 import type { AdministrationSection, OrganizationSettings } from "./model";
+import { t } from "../../i18n";
 
 export function useAdministration({
   section,
@@ -21,6 +23,7 @@ export function useAdministration({
 }) {
   const [organization, setOrganization] = useState<OrganizationSettings | null>(null);
   const [timezones, setTimezones] = useState<string[]>([]);
+  const [languages, setLanguages] = useState<OrganizationLanguageOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
@@ -40,8 +43,9 @@ export function useAdministration({
       const settings = await loadOrganizationSettings();
       setOrganization(settings.organization);
       setTimezones(settings.timezones);
+      setLanguages(settings.languages);
     } catch (loadError) {
-      setError(loadError instanceof ApiError ? loadError.message : "Не удалось загрузить данные");
+      setError(loadError instanceof ApiError ? loadError.message : t("admin.could_not_load_data"));
     } finally {
       setLoading(false);
     }
@@ -64,7 +68,7 @@ export function useAdministration({
       setMessage(successMessage);
       await refreshIdentity();
     } catch (changeError) {
-      setError(changeError instanceof ApiError ? changeError.message : "Не удалось сохранить изменения");
+      setError(changeError instanceof ApiError ? changeError.message : t("admin.could_not_save_changes"));
     } finally {
       setSaving(false);
     }
@@ -77,19 +81,20 @@ export function useAdministration({
     organization,
     saving,
     timezones,
+    languages,
     setOrganization,
     reload: load,
     save: () => organization && runChange(
       () => saveOrganizationSettings(organization),
-      "Данные организации сохранены",
+      t("admin.organization_details_saved"),
     ),
     uploadLogo: (file: File) => runChange(
       () => uploadOrganizationLogo(file),
-      "Логотип обновлён",
+      t("admin.logo_updated"),
     ),
     removeLogo: () => runChange(
       removeOrganizationLogo,
-      "Логотип удалён",
+      t("admin.logo_removed"),
     ),
   };
 }

@@ -1,8 +1,13 @@
+import { t } from "./i18n";
+
 const API = "/api/v1/webchat";
 
 export type WidgetFeatures = { voiceMessages: boolean; audioCalls: boolean; videoCalls: boolean };
 
 export type WebConfig = {
+  // Язык обвязки виджета: язык организации, на котором отвечают агент и
+  // оператор. Пусто — язык решает браузер посетителя.
+  language?: string;
   features?: WidgetFeatures;
   available: boolean;
   reason?: string;
@@ -166,8 +171,8 @@ async function callAccessAction(action: "accept" | "decline" | "end", accessToke
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
   });
   if (!r.ok) {
-    const payload = await r.json().catch(() => ({ detail: "Не удалось выполнить действие со звонком" })) as { detail?: string };
-    throw new Error(payload.detail || "Не удалось выполнить действие со звонком");
+    const payload = await r.json().catch(() => ({ detail: t("call.could_not_act_on_call") })) as { detail?: string };
+    throw new Error(payload.detail || t("call.could_not_act_on_call"));
   }
   return (await r.json()).call as CallInfo;
 }

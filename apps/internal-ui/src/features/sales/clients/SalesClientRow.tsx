@@ -4,12 +4,13 @@ import { ChannelGlyph } from "../../../shared/badges";
 import { Icon } from "../../../shared/icons";
 import { ContactAvatar } from "../../conversations/ContactAvatar";
 import type { SalesClientRowVm } from "./model";
+import { t } from "../../../i18n";
 
 // Строка контакта (кадр K1). Вся строка кликабельна — открывает карточку.
 export function SalesClientRow({ client, menu, openClient, setMenu }: { client: SalesClientRowVm; menu: string | null; openClient: (id: number) => void; setMenu: (menu: string | null) => void }) {
   const menuOpen = menu === client.cid;
   const menuItems = [
-    { key: "open", label: <button type="button" onClick={() => { setMenu(null); openClient(client.id); }}><Icon name="external" size={15} />Открыть карточку</button> },
+    { key: "open", label: <button type="button" onClick={() => { setMenu(null); openClient(client.id); }}><Icon name="external" size={15} />{t("admin.open_card")}</button> },
   ];
   return (
     <div className="sales-client-row" role="button" tabIndex={0} onClick={() => openClient(client.id)} onKeyDown={(event) => { if (event.key === "Enter") openClient(client.id); }}>
@@ -41,7 +42,7 @@ export function SalesClientRow({ client, menu, openClient, setMenu }: { client: 
       <div className="sales-client-open" style={{ color: client.openColor }}>{client.openDialogs}</div>
       <div className="sales-client-menu" onClick={(event) => event.stopPropagation()}>
         <Dropdown menu={{ items: menuItems }} open={menuOpen} onOpenChange={(open) => setMenu(open ? client.cid : null)} trigger={["click"]} overlayClassName="app-dropdown is-wide">
-          <button className="row-menu-button" type="button" aria-label="Действия контакта"><Icon name="more" /></button>
+          <button className="row-menu-button" type="button" aria-label={t("sales.contact_actions")}><Icon name="more" /></button>
         </Dropdown>
       </div>
     </div>

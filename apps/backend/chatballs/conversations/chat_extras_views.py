@@ -25,6 +25,7 @@ from chatballs.conversations.models import (
 from chatballs.conversations.selectors import apply_conversation_visibility
 from chatballs.conversations.serializers import conversation_payload
 from chatballs.conversations.view_base import ConversationViewBase
+from chatballs.i18n import t
 from chatballs.identity.avatars import user_avatar_url
 from chatballs.identity.group_models import EmployeeGroup
 from chatballs.identity.models import HumanUser, OrganizationMembership
@@ -53,10 +54,10 @@ class ConversationPriorityView(ConversationViewBase):
                 request, conversation_id, self.required_capability
             )
         except Conversation.DoesNotExist:
-            return Response({"detail": "Диалог не найден"}, status=404)
+            return Response({"detail": t("conversations.not_found")}, status=404)
         priority = str(request.data.get("priority", "")).strip().upper()
         if priority not in ConversationPriority.values:
-            return Response({"detail": "Неизвестный приоритет"}, status=400)
+            return Response({"detail": t("conversations.unknown_priority")}, status=400)
         conversation.priority = priority
         conversation.save(update_fields=["priority"])
         self._audit(request, "priority_changed", conversation)
@@ -82,10 +83,10 @@ class ConversationContactView(ConversationViewBase):
                 request, conversation_id, self.required_capability
             )
         except Conversation.DoesNotExist:
-            return Response({"detail": "Диалог не найден"}, status=404)
+            return Response({"detail": t("conversations.not_found")}, status=404)
         contact = conversation.contact
         if contact is None:
-            return Response({"detail": "У диалога нет контакта"}, status=400)
+            return Response({"detail": t("conversations.no_contact")}, status=400)
         changed: list[str] = []
         for field, limit in self.LIMITS.items():
             if field not in request.data:
@@ -94,7 +95,7 @@ class ConversationContactView(ConversationViewBase):
             if len(value) > limit:
                 return Response({"detail": f"Поле {field}: не длиннее {limit} символов"}, status=400)
             if field == "name" and not value:
-                return Response({"detail": "Имя контакта не может быть пустым"}, status=400)
+                return Response({"detail": t("conversations.contact_name_empty")}, status=400)
             setattr(contact, field, value)
             changed.append(field)
         if changed:
@@ -118,10 +119,10 @@ class ConversationNoteView(ConversationViewBase):
                 request, conversation_id, self.required_capability
             )
         except Conversation.DoesNotExist:
-            return Response({"detail": "Диалог не найден"}, status=404)
+            return Response({"detail": t("conversations.not_found")}, status=404)
         note = str(request.data.get("note", ""))
         if len(note) > 4000:
-            return Response({"detail": "Заметка длиннее 4000 символов"}, status=400)
+            return Response({"detail": t("conversations.note_too_long")}, status=400)
         conversation.note = note
         conversation.note_author = request.user if note else None
         conversation.note_updated_at = timezone.now() if note else None
@@ -146,7 +147,7 @@ class ConversationLabelsView(ConversationViewBase):
                 request, conversation_id, self.required_capability
             )
         except Conversation.DoesNotExist:
-            return Response({"detail": "Диалог не найден"}, status=404)
+            return Response({"detail": t("conversations.not_found")}, status=404)
         label_ids = request.data.get("labelIds")
         if not isinstance(label_ids, list) or not all(
             isinstance(item, int) for item in label_ids
@@ -159,7 +160,7 @@ class ConversationLabelsView(ConversationViewBase):
             )
         )
         if len(labels) != len(set(label_ids)):
-            return Response({"detail": "Неизвестная метка"}, status=400)
+            return Response({"detail": t("conversations.unknown_label")}, status=400)
         conversation.labels.set(labels)
         return Response(
             {
@@ -182,13 +183,13 @@ class ConversationArchiveView(ConversationViewBase):
                 request, conversation_id, self.required_capability
             )
         except Conversation.DoesNotExist:
-            return Response({"detail": "Диалог не найден"}, status=404)
+            return Response({"detail": t("conversations.not_found")}, status=404)
         archived = request.data.get("archived")
         if not isinstance(archived, bool):
             return Response({"detail": "archived must be a boolean"}, status=400)
         if not archived and not can_administer_access(request.tenant_context.membership):
             return Response(
-                {"detail": "Восстановить диалог может только администратор"}, status=403
+                {"detail": t("conversations.restore_admin_only")}, status=403
             )
         conversation.archived_at = timezone.now() if archived else None
         conversation.save(update_fields=["archived_at"])
@@ -336,9 +337,9 @@ class LabelListView(APIView):
         name = str(request.data.get("name", "")).strip()
         color = str(request.data.get("color", "")).strip()
         if not name or len(name) > 60:
-            return Response({"detail": "Название метки: 1-60 символов"}, status=400)
+            return Response({"detail": t("conversations.label_name_length")}, status=400)
         if len(color) > 20:
-            return Response({"detail": "Некорректный цвет"}, status=400)
+            return Response({"detail": t("conversations.invalid_colour")}, status=400)
         existing = ConversationLabel.objects.filter(
             organization_id=request.tenant_context.organization_id, name__iexact=name
         ).first()
@@ -365,16 +366,16 @@ class LabelDetailView(APIView):
         try:
             label = self._label(request, label_id)
         except ConversationLabel.DoesNotExist:
-            return Response({"detail": "Метка не найдена"}, status=404)
+            return Response({"detail": t("conversations.label_not_found")}, status=404)
         if "name" in request.data:
             name = str(request.data.get("name", "")).strip()
             if not name or len(name) > 60:
-                return Response({"detail": "Название метки: 1-60 символов"}, status=400)
+                return Response({"detail": t("conversations.label_name_length")}, status=400)
             label.name = name
         if "color" in request.data:
             color = str(request.data.get("color", "")).strip()
             if len(color) > 20:
-                return Response({"detail": "Некорректный цвет"}, status=400)
+                return Response({"detail": t("conversations.invalid_colour")}, status=400)
             label.color = color
         label.save()
         return Response({"label": _label_payload(label)})
@@ -383,7 +384,7 @@ class LabelDetailView(APIView):
         try:
             label = self._label(request, label_id)
         except ConversationLabel.DoesNotExist:
-            return Response({"detail": "Метка не найдена"}, status=404)
+            return Response({"detail": t("conversations.label_not_found")}, status=404)
         label.delete()
         return Response(status=204)
 
@@ -405,13 +406,13 @@ class ReplyTemplateListView(APIView):
         title = str(request.data.get("title", "")).strip()
         text = str(request.data.get("text", "")).strip()
         if not title or len(title) > 120:
-            return Response({"detail": "Название шаблона: 1-120 символов"}, status=400)
+            return Response({"detail": t("conversations.template_name_length")}, status=400)
         if not text:
-            return Response({"detail": "Текст шаблона обязателен"}, status=400)
+            return Response({"detail": t("conversations.template_text_required")}, status=400)
         if ReplyTemplate.objects.filter(
             organization_id=request.tenant_context.organization_id, title__iexact=title
         ).exists():
-            return Response({"detail": "Шаблон с таким названием уже есть"}, status=409)
+            return Response({"detail": t("conversations.template_name_taken")}, status=409)
         template = ReplyTemplate.objects.create(
             organization_id=request.tenant_context.organization_id,
             title=title,
@@ -433,16 +434,16 @@ class ReplyTemplateDetailView(APIView):
         try:
             template = self._template(request, template_id)
         except ReplyTemplate.DoesNotExist:
-            return Response({"detail": "Шаблон не найден"}, status=404)
+            return Response({"detail": t("conversations.template_not_found")}, status=404)
         if "title" in request.data:
             title = str(request.data.get("title", "")).strip()
             if not title or len(title) > 120:
-                return Response({"detail": "Название шаблона: 1-120 символов"}, status=400)
+                return Response({"detail": t("conversations.template_name_length")}, status=400)
             template.title = title
         if "text" in request.data:
             text = str(request.data.get("text", "")).strip()
             if not text:
-                return Response({"detail": "Текст шаблона обязателен"}, status=400)
+                return Response({"detail": t("conversations.template_text_required")}, status=400)
             template.text = text
         template.save()
         return Response({"template": _template_payload(template)})
@@ -451,6 +452,6 @@ class ReplyTemplateDetailView(APIView):
         try:
             template = self._template(request, template_id)
         except ReplyTemplate.DoesNotExist:
-            return Response({"detail": "Шаблон не найден"}, status=404)
+            return Response({"detail": t("conversations.template_not_found")}, status=404)
         template.delete()
         return Response(status=204)

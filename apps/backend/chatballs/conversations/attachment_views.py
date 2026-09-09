@@ -28,6 +28,7 @@ from chatballs.conversations.serializers import message_payload
 from chatballs.conversations.transports.base import guess_content_type, safe_filename
 from chatballs.conversations.view_base import ConversationViewBase
 from chatballs.conversations.voice_views import _visible_message
+from chatballs.i18n import t
 
 MAX_FILE_BYTES = 20 * 1024 * 1024
 # Исполняемые и скриптовые типы в чат не отправляем ни в одну сторону.
@@ -62,9 +63,9 @@ class MessageAttachmentView(ConversationViewBase):
         try:
             message = _visible_message(request, message_id)
         except (Message.DoesNotExist, Conversation.DoesNotExist):
-            return Response({"detail": "Сообщение не найдено"}, status=404)
+            return Response({"detail": t("conversations.message_not_found")}, status=404)
         if message.kind != MessageKind.FILE or not message.attachment:
-            return Response({"detail": "Файл недоступен"}, status=404)
+            return Response({"detail": t("conversations.file_unavailable")}, status=404)
         return attachment_response(message, inline="inline" in request.GET)
 
 
@@ -80,15 +81,15 @@ class ConversationAttachmentView(ConversationViewBase):
         try:
             conversation = self._conversation(request, conversation_id, self.required_capability)
         except Conversation.DoesNotExist:
-            return Response({"detail": "Диалог не найден"}, status=404)
+            return Response({"detail": t("conversations.not_found")}, status=404)
         if conversation.lifecycle != LifecycleState.OPEN:
-            return Response({"detail": "Диалог закрыт"}, status=409)
+            return Response({"detail": t("conversations.closed")}, status=409)
         connection = conversation.connection
         if connection is None or not transports.supports_file_send(connection):
-            return Response({"detail": "Файлы недоступны в этом канале"}, status=400)
+            return Response({"detail": t("conversations.files_unavailable_channel")}, status=400)
         upload = request.FILES.get("file")
         if upload is None:
-            return Response({"detail": "Прикрепите файл"}, status=400)
+            return Response({"detail": t("conversations.attach_file")}, status=400)
         problem = validate_upload(upload)
         if problem:
             return Response({"detail": problem}, status=400)
@@ -113,7 +114,7 @@ class ConversationAttachmentView(ConversationViewBase):
             caption=caption,
         )
         if not sent:
-            return Response({"detail": "Не удалось отправить файл в канал"}, status=502)
+            return Response({"detail": t("conversations.file_send_failed")}, status=502)
         message = Message.objects.create(
             conversation=conversation,
             author_type=MessageAuthor.OPERATOR,

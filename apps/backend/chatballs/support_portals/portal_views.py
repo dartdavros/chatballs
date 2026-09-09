@@ -6,6 +6,7 @@ from rest_framework.views import APIView
 
 from chatballs.api.pagination import page_payload, paginate
 from chatballs.api.permissions import HasCapability
+from chatballs.i18n import t
 from chatballs.identity.audit import record_audit_event
 from chatballs.integrations.models import IntegrationProvider, IntegrationStatus
 from chatballs.support_portals.api import validation_response
@@ -173,14 +174,14 @@ class PortalDetailView(PortalBaseView):
     def get(self, request: Request, portal_id: int) -> Response:
         portal = self.portal(request, portal_id)
         if portal is None:
-            return Response({"detail": "Портал не найден"}, status=404)
+            return Response({"detail": t("portals.not_found")}, status=404)
         counts = portal_content_counts(request.tenant_context).get(portal.id, {})
         return Response({"portal": portal_payload(portal, counts=counts)})
 
     def patch(self, request: Request, portal_id: int) -> Response:
         portal = self.portal(request, portal_id)
         if portal is None:
-            return Response({"detail": "Портал не найден"}, status=404)
+            return Response({"detail": t("portals.not_found")}, status=404)
         try:
             update_portal(
                 context=request.tenant_context,
@@ -197,7 +198,7 @@ class PortalStatusView(PortalBaseView):
     def post(self, request: Request, portal_id: int) -> Response:
         portal = self.portal(request, portal_id)
         if portal is None:
-            return Response({"detail": "Портал не найден"}, status=404)
+            return Response({"detail": t("portals.not_found")}, status=404)
         try:
             portal = set_portal_status(
                 context=request.tenant_context,
@@ -224,7 +225,7 @@ class PortalWidgetOptionsView(PortalBaseView):
     def get(self, request: Request, portal_id: int) -> Response:
         portal = self.portal(request, portal_id)
         if portal is None:
-            return Response({"detail": "Портал не найден"}, status=404)
+            return Response({"detail": t("portals.not_found")}, status=404)
         widgets = (
             WebChatWidget.objects.select_related(
                 "integration",
@@ -248,7 +249,7 @@ class PortalDomainView(PortalBaseView):
     def put(self, request: Request, portal_id: int) -> Response:
         portal = self.portal(request, portal_id)
         if portal is None:
-            return Response({"detail": "Портал не найден"}, status=404)
+            return Response({"detail": t("portals.not_found")}, status=404)
         try:
             portal = set_custom_domain(
                 portal, str(request.data.get("customDomain", ""))
@@ -263,7 +264,7 @@ class PortalDomainVerifyView(PortalBaseView):
     def post(self, request: Request, portal_id: int) -> Response:
         portal = self.portal(request, portal_id)
         if portal is None:
-            return Response({"detail": "Портал не найден"}, status=404)
+            return Response({"detail": t("portals.not_found")}, status=404)
         try:
             portal = verify_custom_domain(portal)
         except ValidationError as error:

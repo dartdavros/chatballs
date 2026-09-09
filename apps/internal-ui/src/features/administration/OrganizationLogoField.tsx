@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 
 import { DecisionDialog } from "../../shared/DecisionDialog";
 import { Button } from "../../shared/ui-controls";
+import { t } from "../../i18n";
 
 export function OrganizationLogoField({
   logoUrl,
@@ -25,12 +26,12 @@ export function OrganizationLogoField({
     <div className="administration-logo-field">
       <div className="administration-logo-preview">
         {logoUrl
-          ? <img src={logoUrl} alt={`Логотип ${name}`} />
+          ? <img src={logoUrl} alt={t("admin.organization_logo_alt", { name })} />
           : <span>{name.trim().slice(0, 2).toUpperCase() || "CR"}</span>}
       </div>
       <div className="administration-logo-copy">
-        <strong>Логотип</strong>
-        <span>PNG, JPEG или WebP · до 2 МБ. Виден в сайдбаре, виджете и письмах.</span>
+        <strong>{t("admin.logo")}</strong>
+        <span>{t("admin.png_jpeg_or_webp_up")}</span>
       </div>
       {!disabled && (
         <div className="administration-logo-actions">
@@ -49,17 +50,13 @@ export function OrganizationLogoField({
             variant="secondary"
             disabled={saving}
             onClick={() => input.current?.click()}
-          >
-            Загрузить
-          </Button>
+          >{t("common.upload")}</Button>
           <button
             className="administration-logo-remove"
             type="button"
             disabled={saving || !logoUrl}
             onClick={() => setConfirmingRemoval(true)}
-          >
-            Убрать
-          </button>
+          >{t("common.remove")}</button>
         </div>
       )}
       <DecisionDialog
@@ -67,13 +64,11 @@ export function OrganizationLogoField({
         onClose={() => setConfirmingRemoval(false)}
         tone="danger"
         icon="trash"
-        title="Удалить логотип?"
-        description="Вместо него в меню снова будет показан знак Chatballs."
+        title={t("admin.remove_logo")}
+        description={t("admin.chatballs_mark_will_shown_menu")}
         actions={(
           <>
-            <Button variant="secondary" onClick={() => setConfirmingRemoval(false)}>
-              Отмена
-            </Button>
+            <Button variant="secondary" onClick={() => setConfirmingRemoval(false)}>{t("common.cancel")}</Button>
             <Button
               variant="danger-outline"
               disabled={saving}
@@ -81,9 +76,7 @@ export function OrganizationLogoField({
                 setConfirmingRemoval(false);
                 onRemove();
               }}
-            >
-              Удалить
-            </Button>
+            >{t("common.delete")}</Button>
           </>
         )}
       />

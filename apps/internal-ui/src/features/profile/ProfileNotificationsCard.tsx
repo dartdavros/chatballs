@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "../../api/client";
 import { Icon, LogoSpinner, MaxLogo, TelegramLogo } from "../../shared/icons";
 import { Button } from "../../shared/ui-controls";
+import { t } from "../../i18n";
 
 // «Уведомления в мессенджер» (дизайн-базлайн v2, кадр P1): по строке на бота —
 // фирменная плитка, статус привязки и типы событий галочками (ADR-0015).
@@ -81,10 +82,10 @@ export function ProfileNotificationsCard() {
 
   return (
     <section className="profile-card">
-      <h3>Уведомления в мессенджер</h3>
-      <p className="profile-card-lead">Рабочие события приходят и при закрытом браузере. Один мессенджер: привязка нового заменяет текущий.</p>
+      <h3>{t("profile.messenger_notifications")}</h3>
+      <p className="profile-card-lead">{t("profile.work_events_reach_even_with")}</p>
       {loaded && items.length === 0 && (
-        <p className="profile-notifications-note">Боты уведомлений не настроены. Владелец может добавить бота в «Настройках» → «Интеграции» (флажок «Бот уведомлений для сотрудников»).</p>
+        <p className="profile-notifications-note">{t("profile.no_notification_bots_configured_owner")}</p>
       )}
       {items.map((item) => (
         <div className="profile-notifications-block" key={item.integrationId}>
@@ -94,19 +95,18 @@ export function ProfileNotificationsCard() {
             </span>
             <div className="profile-notifications-name">
               <strong>{PROVIDER_LABEL[item.provider] ?? item.provider}</strong>
-              <small>{item.botUsername ? `@${item.botUsername} · сервисный бот уведомлений` : item.name}</small>
+              <small>{item.botUsername ? t("profile.service_notification_bot", { username: item.botUsername }) : item.name}</small>
             </div>
             {item.bound ? (
               <>
-                <b className="profile-notifications-status">Подключено</b>
-                <Button variant="secondary" disabled={busy} onClick={() => void disconnect(item)}>Отключить</Button>
+                <b className="profile-notifications-status">{t("common.connected")}</b>
+                <Button variant="secondary" disabled={busy} onClick={() => void disconnect(item)}>{t("profile.disconnect")}</Button>
               </>
             ) : links[item.integrationId]?.deepLink ? (
-              <a className="profile-notifications-bind" href={links[item.integrationId].deepLink} target="_blank" rel="noreferrer">
-                Привязать бота<Icon name="external" size={12} strokeWidth={2.2} />
+              <a className="profile-notifications-bind" href={links[item.integrationId].deepLink} target="_blank" rel="noreferrer">{t("profile.link_bot")}<Icon name="external" size={12} strokeWidth={2.2} />
               </a>
             ) : (
-              <span className="profile-notifications-wait">{loaded ? "Готовим ссылку…" : <LogoSpinner size={16} />}</span>
+              <span className="profile-notifications-wait">{loaded ? t("profile.preparing_link") : <LogoSpinner size={16} />}</span>
             )}
           </div>
           {item.bound && types.length > 0 && (
@@ -126,7 +126,7 @@ export function ProfileNotificationsCard() {
         </div>
       ))}
       {hasUnbound && (
-        <p className="profile-notifications-note">Нажмите «Привязать бота» и в открывшемся чате — «Начать»: привязка подтвердится сама.</p>
+        <p className="profile-notifications-note">{t("profile.press_link_bot_then_start")}</p>
       )}
     </section>
   );

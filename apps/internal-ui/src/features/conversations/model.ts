@@ -1,5 +1,6 @@
 import { api, apiUpload } from "../../api/client";
 import type { ChannelKey, ConversationListItem, ControlMode, DialogMode, ListSort } from "./types";
+import { t } from "../../i18n";
 
 // kind: "" — текст, "contact_request" — запрос контакта, "contact" — клиент поделился номером.
 export type ApiMessage = {
@@ -10,6 +11,9 @@ export type ApiMessage = {
   authorAvatarUrl?: string | null;
   kind?: string;
   text: string;
+  // Код системного события: строку сервер уже собрал на языке читателя, код
+  // остаётся интерфейсу для тона строки.
+  systemEvent?: string;
   contentHtml?: string;
   createdAt: string;
   // Голосовое (kind="voice", дизайн-базлайн v2 кадр H).
@@ -114,18 +118,18 @@ export function listTime(iso: string, now = new Date()): string {
   if (sameDay) return date.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
   const yesterday = new Date(now);
   yesterday.setDate(now.getDate() - 1);
-  if (date.toDateString() === yesterday.toDateString()) return "вчера";
+  if (date.toDateString() === yesterday.toDateString()) return t("common.yesterday");
   return date.toLocaleDateString("ru-RU", { day: "numeric", month: "short" }).replace(".", "");
 }
 
 // Таймер ожидания оператора: «6 мин», «1 ч 50 мин» — без слова «ждёт» (решение 4).
 export function waitLabelOf(sinceIso: string, now = new Date()): string {
   const minutes = Math.max(0, Math.round((now.getTime() - new Date(sinceIso).getTime()) / 60000));
-  if (minutes < 60) return `${minutes} мин`;
+  if (minutes < 60) return t("time.minutes_short", { count: minutes });
   const hours = Math.floor(minutes / 60);
-  if (hours >= 24) return `${Math.floor(hours / 24)} д`;
+  if (hours >= 24) return t("time.days_short", { count: Math.floor(hours / 24) });
   const rest = minutes % 60;
-  return rest ? `${hours} ч ${rest} мин` : `${hours} ч`;
+  return rest ? t("time.hours_minutes", { hours, minutes: rest }) : t("time.hours_short", { count: hours });
 }
 const PROVIDER_CHANNEL: Record<string, ChannelKey> = {
   EMAIL: "EMAIL",
@@ -157,13 +161,13 @@ function formatPreviewDuration(totalSeconds: number): string {
 
 function initialsOf(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "Г";
+  if (parts.length === 0) return t("conversations.g");
   return (parts[0][0] + (parts[1]?.[0] ?? "")).toUpperCase();
 }
 
 export function conversationName(conversation: ApiConversation): string {
-  if (conversation.contact) return conversation.contact.name || `Гость ${conversation.contact.id}`;
-  return "Гость";
+  if (conversation.contact) return conversation.contact.name || t("conversations.guest_number", { id: conversation.contact.id });
+  return t("conversations.guest");
 }
 
 export function toConversationListItem(conversation: ApiConversation): ConversationListItem {
@@ -181,9 +185,9 @@ export function toConversationListItem(conversation: ApiConversation): Conversat
     mode: dialogMode(conversation),
     preview:
       conversation.lastMessage?.kind === "voice"
-        ? `Голосовое сообщение · ${formatPreviewDuration(conversation.lastMessage.durationSeconds ?? 0)}`
+        ? t("conversations.voice_message_duration", { duration: formatPreviewDuration(conversation.lastMessage.durationSeconds ?? 0) })
         : conversation.lastMessage?.kind === "file"
-          ? (isImageAttachment(conversation.lastMessage) ? "Фото" : `Файл · ${conversation.lastMessage.attachmentName || ""}`) + (conversation.lastMessage.text ? ` · ${conversation.lastMessage.text.replace(/\s+/g, " ").slice(0, 60)}` : "")
+          ? (isImageAttachment(conversation.lastMessage) ? t("common.photo") : t("conversations.file_named", { name: conversation.lastMessage.attachmentName || "" })) + (conversation.lastMessage.text ? ` · ${conversation.lastMessage.text.replace(/\s+/g, " ").slice(0, 60)}` : "")
           : conversation.lastMessage?.text.replace(/\s+/g, " ").slice(0, 80) ?? "—",
     time: listTime(conversation.lastActivityAt),
     unread: conversation.pendingCount ?? 0,

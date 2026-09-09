@@ -7,7 +7,6 @@ import { DecisionDialog } from "../../../shared/DecisionDialog";
 import { Icon } from "../../../shared/icons";
 import { LoadingState } from "../../../shared/ui";
 import { Button, FilterDropdown, SearchInput } from "../../../shared/ui-controls";
-import { pluralRu } from "../../../shared/utils";
 import type { RouteKey, SessionUser } from "../../../types";
 import type { AgentRef } from "../../agents/model";
 import { KnowledgeAgentDialog } from "./KnowledgeAgentDialog";
@@ -30,16 +29,16 @@ import {
   type KnowledgeItem,
 } from "./model";
 import { useKnowledgeLibrary } from "./useKnowledgeLibrary";
+import { t, tn } from "../../../i18n";
 
 // Библиотека знаний (дизайн-базлайн v2, кадры KB1, KB2, KB3, KB9): шапка с
 // состоянием индекса, дерево категорий 260px, таблица материалов. Панель
 // массовых операций живёт, пока живо выделение.
 
-const KNOWLEDGE_FORMS: [string, string, string] = ["знание", "знания", "знаний"];
 
 const ANSWER_FILTER = [
-  { value: "true", label: "Включено" },
-  { value: "false", label: "Выключено" },
+  { value: "true", label: t("common.on") },
+  { value: "false", label: t("common.off") },
 ];
 
 export function KnowledgeLibraryPage({
@@ -80,10 +79,10 @@ export function KnowledgeLibraryPage({
     || agentFilter.length > 0;
 
   const scopeNote = selected.length > 0
-    ? `выбрано ${selected.length} из ${library.total}`
+    ? t("common.selected_of", { selected: selected.length, total: library.total })
     : activeCategory
-      ? `категория «${activeCategory.name}»`
-      : "показаны все категории";
+      ? t("ai.category_named", { name: activeCategory.name })
+      : t("ai.all_categories_shown");
 
   async function run(action: () => Promise<unknown>, fallback: string) {
     setBusy(true);
@@ -101,7 +100,7 @@ export function KnowledgeLibraryPage({
   async function attachToAgent(agentId: number, action: "attach" | "detach") {
     await run(
       () => linkKnowledgeToAgent({ agentId, action, knowledgeIds: selected }),
-      "Не удалось изменить знания агента",
+      t("ai.could_not_change_agent_s"),
     );
     setAttachOpen(false);
     library.clearSelected();
@@ -110,7 +109,7 @@ export function KnowledgeLibraryPage({
   async function moveSelected(categoryId: number) {
     await run(
       () => bulkMoveKnowledge({ knowledgeIds: selected, categoryId }),
-      "Не удалось переместить знания",
+      t("ai.could_not_move_knowledge_items"),
     );
     setMovingOpen(false);
     library.clearSelected();
@@ -119,7 +118,7 @@ export function KnowledgeLibraryPage({
   async function setEnabled(ids: number[], isEnabled: boolean) {
     await run(
       async () => { for (const id of ids) await updateKnowledgeItem(id, { isEnabled }); },
-      "Не удалось изменить участие в ответах",
+      t("ai.could_not_change_participation_replies"),
     );
     library.clearSelected();
   }
@@ -132,37 +131,31 @@ export function KnowledgeLibraryPage({
         <div className="knowledge-card-head-row">
           <div className="knowledge-card-identity">
             <div className="knowledge-card-title">
-              <h2>База знаний</h2>
-              <span className="knowledge-index-pill"><i />Индекс актуален</span>
+              <h2>{t("common.knowledge_base")}</h2>
+              <span className="knowledge-index-pill"><i />{t("ai.index_up_date")}</span>
               <span>{stats}</span>
             </div>
             <p>
-              Материалы для AI-агентов: регламенты, прайсы, скрипты. Агент отвечает только по
-              включённым знаниям, которые к нему прикреплены. Клиент их не видит — публичное
-              живёт в порталах.
+              {t("ai.library_lead")}
             </p>
           </div>
           <div className="knowledge-card-actions">
             {canManage && (
-              <Button variant="secondary" className="knowledge-secondary-action" icon="import" onClick={() => setRoute("knowledgeImport")}>
-                Импорт YAML
-              </Button>
+              <Button variant="secondary" className="knowledge-secondary-action" icon="import" onClick={() => setRoute("knowledgeImport")}>{t("ai.yaml_import")}</Button>
             )}
             {canManage && (
-              <Button variant="primary" className="knowledge-primary-action" icon="plus" onClick={() => openKnowledgeEditor(null)}>
-                Добавить знание
-              </Button>
+              <Button variant="primary" className="knowledge-primary-action" icon="plus" onClick={() => openKnowledgeEditor(null)}>{t("ai.add_knowledge_item")}</Button>
             )}
             <Dropdown
               menu={{ items: [
-                { key: "categories", label: <button type="button" onClick={() => setRoute("knowledgeCategories")}><Icon name="folder" size={15} strokeWidth={1.9} />Категории</button> },
-                { key: "import", label: <button type="button" onClick={() => setRoute("knowledgeImport")}><Icon name="import" size={15} strokeWidth={1.9} />Импорт YAML</button> },
+                { key: "categories", label: <button type="button" onClick={() => setRoute("knowledgeCategories")}><Icon name="folder" size={15} strokeWidth={1.9} />{t("common.categories")}</button> },
+                { key: "import", label: <button type="button" onClick={() => setRoute("knowledgeImport")}><Icon name="import" size={15} strokeWidth={1.9} />{t("ai.yaml_import")}</button> },
               ] }}
               overlayClassName="app-dropdown is-knowledge-menu"
               placement="bottomRight"
               trigger={["click"]}
             >
-              <button aria-label="Ещё" className="knowledge-more-button" title="Ещё" type="button">
+              <button aria-label={t("common.more")} className="knowledge-more-button" title={t("common.more")} type="button">
                 <Icon name="more" size={16} strokeWidth={2} />
               </button>
             </Dropdown>
@@ -175,8 +168,8 @@ export function KnowledgeLibraryPage({
       <div className="knowledge-library">
         <aside className="knowledge-sections">
           <header>
-            <span>КАТЕГОРИИ</span>
-            {canManage && <button type="button" onClick={() => setRoute("knowledgeCategories")}>Управлять</button>}
+            <span>{t("ai.categories")}</span>
+            {canManage && <button type="button" onClick={() => setRoute("knowledgeCategories")}>{t("ai.manage")}</button>}
           </header>
           <nav>
             <button
@@ -186,7 +179,7 @@ export function KnowledgeLibraryPage({
               onClick={() => library.updateFilter("category", undefined)}
             >
               <Icon name="folder" size={15} strokeWidth={1.8} />
-              <span>Все знания</span>
+              <span>{t("ai.all_knowledge")}</span>
               <small>{library.categories.filter((item) => item.parentId === null).reduce((total, item) => total + (item.knowledgeCount ?? 0), 0)}</small>
             </button>
             {rows.map(({ category, depth, count }) => (
@@ -205,8 +198,7 @@ export function KnowledgeLibraryPage({
           {canManage && (
             <div className="knowledge-sections-foot">
               <button type="button" onClick={() => setRoute("knowledgeCategories")}>
-                <Icon name="plus" size={14} strokeWidth={2} />Добавить категорию
-              </button>
+                <Icon name="plus" size={14} strokeWidth={2} />{t("ai.add_category")}</button>
             </div>
           )}
         </aside>
@@ -216,13 +208,13 @@ export function KnowledgeLibraryPage({
             <div className="knowledge-library-toolbar">
               <SearchInput
                 className="knowledge-library-search"
-                placeholder="Поиск по заголовку и описанию"
+                placeholder={t("ai.search_by_title_description")}
                 value={library.filters.search}
                 onChange={(value) => library.updateFilter("search", value)}
               />
               <FilterDropdown
-                caption="В ответах:"
-                label={library.filters.isEnabled === undefined ? "Все" : library.filters.isEnabled ? "Включено" : "Выключено"}
+                caption={t("ai.replies")}
+                label={library.filters.isEnabled === undefined ? t("common.all") : library.filters.isEnabled ? t("common.on") : t("common.off")}
                 open={answerOpen}
                 options={ANSWER_FILTER}
                 selected={library.filters.isEnabled === undefined ? [] : [String(library.filters.isEnabled)]}
@@ -232,8 +224,8 @@ export function KnowledgeLibraryPage({
                 }}
               />
               <FilterDropdown
-                caption="Агент:"
-                label={agentFilter.length === 1 ? agents.find((agent) => agent.aiAgentId === agentFilter[0])?.name ?? "Любой" : "Любой"}
+                caption={t("ai.agent_2")}
+                label={agentFilter.length === 1 ? agents.find((agent) => agent.aiAgentId === agentFilter[0])?.name ?? t("ai.any") : t("ai.any")}
                 multiple
                 open={agentOpen}
                 options={agents.filter((agent) => agent.aiAgentId != null).map((agent) => ({ value: String(agent.aiAgentId), label: agent.name }))}
@@ -258,18 +250,18 @@ export function KnowledgeLibraryPage({
                   <span className="knowledge-empty-icon"><Icon name="book" size={25} strokeWidth={1.7} /></span>
                   <h3>
                     {activeCategory && !filtersActive
-                      ? `В категории «${activeCategory.name}» пока нет знаний`
-                      : filtersActive ? "Под фильтры ничего не подошло" : "Знаний пока нет"}
+                      ? t("ai.category_has_no_items", { name: activeCategory.name })
+                      : filtersActive ? t("admin.nothing_matched_filters") : t("ai.no_knowledge_yet")}
                   </h3>
                   <p>
                     {filtersActive
-                      ? "Снимите фильтры или измените запрос — материалы могли остаться в других категориях."
-                      : "Добавьте материал вручную или загрузите пачкой из YAML. Пустую категорию без вложенных можно удалить в «Управлять»."}
+                      ? t("ai.clear_filters_or_change_query")
+                      : t("ai.add_material_by_hand_or")}
                   </p>
                   {canManage && !filtersActive && (
                     <div className="knowledge-empty-actions">
-                      <Button variant="primary" onClick={() => openKnowledgeEditor(null)}>Добавить знание</Button>
-                      <Button variant="secondary" onClick={() => setRoute("knowledgeImport")}>Импорт YAML</Button>
+                      <Button variant="primary" onClick={() => openKnowledgeEditor(null)}>{t("ai.add_knowledge_item")}</Button>
+                      <Button variant="secondary" onClick={() => setRoute("knowledgeImport")}>{t("ai.yaml_import")}</Button>
                     </div>
                   )}
                 </div>
@@ -282,7 +274,7 @@ export function KnowledgeLibraryPage({
                       <th className="knowledge-check-cell">
                         {canManage && (
                           <button
-                            aria-label="Выбрать все знания на странице"
+                            aria-label={t("ai.select_every_knowledge_item_page")}
                             className={`knowledge-check${allVisibleChecked ? " is-checked" : ""}`}
                             type="button"
                             onClick={library.toggleVisible}
@@ -291,12 +283,12 @@ export function KnowledgeLibraryPage({
                           </button>
                         )}
                       </th>
-                      <th>ЗНАНИЕ</th>
-                      <th>КАТЕГОРИЯ</th>
-                      <th>ФРАГМЕНТЫ</th>
-                      <th>АГЕНТЫ</th>
-                      <th>В ОТВЕТАХ</th>
-                      <th>ОБНОВЛЕНО</th>
+                      <th>{t("ai.knowledge_item")}</th>
+                      <th>{t("common.category")}</th>
+                      <th>{t("ai.chunks")}</th>
+                      <th>{t("common.agents_2")}</th>
+                      <th>{t("ai.replies_2")}</th>
+                      <th>{t("ai.updated_2")}</th>
                       <th />
                     </tr>
                   </thead>
@@ -308,16 +300,16 @@ export function KnowledgeLibraryPage({
                       // Сколько агентов используют материал — считает сервер.
                       const attachedAgents = item.agentsCount ?? 0;
                       const menuItems = [
-                        { key: "open", label: <button type="button" onClick={() => openKnowledge(item.id)}><Icon name="book" size={15} strokeWidth={1.8} />Открыть знание</button> },
+                        { key: "open", label: <button type="button" onClick={() => openKnowledge(item.id)}><Icon name="book" size={15} strokeWidth={1.8} />{t("ai.open_knowledge_item")}</button> },
                         ...(canManage ? [
-                          { key: "edit", label: <button type="button" onClick={() => openKnowledgeEditor(item.id)}><Icon name="edit" size={15} strokeWidth={1.9} />Редактировать</button> },
+                          { key: "edit", label: <button type="button" onClick={() => openKnowledgeEditor(item.id)}><Icon name="edit" size={15} strokeWidth={1.9} />{t("common.edit_item")}</button> },
                           { key: "divider-1", type: "divider" as const },
-                          { key: "agent", label: <button type="button" onClick={() => { library.selectOnly(item.id); setAttachOpen(true); }}><Icon name="robot" size={15} strokeWidth={1.8} />Прикрепить к агенту</button> },
-                          { key: "move", label: <button type="button" onClick={() => { library.selectOnly(item.id); setMovingOpen(true); }}><Icon name="move" size={15} strokeWidth={1.9} />Переместить в категорию</button> },
-                          { key: "answers", label: <button type="button" onClick={() => void setEnabled([item.id], !item.isEnabled)}><Icon name={item.isEnabled ? "eyeOff" : "eye"} size={15} strokeWidth={1.9} />{item.isEnabled ? "Выключить в ответах" : "Включить в ответах"}</button> },
-                          { key: "reindex", label: <button type="button" onClick={() => void run(() => reindexKnowledge(item.id), "Не удалось переиндексировать знание")}><Icon name="undo" size={15} strokeWidth={1.9} />Переиндексировать</button> },
+                          { key: "agent", label: <button type="button" onClick={() => { library.selectOnly(item.id); setAttachOpen(true); }}><Icon name="robot" size={15} strokeWidth={1.8} />{t("ai.attach_agent")}</button> },
+                          { key: "move", label: <button type="button" onClick={() => { library.selectOnly(item.id); setMovingOpen(true); }}><Icon name="move" size={15} strokeWidth={1.9} />{t("ai.move_category")}</button> },
+                          { key: "answers", label: <button type="button" onClick={() => void setEnabled([item.id], !item.isEnabled)}><Icon name={item.isEnabled ? "eyeOff" : "eye"} size={15} strokeWidth={1.9} />{item.isEnabled ? t("ai.switch_off_replies") : t("ai.switch_replies")}</button> },
+                          { key: "reindex", label: <button type="button" onClick={() => void run(() => reindexKnowledge(item.id), t("ai.could_not_reindex_knowledge_item"))}><Icon name="undo" size={15} strokeWidth={1.9} />{t("ai.reindex")}</button> },
                           { key: "divider-2", type: "divider" as const },
-                          { key: "delete", label: <button className="danger" type="button" onClick={() => setDeleting({ ids: [item.id], text: `«${item.title}» и его вложения будут удалены. У агентов, которым знание прикреплено, оно исчезнет из ответов.` })}><Icon name="trash" size={15} strokeWidth={1.9} />Удалить знание</button> },
+                          { key: "delete", label: <button className="danger" type="button" onClick={() => setDeleting({ ids: [item.id], text: t("ai.item_and_files_deleted", { title: item.title }) })}><Icon name="trash" size={15} strokeWidth={1.9} />{t("ai.delete_knowledge_item")}</button> },
                         ] : []),
                       ];
                       return (
@@ -329,7 +321,7 @@ export function KnowledgeLibraryPage({
                           <td className="knowledge-check-cell" onClick={(event) => event.stopPropagation()}>
                             {canManage && (
                               <button
-                                aria-label={`Выбрать «${item.title}»`}
+                                aria-label={t("ai.select_item", { title: item.title })}
                                 className={`knowledge-check${checked ? " is-checked" : ""}`}
                                 type="button"
                                 onClick={() => library.toggleSelected(item.id)}
@@ -346,7 +338,7 @@ export function KnowledgeLibraryPage({
                                 <small>{item.description}</small>
                               </span>
                               {item.attachments.length > 0 && (
-                                <small className="knowledge-name-files" title="Вложения">
+                                <small className="knowledge-name-files" title={t("ai.attachments_2")}>
                                   <Icon name="attach" size={12} strokeWidth={1.9} />{item.attachments.length}
                                 </small>
                               )}
@@ -360,7 +352,7 @@ export function KnowledgeLibraryPage({
                           <td>
                             {attachedAgents > 0
                               ? <span className="knowledge-agents-tag"><Icon name="robot" size={12} strokeWidth={1.8} />{attachedAgents}</span>
-                              : <small className="knowledge-agents-empty">не прикреплено</small>}
+                              : <small className="knowledge-agents-empty">{t("ai.not_attached")}</small>}
                           </td>
                           <td>
                             <span className={`knowledge-answer-pill${item.isEnabled ? " is-on" : ""}`}><i />{answerStateLabel(item)}</span>
@@ -371,7 +363,7 @@ export function KnowledgeLibraryPage({
                           </td>
                           <td className="row-actions" onClick={(event) => event.stopPropagation()}>
                             <Dropdown menu={{ items: menuItems }} overlayClassName="app-dropdown is-knowledge-menu" placement="bottomRight" trigger={["click"]}>
-                              <button aria-label={`Действия: ${item.title}`} className="row-menu-button" type="button"><Icon name="more" size={16} strokeWidth={2} /></button>
+                              <button aria-label={t("common.actions_for", { name: item.title })} className="row-menu-button" type="button"><Icon name="more" size={16} strokeWidth={2} /></button>
                             </Dropdown>
                           </td>
                         </tr>
@@ -381,7 +373,7 @@ export function KnowledgeLibraryPage({
                 </table>
 
                 <Pagination
-                  note={`${pluralRu(library.total, KNOWLEDGE_FORMS)} · показаны ${library.items.length} · агент отвечает только по включённым и прикреплённым`}
+                  note={t("ai.library_note", { count: tn("plural.knowledge", library.total), shown: library.items.length })}
                   page={library.page}
                   pageCount={library.pageCount}
                   onPage={library.setPage}
@@ -403,7 +395,7 @@ export function KnowledgeLibraryPage({
           onMove={() => setMovingOpen(true)}
           onRemove={() => setDeleting({
             ids: selected,
-            text: `${pluralRu(selected.length, KNOWLEDGE_FORMS)} и их вложения будут удалены. У агентов, которым они прикреплены, материалы исчезнут из ответов.`,
+            text: t("ai.items_and_files_deleted", { count: tn("plural.knowledge", selected.length) }),
           })}
         />
       )}
@@ -433,10 +425,10 @@ export function KnowledgeLibraryPage({
         onClose={() => setDeleting(null)}
         tone="danger"
         icon="trash"
-        title={deleting && deleting.ids.length > 1 ? "Удалить выбранные знания?" : "Удалить знание?"}
+        title={deleting && deleting.ids.length > 1 ? t("ai.delete_selected_knowledge_items") : t("ai.delete_knowledge_item_2")}
         description={deleting?.text ?? ""}
         actions={<>
-          <Button variant="secondary" onClick={() => setDeleting(null)}>Отмена</Button>
+          <Button variant="secondary" onClick={() => setDeleting(null)}>{t("common.cancel")}</Button>
           <Button
             variant="danger-outline"
             disabled={busy}
@@ -446,12 +438,10 @@ export function KnowledgeLibraryPage({
               if (!target) return;
               void run(
                 async () => { for (const id of target.ids) await deleteKnowledgeItem(id); },
-                "Не удалось удалить знание",
+                t("ai.could_not_delete_knowledge_item"),
               ).then(() => library.clearSelected());
             }}
-          >
-            Удалить
-          </Button>
+          >{t("common.delete")}</Button>
         </>}
       />
     </section>

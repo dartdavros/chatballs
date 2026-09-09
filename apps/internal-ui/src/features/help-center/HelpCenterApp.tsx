@@ -11,6 +11,7 @@ import "./styles-layout.css";
 import "./styles-home.css";
 import "./styles-article.css";
 import "./styles-responsive.css";
+import { t } from "../../i18n";
 
 type HelpRoute = {
   articleSlug: string | null;
@@ -47,8 +48,8 @@ export function HelpCenterApp() {
   if (failed || !route) {
     return (
       <main className="help-fatal">
-        <strong>Портал поддержки не найден</strong>
-        <span>Проверьте адрес или обратитесь к администратору организации.</span>
+        <strong>{t("portals.support_portal_not_found")}</strong>
+        <span>{t("portals.check_address_or_ask_organization")}</span>
       </main>
     );
   }

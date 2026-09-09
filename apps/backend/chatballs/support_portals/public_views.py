@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
+from chatballs.i18n import t
 from chatballs.identity.models import Organization
 from chatballs.support_portals.content_services import record_feedback
 from chatballs.support_portals.models import SupportPortal
@@ -55,7 +56,7 @@ class PublicPortalDetailView(PublicPortalView):
     def get(self, request: Request) -> Response:
         resolved = self.resolve(request)
         if resolved is None:
-            return Response({"detail": "Портал не найден"}, status=404)
+            return Response({"detail": t("portals.not_found")}, status=404)
         context, portal = resolved
         with tenant_atomic(context):
             counts = category_article_counts(portal, published_only=True)
@@ -76,7 +77,7 @@ class PublicArticleListView(PublicPortalView):
     def get(self, request: Request) -> Response:
         resolved = self.resolve(request)
         if resolved is None:
-            return Response({"detail": "Портал не найден"}, status=404)
+            return Response({"detail": t("portals.not_found")}, status=404)
         context, portal = resolved
         locale = str(request.query_params.get("locale", portal.default_locale))
         with tenant_atomic(context):
@@ -90,7 +91,7 @@ class PublicArticleListView(PublicPortalView):
                 limit = min(max(int(request.query_params.get("limit", 50)), 1), 100)
                 offset = max(int(request.query_params.get("offset", 0)), 0)
             except (TypeError, ValueError):
-                return Response({"detail": "Некорректная пагинация"}, status=400)
+                return Response({"detail": t("portals.invalid_pagination")}, status=400)
             total = articles.count()
             page = articles[offset : offset + limit]
             return Response(
@@ -113,7 +114,7 @@ class PublicArticleDetailView(PublicPortalView):
     def get(self, request: Request, article_slug: str) -> Response:
         resolved = self.resolve(request)
         if resolved is None:
-            return Response({"detail": "Портал не найден"}, status=404)
+            return Response({"detail": t("portals.not_found")}, status=404)
         context, portal = resolved
         locale = str(request.query_params.get("locale", portal.default_locale))
         with tenant_atomic(context):
@@ -121,7 +122,7 @@ class PublicArticleDetailView(PublicPortalView):
                 slug=article_slug
             ).first()
             if article is None:
-                return Response({"detail": "Статья не найдена"}, status=404)
+                return Response({"detail": t("portals.article_not_found")}, status=404)
             return Response({"article": public_article_payload(article)})
 
 
@@ -132,10 +133,10 @@ class PublicArticleFeedbackView(PublicPortalView):
     def post(self, request: Request, article_slug: str) -> Response:
         resolved = self.resolve(request)
         if resolved is None:
-            return Response({"detail": "Портал не найден"}, status=404)
+            return Response({"detail": t("portals.not_found")}, status=404)
         helpful = request.data.get("helpful")
         if not isinstance(helpful, bool):
-            return Response({"detail": "helpful должен быть boolean"}, status=400)
+            return Response({"detail": t("portals.helpful_must_be_boolean")}, status=400)
         context, portal = resolved
         locale = str(request.query_params.get("locale", portal.default_locale))
         with tenant_atomic(context):
@@ -143,6 +144,6 @@ class PublicArticleFeedbackView(PublicPortalView):
                 slug=article_slug
             ).first()
             if article is None:
-                return Response({"detail": "Статья не найдена"}, status=404)
+                return Response({"detail": t("portals.article_not_found")}, status=404)
             record_feedback(article, helpful)
             return Response({"ok": True}, status=201)

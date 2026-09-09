@@ -1,5 +1,6 @@
 import type { SessionUser } from "../../types";
 import { hasCapability } from "../../auth/access";
+import { t } from "../../i18n";
 
 // Аудит живёт на своём экране (AuditPage) и своём хуке; useAdministration
 // остался только под «Организацию» в Настройках.
@@ -9,6 +10,8 @@ export type OrganizationSettings = {
   name: string;
   timezone: string;
   currency: string;
+  // Пустая строка — «как в установке»: организация не обязана выбирать язык.
+  language: string;
   logoUrl: string | null;
   // Когда настройки сохраняли в последний раз — подпись у кнопки (кадр N1).
   updatedAt: string | null;
@@ -65,11 +68,11 @@ export type AuditPayload = {
 };
 
 export const AUDIT_PERIODS: Array<[AuditPeriod, string]> = [
-  ["today", "Сегодня"],
-  ["7d", "7 дней"],
-  ["30d", "30 дней"],
-  ["90d", "90 дней"],
-  ["all", "Всё время"],
+  ["today", t("common.today")],
+  ["7d", t("admin.7_days")],
+  ["30d", t("admin.30_days")],
+  ["90d", t("admin.90_days")],
+  ["all", t("admin.all_time")],
 ];
 
 export const EMPTY_AUDIT_QUERY: AuditQuery = {

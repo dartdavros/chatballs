@@ -5,6 +5,7 @@ import type {
   CategoryDropPosition,
   ManagedContentCategoryNode,
 } from "./categoryManagementModel";
+import { t } from "../../i18n";
 
 function dropPosition(event: DragEvent<HTMLDivElement>, isSystem: boolean): CategoryDropPosition {
   const bounds = event.currentTarget.getBoundingClientRect();
@@ -53,8 +54,8 @@ export function CategoryManagementRow({
         if (event.key === "Enter") onSaveEdit(category);
         if (event.key === "Escape") onCancel();
       }} />
-      <button className="save" disabled={!draftName.trim()} type="button" onClick={() => onSaveEdit(category)}>Сохранить</button>
-      <button type="button" onClick={onCancel}>Отмена</button>
+      <button className="save" disabled={!draftName.trim()} type="button" onClick={() => onSaveEdit(category)}>{t("common.save")}</button>
+      <button type="button" onClick={onCancel}>{t("common.cancel")}</button>
     </div>
   );
   return (
@@ -75,20 +76,20 @@ export function CategoryManagementRow({
         <Icon name={category.children.length ? "chevron" : "folder"} size={14} />
         {editingId === category.id ? editor : <>
           <button className="content-category-name" disabled={locked} type="button" onClick={() => onStartEdit(category)}>{category.name}</button>
-          {locked && <span className="content-system-badge">СИСТ.</span>}
+          {locked && <span className="content-system-badge">{t("shared.sys")}</span>}
           <span className="content-category-count">{category.count}</span>
-          {!locked && <button aria-label={`Создать подкатегорию в ${category.name}`} className="content-category-action" type="button" onClick={() => onCreateChild(category.id)}><Icon name="plus" size={14} /></button>}
-          <button aria-label={`Удалить ${category.name}`} className="content-category-delete" disabled={!deletable} type="button" onClick={() => onDelete(category)}><Icon name="trash" size={14} /></button>
+          {!locked && <button aria-label={t("shared.create_subcategory_in", { name: category.name })} className="content-category-action" type="button" onClick={() => onCreateChild(category.id)}><Icon name="plus" size={14} /></button>}
+          <button aria-label={t("shared.delete_named", { name: category.name })} className="content-category-delete" disabled={!deletable} type="button" onClick={() => onDelete(category)}><Icon name="trash" size={14} /></button>
         </>}
       </div>
       {createParentId === category.id && (
         <div className="content-category-create" style={{ marginLeft: 50 + level * 20 }}>
-          <input autoFocus placeholder="Название категории" value={draftName} onChange={(event) => onDraftChange(event.target.value)} onKeyDown={(event) => {
+          <input autoFocus placeholder={t("shared.category_name")} value={draftName} onChange={(event) => onDraftChange(event.target.value)} onKeyDown={(event) => {
             if (event.key === "Enter") onSaveCreate();
             if (event.key === "Escape") onCancel();
           }} />
-          <button className="save" disabled={!draftName.trim()} type="button" onClick={onSaveCreate}>Сохранить</button>
-          <button type="button" onClick={onCancel}>Отмена</button>
+          <button className="save" disabled={!draftName.trim()} type="button" onClick={onSaveCreate}>{t("common.save")}</button>
+          <button type="button" onClick={onCancel}>{t("common.cancel")}</button>
         </div>
       )}
       {category.children.map((child) => <CategoryManagementRow

@@ -3,6 +3,7 @@ import { type FormEvent, useEffect, useState } from "react";
 import { api } from "../../api/client";
 import { passwordIsValid } from "../auth/password";
 import type { SessionUser } from "../../types";
+import { t } from "../../i18n";
 
 type UserPayload = { authenticated: true; user: SessionUser };
 
@@ -35,9 +36,9 @@ export function useProfilePage({ user, onUserUpdated, reload }: { user: SessionU
       });
       onUserUpdated(payload.user);
       reload();
-      setProfileMessage("Личные данные сохранены");
+      setProfileMessage(t("profile.personal_details_saved"));
     } catch (error) {
-      setProfileMessage(error instanceof Error ? error.message : "Не удалось сохранить профиль");
+      setProfileMessage(error instanceof Error ? error.message : t("profile.could_not_save_profile"));
     } finally {
       setSavingProfile(false);
     }
@@ -55,9 +56,9 @@ export function useProfilePage({ user, onUserUpdated, reload }: { user: SessionU
       });
       onUserUpdated(payload.user);
       setPasswords({ current: "", next: "", repeat: "" });
-      setPasswordMessage(payload.revoked > 0 ? `Пароль обновлён, завершено сессий: ${payload.revoked}` : "Пароль обновлён");
+      setPasswordMessage(payload.revoked > 0 ? t("profile.password_updated_sessions", { count: payload.revoked }) : t("profile.password_updated"));
     } catch (error) {
-      setPasswordMessage(error instanceof Error ? error.message : "Не удалось обновить пароль");
+      setPasswordMessage(error instanceof Error ? error.message : t("profile.could_not_update_password"));
     } finally {
       setSavingPassword(false);
     }
@@ -69,7 +70,7 @@ export function useProfilePage({ user, onUserUpdated, reload }: { user: SessionU
     try {
       if (user.totpEnabled) {
         if (!passwords.current) {
-          setTotpMessage("Введите текущий пароль в блоке смены пароля, чтобы отключить TOTP");
+          setTotpMessage(t("profile.enter_current_password_change_password"));
           return;
         }
         const payload = await api<UserPayload & { revoked: number }>("/api/v1/auth/profile/totp/disable/", {
@@ -77,13 +78,13 @@ export function useProfilePage({ user, onUserUpdated, reload }: { user: SessionU
           body: JSON.stringify({ currentPassword: passwords.current }),
         });
         onUserUpdated(payload.user);
-        setTotpMessage(payload.revoked > 0 ? `TOTP отключена, завершено сессий: ${payload.revoked}` : "TOTP отключена");
+        setTotpMessage(payload.revoked > 0 ? t("profile.totp_off_sessions", { count: payload.revoked }) : t("profile.totp_turned_off"));
       } else {
         const payload = await api<UserPayload>("/api/v1/auth/profile/totp/start/", { method: "POST" });
         onUserUpdated(payload.user);
       }
     } catch (error) {
-      setTotpMessage(error instanceof Error ? error.message : "Не удалось изменить TOTP");
+      setTotpMessage(error instanceof Error ? error.message : t("profile.could_not_change_totp"));
     } finally {
       setSavingTotp(false);
     }
@@ -94,9 +95,9 @@ export function useProfilePage({ user, onUserUpdated, reload }: { user: SessionU
     setSessionsMessage("");
     try {
       const payload = await api<{ revoked: number }>("/api/v1/auth/profile/sessions/revoke-other/", { method: "POST" });
-      setSessionsMessage(payload.revoked > 0 ? `Завершено сессий: ${payload.revoked}` : "Других активных сессий нет");
+      setSessionsMessage(payload.revoked > 0 ? t("profile.sessions_ended_count", { count: payload.revoked }) : t("profile.there_no_other_active_sessions"));
     } catch (error) {
-      setSessionsMessage(error instanceof Error ? error.message : "Не удалось завершить сессии");
+      setSessionsMessage(error instanceof Error ? error.message : t("profile.could_not_end_sessions"));
     } finally {
       setRevokingSessions(false);
     }

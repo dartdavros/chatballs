@@ -5,18 +5,10 @@ import { HelpArrowIcon, HelpFolderIcon } from "./HelpIcons";
 import { HelpLayout } from "./HelpLayout";
 import { HelpSearch } from "./HelpSearch";
 import type { HelpArticle, HelpManifest } from "./types";
+import { t, tn } from "../../i18n";
 
 function articleHref(articleSlug: string): string {
   return `/articles/${encodeURIComponent(articleSlug)}/`;
-}
-
-function articleCount(value: number): string {
-  const mod100 = value % 100;
-  const mod10 = value % 10;
-  const word = mod100 >= 11 && mod100 <= 14
-    ? "статей"
-    : mod10 === 1 ? "статья" : mod10 >= 2 && mod10 <= 4 ? "статьи" : "статей";
-  return `${value} ${word}`;
 }
 
 export function HelpHome({ manifest }: { manifest: HelpManifest }) {
@@ -101,15 +93,13 @@ export function HelpHome({ manifest }: { manifest: HelpManifest }) {
           <div className="help-results">
             <div className="help-results-heading">
               <div>
-                <span>{selectedCategory ? selectedCategory.name : "Результаты поиска"}</span>
-                <h1>{search.trim() ? `Поиск: «${search.trim()}»` : selectedCategory?.name}</h1>
+                <span>{selectedCategory ? selectedCategory.name : t("portals.search_results")}</span>
+                <h1>{search.trim() ? t("portals.search_query", { query: search.trim() }) : selectedCategory?.name}</h1>
               </div>
-              <button type="button" onClick={() => { setSearch(""); chooseCategory(""); }}>
-                Все разделы
-              </button>
+              <button type="button" onClick={() => { setSearch(""); chooseCategory(""); }}>{t("portals.all_sections")}</button>
             </div>
             {failed ? (
-              <div className="help-empty"><strong>Не удалось загрузить статьи</strong><span>Попробуйте обновить страницу.</span></div>
+              <div className="help-empty"><strong>{t("portals.could_not_load_articles")}</strong><span>{t("portals.try_reloading_page")}</span></div>
             ) : articles === null ? (
               <div className="help-loading-lines"><i /><i /><i /></div>
             ) : articles.length ? (
@@ -122,10 +112,10 @@ export function HelpHome({ manifest }: { manifest: HelpManifest }) {
                     <HelpArrowIcon />
                   </a>
                 ))}
-                {hasMore && <button className="help-load-more" type="button" onClick={() => void loadMore()}>Показать ещё</button>}
+                {hasMore && <button className="help-load-more" type="button" onClick={() => void loadMore()}>{t("portals.show_more")}</button>}
               </div>
             ) : (
-              <div className="help-empty"><strong>Ничего не найдено</strong><span>Попробуйте изменить запрос или открыть другой раздел.</span></div>
+              <div className="help-empty"><strong>{t("common.nothing_found")}</strong><span>{t("portals.try_changing_query_or_opening")}</span></div>
             )}
           </div>
         ) : (
@@ -136,7 +126,7 @@ export function HelpHome({ manifest }: { manifest: HelpManifest }) {
                 <span className="help-category-copy">
                   <strong>{item.name}</strong>
                   {item.description && <p>{item.description}</p>}
-                  <small>{articleCount(item.articleCount)}</small>
+                  <small>{tn("plural.articles", item.articleCount)}</small>
                 </span>
               </button>
             ))}

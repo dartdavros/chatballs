@@ -13,6 +13,7 @@ import { EmployeeTable } from "./EmployeeTable";
 import { EmployeesFilters } from "./EmployeesFilters";
 import { blockEmployee, fetchEmployees, resetEmployeePassword, terminateEmployeeSessions, type IssuedPassword } from "./api";
 import type { EmployeeRoleFilter } from "./model";
+import { t } from "../../i18n";
 
 // Список сотрудников (дизайн-базлайн v2, «Сотрудники Baseline», кадры E1/E2).
 // Страницу, фильтры и поиск считает сервер: список растёт вместе с компанией.
@@ -38,7 +39,7 @@ export function EmployeesPage({ groups, openEmployee, user }: {
     [groupId, role, settledQuery],
   );
   const load = useCallback((page: number) => fetchEmployees(filters, page), [filters]);
-  const employees = usePagedResource(load, filters, "Не удалось загрузить сотрудников");
+  const employees = usePagedResource(load, filters, t("admin.could_not_load_operators"));
 
   function resetFilters() {
     setQuery(""); setRole("all"); setGroupId("all"); setMenuId(null);
@@ -50,7 +51,7 @@ export function EmployeesPage({ groups, openEmployee, user }: {
       await action();
       await employees.reload();
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Не удалось выполнить действие");
+      setError(caught instanceof Error ? caught.message : t("common.could_not_complete_action"));
     }
   }
 
@@ -58,11 +59,11 @@ export function EmployeesPage({ groups, openEmployee, user }: {
     <div className="employees-page">
       <header className="employees-header">
         <div>
-          <h2>Сотрудники</h2>
-          <p>Роли и группы · показано <b>{employees.items.length}</b> из {employees.total}</p>
+          <h2>{t("common.operators")}</h2>
+          <p>{t("admin.roles_groups_shown", { shown: employees.items.length, total: employees.total })}</p>
         </div>
         {canManage && (
-          <Button className="employees-create" variant="primary" icon="team" iconSize={16} onClick={() => setCreateOpen(true)}>Добавить сотрудника</Button>
+          <Button className="employees-create" variant="primary" icon="team" iconSize={16} onClick={() => setCreateOpen(true)}>{t("admin.add_operator")}</Button>
         )}
       </header>
 

@@ -61,6 +61,8 @@ class AdministrationApiTests(TestCase):
                 "name": "Example",
                 "timezone": "Europe/Moscow",
                 "currency": "RUB",
+                # Пустой язык — «как в установке»: организация своего не выбрала.
+                "language": "",
                 "logoUrl": None,
                 # Подпись «Сохранено …» у кнопки (кадр N1): пока правок не было — null.
                 "updatedAt": None,

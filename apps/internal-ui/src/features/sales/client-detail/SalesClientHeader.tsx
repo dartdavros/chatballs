@@ -7,6 +7,7 @@ import { Button, CopyButton } from "../../../shared/ui-controls";
 import { ContactAvatar } from "../../conversations/ContactAvatar";
 import { ContactEditForm, type ContactCardFields } from "../../conversations/ContactEditForm";
 import type { ClientDetailVm } from "./model";
+import { t } from "../../../i18n";
 
 // Шапка карточки контакта (кадр K3): аватар 64 · имя · CID · карандаш ·
 // описание · телефон/email/компания/город с «копировать» · бейджи каналов ·
@@ -24,7 +25,7 @@ export function SalesClientHeader({ client, canEdit = false, openConversation, o
   ].filter(Boolean) as Array<{ icon: "phone" | "mail" | "building" | "pin"; value: string }>;
 
   const menuItems = [
-    { key: "copy-cid", label: <button type="button" onClick={() => { setMenuOpen(false); void navigator.clipboard?.writeText(client.cid); }}><Icon name="copy" size={15} />Скопировать CID</button> },
+    { key: "copy-cid", label: <button type="button" onClick={() => { setMenuOpen(false); void navigator.clipboard?.writeText(client.cid); }}><Icon name="copy" size={15} />{t("sales.copy_cid")}</button> },
   ];
 
   return (
@@ -34,7 +35,7 @@ export function SalesClientHeader({ client, canEdit = false, openConversation, o
         <div className="sales-client-detail-name-row">
           <h2>{client.name}</h2>
           <code>{client.cid}</code>
-          {canEdit && onSave && !editing && <button className="sales-client-edit" type="button" title="Редактировать" aria-label="Редактировать контакт" onClick={() => setEditing(true)}><Icon name="edit" size={14} /></button>}
+          {canEdit && onSave && !editing && <button className="sales-client-edit" type="button" title={t("common.edit_item")} aria-label={t("sales.edit_contact")} onClick={() => setEditing(true)}><Icon name="edit" size={14} /></button>}
         </div>
         {editing && onSave ? (
           <ContactEditForm
@@ -67,9 +68,9 @@ export function SalesClientHeader({ client, canEdit = false, openConversation, o
       </div>
       {!editing && (
         <div className="sales-client-detail-actions">
-          <Button icon="message" variant="primary" disabled={!targetDialog} onClick={() => targetDialog && openConversation(targetDialog.id)}>Открыть диалог</Button>
+          <Button icon="message" variant="primary" disabled={!targetDialog} onClick={() => targetDialog && openConversation(targetDialog.id)}>{t("sales.open_conversation")}</Button>
           <Dropdown menu={{ items: menuItems }} open={menuOpen} onOpenChange={setMenuOpen} trigger={["click"]} overlayClassName="app-dropdown is-wide">
-            <button className="sales-client-more" type="button" aria-label="Действия контакта"><Icon name="more" size={17} /></button>
+            <button className="sales-client-more" type="button" aria-label={t("sales.contact_actions")}><Icon name="more" size={17} /></button>
           </Dropdown>
         </div>
       )}

@@ -1,3 +1,5 @@
+import { t } from "../i18n";
+
 const configuredApiBase = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/+$/, "");
 let activeOrganizationPublicId: string | null = null;
 
@@ -37,7 +39,7 @@ export class ApiError<TPayload extends { detail?: string } = ApiErrorPayload> ex
   readonly payload: TPayload;
 
   constructor(status: number, payload: TPayload) {
-    super(payload.detail ?? "Ошибка запроса");
+    super(payload.detail ?? t("common.request_failed"));
     this.name = "ApiError";
     this.status = status;
     this.payload = payload;
@@ -101,7 +103,7 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
     headers,
   });
   if (!response.ok) {
-    const payload = await response.json().catch(() => ({ detail: "Ошибка запроса" })) as ApiErrorPayload;
+    const payload = await response.json().catch(() => ({ detail: t("common.request_failed") })) as ApiErrorPayload;
     throw new ApiError(response.status, payload);
   }
   if (response.status === 204 || response.status === 205) return undefined as T;
@@ -123,7 +125,7 @@ export function apiUpload<T>(path: string, form: FormData, onProgress?: (percent
         if (event.lengthComputable) onProgress(Math.round((event.loaded / event.total) * 100));
       };
     }
-    request.onerror = () => reject(new ApiError(0, { detail: "Ошибка сети" }));
+    request.onerror = () => reject(new ApiError(0, { detail: t("shared.network_error") }));
     request.onload = () => {
       let payload: unknown = null;
       try {
@@ -135,7 +137,7 @@ export function apiUpload<T>(path: string, form: FormData, onProgress?: (percent
         resolve(payload as T);
         return;
       }
-      reject(new ApiError(request.status, (payload ?? { detail: "Ошибка запроса" }) as ApiErrorPayload));
+      reject(new ApiError(request.status, (payload ?? { detail: t("common.request_failed") }) as ApiErrorPayload));
     };
     request.send(form);
   });

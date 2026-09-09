@@ -14,22 +14,24 @@
 
 from __future__ import annotations
 
+from chatballs.i18n import t
+
 # Разделы журнала: по ним фильтр и группировка. Ключ — префикс кода действия
 # до первой точки.
 AUDIT_CATEGORY_LABELS: dict[str, str] = {
-    "identity": "Доступ и сотрудники",
-    "access_assignment": "Доступ и сотрудники",
-    "administration": "Настройки",
-    "organization": "Организация",
-    "integrations": "Интеграции",
-    "channels": "Каналы",
-    "ai": "AI и знания",
-    "conversations": "Диалоги",
-    "conversation": "Диалоги",
-    "contacts": "Контакты",
-    "calls": "Звонки",
-    "support_portal": "Порталы",
-    "demo": "Демо-данные",
+    "identity": "audit.category_identity",
+    "access_assignment": "audit.category_access_assignment",
+    "administration": "audit.category_administration",
+    "organization": "audit.category_organization",
+    "integrations": "audit.category_integrations",
+    "channels": "audit.category_channels",
+    "ai": "audit.category_ai",
+    "conversations": "audit.category_conversations",
+    "conversation": "audit.category_conversation",
+    "contacts": "audit.category_contacts",
+    "calls": "audit.category_calls",
+    "support_portal": "audit.category_support_portal",
+    "demo": "audit.category_demo",
 }
 
 AUDIT_CATEGORY_ORDER = (
@@ -56,141 +58,149 @@ AUDIT_CATEGORY_ALIASES = {
 
 AUDIT_ACTION_LABELS: dict[str, str] = {
     # --- Доступ и сотрудники ---
-    "identity.login_succeeded": "Вход в систему",
-    "identity.login_failed": "Неудачный вход",
-    "identity.login_totp_required": "Запрошен код двухфакторной проверки",
-    "identity.logout": "Выход из системы",
-    "identity.password_reset_requested": "Запрошен сброс пароля",
-    "identity.password_reset_completed": "Пароль восстановлен",
-    "identity.password_reset_failed": "Неудачный сброс пароля",
-    "identity.temporary_password_changed": "Сменён временный пароль",
-    "identity.profile_updated": "Изменён профиль сотрудника",
-    "identity.profile_password_changed": "Изменён пароль",
-    "identity.profile_sessions_revoked": "Завершены свои сессии",
-    "identity.profile_totp_setup_started": "Начата настройка двухфакторной проверки",
-    "identity.profile_totp_disabled": "Отключена двухфакторная проверка",
-    "identity.totp_enabled": "Включена двухфакторная проверка",
-    "identity.totp_setup_failed": "Ошибка настройки двухфакторной проверки",
-    "identity.totp_verify_failed": "Неверный код двухфакторной проверки",
-    "identity.avatar_updated": "Изменено фото профиля",
-    "identity.avatar_deleted": "Удалено фото профиля",
-    "identity.employee_created": "Добавлен сотрудник",
-    "identity.employee_updated": "Изменён сотрудник",
-    "identity.employee_blocked": "Сотрудник заблокирован",
-    "identity.employee_unblocked": "Сотрудник разблокирован",
-    "identity.employee_role_changed": "Изменена роль сотрудника",
-    "identity.employee_groups_changed": "Изменены группы сотрудника",
-    "identity.employee_password_reset": "Сброшен пароль сотрудника",
-    "identity.employee_sessions_terminated": "Завершены сессии сотрудника",
-    "identity.employee_privileged_action_denied": "Отказано в привилегированном действии",
-    "identity.group_created": "Создана группа",
-    "identity.group_updated": "Изменена группа",
-    "identity.group_deleted": "Удалена группа",
-    "identity.ownership_transferred": "Передано владение организацией",
-    "identity.owner_bootstrapped": "Создан владелец установки",
-    "identity.instance_setup_completed": "Пройден мастер первого запуска",
-    "identity.access_profile_created": "Создан профиль доступа",
-    "identity.access_profile_updated": "Изменён профиль доступа",
-    "identity.access_assignment_created": "Назначен доступ сотруднику",
-    "identity.access_assignment_revoked": "Отозван доступ сотрудника",
-    "access_assignment.created": "Назначен доступ сотруднику",
+    "identity.login_succeeded": "audit.action_identity_login_succeeded",
+    "identity.login_failed": "audit.action_identity_login_failed",
+    "identity.login_totp_required": "audit.action_identity_login_totp_required",
+    "identity.logout": "audit.action_identity_logout",
+    "identity.password_reset_requested": "audit.action_identity_password_reset_requested",
+    "identity.password_reset_completed": "audit.action_identity_password_reset_completed",
+    "identity.password_reset_failed": "audit.action_identity_password_reset_failed",
+    "identity.temporary_password_changed": "audit.action_identity_temporary_password_changed",
+    "identity.profile_updated": "audit.action_identity_profile_updated",
+    "identity.profile_language_changed": "audit.action_identity_profile_language_changed",
+    "identity.profile_password_changed": "audit.action_identity_profile_password_changed",
+    "identity.profile_sessions_revoked": "audit.action_identity_profile_sessions_revoked",
+    "identity.profile_totp_setup_started": "audit.action_identity_profile_totp_setup_started",
+    "identity.profile_totp_disabled": "audit.action_identity_profile_totp_disabled",
+    "identity.totp_enabled": "audit.action_identity_totp_enabled",
+    "identity.totp_setup_failed": "audit.action_identity_totp_setup_failed",
+    "identity.totp_verify_failed": "audit.action_identity_totp_verify_failed",
+    "identity.avatar_updated": "audit.action_identity_avatar_updated",
+    "identity.avatar_deleted": "audit.action_identity_avatar_deleted",
+    "identity.employee_created": "audit.action_identity_employee_created",
+    "identity.employee_updated": "audit.action_identity_employee_updated",
+    "identity.employee_blocked": "audit.action_identity_employee_blocked",
+    "identity.employee_unblocked": "audit.action_identity_employee_unblocked",
+    "identity.employee_role_changed": "audit.action_identity_employee_role_changed",
+    "identity.employee_groups_changed": "audit.action_identity_employee_groups_changed",
+    "identity.employee_password_reset": "audit.action_identity_employee_password_reset",
+    "identity.employee_sessions_terminated": "audit.action_identity_employee_sessions_terminated",
+    "identity.employee_privileged_action_denied": "audit.action_identity_employee_privileged_action_denied",
+    "identity.group_created": "audit.action_identity_group_created",
+    "identity.group_updated": "audit.action_identity_group_updated",
+    "identity.group_deleted": "audit.action_identity_group_deleted",
+    "identity.ownership_transferred": "audit.action_identity_ownership_transferred",
+    "identity.owner_bootstrapped": "audit.action_identity_owner_bootstrapped",
+    "identity.instance_setup_completed": "audit.action_identity_instance_setup_completed",
+    "identity.access_profile_created": "audit.action_identity_access_profile_created",
+    "identity.access_profile_updated": "audit.action_identity_access_profile_updated",
+    "identity.access_assignment_created": "audit.action_identity_access_assignment_created",
+    "identity.access_assignment_revoked": "audit.action_identity_access_assignment_revoked",
+    "access_assignment.created": "audit.action_access_assignment_created",
     # --- Настройки ---
-    "administration.organization_updated": "Изменены данные организации",
-    "administration.logo_updated": "Изменён логотип организации",
-    "administration.logo_deleted": "Удалён логотип организации",
-    "administration.communication_updated": "Изменены голосовые и звонки",
-    "administration.storage_updated": "Изменено хранилище файлов",
-    "administration.storage_migration_requested": "Запущен перенос файлов",
-    "administration.instance_updated": "Изменены настройки платформы",
+    "administration.organization_updated": "audit.action_administration_organization_updated",
+    "administration.logo_updated": "audit.action_administration_logo_updated",
+    "administration.logo_deleted": "audit.action_administration_logo_deleted",
+    "administration.communication_updated": "audit.action_administration_communication_updated",
+    "administration.storage_updated": "audit.action_administration_storage_updated",
+    "administration.storage_migration_requested": "audit.action_administration_storage_migration_requested",
+    "administration.instance_updated": "audit.action_administration_instance_updated",
     # --- Организация ---
-    "organization.provisioned": "Создана организация",
-    "organization.owner_activated": "Активирован владелец организации",
-    "organization.owner_invitation_requested": "Отправлено приглашение владельцу",
+    "organization.provisioned": "audit.action_organization_provisioned",
+    "organization.owner_activated": "audit.action_organization_owner_activated",
+    "organization.owner_invitation_requested": "audit.action_organization_owner_invitation_requested",
     # --- Интеграции и каналы ---
-    "integrations.integration_created": "Добавлена интеграция",
-    "integrations.integration_updated": "Изменена интеграция",
-    "integrations.integration_deleted": "Удалена интеграция",
-    "channels.channel_created": "Создан канал",
-    "channels.channel_updated": "Изменён канал",
-    "channels.channel_deleted": "Удалён канал",
-    "channels.connection_bound": "Подключение привязано к агенту",
+    "integrations.integration_created": "audit.action_integrations_integration_created",
+    "integrations.integration_updated": "audit.action_integrations_integration_updated",
+    "integrations.integration_deleted": "audit.action_integrations_integration_deleted",
+    "channels.channel_created": "audit.action_channels_channel_created",
+    "channels.channel_updated": "audit.action_channels_channel_updated",
+    "channels.channel_deleted": "audit.action_channels_channel_deleted",
+    "channels.connection_bound": "audit.action_channels_connection_bound",
     # --- AI и знания ---
-    "ai.agent_created": "Создан агент",
-    "ai.agent_status_changed": "Изменён статус агента",
-    "ai.agent_category_knowledge_selected": "Выбраны знания категории для агента",
-    "ai.agent_knowledge_attached": "Знания подключены к агенту",
-    "ai.agent_knowledge_detached": "Знания отключены от агента",
-    "ai.agent_portal_articles_attached": "Статьи портала подключены к агенту",
-    "ai.agent_portal_articles_detached": "Статьи портала отключены от агента",
-    "ai.knowledge_created": "Добавлено знание",
-    "ai.knowledge_updated": "Изменено знание",
-    "ai.knowledge_deleted": "Удалено знание",
-    "ai.knowledge_reindexed": "Знание переиндексировано",
-    "ai.knowledge_imported": "Знания импортированы",
-    "ai.knowledge_attachment_added": "Добавлено вложение знания",
-    "ai.knowledge_attachment_deleted": "Удалено вложение знания",
-    "ai.knowledge_category_created": "Создана категория знаний",
-    "ai.knowledge_category_updated": "Изменена категория знаний",
-    "ai.knowledge_category_deleted": "Удалена категория знаний",
+    "ai.agent_created": "audit.action_ai_agent_created",
+    "ai.agent_status_changed": "audit.action_ai_agent_status_changed",
+    "ai.agent_category_knowledge_selected": "audit.action_ai_agent_category_knowledge_selected",
+    "ai.agent_knowledge_attached": "audit.action_ai_agent_knowledge_attached",
+    "ai.agent_knowledge_detached": "audit.action_ai_agent_knowledge_detached",
+    "ai.agent_portal_articles_attached": "audit.action_ai_agent_portal_articles_attached",
+    "ai.agent_portal_articles_detached": "audit.action_ai_agent_portal_articles_detached",
+    "ai.knowledge_created": "audit.action_ai_knowledge_created",
+    "ai.knowledge_updated": "audit.action_ai_knowledge_updated",
+    "ai.knowledge_deleted": "audit.action_ai_knowledge_deleted",
+    "ai.knowledge_reindexed": "audit.action_ai_knowledge_reindexed",
+    "ai.knowledge_imported": "audit.action_ai_knowledge_imported",
+    "ai.knowledge_attachment_added": "audit.action_ai_knowledge_attachment_added",
+    "ai.knowledge_attachment_deleted": "audit.action_ai_knowledge_attachment_deleted",
+    "ai.knowledge_category_created": "audit.action_ai_knowledge_category_created",
+    "ai.knowledge_category_updated": "audit.action_ai_knowledge_category_updated",
+    "ai.knowledge_category_deleted": "audit.action_ai_knowledge_category_deleted",
     # --- Диалоги ---
-    "conversations.claimed": "Диалог взят в работу",
-    "conversations.released_to_ai": "Диалог возвращён AI",
-    "conversations.returned_to_queue": "Диалог возвращён в очередь",
-    "conversations.assignee_changed": "Изменён ответственный за диалог",
-    "conversations.group_changed": "Изменена группа диалога",
-    "conversations.priority_changed": "Изменён приоритет диалога",
-    "conversations.closed": "Диалог закрыт",
-    "conversations.archived": "Диалог отправлен в архив",
-    "conversations.unarchived": "Диалог возвращён из архива",
-    "conversations.marked_spam": "Диалог помечен спамом",
-    "conversations.contact_requested": "Запрошены контакты клиента",
-    "conversations.contact_updated": "Изменён контакт диалога",
-    "conversation.contact_updated": "Изменён контакт диалога",
-    "conversations.file_sent": "Отправлен файл в диалог",
-    "conversations.voice_sent": "Отправлено голосовое в диалог",
+    "conversations.claimed": "audit.action_conversations_claimed",
+    "conversations.released_to_ai": "audit.action_conversations_released_to_ai",
+    "conversations.returned_to_queue": "audit.action_conversations_returned_to_queue",
+    "conversations.assignee_changed": "audit.action_conversations_assignee_changed",
+    "conversations.group_changed": "audit.action_conversations_group_changed",
+    "conversations.priority_changed": "audit.action_conversations_priority_changed",
+    "conversations.closed": "audit.action_conversations_closed",
+    "conversations.archived": "audit.action_conversations_archived",
+    "conversations.unarchived": "audit.action_conversations_unarchived",
+    "conversations.marked_spam": "audit.action_conversations_marked_spam",
+    "conversations.contact_requested": "audit.action_conversations_contact_requested",
+    "conversations.contact_updated": "audit.action_conversations_contact_updated",
+    "conversation.contact_updated": "audit.action_conversation_contact_updated",
+    "conversations.file_sent": "audit.action_conversations_file_sent",
+    "conversations.voice_sent": "audit.action_conversations_voice_sent",
     # --- Контакты ---
-    "contacts.merged": "Объединение контактов",
-    "contacts.unmerged": "Разъединение контактов",
+    "contacts.merged": "audit.action_contacts_merged",
+    "contacts.unmerged": "audit.action_contacts_unmerged",
     # --- Звонки ---
-    "calls.requested": "Запрошен звонок",
-    "calls.cancelled": "Звонок отменён",
+    "calls.requested": "audit.action_calls_requested",
+    "calls.cancelled": "audit.action_calls_cancelled",
     # --- Порталы ---
-    "support_portal.created": "Создан портал",
-    "support_portal.published": "Портал опубликован",
-    "support_portal.draft": "Портал снят с публикации",
-    "support_portal.articles_imported": "Импортированы статьи портала",
+    "support_portal.created": "audit.action_support_portal_created",
+    "support_portal.published": "audit.action_support_portal_published",
+    "support_portal.draft": "audit.action_support_portal_draft",
+    "support_portal.articles_imported": "audit.action_support_portal_articles_imported",
     # --- Демо-данные ---
-    "demo.install_requested": "Запрошена установка демо-данных",
-    "demo.installed": "Демо-данные установлены",
-    "demo.installed_accounts": "Созданы учётные записи демо-сотрудников",
-    "demo.remove_requested": "Запрошено удаление демо-данных",
-    "demo.removed": "Демо-данные удалены",
+    "demo.install_requested": "audit.action_demo_install_requested",
+    "demo.installed": "audit.action_demo_installed",
+    "demo.installed_accounts": "audit.action_demo_installed_accounts",
+    "demo.remove_requested": "audit.action_demo_remove_requested",
+    "demo.removed": "audit.action_demo_removed",
 }
 
+def audit_result_label(result: str) -> str:
+    """Подпись результата события или «Неизвестно» для чужого кода."""
+
+    key = AUDIT_RESULT_LABELS.get(result)
+    return t(key) if key else t("audit.result_unknown")
+
+
 AUDIT_RESULT_LABELS = {
-    "SUCCESS": "Выполнено",
-    "DENIED": "Отклонено",
-    "FAILED": "Ошибка",
+    "SUCCESS": "audit.result_success",
+    "DENIED": "audit.result_denied",
+    "FAILED": "audit.result_failed",
 }
 
 # Что за объект тронули: тип из модели в человеческом виде. Пусто — покажем
 # сам object_type, он и так читается латиницей.
 AUDIT_OBJECT_TYPE_LABELS = {
-    "Organization": "Организация",
-    "HumanUser": "Сотрудник",
-    "EmployeeGroup": "Группа",
-    "Integration": "Интеграция",
-    "Channel": "Канал",
-    "Knowledge": "Знание",
-    "KnowledgeCategory": "Категория знаний",
-    "AgentCard": "Агент",
-    "Conversation": "Диалог",
-    "Contact": "Контакт",
-    "SupportPortal": "Портал",
-    "AccessProfile": "Профиль доступа",
-    "AccessAssignment": "Назначение доступа",
-    "InstanceSettings": "Установка",
-    "StorageSettings": "Хранилище",
+    "Organization": "audit.object_organization",
+    "HumanUser": "audit.object_humanuser",
+    "EmployeeGroup": "audit.object_employeegroup",
+    "Integration": "audit.object_integration",
+    "Channel": "audit.object_channel",
+    "Knowledge": "audit.object_knowledge",
+    "KnowledgeCategory": "audit.object_knowledgecategory",
+    "AgentCard": "audit.object_agentcard",
+    "Conversation": "audit.object_conversation",
+    "Contact": "audit.object_contact",
+    "SupportPortal": "audit.object_supportportal",
+    "AccessProfile": "audit.object_accessprofile",
+    "AccessAssignment": "audit.object_accessassignment",
+    "InstanceSettings": "audit.object_instancesettings",
+    "StorageSettings": "audit.object_storagesettings",
 }
 
 
@@ -202,7 +212,8 @@ def audit_category(action: str) -> str:
 
 
 def audit_category_label(category: str) -> str:
-    return AUDIT_CATEGORY_LABELS.get(category, "Прочее")
+    key = AUDIT_CATEGORY_LABELS.get(category)
+    return t(key) if key else t("audit.category_other")
 
 
 def audit_action_label(action: str) -> str:
@@ -213,7 +224,8 @@ def audit_action_label(action: str) -> str:
     надо дописать сюда.
     """
 
-    return AUDIT_ACTION_LABELS.get(action, "")
+    key = AUDIT_ACTION_LABELS.get(action)
+    return t(key) if key else ""
 
 
 def audit_object_label(object_type: str, object_id: str) -> str:
@@ -221,7 +233,8 @@ def audit_object_label(object_type: str, object_id: str) -> str:
 
     if not object_type:
         return ""
-    label = AUDIT_OBJECT_TYPE_LABELS.get(object_type, object_type)
+    key = AUDIT_OBJECT_TYPE_LABELS.get(object_type)
+    label = t(key) if key else object_type
     return f"{label} · {object_id}" if object_id else label
 
 
@@ -229,6 +242,6 @@ def audit_categories() -> list[dict[str, str]]:
     """Разделы для фильтра — в фиксированном порядке, а не в порядке словаря."""
 
     return [
-        {"value": key, "label": AUDIT_CATEGORY_LABELS[key]}
+        {"value": key, "label": t(AUDIT_CATEGORY_LABELS[key])}
         for key in AUDIT_CATEGORY_ORDER
     ]

@@ -4,6 +4,7 @@ import { useDebounced } from "../../shared/useDebounced";
 import { usePagedResource } from "../../shared/usePagedResource";
 import { loadAudit } from "./api";
 import { EMPTY_AUDIT_QUERY, type AuditPayload, type AuditQuery } from "./model";
+import { t } from "../../i18n";
 
 // Журнал аудита: фильтры и страница живут на сервере — журнал растёт без
 // предела, и отдать его целиком нельзя. Страницей, отложенным поиском и
@@ -27,7 +28,7 @@ export function useAudit() {
     (page: number) => loadAudit({ ...filters, page }),
     [filters],
   );
-  const journal = usePagedResource<AuditPayload>(load, filters, "Не удалось загрузить журнал");
+  const journal = usePagedResource<AuditPayload>(load, filters, t("admin.could_not_load_log"));
 
   const setQuery = useCallback((patch: Partial<AuditQuery>) => {
     // Страницу двигает подвал списка, фильтры — состояние запроса; смена

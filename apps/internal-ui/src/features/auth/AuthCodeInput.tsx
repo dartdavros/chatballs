@@ -1,3 +1,5 @@
+import { t } from "../../i18n";
+
 export function AuthCodeInput({ value, onChange, error = false, autoFocus = false }: { value: string; onChange: (value: string) => void; error?: boolean; autoFocus?: boolean }) {
   const activeIndex = Math.min(value.length, 5);
   const digits = value.padEnd(6, " ").slice(0, 6).split("");
@@ -17,7 +19,7 @@ export function AuthCodeInput({ value, onChange, error = false, autoFocus = fals
         inputMode="numeric"
         maxLength={6}
         autoFocus={autoFocus}
-        aria-label="Код из приложения-аутентификатора"
+        aria-label={t("admin.code_from_authenticator_app")}
       />
     </div>
   );

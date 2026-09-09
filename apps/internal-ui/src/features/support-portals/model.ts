@@ -1,6 +1,7 @@
 import { ApiError } from "../../api/client";
 import type { PagedPayload } from "../../shared/usePagedResource";
 import type { PortalThemeSchemeSetting } from "../help-center/themes/types";
+import { t } from "../../i18n";
 
 export type PortalStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
 export type ArticleStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
@@ -143,15 +144,15 @@ export {
 } from "./api";
 
 export const PORTAL_STATUS_LABEL: Record<PortalStatus, string> = {
-  DRAFT: "Черновик",
-  PUBLISHED: "Опубликован",
-  ARCHIVED: "В архиве",
+  DRAFT: t("common.draft"),
+  PUBLISHED: t("shared.published"),
+  ARCHIVED: t("portals.archived"),
 };
 
 export const ARTICLE_STATUS_LABEL: Record<ArticleStatus, string> = {
-  DRAFT: "Черновик",
-  PUBLISHED: "Опубликована",
-  ARCHIVED: "В архиве",
+  DRAFT: t("common.draft"),
+  PUBLISHED: t("portals.published"),
+  ARCHIVED: t("portals.archived"),
 };
 
 type ValidationPayload = {
@@ -159,17 +160,28 @@ type ValidationPayload = {
   errors?: Record<string, string[]>;
 };
 
+/** Сообщение написано для человека, а не для кода.
+ *
+ *  DRF отдаёт в ошибках и машинные коды («invalid», «unique»), и готовые
+ *  фразы. Раньше человеческие отличались по наличию кириллицы — на английском
+ *  этот признак отбросил бы как раз то, что нужно показать. Признак теперь
+ *  языконезависимый: во фразе есть пробел, в коде — нет.
+ */
+function isReadable(message: string): boolean {
+  return message.trim().includes(" ");
+}
+
 export function portalErrorMessage(error: unknown, fallback: string): string {
   if (!(error instanceof ApiError)) return fallback;
   const payload = error.payload as ValidationPayload;
   const first = payload.errors
     ? Object.values(payload.errors).flat().find(Boolean)
     : undefined;
-  if (first && /[А-Яа-яЁё]/.test(first)) return first;
-  if (error.status === 403) return "Недостаточно прав для этого действия";
-  if (error.status === 404) return "Запись не найдена";
-  if (error.status === 409) return "Изменение конфликтует с текущими данными";
-  if (error.status === 429) return "Слишком много запросов. Повторите позже";
+  if (first && isReadable(first)) return first;
+  if (error.status === 403) return t("portals.not_enough_rights_action");
+  if (error.status === 404) return t("portals.record_not_found");
+  if (error.status === 409) return t("portals.change_conflicts_with_current_data");
+  if (error.status === 429) return t("portals.too_many_requests_try_again");
   return fallback;
 }
 
@@ -179,7 +191,7 @@ export function portalFieldErrors(error: unknown): Record<string, string> {
   return Object.fromEntries(
     Object.entries(payload.errors ?? {}).map(([field, messages]) => [
       field,
-      messages.find((message) => /[А-Яа-яЁё]/.test(message)) ?? "Проверьте значение",
+      messages.find(isReadable) ?? t("portals.check_value"),
     ]),
   );
 }

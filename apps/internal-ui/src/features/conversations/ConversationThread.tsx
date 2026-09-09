@@ -13,6 +13,7 @@ import type { ApiConversation, ApiMessage } from "./model";
 import type { ConversationHistory } from "./useConversationHistory";
 import { useHistoryScroll } from "./useHistoryScroll";
 import type { ConversationListItem, ControlMode, StatusInfo } from "./types";
+import { t } from "../../i18n";
 
 function fmtTime(value: string): string {
   return new Date(value).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
@@ -32,7 +33,7 @@ export function ConversationThread({ controlMode, dialog, detail, history, isOwn
   });
 
   if (!dialog) {
-    return <div className="sales-timeline"><div className="sales-timeline-inner"><div className="sales-wait-note">Выберите диалог</div></div></div>;
+    return <div className="sales-timeline"><div className="sales-timeline-inner"><div className="sales-wait-note">{t("conversations.pick_conversation")}</div></div></div>;
   }
   const status = statusFor(controlMode, detail?.assignedOperator?.name);
   const channel = providerMeta[dialog.channel];
@@ -40,8 +41,8 @@ export function ConversationThread({ controlMode, dialog, detail, history, isOwn
     <>
       <div className="sales-conversation-head">
         {/* Кадр M2: на мобильном лента — отдельный экран, назад к списку. */}
-        {onMobileBack && <button className="mobile-back" type="button" aria-label="К списку диалогов" onClick={onMobileBack}><Icon name="arrow" size={19} /></button>}
-        {onExpandList && <IconButton bare icon="collapseLeft" iconSize={17} label="Показать список" className="list-expand" onClick={onExpandList} />}
+        {onMobileBack && <button className="mobile-back" type="button" aria-label={t("conversations.back_conversation_list")} onClick={onMobileBack}><Icon name="arrow" size={19} /></button>}
+        {onExpandList && <IconButton bare icon="collapseLeft" iconSize={17} label={t("conversations.show_list")} className="list-expand" onClick={onExpandList} />}
         <div className="sales-conversation-person">
           <span className="sales-conversation-avatar-wrap">
             <ContactAvatar avatarUrl={dialog.avatarUrl} initials={dialog.initials} background={dialog.avatarBg} className="sales-conversation-avatar" />
@@ -64,18 +65,18 @@ export function ConversationThread({ controlMode, dialog, detail, history, isOwn
           {/* Одно действие взятия (решение 2): очередь и AI — primary; у другого
               сотрудника — вторичная кнопка; «ведёте вы» — «Вернуть AI». */}
           {(controlMode === "waiting" || controlMode === "ai") && (
-            <button className="sales-claim-button" onClick={onClaim}><Icon name="check" size={15} />Взять диалог</button>
+            <button className="sales-claim-button" onClick={onClaim}><Icon name="check" size={15} />{t("conversations.take_conversation")}</button>
           )}
-          {controlMode === "assigned" && <button className="sales-secondary-action" onClick={onClaim}>Взять диалог</button>}
-          {controlMode === "human" && <button className="sales-secondary-action" onClick={onRelease}>Вернуть AI</button>}
+          {controlMode === "assigned" && <button className="sales-secondary-action" onClick={onClaim}>{t("conversations.take_conversation")}</button>}
+          {controlMode === "human" && <button className="sales-secondary-action" onClick={onRelease}>{t("conversations.hand_back_ai")}</button>}
           {/* Кадр S2: на узком экране контекст-панель — выдвижная, кнопка в шапке. */}
-          {onToggleContext && <IconButton icon="user" label="Контекст диалога" className="ctx-toggle" onClick={onToggleContext} />}
+          {onToggleContext && <IconButton icon="user" label={t("conversations.conversation_context")} className="ctx-toggle" onClick={onToggleContext} />}
           <ConversationActions open={detail?.lifecycle === "OPEN"} canReturnQueue={controlMode === "human"} onClose={onClose} onSpam={onSpam} onReturnQueue={onReturnQueue} onArchive={onArchive} />
         </div>
       </div>
       <div className="sales-timeline" ref={timelineRef} onScroll={onScroll}>
         <div className="sales-timeline-inner">
-          {history.loaded && messages.length === 0 && <div className="sales-wait-note">Пока нет сообщений</div>}
+          {history.loaded && messages.length === 0 && <div className="sales-wait-note">{t("conversations.no_messages_yet")}</div>}
           {messages.map((message, index) => (
             <Fragment key={message.id}>
               {(index === 0 || !sameDay(messages[index - 1].createdAt, message.createdAt)) && (
@@ -92,8 +93,15 @@ export function ConversationThread({ controlMode, dialog, detail, history, isOwn
 
 function MessageRow({ message, dialog, viewerId }: { message: ApiMessage; dialog: ConversationListItem; viewerId: number | null }) {
   if (message.author === "SYSTEM") {
-    // Системное событие (кадры B, C): передача — предупреждение, взятие — акцент.
-    const tone = /передал/i.test(message.text) ? "warning" : /взял|вернул/i.test(message.text) ? "claimed" : "";
+    // Системное событие (кадры B, C): передача — предупреждение, взятие и
+    // возврат — акцент. Тон выбирается по коду события, а не по словам в
+    // тексте: текст приходит на языке читателя и на английском не совпал бы
+    // ни с одной русской регуляркой.
+    const tone = message.systemEvent === "ai_handed_over" || message.systemEvent === "ai_unavailable"
+      ? "warning"
+      : message.systemEvent === "operator_took" || message.systemEvent === "returned_to_ai" || message.systemEvent === "returned_to_queue"
+        ? "claimed"
+        : "";
     return <div className={`sales-event-chip ${tone}`}><Icon name="clock" size={12} />{message.text}<span>·</span>{fmtTime(message.createdAt)}</div>;
   }
   const side = message.author === "CONTACT" ? "client" : message.author === "OPERATOR" ? "operator" : "ai";
@@ -101,7 +109,7 @@ function MessageRow({ message, dialog, viewerId }: { message: ApiMessage; dialog
   const actor = message.author === "AI"
     ? `AI · ${dialog.agentName}`
     : message.author === "OPERATOR"
-      ? `${message.authorName || "Сотрудник"}${viewerId != null && message.authorUserId === viewerId ? " · вы" : ""}`
+      ? `${message.authorName || t("common.operator")}${viewerId != null && message.authorUserId === viewerId ? t("common.you_suffix") : ""}`
       : undefined;
   return (
     <Message side={side} actor={actor} actorColor={message.author === "AI" ? dialog.agentColor : undefined} time={fmtTime(message.createdAt)} authorInitials={message.authorName ? initialsOf(message.authorName) : ""} authorAvatarUrl={message.authorAvatarUrl ?? null}>
@@ -152,9 +160,9 @@ function sameDay(a: string, b: string): boolean {
 function dayLabel(iso: string): string {
   const date = new Date(iso);
   const now = new Date();
-  if (date.toDateString() === now.toDateString()) return "Сегодня";
+  if (date.toDateString() === now.toDateString()) return t("common.today");
   const yesterday = new Date(now);
   yesterday.setDate(now.getDate() - 1);
-  if (date.toDateString() === yesterday.toDateString()) return "Вчера";
+  if (date.toDateString() === yesterday.toDateString()) return t("admin.yesterday");
   return date.toLocaleDateString("ru-RU", { day: "numeric", month: "long" });
 }

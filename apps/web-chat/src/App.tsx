@@ -23,6 +23,7 @@ import { CallInviteBanner, ChatBody, ChatComposer, ChatHeader, StartChatFooter }
 import { useScrollToLatest } from "./useScrollToLatest";
 import { useVoiceRecorder } from "./useVoiceRecorder";
 import { useWidgetActivity } from "./widgetActivity";
+import { applyWidgetLanguage, t } from "./i18n";
 
 const PARAMS = new URLSearchParams(location.search);
 const WIDGET_KEY = PARAMS.get("widgetKey") || "";
@@ -60,13 +61,20 @@ export function App() {
     onSend: async (audio, durationSeconds) => {
       if (!token) return;
       const ok = await sendVoice(token, audio, durationSeconds);
-      if (!ok) throw new Error("Не удалось отправить голосовое");
+      if (!ok) throw new Error(t("chat.could_not_send_voice"));
       try { ingestPoll(await poll(token, lastId.current)); } catch { /* polling loop will retry */ }
     },
   });
 
   useEffect(() => {
-    getConfig(ENTRY, HOST_ORIGIN).then(setConfig).catch(() => setConfig({ available: false }));
+    getConfig(ENTRY, HOST_ORIGIN)
+      .then((loaded) => {
+        // Язык приходит вместе с настройками. Ставится до setConfig: рендер,
+        // который они вызовут, уже пройдёт на нужном языке.
+        applyWidgetLanguage(loaded.language);
+        setConfig(loaded);
+      })
+      .catch(() => setConfig({ available: false }));
   }, []);
 
   function ingestPoll(data: Poll, notify = true) {
@@ -106,7 +114,7 @@ export function App() {
   }, [scrollToLatest, messages, pending, awaiting]);
 
   const accent = config?.accent || "#1677ff";
-  const title = config?.title || "Чат";
+  const title = config?.title || t("chat.chat");
   const letter = title.trim()[0]?.toUpperCase() || "E";
 
   function forgetSession() {
@@ -143,7 +151,7 @@ export function App() {
     setAwaiting(true);
     if (file) {
       const ok = await sendFile(token, file, text).catch(() => false);
-      if (!ok) setAttachmentError("Не удалось отправить файл");
+      if (!ok) setAttachmentError(t("chat.could_not_send_file"));
     } else {
       await sendMessage(token, text).catch(() => undefined);
     }
@@ -180,10 +188,10 @@ export function App() {
   const lastContactRequestId = messages.reduce((current, message) => message.kind === "contact_request" ? message.id : current, 0);
   const showPhoneForm = lastContactRequestId > 0 && !(contactSent || messages.some((message) => message.kind === "contact"));
   const status = state === "operator"
-    ? { label: "Отвечает специалист", dot: "#52c41a" }
+    ? { label: t("chat.operator_answering"), dot: "#52c41a" }
     : state === "waiting"
-      ? { label: "Передаём оператору", dot: "#faad14" }
-      : { label: "Виртуальный помощник", dot: "#52c41a" };
+      ? { label: t("chat.passing_to_operator"), dot: "#faad14" }
+      : { label: t("chat.virtual_assistant"), dot: "#52c41a" };
   const unavailable = config !== null && !config.available;
 
   return (
@@ -192,7 +200,7 @@ export function App() {
       <ChatBody bodyRef={bodyRef} config={config} unavailable={unavailable} accepted={accepted} accent={accent} letter={letter} title={title} messages={messages} pending={pending} awaiting={awaiting} lastContactRequestId={lastContactRequestId} showPhoneForm={showPhoneForm} onSubmitContact={submitContact} audioUrlFor={token ? (id) => voiceAudioUrl(token, id) : undefined} attachmentUrlFor={token ? (id, inline) => attachmentUrl(token, id, inline) : undefined} />
       {config?.available && accepted && call && (call.status === "REQUESTED" || call.status === "RINGING") && <CallInviteBanner call={call} accent={accent} onAccept={() => void acceptCallInvite()} onDecline={() => void declineCallInvite()} />}
       {config?.available && !accepted && <StartChatFooter accent={accent} starting={starting} onAccept={() => void accept()} />}
-      {config?.available && accepted && <ChatComposer accent={accent} state={state} quickReplies={config.quickReplies ?? []} pendingCount={pending.length} messageCount={messages.length} input={input} onInput={setInput} onSend={() => void send()} voice={config.features?.voiceMessages === false ? undefined : recorder} attachment={{ file: attachment, errorText: attachmentError, pick: (file) => { if (!file) return; if (file.size > MAX_FILE_BYTES) { setAttachmentError("Файл больше 20 МБ"); return; } setAttachmentError(""); setAttachment(file); }, clear: () => setAttachment(null) }} />}
+      {config?.available && accepted && <ChatComposer accent={accent} state={state} quickReplies={config.quickReplies ?? []} pendingCount={pending.length} messageCount={messages.length} input={input} onInput={setInput} onSend={() => void send()} voice={config.features?.voiceMessages === false ? undefined : recorder} attachment={{ file: attachment, errorText: attachmentError, pick: (file) => { if (!file) return; if (file.size > MAX_FILE_BYTES) { setAttachmentError(t("chat.file_too_big")); return; } setAttachmentError(""); setAttachment(file); }, clear: () => setAttachment(null) }} />}
     </div>
   );
 }

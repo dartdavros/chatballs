@@ -4,9 +4,9 @@ import { useState } from "react";
 import { Icon } from "../../../shared/icons";
 import { Segmented } from "../../../shared/ui";
 import { Button } from "../../../shared/ui-controls";
-import { pluralRu } from "../../../shared/utils";
 import type { AgentRef } from "../../agents/model";
 import type { KnowledgeItem } from "./types";
+import { t, tn } from "../../../i18n";
 
 // Прикрепление знаний к агенту (дизайн-базлайн v2, кадр KB3). Один агент за
 // операцию: SPEC-CHATBALLS-0029 §6 требует атомарности и журналирования, поэтому
@@ -14,9 +14,8 @@ import type { KnowledgeItem } from "./types";
 
 type Mode = "attach" | "detach";
 
-const MODES: Array<[Mode, string]> = [["attach", "Прикрепить"], ["detach", "Открепить"]];
+const MODES: Array<[Mode, string]> = [["attach", t("common.attach")], ["detach", t("common.detach")]];
 
-const KNOWLEDGE_FORMS: [string, string, string] = ["знание", "знания", "знаний"];
 
 type Skip = { item: KnowledgeItem; reason: string };
 
@@ -29,18 +28,18 @@ function skipsFor(items: KnowledgeItem[], agent: AgentRef | null, mode: Mode): S
   items.forEach((item) => {
     const attached = (item.agentIds ?? []).includes(agentId);
     if (mode === "attach") {
-      if (attached) skips.push({ item, reason: "уже прикреплён к этому агенту" });
-      else if (!item.isEnabled) skips.push({ item, reason: "выключен в ответах" });
+      if (attached) skips.push({ item, reason: t("ai.already_attached_agent") });
+      else if (!item.isEnabled) skips.push({ item, reason: t("ai.switched_off_replies") });
     } else if (!attached) {
-      skips.push({ item, reason: "не прикреплён к этому агенту" });
+      skips.push({ item, reason: t("ai.not_attached_agent") });
     }
   });
   return skips;
 }
 
 function agentMeta(agent: AgentRef): string {
-  if (agent.aiStatus !== "ACTIVE") return "Без AI — знания не используются";
-  return `AI отвечает · ${pluralRu(agent.knowledgeCount, KNOWLEDGE_FORMS)} прикреплено`;
+  if (agent.aiStatus !== "ACTIVE") return t("ai.no_ai_knowledge_not_used");
+  return t("ai.ai_replies_attached", { count: tn("plural.knowledge", agent.knowledgeCount) });
 }
 
 export function KnowledgeAgentDialog({
@@ -67,10 +66,10 @@ export function KnowledgeAgentDialog({
       <header className="knowledge-agent-dialog-head">
         <div className="knowledge-agent-dialog-title">
           <div>
-            <h3>{mode === "attach" ? "Прикрепить к агенту" : "Открепить от агента"}</h3>
-            <p>Выбрано {pluralRu(items.length, KNOWLEDGE_FORMS)}. Один агент за операцию — так видно, что именно изменилось.</p>
+            <h3>{mode === "attach" ? t("ai.attach_agent") : t("ai.detach_from_agent")}</h3>
+            <p>{t("ai.selected_one_agent_note", { count: tn("plural.knowledge", items.length) })}</p>
           </div>
-          <button aria-label="Закрыть" className="knowledge-dialog-close" title="Закрыть" type="button" onClick={onCancel}>
+          <button aria-label={t("common.close")} className="knowledge-dialog-close" title={t("common.close")} type="button" onClick={onCancel}>
             <Icon name="close" size={15} strokeWidth={2.2} />
           </button>
         </div>
@@ -78,7 +77,7 @@ export function KnowledgeAgentDialog({
       </header>
 
       <div className="knowledge-agent-dialog-body">
-        <span className="knowledge-agent-dialog-label">АГЕНТ</span>
+        <span className="knowledge-agent-dialog-label">{t("ai.agent")}</span>
         <div className="knowledge-agent-picks">
           {agents.map((item) => {
             const picked = item.aiAgentId === agentId;
@@ -95,11 +94,11 @@ export function KnowledgeAgentDialog({
                   <strong>{item.name}</strong>
                   <small>{agentMeta(item)}</small>
                 </span>
-                <small className="knowledge-agent-tag">{picked ? "выбран" : noAi ? "без AI" : "доступен"}</small>
+                <small className="knowledge-agent-tag">{picked ? t("ai.selected") : noAi ? t("ai.no_ai") : t("ai.available")}</small>
               </button>
             );
           })}
-          {agents.length === 0 && <p className="knowledge-agent-empty">Агентов пока нет — создайте агента, чтобы прикреплять к нему знания.</p>}
+          {agents.length === 0 && <p className="knowledge-agent-empty">{t("ai.there_no_agents_yet_create")}</p>}
         </div>
       </div>
 
@@ -107,24 +106,22 @@ export function KnowledgeAgentDialog({
         <div className="knowledge-agent-warning">
           <Icon name="alert" size={16} strokeWidth={2} />
           <span>
-            <b>{skips.length} из {items.length} будут пропущены:</b>{" "}
-            {skips.map((skip) => `«${skip.item.title}» ${skip.reason}`).join(", ")}. Состав знаний
-            агента по ним не изменится.
+            <b>{t("ai.skips_summary", { skipped: skips.length, total: items.length })}</b>{" "}
+            {skips.map((skip) => `«${skip.item.title}» ${skip.reason}`).join(", ")}. {t("ai.skips_tail")}
           </span>
         </div>
       )}
 
       <footer className="knowledge-agent-dialog-foot">
-        <span>
-          Операция атомарна: при недоступном идентификаторе не меняется ничего. Требуется право <code>ai.manage</code>.
+        <span>{t("ai.operation_atomic_if_any_identifier")}<code>ai.manage</code>.
         </span>
-        <Button variant="secondary" disabled={busy} onClick={onCancel}>Отмена</Button>
+        <Button variant="secondary" disabled={busy} onClick={onCancel}>{t("common.cancel")}</Button>
         <Button
           variant="primary"
           disabled={busy || agentId === null || applied === 0}
           onClick={() => agentId !== null && onSubmit(agentId, mode)}
         >
-          {mode === "attach" ? "Прикрепить" : "Открепить"} {applied}
+          {mode === "attach" ? t("common.attach") : t("common.detach")} {applied}
         </Button>
       </footer>
     </Modal>

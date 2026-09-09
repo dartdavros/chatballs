@@ -13,6 +13,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from chatballs.conversations.models import ConnectionIdentity, Contact, ContactMerge, Conversation
+from chatballs.i18n import t
 from chatballs.identity.audit import record_audit_event
 
 # Поля карточки, которые дозаполняются из исходного контакта, если у целевого
@@ -24,7 +25,7 @@ MIN_REASON_LENGTH = 5
 def _clean_reason(reason: str) -> str:
     cleaned = (reason or "").strip()
     if len(cleaned) < MIN_REASON_LENGTH:
-        raise ValidationError("Укажите причину объединения — она попадёт в журнал действий")
+        raise ValidationError(t("sales.merge_reason_required"))
     return cleaned[:2000]
 
 
@@ -33,14 +34,14 @@ def merge_contacts(*, organization, target_id: int, source_id: int, reason: str,
     """Перенести идентичности и диалоги source в target."""
     cleaned = _clean_reason(reason)
     if target_id == source_id:
-        raise ValidationError("Нельзя объединить контакт с самим собой")
+        raise ValidationError(t("sales.merge_self"))
     try:
         target = Contact.objects.select_for_update().get(organization=organization, id=target_id)
         source = Contact.objects.select_for_update().get(organization=organization, id=source_id)
     except Contact.DoesNotExist as error:
-        raise ValidationError("Контакт не найден") from error
+        raise ValidationError(t("sales.contact_not_found")) from error
     if source.merged_into_id is not None or target.merged_into_id is not None:
-        raise ValidationError("Контакт уже объединён с другим — сначала разъедините")
+        raise ValidationError(t("sales.already_merged"))
 
     identity_ids = list(ConnectionIdentity.objects.filter(contact=source).values_list("id", flat=True))
     conversation_ids = list(
@@ -94,9 +95,9 @@ def revert_merge(*, organization, merge_id: int, reason: str, actor, request=Non
     try:
         merge = ContactMerge.objects.select_for_update().get(organization=organization, id=merge_id)
     except ContactMerge.DoesNotExist as error:
-        raise ValidationError("Объединение не найдено") from error
+        raise ValidationError(t("sales.merge_not_found")) from error
     if merge.reverted_at is not None:
-        raise ValidationError("Это объединение уже разъединено")
+        raise ValidationError(t("sales.already_unmerged"))
 
     source = merge.source
     target = merge.target

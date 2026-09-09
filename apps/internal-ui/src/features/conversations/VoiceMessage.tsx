@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { Icon } from "../../shared/icons";
 import { resolveApiUrl } from "../../api/client";
 import { transcribeMessage, type ApiMessage } from "./model";
+import { t } from "../../i18n";
 
 // Голосовое сообщение в ленте (дизайн-базлайн v2, кадр H): плеер с волной,
 // длительность и расшифровка по кнопке (три состояния).
@@ -60,7 +61,7 @@ export function VoiceMessage({ message: incoming }: { message: ApiMessage }) {
       audioRef.current.pause();
       setPlaying(false);
     } else {
-      void audioRef.current.play().catch(() => setErrorText("Не удалось воспроизвести"));
+      void audioRef.current.play().catch(() => setErrorText(t("conversations.could_not_play")));
       setPlaying(true);
     }
   }
@@ -72,7 +73,7 @@ export function VoiceMessage({ message: incoming }: { message: ApiMessage }) {
       setMessage(await transcribeMessage(message.id));
       setShowTranscript(true);
     } catch (error) {
-      setErrorText(error instanceof Error ? error.message : "Не удалось расшифровать");
+      setErrorText(error instanceof Error ? error.message : t("conversations.could_not_transcribe"));
     } finally {
       setTranscribing(false);
     }
@@ -84,7 +85,7 @@ export function VoiceMessage({ message: incoming }: { message: ApiMessage }) {
     <div className="voice-message">
       <div className="voice-message-player">
         <button
-          aria-label={playing ? "Пауза" : "Воспроизвести"}
+          aria-label={playing ? t("conversations.pause") : t("conversations.play")}
           className="voice-message-play"
           disabled={!message.audioUrl}
           type="button"
@@ -100,24 +101,23 @@ export function VoiceMessage({ message: incoming }: { message: ApiMessage }) {
         {message.transcriptStatus !== "READY" && !transcribing && message.audioUrl && (
           <button
             className="voice-message-transcribe"
-            title="Расшифровать"
+            title={t("conversations.transcribe")}
             type="button"
             onClick={() => void transcribe()}
           >
-            <Icon name="text" size={13} />Расшифровать
-          </button>
+            <Icon name="text" size={13} />{t("conversations.transcribe")}</button>
         )}
-        {transcribing && <span className="voice-message-busy" title="Расшифровываем…"><i /><i /><i /><em>Расшифровываем…</em></span>}
+        {transcribing && <span className="voice-message-busy" title={t("conversations.transcribing")}><i /><i /><i /><em>{t("conversations.transcribing")}</em></span>}
         <em>{formatDuration(message.durationSeconds ?? 0)}</em>
       </div>
       {message.transcriptStatus === "READY" && message.transcript && showTranscript && (
         <p className="voice-message-transcript">
           {message.transcript}
-          <span className="voice-message-caption">Расшифровка AI · <button className="link" type="button" onClick={() => setShowTranscript(false)}>Скрыть</button></span>
+          <span className="voice-message-caption">{t("conversations.ai_transcript")}<button className="link" type="button" onClick={() => setShowTranscript(false)}>{t("common.hide")}</button></span>
         </p>
       )}
       {message.transcriptStatus === "READY" && !showTranscript && (
-        <span className="voice-message-caption voice-message-show">Расшифровка AI · <button className="link" type="button" onClick={() => setShowTranscript(true)}>Показать</button></span>
+        <span className="voice-message-caption voice-message-show">{t("conversations.ai_transcript")}<button className="link" type="button" onClick={() => setShowTranscript(true)}>{t("common.show")}</button></span>
       )}
       {errorText && <p className="voice-message-error">{errorText}</p>}
     </div>

@@ -43,6 +43,11 @@ class InstanceSettings(models.Model):
     email_use_tls = models.BooleanField(default=True)
     email_from = models.CharField(max_length=255, blank=True, default="")
 
+    # Язык установки: на нём открываются экраны, где организации ещё нет, —
+    # логин, сброс пароля, мастер первого запуска, — и он же служит умолчанием
+    # для организаций, которые своего языка не выбрали.
+    default_language = models.CharField(max_length=5, blank=True, default="ru")
+
     # Адреса TURN-серверов для звонков через relay. Секрет сюда не пишется:
     # он общий с coturn и живёт в томе секретов, чтобы не вводить его дважды.
     turn_urls = models.TextField(blank=True, default="")
@@ -105,6 +110,30 @@ def accepted_hosts() -> tuple[str, ...]:
     """Адреса, которые установка признаёт своими: текущий и предыдущий."""
 
     return tuple(host for host in _hosts() if host)
+
+
+def default_language() -> str:
+    """Язык установки: экраны до входа и умолчание для организаций.
+
+    Читается без кэша, в отличие от адреса. Кэш с TTL здесь означал бы, что
+    один и тот же запрос стоит то одного запроса к базе, то нуля — в зависимости
+    от того, попал ли он в окно, — и язык установки некоторое время оставался бы
+    старым в тех процессах, которые смены не видели. Цена честности — один
+    поиск singleton-строки по первичному ключу, и только у запросов, которые
+    вообще досюда дошли: у сотрудника со своим языком и у организации со своим
+    до этой ветки дело не доходит.
+
+    Пустая строка означает установку, где язык ещё ни разу не задавали, — и
+    приводит к языку по умолчанию из ``chatballs.i18n``.
+    """
+
+    from chatballs.i18n.languages import normalize_language
+
+    try:
+        row = InstanceSettings.objects.filter(pk=InstanceSettings.SINGLETON_PK).first()
+    except Exception:  # таблицы ещё нет (первые миграции)
+        return ""
+    return normalize_language(row.default_language) if row is not None else ""
 
 
 def remember_public_host(raw_host: str, scheme: str = "http") -> None:

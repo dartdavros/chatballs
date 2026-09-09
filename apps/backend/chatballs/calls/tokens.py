@@ -14,6 +14,7 @@ from django.conf import settings
 
 from chatballs.calls.errors import CallTokenError
 from chatballs.calls.models import ParticipantSide
+from chatballs.i18n import t
 
 ACCESS_TOKEN_VERSION = 1
 ACCESS_TOKEN_PURPOSE = "call-access"
@@ -82,7 +83,7 @@ def issue_call_access_token(*, call_session_id: uuid.UUID, side: str, subject_id
 
 
 def verify_call_access_token(token: str) -> CallAccessClaims:
-    message = "Недействительный или истёкший call access token"
+    message = t("calls.token_invalid")
     if not token or "." not in token:
         raise CallTokenError(message)
     encoded, signature = token.rsplit(".", 1)

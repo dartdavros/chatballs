@@ -325,6 +325,45 @@ class AuthEndpointTests(TestCase):
                 )
                 self.assertEqual(rejected.status_code, 400)
 
+    def test_profile_language_saves_personal_choice(self) -> None:
+        """Язык — личная настройка; пустое значение возвращает к организации."""
+
+        self.client.login(username="owner@example.com", password="temporary-password")
+
+        response = self.client.post(
+            "/api/v1/auth/profile/language/",
+            data=json.dumps({"language": "en"}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()["user"]
+        self.assertEqual(payload["uiLanguage"], "en")
+        # Ответ уже на новом языке: интерфейс перерисуется по нему сразу.
+        self.assertEqual(payload["language"], "en")
+        owner = HumanUser.objects.get(email="owner@example.com")
+        self.assertEqual(owner.ui_language, "en")
+        self.assertTrue(
+            AuditEvent.objects.filter(action="identity.profile_language_changed").exists()
+        )
+
+        cleared = self.client.post(
+            "/api/v1/auth/profile/language/",
+            data=json.dumps({"language": ""}),
+            content_type="application/json",
+        )
+        self.assertEqual(cleared.status_code, 200)
+        # Пустая строка — не язык, а снятие личного выбора: человек снова едет
+        # за организацией.
+        self.assertEqual(cleared.json()["user"]["uiLanguage"], "")
+
+        rejected = self.client.post(
+            "/api/v1/auth/profile/language/",
+            data=json.dumps({"language": "de"}),
+            content_type="application/json",
+        )
+        self.assertEqual(rejected.status_code, 400)
+
     def test_profile_password_changes_current_user_password(self) -> None:
         self.client.login(username="owner@example.com", password="temporary-password")
 

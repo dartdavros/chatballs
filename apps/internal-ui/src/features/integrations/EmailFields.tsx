@@ -1,5 +1,6 @@
 import { FormField } from "../../shared/form-controls";
 import type { Integration } from "./model";
+import { t } from "../../i18n";
 
 // Поля Email-подключения (SPEC-CHATBALLS-0025 §3.2): адрес + секции IMAP и SMTP.
 // Порты — строками в состоянии формы; в конфиг уходят числами.
@@ -62,8 +63,8 @@ function MailboxSection({ title, host, port, ssl, hostPlaceholder, portPlacehold
     <div className="integration-email-section">
       <h3>{title}</h3>
       <div className="integration-email-grid">
-        <FormField label="Хост" mono value={host} onChange={(value) => onChange({ host: value })} placeholder={hostPlaceholder} />
-        <FormField label="Порт" mono value={port} onChange={(value) => onChange({ port: value })} placeholder={portPlaceholder} />
+        <FormField label={t("settings.host")} mono value={host} onChange={(value) => onChange({ host: value })} placeholder={hostPlaceholder} />
+        <FormField label={t("settings.port")} mono value={port} onChange={(value) => onChange({ port: value })} placeholder={portPlaceholder} />
       </div>
       <label className="integration-ssl-toggle">
         <input type="checkbox" checked={ssl} onChange={(event) => onChange({ ssl: event.target.checked })} />
@@ -77,9 +78,9 @@ export function EmailFields({ value, onChange }: { value: EmailConfigState; onCh
   const set = (patch: Partial<EmailConfigState>) => onChange({ ...value, ...patch });
   return (
     <>
-      <FormField label="Email-адрес" mono value={value.email} onChange={(email) => set({ email })} placeholder="support@company.ru" />
+      <FormField label={t("settings.email_address")} mono value={value.email} onChange={(email) => set({ email })} placeholder="support@company.ru" />
       <MailboxSection
-        title="Входящая почта · IMAP"
+        title={t("settings.incoming_mail_imap")}
         host={value.imapHost}
         port={value.imapPort}
         ssl={value.imapSsl}
@@ -88,7 +89,7 @@ export function EmailFields({ value, onChange }: { value: EmailConfigState; onCh
         onChange={({ host, port, ssl }) => set({ ...(host !== undefined && { imapHost: host }), ...(port !== undefined && { imapPort: port }), ...(ssl !== undefined && { imapSsl: ssl }) })}
       />
       <MailboxSection
-        title="Исходящая почта · SMTP"
+        title={t("settings.outgoing_mail_smtp")}
         host={value.smtpHost}
         port={value.smtpPort}
         ssl={value.smtpSsl}

@@ -1,3 +1,5 @@
+import { t } from "../i18n";
+
 // Применение персональной темы и акцента (SPEC-CHATBALLS-0031 §7, дизайн-базлайн v2).
 // Тема ставится атрибутом data-theme на <html>; акцент — переменной --accent,
 // из неё в CSS считаются --primary (в тёмной теме приглушён подложкой, как в
@@ -9,10 +11,10 @@ export const DEFAULT_ACCENT = "#1677ff";
 
 // Пресеты акцента из дизайн-базлайна v2 (Tweaks макета).
 export const ACCENT_PRESETS: Array<[string, string]> = [
-  ["#1677ff", "Синий"],
-  ["#6d5dfc", "Индиго"],
-  ["#0f9b8e", "Бирюзовый"],
-  ["#e8590c", "Оранжевый"],
+  ["#1677ff", t("shared.blue")],
+  ["#6d5dfc", t("shared.indigo")],
+  ["#0f9b8e", t("shared.teal")],
+  ["#e8590c", t("shared.orange")],
 ];
 
 const media = typeof window !== "undefined" && window.matchMedia

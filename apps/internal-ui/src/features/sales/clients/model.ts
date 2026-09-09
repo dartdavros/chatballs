@@ -5,6 +5,7 @@
 import { waitLabelOf } from "../../conversations/model";
 import { channelMap } from "../../../shared/providers";
 import { shortDate } from "../../../shared/utils";
+import { t } from "../../../i18n";
 
 export { channelMap };
 
@@ -48,7 +49,7 @@ export const channelOptions: Array<{ code: ClientChannelCode; name: string; colo
   { code: "EMAIL", name: "Email", color: channelMap.EMAIL.color },
   { code: "MAX", name: "MAX", color: channelMap.MAX.color },
   { code: "TG", name: "Telegram", color: channelMap.TG.color },
-  { code: "WEB", name: "Web-виджет", color: channelMap.WEB.color },
+  { code: "WEB", name: t("common.web_widget"), color: channelMap.WEB.color },
 ];
 
 
@@ -65,6 +66,9 @@ export type ApiClient = {
   avatarUrl?: string;
   cid: string;
   name: string;
+  // Признак анонимного посетителя приходит от сервера. Раньше он выводился
+  // регуляркой по слову «Гость» в подписи — на английском не сработало бы.
+  isGuest?: boolean;
   phone: string;
   email: string;
   username: string;
@@ -95,10 +99,10 @@ export function avatarColor(seed: string): string {
 
 export function relativeTime(iso: string): { minutes: number; label: string } {
   const minutes = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
-  if (minutes < 60) return { minutes, label: `${minutes} мин назад` };
+  if (minutes < 60) return { minutes, label: t("time.minutes_ago", { count: minutes }) };
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return { minutes, label: `${hours} ч назад` };
-  return { minutes, label: `${Math.floor(hours / 24)} д назад` };
+  if (hours < 24) return { minutes, label: t("time.hours_ago", { count: hours }) };
+  return { minutes, label: t("time.days_ago_short", { count: Math.floor(hours / 24) }) };
 }
 
 // «17:10 · сегодня» · «вчера, 18:02» · «3 сен» (кадр K1).
@@ -107,8 +111,8 @@ export function contactTime(iso: string, now = new Date()): string {
   if (Number.isNaN(date.getTime())) return "";
   const time = date.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
   const days = Math.round((startOfDay(now).getTime() - startOfDay(date).getTime()) / 86400000);
-  if (days === 0) return `${time} · сегодня`;
-  if (days === 1) return `вчера, ${time}`;
+  if (days === 0) return t("time.today_at", { time });
+  if (days === 1) return t("time.yesterday_comma", { time });
   return shortDate(date);
 }
 
@@ -120,13 +124,13 @@ function startOfDay(date: Date): Date {
 // таймером, сотрудник по имени, закрытый — кем закрыт.
 export function lastDialogWho(client: SalesClient): string {
   if (client.mode === "ai") return `AI · ${client.lastAgentName}`;
-  if (client.mode === "wait") return `Ждёт человека · ${waitLabelOf(client.lastAt)}`;
-  if (client.mode === "operator") return client.lastAssignee || "Ведёт сотрудник";
-  return `Закрыт · ${client.lastAssignee || "AI"}`;
+  if (client.mode === "wait") return t("conversations.waiting_for_person_since", { waited: waitLabelOf(client.lastAt) });
+  if (client.mode === "operator") return client.lastAssignee || t("sales.operator_handling");
+  return t("conversations.closed_by", { name: client.lastAssignee || "AI" });
 }
 
 export function toSalesClient(api: ApiClient): SalesClient {
-  const isGuest = /гость/i.test(api.name);
+  const isGuest = Boolean(api.isGuest);
   const { minutes } = relativeTime(api.lastActivityAt);
   return {
     id: api.id,
@@ -159,7 +163,7 @@ export function toSalesClientRow(client: SalesClient): SalesClientRowVm {
     : client.username
       ? `@${client.username}`
       : client.anon
-        ? "анонимная сессия виджета"
+        ? t("sales.anonymous_widget_session")
         : "";
   return {
     ...client,

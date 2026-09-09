@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { api } from "../../api/client";
 import { Button } from "../../shared/ui-controls";
 import { shortDate } from "../../shared/utils";
+import { fmt, t } from "../../i18n";
 
 // Секция «Демо-данные» экрана настроек: владелец или админ ставит и удаляет
 // вымышленную организацию «Ателье Норд» одной кнопкой. Работу выполняет
@@ -36,15 +37,15 @@ const POLL_INTERVAL_MS = 2000;
 export function demoStatusLabel(state: DemoState): string {
   switch (state.status) {
     case "INSTALLED":
-      return "Установлены";
+      return t("settings.installed");
     case "INSTALLING":
-      return "Устанавливаются";
+      return t("settings.installing");
     case "REMOVING":
-      return "Удаляются";
+      return t("settings.removing");
     case "FAILED":
-      return "Ошибка установки";
+      return t("settings.installation_failed");
     default:
-      return "Не установлены";
+      return t("settings.not_installed");
   }
 }
 
@@ -58,7 +59,7 @@ export function DemoDataCard({ reload }: { reload: () => void }) {
     try {
       setState(await api<DemoState>("/api/v1/company/demo/"));
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Не удалось получить статус демо-данных");
+      setError(caught instanceof Error ? caught.message : t("settings.could_not_read_demo_data"));
     }
   }, []);
 
@@ -89,7 +90,7 @@ export function DemoDataCard({ reload }: { reload: () => void }) {
     try {
       setState(await api<DemoState>("/api/v1/company/demo/", { method: "POST" }));
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Не удалось запустить установку");
+      setError(caught instanceof Error ? caught.message : t("settings.could_not_start_installation"));
     } finally {
       setSubmitting(false);
     }
@@ -102,7 +103,7 @@ export function DemoDataCard({ reload }: { reload: () => void }) {
       setState(await api<DemoState>("/api/v1/company/demo/", { method: "DELETE" }));
       setConfirmRemove(false);
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Не удалось запустить удаление");
+      setError(caught instanceof Error ? caught.message : t("settings.could_not_start_removal"));
     } finally {
       setSubmitting(false);
     }
@@ -115,11 +116,11 @@ export function DemoDataCard({ reload }: { reload: () => void }) {
     <div className="administration-card">
       <div className="settings-demo-head">
         <div className="settings-demo-title">
-        <strong>Ателье «Норд»</strong>
+        <strong>{t("settings.nord_atelier")}</strong>
         {label && <b className={`settings-demo-status is-${state?.status.toLowerCase()}`}>{label}</b>}
         {installed && state && (
           <small>
-            {state.recordsCount.toLocaleString("ru-RU")} записей
+            {t("settings.demo_records_count", { count: fmt.number(state.recordsCount) })}
             {state.finishedAt ? ` · ${shortDate(state.finishedAt)}` : ""}
           </small>
         )}
@@ -127,23 +128,22 @@ export function DemoDataCard({ reload }: { reload: () => void }) {
         <div className="settings-demo-actions">
           {!installed && (
             <Button variant="primary" disabled={busy || submitting || state === null} onClick={() => void install()}>
-              {state?.status === "INSTALLING" ? "Устанавливаются…" : state?.status === "FAILED" ? "Повторить установку" : "Установить"}
+              {state?.status === "INSTALLING" ? t("settings.installing_2") : state?.status === "FAILED" ? t("settings.install_again") : t("settings.install")}
             </Button>
           )}
           {(installed || state?.status === "REMOVING") && (
             <Button variant="danger-outline" disabled={busy || submitting} onClick={() => setConfirmRemove(true)}>
-              {state?.status === "REMOVING" ? "Удаляются…" : "Удалить демо-данные"}
+              {state?.status === "REMOVING" ? t("settings.removing_2") : t("settings.remove_demo_data")}
             </Button>
           )}
         </div>
       </div>
       <p className="settings-section-note">
-        Сотрудники и группы, агенты с подключениями, знания, диалоги во всех состояниях, голосовые, шаблоны ответов,
-        портал поддержки, звонки и уведомления. Удаляются целиком — ваши данные не затрагиваются.
+        {t("settings.demo_contents")}
       </p>
       {state?.status === "INSTALLED" && (
         <div className="settings-demo-logins">
-          <small>Войдите под демо-сотрудником в приватном окне, чтобы увидеть систему его глазами:</small>
+          <small>{t("settings.sign_as_demo_operator_private")}</small>
           <div className="settings-demo-accounts">
             {state.accounts.map((account) => (
               <div className="settings-demo-account" key={account.email}>
@@ -153,7 +153,7 @@ export function DemoDataCard({ reload }: { reload: () => void }) {
                     : <span className="settings-demo-avatar">{account.fullName.trim().slice(0, 1).toUpperCase()}</span>}
                   <span>
                     <strong>{account.fullName}</strong>
-                    <small>{account.role === "EMPLOYEE" ? "Сотрудник" : "Администратор"} · {account.groups.length ? account.groups.join(", ") : "без групп"}</small>
+                    <small>{account.role === "EMPLOYEE" ? t("common.operator") : t("common.administrator")} · {account.groups.length ? account.groups.join(", ") : t("settings.no_groups")}</small>
                   </span>
                 </div>
                 <code>{account.email}</code>
@@ -166,13 +166,13 @@ export function DemoDataCard({ reload }: { reload: () => void }) {
       {state?.status === "FAILED" && state.error && <div className="settings-section-error">{state.error}</div>}
       {error && <div className="settings-section-error">{error}</div>}
       {confirmRemove && (
-        <Modal open title="Удалить демо-данные?" onCancel={() => setConfirmRemove(false)} footer={null} destroyOnClose>
+        <Modal open title={t("settings.remove_demo_data_2")} onCancel={() => setConfirmRemove(false)} footer={null} destroyOnClose>
           <div className="integration-form">
-            <p>Будут удалены все записи демо-набора: сотрудники, агенты, диалоги, знания и файлы. Данные, созданные вами, останутся.</p>
+            <p>{t("settings.every_record_demo_set_will")}</p>
             {error && <div className="integration-form-error">{error}</div>}
             <div className="integration-form-actions">
-              <Button variant="secondary" onClick={() => setConfirmRemove(false)}>Отмена</Button>
-              <Button variant="danger-outline" disabled={submitting} onClick={() => void remove()}>Удалить</Button>
+              <Button variant="secondary" onClick={() => setConfirmRemove(false)}>{t("common.cancel")}</Button>
+              <Button variant="danger-outline" disabled={submitting} onClick={() => void remove()}>{t("common.delete")}</Button>
             </div>
           </div>
         </Modal>

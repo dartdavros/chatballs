@@ -1,14 +1,15 @@
 import type { SalesClientRowVm } from "./model";
+import { t } from "../../../i18n";
 
 const HEADERS = [
-  "Контакт",
-  "Телефон",
+  t("common.contact"),
+  t("common.phone"),
   "Email",
-  "Логин",
-  "Каналы",
-  "Последний диалог",
-  "Когда",
-  "Открытые диалоги",
+  t("sales.username"),
+  t("common.channels"),
+  t("sales.last_conversation"),
+  t("sales.when"),
+  t("sales.open_conversations"),
 ];
 
 function csvCell(value: string | number): string {

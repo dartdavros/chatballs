@@ -5,6 +5,7 @@ import { Icon } from "../../shared/icons";
 import { Avatar, EmptyState } from "../../shared/ui";
 import { groupColorOf } from "../conversations/model";
 import { employeeAvatarColor, formatLastLogin, roleAccessLabel, roleBadge, statusBadge } from "./model";
+import { t } from "../../i18n";
 
 // Таблица сотрудников (дизайн-базлайн v2, «Сотрудники Baseline», кадры E1/E2):
 // сотрудник · роль · должность · группы · доступ · статус · последний вход · ⋯.
@@ -33,13 +34,13 @@ export function EmployeeTable({
   return (
     <div className="employees-table">
       <div className="employees-thead">
-        <span>Сотрудник</span>
-        <span>Роль</span>
-        <span>Должность</span>
-        <span>Группы</span>
-        <span>Доступ</span>
-        <span>Статус</span>
-        <span>Последний вход</span>
+        <span>{t("common.operator")}</span>
+        <span>{t("common.role")}</span>
+        <span>{t("common.position")}</span>
+        <span>{t("common.groups")}</span>
+        <span>{t("admin.access")}</span>
+        <span>{t("common.status")}</span>
+        <span>{t("admin.last_sign")}</span>
         <span />
       </div>
       {employees.map((employee) => (
@@ -55,10 +56,10 @@ export function EmployeeTable({
           key={employee.id}
         />
       ))}
-      {!employees.length && <EmptyState title="Сотрудники не найдены" />}
+      {!employees.length && <EmptyState title={t("admin.no_operators_found")} />}
       <div className="employees-foot">
-        <small>Показано {employees.length} из {total}</small>
-        <small>Группа задаёт только видимость диалогов и не выдаёт прав</small>
+        <small>{t("common.shown_of", { shown: employees.length, total })}</small>
+        <small>{t("admin.group_decides_which_conversations_visible_2")}</small>
       </div>
     </div>
   );
@@ -82,16 +83,16 @@ function EmployeeRow({ employee, groups, menuOpen, onBlock, onResetPassword, onT
   // Кадр E2: карточка · сессии · пароль · разделитель · блокировка.
   // Передачи владения в меню строки нет — она только в опасной зоне владельца.
   const menuItems = [
-    { key: "open", label: <button type="button" onClick={open}><Icon name="external" size={15} />Открыть карточку</button> },
-    { key: "sessions", disabled: !permissions?.canTerminateSessions, label: <button type="button" onClick={() => act(() => onTerminateSessions(employee))}><Icon name="logout" size={15} />Завершить сессии</button> },
-    { key: "password", disabled: !permissions?.canResetPassword, label: <button type="button" onClick={() => act(() => onResetPassword(employee))}><Icon name="lock" size={15} />Сбросить пароль</button> },
+    { key: "open", label: <button type="button" onClick={open}><Icon name="external" size={15} />{t("admin.open_card")}</button> },
+    { key: "sessions", disabled: !permissions?.canTerminateSessions, label: <button type="button" onClick={() => act(() => onTerminateSessions(employee))}><Icon name="logout" size={15} />{t("admin.end_sessions")}</button> },
+    { key: "password", disabled: !permissions?.canResetPassword, label: <button type="button" onClick={() => act(() => onResetPassword(employee))}><Icon name="lock" size={15} />{t("admin.reset_password")}</button> },
     { type: "divider" as const },
     {
       key: "block",
       disabled: employee.isBlocked ? !permissions?.canUnblock : !permissions?.canBlock,
       label: (
         <button className={employee.isBlocked ? "success" : "danger"} type="button" onClick={() => act(() => onBlock(employee))}>
-          <Icon name="lock" size={15} />{employee.isBlocked ? "Разблокировать" : "Заблокировать"}
+          <Icon name="lock" size={15} />{employee.isBlocked ? t("admin.unblock") : t("admin.block")}
         </button>
       ),
     },
@@ -110,7 +111,7 @@ function EmployeeRow({ employee, groups, menuOpen, onBlock, onResetPassword, onT
       <span className="employees-position">{employee.positionTitle}</span>
       <div className="employees-groups">
         {employee.groups.length === 0
-          ? <span className="employees-nogroup">Без группы</span>
+          ? <span className="employees-nogroup">{t("common.no_group")}</span>
           : employee.groups.map((group) => (
             <span className="employees-group" key={group.id}>
               <i style={{ background: groupColorOf(group.id, groups.find((item) => item.id === group.id)?.color) }} />
@@ -122,7 +123,7 @@ function EmployeeRow({ employee, groups, menuOpen, onBlock, onResetPassword, onT
       <b className="employees-badge has-dot" style={{ background: status.bg, color: status.color }}><i />{status.text}</b>
       <span className="employees-login">{formatLastLogin(employee.lastLogin)}</span>
       <Dropdown menu={{ items: menuItems }} open={menuOpen} onOpenChange={(next) => setMenuId(next ? employee.id : null)} trigger={["click"]} overlayClassName="app-dropdown is-employee-menu">
-        <button className={`employees-row-menu ${menuOpen ? "is-open" : ""}`} type="button" aria-label={`Действия: ${employee.fullName || employee.email}`} title="Действия" onClick={(event) => event.stopPropagation()}>
+        <button className={`employees-row-menu ${menuOpen ? "is-open" : ""}`} type="button" aria-label={t("common.actions_for", { name: employee.fullName || employee.email })} title={t("common.actions")} onClick={(event) => event.stopPropagation()}>
           <Icon name="more" size={16} />
         </button>
       </Dropdown>

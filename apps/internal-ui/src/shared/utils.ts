@@ -1,3 +1,5 @@
+import { fmt, t } from "../i18n";
+
 export function initials(name: string, email: string): string {
   const source = name.trim() || email.split("@")[0] || "CB";
   const parts = source.split(/\s+/).filter(Boolean);
@@ -5,19 +7,19 @@ export function initials(name: string, email: string): string {
   return source.slice(0, 2).toUpperCase();
 }
 
+// Даты и числа считает общий модуль языка: список месяцев, порядок слов и
+// разделители разрядов у каждого языка свои, и держать их здесь значило бы
+// иметь вторую копию правил для виджета. Обёртки оставлены, чтобы не править
+// две сотни мест вызова: имена те же, поведение теперь зависит от языка.
+
+/** «2 сентября 2026 г.» / «2 September 2026». */
 export function formatDate(value: string): string {
-  return new Intl.DateTimeFormat("ru-RU", { day: "2-digit", month: "long", year: "numeric" }).format(new Date(value));
+  return fmt.fullDate(value);
 }
 
-/** Склонение по числу: pluralRu(3, ["портал", "портала", "порталов"]) → «3 портала». */
-export function pluralRu(count: number, forms: [string, string, string]): string {
-  const n = Math.abs(count) % 100;
-  const n1 = n % 10;
-  const form = n > 10 && n < 20 ? forms[2] : n1 > 1 && n1 < 5 ? forms[1] : n1 === 1 ? forms[0] : forms[2];
-  return `${count} ${form}`;
-}
-
-/** Подпись часового пояса со смещением: «Europe/Moscow · UTC+3» (кадр N1). */
+/** Подпись часового пояса со смещением: «Europe/Moscow · UTC+3» (кадр N1).
+ *  Тег en-US здесь не язык интерфейса, а формат смещения: строка «GMT+03:00»
+ *  разбирается регуляркой, и локаль подобрана под неё, а не под читателя. */
 export function timezoneLabel(zone: string, now = new Date()): string {
   try {
     const parts = new Intl.DateTimeFormat("en-US", { timeZone: zone, timeZoneName: "longOffset" }).formatToParts(now);
@@ -32,34 +34,30 @@ export function timezoneLabel(zone: string, now = new Date()): string {
   }
 }
 
-// Даты дизайн-базлайна v2 пишутся коротким месяцем без точки: «2 сен, 14:12»
-// (кадры N1/N3/N6/N7). Intl даёт «2 сент.», поэтому месяц берём из списка.
-const SHORT_MONTHS = ["янв", "фев", "мар", "апр", "мая", "июн", "июл", "авг", "сен", "окт", "ноя", "дек"];
-
+/** «2 сен» / «Sep 2» — короткий месяц без точки (кадры N1/N3/N6/N7). */
 export function shortDate(value: string | Date): string {
-  const date = value instanceof Date ? value : new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
-  return `${date.getDate()} ${SHORT_MONTHS[date.getMonth()]}`;
+  return fmt.shortDate(value);
 }
 
-/** «12 авг 2026» — короткий месяц без точки плюс год (кадры E1/E3, G3). */
+/** «12 авг 2026» / «Aug 12 2026» (кадры E1/E3, G3). */
 export function shortDateYear(value: string | Date): string {
-  const date = value instanceof Date ? value : new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
-  return `${shortDate(date)} ${date.getFullYear()}`;
+  return fmt.shortDateYear(value);
 }
 
+/** «2 сен, 14:12» / «Sep 2, 14:12». */
 export function shortDateTime(value: string | Date): string {
-  const date = value instanceof Date ? value : new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
-  const time = date.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
-  return `${shortDate(date)}, ${time}`;
+  return fmt.shortDateTime(value);
 }
 
-/** «янв 2026» — дата вступления в организацию в шапке «Профиля» (кадр P1).
- *  Стоит после предлога «с», поэтому месяц в родительном падеже — «с мая». */
+/** «янв 2026» — дата вступления в организацию в шапке «Профиля» (кадр P1). */
 export function monthYear(value: string | Date): string {
-  const date = value instanceof Date ? value : new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
-  return `${SHORT_MONTHS[date.getMonth()]} ${date.getFullYear()}`;
+  return fmt.monthYear(value);
+}
+
+/** «1,4 МБ» / «1.4 MB» — размер файла на языке интерфейса.
+ *  Ниже мегабайта округляется до килобайт: доли килобайта в интерфейсе
+ *  не нужны, а «0,3 КБ» рядом с именем файла читается хуже, чем «1 КБ». */
+export function readableSize(bytes: number): string {
+  const { value, unit } = fmt.bytes(bytes);
+  return t(unit === "mb" ? "unit.mb" : "unit.kb", { value });
 }

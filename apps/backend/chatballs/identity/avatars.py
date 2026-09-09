@@ -16,6 +16,7 @@ from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import UploadedFile
 from rest_framework.exceptions import ValidationError
 
+from chatballs.i18n import t
 from chatballs.identity.models import HumanUser
 
 MAX_AVATAR_BYTES = 2 * 1024 * 1024
@@ -65,7 +66,7 @@ def image_type(data: bytes) -> tuple[str, str] | None:
 def replace_user_avatar(user: HumanUser, upload: UploadedFile) -> HumanUser:
     data = upload.read()
     if not data:
-        raise ValidationError({"file": "Выберите файл фото"})
+        raise ValidationError({"file": t("profile.choose_photo_file")})
     if len(data) > MAX_AVATAR_BYTES:
         raise ValidationError({"file": "Размер фото не должен превышать 2 МБ"})
     detected = image_type(data)

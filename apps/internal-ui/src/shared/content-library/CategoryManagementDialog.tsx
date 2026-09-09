@@ -11,6 +11,7 @@ import {
   type ManagedContentCategory,
   type ManagedContentCategoryNode,
 } from "./categoryManagementModel";
+import { t } from "../../i18n";
 
 export type CategoryMutation = {
   name?: string;
@@ -20,16 +21,16 @@ export type CategoryMutation = {
 
 export function CategoryManagementDialog({
   categories,
-  createLabel = "Создать категорию",
-  deleteDescription = "Категорию можно удалить только после переноса вложенных категорий и материалов.",
-  errorMessage = "Не удалось изменить категории",
+  createLabel = t("shared.create_category"),
+  deleteDescription = t("shared.category_can_only_deleted_once"),
+  errorMessage = t("shared.could_not_change_categories"),
   onChanged,
   onClose,
   onCreate,
   onDelete,
   onUpdate,
-  subtitle = "Категория определяет только размещение, не доступ",
-  title = "Управление категориями",
+  subtitle = t("shared.category_decides_placement_only_not"),
+  title = t("shared.manage_categories"),
 }: {
   categories: ManagedContentCategory[];
   createLabel?: string;
@@ -97,7 +98,7 @@ export function CategoryManagementDialog({
       <Modal
         className="content-category-modal"
         destroyOnHidden
-        footer={<div className="content-category-modal-footer"><Button variant="secondary" icon="plus" disabled={busy} onClick={() => { setEditingId(null); setCreateParentId(null); setDraftName(""); }}>{createLabel}</Button><Button variant="primary" disabled={busy} onClick={onClose}>Готово</Button></div>}
+        footer={<div className="content-category-modal-footer"><Button variant="secondary" icon="plus" disabled={busy} onClick={() => { setEditingId(null); setCreateParentId(null); setDraftName(""); }}>{createLabel}</Button><Button variant="primary" disabled={busy} onClick={onClose}>{t("common.done")}</Button></div>}
         open title={<div className="content-category-modal-title"><strong>{title}</strong><span>{subtitle}</span></div>}
         width={560} onCancel={onClose}
       >
@@ -117,25 +118,25 @@ export function CategoryManagementDialog({
             key={category.id}
           />)}
           {createParentId === null && <div className="content-category-create root">
-            <input autoFocus placeholder="Название категории" value={draftName} onChange={(event) => setDraftName(event.target.value)} onKeyDown={(event) => {
+            <input autoFocus placeholder={t("shared.category_name")} value={draftName} onChange={(event) => setDraftName(event.target.value)} onKeyDown={(event) => {
               if (event.key === "Enter") saveCreate();
               if (event.key === "Escape") cancel();
             }} />
-            <button className="save" disabled={!draftName.trim()} type="button" onClick={saveCreate}>Сохранить</button>
-            <button type="button" onClick={cancel}>Отмена</button>
+            <button className="save" disabled={!draftName.trim()} type="button" onClick={saveCreate}>{t("common.save")}</button>
+            <button type="button" onClick={cancel}>{t("common.cancel")}</button>
           </div>}
           {error && <div className="content-category-error">{error}</div>}
         </div>
       </Modal>
       <DecisionDialog
         open={Boolean(deleting)} onClose={() => setDeleting(null)} tone="danger" icon="trash"
-        title="Удалить категорию?" description={deleteDescription}
-        actions={<><Button variant="secondary" onClick={() => setDeleting(null)}>Отмена</Button><Button variant="danger-outline" disabled={busy} onClick={() => {
+        title={t("shared.delete_category")} description={deleteDescription}
+        actions={<><Button variant="secondary" onClick={() => setDeleting(null)}>{t("common.cancel")}</Button><Button variant="danger-outline" disabled={busy} onClick={() => {
           if (!deleting) return;
           const id = deleting.id;
           setDeleting(null);
           void run(() => onDelete(id));
-        }}>Удалить</Button></>}
+        }}>{t("common.delete")}</Button></>}
       />
     </>
   );

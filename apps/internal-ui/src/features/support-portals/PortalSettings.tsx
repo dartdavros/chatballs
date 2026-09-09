@@ -16,6 +16,7 @@ import {
   PORTAL_SETTINGS_SECTIONS,
   type PortalSettingsSectionKey,
 } from "./sections";
+import { t } from "../../i18n";
 
 // Настройки портала (дизайн-базлайн v2, кадры PT4–PT6): не модалка на 960px с
 // пятью секциями подряд, а страница с субменю разделов 250px.
@@ -47,7 +48,7 @@ export function PortalSettings({
     ?? PORTAL_SETTINGS_SECTIONS[0];
   const domainLive = Boolean(portal.customDomain && portal.customDomainVerifiedAt);
   const hints: Partial<Record<PortalSettingsSectionKey, { text: string; tone: "ok" | "muted" }>> = {
-    domain: domainLive ? { text: "работает", tone: "ok" } : undefined,
+    domain: domainLive ? { text: t("portals.working"), tone: "ok" } : undefined,
   };
 
   return (
@@ -70,7 +71,7 @@ export function PortalSettings({
           </span>
         ))}
         <span className="portal-settings-nav-gap" />
-        <p>Изменения применяются к публичным страницам сразу после сохранения.</p>
+        <p>{t("portals.changes_reach_public_pages_as")}</p>
       </nav>
 
       <div className="portal-settings-content">

@@ -4,18 +4,19 @@ import { Icon } from "../../shared/icons";
 import { groupColorOf } from "../conversations/model";
 import type { EmployeeGroup, Role } from "../../types";
 import { createEmployee, type IssuedPassword, type PasswordMode } from "./api";
+import { t } from "../../i18n";
 
 // Новый сотрудник (дизайн-базлайн v2, кадры E5/E6): выезжающая панель 520px,
 // четыре шага — учётные данные · роль · должность и группы · пароль.
 
 const ROLE_OPTIONS: Array<{ value: Extract<Role, "ADMIN" | "EMPLOYEE">; label: string; description: string }> = [
-  { value: "EMPLOYEE", label: "Сотрудник", description: "Работает в чате. Видит диалоги своих групп, диалоги без группы и назначенные ему." },
-  { value: "ADMIN", label: "Администратор", description: "Полный доступ, идентичен владельцу. Единственное отличие владельца — его нельзя удалить." },
+  { value: "EMPLOYEE", label: t("common.operator"), description: t("admin.works_chat_sees_conversations_their") },
+  { value: "ADMIN", label: t("common.administrator"), description: t("admin.full_access_identical_owner_owner") },
 ];
 
 const PASSWORD_OPTIONS: Array<{ value: PasswordMode; label: string; description: string }> = [
-  { value: "mail", label: "Отправить на рабочую почту", description: "Сотрудник получит письмо со ссылкой первого входа. Подходит, когда почта организации настроена и работает." },
-  { value: "show", label: "Сгенерировать и показать мне", description: "Пароль покажется один раз после создания — скопируйте и передайте лично. Нужен, когда письма не доходят или ящик ещё не работает." },
+  { value: "mail", label: t("admin.send_work_email"), description: t("admin.operator_gets_email_with_first") },
+  { value: "show", label: t("admin.generate_show_me"), description: t("admin.password_shown_once_after_creation") },
 ];
 
 export function EmployeeCreateDrawer({ groups, onClose, onCreated }: {
@@ -47,37 +48,37 @@ export function EmployeeCreateDrawer({ groups, onClose, onCreated }: {
       const issued = await createEmployee({ fullName, phone, email, role, positionTitle, groupIds, passwordMode });
       onCreated(issued);
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "Ошибка создания");
+      setError(reason instanceof Error ? reason.message : t("admin.creation_failed"));
       setSubmitting(false);
     }
   }
 
   const footerHint = passwordMode === "mail"
-    ? `Пароль первичного доступа отправится на ${email.trim() || "рабочую почту"}`
-    : "Пароль покажем сразу после создания — скопируйте его";
+    ? t("admin.first_password_goes_to", { email: email.trim() || t("admin.work_email") })
+    : t("admin.password_appears_right_after_creation");
 
   return (
     <>
-      <button className="employee-drawer-scrim" type="button" aria-label="Закрыть форму" onClick={onClose} />
-      <aside className="employee-create-drawer" aria-label="Новый сотрудник">
+      <button className="employee-drawer-scrim" type="button" aria-label={t("admin.close_form")} onClick={onClose} />
+      <aside className="employee-create-drawer" aria-label={t("admin.new_operator")}>
         <header>
           <div>
-            <strong>Новый сотрудник</strong>
-            <span>Учётные данные · роль · группы</span>
+            <strong>{t("admin.new_operator")}</strong>
+            <span>{t("admin.credentials_role_groups")}</span>
           </div>
-          <button type="button" aria-label="Закрыть" onClick={onClose}><Icon name="xCircle" size={19} strokeWidth={1.8} /></button>
+          <button type="button" aria-label={t("common.close")} onClick={onClose}><Icon name="xCircle" size={19} strokeWidth={1.8} /></button>
         </header>
 
         <div className="employee-create-body">
-          <CreateStep number="1" title="Учётные данные">
+          <CreateStep number="1" title={t("admin.credentials")}>
             <div className="employee-create-grid">
-              <CreateField label="Имя" value={fullName} onChange={setFullName} placeholder="Имя и фамилия" />
-              <CreateField label="Телефон" value={phone} onChange={setPhone} placeholder="+7 …" />
-              <CreateField className="wide" label="Рабочий email · используется для входа" value={email} onChange={setEmail} placeholder="name@company.ru" mono />
+              <CreateField label={t("common.name")} value={fullName} onChange={setFullName} placeholder={t("admin.first_last_name")} />
+              <CreateField label={t("common.phone")} value={phone} onChange={setPhone} placeholder="+7 …" />
+              <CreateField className="wide" label={t("admin.work_email_used_sign")} value={email} onChange={setEmail} placeholder="name@company.ru" mono />
             </div>
           </CreateStep>
 
-          <CreateStep number="2" title="Роль">
+          <CreateStep number="2" title={t("common.role")}>
             <div className="employee-choice-list">
               {ROLE_OPTIONS.map((option) => (
                 <ChoiceOption
@@ -91,8 +92,8 @@ export function EmployeeCreateDrawer({ groups, onClose, onCreated }: {
             </div>
           </CreateStep>
 
-          <CreateStep number="3" title="Должность и группы">
-            <CreateField className="is-single" label="Должность" value={positionTitle} onChange={setPositionTitle} placeholder="напр. Оператор" />
+          <CreateStep number="3" title={t("admin.position_groups")}>
+            <CreateField className="is-single" label={t("common.position")} value={positionTitle} onChange={setPositionTitle} placeholder={t("admin.e_g_operator")} />
             {groups.length > 0 ? (
               <>
                 <div className="employee-group-picks">
@@ -103,20 +104,20 @@ export function EmployeeCreateDrawer({ groups, onClose, onCreated }: {
                         <i>{active && <Icon name="check" size={11} strokeWidth={3} />}</i>
                         <span>
                           <strong><i className="employee-group-dot" style={{ background: groupColorOf(group.id, group.color) }} />{group.name}</strong>
-                          <small>{group.memberCount} сотр.</small>
+                          <small>{t("admin.member_count", { count: group.memberCount })}</small>
                         </span>
                       </button>
                     );
                   })}
                 </div>
-                <p className="employee-create-note">Без групп сотрудник видит только диалоги без группы. Группы можно изменить позже.</p>
+                <p className="employee-create-note">{t("admin.with_no_groups_operator_sees")}</p>
               </>
             ) : (
-              <p className="employee-create-note">Групп пока нет — сотрудник будет видеть все диалоги. Группы создаются в «Настройках».</p>
+              <p className="employee-create-note">{t("admin.there_no_groups_yet_so")}</p>
             )}
           </CreateStep>
 
-          <CreateStep number="4" title="Пароль первичного доступа">
+          <CreateStep number="4" title={t("admin.first_access_password")}>
             <div className="employee-choice-list">
               {PASSWORD_OPTIONS.map((option) => (
                 <ChoiceOption
@@ -134,9 +135,9 @@ export function EmployeeCreateDrawer({ groups, onClose, onCreated }: {
         <footer>
           <span className={error ? "is-error" : ""}>{error || footerHint}</span>
           <div>
-            <button className="secondary-button" type="button" onClick={onClose}>Отмена</button>
+            <button className="secondary-button" type="button" onClick={onClose}>{t("common.cancel")}</button>
             <button className="primary-button" type="button" disabled={!canSubmit} onClick={() => void submit()}>
-              {submitting ? "Создание" : "Создать сотрудника"}
+              {submitting ? t("admin.creating") : t("admin.create_operator")}
             </button>
           </div>
         </footer>

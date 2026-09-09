@@ -5,6 +5,7 @@ import { usePagedResource } from "../../../shared/usePagedResource";
 import { fetchClients, type ClientsQuery } from "./api";
 import type { ClientChannelCode, ClientDropdown, ClientSortKey } from "./model";
 import { toSalesClient, toSalesClientRow } from "./model";
+import { t } from "../../../i18n";
 
 export type SalesClientsState = ReturnType<typeof useSalesClients>;
 
@@ -28,7 +29,7 @@ export function useSalesClients() {
     [agentFilter, channelFilter, openOnly, settledQuery, sortDir, sortKey],
   );
   const load = useCallback((page: number) => fetchClients(request, page), [request]);
-  const page = usePagedResource(load, request, "Не удалось загрузить контакты");
+  const page = usePagedResource(load, request, t("sales.could_not_load_contacts"));
   const rows = useMemo(
     () => page.items.map((item) => toSalesClientRow(toSalesClient(item))),
     [page.items],

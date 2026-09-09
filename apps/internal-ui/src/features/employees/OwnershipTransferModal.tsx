@@ -8,13 +8,14 @@ import { useDebounced } from "../../shared/useDebounced";
 import type { Employee, Role } from "../../types";
 import { fetchOwner, fetchOwnershipCandidates } from "./api";
 import { employeeAvatarColor, roleBadge } from "./model";
+import { t } from "../../i18n";
 
 // Передача владения (дизайн-базлайн v2, кадр E9). Кандидаты — только активные
 // администраторы: чтобы передать сотруднику, его сначала делают админом.
 
 const PREVIOUS_ROLES: Array<{ value: Extract<Role, "ADMIN" | "EMPLOYEE">; label: string }> = [
-  { value: "ADMIN", label: "Администратор" },
-  { value: "EMPLOYEE", label: "Сотрудник" },
+  { value: "ADMIN", label: t("common.administrator") },
+  { value: "EMPLOYEE", label: t("common.operator") },
 ];
 
 export function OwnershipTransferModal({ onClose }: { onClose: () => void }) {
@@ -49,7 +50,7 @@ export function OwnershipTransferModal({ onClose }: { onClose: () => void }) {
         ));
       })
       .catch(() => {
-        if (active) setError("Не удалось загрузить кандидатов");
+        if (active) setError(t("admin.could_not_load_candidates"));
       });
     return () => {
       active = false;
@@ -70,19 +71,19 @@ export function OwnershipTransferModal({ onClose }: { onClose: () => void }) {
       });
       window.location.reload();
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "Ошибка передачи владения");
+      setError(reason instanceof Error ? reason.message : t("admin.ownership_transfer_failed"));
       setSending(false);
     }
   }
 
   return (
     <div className="employee-dialog-scrim">
-      <section className="employee-transfer-dialog" role="dialog" aria-label="Передача владения">
+      <section className="employee-transfer-dialog" role="dialog" aria-label={t("admin.ownership_transfer")}>
         <header>
           <i><Icon name="transfer" size={21} strokeWidth={1.9} /></i>
           <div>
-            <h2>Передача владения</h2>
-            <p>Атомарная операция · в организации остаётся ровно один владелец</p>
+            <h2>{t("admin.ownership_transfer")}</h2>
+            <p>{t("admin.atomic_operation_organization_keeps_exactly")}</p>
           </div>
         </header>
 
@@ -90,17 +91,17 @@ export function OwnershipTransferModal({ onClose }: { onClose: () => void }) {
           {(hasMore || query) && (
             <SearchInput
               className="employee-transfer-search"
-              placeholder="Имя, почта или должность"
+              placeholder={t("admin.name_email_or_position")}
               value={query}
               onChange={setQuery}
             />
           )}
           {candidates.length === 0 ? (
-            <p className="employee-create-note">Активных администраторов нет. Чтобы передать владение сотруднику, сначала сделайте его администратором.</p>
+            <p className="employee-create-note">{t("admin.there_no_active_administrators_transfer")}</p>
           ) : (
             <>
               <label className="employee-field is-single">
-                <span>Новый владелец · только администраторы</span>
+                <span>{t("admin.new_owner_administrators_only")}</span>
                 <span className="employee-transfer-select">
                   <select value={targetId === null ? "" : String(targetId)} onChange={(event) => setTargetId(Number(event.target.value))}>
                     {candidates.map((employee) => (
@@ -111,7 +112,7 @@ export function OwnershipTransferModal({ onClose }: { onClose: () => void }) {
                   </select>
                   <Icon name="chevron" size={14} strokeWidth={1.8} />
                 </span>
-                <small className="employee-transfer-note">В списке только активные администраторы. Чтобы передать владение сотруднику, сначала сделайте его администратором.</small>
+                <small className="employee-transfer-note">{t("admin.list_holds_active_administrators_only")}</small>
               </label>
 
               <div className="employee-transfer-pair">
@@ -119,7 +120,7 @@ export function OwnershipTransferModal({ onClose }: { onClose: () => void }) {
                   <Avatar employee={owner} background={employeeAvatarColor(owner)} />
                   <span>
                     <strong>{owner.fullName || owner.email}</strong>
-                    <small>Владелец</small>
+                    <small>{t("common.owner")}</small>
                   </span>
                 </div>
                 <Icon name="arrow" size={20} strokeWidth={1.8} />
@@ -127,13 +128,13 @@ export function OwnershipTransferModal({ onClose }: { onClose: () => void }) {
                   {target && <Avatar employee={target} background={employeeAvatarColor(target)} />}
                   <span>
                     <strong>{target?.fullName || target?.email}</strong>
-                    <small className="is-accent">→ Владелец</small>
+                    <small className="is-accent">{t("admin.owner")}</small>
                   </span>
                 </div>
               </div>
 
               <div className="employee-transfer-role">
-                <span>Новая роль прежнего владельца</span>
+                <span>{t("admin.former_owner_s_new_role")}</span>
                 <div>
                   {PREVIOUS_ROLES.map((option) => (
                     <button
@@ -151,12 +152,12 @@ export function OwnershipTransferModal({ onClose }: { onClose: () => void }) {
 
               <div className="employee-password-warning">
                 <Icon name="warning" size={17} strokeWidth={1.9} />
-                <p>Новый владелец получит полный доступ. Вы потеряете права владельца, включая передачу владения и управление администраторами. Операция аудируется и необратима без повторной передачи.</p>
+                <p>{t("admin.new_owner_gains_full_access")}</p>
               </div>
 
               <button className="employee-transfer-confirm" type="button" aria-pressed={confirmed} onClick={() => setConfirmed((value) => !value)}>
                 <i>{confirmed && <Icon name="check" size={12} strokeWidth={3} />}</i>
-                <span>Я понимаю последствия и подтверждаю передачу владения организацией.</span>
+                <span>{t("admin.i_understand_consequences_confirm_transfer")}</span>
               </button>
 
               {error && <div className="employees-error"><Icon name="alert" size={16} strokeWidth={1.8} />{error}</div>}
@@ -165,9 +166,9 @@ export function OwnershipTransferModal({ onClose }: { onClose: () => void }) {
         </div>
 
         <footer>
-          <button className="secondary-button" type="button" onClick={onClose}>Отмена</button>
+          <button className="secondary-button" type="button" onClick={onClose}>{t("common.cancel")}</button>
           <button className="employee-transfer-submit" type="button" disabled={!confirmed || !target || sending} onClick={() => void transfer()}>
-            {sending ? "Передача…" : "Передать владение"}
+            {sending ? t("admin.transferring") : t("admin.transfer_ownership")}
           </button>
         </footer>
       </section>

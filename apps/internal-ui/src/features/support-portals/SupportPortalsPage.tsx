@@ -8,7 +8,6 @@ import { ErrorScreen, LoadingState, StatusPill } from "../../shared/ui";
 import { Button, CopyButton, FilterDropdown, SearchInput } from "../../shared/ui-controls";
 import { useDebounced } from "../../shared/useDebounced";
 import { usePagedResource } from "../../shared/usePagedResource";
-import { pluralRu } from "../../shared/utils";
 import type { SessionUser } from "../../types";
 import {
   changePortalStatus,
@@ -28,6 +27,7 @@ import {
 import { PortalCreateDialog } from "./PortalCreateDialog";
 import { DecisionDialog } from "../../shared/DecisionDialog";
 import "./styles";
+import { t, tn } from "../../i18n";
 
 // Список порталов (дизайн-базлайн v2, кадры PT1/PT2). Адрес — колонка со
 // ссылкой и копированием, действия строки — в меню ⋯, архивные приглушены и
@@ -75,7 +75,7 @@ export function SupportPortalsPage({
     setFailed(false);
     return payload;
   }, [query]);
-  const portals = usePagedResource(loadPage, query, "Не удалось загрузить порталы");
+  const portals = usePagedResource(loadPage, query, t("portals.could_not_load_portals"));
   const load = portals.reload;
 
 
@@ -87,7 +87,7 @@ export function SupportPortalsPage({
       setArchiving(null);
       await load();
     } catch (caught) {
-      setError(portalErrorMessage(caught, "Не удалось перенести портал в архив"));
+      setError(portalErrorMessage(caught, t("portals.could_not_move_portal_archive")));
       setArchiving(null);
     } finally {
       setBusy(false);
@@ -98,9 +98,7 @@ export function SupportPortalsPage({
   if (!address) return <LoadingState />;
 
   const createButton = canManage ? (
-    <Button variant="primary" icon="plus" iconSize={16} onClick={() => setCreating(true)}>
-      Создать портал
-    </Button>
+    <Button variant="primary" icon="plus" iconSize={16} onClick={() => setCreating(true)}>{t("portals.create_portal")}</Button>
   ) : null;
 
   const dialogs = (
@@ -121,11 +119,11 @@ export function SupportPortalsPage({
         onClose={() => setArchiving(null)}
         tone="danger"
         icon="trash"
-        title="Перенести портал в архив?"
-        description="Портал и его материалы станут недоступны посетителям до восстановления."
+        title={t("portals.move_portal_archive")}
+        description={t("portals.portal_its_material_become_unavailable")}
         actions={<>
-          <Button variant="secondary" onClick={() => setArchiving(null)}>Отмена</Button>
-          <Button variant="danger-outline" disabled={busy} onClick={() => archiving && void archive(archiving)}>В архив</Button>
+          <Button variant="secondary" onClick={() => setArchiving(null)}>{t("common.cancel")}</Button>
+          <Button variant="danger-outline" disabled={busy} onClick={() => archiving && void archive(archiving)}>{t("common.archive")}</Button>
         </>}
       />
     </>
@@ -138,16 +136,16 @@ export function SupportPortalsPage({
       <section className="portals-page is-empty">
         <header className="portals-head">
           <div>
-            <h2>Порталы</h2>
-            <p>Публичные базы знаний для клиентов.</p>
+            <h2>{t("common.portals")}</h2>
+            <p>{t("portals.public_knowledge_bases_customers")}</p>
           </div>
           {createButton}
         </header>
         <div className="portals-empty">
           <div>
             <span className="portals-empty-mark"><Icon name="globe" size={27} strokeWidth={1.7} /></span>
-            <h3>Создайте первый портал поддержки</h3>
-            <p>Портал — публичная страница с инструкциями и ответами на частые вопросы. Клиент читает статью и, если не нашёл ответ, пишет в чат прямо со страницы.</p>
+            <h3>{t("portals.create_first_support_portal")}</h3>
+            <p>{t("portals.portal_public_page_with_instructions")}</p>
             <div className="portals-empty-actions">
               {createButton}
               {/* Витрина посетителя — это и есть публичный help-контур установки:
@@ -157,9 +155,7 @@ export function SupportPortalsPage({
                 href={`${address.scheme}://${address.baseDomain}${address.port ? `:${address.port}` : ""}/`}
                 rel="noreferrer"
                 target="_blank"
-              >
-                Как это выглядит у клиента
-              </a>
+              >{t("portals.how_looks_customer")}</a>
             </div>
           </div>
         </div>
@@ -172,8 +168,8 @@ export function SupportPortalsPage({
     <section className="portals-page">
       <header className="portals-head">
         <div>
-          <h2>Порталы</h2>
-          <p>Публичные базы знаний для клиентов. Каждый портал — свой адрес, оформление и материалы.</p>
+          <h2>{t("common.portals")}</h2>
+          <p>{t("portals.public_knowledge_bases_customers_every")}</p>
         </div>
         {createButton}
       </header>
@@ -184,13 +180,13 @@ export function SupportPortalsPage({
         <div className="portals-card-head">
           <SearchInput
             className="portals-search"
-            placeholder="Поиск по названию и адресу"
+            placeholder={t("portals.search_by_name_address")}
             value={search}
             onChange={setSearch}
           />
           <FilterDropdown
-            caption="Статус:"
-            label={status.length === 1 ? STATUS_FILTER.find((item) => item.value === status[0])!.label : "Все"}
+            caption={t("portals.status")}
+            label={status.length === 1 ? STATUS_FILTER.find((item) => item.value === status[0])!.label : t("common.all")}
             multiple
             open={statusOpen}
             options={STATUS_FILTER}
@@ -208,11 +204,11 @@ export function SupportPortalsPage({
         <table className="portals-table">
           <thead>
             <tr>
-              <th>ПОРТАЛ</th>
-              <th>ПУБЛИЧНЫЙ АДРЕС</th>
-              <th>СТАТУС</th>
-              <th>МАТЕРИАЛЫ</th>
-              <th>ОБНОВЛЁН</th>
+              <th>{t("portals.portal")}</th>
+              <th>{t("portals.public_address")}</th>
+              <th>{t("common.status_2")}</th>
+              <th>{t("portals.material_2")}</th>
+              <th>{t("portals.updated")}</th>
               <th />
             </tr>
           </thead>
@@ -222,14 +218,14 @@ export function SupportPortalsPage({
               const ownDomain = Boolean(portal.customDomain && portal.customDomainVerifiedAt);
               const archived = portal.status === "ARCHIVED";
               const menuItems = [
-                { key: "content", label: <button type="button" onClick={() => openPortal(portal.id)}><Icon name="folder" size={15} strokeWidth={1.9} />Открыть материалы</button> },
-                { key: "settings", label: <button type="button" onClick={() => openPortalSettings(portal.id)}><Icon name="settings" size={15} strokeWidth={1.9} />Настройки портала</button> },
+                { key: "content", label: <button type="button" onClick={() => openPortal(portal.id)}><Icon name="folder" size={15} strokeWidth={1.9} />{t("portals.open_material")}</button> },
+                { key: "settings", label: <button type="button" onClick={() => openPortalSettings(portal.id)}><Icon name="settings" size={15} strokeWidth={1.9} />{t("shared.portal_settings")}</button> },
                 { key: "divider-1", type: "divider" as const },
-                { key: "copy", label: <button type="button" onClick={() => void navigator.clipboard?.writeText(portal.publicUrl)}><Icon name="copy" size={15} strokeWidth={1.9} />Копировать публичную ссылку</button> },
-                { key: "open", label: <button type="button" onClick={() => window.open(portal.publicUrl, "_blank", "noreferrer")}><Icon name="external" size={15} strokeWidth={1.9} />Открыть портал</button> },
+                { key: "copy", label: <button type="button" onClick={() => void navigator.clipboard?.writeText(portal.publicUrl)}><Icon name="copy" size={15} strokeWidth={1.9} />{t("portals.copy_public_link")}</button> },
+                { key: "open", label: <button type="button" onClick={() => window.open(portal.publicUrl, "_blank", "noreferrer")}><Icon name="external" size={15} strokeWidth={1.9} />{t("portals.open_portal")}</button> },
                 ...(canManage && !archived ? [
                   { key: "divider-2", type: "divider" as const },
-                  { key: "archive", label: <button className="danger" type="button" onClick={() => setArchiving(portal)}><Icon name="trash" size={15} strokeWidth={1.9} />Перенести в архив</button> },
+                  { key: "archive", label: <button className="danger" type="button" onClick={() => setArchiving(portal)}><Icon name="trash" size={15} strokeWidth={1.9} />{t("common.move_archive")}</button> },
                 ] : []),
               ];
               return (
@@ -249,8 +245,7 @@ export function SupportPortalsPage({
                       <CopyButton className="portals-copy" label="" value={portal.publicUrl} />
                       {ownDomain && (
                         <small className="portals-domain-badge">
-                          <Icon name="check" size={11} strokeWidth={2.6} />свой домен
-                        </small>
+                          <Icon name="check" size={11} strokeWidth={2.6} />{t("portals.custom_domain_2")}</small>
                       )}
                     </span>
                   </td>
@@ -259,7 +254,7 @@ export function SupportPortalsPage({
                   <td className="portals-updated-cell">{updatedAt(portal.updatedAt)}</td>
                   <td className="row-actions" onClick={(event) => event.stopPropagation()}>
                     <Dropdown menu={{ items: menuItems }} overlayClassName="app-dropdown is-portal-menu" placement="bottomRight" trigger={["click"]}>
-                      <button aria-label={`Действия: ${portal.name}`} className="row-menu-button" type="button"><Icon name="more" size={16} strokeWidth={2} /></button>
+                      <button aria-label={t("common.actions_for", { name: portal.name })} className="row-menu-button" type="button"><Icon name="more" size={16} strokeWidth={2} /></button>
                     </Dropdown>
                   </td>
                 </tr>
@@ -269,7 +264,7 @@ export function SupportPortalsPage({
         </table>
 
         <Pagination
-          note={`${pluralRu(portals.total, ["портал", "портала", "порталов"])} · архивные показываются последними`}
+          note={t("portals.portals_note", { count: tn("plural.portals", portals.total) })}
           page={portals.page}
           pageCount={portals.pageCount}
           onPage={portals.setPage}

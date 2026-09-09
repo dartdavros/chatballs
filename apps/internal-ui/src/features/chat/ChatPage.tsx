@@ -10,6 +10,7 @@ import type { ConversationListItem } from "../conversations/types";
 import { ClientContext } from "../sales/dialogs/context/ClientContext";
 import { HistoryContext } from "../sales/dialogs/context/HistoryContext";
 import type { EmployeeGroupRef, RouteKey, SessionUser } from "../../types";
+import { t } from "../../i18n";
 
 // Единый «Чат» (дизайн-базлайн v2 §8.1): один экран для всех диалогов
 // организации. Контекст-панель сама выбирает представление по источнику
@@ -55,7 +56,7 @@ export function ChatPage({
       showScopeSwitcher={showScopeSwitcher}
       mobileHeader={({ total }) => <ChatMobileHeader user={user} scope={scope} total={total} setRoute={setRoute} onLogout={onLogout} onOpenMenu={onOpenMenu} />}
       hint={showScopeSwitcher
-        ? <Hint id="chat-visibility">Вы видите все диалоги организации. Сотрудники видят только диалоги своих групп, без группы и те, где они ответственные.</Hint>
+        ? <Hint id="chat-visibility">{t("admin.see_every_conversation_organization_operators")}</Hint>
         : undefined}
       viewerId={user.id}
       renderContextPanel={({ dialog, detail, applyConversation, startCall, closeContext }) => (
@@ -99,9 +100,9 @@ function ChatContextPanel({
   return (
     <section className="sales-context">
       <div className="sales-context-tabs">
-        <RightTabButton active={rightTab === "client"} onClick={() => setRightTab("client")}>Контакт</RightTabButton>
-        <RightTabButton active={rightTab === "history"} onClick={() => setRightTab("history")}>История</RightTabButton>
-        <button className="ctx-close" type="button" aria-label="Закрыть панель" onClick={closeContext}><Icon name="xCircle" size={16} /></button>
+        <RightTabButton active={rightTab === "client"} onClick={() => setRightTab("client")}>{t("common.contact")}</RightTabButton>
+        <RightTabButton active={rightTab === "history"} onClick={() => setRightTab("history")}>{t("common.history")}</RightTabButton>
+        <button className="ctx-close" type="button" aria-label={t("admin.close_panel")} onClick={closeContext}><Icon name="xCircle" size={16} /></button>
       </div>
       <div className="sales-context-body">
         {rightTab === "client" && (

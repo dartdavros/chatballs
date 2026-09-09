@@ -10,6 +10,7 @@ import { providerMeta } from "../../shared/providers";
 import { endCallByAccess, type ApiCall, type CallAccess } from "./model";
 import type { ConversationListItem } from "./types";
 import "./call.css";
+import { t } from "../../i18n";
 
 type Props = {
   open: boolean;
@@ -55,7 +56,7 @@ export function AudioCallOverlay(props: Props) {
 
   if (!props.dialog) return null;
   const channel = providerMeta[props.dialog.channel];
-  const subCaption = mode === "active" ? (rtc.micOn ? "Говорите" : "Ваш микрофон выключен") : undefined;
+  const subCaption = mode === "active" ? (rtc.micOn ? t("conversations.go_ahead") : t("conversations.microphone_off")) : undefined;
   const builtStatus = buildAudioStatus(audioStatusKey(mode, call, props.errorText, rtc.connectionPhase, rtc.mediaIssue), props.dialog.name, call?.durationSeconds ?? undefined);
   const status = props.errorText && builtStatus
     ? { ...builtStatus, caption: props.errorText }
@@ -140,11 +141,11 @@ function audioStatusKey(mode: AudioCallMode, call: ApiCall | null, errorText: st
 }
 
 function statusLabel(mode: AudioCallMode): string {
-  if (mode === "incoming") return "Входящий звонок";
-  if (mode === "ringing") return "Исходящий звонок";
-  if (mode === "active") return "Аудиозвонок";
-  if (mode === "connecting") return "Соединение";
-  if (mode === "reconnecting") return "Переподключение";
+  if (mode === "incoming") return t("conversations.incoming_call");
+  if (mode === "ringing") return t("conversations.outgoing_call");
+  if (mode === "active") return t("conversations.audio_call");
+  if (mode === "connecting") return t("conversations.connecting");
+  if (mode === "reconnecting") return t("conversations.reconnecting");
   return "";
 }
 

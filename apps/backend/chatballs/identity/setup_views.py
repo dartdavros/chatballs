@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
+from chatballs.i18n import t
 from chatballs.identity.auth.common import _user_payload
 from chatballs.identity.setup import (
     SetupAlreadyCompleted,
@@ -16,7 +17,10 @@ from chatballs.identity.setup import (
     instance_needs_setup,
 )
 
-SETUP_CLOSED = {"detail": "Первый запуск уже выполнен: организация создана"}
+
+# Функция, а не константа: язык запроса решается на каждый запрос заново.
+def setup_closed() -> dict[str, str]:
+    return {"detail": t("identity.setup_already_done")}
 
 
 def _validation_response(error: ValidationError) -> Response:
@@ -54,7 +58,7 @@ class SetupView(APIView):
     def post(self, request: Request) -> Response:
         body = request.data if isinstance(request.data, dict) else {}
         if not instance_needs_setup():
-            return Response(SETUP_CLOSED, status=409)
+            return Response(setup_closed(), status=409)
         try:
             result = complete_setup(
                 SetupInput(
@@ -68,7 +72,7 @@ class SetupView(APIView):
                 public_scheme=request.scheme,
             )
         except SetupAlreadyCompleted:
-            return Response(SETUP_CLOSED, status=409)
+            return Response(setup_closed(), status=409)
         except ValidationError as error:
             return _validation_response(error)
         owner = result.owner

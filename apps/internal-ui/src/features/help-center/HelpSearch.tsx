@@ -1,6 +1,7 @@
 import { type FormEvent, useState } from "react";
 
 import { HelpSearchIcon } from "./HelpIcons";
+import { t } from "../../i18n";
 
 export function HelpSearch({
   value,
@@ -28,8 +29,8 @@ export function HelpSearch({
     >
       <HelpSearchIcon />
       <input
-        aria-label="Поиск по базе знаний"
-        placeholder="Поиск по статьям..."
+        aria-label={t("portals.search_knowledge_base")}
+        placeholder={t("portals.search_articles_2")}
         type="search"
         value={value}
         onBlur={() => setFocused(false)}

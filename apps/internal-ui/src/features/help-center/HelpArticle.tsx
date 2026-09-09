@@ -6,6 +6,7 @@ import { HelpLayout } from "./HelpLayout";
 import { HelpAttachments } from "./HelpAttachments";
 import { MarkdownContent, parseMarkdown } from "./MarkdownContent";
 import type { HelpArticle as HelpArticleType, HelpManifest } from "./types";
+import { t } from "../../i18n";
 
 function formattedDate(value: string, locale: string): string {
   return new Intl.DateTimeFormat(locale, {
@@ -69,15 +70,15 @@ export function HelpArticle({
     >
       {failed ? (
         <section className="help-article-error">
-          <strong>Статья не найдена</strong>
-          <a href={homeHref}>Вернуться в базу знаний</a>
+          <strong>{t("portals.article_not_found")}</strong>
+          <a href={homeHref}>{t("portals.back_knowledge_base")}</a>
         </section>
       ) : !article ? (
         <section className="help-article-loading"><i /><i /><i /><i /></section>
       ) : (
         <div className="help-article-shell">
-          <nav className="help-breadcrumbs" aria-label="Навигация">
-            <a href={homeHref}>Все разделы</a>
+          <nav className="help-breadcrumbs" aria-label={t("portals.navigation")}>
+            <a href={homeHref}>{t("portals.all_sections")}</a>
             <HelpChevronIcon />
             <a href={`${homeHref}?category=${encodeURIComponent(article.category.slug)}`}>
               {article.category.name}
@@ -91,7 +92,7 @@ export function HelpArticle({
                 <h1>{article.revision.title}</h1>
                 {article.revision.summary && <p>{article.revision.summary}</p>}
                 <time dateTime={article.updatedAt}>
-                  Обновлено {formattedDate(article.updatedAt, article.locale)}
+                  {t("portals.updated_on", { date: formattedDate(article.updatedAt, article.locale) })}
                 </time>
               </header>
               <MarkdownContent content={article.revision.content ?? ""} />
@@ -99,16 +100,16 @@ export function HelpArticle({
               <section className="help-feedback">
                 {feedback === "sent" ? (
                   <div className="help-feedback-thanks">
-                    <strong>Спасибо за отзыв</strong>
-                    <span>Он поможет сделать базу знаний полезнее.</span>
+                    <strong>{t("portals.thank_feedback")}</strong>
+                    <span>{t("portals.helps_make_knowledge_base_more")}</span>
                   </div>
                 ) : (
                   <>
-                    <h2>Эта статья была полезна?</h2>
-                    {feedback === "error" && <p role="alert">Не удалось отправить отзыв. Попробуйте ещё раз.</p>}
+                    <h2>{t("portals.was_article_helpful")}</h2>
+                    {feedback === "error" && <p role="alert">{t("portals.could_not_send_feedback_try")}</p>}
                     <div>
                       <button
-                        aria-label="Да, статья полезна"
+                        aria-label={t("portals.yes_article_helped")}
                         disabled={feedback === "sending"}
                         type="button"
                         onClick={() => void vote(true)}
@@ -116,7 +117,7 @@ export function HelpArticle({
                         <HelpThumbIcon direction="up" />
                       </button>
                       <button
-                        aria-label="Нет, статья не помогла"
+                        aria-label={t("portals.no_article_did_not_help")}
                         disabled={feedback === "sending"}
                         type="button"
                         onClick={() => void vote(false)}
@@ -129,8 +130,8 @@ export function HelpArticle({
               </section>
             </article>
             {headings.length > 0 && (
-              <aside className="help-toc" aria-label="Содержание статьи">
-                <strong>В этой статье</strong>
+              <aside className="help-toc" aria-label={t("portals.article_contents")}>
+                <strong>{t("portals.article_2")}</strong>
                 <nav>
                   {headings.map((heading) => (
                     <a className={heading.level === 3 ? "is-nested" : ""} href={`#${heading.id}`} key={heading.id}>

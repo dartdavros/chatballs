@@ -23,16 +23,17 @@ import {
   type ConversationPriority,
 } from "./model";
 import type { EmployeeGroupRef } from "../../types";
+import { t } from "../../i18n";
 
 // Блок «Диалог» контекст-панели (дизайн-базлайн v2, решение 5): Ответственный,
 // Группа, Приоритет — полноширинные селекты; Агент и Режим — read-only в две
 // колонки; Метки — чипы с «+ Добавить»; Начат. Заметка — отдельная жёлтая карточка.
 
 const PRIORITY_OPTIONS: Array<[ConversationPriority, string]> = [
-  ["HIGH", "Высокий"],
-  ["MEDIUM", "Средний"],
-  ["LOW", "Низкий"],
-  ["NONE", "Не задан"],
+  ["HIGH", t("conversations.high")],
+  ["MEDIUM", t("conversations.medium")],
+  ["LOW", t("conversations.low")],
+  ["NONE", t("conversations.not_set")],
 ];
 const PRIORITY_TEXT: Record<ConversationPriority, string> = {
   HIGH: "var(--error-text)",
@@ -79,7 +80,7 @@ export function DialogControls({
     try {
       applyConversation(await action());
     } catch (error) {
-      setErrorText(error instanceof Error ? error.message : "Не удалось сохранить");
+      setErrorText(error instanceof Error ? error.message : t("common.could_not_save"));
     } finally {
       setBusy(false);
     }
@@ -101,7 +102,7 @@ export function DialogControls({
       const ids = [...new Set([...detail.labels.map((item) => item.id), labelId])];
       applyConversation(await setConversationLabels(detail.id, ids));
     } catch (error) {
-      setErrorText(error instanceof Error ? error.message : "Не удалось добавить метку");
+      setErrorText(error instanceof Error ? error.message : t("conversations.could_not_add_label"));
     } finally {
       setBusy(false);
     }
@@ -110,23 +111,23 @@ export function DialogControls({
   const assignedIds = new Set(detail.labels.map((item) => item.id));
   const availableLabels = labels.filter((item) => !assignedIds.has(item.id));
   const assignee = detail.assignedOperator;
-  const assigneeLabel = assignee ? `${assignee.name}${viewerId != null && assignee.id === viewerId ? " · вы" : ""}` : "Не назначен";
+  const assigneeLabel = assignee ? `${assignee.name}${viewerId != null && assignee.id === viewerId ? t("common.you_suffix") : ""}` : t("conversations.unassigned");
   const status = statusFor(controlModeOf(detail), assignee?.name);
-  const priorityLabel = PRIORITY_OPTIONS.find(([value]) => value === detail.priority)?.[1] ?? "Не задан";
+  const priorityLabel = PRIORITY_OPTIONS.find(([value]) => value === detail.priority)?.[1] ?? t("conversations.not_set");
   const canEdit = directory.employees.length > 0 || groups.length > 0;
 
   return (
     <>
       <section className="ctx-section">
         <div className="ctx-section-head">
-          <h4>Диалог</h4>
-          <button type="button" aria-label={collapsed ? "Развернуть" : "Свернуть"} className={collapsed ? "is-collapsed" : ""} onClick={() => setCollapsed((value) => !value)}><Icon name="chevron" size={14} /></button>
+          <h4>{t("conversations.conversation")}</h4>
+          <button type="button" aria-label={collapsed ? t("profile.expand") : t("conversations.collapse")} className={collapsed ? "is-collapsed" : ""} onClick={() => setCollapsed((value) => !value)}><Icon name="chevron" size={14} /></button>
         </div>
         {!collapsed && (
           <div className="ctx-fields">
             {errorText && <p className="ctx-error">{errorText}</p>}
 
-            <label className="ctx-label">Ответственный</label>
+            <label className="ctx-label">{t("common.assignee")}</label>
             <Dropdown
               disabled={busy || (directory.employees.length === 0 && !directory.query)}
               trigger={["click"]}
@@ -142,17 +143,17 @@ export function DialogControls({
                       label: (
                         <SearchInput
                           className="ctx-menu-search"
-                          placeholder="Имя или почта"
+                          placeholder={t("conversations.name_or_email")}
                           value={directory.query}
                           onChange={directory.setQuery}
                         />
                       ),
                     }]
                     : []),
-                  { key: "none", label: <button type="button" className={assignee ? "" : "is-checked"} onClick={() => void run(() => setConversationAssignee(detail.id, null))}><span className="ctx-avatar-empty" /><span>Не назначен</span>{!assignee && <Icon name="check" size={15} />}</button> },
+                  { key: "none", label: <button type="button" className={assignee ? "" : "is-checked"} onClick={() => void run(() => setConversationAssignee(detail.id, null))}><span className="ctx-avatar-empty" /><span>{t("conversations.unassigned")}</span>{!assignee && <Icon name="check" size={15} />}</button> },
                   ...directory.employees.map((employee) => ({
                     key: employee.id,
-                    label: <button type="button" className={assignee?.id === employee.id ? "is-checked" : ""} onClick={() => void run(() => setConversationAssignee(detail.id, employee.id))}><SmallAvatar name={employee.name} avatarUrl={employee.avatarUrl} /><span>{employee.name}{viewerId === employee.id ? " · вы" : ""}</span>{assignee?.id === employee.id && <Icon name="check" size={15} />}</button>,
+                    label: <button type="button" className={assignee?.id === employee.id ? "is-checked" : ""} onClick={() => void run(() => setConversationAssignee(detail.id, employee.id))}><SmallAvatar name={employee.name} avatarUrl={employee.avatarUrl} /><span>{employee.name}{viewerId === employee.id ? t("common.you_suffix") : ""}</span>{assignee?.id === employee.id && <Icon name="check" size={15} />}</button>,
                   })),
                 ],
               }}
@@ -164,7 +165,7 @@ export function DialogControls({
               </button>
             </Dropdown>
 
-            <label className="ctx-label">Группа</label>
+            <label className="ctx-label">{t("common.group")}</label>
             <Dropdown
               disabled={busy || groups.length === 0}
               trigger={["click"]}
@@ -172,24 +173,24 @@ export function DialogControls({
               menu={{
                 // Кадр G: заголовок «Перенести в группу», отмеченный пункт с галочкой, подпись внизу.
                 items: [
-                  { key: "title", type: "group" as const, label: "Перенести в группу" },
-                  { key: "none", label: <button type="button" className={detail.group ? "" : "is-checked"} onClick={() => void run(() => setConversationGroup(detail.id, null))}><i className="ctx-dot is-muted" /><span>Без группы</span>{!detail.group && <Icon name="check" size={15} />}</button> },
+                  { key: "title", type: "group" as const, label: t("conversations.move_group") },
+                  { key: "none", label: <button type="button" className={detail.group ? "" : "is-checked"} onClick={() => void run(() => setConversationGroup(detail.id, null))}><i className="ctx-dot is-muted" /><span>{t("common.no_group")}</span>{!detail.group && <Icon name="check" size={15} />}</button> },
                   ...groups.map((group) => ({
                     key: group.id,
                     label: <button type="button" className={detail.group?.id === group.id ? "is-checked" : ""} onClick={() => void run(() => setConversationGroup(detail.id, group.id))}><i className="ctx-dot" style={{ background: groupColorOf(group.id, group.color) }} /><span>{group.name}</span>{detail.group?.id === group.id && <Icon name="check" size={15} />}</button>,
                   })),
-                  { key: "note", type: "group" as const, className: "ctx-menu-note", label: "Диалог без группы видят все сотрудники." },
+                  { key: "note", type: "group" as const, className: "ctx-menu-note", label: t("conversations.conversation_without_group_visible_every") },
                 ],
               }}
             >
               <button type="button" className="ctx-select">
                 <i className={`ctx-dot ${detail.group ? "" : "is-muted"}`} style={detail.group ? { background: groupColorOf(detail.group.id, detail.group.color) } : undefined} />
-                <span>{detail.group?.name ?? "Без группы"}</span>
+                <span>{detail.group?.name ?? t("common.no_group")}</span>
                 {canEdit && <Icon name="chevron" size={14} />}
               </button>
             </Dropdown>
 
-            <label className="ctx-label">Приоритет</label>
+            <label className="ctx-label">{t("conversations.priority")}</label>
             <Dropdown
               disabled={busy}
               trigger={["click"]}
@@ -210,16 +211,16 @@ export function DialogControls({
 
             <div className="ctx-grid">
               <div>
-                <label className="ctx-label">Агент</label>
+                <label className="ctx-label">{t("common.agent")}</label>
                 <div className="ctx-readonly" style={{ color: agentColorOf(detail.channel.id) }}><Icon name="robot" size={14} />{detail.channel.name}</div>
               </div>
               <div>
-                <label className="ctx-label">Режим</label>
+                <label className="ctx-label">{t("conversations.mode")}</label>
                 <div className="ctx-readonly is-mode" style={{ color: status.color, background: status.bg, borderColor: status.border }}><i style={{ background: status.dot }} />{status.label}</div>
               </div>
             </div>
 
-            <label className="ctx-label">Метки</label>
+            <label className="ctx-label">{t("conversations.labels")}</label>
             <div className="ctx-labels">
               <Dropdown
                 disabled={busy}
@@ -236,7 +237,7 @@ export function DialogControls({
                       label: (
                         <div className="ctx-new-label" onClick={(event) => event.stopPropagation()}>
                           <input
-                            placeholder="Новая метка"
+                            placeholder={t("conversations.new_label")}
                             value={newLabel}
                             onChange={(event) => setNewLabel(event.target.value)}
                             onKeyDown={(event) => {
@@ -253,14 +254,14 @@ export function DialogControls({
                   ],
                 }}
               >
-                <button type="button" className="ctx-add-label"><Icon name="plus" size={13} />Добавить</button>
+                <button type="button" className="ctx-add-label"><Icon name="plus" size={13} />{t("conversations.add")}</button>
               </Dropdown>
               {detail.labels.map((label) => (
                 <b className="ctx-label-chip" key={label.id}>
                   <i style={{ background: label.color || "var(--n-5)" }} />
                   {label.name}
                   <button
-                    aria-label={`Снять метку ${label.name}`}
+                    aria-label={t("conversations.remove_label", { name: label.name })}
                     disabled={busy}
                     type="button"
                     onClick={() => void run(() => setConversationLabels(detail.id, detail.labels.filter((item) => item.id !== label.id).map((item) => item.id)))}
@@ -271,7 +272,7 @@ export function DialogControls({
               ))}
             </div>
 
-            <div className="ctx-meta-row"><span>Начат</span><span>{startedLabel(detail.createdAt)}</span></div>
+            <div className="ctx-meta-row"><span>{t("conversations.started")}</span><span>{startedLabel(detail.createdAt)}</span></div>
           </div>
         )}
       </section>
@@ -293,19 +294,19 @@ function NoteSection({ detail, busy, onSave }: { detail: ApiConversation; busy: 
   return (
     <section className="ctx-section is-note">
       <div className="ctx-section-head">
-        <h4>Заметка</h4>
-        <button type="button" aria-label="Редактировать заметку" onClick={() => setEditing(true)}><Icon name="edit" size={14} /></button>
+        <h4>{t("conversations.note")}</h4>
+        <button type="button" aria-label={t("conversations.edit_note")} onClick={() => setEditing(true)}><Icon name="edit" size={14} /></button>
       </div>
       {editing ? (
         <div className="ctx-note is-editing">
-          <textarea autoFocus disabled={busy} placeholder="Внутренняя заметка — клиент её не видит" rows={3} value={draft} onChange={(event) => setDraft(event.target.value)} />
+          <textarea autoFocus disabled={busy} placeholder={t("conversations.internal_note_customer_does_not")} rows={3} value={draft} onChange={(event) => setDraft(event.target.value)} />
           <div className="ctx-note-actions">
-            <button type="button" disabled={busy} onClick={() => { setDraft(detail.note); setEditing(false); }}>Отмена</button>
-            <button type="button" className="primary" disabled={busy} onClick={() => void onSave(draft).then(() => setEditing(false))}>Сохранить</button>
+            <button type="button" disabled={busy} onClick={() => { setDraft(detail.note); setEditing(false); }}>{t("common.cancel")}</button>
+            <button type="button" className="primary" disabled={busy} onClick={() => void onSave(draft).then(() => setEditing(false))}>{t("common.save")}</button>
           </div>
         </div>
       ) : (
-        <div className={`ctx-note ${detail.note ? "" : "is-empty"}`} onClick={() => setEditing(true)}>{detail.note || "Заметок нет"}</div>
+        <div className={`ctx-note ${detail.note ? "" : "is-empty"}`} onClick={() => setEditing(true)}>{detail.note || t("conversations.no_notes")}</div>
       )}
     </section>
   );
@@ -316,10 +317,10 @@ export function startedLabel(iso: string): string {
   const date = new Date(iso);
   const now = new Date();
   const time = date.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
-  if (date.toDateString() === now.toDateString()) return `сегодня, ${time}`;
+  if (date.toDateString() === now.toDateString()) return t("time.today_comma", { time });
   const yesterday = new Date(now);
   yesterday.setDate(now.getDate() - 1);
-  if (date.toDateString() === yesterday.toDateString()) return `вчера, ${time}`;
+  if (date.toDateString() === yesterday.toDateString()) return t("time.yesterday_comma", { time });
   return `${date.toLocaleDateString("ru-RU", { day: "numeric", month: "short" }).replace(".", "")}, ${time}`;
 }
 
@@ -334,7 +335,7 @@ export function archiveConversationAction(
       return true;
     })
     .catch((error) => {
-      onError(error instanceof Error ? error.message : "Не удалось удалить диалог");
+      onError(error instanceof Error ? error.message : t("conversations.could_not_delete_conversation"));
       return false;
     });
 }

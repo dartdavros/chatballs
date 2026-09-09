@@ -5,6 +5,7 @@ import { Icon, MaxLogo, TelegramLogo } from "../../shared/icons";
 import { Button, ToneBadge } from "../../shared/ui-controls";
 import { shortDateTime } from "../../shared/utils";
 import { PROVIDERS, STATUS_META, type Integration, type IntegrationProvider } from "./model";
+import { t } from "../../i18n";
 
 // Плитка подключения: фирменная марка на фирменном фоне (SPEC-CHATBALLS-0025 §2.3).
 // Web использует глиф и цвет кнопки-лончера виджета (webchat/loader.py).
@@ -37,7 +38,7 @@ export function ConnectionIcon({ provider }: { provider: IntegrationProvider }) 
 }
 
 export function formatChecked(value: string | null): string {
-  if (!value) return "ещё не проверялось";
+  if (!value) return t("settings.not_checked_yet");
   return shortDateTime(value);
 }
 
@@ -45,8 +46,8 @@ export function StatusCell({ integration }: { integration: Integration }) {
   if (!integration.isActive) {
     return (
       <div className="integration-status">
-        <ToneBadge bg="#f5f5f5" color="#8c8c8c">Отключено</ToneBadge>
-        <small>Приём и отправка сообщений остановлены</small>
+        <ToneBadge bg="#f5f5f5" color="#8c8c8c">{t("settings.disabled")}</ToneBadge>
+        <small>{t("settings.receiving_sending_messages_stopped")}</small>
       </div>
     );
   }
@@ -72,26 +73,26 @@ export function RowActions({ integration, testing, onTest, onEdit, onToggleActiv
   const [open, setOpen] = useState(false);
   const meta = PROVIDERS[integration.provider];
   const menuItems = [
-    { key: "edit", label: <button type="button" onClick={() => { setOpen(false); onEdit(integration); }}><Icon name="edit" size={15} />Изменить</button> },
+    { key: "edit", label: <button type="button" onClick={() => { setOpen(false); onEdit(integration); }}><Icon name="edit" size={15} />{t("common.edit")}</button> },
     ...(integration.kind === "MESSENGER" ? [{
       key: "active",
       label: (
         <button type="button" onClick={() => { setOpen(false); onToggleActive(integration); }}>
           <Icon name={integration.isActive ? "pause" : "plug"} size={15} />
-          {integration.isActive ? "Отключить" : "Включить"}
+          {integration.isActive ? t("profile.disconnect") : t("ai.turn")}
         </button>
       ),
     }] : []),
     { type: "divider" as const },
-    { key: "delete", label: <button type="button" className="warning" onClick={() => { setOpen(false); onDelete(integration); }}><Icon name="trash" size={15} />Удалить</button> },
+    { key: "delete", label: <button type="button" className="warning" onClick={() => { setOpen(false); onDelete(integration); }}><Icon name="trash" size={15} />{t("common.delete")}</button> },
   ];
   return (
     <div className="ai-row-actions">
       <Button variant="secondary" icon="refresh" iconSize={13} disabled={!meta.checkable || testing} onClick={() => onTest(integration)}>
-        {testing ? "Проверка…" : "Проверить"}
+        {testing ? t("settings.checking_2") : t("settings.check")}
       </Button>
       <Dropdown menu={{ items: menuItems }} open={open} onOpenChange={setOpen} trigger={["click"]} overlayClassName="app-dropdown">
-        <button className="row-menu-button" type="button" aria-label="Действия интеграции"><Icon name="more" /></button>
+        <button className="row-menu-button" type="button" aria-label={t("settings.integration_actions")}><Icon name="more" /></button>
       </Dropdown>
     </div>
   );

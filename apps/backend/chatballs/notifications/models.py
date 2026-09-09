@@ -33,8 +33,16 @@ class Notification(models.Model):
     organization = models.ForeignKey("identity.Organization", on_delete=models.PROTECT, related_name="notifications")
     type = models.CharField(max_length=32, choices=NotificationType.choices)
     level = models.CharField(max_length=16, choices=NotificationLevel.choices, default=NotificationLevel.INFO)
+    # Текст на языке того, кто писал код: остаётся и для записей, сделанных
+    # до появления ключей, и для доставки в мессенджер, где рендерить нечем.
     title = models.CharField(max_length=255)
     body = models.TextField(blank=True)
+    # Ключи каталога и их параметры. Уведомление адресовано аудитории
+    # («операторам»), а не одному человеку, и разные операторы могут читать на
+    # разных языках — поэтому фраза собирается при показе, а не при записи.
+    title_key = models.CharField(max_length=64, blank=True, default="")
+    body_key = models.CharField(max_length=64, blank=True, default="")
+    text_params = models.JSONField(default=dict, blank=True)
     # Диплинк по клику.
     target_route = models.CharField(max_length=64, blank=True)
     target_id = models.CharField(max_length=64, blank=True)

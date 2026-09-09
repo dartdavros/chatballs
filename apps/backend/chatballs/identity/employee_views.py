@@ -7,6 +7,7 @@ from rest_framework.views import APIView
 
 from chatballs.api.pagination import page_payload, paginate
 from chatballs.events.services import DomainEvent, enqueue_event
+from chatballs.i18n import t
 from chatballs.identity.audit import record_audit_event
 from chatballs.identity.employee_password import clean_password_mode, issue_initial_password
 from chatballs.identity.employee_selectors import employees_for
@@ -50,7 +51,7 @@ class EmployeeAvatarView(APIView):
             .first()
         )
         if membership is None or not membership.user.avatar:
-            return Response({"detail": "Фото не найдено"}, status=404)
+            return Response({"detail": t("admin.photo_not_found")}, status=404)
         response = FileResponse(
             membership.user.avatar.open("rb"),
             content_type=membership.user.avatar_content_type or "application/octet-stream",

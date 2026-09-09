@@ -3,6 +3,7 @@ import { Fragment, useState } from "react";
 import { Icon } from "../../shared/icons";
 import { shortDate, shortDateYear } from "../../shared/utils";
 import type { AuditEvent } from "./model";
+import { t } from "../../i18n";
 
 // Журнал действий. Три вещи, без которых он был нечитаем:
 // * день отбивается заголовком — иначе сотни строк идут сплошняком;
@@ -26,16 +27,16 @@ function dayLabel(value: string): string {
   const today = new Date();
   const yesterday = new Date();
   yesterday.setDate(today.getDate() - 1);
-  if (dayKey(value) === dayKey(today.toISOString())) return "Сегодня";
-  if (dayKey(value) === dayKey(yesterday.toISOString())) return "Вчера";
+  if (dayKey(value) === dayKey(today.toISOString())) return t("common.today");
+  if (dayKey(value) === dayKey(yesterday.toISOString())) return t("admin.yesterday");
   return date.getFullYear() === today.getFullYear() ? shortDate(date) : shortDateYear(date);
 }
 
 function detailLines(event: AuditEvent): Array<[string, string]> {
   const lines: Array<[string, string]> = [];
-  if (event.actorEmail) lines.push(["Сотрудник", `${event.actor} · ${event.actorEmail}`]);
-  lines.push(["Код действия", event.action]);
-  if (event.objectType) lines.push(["Объект", `${event.objectType}${event.objectId ? ` · ${event.objectId}` : ""}`]);
+  if (event.actorEmail) lines.push([t("common.operator"), `${event.actor} · ${event.actorEmail}`]);
+  lines.push([t("admin.action_code"), event.action]);
+  if (event.objectType) lines.push([t("common.object"), `${event.objectType}${event.objectId ? ` · ${event.objectId}` : ""}`]);
   if (event.sourceIp) lines.push(["IP", event.sourceIp]);
   if (event.correlationId) lines.push(["Correlation id", event.correlationId]);
   Object.entries(event.details ?? {}).forEach(([key, value]) => {
@@ -53,11 +54,11 @@ export function AuditTable({ events }: { events: AuditEvent[] }) {
       <table className="baseline-table audit-table">
         <thead>
           <tr>
-            <th className="audit-col-time">Время</th>
-            <th className="audit-col-actor">Сотрудник</th>
-            <th>Действие</th>
-            <th className="audit-col-object">Объект</th>
-            <th className="audit-col-result">Результат</th>
+            <th className="audit-col-time">{t("admin.time")}</th>
+            <th className="audit-col-actor">{t("common.operator")}</th>
+            <th>{t("common.action")}</th>
+            <th className="audit-col-object">{t("common.object")}</th>
+            <th className="audit-col-result">{t("admin.result")}</th>
             <th className="audit-col-toggle" />
           </tr>
         </thead>
