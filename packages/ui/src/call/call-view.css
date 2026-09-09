@@ -1,16 +1,23 @@
-.hub-call-view { width:100%; max-width:428px; background:#fff; border:1px solid #e8e8e8; border-radius:24px; box-shadow:0 12px 40px rgba(0,0,0,.12); overflow:hidden; color:#262626; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif; }
-.hub-call-head { display:flex; align-items:center; gap:11px; padding:12px 15px; border-bottom:1px solid #e8e8e8; }
+/* Видеозвонок (baseline «Экран звонка.dc.html»). Значения — токены дизайн-системы
+   с запасным значением из макета: internal-ui отдаёт свой набор (включая тёмную
+   тему), web-chat — сокращённый в styles.css, остальное берётся из fallback.
+   Хардкод остаётся только там, где он есть и в макете: сцена видео и слои поверх
+   неё не зависят от темы. */
+
+.hub-call-view { width:100%; max-width:428px; background:var(--surface-card,#fff); border:1px solid var(--border-default,#f0f0f0); border-radius:var(--radius-4xl,14px); box-shadow:var(--shadow-lg,0 6px 20px rgba(0,0,0,.12)); overflow:hidden; color:var(--text-body,#262626); font-family:var(--font-sans,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif); }
+.hub-call-head { display:flex; align-items:center; gap:11px; padding:12px 15px; border-bottom:1px solid var(--border-default,#f0f0f0); }
 .hub-call-avatar { display:grid; place-items:center; box-sizing:border-box; padding:0; border-radius:50%; color:#fff; font-weight:600; line-height:1; text-align:center; flex:none; }
 .hub-call-avatar.small { width:38px; height:38px; font-size:14px; }
 .hub-call-avatar.big { width:88px; height:88px; font-size:30px; position:relative; z-index:2; box-shadow:0 4px 18px rgba(0,0,0,.35); }
-.hub-call-avatar.pip { width:34px; height:34px; font-size:12px; background:#595959; position:absolute; inset:0; margin:auto; }
+.hub-call-avatar.pip { width:34px; height:34px; font-size:12px; background:var(--n-3,#595959); position:absolute; inset:0; margin:auto; }
 .hub-call-head-info { display:flex; flex:1; min-width:0; flex-direction:column; gap:2px; }
-.hub-call-head-info > span { font-size:12px; color:#8c8c8c; }
-.hub-call-peer { display:flex; align-items:center; gap:7px; min-width:0; font-size:14px; font-weight:600; color:#1f1f1f; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.hub-call-close { width:34px; height:34px; border-radius:8px; border:1px solid #e8e8e8; background:#fff; color:#8c8c8c; display:flex; align-items:center; justify-content:center; cursor:pointer; flex:none; }
-.hub-call-timer { display:flex; align-items:center; gap:6px; padding:4px 9px; border-radius:999px; background:#fff1f0; color:#cf1322; font-size:11.5px; font-weight:600; }
-.hub-call-timer.warn { background:#fffbe6; color:#ad6800; }
-.hub-call-timer i { width:6px; height:6px; border-radius:50%; background:#ff4d4f; }
+.hub-call-head-info > span { font-size:12px; color:var(--text-secondary,#595959); }
+.hub-call-peer { display:flex; align-items:center; gap:7px; min-width:0; font-size:14px; font-weight:600; color:var(--text-heading,#1f1f1f); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.hub-call-close { width:34px; height:34px; border-radius:var(--radius-md,8px); border:1px solid var(--border-default,#f0f0f0); background:var(--surface-card,#fff); color:var(--text-secondary,#595959); display:flex; align-items:center; justify-content:center; cursor:pointer; flex:none; }
+.hub-call-timer { display:flex; align-items:center; gap:6px; padding:4px 9px; border-radius:var(--radius-pill,999px); background:var(--error-bg,#fff2f0); color:var(--error-text,#cf1322); font-size:12.5px; font-weight:600; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
+.hub-call-timer.warn { background:var(--warning-bg,#fffbe6); color:var(--warning-text,#d48806); }
+.hub-call-timer i { width:6px; height:6px; border-radius:50%; background:var(--error,#ff4d4f); }
+.hub-call-timer.warn i { background:var(--warning,#faad14); }
 .hub-call-media { position:relative; aspect-ratio:16/9; background:#141414; overflow:hidden; }
 .hub-call-remote-video,.hub-call-preview-video,.hub-call-local-video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
 .hub-call-preview-video.mirrored,.hub-call-local-video.mirrored { transform:scaleX(-1); }
@@ -23,7 +30,7 @@
 .hub-call-avatar-wrap.rings > i { display:block; }
 .hub-call-avatar-wrap.rings > i:nth-child(2) { animation-delay:.95s; }
 .hub-call-reconnect { position:absolute; top:0; left:0; right:0; z-index:6; display:flex; align-items:center; justify-content:center; gap:9px; padding:9px 12px; background:rgba(20,20,20,.82); color:#fff; font-size:12.5px; font-weight:500; }
-.hub-call-name-label { position:absolute; left:12px; bottom:12px; z-index:5; display:flex; align-items:center; gap:6px; padding:4px 10px; border-radius:8px; background:rgba(0,0,0,.5); color:#fff; font-size:12px; font-weight:500; }
+.hub-call-name-label { position:absolute; left:12px; bottom:12px; z-index:5; display:flex; align-items:center; gap:6px; padding:4px 10px; border-radius:var(--radius-md,8px); background:rgba(0,0,0,.5); color:#fff; font-size:12px; font-weight:500; }
 .hub-call-name-label svg { width:14px; height:14px; color:#ff7875; }
 .hub-call-pip { position:absolute; right:12px; bottom:12px; width:100px; height:66px; z-index:4; overflow:hidden; border:2px solid rgba(255,255,255,.9); border-radius:10px; background:#1f1f1f; box-shadow:0 4px 14px rgba(0,0,0,.4); }
 .hub-call-pip b { position:absolute; left:5px; bottom:4px; color:#fff; font-size:10px; text-shadow:0 1px 2px rgba(0,0,0,.6); }
@@ -35,22 +42,25 @@
 .hub-call-status strong { color:#fff; font-size:15.5px; line-height:1.3; }
 .hub-call-status p { max-width:280px; margin:6px 0 0; color:rgba(255,255,255,.6); font-size:12.5px; line-height:1.5; }
 .hub-call-status-actions { display:flex; gap:9px; margin-top:2px; }
-.hub-call-status-actions button,.hub-call-join-row button { height:38px; padding:0 16px; border-radius:10px; font:600 13.5px inherit; cursor:pointer; }
-.hub-call-status-actions .primary,.hub-call-join-row .primary { border:0; background:#1677ff; color:#fff; }
+.hub-call-status-actions button,.hub-call-join-row button { height:38px; padding:0 16px; border-radius:var(--radius-lg,9px); font:600 13.5px inherit; cursor:pointer; }
+/* Статус-бар лежит поверх тёмной сцены — его кнопки всегда светлые, как в макете. */
+.hub-call-status-actions .primary,.hub-call-join-row .primary { border:0; background:var(--primary,#1677ff); color:#fff; }
 .hub-call-status-actions .secondary { border:1px solid rgba(255,255,255,.28); background:transparent; color:#fff; }
 .hub-call-ringing-bar { display:flex; flex-direction:column; align-items:center; gap:9px; padding:18px 16px 22px; }
-.hub-call-ringing-bar span,.hub-call-device-control span { color:#8c8c8c; font-size:12px; }
+.hub-call-ringing-bar span { color:var(--text-secondary,#595959); font-size:12.5px; }
+.hub-call-device-control span { color:var(--text-secondary,#595959); font-size:12px; }
 .hub-call-precall-bar { display:flex; flex-direction:column; gap:15px; padding:16px 16px 18px; }
 .hub-call-device-row { display:flex; justify-content:center; gap:32px; }
 .hub-call-device-control { display:flex; flex-direction:column; align-items:center; gap:8px; }
-.hub-call-device,.hub-call-round { width:54px; height:54px; display:flex; align-items:center; justify-content:center; border:1px solid #d9d9d9; border-radius:50%; background:#f5f5f5; color:#434343; cursor:pointer; }
-.hub-call-device.off { border-color:#ffccc7; background:#fff2f0; color:#cf1322; }
+.hub-call-device,.hub-call-round { width:54px; height:54px; display:flex; align-items:center; justify-content:center; border:1px solid var(--n-7,#e8e8e8); border-radius:50%; background:var(--n-9,#f5f5f5); color:var(--n-3,#595959); cursor:pointer; }
+.hub-call-device.off { border-color:var(--error-border,#ffccc7); background:var(--error-bg,#fff2f0); color:var(--error-text,#cf1322); }
 .hub-call-join-row { display:flex; gap:10px; }
-.hub-call-join-row button { flex:1; height:44px; }
-.hub-call-join-row .secondary { border:1px solid #d9d9d9; background:#fff; color:#262626; }
+.hub-call-join-row button { flex:1; height:44px; font-size:14px; }
+.hub-call-join-row .primary { box-shadow:var(--shadow-primary,0 1px 2px rgba(22,119,255,.3)); }
+.hub-call-join-row .secondary { border:1px solid var(--n-6,#d9d9d9); background:var(--surface-card,#fff); color:var(--text-body,#262626); }
 .hub-call-join-row button:disabled { cursor:default; opacity:.6; }
 .hub-call-active-bar { display:flex; align-items:center; justify-content:center; gap:14px; padding:16px; }
-.hub-call-end { width:60px; height:54px; border:0; border-radius:27px; display:flex; align-items:center; justify-content:center; background:#ff4d4f; color:#fff; cursor:pointer; box-shadow:0 2px 8px rgba(255,77,79,.35); }
+.hub-call-end { width:60px; height:54px; border:0; border-radius:27px; display:flex; align-items:center; justify-content:center; background:var(--error,#ff4d4f); color:#fff; cursor:pointer; box-shadow:0 2px 8px rgba(255,77,79,.35); }
 .hub-call-end.round { width:58px; height:58px; border-radius:50%; }
 @keyframes hub-call-ring { from { transform:scale(1); opacity:.55; } to { transform:scale(2.3); opacity:0; } }
 @media (max-width:480px) {
@@ -62,7 +72,7 @@
 
 /* Полноэкранный режим: карточка на весь экран колонкой, чтобы медиа тянулось,
    а шапка и панель кнопок не выходили за нижнюю границу экрана. */
-.hub-call-view:fullscreen { max-width:none; width:100vw; height:100vh; border-radius:0; border:0; display:flex; flex-direction:column; background:#fff; }
+.hub-call-view:fullscreen { max-width:none; width:100vw; height:100vh; border-radius:0; border:0; display:flex; flex-direction:column; background:var(--surface-card,#fff); }
 .hub-call-view:fullscreen .hub-call-head,
 .hub-call-view:fullscreen .hub-call-active-bar { flex:none; }
 .hub-call-view:fullscreen .hub-call-media { flex:1 1 auto; aspect-ratio:auto; min-height:0; }

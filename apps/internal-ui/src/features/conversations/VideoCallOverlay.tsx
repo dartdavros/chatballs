@@ -2,7 +2,7 @@
 // из CallOverlay при добавлении аудиозвонка, чтобы CallOverlay остался тонким
 // диспетчером по call.kind (NO GOD / separation of concerns).
 
-import { CallView, type CallViewMode, type CallViewStatus, useCallRtcSession, useLoopingAudio } from "@chatballs/ui";
+import { CallView, type CallViewMode, type CallViewStatus, isTerminalCallStatus, useCallRtcSession, useLoopingAudio } from "@chatballs/ui";
 import { Modal } from "antd";
 import { useEffect, useMemo, useState } from "react";
 
@@ -47,6 +47,14 @@ export function VideoCallOverlay(props: Props) {
   });
   const elapsed = useElapsed(call?.connectedAt ?? null, call?.status === "ACTIVE");
   const mode = resolveMode(call, props.errorText, rtc.connectionPhase, rtc.mediaIssue);
+
+  // Камеру и микрофон держим только пока оверлей открыт и звонок не завершён.
+  // Терминал приходит и поллингом состояния, а не только по RTC-сокету: до
+  // «Присоединиться» сокета ещё нет, и без явной остановки камера оператора
+  // продолжала гореть после отбоя клиента.
+  useEffect(() => {
+    if (!props.open || isTerminalCallStatus(call?.status)) rtc.stop();
+  }, [props.open, call?.status, rtc.stop]);
   useLoopingAudio("/audio/ringtone.mp3", props.open && mode === "ringing", 0.5);
   const status = useMemo(
     () => buildStatus(props, rtc.connectionPhase, rtc.mediaIssue, rtc.restart, rtc.prepare, rtc.start),

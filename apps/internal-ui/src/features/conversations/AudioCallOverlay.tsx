@@ -47,6 +47,12 @@ export function AudioCallOverlay(props: Props) {
     if (call.status === "ACCEPTED" || call.status === "CONNECTING") void rtc.start();
   }, [props.open, props.access, call?.status, rtc.connectionPhase, rtc.start]);
 
+  // Микрофон держим только пока оверлей открыт и звонок не завершён: терминал
+  // приходит и поллингом состояния, а не только по RTC-сокету (VideoCallOverlay).
+  useEffect(() => {
+    if (!props.open || isTerminalCallStatus(call?.status)) rtc.stop();
+  }, [props.open, call?.status, rtc.stop]);
+
   if (!props.dialog) return null;
   const channel = providerMeta[props.dialog.channel];
   const subCaption = mode === "active" ? (rtc.micOn ? "Говорите" : "Ваш микрофон выключен") : undefined;

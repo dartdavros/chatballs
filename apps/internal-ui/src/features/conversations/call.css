@@ -1,11 +1,15 @@
+/* Контейнер модалки — та же карточка звонка, поэтому радиус берётся из того же
+   токена, что и у `.hub-call-view`: иначе снаружи виден радиус модалки, а не
+   карточки, и перевод call-view.css на токены оператору не заметен. */
 .call-modal .ant-modal-content {
   padding: 0;
-  border-radius: 24px;
+  border-radius: var(--radius-4xl);
   overflow: hidden;
 }
 
 .call-modal .hub-call-view {
   border: 0;
+  border-radius: 0;
   box-shadow: none;
 }
 
@@ -14,7 +18,7 @@
 .audio-call-modal .ant-modal-content {
   padding: 0;
   background: var(--n-1);
-  border-radius: 24px;
+  border-radius: var(--radius-4xl);
   overflow: hidden;
 }
 
