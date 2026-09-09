@@ -94,9 +94,15 @@ def download_bytes(
     ``allowed_host`` — хост из ``base_url`` подключения, который владелец
     назвал сам.
     """
-    ensure_downloadable(url, allowed_host=allowed_host, via_proxy=bool(proxy_url))
+    def guard(candidate: str) -> None:
+        ensure_downloadable(candidate, allowed_host=allowed_host, via_proxy=bool(proxy_url))
+
+    guard(url)
     request = urllib.request.Request(url)
-    with build_opener(proxy_url).open(request, timeout=settings.CHATBALLS_AI_REQUEST_TIMEOUT) as response:
+    # Та же проверка на каждый редирект: провайдер отдаёт адрес данными, и
+    # 302 увёл бы скачивание туда, куда исходный адрес не пустили.
+    opener = build_opener(proxy_url, validate_redirect=guard)
+    with opener.open(request, timeout=settings.CHATBALLS_AI_REQUEST_TIMEOUT) as response:
         data = response.read(max_bytes + 1)
     if len(data) > max_bytes:
         raise ValueError("Файл больше допустимого размера")

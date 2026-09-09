@@ -30,7 +30,6 @@ class DemoDataView(APIView):
         "POST": "company.manage",
         "DELETE": "company.manage",
     }
-    require_organization_scope = True
 
     def get(self, request: Request) -> Response:
         return Response(service.demo_status(request.tenant_context.organization))

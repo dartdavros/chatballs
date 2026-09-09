@@ -74,7 +74,7 @@
 
 ## B. Безопасность — критично
 
-- [ ] **B1. 2FA снимается без пароля.**
+- [x] **B1. 2FA снимается без пароля.**
       `apps/backend/chatballs/identity/auth/profile.py:117` —
       `ProfileTotpStartView` (`POST /api/v1/auth/profile/totp/start/`,
       только `IsAuthenticated`) ставит `totp_enabled = False` и чистит секрет.
@@ -86,8 +86,9 @@
       что у `/disable/`.
       **Доказательство:** тест — при включённой 2FA `/start/` не меняет
       `totp_enabled`/`totp_secret` и не обходит `user_requires_totp`.
+      **Сделано:** `/start/` отвечает 409, если 2FA уже включена: перевыпуск секрета возможен только при выключенной. Тест `identity.test_auth_hardening`.
 
-- [ ] **B2. Сброс пароля по письму не завершает чужие сессии.**
+- [x] **B2. Сброс пароля по письму не завершает чужие сессии.**
       `apps/backend/chatballs/identity/auth/password_reset.py:96` — `set_password`
       и всё. Смена пароля в профиле сессии отзывает (`profile.py:107`), админский
       сброс тоже (`identity/employee_password.py:75`). То есть ровно тот сценарий,
@@ -95,8 +96,9 @@
       **Сделать:** после успешного сброса звать `revoke_user_sessions(user.id)`.
       **Доказательство:** тест — активная сессия до сброса становится недействительной
       после него.
+      **Сделано:** После сброса зовётся `revoke_user_sessions`; ответ отдаёт число завершённых сессий. Тест `identity.test_auth_hardening`.
 
-- [ ] **B3. HTTPS на домене установки не включается никогда.**
+- [x] **B3. HTTPS на домене установки не включается никогда.**
       `Caddyfile` выдаёт сертификаты только через `on_demand` + `ask`, а
       `apps/backend/chatballs/support_portals/gateway_views.py:16` авторизует
       **только домены порталов** из `support_portal_directory`. Проверено на живом
@@ -111,8 +113,9 @@
       (и, если нужно, платформенный домен) наравне с доменами порталов.
       **Доказательство:** тест на эндпоинт (204 для заданного в UI адреса) +
       ручная проверка выпуска сертификата на реальном домене.
+      **Сделано:** Ask-эндпоинт признаёт адрес установки (и предыдущий) наравне с доменами порталов. Тест `support_portals.tests.test_public_api`.
 
-- [ ] **B4. WebSocket ломается под HTTPS.**
+- [x] **B4. WebSocket ломается под HTTPS.**
       `TlsAwareCookieMiddleware` — HTTP-middleware, на WS-хендшейк не работает.
       Channels читает `settings.SESSION_COOKIE_NAME` = `chatballs_app_session`, а
       браузер под TLS держит только `__Host-chatballs-app-session` (обычное имя
@@ -123,6 +126,7 @@
       правило имён (`CHATBALLS_TLS_COOKIE_NAMES`) к WS-scope.
       **Доказательство:** тест WS-подключения со scope, где выставлен только
       `__Host-`-cookie и `scheme=wss`.
+      **Сделано:** Добавлен `chatballs.http.ws_middleware`: имена cookie приводятся к тем, по которым Channels ищет сессию, до `AuthMiddlewareStack`. Тест `http.test_ws_middleware`.
 
 - [x] **B5. Загрузка файлов упадёт на Linux-хосте.**
       Prod-образ работает под `USER hub` (`apps/backend/Dockerfile.production:35`),
@@ -141,7 +145,7 @@
 
 ## C. Безопасность и корректность — существенно
 
-- [ ] **C1. Дубль входящего сообщения ломает транзакцию.**
+- [x] **C1. Дубль входящего сообщения ломает транзакцию.**
       `apps/backend/chatballs/conversations/ingest.py:52` ловит `IntegrityError`
       от `InboxEvent.objects.create` **без вложенного `transaction.atomic()`**, а
       вызывается изнутри `tenant_atomic` (воркер:
@@ -152,8 +156,9 @@
       **Сделать:** обернуть create в `transaction.atomic()` (savepoint).
       **Доказательство:** тест — повторная доставка того же `external_id` внутри
       транзакции возвращает «уже обработано» и не ломает последующие запросы.
+      **Сделано:** Вставка в inbox идёт своей точкой сохранения. Тест `conversations.test_ingest_dedup`.
 
-- [ ] **C2. Смена адреса в «Настройках» может залочить владельца.**
+- [x] **C2. Смена адреса в «Настройках» может залочить владельца.**
       `identity/instance_views.py:63` пишет новый `public_host`, а
       `support_portals/host_boundary.py:35` принимает только его +
       `localhost/127.0.0.1/app.localhost`. Владелец, сидящий на `http://<IP>`,
@@ -164,8 +169,9 @@
       список адресов установки, а не одно поле).
       **Доказательство:** тест — после смены адреса запрос со старым Host всё ещё
       обслуживается.
+      **Сделано:** Добавлено поле `previous_public_host` (миграция identity.0033): прежний адрес остаётся принятым и шлюзом, и проверкой Host. Тест `identity.test_instance_address`.
 
-- [ ] **C3. SSRF через редирект.**
+- [x] **C3. SSRF через редирект.**
       `apps/backend/chatballs/integrations/outbound.py:54` проверяет адрес **до**
       запроса, а `build_opener` тянет штатный `HTTPRedirectHandler`. Ответ
       подставного провайдера отдаёт 302 на `http://169.254.169.254/…` — и хаб
@@ -174,8 +180,9 @@
       **Сделать:** свой `HTTPRedirectHandler`, прогоняющий `ensure_downloadable`
       на каждый `Location`.
       **Доказательство:** тест с локальным сервером, отдающим 302 на приватный адрес.
+      **Сделано:** Свой `HTTPRedirectHandler` прогоняет политику на каждый Location, включая проверку схемы до urllib. Тест `integrations.test_outbound_redirects`.
 
-- [ ] **C4. Портал может «съесть» само приложение.**
+- [x] **C4. Портал может «съесть» само приложение.**
       `support_portals/addressing.py:64` запрещает `custom_domain` только из
       `CHATBALLS_APP_PRIMARY_HOSTS` и не смотрит на `InstanceSettings.public_host`.
       Админ вешает портал на адрес установки → SPA пробует `/api/v1/help/`
@@ -183,20 +190,23 @@
       вместо приложения. Сотрудники теряют вход.
       **Сделать:** добавить адрес установки в запрещённые для `custom_domain`.
       **Доказательство:** тест валидации портала.
+      **Сделано:** Адрес установки (текущий и предыдущий) добавлен в запрещённые для `custom_domain`. Тест `identity.test_instance_address`.
 
-- [ ] **C5. Пароль прокси уходит в API.**
+- [x] **C5. Пароль прокси уходит в API.**
       `integrations/serializers.py:29` отдаёт `proxyUrl` целиком, а формат —
       `socks5://user:pass@host:port` (`integrations/proxy.py`). Секрет интеграции
       маскируется, credentials прокси — нет.
       **Сделать:** отдавать прокси без user:pass (как `hasSecret`/маска у секрета).
       **Доказательство:** тест payload'а интеграции.
+      **Сделано:** Пароль прокси маскируется в ответе; маска того же прокси при сохранении возвращает сохранённый пароль. Тест `integrations.test_proxy_masking`.
 
-- [ ] **C6. `/api/v1/health/ready/` публичен.**
+- [x] **C6. `/api/v1/health/ready/` публичен.**
       Доступен снаружи через Caddy → frontend → backend без авторизации и отдаёт
       состояние БД и Redis.
       **Сделать:** оставить снаружи только `live/`, `ready/` увести во внутренний
       контур (отдельный путь/сеть либо отказ на уровне frontend nginx).
       **Доказательство:** запрос снаружи — 404, изнутри сети — 200.
+      **Сделано:** `/api/v1/health/ready/` закрыт на публичной границе (frontend nginx); liveness остаётся открытым.
 
 ---
 
@@ -208,16 +218,20 @@
       комментарием. То же самое проверить для `CHATBALLS_APP_DOMAIN` после B3.
       **Сделано:** `CHATBALLS_ACME_EMAIL` и `CHATBALLS_APP_DOMAIN` убраны из окружения шлюза как неиспользуемые. Выпуск сертификата на домен установки остаётся в B3.
 
-- [ ] **D2.** В коробке `CHATBALLS_HELP_PUBLIC_IPV4` схлопывается в `127.0.0.1`
+- [x] **D2.** В коробке `CHATBALLS_HELP_PUBLIC_IPV4` схлопывается в `127.0.0.1`
       (`chatballs_backend/settings_base.py:258`) — инструкции по DNS для порталов
       будут указывать на loopback.
-- [ ] **D3.** `EncryptedCharField(max_length=512)` хранит **шифротекст** в
+      **Сделано:** Значение считается в рантайме от адреса установки (`support_portals.public_address`); переменная окружения — переопределение, фейл-фаст убран. Тест `support_portals.tests.test_public_address`.
+- [x] **D3.** `EncryptedCharField(max_length=512)` хранит **шифротекст** в
       varchar(512) (`identity/crypto.py`), а Fernet раздувает примерно в 1.4 раза
       плюс сотня символов: длинный SMTP-пароль обрежется или упадёт на записи.
-- [ ] **D4.** WS-роутинг без `AllowedHostsOriginValidator`
+      **Сделано:** `max_length` описывает открытое значение, ширину колонки считает `ciphertext_length` (миграции identity.0034, integrations.0008, tenancy.0030). Тест `identity.test_crypto_columns`.
+- [x] **D4.** WS-роутинг без `AllowedHostsOriginValidator`
       (`conversations/routing.py`) — сейчас спасает только `SameSite=Lax`.
-- [ ] **D5.** `require_organization_scope = True` в `identity/demo_views.py:32` —
+      **Сделано:** Добавлен `SameOriginWebSocketMiddleware` на оба WS-маршрута. Тест `http.test_ws_middleware`.
+- [x] **D5.** `require_organization_scope = True` в `identity/demo_views.py:32` —
       мёртвый атрибут, `HasCapability` его не читает. Убрать или начать читать.
+      **Сделано:** Мёртвый атрибут убран во всех восьми местах; в `HasCapability` записано, что область организации не отключается.
 
 ---
 

@@ -251,20 +251,18 @@ CHATBALLS_HELP_BASE_DOMAIN = os.environ.get(
 ).strip().lower().rstrip(".")
 CHATBALLS_HELP_PUBLIC_SCHEME = os.environ.get("CHATBALLS_HELP_PUBLIC_SCHEME", "https").strip().lower()
 CHATBALLS_HELP_PUBLIC_PORT = os.environ.get("CHATBALLS_HELP_PUBLIC_PORT", "").strip()
-_default_help_public_ipv4 = os.environ.get(
-    "CHATBALLS_WEB_LISTENING_IP",
-    "",
-).strip()
-if _default_help_public_ipv4 in {"", "0.0.0.0", "::"}:
-    _default_help_public_ipv4 = "127.0.0.1" if CHATBALLS_HELP_BASE_DOMAIN == "localhost" else ""
-CHATBALLS_HELP_PUBLIC_IPV4 = os.environ.get(
-    "CHATBALLS_HELP_PUBLIC_IPV4",
-    _default_help_public_ipv4,
-).strip()
-if not DEBUG and not TESTING and not CHATBALLS_HELP_PUBLIC_IPV4:
-    raise ImproperlyConfigured(
-        "CHATBALLS_HELP_PUBLIC_IPV4 or a non-wildcard CHATBALLS_WEB_LISTENING_IP is required"
-    )
+# Адрес, на который владелец направляет A-запись домена портала. Штатный
+# источник — сам адрес установки (его знает только она сама, см.
+# chatballs.support_portals.public_address); переменные ниже остаются
+# переопределением для контуров, которые ведут конфигурацию сами. Пустое
+# значение — не ошибка установки: до мастера первого запуска адреса просто
+# ещё нет, а порталов с доменами тем более.
+_configured_help_ipv4 = os.environ.get("CHATBALLS_HELP_PUBLIC_IPV4", "").strip()
+if not _configured_help_ipv4:
+    _listening_ip = os.environ.get("CHATBALLS_WEB_LISTENING_IP", "").strip()
+    if _listening_ip not in {"", "0.0.0.0", "::"}:
+        _configured_help_ipv4 = _listening_ip
+CHATBALLS_HELP_PUBLIC_IPV4 = _configured_help_ipv4
 if CHATBALLS_HELP_PUBLIC_IPV4:
     try:
         IPv4Address(CHATBALLS_HELP_PUBLIC_IPV4)

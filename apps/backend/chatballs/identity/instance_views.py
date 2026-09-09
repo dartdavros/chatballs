@@ -88,7 +88,11 @@ class InstanceAddressView(APIView):
                 {"detail": next(iter(errors.values())), "errors": errors}, status=400
             )
 
-        fields = ["public_host", "public_scheme", "updated_at"]
+        fields = ["public_host", "public_scheme", "previous_public_host", "updated_at"]
+        if host != row.public_host:
+            # Прежний адрес остаётся принятым: владелец меняет адрес заранее,
+            # сидя на старом, и не должен выпасть из установки в тот же миг.
+            row.previous_public_host = row.public_host
         row.public_host = host
         row.public_scheme = scheme
 

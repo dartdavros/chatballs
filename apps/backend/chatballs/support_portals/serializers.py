@@ -1,8 +1,8 @@
-from django.conf import settings
 
 from chatballs.integrations.models import IntegrationProvider, IntegrationStatus
 from chatballs.support_portals.addressing import portal_public_url
 from chatballs.support_portals.content_markdown import normalize_file_links
+from chatballs.support_portals.public_address import help_public_ipv4
 from chatballs.support_portals.models import (
     PortalArticle,
     PortalArticleFile,
@@ -13,6 +13,7 @@ from chatballs.support_portals.models import (
 
 
 def portal_payload(portal: SupportPortal, *, counts: dict | None = None) -> dict:
+    server_ipv4 = help_public_ipv4() if portal.custom_domain else ""
     public_url = portal_public_url(
         hosted=portal.hosted_domain,
         custom=portal.custom_domain,
@@ -28,9 +29,9 @@ def portal_payload(portal: SupportPortal, *, counts: dict | None = None) -> dict
             {
                 "name": portal.custom_domain,
                 "type": "A",
-                "value": settings.CHATBALLS_HELP_PUBLIC_IPV4,
+                "value": server_ipv4,
             }
-            if portal.custom_domain and settings.CHATBALLS_HELP_PUBLIC_IPV4
+            if portal.custom_domain and server_ipv4
             else None
         ),
         "customDomainVerifiedAt": portal.custom_domain_verified_at,

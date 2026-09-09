@@ -225,7 +225,6 @@ class AgentCardTestChatView(APIView):
     permission_classes = [HasCapability]
     # Исполняет агента, а не изменяет канал: остаётся на ai.manage (ADR-HUB-0037 §9).
     required_capability = "ai.manage"
-    require_organization_scope = True
 
     def post(self, request: Request, agent_id: int) -> Response:
         try:

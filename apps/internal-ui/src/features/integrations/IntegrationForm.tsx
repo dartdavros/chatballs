@@ -152,7 +152,10 @@ export function IntegrationForm({ initial, kind, onClose, onSaved }: { initial: 
           </>
         )}
         {!isWeb && !isEmail && !isDemo && (
-          <FormField label="Прокси" value={proxyUrl} onChange={setProxyUrl} placeholder="http://host:port или socks5://user:pass@host:port — пусто, если без прокси" />
+          <>
+            <FormField label="Прокси" value={proxyUrl} onChange={setProxyUrl} placeholder="http://host:port или socks5://user:pass@host:port — пусто, если без прокси" />
+            <div className="integration-form-hint">Пароль прокси наружу не отдаётся: вместо него точки. Оставьте их как есть — прежний пароль сохранится; чтобы сменить, впишите новый целиком</div>
+          </>
         )}
         {meta.hasModel && (
           <FormField label="Модель по умолчанию" value={defaultModel} onChange={setDefaultModel} placeholder={provider === "OPENROUTER" ? "anthropic/claude-sonnet-4.6" : ""} />

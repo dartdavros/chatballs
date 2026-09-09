@@ -59,8 +59,34 @@ def decrypt_secret(token: str) -> str:
         return ""
 
 
+def ciphertext_length(plaintext_chars: int) -> int:
+    """Сколько символов занимает Fernet-токен для строки такой длины.
+
+    В колонке лежит не значение, а шифротекст: Fernet добавляет версию,
+    метку времени, IV и подпись, дополняет до блока AES и кодирует всё в
+    base64. Строка в 512 символов уже не помещается в varchar(512) — запись
+    падала бы на длинном пароле SMTP или ключе S3. Считаем по худшему случаю:
+    4 байта на символ (UTF-8).
+    """
+    payload = plaintext_chars * 4
+    blocks = payload // 16 + 1  # PKCS#7 всегда добавляет хотя бы один байт
+    raw = 57 + 16 * blocks  # 57 = версия + timestamp + IV + HMAC
+    return (raw + 2) // 3 * 4  # base64 без переносов
+
+
 class EncryptedCharField(models.CharField):
-    """CharField прозрачно шифрующий значение в БД (Fernet)."""
+    """CharField, прозрачно шифрующий значение в БД (Fernet).
+
+    ``max_length`` описывает открытое значение — то, что вводит человек. Под
+    колонку берётся длина шифротекста: иначе ограничение поля и ограничение
+    столбца означают разное, и запись падает уже в базе.
+    """
+
+    def __init__(self, *args, **kwargs) -> None:
+        self.plaintext_max_length = kwargs.get("max_length")
+        if self.plaintext_max_length:
+            kwargs["max_length"] = ciphertext_length(self.plaintext_max_length)
+        super().__init__(*args, **kwargs)
 
     def from_db_value(self, value, expression, connection):  # noqa: ANN001
         if not value:

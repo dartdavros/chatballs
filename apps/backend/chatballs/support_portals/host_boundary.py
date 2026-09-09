@@ -39,12 +39,13 @@ class SupportPortalHostBoundaryMiddleware:
             or str(connections["default"].settings_dict["NAME"]).startswith("test_")
         ):
             return True
-        # Адрес, который человек ввёл в браузере на первом запуске: продукт
-        # запомнил его в настройках установки и признаёт своим.
-        from chatballs.identity.instance_settings import public_host
+        # Адреса, которые человек задал сам: тот, на котором прошли мастер, и
+        # предыдущий — чтобы смена адреса в «Настройках» не выбрасывала того,
+        # кто её делает, до того как новый домен вообще заработал.
+        from chatballs.identity.instance_settings import accepted_hosts
 
         try:
-            if host and host == public_host():
+            if host and host in {normalize_domain(item) for item in accepted_hosts()}:
                 return True
         except Exception:
             pass
