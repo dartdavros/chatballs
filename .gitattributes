@@ -7,6 +7,13 @@ chatballs text eol=lf
 
 # Dockerfile и манифесты стека читают Linux-инструменты: CR в них ломает
 # RUN-строки и heredoc'и ровно так же, как шебанг.
+# Python читают и переписывают линуксовые инструменты (ruff в контейнере, CI).
+# На CRLF-чекауте ruff принимал за перевод строки одиночный CR и писал его в
+# вывод — файлы оставались рабочими, но с 
+ внутри; 21 такой файл уже
+# доехал до репозитория.
+*.py text eol=lf
+
 Dockerfile text eol=lf
 Dockerfile.* text eol=lf
 *.Dockerfile text eol=lf
