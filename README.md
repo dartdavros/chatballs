@@ -1,185 +1,323 @@
-# Chatballs
+<p align="center">
+  <img src="apps/internal-ui/public/favicon.svg" alt="Chatballs" width="88" height="88">
+</p>
 
-Canonical implementation workspace for Chatballs.
+<h1 align="center">Chatballs</h1>
 
-## Установка (одна команда)
+<p align="center"><strong>AI customer support platform</strong></p>
 
-Нужен только Docker с плагином Compose. Ни одной переменной задавать не нужно и
-негде: у продукта нет `.env`. Организацию, владельца, домены, интеграции, почту и
-хранилище человек настраивает в интерфейсе.
+<p align="center">
+  An AI platform that talks to your customers for you: it answers in messengers, email and web chat, and hands your team only the hard questions.
+</p>
 
-Весь дистрибутив — один файл `compose.yaml` со страницы релиза: ссылки на образы
-в нём закреплены по digest, а Caddyfile, init-скрипты базы и генератор секретов
-лежат внутри образов. Рядом с файлом ничего лежать не должно.
+<p align="center">
+  <a href="README.ru.md">Русская версия</a>
+</p>
 
-Linux / macOS:
+<p align="center">
+  <img alt="Self-hosted" src="https://img.shields.io/badge/self--hosted-one%20command-1677ff">
+  <img alt="Docker Compose" src="https://img.shields.io/badge/docker-compose-2496ED?logo=docker&logoColor=white">
+  <img alt="Bring your own model" src="https://img.shields.io/badge/AI-bring%20your%20own%20model-6f42c1">
+</p>
+
+---
+
+## Table of contents
+
+- [Overview](#overview)
+- [Installation](#installation)
+  - [Requirements](#requirements)
+  - [Step 1. Start the stack](#step-1-start-the-stack)
+  - [Step 2. First-run wizard](#step-2-first-run-wizard)
+  - [Step 3. Configure in the UI](#step-3-configure-in-the-ui)
+  - [Website widget](#website-widget)
+  - [Calls relay (optional)](#calls-relay-optional)
+  - [External file storage (optional)](#external-file-storage-optional)
+  - [Updating](#updating)
+- [Features](#features)
+- [Troubleshooting](#troubleshooting)
+
+---
+
+## Overview
+
+Chatballs takes over the first line of customer conversations. An AI agent answers from your knowledge base in Telegram, MAX, email and the chat on your website. When the agent is not confident or the customer asks for a person, the conversation goes to your team together with a notification.
+
+The platform installs on your own server with a single command. Customer data stays with you. You connect the AI model with your own key and set your own budget.
+
+---
+
+## Installation
+
+### Requirements
+
+| | |
+|---|---|
+| **Server** | Linux, x86_64 |
+| **Software** | Docker with the Docker Compose plugin |
+| **Ports** | 80 and 443 open |
+| **Calls relay (optional)** | A dedicated public IP, port 3478 and UDP range 49160–49999 |
+
+A domain is not needed to start. The installation opens by the server's IP address; the domain is set later in the settings.
+
+### Step 1. Start the stack
+
+Download `compose.yaml` from the release page and bring the stack up:
 
 ```bash
 curl -fsSL https://github.com/dartdavros/chatballs/releases/latest/download/compose.yaml -o compose.yaml
+```
+
+```bash
 docker compose up -d --wait
 ```
 
-Windows (PowerShell):
+Nothing else needs to be configured. There is no `.env` file: instance secrets are generated on first start and kept in a Docker volume. Everything else is configured in the UI.
 
-```powershell
-curl.exe -fsSL https://github.com/dartdavros/chatballs/releases/latest/download/compose.yaml -o compose.yaml
-docker compose up -d --wait
+What happens on first start:
+
+1. Instance secrets are generated: signing key, database role passwords, encryption key, TURN secret.
+2. PostgreSQL with pgvector and Redis start.
+3. Database migrations run.
+4. The application, background worker, frontend and Caddy gateway start.
+
+### Step 2. First-run wizard
+
+Open `http://<server IP>/` in a browser. The wizard asks for:
+
+- the organization name;
+- the owner's name, email and password;
+- whether to install demo data to explore the product on an example.
+
+You are then signed in as the owner.
+
+### Step 3. Configure in the UI
+
+Everything else is done in **Settings**.
+
+| Section | What to do |
+|---|---|
+| **Platform** | Set the installation domain. The gateway issues a Let's Encrypt certificate on its own and switches to HTTPS. Outgoing SMTP mail is configured here as well: it is needed for employee invitations and password recovery. |
+| **Integrations** | Connect an AI model provider: OpenRouter, any OpenAI-compatible service or a local model. A demo provider that needs no key is available for a first look. Then connect entry points: a Telegram bot, a MAX bot, a mailbox over IMAP/SMTP or a web widget for your site. |
+| **Agents** | Create an AI agent: who it is, how it speaks, what rules it follows. Choose the model and a daily budget. Attach articles from the knowledge base. |
+| **Employees** | Invite your team by email, assign roles and groups. |
+
+The home screen shows a launch checklist: create an agent, connect an entry point, invite employees.
+
+### Website widget
+
+After creating a web widget, add one tag to your site:
+
+```html
+<script src="https://<your domain>/chat-widget.js" data-widget-key="<widget key>" async></script>
 ```
 
-`--wait` держит команду до готовности стека: когда она вернула управление,
-установка отвечает. Откройте **http://localhost** (или адрес сервера) — вместо
-входа система покажет **мастер первого запуска**: название организации, ваше имя,
-e-mail и пароль владельца, переключатель «Установить демо-данные». После кнопки
-«Начать» вы сразу в приложении под владельцем. Мастер доступен только пока в
-системе нет ни одной организации; после создания владельца он закрывается
-навсегда.
+The chat opens in an isolated window on top of the site.
 
-Секреты инстанса (ключ подписи, пароли ролей БД) генерирует сам первый старт и
-держит в томе `chatballs-secrets`. Состояние установки живёт в именованных томах
-`chatballs-*` — установка не зависит от того, из какого каталога её запустили.
+### Calls relay (optional)
 
-Обновление — тот же файл новой версии и та же команда:
+Audio and video calls run directly between browsers. If customers or employees sit behind strict NAT or a corporate firewall, enable the TURN relay:
 
 ```bash
-curl -fsSL https://github.com/dartdavros/chatballs/releases/latest/download/compose.yaml -o compose.yaml
-docker compose up -d --wait
+COMPOSE_PROFILES=calls CHATBALLS_CALL_TURN_REALM=<domain> CHATBALLS_TURN_EXTERNAL_IP=<public IP> CHATBALLS_TURN_LISTENING_IP=<IP for TURN> docker compose up -d --wait
 ```
 
-Миграции прогоняет one-shot сервис `init` на каждом старте. Откат — прежняя
-копия `compose.yaml` и снова та же команда.
+The relay listens on a dedicated IP so that port 443 does not conflict with the web gateway. The certificate for TURN over TLS is placed in the directory set by `CHATBALLS_TURN_CERTS_DIR`. TURN addresses are then entered in **Settings → Communication**.
 
-### Запуск из исходников (разработка)
+### External file storage (optional)
 
-Тем, кто правит код, релизный файл не нужен: стек собирается локально.
+By default files are stored in a Docker volume. In **Settings → Storage** the installation can be switched to any S3-compatible storage. Already uploaded files are migrated automatically.
 
-```powershell
-git clone <URL репозитория> chatballs
-cd chatballs
-.\scripts\start.ps1
+### Updating
+
+Download the new release's `compose.yaml` over the old one and restart:
+
+```bash
+docker compose pull && docker compose up -d --wait
+```
+
+Migrations run automatically. Secrets and data stay in their volumes.
+
+---
+
+## Features
+
+### The AI agent answers customers on its own
+
+Set up in minutes: who it is, how it speaks, what rules it follows. It answers only from your knowledge and does not make things up. If the data is missing, it says so honestly and offers to bring in an employee.
+
+### Smart handoff to a person
+
+When the agent cannot find an answer or the customer asks for a real person, the conversation goes to operators right away with a notification. Every conversation has three modes: AI answers, an employee answers, paused.
+
+### All channels in one window
+
+Telegram, MAX, email and website chat land in a single conversation list. The employee sees where the customer came from and replies in the same channel.
+
+### Knowledge base with semantic search
+
+Articles, categories, file import, attachments. The agent finds what it needs by meaning, not only by matching words. If the provider offers no embeddings, search falls back to full text without losing functionality.
+
+### Public help center
+
+A portal with your articles on your own domain and in your own look. Categories, article revisions, usefulness ratings from readers. The agent answers from the same articles: editing an article changes the bot's answers immediately.
+
+### Website chat in one tag
+
+The widget is installed with a single line of code and runs in an isolated window. Voice messages, files, calls. Allowed domains and abuse protection are configured in the UI.
+
+### Audio and video calls from the chat
+
+The customer and the employee call each other straight from the conversation without third-party services. Works in the web widget, Telegram and MAX. A relay is available for difficult networks.
+
+### Operator workspace
+
+Priorities, colored labels, conversation notes, assignment to an employee, reply templates. Voice messages with on-demand transcription. Files and images. Sound notification on a new message.
+
+### One customer profile
+
+One person from different channels is collected into a single profile. Duplicates are merged manually with a reason and can be reverted. The customer list exports to CSV.
+
+### Team and access
+
+Owner, administrator and employee roles. Invitations by email. Visibility groups: an employee sees the conversations of their groups and those they are responsible for. Two-factor protection with TOTP. A full activity log with filters.
+
+### Employee notifications in messengers
+
+Waiting conversations and new messages reach the employee in Telegram or MAX. Linking is done from the profile with a one-time code.
+
+### Your own server and your own AI model
+
+Installs with one command, data stays with you. Connect any AI model provider with your own key: OpenRouter, an OpenAI-compatible service, a local model. A daily budget per agent in dollars, token and cost accounting for every call.
+
+### Customer data protection
+
+Phone numbers, email addresses and long numeric identifiers are stripped from text before it is sent to the AI model. Integration tokens, SMTP passwords, S3 keys and TOTP secrets are stored encrypted in the database.
+
+---
+
+## Troubleshooting
+
+<details>
+<summary><strong>The stack does not start: port 80 or 443 is busy</strong></summary>
+
+The gateway publishes ports 80 and 443. Free them, or bind the gateway to a specific IP with the `CHATBALLS_WEB_LISTENING_IP` variable.
+</details>
+
+<details>
+<summary><strong>The installation opens by IP but not over HTTPS</strong></summary>
+
+This is expected until a domain is set. Enter the domain in **Settings → Platform**. Make sure the domain's DNS record points to the server and ports 80 and 443 are reachable from outside: without that the certificate cannot be issued.
+</details>
+
+<details>
+<summary><strong>The certificate is not issued after changing the domain</strong></summary>
+
+Certificates are issued on demand, at the first request to the domain. Open the domain in a browser and wait a few seconds. If that does not help, check the gateway log:
+
+```bash
+docker compose logs gateway
+```
+</details>
+
+<details>
+<summary><strong>The first-run wizard says the setup has already been completed</strong></summary>
+
+The organization already exists. Sign in at the installation address with the owner account. If the password is lost, use email recovery: outgoing mail must be configured for that.
+</details>
+
+<details>
+<summary><strong>Invitations and emails are not sent</strong></summary>
+
+Check SMTP in **Settings → Platform**. There is a button to send a test email. Typical causes: wrong port, TLS turned off, an app password instead of the account password.
+</details>
+
+<details>
+<summary><strong>The agent does not answer customers</strong></summary>
+
+Check in order:
+
+1. The agent status is **Active**, not **Draft**.
+2. The agent has an AI model provider selected. Without it no answer is possible.
+3. The provider in **Integrations** has the **Connected** status. Run the check to refresh it.
+4. The agent's daily budget is not exhausted. Blocked calls are visible in the AI usage log.
+5. The conversation is not switched to **Operator** or **Paused** mode.
+</details>
+
+<details>
+<summary><strong>An integration shows the Error status</strong></summary>
+
+Open the integration and run the check. For bots the usual cause is a wrong token or an unreachable proxy. For email: wrong IMAP or SMTP parameters. Integration errors also arrive as notifications.
+</details>
+
+<details>
+<summary><strong>Messages from Telegram or MAX do not arrive</strong></summary>
+
+The background worker polls the bots. Make sure it is running:
+
+```bash
+docker compose ps worker
 ```
 
 ```bash
-git clone <URL репозитория> chatballs
-cd chatballs
-./scripts/start.sh
+docker compose logs worker
 ```
+</details>
 
-Первая сборка занимает минуты (`npm ci` + `pip install`). Dev-контур держит
-состояние в `./data`, публикует порты Postgres/Redis и подменяет frontend на
-Vite с HMR — см. `compose.dev.yaml`.
+<details>
+<summary><strong>Calls do not connect</strong></summary>
 
-### Демо-данные
+Between browsers a call goes directly. If one side is behind strict NAT, a relay is needed: enable the `calls` profile and enter the TURN addresses in **Settings**. Check that port 3478 and the UDP range 49160–49999 are open on the firewall. Make sure the relay listens on a separate IP and does not overlap with the web gateway on port 443.
+</details>
 
-Демо — вымышленное ателье «Норд» (дизайн-базлайн v2): сотрудники и группы,
-агенты с подключениями Telegram/MAX/почта/веб-виджет, база знаний с
-вложениями, диалоги во всех состояниях (AI ведёт, ждёт оператора, ведёт
-сотрудник, закрыт, спам, архив), метки, приоритеты, заметки, шаблоны
-ответов, голосовые (живая речь из открытого датасета Mozilla Common Voice, CC0),
-портал поддержки со статьями, звонки, уведомления и история использования AI за
-30 дней. Видимая часть повторяет кадры дизайн-базлайна v2 один в один. Набор покрывает каждую модель системы —
-это проверяет тест `identity.test_seed_demo`.
+<details>
+<summary><strong>Migrations fail with "must be owner of table"</strong></summary>
 
-Демо ставится в вашу организацию и удаляется целиком одной кнопкой: **Настройки →
-Демо-данные**. Там же — учётные записи демо-сотрудников из разных групп, чтобы
-посмотреть систему их глазами (пароль общий и намеренно публичный —
-`Chatballs-Demo-2026`). Ваши данные при удалении не затрагиваются: сид ведёт
-реестр созданных записей и удаляет ровно их.
-
-Для разработки то же доступно из командной строки:
+Schema objects belong to another role. Normalize ownership and rerun the migrations:
 
 ```bash
-docker compose run --rm backend-app python manage.py seed_demo --organization <slug> --apply
-docker compose run --rm backend-app python manage.py seed_demo --organization <slug> --remove
+docker compose exec -T postgres psql -v ON_ERROR_STOP=1 -U chatballs_bootstrap -d chatballs -f /chatballs-reassign-ownership.sql
 ```
-
-Редактируемые данные — `apps/backend/chatballs/identity/demo_seed/data/`
-(JSON-манифест на домен, `media/` — вложения, аватары, голосовые). Голосовые
-сообщения читаются из `media/voice/` (см. README там); если файла нет, сообщение
-пропускается.
-
-### Режим поставки
-
-По умолчанию коробка считает себя `SELF_HOSTED`; облачный контур выставляет
-`CHATBALLS_DELIVERY_MODE=CLOUD` явно. Приложение не определяет режим по домену,
-числу организаций или данным. Задавать что-либо при установке не нужно и негде.
-
-Локально `scripts/start.ps1` поднимает облачный режим; коробочный — тем же
-контуром с явным признаком поставки:
-
-```powershell
-.\scripts\start.ps1 -Mode Cloud
-.\scripts\start.ps1 -Mode SelfHosted
-```
-
-### Что поднимается
-
-- изолированные Django-рантаймы app, platform и loopback-only admin;
-- фоновый worker (outbox, поллинг мессенджеров, установка демо);
-- PostgreSQL и Redis;
-- Internal Hub UI и Web Chat UI одним nginx-образом;
-- шлюз Caddy — единственная публичная граница (80/443).
-
-Секретов production в репозитории нет.
-
-Локальные адреса dev-контура:
-
-- Приложение: `http://localhost` (то же — `http://app.localhost/`)
-- Health платформы: `http://platform.localhost/api/v1/health/live/`
-- Django admin (только loopback): `http://127.0.0.1:18001/admin/`
-- Internal Hub UI напрямую (Vite): `http://localhost:5173`
-- Web Chat: `http://localhost:5175`
-- App API напрямую: `http://localhost:8010/api/v1`
-
-### Доступ по http и переход на TLS
-
-Свежая установка отвечает по обычному http — по адресу сервера, пока домена и
-сертификата ещё нет. Продукт не уводит себя на https принудительно.
-
-Когда у установки появляется домен, владелец вписывает его в **Настройки →
-Адрес установки**. С этого момента шлюз выписывает на него сертификат сам, при
-первом же запросе по https: он спрашивает разрешение у самой установки, и она
-подтверждает свой адрес и адреса опубликованных порталов помощи. Прежний адрес
-остаётся принятым, чтобы смена не выбросила того, кто её делает.
-
-Жёсткость транспорта включается сама по факту TLS: запрос пришёл по https —
-cookie получают префикс `__Host-`, флаг `Secure` и HSTS; по http — обычные
-имена без `Secure`. Настраивать для этого нечего.
-
-## Tests
-
-Линтер бэкенда (та же конфигурация, что в CI — корневой `pyproject.toml`):
 
 ```bash
-ruff check apps/backend
+docker compose run --rm init
+```
+</details>
+
+<details>
+<summary><strong>Files do not upload or open</strong></summary>
+
+With local storage, files live in the `chatballs-media` volume. Check free disk space. With S3, open **Settings → Storage**: it shows the last connection error and the migration status.
+</details>
+
+<details>
+<summary><strong>The widget does not appear on the site</strong></summary>
+
+Check that the widget status is **Published** and the site's domain is in the allowed list. The key in the `data-widget-key` attribute must match the key from the widget settings.
+</details>
+
+<details>
+<summary><strong>How to check that everything works</strong></summary>
+
+```bash
+docker compose ps
 ```
 
-`ruff format` в репозитории не принят: он переписал бы 374 файла, поэтому
-длина строки (`E501`) из проверок исключена — всё остальное из `E`, `F`, `I`,
-`UP`, `B` и `DJ` обязано быть зелёным. Миграции не проверяются: их пишет Django.
+All services should be `healthy` or `running`. Application readiness is available at `/api/v1/health/ready/`.
+</details>
 
-All suites run in Docker, so no manual environment is required — the test
-runners auto-detect themselves and relax production hardening (secret-key
-fail-fast, SSL redirect, throttling) for the duration of the run.
+<details>
+<summary><strong>Do not delete the secrets volume</strong></summary>
 
-Run everything (backend tests, frontend unit tests, typechecks):
+The `chatballs-secrets` volume holds the encryption key. Without it, integration tokens, SMTP passwords, S3 keys and two-factor secrets become unreadable. Include this volume in backups together with the database and files.
+</details>
 
-```powershell
-.\scripts\check.ps1
+<details>
+<summary><strong>Backup</strong></summary>
+
+Copy the `chatballs-postgres`, `chatballs-media` and `chatballs-secrets` volumes. A database dump can be taken as well:
+
+```bash
+docker compose exec -T postgres pg_dump -U chatballs_bootstrap chatballs > backup.sql
 ```
-
-Individual suites:
-
-```powershell
-# Backend (pytest + pytest-django)
-docker compose run --rm backend-app pytest
-
-# Frontend unit tests (vitest)
-docker compose run --rm frontend npm run test
-
-# End-to-end (Playwright, internal-ui) — auto-starts the dev server
-npx playwright install chromium   # one-time
-npx playwright test --project=internal-ui
-```
-
-Backend pytest configuration lives in `apps/backend/pytest.ini` (it must sit
-next to `manage.py` so it is also visible inside the backend container).
+</details>
