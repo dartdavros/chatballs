@@ -3,32 +3,41 @@
 # Локальная разработка — через override compose.dev.yaml; этот файл не содержит
 # dev source mounts, dev-команд и host-портов (кроме public 80/443 у gateway).
 #
-# Image references берутся из release.env (immutable digest refs, см. ADR §release).
-# В dev они не задаются — срабатывают безопасные defaults, а override подменяет
-# image на build.
+# Этот файл — весь дистрибутив. Рядом с ним не должно лежать ничего: ни
+# Caddyfile, ни init-скриптов базы, ни генератора секретов — всё это внутри
+# образов (deploy/docker/*.Dockerfile). Поэтому установка на чистый хост
+# выглядит так:
+#
+#   curl -fsSL <ссылка на compose.yaml со страницы релиза> -o compose.yaml
+#   docker compose up -d --wait
+#
+# В релизной копии ссылки на образы уже закреплены по digest (их подставляет
+# CI). Значения по умолчанию ниже — для сборки из исходников: с
+# compose.dev.yaml они собираются локально.
 #
 # У продукта нет .env: секреты инстанса генерирует сервис secrets при первом
 # старте, всё остальное человек настраивает в UI.
-# Запуск production/box:
-#   docker compose --env-file release.env up -d
-# Запуск разработки:
-#   docker compose -f compose.yaml -f compose.dev.yaml up
 
 services:
   # Секреты инстанса (ключ подписи, пароли ролей БД) генерирует первый старт;
   # они живут в томе chatballs-secrets. Человек их не вводит и не хранит:
   # установка — одна команда, всё остальное настраивается в UI. Скрипт
   # идемпотентен — перезапуск не меняет пароли работающей базы.
+  #
+  # Крутится на backend-образе: он всё равно нужен стеку, а скрипт запечён в
+  # него (apps/backend/Dockerfile.production).
   secrets:
-    image: ${CHATBALLS_POSTGRES_IMAGE:-pgvector/pgvector:pg16}
-    entrypoint: ["/bin/sh", "/chatballs-generate-secrets.sh"]
+    image: ${CHATBALLS_BACKEND_IMAGE:-chatballs-backend:dev}
+    entrypoint: ["/bin/sh", "/usr/local/bin/chatballs-generate-secrets.sh"]
+    # Скрипт создаёт каталог и выставляет права — это делает root, а
+    # production-образ работает под hub.
+    user: root
     restart: "no"
     volumes:
-      - ${CHATBALLS_RELEASE_DIR:-.}/deploy/secrets/generate-instance-secrets.sh:/chatballs-generate-secrets.sh:ro
       - chatballs-secrets:/run/chatballs/secrets
 
   postgres:
-    image: ${CHATBALLS_POSTGRES_IMAGE:-pgvector/pgvector:pg16}
+    image: ${CHATBALLS_POSTGRES_IMAGE:-chatballs-postgres:dev}
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-chatballs}
@@ -45,9 +54,7 @@ services:
         condition: service_completed_successfully
     volumes:
       - chatballs-secrets:/run/chatballs/secrets:ro
-      - ${CHATBALLS_INSTANCE_DIR:-.}/data/postgres:/var/lib/postgresql/data
-      - ${CHATBALLS_RELEASE_DIR:-.}/deploy/postgres/init-runtime-roles.sh:/docker-entrypoint-initdb.d/20-chatballs-runtime-roles.sh:ro
-      - ${CHATBALLS_RELEASE_DIR:-.}/deploy/postgres/reassign-schema-ownership.sql:/chatballs-reassign-ownership.sql:ro
+      - chatballs-postgres:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
@@ -59,7 +66,7 @@ services:
     restart: unless-stopped
     command: ["redis-server", "--appendonly", "yes"]
     volumes:
-      - ${CHATBALLS_INSTANCE_DIR:-.}/data/redis:/data
+      - chatballs-redis:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -97,9 +104,10 @@ services:
       CHATBALLS_DB_ROLE: app
     volumes:
       - chatballs-secrets:/run/chatballs/secrets:ro
-      # Legacy source media retained for the separately approved copy/hash
-      # migration. Production writes use the required S3 backend in C04.
-      - ${CHATBALLS_INSTANCE_DIR:-.}/data/media:/app/apps/backend/media
+      # Локальные файлы — именованный том, а не каталог с хоста. Том наследует
+      # владельца из образа (hub), поэтому загрузки работают и на Linux, где
+      # bind-mount достался бы контейнеру как root:root и падал с EACCES.
+      - chatballs-media:/app/apps/backend/media
     depends_on:
       init:
         condition: service_completed_successfully
@@ -188,7 +196,7 @@ services:
       CHATBALLS_DB_ROLE: app
     volumes:
       - chatballs-secrets:/run/chatballs/secrets:ro
-      - ${CHATBALLS_INSTANCE_DIR:-.}/data/media:/app/apps/backend/media
+      - chatballs-media:/app/apps/backend/media
     depends_on:
       backend-app:
         condition: service_healthy
@@ -203,25 +211,32 @@ services:
     depends_on:
       backend-app:
         condition: service_healthy
+    healthcheck:
+      # Без него `up --wait` считает контейнер готовым сразу после старта, и
+      # человек открывает адрес раньше, чем nginx поднял конфигурацию.
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
 
   # Gateway: единственный HTTP/HTTPS public boundary (ADR-CHATBALLS-0028 §gateway).
   # Caddy: TLS termination, ACME, HTTP->HTTPS redirect, WebSocket upgrade (native).
-  # Маршрутизация публичных путей делегируется frontend (internal). Coturn не
-  # проксируется через Caddy — отдельная network boundary (profile calls).
+  # Caddyfile запечён в образ (deploy/docker/gateway.Dockerfile) — с хоста
+  # ничего не монтируется. Маршрутизация публичных путей делегируется frontend
+  # (internal). Coturn не проксируется через Caddy — отдельная network boundary
+  # (profile calls).
   gateway:
-    image: ${CHATBALLS_GATEWAY_IMAGE:-caddy:2.8.4}
+    image: ${CHATBALLS_GATEWAY_IMAGE:-chatballs-gateway:dev}
     restart: unless-stopped
     environment:
-      CHATBALLS_APP_DOMAIN: ${CHATBALLS_APP_DOMAIN:-localhost}
       CHATBALLS_PLATFORM_DOMAIN: ${CHATBALLS_PLATFORM_DOMAIN:-platform.localhost}
-      CHATBALLS_ACME_EMAIL: ${CHATBALLS_ACME_EMAIL:-}
     ports:
       - "${CHATBALLS_WEB_LISTENING_IP:-0.0.0.0}:80:80"
       - "${CHATBALLS_WEB_LISTENING_IP:-0.0.0.0}:443:443"
     volumes:
-      - ${CHATBALLS_RELEASE_DIR:-.}/Caddyfile:/etc/caddy/Caddyfile:ro
-      - ${CHATBALLS_INSTANCE_DIR:-.}/data/caddy:/data
-      - ${CHATBALLS_INSTANCE_DIR:-.}/data/caddy-config:/config
+      - chatballs-caddy-data:/data
+      - chatballs-caddy-config:/config
     depends_on:
       frontend:
         condition: service_started
@@ -276,10 +291,11 @@ services:
       - --no-tlsv1
       - --no-tlsv1_1
     volumes:
-      # LE-сертификат TURN-хоста (turns:), скопированный под uid coturn (nobody)
-      # renewal deploy-hook'ом. См. docs по развёртыванию TURN-over-TLS.
+      # LE-сертификат TURN-хоста (turns:) кладёт на хост renewal deploy-hook —
+      # это единственное место, где стек смотрит наружу файлом, и только при
+      # включённом профиле calls. Каталог задаётся явно.
       - chatballs-secrets:/run/chatballs/secrets:ro
-      - ${CHATBALLS_INSTANCE_DIR:-.}/data/coturn-certs:/etc/coturn/certs:ro
+      - ${CHATBALLS_TURN_CERTS_DIR:-./data/coturn-certs}:/etc/coturn/certs:ro
     healthcheck:
       # Allocation smoke: STUN binding к собственному listener на выделенном IP.
       test: ["CMD", "turnutils_stunclient", "-p", "${CHATBALLS_TURN_LISTENING_PORT:-3478}", "${CHATBALLS_TURN_LISTENING_IP:-0.0.0.0}"]
@@ -291,3 +307,11 @@ services:
 volumes:
   # Секреты инстанса: генерируются при первом старте, живут только здесь.
   chatballs-secrets:
+  # Состояние установки. Именованные тома вместо каталогов с хоста: установка
+  # не зависит от того, из какого каталога её запустили, и не упирается в
+  # владельца каталога на хосте.
+  chatballs-postgres:
+  chatballs-redis:
+  chatballs-media:
+  chatballs-caddy-data:
+  chatballs-caddy-config:

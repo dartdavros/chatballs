@@ -33,13 +33,29 @@ images:build:
         -t "$FRONTEND_IMAGE" \
         -t "$FRONTEND_LATEST_IMAGE" \
         "$APP_DIR"
+      docker build \
+        -f "$APP_DIR/deploy/docker/gateway.Dockerfile" \
+        --build-arg "CHATBALLS_GATEWAY_BASE_IMAGE=$GATEWAY_BASE_IMAGE" \
+        -t "$GATEWAY_IMAGE" \
+        -t "$GATEWAY_LATEST_IMAGE" \
+        "$APP_DIR"
+      docker build \
+        -f "$APP_DIR/deploy/docker/postgres.Dockerfile" \
+        --build-arg "CHATBALLS_POSTGRES_BASE_IMAGE=$POSTGRES_BASE_IMAGE" \
+        -t "$POSTGRES_IMAGE" \
+        -t "$POSTGRES_LATEST_IMAGE" \
+        "$APP_DIR"
 
       docker push "$BACKEND_IMAGE"
       docker push "$FRONTEND_IMAGE"
+      docker push "$GATEWAY_IMAGE"
+      docker push "$POSTGRES_IMAGE"
 
       if [ "$CI_COMMIT_BRANCH" = "$CI_DEFAULT_BRANCH" ]; then
         docker push "$BACKEND_LATEST_IMAGE"
         docker push "$FRONTEND_LATEST_IMAGE"
+        docker push "$GATEWAY_LATEST_IMAGE"
+        docker push "$POSTGRES_LATEST_IMAGE"
       fi
 
       resolve_digest_ref() {
@@ -91,14 +107,15 @@ release:bundle:
       test "$(awk -F= '$1 == "CHATBALLS_VERSION" {print $2; exit}' .ci/release.env)" = "$VERSION"
 
       rm -rf "$BUNDLE_DIR" "$DIST_DIR"
-      mkdir -p "$BUNDLE_DIR/deploy/cli" "$BUNDLE_DIR/deploy/postgres" "$DIST_DIR"
+      mkdir -p "$BUNDLE_DIR/deploy/cli" "$DIST_DIR"
 
-      cp compose.yaml compose.dev.yaml Caddyfile "$BUNDLE_DIR/"
+      # Caddyfile, init-скрипты базы и генератор секретов лежат внутри образов,
+      # поэтому в бандле их нет: compose.yaml ничего не монтирует с хоста.
+      cp compose.yaml "$BUNDLE_DIR/"
       cp .ci/release.env "$BUNDLE_DIR/release.env"
       cp chatballs "$BUNDLE_DIR/"
       chmod +x "$BUNDLE_DIR/chatballs"
       cp -R deploy/cli/lib "$BUNDLE_DIR/deploy/cli/"
-      cp -R deploy/postgres/. "$BUNDLE_DIR/deploy/postgres/"
 
       (
         cd "$BUNDLE_DIR"

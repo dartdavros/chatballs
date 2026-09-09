@@ -18,9 +18,16 @@ variables:
   BACKEND_LATEST_IMAGE: "$CI_REGISTRY_IMAGE/backend:latest"
   FRONTEND_LATEST_IMAGE: "$CI_REGISTRY_IMAGE/frontend:latest"
 
-  POSTGRES_IMAGE: "pgvector/pgvector:pg16"
+  # Шлюз и база — свои образы: Caddyfile и init-скрипты запечены внутрь,
+  # чтобы установка не требовала ничего рядом с compose.yaml.
+  GATEWAY_IMAGE: "$CI_REGISTRY_IMAGE/gateway:$CI_COMMIT_SHA"
+  POSTGRES_IMAGE: "$CI_REGISTRY_IMAGE/postgres:$CI_COMMIT_SHA"
+  GATEWAY_LATEST_IMAGE: "$CI_REGISTRY_IMAGE/gateway:latest"
+  POSTGRES_LATEST_IMAGE: "$CI_REGISTRY_IMAGE/postgres:latest"
+
+  GATEWAY_BASE_IMAGE: "caddy:2.8.4"
+  POSTGRES_BASE_IMAGE: "pgvector/pgvector:pg16"
   REDIS_IMAGE: "redis:7-alpine"
-  GATEWAY_IMAGE: "caddy:2.8.4"
   COTURN_IMAGE: "coturn/coturn:4.6"
 
 include:

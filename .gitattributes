@@ -5,6 +5,15 @@
 *.sh text eol=lf
 chatballs text eol=lf
 
+# Dockerfile и манифесты стека читают Linux-инструменты: CR в них ломает
+# RUN-строки и heredoc'и ровно так же, как шебанг.
+Dockerfile text eol=lf
+Dockerfile.* text eol=lf
+*.Dockerfile text eol=lf
+compose*.yaml text eol=lf
+Caddyfile text eol=lf
+*.sql text eol=lf
+
 *.bat text eol=crlf
 *.cmd text eol=crlf
 *.ps1 text eol=crlf
