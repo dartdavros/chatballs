@@ -77,6 +77,10 @@ def _instance_is_unconfigured() -> bool:
     except Exception:
         # База ещё не поднялась: на этом этапе хост тем более не проверить.
         return True
-    if not needs_setup:
+    if not needs_setup and not settings.TESTING:
+        # Кэш живёт на весь процесс — в проде это ровно то, что нужно
+        # (после установки признак больше не меняется). В тестах каждый тест
+        # начинается с пустой базы, и первый же из них, создавший
+        # организацию, закрывал бы мастер всем остальным в том же процессе.
         _configured = True
     return needs_setup
