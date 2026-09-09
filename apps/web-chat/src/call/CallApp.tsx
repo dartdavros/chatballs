@@ -55,6 +55,10 @@ export function CallApp() {
       void fetchCallState(token).then((result) => {
         if (!result) { setInvalid(true); setLoading(false); return; }
         if (!callKindOf(result.call)) { setInvalid(true); setLoading(false); return; }
+        // Токен из хеша надо сохранить: хеш уже срезан replaceState, а в пути
+        // лежит callId, а не invite-токен — после F5 звонок было не восстановить
+        // (invite одноразовый, resolve на callId отвечает «недействительно»).
+        sessionStorage.setItem(storageKey(), token);
         setCall(result.call);
         setIceServers(result.iceServers ?? []);
         setLoading(false);

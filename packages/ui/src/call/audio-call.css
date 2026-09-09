@@ -146,6 +146,17 @@
 .hub-audio-pill.solid { flex: 1; border: none; background: #fff; color: #141414; }
 .hub-audio-pill.ghost { flex: 1; border: 1px solid rgba(255, 255, 255, .3); background: rgba(255, 255, 255, .08); color: #fff; }
 
+/* На телефоне сцена занимает весь экран. Высота берётся от вьюпорта, а не `100%`:
+   родитель страницы звонка задаёт только `min-height`, его высота неопределённа,
+   и процент схлопывался в высоту по контенту — окно выходило ~412x427 вместо
+   412x915. Пара vh/dvh — как в call-view.css у видеозвонка. */
 @media (max-width: 480px) {
-  .hub-audio-view { max-width: 100%; max-height: none; aspect-ratio: auto; height: 100%; border-radius: 0; }
+  .hub-audio-view {
+    max-width: 100%;
+    max-height: none;
+    aspect-ratio: auto;
+    height: 100vh;
+    height: 100dvh;
+    border-radius: 0;
+  }
 }

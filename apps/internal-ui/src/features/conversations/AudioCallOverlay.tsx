@@ -2,7 +2,7 @@
 // Видео не запрашивается. Флоу: incoming/ringing → connecting → active → терминал,
 // без pre-call (нет этапа проверки камеры). Параллель VideoCallOverlay, но под аудио.
 
-import { AudioCallView, type AudioCallMode, buildAudioStatus, useCallRtcSession, useLoopingAudio } from "@chatballs/ui";
+import { AudioCallView, type AudioCallMode, buildAudioStatus, isTerminalCallStatus, useCallRtcSession, useLoopingAudio } from "@chatballs/ui";
 import { Modal } from "antd";
 import { useEffect, useState } from "react";
 
@@ -47,6 +47,12 @@ export function AudioCallOverlay(props: Props) {
     if (call.status === "ACCEPTED" || call.status === "CONNECTING") void rtc.start();
   }, [props.open, props.access, call?.status, rtc.connectionPhase, rtc.start]);
 
+  // Микрофон держим только пока оверлей открыт и звонок не завершён: терминал
+  // приходит и поллингом состояния, а не только по RTC-сокету (VideoCallOverlay).
+  useEffect(() => {
+    if (!props.open || isTerminalCallStatus(call?.status)) rtc.stop();
+  }, [props.open, call?.status, rtc.stop]);
+
   if (!props.dialog) return null;
   const channel = providerMeta[props.dialog.channel];
   const subCaption = mode === "active" ? (rtc.micOn ? "Говорите" : "Ваш микрофон выключен") : undefined;
@@ -58,7 +64,7 @@ export function AudioCallOverlay(props: Props) {
   const onAccept = () => { void rtc.start(); };
   const finish = async () => {
     const token = props.access?.accessToken;
-    if (!token || !call || isTerminal(call.status)) return;
+    if (!token || !call || isTerminalCallStatus(call.status)) return;
     try { props.onCallChange(await endCallByAccess(token)); }
     finally { rtc.stop(); }
   };
@@ -110,17 +116,14 @@ export function AudioCallOverlay(props: Props) {
 function resolveAudioMode(call: ApiCall | null, errorText: string, connection: string, mediaIssue: string): AudioCallMode {
   if (errorText || !call) return "status";
   if (mediaIssue === "devices" || mediaIssue === "unsupported") return "status";
-  if (call.status === "REQUESTED" || call.status === "RINGING") return call.status === "REQUESTED" ? "ringing" : "ringing";
+  // Звонок всегда инициирует оператор, поэтому до ответа клиента это исходящий.
+  if (call.status === "REQUESTED" || call.status === "RINGING") return "ringing";
   if (call.status === "ACCEPTED") return connection === "connected" ? "active" : "connecting";
   if (connection === "reconnecting") return "reconnecting";
   if (connection === "failed") return "status";
   if (call.status === "ACTIVE" || connection === "connected") return "active";
-  if (isTerminal(call.status)) return "status";
+  if (isTerminalCallStatus(call.status)) return "status";
   return "connecting";
-}
-
-function isTerminal(status: string) {
-  return ["DECLINED", "CANCELLED", "MISSED", "ENDED", "FAILED", "EXPIRED"].includes(status);
 }
 
 // Ключ статуса, который buildAudioStatus умеет превратить в статус-центр.

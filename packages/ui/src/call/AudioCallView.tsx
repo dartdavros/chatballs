@@ -59,7 +59,7 @@ export function AudioCallView(props: Props) {
       <div className="hub-audio-body">
         <div className="hub-audio-top">
           <span className="hub-audio-status-label">{props.statusLabel ?? defaultStatusLabel(props.mode, status)}</span>
-          {props.showChannel !== false && <span className="hub-audio-channel">{props.channelLabel ?? ""}</span>}
+          {props.showChannel !== false && props.channelLabel && <span className="hub-audio-channel">{props.channelLabel}</span>}
           <div className="hub-audio-top-spacer" />
           {isActive && <span className="hub-audio-timer">{timer}</span>}
         </div>
@@ -100,6 +100,9 @@ export function AudioCallView(props: Props) {
           )}
           {props.mode === "connecting" && (
             <SingleRoundBar label="Отменить" tone="decline" icon={<PhoneIcon rotated />} onClick={props.onCancel ?? props.onEnd} />
+          )}
+          {props.mode === "reconnecting" && (
+            <SingleRoundBar label="Завершить" tone="decline" icon={<PhoneIcon rotated />} onClick={props.onEnd} />
           )}
           {isActive && (
             <div className="hub-audio-active">
@@ -184,6 +187,13 @@ function StatusBar({ status, onClose, onCallAgain, onRetry, onEnd }: { status: A
   const bar = status.bar;
   if (bar === "reconnect") {
     return <SingleRoundBar label="Завершить" tone="decline" icon={<PhoneIcon rotated />} onClick={onEnd} />;
+  }
+  if (bar === "close") {
+    return (
+      <div className="hub-audio-pill-bar">
+        <PillButton kind="ghost" onClick={onClose}>Закрыть</PillButton>
+      </div>
+    );
   }
   if (bar === "retrySingle") {
     return (

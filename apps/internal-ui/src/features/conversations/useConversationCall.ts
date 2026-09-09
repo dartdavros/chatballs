@@ -1,3 +1,4 @@
+import { isTerminalCallStatus } from "@chatballs/ui";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
@@ -10,8 +11,6 @@ import {
   type CallAccess,
   type CallKind,
 } from "./model";
-
-const TERMINAL = new Set(["DECLINED", "CANCELLED", "MISSED", "ENDED", "FAILED", "EXPIRED"]);
 
 type Options = {
   conversationId: number | null;
@@ -38,7 +37,7 @@ export function useConversationCall({ conversationId, onConversationChanged }: O
   useEffect(() => reset(), [conversationId, reset]);
 
   useEffect(() => {
-    if (!open || !call || TERMINAL.has(call.status)) return;
+    if (!open || !call || isTerminalCallStatus(call.status)) return;
     const timer = setInterval(async () => {
       try { setCall(await fetchCall(call.id)); } catch { /* transient */ }
     }, 2000);

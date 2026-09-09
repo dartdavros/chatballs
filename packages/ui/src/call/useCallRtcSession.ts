@@ -1,6 +1,8 @@
 import { CallRtcClient, type CallSide, type PublicCallState, type RtcConnectionPhase } from "@chatballs/shared";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { isTerminalCallStatus } from "./audioCallStates";
+
 export type CallMediaIssue = "none" | "video" | "devices" | "unsupported";
 
 type Options = {
@@ -12,8 +14,6 @@ type Options = {
   videoEnabled?: boolean;
   onCallState: (call: PublicCallState) => void;
 };
-
-const TERMINAL = new Set(["DECLINED", "CANCELLED", "MISSED", "ENDED", "FAILED", "EXPIRED"]);
 
 export function useCallRtcSession(options: Options) {
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
@@ -135,7 +135,7 @@ export function useCallRtcSession(options: Options) {
         handlers: {
           onCallState: (call) => {
             onCallStateRef.current(call);
-            if (TERMINAL.has(call.status)) queueMicrotask(stop);
+            if (isTerminalCallStatus(call.status)) queueMicrotask(stop);
           },
           onRemoteStream: setRemoteStream,
           onRemoteMedia: ({ mic, cam }) => {
@@ -157,23 +157,21 @@ export function useCallRtcSession(options: Options) {
     return pending;
   }, [options.accessToken, options.iceServers, options.side, prepare, stop]);
 
+  // Побочные эффекты (сигналинг + track.enabled) держим снаружи updater'а: React в
+  // StrictMode вызывает updater дважды, а внутри него они бы отработали по два раза.
   const toggleMic = useCallback(() => {
-    setMicOn((current) => {
-      const next = !current;
-      clientRef.current?.setMediaState(next, camOn);
-      localRef.current?.getAudioTracks().forEach((track) => { track.enabled = next; });
-      return next;
-    });
-  }, [camOn]);
+    const next = !micOn;
+    setMicOn(next);
+    clientRef.current?.setMediaState(next, camOn);
+    localRef.current?.getAudioTracks().forEach((track) => { track.enabled = next; });
+  }, [camOn, micOn]);
 
   const toggleCam = useCallback(() => {
-    setCamOn((current) => {
-      const next = !current;
-      clientRef.current?.setMediaState(micOn, next);
-      localRef.current?.getVideoTracks().forEach((track) => { track.enabled = next; });
-      return next;
-    });
-  }, [micOn]);
+    const next = !camOn;
+    setCamOn(next);
+    clientRef.current?.setMediaState(micOn, next);
+    localRef.current?.getVideoTracks().forEach((track) => { track.enabled = next; });
+  }, [camOn, micOn]);
 
   const end = useCallback(() => clientRef.current?.end(), []);
   const restart = useCallback(async () => {

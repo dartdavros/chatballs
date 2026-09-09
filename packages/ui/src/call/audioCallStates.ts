@@ -19,12 +19,15 @@ export type AudioCallStatus = {
 };
 
 // Какой нижний бар рисовать для текущего состояния (вне active/incoming/ringing/connecting).
-export type AudioBarKind = "ended" | "retrySingle" | "retryClose" | "reconnect" | "retryCheck";
+// "close" — только «Закрыть»: сторона, которая не может инициировать звонок (клиент).
+export type AudioBarKind = "ended" | "close" | "retrySingle" | "retryClose" | "reconnect" | "retryCheck";
 
 export type AudioStatusEntry = AudioCallStatus;
 
 // Терминальные состояния, приходящие из домена звонков (TERMINAL_CALL_STATUSES).
-export const AUDIO_TERMINAL_STATUSES = new Set([
+// Единственный источник правды для фронтенда: и аудио-, и видеозвонок, и оператор,
+// и RTC-сессия сверяются с этим набором — раньше он был скопирован в четыре места.
+export const TERMINAL_CALL_STATUSES = new Set([
   "DECLINED",
   "CANCELLED",
   "MISSED",
@@ -33,7 +36,7 @@ export const AUDIO_TERMINAL_STATUSES = new Set([
   "EXPIRED",
 ]);
 
-export const isAudioTerminal = (status?: string) => Boolean(status && AUDIO_TERMINAL_STATUSES.has(status));
+export const isTerminalCallStatus = (status?: string) => Boolean(status && TERMINAL_CALL_STATUSES.has(status));
 
 function dur(prefix: string, duration?: number | null) {
   return duration != null && duration > 0 ? `${prefix}Длительность ${formatDuration(duration)}. ` : prefix;

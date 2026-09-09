@@ -1,4 +1,4 @@
-import { type AudioCallMode, type AudioCallStatus, type CallViewMode, type CallViewStatus, buildAudioStatus } from "@chatballs/ui";
+import { type AudioBarKind, type AudioCallMode, type AudioCallStatus, type CallViewMode, type CallViewStatus, buildAudioStatus, isTerminalCallStatus } from "@chatballs/ui";
 
 import type { CallInfo } from "../api";
 
@@ -11,7 +11,7 @@ const TERMINAL: Record<string, { icon: CallViewStatus["icon"]; tone: "neutral" |
   FAILED: { icon: "alert", tone: "error", title: "Не удалось соединиться", caption: "Проверьте интернет-соединение и попробуйте снова по ссылке из чата." },
 };
 
-export const isTerminalCall = (status?: string) => Boolean(status && TERMINAL[status]);
+export const isTerminalCall = isTerminalCallStatus;
 
 export function resolveCallViewMode(state: { loading: boolean; invalid: boolean; call: CallInfo | null; started: boolean; connection: string; mediaIssue: string; errorText?: string }): CallViewMode {
   if (state.loading || state.invalid || state.errorText || !state.call || isTerminalCall(state.call.status) || state.connection === "failed" || state.mediaIssue === "devices" || state.mediaIssue === "unsupported") return "status";
@@ -59,15 +59,24 @@ export function resolveAudioCallViewMode(state: { loading: boolean; invalid: boo
   return "connecting";
 }
 
+// Клиент не инициирует звонки (см. resolveAudioCallViewMode), поэтому «Позвонить
+// снова» ему показывать нечем: обработчика нет, и кнопка выходила мёртвой — а на
+// DECLINED/MISSED/EXPIRED она была единственной, и с экрана было не уйти.
+const clientBar = (bar: AudioBarKind): AudioBarKind => (bar === "retrySingle" || bar === "ended" ? "close" : bar);
+
+function clientStatus(status: AudioCallStatus | null): AudioCallStatus | undefined {
+  return status ? { ...status, bar: clientBar(status.bar) } : undefined;
+}
+
 export function buildAudioCallViewStatus(state: { loading: boolean; invalid: boolean; call: CallInfo | null; connection: string; mediaIssue: string; errorText?: string; close: () => void }): AudioCallStatus | undefined {
-  if (state.loading) return { icon: "clock", tone: "warn", title: "Проверяем приглашение", caption: "Секунду…", bar: "ended" };
-  if (state.invalid || !state.call) return { icon: "clock", tone: "warn", title: "Приглашение недействительно", caption: "Ссылка устарела или уже была использована. Запросите новое приглашение в чате.", bar: "ended" };
+  if (state.loading) return { icon: "clock", tone: "warn", title: "Проверяем приглашение", caption: "Секунду…", bar: "close" };
+  if (state.invalid || !state.call) return { icon: "clock", tone: "warn", title: "Приглашение недействительно", caption: "Ссылка устарела или уже была использована. Запросите новое приглашение в чате.", bar: "close" };
   if (state.errorText) return { icon: "alert", tone: "error", title: "Не удалось выполнить действие", caption: state.errorText, bar: "retryClose" };
-  if (state.mediaIssue === "unsupported") return buildAudioStatus("unsupported", state.call.staffName || "Оператор") ?? undefined;
-  if (state.mediaIssue === "devices") return buildAudioStatus("nodevice", state.call.staffName || "Оператор") ?? undefined;
-  if (state.connection === "failed") return buildAudioStatus("FAILED", state.call.staffName || "Оператор") ?? undefined;
+  if (state.mediaIssue === "unsupported") return clientStatus(buildAudioStatus("unsupported", state.call.staffName || "Оператор"));
+  if (state.mediaIssue === "devices") return clientStatus(buildAudioStatus("nodevice", state.call.staffName || "Оператор"));
+  if (state.connection === "failed") return clientStatus(buildAudioStatus("FAILED", state.call.staffName || "Оператор"));
   const key = state.call.status === "ACCEPTED" || state.call.status === "CONNECTING" ? "connecting" : state.call.status;
-  return buildAudioStatus(key, state.call.staffName || "Оператор", state.call.durationSeconds ?? undefined) ?? undefined;
+  return clientStatus(buildAudioStatus(key, state.call.staffName || "Оператор", state.call.durationSeconds ?? undefined));
 }
 
 export function audioCallStatusLabel(mode: AudioCallMode, status?: AudioCallStatus): string {
