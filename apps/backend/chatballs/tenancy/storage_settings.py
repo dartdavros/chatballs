@@ -62,13 +62,16 @@ class StorageSettings(models.Model):
     class Meta:
         verbose_name = "Настройки хранилища"
 
+    def __str__(self) -> str:
+        return f"storage-settings:{self.backend.lower()}"
+
     def save(self, *args, **kwargs):
         self.pk = self.SINGLETON_PK
         super().save(*args, **kwargs)
         invalidate_cache()
 
     @classmethod
-    def load(cls) -> "StorageSettings":
+    def load(cls) -> StorageSettings:
         obj, _ = cls.objects.get_or_create(pk=cls.SINGLETON_PK)
         return obj
 

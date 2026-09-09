@@ -19,9 +19,6 @@ from chatballs.support_portals.content_services import (
 )
 from chatballs.support_portals.models import PortalArticle
 from chatballs.support_portals.portal_views import PortalBaseView
-
-# Библиотека статей плотнее списка порталов — своя страница (кадр PT3).
-ARTICLES_PAGE_SIZE = 25
 from chatballs.support_portals.selectors import (
     category_article_counts,
     portal_articles_queryset,
@@ -32,6 +29,9 @@ from chatballs.support_portals.serializers import (
     category_payload,
     revision_payload,
 )
+
+# Библиотека статей плотнее списка порталов — своя страница (кадр PT3).
+ARTICLES_PAGE_SIZE = 25
 
 
 def _article(portal, article_id: int) -> PortalArticle | None:

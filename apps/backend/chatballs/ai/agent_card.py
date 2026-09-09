@@ -13,7 +13,6 @@ from django.db.models import Case, Count, IntegerField, Q, QuerySet, Value, When
 from django.utils.text import slugify
 
 from chatballs.ai.models import AIAgent, AIAgentStatus
-from chatballs.ai.provider_selection import configure_agent_provider
 from chatballs.ai.serializers import agent_portal_article_payload
 from chatballs.channels.models import Channel
 from chatballs.channels.services import (

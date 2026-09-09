@@ -7,7 +7,6 @@ from django.conf import settings
 from django.db import connections
 
 
-
 @dataclass(frozen=True, slots=True)
 class IngressRoute:
     organization_id: int

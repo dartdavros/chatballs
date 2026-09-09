@@ -147,6 +147,16 @@ cookie получают префикс `__Host-`, флаг `Secure` и HSTS; п�
 
 ## Tests
 
+Линтер бэкенда (та же конфигурация, что в CI — корневой `pyproject.toml`):
+
+```bash
+ruff check apps/backend
+```
+
+`ruff format` в репозитории не принят: он переписал бы 374 файла, поэтому
+длина строки (`E501`) из проверок исключена — всё остальное из `E`, `F`, `I`,
+`UP`, `B` и `DJ` обязано быть зелёным. Миграции не проверяются: их пишет Django.
+
 All suites run in Docker, so no manual environment is required — the test
 runners auto-detect themselves and relax production hardening (secret-key
 fail-fast, SSL redirect, throttling) for the duration of the run.

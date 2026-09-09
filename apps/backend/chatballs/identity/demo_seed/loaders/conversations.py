@@ -11,8 +11,8 @@ from django.core.files.base import ContentFile
 from chatballs.conversations.models import (
     ConnectionIdentity,
     Contact,
-    ConversationLabel,
     Conversation,
+    ConversationLabel,
     ConversationRead,
     Message,
     MessageAuthor,
@@ -147,10 +147,11 @@ def _ensure_conversation(context: TenantContext, refs: DemoRefs, item: dict, cur
     channel = refs.channels[item["agent"]]
     connection = refs.integrations[item["connection"]]
     if item.get("webGuest"):
-        contact, identity, external_chat_id = _web_guest(context, refs, item)
+        # Identity гостя заводит _web_guest; диалогу она не нужна — его
+        # единственный источник identity это контакт (Conversation.contact).
+        contact, _identity, external_chat_id = _web_guest(context, refs, item)
     else:
         contact = refs.contacts.get(item.get("contact"))
-        identity = refs.identities.get(item.get("identity"))
         external_chat_id = item["externalChatId"]
 
     existing = Conversation.objects.filter(

@@ -1,16 +1,9 @@
 import logging
-
 from datetime import timedelta
-
-
 
 from django.utils import timezone
 
-
-
 from chatballs.conversations.models import Conversation, LifecycleState
-
-
 
 logger = logging.getLogger(__name__)
 

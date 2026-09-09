@@ -5,9 +5,9 @@ from chatballs.identity.auth.password_reset import (
     PasswordResetValidateView,
 )
 from chatballs.identity.auth.profile import (
+    ChangeTemporaryPasswordView,
     ProfileAppearanceView,
     ProfileAvatarView,
-    ChangeTemporaryPasswordView,
     ProfilePasswordView,
     ProfileRevokeOtherSessionsView,
     ProfileSessionsView,
@@ -26,6 +26,8 @@ __all__ = [
     "PasswordResetValidateView",
     "PasswordResetConfirmView",
     "ProfileUpdateView",
+    "ProfileAppearanceView",
+    "ProfileAvatarView",
     "ProfilePasswordView",
     "ProfileTotpStartView",
     "ProfileTotpDisableView",

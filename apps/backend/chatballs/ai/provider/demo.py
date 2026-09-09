@@ -15,7 +15,13 @@ import hashlib
 import math
 import re
 
-from chatballs.ai.provider.base import ChatMessage, ChatResult, EmbeddingResult, LLMProvider, ProviderError
+from chatballs.ai.provider.base import (
+    ChatMessage,
+    ChatResult,
+    EmbeddingResult,
+    LLMProvider,
+    ProviderError,
+)
 
 EMBEDDING_DIM = 16
 KNOWLEDGE_MARKER = "Отвечай только на основе этих знаний:"

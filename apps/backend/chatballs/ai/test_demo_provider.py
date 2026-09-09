@@ -8,10 +8,17 @@ from chatballs.ai.provider.routing import _provider_from_integration
 from chatballs.ai.runtime import HANDOFF_TOKEN
 from chatballs.identity.bootstrap import bootstrap_owner
 from chatballs.identity.models import Organization
-from chatballs.integrations.models import Integration, IntegrationKind, IntegrationProvider, IntegrationStatus
+from chatballs.integrations.models import (
+    Integration,
+    IntegrationKind,
+    IntegrationProvider,
+    IntegrationStatus,
+)
 from chatballs.integrations.services import (
     IntegrationInput,
     create_integration,
+)
+from chatballs.integrations.services import (
     # Алиас обязателен: имя test_* на уровне модуля pytest собирает как тест
     # и падает на ненайденных фикстурах (как в integrations/tests.py).
     test_integration as run_integration_test,

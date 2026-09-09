@@ -1,5 +1,5 @@
-from datetime import timedelta
 import uuid
+from datetime import timedelta
 
 from django.test import override_settings
 from django.utils import timezone

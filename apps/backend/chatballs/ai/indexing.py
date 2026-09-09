@@ -30,7 +30,7 @@ def _store_fragments(*, organization, chunks: list[str], **source) -> list[Knowl
             embedding=vector,
             **source,
         )
-        for index, (chunk, vector) in enumerate(zip(chunks, vectors))
+        for index, (chunk, vector) in enumerate(zip(chunks, vectors, strict=False))
     ]
     return KnowledgeFragment.objects.bulk_create(fragments)
 

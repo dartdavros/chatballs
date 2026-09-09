@@ -14,7 +14,6 @@ from chatballs.calls.errors import (
     CallTokenError,
 )
 from chatballs.calls.lifecycle import transition_call
-from chatballs.integrations.features import call_allowed
 from chatballs.calls.metrics import record_call_metric
 from chatballs.calls.models import (
     TERMINAL_CALL_STATUSES,
@@ -53,6 +52,7 @@ from chatballs.conversations.models import (
 )
 from chatballs.conversations.services import ClaimError, claim_locked_conversation
 from chatballs.events.services import DomainEvent, enqueue_event
+from chatballs.integrations.features import call_allowed
 from chatballs.integrations.models import IntegrationProvider
 from chatballs.tenancy.context import TenantContext
 

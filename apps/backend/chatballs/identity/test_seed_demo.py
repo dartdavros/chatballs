@@ -8,7 +8,6 @@ import tempfile
 from django.apps import apps
 from django.db import models
 from django.test import TestCase, override_settings
-from chatballs.testing import TenantAPIClient as APIClient
 
 from chatballs.ai.models import AIAgent, AIAgentStatus, Knowledge, KnowledgeAttachment
 from chatballs.conversations.models import (
@@ -27,6 +26,7 @@ from chatballs.identity.models import HumanUser, Organization, OrganizationMembe
 from chatballs.identity.setup import SetupInput, complete_setup
 from chatballs.tenancy.context import TenantActorKind, TenantContext
 from chatballs.tenancy.database import tenant_atomic
+from chatballs.testing import TenantAPIClient as APIClient
 
 _MEDIA_ROOT = tempfile.mkdtemp(prefix="hub-demo-media-")
 

@@ -3,8 +3,8 @@ from __future__ import annotations
 from django.core.exceptions import PermissionDenied
 from django.db.models import QuerySet
 
-from chatballs.identity.policy import has_capability_any_scope
 from chatballs.ai.models import AIAgent, Knowledge
+from chatballs.identity.policy import has_capability_any_scope
 from chatballs.tenancy.context import TenantContext
 
 AI_VIEW = "ai.view"

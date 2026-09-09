@@ -1,41 +1,21 @@
 from django.db import DatabaseError, connection, transaction
-
 from django.test import TransactionTestCase
 
-
-
 from chatballs.ai.knowledge_categories import ensure_uncategorized_category
-
 from chatballs.ai.models import AIAgent, Knowledge
-
 from chatballs.channels.models import Channel
-
 from chatballs.identity.group_models import EmployeeGroup
-
 from chatballs.identity.models import (
-
     AuditEvent,
-
     AuditResult,
-
     EmployeeRole,
-
     HumanUser,
-
     Organization,
-
     OrganizationMembership,
-
 )
-
 from chatballs.tenancy.database import current_tenant_id, set_local_tenant
-
 from chatballs.tenancy.models import StorageReservation
-
 from chatballs.testing import TenantAPIClient
-
-
-
 
 
 class RowLevelSecurityTests(TransactionTestCase):

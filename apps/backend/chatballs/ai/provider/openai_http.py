@@ -32,24 +32,13 @@ do not duplicate it. Adapters stay responsible for their own product semantics
 
 from __future__ import annotations
 
-
-
 import http.client
-
 import json
-
 import urllib.error
-
 import urllib.request
 
-
-
 from chatballs.ai.provider.base import ChatMessage, ChatResult, EmbeddingResult, ProviderError
-
 from chatballs.integrations.proxy import build_opener
-
-
-
 
 
 def post_json(*, base_url: str, path: str, api_key: str, payload: dict, timeout: float, proxy_url: str = "") -> dict:

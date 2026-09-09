@@ -113,14 +113,14 @@ class CallSession(models.Model):
         ]
         indexes = [models.Index(fields=["organization", "status"])]
 
+    def __str__(self) -> str:
+        return f"call:{self.id}/{self.status}"
+
     @property
     def duration_seconds(self) -> int | None:
         if self.connected_at is None or self.ended_at is None:
             return None
         return max(0, int((self.ended_at - self.connected_at).total_seconds()))
-
-    def __str__(self) -> str:
-        return f"call:{self.id}/{self.status}"
 
 
 class CallInvite(TenantRelationModel):

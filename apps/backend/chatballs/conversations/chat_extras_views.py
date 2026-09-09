@@ -15,10 +15,10 @@ from rest_framework.views import APIView
 
 from chatballs.api.permissions import HasCapability
 from chatballs.conversations.models import (
+    ControlMode,
     Conversation,
     ConversationLabel,
     ConversationPriority,
-    ControlMode,
     LifecycleState,
     ReplyTemplate,
 )

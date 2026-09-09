@@ -10,10 +10,8 @@ from __future__ import annotations
 
 import logging
 
-from django.conf import settings
-
-from chatballs.identity.instance_settings import public_base_url
 from chatballs.conversations import transports
+from chatballs.identity.instance_settings import public_base_url
 from chatballs.identity.models import OrganizationMembership
 from chatballs.notifications.models import (
     MessengerBinding,

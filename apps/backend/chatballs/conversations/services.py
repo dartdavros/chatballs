@@ -1,38 +1,20 @@
 from django.db import transaction
-
 from django.utils import timezone
 
-
-
 from chatballs.conversations import transports
-
 from chatballs.conversations.models import (
-
     ConnectionIdentity,
-
-    Conversation,
-
     ControlMode,
-
+    Conversation,
     ExpectedResponder,
-
     LifecycleState,
-
     Message,
-
     MessageAuthor,
-
     MessageKind,
-
 )
-
 from chatballs.identity.models import EmployeeRole
-
 from chatballs.integrations.models import IntegrationProvider
-
 from chatballs.tenancy.context import TenantContext
-
-
 
 CONTACT_REQUEST_TEXT = "Поделитесь, пожалуйста, контактом — нажмите кнопку ниже."
 

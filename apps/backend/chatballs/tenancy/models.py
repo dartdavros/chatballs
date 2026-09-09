@@ -19,6 +19,10 @@ class TenantRelationModel(models.Model):
     class Meta:
         abstract = True
 
+    def save(self, *args: object, **kwargs: object) -> None:
+        self.validate_tenant_relations()
+        super().save(*args, **kwargs)
+
     def _related_organization_ids(self) -> set[int]:
         organization_ids: set[int] = set()
         for field_name in self.tenant_relation_fields:
@@ -47,10 +51,6 @@ class TenantRelationModel(models.Model):
     def clean(self) -> None:
         super().clean()
         self.validate_tenant_relations()
-
-    def save(self, *args: object, **kwargs: object) -> None:
-        self.validate_tenant_relations()
-        super().save(*args, **kwargs)
 
 
 class OrganizationStorageUsage(models.Model):
@@ -81,6 +81,9 @@ class OrganizationStorageUsage(models.Model):
                 name="storage_usage_reserved_non_negative",
             ),
         ]
+
+    def __str__(self) -> str:
+        return f"storage:{self.organization_id}/{self.bytes_used + self.reserved_bytes}"
 
 
 class StorageReservation(models.Model):

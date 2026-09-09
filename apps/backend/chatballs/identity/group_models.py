@@ -29,17 +29,17 @@ class EmployeeGroup(models.Model):
             )
         ]
 
-    def clean(self) -> None:
-        self.name = self.name.strip()
-        if not self.name:
-            raise ValidationError({"name": "Group name is required"})
+    def __str__(self) -> str:
+        return f"{self.organization.slug}/{self.name}"
 
     def save(self, *args, **kwargs) -> None:
         self.full_clean()
         super().save(*args, **kwargs)
 
-    def __str__(self) -> str:
-        return f"{self.organization.slug}/{self.name}"
+    def clean(self) -> None:
+        self.name = self.name.strip()
+        if not self.name:
+            raise ValidationError({"name": "Group name is required"})
 
 
 class EmployeeGroupMember(TenantRelationModel):

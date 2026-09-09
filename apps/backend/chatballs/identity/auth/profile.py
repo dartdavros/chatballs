@@ -11,10 +11,10 @@ from rest_framework.views import APIView
 
 from chatballs.identity.audit import record_audit_event
 from chatballs.identity.auth.common import _revoke_other_user_sessions, _user_payload
-from chatballs.identity.sessions import list_user_sessions
-from chatballs.tenancy.ingress import user_requires_totp
 from chatballs.identity.avatars import delete_user_avatar, replace_user_avatar
 from chatballs.identity.models import HumanUser
+from chatballs.identity.sessions import list_user_sessions
+from chatballs.tenancy.ingress import user_requires_totp
 
 
 class ProfileUpdateView(APIView):

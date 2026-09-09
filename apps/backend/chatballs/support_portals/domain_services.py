@@ -5,9 +5,9 @@ import dns.resolver
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
-from chatballs.support_portals.public_address import help_public_ipv4
 from chatballs.support_portals.addressing import normalize_domain, validate_domain
 from chatballs.support_portals.models import SupportPortal
+from chatballs.support_portals.public_address import help_public_ipv4
 from chatballs.support_portals.statuses import PortalStatus
 
 

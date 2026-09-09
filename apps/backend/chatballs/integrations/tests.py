@@ -1,43 +1,29 @@
 import json
-
 import urllib.request
-
 from unittest import mock
 
-
-
 from django.core.exceptions import ValidationError
-
 from django.test import TestCase
 
-
-
 from chatballs.identity.bootstrap import bootstrap_owner
-
 from chatballs.identity.models import Organization
-
 from chatballs.integrations import checks
-
-from chatballs.integrations.models import Integration, IntegrationKind, IntegrationProvider, IntegrationStatus
-
-from chatballs.integrations.serializers import integration_payload
-
-from chatballs.integrations.services import (
-
-    IntegrationInput,
-
-    create_integration,
-
-    test_integration as run_integration_test,
-
-    update_integration,
-
+from chatballs.integrations.models import (
+    Integration,
+    IntegrationKind,
+    IntegrationProvider,
+    IntegrationStatus,
 )
-
+from chatballs.integrations.serializers import integration_payload
+from chatballs.integrations.services import (
+    IntegrationInput,
+    create_integration,
+    update_integration,
+)
+from chatballs.integrations.services import (
+    test_integration as run_integration_test,
+)
 from chatballs.testing import system_tenant_context
-
-
-
 
 
 def _fake_response(status: int, body: dict):
@@ -497,7 +483,6 @@ class BuildOpenerSocksTests(TestCase):
     def test_socks_without_pysocks_raises_value_error(self) -> None:
 
         from chatballs.integrations import proxy
-
         from chatballs.integrations.proxy import build_opener
 
 

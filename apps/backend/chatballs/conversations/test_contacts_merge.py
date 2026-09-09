@@ -5,7 +5,7 @@ from django.test import TestCase
 
 from chatballs.channels.models import Channel
 from chatballs.conversations.contacts_merge import merge_contacts, revert_merge
-from chatballs.conversations.models import ConnectionIdentity, Contact, ContactMerge, Conversation
+from chatballs.conversations.models import ConnectionIdentity, Contact, Conversation
 from chatballs.identity.models import (
     AuditEvent,
     EmployeeRole,

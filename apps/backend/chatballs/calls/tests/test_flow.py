@@ -3,13 +3,12 @@ TG/MAX через outbox, истечение и системные событи�
 
 import json
 from datetime import timedelta
-from urllib.parse import parse_qs, urlparse
 from unittest import mock
+from urllib.parse import parse_qs, urlparse
 
 from django.utils import timezone
-from chatballs.testing import TenantAPIClient as APIClient, tenant_context_for
 
-from chatballs.calls.event_handlers import handle_call_invite_send
+from chatballs.calls.event_handlers import CallInviteDeliveryError, handle_call_invite_send
 from chatballs.calls.models import (
     CallEndedBy,
     CallInvite,
@@ -18,14 +17,16 @@ from chatballs.calls.models import (
     InviteDeliveryStatus,
 )
 from chatballs.calls.services import (
-    open_call_for_identity,
     decline_call_for_identity,
+    open_call_for_identity,
 )
 from chatballs.calls.tests.helpers import CallTestCase, create_call_request, expire_stale_calls
 from chatballs.calls.tokens import hash_invite_token
 from chatballs.conversations.models import Conversation, Message
 from chatballs.events.models import OutboxEvent
 from chatballs.integrations.models import Integration, IntegrationKind, IntegrationProvider
+from chatballs.testing import TenantAPIClient as APIClient
+from chatballs.testing import tenant_context_for
 
 
 class CancelCallApiTests(CallTestCase):
@@ -279,7 +280,7 @@ class MessengerDeliveryTests(CallTestCase):
         with mock.patch(
             "chatballs.calls.event_handlers.transports.send_call_invite", return_value=False
         ):
-            with self.assertRaises(Exception):
+            with self.assertRaises(CallInviteDeliveryError):
                 handle_call_invite_send(
                     {"callSessionId": str(created.call_session.id)},
                     tenant_context_for(self.owner, self.organization),

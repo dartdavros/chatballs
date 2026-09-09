@@ -1,10 +1,9 @@
 from unittest import mock
 
 from django.core.files.base import ContentFile
-from django.db import connections
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.db import connections
 from django.test import TestCase, TransactionTestCase
-from chatballs.testing import TenantAPIClient as APIClient
 
 from chatballs.ai.provider.local import LocalProvider
 from chatballs.channels.models import Channel
@@ -20,7 +19,6 @@ from chatballs.conversations.models import (
 )
 from chatballs.conversations.transports.base import InboundMessage
 from chatballs.identity.bootstrap import bootstrap_owner
-from chatballs.tenancy.database import current_tenant_id, tenant_atomic
 from chatballs.identity.models import (
     EmployeeRole,
     HumanUser,
@@ -32,6 +30,8 @@ from chatballs.integrations.models import (
     IntegrationKind,
     IntegrationProvider,
 )
+from chatballs.tenancy.database import current_tenant_id, tenant_atomic
+from chatballs.testing import TenantAPIClient as APIClient
 
 
 class VoiceFixtureMixin:

@@ -13,7 +13,6 @@ from django.conf import settings
 from chatballs.integrations.outbound import ensure_downloadable
 from chatballs.integrations.proxy import build_opener
 
-
 MAX_ATTACHMENT_BYTES = 20 * 1024 * 1024
 
 

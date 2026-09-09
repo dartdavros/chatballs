@@ -8,6 +8,7 @@ from rest_framework.views import APIView
 from chatballs.api.pagination import page_payload, paginate
 from chatballs.events.services import DomainEvent, enqueue_event
 from chatballs.identity.audit import record_audit_event
+from chatballs.identity.employee_password import clean_password_mode, issue_initial_password
 from chatballs.identity.employee_selectors import employees_for
 from chatballs.identity.employee_support import employee_payload, get_owned_profile
 from chatballs.identity.employee_validation import (
@@ -16,7 +17,6 @@ from chatballs.identity.employee_validation import (
     deny_employee_action,
     resolve_groups,
 )
-from chatballs.identity.employee_password import clean_password_mode, issue_initial_password
 from chatballs.identity.event_handlers import INITIAL_ACCESS_REQUESTED
 from chatballs.identity.governance import EmployeeAction, can_create_role, can_manage_employee
 from chatballs.identity.group_models import EmployeeGroupMember

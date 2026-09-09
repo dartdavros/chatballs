@@ -4,29 +4,16 @@
 
 from unittest import mock
 
-
-
 from django.core.exceptions import ValidationError
-
 from django.test import TestCase
 
-
-
 from chatballs.identity.bootstrap import bootstrap_owner
-
 from chatballs.identity.models import Organization
-
 from chatballs.integrations import checks
-
 from chatballs.integrations.models import IntegrationKind, IntegrationProvider, IntegrationStatus
-
 from chatballs.integrations.serializers import integration_payload
-
 from chatballs.integrations.services import IntegrationInput, create_integration
-
 from chatballs.testing import system_tenant_context
-
-
 
 EMAIL_INPUT = {
 

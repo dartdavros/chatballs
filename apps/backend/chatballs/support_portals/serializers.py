@@ -2,7 +2,6 @@
 from chatballs.integrations.models import IntegrationProvider, IntegrationStatus
 from chatballs.support_portals.addressing import portal_public_url
 from chatballs.support_portals.content_markdown import normalize_file_links
-from chatballs.support_portals.public_address import help_public_ipv4
 from chatballs.support_portals.models import (
     PortalArticle,
     PortalArticleFile,
@@ -10,6 +9,7 @@ from chatballs.support_portals.models import (
     PortalCategory,
     SupportPortal,
 )
+from chatballs.support_portals.public_address import help_public_ipv4
 
 
 def portal_payload(portal: SupportPortal, *, counts: dict | None = None) -> dict:

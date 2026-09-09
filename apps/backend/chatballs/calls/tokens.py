@@ -32,7 +32,7 @@ class CallAccessClaims:
 def _derived_secret(purpose: str) -> bytes:
     return hmac.new(
         (settings.SECRET_KEY or "").encode("utf-8"),
-        f"hub:{purpose}:v1".encode("utf-8"),
+        f"hub:{purpose}:v1".encode(),
         hashlib.sha256,
     ).digest()
 

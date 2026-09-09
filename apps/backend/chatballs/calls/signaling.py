@@ -10,15 +10,16 @@ from django.utils import timezone
 from chatballs.calls.errors import CallInvalidTransition
 from chatballs.calls.lifecycle import finish_call, transition_call
 from chatballs.calls.models import (
+    TERMINAL_CALL_STATUSES,
     CallParticipant,
     CallSession,
     CallStatus,
     ParticipantConnectionState,
-    TERMINAL_CALL_STATUSES,
 )
 from chatballs.calls.serializers import public_call_state_payload
 from chatballs.calls.services import record_call_metric
 from chatballs.tenancy.context import TenantContext
+
 
 def _call(context: TenantContext, call_id) -> CallSession:
     return CallSession.objects.select_related("initiated_by").get(

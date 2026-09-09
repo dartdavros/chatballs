@@ -12,7 +12,6 @@ POST  company/administration/storage/migrate/  — перенести локал
 from __future__ import annotations
 
 from django.core.exceptions import ValidationError
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView

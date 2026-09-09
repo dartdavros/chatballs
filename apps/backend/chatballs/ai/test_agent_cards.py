@@ -1,7 +1,6 @@
 import json
 
 from django.test import TestCase
-from chatballs.testing import TenantAPIClient as APIClient
 
 from chatballs.ai.models import AIAgent, AIAgentStatus
 from chatballs.channels.models import Channel
@@ -17,6 +16,7 @@ from chatballs.integrations.models import (
     IntegrationKind,
     IntegrationProvider,
 )
+from chatballs.testing import TenantAPIClient as APIClient
 
 
 class AgentCardTestCase(TestCase):

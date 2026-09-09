@@ -13,7 +13,6 @@ from chatballs.identity.audit_catalog import (
 )
 from chatballs.identity.models import AuditEvent, Organization
 
-
 ORGANIZATION_CHANGE_ACTIONS = (
     "administration.organization_updated",
     "administration.logo_updated",

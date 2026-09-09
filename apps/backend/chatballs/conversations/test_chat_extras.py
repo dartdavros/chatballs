@@ -2,15 +2,14 @@ import json
 
 from django.test import TestCase
 from django.utils import timezone
-from chatballs.testing import TenantAPIClient as APIClient
 
 from chatballs.channels.models import Channel
 from chatballs.conversations.models import (
     Contact,
+    ControlMode,
     Conversation,
     ConversationLabel,
     ConversationPriority,
-    ControlMode,
     LifecycleState,
     ReplyTemplate,
 )
@@ -21,6 +20,7 @@ from chatballs.identity.models import (
     Organization,
     OrganizationMembership,
 )
+from chatballs.testing import TenantAPIClient as APIClient
 
 
 class ChatExtrasTestCase(TestCase):

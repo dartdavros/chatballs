@@ -2,9 +2,9 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.utils import timezone
 
+from chatballs.channels.models import Channel
 from chatballs.identity.bootstrap import bootstrap_owner
 from chatballs.identity.instance_settings import InstanceSettings, invalidate_cache
-from chatballs.channels.models import Channel
 from chatballs.support_portals.models import PortalArticleFeedback, SupportPortal
 from chatballs.testing import TenantAPIClient
 from chatballs.webchat.testing import create_web_widget

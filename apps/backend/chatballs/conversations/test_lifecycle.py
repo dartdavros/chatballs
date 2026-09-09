@@ -1,55 +1,28 @@
 import json
-
 from unittest import mock
-
-
 
 from django.test import TestCase
 
-
-
 from chatballs.channels.models import Channel
-
 from chatballs.conversations.ingest import ingest_inbound
-
 from chatballs.conversations.models import (
-
     ConnectionIdentity,
-
     Contact,
-
     ControlMode,
-
     Conversation,
-
     ExpectedResponder,
-
     LifecycleState,
-
     MessageAuthor,
-
 )
-
 from chatballs.conversations.transports.base import InboundMessage
-
 from chatballs.identity.bootstrap import bootstrap_owner
-
 from chatballs.identity.models import HumanUser, Organization
-
 from chatballs.integrations.models import (
-
     Integration,
-
     IntegrationKind,
-
     IntegrationProvider,
-
 )
-
 from chatballs.testing import TenantAPIClient as APIClient
-
-
-
 
 
 def _connection(channel: Channel) -> Integration:

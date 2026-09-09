@@ -1,7 +1,6 @@
 from unittest import mock
 
 from django.test import TestCase
-from chatballs.testing import TenantAPIClient as APIClient, tenant_context_for
 
 from chatballs.conversations.transports.base import InboundMessage
 from chatballs.events.handlers import dispatch
@@ -11,9 +10,16 @@ from chatballs.identity.models import HumanUser, Organization
 from chatballs.integrations.models import Integration, IntegrationKind, IntegrationProvider
 from chatballs.notifications.binding import deep_link, handle_notifier_inbound, issue_binding_code
 from chatballs.notifications.delivery import NOTIFICATION_CREATED
-from chatballs.notifications.models import MessengerBinding, MessengerBindingCode, NotificationAudience, NotificationType
-from chatballs.notifications.services import notify
+from chatballs.notifications.models import (
+    MessengerBinding,
+    MessengerBindingCode,
+    NotificationAudience,
+    NotificationType,
+)
 from chatballs.notifications.selectors import visible_for
+from chatballs.notifications.services import notify
+from chatballs.testing import TenantAPIClient as APIClient
+from chatballs.testing import tenant_context_for
 
 
 def _notifier(organization, provider=IntegrationProvider.TELEGRAM, username="chatballs_notify_bot"):

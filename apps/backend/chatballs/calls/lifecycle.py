@@ -12,7 +12,6 @@ from chatballs.calls.models import (
     ParticipantSide,
 )
 from chatballs.conversations.models import Message, MessageAuthor
-from chatballs.tenancy.context import TenantContext
 
 ALLOWED_TRANSITIONS = {
     CallStatus.REQUESTED: {

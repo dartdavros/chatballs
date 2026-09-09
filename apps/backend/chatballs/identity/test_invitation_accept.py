@@ -17,6 +17,8 @@ from chatballs.identity.models import (
     OrganizationMembership,
     OrganizationStatus,
 )
+
+
 def _pending_org(slug: str = "pending-org") -> Organization:
     return Organization.objects.create(
         name="Pending Org",
