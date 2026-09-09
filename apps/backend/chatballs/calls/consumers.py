@@ -17,10 +17,9 @@ from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
 from chatballs.calls import signaling
 from chatballs.calls.errors import CallTokenError
-from chatballs.calls.models import TERMINAL_CALL_STATUSES
+from chatballs.calls.models import TERMINAL_CALL_STATUSES, ParticipantSide
 from chatballs.calls.permissions import staff_call_access_valid
 from chatballs.calls.services import authorize_call_access_context
-from chatballs.calls.models import ParticipantSide
 from chatballs.tenancy.database import run_tenant_operation
 
 logger = logging.getLogger(__name__)

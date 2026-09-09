@@ -9,15 +9,14 @@ from django.core import mail
 from django.test import Client, TestCase, override_settings
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
-from chatballs.testing import TenantAPIClient as APIClient
 from rest_framework.throttling import ScopedRateThrottle
 
-from chatballs.identity.bootstrap import bootstrap_owner
 from chatballs.identity.auth.totp_utils import (
     TOTP_CHALLENGE_TTL_SECONDS,
     TOTP_STARTED_KEY,
     _totp_code,
 )
+from chatballs.identity.bootstrap import bootstrap_owner
 from chatballs.identity.models import (
     AuditEvent,
     EmployeeGroup,
@@ -27,6 +26,7 @@ from chatballs.identity.models import (
     OrganizationMembership,
 )
 from chatballs.identity.policy import ResourceScope, authorize
+from chatballs.testing import TenantAPIClient as APIClient
 
 _LOCMEM_CACHE = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
 

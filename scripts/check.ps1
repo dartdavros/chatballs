@@ -33,6 +33,10 @@ function Invoke-Step {
 }
 
 # Сначала быстрые проверки, затем длинные: backend-сьют идёт около 20 минут.
+# Линтер запускается из корня репозитория: конфигурация лежит в pyproject.toml,
+# а в контейнер смонтирован только apps/backend — без корня ruff взял бы
+# правила по умолчанию вместо проектных и молча пропускал бы половину.
+Invoke-Step "backend · ruff" { docker @compose run --rm --no-deps -v "${PWD}:/repo" -w /repo backend-app ruff check apps/backend }
 Invoke-Step "internal-ui · typecheck" { docker @compose run --rm --no-deps frontend npm run typecheck }
 Invoke-Step "web-chat · typecheck"    { docker @compose run --rm --no-deps web-chat npm run typecheck }
 Invoke-Step "internal-ui · vitest"    { docker @compose run --rm --no-deps frontend npm run test }

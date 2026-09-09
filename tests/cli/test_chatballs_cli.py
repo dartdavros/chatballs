@@ -232,7 +232,7 @@ def test_deploy_fails_when_release_checksum_is_invalid(fake_env):
 
     fake_env.install_flock(held=False)
 
-    (fake_env.release / "Caddyfile").write_text("tampered\n", encoding="utf-8")
+    (fake_env.release / "compose.yaml").write_text("tampered\n", encoding="utf-8")
 
 
     r = _run(fake_env, "deploy", "--non-interactive")

@@ -19,7 +19,13 @@ from email.utils import parseaddr
 from django.conf import settings
 
 from chatballs.conversations.html_sanitizer import sanitize_email_html
-from chatballs.conversations.transports.base import MAX_ATTACHMENT_BYTES, InboundFile, InboundMessage, guess_content_type, safe_filename
+from chatballs.conversations.transports.base import (
+    MAX_ATTACHMENT_BYTES,
+    InboundFile,
+    InboundMessage,
+    guess_content_type,
+    safe_filename,
+)
 
 logger = logging.getLogger(__name__)
 

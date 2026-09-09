@@ -4,8 +4,8 @@ from datetime import datetime, time, timedelta
 
 from django.core.exceptions import ValidationError
 from django.db.models import Q
-from django.utils import timezone as django_timezone
 from django.http import FileResponse
+from django.utils import timezone as django_timezone
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -50,7 +50,6 @@ class OrganizationSettingsView(APIView):
         "GET": "settings.view",
         "PATCH": "settings.manage",
     }
-    require_organization_scope = True
 
     def get(self, request: Request) -> Response:
         return Response(
@@ -93,7 +92,6 @@ class OrganizationLogoView(APIView):
         "POST": "settings.manage",
         "DELETE": "settings.manage",
     }
-    require_organization_scope = True
 
     def get_permissions(self):
         if self.request.method == "GET":
@@ -173,7 +171,6 @@ class AuditListView(APIView):
 
     permission_classes = [HasCapability]
     required_capability = "audit.view"
-    require_organization_scope = True
 
     def get(self, request: Request) -> Response:
         organization_id = request.tenant_context.organization_id

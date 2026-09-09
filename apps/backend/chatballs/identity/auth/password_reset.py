@@ -16,6 +16,7 @@ from chatballs.events.services import DomainEvent, enqueue_event
 from chatballs.identity.audit import record_audit_event
 from chatballs.identity.event_handlers import PASSWORD_RESET_REQUESTED
 from chatballs.identity.models import AuditResult, HumanUser
+from chatballs.identity.sessions import revoke_user_sessions
 
 
 def _user_from_reset_link(uid: str, token: str) -> HumanUser | None:
@@ -98,9 +99,15 @@ class PasswordResetConfirmView(APIView):
         user.must_change_password = False
         user.password_changed_at = timezone.now()
         user.save(update_fields=["password", "must_change_password", "password_changed_at"])
+        # Пароль сбрасывают именно тогда, когда доступ к учётной записи мог
+        # оказаться у чужого. Оставить его сессии живыми — значит не сделать
+        # ничего: смена пароля из профиля и админский сброс их завершают,
+        # этот путь обязан вести себя так же.
+        revoked = revoke_user_sessions(user.id)
         record_audit_event(
             action="identity.password_reset_completed",
             actor=user,
+            payload={"revoked": revoked},
             request=request,
         )
-        return Response({"ok": True})
+        return Response({"ok": True, "revoked": revoked})

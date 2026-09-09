@@ -1,5 +1,4 @@
 from django.test import TestCase
-from chatballs.testing import TenantAPIClient as APIClient
 
 from chatballs.channels.models import Channel
 from chatballs.conversations.models import Contact, Conversation
@@ -10,6 +9,7 @@ from chatballs.identity.models import (
     Organization,
     OrganizationMembership,
 )
+from chatballs.testing import TenantAPIClient as APIClient
 
 
 class ConversationVisibilityTests(TestCase):

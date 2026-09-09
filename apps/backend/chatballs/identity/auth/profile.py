@@ -11,10 +11,10 @@ from rest_framework.views import APIView
 
 from chatballs.identity.audit import record_audit_event
 from chatballs.identity.auth.common import _revoke_other_user_sessions, _user_payload
-from chatballs.identity.sessions import list_user_sessions
-from chatballs.tenancy.ingress import user_requires_totp
 from chatballs.identity.avatars import delete_user_avatar, replace_user_avatar
 from chatballs.identity.models import HumanUser
+from chatballs.identity.sessions import list_user_sessions
+from chatballs.tenancy.ingress import user_requires_totp
 
 
 class ProfileUpdateView(APIView):
@@ -115,12 +115,24 @@ class ProfilePasswordView(APIView):
 
 
 class ProfileTotpStartView(APIView):
+    """Начало настройки 2FA: выдать пользователю новый секрет.
+
+    Выключать этим уже включённую 2FA нельзя. Иначе достаточно было бы
+    угнанной сессии: отключение (``ProfileTotpDisableView``) спрашивает
+    текущий пароль и не даёт обойти требование организации, а этот эндпоинт
+    молча делал ровно то же самое без единой проверки.
+    """
+
     permission_classes = [IsAuthenticated]
 
     def post(self, request: Request) -> Response:
-        request.user.totp_enabled = False
+        if request.user.totp_enabled:
+            return Response(
+                {"detail": "TOTP уже включена: сначала отключите её текущим паролем"},
+                status=409,
+            )
         request.user.totp_secret = ""
-        request.user.save(update_fields=["totp_enabled", "totp_secret"])
+        request.user.save(update_fields=["totp_secret"])
         record_audit_event(
             action="identity.profile_totp_setup_started",
             actor=request.user,

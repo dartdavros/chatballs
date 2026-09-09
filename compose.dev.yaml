@@ -5,13 +5,28 @@
 # Не определяет отдельную production-топологию.
 
 services:
+  # Секреты в dev генерирует тот же сервис на локально собранном backend-образе.
+  secrets:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+
   postgres:
+    build:
+      context: .
+      dockerfile: deploy/docker/postgres.Dockerfile
     ports:
       - "${POSTGRES_HOST_PORT:-5432}:5432"
+    # Dev держит состояние в рабочем каталоге: базу видно, её легко снести
+    # и легко подсмотреть. В коробке это именованные тома (compose.yaml).
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
 
   redis:
     ports:
       - "${REDIS_HOST_PORT:-6379}:6379"
+    volumes:
+      - ./data/redis:/data
 
   # Dev: migrate через init, без collectstatic (испечён только в prod-образе).
   init:
@@ -47,6 +62,7 @@ services:
       CHATBALLS_HELP_PUBLIC_PORT: ""
     volumes:
       - ./apps/backend:/app/apps/backend
+      - ./data/media:/app/apps/backend/media
     depends_on:
       init:
         condition: service_completed_successfully
@@ -98,6 +114,7 @@ services:
       CHATBALLS_DELIVERY_MODE: ${CHATBALLS_DELIVERY_MODE:-CLOUD}
     volumes:
       - ./apps/backend:/app/apps/backend
+      - ./data/media:/app/apps/backend/media
 
   # Dev: frontend-сервис превращается в Vite dev-сервер internal-ui (HMR).
   frontend:
@@ -105,6 +122,10 @@ services:
       context: .
       dockerfile: apps/internal-ui/Dockerfile
     command: npm run dev -- --host 0.0.0.0 --port 5173
+    # В коробке frontend — nginx на 80, и его healthcheck нужен `up --wait`.
+    # Здесь это Vite на 5173: тот же тест был бы всегда красным.
+    healthcheck:
+      disable: true
     environment:
       # Direct Vite remains same-origin for cookies/CSRF and proxies only to the
       # real local Django service. This variable exists only in dev compose.

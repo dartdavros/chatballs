@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from chatballs.ai.api_errors import validation_error_response
-from chatballs.api.pagination import page_payload, paginate
+from chatballs.ai.indexing import reindex_knowledge
 from chatballs.ai.knowledge_api_inputs import knowledge_filters, knowledge_input
 from chatballs.ai.knowledge_import import import_knowledge_documents
 from chatballs.ai.knowledge_policy import (
@@ -19,7 +19,6 @@ from chatballs.ai.knowledge_services import (
     delete_knowledge,
     update_knowledge,
 )
-from chatballs.ai.indexing import reindex_knowledge
 from chatballs.ai.models import Knowledge
 from chatballs.ai.selectors import (
     apply_knowledge_filters,
@@ -29,6 +28,7 @@ from chatballs.ai.selectors import (
     writable_knowledge_item_for_employee,
 )
 from chatballs.ai.serializers import attachment_payload, knowledge_payload
+from chatballs.api.pagination import page_payload, paginate
 from chatballs.api.permissions import HasCapability
 from chatballs.identity.audit import record_audit_event
 from chatballs.identity.models import AuditEvent

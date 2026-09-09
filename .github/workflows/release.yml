@@ -1,9 +1,16 @@
-# Публикация образов Chatballs в GitHub Container Registry.
+# Публикация Chatballs: образы в GitHub Container Registry + релизный compose.yaml.
 #
-# Смысл: человек не должен собирать продукт, чтобы его запустить. По тегу vX.Y.Z
-# workflow собирает backend и frontend, публикует их в ghcr.io и прикладывает к
-# релизу release.env — файл со ссылками на образы по digest. С ним запуск
-# сводится к «docker compose up» без единой сборки.
+# Смысл: человек не должен ни собирать продукт, ни распаковывать бандл, чтобы
+# его запустить. По тегу vX.Y.Z workflow собирает четыре образа (backend,
+# frontend, gateway с Caddyfile внутри, postgres с init-скриптами внутри),
+# публикует их в ghcr.io и прикладывает к релизу один файл — compose.yaml с
+# ссылками по digest. Установка на чистый хост:
+#
+#   curl -fsSL <ссылка на compose.yaml> -o compose.yaml
+#   docker compose up -d --wait
+#
+# release.env кладётся рядом для тех, кто разворачивает через `chatballs`
+# (закрытый контур): там нужны те же digest'ы отдельным файлом.
 #
 # Ничего настраивать не нужно: путь образов выводится из github.repository,
 # публикация идёт встроенным GITHUB_TOKEN.
@@ -28,9 +35,9 @@ env:
   APP_DIR: .
   REGISTRY: ghcr.io
   # Сторонние образы пинуются тем же способом, что и свои: по digest.
-  POSTGRES_IMAGE: pgvector/pgvector:pg16
+  POSTGRES_BASE_IMAGE: pgvector/pgvector:pg16
+  GATEWAY_BASE_IMAGE: caddy:2.8.4
   REDIS_IMAGE: redis:7-alpine
-  GATEWAY_IMAGE: caddy:2.8.4
   COTURN_IMAGE: coturn/coturn:4.6
 
 jobs:
@@ -58,6 +65,20 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # Базовые образы закрепляем до сборки: тогда digest наших образов
+      # однозначно отвечает известному входу, а не плавающему тегу.
+      - name: Digest базовых образов
+        id: bases
+        run: |
+          set -eu
+          digest_of() {
+            docker buildx imagetools inspect "$1" --format '{{ "{{json .Manifest.Digest}}" }}' | tr -d '"'
+          }
+          echo "postgres=${POSTGRES_BASE_IMAGE}@$(digest_of "$POSTGRES_BASE_IMAGE")" >> "$GITHUB_OUTPUT"
+          echo "gateway=${GATEWAY_BASE_IMAGE}@$(digest_of "$GATEWAY_BASE_IMAGE")" >> "$GITHUB_OUTPUT"
+          echo "redis=${REDIS_IMAGE}@$(digest_of "$REDIS_IMAGE")" >> "$GITHUB_OUTPUT"
+          echo "coturn=${COTURN_IMAGE}@$(digest_of "$COTURN_IMAGE")" >> "$GITHUB_OUTPUT"
+
       - name: Backend
         id: backend
         uses: docker/build-push-action@v6
@@ -84,40 +105,92 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: release.env со ссылками по digest
+      # Шлюз и база — свои образы: Caddyfile и init-скрипты живут внутри них,
+      # а не монтируются с хоста. Ради этого установка и стала одним файлом.
+      - name: Gateway
+        id: gateway
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ env.APP_DIR }}
+          file: ${{ env.APP_DIR }}/deploy/docker/gateway.Dockerfile
+          build-args: |
+            CHATBALLS_GATEWAY_BASE_IMAGE=${{ steps.bases.outputs.gateway }}
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ steps.version.outputs.repo }}/gateway:${{ steps.version.outputs.value }}
+            ${{ env.REGISTRY }}/${{ steps.version.outputs.repo }}/gateway:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Postgres
+        id: postgres
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ env.APP_DIR }}
+          file: ${{ env.APP_DIR }}/deploy/docker/postgres.Dockerfile
+          build-args: |
+            CHATBALLS_POSTGRES_BASE_IMAGE=${{ steps.bases.outputs.postgres }}
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ steps.version.outputs.repo }}/postgres:${{ steps.version.outputs.value }}
+            ${{ env.REGISTRY }}/${{ steps.version.outputs.repo }}/postgres:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Релизный compose.yaml и release.env
+        id: artifacts
         run: |
           set -eu
           version="${{ steps.version.outputs.value }}"
-          repo="${{ steps.version.outputs.repo }}"
-          prefix="${{ env.REGISTRY }}/$repo"
+          prefix="${{ env.REGISTRY }}/${{ steps.version.outputs.repo }}"
 
-          # Digest своих образов отдаёт сам build-push-action; сторонние
-          # спрашиваем у реестра — :latest в релизе недопустим.
-          third_party_digest() {
-            docker buildx imagetools inspect "$1" --format '{{ "{{json .Manifest.Digest}}" }}' | tr -d '"'
-          }
+          backend="$prefix/backend:$version@${{ steps.backend.outputs.digest }}"
+          frontend="$prefix/frontend:$version@${{ steps.frontend.outputs.digest }}"
+          gateway="$prefix/gateway:$version@${{ steps.gateway.outputs.digest }}"
+          postgres="$prefix/postgres:$version@${{ steps.postgres.outputs.digest }}"
+          redis="${{ steps.bases.outputs.redis }}"
+          coturn="${{ steps.bases.outputs.coturn }}"
+
+          python3 scripts/pin-release-compose.py \
+            --source compose.yaml \
+            --output dist/compose.yaml \
+            --version "$version" \
+            --pin "CHATBALLS_BACKEND_IMAGE=$backend" \
+            --pin "CHATBALLS_FRONTEND_IMAGE=$frontend" \
+            --pin "CHATBALLS_GATEWAY_IMAGE=$gateway" \
+            --pin "CHATBALLS_POSTGRES_IMAGE=$postgres" \
+            --pin "CHATBALLS_REDIS_IMAGE=$redis" \
+            --pin "CHATBALLS_COTURN_IMAGE=$coturn"
 
           {
-            echo "# release.env — сгенерирован ${{ github.workflow }} для $version."
-            echo "# Все образы закреплены по digest: :latest источником релиза не является."
+            echo "# release.env — digest-пины релиза $version для \`chatballs deploy\`."
+            echo "# Тем, кто ставит одной командой, он не нужен: всё уже внутри compose.yaml."
             echo "CHATBALLS_VERSION=$version"
-            echo "CHATBALLS_BACKEND_IMAGE=$prefix/backend:$version@${{ steps.backend.outputs.digest }}"
-            echo "CHATBALLS_FRONTEND_IMAGE=$prefix/frontend:$version@${{ steps.frontend.outputs.digest }}"
-            echo "CHATBALLS_POSTGRES_IMAGE=${POSTGRES_IMAGE}@$(third_party_digest "$POSTGRES_IMAGE")"
-            echo "CHATBALLS_REDIS_IMAGE=${REDIS_IMAGE}@$(third_party_digest "$REDIS_IMAGE")"
-            echo "CHATBALLS_GATEWAY_IMAGE=${GATEWAY_IMAGE}@$(third_party_digest "$GATEWAY_IMAGE")"
-            echo "CHATBALLS_COTURN_IMAGE=${COTURN_IMAGE}@$(third_party_digest "$COTURN_IMAGE")"
-          } > release.env
+            echo "CHATBALLS_BACKEND_IMAGE=$backend"
+            echo "CHATBALLS_FRONTEND_IMAGE=$frontend"
+            echo "CHATBALLS_GATEWAY_IMAGE=$gateway"
+            echo "CHATBALLS_POSTGRES_IMAGE=$postgres"
+            echo "CHATBALLS_REDIS_IMAGE=$redis"
+            echo "CHATBALLS_COTURN_IMAGE=$coturn"
+          } > dist/release.env
 
-          cat release.env
+          # Файл, который скачает человек, обязан быть валидным сам по себе —
+          # без переменных окружения и без чего-либо рядом.
+          ( cd dist && docker compose -f compose.yaml config -q )
+
+          cat dist/compose.yaml
 
       - uses: actions/upload-artifact@v4
         with:
-          name: release.env
-          path: release.env
+          name: release-compose
+          path: |
+            dist/compose.yaml
+            dist/release.env
 
-      - name: Приложить release.env к релизу
+      - name: Приложить к релизу
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          files: release.env
+          files: |
+            dist/compose.yaml
+            dist/release.env

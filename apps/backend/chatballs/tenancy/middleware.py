@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from collections.abc import Callable
 import re
 import uuid
+from collections.abc import Callable
 
 from django.http import Http404, HttpRequest, HttpResponse
 from django.urls import Resolver404, resolve

@@ -3,38 +3,21 @@
 
 
 from email import message_from_bytes, policy
-
 from email.message import EmailMessage as MimeMessage
-
 from unittest import mock
 
-
-
 from django.http import QueryDict
-
 from django.test import TestCase
 
-
-
 from chatballs.channels.models import Channel
-
-from chatballs.conversations.models import Contact, Conversation, MessageAuthor
-
 from chatballs.conversations.clients import client_detail, client_row, clients_queryset
-
+from chatballs.conversations.models import Contact, Conversation, MessageAuthor
 from chatballs.conversations.selectors import conversation_messages
-
 from chatballs.conversations.serializers import conversation_payload, message_payload
-
 from chatballs.conversations.transports import email as email_transport
-
 from chatballs.identity.bootstrap import bootstrap_owner
-
 from chatballs.identity.models import Organization
-
 from chatballs.integrations.models import Integration, IntegrationKind, IntegrationProvider
-
-
 
 EMAIL_CONFIG = {
 
@@ -499,7 +482,6 @@ class EmailIngestThreadMetaTests(TestCase):
     def _ingest(self, *, external_id: str, subject: str, message_id: str) -> None:
 
         from chatballs.conversations.ingest import ingest_inbound
-
         from chatballs.conversations.transports.base import InboundMessage
 
 

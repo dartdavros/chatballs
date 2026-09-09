@@ -1,4 +1,49 @@
+from urllib.parse import urlsplit, urlunsplit
+
 from chatballs.integrations.models import Integration
+
+# Пароль прокси наружу не отдаётся: в списке подключений его видел бы каждый,
+# у кого есть право смотреть интеграции, а сам адрес попадал бы в логи и
+# историю браузера вместе с ним. Пустое поле при сохранении означает
+# «оставить прежний» — ровно как у секрета интеграции.
+PROXY_PASSWORD_MASK = "••••••••"
+
+
+def mask_proxy_url(url: str) -> str:
+    """Адрес прокси без пароля: «socks5://user:••••••••@host:1080»."""
+    if not url:
+        return ""
+    parsed = urlsplit(url)
+    if not parsed.password:
+        return url
+    host = parsed.hostname or ""
+    if parsed.port:
+        host = f"{host}:{parsed.port}"
+    userinfo = f"{parsed.username or ''}:{PROXY_PASSWORD_MASK}"
+    return urlunsplit(
+        (parsed.scheme, f"{userinfo}@{host}", parsed.path, parsed.query, parsed.fragment)
+    )
+
+
+def restore_proxy_password(submitted: str, stored: str) -> str:
+    """Вернуть сохранённый пароль, если пришла маска того же прокси.
+
+    Форма отправляет конфигурацию целиком, поэтому без этого замаскированное
+    значение сохранилось бы вместо настоящего пароля и прокси перестал бы
+    работать при первом же редактировании соседнего поля.
+    """
+    if not submitted or PROXY_PASSWORD_MASK not in submitted or not stored:
+        return submitted
+    new, old = urlsplit(submitted), urlsplit(stored)
+    same_target = (
+        new.scheme == old.scheme
+        and (new.hostname or "") == (old.hostname or "")
+        and new.port == old.port
+        and (new.username or "") == (old.username or "")
+    )
+    if not same_target or not old.password:
+        return submitted
+    return stored
 
 
 def secret_mask(secret: str) -> str:
@@ -26,7 +71,7 @@ def integration_payload(integration: Integration) -> dict[str, object]:
             "baseUrl": integration.config.get("base_url", ""),
             "defaultModel": integration.config.get("default_model", ""),
             "transcriptionModel": integration.config.get("transcription_model", ""),
-            "proxyUrl": integration.config.get("proxy_url", ""),
+            "proxyUrl": mask_proxy_url(str(integration.config.get("proxy_url", ""))),
             "botId": integration.config.get("bot_id", ""),
             "botUsername": integration.config.get("bot_username", ""),
             "botName": integration.config.get("bot_name", ""),

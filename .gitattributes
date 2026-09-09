@@ -5,6 +5,21 @@
 *.sh text eol=lf
 chatballs text eol=lf
 
+# Python читают и переписывают линуксовые инструменты (ruff в контейнере, CI).
+# На CRLF-чекауте ruff принимал за перевод строки одиночный возврат каретки и
+# писал его в вывод: файл оставался рабочим, но обрастал лишними CR. Двадцать
+# один такой файл успел доехать до репозитория.
+*.py text eol=lf
+
+# Dockerfile и манифесты стека читают Linux-инструменты: CR в них ломает
+# RUN-строки и heredoc'и ровно так же, как шебанг.
+Dockerfile text eol=lf
+Dockerfile.* text eol=lf
+*.Dockerfile text eol=lf
+compose*.yaml text eol=lf
+Caddyfile text eol=lf
+*.sql text eol=lf
+
 *.bat text eol=crlf
 *.cmd text eol=crlf
 *.ps1 text eol=crlf

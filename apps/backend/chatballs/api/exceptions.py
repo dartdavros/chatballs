@@ -1,9 +1,6 @@
 from typing import Any
 
-from rest_framework import status
-from rest_framework.response import Response
 from rest_framework.views import exception_handler as drf_exception_handler
-
 
 
 def _flatten(data: Any) -> str:
@@ -11,7 +8,7 @@ def _flatten(data: Any) -> str:
         return data
     if isinstance(data, dict):
         return "; ".join(_flatten(value) for value in data.values())
-    if isinstance(data, (list, tuple)):
+    if isinstance(data, list | tuple):
         return "; ".join(_flatten(item) for item in data)
     return str(data)
 

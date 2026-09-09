@@ -1,10 +1,12 @@
 repos:
+  # Тот же линтер и та же конфигурация, что в CI (.github/workflows/checks.yml).
+  # ruff-format здесь намеренно нет: он переписал бы 374 файла разом, и это
+  # отдельное решение, а не побочный эффект установки хука.
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.12.0
     hooks:
       - id: ruff
         args: ["--fix"]
-      - id: ruff-format
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:

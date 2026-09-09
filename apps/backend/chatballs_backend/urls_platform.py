@@ -1,4 +1,5 @@
 from django.urls import include, path
+
 from chatballs.support_portals.gateway_views import HelpDomainAuthorizationView
 
 urlpatterns = [

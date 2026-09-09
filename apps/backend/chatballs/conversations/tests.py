@@ -1,13 +1,11 @@
 import json
-
 from unittest import mock
 
 from django.test import TestCase, override_settings
-from chatballs.testing import TenantAPIClient as APIClient
 
 from chatballs.ai.limits import LimitExceeded
-from chatballs.ai.provider.base import ProviderError
 from chatballs.ai.models import AIAgent, AIAgentStatus
+from chatballs.ai.provider.base import ProviderError
 from chatballs.channels.models import Channel
 from chatballs.conversations.models import (
     ConnectionIdentity,
@@ -19,9 +17,9 @@ from chatballs.conversations.models import (
     MessageAuthor,
     MessageKind,
 )
-from chatballs.conversations.transports.base import InboundMessage
 from chatballs.conversations.transports import max as max_transport
 from chatballs.conversations.transports import telegram as telegram_transport
+from chatballs.conversations.transports.base import InboundMessage
 from chatballs.identity.bootstrap import bootstrap_owner
 from chatballs.identity.models import (
     EmployeeRole,
@@ -31,6 +29,7 @@ from chatballs.identity.models import (
 )
 from chatballs.integrations.models import Integration, IntegrationKind, IntegrationProvider
 from chatballs.notifications.models import Notification, NotificationAudience, NotificationType
+from chatballs.testing import TenantAPIClient as APIClient
 
 
 def _messenger_connection(channel):

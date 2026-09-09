@@ -38,6 +38,40 @@ class _RefusedDataHandler(urllib.request.DataHandler):
         raise OutboundUrlRejected("Схема data: в исходящих запросах запрещена")
 
 
+class _GuardedRedirectHandler(urllib.request.HTTPRedirectHandler):
+    """Проверяет каждый Location, а не только исходный адрес.
+
+    Политика исходящих (``integrations.outbound``) проверяет адрес до запроса.
+    Но urllib сам ходит по редиректам, и ответ подставного провайдера мог
+    вернуть 302 на ``http://169.254.169.254/…`` — проверку прошёл один адрес,
+    а сходили по другому.
+
+    Проверка стоит в ``http_error_302``, а не только в ``redirect_request``:
+    свою проверку схемы urllib делает раньше и отвечает на неё ``HTTPError``,
+    из-за чего запрет выглядел бы сетевой ошибкой, а не отказом политики.
+    """
+
+    def __init__(self, validate) -> None:
+        self._validate = validate
+
+    def http_error_302(self, req, fp, code, msg, headers):  # noqa: ANN001
+        location = headers.get("location") or headers.get("uri") or ""
+        if location:
+            self._validate(urllib.parse.urljoin(req.full_url, location))
+        return super().http_error_302(req, fp, code, msg, headers)
+
+    # urllib связывает остальные коды с базовым методом на этапе создания
+    # класса, поэтому переопределения одного http_error_302 мало.
+    http_error_301 = http_error_302
+    http_error_303 = http_error_302
+    http_error_307 = http_error_302
+    http_error_308 = http_error_302
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):  # noqa: ANN001
+        self._validate(newurl)
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
 def _blocked_scheme_handlers() -> list[urllib.request.BaseHandler]:
     """Заглушки вместо file/ftp/data.
 
@@ -50,9 +84,16 @@ def _blocked_scheme_handlers() -> list[urllib.request.BaseHandler]:
     return [_RefusedFileHandler(), _RefusedFTPHandler(), _RefusedDataHandler()]
 
 
-def build_opener(proxy_url: str):
-    """urllib opener, проксирующий http/https/socks5 запросы. Пустой proxy_url → без прокси."""
+def build_opener(proxy_url: str, *, validate_redirect=None):
+    """urllib opener, проксирующий http/https/socks5 запросы.
+
+    Пустой ``proxy_url`` → без прокси. ``validate_redirect`` — проверка адреса,
+    на который ответ просит перейти: её передают там, где сам адрес пришёл
+    данными от провайдера, а не из настроек подключения.
+    """
     blocked = _blocked_scheme_handlers()
+    if validate_redirect is not None:
+        blocked.append(_GuardedRedirectHandler(validate_redirect))
     if not proxy_url:
         return urllib.request.build_opener(*blocked)
     scheme = urllib.parse.urlparse(proxy_url).scheme.lower()

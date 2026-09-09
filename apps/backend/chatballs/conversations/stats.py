@@ -15,8 +15,8 @@ from django.utils import timezone
 from chatballs.ai.models import LlmInvocation
 from chatballs.channels.selectors import channels_in_organization
 from chatballs.conversations.models import (
-    Conversation,
     ControlMode,
+    Conversation,
     ExpectedResponder,
     LifecycleState,
     Message,

@@ -12,7 +12,7 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils import timezone
 
-from chatballs.conversations.models import ConnectionIdentity, ContactMerge, Contact, Conversation
+from chatballs.conversations.models import ConnectionIdentity, Contact, ContactMerge, Conversation
 from chatballs.identity.audit import record_audit_event
 
 # Поля карточки, которые дозаполняются из исходного контакта, если у целевого

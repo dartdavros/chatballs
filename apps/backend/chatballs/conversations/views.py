@@ -2,18 +2,18 @@ from django.db import transaction
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from chatballs.api.pagination import (
+    cursor_id,
+    window,
+    window_payload,
+    window_size,
+)
 from chatballs.conversations.models import (
     ControlMode,
     Conversation,
     ConversationRead,
     LifecycleState,
     Message,
-)
-from chatballs.api.pagination import (
-    cursor_id,
-    window,
-    window_payload,
-    window_size,
 )
 from chatballs.conversations.selectors import (
     MESSAGES_NEWER_KEYS,

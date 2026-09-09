@@ -11,7 +11,7 @@ from chatballs.integrations.selectors import (
     integration_for_context,
     integrations_for_context,
 )
-from chatballs.integrations.serializers import integration_payload
+from chatballs.integrations.serializers import integration_payload, restore_proxy_password
 from chatballs.integrations.services import (
     IntegrationInput,
     create_integration,
@@ -23,6 +23,7 @@ from chatballs.integrations.services import (
 
 def _input(body: dict[str, object], *, current: Integration | None = None) -> IntegrationInput:
     config = body.get("config", current.config if current else {})
+    config = _keep_proxy_password(config, current)
     raw_channel = body.get("channelId", current.channel_id if current else None)
     channel_id = int(raw_channel) if isinstance(raw_channel, int) or (isinstance(raw_channel, str) and raw_channel.isdigit()) else None
     return IntegrationInput(
@@ -37,6 +38,22 @@ def _input(body: dict[str, object], *, current: Integration | None = None) -> In
             else (current.is_active if current else None)
         ),
     )
+
+
+def _keep_proxy_password(config: object, current: Integration | None) -> object:
+    """Маска пароля прокси из ответа не должна затирать настоящий пароль."""
+    if not isinstance(config, dict) or current is None:
+        return config
+    submitted = str(config.get("proxyUrl", config.get("proxy_url", "")) or "")
+    if not submitted:
+        return config
+    restored = restore_proxy_password(submitted, str(current.config.get("proxy_url", "")))
+    if restored == submitted:
+        return config
+    config = dict(config)
+    config.pop("proxy_url", None)
+    config["proxyUrl"] = restored
+    return config
 
 
 def _validation_error(error: Exception) -> Response:
@@ -64,7 +81,6 @@ def _audit(request: Request, action: str, integration: Integration) -> None:
 class IntegrationListView(APIView):
     permission_classes = [HasCapability]
     required_capabilities = {"GET": "integrations.view", "POST": "integrations.manage"}
-    require_organization_scope = True
 
     def get(self, request: Request) -> Response:
         items = integrations_for_context(request.tenant_context)
@@ -84,7 +100,6 @@ class IntegrationListView(APIView):
 class IntegrationDetailView(APIView):
     permission_classes = [HasCapability]
     required_capability = "integrations.manage"
-    require_organization_scope = True
 
     def _get(self, request: Request, integration_id: int) -> Integration:
         return integration_for_context(
@@ -119,7 +134,6 @@ class IntegrationDetailView(APIView):
 class IntegrationTestView(APIView):
     permission_classes = [HasCapability]
     required_capability = "integrations.manage"
-    require_organization_scope = True
 
     def post(self, request: Request, integration_id: int) -> Response:
         try:

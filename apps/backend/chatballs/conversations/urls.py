@@ -1,6 +1,12 @@
 from django.urls import path
 
-from chatballs.conversations import attachment_views, chat_extras_views, reporting_views, views, voice_views
+from chatballs.conversations import (
+    attachment_views,
+    chat_extras_views,
+    reporting_views,
+    views,
+    voice_views,
+)
 
 urlpatterns = [
     path("", views.ConversationListView.as_view(), name="conversation-list"),

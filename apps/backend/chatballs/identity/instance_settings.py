@@ -24,6 +24,12 @@ class InstanceSettings(models.Model):
 
     # Хост без схемы и порта: «crm.example.com» или «203.0.113.10».
     public_host = models.CharField(max_length=253, blank=True, default="")
+    # Предыдущий адрес: остаётся принятым, чтобы смена адреса не выбрасывала
+    # того, кто её делает. Владелец меняет адрес заранее — до того, как домен
+    # начал резолвиться и получил сертификат, — и сидит при этом на старом.
+    # Без этого он получал «Invalid host» через десять секунд после
+    # сохранения, а мастер уже закрыт: вернуться было бы неоткуда.
+    previous_public_host = models.CharField(max_length=253, blank=True, default="")
     # Схема, по которой установку открывают снаружи. Меняется вместе с
     # адресом, когда перед установкой появляется домен и сертификат.
     public_scheme = models.CharField(max_length=5, blank=True, default="")
@@ -62,7 +68,7 @@ class InstanceSettings(models.Model):
 
 _CACHE_TTL_SECONDS = 10.0
 _lock = threading.Lock()
-_cached: tuple[float, str] | None = None
+_cached: tuple[float, tuple[str, str]] | None = None
 
 
 def invalidate_cache() -> None:
@@ -71,8 +77,8 @@ def invalidate_cache() -> None:
         _cached = None
 
 
-def public_host() -> str:
-    """Адрес установки, запомненный мастером, или пустая строка."""
+def _hosts() -> tuple[str, str]:
+    """Текущий и предыдущий адрес установки (оба могут быть пустыми)."""
 
     global _cached
     now = time.monotonic()
@@ -81,12 +87,24 @@ def public_host() -> str:
             return _cached[1]
     try:
         row = InstanceSettings.objects.filter(pk=InstanceSettings.SINGLETON_PK).first()
-        value = row.public_host if row is not None else ""
+        value = (row.public_host, row.previous_public_host) if row is not None else ("", "")
     except Exception:  # таблицы ещё нет (первые миграции)
-        return ""
+        return ("", "")
     with _lock:
         _cached = (now, value)
     return value
+
+
+def public_host() -> str:
+    """Адрес установки, запомненный мастером, или пустая строка."""
+
+    return _hosts()[0]
+
+
+def accepted_hosts() -> tuple[str, ...]:
+    """Адреса, которые установка признаёт своими: текущий и предыдущий."""
+
+    return tuple(host for host in _hosts() if host)
 
 
 def remember_public_host(raw_host: str, scheme: str = "http") -> None:

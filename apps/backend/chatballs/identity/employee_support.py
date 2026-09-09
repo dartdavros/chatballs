@@ -1,7 +1,7 @@
 from rest_framework.request import Request
 
-from chatballs.identity.governance import employee_management_flags
 from chatballs.identity.avatars import user_avatar_url
+from chatballs.identity.governance import employee_management_flags
 from chatballs.identity.models import AuditEvent, OrganizationMembership
 
 

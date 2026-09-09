@@ -1,16 +1,15 @@
+from django.core.exceptions import ValidationError
 from rest_framework.request import Request
 from rest_framework.response import Response
-
-from django.core.exceptions import ValidationError
 
 from chatballs.api.pagination import page_payload, paginate
 from chatballs.conversations.clients import client_detail, client_row, clients_queryset
 from chatballs.conversations.contacts_merge import merge_contacts, revert_merge
 from chatballs.conversations.models import Contact
-from chatballs.identity.models import EmployeeRole
 from chatballs.conversations.stats import sales_overview_stats
 from chatballs.conversations.view_base import ConversationViewBase
 from chatballs.identity.audit import record_audit_event
+from chatballs.identity.models import EmployeeRole
 
 
 class ConversationStatsView(ConversationViewBase):

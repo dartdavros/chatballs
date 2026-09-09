@@ -1,21 +1,23 @@
-# Локальный запуск Chatballs (Windows).
+# Локальный запуск Chatballs из исходников (Windows).
+#
+# Это путь разработчика: стек собирается из репозитория. Установка продукта
+# выглядит иначе и этого скрипта не требует — там один compose.yaml со
+# страницы релиза и `docker compose up -d --wait` (см. README).
 #
 # Ни одной переменной задавать не нужно и негде: .env у продукта нет. Секреты
-# инстанса генерирует первый старт (сервис secrets), всё остальное — организацию,
-# владельца, домены, почту, интеграции — человек настраивает в UI.
-#
-# Если рядом лежит release.env (скачан со страницы релиза), образы берутся из
-# реестра по digest — запуск занимает минуты вместо сборки. Без него стек
-# собирается из исходников: так работают те, кто правит код.
+# инстанса генерирует первый старт (сервис secrets), всё остальное —
+# организацию, владельца, домены, почту, интеграции — человек настраивает в UI.
+param(
+    [ValidateSet("Cloud", "SelfHosted")]
+    [string] $Mode = "Cloud"
+)
+
 $ErrorActionPreference = "Stop"
 
 Set-Location (Join-Path $PSScriptRoot "..")
 
-if (Test-Path "release.env") {
-    Write-Output "release.env найден: образы берутся из реестра, сборки не будет."
-    docker compose --env-file release.env -f compose.yaml up
-}
-else {
-    Write-Output "release.env нет: собираем из исходников (для готовых образов скачайте release.env со страницы релиза)."
-    docker compose -f compose.yaml -f compose.dev.yaml up --build
-}
+$delivery = if ($Mode -eq "SelfHosted") { "SELF_HOSTED" } else { "CLOUD" }
+Write-Output "Сборка из исходников, режим поставки: $delivery."
+
+$env:CHATBALLS_DELIVERY_MODE = $delivery
+docker compose -f compose.yaml -f compose.dev.yaml up --build

@@ -1,0 +1,60 @@
+# Быстрые проверки на каждый push и pull request.
+#
+# До этого на GitHub был только релизный workflow по тегу, то есть до первого
+# тега ничего не проверялось вовсе. Здесь — то, что стоит секунды и ловит
+# ошибки раньше человека: линтер бэкенда и тесты deployment CLI (они держат
+# свойство «установка — один compose.yaml без host-mount'ов»).
+#
+# Бэкенд-сьют и e2e сюда не вынесены намеренно: им нужны Postgres, Redis и
+# полчаса, их место — отдельный пайплайн, а не проверка на каждый коммит.
+
+name: checks
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: ruff
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Установить ruff той же версии, что и в образе
+        run: |
+          set -eu
+          # Единственный источник версии — requirements бэкенда, чтобы CI и
+          # контейнер не разъезжались.
+          constraint="$(grep -E '^ruff' apps/backend/requirements.txt)"
+          python -m pip install --disable-pip-version-check "$constraint"
+          ruff --version
+
+      # Конфигурация линтера лежит в корневом pyproject.toml (src = apps/backend).
+      - name: ruff check
+        run: ruff check --output-format=github apps/backend
+
+  cli:
+    name: deployment CLI
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: python -m pip install --disable-pip-version-check pytest pyyaml
+
+      # Тесты гоняют настоящий bash-скрипт chatballs с замоканными docker и
+      # flock, плюс проверяют, что production-манифест остаётся
+      # самодостаточным (tests/cli/test_release_compose.py).
+      - run: python -m pytest -q tests/cli

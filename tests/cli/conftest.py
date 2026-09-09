@@ -21,7 +21,9 @@ import pytest
 
 REPO_RELEASE_ROOT = Path(__file__).resolve().parents[2]  # code/chatballs
 
-RELEASE_FILES = ["compose.yaml", "Caddyfile"]
+# Релиз — это один compose.yaml. Caddyfile, init-скрипты базы и генератор
+# секретов лежат внутри образов, поэтому в бандле их нет.
+RELEASE_FILES = ["compose.yaml"]
 LIB_GLOB_DIR = "deploy/cli/lib"
 
 

@@ -46,7 +46,7 @@ def record_call_metric(
     local = _sanitize_candidate_type(local_candidate_type)
     remote = _sanitize_candidate_type(remote_candidate_type)
     rtt: int | None = None
-    if isinstance(round_trip_ms, (int, float)) and not isinstance(round_trip_ms, bool):
+    if isinstance(round_trip_ms, int | float) and not isinstance(round_trip_ms, bool):
         rtt = max(0, min(_MAX_ROUND_TRIP_MS, int(round_trip_ms)))
     CallMetric.objects.update_or_create(
         call_session_id=call_session_id,

@@ -8,8 +8,11 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from chatballs.conversations.attachment_views import (
+    attachment_response,
+    validate_upload,
+)
 from chatballs.conversations.models import Message, MessageKind
-from chatballs.conversations.attachment_views import MAX_FILE_BYTES, attachment_response, validate_upload
 from chatballs.conversations.voice_views import ALLOWED_AUDIO_TYPES, MAX_VOICE_BYTES
 from chatballs.identity.models import Organization
 from chatballs.integrations.features import voice_messages_allowed

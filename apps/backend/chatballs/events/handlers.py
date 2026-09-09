@@ -1,5 +1,5 @@
 import logging
-from typing import Callable
+from collections.abc import Callable
 
 from chatballs.events.models import OutboxEvent
 from chatballs.events.services import tenant_context_for_event

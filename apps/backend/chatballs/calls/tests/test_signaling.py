@@ -270,7 +270,7 @@ class AuthDeadlineTests(CallDomainMixin, TransactionTestCase):
         self.assertEqual(output["code"], consumers.AUTH_TIMEOUT_CLOSE)
 
     def test_authenticated_socket_survives_the_deadline(self) -> None:
-        created, customer_token = None, None
+        customer_token = None
 
         def prepare():
             create_call_request(conversation_id=self.conversation.id, initiator=self.owner)

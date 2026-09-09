@@ -6,7 +6,6 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 
-
 HOST_LABEL_RE = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$")
 
 
@@ -24,6 +23,16 @@ def validate_domain(value: str) -> str:
     return domain
 
 
+def _installation_hosts() -> tuple[str, ...]:
+    """Адреса установки; пусто, если таблицы настроек ещё нет (ранние миграции)."""
+    from chatballs.identity.instance_settings import accepted_hosts
+
+    try:
+        return accepted_hosts()
+    except Exception:
+        return ()
+
+
 def hosted_domain(portal_key: str) -> str:
     base_domain = normalize_domain(settings.CHATBALLS_HELP_BASE_DOMAIN)
     return validate_domain(f"{portal_key}.{base_domain}")
@@ -39,6 +48,13 @@ def clean_portal_domains(portal) -> None:
             normalize_domain(value.lstrip("."))
             for value in getattr(settings, "CHATBALLS_APP_PRIMARY_HOSTS", [])
             if value and not value.startswith(".")
+        }
+        # Адрес самой установки — тоже адрес приложения, хотя в статическом
+        # списке его нет: он живёт в настройках. Портал, повешенный на него,
+        # подменял бы сотрудникам приложение своим Help Center: SPA пробует
+        # /api/v1/help/ и по ответу решает, что рисовать.
+        application_hosts |= {
+            normalize_domain(host) for host in _installation_hosts() if host
         }
         if portal.custom_domain in application_hosts:
             raise ValidationError(

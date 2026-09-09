@@ -12,7 +12,10 @@ COPY apps/backend/requirements.txt /app/apps/backend/requirements.txt
 RUN pip install --no-cache-dir -r /app/apps/backend/requirements.txt
 
 COPY apps/backend /app/apps/backend
-COPY content /app/content
+# Генератор секретов инстанса живёт в образе, а не монтируется с хоста:
+# установка — один compose.yaml, рядом с ним ничего лежать не должно.
+COPY deploy/secrets/generate-instance-secrets.sh /usr/local/bin/chatballs-generate-secrets.sh
+RUN chmod 0755 /usr/local/bin/chatballs-generate-secrets.sh
 
 # collectstatic в образе (ADR-HUB-0028): STATIC_ROOT испечён, runtime-шаг не нужен.
 # Build-time secret нужен только чтобы settings загрузились в production-режиме;
@@ -29,6 +32,11 @@ RUN cd apps/backend && CHATBALLS_SECRET_KEY=collectstatic-build CHATBALLS_DEBUG=
     POSTGRES_PLATFORM_USER=build-platform \
     POSTGRES_MIGRATION_USER=build-migration \
     python manage.py collectstatic --noinput
+
+# Каталог локальных файлов создаётся в образе и принадлежит hub: том
+# наследует владельца из образа, поэтому загрузки работают и на Linux,
+# где bind-mount достался бы контейнеру как root:root.
+RUN mkdir -p /app/apps/backend/media
 
 RUN chown -R hub:hub /app
 

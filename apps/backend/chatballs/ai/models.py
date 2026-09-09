@@ -1,18 +1,10 @@
 import uuid
 
-
-
 from django.core.exceptions import ValidationError
-
 from django.db import models
-
 from pgvector.django import VectorField
 
-
-
 from chatballs.tenancy.models import TenantRelationModel
-
-
 
 # Один основной агент на канал обработки (ADR-HUB-0019, ADR-CHATBALLS-0023).
 
@@ -88,13 +80,9 @@ class Knowledge(models.Model):
 
 
 
-    def clean(self) -> None:
+    def __str__(self) -> str:
 
-        super().clean()
-
-        if self.category_id is not None and self.category.organization_id != self.organization_id:
-
-            raise ValidationError({"category": "Category belongs to another organization"})
+        return f"knowledge:{self.organization_id}/{self.title}"
 
 
 
@@ -106,9 +94,13 @@ class Knowledge(models.Model):
 
 
 
-    def __str__(self) -> str:
+    def clean(self) -> None:
 
-        return f"knowledge:{self.organization_id}/{self.title}"
+        super().clean()
+
+        if self.category_id is not None and self.category.organization_id != self.organization_id:
+
+            raise ValidationError({"category": "Category belongs to another organization"})
 
 
 
@@ -119,13 +111,8 @@ class Knowledge(models.Model):
 # models after Knowledge exists so they are registered without growing this file.
 
 from chatballs.ai.knowledge_models import (  # noqa: E402, F401
-
     KnowledgeCategory,
-
 )
-
-
-
 
 
 def attachment_upload_path(instance: "KnowledgeAttachment", filename: str) -> str:
@@ -197,8 +184,6 @@ class KnowledgeAttachment(TenantRelationModel):
         # строится от публичного адреса Hub, а не от request.
 
         from django.urls import reverse
-
-
 
         from chatballs.identity.instance_settings import public_base_url
 

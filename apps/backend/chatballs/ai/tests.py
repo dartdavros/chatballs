@@ -3,13 +3,14 @@ import tempfile
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
-from chatballs.testing import TenantAPIClient as APIClient, system_tenant_context
 
 from chatballs.ai.knowledge_categories import ensure_uncategorized_category
 from chatballs.ai.models import AIAgent, AIAgentStatus, Knowledge, KnowledgeFragment
 from chatballs.channels.models import Channel
 from chatballs.identity.bootstrap import bootstrap_owner
 from chatballs.identity.models import EmployeeRole, HumanUser, Organization, OrganizationMembership
+from chatballs.testing import TenantAPIClient as APIClient
+from chatballs.testing import system_tenant_context
 
 _MEDIA_ROOT = tempfile.mkdtemp(prefix="hub-test-media-")
 
@@ -284,7 +285,11 @@ class ResilienceTests(TestCase):
 
     def test_circuit_breaker_opens_after_threshold(self) -> None:
         from chatballs.ai.provider.base import ProviderError
-        from chatballs.ai.provider.resilience import CircuitBreaker, CircuitBreakerOpen, call_with_resilience
+        from chatballs.ai.provider.resilience import (
+            CircuitBreaker,
+            CircuitBreakerOpen,
+            call_with_resilience,
+        )
 
         breaker = CircuitBreaker(failure_threshold=2, reset_timeout=999)
 

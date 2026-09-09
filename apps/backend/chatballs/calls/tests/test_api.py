@@ -1,11 +1,10 @@
 import json
 
-from chatballs.testing import TenantAPIClient as APIClient
-
 from chatballs.calls.models import CallKind, CallSession, CallStatus, ParticipantSide
 from chatballs.calls.tests.helpers import CallTestCase, create_call_request
 from chatballs.calls.tokens import verify_call_access_token
 from chatballs.conversations.models import ControlMode
+from chatballs.testing import TenantAPIClient as APIClient
 
 
 class InternalCallApiTests(CallTestCase):

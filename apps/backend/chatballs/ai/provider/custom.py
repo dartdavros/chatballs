@@ -1,9 +1,6 @@
 from chatballs.ai.provider.openrouter import OpenRouterProvider
 
 
-
-
-
 class CustomProvider(OpenRouterProvider):
 
     """Generic OpenAI-compatible BYOK adapter (ADR-CHATBALLS-0034).

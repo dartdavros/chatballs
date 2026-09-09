@@ -18,7 +18,6 @@ from chatballs.tenancy.storage_quota import (
     reserve_storage,
 )
 
-
 MAX_LOGO_BYTES = 2 * 1024 * 1024
 
 

@@ -12,6 +12,11 @@ class HasCapability(BasePermission):
     Views declare ``required_capability`` or a method keyed
     ``required_capabilities`` mapping. Object/resource scope is still checked by the
     view after loading the canonical resource.
+
+    Организационная область не объявляется вьюхой и не отключается: без
+    членства в организации проверка не проходит вообще. Раньше рядом стоял
+    атрибут ``require_organization_scope = True``, который никто не читал — он
+    выглядел как переключатель там, где переключателя нет.
     """
 
     message = "Required capability is missing"

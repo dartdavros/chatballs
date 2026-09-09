@@ -12,8 +12,8 @@ from chatballs.conversations.ingest import ingest_inbound
 from chatballs.conversations.models import (
     ConnectionIdentity,
     Contact,
-    Conversation,
     ControlMode,
+    Conversation,
     LifecycleState,
     MessageKind,
 )
@@ -218,7 +218,11 @@ def post_voice(session: WebSession, *, content: bytes, content_type: str, durati
 
 def post_file(session: WebSession, *, content: bytes, filename: str, content_type: str, caption: str = "") -> None:
     """Файл из виджета: байты приходят телом запроса, подпись — текстом."""
-    from chatballs.conversations.transports.base import InboundFile, guess_content_type, safe_filename
+    from chatballs.conversations.transports.base import (
+        InboundFile,
+        guess_content_type,
+        safe_filename,
+    )
 
     name = safe_filename(filename)
     mime = content_type or guess_content_type(name)

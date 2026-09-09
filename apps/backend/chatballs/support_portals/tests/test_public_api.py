@@ -2,8 +2,9 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.utils import timezone
 
-from chatballs.identity.bootstrap import bootstrap_owner
 from chatballs.channels.models import Channel
+from chatballs.identity.bootstrap import bootstrap_owner
+from chatballs.identity.instance_settings import InstanceSettings, invalidate_cache
 from chatballs.support_portals.models import PortalArticleFeedback, SupportPortal
 from chatballs.testing import TenantAPIClient
 from chatballs.webchat.testing import create_web_widget
@@ -204,6 +205,39 @@ class PublicSupportPortalTests(TestCase):
             sorted(item["name"] for item in payload["attachments"]),
             sorted([attached_doc["name"], attached_image["name"]]),
         )
+
+    @override_settings(ROOT_URLCONF="chatballs_backend.urls_platform")
+    def test_gateway_authorizes_the_installation_address(self) -> None:
+        """Свой домен установки шлюз обязан уметь закрыть сертификатом.
+
+        Адрес коробка знает только от человека: мастер первого запуска
+        запомнил, на чём его открыли, владелец меняет это в «Настройках».
+        Пока ask-эндпоинт отвечал 404 на всё, кроме порталов, установка
+        оставалась на http навсегда — выписать сертификат было нечем.
+        """
+        invalidate_cache()
+        unknown = self.client.get(
+            "/api/v1/gateway/help-domain/", {"domain": "crm.example.test"}
+        )
+        self.assertEqual(unknown.status_code, 404, unknown.content)
+
+        row = InstanceSettings.load()
+        row.public_host = "crm.example.test"
+        row.public_scheme = "https"
+        row.save(update_fields=["public_host", "public_scheme", "updated_at"])
+        invalidate_cache()
+
+        allowed = self.client.get(
+            "/api/v1/gateway/help-domain/", {"domain": "CRM.example.test." }
+        )
+        stranger = self.client.get(
+            "/api/v1/gateway/help-domain/", {"domain": "someone-else.example"}
+        )
+        empty = self.client.get("/api/v1/gateway/help-domain/")
+
+        self.assertEqual(allowed.status_code, 204, allowed.content)
+        self.assertEqual(stranger.status_code, 404, stranger.content)
+        self.assertEqual(empty.status_code, 404, empty.content)
 
     @override_settings(ROOT_URLCONF="chatballs_backend.urls_platform")
     def test_gateway_authorizes_only_published_portal_domains(self) -> None:

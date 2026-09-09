@@ -8,7 +8,6 @@ from chatballs.support_portals.models import (
     SupportPortal,
 )
 
-
 admin.site.register(
     (
         SupportPortal,

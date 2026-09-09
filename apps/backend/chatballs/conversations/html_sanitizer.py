@@ -4,7 +4,6 @@ import html
 from html.parser import HTMLParser
 from urllib.parse import urlsplit
 
-
 _ALLOWED_TAGS = {
     "a",
     "b",
