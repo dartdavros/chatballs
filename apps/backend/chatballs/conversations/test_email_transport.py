@@ -15,6 +15,7 @@ from chatballs.conversations.models import Contact, Conversation, MessageAuthor
 from chatballs.conversations.selectors import conversation_messages
 from chatballs.conversations.serializers import conversation_payload, message_payload
 from chatballs.conversations.transports import email as email_transport
+from chatballs.conversations.transports.errors import PollFailed
 from chatballs.identity.bootstrap import bootstrap_owner
 from chatballs.identity.models import Organization
 from chatballs.integrations.models import Integration, IntegrationKind, IntegrationProvider
@@ -359,11 +360,11 @@ class EmailPollTests(TestCase):
 
         with mock.patch.object(email_transport, "_imap_connect", side_effect=OSError("refused")):
 
-            messages, marker = email_transport.poll_updates(integration)
+            with self.assertRaises(PollFailed):
+                email_transport.poll_updates(integration)
 
-        self.assertEqual(messages, [])
-
-        self.assertEqual(marker, "7:99")
+        # Курсор не сдвинулся: следующий удачный опрос продолжит с того же места.
+        self.assertEqual(integration.poll_marker, "7:99")
 
 
 

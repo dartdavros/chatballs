@@ -22,6 +22,8 @@ def poll_all_messengers(context) -> int:
             channel__is_active=True,
         ).exclude(secret="")
         if integration.config.get("purpose") != "notifications"
+        # Демо-подключения из демо-набора: токены ненастоящие, опрашивать нечего.
+        and not integration.config.get("demoSeed")
     ]
     total = 0
     for integration in integrations:

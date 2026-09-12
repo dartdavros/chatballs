@@ -27,6 +27,7 @@ from chatballs.conversations.transports.base import (
     request_json_multipart,
     safe_filename,
 )
+from chatballs.conversations.transports.errors import PollFailed
 from chatballs.i18n import customer_language, t
 from chatballs.integrations.checks import DEFAULT_MAX_BASE_URL
 from chatballs.integrations.outbound import host_of
@@ -242,8 +243,7 @@ def poll_updates(integration) -> tuple[list[InboundMessage], str]:
     try:
         data = request_json(url, headers={"Authorization": token, "Content-Type": "application/json"}, proxy_url=_proxy(integration))
     except (urllib.error.URLError, TimeoutError, OSError, http.client.HTTPException, json.JSONDecodeError) as error:
-        logger.warning("MAX poll failed for integration %s: %s", integration.id, error)
-        return [], integration.poll_marker
+        raise PollFailed(str(error)) from error
     updates = data.get("updates") or []
     messages = [m for m in (_normalize(u) for u in updates) if m is not None]
     new_marker = data.get("marker")

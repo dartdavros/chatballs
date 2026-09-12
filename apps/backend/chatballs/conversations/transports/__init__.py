@@ -1,6 +1,8 @@
+from chatballs.conversations.transports import backoff
 from chatballs.conversations.transports import email as _email
 from chatballs.conversations.transports import max as _max
 from chatballs.conversations.transports import telegram as _telegram
+from chatballs.conversations.transports.errors import PollFailed
 from chatballs.i18n import t
 from chatballs.integrations.models import IntegrationProvider
 
@@ -51,7 +53,22 @@ SUPPORTED_PROVIDERS = tuple(_POLL.keys())
 
 
 def poll(integration):
-    return _POLL[integration.provider](integration)
+    """Опрос подключения с паузой после сбоя (transports.backoff).
+
+    Сбой транспорта не роняет цикл и не пишется в журнал на каждой попытке:
+    подключение пропускается с растущей паузой, а журнал видит только смену
+    состояния. Курсор при сбое не двигается.
+    """
+
+    if backoff.should_skip(integration.id):
+        return [], integration.poll_marker
+    try:
+        result = _POLL[integration.provider](integration)
+    except PollFailed as error:
+        backoff.record_failure(integration, error)
+        return [], integration.poll_marker
+    backoff.record_success(integration)
+    return result
 
 
 def send_reply(integration, *, chat_id: str, user_id: str, text: str) -> bool:

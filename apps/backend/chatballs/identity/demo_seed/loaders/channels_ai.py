@@ -115,7 +115,8 @@ def _ensure_connection(context: TenantContext, refs: DemoRefs, item: dict, curre
                 provider=item["provider"],
                 name=item["name"],
                 secret=item.get("secret", ""),
-                config=item.get("config", {}),
+                # Токены демо-подключений ненастоящие: воркер их не опрашивает.
+                config={**item.get("config", {}), "demoSeed": True},
             ),
         )
         Integration.objects.filter(pk=integration.pk).update(

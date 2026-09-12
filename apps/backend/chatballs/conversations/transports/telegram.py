@@ -23,6 +23,7 @@ from chatballs.conversations.transports.base import (
     request_json_multipart,
     safe_filename,
 )
+from chatballs.conversations.transports.errors import PollFailed
 from chatballs.i18n import customer_language, t
 from chatballs.integrations.checks import DEFAULT_TELEGRAM_BASE_URL
 from chatballs.integrations.outbound import host_of
@@ -124,8 +125,7 @@ def poll_updates(integration) -> tuple[list[InboundMessage], str]:
     try:
         data = request_json(url, proxy_url=_proxy(integration))
     except (urllib.error.URLError, TimeoutError, OSError, http.client.HTTPException, json.JSONDecodeError) as error:
-        logger.warning("Telegram poll failed for integration %s: %s", integration.id, error)
-        return [], integration.poll_marker
+        raise PollFailed(str(error)) from error
     if not data.get("ok"):
         return [], integration.poll_marker
     updates = data.get("result") or []

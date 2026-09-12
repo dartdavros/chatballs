@@ -12,6 +12,7 @@ import secrets
 from datetime import timedelta
 
 from django.db import transaction
+from django.db.models import Q
 from django.utils import timezone
 
 from chatballs.conversations import transports
@@ -39,7 +40,11 @@ def notifier_integrations(context):
         provider__in=(IntegrationProvider.TELEGRAM, IntegrationProvider.MAX),
         config__purpose=NOTIFIER_PURPOSE,
     ).exclude(secret="")
-    return qs.filter(organization=context.organization)
+    # Демо-подключения из демо-набора не опрашиваются: токены ненастоящие.
+    # Отсутствие ключа в JSON — тоже «не демо», поэтому isnull, а не exclude.
+    return qs.filter(organization=context.organization).filter(
+        Q(config__demoSeed__isnull=True) | Q(config__demoSeed=False)
+    )
 
 
 def deep_link(integration: Integration, code: str) -> str:

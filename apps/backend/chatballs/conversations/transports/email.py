@@ -26,6 +26,7 @@ from chatballs.conversations.transports.base import (
     guess_content_type,
     safe_filename,
 )
+from chatballs.conversations.transports.errors import PollFailed
 from chatballs.i18n import customer_language, t
 
 logger = logging.getLogger(__name__)
@@ -135,8 +136,7 @@ def poll_updates(integration) -> tuple[list[InboundMessage], str]:
     try:
         client = _imap_connect(integration)
     except (imaplib.IMAP4.error, OSError, TimeoutError) as error:
-        logger.warning("Email IMAP poll failed for integration %s: %s", integration.id, error)
-        return [], integration.poll_marker
+        raise PollFailed(str(error)) from error
     try:
         client.select("INBOX", readonly=True)
         validity = _status_value(client, "UIDVALIDITY")
@@ -162,8 +162,7 @@ def poll_updates(integration) -> tuple[list[InboundMessage], str]:
         new_marker = f"{validity}:{uids[-1]}" if uids else integration.poll_marker
         return messages, new_marker
     except (imaplib.IMAP4.error, OSError, TimeoutError) as error:
-        logger.warning("Email IMAP poll failed for integration %s: %s", integration.id, error)
-        return [], integration.poll_marker
+        raise PollFailed(str(error)) from error
     finally:
         try:
             client.logout()
