@@ -43,7 +43,9 @@ class StorageSettingsTests(TestCase):
         DynamicTenantStorage._s3_cache = None
 
         self.organization = Organization.objects.create(name="Acme", slug="acme")
-        self.owner = HumanUser.objects.create_user(email="owner@example.com", password="Password-123", full_name="Owner")
+        self.owner = HumanUser.objects.create_user(
+            email="owner@example.com", password="Password-123", full_name="Owner", is_instance_admin=True
+        )
         OrganizationMembership.objects.create(organization=self.organization, user=self.owner, role=EmployeeRole.OWNER, position_title="Owner")
         self.client = TenantAPIClient()
         self.client.force_authenticate(self.owner)
@@ -133,7 +135,7 @@ class StorageSettingsTests(TestCase):
             stored = cursor.fetchone()[0]
         self.assertNotEqual(stored, "very-secret")
         self.assertEqual(ss.StorageSettings.load().s3_secret_key, "very-secret")
-        payload = self.client.get("/api/v1/company/administration/storage/").json()["storage"]
+        payload = self.client.get("/api/v1/instance/storage/").json()["storage"]
         self.assertEqual(payload["backend"], "S3")
         self.assertNotIn("s3SecretKey", payload)
         self.assertTrue(payload["s3HasSecretKey"])
@@ -142,7 +144,7 @@ class StorageSettingsTests(TestCase):
     def test_patch_to_s3_probes_before_switching(self) -> None:
         with mock.patch.object(ss, "build_s3_storage", side_effect=RuntimeError("connection refused")):
             response = self.client.patch(
-                "/api/v1/company/administration/storage/",
+                "/api/v1/instance/storage/",
                 {"backend": "S3", "s3Bucket": "demo", "s3AccessKey": "a", "s3SecretKey": "b"},
                 format="json",
             )
@@ -153,7 +155,7 @@ class StorageSettingsTests(TestCase):
         factory = _FakeS3Factory(self.bucket.name)
         with mock.patch.object(ss, "build_s3_storage", factory):
             response = self.client.patch(
-                "/api/v1/company/administration/storage/",
+                "/api/v1/instance/storage/",
                 {"backend": "S3", "s3Bucket": "demo", "s3EndpointUrl": "https://s3.example.com/", "s3AccessKey": "a", "s3SecretKey": "b"},
                 format="json",
             )
@@ -164,11 +166,11 @@ class StorageSettingsTests(TestCase):
         self.assertIsNotNone(row.s3_verified_at)
         # Пустые секреты в повторном PATCH оставляют прежние.
         with mock.patch.object(ss, "build_s3_storage", factory):
-            self.client.patch("/api/v1/company/administration/storage/", {"backend": "S3", "s3AccessKey": "", "s3SecretKey": ""}, format="json")
+            self.client.patch("/api/v1/instance/storage/", {"backend": "S3", "s3AccessKey": "", "s3SecretKey": ""}, format="json")
         self.assertEqual(ss.StorageSettings.load().s3_secret_key, "b")
 
     def test_check_endpoint_reports_errors_without_saving(self) -> None:
-        response = self.client.post("/api/v1/company/administration/storage/check/", {"s3Bucket": ""}, format="json")
+        response = self.client.post("/api/v1/instance/storage/check/", {"s3Bucket": ""}, format="json")
         self.assertEqual(response.status_code, 400)
         self.assertIn("s3Bucket", response.json()["errors"])
         self.assertEqual(ss.StorageSettings.load().s3_bucket, "")
@@ -178,18 +180,18 @@ class StorageSettingsTests(TestCase):
         OrganizationMembership.objects.create(organization=self.organization, user=employee, role=EmployeeRole.EMPLOYEE, position_title="Op")
         client = TenantAPIClient()
         client.force_authenticate(employee)
-        self.assertEqual(client.get("/api/v1/company/administration/storage/").status_code, 403)
-        self.assertEqual(client.patch("/api/v1/company/administration/storage/", {"backend": "LOCAL"}, format="json").status_code, 403)
+        self.assertEqual(client.get("/api/v1/instance/storage/").status_code, 403)
+        self.assertEqual(client.patch("/api/v1/instance/storage/", {"backend": "LOCAL"}, format="json").status_code, 403)
 
     def test_migration_copies_local_files_to_s3(self) -> None:
         with tenant_atomic(self.organization.id):
             storages["default"].save(self.key, ContentFile(b"legacy"))
         self._enable_s3()
-        response = self.client.post("/api/v1/company/administration/storage/migrate/")
+        response = self.client.post("/api/v1/instance/storage/migrate/")
         self.assertEqual(response.status_code, 202, response.content)
         row = ss.StorageSettings.load()
         self.assertEqual(row.migration_status, ss.StorageMigrationStatus.RUNNING)
         copied = migrate_local_to_s3(row)
         self.assertEqual(copied, 1)
         self.assertTrue((__import__("pathlib").Path(self.bucket.name) / self.key).exists())
-        self.assertEqual(self.client.post("/api/v1/company/administration/storage/migrate/").status_code, 409)
+        self.assertEqual(self.client.post("/api/v1/instance/storage/migrate/").status_code, 409)

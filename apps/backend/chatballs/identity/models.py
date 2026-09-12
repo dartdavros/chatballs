@@ -84,6 +84,11 @@ class HumanUser(AbstractUser):
     # русский, а отсутствие личного выбора, и она переживает смену языка
     # организации, тогда как записанный при регистрации код — нет.
     ui_language = models.CharField(max_length=5, blank=True, default="")
+    # Администратор установки: право менять свойства инсталляции — адрес,
+    # почту, TURN, хранилище файлов. Это не роль в организации, а признак
+    # учётной записи: первым его получает владелец из мастера первого
+    # запуска, дальше его передают командой set_instance_admin.
+    is_instance_admin = models.BooleanField(default=False)
     # Фото сотрудника (дизайн-базлайн v2): видно коллегам в сайдбаре, подписи
     # сообщений, выборе ответственного. Загружается в профиле.
     avatar = models.FileField(upload_to=user_avatar_upload_path, storage=user_storage, max_length=512, blank=True, default="")

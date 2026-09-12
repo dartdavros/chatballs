@@ -101,6 +101,9 @@ class SetupWizardTests(TestCase):
         owner = HumanUser.objects.get(email="e.kuznetsova@atelie-nord.ru")
         self.assertTrue(owner.check_password(VALID["password"]))
         self.assertTrue(owner.is_superuser)
+        # Владелец из мастера — администратор установки: раздел «Платформа» его.
+        self.assertTrue(owner.is_instance_admin)
+        self.assertTrue(user["isInstanceAdmin"])
         membership = OrganizationMembership.objects.get(user=owner, organization=organization)
         self.assertEqual(membership.role, EmployeeRole.OWNER)
         self.assertTrue(KnowledgeCategory.objects.filter(organization=organization).exists())

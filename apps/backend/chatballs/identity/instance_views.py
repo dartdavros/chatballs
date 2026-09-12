@@ -12,9 +12,9 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from chatballs.api.permissions import HasCapability
 from chatballs.i18n import t
 from chatballs.i18n.languages import DEFAULT_LANGUAGE, LANGUAGES, normalize_language
+from chatballs.identity.instance_access import InstanceSettingsPermission, IsInstanceAdmin
 from chatballs.identity.instance_settings import (
     InstanceSettings,
     email_connection,
@@ -58,8 +58,9 @@ def instance_payload(row: InstanceSettings) -> dict:
 
 
 class InstanceAddressView(APIView):
-    permission_classes = [HasCapability]
-    required_capabilities = {"GET": "settings.view", "PATCH": "company.manage"}
+    # Путь без организации: читает менеджер любой организации, меняет только
+    # администратор установки (identity.instance_access).
+    permission_classes = [InstanceSettingsPermission]
 
     def get(self, request: Request) -> Response:
         return Response({"instance": instance_payload(InstanceSettings.load())})
@@ -171,8 +172,7 @@ class InstanceEmailCheckView(APIView):
     получил приглашение.
     """
 
-    permission_classes = [HasCapability]
-    required_capability = "company.manage"
+    permission_classes = [IsInstanceAdmin]
 
     def post(self, request: Request) -> Response:
         from django.core.mail import send_mail

@@ -370,7 +370,7 @@ class InstanceAddressTests(TestCase):
 
     def test_owner_sets_domain_and_scheme(self) -> None:
         response = self.client.patch(
-            "/api/v1/company/administration/instance/",
+            "/api/v1/instance/settings/",
             {"publicHost": "crm.example.com", "publicScheme": "https"},
             format="json",
         )
@@ -383,7 +383,7 @@ class InstanceAddressTests(TestCase):
     def test_address_may_be_a_bare_ip(self) -> None:
         # Коробку часто так и оставляют: сервер по IP, без домена.
         response = self.client.patch(
-            "/api/v1/company/administration/instance/",
+            "/api/v1/instance/settings/",
             {"publicHost": "203.0.113.10", "publicScheme": "http"},
             format="json",
         )
@@ -393,7 +393,7 @@ class InstanceAddressTests(TestCase):
 
     def test_url_is_accepted_and_trimmed_to_host(self) -> None:
         response = self.client.patch(
-            "/api/v1/company/administration/instance/",
+            "/api/v1/instance/settings/",
             {"publicHost": "https://crm.example.com/settings", "publicScheme": "https"},
             format="json",
         )
@@ -403,7 +403,7 @@ class InstanceAddressTests(TestCase):
 
     def test_garbage_is_rejected(self) -> None:
         response = self.client.patch(
-            "/api/v1/company/administration/instance/",
+            "/api/v1/instance/settings/",
             {"publicHost": "не адрес!", "publicScheme": "ftp"},
             format="json",
         )
@@ -421,7 +421,7 @@ class InstanceEmailTests(TestCase):
 
     def patch(self, **email):
         return self.client.patch(
-            "/api/v1/company/administration/instance/",
+            "/api/v1/instance/settings/",
             {"publicHost": "crm.example.com", "publicScheme": "https", "email": email},
             format="json",
         )
@@ -453,7 +453,7 @@ class InstanceEmailTests(TestCase):
 
     def test_check_without_smtp_explains_itself(self) -> None:
         response = self.client.post(
-            "/api/v1/company/administration/instance/email-check/", {}, format="json"
+            "/api/v1/instance/settings/email-check/", {}, format="json"
         )
 
         self.assertEqual(response.status_code, 400)

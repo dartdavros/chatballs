@@ -14,12 +14,12 @@ from chatballs.identity.models import (
 @admin.register(HumanUser)
 class HumanUserAdmin(UserAdmin):
     ordering = ["email"]
-    list_display = ["email", "full_name", "is_active", "is_staff", "last_login"]
+    list_display = ["email", "full_name", "is_active", "is_staff", "is_instance_admin", "last_login"]
     search_fields = ["email", "full_name"]
     fieldsets = (
         (None, {"fields": ("email", "password")}),
         ("Personal info", {"fields": ("full_name", "first_name", "last_name")}),
-        ("Permissions", {"fields": ("is_active", "is_staff", "is_superuser", "groups", "user_permissions")}),
+        ("Permissions", {"fields": ("is_active", "is_staff", "is_superuser", "is_instance_admin", "groups", "user_permissions")}),
         ("Important dates", {"fields": ("last_login", "date_joined")}),
     )
     add_fieldsets = (

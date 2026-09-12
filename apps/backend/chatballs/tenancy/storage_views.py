@@ -1,12 +1,14 @@
 """Настройки хранилища файлов в «Настройках» администратора.
 
-GET   company/administration/storage/          — текущее состояние (секреты замаскированы)
-PATCH company/administration/storage/          — сохранить; переключение на S3 проверяет доступ
-POST  company/administration/storage/check/    — проверить реквизиты (без сохранения)
-POST  company/administration/storage/migrate/  — перенести локальные файлы в S3 (worker)
+GET   instance/storage/          — текущее состояние (секреты замаскированы)
+PATCH instance/storage/          — сохранить; переключение на S3 проверяет доступ
+POST  instance/storage/check/    — проверить реквизиты (без сохранения)
+POST  instance/storage/migrate/  — перенести локальные файлы в S3 (worker)
 
 Настройка общая для инстанса: файлы всех организаций лежат в одном месте под
-своими префиксами organizations/<public_id>/.
+своими префиксами organizations/<public_id>/. Поэтому путь без организации,
+а менять её вправе только администратор установки (identity.instance_access);
+записи аудита и событие переноса — уровня установки, без организации.
 """
 
 from __future__ import annotations
@@ -16,10 +18,10 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from chatballs.api.permissions import HasCapability
 from chatballs.events.services import DomainEvent, enqueue_event
 from chatballs.i18n import t
 from chatballs.identity.audit import record_audit_event
+from chatballs.identity.instance_access import InstanceSettingsPermission, IsInstanceAdmin
 from chatballs.tenancy import storage_settings as ss
 
 STORAGE_MIGRATION_REQUESTED = "storage.migration_requested"
@@ -81,8 +83,7 @@ def _apply_fields(row: ss.StorageSettings, body: dict) -> ss.StorageConfig:
 
 
 class StorageSettingsView(APIView):
-    permission_classes = [HasCapability]
-    required_capabilities = {"GET": "settings.view", "PATCH": "company.manage"}
+    permission_classes = [InstanceSettingsPermission]
 
     def get(self, request: Request) -> Response:
         return Response({"storage": storage_payload(ss.StorageSettings.load())})
@@ -113,7 +114,7 @@ class StorageSettingsView(APIView):
         record_audit_event(
             action="administration.storage_updated",
             actor=request.user,
-            organization=request.tenant_context.organization,
+            organization=None,
             object_type="StorageSettings",
             object_id=str(row.pk),
             payload={"backend": backend, "bucket": row.s3_bucket if backend == ss.StorageBackend.S3 else ""},
@@ -125,8 +126,7 @@ class StorageSettingsView(APIView):
 class StorageCheckView(APIView):
     """Проверка реквизитов S3 без сохранения: пробная запись и удаление объекта."""
 
-    permission_classes = [HasCapability]
-    required_capability = "company.manage"
+    permission_classes = [IsInstanceAdmin]
 
     def post(self, request: Request) -> Response:
         row = ss.StorageSettings.load()
@@ -145,8 +145,7 @@ class StorageCheckView(APIView):
 class StorageMigrateView(APIView):
     """Перенос локальных файлов в S3 — фоновой задачей worker'а."""
 
-    permission_classes = [HasCapability]
-    required_capability = "company.manage"
+    permission_classes = [IsInstanceAdmin]
 
     def post(self, request: Request) -> Response:
         row = ss.StorageSettings.load()
@@ -169,13 +168,13 @@ class StorageMigrateView(APIView):
                 aggregate_id=str(row.pk),
                 event_type=STORAGE_MIGRATION_REQUESTED,
                 payload={"requestedBy": request.user.id},
-                tenant_context=request.tenant_context,
+                tenant_context=None,
             )
         )
         record_audit_event(
             action="administration.storage_migration_requested",
             actor=request.user,
-            organization=request.tenant_context.organization,
+            organization=None,
             object_type="StorageSettings",
             object_id=str(row.pk),
             request=request,

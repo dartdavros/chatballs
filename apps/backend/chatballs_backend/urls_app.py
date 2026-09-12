@@ -13,6 +13,7 @@ urlpatterns = [
     ),
     path("api/v1/auth/", include("chatballs.identity.auth_urls")),
     path("api/v1/setup/", include("chatballs.identity.setup_urls")),
+    path("api/v1/instance/", include("chatballs.identity.instance_urls")),
     path(
         "api/v1/demo-media/avatars/<str:name>",
         DemoMediaView.as_view(),

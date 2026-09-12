@@ -21,6 +21,7 @@ from chatballs.identity.instance_settings import (
     accepted_hosts,
     invalidate_cache,
 )
+from chatballs.identity.models import EmployeeRole, HumanUser, Organization, OrganizationMembership
 from chatballs.support_portals.models import SupportPortal
 from chatballs.testing import TenantAPIClient
 
@@ -42,7 +43,7 @@ class InstanceAddressChangeTests(TestCase):
 
     def _patch(self, host: str, scheme: str = "https"):
         return self.client.patch(
-            "/api/v1/company/administration/instance/",
+            "/api/v1/instance/settings/",
             {"publicHost": host, "publicScheme": scheme},
             format="json",
         )
@@ -119,3 +120,84 @@ class PortalDomainCollisionTests(TestCase):
         portal.clean()  # не должно бросать
 
         self.assertEqual(portal.custom_domain, "help.example.test")
+
+
+class InstanceSettingsAccessTests(TestCase):
+    """Настройки установки меняет только её администратор.
+
+    Владелец другой организации видит адреса TURN (карточка relay), но не может
+    переключить общий SMTP или адрес установки; сотрудник не видит ничего.
+    """
+
+    def setUp(self) -> None:
+        self.result = bootstrap_owner(email="instance-owner@example.com", password=PASSWORD)
+        self.other_org = Organization.objects.create(name="Other", slug="other-org")
+        self.other_owner = HumanUser.objects.create_user(
+            email="other-owner@example.com", password=PASSWORD, full_name="Other Owner"
+        )
+        OrganizationMembership.objects.create(
+            organization=self.other_org,
+            user=self.other_owner,
+            role=EmployeeRole.OWNER,
+            position_title="Owner",
+        )
+        self.employee = HumanUser.objects.create_user(
+            email="employee@example.com", password=PASSWORD, full_name="Employee"
+        )
+        OrganizationMembership.objects.create(
+            organization=self.other_org,
+            user=self.employee,
+            role=EmployeeRole.EMPLOYEE,
+            position_title="Operator",
+        )
+
+    def _client(self, user: HumanUser) -> TenantAPIClient:
+        client = TenantAPIClient()
+        client.force_authenticate(user)
+        return client
+
+    def test_setup_owner_is_instance_admin_and_may_change_settings(self) -> None:
+        self.assertTrue(self.result.owner.is_instance_admin)
+        response = self._client(self.result.owner).patch(
+            "/api/v1/instance/settings/",
+            {"publicHost": "crm.example.test", "publicScheme": "https"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200, response.content)
+
+    def test_organization_owner_reads_but_cannot_change(self) -> None:
+        client = self._client(self.other_owner)
+        self.assertEqual(client.get("/api/v1/instance/settings/").status_code, 200)
+        self.assertEqual(client.get("/api/v1/instance/storage/").status_code, 200)
+        denied = client.patch(
+            "/api/v1/instance/settings/",
+            {"publicHost": "crm.example.test", "publicScheme": "https"},
+            format="json",
+        )
+        self.assertEqual(denied.status_code, 403)
+        self.assertEqual(
+            client.post("/api/v1/instance/settings/email-check/", {}, format="json").status_code, 403
+        )
+        self.assertEqual(
+            client.patch("/api/v1/instance/storage/", {"backend": "LOCAL"}, format="json").status_code,
+            403,
+        )
+
+    def test_employee_sees_nothing(self) -> None:
+        client = self._client(self.employee)
+        self.assertEqual(client.get("/api/v1/instance/settings/").status_code, 403)
+        self.assertEqual(client.get("/api/v1/instance/storage/").status_code, 403)
+
+    def test_session_reports_the_flag(self) -> None:
+        admin_session = self._client(self.result.owner).get("/api/v1/auth/session/").json()
+        owner_session = self._client(self.other_owner).get("/api/v1/auth/session/").json()
+        self.assertTrue(admin_session["user"]["isInstanceAdmin"])
+        self.assertFalse(owner_session["user"]["isInstanceAdmin"])
+
+    def test_old_organization_scoped_paths_are_gone(self) -> None:
+        client = self._client(self.result.owner)
+        client.organization_public_id = str(self.result.organization.public_id)
+        response = client.get(
+            f"/api/v1/organizations/{self.result.organization.public_id}/company/administration/instance/"
+        )
+        self.assertEqual(response.status_code, 404)

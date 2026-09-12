@@ -50,15 +50,17 @@ def bootstrap_owner(*, email: str, password: str, full_name: str = "") -> Bootst
             "full_name": full_name,
             "is_staff": True,
             "is_superuser": True,
+            "is_instance_admin": True,
         },
     )
     if created_owner:
         owner.set_password(password)
         owner.save(update_fields=["password"])
-    elif not owner.is_staff or not owner.is_superuser:
+    elif not owner.is_staff or not owner.is_superuser or not owner.is_instance_admin:
         owner.is_staff = True
         owner.is_superuser = True
-        owner.save(update_fields=["is_staff", "is_superuser"])
+        owner.is_instance_admin = True
+        owner.save(update_fields=["is_staff", "is_superuser", "is_instance_admin"])
 
     OrganizationMembership.objects.get_or_create(
         user=owner,

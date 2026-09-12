@@ -1,32 +1,48 @@
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from rest_framework.request import Request
+from rest_framework.response import Response
 
-from chatballs.i18n import current_language
+from chatballs.i18n import current_language, t
 from chatballs.identity.avatars import own_avatar_url
-from chatballs.identity.models import HumanUser, Organization, OrganizationMembership
+from chatballs.identity.models import HumanUser, OrganizationMembership
 from chatballs.identity.policy import get_effective_access
 from chatballs.identity.sessions import revoke_user_sessions
 from chatballs.tenancy.database import tenant_atomic
 from chatballs.tenancy.ingress import membership_routes_for_user
 
 
+def validation_response(error: ValidationError) -> Response:
+    """Ошибки формы полями: мастер первого запуска и регистрация по приглашению."""
+
+    if hasattr(error, "message_dict"):
+        errors = {
+            key: messages[0] if isinstance(messages, list) else str(messages)
+            for key, messages in error.message_dict.items()
+        }
+        # validate_password кладёт сообщения без ключа поля.
+        if "__all__" in errors:
+            errors["password"] = " ".join(error.message_dict["__all__"])
+            del errors["__all__"]
+        detail = next(iter(errors.values()), t("setup.check_fields"))
+        return Response({"detail": detail, "errors": errors}, status=400)
+    message = " ".join(error.messages)
+    return Response({"detail": message, "errors": {"password": message}}, status=400)
+
+
 def _user_payload(user: HumanUser) -> dict[str, object]:
     memberships = []
     routes = membership_routes_for_user(user.id)
-    organizations = Organization.objects.in_bulk(
-        [route.organization_id for route in routes]
-    )
     for route in routes:
-        organization = organizations.get(route.organization_id)
-        if organization is None:
-            continue
-        with tenant_atomic(organization.id):
+        # Организация читается вместе с членством внутри её контекста: роль
+        # app не видит чужие строки организаций (tenancy/0033).
+        with tenant_atomic(route.organization_id):
             membership = (
                 OrganizationMembership.objects.select_related("organization")
                 .filter(
                     id=route.resource_id,
                     user=user,
-                    organization=organization,
+                    organization_id=route.organization_id,
                     blocked_at__isnull=True,
                 )
                 .first()
@@ -70,6 +86,9 @@ def _user_payload(user: HumanUser) -> dict[str, object]:
         "uiLanguage": user.ui_language,
         "language": current_language(),
         "avatarUrl": own_avatar_url(user),
+        # Администратор установки видит раздел «Платформа» и хранилище
+        # файлов: это свойства инсталляции, а не организации.
+        "isInstanceAdmin": user.is_instance_admin,
         "memberships": memberships,
     }
 
