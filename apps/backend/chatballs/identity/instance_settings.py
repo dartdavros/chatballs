@@ -72,8 +72,12 @@ class InstanceSettings(models.Model):
 
 
 _CACHE_TTL_SECONDS = 10.0
+# Перечитать кэш при промахе по хосту можно не чаще раза в секунду на процесс:
+# иначе поток запросов с чужим Host превращался бы в поток запросов к базе.
+_MISS_REFRESH_SECONDS = 1.0
 _lock = threading.Lock()
 _cached: tuple[float, tuple[str, str]] | None = None
+_last_miss_refresh = 0.0
 
 
 def invalidate_cache() -> None:
@@ -110,6 +114,31 @@ def accepted_hosts() -> tuple[str, ...]:
     """Адреса, которые установка признаёт своими: текущий и предыдущий."""
 
     return tuple(host for host in _hosts() if host)
+
+
+def host_is_accepted(host: str) -> bool:
+    """Свой ли это адрес — с перечитыванием кэша при промахе.
+
+    Кэш живёт в каждом процессе gunicorn отдельно. Мастер первого запуска или
+    смена адреса в «Настройках» сбрасывают его только там, где выполнялись;
+    соседний процесс до 10 секунд отвечал бы «Invalid host» на адрес, который
+    установка уже считает своим. Поэтому промах — повод перечитать строку, но
+    не чаще раза в секунду.
+    """
+
+    global _last_miss_refresh
+    if not host:
+        return False
+    known = {normalize_domain(item) for item in accepted_hosts()}
+    if host in known:
+        return True
+    now = time.monotonic()
+    with _lock:
+        if now - _last_miss_refresh < _MISS_REFRESH_SECONDS:
+            return False
+        _last_miss_refresh = now
+    invalidate_cache()
+    return host in {normalize_domain(item) for item in accepted_hosts()}
 
 
 def default_language() -> str:

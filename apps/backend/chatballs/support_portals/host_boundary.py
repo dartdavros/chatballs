@@ -41,11 +41,13 @@ class SupportPortalHostBoundaryMiddleware:
             return True
         # Адреса, которые человек задал сам: тот, на котором прошли мастер, и
         # предыдущий — чтобы смена адреса в «Настройках» не выбрасывала того,
-        # кто её делает, до того как новый домен вообще заработал.
-        from chatballs.identity.instance_settings import accepted_hosts
+        # кто её делает, до того как новый домен вообще заработал. Промах
+        # перечитывает кэш: соседний процесс gunicorn мог ещё не увидеть адрес,
+        # который мастер записал секунду назад.
+        from chatballs.identity.instance_settings import host_is_accepted
 
         try:
-            if host and host in {normalize_domain(item) for item in accepted_hosts()}:
+            if host_is_accepted(host):
                 return True
         except Exception:
             pass

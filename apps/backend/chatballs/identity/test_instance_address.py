@@ -12,9 +12,12 @@
 
 from __future__ import annotations
 
+import time
+
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 
+from chatballs.identity import instance_settings
 from chatballs.identity.bootstrap import bootstrap_owner
 from chatballs.identity.instance_settings import (
     InstanceSettings,
@@ -201,3 +204,51 @@ class InstanceSettingsAccessTests(TestCase):
             f"/api/v1/organizations/{self.result.organization.public_id}/company/administration/instance/"
         )
         self.assertEqual(response.status_code, 404)
+
+
+class StaleHostCacheTests(TestCase):
+    """Адрес, записанный мастером в одном процессе, принимает и соседний.
+
+    Кэш адреса живёт в каждом процессе gunicorn по 10 секунд. Соседний процесс
+    с устаревшим кэшем отвечал «Invalid host» на первый же запрос после
+    мастера — в интерфейсе это «Ошибка загрузки», исчезавшая после обновления
+    страницы. Промах по хосту теперь перечитывает кэш.
+    """
+
+    def setUp(self) -> None:
+        self.result = bootstrap_owner(email="cache-owner@example.com", password=PASSWORD)
+        self.client = TenantAPIClient()
+        self.client.force_authenticate(self.result.owner)
+        # Строка настроек должна существовать: update() ниже её не создаёт.
+        InstanceSettings.load()
+        self.addCleanup(invalidate_cache)
+
+    def _stale_cache_with_no_host(self) -> None:
+        # Соседний процесс: только что прочитал пустой адрес, TTL ещё не вышел.
+        instance_settings._cached = (time.monotonic(), ("", ""))
+        instance_settings._last_miss_refresh = 0.0
+
+    def test_host_written_by_another_process_is_accepted_at_once(self) -> None:
+        self._stale_cache_with_no_host()
+        # Запись мимо save(): invalidate_cache() в этом процессе не вызывается,
+        # как и в реальности, где мастер отработал в другом воркере.
+        InstanceSettings.objects.filter(pk=InstanceSettings.SINGLETON_PK).update(
+            public_host="crm.example.test"
+        )
+
+        response = self.client.get("/api/v1/auth/session/", HTTP_HOST="crm.example.test")
+
+        self.assertEqual(response.status_code, 200, response.content)
+
+    def test_unknown_host_does_not_reread_more_than_once_a_second(self) -> None:
+        InstanceSettings.objects.filter(pk=InstanceSettings.SINGLETON_PK).update(
+            public_host="crm.example.test"
+        )
+        self._stale_cache_with_no_host()
+        self.assertEqual(self.client.get("/api/v1/auth/session/", HTTP_HOST="evil.example").status_code, 400)
+        # Первый промах перечитал кэш и уже знает настоящий адрес.
+        self.assertEqual(set(accepted_hosts()), {"crm.example.test"})
+        # Второй промах в ту же секунду базу не трогает: кэш подменён, но не перечитан.
+        instance_settings._cached = (time.monotonic(), ("", ""))
+        self.assertEqual(self.client.get("/api/v1/auth/session/", HTTP_HOST="evil.example").status_code, 400)
+        self.assertEqual(accepted_hosts(), ())
