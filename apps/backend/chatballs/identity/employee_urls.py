@@ -1,6 +1,7 @@
 from django.urls import path
 
 from chatballs.identity import (
+    employee_invitations,
     employee_security_views,
     employee_views,
     ownership_views,
@@ -11,6 +12,9 @@ urlpatterns = [
     # Создание сотрудника (ADMIN/EMPLOYEE по policy). Путь operators/ сохранён для
     # обратной совместимости; поле role в теле выбирает системную роль.
     path("operators/", employee_views.EmployeeCreateView.as_view(), name="employee-create"),
+    # Ожидающие приглашения существующих учётных записей (статус «Приглашён»).
+    path("invitations/<int:invitation_id>/resend/", employee_invitations.InvitationResendView.as_view(), name="employee-invitation-resend"),
+    path("invitations/<int:invitation_id>/revoke/", employee_invitations.InvitationRevokeView.as_view(), name="employee-invitation-revoke"),
     path("<int:user_id>/", employee_views.EmployeeDetailView.as_view(), name="employee-detail"),
     path("<int:user_id>/avatar/", employee_views.EmployeeAvatarView.as_view(), name="employee-avatar"),
     path("<int:user_id>/update/", employee_views.EmployeeUpdateView.as_view(), name="employee-update"),

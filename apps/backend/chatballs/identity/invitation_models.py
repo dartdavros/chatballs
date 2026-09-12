@@ -19,6 +19,12 @@ class OrganizationInvitation(models.Model):
     )
     email = models.EmailField()
     role = models.CharField(max_length=32, choices=EmployeeRole.choices)
+    # Поля будущего членства: приглашение существующего пользователя несёт
+    # то же, что форма создания сотрудника, а членство собирается из них при
+    # принятии. Группы — по id: к моменту принятия часть могла исчезнуть.
+    position_title = models.CharField(max_length=120, blank=True, default="")
+    phone = models.CharField(max_length=32, blank=True, default="")
+    group_ids = models.JSONField(default=list, blank=True)
     token_hash = models.CharField(max_length=128, unique=True)
     expires_at = models.DateTimeField()
     created_by = models.ForeignKey(

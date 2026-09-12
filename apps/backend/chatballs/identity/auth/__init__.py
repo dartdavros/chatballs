@@ -1,4 +1,8 @@
-from chatballs.identity.auth.invitations import InvitationAcceptView
+from chatballs.identity.auth.invitations import (
+    InvitationAcceptView,
+    InvitationPreviewView,
+    InvitationRegisterView,
+)
 from chatballs.identity.auth.password_reset import (
     PasswordResetConfirmView,
     PasswordResetRequestView,
@@ -40,4 +44,6 @@ __all__ = [
     "TotpConfirmView",
     "TotpVerifyView",
     "InvitationAcceptView",
+    "InvitationPreviewView",
+    "InvitationRegisterView",
 ]

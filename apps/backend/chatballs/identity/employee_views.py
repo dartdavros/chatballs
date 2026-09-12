@@ -9,6 +9,7 @@ from chatballs.api.pagination import page_payload, paginate
 from chatballs.events.services import DomainEvent, enqueue_event
 from chatballs.i18n import t
 from chatballs.identity.audit import record_audit_event
+from chatballs.identity.employee_invitations import pending_invitations_payload
 from chatballs.identity.employee_password import clean_password_mode, issue_initial_password
 from chatballs.identity.employee_selectors import employees_for
 from chatballs.identity.employee_support import employee_payload, get_owned_profile
@@ -21,6 +22,7 @@ from chatballs.identity.employee_validation import (
 from chatballs.identity.event_handlers import INITIAL_ACCESS_REQUESTED
 from chatballs.identity.governance import EmployeeAction, can_create_role, can_manage_employee
 from chatballs.identity.group_models import EmployeeGroupMember
+from chatballs.identity.invitation_service import invite_existing_user
 from chatballs.identity.models import EmployeeRole, HumanUser, OrganizationMembership
 from chatballs.identity.policy import has_capability_any_scope
 
@@ -72,7 +74,13 @@ class EmployeeListView(APIView):
             employees_for(actor.organization_id, request.query_params),
             request.query_params,
         )
-        return Response(page_payload(page, lambda employee: employee_payload(employee, actor)))
+        payload = page_payload(page, lambda employee: employee_payload(employee, actor))
+        # Ожидающие приглашения — строками со статусом «Приглашён»: их мало,
+        # они не листаются и показываются на первой странице.
+        payload["invitations"] = pending_invitations_payload(
+            actor.organization, request.query_params
+        )
+        return Response(payload)
 
 
 class EmployeeCreateView(APIView):
@@ -107,12 +115,32 @@ class EmployeeCreateView(APIView):
             return Response({"detail": t("admin.temporary_passwords_unsupported")}, status=400)
         if password_mode is None:
             return Response({"detail": t("admin.unknown_password_mode")}, status=400)
-        if HumanUser.objects.filter(email=email).exists():
-            return Response({"detail": t("admin.email_taken")}, status=400)
-
         groups, groups_error = resolve_groups(actor.organization, body.get("groupIds"))
         if groups_error:
             return Response({"detail": groups_error}, status=400)
+
+        existing = HumanUser.objects.filter(email=email).first()
+        if existing is not None:
+            # Учётная запись глобальная, а вход в организацию — по согласию
+            # человека: вместо «e-mail занят» уходит приглашение с той же ролью
+            # и должностью, членство появится после его принятия. В своей
+            # организации адрес и правда занят.
+            if not existing.is_active or OrganizationMembership.objects.filter(
+                user=existing, organization=actor.organization
+            ).exists():
+                return Response({"detail": t("admin.email_taken")}, status=400)
+            invite_existing_user(
+                organization=actor.organization,
+                user=existing,
+                role=requested_role,
+                position_title=position_title,
+                phone=phone,
+                groups=groups or [],
+                created_by=actor,
+                context=request.tenant_context,
+                request=request,
+            )
+            return Response({"employee": None, "password": None, "invited": True}, status=201)
 
         user = HumanUser.objects.create_user(
             email=email,

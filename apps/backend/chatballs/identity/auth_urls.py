@@ -23,4 +23,6 @@ urlpatterns = [
     path("totp/confirm/", auth.TotpConfirmView.as_view(), name="auth-totp-confirm"),
     path("totp/verify/", auth.TotpVerifyView.as_view(), name="auth-totp-verify"),
     path("invitations/accept/", auth.InvitationAcceptView.as_view(), name="auth-invitation-accept"),
+    path("invitations/preview/", auth.InvitationPreviewView.as_view(), name="auth-invitation-preview"),
+    path("invitations/register/", auth.InvitationRegisterView.as_view(), name="auth-invitation-register"),
 ]

@@ -9,7 +9,7 @@ from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
 from chatballs.i18n import t
-from chatballs.identity.auth.common import _user_payload
+from chatballs.identity.auth.common import _user_payload, validation_response
 from chatballs.identity.setup import (
     SetupAlreadyCompleted,
     SetupInput,
@@ -21,22 +21,6 @@ from chatballs.identity.setup import (
 # Функция, а не константа: язык запроса решается на каждый запрос заново.
 def setup_closed() -> dict[str, str]:
     return {"detail": t("identity.setup_already_done")}
-
-
-def _validation_response(error: ValidationError) -> Response:
-    if hasattr(error, "message_dict"):
-        errors = {
-            key: messages[0] if isinstance(messages, list) else str(messages)
-            for key, messages in error.message_dict.items()
-        }
-        # validate_password кладёт сообщения без ключа поля.
-        if "__all__" in errors:
-            errors["password"] = " ".join(error.message_dict["__all__"])
-            del errors["__all__"]
-        detail = next(iter(errors.values()), t("setup.check_fields"))
-        return Response({"detail": detail, "errors": errors}, status=400)
-    message = " ".join(error.messages)
-    return Response({"detail": message, "errors": {"password": message}}, status=400)
 
 
 @method_decorator(ensure_csrf_cookie, name="dispatch")
@@ -75,7 +59,7 @@ class SetupView(APIView):
         except SetupAlreadyCompleted:
             return Response(setup_closed(), status=409)
         except ValidationError as error:
-            return _validation_response(error)
+            return validation_response(error)
         owner = result.owner
         owner.backend = "django.contrib.auth.backends.ModelBackend"
         login(request, owner)
