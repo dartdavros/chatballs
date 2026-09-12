@@ -83,11 +83,11 @@ def delete_category(*, portal: SupportPortal, category: PortalCategory) -> None:
     ensure_portal_editable(portal)
     if category.children.exists():
         raise ValidationError(
-            {"category": "Сначала переместите или удалите вложенные разделы"}
+            {"category": t("portals.move_nested_sections_first")}
         )
     if category.articles.exists():
         raise ValidationError(
-            {"category": "Сначала переместите статьи из этого раздела"}
+            {"category": t("portals.move_articles_first")}
         )
     category.delete()
 
@@ -116,7 +116,7 @@ def add_revision(
 ) -> PortalArticleRevision:
     ensure_portal_editable(article.portal)
     if article.status == ArticleStatus.ARCHIVED:
-        raise ValidationError({"article": "Архивную статью нельзя изменять"})
+        raise ValidationError({"article": t("portals.archived_article_readonly")})
     last = article.revisions.aggregate(value=Max("revision"))["value"] or 0
     revision = PortalArticleRevision(
         organization=context.organization,
@@ -137,7 +137,7 @@ def update_article(
 ) -> PortalArticle:
     ensure_portal_editable(article.portal)
     if article.status == ArticleStatus.ARCHIVED:
-        raise ValidationError({"article": "Архивную статью нельзя изменять"})
+        raise ValidationError({"article": t("portals.archived_article_readonly")})
     article.category = _category(
         article.portal, data.get("categoryId", article.category_id)
     )
@@ -154,11 +154,11 @@ def publish_revision(
 ) -> PortalArticle:
     ensure_portal_editable(article.portal)
     if article.status == ArticleStatus.ARCHIVED:
-        raise ValidationError({"article": "Архивную статью нельзя публиковать"})
+        raise ValidationError({"article": t("portals.archived_article_publish")})
     try:
         revision = article.revisions.get(id=revision_id)
     except PortalArticleRevision.DoesNotExist as error:
-        raise ValidationError({"revisionId": "Версия статьи не найдена"}) from error
+        raise ValidationError({"revisionId": t("portals.revision_not_found")}) from error
     revision.published_at = timezone.now()
     revision.save(update_fields=["published_at"])
     article.published_revision = revision
@@ -200,7 +200,7 @@ def _category(portal: SupportPortal, category_id) -> PortalCategory:
 def ensure_portal_editable(portal: SupportPortal) -> None:
     if portal.status == PortalStatus.ARCHIVED:
         raise ValidationError(
-            {"portal": "Восстановите портал, чтобы изменить его содержимое"}
+            {"portal": t("portals.restore_to_edit_content")}
         )
 
 
@@ -243,12 +243,12 @@ def add_article_file(
 
     ensure_portal_editable(article.portal)
     if article.status == ArticleStatus.ARCHIVED:
-        raise ValidationError({"article": "Архивную статью нельзя изменять"})
+        raise ValidationError({"article": t("portals.archived_article_readonly")})
     original_name = safe_filename((upload.name or "").strip(), "")
     if not original_name:
-        raise ValidationError({"file": "Имя файла обязательно"})
+        raise ValidationError({"file": t("portals.file_name_required")})
     if upload.size and upload.size > MAX_ARTICLE_FILE_BYTES:
-        raise ValidationError({"file": "Файл больше 25 МБ"})
+        raise ValidationError({"file": t("portals.file_too_large")})
     existing = article.files.filter(original_name=original_name).first()
     existing_size = existing.size if existing is not None else 0
     data = upload.read()

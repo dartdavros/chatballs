@@ -183,13 +183,13 @@ def build_s3_storage(config: StorageConfig, *, probe: bool = False):
 def validate_s3_fields(*, bucket: str, endpoint_url: str, region: str, access_key: str, secret_key: str, addressing_style: str) -> None:
     errors: dict[str, str] = {}
     if not bucket.strip():
-        errors["s3Bucket"] = "Укажите имя бакета"
+        errors["s3Bucket"] = t("settings.s3_bucket_required")
     if endpoint_url and not endpoint_url.startswith(("http://", "https://")):
-        errors["s3EndpointUrl"] = "Адрес должен начинаться с http:// или https://"
+        errors["s3EndpointUrl"] = t("settings.s3_endpoint_scheme")
     if not access_key:
-        errors["s3AccessKey"] = "Укажите Access Key"
+        errors["s3AccessKey"] = t("settings.s3_access_key_required")
     if not secret_key:
-        errors["s3SecretKey"] = "Укажите Secret Key"
+        errors["s3SecretKey"] = t("settings.s3_secret_key_required")
     if addressing_style not in {"path", "virtual"}:
         errors["s3AddressingStyle"] = "path или virtual"
     if errors:
@@ -205,12 +205,12 @@ def probe_s3(config: StorageConfig) -> None:
         storage = build_s3_storage(config, probe=True)
         stored = storage.save(key, ContentFile(b"chatballs storage probe"))
         if not storage.exists(stored):
-            raise ValidationError({"s3Bucket": "Объект записан, но не читается — проверьте права на чтение"})
+            raise ValidationError({"s3Bucket": t("settings.object_written_not_readable")})
         storage.delete(stored)
     except ValidationError:
         raise
     except Exception as error:  # boto/botocore ошибки разнообразны — показываем текст
-        raise ValidationError({"s3Bucket": f"Хранилище недоступно: {_short(error)}"}) from error
+        raise ValidationError({"s3Bucket": t("settings.storage_unavailable", error=_short(error))}) from error
 
 
 def _short(error: Exception) -> str:

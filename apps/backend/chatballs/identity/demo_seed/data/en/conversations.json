@@ -1,0 +1,954 @@
+{
+  "schemaVersion": 1,
+  "_comment": "English twin of data/ru/conversations.json: the same people, the same dialogs, the same frames — only the prose differs. Seven visible dialogs mirror frames A–H and A1 one for one; Maria's contact history is frame F. The remaining features (the VIP group, HTML mail, the portal and the customer-account snapshot, spam) are covered by archived and spam dialogs that are not in the main list. Time is relative: «now» = the moment of installation.",
+  "contacts": [
+    {
+      "key": "maria",
+      "name": "Maria Sokolova",
+      "phone": "+44 7700 900140",
+      "avatar": "maria-sokolova.jpg",
+      "description": "Order 4471 — a set of curtains. A regular since August, prefers Telegram.",
+      "createdDaysAgo": 34
+    },
+    {
+      "key": "maria-duplicate",
+      "name": "Maria S.",
+      "phone": "+44 7700 900140",
+      "description": "Duplicate: came in from the website, not yet recognised by phone number.",
+      "createdDaysAgo": 12
+    },
+    {
+      "key": "irina",
+      "name": "Irina Levina",
+      "phone": "",
+      "avatar": "irina-levina.jpg",
+      "description": "Textile buyer for a hotel. Asked us to write by e-mail rather than call.",
+      "company": "The Riverside Hotel",
+      "createdDaysAgo": 60
+    },
+    {
+      "key": "artem",
+      "name": "Artem Gusev",
+      "phone": "",
+      "createdDaysAgo": 3
+    },
+    {
+      "key": "olga",
+      "name": "Olga Melnik",
+      "phone": "+44 7700 900731",
+      "avatar": "olga-melnik.jpg",
+      "createdDaysAgo": 12
+    },
+    {
+      "key": "sergey",
+      "name": "Sergey Krylov",
+      "phone": "+44 7700 900912",
+      "avatar": "sergey-krylov.jpg",
+      "city": "Manchester",
+      "createdDaysAgo": 9
+    },
+    {
+      "key": "viktor",
+      "name": "Viktor Panov",
+      "phone": "+44 20 7946 0210",
+      "company": "House of Textiles Ltd",
+      "city": "London",
+      "description": "Wholesale customer: a 46-room hotel. Handled by Kirill Volkov.",
+      "createdDaysAgo": 90
+    },
+    {
+      "key": "polina",
+      "name": "Polina Rakitina",
+      "phone": "",
+      "createdDaysAgo": 1
+    },
+    {
+      "key": "spammer",
+      "name": "",
+      "phone": "",
+      "createdDaysAgo": 0
+    }
+  ],
+  "connectionIdentities": [
+    {
+      "key": "maria_tg",
+      "contact": "maria",
+      "connection": "tg",
+      "externalUserId": "482913001",
+      "displayName": "Maria Sokolova",
+      "username": "maria_s"
+    },
+    {
+      "key": "irina_email",
+      "contact": "irina",
+      "connection": "email",
+      "externalUserId": "irina@housetextiles.example",
+      "displayName": "Irina Levina"
+    },
+    {
+      "key": "artem_max",
+      "contact": "artem",
+      "connection": "max",
+      "externalUserId": "58102277",
+      "displayName": "Artem Gusev"
+    },
+    {
+      "key": "olga_tg",
+      "contact": "olga",
+      "connection": "tg",
+      "externalUserId": "482913004",
+      "displayName": "Olga Melnik",
+      "username": "olga_s"
+    },
+    {
+      "key": "sergey_tg",
+      "contact": "sergey",
+      "connection": "tg",
+      "externalUserId": "482913007",
+      "displayName": "Sergey Krylov",
+      "username": "sergey_s"
+    },
+    {
+      "key": "sergey_web",
+      "contact": "sergey",
+      "connection": "web_account",
+      "externalUserId": "web-sess-4402a",
+      "displayName": "Sergey Krylov"
+    },
+    {
+      "key": "viktor_tg",
+      "contact": "viktor",
+      "connection": "tg",
+      "externalUserId": "482913006",
+      "displayName": "Viktor Panov",
+      "username": "v_panov"
+    },
+    {
+      "key": "polina_email",
+      "contact": "polina",
+      "connection": "email",
+      "externalUserId": "polina.rakitina@example.com",
+      "displayName": "Polina Rakitina"
+    },
+    {
+      "key": "spam_tg",
+      "contact": "spammer",
+      "connection": "tg",
+      "externalUserId": "900000001",
+      "displayName": "Instant Credit",
+      "username": "credit_fast_24"
+    }
+  ],
+  "labels": [
+    {
+      "key": "delivery",
+      "name": "delivery",
+      "color": "#1677ff"
+    },
+    {
+      "key": "return",
+      "name": "returns",
+      "color": "#eb2f96"
+    },
+    {
+      "key": "account",
+      "name": "account",
+      "color": "#13c2c2"
+    },
+    {
+      "key": "address",
+      "name": "address",
+      "color": "#fa8c16"
+    },
+    {
+      "key": "mail",
+      "name": "mail",
+      "color": "#722ed1"
+    },
+    {
+      "key": "order4390",
+      "name": "order 4390",
+      "color": "#52c41a"
+    },
+    {
+      "key": "urgent",
+      "name": "urgent",
+      "color": "#f5222d"
+    },
+    {
+      "key": "vip",
+      "name": "vip",
+      "color": "#b8860b"
+    },
+    {
+      "key": "wholesale",
+      "name": "wholesale",
+      "color": "#0f9d58"
+    }
+  ],
+  "replyTemplates": [
+    {
+      "title": "Greeting",
+      "text": "Hello! My name is {name}, I am a consultant at Nord Atelier. Could you tell me the track width and the window drop — I will work out a quote."
+    },
+    {
+      "title": "Lead times",
+      "text": "Making takes 5–7 working days after payment. An express option in 3 days is possible if the fabric is in stock, at +30% of the making price."
+    },
+    {
+      "title": "DPD delivery",
+      "text": "We send by DPD to a pickup point or to your door, 3–5 working days. The tracking number arrives by e-mail on the day of dispatch, by 19:00."
+    },
+    {
+      "title": "Moving a delivery",
+      "text": "We have moved your delivery to {date}, slot {slot}. The courier will call an hour ahead. Please confirm that the slot works for you."
+    },
+    {
+      "title": "Returns — asking for photos",
+      "text": "I am sorry this happened. Please send the order number and photographs of the item in daylight — I will raise a claim for a remake or an exchange."
+    },
+    {
+      "title": "Fabric samples",
+      "text": "We will post up to 5 samples free of charge. Tell us which fabrics and colours you would like, and the address with the postcode."
+    },
+    {
+      "title": "Closing a dialog",
+      "text": "Glad to have helped! If anything else comes up, write to us — I answer during working hours, 10:00 to 20:00."
+    }
+  ],
+  "conversations": [
+    {
+      "key": "maria_delivery",
+      "agent": "consultant",
+      "connection": "tg",
+      "contact": "maria",
+      "identity": "maria_tg",
+      "externalChatId": "482913001",
+      "lifecycle": "OPEN",
+      "controlMode": "AI",
+      "expectedResponder": "CUSTOMER",
+      "group": "operators",
+      "priority": "HIGH",
+      "labels": [
+        "delivery",
+        "urgent"
+      ],
+      "note": "",
+      "createdMinutesAgo": 12,
+      "lastActivityMinutesAgo": 4,
+      "readBy": [],
+      "previousConversation": "maria_measure",
+      "messages": [
+        {
+          "author": "CONTACT",
+          "text": "Hello! I ordered a set of curtains from you, order number 4471. How long does delivery to Manchester take?",
+          "minutesAgo": 12
+        },
+        {
+          "author": "AI",
+          "text": "Hello, Maria. Delivery to Manchester takes 3–5 working days from dispatch. Order 4471 is being made at the moment — we expect to send it on Thursday.",
+          "minutesAgo": 12
+        },
+        {
+          "author": "CONTACT",
+          "text": "Can it be sped up? I need it by Saturday.",
+          "minutesAgo": 5
+        },
+        {
+          "author": "AI",
+          "text": "I understand. Express delivery is possible, but the terms are best checked with a specialist — I am passing the question to my colleagues.",
+          "minutesAgo": 5
+        },
+        {
+          "author": "CONTACT",
+          "text": "All right, I will wait",
+          "minutesAgo": 4
+        }
+      ]
+    },
+    {
+      "key": "dmitry_custom",
+      "agent": "consultant",
+      "connection": "web",
+      "webGuest": true,
+      "guestName": "Dmitry Orlov",
+      "guestAvatar": "dmitry-orlov.png",
+      "lifecycle": "OPEN",
+      "controlMode": "PAUSED",
+      "expectedResponder": "OPERATOR",
+      "group": "operators",
+      "priority": "MEDIUM",
+      "labels": [],
+      "note": "",
+      "createdMinutesAgo": 12,
+      "lastActivityMinutesAgo": 6,
+      "readBy": [],
+      "messages": [
+        {
+          "author": "CONTACT",
+          "text": "Good afternoon. Can I order curtains made to my own measurements?",
+          "minutesAgo": 12
+        },
+        {
+          "author": "AI",
+          "text": "Good afternoon! Yes, we make to measure. Tell me the window width and drop and I will work out the price.",
+          "minutesAgo": 11.7
+        },
+        {
+          "author": "CONTACT",
+          "text": "I would like to talk to a human",
+          "minutesAgo": 6
+        },
+        {
+          "author": "SYSTEM",
+          "text": "The AI handed the dialog over: the client asked for a member of staff",
+          "minutesAgo": 6
+        }
+      ]
+    },
+    {
+      "key": "irina_status",
+      "agent": "support",
+      "connection": "email",
+      "contact": "irina",
+      "identity": "irina_email",
+      "externalChatId": "irina@housetextiles.example",
+      "lifecycle": "OPEN",
+      "controlMode": "HUMAN",
+      "expectedResponder": "CUSTOMER",
+      "assignedOperator": "elena",
+      "group": "support",
+      "priority": "HIGH",
+      "labels": [
+        "order4390",
+        "mail"
+      ],
+      "note": "A regular, order 4390. Asked us to write by e-mail rather than call.",
+      "createdMinutesAgo": 54,
+      "lastActivityMinutesAgo": 26,
+      "readBy": [
+        "elena"
+      ],
+      "transportMeta": {
+        "subject": "Order 4390 — the status is not changing"
+      },
+      "messages": [
+        {
+          "author": "CONTACT",
+          "text": "Hello. Order 4390 was paid for a week ago and the status is not changing. What is going on?",
+          "minutesAgo": 54,
+          "contentHtml": "<p>Hello.</p><p>Order <b>4390</b> was paid for a week ago and the status is not changing. What is going on?</p><p>— Irina Levina, purchasing</p>"
+        },
+        {
+          "author": "AI",
+          "text": "Hello, Irina. I can see order 4390 with the status “In production”. I will check the timing with my colleagues — passing the question on.",
+          "minutesAgo": 54,
+          "contentHtml": "<p>Hello, Irina.</p><p>I can see order 4390 with the status “In production”. I will check the timing with my colleagues — passing the question on.</p>"
+        },
+        {
+          "author": "SYSTEM",
+          "text": "Elena Kuznetsova took the dialog",
+          "minutesAgo": 43
+        },
+        {
+          "author": "OPERATOR",
+          "text": "Good afternoon, Irina. I have checked: the order has already gone to the courier, and the tracking number will arrive by e-mail today before 19:00.",
+          "minutesAgo": 26,
+          "authorUser": "elena",
+          "contentHtml": "<p>Good afternoon, Irina.</p><p>I have checked: the order has already gone to the courier, and the tracking number will arrive by e-mail today before 19:00.</p>"
+        }
+      ]
+    },
+    {
+      "key": "artem_prepay",
+      "agent": "consultant",
+      "connection": "max",
+      "contact": "artem",
+      "identity": "artem_max",
+      "externalChatId": "58102277",
+      "lifecycle": "OPEN",
+      "controlMode": "AI",
+      "expectedResponder": "CUSTOMER",
+      "priority": "NONE",
+      "labels": [],
+      "note": "",
+      "createdMinutesAgo": 52,
+      "lastActivityMinutesAgo": 43,
+      "readBy": [
+        "elena",
+        "anna"
+      ],
+      "messages": [
+        {
+          "author": "CONTACT",
+          "text": "Hello! I would like to order Roman blinds for the kitchen, two windows. How does payment work?",
+          "minutesAgo": 52
+        },
+        {
+          "author": "CONTACT",
+          "kind": "voice",
+          "voice": {
+            "file": "artem-prepayment.ogg",
+            "contentType": "audio/ogg",
+            "durationSeconds": 4,
+            "transcriptStatus": "READY",
+            "transcript": "What deposit do you take? Ideally give it to me as a percentage."
+          },
+          "minutesAgo": 50
+        },
+        {
+          "author": "AI",
+          "text": "Hello, Artem! The deposit is 50% when you place the order, and the rest after the fitting, before delivery. You can pay by card or by bank transfer.",
+          "minutesAgo": 49
+        },
+        {
+          "author": "CONTACT",
+          "text": "Thanks, got it",
+          "minutesAgo": 43
+        }
+      ]
+    },
+    {
+      "key": "guest_password",
+      "agent": "support",
+      "connection": "web_help",
+      "webGuest": true,
+      "lifecycle": "OPEN",
+      "controlMode": "HUMAN",
+      "expectedResponder": "CUSTOMER",
+      "assignedOperator": "anna",
+      "group": "support",
+      "priority": "LOW",
+      "labels": [
+        "account"
+      ],
+      "note": "",
+      "createdMinutesAgo": 94,
+      "lastActivityMinutesAgo": 77,
+      "readBy": [
+        "anna"
+      ],
+      "messages": [
+        {
+          "author": "CONTACT",
+          "text": "The password reset e-mail for my account never arrives",
+          "minutesAgo": 94
+        },
+        {
+          "author": "AI",
+          "text": "Please check your spam folder. If it is not there, I will pass the request to a member of staff.",
+          "minutesAgo": 94
+        },
+        {
+          "author": "CONTACT",
+          "text": "There is nothing there",
+          "minutesAgo": 82
+        },
+        {
+          "author": "SYSTEM",
+          "text": "Anna Kim took the dialog",
+          "minutesAgo": 79
+        },
+        {
+          "author": "OPERATOR",
+          "text": "I will check with my colleagues which address is on the account.",
+          "minutesAgo": 77,
+          "authorUser": "anna"
+        }
+      ]
+    },
+    {
+      "key": "olga_return",
+      "agent": "consultant",
+      "connection": "tg",
+      "contact": "olga",
+      "identity": "olga_tg",
+      "externalChatId": "482913004",
+      "lifecycle": "OPEN",
+      "controlMode": "HUMAN",
+      "expectedResponder": "CUSTOMER",
+      "assignedOperator": "elena",
+      "group": "operators",
+      "priority": "NONE",
+      "labels": [
+        "return"
+      ],
+      "note": "",
+      "createdMinutesAgo": 122,
+      "lastActivityMinutesAgo": 105,
+      "readBy": [
+        "elena"
+      ],
+      "messages": [
+        {
+          "author": "CONTACT",
+          "text": "Hello! I have received the curtains, but the width is not what I ordered.",
+          "minutesAgo": 122
+        },
+        {
+          "author": "AI",
+          "text": "Hello, Olga. I am sorry about that. Exchanges and returns are possible within 14 days — I am passing the question to a member of staff.",
+          "minutesAgo": 122
+        },
+        {
+          "author": "CONTACT",
+          "kind": "voice",
+          "voice": {
+            "file": "olga-eighty-cm.ogg",
+            "contentType": "audio/ogg",
+            "durationSeconds": 3,
+            "transcriptStatus": "READY",
+            "transcript": "Can you see? Exactly eighty centimetres!"
+          },
+          "minutesAgo": 114
+        },
+        {
+          "author": "SYSTEM",
+          "text": "Elena Kuznetsova took the dialog",
+          "minutesAgo": 110
+        },
+        {
+          "author": "OPERATOR",
+          "kind": "voice",
+          "voice": {
+            "file": "elena-start-with-numbers.ogg",
+            "contentType": "audio/ogg",
+            "durationSeconds": 7,
+            "transcriptStatus": "NONE"
+          },
+          "minutesAgo": 108,
+          "authorUser": "elena"
+        },
+        {
+          "author": "CONTACT",
+          "kind": "voice",
+          "voice": {
+            "file": "olga-saturday-post.ogg",
+            "contentType": "audio/ogg",
+            "durationSeconds": 3,
+            "transcriptStatus": "READY",
+            "transcript": "Does the post office deliver parcels on Saturdays?"
+          },
+          "minutesAgo": 105
+        }
+      ]
+    },
+    {
+      "key": "sergey_address",
+      "agent": "consultant",
+      "connection": "tg",
+      "contact": "sergey",
+      "identity": "sergey_tg",
+      "externalChatId": "482913007",
+      "lifecycle": "CLOSED",
+      "controlMode": "HUMAN",
+      "expectedResponder": "NOBODY",
+      "assignedOperator": "elena",
+      "group": "operators",
+      "priority": "NONE",
+      "labels": [
+        "address"
+      ],
+      "note": "",
+      "createdHoursAgo": 30,
+      "createdMinutesAgo": 9,
+      "lastActivityHoursAgo": 30,
+      "lastActivityMinutesAgo": 2,
+      "readBy": [
+        "elena"
+      ],
+      "messages": [
+        {
+          "author": "CONTACT",
+          "text": "Hello, I would like to change the delivery address on order 4402",
+          "hoursAgo": 30,
+          "minutesAgo": 9
+        },
+        {
+          "author": "SYSTEM",
+          "text": "Elena Kuznetsova took the dialog",
+          "hoursAgo": 30,
+          "minutesAgo": 8
+        },
+        {
+          "author": "OPERATOR",
+          "authorUser": "elena",
+          "text": "Hello, Sergey. Send me the new address and I will change it.",
+          "hoursAgo": 30,
+          "minutesAgo": 7
+        },
+        {
+          "author": "CONTACT",
+          "text": "12 Deansgate, Flat 40, Manchester",
+          "hoursAgo": 30,
+          "minutesAgo": 5
+        },
+        {
+          "author": "OPERATOR",
+          "authorUser": "elena",
+          "text": "Done, the address is updated. Have a good day!",
+          "hoursAgo": 30,
+          "minutesAgo": 3
+        },
+        {
+          "author": "SYSTEM",
+          "text": "Dialog closed",
+          "hoursAgo": 30,
+          "minutesAgo": 2
+        }
+      ]
+    },
+    {
+      "key": "maria_measure",
+      "agent": "consultant",
+      "connection": "tg",
+      "contact": "maria",
+      "identity": "maria_tg",
+      "externalChatId": "482913001",
+      "lifecycle": "CLOSED",
+      "controlMode": "HUMAN",
+      "expectedResponder": "NOBODY",
+      "assignedOperator": "anna",
+      "group": "operators",
+      "priority": "NONE",
+      "labels": [],
+      "note": "",
+      "archivedDaysAgo": 20,
+      "createdDaysAgo": 24,
+      "lastActivityDaysAgo": 24,
+      "readBy": [
+        "anna"
+      ],
+      "previousConversation": "maria_first",
+      "messages": [
+        {
+          "author": "CONTACT",
+          "text": "Hello! Three windows, 2.4 by 2.7 each. How much would a set of curtains with voile cost?",
+          "daysAgo": 24,
+          "hoursAgo": 3
+        },
+        {
+          "author": "SYSTEM",
+          "text": "Anna Kim took the dialog",
+          "daysAgo": 24,
+          "hoursAgo": 3
+        },
+        {
+          "author": "OPERATOR",
+          "authorUser": "anna",
+          "text": "Hello, Maria! Anna Kim here. For three windows at 2.4 × 2.7: Nord blackout curtains and sheer voile — £1,940 including the making. I am sending the quote as a file.",
+          "daysAgo": 24,
+          "hoursAgo": 2
+        },
+        {
+          "author": "CONTACT",
+          "text": "That works! Go ahead, I will pay today.",
+          "daysAgo": 24,
+          "hoursAgo": 1
+        },
+        {
+          "author": "OPERATOR",
+          "authorUser": "anna",
+          "text": "I have placed order 4471. The payment link will come to this chat. Thank you!",
+          "daysAgo": 24,
+          "hoursAgo": 1
+        },
+        {
+          "author": "SYSTEM",
+          "text": "Dialog closed · handled by Anna Kim",
+          "daysAgo": 24
+        }
+      ]
+    },
+    {
+      "key": "maria_first",
+      "agent": "consultant",
+      "connection": "tg",
+      "contact": "maria",
+      "identity": "maria_tg",
+      "externalChatId": "482913001",
+      "lifecycle": "CLOSED",
+      "controlMode": "AI",
+      "expectedResponder": "NOBODY",
+      "group": "operators",
+      "priority": "NONE",
+      "labels": [],
+      "note": "",
+      "archivedDaysAgo": 30,
+      "createdDaysAgo": 33,
+      "lastActivityDaysAgo": 33,
+      "readBy": [
+        "anna"
+      ],
+      "messages": [
+        {
+          "author": "CONTACT",
+          "text": "Hello, which fabrics do you have for a living room and how long does the making take?",
+          "daysAgo": 33,
+          "hoursAgo": 5
+        },
+        {
+          "author": "AI",
+          "text": "Hello, Maria! For a living room people usually take Nord blackout (14 colours) and Scandia linen. Making takes 5–7 working days after payment. I am sending the fabric catalogue.",
+          "daysAgo": 33,
+          "hoursAgo": 5
+        },
+        {
+          "author": "CONTACT",
+          "text": "Thank you, I will have a look!",
+          "daysAgo": 33,
+          "hoursAgo": 4
+        },
+        {
+          "author": "SYSTEM",
+          "text": "Dialog closed · AI",
+          "daysAgo": 33
+        }
+      ]
+    },
+    {
+      "key": "viktor_wholesale",
+      "agent": "consultant",
+      "connection": "tg",
+      "contact": "viktor",
+      "identity": "viktor_tg",
+      "externalChatId": "482913006",
+      "lifecycle": "OPEN",
+      "controlMode": "HUMAN",
+      "expectedResponder": "CUSTOMER",
+      "assignedOperator": "kirill",
+      "group": "vip",
+      "priority": "LOW",
+      "labels": [
+        "vip",
+        "wholesale"
+      ],
+      "note": "Textile buyer for a hotel. Asked us to write by e-mail rather than call.",
+      "createdMinutesAgo": 4300,
+      "lastActivityMinutesAgo": 2900,
+      "readBy": [
+        "kirill",
+        "elena"
+      ],
+      "messages": [
+        {
+          "author": "CONTACT",
+          "text": "Good afternoon. House of Textiles, a 46-room hotel. We need blackout and voile for every window, all one size, 1.8 × 2.5. Do you have wholesale terms?",
+          "daysAgo": 3
+        },
+        {
+          "author": "AI",
+          "text": "Good afternoon, Viktor! Wholesale terms are handled by our VIP client manager — I am passing the dialog on.",
+          "daysAgo": 3
+        },
+        {
+          "author": "SYSTEM",
+          "text": "Kirill Volkov took the dialog",
+          "daysAgo": 3
+        },
+        {
+          "author": "OPERATOR",
+          "authorUser": "kirill",
+          "text": "Hello, Viktor! Kirill Volkov here. On 46 sets we give 12% off the fabric and the making, with a three-week lead time. I will send the quotation by e-mail today.",
+          "daysAgo": 3
+        },
+        {
+          "author": "CONTACT",
+          "text": "Excellent, I will wait for the quotation. My e-mail is on the card.",
+          "daysAgo": 2
+        },
+        {
+          "author": "CONTACT",
+          "kind": "contact",
+          "text": "+44 20 7946 0210",
+          "daysAgo": 2
+        }
+      ],
+      "archivedDaysAgo": 1,
+      "createdDaysAgo": 3,
+      "lastActivityDaysAgo": 2
+    },
+    {
+      "key": "polina_password",
+      "agent": "support",
+      "connection": "email",
+      "contact": "polina",
+      "identity": "polina_email",
+      "externalChatId": "polina.rakitina@example.com",
+      "lifecycle": "CLOSED",
+      "controlMode": "HUMAN",
+      "expectedResponder": "NOBODY",
+      "group": "support",
+      "priority": "MEDIUM",
+      "labels": [],
+      "note": "",
+      "createdMinutesAgo": 240,
+      "lastActivityMinutesAgo": 200,
+      "readBy": [
+        "igor"
+      ],
+      "transportMeta": {
+        "subject": "The password reset e-mail never arrives"
+      },
+      "messages": [
+        {
+          "author": "CONTACT",
+          "text": "The password reset e-mail for my account never arrives",
+          "contentHtml": "<p>Hello!</p><p>I am trying to reset the password for my account on <b>nord-atelier.com</b> — the e-mail has not arrived for an hour. The address is right, I have checked.</p><p>Kind regards,<br>Polina Rakitina</p>",
+          "minutesAgo": 240,
+          "daysAgo": 2
+        },
+        {
+          "author": "AI",
+          "text": "Please check your spam folder. If it is not there, I will pass the request to a member of staff.",
+          "contentHtml": "<p>Hello, Polina!</p><p>The message comes from <b>no-reply@nord-atelier.com</b> within 5 minutes. Please check your spam folder. If it is not there, I will pass the request to a member of staff.</p>",
+          "minutesAgo": 238,
+          "daysAgo": 2
+        },
+        {
+          "author": "CONTACT",
+          "text": "It is not in spam either. Please help.",
+          "contentHtml": "<p>It is not in spam either. Please help.</p>",
+          "minutesAgo": 200,
+          "daysAgo": 2
+        },
+        {
+          "author": "SYSTEM",
+          "text": "The AI handed the dialog over: the client is asking for a member of staff",
+          "minutesAgo": 200,
+          "daysAgo": 2
+        },
+        {
+          "author": "OPERATOR",
+          "authorUser": "igor",
+          "text": "Hello, Polina! Igor Saveliev here. The messages were going to an address with a typo — I have fixed it and sent the reset link again.",
+          "daysAgo": 2,
+          "contentHtml": "<p>Hello, Polina!</p><p>The messages were going to an address with a typo — I have fixed it and sent the reset link again.</p><p>Igor Saveliev, support</p>"
+        },
+        {
+          "author": "SYSTEM",
+          "text": "Dialog closed · handled by Igor Saveliev",
+          "daysAgo": 2
+        },
+        {
+          "author": "OPERATOR",
+          "authorUser": "igor",
+          "text": "Hello, Polina! Igor Saveliev here. The messages were going to an address with a typo — I have fixed it and sent the reset link again.",
+          "daysAgo": 2,
+          "contentHtml": "<p>Hello, Polina!</p><p>The messages were going to an address with a typo — I have fixed it and sent the reset link again.</p><p>Igor Saveliev, support</p>"
+        },
+        {
+          "author": "SYSTEM",
+          "text": "Dialog closed · handled by Igor Saveliev",
+          "daysAgo": 2
+        },
+        {
+          "author": "OPERATOR",
+          "authorUser": "igor",
+          "text": "Hello, Polina! Igor Saveliev here. The messages were going to an address with a typo — I have fixed it and sent the reset link again.",
+          "daysAgo": 2,
+          "contentHtml": "<p>Hello, Polina!</p><p>The messages were going to an address with a typo — I have fixed it and sent the reset link again.</p><p>Igor Saveliev, support</p>"
+        },
+        {
+          "author": "SYSTEM",
+          "text": "Dialog closed · handled by Igor Saveliev",
+          "daysAgo": 2
+        }
+      ],
+      "archivedDaysAgo": 1,
+      "createdDaysAgo": 2,
+      "lastActivityDaysAgo": 2,
+      "assignedOperator": "igor"
+    },
+    {
+      "key": "portal_sergey",
+      "agent": "portal",
+      "connection": "web_account",
+      "contact": "sergey",
+      "identity": "sergey_web",
+      "externalChatId": "portal-sergey-1",
+      "lifecycle": "CLOSED",
+      "controlMode": "HUMAN",
+      "expectedResponder": "NOBODY",
+      "assignedOperator": "igor",
+      "group": "support",
+      "priority": "NONE",
+      "labels": [],
+      "note": "An authenticated request from the customer account (support portal).",
+      "createdDaysAgo": 6,
+      "lastActivityDaysAgo": 6,
+      "readBy": [
+        "artem"
+      ],
+      "messages": [
+        {
+          "author": "CONTACT",
+          "text": "I paid for order 4402 by bank transfer, but the status still says “Awaiting payment”. I am attaching the receipt.",
+          "daysAgo": 6
+        },
+        {
+          "author": "AI",
+          "text": "Hello, Sergey. A bank transfer can take up to 30 minutes to show. If the status does not change, I will pass this to a member of staff.",
+          "daysAgo": 6
+        },
+        {
+          "author": "SYSTEM",
+          "text": "Igor Saveliev took the dialog",
+          "daysAgo": 6
+        },
+        {
+          "author": "OPERATOR",
+          "authorUser": "igor",
+          "text": "Sergey, I found the payment and applied it by hand — order 4402 is now “In production”. Thank you for your patience!",
+          "daysAgo": 6
+        },
+        {
+          "author": "SYSTEM",
+          "text": "Dialog closed · handled by Igor Saveliev",
+          "daysAgo": 6
+        }
+      ],
+      "archivedDaysAgo": 4
+    },
+    {
+      "key": "spam_credit",
+      "agent": "consultant",
+      "connection": "tg",
+      "contact": "spammer",
+      "identity": "spam_tg",
+      "externalChatId": "900000001",
+      "lifecycle": "SPAM",
+      "controlMode": "PAUSED",
+      "expectedResponder": "NOBODY",
+      "group": "operators",
+      "priority": "NONE",
+      "labels": [],
+      "note": "",
+      "createdMinutesAgo": 600,
+      "lastActivityMinutesAgo": 600,
+      "readBy": [
+        "elena"
+      ],
+      "messages": [
+        {
+          "author": "CONTACT",
+          "text": "GREAT BUSINESS LOANS up to £200,000 with no paperwork! Click: credit-fast24.example",
+          "minutesAgo": 600
+        },
+        {
+          "author": "SYSTEM",
+          "text": "Elena Kuznetsova marked the dialog as spam",
+          "minutesAgo": 590
+        }
+      ]
+    }
+  ],
+  "contactMerges": [
+    {
+      "target": "maria",
+      "source": "maria-duplicate",
+      "reason": "The same person: the phone number matched and it was confirmed in the dialog",
+      "actor": "elena"
+    }
+  ]
+}

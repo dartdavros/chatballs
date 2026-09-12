@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "portal": {
+    "slug": "nord-atelier",
+    "name": "Help · Nord Atelier",
+    "locale": "en",
+    "status": "PUBLISHED",
+    "widgetConnection": "web_help",
+    "categories": [
+      {
+        "slug": "orders",
+        "name": "Orders and payment",
+        "description": "Placing an order, payment, statuses",
+        "sortOrder": 1
+      },
+      {
+        "slug": "delivery",
+        "name": "Delivery",
+        "description": "Lead times, courier, nationwide shipping",
+        "sortOrder": 2
+      },
+      {
+        "slug": "returns",
+        "name": "Returns and exchanges",
+        "description": "Return conditions for our products",
+        "sortOrder": 3
+      },
+      {
+        "slug": "care",
+        "name": "Caring for your curtains",
+        "description": "Washing and ironing by fabric type",
+        "sortOrder": 4
+      }
+    ],
+    "articles": [
+      {
+        "slug": "how-to-measure",
+        "category": "orders",
+        "title": "How to measure for curtains",
+        "summary": "Track, drop, allowances — in five minutes",
+        "content": "## Track length\n\nMeasure the track from end to end — not the window. Curtains should cover the window with 15–20 cm to spare on each side.\n\n## Drop\n\nFrom the track hook (or the top of the pole) to the length you want: to the sill minus 1 cm, to the floor minus 1–2 cm, puddled on the floor plus 3–5 cm.\n\n## Eyelets\n\nFor eyelet curtains add 3 cm at the top.\n\nPhotograph the whole window and send it to a consultant — we will check your figures free of charge.",
+        "status": "PUBLISHED",
+        "helpfulVotes": 14,
+        "unhelpfulVotes": 1,
+        "publishedDaysAgo": 27,
+        "files": [
+          "katalog-tkanej-2026.pdf"
+        ]
+      },
+      {
+        "slug": "lead-times",
+        "category": "delivery",
+        "title": "Making and delivery times",
+        "summary": "5–7 working days to make, 3–5 to deliver nationwide",
+        "content": "Making takes **5–7 working days** once the quote is agreed and paid.\n\n### Within London\n\nCourier — £15, free on orders over £400. Slots 10:00–13:00, 13:00–17:00, 17:00–20:00. The courier calls an hour ahead.\n\n### Across the country\n\nDPD to a pickup point or to your door, 3–5 working days. The tracking number arrives by e-mail on the day of dispatch.",
+        "status": "PUBLISHED",
+        "helpfulVotes": 22,
+        "unhelpfulVotes": 3,
+        "publishedDaysAgo": 26,
+        "secondRevision": {
+          "summary": "5–7 working days to make, 3–5 to deliver nationwide. Moving your slot is free",
+          "contentAppend": "\n\n### Moving your delivery\n\nYou can move the slot free of charge until 18:00 the day before — write to us in the chat or at info@nord-atelier.com.",
+          "daysAgo": 9
+        }
+      },
+      {
+        "slug": "returns-and-exchanges",
+        "category": "returns",
+        "title": "Returns and exchanges",
+        "summary": "Ready-made items — 14 days; made to measure — remade if faulty",
+        "content": "Ready-made items from the catalogue can be returned within **14 days** if they have not been used.\n\nItems made to your own measurements cannot be returned (bespoke goods are exempt from the cancellation right under the Consumer Contracts Regulations), except where they are faulty or do not match the order: wrong colour or size, defects in the making. In that case we remake or exchange them free of charge, in 5–7 working days.\n\nTo make a claim, send us your order number and photographs of the item in the chat.",
+        "status": "PUBLISHED",
+        "helpfulVotes": 9,
+        "unhelpfulVotes": 4,
+        "publishedDaysAgo": 25
+      },
+      {
+        "slug": "your-account",
+        "category": "orders",
+        "title": "Your account: signing in and resetting a password",
+        "summary": "The reset e-mail arrives within 5 minutes",
+        "content": "You sign in with your e-mail. The password reset message comes from no-reply@nord-atelier.com within 5 minutes. If it has not arrived, check your spam folder. You can ask for another one after 10 minutes.\n\nOrder statuses: “Awaiting payment” → “In production” → “Ready” → “Handed to the courier” → “Delivered”.",
+        "status": "PUBLISHED",
+        "helpfulVotes": 6,
+        "unhelpfulVotes": 0,
+        "publishedDaysAgo": 20
+      },
+      {
+        "slug": "curtain-care",
+        "category": "care",
+        "title": "How to care for your curtains",
+        "summary": "Washing and ironing by fabric type",
+        "content": "**Blackout** — delicate wash at 30°, no spin, iron on the reverse at the lowest setting.\n\n**Linen** — wash at 40°; shrinkage of up to 3% is already allowed for in the measurements.\n\n**Velvet** — dry clean only.\n\n**Voile** — wash at 30° in a mesh bag, dry it hanging on the track.",
+        "status": "PUBLISHED",
+        "helpfulVotes": 11,
+        "unhelpfulVotes": 0,
+        "publishedDaysAgo": 15
+      },
+      {
+        "slug": "paying-in-instalments",
+        "category": "orders",
+        "title": "Paying in instalments",
+        "summary": "Draft: 50/50 terms for orders over £1,200",
+        "content": "For orders over £1,200 you can pay 50% when you order and 50% before dispatch. Draft — to be agreed with the finance team.",
+        "status": "DRAFT",
+        "helpfulVotes": 0,
+        "unhelpfulVotes": 0
+      },
+      {
+        "slug": "summer-sale-2026",
+        "category": "orders",
+        "title": "Summer sale 2026",
+        "summary": "10% off voile until 31 August",
+        "content": "This offer has ended.",
+        "status": "ARCHIVED",
+        "helpfulVotes": 3,
+        "unhelpfulVotes": 0,
+        "publishedDaysAgo": 70
+      }
+    ]
+  }
+}

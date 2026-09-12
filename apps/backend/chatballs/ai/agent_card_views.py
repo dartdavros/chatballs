@@ -110,7 +110,7 @@ class AgentCardListView(APIView):
             try:
                 cards = cards.filter(group_id=int(group))
             except ValueError:
-                return Response({"detail": "group must be an id or none"}, status=400)
+                return Response({"detail": t("ai.group_id_or_none")}, status=400)
         from chatballs.ai.agent_card import (
             ensure_channel_agent,
             knowledge_total_for_organization,
@@ -135,7 +135,7 @@ class AgentCardListView(APIView):
         if group_id is not None and (
             isinstance(group_id, bool) or not isinstance(group_id, int)
         ):
-            return Response({"detail": "groupId must be an integer or null"}, status=400)
+            return Response({"detail": t("ai.group_id_integer_or_null")}, status=400)
         try:
             channel = create_agent_card(
                 context=request.tenant_context,
@@ -245,11 +245,11 @@ class AgentCardTestChatView(APIView):
             return Response({"detail": t("ai.empty_message")}, status=400)
         history = request.data.get("history") or []
         if not isinstance(history, list):
-            return Response({"detail": "history must be a list"}, status=400)
+            return Response({"detail": t("ai.history_must_be_list")}, status=400)
         try:
             result = run_channel_turn(channel=channel, message=message, history=history)
         except ProviderError as error:
-            return Response({"detail": f"Ошибка провайдера: {error}"}, status=502)
+            return Response({"detail": t("ai.provider_error", error=error)}, status=502)
         return Response(
             {
                 "reply": result.text,
@@ -272,7 +272,7 @@ class AgentCardConnectionsView(APIView):
         data = request.data if isinstance(request.data, dict) else {}
         integration_id = data.get("integrationId")
         if isinstance(integration_id, bool) or not isinstance(integration_id, int):
-            return Response({"detail": "integrationId must be an integer"}, status=400)
+            return Response({"detail": t("ai.integration_id_integer")}, status=400)
         try:
             integration, previous_channel_id = channel_services.bind_connection(
                 context=request.tenant_context,

@@ -149,7 +149,7 @@ class InstanceAddressView(APIView):
             except (TypeError, ValueError):
                 return Response(
                     {"detail": t("settings.ttl_is_seconds"),
-                     "errors": {"turnTtlSeconds": "Число секунд"}},
+                     "errors": {"turnTtlSeconds": t("settings.seconds_number")}},
                     status=400,
                 )
             fields += ["turn_urls", "turn_ttl_seconds"]
@@ -185,11 +185,8 @@ class InstanceEmailCheckView(APIView):
         recipient = str(request.data.get("email", "")).strip() or request.user.email
         try:
             send_mail(
-                subject="Проверка почты Chatballs",
-                message=(
-                    "Это тестовое письмо из «Настроек». "
-                    "Если вы его читаете, почта установки работает."
-                ),
+                subject=t("settings.mail_test_subject"),
+                message=t("settings.mail_test_body"),
                 from_email=email_from_address(),
                 recipient_list=[recipient],
                 connection=connection,

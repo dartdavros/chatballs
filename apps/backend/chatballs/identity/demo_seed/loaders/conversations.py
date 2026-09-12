@@ -32,7 +32,7 @@ AVATAR_URL = "/api/v1/demo-media/avatars/{name}"
 
 
 def load(context: TenantContext, refs: DemoRefs) -> None:
-    data = manifest.load("conversations")
+    data = manifest.load("conversations", refs.language)
     organization = refs.organization
     current = now()
 

@@ -38,6 +38,7 @@ import urllib.error
 import urllib.request
 
 from chatballs.ai.provider.base import ChatMessage, ChatResult, EmbeddingResult, ProviderError
+from chatballs.i18n import t
 from chatballs.integrations.proxy import build_opener
 
 
@@ -155,7 +156,7 @@ def chat_completions(*, base_url: str, api_key: str, messages: list[ChatMessage]
 
     except (KeyError, IndexError, TypeError) as error:
 
-        raise ProviderError(f"Unexpected provider response: {error}") from error
+        raise ProviderError(t("ai.unexpected_provider_response", error=error)) from error
 
     usage = data.get("usage") or {}
 
@@ -195,7 +196,7 @@ def embeddings(*, base_url: str, api_key: str, texts: list[str], model: str,
 
     except (KeyError, TypeError) as error:
 
-        raise ProviderError(f"Unexpected provider response: {error}") from error
+        raise ProviderError(t("ai.unexpected_provider_response", error=error)) from error
 
     usage = data.get("usage") or {}
 

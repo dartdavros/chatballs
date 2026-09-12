@@ -12,6 +12,7 @@ from chatballs.ai.models import (
     KnowledgeAttachment,
     KnowledgeCategory,
 )
+from chatballs.i18n import t
 from chatballs.tenancy.context import TenantContext
 from chatballs.tenancy.storage import adjust_storage_usage
 from chatballs.tenancy.storage_quota import (
@@ -39,13 +40,13 @@ def _knowledge_category(*, context: TenantContext, category_id: int | None) -> K
             id=category_id,
         )
     except KnowledgeCategory.DoesNotExist as error:
-        raise ValidationError({"category": "Category not found"}) from error
+        raise ValidationError({"category": t("ai.category_not_found")}) from error
 
 
 @transaction.atomic
 def create_knowledge(*, context: TenantContext, data: KnowledgeInput) -> Knowledge:
     if not data.title.strip():
-        raise ValidationError({"title": "Title is required"})
+        raise ValidationError({"title": t("ai.title_required")})
     knowledge = Knowledge.objects.create(
         organization=context.organization,
         category=_knowledge_category(context=context, category_id=data.category_id),
@@ -63,9 +64,9 @@ def update_knowledge(
     *, context: TenantContext, knowledge: Knowledge, data: KnowledgeInput
 ) -> Knowledge:
     if knowledge.organization_id != context.organization_id:
-        raise ValidationError({"knowledge": "Knowledge belongs to another organization"})
+        raise ValidationError({"knowledge": t("ai.knowledge_other_organization")})
     if not data.title.strip():
-        raise ValidationError({"title": "Title is required"})
+        raise ValidationError({"title": t("ai.title_required")})
     locked = Knowledge.objects.select_for_update().get(pk=knowledge.pk)
     content_changed = locked.content != data.content
     locked.title = data.title.strip()
@@ -94,7 +95,7 @@ def update_knowledge(
 
 def delete_knowledge(*, context: TenantContext, knowledge: Knowledge) -> None:
     if knowledge.organization_id != context.organization_id:
-        raise ValidationError({"knowledge": "Knowledge belongs to another organization"})
+        raise ValidationError({"knowledge": t("ai.knowledge_other_organization")})
     attachments = list(knowledge.attachments.all())
     released_bytes = sum(attachment.size for attachment in attachments)
     for attachment in attachments:
@@ -112,12 +113,12 @@ def add_attachment(
     *, context: TenantContext, knowledge: Knowledge, upload: UploadedFile
 ) -> KnowledgeAttachment:
     if knowledge.organization_id != context.organization_id:
-        raise ValidationError({"knowledge": "Knowledge belongs to another organization"})
+        raise ValidationError({"knowledge": t("ai.knowledge_other_organization")})
     original_name = (upload.name or "").strip()
     if not original_name:
-        raise ValidationError({"file": "File name is required"})
+        raise ValidationError({"file": t("ai.file_name_required")})
     if upload.size and upload.size > _MAX_ATTACHMENT_BYTES:
-        raise ValidationError({"file": "File is too large (max 25 MB)"})
+        raise ValidationError({"file": t("ai.file_too_large_25")})
     existing = knowledge.attachments.filter(original_name=original_name).first()
     existing_size = existing.size if existing is not None else 0
     data = upload.read()
@@ -153,7 +154,7 @@ def add_attachment(
 
 def delete_attachment(*, context: TenantContext, attachment: KnowledgeAttachment) -> None:
     if attachment.knowledge.organization_id != context.organization_id:
-        raise ValidationError({"attachment": "Attachment belongs to another organization"})
+        raise ValidationError({"attachment": t("ai.attachment_other_organization")})
     knowledge = attachment.knowledge
     released_bytes = attachment.size
     attachment.file.delete(save=False)

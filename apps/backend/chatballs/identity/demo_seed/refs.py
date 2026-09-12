@@ -19,6 +19,8 @@ class DemoRefs:
 
     organization: object | None = None
     recorder: object | None = None
+    # Язык набора демо-данных; loaders читают манифесты только на нём.
+    language: str = "ru"
     groups: dict[str, object] = field(default_factory=dict)
     memberships: dict[str, object] = field(default_factory=dict)
     users: dict[str, object] = field(default_factory=dict)

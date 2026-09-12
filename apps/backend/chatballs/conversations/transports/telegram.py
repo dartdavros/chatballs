@@ -23,6 +23,7 @@ from chatballs.conversations.transports.base import (
     request_json_multipart,
     safe_filename,
 )
+from chatballs.i18n import customer_language, t
 from chatballs.integrations.checks import DEFAULT_TELEGRAM_BASE_URL
 from chatballs.integrations.outbound import host_of
 
@@ -152,10 +153,16 @@ def send_text(integration, *, chat_id: str, user_id: str, text: str) -> bool:
     return _send(integration, chat_id=chat_id, user_id=user_id, body={"text": text})
 
 
+def _caption(integration, key: str) -> str:
+    """Подпись кнопки читает клиент — язык организации, а не язык запроса."""
+
+    return t(key, language=customer_language(integration.organization))
+
+
 def send_contact_request(integration, *, chat_id: str, user_id: str, text: str) -> bool:
     # Reply-клавиатура с request_contact: телефон бот получает только так.
     keyboard = {
-        "keyboard": [[{"text": "Поделиться контактом", "request_contact": True}]],
+        "keyboard": [[{"text": _caption(integration, "conversations.button_share_contact"), "request_contact": True}]],
         "one_time_keyboard": True,
         "resize_keyboard": True,
     }
@@ -169,7 +176,7 @@ def send_contact_ack(integration, *, chat_id: str, user_id: str, text: str) -> b
 
 def send_call_invite(integration, *, chat_id: str, user_id: str, text: str, url: str) -> bool:
     # Приглашение на онлайн-звонок: inline-кнопка со ссылкой /calls/<token>.
-    keyboard = {"inline_keyboard": [[{"text": "Перейти к звонку", "url": url}]]}
+    keyboard = {"inline_keyboard": [[{"text": _caption(integration, "conversations.button_join_call"), "url": url}]]}
     return _send(integration, chat_id=chat_id, user_id=user_id, body={"text": text, "reply_markup": keyboard})
 
 
@@ -182,7 +189,7 @@ def download_file(integration, file_id: str) -> tuple[bytes, str]:
     )
     file_path = ((data.get("result") or {}).get("file_path") or "")
     if not data.get("ok") or not file_path:
-        raise ValueError("Telegram getFile failed")
+        raise ValueError(t("conversations.telegram_getfile_failed"))
     content = download_bytes(
         f"{_base(integration)}/file/bot{token}/{file_path}",
         proxy_url=_proxy(integration),
@@ -226,7 +233,7 @@ def download_voice(integration, file_id: str) -> tuple[bytes, str]:
     )
     file_path = ((data.get("result") or {}).get("file_path") or "")
     if not data.get("ok") or not file_path:
-        raise ValueError("Telegram getFile failed")
+        raise ValueError(t("conversations.telegram_getfile_failed"))
     content = download_bytes(
         f"{_base(integration)}/file/bot{token}/{file_path}",
         proxy_url=_proxy(integration),

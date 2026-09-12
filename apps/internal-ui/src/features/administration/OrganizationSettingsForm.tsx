@@ -72,19 +72,6 @@ export function OrganizationSettingsForm({
           options={timezones.map((timezone) => [timezone, timezoneLabel(timezone)])}
         />
         <SelectField
-          label={t("settings.language")}
-          value={organization.language}
-          disabled={!canManage}
-          onChange={(language) => onChange({ ...organization, language })}
-          // Первый пункт — не язык, а отказ от выбора: организация без своего
-          // языка следует за установкой, и владелец видит это словами.
-          options={[
-            ["", t("settings.language_as_installation")],
-            ...languages.map((item): [string, string] => [item.code, item.label]),
-          ]}
-          hint={t("settings.language_org_hint")}
-        />
-        <SelectField
           label={t("admin.currency")}
           value={organization.currency}
           disabled={!canManage}
@@ -92,6 +79,36 @@ export function OrganizationSettingsForm({
           options={[["RUB", t("admin.russian_rouble_rub")]]}
         />
       </div>
+      {/* Язык — сегментом, как «Тема» в профиле и схема в «Платформе»: вариантов
+          три, и выбор лучше видеть целиком, чем разворачивать список. В сетку
+          полей он не встаёт — она выравнивает поля по нижнему краю, и строка с
+          подписью ломала бы ряд. */}
+      <div className="appearance-row administration-language">
+        <span>{t("settings.language")}</span>
+        <div className="appearance-theme-options">
+          <button
+            className={organization.language === "" ? "active" : ""}
+            disabled={!canManage}
+            type="button"
+            onClick={() => onChange({ ...organization, language: "" })}
+          >
+            {t("settings.language_as_installation")}
+          </button>
+          {languages.map((item) => (
+            <button
+              className={organization.language === item.code ? "active" : ""}
+              disabled={!canManage}
+              key={item.code}
+              lang={item.code}
+              type="button"
+              onClick={() => onChange({ ...organization, language: item.code })}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      <p className="settings-section-note">{t("settings.language_org_hint")}</p>
       {error && <div className="administration-message error" role="alert">{error}</div>}
       {canManage && (
         <div className="administration-actions">

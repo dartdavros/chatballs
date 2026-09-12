@@ -5,6 +5,7 @@ import dns.resolver
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
+from chatballs.i18n import t
 from chatballs.support_portals.addressing import normalize_domain, validate_domain
 from chatballs.support_portals.models import SupportPortal
 from chatballs.support_portals.public_address import help_public_ipv4
@@ -14,7 +15,7 @@ from chatballs.support_portals.statuses import PortalStatus
 def set_custom_domain(portal: SupportPortal, value: str) -> SupportPortal:
     if portal.status == PortalStatus.ARCHIVED:
         raise ValidationError(
-            {"portal": "Восстановите портал, чтобы изменить его домен"}
+            {"portal": t("portals.restore_to_edit_domain")}
         )
     normalized = normalize_domain(value)
     portal.custom_domain = validate_domain(normalized) if normalized else ""
@@ -29,10 +30,10 @@ def set_custom_domain(portal: SupportPortal, value: str) -> SupportPortal:
 def verify_custom_domain(portal: SupportPortal) -> SupportPortal:
     if portal.status == PortalStatus.ARCHIVED:
         raise ValidationError(
-            {"portal": "Восстановите портал, чтобы подтвердить его домен"}
+            {"portal": t("portals.restore_to_verify_domain")}
         )
     if not portal.custom_domain:
-        raise ValidationError({"customDomain": "Сначала укажите домен"})
+        raise ValidationError({"customDomain": t("portals.domain_required_first")})
     # Подтверждать владение доменом нечем и незачем: продукт self-hosted, домен
     # и установка принадлежат одному владельцу (README дизайн-базлайна, решение
     # 6). Остаётся техническая проверка «ведёт ли домен на этот сервер» — она
@@ -52,11 +53,11 @@ def verify_custom_domain(portal: SupportPortal) -> SupportPortal:
             dns.exception.Timeout,
         ) as error:
             raise ValidationError(
-                {"customDomain": "A-запись домена пока не найдена"}
+                {"customDomain": t("portals.a_record_missing")}
             ) from error
         if server_ipv4 not in addresses:
             raise ValidationError(
-                {"customDomain": "A-запись домена указывает не на сервер Chatballs"}
+                {"customDomain": t("portals.a_record_mismatch")}
             )
 
     portal.custom_domain_verified_at = timezone.now()

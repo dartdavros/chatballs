@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils import timezone
 
+from chatballs.i18n import t
 from chatballs.identity.models import Organization
 from chatballs.integrations import checks
 from chatballs.integrations.models import (
@@ -44,9 +45,9 @@ def _resolve_channel(
     try:
         channel = Channel.objects.get(organization=organization, id=channel_id)
     except Channel.DoesNotExist as error:
-        raise ValidationError({"channel": "Channel not found"}) from error
+        raise ValidationError({"channel": t("channels.not_found")}) from error
     if not channel.is_active and channel.id != current_channel_id:
-        raise ValidationError({"channel": "Inactive channel cannot accept connections"})
+        raise ValidationError({"channel": t("settings.inactive_channel")})
     return channel
 
 
@@ -54,17 +55,17 @@ def _email_config(config: dict) -> dict:
     """Email-подключение (ADR-CHATBALLS-0035): адрес и хосты IMAP/SMTP обязательны,
     порты/SSL имеют значения по умолчанию, purpose не поддерживается."""
     if str(config.get("purpose", "")).strip():
-        raise ValidationError({"config": "Email cannot be a notifications bot"})
+        raise ValidationError({"config": t("settings.email_not_a_bot")})
     address = str(config.get("email", "")).strip().lower()
     imap_host = str(config.get("imapHost", config.get("imap_host", ""))).strip()
     smtp_host = str(config.get("smtpHost", config.get("smtp_host", ""))).strip()
     if not address or not imap_host or not smtp_host:
-        raise ValidationError({"config": "Email address, IMAP host and SMTP host are required"})
+        raise ValidationError({"config": t("settings.email_hosts_required")})
     try:
         imap_port = int(config.get("imapPort", config.get("imap_port")) or 993)
         smtp_port = int(config.get("smtpPort", config.get("smtp_port")) or 465)
     except (TypeError, ValueError) as error:
-        raise ValidationError({"config": "Ports must be numbers"}) from error
+        raise ValidationError({"config": t("settings.ports_numbers")}) from error
     return {
         "email": address,
         "imap_host": imap_host,
@@ -78,18 +79,18 @@ def _email_config(config: dict) -> dict:
 
 def _normalized_config(provider: str, config: dict) -> dict:
     if not isinstance(config, dict):
-        raise ValidationError({"config": "Object required"})
+        raise ValidationError({"config": t("api.object_required")})
     if provider == IntegrationProvider.EMAIL:
         return _email_config(config)
     if provider == IntegrationProvider.WEB:
         allowed = config.get("allowedOrigins", config.get("allowed_domains", []))
         if not isinstance(allowed, list) or not all(isinstance(item, str) for item in allowed):
-            raise ValidationError({"config": "allowedOrigins must be a list of strings"})
+            raise ValidationError({"config": t("settings.allowed_origins_list")})
         quick_replies = config.get("quickReplies", config.get("quick_replies", []))
         if not isinstance(quick_replies, list) or not all(
             isinstance(item, str) for item in quick_replies
         ):
-            raise ValidationError({"config": "quickReplies must be a list of strings"})
+            raise ValidationError({"config": t("settings.quick_replies_list")})
         return {
             "allowed_domains": [item.strip() for item in allowed if item.strip()],
             "title": str(config.get("title", "")).strip(),
@@ -109,13 +110,13 @@ def _normalized_config(provider: str, config: dict) -> dict:
         try:
             result["base_url"] = clean_config_url(base_url, schemes=HTTP_SCHEMES)
         except OutboundUrlRejected as error:
-            raise ValidationError({"config": f"Base URL: {error}"}) from error
+            raise ValidationError({"config": t("settings.base_url_rejected", error=error)}) from error
     proxy_url = str(config.get("proxyUrl", config.get("proxy_url", ""))).strip()
     if proxy_url:
         try:
             result["proxy_url"] = clean_config_url(proxy_url, schemes=PROXY_SCHEMES)
         except OutboundUrlRejected as error:
-            raise ValidationError({"config": f"Proxy URL: {error}"}) from error
+            raise ValidationError({"config": t("settings.proxy_url_rejected", error=error)}) from error
     # LLM-провайдеры (OpenRouter, Custom) хранят модель по умолчанию свободным текстом.
     # Для OpenRouter поле исторически декоративно (SPEC-HUB-0005:388); для Custom оно
     # читается в рантайме (ADR-CHATBALLS-0034 §4). Версионирование модели — дорожка ADR-0034.
@@ -140,9 +141,9 @@ def _normalized_config(provider: str, config: dict) -> dict:
             result["purpose"] = purpose
     if provider == IntegrationProvider.CUSTOM:
         if not base_url:
-            raise ValidationError({"config": "Custom Base URL is required"})
+            raise ValidationError({"config": t("settings.custom_base_url_required")})
         if "default_model" not in result:
-            raise ValidationError({"config": "Custom model is required"})
+            raise ValidationError({"config": t("settings.custom_model_required")})
     return result
 
 
@@ -161,7 +162,7 @@ def _publish_web_widget(*, context: TenantContext, integration: Integration) -> 
 
 def _validate_provider(provider: str) -> str:
     if provider not in IntegrationProvider.values:
-        raise ValidationError({"provider": "Unknown provider"})
+        raise ValidationError({"provider": t("settings.unknown_provider")})
     return provider
 
 
@@ -171,11 +172,11 @@ def create_integration(*, context: TenantContext, data: IntegrationInput) -> Int
     provider = _validate_provider(data.provider)
     name = data.name.strip()
     if not name:
-        raise ValidationError({"name": "Name required"})
+        raise ValidationError({"name": t("settings.name_required")})
     if provider == IntegrationProvider.CUSTOM and not (data.secret or "").strip():
-        raise ValidationError({"secret": "Custom API key is required"})
+        raise ValidationError({"secret": t("settings.api_key_required")})
     if provider == IntegrationProvider.EMAIL and not (data.secret or "").strip():
-        raise ValidationError({"secret": "Mailbox password is required"})
+        raise ValidationError({"secret": t("settings.mailbox_password_required")})
     integration = Integration(
         organization=organization,
         kind=PROVIDER_KIND[provider],
@@ -200,7 +201,7 @@ def update_integration(
     *, context: TenantContext, integration: Integration, data: IntegrationInput
 ) -> Integration:
     if integration.organization_id != context.organization_id:
-        raise ValidationError({"integration": "Integration belongs to another organization"})
+        raise ValidationError({"integration": t("settings.integration_other_organization")})
     integration.name = data.name.strip() or integration.name
     integration.config = _normalized_config(integration.provider, data.config)
     integration.channel = _resolve_channel(
@@ -225,7 +226,7 @@ def update_integration(
 
 def delete_integration(*, context: TenantContext, integration: Integration) -> None:
     if integration.organization_id != context.organization_id:
-        raise ValidationError({"integration": "Integration belongs to another organization"})
+        raise ValidationError({"integration": t("settings.integration_other_organization")})
     integration.delete()
 
 
@@ -242,7 +243,7 @@ def _check_web(context: TenantContext, integration: Integration) -> tuple[bool, 
     """Web-виджет обслуживается нашим же backend'ом — внешнего API нет.
     Проверяем конфигурацию конкретного widget entry point."""
     if integration.channel_id is None:
-        return False, "Подключение не привязано к каналу — виджет не активен", {}
+        return False, t("integrations.check_web_not_bound"), {}
     from chatballs.webchat.widgets import ensure_widget
 
     try:
@@ -250,18 +251,18 @@ def _check_web(context: TenantContext, integration: Integration) -> tuple[bool, 
     except ValidationError as error:
         return False, "; ".join(error.messages), {}
     if widget is None:
-        return False, "Конфигурация Web-виджета не создана", {}
+        return False, t("integrations.check_web_no_config"), {}
     # Пустой allowed_origins в проде запрещает вообще все домены (webchat.services.
     # origin_allowed), и на сайте виджет молча показывает «Чат временно недоступен».
     # Проверка обязана падать здесь, а не оставлять зелёный статус при мёртвом чате.
     if not widget.allowed_origins:
-        return False, "Не заданы разрешённые домены — виджет будет недоступен на сайте", {}
-    return True, f"Web-виджет активен · канал «{integration.channel.name}»", {}
+        return False, t("integrations.check_web_no_origins"), {}
+    return True, t("integrations.check_web_active", channel=integration.channel.name), {}
 
 
 def test_integration(*, context: TenantContext, integration: Integration) -> Integration:
     if integration.organization_id != context.organization_id:
-        raise ValidationError({"integration": "Integration belongs to another organization"})
+        raise ValidationError({"integration": t("settings.integration_other_organization")})
     if integration.provider == IntegrationProvider.WEB:
         ok, detail, meta = _check_web(context, integration)
     elif integration.provider == IntegrationProvider.EMAIL:
@@ -270,10 +271,12 @@ def test_integration(*, context: TenantContext, integration: Integration) -> Int
     else:
         check = _CHECKS.get(integration.provider)
         if check is None:
-            ok, detail, meta = False, "Проверка для этого типа подключения не поддерживается", {}
+            ok, detail, meta = False, t("integrations.check_unsupported"), {}
         else:
             ok, detail, meta = check(secret=integration.secret, base_url=str(integration.config.get("base_url", "")), proxy_url=str(integration.config.get("proxy_url", "")))
     integration.status = IntegrationStatus.OK if ok else IntegrationStatus.ERROR
+    # Диагностика сохраняется на языке того, кто нажал «Проверить»: она живёт до
+    # следующей проверки, и хранить её кодом, как историю диалога, нечего.
     integration.last_error = "" if ok else detail
     integration.last_checked_at = timezone.now()
     update_fields = ["status", "last_error", "last_checked_at", "updated_at"]

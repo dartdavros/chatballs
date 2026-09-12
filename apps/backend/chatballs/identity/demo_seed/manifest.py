@@ -16,6 +16,12 @@ from django.core.exceptions import ImproperlyConfigured
 DATA_DIR = Path(__file__).resolve().parent / "data"
 MEDIA_DIR = DATA_DIR / "media"
 
+# Язык демо-данных: у каждого свой каталог манифестов. Демо — это витрина, и
+# на английской установке она обязана быть английской целиком: имена, переписка,
+# знания. Общими остаются только бинарные вложения в ``media`` (аватары,
+# голосовые): их из текста не сделать.
+DEFAULT_DATA_LANGUAGE = "ru"
+
 SCHEMA_VERSION = 1
 
 #: Файлы манифестов по доменам (имя файла без расширения).
@@ -33,13 +39,16 @@ class ManifestError(ImproperlyConfigured):
 
 
 @cache
-def load(name: str) -> dict | list:
+def load(name: str, language: str = DEFAULT_DATA_LANGUAGE) -> dict | list:
     """Возвращает разобранный JSON-манифест ``name`` с проверкой схемы.
 
-    Кэшируется на процесс: повторные вызовы во время одного прогона сида
-    не перечитывают файл.
+    Кэшируется на процесс и на язык: повторные вызовы во время одного прогона
+    сида не перечитывают файл. Язык, для которого набора нет, откатывается к
+    языку по умолчанию — демо лучше показать на другом языке, чем не показать.
     """
-    path = DATA_DIR / f"{name}.json"
+    path = DATA_DIR / language / f"{name}.json"
+    if not path.is_file():
+        path = DATA_DIR / DEFAULT_DATA_LANGUAGE / f"{name}.json"
     if not path.is_file():
         raise ManifestError(f"Demo manifest not found: {path}")
     try:

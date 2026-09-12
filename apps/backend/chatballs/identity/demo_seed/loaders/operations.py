@@ -42,7 +42,7 @@ FINISHED = {
 
 
 def load(context: TenantContext, refs: DemoRefs) -> None:
-    data = manifest.load("operations")
+    data = manifest.load("operations", refs.language)
     current = now()
     for item in data.get("calls", []):
         _ensure_call(refs, item, current)

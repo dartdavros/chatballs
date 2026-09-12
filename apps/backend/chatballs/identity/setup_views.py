@@ -33,7 +33,7 @@ def _validation_response(error: ValidationError) -> Response:
         if "__all__" in errors:
             errors["password"] = " ".join(error.message_dict["__all__"])
             del errors["__all__"]
-        detail = next(iter(errors.values()), "Проверьте заполненные поля")
+        detail = next(iter(errors.values()), t("setup.check_fields"))
         return Response({"detail": detail, "errors": errors}, status=400)
     message = " ".join(error.messages)
     return Response({"detail": message, "errors": {"password": message}}, status=400)
@@ -67,6 +67,7 @@ class SetupView(APIView):
                     email=str(body.get("email", "")),
                     password=str(body.get("password", "")),
                     install_demo=bool(body.get("installDemo", False)),
+                    language=str(body.get("language", "")),
                 ),
                 public_host=request.get_host(),
                 public_scheme=request.scheme,

@@ -18,7 +18,7 @@ from chatballs.conversations.models import (
     MessageKind,
 )
 from chatballs.conversations.transports.base import InboundMessage
-from chatballs.i18n import t
+from chatballs.i18n import customer_language, t
 from chatballs.i18n.languages import resolve_language
 from chatballs.identity.instance_settings import default_language
 from chatballs.integrations.features import features_payload
@@ -26,8 +26,6 @@ from chatballs.integrations.models import Integration, IntegrationProvider
 from chatballs.tenancy.context import TenantContext
 from chatballs.webchat.models import WebChatWidget, WebSession
 
-DEFAULT_GREETING = "Здравствуйте! Готов помочь и ответить на вопросы. Чем можем помочь?"
-DEFAULT_CONSENT = "Продолжая, вы соглашаетесь на обработку сообщений для ответа на обращение."
 DEFAULT_ACCENT = "#1677ff"
 
 _STATE = {ControlMode.AI: "ai", ControlMode.HUMAN: "operator", ControlMode.PAUSED: "waiting"}
@@ -84,10 +82,17 @@ def origin_allowed(widget: WebChatWidget, origin: str) -> bool:
 
 def public_config(*, context: TenantContext, widget: WebChatWidget, origin: str) -> dict:
     integration = widget.integration
+    # Язык отдаётся и тогда, когда виджет открыть нельзя: «Чат временно
+    # недоступен» — это организация говорит со своим клиентом, и говорить она
+    # должна на своём языке, а не на языке браузера посетителя.
+    language = resolve_language(
+        organization_language=context.organization.language,
+        instance_language=default_language(),
+    )
     if integration.channel_id is None:
-        return {"available": False}
+        return {"available": False, "language": language}
     if not origin_allowed(widget, origin):
-        return {"available": False, "reason": "domain"}
+        return {"available": False, "reason": "domain", "language": language}
     cfg = widget.presentation_config
     consent = widget.consent_config
     channel = integration.channel
@@ -103,19 +108,15 @@ def public_config(*, context: TenantContext, widget: WebChatWidget, origin: str)
         "widgetKey": widget.public_key,
         # Язык обвязки виджета — язык организации: на нём отвечают и агент, и
         # оператор, и английская кнопка «Send» вокруг русских ответов выглядела
-        # бы ошибкой. Если организация языка не выбрала, берётся язык
-        # установки; пустое значение оставляет решение браузеру посетителя.
-        "language": resolve_language(
-            organization_language=context.organization.language,
-            instance_language=default_language(),
-        ),
+        # бы ошибкой.
+        "language": language,
         # Что разрешено в этой точке входа: виджет прячет микрофон при запрете.
         "features": features_payload(integration),
         "title": cfg.get("title") or channel.name,
         "accent": cfg.get("accent") or DEFAULT_ACCENT,
-        "greeting": cfg.get("greeting") or DEFAULT_GREETING,
+        "greeting": cfg.get("greeting") or t("webchat.default_greeting", language=language),
         "consent": {
-            "text": consent.get("consent_text") or DEFAULT_CONSENT,
+            "text": consent.get("consent_text") or t("webchat.default_consent", language=language),
             "version": consent.get("consent_version") or "v1",
         },
         "quickReplies": cfg.get("quick_replies") or [],
@@ -129,7 +130,11 @@ def issue_session(*, context: TenantContext, widget: WebChatWidget) -> dict | No
     if integration is None or integration.channel_id is None:
         return None
     session_id = uuid.uuid4().hex
-    guest_name = f"Гость · {session_id[:6]}"
+    guest_name = t(
+        "webchat.guest_name",
+        code=session_id[:6],
+        language=customer_language(integration.channel.organization),
+    )
     contact = Contact.objects.create(organization=integration.channel.organization, name=guest_name)
     identity = ConnectionIdentity.objects.create(
         organization=context.organization,

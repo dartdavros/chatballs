@@ -66,9 +66,9 @@ class OpenRouterProvider(LLMProvider):
                 payload = json.loads(response.read().decode("utf-8"))
         except urllib.error.HTTPError as error:
             detail = error.read().decode("utf-8", "replace")[:300]
-            raise ProviderError(f"Расшифровка не удалась: HTTP {error.code} {detail}") from error
+            raise ProviderError(t("ai.transcription_failed_http", code=error.code, detail=detail)) from error
         except (urllib.error.URLError, TimeoutError, OSError, json.JSONDecodeError) as error:
-            raise ProviderError(f"Расшифровка не удалась: {error}") from error
+            raise ProviderError(t("ai.transcription_failed", error=error)) from error
         text = str(payload.get("text") or "").strip()
         if not text:
             raise ProviderError(t("ai.empty_transcript"))

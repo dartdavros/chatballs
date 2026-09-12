@@ -5,10 +5,14 @@ from chatballs.ai.agent_knowledge import (
     runtime_portal_articles_for_agent,
 )
 from chatballs.ai.invocation import invoke_chat
-from chatballs.ai.models import AIAgent, KnowledgeFragment
+from chatballs.ai.models import AIAgent, AnswerLanguage, KnowledgeFragment
 from chatballs.ai.provider.base import ChatMessage, ChatResult
 from chatballs.ai.retrieval import KnowledgeRetriever
+from chatballs.i18n import LANGUAGES, customer_language, normalize_language
 from chatballs.support_portals.addressing import article_public_url
+
+# Название языка — на нём самом: модели так однозначнее, чем «английский».
+LANGUAGE_LABELS = dict(LANGUAGES)
 
 # Гард стиля для мессенджеров: гарантирует простой текст вне зависимости от
 # того, что написано в авторских инструкциях.
@@ -29,6 +33,36 @@ HANDOFF_PROTOCOL = (
     f"добавь отдельной строкой технический токен {HANDOFF_TOKEN}. Не упоминай этот "
     "токен в тексте и не показывай его пользователю — просто заверши им сообщение."
 )
+
+
+# Язык ответа. Директива стоит отдельной строкой и последней среди системных:
+# промпт написан по-русски и сам по себе тянет ответ в русский язык, а явное
+# указание это перебивает. Переводить сам промпт не нужно — его читает модель,
+# а не человек.
+ANSWER_IN_CUSTOMER_LANGUAGE = (
+    "Отвечай на том языке, на котором написано последнее сообщение клиента. "
+    "Если язык определить не удалось, отвечай на языке предыдущей переписки."
+)
+ANSWER_IN_FIXED_LANGUAGE = (
+    "Отвечай всегда на языке «{language}», независимо от того, на каком языке "
+    "написал клиент."
+)
+
+
+def answer_language_directive(agent: AIAgent) -> str:
+    """Строка системного промпта, задающая язык ответа агента."""
+
+    if agent.answer_language == AnswerLanguage.MIRROR:
+        return ANSWER_IN_CUSTOMER_LANGUAGE
+    if agent.answer_language == AnswerLanguage.ORGANIZATION:
+        code = customer_language(agent.channel.organization)
+    else:
+        code = normalize_language(agent.answer_language)
+    if not code:
+        # Код испортили руками или язык убрали из сборки: зеркало клиента
+        # безопаснее молчания — ответ всё равно попадёт в язык обращения.
+        return ANSWER_IN_CUSTOMER_LANGUAGE
+    return ANSWER_IN_FIXED_LANGUAGE.format(language=LANGUAGE_LABELS[code])
 
 
 @dataclass(frozen=True)
@@ -102,6 +136,7 @@ def run_agent_turn(
         messages.append(
             ChatMessage(role="system", content=MESSENGER_STYLE_GUARD + "\n\n" + HANDOFF_PROTOCOL)
         )
+    messages.append(ChatMessage(role="system", content=answer_language_directive(agent)))
     catalog = knowledge_catalog(agent)
     if catalog:
         messages.append(ChatMessage(role="system", content=catalog))

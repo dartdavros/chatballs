@@ -1,6 +1,6 @@
 import { shortDateTime } from "../../shared/utils";
 import type { PortalArticle, SupportPortal } from "./model";
-import { t, tn } from "../../i18n";
+import { fmt, t, tn } from "../../i18n";
 
 const LOCALE_NAMES: Record<string, string> = {
   ru: t("portals.russian_2"),
@@ -18,8 +18,7 @@ export function localeName(locale: string): string {
 
 /** «русский · создан 12 июля» — вторая строка названия портала (кадр PT1). */
 export function portalSubtitle(portal: SupportPortal): string {
-  const created = new Intl.DateTimeFormat("ru-RU", { day: "numeric", month: "long" })
-    .format(new Date(portal.createdAt));
+  const created = fmt.dayMonthLong(portal.createdAt);
   return t("portals.locale_created", { locale: localeName(portal.defaultLocale), date: created });
 }
 

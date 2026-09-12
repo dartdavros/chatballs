@@ -47,7 +47,7 @@ class ConnectionAlreadyBound(Exception):
     def __init__(self, *, integration: Integration) -> None:
         self.integration = integration
         super().__init__(
-            "Подключение уже привязано к другому каналу: перенос требует force"
+            t("channels.binding_conflict")
         )
 
     def payload(self) -> dict[str, Any]:
@@ -74,9 +74,9 @@ class ChannelUpdate:
 def _clean_name(raw: object) -> str:
     name = str(raw or "").strip()
     if not name:
-        raise ValidationError({"name": "Название канала не может быть пустым"})
+        raise ValidationError({"name": t("channels.name_required")})
     if len(name) > NAME_MAX_LENGTH:
-        raise ValidationError({"name": "Название канала длиннее 255 символов"})
+        raise ValidationError({"name": t("channels.name_too_long")})
     return name
 
 
@@ -91,7 +91,7 @@ def _group_for_channel(
             organization_id=context.organization_id,
         )
     except EmployeeGroup.DoesNotExist as error:
-        raise ValidationError({"groupId": "Unknown group"}) from error
+        raise ValidationError({"groupId": t("channels.unknown_group")}) from error
 
 
 @transaction.atomic
@@ -114,11 +114,11 @@ def update_channel(
         authorization.require_channel_manage(context)
     if update.is_active is not UNSET and update.is_active != locked.is_active:
         authorization.require_organization_manage(
-            context, operation="Изменение статуса канала"
+            context, operation="channels.operation_status_change"
         )
     if update.policy:
         authorization.require_organization_manage(
-            context, operation="Изменение политики канала"
+            context, operation="channels.operation_policy_change"
         )
 
     changed: list[str] = []
@@ -149,10 +149,10 @@ def _messenger_integration(*, context: TenantContext, integration_id: int) -> In
             id=integration_id, organization_id=context.organization_id
         )
     except Integration.DoesNotExist as error:
-        raise ValidationError({"integrationId": "Подключение не найдено"}) from error
+        raise ValidationError({"integrationId": t("channels.connection_not_found")}) from error
     if integration.kind != IntegrationKind.MESSENGER:
         raise ValidationError(
-            {"integrationId": "LLM-провайдер не является подключением канала"}
+            {"integrationId": t("channels.llm_is_not_a_connection")}
         )
     return integration
 
@@ -169,7 +169,7 @@ def bind_connection(
     authorization.require_connections_manage(context)
     if not channel.is_active:
         raise ValidationError(
-            {"channelId": "Нельзя привязать подключение к архивному каналу"}
+            {"channelId": t("channels.archived_channel_binding")}
         )
     integration = _messenger_integration(context=context, integration_id=integration_id)
     previous_channel_id = integration.channel_id
@@ -189,7 +189,7 @@ def unbind_connection(
     authorization.require_connections_manage(context)
     integration = _messenger_integration(context=context, integration_id=integration_id)
     if integration.channel_id != channel.id:
-        raise ValidationError({"integrationId": "Подключение не привязано к каналу"})
+        raise ValidationError({"integrationId": t("channels.connection_not_bound")})
     # Диалоги не затрагиваются: Conversation.connection объявлен PROTECT.
     integration.channel = None
     integration.save(update_fields=["channel", "updated_at"])

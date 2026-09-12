@@ -136,6 +136,20 @@ def default_language() -> str:
     return normalize_language(row.default_language) if row is not None else ""
 
 
+def remember_default_language(language: str) -> None:
+    """Записать язык установки. Пустое значение ничего не меняет."""
+
+    from chatballs.i18n.languages import normalize_language
+
+    code = normalize_language(language)
+    if not code:
+        return
+    row = InstanceSettings.load()
+    if row.default_language != code:
+        row.default_language = code
+        row.save(update_fields=["default_language", "updated_at"])
+
+
 def remember_public_host(raw_host: str, scheme: str = "http") -> None:
     """Запомнить адрес, на котором прошли мастер, если он ещё не задан."""
 

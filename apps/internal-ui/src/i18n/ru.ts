@@ -1408,6 +1408,10 @@ export const ru = {
   "unit.b": "{value} Б",
   "unit.kb": "{value} КБ",
   "unit.mb": "{value} МБ",
+  "ai.answer_language": "Язык ответов",
+  "ai.answer_language_hint": "На каком языке агент пишет клиенту",
+  "ai.answer_language_mirror": "Как у клиента",
+  "ai.answer_language_organization": "Язык организации",
 } satisfies Record<string, Message>;
 
 export type MessageKey = keyof typeof ru;

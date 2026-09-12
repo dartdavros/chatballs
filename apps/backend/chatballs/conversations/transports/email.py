@@ -26,6 +26,7 @@ from chatballs.conversations.transports.base import (
     guess_content_type,
     safe_filename,
 )
+from chatballs.i18n import customer_language, t
 
 logger = logging.getLogger(__name__)
 
@@ -194,7 +195,8 @@ def send_text(integration, *, chat_id: str, user_id: str, text: str, attachments
     outgoing["From"] = _address(integration)
     outgoing["To"] = target
     subject = str(meta.get("subject", "")).strip()
-    outgoing["Subject"] = f"Re: {subject}" if subject and not subject.lower().startswith("re:") else (subject or "Re: Ваше обращение")
+    default_subject = t("conversations.email_default_subject", language=customer_language(integration.organization))
+    outgoing["Subject"] = f"Re: {subject}" if subject and not subject.lower().startswith("re:") else f"Re: {subject or default_subject}"
     last_message_id = str(meta.get("last_message_id", "")).strip()
     if last_message_id:
         outgoing["In-Reply-To"] = last_message_id
@@ -223,8 +225,10 @@ def send_text(integration, *, chat_id: str, user_id: str, text: str, attachments
 def send_voice(integration, *, chat_id: str, user_id: str, content: bytes, content_type: str, duration: int) -> bool:
     """Голосовое оператора уходит письмом с аудио-вложением."""
     suffix = "ogg" if "ogg" in content_type else (content_type.rsplit("/", 1)[-1] or "webm").split(";")[0]
-    return send_text(integration, chat_id=chat_id, user_id=user_id, text="Голосовое сообщение", attachments=[(content, f"voice.{suffix}", content_type)])
+    text = t("conversations.voice_message", language=customer_language(integration.organization))
+    return send_text(integration, chat_id=chat_id, user_id=user_id, text=text, attachments=[(content, f"voice.{suffix}", content_type)])
 
 
 def send_file(integration, *, chat_id: str, user_id: str, content: bytes, filename: str, content_type: str, caption: str = "") -> bool:
-    return send_text(integration, chat_id=chat_id, user_id=user_id, text=caption or f"Файл: {filename}", attachments=[(content, filename, content_type)])
+    text = caption or t("conversations.file_caption", name=filename, language=customer_language(integration.organization))
+    return send_text(integration, chat_id=chat_id, user_id=user_id, text=text, attachments=[(content, filename, content_type)])

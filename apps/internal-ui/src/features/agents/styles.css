@@ -755,6 +755,18 @@
 
 /* Инструкции. */
 
+/* Язык ответов (кадр G3): тот же сегмент-контрол, что в профиле и в настройках
+   организации. Стоит над инструкциями — это выбор режима, а не текст, — и
+   подпись у него сверху, как у соседних полей карточки: колонка узкая, сбоку
+   подписи кнопок ломались бы в три строки. */
+.agent-answer-language {
+  margin-bottom: 14px;
+}
+
+.agent-answer-language .appearance-theme-options {
+  flex-wrap: wrap;
+}
+
 .agent-instructions {
   display: flex;
   flex-direction: column;

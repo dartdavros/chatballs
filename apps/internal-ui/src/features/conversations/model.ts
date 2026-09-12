@@ -1,6 +1,6 @@
 import { api, apiUpload } from "../../api/client";
 import type { ChannelKey, ConversationListItem, ControlMode, DialogMode, ListSort } from "./types";
-import { t } from "../../i18n";
+import { fmt, t } from "../../i18n";
 
 // kind: "" — текст, "contact_request" — запрос контакта, "contact" — клиент поделился номером.
 export type ApiMessage = {
@@ -115,11 +115,11 @@ export function groupColorOf(groupId: number, color?: string | null): string {
 export function listTime(iso: string, now = new Date()): string {
   const date = new Date(iso);
   const sameDay = date.toDateString() === now.toDateString();
-  if (sameDay) return date.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+  if (sameDay) return fmt.time(date);
   const yesterday = new Date(now);
   yesterday.setDate(now.getDate() - 1);
   if (date.toDateString() === yesterday.toDateString()) return t("common.yesterday");
-  return date.toLocaleDateString("ru-RU", { day: "numeric", month: "short" }).replace(".", "");
+  return fmt.shortDate(date);
 }
 
 // Таймер ожидания оператора: «6 мин», «1 ч 50 мин» — без слова «ждёт» (решение 4).

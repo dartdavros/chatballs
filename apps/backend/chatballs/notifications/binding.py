@@ -17,6 +17,7 @@ from django.utils import timezone
 from chatballs.conversations import transports
 from chatballs.conversations.transports.base import InboundMessage
 from chatballs.integrations.models import Integration, IntegrationKind, IntegrationProvider
+from chatballs.i18n import customer_language, first_chosen, normalize_language, t
 from chatballs.notifications.models import MessengerBinding, MessengerBindingCode
 
 logger = logging.getLogger(__name__)
@@ -24,8 +25,6 @@ logger = logging.getLogger(__name__)
 CODE_TTL = timedelta(minutes=10)
 NOTIFIER_PURPOSE = "notifications"
 
-CONFIRMATION_TEXT = "Готово! Уведомления Chatballs подключены. Отключить можно в профиле."
-HINT_TEXT = "Это сервисный бот уведомлений Chatballs. Чтобы подключить уведомления, откройте профиль в Chatballs и нажмите «Подключить»."
 
 # База deep-link по провайдеру: и TG, и MAX поддерживают ?start=<код>.
 _DEEP_LINK_BASE = {
@@ -92,7 +91,8 @@ def handle_notifier_inbound(integration: Integration, inbound: InboundMessage) -
         else None
     )
     if binding_code is None:
-        transports.send_reply(integration, chat_id=inbound.chat_id, user_id=inbound.user_id, text=HINT_TEXT)
+        hint = t("notifications.binding_hint", language=customer_language(integration.organization))
+        transports.send_reply(integration, chat_id=inbound.chat_id, user_id=inbound.user_id, text=hint)
         return
     with transaction.atomic():
         # Уведомления идут ровно в один мессенджер: новая привязка заменяет прежние.
@@ -106,7 +106,15 @@ def handle_notifier_inbound(integration: Integration, inbound: InboundMessage) -
             defaults={"external_chat_id": inbound.chat_id or inbound.user_id},
         )
         binding_code.delete()
-    transports.send_reply(integration, chat_id=inbound.chat_id, user_id=inbound.user_id, text=CONFIRMATION_TEXT)
+    # Подтверждение читает конкретный сотрудник — язык берём из его профиля.
+    done = t(
+        "notifications.binding_done",
+        language=first_chosen(
+            normalize_language(binding_code.user.ui_language),
+            customer_language(integration.organization),
+        ),
+    )
+    transports.send_reply(integration, chat_id=inbound.chat_id, user_id=inbound.user_id, text=done)
 
 
 def poll_notifier_bots(context) -> int:

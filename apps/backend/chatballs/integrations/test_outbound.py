@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from django.test import TestCase
 
 from chatballs.conversations.transports.base import download_bytes
+from chatballs.i18n import t
 from chatballs.identity.bootstrap import bootstrap_owner
 from chatballs.identity.models import Organization
 from chatballs.integrations.models import IntegrationProvider
@@ -111,7 +112,7 @@ class IntegrationConfigTests(TestCase):
                     config={"baseUrl": "file:///etc/passwd", "defaultModel": "m"},
                 ),
             )
-        self.assertIn("Base URL", str(raised.exception))
+        self.assertIn(t("settings.base_url_rejected", error="").rstrip(), str(raised.exception))
 
     def test_proxy_url_scheme_is_validated(self) -> None:
         with self.assertRaises(ValidationError) as raised:
@@ -128,4 +129,6 @@ class IntegrationConfigTests(TestCase):
                     },
                 ),
             )
-        self.assertIn("Proxy URL", str(raised.exception))
+        # Сообщение называет именно прокси, а не Base URL. Префикс берём из
+        # каталога: иначе проверка ломается от языка, на котором идёт прогон.
+        self.assertIn(t("settings.proxy_url_rejected", error="").rstrip(), str(raised.exception))

@@ -5,7 +5,7 @@
 import { waitLabelOf } from "../../conversations/model";
 import { channelMap } from "../../../shared/providers";
 import { shortDate } from "../../../shared/utils";
-import { t } from "../../../i18n";
+import { fmt, t } from "../../../i18n";
 
 export { channelMap };
 
@@ -109,7 +109,7 @@ export function relativeTime(iso: string): { minutes: number; label: string } {
 export function contactTime(iso: string, now = new Date()): string {
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return "";
-  const time = date.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+  const time = fmt.time(date);
   const days = Math.round((startOfDay(now).getTime() - startOfDay(date).getTime()) / 86400000);
   if (days === 0) return t("time.today_at", { time });
   if (days === 1) return t("time.yesterday_comma", { time });

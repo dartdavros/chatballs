@@ -3,6 +3,8 @@ from __future__ import annotations
 import abc
 from dataclasses import dataclass
 
+from chatballs.i18n import t
+
 
 @dataclass(frozen=True)
 class ChatMessage:
@@ -48,4 +50,4 @@ class LLMProvider(abc.ABC):
     def transcribe(self, *, audio: bytes, filename: str, content_type: str, model: str) -> str:
         """Расшифровка аудио (дизайн-базлайн v2). Реализуется OpenAI-совместимыми
         адаптерами (POST /audio/transcriptions); остальные явно отказывают."""
-        raise ProviderError(f"Провайдер {self.name} не поддерживает расшифровку аудио")
+        raise ProviderError(t("ai.provider_no_transcription", provider=self.name))

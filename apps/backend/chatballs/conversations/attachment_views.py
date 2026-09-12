@@ -39,12 +39,12 @@ INLINE_TYPES = ("image/jpeg", "image/png", "image/gif", "image/webp", "applicati
 def validate_upload(upload) -> str:
     """Причина отказа или пустая строка."""
     if upload.size > MAX_FILE_BYTES:
-        return "Файл больше 20 МБ"
+        return t("conversations.attachment_too_large")
     if not upload.size:
-        return "Пустой файл"
+        return t("conversations.attachment_empty")
     name = safe_filename(upload.name or "")
     if name.lower().endswith(BLOCKED_SUFFIXES):
-        return "Такой тип файла отправить нельзя"
+        return t("conversations.attachment_type_blocked")
     return ""
 
 

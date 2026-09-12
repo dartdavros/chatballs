@@ -14,6 +14,13 @@ DEFAULT_AI_MODEL = "anthropic/claude-sonnet-4.6"
 
 
 
+class AnswerLanguage(models.TextChoices):
+    """Режимы поля ``AIAgent.answer_language``, кроме кодов самих языков."""
+
+    MIRROR = "MIRROR", "Как у клиента"
+    ORGANIZATION = "ORGANIZATION", "Язык организации"
+
+
 class AIAgentStatus(models.TextChoices):
 
     DRAFT = "DRAFT", "Draft"
@@ -368,6 +375,19 @@ class AIAgent(TenantRelationModel):
     model = models.CharField(max_length=128, default=DEFAULT_AI_MODEL)
 
     model_params = models.JSONField(default=dict, blank=True)
+
+    # Язык ответов клиенту. По умолчанию агент отвечает на языке, на котором
+    # к нему обратились: сигнал точный, лежит прямо в сообщении и не требует
+    # настройки. База знаний при этом остаётся одноязычной — поиск ведёт
+    # семантическая ветка (ai.retrieval), а эмбеддинги кроссязычные.
+    #
+    # Хранится либо режим (MIRROR, ORGANIZATION), либо код языка из
+    # chatballs.i18n.LANGUAGE_CODES — для тех, кому нужен ровно один язык
+    # независимо от того, на каком языке пришло сообщение.
+    answer_language = models.CharField(
+        max_length=16,
+        default=AnswerLanguage.MIRROR,
+    )
 
     # Инструкции из трёх частей; системный промпт собирается в этом порядке.
 

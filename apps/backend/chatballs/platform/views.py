@@ -4,6 +4,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from chatballs.i18n import t
 from chatballs.identity.models import EmployeeRole, OrganizationMembership
 from chatballs.platform.authentication import PlatformTokenAuthentication
 from chatballs.platform.errors import ProvisioningError
@@ -31,7 +32,7 @@ class OrganizationProvisionView(APIView):
     def post(self, request: Request) -> Response:
         idempotency_key = request.headers.get(_IDEMPOTENCY_HEADER, "").strip()
         if not idempotency_key:
-            return Response({"detail": "Idempotency-Key header is required"}, status=400)
+            return Response({"detail": t("platform.idempotency_key_required")}, status=400)
         command, error = parse_provisioning_body(
             request.data,
             idempotency_key=idempotency_key,

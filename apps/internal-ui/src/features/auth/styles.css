@@ -241,6 +241,12 @@
   color: var(--success-text);
 }
 
+/* Выбор языка в мастере: тот же сегмент-контрол, что в профиле и в настройках
+   организации; здесь ему нужен только отступ, как у остальных полей формы. */
+.auth-language {
+  margin-bottom: 16px;
+}
+
 .auth-checkbox {
   display: flex;
   align-items: flex-start;

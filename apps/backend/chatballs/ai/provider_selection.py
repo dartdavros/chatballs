@@ -11,6 +11,7 @@ from dataclasses import dataclass
 
 from django.core.exceptions import ValidationError
 
+from chatballs.i18n import t
 from chatballs.integrations.models import (
     Integration,
     IntegrationKind,
@@ -35,15 +36,23 @@ def configure_agent_provider(
             id=integration_id,
             organization_id=context.organization_id,
             kind=IntegrationKind.LLM_PROVIDER,
-            provider__in=[IntegrationProvider.OPENROUTER, IntegrationProvider.CUSTOM],
+            # DEMO — полноценный провайдер агента, а не заглушка настроек:
+            # на нём работает демо-стенд сразу после установки, без ключей.
+            # Без него любое сохранение агента демо-организации падало на
+            # «Неизвестная интеграция», хотя менялись инструкции, а не провайдер.
+            provider__in=[
+                IntegrationProvider.OPENROUTER,
+                IntegrationProvider.CUSTOM,
+                IntegrationProvider.DEMO,
+            ],
         )
     except (Integration.DoesNotExist, TypeError, ValueError) as error:
         raise ValidationError(
-            {"providerIntegrationId": "Unknown OpenRouter or Custom integration"}
+            {"providerIntegrationId": t("ai.unknown_provider_integration")}
         ) from error
     model = str(integration.config.get("default_model", "")).strip()
     if not model:
         raise ValidationError(
-            {"providerIntegrationId": "Integration default model is required"}
+            {"providerIntegrationId": t("ai.integration_model_required")}
         )
     return ProviderSelection(model, integration)

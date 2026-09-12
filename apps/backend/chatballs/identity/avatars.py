@@ -68,10 +68,10 @@ def replace_user_avatar(user: HumanUser, upload: UploadedFile) -> HumanUser:
     if not data:
         raise ValidationError({"file": t("profile.choose_photo_file")})
     if len(data) > MAX_AVATAR_BYTES:
-        raise ValidationError({"file": "Размер фото не должен превышать 2 МБ"})
+        raise ValidationError({"file": t("profile.photo_too_large")})
     detected = image_type(data)
     if detected is None:
-        raise ValidationError({"file": "Поддерживаются PNG, JPEG и WebP"})
+        raise ValidationError({"file": t("admin.image_formats")})
     content_type, suffix = detected
     return set_user_avatar(user, data, content_type, suffix)
 

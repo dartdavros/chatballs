@@ -13,10 +13,10 @@ import type { ApiConversation, ApiMessage } from "./model";
 import type { ConversationHistory } from "./useConversationHistory";
 import { useHistoryScroll } from "./useHistoryScroll";
 import type { ConversationListItem, ControlMode, StatusInfo } from "./types";
-import { t } from "../../i18n";
+import { fmt, t } from "../../i18n";
 
 function fmtTime(value: string): string {
-  return new Date(value).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+  return fmt.time(value);
 }
 
 export function ConversationThread({ controlMode, dialog, detail, history, isOwner = false, onClaim, onRelease, onClose, onSpam, onReturnQueue, onArchive, onToggleContext, onMobileBack, onExpandList, viewerId = null }: { controlMode: ControlMode; dialog: ConversationListItem | null; detail: ApiConversation | null; history: ConversationHistory; isOwner?: boolean; onClaim: () => void; onRelease: () => void; onClose: () => void; onSpam: () => Promise<boolean>; onReturnQueue: () => void; onArchive: () => Promise<boolean>; onToggleContext?: () => void; onMobileBack?: () => void; onExpandList?: () => void; viewerId?: number | null }) {
@@ -164,5 +164,5 @@ function dayLabel(iso: string): string {
   const yesterday = new Date(now);
   yesterday.setDate(now.getDate() - 1);
   if (date.toDateString() === yesterday.toDateString()) return t("admin.yesterday");
-  return date.toLocaleDateString("ru-RU", { day: "numeric", month: "long" });
+  return fmt.dayMonthLong(date);
 }

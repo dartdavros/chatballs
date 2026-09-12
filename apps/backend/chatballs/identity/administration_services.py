@@ -98,10 +98,10 @@ def replace_organization_logo(
     if not data:
         raise ValidationError({"file": t("admin.choose_logo_file")})
     if len(data) > MAX_LOGO_BYTES:
-        raise ValidationError({"file": "Размер логотипа не должен превышать 2 МБ"})
+        raise ValidationError({"file": t("admin.logo_too_large")})
     detected = _image_type(data)
     if detected is None:
-        raise ValidationError({"file": "Поддерживаются PNG, JPEG и WebP"})
+        raise ValidationError({"file": t("admin.image_formats")})
     content_type, suffix = detected
     organization = Organization.objects.select_for_update().get(
         pk=context.organization_id

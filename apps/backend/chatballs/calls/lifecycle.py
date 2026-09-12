@@ -105,7 +105,7 @@ def transition_call(
         )
     normalized_failure_code = failure_code.strip()
     if target_status == CallStatus.FAILED and not FAILURE_CODE_PATTERN.fullmatch(normalized_failure_code):
-        raise CallInvalidTransition("Для FAILED требуется нормализованный failure_code")
+        raise CallInvalidTransition(t("calls.failure_code_required"))
 
     now = timezone.now()
     update_fields = ["status", "updated_at"]

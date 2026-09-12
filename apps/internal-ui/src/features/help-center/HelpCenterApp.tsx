@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 
 import { Loader } from "@chatballs/ui";
 
+import { normalizeLanguage, setCurrentLanguage } from "@chatballs/shared";
+
 import { fetchHelpManifest } from "./api";
 import { HelpArticle } from "./HelpArticle";
 import { HelpHome } from "./HelpHome";
@@ -41,7 +43,15 @@ export function HelpCenterApp() {
       return;
     }
     fetchHelpManifest()
-      .then(setManifest)
+      .then((loaded) => {
+        // Язык портала — язык его материалов: статьи написаны на нём, и
+        // навигация вокруг них должна говорить так же. Ставится до
+        // setManifest, то есть до первого кадра с текстом: к этому моменту
+        // нарисован только лоадер, и подписи не успевают мигнуть чужим
+        // языком — та же причина, по которой до контента применяется тема.
+        setCurrentLanguage(normalizeLanguage(loaded.portal.defaultLocale));
+        setManifest(loaded);
+      })
       .catch(() => setFailed(true));
   }, [route]);
 

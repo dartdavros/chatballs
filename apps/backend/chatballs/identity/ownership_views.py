@@ -4,6 +4,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from chatballs.i18n import t
 from chatballs.identity.audit import record_audit_event
 from chatballs.identity.employee_support import employee_payload
 from chatballs.identity.employee_validation import (
@@ -31,16 +32,16 @@ class OwnershipTransferView(APIView):
                 .get(user_id=user_id, organization=actor.organization)
             )
         except OrganizationMembership.DoesNotExist:
-            return Response({"detail": "Employee not found"}, status=404)
+            return Response({"detail": t("admin.employee_not_found")}, status=404)
 
         if not can_manage_employee(actor, target, EmployeeAction.TRANSFER_OWNERSHIP):
             return deny_employee_action(request, target, EmployeeAction.TRANSFER_OWNERSHIP)
         if target.is_blocked or not target.user.is_active:
-            return Response({"detail": "Target must be an active employee"}, status=409)
+            return Response({"detail": t("admin.target_must_be_active")}, status=409)
 
         previous_owner_role = str(request.data.get("previousOwnerRole", EmployeeRole.ADMIN))
         if previous_owner_role not in ASSIGNABLE_ROLES:
-            return Response({"detail": "Previous owner role must be ADMIN or EMPLOYEE"}, status=400)
+            return Response({"detail": t("admin.previous_owner_role")}, status=400)
 
         actor.role = previous_owner_role
         actor.save(update_fields=["role"])

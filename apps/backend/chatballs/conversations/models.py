@@ -4,6 +4,7 @@ from django.contrib.postgres.search import SearchVector
 from django.db import models
 from django.utils import timezone
 
+from chatballs.i18n import t
 from chatballs.tenancy.models import TenantRelationModel
 
 # Минимальный домен диалогов (ADR-HUB-0001/0002/0003/0006). Состояние диалога
@@ -254,7 +255,7 @@ class MessageAuthor(models.TextChoices):
     CONTACT = "CONTACT", "Клиент"
     AI = "AI", "AI"
     OPERATOR = "OPERATOR", "Оператор"
-    SYSTEM = "SYSTEM", "Система"
+    SYSTEM = "SYSTEM", t("admin.actor_system")
 
 
 class SystemEvent(models.TextChoices):
@@ -355,6 +356,13 @@ class Message(TenantRelationModel):
         ordering = ["created_at"]
         indexes = [
             # Полнотекстовый поиск по сообщениям (поиск в списке диалогов).
+            #
+            # Конфигурация «russian» покрывает обе переписки, и второй индекс
+            # под английский был бы тратой места: в ней asciiword отдан
+            # english_stem, а word — russian_stem, поэтому английские слова
+            # стеммятся английским стеммером, а русские русским. Обратное
+            # неверно: «english» оставляет кириллицу без основы. Проверено
+            # тестом conversations/test_search_language.py.
             GinIndex(
                 SearchVector("text", config="russian"),
                 name="conv_message_text_fts",

@@ -131,7 +131,7 @@ def create_call_request(
     ensure_conversation_call_access(user=context.membership, conversation=conversation)
     if not call_allowed(conversation.connection, kind):
         raise CallAccessDenied(
-            "Видеозвонки отключены для этой точки входа" if kind == CallKind.VIDEO else "Звонки отключены для этой точки входа"
+            t("calls.video_off_entry_point") if kind == CallKind.VIDEO else t("calls.calls_off_entry_point")
         )
     identity = _conversation_identity(conversation)
     _check_call_creation_conflicts(conversation=conversation, initiator=initiator)

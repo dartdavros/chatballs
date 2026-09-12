@@ -14,7 +14,7 @@ class ArticleImportView(PortalBaseView):
             return Response({"detail": t("portals.not_found")}, status=404)
         articles = request.data.get("articles")
         if not isinstance(articles, list) or not articles:
-            return Response({"detail": "articles must be a non-empty list"}, status=400)
+            return Response({"detail": t("portals.articles_non_empty")}, status=400)
         result = import_articles(
             context=request.tenant_context,
             portal=portal,

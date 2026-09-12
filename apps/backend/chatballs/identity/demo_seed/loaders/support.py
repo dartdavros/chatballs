@@ -34,7 +34,7 @@ from chatballs.tenancy.storage import adjust_storage_usage
 
 
 def load(context: TenantContext, refs: DemoRefs) -> None:
-    data = manifest.load("support")
+    data = manifest.load("support", refs.language)
     current = now()
     _ensure_portal(context, refs, data.get("portal"), current)
     _link_agent_articles(refs)

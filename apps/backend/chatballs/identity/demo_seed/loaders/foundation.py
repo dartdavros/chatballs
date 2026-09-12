@@ -22,7 +22,7 @@ from chatballs.tenancy.context import TenantContext
 
 
 def load(context: TenantContext, refs: DemoRefs) -> None:
-    data = manifest.load("organization")
+    data = manifest.load("organization", refs.language)
     organization = refs.organization
     current = now()
 

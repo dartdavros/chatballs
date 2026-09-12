@@ -4,6 +4,7 @@ from zoneinfo import available_timezones
 
 from django.urls import reverse
 
+from chatballs.i18n import t
 from chatballs.i18n.languages import LANGUAGES
 from chatballs.identity.audit_catalog import (
     audit_action_label,
@@ -83,7 +84,7 @@ def audit_event_payload(event: AuditEvent) -> dict[str, object]:
         "id": event.id,
         "createdAt": event.created_at.isoformat(),
         "actorId": actor.id if actor is not None else None,
-        "actor": ((actor.full_name or actor.email) if actor is not None else "Система"),
+        "actor": ((actor.full_name or actor.email) if actor is not None else t("admin.actor_system")),
         "actorEmail": (actor.email if actor is not None else ""),
         "action": event.action,
         "actionLabel": audit_action_label(event.action),

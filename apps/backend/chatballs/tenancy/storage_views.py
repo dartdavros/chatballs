@@ -58,7 +58,7 @@ def storage_payload(row: ss.StorageSettings) -> dict[str, object]:
 def _errors_response(error: ValidationError) -> Response:
     if hasattr(error, "message_dict"):
         payload = {k: (v[0] if isinstance(v, list) else str(v)) for k, v in error.message_dict.items()}
-        detail = next(iter(payload.values()), "Проверьте заполненные поля")
+        detail = next(iter(payload.values()), t("setup.check_fields"))
         return Response({"detail": detail, "errors": payload}, status=400)
     return Response({"detail": "; ".join(error.messages)}, status=400)
 
@@ -92,7 +92,7 @@ class StorageSettingsView(APIView):
         body = request.data
         backend = str(body.get("backend") or row.backend).upper()
         if backend not in ss.StorageBackend.values:
-            return Response({"detail": t("settings.unknown_storage_kind"), "errors": {"backend": "LOCAL или S3"}}, status=400)
+            return Response({"detail": t("settings.unknown_storage_kind"), "errors": {"backend": t("settings.local_or_s3")}}, status=400)
         config = _apply_fields(row, body)
         if backend == ss.StorageBackend.S3:
             try:

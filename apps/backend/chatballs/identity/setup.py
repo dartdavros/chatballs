@@ -19,12 +19,13 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.db import connections, transaction
+from django.utils import translation
 from django.utils.text import slugify
 
 from chatballs.ai.knowledge_categories import ensure_uncategorized_category
-from chatballs.i18n import t
+from chatballs.i18n import INHERIT, current_language, normalize_language, t
 from chatballs.identity.audit import record_audit_event
-from chatballs.identity.instance_settings import remember_public_host
+from chatballs.identity.instance_settings import remember_default_language, remember_public_host
 from chatballs.identity.models import (
     EmployeeRole,
     HumanUser,
@@ -55,6 +56,9 @@ class SetupInput:
     email: str
     password: str
     install_demo: bool = False
+    # Язык установки, выбранный в мастере. Пусто — язык браузера, на котором
+    # мастер и открылся: человек его не трогал, значит он верен.
+    language: str = INHERIT
 
 
 @dataclass(frozen=True)
@@ -79,17 +83,17 @@ def _clean(data: SetupInput) -> SetupInput:
     if not organization_name:
         errors["organizationName"] = t("admin.organization_name_required")
     elif len(organization_name) > ORGANIZATION_NAME_MAX_LENGTH:
-        errors["organizationName"] = "Название длиннее 255 символов"
+        errors["organizationName"] = t("admin.name_too_long")
     full_name = " ".join(data.full_name.split())
     if not full_name:
-        errors["fullName"] = "Укажите ваше имя"
+        errors["fullName"] = t("setup.your_name_required")
     elif len(full_name) > FULL_NAME_MAX_LENGTH:
-        errors["fullName"] = "Имя длиннее 255 символов"
+        errors["fullName"] = t("setup.your_name_too_long")
     email = data.email.strip()
     try:
         validate_email(email)
     except ValidationError:
-        errors["email"] = "Укажите корректный e-mail"
+        errors["email"] = t("setup.email_invalid")
     if errors:
         raise ValidationError(errors)
     return SetupInput(
@@ -98,6 +102,7 @@ def _clean(data: SetupInput) -> SetupInput:
         email=HumanUser.objects.normalize_email(email).lower(),
         password=data.password,
         install_demo=data.install_demo,
+        language=normalize_language(data.language),
     )
 
 
@@ -114,12 +119,31 @@ def _unique_slug(name: str) -> str:
 def complete_setup(
     data: SetupInput, public_host: str = "", public_scheme: str = "http"
 ) -> SetupResult:
+    """Создать установку целиком: язык, организация, владелец, демо-данные.
+
+    Язык выбирается первым и держится активным до конца: на нём написана
+    должность владельца, на нём приедут демо-данные и на нём вернутся ошибки
+    формы. Иначе установка на английском получила бы русскую запись «Владелец»
+    в карточке сотрудника — с первой же секунды и навсегда.
+    """
+
+    # Пусто — берём язык, который middleware уже вывела из Accept-Language:
+    # именно на нём человек видел форму, пока её заполнял.
+    language = normalize_language(data.language) or current_language()
+    with translation.override(language):
+        return _complete_setup(data, language, public_host, public_scheme)
+
+
+def _complete_setup(
+    data: SetupInput, language: str, public_host: str, public_scheme: str
+) -> SetupResult:
     clean = _clean(data)
     with use_database(INSTANCE_DB_ALIAS), transaction.atomic(using=INSTANCE_DB_ALIAS):
         # Адрес, на котором человек прошёл мастер, и есть публичный адрес
         # установки: другого источника у коробки нет.
         if public_host:
             remember_public_host(public_host, public_scheme)
+        remember_default_language(language)
         # Блокировка от гонки двух вкладок: второй запрос дождётся первого и
         # увидит созданную организацию.
         with connections[INSTANCE_DB_ALIAS].cursor() as cursor:
@@ -150,7 +174,7 @@ def complete_setup(
                 user=owner,
                 organization=organization,
                 role=EmployeeRole.OWNER,
-                position_title="Владелец",
+                position_title=t("setup.owner_position"),
                 totp_required=False,
             )
             record_audit_event(

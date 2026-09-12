@@ -5,7 +5,7 @@ import { Icon } from "../../shared/icons";
 import { Button } from "../../shared/ui-controls";
 import { AuthField } from "./AuthField";
 import { AuthFrame } from "./AuthFrame";
-import { passwordIsValid, passwordLabels, passwordScore } from "./password";
+import { passwordIsValid, passwordLabel, passwordScore } from "./password";
 import { t } from "../../i18n";
 
 type Status = "checking" | "form" | "invalid" | "done";
@@ -102,7 +102,7 @@ export function AuthResetPassword({ onDone }: { onDone: () => void }) {
         <AuthField icon="lock" value={password} onChange={setPassword} placeholder={t("common.at_least_10_characters")} type="password" />
         <div className={`password-strength score-${score}`}>
           <div>{[0, 1, 2, 3].map((item) => <span className={item < score ? "active" : ""} key={item} />)}</div>
-          <p>{passwordLabels[score]}</p>
+          <p>{passwordLabel(score)}</p>
         </div>
         <label className="field-label">{t("admin.repeat_password")}</label>
         <AuthField icon="lock" value={confirm} onChange={setConfirm} placeholder={t("common.repeat_new_password")} type="password" error={mismatch} />

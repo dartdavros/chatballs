@@ -23,7 +23,7 @@ import {
   type ConversationPriority,
 } from "./model";
 import type { EmployeeGroupRef } from "../../types";
-import { t } from "../../i18n";
+import { fmt, t } from "../../i18n";
 
 // Блок «Диалог» контекст-панели (дизайн-базлайн v2, решение 5): Ответственный,
 // Группа, Приоритет — полноширинные селекты; Агент и Режим — read-only в две
@@ -316,12 +316,12 @@ function NoteSection({ detail, busy, onSave }: { detail: ApiConversation; busy: 
 export function startedLabel(iso: string): string {
   const date = new Date(iso);
   const now = new Date();
-  const time = date.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+  const time = fmt.time(date);
   if (date.toDateString() === now.toDateString()) return t("time.today_comma", { time });
   const yesterday = new Date(now);
   yesterday.setDate(now.getDate() - 1);
   if (date.toDateString() === yesterday.toDateString()) return t("time.yesterday_comma", { time });
-  return `${date.toLocaleDateString("ru-RU", { day: "numeric", month: "short" }).replace(".", "")}, ${time}`;
+  return fmt.shortDateTime(date);
 }
 
 export function archiveConversationAction(

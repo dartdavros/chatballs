@@ -1,0 +1,134 @@
+{
+  "schemaVersion": 1,
+  "_comment": "English demo set for «Nord Atelier». Same cast and keys as data/ru: avatars, voice recordings and cross-file references are shared, only the prose differs. Installed into the installer's own organization — neither the organization nor its owner is created here. All demo employees share one password, see demoPassword.",
+  "demoPassword": "Chatballs-Demo-2026",
+  "showcaseAccounts": [
+    "elena",
+    "svetlana",
+    "igor"
+  ],
+  "groups": [
+    {
+      "key": "operators",
+      "name": "Operators",
+      "color": "#1677ff"
+    },
+    {
+      "key": "support",
+      "name": "Support",
+      "color": "#2aa876"
+    },
+    {
+      "key": "vip",
+      "name": "VIP clients",
+      "color": "#eb2f96"
+    }
+  ],
+  "accounts": [
+    {
+      "key": "elena",
+      "email": "e.kuznetsova@nord-atelier.com",
+      "fullName": "Elena Kuznetsova",
+      "role": "ADMIN",
+      "positionTitle": "Administrator",
+      "phone": "+44 20 7946 0116",
+      "groups": [
+        "operators",
+        "support"
+      ],
+      "avatar": "elena-kuznetsova.png",
+      "uiTheme": "LIGHT",
+      "uiAccent": "#1677ff",
+      "createdDaysAgo": 120
+    },
+    {
+      "key": "anna",
+      "email": "a.kim@nord-atelier.com",
+      "fullName": "Anna Kim",
+      "role": "ADMIN",
+      "positionTitle": "Administrator",
+      "phone": "+44 20 7946 0117",
+      "groups": [
+        "operators",
+        "support"
+      ],
+      "avatar": "anna-kim.png",
+      "uiTheme": "LIGHT",
+      "uiAccent": "#1677ff",
+      "createdDaysAgo": 110
+    },
+    {
+      "key": "svetlana",
+      "email": "s.petrova@nord-atelier.com",
+      "fullName": "Svetlana Petrova",
+      "role": "EMPLOYEE",
+      "positionTitle": "Operator",
+      "phone": "+44 20 7946 0120",
+      "groups": [
+        "operators"
+      ],
+      "avatar": "svetlana-petrova.jpg",
+      "uiTheme": "DARK",
+      "uiAccent": "#7c3aed",
+      "createdDaysAgo": 80
+    },
+    {
+      "key": "igor",
+      "email": "i.saveliev@nord-atelier.com",
+      "fullName": "Igor Saveliev",
+      "role": "EMPLOYEE",
+      "positionTitle": "Support specialist",
+      "phone": "+44 20 7946 0119",
+      "groups": [
+        "support"
+      ],
+      "uiTheme": "SYSTEM",
+      "uiAccent": "#0f9d58",
+      "createdDaysAgo": 60
+    },
+    {
+      "key": "kirill",
+      "email": "k.volkov@nord-atelier.com",
+      "fullName": "Kirill Volkov",
+      "role": "EMPLOYEE",
+      "positionTitle": "VIP client manager",
+      "phone": "",
+      "groups": [
+        "vip"
+      ],
+      "totpEnabled": true,
+      "uiTheme": "LIGHT",
+      "uiAccent": "#d6336c",
+      "createdDaysAgo": 40
+    },
+    {
+      "key": "natalia",
+      "email": "n.frolova@nord-atelier.com",
+      "fullName": "Natalia Frolova",
+      "role": "EMPLOYEE",
+      "positionTitle": "Operator (left the company)",
+      "phone": "",
+      "groups": [
+        "operators"
+      ],
+      "blocked": true,
+      "uiTheme": "SYSTEM",
+      "uiAccent": "#1677ff",
+      "createdDaysAgo": 200
+    }
+  ],
+  "invitations": [
+    {
+      "email": "v.kotova@nord-atelier.com",
+      "role": "EMPLOYEE",
+      "createdBy": "elena",
+      "expiresInDays": 6
+    },
+    {
+      "email": "old.invite@nord-atelier.com",
+      "role": "EMPLOYEE",
+      "createdBy": "elena",
+      "expiresInDays": -2
+    }
+  ]
+}

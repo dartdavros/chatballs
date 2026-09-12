@@ -14,16 +14,17 @@ from chatballs.ai.models import KnowledgeCategory
 from chatballs.ai.selectors import category_tree_for_employee
 from chatballs.ai.serializers import category_payload
 from chatballs.api.permissions import HasCapability
+from chatballs.i18n import t
 from chatballs.identity.audit import record_audit_event
 
 
 def _integer(value: object, field: str) -> int:
     if isinstance(value, bool):
-        raise ValidationError({field: "Integer required"})
+        raise ValidationError({field: t("api.integer_required")})
     try:
         return int(value)
     except (TypeError, ValueError) as error:
-        raise ValidationError({field: "Integer required"}) from error
+        raise ValidationError({field: t("api.integer_required")}) from error
 
 
 def _category(request: Request, category_id: int) -> KnowledgeCategory:
@@ -42,7 +43,7 @@ def _parent(
     try:
         return _category(request, parent_id)
     except KnowledgeCategory.DoesNotExist as error:
-        raise ValidationError({"parentId": "Parent category not found"}) from error
+        raise ValidationError({"parentId": t("ai.parent_category_not_found")}) from error
 
 
 def _audit(
@@ -110,7 +111,7 @@ class KnowledgeCategoryDetailView(APIView):
             require_category_manage(context=request.tenant_context)
             category = _category(request, category_id)
         except KnowledgeCategory.DoesNotExist:
-            return Response({"detail": "Category not found"}, status=404)
+            return Response({"detail": t("ai.category_not_found")}, status=404)
         try:
             parent = (
                 _parent(request, request.data.get("parentId"), field_present=True)
@@ -136,7 +137,7 @@ class KnowledgeCategoryDetailView(APIView):
             require_category_manage(context=request.tenant_context)
             category = _category(request, category_id)
         except KnowledgeCategory.DoesNotExist:
-            return Response({"detail": "Category not found"}, status=404)
+            return Response({"detail": t("ai.category_not_found")}, status=404)
         try:
             deleted_id = category.id
             delete_category(context=request.tenant_context, category=category)

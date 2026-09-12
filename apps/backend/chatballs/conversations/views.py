@@ -93,7 +93,11 @@ class ConversationListView(ConversationViewBase):
             from django.db.models import Exists, OuterRef
 
             # Имена — по подстроке; тексты сообщений — полнотекстовым поиском
-            # (russian-конфиг, GIN-индекс conv_message_text_fts).
+            # (russian-конфиг, GIN-индекс conv_message_text_fts). Конфигурация
+            # одна на оба языка и от языка организации не зависит: в «russian»
+            # латиница отдана english_stem, а кириллица — russian_stem, так что
+            # английская переписка стеммится английским стеммером. Менять её на
+            # «english» нельзя — та оставит без основы русские слова.
             search = SearchQuery(query, config="russian", search_type="websearch")
             message_match = (
                 Message.objects.filter(conversation=OuterRef("pk"))

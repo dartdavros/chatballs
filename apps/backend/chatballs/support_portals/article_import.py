@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 from django.core.exceptions import ValidationError
 from django.db import transaction
 
+from chatballs.i18n import t
 from chatballs.support_portals.content_services import (
     add_revision,
     create_article,
@@ -32,14 +33,14 @@ class ArticleImportResult:
 def _required(document: dict[str, object], key: str) -> str:
     value = document.get(key)
     if not isinstance(value, str) or not value.strip():
-        raise ValidationError({key: f"{key} is required"})
+        raise ValidationError({key: t("ai.field_required", field=key)})
     return value.strip()
 
 
 def _content(document: dict[str, object]) -> str:
     value = document.get("content")
     if not isinstance(value, str):
-        raise ValidationError({"content": "Content string is required"})
+        raise ValidationError({"content": t("ai.content_required")})
     return value
 
 
@@ -48,7 +49,7 @@ def _locale(document: dict[str, object], *, default: str) -> str:
         return default
     value = document["locale"]
     if not isinstance(value, str):
-        raise ValidationError({"locale": "Locale must be a string"})
+        raise ValidationError({"locale": t("portals.locale_string")})
     return value.strip().lower()
 
 
@@ -57,18 +58,18 @@ def _summary(document: dict[str, object], *, default: str) -> str:
         return default
     value = document["summary"]
     if not isinstance(value, str):
-        raise ValidationError({"summary": "Summary must be a string"})
+        raise ValidationError({"summary": t("portals.summary_string")})
     return value.strip()
 
 
 def _category_for_path(*, portal, raw_path: object) -> PortalCategory:
     if not isinstance(raw_path, list) or not raw_path:
-        raise ValidationError({"categoryPath": "Non-empty category path required"})
+        raise ValidationError({"categoryPath": t("ai.category_path_required")})
     parent_id = None
     category = None
     for raw_name in raw_path:
         if not isinstance(raw_name, str) or not raw_name.strip():
-            raise ValidationError({"categoryPath": "Category names must be non-empty strings"})
+            raise ValidationError({"categoryPath": t("ai.category_names_strings")})
         name = raw_name.strip()
         try:
             category = portal.categories.get(parent_id=parent_id, name=name)
@@ -76,7 +77,7 @@ def _category_for_path(*, portal, raw_path: object) -> PortalCategory:
             PortalCategory.DoesNotExist,
             PortalCategory.MultipleObjectsReturned,
         ) as error:
-            raise ValidationError({"categoryPath": "Category path not found"}) from error
+            raise ValidationError({"categoryPath": t("ai.category_path_not_found")}) from error
         parent_id = category.id
     assert category is not None
     return category
@@ -157,7 +158,7 @@ def import_articles(
             slug = raw_slug.strip() if isinstance(raw_slug, str) else ""
         try:
             if not isinstance(raw_document, dict):
-                raise ValidationError({"article": "Article must be an object"})
+                raise ValidationError({"article": t("portals.article_object_required")})
             outcome = _import_document(
                 context=context, portal=portal, document=raw_document
             )

@@ -56,7 +56,7 @@ class MessengerBindingListView(APIView):
                 }
             )
         # Реестр типов для чекбоксов в профиле (порядок — как в TYPE_META).
-        available = [{"code": code, "label": NotificationType(code).label} for code in TYPE_META]
+        available = [{"code": code, "label": t(meta["label"])} for code, meta in TYPE_META.items()]
         return Response({"items": items, "availableTypes": available})
 
 
@@ -90,8 +90,8 @@ class MessengerBindingDetailView(APIView):
             return Response({"detail": t("profile.link_not_found")}, status=404)
         types = request.data.get("pushTypes")
         if not isinstance(types, list):
-            return Response({"detail": "pushTypes must be a list"}, status=400)
-        binding.push_types = [t for t in types if t in NotificationType.values]
+            return Response({"detail": t("notifications.push_types_list")}, status=400)
+        binding.push_types = [code for code in types if code in NotificationType.values]
         binding.save(update_fields=["push_types"])
         return Response({"pushTypes": binding.push_types})
 
@@ -109,6 +109,6 @@ class NotificationReadView(APIView):
         else:
             ids = request.data.get("ids")
             if not isinstance(ids, list):
-                return Response({"detail": "ids must be a list or use all=true"}, status=400)
+                return Response({"detail": t("notifications.ids_list_or_all")}, status=400)
             mark_read(context=request.tenant_context, ids=[i for i in ids if isinstance(i, int)])
         return Response({"unreadCount": unread_for(request.tenant_context).count()})

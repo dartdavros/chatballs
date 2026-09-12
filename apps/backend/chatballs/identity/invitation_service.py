@@ -8,6 +8,7 @@ from datetime import datetime
 from django.db import transaction
 from django.utils import timezone
 
+from chatballs.i18n import t
 from chatballs.identity.audit import record_audit_event
 from chatballs.identity.models import (
     EmployeeRole,
@@ -99,12 +100,12 @@ def accept_invitation(*, token: str, user: HumanUser) -> AcceptedInvitation:
         if already is not None:
             return already
         raise InvitationError(
-            "Invitation is invalid or has expired", code="invitation_invalid"
+            t("identity.invitation_invalid"), code="invitation_invalid"
         )
     normalized_email = user.email.strip().lower()
     if invitation.email.strip().lower() != normalized_email:
         raise InvitationError(
-            "Invitation email does not match the account", code="email_mismatch"
+            t("identity.invitation_email_mismatch"), code="email_mismatch"
         )
 
     organization = invitation.organization
@@ -143,7 +144,7 @@ def _ensure_owner_membership(
         # An existing non-OWNER membership for this user should not be silently
         # promoted by an invitation; surface as a conflict instead.
         raise InvitationError(
-            "User already has a different role in this organization",
+            t("identity.role_conflict"),
             code="role_conflict",
         )
     return membership

@@ -55,7 +55,7 @@ def _resolve_members(organization, raw) -> tuple[list[OrganizationMembership] | 
         )
     )
     if len(members) != len(requested):
-        return None, "Employee not found"
+        return None, t("admin.employee_not_found")
     return members, None
 
 
@@ -121,7 +121,7 @@ class GroupDetailView(APIView):
     def patch(self, request: Request, group_id: int) -> Response:
         group = self._group(request, group_id)
         if group is None:
-            return Response({"detail": "Group not found"}, status=404)
+            return Response({"detail": t("admin.group_not_found")}, status=404)
         if "color" in request.data:
             color = _clean_color(request.data.get("color"))
             if color is None:
@@ -163,7 +163,7 @@ class GroupDetailView(APIView):
     def delete(self, request: Request, group_id: int) -> Response:
         group = self._group(request, group_id)
         if group is None:
-            return Response({"detail": "Group not found"}, status=404)
+            return Response({"detail": t("admin.group_not_found")}, status=404)
         # SET_NULL на каналах и диалогах: их диалоги становятся общими.
         group_payload = _group_payload(group)
         group.delete()

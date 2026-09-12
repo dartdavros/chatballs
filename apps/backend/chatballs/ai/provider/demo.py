@@ -27,27 +27,63 @@ from chatballs.i18n import t
 EMBEDDING_DIM = 16
 KNOWLEDGE_MARKER = "Отвечай только на основе этих знаний:"
 HANDOFF_TOKEN = "<<HANDOFF>>"
-HUMAN_REQUEST_WORDS = ("человек", "оператор", "сотрудник", "менеджер", "живой", "жалоб", "верн", "возврат")
+# Язык демо-агента определяется по письму клиента — тем же правилом, что и у
+# настоящего агента (AnswerLanguage.MIRROR). Здесь оно грубое, по алфавиту:
+# провайдер детерминированный и без сети, распознавать язык ему нечем.
+CYRILLIC = re.compile(r"[а-яё]", re.IGNORECASE)
+
+# Слова, по которым видно, что клиент просит живого человека.
+HUMAN_REQUEST_WORDS = {
+    "ru": ("человек", "оператор", "сотрудник", "менеджер", "живой", "жалоб", "верн", "возврат"),
+    "en": ("human", "operator", "agent", "manager", "person", "complain", "refund", "return"),
+}
 _WORD = re.compile(r"[а-яёa-z0-9]+", re.IGNORECASE)
 _HEADER = re.compile(r"^\s*\[[^\]]{1,120}\]\s*")
 _STOP = {
-    "и", "в", "на", "с", "по", "у", "а", "но", "не", "что", "как", "это", "для", "до", "от",
-    "за", "из", "к", "о", "же", "ли", "бы", "вы", "мы", "я", "он", "она", "они", "мне", "вас",
-    "есть", "можно", "нужно", "хочу", "подскажите", "здравствуйте", "добрый", "день", "the",
+    "ru": {
+        "и", "в", "на", "с", "по", "у", "а", "но", "не", "что", "как", "это", "для", "до", "от",
+        "за", "из", "к", "о", "же", "ли", "бы", "вы", "мы", "я", "он", "она", "они", "мне", "вас",
+        "есть", "можно", "нужно", "хочу", "подскажите", "здравствуйте", "добрый", "день",
+    },
+    "en": {
+        "the", "and", "for", "you", "your", "with", "from", "that", "this", "are", "was", "can",
+        "could", "would", "have", "has", "not", "but", "our", "what", "how", "when", "where",
+        "please", "hello", "hi", "there", "want", "need", "tell", "about", "will", "its",
+    },
+}
+
+# Грубая морфология: смысл в том, чтобы «доставка» ≈ «доставку», а
+# «deliveries» ≈ «delivery». Настоящий стеммер тут был бы зависимостью ради
+# демо-стенда.
+_SUFFIXES = {
+    "ru": (
+        "ами", "ями", "ого", "его", "ому", "ему", "ыми", "ими", "ах", "ях", "ов", "ев", "ам",
+        "ям", "ой", "ей", "ую", "юю", "ая", "яя", "ые", "ие", "ть", "ся", "а", "я", "ы", "и",
+        "у", "ю", "е", "о",
+    ),
+    "en": ("ing", "ies", "ied", "ers", "es", "ed", "er", "ly", "s"),
 }
 
 
-def _tokens(text: str) -> set[str]:
+def _language_of(text: str) -> str:
+    """Язык письма клиента: кириллица — русский, иначе английский."""
+
+    return "ru" if CYRILLIC.search(text) else "en"
+
+
+def _tokens(text: str, language: str) -> set[str]:
+    stop = _STOP[language]
     return {
         _stem(word.lower())
         for word in _WORD.findall(text)
-        if len(word) > 2 and word.lower() not in _STOP
+        if len(word) > 2 and word.lower() not in stop
     }
 
 
 def _stem(word: str) -> str:
-    # Грубая морфология: обрезаем частые русские окончания, чтобы «доставка» ≈ «доставку».
-    for suffix in ("ами", "ями", "ого", "его", "ому", "ему", "ыми", "ими", "ах", "ях", "ов", "ев", "ам", "ям", "ой", "ей", "ую", "юю", "ая", "яя", "ые", "ие", "ть", "ся", "а", "я", "ы", "и", "у", "ю", "е", "о"):
+    # Слово может быть на другом языке, чем письмо (знания одноязычные), поэтому
+    # окончания режем по алфавиту самого слова, а не по языку диалога.
+    for suffix in _SUFFIXES[_language_of(word)]:
         if len(word) > 4 and word.endswith(suffix):
             return word[: -len(suffix)]
     return word
@@ -86,12 +122,13 @@ def _knowledge_sentences(messages: list[ChatMessage]) -> list[str]:
 def compose_reply(messages: list[ChatMessage]) -> tuple[str, bool]:
     """Ответ по знаниям и признак передачи оператору."""
     question = next((m.content for m in reversed(messages) if m.role == "user"), "")
+    language = _language_of(question)
     lowered = question.lower()
-    wants_human = any(word in lowered for word in HUMAN_REQUEST_WORDS)
-    query = _tokens(question)
+    wants_human = any(word in lowered for word in HUMAN_REQUEST_WORDS[language])
+    query = _tokens(question, language)
     scored = []
     for index, sentence in enumerate(_knowledge_sentences(messages)):
-        overlap = len(query & _tokens(sentence))
+        overlap = len(query & _tokens(sentence, language))
         if overlap:
             scored.append((-overlap, index, sentence))
     scored.sort()
@@ -99,13 +136,8 @@ def compose_reply(messages: list[ChatMessage]) -> tuple[str, bool]:
     if best and not wants_human:
         return " ".join(best), False
     if best:
-        return (
-            " ".join(best)
-            + " Передаю диалог сотруднику — он поможет дальше."
-        ), True
-    return (
-        "Уточню этот вопрос у коллег и передам диалог сотруднику — он ответит в рабочее время."
-    ), True
+        return " ".join(best) + t("ai.demo_handover_suffix", language=language), True
+    return t("ai.demo_handover", language=language), True
 
 
 class DemoProvider(LLMProvider):

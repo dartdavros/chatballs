@@ -7,6 +7,7 @@ from django.test import TestCase
 
 from chatballs.identity.bootstrap import bootstrap_owner
 from chatballs.identity.models import Organization
+from chatballs.i18n import tn
 from chatballs.integrations import checks
 from chatballs.integrations.models import (
     Integration,
@@ -647,7 +648,7 @@ class CustomIntegrationTests(TestCase):
 
         self.assertTrue(ok)
 
-        self.assertIn("1 моделей", detail)
+        self.assertEqual(detail, tn("integrations.check_endpoint_models", 1))
 
 
 

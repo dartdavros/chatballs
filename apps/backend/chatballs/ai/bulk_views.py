@@ -16,19 +16,20 @@ from chatballs.ai.knowledge_bulk import (
 from chatballs.ai.models import AIAgent
 from chatballs.ai.selectors import agent_for_employee
 from chatballs.api.permissions import HasCapability
+from chatballs.i18n import t
 from chatballs.identity.audit import record_audit_event
 
 
 def _positive_id(value: object, field: str) -> int:
     if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
-        raise ValidationError({field: "Positive integer ID required"})
+        raise ValidationError({field: t("api.positive_id_required")})
     return value
 
 
 def _knowledge_ids(body: dict[str, object]) -> list[int]:
     raw_ids = body.get("knowledgeIds")
     if not isinstance(raw_ids, list):
-        raise ValidationError({"knowledgeIds": "List of knowledge IDs required"})
+        raise ValidationError({"knowledgeIds": t("ai.list_of_knowledge_ids")})
     return [_positive_id(item, "knowledgeIds") for item in raw_ids]
 
 
@@ -68,7 +69,7 @@ class KnowledgeBulkMoveView(_KnowledgeBulkView):
 def _attach_action(body: dict[str, object]) -> bool:
     action = str(body.get("action", "attach"))
     if action not in {"attach", "detach"}:
-        raise ValidationError({"action": "Expected attach or detach"})
+        raise ValidationError({"action": t("ai.expected_attach_or_detach")})
     return action == "attach"
 
 
@@ -91,7 +92,7 @@ class _AgentLinkView(APIView):
             agent_id = _positive_id(request.data.get("agentId"), "agentId")
             raw_ids = request.data.get(self.id_field)
             if not isinstance(raw_ids, list):
-                raise ValidationError({self.id_field: "List of IDs required"})
+                raise ValidationError({self.id_field: t("ai.list_of_ids")})
             ids = [_positive_id(item, self.id_field) for item in raw_ids]
             attach = _attach_action(request.data)
         except ValidationError as error:
@@ -103,7 +104,7 @@ class _AgentLinkView(APIView):
                 capability="ai.manage",
             )
         except AIAgent.DoesNotExist:
-            return Response({"detail": "Agent not found"}, status=404)
+            return Response({"detail": t("ai.agent_not_found")}, status=404)
         try:
             result = self.link(request, agent, ids, attach)
         except ValidationError as error:
@@ -171,7 +172,7 @@ class AgentCategoryKnowledgeSelectView(APIView):
                 capability="ai.manage",
             )
         except AIAgent.DoesNotExist:
-            return Response({"detail": "Agent not found"}, status=404)
+            return Response({"detail": t("ai.agent_not_found")}, status=404)
         try:
             category_id = _positive_id(request.data.get("categoryId"), "categoryId")
             result = add_category_knowledge_to_agent(

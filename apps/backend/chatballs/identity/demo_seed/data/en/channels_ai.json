@@ -1,0 +1,384 @@
+{
+  "schemaVersion": 1,
+  "_comment": "English twin of data/ru/channels_ai.json. Agents = cards over Channel+AIAgent (ADR-HUB-0041 §4). Connections are dialog entry points; the LLM provider is shared across the organization (BYOK). There are two web widgets: the anonymous one on the site (agent «Consultant») and the authenticated one in the customer account (agent «Site support», mandatory-identity policy — SPEC-HUB-0027 P4/P5). The demo LLM provider is the built-in «Demo provider» (no key): agents answer from the knowledge base straight after installation.",
+  "llmProvider": {
+    "key": "llm",
+    "provider": "DEMO",
+    "name": "Demo provider",
+    "secret": "",
+    "config": {},
+    "status": "OK"
+  },
+  "agents": [
+    {
+      "key": "consultant",
+      "code": "consultant",
+      "name": "Consultant",
+      "group": "operators",
+      "aiStatus": "ACTIVE",
+      "persona": "You are a consultant at Nord Atelier. The atelier makes curtains, voile and home textiles to measure and delivers across the country.",
+      "tone": "Friendly, brief, no officialese. Use the client's name if they have given it.",
+      "instructions": "Answer only from the atelier's knowledge. Quote lead times, prices and order status only from the knowledge base; if there is no answer, say you will check with colleagues and hand the dialog to a member of staff. Do not promise discounts. If the client asks for a human, hand the dialog over straight away.",
+      "knowledge": [
+        "pricing",
+        "fabrics",
+        "measure",
+        "delivery",
+        "care"
+      ],
+      "portalArticles": [
+        "how-to-measure",
+        "lead-times"
+      ],
+      "limits": {
+        "dailyCostUsd": 300
+      },
+      "createdDaysAgo": 41
+    },
+    {
+      "key": "support",
+      "code": "site-support",
+      "name": "Site support",
+      "group": "support",
+      "aiStatus": "ACTIVE",
+      "persona": "You are the support assistant for the Nord Atelier website: accounts, orders, payment, delivery, returns.",
+      "tone": "Calm and to the point.",
+      "instructions": "Check the knowledge about accounts and returns first. For questions about a specific order with no order number, ask for the number. Complaints about quality go to a member of staff with a note.",
+      "knowledge": [
+        "delivery",
+        "returns",
+        "account"
+      ],
+      "portalArticles": [
+        "returns-and-exchanges",
+        "your-account"
+      ],
+      "limits": {},
+      "createdDaysAgo": 30,
+      "policy": {
+        "allow_anonymous_sessions": true,
+        "allow_self_reported_contact": true
+      }
+    },
+    {
+      "key": "portal",
+      "code": "portal",
+      "name": "Customer account",
+      "group": "support",
+      "aiStatus": "ACTIVE",
+      "persona": "You are the assistant for the Nord Atelier customer account: orders, payment, statuses, delivery, returns.",
+      "tone": "Calm and to the point.",
+      "instructions": "Rely on the knowledge about accounts and orders. Ask for the order number if it has not been given. Complaints about payment go to a member of staff.",
+      "knowledge": [
+        "account",
+        "delivery",
+        "returns"
+      ],
+      "portalArticles": [
+        "your-account",
+        "returns-and-exchanges"
+      ],
+      "limits": {},
+      "createdDaysAgo": 28,
+      "policy": {
+        "allow_anonymous_sessions": true,
+        "allow_self_reported_contact": true
+      }
+    },
+    {
+      "key": "reception",
+      "code": "reception",
+      "name": "Front desk",
+      "group": null,
+      "aiStatus": "DRAFT",
+      "persona": "",
+      "tone": "",
+      "instructions": "",
+      "knowledge": [],
+      "portalArticles": [],
+      "limits": {},
+      "createdDaysAgo": 3
+    },
+    {
+      "key": "legacy",
+      "code": "old-line",
+      "name": "Old line (Instagram)",
+      "group": "vip",
+      "isActive": false,
+      "aiStatus": "DISABLED",
+      "persona": "Atelier consultant.",
+      "tone": "",
+      "instructions": "This channel was closed in the spring of 2026.",
+      "knowledge": [
+        "pricing"
+      ],
+      "portalArticles": [],
+      "limits": {},
+      "createdDaysAgo": 180
+    }
+  ],
+  "connections": [
+    {
+      "key": "tg",
+      "provider": "TELEGRAM",
+      "name": "Telegram · @NordAtelierBot",
+      "agent": "consultant",
+      "status": "OK",
+      "secret": "0000000000:DEMO-token-not-real",
+      "config": {
+        "username": "NordAtelierBot"
+      },
+      "createdDaysAgo": 40
+    },
+    {
+      "key": "max",
+      "provider": "MAX",
+      "name": "MAX · Nord Atelier",
+      "agent": "consultant",
+      "status": "OK",
+      "secret": "demo-max-token",
+      "config": {},
+      "createdDaysAgo": 25
+    },
+    {
+      "key": "email",
+      "provider": "EMAIL",
+      "name": "Mail · info@nord-atelier.com",
+      "agent": "support",
+      "status": "OK",
+      "secret": "demo-imap-password",
+      "config": {
+        "email": "info@nord-atelier.com",
+        "imapHost": "imap.nord-atelier.com",
+        "smtpHost": "smtp.nord-atelier.com"
+      },
+      "createdDaysAgo": 29
+    },
+    {
+      "key": "web",
+      "provider": "WEB",
+      "name": "Web Chat · nord-atelier.com",
+      "agent": "consultant",
+      "status": "OK",
+      "config": {
+        "title": "Nord Atelier",
+        "greeting": "Hello! We can help with fabrics, lead times and orders.",
+        "quick_replies": [
+          "Lead times",
+          "Order status",
+          "Returns"
+        ],
+        "allowed_origins": [
+          "https://nord-atelier.com"
+        ]
+      },
+      "createdDaysAgo": 28
+    },
+    {
+      "key": "web_help",
+      "provider": "WEB",
+      "name": "Web Chat · Help section",
+      "agent": "support",
+      "status": "OK",
+      "config": {
+        "title": "Nord Atelier",
+        "greeting": "Hello! We can help with fabrics, lead times and orders.",
+        "quick_replies": [
+          "Lead times",
+          "Order status",
+          "Returns"
+        ],
+        "allowed_origins": [
+          "https://nord-atelier.com"
+        ]
+      },
+      "createdDaysAgo": 28
+    },
+    {
+      "key": "web_account",
+      "provider": "WEB",
+      "name": "Web Chat · customer account",
+      "agent": "portal",
+      "status": "OK",
+      "config": {
+        "title": "Support · Nord Atelier",
+        "greeting": "Hello! We can see your order — how can we help?",
+        "quick_replies": [
+          "Order status",
+          "Change the address",
+          "Returns"
+        ],
+        "allowed_origins": [
+          "https://nord-atelier.com",
+          "https://account.nord-atelier.com"
+        ]
+      },
+      "createdDaysAgo": 27
+    },
+    {
+      "key": "tg_delivery",
+      "provider": "TELEGRAM",
+      "name": "Telegram · delivery bot",
+      "agent": "reception",
+      "status": "ERROR",
+      "lastError": "401 Unauthorized: bot token was revoked in @BotFather",
+      "secret": "1111111111:DEMO-revoked",
+      "config": {
+        "username": "NordAtelierDeliveryBot"
+      },
+      "createdDaysAgo": 3
+    }
+  ],
+  "knowledgeCategories": [
+    {
+      "key": "sewing",
+      "name": "Making and fabrics",
+      "children": [
+        {
+          "key": "measure",
+          "name": "Measuring and quotes"
+        },
+        {
+          "key": "fabrics",
+          "name": "Fabrics"
+        }
+      ]
+    },
+    {
+      "key": "orders",
+      "name": "Orders and delivery",
+      "children": [
+        {
+          "key": "delivery",
+          "name": "Delivery"
+        },
+        {
+          "key": "returns",
+          "name": "Returns and exchanges"
+        }
+      ]
+    },
+    {
+      "key": "site",
+      "name": "Website and customer account"
+    }
+  ],
+  "knowledge": [
+    {
+      "key": "pricing",
+      "category": "measure",
+      "title": "Quoting for made-to-measure curtains",
+      "description": "The pricing formula, fullness ratios, minimum order",
+      "content": "Price = fabric (metres × price per metre) + making (by the finished width) + hardware.\n\nFullness ratio: 1.5 for heavy curtains, 2.0–2.5 for voile. Fabric width including fullness = track width × ratio.\n\nMaking: £18 per linear metre of finished width for curtains, £14 for voile. The bottom hem is included. Eyelets — £3.50 each, heading tape — £4.80 per metre.\n\nMinimum order — £120. The consultant quotes from the window width and drop; a measuring visit within London is free on orders over £600.",
+      "attachments": [
+        "price-estimate.md"
+      ],
+      "createdDaysAgo": 40
+    },
+    {
+      "key": "fabrics",
+      "category": "fabrics",
+      "title": "Fabric catalogue 2026",
+      "description": "Curtain and voile fabrics in stock, prices per metre",
+      "content": "Curtain fabrics: Nord blackout (100% blackout, £59/m, 14 colours), linen blend (£35/m, 9 colours), Verona velvet (£87/m, 6 colours), canvas (£27/m, 12 colours).\n\nVoile: sheer voile (£15/m), Greek net (£20/m), linen voile (£29/m).\n\nEvery fabric is 280–300 cm wide. We post samples free of charge — up to 5 of them.",
+      "attachments": [
+        {
+          "file": "fabric-catalogue-2026.pdf",
+          "text": "fabric-catalogue-2026.txt",
+          "contentType": "application/pdf"
+        }
+      ],
+      "createdDaysAgo": 38
+    },
+    {
+      "key": "measure",
+      "category": "measure",
+      "title": "How to measure your windows yourself",
+      "description": "Client instructions: track, drop, allowances",
+      "content": "1. Measure the length of the track from end to end (not the window!).\n2. Measure the drop from the track hook (or the top of the pole) to the length you want: to the sill (minus 1 cm), to the floor (minus 1–2 cm) or puddled on the floor (+3–5 cm).\n3. For eyelet curtains add 3 cm at the top.\n4. Photograph the whole window — a consultant will check the figures.",
+      "attachments": [],
+      "createdDaysAgo": 36
+    },
+    {
+      "key": "delivery",
+      "category": "delivery",
+      "title": "Making times and delivery",
+      "description": "Making 5–7 working days, delivery by DPD and courier",
+      "content": "Making takes 5–7 working days once the quote is agreed and paid. Express making (3 working days) costs +30% of the making price and only if the fabric is in stock.\n\nDelivery: within London by courier £15 (free over £400), slots 10:00–13:00, 13:00–17:00, 17:00–20:00; the courier calls an hour ahead. Across the country — DPD to a pickup point or to your door, 3–5 working days from dispatch, and the tracking number arrives by e-mail on the day of dispatch. Manchester, Birmingham and Leeds are usually 3 days.\n\nMoving a delivery slot is free of charge, no later than 18:00 the day before.",
+      "attachments": [
+        "delivery-and-payment.txt"
+      ],
+      "createdDaysAgo": 35
+    },
+    {
+      "key": "returns",
+      "category": "returns",
+      "title": "Returns and exchanges",
+      "description": "14 days, and the terms for made-to-measure items",
+      "content": "Ready-made items (cushions, throws from the catalogue) — returnable within 14 days with no reason given, provided they have not been used.\n\nItems made to your own measurements cannot be returned (bespoke goods are exempt from the cancellation right under the Consumer Contracts Regulations), except where they are faulty or do not match the agreed order: wrong colour or size, defects in the making. In that case we remake them free of charge or exchange them for another colour in stock, in 5–7 working days; if the client prefers, we refund the money within 10 days.\n\nA claim needs the order number and photographs of the item. The claim is raised by a member of staff, not by the AI.",
+      "attachments": [],
+      "createdDaysAgo": 33
+    },
+    {
+      "key": "care",
+      "category": "fabrics",
+      "title": "Caring for your curtains",
+      "description": "Washing, ironing and cleaning by fabric type",
+      "content": "Blackout: delicate wash at 30°, no spin, iron on the reverse at the lowest temperature. Linen: wash at 40°, shrinkage of up to 3% is allowed for in the measurements. Velvet: dry clean only. Voile: wash at 30° in a mesh bag, dry it on the track.",
+      "attachments": [],
+      "createdDaysAgo": 20
+    },
+    {
+      "key": "account",
+      "category": "site",
+      "title": "The customer account on the website",
+      "description": "Registration, password recovery, order statuses",
+      "content": "You sign in with your e-mail. The password reset message comes from no-reply@nord-atelier.com within 5 minutes; if it has not arrived, check your spam folder and that the address is right. You can ask for another one after 10 minutes.\n\nOrder statuses in the account: “Awaiting payment” → “In production” → “Ready” → “Handed to the courier” → “Delivered”. The delivery address can be changed up to the “Handed to the courier” status — through a support agent.",
+      "attachments": [],
+      "createdDaysAgo": 28
+    },
+    {
+      "key": "old_prices",
+      "category": "measure",
+      "title": "2024 price list (out of date)",
+      "description": "Old prices — switched off, kept for the record",
+      "content": "Making £15/m, voile £11/m. Do not use.",
+      "attachments": [],
+      "isEnabled": false,
+      "createdDaysAgo": 400
+    }
+  ],
+  "usage": {
+    "_comment": "Thirty days of LLM call history for the «AI usage» section: generated from a template.",
+    "days": 30,
+    "chatPerDay": {
+      "consultant": [
+        6,
+        14
+      ],
+      "support": [
+        3,
+        9
+      ],
+      "portal": [
+        1,
+        4
+      ]
+    },
+    "embeddingPerDay": [
+      0,
+      2
+    ],
+    "model": "openai/gpt-4o-mini",
+    "promptTokens": [
+      600,
+      1800
+    ],
+    "completionTokens": [
+      80,
+      260
+    ],
+    "costMicrosPerToken": 0.6,
+    "failuresTotal": 3
+  }
+}

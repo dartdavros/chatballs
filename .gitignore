@@ -20,7 +20,10 @@ test-results/
 .DS_Store
 
 # Перенесено из корневого .gitignore при переносе корня репозитория в code/chatballs
-data/
+# Тома docker-стенда (postgres, redis, caddy, media) — только в корне репозитория.
+# Без якоря правило ловило и demo_seed/data: русские манифесты в индексе уже
+# лежали, а новые файлы туда молча не попадали.
+/data/
 .env.bak-*
 **/staticfiles/
 

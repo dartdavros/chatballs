@@ -1,0 +1,161 @@
+{
+  "schemaVersion": 1,
+  "calls": [
+    {
+      "key": "call_maria",
+      "conversation": "maria_measure",
+      "initiatedBy": "anna",
+      "contactIdentity": "maria_tg",
+      "deliveryConnection": "tg",
+      "kind": "AUDIO",
+      "status": "ENDED",
+      "endedBy": "STAFF",
+      "daysAgo": 24,
+      "durationSeconds": 262,
+      "metrics": {
+        "connectionType": "RELAY",
+        "localCandidateType": "relay",
+        "remoteCandidateType": "relay",
+        "roundTripMs": 64
+      }
+    },
+    {
+      "key": "call_olga_video",
+      "conversation": "olga_return",
+      "initiatedBy": "elena",
+      "contactIdentity": "olga_tg",
+      "deliveryConnection": "tg",
+      "kind": "VIDEO",
+      "status": "ENDED",
+      "endedBy": "CUSTOMER",
+      "minutesAgo": 107,
+      "durationSeconds": 95,
+      "metrics": {
+        "connectionType": "DIRECT",
+        "localCandidateType": "srflx",
+        "remoteCandidateType": "srflx",
+        "roundTripMs": 31
+      }
+    },
+    {
+      "key": "call_sergey_missed",
+      "conversation": "sergey_address",
+      "initiatedBy": "elena",
+      "contactIdentity": "sergey_tg",
+      "deliveryConnection": "tg",
+      "kind": "AUDIO",
+      "status": "MISSED",
+      "hoursAgo": 30,
+      "minutesAgo": 6
+    },
+    {
+      "key": "call_viktor_declined",
+      "conversation": "viktor_wholesale",
+      "initiatedBy": "kirill",
+      "contactIdentity": "viktor_tg",
+      "deliveryConnection": "tg",
+      "kind": "AUDIO",
+      "status": "DECLINED",
+      "endedBy": "CUSTOMER",
+      "daysAgo": 3
+    },
+    {
+      "key": "call_sergey_expired",
+      "conversation": "portal_sergey",
+      "initiatedBy": "igor",
+      "contactIdentity": "sergey_web",
+      "deliveryConnection": "web_account",
+      "kind": "AUDIO",
+      "status": "EXPIRED",
+      "daysAgo": 6,
+      "invite": {
+        "deliveryStatus": "DELIVERED",
+        "expiredMinutesAfter": 2
+      }
+    }
+  ],
+  "notifications": [
+    {
+      "type": "DIALOG_WAITING",
+      "level": "WARNING",
+      "title": "Dmitry Orlov is waiting for an operator",
+      "body": "Web Chat: the client asked for a member of staff. Waiting 6 min.",
+      "targetRoute": "chat",
+      "targetConversation": "dmitry_custom",
+      "audience": "ALL",
+      "minutesAgo": 10
+    },
+    {
+      "type": "DIALOG_NEW_MESSAGE",
+      "level": "INFO",
+      "title": "New voice message from Olga Melnik",
+      "body": "“Does the post office deliver parcels on Saturdays?”",
+      "targetRoute": "chat",
+      "targetConversation": "olga_return",
+      "audience": "USER",
+      "recipientUser": "elena",
+      "minutesAgo": 105
+    },
+    {
+      "type": "DIALOG_NEW_MESSAGE",
+      "level": "INFO",
+      "title": "New message from Maria Sokolova",
+      "body": "“All right, I'll wait”",
+      "targetRoute": "chat",
+      "targetConversation": "maria_delivery",
+      "audience": "ALL",
+      "minutesAgo": 4
+    },
+    {
+      "type": "INTEGRATION_ERROR",
+      "level": "CRITICAL",
+      "title": "Telegram · delivery bot: connection error",
+      "body": "401 Unauthorized: bot token was revoked in @BotFather. Check the token in the connection settings.",
+      "targetRoute": "settings",
+      "audience": "OWNER",
+      "minutesAgo": 4200
+    },
+    {
+      "type": "RELEASE_PUBLISHED",
+      "level": "SUCCESS",
+      "title": "Chatballs update: voice messages",
+      "body": "Operators can send voice messages to Telegram and MAX, and incoming ones are transcribed with a single button.",
+      "targetRoute": "chat",
+      "audience": "ALL",
+      "daysAgo": 2,
+      "readBy": [
+        "elena",
+        "anna",
+        "svetlana"
+      ]
+    }
+  ],
+  "messengerBindings": [
+    {
+      "user": "elena",
+      "connection": "tg",
+      "externalChatId": "482900010",
+      "pushTypes": [
+        "DIALOG_WAITING",
+        "DIALOG_NEW_MESSAGE",
+        "INTEGRATION_ERROR"
+      ]
+    },
+    {
+      "user": "svetlana",
+      "connection": "tg",
+      "externalChatId": "482900011",
+      "pushTypes": [
+        "DIALOG_WAITING"
+      ]
+    }
+  ],
+  "messengerBindingCodes": [
+    {
+      "user": "igor",
+      "connection": "tg",
+      "code": "DEMO-7K2P",
+      "expiresInMinutes": 25
+    }
+  ]
+}

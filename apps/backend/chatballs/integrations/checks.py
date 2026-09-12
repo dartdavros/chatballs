@@ -22,6 +22,7 @@ import urllib.request
 
 from django.conf import settings
 
+from chatballs.i18n import t, tn
 from chatballs.integrations.proxy import build_opener
 
 DEFAULT_OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
@@ -51,19 +52,19 @@ def _safe(fn) -> CheckResult:
     except urllib.error.HTTPError as error:
         return False, f"HTTP {error.code}: {error.reason}", {}
     except (urllib.error.URLError, TimeoutError, OSError) as error:
-        return False, f"Нет связи: {error}", {}
+        return False, t("integrations.check_no_connection", error=error), {}
 
 
 def check_openrouter(*, secret: str, base_url: str, proxy_url: str = "") -> CheckResult:
     if not secret:
-        return False, "Не указан API-ключ", {}
+        return False, t("integrations.check_api_key_missing"), {}
     base = (base_url or DEFAULT_OPENROUTER_BASE_URL).rstrip("/")
 
     def run() -> CheckResult:
         status, data = _get(f"{base}/key", headers={"Authorization": f"Bearer {secret}"}, proxy_url=proxy_url)
         if status != 200:
-            return False, f"OpenRouter ответил {status}", {}
-        label = (data.get("data") or {}).get("label") or "ключ принят"
+            return False, t("integrations.check_provider_answered", provider="OpenRouter", status=status), {}
+        label = (data.get("data") or {}).get("label") or t("integrations.check_key_accepted")
         return True, f"OpenRouter: {label}", {}
 
     return _safe(run)
@@ -77,38 +78,38 @@ def check_custom(*, secret: str, base_url: str, proxy_url: str = "") -> CheckRes
     shape by listing models. GET /models with Authorization: Bearer <key>.
     """
     if not secret:
-        return False, "Не указан API-ключ", {}
+        return False, t("integrations.check_api_key_missing"), {}
     if not base_url:
-        return False, "Не указан Base URL", {}
+        return False, t("integrations.check_base_url_missing"), {}
 
     base = base_url.rstrip("/")
 
     def run() -> CheckResult:
         status, data = _get(f"{base}/models", headers={"Authorization": f"Bearer {secret}"}, proxy_url=proxy_url)
         if status != 200:
-            return False, f"Эндпоинт ответил {status}", {}
+            return False, t("integrations.check_endpoint_answered", status=status), {}
         # OpenAI shape: {"data": [{"id": "..."}, ...]}. Каталог не является
         # разрешительным списком (ADR-CHATBALLS-0020:89), ответственность за model
         # identifier лежит на владельце (ADR-CHATBALLS-0034 §4).
         count = len(data.get("data") or [])
-        return True, f"Эндпоинт отвечает: {count} моделей", {}
+        return True, tn("integrations.check_endpoint_models", count), {}
 
     return _safe(run)
 
 
 def check_max(*, secret: str, base_url: str, proxy_url: str = "") -> CheckResult:
     if not secret:
-        return False, "Не указан токен бота", {}
+        return False, t("integrations.check_bot_token_missing"), {}
     base = (base_url or DEFAULT_MAX_BASE_URL).rstrip("/")
 
     def run() -> CheckResult:
         # MAX: токен в заголовке Authorization (без Bearer), метод GET /me.
         status, data = _get(f"{base}/me", headers={"Authorization": secret}, proxy_url=proxy_url)
         if status != 200:
-            return False, f"MAX ответил {status}", {}
+            return False, t("integrations.check_provider_answered", provider="MAX", status=status), {}
         bot_id = data.get("user_id")
         username = data.get("username") or ""
-        name = data.get("name") or username or "бот подключён"
+        name = data.get("name") or username or t("integrations.check_bot_connected")
         meta = {"bot_id": str(bot_id) if bot_id else "", "bot_username": username, "bot_name": name}
         return True, f"MAX: {name}", meta
 
@@ -129,9 +130,9 @@ def check_email(*, secret: str, config: dict) -> CheckResult:
     imap_host = str(config.get("imap_host", "")).strip()
     smtp_host = str(config.get("smtp_host", "")).strip()
     if not secret:
-        return False, "Не указан пароль ящика", {}
+        return False, t("integrations.check_mailbox_password_missing"), {}
     if not address or not imap_host or not smtp_host:
-        return False, "Не заполнены адрес, IMAP- или SMTP-хост", {}
+        return False, t("integrations.check_mail_hosts_missing"), {}
     timeout = settings.CHATBALLS_AI_REQUEST_TIMEOUT
 
     try:
@@ -169,20 +170,20 @@ def check_email(*, secret: str, config: dict) -> CheckResult:
 
 def check_telegram(*, secret: str, base_url: str, proxy_url: str = "") -> CheckResult:
     if not secret:
-        return False, "Не указан токен бота", {}
+        return False, t("integrations.check_bot_token_missing"), {}
     base = (base_url or DEFAULT_TELEGRAM_BASE_URL).rstrip("/")
 
     def run() -> CheckResult:
         # Telegram: токен в пути /bot<token>/getMe.
         status, data = _get(f"{base}/bot{secret}/getMe", proxy_url=proxy_url)
         if status != 200 or not data.get("ok"):
-            return False, f"Telegram ответил {status}", {}
+            return False, t("integrations.check_provider_answered", provider="Telegram", status=status), {}
         result = data.get("result") or {}
         bot_id = result.get("id")
         username = result.get("username") or ""
         name = result.get("first_name") or username or "бот подключён"
         meta = {"bot_id": str(bot_id) if bot_id else "", "bot_username": username, "bot_name": name}
-        detail = f"Telegram: @{username}" if username else "Telegram: бот подключён"
+        detail = f"Telegram: @{username}" if username else f'Telegram: {t("integrations.check_bot_connected")}'
         return True, detail, meta
 
     return _safe(run)
@@ -190,4 +191,4 @@ def check_telegram(*, secret: str, base_url: str, proxy_url: str = "") -> CheckR
 
 def check_demo(*, secret: str, base_url: str, proxy_url: str = "") -> CheckResult:
     """Демо-провайдер не ходит в сеть — всегда готов."""
-    return True, "Демо-провайдер: отвечает по знаниям агента, без внешних запросов и ключей", {}
+    return True, t("integrations.check_demo"), {}

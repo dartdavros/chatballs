@@ -26,17 +26,17 @@ SOCKS_SCHEMES = ("socks5", "socks5h")
 
 class _RefusedFileHandler(urllib.request.FileHandler):
     def file_open(self, req):
-        raise OutboundUrlRejected("Схема file:// в исходящих запросах запрещена")
+        raise OutboundUrlRejected(t("settings.scheme_forbidden", scheme="file://"))
 
 
 class _RefusedFTPHandler(urllib.request.FTPHandler):
     def ftp_open(self, req):
-        raise OutboundUrlRejected("Схема ftp:// в исходящих запросах запрещена")
+        raise OutboundUrlRejected(t("settings.scheme_forbidden", scheme="ftp://"))
 
 
 class _RefusedDataHandler(urllib.request.DataHandler):
     def data_open(self, req):
-        raise OutboundUrlRejected("Схема data: в исходящих запросах запрещена")
+        raise OutboundUrlRejected(t("settings.scheme_forbidden", scheme="data:"))
 
 
 class _GuardedRedirectHandler(urllib.request.HTTPRedirectHandler):

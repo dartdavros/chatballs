@@ -1,6 +1,6 @@
 import { readableSize, shortDateTime } from "../../../shared/utils";
 import type { KnowledgeAgentRef, KnowledgeAttachment, KnowledgeCategory, KnowledgeItem } from "./types";
-import { t, tn } from "../../../i18n";
+import { fmt, t, tn } from "../../../i18n";
 
 // Экранная модель раздела «База знаний» (дизайн-базлайн v2, кадры KB1–KB9).
 // Отделы упразднены ADR-CHATBALLS-0041, поэтому доступность знания — это флаг
@@ -54,7 +54,7 @@ export function libraryTotals(categories: KnowledgeCategory[], items: KnowledgeI
     .reduce((total, category) => total + (category.knowledgeCount ?? 0), 0);
   const fragments = items.reduce((total, item) => total + (item.fragmentsCount ?? 0), 0);
   const fragmentsText = tn("plural.chunks", fragments)
-    .replace(String(fragments), fragments.toLocaleString("ru-RU"));
+    .replace(String(fragments), fmt.number(fragments));
   return [
     tn("plural.categories", categories.length),
     tn("plural.knowledge", knowledge),
@@ -132,6 +132,6 @@ export function knowledgeChunks(content: string, maxChars = 800): string[] {
 
 /** «4 280 знаков · ≈12 фрагментов» — статусная строка редактора (кадр KB5). */
 export function knowledgeEditorStats(content: string): string {
-  const characters = content.length.toLocaleString("ru-RU");
+  const characters = fmt.number(content.length);
   return t("ai.characters_and_chunks", { characters, chunks: tn("plural.chunks", knowledgeChunks(content).length) });
 }

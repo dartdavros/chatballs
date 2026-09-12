@@ -186,7 +186,12 @@ def client_row(contact: Contact) -> dict:
 
 
 def _dialog_status(conversation: Conversation) -> str:
-    return {"closed": "Закрыт", "operator": "Оператор", "ai": "AI", "wait": "Ждёт оператора"}[_mode(conversation)]
+    return {
+        "closed": t("conversations.dialog_status_closed"),
+        "operator": t("conversations.dialog_status_operator"),
+        "ai": "AI",
+        "wait": t("conversations.dialog_status_wait"),
+    }[_mode(conversation)]
 
 
 def client_detail(organization_id: int, contact_id: int) -> dict:
@@ -257,9 +262,9 @@ def client_detail(organization_id: int, contact_id: int) -> dict:
     # Активность из жизненного цикла диалогов (created/closed) — реальные события.
     activity: list[dict] = []
     for conversation in conversations:
-        activity.append({"type": "created", "title": f"Диалог · {conversation.channel.name}", "at": conversation.created_at.isoformat()})
+        activity.append({"type": "created", "title": t("conversations.activity_started", channel=conversation.channel.name), "at": conversation.created_at.isoformat()})
         if conversation.lifecycle == LifecycleState.CLOSED:
-            activity.append({"type": "closed", "title": f"Диалог закрыт · {conversation.channel.name}", "at": conversation.last_activity_at.isoformat()})
+            activity.append({"type": "closed", "title": t("conversations.activity_closed", channel=conversation.channel.name), "at": conversation.last_activity_at.isoformat()})
     activity.sort(key=lambda item: item["at"], reverse=True)
 
     conversation_ids = [str(conversation.id) for conversation in conversations]
@@ -282,7 +287,7 @@ def client_detail(organization_id: int, contact_id: int) -> dict:
                 # тогда показываем код — как в журнале.
                 "action": audit_action_label(event.action) or event.action,
                 "object": audit_object_label(event.object_type, event.object_id),
-                "actor": (event.actor.full_name or event.actor.email) if event.actor_id else "Система",
+                "actor": (event.actor.full_name or event.actor.email) if event.actor_id else t("admin.actor_system"),
                 "result": audit_result_label(event.result),
             }
         )

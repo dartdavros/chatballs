@@ -22,4 +22,4 @@ class PasswordComplexityValidator:
             raise ValidationError(t("identity.password_needs_special"), code="password_no_special")
 
     def get_help_text(self) -> str:
-        return "Пароль должен содержать букву, цифру и спецсимвол."
+        return t("identity.password_help")

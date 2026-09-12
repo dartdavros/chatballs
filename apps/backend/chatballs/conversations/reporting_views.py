@@ -56,7 +56,7 @@ class ClientDetailView(ConversationViewBase):
                 continue
             value = str(request.data.get(field) or "").strip()
             if len(value) > limit:
-                return Response({"detail": f"Поле {field}: не длиннее {limit} символов"}, status=400)
+                return Response({"detail": t("conversations.field_too_long", field=field, limit=limit)}, status=400)
             if field == "name" and not value:
                 return Response({"detail": t("conversations.contact_name_empty")}, status=400)
             setattr(contact, field, value)

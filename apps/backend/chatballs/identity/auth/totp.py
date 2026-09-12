@@ -10,6 +10,7 @@ from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
+from chatballs.i18n import t
 from chatballs.identity.audit import record_audit_event
 from chatballs.identity.auth.common import _user_payload
 from chatballs.identity.auth.totp_utils import (
@@ -43,7 +44,7 @@ class TotpSetupView(APIView):
 
     def get(self, request: Request) -> Response:
         if request.user.totp_enabled:
-            return Response({"detail": "TOTP is already enabled"}, status=400)
+            return Response({"detail": t("profile.totp_enabled_already")}, status=400)
 
         secret = _ensure_totp_secret(request.user)
         account_name = request.user.email
@@ -76,7 +77,7 @@ class TotpConfirmView(APIView):
                 result=AuditResult.DENIED,
                 request=request,
             )
-            return Response({"detail": "Invalid TOTP code"}, status=400)
+            return Response({"detail": t("identity.invalid_totp_code")}, status=400)
 
         request.user.totp_enabled = True
         request.user.save(update_fields=["totp_enabled"])
@@ -99,7 +100,7 @@ class TotpVerifyView(APIView):
         pending_user_id = request.session.get(TOTP_SESSION_KEY)
         if not pending_user_id or _challenge_expired(request):
             _drop_challenge(request)
-            return Response({"detail": "TOTP challenge is not active"}, status=401)
+            return Response({"detail": t("identity.totp_challenge_inactive")}, status=401)
 
         try:
             # is_active обязателен: пароль приняли раньше, и без этой проверки
@@ -109,7 +110,7 @@ class TotpVerifyView(APIView):
             )
         except HumanUser.DoesNotExist:
             _drop_challenge(request)
-            return Response({"detail": "TOTP challenge is not active"}, status=401)
+            return Response({"detail": t("identity.totp_challenge_inactive")}, status=401)
 
         if not user.totp_enabled or not accept_totp_code(
             user, str(request.data.get("code", ""))
@@ -120,7 +121,7 @@ class TotpVerifyView(APIView):
                 result=AuditResult.DENIED,
                 request=request,
             )
-            return Response({"detail": "Invalid TOTP code"}, status=400)
+            return Response({"detail": t("identity.invalid_totp_code")}, status=400)
 
         # Отметку «последний код принят …» для карточки 2FA (кадр P1) уже
         # проставил accept_totp_code вместе с номером интервала.

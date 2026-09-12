@@ -5,6 +5,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from chatballs.i18n import t
 from chatballs.identity.auth.common import _user_payload
 from chatballs.identity.invitation_service import InvitationError, accept_invitation
 
@@ -23,7 +24,7 @@ class InvitationAcceptView(APIView):
     def post(self, request: Request) -> Response:
         token = str(request.data.get("token", "")).strip()
         if not token:
-            return Response({"detail": "token is required"}, status=400)
+            return Response({"detail": t("identity.token_required")}, status=400)
         try:
             accept_invitation(token=token, user=request.user)
         except InvitationError as error:

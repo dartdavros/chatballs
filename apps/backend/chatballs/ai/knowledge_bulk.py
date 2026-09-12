@@ -14,6 +14,7 @@ from chatballs.ai.models import (
 )
 from chatballs.ai.services import knowledge_for_agent_ids
 from chatballs.channels.models import Channel
+from chatballs.i18n import t
 from chatballs.tenancy.context import TenantContext
 
 
@@ -21,11 +22,11 @@ def _normalized_knowledge_ids(knowledge_ids: Iterable[int]) -> list[int]:
     normalized: list[int] = []
     for knowledge_id in knowledge_ids:
         if isinstance(knowledge_id, bool) or not isinstance(knowledge_id, int):
-            raise ValidationError({"knowledgeIds": "Knowledge IDs must be integers"})
+            raise ValidationError({"knowledgeIds": t("ai.knowledge_ids_integers")})
         if knowledge_id not in normalized:
             normalized.append(knowledge_id)
     if not normalized:
-        raise ValidationError({"knowledgeIds": "At least one knowledge ID is required"})
+        raise ValidationError({"knowledgeIds": t("ai.at_least_one_knowledge_id")})
     return normalized
 
 
@@ -40,7 +41,7 @@ def _locked_knowledge(*, context: TenantContext, knowledge_ids: Iterable[int]) -
         .order_by("id")
     )
     if len(items) != len(normalized_ids):
-        raise ValidationError({"knowledgeIds": "Unknown knowledge item"})
+        raise ValidationError({"knowledgeIds": t("ai.unknown_knowledge_item")})
     return items
 
 
@@ -64,7 +65,7 @@ def bulk_move_knowledge(
             organization_id=context.organization_id,
         )
     except KnowledgeCategory.DoesNotExist as error:
-        raise ValidationError({"categoryId": "Category not found"}) from error
+        raise ValidationError({"categoryId": t("ai.category_not_found")}) from error
     items = _locked_knowledge(context=context, knowledge_ids=knowledge_ids)
     _require_bulk_write(context=context, items=items)
     now = timezone.now()
@@ -87,7 +88,7 @@ def add_category_knowledge_to_agent(
     *, context: TenantContext, agent: AIAgent, category_id: int
 ) -> CategorySelectionResult:
     if agent.channel.organization_id != context.organization_id:
-        raise ValidationError({"agent": "Agent belongs to another organization"})
+        raise ValidationError({"agent": t("ai.agent_other_organization")})
     channel = Channel.objects.select_for_update().get(
         id=agent.channel_id,
         organization_id=context.organization_id,
@@ -96,7 +97,7 @@ def add_category_knowledge_to_agent(
         id=category_id,
         organization_id=context.organization_id,
     ).exists():
-        raise ValidationError({"categoryId": "Category not found"})
+        raise ValidationError({"categoryId": t("ai.category_not_found")})
 
     current_ids = set(agent.knowledge_items.values_list("id", flat=True))
     category_ids = set(

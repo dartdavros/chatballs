@@ -3,6 +3,7 @@ import uuid
 from django.conf import settings
 from django.db import models
 
+from chatballs.i18n import t
 from chatballs.tenancy.models import TenantRelationModel
 
 
@@ -40,7 +41,7 @@ TERMINAL_CALL_STATUSES = (
 class CallEndedBy(models.TextChoices):
     STAFF = "STAFF", "Сотрудник"
     CUSTOMER = "CUSTOMER", "Клиент"
-    SYSTEM = "SYSTEM", "Система"
+    SYSTEM = "SYSTEM", t("admin.actor_system")
     TIMEOUT = "TIMEOUT", "Таймаут"
 
 

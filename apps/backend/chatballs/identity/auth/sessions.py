@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
-from chatballs.i18n import current_language
+from chatballs.i18n import current_language, t
 from chatballs.identity.audit import record_audit_event
 from chatballs.identity.auth.common import _challenge_payload, _user_payload
 from chatballs.identity.auth.totp_utils import TOTP_SESSION_KEY, TOTP_STARTED_KEY
@@ -48,7 +48,7 @@ class LoginView(APIView):
         user = authenticate(request, username=email, password=password)
         if user is None:
             record_audit_event(action="identity.login_failed", result=AuditResult.DENIED, request=request)
-            return Response({"detail": "Invalid credentials"}, status=401)
+            return Response({"detail": t("identity.invalid_credentials")}, status=401)
         if user.totp_enabled:
             request.session[TOTP_SESSION_KEY] = user.id
             # Шаг с кодом ждёт не вечно: см. TOTP_CHALLENGE_TTL_SECONDS.

@@ -27,12 +27,12 @@ class EmployeeResetPasswordView(APIView):
         actor = request.tenant_context.membership
         profile = get_owned_profile(request, user_id)
         if profile is None:
-            return Response({"detail": "Employee not found"}, status=404)
+            return Response({"detail": t("admin.employee_not_found")}, status=404)
         if not can_manage_employee(actor, profile, EmployeeAction.RESET_PASSWORD):
             return deny_employee_action(request, profile, EmployeeAction.RESET_PASSWORD)
         mode = clean_password_mode(request.data.get("mode"))
         if mode is None:
-            return Response({"detail": "Unknown password mode"}, status=400)
+            return Response({"detail": t("admin.unknown_password_mode")}, status=400)
         # Пароль живёт на пользователе, а не на членстве: сбрасывать его из одной
         # организации, когда человек работает и в другой, нельзя.
         if profile.user.memberships.count() > 1:
@@ -58,7 +58,7 @@ class EmployeeRevokeSessionsView(APIView):
         actor = request.tenant_context.membership
         profile = get_owned_profile(request, user_id)
         if profile is None:
-            return Response({"detail": "Employee not found"}, status=404)
+            return Response({"detail": t("admin.employee_not_found")}, status=404)
         if not can_manage_employee(actor, profile, EmployeeAction.TERMINATE_SESSIONS):
             return deny_employee_action(request, profile, EmployeeAction.TERMINATE_SESSIONS)
         revoked = revoke_user_sessions(profile.user_id)
@@ -82,7 +82,7 @@ class EmployeeBlockView(APIView):
         actor = request.tenant_context.membership
         profile = get_owned_profile(request, user_id)
         if profile is None:
-            return Response({"detail": "Employee not found"}, status=404)
+            return Response({"detail": t("admin.employee_not_found")}, status=404)
         if not can_manage_employee(actor, profile, EmployeeAction.BLOCK):
             return deny_employee_action(request, profile, EmployeeAction.BLOCK)
         profile.block()
@@ -105,7 +105,7 @@ class EmployeeUnblockView(APIView):
         actor = request.tenant_context.membership
         profile = get_owned_profile(request, user_id)
         if profile is None:
-            return Response({"detail": "Employee not found"}, status=404)
+            return Response({"detail": t("admin.employee_not_found")}, status=404)
         if not can_manage_employee(actor, profile, EmployeeAction.UNBLOCK):
             return deny_employee_action(request, profile, EmployeeAction.UNBLOCK)
         profile.unblock()

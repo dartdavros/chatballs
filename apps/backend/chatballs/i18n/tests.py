@@ -49,6 +49,40 @@ class CatalogTests(SimpleTestCase):
                     names(russian), names(table[key]), f"{key}: расходятся параметры в {code}"
                 )
 
+    def test_every_key_used_in_code_exists(self) -> None:
+        """Вызов t() без ключа в каталоге молча печатает сам ключ.
+
+        Так уже случалось: строки заменили на вызовы, а ключи в каталог
+        дописать забыли — и вместо текста в ответе поехало «channels.
+        connection_not_found». Ошибка не падает и в логах не видна, поэтому
+        ищется здесь, обходом исходников.
+        """
+
+        import ast
+
+        root = pathlib.Path(__file__).resolve().parents[1]
+        known = set(CATALOG[DEFAULT_LANGUAGE])
+        unknown: list[str] = []
+        for source in root.rglob("*.py"):
+            # Каталог — это сами словари; тесты намеренно зовут несуществующий
+            # ключ, проверяя фолбэк.
+            if "__pycache__" in source.parts or source.parts[-2:-1] == ("messages",):
+                continue
+            if "test" in source.name:
+                continue
+            for node in ast.walk(ast.parse(source.read_text(encoding="utf-8"))):
+                if not isinstance(node, ast.Call):
+                    continue
+                if getattr(node.func, "id", "") not in ("t", "tn") or not node.args:
+                    continue
+                first = node.args[0]
+                # Ключ, собранный из выражения, проверить статически нельзя —
+                # такие места отвечают за себя сами (см. _system_text).
+                if isinstance(first, ast.Constant) and isinstance(first.value, str):
+                    if first.value not in known:
+                        unknown.append(f"{source.name}:{node.lineno} {first.value}")
+        self.assertEqual(unknown, [], "ключи вызываются, но в каталоге их нет")
+
     def test_unknown_key_returns_itself(self) -> None:
         self.assertEqual(t("нет.такого.ключа"), "нет.такого.ключа")
 

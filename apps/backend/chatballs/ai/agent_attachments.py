@@ -19,6 +19,7 @@ from chatballs.ai.agent_knowledge import (
 from chatballs.ai.knowledge_policy import readable_knowledge
 from chatballs.ai.models import AIAgent, Knowledge
 from chatballs.channels.models import Channel
+from chatballs.i18n import t
 from chatballs.support_portals.models import PortalArticle
 from chatballs.tenancy.context import TenantContext
 
@@ -37,17 +38,17 @@ def normalized_ids(raw_ids: Iterable[int], field: str) -> list[int]:
     normalized: list[int] = []
     for value in raw_ids:
         if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
-            raise ValidationError({field: "Positive integer ID required"})
+            raise ValidationError({field: t("api.positive_id_required")})
         if value not in normalized:
             normalized.append(value)
     if not normalized:
-        raise ValidationError({field: "At least one ID is required"})
+        raise ValidationError({field: t("api.at_least_one_id")})
     return normalized
 
 
 def _locked_agent(*, context: TenantContext, agent: AIAgent) -> tuple[AIAgent, Channel]:
     if agent.channel.organization_id != context.organization_id:
-        raise ValidationError({"agent": "Agent belongs to another organization"})
+        raise ValidationError({"agent": t("ai.agent_other_organization")})
     channel = Channel.objects.select_for_update().get(
         id=agent.channel_id,
         organization_id=context.organization_id,
@@ -99,7 +100,7 @@ def link_knowledge_to_agent(
     )
     found_ids = set(readable.values_list("id", flat=True))
     if len(found_ids) != len(requested_ids):
-        raise ValidationError({"knowledgeIds": "Unknown knowledge item"})
+        raise ValidationError({"knowledgeIds": t("ai.unknown_knowledge_item")})
     available_ids = set(
         knowledge_available_to_channel(
             Knowledge.objects.filter(id__in=found_ids),
@@ -130,7 +131,7 @@ def link_portal_articles_to_agent(
     )
     found_ids = set(articles.values_list("id", flat=True))
     if len(found_ids) != len(requested_ids):
-        raise ValidationError({"articleIds": "Unknown portal article"})
+        raise ValidationError({"articleIds": t("ai.unknown_portal_article")})
     available_ids = set(
         portal_articles_available_to_channel(
             PortalArticle.objects.filter(id__in=found_ids),

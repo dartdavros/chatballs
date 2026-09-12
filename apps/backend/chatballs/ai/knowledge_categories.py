@@ -3,6 +3,7 @@ from django.db import transaction
 
 from chatballs.ai.knowledge_types import UNCATEGORIZED_CATEGORY_NAME
 from chatballs.ai.models import KnowledgeCategory
+from chatballs.i18n import t
 from chatballs.identity.models import Organization
 from chatballs.tenancy.context import TenantContext
 
@@ -24,14 +25,14 @@ def _validate_category_context(
     *, context: TenantContext, category: KnowledgeCategory
 ) -> None:
     if category.organization_id != context.organization_id:
-        raise ValidationError({"category": "Category belongs to another organization"})
+        raise ValidationError({"category": t("ai.category_other_organization")})
 
 
 def _validate_parent(
     *, context: TenantContext, parent: KnowledgeCategory | None
 ) -> None:
     if parent is not None and parent.organization_id != context.organization_id:
-        raise ValidationError({"parent": "Parent category belongs to another organization"})
+        raise ValidationError({"parent": t("ai.parent_category_other_organization")})
 
 
 @transaction.atomic
@@ -57,7 +58,7 @@ def rename_category(
 ) -> KnowledgeCategory:
     _validate_category_context(context=context, category=category)
     if category.is_system:
-        raise ValidationError({"category": "System category is immutable"})
+        raise ValidationError({"category": t("ai.system_category_immutable")})
     locked = KnowledgeCategory.objects.select_for_update().get(pk=category.pk)
     locked.name = name
     locked.save(update_fields=["name"])
@@ -75,7 +76,7 @@ def move_category(
     _validate_category_context(context=context, category=category)
     _validate_parent(context=context, parent=parent)
     if category.is_system:
-        raise ValidationError({"category": "System category is immutable"})
+        raise ValidationError({"category": t("ai.system_category_immutable")})
     locked_categories = {
         item.pk: item
         for item in KnowledgeCategory.objects.select_for_update().filter(
@@ -104,7 +105,7 @@ def update_category(
     _validate_category_context(context=context, category=category)
     _validate_parent(context=context, parent=parent)
     if category.is_system:
-        raise ValidationError({"category": "System category is immutable"})
+        raise ValidationError({"category": t("ai.system_category_immutable")})
     locked_categories = {
         item.pk: item
         for item in KnowledgeCategory.objects.select_for_update().filter(

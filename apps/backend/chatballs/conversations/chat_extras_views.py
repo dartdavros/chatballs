@@ -93,7 +93,7 @@ class ConversationContactView(ConversationViewBase):
                 continue
             value = str(request.data.get(field) or "").strip()
             if len(value) > limit:
-                return Response({"detail": f"Поле {field}: не длиннее {limit} символов"}, status=400)
+                return Response({"detail": t("conversations.field_too_long", field=field, limit=limit)}, status=400)
             if field == "name" and not value:
                 return Response({"detail": t("conversations.contact_name_empty")}, status=400)
             setattr(contact, field, value)
@@ -152,7 +152,7 @@ class ConversationLabelsView(ConversationViewBase):
         if not isinstance(label_ids, list) or not all(
             isinstance(item, int) for item in label_ids
         ):
-            return Response({"detail": "labelIds must be a list of ids"}, status=400)
+            return Response({"detail": t("conversations.label_ids_list")}, status=400)
         labels = list(
             ConversationLabel.objects.filter(
                 organization_id=request.tenant_context.organization_id,
@@ -186,7 +186,7 @@ class ConversationArchiveView(ConversationViewBase):
             return Response({"detail": t("conversations.not_found")}, status=404)
         archived = request.data.get("archived")
         if not isinstance(archived, bool):
-            return Response({"detail": "archived must be a boolean"}, status=400)
+            return Response({"detail": t("conversations.archived_boolean")}, status=400)
         if not archived and not can_administer_access(request.tenant_context.membership):
             return Response(
                 {"detail": t("conversations.restore_admin_only")}, status=403

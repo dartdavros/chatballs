@@ -28,11 +28,11 @@ class ProfileUpdateView(APIView):
         full_name = str(body.get("fullName", "")).strip()
         email = HumanUser.objects.normalize_email(str(body.get("email", "")).strip())
         if not full_name:
-            return Response({"detail": "Full name is required"}, status=400)
+            return Response({"detail": t("admin.full_name_required")}, status=400)
         if not email:
-            return Response({"detail": "Email is required"}, status=400)
+            return Response({"detail": t("admin.email_required")}, status=400)
         if HumanUser.objects.exclude(id=request.user.id).filter(email=email).exists():
-            return Response({"detail": "Email is already used"}, status=400)
+            return Response({"detail": t("admin.email_taken")}, status=400)
 
         request.user.full_name = full_name
         request.user.email = email
@@ -97,7 +97,7 @@ class ProfilePasswordView(APIView):
         current_password = str(body.get("currentPassword", ""))
         new_password = str(body.get("newPassword", ""))
         if not request.user.check_password(current_password):
-            return Response({"detail": "Current password is invalid"}, status=400)
+            return Response({"detail": t("profile.current_password_invalid")}, status=400)
         try:
             validate_password(new_password, user=request.user)
         except DjangoValidationError as error:
@@ -150,10 +150,10 @@ class ProfileTotpDisableView(APIView):
     def post(self, request: Request) -> Response:
         current_password = str(request.data.get("currentPassword", ""))
         if not request.user.check_password(current_password):
-            return Response({"detail": "Current password is invalid"}, status=400)
+            return Response({"detail": t("profile.current_password_invalid")}, status=400)
 
         if user_requires_totp(request.user.id):
-            return Response({"detail": "TOTP is required by an organization policy"}, status=409)
+            return Response({"detail": t("profile.totp_required_by_policy")}, status=409)
         request.user.totp_enabled = False
         request.user.totp_secret = ""
         request.user.save(update_fields=["totp_enabled", "totp_secret"])
@@ -199,7 +199,7 @@ class ChangeTemporaryPasswordView(APIView):
         current_password = str(body.get("currentPassword", ""))
         new_password = str(body.get("newPassword", ""))
         if not request.user.must_change_password and not request.user.check_password(current_password):
-            return Response({"detail": "Current password is invalid"}, status=400)
+            return Response({"detail": t("profile.current_password_invalid")}, status=400)
         try:
             validate_password(new_password, user=request.user)
         except DjangoValidationError as error:

@@ -28,7 +28,7 @@ from chatballs.webchat.widgets import ensure_widget
 
 
 def load(context: TenantContext, refs: DemoRefs) -> None:
-    data = manifest.load("channels_ai")
+    data = manifest.load("channels_ai", refs.language)
     current = now()
 
     llm = _ensure_llm_provider(context, refs, data["llmProvider"], current)

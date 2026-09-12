@@ -30,6 +30,7 @@ from chatballs.ai.selectors import (
 from chatballs.ai.serializers import attachment_payload, knowledge_payload
 from chatballs.api.pagination import page_payload, paginate
 from chatballs.api.permissions import HasCapability
+from chatballs.i18n import t
 from chatballs.identity.audit import record_audit_event
 from chatballs.identity.models import AuditEvent
 
@@ -122,7 +123,7 @@ class KnowledgeDetailView(_KnowledgeBaseView):
         try:
             knowledge = self._read_knowledge(request, knowledge_id)
         except Knowledge.DoesNotExist:
-            return Response({"detail": "Knowledge not found"}, status=404)
+            return Response({"detail": t("ai.knowledge_not_found")}, status=404)
         payload = knowledge_payload(knowledge)
         created_event = (
             AuditEvent.objects.filter(
@@ -162,7 +163,7 @@ class KnowledgeDetailView(_KnowledgeBaseView):
         try:
             knowledge = self._write_knowledge(request, knowledge_id)
         except Knowledge.DoesNotExist:
-            return Response({"detail": "Knowledge not found"}, status=404)
+            return Response({"detail": t("ai.knowledge_not_found")}, status=404)
         try:
             data = knowledge_input(request.data, current=knowledge)
             if not employee_can_write_knowledge(
@@ -185,7 +186,7 @@ class KnowledgeDetailView(_KnowledgeBaseView):
         try:
             knowledge = self._write_knowledge(request, knowledge_id)
         except Knowledge.DoesNotExist:
-            return Response({"detail": "Knowledge not found"}, status=404)
+            return Response({"detail": t("ai.knowledge_not_found")}, status=404)
         self._audit(request, "deleted", knowledge)
         delete_knowledge(context=request.tenant_context, knowledge=knowledge)
         return Response(status=204)
@@ -195,7 +196,7 @@ class KnowledgeImportView(_KnowledgeBaseView):
     def post(self, request: Request) -> Response:
         documents = request.data.get("documents")
         if not isinstance(documents, list) or not documents:
-            return Response({"detail": "documents must be a non-empty list"}, status=400)
+            return Response({"detail": t("ai.documents_non_empty")}, status=400)
         result = import_knowledge_documents(
             context=request.tenant_context,
             documents=documents,
@@ -222,7 +223,7 @@ class KnowledgeReindexView(_KnowledgeBaseView):
         try:
             knowledge = self._write_knowledge(request, knowledge_id)
         except Knowledge.DoesNotExist:
-            return Response({"detail": "Knowledge not found"}, status=404)
+            return Response({"detail": t("ai.knowledge_not_found")}, status=404)
         reindex_knowledge(knowledge)
         self._audit(request, "reindexed", knowledge)
         knowledge = self._write_knowledge(request, knowledge_id)
@@ -236,10 +237,10 @@ class KnowledgeAttachmentUploadView(_KnowledgeBaseView):
         try:
             knowledge = self._write_knowledge(request, knowledge_id)
         except Knowledge.DoesNotExist:
-            return Response({"detail": "Knowledge not found"}, status=404)
+            return Response({"detail": t("ai.knowledge_not_found")}, status=404)
         upload = request.FILES.get("file")
         if upload is None:
-            return Response({"detail": "file is required (multipart/form-data)"}, status=400)
+            return Response({"detail": t("ai.file_required")}, status=400)
         try:
             attachment = add_attachment(
                 context=request.tenant_context, knowledge=knowledge, upload=upload
@@ -255,10 +256,10 @@ class KnowledgeAttachmentDeleteView(_KnowledgeBaseView):
         try:
             knowledge = self._write_knowledge(request, knowledge_id)
         except Knowledge.DoesNotExist:
-            return Response({"detail": "Knowledge not found"}, status=404)
+            return Response({"detail": t("ai.knowledge_not_found")}, status=404)
         attachment = knowledge.attachments.filter(id=attachment_id).first()
         if attachment is None:
-            return Response({"detail": "Attachment not found"}, status=404)
+            return Response({"detail": t("ai.attachment_not_found")}, status=404)
         delete_attachment(context=request.tenant_context, attachment=attachment)
         self._audit(request, "attachment_deleted", knowledge)
         return Response(status=204)

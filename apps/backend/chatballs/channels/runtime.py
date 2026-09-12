@@ -1,5 +1,6 @@
 from chatballs.ai.provider.base import ChatResult, ProviderError
 from chatballs.ai.runtime import run_agent_turn
+from chatballs.i18n import t
 
 
 def run_channel_turn(*, channel, message: str, history: list[dict] | None = None) -> ChatResult:
@@ -11,5 +12,5 @@ def run_channel_turn(*, channel, message: str, history: list[dict] | None = None
     """
     agent = getattr(channel, "ai_agent", None)
     if agent is None or not agent.is_active:
-        raise ProviderError("Channel has no active AI agent")
+        raise ProviderError(t("channels.no_active_agent"))
     return run_agent_turn(agent=agent, message=message, history=history, style_guard=True).result

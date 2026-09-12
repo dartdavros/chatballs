@@ -21,6 +21,7 @@ at runtime and overrides `AIAgent.model`.
 
 from __future__ import annotations
 
+from chatballs.i18n import t
 from chatballs.ai.provider.base import LLMProvider, ProviderError
 from chatballs.ai.provider.custom import CustomProvider
 from chatballs.ai.provider.demo import DemoProvider
@@ -79,7 +80,7 @@ def _channel_integration(channel) -> Integration:
         integration = getattr(channel, "provider_integration", None)
     if integration is None or not integration.secret:
         raise IntegrationNotConfigured(
-            "Агент не привязан к LLM-интеграции BYOK; выберите провайдера в настройках агента"
+            t("ai.agent_without_llm_integration")
         )
     return integration
 
@@ -104,5 +105,5 @@ def _provider_from_integration(integration: Integration) -> LLMProvider:
             proxy_url=integration.config.get("proxy_url", ""),
         )
     raise IntegrationNotConfigured(
-        f"Интеграция «{integration.provider}» не является LLM-провайдером BYOK"
+        t("ai.integration_is_not_llm", provider=integration.provider)
     )

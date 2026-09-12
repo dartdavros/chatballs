@@ -14,6 +14,7 @@ from chatballs.calls.models import CallInvite, CallSession, CallStatus, InviteDe
 from chatballs.calls.services import CALL_INVITE_SEND
 from chatballs.calls.tokens import issue_invite_token
 from chatballs.conversations import transports
+from chatballs.i18n import customer_language, t
 from chatballs.events.handlers import register
 from chatballs.identity.instance_settings import public_base_url
 from chatballs.tenancy.context import TenantContext
@@ -49,8 +50,11 @@ def handle_call_invite_send(payload: dict, context: TenantContext | None) -> Non
         token, token_hash = issue_invite_token()
         invite.token_hash = token_hash
         invite.save(update_fields=["token_hash"])
-        call_label = "аудиозвонок" if call.kind == "AUDIO" else "видеозвонок"
-        invite_text = f"Приглашаем вас на {call_label}. Нажмите кнопку, чтобы перейти к звонку."
+        # Приглашение читает клиент, а не оператор, и рождается оно в воркере,
+        # где запроса нет: язык берём у организации.
+        language = customer_language(call.conversation.organization)
+        call_label = t("calls.kind_audio" if call.kind == "AUDIO" else "calls.kind_video", language=language)
+        invite_text = t("calls.invite_text", kind=call_label, language=language)
         url = f"{public_base_url()}/calls/{token}?kind={call.kind}"
         sent = transports.send_call_invite(
             call.delivery_connection,

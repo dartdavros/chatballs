@@ -1407,4 +1407,8 @@ export const en: Record<MessageKey, Message> = {
   "unit.b": "{value} B",
   "unit.kb": "{value} KB",
   "unit.mb": "{value} MB",
+  "ai.answer_language": "Answer language",
+  "ai.answer_language_hint": "The language the agent writes to the client in",
+  "ai.answer_language_mirror": "Same as the client",
+  "ai.answer_language_organization": "The organization's language",
 };

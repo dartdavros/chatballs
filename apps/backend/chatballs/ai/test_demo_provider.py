@@ -89,3 +89,45 @@ class DemoIntegrationTests(TestCase):
         checked = run_integration_test(context=self.context, integration=integration)
         self.assertEqual(checked.status, IntegrationStatus.OK)
         self.assertIsInstance(_provider_from_integration(Integration.objects.get(pk=integration.pk)), DemoProvider)
+
+
+ENGLISH_KNOWLEDGE = """Отвечай только на основе этих знаний:
+Making takes 5-7 working days after payment. Delivery across the country is DPD, \
+3-5 working days. The London courier calls an hour ahead.
+Ready-made items can be returned within 14 days."""
+
+
+class DemoProviderLanguageTests(TestCase):
+    """Демо-агент отвечает на языке обращения — как настоящий в режиме MIRROR."""
+
+    def test_english_question_is_answered_from_english_knowledge(self) -> None:
+        result = DemoProvider().chat(
+            messages=[
+                ChatMessage(role="system", content=ENGLISH_KNOWLEDGE),
+                ChatMessage(role="user", content="How long does delivery take?"),
+            ],
+            model="demo",
+        )
+        self.assertIn("DPD", result.text)
+        self.assertNotIn(HANDOFF_TOKEN, result.text)
+
+    def test_english_request_for_human_hands_off_in_english(self) -> None:
+        result = DemoProvider().chat(
+            messages=[
+                ChatMessage(role="system", content=ENGLISH_KNOWLEDGE),
+                ChatMessage(role="user", content="I want to speak to a human"),
+            ],
+            model="demo",
+        )
+        self.assertIn(HANDOFF_TOKEN, result.text)
+        self.assertNotRegex(result.text, r"[А-Яа-яЁё]")
+
+    def test_russian_question_still_answers_in_russian(self) -> None:
+        result = DemoProvider().chat(
+            messages=[
+                ChatMessage(role="system", content=KNOWLEDGE),
+                ChatMessage(role="user", content="Сколько идёт доставка?"),
+            ],
+            model="demo",
+        )
+        self.assertIn("СДЭК", result.text)

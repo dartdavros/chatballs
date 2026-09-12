@@ -25,6 +25,7 @@ class AgentInput:
     persona: str
     tone: str
     instructions: str
+    answer_language: str
     knowledge_ids: list[int] | None  # None -> выбор знаний не меняется
 
 
@@ -72,7 +73,7 @@ def knowledge_for_agent_ids(
         .order_by("id")
     )
     if len(items) != len(requested_ids):
-        raise ValidationError({"knowledgeIds": "Unknown or unavailable knowledge item"})
+        raise ValidationError({"knowledgeIds": t("ai.knowledge_unknown_or_unavailable")})
     return items
 
 
@@ -80,16 +81,16 @@ def knowledge_for_agent_ids(
 def create_agent(*, context: TenantContext, data: AgentCreateInput) -> AIAgent:
     organization = context.organization
     if not data.channel_code:
-        raise ValidationError({"channel": "Channel is required"})
+        raise ValidationError({"channel": t("ai.channel_required")})
     try:
         channel = Channel.objects.select_for_update().get(
             organization=organization,
             code=data.channel_code,
         )
     except Channel.DoesNotExist as error:
-        raise ValidationError({"channel": "Channel not found"}) from error
+        raise ValidationError({"channel": t("channels.not_found")}) from error
     if AIAgent.objects.filter(channel=channel).exists():
-        raise ValidationError({"channel": "Channel already has an AI agent"})
+        raise ValidationError({"channel": t("channels.agent_exists")})
 
     knowledge_items = knowledge_for_agent_ids(
         context=context,
@@ -117,7 +118,7 @@ def create_agent(*, context: TenantContext, data: AgentCreateInput) -> AIAgent:
 @transaction.atomic
 def update_agent(*, context: TenantContext, agent: AIAgent, data: AgentInput) -> AIAgent:
     if agent.channel.organization_id != context.organization_id:
-        raise ValidationError({"agent": "Agent belongs to another organization"})
+        raise ValidationError({"agent": t("ai.agent_other_organization")})
     channel = Channel.objects.select_for_update().get(
         id=agent.channel_id,
         organization_id=context.organization_id,
@@ -149,6 +150,7 @@ def update_agent(*, context: TenantContext, agent: AIAgent, data: AgentInput) ->
     locked.persona = data.persona
     locked.tone = data.tone
     locked.instructions = data.instructions
+    locked.answer_language = data.answer_language
     locked.save(
         update_fields=[
             "name",
@@ -160,6 +162,7 @@ def update_agent(*, context: TenantContext, agent: AIAgent, data: AgentInput) ->
             "persona",
             "tone",
             "instructions",
+            "answer_language",
             "updated_at",
         ]
     )
@@ -173,7 +176,7 @@ def set_agent_active(*, context: TenantContext, agent: AIAgent, is_active: bool)
     """Смена статуса AI без тарифных слотов (ADR-CHATBALLS-0042 §2): количество
     активных агентов не ограничено; активация требует настроенного провайдера."""
     if agent.channel.organization_id != context.organization_id:
-        raise ValidationError({"agent": "Agent belongs to another organization"})
+        raise ValidationError({"agent": t("ai.agent_other_organization")})
     locked = AIAgent.objects.select_for_update().get(
         pk=agent.id, organization_id=context.organization_id
     )
@@ -181,7 +184,7 @@ def set_agent_active(*, context: TenantContext, agent: AIAgent, is_active: bool)
     if locked.status == target_status:
         return locked
     if locked.status == AIAgentStatus.ARCHIVED:
-        raise ValidationError({"agent": "Archived AI agent cannot change state"})
+        raise ValidationError({"agent": t("ai.archived_agent_state")})
     if is_active and locked.provider_integration_id is None:
         raise ValidationError(
             {"providerIntegrationId": t("ai.pick_provider_first")}

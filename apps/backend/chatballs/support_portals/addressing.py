@@ -60,11 +60,11 @@ def clean_portal_domains(portal) -> None:
         }
         if portal.custom_domain in application_hosts:
             raise ValidationError(
-                {"custom_domain": "Домен внутреннего приложения использовать нельзя"}
+                {"custom_domain": t("portals.domain_is_internal")}
             )
         if portal.custom_domain == portal.hosted_domain:
             raise ValidationError(
-                {"custom_domain": "Свой домен должен отличаться от адреса Chatballs"}
+                {"custom_domain": t("portals.domain_same_as_installation")}
             )
         collision = portal.__class__.objects.exclude(pk=portal.pk).filter(
             models.Q(hosted_domain=portal.custom_domain)
@@ -73,16 +73,16 @@ def clean_portal_domains(portal) -> None:
         )
         if collision.exists():
             raise ValidationError(
-                {"custom_domain": "Этот домен уже используется другим порталом"}
+                {"custom_domain": t("portals.domain_taken")}
             )
     elif portal.custom_domain_verified_at is not None:
         raise ValidationError(
-            {"custom_domain_verified_at": "Нельзя подтвердить пустой домен"}
+            {"custom_domain_verified_at": t("portals.domain_empty_check")}
         )
     elif portal.__class__.objects.exclude(pk=portal.pk).filter(
         custom_domain=portal.hosted_domain
     ).exists():
-        raise ValidationError({"slug": "Этот адрес уже используется другим порталом"})
+        raise ValidationError({"slug": t("portals.slug_taken")})
 
 
 def portal_public_url(*, hosted: str, custom: str = "", custom_verified: bool = False) -> str:

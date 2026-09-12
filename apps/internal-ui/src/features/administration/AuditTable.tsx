@@ -3,7 +3,7 @@ import { Fragment, useState } from "react";
 import { Icon } from "../../shared/icons";
 import { shortDate, shortDateYear } from "../../shared/utils";
 import type { AuditEvent } from "./model";
-import { t } from "../../i18n";
+import { fmt, t } from "../../i18n";
 
 // Журнал действий. Три вещи, без которых он был нечитаем:
 // * день отбивается заголовком — иначе сотни строк идут сплошняком;
@@ -12,7 +12,7 @@ import { t } from "../../i18n";
 //   были в базе, но наружу не отдавались, и разобраться в событии было нечем.
 
 function formatTime(value: string): string {
-  return new Intl.DateTimeFormat("ru-RU", { hour: "2-digit", minute: "2-digit" }).format(new Date(value));
+  return fmt.time(value);
 }
 
 function dayKey(value: string): string {

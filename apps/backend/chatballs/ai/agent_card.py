@@ -12,7 +12,7 @@ from django.db import transaction
 from django.db.models import Case, Count, IntegerField, Q, QuerySet, Value, When
 from django.utils.text import slugify
 
-from chatballs.ai.models import AIAgent, AIAgentStatus
+from chatballs.ai.models import AIAgent, AIAgentStatus, AnswerLanguage
 from chatballs.ai.serializers import agent_portal_article_payload
 from chatballs.channels.models import Channel
 from chatballs.channels.services import (
@@ -22,7 +22,7 @@ from chatballs.channels.services import (
     update_channel,
 )
 from chatballs.conversations.models import LifecycleState
-from chatballs.i18n import t
+from chatballs.i18n import normalize_language, t
 from chatballs.tenancy.context import TenantContext
 
 
@@ -129,6 +129,7 @@ def agent_card_payload(channel: Channel, *, knowledge_total: int | None = None) 
         "providerIntegrationId": agent.provider_integration_id,
         "modelParams": agent.model_params,
         "limits": agent.limits,
+        "answerLanguage": agent.answer_language,
         "persona": agent.persona,
         "tone": agent.tone,
         "instructions": agent.instructions,
@@ -201,7 +202,7 @@ def create_agent_card(
     from chatballs.channels import authorization
     from chatballs.channels.services import _clean_name, _group_for_channel
 
-    authorization.require_organization_manage(context, operation="Создание агента")
+    authorization.require_organization_manage(context, operation="channels.operation_agent_create")
     clean_name = _clean_name(name)
     group = _group_for_channel(context=context, group_id=group_id)
     channel = Channel.objects.create(
@@ -235,6 +236,7 @@ def update_agent_card(
         "persona",
         "tone",
         "instructions",
+        "answerLanguage",
         "knowledgeIds",
     }
     if ai_fields & set(body):
@@ -245,20 +247,20 @@ def update_agent_card(
             not isinstance(knowledge_ids, list)
             or not all(isinstance(item, int) for item in knowledge_ids)
         ):
-            raise ValidationError({"knowledgeIds": "List of ids required"})
+            raise ValidationError({"knowledgeIds": t("api.list_of_ids_required")})
         model_params = body.get("modelParams", agent.model_params)
         limits = body.get("limits", agent.limits)
         if not isinstance(model_params, dict):
-            raise ValidationError({"modelParams": "Object required"})
+            raise ValidationError({"modelParams": t("api.object_required")})
         if not isinstance(limits, dict):
-            raise ValidationError({"limits": "Object required"})
+            raise ValidationError({"limits": t("api.object_required")})
         provider_integration_id = body.get(
             "providerIntegrationId", agent.provider_integration_id
         )
         if provider_integration_id is not None and not isinstance(
             provider_integration_id, int
         ):
-            raise ValidationError({"providerIntegrationId": "Integer id required"})
+            raise ValidationError({"providerIntegrationId": t("api.integer_id_required")})
         update_agent(
             context=context,
             agent=agent,
@@ -272,6 +274,9 @@ def update_agent_card(
                 persona=str(body.get("persona", agent.persona)),
                 tone=str(body.get("tone", agent.tone)),
                 instructions=str(body.get("instructions", agent.instructions)),
+                answer_language=_clean_answer_language(
+                    body.get("answerLanguage", agent.answer_language)
+                ),
                 knowledge_ids=knowledge_ids,
             ),
         )
@@ -279,6 +284,18 @@ def update_agent_card(
         agent.name = channel.name
         agent.save(update_fields=["name", "updated_at"])
     return agent_card_for_context(context=context, agent_id=channel.id)
+
+
+def _clean_answer_language(value: object) -> str:
+    """Режим ответа агента: MIRROR, ORGANIZATION или код поддерживаемого языка."""
+
+    raw = str(value or "").strip()
+    if raw in AnswerLanguage.values:
+        return raw
+    code = normalize_language(raw)
+    if code:
+        return code
+    raise ValidationError({"answerLanguage": t("ai.unknown_answer_language")})
 
 
 def agent_deletion_blockers(channel: Channel) -> list[dict[str, object]]:
@@ -296,7 +313,7 @@ def delete_agent_card(*, context: TenantContext, channel: Channel) -> None:
     from chatballs.channels import authorization
     from chatballs.channels.services import ChannelHasReferences
 
-    authorization.require_organization_manage(context, operation="Удаление агента")
+    authorization.require_organization_manage(context, operation="channels.operation_agent_delete")
     blockers = agent_deletion_blockers(channel)
     if blockers:
         raise ChannelHasReferences(blockers)

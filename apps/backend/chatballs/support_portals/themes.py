@@ -15,6 +15,8 @@ import re
 from django.core.exceptions import ValidationError
 from django.db import models
 
+from chatballs.i18n import t
+
 DEFAULT_PORTAL_THEME = "classic"
 PORTAL_THEME_ID_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 PORTAL_THEME_SETTINGS_MAX_BYTES = 4096
@@ -38,28 +40,28 @@ def normalize_theme_scheme(value: str | None) -> str:
 
 def validate_theme(value: str) -> None:
     if not PORTAL_THEME_ID_PATTERN.fullmatch(value or ""):
-        raise ValidationError({"theme": "Некорректный идентификатор темы"})
+        raise ValidationError({"theme": t("portals.invalid_theme_id")})
 
 
 def validate_theme_scheme(value: str) -> None:
     if value not in PortalThemeScheme.values:
-        raise ValidationError({"themeScheme": "Неизвестная цветовая схема темы"})
+        raise ValidationError({"themeScheme": t("portals.invalid_theme_scheme")})
 
 
 def validate_theme_settings(value) -> dict:
     if value in (None, ""):
         return {}
     if not isinstance(value, dict):
-        raise ValidationError({"themeSettings": "Параметры темы должны быть объектом"})
+        raise ValidationError({"themeSettings": t("portals.theme_settings_object")})
     for key in value:
         if not isinstance(key, str) or not PORTAL_THEME_ID_PATTERN.fullmatch(key):
-            raise ValidationError({"themeSettings": "Некорректное имя параметра темы"})
+            raise ValidationError({"themeSettings": t("portals.invalid_theme_setting_name")})
     try:
         encoded = json.dumps(value, ensure_ascii=False)
     except (TypeError, ValueError) as error:
         raise ValidationError(
-            {"themeSettings": "Параметры темы должны быть JSON-объектом"}
+            {"themeSettings": t("portals.theme_settings_json")}
         ) from error
     if len(encoded.encode("utf-8")) > PORTAL_THEME_SETTINGS_MAX_BYTES:
-        raise ValidationError({"themeSettings": "Параметры темы слишком велики"})
+        raise ValidationError({"themeSettings": t("portals.theme_settings_too_large")})
     return value

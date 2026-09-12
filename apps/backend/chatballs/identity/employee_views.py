@@ -67,7 +67,7 @@ class EmployeeListView(APIView):
     def get(self, request: Request) -> Response:
         actor = request.tenant_context.membership
         if not has_capability_any_scope(actor, "employees.view"):
-            return Response({"detail": "Not allowed"}, status=403)
+            return Response({"detail": t("admin.not_allowed")}, status=403)
         page = paginate(
             employees_for(actor.organization_id, request.query_params),
             request.query_params,
@@ -92,23 +92,23 @@ class EmployeeCreateView(APIView):
         requested_role = str(body.get("role", EmployeeRole.EMPLOYEE))
 
         if requested_role not in ASSIGNABLE_ROLES:
-            return Response({"detail": "Invalid role"}, status=400)
+            return Response({"detail": t("admin.invalid_role")}, status=400)
         if not can_create_role(actor, requested_role):
             return deny_employee_action(
                 request, None, f"{EmployeeAction.CREATE}:{requested_role}"
             )
         if not email:
-            return Response({"detail": "Email is required"}, status=400)
+            return Response({"detail": t("admin.email_required")}, status=400)
         if not full_name:
-            return Response({"detail": "Full name is required"}, status=400)
+            return Response({"detail": t("admin.full_name_required")}, status=400)
         if position_error:
             return Response({"detail": position_error}, status=400)
         if provided_password:
-            return Response({"detail": "Temporary passwords are not supported"}, status=400)
+            return Response({"detail": t("admin.temporary_passwords_unsupported")}, status=400)
         if password_mode is None:
-            return Response({"detail": "Unknown password mode"}, status=400)
+            return Response({"detail": t("admin.unknown_password_mode")}, status=400)
         if HumanUser.objects.filter(email=email).exists():
-            return Response({"detail": "Email is already used"}, status=400)
+            return Response({"detail": t("admin.email_taken")}, status=400)
 
         groups, groups_error = resolve_groups(actor.organization, body.get("groupIds"))
         if groups_error:
@@ -164,9 +164,9 @@ class EmployeeDetailView(APIView):
         actor = request.tenant_context.membership
         profile = get_owned_profile(request, user_id)
         if profile is None:
-            return Response({"detail": "Employee not found"}, status=404)
+            return Response({"detail": t("admin.employee_not_found")}, status=404)
         if not has_capability_any_scope(actor, "employees.view"):
-            return Response({"detail": "Employee not found"}, status=404)
+            return Response({"detail": t("admin.employee_not_found")}, status=404)
         return Response({"employee": employee_payload(profile, actor, include_detail=True)})
 
 
@@ -178,7 +178,7 @@ class EmployeeUpdateView(APIView):
         actor = request.tenant_context.membership
         profile = get_owned_profile(request, user_id)
         if profile is None:
-            return Response({"detail": "Employee not found"}, status=404)
+            return Response({"detail": t("admin.employee_not_found")}, status=404)
         if not can_manage_employee(actor, profile, EmployeeAction.UPDATE_PROFILE):
             return deny_employee_action(request, profile, EmployeeAction.UPDATE_PROFILE)
 
@@ -192,18 +192,18 @@ class EmployeeUpdateView(APIView):
         requested_role = str(body.get("role", profile.role))
 
         if not full_name:
-            return Response({"detail": "Full name is required"}, status=400)
+            return Response({"detail": t("admin.full_name_required")}, status=400)
         if not email:
-            return Response({"detail": "Email is required"}, status=400)
+            return Response({"detail": t("admin.email_required")}, status=400)
         if HumanUser.objects.exclude(id=profile.user_id).filter(email=email).exists():
-            return Response({"detail": "Email is already used"}, status=400)
+            return Response({"detail": t("admin.email_taken")}, status=400)
         if position_error:
             return Response({"detail": position_error}, status=400)
 
         role_changing = requested_role != profile.role
         if role_changing:
             if requested_role not in ASSIGNABLE_ROLES:
-                return Response({"detail": "Invalid role"}, status=400)
+                return Response({"detail": t("admin.invalid_role")}, status=400)
             if not can_manage_employee(actor, profile, EmployeeAction.CHANGE_ROLE):
                 return deny_employee_action(request, profile, EmployeeAction.CHANGE_ROLE)
 

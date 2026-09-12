@@ -72,3 +72,22 @@ export function acceptServerLanguage(code: string | null | undefined): void {
   remember(next);
   window.location.reload();
 }
+
+/**
+ * Сменить язык до входа, без перезагрузки — только для мастера первого запуска.
+ *
+ * Правило модуля (язык ставится один раз, смена перезагружает страницу) здесь
+ * не работает: перезагрузка стёрла бы форму, которую человек уже заполняет, а
+ * пароль в ней восстановить было бы неоткуда — в хранилище браузера ему не
+ * место. На экране мастера застывших констант нет ни одной (подписи силы
+ * пароля стали функцией ровно ради этого), поэтому достаточно перерисовки:
+ * подписаться на язык можно хуком useLanguage.
+ *
+ * После входа язык по-прежнему приходит с сервера и меняется перезагрузкой.
+ */
+export function setPreLoginLanguage(code: string): void {
+  const next = normalizeLanguage(code);
+  if (!next || !i18n.setLanguage(next)) return;
+  remember(next);
+  if (typeof document !== "undefined") document.documentElement.lang = next;
+}

@@ -2,7 +2,7 @@ import { Drawer } from "antd";
 
 import { Icon } from "../../shared/icons";
 import { LEVEL_META, type AppNotification } from "./model";
-import { t } from "../../i18n";
+import { fmt, t } from "../../i18n";
 
 function group(items: AppNotification[]): { today: AppNotification[]; earlier: AppNotification[] } {
   const now = new Date();
@@ -16,13 +16,12 @@ function group(items: AppNotification[]): { today: AppNotification[]; earlier: A
   };
 }
 
-function fmt(iso: string): string {
+/** «14:12» для сегодняшних, «2 сен» для прежних — подпись справа в строке. */
+function notificationTime(iso: string): string {
   const d = new Date(iso);
   const now = new Date();
   const today = d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
-  return today
-    ? d.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" })
-    : d.toLocaleDateString("ru-RU", { day: "2-digit", month: "short" });
+  return today ? fmt.time(d) : fmt.shortDate(d);
 }
 
 export function NotificationDrawer({ open, items, unreadCount, onClose, onItemClick, onMarkAll }: {
@@ -61,7 +60,7 @@ function Section({ title, items, onItemClick }: { title: string; items: AppNotif
             <span className="notif-item-body">
               <span className="notif-item-title">{n.title}</span>
               {n.body && <span className="notif-item-text">{n.body}</span>}
-              <span className="notif-item-time">{fmt(n.createdAt)}</span>
+              <span className="notif-item-time">{notificationTime(n.createdAt)}</span>
             </span>
             {n.unread && <i className="notif-item-dot" />}
           </button>

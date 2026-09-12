@@ -42,7 +42,7 @@ def _validation_response(error: ValidationError) -> Response:
             key: messages[0] if isinstance(messages, list) else str(messages)
             for key, messages in error.message_dict.items()
         }
-        detail = next(iter(payload.values()), "Проверьте заполненные поля")
+        detail = next(iter(payload.values()), t("setup.check_fields"))
         return Response({"detail": detail, "errors": payload}, status=400)
     return Response({"detail": "; ".join(error.messages)}, status=400)
 
@@ -282,7 +282,7 @@ def _audit_actors(base) -> list[dict[str, object]]:
     ]
     actors.sort(key=lambda item: str(item["label"]).lower())
     if base.filter(actor__isnull=True).exists():
-        actors.append({"value": "system", "label": "Система"})
+        actors.append({"value": "system", "label": t("admin.actor_system")})
     return actors
 
 

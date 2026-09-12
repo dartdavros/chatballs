@@ -55,6 +55,8 @@ export type Formats = {
   shortDateTime: (value: string | Date) => string;
   /** «2 сентября 2026 г.» / «2 September 2026» — Intl целиком. */
   fullDate: (value: string | Date) => string;
+  /** «7 сентября» / «7 September» — разделитель дня в ленте сообщений. */
+  dayMonthLong: (value: string | Date) => string;
   /** «сен 2026» / «Sep 2026». */
   monthYear: (value: string | Date) => string;
   /** «14:12». */
@@ -91,6 +93,11 @@ export function createFormats(language: () => string): Formats {
       const date = asDate(value);
       if (!date) return "";
       return new Intl.DateTimeFormat(locale().tag, { day: "numeric", month: "long", year: "numeric" }).format(date);
+    },
+    dayMonthLong(value) {
+      const date = asDate(value);
+      if (!date) return "";
+      return new Intl.DateTimeFormat(locale().tag, { day: "numeric", month: "long" }).format(date);
     },
     monthYear(value) {
       const date = asDate(value);

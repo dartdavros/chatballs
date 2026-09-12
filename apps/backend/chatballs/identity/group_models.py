@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.functions import Lower
 
+from chatballs.i18n import t
 from chatballs.identity.models import Organization, OrganizationMembership
 from chatballs.tenancy.models import TenantRelationModel
 
@@ -39,7 +40,7 @@ class EmployeeGroup(models.Model):
     def clean(self) -> None:
         self.name = self.name.strip()
         if not self.name:
-            raise ValidationError({"name": "Group name is required"})
+            raise ValidationError({"name": t("admin.group_name_required")})
 
 
 class EmployeeGroupMember(TenantRelationModel):

@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils import timezone
 
+from chatballs.i18n import t
 from chatballs.integrations.models import IntegrationProvider, IntegrationStatus
 from chatballs.support_portals.addressing import hosted_domain
 from chatballs.support_portals.models import SupportPortal
@@ -63,7 +64,7 @@ def update_portal(
 ) -> SupportPortal:
     _check_tenant(context, portal)
     if portal.status == PortalStatus.ARCHIVED:
-        raise ValidationError({"portal": "Восстановите портал, чтобы изменить настройки"})
+        raise ValidationError({"portal": t("portals.restore_to_edit_settings")})
     portal.slug = data.slug.strip().lower()
     portal.hosted_domain = hosted_domain(portal.slug)
     portal.name = data.name.strip()
@@ -108,7 +109,7 @@ def _widget(
         widget = matches[0] if len(matches) == 1 else None
     if widget is None:
         raise ValidationError(
-            {"widgetId": "Активный анонимный Web-виджет поддержки не найден"}
+            {"widgetId": t("portals.anonymous_widget_missing")}
         )
     return widget
 
@@ -119,7 +120,7 @@ def set_portal_status(
 ) -> SupportPortal:
     _check_tenant(context, portal)
     if status not in PortalStatus.values:
-        raise ValidationError({"status": "Неизвестный статус портала"})
+        raise ValidationError({"status": t("portals.unknown_status")})
     if status == portal.status:
         return portal
     portal.transition_version += 1
@@ -138,4 +139,4 @@ def set_portal_status(
 
 def _check_tenant(context: TenantContext, portal: SupportPortal) -> None:
     if portal.organization_id != context.organization_id:
-        raise ValidationError({"portal": "Портал принадлежит другой организации"})
+        raise ValidationError({"portal": t("portals.other_organization")})

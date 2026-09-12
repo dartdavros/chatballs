@@ -159,6 +159,28 @@ class AgentProviderOwnershipTests(TestCase):
         with self.assertRaises(ValidationError):
             configure_agent_provider(context=self.context, integration_id=999999)
 
+    def test_demo_provider_is_a_valid_agent_provider(self) -> None:
+        """Регрессия: демо-стенд нельзя было редактировать.
+
+        Демо ставит агентов на встроенный DEMO-провайдер, а выбор провайдера
+        его не принимал. Поле providerIntegrationId уходит с каждым PATCH
+        карточки, поэтому падало любое сохранение агента — даже правка
+        инструкций, где провайдер не меняли.
+        """
+
+        demo = create_integration(
+            context=self.context,
+            data=IntegrationInput(
+                provider=IntegrationProvider.DEMO,
+                name="Демо-провайдер",
+                secret="",
+                config={},
+            ),
+        )
+        selection = configure_agent_provider(context=self.context, integration_id=demo.id)
+        self.assertEqual(selection.integration, demo)
+        self.assertEqual(selection.model, "demo")
+
     def test_selection_never_writes_to_the_channel(self) -> None:
         integration = self._integration()
         selection = configure_agent_provider(

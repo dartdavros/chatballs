@@ -13,6 +13,8 @@ import re
 from django.contrib.sessions.models import Session
 from django.utils import timezone
 
+from chatballs.i18n import t
+
 SESSION_AGENT_KEY = "device_agent"
 SESSION_IP_KEY = "device_ip"
 SESSION_STARTED_KEY = "device_started"
@@ -44,7 +46,7 @@ def describe_agent(user_agent: str) -> str:
     platform = next((label for token, label in _PLATFORMS if token in user_agent), "")
     if browser and platform:
         return f"{browser} · {platform}"
-    return browser or platform or "Браузер"
+    return browser or platform or t("identity.browser_unknown")
 
 
 def device_kind(user_agent: str) -> str:

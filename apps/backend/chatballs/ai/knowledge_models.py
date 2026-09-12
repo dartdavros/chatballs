@@ -2,6 +2,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 
 from chatballs.ai.knowledge_types import UNCATEGORIZED_CATEGORY_NAME
+from chatballs.i18n import t
 from chatballs.tenancy.models import TenantRelationModel
 
 
@@ -42,23 +43,23 @@ class KnowledgeCategory(TenantRelationModel):
         super().clean()
         self.name = self.name.strip()
         if not self.name:
-            raise ValidationError({"name": "Category name is required"})
+            raise ValidationError({"name": t("ai.category_name_required")})
         persisted = None
         if self.pk is not None:
             persisted = type(self).objects.filter(pk=self.pk).values("is_system").first()
         if persisted and persisted["is_system"] and not self.is_system:
-            raise ValidationError({"category": "System category is immutable"})
+            raise ValidationError({"category": t("ai.system_category_immutable")})
         if self.is_system and self.name != UNCATEGORIZED_CATEGORY_NAME:
-            raise ValidationError({"name": "System category name is immutable"})
+            raise ValidationError({"name": t("ai.system_category_name_immutable")})
 
         ancestor = self.parent
         visited: set[int] = set()
         while ancestor is not None:
             if self.pk is not None and ancestor.pk == self.pk:
-                raise ValidationError({"parent": "Category cycle is not allowed"})
+                raise ValidationError({"parent": t("ai.category_cycle")})
             if ancestor.pk is not None:
                 if ancestor.pk in visited:
-                    raise ValidationError({"parent": "Category cycle is not allowed"})
+                    raise ValidationError({"parent": t("ai.category_cycle")})
                 visited.add(ancestor.pk)
             ancestor = ancestor.parent
 
@@ -68,11 +69,11 @@ class KnowledgeCategory(TenantRelationModel):
 
     def delete(self, *args: object, **kwargs: object):
         if self.is_system:
-            raise ValidationError({"category": "System category cannot be deleted"})
+            raise ValidationError({"category": t("ai.system_category_undeletable")})
         if self.children.exists():
-            raise ValidationError({"category": "Category with children cannot be deleted"})
+            raise ValidationError({"category": t("ai.category_with_children")})
         if self.knowledge_items.exists():
-            raise ValidationError({"category": "Category with knowledge cannot be deleted"})
+            raise ValidationError({"category": t("ai.category_with_knowledge")})
         return super().delete(*args, **kwargs)
 
     def __str__(self) -> str:

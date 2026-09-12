@@ -4,17 +4,18 @@ from rest_framework.request import Request
 from chatballs.ai.knowledge_services import KnowledgeInput
 from chatballs.ai.models import Knowledge
 from chatballs.ai.selectors import KnowledgeFilters
+from chatballs.i18n import t
 
 
 def _positive_id(value: object, field: str) -> int:
     if isinstance(value, bool):
-        raise ValidationError({field: "Positive integer id required"})
+        raise ValidationError({field: t("api.positive_id_required")})
     try:
         parsed = int(value)
     except (TypeError, ValueError) as error:
-        raise ValidationError({field: "Integer id required"}) from error
+        raise ValidationError({field: t("api.integer_id_required")}) from error
     if parsed <= 0:
-        raise ValidationError({field: "Positive integer id required"})
+        raise ValidationError({field: t("api.positive_id_required")})
     return parsed
 
 
@@ -38,7 +39,7 @@ def knowledge_input(
 ) -> KnowledgeInput:
     raw_enabled = body.get("isEnabled", current.is_enabled if current else True)
     if not isinstance(raw_enabled, bool):
-        raise ValidationError({"isEnabled": "Boolean required"})
+        raise ValidationError({"isEnabled": t("api.boolean_required")})
     return KnowledgeInput(
         title=str(body.get("title", current.title if current else "")),
         description=str(
@@ -59,7 +60,7 @@ def knowledge_filters(request: Request) -> KnowledgeFilters:
     elif raw_enabled.lower() == "false":
         is_enabled = False
     else:
-        raise ValidationError({"isEnabled": "Boolean required"})
+        raise ValidationError({"isEnabled": t("api.boolean_required")})
     agents = tuple(
         int(value) for value in request.query_params.getlist("agent") if value.isdigit()
     )

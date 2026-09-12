@@ -1,6 +1,7 @@
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from chatballs.i18n import t
 from chatballs.identity.audit import record_audit_event
 from chatballs.identity.models import (
     POSITION_TITLE_MAX_LENGTH,
@@ -31,7 +32,7 @@ def resolve_groups(organization, raw: object) -> tuple[list[EmployeeGroup] | Non
     requested = list(dict.fromkeys(raw))
     groups = list(EmployeeGroup.objects.filter(organization=organization, id__in=requested))
     if len(groups) != len(requested):
-        return None, "Group not found"
+        return None, t("admin.group_not_found")
     return groups, None
 
 
@@ -49,4 +50,4 @@ def deny_employee_action(
         payload={"action": action, "targetRole": target.role if target else None},
         request=request,
     )
-    return Response({"detail": "You cannot perform this action on this employee"}, status=403)
+    return Response({"detail": t("admin.action_not_allowed_for_employee")}, status=403)

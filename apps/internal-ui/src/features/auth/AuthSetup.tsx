@@ -1,19 +1,27 @@
 import { type FormEvent, useState } from "react";
 
+import { LANGUAGES } from "@chatballs/shared";
+
 import { api, ApiError } from "../../api/client";
 import type { AuthenticatedUser } from "../../types";
 import { Icon } from "../../shared/icons";
 import { Button } from "../../shared/ui-controls";
 import { AuthField } from "./AuthField";
 import { AuthFrame } from "./AuthFrame";
-import { passwordIsValid, passwordLabels, passwordScore } from "./password";
-import { t } from "../../i18n";
+import { passwordIsValid, passwordLabel, passwordScore } from "./password";
+import { language as currentLanguage, setPreLoginLanguage, t } from "../../i18n";
+import { useLanguage } from "../../i18n/useLanguage";
 
 type SetupErrors = Partial<Record<"organizationName" | "fullName" | "email" | "password", string>>;
 
 /**
  * Мастер первого запуска: пока в инстансе нет организации, вместо входа —
  * одна форма. Никаких параметров в .env: всё задаёт человек здесь.
+ *
+ * Язык стоит первым полем и переключает экран сразу, без перезагрузки: форму
+ * уже начали заполнять, и терять введённое ради смены языка нельзя. Выбранный
+ * язык уходит вместе с формой и становится языком установки — на нём откроются
+ * логин и мастер у следующего, и от него унаследуют язык организации.
  */
 export function AuthSetup({ onDone }: { onDone: (user: AuthenticatedUser) => void }) {
   const [organizationName, setOrganizationName] = useState("");
@@ -25,6 +33,8 @@ export function AuthSetup({ onDone }: { onDone: (user: AuthenticatedUser) => voi
   const [errors, setErrors] = useState<SetupErrors>({});
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  // Подписка на язык: экран перерисовывается прямо на переключении.
+  const language = useLanguage();
   const score = passwordScore(password);
   const valid = organizationName.trim() !== "" && fullName.trim() !== "" && email.trim() !== "" && passwordIsValid(password, false);
 
@@ -37,7 +47,7 @@ export function AuthSetup({ onDone }: { onDone: (user: AuthenticatedUser) => voi
     try {
       const payload = await api<{ authenticated: true; user: AuthenticatedUser }>("/api/v1/setup/complete/", {
         method: "POST",
-        body: JSON.stringify({ organizationName, fullName, email, password, installDemo }),
+        body: JSON.stringify({ organizationName, fullName, email, password, installDemo, language: currentLanguage() }),
       });
       onDone(payload.user);
     } catch (requestError) {
@@ -57,6 +67,20 @@ export function AuthSetup({ onDone }: { onDone: (user: AuthenticatedUser) => voi
     <AuthFrame title="Chatballs" subtitle={t("admin.first_run_create_organization_owner")} logo="pulse" width={420}>
       <form className="auth-card" onSubmit={submit}>
         {error && <div className="auth-error"><span className="auth-error-dot">!</span><span>{error}</span></div>}
+        <label className="field-label">{t("settings.language")}</label>
+        <div className="appearance-theme-options auth-language">
+          {LANGUAGES.map((item) => (
+            <button
+              className={language === item.code ? "active" : ""}
+              key={item.code}
+              lang={item.code}
+              type="button"
+              onClick={() => setPreLoginLanguage(item.code)}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
         <label className="field-label">{t("admin.organization_name")}</label>
         <AuthField icon="building" value={organizationName} onChange={setOrganizationName} placeholder={t("admin.nord_atelier")} error={Boolean(errors.organizationName)} />
         <label className="field-label">{t("admin.name")}</label>
@@ -71,7 +95,7 @@ export function AuthSetup({ onDone }: { onDone: (user: AuthenticatedUser) => voi
         </AuthField>
         <div className={`password-strength score-${score}`}>
           <div>{[0, 1, 2, 3].map((item) => <span className={item < score ? "active" : ""} key={item} />)}</div>
-          <p>{passwordLabels[score]}</p>
+          <p>{passwordLabel(score)}</p>
         </div>
         <div className="password-requirements">
           <strong>{t("common.password_requirements")}</strong>

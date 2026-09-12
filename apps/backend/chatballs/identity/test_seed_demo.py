@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import tempfile
 
 from django.apps import apps
@@ -22,6 +23,7 @@ from chatballs.events.models import OutboxEvent
 from chatballs.identity.demo_models import DemoDataset, DemoDatasetStatus, DemoRecord
 from chatballs.identity.demo_seed import service
 from chatballs.identity.group_models import EmployeeGroup
+from chatballs.identity.instance_settings import default_language
 from chatballs.identity.models import HumanUser, Organization, OrganizationMembership
 from chatballs.identity.setup import SetupInput, complete_setup
 from chatballs.tenancy.context import TenantActorKind, TenantContext
@@ -243,3 +245,43 @@ class SetupWizardDemoTests(TestCase):
         dataset = DemoDataset.objects.get()
         self.assertEqual(dataset.status, DemoDatasetStatus.INSTALLING)
         self.assertTrue(OutboxEvent.objects.filter(event_type="demo.install_requested").exists())
+
+
+class EnglishDemoDatasetTests(TestCase):
+    """Демо на английской установке: набор ставится английский, целиком.
+
+    Витрина показывает продукт целиком, и русская переписка в английском
+    интерфейсе обесценивает её ровно так же, как непереведённая кнопка.
+    """
+
+    @override_settings(MEDIA_ROOT=_MEDIA_ROOT)
+    def test_english_organization_gets_the_english_dataset(self) -> None:
+        result = complete_setup(SetupInput(**OWNER, language="en"))
+        organization = result.organization
+        context = TenantContext.for_resource(
+            organization, actor_kind=TenantActorKind.SYSTEM, actor_user=result.owner
+        )
+        with tenant_atomic(context):
+            dataset = DemoDataset.objects.create(
+                organization=organization, status=DemoDatasetStatus.INSTALLING
+            )
+            dataset = service.install(context=context, dataset=dataset)
+        self.assertEqual(dataset.status, DemoDatasetStatus.INSTALLED, dataset.error)
+
+        # Язык установки пришёл из мастера и достался организации по наследству.
+        self.assertEqual(default_language(), "en")
+
+        self.assertTrue(
+            Contact.objects.filter(organization=organization, name="Maria Sokolova").exists()
+        )
+        self.assertTrue(
+            AIAgent.objects.filter(organization=organization, name="Consultant").exists()
+        )
+        # Ни одной кириллической буквы во всём, что увидит человек на экране.
+        texts = [
+            *Message.objects.filter(organization=organization).values_list("text", flat=True),
+            *Knowledge.objects.filter(organization=organization).values_list("content", flat=True),
+            *Contact.objects.filter(organization=organization).values_list("description", flat=True),
+        ]
+        cyrillic = [text for text in texts if re.search(r"[А-Яа-яЁё]", text or "")]
+        self.assertEqual(cyrillic, [], f"английское демо содержит русский текст: {cyrillic[:3]}")

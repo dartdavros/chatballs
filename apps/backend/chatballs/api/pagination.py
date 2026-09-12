@@ -43,9 +43,9 @@ def _bounded_int(params, name: str, default: int, maximum: int) -> int:
     try:
         value = int(raw)
     except (TypeError, ValueError):
-        raise ValidationError(f"{name}: ожидается целое число") from None
+        raise ValidationError(t("api.expected_integer", name=name)) from None
     if value < 1:
-        raise ValidationError(f"{name}: ожидается число больше нуля")
+        raise ValidationError(t("api.expected_positive", name=name))
     return min(value, maximum)
 
 
@@ -57,9 +57,9 @@ def cursor_id(params, name: str = "cursor") -> int | None:
     try:
         value = int(raw)
     except (TypeError, ValueError):
-        raise ValidationError(f"{name}: ожидается идентификатор записи") from None
+        raise ValidationError(t("api.expected_record_id", name=name)) from None
     if value < 1:
-        raise ValidationError(f"{name}: ожидается идентификатор записи")
+        raise ValidationError(t("api.expected_record_id", name=name))
     return value
 
 

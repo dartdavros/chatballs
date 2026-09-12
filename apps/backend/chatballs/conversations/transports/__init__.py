@@ -1,6 +1,7 @@
 from chatballs.conversations.transports import email as _email
 from chatballs.conversations.transports import max as _max
 from chatballs.conversations.transports import telegram as _telegram
+from chatballs.i18n import t
 from chatballs.integrations.models import IntegrationProvider
 
 _POLL = {
@@ -114,7 +115,7 @@ def download_file(integration, inbound_file) -> tuple[bytes, str]:
         return content, inbound_file.content_type or guessed
     if integration.provider == IntegrationProvider.MAX and inbound_file.url:
         return _max.download_file(integration, inbound_file.url, inbound_file.content_type)
-    raise ValueError("File download is not supported for this provider")
+    raise ValueError(t("conversations.file_download_unsupported"))
 
 
 def supports_file_send(integration) -> bool:
@@ -143,7 +144,7 @@ def download_voice(integration, inbound) -> tuple[bytes, str]:
         return _telegram.download_voice(integration, inbound.voice_file_id)
     if integration.provider == IntegrationProvider.MAX and inbound.voice_url:
         return _max.download_voice(integration, inbound.voice_url)
-    raise ValueError("Voice download is not supported for this provider")
+    raise ValueError(t("conversations.voice_download_unsupported"))
 
 
 def supports_voice_send(integration) -> bool:

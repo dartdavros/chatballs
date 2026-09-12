@@ -16,11 +16,30 @@ from chatballs.notifications.selectors import unread_for
 
 # Реестр типов: дефолтный уровень и маршрут диплинка. Новый тип события —
 # одна запись здесь + вызов notify(...) из доменного сервиса.
+# «label» — ключ каталога, а не текст: список типов уходит в профиль, где
+# каждый сотрудник читает его на своём языке. Ярлык TextChoices остаётся
+# английским/русским значением модели и до человека не доходит.
 TYPE_META: dict[str, dict] = {
-    NotificationType.DIALOG_WAITING: {"level": NotificationLevel.WARNING, "route": "chat"},
-    NotificationType.DIALOG_NEW_MESSAGE: {"level": NotificationLevel.INFO, "route": "chat"},
-    NotificationType.RELEASE_PUBLISHED: {"level": NotificationLevel.SUCCESS, "route": "agents"},
-    NotificationType.INTEGRATION_ERROR: {"level": NotificationLevel.CRITICAL, "route": "integrations"},
+    NotificationType.DIALOG_WAITING: {
+        "level": NotificationLevel.WARNING,
+        "route": "chat",
+        "label": "notifications.type_dialog_waiting",
+    },
+    NotificationType.DIALOG_NEW_MESSAGE: {
+        "level": NotificationLevel.INFO,
+        "route": "chat",
+        "label": "notifications.type_dialog_new_message",
+    },
+    NotificationType.RELEASE_PUBLISHED: {
+        "level": NotificationLevel.SUCCESS,
+        "route": "agents",
+        "label": "notifications.type_release_published",
+    },
+    NotificationType.INTEGRATION_ERROR: {
+        "level": NotificationLevel.CRITICAL,
+        "route": "integrations",
+        "label": "notifications.type_integration_error",
+    },
 }
 
 

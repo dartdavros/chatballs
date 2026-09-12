@@ -18,6 +18,8 @@ OpenAI-совместимый сервер или собственный Bot API
 
 from __future__ import annotations
 
+from chatballs.i18n import t
+
 import ipaddress
 import socket
 from urllib.parse import urlsplit
@@ -44,7 +46,7 @@ def clean_config_url(value: str, *, schemes: frozenset[str]) -> str:
     parsed = urlsplit(candidate)
     if parsed.scheme.lower() not in schemes or not parsed.hostname:
         allowed = ", ".join(f"{scheme}://" for scheme in sorted(schemes))
-        raise OutboundUrlRejected(f"Адрес должен начинаться с одной из схем: {allowed}")
+        raise OutboundUrlRejected(t("settings.url_scheme_required", schemes=allowed))
     return candidate
 
 
@@ -61,13 +63,13 @@ def ensure_downloadable(url: str, *, allowed_host: str = "", via_proxy: bool = F
     parsed = urlsplit(str(url or "").strip())
     scheme = parsed.scheme.lower()
     if scheme not in HTTP_SCHEMES or not parsed.hostname:
-        raise OutboundUrlRejected("Скачивать можно только по http/https")
+        raise OutboundUrlRejected(t("settings.download_http_only"))
     host = parsed.hostname.lower()
     if via_proxy or (allowed_host and host == allowed_host.lower()):
         return
     port = parsed.port or (443 if scheme == "https" else 80)
     if _resolves_to_private(host, port):
-        raise OutboundUrlRejected("Адрес ведёт во внутреннюю сеть")
+        raise OutboundUrlRejected(t("settings.url_points_inside"))
 
 
 def _resolves_to_private(host: str, port: int) -> bool:

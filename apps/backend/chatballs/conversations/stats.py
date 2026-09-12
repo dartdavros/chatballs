@@ -21,6 +21,7 @@ from chatballs.conversations.models import (
     LifecycleState,
     Message,
 )
+from chatballs.i18n import t
 
 _ACTIVE_WINDOW = timedelta(minutes=15)
 _WEEKDAYS = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"]
@@ -126,7 +127,7 @@ def sales_overview_stats(context, period: str) -> dict:
     ):
         minutes = int((now - conversation.last_activity_at).total_seconds() // 60)
         meta = conversation.channel.name
-        title = (conversation.contact.name if conversation.contact_id else "") or "Гость"
+        title = (conversation.contact.name if conversation.contact_id else "") or t("conversations.guest")
         problems.append(
             {
                 "conversationId": conversation.id,

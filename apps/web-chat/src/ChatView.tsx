@@ -158,7 +158,7 @@ export function CallInviteBanner({ call, accent, onAccept, onDecline }: { call: 
 function formatTime(iso: string | undefined): string {
   if (!iso) return "";
   const date = new Date(iso);
-  return Number.isNaN(date.getTime()) ? "" : date.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+  return Number.isNaN(date.getTime()) ? "" : fmt.time(date);
 }
 
 const META: React.CSSProperties = { fontSize: 11, color: "#bfbfbf", marginTop: 4 };

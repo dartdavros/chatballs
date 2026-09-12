@@ -38,6 +38,8 @@ export type AgentCard = {
   providerIntegrationId: number | null;
   modelParams: Record<string, unknown>;
   limits: Record<string, unknown>;
+  // Режим языка ответов: MIRROR, ORGANIZATION или код языка.
+  answerLanguage: string;
   persona: string;
   tone: string;
   instructions: string;
@@ -56,6 +58,7 @@ export type AgentPatch = Partial<{
   groupId: number | null;
   isActive: boolean;
   providerIntegrationId: number | null;
+  answerLanguage: string;
   persona: string;
   tone: string;
   instructions: string;

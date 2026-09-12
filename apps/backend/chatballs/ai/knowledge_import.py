@@ -13,6 +13,7 @@ from chatballs.ai.knowledge_services import (
     update_knowledge,
 )
 from chatballs.ai.models import Knowledge, KnowledgeCategory
+from chatballs.i18n import t
 from chatballs.tenancy.context import TenantContext
 
 
@@ -35,14 +36,14 @@ class KnowledgeImportResult:
 def _title(document: dict[str, object]) -> str:
     value = document.get("title")
     if not isinstance(value, str) or not value.strip():
-        raise ValidationError({"title": "Title is required"})
+        raise ValidationError({"title": t("ai.title_required")})
     return value.strip()
 
 
 def _content(document: dict[str, object]) -> str:
     value = document.get("content")
     if not isinstance(value, str):
-        raise ValidationError({"content": "Content string is required"})
+        raise ValidationError({"content": t("ai.content_required")})
     return value
 
 
@@ -53,18 +54,18 @@ def _description(document: dict[str, object], *, default: str) -> str:
     if value is None:
         return ""
     if not isinstance(value, str):
-        raise ValidationError({"description": "Description must be a string"})
+        raise ValidationError({"description": t("ai.description_string")})
     return value.strip()
 
 
 def _category_for_path(*, context: TenantContext, raw_path: object) -> KnowledgeCategory:
     if not isinstance(raw_path, list) or not raw_path:
-        raise ValidationError({"categoryPath": "Non-empty category path required"})
+        raise ValidationError({"categoryPath": t("ai.category_path_required")})
     parent_id = None
     category = None
     for raw_name in raw_path:
         if not isinstance(raw_name, str) or not raw_name.strip():
-            raise ValidationError({"categoryPath": "Category names must be non-empty strings"})
+            raise ValidationError({"categoryPath": t("ai.category_names_strings")})
         try:
             category = KnowledgeCategory.objects.get(
                 organization_id=context.organization_id,
@@ -72,7 +73,7 @@ def _category_for_path(*, context: TenantContext, raw_path: object) -> Knowledge
                 name=raw_name.strip(),
             )
         except KnowledgeCategory.DoesNotExist as error:
-            raise ValidationError({"categoryPath": "Category path not found"}) from error
+            raise ValidationError({"categoryPath": t("ai.category_path_not_found")}) from error
         parent_id = category.id
     assert category is not None
     return category
@@ -153,7 +154,7 @@ def import_knowledge_documents(
             title = raw_title.strip() if isinstance(raw_title, str) else ""
         try:
             if not isinstance(raw_document, dict):
-                raise ValidationError({"document": "Document must be an object"})
+                raise ValidationError({"document": t("ai.document_object_required")})
             outcome = _import_document(context=context, document=raw_document)
         except ValidationError as error:
             result.failed.append({"title": title, "detail": _validation_detail(error)})

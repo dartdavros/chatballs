@@ -1,6 +1,10 @@
 import { t } from "../../i18n";
 
-export const passwordLabels = [t("admin.enter_new_password"), t("admin.weak_password"), t("admin.fair_password"), t("admin.good_password"), t("admin.strong_password")];
+// Функция, а не константа: в мастере первого запуска язык меняют прямо на
+// экране, и застывший при импорте массив остался бы на прежнем языке.
+export function passwordLabel(score: number): string {
+  return [t("admin.enter_new_password"), t("admin.weak_password"), t("admin.fair_password"), t("admin.good_password"), t("admin.strong_password")][score] ?? "";
+}
 
 export function passwordScore(password: string): number {
   if (!password) return 0;

@@ -27,6 +27,7 @@ from chatballs.conversations.transports.base import (
     request_json_multipart,
     safe_filename,
 )
+from chatballs.i18n import customer_language, t
 from chatballs.integrations.checks import DEFAULT_MAX_BASE_URL
 from chatballs.integrations.outbound import host_of
 
@@ -271,11 +272,17 @@ def send_text(integration, *, chat_id: str, user_id: str, text: str) -> bool:
     return _send(integration, chat_id=chat_id, user_id=user_id, body={"text": text})
 
 
+def _caption(integration, key: str) -> str:
+    """Подпись кнопки читает клиент — язык организации, а не язык запроса."""
+
+    return t(key, language=customer_language(integration.organization))
+
+
 def send_contact_request(integration, *, chat_id: str, user_id: str, text: str) -> bool:
     # Inline-клавиатура с кнопкой request_contact (Bot API MAX/TamTam).
     keyboard = {
         "type": "inline_keyboard",
-        "payload": {"buttons": [[{"type": "request_contact", "text": "Поделиться контактом"}]]},
+        "payload": {"buttons": [[{"type": "request_contact", "text": _caption(integration, "conversations.button_share_contact")}]]},
     }
     return _send(integration, chat_id=chat_id, user_id=user_id, body={"text": text, "attachments": [keyboard]})
 
@@ -284,7 +291,7 @@ def send_call_invite(integration, *, chat_id: str, user_id: str, text: str, url:
     # Приглашение на онлайн-звонок: inline-кнопка со ссылкой /calls/<token>.
     keyboard = {
         "type": "inline_keyboard",
-        "payload": {"buttons": [[{"type": "link", "text": "Перейти к звонку", "url": url}]]},
+        "payload": {"buttons": [[{"type": "link", "text": _caption(integration, "conversations.button_join_call"), "url": url}]]},
     }
     return _send(integration, chat_id=chat_id, user_id=user_id, body={"text": text, "attachments": [keyboard]})
 

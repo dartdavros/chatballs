@@ -44,7 +44,7 @@ def _optional_id(value) -> int | None:
         return int(value)
     except (TypeError, ValueError) as error:
         raise ValidationError(
-            {"widgetChannelId": "Канал веб-виджета не найден"}
+            {"widgetChannelId": t("portals.widget_channel_missing")}
         ) from error
 
 

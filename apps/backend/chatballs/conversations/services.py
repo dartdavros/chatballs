@@ -13,14 +13,12 @@ from chatballs.conversations.models import (
     MessageKind,
     SystemEvent,
 )
-from chatballs.i18n import t
+from chatballs.i18n import customer_language, t
 from chatballs.identity.models import EmployeeRole
 from chatballs.integrations.models import IntegrationProvider
 from chatballs.tenancy.context import TenantContext
 
-CONTACT_REQUEST_TEXT = "Поделитесь, пожалуйста, контактом — нажмите кнопку ниже."
 
-CONTACT_REQUEST_TEXT_WEB = "Поделитесь, пожалуйста, номером телефона."
 
 
 
@@ -115,6 +113,10 @@ def claim_locked_conversation(*, context: TenantContext, conversation: Conversat
         conversation=conversation,
 
         author_type=MessageAuthor.SYSTEM,
+
+        system_event=SystemEvent.OPERATOR_TOOK,
+
+        system_params={"operator": _operator_label(operator)},
 
         text=f"Оператор {_operator_label(operator)} перехватил диалог",
 
@@ -270,7 +272,9 @@ def request_contact(*, context: TenantContext, conversation: Conversation) -> Me
 
     is_web = conversation.connection_id and conversation.connection.provider == IntegrationProvider.WEB
 
-    text = CONTACT_REQUEST_TEXT_WEB if is_web else CONTACT_REQUEST_TEXT
+    key = "conversations.contact_request_web" if is_web else "conversations.contact_request"
+
+    text = t(key, language=customer_language(conversation.organization))
 
     message = Message.objects.create(
 

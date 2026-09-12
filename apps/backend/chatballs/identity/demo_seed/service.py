@@ -38,9 +38,11 @@ class DemoBusy(ValidationError):
 def showcase_accounts(organization_id: int) -> list[dict[str, object]]:
     """Учётки для входа «посмотреть глазами сотрудника»: админ и по одному
     сотруднику из разных групп. Пароль общий и намеренно публичный — это демо."""
+    from chatballs.i18n import customer_language
     from chatballs.identity.demo_seed import manifest
 
-    data = manifest.load("organization")
+    organization = Organization.objects.filter(id=organization_id).first()
+    data = manifest.load("organization", customer_language(organization))
     by_key = {item["key"]: item for item in data["accounts"]}
     groups = {item["key"]: item["name"] for item in data.get("groups", [])}
     keys = data.get("showcaseAccounts", [])
