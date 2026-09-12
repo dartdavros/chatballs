@@ -350,6 +350,34 @@ test("гость по ссылке-приглашению задаёт имя и
   expect(registered[0]).toContain("guest-token");
 });
 
+test("администратор установки видит баннер о новой версии и запускает обновление", async ({ page }) => {
+  await mockSession(page, OWNER_IDENTITY);
+  await mockInstance(page);
+  await mockEmployees(page);
+  const update = {
+    currentVersion: "1.4.0", latestVersion: "1.5.0", latestName: "v1.5.0", latestNotes: "", latestPublishedAt: null,
+    latestPageUrl: "https://github.com/dartdavros/chatballs/releases/tag/v1.5.0", available: true, checkedAt: null,
+    checkError: "", updaterOnline: true, install: { version: null, status: "IDLE", message: "", requestedAt: null, updatedAt: null },
+  };
+  await page.route("**/api/v1/instance/update/", (route) => route.fulfill({ json: { update } }));
+  const installs: string[] = [];
+  await page.route("**/api/v1/instance/update/install/", (route) => {
+    installs.push(route.request().method());
+    return route.fulfill({ status: 202, json: { update: { ...update, install: { ...update.install, version: "1.5.0", status: "REQUESTED" } } } });
+  });
+
+  await page.goto(`/organizations/${ORGANIZATION_PUBLIC_ID}/chat`);
+
+  const banner = page.locator(".update-banner");
+  await expect(banner).toContainText("Доступна версия 1.5.0");
+  await banner.getByRole("button", { name: "Обновить", exact: true }).click();
+  await expect(page.getByText("Обновить до 1.5.0?")).toBeVisible();
+  await page.locator(".decision-dialog").getByRole("button", { name: "Обновить", exact: true }).click();
+
+  await expect.poll(() => installs).toEqual(["POST"]);
+  await expect(page.locator(".update-banner")).toContainText("Обновление до 1.5.0");
+});
+
 test("с несколькими организациями вход открывает первую, переключатель ведёт во вторую", async ({ page }) => {
   const secondMembership = membershipFor("OWNER", {
     id: 3,

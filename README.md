@@ -132,7 +132,9 @@ By default files are stored in a Docker volume. In **Settings → Storage** the 
 
 ### Updating
 
-Download the new release's `compose.yaml` over the old one and restart:
+When a new release is out, the installation administrator sees a banner in the interface and updates with one button; the same lives in **Settings → Platform → Updates**. The installation updates itself on the server: it downloads the release `compose.yaml`, pulls the images and restarts the services, with about a minute of downtime.
+
+Manually, from the server console: download the new release's `compose.yaml` over the old one and restart:
 
 ```bash
 docker compose pull && docker compose up -d --wait

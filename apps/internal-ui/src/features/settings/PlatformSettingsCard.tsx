@@ -11,6 +11,7 @@ import {
   type EmailPayload,
   type InstancePayload,
 } from "./instance";
+import { UpdatesCard } from "../updates/UpdatesCard";
 import { t } from "../../i18n";
 
 // «Платформа» (Настройки): свойства инсталляции, а не организации. Адрес
@@ -62,6 +63,7 @@ export function PlatformSettingsCard({ canManage }: { canManage: boolean }) {
 
   return (
     <>
+      <UpdatesCard canManage={canManage} />
       <AddressCard canManage={canManage} current={current} onSaved={setCurrent} />
       <LanguageCard canManage={canManage} current={current} onSaved={setCurrent} />
       <EmailCard canManage={canManage} current={current} onSaved={setCurrent} />

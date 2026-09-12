@@ -6,8 +6,9 @@
 стек падал на первом старте, уже у человека.
 
 Эти тесты держат свойство, а не текущий текст файла: в production-манифесте нет
-ни одного bind-mount (кроме сертификатов TURN у опционального профиля calls), а
-все ссылки на образы поддаются закреплению по digest.
+ни одного bind-mount (кроме сертификатов TURN у опционального профиля calls и
+Docker-сокета у сервиса обновлений), а все ссылки на образы поддаются
+закреплению по digest.
 """
 
 from __future__ import annotations
@@ -23,9 +24,10 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 COMPOSE = REPO_ROOT / "compose.yaml"
 PIN_SCRIPT = REPO_ROOT / "scripts" / "pin-release-compose.py"
 
-# Единственное исключение: сертификат TURN-хоста кладёт на хост renewal-хук,
-# и только при включённом профиле calls.
-BIND_MOUNT_EXCEPTIONS = {"coturn"}
+# Исключения: сертификат TURN-хоста кладёт на хост renewal-хук (только при
+# включённом профиле calls), а сервис обновлений управляет стеком через
+# Docker-сокет хоста — это его назначение (ADR-CHATBALLS-0049).
+BIND_MOUNT_EXCEPTIONS = {"coturn", "updater"}
 
 DIGEST = "sha256:" + "a" * 64
 IMAGE_KEYS = (
@@ -35,6 +37,7 @@ IMAGE_KEYS = (
     "CHATBALLS_REDIS_IMAGE",
     "CHATBALLS_GATEWAY_IMAGE",
     "CHATBALLS_COTURN_IMAGE",
+    "CHATBALLS_UPDATER_IMAGE",
 )
 
 
@@ -82,7 +85,7 @@ def test_named_volumes_are_declared() -> None:
 
 
 def test_every_image_reference_can_be_pinned(tmp_path: Path) -> None:
-    """Все шесть ключей образов присутствуют и закрепляются по digest.
+    """Все семь ключей образов присутствуют и закрепляются по digest.
 
     Если из манифеста уйдёт (или переименуется) хоть один ключ, релизный
     compose.yaml уедет с плавающим тегом — а найдётся это уже у человека.

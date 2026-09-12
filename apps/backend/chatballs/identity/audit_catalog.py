@@ -81,6 +81,7 @@ AUDIT_ACTION_LABELS: dict[str, str] = {
     "identity.employee_invited": "audit.action_identity_employee_invited",
     "identity.invitation_accepted": "audit.action_identity_invitation_accepted",
     "identity.invitation_revoked": "audit.action_identity_invitation_revoked",
+    "updates.install_requested": "audit.action_updates_install_requested",
     "identity.employee_updated": "audit.action_identity_employee_updated",
     "identity.employee_blocked": "audit.action_identity_employee_blocked",
     "identity.employee_unblocked": "audit.action_identity_employee_unblocked",

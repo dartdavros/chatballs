@@ -779,6 +779,16 @@
   color: var(--success-text);
 }
 
+.demo-install-banner.is-failed {
+  background: var(--error-bg);
+  color: var(--error-text);
+}
+
+.update-banner a.link {
+  flex: none;
+  font-size: 13px;
+}
+
 .demo-install-banner > svg {
   flex: none;
 }

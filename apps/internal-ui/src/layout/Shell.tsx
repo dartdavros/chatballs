@@ -11,6 +11,7 @@ import { useChatScope } from "../features/chat/useChatScope";
 import { isManager } from "../auth/access";
 import { DemoInstallBanner } from "../features/settings/DemoInstallBanner";
 import { Sidebar } from "./Sidebar";
+import { UpdateBanner } from "../features/updates/UpdateBanner";
 import { ShellRouteContent } from "./ShellRouteContent";
 
 export function Shell({ route, setRoute, settingsSection, openSettingsRoute, selectedEmployeeId, selectedAgentId, selectedKnowledgeId, selectedConversationId, selectedClientId, selectedChannelId, selectedSupportPortalId, portalSettingsSection, openChannelRoute, openSupportPortalRoute, openPortalSettingsRoute, openEmployeeRoute, openAgentRoute, openKnowledgeRoute, openKnowledgeEditorRoute, openConversationRoute, openClientRoute, user, data, reload, onUserUpdated, onLogout, onSwitchOrganization }: { route: RouteKey; setRoute: (route: RouteKey) => void; settingsSection: SettingsSectionKey | null; openSettingsRoute: (section: SettingsSectionKey | null) => void; selectedEmployeeId: number | null; selectedAgentId: number | null; selectedKnowledgeId: number | null; selectedConversationId: number | null; selectedClientId: number | null; selectedChannelId: number | null; selectedSupportPortalId: number | null; portalSettingsSection: PortalSettingsSectionKey | null; openEmployeeRoute: (employeeId: number) => void; openAgentRoute: (agentId: number) => void; openKnowledgeRoute: (knowledgeId: number) => void;
@@ -115,6 +116,7 @@ export function Shell({ route, setRoute, settingsSection, openSettingsRoute, sel
       <Sidebar route={route} user={user} setRoute={setRoute} openSettings={openSettingsRoute} onLogout={onLogout} onSwitchOrganization={onSwitchOrganization} waitingCount={waitingCount} chatScope={chatScope.scope} setChatScope={chatScope.setScope} chatCounters={chatScope.counters} unreadCount={unreadCount} onOpenNotifications={() => { setNotifOpen(true); void loadNotifications(); }} expanded={sidebarExpanded} setExpanded={setSidebarExpanded} />
       <div className="hub-main">
         {manager && <DemoInstallBanner reload={reload} />}
+        <UpdateBanner enabled={user.isInstanceAdmin} />
         {/* Верхней панели нет ни у одной роли (дизайн-базлайн v2): заголовок и
             «назад» живут в самой странице, уведомления — в меню профиля сайдбара. */}
         <main className={`hub-scroll ${isDialogsWorkspace ? "sales-dialogs-scroll" : ""} ${isAiFullWidth ? "ai-fullwidth-scroll" : ""} ${isSettings ? "settings-scroll" : ""} ${isProfile ? "profile-scroll" : ""} ${isContacts ? "contacts-scroll" : ""} ${isAgents ? "agents-scroll" : ""} ${isEmployees ? "employees-scroll" : ""} ${isAudit ? "audit-scroll" : ""} ${isPortals ? "portals-scroll" : ""} ${isKnowledge || isKnowledgeEditor ? "knowledge-scroll" : ""}`}>

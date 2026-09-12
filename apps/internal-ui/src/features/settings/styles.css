@@ -582,6 +582,40 @@
    справа, снизу разделитель (кадр N6). Один стандарт на все разделы —
    «Хранилище файлов», «Платформа», relay в «Голосовых и звонках». */
 
+.settings-facts {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 6px 16px;
+  margin: 14px 0 0;
+  font-size: 13.5px;
+}
+
+.settings-facts > div {
+  display: contents;
+}
+
+.settings-facts dt {
+  color: var(--n-4);
+}
+
+.settings-facts dd {
+  margin: 0;
+  color: var(--n-1);
+}
+
+.settings-card-note {
+  margin: 12px 0 0;
+  color: var(--n-3);
+  font-size: 13px;
+}
+
+.settings-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+}
+
 .settings-card-head {
   display: flex;
   align-items: center;

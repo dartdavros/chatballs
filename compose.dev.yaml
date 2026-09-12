@@ -116,6 +116,13 @@ services:
       - ./apps/backend:/app/apps/backend
       - ./data/media:/app/apps/backend/media
 
+  # Dev: образ сервиса обновления собирается локально; сам сервис в dev
+  # бесполезен (стек поднят из исходников), но должен собираться и стартовать.
+  updater:
+    build:
+      context: .
+      dockerfile: deploy/docker/updater.Dockerfile
+
   # Dev: frontend-сервис превращается в Vite dev-сервер internal-ui (HMR).
   frontend:
     build:

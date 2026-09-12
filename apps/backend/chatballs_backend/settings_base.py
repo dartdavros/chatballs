@@ -33,6 +33,17 @@ if _delivery_mode not in {"CLOUD", "SELF_HOSTED"}:
         "CHATBALLS_DELIVERY_MODE must be CLOUD or SELF_HOSTED"
     )
 CHATBALLS_DELIVERY_MODE = _delivery_mode
+
+# Версия установки: CI передаёт её в образ при сборке релиза; в сборке из
+# исходников остаётся «dev», и тогда обновлений из интерфейса нет — сравнивать
+# не с чем.
+CHATBALLS_VERSION = os.environ.get("CHATBALLS_VERSION", "dev").strip() or "dev"
+# Канал релизов и обмен с сервисом updater (ADR-CHATBALLS-0049).
+CHATBALLS_UPDATE_REPO = os.environ.get("CHATBALLS_UPDATE_REPO", "dartdavros/chatballs").strip()
+CHATBALLS_UPDATES_DIR = os.environ.get("CHATBALLS_UPDATES_DIR", "/run/chatballs/updates")
+CHATBALLS_UPDATE_CHECK_INTERVAL_SECONDS = int(
+    os.environ.get("CHATBALLS_UPDATE_CHECK_INTERVAL_SECONDS", str(6 * 3600))
+)
 ALLOWED_HOSTS = env_list("CHATBALLS_ALLOWED_HOSTS", ["localhost", "127.0.0.1"])
 if TESTING:
     ALLOWED_HOSTS.extend(["testserver", ".localhost"])
@@ -67,6 +78,7 @@ INSTALLED_APPS = [
     "chatballs.events",
     "chatballs.support_portals",
     "chatballs.calls",
+    "chatballs.updates",
     # django-channels НЕ добавляется в INSTALLED_APPS: его app label «channels»
     # конфликтует с доменным chatballs.channels, а без runserver-оверрайда
     # (сервер — uvicorn) библиотеке достаточно CHANNEL_LAYERS.

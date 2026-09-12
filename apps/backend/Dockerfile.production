@@ -6,6 +6,11 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
+# Версия релиза попадает в образ при сборке: по ней приложение решает,
+# есть ли обновление. Сборка из исходников остаётся «dev».
+ARG CHATBALLS_VERSION=dev
+ENV CHATBALLS_VERSION=${CHATBALLS_VERSION}
+
 RUN addgroup --system hub && adduser --system --ingroup hub hub
 
 COPY apps/backend/requirements.txt /app/apps/backend/requirements.txt

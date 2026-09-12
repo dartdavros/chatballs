@@ -39,6 +39,7 @@ env:
   GATEWAY_BASE_IMAGE: caddy:2.8.4
   REDIS_IMAGE: redis:7-alpine
   COTURN_IMAGE: coturn/coturn:4.6
+  UPDATER_BASE_IMAGE: docker:27-cli
 
 jobs:
   images:
@@ -78,6 +79,7 @@ jobs:
           echo "gateway=${GATEWAY_BASE_IMAGE}@$(digest_of "$GATEWAY_BASE_IMAGE")" >> "$GITHUB_OUTPUT"
           echo "redis=${REDIS_IMAGE}@$(digest_of "$REDIS_IMAGE")" >> "$GITHUB_OUTPUT"
           echo "coturn=${COTURN_IMAGE}@$(digest_of "$COTURN_IMAGE")" >> "$GITHUB_OUTPUT"
+          echo "updater=${UPDATER_BASE_IMAGE}@$(digest_of "$UPDATER_BASE_IMAGE")" >> "$GITHUB_OUTPUT"
 
       - name: Backend
         id: backend
@@ -85,6 +87,8 @@ jobs:
         with:
           context: ${{ env.APP_DIR }}
           file: ${{ env.APP_DIR }}/apps/backend/Dockerfile.production
+          build-args: |
+            CHATBALLS_VERSION=${{ steps.version.outputs.value }}
           push: true
           tags: |
             ${{ env.REGISTRY }}/${{ steps.version.outputs.repo }}/backend:${{ steps.version.outputs.value }}
@@ -137,6 +141,23 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      # Сервис обновления по кнопке (ADR-CHATBALLS-0049): docker CLI с compose
+      # и два сценария внутри; единственный, кому монтируется docker.sock.
+      - name: Updater
+        id: updater
+        uses: docker/build-push-action@v7
+        with:
+          context: ${{ env.APP_DIR }}
+          file: ${{ env.APP_DIR }}/deploy/docker/updater.Dockerfile
+          build-args: |
+            CHATBALLS_UPDATER_BASE_IMAGE=${{ steps.bases.outputs.updater }}
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ steps.version.outputs.repo }}/updater:${{ steps.version.outputs.value }}
+            ${{ env.REGISTRY }}/${{ steps.version.outputs.repo }}/updater:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
       - name: Релизный compose.yaml и release.env
         id: artifacts
         run: |
@@ -148,6 +169,7 @@ jobs:
           frontend="$prefix/frontend:$version@${{ steps.frontend.outputs.digest }}"
           gateway="$prefix/gateway:$version@${{ steps.gateway.outputs.digest }}"
           postgres="$prefix/postgres:$version@${{ steps.postgres.outputs.digest }}"
+          updater="$prefix/updater:$version@${{ steps.updater.outputs.digest }}"
           redis="${{ steps.bases.outputs.redis }}"
           coturn="${{ steps.bases.outputs.coturn }}"
 
@@ -160,7 +182,8 @@ jobs:
             --pin "CHATBALLS_GATEWAY_IMAGE=$gateway" \
             --pin "CHATBALLS_POSTGRES_IMAGE=$postgres" \
             --pin "CHATBALLS_REDIS_IMAGE=$redis" \
-            --pin "CHATBALLS_COTURN_IMAGE=$coturn"
+            --pin "CHATBALLS_COTURN_IMAGE=$coturn" \
+            --pin "CHATBALLS_UPDATER_IMAGE=$updater"
 
           {
             echo "# release.env — digest-пины релиза $version для \`chatballs deploy\`."
@@ -172,6 +195,7 @@ jobs:
             echo "CHATBALLS_POSTGRES_IMAGE=$postgres"
             echo "CHATBALLS_REDIS_IMAGE=$redis"
             echo "CHATBALLS_COTURN_IMAGE=$coturn"
+            echo "CHATBALLS_UPDATER_IMAGE=$updater"
           } > dist/release.env
 
           # Файл, который скачает человек, обязан быть валидным сам по себе —

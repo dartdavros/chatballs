@@ -115,6 +115,9 @@ services:
       # владельца из образа (hub), поэтому загрузки работают и на Linux, где
       # bind-mount достался бы контейнеру как root:root и падал с EACCES.
       - chatballs-media:/app/apps/backend/media
+      # Обмен с сервисом updater: сюда кладётся запрос на обновление, отсюда
+      # читается его статус. Доступа к Docker у приложения нет и не будет.
+      - chatballs-updates:/run/chatballs/updates
     depends_on:
       init:
         condition: service_completed_successfully
@@ -210,6 +213,24 @@ services:
       - chatballs-secrets:/run/chatballs/secrets:ro
       - chatballs-secrets-platform:/run/chatballs/secrets/platform:ro
       - chatballs-media:/app/apps/backend/media
+    depends_on:
+      backend-app:
+        condition: service_healthy
+
+  # Обновление по кнопке из интерфейса (ADR-CHATBALLS-0049). Единственный
+  # сервис с доступом к docker.sock: забирает запрос из тома chatballs-updates,
+  # проверяет, что это официальный релиз (адрес со страницы релизов, образы по
+  # digest), и запускает `docker compose pull && up` отдельным контейнером вне
+  # проекта. Без сокета (rootless, podman) просто спит — кнопка в интерфейсе
+  # тогда сообщает, что обновление из интерфейса недоступно.
+  updater:
+    image: ${CHATBALLS_UPDATER_IMAGE:-chatballs-updater:dev}
+    restart: unless-stopped
+    environment:
+      CHATBALLS_UPDATE_REPO: ${CHATBALLS_UPDATE_REPO:-dartdavros/chatballs}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - chatballs-updates:/run/chatballs/updates
     depends_on:
       backend-app:
         condition: service_healthy
@@ -332,3 +353,5 @@ volumes:
   chatballs-media:
   chatballs-caddy-data:
   chatballs-caddy-config:
+  # Обмен приложения с сервисом updater: запрос и статус обновления.
+  chatballs-updates:

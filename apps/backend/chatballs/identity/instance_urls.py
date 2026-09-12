@@ -10,6 +10,7 @@ from django.urls import path
 
 from chatballs.identity import instance_views
 from chatballs.tenancy import storage_views
+from chatballs.updates import views as update_views
 
 urlpatterns = [
     path("settings/", instance_views.InstanceAddressView.as_view(), name="instance-settings"),
@@ -25,4 +26,8 @@ urlpatterns = [
         storage_views.StorageMigrateView.as_view(),
         name="instance-storage-migrate",
     ),
+    # Обновления установки: состояние, проверка канала, установка по кнопке.
+    path("update/", update_views.UpdateStateView.as_view(), name="instance-update"),
+    path("update/check/", update_views.UpdateCheckView.as_view(), name="instance-update-check"),
+    path("update/install/", update_views.UpdateInstallView.as_view(), name="instance-update-install"),
 ]
