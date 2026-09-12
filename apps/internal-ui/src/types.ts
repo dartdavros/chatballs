@@ -42,6 +42,9 @@ export type AuthenticatedUser = {
   // Когда последний раз принимался код аутентификатора (кадр P1).
   totpLastUsedAt: string | null;
   deliveryMode: DeliveryMode;
+  // Администратор установки: разделы «Платформа» и «Хранилище файлов» — его,
+  // это свойства инсталляции, а не организации.
+  isInstanceAdmin: boolean;
   memberships: OrganizationMembership[];
   uiTheme: "LIGHT" | "DARK" | "SYSTEM";
   uiAccent: string;
@@ -98,6 +101,21 @@ export type Employee = {
   // «Последняя смена» пароля в карточке сотрудника (кадр E3).
   passwordChangedAt?: string | null;
   auditEvents?: EmployeeAuditEvent[];
+};
+
+// Ожидающее приглашение существующей учётной записи (статус «Приглашён»):
+// роль, должность и группы уже известны и придут вместе с членством.
+export type EmployeeInvitation = {
+  id: number;
+  email: string;
+  fullName: string;
+  avatarUrl?: string | null;
+  role: Role;
+  positionTitle: string;
+  phone: string;
+  groups: EmployeeGroupRef[];
+  invitedAt: string;
+  expiresAt: string;
 };
 
 export type EmployeeAuditEvent = {

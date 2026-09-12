@@ -1,4 +1,6 @@
 export { AuthChangePassword } from "./AuthChangePassword";
+export { AuthJoin } from "./AuthJoin";
+export { AuthJoinGuest } from "./AuthJoinGuest";
 export { AuthLogin } from "./AuthLogin";
 export { AuthPasswordRecovery } from "./AuthPasswordRecovery";
 export { AuthResetPassword } from "./AuthResetPassword";

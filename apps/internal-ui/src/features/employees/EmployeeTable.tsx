@@ -1,9 +1,10 @@
 import { Dropdown } from "antd";
 
-import type { Employee, EmployeeGroup } from "../../types";
+import type { Employee, EmployeeGroup, EmployeeInvitation } from "../../types";
 import { Icon } from "../../shared/icons";
 import { Avatar, EmptyState } from "../../shared/ui";
 import { groupColorOf } from "../conversations/model";
+import { EmployeeInvitationRow } from "./EmployeeInvitationRow";
 import { employeeAvatarColor, formatLastLogin, roleAccessLabel, roleBadge, statusBadge } from "./model";
 import { t } from "../../i18n";
 
@@ -12,21 +13,30 @@ import { t } from "../../i18n";
 
 export function EmployeeTable({
   employees,
+  invitations = [],
+  canManageInvitations = false,
   groups,
   menuId,
   onBlock,
   onResetPassword,
   onTerminateSessions,
+  onResendInvitation,
+  onRevokeInvitation,
   openEmployee,
   setMenuId,
   total,
 }: {
   employees: Employee[];
+  // Ожидающие приглашения — строками со статусом «Приглашён» перед сотрудниками.
+  invitations?: EmployeeInvitation[];
+  canManageInvitations?: boolean;
   groups: EmployeeGroup[];
   menuId: number | null;
   onBlock: (employee: Employee) => void;
   onResetPassword: (employee: Employee) => void;
   onTerminateSessions: (employee: Employee) => void;
+  onResendInvitation?: (invitation: EmployeeInvitation) => void;
+  onRevokeInvitation?: (invitation: EmployeeInvitation) => void;
   openEmployee: (employee: Employee) => void;
   setMenuId: (id: number | null) => void;
   total: number;
@@ -43,6 +53,16 @@ export function EmployeeTable({
         <span>{t("admin.last_sign")}</span>
         <span />
       </div>
+      {invitations.map((invitation) => (
+        <EmployeeInvitationRow
+          invitation={invitation}
+          groups={groups}
+          canManage={canManageInvitations}
+          onResend={(item) => onResendInvitation?.(item)}
+          onRevoke={(item) => onRevokeInvitation?.(item)}
+          key={`invitation-${invitation.id}`}
+        />
+      ))}
       {employees.map((employee) => (
         <EmployeeRow
           employee={employee}
@@ -56,7 +76,7 @@ export function EmployeeTable({
           key={employee.id}
         />
       ))}
-      {!employees.length && <EmptyState title={t("admin.no_operators_found")} />}
+      {!employees.length && !invitations.length && <EmptyState title={t("admin.no_operators_found")} />}
       <div className="employees-foot">
         <small>{t("common.shown_of", { shown: employees.length, total })}</small>
         <small>{t("admin.group_decides_which_conversations_visible_2")}</small>

@@ -1,4 +1,5 @@
 import type { Icon } from "../../shared/icons";
+import type { SessionUser } from "../../types";
 import { t } from "../../i18n";
 
 // Разделы «Настроек» (дизайн-базлайн v2, кадры N1–N7): субменю 240px и один
@@ -21,6 +22,8 @@ export type SettingsSection = {
   icon: Parameters<typeof Icon>[0]["name"];
   heading: string;
   lead: string;
+  // Раздел про саму установку: виден только администратору установки.
+  instanceOnly?: boolean;
 };
 
 export const SETTINGS_SECTIONS: SettingsSection[] = [
@@ -67,6 +70,7 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     icon: "database",
     heading: t("settings.file_storage"),
     lead: t("settings.attachments_voice_messages_photos_logos"),
+    instanceOnly: true,
   },
   {
     key: "platform",
@@ -74,6 +78,7 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     icon: "globe",
     heading: t("settings.platform"),
     lead: t("settings.properties_installation_itself_address_opened"),
+    instanceOnly: true,
   },
   {
     key: "demo",
@@ -85,6 +90,10 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
 ];
 
 export const DEFAULT_SETTINGS_SECTION: SettingsSectionKey = "organization";
+
+export function visibleSettingsSections(user: SessionUser): SettingsSection[] {
+  return SETTINGS_SECTIONS.filter((section) => !section.instanceOnly || user.isInstanceAdmin);
+}
 
 export function settingsSectionKey(value: string | null | undefined): SettingsSectionKey | null {
   const found = SETTINGS_SECTIONS.find((section) => section.key === value);

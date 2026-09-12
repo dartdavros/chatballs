@@ -29,7 +29,9 @@ type Flag = "voiceMessages" | "audioCalls" | "videoCalls";
 const BASE = "/api/v1/company/administration/communication/";
 const COLUMNS: Array<[Flag, string]> = [["voiceMessages", t("settings.voice_messages")], ["audioCalls", t("settings.audio_calls")], ["videoCalls", t("settings.video_calls")]];
 
-export function CommunicationSettingsCard({ canManage }: { canManage: boolean }) {
+// Relay — настройка установки, а не организации: менять его может только
+// администратор установки, поэтому право приходит отдельным флагом.
+export function CommunicationSettingsCard({ canManage, canManageRelay }: { canManage: boolean; canManageRelay: boolean }) {
   const [items, setItems] = useState<EntryPoint[] | null>(null);
   const [busyId, setBusyId] = useState<number | null>(null);
   const [errorText, setErrorText] = useState("");
@@ -85,7 +87,7 @@ export function CommunicationSettingsCard({ canManage }: { canManage: boolean })
       {items.length > 0 && (
         <p className="settings-section-note">{t("settings.voice_messages_sent_by_customer")}</p>
       )}
-      <CallsRelayCard canManage={canManage} />
+      <CallsRelayCard canManage={canManageRelay} />
     </>
   );
 }

@@ -12,6 +12,7 @@ function userWith(role: Role, capabilities: string[] = []): SessionUser {
     totpEnabled: false,
     totpLastUsedAt: null,
     deliveryMode: "CLOUD",
+    isInstanceAdmin: false,
     uiTheme: "SYSTEM",
     uiAccent: "",
     uiLanguage: "",

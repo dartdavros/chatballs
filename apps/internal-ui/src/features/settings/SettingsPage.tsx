@@ -17,7 +17,7 @@ import { CommunicationSettingsCard } from "./CommunicationSettingsCard";
 import { PlatformSettingsCard } from "./PlatformSettingsCard";
 import { StorageSettingsCard } from "./StorageSettingsCard";
 import { GroupsSettingsCard } from "./GroupsSettingsCard";
-import { DEFAULT_SETTINGS_SECTION, SETTINGS_SECTIONS, type SettingsSectionKey } from "./sections";
+import { DEFAULT_SETTINGS_SECTION, visibleSettingsSections, type SettingsSectionKey } from "./sections";
 import { useIntegrations } from "./useIntegrations";
 import { t } from "../../i18n";
 
@@ -54,7 +54,9 @@ export function SettingsPage({ user, onUserUpdated, reload, groups = [], section
     integrations: connections.length,
   };
   const active = section ?? (mobile ? null : DEFAULT_SETTINGS_SECTION);
-  const current = SETTINGS_SECTIONS.find((item) => item.key === active) ?? null;
+  // Разделы про саму установку видит только её администратор.
+  const sections = visibleSettingsSections(user);
+  const current = sections.find((item) => item.key === active) ?? null;
 
   const links = (
     <>
@@ -70,7 +72,7 @@ export function SettingsPage({ user, onUserUpdated, reload, groups = [], section
     <nav className={`settings-subnav ${mobile && current ? "is-hidden" : ""}`}>
       <div className="settings-subnav-head"><h2>{t("common.settings")}</h2></div>
       <div className="settings-subnav-list">
-        {SETTINGS_SECTIONS.map((item) => (
+        {sections.map((item) => (
           <button
             className={`settings-subnav-item ${item.key === active ? "is-active" : ""}`}
             key={item.key}
@@ -153,9 +155,9 @@ function SectionBody({ section, user, onUserUpdated, reload, groups, integration
 }): ReactNode {
   if (section === "organization") return <OrganizationSection user={user} onUserUpdated={onUserUpdated} />;
   if (section === "groups") return <GroupsSettingsCard groups={groups} reload={reload} />;
-  if (section === "communication") return <CommunicationSettingsCard canManage={canManageSettings(user)} />;
-  if (section === "platform") return <PlatformSettingsCard canManage={canManageSettings(user)} />;
-  if (section === "storage") return <StorageSettingsCard canManage={canManageSettings(user)} />;
+  if (section === "communication") return <CommunicationSettingsCard canManage={canManageSettings(user)} canManageRelay={user.isInstanceAdmin} />;
+  if (section === "platform") return <PlatformSettingsCard canManage={user.isInstanceAdmin} />;
+  if (section === "storage") return <StorageSettingsCard canManage={user.isInstanceAdmin} />;
   if (section === "demo") return <DemoDataCard reload={reload} />;
   if (integrations.loading) return <LoadingState />;
   if (integrations.failed) return <EmptyState title={t("settings.could_not_load_integrations")} />;

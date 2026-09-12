@@ -3,6 +3,8 @@ import { t } from "../../i18n";
 
 // Настройки инсталляции (раздел «Платформа» и карточка relay в «Голосовых и
 // звонках»). Один эндпоинт на всю установку: адрес, исходящая почта и TURN.
+// Путь без организации: менять его вправе только администратор установки,
+// читать — менеджер любой организации.
 // PATCH частичный — блоки email и turn применяются, только если пришли в теле,
 // поэтому каждая карточка сохраняет свою часть и не затирает соседние.
 
@@ -28,7 +30,7 @@ export type InstancePayload = {
   turn: { urls: string[]; ttlSeconds: number; secretReady: boolean };
 };
 
-export const INSTANCE_BASE = "/api/v1/company/administration/instance/";
+export const INSTANCE_BASE = "/api/v1/instance/settings/";
 
 export function loadInstance(): Promise<InstancePayload> {
   return api<{ instance: InstancePayload }>(INSTANCE_BASE).then((payload) => payload.instance);

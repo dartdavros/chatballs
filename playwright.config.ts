@@ -27,7 +27,9 @@ export default defineConfig({
   projects: [
     {
       name: "internal-ui",
-      use: { ...devices["Desktop Chrome"], baseURL: "http://localhost:5173" },
+      // Русская локаль браузера: интерфейс открывается на языке установки из
+      // моков без перезагрузки, которую иначе делает acceptServerLanguage.
+      use: { ...devices["Desktop Chrome"], baseURL: "http://localhost:5173", locale: "ru-RU" },
     },
     {
       name: "web-chat-mobile",

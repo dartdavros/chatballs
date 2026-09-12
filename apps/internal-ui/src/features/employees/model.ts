@@ -59,6 +59,10 @@ export function statusBadge(employee: Employee) {
   return STATUS_BADGE[employeeStatusKey(employee)];
 }
 
+export function invitationStatusBadge() {
+  return STATUS_BADGE.invited;
+}
+
 export function employeeStatusKey(employee: Employee): EmployeeStatus {
   if (employee.isBlocked) return "blocked";
   if (employee.mustChangePassword) return "invited";
@@ -83,7 +87,7 @@ export function groupsLabel(employee: Employee) {
   return employee.groups.map((group) => group.name).join(", ");
 }
 
-export function roleAccessLabel(employee: Employee) {
+export function roleAccessLabel(employee: { role: Role }) {
   if (employee.role === "OWNER" || employee.role === "ADMIN") return t("common.full_access");
   return t("admin.chat_only");
 }

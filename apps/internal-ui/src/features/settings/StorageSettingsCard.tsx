@@ -37,7 +37,7 @@ type Draft = {
   s3AddressingStyle: string;
 };
 
-const BASE = "/api/v1/company/administration/storage/";
+const BASE = "/api/v1/instance/storage/";
 
 function draftOf(payload: StoragePayload): Draft {
   return {

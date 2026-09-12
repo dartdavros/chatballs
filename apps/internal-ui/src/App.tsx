@@ -12,7 +12,7 @@ import { api, setActiveOrganization } from "./api/client";
 import { fetchAgentDirectory } from "./features/agents/model";
 import { canAccess, defaultRoute, isManager } from "./auth/access";
 import { activateOrganization, clearOrganizationPreference } from "./auth/session";
-import { AuthChangePassword, AuthLogin, AuthPasswordRecovery, AuthResetPassword, AuthSetup, AuthTotpCode, AuthTotpSetup } from "./features/auth/AuthScreens";
+import { AuthChangePassword, AuthJoin, AuthJoinGuest, AuthLogin, AuthPasswordRecovery, AuthResetPassword, AuthSetup, AuthTotpCode, AuthTotpSetup } from "./features/auth/AuthScreens";
 import { Shell } from "./layout/Shell";
 import { pathFromRoute, routeFromPath } from "./router";
 import { ErrorScreen, LoadingScreen, PermissionScreen } from "./shared/ui";
@@ -42,6 +42,14 @@ export function App() {
   const [totpChallenge, setTotpChallenge] = useState<AuthChallenge | null>(null);
   const [recovering, setRecovering] = useState(false);
   const [resetting, setResetting] = useState(() => window.location.pathname === "/reset-password");
+  // Ссылка из письма-приглашения (/join?token=…): токен запоминается до входа
+  // и принимается, как только известна учётная запись.
+  const [joinToken, setJoinToken] = useState<string | null>(
+    () => (window.location.pathname === "/join" ? new URLSearchParams(window.location.search).get("token") : null),
+  );
+  // До входа ссылка ведёт либо на форму создания пароля (учётной записи ещё
+  // нет), либо на обычный вход — это решает предпросмотр приглашения.
+  const [joinNeedsLogin, setJoinNeedsLogin] = useState(false);
   // Мастер первого запуска: пока в инстансе нет организации, вместо входа — форма создания.
   const [needsSetup, setNeedsSetup] = useState(false);
   const [data, setData] = useState<AppData>({ groups: [], agents: [] });
@@ -90,7 +98,8 @@ export function App() {
         if (!payload.authenticated) acceptServerLanguage(payload.language);
         if (payload.authenticated && payload.user) {
           const activeUser = useIdentity(payload.user, initialRoute.organizationPublicId);
-          if (activeUser && !initialRoute.organizationPublicId) {
+          // Адрес без организации или с чужой: подставляем ту, что открылась.
+          if (activeUser && activeUser.organizationPublicId !== initialRoute.organizationPublicId) {
             const nextPath = pathFromRoute(
               initialRoute.route,
               initialRoute.employeeId || initialRoute.agentId || initialRoute.knowledgeId || initialRoute.clientId || initialRoute.channelId || initialRoute.supportPortalId || initialRoute.portalSettingsSection || initialRoute.settingsSection,
@@ -133,6 +142,32 @@ export function App() {
     useIdentity(nextIdentity, organizationPublicId);
   }, [organizationPublicId, useIdentity]);
 
+  // Переключатель в сайдбаре: другая организация открывается со своего
+  // стартового экрана, Shell пересобирается по key — состояние страниц
+  // прежней организации в новую не переезжает.
+  const switchOrganization = useCallback((nextOrganizationId: string) => {
+    if (!identity) return;
+    const activeUser = useIdentity(identity, nextOrganizationId);
+    if (activeUser) {
+      navigate(defaultRoute(activeUser), null, false, activeUser.organizationPublicId);
+    }
+  }, [identity, navigate, useIdentity]);
+
+  const finishJoin = useCallback((nextIdentity: AuthenticatedUser, organizationId: string) => {
+    setJoinToken(null);
+    const activeUser = useIdentity(nextIdentity, organizationId);
+    if (activeUser) {
+      navigate(defaultRoute(activeUser), null, true, activeUser.organizationPublicId);
+    }
+  }, [navigate, useIdentity]);
+
+  const joinUseLogin = useCallback(() => setJoinNeedsLogin(true), []);
+
+  const cancelJoin = useCallback(() => {
+    setJoinToken(null);
+    if (user) navigate(defaultRoute(user), null, true, user.organizationPublicId);
+  }, [navigate, user]);
+
   async function logout() {
     await api("/api/v1/auth/logout/", { method: "POST" }).catch(() => undefined);
     setIdentity(null);
@@ -160,13 +195,17 @@ export function App() {
       {totpChallenge ? (
         <AuthTotpCode challenge={totpChallenge} onVerified={(nextUser) => { setTotpChallenge(null); landAfterAuth(nextUser); }} />
       ) : !identity ? (
-        needsSetup ? (
+        joinToken && !joinNeedsLogin && !needsSetup ? (
+          <AuthJoinGuest token={joinToken} onUseLogin={joinUseLogin} onRegistered={finishJoin} />
+        ) : needsSetup ? (
           <AuthSetup onDone={(nextUser) => { setNeedsSetup(false); landAfterAuth(nextUser); }} />
         ) : recovering ? (
           <AuthPasswordRecovery onBackToLogin={() => setRecovering(false)} />
         ) : (
           <AuthLogin onLogin={landAfterAuth} onTotpChallenge={setTotpChallenge} onRecover={() => setRecovering(true)} />
         )
+      ) : joinToken ? (
+        <AuthJoin token={joinToken} onAccepted={finishJoin} onBack={cancelJoin} />
       ) : !user ? (
         <PermissionScreen onReturn={logout} />
       ) : user.mustChangePassword ? (
@@ -178,7 +217,7 @@ export function App() {
       ) : !canAccess(user, navigation.route) ? (
         <PermissionScreen onReturn={() => navigate(defaultRoute(user), null, true)} />
       ) : (
-        <Shell route={navigation.route} setRoute={(nextRoute) => navigate(nextRoute)} selectedEmployeeId={navigation.selectedEmployeeId} selectedAgentId={navigation.selectedAgentId} selectedKnowledgeId={navigation.selectedKnowledgeId} selectedConversationId={navigation.selectedConversationId} selectedClientId={navigation.selectedClientId} openClientRoute={(clientId) => navigate("salesClientDetail", clientId)} selectedChannelId={navigation.selectedChannelId} openChannelRoute={(channelId) => navigate("agentDetail", channelId)} selectedSupportPortalId={navigation.selectedSupportPortalId} openSupportPortalRoute={(portalId) => navigate("supportPortalDetail", portalId)} portalSettingsSection={navigation.selectedPortalSection} openPortalSettingsRoute={(portalId, section) => navigate("supportPortalSettings", `${portalId}/${section ?? ""}`)} settingsSection={navigation.selectedSettingsSection} openSettingsRoute={(section) => navigate("settings", section)} openEmployeeRoute={(employeeId) => navigate("employeeDetail", employeeId)} openAgentRoute={(agentId) => navigate("agentDetail", agentId)} openKnowledgeRoute={(knowledgeId) => navigate("knowledgeDetail", knowledgeId)} openKnowledgeEditorRoute={(knowledgeId) => (knowledgeId === null ? navigate("knowledgeCreate") : navigate("knowledgeEdit", knowledgeId))} openConversationRoute={(conversationId) => navigate("chat", conversationId)} user={user} data={data} reload={loadData} onUserUpdated={refreshIdentity} onLogout={logout} />
+        <Shell key={user.organizationPublicId} route={navigation.route} setRoute={(nextRoute) => navigate(nextRoute)} selectedEmployeeId={navigation.selectedEmployeeId} selectedAgentId={navigation.selectedAgentId} selectedKnowledgeId={navigation.selectedKnowledgeId} selectedConversationId={navigation.selectedConversationId} selectedClientId={navigation.selectedClientId} openClientRoute={(clientId) => navigate("salesClientDetail", clientId)} selectedChannelId={navigation.selectedChannelId} openChannelRoute={(channelId) => navigate("agentDetail", channelId)} selectedSupportPortalId={navigation.selectedSupportPortalId} openSupportPortalRoute={(portalId) => navigate("supportPortalDetail", portalId)} portalSettingsSection={navigation.selectedPortalSection} openPortalSettingsRoute={(portalId, section) => navigate("supportPortalSettings", `${portalId}/${section ?? ""}`)} settingsSection={navigation.selectedSettingsSection} openSettingsRoute={(section) => navigate("settings", section)} openEmployeeRoute={(employeeId) => navigate("employeeDetail", employeeId)} openAgentRoute={(agentId) => navigate("agentDetail", agentId)} openKnowledgeRoute={(knowledgeId) => navigate("knowledgeDetail", knowledgeId)} openKnowledgeEditorRoute={(knowledgeId) => (knowledgeId === null ? navigate("knowledgeCreate") : navigate("knowledgeEdit", knowledgeId))} openConversationRoute={(conversationId) => navigate("chat", conversationId)} user={user} data={data} reload={loadData} onUserUpdated={refreshIdentity} onLogout={logout} onSwitchOrganization={switchOrganization} />
       )}
     </ConfigProvider>
   );

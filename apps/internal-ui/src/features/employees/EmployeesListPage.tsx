@@ -11,7 +11,7 @@ import { EmployeeCreateDrawer } from "./EmployeeCreateDrawer";
 import { EmployeePasswordDialog } from "./EmployeePasswordDialog";
 import { EmployeeTable } from "./EmployeeTable";
 import { EmployeesFilters } from "./EmployeesFilters";
-import { blockEmployee, fetchEmployees, resetEmployeePassword, terminateEmployeeSessions, type IssuedPassword } from "./api";
+import { blockEmployee, fetchEmployees, resendInvitation, resetEmployeePassword, revokeInvitation, terminateEmployeeSessions, type IssuedPassword } from "./api";
 import type { EmployeeRoleFilter } from "./model";
 import { t } from "../../i18n";
 
@@ -82,6 +82,10 @@ export function EmployeesPage({ groups, openEmployee, user }: {
 
       <EmployeeTable
         employees={employees.items}
+        invitations={employees.page === 1 ? employees.payload?.invitations ?? [] : []}
+        canManageInvitations={canManage}
+        onResendInvitation={(invitation) => void run(() => resendInvitation(invitation.id))}
+        onRevokeInvitation={(invitation) => void run(() => revokeInvitation(invitation.id))}
         groups={groups}
         menuId={menuId}
         onBlock={(employee) => void run(() => blockEmployee(employee.id, !employee.isBlocked))}

@@ -75,6 +75,10 @@ function identityFor(role: Role, memberships = [membershipFor(role)]) {
     totpEnabled: false,
     totpLastUsedAt: null,
     deliveryMode: "SELF_HOSTED",
+    isInstanceAdmin: role === "OWNER",
+    // Язык отдаёт сервер: без него интерфейс открылся бы на языке браузера.
+    language: "ru",
+    uiLanguage: "",
     memberships,
     uiTheme: "LIGHT",
     uiAccent: "#1677ff",
@@ -142,8 +146,24 @@ const OWNER_STAFF = {
 
 // Пустое, но валидное окружение экрана: чат, справочники и чек-лист запуска.
 // Без него любой экран падает в состояние ошибки и проверять на нём нечего.
+// Ожидающее приглашение существующей учётной записи: строка со статусом
+// «Приглашён» перед сотрудниками (кадры E1/E2).
+const INVITATION = {
+  id: 9,
+  email: "guest@example.com",
+  fullName: "Пётр Приглашённый",
+  avatarUrl: null,
+  role: "EMPLOYEE",
+  positionTitle: "Оператор поддержки",
+  phone: "",
+  groups: [{ id: 1, name: "Операторы" }],
+  invitedAt: "2026-09-10T10:00:00Z",
+  expiresAt: "2026-09-17T10:00:00Z",
+};
+
 async function mockInstance(page: Page) {
   await page.route("**/api/v1/setup/", (route) => route.fulfill({ json: { needsSetup: false } }));
+  await page.route("**/api/v1/instance/**", (route) => route.fulfill({ json: {} }));
   await page.route("**/api/v1/organizations/*/conversations/**", (route) => {
     const path = new URL(route.request().url()).pathname;
     if (path.endsWith("/conversations/counters/")) {
@@ -192,14 +212,14 @@ async function mockEmployees(page: Page) {
       .filter((employee) => !role || employee.role === role)
       .filter((employee) => !query || `${employee.fullName} ${employee.email} ${employee.positionTitle}`.toLowerCase().includes(query));
     return route.fulfill({
-      json: { items, page: 1, pageSize: 20, total: items.length, pageCount: 1 },
+      json: { items, page: 1, pageSize: 20, total: items.length, pageCount: 1, invitations: [INVITATION] },
     });
   });
 }
 
 async function mockSession(page: Page, user: object | null) {
   await page.route("**/api/v1/auth/session/", (route) =>
-    route.fulfill({ json: user ? { authenticated: true, user } : { authenticated: false } }),
+    route.fulfill({ json: user ? { authenticated: true, user } : { authenticated: false, language: "ru" } }),
   );
 }
 
@@ -277,6 +297,86 @@ test("организация выбирается адресом, а не сох
   // хотя членство в первой тоже есть.
   await expect.poll(() => requests.some((url) => url.includes(SECOND_ORGANIZATION_PUBLIC_ID))).toBe(true);
   expect(requests.filter((url) => url.includes(ORGANIZATION_PUBLIC_ID))).toEqual([]);
+});
+
+test("ожидающее приглашение показано строкой «Приглашён» с меню отправки и отзыва", async ({ page }) => {
+  await mockSession(page, OWNER_IDENTITY);
+  await mockInstance(page);
+  await mockEmployees(page);
+  const posted: string[] = [];
+  await page.route("**/api/v1/organizations/*/employees/invitations/**", (route) => {
+    posted.push(new URL(route.request().url()).pathname);
+    return route.fulfill({ json: { ok: true } });
+  });
+
+  await page.goto(`/organizations/${ORGANIZATION_PUBLIC_ID}/employees`);
+
+  const row = page.locator(".employees-row.is-invited");
+  await expect(row).toHaveCount(1);
+  await expect(row.getByText("Пётр Приглашённый")).toBeVisible();
+  await expect(row.locator(".employees-badge.has-dot")).toHaveText("Приглашён");
+  await expect(row.getByText("Оператор поддержки")).toBeVisible();
+
+  await row.locator(".employees-row-menu").click();
+  await page.getByRole("button", { name: "Отправить приглашение ещё раз" }).click();
+  await expect.poll(() => posted).toContain(`/api/v1/organizations/${ORGANIZATION_PUBLIC_ID}/employees/invitations/9/resend/`);
+});
+
+test("гость по ссылке-приглашению задаёт имя и пароль и попадает в организацию", async ({ page }) => {
+  await mockSession(page, null);
+  await mockInstance(page);
+  await mockEmployees(page);
+  await page.route("**/api/v1/auth/invitations/preview/**", (route) =>
+    route.fulfill({ json: { valid: true, email: "new-owner@example.com", organizationName: "Новая организация", accountExists: false } }),
+  );
+  const registered: string[] = [];
+  await page.route("**/api/v1/auth/invitations/register/", async (route) => {
+    registered.push(route.request().postData() ?? "");
+    const user = identityFor("OWNER", [membershipFor("OWNER", { organizationPublicId: SECOND_ORGANIZATION_PUBLIC_ID, organization: "new", organizationName: "Новая организация" })]);
+    // После регистрации сессия уже есть — сессионный мок отвечает как для вошедшего.
+    await mockSession(page, user);
+    return route.fulfill({ status: 201, json: { authenticated: true, user, organizationPublicId: SECOND_ORGANIZATION_PUBLIC_ID } });
+  });
+
+  await page.goto("/join?token=guest-token");
+
+  await expect(page.getByText("Вас приглашают в «Новая организация»")).toBeVisible();
+  await page.getByPlaceholder("Елена Кузнецова").fill("Новый Владелец");
+  await page.getByPlaceholder("Минимум 10 символов").fill("Very-strong-passphrase-42");
+  await page.getByRole("button", { name: "Принять приглашение" }).click();
+
+  await expect(page).toHaveURL(new RegExp(`/organizations/${SECOND_ORGANIZATION_PUBLIC_ID}/`));
+  await expect(managerNav(page)).toHaveCount(MANAGER_NAV.length);
+  expect(registered[0]).toContain("guest-token");
+});
+
+test("с несколькими организациями вход открывает первую, переключатель ведёт во вторую", async ({ page }) => {
+  const secondMembership = membershipFor("OWNER", {
+    id: 3,
+    organizationPublicId: SECOND_ORGANIZATION_PUBLIC_ID,
+    organization: "second",
+    organizationName: "Вторая организация",
+  });
+  await mockInstance(page);
+  await mockEmployees(page);
+  await mockSession(page, identityFor("OWNER", [membershipFor("OWNER"), secondMembership]));
+
+  // Адрес без организации: открывается первая по списку, а не экран «нет доступа».
+  await page.goto("/");
+
+  await expect(managerNav(page)).toHaveCount(MANAGER_NAV.length);
+  await expect(page).toHaveURL(new RegExp(`/organizations/${ORGANIZATION_PUBLIC_ID}/`));
+  await expect(page.locator(".hub-brand-switch span")).toHaveText("Ателье Норд");
+
+  // Переключатель (A1): в списке обе организации, текущая отмечена.
+  await page.locator(".hub-brand-switch").click();
+  const menu = page.locator(".app-dropdown");
+  await expect(menu.getByRole("button", { name: "Ателье Норд" })).toHaveClass(/is-checked/);
+  await menu.getByRole("button", { name: "Вторая организация" }).click();
+
+  await expect(page).toHaveURL(new RegExp(`/organizations/${SECOND_ORGANIZATION_PUBLIC_ID}/`));
+  await expect(page.locator(".hub-brand-switch span")).toHaveText("Вторая организация");
+  await expect(managerNav(page)).toHaveCount(MANAGER_NAV.length);
 });
 
 test("интерфейс работает на минимальной поддерживаемой ширине 1024px", async ({ page }) => {

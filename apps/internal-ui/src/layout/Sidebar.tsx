@@ -47,6 +47,7 @@ export function Sidebar({
   setRoute,
   openSettings,
   onLogout,
+  onSwitchOrganization,
   waitingCount = 0,
   chatScope,
   setChatScope,
@@ -61,6 +62,7 @@ export function Sidebar({
   setRoute: (route: RouteKey) => void;
   openSettings: (section: SettingsSectionKey | null) => void;
   onLogout: () => void;
+  onSwitchOrganization: (organizationPublicId: string) => void;
   waitingCount?: number;
   chatScope: DialogScope;
   setChatScope: (scope: DialogScope) => void;
@@ -114,15 +116,33 @@ export function Sidebar({
             ? <img src={user.organizationLogoUrl} alt="" />
             : <LogoIcon />}
         </button>
-        {/* Переключатель организации (дизайн-базлайн v2, A1): пока у пользователя
-            одна организация — в списке она одна, отмечена. */}
+        {/* Переключатель организации (дизайн-базлайн v2, A1): все организации
+            человека, текущая отмечена; выбор другой открывает её стартовый экран. */}
         <Dropdown
           trigger={["click"]}
           placement="bottomLeft"
           overlayClassName="app-dropdown is-wide"
-          menu={{ items: [{ key: "current", label: <button type="button" className="is-checked"><Icon name="building" size={15} />{user.organizationName || "Chatballs"}</button> }] }}
+          menu={{
+            items: user.memberships.map((membership) => ({
+              key: membership.organizationPublicId,
+              label: (
+                <button
+                  type="button"
+                  className={membership.organizationPublicId === user.organizationPublicId ? "is-checked" : ""}
+                  onClick={() => {
+                    if (membership.organizationPublicId !== user.organizationPublicId) {
+                      onSwitchOrganization(membership.organizationPublicId);
+                    }
+                  }}
+                >
+                  <Icon name="building" size={15} />
+                  {membership.organizationName || "Chatballs"}
+                </button>
+              ),
+            })),
+          }}
         >
-          <button className="hub-brand-switch" type="button">
+          <button className="hub-brand-switch" type="button" title={t("profile.switch_organization")}>
             <span>{user.organizationName || "Chatballs"}</span>
             <Icon name="chevron" size={14} />
           </button>
