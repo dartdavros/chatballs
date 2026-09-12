@@ -38,7 +38,7 @@ export function OrganizationLogoField({
           <input
             ref={input}
             type="file"
-            accept="image/png,image/jpeg,image/webp"
+            accept="image/png,image/jpeg,image/webp,image/svg+xml"
             hidden
             onChange={(event) => {
               const file = event.target.files?.[0];

@@ -158,7 +158,7 @@ export const ru = {
   "admin.password_was_generated_shown_once": "Пароль сгенерирован и показан один раз — скопируйте его сейчас.",
   "admin.people_count": "{count} чел.",
   "admin.period": "Период",
-  "admin.png_jpeg_or_webp_up": "PNG, JPEG или WebP · до 2 МБ. Виден в сайдбаре, виджете и письмах.",
+  "admin.png_jpeg_or_webp_up": "PNG, JPEG, WebP или SVG · до 2 МБ. Виден в сайдбаре, виджете и письмах.",
   "admin.position_groups": "Должность и группы",
   "admin.qr_code_setting_up_totp": "QR-код для подключения TOTP",
   "admin.recover_access": "Восстановить доступ",

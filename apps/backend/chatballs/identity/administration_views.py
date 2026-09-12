@@ -107,11 +107,18 @@ class OrganizationLogoView(APIView):
         organization = request.tenant_context.organization
         if not organization.logo:
             return Response({"detail": t("admin.logo_not_uploaded")}, status=404)
-        return FileResponse(
+        response = FileResponse(
             organization.logo.open("rb"),
             content_type=organization.logo_content_type or "application/octet-stream",
             filename="organization-logo",
         )
+        # Логотип показывается через <img>, но адрес можно открыть и напрямую.
+        # SVG проверен при загрузке; заголовки — второй рубеж: в контексте
+        # документа ему нельзя ни исполнять скрипты, ни ходить наружу, а
+        # браузеру нельзя угадывать тип.
+        response["Content-Security-Policy"] = "default-src 'none'; style-src 'unsafe-inline'; img-src data:; sandbox"
+        response["X-Content-Type-Options"] = "nosniff"
+        return response
 
     def post(self, request: Request) -> Response:
         upload = request.FILES.get("file")

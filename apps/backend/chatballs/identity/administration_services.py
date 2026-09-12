@@ -11,6 +11,7 @@ from django.db import transaction
 
 from chatballs.i18n import t
 from chatballs.i18n.languages import normalize_language
+from chatballs.identity.logo_svg import SVG_CONTENT_TYPE, looks_like_svg, svg_is_safe
 from chatballs.identity.models import Organization
 from chatballs.tenancy.context import TenantContext
 from chatballs.tenancy.storage import adjust_storage_usage
@@ -85,6 +86,8 @@ def _image_type(data: bytes) -> tuple[str, str] | None:
         return "image/jpeg", ".jpg"
     if len(data) >= 12 and data[:4] == b"RIFF" and data[8:12] == b"WEBP":
         return "image/webp", ".webp"
+    if looks_like_svg(data):
+        return SVG_CONTENT_TYPE, ".svg"
     return None
 
 
@@ -102,6 +105,10 @@ def replace_organization_logo(
     detected = _image_type(data)
     if detected is None:
         raise ValidationError({"file": t("admin.image_formats")})
+    if detected[0] == SVG_CONTENT_TYPE and not svg_is_safe(data):
+        # Скрипты, внешние ссылки и обработчики событий в логотипе не нужны:
+        # файл отклоняется целиком, а не переписывается молча.
+        raise ValidationError({"file": t("admin.svg_logo_unsafe")})
     content_type, suffix = detected
     organization = Organization.objects.select_for_update().get(
         pk=context.organization_id

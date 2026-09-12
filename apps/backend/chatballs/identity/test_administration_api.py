@@ -172,16 +172,16 @@ class AdministrationApiTests(TestCase):
             "/api/v1/company/administration/logo/",
             {
                 "file": SimpleUploadedFile(
-                    "logo.svg",
-                    b"<svg></svg>",
-                    content_type="image/svg+xml",
+                    "logo.txt",
+                    b"not an image at all",
+                    content_type="text/plain",
                 )
             },
             format="multipart",
         )
 
         self.assertEqual(response.status_code, 400)
-        self.assertIn("PNG, JPEG и WebP", response.json()["detail"])
+        self.assertIn("PNG, JPEG, WebP и SVG", response.json()["detail"])
 
     def test_audit_returns_readable_label_next_to_the_action_code(self) -> None:
         record_audit_event(

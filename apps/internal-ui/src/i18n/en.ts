@@ -157,7 +157,7 @@ export const en: Record<MessageKey, Message> = {
   "admin.password_was_generated_shown_once": "The password was generated and is shown once — copy it now.",
   "admin.people_count": "{count} people",
   "admin.period": "Period",
-  "admin.png_jpeg_or_webp_up": "PNG, JPEG or WebP · up to 2 MB. Shown in the sidebar, the widget and emails.",
+  "admin.png_jpeg_or_webp_up": "PNG, JPEG, WebP or SVG · up to 2 MB. Shown in the sidebar, the widget and emails.",
   "admin.position_groups": "Position and groups",
   "admin.qr_code_setting_up_totp": "QR code for setting up TOTP",
   "admin.recover_access": "Recover access",
