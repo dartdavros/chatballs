@@ -505,7 +505,15 @@
 
 .knowledge-table .row-actions { text-align: right; }
 
-/* --- Подвал таблицы --- */
+/* --- Пустое состояние (кадр KB1): блок по центру рабочей области --- */
+
+.knowledge-empty {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
 
 .knowledge-empty > div {
   width: 480px;
