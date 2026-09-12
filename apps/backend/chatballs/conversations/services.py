@@ -19,11 +19,6 @@ from chatballs.integrations.models import IntegrationProvider
 from chatballs.tenancy.context import TenantContext
 
 
-
-
-
-
-
 class ClaimError(Exception):
 
     pass

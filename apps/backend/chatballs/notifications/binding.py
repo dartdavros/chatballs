@@ -16,8 +16,8 @@ from django.utils import timezone
 
 from chatballs.conversations import transports
 from chatballs.conversations.transports.base import InboundMessage
-from chatballs.integrations.models import Integration, IntegrationKind, IntegrationProvider
 from chatballs.i18n import customer_language, first_chosen, normalize_language, t
+from chatballs.integrations.models import Integration, IntegrationKind, IntegrationProvider
 from chatballs.notifications.models import MessengerBinding, MessengerBindingCode
 
 logger = logging.getLogger(__name__)

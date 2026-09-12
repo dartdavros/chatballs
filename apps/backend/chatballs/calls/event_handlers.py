@@ -14,8 +14,8 @@ from chatballs.calls.models import CallInvite, CallSession, CallStatus, InviteDe
 from chatballs.calls.services import CALL_INVITE_SEND
 from chatballs.calls.tokens import issue_invite_token
 from chatballs.conversations import transports
-from chatballs.i18n import customer_language, t
 from chatballs.events.handlers import register
+from chatballs.i18n import customer_language, t
 from chatballs.identity.instance_settings import public_base_url
 from chatballs.tenancy.context import TenantContext
 

@@ -21,11 +21,11 @@ at runtime and overrides `AIAgent.model`.
 
 from __future__ import annotations
 
-from chatballs.i18n import t
 from chatballs.ai.provider.base import LLMProvider, ProviderError
 from chatballs.ai.provider.custom import CustomProvider
 from chatballs.ai.provider.demo import DemoProvider
 from chatballs.ai.provider.openrouter import OpenRouterProvider
+from chatballs.i18n import t
 from chatballs.integrations.models import Integration, IntegrationProvider
 
 

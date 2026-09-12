@@ -5,9 +5,9 @@ from unittest import mock
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 
+from chatballs.i18n import tn
 from chatballs.identity.bootstrap import bootstrap_owner
 from chatballs.identity.models import Organization
-from chatballs.i18n import tn
 from chatballs.integrations import checks
 from chatballs.integrations.models import (
     Integration,

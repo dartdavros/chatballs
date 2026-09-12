@@ -18,11 +18,11 @@ OpenAI-совместимый сервер или собственный Bot API
 
 from __future__ import annotations
 
-from chatballs.i18n import t
-
 import ipaddress
 import socket
 from urllib.parse import urlsplit
+
+from chatballs.i18n import t
 
 HTTP_SCHEMES = frozenset({"http", "https"})
 PROXY_SCHEMES = frozenset({"http", "https", "socks5", "socks5h"})

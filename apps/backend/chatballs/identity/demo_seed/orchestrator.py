@@ -8,6 +8,7 @@ foundation → channels/ai → support → conversations → operations.
 
 from __future__ import annotations
 
+from chatballs.i18n import customer_language
 from chatballs.identity.demo_seed.loaders import (
     channels_ai as channels_ai_loader,
 )
@@ -23,7 +24,6 @@ from chatballs.identity.demo_seed.loaders import (
 from chatballs.identity.demo_seed.loaders import (
     support as support_loader,
 )
-from chatballs.i18n import customer_language
 from chatballs.identity.demo_seed.refs import DemoRefs
 from chatballs.tenancy.context import TenantContext
 
