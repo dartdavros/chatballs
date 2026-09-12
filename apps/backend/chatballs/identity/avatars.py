@@ -38,9 +38,12 @@ def user_avatar_url(user: HumanUser | None, organization_public_id) -> str | Non
 @functools.lru_cache(maxsize=4096)
 def organization_public_id(organization_id: int) -> str:
     """public_id организации по id — неизменяем, поэтому кэшируется."""
-    from chatballs.identity.models import Organization
+    from chatballs.tenancy.ingress import organization_public_id_of
 
-    return str(Organization.objects.values_list("public_id", flat=True).get(pk=organization_id))
+    public_id = organization_public_id_of(organization_id)
+    if public_id is None:
+        raise LookupError(f"Organization {organization_id} does not exist")
+    return public_id
 
 
 def user_avatar_url_in(user: HumanUser | None, organization_id: int) -> str | None:

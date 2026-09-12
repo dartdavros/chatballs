@@ -8,6 +8,8 @@ from django.utils import timezone
 
 from chatballs.ai.knowledge_categories import ensure_uncategorized_category
 from chatballs.events.services import DomainEvent, enqueue_event
+from chatballs.i18n import t
+from chatballs.i18n.audience import customer_language
 from chatballs.identity.audit import record_audit_event
 from chatballs.identity.invitation_service import issue_invitation
 from chatballs.identity.models import (
@@ -173,7 +175,7 @@ def _provision_active_owner(
         user=owner_user,
         organization=org,
         role=EmployeeRole.OWNER,
-        position_title=_owner_position_title(),
+        position_title=_owner_position_title(org),
     )
     record_audit_event(
         action="organization.provisioned",
@@ -228,8 +230,10 @@ def _provision_pending_owner(
     )
 
 
-def _owner_position_title() -> str:
-    return "Владелец"
+def _owner_position_title(org: Organization) -> str:
+    # Должность хранится текстом, поэтому пишется сразу на языке организации,
+    # а не оператора платформы: переводить её потом будет нечем.
+    return t("setup.owner_position", language=customer_language(org))
 
 
 def _safe_message(error: Exception) -> str:

@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.db import DatabaseError, connection, transaction
 from django.test import TransactionTestCase
 
@@ -162,7 +163,9 @@ class RowLevelSecurityTests(TransactionTestCase):
 
 
 
-        with self.assertRaises(DatabaseError), transaction.atomic():
+        # Чужая организация в контексте первой не видна вовсе (tenancy/0033):
+        # проверка внешнего ключа в full_clean отказывает ещё до INSERT.
+        with self.assertRaises((DatabaseError, ValidationError)), transaction.atomic():
 
             self._set_role("chatballs_runtime_app")
 
@@ -426,6 +429,23 @@ class RowLevelSecurityTests(TransactionTestCase):
 
 
 
+    def test_app_role_reads_ingress_directory_and_cannot_add_organizations(self) -> None:
+        # Каталоги входа доступны роли app (tenancy/0032): backend-app
+        # обходится без platform-соединения.
+        with transaction.atomic():
+            self._set_role("chatballs_runtime_app")
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "SELECT organization_id FROM chatballs.membership_directory "
+                    "WHERE user_id = %s",
+                    [self.user.id],
+                )
+                self.assertEqual(cursor.fetchone()[0], self.first.id)
+        # Организации уже есть — INSERT для app закрыт политикой bootstrap.
+        with self.assertRaises(DatabaseError), transaction.atomic():
+            self._set_role("chatballs_runtime_app")
+            Organization.objects.create(name="Third", slug="rls-third")
+
     def test_platform_role_can_only_use_ingress_directory(self) -> None:
 
         with self.assertRaises(DatabaseError), transaction.atomic():
@@ -463,6 +483,47 @@ class RowLevelSecurityTests(TransactionTestCase):
         self.assertEqual(row[0], self.first.id)
 
 
+
+    def test_app_role_sees_organizations_only_in_their_context(self) -> None:
+        # tenancy/0033: без контекста строк организаций нет, в контексте — своя.
+        with transaction.atomic():
+            self._set_role("chatballs_runtime_app")
+            self.assertEqual(Organization.objects.count(), 0)
+            set_local_tenant(self.first.id)
+            self.assertEqual(
+                list(Organization.objects.values_list("id", flat=True)), [self.first.id]
+            )
+
+    def test_app_role_finds_organizations_through_the_directory(self) -> None:
+        from chatballs.tenancy.lookup import (
+            instance_has_organizations,
+            iter_organizations,
+            organization_by_public_id,
+        )
+
+        with connection.cursor() as cursor:
+            cursor.execute("SET ROLE chatballs_runtime_app")
+        try:
+            self.assertTrue(instance_has_organizations())
+            self.assertEqual(
+                [organization.id for organization in iter_organizations()],
+                [self.first.id, self.second.id],
+            )
+            found = organization_by_public_id(self.second.public_id)
+            self.assertIsNotNone(found)
+            self.assertEqual(found.id, self.second.id)
+            # Сессия собирает членства по каталогу и читает каждую организацию
+            # в её контексте.
+            client = TenantAPIClient()
+            client.force_authenticate(self.user)
+            session = client.get("/api/v1/auth/session/").json()
+            self.assertEqual(
+                [item["organizationPublicId"] for item in session["user"]["memberships"]],
+                [str(self.first.public_id)],
+            )
+        finally:
+            with connection.cursor() as cursor:
+                cursor.execute("RESET ROLE")
 
     def test_transaction_local_context_clears_after_commit_and_rollback(self) -> None:
 

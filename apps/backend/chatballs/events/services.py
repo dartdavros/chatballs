@@ -7,8 +7,9 @@ from django.utils import timezone
 
 from chatballs.events.context import get_correlation_id
 from chatballs.events.models import EventOwnership, OutboxEvent, OutboxStatus
-from chatballs.identity.models import Organization, OrganizationMembership
+from chatballs.identity.models import OrganizationMembership
 from chatballs.tenancy.context import TenantActorKind, TenantContext
+from chatballs.tenancy.lookup import load_organization
 
 
 @dataclass(frozen=True)
@@ -43,7 +44,9 @@ def tenant_context_for_event(event: OutboxEvent) -> TenantContext | None:
         return None
     if event.organization_id is None:
         raise ValueError("Tenant event has no organization")
-    organization = Organization.objects.get(pk=event.organization_id)
+    organization = load_organization(event.organization_id)
+    if organization is None:
+        raise ValueError("Tenant event organization does not exist")
     try:
         actor_kind = TenantActorKind(event.actor_kind)
     except ValueError as error:

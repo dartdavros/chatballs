@@ -13,6 +13,7 @@ from chatballs.platform.payloads import owner_state_for, provisioning_result_pay
 from chatballs.platform.permissions import HasPlatformCapability
 from chatballs.platform.provisioning_service import provision_organization
 from chatballs.platform.validation import parse_provisioning_body
+from chatballs.tenancy.database import tenant_atomic
 
 _IDEMPOTENCY_HEADER = "Idempotency-Key"
 
@@ -44,9 +45,12 @@ class OrganizationProvisionView(APIView):
             result = provision_organization(command=command, operator=request.user)
         except ProvisioningError as error:
             return Response({"detail": str(error)}, status=error.status_code)
-        owner_membership = OrganizationMembership.objects.filter(
-            organization=result.organization, role=EmployeeRole.OWNER
-        ).first()
+        # Членство — тенантная строка: под ролью platform без tenant-контекста
+        # RLS её не покажет, и ответ назвал бы активного владельца ожидающим.
+        with tenant_atomic(result.organization.pk):
+            owner_membership = OrganizationMembership.objects.filter(
+                organization=result.organization, role=EmployeeRole.OWNER
+            ).first()
         payload = provisioning_result_payload(
             provisioning=result.provisioning,
             organization=result.organization,

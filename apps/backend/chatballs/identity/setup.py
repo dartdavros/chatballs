@@ -5,16 +5,16 @@
 Никаких параметров в .env и CLI: всё задаёт человек в браузере. После
 создания владельца мастер закрывается навсегда (409).
 
-Запись идёт на соединении ``platform`` — единственной runtime-роли с правом
-создавать организации (SPEC-HUB-0021 §10); RLS-контекст и транзакция живут
-на том же соединении.
+Запись идёт по основному соединению процесса. Роль app вправе вставить
+организацию только пока их нет (политика tenancy/0032); дальше создавать
+организации может только роль platform (SPEC-HUB-0021 §10). Так пароль
+platform-роли не нужен процессу backend-app.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 
-from django.conf import settings
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
@@ -35,14 +35,15 @@ from chatballs.identity.models import (
 )
 from chatballs.tenancy.context import TenantActorKind, TenantContext
 from chatballs.tenancy.database import tenant_atomic
-from chatballs.tenancy.routing import use_database
+from chatballs.tenancy.ingress import organization_route_by_slug
+from chatballs.tenancy.lookup import instance_has_organizations, reserve_organization_id
 
 ORGANIZATION_NAME_MAX_LENGTH = 255
 FULL_NAME_MAX_LENGTH = 255
 
-# Алиас соединения для операций уровня инстанса. В тестах оба алиаса —
-# зеркала одной тестовой БД под ролью-владельцем кластера.
-INSTANCE_DB_ALIAS = "default" if settings.TESTING else "platform"
+# Мастер работает по основному соединению процесса: отдельный алиас с ролью
+# platform ему больше не нужен.
+INSTANCE_DB_ALIAS = "default"
 
 
 class SetupAlreadyCompleted(Exception):
@@ -70,11 +71,10 @@ class SetupResult:
 def instance_needs_setup() -> bool:
     """Мастер нужен, пока не создана ни одна организация.
 
-    Организации видны роли app целиком (RLS SELECT USING true), поэтому
-    проверка не требует tenant-контекста.
+    Строки организаций роли app без контекста не видны (tenancy/0033):
+    наличие хотя бы одной проверяет SECURITY DEFINER-функция.
     """
-    with use_database(INSTANCE_DB_ALIAS):
-        return not Organization.objects.exists()
+    return not instance_has_organizations()
 
 
 def _clean(data: SetupInput) -> SetupInput:
@@ -110,7 +110,7 @@ def _unique_slug(name: str) -> str:
     base = slugify(name)[:40].strip("-") or "organization"
     candidate = base
     suffix = 2
-    while Organization.objects.filter(slug=candidate).exists():
+    while organization_route_by_slug(candidate) is not None:
         candidate = f"{base}-{suffix}"
         suffix += 1
     return candidate
@@ -138,7 +138,7 @@ def _complete_setup(
     data: SetupInput, language: str, public_host: str, public_scheme: str
 ) -> SetupResult:
     clean = _clean(data)
-    with use_database(INSTANCE_DB_ALIAS), transaction.atomic(using=INSTANCE_DB_ALIAS):
+    with transaction.atomic(using=INSTANCE_DB_ALIAS):
         # Адрес, на котором человек прошёл мастер, и есть публичный адрес
         # установки: другого источника у коробки нет.
         if public_host:
@@ -148,7 +148,7 @@ def _complete_setup(
         # увидит созданную организацию.
         with connections[INSTANCE_DB_ALIAS].cursor() as cursor:
             cursor.execute("SELECT pg_advisory_xact_lock(hashtext('chatballs.instance_setup'))")
-        if Organization.objects.exists():
+        if instance_has_organizations(using=INSTANCE_DB_ALIAS):
             raise SetupAlreadyCompleted()
 
         # Пароль проверяется против атрибутов будущего пользователя (схожесть
@@ -156,12 +156,17 @@ def _complete_setup(
         probe = HumanUser(email=clean.email, full_name=clean.full_name)
         validate_password(clean.password, user=probe)
 
-        organization = Organization.objects.create(
-            name=clean.organization_name,
-            slug=_unique_slug(clean.organization_name),
-            status=OrganizationStatus.ACTIVE,
-        )
-        with tenant_atomic(organization.id, using=INSTANCE_DB_ALIAS):
+        # id выделяется заранее: строка организации видна роли app только в
+        # её контексте, и вставка идёт уже внутри него (tenancy/0033).
+        organization_id = reserve_organization_id(using=INSTANCE_DB_ALIAS)
+        with tenant_atomic(organization_id, using=INSTANCE_DB_ALIAS):
+            organization = Organization(
+                id=organization_id,
+                name=clean.organization_name,
+                slug=_unique_slug(clean.organization_name),
+                status=OrganizationStatus.ACTIVE,
+            )
+            organization.save(force_insert=True)
             ensure_uncategorized_category(organization)
             owner = HumanUser.objects.create_user(
                 email=clean.email,
@@ -169,6 +174,7 @@ def _complete_setup(
                 full_name=clean.full_name,
                 is_staff=True,
                 is_superuser=True,
+                is_instance_admin=True,
             )
             OrganizationMembership.objects.create(
                 user=owner,

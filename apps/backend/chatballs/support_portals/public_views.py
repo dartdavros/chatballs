@@ -5,7 +5,6 @@ from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
 from chatballs.i18n import t
-from chatballs.identity.models import Organization
 from chatballs.support_portals.content_services import record_feedback
 from chatballs.support_portals.models import SupportPortal
 from chatballs.support_portals.selectors import category_article_counts, public_articles
@@ -17,6 +16,7 @@ from chatballs.support_portals.serializers import (
 from chatballs.tenancy.context import TenantContext
 from chatballs.tenancy.database import tenant_atomic
 from chatballs.tenancy.ingress import support_portal_route
+from chatballs.tenancy.lookup import load_organization
 
 
 class PublicPortalView(APIView):
@@ -28,9 +28,8 @@ class PublicPortalView(APIView):
         route = support_portal_route(hostname)
         if route is None:
             return None
-        try:
-            organization = Organization.objects.get(id=route.organization_id)
-        except Organization.DoesNotExist:
+        organization = load_organization(route.organization_id)
+        if organization is None:
             return None
         context = TenantContext.for_resource(organization)
         with tenant_atomic(context):

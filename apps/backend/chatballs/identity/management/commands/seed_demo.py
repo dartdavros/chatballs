@@ -11,9 +11,9 @@ from django.core.management.base import BaseCommand, CommandError
 
 from chatballs.identity.demo_models import DemoDataset, DemoDatasetStatus
 from chatballs.identity.demo_seed import service
-from chatballs.identity.models import Organization
 from chatballs.tenancy.context import TenantActorKind, TenantContext
 from chatballs.tenancy.database import tenant_atomic
+from chatballs.tenancy.lookup import organization_by_slug
 
 
 class Command(BaseCommand):
@@ -26,10 +26,9 @@ class Command(BaseCommand):
         group.add_argument("--remove", action="store_true", help="Remove the installed demo dataset")
 
     def handle(self, *args: object, **options: object) -> None:
-        try:
-            organization = Organization.objects.get(slug=options["organization"])
-        except Organization.DoesNotExist as error:
-            raise CommandError(f"Organization {options['organization']!r} not found") from error
+        organization = organization_by_slug(str(options["organization"]))
+        if organization is None:
+            raise CommandError(f"Organization {options['organization']!r} not found")
         context = TenantContext.for_resource(organization, actor_kind=TenantActorKind.SYSTEM)
 
         if not options["apply"] and not options["remove"]:

@@ -3,12 +3,12 @@ from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.views import APIView
 
-from chatballs.identity.models import Organization
 from chatballs.support_portals.content_services import INLINE_CONTENT_TYPES
 from chatballs.support_portals.models import PortalArticleFile
 from chatballs.tenancy.context import TenantContext
 from chatballs.tenancy.database import tenant_atomic
 from chatballs.tenancy.ingress import portal_article_file_route
+from chatballs.tenancy.lookup import load_organization
 
 
 class PortalArticleFileView(APIView):
@@ -26,10 +26,9 @@ class PortalArticleFileView(APIView):
         route = portal_article_file_route(str(public_id))
         if route is None:
             raise Http404
-        try:
-            organization = Organization.objects.get(pk=route.organization_id)
-        except Organization.DoesNotExist as error:
-            raise Http404 from error
+        organization = load_organization(route.organization_id)
+        if organization is None:
+            raise Http404
         context = TenantContext.for_resource(organization)
         with tenant_atomic(context):
             article_file = PortalArticleFile.objects.filter(

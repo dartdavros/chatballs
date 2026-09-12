@@ -1,15 +1,16 @@
 from __future__ import annotations
 
 import json
+import uuid
 from datetime import UTC, datetime
 from pathlib import Path
 
 from django.core.management.base import BaseCommand, CommandError
 
 from chatballs.ai.models import KnowledgeAttachment
-from chatballs.identity.models import Organization
 from chatballs.tenancy.context import TenantContext
 from chatballs.tenancy.database import tenant_atomic
+from chatballs.tenancy.lookup import organization_by_public_id
 from chatballs.tenancy.media_migration import (
     copy_attachment,
     reconcile_attachment_storage_usage,
@@ -34,11 +35,11 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options) -> None:
         try:
-            organization = Organization.objects.get(
-                public_id=options["organization_public_id"]
-            )
-        except (Organization.DoesNotExist, ValueError) as error:
+            organization = organization_by_public_id(uuid.UUID(str(options["organization_public_id"])))
+        except ValueError as error:
             raise CommandError("Organization not found") from error
+        if organization is None:
+            raise CommandError("Organization not found")
 
         source_root = Path(options["source_root"])
         manifest_path = Path(options["manifest"])

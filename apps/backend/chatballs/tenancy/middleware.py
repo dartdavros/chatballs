@@ -8,9 +8,10 @@ from django.http import Http404, HttpRequest, HttpResponse
 from django.urls import Resolver404, resolve
 
 from chatballs.events.context import get_correlation_id
-from chatballs.identity.models import Organization, OrganizationMembership
+from chatballs.identity.models import OrganizationMembership
 from chatballs.tenancy.context import TenantContext
 from chatballs.tenancy.database import tenant_atomic
+from chatballs.tenancy.lookup import organization_by_public_id
 
 
 class TenantContextMiddleware:
@@ -47,9 +48,13 @@ class TenantContextMiddleware:
             raise Http404
         try:
             public_id = uuid.UUID(match.group("public_id"))
-            organization = Organization.objects.get(public_id=public_id)
-        except (ValueError, Organization.DoesNotExist) as error:
+        except ValueError as error:
             raise Http404 from error
+        # Строка организации видна роли app только в её контексте: id берётся
+        # из каталога, а сама строка читается уже внутри tenant_atomic.
+        organization = organization_by_public_id(public_id)
+        if organization is None:
+            raise Http404
 
         with tenant_atomic(organization.pk):
             try:

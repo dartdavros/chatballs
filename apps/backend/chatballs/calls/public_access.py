@@ -27,10 +27,11 @@ from chatballs.calls.tokens import (
     verify_call_access_token,
 )
 from chatballs.i18n import t
-from chatballs.identity.models import Organization, OrganizationMembership
+from chatballs.identity.models import OrganizationMembership
 from chatballs.tenancy.context import TenantContext
 from chatballs.tenancy.database import tenant_atomic
 from chatballs.tenancy.ingress import call_invite_route, call_session_route
+from chatballs.tenancy.lookup import load_organization
 
 
 @dataclass(frozen=True)
@@ -45,10 +46,9 @@ def resolve_invite(*, token: str) -> ResolvedInvite:
     route = call_invite_route(token_hash)
     if route is None:
         raise CallTokenError(message)
-    try:
-        organization = Organization.objects.get(pk=route.organization_id)
-    except Organization.DoesNotExist:
-        raise CallTokenError(message) from None
+    organization = load_organization(route.organization_id)
+    if organization is None:
+        raise CallTokenError(message)
     context = TenantContext.for_resource(organization)
     with tenant_atomic(context):
         invite = (
@@ -92,10 +92,9 @@ def _authorize_call_access(
     route = call_session_route(str(claims.call_session_id))
     if route is None:
         raise CallTokenError(t("calls.token_invalid"))
-    try:
-        organization = Organization.objects.get(pk=route.organization_id)
-    except Organization.DoesNotExist:
-        raise CallTokenError(t("calls.token_invalid")) from None
+    organization = load_organization(route.organization_id)
+    if organization is None:
+        raise CallTokenError(t("calls.token_invalid"))
     resource_context = TenantContext.for_resource(organization)
     with tenant_atomic(resource_context):
         try:

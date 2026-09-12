@@ -2,7 +2,7 @@ import os
 
 from django.core.exceptions import ImproperlyConfigured
 
-from chatballs_backend.settings_env import env_secret
+from chatballs_backend.settings_env import env_bool, env_secret
 
 
 def _credentials() -> tuple[dict[str, str], dict[str, str]]:
@@ -16,16 +16,19 @@ def _credentials() -> tuple[dict[str, str], dict[str, str]]:
             "POSTGRES_MIGRATION_USER", "chatballs_migration"
         ),
     }
-    # Пароли ролей генерирует первый старт стека в том с секретами; человек их
-    # не вводит и не хранит. Переменные окружения остаются переопределением.
-    fallback = env_secret("POSTGRES_PASSWORD", "postgres_password", "chatballs")
+    # Пароли ролей генерирует первый старт стека в томах с секретами; человек их
+    # не вводит и не хранит. Пароли platform и migration лежат в своих томах
+    # (подкаталоги platform/ и schema/), которые монтируются только процессам с
+    # этими ролями; у остальных файла нет и остаётся default. Переменные
+    # окружения остаются переопределением.
+    fallback = env_secret("POSTGRES_PASSWORD", "schema/postgres_password", "chatballs")
     passwords = {
         "app": env_secret("POSTGRES_APP_PASSWORD", "postgres_app_password", fallback),
         "platform": env_secret(
-            "POSTGRES_PLATFORM_PASSWORD", "postgres_platform_password", fallback
+            "POSTGRES_PLATFORM_PASSWORD", "platform/postgres_platform_password", fallback
         ),
         "migration": env_secret(
-            "POSTGRES_MIGRATION_PASSWORD", "postgres_migration_password", fallback
+            "POSTGRES_MIGRATION_PASSWORD", "schema/postgres_migration_password", fallback
         ),
     }
     return users, passwords
@@ -75,10 +78,13 @@ def build_databases(*, debug: bool, testing: bool) -> dict[str, dict]:
             "OPTIONS": {"pool": dict(pool)} if pool else {},
         }
 
-    databases = {
-        "default": config("migration" if testing else role),
-        "platform": config("platform"),
-    }
+    databases = {"default": config("migration" if testing else role)}
+    # Алиас platform поднимается только там, где он нужен: в платформенной
+    # поверхности и в воркере (CHATBALLS_DB_PLATFORM_ALIAS=1 — он захватывает
+    # outbox всех организаций). Остальные процессы пароль этой роли не читают;
+    # обращение к алиасу там упадёт сразу, а не откроет обход изоляции.
+    if testing or role == "platform" or env_bool("CHATBALLS_DB_PLATFORM_ALIAS"):
+        databases["platform"] = config("platform")
     if testing:
         # Тесты создают свою БД и подключаются владельцем кластера. Его пароль
         # приходит оттуда же, откуда у остальных ролей: файл секрета инстанса,
@@ -87,7 +93,7 @@ def build_databases(*, debug: bool, testing: bool) -> dict[str, dict]:
             "POSTGRES_USER", "chatballs_bootstrap"
         )
         databases["default"]["PASSWORD"] = env_secret(
-            "POSTGRES_PASSWORD", "postgres_password", "chatballs"
+            "POSTGRES_PASSWORD", "schema/postgres_password", "chatballs"
         )
         databases["platform"]["TEST"] = {"MIRROR": "default"}
     return databases

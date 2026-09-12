@@ -22,8 +22,9 @@ from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from chatballs.conversations.models import Conversation
 from chatballs.conversations.realtime import conversation_group, inbox_group
 from chatballs.conversations.selectors import conversation_is_visible
-from chatballs.identity.models import Organization, OrganizationMembership
+from chatballs.identity.models import OrganizationMembership
 from chatballs.tenancy.database import tenant_atomic
+from chatballs.tenancy.lookup import organization_by_public_id
 
 logger = logging.getLogger(__name__)
 
@@ -82,8 +83,10 @@ class ConversationEventsConsumer(AsyncJsonWebsocketConsumer):
     @database_sync_to_async
     def _membership(self, user_id: int, raw_public_id: str) -> tuple[int, int] | None:
         try:
-            organization = Organization.objects.get(public_id=uuid.UUID(str(raw_public_id)))
-        except (ValueError, Organization.DoesNotExist):
+            organization = organization_by_public_id(uuid.UUID(str(raw_public_id)))
+        except ValueError:
+            return None
+        if organization is None:
             return None
         with tenant_atomic(organization.pk):
             membership = (

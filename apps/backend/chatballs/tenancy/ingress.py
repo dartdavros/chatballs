@@ -3,7 +3,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from django.conf import settings
 from django.db import connections
 
 
@@ -14,8 +13,9 @@ class IngressRoute:
 
 
 def _rows(query: str, parameters: list[Any]) -> list[tuple]:
-    alias = "default" if settings.TESTING else "platform"
-    with connections[alias].cursor() as cursor:
+    # Каталоги — security-barrier вьюхи, на них есть SELECT у роли app
+    # (tenancy/0032): чтение идёт по основному соединению процесса.
+    with connections["default"].cursor() as cursor:
         cursor.execute(query, parameters)
         return list(cursor.fetchall())
 
@@ -82,5 +82,47 @@ def web_widget_route(public_key: str) -> IngressRoute | None:
 
 def support_portal_route(hostname: str) -> IngressRoute | None:
     return _unique_route("support_portal_directory", hostname.strip().lower().rstrip("."))
+
+
+# Каталог организаций: id по публичному id или слагу, публичный id по id и
+# список всех id. Роль app видит строку организации только в её контексте
+# (tenancy/0033), а сюда приходят до того, как контекст открыт.
+def organization_route_by_public_id(public_id: str) -> IngressRoute | None:
+    rows = _rows(
+        "SELECT organization_id, public_id FROM chatballs.organization_directory "
+        "WHERE public_id = %s::uuid",
+        [public_id],
+    )
+    if len(rows) != 1:
+        return None
+    return IngressRoute(organization_id=int(rows[0][0]), resource_id=str(rows[0][1]))
+
+
+def organization_route_by_slug(slug: str) -> IngressRoute | None:
+    rows = _rows(
+        "SELECT organization_id, slug FROM chatballs.organization_directory WHERE slug = %s",
+        [slug],
+    )
+    if len(rows) != 1:
+        return None
+    return IngressRoute(organization_id=int(rows[0][0]), resource_id=str(rows[0][1]))
+
+
+def organization_public_id_of(organization_id: int) -> str | None:
+    rows = _rows(
+        "SELECT public_id FROM chatballs.organization_directory WHERE organization_id = %s",
+        [int(organization_id)],
+    )
+    return str(rows[0][0]) if rows else None
+
+
+def organization_ids() -> list[int]:
+    return [
+        int(row[0])
+        for row in _rows(
+            "SELECT organization_id FROM chatballs.organization_directory ORDER BY organization_id",
+            [],
+        )
+    ]
 
 

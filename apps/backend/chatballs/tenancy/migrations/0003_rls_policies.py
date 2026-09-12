@@ -1,6 +1,9 @@
 from django.db import migrations
 
 
+# Исторический список на момент миграции: identity_department и три таблицы
+# access-профилей позже удалены (identity/0020), ai_knowledgedepartment — в
+# ai/0014. Актуальное покрытие RLS — сумма всех миграций tenancy, не эта константа.
 TENANT_TABLES = (
     "identity_department",
     "identity_employeeprofile",

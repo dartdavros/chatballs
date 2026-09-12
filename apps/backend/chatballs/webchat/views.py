@@ -15,7 +15,6 @@ from chatballs.conversations.attachment_views import (
 from chatballs.conversations.models import Message, MessageKind
 from chatballs.conversations.voice_views import ALLOWED_AUDIO_TYPES, MAX_VOICE_BYTES
 from chatballs.i18n import t
-from chatballs.identity.models import Organization
 from chatballs.integrations.features import voice_messages_allowed
 from chatballs.integrations.models import IntegrationStatus
 from chatballs.tenancy.context import TenantContext
@@ -25,6 +24,7 @@ from chatballs.tenancy.ingress import (
     web_session_route,
     web_widget_route,
 )
+from chatballs.tenancy.lookup import load_organization
 from chatballs.webchat import services
 from chatballs.webchat.api_inputs import host_origin, session_token
 from chatballs.webchat.loader import LOADER_JS
@@ -58,9 +58,8 @@ def _resolved_web_widget(widget_key: str, channel_code: str = ""):
     if route is None:
         yield None, None
         return
-    try:
-        organization = Organization.objects.get(pk=route.organization_id)
-    except Organization.DoesNotExist:
+    organization = load_organization(route.organization_id)
+    if organization is None:
         yield None, None
         return
     context = TenantContext.for_resource(organization)
@@ -96,9 +95,8 @@ def _resolved_web_session(request: Request):
     if route is None:
         yield None, None
         return
-    try:
-        organization = Organization.objects.get(pk=route.organization_id)
-    except Organization.DoesNotExist:
+    organization = load_organization(route.organization_id)
+    if organization is None:
         yield None, None
         return
     context = TenantContext.for_resource(organization)

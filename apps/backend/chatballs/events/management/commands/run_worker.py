@@ -11,10 +11,10 @@ from chatballs.conversations.poller import poll_all_messengers
 from chatballs.events.handlers import dispatch
 from chatballs.events.models import OutboxStatus
 from chatballs.events.services import claim_next_outbox_event, mark_retry
-from chatballs.identity.models import Organization
 from chatballs.notifications.binding import poll_notifier_bots
 from chatballs.tenancy.context import TenantActorKind, TenantContext
 from chatballs.tenancy.database import tenant_atomic
+from chatballs.tenancy.lookup import iter_organizations
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ class Command(BaseCommand):
 
     @staticmethod
     def _tenant_contexts():
-        for organization in Organization.objects.order_by("id").iterator():
+        for organization in iter_organizations():
             yield TenantContext.for_resource(
                 organization, actor_kind=TenantActorKind.SYSTEM
             )
