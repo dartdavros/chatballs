@@ -311,13 +311,13 @@ All services should be `healthy` or `running`. Application readiness is availabl
 <details>
 <summary><strong>Do not delete the secrets volume</strong></summary>
 
-The `chatballs-secrets` volume holds the encryption key. Without it, integration tokens, SMTP passwords, S3 keys and two-factor secrets become unreadable. Include this volume in backups together with the database and files.
+The `chatballs-secrets` volume holds the encryption key. Without it, integration tokens, SMTP passwords, S3 keys and two-factor secrets become unreadable. The `chatballs-secrets-platform` and `chatballs-secrets-schema` volumes hold the database role passwords: without them the stack cannot connect to its own database. Include all three volumes in backups together with the database and files.
 </details>
 
 <details>
 <summary><strong>Backup</strong></summary>
 
-Copy the `chatballs-postgres`, `chatballs-media` and `chatballs-secrets` volumes. A database dump can be taken as well:
+Copy the `chatballs-postgres`, `chatballs-media`, `chatballs-secrets`, `chatballs-secrets-platform` and `chatballs-secrets-schema` volumes. A database dump can be taken as well:
 
 ```bash
 docker compose exec -T postgres pg_dump -U chatballs_bootstrap chatballs > backup.sql

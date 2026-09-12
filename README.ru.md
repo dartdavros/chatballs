@@ -311,13 +311,13 @@ docker compose ps
 <details>
 <summary><strong>Не удаляйте том с секретами</strong></summary>
 
-В томе `chatballs-secrets` лежит ключ шифрования. Без него станут нечитаемы токены интеграций, пароли SMTP, ключи S3 и секреты двухфакторной защиты. Включайте этот том в резервные копии вместе с базой и файлами.
+В томе `chatballs-secrets` лежит ключ шифрования. Без него станут нечитаемы токены интеграций, пароли SMTP, ключи S3 и секреты двухфакторной защиты. В томах `chatballs-secrets-platform` и `chatballs-secrets-schema` лежат пароли ролей базы: без них стек не подключится к собственной базе. Включайте все три тома в резервные копии вместе с базой и файлами.
 </details>
 
 <details>
 <summary><strong>Резервная копия</strong></summary>
 
-Копируйте тома `chatballs-postgres`, `chatballs-media` и `chatballs-secrets`. Для базы можно снять дамп:
+Копируйте тома `chatballs-postgres`, `chatballs-media`, `chatballs-secrets`, `chatballs-secrets-platform` и `chatballs-secrets-schema`. Для базы можно снять дамп:
 
 ```bash
 docker compose exec -T postgres pg_dump -U chatballs_bootstrap chatballs > backup.sql

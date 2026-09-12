@@ -35,6 +35,8 @@ services:
     restart: "no"
     volumes:
       - chatballs-secrets:/run/chatballs/secrets
+      - chatballs-secrets-platform:/run/chatballs/secrets/platform
+      - chatballs-secrets-schema:/run/chatballs/secrets/schema
 
   postgres:
     image: ${CHATBALLS_POSTGRES_IMAGE:-chatballs-postgres:dev}
@@ -42,18 +44,20 @@ services:
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-chatballs}
       POSTGRES_USER: ${POSTGRES_USER:-chatballs_bootstrap}
-      POSTGRES_PASSWORD_FILE: /run/chatballs/secrets/postgres_password
+      POSTGRES_PASSWORD_FILE: /run/chatballs/secrets/schema/postgres_password
       POSTGRES_APP_USER: ${POSTGRES_APP_USER:-chatballs_app}
       POSTGRES_APP_PASSWORD_FILE: /run/chatballs/secrets/postgres_app_password
       POSTGRES_PLATFORM_USER: ${POSTGRES_PLATFORM_USER:-chatballs_platform}
-      POSTGRES_PLATFORM_PASSWORD_FILE: /run/chatballs/secrets/postgres_platform_password
+      POSTGRES_PLATFORM_PASSWORD_FILE: /run/chatballs/secrets/platform/postgres_platform_password
       POSTGRES_MIGRATION_USER: ${POSTGRES_MIGRATION_USER:-chatballs_migration}
-      POSTGRES_MIGRATION_PASSWORD_FILE: /run/chatballs/secrets/postgres_migration_password
+      POSTGRES_MIGRATION_PASSWORD_FILE: /run/chatballs/secrets/schema/postgres_migration_password
     depends_on:
       secrets:
         condition: service_completed_successfully
     volumes:
       - chatballs-secrets:/run/chatballs/secrets:ro
+      - chatballs-secrets-platform:/run/chatballs/secrets/platform:ro
+      - chatballs-secrets-schema:/run/chatballs/secrets/schema:ro
       - chatballs-postgres:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
@@ -81,6 +85,7 @@ services:
     image: ${CHATBALLS_BACKEND_IMAGE:-chatballs-backend:dev}
     volumes:
       - chatballs-secrets:/run/chatballs/secrets:ro
+      - chatballs-secrets-schema:/run/chatballs/secrets/schema:ro
     command: ["python", "manage.py", "migrate", "--noinput"]
     environment:
       CHATBALLS_DB_ROLE: migration
@@ -103,6 +108,8 @@ services:
     environment:
       CHATBALLS_DB_ROLE: app
     volumes:
+      # Только общий том: паролей platform и migration у публичного процесса
+      # нет даже в файловой системе (они в своих томах, см. сервис secrets).
       - chatballs-secrets:/run/chatballs/secrets:ro
       # Локальные файлы — именованный том, а не каталог с хоста. Том наследует
       # владельца из образа (hub), поэтому загрузки работают и на Linux, где
@@ -132,6 +139,7 @@ services:
     image: ${CHATBALLS_BACKEND_IMAGE:-chatballs-backend:dev}
     volumes:
       - chatballs-secrets:/run/chatballs/secrets:ro
+      - chatballs-secrets-platform:/run/chatballs/secrets/platform:ro
     restart: unless-stopped
     command: >
       sh -c "gunicorn chatballs_backend.asgi_platform:application
@@ -167,6 +175,7 @@ services:
     image: ${CHATBALLS_BACKEND_IMAGE:-chatballs-backend:dev}
     volumes:
       - chatballs-secrets:/run/chatballs/secrets:ro
+      - chatballs-secrets-schema:/run/chatballs/secrets/schema:ro
     restart: unless-stopped
     command: >
       sh -c "gunicorn chatballs_backend.asgi_admin:application
@@ -194,8 +203,12 @@ services:
     command: ["python", "manage.py", "run_worker"]
     environment:
       CHATBALLS_DB_ROLE: app
+      # Захват outbox идёт по всем организациям сразу — воркеру нужен алиас
+      # platform. У backend-app его нет: он работает только ролью app.
+      CHATBALLS_DB_PLATFORM_ALIAS: "1"
     volumes:
       - chatballs-secrets:/run/chatballs/secrets:ro
+      - chatballs-secrets-platform:/run/chatballs/secrets/platform:ro
       - chatballs-media:/app/apps/backend/media
     depends_on:
       backend-app:
@@ -306,7 +319,11 @@ services:
 
 volumes:
   # Секреты инстанса: генерируются при первом старте, живут только здесь.
+  # Три тома, чтобы каждый процесс видел лишь свои пароли: общий, роли
+  # platform и роли миграций (вместе с паролем владельца кластера).
   chatballs-secrets:
+  chatballs-secrets-platform:
+  chatballs-secrets-schema:
   # Состояние установки. Именованные тома вместо каталогов с хоста: установка
   # не зависит от того, из какого каталога её запустили, и не упирается в
   # владельца каталога на хосте.

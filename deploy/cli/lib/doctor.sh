@@ -112,6 +112,19 @@ cmd_doctor() {
     _doctor_report 0 "compose config invalid"
   fi
 
+  # Разделение томов с секретами: у публичного backend-app не должно быть
+  # паролей ролей platform и migration даже в файловой системе. Проверяется
+  # только на работающем стеке; до первого запуска проверять нечего.
+  if run_compose ps --status running --services 2>/dev/null | grep -qx backend-app; then
+    if run_compose exec -T backend-app sh -c \
+      'for f in platform/postgres_platform_password schema/postgres_migration_password schema/postgres_password postgres_platform_password postgres_migration_password postgres_password; do test ! -s "/run/chatballs/secrets/$f" || exit 1; done' \
+      >/dev/null 2>&1; then
+      _doctor_report 1 "backend-app sees no platform/migration database passwords"
+    else
+      _doctor_report 0 "backend-app can read platform or migration database passwords"
+    fi
+  fi
+
   if [[ "$failures" != "0" ]]; then
     die "doctor: $failures check(s) failed" 1
   fi
