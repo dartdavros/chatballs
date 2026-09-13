@@ -17,10 +17,18 @@ export function hasCapability(user: SessionUser, capability: string): boolean {
   return user.capabilities.includes(capability);
 }
 
+/** Кто заводит новые организации: администратор установки и тот, кто где-либо
+ *  владелец или администратор. Роль в текущей организации не решает —
+ *  сотрудник здесь может быть владельцем в другой. Сервер проверяет то же. */
+export function canCreateOrganization(user: SessionUser): boolean {
+  return user.isInstanceAdmin || user.memberships.some((membership) => membership.role === "OWNER" || membership.role === "ADMIN");
+}
+
 export function canAccess(user: SessionUser, route: RouteKey): boolean {
   // «Настройки» — настройки организации: только владелец и админ. Личные
   // параметры сотрудника живут на странице «Профиль» (дизайн-базлайн v2).
   if (route === "profile") return true;
+  if (route === "organizationCreate") return canCreateOrganization(user);
   if (isManager(user)) return true;
   return EMPLOYEE_ROUTES.has(route);
 }

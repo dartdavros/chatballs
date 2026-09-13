@@ -21,6 +21,11 @@ export type RouteState = {
 
 export function routeFromPath(pathname: string, search = ""): RouteState {
   const normalized = pathname.replace(/\/+$/, "") || "/";
+  // Страница создания организации живёт вне организации: у неё ещё нет
+  // адреса, а человек попадает сюда из переключателя любой из своих (A1).
+  if (normalized === "/organizations/new") {
+    return { route: "organizationCreate", organizationPublicId: null, employeeId: null, agentId: null, knowledgeId: null, clientId: null, channelId: null, supportPortalId: null, portalSettingsSection: null, settingsSection: null };
+  }
   const match = normalized.match(/^\/organizations\/([0-9a-f-]{36})(\/.*)?$/i);
   const organizationPublicId = match?.[1] ?? null;
   const path = match ? match[2] || "/" : normalized;
@@ -114,6 +119,7 @@ export function routeFromPath(pathname: string, search = ""): RouteState {
 
 export function pathFromRoute(route: RouteKey, entityId: number | string | null = null, organizationPublicId: string | null = null): string {
   const prefix = organizationPublicId ? `/organizations/${organizationPublicId}` : "";
+  if (route === "organizationCreate") return "/organizations/new";
   if (route === "salesClients") return `${prefix}/contacts`;
   if (route === "salesClientDetail") return entityId ? `${prefix}/contacts/${entityId}` : `${prefix}/contacts`;
   if (route === "chat") return `${prefix}/chat`;

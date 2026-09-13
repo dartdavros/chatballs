@@ -124,7 +124,7 @@ export type EmployeeAuditEvent = {
   createdAt: string;
 };
 
-export type RouteKey = "administrationAudit" | "employeeDetail" | "employees" | "profile" | "settings" | "salesClientDetail" | "salesClients" | "chat" | "supportPortals" | "supportPortalDetail" | "supportPortalSettings" | "agents" | "agentDetail" | "knowledge" | "knowledgeDetail" | "knowledgeCreate" | "knowledgeEdit" | "knowledgeCategories" | "knowledgeImport" | "aiUsage";
+export type RouteKey = "administrationAudit" | "employeeDetail" | "employees" | "profile" | "settings" | "salesClientDetail" | "salesClients" | "chat" | "supportPortals" | "supportPortalDetail" | "supportPortalSettings" | "agents" | "agentDetail" | "knowledge" | "knowledgeDetail" | "knowledgeCreate" | "knowledgeEdit" | "knowledgeCategories" | "knowledgeImport" | "aiUsage" | "organizationCreate";
 
 export type AppData = {
   groups: EmployeeGroup[];

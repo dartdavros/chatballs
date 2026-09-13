@@ -17,7 +17,8 @@ from chatballs.identity.avatars import delete_user_avatar, replace_user_avatar
 from chatballs.identity.instance_settings import default_language
 from chatballs.identity.models import HumanUser, OrganizationMembership
 from chatballs.identity.sessions import list_user_sessions
-from chatballs.tenancy.ingress import user_requires_totp
+from chatballs.tenancy.database import tenant_atomic
+from chatballs.tenancy.ingress import membership_routes_for_user, user_requires_totp
 
 
 class ProfileUpdateView(APIView):
@@ -289,10 +290,20 @@ def _request_organization_language(request: Request) -> str:
     context = getattr(request, "tenant_context", None)
     if context is not None:
         return context.organization.language or ""
-    membership = (
-        OrganizationMembership.objects.select_related("organization")
-        .filter(user=request.user, blocked_at__isnull=True)
-        .order_by("created_at", "id")
-        .first()
-    )
-    return membership.organization.language if membership is not None else ""
+    # Членства роли app без контекста не видны: сначала каталог входа, затем
+    # каждое членство читается в контексте своей организации — как в
+    # identity.auth.common._user_payload.
+    oldest: tuple[object, int, str] | None = None
+    for route in membership_routes_for_user(request.user.id):
+        with tenant_atomic(route.organization_id):
+            membership = (
+                OrganizationMembership.objects.select_related("organization")
+                .filter(id=route.resource_id, user=request.user, blocked_at__isnull=True)
+                .first()
+            )
+        if membership is None:
+            continue
+        key = (membership.created_at, membership.id, membership.organization.language or "")
+        if oldest is None or key[:2] < oldest[:2]:
+            oldest = key
+    return oldest[2] if oldest is not None else ""

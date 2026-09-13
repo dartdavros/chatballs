@@ -407,6 +407,97 @@ test("с несколькими организациями вход открыв
   await expect(managerNav(page)).toHaveCount(MANAGER_NAV.length);
 });
 
+test("после входа с несколькими организациями показывается выбор, ссылка на организацию его минует", async ({ page }) => {
+  const secondMembership = membershipFor("OWNER", {
+    id: 3,
+    organizationPublicId: SECOND_ORGANIZATION_PUBLIC_ID,
+    organization: "second",
+    organizationName: "Вторая организация",
+    positionTitle: "Директор",
+  });
+  const identity = identityFor("OWNER", [membershipFor("OWNER"), secondMembership]);
+  await login(page, identity);
+
+  // Экран выбора: обе организации строками с ролью, приложение ещё не открыто.
+  await expect(page.getByRole("heading", { name: "Выберите организацию" })).toBeVisible();
+  const list = page.locator(".auth-org-list");
+  await expect(list.getByRole("button")).toHaveCount(2);
+  await expect(list.getByRole("button", { name: /Вторая организация/ })).toContainText("Директор");
+  await expect(managerNav(page)).toHaveCount(0);
+
+  await list.getByRole("button", { name: /Вторая организация/ }).click();
+
+  await expect(page).toHaveURL(new RegExp(`/organizations/${SECOND_ORGANIZATION_PUBLIC_ID}/chat`));
+  await expect(page.locator(".hub-brand-switch span")).toHaveText("Вторая организация");
+  await expect(managerNav(page)).toHaveCount(MANAGER_NAV.length);
+
+  // Прямая ссылка на организацию: вход ведёт сразу в неё (на стартовый
+  // экран, как и всегда после входа), без выбора.
+  await mockSession(page, null);
+  await page.goto(`/organizations/${ORGANIZATION_PUBLIC_ID}/employees`);
+  await page.getByPlaceholder("you@domain.ru").fill("user@example.com");
+  await page.getByPlaceholder("Пароль").fill("Password-123");
+  await page.getByRole("button", { name: "Войти" }).click();
+  await expect(page).toHaveURL(new RegExp(`/organizations/${ORGANIZATION_PUBLIC_ID}/chat`));
+  await expect(page.locator(".hub-brand-switch span")).toHaveText("Ателье Норд");
+  await expect(page.getByRole("heading", { name: "Выберите организацию" })).toHaveCount(0);
+});
+
+test("владелец добавляет организацию из переключателя и сразу в неё попадает", async ({ page }) => {
+  const NEW_ORGANIZATION_PUBLIC_ID = "323e4567-e89b-12d3-a456-426614174000";
+  await mockInstance(page);
+  await mockEmployees(page);
+  await mockSession(page, OWNER_IDENTITY);
+  await page.route("**/api/v1/organizations/options/", (route) =>
+    route.fulfill({ json: { timezones: ["Europe/Moscow", "Europe/Berlin"], languages: [{ code: "ru", label: "Русский" }, { code: "en", label: "English" }], currencies: ["RUB"] } }),
+  );
+  let created: Record<string, unknown> | null = null;
+  await page.route("**/api/v1/organizations/", (route) => {
+    created = route.request().postDataJSON();
+    const membership = membershipFor("OWNER", {
+      id: 9,
+      organizationPublicId: NEW_ORGANIZATION_PUBLIC_ID,
+      organization: "vtoraya",
+      organizationName: "Вторая компания",
+    });
+    return route.fulfill({
+      status: 201,
+      json: { user: identityFor("OWNER", [membershipFor("OWNER"), membership]), organizationPublicId: NEW_ORGANIZATION_PUBLIC_ID },
+    });
+  });
+
+  await page.goto("/");
+  await expect(managerNav(page)).toHaveCount(MANAGER_NAV.length);
+
+  // В переключателе (A1) под списком организаций — «Добавить организацию».
+  await page.locator(".hub-brand-switch").click();
+  await page.locator(".app-dropdown").getByRole("button", { name: "Добавить организацию" }).click();
+  await expect(page).toHaveURL(/\/organizations\/new$/);
+  await expect(page.getByRole("heading", { name: "Новая организация" })).toBeVisible();
+
+  await page.getByPlaceholder("Например, «Ателье Норд»").fill("Вторая компания");
+  await page.getByRole("button", { name: "English" }).click();
+  await page.getByRole("button", { name: "Создать организацию" }).click();
+
+  // Сразу в новой организации: адрес и переключатель показывают её.
+  await expect(page).toHaveURL(new RegExp(`/organizations/${NEW_ORGANIZATION_PUBLIC_ID}/chat`));
+  await expect(page.locator(".hub-brand-switch span")).toHaveText("Вторая компания");
+  expect(created).toEqual({ name: "Вторая компания", timezone: "Europe/Moscow", currency: "RUB", language: "en" });
+});
+
+test("сотрудник без прав менеджера не видит «Добавить организацию»", async ({ page }) => {
+  await mockInstance(page);
+  await mockEmployees(page);
+  await mockSession(page, identityFor("EMPLOYEE"));
+
+  await page.goto("/");
+  await page.locator(".hub-brand-switch").click();
+
+  const menu = page.locator(".app-dropdown");
+  await expect(menu.getByRole("button", { name: "Ателье Норд" })).toBeVisible();
+  await expect(menu.getByRole("button", { name: "Добавить организацию" })).toHaveCount(0);
+});
+
 test("интерфейс работает на минимальной поддерживаемой ширине 1024px", async ({ page }) => {
   await page.setViewportSize({ width: 1024, height: 768 });
   await mockInstance(page);

@@ -208,6 +208,42 @@
   color: var(--n-4);
 }
 
+/* «Добавить организацию» в переключателе (A1): такая же строка, как у
+   организаций, только на месте значка — пунктирная плитка с плюсом, как у
+   «пустого» слота. Ничего залитого: строка читается как действие, а не как
+   ещё одна организация, и не спорит с отмеченной текущей. */
+.app-dropdown .ant-dropdown-menu-item button.hub-brand-add {
+  color: var(--n-3);
+}
+
+.app-dropdown .ant-dropdown-menu-item button.hub-brand-add:hover {
+  color: var(--primary-text);
+}
+
+/* Селектор длиннее общего «button span { display: block }» из menu.css:
+   иначе плюс прижимается к левому верхнему углу плитки. */
+.app-dropdown .ant-dropdown-menu-item button .hub-brand-add-icon {
+  width: 17px;
+  height: 17px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  color: var(--n-4);
+  border: 1.5px dashed var(--n-6);
+  border-radius: 6px;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.hub-brand-add-icon svg {
+  display: block;
+}
+
+.app-dropdown .ant-dropdown-menu-item button.hub-brand-add:hover .hub-brand-add-icon {
+  color: var(--primary-text);
+  border-color: var(--primary);
+}
+
 /* Логотип — сам по себе, без подложки: цвет текста темы. */
 .hub-brand-mark {
   width: 28px;

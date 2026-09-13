@@ -603,6 +603,102 @@
   font-weight: 600;
 }
 
+/* Выбор организации после входа: строки «логотип · название · роль» в той же
+   матовой рамке, что и вход. Плитка логотипа — как знак в сайдбаре (28px),
+   только крупнее; строка целиком — кнопка. */
+.auth-org-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.auth-org-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px 10px 10px;
+  color: var(--n-1);
+  background: var(--surface-card);
+  border: 1px solid var(--n-8);
+  border-radius: 10px;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.auth-org-item:hover,
+.auth-org-item:focus-visible {
+  background: var(--primary-bg);
+  border-color: var(--primary-border);
+  outline: none;
+}
+
+.auth-org-item > svg {
+  flex: none;
+  color: var(--n-5);
+}
+
+.auth-org-item:hover > svg {
+  color: var(--primary-text);
+}
+
+.auth-org-mark {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  overflow: hidden;
+  color: var(--primary-text);
+  background: var(--primary-bg);
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.auth-org-mark.has-logo {
+  background: var(--surface-card);
+  border: 1px solid var(--n-7);
+}
+
+.auth-org-mark img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+}
+
+.auth-org-copy {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  gap: 2px;
+}
+
+.auth-org-copy strong {
+  overflow: hidden;
+  color: var(--n-1);
+  font-size: 14px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.auth-org-copy small {
+  overflow: hidden;
+  color: var(--n-4);
+  font-size: 12.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .auth-back-login {
   display: inline-flex;
   align-items: center;

@@ -1,11 +1,20 @@
+from datetime import timedelta
+
 from django.core.exceptions import ValidationError
 from django.db import DatabaseError, connection, transaction
 from django.test import TransactionTestCase
+from django.utils import timezone
 
 from chatballs.ai.knowledge_categories import ensure_uncategorized_category
 from chatballs.ai.models import AIAgent, Knowledge
 from chatballs.channels.models import Channel
 from chatballs.identity.group_models import EmployeeGroup
+from chatballs.identity.invitation_models import OrganizationInvitation
+from chatballs.identity.invitation_service import (
+    invitation_preview,
+    issue_invitation,
+    pending_invitation_for_token,
+)
 from chatballs.identity.models import (
     AuditEvent,
     AuditResult,
@@ -14,7 +23,8 @@ from chatballs.identity.models import (
     Organization,
     OrganizationMembership,
 )
-from chatballs.tenancy.database import current_tenant_id, set_local_tenant
+from chatballs.tenancy.database import current_tenant_id, set_local_tenant, tenant_atomic
+from chatballs.tenancy.lookup import reserve_organization_id
 from chatballs.tenancy.models import StorageReservation
 from chatballs.testing import TenantAPIClient
 
@@ -429,7 +439,7 @@ class RowLevelSecurityTests(TransactionTestCase):
 
 
 
-    def test_app_role_reads_ingress_directory_and_cannot_add_organizations(self) -> None:
+    def test_app_role_reads_ingress_directory_and_adds_organizations_only_in_context(self) -> None:
         # Каталоги входа доступны роли app (tenancy/0032): backend-app
         # обходится без platform-соединения.
         with transaction.atomic():
@@ -441,10 +451,45 @@ class RowLevelSecurityTests(TransactionTestCase):
                     [self.user.id],
                 )
                 self.assertEqual(cursor.fetchone()[0], self.first.id)
-        # Организации уже есть — INSERT для app закрыт политикой bootstrap.
+        # Без контекста INSERT организации для app закрыт (tenancy/0035).
         with self.assertRaises(DatabaseError), transaction.atomic():
             self._set_role("chatballs_runtime_app")
             Organization.objects.create(name="Third", slug="rls-third")
+        # В контексте заранее выделенного id — открыт: так работает кнопка
+        # «Добавить организацию» (identity.organization_creation).
+        with transaction.atomic():
+            self._set_role("chatballs_runtime_app")
+            organization_id = reserve_organization_id()
+            with tenant_atomic(organization_id):
+                Organization(id=organization_id, name="Third", slug="rls-third").save(force_insert=True)
+                self.assertEqual(Organization.objects.get(pk=organization_id).slug, "rls-third")
+        self.assertTrue(Organization.objects.filter(slug="rls-third").exists())
+        # Чужой контекст не подходит: id строки обязан совпасть с контекстом.
+        with self.assertRaises(DatabaseError), transaction.atomic():
+            self._set_role("chatballs_runtime_app")
+            with tenant_atomic(self.first.id):
+                Organization(id=reserve_organization_id(), name="Fourth", slug="rls-fourth").save(force_insert=True)
+
+    def test_app_role_finds_invitation_by_token_without_context(self) -> None:
+        # Ссылка /join открывается без контекста: приглашение находит каталог
+        # invitation_directory (tenancy/0035), иначе роль app видела бы пустоту.
+        issued = issue_invitation(
+            organization=self.second,
+            email="invited@example.test",
+            role=EmployeeRole.EMPLOYEE,
+            expires_at=timezone.now() + timedelta(days=1),
+            created_by=None,
+        )
+        with transaction.atomic():
+            self._set_role("chatballs_runtime_app")
+            self.assertEqual(OrganizationInvitation.objects.count(), 0)
+            invitation = pending_invitation_for_token(issued.token)
+            self.assertIsNotNone(invitation)
+            self.assertEqual(invitation.id, issued.invitation.id)
+            self.assertEqual(invitation.organization.slug, "rls-second")
+            self.assertIsNone(pending_invitation_for_token("wrong-token"))
+            preview = invitation_preview(issued.token)
+            self.assertEqual(preview["organizationName"], "Second")
 
     def test_platform_role_can_only_use_ingress_directory(self) -> None:
 

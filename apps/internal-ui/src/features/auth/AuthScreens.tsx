@@ -1,4 +1,5 @@
 export { AuthChangePassword } from "./AuthChangePassword";
+export { AuthChooseOrganization } from "./AuthChooseOrganization";
 export { AuthJoin } from "./AuthJoin";
 export { AuthJoinGuest } from "./AuthJoinGuest";
 export { AuthLogin } from "./AuthLogin";

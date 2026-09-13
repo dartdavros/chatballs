@@ -111,6 +111,7 @@ AUDIT_ACTION_LABELS: dict[str, str] = {
     "administration.instance_updated": "audit.action_administration_instance_updated",
     # --- Организация ---
     "organization.provisioned": "audit.action_organization_provisioned",
+    "organization.created": "audit.action_organization_created",
     "organization.owner_activated": "audit.action_organization_owner_activated",
     "organization.owner_invitation_requested": "audit.action_organization_owner_invitation_requested",
     # --- Интеграции и каналы ---

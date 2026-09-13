@@ -14,6 +14,16 @@ const empty = {
   settingsSection: null,
 };
 
+describe("organization create route", () => {
+  // Страница создания живёт вне организации: адрес без uuid, а сборка адреса
+  // не подставляет префикс текущей организации.
+  it("parses and builds /organizations/new", () => {
+    expect(routeFromPath("/organizations/new")).toEqual({ route: "organizationCreate", ...empty });
+    expect(routeFromPath("/organizations/new/")).toEqual({ route: "organizationCreate", ...empty });
+    expect(pathFromRoute("organizationCreate", null, "123e4567-e89b-12d3-a456-426614174000")).toBe("/organizations/new");
+  });
+});
+
 describe("sales detail routes", () => {
   it("parses a client detail URL", () => {
     expect(routeFromPath("/departments/sales/clients/15")).toEqual({ route: "salesClientDetail", ...empty, clientId: 15 });

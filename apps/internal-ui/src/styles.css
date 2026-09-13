@@ -24,6 +24,7 @@
 @import "./features/ai/knowledge/styles-pages.css";
 @import "./features/integrations/styles.css";
 @import "./features/administration/styles.css";
+@import "./features/organizations/styles.css";
 @import "./features/settings/styles.css";
 @import "./features/notifications/styles.css";
 @import "./shared/state.css";

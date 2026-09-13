@@ -5,7 +5,7 @@ import type { RouteKey, SessionUser } from "../types";
 import type { SettingsSectionKey } from "../features/settings/sections";
 import { useResizableWidth } from "../shared/useResizableWidth";
 import { Icon, LogoIcon } from "../shared/icons";
-import { defaultRoute, isManager } from "../auth/access";
+import { canCreateOrganization, defaultRoute, isManager } from "../auth/access";
 import type { DialogScope } from "../features/conversations/ConversationWorkspace";
 import { agentColorOf, groupColorOf, type ConversationCounters } from "../features/conversations/model";
 import { LaunchChecklist } from "./LaunchChecklist";
@@ -123,23 +123,41 @@ export function Sidebar({
           placement="bottomLeft"
           overlayClassName="app-dropdown is-wide"
           menu={{
-            items: user.memberships.map((membership) => ({
-              key: membership.organizationPublicId,
-              label: (
-                <button
-                  type="button"
-                  className={membership.organizationPublicId === user.organizationPublicId ? "is-checked" : ""}
-                  onClick={() => {
-                    if (membership.organizationPublicId !== user.organizationPublicId) {
-                      onSwitchOrganization(membership.organizationPublicId);
-                    }
-                  }}
-                >
-                  <Icon name="building" size={15} />
-                  {membership.organizationName || "Chatballs"}
-                </button>
-              ),
-            })),
+            items: [
+              ...user.memberships.map((membership) => ({
+                key: membership.organizationPublicId,
+                label: (
+                  <button
+                    type="button"
+                    className={membership.organizationPublicId === user.organizationPublicId ? "is-checked" : ""}
+                    onClick={() => {
+                      if (membership.organizationPublicId !== user.organizationPublicId) {
+                        onSwitchOrganization(membership.organizationPublicId);
+                      }
+                    }}
+                  >
+                    <Icon name="building" size={15} />
+                    {membership.organizationName || "Chatballs"}
+                  </button>
+                ),
+              })),
+              // «Добавить организацию» — внизу списка, отделена чертой: ведёт на
+              // страницу создания, где человек становится владельцем новой.
+              ...(canCreateOrganization(user)
+                ? [
+                  { type: "divider" as const, key: "add-divider" },
+                  {
+                    key: "add-organization",
+                    label: (
+                      <button type="button" className="hub-brand-add" onClick={() => setRoute("organizationCreate")}>
+                        <span className="hub-brand-add-icon"><Icon name="plus" size={11} strokeWidth={2.4} /></span>
+                        {t("organizations.add")}
+                      </button>
+                    ),
+                  },
+                ]
+                : []),
+            ],
           }}
         >
           <button className="hub-brand-switch" type="button" title={t("profile.switch_organization")}>

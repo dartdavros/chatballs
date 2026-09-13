@@ -64,6 +64,16 @@ def call_invite_route(token_hash: str) -> IngressRoute | None:
     return _unique_route("call_invite_directory", token_hash)
 
 
+def invitation_route(token_hash: str) -> IngressRoute | None:
+    """Приглашение в организацию по хэшу токена из письма (/join).
+
+    Ссылка открывается без контекста — токен и есть единственный ключ. Каталог
+    (tenancy/0035) отдаёт организацию, а само приглашение читается уже в ней.
+    """
+
+    return _unique_route("invitation_directory", token_hash)
+
+
 def call_session_route(call_session_id: str) -> IngressRoute | None:
     return _unique_route("call_session_directory", call_session_id)
 

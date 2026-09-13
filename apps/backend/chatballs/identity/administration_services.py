@@ -35,7 +35,10 @@ class OrganizationSettingsInput:
     language: str = ""
 
 
-def _validate_input(data: OrganizationSettingsInput) -> OrganizationSettingsInput:
+def validate_organization_settings(data: OrganizationSettingsInput) -> OrganizationSettingsInput:
+    """Имя, часовой пояс, валюта и язык организации — одни правила для
+    «Настроек» и для страницы создания организации."""
+
     name = data.name.strip()
     timezone = data.timezone.strip()
     currency = data.currency.strip().upper()
@@ -67,7 +70,7 @@ def update_organization_settings(
     context: TenantContext,
     data: OrganizationSettingsInput,
 ) -> Organization:
-    clean = _validate_input(data)
+    clean = validate_organization_settings(data)
     organization = Organization.objects.select_for_update().get(
         pk=context.organization_id
     )

@@ -14,6 +14,9 @@ urlpatterns = [
     path("api/v1/auth/", include("chatballs.identity.auth_urls")),
     path("api/v1/setup/", include("chatballs.identity.setup_urls")),
     path("api/v1/instance/", include("chatballs.identity.instance_urls")),
+    # Создание организации из интерфейса: адрес без uuid, контекст открывает
+    # сам сервис. Маршруты с uuid ниже его не перехватывают.
+    path("api/v1/organizations/", include("chatballs.identity.organization_urls")),
     path(
         "api/v1/demo-media/avatars/<str:name>",
         DemoMediaView.as_view(),

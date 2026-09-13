@@ -50,6 +50,8 @@ COVERAGE_EXEMPT = {
     # Настройки установки (адрес, по которому её открывают) — тоже одна
     # строка на инстанс: их пишет мастер первого запуска, а не демо.
     ("identity", "instancesettings"),
+    # Состояние обновлений установки — одна строка на инстанс (updates/0001).
+    ("updates", "updatestate"),
 }
 COVERAGE_EXEMPT_APPS = {"platform", "events"}
 

@@ -25,6 +25,7 @@ from chatballs.identity.models import (
 )
 from chatballs.tenancy.context import TenantContext
 from chatballs.tenancy.database import tenant_atomic
+from chatballs.tenancy.ingress import invitation_route
 
 # Приглашение существующего пользователя в организацию: письмо отправляет
 # воркер по этому событию (identity.event_handlers).
@@ -204,14 +205,37 @@ def register_and_accept(*, token: str, full_name: str, password: str) -> Accepte
 
 
 def pending_invitation_for_token(token: str) -> OrganizationInvitation | None:
+    return _invitation_for_token(token, accepted=False)
+
+
+def _invitation_for_token(token: str, *, accepted: bool) -> OrganizationInvitation | None:
+    """Приглашение по токену из письма — без tenant-контекста на входе.
+
+    Ссылка /join приходит до входа в организацию, а таблица приглашений и
+    строка организации роли app без контекста не видны (tenancy/0003, 0033).
+    Организацию находит security-barrier каталог по хэшу токена (tenancy/0035),
+    и приглашение читается уже в её контексте — вместе с организацией, чтобы
+    вызывающий код мог обращаться к ней и после выхода из контекста.
+    """
+
     if not token:
         return None
-    return OrganizationInvitation.objects.filter(
-        token_hash=_token_hash(token),
-        accepted_at__isnull=True,
+    token_hash = _token_hash(token)
+    route = invitation_route(token_hash)
+    if route is None:
+        return None
+    query = OrganizationInvitation.objects.select_related("organization").filter(
+        id=route.resource_id,
+        organization_id=route.organization_id,
+        token_hash=token_hash,
         revoked_at__isnull=True,
-        expires_at__gt=timezone.now(),
-    ).first()
+    )
+    if accepted:
+        query = query.filter(accepted_at__isnull=False)
+    else:
+        query = query.filter(accepted_at__isnull=True, expires_at__gt=timezone.now())
+    with tenant_atomic(route.organization_id):
+        return query.first()
 
 
 @transaction.atomic
@@ -314,16 +338,13 @@ def _already_accepted_for(
 ) -> AcceptedInvitation | None:
     """Idempotent re-accept: if this token was already accepted by the same user,
     return the existing result instead of raising (SPEC-HUB-0021 §11/§15)."""
-    invitation = OrganizationInvitation.objects.filter(
-        token_hash=_token_hash(token),
-        accepted_at__isnull=False,
-        revoked_at__isnull=True,
-    ).first()
+    invitation = _invitation_for_token(token, accepted=True)
     if invitation is None:
         return None
-    membership = OrganizationMembership.objects.filter(
-        user=user, organization=invitation.organization
-    ).first()
+    with tenant_atomic(invitation.organization_id):
+        membership = OrganizationMembership.objects.filter(
+            user=user, organization=invitation.organization
+        ).first()
     if membership is None:
         return None
     return AcceptedInvitation(

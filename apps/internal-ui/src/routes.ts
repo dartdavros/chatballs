@@ -22,4 +22,5 @@ export const routes: Record<RouteKey, string> = {
   knowledgeCategories: t("shared.knowledge_categories"),
   knowledgeImport: t("shared.knowledge_import"),
   aiUsage: t("shared.ai_usage"),
+  organizationCreate: t("organizations.create_title"),
 };
