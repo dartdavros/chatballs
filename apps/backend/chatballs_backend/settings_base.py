@@ -42,7 +42,7 @@ CHATBALLS_VERSION = os.environ.get("CHATBALLS_VERSION", "dev").strip() or "dev"
 CHATBALLS_UPDATE_REPO = os.environ.get("CHATBALLS_UPDATE_REPO", "dartdavros/chatballs").strip()
 CHATBALLS_UPDATES_DIR = os.environ.get("CHATBALLS_UPDATES_DIR", "/run/chatballs/updates")
 CHATBALLS_UPDATE_CHECK_INTERVAL_SECONDS = int(
-    os.environ.get("CHATBALLS_UPDATE_CHECK_INTERVAL_SECONDS", str(6 * 3600))
+    os.environ.get("CHATBALLS_UPDATE_CHECK_INTERVAL_SECONDS", str(15 * 60))
 )
 ALLOWED_HOSTS = env_list("CHATBALLS_ALLOWED_HOSTS", ["localhost", "127.0.0.1"])
 if TESTING:
