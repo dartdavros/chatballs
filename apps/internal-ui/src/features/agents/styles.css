@@ -352,23 +352,6 @@
   gap: 14px;
 }
 
-.agent-create-modal .readonly-field span,
-.agent-knowledge-modal .readonly-field span {
-  margin-bottom: 6px;
-  color: var(--n-3);
-  font-size: 12.5px;
-  font-weight: 600;
-  line-height: normal;
-}
-
-.agent-create-modal .readonly-field input,
-.agent-create-modal .select-like select {
-  height: 36px;
-  background: var(--n-10);
-  font-size: 13.5px;
-  line-height: normal;
-}
-
 .agent-create-actions {
   display: flex;
   justify-content: flex-end;
@@ -800,7 +783,6 @@
 
 .agent-field textarea,
 .agent-field input,
-.agent-field select,
 .agent-field .agent-field-static {
   width: 100%;
   padding: 0 12px;
@@ -814,7 +796,6 @@
 }
 
 .agent-field input,
-.agent-field select,
 .agent-field > .agent-field-static {
   height: 36px;
   line-height: 34px;
@@ -859,7 +840,6 @@
 /* Фокус поля — как в кадре G2: акцентная рамка, кольцо 3px и подложка карточки. */
 .agent-field textarea:focus,
 .agent-field input:focus,
-.agent-field select:focus,
 .agent-create-modal .form-field.is-editable input:focus,
 .agent-create-modal .select-like select:focus {
   border-color: var(--primary);
@@ -867,7 +847,9 @@
   box-shadow: 0 0 0 3px var(--primary-bg);
 }
 
-.agent-field-control:focus-within {
+/* Тот же фокус для общего селекта карточки: с боксом (группа) и без (провайдер). */
+.agent-side-fields .select-like select:focus,
+.agent-side-fields .select-box:focus-within {
   border-color: var(--primary);
   background: var(--surface-card);
   box-shadow: 0 0 0 3px var(--primary-bg);
@@ -1026,23 +1008,6 @@
   background: var(--n-10);
   color: var(--n-1);
   font-size: 13.5px;
-}
-
-.agent-field.is-invalid .agent-field-control {
-  border-color: var(--error-border);
-  color: var(--error-text);
-}
-
-.agent-field-control select {
-  flex: 1;
-  height: 34px;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: inherit;
-  font-size: 13.5px;
-  appearance: none;
-  cursor: pointer;
 }
 
 .agent-field-control .agent-field-static {

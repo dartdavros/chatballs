@@ -229,31 +229,12 @@
   font-size: 12.5px;
 }
 
-/* Карточка и поля раздела: подпись 12.5/600 --n-3, поле 36px на подложке
-   --n-10 (кадры N1/N6). */
+/* Карточка раздела (кадры N1/N6). Поля — общий скин из
+   shared/form-controls.css, своей копии у раздела больше нет. */
 
 .settings-content .administration-card {
   padding: 22px 24px;
   box-shadow: none;
-}
-
-.settings-content .readonly-field span {
-  margin-bottom: 6px;
-  color: var(--n-3);
-  font-size: 12.5px;
-  font-weight: 600;
-}
-
-.settings-content .readonly-field input,
-.settings-content .readonly-field select,
-.settings-content .select-like input,
-.settings-content .select-like select,
-.settings-content .form-field.is-editable input {
-  height: 36px;
-  color: var(--n-1);
-  background: var(--n-10);
-  border-color: var(--n-7);
-  font-size: 13.5px;
 }
 
 /* Кнопки раздела: primary и вторичная 34px радиусом 8 (кадры N1–N7). */
@@ -913,9 +894,6 @@
     padding-inline: 14px;
   }
 
-  .settings-content .readonly-field input,
-  .settings-content .readonly-field select,
-  .settings-content .select-like select,
   .settings-content .settings-group-create input {
     height: 44px;
     font-size: 15px;

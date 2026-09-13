@@ -5,6 +5,7 @@ import { LANGUAGES } from "@chatballs/shared";
 
 import { api, ApiError } from "../../api/client";
 import { ChannelGlyph } from "../../shared/badges";
+import { SelectField } from "../../shared/form-controls";
 import { Icon } from "../../shared/icons";
 import { EmptyState, ErrorScreen, LoadingState } from "../../shared/ui";
 import { BackLink, Button, CopyButton } from "../../shared/ui-controls";
@@ -509,25 +510,16 @@ function AssignmentCard({ card, groups, canManage, busy, apply }: {
             ? <input value={name} onChange={(event) => setName(event.target.value)} onBlur={() => { if (dirty) void apply({ name: name.trim() }); }} />
             : <span className="agent-field-static">{card.name}</span>}
         </label>
-        <label className="agent-field is-select">
-          <span>{t("common.group")}</span>
-          <span className="agent-field-control">
-            <i className="agent-group-dot" style={{ background: card.groupId === null ? "var(--n-5)" : groupColorOf(card.groupId, card.groupColor) }} />
-            {canManage ? (
-              <select
-                disabled={busy}
-                value={card.groupId === null ? "" : String(card.groupId)}
-                onChange={(event) => void apply({ groupId: event.target.value ? Number(event.target.value) : null })}
-              >
-                <option value="">{t("common.no_group")}</option>
-                {groups.map((group) => <option value={String(group.id)} key={group.id}>{group.name}</option>)}
-              </select>
-            ) : (
-              <span className="agent-field-static">{card.groupName ?? t("common.no_group")}</span>
-            )}
-            <Icon name="chevron" size={14} strokeWidth={2.2} />
-          </span>
-        </label>
+        <SelectField
+          adornment={<i className="agent-group-dot" style={{ background: card.groupId === null ? "var(--n-5)" : groupColorOf(card.groupId, card.groupColor) }} />}
+          disabled={busy}
+          label={t("common.group")}
+          readOnly={!canManage}
+          readOnlyText={card.groupName ?? t("common.no_group")}
+          value={card.groupId === null ? "" : String(card.groupId)}
+          onChange={(next) => void apply({ groupId: next ? Number(next) : null })}
+          options={[["", t("common.no_group")], ...groups.map((group) => [String(group.id), group.name] as [string, string])]}
+        />
       </div>
     </section>
   );
@@ -558,24 +550,16 @@ function ModelCard({ card, providers, canManage, busy, apply }: {
       <h3>{t("common.model")}</h3>
       <p>{t("ai.provider_key_lives_under_settings")}</p>
       <div className="agent-side-fields">
-        <label className={`agent-field is-select ${missingProvider ? "is-invalid" : ""}`}>
-          <span>{t("ai.provider")}</span>
-          <span className="agent-field-control">
-            {canManage ? (
-              <select
-                disabled={busy}
-                value={card.providerIntegrationId ? String(card.providerIntegrationId) : ""}
-                onChange={(event) => void apply({ providerIntegrationId: event.target.value ? Number(event.target.value) : null })}
-              >
-                <option value="">{t("ai.not_selected")}</option>
-                {providers.map((item) => <option value={String(item.id)} key={item.id}>{item.name}</option>)}
-              </select>
-            ) : (
-              <span className="agent-field-static">{providerName || t("ai.not_selected")}</span>
-            )}
-            <Icon name="chevron" size={14} strokeWidth={2.2} />
-          </span>
-        </label>
+        <SelectField
+          disabled={busy}
+          invalid={missingProvider}
+          label={t("ai.provider")}
+          readOnly={!canManage}
+          readOnlyText={providerName || t("ai.not_selected")}
+          value={card.providerIntegrationId ? String(card.providerIntegrationId) : ""}
+          onChange={(next) => void apply({ providerIntegrationId: next ? Number(next) : null })}
+          options={[["", t("ai.not_selected")], ...providers.map((item) => [String(item.id), item.name] as [string, string])]}
+        />
         <label className="agent-field is-model">
           <span>{t("common.model")}</span>
           <span className="agent-field-control">

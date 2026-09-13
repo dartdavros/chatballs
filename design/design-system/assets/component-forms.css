@@ -5,9 +5,10 @@
 .readonly-field > span {
   display: block;
   margin-bottom: 6px;
-  color: var(--text-tertiary);
-  font-size: 12px;
-  font-weight: 500;
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: normal;
 }
 
 .readonly-field input,
@@ -23,11 +24,20 @@
   font-size: 13px;
 }
 
-.readonly-field input,
-.select-like select,
 .search-control {
   height: 38px;
   padding: 0 12px;
+}
+
+/* Поле формы — дизайн-базлайн v2 (кадры G3, N1/N6, P1): 36px на подложке
+   --n-10, текст 13.5px. Один скин на всё приложение. */
+.readonly-field input,
+.select-like select {
+  height: 36px;
+  padding: 0 12px;
+  color: var(--n-1);
+  background: var(--n-10);
+  font-size: 13.5px;
 }
 
 .readonly-field textarea {
@@ -40,6 +50,7 @@
 .form-field.is-editable:focus-within input,
 .form-field.is-editable:focus-within textarea,
 .select-like:focus-within select,
+.select-like .select-box:focus-within,
 .search-control:focus-within {
   border-color: var(--primary);
 }
@@ -71,12 +82,65 @@
   appearance: none;
 }
 
-.select-like .select-chevron {
+.select-like > .select-chevron {
   position: absolute;
-  right: 11px;
-  bottom: 12px;
+  right: 13px;
+  bottom: 11px;
   color: var(--text-tertiary);
   pointer-events: none;
+}
+
+/* Бокс селекта — для метки перед значением (точка группы на карточке агента) и
+   для режима без прав правки. Рамку держит бокс, селект внутри без своей. */
+.select-like .select-box {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 36px;
+  padding: 0 12px;
+  color: var(--n-1);
+  background: var(--n-10);
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-md);
+  font-size: 13.5px;
+}
+
+.select-like .select-box select {
+  flex: 1;
+  height: 34px;
+  padding: 0;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  font-size: inherit;
+}
+
+.select-like .select-box > .select-chevron {
+  flex: none;
+  color: var(--text-tertiary);
+  pointer-events: none;
+}
+
+/* Пример метки перед значением: цветная точка группы. */
+.select-like .select-dot {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 50%;
+}
+
+.select-like .select-value {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.select-like.is-invalid select,
+.select-like.is-invalid .select-box {
+  color: var(--error-text);
+  border-color: var(--error-border);
 }
 
 .search-control {

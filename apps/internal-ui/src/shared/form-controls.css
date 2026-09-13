@@ -1,3 +1,9 @@
+/* Поля формы приложения. Геометрия — дизайн-базлайн v2 (кадры G3, N1/N6, P1):
+   подпись 12.5/600 цветом --n-3, поле 36px на подложке --n-10 рамкой --n-7,
+   текст 13.5px. Скин был общим только на бумаге: здесь стояли 38px на
+   --surface-card, а базлайн добирали поверх в профиле, настройках и модалке
+   создания агента — три копии одного поля. Копий больше нет, скин один и
+   живёт здесь. line-height задан явно: внутри antd Modal свой reset. */
 .readonly-field {
   display: block;
 }
@@ -6,24 +12,26 @@
   grid-column: span 2;
 }
 
-.readonly-field span {
+.readonly-field > span:first-child {
   display: block;
   margin-bottom: 6px;
-  color: var(--n-4);
-  font-size: 12px;
-  font-weight: 500;
+  color: var(--n-3);
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: normal;
 }
 
 .readonly-field input {
   width: 100%;
-  height: 38px;
+  height: 36px;
   padding: 0 12px;
-  color: var(--n-2);
-  background: var(--surface-card);
+  color: var(--n-1);
+  background: var(--n-10);
   border: 1px solid var(--n-7);
   border-radius: 8px;
   outline: none;
-  font-size: 13px;
+  font-size: 13.5px;
+  line-height: normal;
 }
 
 .form-field.is-editable:focus-within input,
@@ -31,7 +39,7 @@
 .form-field.is-editable:focus-within textarea,
 .form-field.is-editable textarea:focus,
 .select-like:focus-within select,
-.select-like select:focus {
+.select-like .select-box:focus-within {
   border-color: var(--primary);
 }
 
@@ -57,43 +65,100 @@
 .form-field.is-readonly input,
 .readonly-field input:disabled {
   color: var(--n-4);
-  background: var(--n-10);
   border-color: var(--n-8);
-}
-
-.form-field.is-editable input {
-  background: var(--surface-card);
 }
 
 .select-like {
   position: relative;
 }
 
-.select-like input,
 .select-like select {
   width: 100%;
-  height: 38px;
-  padding-right: 32px;
+  height: 36px;
+  padding: 0 32px 0 12px;
   cursor: pointer;
-}
-
-.select-like select {
-  padding-left: 12px;
-  color: var(--n-2);
-  background: var(--surface-card);
+  color: var(--n-1);
+  background: var(--n-10);
   border: 1px solid var(--n-7);
   border-radius: 8px;
   outline: none;
   appearance: none;
-  font-size: 13px;
+  font-size: 13.5px;
+  line-height: normal;
 }
 
-.select-like svg {
+/* Шеврон по центру поля: 36px бокса минус 14px иконки. Отступ справа — те же
+   12px внутреннего поля плюс 1px рамки, что и у шеврона внутри `.select-box`. */
+.select-like > svg {
   position: absolute;
-  right: 11px;
-  bottom: 12px;
+  right: 13px;
+  bottom: 11px;
   color: var(--n-4);
   pointer-events: none;
+}
+
+/* Бокс селекта — для метки перед значением (точка группы на карточке агента) и
+   для режима без прав правки. Рамку держит бокс, селект внутри без своей. */
+.select-like .select-box {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 36px;
+  padding: 0 12px;
+  color: var(--n-1);
+  background: var(--n-10);
+  border: 1px solid var(--n-7);
+  border-radius: 8px;
+  font-size: 13.5px;
+}
+
+.select-like .select-box select {
+  flex: 1;
+  height: 34px;
+  padding: 0;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  font-size: inherit;
+}
+
+.select-like .select-box > svg {
+  flex: none;
+  color: var(--n-4);
+  pointer-events: none;
+}
+
+.select-like .select-value {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.select-like.is-invalid select,
+.select-like.is-invalid .select-box {
+  color: var(--error-text);
+  border-color: var(--error-border);
+}
+
+/* Узкий экран (мобильные кадры профиля и настроек): поле под палец — 44px и
+   текст 15px. Это тоже лежало копиями в профиле и настройках. */
+@media (max-width: 900px) {
+  .readonly-field input,
+  .select-like select,
+  .select-like .select-box {
+    height: 44px;
+    font-size: 15px;
+  }
+
+  .select-like .select-box select {
+    height: 42px;
+  }
+
+  .select-like > svg {
+    bottom: 15px;
+  }
 }
 
 /* Единый переключатель приложения. Раньше в проекте было четыре его копии
