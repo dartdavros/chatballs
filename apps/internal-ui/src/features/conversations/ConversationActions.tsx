@@ -5,6 +5,7 @@ import { DecisionDialog } from "../../shared/DecisionDialog";
 import { Icon } from "../../shared/icons";
 import { Button } from "../../shared/ui-controls";
 import { t } from "../../i18n";
+import { useDiagnosticDownload } from "./useDiagnosticDownload";
 
 // Меню «⋯» над перепиской: вернуть в очередь, закрыть, спам, удалить.
 // Удаление стирает диалог вместе с перепиской и доступно только владельцу и
@@ -18,6 +19,9 @@ export function ConversationActions({
   onSpam,
   onReturnQueue,
   onDelete,
+  conversationId,
+  canExportDiagnostics,
+  onDiagnosticError,
 }: {
   open: boolean;
   canReturnQueue: boolean;
@@ -26,12 +30,16 @@ export function ConversationActions({
   onSpam: () => Promise<boolean>;
   onReturnQueue: () => void;
   onDelete: () => Promise<boolean>;
+  conversationId: number;
+  canExportDiagnostics: boolean;
+  onDiagnosticError: (error: string) => void;
 }) {
   const [confirmSpam, setConfirmSpam] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [busy, setBusy] = useState(false);
+  const { downloading, download } = useDiagnosticDownload(conversationId, onDiagnosticError);
 
-  if (!open) return null;
+  if (!open && !canExportDiagnostics) return null;
 
   async function confirm() {
     setBusy(true);
@@ -51,7 +59,7 @@ export function ConversationActions({
     }
   }
 
-  const items = [
+  const lifecycleItems = [
     ...(canReturnQueue
       ? [{
           key: "queue",
@@ -73,6 +81,13 @@ export function ConversationActions({
           label: <button className="danger" type="button" onClick={() => setConfirmDelete(true)}><Icon name="trash" size={15} />{t("conversations.delete_conversation")}</button>,
         }]
       : []),
+  ];
+  const items = [
+    ...(open ? lifecycleItems : []),
+    ...(canExportDiagnostics ? [{
+      key: "diagnostics", disabled: downloading,
+      label: <button type="button" disabled={downloading} onClick={() => void download()}><Icon name="download" size={15} />{t("diagnostics.download")}</button>,
+    }] : []),
   ];
 
   return (

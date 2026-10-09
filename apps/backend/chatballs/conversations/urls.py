@@ -3,6 +3,7 @@ from django.urls import path
 from chatballs.conversations import (
     attachment_views,
     chat_extras_views,
+    diagnostic_views,
     queue_policy_views,
     reporting_views,
     transfer_reason_views,
@@ -20,6 +21,7 @@ urlpatterns = [
     path("clients/<int:contact_id>/avatar/", reporting_views.ContactAvatarView.as_view(), name="conversation-client-avatar"),
     path("clients/<int:contact_id>/merge/", reporting_views.ClientMergeView.as_view(), name="conversation-client-merge"),
     path("<int:conversation_id>/", views.ConversationDetailView.as_view(), name="conversation-detail"),
+    path("<int:conversation_id>/diagnostic/", diagnostic_views.ConversationDiagnosticView.as_view(), name="conversation-diagnostic"),
     path("<int:conversation_id>/claim/", views.ConversationClaimView.as_view(), name="conversation-claim"),
     path("<int:conversation_id>/release/", views.ConversationReleaseView.as_view(), name="conversation-release"),
     path("<int:conversation_id>/return-queue/", views.ConversationReturnQueueView.as_view(), name="conversation-return-queue"),

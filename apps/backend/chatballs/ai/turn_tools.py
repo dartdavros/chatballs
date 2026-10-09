@@ -55,6 +55,7 @@ def plan_turn_tools(
     agent: AIAgent,
     conversation: Conversation | None = None,
     client: ClientData | None = None,
+    decisions: list[dict] | None = None,
 ) -> list[TurnTool]:
     """Шаг в транзакции: включённые агенту инструменты, пригодные в этом ходе.
 
@@ -70,15 +71,22 @@ def plan_turn_tools(
     if not enabled:
         return []
     # Модель, про которую известно, что инструменты она не вызывает, отклонит запрос.
-    if cached_tool_support(agent) is False:
-        return []
+    support = cached_tool_support(agent)
     if client is None:
         client = conversation_client_data(conversation)
     readable: dict[int, dict[str, ServerTool]] = {}
     planned: dict[str, TurnTool] = {}
     for item in enabled:
         server = item.integration
+        decision = {"integrationId": server.id, "name": item.tool_name or server.config.get("tool_name", ""),
+                    "modelSupportsTools": support, "reason": "offered"}
+        if decisions is not None:
+            decisions.append(decision)
+        if support is False:
+            decision["reason"] = "model_does_not_support_tools"
+            continue
         if not server.is_active:
+            decision["reason"] = "integration_disabled"
             continue
         if server.id not in readable:
             readable[server.id] = {
@@ -86,16 +94,30 @@ def plan_turn_tools(
             }
         tool = readable[server.id].get(item.tool_name)
         if tool is None:
+            decision["reason"] = "tool_missing_or_not_read_only"
             continue
         if server.provider == IntegrationProvider.HTTP:
+            decision["boundParameters"] = [
+                {"name": parameter["name"],
+                 "available": bool(bound_arguments({"parameters": [{**parameter, "required": True}]}, client))}
+                for parameter in server.config.get("parameters", [])
+                if parameter["source"]["type"] != "ai"
+            ]
             spec = http_tool_spec(server, client)
             bound = bound_arguments(server.config, client) if spec is not None else None
         else:
             spec = _mcp_spec(server, item.tool_name)
             bound = {}
         if spec is None or bound is None:
+            decision["reason"] = "required_client_data_unavailable"
+            decision["missingParameters"] = [
+                parameter["name"] for parameter in server.config.get("parameters", [])
+                if parameter.get("required") and parameter["source"]["type"] != "ai"
+                and bound_arguments({"parameters": [parameter]}, client) is None
+            ]
             continue
         if not _MODEL_NAME.match(spec.name) or spec.name in planned:
+            decision["reason"] = "invalid_or_duplicate_tool_name"
             # Два инструмента с одним именем модель не различит: остаётся первый.
             logger.warning(
                 "Tool %r of integration %s is not offered to the model: invalid or duplicate name",

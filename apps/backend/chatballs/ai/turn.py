@@ -34,6 +34,8 @@ from dataclasses import dataclass, field, replace
 
 from django.conf import settings
 
+from chatballs.ai.diagnostic_redaction import DiagnosticRedactor
+from chatballs.ai.diagnostic_snapshot import diagnostic_context
 from chatballs.ai.invocation import (
     ChatJob,
     EmbeddingJob,
@@ -89,6 +91,8 @@ class TurnPlan:
     pseudonymizer: Pseudonymizer
     # Инструменты, которые модель может вызвать в этом ходе (SPEC-0023 R-11).
     tools: list[TurnTool] = field(default_factory=list)
+    diagnostic_snapshot: dict = field(default_factory=dict)
+    diagnostic_redactor: DiagnosticRedactor | None = field(default=None, repr=False)
 
 
 @dataclass(frozen=True, slots=True)
@@ -102,6 +106,7 @@ class TurnAnswer:
     rounds: tuple[ChatRound, ...] = ()
     # Вызовы инструментов хода, по порядку: для ленты оператора.
     tool_calls: tuple[ToolCallRecord, ...] = ()
+    requests: tuple[ChatJob, ...] = field(default=(), repr=False)
 
 
 def turn_pseudonymizer(conversation: Conversation | None) -> Pseudonymizer:
@@ -216,12 +221,16 @@ def plan_chat(
             role="system", content=client_context_prompt(client_context, pseudonymizer), masked=True,
         ))
         job = replace(job, messages=messages)
-    tools = plan_turn_tools(agent=agent, conversation=conversation, client=client)
+    client, redactor, snapshot = diagnostic_context(agent, conversation, pseudonymizer, client)
+    tools = plan_turn_tools(agent=agent, conversation=conversation, client=client,
+                           decisions=snapshot["toolAvailability"])
     return TurnPlan(
         job=with_tools(job, tools),
         fragment_ids=[fragment.id for fragment in fragments],
         pseudonymizer=pseudonymizer,
         tools=tools,
+        diagnostic_snapshot=snapshot,
+        diagnostic_redactor=redactor,
     )
 
 
@@ -241,6 +250,7 @@ def run_turn_chat(plan: TurnPlan, *, time_left: float | None = None) -> TurnAnsw
             latency_ms=_elapsed_ms(started),
             rounds=loop.rounds,
             tool_calls=loop.tool_calls,
+            requests=loop.requests,
         )
     try:
         result = run_chat(plan.job)

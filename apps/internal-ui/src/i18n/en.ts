@@ -12,6 +12,7 @@ import { preChatEn } from "./pre-chat.en";
 import { externalServersEn } from "./external-servers.en";
 import { agentTestEn } from "./agent-test.en";
 import { toolCallsEn } from "./tool-calls.en";
+import { diagnosticsEn } from "./diagnostics.en";
 
 export const en: Record<MessageKey, Message> = {
   ...siteFieldsEn,
@@ -20,6 +21,7 @@ export const en: Record<MessageKey, Message> = {
   ...externalServersEn,
   ...agentTestEn,
   ...toolCallsEn,
+  ...diagnosticsEn,
   "admin.30_days": "30 days",
   "admin.7_days": "7 days",
   "admin.90_days": "90 days",

@@ -13,6 +13,7 @@ import { preChatRu } from "./pre-chat.ru";
 import { externalServersRu } from "./external-servers.ru";
 import { agentTestRu } from "./agent-test.ru";
 import { toolCallsRu } from "./tool-calls.ru";
+import { diagnosticsRu } from "./diagnostics.ru";
 
 export const ru = {
   ...siteFieldsRu,
@@ -21,6 +22,7 @@ export const ru = {
   ...externalServersRu,
   ...agentTestRu,
   ...toolCallsRu,
+  ...diagnosticsRu,
   "admin.30_days": "30 дней",
   "admin.7_days": "7 дней",
   "admin.90_days": "90 дней",
