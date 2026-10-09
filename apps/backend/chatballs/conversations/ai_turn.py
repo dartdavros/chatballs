@@ -19,6 +19,11 @@ from datetime import timedelta
 from django.conf import settings
 from django.utils import timezone
 
+from chatballs.ai.diagnostic_capture import (
+    finish_diagnostic,
+    record_planning_failure,
+    start_diagnostic,
+)
 from chatballs.ai.models import HISTORY_LIMIT_DEFAULT, AIAgent
 from chatballs.ai.provider.base import ProviderError
 from chatballs.ai.pseudonymization import Pseudonymizer
@@ -30,7 +35,8 @@ from chatballs.ai.turn import (
     run_turn_chat,
     turn_pseudonymizer,
 )
-from chatballs.conversations import ai_turn_result, tool_call_events, transports
+from chatballs.conversations import ai_turn_result, tool_call_events
+from chatballs.conversations.ai_delivery import deliver as _deliver
 from chatballs.conversations.ai_history import conversation_history as _history
 from chatballs.conversations.models import (
     AiTurnState,
@@ -230,21 +236,6 @@ def _apply_transcript(*, turn: Turn, transcript: str, context: TenantContext) ->
     return True
 
 
-def _deliver(turn: Turn, text: str) -> None:
-    """Шаг без транзакции: ответ уходит клиенту в его канал.
-
-    Веб-виджет забирает ответ поллингом — для него отправка пустая.
-    """
-    if not text or turn.conversation.connection is None:
-        return
-    transports.send_reply(
-        turn.conversation.connection,
-        chat_id=turn.conversation.external_chat_id,
-        user_id=turn.user_id,
-        text=text,
-    )
-
-
 def run_requested_turn(payload: dict, context: TenantContext) -> None:
     """Ход целиком: короткие транзакции и походы наружу между ними."""
 
@@ -277,10 +268,13 @@ def run_requested_turn(payload: dict, context: TenantContext) -> None:
                 conversation=turn.conversation,
                 pseudonymizer=turn.pseudonymizer,
             )
+            start_diagnostic(turn.message, plan)
         except ProviderError as error:
             # Провайдер не настроен вовсе — тот же отказ хода, что и молчание
             # модели: клиент получает понятный текст, диалог уходит человеку.
             failure = ai_turn_result.store_failure(turn=turn, context=context, error=error)
+            record_planning_failure(turn.message, turn.agent, turn.conversation,
+                                    turn.pseudonymizer, error)
     if failure is not None:
         _deliver(turn, failure)
         return
@@ -289,6 +283,7 @@ def run_requested_turn(payload: dict, context: TenantContext) -> None:
     answer = run_turn_chat(plan, time_left=_time_left(turn.message))
     with tenant_atomic(context):
         # В диалог и клиенту идёт ответ с настоящими значениями вместо токенов.
+        finish_diagnostic(turn.message, plan, answer)
         reply = record_turn(agent=turn.agent, plan=plan, answer=answer)
         tool_call_events.record_tool_calls(turn.message, answer.tool_calls)
         if answer.error is not None:

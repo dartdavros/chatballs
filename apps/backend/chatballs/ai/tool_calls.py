@@ -13,7 +13,7 @@ import json
 import logging
 import time
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from chatballs.ai.provider.base import ToolCall
 from chatballs.ai.pseudonymization import Pseudonymizer
@@ -53,6 +53,7 @@ class ToolCallRecord:
     # Код ошибки; пусто — вызов удался.
     error: str
     duration_ms: int
+    diagnostic: dict = field(default_factory=dict, repr=False, compare=False)
 
 
 class _Failed(Exception):
@@ -76,7 +77,7 @@ def _revealed(value: object, pseudonymizer: Pseudonymizer) -> object:
     return value
 
 
-def _call_http(tool: TurnTool, arguments: dict, timeout: float) -> str:
+def _call_http(tool: TurnTool, arguments: dict, timeout: float, diagnostic: dict) -> str:
     try:
         response = call_http_tool(tool.integration, arguments, tool.bound, timeout=timeout)
     except ToolArgumentsRejected as error:
@@ -90,6 +91,7 @@ def _call_http(tool: TurnTool, arguments: dict, timeout: float) -> str:
         raise _Failed(TIMEOUT) from error
     except (OSError, http.client.HTTPException, ValueError) as error:
         raise _Failed(UNREACHABLE) from error
+    diagnostic["httpStatus"] = response.status
     if response.status in (401, 403):
         raise _Failed(UNAUTHORIZED)
     if response.status == 404:
@@ -125,6 +127,7 @@ def execute_tool_call(
     tool = tools.get(call.name)
     timeout = TOOL_TIMEOUT_SECONDS if time_left is None else min(time_left, TOOL_TIMEOUT_SECONDS)
     error = ""
+    diagnostic = {"callId": call.id, "arguments": call.arguments}
     try:
         if tool is None:
             raise _Failed(UNKNOWN_TOOL)
@@ -132,7 +135,8 @@ def execute_tool_call(
             raise _Failed(TIMEOUT)
         arguments = _revealed(call.arguments, pseudonymizer)
         is_http = tool.integration.provider == IntegrationProvider.HTTP
-        text = (_call_http if is_http else _call_mcp)(tool, arguments, timeout)
+        text = (_call_http(tool, arguments, timeout, diagnostic) if is_http
+                else _call_mcp(tool, arguments, timeout))
         content = masked_result(text, pseudonymizer) or _payload(result="")
     except _Failed as failure:
         error = failure.code
@@ -147,5 +151,6 @@ def execute_tool_call(
         title=tool.title if tool is not None else call.name[:128],
         error=error,
         duration_ms=int((time.monotonic() - started) * 1000),
+        diagnostic={**diagnostic, "modelResult": content},
     )
     return content, record

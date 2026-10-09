@@ -41,12 +41,14 @@ class ChatRound:
     result: ChatResult | None = None
     error: ProviderError | None = None
     latency_ms: int = 0
+    request_sent: bool = True
 
 
 @dataclass(frozen=True, slots=True)
 class LoopResult:
     rounds: tuple[ChatRound, ...]
     tool_calls: tuple[ToolCallRecord, ...]
+    requests: tuple[ChatJob, ...] = ()
 
 
 def with_tools(job: ChatJob, tools: list[TurnTool]) -> ChatJob:
@@ -98,15 +100,18 @@ def run_tool_loop(
     messages = list(job.messages)
     rounds: list[ChatRound] = []
     records: list[ToolCallRecord] = []
+    requests: list[ChatJob] = []
     for number in range(MAX_TOOL_ROUNDS + 1):
         last = number == MAX_TOOL_ROUNDS
+        request = _final_job(job, messages) if last else replace(job, messages=list(messages))
+        requests.append(request)
         left = _left(deadline)
         if left is not None and left <= 0:
-            rounds.append(ChatRound(error=ProviderError("turn deadline passed")))
+            rounds.append(ChatRound(error=ProviderError("turn deadline passed"), request_sent=False))
             break
         started = time.monotonic()
         try:
-            result = run_chat(_final_job(job, messages) if last else replace(job, messages=messages))
+            result = run_chat(request)
         except ProviderError as error:
             rounds.append(ChatRound(error=error, latency_ms=_elapsed_ms(started)))
             break
@@ -128,4 +133,4 @@ def run_tool_loop(
             )
             records.append(record)
             messages.append(ChatMessage(role="tool", content=content, tool_call_id=call.id))
-    return LoopResult(rounds=tuple(rounds), tool_calls=tuple(records))
+    return LoopResult(rounds=tuple(rounds), tool_calls=tuple(records), requests=tuple(requests))

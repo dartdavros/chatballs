@@ -24,6 +24,7 @@ ALL_CAPABILITIES: frozenset[str] = frozenset(
         "settings.manage",
         "audit.view",
         "conversations.view",
+        "conversations.diagnostics",
         "conversations.operate",
         "conversations.call",
         "customers.view",

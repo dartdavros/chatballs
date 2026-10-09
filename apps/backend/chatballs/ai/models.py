@@ -534,4 +534,5 @@ class LlmInvocation(TenantRelationModel):
 
 
 
+from chatballs.ai.diagnostic_models import TurnDiagnostic  # noqa: E402, F401
 from chatballs.ai.tool_models import AgentTool  # noqa: E402, F401
