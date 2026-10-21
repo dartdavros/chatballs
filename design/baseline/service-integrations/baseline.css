@@ -1,0 +1,76 @@
+/* Canvas-only presentation. Product shell, fields, buttons, menus, tabs and tables
+   use unmodified CSS compiled from internal-ui by build-runtime.mjs. */
+html,body{margin:0;padding:0;min-width:0}
+.si-canvas{padding:28px 32px 60px;background:var(--surface-page);min-height:100vh;font-size:13px;line-height:1.5}
+.si-review{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:24px;max-width:1440px}
+.si-review h1{font-size:22px;margin:0;color:var(--n-1)}
+.si-review p{width:100%;margin:0;color:var(--n-3)}
+.si-review label{display:flex;align-items:center;gap:7px}
+.si-review select{height:32px;max-width:420px;background:var(--surface-card);color:var(--n-2);border:1px solid var(--n-7);border-radius:8px;padding:0 8px}
+.si-board{display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start}
+.si-caption{display:flex;gap:10px;align-items:center;margin-bottom:10px;color:var(--n-2)}
+.si-caption code{font-size:11.5px;font-weight:700;background:var(--n-1);color:var(--surface-card);padding:2px 7px;border-radius:6px}
+.si-screen{container:baseline / inline-size;display:flex;height:900px;background:var(--surface-card);border-radius:6px;overflow:hidden;box-shadow:0 2px 12px #00000014;position:relative}
+.si-screen .hub-sidebar{height:100%}
+.si-workspace{flex:1;min-width:0;background:var(--surface-feed)}
+.si-page-body{display:flex;flex-direction:column;gap:18px}
+.si-back{margin-bottom:12px}
+.si-card h3{margin:0 0 18px;color:var(--n-1);font-size:14px;font-weight:700}
+.si-card-body{display:flex;flex-direction:column;gap:16px}
+.si-card-body>p{margin:0;color:var(--n-4);font-size:12.5px}
+.si-actions{flex-wrap:wrap;align-self:flex-start}
+.si-actions>button{flex:none}
+.si-page-body .readonly-field{width:320px;max-width:100%;box-sizing:border-box}
+.si-page-body .readonly-field:has(textarea),.si-page-body .readonly-field.wide{width:480px}
+.si-page-body .readonly-field:has(input[type=number]){width:160px}
+.si-page-body .readonly-field:has(input[type=datetime-local]){width:240px}
+.si-page-body .si-fields{grid-template-columns:repeat(2,minmax(0,320px))}
+.si-card-body>.secondary-button{align-self:flex-start}
+.si-field{min-width:0}.si-field.wide{grid-column:1/-1}
+.si-field-help{display:block;margin-top:6px;font-size:12px;color:var(--n-4);line-height:1.45}
+.si-fields .readonly-field.wide{grid-column:auto}
+.si-line{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.si-line:last-child{padding-bottom:0;border:0}
+.si-line-main{min-width:0;flex:1}.si-line strong{font-size:13.5px;color:var(--n-1)}
+.si-line>button{flex:none}
+.si-line p{font-size:12px;margin:3px 0 0;color:var(--n-4)}
+.si-line>.si-actions{flex:none}
+.si-table-wrap{width:100%;overflow-x:auto}
+.si-table-wrap table{width:100%;table-layout:fixed}
+.si-table-wrap td{overflow-wrap:anywhere}
+.si-table-wrap .si-table-actions{width:142px;text-align:right}
+.si-table-actions>.si-actions{justify-content:flex-end}
+.si-table-wrap .link{max-width:100%;text-align:left;white-space:normal}
+.si-tabs{margin-bottom:0;flex-wrap:wrap}
+.si-note{margin:0}
+.si-notice.error{border-color:var(--error-border);background:var(--error-bg)}
+.si-notice.error>svg{color:var(--error-text)}
+.si-notice.ok{border-color:var(--success-border);background:var(--success-bg)}
+.si-notice.ok>svg{color:var(--success-text)}
+.si-chips{display:flex;gap:6px;flex-wrap:wrap}
+.si-value-chip{background:var(--n-9);border-radius:6px;padding:3px 9px;font-size:12.5px;color:var(--n-2)}
+/* New scenario compositions: typography, borders and spacing follow settings cards. */
+.si-block{border:1px solid var(--n-8);border-radius:12px;background:var(--surface-card)}
+.si-block>header{display:flex;align-items:flex-start;gap:12px;padding:18px 24px}
+.si-block>header>div{flex:1;min-width:0}
+.si-block>header>.si-step-actions{flex:none}
+.si-block h3{font-size:14px;margin:0;color:var(--n-1)}
+.si-block header p{font-size:12px;color:var(--n-4);margin:4px 0 0}
+.si-step-number{font-size:12px;color:var(--n-4);line-height:21px}
+.si-block-body{display:flex;flex-direction:column;gap:16px;padding:0 24px 22px}
+.si-nested{border-left:2px solid var(--n-7);padding-left:18px;margin:8px 0;display:flex;flex-direction:column;gap:14px}
+.si-columns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.si-columns>section{min-width:0}
+.si-progress{display:flex;gap:8px;font-size:12.5px;color:var(--n-4)}
+.si-progress span{color:var(--n-3)}
+.si-modal-backdrop{position:absolute;inset:0;background:var(--scrim);display:flex;justify-content:center;align-items:flex-start;padding:100px 24px 40px;z-index:10;overflow:auto}
+.si-modal{width:560px;max-width:100%}.si-modal .ant-modal-content{background:var(--surface-card);box-shadow:var(--modal-shadow)}
+.si-modal .si-actions{justify-content:flex-end;width:100%;padding:0}
+.si-empty{text-align:center;padding:40px 24px;background:var(--surface-card);border:1px solid var(--n-8);border-radius:12px}
+.si-empty h3{font-size:14px;margin:0 0 6px}.si-empty p{font-size:12.5px;color:var(--n-4)}
+.si-empty .si-actions{justify-content:center;margin-top:16px}
+.si-muted{color:var(--n-4);font-size:12.5px;margin:0}
+/* Ready rows measure 231px at both desktop widths; reserve the next 16px step. */
+.si-catalog-surface{box-sizing:border-box;width:100%;max-width:none;min-height:240px;margin:0}
+.si-catalog-loading{display:grid;place-items:center}
+@container baseline (max-width:1024px){.si-columns{grid-template-columns:minmax(0,1fr)}.si-line{flex-wrap:wrap}.si-block>header{padding:18px}.si-block-body{padding:0 18px 18px}}

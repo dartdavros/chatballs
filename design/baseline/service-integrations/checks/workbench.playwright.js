@@ -1,0 +1,43 @@
+// Stateful settings checks in the design document. External services are never called.
+async page => {
+  const errors=[],requests=[],capture=r=>{if(/^https?:/.test(r.url()))requests.push(r.url());};page.on('request',capture);
+  const content=page.locator('.settings-content'),frames=page.locator('.si-review select').first();
+  const click=async name=>(await page.getByRole('dialog').count()?page.getByRole('dialog'):content).getByRole('button',{name,exact:true}).click();
+  const select=async(label,value)=>{await click(label);await page.locator('.app-dropdown:visible').getByRole('button',{name:value,exact:true}).click();await page.locator('.app-dropdown:visible').waitFor({state:'hidden'});};
+  const toggle=name=>content.getByRole('switch',{name,exact:true}).click();
+  await frames.selectOption('J06');await click('Изменить сценарий');await click('Запуск и доступ');
+  for(const name of ['ИИ','Событием Chatballs','Событием сервиса','По расписанию','Внешним API','Из другого сценария'])await toggle(name);
+  await click('Применить настройки');
+  if(!await content.getByText('Для автоматического запуска выберите владельца разрешения и разрешите действия сценария.',{exact:true}).isVisible())errors.push('Delegation gate missing');
+  await select('Что разрешено ИИ','Запускать самостоятельно');await select('От чьего имени','Елена Кузнецова · владелец');await toggle('Разрешить действия этого сценария');
+  await content.getByLabel('Время запуска',{exact:true}).fill('10:15');await select('Часовой пояс','Europe/Berlin · Берлин');
+  await select('Если запуск пропущен','Пропустить');await select('Как получать изменения','Периодическая проверка');
+  await content.getByLabel('Проверять каждые, минут',{exact:true}).fill('15');await click('Применить настройки');await click('Запуск и доступ');
+  if(await content.getByRole('switch',{name:'По расписанию',exact:true}).getAttribute('aria-checked')!=='true'||await content.getByLabel('Время запуска',{exact:true}).inputValue()!=='10:15')errors.push('Launch settings lost');
+  if(!(await content.getByRole('table').first().innerText()).includes('Europe/Berlin'))errors.push('Timezone preview mismatch');
+  await click('Отмена');await click('Параметры');await click('Добавить параметр');
+  await content.getByLabel('Название',{exact:true}).fill('Документы');await select('Тип значения','Список');await select('Тип элемента списка','Объект с полями');await click('Добавить поле объекта');
+  await content.getByLabel('Название',{exact:true}).last().fill('Файл');await content.getByRole('button',{name:'Тип значения',exact:true}).last().click();
+  await page.locator('.app-dropdown:visible').getByRole('button',{name:'Файл',exact:true}).click();await click('Применить настройки');await click('Параметры');
+  if(await content.getByLabel('Название',{exact:true}).count()!==2)errors.push('Nested input schema lost');await click('Отмена');
+  await click('Связи и обмен');await toggle('Обновлять связанные записи');
+  if(!await content.getByRole('button',{name:'Применить настройки',exact:true}).isDisabled())errors.push('Incomplete sync accepted');
+  await content.getByLabel('Номер записи сервиса',{exact:true}).fill('Из результата первого шага');await select('Направление обмена','Из сервиса в Chatballs');await click('Применить настройки');await click('Связи и обмен');
+  if(!(await content.getByRole('button',{name:'Направление обмена',exact:true}).innerText()).includes('Из сервиса в Chatballs'))errors.push('Sync settings lost');await click('Отмена');
+  await click('Настроить условия');await click('Добавить условие');await content.getByRole('button',{name:'Проверить',exact:true}).last().click();await page.locator('.app-dropdown:visible').getByRole('button',{name:'У диалога есть метка',exact:true}).click();await content.getByLabel('Метка',{exact:true}).fill('Продажи');await click('Добавить группу условий');await click('Применить настройки');
+  await click('Проверить сценарий');if(!await content.getByText('У диалога есть метка: Продажи',{exact:true}).isVisible())errors.push('Review lost grouped condition');await click('Вернуться в редактор');
+  await click('Настроить: 1');await click('Другие поля действия');
+  const amount=content.locator('section.si-form-section').filter({has:page.getByRole('heading',{name:'Сумма',exact:true})});
+  await amount.getByRole('button',{name:'Откуда взять значение',exact:true}).click();await page.locator('.app-dropdown:visible').getByRole('button',{name:'Из диалога',exact:true}).click();
+  await amount.getByRole('button',{name:'Поле источника',exact:true}).click();await page.locator('.app-dropdown:visible').getByRole('button',{name:'Тема диалога',exact:true}).click();
+  await click('Применить к сценарию');if(await frames.inputValue()!=='X03')errors.push('Invalid typed binding accepted');await click('Отмена');
+  await frames.selectOption('Y15');await content.getByLabel('Данные шагов, дней',{exact:true}).fill('3');await click('Сохранить сроки');
+  await page.getByRole('dialog').waitFor();await click('Отмена');if(await content.getByText('Сроки хранения сохранены',{exact:true}).count())errors.push('Retention cancel applied');
+  await click('Сохранить сроки');await click('Применить сроки');if(!await content.getByText('Сроки хранения сохранены',{exact:true}).isVisible())errors.push('Retention confirmation failed');
+  await frames.selectOption('Z03');await click('Сохранить без проверки');if(!await content.getByText('Заполните обязательные поля доступа.',{exact:true}).isVisible())errors.push('Basic validation missing');
+  await content.getByLabel('Логин',{exact:true}).fill('preview');await content.getByLabel('Пароль',{exact:true}).fill('preview-only');await click('Сохранить без проверки');
+  if(await content.locator('input[type=password]').count())errors.push('Saved secret exposed');
+  await frames.selectOption('Y09');await click('Сохранить мои изменения как копию');
+  if(!(await content.getByLabel('Название сценария',{exact:true}).inputValue()).endsWith('· копия'))errors.push('Conflict copy failed');
+  page.off('request',capture);return{errors,requests,verified:'seven launch methods, delegation gate, timezone preview, nested schema, sync settings, grouped conditions, typed binding rejection, retention confirm/cancel, Basic required fields and secret discard, conflict copy'};
+}

@@ -1,0 +1,30 @@
+/* New reusable scenario list; product buttons, grip, menu and tokens are reused. */
+.si-step-list{display:flex;flex-direction:column;gap:0;min-width:0}
+.si-step-list>.secondary-button{align-self:flex-start;margin-top:8px}
+.si-drop-slot{height:12px;flex:none;border-radius:2px;box-sizing:border-box}
+.si-drop-slot:first-child{height:6px}
+.si-drop-slot.is-target{background:var(--primary);box-shadow:0 0 0 2px var(--primary-bg);height:6px;margin:3px 0}
+.si-sortable.is-dragging{box-shadow:var(--shadow-lg);border-color:var(--primary);opacity:.65}
+.si-sortable .site-field-grip{padding:4px;margin:0;flex:none;align-self:flex-start}
+.si-sortable>header{align-items:flex-start;padding:16px}
+.si-step-actions{display:flex;align-items:center;gap:8px}
+.si-sortable header p{line-height:1.5;overflow-wrap:anywhere}
+.si-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+.si-stage-help{margin:0 0 12px;color:var(--n-4);font-size:12.5px;line-height:1.5}
+.settings-card-head.si-inline-toggle{padding-bottom:0;border-bottom:0}
+.si-review-steps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:16px;color:var(--n-2)}
+.si-review-steps p{margin:4px 0 0;font-size:12.5px;color:var(--n-4)}
+.si-form-section{display:flex;flex-direction:column;gap:16px}
+.si-form-section .si-field-help{max-width:480px}
+.si-palette-toggle{align-self:flex-start}
+.si-parameter-head{display:flex;align-items:flex-start;gap:12px}
+.si-parameter-head .row-menu-button{margin-left:auto;margin-top:24px;flex:none}
+.si-mapping-row{display:grid;grid-template-columns:repeat(2,minmax(0,320px));gap:16px;align-items:end}
+.si-mapping-row>button{justify-self:end}
+.si-mapping-row .readonly-field{width:100%}
+.si-form-section>h3{margin:0}
+.si-form-section>.secondary-button{align-self:flex-start}
+.si-screen .ant-modal-wrap,.si-screen .ant-modal-mask{position:absolute}
+.si-screen .ant-modal-root .ant-modal{max-width:calc(100% - 32px)}
+.si-page-body .readonly-field:has(input[type=time]),.si-page-body .readonly-field:has(input[type=date]){width:200px}
+@container baseline (max-width:1024px){.si-sortable .journey-step-title{flex-wrap:wrap}.si-step-actions .secondary-button{padding:0 10px}.si-nested{padding-left:12px}.si-sortable .si-block-body{padding:0 12px 16px}}
