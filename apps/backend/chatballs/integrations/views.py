@@ -167,9 +167,12 @@ class IntegrationTestView(APIView):
             )
         except Integration.DoesNotExist:
             return Response({"detail": t("settings.integration_not_found")}, status=404)
-        integration = test_integration(
-            context=request.tenant_context, integration=integration
-        )
+        try:
+            integration = test_integration(
+                context=request.tenant_context, integration=integration
+            )
+        except ValidationError as error:
+            return _validation_error(error)
         _audit(request, "integrations.integration_tested", integration)
         return Response({"integration": integration_payload(integration)})
 

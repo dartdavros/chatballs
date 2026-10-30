@@ -104,7 +104,7 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     label: t("common.integrations"),
     icon: "plug",
     heading: t("common.integrations"),
-    lead: t("servers.integrations_lead"),
+    lead: t("services.section_lead"),
   },
   {
     key: "communication",

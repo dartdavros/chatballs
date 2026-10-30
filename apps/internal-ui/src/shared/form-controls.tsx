@@ -13,7 +13,7 @@ type FormFieldProps = {
    *  запрос на каждую букву. */
   onBlur?: () => void;
   placeholder?: string;
-  type?: "number" | "password" | "text";
+  type?: "number" | "password" | "text" | "date" | "datetime-local";
   value: string;
   wide?: boolean;
 };

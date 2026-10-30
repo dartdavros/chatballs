@@ -11,6 +11,9 @@ class IntegrationKind(models.TextChoices):
     MESSENGER = "MESSENGER", "Подключение-мессенджер"
     # Внешний сервер: откуда агент берёт данные организации (SPEC-0023 R-1).
     EXTERNAL_SERVER = "EXTERNAL_SERVER", "Внешний сервер"
+    # Сервис: подключение установленного адаптера (SPEC-0037 R-1). Какой это
+    # сервис, хранит ServiceConnectionSettings, а не enum бренда.
+    SERVICE = "SERVICE", "Сервис"
 
 
 class IntegrationProvider(models.TextChoices):
@@ -27,6 +30,9 @@ class IntegrationProvider(models.TextChoices):
     # один инструмент поверх REST API организации.
     MCP = "MCP", "MCP-сервер"
     HTTP = "HTTP", "HTTP-запрос"
+    # Общий провайдер всех сервисных подключений: конкретный адаптер задаётся
+    # ключом в настройках подключения (ADR-0038 п.2).
+    ADAPTER = "ADAPTER", "Адаптер сервиса"
 
 
 class IntegrationStatus(models.TextChoices):
@@ -50,6 +56,7 @@ PROVIDER_KIND = {
     IntegrationProvider.EMAIL: IntegrationKind.MESSENGER,
     IntegrationProvider.MCP: IntegrationKind.EXTERNAL_SERVER,
     IntegrationProvider.HTTP: IntegrationKind.EXTERNAL_SERVER,
+    IntegrationProvider.ADAPTER: IntegrationKind.SERVICE,
 }
 
 
@@ -133,3 +140,26 @@ class ToolReadOnlyConfirmation(models.Model):
     @property
     def is_active(self) -> bool:
         return self.revoked_at is None
+
+
+# Модели сервисных подключений живут в своих модулях, а Django находит их
+# здесь, в models приложения.
+from chatballs.integrations.scenario_state.connections import (  # noqa: E402
+    OAuthStateStatus,
+    ServiceConnectionSettings,
+    ServiceOAuthState,
+)
+from chatballs.integrations.scenario_state.files import ServiceFile  # noqa: E402
+
+__all__ = [
+    "PROVIDER_KIND",
+    "Integration",
+    "IntegrationKind",
+    "IntegrationProvider",
+    "IntegrationStatus",
+    "OAuthStateStatus",
+    "ServiceConnectionSettings",
+    "ServiceFile",
+    "ServiceOAuthState",
+    "ToolReadOnlyConfirmation",
+]

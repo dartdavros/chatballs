@@ -10,6 +10,7 @@ import { canManageSettings } from "../administration/model";
 import { useAdministration } from "../administration/useAdministration";
 import { IntegrationsSection } from "../integrations/IntegrationsSection";
 import type { Integration } from "../integrations/model";
+import type { IntegrationsTab } from "../integrations/tabs";
 import { EmptyState, LoadingState } from "../../shared/ui";
 import { DemoDataCard } from "./DemoDataCard";
 import { CommunicationSettingsCard } from "./CommunicationSettingsCard";
@@ -22,10 +23,13 @@ import type { SettingsSectionKey } from "./sections";
 import type { useIntegrations } from "./useIntegrations";
 import { t } from "../../i18n";
 
-export function SettingsSectionBody({ section, user, onUserUpdated, reload, groups, integrations, providers, onEditIntegration, onTemplatesChanged, openJournal }: {
+export function SettingsSectionBody({ section, user, onUserUpdated, reload, groups, integrations, providers, onEditIntegration, integrationsTab = "entry", openIntegrationsTab = () => undefined, openServiceConnection = () => undefined, onTemplatesChanged, openJournal }: {
   section: SettingsSectionKey; user: SessionUser; onUserUpdated: (user: SessionUser) => void; reload: () => void;
   groups: EmployeeGroup[]; integrations: ReturnType<typeof useIntegrations>; providers: Integration[];
   onEditIntegration: (integration: Integration) => void;
+  integrationsTab?: IntegrationsTab;
+  openIntegrationsTab?: (tab: IntegrationsTab) => void;
+  openServiceConnection?: (id: number) => void;
   onTemplatesChanged: () => void;
   openJournal: () => void;
 }): ReactNode {
@@ -43,9 +47,9 @@ export function SettingsSectionBody({ section, user, onUserUpdated, reload, grou
   if (section === "templates") return <ReplyTemplateLibrary onChanged={onTemplatesChanged} />;
   if (integrations.loading) return <LoadingState />;
   if (integrations.failed) return <EmptyState title={t("settings.could_not_load_integrations")} />;
-  return <IntegrationsSection kind={section === "ai" ? "LLM_PROVIDER" : "MESSENGER"}
-    items={section === "ai" ? providers : integrations.items.filter(item => item.kind !== "LLM_PROVIDER")}
-    reload={integrations.reload} onEdit={onEditIntegration} />;
+  if (section === "ai") return <IntegrationsSection kind="LLM_PROVIDER" items={providers} reload={integrations.reload} onEdit={onEditIntegration} />;
+  return <IntegrationsSection kind="MESSENGER" items={integrations.items} reload={integrations.reload} onEdit={onEditIntegration}
+    tab={integrationsTab} openTab={openIntegrationsTab} openServiceConnection={openServiceConnection} />;
 }
 
 function OrganizationSection({ user, onUserUpdated }: { user: SessionUser; onUserUpdated: (user: SessionUser) => void }) {

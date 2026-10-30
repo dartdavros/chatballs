@@ -154,9 +154,10 @@ def _open_socket(address: str, port: int, timeout: float) -> socket.socket:
 class _PinnedHTTPConnection(http.client.HTTPConnection):
     """Соединение с проверенным IP; Host остаётся именем из адреса."""
 
-    def __init__(self, target: ToolTarget, timeout: float) -> None:
+    def __init__(self, target: ToolTarget, timeout: float, ssl_context: ssl.SSLContext | None = None) -> None:
         super().__init__(target.host, target.port, timeout=timeout)
         self._address = target.address
+        self._ssl_context = ssl_context
         self.pinned_sock: socket.socket | None = None
 
     def connect(self) -> None:
@@ -170,10 +171,19 @@ class _PinnedHTTPSConnection(_PinnedHTTPConnection):
 
     def connect(self) -> None:
         raw = _open_socket(self._address, self.port, self.timeout)
-        context = ssl.create_default_context()
+        context = self._ssl_context or ssl.create_default_context()
         self.sock = self.pinned_sock = context.wrap_socket(raw, server_hostname=self.host)
 
 
-def _connection(target: ToolTarget, timeout: float) -> _PinnedHTTPConnection:
+def _connection(target: ToolTarget, timeout: float, ssl_context: ssl.SSLContext | None = None) -> _PinnedHTTPConnection:
     factory = _PinnedHTTPSConnection if target.scheme == "https" else _PinnedHTTPConnection
-    return factory(target, timeout)
+    return factory(target, timeout, ssl_context)
+
+
+# Сервисные адаптеры (adapters/transport.py) ходят тем же закреплённым
+# соединением и по тем же правилам перенаправлений.
+pinned_connection = _connection
+origin_of = _origin
+remaining_time = _remaining
+ORIGIN_NEUTRAL_HEADERS = _ORIGIN_NEUTRAL_HEADERS
+REDIRECT_STATUSES = _REDIRECT_STATUSES

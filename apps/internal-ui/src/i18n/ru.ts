@@ -21,6 +21,7 @@ import { siteFieldsRu } from "./site-fields.ru";
 import { widgetAppearanceRu } from "./widget-appearance.ru";
 import { preChatRu } from "./pre-chat.ru";
 import { externalServersRu } from "./external-servers.ru";
+import { servicesRu } from "./services.ru";
 import { agentTestRu } from "./agent-test.ru";
 import { toolCallsRu } from "./tool-calls.ru";
 import { emailContinuationRu } from "./email-continuation.ru";
@@ -53,6 +54,7 @@ export const ru = {
   ...widgetAppearanceRu,
   ...preChatRu,
   ...externalServersRu,
+  ...servicesRu,
   ...agentTestRu,
   ...toolCallsRu,
   ...diagnosticsRu,

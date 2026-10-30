@@ -55,7 +55,7 @@ export function useRouteNavigation(
       knowledgeId: (nextRoute === "knowledgeDetail" || nextRoute === "knowledgeEdit") && typeof entityId === "number" ? entityId : null,
       clientId: nextRoute === "salesClientDetail" && typeof entityId === "number" ? entityId : null,
       channelId: null,
-      integrationId: nextRoute === "webIntegrationSettings" && typeof entityId === "number" ? entityId : null,
+      integrationId: (nextRoute === "webIntegrationSettings" || nextRoute === "serviceConnection") && typeof entityId === "number" ? entityId : null,
       supportPortalId: nextRoute === "supportPortalDetail" && typeof entityId === "number"
         ? entityId
         // У настроек портала entityId — «id/раздел»: id портала и ключ раздела.

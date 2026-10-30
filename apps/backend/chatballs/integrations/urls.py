@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import include, path
 
 from chatballs.integrations import views
 from chatballs.integrations.address_validation import HttpAddressValidationView
@@ -25,4 +25,5 @@ urlpatterns = [
         name="integration-tool-read-only-revoke",
     ),
     path("<int:integration_id>/assets/", WidgetAssetUploadView.as_view(), name="integration-widget-assets"),
+    path("", include("chatballs.integrations.service_connections.urls")),
 ]

@@ -268,6 +268,16 @@ CHATBALLS_STORAGE_BACKEND, MEDIA_ROOT, STORAGES = build_storage_settings(
 # Публичный адрес установки: абсолютные ссылки, уходящие клиентам (download вложений).
 CHATBALLS_PUBLIC_BASE_URL = os.environ.get("CHATBALLS_PUBLIC_BASE_URL", "http://localhost:8000")
 
+# Установленные адаптеры сервисов (SPEC-0037 R-3): доверенные модули этой
+# версии приложения. Каталог «Интеграции → Сервисы» показывает только их.
+CHATBALLS_SERVICE_ADAPTERS = ["chatballs.integrations.adapters.bitrix24"]
+CHATBALLS_SERVICE_EXTENSIONS: list[str] = []
+# Приложения OAuth, зарегистрированные администратором установки у сервисов:
+# {"<ключ адаптера>": {"client_id": "...", "client_secret": "..."}}.
+CHATBALLS_SERVICE_OAUTH_CLIENTS: dict[str, dict[str, str]] = {}
+# Сколько живёт одноразовый state входа через сервис.
+CHATBALLS_SERVICE_OAUTH_STATE_SECONDS = 600
+
 # Публичные порталы поддержки размещаются на отдельных хостах. Базовый домен
 # берётся из адреса самой установки (support_portals.addressing.help_base_domain):
 # у коробки нет .env, задать переменную окружения негде, и её прежнее значение

@@ -1,0 +1,208 @@
+/* Интеграции · Сервисы (design/baseline/service-integrations/Сервисы.dc.html). */
+
+.services-tab { display: flex; flex-direction: column; gap: 32px; }
+
+.service-logo { display: inline-flex; align-items: center; }
+.service-logo img { display: block; width: auto; }
+.service-logo .is-dark { display: none; }
+html[data-theme="dark"] .service-logo .is-light { display: none; }
+html[data-theme="dark"] .service-logo .is-dark { display: block; }
+
+/* Список подключений */
+.service-connections { overflow: hidden; }
+.service-connections-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) 40px;
+  align-items: center;
+  width: 100%;
+  min-height: 62px;
+  padding: 10px 20px;
+  box-sizing: border-box;
+  border: 0;
+  border-top: 1px solid var(--n-9);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.service-connections-row:hover { background: var(--n-10); }
+.service-connections-row.is-head {
+  min-height: 0;
+  border-top: 0;
+  border-bottom: 1px solid var(--n-8);
+  background: var(--surface-sidebar);
+  color: var(--n-4);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  cursor: default;
+}
+.service-connections-row.is-head + .service-connections-row { border-top: 0; }
+.service-connections-name { min-width: 0; }
+.service-connections-name strong { display: block; color: var(--primary); font-size: 14px; font-weight: 700; }
+.service-connections-name small { display: block; margin-top: 2px; color: var(--n-4); font-size: 12px; }
+.service-connections-scenarios { color: var(--n-3); font-size: 12.5px; }
+.service-connections-chevron { display: flex; justify-content: flex-end; color: var(--n-5); }
+
+/* Каталог */
+.service-catalog { display: flex; flex-direction: column; gap: 14px; container-type: inline-size; }
+.service-catalog h3 { margin: 0; color: var(--n-1); font-size: 15px; font-weight: 700; }
+.service-catalog > div > p { margin: 4px 0 0; color: var(--n-4); font-size: 12.5px; }
+.service-catalog-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+/* Одобрено владельцем для 1024: три карточки по 280px и два gap по 14px
+   требуют 868px. Учитывается ширина рабочей области, включая сайдбар. */
+@container (max-width: 868px) {
+  .service-catalog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.service-catalog-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+  border: 1px solid var(--n-8);
+  border-radius: 12px;
+  background: var(--surface-card);
+}
+.service-catalog-logo { display: flex; align-items: center; height: 26px; }
+.service-catalog-card > p { flex: 1; margin: 0; color: var(--n-3); font-size: 12.5px; line-height: 1.5; }
+.service-catalog-actions { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.service-catalog-actions span { color: var(--n-4); font-size: 12px; }
+.service-catalog-note { margin: 4px 0 0; color: var(--n-4); font-size: 12.5px; }
+.service-catalog-note strong { color: var(--n-2); font-weight: 600; }
+
+/* Баннеры */
+.service-alert {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 11px 14px;
+  border: 1px solid var(--error-border);
+  border-radius: 9px;
+  background: var(--error-bg);
+}
+.service-alert > svg { flex: none; margin-top: 2px; color: var(--error-text); }
+.service-alert.is-success { border-color: var(--success-border); background: var(--success-bg); }
+.service-alert.is-success > svg { color: var(--success-text); }
+.service-alert p { flex: 1; margin: 0; color: var(--n-2); font-size: 12.5px; line-height: 1.55; }
+.service-alert > button { flex: none; }
+.service-alert-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--n-4);
+  cursor: pointer;
+}
+
+/* Окно подключения */
+.service-connect-modal .ant-modal-content { padding: 0; overflow: hidden; border-radius: 14px; background: var(--surface-card); }
+.service-connect-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border-default);
+}
+.service-connect-head > div { flex: 1; min-width: 0; }
+.service-connect-head h3 { margin: 0 0 4px; color: var(--n-1); font-size: 16px; font-weight: 600; }
+.service-connect-head p { margin: 0; color: var(--n-3); font-size: 13px; line-height: 1.55; }
+.service-connect-head .service-logo { margin-top: 4px; }
+.service-connect-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  margin: -2px -8px 0 0;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--n-4);
+  cursor: pointer;
+}
+.service-connect-close:hover { background: var(--n-8); color: var(--n-2); }
+.service-connect-body { display: flex; flex-direction: column; gap: 16px; max-height: 640px; padding: 20px 24px; overflow-y: auto; }
+.service-connect-grid { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 24px; align-items: start; }
+.service-connect-fields, .service-connect-stack { display: flex; flex-direction: column; gap: 16px; }
+.service-field > small { display: block; margin-top: 6px; color: var(--n-4); font-size: 12px; line-height: 1.45; }
+.service-connect-help { padding: 16px; border: 1px solid var(--n-8); border-radius: 10px; background: var(--n-10); }
+.service-connect-help strong { display: block; margin-bottom: 10px; color: var(--n-1); font-size: 13px; font-weight: 600; }
+.service-connect-help ol { display: flex; flex-direction: column; gap: 8px; margin: 0; padding-left: 18px; color: var(--n-3); font-size: 12.5px; line-height: 1.55; }
+.service-connect-help p { margin: 8px 0 0; color: var(--n-3); font-size: 12.5px; line-height: 1.55; }
+.service-connect-help .link { margin-top: 12px; font-size: 12.5px; }
+.service-connect-note { margin: 0; color: var(--n-4); font-size: 12.5px; line-height: 1.5; }
+.service-connect-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 24px;
+  border-top: 1px solid var(--border-default);
+}
+.service-connect-foot > span { color: var(--n-4); font-size: 12px; }
+.service-connect-foot > div { display: flex; flex: none; align-items: center; gap: 10px; }
+.service-connect-foot button { white-space: nowrap; }
+.service-connect-foot .logo-spinner { margin-right: 7px; }
+
+.service-access-methods { display: flex; flex-direction: column; gap: 8px; }
+.service-access-methods > span { color: var(--n-2); font-size: 12.5px; font-weight: 600; }
+.service-access-methods > div { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.service-access-methods button {
+  padding: 12px 14px;
+  border: 1px solid var(--n-7);
+  border-radius: 10px;
+  background: var(--surface-card);
+  text-align: left;
+  cursor: pointer;
+}
+.service-access-methods button.is-active { border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
+.service-access-methods strong { display: block; color: var(--n-1); font-size: 13px; font-weight: 600; }
+.service-access-methods small { display: block; margin-top: 2px; color: var(--n-4); font-size: 12px; line-height: 1.45; }
+
+.service-oauth-waiting {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 16px;
+  border: 1px solid var(--n-8);
+  border-radius: 10px;
+  background: var(--n-10);
+}
+.service-oauth-waiting > div { flex: 1; }
+.service-oauth-waiting strong { display: block; color: var(--n-1); font-size: 13px; font-weight: 600; }
+.service-oauth-waiting span { color: var(--n-4); font-size: 12.5px; }
+
+/* Карточка */
+.service-card-back { margin: 0 0 12px -8px; font-size: 12.5px; }
+.service-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; margin-bottom: 22px; }
+.service-card-head > div:first-child { min-width: 0; }
+.service-card-title { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.service-card-title h2 { margin: 0; color: var(--n-1); font-size: 20px; font-weight: 700; letter-spacing: -.01em; }
+.service-card-head p { margin: 5px 0 0; color: var(--n-4); font-size: 13px; }
+.service-card-tools { display: flex; align-items: center; gap: 14px; }
+.service-card-blocks { display: flex; flex-direction: column; gap: 18px; }
+.service-card-block { padding: 22px 24px; border: 1px solid var(--n-8); border-radius: 12px; background: var(--surface-card); }
+.service-card-block h3 { margin: 0 0 18px; color: var(--n-1); font-size: 14px; font-weight: 700; }
+.service-presets { padding-bottom: 8px; }
+.service-presets h3 { margin-bottom: 0; }
+.service-card-lead { margin: 4px 0 6px; color: var(--n-4); font-size: 12.5px; }
+.service-preset { display: flex; align-items: center; gap: 16px; padding: 16px 0; border-top: 1px solid var(--n-9); }
+.service-preset > div { flex: 1; min-width: 0; }
+.service-preset-name { display: flex; align-items: center; gap: 8px; }
+.service-preset-name strong { color: var(--n-1); font-size: 13.5px; font-weight: 600; }
+.service-preset-name span { padding: 0 6px; border-radius: 5px; background: var(--n-9); color: var(--n-4); font-size: 11px; font-weight: 600; }
+.service-preset p { margin: 3px 0 0; color: var(--n-4); font-size: 12.5px; line-height: 1.5; }
+.service-preset-state { color: var(--n-4); font-size: 12.5px; }
+.service-connection-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 320px)); gap: 16px 24px; }
+.service-connection-host > span { display: block; margin-bottom: 6px; color: var(--n-2); font-size: 12.5px; font-weight: 600; }
+.service-connection-host > div { display: flex; align-items: center; height: 36px; color: var(--n-3); font-size: 13.5px; }
+.service-connection-access { display: flex; align-items: center; gap: 16px; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--n-9); }
+.service-connection-access > div { flex: 1; min-width: 0; }
+.service-connection-access strong { display: block; color: var(--n-1); font-size: 13.5px; font-weight: 600; }
+.service-connection-access p { margin: 3px 0 0; color: var(--n-4); font-size: 12.5px; }

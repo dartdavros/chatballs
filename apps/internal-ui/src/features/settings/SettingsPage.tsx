@@ -5,6 +5,8 @@ import type { EmployeeGroup, RouteKey, SessionUser } from "../../types";
 import { IntegrationForm } from "../integrations/IntegrationForm";
 import { AddIntegrationButton } from "../integrations/AddIntegrationButton";
 import type { Integration, IntegrationKind } from "../integrations/model";
+import { ServiceCardPage } from "../integrations/services/card/ServiceCardPage";
+import { TAB_ROUTE, type IntegrationsTab, type IntegrationsView } from "../integrations/tabs";
 import { EmptyState } from "../../shared/ui";
 import { Button } from "../../shared/ui-controls";
 import { Icon } from "../../shared/icons";
@@ -32,7 +34,7 @@ const SECTION_TOUR_TARGET: Partial<Record<SettingsSectionKey, TourTarget>> = {
 // «Платформа» кадра в базлайне не имеет — раздел собран по стандарту N6
 // («Хранилище файлов»): заголовок карточки, поля, ряд действий.
 
-export function SettingsPage({ user, onUserUpdated, reload, groups = [], section, openSection, openWebIntegration, setRoute, journal = false, openConversation }: {
+export function SettingsPage({ user, onUserUpdated, reload, groups = [], section, openSection, openWebIntegration, openServiceConnection = () => undefined, integrationsView, setRoute, journal = false, openConversation }: {
   user: SessionUser;
   onUserUpdated: (user: SessionUser) => void;
   reload: () => void;
@@ -40,6 +42,9 @@ export function SettingsPage({ user, onUserUpdated, reload, groups = [], section
   section: SettingsSectionKey | null;
   openSection: (section: SettingsSectionKey | null) => void;
   openWebIntegration: (id: number) => void;
+  openServiceConnection?: (id: number) => void;
+  /** Вкладка «Интеграций» или карточка сервиса из адреса страницы. */
+  integrationsView?: IntegrationsView;
   setRoute: (route: RouteKey) => void;
   journal?: boolean;
   openConversation: (id: number) => void;
@@ -62,7 +67,9 @@ export function SettingsPage({ user, onUserUpdated, reload, groups = [], section
     ai: providers.length,
     integrations: connections.length,
   };
-  const active = journal ? "rules" : section ?? (mobile ? null : DEFAULT_SETTINGS_SECTION);
+  const active = journal ? "rules" : integrationsView ? "integrations" : section ?? (mobile ? null : DEFAULT_SETTINGS_SECTION);
+  const integrationsTab = integrationsView?.tab ?? "entry";
+  const openIntegrationsTab = (tab: IntegrationsTab) => tab === "entry" ? openSection("integrations") : setRoute(TAB_ROUTE[tab]);
   // Разделы про саму установку видит только её администратор.
   const sections = visibleSettingsSections(user);
   const onboarding = useOnboarding();
@@ -118,7 +125,7 @@ export function SettingsPage({ user, onUserUpdated, reload, groups = [], section
 
   const headAction = current?.key === "ai"
     ? <Button variant="primary" icon="plus" onClick={() => setForm({ kind: "LLM_PROVIDER", initial: null })}>{t("settings.add_provider")}</Button>
-    : current?.key === "integrations"
+    : current?.key === "integrations" && integrationsTab !== "services"
       ? <AddIntegrationButton onEntry={() => setForm({ kind: "MESSENGER", initial: null })} onServer={(kind) => setRoute(kind === "mcp" ? "mcpServerCreate" : "httpServerCreate")} />
       : null;
 
@@ -129,6 +136,7 @@ export function SettingsPage({ user, onUserUpdated, reload, groups = [], section
         <section className={`settings-content ${mobile ? "is-single" : ""}`}>
           <div className="settings-content-inner">
             {journal && <button className="link is-muted has-icon" type="button" onClick={() => openSection("rules")}><Icon name="chevronLeft" size={15} />{t("handling_rules.title")}</button>}
+            {integrationsView?.serviceId ? <ServiceCardPage key={integrationsView.serviceId} connectionId={integrationsView.serviceId} onBack={() => setRoute("serviceIntegrations")} /> : <>
             {current.key !== "templates" && <header className="settings-head">
               {mobile && (
                 <button className="settings-head-back" type="button" aria-label={t("settings.back_section_list")} onClick={() => openSection(null)}>
@@ -150,9 +158,13 @@ export function SettingsPage({ user, onUserUpdated, reload, groups = [], section
               integrations={integrations}
               providers={providers}
               onEditIntegration={(item) => item.provider === "WEB" || item.kind === "EXTERNAL_SERVER" ? openWebIntegration(item.id) : setForm({ kind: item.kind, initial: item })}
+              integrationsTab={integrationsTab}
+              openIntegrationsTab={openIntegrationsTab}
+              openServiceConnection={openServiceConnection}
               onTemplatesChanged={templates.reload}
               openJournal={() => setRoute("ruleJournal")}
             />}
+            </>}
           </div>
         </section>
       )}

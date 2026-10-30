@@ -4,6 +4,7 @@ import ReactDOM from "react-dom/client";
 import { Loader } from "@chatballs/ui";
 
 import { App } from "./App";
+import { closeServiceOAuthWindow } from "./features/integrations/services/oauthPopup";
 import { surfaceForHost, type Surface } from "./surface";
 import "./styles";
 
@@ -36,8 +37,10 @@ function SurfaceApp() {
     : <App />;
 }
 
-ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <SurfaceApp />
-  </React.StrictMode>,
-);
+if (!closeServiceOAuthWindow()) {
+  ReactDOM.createRoot(document.getElementById("root")!).render(
+    <React.StrictMode>
+      <SurfaceApp />
+    </React.StrictMode>,
+  );
+}

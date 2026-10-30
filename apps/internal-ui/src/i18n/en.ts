@@ -20,6 +20,7 @@ import { siteFieldsEn } from "./site-fields.en";
 import { widgetAppearanceEn } from "./widget-appearance.en";
 import { preChatEn } from "./pre-chat.en";
 import { externalServersEn } from "./external-servers.en";
+import { servicesEn } from "./services.en";
 import { agentTestEn } from "./agent-test.en";
 import { toolCallsEn } from "./tool-calls.en";
 import { emailContinuationEn } from "./email-continuation.en";
@@ -52,6 +53,7 @@ export const en: Record<MessageKey, Message> = {
   ...widgetAppearanceEn,
   ...preChatEn,
   ...externalServersEn,
+  ...servicesEn,
   ...agentTestEn,
   ...toolCallsEn,
   ...diagnosticsEn,

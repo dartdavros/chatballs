@@ -157,7 +157,9 @@ def _publish_web_widget(*, context: TenantContext, integration: Integration) -> 
 
 
 def _validate_provider(provider: str) -> str:
-    if provider not in IntegrationProvider.values:
+    # Сервисное подключение создаётся только через service_connections: там
+    # адаптер, схема настроек и проверка доступа.
+    if provider not in IntegrationProvider.values or provider == IntegrationProvider.ADAPTER:
         raise ValidationError({"provider": t("settings.unknown_provider")})
     return provider
 
@@ -200,6 +202,8 @@ def update_integration(
 ) -> Integration:
     if integration.organization_id != context.organization_id:
         raise ValidationError({"integration": t("settings.integration_other_organization")})
+    if integration.provider == IntegrationProvider.ADAPTER:
+        raise ValidationError({"provider": t("settings.unknown_provider")})
     if integration.provider == IntegrationProvider.WEB:
         # Версию согласия считаем по последней сохранённой конфигурации.
         integration = Integration.objects.select_for_update().get(

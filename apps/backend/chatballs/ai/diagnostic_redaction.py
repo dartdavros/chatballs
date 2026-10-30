@@ -6,6 +6,8 @@ import json
 import re
 from urllib.parse import parse_qsl, quote, urlsplit, urlunsplit
 
+from django.core.exceptions import ObjectDoesNotExist
+
 from chatballs.ai.pseudonymization import Pseudonymizer
 from chatballs.integrations.external_headers import stored_secret_headers
 
@@ -107,4 +109,24 @@ def integration_secrets(integrations) -> list[str]:
                 values.extend(filter(None, (parts.username, parts.password)))
             except ValueError:
                 continue
+        values.extend(_service_secrets(integration))
+    return values
+
+
+def _service_secrets(integration) -> list[str]:
+    """Секреты сервисного подключения (SPEC-0037 R-7): значения и части секретных адресов."""
+
+    from chatballs.integrations.adapters.auth import credential_strings
+    from chatballs.integrations.service_connections.binding import load_credentials
+
+    try:
+        row = integration.service_settings
+    except ObjectDoesNotExist:
+        return []
+    values = []
+    for value in credential_strings(load_credentials(row)):
+        values.append(value)
+        # В адресе-секрете (вебхук) секретна часть пути, а не адрес целиком.
+        if value.startswith(("https://", "http://")):
+            values.extend(part for part in urlsplit(value).path.split("/") if len(part) >= 8)
     return values

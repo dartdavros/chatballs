@@ -40,6 +40,9 @@ def _check_web(context: TenantContext, integration: Integration) -> tuple[bool, 
 def test_integration(*, context: TenantContext, integration: Integration) -> Integration:
     if integration.organization_id != context.organization_id:
         raise ValidationError({"integration": t("settings.integration_other_organization")})
+    if integration.provider == IntegrationProvider.ADAPTER:
+        # Доступ к сервису проверяет его адаптер: service_connections.services.
+        raise ValidationError({"integration": t("integrations.check_unsupported")})
     error_code = ""
     if integration.provider == IntegrationProvider.WEB:
         ok, detail, meta = _check_web(context, integration)

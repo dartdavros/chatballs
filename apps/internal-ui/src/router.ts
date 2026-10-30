@@ -122,6 +122,15 @@ export function routeFromPath(pathname: string, search = ""): RouteState {
   if (path === "/settings") return { route: "settings", ...state };
   if (path === "/settings/integrations/new/mcp") return { ...state, route: "mcpServerCreate" };
   if (path === "/settings/integrations/new/http") return { ...state, route: "httpServerCreate" };
+  // Вкладки раздела «Интеграции» и карточка подключения сервиса (SPEC-0037).
+  if (path === "/settings/integrations/servers") return { ...state, route: "integrationServers" };
+  if (path === "/settings/integrations/services") return { ...state, route: "serviceIntegrations" };
+  if (path.startsWith("/settings/integrations/services/")) {
+    const id = Number(path.slice("/settings/integrations/services/".length));
+    return Number.isInteger(id) && id > 0
+      ? { ...state, route: "serviceConnection", integrationId: id }
+      : { ...state, route: "serviceIntegrations" };
+  }
   if (path.startsWith("/settings/integrations/")) {
     const id = Number(path.slice("/settings/integrations/".length));
     return Number.isInteger(id) && id > 0
@@ -168,6 +177,9 @@ export function pathFromRoute(route: RouteKey, entityId: number | string | null 
   if (route === "replyTemplates") return `${prefix}/reply-templates`;
   if (route === "webIntegrationSettings") return entityId ? `${prefix}/settings/integrations/${entityId}` : `${prefix}/settings/integrations`;
   if (route === "mcpServerCreate") return `${prefix}/settings/integrations/new/mcp`;
+  if (route === "integrationServers") return `${prefix}/settings/integrations/servers`;
+  if (route === "serviceIntegrations") return `${prefix}/settings/integrations/services`;
+  if (route === "serviceConnection") return entityId ? `${prefix}/settings/integrations/services/${entityId}` : `${prefix}/settings/integrations/services`;
   if (route === "httpServerCreate") return `${prefix}/settings/integrations/new/http`;
   // У «Настроек» вместо id — ключ раздела субменю (кадры N1–N7).
   if (route === "settings") return settingsSectionKey(String(entityId)) ? `${prefix}/settings/${entityId}` : `${prefix}/settings`;

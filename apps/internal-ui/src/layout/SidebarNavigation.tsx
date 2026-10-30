@@ -61,7 +61,7 @@ export function SidebarNavigation({ route, user, setRoute, waitingCount, chatSco
           <SidebarLink activeRoutes={["knowledge", "knowledgeDetail", "knowledgeCreate", "knowledgeEdit", "knowledgeCategories", "knowledgeImport"]} icon="book" label={t("common.knowledge_base")} route={route} routeKey="knowledge" setRoute={setRoute} target="nav-knowledge" />
           <div className="hub-nav-divider" />
           <SidebarLink activeRoutes={["supportReports", "qualityAnalysis"]} icon="stats" label={t("reports.title")} route={route} routeKey="supportReports" setRoute={setRoute} />
-          <SidebarLink activeRoutes={["ruleJournal", "settings", "webIntegrationSettings", "mcpServerCreate", "httpServerCreate", "administrationAudit"]} icon="settings" label={t("common.settings")} route={route} routeKey="settings" setRoute={setRoute} />
+          <SidebarLink activeRoutes={["ruleJournal", "settings", "webIntegrationSettings", "mcpServerCreate", "httpServerCreate", "integrationServers", "serviceIntegrations", "serviceConnection", "administrationAudit"]} icon="settings" label={t("common.settings")} route={route} routeKey="settings" setRoute={setRoute} />
           <SidebarHelpLink />
         </nav>
       ) : route === "profile" || route === "replyTemplates" ? (

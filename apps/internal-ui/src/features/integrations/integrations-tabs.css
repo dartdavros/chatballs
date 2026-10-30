@@ -1,0 +1,4 @@
+/* Вкладки раздела «Интеграции» (Сервисы.dc.html, кадр «Список»). */
+.integrations-tabs { gap: 4px; margin-bottom: 22px; border-bottom: 1px solid var(--n-7); }
+.integrations-tabs button { padding: 11px 16px; margin-bottom: -1px; color: var(--n-3); font-size: 14px; font-weight: 500; }
+.integrations-tabs button.active { color: var(--primary); font-weight: 600; }
