@@ -36,9 +36,10 @@ provides Create a lead from a conversation. It requires the connection, CRM and
 user permissions, an assignee and a stage. Its definition creates a lead from
 contact data and saves the conversation's link to that lead.
 
-This delivery provides connections and preset descriptions. Editing a tenant's
-copy and running it are delivered by subsequent tasks. Saving access never
-enables scenarios automatically.
+Configure creates an editable organization copy in the common
+[scenario editor](scenarios.en.md). Save it disabled, add steps and explicitly
+enable it after validation. Execution is delivered by dependent tasks.
+Saving access never enables scenarios automatically.
 
 Existing external HTTP/MCP servers retain their tab. You do not need to reconnect
 them or alter read-only confirmations to use the new Services tab.

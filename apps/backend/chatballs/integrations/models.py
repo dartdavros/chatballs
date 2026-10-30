@@ -150,6 +150,9 @@ from chatballs.integrations.scenario_state.connections import (  # noqa: E402
     ServiceOAuthState,
 )
 from chatballs.integrations.scenario_state.files import ServiceFile  # noqa: E402
+from chatballs.integrations.scenario_state.definitions import ScenarioConnection, ScenarioDefinition  # noqa: E402
+from chatballs.integrations.scenario_state.subscriptions import ScenarioExternalKey  # noqa: E402
+from chatballs.integrations.scenario_state.synchronization import ServiceSynchronizationSettings  # noqa: E402
 
 __all__ = [
     "PROVIDER_KIND",
@@ -160,6 +163,10 @@ __all__ = [
     "OAuthStateStatus",
     "ServiceConnectionSettings",
     "ServiceFile",
+    "ScenarioConnection",
+    "ScenarioDefinition",
+    "ScenarioExternalKey",
+    "ServiceSynchronizationSettings",
     "ServiceOAuthState",
     "ToolReadOnlyConfirmation",
 ]

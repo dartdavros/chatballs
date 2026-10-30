@@ -70,6 +70,7 @@ def http_operation(
     permission_scope: str = "",
     limits: Limits = DEFAULT_LIMITS,
     description_key: str = "",
+    entity_kind: str = "",
 ) -> OperationDescriptor:
     if spec.method not in HTTP_METHODS or spec.body not in BODY_FORMATS:
         raise ValueError(f"operation {key}: unsupported method or body format")
@@ -89,6 +90,7 @@ def http_operation(
         permission_scope=permission_scope,
         limits=limits,
         protocol={"http": spec},
+        entity_kind=entity_kind,
     )
 
 

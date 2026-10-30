@@ -17,6 +17,8 @@ from enum import StrEnum
 from typing import TYPE_CHECKING, Any
 
 from chatballs.integrations.adapters.schema import TypeSpec
+from chatballs.integrations.adapters.templates import ScenarioTemplate as ScenarioTemplate
+from chatballs.integrations.adapters.templates import TemplateStep as TemplateStep
 
 if TYPE_CHECKING:
     from chatballs.integrations.models import Integration
@@ -148,6 +150,7 @@ class OperationDescriptor:
     limits: Limits = DEFAULT_LIMITS
     # Произвольные данные протокола для общего HTTP/MCP-исполнителя.
     protocol: dict[str, Any] = field(default_factory=dict)
+    entity_kind: str = ""
 
 
 @dataclass(frozen=True)
@@ -235,31 +238,11 @@ class Presentation:
 
 
 @dataclass(frozen=True)
-class TemplateStep:
-    id: str
-    title_key: str
-    # «service:<операция>» — операция этого адаптера, «chatballs:<действие>» —
-    # действие платформы из общего каталога действий.
-    target: str
-    inputs: dict[str, Any] = field(default_factory=dict)
-
-
-@dataclass(frozen=True)
-class ScenarioTemplate:
+class EntityDescriptor:
     key: str
-    version: int
     title_key: str
-    purpose_key: str
-    parameters: TypeSpec
-    steps: tuple[TemplateStep, ...]
-    # Запуск и условия в декларативном виде; интерпретирует редактор и
-    # исполнитель сценариев, а не адаптер.
-    triggers: tuple[dict[str, Any], ...] = ()
-    conditions: tuple[dict[str, Any], ...] = ()
-    # Сколько подключений каких адаптеров нужно сценарию; «self» — этот.
-    required_connections: tuple[str, ...] = ("self",)
-    # Области доступа сервиса и действия, которые сценарий использует.
-    required_permissions: tuple[str, ...] = ()
+    fields: TypeSpec
+    native_entities: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -287,6 +270,7 @@ class AdapterDescriptor:
     # Каталог модуля адаптера: от него берутся файлы логотипа.
     package_dir: str = ""
     transport: str = "https@1"
+    entities: tuple[EntityDescriptor, ...] = ()
 
     def operation(self, key: str) -> OperationDescriptor | None:
         return next((item for item in self.operations if item.key == key), None)

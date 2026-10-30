@@ -44,6 +44,10 @@ def validate_adapter(adapter: AdapterDescriptor, registry: AdapterRegistry) -> l
     _unique(problems, "auth method", [item.key for item in adapter.auth_methods])
     _unique(problems, "event", [item.key for item in adapter.events])
     _unique(problems, "lookup", [item.key for item in adapter.lookups])
+    _unique(problems, "entity", [item.key for item in adapter.entities])
+    for entity in adapter.entities:
+        _schema(problems, f"entity {entity.key}", entity.fields)
+        problems.extend(_controls(entity.fields, registry))
     for operation in adapter.operations:
         problems.extend(f"operation {operation.key}: {item}" for item in _operation(operation, registry))
     for method in adapter.auth_methods:
@@ -106,8 +110,27 @@ def _template(adapter: AdapterDescriptor, template: ScenarioTemplate, registry: 
     problems: list[str] = []
     if template.version < 1:
         problems.append("version must be positive")
-    if not template.steps:
+    if not template.steps and template.definition is None:
         problems.append("template needs steps")
+    if template.definition is not None:
+        from chatballs.integrations.adapters.template_labels import label_target
+        from chatballs.integrations.scenarios.definition import DefinitionContext
+        from chatballs.integrations.scenarios.validation import validate_definition
+        context = DefinitionContext(connections={"self"}, operations={
+            ("self", f"service:{operation.key}"): (operation.input, operation.output) for operation in adapter.operations
+        })
+        issues = validate_definition(template.definition, context=context, registry=registry)
+        structural = {"structure", "unknown", "version", "schema", "block", "trigger", "identifier", "size", "binding"}
+        problems += [f"{issue.path}: {issue.code}" for issue in issues if issue.code in structural]
+        for path, title_key in template.labels:
+            try:
+                label_target(template.definition, path)
+                if not isinstance(title_key, str) or not title_key:
+                    raise ValueError("label translation key must be text")
+            except ValueError as error:
+                problems.append(str(error))
+    elif template.labels:
+        problems.append("labels require a complete definition")
     _schema(problems, "parameters", template.parameters)
     problems.extend(_controls(template.parameters, registry))
     _unique(problems, "step", [step.id for step in template.steps])

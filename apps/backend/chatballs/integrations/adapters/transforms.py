@@ -15,6 +15,7 @@ from decimal import ROUND_HALF_UP, Decimal
 from typing import Any
 
 from chatballs.integrations.adapters.registry import Extension
+from chatballs.integrations.adapters.schema import TypeSpec
 
 
 class TransformError(ValueError):
@@ -30,6 +31,8 @@ class Transform:
     input_types: frozenset[str]
     output_type: str
     apply: Callable[..., Any]
+    arguments: TypeSpec = TypeSpec("object")
+    title_key: str = ""
 
 
 def _text(value: Any) -> str:
@@ -94,6 +97,7 @@ _TEXT = frozenset({"string"})
 _ANY_SCALAR = frozenset({"string", "integer", "number"})
 
 TRANSFORMS: dict[str, Transform] = {
+    "text.stringify": Transform(_ANY_SCALAR, "string", lambda value: str(value)),
     "text.trim": Transform(_TEXT, "string", lambda value: _text(value).strip()),
     "text.lower": Transform(_TEXT, "string", lambda value: _text(value).lower()),
     "text.upper": Transform(_TEXT, "string", lambda value: _text(value).upper()),
@@ -109,6 +113,19 @@ TRANSFORMS: dict[str, Transform] = {
     "object.get": Transform(frozenset({"object", "array"}), "any", _get),
 }
 
+_ARGUMENTS = {
+    "text.concat": (("prefix", TypeSpec("string", title_key="scenarios.prefix")), ("suffix", TypeSpec("string", title_key="scenarios.suffix"))),
+    "number.round": (("digits", TypeSpec("integer", title_key="scenarios.digits")),),
+    "list.join": (("separator", TypeSpec("string", title_key="scenarios.separator")),),
+    "object.get": (("path", TypeSpec("string", title_key="scenarios.field", required=True)),),
+    "list.of_object": (("key", TypeSpec("string", title_key="scenarios.field", required=True)),
+                       ("extra", TypeSpec("object", open=True, title_key="scenarios.extra_fields"))),
+}
+
 
 def builtin_extensions() -> list[Extension]:
-    return [Extension("transform", key, 1, transform) for key, transform in TRANSFORMS.items()]
+    from dataclasses import replace
+    return [Extension("transform", key, 1, replace(transform,
+        title_key=f"scenarios.transform_{key.replace('.', '_')}",
+        arguments=TypeSpec("object", properties=_ARGUMENTS.get(key, ())),
+    )) for key, transform in TRANSFORMS.items()]

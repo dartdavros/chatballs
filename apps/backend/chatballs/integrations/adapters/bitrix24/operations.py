@@ -9,6 +9,7 @@
 from __future__ import annotations
 
 from functools import partial
+from dataclasses import replace
 from typing import Any
 
 from chatballs.integrations.adapters.contracts import Effect, OperationDescriptor
@@ -46,13 +47,14 @@ _MULTIFIELD = TypeSpec(
     "array",
     items=TypeSpec(
         "object",
-        properties=(("VALUE", TypeSpec("string", required=True)), ("VALUE_TYPE", TypeSpec("string"))),
+        properties=(("VALUE", TypeSpec("string", required=True, title_key="services.bitrix24.field_value")),
+                    ("VALUE_TYPE", TypeSpec("string", title_key="services.bitrix24.field_value_type"))),
         open=True,
     ),
 )
 
 
-def _fields(entity: str) -> TypeSpec:
+def entity_fields(entity: str) -> TypeSpec:
     common: list[tuple[str, TypeSpec]] = [
         ("TITLE", _text("title")),
         ("NAME", _text("name")),
@@ -66,12 +68,12 @@ def _fields(entity: str) -> TypeSpec:
         common.append(("STATUS_ID", TypeSpec("lookup", lookup="lead_stages", title_key="services.bitrix24.field_stage")))
     if entity == "deal":
         common.append(("OPPORTUNITY", TypeSpec("number", title_key="services.bitrix24.field_amount")))
-        common.append(("CATEGORY_ID", TypeSpec("integer")))
+        common.append(("CATEGORY_ID", TypeSpec("integer", title_key="services.bitrix24.field_category")))
         common.append(("STAGE_ID", TypeSpec("string", title_key="services.bitrix24.field_stage")))
-        common.append(("CONTACT_ID", TypeSpec("integer")))
+        common.append(("CONTACT_ID", TypeSpec("integer", title_key="services.bitrix24.field_contact")))
     if entity == "contact":
         common = [item for item in common if item[0] != "TITLE"]
-    return TypeSpec("object", properties=tuple(common), open=True, required=True)
+    return TypeSpec("object", properties=tuple(common), open=True, required=True, title_key="services.bitrix24.field_fields")
 
 
 _ID = ("id", TypeSpec("integer", title_key="services.bitrix24.field_id", required=True))
@@ -79,10 +81,10 @@ _RECORD = TypeSpec("object", open=True, nullable=True)
 _LIST_INPUT = TypeSpec(
     "object",
     properties=(
-        ("filter", TypeSpec("object", open=True)),
-        ("select", TypeSpec("array", items=TypeSpec("string"))),
-        ("order", TypeSpec("object", open=True)),
-        ("start", TypeSpec("integer")),
+        ("filter", TypeSpec("object", open=True, title_key="services.bitrix24.field_filter")),
+        ("select", TypeSpec("array", items=TypeSpec("string"), title_key="services.bitrix24.field_select")),
+        ("order", TypeSpec("object", open=True, title_key="services.bitrix24.field_order")),
+        ("start", TypeSpec("integer", title_key="services.bitrix24.field_start")),
     ),
 )
 
@@ -94,19 +96,21 @@ def _call(method: str, *, result: str = "result", permission: str = "crm") -> Ht
 def entity_operations(entity: str) -> list[OperationDescriptor]:
     prefix = f"services.bitrix24.op_{entity}"
     method = f"crm.{entity}"
+    result = replace(entity_fields(entity), required=False, nullable=True,
+                     properties=(("ID", TypeSpec("string", title_key="services.bitrix24.field_id")),) + entity_fields(entity).properties)
     return [
         http_operation(
             f"{entity}.create", title_key=f"{prefix}_create", effect=Effect.CREATE, permission_scope="crm",
-            input=TypeSpec("object", properties=(("fields", _fields(entity)), ("params", TypeSpec("object", open=True)))),
-            output=TypeSpec("integer"), spec=_call(f"{method}.add"),
+            input=TypeSpec("object", properties=(("fields", entity_fields(entity)), ("params", TypeSpec("object", open=True, title_key="services.bitrix24.field_params")))),
+            output=TypeSpec("integer"), spec=_call(f"{method}.add"), entity_kind=entity,
         ),
         http_operation(
             f"{entity}.get", title_key=f"{prefix}_get", effect=Effect.READ, permission_scope="crm",
-            input=TypeSpec("object", properties=(_ID,)), output=_RECORD, spec=_call(f"{method}.get"),
+            input=TypeSpec("object", properties=(_ID,)), output=result, spec=_call(f"{method}.get"),
         ),
         http_operation(
             f"{entity}.update", title_key=f"{prefix}_update", effect=Effect.UPDATE, permission_scope="crm",
-            input=TypeSpec("object", properties=(_ID, ("fields", _fields(entity)))),
+            input=TypeSpec("object", properties=(_ID, ("fields", entity_fields(entity)))),
             output=TypeSpec("boolean"), spec=_call(f"{method}.update"),
         ),
         http_operation(
@@ -115,7 +119,7 @@ def entity_operations(entity: str) -> list[OperationDescriptor]:
         ),
         http_operation(
             f"{entity}.list", title_key=f"{prefix}_list", effect=Effect.SEARCH, permission_scope="crm",
-            input=_LIST_INPUT, output=TypeSpec("array", items=_RECORD), spec=_call(f"{method}.list"),
+            input=_LIST_INPUT, output=TypeSpec("array", items=replace(result, nullable=False)), spec=_call(f"{method}.list"),
         ),
     ]
 

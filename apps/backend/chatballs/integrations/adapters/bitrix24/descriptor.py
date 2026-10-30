@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from chatballs.integrations.adapters.bitrix24.operations import (
+    entity_fields,
     entity_operations,
     service_operations,
 )
@@ -19,6 +20,7 @@ from chatballs.integrations.adapters.contracts import (
     AuthMethod,
     CheckDescriptor,
     ErrorText,
+    EntityDescriptor,
     HelpBlock,
     LookupDescriptor,
     LookupItem,
@@ -129,7 +131,7 @@ CREATE_LEAD = ScenarioTemplate(
             id="link_lead",
             title_key="services.bitrix24.preset_lead_link_step",
             target="chatballs:entity_link.create",
-            inputs={"entity": "lead", "external_id": {"source": "step", "step": "create_lead", "field": ""}},
+            inputs={"entity": "lead", "external_id": {"source": "step", "step": "create_lead", "field": "", "transform": "text.stringify@1"}},
         ),
     ),
 )
@@ -137,6 +139,9 @@ CREATE_LEAD = ScenarioTemplate(
 ADAPTER = AdapterDescriptor(
     key="bitrix24",
     contract_version=1,
+    entities=tuple(EntityDescriptor(key=entity, title_key=f"services.bitrix24.entity_{entity}", fields=entity_fields(entity),
+                                  native_entities=("contact",) if entity == "contact" else ("conversation",))
+                   for entity in ("lead", "contact", "deal")),
     package_dir=str(Path(__file__).parent),
     presentation=Presentation(
         title_key="services.bitrix24.title",

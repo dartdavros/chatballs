@@ -9,6 +9,7 @@ export type ServiceField = {
   placeholder: string;
   required: boolean;
   nullable: boolean;
+  open?: boolean;
   secret: boolean;
   control: string;
   pattern?: string;
@@ -58,6 +59,9 @@ export type ServiceAdapter = {
   authMethods: ServiceAuthMethod[];
   settings: ServiceField[];
   presets: ServicePreset[];
+  operations: Array<{ key: string; title: string; input: ServiceField; output: ServiceField; entityKind?: string }>;
+  entities?: Array<{ key: string; title: string; fields: ServiceField; nativeEntities: string[] }>;
+  events: Array<{ key: string; title: string; payload: ServiceField }>;
 };
 
 export type ServiceError = { code: string; title: string; text: string };

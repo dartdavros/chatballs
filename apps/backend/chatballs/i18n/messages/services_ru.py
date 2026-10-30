@@ -1,4 +1,17 @@
 MESSAGES = {
+    "services.bitrix24.field_value": "Значение",
+    "services.bitrix24.field_value_type": "Вид значения",
+    "services.bitrix24.field_category": "Воронка",
+    "services.bitrix24.field_contact": "Контакт",
+    "services.bitrix24.field_fields": "Поля записи",
+    "services.bitrix24.field_params": "Дополнительные параметры",
+    "services.bitrix24.field_filter": "Условия поиска",
+    "services.bitrix24.field_select": "Поля результата",
+    "services.bitrix24.field_order": "Порядок результатов",
+    "services.bitrix24.field_start": "Начать с записи",
+    "services.bitrix24.entity_lead": "Лид",
+    "services.bitrix24.entity_contact": "Контакт",
+    "services.bitrix24.entity_deal": "Сделка",
     # Общие тексты сервисных подключений.
     "services.not_found": "Подключение не найдено.",
     "services.adapter_unknown": "Этот сервис не установлен.",

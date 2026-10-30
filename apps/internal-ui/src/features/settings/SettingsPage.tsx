@@ -55,6 +55,10 @@ export function SettingsPage({ user, onUserUpdated, reload, groups = [], section
   const templates = useReplyTemplates(manager);
   // Кадр M: на узком экране субменю и раздел — два отдельных экрана.
   const mobile = useMediaQuery("(max-width: 900px)");
+  const openScenario = (id: string) => {
+    openSection("scenarios");
+    const url = new URL(window.location.href); url.searchParams.set("scenario", id); window.history.replaceState(window.history.state, "", url);
+  };
 
   if (!manager) return <EmptyState title={t("settings.settings_available_owner_administrators")} />;
 
@@ -136,8 +140,8 @@ export function SettingsPage({ user, onUserUpdated, reload, groups = [], section
         <section className={`settings-content ${mobile ? "is-single" : ""}`}>
           <div className="settings-content-inner">
             {journal && <button className="link is-muted has-icon" type="button" onClick={() => openSection("rules")}><Icon name="chevronLeft" size={15} />{t("handling_rules.title")}</button>}
-            {integrationsView?.serviceId ? <ServiceCardPage key={integrationsView.serviceId} connectionId={integrationsView.serviceId} onBack={() => setRoute("serviceIntegrations")} /> : <>
-            {current.key !== "templates" && <header className="settings-head">
+            {integrationsView?.serviceId ? <ServiceCardPage key={integrationsView.serviceId} connectionId={integrationsView.serviceId} onOpenScenario={openScenario} onBack={() => setRoute("serviceIntegrations")} /> : <>
+            {current.key !== "templates" && current.key !== "scenarios" && <header className="settings-head">
               {mobile && (
                 <button className="settings-head-back" type="button" aria-label={t("settings.back_section_list")} onClick={() => openSection(null)}>
                   <Icon name="chevronLeft" size={18} />

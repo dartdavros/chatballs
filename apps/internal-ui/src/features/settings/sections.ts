@@ -17,6 +17,7 @@ export type SettingsSectionKey =
   | "quality"
   | "ai"
   | "integrations"
+  | "scenarios"
   | "communication"
   | "storage"
   | "platform"
@@ -105,6 +106,13 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     icon: "plug",
     heading: t("common.integrations"),
     lead: t("services.section_lead"),
+  },
+  {
+    key: "scenarios",
+    label: t("scenarios.title"),
+    icon: "refresh",
+    heading: t("scenarios.title"),
+    lead: t("scenarios.lead"),
   },
   {
     key: "communication",

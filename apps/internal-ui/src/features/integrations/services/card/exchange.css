@@ -1,0 +1,20 @@
+.service-exchange-block { min-height: 160px; }
+.service-exchange-block h3 { margin-bottom: 4px; }
+.service-exchange-tools { display: flex; align-items: center; gap: 12px; margin-top: 16px; }
+.exchange-drawer .ant-drawer-body { padding: 18px 22px 24px; }
+.exchange-drawer .ant-drawer-title small { color: var(--n-4); font-size: 12px; font-weight: 600; }
+.exchange-drawer section { margin-bottom: 8px; }
+.exchange-drawer strong { color: var(--n-1); font-size: 13.5px; }
+.exchange-pair, .exchange-conflict { display: flex; flex-direction: column; gap: 10px; border: 1px solid var(--n-8); border-radius: 8px; padding: 12px; }
+.exchange-pair > label, .exchange-conflict { display: flex; align-items: center; gap: 10px; }
+.exchange-conflict { flex-direction: row; color: var(--n-2); font-size: 13px; }
+.exchange-drawer input { accent-color: var(--primary); }
+.exchange-footer { display: flex; justify-content: flex-end; gap: 10px; }
+.exchange-map { margin-top: 8px; border: 1px solid var(--n-8); border-radius: 10px; overflow: hidden; }
+.exchange-map-row { display: grid; grid-template-columns: minmax(0,1fr) 34px minmax(0,1fr); gap: 8px; align-items: center; padding: 7px 12px; border-top: 1px solid var(--n-9); color: var(--n-1); font-size: 13px; }
+.exchange-map-row > span:nth-child(2) { text-align: center; color: var(--n-4); }
+.exchange-map-head { background: var(--surface-sidebar); color: var(--n-4); font-size: 11px; text-transform: uppercase; }
+.exchange-map-row .select-like > span:first-child { display: none; }
+.exchange-map-row .select-like { margin: 0; }
+.exchange-transform, .exchange-value-map { padding: 8px 12px; background: var(--n-10); }
+.exchange-value-map { min-height: 80px; }

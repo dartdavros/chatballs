@@ -1,4 +1,5 @@
 import { ParticipantLimitCard } from "./ParticipantLimitCard";
+import { ScenariosWorkspace } from "../integrations/scenarios/ScenariosWorkspace";
 import { RatingSettingsCard } from "../ratings/RatingSettingsCard";
 import { RuleSettingsCard } from "../handling-rules/RuleSettingsCard";
 import { QualitySettings } from "../quality/QualitySettings";
@@ -34,6 +35,7 @@ export function SettingsSectionBody({ section, user, onUserUpdated, reload, grou
   openJournal: () => void;
 }): ReactNode {
   if (section === "organization") return <OrganizationSection user={user} onUserUpdated={onUserUpdated} />;
+  if (section === "scenarios") return <ScenariosWorkspace key={user.organizationPublicId} />;
   if (section === "groups") return <GroupsSettingsCard groups={groups} reload={reload} />;
   if (section === "ratings") return <RatingSettingsCard key={user.organizationPublicId} />;
   if (section === "rules") return <RuleSettingsCard key={user.organizationPublicId} openJournal={openJournal} />;

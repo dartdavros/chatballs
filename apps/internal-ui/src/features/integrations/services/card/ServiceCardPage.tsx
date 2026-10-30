@@ -8,11 +8,12 @@ import { ServiceCardBanners } from "./ServiceCardBanners";
 import { ServiceCardHeader } from "./ServiceCardHeader";
 import { ServiceConnectionBlock } from "./ServiceConnectionBlock";
 import { ServicePresetsBlock } from "./ServicePresetsBlock";
+import { ServiceExchangeBlock } from "./ServiceExchangeBlock";
 import { useServiceCard } from "./useServiceCard";
 import "../services.css";
 
 /** Карточка подключения сервиса (кадры «Карточка · …» Сервисы.dc.html). */
-export function ServiceCardPage({ connectionId, onBack }: { connectionId: number; onBack: () => void }) {
+export function ServiceCardPage({ connectionId, onBack, onOpenScenario }: { connectionId: number; onBack: () => void; onOpenScenario: (id: string) => void }) {
   const card = useServiceCard(connectionId);
   const [replacing, setReplacing] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -29,7 +30,8 @@ export function ServiceCardPage({ connectionId, onBack }: { connectionId: number
       <div className="service-card-blocks">
         <ServiceCardBanners connection={connection} service={service} justConnected={card.justConnected}
           onHide={card.hideNotice} onRestore={() => setReplacing(true)} />
-        {adapter && <ServicePresetsBlock adapter={adapter} />}
+        {adapter && <ServicePresetsBlock adapter={adapter} connectionId={connectionId} onOpen={onOpenScenario} />}
+        {adapter?.entities?.length ? <ServiceExchangeBlock connection={connection} adapter={adapter} /> : null}
         <ServiceConnectionBlock connection={connection} adapter={adapter} checking={card.checking}
           nameError={card.failure?.fields.name} onRename={(name) => void card.rename(name)}
           onCheck={() => void card.check()} onReplace={() => setReplacing(true)} />

@@ -50,6 +50,7 @@ def field_payload(name: str, spec: TypeSpec) -> dict[str, Any]:
         "placeholder": _text(spec.placeholder_key),
         "required": spec.required,
         "nullable": spec.nullable,
+        "open": spec.open,
         "secret": spec.secret,
         "control": spec.control,
         "maxLength": spec.max_length,
@@ -138,12 +139,15 @@ def adapter_payload(adapter: AdapterDescriptor) -> dict[str, Any]:
                 "retry": operation.retry.value,
                 "cancellable": operation.cancellable,
                 "permissionScope": operation.permission_scope,
+                "entityKind": operation.entity_kind,
                 "input": field_payload("", operation.input),
                 "output": field_payload("", operation.output),
             }
             for operation in adapter.operations
         ],
         "lookups": [{"key": lookup.key, "title": _text(lookup.title_key)} for lookup in adapter.lookups],
+        "entities": [{"key": entity.key, "title": _text(entity.title_key), "fields": field_payload("", entity.fields),
+                      "nativeEntities": list(entity.native_entities)} for entity in adapter.entities],
         "events": [{"key": event.key, "title": _text(event.title_key), "delivery": event.delivery.value,
                     "payload": field_payload("", event.payload)} for event in adapter.events],
         "unsupported": [{"capability": item.capability, "reason": _text(item.reason_key)} for item in adapter.unsupported],
@@ -180,7 +184,7 @@ def connection_payload(integration: Integration) -> dict[str, Any]:
         "lastCheckedAt": integration.last_checked_at.isoformat() if integration.last_checked_at else None,
         "error": error_payload(adapter, integration.last_error_code).as_dict() if status == "lost" else None,
         # Сценарии подключения появятся вместе с их редактором.
-        "scenarios": {"enabled": 0},
+        "scenarios": {"enabled": integration.scenarios.filter(scenario__enabled=True).count()},
         "createdAt": integration.created_at.isoformat(),
     }
 
