@@ -13,3 +13,5 @@ class IntegrationsConfig(AppConfig):
         from chatballs.integrations.adapters.registry import default_registry
 
         default_registry()
+        from chatballs.integrations.execution import worker  # noqa: F401
+        from chatballs.integrations.execution import retention  # noqa: F401

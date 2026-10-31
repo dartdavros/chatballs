@@ -9,14 +9,18 @@ import { ScenarioList } from "./ScenarioList";
 import { ScenarioSections } from "./ScenarioSections";
 import { useScenarioEditor } from "./useScenarioEditor";
 import "./scenarios.css";
+import { RunsWorkspace } from "../runs/RunsWorkspace";
 
 export function ScenariosWorkspace({ initial }: { initial?: string }) {
   const editor = useScenarioEditor(initial);
+  const [journal, setJournal] = useState(new URLSearchParams(location.search).has("runs"));
+  const showJournal = (show: boolean) => { const url = new URL(location.href); if (show) url.searchParams.set("runs", "1"); else { url.searchParams.delete("runs"); url.searchParams.delete("run"); } history.replaceState(history.state, "", url); setJournal(show); };
   const [deleting, setDeleting] = useState(false);
+  if (journal) return <RunsWorkspace onScenarios={() => showJournal(false)} />;
   return <div className="scenario-workspace">
     {editor.loading ? <LoadingState /> : !editor.catalog || editor.error && !editor.draft ? <EmptyState title={editor.error || t("scenarios.load_failed")} />
       : editor.draft ? <><ScenarioHeader editor={editor} onDelete={() => setDeleting(true)} /><fieldset className="scenario-fieldset" disabled={editor.saving}><ScenarioSections editor={editor} /></fieldset><ScenarioDrawer editor={editor} /></>
-      : <ScenarioList rows={editor.rows} catalog={editor.catalog} open={editor.open} />}
+      : <ScenarioList rows={editor.rows} catalog={editor.catalog} open={editor.open} openJournal={() => showJournal(true)} />}
     <DecisionDialog open={Boolean(editor.pendingLeave)} tone="warning" icon="warning" title={t("scenarios.leave_title")}
       description={t("scenarios.leave_text")} onClose={() => editor.setPendingLeave(null)} actions={<>
         <Button variant="secondary" onClick={() => editor.setPendingLeave(null)}>{t("scenarios.cancel")}</Button>

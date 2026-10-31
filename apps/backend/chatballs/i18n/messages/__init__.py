@@ -29,6 +29,8 @@ from chatballs.i18n.messages import (
     rules_ru,
     scenarios_en,
     scenarios_ru,
+    runs_ru,
+    runs_en,
     services_en,
     services_ru,
     skills_en,
@@ -65,6 +67,7 @@ CATALOG: dict[str, dict[str, object]] = {
         **media_errors_ru.MESSAGES,
         **services_ru.MESSAGES,
         **scenarios_ru.MESSAGES,
+        **runs_ru.MESSAGES,
     },
     "en": {
         **en.MESSAGES,
@@ -87,6 +90,7 @@ CATALOG: dict[str, dict[str, object]] = {
         **media_errors_en.MESSAGES,
         **services_en.MESSAGES,
         **scenarios_en.MESSAGES,
+        **runs_en.MESSAGES,
     },
 }
 

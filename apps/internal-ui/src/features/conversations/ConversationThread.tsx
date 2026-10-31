@@ -22,21 +22,26 @@ import type { SupervisionRevocation } from "./supervision";
 import { fmt, t } from "../../i18n";
 import { pathFromRoute, routeFromPath } from "../../router";
 import "./history-layout.css";
+import { useConversationRuns } from "../integrations/runs/conversationContext";
+import { ManualActionMenu } from "../integrations/runs/ManualActionMenu";
+import { RunFeedCard } from "../integrations/runs/RunFeedCard";
+import { mergeRunFeed } from "../integrations/runs/feed";
 
 export function ConversationThread({ controlMode, dialog, detail, feed, isOwner = false, onClaim, onRelease, onClose, onSpam, onReturnQueue, canDelete = false, onDelete, onDiagnosticError, onToggleContext, onMobileBack, onExpandList, viewerId = null, onUpdated, onRefresh, retainsReplyAfterTransfer = false, revocation, onBack }: { controlMode: ControlMode; dialog: ConversationListItem | null; detail: ApiConversation | null; feed: ConversationFeed; isOwner?: boolean; onClaim: () => void; onRelease: () => void; onClose: () => void; onSpam: () => Promise<boolean>; onReturnQueue: () => void; canDelete?: boolean; onDelete: () => Promise<boolean>; onDiagnosticError: (error: string) => void; onToggleContext?: () => void; onMobileBack?: () => void; onExpandList?: () => void; viewerId?: number | null; onUpdated: (next: ApiConversation) => void; onRefresh: () => void; retainsReplyAfterTransfer?: boolean; revocation?: SupervisionRevocation | null; onBack?: () => void }) {
   const transfer = useConversationTransfer(detail, onUpdated, onRefresh, retainsReplyAfterTransfer);
   const timelineRef = useRef<HTMLDivElement>(null);
   // Сообщения переписки и внутренние комментарии — одна лента по времени.
-  const rows = feed.rows;
-  const entries = useMemo(() => rows.map((row) => ({ key: row.key, own: isOwnFeedRow(row, viewerId) })), [rows, viewerId]);
+  const services = useConversationRuns();
+  const rows = useMemo(() => mergeRunFeed(feed.rows, services?.runs ?? [], feed.hasOlder, services?.hasMore ?? false), [feed.rows, feed.hasOlder, services?.runs, services?.hasMore]);
+  const entries = useMemo(() => rows.map((row) => ({ key: row.key, own: row.kind !== "service_run" && isOwnFeedRow(row, viewerId) })), [rows, viewerId]);
   // Лента держит низ при новых репликах и догружает предыдущие при подходе к
   // верху, сохраняя место чтения.
   const { onScroll } = useHistoryScroll(timelineRef, {
     conversationId: dialog?.id ?? null,
     entries,
-    hasOlder: feed.hasOlder,
-    loadingOlder: feed.loadingOlder,
-    loadOlder: feed.loadOlder,
+    hasOlder: feed.hasOlder || (services?.hasMore ?? false),
+    loadingOlder: feed.loadingOlder || (services?.loading ?? false),
+    loadOlder: () => { if (feed.hasOlder) feed.loadOlder(); if (services?.hasMore) void services.loadOlder(); },
   });
   useEvidenceMessageFocus(dialog?.id ?? null, feed);
 
@@ -71,6 +76,7 @@ export function ConversationThread({ controlMode, dialog, detail, feed, isOwner 
           </div>
         </div>
         <div className="sales-conversation-actions">
+          <ManualActionMenu />
           {transfer.available && <TransferAction onOpen={transfer.open} />}
           {/* Одно действие взятия (решение 2): очередь и AI — primary; у другого
               сотрудника — вторичная кнопка; «ведёте вы» — «Вернуть AI». */}
@@ -94,7 +100,7 @@ export function ConversationThread({ controlMode, dialog, detail, feed, isOwner 
               {(index === 0 || !sameDay(rows[index - 1].createdAt, row.createdAt)) && (
                 <div className="sales-day-divider"><span />{dayLabel(row.createdAt)}<span /></div>
               )}
-              {row.kind === "comment"
+              {row.kind === "service_run" ? <RunFeedCard run={row.run} /> : row.kind === "comment"
                 ? <ConversationComment comment={row.comment} viewerId={viewerId} />
                 : row.calls
                   ? <ToolCallChip calls={row.calls} createdAt={row.createdAt} />

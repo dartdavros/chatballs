@@ -23,6 +23,7 @@ import { ReplyTemplateLibrary } from "../reply-templates/ReplyTemplateLibrary";
 import type { SettingsSectionKey } from "./sections";
 import type { useIntegrations } from "./useIntegrations";
 import { t } from "../../i18n";
+import { RunRetention } from "../integrations/runs/RunRetention";
 
 export function SettingsSectionBody({ section, user, onUserUpdated, reload, groups, integrations, providers, onEditIntegration, integrationsTab = "entry", openIntegrationsTab = () => undefined, openServiceConnection = () => undefined, onTemplatesChanged, openJournal }: {
   section: SettingsSectionKey; user: SessionUser; onUserUpdated: (user: SessionUser) => void; reload: () => void;
@@ -58,7 +59,7 @@ function OrganizationSection({ user, onUserUpdated }: { user: SessionUser; onUse
   const page = useAdministration({ section: "organization", user, onUserUpdated });
   if (page.loading) return <LoadingState />;
   if (!page.organization) return <EmptyState title={page.error || t("settings.could_not_load_settings")} />;
-  return <OrganizationSettingsForm organization={page.organization} canManage={canManageSettings(user)} saving={page.saving}
+  return <><OrganizationSettingsForm organization={page.organization} canManage={canManageSettings(user)} saving={page.saving}
     message={page.message} error={page.error} timezones={page.timezones} languages={page.languages} onChange={page.setOrganization}
-    onSave={() => void page.save()} onUploadLogo={file => void page.uploadLogo(file)} onRemoveLogo={() => void page.removeLogo()} />;
+    onSave={() => void page.save()} onUploadLogo={file => void page.uploadLogo(file)} onRemoveLogo={() => void page.removeLogo()} />{canManageSettings(user) && <RunRetention />}</>;
 }

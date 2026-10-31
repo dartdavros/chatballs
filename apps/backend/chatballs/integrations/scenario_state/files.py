@@ -35,6 +35,9 @@ class ServiceFile(TenantRelationModel):
     size = models.PositiveBigIntegerField(default=0)
     sha256 = models.CharField(max_length=64)
     created_at = models.DateTimeField(auto_now_add=True)
+    # Existing/user-uploaded files retain their independent owner. A file
+    # produced solely by execution follows its step's retention policy.
+    independent_owner = models.BooleanField(default=True)
 
     class Meta:
         ordering = ["-created_at", "-id"]

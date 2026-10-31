@@ -27,4 +27,5 @@ urlpatterns = [
     path("<int:integration_id>/assets/", WidgetAssetUploadView.as_view(), name="integration-widget-assets"),
     path("", include("chatballs.integrations.service_connections.urls")),
     path("", include("chatballs.integrations.scenarios.urls")),
+    path("", include("chatballs.integrations.execution.urls")),
 ]

@@ -14,6 +14,7 @@ import { t } from "../../../../i18n";
 import { SiteDataSection } from "./SiteDataSection";
 import { VisitorStateChip } from "../../../conversations/VisitorStateChip";
 import { ConversationRating } from "../../../ratings/ConversationRating";
+import { ContactActions } from "../../../integrations/runs/ContactActions";
 
 // Карточка контакта (дизайн-базлайн v2, решение 5): аватар 64 · канал · имя ·
 // описание · поля с иконками и «копировать» · «Позвонить» / «Видеозвонок» под
@@ -139,6 +140,7 @@ export function ClientContext({
       </div>
 
       <SiteDataSection fields={detail?.siteFields} />
+      <ContactActions />
 
       {detail && applyConversation && (
         <DialogControls detail={detail} groups={groups} applyConversation={applyConversation} viewerId={viewerId} assignmentTimeoutMinutes={assignmentTimeoutMinutes}

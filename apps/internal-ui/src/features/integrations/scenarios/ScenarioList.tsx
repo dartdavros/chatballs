@@ -4,12 +4,15 @@ import { StatusPill } from "../../../shared/ui";
 import { Button } from "../../../shared/ui-controls";
 import type { EditorCatalog, Scenario, TriggerKind } from "./types";
 
-export function ScenarioList({ rows, catalog, open }: { rows: Scenario[]; catalog: EditorCatalog; open: (id: string) => void }) {
+import { RunTabs } from "../runs/RunTabs";
+
+export function ScenarioList({ rows, catalog, open, openJournal }: { rows: Scenario[]; catalog: EditorCatalog; open: (id: string) => void; openJournal: () => void }) {
   return <div className="scenarios-list">
     <header className="settings-head">
       <div><h2>{t("scenarios.title")}</h2><p>{t("scenarios.lead")}</p></div>
       <Button variant="primary" icon="plus" onClick={() => open("new")}>{t("scenarios.create")}</Button>
     </header>
+    <RunTabs journal={false} onChange={journal => { if (journal) openJournal(); }} />
     <div className="scenario-table">
       <div className="scenario-table-row is-head"><span>{t("scenarios.title")}</span><span>{t("scenarios.launch")}</span>
         <span>{t("scenarios.connections")}</span><span>{t("scenarios.state")}</span><span /></div>

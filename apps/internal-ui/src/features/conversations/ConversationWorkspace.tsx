@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useCallback, type ReactNode } from "react";
 import { CallOverlay } from "./CallOverlay";
 import { Composer } from "./Composer";
 import { EmailContinuationProvider } from "./EmailContinuationContext";
@@ -12,6 +12,8 @@ import type { DialogScope } from "./workspaceScope";
 import { useConversationWorkspace } from "./useConversationWorkspace";
 import { t } from "../../i18n";
 import { conversationAction } from "./supervision";
+import { ConversationRunsProvider } from "../integrations/runs/ConversationRunsProvider";
+import { ConversationRunPanel } from "../integrations/runs/ConversationRunPanel";
 export type { DialogScope } from "./workspaceScope";
 export { scopeLabel } from "./workspaceScope";
 
@@ -44,8 +46,10 @@ export function ConversationWorkspace({ isOwner = false, canDelete = false, reta
     detailLoaded, controlMode, applyUpdated, accessLost, setAccessLost, revocation, clearRevocation,
     onClaim, onRelease, onReturnQueue, onClose, onSpam, onDelete,
   } = useConversationWorkspace({ initialConversationId, scope, counters, viewerId });
+  const openRunContext = useCallback(() => setCtxOpen(true), [setCtxOpen]);
 
   return (
+    <ConversationRunsProvider conversationId={detail?.id ?? null} openContext={openRunContext}>
     <div className={`sales-dialogs ${ctxOpen ? "is-ctx-open" : ""} ${mobileDialogOpen ? "is-mobile-dialog" : ""} ${listCollapsed ? "is-list-collapsed" : ""}`}>
       <DialogList
         viewerId={viewerId}
@@ -134,7 +138,7 @@ export function ConversationWorkspace({ isOwner = false, canDelete = false, reta
       </section>
       </EmailContinuationProvider>
       )}
-      {selectedDialog && renderContextPanel({
+      {selectedDialog && <ConversationRunPanel>{renderContextPanel({
         dialog: selectedDialog,
         detail,
         applyConversation: applyUpdated,
@@ -144,7 +148,8 @@ export function ConversationWorkspace({ isOwner = false, canDelete = false, reta
         // Кадр S2: выдвижная панель закрывается крестиком в её шапке.
         closeContext: () => setCtxOpen(false),
         assignmentTimeoutMinutes: counters?.assignmentTimeoutMinutes,
-      })}
+      })}</ConversationRunPanel>}
     </div>
+    </ConversationRunsProvider>
   );
 }

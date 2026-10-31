@@ -24,6 +24,7 @@ from chatballs.tenancy.context import TenantActorKind, TenantContext
 from chatballs.tenancy.database import tenant_atomic
 from chatballs.tenancy.lookup import iter_organizations
 from chatballs.updates.services import check_for_updates
+from chatballs.integrations.execution.retention import cleanup as cleanup_scenario_data
 
 logger = logging.getLogger(__name__)
 
@@ -156,6 +157,7 @@ class Command(BaseCommand):
                 except Exception:  # pragma: no cover
                     logger.exception("Update check cycle failed")
                 self._for_each_tenant(close_stale_conversations, "Maintenance cycle failed")
+                self._for_each_tenant(cleanup_scenario_data, "Scenario retention cycle failed")
                 try:
                     # Просроченные сессии Django сам не удаляет, а их накопление
                     # утяжеляет карточку сотрудника: владельца сессии видно

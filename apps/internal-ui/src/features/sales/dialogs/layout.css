@@ -77,7 +77,7 @@
   /* Сайдбар на мобильном чате — выезжающее меню (☰ в шапке списка): сама
      колонка схлопнута, раскрытое тело сайдбара и подложка — fixed. */
   .hub-shell.is-chat-route .hub-sidebar {
-    width: 0;
+    width: 0 !important;
     border-right: 0;
     overflow: visible;
   }

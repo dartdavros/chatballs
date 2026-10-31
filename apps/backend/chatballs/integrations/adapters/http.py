@@ -13,6 +13,8 @@ from __future__ import annotations
 
 import http.client
 import json
+from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
@@ -205,7 +207,19 @@ def _dig(payload: Any, path: str) -> Any:
 
 
 def _retry_after(value: str) -> float | None:
-    return float(value) if value.strip().isdigit() else None
+    if value.strip().isdigit():
+        try:
+            delay = float(value)
+            return delay if delay <= 315360000 else None
+        except (ValueError, OverflowError):
+            return None
+    try:
+        when = parsedate_to_datetime(value)
+        if when.tzinfo is None:
+            when = when.replace(tzinfo=timezone.utc)
+        return max(0, (when - datetime.now(timezone.utc)).total_seconds())
+    except (ValueError, TypeError, OverflowError):
+        return None
 
 
 def _scalar(value: Any) -> str:

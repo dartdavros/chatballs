@@ -22,6 +22,7 @@ import { preChatEn } from "./pre-chat.en";
 import { externalServersEn } from "./external-servers.en";
 import { servicesEn } from "./services.en";
 import { scenariosEn } from "./scenarios.en";
+import { runsEn } from "./runs.en";
 import { agentTestEn } from "./agent-test.en";
 import { toolCallsEn } from "./tool-calls.en";
 import { emailContinuationEn } from "./email-continuation.en";
@@ -56,6 +57,7 @@ export const en: Record<MessageKey, Message> = {
   ...externalServersEn,
   ...servicesEn,
   ...scenariosEn,
+  ...runsEn,
   ...agentTestEn,
   ...toolCallsEn,
   ...diagnosticsEn,

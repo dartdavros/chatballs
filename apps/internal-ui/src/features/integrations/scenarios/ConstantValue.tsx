@@ -9,7 +9,7 @@ import { inferredField, initialLiteral } from "./valueFields";
 import type { EditorCatalog } from "./types";
 
 export function ConstantValue({ field, value, connection, onChange, catalog }: {
-  field: ServiceField; value: unknown; connection: string; onChange: (value: unknown) => void; catalog?: EditorCatalog;
+  field: ServiceField; value: unknown; connection: string; onChange: (value: unknown) => void; catalog?: Pick<EditorCatalog, "files">;
 }) {
   const [extraFields, setExtraFields] = useState<ServiceField[]>([]);
   if (field.control && !["lookup@1", "file@1"].includes(field.control)) {

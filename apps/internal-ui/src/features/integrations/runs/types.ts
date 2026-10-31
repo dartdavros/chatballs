@@ -1,0 +1,21 @@
+import type { ServiceField } from "../services/types";
+
+export type RunState = "queued" | "running" | "reconciling" | "approval" | "pending" | "completed" | "failed" | "unknown" | "cancelled";
+export type RunSummary = {
+  id: string; number: number; name: string; connection: string; state: RunState; stateLabel: string;
+  initiator: string; conversationId: number | null; createdAt: string; finishedAt: string | null;
+  cancelRequested: boolean; dataCleared: boolean; revision: number; definitionUpdatedAt: string | null;
+  progress: Array<{ title: string; state: RunState; stateLabel: string }>;
+};
+export type RunStep = {
+  path: string; title: string; state: RunState; stateLabel: string; attempt: number; error: string;
+  inputSchema: ServiceField | null; outputSchema: ServiceField | null; arguments: unknown; result: unknown; approvalDigest?: string;
+};
+export type RunDetail = RunSummary & { controls: string[]; steps: RunStep[]; journal: Array<{ id: number; label: string; createdAt: string }> };
+export type RunPage = { items: RunSummary[]; count: number; page: number; pageSize: number;
+  filters: { connections: Array<{ id: number; name: string }>; initiators: Array<{ initiator_id: number; initiator__user__full_name: string }> } };
+export type ManualAction = { id: string; kind: "scenario" | "operation"; title: string; parameters: ServiceField;
+  connectionId?: number; operationKey?: string; connection?: string; available?: boolean; reason?: string };
+export type RetentionPolicy = { stepDays: number; journalDays: number; version: number; effectiveAt: string | null };
+export type ManualCatalog = { items: ManualAction[]; files: Array<{ id: string; name: string }> };
+export type PlanPreview = { confirmation: string; operation: string; inputSchema: ServiceField; arguments: unknown; note: string };

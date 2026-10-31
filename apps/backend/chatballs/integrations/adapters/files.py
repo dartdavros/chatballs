@@ -25,27 +25,27 @@ from chatballs.tenancy.storage_quota import finalize_storage, release_storage, r
 _HASH_CHUNK = 64 * 1024
 
 
-def file_store(*, context: TenantContext, integration: Integration) -> StoreFile:
+def file_store(*, context: TenantContext, integration: Integration, step=None) -> StoreFile:
     def store(name: str, content_type: str, stream: IO[bytes], size: int) -> FileRef:
         return store_service_file(
-            context=context, integration=integration, name=name, content_type=content_type, stream=stream, size=size
+            context=context, integration=integration, name=name, content_type=content_type, stream=stream, size=size, step=step
         )
 
     return store
 
 
 def store_service_file(
-    *, context: TenantContext, integration: Integration, name: str, content_type: str, stream: IO[bytes], size: int
+    *, context: TenantContext, integration: Integration, name: str, content_type: str, stream: IO[bytes], size: int, step=None
 ) -> FileRef:
     # Ответ внешнего сервиса уже получен в spool. Persistence должна сама
     # установить tenant: сетевые обработчики работают вне tenant-транзакции.
     with tenant_atomic(context):
         return _store_service_file(context=context, integration=integration, name=name,
-                                   content_type=content_type, stream=stream, size=size)
+                                   content_type=content_type, stream=stream, size=size, step=step)
 
 
 def _store_service_file(
-    *, context: TenantContext, integration: Integration, name: str, content_type: str, stream: IO[bytes], size: int
+    *, context: TenantContext, integration: Integration, name: str, content_type: str, stream: IO[bytes], size: int, step=None
 ) -> FileRef:
     digest = hashlib.sha256()
     for chunk in iter(lambda: stream.read(_HASH_CHUNK), b""):
@@ -58,6 +58,7 @@ def _store_service_file(
         content_type=content_type[:128],
         size=size,
         sha256=digest.hexdigest(),
+        independent_owner=step is None,
     )
     reservation_key = f"service-file:{uuid.uuid4()}"
     reserve_storage(context=context, expected_bytes=size, idempotency_key=reservation_key)
@@ -65,6 +66,9 @@ def _store_service_file(
         record.file.save(name, File(stream), save=False)
         with transaction.atomic():
             record.save()
+            if step is not None:
+                from chatballs.integrations.scenario_state.retention import StepOperationalFile
+                StepOperationalFile.objects.create(organization_id=context.organization_id, step=step, file=record)
         finalize_storage(context=context, idempotency_key=reservation_key, actual_bytes=size)
     except Exception:
         if record.file.name:
