@@ -46,7 +46,7 @@ def freeze(tenant, document, *, scenario_id, registry=None):
             if block["kind"] == "action":
                 resolved = resolve_action(tenant.organization_id, block.get("connection"), block["target"], registry=registry)
                 integration, _, adapter, _, operation = resolved
-                key = f"{integration.pk}:{block['target']}"
+                key = f"{block['connection']}:{block['target']}"
                 from chatballs.integrations.execution.contract_schemas import write_spec
                 contracts[key] = {"adapter": adapter.key, "version": adapter.contract_version,
                                   "signature": signature(operation), "input": write_spec(operation.input),

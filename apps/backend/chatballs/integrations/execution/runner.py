@@ -12,6 +12,7 @@ from chatballs.integrations.adapters.files import file_store
 from chatballs.integrations.execution import checkpoints, recovery
 from chatballs.integrations.execution.actions import resolve_action
 from chatballs.integrations.execution.approvals import approved
+from chatballs.integrations.execution.automation import confirmation_required
 from chatballs.integrations.execution.events import journal
 from chatballs.integrations.execution.permissions import ExecutionDenied, authorize_run, validate_arguments
 from chatballs.integrations.scenario_state.limits import ConnectionExecutionLane
@@ -22,12 +23,18 @@ from chatballs.tenancy.context import TenantContext
 from chatballs.tenancy.database import tenant_atomic
 
 
+def _target(step):
+    return {"connection": "chatballs", "target": f"chatballs:{step.operation_key}"} if step.adapter_key == "chatballs" else {
+        "connection": str(step.integration_id), "target": f"service:{step.operation_key}"}
+
+
 def _prepare(tenant, token, registry):
     with tenant_atomic(tenant):
         run, step, valid = checkpoints.locked(tenant, token)
         if not valid:
             return None
-        resolved = resolve_action(tenant.organization_id, step.integration_id, f"service:{step.operation_key}",
+        target = _target(step)
+        resolved = resolve_action(tenant.organization_id, target["connection"], target["target"],
             registry=registry, expected=(step.adapter_key, step.adapter_version), recovering=token.recovering)
         integration, row, adapter, method, operation = resolved
         if operation.retry != step.retry_strategy:
@@ -54,8 +61,7 @@ def _prepare(tenant, token, registry):
                     raise
             if run.cancel_requested_at:
                 handler = "reconcile" if operation.handlers.reconcile else None
-            elif handler != "reconcile" and not approved(step, run) and (operation.effect not in READ_EFFECTS
-                    or run.definition["document"]["access"]["confirm"] == "always"):
+            elif handler != "reconcile" and not approved(step, run) and confirmation_required(operation, run):
                 raise ExecutionDenied("approval_expired")
         if handler is None:
             checkpoints.finish(run, step, "unknown", code="outcome_unavailable")
@@ -68,10 +74,13 @@ def _prepare(tenant, token, registry):
             raise ExecutionDenied("arguments")
         if run.definition.get("contracts") and handler == "execute":
             from chatballs.integrations.execution.snapshots import check_contract
-            check_contract(run, {"connection": str(step.integration_id), "target": f"service:{step.operation_key}"}, operation, adapter)
+            check_contract(run, _target(step), operation, adapter)
             from chatballs.integrations.execution.budgets import reserve
             if run.definition.get("composite") and not token.recovering:
                 reserve(run, 0)
+        if integration is None and handler == "execute":
+            from chatballs.integrations.execution.native import preflight
+            preflight(actor, run, operation, arguments, registry=registry)
         return run, step, actor, resolved, handler, arguments
 
 
@@ -87,14 +96,17 @@ def _send_marker(tenant, token, handler, registry=None):
                 checkpoints.finish(run, step, "unknown" if step.sent_at else "cancelled")
                 return False
             integration, _row, _adapter, _method, operation = resolve_action(
-                tenant.organization_id, step.integration_id, f"service:{step.operation_key}",
+                tenant.organization_id, _target(step)["connection"], _target(step)["target"],
                 expected=(step.adapter_key, step.adapter_version), registry=registry)
             if run.definition.get("contracts"):
                 from chatballs.integrations.execution.snapshots import check_contract
-                check_contract(run, {"connection": str(step.integration_id), "target": f"service:{step.operation_key}"}, operation, _adapter)
-            if (operation.effect not in READ_EFFECTS or run.definition["document"]["access"]["confirm"] == "always") and not approved(step, run):
+                check_contract(run, _target(step), operation, _adapter)
+            if confirmation_required(operation, run) and not approved(step, run):
                 raise ExecutionDenied("approval_expired")
             validate_arguments(actor, run.conversation_id, operation, step.definition["arguments"])
+            if integration is None:
+                from chatballs.integrations.execution.native import preflight
+                preflight(actor, run, operation, step.definition["arguments"], registry=registry)
         step.sent_at = step.sent_at or timezone.now()
         step.save(update_fields=["sent_at"])
         journal(run, "reconcile_sent" if handler == "reconcile" else "request_sent", step)
@@ -115,8 +127,19 @@ def _commit(tenant, token, result, *, elapsed=0):
             from django.db.models import F
             ScenarioBudget.objects.filter(root=root_of(run)).update(active_seconds=F("active_seconds") + elapsed)
         # No unbounded remote text is copied into the safe journal.
-        code = result.error_code if result.error_code in recovery.TRANSIENT else "operation_rejected"
+        from chatballs.integrations.execution.errors import KNOWN
+        code = result.error_code if result.error_code in recovery.TRANSIENT | KNOWN else "operation_rejected"
         values = step.definition
+        if state == "decision":
+            if step.adapter_key != "chatballs" or step.operation_key != "synchronization.plan":
+                state = "unknown"
+            else:
+                step.state, step.lease_until = "decision", None
+                step.save(update_fields=["state", "lease_until"])
+                run.state = "decision"
+                run.save(update_fields=["state"])
+                journal(run, "changed", step)
+                return True
         if result.deadline and not values.get("deadline"):
             values["deadline"] = result.deadline.isoformat()
         if state == "pending" and values.get("deadline"):
@@ -172,9 +195,14 @@ def run_one(tenant, public_id, *, registry=None, token=None):
             return
         run, step, actor, resolved, handler, arguments = prepared
         integration, row, adapter, method, operation = resolved
-        credentials = fresh_credentials(tenant=tenant, integration=integration, row=row, method=method)
-        context = build_context(tenant=tenant, integration=integration, method=method, settings=row.settings,
-            credentials=credentials, registry=registry, effect_key=str(step.effect_key), transport_ref=adapter.transport)
+        if integration is None:
+            from chatballs.integrations.adapters.contracts import OperationContext
+            context = OperationContext(organization_id=tenant.organization_id, connection=None,
+                settings={}, credentials={}, effect_key=str(step.effect_key))
+        else:
+            credentials = fresh_credentials(tenant=tenant, integration=integration, row=row, method=method)
+            context = build_context(tenant=tenant, integration=integration, method=method, settings=row.settings,
+                credentials=credentials, registry=registry, effect_key=str(step.effect_key), transport_ref=adapter.transport)
         context = replace(context, run_id=str(run.public_id), step_path=step.path,
                           deadline_seconds=min(operation.limits.timeout_seconds, 30),
                           store_file=file_store(context=tenant, integration=integration, step=step))
@@ -186,7 +214,9 @@ def run_one(tenant, public_id, *, registry=None, token=None):
             return
         try:
             started = monotonic()
-            result = getattr(operation.handlers, handler)(context, operation, arguments)
+            from chatballs.integrations.automation_events.causality import origin
+            with origin(context.causal_chain):
+                result = getattr(operation.handlers, handler)(context, operation, arguments)
             if result.state == ResultState.PENDING:
                 from datetime import datetime
                 if not isinstance(result.deadline, datetime) or timezone.is_naive(result.deadline):

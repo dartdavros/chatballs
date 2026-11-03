@@ -8,6 +8,7 @@ import { Button } from "../../../shared/ui-controls";
 import { RunStatus } from "./RunStatus";
 import { RunValues } from "./RunValues";
 import { useRunDetail } from "./useRunDetail";
+import { RunConflict } from "./RunConflict";
 
 export function RunDetail({ id, onBack, inChat = false, onRepeated }: { id: string; onBack: () => void; inChat?: boolean; onRepeated?: (id: string) => void }) {
   const state = useRunDetail(id);
@@ -33,6 +34,8 @@ export function RunDetail({ id, onBack, inChat = false, onRepeated }: { id: stri
     {run.dataCleared && <div className="run-notice">{t("runs.cleared")}</div>}
     {run.state === "unknown" && <div className="run-notice is-warning">{t("runs.unknown_text")}</div>}
     {run.cancelRequested && !run.finishedAt && <div className="run-notice is-warning">{t("runs.cancel_requested")}</div>}
+    {run.conflict && <RunConflict key={run.conflict.digest} conflict={run.conflict} disabled={state.busy || state.changed}
+      apply={choices => void state.act("resolve", { digest: run.conflict!.digest, choices })} />}
     <dl className="run-meta"><div><dt>{t("runs.initiator")}</dt><dd>{run.initiator}</dd></div>
       <div><dt>{t("runs.where")}</dt><dd>{run.conversationId ? t("runs.conversation", { number: fmt.number(run.conversationId) }) : "—"}</dd></div>
       <div><dt>{t("runs.started")}</dt><dd>{fmt.shortDateTime(run.createdAt)}</dd></div>

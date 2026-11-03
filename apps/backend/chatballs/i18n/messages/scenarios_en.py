@@ -1,4 +1,5 @@
 MESSAGES = {
+    "scenarios.exchange_unavailable": "This service cannot exchange data in the selected direction while checking record versions. Choose another direction or connection.",
     "scenarios.step_completed": "Completed",
     "scenarios.step_failed": "Failed",
     "audit.action_integrations_scenario_saved": "Scenario saved",

@@ -1,4 +1,11 @@
 MESSAGES = {
+    "runs.synchronization": "Data exchange",
+    "runs.synchronization_plan": "Compare changes",
+    "runs.synchronization_validate": "Check current values",
+    "runs.synchronization_local": "Update Chatballs data",
+    "runs.synchronization_finish": "Save exchange result",
+    "runs.state_decision": "Decision needed",
+    "runs.field": "Field",
     "runs.service": "Service",
     "runs.run_number": "Run number",
     "runs.branch_number": "Branch {number}",

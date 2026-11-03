@@ -41,17 +41,27 @@ def receive(tenant, connection_id, event_key, body, headers, *, registry=None):
         envelope = event.ingress(context, body, headers)
     except Exception:
         raise ExecutionDenied("event_invalid") from None
-    if (not isinstance(envelope, VerifiedEvent) or envelope.event_key != event.key
+    validate_envelope(event, envelope)
+    return persist(tenant, connection_id, envelope, replay_seconds=event.replay_seconds)
+
+
+def validate_envelope(event, envelope):
+    if (not event.replay_seconds or not 1 <= event.replay_seconds <= 31536000
+            or not isinstance(envelope, VerifiedEvent) or envelope.event_key != event.key
             or not isinstance(envelope.event_id, str) or not 1 <= len(envelope.event_id) <= 512
             or not isinstance(envelope.correlation, str) or len(envelope.correlation) > 512
             or not isinstance(envelope.occurred_at, datetime) or timezone.is_naive(envelope.occurred_at)
             or validate_value(event.payload, envelope.payload)
+            or not isinstance(envelope.causal_chain, tuple) or len(envelope.causal_chain) > 16
+            or any(not isinstance(item, str) or not 1 <= len(item) <= 160 for item in envelope.causal_chain)
+            or not isinstance(envelope.entity_kind, str) or len(envelope.entity_kind) > 100
+            or not isinstance(envelope.entity_id, str) or len(envelope.entity_id) > 512
+            or bool(envelope.entity_kind) != bool(envelope.entity_id)
             or envelope.sequence is not None and (type(envelope.sequence) is not int or envelope.sequence < 0)):
         raise ExecutionDenied("event_invalid")
     now = timezone.now()
     if not now - timedelta(seconds=event.replay_seconds) <= envelope.occurred_at <= now + timedelta(minutes=5):
         raise ExecutionDenied("event_expired")
-    return persist(tenant, connection_id, envelope, replay_seconds=event.replay_seconds)
 
 
 def persist(tenant, connection_id, envelope, *, replay_seconds):
@@ -60,7 +70,8 @@ def persist(tenant, connection_id, envelope, *, replay_seconds):
     if result and result.get("deadline"):
         result["deadline"] = result["deadline"].isoformat()
     content = {"payload": envelope.payload, "result": result, "event": envelope.event_key,
-               "correlation": envelope.correlation, "sequence": envelope.sequence}
+               "correlation": envelope.correlation, "sequence": envelope.sequence, "causalChain": list(envelope.causal_chain),
+               "entityKind": envelope.entity_kind, "entityId": envelope.entity_id}
     encoded = json.dumps(content, sort_keys=True, ensure_ascii=False, allow_nan=False, separators=(",", ":"))
     if len(encoded.encode()) > 256 * 1024:
         raise ExecutionDenied("budget_volume")
@@ -84,6 +95,8 @@ def persist(tenant, connection_id, envelope, *, replay_seconds):
             occurred_at=envelope.occurred_at, expires_at=now + timedelta(seconds=replay_seconds))
         row.definition = content
         row.save()
+        from chatballs.integrations.automation_events.fanout import seed
+        seed(tenant, row)
         enqueue_event(DomainEvent(aggregate_type="service_receipt", aggregate_id=str(row.pk),
             event_type="integrations.receipt", payload={"receiptId": row.pk}, tenant_context=system_context(tenant)))
         return row, True

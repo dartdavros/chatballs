@@ -46,10 +46,12 @@ def claim(tenant, public_id):
         if run.cancel_requested_at and step.sent_at is None:
             finish(run, step, "cancelled")
             return None
-        Integration.objects.select_for_update().get(pk=step.integration_id)
-        lane, _ = ConnectionExecutionLane.objects.get_or_create(
-            organization_id=tenant.organization_id, integration_id=step.integration_id)
-        wait_until = max((t for t in (lane.until, lane.cooldown_until) if t and t > now), default=None)
+        lane = None
+        if step.integration_id:
+            Integration.objects.select_for_update().get(pk=step.integration_id)
+            lane, _ = ConnectionExecutionLane.objects.get_or_create(
+                organization_id=tenant.organization_id, integration_id=step.integration_id)
+        wait_until = max((t for t in ((lane.until, lane.cooldown_until) if lane else ()) if t and t > now), default=None)
         if wait_until:
             defer(tenant, run, step, delay=(wait_until - now).total_seconds())
             return None
@@ -60,9 +62,10 @@ def claim(tenant, public_id):
         step.due_at = step.lease_until
         step.state = "reconciling" if recovering else "running"
         step.save(update_fields=["fence", "attempt", "lease_until", "due_at", "state"])
-        lane.step = step
-        lane.until = step.lease_until
-        lane.save(update_fields=["step", "until"])
+        if lane:
+            lane.step = step
+            lane.until = step.lease_until
+            lane.save(update_fields=["step", "until"])
         run.state = step.state
         run.save(update_fields=["state"])
         journal(run, "recovering" if recovering else "claimed", step)

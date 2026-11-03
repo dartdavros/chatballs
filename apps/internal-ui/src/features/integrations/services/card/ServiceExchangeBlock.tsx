@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { t } from "../../../../i18n";
+import { fmt, t } from "../../../../i18n";
 import { SwitchButton } from "../../../../shared/form-controls";
 import { LoadingState } from "../../../../shared/ui";
 import { Button } from "../../../../shared/ui-controls";
@@ -23,6 +23,8 @@ export function ServiceExchangeBlock({ connection, adapter }: { connection: Serv
         <Button variant="secondary" disabled={state.saving} onClick={() => setOpen(true)}>{t("scenarios.exchange_configure")}</Button>
       </div>}
     {state.error && state.settings && !open && <p className="service-card-lead" role="alert">{state.error}</p>}
+    <p className="service-exchange-status" role={state.settings?.error ? "alert" : undefined}>{state.settings?.error ||
+      (state.settings?.result ? `${state.settings.result.stateLabel}${state.settings.result.finishedAt ? ` · ${fmt.shortDateTime(state.settings.result.finishedAt)}` : ""}` : "")}</p>
     {open && state.settings && state.catalog && <ExchangeDrawer connection={connection} adapter={adapter.key} catalog={state.catalog}
       settings={state.settings} saving={state.saving} error={state.error} onSave={state.save} onClose={() => setOpen(false)} />}
   </section>;

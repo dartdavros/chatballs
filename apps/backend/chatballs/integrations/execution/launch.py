@@ -17,7 +17,7 @@ from chatballs.integrations.scenarios.values import RunValues, prepare_inputs
 from chatballs.tenancy.database import tenant_atomic
 
 
-def launch(*, tenant, scenario_id, trigger_key, parameters, conversation_id=None, registry=None, preview=False, confirmation=None):
+def launch(*, tenant, scenario_id, trigger_key, parameters, conversation_id=None, registry=None, preview=False, confirmation=None, automatic=None):
     if not isinstance(trigger_key, str) or not 1 <= len(trigger_key) <= 200:
         raise ExecutionDenied("trigger")
     dedup = hashlib.sha256(trigger_key.encode()).hexdigest()
@@ -28,8 +28,12 @@ def launch(*, tenant, scenario_id, trigger_key, parameters, conversation_id=None
             public_id=scenario_id, organization_id=tenant.organization_id,
         )
         document = scenario.definition
-        tenant, conversation = authorize(tenant, document, conversation_id, scenario_id=scenario.pk)
-        if not any(t["kind"] == "staff" for t in document["triggers"]):
+        kind = automatic["trigger"]["kind"] if automatic else "staff"
+        if automatic:
+            from chatballs.integrations.execution.automation import check
+            check(tenant, document, scenario.pk, automatic["trigger"])
+        tenant, conversation = authorize(tenant, document, conversation_id, scenario_id=scenario.pk, trigger_kind=kind)
+        if not any(t["kind"] == kind for t in document["triggers"]):
             raise ExecutionDenied("permission")
         existing = ScenarioRun.objects.filter(organization_id=tenant.organization_id,
             scenario_key=str(scenario.public_id), trigger_key=dedup).first()
@@ -38,11 +42,13 @@ def launch(*, tenant, scenario_id, trigger_key, parameters, conversation_id=None
             # Reuse is identity only: changed input cannot replace the snapshot.
             return existing, False
         from chatballs.integrations.execution.conditions import require_conditions
-        require_conditions(document, conversation, parameters, registry=registry)
-        if len(document["steps"]) != 1 or document["steps"][0]["kind"] != "action":
+        from chatballs.integrations.scenarios.values import RunValues
+        require_conditions(document, conversation, parameters, registry=registry,
+            values=RunValues(parameters=parameters, context=context_values(conversation), event=automatic["event"]) if automatic else None)
+        if automatic or len(document["steps"]) != 1 or document["steps"][0]["kind"] != "action" or document["steps"][0].get("connection") == "chatballs":
             from chatballs.integrations.execution.composite_launch import snapshot
             return snapshot(tenant, document, parameters, conversation, scenario=scenario, dedup=dedup,
-                            registry=registry, preview=preview, confirmation=confirmation), True
+                            registry=registry, preview=preview, confirmation=confirmation, automatic=automatic), True
         return _snapshot(tenant, document, parameters, conversation, scenario=scenario, dedup=dedup,
                          scenario_key=str(scenario.public_id), registry=registry, preview=preview, confirmation=confirmation), True
 
@@ -106,6 +112,10 @@ def _snapshot(tenant, document, parameters, conversation, *, scenario, dedup, sc
     run.definition = {"document": document, "parameters": parameters, "context": context,
                       "kind": "scenario" if scenario else "direct", "grantId": grant_id,
                       "contracts": {f"{integration.pk}:{block['target']}": contract}}
+    from chatballs.integrations.scenarios.entity_links import snapshot as link_snapshot
+    data = run.definition
+    data["links"] = link_snapshot(conversation)
+    run.definition = data
     run.structure = {"name": scenario.name if scenario else "", "operationTitle": operation.title_key,
                      "connection": integration.name, "definitionUpdatedAt": scenario.updated_at.isoformat() if scenario else None}
     run.save()

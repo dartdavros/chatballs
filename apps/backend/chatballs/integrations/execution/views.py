@@ -69,11 +69,11 @@ class RunListView(RunAPIView):
                 match |= Q(pk=int(query)) | Q(conversation_id=int(query))
             rows = rows.filter(match)
         state = request.query_params.get("state")
-        if state in {"running", "approval", "completed", "failed", "unknown", "cancelled", "pending", "queued", "reconciling"}:
+        if state in {"running", "approval", "completed", "failed", "unknown", "cancelled", "pending", "queued", "reconciling", "decision"}:
             rows = rows.filter(state=state)
         group = request.query_params.get("group")
         if group == "attention":
-            rows = rows.filter(state__in=("failed", "unknown", "approval"))
+            rows = rows.filter(state__in=("failed", "unknown", "approval", "decision"))
         elif group == "active":
             rows = rows.filter(finished_at__isnull=True)
         elif group == "finished":
@@ -116,7 +116,10 @@ class RunControlView(RunAPIView):
             run = intentional_repeat(request.tenant_context, public_id,
                 trigger_key=data.get("triggerKey"), acknowledged=data.get("acknowledged"))
         else:
-            if action == "decide":
+            if action == "resolve":
+                from chatballs.integrations.scenarios.conflicts import resolve
+                run = resolve(request.tenant_context, public_id, expected_digest=data.get("digest"), choices=data.get("choices"))
+            elif action == "decide":
                 from chatballs.integrations.execution.wait_controls import decide
                 run = decide(request.tenant_context, public_id, path=data.get("path"), generation=data.get("generation"),
                     digest=data.get("digest"), accepted=data.get("accepted"))

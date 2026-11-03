@@ -1,4 +1,5 @@
 MESSAGES = {
+    "scenarios.exchange_unavailable": "Сервис не поддерживает выбранное направление обмена с проверкой актуальности записи. Выберите другое направление или подключение.",
     "scenarios.step_completed": "Выполнен",
     "scenarios.step_failed": "Ошибка",
     "audit.action_integrations_scenario_saved": "Сохранён сценарий",

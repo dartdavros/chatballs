@@ -46,6 +46,8 @@ def validate_adapter(adapter: AdapterDescriptor, registry: AdapterRegistry) -> l
     _unique(problems, "lookup", [item.key for item in adapter.lookups])
     _unique(problems, "entity", [item.key for item in adapter.entities])
     for entity in adapter.entities:
+        from chatballs.integrations.adapters.entity_contracts import validate_entity
+        problems.extend(validate_entity(adapter, entity))
         _schema(problems, f"entity {entity.key}", entity.fields)
         problems.extend(_controls(entity.fields, registry))
     for operation in adapter.operations:

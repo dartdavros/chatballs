@@ -4,6 +4,13 @@ from chatballs.integrations.execution.permissions import ExecutionDenied, author
 
 
 def authorize_chain(tenant, run):
+    kind = run.definition.get("triggerKind", "staff")
+    if kind in {"chatballs", "service", "schedule", "api"}:
+        from chatballs.integrations.execution.automation import check
+        if run.scenario_id is None:
+            raise ExecutionDenied("scenario_disabled")
+        check(tenant, run.definition["document"], run.scenario_id, run.definition["trigger"])
+        check(tenant, run.scenario.definition, run.scenario_id, run.definition["trigger"], current=True)
     if run.parent_id:
         current = run.scenario
         if not run.definition["document"]["access"]["delegated"] or current is None or not current.definition["access"]["delegated"]:
@@ -17,6 +24,9 @@ def authorize_chain(tenant, run):
         if conversation and expected_contact != (str(conversation.contact_id) if conversation.contact_id else None):
             raise ExecutionDenied("context_changed")
         from chatballs.integrations.execution.conditions import require_conditions
-        require_conditions(parent.definition["document"], conversation, parent.definition["parameters"])
+        from chatballs.integrations.scenarios.values import RunValues
+        from chatballs.integrations.execution.permissions import context_values
+        require_conditions(parent.definition["document"], conversation, parent.definition["parameters"], values=RunValues(
+            parameters=parent.definition["parameters"], context=context_values(conversation), event=parent.definition.get("event", {})))
     return authorize(tenant, run.definition["document"], run.conversation_id,
-                     scenario_id=run.scenario_id, trigger_kind="scenario" if run.parent_id else "staff")
+                     scenario_id=run.scenario_id, trigger_kind="scenario" if run.parent_id else kind)

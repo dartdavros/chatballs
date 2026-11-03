@@ -4,8 +4,12 @@ from chatballs.integrations.scenarios import views
 from chatballs.integrations.scenarios.catalog_views import ScenarioCatalogView
 from chatballs.integrations.scenarios.key_views import ScenarioRotateKeyView
 from chatballs.integrations.scenarios.synchronization_views import ServiceSynchronizationView
+from chatballs.integrations.scenarios.entity_link_views import EntityLinksView, EntityLinkSearchView, EntityLinkCommandView
 
 urlpatterns = [
+    path("entity-links/", EntityLinksView.as_view(), name="entity-links"),
+    path("entity-links/<int:pk>/search/", EntityLinkSearchView.as_view(), name="entity-link-search"),
+    path("entity-links/<int:pk>/", EntityLinkCommandView.as_view(), name="entity-link-command"),
     path("scenarios/", views.ScenarioListView.as_view(), name="scenario-list"),
     path("scenarios/check/", views.ScenarioCheckView.as_view(), name="scenario-check"),
     path("scenarios/catalog/", ScenarioCatalogView.as_view(), name="scenario-catalog"),

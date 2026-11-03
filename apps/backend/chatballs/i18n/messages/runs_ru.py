@@ -1,4 +1,11 @@
 MESSAGES = {
+    "runs.synchronization": "Обмен данными",
+    "runs.synchronization_plan": "Сопоставить изменения",
+    "runs.synchronization_validate": "Проверить актуальность данных",
+    "runs.synchronization_local": "Обновить данные Chatballs",
+    "runs.synchronization_finish": "Сохранить результат обмена",
+    "runs.state_decision": "Нужно решение",
+    "runs.field": "Поле",
     "runs.service": "Сервис",
     "runs.run_number": "Номер запуска",
     "runs.branch_number": "Ветвь {number}",

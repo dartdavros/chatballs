@@ -15,7 +15,7 @@ export function ConversationRunsProvider({ conversationId, children, openContext
   useEffect(() => { if (sheet && !mobile) openContext(); }, [sheet, mobile, openContext]);
   return <ConversationRunsContext.Provider value={state}>{children}
     <Drawer open={mobile && Boolean(sheet)} height="88vh" placement="bottom"
-      push={false} closable={false} onClose={state.close} className="run-conversation-drawer" title={sheet?.action?.title ?? t("runs.details")}
+      push={false} closable={false} onClose={state.close} className="run-conversation-drawer" title={sheet?.link ? t("runs.replace_link") : sheet?.action?.title ?? t("runs.details")}
       extra={<IconButton icon="close" label={t("common.close")} onClick={state.close} />}>
       {mobile && <ConversationRunContent />}
     </Drawer>

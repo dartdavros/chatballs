@@ -28,6 +28,8 @@ def recovery_handler(step, operation):
 
 
 def outcome(step, result):
+    if result.state == ResultState.DECISION:
+        return "decision"
     if result.state == ResultState.COMPLETED:
         return "completed"
     if result.state == ResultState.PENDING:

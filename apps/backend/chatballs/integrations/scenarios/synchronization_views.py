@@ -22,7 +22,12 @@ class ServiceSynchronizationView(ScenarioAPIView):
     def get(self, request, connection_id):
         connection = self.connection(request, connection_id)
         row = ServiceSynchronizationSettings.objects.filter(integration=connection).first()
-        return Response({"revision": row.revision if row else 0, "definition": row.definition if row else {"version": 1, "synchronization": []}})
+        latest = row.checkpoints.select_related("run").order_by("-run__created_at").first() if row else None
+        from chatballs.integrations.execution.errors import error_message
+        from chatballs.integrations.execution.payloads import run_payload
+        result = run_payload(latest.run) if latest and latest.run else None
+        return Response({"revision": row.revision if row else 0, "definition": row.definition if row else {"version": 1, "synchronization": []},
+            "result": result, "error": error_message(latest.error_code) if latest and latest.error_code else ""})
 
     def put(self, request, connection_id):
         connection = self.connection(request, connection_id, lock=True)
@@ -43,11 +48,14 @@ class ServiceSynchronizationView(ScenarioAPIView):
             return Response({"issues": [issue_payload(issue) for issue in issues]}, status=400)
         if any(str(connection_id) not in {str(pair[side]["connection"]) for side in ("left", "right")} for pair in document["synchronization"]):
             raise ValidationError({"definition": t("scenarios.invalid_reference")})
+        from chatballs.integrations.scenarios.synchronization_support import require_supported
+        require_supported(request.tenant_context, document["synchronization"])
         if row is None:
             row = ServiceSynchronizationSettings(organization_id=connection.organization_id, integration=connection)
         else:
             row.revision += 1
         row.definition = document
+        row.delegate = request.tenant_context.membership if any(pair["enabled"] for pair in document["synchronization"]) else None
         row.save()
         record_audit_event(action="integrations.synchronization_saved", actor=request.user,
             organization=request.tenant_context.organization, object_type="Integration", object_id=str(connection_id),

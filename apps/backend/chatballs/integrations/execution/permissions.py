@@ -64,8 +64,11 @@ def authorize(tenant, document, conversation_id=None, *, scenario_id=None, trigg
     return tenant, conversation
 
 
-def authorize_run(tenant, run):
-    if run.definition.get("kind") == "direct":
+def authorize_run(tenant, run, *, check_conditions=True):
+    if run.definition.get("kind") == "synchronization":
+        from chatballs.integrations.scenarios.synchronization_access import authorize_exchange
+        result = authorize_exchange(tenant, run)
+    elif run.definition.get("kind") == "direct":
         from chatballs.integrations.scenario_state.grants import ActionGrant
         tenant = current_actor(tenant)
         grant_id = run.definition.get("grantId")
@@ -89,7 +92,10 @@ def authorize_run(tenant, run):
     if conversation and expected_contact != (str(conversation.contact_id) if conversation.contact_id else None):
         raise ExecutionDenied("context_changed")
     from chatballs.integrations.execution.conditions import require_conditions
-    require_conditions(run.definition["document"], conversation, run.definition["parameters"])
+    from chatballs.integrations.scenarios.values import RunValues
+    if check_conditions:
+        require_conditions(run.definition["document"], conversation, run.definition["parameters"],
+            values=RunValues(parameters=run.definition["parameters"], context=context_values(conversation), event=run.definition.get("event", {})))
     return current_tenant, conversation
 
 

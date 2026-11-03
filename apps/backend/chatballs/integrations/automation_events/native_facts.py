@@ -17,9 +17,10 @@ from chatballs.tenancy.context import TenantContext
 
 
 def enqueue(conversation, kind, identity, *, occurred_at, tag=None):
+    from chatballs.integrations.automation_events.causality import chain
     tenant = TenantContext.for_resource(conversation.organization)
     payload = {"conversationId": conversation.pk, "contactId": conversation.contact_id,
-               "event": kind, "identity": identity, "time": occurred_at.isoformat()}
+               "event": kind, "identity": identity, "time": occurred_at.isoformat(), "causalChain": list(chain.get())}
     if tag is not None:
         payload["tagId"] = tag
     enqueue_event(DomainEvent(aggregate_type="scenario_native_fact", aggregate_id=identity,
@@ -57,4 +58,4 @@ def deliver_fact(payload, tenant):
     if "tagId" in payload:
         data["tagId"] = payload["tagId"]
     persist(tenant, None, VerifiedEvent(event_id=payload["identity"], event_key=payload["event"],
-        occurred_at=parse_datetime(payload["time"]), payload=data), replay_seconds=30 * 86400)
+        occurred_at=parse_datetime(payload["time"]), payload=data, causal_chain=tuple(payload.get("causalChain", []))), replay_seconds=30 * 86400)

@@ -150,3 +150,59 @@ A shorter period requires explicit confirmation and takes effect no earlier than
 Longer periods cannot restore deleted data. Cleared details cannot be recovered
 from the safe journal. After history expires, only minimal command deduplication
 identity remains. The audit retains its own policy.
+
+## Automatic launches
+
+In Launch, choose a Chatballs event, a connected service event, a schedule, or
+the external API. Enable Allow launching without an employee after reviewing
+the steps: the scenario uses your administrator permissions, checked before
+every action. Copies do not inherit this authorization automatically. Disabling
+a scenario stops new actions.
+
+One event can launch several independent scenarios. Redelivery and definition
+edits do not repeat the same scenario event. One subscriber failing does not
+cancel the others. Pausing a connection preserves accepted delivery for resume;
+a disabled scenario does not replay events received while it was disabled.
+The scenario editor/list shows a stopped launch reason; the journal shows
+results for executions that have started.
+
+Schedules retain the organization's time zone. Choose a time, weekdays or a day
+of the month, and a missed-launch policy. Run once catches up only the latest
+missed slot; Skip does not catch up. Normal servicing delays of up to a minute
+still belong to the current slot. By default a missing daylight-saving time is
+skipped and a repeated local time uses its first occurrence once. Editing a
+scenario does not repeat an already processed slot.
+
+Save an API scenario and copy its generated address, new key and request example.
+The key is shown once; rotation revokes the old key. Each new command needs its
+own Idempotency-Key header; retries of that command reuse the same value. Inputs
+are sent in parameters. The response identifies the run and its actual state,
+without promising a completed effect. The key cannot authorize another scenario
+or an inaccessible conversation.
+
+## Linked records and data exchange
+
+Linked records in a conversation show records explicitly linked by scenarios.
+Link another record searches first: select the intended result and confirm.
+The first candidate is never selected automatically. If none is found, try
+another number or name. Unlinking/replacing does not change or delete the remote
+record. A matching email or phone does not prove identity or merge contacts.
+
+Data exchange in a service card processes existing links only. Enable the
+required entity pairs and choose directions, field mappings, source of truth,
+conflict policy and deletion behavior. Conversation status and service stage
+maps are independent in each direction. Unmapped values preserve the receiving
+status. An unsupported adapter direction cannot be enabled; an unconditional
+write does not substitute for a current-version check.
+
+With Do not change, the journal's Needs attention group shows Decision needed.
+An owner or administrator selects a value for every field and chooses Apply
+in both systems. Saving the selection has not completed the writes: wait for
+the step results. If either record has changed, the stale decision is rejected.
+Refresh the values and review the change again.
+
+A running execution keeps its original link; later executions use the new one.
+Deletion follows the selected policy and supported domain action. An access
+failure is not evidence of deletion. Exchange does not reopen closed
+conversations. Partial success and unknown outcomes remain visible in the
+journal; inspect them before intentionally launching again.

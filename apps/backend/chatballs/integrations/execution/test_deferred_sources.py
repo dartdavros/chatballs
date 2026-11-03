@@ -17,7 +17,6 @@ class DeferredSourceTests(ExecutionCase):
         conditions = [
             {"kind": "context_present", "path": "conversation.topic", "present": False},
             {"kind": "tag", "scope": "contact", "tag": 1, "present": False},
-            {"kind": "no_link", "connection": str(self.integration.pk), "entity": "lead"},
             {"left": {"source": "context", "path": "conversation.topic"}, "op": "empty"},
             {"left": {"source": "context", "path": "conversation", "transform": "object.get@1",
                       "args": {"path": "topic"}}, "op": "empty"},

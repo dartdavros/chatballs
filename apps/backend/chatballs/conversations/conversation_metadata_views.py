@@ -11,9 +11,8 @@ from django.utils import timezone
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from chatballs.conversations.contact_card import apply_card_fields
+from chatballs.conversations.contact_card import save_card_fields
 from chatballs.conversations.models import (
-    ContactFieldValue,
     Conversation,
     ConversationLabel,
     ConversationPriority,
@@ -65,12 +64,10 @@ class ConversationContactView(ConversationViewBase):
         contact = conversation.contact
         if contact is None:
             return Response({"detail": t("conversations.no_contact")}, status=400)
-        changed, error = apply_card_fields(contact, request.data)
+        changed, error = save_card_fields(contact, request.data)
         if error:
             return Response({"detail": error}, status=400)
         if changed:
-            contact.save(update_fields=changed)
-            ContactFieldValue.objects.filter(contact=contact, key__in=changed).delete()
             self._audit(request, "contact_updated", conversation)
         return Response(
             {

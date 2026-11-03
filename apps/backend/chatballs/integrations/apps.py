@@ -17,3 +17,6 @@ class IntegrationsConfig(AppConfig):
         from chatballs.integrations.execution import retention  # noqa: F401
         from chatballs.integrations.execution import cancellation  # noqa: F401
         from chatballs.integrations.automation_events import callbacks, replies, native_facts  # noqa: F401
+        from chatballs.integrations.automation_events import fanout, polling  # noqa: F401
+        from chatballs.integrations.automation_events import entity_versions  # noqa: F401
+        from chatballs.integrations.scenarios import synchronization_runtime  # noqa: F401

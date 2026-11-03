@@ -23,3 +23,8 @@ export function RunValues({ schema, value }: { schema: ServiceField | null; valu
   if (!rows.length) return null;
   return <dl className="run-values">{rows.map(([label, text], i) => <Fragment key={`${label}:${i}`}><dt>{label}</dt><dd>{text}</dd></Fragment>)}</dl>;
 }
+
+export function displayRunValue(schema: ServiceField | null, value: unknown): string {
+  if (schema) return entries(schema, value, "").map(([label, text]) => label ? `${label}: ${text}` : text).join(" · ") || "—";
+  return typeof value === "number" ? fmt.number(value) : typeof value === "string" ? value : "—";
+}

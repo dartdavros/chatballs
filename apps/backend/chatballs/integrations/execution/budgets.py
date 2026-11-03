@@ -88,4 +88,8 @@ def causal_chain(run):
         if run.scenario_key in values or len(values) >= 16:
             raise ExecutionDenied("recursion")
         values.append(run.scenario_key)
-    return tuple(reversed(values))
+    inherited = run.definition.get("causalChain", [])
+    result = [*inherited, *reversed(values)]
+    if len(result) > 16 or len(set(result)) != len(result):
+        raise ExecutionDenied("recursion")
+    return tuple(result)

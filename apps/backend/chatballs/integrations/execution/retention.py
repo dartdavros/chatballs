@@ -130,4 +130,6 @@ def cleanup(tenant, *, limit=50):
         _delete_orphan_files(tenant, cleared_step_ids)
         from chatballs.integrations.automation_events.retention import cleanup_receipts
         cleanup_receipts(tenant, now=now)
+        from chatballs.integrations.scenarios.synchronization_retention import clear_inactive
+        clear_inactive(tenant, now=now, days=days)
         return count

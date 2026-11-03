@@ -23,6 +23,9 @@ def evaluate_conditions(document, conversation, parameters, *, registry=None, va
             return bool(conversation and conversation.connection_id == condition["connection"]) == condition["present"]
         if kind == "tag" and condition["scope"] == "conversation":
             return bool(conversation and conversation.labels.filter(pk=condition["tag"]).exists()) == condition["present"]
+        if kind in {"has_link", "no_link"}:
+            from chatballs.integrations.scenarios.entity_links import has_link
+            return has_link(conversation, condition["connection"], condition["entity"]) == (kind == "has_link")
         if kind is not None:
             # Entity-link/contact-label evaluation belongs to its real domain
             # implementation; absence is not evidence that a link is absent.
@@ -46,6 +49,6 @@ def evaluate_conditions(document, conversation, parameters, *, registry=None, va
     return accepted
 
 
-def require_conditions(document, conversation, parameters, *, registry=None):
-    if not evaluate_conditions(document, conversation, parameters, registry=registry):
+def require_conditions(document, conversation, parameters, *, registry=None, values=None):
+    if not evaluate_conditions(document, conversation, parameters, registry=registry, values=values):
         raise ExecutionDenied("conditions_not_met")

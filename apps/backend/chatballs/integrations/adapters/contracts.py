@@ -23,6 +23,8 @@ from chatballs.integrations.adapters.templates import TemplateStep as TemplateSt
 
 if TYPE_CHECKING:
     from chatballs.integrations.models import Integration
+    from chatballs.integrations.adapters.synchronization import SynchronizationBinding
+    from chatballs.integrations.adapters.references import EntityReferences
 
 
 class Effect(StrEnum):
@@ -67,6 +69,7 @@ class ResultState(StrEnum):
     PENDING = "pending"
     FAILED = "failed"
     UNKNOWN = "unknown"
+    DECISION = "decision"
 
 
 @dataclass(frozen=True)
@@ -248,6 +251,8 @@ class EntityDescriptor:
     title_key: str
     fields: TypeSpec
     native_entities: tuple[str, ...] = ()
+    synchronization: SynchronizationBinding | None = None
+    references: EntityReferences | None = None
 
 
 @dataclass(frozen=True)

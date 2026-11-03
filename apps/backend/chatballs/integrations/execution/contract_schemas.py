@@ -19,7 +19,8 @@ def read_spec(value):
 
 
 def frozen_schemas(run, step, operation):
-    saved = run.definition.get("contracts", {}).get(f"{step.integration_id}:service:{step.operation_key}")
+    key = f"chatballs:chatballs:{step.operation_key}" if step.adapter_key == "chatballs" else f"{step.integration_id}:service:{step.operation_key}"
+    saved = run.definition.get("contracts", {}).get(key)
     if saved and "input" in saved:
         return read_spec(saved["input"]), read_spec(saved["output"])
     # Old snapshots have no schema copy: withhold values if their original

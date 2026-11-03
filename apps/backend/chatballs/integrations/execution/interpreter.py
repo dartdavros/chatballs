@@ -25,7 +25,7 @@ def is_composite(run):
 def advance(tenant, public_id, *, registry=None):
     with tenant_atomic(tenant):
         run = lock_run(tenant, public_id)
-        if run.data_cleared_at or run.finished_at:
+        if run.data_cleared_at or run.finished_at or run.state == "decision":
             return
         from chatballs.integrations.execution.waits import expire_operations
         expire_operations(tenant, run)
@@ -45,7 +45,7 @@ def advance(tenant, public_id, *, registry=None):
         run.progress.filter(path__in=due).exclude(state__in=DONE).update(state="queued")
         actor = TenantContext.for_membership(run.initiator) if run.initiator_id else tenant
         try:
-            authorize_run(actor, run)
+            authorize_run(actor, run, check_conditions=False)
             denied = "cancelled" if run.cancel_requested_at else None
         except ExecutionDenied as error:
             denied = str(error)
@@ -124,3 +124,6 @@ def aggregate(tenant, actor, run, root, registry):
     if not run.finished_at and ("queued" in states or run.progress.filter(state="queued").exists()):
         schedule(tenant, run)
     run.save(update_fields=["state", "finished_at"])
+    if run.definition.get("kind") == "synchronization" and (run.finished_at or run.state == "unknown"):
+        from chatballs.integrations.scenarios.synchronization_runtime import schedule_exchange
+        schedule_exchange(tenant, run.definition["exchange"]["checkpoint"])

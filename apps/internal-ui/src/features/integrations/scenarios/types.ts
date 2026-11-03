@@ -46,13 +46,15 @@ export type ScenarioDocument = {
 };
 export type Issue = { path: string; code: string; message: string };
 export type Scenario = {
+  automationError?: string;
   id: string; name: string; revision: number; enabled: boolean; definition: ScenarioDocument; issues?: Issue[];
   origin: { adapter: string; key: string; version: number | null }; connections: number[]; updatedAt: string;
   triggers?: TriggerKind[];
   externalKeys?: ExternalKey[];
 };
 export type ExternalKey = { id: string; trigger: string; url: string; key?: string };
-export type ExchangeSettings = { revision: number; definition: { version: 1; synchronization: SyncPair[] } };
+export type ExchangeSettings = { revision: number; definition: { version: 1; synchronization: SyncPair[] };
+  result?: { stateLabel: string; finishedAt: string | null } | null; error?: string };
 export type Entity = { key: string; title: string; fields: ServiceField; writableFields?: string[]; nativeEntities?: string[] };
 export type Operation = { key: string; title: string; input: ServiceField; output: ServiceField; entityKind?: string };
 export type EditorCatalog = {

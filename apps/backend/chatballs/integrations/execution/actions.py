@@ -8,6 +8,11 @@ from chatballs.integrations.execution.permissions import ExecutionDenied
 
 def resolve_action(organization_id, connection_id, target, *, registry=None, expected=None, recovering=False):
     registry = registry or default_registry()
+    if connection_id == "chatballs" and target.startswith("chatballs:"):
+        from chatballs.integrations.execution.native import ADAPTER, operation
+        if expected and expected != (ADAPTER.key, ADAPTER.contract_version):
+            raise ExecutionDenied("version_incompatible")
+        return None, None, ADAPTER, None, operation(target.removeprefix("chatballs:"))
     if not str(connection_id).isdecimal() or not target.startswith("service:"):
         raise ExecutionDenied("operation_unavailable")
     integration = Integration.objects.select_related("service_settings").filter(

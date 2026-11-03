@@ -14,6 +14,7 @@ export function ScenarioHeader({ editor, onDelete }: { editor: ScenarioEditorSta
     { key: "delete", label: t("scenarios.delete"), danger: true, disabled: !draft.id || saving, onClick: onDelete },
   ];
   return <>
+    {draft.automationError && <p className="scenario-banner" role="alert">{draft.automationError}</p>}
     <button className="link is-muted has-icon scenario-back" type="button" disabled={saving} onClick={() => editor.open(null)}>
       <Icon name="chevronLeft" size={14} />{t("scenarios.title")}</button>
     <header className="scenario-head">

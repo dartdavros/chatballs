@@ -14,9 +14,13 @@ from chatballs.integrations.execution.frames import save
 def apply_control(tenant, run, *, action, digest, path):
     if action == "cancel":
         run.cancel_requested_at = run.cancel_requested_at or timezone.now()
-        run.save(update_fields=["cancel_requested_at"])
+        if run.state == "decision":
+            run.state = "queued"
+        run.save(update_fields=["cancel_requested_at", "state"])
         for step in run.steps.select_for_update().exclude(state__in=("completed", "failed", "cancelled")):
-            if step.sent_at is None and step.state != "running":
+            # A decision is a completed read-only planning attempt, not an
+            # uncertain external effect. It can stop without reconciliation.
+            if (step.sent_at is None and step.state != "running") or step.state == "decision":
                 step.state = "cancelled"
                 step.save(update_fields=["state"])
         schedule(tenant, run)

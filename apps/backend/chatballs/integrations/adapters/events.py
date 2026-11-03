@@ -15,3 +15,13 @@ class VerifiedEvent:
     correlation: str = ""
     sequence: int | None = None
     result: OperationResult | None = None
+    causal_chain: tuple[str, ...] = ()
+    entity_kind: str = ""
+    entity_id: str = ""
+
+
+@dataclass(frozen=True)
+class PollResult:
+    events: tuple[VerifiedEvent, ...]
+    cursor: str
+    retry_after: int = 30

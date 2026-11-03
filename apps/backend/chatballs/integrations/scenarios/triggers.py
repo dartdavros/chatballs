@@ -42,7 +42,9 @@ def check_triggers(triggers, *, context, path, issues):
 def _schedule(trigger, path, issues):
     try:
         ZoneInfo(trigger.get("timezone", ""))
-        time.fromisoformat(trigger.get("time", ""))
+        clock = time.fromisoformat(trigger.get("time", ""))
+        if clock.tzinfo is not None:
+            raise ValueError("time")
         frequency = trigger.get("frequency", "days")
         if trigger.get("date"):
             date.fromisoformat(trigger["date"])

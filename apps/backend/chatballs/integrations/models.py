@@ -152,7 +152,7 @@ from chatballs.integrations.scenario_state.connections import (  # noqa: E402
 from chatballs.integrations.scenario_state.files import ServiceFile  # noqa: E402
 from chatballs.integrations.scenario_state.definitions import ScenarioConnection, ScenarioDefinition  # noqa: E402
 from chatballs.integrations.scenario_state.subscriptions import ScenarioExternalKey  # noqa: E402
-from chatballs.integrations.scenario_state.synchronization import ServiceSynchronizationSettings  # noqa: E402
+from chatballs.integrations.scenario_state.synchronization import ServiceSynchronizationSettings, SynchronizationCheckpoint  # noqa: E402,F401
 from chatballs.integrations.scenario_state.runs import ScenarioRun  # noqa: E402,F401
 from chatballs.integrations.scenario_state.steps import ScenarioStep  # noqa: E402,F401
 from chatballs.integrations.scenario_state.journal import RunJournalEntry  # noqa: E402,F401
@@ -162,6 +162,8 @@ from chatballs.integrations.scenario_state.grants import ActionGrant  # noqa: E4
 from chatballs.integrations.scenario_state.progress import ScenarioBudget, ScenarioProgress  # noqa: E402,F401
 from chatballs.integrations.scenario_state.waits import ScenarioWait  # noqa: E402,F401
 from chatballs.integrations.scenario_state.receipts import EventReceipt  # noqa: E402,F401
+from chatballs.integrations.scenario_state.automation import ScenarioAutomation, EventDelivery, EventSubscription, ScheduleCheckpoint, PollCursor  # noqa: E402,F401
+from chatballs.integrations.scenario_state.entity_links import EntityLink, IntegrationEntityVersion  # noqa: E402,F401
 
 __all__ = [
     "PROVIDER_KIND",

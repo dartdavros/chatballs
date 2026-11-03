@@ -53,6 +53,9 @@ def run_payload(run, *, detail=False, tenant=None):
             continue
         adapter = default_registry().adapter(step.adapter_key)
         operation = adapter.operation(step.operation_key) if adapter and adapter.contract_version == step.adapter_version else None
+        if step.adapter_key == "chatballs" and step.adapter_version == 1:
+            from chatballs.integrations.execution.native import operation as native_operation
+            operation = native_operation(step.operation_key)
         values = step.definition if not run.data_cleared_at else {}
         from chatballs.integrations.execution.contract_schemas import frozen_schemas
         input_spec, output_spec = frozen_schemas(run, step, operation) if run.content else (None, None)
@@ -64,10 +67,15 @@ def run_payload(run, *, detail=False, tenant=None):
             "outputSchema": field_payload("", output_spec) if output_spec else None,
             "arguments": clean_value(input_spec, values.get("arguments", {}), secrets) if input_spec else {},
             "result": clean_value(output_spec, values.get("result", {}), secrets) if output_spec else {}}
+        if step.adapter_key == "chatballs" and step.operation_key.startswith("synchronization."):
+            item.update(inputSchema=None, outputSchema=None, arguments={}, result={})
         if step.state == "approval":
             item["approvalDigest"] = invocation_digest(step, run)
         steps.append(item)
     payload["steps"] = steps
+    if run.definition.get("kind") == "synchronization":
+        from chatballs.integrations.scenarios.conflicts import payload as conflict_payload
+        payload["conflict"] = conflict_payload(tenant, run) if tenant else None
     payload["journal"] = [{"id": row.pk, "label": t(f"runs.journal_{row.code}") if row.code in {
         "created", "claimed", "recovering", "retry_scheduled", "request_sent", "reconcile_sent", "approve", "cancel", "reconcile"
     } else t(f"runs.state_{row.code}") if row.code in {

@@ -34,7 +34,7 @@ def require_supported_sources(document):
             _context_path(condition["path"])
         elif kind == "tag" and condition["scope"] != "conversation":
             raise ExecutionDenied("conditions_unavailable")
-        elif kind not in {None, "tag", "channel"}:
+        elif kind not in {None, "tag", "channel", "has_link", "no_link"}:
             # EntityLink and any unknown domain predicate remain blocked.
             raise ExecutionDenied("conditions_unavailable")
         if kind is None:

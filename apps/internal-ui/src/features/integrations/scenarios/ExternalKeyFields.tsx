@@ -7,7 +7,7 @@ import type { ExternalKey } from "./types";
 export function ExternalKeyFields({ value, disabled, rotate }: { value?: ExternalKey; disabled: boolean; rotate: () => Promise<void> }) {
   const [confirming, setConfirming] = useState(false);
   if (!value) return <p className="scenario-banner">{t("scenarios.key_pending")}</p>;
-  const example = `curl -X POST '${value.url}' -H 'Authorization: Bearer ${value.key ?? "<key>"}' -H 'Content-Type: application/json' -d '{"inputs":{}}'`;
+  const example = `curl -X POST '${value.url}' -H 'Authorization: Bearer ${value.key ?? "<key>"}' -H 'Idempotency-Key: <request-id>' -H 'Content-Type: application/json' -d '{"parameters":{}}'`;
   return <div className="scenario-form">
     <label className="scenario-copy-field"><span>{t("scenarios.api_address")}</span><div><code>{value.url}</code><CopyButton value={value.url} label={t("common.copy")} /></div></label>
     <label className="scenario-copy-field"><span>{t("scenarios.api_key")}</span><div><code>{value.key ?? "••••••••••••••••••••"}</code>

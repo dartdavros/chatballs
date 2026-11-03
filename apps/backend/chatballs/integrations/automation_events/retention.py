@@ -12,6 +12,8 @@ def cleanup_receipts(tenant, *, now):
             active=Exists(consumers.filter(run__finished_at__isnull=True)), referenced=Exists(consumers),
         ).filter(active=False).filter(Q(cleared_at__isnull=True) | Q(referenced=False)).order_by("expires_at")[:50]
     for row in rows:
+        if row.deliveries.filter(state="pending").exists():
+            continue
         if row.referenced:
             row.content = ""
             row.cleared_at = now

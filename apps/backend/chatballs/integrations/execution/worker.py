@@ -18,6 +18,25 @@ _POOL = ThreadPoolExecutor(max_workers=2, thread_name_prefix="service-effect")
 _SLOTS = BoundedSemaphore(2)
 
 
+def submit_io(function, *args):
+    """Share the same bounded lane with event polling; never block dispatch."""
+    if not _SLOTS.acquire(blocking=False):
+        return False
+    def invoke():
+        close_old_connections()
+        try:
+            function(*args)
+        finally:
+            close_old_connections()
+            _SLOTS.release()
+    try:
+        _POOL.submit(invoke)
+    except Exception:
+        _SLOTS.release()
+        raise
+    return True
+
+
 def _run(tenant, public_id, token):
     close_old_connections()
     try:

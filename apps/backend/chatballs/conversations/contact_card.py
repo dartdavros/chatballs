@@ -32,3 +32,13 @@ def apply_card_fields(contact, data) -> tuple[list[str], str]:
         setattr(contact, field, value)
         changed.append(field)
     return changed, ""
+
+
+def save_card_fields(contact, data) -> tuple[list[str], str]:
+    """Shared domain persistence, including provenance invalidation."""
+    changed, error = apply_card_fields(contact, data)
+    if changed and not error:
+        from chatballs.conversations.models import ContactFieldValue
+        contact.save(update_fields=changed)
+        ContactFieldValue.objects.filter(contact=contact, key__in=changed).delete()
+    return changed, error

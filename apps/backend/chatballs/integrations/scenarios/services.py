@@ -46,6 +46,7 @@ def save_definition(*, tenant, name, document, public_id=None, revision=None, en
         found = set(Integration.objects.filter(organization_id=tenant.organization_id, pk__in=connections).values_list("id", flat=True))
         if found != connections:
             raise ValidationError({"definition": t("scenarios.invalid_reference")})
+        previous = row.definition if row else {}
         if row is None:
             row = ScenarioDefinition(organization_id=tenant.organization_id)
         else:
@@ -54,6 +55,8 @@ def save_definition(*, tenant, name, document, public_id=None, revision=None, en
         row.definition = document
         row.enabled = enabled
         row.save()
+        from chatballs.integrations.automation_events.configuration import synchronize
+        synchronize(tenant, row, previous)
         row.connections.exclude(integration_id__in=connections).delete()
         for connection in connections:
             ScenarioConnection.objects.get_or_create(organization_id=tenant.organization_id, scenario=row, integration_id=connection)
@@ -63,7 +66,9 @@ def save_definition(*, tenant, name, document, public_id=None, revision=None, en
 def copy_definition(*, tenant, source, name):
     with tenant_atomic(tenant):
         row = ScenarioDefinition.objects.get(organization_id=tenant.organization_id, public_id=source)
-        copied, issues = save_definition(tenant=tenant, name=name, document=row.definition)
+        document = row.definition
+        document["access"]["delegated"] = False
+        copied, issues = save_definition(tenant=tenant, name=name, document=document)
         return copied, issues
 
 

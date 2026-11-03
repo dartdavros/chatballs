@@ -31,6 +31,8 @@ from chatballs.integrations.adapters.contracts import (
     Unsupported,
 )
 from chatballs.integrations.adapters.schema import TypeSpec
+from chatballs.integrations.adapters.bitrix24.references import references
+from chatballs.integrations.adapters.bitrix24.synchronization import binding as synchronization_binding
 
 # Телефон и почта в Битрикс24 — список значений с типом.
 _MULTIFIELD = {"transform": "list.of_object@1", "args": {"key": "VALUE", "extra": {"VALUE_TYPE": "WORK"}}}
@@ -140,7 +142,8 @@ ADAPTER = AdapterDescriptor(
     key="bitrix24",
     contract_version=1,
     entities=tuple(EntityDescriptor(key=entity, title_key=f"services.bitrix24.entity_{entity}", fields=entity_fields(entity),
-                                  native_entities=("contact",) if entity == "contact" else ("conversation",))
+                                  native_entities=("contact",) if entity == "contact" else ("conversation",), references=references(entity),
+                                  synchronization=synchronization_binding(entity))
                    for entity in ("lead", "contact", "deal")),
     package_dir=str(Path(__file__).parent),
     presentation=Presentation(

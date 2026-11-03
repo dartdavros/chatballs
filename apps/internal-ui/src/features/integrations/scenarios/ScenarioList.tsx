@@ -24,8 +24,8 @@ export function ScenarioList({ rows, catalog, open, openJournal }: { rows: Scena
             <small>{t(row.origin.key ? "scenarios.origin_preset" : "scenarios.origin_custom")}</small></div>
           <span>{(row.triggers ?? []).map((kind: TriggerKind) => t(`scenarios.trigger_${kind}`)).join(", ")}</span>
           <span>{connections.map(c => c.name).join(", ")}</span>
-          <span><StatusPill status={paused ? "pending" : row.enabled ? "healthy" : "draft"}
-            label={t(paused ? "scenarios.paused" : row.enabled ? "scenarios.on" : "scenarios.off")} /></span>
+          <span title={row.automationError}><StatusPill status={row.automationError ? "error" : paused ? "pending" : row.enabled ? "healthy" : "draft"}
+            label={t(paused || row.automationError ? "scenarios.paused" : row.enabled ? "scenarios.on" : "scenarios.off")} /></span>
           <button type="button" className="row-menu-button" aria-label={row.name} onClick={() => open(row.id)}><Icon name="chevronRight" size={16} /></button>
         </div>;
       })}

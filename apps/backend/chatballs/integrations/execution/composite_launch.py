@@ -13,30 +13,41 @@ from chatballs.integrations.scenarios.values import RunValues, prepare_inputs
 from chatballs.integrations.service_connections.payloads import field_payload
 
 
-def snapshot(tenant, document, parameters, conversation, *, scenario, dedup, registry, preview, confirmation):
+def snapshot(tenant, document, parameters, conversation, *, scenario, dedup, registry, preview, confirmation, automatic=None, source=None):
+    identity = str(scenario.public_id) if scenario else source["key"]
+    revision = scenario.revision if scenario else source["revision"]
+    name = scenario.name if scenario else source["name"]
     spec = read_type(document["parameters"])
     files = {str(pk) for pk in allowed_files(tenant, conversation.pk if conversation else None).values_list("public_id", flat=True)}
     # The same boundary validates optional/nested/file inputs at launch.
     prepare_inputs(spec, {k: {"source": "constant", "value": v} for k, v in parameters.items()}, RunValues(files=files), registry=registry)
-    frozen = freeze(tenant, document, scenario_id=scenario.public_id, registry=registry)
+    frozen = freeze(tenant, document, scenario_id=identity, registry=registry)
     context = context_values(conversation)
     plan = {"document": document, "parameters": parameters, "context": context, **frozen,
-            "scenarioKey": str(scenario.public_id), "revision": scenario.revision}
+            "scenarioKey": identity, "revision": revision}
     from chatballs.integrations.execution.budgets import MAX_SNAPSHOT, size
     from chatballs.integrations.execution.permissions import ExecutionDenied
     if size(plan) > MAX_SNAPSHOT:
         raise ExecutionDenied("budget_volume")
     if preview:
         secrets = integration_secrets(list(Integration.objects.filter(organization_id=tenant.organization_id)))
-        return {"confirmation": sign_plan(tenant, plan), "operation": scenario.name, "note": "",
+        return {"confirmation": sign_plan(tenant, plan), "operation": name, "note": "",
                 "inputSchema": field_payload("", spec), "arguments": clean_value(spec, parameters, secrets)}
     if confirmation is not None:
         verify_plan(tenant, plan, confirmation)
-    run = ScenarioRun(organization_id=tenant.organization_id, scenario=scenario, scenario_key=str(scenario.public_id),
-        trigger_key=dedup, revision=scenario.revision, initiator=tenant.membership, conversation=conversation)
+    run = ScenarioRun(organization_id=tenant.organization_id, scenario=scenario, scenario_key=identity,
+        trigger_key=dedup, revision=revision, initiator=tenant.membership, conversation=conversation)
     run.definition = {"document": document, "parameters": parameters, "context": context,
-                      "kind": "scenario", "composite": True, **frozen}
-    run.structure = {"name": scenario.name, "definitionUpdatedAt": scenario.updated_at.isoformat()}
+                      "kind": "scenario", "composite": True, **frozen,
+                      **({"triggerKind": automatic["trigger"]["kind"], "trigger": automatic["trigger"],
+                          "event": automatic["event"], "causalChain": automatic.get("causalChain", [])} if automatic else {})}
+    from chatballs.integrations.scenarios.entity_links import snapshot as link_snapshot
+    data = run.definition
+    data["links"] = link_snapshot(conversation)
+    if source:
+        data.update(kind="synchronization", triggerKind="synchronization", exchange=source["exchange"])
+    run.definition = data
+    run.structure = {"name": name, "definitionUpdatedAt": scenario.updated_at.isoformat() if scenario else source["updatedAt"]}
     run.save()
     from chatballs.integrations.execution.budgets import account_data, size
     account_data(run, size(run.definition))
