@@ -52,7 +52,17 @@ def _is_secure(scope: dict) -> bool:
         header = name.removeprefix("HTTP_").replace("_", "-").lower().encode("ascii")
         value = _header(scope, header).decode("latin-1")
         if value:
-            return value.split(",", 1)[0].strip() == secure_value
+            forwarded_proto = value.split(",", 1)[0].strip().lower()
+            # WebSocket over TLS is reported as wss by some reverse proxies.
+            # Django SECURE_PROXY_SSL_HEADER expects the HTTP scheme https.
+            # Accept this TLS equivalent only for WebSocket handshakes.
+            if (
+                scope.get("type") == "websocket"
+                and secure_value == "https"
+                and forwarded_proto == "wss"
+            ):
+                return True
+            return forwarded_proto == secure_value
     return scope.get("scheme") in {"wss", "https"}
 
 
