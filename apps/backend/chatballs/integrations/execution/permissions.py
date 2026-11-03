@@ -26,13 +26,13 @@ def current_actor(tenant):
                          correlation_id=tenant.correlation_id)
 
 
-def authorize(tenant, document, conversation_id=None, *, scenario_id=None):
+def authorize(tenant, document, conversation_id=None, *, scenario_id=None, trigger_kind="staff"):
     tenant = current_actor(tenant)
     if scenario_id is not None:
         current = ScenarioDefinition.objects.filter(pk=scenario_id, organization_id=tenant.organization_id).first()
         if current is None or not current.enabled:
             raise ExecutionDenied("scenario_disabled")
-        if not any(trigger["kind"] == "staff" for trigger in current.definition["triggers"]):
+        if not any(trigger["kind"] == trigger_kind for trigger in current.definition["triggers"]):
             raise ExecutionDenied("permission")
         # Runtime snapshot is immutable, but revocation applies immediately.
         policies = (document["access"], current.definition["access"])
@@ -82,7 +82,8 @@ def authorize_run(tenant, run):
     else:
         if run.scenario_id is None:
             raise ExecutionDenied("scenario_disabled")
-        result = authorize(tenant, run.definition["document"], run.conversation_id, scenario_id=run.scenario_id)
+        from chatballs.integrations.execution.principals import authorize_chain
+        result = authorize_chain(tenant, run)
     current_tenant, conversation = result
     expected_contact = run.definition.get("context", {}).get("contact", {}).get("id")
     if conversation and expected_contact != (str(conversation.contact_id) if conversation.contact_id else None):

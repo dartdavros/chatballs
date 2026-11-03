@@ -159,6 +159,9 @@ from chatballs.integrations.scenario_state.journal import RunJournalEntry  # noq
 from chatballs.integrations.scenario_state.limits import ConnectionExecutionLane  # noqa: E402,F401
 from chatballs.integrations.scenario_state.retention import ScenarioRetentionPolicy, StepOperationalFile  # noqa: E402,F401
 from chatballs.integrations.scenario_state.grants import ActionGrant  # noqa: E402,F401
+from chatballs.integrations.scenario_state.progress import ScenarioBudget, ScenarioProgress  # noqa: E402,F401
+from chatballs.integrations.scenario_state.waits import ScenarioWait  # noqa: E402,F401
+from chatballs.integrations.scenario_state.receipts import EventReceipt  # noqa: E402,F401
 
 __all__ = [
     "PROVIDER_KIND",

@@ -10,8 +10,9 @@ export type RunSummary = {
 export type RunStep = {
   path: string; title: string; state: RunState; stateLabel: string; attempt: number; error: string;
   inputSchema: ServiceField | null; outputSchema: ServiceField | null; arguments: unknown; result: unknown; approvalDigest?: string;
+  depth?: number; deadline?: string; prompt?: string; scope?: Array<{ kind: "iteration" | "branch"; number: number }>; decision?: { generation: string; digest: string };
 };
-export type RunDetail = RunSummary & { controls: string[]; steps: RunStep[]; journal: Array<{ id: number; label: string; createdAt: string }> };
+export type RunDetail = RunSummary & { controls: string[]; steps: RunStep[]; reconcilePath?: string; journal: Array<{ id: number; label: string; createdAt: string }> };
 export type RunPage = { items: RunSummary[]; count: number; page: number; pageSize: number;
   filters: { connections: Array<{ id: number; name: string }>; initiators: Array<{ initiator_id: number; initiator__user__full_name: string }> } };
 export type ManualAction = { id: string; kind: "scenario" | "operation"; title: string; parameters: ServiceField;

@@ -3,9 +3,11 @@ from rest_framework.schemas import get_schema_view
 
 from chatballs.identity.demo_views import DemoMediaView
 from chatballs.integrations.service_connections.oauth_views import ServiceOAuthCallbackView
+from chatballs.integrations.automation_events.views import ServiceEventView
 from chatballs.webchat.loader_views import WidgetLoaderView
 
 urlpatterns = [
+    path("api/v1/service-events/<int:connection_id>/<str:event_key>/", ServiceEventView.as_view(), name="service-event-ingress"),
     path("chat-widget.js", WidgetLoaderView.as_view(), name="chat-widget-loader"),
     path(
         "api/v1/schema/",

@@ -14,12 +14,12 @@ export function RunDetail({ id, onBack, inChat = false, onRepeated }: { id: stri
   const [repeat, setRepeat] = useState<string | null>(null);
   const run = state.run;
   if (!run) return <div className="run-detail-state">{state.loading ? <LoadingState /> : <EmptyState title={state.error} />}</div>;
-  const approval = run.steps.find(step => step.state === "approval");
+  const approval = run.steps.find(step => step.state === "approval" && step.approvalDigest);
   return <div className="run-detail">
     <button className="link is-muted has-icon" type="button" onClick={onBack}><Icon name="chevronLeft" size={14} />{t(inChat ? "runs.back_chat" : "runs.back")}</button>
     <header className="run-detail-head"><div><div className="run-title"><h2>{run.name}</h2><RunStatus state={run.state} label={run.stateLabel} /></div>
       <p>{t("runs.run_label", { number: fmt.number(run.number) })} · {fmt.shortDateTime(run.createdAt)}</p></div>
-      <div className="run-detail-actions">{run.controls.includes("reconcile") && <Button variant="secondary" disabled={state.busy} onClick={() => void state.act("reconcile")}>{t("runs.reconcile")}</Button>}
+      <div className="run-detail-actions">{run.controls.includes("reconcile") && <Button variant="secondary" disabled={state.busy} onClick={() => void state.act("reconcile", { path: run.reconcilePath })}>{t("runs.reconcile")}</Button>}
         {!run.dataCleared && <Dropdown overlayClassName="app-dropdown" trigger={["click"]} menu={{ items: [
           { key: "cancel", label: t("runs.cancel"), disabled: !run.controls.includes("cancel") },
           { key: "repeat", label: t("runs.repeat"), disabled: !run.controls.includes("repeat") },
@@ -38,13 +38,20 @@ export function RunDetail({ id, onBack, inChat = false, onRepeated }: { id: stri
       <div><dt>{t("runs.started")}</dt><dd>{fmt.shortDateTime(run.createdAt)}</dd></div>
       <div><dt>{t("runs.ended")}</dt><dd>{run.finishedAt ? fmt.shortDateTime(run.finishedAt) : "—"}</dd></div>
       <div><dt>{t("runs.definition_version")}</dt><dd>{run.definitionUpdatedAt ? fmt.shortDateTime(run.definitionUpdatedAt) : "—"}</dd></div>
-      <div><dt>{t("runs.connections")}</dt><dd>{run.connection}</dd></div></dl>
+      <div><dt>{t("runs.connections")}</dt><dd>{run.connection || "—"}</dd></div></dl>
     <section className="run-steps"><h3>{t("runs.steps")}</h3>{run.steps.map(step => <div className="run-step" key={step.path}>
       <div className="run-step-title"><strong>{step.title}</strong><RunStatus state={step.state} label={step.stateLabel} /></div>
+      {step.scope?.map((scope, index) => <p key={index}>{t(scope.kind === "iteration" ? "runs.iteration_number" : "runs.branch_number", { number: fmt.number(scope.number) })}</p>)}
+      {step.prompt && <p>{step.prompt}</p>}
       {step.error && <p className="run-step-error">{step.error}</p>}
+      {step.deadline && <p>{fmt.shortDateTime(step.deadline)}</p>}
       {!run.dataCleared && <><RunValues schema={step.inputSchema} value={step.arguments} /><RunValues schema={step.outputSchema} value={step.result} /></>}
+      {step.decision && <div className="run-detail-actions"><Button variant="primary" disabled={state.busy || state.changed}
+        onClick={() => void state.act("decide", { path: step.path, ...step.decision, accepted: true })}>{t("runs.approve")}</Button>
+        <Button variant="secondary" disabled={state.busy || state.changed}
+          onClick={() => void state.act("decide", { path: step.path, ...step.decision, accepted: false })}>{t("runs.reject")}</Button></div>}
     </div>)}</section>
-    {approval && run.controls.includes("approve") && <Button variant="primary" disabled={state.busy || state.changed} onClick={() => void state.act("approve", { digest: approval.approvalDigest })}>{t("runs.approve")}</Button>}
+    {approval?.approvalDigest && run.controls.includes("approve") && <Button variant="primary" disabled={state.busy || state.changed} onClick={() => void state.act("approve", { digest: approval.approvalDigest, path: approval.path })}>{t("runs.approve")}</Button>}
     <DecisionDialog open={repeat !== null} title={t("runs.repeat_title")} description={t("runs.repeat_text")} icon="warning" tone="warning" onClose={() => setRepeat(null)} actions={<>
       <Button variant="secondary" onClick={() => setRepeat(null)}>{t("runs.close")}</Button><Button variant="primary" disabled={state.busy} onClick={async () => {
         const result = await state.act("repeat", { triggerKey: repeat, acknowledged: run.id });

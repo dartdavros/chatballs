@@ -1,6 +1,7 @@
 import { t } from "../../../i18n";
 import type { ServiceField } from "../services/types";
-import { childLists, operationFor, schemaField, blockTitle } from "./model";
+import { childLists, schemaField, blockTitle } from "./model";
+import { aggregateOutput } from "./aggregateOutput";
 import type { Binding, Block, EditorCatalog, ScenarioDocument } from "./types";
 
 export type ValueOption = { key: string; label: string; binding: Binding; field: ServiceField };
@@ -40,11 +41,7 @@ function referenceField(binding: Binding, scope: Scope, catalog: EditorCatalog, 
   return root && fieldAt(root, binding.path ?? "");
 }
 export function outputField(step: Block, catalog: EditorCatalog) {
-  if (step.kind === "call") {
-    const called = catalog.scenarios.find(s => s.id === step.scenario);
-    return called ? schemaField("", called.results) : undefined;
-  }
-  return operationFor(catalog, step)?.output;
+  return aggregateOutput(step, catalog);
 }
 export function fieldAt(field: ServiceField, path: string): ServiceField | undefined {
   let result: ServiceField | undefined = field;

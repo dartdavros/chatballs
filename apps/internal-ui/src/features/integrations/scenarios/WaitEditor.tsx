@@ -27,9 +27,10 @@ export function WaitEditor({ block, catalog, timezone, change }: {
       <SelectField label={t("scenarios.event")} value={block.event ?? ""} options={[["", t("scenarios.select")], ...(block.connection ? adapter?.events ?? [] : catalog.events).map(event => [event.key, event.title] as [string, string])]}
         onChange={event => change({ event })} wide />
     </>}
-    {block.mode === "confirmation" && <SelectField label={t("scenarios.approver")} value={block.approver ?? "initiator"}
+    {block.mode === "confirmation" && <><SelectField label={t("scenarios.approver")} value={block.approver ?? "initiator"}
       options={[["initiator", t("scenarios.approver_initiator")], ...catalog.staff.map(s => [String(s.id), s.name] as [string, string])]}
-      onChange={approver => change({ approver })} wide />}
+      onChange={approver => change({ approver })} wide />
+      <FormField label={t("runs.confirmation_text")} value={block.message ?? ""} onChange={message => change({ message })} wide /></>}
     {["reply", "confirmation", "event"].includes(block.mode ?? "reply") && <>
       <SelectField label={t("scenarios.timeout")} value={String(block.timeout ?? 86400)}
         options={[["3600", t("scenarios.timeout_hour")], ["86400", t("scenarios.timeout_day")], ["259200", t("scenarios.timeout_three_days")]]}

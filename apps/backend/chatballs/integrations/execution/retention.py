@@ -99,9 +99,15 @@ def cleanup(tenant, *, limit=50):
         count = 0
         cleared_step_ids = []
         for run in runs:
+            if run.children.filter(finished_at__isnull=True).exists() or run.waits.filter(state="pending").exists():
+                continue
+            if run.parent_id and run.parent.finished_at is None:
+                continue
             step_ids = list(run.steps.values_list("pk", flat=True))
             cleared_step_ids.extend(step_ids)
             run.steps.update(content="", confirmed_digest="", approval_expires_at=None)
+            run.progress.update(content="")
+            run.waits.update(content="")
             run.content = ""
             run.data_cleared_at = now
             run.save(update_fields=["content", "data_cleared_at"])
@@ -113,6 +119,8 @@ def cleanup(tenant, *, limit=50):
         for run in expired:
             run.journal.all().delete()
             run.steps.all().delete()
+            run.progress.all().delete()
+            run.waits.all().delete()
             run.structure = {}
             run.initiator_id = None
             run.conversation_id = None
@@ -120,4 +128,6 @@ def cleanup(tenant, *, limit=50):
             run.journal_cleared_at = now
             run.save(update_fields=["journal_cleared_at", "structure", "initiator", "conversation", "scenario"])
         _delete_orphan_files(tenant, cleared_step_ids)
+        from chatballs.integrations.automation_events.retention import cleanup_receipts
+        cleanup_receipts(tenant, now=now)
         return count

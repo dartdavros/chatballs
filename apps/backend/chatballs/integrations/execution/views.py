@@ -116,5 +116,11 @@ class RunControlView(RunAPIView):
             run = intentional_repeat(request.tenant_context, public_id,
                 trigger_key=data.get("triggerKey"), acknowledged=data.get("acknowledged"))
         else:
-            run = control(tenant=request.tenant_context, public_id=public_id, action=action, digest=data.get("digest"))
+            if action == "decide":
+                from chatballs.integrations.execution.wait_controls import decide
+                run = decide(request.tenant_context, public_id, path=data.get("path"), generation=data.get("generation"),
+                    digest=data.get("digest"), accepted=data.get("accepted"))
+            else:
+                run = control(tenant=request.tenant_context, public_id=public_id, action=action,
+                              digest=data.get("digest"), path=data.get("path"))
         return Response({"run": run_payload(run, detail=True, tenant=request.tenant_context)})

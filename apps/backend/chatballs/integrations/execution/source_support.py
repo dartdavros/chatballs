@@ -40,5 +40,12 @@ def require_supported_sources(document):
         if kind is None:
             _binding(condition.get("left"))
             _binding(condition.get("right"))
-    for block in document["steps"]:
+    from chatballs.integrations.scenarios.definition import child_lists
+    for block in document.get("steps", []):
         _binding(block.get("inputs", {}))
+        _binding(block.get("list"))
+        _binding(block.get("until"))
+        if block.get("condition"):
+            require_supported_sources({"conditions": block["condition"], "steps": []})
+        for _, children in child_lists(block):
+            require_supported_sources({"conditions": {"mode": "all", "items": []}, "steps": children})

@@ -40,22 +40,30 @@ def run_payload(run, *, detail=False, tenant=None):
         "progress": [{"title": t(run.structure.get("operationTitle") or "runs.operation"), "state": step.state,
                       "stateLabel": t(f"runs.state_{step.state}")} for step in run.steps.all()]}
     if not detail:
-        return payload
+        from chatballs.integrations.execution.progress_payloads import extend_payload
+        return extend_payload(run, payload, tenant=tenant, detail=False)
     from chatballs.integrations.execution.control import available_controls
     payload["controls"] = available_controls(tenant, run) if tenant else []
+    payload["reconcilePath"] = run.steps.filter(state="unknown").order_by("pk").values_list("path", flat=True).first()
     steps = []
+    from chatballs.integrations.models import Integration
+    all_secrets = integration_secrets(list(Integration.objects.filter(organization_id=run.organization_id)))
     for step in run.steps.select_related("integration", "integration__service_settings").order_by("id"):
+        if not step.operation_key:
+            continue
         adapter = default_registry().adapter(step.adapter_key)
         operation = adapter.operation(step.operation_key) if adapter and adapter.contract_version == step.adapter_version else None
         values = step.definition if not run.data_cleared_at else {}
-        secrets = integration_secrets([step.integration]) if step.integration else []
+        from chatballs.integrations.execution.contract_schemas import frozen_schemas
+        input_spec, output_spec = frozen_schemas(run, step, operation) if run.content else (None, None)
+        secrets = all_secrets
         item = {"path": step.path, "title": t(operation.title_key) if operation else t("runs.operation"),
-            "state": step.state, "stateLabel": t(f"runs.state_{step.state}"), "attempt": step.attempt,
+            "state": "pending" if step.state == "waiting" else step.state, "stateLabel": t(f"runs.state_{'pending' if step.state == 'waiting' else step.state}"), "attempt": step.attempt,
             "error": t("runs.unknown_text") if step.state == "unknown" else error_message(step.error_code) if step.error_code else "",
-            "inputSchema": field_payload("", operation.input) if operation else None,
-            "outputSchema": field_payload("", operation.output) if operation else None,
-            "arguments": clean_value(operation.input if operation else None, values.get("arguments", {}), secrets),
-            "result": clean_value(operation.output if operation else None, values.get("result", {}), secrets)}
+            "inputSchema": field_payload("", input_spec) if input_spec else None,
+            "outputSchema": field_payload("", output_spec) if output_spec else None,
+            "arguments": clean_value(input_spec, values.get("arguments", {}), secrets) if input_spec else {},
+            "result": clean_value(output_spec, values.get("result", {}), secrets) if output_spec else {}}
         if step.state == "approval":
             item["approvalDigest"] = invocation_digest(step, run)
         steps.append(item)
@@ -66,4 +74,5 @@ def run_payload(run, *, detail=False, tenant=None):
         "completed", "failed", "cancelled", "unknown", "queued", "pending", "approval", "reconciling", "running"
     } else t("runs.journal_changed"), "createdAt": row.created_at.isoformat()}
         for row in run.journal.order_by("-id")[:100]]
-    return payload
+    from chatballs.integrations.execution.progress_payloads import extend_payload
+    return extend_payload(run, payload, tenant=tenant, detail=True)

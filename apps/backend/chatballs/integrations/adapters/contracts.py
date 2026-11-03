@@ -15,6 +15,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import TYPE_CHECKING, Any
+from datetime import datetime
 
 from chatballs.integrations.adapters.schema import TypeSpec
 from chatballs.integrations.adapters.templates import ScenarioTemplate as ScenarioTemplate
@@ -119,6 +120,9 @@ class OperationResult:
     # Безопасный код причины, без текста чужого сервера и секретов.
     error_code: str = ""
     retry_after_seconds: float | None = None
+    correlation: str = ""
+    event_key: str = ""
+    deadline: datetime | None = None
 
 
 Execute = Callable[[OperationContext, "OperationDescriptor", dict[str, Any]], OperationResult]
@@ -161,6 +165,7 @@ class EventDescriptor:
     delivery: Delivery
     ingress: Callable[..., Any] | None = None
     poll: Callable[..., Any] | None = None
+    replay_seconds: int | None = None
 
 
 @dataclass(frozen=True)

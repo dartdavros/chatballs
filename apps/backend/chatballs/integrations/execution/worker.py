@@ -40,6 +40,8 @@ def dispatch_run(payload, tenant):
     try:
         # Claim and its watchdog commit before asynchronous handoff / outbox
         # ACK. Every crash boundary therefore has a durable next job.
+        from chatballs.integrations.execution.interpreter import advance
+        advance(tenant, public_id)
         token = claim(tenant, public_id)
         if token is None:
             _SLOTS.release()

@@ -14,7 +14,7 @@ FIELDS = {
     "foreach": {"list", "body", "concurrency", "onError"},
     "parallel": {"branches", "onError"},
     "call": {"scenario", "inputs"},
-    "wait": {"mode", "duration", "until", "event", "connection", "condition", "timeout", "onTimeout", "day", "date", "time", "timezone", "approver"},
+    "wait": {"mode", "duration", "until", "event", "connection", "condition", "timeout", "onTimeout", "day", "date", "time", "timezone", "approver", "message"},
     "try": {"body", "catch", "after"},
 }
 
@@ -118,7 +118,8 @@ class BlockValidator:
                 self.binding(value, spec, scope, f"{path}.list")
         if kind == "wait":
             self._wait(step, scope, path)
-        return None
+        from chatballs.integrations.scenarios.result_schemas import block_output
+        return block_output(step, self.context)
 
     def _wait(self, step, scope, path):
         mode = step.get("mode")
@@ -150,6 +151,8 @@ class BlockValidator:
         elif mode == "reply":
             pass
         elif mode == "confirmation":
+            if "message" in step and (not isinstance(step["message"], str) or len(step["message"]) > 2000):
+                self.issue(f"{path}.message", "type")
             approver = step.get("approver", "initiator")
             if approver != "initiator" and (not isinstance(approver, str) or not approver.isdecimal() or int(approver) not in self.context.staff):
                 self.issue(f"{path}.approver", "reference")

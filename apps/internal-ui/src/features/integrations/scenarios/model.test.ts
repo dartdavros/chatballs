@@ -39,10 +39,13 @@ describe("scenario document editing", () => {
       { id: "after", kind: "wait" }];
     const catalog = { context: schemaField("", { type: "object" }), scenarios: [], adapters: [], connections: [], events: [], nativeActions: [] } as unknown as EditorCatalog;
     const options = conditionOptions(document, catalog, "after");
-    expect(options.map(o => o.binding)).toEqual([{ source: "step", step: "parallel", aspect: "state" }]);
-    expect(newCondition("step", options).right?.value).toBe("completed");
+    const states = options.filter(option => option.binding.aspect === "state");
+    expect(states.map(o => o.binding)).toEqual([{ source: "step", step: "parallel", aspect: "state" }]);
+    expect(options.every(option => option.binding.step === "parallel")).toBe(true);
+    expect(options.some(option => option.binding.path === "branches.0.state")).toBe(true);
+    expect(newCondition("step", states).right?.value).toBe("completed");
     expect(valueOptions(document, catalog, "sibling").some(o => o.binding.step === "first")).toBe(false);
-    expect(sameReference({ step: "parallel", aspect: "state", source: "step" }, options[0].binding)).toBe(true);
-    expect(sameReference({ source: "step", step: "parallel", path: "" }, options[0].binding)).toBe(false);
+    expect(sameReference({ step: "parallel", aspect: "state", source: "step" }, states[0].binding)).toBe(true);
+    expect(sameReference({ source: "step", step: "parallel", path: "" }, states[0].binding)).toBe(false);
   });
 });

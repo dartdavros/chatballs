@@ -12,10 +12,9 @@ def metadata_action(tenant, *, connection_id, operation_key, conversation_id, sc
         document = scenario.definition
         tenant, _conversation = authorize(tenant, document, conversation_id, scenario_id=scenario.pk)
         require_supported_sources(document)
-        if len(document["steps"]) != 1:
-            raise ExecutionDenied("composition_unavailable")
-        block = document["steps"][0]
-        if str(block.get("connection")) != str(connection_id) or block.get("target") != f"service:{operation_key}":
+        from chatballs.integrations.execution.snapshots import walk
+        if not any(str(block.get("connection")) == str(connection_id) and block.get("target") == f"service:{operation_key}"
+                   for block in walk(document["steps"])):
             raise ExecutionDenied("permission")
     else:
         tenant, _document, _grant, _conversation = direct_policy(tenant, connection_id, operation_key, conversation_id)

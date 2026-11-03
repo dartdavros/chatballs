@@ -46,23 +46,24 @@ class ManualActionsView(RunAPIView):
         items = []
         for row in ScenarioDefinition.objects.filter(organization_id=tenant.organization_id, enabled=True):
             document = row.definition
-            if len(document["steps"]) != 1 or document["steps"][0]["kind"] != "action":
-                continue
             try:
                 authorize(tenant, document, conversation_id, scenario_id=row.pk)
             except ExecutionDenied:
                 continue
-            block = document["steps"][0]
+            from chatballs.integrations.execution.snapshots import walk
+            actions = [b for b in walk(document["steps"]) if b["kind"] == "action"]
+            block = actions[0] if actions else {}
             available, reason = True, ""
             try:
                 require_supported_sources(document)
-                resolve_action(tenant.organization_id, block.get("connection"), block.get("target", ""))
+                from chatballs.integrations.execution.snapshots import freeze
+                freeze(tenant, document, scenario_id=row.public_id)
             except ExecutionDenied as error:
                 available, reason = False, error_message(str(error))
             items.append({"id": str(row.public_id), "kind": "scenario", "title": row.name,
                           "available": available, "reason": reason,
-                          "connectionId": document["steps"][0].get("connection"),
-                          "operationKey": document["steps"][0].get("target", "").removeprefix("service:"),
+                          "connectionId": block.get("connection"),
+                          "operationKey": block.get("target", "").removeprefix("service:"),
                           "parameters": parameter_schema(document["parameters"])})
         grants = ActionGrant.objects.filter(organization_id=tenant.organization_id, membership=tenant.membership, enabled=True)
         allowed = {(row.integration_id, row.operation_key) for row in grants}

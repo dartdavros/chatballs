@@ -9,7 +9,6 @@ from chatballs.integrations.execution import checkpoints
 from chatballs.integrations.execution.approvals import invocation_digest
 from chatballs.integrations.execution.events import journal, schedule
 from chatballs.integrations.execution.permissions import ExecutionDenied, authorize_run, view_run
-from chatballs.integrations.scenario_state.runs import ScenarioRun
 from chatballs.tenancy.database import tenant_atomic
 
 
@@ -23,22 +22,23 @@ def available_controls(tenant, run):
     if manages:
         if run.state not in checkpoints.TERMINAL and not run.cancel_requested_at:
             actions.append("cancel")
-        if run.state == "unknown":
+        if run.state == "unknown" and run.steps.filter(state="unknown").exists():
             actions.append("reconcile")
     try:
         authorize_run(tenant, run)
     except ExecutionDenied:
         return actions
-    if run.state == "approval":
+    if run.state == "approval" and run.steps.filter(state="approval").exists():
         actions.append("approve")
     if run.state in checkpoints.TERMINAL or run.state == "unknown":
         actions.append("repeat")
     return actions
 
 
-def control(*, tenant, public_id, action, digest=None):
+def control(*, tenant, public_id, action, digest=None, path=None):
     with tenant_atomic(tenant):
-        run = ScenarioRun.objects.select_for_update().get(public_id=public_id, organization_id=tenant.organization_id)
+        from chatballs.integrations.execution.budgets import lock_run
+        run = lock_run(tenant, public_id)
         if run.data_cleared_at:
             raise ExecutionDenied("data_cleared")
         tenant = view_run(tenant, run)
@@ -48,6 +48,9 @@ def control(*, tenant, public_id, action, digest=None):
             from chatballs.identity.models import EmployeeRole
             if tenant.membership.role not in {EmployeeRole.OWNER, EmployeeRole.ADMIN}:
                 raise ExecutionDenied("permission")
+        if run.definition.get("composite"):
+            from chatballs.integrations.execution.composite_control import apply_control
+            return apply_control(tenant, run, action=action, digest=digest, path=path)
         step = run.steps.select_for_update().get()
         if action == "approve":
             if step.state != "approval" or digest != invocation_digest(step, run):

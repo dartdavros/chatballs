@@ -1,5 +1,45 @@
 # Scenario editor
 
+## Composite steps and waits
+
+A sequence advances after recording the previous outcome. A condition selects
+one branch using actual values; a missing required value stops the action rather
+than becoming false. A loop snapshots its list once and records each iteration.
+Continuing after an item error preserves the other results. Parallel branches
+keep independent checkpoints and join their outcomes. Recovery never repeats
+already completed effects.
+
+Error handling receives a safe reason, the failed step name and number, service
+and run. It can continue or finish with failure after the handler. An unknown
+write outcome requires reconciliation and never becomes an ordinary catch error.
+Compensation is a separate explicitly permitted action.
+
+A nested call supplies required inputs and returns a validated result. The
+callee must enable nested invocation and delegation. It has its own Run and
+intersects the caller's permissions with its own. Cycles are rejected. Definition
+edits do not change an active snapshot; disabling or revoking access stops new
+effects.
+
+A wait releases the worker. Duration, fixed date/time, local clock, customer
+reply, service event and assigned employee decision keep persistent deadlines.
+A matching early event after Run creation is retained; another connection cannot
+resume the wait. A decision binds exact data and expiry and cannot resume twice.
+A working day needs a working calendar; choose a fixed date or duration when one
+is unavailable. A long service result has its own deadline. Expiry does not prove
+that the service did nothing.
+
+Run details retain block, branch and iteration states, confirmation parameters
+and recorded results. Viewing does not grant continuation authority. Technical
+depth, iteration, volume and time limits are explained without hiding partial
+outcomes.
+
+Example custom scenario: read the first service → test a result field → process
+documents → run independent actions in two connections → wait for confirmation
+→ invoke a permitted nested scenario with the first result. Ordinary blocks
+compose this scenario without a core change. Available operations and fields
+come from installed adapters. This example does not claim a verified external
+service connection.
+
 Organization owners and administrators can open Settings → Scenarios, create a
 scenario, or configure a preset from a service connection. A preset becomes an
 editable organization copy. Adapter updates do not overwrite that copy.

@@ -3,6 +3,7 @@
 from chatballs.i18n import t
 
 KNOWN = frozenset({
+    "budget_depth", "budget_execution", "budget_iterations", "budget_volume", "recursion", "calendar_unavailable",
     "version_incompatible", "approval_expired", "approval_changed", "permission",
     "connection_paused", "scenario_disabled", "arguments", "context_changed",
     "context", "conditions_not_met", "conditions_unavailable", "composition_unavailable",

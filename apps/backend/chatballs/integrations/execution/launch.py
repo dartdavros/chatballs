@@ -37,10 +37,12 @@ def launch(*, tenant, scenario_id, trigger_key, parameters, conversation_id=None
             view_run(tenant, existing)
             # Reuse is identity only: changed input cannot replace the snapshot.
             return existing, False
-        if len(document["steps"]) != 1 or document["steps"][0]["kind"] != "action":
-            raise ExecutionDenied("composition_unavailable")
         from chatballs.integrations.execution.conditions import require_conditions
         require_conditions(document, conversation, parameters, registry=registry)
+        if len(document["steps"]) != 1 or document["steps"][0]["kind"] != "action":
+            from chatballs.integrations.execution.composite_launch import snapshot
+            return snapshot(tenant, document, parameters, conversation, scenario=scenario, dedup=dedup,
+                            registry=registry, preview=preview, confirmation=confirmation), True
         return _snapshot(tenant, document, parameters, conversation, scenario=scenario, dedup=dedup,
                          scenario_key=str(scenario.public_id), registry=registry, preview=preview, confirmation=confirmation), True
 
@@ -81,6 +83,11 @@ def _snapshot(tenant, document, parameters, conversation, *, scenario, dedup, sc
     plan = {"document": document, "parameters": parameters, "context": context, "arguments": arguments,
             "scenarioKey": scenario_key, "revision": scenario.revision if scenario else 1,
             "connection": integration.pk, "adapter": adapter.key, "version": adapter.contract_version, "grant": grant_id}
+    from chatballs.integrations.execution.contract_schemas import write_spec
+    from chatballs.integrations.execution.snapshots import signature
+    contract = {"adapter": adapter.key, "version": adapter.contract_version, "signature": signature(operation),
+                "input": write_spec(operation.input), "output": write_spec(operation.output), "title_key": operation.title_key}
+    plan["contract"] = contract
     if preview:
         from chatballs.integrations.execution.payloads import clean_value
         from chatballs.ai.diagnostic_redaction import integration_secrets
@@ -97,7 +104,8 @@ def _snapshot(tenant, document, parameters, conversation, *, scenario, dedup, sc
         scenario_key=scenario_key, trigger_key=dedup, revision=scenario.revision if scenario else 1,
         initiator=tenant.membership, conversation=conversation)
     run.definition = {"document": document, "parameters": parameters, "context": context,
-                      "kind": "scenario" if scenario else "direct", "grantId": grant_id}
+                      "kind": "scenario" if scenario else "direct", "grantId": grant_id,
+                      "contracts": {f"{integration.pk}:{block['target']}": contract}}
     run.structure = {"name": scenario.name if scenario else "", "operationTitle": operation.title_key,
                      "connection": integration.name, "definitionUpdatedAt": scenario.updated_at.isoformat() if scenario else None}
     run.save()

@@ -20,7 +20,7 @@ export type Block = {
   list?: Binding; concurrency?: number; onError?: "stop" | "continue" | "wait"; after?: "continue" | "fail";
   scenario?: string; mode?: "duration" | "until" | "event" | "confirmation" | "reply" | "clock";
   duration?: number; until?: Binding; event?: string; timeout?: number; onTimeout?: "continue" | "end";
-  day?: "next" | "work" | "date"; date?: string; time?: string; timezone?: string; approver?: string;
+  day?: "next" | "work" | "date"; date?: string; time?: string; timezone?: string; approver?: string; message?: string;
 };
 export type TriggerKind = "staff" | "ai" | "chatballs" | "service" | "schedule" | "api" | "scenario";
 export type Trigger = {

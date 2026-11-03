@@ -1,5 +1,37 @@
 # Service adapter contract
 
+## Persistent events and long results
+
+An ingress handler receives the original body bytes, headers and server-built
+OperationContext. It verifies the service signature/secret before returning
+adapters.events.VerifiedEvent. Never infer tenant/connection from the body.
+The server uses the stored connection directory, validates the payload schema,
+event identity, timestamp, size and adapter version, then commits encrypted
+EventReceipt and an identity-only outbox job before acknowledging the request.
+
+EventDescriptor.replay_seconds declares the finite verified replay horizon.
+Missing/invalid horizons are unsupported for ingress; 7/30 history retention
+does not invent a delivery protocol. VerifiedEvent contains event_id, event_key,
+occurred_at, payload, correlation, optional sequence and optional OperationResult.
+The same event identity and normalized digest returns the existing receipt.
+A conflicting digest is rejected. Callback before wait registration is matched
+again when registering; duplicate/out-of-order jobs never roll back a terminal
+checkpoint. A receipt from another organization/connection cannot satisfy a wait.
+The app endpoint is POST /api/v1/service-events/<connection-id>/<event-key>/.
+
+OperationResult can supply correlation, event_key and an aware absolute deadline
+for a pending callback result. The operation's durable effect_key is available
+in OperationContext and can be used as correlation. Resume/reconcile keeps the
+same effect key and never re-executes an unsafe write just because its deadline
+expired. A terminal callback result must satisfy the frozen operation output
+contract. Poll-based continuation still uses durable future outbox jobs.
+
+The independent execution/contract_testing.py module is registered only by
+automatic tests. It exercises descriptor loading, typed inputs/results, multiple
+connections, long results and signed events without changing the interpreter
+or common screens. It is not installed for product UI, does not start a network
+server, and does not verify any real brand service.
+
 T-168 implements connection setup, the installed catalog, schemas and preset
 metadata. Scenario copies/editor, execution policy, durable runs and event
 delivery belong to the following tasks of SPEC-0037. A callable adapter handler

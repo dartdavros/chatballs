@@ -1,0 +1,17 @@
+
+> @chatballs/internal-ui@0.1.0 test
+> vitest run --passWithNoTests src/features/integrations/scenarios/model.test.ts src/features/integrations/scenarios/controlModel.test.tsx src/features/integrations/scenarios/aggregateOutput.test.ts src/features/integrations/runs/feed.test.ts src/i18n/catalog.test.ts
+
+
+ RUN  v3.2.7 /app/apps/internal-ui
+
+ ✓ src/features/integrations/runs/feed.test.ts (3 tests) 16ms
+ ✓ src/i18n/catalog.test.ts (3 tests) 43ms
+ ✓ src/features/integrations/scenarios/aggregateOutput.test.ts (1 test) 67ms
+ ✓ src/features/integrations/scenarios/model.test.ts (3 tests) 60ms
+ ✓ src/features/integrations/scenarios/controlModel.test.tsx (2 tests) 31ms
+
+ Test Files  5 passed (5)
+      Tests  12 passed (12)
+   Start at  09:34:56
+   Duration  23.08s (transform 33.11s, setup 0ms, collect 60.64s, tests 216ms, environment 10ms, prepare 2.40s)

@@ -1,6 +1,7 @@
 """One bounded step: claim → prepare → fenced send marker → I/O → commit."""
 
 from dataclasses import replace
+from time import monotonic
 
 from django.db import connection
 from django.utils import timezone
@@ -38,6 +39,11 @@ def _prepare(tenant, token, registry):
         data = step.definition
         if token.recovering and data.get("continuation") and operation.handlers.resume:
             handler = "resume"
+        if data.get("deadline"):
+            from django.utils.dateparse import parse_datetime
+            deadline = parse_datetime(data["deadline"])
+            if deadline <= timezone.now():
+                handler = "reconcile" if operation.handlers.reconcile else None
         if handler not in {None, "reconcile"}:
             try:
                 actor, _conversation = authorize_run(actor, run)
@@ -60,6 +66,12 @@ def _prepare(tenant, token, registry):
         }
         if handler == "execute" and validate_value(operation.input, arguments):
             raise ExecutionDenied("arguments")
+        if run.definition.get("contracts") and handler == "execute":
+            from chatballs.integrations.execution.snapshots import check_contract
+            check_contract(run, {"connection": str(step.integration_id), "target": f"service:{step.operation_key}"}, operation, adapter)
+            from chatballs.integrations.execution.budgets import reserve
+            if run.definition.get("composite") and not token.recovering:
+                reserve(run, 0)
         return run, step, actor, resolved, handler, arguments
 
 
@@ -77,6 +89,9 @@ def _send_marker(tenant, token, handler, registry=None):
             integration, _row, _adapter, _method, operation = resolve_action(
                 tenant.organization_id, step.integration_id, f"service:{step.operation_key}",
                 expected=(step.adapter_key, step.adapter_version), registry=registry)
+            if run.definition.get("contracts"):
+                from chatballs.integrations.execution.snapshots import check_contract
+                check_contract(run, {"connection": str(step.integration_id), "target": f"service:{step.operation_key}"}, operation, _adapter)
             if (operation.effect not in READ_EFFECTS or run.definition["document"]["access"]["confirm"] == "always") and not approved(step, run):
                 raise ExecutionDenied("approval_expired")
             validate_arguments(actor, run.conversation_id, operation, step.definition["arguments"])
@@ -86,21 +101,48 @@ def _send_marker(tenant, token, handler, registry=None):
         return True
 
 
-def _commit(tenant, token, result):
+def _commit(tenant, token, result, *, elapsed=0):
     with tenant_atomic(tenant):
         run, step, valid = checkpoints.locked(tenant, token)
         if not valid:
             return False
         state = recovery.outcome(step, result)
+        if result.error_code == "invalid_result":
+            state = "unknown"
+        if run.definition.get("composite"):
+            from chatballs.integrations.execution.budgets import root_of
+            from chatballs.integrations.scenario_state.progress import ScenarioBudget
+            from django.db.models import F
+            ScenarioBudget.objects.filter(root=root_of(run)).update(active_seconds=F("active_seconds") + elapsed)
         # No unbounded remote text is copied into the safe journal.
         code = result.error_code if result.error_code in recovery.TRANSIENT else "operation_rejected"
         values = step.definition
+        if result.deadline and not values.get("deadline"):
+            values["deadline"] = result.deadline.isoformat()
+        if state == "pending" and values.get("deadline"):
+            from django.utils.dateparse import parse_datetime
+            if parse_datetime(values["deadline"]) <= timezone.now():
+                state, code = "unknown", "outcome_unavailable"
         if state == "completed":
             values.update(result=result.data, files=[f.file_id for f in result.files])
         if result.continuation or result.external_reference:
             values.update(continuation=result.continuation, external_reference=result.external_reference)
         step.definition = values
+        if state == "pending" and result.correlation and result.event_key and result.deadline:
+            from chatballs.integrations.execution.waits import pending_operation
+            from chatballs.integrations.execution.effect_data import account_effect
+            account_effect(run, step)
+            step.state, step.lease_until = "waiting", None
+            step.save(update_fields=["content", "state", "lease_until"])
+            ConnectionExecutionLane.objects.filter(step=step).update(step=None, until=None)
+            run.state = "pending"
+            run.save(update_fields=["state"])
+            pending_operation(tenant, run, step, result)
+            return True
         delay = recovery.backoff(step.attempt, result.retry_after_seconds)
+        if values.get("deadline"):
+            from django.utils.dateparse import parse_datetime
+            delay = max(0, min(delay, (parse_datetime(values["deadline"]) - timezone.now()).total_seconds()))
         if result.error_code == "rate_limited":
             from datetime import timedelta
             ConnectionExecutionLane.objects.filter(integration_id=step.integration_id).update(
@@ -118,6 +160,9 @@ def run_one(tenant, public_id, *, registry=None, token=None):
     # external I/O boundary, even if the inner tenant_atomic block exits.
     if connection.in_atomic_block:
         raise RuntimeError("Execution must start outside a transaction")
+    if token is None:
+        from chatballs.integrations.execution.interpreter import advance
+        advance(tenant, public_id, registry=registry)
     token = token or checkpoints.claim(tenant, public_id)
     if token is None:
         return
@@ -133,11 +178,24 @@ def run_one(tenant, public_id, *, registry=None, token=None):
         context = replace(context, run_id=str(run.public_id), step_path=step.path,
                           deadline_seconds=min(operation.limits.timeout_seconds, 30),
                           store_file=file_store(context=tenant, integration=integration, step=step))
+        if run.definition.get("composite"):
+            from chatballs.integrations.execution.budgets import causal_chain
+            context = replace(context, causal_chain=causal_chain(run))
         operation = replace(operation, limits=replace(operation.limits, timeout_seconds=min(operation.limits.timeout_seconds, 30)))
         if not _send_marker(tenant, token, handler, registry):
             return
         try:
+            started = monotonic()
             result = getattr(operation.handlers, handler)(context, operation, arguments)
+            if result.state == ResultState.PENDING:
+                from datetime import datetime
+                if not isinstance(result.deadline, datetime) or timezone.is_naive(result.deadline):
+                    result = replace(result, state=ResultState.UNKNOWN, error_code="invalid_result", deadline=None)
+            from chatballs.integrations.execution.budgets import size
+            if size({"data": result.data, "continuation": result.continuation,
+                    "external_reference": result.external_reference, "files": [str(f.file_id) for f in result.files],
+                    "correlation": result.correlation, "event_key": result.event_key}) > operation.limits.max_response_bytes:
+                result = OperationResult(ResultState.UNKNOWN, error_code="invalid_result")
             if result.state == ResultState.FAILED and result.error_code in recovery.TRANSIENT and operation.effect not in READ_EFFECTS:
                 result = replace(result, state=ResultState.UNKNOWN)
             if result.state == ResultState.COMPLETED and validate_value(operation.output, result.data):
@@ -146,7 +204,7 @@ def run_one(tenant, public_id, *, registry=None, token=None):
             # An arbitrary adapter exception may occur after send. Do not log
             # its message, arguments, credentials or remote response.
             result = OperationResult(ResultState.UNKNOWN, error_code="no_response")
-        _commit(tenant, token, result)
+        _commit(tenant, token, result, elapsed=monotonic() - started)
     except (ExecutionDenied, ServiceCheckFailed) as error:
         with tenant_atomic(tenant):
             run, step, valid = checkpoints.locked(tenant, token)

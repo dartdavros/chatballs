@@ -1,0 +1,17 @@
+............                                                             [100%]
+=============================== warnings summary ===============================
+chatballs/integrations/execution/test_composite_retention.py::CompositeRetentionTests::test_wait_progress_survives_seven_day_cleanup_without_operational_values
+  /app/apps/backend/chatballs/identity/migrations/0007_employee_roles_position_department.py:65: RemovedInDjango60Warning: CheckConstraint.check is deprecated in favor of `.condition`.
+    constraint=models.CheckConstraint(
+
+chatballs/integrations/execution/test_api.py::RunAPITests::test_catalog_rejects_unknown_conversation_before_exposing_file_names
+chatballs/integrations/execution/test_api.py::RunAPITests::test_detail_lists_only_controls_authorized_in_current_state
+chatballs/integrations/execution/test_api.py::RunAPITests::test_employee_cannot_read_organization_journal_or_control_unrelated_run
+chatballs/integrations/execution/test_api.py::RunAPITests::test_paused_connection_is_shown_unavailable_without_sending
+chatballs/integrations/execution/test_api.py::RunAPITests::test_preview_has_no_run_and_changed_confirmation_cannot_send
+chatballs/integrations/execution/test_api.py::RunAPITests::test_runtime_journal_and_details_do_not_disclose_other_tenants
+  /usr/local/lib/python3.12/site-packages/django/core/handlers/base.py:61: UserWarning: No directory at: /app/apps/backend/staticfiles/
+    mw_instance = middleware(adapted_handler)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+12 passed, 7 warnings in 193.70s (0:03:13)

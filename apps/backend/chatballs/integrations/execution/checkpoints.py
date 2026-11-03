@@ -27,8 +27,15 @@ class Claim:
 
 def claim(tenant, public_id):
     with tenant_atomic(tenant):
-        run = ScenarioRun.objects.select_for_update().filter(public_id=public_id, organization_id=tenant.organization_id).first()
+        from chatballs.integrations.execution.budgets import lock_run, active_effects
+        try:
+            run = lock_run(tenant, public_id)
+        except ScenarioRun.DoesNotExist:
+            return None
         if run is None or run.state in TERMINAL or run.data_cleared_at:
+            return None
+        if run.definition.get("composite") and active_effects(run) >= 5:
+            schedule(tenant, run, at=timezone.now() + timedelta(seconds=1))
             return None
         now = timezone.now()
         step = run.steps.select_for_update().filter(
@@ -60,22 +67,35 @@ def claim(tenant, public_id):
         run.save(update_fields=["state"])
         journal(run, "recovering" if recovering else "claimed", step)
         schedule(tenant, run, at=step.lease_until)
+        if run.definition.get("composite") and run.steps.filter(state="queued", due_at__lte=now).exists():
+            schedule(tenant, run)
         return Claim(run.pk, step.pk, step.fence, recovering)
 
 
 def locked(tenant, token):
     # Consistent lock order for launch/claim/cancel/result: run then step.
-    run = ScenarioRun.objects.select_for_update().get(pk=token.run_id, organization_id=tenant.organization_id)
+    from chatballs.integrations.execution.budgets import lock_run
+    run = lock_run(tenant, pk=token.run_id)
     step = ScenarioStep.objects.select_for_update().get(pk=token.step_id, run=run)
     valid = step.fence == token.fence and step.lease_until and step.lease_until > timezone.now()
     return run, step, bool(valid)
 
 
 def finish(run, step, state, *, code=""):
+    from chatballs.integrations.execution.effect_data import account_effect
+    account_effect(run, step, terminal=True)
     step.state = state
     step.error_code = code
     step.lease_until = None
     step.save(update_fields=["state", "error_code", "lease_until", "content"])
+    if run.definition.get("composite"):
+        run.progress.filter(path=step.path).update(state="queued")
+        journal(run, state, step)
+        ConnectionExecutionLane.objects.filter(step=step).update(until=None, step=None)
+        from chatballs.tenancy.lookup import load_organization
+        from chatballs.tenancy.context import TenantContext
+        schedule(TenantContext.for_resource(load_organization(run.organization_id)), run)
+        return
     run.state = state
     # Unknown stops automatic execution with an honest unresolved outcome.
     # Explicit reconciliation reopens it and protects its operational data.
@@ -87,6 +107,8 @@ def finish(run, step, state, *, code=""):
 
 
 def defer(tenant, run, step, *, delay, state="queued", code=""):
+    from chatballs.integrations.execution.effect_data import account_effect
+    account_effect(run, step)
     step.state = state
     step.error_code = code
     step.lease_until = None

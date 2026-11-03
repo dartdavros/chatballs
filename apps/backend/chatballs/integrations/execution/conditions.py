@@ -7,9 +7,9 @@ from chatballs.integrations.scenarios.values import RunValues, resolve_value
 from chatballs.integrations.execution.source_support import require_supported_sources
 
 
-def require_conditions(document, conversation, parameters, *, registry=None):
+def evaluate_conditions(document, conversation, parameters, *, registry=None, values=None):
     require_supported_sources(document)
-    values = RunValues(parameters=parameters, context=context_values(conversation))
+    values = values or RunValues(parameters=parameters, context=context_values(conversation))
     def check(condition):
         kind = condition.get("kind")
         if kind == "context_present":
@@ -43,5 +43,9 @@ def require_conditions(document, conversation, parameters, *, registry=None):
     # No short-circuit may hide an unsupported guard and later admit it.
     results = [check(condition) for condition in conditions["items"]]
     accepted = not results or (all(results) if conditions["mode"] == "all" else any(results))
-    if not accepted:
+    return accepted
+
+
+def require_conditions(document, conversation, parameters, *, registry=None):
+    if not evaluate_conditions(document, conversation, parameters, registry=registry):
         raise ExecutionDenied("conditions_not_met")
