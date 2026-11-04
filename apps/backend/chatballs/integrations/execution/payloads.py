@@ -39,11 +39,17 @@ def run_payload(run, *, detail=False, tenant=None):
         "revision": run.revision, "definitionUpdatedAt": run.structure.get("definitionUpdatedAt"),
         "progress": [{"title": t(run.structure.get("operationTitle") or "runs.operation"), "state": step.state,
                       "stateLabel": t(f"runs.state_{step.state}")} for step in run.steps.all()]}
+    payload["ai"] = bool(run.structure.get("agentName"))
+    if payload["ai"]:
+        payload["initiator"] = t("runs.ai_initiator", name=run.structure["agentName"])
     if not detail:
         from chatballs.integrations.execution.progress_payloads import extend_payload
         return extend_payload(run, payload, tenant=tenant, detail=False)
     from chatballs.integrations.execution.control import available_controls
     payload["controls"] = available_controls(tenant, run) if tenant else []
+    if tenant and payload["ai"] and "approve" in payload["controls"]:
+        from chatballs.integrations.execution.permissions import allowed_files
+        payload["files"] = [{"id": str(file.public_id), "name": file.name} for file in allowed_files(tenant, run.conversation_id)]
     payload["reconcilePath"] = run.steps.filter(state="unknown").order_by("pk").values_list("path", flat=True).first()
     steps = []
     from chatballs.integrations.models import Integration
@@ -71,6 +77,14 @@ def run_payload(run, *, detail=False, tenant=None):
             item.update(inputSchema=None, outputSchema=None, arguments={}, result={})
         if step.state == "approval":
             item["approvalDigest"] = invocation_digest(step, run)
+            if run.definition.get("ai"):
+                from chatballs.integrations.execution.ai_approval import active_editor
+                editor = active_editor(step)
+                item["deadline"] = run.definition["ai"]["approvalDeadline"]
+                item["editing"] = bool(editor)
+                if tenant and editor.get("membership") == tenant.membership_id:
+                    item["editToken"] = editor["token"]
+        item["connectionId"] = step.integration_id
         steps.append(item)
     payload["steps"] = steps
     if run.definition.get("kind") == "synchronization":

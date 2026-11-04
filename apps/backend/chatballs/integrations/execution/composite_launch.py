@@ -13,7 +13,7 @@ from chatballs.integrations.scenarios.values import RunValues, prepare_inputs
 from chatballs.integrations.service_connections.payloads import field_payload
 
 
-def snapshot(tenant, document, parameters, conversation, *, scenario, dedup, registry, preview, confirmation, automatic=None, source=None):
+def snapshot(tenant, document, parameters, conversation, *, scenario, dedup, registry, preview, confirmation, automatic=None, source=None, ai_binding=None):
     identity = str(scenario.public_id) if scenario else source["key"]
     revision = scenario.revision if scenario else source["revision"]
     name = scenario.name if scenario else source["name"]
@@ -22,7 +22,7 @@ def snapshot(tenant, document, parameters, conversation, *, scenario, dedup, reg
     # The same boundary validates optional/nested/file inputs at launch.
     prepare_inputs(spec, {k: {"source": "constant", "value": v} for k, v in parameters.items()}, RunValues(files=files), registry=registry)
     frozen = freeze(tenant, document, scenario_id=identity, registry=registry)
-    context = context_values(conversation)
+    context = ai_binding.get("testContext", {}) if ai_binding and ai_binding.get("tester") else context_values(conversation)
     plan = {"document": document, "parameters": parameters, "context": context, **frozen,
             "scenarioKey": identity, "revision": revision}
     from chatballs.integrations.execution.budgets import MAX_SNAPSHOT, size
@@ -44,10 +44,16 @@ def snapshot(tenant, document, parameters, conversation, *, scenario, dedup, reg
     from chatballs.integrations.scenarios.entity_links import snapshot as link_snapshot
     data = run.definition
     data["links"] = link_snapshot(conversation)
+    if ai_binding:
+        data["ai"] = ai_binding
     if source:
         data.update(kind="synchronization", triggerKind="synchronization", exchange=source["exchange"])
     run.definition = data
     run.structure = {"name": name, "definitionUpdatedAt": scenario.updated_at.isoformat() if scenario else source["updatedAt"]}
+    if ai_binding:
+        from chatballs.ai.models import AIAgent
+        run.structure = {**run.structure, "agentName": AIAgent.objects.get(pk=ai_binding["agent"]).channel.name,
+                         "testChat": bool(ai_binding.get("tester"))}
     run.save()
     from chatballs.integrations.execution.budgets import account_data, size
     account_data(run, size(run.definition))

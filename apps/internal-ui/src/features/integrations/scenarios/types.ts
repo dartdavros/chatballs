@@ -46,6 +46,7 @@ export type ScenarioDocument = {
 };
 export type Issue = { path: string; code: string; message: string };
 export type Scenario = {
+  agentPolicies?: Array<{ agent: number; mode: "off" | "self" | "ask"; revision: number }>;
   automationError?: string;
   id: string; name: string; revision: number; enabled: boolean; definition: ScenarioDocument; issues?: Issue[];
   origin: { adapter: string; key: string; version: number | null }; connections: number[]; updatedAt: string;

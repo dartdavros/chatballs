@@ -3,6 +3,7 @@ import type { MessagePresentation } from "@chatballs/contracts";
 import { fmt, t, tn } from "../../../i18n";
 import type { Integration } from "../../integrations/model";
 import type { ToolCall } from "../../../shared/tool-calls/model";
+import type { ServiceField } from "../../integrations/services/types";
 
 export type TestConnection = { id: number; name: string; fields: ClientField[] };
 export type TestValues = Record<string, string | boolean>;
@@ -11,8 +12,9 @@ export type ClientData = {
   webFields?: Record<string, Record<string, string | number | boolean | null>>;
 };
 export type ChatMessage = { role: "user" | "assistant"; content: string };
-export type TestTurn = MessagePresentation & { message: string; reply?: string; calls: ToolCall[]; error?: string; createdAt: string };
-export type TestReply = MessagePresentation & { reply: string; toolCalls: ToolCall[] };
+export type TestAction = { state: string; runId?: string; title?: string; inputSchema?: ServiceField; arguments?: unknown };
+export type TestTurn = MessagePresentation & { message: string; reply?: string; calls: ToolCall[]; error?: string; createdAt: string; serviceActions?: TestAction[] };
+export type TestReply = MessagePresentation & { reply: string; toolCalls: ToolCall[]; serviceActions?: TestAction[] };
 
 export function contactFields(): ClientField[] {
   return [

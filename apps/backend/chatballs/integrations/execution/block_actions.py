@@ -2,6 +2,7 @@
 
 from django.utils import timezone
 
+from chatballs.integrations.execution.ai_policy import needs_confirmation
 from chatballs.integrations.execution.actions import resolve_action
 from chatballs.integrations.execution.block_values import actual
 from chatballs.integrations.execution.frames import save
@@ -39,12 +40,14 @@ def action(tenant, run, frame, registry):
         integration=integration, adapter_key=adapter.key, adapter_version=adapter.contract_version,
         operation_key=operation.key, retry_strategy=operation.retry, due_at=timezone.now())
     step.definition = values
-    from chatballs.integrations.execution.automation import confirmation_required
-    step.state = "approval" if confirmation_required(operation, run) else "queued"
+    step.state = "approval" if needs_confirmation(run, operation) else "queued"
     step.save()
     own_input_files(step, files)
     save(frame, data, "pending")
     journal(run, "created", step)
+    if run.definition.get("ai"):
+        from chatballs.integrations.execution.ai_deadlines import schedule_expiry
+        schedule_expiry(tenant, run, step)
     if step.state == "queued":
         schedule(tenant, run)
     return True

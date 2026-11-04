@@ -23,6 +23,8 @@ def scenario_payload(row, *, issues=None, detail=True):
     }
     if detail:
         payload["definition"] = row.definition
+        from chatballs.integrations.execution.scenario_agent_policies import payload as agent_policies
+        payload["agentPolicies"] = agent_policies(row)
     if issues is not None:
         payload["issues"] = [issue_payload(issue) for issue in issues]
     return payload

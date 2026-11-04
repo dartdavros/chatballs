@@ -56,7 +56,8 @@ def finish_diagnostic(message, plan, answer):
                    "latencyMs": answer.latency_ms}]
     extra = plan.diagnostic_redactor.clean({
         "rounds": rounds,
-        "toolCalls": [{**asdict(call), **({"diagnostic": {}} if clean_operations else {})} for call in answer.tool_calls],
+        "toolCalls": [{**{key: value for key, value in asdict(call).items() if key != "action_result"},
+                       **({"diagnostic": {}} if clean_operations or call.action_result else {})} for call in answer.tool_calls],
         "handoff": bool(answer.error is not None or (
             answer.result is not None and HANDOFF_TOKEN in answer.result.text
         )),

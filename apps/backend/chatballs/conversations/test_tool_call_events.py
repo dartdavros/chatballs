@@ -146,7 +146,7 @@ class ToolCallEventTests(ToolLoopTestCase):
 
     def test_event_is_announced_over_the_conversation_channel(self) -> None:
         incoming = self._incoming()
-        with patch("chatballs.conversations.realtime.publish") as publish:
+        with patch("chatballs.conversations.realtime.publish") as publish, self.captureOnCommitCallbacks(execute=True):
             record_tool_calls(
                 incoming, [ToolCallRecord(name="x", title=TITLE, error="", duration_ms=1)]
             )

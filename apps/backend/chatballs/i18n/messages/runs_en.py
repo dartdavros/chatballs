@@ -1,4 +1,5 @@
 MESSAGES = {
+    "runs.scenario": "Scenario",
     "runs.synchronization": "Data exchange",
     "runs.synchronization_plan": "Compare changes",
     "runs.synchronization_validate": "Check current values",

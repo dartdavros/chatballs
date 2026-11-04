@@ -2,12 +2,14 @@ import type { ServiceField } from "../services/types";
 
 export type RunState = "queued" | "running" | "reconciling" | "approval" | "pending" | "completed" | "failed" | "unknown" | "cancelled" | "decision";
 export type RunSummary = {
+  ai?: boolean;
   id: string; number: number; name: string; connection: string; state: RunState; stateLabel: string;
   initiator: string; conversationId: number | null; createdAt: string; finishedAt: string | null;
   cancelRequested: boolean; dataCleared: boolean; revision: number; definitionUpdatedAt: string | null;
   progress: Array<{ title: string; state: RunState; stateLabel: string }>;
 };
 export type RunStep = {
+  editToken?: string; editing?: boolean; connectionId?: number;
   path: string; title: string; state: RunState; stateLabel: string; attempt: number; error: string;
   inputSchema: ServiceField | null; outputSchema: ServiceField | null; arguments: unknown; result: unknown; approvalDigest?: string;
   depth?: number; deadline?: string; prompt?: string; scope?: Array<{ kind: "iteration" | "branch"; number: number }>; decision?: { generation: string; digest: string };
@@ -16,7 +18,7 @@ export type RunConflict = { digest: string; leftTitle: string; rightTitle: strin
   id: string; field: string; left: unknown; right: unknown; leftAt: string | null; rightAt: string | null;
   leftSchema: ServiceField | null; rightSchema: ServiceField | null;
 }> };
-export type RunDetail = RunSummary & { controls: string[]; steps: RunStep[]; reconcilePath?: string; conflict?: RunConflict | null; journal: Array<{ id: number; label: string; createdAt: string }> };
+export type RunDetail = RunSummary & { files?: Array<{ id: string; name: string }>; controls: string[]; steps: RunStep[]; reconcilePath?: string; conflict?: RunConflict | null; journal: Array<{ id: number; label: string; createdAt: string }> };
 export type RunPage = { items: RunSummary[]; count: number; page: number; pageSize: number;
   filters: { connections: Array<{ id: number; name: string }>; initiators: Array<{ initiator_id: number; initiator__user__full_name: string }> } };
 export type ManualAction = { id: string; kind: "scenario" | "operation"; title: string; parameters: ServiceField;

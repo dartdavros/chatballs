@@ -135,6 +135,9 @@ def plan_chat(
     pseudonymizer: Pseudonymizer | None = None,
     client: ClientData | None = None,
     client_context: list[tuple[str, str]] | None = None,
+    test_tenant=None,
+    action_preview: bool = True,
+    action_turn_id=None,
 ) -> TurnPlan:
     """Шаг в транзакции: поиск знаний, сборка промпта, выбор модели и инструментов.
 
@@ -185,6 +188,14 @@ def plan_chat(
     client, redactor, snapshot = diagnostic_context(agent, conversation, pseudonymizer, client)
     tools = plan_turn_tools(agent=agent, conversation=conversation, client=client,
                            decisions=snapshot["toolAvailability"])
+    from chatballs.integrations.execution.ai_bridge import plan_actions
+    tools.extend(plan_actions(agent, conversation, preview=action_preview if test_tenant else False,
+                              test_tenant=test_tenant, test_client=client, turn_id=action_turn_id,
+                              reserved_names=[tool.spec.name for tool in tools]))
+    from chatballs.integrations.execution.ai_context import action_context
+    action_data = action_context(agent, conversation, pseudonymizer)
+    if action_data:
+        job = replace(job, messages=[ChatMessage(role="system", content=action_data, masked=True), *job.messages])
     skills = plan_turn_skills(agent, tools, pseudonymizer)
     return TurnPlan(
         job=with_tools(job, tools, pseudonymizer, skills),

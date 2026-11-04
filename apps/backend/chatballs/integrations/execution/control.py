@@ -25,40 +25,76 @@ def available_controls(tenant, run):
         if run.state == "unknown" and run.steps.filter(state="unknown").exists():
             actions.append("reconcile")
     try:
-        authorize_run(tenant, run)
+        if run.definition.get("ai"):
+            from chatballs.integrations.execution.ai_policy import approver
+            approver(tenant, run)
+        else:
+            authorize_run(tenant, run)
     except ExecutionDenied:
         return actions
     if run.state == "approval" and run.steps.filter(state="approval").exists():
         actions.append("approve")
-    if run.state in checkpoints.TERMINAL or run.state == "unknown":
+        if run.definition.get("ai") and "cancel" not in actions:
+            actions.append("cancel")
+    if not run.definition.get("ai") and (run.state in checkpoints.TERMINAL or run.state == "unknown"):
         actions.append("repeat")
     return actions
 
 
-def control(*, tenant, public_id, action, digest=None, path=None):
+def control(*, tenant, public_id, action, digest=None, path=None, arguments=None, edit_token=None):
     with tenant_atomic(tenant):
         from chatballs.integrations.execution.budgets import lock_run
         run = lock_run(tenant, public_id)
         if run.data_cleared_at:
             raise ExecutionDenied("data_cleared")
         tenant = view_run(tenant, run)
-        if action == "approve":
-            tenant, _ = authorize_run(tenant, run)
+        if action in {"approve", "edit", "revise", "release-edit"}:
+            if run.definition.get("ai"):
+                from chatballs.integrations.execution.ai_policy import approver
+                tenant = approver(tenant, run)
+            else:
+                tenant, _ = authorize_run(tenant, run)
         elif tenant.membership_id != run.initiator_id:
             from chatballs.identity.models import EmployeeRole
             if tenant.membership.role not in {EmployeeRole.OWNER, EmployeeRole.ADMIN}:
-                raise ExecutionDenied("permission")
+                if action == "cancel" and run.definition.get("ai"):
+                    from chatballs.integrations.execution.ai_policy import approver
+                    approver(tenant, run)
+                else:
+                    raise ExecutionDenied("permission")
         if run.definition.get("composite"):
             from chatballs.integrations.execution.composite_control import apply_control
-            return apply_control(tenant, run, action=action, digest=digest, path=path)
-        step = run.steps.select_for_update().get()
+            if action not in {"edit", "revise", "release-edit"}:
+                return apply_control(tenant, run, action=action, digest=digest, path=path)
+        step = run.steps.select_for_update().get(path=path) if path else run.steps.select_for_update().get()
+        if action in {"edit", "revise", "release-edit"}:
+            if not run.definition.get("ai"):
+                raise ExecutionDenied("action")
+            from chatballs.integrations.execution.ai_approval import edit
+            if action == "revise" and not isinstance(arguments, dict):
+                raise ExecutionDenied("arguments")
+            edit(tenant, run, step, digest=digest, arguments=arguments if action == "revise" else None,
+                 token=edit_token, release=action == "release-edit")
+            if action == "revise":
+                run.state = "queued"
+                run.save(update_fields=["state"])
+                journal(run, "approve", step)
+                record_audit_event(action="integrations.run_approve", actor=tenant.actor_user,
+                    organization=tenant.organization, object_type="ScenarioRun", object_id=str(run.public_id),
+                    payload={"path": step.path, "parametersChanged": True})
+                schedule(tenant, run)
+            return run
         if action == "approve":
             if step.state != "approval" or digest != invocation_digest(step, run):
                 raise ExecutionDenied("approval_changed")
             step.confirmed_digest = digest
-            step.approval_expires_at = timezone.now() + timedelta(minutes=15)
+            if run.definition.get("ai"):
+                from chatballs.integrations.execution.ai_approval import confirm
+                confirm(tenant, run, step, digest)
+            else:
+                step.approval_expires_at = timezone.now() + timedelta(minutes=15)
             step.state = "queued"
-            step.save(update_fields=["confirmed_digest", "approval_expires_at", "state"])
+            step.save(update_fields=["confirmed_digest", "approval_expires_at", "state", "content"])
             run.state = "queued"
             run.save(update_fields=["state"])
             schedule(tenant, run)

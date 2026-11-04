@@ -90,8 +90,12 @@ class ToolLoopTestCase(AgentToolsTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.ai_agent = AIAgent.objects.get(channel__name="Приёмная")
+        provider = Integration.objects.create(organization=self.organization, name="Tool loop provider",
+            kind=IntegrationKind.LLM_PROVIDER, provider=IntegrationProvider.DEMO, secret="test-provider")
+        self.ai_agent.provider_integration = provider
+        self.ai_agent.model = "demo"
         self.ai_agent.status = AIAgentStatus.ACTIVE
-        self.ai_agent.save(update_fields=["status"])
+        self.ai_agent.save(update_fields=["status", "provider_integration", "model"])
         self.channel = self.ai_agent.channel
         self.contact = Contact.objects.create(
             organization=self.organization, name=NAME, email=EMAIL
@@ -123,6 +127,9 @@ class ToolLoopTestCase(AgentToolsTestCase):
             )
         with (
             patch("chatballs.ai.invocation.get_provider", return_value=provider),
+            # The scripted model represents a tool-capable provider. The
+            # generic test LocalProvider advertises no tool capability.
+            patch("chatballs.ai.turn_tools.cached_tool_support", return_value=True),
             patch("chatballs.conversations.transports.send_reply", return_value=True) as send,
         ):
             run_requested_turn(

@@ -18,8 +18,6 @@ export function AccessFields({ value, catalog, onChange }: { value: Access; cata
         onChange={checked => onChange({ ...value, staff: checked ? [...value.staff, employee.id] : value.staff.filter(id => id !== employee.id) })} />)}
     </div>
     <ToggleField label={t("scenarios.delegated")} checked={value.delegated} onChange={delegated => onChange({ ...value, delegated })} />
-    <SelectField label={t("scenarios.ai_mode")} value={value.aiMode} options={(["off", "confirm", "autonomous"] as const).map(mode => [mode, t(`scenarios.ai_${mode}`)])}
-      onChange={aiMode => onChange({ ...value, aiMode: aiMode as Access["aiMode"] })} wide />
     <SelectField label={t("scenarios.confirm")} value={value.confirm} options={(["effects", "always"] as const).map(mode => [mode, t(`scenarios.confirm_${mode}`)])}
       onChange={confirm => onChange({ ...value, confirm: confirm as Access["confirm"] })} wide />
   </div>;

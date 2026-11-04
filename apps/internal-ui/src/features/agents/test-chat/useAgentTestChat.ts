@@ -10,6 +10,7 @@ export function useAgentTestChat(agentId: number) {
   const [values, setValues] = useState<TestValues>({});
   const [turns, setTurns] = useState<TestTurn[]>([]);
   const [busy, setBusy] = useState(false);
+  const [executionMode, setExecutionMode] = useState<"preview" | "execute">("preview");
   const controller = useRef<AbortController | null>(null);
 
   async function load(signal?: AbortSignal) {
@@ -38,12 +39,12 @@ export function useAgentTestChat(agentId: number) {
     try {
       const result = await api<TestReply>(`/api/v1/agents/${agentId}/test-chat/`, {
         method: "POST", signal: request.signal,
-        body: JSON.stringify({ message: turn.message, history: chatHistory(turns), clientData: clientData(values, connections) }),
+        body: JSON.stringify({ message: turn.message, history: chatHistory(turns), clientData: clientData(values, connections), executionMode }),
       });
       if (!request.signal.aborted) setTurns((current) => [...current.slice(0, -1), {
         ...turn, formatVersion: result.formatVersion, presentation: result.presentation,
         deliveryRepresentation: result.deliveryRepresentation, template: result.template,
-        reply: displayReply(result.reply), calls: result.toolCalls ?? [],
+        reply: displayReply(result.reply), calls: result.toolCalls ?? [], serviceActions: result.serviceActions,
       }]);
     } catch (caught) {
       if (!request.signal.aborted) {
@@ -51,7 +52,8 @@ export function useAgentTestChat(agentId: number) {
           ? caught.payload.detail ?? t("conversations.could_not_send_message")
           : t("conversations.could_not_send_message");
         const calls = caught instanceof ApiError && Array.isArray(caught.payload.toolCalls) ? caught.payload.toolCalls as TestReply["toolCalls"] : [];
-        setTurns((current) => [...current.slice(0, -1), { ...turn, error, calls }]);
+        const serviceActions = caught instanceof ApiError && Array.isArray(caught.payload.serviceActions) ? caught.payload.serviceActions as TestReply["serviceActions"] : [];
+        setTurns((current) => [...current.slice(0, -1), { ...turn, error, calls, serviceActions }]);
       }
     } finally {
       if (controller.current === request) { controller.current = null; setBusy(false); }
@@ -65,5 +67,5 @@ export function useAgentTestChat(agentId: number) {
     setTurns([]);
   }
 
-  return { connections, loadError, reload: () => void load(), values, setValues, turns, busy, send, restart };
+  return { connections, loadError, reload: () => void load(), values, setValues, turns, busy, send, restart, executionMode, setExecutionMode };
 }

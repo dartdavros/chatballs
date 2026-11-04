@@ -1,4 +1,5 @@
 MESSAGES = {
+    "runs.scenario": "Сценарий",
     "runs.synchronization": "Обмен данными",
     "runs.synchronization_plan": "Сопоставить изменения",
     "runs.synchronization_validate": "Проверить актуальность данных",

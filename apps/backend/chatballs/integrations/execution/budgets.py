@@ -21,6 +21,11 @@ def size(value):
 def lock_run(tenant, public_id=None, *, pk=None):
     run = ScenarioRun.objects.get(
         **({"pk": pk} if pk else {"public_id": public_id}), organization_id=tenant.organization_id)
+    if run.content and run.definition.get("ai"):
+        # Match organization mode transitions and AI launch/policy updates:
+        # organization before run/step/conversation, never the reverse.
+        from chatballs.identity.operation_modes import lock_organization
+        lock_organization(tenant.organization_id)
     chain = [run.pk]
     parent = run.parent_id
     while parent:

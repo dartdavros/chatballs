@@ -1,5 +1,7 @@
 # Scenario editor
 
+AI permissions and confirmations: [agent actions](agent-actions.en.md).
+
 ## Composite steps and waits
 
 A sequence advances after recording the previous outcome. A condition selects

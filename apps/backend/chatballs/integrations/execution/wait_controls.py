@@ -21,6 +21,13 @@ def decision_digest(wait):
 
 
 def can_decide(tenant, wait):
+    if wait.run.definition.get("ai"):
+        from chatballs.integrations.execution.ai_policy import approver
+        tenant = approver(tenant, wait.run)
+        configured = wait.definition["block"].get("approver", "initiator")
+        if configured != "initiator" and str(configured) != str(tenant.actor_user.pk):
+            raise ExecutionDenied("permission")
+        return tenant
     tenant = current_actor(tenant)
     view_run(tenant, wait.run)
     # Authority to decide never substitutes the run's effect principal.

@@ -52,6 +52,9 @@ export function ScenarioDrawer({ editor }: { editor: ScenarioEditorState }) {
         change={patch => editor.mutate(document => { const found = findBlock(document.steps, block.id); if (found) Object.assign(found, patch); })}
         onInput={(name, schema) => editor.mutate(document => { (document.parameters.properties ??= {})[name] = schema; })} />}
       {trigger && <><TriggerEditor trigger={trigger} access={draft.definition.access} catalog={catalog}
+        policies={draft.agentPolicies} onPolicy={(agent, mode) => editor.setDraft(current => current ? { ...current,
+          agentPolicies: [...(current.agentPolicies ?? []).filter(row => row.agent !== agent),
+            { agent, mode, revision: current.agentPolicies?.find(row => row.agent === agent)?.revision ?? 0 }] } : current)}
         change={patch => editor.mutate(document => { const found = document.triggers.find(t => t.id === trigger.id); if (found) Object.assign(found, patch); })}
         onAccess={access => editor.mutate(document => { document.access = access; })} />
         {trigger.kind === "api" && <ExternalKeyFields value={draft.externalKeys?.find(key => key.trigger === trigger.id)}

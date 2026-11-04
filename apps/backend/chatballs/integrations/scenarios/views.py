@@ -2,6 +2,7 @@
 
 from django.core.exceptions import ValidationError
 from django.http import Http404
+from django.db import transaction
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -39,9 +40,10 @@ class ScenarioAPIView(APIView):
                            organization=request.tenant_context.organization, object_type="ScenarioDefinition",
                            object_id=str(row.public_id), payload={"revision": row.revision}, request=request)
 
+    @transaction.atomic
     def save(self, request, public_id=None):
         data = request.data
-        allowed = {"name", "definition", "revision", "enabled"}
+        allowed = {"name", "definition", "revision", "enabled", "agentPolicies"}
         if not isinstance(data, dict) or set(data) - allowed or not isinstance(data.get("enabled", False), bool):
             raise ValidationError({"definition": t("scenarios.invalid_definition")})
         row, issues = services.save_definition(tenant=request.tenant_context, name=data.get("name"),
@@ -49,6 +51,9 @@ class ScenarioAPIView(APIView):
             enabled=data.get("enabled", False))
         if row is None:
             return Response({"issues": [issue_payload(issue) for issue in issues]}, status=400)
+        if "agentPolicies" in data:
+            from chatballs.integrations.execution.scenario_agent_policies import save
+            save(request.tenant_context, row, data["agentPolicies"])
         self.audit(request, row, "saved")
         payload = scenario_payload(row, issues=issues)
         payload["externalKeys"] = synchronize_keys(request, row)

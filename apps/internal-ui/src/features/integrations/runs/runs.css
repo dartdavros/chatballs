@@ -97,6 +97,9 @@
 .run-feed-card > p { color: var(--warning-text); font-size: 12px; }
 .run-feed-card > footer { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; font-size: 12px; }
 .run-feed-card time { color: var(--n-4); }
+.run-feed-card.run-detail-state { min-height: 180px; }
+.run-feed-card .run-detail-actions { flex-wrap: wrap; padding-top: 10px; }
+.run-feed-card.is-ai { border-color: color-mix(in srgb, var(--ai) 32%, var(--surface-card)); }
 .run-feed-step { display: flex; align-items: center; gap: 7px; margin-top: 10px; color: var(--n-2); font-size: 12.5px; }
 .run-feed-step > span { flex: 1; }
 .run-feed-step > small { color: var(--n-4); }

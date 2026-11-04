@@ -1,4 +1,4 @@
-"""Проверочный чат использует шаги живого хода; клиентские данные не записывает."""
+"""Проверочный чат использует живой runtime с явным preview/execute действий."""
 
 import time
 
@@ -38,8 +38,12 @@ class AgentCardTestChatView(APIView):
     def post(self, request: Request, agent_id: int) -> Response:
         started = time.monotonic()
         calls = []
+        actions = []
         skill_support, skill_warning = "unknown", ""
         body = request.data if isinstance(request.data, dict) else {}
+        execution_mode = body.get("executionMode", "preview")
+        if not isinstance(execution_mode, str) or execution_mode not in {"preview", "execute"}:
+            return Response({"detail": t("ai.test_client_data_invalid")}, status=400)
         message = body.get("message", "")
         if not isinstance(message, str) or not message.strip():
             return Response({"detail": t("ai.empty_message")}, status=400)
@@ -72,6 +76,7 @@ class AgentCardTestChatView(APIView):
                 plan = plan_chat(
                     agent=agent, message=message.strip(), history=history, embedding=embedding,
                     pseudonymizer=data.pseudonymizer, client=data.client, client_context=data.context_fields,
+                    test_tenant=request.tenant_context, action_preview=execution_mode == "preview",
                 )
                 skill_support = plan.skills.support
                 if plan.skills.items and skill_support == "unsupported":
@@ -87,13 +92,15 @@ class AgentCardTestChatView(APIView):
                 })}
                 for call in answer.tool_calls
             ]
+            actions = [call.action_result for call in answer.tool_calls if call.action_result]
             if answer.error is not None:
                 raise answer.error
         except ProviderError as error:
-            return Response({"detail": t("ai.provider_error", error=error), "toolCalls": calls,
+            return Response({"detail": t("ai.provider_error", error=error), "toolCalls": calls, "serviceActions": actions,
                              "skillSupport": skill_support, "skillWarning": skill_warning}, status=502)
         result = answer.result
         return Response({
+            "serviceActions": actions,
             "reply": reply,
             **({"formatVersion": 1, **answer.prepared_reply.payload()} if answer.prepared_reply else {}),
             "model": result.model,

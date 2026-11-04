@@ -29,7 +29,7 @@ export function useScenarioEditor(initial?: string) {
   const [pendingLeave, setPendingLeave] = useState<(() => void) | null>(null);
   const generation = useRef(0);
   const loadedSelection = useRef<string | null | undefined>(undefined);
-  const snapshot = draft ? JSON.stringify({ name: draft.name, definition: draft.definition, enabled: draft.enabled }) : "";
+  const snapshot = draft ? JSON.stringify({ name: draft.name, definition: draft.definition, enabled: draft.enabled, agentPolicies: draft.agentPolicies }) : "";
   const dirty = snapshot !== saved;
 
   const load = useCallback(async (target = selected) => {
@@ -47,7 +47,7 @@ export function useScenarioEditor(initial?: string) {
       setCatalog(metadata); setRows(list);
       const next = scenario ?? (target === "new" ? { id: "", name: t("scenarios.new_name"), revision: 0,
         enabled: false, definition: emptyDocument(), origin: { adapter: "", key: "", version: null }, connections: [], updatedAt: "" } : null);
-      setDraft(next); setSaved(next && next.id ? JSON.stringify({ name: next.name, definition: next.definition, enabled: next.enabled }) : "");
+      setDraft(next); setSaved(next && next.id ? JSON.stringify({ name: next.name, definition: next.definition, enabled: next.enabled, agentPolicies: next.agentPolicies }) : "");
       setIssues(next?.issues ?? []);
     } catch { if (generation.current === token) setError(t("scenarios.load_failed")); }
     finally { if (generation.current === token) setLoading(false); }
@@ -88,10 +88,11 @@ export function useScenarioEditor(initial?: string) {
     setSaving(true); setError("");
     try {
       const result = await api.saveScenario({ name: draft.name, definition: draft.definition, enabled,
+        agentPolicies: draft.agentPolicies,
         ...(draft.id ? { id: draft.id, revision: draft.revision } : {}) });
       setDraft(result); setIssues(result.issues ?? []);
       loadedSelection.current = result.id; setSelected(result.id);
-      setSaved(JSON.stringify({ name: result.name, definition: result.definition, enabled: result.enabled }));
+      setSaved(JSON.stringify({ name: result.name, definition: result.definition, enabled: result.enabled, agentPolicies: result.agentPolicies }));
       setRows(items => [...items.filter(item => item.id !== result.id), result]);
       updateScenarioUrl(result.id);
       return true;
@@ -109,7 +110,7 @@ export function useScenarioEditor(initial?: string) {
     setSaving(true);
     try {
       const result = await api.copyScenario(draft.id, draft.name);
-      setDraft(result); setSaved(JSON.stringify({ name: result.name, definition: result.definition, enabled: result.enabled }));
+      setDraft(result); setSaved(JSON.stringify({ name: result.name, definition: result.definition, enabled: result.enabled, agentPolicies: result.agentPolicies }));
       loadedSelection.current = result.id; setSelected(result.id);
       setIssues(result.issues ?? []); setRows(items => [...items, result]); releaseNavigationGuard();
       updateScenarioUrl(result.id);

@@ -4,7 +4,6 @@ import hashlib
 
 from django.utils import timezone
 
-from chatballs.integrations.adapters.contracts import READ_EFFECTS
 from chatballs.integrations.adapters.schema import validate_value
 from chatballs.integrations.execution.actions import resolve_action
 from chatballs.integrations.execution.events import journal, schedule
@@ -72,7 +71,7 @@ def launch_direct(*, tenant, connection_id, operation_key, trigger_key, argument
             registry=registry, grant_id=grant.pk if grant else None, preview=preview, confirmation=confirmation), True
 
 
-def _snapshot(tenant, document, parameters, conversation, *, scenario, dedup, scenario_key, registry, grant_id=None, preview=False, confirmation=None):
+def _snapshot(tenant, document, parameters, conversation, *, scenario, dedup, scenario_key, registry, grant_id=None, preview=False, confirmation=None, ai_binding=None):
     spec = read_type(document["parameters"])
     if validate_value(spec, parameters):
         raise ExecutionDenied("arguments")
@@ -81,7 +80,7 @@ def _snapshot(tenant, document, parameters, conversation, *, scenario, dedup, sc
         tenant.organization_id, block.get("connection"), block["target"], registry=registry,
     )
     files = {str(pk) for pk in allowed_files(tenant, conversation.pk if conversation else None).values_list("public_id", flat=True)}
-    context = context_values(conversation)
+    context = ai_binding.get("testContext", {}) if ai_binding and ai_binding.get("tester") else context_values(conversation)
     arguments = prepare_inputs(operation.input, block["inputs"],
         RunValues(parameters=parameters, context=context, files=files), registry=registry)
     now = timezone.now()
@@ -112,19 +111,26 @@ def _snapshot(tenant, document, parameters, conversation, *, scenario, dedup, sc
     run.definition = {"document": document, "parameters": parameters, "context": context,
                       "kind": "scenario" if scenario else "direct", "grantId": grant_id,
                       "contracts": {f"{integration.pk}:{block['target']}": contract}}
+    if ai_binding:
+        run.definition = {**run.definition, "ai": ai_binding}
     from chatballs.integrations.scenarios.entity_links import snapshot as link_snapshot
     data = run.definition
     data["links"] = link_snapshot(conversation)
     run.definition = data
     run.structure = {"name": scenario.name if scenario else "", "operationTitle": operation.title_key,
                      "connection": integration.name, "definitionUpdatedAt": scenario.updated_at.isoformat() if scenario else None}
+    if ai_binding:
+        from chatballs.ai.models import AIAgent
+        run.structure = {**run.structure, "agentName": AIAgent.objects.get(pk=ai_binding["agent"]).channel.name,
+                         "testChat": bool(ai_binding.get("tester"))}
     run.save()
     step = ScenarioStep(organization_id=tenant.organization_id, run=run,
         path=f"steps/{block['id']}", integration=integration, adapter_key=adapter.key,
         adapter_version=adapter.contract_version, operation_key=operation.key,
         retry_strategy=operation.retry, due_at=now)
     step.definition = {"arguments": arguments}
-    needs_confirmation = operation.effect not in READ_EFFECTS or document["access"]["confirm"] == "always"
+    from chatballs.integrations.execution.ai_policy import needs_confirmation as confirmation_required
+    needs_confirmation = confirmation_required(run, operation)
     step.state = "approval" if needs_confirmation and expires is None else "queued"
     if expires is not None:
         from chatballs.integrations.execution.approvals import invocation_digest
@@ -135,6 +141,9 @@ def _snapshot(tenant, document, parameters, conversation, *, scenario, dedup, sc
     run.state = step.state
     run.save(update_fields=["state"])
     journal(run, "created", step)
+    if ai_binding:
+        from chatballs.integrations.execution.ai_deadlines import schedule_expiry
+        schedule_expiry(tenant, run, step)
     if step.state == "queued":
         schedule(tenant, run)
     return run

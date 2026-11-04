@@ -38,6 +38,7 @@ class Turn:
     stopped: bool = False
     outgoing: str = ""
     mode_version: int = 0
+    control_version: int = 0
 
 
 def request_ai_turn(
@@ -57,7 +58,9 @@ def request_ai_turn(
                               connection=conversation.connection, conversation=conversation):
         return
     message.ai_turn_state = AiTurnState.PENDING
-    message.ai_delivery = {"modeVersion": organization.operation_mode_version}
+    message.ai_delivery = {"modeVersion": organization.operation_mode_version,
+                           "controlVersion": conversation.ai_control_version,
+                           "agentId": conversation.channel.ai_agent.pk}
     message.save(update_fields=["ai_turn_state", "ai_delivery"])
     enqueue_event(
         DomainEvent(

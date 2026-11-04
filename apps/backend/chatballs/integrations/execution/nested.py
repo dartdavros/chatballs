@@ -20,7 +20,15 @@ def call(tenant, run, frame, registry):
         document = saved["document"]
         if not any(t["kind"] == "scenario" for t in document["triggers"]) or not document["access"]["delegated"]:
             raise ExecutionDenied("permission")
-        authorize(tenant, document, run.conversation_id, scenario_id=saved["id"], trigger_kind="scenario")
+        if run.definition.get("ai"):
+            from chatballs.integrations.scenario_state.definitions import ScenarioDefinition
+            current = ScenarioDefinition.objects.get(pk=saved["id"], organization_id=run.organization_id)
+            if not current.enabled or not current.definition["access"]["delegated"] or not any(
+                t["kind"] == "scenario" for t in current.definition["triggers"]
+            ):
+                raise ExecutionDenied("permission")
+        else:
+            authorize(tenant, document, run.conversation_id, scenario_id=saved["id"], trigger_kind="scenario")
         inputs = prepare_inputs(read_type(document["parameters"]), block["inputs"],
                                 actual(tenant, run, data["values"]), registry=registry)
         reserve(run)

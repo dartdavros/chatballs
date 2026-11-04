@@ -7,6 +7,8 @@
 from __future__ import annotations
 
 MESSAGES: dict[str, object] = {
+    "runs.ai_initiator": "Агент «{name}»",
+    "audit.action_integrations_agent_action_changed": "Изменено разрешение действия агента",
     "admin.choose_logo_file": "Выберите файл логотипа",
     "admin.employee_not_found": "Сотрудник не найден",
     "admin.group_name_taken": "Группа с таким именем уже есть",

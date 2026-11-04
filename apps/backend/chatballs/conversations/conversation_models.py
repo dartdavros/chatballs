@@ -93,6 +93,7 @@ class Conversation(models.Model):
     # диалог возвращается в общую (chatballs.conversations.escalation).
     assigned_at = models.DateTimeField(null=True, blank=True)
     assignment_version = models.PositiveBigIntegerField(default=0, db_default=0, editable=False)
+    ai_control_version = models.PositiveBigIntegerField(default=0, db_default=0, editable=False)
     # Дизайн-базлайн v2: приоритет, метки и заметка оператора.
     priority = models.CharField(
         max_length=8, choices=ConversationPriority.choices, default=ConversationPriority.NONE
@@ -161,6 +162,10 @@ class Conversation(models.Model):
             # PostgreSQL owns this value, including for older claim/release
             # services; their HTTP result must expose the committed version.
             self.refresh_from_db(fields=["assignment_version"])
+        if existing and (fields is None or set(fields) & {
+            "control_mode", "assigned_operator", "assigned_operator_id", "channel", "channel_id", "lifecycle", "archived_at",
+        }):
+            self.refresh_from_db(fields=["ai_control_version"])
 
 
 class ConversationRead(TenantRelationModel):

@@ -65,6 +65,9 @@ def authorize(tenant, document, conversation_id=None, *, scenario_id=None, trigg
 
 
 def authorize_run(tenant, run, *, check_conditions=True):
+    if run.definition.get("ai"):
+        from chatballs.integrations.execution.ai_policy import authorize_ai
+        return authorize_ai(tenant, run)
     if run.definition.get("kind") == "synchronization":
         from chatballs.integrations.scenarios.synchronization_access import authorize_exchange
         result = authorize_exchange(tenant, run)
@@ -143,7 +146,7 @@ def direct_policy(tenant, connection_id, operation_key, conversation_id):
 def allowed_files(tenant, conversation_id=None):
     from chatballs.integrations.models import ServiceFile
     rows = ServiceFile.objects.filter(organization_id=tenant.organization_id)
-    if tenant.membership.role not in {EmployeeRole.OWNER, EmployeeRole.ADMIN}:
+    if tenant.membership is None or tenant.membership.role not in {EmployeeRole.OWNER, EmployeeRole.ADMIN}:
         rows = rows.filter(execution_owners__step__run__conversation_id=conversation_id) if conversation_id else rows.none()
     return rows.distinct()
 

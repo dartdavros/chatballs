@@ -32,9 +32,13 @@ def apply_control(tenant, run, *, action, digest, path):
             if step.state != "approval" or digest != invocation_digest(step, run):
                 raise ExecutionDenied("approval_changed")
             step.confirmed_digest = digest
-            step.approval_expires_at = timezone.now() + timedelta(minutes=15)
-            step.state = "queued"
-            step.save(update_fields=["confirmed_digest", "approval_expires_at", "state"])
+            if run.definition.get("ai"):
+                from chatballs.integrations.execution.ai_approval import confirm
+                confirm(tenant, run, step, digest)
+            else:
+                step.approval_expires_at = timezone.now() + timedelta(minutes=15)
+                step.state = "queued"
+                step.save(update_fields=["confirmed_digest", "approval_expires_at", "state"])
         elif action == "reconcile":
             if step.state != "unknown":
                 raise ExecutionDenied("state_changed")

@@ -8,6 +8,7 @@ import { Button } from "../../../shared/ui-controls";
 import { RunStatus } from "./RunStatus";
 import { RunValues } from "./RunValues";
 import { useRunDetail } from "./useRunDetail";
+import { ApprovalEditor } from "./ApprovalEditor";
 import { RunConflict } from "./RunConflict";
 
 export function RunDetail({ id, onBack, inChat = false, onRepeated }: { id: string; onBack: () => void; inChat?: boolean; onRepeated?: (id: string) => void }) {
@@ -34,6 +35,7 @@ export function RunDetail({ id, onBack, inChat = false, onRepeated }: { id: stri
     {run.dataCleared && <div className="run-notice">{t("runs.cleared")}</div>}
     {run.state === "unknown" && <div className="run-notice is-warning">{t("runs.unknown_text")}</div>}
     {run.cancelRequested && !run.finishedAt && <div className="run-notice is-warning">{t("runs.cancel_requested")}</div>}
+    {run.ai && approval?.editToken && <ApprovalEditor key={approval.editToken} run={run} step={approval} busy={state.busy || state.changed} act={state.act} />}
     {run.conflict && <RunConflict key={run.conflict.digest} conflict={run.conflict} disabled={state.busy || state.changed}
       apply={choices => void state.act("resolve", { digest: run.conflict!.digest, choices })} />}
     <dl className="run-meta"><div><dt>{t("runs.initiator")}</dt><dd>{run.initiator}</dd></div>
@@ -54,7 +56,9 @@ export function RunDetail({ id, onBack, inChat = false, onRepeated }: { id: stri
         <Button variant="secondary" disabled={state.busy || state.changed}
           onClick={() => void state.act("decide", { path: step.path, ...step.decision, accepted: false })}>{t("runs.reject")}</Button></div>}
     </div>)}</section>
-    {approval?.approvalDigest && run.controls.includes("approve") && <Button variant="primary" disabled={state.busy || state.changed} onClick={() => void state.act("approve", { digest: approval.approvalDigest, path: approval.path })}>{t("runs.approve")}</Button>}
+    {approval?.approvalDigest && run.controls.includes("approve") && !approval.editing && <div className="run-detail-actions"><Button variant="primary" disabled={state.busy || state.changed} onClick={() => void state.act("approve", { digest: approval.approvalDigest, path: approval.path })}>{t("runs.approve")}</Button>
+      {run.ai && <Button variant="secondary" disabled={state.busy || state.changed} onClick={() => void state.act("edit", { digest: approval.approvalDigest, path: approval.path })}>{t("common.edit")}</Button>}
+    </div>}
     <DecisionDialog open={repeat !== null} title={t("runs.repeat_title")} description={t("runs.repeat_text")} icon="warning" tone="warning" onClose={() => setRepeat(null)} actions={<>
       <Button variant="secondary" onClick={() => setRepeat(null)}>{t("runs.close")}</Button><Button variant="primary" disabled={state.busy} onClick={async () => {
         const result = await state.act("repeat", { triggerKey: repeat, acknowledged: run.id });

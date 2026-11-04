@@ -12,7 +12,7 @@ from chatballs.integrations.adapters.files import file_store
 from chatballs.integrations.execution import checkpoints, recovery
 from chatballs.integrations.execution.actions import resolve_action
 from chatballs.integrations.execution.approvals import approved
-from chatballs.integrations.execution.automation import confirmation_required
+from chatballs.integrations.execution.ai_policy import needs_confirmation
 from chatballs.integrations.execution.events import journal
 from chatballs.integrations.execution.permissions import ExecutionDenied, authorize_run, validate_arguments
 from chatballs.integrations.scenario_state.limits import ConnectionExecutionLane
@@ -61,7 +61,7 @@ def _prepare(tenant, token, registry):
                     raise
             if run.cancel_requested_at:
                 handler = "reconcile" if operation.handlers.reconcile else None
-            elif handler != "reconcile" and not approved(step, run) and confirmation_required(operation, run):
+            elif handler != "reconcile" and needs_confirmation(run, operation) and not approved(step, run):
                 raise ExecutionDenied("approval_expired")
         if handler is None:
             checkpoints.finish(run, step, "unknown", code="outcome_unavailable")
@@ -101,7 +101,7 @@ def _send_marker(tenant, token, handler, registry=None):
             if run.definition.get("contracts"):
                 from chatballs.integrations.execution.snapshots import check_contract
                 check_contract(run, _target(step), operation, _adapter)
-            if confirmation_required(operation, run) and not approved(step, run):
+            if needs_confirmation(run, operation) and not approved(step, run):
                 raise ExecutionDenied("approval_expired")
             validate_arguments(actor, run.conversation_id, operation, step.definition["arguments"])
             if integration is None:

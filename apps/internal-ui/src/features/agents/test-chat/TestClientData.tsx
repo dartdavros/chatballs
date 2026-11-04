@@ -5,8 +5,8 @@ import { Icon } from "../../../shared/icons";
 import { contactFields, dataSummary, valueKey, type TestConnection, type TestValues } from "./model";
 import { TestClientField } from "./TestClientField";
 
-export function TestClientData({ connections, values, onChange, disabled }: {
-  connections: TestConnection[]; values: TestValues; disabled: boolean;
+export function TestClientData({ connections, values, onChange, disabled, preview = true }: {
+  connections: TestConnection[]; values: TestValues; disabled: boolean; preview?: boolean;
   onChange: (values: TestValues) => void;
 }) {
   const [expanded, setExpanded] = useState(true);
@@ -19,11 +19,11 @@ export function TestClientData({ connections, values, onChange, disabled }: {
     <button type="button" className="agent-test-data-heading" aria-expanded={expanded} aria-controls={`${id}-fields`}
       onClick={() => setExpanded(!expanded)}>
       <Icon name="user" size={15} strokeWidth={1.9} />
-      <span><strong>{t("agent_test.client_data")}</strong><small>{expanded ? t("agent_test.data_summary") : dataSummary(values, connections)}</small></span>
+      <span><strong>{t("agent_test.client_data")}</strong>{preview && <small>{expanded ? t("agent_test.data_summary") : dataSummary(values, connections)}</small>}</span>
       <span className={expanded ? "is-expanded" : ""}><Icon name="chevron" size={14} strokeWidth={2.2} /></span>
     </button>
     {expanded && <div id={`${id}-fields`} className="agent-test-fields">
-      <small className="agent-test-data-hint">{t("agent_test.data_hint")}</small>
+      {preview && <small className="agent-test-data-hint">{t("agent_test.data_hint")}</small>}
       {contactFields().map((field) => fieldControl(field, field.key))}
       {connections.filter((connection) => connection.fields.length).map((connection) => <div className="agent-test-custom" key={connection.id}>
         <strong className="agent-test-group">{t("settings.site_data")}{connections.filter((item) => item.fields.length).length > 1 && ` · ${connection.name}`}</strong>

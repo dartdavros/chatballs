@@ -1,4 +1,5 @@
 import { skillsRu } from "./skills.ru";
+import { agentActionsRu } from "./agent-actions.ru";
 import { snapshotsRu } from "./snapshots.ru";
 import { skillTemplatesRu } from "./skill-templates.ru";
 // Словарь русского интерфейса.
@@ -38,6 +39,7 @@ import { operationModesRu } from "./operation-modes.ru";
 import { transferMessages } from "./transfers.ru";
 
 export const ru = {
+  ...agentActionsRu,
   ...snapshotsRu,
   ...skillsRu,
   ...skillTemplatesRu,

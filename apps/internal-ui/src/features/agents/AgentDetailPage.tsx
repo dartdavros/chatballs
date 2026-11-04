@@ -1,4 +1,6 @@
 import { AgentSkillsCard } from "../skills/AgentSkillsCard";
+import { AgentActionsCard } from "./actions/AgentActionsCard";
+import { useAgentActions } from "./actions/useAgentActions";
 import { Modal } from "antd";
 import { useEffect, useState } from "react";
 import { t } from "../../i18n";
@@ -43,12 +45,13 @@ export function AgentDetailPage({
   onLoaded: (name: string | null) => void;
 }) {
   const state = useAgentDetail(agentId, canManage, canManageConnections, openAgents);
+  const actions = useAgentActions(agentId, canManage);
   const { card, missing, failed, reload, tools, busy, feedback, deleting, setDeleting, providers, messengers, apply, toggleAi, removeAgent, bind, unbind } = state;
   const [testOpen, setTestOpen] = useState(false);
   useEffect(() => { onLoaded(card?.name ?? null); return () => onLoaded(null); }, [card?.name, onLoaded]);
   if (missing) return <EmptyState title={t("ai.agent_not_found")} />;
   if (failed) return <ErrorScreen retry={() => void reload()} />;
-  if (!card) return <LoadingState />;
+  if (!card || canManage && !actions.rows && !actions.error) return <LoadingState />;
 
   const toolsUnsupported = card.modelSupportsTools === false && enabledToolRefs(tools.servers ?? []).length > 0;
   return (
@@ -56,7 +59,8 @@ export function AgentDetailPage({
       <BackLink label={t("common.agents")} onClick={openAgents} />
 
       <AgentHeader card={card} canManage={canManage} busy={busy} apply={apply} toggleAi={toggleAi}
-        onDelete={() => setDeleting(true)} onTest={() => setTestOpen(true)} testing={testOpen} />
+        onDelete={() => setDeleting(true)} onTest={() => setTestOpen(true)} testing={testOpen}
+        actionsDirty={actions.dirty} actionsBusy={actions.busy} saveActions={() => void actions.save()} />
 
       {card.providerIntegrationId === null && (
         <div className="agent-blocker">
@@ -73,13 +77,15 @@ export function AgentDetailPage({
 
       {feedback && <div className={`agent-feedback is-${feedback.kind}`}>{feedback.text}</div>}
 
-      <div className="agent-grid">
+      <div className={`agent-grid${canManage ? " has-service-actions" : ""}`}>
         <div className="agent-column">
           <InstructionsCard card={card} canManage={canManage} busy={busy} apply={apply} />
+          <ModelCard card={card} providers={providers} canManage={canManage} busy={busy} toolsUnsupported={toolsUnsupported} apply={apply} />
           {canManage && <AgentSkillsCard card={card} />}
           <KnowledgeCard card={card} canManage={canManage} openKnowledge={openKnowledge} reload={reload} />
         </div>
         <div className="agent-column">
+          {canManage && <AgentActionsCard state={actions} />}
           <AssignmentCard card={card} groups={groups} canManage={canManage} busy={busy} apply={apply} />
           <AssistanceCard key={card.id} card={card} canManage={canManage} busy={busy} save={state.saveAssistance} />
           <ConnectionsCard
@@ -91,7 +97,6 @@ export function AgentDetailPage({
             bind={bind}
             unbind={unbind}
           />
-          <ModelCard card={card} providers={providers} canManage={canManage} busy={busy} toolsUnsupported={toolsUnsupported} apply={apply} />
           <AgentToolsCard
             tools={tools}
             modelWarning={toolsUnsupported}

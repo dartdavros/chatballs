@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 MESSAGES: dict[str, object] = {
+    "runs.ai_initiator": "Agent “{name}”",
+    "audit.action_integrations_agent_action_changed": "Agent action permission changed",
     "admin.choose_logo_file": "Choose a logo file",
     "admin.employee_not_found": "Operator not found",
     "admin.group_name_taken": "A group with this name already exists",

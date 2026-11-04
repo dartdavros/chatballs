@@ -30,6 +30,7 @@ from chatballs.integrations.mcp_client import (
     McpError,
 )
 from chatballs.integrations.models import IntegrationProvider
+from chatballs.integrations.execution.permissions import ExecutionDenied
 from chatballs.integrations.tool_client import ToolResponseRejected
 from chatballs.integrations.tool_network import ToolAddressRejected
 
@@ -54,6 +55,7 @@ class ToolCallRecord:
     error: str
     duration_ms: int
     diagnostic: dict = field(default_factory=dict, repr=False, compare=False)
+    action_result: dict = field(default_factory=dict, repr=False, compare=False)
 
 
 class _Failed(Exception):
@@ -132,18 +134,29 @@ def execute_tool_call(
     timeout = TOOL_TIMEOUT_SECONDS if time_left is None else min(time_left, TOOL_TIMEOUT_SECONDS)
     error = ""
     diagnostic = {"callId": call.id, "arguments": call.arguments}
+    action_result = {}
     try:
         if tool is None:
             raise _Failed(UNKNOWN_TOOL)
         if timeout <= 0:
             raise _Failed(TIMEOUT)
         arguments = _revealed(call.arguments, pseudonymizer)
-        is_http = tool.integration.provider == IntegrationProvider.HTTP
-        text = (_call_http(tool, arguments, timeout, diagnostic) if is_http
-                else _call_mcp(tool, arguments, timeout))
+        from chatballs.integrations.execution.ai_bridge import AgentActionTool
+        if isinstance(tool, AgentActionTool):
+            # Only identity/status belongs in diagnostics; the shared runner
+            # owns encrypted operational inputs. The token map stays in memory.
+            diagnostic = {"callId": call.id}
+            text = tool.execute(arguments, call.id)
+            action_result = json.loads(text)
+        else:
+            is_http = tool.integration.provider == IntegrationProvider.HTTP
+            text = (_call_http(tool, arguments, timeout, diagnostic) if is_http
+                    else _call_mcp(tool, arguments, timeout))
         content = masked_result(text, pseudonymizer) or _payload(result="")
     except _Failed as failure:
         error = failure.code
+    except ExecutionDenied:
+        error = "permission"
     except Exception as failure:  # noqa: BLE001 - сбой инструмента ход не роняет
         # Только тип: в тексте исключения может оказаться кусок чужого ответа.
         logger.warning("Tool call failed unexpectedly: %s", type(failure).__name__)
@@ -156,5 +169,6 @@ def execute_tool_call(
         error=error,
         duration_ms=int((time.monotonic() - started) * 1000),
         diagnostic={**diagnostic, "modelResult": content},
+        action_result=action_result,
     )
     return content, record

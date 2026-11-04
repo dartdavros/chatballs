@@ -125,5 +125,5 @@ class RunControlView(RunAPIView):
                     digest=data.get("digest"), accepted=data.get("accepted"))
             else:
                 run = control(tenant=request.tenant_context, public_id=public_id, action=action,
-                              digest=data.get("digest"), path=data.get("path"))
+                              digest=data.get("digest"), path=data.get("path"), arguments=data.get("arguments"), edit_token=data.get("editToken"))
         return Response({"run": run_payload(run, detail=True, tenant=request.tenant_context)})
