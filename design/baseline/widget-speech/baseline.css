@@ -1,0 +1,54 @@
+/* Composition of accepted baseline shells and real product controls.
+   The review toolbar and frame captions are outside the proposed product UI. */
+html,body{margin:0;min-width:0}*{box-sizing:border-box}
+.sp-canvas{padding:24px;background:var(--surface-page);color:var(--n-1);min-height:100vh;font:13px/1.5 var(--font-sans)}
+.sp-review{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:24px;max-width:1440px}
+.sp-review h1{font-size:22px;margin:0;width:100%}.sp-review p{width:100%;margin:0;color:var(--n-4)}
+.sp-review label{display:flex;align-items:center;gap:6px;min-width:0}.sp-review select{max-width:100%;height:34px;border:1px solid var(--n-7);border-radius:8px;background:var(--surface-card);color:var(--n-1);padding:0 8px}
+.sp-preview-actions{display:flex;gap:18px;flex-wrap:wrap;width:100%}
+.sp-board{display:flex;gap:32px;flex-wrap:wrap;align-items:flex-start}
+.sp-caption{display:flex;gap:10px;align-items:center;margin-bottom:10px;color:var(--n-3)}
+.sp-caption code{font-size:11px;background:var(--n-9);padding:3px 6px;border-radius:6px}
+.sp-settings-screen{container:baseline / inline-size;display:flex;height:980px;background:var(--surface-card);overflow:hidden;border:1px solid var(--n-8);border-radius:8px}
+.sp-settings-screen .hub-sidebar{height:100%}.sp-settings-layout{flex:1;min-width:0}
+.sp-settings-screen>.web-integration-page{min-width:0;flex:1}
+.sp-settings-body{display:flex;flex-direction:column;gap:18px}.sp-form{display:flex;flex-direction:column;gap:18px}
+.sp-form p,.sp-connection p{margin:0}.sp-field{min-width:0}.sp-field>small{display:block;margin-top:6px;color:var(--n-4);font-size:12px}
+.sp-field .readonly-field{width:100%}
+.settings-content .sp-connection-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
+.sp-connection-fields>.sp-field{align-self:end}
+.sp-checks{display:flex;flex-direction:column}.sp-check{display:grid;grid-template-columns:minmax(0,1fr) 130px 194px;gap:12px;align-items:center;min-height:54px;border-bottom:1px solid var(--n-8);padding:10px 0}
+.sp-check-status{min-height:28px;display:flex;align-items:center;justify-content:flex-end}.sp-error{color:var(--error-text)}
+.sp-card p{overflow-wrap:anywhere}.sp-card h3{margin-top:0}.sp-agent{overflow:auto;min-width:0;flex:1;background:var(--surface-feed);padding:26px 32px}
+.sp-agent .agents-header{flex-direction:column;align-items:flex-start}.sp-agent-grid{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:24px}
+.sp-agent-main,.sp-agent-side{display:flex;flex-direction:column;gap:20px}.sp-agent h2{margin:12px 0 20px}.sp-card{padding:20px}
+.sp-widget-screen{height:844px;border:1px solid var(--n-8);border-radius:14px;overflow:hidden;background:#fff;flex:none}
+.sp-widget-screen .cb-widget{font-family:var(--font-sans)}.sp-widget-screen .cb-body{overflow-x:hidden}
+.sp-widget-screen .cb-message-content{max-width:100%}.sp-widget-screen .cb-message--client .cb-message-content{max-width:82%}
+.sp-widget-screen .cb-body .cb-message{margin-bottom:14px}.sp-widget-screen .cb-brand{font-size:11px;color:#8c8c8c}
+.sp-answer{margin-bottom:14px}.sp-answer>.cb-message{margin-bottom:0!important}
+.sp-answer-text{white-space:pre-wrap}.sp-answer-text:has(.prepared-message){white-space:normal}
+.sp-answer-audio{display:grid;grid-template-columns:minmax(0,1fr) 28px;gap:8px;align-items:end;margin-top:6px}
+.sp-answer-audio-toggle{grid-column:2;width:28px;height:28px;align-self:end}.sp-answer-audio-toggle[aria-expanded=true]{color:var(--cb-accent)}
+.sp-player{min-width:0;margin-top:6px;white-space:normal;font-size:12px}
+.sp-player .voice-message-wave{min-width:0}
+.sp-player-status{height:34px;display:flex;align-items:center;gap:8px;margin:6px 0 0;line-height:16px;color:#8c8c8c}
+.sp-player-status>span{flex:1;min-width:0}.sp-player-status.voice-message-error{color:#cf1322}
+.sp-player .voice-message-play{cursor:pointer}.sp-player .voice-message-play:disabled{cursor:wait}
+.sp-composer{color:#595959}
+.sp-composer-status{height:56px;display:flex;align-items:center;gap:8px;margin:0 0 6px;font-size:12px;line-height:17px}
+.sp-status-copy{flex:1;min-width:0}.sp-status-heading{display:flex;align-items:center;gap:8px}.sp-status-heading>svg,.sp-status-heading>strong{flex:none}.sp-status-heading>span{flex:1;min-width:0}
+.sp-status-actions{display:flex;gap:4px;align-items:center;flex:none}
+.sp-input-row{display:flex;align-items:center;gap:4px;min-height:37px}.sp-input-row textarea{min-width:0;width:0;outline-offset:-2px}
+.sp-timer{font-variant-numeric:tabular-nums;color:#cf1322;font-size:12.5px;font-weight:600}
+.sp-composer .sp-error{color:#cf1322}
+.sp-legacy-composer{display:flex;align-items:center;gap:10px;min-height:60px;font-size:12px;color:#8c8c8c}.sp-legacy-composer>span{flex:1}
+.sp-legacy-player{display:flex;align-items:center;gap:10px;min-width:216px;font-size:12px}.sp-legacy-player>button{width:34px;height:34px;flex:none;border:0;border-radius:50%;background:#ffffff38;color:#fff;display:grid;place-items:center}
+.sp-legacy-wave{display:flex;align-items:center;gap:2px;height:24px;flex:1;min-width:110px}.sp-legacy-wave i{width:3px;flex:none;border-radius:1.5px;background:#ffffff73}
+button:focus-visible,a:focus-visible,select:focus-visible,textarea:focus-visible,input:focus-visible{outline:2px solid var(--primary-text);outline-offset:2px}
+/* The embedded widget has its own existing light palette, independent of staff theme. */
+.sp-widget-screen{--n-4:#8c8c8c;--n-6:#d9d9d9;--primary:var(--cb-accent,#0f9b8e);--primary-hover:var(--cb-accent,#0f9b8e);--primary-text:var(--cb-accent,#0f9b8e);--text-body:#262626}
+@container baseline (max-width:1024px){.sp-agent-grid{grid-template-columns:minmax(0,1fr)}.sp-agent{padding:24px}.sp-settings-screen .settings-content-inner{padding:24px}}
+@container baseline (max-width:1200px){.sp-check{grid-template-columns:minmax(0,1fr) auto;gap:8px}.sp-check>button{grid-column:1/-1;justify-self:start}}
+@container baseline (max-width:767px){.hub-sidebar,.settings-subnav{display:none!important}.sp-agent{padding:18px}.settings-content{padding:0!important}.settings-content-inner{padding:20px!important}.sp-settings-body{padding-bottom:24px}.sp-check{grid-template-columns:minmax(0,1fr) auto;gap:8px}.sp-check>button{grid-column:1/-1;justify-self:start}.server-two-fields{grid-template-columns:1fr}}
+@media(max-width:600px){.sp-canvas{padding:12px}.sp-review label:first-of-type{width:100%}.sp-review label:first-of-type select{min-width:0;flex:1}.sp-caption{max-width:calc(100vw - 24px);overflow-wrap:anywhere}.sp-board{gap:24px}.sp-review h1{font-size:20px}}

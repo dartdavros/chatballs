@@ -1,0 +1,217 @@
+{
+  "results": [
+    {
+      "page": "settings",
+      "check": "responsive-state-matrix",
+      "frames": 17,
+      "measured": 340,
+      "errors": [],
+      "captures": 51,
+      "verified": "both languages/themes, 320/390/768/1024/1440 settings, 320/390/420 widget, shared spinner, formatted answer, stable geometry, no internal codes"
+    },
+    {
+      "page": "settings",
+      "check": "illustrated-interactions",
+      "errors": [],
+      "verified": [
+        "existing settings error block, integration error and FormField error; full-width forms and grouped related fields",
+        "existing pre-chat form: required name and explicit start with consent; no speech controls before start",
+        "speech model edit independent of text model; Save has no custom success message"
+      ]
+    },
+    {
+      "page": "settings",
+      "check": "keyboard-scale",
+      "errors": [],
+      "verified": [
+        "360px browser viewport, English errors, keyboard Tab and visible focus",
+        "200% CSS zoom at 320 CSS px; controls remain inside the frame"
+      ],
+      "focus": [
+        {
+          "tag": "BUTTON",
+          "outline": "solid",
+          "label": "Settings"
+        },
+        {
+          "tag": "BUTTON",
+          "outline": "solid",
+          "label": "Integrations"
+        },
+        {
+          "tag": "BUTTON",
+          "outline": "solid",
+          "label": "Copy to clipboard"
+        },
+        {
+          "tag": "BUTTON",
+          "outline": "solid",
+          "label": "General"
+        },
+        {
+          "tag": "BUTTON",
+          "outline": "solid",
+          "label": "Website data"
+        },
+        {
+          "tag": "BUTTON",
+          "outline": "solid",
+          "label": "Pre-chat form"
+        },
+        {
+          "tag": "BUTTON",
+          "outline": "solid",
+          "label": "Appearance"
+        },
+        {
+          "tag": "BUTTON",
+          "outline": "solid",
+          "label": "Delete connection"
+        }
+      ]
+    },
+    {
+      "page": "dictation",
+      "check": "responsive-state-matrix",
+      "frames": 20,
+      "measured": 240,
+      "errors": [],
+      "captures": 40,
+      "verified": "both languages/themes, 320/390/768/1024/1440 settings, 320/390/420 widget, shared spinner, formatted answer, stable geometry, no internal codes"
+    },
+    {
+      "page": "dictation",
+      "check": "illustrated-interactions",
+      "errors": [],
+      "verified": [
+        "permission → recording → stop → STT → editable latest draft → explicit send; result applied once",
+        "cancel and late result preserve existing draft",
+        "retry retains draft; overlong result untruncated and becomes sendable after editing",
+        "keyboard Escape, Shift+Enter and Enter"
+      ]
+    },
+    {
+      "page": "dictation",
+      "check": "keyboard-scale",
+      "errors": [],
+      "verified": [
+        "360px browser viewport, English errors, keyboard Tab and visible focus",
+        "200% CSS zoom at 320 CSS px; controls remain inside the frame"
+      ],
+      "focus": [
+        {
+          "tag": "BUTTON",
+          "outline": "solid",
+          "label": "Try again"
+        },
+        {
+          "tag": "BUTTON",
+          "outline": "solid",
+          "label": "Cancel"
+        },
+        {
+          "tag": "TEXTAREA",
+          "outline": "solid",
+          "label": "Message"
+        },
+        {
+          "tag": "BUTTON",
+          "outline": "solid",
+          "label": "Dictate a message"
+        },
+        {
+          "tag": "BUTTON",
+          "outline": "solid",
+          "label": "Send"
+        },
+        {
+          "tag": "BODY",
+          "outline": "none",
+          "label": "Chatballs · Dictation and listeningDesign document for perso"
+        },
+        {
+          "tag": "SELECT",
+          "outline": "solid",
+          "label": "Frame"
+        },
+        {
+          "tag": "SELECT",
+          "outline": "solid",
+          "label": "Width"
+        }
+      ]
+    },
+    {
+      "page": "playback",
+      "check": "responsive-state-matrix",
+      "frames": 15,
+      "measured": 180,
+      "errors": [],
+      "captures": 32,
+      "verified": "both languages/themes, 320/390/768/1024/1440 settings, 320/390/420 widget, shared spinner, formatted answer, stable geometry, no internal codes"
+    },
+    {
+      "page": "playback",
+      "check": "illustrated-interactions",
+      "errors": [],
+      "verified": [
+        "Lucide sound icon opens player and becomes stop; pause/resume/replay; stop hides player and restores sound; text remains",
+        "one illustrated sound; recording stops playback",
+        "voice/language/synthesis/playback errors retain text; staff/client have no player"
+      ]
+    },
+    {
+      "page": "playback",
+      "check": "keyboard-scale",
+      "errors": [],
+      "verified": [
+        "360px browser viewport, English errors, keyboard Tab and visible focus",
+        "200% CSS zoom at 320 CSS px; controls remain inside the frame"
+      ],
+      "focus": [
+        {
+          "tag": "BUTTON",
+          "outline": "solid",
+          "label": "Try again"
+        },
+        {
+          "tag": "BUTTON",
+          "outline": "solid",
+          "label": "Stop"
+        },
+        {
+          "tag": "TEXTAREA",
+          "outline": "solid",
+          "label": "Message"
+        },
+        {
+          "tag": "BUTTON",
+          "outline": "solid",
+          "label": "Dictate a message"
+        },
+        {
+          "tag": "BUTTON",
+          "outline": "solid",
+          "label": "Send"
+        },
+        {
+          "tag": "BODY",
+          "outline": "none",
+          "label": "Chatballs · Dictation and listeningDesign document for perso"
+        },
+        {
+          "tag": "SELECT",
+          "outline": "solid",
+          "label": "Frame"
+        },
+        {
+          "tag": "SELECT",
+          "outline": "solid",
+          "label": "Width"
+        }
+      ]
+    }
+  ],
+  "failures": [],
+  "network": []
+}
