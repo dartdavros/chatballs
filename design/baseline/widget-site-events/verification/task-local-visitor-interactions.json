@@ -1,0 +1,27 @@
+{
+  "checked": 21,
+  "verified": [
+    "Invitation leaves panel closed",
+    "First pending invitation is not replaced",
+    "Dismiss with Escape restores launcher focus",
+    "Dismissed invitation stays suppressed",
+    "Accept reaches original consent",
+    "First AI reply without fabricated client text",
+    "Required form blocks empty name",
+    "Required form proceeds after input",
+    "Previous consent shows current revision",
+    "Valid consent neither prompts nor forces panel open",
+    "Valid consent is not requested again",
+    "Original expanded panel width",
+    "Ordinary input wins over late proactive reply",
+    "Staff takeover prevents late AI reply",
+    "Expired invitation disappears",
+    "Late consent cannot start expired event",
+    "V08: error keeps ordinary input, no false reply",
+    "V09: error keeps ordinary input, no false reply",
+    "Reload frame suppresses repeat",
+    "Closed conversation stays closed",
+    "200% zoom has no product horizontal overflow"
+  ],
+  "errors": []
+}

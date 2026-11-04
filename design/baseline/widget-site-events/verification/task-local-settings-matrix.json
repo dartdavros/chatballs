@@ -1,0 +1,708 @@
+{
+  "checked": 84,
+  "measurements": [
+    {
+      "id": "S01",
+      "lang": "ru",
+      "theme": "light",
+      "width": 320,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S02",
+      "lang": "ru",
+      "theme": "light",
+      "width": 320,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S03",
+      "lang": "ru",
+      "theme": "light",
+      "width": 320,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S04",
+      "lang": "ru",
+      "theme": "light",
+      "width": 320,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S05",
+      "lang": "ru",
+      "theme": "light",
+      "width": 320,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S06",
+      "lang": "ru",
+      "theme": "light",
+      "width": 320,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S07",
+      "lang": "ru",
+      "theme": "light",
+      "width": 320,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S01",
+      "lang": "ru",
+      "theme": "light",
+      "width": 768,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S02",
+      "lang": "ru",
+      "theme": "light",
+      "width": 768,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S03",
+      "lang": "ru",
+      "theme": "light",
+      "width": 768,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S04",
+      "lang": "ru",
+      "theme": "light",
+      "width": 768,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S05",
+      "lang": "ru",
+      "theme": "light",
+      "width": 768,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S06",
+      "lang": "ru",
+      "theme": "light",
+      "width": 768,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S07",
+      "lang": "ru",
+      "theme": "light",
+      "width": 768,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S01",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "panel": null,
+      "catalog": 127
+    },
+    {
+      "id": "S02",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "panel": null,
+      "catalog": 127
+    },
+    {
+      "id": "S03",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "panel": null,
+      "catalog": 127
+    },
+    {
+      "id": "S04",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "panel": null,
+      "catalog": 127
+    },
+    {
+      "id": "S05",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "panel": null,
+      "catalog": 127
+    },
+    {
+      "id": "S06",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "panel": null,
+      "catalog": 127
+    },
+    {
+      "id": "S07",
+      "lang": "ru",
+      "theme": "light",
+      "width": 1440,
+      "panel": null,
+      "catalog": 127
+    },
+    {
+      "id": "S01",
+      "lang": "ru",
+      "theme": "dark",
+      "width": 320,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S02",
+      "lang": "ru",
+      "theme": "dark",
+      "width": 320,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S03",
+      "lang": "ru",
+      "theme": "dark",
+      "width": 320,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S04",
+      "lang": "ru",
+      "theme": "dark",
+      "width": 320,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S05",
+      "lang": "ru",
+      "theme": "dark",
+      "width": 320,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S06",
+      "lang": "ru",
+      "theme": "dark",
+      "width": 320,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S07",
+      "lang": "ru",
+      "theme": "dark",
+      "width": 320,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S01",
+      "lang": "ru",
+      "theme": "dark",
+      "width": 768,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S02",
+      "lang": "ru",
+      "theme": "dark",
+      "width": 768,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S03",
+      "lang": "ru",
+      "theme": "dark",
+      "width": 768,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S04",
+      "lang": "ru",
+      "theme": "dark",
+      "width": 768,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S05",
+      "lang": "ru",
+      "theme": "dark",
+      "width": 768,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S06",
+      "lang": "ru",
+      "theme": "dark",
+      "width": 768,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S07",
+      "lang": "ru",
+      "theme": "dark",
+      "width": 768,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S01",
+      "lang": "ru",
+      "theme": "dark",
+      "width": 1440,
+      "panel": null,
+      "catalog": 127
+    },
+    {
+      "id": "S02",
+      "lang": "ru",
+      "theme": "dark",
+      "width": 1440,
+      "panel": null,
+      "catalog": 127
+    },
+    {
+      "id": "S03",
+      "lang": "ru",
+      "theme": "dark",
+      "width": 1440,
+      "panel": null,
+      "catalog": 127
+    },
+    {
+      "id": "S04",
+      "lang": "ru",
+      "theme": "dark",
+      "width": 1440,
+      "panel": null,
+      "catalog": 127
+    },
+    {
+      "id": "S05",
+      "lang": "ru",
+      "theme": "dark",
+      "width": 1440,
+      "panel": null,
+      "catalog": 127
+    },
+    {
+      "id": "S06",
+      "lang": "ru",
+      "theme": "dark",
+      "width": 1440,
+      "panel": null,
+      "catalog": 127
+    },
+    {
+      "id": "S07",
+      "lang": "ru",
+      "theme": "dark",
+      "width": 1440,
+      "panel": null,
+      "catalog": 127
+    },
+    {
+      "id": "S01",
+      "lang": "en",
+      "theme": "light",
+      "width": 320,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S02",
+      "lang": "en",
+      "theme": "light",
+      "width": 320,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S03",
+      "lang": "en",
+      "theme": "light",
+      "width": 320,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S04",
+      "lang": "en",
+      "theme": "light",
+      "width": 320,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S05",
+      "lang": "en",
+      "theme": "light",
+      "width": 320,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S06",
+      "lang": "en",
+      "theme": "light",
+      "width": 320,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S07",
+      "lang": "en",
+      "theme": "light",
+      "width": 320,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S01",
+      "lang": "en",
+      "theme": "light",
+      "width": 768,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S02",
+      "lang": "en",
+      "theme": "light",
+      "width": 768,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S03",
+      "lang": "en",
+      "theme": "light",
+      "width": 768,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S04",
+      "lang": "en",
+      "theme": "light",
+      "width": 768,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S05",
+      "lang": "en",
+      "theme": "light",
+      "width": 768,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S06",
+      "lang": "en",
+      "theme": "light",
+      "width": 768,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S07",
+      "lang": "en",
+      "theme": "light",
+      "width": 768,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S01",
+      "lang": "en",
+      "theme": "light",
+      "width": 1440,
+      "panel": null,
+      "catalog": 127
+    },
+    {
+      "id": "S02",
+      "lang": "en",
+      "theme": "light",
+      "width": 1440,
+      "panel": null,
+      "catalog": 127
+    },
+    {
+      "id": "S03",
+      "lang": "en",
+      "theme": "light",
+      "width": 1440,
+      "panel": null,
+      "catalog": 127
+    },
+    {
+      "id": "S04",
+      "lang": "en",
+      "theme": "light",
+      "width": 1440,
+      "panel": null,
+      "catalog": 127
+    },
+    {
+      "id": "S05",
+      "lang": "en",
+      "theme": "light",
+      "width": 1440,
+      "panel": null,
+      "catalog": 127
+    },
+    {
+      "id": "S06",
+      "lang": "en",
+      "theme": "light",
+      "width": 1440,
+      "panel": null,
+      "catalog": 127
+    },
+    {
+      "id": "S07",
+      "lang": "en",
+      "theme": "light",
+      "width": 1440,
+      "panel": null,
+      "catalog": 127
+    },
+    {
+      "id": "S01",
+      "lang": "en",
+      "theme": "dark",
+      "width": 320,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S02",
+      "lang": "en",
+      "theme": "dark",
+      "width": 320,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S03",
+      "lang": "en",
+      "theme": "dark",
+      "width": 320,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S04",
+      "lang": "en",
+      "theme": "dark",
+      "width": 320,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S05",
+      "lang": "en",
+      "theme": "dark",
+      "width": 320,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S06",
+      "lang": "en",
+      "theme": "dark",
+      "width": 320,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S07",
+      "lang": "en",
+      "theme": "dark",
+      "width": 320,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S01",
+      "lang": "en",
+      "theme": "dark",
+      "width": 768,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S02",
+      "lang": "en",
+      "theme": "dark",
+      "width": 768,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S03",
+      "lang": "en",
+      "theme": "dark",
+      "width": 768,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S04",
+      "lang": "en",
+      "theme": "dark",
+      "width": 768,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S05",
+      "lang": "en",
+      "theme": "dark",
+      "width": 768,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S06",
+      "lang": "en",
+      "theme": "dark",
+      "width": 768,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S07",
+      "lang": "en",
+      "theme": "dark",
+      "width": 768,
+      "panel": null,
+      "catalog": 170
+    },
+    {
+      "id": "S01",
+      "lang": "en",
+      "theme": "dark",
+      "width": 1440,
+      "panel": null,
+      "catalog": 127
+    },
+    {
+      "id": "S02",
+      "lang": "en",
+      "theme": "dark",
+      "width": 1440,
+      "panel": null,
+      "catalog": 127
+    },
+    {
+      "id": "S03",
+      "lang": "en",
+      "theme": "dark",
+      "width": 1440,
+      "panel": null,
+      "catalog": 127
+    },
+    {
+      "id": "S04",
+      "lang": "en",
+      "theme": "dark",
+      "width": 1440,
+      "panel": null,
+      "catalog": 127
+    },
+    {
+      "id": "S05",
+      "lang": "en",
+      "theme": "dark",
+      "width": 1440,
+      "panel": null,
+      "catalog": 127
+    },
+    {
+      "id": "S06",
+      "lang": "en",
+      "theme": "dark",
+      "width": 1440,
+      "panel": null,
+      "catalog": 127
+    },
+    {
+      "id": "S07",
+      "lang": "en",
+      "theme": "dark",
+      "width": 1440,
+      "panel": null,
+      "catalog": 127
+    }
+  ],
+  "shots": [
+    "design/baseline/widget-site-events/verification/S01-ru-light-1440.png",
+    "design/baseline/widget-site-events/verification/S01-ru-light-1440-bottom.png",
+    "design/baseline/widget-site-events/verification/S02-ru-light-1440.png",
+    "design/baseline/widget-site-events/verification/S02-ru-light-1440-bottom.png",
+    "design/baseline/widget-site-events/verification/S03-ru-light-1440.png",
+    "design/baseline/widget-site-events/verification/S03-ru-light-1440-bottom.png",
+    "design/baseline/widget-site-events/verification/S04-ru-light-1440.png",
+    "design/baseline/widget-site-events/verification/S04-ru-light-1440-bottom.png",
+    "design/baseline/widget-site-events/verification/S05-ru-light-1440.png",
+    "design/baseline/widget-site-events/verification/S05-ru-light-1440-bottom.png",
+    "design/baseline/widget-site-events/verification/S06-ru-light-1440.png",
+    "design/baseline/widget-site-events/verification/S06-ru-light-1440-bottom.png",
+    "design/baseline/widget-site-events/verification/S07-ru-light-1440.png",
+    "design/baseline/widget-site-events/verification/S07-ru-light-1440-bottom.png",
+    "design/baseline/widget-site-events/verification/S01-en-dark-320.png",
+    "design/baseline/widget-site-events/verification/S01-en-dark-320-bottom.png",
+    "design/baseline/widget-site-events/verification/S02-en-dark-320.png",
+    "design/baseline/widget-site-events/verification/S02-en-dark-320-bottom.png",
+    "design/baseline/widget-site-events/verification/S03-en-dark-320.png",
+    "design/baseline/widget-site-events/verification/S03-en-dark-320-bottom.png",
+    "design/baseline/widget-site-events/verification/S04-en-dark-320.png",
+    "design/baseline/widget-site-events/verification/S04-en-dark-320-bottom.png",
+    "design/baseline/widget-site-events/verification/S05-en-dark-320.png",
+    "design/baseline/widget-site-events/verification/S05-en-dark-320-bottom.png",
+    "design/baseline/widget-site-events/verification/S06-en-dark-320.png",
+    "design/baseline/widget-site-events/verification/S06-en-dark-320-bottom.png",
+    "design/baseline/widget-site-events/verification/S07-en-dark-320.png",
+    "design/baseline/widget-site-events/verification/S07-en-dark-320-bottom.png"
+  ],
+  "errors": []
+}

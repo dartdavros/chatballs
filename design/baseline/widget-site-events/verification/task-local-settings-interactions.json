@@ -1,0 +1,22 @@
+{
+  "checked": 16,
+  "verified": [
+    "New rule is disabled",
+    "Missing scenario cannot save",
+    "Catalog choice saves beside the save button",
+    "One shared editor destination",
+    "Schema field can be added",
+    "Empty field rejected",
+    "Editing clears saved status",
+    "Native dropdown removes field",
+    "Catalog retry preserves field region",
+    "Keyboard follows the name/scenario row",
+    "Keyboard reaches invitation after catalogue link",
+    "Keyboard reaches enable switch after invitation",
+    "Numeric bounds share one table cell",
+    "Boolean field has no numeric/text constraint",
+    "Narrow schema table scrolls to focused action",
+    "200% zoom has no product horizontal overflow"
+  ],
+  "errors": []
+}
