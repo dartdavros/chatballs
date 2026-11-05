@@ -64,7 +64,7 @@ def validate_envelope(event, envelope):
         raise ExecutionDenied("event_expired")
 
 
-def persist(tenant, connection_id, envelope, *, replay_seconds):
+def persist(tenant, connection_id, envelope, *, replay_seconds, audience=None):
     now = timezone.now()
     result = asdict(envelope.result) if envelope.result else None
     if result and result.get("deadline"):
@@ -96,7 +96,7 @@ def persist(tenant, connection_id, envelope, *, replay_seconds):
         row.definition = content
         row.save()
         from chatballs.integrations.automation_events.fanout import seed
-        seed(tenant, row)
+        seed(tenant, row, scenario_id=audience)
         enqueue_event(DomainEvent(aggregate_type="service_receipt", aggregate_id=str(row.pk),
             event_type="integrations.receipt", payload={"receiptId": row.pk}, tenant_context=system_context(tenant)))
         return row, True

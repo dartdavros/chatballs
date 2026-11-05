@@ -22,6 +22,8 @@
   /*__APPEARANCE__*/
 
   /*__LAUNCHER__*/
+  /*__SITE_EVENTS__*/
+  /*__SITE_INVITATION__*/
 
   function ensureFrame() {
     if (frame) return;
@@ -46,6 +48,7 @@
       if (e.origin !== origin || !frame || e.source !== frame.contentWindow) return;
       var d = e.data || {};
       if (d.instanceId && d.instanceId !== instanceId) return;
+      handleSiteEventMessage(d);
       if (d.type === "chatballs-fields-ready") {
         fieldsReady = true;
         sendFields();
@@ -93,6 +96,7 @@
     shell.style.height = full ? "100%" : panelHeight();
     frame.style.borderRadius = panelRadius() + "px";
     showLauncher();
+    layoutSiteInvitation();
     notifyLayout();
   }
 
@@ -128,6 +132,7 @@
     genieSvg.style.display = "none";
     restPanel();
     showLauncher();
+    focusSiteEventPanel();
     if (pendingAppearance) {
       var next = pendingAppearance;
       pendingAppearance = null;
@@ -141,6 +146,8 @@
     // запуска анимации, чтобы панель не мелькнула целиком.
     ensureGenie();
     open = next;
+    layoutSiteInvitation();
+    if (!next) notifySiteEvent("cancel");
     notifyVisitor(next ? "widget_open" : "widget_close");
     animating = true;
     btn.style.opacity = "0";

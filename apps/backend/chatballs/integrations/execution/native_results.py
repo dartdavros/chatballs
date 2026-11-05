@@ -33,9 +33,15 @@ def validate_files(action, result, step):
 
 def save(run, step, action, result, *, actor=None):
     validate_files(action, result, step)
+    payload = {"result": result.data, "files": [asdict(file) for file in result.files]}
+    existing = NativeEffectReceipt.objects.filter(step=step).first()
+    if existing is not None:
+        if existing.invocation_digest != invocation_digest(step, run) or existing.definition != payload:
+            raise ExecutionDenied("invalid_result")
+        return existing
     receipt = NativeEffectReceipt(organization_id=run.organization_id,
         step=step, invocation_digest=invocation_digest(step, run))
-    receipt.definition = {"result": result.data, "files": [asdict(file) for file in result.files]}
+    receipt.definition = payload
     receipt.save()
     if actor and run.definition.get("ai"):
         from chatballs.identity.audit import record_audit_event

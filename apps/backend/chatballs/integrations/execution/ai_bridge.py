@@ -90,7 +90,7 @@ class AgentActionTool:
                                "steps": [{"state": step["state"], "arguments": step["arguments"], "result": step["result"]} for step in payload["steps"]]}, ensure_ascii=False)
 
 
-def plan_actions(agent, conversation, *, preview=False, registry=None, test_tenant=None, test_client=None, turn_id=None, reserved_names=()):
+def plan_actions(agent, conversation, *, preview=False, registry=None, test_tenant=None, test_client=None, turn_id=None, reserved_names=(), site_event_launch_id=None):
     if conversation is None and test_tenant is None or cached_tool_support(agent) is False:
         return []
     tenant = TenantContext.for_resource(agent.organization)
@@ -115,6 +115,8 @@ def plan_actions(agent, conversation, *, preview=False, registry=None, test_tena
             binding["testContext"] = {"contact": {key: getattr(test_client, key) for key in ("name", "email", "phone")}}
         binding["turn"] = turn_id
         binding["agentVersion"] = configuration_version(agent)
+        if site_event_launch_id is not None:
+            binding["siteEventLaunchId"] = site_event_launch_id
         try:
             current(tenant, binding)
             if grant.scenario_id:

@@ -39,6 +39,9 @@ def require_action(tenant, action, run, arguments):
     if not manager and grant is None:
         raise ExecutionDenied("permission")
     scopes = set()
+    from chatballs.webchat.proactive_guards import for_run
+    if for_run(run) is not None:
+        scopes.add("conversation")
     cursor = run
     while cursor:
         scopes.add(cursor.definition["document"]["access"]["scope"])

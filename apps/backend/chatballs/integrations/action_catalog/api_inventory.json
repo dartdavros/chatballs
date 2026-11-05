@@ -1,4 +1,9 @@
 [
+  {"method": "GET", "route": "api/v1/webchat/consent/", "action": null, "reason": "Read the current WebSession consent proof; an authorization guard, not a domain action.", "handler": "chatballs.webchat.consent_views.WebchatConsentView"},
+  {"method": "POST", "route": "api/v1/webchat/consent/", "action": null, "reason": "Visitor confirmation of the current consent and required form; scenarios cannot impersonate visitor consent.", "handler": "chatballs.webchat.consent_views.WebchatConsentView"},
+  {"method": "POST", "route": "api/v1/webchat/dictation/", "action": null, "reason": "Consent-bound dictation into the visitor's local unsent draft; it does not send a message or invoke a scenario.", "handler": "chatballs.webchat.dictation_views.WebchatDictationView"},
+  {"method": "POST", "route": "api/v1/webchat/site-events/cancel/", "action": null, "reason": "Visitor lifecycle suppression of a pending site event; cannot invoke an action or select a scenario.", "handler": "chatballs.webchat.site_event_views.WebchatSiteEventCancelView"},
+  {"method": "POST", "route": "api/v1/webchat/site-events/", "action": "webchat.first_reply", "reason": null, "handler": "chatballs.webchat.site_event_views.WebchatSiteEventView"},
   {"method": "GET", "route": "api/v1/organizations/<uuid:organization_public_id>/conversations/quality/settings/", "action": "quality.settings.get", "reason": null, "handler": "chatballs.conversations.quality.views.QualitySettingsView"},
   {"method": "PUT", "route": "api/v1/organizations/<uuid:organization_public_id>/conversations/quality/settings/", "action": "quality.settings.put", "reason": null, "handler": "chatballs.conversations.quality.views.QualitySettingsView"},
   {"method": "GET", "route": "api/v1/organizations/<uuid:organization_public_id>/conversations/quality/report/", "action": "quality.report.get", "reason": null, "handler": "chatballs.conversations.quality.views.QualityReportView"},

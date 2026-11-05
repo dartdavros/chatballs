@@ -21,7 +21,7 @@ AGGREGATE_TYPE = "Conversation"
 class Turn:
     """Всё о ходе, прочитанное из базы первым шагом."""
 
-    message: Message
+    message: Message | None
     conversation: Conversation
     agent: AIAgent
     user_id: str
@@ -39,6 +39,7 @@ class Turn:
     outgoing: str = ""
     mode_version: int = 0
     control_version: int = 0
+    site_event_launch_id: int | None = None
 
 
 def request_ai_turn(

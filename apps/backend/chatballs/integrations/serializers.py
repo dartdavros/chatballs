@@ -125,6 +125,9 @@ def integration_payload(integration: Integration) -> dict[str, object]:
 
         payload["webChatWidget"] = widget_payload(widget_for_integration(integration))
         payload["config"].update(recording_settings(integration))
+        payload["config"]["siteEvent"] = integration.config.get("siteEvent")
+        from chatballs.webchat.configuration import _autonomous
+        payload["config"]["siteEventAvailable"] = _autonomous(integration)
     if integration.kind in {"LLM_PROVIDER", "SPEECH_PROVIDER"}:
         from dataclasses import asdict
         from chatballs.speech.contracts import capabilities

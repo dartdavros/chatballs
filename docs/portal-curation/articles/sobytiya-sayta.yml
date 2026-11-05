@@ -1,0 +1,126 @@
+articles:
+  - slug: "sobytiya-sayta"
+    categoryPath: ["Точки входа"]
+    locale: "ru"
+    title: "Приглашение по событию сайта"
+    summary: "Как явно передать событие сайта, показать приглашение и получить первый ответ агента после согласия посетителя."
+    content: |
+      Откройте веб-подключение и раздел «События сайта». Задайте имя события, разрешённые поля и их ограничения, текст приглашения и сценарий. Сценарий должен быть включён, принимать событие сайта и работать в контексте диалога. Для первого ответа используйте действие первого ответа агента с постоянным заданием: значения события не должны подменять это задание. Настройте активного агента и разрешите его самостоятельную работу. Правило изначально выключено; включите его и сохраните настройки.
+
+      Сайт сам решает, когда произошло событие. Виджет не следит за прокруткой, DOM или изменениями полей. Вызов `setFields` передаёт поля посетителя и не запускает сценарий.
+
+      ## Отправка события
+
+      После загрузки обычного кода виджета вызовите:
+
+      ```javascript
+      Chatballs.emitEvent({
+        widgetKey: "PUBLIC_WIDGET_KEY",
+        name: "checkout.help",
+        eventId: "checkout-help-unique-visit-123",
+        data: { category: "coats" }
+      });
+      ```
+
+      Замените ключ публичным ключом нужного виджета. Имя события должно точно совпадать с настройкой. В примере поле `category` нужно заранее разрешить как строку с подходящим ограничением длины. Допустимы только настроенные строковые, числовые и логические поля; лишние поля и значения вне ограничений отклоняются. Размер события ограничен 20 КиБ.
+
+      Имя события содержит до 80 латинских букв, цифр и символов `_`, `.` или `-` и начинается с буквы. В схеме можно разрешить до 30 полей. Имя поля начинается со строчной латинской буквы и содержит до 40 строчных букв, цифр или `_`. Для строки задайте длину не более 4000 символов, для числа — конечные минимум и максимум. Не передавайте вложенные объекты, массивы или `null`; необязательное поле можно пропустить.
+
+      Чтобы вызвать событие до загрузки виджета, разместите этот небольшой код перед обычным кодом подключения:
+
+      ```javascript
+      window.Chatballs = window.Chatballs || {};
+      window.Chatballs.eventQueue = window.Chatballs.eventQueue || [];
+      window.Chatballs.emitEvent = window.Chatballs.emitEvent || function (event) {
+        var queue = window.Chatballs.eventQueue;
+        if (queue.length >= 100) return false;
+        queue.push({ event: event, receivedAt: Date.now() });
+        window.setTimeout(function () {
+          for (var i = queue.length - 1; i >= 0; i -= 1) {
+            if (Date.now() - queue[i].receivedAt >= 300000) queue.splice(i, 1);
+          }
+        }, 300000);
+        return true;
+      };
+      ```
+
+      Затем используйте тот же `Chatballs.emitEvent(...)`. Очередь событий отдельна от очереди полей. Для нескольких виджетов указывайте соответствующий `widgetKey` в каждом событии. Сайт должен входить в список разрешённых адресов виджета. В браузере не нужны API-ключ, идентификатор сценария или разрешения доступа.
+
+      Пока виджет загружается, очередь хранит не более 100 кандидатов и удаляет их через пять минут. После локальной проверки остаётся только первое подходящее событие; неподходящее раннее событие не мешает следующему подходящему.
+
+      ## Согласие и срок действия
+
+      Без актуального согласия первое подходящее событие показывает локальное приглашение. Данные события остаются только в памяти страницы до пяти минут с момента вызова; техническая отметка в `sessionStorage` не содержит этих данных. До согласия событие не создаёт обращение и не вызывает агента. Окно чата само не открывается.
+
+      Нажатие кнопки приглашения открывает обычное согласие и, если настроена, обязательную форму. Сценарий запускается только после их успешного прохождения. Если актуальное согласие уже есть, подходящее событие может запустить сценарий без повторной формы и без первого сообщения посетителя.
+
+      Закрытие приглашения, перезагрузка страницы и истечение пяти минут удаляют данные и исключают поздний запуск этого приглашения. Остальные события не заменяют первое ожидающее событие. Первый обычный ввод посетителя и передача управления специалисту подавляют ещё не доставленный первый ответ агента.
+
+      ## Повторы и результат
+
+      Создавайте непустой `eventId` длиной до 200 символов один раз для конкретного события. При явном повторе после сетевого сбоя отправляйте тот же `eventId` и те же данные. Новое значение не обходит ограничение одного запуска правила для сессии посетителя: защита действует и между вкладками.
+
+      Вызов API в браузере лишь ставит событие в локальную очередь; это не подтверждение доставки или ответа. Автоматически повторять событие после закрытия, перезагрузки или истечения срока не следует. При ошибке посетитель может продолжить обычный чат. Запуск, подавление и сбой сценария доступны в журнале сценариев.
+
+  - slug: "sobytiya-sayta"
+    categoryPath: ["Точки входа"]
+    locale: "en"
+    title: "Invitations from website events"
+    summary: "Send an explicit website event, show an invitation and let the agent reply first after visitor consent."
+    content: |
+      Open the web connection and its website events section. Set the event name, permitted fields and limits, invitation text and scenario. Enable the scenario, select the website event trigger and use conversation scope. For the agent's first reply, use the first reply action with a constant instruction: event values must not replace that instruction. Configure an active agent and enable autonomous operation. Rules are off by default; enable and save the rule.
+
+      Your website decides when an event occurs. The widget does not track scrolling, the DOM or field changes. `setFields` supplies visitor fields and does not trigger a scenario.
+
+      ## Sending an event
+
+      After the regular widget script has loaded, call:
+
+      ```javascript
+      Chatballs.emitEvent({
+        widgetKey: "PUBLIC_WIDGET_KEY",
+        name: "checkout.help",
+        eventId: "checkout-help-unique-visit-123",
+        data: { category: "coats" }
+      });
+      ```
+
+      Use the intended widget's public key. The name must exactly match the rule. First permit `category` as a string with a suitable length limit. Only configured string, number and boolean fields are allowed. Extra fields and values outside their limits are rejected. The event size limit is 20 KiB.
+
+      An event name starts with a Latin letter and contains up to 80 Latin letters, digits, `_`, `.` or `-`. A schema allows up to 30 fields. A field name starts with a lowercase Latin letter and contains up to 40 lowercase letters, digits or `_`. Set a string length limit of at most 4000 characters, or finite minimum and maximum values for a number. Do not send nested objects, arrays or `null`; omit an optional field instead.
+
+      To call the API before the widget loads, place this code before the regular widget embed script:
+
+      ```javascript
+      window.Chatballs = window.Chatballs || {};
+      window.Chatballs.eventQueue = window.Chatballs.eventQueue || [];
+      window.Chatballs.emitEvent = window.Chatballs.emitEvent || function (event) {
+        var queue = window.Chatballs.eventQueue;
+        if (queue.length >= 100) return false;
+        queue.push({ event: event, receivedAt: Date.now() });
+        window.setTimeout(function () {
+          for (var i = queue.length - 1; i >= 0; i -= 1) {
+            if (Date.now() - queue[i].receivedAt >= 300000) queue.splice(i, 1);
+          }
+        }, 300000);
+        return true;
+      };
+      ```
+
+      Then call the same `Chatballs.emitEvent(...)` API. Events use a separate queue from visitor fields. For multiple widgets, supply the corresponding `widgetKey` on each event. The website must be in the widget's allowed origins. Do not send an API key, scenario identifier or access grants from the browser.
+
+      While the widget loads, the queue holds up to 100 candidates and discards them after five minutes. Local validation retains only the first matching event; an invalid earlier event does not block a later valid one.
+
+      ## Consent and expiry
+
+      Without current consent, the first matching event shows a local invitation. Its data stays only in page memory for up to five minutes from the call. A technical `sessionStorage` marker contains no event data. Before consent, the event creates no conversation and makes no AI call. It does not open the chat panel automatically.
+
+      Accepting the invitation opens the regular consent flow and any required form. The scenario starts only after both succeed. With current consent, a matching event can start without repeating the form or requiring a first visitor message.
+
+      Dismissal, page reload and expiry discard the data and prevent that invitation from starting later. Further events do not replace the first pending event. A regular visitor message or a handover to a specialist suppresses a first reply that has not yet been delivered.
+
+      ## Retries and results
+
+      Generate a nonempty `eventId` of up to 200 characters once for the specific event. For an explicit retry after a network failure, reuse that ID and the same data. A new ID cannot bypass the limit of one rule execution per visitor session, including across tabs.
+
+      Calling the browser API only queues the event locally; it does not confirm delivery or an agent reply. Do not automatically retry after dismissal, reload or expiry. The visitor can continue with regular chat after an error. The scenario journal shows execution, suppression and failure.

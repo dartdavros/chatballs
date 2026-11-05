@@ -1,0 +1,4 @@
+/* Accepted visitor baseline: ev-reply-area / ev-progress / ev-widget-status. */
+.cb-site-reply-area { min-height: 148px; }
+.cb-site-progress { height: 148px; display: flex; align-items: center; justify-content: center; }
+.cb-site-status { padding: 14px; margin: 0; font-size: 13px; line-height: 20px; background: #f7f8fa; color: #595959; }

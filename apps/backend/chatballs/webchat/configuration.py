@@ -12,6 +12,7 @@ from chatballs.webchat.models import WebChatWidget
 from chatballs.webchat.pre_chat import pre_chat_payload
 from chatballs.webchat.sessions import origin_allowed
 from chatballs.webchat.recording_configuration import public_recording
+from chatballs.webchat.site_event_config import public_rule
 
 
 def public_config(*, context: TenantContext, widget: WebChatWidget, origin: str) -> dict:
@@ -65,6 +66,7 @@ def public_config(*, context: TenantContext, widget: WebChatWidget, origin: str)
         # Схема своих полей — уже без «Видит AI» (widgets.ensure_widget).
         "fields": cfg.get("fields") or [],
         "preChat": pre_chat_payload(integration.config),
+        "siteEvent": public_rule(integration),
         "fallback": fallback,
     }
 

@@ -138,6 +138,7 @@ def plan_chat(
     test_tenant=None,
     action_preview: bool = True,
     action_turn_id=None,
+    site_event_launch_id=None,
 ) -> TurnPlan:
     """Шаг в транзакции: поиск знаний, сборка промпта, выбор модели и инструментов.
 
@@ -191,7 +192,7 @@ def plan_chat(
     from chatballs.integrations.execution.ai_bridge import plan_actions
     tools.extend(plan_actions(agent, conversation, preview=action_preview if test_tenant else False,
                               test_tenant=test_tenant, test_client=client, turn_id=action_turn_id,
-                              reserved_names=[tool.spec.name for tool in tools]))
+                              reserved_names=[tool.spec.name for tool in tools], site_event_launch_id=site_event_launch_id))
     from chatballs.integrations.execution.ai_context import action_context
     action_data = action_context(agent, conversation, pseudonymizer)
     if action_data:

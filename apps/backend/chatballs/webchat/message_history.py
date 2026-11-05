@@ -43,6 +43,8 @@ def _thread_is_gone(session: WebSession, since: int) -> bool:
 
 
 def messages_payload(session: WebSession, since: int) -> dict:
+    from chatballs.webchat.proactive_status import status as site_status
+    site_event = site_status(session)
     conversation = (
         Conversation.objects.filter(
             channel=session.connection.channel, connection=session.connection,
@@ -63,7 +65,8 @@ def messages_payload(session: WebSession, since: int) -> dict:
             "messages": [],
             "call": None,
             "reset": reset,
-            "thinking": False,
+            "thinking": site_event in ("pending", "running"),
+            "siteEvent": site_event,
             "ratingRequests": session_requests(session),
         }
     # Изменения сайта и вызовы инструментов адресованы оператору: клиенту не
@@ -77,7 +80,8 @@ def messages_payload(session: WebSession, since: int) -> dict:
         "state": _STATE.get(conversation.control_mode, "ai"),
         "lifecycle": conversation.lifecycle,
         # Ответ уже считается: виджет показывает клиенту, что агент печатает.
-        "thinking": conversation_is_thinking(conversation.id),
+        "thinking": conversation_is_thinking(conversation.id) or site_event in ("pending", "running"),
+        "siteEvent": site_event,
         "messages": [
             {
                 "id": m.id,

@@ -39,8 +39,11 @@ def bind_reply(turn, message, route):
     route["controlVersion"] = turn.control_version
     route["agentId"] = turn.agent.pk
     route["agentVersion"] = configuration_version(turn.agent)
-    if turn.message.ai_delivery.get("actionRuns"):
+    if turn.message is not None and turn.message.ai_delivery.get("actionRuns"):
         route["actionRuns"] = turn.message.ai_delivery["actionRuns"]
+    if getattr(turn, "site_event_launch_id", None) is not None:
+        # WEB delivery is the committed history row read by the widget poll.
+        route.update(siteEventLaunchId=turn.site_event_launch_id, sent=True)
     message.ai_reply_to = turn.message
     message.ai_delivery = route
     message.save(update_fields=["ai_reply_to", "ai_delivery"])

@@ -5,6 +5,7 @@ export interface HealthResponse {
 }
 
 export type { MessagePresentation } from "./messagePresentation";
+export type { SiteEventField, PublicSiteEventRule, SiteEventRule, SiteEvent, SiteEventState, SiteEventData } from "./siteEvents";
 export type { MicrophoneMode, WebSpeechCapabilities, SpeechCapabilities } from "./speech";
 
 export interface SiteField {

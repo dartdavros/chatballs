@@ -13,6 +13,7 @@ export function useWidgetConsent(config: WebConfig | null, entry: WidgetEntry, h
   const [version, setVersion] = useState<string | null>(() => localStorage.getItem(versionKey));
   const [starting, setStarting] = useState(false);
   const [proof, setProof] = useState<{ token: string; policy: string } | null>(null);
+  const [checked, setChecked] = useState<{ token: string; policy: string } | null>(null);
   const policy = JSON.stringify([config?.consent?.version, config?.preChat, config?.fields]);
   const accepted = consentMatches(token, version, config?.consent?.version)
     && proof?.token === token && proof?.policy === policy;
@@ -22,8 +23,8 @@ export function useWidgetConsent(config: WebConfig | null, entry: WidgetEntry, h
     if (!token || !config?.available) return;
     const controller = new AbortController();
     void checkServerConsent(token, hostOrigin, controller.signal).then((confirmed) => {
-      if (!controller.signal.aborted) setProof(confirmed ? { token, policy } : null);
-    }).catch(() => { if (!controller.signal.aborted) setProof(null); });
+      if (!controller.signal.aborted) { setProof(confirmed ? { token, policy } : null); setChecked({ token, policy }); }
+    }).catch(() => { if (!controller.signal.aborted) { setProof(null); setChecked({ token, policy }); } });
     return () => controller.abort();
   }, [token, config?.available, hostOrigin, policy]);
 
@@ -58,5 +59,6 @@ export function useWidgetConsent(config: WebConfig | null, entry: WidgetEntry, h
     } finally { setStarting(false); }
   }
 
-  return { token, accepted, starting, accept, forgetConsent, siteValues: siteFields.values };
+  const consentReady = !token || (checked?.token === token && checked?.policy === policy) || accepted;
+  return { token, accepted, consentReady, starting, accept, forgetConsent, siteValues: siteFields.values };
 }

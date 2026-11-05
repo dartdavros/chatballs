@@ -57,6 +57,8 @@ from chatballs.i18n.messages import (
     scenarios_ru,
     services_en,
     services_ru,
+    site_events_en,
+    site_events_ru,
     skills_en,
     skills_ru,
     speech_en,
@@ -73,6 +75,7 @@ from chatballs.i18n.messages import (
 
 CATALOG: dict[str, dict[str, object]] = {
     "ru": {
+        **site_events_ru.MESSAGES,
         **ru.MESSAGES,
         **native_actions_ru.MESSAGES,
         **native_email_ru.MESSAGES,
@@ -109,6 +112,7 @@ CATALOG: dict[str, dict[str, object]] = {
         **speech_ru.MESSAGES,
     },
     "en": {
+        **site_events_en.MESSAGES,
         **en.MESSAGES,
         **native_actions_en.MESSAGES,
         **native_email_en.MESSAGES,

@@ -1,0 +1,15 @@
+MESSAGES = {
+    "runs.error_site_event_suppressed": "The first reply was cancelled: consent, the rule or conversation control changed, or the visitor already started chatting.",
+    "runs.error_site_event_failed": "Could not prepare the first reply. Check the agent settings and invocation log.",
+    "site_events.invalid": "Enter the event name, invitation and scenario. Field names must be unique and limits must be filled in.",
+    "site_events.source": "Site event",
+    "site_events.launch": "Run",
+    "site_events.name": "Event name",
+    "site_events.data": "Event data",
+    "site_events.first_reply": "First agent reply",
+    "site_events.instruction": "Scenario task",
+    "site_events.message": "Message",
+    "site_events.state.sent": "Reply sent",
+    "site_events.state.suppressed": "Reply suppressed",
+    "site_events.state.unknown": "Result unknown",
+}

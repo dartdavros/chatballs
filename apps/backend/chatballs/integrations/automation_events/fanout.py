@@ -22,10 +22,13 @@ def schedule(tenant, receipt, *, after=0):
         tenant_context=system_context(tenant)))
 
 
-def seed(tenant, receipt):
+def seed(tenant, receipt, *, scenario_id=None):
     # Store audience before ACK: later subscriptions cannot consume an old event.
     subscriptions = EventSubscription.objects.filter(organization_id=receipt.organization_id, active=True,
-        integration_id=receipt.integration_id, event_key=receipt.event_key).order_by("scenario_id", "pk").values_list(
+        integration_id=receipt.integration_id, event_key=receipt.event_key)
+    if scenario_id is not None:
+        subscriptions = subscriptions.filter(scenario_id=scenario_id)
+    subscriptions = subscriptions.order_by("scenario_id", "pk").values_list(
             "scenario_id", "scenario__public_id", "trigger_id").iterator(chunk_size=500)
     seen, batch = set(), []
     for scenario_id, public_id, trigger_id in subscriptions:
@@ -69,6 +72,9 @@ def deliver_one(tenant, pk, *, registry=None):
                 # Only native schemas supply a Chatballs conversation ID. External
                 # untrusted payload cannot pick a privileged internal context.
                 conversation_id = event.get("conversationId") if kind == "chatballs" else None
+                if kind == "chatballs" and receipt.event_key == "webchat.site_event":
+                    from chatballs.webchat.proactive_launch import prepare
+                    conversation_id = prepare(tenant, receipt, row.scenario)
                 if kind == "service" and receipt.definition.get("entityKind"):
                     from chatballs.integrations.scenario_state.entity_links import EntityLink
                     from chatballs.conversations.models import Conversation

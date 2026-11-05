@@ -8,6 +8,7 @@ KNOWN = frozenset({
     "connection_paused", "scenario_disabled", "arguments", "context_changed",
     "context", "conditions_not_met", "conditions_unavailable", "composition_unavailable",
     "data_cleared", "state_changed", "retention_values", "retention_confirmation",
+    "site_event_suppressed", "site_event_failed",
 })
 
 

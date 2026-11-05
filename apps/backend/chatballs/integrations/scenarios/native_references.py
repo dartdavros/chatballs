@@ -20,6 +20,11 @@ def entity_link_reference(step):
 
 
 def check_native_references(step, context, path, issues):
+    if step.get("connection") == "chatballs" and step.get("target") == "chatballs:webchat.first_reply":
+        binding = step.get("inputs", {}).get("instruction", {})
+        if (not isinstance(binding, dict) or set(binding) != {"source", "value"}
+                or binding.get("source") != "constant" or not isinstance(binding.get("value"), str)):
+            issues.append(Issue(f"{path}.inputs.instruction", "binding"))
     if step.get("connection") == "chatballs" and step.get("target") == "chatballs:entity_link.create":
         ref = entity_link_reference(step)
         if ref is None or ref[0] not in context.connections or ref not in context.entities:

@@ -134,3 +134,4 @@ class WidgetAsset(TenantRelationModel):
 
 
 from chatballs.webchat.observation_models import VisitorObservation  # noqa: E402,F401
+from chatballs.webchat.proactive_models import SiteEventLaunch  # noqa: E402,F401

@@ -35,6 +35,13 @@ def current(tenant, binding):
         conversation = None
     else:
         conversation = _conversation(organization, grant, binding)
+    if binding.get("siteEventLaunchId") is not None:
+        from chatballs.webchat.proactive_guards import current as site_current
+        from chatballs.webchat.proactive_models import SiteEventLaunch
+        claim = SiteEventLaunch.objects.filter(pk=binding["siteEventLaunchId"], organization_id=organization.pk).first()
+        if claim is None or conversation is None or claim.conversation_id != conversation.pk:
+            raise ExecutionDenied("context")
+        site_current(tenant, claim, allow_sent=True)
     if grant.scenario_id:
         scenario = grant.scenario
         if not scenario.enabled or not any(t["kind"] == "ai" and grant.agent_id in t.get("agents", []) for t in scenario.definition["triggers"]):
@@ -124,6 +131,10 @@ def approver(tenant, run):
 
 
 def needs_confirmation(run, operation):
+    from chatballs.integrations.adapters.contracts import READ_EFFECTS
+    from chatballs.webchat.proactive_guards import for_run
+    if for_run(run) is not None and operation.effect not in READ_EFFECTS and operation.key != "webchat.first_reply":
+        return True
     if run.definition.get("ai"):
         return run.definition["ai"]["mode"] == "ask"
     from chatballs.integrations.execution.automation import confirmation_required

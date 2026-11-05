@@ -51,6 +51,8 @@ export type Scenario = {
   id: string; name: string; revision: number; enabled: boolean; definition: ScenarioDocument; issues?: Issue[];
   origin: { adapter: string; key: string; version: number | null }; connections: number[]; updatedAt: string;
   triggers?: TriggerKind[];
+  nativeEvents?: string[];
+  accessScope?: Access["scope"];
   externalKeys?: ExternalKey[];
 };
 export type ExternalKey = { id: string; trigger: string; url: string; key?: string };

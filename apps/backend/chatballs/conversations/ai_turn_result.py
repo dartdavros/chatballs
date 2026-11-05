@@ -37,7 +37,9 @@ if TYPE_CHECKING:  # pragma: no cover - только для подсказок �
 logger = logging.getLogger(__name__)
 
 
-def _finish(message: Message, state: str) -> None:
+def _finish(message: Message | None, state: str) -> None:
+    if message is None:
+        return
     message.ai_turn_state = state
     message.save(update_fields=["ai_turn_state"])
 

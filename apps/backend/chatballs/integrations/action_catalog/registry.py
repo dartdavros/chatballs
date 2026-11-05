@@ -78,6 +78,7 @@ def load_actions():
             transcription,
             transfers,
             widget_calls,
+            webchat,
         )
 
         _loaded = True

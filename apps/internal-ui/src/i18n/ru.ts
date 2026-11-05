@@ -1,5 +1,6 @@
 import { skillsRu } from "./skills.ru";
 import { speechRu } from "./speech.ru";
+import { siteEventsRu } from "./site-events.ru";
 import { agentActionsRu } from "./agent-actions.ru";
 import { snapshotsRu } from "./snapshots.ru";
 import { skillTemplatesRu } from "./skill-templates.ru";
@@ -40,6 +41,7 @@ import { operationModesRu } from "./operation-modes.ru";
 import { transferMessages } from "./transfers.ru";
 
 export const ru = {
+  ...siteEventsRu,
   ...speechRu,
   ...agentActionsRu,
   ...snapshotsRu,

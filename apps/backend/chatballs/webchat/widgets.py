@@ -39,6 +39,9 @@ def ensure_widget(integration: Integration) -> WebChatWidget | None:
         return widget
 
     config = integration.config if isinstance(integration.config, dict) else {}
+    from chatballs.webchat.site_event_config import configured_scenario
+
+    configured_scenario(integration)
     presentation = {
         key: config[key]
         for key in ("title", "accent", "greeting", "quick_replies", "appearance")

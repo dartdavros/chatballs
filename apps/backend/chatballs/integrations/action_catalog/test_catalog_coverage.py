@@ -14,9 +14,9 @@ class NativeCoverageTests(SimpleTestCase):
     def test_inventory_resolves_real_routes_and_method_inheritance(self):
         expected = {(row["route"], row["method"], row["handler"]) for row in inventory()}
         self.assertEqual(mounted_entries(), expected)
-        self.assertEqual(len(expected), 155)
+        self.assertEqual(len(expected), 160)
         excluded = [row for row in inventory() if row["action"] is None]
-        self.assertEqual(len(excluded), 28)
+        self.assertEqual(len(excluded), 32)
         self.assertTrue(all(row["reason"] for row in excluded))
 
     def test_registered_domains_cover_their_exact_product_methods(self):

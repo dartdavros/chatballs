@@ -38,6 +38,8 @@ export type Integration = {
     maxDictationSeconds?: number;
     fields?: SiteField[];
     preChat?: PreChat;
+    siteEvent?: import("@chatballs/contracts").SiteEventRule | null;
+    siteEventAvailable?: boolean;
     baseUrl: string;
     defaultModel: string;
     transcriptionModel: string;

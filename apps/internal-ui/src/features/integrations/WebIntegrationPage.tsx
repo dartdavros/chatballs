@@ -11,13 +11,15 @@ import { useWebIntegration } from "./useWebIntegration";
 import { SiteFieldsSection } from "./site-fields/SiteFieldsSection";
 import { WebIntegrationAppearance } from "./appearance/WebIntegrationAppearance";
 import { PreChatSection } from "./pre-chat/PreChatSection";
+import { SiteEventSection } from "./site-events/SiteEventSection";
 
-type Section = "basics" | "fields" | "form" | "look" | "danger";
+type Section = "basics" | "fields" | "form" | "events" | "look" | "danger";
 
 const sections: SectionMenuItem<Section>[] = [
   { key: "basics", label: t("portals.basics"), icon: "settings" },
   { key: "fields", label: t("settings.site_data"), icon: "code" },
   { key: "form", label: t("settings.pre_chat_form"), icon: "form" },
+  { key: "events", label: t("site_events.section"), icon: "message" },
   { key: "look", label: t("common.appearance"), icon: "paint", divider: true },
   { key: "danger", label: t("settings.delete_connection"), icon: "trash", danger: true },
 ];
@@ -40,6 +42,7 @@ export function WebIntegrationPage({ integrationId, onOpenSettings, onBack }: {
   return (
     <>
       <IntegrationPageLayout
+        className={section === "events" ? "site-event-settings" : ""}
         header={<WebIntegrationHeader integration={integration} onOpenSettings={onOpenSettings} onBack={onBack} />}
         items={sections.map((item) => {
           if (item.key === "fields") return { ...item, hint: { text: fmt.number(fieldCount ?? integration.config.fields?.length ?? 0) } };
@@ -63,6 +66,7 @@ export function WebIntegrationPage({ integrationId, onOpenSettings, onBack }: {
           <PreChatSection key={integration.id} integration={integration} onSaved={setIntegration} onEnabled={setFormEnabled} />
         </div>
         {section === "look" && <WebIntegrationAppearance key={integration.id} integration={integration} onSaved={setIntegration} />}
+        {section === "events" && <SiteEventSection key={integration.id} integration={integration} onSaved={setIntegration} />}
       </IntegrationPageLayout>
       {confirmingDelete && <DeleteIntegrationDialog integration={integration} onClose={() => setConfirmingDelete(false)} onDeleted={onBack} />}
     </>

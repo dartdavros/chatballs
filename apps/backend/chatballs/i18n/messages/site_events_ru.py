@@ -1,0 +1,15 @@
+MESSAGES = {
+    "runs.error_site_event_suppressed": "Первый ответ отменён: изменилось согласие, правило или управление диалогом либо посетитель уже начал переписку.",
+    "runs.error_site_event_failed": "Не удалось подготовить первый ответ. Проверьте настройки агента и журнал вызовов.",
+    "site_events.invalid": "Укажите имя события, приглашение и сценарий. Имена полей должны быть уникальными, ограничения — заполненными.",
+    "site_events.source": "Событие сайта",
+    "site_events.launch": "Запуск",
+    "site_events.name": "Имя события",
+    "site_events.data": "Данные события",
+    "site_events.first_reply": "Первый ответ агента",
+    "site_events.instruction": "Задание сценария",
+    "site_events.message": "Сообщение",
+    "site_events.state.sent": "Ответ отправлен",
+    "site_events.state.suppressed": "Ответ подавлен",
+    "site_events.state.unknown": "Результат неизвестен",
+}

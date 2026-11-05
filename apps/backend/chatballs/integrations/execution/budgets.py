@@ -21,7 +21,8 @@ def size(value):
 def lock_run(tenant, public_id=None, *, pk=None):
     run = ScenarioRun.objects.get(
         **({"pk": pk} if pk else {"public_id": public_id}), organization_id=tenant.organization_id)
-    if run.content and run.definition.get("ai"):
+    from chatballs.webchat.proactive_guards import for_run
+    if run.content and (run.definition.get("ai") or for_run(run) is not None):
         # Match organization mode transitions and AI launch/policy updates:
         # organization before run/step/conversation, never the reverse.
         from chatballs.identity.operation_modes import lock_organization

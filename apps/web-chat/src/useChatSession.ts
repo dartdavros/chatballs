@@ -24,6 +24,7 @@ import { useWidgetActivity } from "./widgetActivity";
 import { useVisitorSignals } from "./useVisitorSignals";
 import { applyWidgetLanguage, t } from "./i18n";
 import type { RatingRequest } from "./ratings/api";
+import { useSiteEvents } from "./proactivity/useSiteEvents";
 
 const PARAMS = new URLSearchParams(location.search);
 const WIDGET_KEY = PARAMS.get("widgetKey") || "";
@@ -34,7 +35,8 @@ const TOKEN_KEY = `chatballs-chat-token:${WIDGET_KEY || `channel:${LEGACY_CHANNE
 
 export function useChatSession() {
   const [config, setConfig] = useState<WebConfig | null>(null);
-  const { token, accepted, starting, accept, forgetConsent, siteValues } = useWidgetConsent(config, ENTRY, HOST_ORIGIN, TOKEN_KEY);
+  const { token, accepted, consentReady, starting, accept, forgetConsent, siteValues } = useWidgetConsent(config, ENTRY, HOST_ORIGIN, TOKEN_KEY);
+  const siteEvent = useSiteEvents({ config, token, accepted, consentReady, widgetKey: WIDGET_KEY, hostOrigin: HOST_ORIGIN });
   useVisitorSignals(accepted ? token : null, HOST_ORIGIN);
   const [messages, setMessages] = useState<WebMessage[]>([]);
   const [ratingRequests, setRatingRequests] = useState<RatingRequest[]>([]);
@@ -82,6 +84,7 @@ export function useChatSession() {
   }, []);
 
   function ingestPoll(data: Poll, notify = true) {
+    siteEvent.updateStatus(data.siteEvent);
     setRatingRequests(data.ratingRequests || []);
     // Диалог удалили на стороне поддержки — переписка обнуляется, и виджет
     // продолжает жить как только что открытый.
@@ -128,6 +131,7 @@ export function useChatSession() {
   async function send() {
     const text = input.trim();
     if ((!text && !attachment) || !token || !accepted || awaiting || dictation.busy || text.length > 4000) return;
+    siteEvent.cancel();
     setInput("");
     const file = attachment;
     setAttachment(null);
@@ -175,5 +179,5 @@ export function useChatSession() {
   const showPhoneForm = lastContactRequestId > 0 && !(contactSent || messages.some((message) => message.kind === "contact"));
   const unavailable = config !== null && !config.available;
 
-  return { config, state, accepted, siteValues, messages, ratingRequests, pending, awaiting, thinking, call, input, setInput, starting, recorder, dictation, bodyRef, token, lastContactRequestId, showPhoneForm, unavailable, accept, send, submitContact, acceptCallInvite, declineCallInvite, attachment, attachmentError, setAttachment, setAttachmentError };
+  return { config, state, accepted, siteValues, siteEvent, messages, ratingRequests, pending, awaiting, thinking, call, input, setInput, starting, recorder, dictation, bodyRef, token, lastContactRequestId, showPhoneForm, unavailable, accept, send, submitContact, acceptCallInvite, declineCallInvite, attachment, attachmentError, setAttachment, setAttachmentError };
 }

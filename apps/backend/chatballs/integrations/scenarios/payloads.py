@@ -13,16 +13,19 @@ def scenario_payload(row, *, issues=None, detail=True):
     error = delivery.error_code if delivery and delivery.state in {"failed", "pending"} else ""
     if not error:
         error = row.schedules.exclude(error_code="").values_list("error_code", flat=True).first() or ""
+    document = row.definition
     payload = {
         "id": str(row.public_id), "name": row.name, "revision": row.revision, "enabled": row.enabled,
         "origin": {"adapter": row.origin_adapter, "key": row.origin_key, "version": row.origin_version},
         "connections": list(row.connections.values_list("integration_id", flat=True)),
         "updatedAt": row.updated_at.isoformat(),
-        "triggers": [trigger["kind"] for trigger in row.definition["triggers"]],
+        "triggers": [trigger["kind"] for trigger in document["triggers"]],
+        "nativeEvents": [trigger["event"] for trigger in document["triggers"] if trigger["kind"] == "chatballs"],
+        "accessScope": document["access"]["scope"],
         "automationError": error_message(error) if error else "",
     }
     if detail:
-        payload["definition"] = row.definition
+        payload["definition"] = document
         from chatballs.integrations.execution.scenario_agent_policies import payload as agent_policies
         payload["agentPolicies"] = agent_policies(row)
     if issues is not None:

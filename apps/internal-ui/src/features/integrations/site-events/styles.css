@@ -1,0 +1,35 @@
+/* Accepted settings baseline; existing form/table styles remain the base. */
+.site-event-settings .server-two-fields > div { min-width: 0; }
+.ev-catalog-help { min-height: 63px; }
+.ev-catalog-help small + small { margin-top: 3px; }
+.ev-schema-scroll { overflow-x: auto; }
+.ev-schema-table { table-layout: fixed; min-width: 690px; }
+.ev-schema-table th:nth-child(1) { width: 18%; }
+.ev-schema-table th:nth-child(2) { width: 18%; }
+.ev-schema-table th:nth-child(3) { width: 42%; }
+.ev-schema-table th:nth-child(4) { width: 16%; }
+.ev-schema-table th:last-child { width: 6%; }
+.ev-schema-table td { vertical-align: middle; }
+.ev-schema-table .readonly-field { min-width: 0; gap: 4px; }
+.ev-schema-table .readonly-field > span:first-child { font-size: 11px; color: var(--n-4); }
+.ev-cell-unlabelled .readonly-field > span:first-child {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+}
+.ev-actions-heading { font-size: 0 !important; }
+.ev-schema-limits .readonly-field { display: flex; align-items: center; gap: 8px; }
+.ev-schema-limits .readonly-field > span:first-child { flex: 0 1 auto; margin: 0; }
+.ev-schema-limits .readonly-field input { flex: 1; width: 0; min-width: 0; }
+.ev-schema-table .readonly-field input,
+.ev-schema-table .select-like .select-box { height: 30px; border-radius: 7px; padding: 0 9px; font-size: 12.5px; }
+.ev-schema-table .row-menu-button { width: 28px; height: 28px; }
+.ev-range { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 8px; }
+@media (max-width:900px) {
+  .ev-schema.site-fields-card { overflow: hidden; }
+  .ev-schema .site-fields-card-head { flex-wrap: wrap; }
+  .ev-catalog-help { min-height: 98px; }
+}
+/* The accepted 320px frame omits the global rail, as widget-speech/baseline.css. */
+@media (max-width:767px) {
+  .hub-shell:has(.site-event-settings) > .hub-sidebar { display: none; }
+}

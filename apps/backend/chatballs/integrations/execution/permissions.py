@@ -72,6 +72,8 @@ def authorize(tenant, document, conversation_id=None, *, scenario_id=None, trigg
 
 
 def authorize_run(tenant, run, *, check_conditions=True):
+    from chatballs.webchat.proactive_guards import authorize_run as authorize_site_run
+    authorize_site_run(tenant, run)
     if run.definition.get("ai"):
         from chatballs.integrations.execution.ai_policy import authorize_ai
         return authorize_ai(tenant, run)

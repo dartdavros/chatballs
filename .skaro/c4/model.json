@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "revision": 16,
+  "revision": 19,
   "title": "Chatballs — архитектура контакт-центра",
   "elements": [
     {
@@ -5107,7 +5107,7 @@
         "0040",
         "0038"
       ],
-      "state": "planned",
+      "state": "current",
       "external": false
     },
     {
@@ -5119,18 +5119,32 @@
       "technology": "JavaScript / React / postMessage",
       "code": [
         "apps/backend/chatballs/webchat/loader_assets/site_events.js",
-        "apps/web-chat/src/proactivity/"
+        "apps/backend/chatballs/webchat/loader_assets/site_invitation.js",
+        "apps/web-chat/src/proactivity/useSiteEvents.ts",
+        "apps/web-chat/src/proactivity/memory.ts",
+        "apps/web-chat/src/proactivity/api.ts",
+        "apps/web-chat/src/proactivity/ProactiveStatus.tsx",
+        "apps/web-chat/src/proactivity/styles.css"
       ],
       "evidence": [
         ".skaro/specs/0040-priglasheniya-i-pervyy-otvet-po-sobytiyu-sayta.md",
         ".skaro/adr/0040-sobytiya-sayta-i-pervyy-kontakt-agenta.md",
-        "apps/backend/chatballs/webchat/loader_assets/site_fields.js"
+        "apps/backend/chatballs/webchat/loader_assets/site_fields.js",
+        "design/baseline/widget-site-events/OWNER-ACCEPTANCE.md",
+        "apps/backend/chatballs/webchat/loader_assets/site_events.js",
+        "apps/backend/chatballs/webchat/loader_assets/site_invitation.js",
+        "apps/web-chat/src/proactivity/useSiteEvents.ts",
+        "apps/web-chat/src/proactivity/memory.ts",
+        "apps/web-chat/src/proactivity/api.ts",
+        "apps/web-chat/src/proactivity/ProactiveStatus.tsx",
+        "apps/web-chat/src/proactivity/styles.css",
+        "docs/verification/T-181/README.md"
       ],
       "decisions": [
         "0040",
         "0031"
       ],
-      "state": "planned",
+      "state": "current",
       "external": false
     },
     {
@@ -5141,18 +5155,33 @@
       "description": "Имя/schema/текст/сценарий/включённость в WEB; общий каталог/журнал, без дублирования редактора.",
       "technology": "React / TypeScript / shared schema controls",
       "code": [
-        "apps/internal-ui/src/features/integrations/site-events/"
+        "apps/internal-ui/src/features/integrations/site-events/SiteEventSection.tsx",
+        "apps/internal-ui/src/features/integrations/site-events/EventSchema.tsx",
+        "apps/internal-ui/src/features/integrations/site-events/SchemaRow.tsx",
+        "apps/internal-ui/src/features/integrations/site-events/ScenarioChoice.tsx",
+        "apps/internal-ui/src/features/integrations/site-events/useRuleEditor.ts",
+        "apps/internal-ui/src/features/integrations/site-events/model.ts",
+        "apps/internal-ui/src/features/integrations/site-events/styles.css"
       ],
       "evidence": [
         ".skaro/specs/0040-priglasheniya-i-pervyy-otvet-po-sobytiyu-sayta.md",
         ".skaro/adr/0040-sobytiya-sayta-i-pervyy-kontakt-agenta.md",
-        "apps/internal-ui/src/features/integrations/WebIntegrationPage.tsx"
+        "apps/internal-ui/src/features/integrations/WebIntegrationPage.tsx",
+        "design/baseline/widget-site-events/OWNER-ACCEPTANCE.md",
+        "apps/internal-ui/src/features/integrations/site-events/SiteEventSection.tsx",
+        "apps/internal-ui/src/features/integrations/site-events/EventSchema.tsx",
+        "apps/internal-ui/src/features/integrations/site-events/SchemaRow.tsx",
+        "apps/internal-ui/src/features/integrations/site-events/ScenarioChoice.tsx",
+        "apps/internal-ui/src/features/integrations/site-events/useRuleEditor.ts",
+        "apps/internal-ui/src/features/integrations/site-events/model.ts",
+        "apps/internal-ui/src/features/integrations/site-events/styles.css",
+        "docs/verification/T-181/README.md"
       ],
       "decisions": [
         "0040",
         "0038"
       ],
-      "state": "planned",
+      "state": "current",
       "external": false
     },
     {
@@ -5458,7 +5487,7 @@
       "decisions": [
         "0040"
       ],
-      "state": "planned",
+      "state": "current",
       "external": false
     },
     {
@@ -5469,19 +5498,33 @@
       "description": "Одно событие в памяти/TTL5мин, минимальная отметка, закрытие/reload; принятие через общий consent/preChat, без принудительного открытия. Общий consent-клиент принадлежит code-web-consent и переиспользуется по rel-site-consent; UI приглашения остаётся отдельным планом.",
       "technology": "Python / TypeScript; см. пути модулей",
       "code": [
-        "apps/web-chat/src/proactivity/",
-        "apps/backend/chatballs/webchat/loader_assets/launcher.js"
+        "apps/web-chat/src/proactivity/useSiteEvents.ts",
+        "apps/web-chat/src/proactivity/memory.ts",
+        "apps/web-chat/src/proactivity/api.ts",
+        "apps/web-chat/src/proactivity/ProactiveStatus.tsx",
+        "apps/web-chat/src/proactivity/styles.css",
+        "apps/backend/chatballs/webchat/loader_assets/launcher.js",
+        "apps/backend/chatballs/webchat/loader_assets/site_invitation.js"
       ],
       "evidence": [
         ".skaro/specs/0040-priglasheniya-i-pervyy-otvet-po-sobytiyu-sayta.md",
         ".skaro/adr/0040-sobytiya-sayta-i-pervyy-kontakt-agenta.md",
-        "apps/web-chat/src/useWidgetConsent.ts"
+        "apps/web-chat/src/useWidgetConsent.ts",
+        "design/baseline/widget-site-events/OWNER-ACCEPTANCE.md",
+        "apps/web-chat/src/proactivity/useSiteEvents.ts",
+        "apps/web-chat/src/proactivity/memory.ts",
+        "apps/web-chat/src/proactivity/api.ts",
+        "apps/web-chat/src/proactivity/ProactiveStatus.tsx",
+        "apps/web-chat/src/proactivity/styles.css",
+        "apps/backend/chatballs/webchat/loader_assets/launcher.js",
+        "apps/backend/chatballs/webchat/loader_assets/site_invitation.js",
+        "docs/verification/T-181/README.md"
       ],
       "decisions": [
         "0040",
         "0031"
       ],
-      "state": "planned",
+      "state": "current",
       "external": false
     },
     {
@@ -5503,7 +5546,7 @@
       "decisions": [
         "0040"
       ],
-      "state": "planned",
+      "state": "current",
       "external": false
     },
     {
@@ -5526,7 +5569,7 @@
         "0040",
         "0038"
       ],
-      "state": "planned",
+      "state": "current",
       "external": false
     },
     {
@@ -5549,7 +5592,7 @@
         "0040",
         "0038"
       ],
-      "state": "planned",
+      "state": "current",
       "external": false
     },
     {
@@ -5560,18 +5603,33 @@
       "description": "Имя/schema/текст/сценарий и общий журнал, shared-controls/ru-en по лично принятому baseline.",
       "technology": "Python / TypeScript; см. пути модулей",
       "code": [
-        "apps/internal-ui/src/features/integrations/site-events/"
+        "apps/internal-ui/src/features/integrations/site-events/SiteEventSection.tsx",
+        "apps/internal-ui/src/features/integrations/site-events/EventSchema.tsx",
+        "apps/internal-ui/src/features/integrations/site-events/SchemaRow.tsx",
+        "apps/internal-ui/src/features/integrations/site-events/ScenarioChoice.tsx",
+        "apps/internal-ui/src/features/integrations/site-events/useRuleEditor.ts",
+        "apps/internal-ui/src/features/integrations/site-events/model.ts",
+        "apps/internal-ui/src/features/integrations/site-events/styles.css"
       ],
       "evidence": [
         ".skaro/specs/0040-priglasheniya-i-pervyy-otvet-po-sobytiyu-sayta.md",
         ".skaro/adr/0040-sobytiya-sayta-i-pervyy-kontakt-agenta.md",
-        "apps/internal-ui/src/features/integrations/WebIntegrationPage.tsx"
+        "apps/internal-ui/src/features/integrations/WebIntegrationPage.tsx",
+        "design/baseline/widget-site-events/OWNER-ACCEPTANCE.md",
+        "apps/internal-ui/src/features/integrations/site-events/SiteEventSection.tsx",
+        "apps/internal-ui/src/features/integrations/site-events/EventSchema.tsx",
+        "apps/internal-ui/src/features/integrations/site-events/SchemaRow.tsx",
+        "apps/internal-ui/src/features/integrations/site-events/ScenarioChoice.tsx",
+        "apps/internal-ui/src/features/integrations/site-events/useRuleEditor.ts",
+        "apps/internal-ui/src/features/integrations/site-events/model.ts",
+        "apps/internal-ui/src/features/integrations/site-events/styles.css",
+        "docs/verification/T-181/README.md"
       ],
       "decisions": [
         "0040",
         "0038"
       ],
-      "state": "planned",
+      "state": "current",
       "external": false
     },
     {
@@ -12602,7 +12660,7 @@
       "decisions": [
         "0040"
       ],
-      "state": "planned"
+      "state": "current"
     },
     {
       "id": "rel-backend-speechkit",
@@ -12662,7 +12720,7 @@
       "decisions": [
         "0040"
       ],
-      "state": "planned"
+      "state": "current"
     },
     {
       "id": "rel-widget-site-api",
@@ -12797,7 +12855,7 @@
       "decisions": [
         "0040"
       ],
-      "state": "planned"
+      "state": "current"
     },
     {
       "id": "rel-site-widget-submit",
@@ -12812,7 +12870,7 @@
       "decisions": [
         "0040"
       ],
-      "state": "planned"
+      "state": "current"
     },
     {
       "id": "rel-site-ui-api",
@@ -12827,7 +12885,7 @@
       "decisions": [
         "0040"
       ],
-      "state": "planned"
+      "state": "current"
     },
     {
       "id": "rel-site-general-ingress",
@@ -12875,7 +12933,7 @@
         "0040",
         "0038"
       ],
-      "state": "planned"
+      "state": "current"
     },
     {
       "id": "rel-site-conversation",
@@ -12890,7 +12948,7 @@
       "decisions": [
         "0040"
       ],
-      "state": "planned"
+      "state": "current"
     },
     {
       "id": "rel-dictation-request",
@@ -13205,7 +13263,7 @@
       "decisions": [
         "0040"
       ],
-      "state": "planned"
+      "state": "current"
     },
     {
       "id": "rel-site-local",
@@ -13220,7 +13278,7 @@
       "decisions": [
         "0040"
       ],
-      "state": "planned"
+      "state": "current"
     },
     {
       "id": "rel-site-public-config",
@@ -13235,7 +13293,7 @@
       "decisions": [
         "0040"
       ],
-      "state": "planned"
+      "state": "current"
     },
     {
       "id": "rel-site-consent",
@@ -13251,7 +13309,7 @@
         "0040",
         "0039"
       ],
-      "state": "planned"
+      "state": "current"
     },
     {
       "id": "rel-site-submit",
@@ -13266,7 +13324,7 @@
       "decisions": [
         "0040"
       ],
-      "state": "planned"
+      "state": "current"
     },
     {
       "id": "rel-site-consent-guard",
@@ -13282,7 +13340,7 @@
         "0040",
         "0039"
       ],
-      "state": "planned"
+      "state": "current"
     },
     {
       "id": "rel-site-rule-guard",
@@ -13297,7 +13355,7 @@
       "decisions": [
         "0040"
       ],
-      "state": "planned"
+      "state": "current"
     },
     {
       "id": "rel-site-durable",
@@ -13360,7 +13418,7 @@
       "decisions": [
         "0040"
       ],
-      "state": "planned"
+      "state": "current"
     },
     {
       "id": "rel-site-run-ai",
@@ -13375,7 +13433,7 @@
       "decisions": [
         "0040"
       ],
-      "state": "planned"
+      "state": "current"
     },
     {
       "id": "rel-site-first-send",
@@ -13390,7 +13448,7 @@
       "decisions": [
         "0040"
       ],
-      "state": "planned"
+      "state": "current"
     },
     {
       "id": "rel-site-setting-code",
@@ -13405,7 +13463,7 @@
       "decisions": [
         "0040"
       ],
-      "state": "planned"
+      "state": "current"
     },
     {
       "id": "rel-site-setting-run",
@@ -13445,7 +13503,7 @@
       "target": "code-pseudonymizer",
       "description": "Недоверенный контекст события проходит обычную псевдонимизацию; доверенное задание отдельно",
       "technology": "Python / existing AI runtime",
-      "state": "planned",
+      "state": "current",
       "evidence": [
         ".skaro/specs/0040-priglasheniya-i-pervyy-otvet-po-sobytiyu-sayta.md",
         ".skaro/adr/0040-sobytiya-sayta-i-pervyy-kontakt-agenta.md"
@@ -18072,7 +18130,7 @@
       "kind": "code",
       "scope": "widget-site-events",
       "title": "Код: очередь, локальное приглашение и согласие",
-      "state": "planned",
+      "state": "current",
       "elements": [
         "code-site-event-loader",
         "code-widget-site-events"
@@ -18088,7 +18146,7 @@
       "kind": "code",
       "scope": "component-webchat-proactivity",
       "title": "Код: проверенное событие и первый ход",
-      "state": "planned",
+      "state": "current",
       "elements": [
         "code-web-site-events",
         "code-web-site-config",
@@ -18105,7 +18163,7 @@
       "kind": "code",
       "scope": "ui-widget-event-settings",
       "title": "Код: правило сайта и общий журнал",
-      "state": "planned",
+      "state": "current",
       "elements": [
         "code-ui-event-settings"
       ],
@@ -18326,7 +18384,7 @@
       "kind": "dynamic",
       "scope": "system-chatballs",
       "title": "Событие до согласия: локальное приглашение",
-      "state": "planned",
+      "state": "current",
       "elements": [
         "code-web-site-config",
         "code-site-event-loader",
@@ -36435,7 +36493,7 @@
     {
       "id": "0040",
       "path": "specs/0040-priglasheniya-i-pervyy-otvet-po-sobytiyu-sayta.md",
-      "bodyHash": "1c54dc006965d1bfb30fc5f873f6b1adb227ebcda1f908ce61f229d7e09e033a",
+      "bodyHash": "51d7f1670892fdea703dde958d9df038d247b8bfb01cab4676707e18580c4fb0",
       "impact": "changes",
       "description": "Планируемые локальное приглашение, защищённый site-event после consent и первый штатный AI-ход через общий runner без дублей.",
       "elements": [
@@ -37620,16 +37678,6 @@
       "affects": [
         "container-cli",
         "deployment-host"
-      ]
-    },
-    {
-      "id": "Q-WIDGET-SITE-EVENTS-DESIGN",
-      "question": "Лично принять design/baseline/widget-site-events/*.dc.html: приглашение, настройка правила, переход к consent/форме и ошибки. Backend/подготовка дизайна этим вопросом не блокируются.",
-      "affects": [
-        "widget-site-events",
-        "ui-widget-event-settings",
-        "code-widget-site-events",
-        "code-ui-event-settings"
       ]
     }
   ],
