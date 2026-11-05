@@ -6,7 +6,6 @@ from chatballs.integrations.action_catalog.administrative import register
 from chatballs.integrations.action_catalog.schema import obj
 from chatballs.integrations.adapters.contracts import Effect
 
-
 for key, method, suffix, view, inputs, outputs, service, body, audit, execution, effect in (
     ("instance.settings.get", "GET", "settings/", "instance_views.InstanceAddressView", obj(), schema.OUTPUT, instance_commands.read, False, False, "local", Effect.READ),
     ("instance.settings.patch", "PATCH", "settings/", "instance_views.InstanceAddressView", schema.INPUT, schema.OUTPUT, instance_commands.update, True, False, "local", Effect.UPDATE),

@@ -3,7 +3,6 @@
 from dataclasses import dataclass
 from typing import Protocol
 
-
 MAX_RECORDING_BYTES = 10 * 1024 * 1024
 MAX_DICTATION_SECONDS = 60
 SPEECHKIT_MODELS = ("general", "general:rc", "general:deprecated")

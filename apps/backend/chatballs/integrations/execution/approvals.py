@@ -20,10 +20,10 @@ def invocation_digest(step, run):
 
 def approved(step, run):
     if run.definition.get("ai"):
-        from chatballs.integrations.execution.ai_policy import approver
         from chatballs.identity.models import OrganizationMembership
-        from chatballs.tenancy.context import TenantContext
+        from chatballs.integrations.execution.ai_policy import approver
         from chatballs.integrations.execution.permissions import ExecutionDenied
+        from chatballs.tenancy.context import TenantContext
         member = OrganizationMembership.objects.select_related("organization", "user").filter(
             pk=step.definition.get("approvedBy"), organization_id=run.organization_id).first()
         if member is None:

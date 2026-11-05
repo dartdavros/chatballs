@@ -1,11 +1,11 @@
 from django.urls import path
 
-from chatballs.integrations.execution.views import RunControlView, RunDetailView, RunListView
-from chatballs.integrations.execution.retention_views import RunRetentionView
-from chatballs.integrations.execution.launch_views import ManualActionsView
-from chatballs.integrations.execution.metadata_views import ManualLookupView
 from chatballs.integrations.execution.agent_actions import AgentActionsView
 from chatballs.integrations.execution.ai_metadata import ApprovalLookupView
+from chatballs.integrations.execution.launch_views import ManualActionsView
+from chatballs.integrations.execution.metadata_views import ManualLookupView
+from chatballs.integrations.execution.retention_views import RunRetentionView
+from chatballs.integrations.execution.views import RunControlView, RunDetailView, RunListView
 
 urlpatterns = [
     path("agent-actions/<int:channel_id>/", AgentActionsView.as_view(), name="agent-service-actions"),

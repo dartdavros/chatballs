@@ -85,6 +85,22 @@ class TlsAwareCookieASGIMiddlewareTests(SimpleTestCase):
         self.assertEqual(_cookies(self._run(scope))[PLAIN], "real")
 
     @override_settings(SECURE_PROXY_SSL_HEADER=("HTTP_X_FORWARDED_PROTO", "https"))
+    def test_wss_forwarded_proto_uses_hardened_cookie(self) -> None:
+        """TLS WebSocket proxies may forward wss, not https."""
+        scope = _scope(scheme="ws", cookie=f"{HARDENED}=session-value")
+        scope["headers"].append((b"x-forwarded-proto", b"wss"))
+
+        self.assertEqual(_cookies(self._run(scope))[PLAIN], "session-value")
+
+    @override_settings(SECURE_PROXY_SSL_HEADER=("HTTP_X_FORWARDED_PROTO", "https"))
+    def test_http_forwarded_proto_is_not_secure_for_websocket(self) -> None:
+        """Do not promote plain HTTP to a secure WebSocket handshake."""
+        scope = _scope(scheme="ws", cookie=f"{PLAIN}=plain; {HARDENED}=hardened")
+        scope["headers"].append((b"x-forwarded-proto", b"http"))
+
+        self.assertEqual(_cookies(self._run(scope))[PLAIN], "plain")
+
+    @override_settings(SECURE_PROXY_SSL_HEADER=("HTTP_X_FORWARDED_PROTO", "https"))
     def test_plain_cookie_is_not_authenticated_behind_tls_proxy(self) -> None:
         scope = _scope(scheme="ws", cookie=f"{PLAIN}=planted")
         scope["headers"].append((b"x-forwarded-proto", b"https"))

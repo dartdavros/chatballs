@@ -2,7 +2,7 @@
 
 from copy import deepcopy
 
-from chatballs.integrations.execution.budgets import reserve, account_data, size
+from chatballs.integrations.execution.budgets import account_data, reserve, size
 from chatballs.integrations.scenario_state.progress import ScenarioProgress
 
 DONE = frozenset({"completed", "failed", "cancelled"})

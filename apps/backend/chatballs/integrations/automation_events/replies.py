@@ -3,9 +3,9 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
+from chatballs.conversations.models import Message
 from chatballs.events.handlers import register
 from chatballs.events.services import DomainEvent, enqueue_event
-from chatballs.conversations.models import Message
 from chatballs.integrations.adapters.events import VerifiedEvent
 from chatballs.integrations.automation_events.ingress import persist
 from chatballs.tenancy.context import TenantContext

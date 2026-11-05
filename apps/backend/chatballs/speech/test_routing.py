@@ -1,12 +1,12 @@
 from types import SimpleNamespace
 
+from django.core.exceptions import ValidationError
 from django.test import SimpleTestCase
 
 from chatballs.speech.contracts import capabilities
 from chatballs.speech.errors import SpeechError
 from chatballs.speech.routing import resolve_model, selected_integration
 from chatballs.webchat.recording_configuration import normalize_recording
-from django.core.exceptions import ValidationError
 
 
 class SpeechRoutingTests(SimpleTestCase):

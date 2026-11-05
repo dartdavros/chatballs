@@ -1,9 +1,10 @@
 """A durable audience and independent delivery transactions for every subscriber."""
 
+from datetime import timedelta
+
 from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
-from datetime import timedelta
 
 from chatballs.events.handlers import register
 from chatballs.events.services import DomainEvent, enqueue_event
@@ -76,9 +77,10 @@ def deliver_one(tenant, pk, *, registry=None):
                     from chatballs.webchat.proactive_launch import prepare
                     conversation_id = prepare(tenant, receipt, row.scenario)
                 if kind == "service" and receipt.definition.get("entityKind"):
-                    from chatballs.integrations.scenario_state.entity_links import EntityLink
-                    from chatballs.conversations.models import Conversation
                     from django.db.models import Q
+
+                    from chatballs.conversations.models import Conversation
+                    from chatballs.integrations.scenario_state.entity_links import EntityLink
                     links = EntityLink.objects.filter(organization_id=tenant.organization_id, integration_id=receipt.integration_id,
                         external_kind=receipt.definition["entityKind"], external_id=receipt.definition["entityId"], active=True)
                     ids = list(Conversation.objects.filter(organization_id=tenant.organization_id, archived_at__isnull=True).filter(

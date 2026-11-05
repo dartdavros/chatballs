@@ -2,8 +2,8 @@
 
 from email.utils import make_msgid
 
-from chatballs.conversations import transports
 from chatballs.ai.execution_version import configuration_version
+from chatballs.conversations import transports
 from chatballs.conversations.domain_events import operation_key, record_public_reply
 from chatballs.conversations.email_facts import record_email_fact
 from chatballs.conversations.email_thread_models import EmailThreadMessage

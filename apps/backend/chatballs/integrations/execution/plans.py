@@ -3,7 +3,7 @@
 import hashlib
 import hmac
 import json
-from datetime import timedelta, datetime, timezone as datetime_timezone
+from datetime import UTC, datetime, timedelta
 
 from django.core import signing
 from django.utils import timezone
@@ -29,6 +29,6 @@ def verify_plan(tenant, plan, token):
         signed = signing.loads(token, salt=SALT, max_age=LIFETIME.total_seconds())
         if not hmac.compare_digest(signed["digest"], plan_digest(tenant, plan)) or signed["expires"] <= timezone.now().timestamp():
             raise ValueError
-        return datetime.fromtimestamp(signed["expires"], tz=datetime_timezone.utc)
+        return datetime.fromtimestamp(signed["expires"], tz=UTC)
     except (signing.BadSignature, ValueError, TypeError, KeyError):
         raise ExecutionDenied("approval_changed") from None

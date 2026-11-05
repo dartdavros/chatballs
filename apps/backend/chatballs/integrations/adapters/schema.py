@@ -167,7 +167,7 @@ def _check_integer(spec: TypeSpec, value: Any, path: str, walk: _Walk) -> None:
 
 
 def _check_number(spec: TypeSpec, value: Any, path: str, walk: _Walk) -> None:
-    if isinstance(value, bool) or not isinstance(value, (int, float)):
+    if isinstance(value, bool) or not isinstance(value, int | float):
         walk.add(path, "type")
 
 
@@ -193,7 +193,7 @@ def _check_enum(spec: TypeSpec, value: Any, path: str, walk: _Walk) -> None:
 
 
 def _check_lookup(spec: TypeSpec, value: Any, path: str, walk: _Walk) -> None:
-    if isinstance(value, bool) or not isinstance(value, (str, int)) or value == "":
+    if isinstance(value, bool) or not isinstance(value, str | int) or value == "":
         walk.add(path, "type")
 
 

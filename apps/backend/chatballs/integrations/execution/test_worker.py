@@ -14,7 +14,12 @@ from chatballs.integrations.execution.control import control
 from chatballs.integrations.execution.launch import launch_direct
 from chatballs.integrations.execution.runner import _commit
 from chatballs.integrations.execution.test_execution import ExecutionCase
-from chatballs.integrations.models import Integration, IntegrationKind, IntegrationProvider, ServiceConnectionSettings
+from chatballs.integrations.models import (
+    Integration,
+    IntegrationKind,
+    IntegrationProvider,
+    ServiceConnectionSettings,
+)
 from chatballs.integrations.scenario_state.limits import ConnectionExecutionLane
 from chatballs.tenancy.database import tenant_atomic
 

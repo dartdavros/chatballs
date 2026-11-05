@@ -2,8 +2,8 @@
 
 from django.test import SimpleTestCase
 
-from chatballs.integrations.execution.result_payloads import display_errors
 from chatballs.integrations.execution.errors import error_message
+from chatballs.integrations.execution.result_payloads import display_errors
 
 
 class ResultPayloadTests(SimpleTestCase):

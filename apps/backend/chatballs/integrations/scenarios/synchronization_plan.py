@@ -4,8 +4,8 @@ from copy import deepcopy
 from datetime import datetime
 
 from chatballs.integrations.adapters.registry import default_registry
-from chatballs.integrations.scenarios.values import RunValues, resolve_value
 from chatballs.integrations.execution.permissions import ExecutionDenied
+from chatballs.integrations.scenarios.values import RunValues, resolve_value
 
 MISSING = object()
 

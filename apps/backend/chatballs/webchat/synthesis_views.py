@@ -6,8 +6,8 @@ from rest_framework.response import Response
 from chatballs.i18n import customer_language, t
 from chatballs.speech.concurrency import recognition_lease
 from chatballs.speech.errors import SpeechError
-from chatballs.speech.synthesis import resolve_synthesis
 from chatballs.speech.providers.yandex_tts import MAX_TEXT
+from chatballs.speech.synthesis import resolve_synthesis
 from chatballs.speech.tts_contract import validate_language
 from chatballs.webchat.access import _PublicSession, _resolved_web_session, session_available
 from chatballs.webchat.api_inputs import BEARER_PREFIX

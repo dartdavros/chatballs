@@ -1,8 +1,8 @@
 """Trusted entity exchange bindings, independent of a CRM or transport shape."""
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Callable
 
 
 @dataclass(frozen=True)

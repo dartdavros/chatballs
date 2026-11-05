@@ -5,12 +5,20 @@ from datetime import datetime
 from django.utils import timezone
 
 from chatballs.integrations.adapters.contracts import (
-    AdapterDescriptor, AuthMethod, Effect, EntityDescriptor, OperationDescriptor,
-    OperationHandlers, OperationResult, Presentation, ResultState, RetryStrategy,
+    AdapterDescriptor,
+    AuthMethod,
+    Effect,
+    EntityDescriptor,
+    OperationDescriptor,
+    OperationHandlers,
+    OperationResult,
+    Presentation,
+    ResultState,
+    RetryStrategy,
 )
+from chatballs.integrations.adapters.references import EntityReferences, ReferenceCandidate
 from chatballs.integrations.adapters.schema import TypeSpec
 from chatballs.integrations.adapters.synchronization import EntitySnapshot, SynchronizationBinding
-from chatballs.integrations.adapters.references import EntityReferences, ReferenceCandidate
 
 RECORDS, WRITES, RECEIPTS = {}, [], {}
 OBJECT = TypeSpec("object", open=True)

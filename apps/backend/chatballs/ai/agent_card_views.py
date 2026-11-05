@@ -22,7 +22,7 @@ class AgentCardView(APIView):
             messages = ([message for values in error.message_dict.values() for message in values]
                 if hasattr(error, "message_dict") else error.messages)
             return Response({"detail": "; ".join(messages)}, status=400)
-        if isinstance(error, (ChannelHasReferences, ConnectionAlreadyBound)):
+        if isinstance(error, ChannelHasReferences | ConnectionAlreadyBound):
             return Response(error.payload(), status=409)
         return super().handle_exception(error)
 

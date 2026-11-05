@@ -6,7 +6,10 @@ from django.http import Http404
 from chatballs.identity import demo_media, setup_commands
 from chatballs.identity.setup import SetupAlreadyCompleted, instance_needs_setup
 from chatballs.integrations.action_catalog.authority import require_context
-from chatballs.integrations.action_catalog.contracts import NativeAccessDenied, NativeOperationRejected
+from chatballs.integrations.action_catalog.contracts import (
+    NativeAccessDenied,
+    NativeOperationRejected,
+)
 from chatballs.integrations.action_catalog.file_reads import FILE_RESULT, stream_result
 from chatballs.integrations.action_catalog.profile_schemas import field
 from chatballs.integrations.action_catalog.schema import action, obj

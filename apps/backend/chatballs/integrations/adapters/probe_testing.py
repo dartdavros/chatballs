@@ -9,8 +9,8 @@
 
 from __future__ import annotations
 
+from datetime import UTC, datetime, timedelta
 from typing import Any
-from datetime import datetime, timedelta, timezone
 
 from chatballs.integrations.adapters.contracts import (
     AdapterDescriptor,
@@ -54,7 +54,7 @@ def _resume(context: OperationContext, operation: OperationDescriptor, continuat
 
 def _start_export(context: OperationContext, operation: OperationDescriptor, arguments: dict[str, Any]) -> OperationResult:
     return OperationResult(ResultState.PENDING, continuation={"job": "export-1"}, external_reference="export-1",
-                           deadline=datetime.now(timezone.utc) + timedelta(hours=1))
+                           deadline=datetime.now(UTC) + timedelta(hours=1))
 
 
 def _managers(data: Any) -> list[LookupItem]:

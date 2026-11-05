@@ -7,7 +7,10 @@ from django.test import SimpleTestCase
 from django.urls import path
 from django.views import View
 
-from chatballs.integrations.action_catalog.http_coverage import framework_entries, mounted_http_entries
+from chatballs.integrations.action_catalog.http_coverage import (
+    framework_entries,
+    mounted_http_entries,
+)
 
 
 class PlainView(View):

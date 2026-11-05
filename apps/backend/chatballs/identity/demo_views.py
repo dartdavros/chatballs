@@ -9,8 +9,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from chatballs.api.permissions import HasCapability
-from chatballs.identity.demo_seed import service
 from chatballs.identity.demo_media import open_avatar
+from chatballs.identity.demo_seed import service
 
 
 def _error(error: ValidationError, status: int) -> Response:

@@ -1,7 +1,11 @@
 """Global organization creation: caller identity is never a tenant delegate."""
 from django.core.exceptions import ValidationError
+
 from chatballs.i18n import t
-from chatballs.identity.administration_payloads import administration_languages, administration_timezones
+from chatballs.identity.administration_payloads import (
+    administration_languages,
+    administration_timezones,
+)
 from chatballs.identity.administration_services import OrganizationSettingsInput
 from chatballs.identity.auth.common import _user_payload
 from chatballs.identity.command_outcomes import CommandOutcome, validation_outcome

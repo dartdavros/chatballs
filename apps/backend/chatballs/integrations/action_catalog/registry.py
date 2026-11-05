@@ -85,12 +85,12 @@ def load_actions():
             organizations,
             participants,
             platform,
-            profile,
             portal_articles,
             portal_categories,
             portal_files,
             portal_public,
             portals,
+            profile,
             quality,
             ratings,
             reports,
@@ -110,8 +110,8 @@ def load_actions():
             transcription,
             transfers,
             updates,
-            widget_calls,
             webchat,
+            widget_calls,
         )
 
         _loaded = True

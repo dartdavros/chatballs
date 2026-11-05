@@ -11,7 +11,10 @@ from chatballs.integrations.execution.composition_testing import CompositionCase
 from chatballs.integrations.execution.runner import run_one
 from chatballs.integrations.models import ServiceConnectionSettings
 from chatballs.integrations.scenario_state.entity_links import EntityLink
-from chatballs.integrations.scenario_state.synchronization import ServiceSynchronizationSettings, SynchronizationCheckpoint
+from chatballs.integrations.scenario_state.synchronization import (
+    ServiceSynchronizationSettings,
+    SynchronizationCheckpoint,
+)
 from chatballs.integrations.scenarios.conflicts import digest, resolve
 from chatballs.integrations.scenarios.synchronization_runtime import start_cycle
 from chatballs.tenancy.database import tenant_atomic

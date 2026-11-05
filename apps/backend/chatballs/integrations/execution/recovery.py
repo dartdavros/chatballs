@@ -11,7 +11,7 @@ TRANSIENT = frozenset({"temporary", "rate_limited", "no_response", "timeout", "n
 
 def backoff(attempt, retry_after=None):
     delay = random.uniform(0.5, 1.0) * min(300, 2 ** min(attempt, 9))
-    if isinstance(retry_after, (int, float)) and math.isfinite(retry_after):
+    if isinstance(retry_after, int | float) and math.isfinite(retry_after):
         # Honor multi-day Retry-After values; scheduling does not sleep a worker.
         delay = max(delay, max(0, min(retry_after, 315360000)))
     return delay

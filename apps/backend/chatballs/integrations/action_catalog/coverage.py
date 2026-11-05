@@ -3,7 +3,10 @@
 import json
 from pathlib import Path
 
-from chatballs.integrations.action_catalog.http_coverage import framework_entries, mounted_http_entries
+from chatballs.integrations.action_catalog.http_coverage import (
+    framework_entries,
+    mounted_http_entries,
+)
 from chatballs.integrations.action_catalog.protocol_coverage import mounted_protocol_entries
 from chatballs.integrations.action_catalog.registry import native_actions
 

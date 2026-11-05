@@ -24,8 +24,8 @@ def authorize_chain(tenant, run):
         if conversation and expected_contact != (str(conversation.contact_id) if conversation.contact_id else None):
             raise ExecutionDenied("context_changed")
         from chatballs.integrations.execution.conditions import require_conditions
-        from chatballs.integrations.scenarios.values import RunValues
         from chatballs.integrations.execution.permissions import context_values
+        from chatballs.integrations.scenarios.values import RunValues
         require_conditions(parent.definition["document"], conversation, parent.definition["parameters"], values=RunValues(
             parameters=parent.definition["parameters"], context=context_values(conversation), event=parent.definition.get("event", {})))
     return authorize(tenant, run.definition["document"], run.conversation_id,

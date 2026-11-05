@@ -7,8 +7,8 @@ from django.dispatch import receiver
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 
-from chatballs.conversations.models import Conversation
 from chatballs.conversations.domain_event_models import ConversationEvent
+from chatballs.conversations.models import Conversation
 from chatballs.events.handlers import register
 from chatballs.events.services import DomainEvent, enqueue_event
 from chatballs.integrations.adapters.events import VerifiedEvent

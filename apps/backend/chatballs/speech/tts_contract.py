@@ -1,7 +1,7 @@
 """Explicit SpeechKit TTS catalog; no inherited provider or voice."""
 
-from functools import lru_cache
 import re
+from functools import lru_cache
 
 from chatballs.speech.errors import SpeechError
 
@@ -14,7 +14,7 @@ VOICES = {"alena": "ru-RU", "filipp": "ru-RU", "ermil": "ru-RU", "jane": "ru-RU"
 
 @lru_cache(maxsize=1)
 def language_factory():
-    from langdetect.detector_factory import DetectorFactory, PROFILES_DIRECTORY
+    from langdetect.detector_factory import PROFILES_DIRECTORY, DetectorFactory
 
     # Publish only a fully loaded factory; each request creates its own detector.
     factory = DetectorFactory()

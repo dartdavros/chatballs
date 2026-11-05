@@ -7,8 +7,8 @@ def issue_payload(issue):
 
 
 def scenario_payload(row, *, issues=None, detail=True):
-    from chatballs.integrations.scenario_state.automation import EventDelivery
     from chatballs.integrations.execution.errors import error_message
+    from chatballs.integrations.scenario_state.automation import EventDelivery
     delivery = EventDelivery.objects.filter(scenario=row).order_by("-pk").first()
     error = delivery.error_code if delivery and delivery.state in {"failed", "pending"} else ""
     if not error:
@@ -26,7 +26,9 @@ def scenario_payload(row, *, issues=None, detail=True):
     }
     if detail:
         payload["definition"] = document
-        from chatballs.integrations.execution.scenario_agent_policies import payload as agent_policies
+        from chatballs.integrations.execution.scenario_agent_policies import (
+            payload as agent_policies,
+        )
         payload["agentPolicies"] = agent_policies(row)
     if issues is not None:
         payload["issues"] = [issue_payload(issue) for issue in issues]

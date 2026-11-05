@@ -4,8 +4,8 @@ import json
 from time import monotonic
 
 from chatballs.integrations.execution.permissions import ExecutionDenied
-from chatballs.integrations.scenario_state.runs import ScenarioRun
 from chatballs.integrations.scenario_state.progress import ScenarioBudget
+from chatballs.integrations.scenario_state.runs import ScenarioRun
 
 MAX_INSTANCES = 10000
 MAX_ITEMS = 1000
@@ -80,9 +80,10 @@ def account_data(run, delta):
 
 def active_effects(run):
     root = root_of(run)
-    from chatballs.integrations.scenario_state.steps import ScenarioStep
-    from django.utils import timezone
     from django.db.models import Q
+    from django.utils import timezone
+
+    from chatballs.integrations.scenario_state.steps import ScenarioStep
     return ScenarioStep.objects.filter(Q(run=root) | Q(run__root=root),
         state__in=("running", "reconciling"), lease_until__gt=timezone.now()).count()
 

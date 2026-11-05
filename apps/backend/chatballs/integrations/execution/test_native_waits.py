@@ -3,14 +3,14 @@
 import hashlib
 
 from chatballs.channels.models import Channel
-from chatballs.conversations.models import Contact, Conversation, ConversationLabel, Message
 from chatballs.conversations.domain_events import record_fact
+from chatballs.conversations.models import Contact, Conversation, ConversationLabel, Message
 from chatballs.events.models import OutboxEvent
+from chatballs.integrations.automation_events.callbacks import deliver
 from chatballs.integrations.automation_events.native_facts import deliver_fact
 from chatballs.integrations.automation_events.replies import accept_reply
-from chatballs.integrations.automation_events.callbacks import deliver
-from chatballs.integrations.execution.composition_testing import CompositionCase
 from chatballs.integrations.execution import contract_testing
+from chatballs.integrations.execution.composition_testing import CompositionCase
 from chatballs.integrations.scenario_state.receipts import EventReceipt
 from chatballs.tenancy.database import tenant_atomic
 

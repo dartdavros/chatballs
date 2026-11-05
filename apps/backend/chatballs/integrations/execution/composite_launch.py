@@ -2,8 +2,8 @@
 
 from chatballs.ai.diagnostic_redaction import integration_secrets
 from chatballs.integrations.execution.events import journal, schedule
-from chatballs.integrations.execution.permissions import allowed_files, context_values
 from chatballs.integrations.execution.payloads import clean_value
+from chatballs.integrations.execution.permissions import allowed_files, context_values
 from chatballs.integrations.execution.plans import sign_plan, verify_plan
 from chatballs.integrations.execution.snapshots import freeze
 from chatballs.integrations.models import Integration
@@ -58,11 +58,16 @@ def snapshot(tenant, document, parameters, conversation, *, scenario, dedup, reg
     from chatballs.integrations.execution.budgets import account_data, size
     account_data(run, size(run.definition))
     # Retain input files before a source run can lose its ownership.
-    from chatballs.integrations.execution.files import lock_input_files, own_input_files
-    from chatballs.integrations.adapters.contracts import OperationDescriptor, OperationHandlers, Effect
-    from chatballs.integrations.adapters.schema import TypeSpec
-    from chatballs.integrations.scenario_state.steps import ScenarioStep
     from django.utils import timezone
+
+    from chatballs.integrations.adapters.contracts import (
+        Effect,
+        OperationDescriptor,
+        OperationHandlers,
+    )
+    from chatballs.integrations.adapters.schema import TypeSpec
+    from chatballs.integrations.execution.files import lock_input_files, own_input_files
+    from chatballs.integrations.scenario_state.steps import ScenarioStep
     operation = OperationDescriptor("inputs", "", Effect.READ, spec, TypeSpec("object"), OperationHandlers())
     input_files = lock_input_files(tenant, operation, parameters)
     if input_files:

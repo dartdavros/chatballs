@@ -1,8 +1,9 @@
 """Bounded receipt cleanup preserves active consumers and replay identity."""
 
+from django.db.models import Exists, OuterRef, Q
+
 from chatballs.integrations.scenario_state.receipts import EventReceipt
 from chatballs.integrations.scenario_state.waits import ScenarioWait
-from django.db.models import Exists, OuterRef, Q
 
 
 def cleanup_receipts(tenant, *, now):

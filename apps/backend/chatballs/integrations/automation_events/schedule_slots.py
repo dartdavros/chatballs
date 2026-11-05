@@ -1,10 +1,10 @@
 """Pure timezone slot calculation with explicit fold, gap and misfire policies."""
 
 from calendar import monthrange
-from datetime import date, datetime, time, timedelta, timezone
+from datetime import UTC, date, datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
-NEVER = datetime.max.replace(tzinfo=timezone.utc)
+NEVER = datetime.max.replace(tzinfo=UTC)
 
 
 def matches(trigger, day):
@@ -21,8 +21,8 @@ def on_day(trigger, day):
     zone = ZoneInfo(trigger["timezone"])
     local = datetime.combine(day, time.fromisoformat(trigger["time"]))
     for _ in range(1441):
-        candidates = sorted({local.replace(tzinfo=zone, fold=fold).astimezone(timezone.utc)
-            for fold in (0, 1) if local.replace(tzinfo=zone, fold=fold).astimezone(timezone.utc).astimezone(zone).replace(tzinfo=None) == local})
+        candidates = sorted({local.replace(tzinfo=zone, fold=fold).astimezone(UTC)
+            for fold in (0, 1) if local.replace(tzinfo=zone, fold=fold).astimezone(UTC).astimezone(zone).replace(tzinfo=None) == local})
         if candidates:
             return candidates[-1] if trigger["ambiguous"] == "second" else candidates[0]
         if trigger["nonexistent"] == "skip":

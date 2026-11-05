@@ -1,6 +1,7 @@
 """Public storage state: preserve the ordinary redacted settings contract."""
 from chatballs.tenancy import storage_settings as ss
 
+
 def _mask(value: str) -> str:
     if not value:
         return ""

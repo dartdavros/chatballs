@@ -2,9 +2,9 @@ from django.urls import include, path
 from rest_framework.schemas import get_schema_view
 
 from chatballs.identity.demo_views import DemoMediaView
-from chatballs.integrations.service_connections.oauth_views import ServiceOAuthCallbackView
-from chatballs.integrations.automation_events.views import ServiceEventView
 from chatballs.integrations.automation_events.api import ScenarioTriggerView
+from chatballs.integrations.automation_events.views import ServiceEventView
+from chatballs.integrations.service_connections.oauth_views import ServiceOAuthCallbackView
 from chatballs.webchat.loader_views import WidgetLoaderView
 
 urlpatterns = [

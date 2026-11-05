@@ -1,6 +1,7 @@
 """Authenticated creation retains its global domain permission checks."""
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
+
 from chatballs.identity import organization_commands as commands
 from chatballs.identity.command_http import command_response
 

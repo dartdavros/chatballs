@@ -6,9 +6,9 @@ and ownership belong to persistence. Saving a definition has no runtime effects.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from typing import Any
-import re
 
 from chatballs.integrations.adapters.schema import TypeSpec
 

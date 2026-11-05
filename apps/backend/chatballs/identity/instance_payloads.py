@@ -1,7 +1,14 @@
 """Public instance settings projection; credentials never leave the server."""
 from django.conf import settings
+
 from chatballs.i18n.languages import DEFAULT_LANGUAGE, LANGUAGES
-from chatballs.identity.instance_settings import InstanceSettings, default_turn_urls, format_address, public_base_url
+from chatballs.identity.instance_settings import (
+    InstanceSettings,
+    default_turn_urls,
+    format_address,
+    public_base_url,
+)
+
 
 def instance_payload(row: InstanceSettings) -> dict:
     return {

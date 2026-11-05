@@ -1,18 +1,17 @@
 """Server-derived editing schemas. No operation is executed to build this catalog."""
 
-from chatballs.integrations.adapters.registry import default_registry
-from chatballs.integrations.action_catalog.registry import action_schemas
-from chatballs.integrations.adapters.schema import EnumOption, TypeSpec
-from chatballs.identity.models import EmployeeGroup, OrganizationMembership
 from chatballs.ai.models import AIAgent
-from chatballs.integrations.models import Integration, ServiceFile
+from chatballs.conversations.models import ConversationLabel
+from chatballs.identity.models import EmployeeGroup, OrganizationMembership
+from chatballs.integrations.action_catalog.registry import action_schemas
+from chatballs.integrations.adapters.registry import default_registry
+from chatballs.integrations.adapters.schema import EnumOption, TypeSpec
+from chatballs.integrations.models import Integration, IntegrationKind, ServiceFile
 from chatballs.integrations.scenario_state.definitions import ScenarioDefinition
 from chatballs.integrations.scenarios.definition import DefinitionContext
-from chatballs.integrations.scenarios.types import read_type
 from chatballs.integrations.scenarios.native_events import NATIVE_EVENTS
 from chatballs.integrations.scenarios.native_references import entity_link_reference
-from chatballs.conversations.models import ConversationLabel
-from chatballs.integrations.models import IntegrationKind
+from chatballs.integrations.scenarios.types import read_type
 
 # Context is intentionally explicit: a browser cannot name arbitrary user,
 # organization, connection credentials or Django model fields.
@@ -70,7 +69,7 @@ def connection_ids(document):
     found = set()
     from chatballs.integrations.scenarios.definition import child_lists
     def add(value):
-        if isinstance(value, (str, int)) and str(value).isdecimal():
+        if isinstance(value, str | int) and str(value).isdecimal():
             found.add(int(value))
     def visit(steps):
         for step in steps:

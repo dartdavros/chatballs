@@ -2,7 +2,6 @@
 
 import re
 
-
 _STEP_NAME = re.compile(r"/steps/\d+/(?:(?:(?:then|else|body|catch)/\d+|branches/\d+/\d+)/)*name")
 _SCHEMA_TITLE = re.compile(r"/(?:parameters|results)/(?:properties/[^/]+/|items/)*title")
 

@@ -9,7 +9,14 @@ from django.utils import timezone
 
 from chatballs.events.models import OutboxEvent
 from chatballs.integrations.adapters.bitrix24 import ADAPTER
-from chatballs.integrations.adapters.contracts import Effect, OperationDescriptor, OperationHandlers, OperationResult, ResultState, RetryStrategy
+from chatballs.integrations.adapters.contracts import (
+    Effect,
+    OperationDescriptor,
+    OperationHandlers,
+    OperationResult,
+    ResultState,
+    RetryStrategy,
+)
 from chatballs.integrations.adapters.registry import build_registry
 from chatballs.integrations.adapters.schema import TypeSpec
 from chatballs.integrations.execution import checkpoints
@@ -17,7 +24,12 @@ from chatballs.integrations.execution.approvals import invocation_digest
 from chatballs.integrations.execution.control import control
 from chatballs.integrations.execution.launch import launch
 from chatballs.integrations.execution.runner import _commit, _send_marker, run_one
-from chatballs.integrations.models import Integration, IntegrationKind, IntegrationProvider, ServiceConnectionSettings
+from chatballs.integrations.models import (
+    Integration,
+    IntegrationKind,
+    IntegrationProvider,
+    ServiceConnectionSettings,
+)
 from chatballs.integrations.scenario_state.definitions import ScenarioDefinition
 from chatballs.integrations.scenario_state.limits import ConnectionExecutionLane
 from chatballs.integrations.scenario_state.runs import ScenarioRun
@@ -137,11 +149,11 @@ class ExecutionTests(ExecutionCase):
         for strategy in (RetryStrategy.IDEMPOTENCY_KEY, RetryStrategy.RECONCILE, RetryStrategy.SAFE_READ):
             with self.subTest(strategy=strategy):
                 calls, reads = [], []
-                def effect(context, _operation, _arguments):
+                def effect(context, _operation, _arguments, calls=calls):
                     self.assertFalse(connection.in_atomic_block)
                     calls.append(context.effect_key)
                     return OperationResult(ResultState.UNKNOWN) if len(calls) == 1 else OperationResult(ResultState.COMPLETED, data={})
-                def reconcile(context, _operation, _arguments):
+                def reconcile(context, _operation, _arguments, reads=reads):
                     reads.append(context.effect_key)
                     return OperationResult(ResultState.COMPLETED, data={})
                 self.operation = replace(self.operation, retry=strategy,

@@ -100,7 +100,7 @@ def fanout(tenant, run, frame, registry):
             raise ExecutionDenied("arguments")
         if len(items) > MAX_ITEMS:
             raise ExecutionDenied("budget_iterations")
-        from chatballs.integrations.execution.budgets import reserve, check_data
+        from chatballs.integrations.execution.budgets import check_data, reserve
         reserve(run, len(items))
         data.update(count=len(items), items=items if loop else [], next=0)
         check_data(run, data)

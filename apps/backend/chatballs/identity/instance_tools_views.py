@@ -1,5 +1,6 @@
 """HTTP surface for the installation network policy."""
 from rest_framework.views import APIView
+
 from chatballs.identity import instance_tools_commands as commands
 from chatballs.identity.command_http import command_response
 from chatballs.identity.instance_access import IsInstanceAdmin

@@ -1,8 +1,8 @@
 """Personal session commands require the caller's actual, still-valid session."""
 
+from django.conf import settings
 from django.contrib.auth import BACKEND_SESSION_KEY, HASH_SESSION_KEY, SESSION_KEY, load_backend
 from django.contrib.sessions.models import Session
-from django.conf import settings
 from django.utils import timezone
 from django.utils.crypto import constant_time_compare
 from rest_framework.exceptions import PermissionDenied

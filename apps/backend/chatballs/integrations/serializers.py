@@ -120,8 +120,8 @@ def integration_payload(integration: Integration) -> dict[str, object]:
         "updatedAt": integration.updated_at.isoformat(),
     }
     if integration.provider == "WEB":
-        from chatballs.webchat.widgets import widget_for_integration, widget_payload
         from chatballs.webchat.recording_configuration import recording_settings
+        from chatballs.webchat.widgets import widget_for_integration, widget_payload
 
         payload["webChatWidget"] = widget_payload(widget_for_integration(integration))
         payload["config"].update(recording_settings(integration))
@@ -130,6 +130,7 @@ def integration_payload(integration: Integration) -> dict[str, object]:
         payload["config"]["siteEventAvailable"] = _autonomous(integration)
     if integration.kind in {"LLM_PROVIDER", "SPEECH_PROVIDER"}:
         from dataclasses import asdict
+
         from chatballs.speech.contracts import capabilities
 
         payload["speechCapabilities"] = asdict(capabilities(integration.provider))

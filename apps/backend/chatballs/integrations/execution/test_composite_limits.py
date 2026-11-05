@@ -2,17 +2,17 @@
 
 from copy import deepcopy
 
+from chatballs.integrations.adapters.contracts import OperationResult, ResultState
 from chatballs.integrations.execution import checkpoints, contract_testing
-from chatballs.integrations.execution.budgets import MAX_DATA, MAX_INSTANCES
 from chatballs.integrations.execution.block_values import initial
+from chatballs.integrations.execution.budgets import MAX_DATA, MAX_INSTANCES
 from chatballs.integrations.execution.composition_testing import CompositionCase
 from chatballs.integrations.execution.frames import create
 from chatballs.integrations.execution.interpreter import advance
-from chatballs.integrations.execution.runner import _commit
-from chatballs.integrations.adapters.contracts import OperationResult, ResultState
 from chatballs.integrations.execution.permissions import ExecutionDenied
-from chatballs.integrations.scenario_state.progress import ScenarioBudget
+from chatballs.integrations.execution.runner import _commit
 from chatballs.integrations.scenario_state.definitions import ScenarioDefinition
+from chatballs.integrations.scenario_state.progress import ScenarioBudget
 from chatballs.tenancy.database import tenant_atomic
 
 

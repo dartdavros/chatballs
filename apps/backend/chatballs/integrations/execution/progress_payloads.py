@@ -2,8 +2,8 @@
 
 from chatballs.i18n import t
 from chatballs.integrations.execution.errors import error_message
-from chatballs.integrations.execution.wait_controls import can_decide, decision_digest
 from chatballs.integrations.execution.permissions import ExecutionDenied
+from chatballs.integrations.execution.wait_controls import can_decide, decision_digest
 
 TITLES = {"if": "runs.block_if", "foreach": "runs.block_foreach", "parallel": "runs.block_parallel",
           "try": "runs.block_try", "call": "runs.block_call", "wait": "runs.block_wait"}
@@ -20,9 +20,13 @@ def extend_payload(run, payload, *, tenant, detail):
     if not detail:
         return payload
     from chatballs.ai.diagnostic_redaction import integration_secrets
-    from chatballs.integrations.models import Integration
     from chatballs.integrations.execution.payloads import clean_value
-    from chatballs.integrations.execution.result_payloads import schema_and_names, label_schema, display_errors
+    from chatballs.integrations.execution.result_payloads import (
+        display_errors,
+        label_schema,
+        schema_and_names,
+    )
+    from chatballs.integrations.models import Integration
     secrets = integration_secrets(list(Integration.objects.filter(organization_id=run.organization_id)))
     items = {step["path"]: step for step in payload["steps"]}
     waits = {row.path: row for row in run.waits.all()}

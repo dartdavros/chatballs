@@ -13,11 +13,18 @@ class IntegrationsConfig(AppConfig):
         from chatballs.integrations.adapters.registry import default_registry
 
         default_registry()
-        from chatballs.integrations.execution import worker  # noqa: F401
-        from chatballs.integrations.execution import retention  # noqa: F401
-        from chatballs.integrations.execution import cancellation  # noqa: F401
-        from chatballs.integrations.execution import ai_deadlines  # noqa: F401
-        from chatballs.integrations.automation_events import callbacks, replies, native_facts  # noqa: F401
-        from chatballs.integrations.automation_events import fanout, polling  # noqa: F401
-        from chatballs.integrations.automation_events import entity_versions  # noqa: F401
+        from chatballs.integrations.automation_events import (  # noqa: F401
+            callbacks,
+            entity_versions,  # noqa: F401
+            fanout,
+            native_facts,
+            polling,
+            replies,
+        )
+        from chatballs.integrations.execution import (
+            ai_deadlines,  # noqa: F401
+            cancellation,  # noqa: F401
+            retention,  # noqa: F401
+            worker,  # noqa: F401
+        )
         from chatballs.integrations.scenarios import synchronization_runtime  # noqa: F401

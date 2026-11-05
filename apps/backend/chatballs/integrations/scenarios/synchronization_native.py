@@ -44,7 +44,11 @@ def apply(tenant, link, expected, patch, *, delete=False):
         if error:
             raise ExecutionDenied("arguments")
     else:
-        from chatballs.conversations.lifecycle_services import close_conversation, mark_conversation_as_spam, delete_conversation
+        from chatballs.conversations.lifecycle_services import (
+            close_conversation,
+            delete_conversation,
+            mark_conversation_as_spam,
+        )
         conversation = Conversation.objects.get(pk=link["internal_id"], organization_id=tenant.organization_id)
         if delete:
             delete_conversation(context=tenant, conversation=conversation)

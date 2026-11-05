@@ -7,7 +7,11 @@ from django.utils import timezone
 
 from chatballs.identity.models import EmployeeRole
 from chatballs.integrations.execution.permissions import ExecutionDenied, current_actor
-from chatballs.integrations.scenario_state.automation import ScenarioAutomation, ScheduleCheckpoint, EventSubscription
+from chatballs.integrations.scenario_state.automation import (
+    EventSubscription,
+    ScenarioAutomation,
+    ScheduleCheckpoint,
+)
 
 
 def synchronize(tenant, scenario, previous):

@@ -13,10 +13,10 @@ from __future__ import annotations
 
 import http.client
 import json
-from datetime import datetime, timezone
-from email.utils import parsedate_to_datetime
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
+from email.utils import parsedate_to_datetime
 from typing import Any
 from urllib.parse import quote, urlencode, urljoin, urlsplit
 
@@ -216,8 +216,8 @@ def _retry_after(value: str) -> float | None:
     try:
         when = parsedate_to_datetime(value)
         if when.tzinfo is None:
-            when = when.replace(tzinfo=timezone.utc)
-        return max(0, (when - datetime.now(timezone.utc)).total_seconds())
+            when = when.replace(tzinfo=UTC)
+        return max(0, (when - datetime.now(UTC)).total_seconds())
     except (ValueError, TypeError, OverflowError):
         return None
 

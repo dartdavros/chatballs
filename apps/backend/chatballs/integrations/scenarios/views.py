@@ -18,7 +18,7 @@ class ScenarioAPIView(APIView):
     required_capability = "integrations.manage"
 
     def handle_exception(self, exc):
-        if isinstance(exc, (ScenarioDefinition.DoesNotExist, Integration.DoesNotExist)):
+        if isinstance(exc, ScenarioDefinition.DoesNotExist | Integration.DoesNotExist):
             return Response({"detail": t("scenarios.not_found")}, status=404)
         if isinstance(exc, services.RevisionConflict):
             return Response({"detail": t("scenarios.conflict")}, status=409)
