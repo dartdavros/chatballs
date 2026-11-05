@@ -31,6 +31,8 @@ from chatballs.tenancy.database import tenant_atomic
 
 
 def require_action(tenant, action, run, arguments):
+    if action.authority != "tenant":
+        raise ExecutionDenied("permission")
     if action.capability and not has_capability_any_scope(tenant.membership, action.capability):
         raise ExecutionDenied("permission")
     manager = tenant.membership.role in {EmployeeRole.OWNER, EmployeeRole.ADMIN}

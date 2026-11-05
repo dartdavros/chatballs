@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from chatballs.i18n import current_language, t
+from chatballs.i18n import current_language
 from chatballs.identity.avatars import own_avatar_url
 from chatballs.identity.models import HumanUser, OrganizationMembership
 from chatballs.identity.policy import get_effective_access
@@ -13,21 +13,10 @@ from chatballs.tenancy.ingress import membership_routes_for_user
 
 
 def validation_response(error: ValidationError) -> Response:
-    """Ошибки формы полями: мастер первого запуска и регистрация по приглашению."""
+    from chatballs.identity.command_http import command_response
+    from chatballs.identity.command_outcomes import validation_outcome
 
-    if hasattr(error, "message_dict"):
-        errors = {
-            key: messages[0] if isinstance(messages, list) else str(messages)
-            for key, messages in error.message_dict.items()
-        }
-        # validate_password кладёт сообщения без ключа поля.
-        if "__all__" in errors:
-            errors["password"] = " ".join(error.message_dict["__all__"])
-            del errors["__all__"]
-        detail = next(iter(errors.values()), t("setup.check_fields"))
-        return Response({"detail": detail, "errors": errors}, status=400)
-    message = " ".join(error.messages)
-    return Response({"detail": message, "errors": {"password": message}}, status=400)
+    return command_response(validation_outcome(error))
 
 
 def _user_payload(user: HumanUser) -> dict[str, object]:

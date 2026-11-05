@@ -8,12 +8,11 @@ from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
+from chatballs.identity.setup_commands import finish
 from chatballs.i18n import t
 from chatballs.identity.auth.common import _user_payload, validation_response
 from chatballs.identity.setup import (
     SetupAlreadyCompleted,
-    SetupInput,
-    complete_setup,
     instance_needs_setup,
 )
 
@@ -44,18 +43,7 @@ class SetupView(APIView):
         if not instance_needs_setup():
             return Response(setup_closed(), status=409)
         try:
-            result = complete_setup(
-                SetupInput(
-                    organization_name=str(body.get("organizationName", "")),
-                    full_name=str(body.get("fullName", "")),
-                    email=str(body.get("email", "")),
-                    password=str(body.get("password", "")),
-                    install_demo=bool(body.get("installDemo", False)),
-                    language=str(body.get("language", "")),
-                ),
-                public_host=request.get_host(),
-                public_scheme=request.scheme,
-            )
+            result = finish(body, public_host=request.get_host(), public_scheme=request.scheme)
         except SetupAlreadyCompleted:
             return Response(setup_closed(), status=409)
         except ValidationError as error:

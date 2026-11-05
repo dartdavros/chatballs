@@ -1,261 +1,36 @@
 [
-  {
-    "method": "GET",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/company/groups/",
-    "action": "groups.get",
-    "reason": null,
-    "handler": "chatballs.identity.group_views.GroupListView"
-  },
-  {
-    "method": "POST",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/company/groups/",
-    "action": "groups.post",
-    "reason": null,
-    "handler": "chatballs.identity.group_views.GroupListView"
-  },
-  {
-    "method": "PATCH",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/company/groups/<int:group_id>/",
-    "action": "groups.group.patch",
-    "reason": null,
-    "handler": "chatballs.identity.group_views.GroupDetailView"
-  },
-  {
-    "method": "DELETE",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/company/groups/<int:group_id>/",
-    "action": "groups.group.delete",
-    "reason": null,
-    "handler": "chatballs.identity.group_views.GroupDetailView"
-  },
-  {
-    "method": "GET",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/employees/me/work-status/",
-    "action": "availability.own.get",
-    "reason": null,
-    "handler": "chatballs.identity.work_status_views.OwnWorkStatusView"
-  },
-  {
-    "method": "POST",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/employees/me/work-status/",
-    "action": "availability.own.post",
-    "reason": null,
-    "handler": "chatballs.identity.work_status_views.OwnWorkStatusView"
-  },
-  {
-    "method": "GET",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/employees/<int:user_id>/work-status/",
-    "action": "availability.employee.get",
-    "reason": null,
-    "handler": "chatballs.identity.work_status_views.EmployeeWorkStatusView"
-  },
-  {
-    "method": "GET",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/employees/me/work-status/history/",
-    "action": "availability.own.history.get",
-    "reason": null,
-    "handler": "chatballs.identity.work_status_views.WorkStatusHistoryView"
-  },
-  {
-    "method": "GET",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/employees/<int:user_id>/work-status/history/",
-    "action": "availability.employee.history.get",
-    "reason": null,
-    "handler": "chatballs.identity.work_status_views.WorkStatusHistoryView"
-  },
-  {
-    "method": "GET",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/employees/",
-    "action": "employees.get",
-    "reason": null,
-    "handler": "chatballs.identity.employee_views.EmployeeListView"
-  },
-  {
-    "method": "GET",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/employees/<int:user_id>/",
-    "action": "employees.detail.get",
-    "reason": null,
-    "handler": "chatballs.identity.employee_views.EmployeeDetailView"
-  },
-  {
-    "method": "GET",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/employees/<int:user_id>/avatar/",
-    "action": "employees.avatar.get",
-    "reason": null,
-    "handler": "chatballs.identity.employee_views.EmployeeAvatarView"
-  },
-  {
-    "method": "POST",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/employees/operators/",
-    "action": "employees.post",
-    "reason": null,
-    "handler": "chatballs.identity.employee_views.EmployeeCreateView",
-    "protocolVariants": [
-      {
-        "parameter": "passwordMode",
-        "value": "show",
-        "classification": "authentication",
-        "reason": "One-time credential delivery stays in the original authenticated employee UI. Automation uses mail; passwords are never step outputs, bindings, receipts or journal fields.",
-        "evidence": "chatballs/identity/employee_password.py"
-      }
-    ]
-  },
-  {
-    "method": "POST",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/employees/<int:user_id>/update/",
-    "action": "employees.update",
-    "reason": null,
-    "handler": "chatballs.identity.employee_update_views.EmployeeUpdateView"
-  },
-  {
-    "method": "POST",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/employees/<int:user_id>/reset-password/",
-    "action": "employees.reset_password",
-    "reason": null,
-    "handler": "chatballs.identity.employee_security_views.EmployeeResetPasswordView",
-    "protocolVariants": [
-      {
-        "parameter": "mode",
-        "value": "show",
-        "classification": "authentication",
-        "reason": "One-time credential delivery stays in the original authenticated employee UI. Automation uses mail; passwords are never step outputs, bindings, receipts or journal fields.",
-        "evidence": "chatballs/identity/employee_password.py"
-      }
-    ]
-  },
-  {
-    "method": "POST",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/employees/<int:user_id>/revoke-sessions/",
-    "action": "employees.revoke_sessions",
-    "reason": null,
-    "handler": "chatballs.identity.employee_security_views.EmployeeRevokeSessionsView"
-  },
-  {
-    "method": "POST",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/employees/<int:user_id>/block/",
-    "action": "employees.block",
-    "reason": null,
-    "handler": "chatballs.identity.employee_security_views.EmployeeBlockView"
-  },
-  {
-    "method": "POST",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/employees/<int:user_id>/unblock/",
-    "action": "employees.unblock",
-    "reason": null,
-    "handler": "chatballs.identity.employee_security_views.EmployeeUnblockView"
-  },
-  {
-    "method": "POST",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/employees/<int:user_id>/transfer-ownership/",
-    "action": "employees.transfer_ownership",
-    "reason": null,
-    "handler": "chatballs.identity.ownership_views.OwnershipTransferView"
-  },
-  {
-    "method": "POST",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/employees/invitations/<int:invitation_id>/resend/",
-    "action": "employees.invitation.resend",
-    "reason": null,
-    "handler": "chatballs.identity.employee_invitations.InvitationResendView"
-  },
-  {
-    "method": "POST",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/employees/invitations/<int:invitation_id>/revoke/",
-    "action": "employees.invitation.revoke",
-    "reason": null,
-    "handler": "chatballs.identity.employee_invitations.InvitationRevokeView"
-  },
-  {
-    "method": "GET",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/company/administration/",
-    "action": "settings.get",
-    "reason": null,
-    "handler": "chatballs.identity.administration_views.OrganizationSettingsView"
-  },
-  {
-    "method": "PATCH",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/company/administration/",
-    "action": "settings.patch",
-    "reason": null,
-    "handler": "chatballs.identity.administration_views.OrganizationSettingsView"
-  },
-  {
-    "method": "GET",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/company/administration/logo/",
-    "action": "settings.logo.get",
-    "reason": null,
-    "handler": "chatballs.identity.administration_views.OrganizationLogoView"
-  },
-  {
-    "method": "POST",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/company/administration/logo/",
-    "action": "settings.logo.post",
-    "reason": null,
-    "handler": "chatballs.identity.administration_views.OrganizationLogoView"
-  },
-  {
-    "method": "DELETE",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/company/administration/logo/",
-    "action": "settings.logo.delete",
-    "reason": null,
-    "handler": "chatballs.identity.administration_views.OrganizationLogoView"
-  },
-  {
-    "method": "GET",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/company/administration/audit/",
-    "action": "settings.audit.get",
-    "reason": null,
-    "handler": "chatballs.identity.administration_views.AuditListView"
-  },
-  {
-    "method": "GET",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/company/onboarding/",
-    "action": "settings.onboarding.get",
-    "reason": null,
-    "handler": "chatballs.identity.onboarding_views.OnboardingView"
-  },
-  {
-    "method": "POST",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/company/onboarding/",
-    "action": "settings.onboarding.post",
-    "reason": null,
-    "handler": "chatballs.identity.onboarding_views.OnboardingView"
-  },
-  {
-    "method": "GET",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/company/administration/communication/",
-    "action": "settings.communication.get",
-    "reason": null,
-    "handler": "chatballs.integrations.feature_views.CommunicationSettingsView"
-  },
-  {
-    "method": "PATCH",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/company/administration/communication/",
-    "action": "settings.communication.patch",
-    "reason": null,
-    "handler": "chatballs.integrations.feature_views.CommunicationSettingsView"
-  },
-  {
-    "method": "GET",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/company/demo/",
-    "action": "settings.demo.get",
-    "reason": null,
-    "handler": "chatballs.identity.demo_views.DemoDataView",
-    "credentialProtocol": "Demo login credentials stay in the original authenticated demo form; native results contain only account metadata."
-  },
-  {
-    "method": "POST",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/company/demo/",
-    "action": "settings.demo.post",
-    "reason": null,
-    "handler": "chatballs.identity.demo_views.DemoDataView",
-    "credentialProtocol": "Demo login credentials stay in the original authenticated demo form; native results contain only account metadata."
-  },
-  {
-    "method": "DELETE",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/company/demo/",
-    "action": "settings.demo.delete",
-    "reason": null,
-    "handler": "chatballs.identity.demo_views.DemoDataView",
-    "credentialProtocol": "Demo login credentials stay in the original authenticated demo form; native results contain only account metadata."
-  }
+  {"method": "GET", "route": "api/v1/organizations/<uuid:organization_public_id>/company/groups/", "action": "groups.get", "reason": "", "handler": "chatballs.identity.group_views.GroupListView", "surface": "app", "evidence": ["apps/backend/chatballs/identity/group_views.py"], "authority": "tenant", "classification": "product"},
+  {"method": "POST", "route": "api/v1/organizations/<uuid:organization_public_id>/company/groups/", "action": "groups.post", "reason": "", "handler": "chatballs.identity.group_views.GroupListView", "surface": "app", "evidence": ["apps/backend/chatballs/identity/group_views.py"], "authority": "tenant", "classification": "product"},
+  {"method": "PATCH", "route": "api/v1/organizations/<uuid:organization_public_id>/company/groups/<int:group_id>/", "action": "groups.group.patch", "reason": "", "handler": "chatballs.identity.group_views.GroupDetailView", "surface": "app", "evidence": ["apps/backend/chatballs/identity/group_views.py"], "authority": "tenant", "classification": "product"},
+  {"method": "DELETE", "route": "api/v1/organizations/<uuid:organization_public_id>/company/groups/<int:group_id>/", "action": "groups.group.delete", "reason": "", "handler": "chatballs.identity.group_views.GroupDetailView", "surface": "app", "evidence": ["apps/backend/chatballs/identity/group_views.py"], "authority": "tenant", "classification": "product"},
+  {"method": "GET", "route": "api/v1/organizations/<uuid:organization_public_id>/employees/me/work-status/", "action": "availability.own.get", "reason": "", "handler": "chatballs.identity.work_status_views.OwnWorkStatusView", "surface": "app", "evidence": ["apps/backend/chatballs/identity/work_status_views.py"], "authority": "tenant", "classification": "product"},
+  {"method": "POST", "route": "api/v1/organizations/<uuid:organization_public_id>/employees/me/work-status/", "action": "availability.own.post", "reason": "", "handler": "chatballs.identity.work_status_views.OwnWorkStatusView", "surface": "app", "evidence": ["apps/backend/chatballs/identity/work_status_views.py"], "authority": "tenant", "classification": "product"},
+  {"method": "GET", "route": "api/v1/organizations/<uuid:organization_public_id>/employees/<int:user_id>/work-status/", "action": "availability.employee.get", "reason": "", "handler": "chatballs.identity.work_status_views.EmployeeWorkStatusView", "surface": "app", "evidence": ["apps/backend/chatballs/identity/work_status_views.py"], "authority": "tenant", "classification": "product"},
+  {"method": "GET", "route": "api/v1/organizations/<uuid:organization_public_id>/employees/me/work-status/history/", "action": "availability.own.history.get", "reason": "", "handler": "chatballs.identity.work_status_views.WorkStatusHistoryView", "surface": "app", "evidence": ["apps/backend/chatballs/identity/work_status_views.py"], "authority": "tenant", "classification": "product"},
+  {"method": "GET", "route": "api/v1/organizations/<uuid:organization_public_id>/employees/<int:user_id>/work-status/history/", "action": "availability.employee.history.get", "reason": "", "handler": "chatballs.identity.work_status_views.WorkStatusHistoryView", "surface": "app", "evidence": ["apps/backend/chatballs/identity/work_status_views.py"], "authority": "tenant", "classification": "product"},
+  {"method": "GET", "route": "api/v1/organizations/<uuid:organization_public_id>/employees/", "action": "employees.get", "reason": "", "handler": "chatballs.identity.employee_views.EmployeeListView", "surface": "app", "evidence": ["apps/backend/chatballs/identity/employee_views.py"], "authority": "tenant", "classification": "product"},
+  {"method": "GET", "route": "api/v1/organizations/<uuid:organization_public_id>/employees/<int:user_id>/", "action": "employees.detail.get", "reason": "", "handler": "chatballs.identity.employee_views.EmployeeDetailView", "surface": "app", "evidence": ["apps/backend/chatballs/identity/employee_views.py"], "authority": "tenant", "classification": "product"},
+  {"method": "GET", "route": "api/v1/organizations/<uuid:organization_public_id>/employees/<int:user_id>/avatar/", "action": "employees.avatar.get", "reason": "", "handler": "chatballs.identity.employee_views.EmployeeAvatarView", "surface": "app", "evidence": ["apps/backend/chatballs/identity/employee_views.py"], "authority": "tenant", "classification": "product"},
+  {"method": "POST", "route": "api/v1/organizations/<uuid:organization_public_id>/employees/operators/", "action": "employees.post", "reason": "", "handler": "chatballs.identity.employee_views.EmployeeCreateView", "protocolVariants": [{"parameter": "passwordMode", "value": "show", "classification": "authentication", "reason": "One-time credential delivery stays in the original authenticated employee UI. Automation uses mail; passwords are never step outputs, bindings, receipts or journal fields.", "evidence": "chatballs/identity/employee_password.py"}], "surface": "app", "evidence": ["apps/backend/chatballs/identity/employee_views.py"], "authority": "tenant", "classification": "product"},
+  {"method": "POST", "route": "api/v1/organizations/<uuid:organization_public_id>/employees/<int:user_id>/update/", "action": "employees.update", "reason": "", "handler": "chatballs.identity.employee_update_views.EmployeeUpdateView", "surface": "app", "evidence": ["apps/backend/chatballs/identity/employee_update_views.py"], "authority": "tenant", "classification": "product"},
+  {"method": "POST", "route": "api/v1/organizations/<uuid:organization_public_id>/employees/<int:user_id>/reset-password/", "action": "employees.reset_password", "reason": "", "handler": "chatballs.identity.employee_security_views.EmployeeResetPasswordView", "protocolVariants": [{"parameter": "mode", "value": "show", "classification": "authentication", "reason": "One-time credential delivery stays in the original authenticated employee UI. Automation uses mail; passwords are never step outputs, bindings, receipts or journal fields.", "evidence": "chatballs/identity/employee_password.py"}], "surface": "app", "evidence": ["apps/backend/chatballs/identity/employee_security_views.py"], "authority": "tenant", "classification": "product"},
+  {"method": "POST", "route": "api/v1/organizations/<uuid:organization_public_id>/employees/<int:user_id>/revoke-sessions/", "action": "employees.revoke_sessions", "reason": "", "handler": "chatballs.identity.employee_security_views.EmployeeRevokeSessionsView", "surface": "app", "evidence": ["apps/backend/chatballs/identity/employee_security_views.py"], "authority": "tenant", "classification": "product"},
+  {"method": "POST", "route": "api/v1/organizations/<uuid:organization_public_id>/employees/<int:user_id>/block/", "action": "employees.block", "reason": "", "handler": "chatballs.identity.employee_security_views.EmployeeBlockView", "surface": "app", "evidence": ["apps/backend/chatballs/identity/employee_security_views.py"], "authority": "tenant", "classification": "product"},
+  {"method": "POST", "route": "api/v1/organizations/<uuid:organization_public_id>/employees/<int:user_id>/unblock/", "action": "employees.unblock", "reason": "", "handler": "chatballs.identity.employee_security_views.EmployeeUnblockView", "surface": "app", "evidence": ["apps/backend/chatballs/identity/employee_security_views.py"], "authority": "tenant", "classification": "product"},
+  {"method": "POST", "route": "api/v1/organizations/<uuid:organization_public_id>/employees/<int:user_id>/transfer-ownership/", "action": "employees.transfer_ownership", "reason": "", "handler": "chatballs.identity.ownership_views.OwnershipTransferView", "surface": "app", "evidence": ["apps/backend/chatballs/identity/ownership_views.py"], "authority": "tenant", "classification": "product"},
+  {"method": "POST", "route": "api/v1/organizations/<uuid:organization_public_id>/employees/invitations/<int:invitation_id>/resend/", "action": "employees.invitation.resend", "reason": "", "handler": "chatballs.identity.employee_invitations.InvitationResendView", "surface": "app", "evidence": ["apps/backend/chatballs/identity/employee_invitations.py"], "authority": "tenant", "classification": "product"},
+  {"method": "POST", "route": "api/v1/organizations/<uuid:organization_public_id>/employees/invitations/<int:invitation_id>/revoke/", "action": "employees.invitation.revoke", "reason": "", "handler": "chatballs.identity.employee_invitations.InvitationRevokeView", "surface": "app", "evidence": ["apps/backend/chatballs/identity/employee_invitations.py"], "authority": "tenant", "classification": "product"},
+  {"method": "GET", "route": "api/v1/organizations/<uuid:organization_public_id>/company/administration/", "action": "settings.get", "reason": "", "handler": "chatballs.identity.administration_views.OrganizationSettingsView", "surface": "app", "evidence": ["apps/backend/chatballs/identity/administration_views.py"], "authority": "tenant", "classification": "product"},
+  {"method": "PATCH", "route": "api/v1/organizations/<uuid:organization_public_id>/company/administration/", "action": "settings.patch", "reason": "", "handler": "chatballs.identity.administration_views.OrganizationSettingsView", "surface": "app", "evidence": ["apps/backend/chatballs/identity/administration_views.py"], "authority": "tenant", "classification": "product"},
+  {"method": "GET", "route": "api/v1/organizations/<uuid:organization_public_id>/company/administration/logo/", "action": "settings.logo.get", "reason": "", "handler": "chatballs.identity.administration_views.OrganizationLogoView", "surface": "app", "evidence": ["apps/backend/chatballs/identity/administration_views.py"], "authority": "tenant", "classification": "product"},
+  {"method": "POST", "route": "api/v1/organizations/<uuid:organization_public_id>/company/administration/logo/", "action": "settings.logo.post", "reason": "", "handler": "chatballs.identity.administration_views.OrganizationLogoView", "surface": "app", "evidence": ["apps/backend/chatballs/identity/administration_views.py"], "authority": "tenant", "classification": "product"},
+  {"method": "DELETE", "route": "api/v1/organizations/<uuid:organization_public_id>/company/administration/logo/", "action": "settings.logo.delete", "reason": "", "handler": "chatballs.identity.administration_views.OrganizationLogoView", "surface": "app", "evidence": ["apps/backend/chatballs/identity/administration_views.py"], "authority": "tenant", "classification": "product"},
+  {"method": "GET", "route": "api/v1/organizations/<uuid:organization_public_id>/company/administration/audit/", "action": "settings.audit.get", "reason": "", "handler": "chatballs.identity.administration_views.AuditListView", "surface": "app", "evidence": ["apps/backend/chatballs/identity/administration_views.py"], "authority": "tenant", "classification": "product"},
+  {"method": "GET", "route": "api/v1/organizations/<uuid:organization_public_id>/company/onboarding/", "action": "settings.onboarding.get", "reason": "", "handler": "chatballs.identity.onboarding_views.OnboardingView", "surface": "app", "evidence": ["apps/backend/chatballs/identity/onboarding_views.py"], "authority": "tenant", "classification": "product"},
+  {"method": "POST", "route": "api/v1/organizations/<uuid:organization_public_id>/company/onboarding/", "action": "settings.onboarding.post", "reason": "", "handler": "chatballs.identity.onboarding_views.OnboardingView", "surface": "app", "evidence": ["apps/backend/chatballs/identity/onboarding_views.py"], "authority": "tenant", "classification": "product"},
+  {"method": "GET", "route": "api/v1/organizations/<uuid:organization_public_id>/company/administration/communication/", "action": "settings.communication.get", "reason": "", "handler": "chatballs.integrations.feature_views.CommunicationSettingsView", "surface": "app", "evidence": ["apps/backend/chatballs/integrations/feature_views.py"], "authority": "tenant", "classification": "product"},
+  {"method": "PATCH", "route": "api/v1/organizations/<uuid:organization_public_id>/company/administration/communication/", "action": "settings.communication.patch", "reason": "", "handler": "chatballs.integrations.feature_views.CommunicationSettingsView", "surface": "app", "evidence": ["apps/backend/chatballs/integrations/feature_views.py"], "authority": "tenant", "classification": "product"},
+  {"method": "GET", "route": "api/v1/organizations/<uuid:organization_public_id>/company/demo/", "action": "settings.demo.get", "reason": "", "handler": "chatballs.identity.demo_views.DemoDataView", "credentialProtocol": "Demo login credentials stay in the original authenticated demo form; native results contain only account metadata.", "surface": "app", "evidence": ["apps/backend/chatballs/identity/demo_views.py"], "authority": "tenant", "classification": "product"},
+  {"method": "POST", "route": "api/v1/organizations/<uuid:organization_public_id>/company/demo/", "action": "settings.demo.post", "reason": "", "handler": "chatballs.identity.demo_views.DemoDataView", "credentialProtocol": "Demo login credentials stay in the original authenticated demo form; native results contain only account metadata.", "surface": "app", "evidence": ["apps/backend/chatballs/identity/demo_views.py"], "authority": "tenant", "classification": "product"},
+  {"method": "DELETE", "route": "api/v1/organizations/<uuid:organization_public_id>/company/demo/", "action": "settings.demo.delete", "reason": "", "handler": "chatballs.identity.demo_views.DemoDataView", "credentialProtocol": "Demo login credentials stay in the original authenticated demo form; native results contain only account metadata.", "surface": "app", "evidence": ["apps/backend/chatballs/identity/demo_views.py"], "authority": "tenant", "classification": "product"}
 ]

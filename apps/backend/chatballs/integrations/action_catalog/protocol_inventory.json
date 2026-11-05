@@ -1,100 +1,16 @@
 [
-  {
-    "route": "ws/calls/",
-    "method": "CONNECT",
-    "handler": "chatballs.calls.consumers.CallSignalingConsumer",
-    "action": null,
-    "reason": "Открытие same-origin signaling transport с десятисекундным auth deadline; не создаёт звонок или клиентский credential."
-  },
-  {
-    "route": "ws/calls/",
-    "method": "DISCONNECT",
-    "handler": "chatballs.calls.consumers.CallSignalingConsumer",
-    "action": null,
-    "reason": "Наблюдение разрыва transport и presence участника; сервер не подменяет это бизнес-командой завершения звонка."
-  },
-  {
-    "route": "ws/calls/",
-    "method": "WS:auth",
-    "handler": "chatballs.calls.consumers.CallSignalingConsumer",
-    "action": null,
-    "reason": "Аутентификация существующим call-access token и подключение к комнате двух разрешённых участников; native-grant не выпускает токен."
-  },
-  {
-    "route": "ws/calls/",
-    "method": "WS:webrtc.offer",
-    "handler": "chatballs.calls.consumers.CallSignalingConsumer",
-    "action": null,
-    "reason": "Ретрансляция живого SDP/ICE/media-state между аутентифицированными участниками. Сервер не управляет физическим MediaStream, не хранит SDP/ICE и не даёт сценарию имитировать RTC/подключение."
-  },
-  {
-    "route": "ws/calls/",
-    "method": "WS:webrtc.answer",
-    "handler": "chatballs.calls.consumers.CallSignalingConsumer",
-    "action": null,
-    "reason": "Ретрансляция живого SDP/ICE/media-state между аутентифицированными участниками. Сервер не управляет физическим MediaStream, не хранит SDP/ICE и не даёт сценарию имитировать RTC/подключение."
-  },
-  {
-    "route": "ws/calls/",
-    "method": "WS:webrtc.ice_candidate",
-    "handler": "chatballs.calls.consumers.CallSignalingConsumer",
-    "action": null,
-    "reason": "Ретрансляция живого SDP/ICE/media-state между аутентифицированными участниками. Сервер не управляет физическим MediaStream, не хранит SDP/ICE и не даёт сценарию имитировать RTC/подключение."
-  },
-  {
-    "route": "ws/calls/",
-    "method": "WS:participant.media_state",
-    "handler": "chatballs.calls.consumers.CallSignalingConsumer",
-    "action": null,
-    "reason": "Ретрансляция живого SDP/ICE/media-state между аутентифицированными участниками. Сервер не управляет физическим MediaStream, не хранит SDP/ICE и не даёт сценарию имитировать RTC/подключение."
-  },
-  {
-    "route": "ws/calls/",
-    "method": "WS:participant.connection_state",
-    "handler": "chatballs.calls.consumers.CallSignalingConsumer",
-    "action": null,
-    "reason": "Телеметрия реального peer connection; ACTIVE выводится из наблюдений обеих сторон. Не самостоятельная бизнес-команда, которую разрешено подделывать native-grant."
-  },
-  {
-    "route": "ws/calls/",
-    "method": "WS:participant.metrics",
-    "handler": "chatballs.calls.consumers.CallSignalingConsumer",
-    "action": null,
-    "reason": "Технические сетевые метрики аутентифицированного участника без медиаконтента; не отчёт или ручная оценка качества обслуживания."
-  },
-  {
-    "route": "ws/calls/",
-    "method": "WS:call.ended",
-    "handler": "chatballs.calls.consumers.CallSignalingConsumer",
-    "action": "calls.end.post",
-    "reason": null
-  },
-  {
-    "route": "ws/organizations/<uuid:organization_public_id>/conversations/",
-    "method": "CONNECT",
-    "handler": "chatballs.conversations.consumers.ConversationEventsConsumer",
-    "action": null,
-    "reason": "Same-origin/TLS cookie/membership handshake существующего SPA и подписка на разрешённые потоки; не выдаёт доменных полномочий."
-  },
-  {
-    "route": "ws/organizations/<uuid:organization_public_id>/conversations/",
-    "method": "DISCONNECT",
-    "handler": "chatballs.conversations.consumers.ConversationEventsConsumer",
-    "action": null,
-    "reason": "Очистка transport-подписок и отметка фактического presence; не смена рабочей доступности сотрудника."
-  },
-  {
-    "route": "ws/organizations/<uuid:organization_public_id>/conversations/",
-    "method": "WS:ping",
-    "handler": "chatballs.conversations.consumers.ConversationEventsConsumer",
-    "action": null,
-    "reason": "Heartbeat фактически открытого соединения; не продуктовая команда установки статуса сотрудника."
-  },
-  {
-    "route": "ws/organizations/<uuid:organization_public_id>/conversations/",
-    "method": "WS:watch",
-    "handler": "chatballs.conversations.consumers.ConversationEventsConsumer",
-    "action": null,
-    "reason": "Подписка на поток выбранного видимого диалога с повторной проверкой прав; чтение данных и команды представлены штатными API-действиями."
-  }
+  {"route": "ws/calls/", "method": "CONNECT", "handler": "chatballs.calls.consumers.CallSignalingConsumer", "action": null, "reason": "Открытие same-origin signaling transport с десятисекундным auth deadline; не создаёт звонок или клиентский credential.", "surface": "app", "evidence": ["apps/backend/chatballs/calls/consumers.py"], "classification": "protocol"},
+  {"route": "ws/calls/", "method": "DISCONNECT", "handler": "chatballs.calls.consumers.CallSignalingConsumer", "action": null, "reason": "Наблюдение разрыва transport и presence участника; сервер не подменяет это бизнес-командой завершения звонка.", "surface": "app", "evidence": ["apps/backend/chatballs/calls/consumers.py"], "classification": "protocol"},
+  {"route": "ws/calls/", "method": "WS:auth", "handler": "chatballs.calls.consumers.CallSignalingConsumer", "action": null, "reason": "Аутентификация существующим call-access token и подключение к комнате двух разрешённых участников; native-grant не выпускает токен.", "surface": "app", "evidence": ["apps/backend/chatballs/calls/consumers.py"], "classification": "protocol"},
+  {"route": "ws/calls/", "method": "WS:webrtc.offer", "handler": "chatballs.calls.consumers.CallSignalingConsumer", "action": null, "reason": "Ретрансляция живого SDP/ICE/media-state между аутентифицированными участниками. Сервер не управляет физическим MediaStream, не хранит SDP/ICE и не даёт сценарию имитировать RTC/подключение.", "surface": "app", "evidence": ["apps/backend/chatballs/calls/consumers.py"], "classification": "protocol"},
+  {"route": "ws/calls/", "method": "WS:webrtc.answer", "handler": "chatballs.calls.consumers.CallSignalingConsumer", "action": null, "reason": "Ретрансляция живого SDP/ICE/media-state между аутентифицированными участниками. Сервер не управляет физическим MediaStream, не хранит SDP/ICE и не даёт сценарию имитировать RTC/подключение.", "surface": "app", "evidence": ["apps/backend/chatballs/calls/consumers.py"], "classification": "protocol"},
+  {"route": "ws/calls/", "method": "WS:webrtc.ice_candidate", "handler": "chatballs.calls.consumers.CallSignalingConsumer", "action": null, "reason": "Ретрансляция живого SDP/ICE/media-state между аутентифицированными участниками. Сервер не управляет физическим MediaStream, не хранит SDP/ICE и не даёт сценарию имитировать RTC/подключение.", "surface": "app", "evidence": ["apps/backend/chatballs/calls/consumers.py"], "classification": "protocol"},
+  {"route": "ws/calls/", "method": "WS:participant.media_state", "handler": "chatballs.calls.consumers.CallSignalingConsumer", "action": null, "reason": "Ретрансляция живого SDP/ICE/media-state между аутентифицированными участниками. Сервер не управляет физическим MediaStream, не хранит SDP/ICE и не даёт сценарию имитировать RTC/подключение.", "surface": "app", "evidence": ["apps/backend/chatballs/calls/consumers.py"], "classification": "protocol"},
+  {"route": "ws/calls/", "method": "WS:participant.connection_state", "handler": "chatballs.calls.consumers.CallSignalingConsumer", "action": null, "reason": "Телеметрия реального peer connection; ACTIVE выводится из наблюдений обеих сторон. Не самостоятельная бизнес-команда, которую разрешено подделывать native-grant.", "surface": "app", "evidence": ["apps/backend/chatballs/calls/consumers.py"], "classification": "protocol"},
+  {"route": "ws/calls/", "method": "WS:participant.metrics", "handler": "chatballs.calls.consumers.CallSignalingConsumer", "action": null, "reason": "Технические сетевые метрики аутентифицированного участника без медиаконтента; не отчёт или ручная оценка качества обслуживания.", "surface": "app", "evidence": ["apps/backend/chatballs/calls/consumers.py"], "classification": "protocol"},
+  {"route": "ws/calls/", "method": "WS:call.ended", "handler": "chatballs.calls.consumers.CallSignalingConsumer", "action": "calls.end.post", "reason": "", "surface": "app", "evidence": ["apps/backend/chatballs/calls/consumers.py"], "authority": "tenant", "classification": "product"},
+  {"route": "ws/organizations/<uuid:organization_public_id>/conversations/", "method": "CONNECT", "handler": "chatballs.conversations.consumers.ConversationEventsConsumer", "action": null, "reason": "Same-origin/TLS cookie/membership handshake существующего SPA и подписка на разрешённые потоки; не выдаёт доменных полномочий.", "surface": "app", "evidence": ["apps/backend/chatballs/conversations/consumers.py"], "classification": "protocol"},
+  {"route": "ws/organizations/<uuid:organization_public_id>/conversations/", "method": "DISCONNECT", "handler": "chatballs.conversations.consumers.ConversationEventsConsumer", "action": null, "reason": "Очистка transport-подписок и отметка фактического presence; не смена рабочей доступности сотрудника.", "surface": "app", "evidence": ["apps/backend/chatballs/conversations/consumers.py"], "classification": "protocol"},
+  {"route": "ws/organizations/<uuid:organization_public_id>/conversations/", "method": "WS:ping", "handler": "chatballs.conversations.consumers.ConversationEventsConsumer", "action": null, "reason": "Heartbeat фактически открытого соединения; не продуктовая команда установки статуса сотрудника.", "surface": "app", "evidence": ["apps/backend/chatballs/conversations/consumers.py"], "classification": "protocol"},
+  {"route": "ws/organizations/<uuid:organization_public_id>/conversations/", "method": "WS:watch", "handler": "chatballs.conversations.consumers.ConversationEventsConsumer", "action": null, "reason": "Подписка на поток выбранного видимого диалога с повторной проверкой прав; чтение данных и команды представлены штатными API-действиями.", "surface": "app", "evidence": ["apps/backend/chatballs/conversations/consumers.py"], "classification": "protocol"}
 ]

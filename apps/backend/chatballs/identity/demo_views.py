@@ -1,16 +1,16 @@
 """Демо-данные организации: статус, установка, удаление («Настройки»)."""
 
-import mimetypes
 
 from django.core.exceptions import ValidationError
-from django.http import FileResponse, Http404
+from django.http import FileResponse
 from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from chatballs.api.permissions import HasCapability
-from chatballs.identity.demo_seed import manifest, service
+from chatballs.identity.demo_seed import service
+from chatballs.identity.demo_media import open_avatar
 
 
 def _error(error: ValidationError, status: int) -> Response:
@@ -64,11 +64,7 @@ class DemoMediaView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request: Request, name: str):
-        root = (manifest.MEDIA_DIR / "avatars").resolve()
-        candidate = (root / name).resolve()
-        if root not in candidate.parents or not candidate.is_file():
-            raise Http404("Demo media not found")
-        content_type = mimetypes.guess_type(candidate.name)[0] or "application/octet-stream"
-        response = FileResponse(candidate.open("rb"), content_type=content_type)
+        stream, content_type = open_avatar(name)
+        response = FileResponse(stream, content_type=content_type)
         response["Cache-Control"] = "public, max-age=86400"
         return response

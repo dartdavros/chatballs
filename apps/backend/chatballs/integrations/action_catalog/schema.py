@@ -40,10 +40,11 @@ BOOLEAN = TypeSpec("boolean")
 
 
 def action(*, key, title, input, output, handler, capability, scope,
-           route, view, method, execution="local", effect=None, extra_entries=(), limits=DEFAULT_LIMITS):
+           route, view, method, execution="local", effect=None, extra_entries=(), limits=DEFAULT_LIMITS,
+           authority="tenant", surface="app"):
     operation = OperationDescriptor(key=key, title_key=title,
         input=input, output=output, handlers=OperationHandlers(),
         effect=effect or (Effect.READ if method == "GET" else Effect.UPDATE),
         permission_scope=scope, limits=limits)
     return register_action(NativeAction(operation, handler, capability, scope,
-        (APIEntry(route, method, view),) + tuple(extra_entries), execution))
+        (APIEntry(route, method, view, surface),) + tuple(extra_entries), execution, authority=authority))

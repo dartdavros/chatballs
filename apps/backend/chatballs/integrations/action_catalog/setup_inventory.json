@@ -1,0 +1,5 @@
+[
+  {"surface": "app", "route": "api/v1/demo-media/avatars/<str:name>", "method": "GET", "handler": "chatballs.identity.demo_views.DemoMediaView", "action": "setup.demo_media.get", "authority": "bootstrap", "classification": "product", "reason": "", "evidence": ["apps/backend/chatballs/identity/demo_views.py"]},
+  {"surface": "app", "route": "api/v1/setup/", "method": "GET", "handler": "chatballs.identity.setup_views.SetupStatusView", "action": "setup.get", "authority": "bootstrap", "classification": "product", "reason": "", "evidence": ["apps/backend/chatballs/identity/setup_views.py"]},
+  {"surface": "app", "route": "api/v1/setup/complete/", "method": "POST", "handler": "chatballs.identity.setup_views.SetupView", "action": "setup.complete", "authority": "bootstrap", "classification": "product", "reason": "", "evidence": ["apps/backend/chatballs/identity/setup_views.py"]}
+]

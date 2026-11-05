@@ -1,0 +1,3 @@
+[
+  {"surface": "platform", "route": "api/v1/organizations", "method": "POST", "handler": "chatballs.platform.views.OrganizationProvisionView", "action": "platform.organizations.provision", "authority": "platform", "classification": "product", "reason": "", "evidence": ["apps/backend/chatballs/platform/views.py"]}
+]

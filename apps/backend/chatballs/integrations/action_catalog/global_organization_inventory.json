@@ -1,0 +1,4 @@
+[
+  {"surface": "app", "route": "api/v1/organizations/", "method": "POST", "handler": "chatballs.identity.organization_views.OrganizationCreateView", "action": "organizations.post", "authority": "personal", "classification": "product", "reason": "", "evidence": ["apps/backend/chatballs/identity/organization_views.py"]},
+  {"surface": "app", "route": "api/v1/organizations/options/", "method": "GET", "handler": "chatballs.identity.organization_views.OrganizationCreateOptionsView", "action": "organizations.options.get", "authority": "personal", "classification": "product", "reason": "", "evidence": ["apps/backend/chatballs/identity/organization_views.py"]}
+]

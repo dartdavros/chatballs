@@ -12,6 +12,7 @@ class ActionSchema:
     input: TypeSpec
     output: TypeSpec
     permission_scope: str
+    authority: str = "tenant"
 
 
 _ACTIONS: dict[str, ActionSchema] = {}
@@ -27,14 +28,16 @@ def register_action_schema(schema: ActionSchema):
     _ACTIONS[schema.key] = schema
 
 
-def action_schemas():
+def action_schemas(*, authority="tenant"):
     load_actions()
-    return tuple(_ACTIONS.values())
+    return tuple(a for a in _ACTIONS.values() if authority is None or a.authority == authority)
 
 
 def register_action(action):
     from chatballs.integrations.adapters.contracts import READ_EFFECTS, RetryStrategy
 
+    if action.authority not in {"tenant", "personal", "instance", "platform", "bootstrap"}:
+        raise ValueError(f"Invalid authority: {action.key}")
     if action.key in _EXECUTABLE or not callable(action.execute):
         raise ValueError(f"Invalid executable action: {action.key}")
     if action.execution not in {"local", "io"} or action.contract_version < 1:
@@ -42,7 +45,7 @@ def register_action(action):
     if action.execution == "io" and action.operation.effect not in READ_EFFECTS and action.operation.retry != RetryStrategy.NONE:
         raise ValueError(f"I/O action needs an explicit recovery implementation: {action.key}")
     register_action_schema(ActionSchema(action.key, action.operation.title_key,
-        action.operation.input, action.operation.output, action.scope))
+        action.operation.input, action.operation.output, action.scope, action.authority))
     _EXECUTABLE[action.key] = action
     return action
 
@@ -71,6 +74,7 @@ def load_actions():
             file_reads,
             groups,
             inbox,
+            instance,
             knowledge,
             knowledge_categories,
             knowledge_files,
@@ -78,7 +82,10 @@ def load_actions():
             labels,
             messages,
             notifications,
+            organizations,
             participants,
+            platform,
+            profile,
             portal_articles,
             portal_categories,
             portal_files,
@@ -93,13 +100,16 @@ def load_actions():
             scenarios,
             service_connections,
             settings,
+            setup,
             skills,
+            storage,
             synchronization,
             template_taxonomies,
             template_tools,
             templates,
             transcription,
             transfers,
+            updates,
             widget_calls,
             webchat,
         )
@@ -107,14 +117,15 @@ def load_actions():
         _loaded = True
 
 
-def native_actions():
+def native_actions(*, authority="tenant"):
     load_actions()
-    return tuple(_EXECUTABLE.values())
+    return tuple(a for a in _EXECUTABLE.values() if authority is None or a.authority == authority)
 
 
-def native_action(key):
+def native_action(key, *, authority="tenant"):
     load_actions()
-    return _EXECUTABLE.get(key)
+    action = _EXECUTABLE.get(key)
+    return action if action and (authority is None or action.authority == authority) else None
 
 
 # Metadata needed by installed presets; no link is created when editing.

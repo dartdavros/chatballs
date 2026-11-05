@@ -1,143 +1,16 @@
 [
-  {
-    "route": "api/v1/webchat/assets/<uuid:public_id>/",
-    "method": "GET",
-    "handler": "chatballs.webchat.asset_views.WidgetAssetView",
-    "action": "connections.asset.get",
-    "reason": null
-  },
-  {
-    "route": "api/v1/webchat/config/",
-    "method": "GET",
-    "handler": "chatballs.webchat.config_views.WebchatConfigView",
-    "action": null,
-    "reason": "Published configuration bootstrap for the SDK with origin/widget checks. Product widget configuration is covered by native connection actions; this endpoint preserves the SDK protocol.",
-    "relatedActions": [
-      "connections.post",
-      "connections.detail.patch",
-      "connections.assets.post"
-    ]
-  },
-  {
-    "route": "api/v1/webchat/session/",
-    "method": "POST",
-    "handler": "chatballs.webchat.views.WebchatSessionView",
-    "action": null,
-    "reason": "Выпуск анонимного WebSession credential после widget/origin/pre-chat проверок; native-grant не выпускает клиентскую identity или credential.",
-    "relatedActions": []
-  },
-  {
-    "route": "api/v1/webchat/fields/",
-    "method": "POST",
-    "handler": "chatballs.webchat.views.WebchatFieldsView",
-    "action": null,
-    "reason": "Транспорт входящих недоверенных полей сайта, связанных с существующим WebSession. Это внешнее наблюдение с исходной provenance, а не разрешение сценарию выдавать данные за наблюдение сайта.",
-    "relatedActions": [
-      "conversations.visitor_state.get",
-      "contacts.card.patch"
-    ]
-  },
-  {
-    "route": "api/v1/webchat/observations/",
-    "method": "GET",
-    "handler": "chatballs.webchat.observation_views.WebchatObservationsView",
-    "action": null,
-    "reason": "Протокол browser telemetry/наблюдений существующего WebSession: чтение и приём сенсорных данных сайта. Не самостоятельная команда сотрудника; сценарий не имитирует наблюдение браузера.",
-    "relatedActions": [
-      "conversations.visitor_state.get"
-    ]
-  },
-  {
-    "route": "api/v1/webchat/observations/",
-    "method": "POST",
-    "handler": "chatballs.webchat.observation_views.WebchatObservationsView",
-    "action": null,
-    "reason": "Протокол browser telemetry/наблюдений существующего WebSession: чтение и приём сенсорных данных сайта. Не самостоятельная команда сотрудника; сценарий не имитирует наблюдение браузера.",
-    "relatedActions": [
-      "conversations.visitor_state.get"
-    ]
-  },
-  {
-    "route": "api/v1/webchat/messages/",
-    "method": "GET",
-    "handler": "chatballs.webchat.views.WebchatMessagesView",
-    "action": null,
-    "reason": "Polling-проекция ленты и актуальных статусов для аутентифицированного SDK; не отдельный способ изменить диалог. Чтение продуктовой истории представлено messages.get, состояния звонка — calls.state.post.",
-    "relatedActions": [
-      "messages.get",
-      "calls.state.post"
-    ]
-  },
-  {
-    "route": "api/v1/webchat/messages/",
-    "method": "POST",
-    "handler": "chatballs.webchat.views.WebchatMessagesView",
-    "action": null,
-    "reason": "Ingress фактического входящего текста/файла/голосового клиента по WebSession. Сохраняет клиентское происхождение и ingest, не подменяется операторским native-ответом или вымышленным клиентом. Исходящие продуктовые команды представлены отдельно.",
-    "relatedActions": [
-      "messages.post",
-      "messages.voice.post",
-      "messages.attachment.post"
-    ]
-  },
-  {
-    "route": "api/v1/webchat/messages/<int:message_id>/author-avatar/",
-    "method": "GET",
-    "handler": "chatballs.webchat.author_avatar_views.WebchatAuthorAvatarView",
-    "action": null,
-    "reason": "Доставка публичного аватара автора уже доступной SDK-реплики, с проверкой WebSession/message visibility; не операция управления автором/контактом.",
-    "relatedActions": []
-  },
-  {
-    "route": "api/v1/webchat/messages/<int:message_id>/audio/",
-    "method": "GET",
-    "handler": "chatballs.webchat.views.WebchatMessageAudioView",
-    "action": null,
-    "reason": "Бинарная транспортная проекция доступного клиенту сообщения по WebSession; продуктовая файловая операция с tenant/видимостью представлена messages.audio_file.get.",
-    "relatedActions": [
-      "messages.audio_file.get"
-    ]
-  },
-  {
-    "route": "api/v1/webchat/messages/<int:message_id>/attachment/",
-    "method": "GET",
-    "handler": "chatballs.webchat.views.WebchatMessageAttachmentView",
-    "action": null,
-    "reason": "Бинарная транспортная проекция доступного клиенту вложения по WebSession; продуктовая файловая операция представлена messages.attachment_file.get.",
-    "relatedActions": [
-      "messages.attachment_file.get"
-    ]
-  },
-  {
-    "route": "api/v1/webchat/contact/",
-    "method": "POST",
-    "handler": "chatballs.webchat.views.WebchatContactView",
-    "action": null,
-    "reason": "Ingress структурированного ответа клиента с телефоном по исходному WebSession; сохраняет идентичность входящего клиента и post_contact. Продуктовые команды запроса/изменения контакта представлены отдельно, без имитации клиента.",
-    "relatedActions": [
-      "messages.request_contact.post",
-      "contacts.card.patch"
-    ]
-  },
-  {
-    "route": "api/v1/webchat/call/open/",
-    "method": "POST",
-    "handler": "chatballs.webchat.views.WebchatCallOpenView",
-    "action": null,
-    "reason": "Обмен существующего WebSession и активного приглашения на call-access credential/ICE. Grant не выпускает credential клиента; принятие, отклонение, состояние и завершение зарегистрированы отдельно.",
-    "relatedActions": [
-      "calls.accept.post",
-      "calls.widget_decline.post",
-      "calls.state.post",
-      "calls.end.post"
-    ]
-  },
-  {
-    "route": "api/v1/webchat/call/decline/",
-    "method": "POST",
-    "handler": "chatballs.webchat.views.WebchatCallDeclineView",
-    "action": "calls.widget_decline.post",
-    "reason": null,
-    "relatedActions": []
-  }
+  {"route": "api/v1/webchat/assets/<uuid:public_id>/", "method": "GET", "handler": "chatballs.webchat.asset_views.WidgetAssetView", "action": "connections.asset.get", "reason": "", "surface": "app", "evidence": ["apps/backend/chatballs/webchat/asset_views.py"], "authority": "tenant", "classification": "product"},
+  {"route": "api/v1/webchat/config/", "method": "GET", "handler": "chatballs.webchat.config_views.WebchatConfigView", "action": null, "reason": "Published configuration bootstrap for the SDK with origin/widget checks. Product widget configuration is covered by native connection actions; this endpoint preserves the SDK protocol.", "relatedActions": ["connections.post", "connections.detail.patch", "connections.assets.post"], "surface": "app", "evidence": ["apps/backend/chatballs/webchat/config_views.py"], "classification": "protocol"},
+  {"route": "api/v1/webchat/session/", "method": "POST", "handler": "chatballs.webchat.views.WebchatSessionView", "action": null, "reason": "Выпуск анонимного WebSession credential после widget/origin/pre-chat проверок; native-grant не выпускает клиентскую identity или credential.", "relatedActions": [], "surface": "app", "evidence": ["apps/backend/chatballs/webchat/views.py"], "classification": "protocol"},
+  {"route": "api/v1/webchat/fields/", "method": "POST", "handler": "chatballs.webchat.views.WebchatFieldsView", "action": null, "reason": "Транспорт входящих недоверенных полей сайта, связанных с существующим WebSession. Это внешнее наблюдение с исходной provenance, а не разрешение сценарию выдавать данные за наблюдение сайта.", "relatedActions": ["conversations.visitor_state.get", "contacts.card.patch"], "surface": "app", "evidence": ["apps/backend/chatballs/webchat/views.py"], "classification": "protocol"},
+  {"route": "api/v1/webchat/observations/", "method": "GET", "handler": "chatballs.webchat.observation_views.WebchatObservationsView", "action": null, "reason": "Протокол browser telemetry/наблюдений существующего WebSession: чтение и приём сенсорных данных сайта. Не самостоятельная команда сотрудника; сценарий не имитирует наблюдение браузера.", "relatedActions": ["conversations.visitor_state.get"], "surface": "app", "evidence": ["apps/backend/chatballs/webchat/observation_views.py"], "classification": "protocol"},
+  {"route": "api/v1/webchat/observations/", "method": "POST", "handler": "chatballs.webchat.observation_views.WebchatObservationsView", "action": null, "reason": "Протокол browser telemetry/наблюдений существующего WebSession: чтение и приём сенсорных данных сайта. Не самостоятельная команда сотрудника; сценарий не имитирует наблюдение браузера.", "relatedActions": ["conversations.visitor_state.get"], "surface": "app", "evidence": ["apps/backend/chatballs/webchat/observation_views.py"], "classification": "protocol"},
+  {"route": "api/v1/webchat/messages/", "method": "GET", "handler": "chatballs.webchat.views.WebchatMessagesView", "action": null, "reason": "Polling-проекция ленты и актуальных статусов для аутентифицированного SDK; не отдельный способ изменить диалог. Чтение продуктовой истории представлено messages.get, состояния звонка — calls.state.post.", "relatedActions": ["messages.get", "calls.state.post"], "surface": "app", "evidence": ["apps/backend/chatballs/webchat/views.py"], "classification": "protocol"},
+  {"route": "api/v1/webchat/messages/", "method": "POST", "handler": "chatballs.webchat.views.WebchatMessagesView", "action": null, "reason": "Ingress фактического входящего текста/файла/голосового клиента по WebSession. Сохраняет клиентское происхождение и ingest, не подменяется операторским native-ответом или вымышленным клиентом. Исходящие продуктовые команды представлены отдельно.", "relatedActions": ["messages.post", "messages.voice.post", "messages.attachment.post"], "surface": "app", "evidence": ["apps/backend/chatballs/webchat/views.py"], "classification": "protocol"},
+  {"route": "api/v1/webchat/messages/<int:message_id>/author-avatar/", "method": "GET", "handler": "chatballs.webchat.author_avatar_views.WebchatAuthorAvatarView", "action": null, "reason": "Доставка публичного аватара автора уже доступной SDK-реплики, с проверкой WebSession/message visibility; не операция управления автором/контактом.", "relatedActions": [], "surface": "app", "evidence": ["apps/backend/chatballs/webchat/author_avatar_views.py"], "classification": "protocol"},
+  {"route": "api/v1/webchat/messages/<int:message_id>/audio/", "method": "GET", "handler": "chatballs.webchat.views.WebchatMessageAudioView", "action": null, "reason": "Бинарная транспортная проекция доступного клиенту сообщения по WebSession; продуктовая файловая операция с tenant/видимостью представлена messages.audio_file.get.", "relatedActions": ["messages.audio_file.get"], "surface": "app", "evidence": ["apps/backend/chatballs/webchat/views.py"], "classification": "protocol"},
+  {"route": "api/v1/webchat/messages/<int:message_id>/attachment/", "method": "GET", "handler": "chatballs.webchat.views.WebchatMessageAttachmentView", "action": null, "reason": "Бинарная транспортная проекция доступного клиенту вложения по WebSession; продуктовая файловая операция представлена messages.attachment_file.get.", "relatedActions": ["messages.attachment_file.get"], "surface": "app", "evidence": ["apps/backend/chatballs/webchat/views.py"], "classification": "protocol"},
+  {"route": "api/v1/webchat/contact/", "method": "POST", "handler": "chatballs.webchat.views.WebchatContactView", "action": null, "reason": "Ingress структурированного ответа клиента с телефоном по исходному WebSession; сохраняет идентичность входящего клиента и post_contact. Продуктовые команды запроса/изменения контакта представлены отдельно, без имитации клиента.", "relatedActions": ["messages.request_contact.post", "contacts.card.patch"], "surface": "app", "evidence": ["apps/backend/chatballs/webchat/views.py"], "classification": "protocol"},
+  {"route": "api/v1/webchat/call/open/", "method": "POST", "handler": "chatballs.webchat.views.WebchatCallOpenView", "action": null, "reason": "Обмен существующего WebSession и активного приглашения на call-access credential/ICE. Grant не выпускает credential клиента; принятие, отклонение, состояние и завершение зарегистрированы отдельно.", "relatedActions": ["calls.accept.post", "calls.widget_decline.post", "calls.state.post", "calls.end.post"], "surface": "app", "evidence": ["apps/backend/chatballs/webchat/views.py"], "classification": "protocol"},
+  {"route": "api/v1/webchat/call/decline/", "method": "POST", "handler": "chatballs.webchat.views.WebchatCallDeclineView", "action": "calls.widget_decline.post", "reason": "", "relatedActions": [], "surface": "app", "evidence": ["apps/backend/chatballs/webchat/views.py"], "authority": "tenant", "classification": "product"}
 ]

@@ -49,9 +49,16 @@ principal. Nested scenarios use the call block and intersect every ancestor's
 restrictions. External record search invokes the registered adapter operation
 through the common runner; candidate reads and link changes have native actions.
 
-T-175 covers organization and content operations. Global HumanUser profile,
-personal sessions, installation and platform actions belong to the remaining
-T-176 catalog in the accepted plan. Global profile editing is still a product
-API, not a login protocol. Login, passwords, TOTP and invitation acceptance retain
-their own identification protocols; tenant actions do not acquire a personal
-session or installation administrator authority.
+Global profiles, personal sessions, installation, platform and initial setup
+are registered in the same catalog, but are unavailable to organization scenarios
+and AI. Registration grants no execution authority. Profile commands act on the
+current user; session management requires that user's valid session. Installation
+settings retain their separate administrator permission, while provisioning
+requires a valid platform token. Login, passwords, TOTP and invitation acceptance
+retain their identification protocols.
+
+Administrative operations use the existing application settings and platform API.
+Organization automation cannot access SMTP, storage, installation updates or
+global profiles even when its delegate personally holds those permissions.
+Organization settings actions remain available in the editor.
+Developer contract and examples: [global actions](native-global-actions.md).

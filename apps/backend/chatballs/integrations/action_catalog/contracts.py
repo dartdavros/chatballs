@@ -48,6 +48,7 @@ class APIEntry:
     route: str
     method: str
     handler: str
+    surface: str = "app"
 
 
 @dataclass(frozen=True)
@@ -61,6 +62,7 @@ class NativeAction:
     # precedes the call; recovery must never assume a database rollback undid I/O.
     execution: str = "local"
     contract_version: int = 1
+    authority: str = "tenant"
 
     @property
     def key(self):

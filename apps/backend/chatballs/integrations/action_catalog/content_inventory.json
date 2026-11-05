@@ -1,128 +1,20 @@
 [
-  {
-    "method": "GET",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/ai/knowledge/categories/",
-    "action": "knowledge.categories.get",
-    "reason": null,
-    "handler": "chatballs.ai.category_views.KnowledgeCategoryListCreateView"
-  },
-  {
-    "method": "POST",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/ai/knowledge/categories/",
-    "action": "knowledge.categories.post",
-    "reason": null,
-    "handler": "chatballs.ai.category_views.KnowledgeCategoryListCreateView"
-  },
-  {
-    "method": "PATCH",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/ai/knowledge/categories/<int:category_id>/",
-    "action": "knowledge.category.patch",
-    "reason": null,
-    "handler": "chatballs.ai.category_views.KnowledgeCategoryDetailView"
-  },
-  {
-    "method": "DELETE",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/ai/knowledge/categories/<int:category_id>/",
-    "action": "knowledge.category.delete",
-    "reason": null,
-    "handler": "chatballs.ai.category_views.KnowledgeCategoryDetailView"
-  },
-  {
-    "method": "GET",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/ai/knowledge/",
-    "action": "knowledge.get",
-    "reason": null,
-    "handler": "chatballs.ai.views.KnowledgeListCreateView"
-  },
-  {
-    "method": "POST",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/ai/knowledge/",
-    "action": "knowledge.post",
-    "reason": null,
-    "handler": "chatballs.ai.views.KnowledgeListCreateView"
-  },
-  {
-    "method": "GET",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/ai/knowledge/<int:knowledge_id>/",
-    "action": "knowledge.detail.get",
-    "reason": null,
-    "handler": "chatballs.ai.views.KnowledgeDetailView"
-  },
-  {
-    "method": "PATCH",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/ai/knowledge/<int:knowledge_id>/",
-    "action": "knowledge.detail.patch",
-    "reason": null,
-    "handler": "chatballs.ai.views.KnowledgeDetailView"
-  },
-  {
-    "method": "DELETE",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/ai/knowledge/<int:knowledge_id>/",
-    "action": "knowledge.detail.delete",
-    "reason": null,
-    "handler": "chatballs.ai.views.KnowledgeDetailView"
-  },
-  {
-    "method": "POST",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/ai/knowledge/import/",
-    "action": "knowledge.import.post",
-    "reason": null,
-    "handler": "chatballs.ai.views.KnowledgeImportView"
-  },
-  {
-    "method": "POST",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/ai/knowledge/<int:knowledge_id>/reindex/",
-    "action": "knowledge.reindex.post",
-    "reason": null,
-    "handler": "chatballs.ai.views.KnowledgeReindexView"
-  },
-  {
-    "method": "POST",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/ai/knowledge/<int:knowledge_id>/attachments/",
-    "action": "knowledge.attachments.post",
-    "reason": null,
-    "handler": "chatballs.ai.views.KnowledgeAttachmentUploadView"
-  },
-  {
-    "method": "DELETE",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/ai/knowledge/<int:knowledge_id>/attachments/<int:attachment_id>/",
-    "action": "knowledge.attachment.delete",
-    "reason": null,
-    "handler": "chatballs.ai.views.KnowledgeAttachmentDeleteView"
-  },
-  {
-    "method": "POST",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/ai/knowledge/bulk/move/",
-    "action": "knowledge.bulk.move",
-    "reason": null,
-    "handler": "chatballs.ai.bulk_views.KnowledgeBulkMoveView"
-  },
-  {
-    "method": "POST",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/ai/knowledge/bulk/agent/",
-    "action": "knowledge.bulk.agent",
-    "reason": null,
-    "handler": "chatballs.ai.bulk_views.AgentKnowledgeLinkView"
-  },
-  {
-    "method": "POST",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/ai/portal-articles/bulk/agent/",
-    "action": "knowledge.portal_articles.agent",
-    "reason": null,
-    "handler": "chatballs.ai.bulk_views.AgentPortalArticleLinkView"
-  },
-  {
-    "method": "POST",
-    "route": "api/v1/organizations/<uuid:organization_public_id>/ai/agents/<int:agent_id>/knowledge/select-category/",
-    "action": "knowledge.agent.select_category",
-    "reason": null,
-    "handler": "chatballs.ai.bulk_views.AgentCategoryKnowledgeSelectView"
-  },
-  {
-    "route": "api/v1/ai/files/<uuid:public_id>/",
-    "method": "GET",
-    "handler": "chatballs.ai.attachment_views.AttachmentDownloadView",
-    "action": "knowledge.file.get",
-    "reason": null
-  }
+  {"method": "GET", "route": "api/v1/organizations/<uuid:organization_public_id>/ai/knowledge/categories/", "action": "knowledge.categories.get", "reason": "", "handler": "chatballs.ai.category_views.KnowledgeCategoryListCreateView", "surface": "app", "evidence": ["apps/backend/chatballs/ai/category_views.py"], "authority": "tenant", "classification": "product"},
+  {"method": "POST", "route": "api/v1/organizations/<uuid:organization_public_id>/ai/knowledge/categories/", "action": "knowledge.categories.post", "reason": "", "handler": "chatballs.ai.category_views.KnowledgeCategoryListCreateView", "surface": "app", "evidence": ["apps/backend/chatballs/ai/category_views.py"], "authority": "tenant", "classification": "product"},
+  {"method": "PATCH", "route": "api/v1/organizations/<uuid:organization_public_id>/ai/knowledge/categories/<int:category_id>/", "action": "knowledge.category.patch", "reason": "", "handler": "chatballs.ai.category_views.KnowledgeCategoryDetailView", "surface": "app", "evidence": ["apps/backend/chatballs/ai/category_views.py"], "authority": "tenant", "classification": "product"},
+  {"method": "DELETE", "route": "api/v1/organizations/<uuid:organization_public_id>/ai/knowledge/categories/<int:category_id>/", "action": "knowledge.category.delete", "reason": "", "handler": "chatballs.ai.category_views.KnowledgeCategoryDetailView", "surface": "app", "evidence": ["apps/backend/chatballs/ai/category_views.py"], "authority": "tenant", "classification": "product"},
+  {"method": "GET", "route": "api/v1/organizations/<uuid:organization_public_id>/ai/knowledge/", "action": "knowledge.get", "reason": "", "handler": "chatballs.ai.views.KnowledgeListCreateView", "surface": "app", "evidence": ["apps/backend/chatballs/ai/views.py"], "authority": "tenant", "classification": "product"},
+  {"method": "POST", "route": "api/v1/organizations/<uuid:organization_public_id>/ai/knowledge/", "action": "knowledge.post", "reason": "", "handler": "chatballs.ai.views.KnowledgeListCreateView", "surface": "app", "evidence": ["apps/backend/chatballs/ai/views.py"], "authority": "tenant", "classification": "product"},
+  {"method": "GET", "route": "api/v1/organizations/<uuid:organization_public_id>/ai/knowledge/<int:knowledge_id>/", "action": "knowledge.detail.get", "reason": "", "handler": "chatballs.ai.views.KnowledgeDetailView", "surface": "app", "evidence": ["apps/backend/chatballs/ai/views.py"], "authority": "tenant", "classification": "product"},
+  {"method": "PATCH", "route": "api/v1/organizations/<uuid:organization_public_id>/ai/knowledge/<int:knowledge_id>/", "action": "knowledge.detail.patch", "reason": "", "handler": "chatballs.ai.views.KnowledgeDetailView", "surface": "app", "evidence": ["apps/backend/chatballs/ai/views.py"], "authority": "tenant", "classification": "product"},
+  {"method": "DELETE", "route": "api/v1/organizations/<uuid:organization_public_id>/ai/knowledge/<int:knowledge_id>/", "action": "knowledge.detail.delete", "reason": "", "handler": "chatballs.ai.views.KnowledgeDetailView", "surface": "app", "evidence": ["apps/backend/chatballs/ai/views.py"], "authority": "tenant", "classification": "product"},
+  {"method": "POST", "route": "api/v1/organizations/<uuid:organization_public_id>/ai/knowledge/import/", "action": "knowledge.import.post", "reason": "", "handler": "chatballs.ai.views.KnowledgeImportView", "surface": "app", "evidence": ["apps/backend/chatballs/ai/views.py"], "authority": "tenant", "classification": "product"},
+  {"method": "POST", "route": "api/v1/organizations/<uuid:organization_public_id>/ai/knowledge/<int:knowledge_id>/reindex/", "action": "knowledge.reindex.post", "reason": "", "handler": "chatballs.ai.views.KnowledgeReindexView", "surface": "app", "evidence": ["apps/backend/chatballs/ai/views.py"], "authority": "tenant", "classification": "product"},
+  {"method": "POST", "route": "api/v1/organizations/<uuid:organization_public_id>/ai/knowledge/<int:knowledge_id>/attachments/", "action": "knowledge.attachments.post", "reason": "", "handler": "chatballs.ai.views.KnowledgeAttachmentUploadView", "surface": "app", "evidence": ["apps/backend/chatballs/ai/views.py"], "authority": "tenant", "classification": "product"},
+  {"method": "DELETE", "route": "api/v1/organizations/<uuid:organization_public_id>/ai/knowledge/<int:knowledge_id>/attachments/<int:attachment_id>/", "action": "knowledge.attachment.delete", "reason": "", "handler": "chatballs.ai.views.KnowledgeAttachmentDeleteView", "surface": "app", "evidence": ["apps/backend/chatballs/ai/views.py"], "authority": "tenant", "classification": "product"},
+  {"method": "POST", "route": "api/v1/organizations/<uuid:organization_public_id>/ai/knowledge/bulk/move/", "action": "knowledge.bulk.move", "reason": "", "handler": "chatballs.ai.bulk_views.KnowledgeBulkMoveView", "surface": "app", "evidence": ["apps/backend/chatballs/ai/bulk_views.py"], "authority": "tenant", "classification": "product"},
+  {"method": "POST", "route": "api/v1/organizations/<uuid:organization_public_id>/ai/knowledge/bulk/agent/", "action": "knowledge.bulk.agent", "reason": "", "handler": "chatballs.ai.bulk_views.AgentKnowledgeLinkView", "surface": "app", "evidence": ["apps/backend/chatballs/ai/bulk_views.py"], "authority": "tenant", "classification": "product"},
+  {"method": "POST", "route": "api/v1/organizations/<uuid:organization_public_id>/ai/portal-articles/bulk/agent/", "action": "knowledge.portal_articles.agent", "reason": "", "handler": "chatballs.ai.bulk_views.AgentPortalArticleLinkView", "surface": "app", "evidence": ["apps/backend/chatballs/ai/bulk_views.py"], "authority": "tenant", "classification": "product"},
+  {"method": "POST", "route": "api/v1/organizations/<uuid:organization_public_id>/ai/agents/<int:agent_id>/knowledge/select-category/", "action": "knowledge.agent.select_category", "reason": "", "handler": "chatballs.ai.bulk_views.AgentCategoryKnowledgeSelectView", "surface": "app", "evidence": ["apps/backend/chatballs/ai/bulk_views.py"], "authority": "tenant", "classification": "product"},
+  {"route": "api/v1/ai/files/<uuid:public_id>/", "method": "GET", "handler": "chatballs.ai.attachment_views.AttachmentDownloadView", "action": "knowledge.file.get", "reason": "", "surface": "app", "evidence": ["apps/backend/chatballs/ai/attachment_views.py"], "authority": "tenant", "classification": "product"}
 ]
