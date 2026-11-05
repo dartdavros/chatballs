@@ -59,6 +59,8 @@ from chatballs.i18n.messages import (
     services_ru,
     skills_en,
     skills_ru,
+    speech_en,
+    speech_ru,
     support_stats_en,
     support_stats_ru,
     template_variables_en,
@@ -104,6 +106,7 @@ CATALOG: dict[str, dict[str, object]] = {
         **services_ru.MESSAGES,
         **scenarios_ru.MESSAGES,
         **runs_ru.MESSAGES,
+        **speech_ru.MESSAGES,
     },
     "en": {
         **en.MESSAGES,
@@ -139,6 +142,7 @@ CATALOG: dict[str, dict[str, object]] = {
         **services_en.MESSAGES,
         **scenarios_en.MESSAGES,
         **runs_en.MESSAGES,
+        **speech_en.MESSAGES,
     },
 }
 

@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { voiceWaveHeights } from "@chatballs/ui";
 
 import { t } from "./i18n";
+import { focusAudio } from "./speech/audioFocus";
 
 // Голосовое сообщение в виджете: тот же плеер, что видит оператор в своём чате
 // (дизайн-базлайн v2, кадр H) — кнопка воспроизведения, волна и длительность.
@@ -47,12 +48,14 @@ export function VoiceMessage({ messageId, url, durationSeconds, accent, light }:
         setProgress(0);
       });
       audioRef.current = audio;
+      audio.addEventListener("pause", () => setPlaying(false));
     }
     if (playing) {
       audioRef.current.pause();
       setPlaying(false);
       return;
     }
+    if (!focusAudio(audioRef.current)) return;
     void audioRef.current.play().catch(() => {
       setFailed(true);
       setPlaying(false);

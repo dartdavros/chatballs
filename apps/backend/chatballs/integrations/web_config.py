@@ -6,6 +6,7 @@ from chatballs.i18n import t
 from chatballs.webchat.appearance import normalize_appearance
 from chatballs.webchat.field_schema import normalize_fields
 from chatballs.webchat.pre_chat import normalize_consent, normalize_pre_chat
+from chatballs.webchat.recording_configuration import normalize_recording
 
 
 def normalized_web_config(config: dict, previous: dict | None = None) -> dict:
@@ -31,6 +32,7 @@ def normalized_web_config(config: dict, previous: dict | None = None) -> dict:
         "greeting": str(config.get("greeting", "")).strip(),
         "quick_replies": quick_replies,
         **consent,
+        **normalize_recording(config, previous),
         "fields": fields,
         "preChat": normalize_pre_chat(config, previous, fields),
     }

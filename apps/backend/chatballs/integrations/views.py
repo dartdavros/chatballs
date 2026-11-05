@@ -159,22 +159,40 @@ class IntegrationDetailView(APIView):
 class IntegrationTestView(APIView):
     permission_classes = [HasCapability]
     required_capability = "integrations.manage"
+    tenant_manages_own_transaction = True
+
+    def check_permissions(self, request: Request) -> None:
+        from chatballs.tenancy.database import tenant_atomic
+
+        with tenant_atomic(request.tenant_context):
+            super().check_permissions(request)
 
     def post(self, request: Request, integration_id: int) -> Response:
-        try:
-            integration = integration_for_context(
-                context=request.tenant_context, integration_id=integration_id
-            )
-        except Integration.DoesNotExist:
-            return Response({"detail": t("settings.integration_not_found")}, status=404)
-        try:
-            integration = test_integration(
-                context=request.tenant_context, integration=integration
-            )
-        except ValidationError as error:
-            return _validation_error(error)
-        _audit(request, "integrations.integration_tested", integration)
-        return Response({"integration": integration_payload(integration)})
+        from chatballs.speech.checking import finish_check, prepare_check, run_check
+        from chatballs.tenancy.database import tenant_atomic
+
+        context = request.tenant_context
+        with tenant_atomic(context):
+            try:
+                integration = integration_for_context(context=context, integration_id=integration_id)
+            except Integration.DoesNotExist:
+                return Response({"detail": t("settings.integration_not_found")}, status=404)
+            if integration.provider != "YANDEX_SPEECHKIT":
+                try:
+                    integration = test_integration(context=context, integration=integration)
+                except ValidationError as error:
+                    return _validation_error(error)
+                _audit(request, "integrations.integration_tested", integration)
+                return Response({"integration": integration_payload(integration)})
+            job = prepare_check(integration)
+        error_code = run_check(job)
+        with tenant_atomic(context):
+            try:
+                integration = finish_check(context, job, error_code)
+            except ValidationError as error:
+                return _validation_error(error)
+            _audit(request, "integrations.integration_tested", integration)
+            return Response({"integration": integration_payload(integration)})
 
 
 class IntegrationToolsRefreshView(APIView):

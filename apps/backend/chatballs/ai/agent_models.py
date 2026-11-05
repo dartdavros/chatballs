@@ -49,6 +49,7 @@ class AIAgent(TenantRelationModel):
     # Модель расшифровки голосовых. Пусто — модель из интеграции, которая
     # расшифровывает, а если и там пусто — whisper-1.
     transcription_model = models.CharField(max_length=128, blank=True, default="")
+    transcription_language = models.CharField(max_length=16, blank=True, default="")
     model_params = models.JSONField(default=dict, blank=True)
     # Сколько последних сообщений диалога уходит модели вместе с новым. Больше —
     # агент помнит длинный разговор, но каждый ответ дороже, а у локальной

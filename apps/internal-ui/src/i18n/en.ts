@@ -1,4 +1,5 @@
 import { skillsEn } from "./skills.en";
+import { speechEn } from "./speech.en";
 import { agentActionsEn } from "./agent-actions.en";
 import { snapshotsEn } from "./snapshots.en";
 import { skillTemplatesEn } from "./skill-templates.en";
@@ -38,6 +39,7 @@ import { operationModesEn } from "./operation-modes.en";
 import { transferMessages } from "./transfers.en";
 
 export const en: Record<MessageKey, Message> = {
+  ...speechEn,
   ...agentActionsEn,
   ...snapshotsEn,
   ...skillsEn,

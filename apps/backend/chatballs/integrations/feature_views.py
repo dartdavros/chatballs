@@ -66,6 +66,13 @@ class CommunicationSettingsView(APIView):
                     setattr(integration, attr, bool(raw[key]))
                     fields.append(attr)
             if fields:
+                if integration.provider == "WEB" and "voiceMessages" in raw:
+                    from chatballs.webchat.recording_configuration import recording_settings
+
+                    mode = recording_settings(integration)["microphoneMode"]
+                    if mode != "dictation":
+                        integration.config = {**integration.config, "microphoneMode": "voice_message" if integration.voice_messages_enabled else "off"}
+                        fields.append("config")
                 integration.save(update_fields=[*fields, "updated_at"])
                 changed.append({"id": integration.id, **{k: raw[k] for k in ("voiceMessages", "audioCalls", "videoCalls") if k in raw}})
         if changed:

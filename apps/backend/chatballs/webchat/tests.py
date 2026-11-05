@@ -93,12 +93,14 @@ class PublicWebChatWidgetTests(TestCase):
 
         widget = create_web_widget(self.channel, name="Виджет")
         token = self._session(widget.public_key).json()["token"]
+        self.client.post("/api/v1/webchat/consent/", {"consentVersion": "v1"}, format="json", headers={"Authorization": f"Bearer {token}"})
+        from chatballs.speech.test_formats import encode
 
         posted = self.client.post(
             "/api/v1/webchat/messages/",
             data={
-                "audio": SimpleUploadedFile("voice.webm", b"WEBMDATA", content_type="audio/webm"),
-                "duration": "4",
+                "audio": SimpleUploadedFile("voice.webm", encode(4, "webm"), content_type="text/plain"),
+                "duration": "999",
             },
             format="multipart",
             headers={"Authorization": f"Bearer {token}"},

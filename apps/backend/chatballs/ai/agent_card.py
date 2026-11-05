@@ -144,6 +144,7 @@ def update_agent_card(
         "transcriptionIntegrationId",
         "model",
         "transcriptionModel",
+        "transcriptionLanguage",
         "modelParams",
         "persona",
         "tone",
@@ -196,6 +197,7 @@ def update_agent_card(
                     body.get("transcriptionModel", agent.transcription_model)
                 ),
                 model_params=model_params,
+                transcription_language=body.get("transcriptionLanguage", agent.transcription_language),
                 allowed_tools=agent.allowed_tools,
                 persona=str(body.get("persona", agent.persona)),
                 tone=str(body.get("tone", agent.tone)),

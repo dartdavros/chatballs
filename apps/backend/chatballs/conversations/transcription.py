@@ -50,7 +50,11 @@ def prepare_transcription(channel, message: Message) -> TranscriptionJob | None:
     try:
         model = resolve_transcription_model(channel)
     except ProviderError:
-        model = DEFAULT_TRANSCRIPTION_MODEL  # тестовый провайдер без интеграции
+        from django.conf import settings
+
+        if settings.CHATBALLS_AI_PROVIDER != "test":
+            raise
+        model = DEFAULT_TRANSCRIPTION_MODEL  # Явная штатная тестовая поверхность.
     with message.audio.open("rb") as handle:
         audio = handle.read()
     return TranscriptionJob(

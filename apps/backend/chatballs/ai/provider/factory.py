@@ -5,6 +5,7 @@ from chatballs.ai.provider import routing
 from chatballs.ai.provider.base import LLMProvider, ProviderError
 from chatballs.ai.provider.local import LocalProvider
 from chatballs.i18n import t
+from chatballs.speech.contracts import Transcriber
 
 
 def _test_provider() -> LLMProvider:
@@ -32,7 +33,7 @@ def get_provider(*, channel=None, timeout: float | None = None) -> LLMProvider:
     return routing.resolve_provider(channel, timeout=timeout)
 
 
-def get_transcription_provider(*, channel=None, timeout: float | None = None) -> LLMProvider:
+def get_transcription_provider(*, channel=None, timeout: float | None = None) -> Transcriber:
     """Провайдер расшифровки голосовых.
 
     Отличается от `get_provider` одним: агент может расшифровывать другим

@@ -1,0 +1,12 @@
+.speech-connection p { margin:0; }
+.settings-content .speech-connection-fields { grid-template-columns:repeat(2,minmax(0,1fr)); }
+.speech-connection-fields>div { min-width:0; align-self:end; }
+.speech-check { display:grid; grid-template-columns:minmax(0,1fr) 130px 194px; align-items:center; gap:12px; min-height:54px; border-bottom:1px solid var(--n-8); padding:10px 0; }
+.speech-check-status { min-height:28px; display:flex; align-items:center; justify-content:flex-end; }
+@media(max-width:1200px) { .speech-check { grid-template-columns:minmax(0,1fr) auto; gap:8px; } .speech-check>button { grid-column:1/-1; justify-self:start; } }
+@media(max-width:600px) { .settings-content .speech-connection-fields { grid-template-columns:minmax(0,1fr); } }
+@media(max-width:767px) {
+  .hub-shell:has(.speech-connection) .hub-sidebar { display:none; }
+  .settings-content:has(.speech-connection) { padding:0; }
+  .settings-content-inner:has(.speech-connection) { padding:20px; }
+}

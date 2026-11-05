@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { api, ApiError } from "../../api/client";
 import { t } from "../../i18n";
-import { fetchLlmProviders, type Integration } from "../integrations/model";
+import { fetchAgentProviders, type Integration } from "../integrations/model";
 import { useAgentTools } from "./useAgentTools";
 import { fetchAgent, patchAgent, setAgentAiActive, deleteAgent, bindAgentConnection, unbindAgentConnection, type AgentCard, type AgentPatch } from "./model";
 
@@ -52,7 +52,7 @@ export function useAgentDetail(agentId: number | null, canManage: boolean, canMa
   }, []);
 
   useEffect(() => {
-    if (canManage) fetchLlmProviders().then(setProviders).catch(() => setProviders([]));
+    if (canManage) fetchAgentProviders().then(setProviders).catch(() => setProviders([]));
   }, [canManage]);
 
   useEffect(() => {

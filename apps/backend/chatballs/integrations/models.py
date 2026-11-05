@@ -8,6 +8,7 @@ from chatballs.identity.crypto import EncryptedCharField
 
 class IntegrationKind(models.TextChoices):
     LLM_PROVIDER = "LLM_PROVIDER", "LLM-провайдер"
+    SPEECH_PROVIDER = "SPEECH_PROVIDER", "Речевой провайдер"
     MESSENGER = "MESSENGER", "Подключение-мессенджер"
     # Внешний сервер: откуда агент берёт данные организации (SPEC-0023 R-1).
     EXTERNAL_SERVER = "EXTERNAL_SERVER", "Внешний сервер"
@@ -17,6 +18,7 @@ class IntegrationKind(models.TextChoices):
 
 
 class IntegrationProvider(models.TextChoices):
+    YANDEX_SPEECHKIT = "YANDEX_SPEECHKIT", "Yandex SpeechKit"
     OPENROUTER = "OPENROUTER", "OpenRouter"
     CUSTOM = "CUSTOM", "Custom (OpenAI-compatible)"
     # Демо-провайдер: живой AI без ключей и сети — для знакомства с системой.
@@ -43,6 +45,7 @@ class IntegrationStatus(models.TextChoices):
 
 # Какой провайдер к какому роду относится.
 PROVIDER_KIND = {
+    IntegrationProvider.YANDEX_SPEECHKIT: IntegrationKind.SPEECH_PROVIDER,
     IntegrationProvider.OPENROUTER: IntegrationKind.LLM_PROVIDER,
     # Custom — generic BYOK для любого OpenAI-compatible endpoint (ADR-CHATBALLS-0034).
     IntegrationProvider.CUSTOM: IntegrationKind.LLM_PROVIDER,

@@ -83,6 +83,9 @@ class WebSession(TenantRelationModel):
     identity = models.ForeignKey("conversations.ConnectionIdentity", on_delete=models.CASCADE, related_name="web_sessions")
     created_at = models.DateTimeField(auto_now_add=True)
     last_seen_at = models.DateTimeField(auto_now=True)
+    consent_version = models.CharField(max_length=255, blank=True, default="")
+    consent_accepted_at = models.DateTimeField(null=True, blank=True)
+    consent_form_revision = models.CharField(max_length=64, blank=True, default="")
 
     def __str__(self) -> str:
         return f"websession:{self.identity_id}"

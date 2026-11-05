@@ -20,7 +20,7 @@ function requestExpanded(expanded: boolean) {
 }
 
 export function App() {
-  const { config, state, accepted, siteValues, messages, ratingRequests, pending, awaiting, thinking, call, input, setInput, starting, recorder, bodyRef, token, lastContactRequestId, showPhoneForm, unavailable, accept, send, submitContact, acceptCallInvite, declineCallInvite, attachment, attachmentError, setAttachment, setAttachmentError } = useChatSession();
+  const { config, state, accepted, siteValues, messages, ratingRequests, pending, awaiting, thinking, call, input, setInput, starting, recorder, dictation, bodyRef, token, lastContactRequestId, showPhoneForm, unavailable, accept, send, submitContact, acceptCallInvite, declineCallInvite, attachment, attachmentError, setAttachment, setAttachmentError } = useChatSession();
   const [expanded, setExpanded] = useState(false);
   const fullscreen = usePanelFullscreen();
   const { accent, headerIcon, customCss } = resolveWidgetAppearance(config);
@@ -42,7 +42,7 @@ export function App() {
       {showPreChat && config ? <PreChatForm config={config} accent={accent} title={title} siteValues={siteValues} starting={starting} onAccept={accept} /> : <ChatBody bodyRef={bodyRef} config={config} unavailable={unavailable} accepted={accepted} accent={accent} title={title} messages={messages} ratingRequests={ratingRequests} pending={pending} awaiting={thinking && state === "ai"} state={state} lastContactRequestId={lastContactRequestId} showPhoneForm={showPhoneForm} onSubmitContact={submitContact} authorAvatarUrlFor={token ? (id) => authorAvatarUrl(token, id) : undefined} audioUrlFor={token ? (id) => voiceAudioUrl(token, id) : undefined} attachmentUrlFor={token ? (id, inline) => attachmentUrl(token, id, inline) : undefined} />}
       {config?.available && accepted && call && (call.status === "REQUESTED" || call.status === "RINGING") && <CallInviteBanner call={call} accent={accent} onAccept={() => void acceptCallInvite()} onDecline={() => void declineCallInvite()} />}
       {config?.available && !accepted && !showPreChat && <StartChatFooter accent={accent} starting={starting} onAccept={() => void accept()} />}
-      {config?.available && accepted && <ChatComposer accent={accent} input={input} onInput={setInput} onSend={() => void send()} voice={config.features?.voiceMessages === false ? undefined : recorder} attachment={{ file: attachment, errorText: attachmentError, pick: (file) => { if (!file) return; if (file.size > MAX_FILE_BYTES) { setAttachmentError(t("chat.file_too_big")); return; } setAttachmentError(""); setAttachment(file); }, clear: () => setAttachment(null) }} />}
+      {config?.available && accepted && <ChatComposer accent={accent} input={input} onInput={setInput} onSend={() => void send()} dictation={config.speech?.microphoneMode === "dictation" ? dictation : undefined} voice={config.features?.voiceMessages === false ? undefined : recorder} attachment={{ file: attachment, errorText: attachmentError, pick: (file) => { if (!file) return; if (file.size > MAX_FILE_BYTES) { setAttachmentError(t("chat.file_too_big")); return; } setAttachmentError(""); setAttachment(file); }, clear: () => setAttachment(null) }} />}
       {config?.available && <BrandFooter accent={accent} />}
     </div>
   );

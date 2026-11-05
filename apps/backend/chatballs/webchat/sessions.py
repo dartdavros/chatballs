@@ -67,11 +67,16 @@ def origin_allowed(widget: WebChatWidget, origin: str) -> bool:
 
 @transaction.atomic
 def issue_session(
-    *, context: TenantContext, widget: WebChatWidget, fields: object = None, pre_chat_fields: object = None
+    *, context: TenantContext, widget: WebChatWidget, fields: object = None,
+    pre_chat_fields: object = None, consent_version: object = None,
 ) -> dict | None:
     integration = widget.integration
     if integration is None or integration.channel_id is None:
         return None
+    if consent_version is not None:
+        from chatballs.webchat.consent import validate_acceptance
+
+        validate_acceptance(widget, consent_version, pre_chat_fields)
     session_id = uuid.uuid4().hex
     guest_name = t(
         "webchat.guest_name",
@@ -107,6 +112,10 @@ def issue_session(
         elif pre_chat_fields is not None:
             save_site_fields(session, pre_chat_fields)
         save_site_fields(session, values)
+    if consent_version is not None:
+        from chatballs.webchat.consent import record_acceptance
+
+        record_acceptance(session, version=consent_version, fields=pre_chat_fields)
     return {"token": token, "sessionId": session_id}
 
 
@@ -158,5 +167,4 @@ def _touch_session(session: WebSession) -> None:
     if timezone.now() - session.last_seen_at >= SESSION_TOUCH_THROTTLE:
         # last_seen_at — auto_now, значение проставит сам Django.
         session.save(update_fields=["last_seen_at"])
-
 

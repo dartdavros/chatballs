@@ -96,6 +96,10 @@ def _normalized_config(provider: str, config: dict, previous_config: dict | None
         return _email_config(config)
     if provider == IntegrationProvider.WEB:
         return normalized_web_config(config, previous_config)
+    if provider == IntegrationProvider.YANDEX_SPEECHKIT:
+        from chatballs.speech.configuration import normalize_speechkit
+
+        return normalize_speechkit(config)
     base_url = str(config.get("baseUrl", config.get("base_url", ""))).strip()
     result: dict[str, str] = {}
     # Схему проверяем на входе: без неё в base_url принимался, например,
@@ -171,7 +175,7 @@ def create_integration(*, context: TenantContext, data: IntegrationInput) -> Int
     name = data.name.strip()
     if not name:
         raise ValidationError({"name": t("settings.name_required")})
-    if provider == IntegrationProvider.CUSTOM and not (data.secret or "").strip():
+    if provider in {IntegrationProvider.CUSTOM, IntegrationProvider.YANDEX_SPEECHKIT} and not (data.secret or "").strip():
         raise ValidationError({"secret": t("settings.api_key_required")})
     if provider == IntegrationProvider.EMAIL and not (data.secret or "").strip():
         raise ValidationError({"secret": t("settings.mailbox_password_required")})

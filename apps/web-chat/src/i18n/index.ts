@@ -16,6 +16,7 @@ i18n.setLanguage(resolveLanguage({}));
 
 export type { ChatMessageKey };
 export const t = i18n.t;
+export const tn = i18n.tn;
 export const fmt = i18n.fmt;
 
 /** Принять язык из настроек виджета. Пустое значение оставляет язык браузера. */

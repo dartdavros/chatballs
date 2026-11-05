@@ -9,7 +9,7 @@ import { t } from "../../i18n";
 import { ConnectionRouteFields } from "./ConnectionRouteFields";
 import { useIntegrationForm } from "./useIntegrationForm";
 
-export function IntegrationForm({ initial, kind, onClose, onSaved }: { initial: Integration | null; kind: IntegrationKind; onClose: () => void; onSaved: () => void }) {
+export function IntegrationForm({ initial, kind, onClose, onSaved, onSpeechKit }: { initial: Integration | null; kind: IntegrationKind; onClose: () => void; onSaved: () => void; onSpeechKit?: () => void }) {
   const { isEdit, options, provider, setProvider, name, setName, secret, setSecret, baseUrl, setBaseUrl, defaultModel, setDefaultModel, transcriptionModel, setTranscriptionModel, proxyUrl, setProxyUrl, allowedOrigins, setAllowedOrigins, emailConfig, setEmailConfig, channelId, setChannelId, groupId, setGroupId, isNotifier, setIsNotifier, submitting, error, copied, meta, isMessenger, isWeb, isEmail, isDemo, widgetSnippet, copySnippet, badOrigin, ready, submit } = useIntegrationForm({ initial, kind, onSaved });
 
   return (
@@ -18,7 +18,7 @@ export function IntegrationForm({ initial, kind, onClose, onSaved }: { initial: 
         {isEdit ? (
           <FormField label={t("settings.type")} value={meta.label} />
         ) : (
-          <SelectField label={t("settings.type")} value={provider} onChange={(value) => setProvider(value as IntegrationProvider)} options={options} />
+          <SelectField label={t("settings.type")} value={provider} onChange={(value) => { if (value === "YANDEX_SPEECHKIT" && onSpeechKit) onSpeechKit(); else setProvider(value as IntegrationProvider); }} options={options} />
         )}
         {meta.helpSlug && (
           <a className="link is-muted has-icon integration-form-help" href={helpArticleUrl(meta.helpSlug)} target="_blank" rel="noopener noreferrer">

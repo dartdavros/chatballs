@@ -1,5 +1,5 @@
 import type { WidgetAppearance } from "./widgetAppearance";
-import type { MessagePresentation } from "@chatballs/contracts";
+import type { MessagePresentation, WebSpeechCapabilities } from "@chatballs/contracts";
 import type { FieldSchema, PreChatConfig } from "./preChatModel";
 
 import { t } from "./i18n";
@@ -14,6 +14,7 @@ export type WebConfig = {
   // оператор. Пусто — язык решает браузер посетителя.
   language?: string;
   features?: WidgetFeatures;
+  speech?: WebSpeechCapabilities;
   available: boolean;
   reason?: string;
   widgetKey?: string;
@@ -102,11 +103,12 @@ export async function sendMessage(token: string, text: string): Promise<boolean>
   return r.ok;
 }
 
-export async function sendVoice(token: string, audio: Blob, durationSeconds: number): Promise<boolean> {
+export async function sendVoice(token: string, audio: Blob, durationSeconds: number, hostOrigin = ""): Promise<boolean> {
   const body = new FormData();
   const type = (audio.type || "audio/webm").split(";")[0];
   body.append("audio", audio, `voice.${type.split("/")[1] || "webm"}`);
   body.append("duration", String(Math.round(durationSeconds)));
+  body.append("hostOrigin", hostOrigin);
   const r = await fetch(`${API}/messages/`, { method: "POST", headers: { Authorization: `Bearer ${token}` }, body });
   return r.ok;
 }

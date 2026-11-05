@@ -77,6 +77,7 @@ def integration_payload(integration: Integration) -> dict[str, object]:
             "baseUrl": integration.config.get("base_url", ""),
             "defaultModel": integration.config.get("default_model", ""),
             "transcriptionModel": integration.config.get("transcription_model", ""),
+            "folderId": integration.config.get("folder_id", ""),
             "proxyUrl": mask_proxy_url(str(integration.config.get("proxy_url", ""))),
             "botId": integration.config.get("bot_id", ""),
             "botUsername": integration.config.get("bot_username", ""),
@@ -120,8 +121,15 @@ def integration_payload(integration: Integration) -> dict[str, object]:
     }
     if integration.provider == "WEB":
         from chatballs.webchat.widgets import widget_for_integration, widget_payload
+        from chatballs.webchat.recording_configuration import recording_settings
 
         payload["webChatWidget"] = widget_payload(widget_for_integration(integration))
+        payload["config"].update(recording_settings(integration))
+    if integration.kind in {"LLM_PROVIDER", "SPEECH_PROVIDER"}:
+        from dataclasses import asdict
+        from chatballs.speech.contracts import capabilities
+
+        payload["speechCapabilities"] = asdict(capabilities(integration.provider))
     if is_external_server(integration.provider):
         payload["externalServer"] = external_server_payload(integration)
         if integration.provider == IntegrationProvider.MCP:

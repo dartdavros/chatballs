@@ -18,6 +18,8 @@ import { useScrollToLatest } from "./useScrollToLatest";
 import { useWidgetConsent } from "./useWidgetConsent";
 import { useChatPolling } from "./useChatPolling";
 import { useVoiceRecorder } from "./useVoiceRecorder";
+import { useDictation } from "./speech/useDictation";
+import { appendDictation } from "./speech/draft";
 import { useWidgetActivity } from "./widgetActivity";
 import { useVisitorSignals } from "./useVisitorSignals";
 import { applyWidgetLanguage, t } from "./i18n";
@@ -54,10 +56,15 @@ export function useChatSession() {
   const scrollToLatest = useScrollToLatest(bodyRef);
   const incomingCall = Boolean(call && (call.status === "REQUESTED" || call.status === "RINGING"));
   const notifyNewMessage = useWidgetActivity(incomingCall);
+  const dictation = useDictation({
+    token: accepted ? token : null, hostOrigin: HOST_ORIGIN, settings: config?.speech,
+    onResult: (text) => setInput((current) => appendDictation(current, text)),
+  });
   const recorder = useVoiceRecorder({
+    maxBytes: config?.speech?.maxRecordingBytes,
     onSend: async (audio, durationSeconds) => {
       if (!token) return;
-      const ok = await sendVoice(token, audio, durationSeconds);
+      const ok = await sendVoice(token, audio, durationSeconds, HOST_ORIGIN);
       if (!ok) throw new Error(t("chat.could_not_send_voice"));
       try { ingestPoll(await poll(token, lastId.current)); } catch { /* polling loop will retry */ }
     },
@@ -79,6 +86,7 @@ export function useChatSession() {
     // Диалог удалили на стороне поддержки — переписка обнуляется, и виджет
     // продолжает жить как только что открытый.
     if (data.reset) {
+      dictation.cancel();
       lastId.current = 0;
       setMessages([]);
       setPending([]);
@@ -119,7 +127,7 @@ export function useChatSession() {
 
   async function send() {
     const text = input.trim();
-    if ((!text && !attachment) || !token || awaiting) return;
+    if ((!text && !attachment) || !token || !accepted || awaiting || dictation.busy || text.length > 4000) return;
     setInput("");
     const file = attachment;
     setAttachment(null);
@@ -130,7 +138,8 @@ export function useChatSession() {
       const ok = await sendFile(token, file, text).catch(() => false);
       if (!ok) setAttachmentError(t("chat.could_not_send_file"));
     } else {
-      await sendMessage(token, text).catch(() => undefined);
+      const ok = await sendMessage(token, text).catch(() => false);
+      if (!ok) setInput((current) => current ? appendDictation(text, current) : text);
     }
     try { ingestPoll(await poll(token, lastId.current)); } catch { /* polling loop will retry */ }
     setPending([]);
@@ -166,5 +175,5 @@ export function useChatSession() {
   const showPhoneForm = lastContactRequestId > 0 && !(contactSent || messages.some((message) => message.kind === "contact"));
   const unavailable = config !== null && !config.available;
 
-  return { config, state, accepted, siteValues, messages, ratingRequests, pending, awaiting, thinking, call, input, setInput, starting, recorder, bodyRef, token, lastContactRequestId, showPhoneForm, unavailable, accept, send, submitContact, acceptCallInvite, declineCallInvite, attachment, attachmentError, setAttachment, setAttachmentError };
+  return { config, state, accepted, siteValues, messages, ratingRequests, pending, awaiting, thinking, call, input, setInput, starting, recorder, dictation, bodyRef, token, lastContactRequestId, showPhoneForm, unavailable, accept, send, submitContact, acceptCallInvite, declineCallInvite, attachment, attachmentError, setAttachment, setAttachmentError };
 }

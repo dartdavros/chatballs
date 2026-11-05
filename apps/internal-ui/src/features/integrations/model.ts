@@ -4,9 +4,10 @@ import type { SiteField } from "./site-fields/model";
 import type { WidgetAppearance } from "./appearance/model";
 import type { PreChat } from "./pre-chat/model";
 import type { ExternalServer } from "./external/types";
+import type { SpeechCapabilities, MicrophoneMode } from "@chatballs/contracts";
 
-export type IntegrationProvider = "OPENROUTER" | "CUSTOM" | "DEMO" | "MAX" | "TELEGRAM" | "VK" | "WEB" | "EMAIL" | "MCP" | "HTTP";
-export type IntegrationKind = "LLM_PROVIDER" | "MESSENGER" | "EXTERNAL_SERVER";
+export type IntegrationProvider = "OPENROUTER" | "CUSTOM" | "DEMO" | "MAX" | "TELEGRAM" | "VK" | "WEB" | "EMAIL" | "MCP" | "HTTP" | "YANDEX_SPEECHKIT";
+export type IntegrationKind = "LLM_PROVIDER" | "MESSENGER" | "EXTERNAL_SERVER" | "SPEECH_PROVIDER";
 export type IntegrationStatus = "UNCHECKED" | "OK" | "ERROR";
 export type WebChatWidgetSummary = {
   id: number;
@@ -23,6 +24,7 @@ export type Integration = {
   provider: IntegrationProvider;
   name: string;
   externalServer?: ExternalServer;
+  speechCapabilities?: SpeechCapabilities;
   hasSecret: boolean;
   // Публичный префикс ключа + маска («sk-or-••••••••») для колонки «Секрет».
   secretMasked: string;
@@ -30,6 +32,10 @@ export type Integration = {
   // purpose="notifications" — сервисный бот уведомлений сотрудников (не привязан к каналу продаж).
   // email/imap*/smtp* — Email-подключение (SPEC-CHATBALLS-0025 §3.1).
   config: {
+    folderId?: string;
+    microphoneMode?: MicrophoneMode;
+    maxRecordingBytes?: number;
+    maxDictationSeconds?: number;
     fields?: SiteField[];
     preChat?: PreChat;
     baseUrl: string;
@@ -80,6 +86,7 @@ type ProviderMeta = {
 };
 
 export const PROVIDERS: Record<IntegrationProvider, ProviderMeta> = {
+  YANDEX_SPEECHKIT: { label: "Yandex SpeechKit", kind: "SPEECH_PROVIDER", secretLabel: t("speech.secret"), defaultBaseUrl: "", hasModel: false, testable: true, checkable: true },
   MCP: { label: t("servers.new_mcp"), kind: "EXTERNAL_SERVER", secretLabel: "", defaultBaseUrl: "", hasModel: false, testable: false, checkable: true, helpSlug: "instrumenty-agenta" },
   HTTP: { label: t("servers.new_http"), kind: "EXTERNAL_SERVER", secretLabel: "", defaultBaseUrl: "", hasModel: false, testable: false, checkable: true, helpSlug: "instrumenty-agenta" },
   OPENROUTER: { label: "OpenRouter", kind: "LLM_PROVIDER", secretLabel: t("settings.api_key"), defaultBaseUrl: "https://openrouter.ai/api/v1", hasModel: true, testable: true, checkable: true },
@@ -105,6 +112,7 @@ export const STATUS_META: Record<IntegrationStatus, { label: string; bg: string;
 };
 
 export const KIND_LABEL: Record<IntegrationKind, string> = {
+  SPEECH_PROVIDER: t("speech.stt"),
   EXTERNAL_SERVER: t("ai.tools"),
   LLM_PROVIDER: t("settings.providers"),
   MESSENGER: t("common.connections"),
@@ -124,6 +132,9 @@ export const fetchLlmProviders = () =>
   api<{ items: Integration[] }>("/api/v1/integrations/").then((response) =>
     response.items.filter((item) => item.kind === "LLM_PROVIDER")
   );
+
+export const fetchAgentProviders = () => api<{ items: Integration[] }>("/api/v1/integrations/").then((response) =>
+  response.items.filter((item) => item.kind === "LLM_PROVIDER" || item.kind === "SPEECH_PROVIDER"));
 
 // Разрешённые домены Web-виджета. Пустой список в проде
 // запрещает все origin'ы, поэтому домены вводятся руками и обязательны.

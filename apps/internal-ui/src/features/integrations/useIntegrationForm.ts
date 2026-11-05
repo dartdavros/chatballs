@@ -8,7 +8,8 @@ import { connectionGroupSettings, formatAllowedOrigins, invalidAllowedOrigin, pa
 // Селектор «Тип» показывает только провайдеров рода активного таба (SPEC-CHATBALLS-0025 §2.2).
 function providerOptions(kind: IntegrationKind): Array<[string, string]> {
   return (Object.keys(PROVIDERS) as IntegrationProvider[])
-    .filter((key) => PROVIDERS[key].kind === kind)
+    .filter((key) => PROVIDERS[key].kind === kind || (kind === "LLM_PROVIDER" && PROVIDERS[key].kind === "SPEECH_PROVIDER"))
+    .sort((left, right) => Number(left === "YANDEX_SPEECHKIT") - Number(right === "YANDEX_SPEECHKIT"))
     .map((key) => [key, PROVIDERS[key].label]);
 }
 

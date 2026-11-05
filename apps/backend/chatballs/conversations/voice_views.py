@@ -67,6 +67,10 @@ class MessageTranscribeView(ConversationViewBase):
     # провайдера остаётся между ними (chatballs.tenancy.middleware).
     tenant_manages_own_transaction = True
 
+    def check_permissions(self, request: Request) -> None:
+        with tenant_atomic(request.tenant_context):
+            super().check_permissions(request)
+
     def post(self, request: Request, message_id: int) -> Response:
         from chatballs.conversations.transcription import (
             mark_transcription_failed,

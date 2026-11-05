@@ -62,6 +62,10 @@ def _integration_model(integration, key: str) -> str:
     """Модель, заданная в интеграции: подсказка в поле модели на карточке."""
     if integration is None:
         return ""
+    if key == "transcription_model":
+        from chatballs.speech.contracts import capabilities
+
+        return str(integration.config.get(key) or capabilities(integration.provider).default_model)
     return str((integration.config or {}).get(key) or "")
 
 
@@ -101,6 +105,7 @@ def agent_card_payload(
         # карточка показывает модель интеграции подсказкой в поле.
         "model": agent.model,
         "transcriptionModel": agent.transcription_model,
+        "transcriptionLanguage": agent.transcription_language,
         "providerModel": _integration_model(agent.provider_integration, "default_model"),
         "transcriptionProviderModel": _integration_model(
             agent.transcription_integration or agent.provider_integration,

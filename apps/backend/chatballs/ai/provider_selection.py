@@ -73,11 +73,12 @@ def configure_agent_transcription(
         return Integration.objects.get(
             id=integration_id,
             organization_id=context.organization_id,
-            kind=IntegrationKind.LLM_PROVIDER,
+            kind__in=[IntegrationKind.LLM_PROVIDER, IntegrationKind.SPEECH_PROVIDER],
             provider__in=[
                 IntegrationProvider.OPENROUTER,
                 IntegrationProvider.CUSTOM,
                 IntegrationProvider.DEMO,
+                IntegrationProvider.YANDEX_SPEECHKIT,
             ],
         )
     except (Integration.DoesNotExist, TypeError, ValueError) as error:

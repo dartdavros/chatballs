@@ -1,0 +1,26 @@
+import type { speechRu } from "./speech.ru";
+import type { Message } from "@chatballs/shared";
+
+export const speechEn: Record<keyof typeof speechRu, Message> = {
+  "speech.permission": "Allow the microphone in your browser, or keep typing.",
+  "speech.recording": "Recording",
+  "speech.recognizing": "Recognizing speech… You can type.",
+  "speech.result": "Text added. Review before sending.",
+  "speech.cancelled": "Dictation cancelled. Your draft has been kept.",
+  "speech.durationLimit": { one: "The {count}-second limit was reached. Recognizing the recording…", other: "The {count}-second limit was reached. Recognizing the recording…" },
+  "speech.sizeLimit": "The {size} limit was reached. Recognizing the recording…",
+  "speech.tooLong": "Shorten the text before sending. The entire draft is kept.",
+  "speech.emptySpeech": "No speech heard. Record again or type a message.",
+  "speech.unsupported": "This browser cannot record. Continue typing.",
+  "speech.denied": "Allow the microphone in your browser or keep typing.",
+  "speech.limitError": "Recording exceeds the limit. Record a shorter message.",
+  "speech.formatError": "Recording format is unsupported. Record again.",
+  "speech.networkError": "Connection failed. Retry recognition or keep typing.",
+  "speech.providerError": "Service unavailable. Try again or keep typing.",
+  "speech.timeoutError": "Recognition timed out. Try again or keep typing.",
+  "speech.dictate": "Dictate a message",
+  "speech.stop": "Stop",
+  "speech.cancel": "Cancel",
+  "speech.retry": "Retry",
+  "speech.recordAgain": "Record again",
+};

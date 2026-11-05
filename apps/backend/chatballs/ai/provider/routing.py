@@ -27,6 +27,7 @@ from chatballs.ai.provider.demo import DemoProvider
 from chatballs.ai.provider.openrouter import OpenRouterProvider
 from chatballs.i18n import t
 from chatballs.integrations.models import Integration, IntegrationProvider
+from chatballs.speech.contracts import Transcriber
 
 
 class IntegrationNotConfigured(ProviderError):
@@ -79,35 +80,18 @@ def resolve_model(channel, *, fallback_model: str) -> str:
 DEFAULT_TRANSCRIPTION_MODEL = "whisper-1"
 
 
-def _transcription_integration(channel) -> Integration:
-    """Чем расшифровывать голосовые.
-
-    Обычно тем же провайдером, что и отвечает, но выбор отдельный: модель
-    ответов может не уметь речь в текст. У Anthropic и Yandex Foundation Models
-    эндпоинта `/audio/transcriptions` нет вовсе, и без отдельного выбора
-    голосовые у такого агента расшифровать было нечем.
-    """
-    agent = getattr(channel, "ai_agent", None)
-    integration = getattr(agent, "transcription_integration", None) if agent else None
-    if integration is None or not integration.secret:
-        return _channel_integration(channel)
-    return integration
-
-
-def resolve_transcription_provider(channel, *, timeout: float | None = None) -> LLMProvider:
+def resolve_transcription_provider(channel, *, timeout: float | None = None) -> Transcriber:
     """Провайдер расшифровки: отдельная интеграция агента либо провайдер ответов."""
-    return _provider_from_integration(_transcription_integration(channel), timeout=timeout)
+    from chatballs.speech.routing import resolve_transcriber
+
+    return resolve_transcriber(channel, timeout=timeout)
 
 
 def resolve_transcription_model(channel) -> str:
-    """Модель расшифровки: выбранная на карточке агента, иначе модель той
-    интеграции, которая расшифровывает, иначе whisper-1."""
-    agent = getattr(channel, "ai_agent", None)
-    chosen = str(getattr(agent, "transcription_model", "") or "").strip()
-    if chosen:
-        return chosen
-    integration = _transcription_integration(channel)
-    return str(integration.config.get("transcription_model") or "").strip() or DEFAULT_TRANSCRIPTION_MODEL
+    """Модель агента → интеграции → default речевого адаптера."""
+    from chatballs.speech.routing import resolve_model as resolve_speech_model
+
+    return resolve_speech_model(channel)
 
 
 def _channel_integration(channel) -> Integration:

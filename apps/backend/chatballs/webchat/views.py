@@ -8,9 +8,7 @@ from chatballs.conversations.attachment_views import (
     validate_upload,
 )
 from chatballs.conversations.models import MessageKind
-from chatballs.conversations.voice_views import ALLOWED_AUDIO_TYPES, MAX_VOICE_BYTES
 from chatballs.i18n import t
-from chatballs.integrations.features import voice_messages_allowed
 from chatballs.webchat import services
 from chatballs.webchat.access import (
     _Public,
@@ -42,6 +40,7 @@ class WebchatSessionView(_Public):
             result = services.issue_session(
                 context=context, widget=widget, fields=request.data.get("fields"),
                 pre_chat_fields=request.data.get("preChatFields"),
+                consent_version=request.data.get("consentVersion"),
             )
             if result is None:
                 return Response({"detail": t("webchat.widget_unavailable")}, status=404)
@@ -64,30 +63,13 @@ class WebchatMessagesView(_PublicSession):
     parser_classes = [JSONParser, MultiPartParser, FormParser]
 
     def post(self, request: Request) -> Response:
+        if (request.content_type or "").startswith("multipart/form-data") and request.FILES.get("audio") is not None:
+            from chatballs.webchat.voice_inputs import post_web_voice
+
+            return post_web_voice(request, request.FILES["audio"])
         with _resolved_web_session(request) as (_context, session):
             if session is None:
                 return Response({"detail": t("webchat.session_not_found")}, status=401)
-            upload = request.FILES.get("audio")
-            if upload is not None:
-                # Голосовое из виджета (дизайн-базлайн v2, кадр H).
-                if not voice_messages_allowed(session.connection):
-                    return Response({"detail": t("webchat.voice_off")}, status=400)
-                if upload.size > MAX_VOICE_BYTES:
-                    return Response({"detail": t("conversations.audio_too_large")}, status=400)
-                content_type = (upload.content_type or "audio/webm").split(";")[0]
-                if content_type not in ALLOWED_AUDIO_TYPES:
-                    return Response({"detail": t("conversations.audio_format_unsupported")}, status=400)
-                try:
-                    duration = max(0, int(request.data.get("duration", 0)))
-                except (TypeError, ValueError):
-                    duration = 0
-                services.post_voice(
-                    session,
-                    content=upload.read(),
-                    content_type=content_type,
-                    duration=duration,
-                )
-                return Response({"ok": True}, status=201)
             attachment = request.FILES.get("file")
             if attachment is not None:
                 problem = validate_upload(attachment)
@@ -104,7 +86,9 @@ class WebchatMessagesView(_PublicSession):
             text = str(request.data.get("text", "")).strip()
             if not text:
                 return Response({"detail": t("ai.empty_message")}, status=400)
-            services.post_message(session, text[:4000])
+            if len(text) > 4000:
+                return Response({"detail": t("speech.text_too_long")}, status=400)
+            services.post_message(session, text)
             return Response({"ok": True}, status=201)
 
     def get(self, request: Request) -> Response:

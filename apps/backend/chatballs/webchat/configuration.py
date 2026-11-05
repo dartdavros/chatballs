@@ -11,6 +11,7 @@ from chatballs.webchat.consent_html import clean_consent_html
 from chatballs.webchat.models import WebChatWidget
 from chatballs.webchat.pre_chat import pre_chat_payload
 from chatballs.webchat.sessions import origin_allowed
+from chatballs.webchat.recording_configuration import public_recording
 
 
 def public_config(*, context: TenantContext, widget: WebChatWidget, origin: str) -> dict:
@@ -37,6 +38,7 @@ def public_config(*, context: TenantContext, widget: WebChatWidget, origin: str)
         elif sib.provider == IntegrationProvider.MAX and username:
             fallback.append({"label": t("webchat.write_in_max"), "url": ""})
     appearance = public_appearance(cfg)
+    recording = public_recording(integration)
     return {
         "available": True,
         "autonomous": _autonomous(integration),
@@ -46,7 +48,8 @@ def public_config(*, context: TenantContext, widget: WebChatWidget, origin: str)
         # бы ошибкой.
         "language": language,
         # Что разрешено в этой точке входа: виджет прячет микрофон при запрете.
-        "features": features_payload(integration),
+        "features": {**features_payload(integration), "voiceMessages": recording["microphoneMode"] == "voice_message"},
+        "speech": recording,
         "title": cfg.get("title") or channel.name,
         "accent": appearance["accent"],
         "appearance": appearance,

@@ -11,7 +11,8 @@ from chatballs.tenancy.context import TenantContext
 from chatballs.tenancy.database import tenant_atomic
 from chatballs.tenancy.ingress import web_channel_route, web_widget_route
 from chatballs.tenancy.lookup import load_organization
-from chatballs.webchat.api_inputs import session_token
+from chatballs.webchat import services
+from chatballs.webchat.api_inputs import host_origin, session_token
 from chatballs.webchat.models import WebChatWidget, WebChatWidgetStatus
 from chatballs.webchat.session_access import resolved_web_session
 from chatballs.webchat.throttling import WebchatSessionTrafficThrottle, WebchatTrafficThrottle
@@ -30,6 +31,17 @@ class _PublicSession(_Public):
     """
 
     throttle_classes = [WebchatTrafficThrottle, WebchatSessionTrafficThrottle]
+
+
+def session_available(session, request) -> bool:
+    connection = session.connection
+    return bool(
+        session.widget.status == WebChatWidgetStatus.PUBLISHED
+        and connection.is_active and connection.status == IntegrationStatus.OK
+        and connection.channel_id and connection.channel.is_active
+        and connection.channel.allow_anonymous_sessions
+        and services.origin_allowed(session.widget, host_origin(request))
+    )
 
 
 @contextmanager
