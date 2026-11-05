@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "revision": 26,
+  "revision": 28,
   "title": "Chatballs — архитектура контакт-центра",
   "elements": [
     {
@@ -1352,7 +1352,7 @@
       "id": "component-ratings",
       "kind": "component",
       "name": "Оценки клиентов",
-      "description": "Запрос по факту завершения, снимок шкалы, отложенная WEB-доставка, ограниченный credential и неизменяемая оценка; управленческая выдача.",
+      "description": "Запрос по факту завершения, снимок шкалы, отложенная WEB-доставка, ограниченный credential и неизменяемая оценка; управленческая выдача. WEB-оценка не истекает по времени; отмена/удаление и область credential сохраняются.",
       "state": "current",
       "external": false,
       "code": [
@@ -1360,31 +1360,15 @@
         "apps/backend/chatballs/ratings/urls.py"
       ],
       "evidence": [
-        "apps/backend/chatballs/ratings"
+        "apps/backend/chatballs/ratings",
+        ".skaro/specs/0032-otsenka-zavershennogo-dialoga-klientom.md",
+        "apps/backend/chatballs/ratings/public_service.py"
       ],
       "decisions": [
         "0034"
       ],
       "parent": "container-backend",
-      "technology": "Python / Django",
-      "planned": {
-        "name": "Оценки клиентов",
-        "description": "Запрос по факту завершения, снимок шкалы, отложенная WEB-доставка, ограниченный credential и неизменяемая оценка; управленческая выдача. WEB-оценка не истекает по времени; отмена/удаление и область credential сохраняются.",
-        "code": [
-          "apps/backend/chatballs/ratings/models.py",
-          "apps/backend/chatballs/ratings/urls.py"
-        ],
-        "evidence": [
-          "apps/backend/chatballs/ratings",
-          ".skaro/specs/0032-otsenka-zavershennogo-dialoga-klientom.md",
-          "apps/backend/chatballs/ratings/public_service.py"
-        ],
-        "decisions": [
-          "0034"
-        ],
-        "parent": "container-backend",
-        "technology": "Python / Django"
-      }
+      "technology": "Python / Django"
     },
     {
       "id": "component-quality",
@@ -2024,11 +2008,14 @@
       "id": "widget-rating",
       "kind": "component",
       "name": "Форма клиентской оценки",
-      "description": "Получает ограниченный вопрос/шкалу и отправляет одну оценку без доступа к истории.",
+      "description": "Получает ограниченный вопрос/шкалу и отправляет одну оценку без доступа к истории. Форма принимает WEB-оценку независимо от возраста. Отсутствие срока отражается достоверно; неизвестный/отменённый/удалённый запрос не называется просроченным.",
       "technology": "React / TypeScript",
       "code": [
         "apps/web-chat/src/ratings/main.tsx",
-        "apps/web-chat/src/ratings/api.ts"
+        "apps/web-chat/src/ratings/api.ts",
+        "apps/web-chat/src/ratings/useRating.ts",
+        "apps/web-chat/src/ratings/RatingOutcome.tsx",
+        "apps/web-chat/src/ratings/RatingRequestCard.tsx"
       ],
       "parent": "container-widget",
       "decisions": [
@@ -2037,29 +2024,10 @@
       "state": "current",
       "external": false,
       "evidence": [
-        "apps/web-chat/src/ratings"
-      ],
-      "planned": {
-        "name": "Форма клиентской оценки",
-        "description": "Получает ограниченный вопрос/шкалу и отправляет одну оценку без доступа к истории. Форма принимает WEB-оценку независимо от возраста. Отсутствие срока отражается достоверно; неизвестный/отменённый/удалённый запрос не называется просроченным.",
-        "code": [
-          "apps/web-chat/src/ratings/main.tsx",
-          "apps/web-chat/src/ratings/api.ts",
-          "apps/web-chat/src/ratings/useRating.ts",
-          "apps/web-chat/src/ratings/RatingOutcome.tsx",
-          "apps/web-chat/src/ratings/RatingRequestCard.tsx"
-        ],
-        "evidence": [
-          "apps/web-chat/src/ratings",
-          ".skaro/specs/0032-otsenka-zavershennogo-dialoga-klientom.md",
-          "apps/web-chat/src/ratings/api.ts"
-        ],
-        "decisions": [
-          "0034"
-        ],
-        "parent": "container-widget",
-        "technology": "React / TypeScript"
-      }
+        "apps/web-chat/src/ratings",
+        ".skaro/specs/0032-otsenka-zavershennogo-dialoga-klientom.md",
+        "apps/web-chat/src/ratings/api.ts"
+      ]
     },
     {
       "id": "widget-snapshot",
@@ -3045,13 +3013,15 @@
       "id": "code-rating",
       "kind": "code",
       "name": "RatingRequest / credentials / delivery",
-      "description": "Один запрос на завершение, snapshot шкалы и реальная WEB-доставка воркером; ограниченный публичный доступ.",
+      "description": "Один запрос на завершение, snapshot шкалы и реальная WEB-доставка воркером; ограниченный публичный доступ. Планируемое исправление: WEB-запросы бессрочны, включая уже отправленные. Миграции, API, directory и триггеры согласованы; отмены, credential, снимки и единственный результат сохраняются.",
       "technology": "Python",
       "code": [
         "apps/backend/chatballs/ratings/scheduling.py",
         "apps/backend/chatballs/ratings/credentials.py",
         "apps/backend/chatballs/ratings/web_delivery.py",
-        "apps/backend/chatballs/ratings/public_service.py"
+        "apps/backend/chatballs/ratings/public_service.py",
+        "apps/backend/chatballs/ratings/models.py",
+        "apps/backend/chatballs/ratings/migrations/0003_web_requests_without_expiry.py"
       ],
       "parent": "component-ratings",
       "decisions": [
@@ -3063,33 +3033,13 @@
         "apps/backend/chatballs/ratings/scheduling.py",
         "apps/backend/chatballs/ratings/credentials.py",
         "apps/backend/chatballs/ratings/web_delivery.py",
-        "apps/backend/chatballs/ratings/public_service.py"
-      ],
-      "planned": {
-        "name": "RatingRequest / credentials / delivery",
-        "description": "Один запрос на завершение, snapshot шкалы и реальная WEB-доставка воркером; ограниченный публичный доступ. Планируемое исправление: WEB-запросы бессрочны, включая уже отправленные. Миграции, API, directory и триггеры согласованы; отмены, credential, снимки и единственный результат сохраняются.",
-        "code": [
-          "apps/backend/chatballs/ratings/scheduling.py",
-          "apps/backend/chatballs/ratings/credentials.py",
-          "apps/backend/chatballs/ratings/web_delivery.py",
-          "apps/backend/chatballs/ratings/public_service.py",
-          "apps/backend/chatballs/ratings/models.py",
-          "apps/backend/chatballs/ratings/migrations/"
-        ],
-        "evidence": [
-          "apps/backend/chatballs/ratings/scheduling.py",
-          "apps/backend/chatballs/ratings/credentials.py",
-          "apps/backend/chatballs/ratings/web_delivery.py",
-          "apps/backend/chatballs/ratings/public_service.py",
-          ".skaro/specs/0032-otsenka-zavershennogo-dialoga-klientom.md",
-          "apps/backend/chatballs/ratings/migrations/0002_guards.py"
-        ],
-        "decisions": [
-          "0034"
-        ],
-        "parent": "component-ratings",
-        "technology": "Python"
-      }
+        "apps/backend/chatballs/ratings/public_service.py",
+        ".skaro/specs/0032-otsenka-zavershennogo-dialoga-klientom.md",
+        "apps/backend/chatballs/ratings/migrations/0002_guards.py",
+        "apps/backend/chatballs/ratings/migrations/0003_web_requests_without_expiry.py",
+        "apps/backend/chatballs/ratings/test_expiry_migration.py",
+        "docs/verification/T-184/README.md"
+      ]
     },
     {
       "id": "code-quality",
@@ -8306,12 +8256,13 @@
       "id": "rel-ratings-webchat",
       "source": "component-ratings",
       "target": "component-webchat",
-      "description": "Выбирает допустимую WebSession для реализованной WEB-доставки.",
+      "description": "Выбирает допустимую WebSession для реализованной WEB-доставки. WEB-запрос не ограничен возрастом; прежние проверки отмены, существования и изоляции сохраняются.",
       "technology": "Вызов Python / ORM внутри монолита",
       "state": "current",
       "evidence": [
         "apps/backend/chatballs/ratings",
-        "apps/backend/chatballs/webchat"
+        "apps/backend/chatballs/webchat",
+        ".skaro/specs/0032-otsenka-zavershennogo-dialoga-klientom.md"
       ],
       "decisions": [
         "0034",
@@ -8320,26 +8271,7 @@
         "0030",
         "0031",
         "0037"
-      ],
-      "planned": {
-        "source": "component-ratings",
-        "target": "component-webchat",
-        "description": "Выбирает допустимую WebSession для реализованной WEB-доставки. WEB-запрос не ограничен возрастом; прежние проверки отмены, существования и изоляции сохраняются.",
-        "evidence": [
-          "apps/backend/chatballs/ratings",
-          "apps/backend/chatballs/webchat",
-          ".skaro/specs/0032-otsenka-zavershennogo-dialoga-klientom.md"
-        ],
-        "decisions": [
-          "0034",
-          "0018",
-          "0023",
-          "0030",
-          "0031",
-          "0037"
-        ],
-        "technology": "Вызов Python / ORM внутри монолита"
-      }
+      ]
     },
     {
       "id": "rel-quality-privacy",
@@ -9668,30 +9600,17 @@
       "id": "rel-widget-rating",
       "source": "widget-rating",
       "target": "component-ratings",
-      "description": "Читает разрешённый вопрос и отправляет оценку по ограниченному credential.",
+      "description": "Читает разрешённый вопрос и отправляет оценку по ограниченному credential. WEB-запрос не ограничен возрастом; прежние проверки отмены, существования и изоляции сохраняются.",
       "technology": "HTTPS JSON",
       "state": "current",
       "evidence": [
         "apps/web-chat/src/ratings",
-        "apps/backend/chatballs/ratings"
+        "apps/backend/chatballs/ratings",
+        ".skaro/specs/0032-otsenka-zavershennogo-dialoga-klientom.md"
       ],
       "decisions": [
         "0034"
-      ],
-      "planned": {
-        "source": "widget-rating",
-        "target": "component-ratings",
-        "description": "Читает разрешённый вопрос и отправляет оценку по ограниченному credential. WEB-запрос не ограничен возрастом; прежние проверки отмены, существования и изоляции сохраняются.",
-        "evidence": [
-          "apps/web-chat/src/ratings",
-          "apps/backend/chatballs/ratings",
-          ".skaro/specs/0032-otsenka-zavershennogo-dialoga-klientom.md"
-        ],
-        "decisions": [
-          "0034"
-        ],
-        "technology": "HTTPS JSON"
-      }
+      ]
     },
     {
       "id": "rel-widget-snapshot",

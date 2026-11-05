@@ -11,8 +11,6 @@ from chatballs.ratings.presentation import request_presentation
 from chatballs.tenancy.database import tenant_atomic
 from chatballs.webchat.models import WebSession
 
-REQUEST_TTL = timedelta(days=7)
-
 
 def available_sessions():
     return WebSession.objects.filter(
@@ -38,14 +36,13 @@ def deliver_due_requests(context):
                 widget__integration_id=request.conversation.connection_id,
                 identity__contact_id=request.conversation.contact_id,
             ).first()
-            if policy is None or not policy.enabled or session is None:
+            if policy is None or not policy.enabled or session is None or request.completion.transport != "WEB":
                 request.cancelled_at = timezone.now()
                 request.save(update_fields=["cancelled_at"])
                 continue
             request.sent_at = timezone.now()
-            request.expires_at = request.sent_at + REQUEST_TTL
             request.credential_hash = hash_credential(credential_for(request))
-            request.save(update_fields=["sent_at", "expires_at", "credential_hash"])
+            request.save(update_fields=["sent_at", "credential_hash"])
             delivered += 1
         return delivered
 
@@ -55,12 +52,13 @@ def session_requests(session):
         return []
     requests = RatingRequest.objects.filter(
         organization_id=session.organization_id, delivery_session_id=session.pk,
-        sent_at__isnull=False, cancelled_at__isnull=True, expires_at__gt=timezone.now(),
+        completion__transport="WEB",
+        sent_at__isnull=False, cancelled_at__isnull=True,
         result__isnull=True,
     ).order_by("due_at", "pk")
     return [
         {"credential": credential_for(request), "text": request.text,
-         "scale": request.scale, "expiresAt": request.expires_at.isoformat(),
+         "scale": request.scale, "expiresAt": None,
          "presentation": request_presentation(request)}
         for request in requests
         if hash_credential(credential_for(request)) == request.credential_hash

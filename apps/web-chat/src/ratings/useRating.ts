@@ -9,7 +9,7 @@ export function useRating() {
   const [result, setResult] = useState<RatingResult | null>(null);
   const [value, setValue] = useState(entry?.value || 0);
   const [comment, setComment] = useState("");
-  const [state, setState] = useState<"loading" | "form" | "thanks" | "rated" | "expired">(entry?.credential ? "loading" : "expired");
+  const [state, setState] = useState<"loading" | "form" | "thanks" | "rated" | "unavailable">(entry?.credential ? "loading" : "unavailable");
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
   useEffect(() => {
@@ -24,7 +24,7 @@ export function useRating() {
       setState(data.result ? "rated" : "form");
     }).catch(problem => {
       if (!active) return;
-      if (problem instanceof RatingError && problem.status === 404) setState("expired");
+      if (problem instanceof RatingError && problem.status === 404) setState("unavailable");
       else { setFailed(true); setState("form"); }
     });
     return () => { active = false; };
@@ -42,7 +42,7 @@ export function useRating() {
       const data = await ratingApi<RatingResult>(entry.credential, { value, comment });
       setResult(data); setState("thanks");
     } catch (problem) {
-      if (problem instanceof RatingError && problem.status === 404) setState("expired");
+      if (problem instanceof RatingError && problem.status === 404) setState("unavailable");
       else if (problem instanceof RatingError && problem.status === 409) {
         try { const data = await ratingApi<RatingQuestion>(entry.credential); setQuestion(data); setResult(data.result); setState("rated"); }
         catch { setFailed(true); }

@@ -1,6 +1,6 @@
 export type RatingChoice = { value: number; label: string };
 export type RatingPresentation = { name: string; accent: string; siteUrl: string; conversationDate: string; language: string };
-export type RatingRequest = { credential: string; text: string; scale: RatingChoice[]; expiresAt: string; presentation: RatingPresentation };
+export type RatingRequest = { credential: string; text: string; scale: RatingChoice[]; expiresAt: string | null; presentation: RatingPresentation };
 export type RatingResult = { value: number; comment: string; receivedAt: string };
 export type RatingQuestion = Omit<RatingRequest, "credential"> & { commentMaxLength: number; result: RatingResult | null };
 

@@ -11,7 +11,7 @@ export function RatingPage() {
     <header>{presentation && <><span>{presentation.name.slice(0, 1)}</span><strong>{presentation.name}</strong></>}</header>
     <div className="rating-page-body">
       {rating.state === "form" && <RatingForm rating={rating} />}
-      {["thanks", "rated", "expired"].includes(rating.state) && <RatingOutcome rating={rating} />}
+      {["thanks", "rated", "unavailable"].includes(rating.state) && <RatingOutcome rating={rating} />}
     </div>
   </main>;
 }

@@ -41,7 +41,7 @@ class RatingRequest(TenantRelationModel):
             models.UniqueConstraint(fields=["conversation", "completion"], name="rating_completion_unique"),
             models.CheckConstraint(
                 condition=models.Q(sent_at__isnull=True, credential_hash__isnull=True, expires_at__isnull=True)
-                | models.Q(sent_at__isnull=False, credential_hash__isnull=False, expires_at__isnull=False),
+                | models.Q(sent_at__isnull=False, credential_hash__isnull=False),
                 name="rating_credential_lifecycle",
             ),
         ]

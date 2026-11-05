@@ -3,6 +3,7 @@
 from contextlib import contextmanager
 
 from django.db import connection
+from django.db.models import Q
 from django.utils import timezone
 from rest_framework.exceptions import APIException, NotFound
 
@@ -30,7 +31,9 @@ def result_payload(result):
 def question_payload(request):
     result = CustomerRating.objects.filter(request=request).first()
     return {"text": request.text, "scale": request.scale,
-            "expiresAt": request.expires_at.isoformat(), "commentMaxLength": COMMENT_LIMIT,
+            "expiresAt": (request.expires_at.isoformat()
+                          if request.completion.transport != "WEB" and request.expires_at else None),
+            "commentMaxLength": COMMENT_LIMIT,
             "result": result_payload(result) if result else None,
             "presentation": request_presentation(request)}
 
@@ -51,9 +54,10 @@ def resolved_request(token, *, expected_organization_id=None):
         raise NotFound(t("ratings.unavailable"))
     context = TenantContext.for_resource(organization, actor_kind=TenantActorKind.MACHINE)
     with tenant_atomic(context):
-        request = RatingRequest.objects.select_for_update().filter(
+        request = RatingRequest.objects.select_for_update(of=("self",)).filter(
+            Q(completion__transport="WEB") | Q(expires_at__gt=timezone.now()),
             pk=route[1], organization_id=organization.pk, credential_hash=digest,
-            sent_at__isnull=False, cancelled_at__isnull=True, expires_at__gt=timezone.now(),
+            sent_at__isnull=False, cancelled_at__isnull=True,
         ).first()
         if request is None:
             raise NotFound(t("ratings.unavailable"))

@@ -1,12 +1,9 @@
-from datetime import timedelta
-
 from django.db import connection
-from django.utils import timezone
 from rest_framework.test import APIClient
 
 from chatballs.events.models import OutboxEvent
 from chatballs.ratings.credentials import credential_for, hash_credential
-from chatballs.ratings.models import CustomerRating, RatingRequest
+from chatballs.ratings.models import CustomerRating
 from chatballs.ratings.test_support import RatingTestBase
 from chatballs.ratings.web_delivery import deliver_due_requests
 
@@ -29,7 +26,8 @@ class RatingPublicTests(RatingTestBase):
         self.assertEqual(response["Cache-Control"], "no-store")
         self.assertEqual(self.target.credential_hash, hash_credential(self.token))
         self.assertNotEqual(self.target.credential_hash, self.token)
-        self.assertEqual(self.target.expires_at - self.target.sent_at, timedelta(days=7))
+        self.assertIsNone(self.target.expires_at)
+        self.assertIsNone(response.data["expiresAt"])
         self.assertFalse(self.conversation.messages.filter(text__contains=self.token).exists())
 
     def test_repeated_identical_response_and_changed_response_conflict(self):
@@ -62,21 +60,10 @@ class RatingPublicTests(RatingTestBase):
         self.assertEqual(self.client.get(f"/api/v1/ratings/{self.target.pk}/").status_code, 404)
         self.assertEqual(self.client.get("/api/v1/webchat/messages/").status_code, 401)
 
-    def test_missing_bad_expired_and_deleted_credentials_rejected(self):
+    def test_missing_bad_and_deleted_credentials_rejected(self):
         for header in ("", "Bearer wrong", f"Bearer {self.target.pk}", f"Bearer {'0' * 64}"):
             self.client.credentials(HTTP_AUTHORIZATION=header)
             self.assertEqual(self.client.get("/api/v1/ratings/").status_code, 404)
-        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.token}")
-        # A separate already-expired request, using the real INSERT lifecycle.
-        event = self.row(event_type="CLOSED")
-        event.save()
-        expired = RatingRequest.objects.get(completion=event)
-        expired.sent_at = timezone.now() - timedelta(days=8)
-        expired.expires_at = expired.sent_at + timedelta(days=7)
-        expired.credential_hash = hash_credential(credential_for(expired))
-        expired.save(update_fields=["sent_at", "expires_at", "credential_hash"])
-        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {credential_for(expired)}")
-        self.assertEqual(self.client.post("/api/v1/ratings/", {"value": 5}, format="json").status_code, 404)
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.conversation.delete()
         self.assertEqual(self.client.get("/api/v1/ratings/").status_code, 404)
