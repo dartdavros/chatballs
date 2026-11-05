@@ -2,7 +2,12 @@
 
 from django.db import connection
 
-from chatballs.integrations.models import Integration, IntegrationKind, IntegrationProvider, ServiceConnectionSettings
+from chatballs.integrations.models import (
+    Integration,
+    IntegrationKind,
+    IntegrationProvider,
+    ServiceConnectionSettings,
+)
 from chatballs.integrations.scenario_state.subscriptions import ScenarioExternalKey
 from chatballs.integrations.scenarios.definition import empty_definition
 from chatballs.integrations.scenarios.external_keys import token_hash
@@ -59,6 +64,10 @@ class ScenarioConfigurationTests(ScenarioAPICase):
             "fields": [{"left": "name", "right": "NAME", "direction": "forward"}, {"left": "name", "right": "NAME", "direction": "reverse"}],
             "sourceOfTruth": "latest", "conflict": "manual", "deletion": "unlink", "causality": {"suppressEcho": True, "requireExplicitLink": True}}
         payload = {"revision": 0, "definition": {"version": 1, "synchronization": [pair]}}
+        # Bitrix does not expose a conditional remote write. Preserve that
+        # rejection and exercise the supported remote-to-native direction.
+        self.assertEqual(self.client.put(url, payload, format="json").status_code, 400)
+        pair["direction"] = "reverse"
         result = self.as_runtime(lambda: self.client.put(url, payload, format="json"))
         self.assertEqual(result.status_code, 200, result.content)
         self.assertEqual(result.json()["revision"], 1)

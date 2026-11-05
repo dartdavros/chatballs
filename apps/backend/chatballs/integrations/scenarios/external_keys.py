@@ -12,9 +12,10 @@ def token_hash(token):
 
 def key_payload(request, key, token=None):
     # Stable endpoint contract for T-172. No request is executed by the editor.
-    url = request.build_absolute_uri(f"/api/v1/scenario-triggers/{key.public_id}/")
+    path = f"/api/v1/scenario-triggers/{key.public_id}/"
+    url = request.build_absolute_uri(path) if request is not None else path
     result = {"id": str(key.public_id), "trigger": key.trigger_id, "url": url}
-    if token is not None:
+    if token is not None and request is not None:
         result["key"] = token
     return result
 

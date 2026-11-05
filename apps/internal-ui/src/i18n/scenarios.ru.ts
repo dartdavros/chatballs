@@ -126,6 +126,8 @@ export const scenariosRu = {
   "scenarios.type": "Тип",
   "scenarios.required": "Обязательно",
   "scenarios.nullable": "Можно оставить пустым",
+  "scenarios.empty_value": "Пустое значение",
+  "scenarios.type_json": "Произвольное значение",
   "scenarios.options": "Разрешённые значения",
   "scenarios.add_value": "Добавить значение",
   "scenarios.array_item": "Элемент списка",

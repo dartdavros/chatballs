@@ -30,7 +30,7 @@ export function ConstantValue({ field, value, connection, onChange, catalog }: {
     const object: Record<string, unknown> = value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : {};
     const known = [...(field.fields ?? []), ...extraFields];
     const fields = [...known, ...Object.keys(object).filter(name => !known.some(f => f.name === name)).map(name => inferredField(name, object[name]))];
-    return <CompoundValue title={field.title}>{fields.map(child => <ConstantValue key={child.name} field={child} value={object[child.name]} catalog={catalog}
+    return <CompoundValue title={field.title}>{fields.map(child => <ConstantValue key={child.name} field={{ ...child, secret: field.secret || child.secret }} value={object[child.name]} catalog={catalog}
       connection={connection} onChange={next => onChange({ ...object, [child.name]: next })} />)}
       {field.open && <AddObjectField names={fields.map(f => f.name)} onAdd={child => { setExtraFields([...extraFields, child]); onChange({ ...object, [child.name]: initialLiteral(child) }); }} />}
     </CompoundValue>;
@@ -38,7 +38,7 @@ export function ConstantValue({ field, value, connection, onChange, catalog }: {
   if (field.type === "array" && field.items) {
     const items = Array.isArray(value) ? value : [];
     return <CompoundValue title={field.title}>{items.map((item, index) => <ConstantValue key={index}
-      field={{ ...field.items!, title: field.items!.title || t("scenarios.array_item") }} value={item} catalog={catalog}
+      field={{ ...field.items!, title: field.items!.title || t("scenarios.array_item"), secret: field.secret || field.items!.secret }} value={item} catalog={catalog}
       connection={connection} onChange={next => onChange(items.map((v, i) => i === index ? next : v))} />)}
       <button type="button" className="link" onClick={() => onChange([...items, initialLiteral(field.items!)])}>{t("scenarios.add_item")}</button></CompoundValue>;
   }

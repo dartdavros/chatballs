@@ -2,6 +2,8 @@ import type { ComponentType } from "react";
 
 import { FormField, SelectField, SwitchButton, TextAreaField } from "../../../../shared/form-controls";
 import type { ServiceField } from "../types";
+import { StructuredValue } from "./StructuredValue";
+import { ScenarioSettingsValue } from "../../scenarios/ScenarioSettingsValue";
 
 export type ServiceValues = Record<string, unknown>;
 export type ControlProps = {
@@ -16,11 +18,12 @@ const text = (value: unknown) => typeof value === "string" || typeof value === "
 
 function InputControl({ field, value, error, disabled, onChange }: ControlProps) {
   const secret = field.control.startsWith("secret@") || (field.secret && !field.control.startsWith("url@"));
-  const type = secret ? "password" : field.type === "integer" || field.type === "number" ? "number"
+  const numeric = field.type === "integer" || field.type === "number";
+  const type = secret ? "password" : numeric ? "number"
     : field.type === "date" ? "date" : field.type === "datetime" ? "datetime-local" : "text";
   return <FormField label={field.title} value={text(value)} error={error} placeholder={field.placeholder} disabled={disabled}
     mono={field.control.startsWith("url@") || field.secret} type={type} wide onChange={(next) => {
-      onChange(type === "number" && next !== "" && Number.isFinite(Number(next)) ? Number(next) : next);
+      onChange(numeric && next !== "" && Number.isFinite(Number(next)) ? Number(next) : next);
     }} />;
 }
 
@@ -44,6 +47,8 @@ function ToggleControl({ field, value, disabled, onChange }: ControlProps) {
 // Доверенный frontend-пакет регистрирует свой компонент до открытия формы.
 // Незнакомый ключ/версия никогда не превращается в текстовый input.
 const controls = new Map<string, ComponentType<ControlProps>>([
+  ["scenario_settings@1", ScenarioSettingsValue],
+  ["structured_value@1", StructuredValue],
   ...["text", "url", "secret", "number", "date"].map((key) => [`${key}@1`, InputControl] as const),
   ["textarea@1", TextControl], ["select@1", SelectControl], ["toggle@1", ToggleControl],
 ]);
@@ -55,6 +60,7 @@ export function registerFieldControl(ref: string, component: ComponentType<Contr
 
 export function fieldControl(field: ServiceField) {
   const defaults: Record<string, string> = {
+    json: "structured_value@1",
     string: field.secret ? "secret@1" : "text@1", integer: "number@1", number: "number@1",
     boolean: "toggle@1", enum: "select@1", date: "date@1", datetime: "date@1",
   };

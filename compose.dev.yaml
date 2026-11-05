@@ -157,9 +157,11 @@ services:
       # Bind-mounts from the Windows host do not deliver inotify events into the
       # container, so the watcher polls instead — otherwise HMR never fires.
       VITE_DEV_POLL: "1"
-      # Slow Windows mounts can block Vite while polling. Verification can
-      # disable watching and apply source changes through a managed restart.
+      # Verification can disable watching and apply changes through a managed restart.
       VITE_DEV_WATCH: "${VITE_DEV_WATCH:-1}"
+      # Windows file polling and DNS share libuv's worker pool. Keep backend
+      # proxy lookups responsive while the source tree is being scanned.
+      UV_THREADPOOL_SIZE: "16"
     ports:
       - "${INTERNAL_UI_PORT:-5173}:5173"
     volumes:
@@ -176,6 +178,7 @@ services:
     command: npm run dev -- --host 0.0.0.0 --port 5175
     environment:
       VITE_DEV_POLL: "1"
+      UV_THREADPOOL_SIZE: "16"
       VITE_DEV_API_TARGET: http://backend-app:8000
     ports:
       - "${WEB_CHAT_PORT:-5175}:5175"

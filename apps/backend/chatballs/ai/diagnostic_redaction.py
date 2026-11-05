@@ -23,6 +23,10 @@ _BEARER = re.compile(r"\b(Bearer|Basic)\s+[^\s\"'<>]+", re.I)
 _TOKEN_COUNTS = {"prompt_tokens", "completion_tokens", "total_tokens", "max_tokens", "max_completion_tokens"}
 
 
+def is_sensitive_key(key: str) -> bool:
+    return bool(_SENSITIVE.search(key)) and key not in _TOKEN_COUNTS
+
+
 class DiagnosticRedactor:
     def __init__(self, pseudonymizer: Pseudonymizer, secrets=()) -> None:
         self.pseudonymizer = pseudonymizer
@@ -73,7 +77,7 @@ class DiagnosticRedactor:
             return "[truncated]"
         if isinstance(value, dict):
             return {
-                self.text(str(key), bounded=False): REDACTED if (_SENSITIVE.search(str(key)) and str(key) not in _TOKEN_COUNTS)
+                self.text(str(key), bounded=False): REDACTED if is_sensitive_key(str(key))
                 else self.clean(item, depth + 1)
                 for key, item in value.items()
             }

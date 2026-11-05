@@ -1,0 +1,72 @@
+[
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/",
+    "method": "GET",
+    "handler": "chatballs.integrations.views.IntegrationListView",
+    "action": "connections.get",
+    "reason": null
+  },
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/",
+    "method": "POST",
+    "handler": "chatballs.integrations.views.IntegrationListView",
+    "action": "connections.post",
+    "reason": null
+  },
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/<int:integration_id>/",
+    "method": "PATCH",
+    "handler": "chatballs.integrations.views.IntegrationDetailView",
+    "action": "connections.detail.patch",
+    "reason": null
+  },
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/<int:integration_id>/",
+    "method": "DELETE",
+    "handler": "chatballs.integrations.views.IntegrationDetailView",
+    "action": "connections.detail.delete",
+    "reason": null
+  },
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/<int:integration_id>/test/",
+    "method": "POST",
+    "handler": "chatballs.integrations.views.IntegrationTestView",
+    "action": "connections.test.post",
+    "reason": null
+  },
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/<int:integration_id>/tools/refresh/",
+    "method": "POST",
+    "handler": "chatballs.integrations.views.IntegrationToolsRefreshView",
+    "action": "connections.tools.refresh.post",
+    "reason": null
+  },
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/<int:integration_id>/tools/read-only/confirm/",
+    "method": "POST",
+    "handler": "chatballs.integrations.views.IntegrationToolConfirmView",
+    "action": "connections.tools.confirm.post",
+    "reason": null
+  },
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/<int:integration_id>/tools/read-only/revoke/",
+    "method": "POST",
+    "handler": "chatballs.integrations.views.IntegrationToolRevokeView",
+    "action": "connections.tools.revoke.post",
+    "reason": null
+  },
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/http/validate-address/",
+    "method": "POST",
+    "handler": "chatballs.integrations.address_validation.HttpAddressValidationView",
+    "action": "connections.address.post",
+    "reason": null
+  },
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/<int:integration_id>/assets/",
+    "method": "POST",
+    "handler": "chatballs.webchat.asset_views.WidgetAssetUploadView",
+    "action": "connections.assets.post",
+    "reason": null
+  }
+]

@@ -264,11 +264,11 @@ class TestChatTests(TransactionTestCase):
 
     def test_escaped_values_are_masked_and_restored_without_escaping_artifacts(self):
         self.data["name"] = 'Анна "Ким"\nТест'
-        self.data["webFields"][str(self.web.id)]["order_number"] = 'номер "А"\n42'
+        self.data["webFields"][str(self.web.id)]["order_number"] = 'ЛичныйЗаказ42 "А"\n42'
         provider = ScriptedProvider(says("[[client_name]]: [[order_number]]"))
         with patch("chatballs.ai.invocation.get_provider", return_value=provider):
             response = self._post()
         self.assertEqual(response.status_code, 200, response.content)
-        self.assertEqual(response.json()["reply"], 'Анна "Ким"\nТест: номер "А"\n42')
+        self.assertEqual(response.json()["reply"], 'Анна "Ким"\nТест: ЛичныйЗаказ42 "А"\n42')
         self.assertNotIn("Анна", provider.sent())
-        self.assertNotIn("номер", provider.sent())
+        self.assertNotIn("ЛичныйЗаказ42", provider.sent())

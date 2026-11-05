@@ -5,9 +5,46 @@ import { displayRunValue } from "../runs/RunValues";
 import { ConstantValue } from "./ConstantValue";
 import { unavailableField, unavailableScenarioControl } from "./controlModel";
 import { emptyDocument, schemaField } from "./model";
+import { compatibleField } from "./bindingOptions";
+import { jsonField, replaceEntry } from "../services/connect/structuredValues";
 import type { EditorCatalog } from "./types";
 
 describe("scenario schema controls", () => {
+  it("keeps nested access values masked in ordinary and arbitrary structures", () => {
+    for (const field of [{ ...schemaField("access", { type: "object", open: true }), secret: true },
+      { ...jsonField("access"), secret: true }]) {
+      const rendered = renderToStaticMarkup(<ConstantValue field={field}
+        value={{ url: "private-access-value" }} connection="" onChange={() => undefined} />);
+      expect(rendered).toContain('type="password"');
+      expect(rendered).not.toContain("<textarea");
+    }
+  });
+
+  it("renders mixed examples without converting them to a JSON string or a file", () => {
+    const field = jsonField("example");
+    const value = [null, "draft\nline", 42, false, { source: "step", fileId: "ordinary-data", nested: [true, 3] }];
+    const rendered = renderToStaticMarkup(<ConstantValue field={field} value={value} connection="chatballs" onChange={() => undefined} />);
+    expect(unavailableField(field)).toBe(false);
+    expect(rendered).toContain("ordinary-data");
+    expect(rendered).toContain("draft\nline");
+    expect(rendered).toContain("textarea");
+    expect(rendered).not.toContain("&quot;source&quot;");
+    expect(compatibleField(field, schemaField("file", { type: "file", nullable: true }))).toBe(false);
+    expect(compatibleField(schemaField("count", { type: "integer" }), field)).toBe(true);
+    const renamed = replaceEntry({ key: [1, null] }, 0, "__proto__", [1, null]);
+    expect(Object.keys(renamed)).toEqual(["__proto__"]);
+    expect(Object.getPrototypeOf(renamed)).toBe(Object.prototype);
+  });
+
+  it("shows dynamic result fields and mixed arrays while preserving redaction", () => {
+    const field = { ...schemaField("settings", { type: "object" }), open: true };
+    const shown = displayRunValue(field, { max_tokens: 1200, nested: [1, null, { text: "visible" }], hidden: { redacted: true } });
+    expect(shown).toContain("max_tokens");
+    expect(shown).toContain("visible");
+    expect(shown).not.toContain("redacted");
+    expect(displayRunValue(jsonField("example"), { source: "step", fileId: "ordinary-data" })).toContain("ordinary-data");
+  });
+
   it("uses vocabulary labels and a safe fallback without changing machine values", () => {
     const field = { ...schemaField("failure", { type: "string" }),
       options: [{ value: "PROVIDER_FAILURE", label: "Provider unavailable" }], placeholder: "Operation could not finish" };

@@ -36,7 +36,7 @@ def resolve_supervised_groups(profile, role, body):
     return None, None
 
 
-def update_employee_access(request, profile, role, groups) -> None:
+def update_employee_access(request, profile, role, groups, *, actor=None) -> None:
     old_role = profile.role
     old_ids = sorted(profile.supervision_links.values_list("group_id", flat=True))
     new_ids = old_ids if groups is None else sorted(group.id for group in groups)
@@ -61,7 +61,7 @@ def update_employee_access(request, profile, role, groups) -> None:
         }))
     for action, payload in changes:
         record_audit_event(
-            action=action, actor=request.user, organization=profile.organization,
+            action=action, actor=actor if actor is not None else request.user, organization=profile.organization,
             object_type="HumanUser", object_id=str(profile.user_id),
             payload=payload, request=request,
         )

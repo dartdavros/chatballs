@@ -4,8 +4,8 @@ from unittest.mock import patch
 
 from chatballs.events.models import OutboxEvent
 from chatballs.integrations.execution.permissions import ExecutionDenied
-from chatballs.integrations.execution.source_support import require_supported_sources
 from chatballs.integrations.execution.runner import run_one
+from chatballs.integrations.execution.source_support import require_supported_sources
 from chatballs.integrations.execution.test_execution import ExecutionCase
 from chatballs.integrations.scenario_state.runs import ScenarioRun
 from chatballs.integrations.scenarios.definition import empty_definition
@@ -43,7 +43,7 @@ class DeferredSourceTests(ExecutionCase):
             self.scenario.definition = document
             self.scenario.save(update_fields=["content"])
         url = f"/api/v1/organizations/{self.organization.public_id}/integrations/run-actions/"
-        with patch("chatballs.integrations.execution.launch_views.default_registry", return_value=self.registry), patch(
+        with patch("chatballs.integrations.execution.manual_catalog_queries.default_registry", return_value=self.registry), patch(
                 "chatballs.integrations.execution.actions.default_registry", return_value=self.registry):
             response = self.as_runtime(lambda: self.client.get(url))
         self.assertEqual(response.status_code, 200, response.content)

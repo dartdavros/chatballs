@@ -1,6 +1,6 @@
 import type { ServiceAdapter, ServiceConnection, ServiceField } from "../services/types";
 
-export type DataKind = "string" | "integer" | "number" | "boolean" | "date" | "datetime" | "object" | "array" | "enum" | "lookup" | "file";
+export type DataKind = "string" | "integer" | "number" | "boolean" | "date" | "datetime" | "object" | "array" | "enum" | "lookup" | "file" | "json";
 export type DataSchema = {
   type: DataKind; title?: string; required?: boolean; nullable?: boolean; open?: boolean;
   properties?: Record<string, DataSchema>; items?: DataSchema; options?: Array<string | number | boolean>; lookup?: string;

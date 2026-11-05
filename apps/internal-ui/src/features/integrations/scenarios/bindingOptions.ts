@@ -84,6 +84,7 @@ export function valueOptions(document: ScenarioDocument, catalog: EditorCatalog,
   return options;
 }
 export function compatibleField(source: ServiceField, target: ServiceField): boolean {
+  if (target.type === "json") return !source.nullable || target.nullable;
   if (source.type !== target.type && !(source.type === "integer" && target.type === "number")) return false;
   if (source.nullable && !target.nullable) return false;
   if (target.type === "lookup") return source.lookup === target.lookup;

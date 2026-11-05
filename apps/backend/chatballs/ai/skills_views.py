@@ -1,21 +1,19 @@
 """Thin administrative HTTP boundary for the organization skill library."""
 
 from django.core.exceptions import RequestDataTooBig
-from django.db.models import Q
 from rest_framework.exceptions import APIException
 from rest_framework.response import Response
 from rest_framework.views import APIView, exception_handler
 
 from chatballs.ai.skill_templates.errors import TemplateError
 from chatballs.ai.skills_json import SkillJSONParser
-from chatballs.ai.skills_queries import library, load, require_manager, skill_payload
+from chatballs.ai.skills_queries import listing, load, require_manager, skill_payload
 from chatballs.ai.skills_service import (
     delete_configuration,
     save_configuration,
     set_assignment,
 )
 from chatballs.ai.skills_validation import REQUEST_MAX_BYTES, SkillError
-from chatballs.api.pagination import page_payload, paginate
 
 
 class SkillView(APIView):
@@ -71,20 +69,7 @@ class SkillView(APIView):
 
 class SkillListView(SkillView):
     def get(self, request):
-        rows = library(request.tenant_context)
-        query = request.query_params.get("q", "").strip()
-        if len(query) > 200 or "\0" in query:
-            raise SkillError("invalid_field", field="q")
-        if query:
-            rows = rows.filter(Q(name__icontains=query) | Q(description__icontains=query))
-        agent_id = request.query_params.get("agentId", "")
-        if agent_id:
-            if len(agent_id) > 19 or not agent_id.isascii() or not agent_id.isdecimal() or not 0 < int(agent_id) <= 2**63 - 1:
-                raise SkillError("invalid_field", field="agentId")
-            rows = rows.filter(assignments__agent__channel_id=int(agent_id))
-        payload = page_payload(paginate(rows, request.query_params), skill_payload)
-        payload["connectedAgentCount"] = rows.filter(assignments__isnull=False).order_by().values("assignments__agent_id").distinct().count()
-        return Response(payload)
+        return Response(listing(request.tenant_context, request.query_params))
 
     def post(self, request):
         raw = self.body(request, ["requestId", "configuration"])

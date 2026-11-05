@@ -1,0 +1,225 @@
+[
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/scenarios/",
+    "method": "GET",
+    "handler": "chatballs.integrations.scenarios.views.ScenarioListView",
+    "action": "scenarios.get",
+    "reason": null
+  },
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/scenarios/",
+    "method": "POST",
+    "handler": "chatballs.integrations.scenarios.views.ScenarioListView",
+    "action": "scenarios.post",
+    "reason": null
+  },
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/scenarios/<uuid:public_id>/",
+    "method": "GET",
+    "handler": "chatballs.integrations.scenarios.views.ScenarioDetailView",
+    "action": "scenarios.detail.get",
+    "reason": null
+  },
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/scenarios/<uuid:public_id>/",
+    "method": "PUT",
+    "handler": "chatballs.integrations.scenarios.views.ScenarioDetailView",
+    "action": "scenarios.detail.put",
+    "reason": null
+  },
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/scenarios/<uuid:public_id>/",
+    "method": "DELETE",
+    "handler": "chatballs.integrations.scenarios.views.ScenarioDetailView",
+    "action": "scenarios.detail.delete",
+    "reason": null
+  },
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/scenarios/check/",
+    "method": "POST",
+    "handler": "chatballs.integrations.scenarios.views.ScenarioCheckView",
+    "action": "scenarios.check.post",
+    "reason": null
+  },
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/scenarios/<uuid:public_id>/copy/",
+    "method": "POST",
+    "handler": "chatballs.integrations.scenarios.views.ScenarioCopyView",
+    "action": "scenarios.copy.post",
+    "reason": null
+  },
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/services/<int:connection_id>/presets/<slug:key>/",
+    "method": "POST",
+    "handler": "chatballs.integrations.scenarios.views.ScenarioPresetView",
+    "action": "scenarios.preset.post",
+    "reason": null
+  },
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/scenarios/catalog/",
+    "method": "GET",
+    "handler": "chatballs.integrations.scenarios.catalog_views.ScenarioCatalogView",
+    "action": "scenarios.catalog.get",
+    "reason": null
+  },
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/agent-actions/<int:channel_id>/",
+    "method": "GET",
+    "handler": "chatballs.integrations.execution.agent_actions.AgentActionsView",
+    "action": "agents.actions.get",
+    "reason": null
+  },
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/agent-actions/<int:channel_id>/",
+    "method": "PUT",
+    "handler": "chatballs.integrations.execution.agent_actions.AgentActionsView",
+    "action": "agents.actions.put",
+    "reason": null
+  },
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/runs/",
+    "method": "GET",
+    "handler": "chatballs.integrations.execution.views.RunListView",
+    "action": "runs.get",
+    "reason": null
+  },
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/runs/<uuid:public_id>/",
+    "method": "GET",
+    "handler": "chatballs.integrations.execution.views.RunDetailView",
+    "action": "runs.detail.get",
+    "reason": null
+  },
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/runs/<uuid:public_id>/<str:action>/",
+    "method": "POST",
+    "handler": "chatballs.integrations.execution.views.RunControlView",
+    "action": "runs.control.post",
+    "reason": null,
+    "variants": {
+      "native": [
+        "cancel",
+        "reconcile"
+      ],
+      "protocol": [
+        "approve",
+        "edit",
+        "revise",
+        "release-edit",
+        "repeat",
+        "resolve",
+        "decide"
+      ]
+    },
+    "protocolReason": "Approval/editor lease, intentional repeat and explicit conflict/wait decisions remain digest/revision-bound protocols of the common runner; they cannot be nested grants or ordinary data writes."
+  },
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/runs/retention/",
+    "method": "GET",
+    "handler": "chatballs.integrations.execution.retention_views.RunRetentionView",
+    "action": "runs.retention.get",
+    "reason": null
+  },
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/runs/retention/",
+    "method": "PUT",
+    "handler": "chatballs.integrations.execution.retention_views.RunRetentionView",
+    "action": "runs.retention.put",
+    "reason": null
+  },
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/entity-links/",
+    "method": "GET",
+    "handler": "chatballs.integrations.scenarios.entity_link_views.EntityLinksView",
+    "action": "entity_links.get",
+    "reason": null
+  },
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/entity-links/<int:pk>/search/",
+    "method": "GET",
+    "handler": "chatballs.integrations.scenarios.entity_link_views.EntityLinkSearchView",
+    "action": "entity_links.search.get",
+    "reason": null
+  },
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/entity-links/<int:pk>/",
+    "method": "GET",
+    "handler": "chatballs.integrations.scenarios.entity_link_views.EntityLinkCommandView",
+    "action": "entity_links.search.get",
+    "reason": null
+  },
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/entity-links/<int:pk>/",
+    "method": "POST",
+    "handler": "chatballs.integrations.scenarios.entity_link_views.EntityLinkCommandView",
+    "action": "entity_links.command.post",
+    "reason": null
+  },
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/run-actions/",
+    "method": "GET",
+    "handler": "chatballs.integrations.execution.launch_views.ManualActionsView",
+    "action": "runs.actions.get",
+    "reason": null
+  },
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/run-actions/lookup/",
+    "method": "GET",
+    "handler": "chatballs.integrations.execution.metadata_views.ManualLookupView",
+    "action": "runs.lookup.get",
+    "reason": null
+  },
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/runs/<uuid:public_id>/approval-lookup/",
+    "method": "GET",
+    "handler": "chatballs.integrations.execution.ai_metadata.ApprovalLookupView",
+    "action": "runs.approval_lookup.get",
+    "reason": null
+  },
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/services/<int:connection_id>/synchronization/",
+    "method": "GET",
+    "handler": "chatballs.integrations.scenarios.synchronization_views.ServiceSynchronizationView",
+    "action": "synchronization.get",
+    "reason": null
+  },
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/services/<int:connection_id>/synchronization/",
+    "method": "PUT",
+    "handler": "chatballs.integrations.scenarios.synchronization_views.ServiceSynchronizationView",
+    "action": "synchronization.put",
+    "reason": null
+  },
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/scenarios/<uuid:public_id>/keys/<str:trigger_id>/rotate/",
+    "method": "POST",
+    "handler": "chatballs.integrations.scenarios.key_views.ScenarioRotateKeyView",
+    "action": null,
+    "reason": "Credential issuance protocol: revision-bound rotation returns a one-time token to the interactive owner; tokens are never ordinary native outputs.",
+    "relatedActions": [
+      "scenarios.post",
+      "scenarios.detail.put"
+    ]
+  },
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/run-actions/",
+    "method": "POST",
+    "handler": "chatballs.integrations.execution.launch_views.ManualActionsView",
+    "action": null,
+    "reason": "Invocation protocol for registered native/adapter actions and scenario definitions: preview, confirmation, trigger identity and frozen principal. Nested calls use the composite call block and retain ancestor scope; no management wrapper may mint a new launch principal.",
+    "relatedActions": [
+      "runs.actions.get"
+    ]
+  },
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/entity-links/<int:pk>/search/",
+    "method": "POST",
+    "handler": "chatballs.integrations.scenarios.entity_link_views.EntityLinkSearchView",
+    "action": null,
+    "reason": "Invocation protocol for the installed adapter entity reference search operation. The operation remains executable via the common runner; this endpoint supplies conversation visibility and a trigger identity. Candidate reading and link replacement have native actions.",
+    "relatedActions": [
+      "entity_links.search.get",
+      "entity_links.command.post"
+    ]
+  }
+]

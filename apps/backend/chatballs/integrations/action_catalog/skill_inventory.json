@@ -1,0 +1,93 @@
+[
+  {
+    "method": "GET",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/skills/",
+    "action": "skills.get",
+    "reason": null,
+    "handler": "chatballs.ai.skills_views.SkillListView"
+  },
+  {
+    "method": "POST",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/skills/",
+    "action": "skills.post",
+    "reason": null,
+    "handler": "chatballs.ai.skills_views.SkillListView"
+  },
+  {
+    "method": "GET",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/skills/<uuid:skill_id>/",
+    "action": "skills.detail.get",
+    "reason": null,
+    "handler": "chatballs.ai.skills_views.SkillDetailView"
+  },
+  {
+    "method": "PUT",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/skills/<uuid:skill_id>/",
+    "action": "skills.detail.put",
+    "reason": null,
+    "handler": "chatballs.ai.skills_views.SkillDetailView"
+  },
+  {
+    "method": "DELETE",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/skills/<uuid:skill_id>/",
+    "action": "skills.detail.delete",
+    "reason": null,
+    "handler": "chatballs.ai.skills_views.SkillDetailView"
+  },
+  {
+    "method": "GET",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/skills/<uuid:skill_id>/deletion/",
+    "action": "skills.deletion.get",
+    "reason": null,
+    "handler": "chatballs.ai.skills_views.SkillDeletionView"
+  },
+  {
+    "method": "PUT",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/skills/<uuid:skill_id>/agents/<int:agent_id>/",
+    "action": "skills.assignment.put",
+    "reason": null,
+    "handler": "chatballs.ai.skills_views.SkillAssignmentView"
+  },
+  {
+    "method": "DELETE",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/skills/<uuid:skill_id>/agents/<int:agent_id>/",
+    "action": "skills.assignment.delete",
+    "reason": null,
+    "handler": "chatballs.ai.skills_views.SkillAssignmentView"
+  },
+  {
+    "method": "POST",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/skills/validate/",
+    "action": "skills.validate.post",
+    "reason": null,
+    "handler": "chatballs.ai.skills_preview.SkillValidationView"
+  },
+  {
+    "method": "POST",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/skills/preview/",
+    "action": "skills.preview.post",
+    "reason": null,
+    "handler": "chatballs.ai.skills_preview.SkillPreviewView"
+  },
+  {
+    "method": "POST",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/skills/<uuid:skill_id>/validate/",
+    "action": "skills.detail.validate.post",
+    "reason": null,
+    "handler": "chatballs.ai.skills_preview.SkillValidationView"
+  },
+  {
+    "method": "POST",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/skills/<uuid:skill_id>/preview/",
+    "action": "skills.detail.preview.post",
+    "reason": null,
+    "handler": "chatballs.ai.skills_preview.SkillPreviewView"
+  },
+  {
+    "method": "GET",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/skills/bases/orders/",
+    "action": "skills.basis.get",
+    "reason": null,
+    "handler": "chatballs.ai.skills_preview.SkillBasisView"
+  }
+]

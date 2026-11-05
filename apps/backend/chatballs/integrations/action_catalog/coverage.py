@@ -10,13 +10,24 @@ from chatballs.integrations.action_catalog.registry import native_actions
 
 STAFF = "api/v1/organizations/<uuid:organization_public_id>/"
 ROOTS = tuple(STAFF + domain + "/" for domain in ("conversations", "calls", "notifications", "ratings")) + (
-    "api/v1/calls/", "api/v1/ratings/", "api/v1/webchat/",
+    "api/v1/calls/", "api/v1/ratings/", "api/v1/webchat/", STAFF + "company/",
+    STAFF + "employees/",
+    STAFF + "ai/", STAFF + "agents/", STAFF + "skills/", STAFF + "support/portals/", "api/v1/help/",
+    "api/v1/ai/files/",
+    STAFF + "integrations/",
 )
 METHODS = frozenset({"GET", "POST", "PUT", "PATCH", "DELETE"})
+# These mounted API owners share the integrations prefix with scenario/runtime
+# APIs, which are inventoried as their own product domain.
+API_MODULES = frozenset({"chatballs.integrations.service_connections.views",
+    "chatballs.integrations.service_connections.oauth_views", "chatballs.integrations.views",
+    "chatballs.integrations.scenarios.views", "chatballs.integrations.scenarios.catalog_views",
+    "chatballs.integrations.address_validation", "chatballs.webchat.asset_views"})
 
 
 def inventory():
-    return [row for name in ("api_inventory.json", "transport_inventory.json", "protocol_inventory.json")
+    return [row for name in ("api_inventory.json", "transport_inventory.json", "protocol_inventory.json",
+                            "organization_inventory.json", "content_inventory.json", "agent_inventory.json", "skill_inventory.json", "portal_inventory.json", "service_inventory.json", "connection_inventory.json", "scenario_inventory.json")
         for row in json.loads(Path(__file__).with_name(name).read_text(encoding="utf-8"))]
 
 
@@ -30,8 +41,10 @@ def mounted_entries():
             route = prefix + str(pattern.pattern)
             if isinstance(pattern, URLResolver):
                 yield from walk(pattern.url_patterns, route)
-            elif route.startswith(ROOTS):
+            else:
                 view = getattr(pattern.callback, "cls", None)
+                if not route.startswith(ROOTS) and getattr(view, "__module__", "") not in API_MODULES:
+                    continue
                 if view is None:
                     yield route, "UNKNOWN", ""
                     continue

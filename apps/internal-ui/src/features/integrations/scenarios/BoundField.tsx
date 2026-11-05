@@ -62,13 +62,13 @@ export function BoundField(props: Props) {
   return <div className="scenario-bound-field">
     <SelectField label={field.title} value={source} options={sources} onChange={selectSource} invalid={Boolean(error)} wide />
     {source === "constant" && field.type === "object" && !field.control && <div className="scenario-bound-children">
-      {objectFields.map(nested => <BoundField key={nested.name} {...props} field={nested}
+      {objectFields.map(nested => <BoundField key={nested.name} {...props} field={{ ...nested, secret: field.secret || nested.secret }}
         value={value && !isBinding(value) && !Array.isArray(value) ? value[nested.name] : undefined} onChange={next => child(nested.name, next)} />)}
       {field.open && <AddObjectField names={objectFields.map(f => f.name)} onAdd={nested => { setExtraFields([...extraFields, nested]); child(nested.name, initialBound(nested)); }} />}
     </div>}
     {source === "constant" && field.type === "array" && field.items && !field.control && <div className="scenario-bound-children">
       {(Array.isArray(value) ? value : []).map((item, index) => <div key={index}>
-        <BoundField {...props} field={{ ...field.items!, title: field.items!.title || t("scenarios.array_item") }} value={item}
+        <BoundField {...props} field={{ ...field.items!, title: field.items!.title || t("scenarios.array_item"), secret: field.secret || field.items!.secret }} value={item}
           onChange={next => { const items = Array.isArray(value) ? [...value] : []; if (next === undefined) items.splice(index, 1); else items[index] = next; onChange(items); }} />
       </div>)}
       <button type="button" className="link has-icon" onClick={() => onChange([...(Array.isArray(value) ? value : []), { source: "constant", value: "" }])}>

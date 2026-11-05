@@ -13,7 +13,7 @@ class RunAPITests(ExecutionCase):
             self.integration.is_active = False
             self.integration.save(update_fields=["is_active"])
         url = f"/api/v1/organizations/{self.organization.public_id}/integrations/run-actions/"
-        with patch("chatballs.integrations.execution.launch_views.default_registry", return_value=self.registry), patch(
+        with patch("chatballs.integrations.execution.manual_catalog_queries.default_registry", return_value=self.registry), patch(
                 "chatballs.integrations.execution.actions.default_registry", return_value=self.registry):
             response = self.as_runtime(lambda: self.client.get(url))
         self.assertEqual(response.status_code, 200, response.content)

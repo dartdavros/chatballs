@@ -1,12 +1,24 @@
 """Current membership rights for availability reads and recipient delivery."""
 
+from django.db.models import F
 from rest_framework.exceptions import NotFound, PermissionDenied
 
+from chatballs.api.pagination import page_payload, paginate
 from chatballs.i18n import t
 from chatballs.identity.models import EmployeeRole, OrganizationMembership
 from chatballs.identity.policy import can_administer_access, has_capability_any_scope
 from chatballs.identity.supervision_models import EmployeeGroupSupervision
+from chatballs.identity.work_status_models import WorkStatusOperation
+from chatballs.identity.work_status_payloads import operation_payload
 from chatballs.identity.work_status_services import own_membership
+
+
+def work_status_history(*, context, params, user_id=None):
+    membership = readable_membership(context=context, user_id=user_id)
+    history = WorkStatusOperation.objects.filter(
+        organization_id=context.organization_id, membership=membership,
+    ).exclude(previous_status=F("status")).order_by("-version", "-id")
+    return page_payload(paginate(history, params), operation_payload)
 
 
 def directory_memberships(organization_id):

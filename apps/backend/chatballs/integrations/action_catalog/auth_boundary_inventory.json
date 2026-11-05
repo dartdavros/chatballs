@@ -1,0 +1,290 @@
+[
+  {
+    "route": "api/v1/auth/session/",
+    "method": "GET",
+    "handler": "chatballs.identity.auth.sessions.SessionView",
+    "classification": "credential_protocol",
+    "ownerTask": null,
+    "reason": "Existing login, credential challenge/rotation or invitation identity exchange protocol; no tenant action may mint or impersonate this identity.",
+    "evidence": [
+      "apps/backend/chatballs/identity/auth_urls.py",
+      ".skaro/docs/service-integrations-plan.md"
+    ]
+  },
+  {
+    "route": "api/v1/auth/login/",
+    "method": "POST",
+    "handler": "chatballs.identity.auth.sessions.LoginView",
+    "classification": "credential_protocol",
+    "ownerTask": null,
+    "reason": "Existing login, credential challenge/rotation or invitation identity exchange protocol; no tenant action may mint or impersonate this identity.",
+    "evidence": [
+      "apps/backend/chatballs/identity/auth_urls.py",
+      ".skaro/docs/service-integrations-plan.md"
+    ]
+  },
+  {
+    "route": "api/v1/auth/logout/",
+    "method": "POST",
+    "handler": "chatballs.identity.auth.sessions.LogoutView",
+    "classification": "credential_protocol",
+    "ownerTask": null,
+    "reason": "Existing login, credential challenge/rotation or invitation identity exchange protocol; no tenant action may mint or impersonate this identity.",
+    "evidence": [
+      "apps/backend/chatballs/identity/auth_urls.py",
+      ".skaro/docs/service-integrations-plan.md"
+    ]
+  },
+  {
+    "route": "api/v1/auth/password-reset/request/",
+    "method": "POST",
+    "handler": "chatballs.identity.auth.password_reset.PasswordResetRequestView",
+    "classification": "credential_protocol",
+    "ownerTask": null,
+    "reason": "Existing login, credential challenge/rotation or invitation identity exchange protocol; no tenant action may mint or impersonate this identity.",
+    "evidence": [
+      "apps/backend/chatballs/identity/auth_urls.py",
+      ".skaro/docs/service-integrations-plan.md"
+    ]
+  },
+  {
+    "route": "api/v1/auth/password-reset/validate/",
+    "method": "GET",
+    "handler": "chatballs.identity.auth.password_reset.PasswordResetValidateView",
+    "classification": "credential_protocol",
+    "ownerTask": null,
+    "reason": "Existing login, credential challenge/rotation or invitation identity exchange protocol; no tenant action may mint or impersonate this identity.",
+    "evidence": [
+      "apps/backend/chatballs/identity/auth_urls.py",
+      ".skaro/docs/service-integrations-plan.md"
+    ]
+  },
+  {
+    "route": "api/v1/auth/password-reset/confirm/",
+    "method": "POST",
+    "handler": "chatballs.identity.auth.password_reset.PasswordResetConfirmView",
+    "classification": "credential_protocol",
+    "ownerTask": null,
+    "reason": "Existing login, credential challenge/rotation or invitation identity exchange protocol; no tenant action may mint or impersonate this identity.",
+    "evidence": [
+      "apps/backend/chatballs/identity/auth_urls.py",
+      ".skaro/docs/service-integrations-plan.md"
+    ]
+  },
+  {
+    "route": "api/v1/auth/profile/update/",
+    "method": "POST",
+    "handler": "chatballs.identity.auth.profile.ProfileUpdateView",
+    "classification": "global_product",
+    "ownerTask": "T-176",
+    "reason": "Global HumanUser/personal session API, outside the organization principal; remains product functionality for T-176 under the accepted plan.",
+    "evidence": [
+      "apps/backend/chatballs/identity/auth_urls.py",
+      ".skaro/docs/service-integrations-plan.md"
+    ]
+  },
+  {
+    "route": "api/v1/auth/profile/appearance/",
+    "method": "POST",
+    "handler": "chatballs.identity.auth.profile.ProfileAppearanceView",
+    "classification": "global_product",
+    "ownerTask": "T-176",
+    "reason": "Global HumanUser/personal session API, outside the organization principal; remains product functionality for T-176 under the accepted plan.",
+    "evidence": [
+      "apps/backend/chatballs/identity/auth_urls.py",
+      ".skaro/docs/service-integrations-plan.md"
+    ]
+  },
+  {
+    "route": "api/v1/auth/profile/language/",
+    "method": "POST",
+    "handler": "chatballs.identity.auth.profile.ProfileLanguageView",
+    "classification": "global_product",
+    "ownerTask": "T-176",
+    "reason": "Global HumanUser/personal session API, outside the organization principal; remains product functionality for T-176 under the accepted plan.",
+    "evidence": [
+      "apps/backend/chatballs/identity/auth_urls.py",
+      ".skaro/docs/service-integrations-plan.md"
+    ]
+  },
+  {
+    "route": "api/v1/auth/profile/avatar/",
+    "method": "GET",
+    "handler": "chatballs.identity.auth.profile.ProfileAvatarView",
+    "classification": "global_product",
+    "ownerTask": "T-176",
+    "reason": "Global HumanUser/personal session API, outside the organization principal; remains product functionality for T-176 under the accepted plan.",
+    "evidence": [
+      "apps/backend/chatballs/identity/auth_urls.py",
+      ".skaro/docs/service-integrations-plan.md"
+    ]
+  },
+  {
+    "route": "api/v1/auth/profile/avatar/",
+    "method": "POST",
+    "handler": "chatballs.identity.auth.profile.ProfileAvatarView",
+    "classification": "global_product",
+    "ownerTask": "T-176",
+    "reason": "Global HumanUser/personal session API, outside the organization principal; remains product functionality for T-176 under the accepted plan.",
+    "evidence": [
+      "apps/backend/chatballs/identity/auth_urls.py",
+      ".skaro/docs/service-integrations-plan.md"
+    ]
+  },
+  {
+    "route": "api/v1/auth/profile/avatar/",
+    "method": "DELETE",
+    "handler": "chatballs.identity.auth.profile.ProfileAvatarView",
+    "classification": "global_product",
+    "ownerTask": "T-176",
+    "reason": "Global HumanUser/personal session API, outside the organization principal; remains product functionality for T-176 under the accepted plan.",
+    "evidence": [
+      "apps/backend/chatballs/identity/auth_urls.py",
+      ".skaro/docs/service-integrations-plan.md"
+    ]
+  },
+  {
+    "route": "api/v1/auth/profile/password/",
+    "method": "POST",
+    "handler": "chatballs.identity.auth.profile.ProfilePasswordView",
+    "classification": "credential_protocol",
+    "ownerTask": null,
+    "reason": "Existing login, credential challenge/rotation or invitation identity exchange protocol; no tenant action may mint or impersonate this identity.",
+    "evidence": [
+      "apps/backend/chatballs/identity/auth_urls.py",
+      ".skaro/docs/service-integrations-plan.md"
+    ]
+  },
+  {
+    "route": "api/v1/auth/profile/totp/start/",
+    "method": "POST",
+    "handler": "chatballs.identity.auth.profile.ProfileTotpStartView",
+    "classification": "credential_protocol",
+    "ownerTask": null,
+    "reason": "Existing login, credential challenge/rotation or invitation identity exchange protocol; no tenant action may mint or impersonate this identity.",
+    "evidence": [
+      "apps/backend/chatballs/identity/auth_urls.py",
+      ".skaro/docs/service-integrations-plan.md"
+    ]
+  },
+  {
+    "route": "api/v1/auth/profile/totp/disable/",
+    "method": "POST",
+    "handler": "chatballs.identity.auth.profile.ProfileTotpDisableView",
+    "classification": "credential_protocol",
+    "ownerTask": null,
+    "reason": "Existing login, credential challenge/rotation or invitation identity exchange protocol; no tenant action may mint or impersonate this identity.",
+    "evidence": [
+      "apps/backend/chatballs/identity/auth_urls.py",
+      ".skaro/docs/service-integrations-plan.md"
+    ]
+  },
+  {
+    "route": "api/v1/auth/profile/sessions/",
+    "method": "GET",
+    "handler": "chatballs.identity.auth.profile.ProfileSessionsView",
+    "classification": "global_product",
+    "ownerTask": "T-176",
+    "reason": "Global HumanUser/personal session API, outside the organization principal; remains product functionality for T-176 under the accepted plan.",
+    "evidence": [
+      "apps/backend/chatballs/identity/auth_urls.py",
+      ".skaro/docs/service-integrations-plan.md"
+    ]
+  },
+  {
+    "route": "api/v1/auth/profile/sessions/revoke-other/",
+    "method": "POST",
+    "handler": "chatballs.identity.auth.profile.ProfileRevokeOtherSessionsView",
+    "classification": "global_product",
+    "ownerTask": "T-176",
+    "reason": "Global HumanUser/personal session API, outside the organization principal; remains product functionality for T-176 under the accepted plan.",
+    "evidence": [
+      "apps/backend/chatballs/identity/auth_urls.py",
+      ".skaro/docs/service-integrations-plan.md"
+    ]
+  },
+  {
+    "route": "api/v1/auth/change-temporary-password/",
+    "method": "POST",
+    "handler": "chatballs.identity.auth.profile.ChangeTemporaryPasswordView",
+    "classification": "credential_protocol",
+    "ownerTask": null,
+    "reason": "Existing login, credential challenge/rotation or invitation identity exchange protocol; no tenant action may mint or impersonate this identity.",
+    "evidence": [
+      "apps/backend/chatballs/identity/auth_urls.py",
+      ".skaro/docs/service-integrations-plan.md"
+    ]
+  },
+  {
+    "route": "api/v1/auth/totp/setup/",
+    "method": "GET",
+    "handler": "chatballs.identity.auth.totp.TotpSetupView",
+    "classification": "credential_protocol",
+    "ownerTask": null,
+    "reason": "Existing login, credential challenge/rotation or invitation identity exchange protocol; no tenant action may mint or impersonate this identity.",
+    "evidence": [
+      "apps/backend/chatballs/identity/auth_urls.py",
+      ".skaro/docs/service-integrations-plan.md"
+    ]
+  },
+  {
+    "route": "api/v1/auth/totp/confirm/",
+    "method": "POST",
+    "handler": "chatballs.identity.auth.totp.TotpConfirmView",
+    "classification": "credential_protocol",
+    "ownerTask": null,
+    "reason": "Existing login, credential challenge/rotation or invitation identity exchange protocol; no tenant action may mint or impersonate this identity.",
+    "evidence": [
+      "apps/backend/chatballs/identity/auth_urls.py",
+      ".skaro/docs/service-integrations-plan.md"
+    ]
+  },
+  {
+    "route": "api/v1/auth/totp/verify/",
+    "method": "POST",
+    "handler": "chatballs.identity.auth.totp.TotpVerifyView",
+    "classification": "credential_protocol",
+    "ownerTask": null,
+    "reason": "Existing login, credential challenge/rotation or invitation identity exchange protocol; no tenant action may mint or impersonate this identity.",
+    "evidence": [
+      "apps/backend/chatballs/identity/auth_urls.py",
+      ".skaro/docs/service-integrations-plan.md"
+    ]
+  },
+  {
+    "route": "api/v1/auth/invitations/accept/",
+    "method": "POST",
+    "handler": "chatballs.identity.auth.invitations.InvitationAcceptView",
+    "classification": "credential_protocol",
+    "ownerTask": null,
+    "reason": "Existing login, credential challenge/rotation or invitation identity exchange protocol; no tenant action may mint or impersonate this identity.",
+    "evidence": [
+      "apps/backend/chatballs/identity/auth_urls.py",
+      ".skaro/docs/service-integrations-plan.md"
+    ]
+  },
+  {
+    "route": "api/v1/auth/invitations/preview/",
+    "method": "GET",
+    "handler": "chatballs.identity.auth.invitations.InvitationPreviewView",
+    "classification": "credential_protocol",
+    "ownerTask": null,
+    "reason": "Existing login, credential challenge/rotation or invitation identity exchange protocol; no tenant action may mint or impersonate this identity.",
+    "evidence": [
+      "apps/backend/chatballs/identity/auth_urls.py",
+      ".skaro/docs/service-integrations-plan.md"
+    ]
+  },
+  {
+    "route": "api/v1/auth/invitations/register/",
+    "method": "POST",
+    "handler": "chatballs.identity.auth.invitations.InvitationRegisterView",
+    "classification": "credential_protocol",
+    "ownerTask": null,
+    "reason": "Existing login, credential challenge/rotation or invitation identity exchange protocol; no tenant action may mint or impersonate this identity.",
+    "evidence": [
+      "apps/backend/chatballs/identity/auth_urls.py",
+      ".skaro/docs/service-integrations-plan.md"
+    ]
+  }
+]

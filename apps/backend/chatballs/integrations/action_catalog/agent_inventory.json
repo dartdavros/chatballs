@@ -1,0 +1,86 @@
+[
+  {
+    "method": "GET",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/agents/",
+    "action": "agents.get",
+    "reason": null,
+    "handler": "chatballs.ai.agent_card_views.AgentCardListView"
+  },
+  {
+    "method": "GET",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/agents/directory/",
+    "action": "agents.directory.get",
+    "reason": null,
+    "handler": "chatballs.ai.agent_card_views.AgentDirectoryView"
+  },
+  {
+    "method": "POST",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/agents/",
+    "action": "agents.post",
+    "reason": null,
+    "handler": "chatballs.ai.agent_card_views.AgentCardListView"
+  },
+  {
+    "method": "GET",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/agents/<int:agent_id>/",
+    "action": "agents.detail.get",
+    "reason": null,
+    "handler": "chatballs.ai.agent_card_views.AgentCardDetailView"
+  },
+  {
+    "method": "PATCH",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/agents/<int:agent_id>/",
+    "action": "agents.detail.patch",
+    "reason": null,
+    "handler": "chatballs.ai.agent_card_views.AgentCardDetailView"
+  },
+  {
+    "method": "DELETE",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/agents/<int:agent_id>/",
+    "action": "agents.detail.delete",
+    "reason": null,
+    "handler": "chatballs.ai.agent_card_views.AgentCardDetailView"
+  },
+  {
+    "method": "GET",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/agents/<int:agent_id>/tools/",
+    "action": "agents.tools.get",
+    "reason": null,
+    "handler": "chatballs.ai.agent_card_views.AgentCardToolsView"
+  },
+  {
+    "method": "POST",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/agents/<int:agent_id>/activate/",
+    "action": "agents.activate.post",
+    "reason": null,
+    "handler": "chatballs.ai.agent_card_views.AgentCardActivateView"
+  },
+  {
+    "method": "POST",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/agents/<int:agent_id>/deactivate/",
+    "action": "agents.deactivate.post",
+    "reason": null,
+    "handler": "chatballs.ai.agent_card_views.AgentCardDeactivateView"
+  },
+  {
+    "method": "POST",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/agents/<int:agent_id>/connections/",
+    "action": "agents.connections.post",
+    "reason": null,
+    "handler": "chatballs.ai.agent_card_views.AgentCardConnectionsView"
+  },
+  {
+    "method": "DELETE",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/agents/<int:agent_id>/connections/<int:integration_id>/",
+    "action": "agents.connection.delete",
+    "reason": null,
+    "handler": "chatballs.ai.agent_card_views.AgentCardConnectionDetailView"
+  },
+  {
+    "method": "POST",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/agents/<int:agent_id>/test-chat/",
+    "action": "agents.test_chat.post",
+    "reason": null,
+    "handler": "chatballs.ai.test_chat_views.AgentCardTestChatView"
+  }
+]

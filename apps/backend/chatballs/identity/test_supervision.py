@@ -173,7 +173,7 @@ class SupervisionTests(TestCase):
         self.assertEqual(conversation_visibility(self.supervisor)["group_ids"], set())
         self.supervisor.block()
         self.assertEqual(get_effective_access(self.supervisor), {
-            "capabilities": [], "groups": [], "supervisedGroups": []
+            "capabilities": [], "groups": [], "supervisedGroups": [], "reportCapabilities": []
         })
 
     def test_deleting_control_group_revokes_and_audits_control_area(self):

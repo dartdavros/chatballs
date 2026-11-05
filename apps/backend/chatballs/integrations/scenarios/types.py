@@ -69,6 +69,8 @@ def at_path(spec: TypeSpec | None, path: str) -> TypeSpec | None:
 def compatible(source: TypeSpec, target: TypeSpec) -> bool:
     if source.nullable and not target.nullable:
         return False
+    if target.type == "json":
+        return True
     if source.type != target.type and not (source.type == "integer" and target.type == "number"):
         return False
     if target.type == "lookup":

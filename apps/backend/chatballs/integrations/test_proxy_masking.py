@@ -84,7 +84,7 @@ class ProxyPayloadTests(TestCase):
 
     def test_editing_another_field_keeps_the_proxy_password(self) -> None:
         """Форма возвращает то, что ей отдали, — включая маску."""
-        from chatballs.integrations.views import _keep_proxy_password
+        from chatballs.integrations.management_inputs import _keep_proxy_password
 
         submitted = {
             "baseUrl": "https://openrouter.ai/api/v1",

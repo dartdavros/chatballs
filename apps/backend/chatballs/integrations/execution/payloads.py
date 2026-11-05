@@ -1,22 +1,18 @@
 """Localized run views. Stored journal entries never contain these values."""
 
-import re
-
-from chatballs.ai.diagnostic_redaction import integration_secrets
+from chatballs.ai.diagnostic_redaction import integration_secrets, is_sensitive_key
 from chatballs.i18n import t
 from chatballs.integrations.adapters.registry import default_registry
 from chatballs.integrations.execution.approvals import invocation_digest
 from chatballs.integrations.execution.errors import error_message
 from chatballs.integrations.service_connections.payloads import field_payload
 
-_SECRET_KEY = re.compile(r"token|secret|password|authorization|cookie|api.?key|credential", re.I)
-
 
 def clean_value(spec, value, secrets, depth=0):
     if depth > 20 or spec and spec.secret:
         return {"redacted": True}
     if isinstance(value, dict):
-        return {name: {"redacted": True} if _SECRET_KEY.search(name) else clean_value(
+        return {name: {"redacted": True} if is_sensitive_key(name) else clean_value(
             spec.field(name) if spec else None, child, secrets, depth + 1) for name, child in value.items()}
     if isinstance(value, list):
         return [clean_value(spec.items if spec else None, child, secrets, depth + 1) for child in value]

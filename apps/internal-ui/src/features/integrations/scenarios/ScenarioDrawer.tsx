@@ -10,7 +10,8 @@ import { TriggerEditor } from "./TriggerEditor";
 import type { BlockKind, TriggerKind } from "./types";
 import type { ScenarioEditorState } from "./useScenarioEditor";
 
-export function ScenarioDrawer({ editor }: { editor: ScenarioEditorState }) {
+export function ScenarioDrawer({ editor }: { editor: Pick<ScenarioEditorState,
+  "drawer" | "draft" | "catalog" | "hideKeys" | "setDrawer" | "mutate" | "saving" | "issues" | "setDraft" | "dirty" | "rotateKey"> }) {
   const { drawer, draft, catalog } = editor;
   if (!drawer || !draft || !catalog) return null;
   const block = drawer.kind === "block" ? findBlock(draft.definition.steps, drawer.id) : undefined;

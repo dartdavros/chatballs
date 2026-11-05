@@ -1,6 +1,5 @@
 """Explicit policy editing; neither catalog reads nor migration grant access."""
 
-from django.db import transaction
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -75,27 +74,14 @@ class AgentActionsView(APIView):
     permission_classes = [HasCapability]
     required_capability = "ai.manage"
 
-    def agent(self, request, channel_id):
-        return AIAgent.objects.get(organization_id=request.tenant_context.organization_id, channel_id=channel_id)
-
     def get(self, request, channel_id):
-        rows = catalog(request.tenant_context.organization_id, self.agent(request, channel_id))
-        return Response({"items": [{k: v for k, v in row.items() if k not in {"integration", "operation", "scenario", "native"}} for row in rows]})
+        from chatballs.integrations.execution.agent_policy_management import listing
+        return Response(listing(request.tenant_context, channel_id))
 
     def put(self, request, channel_id):
+        from chatballs.integrations.execution.agent_policy_management import update
         try:
-            with transaction.atomic():
-                agent = self.agent(request, channel_id)
-                data = request.data
-                if not isinstance(data, dict) or set(data) != {"items"} or not isinstance(data["items"], list) or len(data["items"]) > 1000:
-                    raise ExecutionDenied("arguments")
-                seen = set()
-                for item in data["items"]:
-                    if not isinstance(item, dict) or set(item) != {"id", "mode", "revision"} or not isinstance(item["id"], str) or item["id"] in seen:
-                        raise ExecutionDenied("arguments")
-                    seen.add(item["id"])
-                    change_policy(request.tenant_context, agent, item["id"], item["mode"], item["revision"])
-                return self.get(request, channel_id)
+            return Response(update(request.tenant_context, channel_id, request.data))
         except ExecutionDenied as error:
             from chatballs.integrations.execution.errors import error_message
             return Response({"detail": error_message(str(error))}, status=409)

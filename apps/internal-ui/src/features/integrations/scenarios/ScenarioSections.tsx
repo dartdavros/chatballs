@@ -8,7 +8,8 @@ import type { ScenarioEditorState } from "./useScenarioEditor";
 function Section({ title, lead, children }: { title: string; lead: string; children: ReactNode }) {
   return <section className="scenario-section"><header><strong>{title}</strong><span>{lead}</span></header>{children}</section>;
 }
-export function ScenarioSections({ editor }: { editor: ScenarioEditorState }) {
+export function ScenarioSections({ editor }: { editor: Pick<ScenarioEditorState,
+  "draft" | "catalog" | "error" | "conflict" | "issues" | "reload" | "setDrawer" | "mutate"> }) {
   const { draft, catalog } = editor;
   if (!draft || !catalog) return null;
   return <div className="scenario-sections">

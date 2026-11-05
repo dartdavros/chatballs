@@ -4,7 +4,12 @@ from dataclasses import replace
 
 from chatballs.integrations.action_catalog.contracts import APIEntry, NativeAction
 from chatballs.integrations.action_catalog.registry import register_action
-from chatballs.integrations.adapters.contracts import Effect, OperationDescriptor, OperationHandlers
+from chatballs.integrations.adapters.contracts import (
+    DEFAULT_LIMITS,
+    Effect,
+    OperationDescriptor,
+    OperationHandlers,
+)
 from chatballs.integrations.adapters.schema import EnumOption, TypeSpec
 
 
@@ -35,10 +40,10 @@ BOOLEAN = TypeSpec("boolean")
 
 
 def action(*, key, title, input, output, handler, capability, scope,
-           route, view, method, execution="local", effect=None, extra_entries=()):
+           route, view, method, execution="local", effect=None, extra_entries=(), limits=DEFAULT_LIMITS):
     operation = OperationDescriptor(key=key, title_key=title,
         input=input, output=output, handlers=OperationHandlers(),
         effect=effect or (Effect.READ if method == "GET" else Effect.UPDATE),
-        permission_scope=scope)
+        permission_scope=scope, limits=limits)
     return register_action(NativeAction(operation, handler, capability, scope,
         (APIEntry(route, method, view),) + tuple(extra_entries), execution))

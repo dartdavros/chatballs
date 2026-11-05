@@ -14,6 +14,7 @@ from chatballs.integrations.execution import checkpoints, native_results
 from chatballs.integrations.execution.actions import step_target
 from chatballs.integrations.execution.approvals import approved, invocation_digest
 from chatballs.integrations.execution.native_context import context_for
+from chatballs.integrations.execution.native_locale import native_locale
 from chatballs.integrations.execution.native_system import preflight  # noqa: F401
 from chatballs.integrations.execution.permissions import (
     ExecutionDenied,
@@ -67,6 +68,14 @@ def require_action(tenant, action, run, arguments):
 
 def _result(action, result):
     from chatballs.integrations.execution.budgets import size
+    from chatballs.integrations.execution.errors import KNOWN
+    # A confirmed domain rejection may have a durable denial audit. It is not
+    # an exception/rollback or an ambiguous effect, and carries no output data.
+    if isinstance(result, OperationResult) and result.state == ResultState.FAILED:
+        if (result.data not in (None, {}) or result.files or result.error_code not in KNOWN
+                or result.continuation or result.external_reference or result.deadline):
+            raise ExecutionDenied("invalid_result")
+        return result
     if (not isinstance(result, OperationResult) or result.state != ResultState.COMPLETED
             or validate_value(action.operation.output, result.data)
             or size({"data": result.data, "files": [vars(file) for file in result.files]})
@@ -122,7 +131,7 @@ def _execute(tenant, token):
     from chatballs.integrations.automation_events.causality import origin
     from chatballs.integrations.execution.budgets import causal_chain
     started = monotonic()
-    with origin(causal_chain(run)), native_audit(run, step, actor):
+    with origin(causal_chain(run)), native_audit(run, step, actor), native_locale(actor):
         result = _result(action, action.execute(context_for(run, step, action, actor, scope, arguments), arguments))
     native_results.save(run, step, action, result, actor=actor)
     _commit(tenant, token, result, elapsed=monotonic() - started)

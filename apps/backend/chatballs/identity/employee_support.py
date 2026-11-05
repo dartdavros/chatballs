@@ -1,5 +1,3 @@
-from rest_framework.request import Request
-
 from chatballs.identity.avatars import user_avatar_url
 from chatballs.identity.employee_availability import employee_availability
 from chatballs.identity.governance import employee_management_flags
@@ -28,7 +26,7 @@ def employee_payload(
         "email": profile.user.email,
         "fullName": profile.user.full_name,
         "avatarUrl": user_avatar_url(profile.user, profile.organization.public_id),
-        "role": profile.role,
+        "role": str(profile.role),
         "positionTitle": profile.position_title,
         "phone": profile.phone,
         "groups": groups,
@@ -75,10 +73,7 @@ def employee_payload(
     return payload
 
 
-def get_owned_profile(
-    request: Request, user_id: int, *, for_update: bool = False
-) -> OrganizationMembership | None:
-    owner_profile = request.tenant_context.membership
+def profile_for(context, user_id: int, *, for_update: bool = False):
     try:
         profiles = (
             OrganizationMembership.objects.select_related("user")
@@ -86,6 +81,6 @@ def get_owned_profile(
         )
         if for_update:
             profiles = profiles.select_for_update(of=("self",))
-        return profiles.get(user_id=user_id, organization=owner_profile.organization)
+        return profiles.get(user_id=user_id, organization_id=context.organization_id)
     except OrganizationMembership.DoesNotExist:
         return None

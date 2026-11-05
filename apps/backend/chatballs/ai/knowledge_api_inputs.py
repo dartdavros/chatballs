@@ -52,23 +52,27 @@ def knowledge_input(
 
 
 def knowledge_filters(request: Request) -> KnowledgeFilters:
-    raw_enabled = request.query_params.get("isEnabled")
+    return parse_knowledge_filters(request.query_params, request.query_params.getlist("agent"))
+
+
+def parse_knowledge_filters(params, agents=()) -> KnowledgeFilters:
+    raw_enabled = params.get("isEnabled")
     if raw_enabled in (None, ""):
         is_enabled = None
-    elif raw_enabled.lower() == "true":
+    elif str(raw_enabled).lower() == "true":
         is_enabled = True
-    elif raw_enabled.lower() == "false":
+    elif str(raw_enabled).lower() == "false":
         is_enabled = False
     else:
         raise ValidationError({"isEnabled": t("api.boolean_required")})
     agents = tuple(
-        int(value) for value in request.query_params.getlist("agent") if value.isdigit()
+        int(value) for value in agents if str(value).isdigit()
     )
     return KnowledgeFilters(
         category_id=_optional_query_id(
-            request.query_params.get("category"), "category"
+            params.get("category"), "category"
         ),
         is_enabled=is_enabled,
-        search=request.query_params.get("search", ""),
+        search=params.get("search", ""),
         agent_ids=agents,
     )

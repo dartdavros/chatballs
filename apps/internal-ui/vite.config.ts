@@ -33,7 +33,9 @@ export default defineConfig(({ mode }) => {
       // Под Docker на Windows bind-mount не пробрасывает inotify внутрь
       // контейнера, и vite не видит правок — HMR молчит до ручной перезагрузки.
       // Опрос включается только в контейнере (переменная задана в compose.dev).
-      watch: env.VITE_DEV_WATCH === "0" ? null : env.VITE_DEV_POLL ? { usePolling: true, interval: 300 } : undefined,
+      // A short poll saturates Docker Desktop's Windows file sharing and the
+      // libuv pool also used by DNS lookups for the real backend proxy.
+      watch: env.VITE_DEV_WATCH === "0" ? null : env.VITE_DEV_POLL ? { usePolling: true, interval: 1000 } : undefined,
       proxy: devApiTarget
         ? {
             "/api": { target: devApiTarget, changeOrigin: false },

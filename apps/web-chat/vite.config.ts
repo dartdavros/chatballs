@@ -24,7 +24,7 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 5175,
       // См. apps/internal-ui/vite.config.ts: опрос файлов в контейнере.
-      watch: env.VITE_DEV_POLL ? { usePolling: true, interval: 300 } : undefined,
+      watch: env.VITE_DEV_POLL ? { usePolling: true, interval: 1000 } : undefined,
       proxy: devApiTarget ? {
         "/api": { target: devApiTarget, changeOrigin: false },
         "/chat-widget.js": { target: devApiTarget, changeOrigin: false },

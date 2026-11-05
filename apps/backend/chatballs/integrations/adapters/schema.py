@@ -16,8 +16,10 @@ from dataclasses import dataclass, field
 from datetime import date, datetime
 from typing import Any
 
+from chatballs.integrations.adapters.json_values import valid_json
+
 SCALAR_TYPES = frozenset({"string", "integer", "number", "boolean", "date", "datetime"})
-TYPES = SCALAR_TYPES | frozenset({"object", "array", "enum", "lookup", "file"})
+TYPES = SCALAR_TYPES | frozenset({"object", "array", "enum", "lookup", "file", "json"})
 
 
 class SchemaDefinitionError(ValueError):
@@ -206,7 +208,13 @@ def _check_file(spec: TypeSpec, value: Any, path: str, walk: _Walk) -> None:
         walk.add(path, "unknown")
 
 
+def _check_json(spec: TypeSpec, value: Any, path: str, walk: _Walk) -> None:
+    if not valid_json(value):
+        walk.add(path, "type")
+
+
 _CHECKERS = {
+    "json": _check_json,
     "object": _check_object,
     "array": _check_array,
     "string": _check_string,

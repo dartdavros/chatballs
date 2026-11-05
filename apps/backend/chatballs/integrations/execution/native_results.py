@@ -12,11 +12,14 @@ from chatballs.integrations.scenario_state.native_receipts import NativeEffectRe
 
 def restored(receipt):
     payload = receipt.definition
-    return OperationResult(ResultState.COMPLETED, payload["result"],
+    return OperationResult(ResultState(payload.get("state", "completed")), payload["result"],
+        error_code=payload.get("error_code", ""),
         files=tuple(FileRef(**item) for item in payload.get("files", [])))
 
 
 def validate_files(action, result, step):
+    if result.state == ResultState.FAILED:
+        return
     references = file_references(action.operation.output, result.data)
     references.update(str(file.file_id) for file in result.files)
     records = {str(row.public_id): row for row in ServiceFile.objects.filter(
@@ -33,17 +36,22 @@ def validate_files(action, result, step):
 
 def save(run, step, action, result, *, actor=None):
     validate_files(action, result, step)
-    payload = {"result": result.data, "files": [asdict(file) for file in result.files]}
+    payload = {"state": result.state.value, "error_code": result.error_code,
+        "result": result.data, "files": [asdict(file) for file in result.files]}
     existing = NativeEffectReceipt.objects.filter(step=step).first()
     if existing is not None:
-        if existing.invocation_digest != invocation_digest(step, run) or existing.definition != payload:
+        previous = existing.definition
+        previous.setdefault("state", ResultState.COMPLETED.value)
+        previous.setdefault("error_code", "")
+        previous.setdefault("files", [])
+        if existing.invocation_digest != invocation_digest(step, run) or previous != payload:
             raise ExecutionDenied("invalid_result")
         return existing
     receipt = NativeEffectReceipt(organization_id=run.organization_id,
         step=step, invocation_digest=invocation_digest(step, run))
     receipt.definition = payload
     receipt.save()
-    if actor and run.definition.get("ai"):
+    if actor and run.definition.get("ai") and result.state == ResultState.COMPLETED:
         from chatballs.identity.audit import record_audit_event
         from chatballs.identity.audit_context import native_audit
         with native_audit(run, step, actor, title_key=action.operation.title_key):

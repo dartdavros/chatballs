@@ -1,0 +1,86 @@
+[
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/service-adapters/",
+    "method": "GET",
+    "handler": "chatballs.integrations.service_connections.views.ServiceAdapterListView",
+    "action": "services.adapters.get",
+    "reason": null
+  },
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/services/",
+    "method": "GET",
+    "handler": "chatballs.integrations.service_connections.views.ServiceConnectionListView",
+    "action": "services.get",
+    "reason": null
+  },
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/services/",
+    "method": "POST",
+    "handler": "chatballs.integrations.service_connections.views.ServiceConnectionListView",
+    "action": "services.post",
+    "reason": null
+  },
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/services/<int:connection_id>/",
+    "method": "GET",
+    "handler": "chatballs.integrations.service_connections.views.ServiceConnectionDetailView",
+    "action": "services.detail.get",
+    "reason": null
+  },
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/services/<int:connection_id>/",
+    "method": "PATCH",
+    "handler": "chatballs.integrations.service_connections.views.ServiceConnectionDetailView",
+    "action": "services.detail.patch",
+    "reason": null
+  },
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/services/<int:connection_id>/",
+    "method": "DELETE",
+    "handler": "chatballs.integrations.service_connections.views.ServiceConnectionDetailView",
+    "action": "services.detail.delete",
+    "reason": null
+  },
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/services/<int:connection_id>/check/",
+    "method": "POST",
+    "handler": "chatballs.integrations.service_connections.views.ServiceConnectionCheckView",
+    "action": "services.check.post",
+    "reason": null
+  },
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/services/<int:connection_id>/access/",
+    "method": "POST",
+    "handler": "chatballs.integrations.service_connections.views.ServiceConnectionAccessView",
+    "action": "services.access.post",
+    "reason": null
+  },
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/services/<int:connection_id>/lookups/<slug:key>/",
+    "method": "GET",
+    "handler": "chatballs.integrations.service_connections.views.ServiceLookupView",
+    "action": "services.lookup.get",
+    "reason": null
+  },
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/services/oauth/start/",
+    "method": "POST",
+    "handler": "chatballs.integrations.service_connections.oauth_views.ServiceOAuthStartView",
+    "action": null,
+    "reason": "Interactive OAuth authorization protocol; state belongs to the authenticated user and credentials never become action output."
+  },
+  {
+    "route": "api/v1/organizations/<uuid:organization_public_id>/integrations/services/oauth/<uuid:state_id>/",
+    "method": "GET",
+    "handler": "chatballs.integrations.service_connections.oauth_views.ServiceOAuthStateView",
+    "action": null,
+    "reason": "Interactive OAuth authorization protocol; state belongs to the authenticated user and credentials never become action output."
+  },
+  {
+    "route": "api/v1/service-oauth/callback/",
+    "method": "GET",
+    "handler": "chatballs.integrations.service_connections.oauth_views.ServiceOAuthCallbackView",
+    "action": null,
+    "reason": "Interactive OAuth authorization protocol; state belongs to the authenticated user and credentials never become action output."
+  }
+]

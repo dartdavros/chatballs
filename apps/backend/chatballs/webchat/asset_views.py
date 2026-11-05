@@ -8,14 +8,8 @@ from rest_framework.views import APIView
 
 from chatballs.api.permissions import HasCapability
 from chatballs.i18n import t
-from chatballs.identity.audit import record_audit_event
-from chatballs.integrations.models import Integration, IntegrationProvider
-from chatballs.integrations.selectors import integration_for_context
-from chatballs.tenancy.context import TenantContext
-from chatballs.tenancy.database import tenant_atomic
-from chatballs.tenancy.ingress import widget_asset_route
-from chatballs.tenancy.lookup import load_organization
-from chatballs.webchat.assets import upload_widget_asset, widget_asset_url
+from chatballs.integrations.models import Integration
+from chatballs.webchat import asset_services
 from chatballs.webchat.models import WidgetAsset
 
 # Адрес иконки неизменен: каждая загрузка получает новый UUID.
@@ -31,36 +25,14 @@ class WidgetAssetUploadView(APIView):
 
     def post(self, request: Request, integration_id: int) -> Response:
         try:
-            integration = integration_for_context(
-                context=request.tenant_context, integration_id=integration_id
-            )
+            result = asset_services.upload(request.tenant_context, integration_id,
+                request.FILES.get("file"), request=request)
         except Integration.DoesNotExist:
-            integration = None
-        if integration is None or integration.provider != IntegrationProvider.WEB:
             return Response({"detail": t("settings.integration_not_found")}, status=404)
-        upload = request.FILES.get("file")
-        if upload is None:
-            detail = t("webchat.asset_choose_file")
-            return Response({"detail": detail, "errors": {"file": detail}}, status=400)
-        try:
-            asset = upload_widget_asset(
-                context=request.tenant_context,
-                integration=integration,
-                upload=upload,
-                uploaded_by=request.user,
-            )
         except ValidationError as error:
             detail = error.message_dict["file"][0]
             return Response({"detail": detail, "errors": {"file": detail}}, status=400)
-        record_audit_event(
-            action="integrations.widget_asset_uploaded",
-            actor=request.user,
-            organization=request.tenant_context.organization,
-            object_type="Integration",
-            object_id=str(integration.id),
-            request=request,
-        )
-        return Response({"url": widget_asset_url(asset)}, status=201)
+        return Response(result, status=201)
 
 
 class WidgetAssetView(APIView):
@@ -74,18 +46,10 @@ class WidgetAssetView(APIView):
     authentication_classes: list = []
 
     def get(self, request: Request, public_id) -> FileResponse:
-        route = widget_asset_route(str(public_id))
-        organization = load_organization(route.organization_id) if route else None
-        if organization is None:
-            raise Http404
-        with tenant_atomic(TenantContext.for_resource(organization)):
-            asset = WidgetAsset.objects.filter(
-                id=route.resource_id, public_id=public_id, organization=organization
-            ).first()
-            if asset is None:
-                raise Http404
-            opened_file = asset.file.open("rb")
-            content_type = asset.content_type
+        try:
+            opened_file, _name, content_type = asset_services.open_asset(public_id)
+        except WidgetAsset.DoesNotExist:
+            raise Http404 from None
         response = FileResponse(opened_file, content_type=content_type)
         # SVG очищен при загрузке; заголовки — второй рубеж на случай, если
         # адрес откроют как документ: ничего не исполнять, никуда не ходить,

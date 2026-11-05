@@ -20,6 +20,8 @@ class Control:
 
 
 CONTROLS: dict[str, Control] = {
+    "scenario_settings": Control(frozenset({"json"})),
+    "structured_value": Control(frozenset({"json"})),
     "text": Control(frozenset({"string"})),
     "textarea": Control(frozenset({"string"})),
     "url": Control(frozenset({"string"})),

@@ -5,6 +5,7 @@ from django.test import SimpleTestCase
 from chatballs.i18n.messages import CATALOG
 from chatballs.integrations.action_catalog.coverage import inventory, mounted_entries, problems
 from chatballs.integrations.action_catalog.registry import native_actions
+from chatballs.integrations.adapters.registry import default_registry
 
 
 class NativeCoverageTests(SimpleTestCase):
@@ -14,9 +15,9 @@ class NativeCoverageTests(SimpleTestCase):
     def test_inventory_resolves_real_routes_and_method_inheritance(self):
         expected = {(row["route"], row["method"], row["handler"]) for row in inventory()}
         self.assertEqual(mounted_entries(), expected)
-        self.assertEqual(len(expected), 160)
+        self.assertEqual(len(expected), len(inventory()), "Duplicate inventory entries")
         excluded = [row for row in inventory() if row["action"] is None]
-        self.assertEqual(len(excluded), 32)
+        self.assertTrue(excluded)
         self.assertTrue(all(row["reason"] for row in excluded))
 
     def test_registered_domains_cover_their_exact_product_methods(self):
@@ -33,6 +34,10 @@ class NativeCoverageTests(SimpleTestCase):
                 else:
                     self.assertNotIn("??", CATALOG[language][key], f"{language}:{key}")
         def fields(spec):
+            if spec.control:
+                control = default_registry().extension("control", spec.control)
+                self.assertIsNotNone(control, spec.control)
+                self.assertIn(spec.type, control.implementation.types, spec.control)
             for key in (spec.hint_key, spec.placeholder_key, spec.pattern_error_key):
                 if key:
                     translated(key)

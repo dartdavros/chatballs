@@ -3,20 +3,20 @@
     "route": "api/v1/webchat/assets/<uuid:public_id>/",
     "method": "GET",
     "handler": "chatballs.webchat.asset_views.WidgetAssetView",
-    "action": null,
-    "reason": "Доставка опубликованного бинарного ассета SDK по public_id; не команда изменения/отправки сообщения. Файлы сообщений доступны отдельными native-действиями.",
-    "relatedActions": [
-      "messages.attachment_file.get",
-      "messages.audio_file.get"
-    ]
+    "action": "connections.asset.get",
+    "reason": null
   },
   {
     "route": "api/v1/webchat/config/",
     "method": "GET",
     "handler": "chatballs.webchat.config_views.WebchatConfigView",
     "action": null,
-    "reason": "Bootstrap-проекция опубликованной конфигурации для SDK с origin/widget проверками. Настройка виджета относится к отдельному каталогу T-176; это не новая операция обслуживания.",
-    "relatedActions": []
+    "reason": "Published configuration bootstrap for the SDK with origin/widget checks. Product widget configuration is covered by native connection actions; this endpoint preserves the SDK protocol.",
+    "relatedActions": [
+      "connections.post",
+      "connections.detail.patch",
+      "connections.assets.post"
+    ]
   },
   {
     "route": "api/v1/webchat/session/",

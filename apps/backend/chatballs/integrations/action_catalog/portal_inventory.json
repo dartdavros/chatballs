@@ -1,0 +1,198 @@
+[
+  {
+    "method": "GET",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/support/portals/",
+    "action": "portals.get",
+    "reason": null,
+    "handler": "chatballs.support_portals.portal_views.PortalListView"
+  },
+  {
+    "method": "POST",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/support/portals/",
+    "action": "portals.post",
+    "reason": null,
+    "handler": "chatballs.support_portals.portal_views.PortalListView"
+  },
+  {
+    "method": "GET",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/support/portals/<int:portal_id>/",
+    "action": "portals.detail.get",
+    "reason": null,
+    "handler": "chatballs.support_portals.portal_views.PortalDetailView"
+  },
+  {
+    "method": "PATCH",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/support/portals/<int:portal_id>/",
+    "action": "portals.detail.patch",
+    "reason": null,
+    "handler": "chatballs.support_portals.portal_views.PortalDetailView"
+  },
+  {
+    "method": "POST",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/support/portals/<int:portal_id>/status/",
+    "action": "portals.status.post",
+    "reason": null,
+    "handler": "chatballs.support_portals.portal_views.PortalStatusView"
+  },
+  {
+    "method": "GET",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/support/portals/<int:portal_id>/widgets/",
+    "action": "portals.widgets.get",
+    "reason": null,
+    "handler": "chatballs.support_portals.portal_views.PortalWidgetOptionsView"
+  },
+  {
+    "method": "PUT",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/support/portals/<int:portal_id>/domain/",
+    "action": "portals.domain.put",
+    "reason": null,
+    "handler": "chatballs.support_portals.portal_views.PortalDomainView"
+  },
+  {
+    "method": "POST",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/support/portals/<int:portal_id>/domain/verify/",
+    "action": "portals.domain.verify.post",
+    "reason": null,
+    "handler": "chatballs.support_portals.portal_views.PortalDomainVerifyView"
+  },
+  {
+    "method": "GET",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/support/portals/<int:portal_id>/categories/",
+    "action": "portals.categories.get",
+    "reason": null,
+    "handler": "chatballs.support_portals.content_views.CategoryListView"
+  },
+  {
+    "method": "POST",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/support/portals/<int:portal_id>/categories/",
+    "action": "portals.categories.post",
+    "reason": null,
+    "handler": "chatballs.support_portals.content_views.CategoryListView"
+  },
+  {
+    "method": "PATCH",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/support/portals/<int:portal_id>/categories/<int:category_id>/",
+    "action": "portals.category.patch",
+    "reason": null,
+    "handler": "chatballs.support_portals.content_views.CategoryDetailView"
+  },
+  {
+    "method": "DELETE",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/support/portals/<int:portal_id>/categories/<int:category_id>/",
+    "action": "portals.category.delete",
+    "reason": null,
+    "handler": "chatballs.support_portals.content_views.CategoryDetailView"
+  },
+  {
+    "method": "GET",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/support/portals/<int:portal_id>/articles/",
+    "action": "portals.articles.get",
+    "reason": null,
+    "handler": "chatballs.support_portals.content_views.ArticleListView"
+  },
+  {
+    "method": "POST",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/support/portals/<int:portal_id>/articles/",
+    "action": "portals.articles.post",
+    "reason": null,
+    "handler": "chatballs.support_portals.content_views.ArticleListView"
+  },
+  {
+    "method": "GET",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/support/portals/<int:portal_id>/articles/<int:article_id>/",
+    "action": "portals.article.get",
+    "reason": null,
+    "handler": "chatballs.support_portals.content_views.ArticleDetailView"
+  },
+  {
+    "method": "PATCH",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/support/portals/<int:portal_id>/articles/<int:article_id>/",
+    "action": "portals.article.patch",
+    "reason": null,
+    "handler": "chatballs.support_portals.content_views.ArticleDetailView"
+  },
+  {
+    "method": "POST",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/support/portals/<int:portal_id>/articles/<int:article_id>/revisions/",
+    "action": "portals.article.revision.post",
+    "reason": null,
+    "handler": "chatballs.support_portals.content_views.ArticleRevisionListView"
+  },
+  {
+    "method": "POST",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/support/portals/<int:portal_id>/articles/<int:article_id>/publish/",
+    "action": "portals.article.publish.post",
+    "reason": null,
+    "handler": "chatballs.support_portals.content_views.ArticlePublishView"
+  },
+  {
+    "method": "POST",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/support/portals/<int:portal_id>/articles/<int:article_id>/archive/",
+    "action": "portals.article.archive.post",
+    "reason": null,
+    "handler": "chatballs.support_portals.content_views.ArticleArchiveView"
+  },
+  {
+    "method": "POST",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/support/portals/<int:portal_id>/articles/import/",
+    "action": "portals.articles.import.post",
+    "reason": null,
+    "handler": "chatballs.support_portals.article_import_views.ArticleImportView"
+  },
+  {
+    "method": "GET",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/support/portals/<int:portal_id>/articles/<int:article_id>/files/",
+    "action": "portals.article.files.get",
+    "reason": null,
+    "handler": "chatballs.support_portals.content_views.ArticleFileListView"
+  },
+  {
+    "method": "POST",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/support/portals/<int:portal_id>/articles/<int:article_id>/files/",
+    "action": "portals.article.files.post",
+    "reason": null,
+    "handler": "chatballs.support_portals.content_views.ArticleFileListView"
+  },
+  {
+    "method": "DELETE",
+    "route": "api/v1/organizations/<uuid:organization_public_id>/support/portals/<int:portal_id>/articles/<int:article_id>/files/<int:file_id>/",
+    "action": "portals.article.file.delete",
+    "reason": null,
+    "handler": "chatballs.support_portals.content_views.ArticleFileDetailView"
+  },
+  {
+    "method": "GET",
+    "route": "api/v1/help/",
+    "action": "portals.public.get",
+    "reason": null,
+    "handler": "chatballs.support_portals.public_views.PublicPortalDetailView"
+  },
+  {
+    "method": "GET",
+    "route": "api/v1/help/articles/",
+    "action": "portals.public.articles.get",
+    "reason": null,
+    "handler": "chatballs.support_portals.public_views.PublicArticleListView"
+  },
+  {
+    "method": "GET",
+    "route": "api/v1/help/articles/<slug:article_slug>/",
+    "action": "portals.public.article.get",
+    "reason": null,
+    "handler": "chatballs.support_portals.public_views.PublicArticleDetailView"
+  },
+  {
+    "method": "POST",
+    "route": "api/v1/help/articles/<slug:article_slug>/feedback/",
+    "action": "portals.public.feedback.post",
+    "reason": null,
+    "handler": "chatballs.support_portals.public_views.PublicArticleFeedbackView"
+  },
+  {
+    "method": "GET",
+    "route": "api/v1/help/files/<uuid:public_id>/",
+    "action": "portals.file.get",
+    "reason": null,
+    "handler": "chatballs.support_portals.file_views.PortalArticleFileView"
+  }
+]

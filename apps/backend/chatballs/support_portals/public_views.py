@@ -5,14 +5,9 @@ from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
 from chatballs.i18n import t
-from chatballs.support_portals.content_services import record_feedback
-from chatballs.support_portals.models import SupportPortal
-from chatballs.support_portals.selectors import category_article_counts, public_articles
-from chatballs.support_portals.serializers import (
-    category_payload,
-    public_article_payload,
-    public_portal_payload,
-)
+from chatballs.support_portals import public_queries as queries
+from chatballs.support_portals.feedback_limits import FEEDBACK_SCOPE
+from chatballs.support_portals.models import PortalArticle, SupportPortal
 from chatballs.tenancy.context import TenantContext
 from chatballs.tenancy.database import tenant_atomic
 from chatballs.tenancy.ingress import support_portal_route
@@ -52,97 +47,47 @@ class PublicPortalView(APIView):
 
 
 class PublicPortalDetailView(PublicPortalView):
-    def get(self, request: Request) -> Response:
+    def get(self, request):
         resolved = self.resolve(request)
         if resolved is None:
             return Response({"detail": t("portals.not_found")}, status=404)
         context, portal = resolved
         with tenant_atomic(context):
-            counts = category_article_counts(
-                portal, published_only=True, locale=portal.default_locale
-            )
-            return Response(
-                {
-                    "portal": public_portal_payload(portal),
-                    "categories": [
-                        category_payload(
-                            category, article_count=counts.get(category.id, 0)
-                        )
-                        for category in portal.categories.all()
-                    ],
-                }
-            )
+            return Response(queries.detail(portal))
 
 
 class PublicArticleListView(PublicPortalView):
-    def get(self, request: Request) -> Response:
+    def get(self, request):
         resolved = self.resolve(request)
         if resolved is None:
             return Response({"detail": t("portals.not_found")}, status=404)
         context, portal = resolved
-        locale = str(request.query_params.get("locale", portal.default_locale))
         with tenant_atomic(context):
-            articles = public_articles(
-                portal,
-                locale=locale,
-                category=str(request.query_params.get("category", "")),
-                query=str(request.query_params.get("q", "")).strip(),
-                direct_category=request.query_params.get("direct") == "1",
-            )
             try:
-                limit = min(max(int(request.query_params.get("limit", 50)), 1), 100)
-                offset = max(int(request.query_params.get("offset", 0)), 0)
+                return Response(queries.listing(portal, request.query_params))
             except (TypeError, ValueError):
                 return Response({"detail": t("portals.invalid_pagination")}, status=400)
-            total = articles.count()
-            page = articles[offset : offset + limit]
-            return Response(
-                {
-                    "items": [
-                        public_article_payload(article, content=False)
-                        for article in page
-                    ],
-                    "pagination": {
-                        "limit": limit,
-                        "offset": offset,
-                        "total": total,
-                        "hasMore": offset + limit < total,
-                    },
-                }
-            )
 
 
 class PublicArticleDetailView(PublicPortalView):
-    def get(self, request: Request, article_slug: str) -> Response:
+    def get(self, request, article_slug):
         resolved = self.resolve(request)
         if resolved is None:
             return Response({"detail": t("portals.not_found")}, status=404)
         context, portal = resolved
         locale = str(request.query_params.get("locale", portal.default_locale))
         with tenant_atomic(context):
-            article = public_articles(portal, locale=locale).filter(
-                slug=article_slug
-            ).first()
-            if article is None:
+            try:
+                return Response(queries.article_detail(portal, article_slug, locale))
+            except PortalArticle.DoesNotExist:
                 return Response({"detail": t("portals.article_not_found")}, status=404)
-            payload = public_article_payload(article)
-            related = public_articles(portal, locale=locale).filter(
-                id__in=article.related_article_ids
-            )
-            by_id = {item.id: item for item in related}
-            payload["relatedArticles"] = [
-                public_article_payload(by_id[item_id], content=False)
-                for item_id in article.related_article_ids
-                if item_id in by_id
-            ]
-            return Response({"article": payload})
 
 
 class PublicArticleFeedbackView(PublicPortalView):
     throttle_classes = [ScopedRateThrottle]
-    throttle_scope = "help_feedback"
+    throttle_scope = FEEDBACK_SCOPE
 
-    def post(self, request: Request, article_slug: str) -> Response:
+    def post(self, request, article_slug):
         resolved = self.resolve(request)
         if resolved is None:
             return Response({"detail": t("portals.not_found")}, status=404)
@@ -152,10 +97,7 @@ class PublicArticleFeedbackView(PublicPortalView):
         context, portal = resolved
         locale = str(request.query_params.get("locale", portal.default_locale))
         with tenant_atomic(context):
-            article = public_articles(portal, locale=locale).filter(
-                slug=article_slug
-            ).first()
-            if article is None:
+            try:
+                return Response(queries.feedback(portal, article_slug, locale, helpful), status=201)
+            except PortalArticle.DoesNotExist:
                 return Response({"detail": t("portals.article_not_found")}, status=404)
-            record_feedback(article, helpful)
-            return Response({"ok": True}, status=201)

@@ -55,7 +55,7 @@ def issue_initial_password(user: HumanUser) -> str:
 
 
 def reset_employee_password(
-    *, profile: OrganizationMembership, mode: str, actor, request=None
+    *, profile: OrganizationMembership, mode: str, actor, context, request=None
 ) -> str | None:
     """Сброс пароля сотрудника. Возвращает пароль только в режиме «показать».
 
@@ -82,14 +82,14 @@ def reset_employee_password(
         payload={"mode": mode, "sessionsRevoked": revoked},
         request=request,
     )
-    if mode == "mail" and request is not None:
+    if mode == "mail":
         enqueue_event(
             DomainEvent(
                 aggregate_type="HumanUser",
                 aggregate_id=str(user.id),
                 event_type=INITIAL_ACCESS_REQUESTED,
                 payload={"userId": user.id},
-                tenant_context=request.tenant_context,
+                tenant_context=context,
             )
         )
     return password

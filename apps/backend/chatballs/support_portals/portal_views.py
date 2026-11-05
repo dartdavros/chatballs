@@ -1,274 +1,71 @@
-from django.conf import settings
+"""HTTP adapters for shared portal commands and reads."""
+
 from django.core.exceptions import ValidationError
-from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from chatballs.api.pagination import page_payload, paginate
 from chatballs.api.permissions import HasCapability
 from chatballs.i18n import t
-from chatballs.identity.audit import record_audit_event
-from chatballs.integrations.models import IntegrationProvider, IntegrationStatus
-from chatballs.support_portals.addressing import help_base_domain
+from chatballs.support_portals import portal_commands as commands
+from chatballs.support_portals import portal_queries as queries
 from chatballs.support_portals.api import validation_response
-from chatballs.support_portals.domain_services import (
-    set_custom_domain,
-    verify_custom_domain,
-)
 from chatballs.support_portals.models import SupportPortal
-from chatballs.support_portals.portal_services import (
-    PortalInput,
-    create_portal,
-    set_portal_status,
-    update_portal,
-)
-from chatballs.support_portals.selectors import (
-    portal_content_counts,
-    portal_for_context,
-    portals_for_context,
-    portals_page_queryset,
-)
-from chatballs.support_portals.serializers import portal_payload
-from chatballs.support_portals.statuses import PortalStatus
-from chatballs.support_portals.themes import (
-    DEFAULT_PORTAL_THEME,
-    PortalThemeScheme,
-)
-from chatballs.webchat.models import WebChatWidget, WebChatWidgetStatus
-from chatballs.webchat.widgets import widget_payload
-
-
-def _optional_id(value) -> int | None:
-    if value in (None, ""):
-        return None
-    try:
-        return int(value)
-    except (TypeError, ValueError) as error:
-        raise ValidationError(
-            {"widgetChannelId": t("portals.widget_channel_missing")}
-        ) from error
+from chatballs.support_portals.selectors import portal_for_context
 
 
 class PortalBaseView(APIView):
     permission_classes = [HasCapability]
     required_capability = "support.view"
-    required_capabilities = {
-        "GET": "support.view",
-        "POST": "support.operate",
-        "PATCH": "support.operate",
-        "PUT": "support.operate",
-        "DELETE": "support.operate",
-    }
+    required_capabilities = {"GET": "support.view", **dict.fromkeys(
+        ("POST", "PATCH", "PUT", "DELETE"), "support.operate")}
 
-    def portal(self, request: Request, portal_id: int) -> SupportPortal | None:
+    def portal(self, request, portal_id):
         try:
             return portal_for_context(request.tenant_context, portal_id)
         except SupportPortal.DoesNotExist:
             return None
 
-
-def _input(request: Request, current: SupportPortal | None = None) -> PortalInput:
-    if "widgetId" in request.data:
-        widget_id = (
-            _optional_id(request.data["widgetId"])
-            if request.data.get("widgetId") not in (None, "")
-            else None
-        )
-        widget_channel_id = None
-    else:
-        widget_id = current.widget_id if current is not None else None
-        widget_channel_id = (
-            _optional_id(request.data["widgetChannelId"])
-            if request.data.get("widgetChannelId") not in (None, "")
-            else (
-                current.widget_channel_id
-                if current is not None and "widgetChannelId" not in request.data
-                else None
-            )
-        )
-    return PortalInput(
-        slug=str(request.data.get("slug", current.slug if current else "")),
-        name=str(request.data.get("name", current.name if current else "")),
-        default_locale=str(
-            request.data.get(
-                "defaultLocale",
-                current.default_locale if current else "ru",
-            )
-        ),
-        widget_id=widget_id,
-        widget_channel_id=widget_channel_id,
-        theme=str(
-            request.data.get("theme", current.theme if current else DEFAULT_PORTAL_THEME)
-        ),
-        theme_scheme=str(
-            request.data.get(
-                "themeScheme",
-                current.theme_scheme if current else PortalThemeScheme.LIGHT,
-            )
-        ),
-        theme_settings=request.data.get(
-            "themeSettings",
-            current.theme_settings if current else {},
-        ),
-    )
+    def result(self, http_request, operation, *args, status=200, **kwargs):
+        try:
+            payload = operation(http_request.tenant_context, *args, **kwargs)
+        except SupportPortal.DoesNotExist:
+            return Response({"detail": t("portals.not_found")}, status=404)
+        except ValidationError as error:
+            return validation_response(error)
+        return Response(payload, status=status)
 
 
 class PortalListView(PortalBaseView):
-    def get(self, request: Request) -> Response:
-        """Страница списка порталов: статус, поиск и порядок отрабатывает база."""
-        page = paginate(
-            portals_page_queryset(request.tenant_context, request.query_params),
-            request.query_params,
-        )
-        counts = portal_content_counts(request.tenant_context)
-        # Тарифные лимиты порталов удалены (ADR-CHATBALLS-0042 §2): создание доступно всегда.
-        active_count = (
-            portals_for_context(request.tenant_context)
-            .exclude(status=PortalStatus.ARCHIVED)
-            .count()
-        )
-        return Response(
-            {
-                **page_payload(
-                    page,
-                    lambda item: portal_payload(
-                        item,
-                        counts={
-                            "categories": 0,
-                            "articles": 0,
-                            **counts.get(item.id, {}),
-                        },
-                    ),
-                ),
-                "creation": {
-                    "available": True,
-                    "canCreate": True,
-                    "limit": None,
-                    "used": active_count,
-                },
-                "address": {
-                    "scheme": settings.CHATBALLS_HELP_PUBLIC_SCHEME,
-                    "baseDomain": help_base_domain(),
-                    "port": settings.CHATBALLS_HELP_PUBLIC_PORT or None,
-                },
-            }
-        )
+    def get(self, request):
+        return self.result(request, queries.listing, request.query_params)
 
-    def post(self, request: Request) -> Response:
-        try:
-            portal = create_portal(context=request.tenant_context, data=_input(request))
-        except ValidationError as error:
-            return validation_response(error)
-        record_audit_event(
-            action="support_portal.created",
-            actor=request.user,
-            organization=request.tenant_context.organization,
-            object_type="SupportPortal",
-            object_id=str(portal.public_id),
-            request=request,
-        )
-        portal = portal_for_context(request.tenant_context, portal.id)
-        return Response({"portal": portal_payload(portal)}, status=201)
+    def post(self, request):
+        return self.result(request, commands.create, request.data, request=request, status=201)
 
 
 class PortalDetailView(PortalBaseView):
-    def get(self, request: Request, portal_id: int) -> Response:
-        portal = self.portal(request, portal_id)
-        if portal is None:
-            return Response({"detail": t("portals.not_found")}, status=404)
-        counts = portal_content_counts(request.tenant_context).get(portal.id, {})
-        return Response({"portal": portal_payload(portal, counts=counts)})
+    def get(self, request, portal_id):
+        return self.result(request, queries.detail, portal_id)
 
-    def patch(self, request: Request, portal_id: int) -> Response:
-        portal = self.portal(request, portal_id)
-        if portal is None:
-            return Response({"detail": t("portals.not_found")}, status=404)
-        try:
-            update_portal(
-                context=request.tenant_context,
-                portal=portal,
-                data=_input(request, portal),
-            )
-        except ValidationError as error:
-            return validation_response(error)
-        portal = portal_for_context(request.tenant_context, portal.id)
-        return Response({"portal": portal_payload(portal)})
+    def patch(self, request, portal_id):
+        return self.result(request, commands.update, portal_id, request.data)
 
 
 class PortalStatusView(PortalBaseView):
-    def post(self, request: Request, portal_id: int) -> Response:
-        portal = self.portal(request, portal_id)
-        if portal is None:
-            return Response({"detail": t("portals.not_found")}, status=404)
-        try:
-            portal = set_portal_status(
-                context=request.tenant_context,
-                portal=portal,
-                status=str(request.data.get("status", "")),
-            )
-        except ValidationError as error:
-            return validation_response(error)
-        record_audit_event(
-            action=f"support_portal.{portal.status.lower()}",
-            actor=request.user,
-            organization=request.tenant_context.organization,
-            object_type="SupportPortal",
-            object_id=str(portal.public_id),
-            request=request,
-        )
-        portal = portal_for_context(request.tenant_context, portal.id)
-        return Response({"portal": portal_payload(portal)})
+    def post(self, request, portal_id):
+        return self.result(request, commands.status, portal_id, request.data, request=request)
 
 
 class PortalWidgetOptionsView(PortalBaseView):
-    """Анонимные веб-виджеты, доступные порталу."""
-
-    def get(self, request: Request, portal_id: int) -> Response:
-        portal = self.portal(request, portal_id)
-        if portal is None:
-            return Response({"detail": t("portals.not_found")}, status=404)
-        widgets = (
-            WebChatWidget.objects.select_related(
-                "integration",
-                "integration__channel",
-            )
-            .filter(
-                organization=request.tenant_context.organization,
-                status=WebChatWidgetStatus.PUBLISHED,
-                integration__provider=IntegrationProvider.WEB,
-                integration__status=IntegrationStatus.OK,
-                integration__is_active=True,
-                integration__channel__is_active=True,
-                integration__channel__allow_anonymous_sessions=True,
-            )
-            .order_by("name", "id")
-        )
-        return Response({"items": [widget_payload(widget) for widget in widgets]})
+    def get(self, request, portal_id):
+        return self.result(request, queries.widgets, portal_id)
 
 
 class PortalDomainView(PortalBaseView):
-    def put(self, request: Request, portal_id: int) -> Response:
-        portal = self.portal(request, portal_id)
-        if portal is None:
-            return Response({"detail": t("portals.not_found")}, status=404)
-        try:
-            portal = set_custom_domain(
-                portal, str(request.data.get("customDomain", ""))
-            )
-        except ValidationError as error:
-            return validation_response(error)
-        portal = portal_for_context(request.tenant_context, portal.id)
-        return Response({"portal": portal_payload(portal)})
+    def put(self, request, portal_id):
+        return self.result(request, commands.domain, portal_id, request.data)
 
 
 class PortalDomainVerifyView(PortalBaseView):
-    def post(self, request: Request, portal_id: int) -> Response:
-        portal = self.portal(request, portal_id)
-        if portal is None:
-            return Response({"detail": t("portals.not_found")}, status=404)
-        try:
-            portal = verify_custom_domain(portal)
-        except ValidationError as error:
-            return validation_response(error)
-        portal = portal_for_context(request.tenant_context, portal.id)
-        return Response({"portal": portal_payload(portal)})
+    def post(self, request, portal_id):
+        return self.result(request, commands.verify_domain, portal_id)

@@ -14,6 +14,7 @@ from chatballs.integrations.execution import checkpoints, native_results
 from chatballs.integrations.execution.budgets import causal_chain
 from chatballs.integrations.execution.events import journal
 from chatballs.integrations.execution.native_context import context_for
+from chatballs.integrations.execution.native_locale import native_locale
 from chatballs.integrations.execution.permissions import ExecutionDenied
 from chatballs.tenancy.database import tenant_atomic
 
@@ -37,7 +38,7 @@ def run_io(tenant, token):
             step.save(update_fields=["sent_at"])
             journal(run, "request_sent", step)
         sent = True
-        with origin(chain), native_audit(run, step, actor):
+        with origin(chain), native_audit(run, step, actor), native_locale(actor):
             result = action.execute(context, arguments)
         # A confirmed result is durable even if the worker subsequently loses
         # its lease or crashes before its fenced checkpoint can be committed.

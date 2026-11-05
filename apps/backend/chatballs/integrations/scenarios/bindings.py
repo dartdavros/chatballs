@@ -133,7 +133,7 @@ def check_untyped(value: Any, **kwargs) -> None:
     """An adapter's open object still cannot smuggle an unchecked reference."""
     if isinstance(value, dict) and isinstance(value.get("source"), str):
         if value["source"] == "constant":
-            target = infer_type(value.get("value"))
+            target = TypeSpec("json", nullable=True)
         else:
             target = binding_type(value, kwargs["scope"], kwargs["context"])
             if target:

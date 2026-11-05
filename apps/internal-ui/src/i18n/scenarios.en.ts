@@ -126,6 +126,8 @@ export const scenariosEn = {
   "scenarios.type": "Type",
   "scenarios.required": "Required",
   "scenarios.nullable": "Allow empty value",
+  "scenarios.empty_value": "Empty value",
+  "scenarios.type_json": "Any value",
   "scenarios.options": "Allowed values",
   "scenarios.add_value": "Add value",
   "scenarios.array_item": "List item",
