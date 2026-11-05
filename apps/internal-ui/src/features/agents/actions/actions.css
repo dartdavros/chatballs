@@ -3,8 +3,9 @@
 .agent-actions-card > h3::after { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--primary); }
 .agent-actions-card > p { margin-bottom: 8px; }
 .agent-actions-empty { margin: 0; padding: 18px 0 8px; font-size: 12.5px; color: var(--n-4); line-height: 1.5; }
-.agent-grid.has-service-actions { grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr); }
 .agent-actions-body { min-height: 90px; }
+.agent-actions-modal .agent-actions-body { height: min(440px, calc(100dvh - 300px)); max-height: none; min-height: 90px; }
+.agent-actions-modal .agent-action-head strong, .agent-actions-modal .agent-action-head small { overflow-wrap: anywhere; }
 .agent-action { display: flex; flex-direction: column; gap: 8px; padding: 12px 0; border-top: 1px solid var(--n-9); }
 .agent-action-head { display: flex; align-items: flex-start; gap: 12px; }
 .agent-action-head > div:first-child { flex: 1; min-width: 0; }

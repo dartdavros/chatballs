@@ -6,11 +6,10 @@ import { Button } from "../../shared/ui-controls";
 import { groupColorOf } from "../conversations/model";
 import { agentTile, agentStatusMeta, createdLabel, openDialogsLine, type AgentCard, type AgentPatch } from "./model";
 
-export function AgentHeader({ card, canManage, busy, apply, toggleAi, onDelete, onTest, testing, actionsDirty, actionsBusy, saveActions }: {
+export function AgentHeader({ card, canManage, busy, apply, toggleAi, onDelete, onTest, testing }: {
   card: AgentCard; canManage: boolean; busy: boolean; testing: boolean;
   apply: (patch: AgentPatch) => Promise<boolean>; toggleAi: () => Promise<void>;
   onDelete: () => void; onTest: () => void;
-  actionsDirty?: boolean; actionsBusy?: boolean; saveActions?: () => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const tile = agentTile(card);
@@ -65,7 +64,6 @@ export function AgentHeader({ card, canManage, busy, apply, toggleAi, onDelete, 
             <Button variant="secondary" className={`agent-test-button${testing ? " is-active" : ""}`} icon="message" aria-expanded={testing} onClick={onTest}>
               {t("agent_test.open")}
             </Button>
-            {saveActions && <Button variant="primary" disabled={!actionsDirty || actionsBusy} onClick={saveActions}>{t("common.save")}</Button>}
             <Button variant="secondary" className="agent-toggle" icon={running ? "pause" : "bolt"} disabled={busy} onClick={() => void toggleAi()}>
               {running ? t("ai.stop_ai") : t("ai.start_ai")}
             </Button>
