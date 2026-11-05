@@ -7,47 +7,39 @@
 
 from __future__ import annotations
 
-from django.core.files.base import ContentFile
 from django.http import FileResponse
-from django.utils import timezone
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.request import Request
 from rest_framework.response import Response
 
 from chatballs.ai.provider.base import ProviderError
-from chatballs.conversations import transports
-from chatballs.conversations.media_operations import public_media_operation
+from chatballs.conversations.media_queries import visible_message
 from chatballs.conversations.models import (
-    ConnectionIdentity,
     Conversation,
-    ExpectedResponder,
-    LifecycleState,
     Message,
-    MessageAuthor,
     MessageKind,
     TranscriptStatus,
 )
-from chatballs.conversations.selectors import conversation_for_context
+from chatballs.conversations.reply_http import reply_response
 from chatballs.conversations.serializers import message_payload
 from chatballs.conversations.view_base import ConversationViewBase
+from chatballs.conversations.voice_send import (
+    ALLOWED_AUDIO_TYPES as ALLOWED_AUDIO_TYPES,
+)
+from chatballs.conversations.voice_send import (
+    MAX_VOICE_BYTES as MAX_VOICE_BYTES,
+)
+from chatballs.conversations.voice_send import (
+    send_voice_reply,
+)
 from chatballs.i18n import t
-from chatballs.integrations.features import voice_messages_allowed
 from chatballs.tenancy.database import tenant_atomic
-
-MAX_VOICE_BYTES = 10 * 1024 * 1024
-ALLOWED_AUDIO_TYPES = ("audio/ogg", "audio/webm", "audio/mpeg", "audio/mp4", "audio/wav")
 
 
 def _visible_message(request: Request, message_id: int) -> Message:
     """Сообщение доступно, если видим его диалог (группы/назначение/архив —
     та же модель видимости, что и у detail)."""
-    message = Message.objects.select_related(
-        "conversation", "conversation__channel", "conversation__connection"
-    ).get(id=message_id, organization_id=request.tenant_context.organization_id)
-    conversation_for_context(
-        context=request.tenant_context, conversation_id=message.conversation_id
-    )
-    return message
+    return visible_message(request.tenant_context, message_id)
 
 
 class MessageAudioView(ConversationViewBase):
@@ -124,70 +116,8 @@ class ConversationVoiceView(ConversationViewBase):
     required_capability = "conversations.operate"
     parser_classes = [MultiPartParser, FormParser]
 
-    @public_media_operation
     def post(self, request: Request, conversation_id: int) -> Response:
-        from chatballs.conversations.views import claim_for_reply
-
-        try:
-            conversation = self._conversation(
-                request, conversation_id, self.required_capability
-            )
-        except Conversation.DoesNotExist:
-            return Response({"detail": t("conversations.not_found")}, status=404)
-        if conversation.lifecycle != LifecycleState.OPEN:
-            return Response({"detail": t("conversations.closed")}, status=409)
-        connection = conversation.connection
-        if connection is None or not transports.supports_voice_send(connection):
-            return Response(
-                {"detail": t("conversations.voice_unavailable_channel")}, status=400
-            )
-        if not voice_messages_allowed(connection):
-            return Response({"detail": t("conversations.voice_off_entry_point")}, status=400)
-        upload = request.FILES.get("audio")
-        if upload is None:
-            return Response({"detail": t("conversations.attach_audio")}, status=400)
-        if upload.size > MAX_VOICE_BYTES:
-            return Response({"detail": t("conversations.audio_too_large")}, status=400)
-        content_type = (upload.content_type or "audio/ogg").split(";")[0]
-        if content_type not in ALLOWED_AUDIO_TYPES:
-            return Response({"detail": t("conversations.audio_format_unsupported")}, status=400)
-        try:
-            duration = max(0, int(request.data.get("duration", 0)))
-        except (TypeError, ValueError):
-            duration = 0
-
-        claimed = claim_for_reply(self, request, conversation)
-        if isinstance(claimed, Response):
-            return claimed
-        conversation = claimed
-
-        identity = ConnectionIdentity.objects.filter(connection=connection, contact=conversation.contact).first()
-        content = upload.read()
-        sent = transports.send_voice(
-            connection,
-            chat_id=conversation.external_chat_id,
-            user_id=identity.external_user_id if identity else "",
-            content=content,
-            content_type=content_type,
-            duration=duration,
-        )
-        if not sent:
-            return Response(
-                {"detail": t("conversations.voice_send_failed")}, status=502
-            )
-        message = Message.objects.create(
-            conversation=conversation,
-            author_type=MessageAuthor.OPERATOR,
-            author_user=request.user,
-            kind=MessageKind.VOICE,
-            audio_content_type=content_type,
-            duration_seconds=duration,
-        )
-        suffix = "ogg" if "ogg" in content_type else content_type.rsplit("/", 1)[-1]
-        message.audio.save(f"voice.{suffix}", ContentFile(content), save=False)
-        message.save(update_fields=["audio"])
-        conversation.last_activity_at = timezone.now()
-        conversation.expected_responder = ExpectedResponder.CUSTOMER
-        conversation.save(update_fields=["last_activity_at", "expected_responder"])
-        self._audit(request, "voice_sent", conversation)
-        return Response({"message": message_payload(message)}, status=201)
+        return reply_response(send_voice_reply(context=request.tenant_context,
+            conversation_id=conversation_id, upload=request.FILES.get("audio"),
+            duration=request.data.get("duration", 0),
+            operation_id=request.headers.get("Idempotency-Key"), request=request))

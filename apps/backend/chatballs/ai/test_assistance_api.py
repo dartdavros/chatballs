@@ -5,6 +5,7 @@ from django.utils import timezone
 from rest_framework.test import APIRequestFactory, force_authenticate
 
 from chatballs.ai.assistance_behavior_base import AssistanceBehaviorData
+from chatballs.ai.assistance_services import ASSISTANCE_REQUESTED
 from chatballs.ai.assistance_views import (
     AssistanceDetailView,
     AssistanceListView,
@@ -30,7 +31,9 @@ class AssistanceApiTests(AssistanceBehaviorData, TestCase):
         self.assertEqual(response.status_code, 202)
         repeated = self.api(AssistanceListView, data={"operationKey": "first"})
         self.assertEqual(response.data, repeated.data)
-        self.assertEqual(OutboxEvent.objects.count(), 1)
+        requested = OutboxEvent.objects.filter(event_type=ASSISTANCE_REQUESTED)
+        self.assertEqual(requested.count(), 1)
+        self.assertEqual(requested.get().payload["suggestionId"], response.data["suggestion"]["id"])
         original = self.generate(ReplySuggestion.objects.get())
         alternative = self.api(AssistanceListView, data={
             "operationKey": "alternative", "attemptId": str(original.attempt.public_id),

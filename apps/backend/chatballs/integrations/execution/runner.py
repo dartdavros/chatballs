@@ -6,15 +6,19 @@ from time import monotonic
 from django.db import connection
 from django.utils import timezone
 
-from chatballs.integrations.adapters.contracts import OperationResult, READ_EFFECTS, ResultState
-from chatballs.integrations.adapters.schema import validate_value
+from chatballs.integrations.adapters.contracts import READ_EFFECTS, OperationResult, ResultState
 from chatballs.integrations.adapters.files import file_store
+from chatballs.integrations.adapters.schema import validate_value
 from chatballs.integrations.execution import checkpoints, recovery
 from chatballs.integrations.execution.actions import resolve_action
-from chatballs.integrations.execution.approvals import approved
 from chatballs.integrations.execution.ai_policy import needs_confirmation
+from chatballs.integrations.execution.approvals import approved
 from chatballs.integrations.execution.events import journal
-from chatballs.integrations.execution.permissions import ExecutionDenied, authorize_run, validate_arguments
+from chatballs.integrations.execution.permissions import (
+    ExecutionDenied,
+    authorize_run,
+    validate_arguments,
+)
 from chatballs.integrations.scenario_state.limits import ConnectionExecutionLane
 from chatballs.integrations.service_connections.binding import build_context
 from chatballs.integrations.service_connections.errors import ServiceCheckFailed
@@ -122,9 +126,10 @@ def _commit(tenant, token, result, *, elapsed=0):
         if result.error_code == "invalid_result":
             state = "unknown"
         if run.definition.get("composite"):
+            from django.db.models import F
+
             from chatballs.integrations.execution.budgets import root_of
             from chatballs.integrations.scenario_state.progress import ScenarioBudget
-            from django.db.models import F
             ScenarioBudget.objects.filter(root=root_of(run)).update(active_seconds=F("active_seconds") + elapsed)
         # No unbounded remote text is copied into the safe journal.
         from chatballs.integrations.execution.errors import KNOWN
@@ -152,8 +157,8 @@ def _commit(tenant, token, result, *, elapsed=0):
             values.update(continuation=result.continuation, external_reference=result.external_reference)
         step.definition = values
         if state == "pending" and result.correlation and result.event_key and result.deadline:
-            from chatballs.integrations.execution.waits import pending_operation
             from chatballs.integrations.execution.effect_data import account_effect
+            from chatballs.integrations.execution.waits import pending_operation
             account_effect(run, step)
             step.state, step.lease_until = "waiting", None
             step.save(update_fields=["content", "state", "lease_until"])
@@ -188,6 +193,9 @@ def run_one(tenant, public_id, *, registry=None, token=None):
         advance(tenant, public_id, registry=registry)
     token = token or checkpoints.claim(tenant, public_id)
     if token is None:
+        return
+    from chatballs.integrations.execution.native import run_native
+    if run_native(tenant, token):
         return
     try:
         prepared = _prepare(tenant, token, registry)

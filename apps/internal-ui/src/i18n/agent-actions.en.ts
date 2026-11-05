@@ -1,6 +1,6 @@
 export const agentActionsEn = {
   "agent_actions.title": "Actions and scenarios",
-  "agent_actions.description": "What the agent may do in a conversation. Forbidden by default. Nested scenarios do not extend the agent’s permissions.",
+  "agent_actions.description": "What the agent may do in a conversation. Forbidden by default. Nested scenarios do not extend the agent’s permissions. Chatballs actions run on behalf of the administrator who granted access, using that administrator's current permissions.",
   "agent_actions.empty": "No enabled scenarios or operations to delegate to the agent. Enable them in Settings → Scenarios.",
   "agent_actions.off": "Forbidden",
   "agent_actions.self": "Independently",

@@ -2,14 +2,14 @@
 
 import json
 import uuid
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
-from chatballs.ai.provider.base import ToolSpec
 from chatballs.ai.execution_version import configuration_version
+from chatballs.ai.provider.base import ToolSpec
 from chatballs.ai.tool_support import cached_tool_support
 from chatballs.integrations.execution.actions import resolve_action
-from chatballs.integrations.execution.ai_policy import bind, current, authorize_ai
 from chatballs.integrations.execution.ai_launch import launch_ai
+from chatballs.integrations.execution.ai_policy import authorize_ai, bind, current
 from chatballs.integrations.execution.permissions import ExecutionDenied
 from chatballs.integrations.scenario_state.agent_grants import AgentActionGrant
 from chatballs.integrations.scenario_state.runs import ScenarioRun
@@ -108,6 +108,7 @@ def plan_actions(agent, conversation, *, preview=False, registry=None, test_tena
         mode="off").select_related("scenario", "integration", "agent"):
         binding = bind(grant, conversation) if conversation else {
             "grant": grant.pk, "agent": agent.pk, "revision": grant.revision, "mode": grant.mode,
+            "delegate": grant.delegate_id,
             "tester": test_tenant.membership_id, "conversation": None,
             "modeVersion": test_tenant.organization.operation_mode_version}
         if not conversation and test_client:
@@ -120,9 +121,13 @@ def plan_actions(agent, conversation, *, preview=False, registry=None, test_tena
                 spec = read_type(grant.scenario.definition["parameters"])
                 title = grant.scenario.name
             else:
-                _, _, _, _, operation = resolve_action(agent.organization_id, grant.integration_id,
-                    f"service:{grant.operation_key}", registry=registry)
+                _, _, _, _, operation = resolve_action(agent.organization_id,
+                    "chatballs" if grant.native_key else grant.integration_id,
+                    f"chatballs:{grant.native_key}" if grant.native_key else f"service:{grant.operation_key}", registry=registry)
                 spec = operation.input
+                if grant.native_key and conversation:
+                    spec = replace(spec, properties=tuple((name, child) for name, child in spec.properties
+                        if name != "conversation_id" or not child.required))
                 from chatballs.i18n import t
                 title = t(operation.title_key)
             tools.append(AgentActionTool(ToolSpec(name=tool_name(f"chatballs_action_{grant.pk}"),

@@ -42,9 +42,10 @@ def search_templates(actor, params):
         category = library_object(ReplyTemplateCategory, actor, filter_id(params["categoryId"]))
         templates = templates.filter(category_id=category.pk)
 
+    groups = params.getlist("tagIds") if hasattr(params, "getlist") else [str(pk) for pk in params.get("tagIds", [])]
     tag_ids = {
         filter_id(raw)
-        for group in params.getlist("tagIds")
+        for group in groups
         for raw in group.split(",")
     }
     if tag_ids:

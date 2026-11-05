@@ -36,7 +36,7 @@ def question_payload(request):
 
 
 @contextmanager
-def resolved_request(token):
+def resolved_request(token, *, expected_organization_id=None):
     digest = hash_credential(token) if token else ""
     with connection.cursor() as cursor:
         cursor.execute(
@@ -44,6 +44,8 @@ def resolved_request(token):
             "WHERE lookup_key = %s LIMIT 1", [digest],
         )
         route = cursor.fetchone()
+    if route and expected_organization_id is not None and route[0] != expected_organization_id:
+        raise NotFound(t("ratings.unavailable"))
     organization = load_organization(route[0]) if route else None
     if organization is None:
         raise NotFound(t("ratings.unavailable"))

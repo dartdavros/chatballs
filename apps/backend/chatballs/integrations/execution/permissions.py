@@ -45,7 +45,9 @@ def authorize(tenant, document, conversation_id=None, *, scenario_id=None, trigg
         if not manager and not allowed:
             raise ExecutionDenied("permission")
         if policy["scope"] == "organization" and not manager:
-            raise ExecutionDenied("permission")
+            from chatballs.integrations.action_catalog.permissions import organization_grants_cover
+            if not organization_grants_cover(tenant, document):
+                raise ExecutionDenied("permission")
         if policy["scope"] != "organization" and conversation_id is None:
             raise ExecutionDenied("context")
     conversation = None
@@ -56,7 +58,12 @@ def authorize(tenant, document, conversation_id=None, *, scenario_id=None, trigg
         if conversation is None:
             raise ExecutionDenied("context")
         try:
-            require_conversation_action(tenant, conversation, "conversations.operate")
+            from chatballs.integrations.execution.snapshots import walk
+            capability = "conversations.operate" if any(
+                b["kind"] == "action" and b.get("target", "").startswith("service:")
+                for b in walk(document["steps"])
+            ) else "conversations.view"
+            require_conversation_action(tenant, conversation, capability)
         except Conversation.DoesNotExist:
             raise ExecutionDenied("permission") from None
         if any(p["scope"] == "contact" for p in policies) and not conversation.contact_id:
@@ -77,9 +84,10 @@ def authorize_run(tenant, run, *, check_conditions=True):
         grant_id = run.definition.get("grantId")
         if grant_id is not None:
             step = run.steps.get()
+            target = ({"integration__isnull": True, "native_key": step.operation_key, "operation_key": ""}
+                if step.adapter_key == "chatballs" else {"integration_id": step.integration_id, "operation_key": step.operation_key})
             grant = ActionGrant.objects.filter(pk=grant_id, organization_id=tenant.organization_id,
-                integration_id=step.integration_id, membership=tenant.membership,
-                operation_key=step.operation_key, enabled=True).first()
+                membership=tenant.membership, enabled=True, **target).first()
             if grant is None or grant.scope != run.definition["document"]["access"]["scope"]:
                 raise ExecutionDenied("permission")
         elif tenant.membership.role not in {EmployeeRole.OWNER, EmployeeRole.ADMIN}:
@@ -132,12 +140,21 @@ def direct_policy(tenant, connection_id, operation_key, conversation_id):
     from chatballs.integrations.scenario_state.grants import ActionGrant
     from chatballs.integrations.scenarios.definition import empty_definition
     tenant = current_actor(tenant)
-    grant = ActionGrant.objects.filter(integration_id=connection_id, membership=tenant.membership,
-                                      operation_key=operation_key, enabled=True).first()
+    target = ({"integration__isnull": True, "native_key": operation_key, "operation_key": ""}
+        if connection_id == "chatballs" else {"integration_id": connection_id, "operation_key": operation_key})
+    grant = ActionGrant.objects.filter(organization_id=tenant.organization_id, membership=tenant.membership,
+        enabled=True, **target).first()
     if tenant.membership.role not in {EmployeeRole.OWNER, EmployeeRole.ADMIN} and grant is None:
         raise ExecutionDenied("permission")
     document = empty_definition()
+    native = None
+    if connection_id == "chatballs":
+        from chatballs.integrations.action_catalog.registry import native_action
+        native = native_action(operation_key)
+        document["steps"] = [{"id": "operation", "kind": "action", "connection": "chatballs",
+            "target": f"chatballs:{operation_key}", "inputs": {}}]
     document["access"].update(staff=[tenant.actor_user.pk], scope=grant.scope if grant else (
+        "organization" if native and native.scope == "organization" else
         "conversation" if conversation_id is not None else "organization"))
     tenant, conversation = authorize(tenant, document, conversation_id)
     return tenant, document, grant, conversation

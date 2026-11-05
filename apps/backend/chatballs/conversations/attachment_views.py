@@ -7,32 +7,21 @@
 
 from __future__ import annotations
 
-from django.core.files.base import ContentFile
 from django.http import FileResponse
-from django.utils import timezone
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from chatballs.conversations import transports
 from chatballs.conversations.attachment_policy import MAX_FILE_BYTES as MAX_FILE_BYTES
 from chatballs.conversations.attachment_policy import validate_upload as validate_upload
-from chatballs.conversations.media_operations import public_media_operation
+from chatballs.conversations.attachment_send import send_attachment_reply
 from chatballs.conversations.models import (
-    ConnectionIdentity,
     Conversation,
-    ExpectedResponder,
-    LifecycleState,
     Message,
-    MessageAuthor,
     MessageKind,
 )
-from chatballs.conversations.serializers import message_payload
-from chatballs.conversations.template_send_guard import (
-    UnfilledTemplateVariables,
-    require_filled_text,
-)
-from chatballs.conversations.transports.base import guess_content_type, safe_filename
+from chatballs.conversations.reply_http import reply_response
+from chatballs.conversations.transports.base import guess_content_type
 from chatballs.conversations.view_base import ConversationViewBase
 from chatballs.conversations.voice_views import _visible_message
 from chatballs.i18n import t
@@ -68,65 +57,8 @@ class ConversationAttachmentView(ConversationViewBase):
     required_capability = "conversations.operate"
     parser_classes = [MultiPartParser, FormParser]
 
-    @public_media_operation
     def post(self, request: Request, conversation_id: int) -> Response:
-        from chatballs.conversations.views import claim_for_reply
-
-        try:
-            conversation = self._conversation(request, conversation_id, self.required_capability)
-        except Conversation.DoesNotExist:
-            return Response({"detail": t("conversations.not_found")}, status=404)
-        if conversation.lifecycle != LifecycleState.OPEN:
-            return Response({"detail": t("conversations.closed")}, status=409)
-        connection = conversation.connection
-        if connection is None or not transports.supports_file_send(connection):
-            return Response({"detail": t("conversations.files_unavailable_channel")}, status=400)
-        upload = request.FILES.get("file")
-        if upload is None:
-            return Response({"detail": t("conversations.attach_file")}, status=400)
-        problem = validate_upload(upload)
-        if problem:
-            return Response({"detail": problem}, status=400)
-        name = safe_filename(upload.name or "")
-        content_type = (upload.content_type or "").split(";")[0] or guess_content_type(name)
-        caption = str(request.data.get("text", "")).strip()[:4000]
-        try:
-            require_filled_text(caption)
-        except UnfilledTemplateVariables as error:
-            return Response(error.payload(), status=400)
-
-        claimed = claim_for_reply(self, request, conversation)
-        if isinstance(claimed, Response):
-            return claimed
-        conversation = claimed
-
-        identity = ConnectionIdentity.objects.filter(connection=connection, contact=conversation.contact).first()
-        content = upload.read()
-        sent = transports.send_file(
-            connection,
-            chat_id=conversation.external_chat_id,
-            user_id=identity.external_user_id if identity else "",
-            content=content,
-            filename=name,
-            content_type=content_type,
-            caption=caption,
-        )
-        if not sent:
-            return Response({"detail": t("conversations.file_send_failed")}, status=502)
-        message = Message.objects.create(
-            conversation=conversation,
-            author_type=MessageAuthor.OPERATOR,
-            author_user=request.user,
-            kind=MessageKind.FILE,
-            text=caption,
-            attachment_name=name,
-            attachment_content_type=content_type,
-            attachment_size=len(content),
-        )
-        message.attachment.save(name, ContentFile(content), save=False)
-        message.save(update_fields=["attachment"])
-        conversation.last_activity_at = timezone.now()
-        conversation.expected_responder = ExpectedResponder.CUSTOMER
-        conversation.save(update_fields=["last_activity_at", "expected_responder"])
-        self._audit(request, "file_sent", conversation)
-        return Response({"message": message_payload(message)}, status=201)
+        return reply_response(send_attachment_reply(context=request.tenant_context,
+            conversation_id=conversation_id, upload=request.FILES.get("file"),
+            text=request.data.get("text", ""),
+            operation_id=request.headers.get("Idempotency-Key"), request=request))

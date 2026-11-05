@@ -1,37 +1,19 @@
-from rest_framework import serializers
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from chatballs.api.pagination import page_payload, paginate
 from chatballs.api.permissions import HasCapability
+from chatballs.conversations.transfer_reason_inputs import ReasonInput
+from chatballs.conversations.transfer_reason_payloads import (
+    reason_option_payload as reason_option_payload,
+)
+from chatballs.conversations.transfer_reason_payloads import reason_payload
 from chatballs.conversations.transfer_services import (
     disable_reason,
     reasons_for_management,
     save_reason,
 )
 from chatballs.i18n import t
-
-
-class ReasonInput(serializers.Serializer):
-    code = serializers.RegexField(r"^[-a-zA-Z0-9_]+$", max_length=64, required=False)
-    name = serializers.CharField(max_length=120)
-    isActive = serializers.BooleanField(required=False, source="is_active")
-
-
-def reason_option_payload(reason):
-    return {
-        "id": reason.pk, "code": reason.code, "name": reason.name,
-        "isActive": reason.is_active,
-    }
-
-
-def reason_payload(reason):
-    return {
-        **reason_option_payload(reason),
-        "usageCount": getattr(reason, "usage_count", 0),
-        "previousName": reason.previous_name,
-        "renamedAt": reason.renamed_at.isoformat() if reason.renamed_at else None,
-    }
 
 
 class ReasonListView(APIView):

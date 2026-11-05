@@ -1,87 +1,43 @@
-"""Organization label catalog and compatibility exports for reply templates."""
+"""Label HTTP adapters and reply-template compatibility exports."""
 
-from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from chatballs.api.permissions import HasCapability
-from chatballs.conversations.models import ConversationLabel
-from chatballs.i18n import t
-
-
-def _label_payload(label: ConversationLabel) -> dict[str, object]:
-    return {"id": label.id, "name": label.name, "color": label.color}
+from chatballs.conversations.label_services import (
+    create_label,
+    delete_label,
+    labels_for,
+    update_label,
+)
+from chatballs.conversations.label_services import (
+    label_payload as _label_payload,
+)
 
 
 class LabelListView(APIView):
-    """Словарь меток организации. Создание — лёгкое действие оператора
-    («+ Добавить» в карточке), правка/удаление — администратора."""
-
     permission_classes = [HasCapability]
-    required_capabilities = {
-        "GET": "conversations.view",
-        "POST": "conversations.operate",
-    }
+    required_capabilities = {"GET": "conversations.view", "POST": "conversations.operate"}
 
-    def get(self, request: Request) -> Response:
-        labels = ConversationLabel.objects.filter(
-            organization_id=request.tenant_context.organization_id
-        )
-        return Response({"items": [_label_payload(label) for label in labels]})
+    def get(self, request):
+        return Response({"items": [_label_payload(label) for label in labels_for(request.tenant_context)]})
 
-    def post(self, request: Request) -> Response:
-        name = str(request.data.get("name", "")).strip()
-        color = str(request.data.get("color", "")).strip()
-        if not name or len(name) > 60:
-            return Response({"detail": t("conversations.label_name_length")}, status=400)
-        if len(color) > 20:
-            return Response({"detail": t("conversations.invalid_colour")}, status=400)
-        existing = ConversationLabel.objects.filter(
-            organization_id=request.tenant_context.organization_id, name__iexact=name
-        ).first()
-        if existing is not None:
-            return Response({"label": _label_payload(existing)})
-        label = ConversationLabel.objects.create(
-            organization_id=request.tenant_context.organization_id,
-            name=name,
-            color=color,
-        )
-        return Response({"label": _label_payload(label)}, status=201)
+    def post(self, request):
+        label, created = create_label(context=request.tenant_context,
+            name=request.data.get("name", ""), color=request.data.get("color", ""))
+        return Response({"label": _label_payload(label)}, status=201 if created else 200)
 
 
 class LabelDetailView(APIView):
     permission_classes = [HasCapability]
     required_capabilities = {"PATCH": "settings.manage", "DELETE": "settings.manage"}
 
-    def _label(self, request: Request, label_id: int) -> ConversationLabel:
-        return ConversationLabel.objects.get(
-            organization_id=request.tenant_context.organization_id, id=label_id
-        )
-
-    def patch(self, request: Request, label_id: int) -> Response:
-        try:
-            label = self._label(request, label_id)
-        except ConversationLabel.DoesNotExist:
-            return Response({"detail": t("conversations.label_not_found")}, status=404)
-        if "name" in request.data:
-            name = str(request.data.get("name", "")).strip()
-            if not name or len(name) > 60:
-                return Response({"detail": t("conversations.label_name_length")}, status=400)
-            label.name = name
-        if "color" in request.data:
-            color = str(request.data.get("color", "")).strip()
-            if len(color) > 20:
-                return Response({"detail": t("conversations.invalid_colour")}, status=400)
-            label.color = color
-        label.save()
+    def patch(self, request, label_id):
+        label = update_label(context=request.tenant_context, label_id=label_id, changes=request.data)
         return Response({"label": _label_payload(label)})
 
-    def delete(self, request: Request, label_id: int) -> Response:
-        try:
-            label = self._label(request, label_id)
-        except ConversationLabel.DoesNotExist:
-            return Response({"detail": t("conversations.label_not_found")}, status=404)
-        label.delete()
+    def delete(self, request, label_id):
+        delete_label(context=request.tenant_context, label_id=label_id)
         return Response(status=204)
 
 

@@ -56,9 +56,10 @@ def edit(tenant, run, step, *, digest, arguments=None, token=None, release=False
         return
     if not editor or not secrets.compare_digest(editor["token"], token or "") or not isinstance(arguments, dict):
         raise ExecutionDenied("state_changed")
-    from chatballs.integrations.execution.actions import resolve_action
+    from chatballs.integrations.execution.actions import resolve_action, step_target
     from chatballs.integrations.execution.permissions import validate_arguments
-    _, _, _, _, operation = resolve_action(run.organization_id, step.integration_id, f"service:{step.operation_key}",
+    target = step_target(step)
+    _, _, _, _, operation = resolve_action(run.organization_id, target["connection"], target["target"],
                                            expected=(step.adapter_key, step.adapter_version))
     validate_arguments(tenant, run.conversation_id, operation, arguments)
     from chatballs.integrations.execution.files import lock_input_files, own_input_files

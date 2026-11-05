@@ -3,17 +3,11 @@ from django.http import FileResponse
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from chatballs.api.pagination import page_payload, paginate
-from chatballs.conversations.clients import client_detail, client_row, clients_queryset
-from chatballs.conversations.contact_card import save_card_fields
-from chatballs.conversations.contacts_merge import merge_contacts, revert_merge
+from chatballs.conversations import contact_services
 from chatballs.conversations.models import Contact
-from chatballs.conversations.selectors import visible_conversations_for
 from chatballs.conversations.stats import sales_overview_stats
 from chatballs.conversations.view_base import ConversationViewBase
 from chatballs.i18n import t
-from chatballs.identity.audit import record_audit_event
-from chatballs.identity.models import EmployeeRole
 
 
 class ConversationStatsView(ConversationViewBase):
@@ -38,10 +32,9 @@ class ContactAvatarView(ConversationViewBase):
     """
 
     def get(self, request: Request, contact_id: int):
-        contact = Contact.objects.filter(
-            organization=self._org(request), id=contact_id
-        ).first()
-        if contact is None or not contact.avatar or not visible_conversations_for(request.tenant_context).filter(contact_id=contact_id).exists():
+        try:
+            contact = contact_services.avatar(request.tenant_context, contact_id)
+        except Contact.DoesNotExist:
             return Response({"detail": t("sales.client_not_found")}, status=404)
         response = FileResponse(
             contact.avatar.open("rb"),
@@ -57,11 +50,7 @@ class ClientsView(ConversationViewBase):
 
     def get(self, request: Request) -> Response:
         """Страница списка контактов: фильтры, поиск и порядок отрабатывает база."""
-        page = paginate(
-            clients_queryset(self._org(request).id, request.query_params, context=request.tenant_context),
-            request.query_params,
-        )
-        return Response(page_payload(page, client_row))
+        return Response(contact_services.contacts(request.tenant_context, request.query_params))
 
 
 class ClientDetailView(ConversationViewBase):
@@ -69,31 +58,16 @@ class ClientDetailView(ConversationViewBase):
 
     def get(self, request: Request, contact_id: int) -> Response:
         try:
-            return Response({"client": client_detail(self._org(request).id, contact_id, context=request.tenant_context)})
+            return Response({"client": contact_services.card(request.tenant_context, contact_id)["client"]})
         except Contact.DoesNotExist:
             return Response({"detail": t("sales.client_not_found")}, status=404)
 
     def patch(self, request: Request, contact_id: int) -> Response:
-        organization = self._org(request)
         try:
-            contact = Contact.objects.get(id=contact_id, organization=organization)
+            return Response(contact_services.change_card(request.tenant_context, contact_id, request.data, request=request))
         except Contact.DoesNotExist:
             return Response({"detail": t("sales.client_not_found")}, status=404)
-        # Те же поля и пределы, что у карточки контакта в чате (ConversationContactView).
-        changed, error = save_card_fields(contact, request.data)
-        if error:
-            return Response({"detail": error}, status=400)
-        if changed:
-            record_audit_event(
-                action="conversation.contact_updated",
-                actor=request.user,
-                organization=organization,
-                object_type="Contact",
-                object_id=str(contact.id),
-                payload={"fields": changed},
-                request=request,
-            )
-        return Response({"client": client_detail(organization.id, contact_id)})
+
 
 
 class ClientMergeView(ConversationViewBase):
@@ -105,43 +79,16 @@ class ClientMergeView(ConversationViewBase):
 
     required_capabilities = {"POST": "customers.manage", "DELETE": "customers.manage"}
 
-    def _owner_only(self, request: Request) -> Response | None:
-        membership = request.tenant_context.membership
-        if membership is None or membership.role != EmployeeRole.OWNER:
-            return Response({"detail": t("sales.merge_owner_only")}, status=403)
-        return None
-
     def post(self, request: Request, contact_id: int) -> Response:
-        denied = self._owner_only(request)
-        if denied is not None:
-            return denied
-        organization = self._org(request)
         try:
-            merge_contacts(
-                organization=organization,
-                target_id=contact_id,
-                source_id=int(request.data.get("sourceId") or 0),
-                reason=str(request.data.get("reason", "")),
-                actor=request.user,
-                request=request,
-            )
+            return Response(contact_services.merge(request.tenant_context, contact_id,
+                int(request.data.get("sourceId") or 0), str(request.data.get("reason", "")), request=request))
         except ValidationError as error:
             return Response({"detail": "; ".join(error.messages)}, status=400)
-        return Response({"client": client_detail(organization.id, contact_id)})
 
     def delete(self, request: Request, contact_id: int) -> Response:
-        denied = self._owner_only(request)
-        if denied is not None:
-            return denied
-        organization = self._org(request)
         try:
-            revert_merge(
-                organization=organization,
-                merge_id=int(request.data.get("mergeId") or 0),
-                reason=str(request.data.get("reason", "")),
-                actor=request.user,
-                request=request,
-            )
+            return Response(contact_services.unmerge(request.tenant_context, contact_id,
+                int(request.data.get("mergeId") or 0), str(request.data.get("reason", "")), request=request))
         except ValidationError as error:
             return Response({"detail": "; ".join(error.messages)}, status=400)
-        return Response({"client": client_detail(organization.id, contact_id)})

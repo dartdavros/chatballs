@@ -38,6 +38,8 @@ def save(tenant, scenario, policies):
             continue
         else:
             grant.revision += 1
+        from chatballs.integrations.execution.native_principal import capture_delegate
+        capture_delegate(tenant, grant, mode)
         grant.mode = mode
         grant.save()
     for agent, grant in current.items():

@@ -6,18 +6,24 @@ from chatballs.i18n import t
 from chatballs.identity.audit import record_audit_event
 from chatballs.identity.models import EmployeeRole
 from chatballs.integrations.adapters.registry import default_registry
-from chatballs.integrations.execution.launch import launch, launch_direct
 from chatballs.integrations.execution.actions import resolve_action
 from chatballs.integrations.execution.errors import error_message
-from chatballs.integrations.execution.source_support import require_supported_sources
+from chatballs.integrations.execution.launch import launch, launch_direct
 from chatballs.integrations.execution.payloads import run_payload
-from chatballs.integrations.execution.permissions import ExecutionDenied, authorize, allowed_files, current_actor, direct_policy
+from chatballs.integrations.execution.permissions import (
+    ExecutionDenied,
+    allowed_files,
+    authorize,
+    current_actor,
+    direct_policy,
+)
+from chatballs.integrations.execution.source_support import require_supported_sources
 from chatballs.integrations.execution.views import RunAPIView
 from chatballs.integrations.models import Integration
 from chatballs.integrations.scenario_state.definitions import ScenarioDefinition
 from chatballs.integrations.scenario_state.grants import ActionGrant
-from chatballs.integrations.service_connections.payloads import field_payload
 from chatballs.integrations.scenarios.types import read_type
+from chatballs.integrations.service_connections.payloads import field_payload
 
 
 def parameter_schema(data):
@@ -38,9 +44,10 @@ class ManualActionsView(RunAPIView):
         tenant = current_actor(request.tenant_context)
         raw = request.query_params.get("conversation", "")
         conversation_id = int(raw) if raw.isdecimal() and len(raw) < 16 else None
+        context = None
         if conversation_id is not None:
-            from chatballs.conversations.models import Conversation
             from chatballs.conversations.access import require_conversation_action
+            from chatballs.conversations.models import Conversation
             context = Conversation.objects.get(pk=conversation_id, organization_id=tenant.organization_id)
             require_conversation_action(tenant, context, "conversations.view")
         items = []
@@ -91,6 +98,8 @@ class ManualActionsView(RunAPIView):
                         "available": available, "reason": reason,
                         "connectionId": connection.pk, "operationKey": operation.key, "connection": connection.name,
                         "parameters": field_payload("", operation.input)})
+        from chatballs.integrations.action_catalog.manual_catalog import manual_actions
+        items.extend(manual_actions(tenant, grants, context))
         return Response({"items": items, "files": [{"id": str(file.public_id), "name": file.name}
                          for file in allowed_files(tenant, conversation_id)]})
 

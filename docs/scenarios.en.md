@@ -2,6 +2,8 @@
 
 AI permissions and confirmations: [agent actions](agent-actions.en.md).
 
+Application operations and examples: [communication and service actions](native-service-actions.en.md).
+
 ## Composite steps and waits
 
 A sequence advances after recording the previous outcome. A condition selects

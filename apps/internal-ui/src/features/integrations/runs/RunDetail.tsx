@@ -50,7 +50,7 @@ export function RunDetail({ id, onBack, inChat = false, onRepeated }: { id: stri
       {step.prompt && <p>{step.prompt}</p>}
       {step.error && <p className="run-step-error">{step.error}</p>}
       {step.deadline && <p>{fmt.shortDateTime(step.deadline)}</p>}
-      {!run.dataCleared && <><RunValues schema={step.inputSchema} value={step.arguments} /><RunValues schema={step.outputSchema} value={step.result} /></>}
+      {!run.dataCleared && <><RunValues schema={step.inputSchema} value={step.arguments} fileNames={step.fileNames} /><RunValues schema={step.outputSchema} value={step.result} fileNames={step.fileNames} /></>}
       {step.decision && <div className="run-detail-actions"><Button variant="primary" disabled={state.busy || state.changed}
         onClick={() => void state.act("decide", { path: step.path, ...step.decision, accepted: true })}>{t("runs.approve")}</Button>
         <Button variant="secondary" disabled={state.busy || state.changed}

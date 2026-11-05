@@ -81,14 +81,15 @@ def audit_event_payload(event: AuditEvent) -> dict[str, object]:
 
     actor = event.actor
     category = audit_category(event.action)
+    from chatballs.identity.audit_context import KEY, action_label, actor_label
     return {
         "id": event.id,
         "createdAt": event.created_at.isoformat(),
         "actorId": actor.id if actor is not None else None,
-        "actor": ((actor.full_name or actor.email) if actor is not None else t("admin.actor_system")),
+        "actor": actor_label(event, (actor.full_name or actor.email) if actor is not None else t("admin.actor_system")),
         "actorEmail": (actor.email if actor is not None else ""),
         "action": event.action,
-        "actionLabel": audit_action_label(event.action),
+        "actionLabel": action_label(event, audit_action_label(event.action)),
         "category": category,
         "categoryLabel": audit_category_label(category),
         "object": audit_object_label(event.object_type, event.object_id),
@@ -98,5 +99,5 @@ def audit_event_payload(event: AuditEvent) -> dict[str, object]:
         "resultLabel": audit_result_label(event.result),
         "sourceIp": event.source_ip or "",
         "correlationId": event.correlation_id,
-        "details": event.payload or {},
+        "details": {key: value for key, value in (event.payload or {}).items() if key != KEY},
     }

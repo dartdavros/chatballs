@@ -7,10 +7,10 @@ from django.db.models import Q
 from django.utils import timezone
 
 from chatballs.integrations.execution.events import journal, schedule
+from chatballs.integrations.models import Integration
+from chatballs.integrations.scenario_state.limits import ConnectionExecutionLane
 from chatballs.integrations.scenario_state.runs import ScenarioRun
 from chatballs.integrations.scenario_state.steps import ScenarioStep
-from chatballs.integrations.scenario_state.limits import ConnectionExecutionLane
-from chatballs.integrations.models import Integration
 from chatballs.tenancy.database import tenant_atomic
 
 LEASE = timedelta(seconds=90)
@@ -27,7 +27,7 @@ class Claim:
 
 def claim(tenant, public_id):
     with tenant_atomic(tenant):
-        from chatballs.integrations.execution.budgets import lock_run, active_effects
+        from chatballs.integrations.execution.budgets import active_effects, lock_run
         try:
             run = lock_run(tenant, public_id)
         except ScenarioRun.DoesNotExist:
@@ -47,14 +47,14 @@ def claim(tenant, public_id):
             finish(run, step, "cancelled")
             return None
         lane = None
-        if step.integration_id:
+        if step.integration_id is not None:
             Integration.objects.select_for_update().get(pk=step.integration_id)
             lane, _ = ConnectionExecutionLane.objects.get_or_create(
                 organization_id=tenant.organization_id, integration_id=step.integration_id)
-        wait_until = max((t for t in ((lane.until, lane.cooldown_until) if lane else ()) if t and t > now), default=None)
-        if wait_until:
-            defer(tenant, run, step, delay=(wait_until - now).total_seconds())
-            return None
+            wait_until = max((t for t in (lane.until, lane.cooldown_until) if t and t > now), default=None)
+            if wait_until:
+                defer(tenant, run, step, delay=(wait_until - now).total_seconds())
+                return None
         recovering = step.sent_at is not None
         step.fence += 1
         step.attempt += 1
@@ -62,7 +62,7 @@ def claim(tenant, public_id):
         step.due_at = step.lease_until
         step.state = "reconciling" if recovering else "running"
         step.save(update_fields=["fence", "attempt", "lease_until", "due_at", "state"])
-        if lane:
+        if lane is not None:
             lane.step = step
             lane.until = step.lease_until
             lane.save(update_fields=["step", "until"])
@@ -95,8 +95,8 @@ def finish(run, step, state, *, code=""):
         run.progress.filter(path=step.path).update(state="queued")
         journal(run, state, step)
         ConnectionExecutionLane.objects.filter(step=step).update(until=None, step=None)
-        from chatballs.tenancy.lookup import load_organization
         from chatballs.tenancy.context import TenantContext
+        from chatballs.tenancy.lookup import load_organization
         schedule(TenantContext.for_resource(load_organization(run.organization_id)), run)
         return
     run.state = state

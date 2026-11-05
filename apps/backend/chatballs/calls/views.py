@@ -4,9 +4,9 @@ from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
+from chatballs.calls import operations
 from chatballs.calls.errors import CallAccessDenied, CallConflict, CallTokenError
 from chatballs.calls.models import CallKind, CallSession
-from chatballs.calls.permissions import ensure_call_access, ensure_conversation_call_access
 from chatballs.calls.serializers import (
     call_payload,
     ice_servers_payload,
@@ -15,10 +15,7 @@ from chatballs.calls.serializers import (
 )
 from chatballs.calls.services import (
     accept_call_by_access_token,
-    active_call_for_conversation,
     call_state_by_access_token,
-    cancel_call,
-    create_call_request,
     decline_call_by_access_token,
     end_call_by_access_token,
     issue_staff_access_token,
@@ -26,16 +23,8 @@ from chatballs.calls.services import (
 )
 from chatballs.conversations.models import Conversation
 from chatballs.i18n import t
-from chatballs.identity.audit import record_audit_event
 
-
-def _call_queryset():
-    return CallSession.objects.select_related(
-        "conversation",
-        "conversation__channel",
-        "initiated_by",
-        "delivery_connection",
-    ).prefetch_related("participants")
+_call_queryset = operations.call_queryset
 
 
 def _token_response(payload: dict, *, status: int = 200) -> Response:
@@ -55,8 +44,8 @@ class CallCreateView(APIView):
         if kind not in CallKind.values:
             return Response({"detail": t("calls.kind_invalid")}, status=400)
         try:
-            created = create_call_request(
-                context=request.tenant_context, conversation_id=conversation_id, kind=kind
+            created, call = operations.create(
+                request.tenant_context, conversation_id, kind, request=request,
             )
         except Conversation.DoesNotExist:
             return Response({"detail": t("conversations.not_found")}, status=404)
@@ -65,18 +54,6 @@ class CallCreateView(APIView):
         except CallConflict as error:
             return Response({"detail": str(error)}, status=409)
 
-        call = _call_queryset().get(
-            id=created.call_session.id, organization=request.tenant_context.organization
-        )
-        record_audit_event(
-            action="calls.requested",
-            actor=request.user,
-            organization=call.organization,
-            object_type="CallSession",
-            object_id=str(call.id),
-            payload={"conversation_id": call.conversation_id, "kind": call.kind},
-            request=request,
-        )
         return _token_response(
             {
                 "call": call_payload(call),
@@ -92,13 +69,9 @@ class CallDetailView(APIView):
 
     def get(self, request: Request, call_session_id) -> Response:
         try:
-            call = _call_queryset().get(
-                id=call_session_id, organization=request.tenant_context.organization
-            )
+            call = operations.detail(request.tenant_context, call_session_id)
         except CallSession.DoesNotExist:
             return Response({"detail": t("calls.not_found")}, status=404)
-        try:
-            ensure_call_access(user=request.tenant_context.membership, call_session=call)
         except CallAccessDenied as error:
             return Response({"detail": str(error)}, status=403)
         return Response({"call": call_payload(call)})
@@ -127,28 +100,13 @@ class CallCancelView(APIView):
 
     def post(self, request: Request, call_session_id) -> Response:
         try:
-            call = _call_queryset().get(
-                id=call_session_id, organization=request.tenant_context.organization
-            )
-            cancel_call(context=request.tenant_context, call_session=call)
+            call = operations.cancel(request.tenant_context, call_session_id, request=request)
         except CallSession.DoesNotExist:
             return Response({"detail": t("calls.not_found")}, status=404)
         except CallAccessDenied as error:
             return Response({"detail": str(error)}, status=403)
         except CallConflict as error:
             return Response({"detail": str(error)}, status=409)
-        call = _call_queryset().get(
-            id=call_session_id, organization=request.tenant_context.organization
-        )
-        record_audit_event(
-            action="calls.cancelled",
-            actor=request.user,
-            organization=call.organization,
-            object_type="CallSession",
-            object_id=str(call.id),
-            payload={"conversation_id": call.conversation_id},
-            request=request,
-        )
         return Response({"call": call_payload(call)})
 
 
@@ -157,17 +115,11 @@ class ConversationActiveCallView(APIView):
 
     def get(self, request: Request, conversation_id: int) -> Response:
         try:
-            conversation = Conversation.objects.select_related("channel").get(
-                id=conversation_id, organization=request.tenant_context.organization
-            )
-            ensure_conversation_call_access(
-                user=request.tenant_context.membership, conversation=conversation
-            )
+            call = operations.active(request.tenant_context, conversation_id)
         except Conversation.DoesNotExist:
             return Response({"detail": t("conversations.not_found")}, status=404)
         except CallAccessDenied as error:
             return Response({"detail": str(error)}, status=403)
-        call = active_call_for_conversation(conversation)
         return Response({"call": call_payload(call) if call else None})
 
 

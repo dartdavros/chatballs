@@ -83,13 +83,19 @@ def roles_with_capability(capability: str) -> frozenset[str]:
     )
 
 
-def has_capability_any_scope(actor, capability: str) -> bool:
+def capabilities_in_any_scope(actor) -> frozenset[str]:
+    """Current role capabilities, resolved once for a catalog request."""
     profile = _active_membership(actor)
     if profile is None:
-        return False
+        return frozenset()
     from chatballs.conversations.access import ACTION_CAPABILITIES
 
-    return ACTION_CAPABILITIES.get(capability, capability) in _role_capabilities(profile.role)
+    capabilities = _role_capabilities(profile.role)
+    return capabilities | frozenset(alias for alias, base in ACTION_CAPABILITIES.items() if base in capabilities)
+
+
+def has_capability_any_scope(actor, capability: str) -> bool:
+    return capability in capabilities_in_any_scope(actor)
 
 
 def can_administer_access(actor) -> bool:

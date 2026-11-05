@@ -2,8 +2,8 @@
 
 from rest_framework.response import Response
 
+from chatballs.integrations.execution.actions import resolve_action, step_target
 from chatballs.integrations.execution.ai_policy import approver
-from chatballs.integrations.execution.actions import resolve_action
 from chatballs.integrations.execution.metadata import lookup_keys
 from chatballs.integrations.execution.permissions import ExecutionDenied
 from chatballs.integrations.execution.snapshots import check_contract
@@ -24,9 +24,10 @@ class ApprovalLookupView(RunAPIView):
             run = self.rows(request).get(public_id=public_id)
             approver(request.tenant_context, run)
             step = run.steps.get(path=request.query_params.get("path"))
-            integration, _, adapter, _, operation = resolve_action(run.organization_id, step.integration_id,
-                f"service:{step.operation_key}", expected=(step.adapter_key, step.adapter_version))
-            check_contract(run, {"connection": str(step.integration_id), "target": f"service:{step.operation_key}"}, operation, adapter)
+            target = step_target(step)
+            integration, _, adapter, _, operation = resolve_action(run.organization_id, target["connection"],
+                target["target"], expected=(step.adapter_key, step.adapter_version))
+            check_contract(run, target, operation, adapter)
             lookup = request.query_params.get("lookup")
             if lookup not in lookup_keys(operation.input):
                 raise ExecutionDenied("permission")

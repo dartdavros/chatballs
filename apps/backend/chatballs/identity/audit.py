@@ -20,6 +20,7 @@ def record_audit_event(
     source_ip = None
     if request is not None:
         source_ip = request.META.get("REMOTE_ADDR")
+    from chatballs.identity.audit_context import audit_payload
 
     return AuditEvent.objects.create(
         organization=organization,
@@ -28,7 +29,7 @@ def record_audit_event(
         object_type=object_type,
         object_id=object_id,
         result=result,
-        payload=payload or {},
+        payload=audit_payload(organization, payload),
         correlation_id=get_correlation_id(),
         source_ip=source_ip,
     )

@@ -1,0 +1,46 @@
+"""Encrypted native receipts retain typed file metadata and execution ownership."""
+
+from dataclasses import asdict
+
+from chatballs.integrations.adapters.contracts import FileRef, OperationResult, ResultState
+from chatballs.integrations.execution.approvals import invocation_digest
+from chatballs.integrations.execution.files import file_references
+from chatballs.integrations.execution.permissions import ExecutionDenied
+from chatballs.integrations.scenario_state.files import ServiceFile
+from chatballs.integrations.scenario_state.native_receipts import NativeEffectReceipt
+
+
+def restored(receipt):
+    payload = receipt.definition
+    return OperationResult(ResultState.COMPLETED, payload["result"],
+        files=tuple(FileRef(**item) for item in payload.get("files", [])))
+
+
+def validate_files(action, result, step):
+    references = file_references(action.operation.output, result.data)
+    references.update(str(file.file_id) for file in result.files)
+    records = {str(row.public_id): row for row in ServiceFile.objects.filter(
+        organization_id=step.organization_id, execution_owners__step=step, public_id__in=references,
+    )}
+    if set(records) != references:
+        raise ExecutionDenied("invalid_result")
+    for file in result.files:
+        record = records[str(file.file_id)]
+        if (file.name != record.name or file.content_type != record.content_type or file.size != record.size
+                or file.size > action.operation.limits.max_file_bytes):
+            raise ExecutionDenied("invalid_result")
+
+
+def save(run, step, action, result, *, actor=None):
+    validate_files(action, result, step)
+    receipt = NativeEffectReceipt(organization_id=run.organization_id,
+        step=step, invocation_digest=invocation_digest(step, run))
+    receipt.definition = {"result": result.data, "files": [asdict(file) for file in result.files]}
+    receipt.save()
+    if actor and run.definition.get("ai"):
+        from chatballs.identity.audit import record_audit_event
+        from chatballs.identity.audit_context import native_audit
+        with native_audit(run, step, actor, title_key=action.operation.title_key):
+            record_audit_event(action="integrations.native_action_executed", organization=actor.organization,
+                actor=actor.actor_user, object_type="ScenarioRun", object_id=str(run.public_id))
+    return receipt

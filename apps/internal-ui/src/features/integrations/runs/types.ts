@@ -9,6 +9,7 @@ export type RunSummary = {
   progress: Array<{ title: string; state: RunState; stateLabel: string }>;
 };
 export type RunStep = {
+  fileNames?: Record<string, string>;
   editToken?: string; editing?: boolean; connectionId?: number;
   path: string; title: string; state: RunState; stateLabel: string; attempt: number; error: string;
   inputSchema: ServiceField | null; outputSchema: ServiceField | null; arguments: unknown; result: unknown; approvalDigest?: string;
@@ -22,7 +23,7 @@ export type RunDetail = RunSummary & { files?: Array<{ id: string; name: string 
 export type RunPage = { items: RunSummary[]; count: number; page: number; pageSize: number;
   filters: { connections: Array<{ id: number; name: string }>; initiators: Array<{ initiator_id: number; initiator__user__full_name: string }> } };
 export type ManualAction = { id: string; kind: "scenario" | "operation"; title: string; parameters: ServiceField;
-  connectionId?: number; operationKey?: string; connection?: string; available?: boolean; reason?: string };
+  connectionId?: number | "chatballs"; operationKey?: string; connection?: string; available?: boolean; reason?: string };
 export type RetentionPolicy = { stepDays: number; journalDays: number; version: number; effectiveAt: string | null };
 export type ManualCatalog = { items: ManualAction[]; files: Array<{ id: string; name: string }> };
 export type PlanPreview = { confirmation: string; operation: string; inputSchema: ServiceField; arguments: unknown; note: string };

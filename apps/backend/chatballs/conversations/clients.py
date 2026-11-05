@@ -94,11 +94,12 @@ def clients_queryset(organization_id: int, params, *, context=None) -> QuerySet[
                 Q(username__icontains=query) | Q(external_user_id__icontains=query)
             ).values("contact_id"))
         )
-    agents = [value for value in params.getlist("agent") if value.isdigit()]
+    getlist = getattr(params, "getlist", lambda key: params.get(key, []))
+    agents = [str(value) for value in getlist("agent") if str(value).isdigit()]
     if agents:
         contacts = contacts.filter(pk__in=visible.filter(channel_id__in=agents).values("contact_id"))
     providers = [
-        PROVIDER_BY_CODE[code] for code in params.getlist("channel") if code in PROVIDER_BY_CODE
+        PROVIDER_BY_CODE[code] for code in getlist("channel") if code in PROVIDER_BY_CODE
     ]
     if providers:
         contacts = contacts.filter(pk__in=visible.filter(connection__provider__in=providers).values("contact_id"))

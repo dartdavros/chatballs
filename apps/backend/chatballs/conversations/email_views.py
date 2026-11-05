@@ -4,14 +4,12 @@ from rest_framework import serializers
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.response import Response
 
-from chatballs.api.pagination import cursor_id, window_size
+from chatballs.conversations import email_queries
 from chatballs.conversations.email_attempt_models import EmailSendOperation
 from chatballs.conversations.email_continuation import (
-    require_reply,
     retry_email_reply,
     send_email_reply,
 )
-from chatballs.conversations.email_options import available_mailboxes, saved_addresses
 from chatballs.conversations.email_payloads import attempt_payload, operation_payload
 from chatballs.conversations.models import Conversation
 from chatballs.conversations.services import ClaimError
@@ -37,17 +35,12 @@ class EmailOptionsView(ConversationViewBase):
 
     def get(self, request, conversation_id):
         try:
-            conversation = self._conversation(request, conversation_id, self.required_capability)
-            require_reply(request.tenant_context, conversation, allow_unclaimed=True)
+            data = email_queries.options(request.tenant_context, conversation_id)
         except Conversation.DoesNotExist:
             return Response({"detail": t("conversations.not_found")}, status=404)
         except ClaimError as error:
             return Response({"detail": str(error)}, status=409)
-        return Response({
-            "addresses": saved_addresses(conversation),
-            "mailboxes": [{"id": connection.pk, "name": connection.name, "address": connection.config["email"]}
-                          for connection in available_mailboxes(conversation.organization_id)],
-        })
+        return Response(data)
 
 
 class EmailOperationsView(ConversationViewBase):
@@ -56,25 +49,12 @@ class EmailOperationsView(ConversationViewBase):
 
     def get(self, request, conversation_id):
         try:
-            conversation = self._conversation(request, conversation_id)
+            data = email_queries.operations(request.tenant_context, conversation_id,
+                message_ids=request.query_params.get("messageIds"), before=request.query_params.get("before"),
+                limit=request.query_params.get("limit", 50))
         except Conversation.DoesNotExist:
             return Response({"detail": t("conversations.not_found")}, status=404)
-        operations = EmailSendOperation.objects.filter(
-            organization_id=conversation.organization_id, letter__thread__conversation=conversation,
-        ).select_related("letter__thread", "letter__connection__channel", "initiated_by").order_by("-pk")
-        limit = window_size(request.query_params, default=50)
-        message_ids = request.query_params.get("messageIds")
-        if message_ids is not None:
-            values = serializers.ListField(child=serializers.IntegerField(min_value=1), max_length=200).run_validation(
-                message_ids.split(",") if message_ids else [],
-            )
-            operations = operations.filter(letter__message_id__in=values)
-        before = cursor_id(request.query_params, "before")
-        if before is not None:
-            operations = operations.filter(pk__lt=before)
-        rows = list(operations[:limit + 1])
-        return Response({"items": [operation_payload(row, context=request.tenant_context) for row in rows[:limit]],
-                         "nextCursor": rows[limit - 1].pk if len(rows) > limit else None})
+        return Response(data)
 
     def post(self, request, conversation_id):
         data = SendInput(data=request.data)

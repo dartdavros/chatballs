@@ -17,7 +17,8 @@ from chatballs.integrations.scenario_state.definitions import ScenarioDefinition
 
 
 def catalog(organization_id, agent):
-    grants = {(g.integration_id, g.operation_key, g.scenario_id): g for g in agent.action_grants.all()}
+    policies = list(agent.action_grants.all())
+    grants = {(g.integration_id, g.operation_key, g.scenario_id): g for g in policies if not g.native_key}
     rows = []
     registry = default_registry()
     for connection in Integration.objects.filter(organization_id=organization_id, kind=IntegrationKind.SERVICE).select_related("service_settings"):
@@ -38,6 +39,8 @@ def catalog(organization_id, agent):
         rows.append({"id": f"scenario:{scenario.public_id}", "title": scenario.name, "subtitle": t("runs.scenario"),
             "mode": grant.mode if grant else "off", "revision": grant.revision if grant else 0,
             "available": True, "writes": True, "integration": None, "operation": "", "scenario": scenario.pk})
+    from chatballs.integrations.execution.native_principal import native_catalog
+    rows.extend(native_catalog({g.native_key: g for g in policies if g.native_key}))
     return rows
 
 
@@ -49,13 +52,18 @@ def change_policy(tenant, agent, target, mode, revision):
     if row is None or mode != "off" and not row["available"]:
         raise ExecutionDenied("operation_unavailable")
     grant = AgentActionGrant.objects.select_for_update().filter(agent=agent, integration_id=row["integration"],
-        scenario_id=row["scenario"], operation_key=row["operation"]).first()
+        scenario_id=row["scenario"], operation_key=row["operation"], native_key=row.get("native", "")).first()
     if revision != (grant.revision if grant else 0):
         raise ExecutionDenied("state_changed")
     if grant is None:
-        grant = AgentActionGrant(agent=agent, integration_id=row["integration"], scenario_id=row["scenario"], operation_key=row["operation"])
+        grant = AgentActionGrant(agent=agent, integration_id=row["integration"], scenario_id=row["scenario"],
+            operation_key=row["operation"], native_key=row.get("native", ""))
+    elif grant.mode == mode:
+        return
     else:
         grant.revision += 1
+    from chatballs.integrations.execution.native_principal import capture_delegate
+    capture_delegate(tenant, grant, mode)
     grant.mode = mode
     grant.save()
     record_audit_event(action="integrations.agent_action_changed", actor=tenant.actor_user,
@@ -72,14 +80,14 @@ class AgentActionsView(APIView):
 
     def get(self, request, channel_id):
         rows = catalog(request.tenant_context.organization_id, self.agent(request, channel_id))
-        return Response({"items": [{k: v for k, v in row.items() if k not in {"integration", "operation", "scenario"}} for row in rows]})
+        return Response({"items": [{k: v for k, v in row.items() if k not in {"integration", "operation", "scenario", "native"}} for row in rows]})
 
     def put(self, request, channel_id):
         try:
             with transaction.atomic():
                 agent = self.agent(request, channel_id)
                 data = request.data
-                if not isinstance(data, dict) or set(data) != {"items"} or not isinstance(data["items"], list) or len(data["items"]) > 100:
+                if not isinstance(data, dict) or set(data) != {"items"} or not isinstance(data["items"], list) or len(data["items"]) > 1000:
                     raise ExecutionDenied("arguments")
                 seen = set()
                 for item in data["items"]:

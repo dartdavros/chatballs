@@ -17,10 +17,11 @@ def intentional_repeat(tenant, public_id, *, trigger_key, acknowledged):
             raise ExecutionDenied("state_changed")
         key = f"repeat:{public_id}:{trigger_key}"
         if source.definition.get("kind") == "synchronization":
+            import hashlib
+
             from chatballs.identity.models import EmployeeRole
             from chatballs.integrations.execution.permissions import current_actor
             from chatballs.integrations.scenarios.synchronization_runtime import lock, start_cycle
-            import hashlib
             if current_actor(tenant).membership.role not in {EmployeeRole.OWNER, EmployeeRole.ADMIN}:
                 raise ExecutionDenied("permission")
             digest = hashlib.sha256(key.encode()).hexdigest()
@@ -45,7 +46,7 @@ def intentional_repeat(tenant, public_id, *, trigger_key, acknowledged):
                 conversation_id=source.conversation_id, causal_chain=source.definition.get("causalChain", []))
         elif source.definition.get("kind") == "direct":
             step = source.steps.get()
-            run, created = launch_direct(tenant=tenant, connection_id=step.integration_id, operation_key=step.operation_key,
+            run, created = launch_direct(tenant=tenant, connection_id=step.integration_id if step.integration_id else "chatballs", operation_key=step.operation_key,
                 trigger_key=key, arguments=step.definition["arguments"], conversation_id=source.conversation_id)
         else:
             if source.scenario_id is None:

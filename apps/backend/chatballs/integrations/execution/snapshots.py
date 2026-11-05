@@ -3,7 +3,7 @@
 import hashlib
 from copy import deepcopy
 
-from chatballs.integrations.execution.actions import resolve_action
+from chatballs.integrations.execution.actions import connection_key, resolve_action
 from chatballs.integrations.execution.budgets import MAX_SNAPSHOT, size
 from chatballs.integrations.execution.permissions import ExecutionDenied
 from chatballs.integrations.execution.source_support import require_supported_sources
@@ -46,15 +46,15 @@ def freeze(tenant, document, *, scenario_id, registry=None):
             if block["kind"] == "action":
                 resolved = resolve_action(tenant.organization_id, block.get("connection"), block["target"], registry=registry)
                 integration, _, adapter, _, operation = resolved
-                key = f"{block['connection']}:{block['target']}"
+                key = f"{connection_key(integration)}:{block['target']}"
                 from chatballs.integrations.execution.contract_schemas import write_spec
                 contracts[key] = {"adapter": adapter.key, "version": adapter.contract_version,
                                   "signature": signature(operation), "input": write_spec(operation.input),
                                   "output": write_spec(operation.output), "title_key": operation.title_key}
             if block["kind"] == "wait" and block["mode"] == "event" and str(block.get("connection", "")).isdecimal():
+                from chatballs.integrations.execution.contract_schemas import write_spec
                 from chatballs.integrations.models import Integration
                 from chatballs.integrations.service_connections.binding import resolve
-                from chatballs.integrations.execution.contract_schemas import write_spec
                 connection = Integration.objects.get(pk=block["connection"], organization_id=tenant.organization_id)
                 _, adapter, _ = resolve(connection, registry)
                 event = next((e for e in adapter.events if e.key == block["event"]), None)
@@ -62,8 +62,8 @@ def freeze(tenant, document, *, scenario_id, registry=None):
                     raise ExecutionDenied("connection_paused")
                 events[f"{connection.pk}:{event.key}"] = write_spec(event.payload)
             elif block["kind"] == "wait" and block["mode"] == "event":
-                from chatballs.integrations.scenarios.native_events import NATIVE_EVENTS
                 from chatballs.integrations.execution.contract_schemas import write_spec
+                from chatballs.integrations.scenarios.native_events import NATIVE_EVENTS
                 payload = next((schema for key, _title, schema in NATIVE_EVENTS if key == block["event"]), None)
                 if payload is None:
                     raise ExecutionDenied("event_unavailable")

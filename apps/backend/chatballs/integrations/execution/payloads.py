@@ -2,9 +2,9 @@
 
 import re
 
+from chatballs.ai.diagnostic_redaction import integration_secrets
 from chatballs.i18n import t
 from chatballs.integrations.adapters.registry import default_registry
-from chatballs.ai.diagnostic_redaction import integration_secrets
 from chatballs.integrations.execution.approvals import invocation_digest
 from chatballs.integrations.execution.errors import error_message
 from chatballs.integrations.service_connections.payloads import field_payload
@@ -59,9 +59,14 @@ def run_payload(run, *, detail=False, tenant=None):
             continue
         adapter = default_registry().adapter(step.adapter_key)
         operation = adapter.operation(step.operation_key) if adapter and adapter.contract_version == step.adapter_version else None
-        if step.adapter_key == "chatballs" and step.adapter_version == 1:
-            from chatballs.integrations.execution.native import operation as native_operation
-            operation = native_operation(step.operation_key)
+        if step.adapter_key == "chatballs":
+            from chatballs.integrations.execution.actions import native_operation
+            from chatballs.integrations.execution.permissions import ExecutionDenied
+            try:
+                resolved, version = native_operation(step.operation_key)
+                operation = resolved if version == step.adapter_version else None
+            except ExecutionDenied:
+                operation = None
         values = step.definition if not run.data_cleared_at else {}
         from chatballs.integrations.execution.contract_schemas import frozen_schemas
         input_spec, output_spec = frozen_schemas(run, step, operation) if run.content else (None, None)
@@ -96,5 +101,6 @@ def run_payload(run, *, detail=False, tenant=None):
         "completed", "failed", "cancelled", "unknown", "queued", "pending", "approval", "reconciling", "running"
     } else t("runs.journal_changed"), "createdAt": row.created_at.isoformat()}
         for row in run.journal.order_by("-id")[:100]]
+    from chatballs.integrations.execution.file_payloads import with_file_names
     from chatballs.integrations.execution.progress_payloads import extend_payload
-    return extend_payload(run, payload, tenant=tenant, detail=True)
+    return with_file_names(extend_payload(run, payload, tenant=tenant, detail=True), run, all_secrets)

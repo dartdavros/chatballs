@@ -25,7 +25,7 @@ from chatballs.tenancy.storage_quota import finalize_storage, release_storage, r
 _HASH_CHUNK = 64 * 1024
 
 
-def file_store(*, context: TenantContext, integration: Integration, step=None) -> StoreFile:
+def file_store(*, context: TenantContext, integration: Integration | None, step=None) -> StoreFile:
     def store(name: str, content_type: str, stream: IO[bytes], size: int) -> FileRef:
         return store_service_file(
             context=context, integration=integration, name=name, content_type=content_type, stream=stream, size=size, step=step
@@ -35,7 +35,7 @@ def file_store(*, context: TenantContext, integration: Integration, step=None) -
 
 
 def store_service_file(
-    *, context: TenantContext, integration: Integration, name: str, content_type: str, stream: IO[bytes], size: int, step=None
+    *, context: TenantContext, integration: Integration | None, name: str, content_type: str, stream: IO[bytes], size: int, step=None
 ) -> FileRef:
     # Ответ внешнего сервиса уже получен в spool. Persistence должна сама
     # установить tenant: сетевые обработчики работают вне tenant-транзакции.
@@ -45,11 +45,19 @@ def store_service_file(
 
 
 def _store_service_file(
-    *, context: TenantContext, integration: Integration, name: str, content_type: str, stream: IO[bytes], size: int, step=None
+    *, context: TenantContext, integration: Integration | None, name: str, content_type: str, stream: IO[bytes], size: int, step=None
 ) -> FileRef:
+    if type(size) is not int or size < 0:
+        raise ValueError("file_size_mismatch")
     digest = hashlib.sha256()
+    actual = 0
     for chunk in iter(lambda: stream.read(_HASH_CHUNK), b""):
+        actual += len(chunk)
+        if actual > size:
+            raise ValueError("file_size_mismatch")
         digest.update(chunk)
+    if actual != size:
+        raise ValueError("file_size_mismatch")
     stream.seek(0)
     record = ServiceFile(
         organization_id=context.organization_id,

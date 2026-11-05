@@ -36,6 +36,23 @@ def validate_policy(data):
     return {field: data[status] for status, field in STATUS_FIELDS.items()}
 
 
+def assignment_settings(context, changes=None):
+    from chatballs.conversations.transfer_services import require_reason_management
+    from chatballs.identity.models import Organization
+    from chatballs.tenancy.database import tenant_atomic
+
+    require_reason_management(context)
+    if changes is None:
+        policy = AssignmentPolicy.objects.filter(organization_id=context.organization_id).first()
+    else:
+        clean = validate_policy(changes)
+        with tenant_atomic(context):
+            Organization.objects.select_for_update().get(pk=context.organization_id)
+            policy, _ = AssignmentPolicy.objects.update_or_create(
+                organization_id=context.organization_id, defaults=clean)
+    return {"allowedStatuses": policy_payload(policy) if policy else None}
+
+
 def policy_for(context, lock=False):
     policies = AssignmentPolicy.objects.filter(organization_id=context.organization_id)
     if lock:

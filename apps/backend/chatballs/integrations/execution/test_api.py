@@ -17,9 +17,13 @@ class RunAPITests(ExecutionCase):
                 "chatballs.integrations.execution.actions.default_registry", return_value=self.registry):
             response = self.as_runtime(lambda: self.client.get(url))
         self.assertEqual(response.status_code, 200, response.content)
-        items = response.json()["items"]
+        catalog = response.json()["items"]
+        items = [item for item in catalog if item.get("connectionId") != "chatballs"]
         self.assertEqual({item["kind"] for item in items}, {"scenario", "operation"})
         self.assertTrue(all(item["available"] is False and item["reason"] for item in items))
+        native = [item for item in catalog if item.get("connectionId") == "chatballs"]
+        self.assertTrue(native)
+        self.assertTrue(all(item["available"] for item in native))
         self.assertEqual(self.calls, [])
 
     def run_url(self, suffix="", organization=None):
@@ -39,10 +43,10 @@ class RunAPITests(ExecutionCase):
         run = self.launch(approve=False)
         client = self.client_for(self.employee)
         for suffix in ("", f"{run.public_id}/"):
-            response = self.as_runtime(lambda: client.get(self.run_url(suffix)))
+            response = self.as_runtime(lambda suffix=suffix: client.get(self.run_url(suffix)))
             self.assertEqual(response.status_code, 409, response.content)
         for action in ("cancel", "reconcile", "approve"):
-            response = self.as_runtime(lambda: client.post(self.run_url(f"{run.public_id}/{action}/"), {}, format="json"))
+            response = self.as_runtime(lambda action=action: client.post(self.run_url(f"{run.public_id}/{action}/"), {}, format="json"))
             self.assertEqual(response.status_code, 409, response.content)
         self.assertEqual(self.state(run), "approval")
 

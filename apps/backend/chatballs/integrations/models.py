@@ -144,27 +144,51 @@ class ToolReadOnlyConfirmation(models.Model):
 
 # Модели сервисных подключений живут в своих модулях, а Django находит их
 # здесь, в models приложения.
+from chatballs.integrations.scenario_state.agent_grants import AgentActionGrant  # noqa: E402,F401
+from chatballs.integrations.scenario_state.automation import (  # noqa: E402,F401
+    EventDelivery,
+    EventSubscription,
+    PollCursor,
+    ScenarioAutomation,
+    ScheduleCheckpoint,
+)
 from chatballs.integrations.scenario_state.connections import (  # noqa: E402
     OAuthStateStatus,
     ServiceConnectionSettings,
     ServiceOAuthState,
 )
+from chatballs.integrations.scenario_state.definitions import (  # noqa: E402
+    ScenarioConnection,
+    ScenarioDefinition,
+)
+from chatballs.integrations.scenario_state.entity_links import (  # noqa: E402,F401
+    EntityLink,
+    IntegrationEntityVersion,
+)
 from chatballs.integrations.scenario_state.files import ServiceFile  # noqa: E402
-from chatballs.integrations.scenario_state.definitions import ScenarioConnection, ScenarioDefinition  # noqa: E402
-from chatballs.integrations.scenario_state.subscriptions import ScenarioExternalKey  # noqa: E402
-from chatballs.integrations.scenario_state.synchronization import ServiceSynchronizationSettings, SynchronizationCheckpoint  # noqa: E402,F401
-from chatballs.integrations.scenario_state.runs import ScenarioRun  # noqa: E402,F401
-from chatballs.integrations.scenario_state.steps import ScenarioStep  # noqa: E402,F401
+from chatballs.integrations.scenario_state.grants import ActionGrant  # noqa: E402,F401
 from chatballs.integrations.scenario_state.journal import RunJournalEntry  # noqa: E402,F401
 from chatballs.integrations.scenario_state.limits import ConnectionExecutionLane  # noqa: E402,F401
-from chatballs.integrations.scenario_state.retention import ScenarioRetentionPolicy, StepOperationalFile  # noqa: E402,F401
-from chatballs.integrations.scenario_state.grants import ActionGrant  # noqa: E402,F401
-from chatballs.integrations.scenario_state.agent_grants import AgentActionGrant  # noqa: E402,F401
-from chatballs.integrations.scenario_state.progress import ScenarioBudget, ScenarioProgress  # noqa: E402,F401
-from chatballs.integrations.scenario_state.waits import ScenarioWait  # noqa: E402,F401
+from chatballs.integrations.scenario_state.native_receipts import (  # noqa: E402,F401
+    NativeEffectReceipt,
+)
+from chatballs.integrations.scenario_state.progress import (  # noqa: E402,F401
+    ScenarioBudget,
+    ScenarioProgress,
+)
 from chatballs.integrations.scenario_state.receipts import EventReceipt  # noqa: E402,F401
-from chatballs.integrations.scenario_state.automation import ScenarioAutomation, EventDelivery, EventSubscription, ScheduleCheckpoint, PollCursor  # noqa: E402,F401
-from chatballs.integrations.scenario_state.entity_links import EntityLink, IntegrationEntityVersion  # noqa: E402,F401
+from chatballs.integrations.scenario_state.retention import (  # noqa: E402,F401
+    ScenarioRetentionPolicy,
+    StepOperationalFile,
+)
+from chatballs.integrations.scenario_state.runs import ScenarioRun  # noqa: E402,F401
+from chatballs.integrations.scenario_state.steps import ScenarioStep  # noqa: E402,F401
+from chatballs.integrations.scenario_state.subscriptions import ScenarioExternalKey  # noqa: E402
+from chatballs.integrations.scenario_state.synchronization import (  # noqa: E402,F401
+    ServiceSynchronizationSettings,
+    SynchronizationCheckpoint,
+)
+from chatballs.integrations.scenario_state.waits import ScenarioWait  # noqa: E402,F401
 
 __all__ = [
     "PROVIDER_KIND",

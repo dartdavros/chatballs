@@ -1,4 +1,6 @@
 MESSAGES = {
+    "comments.add": "Add an internal comment",
+    "comments.title": "Read internal comments",
     "comments.author_required": "The comment author must belong to the conversation's organization.",
     "comments.append_only": "A sent comment cannot be changed.",
     "comments.internal_required": "Explicitly select the internal audience for a comment.",

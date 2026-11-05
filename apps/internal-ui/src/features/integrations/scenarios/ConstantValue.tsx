@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { t } from "../../../i18n";
 import { FormField, SelectField, SwitchButton } from "../../../shared/form-controls";
 import { fieldControl } from "../services/connect/fieldControls";
@@ -7,6 +7,12 @@ import { LookupValue } from "./LookupValue";
 import { AddObjectField } from "./AddObjectField";
 import { inferredField, initialLiteral } from "./valueFields";
 import type { EditorCatalog } from "./types";
+
+function CompoundValue({ title, children }: { title: string; children: ReactNode }) {
+  const fields = <div className="scenario-bound-children">{children}</div>;
+  return title ? <div className="readonly-field wide" role="group" aria-label={title}>
+    <span>{title}</span>{fields}</div> : fields;
+}
 
 export function ConstantValue({ field, value, connection, onChange, catalog }: {
   field: ServiceField; value: unknown; connection: string; onChange: (value: unknown) => void; catalog?: Pick<EditorCatalog, "files">;
@@ -24,16 +30,17 @@ export function ConstantValue({ field, value, connection, onChange, catalog }: {
     const object: Record<string, unknown> = value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : {};
     const known = [...(field.fields ?? []), ...extraFields];
     const fields = [...known, ...Object.keys(object).filter(name => !known.some(f => f.name === name)).map(name => inferredField(name, object[name]))];
-    return <div className="scenario-bound-children">{fields.map(child => <ConstantValue key={child.name} field={child} value={object[child.name]} catalog={catalog}
+    return <CompoundValue title={field.title}>{fields.map(child => <ConstantValue key={child.name} field={child} value={object[child.name]} catalog={catalog}
       connection={connection} onChange={next => onChange({ ...object, [child.name]: next })} />)}
       {field.open && <AddObjectField names={fields.map(f => f.name)} onAdd={child => { setExtraFields([...extraFields, child]); onChange({ ...object, [child.name]: initialLiteral(child) }); }} />}
-    </div>;
+    </CompoundValue>;
   }
   if (field.type === "array" && field.items) {
     const items = Array.isArray(value) ? value : [];
-    return <div className="scenario-bound-children">{items.map((item, index) => <ConstantValue key={index} field={field.items!} value={item} catalog={catalog}
+    return <CompoundValue title={field.title}>{items.map((item, index) => <ConstantValue key={index}
+      field={{ ...field.items!, title: field.items!.title || t("scenarios.array_item") }} value={item} catalog={catalog}
       connection={connection} onChange={next => onChange(items.map((v, i) => i === index ? next : v))} />)}
-      <button type="button" className="link" onClick={() => onChange([...items, initialLiteral(field.items!)])}>{t("scenarios.add_item")}</button></div>;
+      <button type="button" className="link" onClick={() => onChange([...items, initialLiteral(field.items!)])}>{t("scenarios.add_item")}</button></CompoundValue>;
   }
   if (field.type === "lookup") return <LookupValue field={field} value={value} connection={connection} onChange={onChange} />;
   if (field.type === "enum") return <SelectField label={field.title} value={String(field.options?.findIndex(option => option.value === value) ?? -1)}

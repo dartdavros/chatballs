@@ -4,10 +4,10 @@ from datetime import timedelta
 
 from django.utils import timezone
 
-from chatballs.identity.audit import record_audit_event
-from chatballs.identity.models import EmployeeRole
 from chatballs.events.handlers import register
 from chatballs.events.services import DomainEvent, enqueue_event
+from chatballs.identity.audit import record_audit_event
+from chatballs.identity.models import EmployeeRole
 from chatballs.integrations.execution.events import system_context
 from chatballs.integrations.execution.permissions import ExecutionDenied, current_actor
 from chatballs.integrations.scenario_state.files import ServiceFile
@@ -106,6 +106,8 @@ def cleanup(tenant, *, limit=50):
             step_ids = list(run.steps.values_list("pk", flat=True))
             cleared_step_ids.extend(step_ids)
             run.steps.update(content="", confirmed_digest="", approval_expires_at=None)
+            from chatballs.integrations.scenario_state.native_receipts import NativeEffectReceipt
+            NativeEffectReceipt.objects.filter(step_id__in=step_ids).delete()
             run.progress.update(content="")
             run.waits.update(content="")
             run.content = ""

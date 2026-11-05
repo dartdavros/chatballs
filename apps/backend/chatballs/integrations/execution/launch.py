@@ -5,9 +5,16 @@ import hashlib
 from django.utils import timezone
 
 from chatballs.integrations.adapters.schema import validate_value
-from chatballs.integrations.execution.actions import resolve_action
+from chatballs.integrations.execution.actions import connection_key, resolve_action
 from chatballs.integrations.execution.events import journal, schedule
-from chatballs.integrations.execution.permissions import ExecutionDenied, authorize, context_values, direct_policy, allowed_files, view_run
+from chatballs.integrations.execution.permissions import (
+    ExecutionDenied,
+    allowed_files,
+    authorize,
+    context_values,
+    direct_policy,
+    view_run,
+)
 from chatballs.integrations.scenario_state.definitions import ScenarioDefinition
 from chatballs.integrations.scenario_state.runs import ScenarioRun
 from chatballs.integrations.scenario_state.steps import ScenarioStep
@@ -44,7 +51,7 @@ def launch(*, tenant, scenario_id, trigger_key, parameters, conversation_id=None
         from chatballs.integrations.scenarios.values import RunValues
         require_conditions(document, conversation, parameters, registry=registry,
             values=RunValues(parameters=parameters, context=context_values(conversation), event=automatic["event"]) if automatic else None)
-        if automatic or len(document["steps"]) != 1 or document["steps"][0]["kind"] != "action" or document["steps"][0].get("connection") == "chatballs":
+        if automatic or len(document["steps"]) != 1 or document["steps"][0]["kind"] != "action":
             from chatballs.integrations.execution.composite_launch import snapshot
             return snapshot(tenant, document, parameters, conversation, scenario=scenario, dedup=dedup,
                             registry=registry, preview=preview, confirmation=confirmation, automatic=automatic), True
@@ -56,11 +63,18 @@ def launch_direct(*, tenant, connection_id, operation_key, trigger_key, argument
     if not isinstance(trigger_key, str) or not 1 <= len(trigger_key) <= 200 or not isinstance(arguments, dict):
         raise ExecutionDenied("arguments")
     from chatballs.integrations.models import Integration
+    if connection_id == "chatballs" and conversation_id is not None:
+        from chatballs.integrations.action_catalog.registry import native_action
+        action = native_action(operation_key)
+        field = action.operation.input.field("conversation_id") if action else None
+        if field and field.required:
+            arguments = {"conversation_id": str(conversation_id), **arguments}
     with tenant_atomic(tenant):
-        Integration.objects.select_for_update().get(pk=connection_id, organization_id=tenant.organization_id)
+        if connection_id != "chatballs":
+            Integration.objects.select_for_update().get(pk=connection_id, organization_id=tenant.organization_id)
         tenant, document, grant, conversation = direct_policy(tenant, connection_id, operation_key, conversation_id)
         document["steps"] = [{"id": "operation", "kind": "action", "connection": str(connection_id),
-            "target": f"service:{operation_key}", "inputs": {key: {"source": "constant", "value": value} for key, value in arguments.items()}}]
+            "target": f"{'chatballs' if connection_id == 'chatballs' else 'service'}:{operation_key}", "inputs": {key: {"source": "constant", "value": value} for key, value in arguments.items()}}]
         key = f"operation:{connection_id}:{operation_key}"
         dedup = hashlib.sha256(trigger_key.encode()).hexdigest()
         existing = ScenarioRun.objects.filter(organization_id=tenant.organization_id, scenario_key=key, trigger_key=dedup).first()
@@ -87,21 +101,21 @@ def _snapshot(tenant, document, parameters, conversation, *, scenario, dedup, sc
     from chatballs.integrations.execution.plans import sign_plan, verify_plan
     plan = {"document": document, "parameters": parameters, "context": context, "arguments": arguments,
             "scenarioKey": scenario_key, "revision": scenario.revision if scenario else 1,
-            "connection": integration.pk, "adapter": adapter.key, "version": adapter.contract_version, "grant": grant_id}
+            "connection": connection_key(integration), "adapter": adapter.key, "version": adapter.contract_version, "grant": grant_id}
     from chatballs.integrations.execution.contract_schemas import write_spec
     from chatballs.integrations.execution.snapshots import signature
     contract = {"adapter": adapter.key, "version": adapter.contract_version, "signature": signature(operation),
                 "input": write_spec(operation.input), "output": write_spec(operation.output), "title_key": operation.title_key}
     plan["contract"] = contract
     if preview:
-        from chatballs.integrations.execution.payloads import clean_value
         from chatballs.ai.diagnostic_redaction import integration_secrets
-        from chatballs.integrations.service_connections.payloads import field_payload
         from chatballs.i18n import t
+        from chatballs.integrations.execution.payloads import clean_value
+        from chatballs.integrations.service_connections.payloads import field_payload
         return {"confirmation": sign_plan(tenant, plan), "operation": t(operation.title_key),
                 "note": t(operation.description_key) if operation.description_key else "",
                 "inputSchema": field_payload("", operation.input),
-                "arguments": clean_value(operation.input, arguments, integration_secrets([integration]))}
+                "arguments": clean_value(operation.input, arguments, integration_secrets([integration] if integration else []))}
     expires = verify_plan(tenant, plan, confirmation) if confirmation is not None else None
     from chatballs.integrations.execution.files import lock_input_files, own_input_files
     input_files = lock_input_files(tenant, operation, arguments)
@@ -110,7 +124,7 @@ def _snapshot(tenant, document, parameters, conversation, *, scenario, dedup, sc
         initiator=tenant.membership, conversation=conversation)
     run.definition = {"document": document, "parameters": parameters, "context": context,
                       "kind": "scenario" if scenario else "direct", "grantId": grant_id,
-                      "contracts": {f"{integration.pk}:{block['target']}": contract}}
+                      "contracts": {f"{connection_key(integration)}:{block['target']}": contract}}
     if ai_binding:
         run.definition = {**run.definition, "ai": ai_binding}
     from chatballs.integrations.scenarios.entity_links import snapshot as link_snapshot
@@ -118,7 +132,7 @@ def _snapshot(tenant, document, parameters, conversation, *, scenario, dedup, sc
     data["links"] = link_snapshot(conversation)
     run.definition = data
     run.structure = {"name": scenario.name if scenario else "", "operationTitle": operation.title_key,
-                     "connection": integration.name, "definitionUpdatedAt": scenario.updated_at.isoformat() if scenario else None}
+                     "connection": (integration.name if integration else ""), "definitionUpdatedAt": scenario.updated_at.isoformat() if scenario else None}
     if ai_binding:
         from chatballs.ai.models import AIAgent
         run.structure = {**run.structure, "agentName": AIAgent.objects.get(pk=ai_binding["agent"]).channel.name,
@@ -129,7 +143,9 @@ def _snapshot(tenant, document, parameters, conversation, *, scenario, dedup, sc
         adapter_version=adapter.contract_version, operation_key=operation.key,
         retry_strategy=operation.retry, due_at=now)
     step.definition = {"arguments": arguments}
-    from chatballs.integrations.execution.ai_policy import needs_confirmation as confirmation_required
+    from chatballs.integrations.execution.ai_policy import (
+        needs_confirmation as confirmation_required,
+    )
     needs_confirmation = confirmation_required(run, operation)
     step.state = "approval" if needs_confirmation and expires is None else "queued"
     if expires is not None:

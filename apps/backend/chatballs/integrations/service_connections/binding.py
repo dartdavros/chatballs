@@ -22,9 +22,8 @@ from chatballs.integrations.adapters.contracts import (
 from chatballs.integrations.adapters.files import file_store
 from chatballs.integrations.adapters.registry import AdapterRegistry, default_registry
 from chatballs.integrations.adapters.schema import validate_value
-from chatballs.integrations.models import Integration, ServiceConnectionSettings, ServiceFile
+from chatballs.integrations.models import Integration, ServiceConnectionSettings
 from chatballs.tenancy.context import TenantContext
-from chatballs.tenancy.database import tenant_atomic
 
 
 class ServiceUnavailable(Exception):
@@ -139,10 +138,5 @@ def load_lookup(*, tenant: TenantContext, integration: Integration, key: str) ->
 
 
 def _file_opener(organization_id: int):
-    def open_file(file_id: str) -> tuple[str, str, bytes]:
-        with tenant_atomic(organization_id):
-            record = ServiceFile.objects.get(public_id=file_id, organization_id=organization_id)
-            with record.file.open("rb") as stream:
-                return record.name, record.content_type, stream.read()
-
-    return open_file
+    from chatballs.integrations.adapters.file_access import file_opener
+    return file_opener(organization_id)

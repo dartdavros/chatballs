@@ -57,6 +57,7 @@ AUDIT_CATEGORY_ALIASES = {
 
 
 AUDIT_ACTION_LABELS: dict[str, str] = {
+    "integrations.native_action_executed": "native.audit_executed",
     "integrations.agent_action_changed": "audit.action_integrations_agent_action_changed",
     "ai.skill_created": "audit.action_ai_skill_created",
     "ai.skill_updated": "audit.action_ai_skill_updated",

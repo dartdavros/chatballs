@@ -16,17 +16,18 @@ from chatballs.tenancy.models import TenantRelationModel
 
 
 def service_file_upload_path(instance: ServiceFile, filename: str) -> str:
-    organization = instance.integration.organization
+    organization = instance.integration.organization if instance.integration_id else instance.organization
+    source = instance.integration_id if instance.integration_id else "native"
     return (
         f"organizations/{organization.public_id}/service-files/"
-        f"{instance.integration_id}/{instance.public_id}{PurePath(filename).suffix}"
+        f"{source}/{instance.public_id}{PurePath(filename).suffix}"
     )
 
 
 class ServiceFile(TenantRelationModel):
     tenant_relation_fields = ("integration",)
     integration = models.ForeignKey(
-        "integrations.Integration", on_delete=models.CASCADE, related_name="service_files"
+        "integrations.Integration", on_delete=models.CASCADE, related_name="service_files", null=True, blank=True
     )
     public_id = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     file = models.FileField(upload_to=service_file_upload_path, max_length=512)

@@ -1,3 +1,4 @@
+from chatballs.conversations.delivery_observation import observed_send
 from chatballs.conversations.transports import backoff
 from chatballs.conversations.transports import email as _email
 from chatballs.conversations.transports import max as _max
@@ -81,11 +82,11 @@ def poll(integration):
 
 
 def send_reply(integration, *, chat_id: str, user_id: str, text: str) -> bool:
-    return _SEND[integration.provider](integration, chat_id=chat_id, user_id=user_id, text=text)
+    return observed_send(_SEND[integration.provider], integration, chat_id=chat_id, user_id=user_id, text=text)
 
 
 def send_contact_request(integration, *, chat_id: str, user_id: str, text: str) -> bool:
-    return _CONTACT_REQUEST[integration.provider](integration, chat_id=chat_id, user_id=user_id, text=text)
+    return observed_send(_CONTACT_REQUEST[integration.provider], integration, chat_id=chat_id, user_id=user_id, text=text)
 
 
 def send_contact_ack(integration, *, chat_id: str, user_id: str, text: str) -> bool:
@@ -155,8 +156,8 @@ def send_file(integration, *, chat_id: str, user_id: str, content: bytes, filena
     sender = _FILE_SEND.get(integration.provider)
     if sender is None:
         return False
-    return sender(
-        integration,
+    return observed_send(
+        sender, integration,
         chat_id=chat_id,
         user_id=user_id,
         content=content,
@@ -219,8 +220,8 @@ def send_voice(integration, *, chat_id: str, user_id: str, content: bytes, conte
     sender = _VOICE_SEND.get(integration.provider)
     if sender is None:
         return False
-    return sender(
-        integration,
+    return observed_send(
+        sender, integration,
         chat_id=chat_id,
         user_id=user_id,
         content=content,

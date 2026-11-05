@@ -13,6 +13,9 @@ from chatballs.notifications.models import Notification
 class TransferOperationTestBase(TransferTestBase):
     def setUp(self):
         super().setUp()
+        # Conversation fixtures already publish native facts. Rejected transfer
+        # requests must add no events; existing facts remain legitimate.
+        self.initial_outbox_ids = set(OutboxEvent.objects.values_list("pk", flat=True))
         self.policy = AssignmentPolicy.objects.get(organization=self.organization)
         self.policy.busy = False
         self.policy.break_allowed = False
@@ -28,9 +31,13 @@ class TransferOperationTestBase(TransferTestBase):
     def post(self, **changes):
         return self.client.post(self.endpoint, {**self.data, **changes}, format="json")
 
+    def outbox_since_setup(self):
+        return OutboxEvent.objects.exclude(pk__in=self.initial_outbox_ids)
+
     def assert_no_transfer(self):
         self.conversation.refresh_from_db()
         self.assertEqual(self.conversation.assigned_operator_id, self.members[EmployeeRole.ADMIN].user_id)
         self.assertEqual(self.conversation.assignment_version, 0)
-        for model in (ConversationTransfer, ConversationEvent, Notification, OutboxEvent, Message):
+        for model in (ConversationTransfer, ConversationEvent, Notification, Message):
             self.assertFalse(model.objects.exists(), model.__name__)
+        self.assertFalse(self.outbox_since_setup().exists())

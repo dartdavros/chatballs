@@ -3,8 +3,8 @@
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 
-from chatballs.conversations.models import Conversation
 from chatballs.ai.execution_version import configuration_version
+from chatballs.conversations.models import Conversation
 from chatballs.identity.operation_modes import autonomous_allowed, lock_organization
 from chatballs.integrations.execution.permissions import ExecutionDenied, current_actor
 from chatballs.integrations.scenario_state.agent_grants import AgentActionGrant
@@ -13,7 +13,7 @@ from chatballs.tenancy.context import TenantContext
 
 def current(tenant, binding):
     organization = lock_organization(tenant.organization_id)
-    grant = AgentActionGrant.objects.select_related("agent__channel", "scenario").filter(
+    grant = AgentActionGrant.objects.select_related("agent__channel", "scenario", "delegate__user").filter(
         pk=binding["grant"], organization_id=organization.pk, agent_id=binding["agent"],
         revision=binding["revision"], mode=binding["mode"],
     ).exclude(mode="off").first()
@@ -21,6 +21,9 @@ def current(tenant, binding):
         raise ExecutionDenied("permission")
     if binding.get("agentVersion") != configuration_version(grant.agent):
         raise ExecutionDenied("permission")
+    from chatballs.integrations.execution.native_principal import delegate_context, has_native
+    if grant.native_key or grant.delegate_id or has_native(grant.scenario):
+        delegate_context(tenant, grant, binding)
     if binding.get("tester"):
         from chatballs.identity.models import EmployeeRole, OrganizationMembership
         member = OrganizationMembership.objects.select_related("organization", "user").filter(
@@ -54,7 +57,7 @@ def _conversation(organization, grant, binding):
 
 def bind(grant, conversation):
     return {"grant": grant.pk, "agent": grant.agent_id, "revision": grant.revision, "mode": grant.mode,
-            "agentVersion": configuration_version(grant.agent),
+            "agentVersion": configuration_version(grant.agent), "delegate": grant.delegate_id,
             "conversation": conversation.pk, "controlVersion": conversation.ai_control_version,
             "modeVersion": conversation.organization.operation_mode_version}
 
@@ -71,6 +74,10 @@ def authorize_ai(tenant, run):
     if grant.integration_id:
         step = root.steps.get()
         if step.integration_id != grant.integration_id or step.operation_key != grant.operation_key:
+            raise ExecutionDenied("permission")
+    if grant.native_key:
+        step = root.steps.get()
+        if step.integration_id or step.adapter_key != "chatballs" or step.operation_key != grant.native_key:
             raise ExecutionDenied("permission")
     cursor = run
     while cursor:
@@ -89,6 +96,9 @@ def authorize_ai(tenant, run):
     expected = run.definition.get("context", {}).get("contact", {}).get("id")
     if conversation and expected != (str(conversation.contact_id) if conversation.contact_id else None):
         raise ExecutionDenied("context_changed")
+    if grant.delegate_id:
+        from chatballs.integrations.execution.native_principal import delegate_context
+        return delegate_context(tenant, grant, binding), conversation
     return TenantContext.for_resource(tenant.organization), conversation
 
 

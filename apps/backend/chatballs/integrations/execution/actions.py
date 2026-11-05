@@ -1,18 +1,18 @@
 """Resolve exactly the saved adapter contract, never the latest substitute."""
 
 from chatballs.integrations.adapters.registry import default_registry
+from chatballs.integrations.execution.permissions import ExecutionDenied
 from chatballs.integrations.models import Integration, IntegrationStatus
 from chatballs.integrations.service_connections.binding import ServiceUnavailable, resolve
-from chatballs.integrations.execution.permissions import ExecutionDenied
 
 
 def resolve_action(organization_id, connection_id, target, *, registry=None, expected=None, recovering=False):
-    registry = registry or default_registry()
     if connection_id == "chatballs" and target.startswith("chatballs:"):
-        from chatballs.integrations.execution.native import ADAPTER, operation
-        if expected and expected != (ADAPTER.key, ADAPTER.contract_version):
+        operation, version = native_operation(target.removeprefix("chatballs:"))
+        if expected and expected != ("chatballs", version):
             raise ExecutionDenied("version_incompatible")
-        return None, None, ADAPTER, None, operation(target.removeprefix("chatballs:"))
+        return None, None, NativeCatalog(version), None, operation
+    registry = registry or default_registry()
     if not str(connection_id).isdecimal() or not target.startswith("service:"):
         raise ExecutionDenied("operation_unavailable")
     integration = Integration.objects.select_related("service_settings").filter(
@@ -32,3 +32,30 @@ def resolve_action(organization_id, connection_id, target, *, registry=None, exp
     if operation is None:
         raise ExecutionDenied("operation_unavailable")
     return integration, row, adapter, method, operation
+
+
+class NativeCatalog:
+    """A native contract identity, never an Integration or a service adapter."""
+
+    key = "chatballs"
+
+    def __init__(self, contract_version):
+        self.contract_version = contract_version
+
+
+def connection_key(integration):
+    return integration.pk if integration is not None else "chatballs"
+
+
+def step_target(step):
+    return {"connection": str(step.integration_id) if step.integration_id else "chatballs",
+            "target": f"{'service' if step.integration_id else 'chatballs'}:{step.operation_key}"}
+
+
+def native_operation(key):
+    from chatballs.integrations.action_catalog.registry import native_action
+    action = native_action(key)
+    if action:
+        return action.operation, action.contract_version
+    from chatballs.integrations.execution.native_system import operation
+    return operation(key), 1

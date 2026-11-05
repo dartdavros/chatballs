@@ -15,7 +15,7 @@ export function RunApprovalCard({ id, onDetails }: { id: string; onDetails: () =
   return <article className="run-feed-card is-ai">
     <header><Icon name="robot" size={17} /><strong>{run.name}</strong><RunStatus state={run.state} label={run.stateLabel} /></header>
     <small>{t("runs.run_label", { number: fmt.number(run.number) })} · {run.initiator}</small>
-    {step && <><RunValues schema={step.inputSchema} value={step.arguments} />
+    {step && <><RunValues schema={step.inputSchema} value={step.arguments} fileNames={step.fileNames} />
       {(!step.editing || step.editToken) && <p>{t(step.editing ? "agent_actions.editing" : "agent_actions.confirm_note")}</p>}
       {step.deadline && <p>{t("agent_actions.valid_until", { date: fmt.shortDateTime(step.deadline) })}</p>}
       {canApprove && <div className="run-detail-actions">

@@ -51,7 +51,7 @@ class TransferAPITests(TransferOperationTestBase):
             self.assertEqual(message_payload(message)["transferId"], row.pk)
             self.assertNotIn(self.data["comment"], str(message_payload(message)))
             self.assertNotIn(self.reason.name, str(message.system_params))
-            event = OutboxEvent.objects.get()
+            event = self.outbox_since_setup().get()
             self.assertEqual(event.payload, {"notificationId": notification.pk})
             self.assertEqual(event.actor_kind, "SYSTEM")
             self.assertIsNone(event.membership_id)
@@ -131,7 +131,7 @@ class TransferAPITests(TransferOperationTestBase):
         self.assertEqual(ConversationTransfer.objects.count(), 2)
         self.assertEqual(ConversationEvent.objects.count(), 2)
         self.assertEqual(Notification.objects.count(), 2)
-        self.assertEqual(OutboxEvent.objects.count(), 2)
+        self.assertEqual(self.outbox_since_setup().count(), 2)
 
     def test_key_cannot_disclose_another_conversation_or_actor_result(self):
         self.assertEqual(self.post().status_code, 200)

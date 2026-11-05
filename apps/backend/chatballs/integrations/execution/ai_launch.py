@@ -17,6 +17,9 @@ from chatballs.tenancy.database import tenant_atomic
 def launch_ai(tenant, binding, arguments, trigger_key, *, preview=False, registry=None):
     with tenant_atomic(tenant):
         grant, conversation = current(tenant, binding)
+        if grant.delegate_id:
+            from chatballs.integrations.execution.native_principal import delegate_context
+            tenant = delegate_context(tenant, grant, binding)
         scenario = grant.scenario
         if scenario:
             document = scenario.definition
@@ -24,12 +27,24 @@ def launch_ai(tenant, binding, arguments, trigger_key, *, preview=False, registr
             key = str(scenario.public_id)
         else:
             document = empty_definition()
-            document["access"]["scope"] = "conversation"
-            document["steps"] = [{"id": "operation", "kind": "action", "connection": str(grant.integration_id),
-                "target": f"service:{grant.operation_key}", "inputs": {
+            if grant.native_key:
+                from chatballs.integrations.action_catalog.registry import native_action
+                action = native_action(grant.native_key)
+                if action is None:
+                    raise ExecutionDenied("operation_unavailable")
+                document["access"]["scope"] = action.scope
+                field = action.operation.input.field("conversation_id")
+                if conversation and field and field.required:
+                    arguments = {"conversation_id": str(conversation.pk), **arguments}
+            else:
+                document["access"]["scope"] = "conversation"
+            connection = "chatballs" if grant.native_key else str(grant.integration_id)
+            operation = grant.native_key or grant.operation_key
+            document["steps"] = [{"id": "operation", "kind": "action", "connection": connection,
+                "target": f"{'chatballs' if grant.native_key else 'service'}:{operation}", "inputs": {
                     name: {"source": "constant", "value": value} for name, value in arguments.items()}}]
             parameters = {}
-            key = f"operation:{grant.integration_id}:{grant.operation_key}"
+            key = f"operation:{connection}:{operation}"
         require_conditions(document, conversation, parameters, registry=registry)
         context_id = conversation.pk if conversation else f"test:{binding['tester']}"
         dedup = hashlib.sha256(f"ai:{binding['agent']}:{context_id}:{trigger_key}".encode()).hexdigest()

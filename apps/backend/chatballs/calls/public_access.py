@@ -87,10 +87,12 @@ def _authorize_call_access(
     *,
     token: str,
     allow_terminal: bool = False,
+    expected_organization_id: int | None = None,
 ) -> tuple[CallAccessClaims, CallSession, TenantContext]:
     claims = verify_call_access_token(token)
     route = call_session_route(str(claims.call_session_id))
-    if route is None:
+    if route is None or (expected_organization_id is not None
+            and route.organization_id != expected_organization_id):
         raise CallTokenError(t("calls.token_invalid"))
     organization = load_organization(route.organization_id)
     if organization is None:
@@ -155,9 +157,10 @@ def authorize_call_access_token(
 
 
 def authorize_call_access_context(
-    *, token: str, allow_terminal: bool = False
+    *, token: str, allow_terminal: bool = False, expected_organization_id: int | None = None,
 ) -> tuple[CallAccessClaims, CallSession, TenantContext]:
-    return _authorize_call_access(token=token, allow_terminal=allow_terminal)
+    return _authorize_call_access(token=token, allow_terminal=allow_terminal,
+        expected_organization_id=expected_organization_id)
 
 
 def _customer_call(
