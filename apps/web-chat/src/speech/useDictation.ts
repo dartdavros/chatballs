@@ -66,7 +66,7 @@ export function useDictation({ token, hostOrigin, settings, onResult }: {
 
   function cancel() {
     discardRequest(); capture.cancel(); recording.current = null;
-    setRecognizing(false); setRetryable(false); setLimit(null); setNotice("cancelled");
+    setRecognizing(false); setRetryable(false); setLimit(null); setNotice(null);
   }
 
   return {
@@ -76,7 +76,7 @@ export function useDictation({ token, hostOrigin, settings, onResult }: {
     available: settings?.microphoneMode === "dictation" && settings.available,
     maxSeconds: settings?.maxDictationSeconds ?? 60,
     maxBytes: settings?.maxRecordingBytes ?? 10 * 1024 * 1024,
-    start: () => { if (!recognizing && capture.phase === "idle") { setRetryable(false); setLimit(null); recording.current = null; void capture.start(); } },
+    start: () => { if (!recognizing && capture.phase === "idle") { setNotice(null); setRetryable(false); setLimit(null); recording.current = null; void capture.start(); } },
     stop: capture.stop, cancel,
     retry: () => { if (recording.current && !recognizing) void transcribe(recording.current); },
   };

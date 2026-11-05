@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "revision": 23,
+  "revision": 26,
   "title": "Chatballs — архитектура контакт-центра",
   "elements": [
     {
@@ -1366,7 +1366,25 @@
         "0034"
       ],
       "parent": "container-backend",
-      "technology": "Python / Django"
+      "technology": "Python / Django",
+      "planned": {
+        "name": "Оценки клиентов",
+        "description": "Запрос по факту завершения, снимок шкалы, отложенная WEB-доставка, ограниченный credential и неизменяемая оценка; управленческая выдача. WEB-оценка не истекает по времени; отмена/удаление и область credential сохраняются.",
+        "code": [
+          "apps/backend/chatballs/ratings/models.py",
+          "apps/backend/chatballs/ratings/urls.py"
+        ],
+        "evidence": [
+          "apps/backend/chatballs/ratings",
+          ".skaro/specs/0032-otsenka-zavershennogo-dialoga-klientom.md",
+          "apps/backend/chatballs/ratings/public_service.py"
+        ],
+        "decisions": [
+          "0034"
+        ],
+        "parent": "container-backend",
+        "technology": "Python / Django"
+      }
     },
     {
       "id": "component-quality",
@@ -2020,7 +2038,28 @@
       "external": false,
       "evidence": [
         "apps/web-chat/src/ratings"
-      ]
+      ],
+      "planned": {
+        "name": "Форма клиентской оценки",
+        "description": "Получает ограниченный вопрос/шкалу и отправляет одну оценку без доступа к истории. Форма принимает WEB-оценку независимо от возраста. Отсутствие срока отражается достоверно; неизвестный/отменённый/удалённый запрос не называется просроченным.",
+        "code": [
+          "apps/web-chat/src/ratings/main.tsx",
+          "apps/web-chat/src/ratings/api.ts",
+          "apps/web-chat/src/ratings/useRating.ts",
+          "apps/web-chat/src/ratings/RatingOutcome.tsx",
+          "apps/web-chat/src/ratings/RatingRequestCard.tsx"
+        ],
+        "evidence": [
+          "apps/web-chat/src/ratings",
+          ".skaro/specs/0032-otsenka-zavershennogo-dialoga-klientom.md",
+          "apps/web-chat/src/ratings/api.ts"
+        ],
+        "decisions": [
+          "0034"
+        ],
+        "parent": "container-widget",
+        "technology": "React / TypeScript"
+      }
     },
     {
       "id": "widget-snapshot",
@@ -3025,7 +3064,32 @@
         "apps/backend/chatballs/ratings/credentials.py",
         "apps/backend/chatballs/ratings/web_delivery.py",
         "apps/backend/chatballs/ratings/public_service.py"
-      ]
+      ],
+      "planned": {
+        "name": "RatingRequest / credentials / delivery",
+        "description": "Один запрос на завершение, snapshot шкалы и реальная WEB-доставка воркером; ограниченный публичный доступ. Планируемое исправление: WEB-запросы бессрочны, включая уже отправленные. Миграции, API, directory и триггеры согласованы; отмены, credential, снимки и единственный результат сохраняются.",
+        "code": [
+          "apps/backend/chatballs/ratings/scheduling.py",
+          "apps/backend/chatballs/ratings/credentials.py",
+          "apps/backend/chatballs/ratings/web_delivery.py",
+          "apps/backend/chatballs/ratings/public_service.py",
+          "apps/backend/chatballs/ratings/models.py",
+          "apps/backend/chatballs/ratings/migrations/"
+        ],
+        "evidence": [
+          "apps/backend/chatballs/ratings/scheduling.py",
+          "apps/backend/chatballs/ratings/credentials.py",
+          "apps/backend/chatballs/ratings/web_delivery.py",
+          "apps/backend/chatballs/ratings/public_service.py",
+          ".skaro/specs/0032-otsenka-zavershennogo-dialoga-klientom.md",
+          "apps/backend/chatballs/ratings/migrations/0002_guards.py"
+        ],
+        "decisions": [
+          "0034"
+        ],
+        "parent": "component-ratings",
+        "technology": "Python"
+      }
     },
     {
       "id": "code-quality",
@@ -4170,7 +4234,7 @@
       "id": "code-service-execution-policy",
       "kind": "code",
       "name": "Политика доступа",
-      "description": "ExecutionPrincipal с серверными organization/scope/actor/grants; актуальные проверки перед каждым эффектом; самостоятельный/запрещённый/подтверждаемый режим ИИ. Решение владельца 30.10.2026: conversation.topic и метки контакта отложены; внешние связи — T-172. Зависимые guards/bindings недоступны, включая отрицательное условие/any/object.get, без трактовки отсутствующего источника как отсутствия бизнес-данных. Остальной одношаговый путь не блокируется. T-175 manual_catalog_queries/lookup_queries: метаданные проверяют точную операцию и текущий principal, approval lookup использует замороженный контракт и действующего одобрителя. Native wrappers не вызывают новый launch от имени владельца.",
+      "description": "ExecutionPrincipal с серверными organization/scope/actor/grants; актуальные проверки перед каждым эффектом; самостоятельный/запрещённый/подтверждаемый режим ИИ. Решение владельца 30.10.2026: conversation.topic и метки контакта отложены; внешние связи — T-172. Зависимые guards/bindings недоступны, включая отрицательное условие/any/object.get, без трактовки отсутствующего источника как отсутствия бизнес-данных. Остальной одношаговый путь не блокируется. T-175 manual_catalog_queries/lookup_queries: метаданные проверяют точную операцию и текущий principal, approval lookup использует замороженный контракт и действующего одобрителя. Native wrappers не вызывают новый launch от имени владельца. T-176: фильтрация каталога не является защитой сама по себе; проверка authority повторяется сервером при подготовке и исполнении, включая старые/вложенные снимки и ИИ.",
       "state": "planned",
       "external": false,
       "code": [
@@ -4202,7 +4266,8 @@
         ".skaro/docs/service-native-organization-runtime.md",
         "docs/verification/T-175/README.md",
         "apps/backend/chatballs/integrations/execution/manual_catalog_queries.py",
-        "apps/backend/chatballs/integrations/execution/lookup_queries.py"
+        "apps/backend/chatballs/integrations/execution/lookup_queries.py",
+        ".skaro/docs/service-native-installation-runtime.md"
       ],
       "decisions": [
         "0038"
@@ -4409,7 +4474,7 @@
       "id": "code-service-native-registry",
       "kind": "code",
       "name": "Каталог продуктовых действий",
-      "description": "Опись публичных продуктовых API и обёрток; аутентификация/транспорт классифицируются отдельно. Доменные модули регистрируют свои действия, все штатные проверки сохраняются. T-169 добавляет только схемы для редактора, включая entity_link.create; полный каталог и исполнение обёрток этим не реализуются. T-174 планирует полный executable descriptor-контракт общения/обслуживания: стабильный action key/version, TypeSpec input/output, effect/scope/capability и recovery; схемы редактора и runner читают один реестр. Полнота проверяется по реально смонтированным API-входам, без искусственного Integration. T-175 расширяет тот же executable registry: 274 действия на проверяемом checkout, без отдельного движка; TypeSpec JSON имеет versioned control, свойства secret не попадают в обычный результат.",
+      "description": "Опись публичных продуктовых API и обёрток; аутентификация/транспорт классифицируются отдельно. Доменные модули регистрируют свои действия, все штатные проверки сохраняются. T-169 добавляет только схемы для редактора, включая entity_link.create; полный каталог и исполнение обёрток этим не реализуются. T-174 планирует полный executable descriptor-контракт общения/обслуживания: стабильный action key/version, TypeSpec input/output, effect/scope/capability и recovery; схемы редактора и runner читают один реестр. Полнота проверяется по реально смонтированным API-входам, без искусственного Integration. T-175 расширяет тот же executable registry: 274 действия на проверяемом checkout, без отдельного движка; TypeSpec JSON имеет versioned control, свойства secret не попадают в обычный результат. T-176: один полный executable registry хранит также глобальные действия с явной authority; выборка tenant-действий используется редактором и grants, полный каталог — inventory и собственными штатными административными входами. Наличие descriptor не предоставляет полномочий.",
       "state": "planned",
       "external": false,
       "code": [
@@ -4429,7 +4494,8 @@
         "docs/verification/T-175/README.md",
         "apps/backend/chatballs/integrations/action_catalog/schema.py",
         "apps/backend/chatballs/integrations/action_catalog/serialization.py",
-        "apps/backend/chatballs/integrations/adapters/json_values.py"
+        "apps/backend/chatballs/integrations/adapters/json_values.py",
+        ".skaro/docs/service-native-installation-runtime.md"
       ],
       "decisions": [
         "0038"
@@ -4441,7 +4507,7 @@
       "id": "code-service-native-domain",
       "kind": "code",
       "name": "Доменные обёртки",
-      "description": "Разделённые модули вызывают сервисы переписки, сотрудников, ИИ, знаний, порталов, звонков, файлов, уведомлений, отчётов и настроек; область установки/платформы не выдаётся tenant-сценарию. T-174 уточняет conversations/contacts/labels/messages/comments/media/participants/transfers/calls/notifications/templates/rules/reports/ratings/quality, включая email-продолжение и черновики. API-логика без сервисной функции выносится в общий доменный application service, который вызывают исходный API и descriptor; без APIView dispatch, fake Request или универсального CRUD. Token-scoped продуктовые действия сохраняют исходный credential/side/tenant, grant не выдаёт клиентскую идентичность. Делегат ИИ проходит прежние проверки назначения/личных данных/прав; косвенный ID/credential сверяется с каноническим контекстом. T-175 уточняет tenant-обёртки сотрудников/membership/приглашений/владения, групп/доступности/настроек, агентов/навыков/знаний/импорта/файлов, порталов и сервисных/транспортных/AI-подключений, включая разрешённое управление сценариями. Область установки и глобального HumanUser остаётся T-176; tenant-грант её не предоставляет. Ключи запуска, OAuth, customer credentials и editToken не являются обычными выходами действия.",
+      "description": "Разделённые модули вызывают сервисы переписки, сотрудников, ИИ, знаний, порталов, звонков, файлов, уведомлений, отчётов и настроек; область установки/платформы не выдаётся tenant-сценарию. T-174 уточняет conversations/contacts/labels/messages/comments/media/participants/transfers/calls/notifications/templates/rules/reports/ratings/quality, включая email-продолжение и черновики. API-логика без сервисной функции выносится в общий доменный application service, который вызывают исходный API и descriptor; без APIView dispatch, fake Request или универсального CRUD. Token-scoped продуктовые действия сохраняют исходный credential/side/tenant, grant не выдаёт клиентскую идентичность. Делегат ИИ проходит прежние проверки назначения/личных данных/прав; косвенный ID/credential сверяется с каноническим контекстом. T-175 уточняет tenant-обёртки сотрудников/membership/приглашений/владения, групп/доступности/настроек, агентов/навыков/знаний/импорта/файлов, порталов и сервисных/транспортных/AI-подключений, включая разрешённое управление сценариями. Область установки и глобального HumanUser остаётся T-176; tenant-грант её не предоставляет. Ключи запуска, OAuth, customer credentials и editToken не являются обычными выходами действия. T-176 планирует instance/platform/update/storage/profile/organization/bootstrap обёртки в их собственной области полномочий; глобальные действия не выдаются tenant-сценарию. Исходные API и каталог используют общие разделённые доменные службы. Реальные credentials, выдача сессии и подтверждения остаются в прежних протоколах.",
       "state": "planned",
       "external": false,
       "code": [
@@ -4484,7 +4550,13 @@
         "apps/backend/chatballs/integrations/action_catalog/agent_policies.py",
         "apps/backend/chatballs/integrations/action_catalog/scenario_metadata.py",
         "apps/backend/chatballs/integrations/action_catalog/synchronization.py",
-        "apps/backend/chatballs/integrations/action_catalog/entity_links.py"
+        "apps/backend/chatballs/integrations/action_catalog/entity_links.py",
+        "apps/backend/chatballs/integrations/action_catalog/instance.py",
+        "apps/backend/chatballs/integrations/action_catalog/platform.py",
+        "apps/backend/chatballs/integrations/action_catalog/updates.py",
+        "apps/backend/chatballs/integrations/action_catalog/storage.py",
+        "apps/backend/chatballs/integrations/action_catalog/profile.py",
+        "apps/backend/chatballs/integrations/action_catalog/setup.py"
       ],
       "evidence": [
         ".skaro/specs/0037-rasshiryaemye-integratsii-servisov-i-sts.md",
@@ -4515,7 +4587,8 @@
         "apps/backend/chatballs/integrations/action_catalog/agent_policies.py",
         "apps/backend/chatballs/integrations/action_catalog/scenario_metadata.py",
         "apps/backend/chatballs/integrations/action_catalog/synchronization.py",
-        "apps/backend/chatballs/integrations/action_catalog/entity_links.py"
+        "apps/backend/chatballs/integrations/action_catalog/entity_links.py",
+        ".skaro/docs/service-native-installation-runtime.md"
       ],
       "decisions": [
         "0038"
@@ -4831,14 +4904,16 @@
       "id": "code-ui-service-runs",
       "kind": "code",
       "name": "Модули UI: Запуск и журнал",
-      "description": "Composition-only views; state/model/API отдельно. Разделение доступа к конкретному запуску и общему журналу, мобильные параметры/подробности, ручное решение спорных полей с текущими правами и сохранением фактического результата. Одношаговый запуск заменяет карточку контакта на desktop; мобильная нижняя панель 88vh остаётся внутри чата. Полные параметры/unknown/recovery ещё требуют проверки на реальном подключении. T-173: точные параметры, срок и право решения; редактор меняет только текущий запрос.",
+      "description": "Composition-only views; state/model/API отдельно. Разделение доступа к конкретному запуску и общему журналу, мобильные параметры/подробности, ручное решение спорных полей с текущими правами и сохранением фактического результата. Одношаговый запуск заменяет карточку контакта на desktop; мобильная нижняя панель 88vh остаётся внутри чата. Полные параметры/unknown/recovery ещё требуют проверки на реальном подключении. T-173: точные параметры, срок и право решения; редактор меняет только текущий запрос. В контакте вместо полного списка используется компактный ManualActionMenu с прежним запуском и доступом.",
       "state": "planned",
       "external": false,
       "code": [
         "apps/internal-ui/src/features/integrations/runs/",
         "apps/internal-ui/src/features/integrations/entity-links/",
         "apps/internal-ui/src/features/integrations/runs/RunApprovalCard.tsx",
-        "apps/internal-ui/src/features/integrations/runs/ApprovalEditor.tsx"
+        "apps/internal-ui/src/features/integrations/runs/ApprovalEditor.tsx",
+        "apps/internal-ui/src/features/integrations/runs/ContactActions.tsx",
+        "apps/internal-ui/src/features/integrations/runs/ManualActionMenu.tsx"
       ],
       "evidence": [
         ".skaro/specs/0037-rasshiryaemye-integratsii-servisov-i-sts.md",
@@ -5550,18 +5625,22 @@
       "kind": "code",
       "parent": "widget-speech",
       "name": "Запись и применение черновика",
-      "description": "MediaRecorder/отмена/автолимит/request generation; добавление к актуальному тексту один раз, обычная отправка отдельно.",
+      "description": "MediaRecorder/отмена/автолимит/request generation; добавление к актуальному тексту один раз, обычная отправка отдельно. Крестик закрывает панель/отменяет попытку и сохраняет черновик. Панель компактнее, типографика виджета, чуть увеличенные акцентный стоп и интервал mic/send.",
       "technology": "Python / TypeScript; см. пути модулей",
       "code": [
         "apps/web-chat/src/speech/useDictation.ts",
         "apps/web-chat/src/useVoiceRecorder.ts",
-        "apps/web-chat/src/ChatComposer.tsx"
+        "apps/web-chat/src/ChatComposer.tsx",
+        "apps/web-chat/src/speech/DictationStatus.tsx",
+        "apps/web-chat/src/speech/dictation.css",
+        "apps/web-chat/src/widget.css"
       ],
       "evidence": [
         ".skaro/specs/0039-golosovoy-vvod-i-ozvuchivanie-veb-vidzheta.md",
         ".skaro/adr/0039-rechevye-provaydery-diktovka-i-ozvuchivanie.md",
         "apps/web-chat/src/useVoiceRecorder.ts",
-        "design/baseline/widget-speech/OWNER-ACCEPTANCE.md"
+        "design/baseline/widget-speech/OWNER-ACCEPTANCE.md",
+        "apps/web-chat/src/speech/useDictation.ts"
       ],
       "decisions": [
         "0039"
@@ -5936,14 +6015,15 @@
     {
       "id": "code-ui-agent-actions",
       "name": "Действия агента и проверочный чат",
-      "description": "Принятый baseline: явные три режима одной пары с ревизией; preview без Run и явный execute с прежней политикой. Существующее описание уточняет согласованный смысл делегирования native-действий; три режима и layout сохраняются.",
+      "description": "Принятый baseline: явные три режима одной пары с ревизией; preview без Run и явный execute с прежней политикой. Существующее описание уточняет согласованный смысл делегирования native-действий; три режима и layout сохраняются. Редактор в существующей модалке с поиском и предметными категориями; скрытые фильтром изменения сохраняются вместе. Отдельный дизайн отменён владельцем для этого переноса.",
       "parent": "ui-agents",
       "code": [
         "apps/internal-ui/src/features/agents/actions/AgentActionsCard.tsx",
         "apps/internal-ui/src/features/agents/actions/model.ts",
         "apps/internal-ui/src/features/agents/actions/useAgentActions.ts",
         "apps/internal-ui/src/features/agents/test-chat/AgentTestPanel.tsx",
-        "apps/internal-ui/src/features/agents/test-chat/TestActionCard.tsx"
+        "apps/internal-ui/src/features/agents/test-chat/TestActionCard.tsx",
+        "apps/internal-ui/src/features/agents/AgentKnowledgeDialog.tsx"
       ],
       "kind": "code",
       "technology": "React / TypeScript",
@@ -5968,7 +6048,7 @@
       "id": "code-service-native-coverage",
       "kind": "code",
       "name": "Полнота продуктовых API",
-      "description": "Планируемая проверка method/route фактического Django resolver против descriptor либо точной непродуктовой причины. Исходный перечень T-174 — 127 входов выбранных шести URL-групп (125 product, 2 credential exchange); transport/customer ingress дополнительно сверяются без сокрытия самостоятельной бизнес-функции. T-175: 310 точных route/method/handler записей, 277 продуктовых связей к 274 действиям и 33 отдельных протокольных входа. Покрытие сравнивается с реальным resolver, включая наследование методов. Отдельная опись 24 auth-входов отличает credential protocols от глобальных функций HumanUser, оставленных T-176 принятого плана; эти функции не объявляются протоколом.",
+      "description": "Планируемая проверка method/route фактического Django resolver против descriptor либо точной непродуктовой причины. Исходный перечень T-174 — 127 входов выбранных шести URL-групп (125 product, 2 credential exchange); transport/customer ingress дополнительно сверяются без сокрытия самостоятельной бизнес-функции. T-175: 310 точных route/method/handler записей, 277 продуктовых связей к 274 действиям и 33 отдельных протокольных входа. Покрытие сравнивается с реальным resolver, включая наследование методов. Отдельная опись 24 auth-входов отличает credential protocols от глобальных функций HumanUser, оставленных T-176 принятого плана; эти функции не объявляются протоколом. T-176: полный inventory всех публичных app/platform HTTP-маршрутов и socket dispatch без whitelist доменных префиксов; surface+route+method+handler, наследование, дубликаты, stale/unmapped записи. Технические auth/health/transport/protocol входы имеют точную классификацию и evidence; глобальные profile/setup/provisioning операции не исключаются как auth. Django admin — штатная служебная поверхность, не продуктовый API; его граница также указана.",
       "state": "planned",
       "external": false,
       "parent": "component-service-native",
@@ -5985,7 +6065,11 @@
         "apps/backend/chatballs/integrations/action_catalog/connection_inventory.json",
         "apps/backend/chatballs/integrations/action_catalog/scenario_inventory.json",
         "apps/backend/chatballs/integrations/action_catalog/auth_boundary_inventory.json",
-        "apps/backend/chatballs/integrations/action_catalog/test_auth_boundary.py"
+        "apps/backend/chatballs/integrations/action_catalog/test_auth_boundary.py",
+        "apps/backend/chatballs/integrations/action_catalog/instance_inventory.json",
+        "apps/backend/chatballs/integrations/action_catalog/platform_inventory.json",
+        "apps/backend/chatballs/integrations/action_catalog/profile_inventory.json",
+        "apps/backend/chatballs/integrations/action_catalog/infrastructure_inventory.json"
       ],
       "evidence": [
         ".skaro/docs/service-native-actions-runtime.md",
@@ -6009,7 +6093,8 @@
         "apps/backend/chatballs/integrations/action_catalog/connection_inventory.json",
         "apps/backend/chatballs/integrations/action_catalog/scenario_inventory.json",
         "apps/backend/chatballs/integrations/action_catalog/auth_boundary_inventory.json",
-        "apps/backend/chatballs/integrations/action_catalog/test_auth_boundary.py"
+        "apps/backend/chatballs/integrations/action_catalog/test_auth_boundary.py",
+        ".skaro/docs/service-native-installation-runtime.md"
       ],
       "decisions": [
         "0038"
@@ -6019,7 +6104,7 @@
       "id": "code-service-native-runtime",
       "kind": "code",
       "name": "Исполнение внутренних действий",
-      "description": "Планируемый native путь общего runner: нынешний principal/grants/domain scope, immutable контракт/аргументы, same effect_key, файлы/выходы/ошибки. DB-only изменение и receipt фиксируются атомарно; domain I/O сохраняет штатные проверки/границы и конкретный send/recovery, неизвестность без слепого повторения. Нет отдельного launch, fake Integration или APIView dispatch. Для ИИ используется явно сохранённый делегат AgentActionGrant, актуальный agent binding, scope всех предков и исходные доменные права. Серверный audit context различает ИИ-инициатора и делегата; ask-одобритель не подменяет исполнителя. T-175 сохраняет подтверждённые доменные отказы как failed receipt без полезных данных; язык берётся из server TenantContext. I/O остаётся вне транзакции, неоднозначный эффект не повторяется автоматически.",
+      "description": "Планируемый native путь общего runner: нынешний principal/grants/domain scope, immutable контракт/аргументы, same effect_key, файлы/выходы/ошибки. DB-only изменение и receipt фиксируются атомарно; domain I/O сохраняет штатные проверки/границы и конкретный send/recovery, неизвестность без слепого повторения. Нет отдельного launch, fake Integration или APIView dispatch. Для ИИ используется явно сохранённый делегат AgentActionGrant, актуальный agent binding, scope всех предков и исходные доменные права. Серверный audit context различает ИИ-инициатора и делегата; ask-одобритель не подменяет исполнителя. T-175 сохраняет подтверждённые доменные отказы как failed receipt без полезных данных; язык берётся из server TenantContext. I/O остаётся вне транзакции, неоднозначный эффект не повторяется автоматически. T-176: tenant runtime fail-closed отклоняет несовместимую authority до разрешения grant/снимка/эффекта; глобальный статус HumanUser не повышает tenant principal.",
       "state": "planned",
       "external": false,
       "parent": "component-service-runner",
@@ -6043,7 +6128,8 @@
         "docs/verification/T-175/README.md",
         "apps/backend/chatballs/integrations/execution/native_results.py",
         "apps/backend/chatballs/integrations/execution/native_locale.py",
-        "apps/backend/chatballs/integrations/execution/native_io.py"
+        "apps/backend/chatballs/integrations/execution/native_io.py",
+        ".skaro/docs/service-native-installation-runtime.md"
       ],
       "decisions": [
         "0038"
@@ -6075,6 +6161,37 @@
       ],
       "decisions": [
         "0038"
+      ]
+    },
+    {
+      "id": "code-service-native-authority",
+      "kind": "code",
+      "name": "Границы полномочий глобальных действий",
+      "description": "Планируемая серверная граница общего каталога: tenant, personal, instance, platform и bootstrap различают существующие виды инициатора, не вводят роли. Personal использует текущего HumanUser и его реальную сессию; instance использует is_instance_admin/can_view_instance_settings; platform — действующий PlatformToken с capability; bootstrap — только открытый штатный мастер. Context не создаётся из параметров сценария. Tenant editor/grants/snapshot/runner отвергают глобальные действия, даже когда делегат лично является администратором установки. API вызывает тот же разделённый application service; нет HTTP к себе, fake Request или APIView dispatch.",
+      "state": "planned",
+      "external": false,
+      "parent": "component-service-native",
+      "technology": "Python / Django; существующие principal и permissions",
+      "code": [
+        "apps/backend/chatballs/integrations/action_catalog/authority.py",
+        "apps/backend/chatballs/integrations/action_catalog/contracts.py",
+        "apps/backend/chatballs/integrations/action_catalog/registry.py"
+      ],
+      "evidence": [
+        ".skaro/docs/service-native-installation-runtime.md",
+        ".skaro/specs/0037-rasshiryaemye-integratsii-servisov-i-sts.md",
+        ".skaro/adr/0038-servisnye-adaptery-i-ustoychivye-stsenarii.md",
+        "apps/backend/chatballs/identity/instance_access.py",
+        "apps/backend/chatballs/platform/permissions.py",
+        "apps/backend/chatballs/identity/setup.py",
+        "apps/backend/chatballs/identity/auth/profile.py"
+      ],
+      "decisions": [
+        "0038",
+        "0024",
+        "0026",
+        "0027",
+        "0013"
       ]
     }
   ],
@@ -8203,7 +8320,26 @@
         "0030",
         "0031",
         "0037"
-      ]
+      ],
+      "planned": {
+        "source": "component-ratings",
+        "target": "component-webchat",
+        "description": "Выбирает допустимую WebSession для реализованной WEB-доставки. WEB-запрос не ограничен возрастом; прежние проверки отмены, существования и изоляции сохраняются.",
+        "evidence": [
+          "apps/backend/chatballs/ratings",
+          "apps/backend/chatballs/webchat",
+          ".skaro/specs/0032-otsenka-zavershennogo-dialoga-klientom.md"
+        ],
+        "decisions": [
+          "0034",
+          "0018",
+          "0023",
+          "0030",
+          "0031",
+          "0037"
+        ],
+        "technology": "Вызов Python / ORM внутри монолита"
+      }
     },
     {
       "id": "rel-quality-privacy",
@@ -9541,7 +9677,21 @@
       ],
       "decisions": [
         "0034"
-      ]
+      ],
+      "planned": {
+        "source": "widget-rating",
+        "target": "component-ratings",
+        "description": "Читает разрешённый вопрос и отправляет оценку по ограниченному credential. WEB-запрос не ограничен возрастом; прежние проверки отмены, существования и изоляции сохраняются.",
+        "evidence": [
+          "apps/web-chat/src/ratings",
+          "apps/backend/chatballs/ratings",
+          ".skaro/specs/0032-otsenka-zavershennogo-dialoga-klientom.md"
+        ],
+        "decisions": [
+          "0034"
+        ],
+        "technology": "HTTPS JSON"
+      }
     },
     {
       "id": "rel-widget-snapshot",
@@ -11977,7 +12127,7 @@
       "id": "rel-service-native-identity",
       "source": "component-service-native",
       "target": "component-identity",
-      "description": "Штатные публичные продуктовые действия домена; прежние проверки и область полномочий, включая запрет повышения tenant до установки/платформы T-175: разделённые обёртки вызывают прежние application services с текущими tenant/role/content/mode guards; write/delete не сведены к read, внешние эффекты имеют явную retry-политику.",
+      "description": "Штатные публичные продуктовые действия домена; прежние проверки и область полномочий, включая запрет повышения tenant до установки/платформы T-175: разделённые обёртки вызывают прежние application services с текущими tenant/role/content/mode guards; write/delete не сведены к read, внешние эффекты имеют явную retry-политику. T-176: собственная глобальная authority сохраняется; tenant-сценарий не получает административные или личные полномочия.",
       "technology": "Python / вызов сервиса",
       "state": "planned",
       "evidence": [
@@ -11987,7 +12137,8 @@
         ".skaro/docs/service-native-organization-runtime.md",
         "apps/backend/chatballs/integrations/action_catalog/employees.py",
         "apps/backend/chatballs/integrations/action_catalog/groups.py",
-        "apps/backend/chatballs/integrations/action_catalog/settings.py"
+        "apps/backend/chatballs/integrations/action_catalog/settings.py",
+        ".skaro/docs/service-native-installation-runtime.md"
       ],
       "decisions": [
         "0038"
@@ -12091,7 +12242,7 @@
       "id": "rel-service-native-storage",
       "source": "component-service-native",
       "target": "component-storage",
-      "description": "Штатные публичные продуктовые действия домена; прежние проверки и область полномочий, включая запрет повышения tenant до установки/платформы T-175: разделённые обёртки вызывают прежние application services с текущими tenant/role/content/mode guards; write/delete не сведены к read, внешние эффекты имеют явную retry-политику.",
+      "description": "Штатные публичные продуктовые действия домена; прежние проверки и область полномочий, включая запрет повышения tenant до установки/платформы T-175: разделённые обёртки вызывают прежние application services с текущими tenant/role/content/mode guards; write/delete не сведены к read, внешние эффекты имеют явную retry-политику. T-176: собственная глобальная authority сохраняется; tenant-сценарий не получает административные или личные полномочия.",
       "technology": "Python / вызов сервиса",
       "state": "planned",
       "evidence": [
@@ -12100,7 +12251,8 @@
         ".skaro/docs/service-integrations-c4.md",
         ".skaro/docs/service-native-organization-runtime.md",
         "apps/backend/chatballs/integrations/action_catalog/knowledge_files.py",
-        "apps/backend/chatballs/integrations/action_catalog/portal_files.py"
+        "apps/backend/chatballs/integrations/action_catalog/portal_files.py",
+        ".skaro/docs/service-native-installation-runtime.md"
       ],
       "decisions": [
         "0038"
@@ -12241,13 +12393,14 @@
       "id": "rel-service-native-platform",
       "source": "component-service-native",
       "target": "component-platform",
-      "description": "Штатные публичные продуктовые действия домена; прежние проверки и область полномочий, включая запрет повышения tenant до установки/платформы",
+      "description": "Штатные публичные продуктовые действия домена; прежние проверки и область полномочий, включая запрет повышения tenant до установки/платформы T-176: собственная глобальная authority сохраняется; tenant-сценарий не получает административные или личные полномочия.",
       "technology": "Python / вызов сервиса",
       "state": "planned",
       "evidence": [
         ".skaro/specs/0037-rasshiryaemye-integratsii-servisov-i-sts.md",
         ".skaro/adr/0038-servisnye-adaptery-i-ustoychivye-stsenarii.md",
-        ".skaro/docs/service-integrations-c4.md"
+        ".skaro/docs/service-integrations-c4.md",
+        ".skaro/docs/service-native-installation-runtime.md"
       ],
       "decisions": [
         "0038"
@@ -12345,13 +12498,14 @@
       "id": "rel-service-native-updates",
       "source": "component-service-native",
       "target": "component-updates",
-      "description": "Штатные публичные продуктовые действия домена; прежние проверки и область полномочий, включая запрет повышения tenant до установки/платформы",
+      "description": "Штатные публичные продуктовые действия домена; прежние проверки и область полномочий, включая запрет повышения tenant до установки/платформы T-176: собственная глобальная authority сохраняется; tenant-сценарий не получает административные или личные полномочия.",
       "technology": "Python / вызов сервиса",
       "state": "planned",
       "evidence": [
         ".skaro/specs/0037-rasshiryaemye-integratsii-servisov-i-sts.md",
         ".skaro/adr/0038-servisnye-adaptery-i-ustoychivye-stsenarii.md",
-        ".skaro/docs/service-integrations-c4.md"
+        ".skaro/docs/service-integrations-c4.md",
+        ".skaro/docs/service-native-installation-runtime.md"
       ],
       "decisions": [
         "0038"
@@ -14166,6 +14320,204 @@
       ],
       "decisions": [
         "0038"
+      ]
+    },
+    {
+      "id": "rel-service-code-native-authority",
+      "source": "code-service-native-registry",
+      "target": "code-service-native-authority",
+      "description": "Descriptor объявляет собственную область инициатора; tenant-выборка не выдаёт глобальные действия.",
+      "state": "planned",
+      "technology": "Python / общий доменный сервис",
+      "evidence": [
+        ".skaro/docs/service-native-installation-runtime.md",
+        ".skaro/specs/0037-rasshiryaemye-integratsii-servisov-i-sts.md",
+        ".skaro/adr/0038-servisnye-adaptery-i-ustoychivye-stsenarii.md",
+        "apps/backend/chatballs_backend/urls_app.py",
+        "apps/backend/chatballs_backend/urls_platform.py",
+        "apps/backend/chatballs/identity/instance_access.py",
+        "apps/backend/chatballs/platform/permissions.py"
+      ],
+      "decisions": [
+        "0038",
+        "0024",
+        "0026"
+      ]
+    },
+    {
+      "id": "rel-service-code-authority-domain",
+      "source": "code-service-native-authority",
+      "target": "code-service-native-domain",
+      "description": "После штатной аутентификации и актуальных проверок вызывает общий доменный application service с серверным контекстом.",
+      "state": "planned",
+      "technology": "Python / общий доменный сервис",
+      "evidence": [
+        ".skaro/docs/service-native-installation-runtime.md",
+        ".skaro/specs/0037-rasshiryaemye-integratsii-servisov-i-sts.md",
+        ".skaro/adr/0038-servisnye-adaptery-i-ustoychivye-stsenarii.md",
+        "apps/backend/chatballs_backend/urls_app.py",
+        "apps/backend/chatballs_backend/urls_platform.py",
+        "apps/backend/chatballs/identity/instance_access.py",
+        "apps/backend/chatballs/platform/permissions.py"
+      ],
+      "decisions": [
+        "0038",
+        "0024",
+        "0026"
+      ]
+    },
+    {
+      "id": "rel-service-code-authority-identity",
+      "source": "code-service-native-authority",
+      "target": "code-identity",
+      "description": "Сохраняет личность HumanUser, реальную сессию, глобальный признак и проверку видимости настроек; без подстановки владельца.",
+      "state": "planned",
+      "technology": "Python / общий доменный сервис",
+      "evidence": [
+        ".skaro/docs/service-native-installation-runtime.md",
+        ".skaro/specs/0037-rasshiryaemye-integratsii-servisov-i-sts.md",
+        ".skaro/adr/0038-servisnye-adaptery-i-ustoychivye-stsenarii.md",
+        "apps/backend/chatballs_backend/urls_app.py",
+        "apps/backend/chatballs_backend/urls_platform.py",
+        "apps/backend/chatballs/identity/instance_access.py",
+        "apps/backend/chatballs/platform/permissions.py"
+      ],
+      "decisions": [
+        "0038",
+        "0024",
+        "0026"
+      ]
+    },
+    {
+      "id": "rel-service-code-authority-platform",
+      "source": "code-service-native-authority",
+      "target": "code-platform",
+      "description": "Проверяет текущие operator/token/capability, выполняет provisioning с прежним Idempotency-Key в backend-platform.",
+      "state": "planned",
+      "technology": "Python / общий доменный сервис",
+      "evidence": [
+        ".skaro/docs/service-native-installation-runtime.md",
+        ".skaro/specs/0037-rasshiryaemye-integratsii-servisov-i-sts.md",
+        ".skaro/adr/0038-servisnye-adaptery-i-ustoychivye-stsenarii.md",
+        "apps/backend/chatballs_backend/urls_app.py",
+        "apps/backend/chatballs_backend/urls_platform.py",
+        "apps/backend/chatballs/identity/instance_access.py",
+        "apps/backend/chatballs/platform/permissions.py"
+      ],
+      "decisions": [
+        "0038",
+        "0024",
+        "0026"
+      ]
+    },
+    {
+      "id": "rel-service-code-authority-storage",
+      "source": "code-service-native-authority",
+      "target": "code-storage",
+      "description": "Сохраняет права установки, проверку S3, аудит и штатную фоновую миграцию; I/O не объявляется безопасно повторяемым.",
+      "state": "planned",
+      "technology": "Python / общий доменный сервис",
+      "evidence": [
+        ".skaro/docs/service-native-installation-runtime.md",
+        ".skaro/specs/0037-rasshiryaemye-integratsii-servisov-i-sts.md",
+        ".skaro/adr/0038-servisnye-adaptery-i-ustoychivye-stsenarii.md",
+        "apps/backend/chatballs_backend/urls_app.py",
+        "apps/backend/chatballs_backend/urls_platform.py",
+        "apps/backend/chatballs/identity/instance_access.py",
+        "apps/backend/chatballs/platform/permissions.py"
+      ],
+      "decisions": [
+        "0038",
+        "0024",
+        "0026"
+      ]
+    },
+    {
+      "id": "rel-service-code-authority-updates",
+      "source": "code-service-native-authority",
+      "target": "code-update",
+      "description": "Передаёт только явный запрос уполномоченного администратора прежнему update service; сохраняет heartbeat/блокировки/обмен с updater.",
+      "state": "planned",
+      "technology": "Python / общий доменный сервис",
+      "evidence": [
+        ".skaro/docs/service-native-installation-runtime.md",
+        ".skaro/specs/0037-rasshiryaemye-integratsii-servisov-i-sts.md",
+        ".skaro/adr/0038-servisnye-adaptery-i-ustoychivye-stsenarii.md",
+        "apps/backend/chatballs_backend/urls_app.py",
+        "apps/backend/chatballs_backend/urls_platform.py",
+        "apps/backend/chatballs/identity/instance_access.py",
+        "apps/backend/chatballs/platform/permissions.py"
+      ],
+      "decisions": [
+        "0038",
+        "0024",
+        "0026"
+      ]
+    },
+    {
+      "id": "rel-service-code-runtime-authority",
+      "source": "code-service-native-runtime",
+      "target": "code-service-native-authority",
+      "description": "Tenant runner отклоняет personal/instance/platform/bootstrap до эффекта; ни grant, ни делегат не повышают authority.",
+      "state": "planned",
+      "technology": "Python / общий доменный сервис",
+      "evidence": [
+        ".skaro/docs/service-native-installation-runtime.md",
+        ".skaro/specs/0037-rasshiryaemye-integratsii-servisov-i-sts.md",
+        ".skaro/adr/0038-servisnye-adaptery-i-ustoychivye-stsenarii.md",
+        "apps/backend/chatballs_backend/urls_app.py",
+        "apps/backend/chatballs_backend/urls_platform.py",
+        "apps/backend/chatballs/identity/instance_access.py",
+        "apps/backend/chatballs/platform/permissions.py"
+      ],
+      "decisions": [
+        "0038",
+        "0024",
+        "0026"
+      ]
+    },
+    {
+      "id": "rel-service-code-coverage-authority",
+      "source": "code-service-native-coverage",
+      "target": "code-service-native-authority",
+      "description": "Сверяет каждую продуктовую запись с executable descriptor и исходной областью полномочий.",
+      "state": "planned",
+      "technology": "Python / общий доменный сервис",
+      "evidence": [
+        ".skaro/docs/service-native-installation-runtime.md",
+        ".skaro/specs/0037-rasshiryaemye-integratsii-servisov-i-sts.md",
+        ".skaro/adr/0038-servisnye-adaptery-i-ustoychivye-stsenarii.md",
+        "apps/backend/chatballs_backend/urls_app.py",
+        "apps/backend/chatballs_backend/urls_platform.py",
+        "apps/backend/chatballs/identity/instance_access.py",
+        "apps/backend/chatballs/platform/permissions.py"
+      ],
+      "decisions": [
+        "0038",
+        "0024",
+        "0026"
+      ]
+    },
+    {
+      "id": "rel-service-code-entry-authority",
+      "source": "code-entrypoints",
+      "target": "code-service-native-authority",
+      "description": "Штатные app/platform входы сохраняют authentication/CSRF/throttle/подтверждения и передают проверенный сервером principal.",
+      "state": "planned",
+      "technology": "Python / общий доменный сервис",
+      "evidence": [
+        ".skaro/docs/service-native-installation-runtime.md",
+        ".skaro/specs/0037-rasshiryaemye-integratsii-servisov-i-sts.md",
+        ".skaro/adr/0038-servisnye-adaptery-i-ustoychivye-stsenarii.md",
+        "apps/backend/chatballs_backend/urls_app.py",
+        "apps/backend/chatballs_backend/urls_platform.py",
+        "apps/backend/chatballs/identity/instance_access.py",
+        "apps/backend/chatballs/platform/permissions.py"
+      ],
+      "decisions": [
+        "0038",
+        "0024",
+        "0026"
       ]
     }
   ],
@@ -16578,7 +16930,9 @@
       "relationships": [
         "rel-service-system-business",
         "rel-service-staff-system",
-        "rel-service-external-api"
+        "rel-service-external-api",
+        "rel-admin-system",
+        "rel-platform-system"
       ],
       "steps": [],
       "instances": []
@@ -16597,7 +16951,11 @@
         "container-postgres",
         "container-redis",
         "container-media",
-        "container-secret-store"
+        "container-secret-store",
+        "person-instance-admin",
+        "person-platform-operator",
+        "container-updater",
+        "container-update-exchange"
       ],
       "relationships": [
         "rel-service-ui-backend",
@@ -16606,7 +16964,12 @@
         "rel-browser-gateway",
         "rel-backend-redis",
         "rel-backend-media",
-        "rel-backend-secrets"
+        "rel-backend-secrets",
+        "rel-admin-workbench",
+        "rel-platform-api",
+        "rel-gateway-platform",
+        "rel-backend-update-exchange",
+        "rel-updater-exchange"
       ],
       "steps": [],
       "instances": []
@@ -16871,11 +17234,15 @@
       "elements": [
         "code-service-native-registry",
         "code-service-native-domain",
-        "code-service-native-coverage"
+        "code-service-native-coverage",
+        "code-service-native-authority"
       ],
       "relationships": [
         "rel-service-code-native-inventory",
-        "rel-service-code-native-coverage"
+        "rel-service-code-native-coverage",
+        "rel-service-code-native-authority",
+        "rel-service-code-authority-domain",
+        "rel-service-code-coverage-authority"
       ],
       "steps": [],
       "instances": []
@@ -19911,6 +20278,300 @@
         {
           "relationship": "rel-service-code-native-recover",
           "description": "При продолжении читается receipt; после неизвестного send без сверки нет слепого повтора"
+        }
+      ],
+      "instances": []
+    },
+    {
+      "id": "view-service-dynamic-authority-instance",
+      "kind": "dynamic",
+      "title": "Действия установки и проверка прав",
+      "scope": "system-chatballs",
+      "state": "planned",
+      "elements": [
+        "code-entrypoints",
+        "code-service-native-authority",
+        "code-service-native-registry",
+        "code-identity",
+        "code-service-native-domain"
+      ],
+      "relationships": [
+        "rel-service-code-entry-authority",
+        "rel-service-code-native-authority",
+        "rel-service-code-authority-identity",
+        "rel-service-code-authority-domain"
+      ],
+      "steps": [
+        {
+          "relationship": "rel-service-code-entry-authority",
+          "description": "Штатные app/platform входы сохраняют authentication/CSRF/throttle/подтверждения и передают проверенный сервером principal."
+        },
+        {
+          "relationship": "rel-service-code-native-authority",
+          "description": "Descriptor объявляет собственную область инициатора; tenant-выборка не выдаёт глобальные действия."
+        },
+        {
+          "relationship": "rel-service-code-authority-identity",
+          "description": "Сохраняет личность HumanUser, реальную сессию, глобальный признак и проверку видимости настроек; без подстановки владельца."
+        },
+        {
+          "relationship": "rel-service-code-authority-domain",
+          "description": "После штатной аутентификации и актуальных проверок вызывает общий доменный application service с серверным контекстом."
+        }
+      ],
+      "instances": []
+    },
+    {
+      "id": "view-service-dynamic-authority-platform",
+      "kind": "dynamic",
+      "title": "Provisioning в собственной области платформы",
+      "scope": "system-chatballs",
+      "state": "planned",
+      "elements": [
+        "code-entrypoints",
+        "code-service-native-authority",
+        "code-service-native-registry",
+        "code-platform",
+        "code-service-native-domain"
+      ],
+      "relationships": [
+        "rel-service-code-entry-authority",
+        "rel-service-code-native-authority",
+        "rel-service-code-authority-platform",
+        "rel-service-code-authority-domain"
+      ],
+      "steps": [
+        {
+          "relationship": "rel-service-code-entry-authority",
+          "description": "Штатные app/platform входы сохраняют authentication/CSRF/throttle/подтверждения и передают проверенный сервером principal."
+        },
+        {
+          "relationship": "rel-service-code-native-authority",
+          "description": "Descriptor объявляет собственную область инициатора; tenant-выборка не выдаёт глобальные действия."
+        },
+        {
+          "relationship": "rel-service-code-authority-platform",
+          "description": "Проверяет текущие operator/token/capability, выполняет provisioning с прежним Idempotency-Key в backend-platform."
+        },
+        {
+          "relationship": "rel-service-code-authority-domain",
+          "description": "После штатной аутентификации и актуальных проверок вызывает общий доменный application service с серверным контекстом."
+        }
+      ],
+      "instances": []
+    },
+    {
+      "id": "view-service-dynamic-authority-storage",
+      "kind": "dynamic",
+      "title": "Хранение и штатная процедура переноса",
+      "scope": "system-chatballs",
+      "state": "planned",
+      "elements": [
+        "code-entrypoints",
+        "code-service-native-authority",
+        "code-service-native-registry",
+        "code-storage",
+        "code-service-native-domain"
+      ],
+      "relationships": [
+        "rel-service-code-entry-authority",
+        "rel-service-code-native-authority",
+        "rel-service-code-authority-storage",
+        "rel-service-code-authority-domain"
+      ],
+      "steps": [
+        {
+          "relationship": "rel-service-code-entry-authority",
+          "description": "Штатные app/platform входы сохраняют authentication/CSRF/throttle/подтверждения и передают проверенный сервером principal."
+        },
+        {
+          "relationship": "rel-service-code-native-authority",
+          "description": "Descriptor объявляет собственную область инициатора; tenant-выборка не выдаёт глобальные действия."
+        },
+        {
+          "relationship": "rel-service-code-authority-storage",
+          "description": "Сохраняет права установки, проверку S3, аудит и штатную фоновую миграцию; I/O не объявляется безопасно повторяемым."
+        },
+        {
+          "relationship": "rel-service-code-authority-domain",
+          "description": "После штатной аутентификации и актуальных проверок вызывает общий доменный application service с серверным контекстом."
+        }
+      ],
+      "instances": []
+    },
+    {
+      "id": "view-service-dynamic-authority-updates",
+      "kind": "dynamic",
+      "title": "Явная команда обновления и штатный updater",
+      "scope": "system-chatballs",
+      "state": "planned",
+      "elements": [
+        "code-entrypoints",
+        "code-service-native-authority",
+        "code-service-native-registry",
+        "code-update",
+        "code-service-native-domain"
+      ],
+      "relationships": [
+        "rel-service-code-entry-authority",
+        "rel-service-code-native-authority",
+        "rel-service-code-authority-updates",
+        "rel-service-code-authority-domain"
+      ],
+      "steps": [
+        {
+          "relationship": "rel-service-code-entry-authority",
+          "description": "Штатные app/platform входы сохраняют authentication/CSRF/throttle/подтверждения и передают проверенный сервером principal."
+        },
+        {
+          "relationship": "rel-service-code-native-authority",
+          "description": "Descriptor объявляет собственную область инициатора; tenant-выборка не выдаёт глобальные действия."
+        },
+        {
+          "relationship": "rel-service-code-authority-updates",
+          "description": "Передаёт только явный запрос уполномоченного администратора прежнему update service; сохраняет heartbeat/блокировки/обмен с updater."
+        },
+        {
+          "relationship": "rel-service-code-authority-domain",
+          "description": "После штатной аутентификации и актуальных проверок вызывает общий доменный application service с серверным контекстом."
+        }
+      ],
+      "instances": []
+    },
+    {
+      "id": "view-service-dynamic-authority-denial",
+      "kind": "dynamic",
+      "title": "Отказ повышения полномочий tenant-сценария",
+      "scope": "system-chatballs",
+      "state": "planned",
+      "elements": [
+        "code-service-native-runtime",
+        "code-service-native-registry",
+        "code-service-native-authority"
+      ],
+      "relationships": [
+        "rel-service-code-native-resolve",
+        "rel-service-code-runtime-authority"
+      ],
+      "steps": [
+        {
+          "relationship": "rel-service-code-native-resolve",
+          "description": "Runner разрешает точный executable descriptor из замороженного шага."
+        },
+        {
+          "relationship": "rel-service-code-runtime-authority",
+          "description": "Несовместимая personal/instance/platform/bootstrap authority отклоняется до вызова доменного сервиса, независимо от личных полномочий делегата."
+        }
+      ],
+      "instances": []
+    },
+    {
+      "kind": "dynamic",
+      "scope": "system-chatballs",
+      "state": "planned",
+      "instances": [],
+      "id": "view-dynamic-rating-no-expiry",
+      "title": "WEB-оценка спустя любое время",
+      "elements": [
+        "widget-rating",
+        "component-ratings",
+        "component-webchat",
+        "component-events"
+      ],
+      "relationships": [
+        "rel-events-ratings",
+        "rel-ratings-webchat",
+        "rel-widget-rating"
+      ],
+      "steps": [
+        {
+          "relationship": "rel-events-ratings",
+          "description": "1. Штатный фон доставляет один запрос WEB-оценки без TTL."
+        },
+        {
+          "relationship": "rel-ratings-webchat",
+          "description": "2. Poll отдаёт неотвеченный запрос допустимой сессии независимо от возраста."
+        },
+        {
+          "relationship": "rel-widget-rating",
+          "description": "3. Клиент читает форму по прежнему credential спустя более 7 дней; directory/API не отклоняют запрос по времени."
+        },
+        {
+          "relationship": "rel-widget-rating",
+          "description": "4. Атомарно сохраняется один результат; повтор возвращает его, изменение конфликтует. Отмена/удаление остаются недоступными."
+        }
+      ]
+    },
+    {
+      "kind": "dynamic",
+      "scope": "system-chatballs",
+      "state": "planned",
+      "instances": [],
+      "id": "view-dynamic-agent-permissions-modal",
+      "title": "Редактирование прав в модалке",
+      "elements": [
+        "code-ui-agent-actions",
+        "code-service-execution-ai-policy"
+      ],
+      "relationships": [
+        "rel-service-code-ai-ui-api"
+      ],
+      "steps": [
+        {
+          "relationship": "rel-service-code-ai-ui-api",
+          "description": "1. Загружается штатный каталог с режимами/ревизиями; открывается существующий Modal."
+        },
+        {
+          "relationship": "rel-service-code-ai-ui-api",
+          "description": "2. Поиск и категории локально отбирают строки без сброса скрытых правок и без записи прав на сервер."
+        },
+        {
+          "relationship": "rel-service-code-ai-ui-api",
+          "description": "3. Только явное сохранение отправляет все изменённые режимы и ревизии. Отмена/закрытие не пишут права."
+        }
+      ]
+    },
+    {
+      "id": "view-dynamic-dictation-close",
+      "kind": "dynamic",
+      "scope": "system-chatballs",
+      "title": "Закрытие диктовки без потери черновика",
+      "state": "planned",
+      "elements": [
+        "code-widget-dictation",
+        "code-web-dictation",
+        "code-web-consent",
+        "code-speech-formats",
+        "code-speechkit-stt",
+        "external-speechkit"
+      ],
+      "relationships": [
+        "rel-dictation-request",
+        "rel-dictation-consent",
+        "rel-dictation-format",
+        "rel-stt-external",
+        "rel-dictation-result"
+      ],
+      "steps": [
+        {
+          "relationship": "rel-dictation-request",
+          "description": "1. Начата попытка STT; пользовательский черновик сохранён."
+        },
+        {
+          "relationship": "rel-dictation-consent",
+          "description": "2. Отказ consent/режима обрывает запрос до провайдера."
+        },
+        {
+          "relationship": "rel-dictation-format",
+          "description": "3. При пройденном consent ошибка лимита/формата также обрывает запрос до провайдера."
+        },
+        {
+          "relationship": "rel-stt-external",
+          "description": "4. Если запрос допустим, возможны ограниченный таймаут/ошибка/пустая речь провайдера."
+        },
+        {
+          "relationship": "rel-dictation-result",
+          "description": "5. Крестик полностью закрывает панель, останавливает capture/отменяет запрос и инвалидирует generation. Поздний ответ не применяется; актуальный черновик остаётся. Статус отмены не удерживает панель."
         }
       ],
       "instances": []
@@ -30682,9 +31343,9 @@
     {
       "id": "0032",
       "path": "specs/0032-otsenka-zavershennogo-dialoga-klientom.md",
-      "bodyHash": "f6e4f81bfd172a7abc0db1bad0e1987b4f6dc2486f2d87437afd7ba986f7eea7",
-      "impact": "uses",
-      "description": "Архитектурная трассировка принятой спецификации «Оценка завершённого диалога клиентом». Поведение не изменяется; наличие связей не заменяет тесты и приёмку реализации.",
+      "bodyHash": "8e1946491645da530470ddccbf497453ff6ed81df5dec348d2aaad8824f4a1d2",
+      "impact": "changes",
+      "description": "Архитектурная трассировка принятой спецификации «Оценка завершённого диалога клиентом». Поведение не изменяется; наличие связей не заменяет тесты и приёмку реализации. Исправления релиза 05.11.2026 остаются planned до проверенной публикации.",
       "elements": [
         "component-ratings",
         "component-metrics",
@@ -30708,7 +31369,11 @@
         "view-dynamic-closure",
         "view-code-component-ratings",
         "view-code-component-availability",
-        "view-interaction-ui-reports-ratings"
+        "view-interaction-ui-reports-ratings",
+        "view-dynamic-rating-no-expiry",
+        "view-context",
+        "view-containers",
+        "view-deployment"
       ],
       "requirements": [
         {
@@ -30813,7 +31478,11 @@
             "view-backend-support",
             "view-widget",
             "view-dynamic-closure",
-            "view-code-component-ratings"
+            "view-code-component-ratings",
+            "view-dynamic-rating-no-expiry",
+            "view-context",
+            "view-containers",
+            "view-deployment"
           ]
         },
         {
@@ -30834,7 +31503,11 @@
             "view-backend-support",
             "view-widget",
             "view-dynamic-closure",
-            "view-code-component-ratings"
+            "view-code-component-ratings",
+            "view-dynamic-rating-no-expiry",
+            "view-context",
+            "view-containers",
+            "view-deployment"
           ]
         },
         {
@@ -30914,7 +31587,11 @@
             "view-widget",
             "view-dynamic-closure",
             "view-code-component-ratings",
-            "view-interaction-ui-reports-ratings"
+            "view-interaction-ui-reports-ratings",
+            "view-dynamic-rating-no-expiry",
+            "view-context",
+            "view-containers",
+            "view-deployment"
           ]
         }
       ]
@@ -32764,9 +33441,9 @@
     {
       "id": "0037",
       "path": "specs/0037-rasshiryaemye-integratsii-servisov-i-sts.md",
-      "bodyHash": "a45c500286226126d0786f01619fd5d7ef237d960f195df11544baef8622b3ba",
+      "bodyHash": "b4bf8378ba0823fda4d29bc469403b67f6cd7c3c876a2d112690f10083bfd0cc",
       "impact": "changes",
-      "description": "Полный планируемый механизм сервисных интеграций: контракт адаптеров и готовые сценарии, собственные сценарии без обязательного кода, все способы запуска/публичные действия Chatballs, восстановление, безопасность и личная приёмка baseline. Реализация ещё не опубликована. Дополнение 03.11.2026: целевое поведение SPEC-0039/0040 остаётся planned.",
+      "description": "Полный планируемый механизм сервисных интеграций: контракт адаптеров и готовые сценарии, собственные сценарии без обязательного кода, все способы запуска/публичные действия Chatballs, восстановление, безопасность и личная приёмка baseline. Реализация ещё не опубликована. Дополнение 03.11.2026: целевое поведение SPEC-0039/0040 остаётся planned. Исправления релиза 05.11.2026 остаются planned до проверенной публикации.",
       "elements": [
         "person-instance-admin",
         "person-platform-operator",
@@ -32897,7 +33574,8 @@
         "code-ui-agent-actions",
         "code-service-native-coverage",
         "code-service-native-runtime",
-        "code-service-native-receipts"
+        "code-service-native-receipts",
+        "code-service-native-authority"
       ],
       "relationships": [
         "rel-service-system-business",
@@ -33063,7 +33741,16 @@
         "rel-service-code-native-journal",
         "rel-service-code-native-agent-policy",
         "rel-service-code-native-connections",
-        "rel-service-code-native-links"
+        "rel-service-code-native-links",
+        "rel-service-code-native-authority",
+        "rel-service-code-authority-domain",
+        "rel-service-code-authority-identity",
+        "rel-service-code-authority-platform",
+        "rel-service-code-authority-storage",
+        "rel-service-code-authority-updates",
+        "rel-service-code-runtime-authority",
+        "rel-service-code-coverage-authority",
+        "rel-service-code-entry-authority"
       ],
       "views": [
         "view-service-context",
@@ -33111,7 +33798,13 @@
         "view-service-dynamic-native-journal",
         "view-service-dynamic-native-agent-policy",
         "view-service-dynamic-native-connections",
-        "view-service-dynamic-native-links"
+        "view-service-dynamic-native-links",
+        "view-service-dynamic-authority-instance",
+        "view-service-dynamic-authority-platform",
+        "view-service-dynamic-authority-storage",
+        "view-service-dynamic-authority-updates",
+        "view-service-dynamic-authority-denial",
+        "view-dynamic-agent-permissions-modal"
       ],
       "requirements": [
         {
@@ -33266,7 +33959,8 @@
             "code-service-connection-service",
             "code-service-execution-policy",
             "code-service-execution-ai-policy",
-            "code-service-execution-launch"
+            "code-service-execution-launch",
+            "code-service-native-authority"
           ],
           "relationships": [
             "rel-service-ui-backend",
@@ -33372,7 +34066,16 @@
             "rel-service-code-native-journal",
             "rel-service-code-native-agent-policy",
             "rel-service-code-native-connections",
-            "rel-service-code-native-links"
+            "rel-service-code-native-links",
+            "rel-service-code-native-authority",
+            "rel-service-code-authority-domain",
+            "rel-service-code-authority-identity",
+            "rel-service-code-authority-platform",
+            "rel-service-code-authority-storage",
+            "rel-service-code-authority-updates",
+            "rel-service-code-runtime-authority",
+            "rel-service-code-coverage-authority",
+            "rel-service-code-entry-authority"
           ],
           "views": [
             "view-service-containers",
@@ -33397,7 +34100,13 @@
             "view-service-dynamic-native-journal",
             "view-service-dynamic-native-agent-policy",
             "view-service-dynamic-native-connections",
-            "view-service-dynamic-native-links"
+            "view-service-dynamic-native-links",
+            "view-service-context",
+            "view-service-dynamic-authority-instance",
+            "view-service-dynamic-authority-platform",
+            "view-service-dynamic-authority-storage",
+            "view-service-dynamic-authority-updates",
+            "view-service-dynamic-authority-denial"
           ]
         },
         {
@@ -34087,7 +34796,8 @@
             "code-service-connection-service",
             "code-service-execution-policy",
             "code-service-execution-ai-policy",
-            "code-service-execution-launch"
+            "code-service-execution-launch",
+            "code-service-native-authority"
           ],
           "relationships": [
             "rel-service-code-native-inventory",
@@ -34129,7 +34839,16 @@
             "rel-service-code-native-journal",
             "rel-service-code-native-agent-policy",
             "rel-service-code-native-connections",
-            "rel-service-code-native-links"
+            "rel-service-code-native-links",
+            "rel-service-code-native-authority",
+            "rel-service-code-authority-domain",
+            "rel-service-code-authority-identity",
+            "rel-service-code-authority-platform",
+            "rel-service-code-authority-storage",
+            "rel-service-code-authority-updates",
+            "rel-service-code-runtime-authority",
+            "rel-service-code-coverage-authority",
+            "rel-service-code-entry-authority"
           ],
           "views": [
             "view-service-code-native",
@@ -34148,7 +34867,14 @@
             "view-service-dynamic-native-journal",
             "view-service-dynamic-native-agent-policy",
             "view-service-dynamic-native-connections",
-            "view-service-dynamic-native-links"
+            "view-service-dynamic-native-links",
+            "view-service-context",
+            "view-service-containers",
+            "view-service-dynamic-authority-instance",
+            "view-service-dynamic-authority-platform",
+            "view-service-dynamic-authority-storage",
+            "view-service-dynamic-authority-updates",
+            "view-service-dynamic-authority-denial"
           ]
         },
         {
@@ -34261,7 +34987,8 @@
             "code-service-native-registry",
             "code-ui-service-controls",
             "code-service-scenario-synchronization",
-            "code-service-connection-service"
+            "code-service-connection-service",
+            "code-service-native-authority"
           ],
           "relationships": [
             "rel-service-code-launch-policy",
@@ -34326,7 +35053,16 @@
             "rel-service-code-native-journal",
             "rel-service-code-native-agent-policy",
             "rel-service-code-native-connections",
-            "rel-service-code-native-links"
+            "rel-service-code-native-links",
+            "rel-service-code-native-authority",
+            "rel-service-code-authority-domain",
+            "rel-service-code-authority-identity",
+            "rel-service-code-authority-platform",
+            "rel-service-code-authority-storage",
+            "rel-service-code-authority-updates",
+            "rel-service-code-runtime-authority",
+            "rel-service-code-coverage-authority",
+            "rel-service-code-entry-authority"
           ],
           "views": [
             "view-service-code-policy",
@@ -34354,7 +35090,14 @@
             "view-service-dynamic-native-journal",
             "view-service-dynamic-native-agent-policy",
             "view-service-dynamic-native-connections",
-            "view-service-dynamic-native-links"
+            "view-service-dynamic-native-links",
+            "view-service-context",
+            "view-service-containers",
+            "view-service-dynamic-authority-instance",
+            "view-service-dynamic-authority-platform",
+            "view-service-dynamic-authority-storage",
+            "view-service-dynamic-authority-updates",
+            "view-service-dynamic-authority-denial"
           ]
         },
         {
@@ -34440,7 +35183,8 @@
             "view-service-code-ai",
             "view-service-code-native",
             "view-service-dynamic-native-actions",
-            "view-service-dynamic-native-agent-policy"
+            "view-service-dynamic-native-agent-policy",
+            "view-dynamic-agent-permissions-modal"
           ]
         },
         {
@@ -34623,7 +35367,10 @@
             "code-service-event-schedule",
             "code-service-native-runtime",
             "code-service-native-receipts",
-            "code-service-native-domain"
+            "code-service-native-domain",
+            "code-service-native-authority",
+            "code-service-native-registry",
+            "code-service-native-coverage"
           ],
           "relationships": [
             "rel-service-code-launch-policy",
@@ -34659,7 +35406,16 @@
             "rel-service-code-schedule-state",
             "rel-service-code-schedule-launch",
             "rel-service-code-native-record",
-            "rel-service-code-native-recover"
+            "rel-service-code-native-recover",
+            "rel-service-code-native-authority",
+            "rel-service-code-authority-domain",
+            "rel-service-code-authority-identity",
+            "rel-service-code-authority-platform",
+            "rel-service-code-authority-storage",
+            "rel-service-code-authority-updates",
+            "rel-service-code-runtime-authority",
+            "rel-service-code-coverage-authority",
+            "rel-service-code-entry-authority"
           ],
           "views": [
             "view-service-code-policy",
@@ -34674,7 +35430,17 @@
             "view-service-dynamic-composite-modules",
             "view-service-dynamic-schedule",
             "view-service-dynamic-automation-modules",
-            "view-service-dynamic-native-administration"
+            "view-service-dynamic-native-administration",
+            "view-service-context",
+            "view-service-containers",
+            "view-service-backend",
+            "view-service-code-native",
+            "view-service-deployment",
+            "view-service-dynamic-authority-instance",
+            "view-service-dynamic-authority-platform",
+            "view-service-dynamic-authority-storage",
+            "view-service-dynamic-authority-updates",
+            "view-service-dynamic-authority-denial"
           ]
         },
         {
@@ -34709,7 +35475,9 @@
             "code-service-native-runtime",
             "code-service-native-receipts",
             "code-service-state-agent-grants",
-            "code-service-native-domain"
+            "code-service-native-domain",
+            "code-service-native-authority",
+            "code-service-native-registry"
           ],
           "relationships": [
             "rel-service-code-runner-effects",
@@ -34754,7 +35522,16 @@
             "rel-service-code-native-recover",
             "rel-service-code-native-receipt-step",
             "rel-service-code-native-grants",
-            "rel-service-code-native-agent-grants"
+            "rel-service-code-native-agent-grants",
+            "rel-service-code-native-authority",
+            "rel-service-code-authority-domain",
+            "rel-service-code-authority-identity",
+            "rel-service-code-authority-platform",
+            "rel-service-code-authority-storage",
+            "rel-service-code-authority-updates",
+            "rel-service-code-runtime-authority",
+            "rel-service-code-coverage-authority",
+            "rel-service-code-entry-authority"
           ],
           "views": [
             "view-service-code-runner",
@@ -34769,7 +35546,16 @@
             "view-service-dynamic-composite-modules",
             "view-service-code-native",
             "view-service-dynamic-native-actions",
-            "view-service-dynamic-native-administration"
+            "view-service-dynamic-native-administration",
+            "view-service-context",
+            "view-service-containers",
+            "view-service-backend",
+            "view-service-deployment",
+            "view-service-dynamic-authority-instance",
+            "view-service-dynamic-authority-platform",
+            "view-service-dynamic-authority-storage",
+            "view-service-dynamic-authority-updates",
+            "view-service-dynamic-authority-denial"
           ]
         },
         {
@@ -34802,7 +35588,9 @@
             "code-service-native-domain",
             "code-service-connection-service",
             "code-service-scenario-definition",
-            "code-service-execution-launch"
+            "code-service-execution-launch",
+            "code-service-native-authority",
+            "code-service-native-registry"
           ],
           "relationships": [
             "rel-service-code-contract-registry",
@@ -34838,7 +35626,16 @@
             "rel-service-code-native-agent-grants",
             "rel-service-code-native-connections",
             "rel-service-code-native-definitions",
-            "rel-service-code-native-journal"
+            "rel-service-code-native-journal",
+            "rel-service-code-native-authority",
+            "rel-service-code-authority-domain",
+            "rel-service-code-authority-identity",
+            "rel-service-code-authority-platform",
+            "rel-service-code-authority-storage",
+            "rel-service-code-authority-updates",
+            "rel-service-code-runtime-authority",
+            "rel-service-code-coverage-authority",
+            "rel-service-code-entry-authority"
           ],
           "views": [
             "view-service-code-registry",
@@ -34857,7 +35654,16 @@
             "view-service-code-scenarios",
             "view-service-dynamic-native-connections",
             "view-service-dynamic-native-administration",
-            "view-service-dynamic-native-journal"
+            "view-service-dynamic-native-journal",
+            "view-service-context",
+            "view-service-containers",
+            "view-service-backend",
+            "view-service-deployment",
+            "view-service-dynamic-authority-instance",
+            "view-service-dynamic-authority-platform",
+            "view-service-dynamic-authority-storage",
+            "view-service-dynamic-authority-updates",
+            "view-service-dynamic-authority-denial"
           ]
         },
         {
@@ -34918,7 +35724,10 @@
             "code-service-native-runtime",
             "code-service-native-receipts",
             "code-service-state-grants",
-            "code-service-state-agent-grants"
+            "code-service-state-agent-grants",
+            "code-service-native-authority",
+            "code-service-native-registry",
+            "code-service-native-domain"
           ],
           "relationships": [
             "rel-service-code-runner-effects",
@@ -34962,7 +35771,16 @@
             "rel-service-code-native-recover",
             "rel-service-code-native-receipt-step",
             "rel-service-code-native-grants",
-            "rel-service-code-native-agent-grants"
+            "rel-service-code-native-agent-grants",
+            "rel-service-code-native-authority",
+            "rel-service-code-authority-domain",
+            "rel-service-code-authority-identity",
+            "rel-service-code-authority-platform",
+            "rel-service-code-authority-storage",
+            "rel-service-code-authority-updates",
+            "rel-service-code-runtime-authority",
+            "rel-service-code-coverage-authority",
+            "rel-service-code-entry-authority"
           ],
           "views": [
             "view-service-code-events",
@@ -34975,7 +35793,15 @@
             "view-service-dynamic-retention",
             "view-service-dynamic-composite-modules",
             "view-service-code-native",
-            "view-service-dynamic-native-actions"
+            "view-service-dynamic-native-actions",
+            "view-service-context",
+            "view-service-containers",
+            "view-service-backend",
+            "view-service-dynamic-authority-instance",
+            "view-service-dynamic-authority-platform",
+            "view-service-dynamic-authority-storage",
+            "view-service-dynamic-authority-updates",
+            "view-service-dynamic-authority-denial"
           ]
         },
         {
@@ -35156,7 +35982,8 @@
             "code-service-scenario-synchronization",
             "code-service-connection-service",
             "code-service-execution-policy",
-            "code-service-execution-launch"
+            "code-service-execution-launch",
+            "code-service-native-authority"
           ],
           "relationships": [
             "rel-service-code-state-integration",
@@ -35204,7 +36031,16 @@
             "rel-service-code-native-journal",
             "rel-service-code-native-agent-policy",
             "rel-service-code-native-connections",
-            "rel-service-code-native-links"
+            "rel-service-code-native-links",
+            "rel-service-code-native-authority",
+            "rel-service-code-authority-domain",
+            "rel-service-code-authority-identity",
+            "rel-service-code-authority-platform",
+            "rel-service-code-authority-storage",
+            "rel-service-code-authority-updates",
+            "rel-service-code-runtime-authority",
+            "rel-service-code-coverage-authority",
+            "rel-service-code-entry-authority"
           ],
           "views": [
             "view-service-data",
@@ -35230,7 +36066,14 @@
             "view-service-dynamic-native-journal",
             "view-service-dynamic-native-agent-policy",
             "view-service-dynamic-native-connections",
-            "view-service-dynamic-native-links"
+            "view-service-dynamic-native-links",
+            "view-service-context",
+            "view-service-containers",
+            "view-service-dynamic-authority-instance",
+            "view-service-dynamic-authority-platform",
+            "view-service-dynamic-authority-storage",
+            "view-service-dynamic-authority-updates",
+            "view-service-dynamic-authority-denial"
           ]
         },
         {
@@ -35439,7 +36282,8 @@
             "code-service-scenario-synchronization",
             "code-service-connection-service",
             "code-service-execution-policy",
-            "code-service-execution-launch"
+            "code-service-execution-launch",
+            "code-service-native-authority"
           ],
           "relationships": [
             "rel-service-ui-backend",
@@ -35507,7 +36351,16 @@
             "rel-service-code-native-journal",
             "rel-service-code-native-agent-policy",
             "rel-service-code-native-connections",
-            "rel-service-code-native-links"
+            "rel-service-code-native-links",
+            "rel-service-code-native-authority",
+            "rel-service-code-authority-domain",
+            "rel-service-code-authority-identity",
+            "rel-service-code-authority-platform",
+            "rel-service-code-authority-storage",
+            "rel-service-code-authority-updates",
+            "rel-service-code-runtime-authority",
+            "rel-service-code-coverage-authority",
+            "rel-service-code-entry-authority"
           ],
           "views": [
             "view-service-workbench",
@@ -35534,7 +36387,15 @@
             "view-service-dynamic-native-journal",
             "view-service-dynamic-native-agent-policy",
             "view-service-dynamic-native-connections",
-            "view-service-dynamic-native-links"
+            "view-service-dynamic-native-links",
+            "view-service-context",
+            "view-service-containers",
+            "view-service-dynamic-authority-instance",
+            "view-service-dynamic-authority-platform",
+            "view-service-dynamic-authority-storage",
+            "view-service-dynamic-authority-updates",
+            "view-service-dynamic-authority-denial",
+            "view-dynamic-agent-permissions-modal"
           ]
         },
         {
@@ -35664,7 +36525,8 @@
             "code-service-scenario-definition",
             "code-service-scenario-synchronization",
             "code-service-execution-policy",
-            "code-service-execution-launch"
+            "code-service-execution-launch",
+            "code-service-native-authority"
           ],
           "relationships": [
             "rel-service-code-contract-registry",
@@ -35718,7 +36580,16 @@
             "rel-service-code-native-journal",
             "rel-service-code-native-agent-policy",
             "rel-service-code-native-connections",
-            "rel-service-code-native-links"
+            "rel-service-code-native-links",
+            "rel-service-code-native-authority",
+            "rel-service-code-authority-domain",
+            "rel-service-code-authority-identity",
+            "rel-service-code-authority-platform",
+            "rel-service-code-authority-storage",
+            "rel-service-code-authority-updates",
+            "rel-service-code-runtime-authority",
+            "rel-service-code-coverage-authority",
+            "rel-service-code-entry-authority"
           ],
           "views": [
             "view-service-code-connections",
@@ -35738,7 +36609,14 @@
             "view-service-dynamic-native-journal",
             "view-service-dynamic-native-agent-policy",
             "view-service-dynamic-native-connections",
-            "view-service-dynamic-native-links"
+            "view-service-dynamic-native-links",
+            "view-service-context",
+            "view-service-containers",
+            "view-service-dynamic-authority-instance",
+            "view-service-dynamic-authority-platform",
+            "view-service-dynamic-authority-storage",
+            "view-service-dynamic-authority-updates",
+            "view-service-dynamic-authority-denial"
           ]
         },
         {
@@ -35779,7 +36657,8 @@
             "code-service-native-coverage",
             "code-service-native-runtime",
             "code-service-native-receipts",
-            "code-service-state-grants"
+            "code-service-state-grants",
+            "code-service-native-authority"
           ],
           "relationships": [
             "rel-service-code-native-inventory",
@@ -35841,7 +36720,16 @@
             "rel-service-code-native-recover",
             "rel-service-code-native-receipt-step",
             "rel-service-code-native-grants",
-            "rel-service-code-native-agent-grants"
+            "rel-service-code-native-agent-grants",
+            "rel-service-code-native-authority",
+            "rel-service-code-authority-domain",
+            "rel-service-code-authority-identity",
+            "rel-service-code-authority-platform",
+            "rel-service-code-authority-storage",
+            "rel-service-code-authority-updates",
+            "rel-service-code-runtime-authority",
+            "rel-service-code-coverage-authority",
+            "rel-service-code-entry-authority"
           ],
           "views": [
             "view-service-code-native",
@@ -35863,7 +36751,16 @@
             "view-service-dynamic-automation-modules",
             "view-service-code-ai",
             "view-service-dynamic-native-actions",
-            "view-service-dynamic-native-administration"
+            "view-service-dynamic-native-administration",
+            "view-service-context",
+            "view-service-containers",
+            "view-service-backend",
+            "view-service-deployment",
+            "view-service-dynamic-authority-instance",
+            "view-service-dynamic-authority-platform",
+            "view-service-dynamic-authority-storage",
+            "view-service-dynamic-authority-updates",
+            "view-service-dynamic-authority-denial"
           ]
         },
         {
@@ -35908,7 +36805,8 @@
             "code-ui-agent-actions",
             "code-service-native-registry",
             "code-service-connection-service",
-            "code-service-execution-policy"
+            "code-service-execution-policy",
+            "code-service-native-authority"
           ],
           "relationships": [
             "rel-service-code-contract-registry",
@@ -35968,7 +36866,16 @@
             "rel-service-code-native-journal",
             "rel-service-code-native-agent-policy",
             "rel-service-code-native-connections",
-            "rel-service-code-native-links"
+            "rel-service-code-native-links",
+            "rel-service-code-native-authority",
+            "rel-service-code-authority-domain",
+            "rel-service-code-authority-identity",
+            "rel-service-code-authority-platform",
+            "rel-service-code-authority-storage",
+            "rel-service-code-authority-updates",
+            "rel-service-code-runtime-authority",
+            "rel-service-code-coverage-authority",
+            "rel-service-code-entry-authority"
           ],
           "views": [
             "view-service-code-registry",
@@ -36000,7 +36907,14 @@
             "view-service-dynamic-native-journal",
             "view-service-dynamic-native-agent-policy",
             "view-service-dynamic-native-connections",
-            "view-service-dynamic-native-links"
+            "view-service-dynamic-native-links",
+            "view-service-context",
+            "view-service-containers",
+            "view-service-dynamic-authority-instance",
+            "view-service-dynamic-authority-platform",
+            "view-service-dynamic-authority-storage",
+            "view-service-dynamic-authority-updates",
+            "view-service-dynamic-authority-denial"
           ]
         },
         {
@@ -36404,9 +37318,9 @@
     {
       "id": "0039",
       "path": "specs/0039-golosovoy-vvod-i-ozvuchivanie-veb-vidzheta.md",
-      "bodyHash": "66b7257b893022fef150783589e9150a4a747d50351fae736a30733a26e65c85",
+      "bodyHash": "f71fd567dbbc7d45b02846953ac3d65ec52b2766394f96ae97c8db6c6350f64e",
       "impact": "changes",
-      "description": "Планируемые диктовка до Message, SpeechKit STT/TTS, независимые настройки, согласие/лимиты/ошибки/кэш памяти и baseline gate.",
+      "description": "Планируемые диктовка до Message, SpeechKit STT/TTS, независимые настройки, согласие/лимиты/ошибки/кэш памяти и baseline gate. Исправления релиза 05.11.2026 остаются planned до проверенной публикации.",
       "elements": [
         "code-speech-config",
         "code-speech-contracts",
@@ -36467,7 +37381,8 @@
         "view-widget-speech-clients",
         "view-widget-expansion-settings",
         "view-code-voice-stt-compatibility",
-        "view-dynamic-speech-settings"
+        "view-dynamic-speech-settings",
+        "view-dynamic-dictation-close"
       ],
       "requirements": [
         {
@@ -36775,7 +37690,8 @@
             "view-code-speech",
             "view-dynamic-speech-playback",
             "view-widget-speech-clients",
-            "view-widget-expansion-settings"
+            "view-widget-expansion-settings",
+            "view-dynamic-dictation-close"
           ]
         },
         {
@@ -37369,7 +38285,8 @@
             "view-dynamic-speech-playback",
             "view-widget-speech-clients",
             "view-widget-expansion-settings",
-            "view-dynamic-speech-settings"
+            "view-dynamic-speech-settings",
+            "view-dynamic-dictation-close"
           ]
         },
         {

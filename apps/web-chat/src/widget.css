@@ -37,15 +37,15 @@
 :where(.cb-bubble:has(.prepared-message)) { padding: 8px; white-space: normal; }
 :where(.cb-message-time) { font-size: 11px; color: #bfbfbf; margin-top: 4px; margin-right: 4px; text-align: right; }
 :where(.cb-composer, .cb-start-footer) { flex: none; background: #f7f8fa; border-top: 1px solid #e6e9ed; }
-:where(.cb-composer) { padding: 8px 12px; }
+:where(.cb-composer) { --cb-composer-font-size: 15px; --cb-composer-line-height: 21px; padding: 8px 12px; }
 :where(.cb-start-footer) { padding: 12px 14px 10px; }
 :where(.cb-start-button) {
   width: 100%; height: 44px; border-radius: 10px; border: none;
   background: var(--cb-accent); color: #fff; font-size: 14px; font-weight: 600; cursor: pointer;
 }
 :where(.cb-composer-input) {
-  flex: 1; border: none; outline: none; resize: none; background: transparent;
-  font-size: 15px; line-height: 21px; color: #262626; font-family: inherit;
+  flex: 1; min-width: 0; border: none; outline: none; resize: none; background: transparent;
+  font-size: var(--cb-composer-font-size); line-height: var(--cb-composer-line-height); color: #262626; font-family: inherit;
   padding: 8px 2px; max-height: 132px;
 }
 :where(.cb-composer-button) {

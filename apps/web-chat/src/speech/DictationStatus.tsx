@@ -8,8 +8,8 @@ export type ComposerDictation = ReturnType<typeof useDictation>;
 const seconds = (value: number) => `${Math.floor(value / 60)}:${String(value % 60).padStart(2, "0")}`;
 
 export function DictationStatus({ dictation, tooLong }: { dictation: ComposerDictation; tooLong: boolean }) {
+  if (!dictation.notice) return null;
   const notice = tooLong && !dictation.busy ? "tooLong" : dictation.notice;
-  if (!notice) return null;
   const loading = notice === "recognizing" || notice === "permission";
   const error = ["tooLong", "emptySpeech", "unsupported", "denied", "limitError", "formatError", "networkError", "providerError", "timeoutError"].includes(notice);
   const label = notice === "recognizing" && dictation.limit
@@ -26,7 +26,7 @@ export function DictationStatus({ dictation, tooLong }: { dictation: ComposerDic
     <div className="wc-dictation-actions">
       {dictation.retryable && <button className="wc-icon-button cb-composer-button" onClick={dictation.retry} aria-label={t("speech.retry")}><SpeechIcon name="refresh" /></button>}
       {error && !dictation.retryable && <button className="wc-icon-button cb-composer-button" onClick={dictation.start} aria-label={t("speech.recordAgain")}><SpeechIcon name="mic" /></button>}
-      {dictation.recording && <button className="wc-icon-button cb-composer-button" onClick={dictation.stop} aria-label={t("speech.stop")}><SpeechIcon name="stop" /></button>}
+      {dictation.recording && <button className="wc-icon-button cb-composer-button wc-dictation-stop" onClick={dictation.stop} aria-label={t("speech.stop")}><SpeechIcon name="stop" size={20} /></button>}
       <button className="wc-icon-button cb-composer-button" onClick={dictation.cancel} aria-label={t("speech.cancel")}><SpeechIcon name="close" /></button>
     </div>
   </div>;

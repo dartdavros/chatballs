@@ -17,7 +17,7 @@
       case 'permit': return { ...state, phase: 'recording', notice: 'recordingHelp' };
       case 'stop': return { ...state, phase: 'recognizing', notice: 'recognizing' };
       case 'cancel': return { ...state, phase: 'cancelled', notice: 'cancelled',
-        engaged: ['permission', 'recording', 'recognizing', 'retry'].includes(state.phase), attempt: state.attempt + 1 };
+        engaged: false, attempt: state.attempt + 1 };
       case 'retry': return { ...state, phase: 'recognizing', notice: 'recognizing', attempt: state.attempt + 1, applied: false };
       case 'result':
         if (state.phase !== 'recognizing' || state.applied || event.attempt !== state.attempt) return state;

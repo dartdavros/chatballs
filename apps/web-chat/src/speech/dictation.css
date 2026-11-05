@@ -1,9 +1,11 @@
-/* Принятый widget-speech/composer.js и baseline.css: статус 56 px над вводом. */
-.wc-dictation-status { height:56px; display:flex; align-items:center; gap:8px; margin:0 0 6px; font-size:12px; line-height:17px; color:#595959; }
+/* SPEC-0039 R-22: штатная типографика ввода, высота по содержимому. */
+.wc-dictation-status { min-height:36px; display:flex; align-items:center; gap:8px; margin:0 0 4px; font-size:var(--cb-composer-font-size); line-height:var(--cb-composer-line-height); color:#595959; }
 .wc-dictation-copy { flex:1; min-width:0; }
-.wc-dictation-heading { display:flex; align-items:center; gap:8px; }
+.wc-dictation-heading { display:flex; flex-wrap:wrap; align-items:center; gap:4px 8px; }
 .wc-dictation-heading>svg,.wc-dictation-heading>strong { flex:none; }
-.wc-dictation-heading>span { flex:1; min-width:0; }
+.wc-dictation-heading>span { flex:1; min-width:0; overflow-wrap:anywhere; }
 .wc-dictation-actions { display:flex; gap:4px; align-items:center; flex:none; }
-.wc-dictation-timer { font-variant-numeric:tabular-nums; color:#cf1322; font-size:12.5px; font-weight:600; }
+.wc-dictation-timer { font-variant-numeric:tabular-nums; color:#cf1322; font-weight:600; }
+.wc-dictation-stop { width:36px; height:36px; color:var(--cb-accent); }
+.wc-dictation-trigger { margin-inline-end:4px; }
 .wc-dictation-status.is-error { color:#cf1322; }

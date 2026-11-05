@@ -42,6 +42,7 @@ async (page) => {
     await open('D04');
     const before = await draft.inputValue();
     await (await button('cancel')).click();
+    expect(await screen.locator('.sp-composer-status').count() === 0, 'Cancel did not close dictation panel');
     await page.getByRole('button', { name: await t('stalePreview'), exact: true }).click();
     expect(await draft.inputValue() === before, 'Cancelled late result changed draft');
     verified.push('cancel and late result preserve existing draft');
@@ -55,7 +56,7 @@ async (page) => {
     await draft.fill(await t('draft')); expect(await (await button('send')).isEnabled(), 'Shortened draft cannot be sent');
     verified.push('retry retains draft; overlong result untruncated and becomes sendable after editing');
     await open('D03'); await draft.focus(); await page.keyboard.press('Escape');
-    expect((await screen.innerText()).includes(await t('cancelled')), 'Escape did not cancel');
+    expect(await screen.locator('.sp-composer-status').count() === 0, 'Escape did not close dictation panel');
     await draft.fill(await t('draft')); await page.keyboard.press('Shift+Enter');
     expect((await draft.inputValue()).includes('\n'), 'Shift+Enter lost newline');
     await page.keyboard.press('Enter'); expect(await screen.locator('.cb-message--client').count() === 1, 'Enter did not explicitly send');

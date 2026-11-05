@@ -3,8 +3,8 @@
   const { h, t, spinner } = window.SpeechParts;
   const icon = name => h(window.SpeechProduct.SpeechIcon, { name });
   function IconButton({ name, label, onClick, disabled = false, primary = false, children }) {
-    return h('button', { type: 'button', className: `wc-icon-button cb-composer-button ${primary ? 'cb-send-button' : ''}`,
-      'aria-label': t(label), title: t(label), disabled, onClick }, children || icon(name));
+    return h('button', { type: 'button', className: `wc-icon-button cb-composer-button ${primary ? 'cb-send-button' : ''} ${name === 'stop' ? 'sp-dictation-stop' : ''}`,
+      'aria-label': t(label), title: t(label), disabled, onClick }, children || (name === 'stop' ? h(window.SpeechProduct.SpeechIcon, { name, size: 20 }) : icon(name)));
   }
   function Composer({ state, dispatch, onStart }) {
     const inputRef = window.React.useRef(null);
