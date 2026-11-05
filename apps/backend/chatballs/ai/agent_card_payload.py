@@ -106,6 +106,9 @@ def agent_card_payload(
         "model": agent.model,
         "transcriptionModel": agent.transcription_model,
         "transcriptionLanguage": agent.transcription_language,
+        "synthesisIntegrationId": agent.synthesis_integration_id,
+        "synthesisModel": agent.synthesis_model,
+        "synthesisVoice": agent.synthesis_voice,
         "providerModel": _integration_model(agent.provider_integration, "default_model"),
         "transcriptionProviderModel": _integration_model(
             agent.transcription_integration or agent.provider_integration,

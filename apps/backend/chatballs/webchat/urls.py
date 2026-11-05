@@ -6,6 +6,7 @@ from chatballs.webchat.author_avatar_views import WebchatAuthorAvatarView
 from chatballs.webchat.config_views import WebchatConfigView
 from chatballs.webchat.consent_views import WebchatConsentView
 from chatballs.webchat.dictation_views import WebchatDictationView
+from chatballs.webchat.synthesis_views import WebchatSynthesisView
 from chatballs.webchat.observation_views import WebchatObservationsView
 from chatballs.webchat.site_event_views import WebchatSiteEventCancelView, WebchatSiteEventView
 
@@ -15,6 +16,7 @@ urlpatterns = [
     path("session/", views.WebchatSessionView.as_view(), name="webchat-session"),
     path("consent/", WebchatConsentView.as_view(), name="webchat-consent"),
     path("dictation/", WebchatDictationView.as_view(), name="webchat-dictation"),
+    path("messages/<int:message_id>/synthesis/", WebchatSynthesisView.as_view(), name="webchat-synthesis"),
     path("fields/", views.WebchatFieldsView.as_view(), name="webchat-fields"),
     path("site-events/", WebchatSiteEventView.as_view(), name="webchat-site-event"),
     path("site-events/cancel/", WebchatSiteEventCancelView.as_view(), name="webchat-site-event-cancel"),

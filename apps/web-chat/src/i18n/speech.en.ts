@@ -2,6 +2,18 @@ import type { speechRu } from "./speech.ru";
 import type { Message } from "@chatballs/shared";
 
 export const speechEn: Record<keyof typeof speechRu, Message> = {
+  "speech.listen": "Listen",
+  "speech.loadingAudio": "Preparing audio…",
+  "speech.pause": "Pause",
+  "speech.resume": "Resume",
+  "speech.replay": "Replay",
+  "speech.playing": "Playing",
+  "speech.paused": "Paused",
+  "speech.ended": "Listened",
+  "speech.ttsFailure": "Could not synthesize audio. Try again.",
+  "speech.voiceUnavailable": "The voice is unavailable. You can read the answer.",
+  "speech.languageUnavailable": "The voice does not support the answer language. Text is not translated.",
+  "speech.playbackFailure": "Could not play audio. Try again.",
   "speech.permission": "Allow the microphone in your browser, or keep typing.",
   "speech.recording": "Recording",
   "speech.recognizing": "Recognizing speech… You can type.",

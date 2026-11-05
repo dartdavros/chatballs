@@ -27,8 +27,15 @@ export function SpeechSettingsContent({ initial, onBack, onSaved }: { initial: I
       <p className="settings-section-note">{t("speech.privacy")}</p>
       <div className="speech-check">
         <strong>{t("speech.stt")}</strong>
-        <div role="status" className="speech-check-status">{form.checking ? <LogoSpinner size={20} /> : <StatusPill status={status === "OK" ? "healthy" : status === "ERROR" ? "error" : "unchecked"} label={t(status === "OK" ? "speech.available" : status === "ERROR" ? "speech.unavailable" : "ai.not_checked")} />}</div>
+        <div role="status" className="speech-check-status">{form.checkingCapability === "stt" ? <LogoSpinner size={20} /> : <StatusPill status={status === "OK" ? "healthy" : status === "ERROR" ? "error" : "unchecked"} label={t(status === "OK" ? "speech.available" : status === "ERROR" ? "speech.unavailable" : "ai.not_checked")} />}</div>
         <Button variant="secondary" disabled={form.dirty || form.busy || form.checking} onClick={() => void form.check()}>{t("speech.checkStt")}</Button>
+      </div>
+      <div className="speech-check">
+        <strong>{t("speech.tts")}</strong>
+        <div role="status" className="speech-check-status">{form.checkingCapability === "tts" ? <LogoSpinner size={20} /> : <StatusPill
+          status={form.connection?.ttsCheck?.status === "OK" && !form.dirty ? "healthy" : form.connection?.ttsCheck?.status === "ERROR" && !form.dirty ? "error" : "unchecked"}
+          label={t(!form.dirty && form.connection?.ttsCheck?.status === "OK" ? "speech.available" : !form.dirty && form.connection?.ttsCheck?.status === "ERROR" ? "speech.unavailable" : "ai.not_checked")} />}</div>
+        <Button variant="secondary" disabled={Boolean(form.dirty || form.busy || form.checking)} onClick={() => void form.check("tts")}>{t("speech.checkTts")}</Button>
       </div>
       {(form.error || (!form.dirty && form.connection?.lastError)) && <div className="administration-message error" role="alert">{form.error || form.connection?.lastError}</div>}
       <div className="administration-actions"><Button variant="primary" disabled={form.busy || form.checking} onClick={() => void form.save()}>{form.busy ? t("ai.saving") : form.connection ? t("common.save") : t("speech.connect")}</Button></div>

@@ -8,9 +8,10 @@ import { t } from "./i18n";
 import { widgetClasses as classes } from "./widgetClasses";
 import { RatingRequestCard } from "./ratings/RatingRequestCard";
 import type { RatingRequest } from "./ratings/api";
+import type { AnswerPlaybackControl } from "./speech/useAnswerPlayback";
 import { ProactiveStatus } from "./proactivity/ProactiveStatus";
 
-export function ChatBody({ bodyRef, config, unavailable, accepted, accent, title, messages, ratingRequests = [], pending, awaiting, state, lastContactRequestId, showPhoneForm, onSubmitContact, authorAvatarUrlFor, audioUrlFor, attachmentUrlFor, siteEvent }: {
+export function ChatBody({ bodyRef, config, unavailable, accepted, accent, title, messages, ratingRequests = [], pending, awaiting, state, lastContactRequestId, showPhoneForm, onSubmitContact, authorAvatarUrlFor, audioUrlFor, attachmentUrlFor, playback, siteEvent }: {
   bodyRef: RefObject<HTMLDivElement | null>;
   config: WebConfig | null;
   unavailable: boolean;
@@ -28,6 +29,7 @@ export function ChatBody({ bodyRef, config, unavailable, accepted, accent, title
   authorAvatarUrlFor?: (messageId: number) => string;
   audioUrlFor?: (messageId: number) => string;
   attachmentUrlFor?: (messageId: number, inline: boolean) => string;
+  playback?: AnswerPlaybackControl;
   siteEvent?: { related: boolean; status: import("@chatballs/contracts").SiteEventState | "expired" | null };
 }) {
   return (
@@ -43,7 +45,7 @@ export function ChatBody({ bodyRef, config, unavailable, accepted, accent, title
           {siteEvent?.related && !messages.length && <ProactiveStatus state={siteEvent.status} autonomous={config.autonomous} />}
           {messages.map((message) => message.author === "system"
             ? <SystemMessage key={message.id} text={message.text} neutral={message.systemEvent === "specialist_joined"} />
-            : <div key={message.id}><Bubble authorAvatarUrl={message.author === "operator" && message.hasAuthorAvatar && authorAvatarUrlFor ? authorAvatarUrlFor(message.id) : undefined} snapshot={message} author={message.author} authorName={message.author === "operator" ? message.authorName || t("chat.specialist") : title} text={message.hasAudio ? "" : message.text || (message.kind === "voice" ? t("chat.voice_message") : "")} accent={accent} time={message.createdAt} audioUrl={message.hasAudio && audioUrlFor ? audioUrlFor(message.id) : undefined} voice={{ messageId: message.id, durationSeconds: message.durationSeconds }} attachment={message.kind === "file" && message.attachment ? { ...message.attachment, url: message.attachment.available && attachmentUrlFor ? attachmentUrlFor(message.id, false) : "", inlineUrl: message.attachment.available && attachmentUrlFor ? attachmentUrlFor(message.id, true) : "" } : undefined} />{message.kind === "contact_request" && message.id === lastContactRequestId && showPhoneForm && <PhoneForm accent={accent} onSubmit={onSubmitContact} />}</div>)}
+            : <div key={message.id}><Bubble playback={playback && config.speech?.playbackAvailable && message.author === "ai" && !message.kind && Boolean(message.text.trim()) ? { messageId: message.id, control: playback } : undefined} authorAvatarUrl={message.author === "operator" && message.hasAuthorAvatar && authorAvatarUrlFor ? authorAvatarUrlFor(message.id) : undefined} snapshot={message} author={message.author} authorName={message.author === "operator" ? message.authorName || t("chat.specialist") : title} text={message.hasAudio ? "" : message.text || (message.kind === "voice" ? t("chat.voice_message") : "")} accent={accent} time={message.createdAt} audioUrl={message.hasAudio && audioUrlFor ? audioUrlFor(message.id) : undefined} voice={{ messageId: message.id, durationSeconds: message.durationSeconds }} attachment={message.kind === "file" && message.attachment ? { ...message.attachment, url: message.attachment.available && attachmentUrlFor ? attachmentUrlFor(message.id, false) : "", inlineUrl: message.attachment.available && attachmentUrlFor ? attachmentUrlFor(message.id, true) : "" } : undefined} />{message.kind === "contact_request" && message.id === lastContactRequestId && showPhoneForm && <PhoneForm accent={accent} onSubmit={onSubmitContact} />}</div>)}
           {pending.map((text, index) => <Bubble key={`p${index}`} author="client" authorName={title} text={text} accent={accent} pendingState />)}
           {state === "waiting" && <SystemMessage neutral text={t("chat.waiting_operator")} />}
           {state === "operator" && <SystemMessage neutral text={t("chat.operator_answering")} />}

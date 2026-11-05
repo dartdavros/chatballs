@@ -9,7 +9,7 @@ export function useSpeechConnection(initial: Integration | null, onSaved: () => 
   const [folder, setFolder] = useState(initial?.config.folderId ?? "");
   const [secret, setSecret] = useState("");
   const [busy, setBusy] = useState(false);
-  const [checking, setChecking] = useState(false);
+  const [checking, setChecking] = useState<"stt" | "tts" | null>(null);
   const [error, setError] = useState("");
   const [fields, setFields] = useState<Record<string, string>>({});
   const dirty = !connection || name !== connection.name || folder !== connection.config.folderId || Boolean(secret);
@@ -35,14 +35,14 @@ export function useSpeechConnection(initial: Integration | null, onSaved: () => 
     } finally { setBusy(false); }
   }
 
-  async function check() {
+  async function check(capability: "stt" | "tts" = "stt") {
     if (!connection || dirty || checking) return;
-    setChecking(true); setError("");
+    setChecking(capability); setError("");
     try {
-      const result = await api<{ integration: Integration }>(`/api/v1/integrations/${connection.id}/test/`, { method: "POST" });
+      const result = await api<{ integration: Integration }>(`/api/v1/integrations/${connection.id}/test/`, { method: "POST", body: JSON.stringify({ capability }) });
       setConnection(result.integration); onSaved();
     } catch (caught) { setError(caught instanceof Error ? caught.message : t("common.request_failed")); }
-    finally { setChecking(false); }
+    finally { setChecking(null); }
   }
-  return { connection, name, setName, folder, setFolder, secret, setSecret, busy, checking, error, fields, dirty, save, check };
+  return { connection, name, setName, folder, setFolder, secret, setSecret, busy, checking: Boolean(checking), checkingCapability: checking, error, fields, dirty, save, check };
 }

@@ -157,6 +157,9 @@ services:
       # Bind-mounts from the Windows host do not deliver inotify events into the
       # container, so the watcher polls instead — otherwise HMR never fires.
       VITE_DEV_POLL: "1"
+      # Slow Windows mounts can block Vite while polling. Verification can
+      # disable watching and apply source changes through a managed restart.
+      VITE_DEV_WATCH: "${VITE_DEV_WATCH:-1}"
     ports:
       - "${INTERNAL_UI_PORT:-5173}:5173"
     volumes:

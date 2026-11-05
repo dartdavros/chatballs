@@ -1,5 +1,15 @@
 import type { speechRu } from "./speech.ru";
 export const speechEn: Record<keyof typeof speechRu, string> = {
+  "speech.tts": "Answer synthesis",
+  "speech.checkTts": "Check synthesis",
+  "speech.ttsProvider": "Synthesis provider",
+  "speech.ttsModel": "Synthesis model",
+  "speech.modelDefault": "Connection default",
+  "speech.voice": "Voice",
+  "speech.disabled": "Disabled",
+  "speech.voiceHelp": "The voice must support the answer language. Text is not translated.",
+  "speech.listenWeb": "Allow AI answer playback",
+  "speech.listenHelp": "The visitor starts audio manually, using the voice selected for the agent.",
   "speech.name": "Connection name",
   "speech.folder": "Yandex Cloud folder",
   "speech.secret": "Service account API key",

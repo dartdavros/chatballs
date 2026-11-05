@@ -25,6 +25,7 @@ export type Integration = {
   name: string;
   externalServer?: ExternalServer;
   speechCapabilities?: SpeechCapabilities;
+  ttsCheck?: { status?: string; error?: string; checkedAt?: string };
   hasSecret: boolean;
   // Публичный префикс ключа + маска («sk-or-••••••••») для колонки «Секрет».
   secretMasked: string;
@@ -34,6 +35,7 @@ export type Integration = {
   config: {
     folderId?: string;
     microphoneMode?: MicrophoneMode;
+    answerPlaybackEnabled?: boolean;
     maxRecordingBytes?: number;
     maxDictationSeconds?: number;
     fields?: SiteField[];

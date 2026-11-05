@@ -31,13 +31,13 @@ return 1
 
 
 @contextmanager
-def recognition_lease(*, session_id: int, widget_id: int, integration_id: int, client_address: str):
+def recognition_lease(*, session_id: int, widget_id: int, integration_id: int, client_address: str, seconds=70):
     address = hashlib.sha256(client_address.encode()).hexdigest()
     keys = [f"speech:session:{session_id}", f"speech:widget:{widget_id}", f"speech:integration:{integration_id}", f"speech:address:{address}"]
     nonce = secrets.token_hex(16)
     with Redis.from_url(settings.CACHES["default"]["LOCATION"], socket_connect_timeout=2, socket_timeout=2) as client:
         try:
-            if not client.eval(ACQUIRE, len(keys), *keys, nonce, 70, 2, 4, 4):
+            if not client.eval(ACQUIRE, len(keys), *keys, nonce, seconds, 2, 4, 4):
                 raise SpeechError("busy")
         except RedisError:
             raise SpeechError("busy") from None

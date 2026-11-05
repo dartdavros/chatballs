@@ -3,6 +3,7 @@ import { t } from "../../i18n";
 import { FormField, SelectField } from "../../shared/form-controls";
 import type { Integration } from "../integrations/model";
 import type { AgentCard, AgentPatch } from "./model";
+import { SynthesisSettings } from "./SynthesisSettings";
 
 export function SpeechSettings({ card, providers, canManage, busy, apply }: {
   card: AgentCard; providers: Integration[]; canManage: boolean; busy: boolean;
@@ -28,6 +29,7 @@ export function SpeechSettings({ card, providers, canManage, busy, apply }: {
       onChange={(value) => void apply({ transcriptionLanguage: value })}
       options={[["", t("speech.organizationLanguage")], ["ru-RU", t("portals.russian")], ["en-US", t("portals.english")]]} />
     {broken && <div className="integration-form-error" role="alert">{t("speech.explicitError")}</div>}
+    <SynthesisSettings card={card} providers={providers} canManage={canManage} busy={busy} apply={apply} />
     <p className="settings-section-note">{t("speech.privacy")}</p>
   </>;
 }

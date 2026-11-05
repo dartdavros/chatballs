@@ -1,8 +1,9 @@
 import type { MicrophoneMode } from "@chatballs/contracts";
 import { t } from "../../../i18n";
-import { FormField, SelectField } from "../../../shared/form-controls";
+import { FormField, SelectField, SwitchButton } from "../../../shared/form-controls";
+import "../external/styles.css";
 
-export type WebRecordingDraft = { microphoneMode: MicrophoneMode; maxSize: string; maxSeconds: string };
+export type WebRecordingDraft = { microphoneMode: MicrophoneMode; maxSize: string; maxSeconds: string; answerPlaybackEnabled?: boolean };
 export const validRecording = (draft: WebRecordingDraft) =>
   Number(draft.maxSize) > 0 && Number.isInteger(Number(draft.maxSize) * 1048576) && Number(draft.maxSize) <= 10
   && /^\d+$/.test(draft.maxSeconds) && Number(draft.maxSeconds) > 0 && Number(draft.maxSeconds) <= 60;
@@ -21,6 +22,8 @@ export function WebRecordingFields({ value, onChange, hasAgent }: { value: WebRe
       <div><FormField label={t("speech.maxDuration")} type="number" value={value.maxSeconds} onChange={(maxSeconds) => onChange({ ...value, maxSeconds })} disabled={value.microphoneMode !== "dictation"} />
         <div className="integration-form-hint">{t("speech.durationHelp")}</div></div>
     </div>
+    <div className="server-enabled"><span><strong>{t("speech.listenWeb")}</strong><small>{t("speech.listenHelp")}</small></span><SwitchButton className="ui-switch" label={t("speech.listenWeb")} checked={Boolean(value.answerPlaybackEnabled)} disabled={!hasAgent}
+      onClick={() => onChange({ ...value, answerPlaybackEnabled: !value.answerPlaybackEnabled })} /></div>
     <p className="settings-section-note">{t(hasAgent ? "speech.defaultsHelp" : "speech.noAgent")}</p>
     <p className="settings-section-note">{t("speech.privacy")}</p>
   </>;

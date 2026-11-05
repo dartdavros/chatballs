@@ -1,4 +1,4 @@
-# Dictation and SpeechKit
+# Dictation and answer playback through SpeechKit
 
 Add Yandex SpeechKit in provider settings. Enter a name, Yandex Cloud folder
 and a service account API key with speech recognition access. The key is
@@ -47,7 +47,36 @@ terms. No Chatballs storage does not imply no provider storage. STT v3 creates
 an external operation. Chatballs bounds its wait and attempts DeleteRecognition
 cleanup. Network failures cannot guarantee deletion; losing the creation
 response can leave the operation ID unknown. The key owner pays the provider
-directly. Answer synthesis belongs to the next task of this stage.
+directly.
+
+For playback, separately select the agent's synthesis provider, optional model
+and voice. An empty connection or voice disables TTS; text and STT providers are
+never inherited. Enable “Allow AI answer playback” in WEB. Enabling it adds the
+accepted disclosure about sending answer text, including possible personal data,
+to SpeechKit. Previously confirmed consent without that disclosure is no longer
+current. The synthesis check makes its own real TTS request.
+
+“Listen” beside a saved AI answer starts synthesis. Pause, resume, replay and
+the square stop button control playback. Recording stops and hides the player.
+Staff replies, internal records, system events and unfinished answers cannot be
+synthesized. Formatted replies use their saved plain text, without HTML, CSS or
+formatting instructions.
+
+The voice is never automatically replaced. An incompatible language shows an
+error beside the answer. Language is inferred from saved text; short ambiguous
+answers may be rejected when a compatible language cannot be determined.
+SpeechKit v3 receives sequential parts of up to 1000
+characters with unsafeMode (its documented limit is 5000). PCM parts join into
+one in-memory WAV; partial results are never offered. Limits are 180 seconds,
+100,000 input characters and 64 MiB of audio. Exceeding them produces an error
+without truncating the answer. There is no pre-generation or autoplay.
+
+Replay uses current-widget memory; concurrent requests for an answer join the
+same flight. Keys include session, message, text and TTS settings. Session or
+settings changes, history reset and unmount release buffers and object URLs.
+Reload may require synthesis again. No persistent TTS cache or new audio message
+is created. Failure leaves typing available and never hands the conversation to
+an operator.
 
 [SpeechKit documentation](https://aistudio.yandex.ru/en/docs/speechkit/stt/transcribation)
 states that recognition results are stored for three days and queueing can take
@@ -58,3 +87,5 @@ retry the available recording or continue typing.
 Actual verification and remaining limitations are recorded in
 `docs/verification/T-178/README.md`. This guide does not replace live SpeechKit
 acceptance, including a 60-second recording.
+
+Playback verification and actual outcomes: `docs/verification/T-179/README.md`.

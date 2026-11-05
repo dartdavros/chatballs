@@ -7,6 +7,8 @@ import { AttachmentContent, type BubbleAttachment } from "./ChatAttachment";
 import { formatTime } from "./chatFormat";
 import { t } from "./i18n";
 import { widgetClasses as classes } from "./widgetClasses";
+import { AnswerPlayback } from "./speech/AnswerPlayback";
+import type { AnswerPlaybackControl } from "./speech/useAnswerPlayback";
 
 export function SystemMessage({ text, neutral = false }: { text: string; neutral?: boolean }) {
   return <div style={{ textAlign: "center", margin: "12px 0" }}><span style={neutral
@@ -27,7 +29,7 @@ function AuthorRow({ accent, name, operator, avatarUrl }: { accent: string; name
   );
 }
 
-export function Bubble({ author, authorName, authorAvatarUrl, text, accent, time, pendingState, audioUrl, voice, attachment, snapshot }: { author: "client" | "ai" | "operator"; authorName: string; authorAvatarUrl?: string; text: string; accent: string; time?: string; pendingState?: boolean; audioUrl?: string; voice?: { messageId: number; durationSeconds?: number }; attachment?: BubbleAttachment; snapshot?: MessagePresentation }) {
+export function Bubble({ author, authorName, authorAvatarUrl, text, accent, time, pendingState, audioUrl, voice, attachment, snapshot, playback }: { author: "client" | "ai" | "operator"; authorName: string; authorAvatarUrl?: string; text: string; accent: string; time?: string; pendingState?: boolean; audioUrl?: string; voice?: { messageId: number; durationSeconds?: number }; attachment?: BubbleAttachment; snapshot?: MessagePresentation; playback?: { messageId: number; control: AnswerPlaybackControl } }) {
   const at = formatTime(time);
   const content = audioUrl && voice
     ? <VoiceMessage accent={accent} durationSeconds={voice.durationSeconds} light={author === "client"} messageId={voice.messageId} url={audioUrl} />
@@ -50,7 +52,7 @@ export function Bubble({ author, authorName, authorAvatarUrl, text, accent, time
     <div className={classes.message}>
       <AuthorRow accent={accent} name={operator ? authorName || t("chat.specialist") : authorName} operator={operator} avatarUrl={authorAvatarUrl} />
       <div className={classes.messageContent}>
-        <div className={`${classes.bubble} ${classes.bubbleAgent} ${operator ? classes.bubbleOperator : ""} ${audioUrl ? classes.bubbleAudio : ""}`}>{content}</div>
+        <div className={`${classes.bubble} ${classes.bubbleAgent} ${operator ? classes.bubbleOperator : ""} ${audioUrl ? classes.bubbleAudio : ""}`}>{content}{playback && <AnswerPlayback control={playback.control} messageId={playback.messageId} text={text} />}</div>
       </div>
     </div>
   );

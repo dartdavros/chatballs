@@ -46,7 +46,7 @@ class SpeechRoutingTests(SimpleTestCase):
 
     def test_recording_limits_are_positive_strict_integers_and_keep_previous_mode(self):
         previous = {"microphoneMode": "off", "maxRecordingBytes": 1234, "maxDictationSeconds": 12}
-        self.assertEqual(normalize_recording({}, previous), previous)
+        self.assertEqual(normalize_recording({}, previous), {**previous, "answerPlaybackEnabled": False})
         for key, value in (("maxRecordingBytes", 0), ("maxRecordingBytes", True), ("maxRecordingBytes", 10485761), ("maxDictationSeconds", "60"), ("maxDictationSeconds", 61), ("microphoneMode", [])):
             with self.subTest(key=key, value=value), self.assertRaises(ValidationError):
                 normalize_recording({key: value}, {})

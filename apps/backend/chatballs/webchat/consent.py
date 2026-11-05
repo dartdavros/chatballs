@@ -18,6 +18,8 @@ def current_version(widget) -> str:
 def form_revision(widget) -> str:
     config = widget.integration.config
     policy = {"form": pre_chat_payload(config), "fields": config.get("fields", [])}
+    if config.get("answerPlaybackEnabled", False):
+        policy["answerPlaybackDisclosure"] = 1
     encoded = json.dumps(policy, ensure_ascii=True, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(encoded.encode()).hexdigest()
 

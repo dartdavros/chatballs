@@ -1,0 +1,15 @@
+/* Accepted widget-speech player composition, using the existing voice classes. */
+.wc-answer-audio{display:grid;grid-template-columns:minmax(0,1fr) 28px;gap:8px;align-items:end;margin-top:6px;white-space:normal}
+.wc-answer-audio-toggle{grid-column:2;width:28px;height:28px;align-self:end}
+.wc-answer-audio-toggle[aria-expanded=true]{color:var(--cb-accent)}
+.wc-answer-player{min-width:0;margin-top:6px;font-size:12px}
+.wc-answer-player .voice-message-player{display:flex;align-items:center;gap:10px}
+.wc-answer-player .voice-message-play{width:36px;height:36px;flex:none;border:0;border-radius:50%;background:var(--cb-accent);color:#fff;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.wc-answer-player .voice-message-play:disabled{cursor:wait}
+.wc-answer-player .voice-message-wave{flex:1;display:flex;align-items:center;gap:2px;height:24px;min-width:0;overflow:hidden}
+.wc-answer-player .voice-message-wave i{display:block;width:3px;border-radius:1.5px;background:#d9d9d9;flex:none}
+.wc-answer-player .voice-message-wave i.is-played{background:var(--cb-accent)}
+.wc-answer-player .voice-message-player em{flex:none;color:#8c8c8c;font-size:12px;font-weight:500;font-style:normal;font-variant-numeric:tabular-nums}
+.wc-player-status{height:34px;display:flex;align-items:center;gap:8px;margin:6px 0 0;line-height:16px;color:#8c8c8c}
+.wc-player-status>span{flex:1;min-width:0}
+.wc-player-status.voice-message-error{color:#cf1322}

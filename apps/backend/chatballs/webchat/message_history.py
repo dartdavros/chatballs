@@ -54,11 +54,21 @@ def messages_payload(session: WebSession, since: int) -> dict:
         .first()
     )
     reset = _thread_is_gone(session, since)
+    from chatballs.speech.synthesis import public_synthesis
+
+    playback = public_synthesis(session.connection)
+    from chatballs.webchat.consent import has_current_consent
+
+    consent_current = has_current_consent(session)
+    if not consent_current:
+        playback = {"playbackAvailable": False, "ttsRevision": ""}
+    playback["consentCurrent"] = consent_current
     if reset:
         # Лента виджета начинается заново: то, что осталось, отдаётся целиком.
         since = 0
     if conversation is None:
         return {
+            "playback": playback,
             "state": "ai" if _autonomous_session(session) else "waiting",
             "autonomous": _autonomous_session(session),
             "lifecycle": LifecycleState.OPEN,
@@ -75,6 +85,7 @@ def messages_payload(session: WebSession, since: int) -> dict:
         conversation_id=conversation.pk, id__gt=since,
     ).order_by("created_at", "id")
     return {
+        "playback": playback,
         "reset": reset,
         "autonomous": _autonomous_session(session),
         "state": _STATE.get(conversation.control_mode, "ai"),

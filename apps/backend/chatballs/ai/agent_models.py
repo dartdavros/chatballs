@@ -11,7 +11,7 @@ from chatballs.tenancy.models import TenantRelationModel
 
 
 class AIAgent(TenantRelationModel):
-    tenant_relation_fields = ("channel", "provider_integration", "transcription_integration")
+    tenant_relation_fields = ("channel", "provider_integration", "transcription_integration", "synthesis_integration")
     channel = models.OneToOneField("channels.Channel", on_delete=models.CASCADE, related_name="ai_agent")
     # BYOK-секрет организации. Раньше жил на Channel, из-за
     # чего credential_mode и model были на агенте, а секрет — на канале: одно
@@ -50,6 +50,12 @@ class AIAgent(TenantRelationModel):
     # расшифровывает, а если и там пусто — whisper-1.
     transcription_model = models.CharField(max_length=128, blank=True, default="")
     transcription_language = models.CharField(max_length=16, blank=True, default="")
+    synthesis_integration = models.ForeignKey(
+        "integrations.Integration", on_delete=models.PROTECT, related_name="synthesizing_agents",
+        null=True, blank=True,
+    )
+    synthesis_model = models.CharField(max_length=128, blank=True, default="")
+    synthesis_voice = models.CharField(max_length=64, blank=True, default="")
     model_params = models.JSONField(default=dict, blank=True)
     # Сколько последних сообщений диалога уходит модели вместе с новым. Больше —
     # агент помнит длинный разговор, но каждый ответ дороже, а у локальной

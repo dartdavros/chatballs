@@ -133,6 +133,8 @@ def integration_payload(integration: Integration) -> dict[str, object]:
         from chatballs.speech.contracts import capabilities
 
         payload["speechCapabilities"] = asdict(capabilities(integration.provider))
+        check = integration.config.get("tts_check", {})
+        payload["ttsCheck"] = check if check.get("revision") == integration.runtime_revision else {}
     if is_external_server(integration.provider):
         payload["externalServer"] = external_server_payload(integration)
         if integration.provider == IntegrationProvider.MCP:

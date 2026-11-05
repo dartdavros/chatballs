@@ -184,7 +184,7 @@ class IntegrationTestView(APIView):
                     return _validation_error(error)
                 _audit(request, "integrations.integration_tested", integration)
                 return Response({"integration": integration_payload(integration)})
-            job = prepare_check(integration)
+            job = prepare_check(integration, request.data.get("capability", "stt"))
         error_code = run_check(job)
         with tenant_atomic(context):
             try:

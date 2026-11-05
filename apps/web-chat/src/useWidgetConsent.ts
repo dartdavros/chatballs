@@ -7,14 +7,14 @@ export function consentMatches(token: string | null, saved: string | null, curre
   return Boolean(token && current && saved === current);
 }
 
-export function useWidgetConsent(config: WebConfig | null, entry: WidgetEntry, hostOrigin: string, tokenKey: string) {
+export function useWidgetConsent(config: WebConfig | null, entry: WidgetEntry, hostOrigin: string, tokenKey: string, refreshConfig?: () => void) {
   const versionKey = `${tokenKey}:consent-version`;
   const [token, setToken] = useState<string | null>(() => localStorage.getItem(tokenKey));
   const [version, setVersion] = useState<string | null>(() => localStorage.getItem(versionKey));
   const [starting, setStarting] = useState(false);
   const [proof, setProof] = useState<{ token: string; policy: string } | null>(null);
   const [checked, setChecked] = useState<{ token: string; policy: string } | null>(null);
-  const policy = JSON.stringify([config?.consent?.version, config?.preChat, config?.fields]);
+  const policy = JSON.stringify([config?.consent?.version, config?.consent?.text, config?.preChat, config?.fields]);
   const accepted = consentMatches(token, version, config?.consent?.version)
     && proof?.token === token && proof?.policy === policy;
   const siteFields = useSiteFields(accepted ? token : null, hostOrigin);
@@ -49,7 +49,7 @@ export function useWidgetConsent(config: WebConfig | null, entry: WidgetEntry, h
         }
         return startSession(entry, hostOrigin, fields, preChatFields, config.consent?.version);
       });
-      if (!nextToken) return;
+      if (!nextToken) { refreshConfig?.(); return; }
       const nextVersion = config.consent?.version ?? "";
       localStorage.setItem(tokenKey, nextToken);
       localStorage.setItem(versionKey, nextVersion);
@@ -60,5 +60,5 @@ export function useWidgetConsent(config: WebConfig | null, entry: WidgetEntry, h
   }
 
   const consentReady = !token || (checked?.token === token && checked?.policy === policy) || accepted;
-  return { token, accepted, consentReady, starting, accept, forgetConsent, siteValues: siteFields.values };
+  return { token, accepted, consentReady, starting, accept, forgetConsent, invalidateConsent: () => setProof(null), siteValues: siteFields.values };
 }

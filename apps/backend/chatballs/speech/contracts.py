@@ -23,11 +23,18 @@ class SpeechCapabilities:
     formats: tuple[str, ...] = BROWSER_FORMATS
     max_bytes: int = MAX_RECORDING_BYTES
     max_seconds: int = MAX_DICTATION_SECONDS
+    tts: bool = False
+    tts_models: tuple[str, ...] = ()
+    voices: tuple[dict, ...] = ()
 
 
 def capabilities(provider: str) -> SpeechCapabilities:
     if provider == "YANDEX_SPEECHKIT":
-        return SpeechCapabilities(True, "general", SPEECHKIT_MODELS, ("ru-RU", "en-US"))
+        from chatballs.speech.tts_contract import TTS_MODELS, VOICES
+
+        return SpeechCapabilities(True, "general", SPEECHKIT_MODELS, ("ru-RU", "en-US"),
+                                  tts=True, tts_models=TTS_MODELS,
+                                  voices=tuple({"id": voice, "language": language} for voice, language in VOICES.items()))
     if provider in {"OPENROUTER", "CUSTOM"}:
         # Прежний совместимый /audio/transcriptions, список моделей задаёт сервис.
         return SpeechCapabilities(True, "whisper-1")

@@ -60,7 +60,7 @@ export type CallStateEnvelope = { call: CallInfo; iceServers: RTCIceServer[] };
 // надо начать с чистого листа, иначе клиент видит переписку, которой нет.
 // thinking — агент уже считает ответ: он приходит не в том же запросе, что
 // вопрос, и без этого признака клиент не понимал бы, ждать ему или нет.
-export type Poll = { autonomous?: boolean; state: "ai" | "operator" | "waiting"; lifecycle: string; messages: WebMessage[]; ratingRequests?: import("./ratings/api").RatingRequest[]; call?: CallInfo | null; reset?: boolean; thinking?: boolean; siteEvent?: import("@chatballs/contracts").SiteEventState | null };
+export type Poll = { playback?: { playbackAvailable: boolean; ttsRevision: string; consentCurrent?: boolean }; autonomous?: boolean; state: "ai" | "operator" | "waiting"; lifecycle: string; messages: WebMessage[]; ratingRequests?: import("./ratings/api").RatingRequest[]; call?: CallInfo | null; reset?: boolean; thinking?: boolean; siteEvent?: import("@chatballs/contracts").SiteEventState | null };
 
 export type WidgetEntry = { widgetKey?: string; channel?: string };
 

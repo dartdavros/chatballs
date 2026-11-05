@@ -9,7 +9,7 @@ from chatballs.speech.errors import SpeechError
 MAX_RESPONSE_BYTES = 2 * 1024 * 1024
 
 
-def request(client: httpx.Client, method: str, url: str, *, deadline: float, **kwargs) -> bytes:
+def request(client: httpx.Client, method: str, url: str, *, deadline: float, max_response_bytes=MAX_RESPONSE_BYTES, **kwargs) -> bytes:
     remaining = deadline - time.monotonic()
     if remaining <= 0:
         raise SpeechError("timeout")
@@ -23,7 +23,7 @@ def request(client: httpx.Client, method: str, url: str, *, deadline: float, **k
             for chunk in response.iter_raw(chunk_size=65536):
                 if time.monotonic() >= deadline:
                     raise SpeechError("timeout")
-                if len(content) + len(chunk) > MAX_RESPONSE_BYTES:
+                if len(content) + len(chunk) > max_response_bytes:
                     raise SpeechError("provider_error")
                 content.extend(chunk)
             return bytes(content)

@@ -24,6 +24,7 @@ export function WebIntegrationBasics({ integration, onSaved }: {
     microphoneMode: integration.config.microphoneMode ?? "off",
     maxSize: String((integration.config.maxRecordingBytes ?? 10485760) / 1048576),
     maxSeconds: String(integration.config.maxDictationSeconds ?? 60),
+    answerPlaybackEnabled: integration.config.answerPlaybackEnabled ?? false,
   });
   const [error, setError] = useState<string | null>(null);
   const origins = parseAllowedOrigins(allowedOrigins);
@@ -41,7 +42,7 @@ export function WebIntegrationBasics({ integration, onSaved }: {
         method: "PATCH",
         body: JSON.stringify({ name: name.trim(), channelId: channelId ? Number(channelId) : null,
           ...connectionGroupSettings(integration, channelId, groupId), config: { ...integration.config, allowedOrigins: origins,
-            microphoneMode: recording.microphoneMode, maxRecordingBytes: Number(recording.maxSize) * 1048576, maxDictationSeconds: Number(recording.maxSeconds) } }),
+            microphoneMode: recording.microphoneMode, maxRecordingBytes: Number(recording.maxSize) * 1048576, maxDictationSeconds: Number(recording.maxSeconds), answerPlaybackEnabled: recording.answerPlaybackEnabled } }),
       });
       onSaved(response.integration);
     } catch (caught) {

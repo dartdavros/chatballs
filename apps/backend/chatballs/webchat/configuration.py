@@ -40,6 +40,12 @@ def public_config(*, context: TenantContext, widget: WebChatWidget, origin: str)
             fallback.append({"label": t("webchat.write_in_max"), "url": ""})
     appearance = public_appearance(cfg)
     recording = public_recording(integration)
+    from chatballs.speech.synthesis import public_synthesis
+
+    recording.update(public_synthesis(integration))
+    consent_text = clean_consent_html(str(consent.get("consent_text") or "")) or t("webchat.default_consent", language=language)
+    if integration.config.get("answerPlaybackEnabled", False):
+        consent_text += "<p>" + t("speech.consent_disclosure", language=language) + "</p>"
     return {
         "available": True,
         "autonomous": _autonomous(integration),
@@ -58,8 +64,7 @@ def public_config(*, context: TenantContext, widget: WebChatWidget, origin: str)
         "consent": {
             # Запись могла сохраниться до очистки — наружу уходит только
             # безопасная разметка (SPEC-0020 R-15).
-            "text": clean_consent_html(str(consent.get("consent_text") or ""))
-            or t("webchat.default_consent", language=language),
+            "text": consent_text,
             "version": consent.get("consent_version") or "v1",
         },
         "quickReplies": cfg.get("quick_replies") or [],

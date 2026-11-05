@@ -15,11 +15,16 @@ def recording_settings(integration) -> dict:
         "microphoneMode": stored.get("microphoneMode", "voice_message" if integration.voice_messages_enabled else "off"),
         "maxRecordingBytes": stored.get("maxRecordingBytes", MAX_RECORDING_BYTES),
         "maxDictationSeconds": stored.get("maxDictationSeconds", MAX_DICTATION_SECONDS),
+        "answerPlaybackEnabled": stored.get("answerPlaybackEnabled", False),
     }
 
 
 def normalize_recording(config: dict, previous: dict) -> dict:
     result = {}
+    playback = config.get("answerPlaybackEnabled", previous.get("answerPlaybackEnabled", False))
+    if type(playback) is not bool:
+        raise ValidationError({"answerPlaybackEnabled": t("api.boolean_required")})
+    result["answerPlaybackEnabled"] = playback
     for key, default, limit in (
         ("maxRecordingBytes", MAX_RECORDING_BYTES, MAX_RECORDING_BYTES),
         ("maxDictationSeconds", MAX_DICTATION_SECONDS, MAX_DICTATION_SECONDS),

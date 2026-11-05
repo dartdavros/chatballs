@@ -19,6 +19,7 @@ import { useWidgetConsent } from "./useWidgetConsent";
 import { useChatPolling } from "./useChatPolling";
 import { useVoiceRecorder } from "./useVoiceRecorder";
 import { useDictation } from "./speech/useDictation";
+import { useAnswerPlayback } from "./speech/useAnswerPlayback";
 import { appendDictation } from "./speech/draft";
 import { useWidgetActivity } from "./widgetActivity";
 import { useVisitorSignals } from "./useVisitorSignals";
@@ -35,7 +36,11 @@ const TOKEN_KEY = `chatballs-chat-token:${WIDGET_KEY || `channel:${LEGACY_CHANNE
 
 export function useChatSession() {
   const [config, setConfig] = useState<WebConfig | null>(null);
-  const { token, accepted, consentReady, starting, accept, forgetConsent, siteValues } = useWidgetConsent(config, ENTRY, HOST_ORIGIN, TOKEN_KEY);
+  function reloadConfig() {
+    return getConfig(ENTRY, HOST_ORIGIN).then(loaded => { applyWidgetLanguage(loaded.language); setConfig(loaded); });
+  }
+  const refreshConfig = () => { void reloadConfig().catch(() => undefined); };
+  const { token, accepted, consentReady, starting, accept, forgetConsent, invalidateConsent, siteValues } = useWidgetConsent(config, ENTRY, HOST_ORIGIN, TOKEN_KEY, refreshConfig);
   const siteEvent = useSiteEvents({ config, token, accepted, consentReady, widgetKey: WIDGET_KEY, hostOrigin: HOST_ORIGIN });
   useVisitorSignals(accepted ? token : null, HOST_ORIGIN);
   const [messages, setMessages] = useState<WebMessage[]>([]);
@@ -58,6 +63,7 @@ export function useChatSession() {
   const scrollToLatest = useScrollToLatest(bodyRef);
   const incomingCall = Boolean(call && (call.status === "REQUESTED" || call.status === "RINGING"));
   const notifyNewMessage = useWidgetActivity(incomingCall);
+  const playback = useAnswerPlayback(accepted ? token : null, config?.speech?.playbackAvailable ? config.speech.ttsRevision ?? "" : "", HOST_ORIGIN);
   const dictation = useDictation({
     token: accepted ? token : null, hostOrigin: HOST_ORIGIN, settings: config?.speech,
     onResult: (text) => setInput((current) => appendDictation(current, text)),
@@ -73,23 +79,23 @@ export function useChatSession() {
   });
 
   useEffect(() => {
-    getConfig(ENTRY, HOST_ORIGIN)
-      .then((loaded) => {
-        // Язык приходит вместе с настройками. Ставится до setConfig: рендер,
-        // который они вызовут, уже пройдёт на нужном языке.
-        applyWidgetLanguage(loaded.language);
-        setConfig(loaded);
-      })
-      .catch(() => setConfig({ available: false }));
+    void reloadConfig().catch(() => setConfig({ available: false }));
   }, []);
 
   function ingestPoll(data: Poll, notify = true) {
+    if (data.playback?.consentCurrent === false) {
+      playback.clear();
+      dictation.cancel();
+      invalidateConsent();
+      refreshConfig();
+    }
     siteEvent.updateStatus(data.siteEvent);
     setRatingRequests(data.ratingRequests || []);
     // Диалог удалили на стороне поддержки — переписка обнуляется, и виджет
     // продолжает жить как только что открытый.
     if (data.reset) {
       dictation.cancel();
+      playback.clear();
       lastId.current = 0;
       setMessages([]);
       setPending([]);
@@ -97,6 +103,9 @@ export function useChatSession() {
       setContactSent(false);
     }
     setState(data.state);
+    if (data.playback) setConfig(previous => previous && previous.speech
+      && (previous.speech.ttsRevision !== data.playback!.ttsRevision || previous.speech.playbackAvailable !== data.playback!.playbackAvailable)
+      ? { ...previous, speech: { ...previous.speech, ...data.playback } } : previous);
     if (data.autonomous !== undefined) setConfig((previous) => previous && previous.autonomous !== data.autonomous
       ? { ...previous, autonomous: data.autonomous } : previous);
     setThinking(Boolean(data.thinking));
@@ -116,6 +125,7 @@ export function useChatSession() {
   }, [scrollToLatest, messages, pending, awaiting]);
 
   function forgetSession() {
+    playback.clear();
     setRatingRequests([]);
     forgetConsent();
     lastId.current = 0;
@@ -179,5 +189,5 @@ export function useChatSession() {
   const showPhoneForm = lastContactRequestId > 0 && !(contactSent || messages.some((message) => message.kind === "contact"));
   const unavailable = config !== null && !config.available;
 
-  return { config, state, accepted, siteValues, siteEvent, messages, ratingRequests, pending, awaiting, thinking, call, input, setInput, starting, recorder, dictation, bodyRef, token, lastContactRequestId, showPhoneForm, unavailable, accept, send, submitContact, acceptCallInvite, declineCallInvite, attachment, attachmentError, setAttachment, setAttachmentError };
+  return { playback, config, state, accepted, siteValues, siteEvent, messages, ratingRequests, pending, awaiting, thinking, call, input, setInput, starting, recorder, dictation, bodyRef, token, lastContactRequestId, showPhoneForm, unavailable, accept, send, submitContact, acceptCallInvite, declineCallInvite, attachment, attachmentError, setAttachment, setAttachmentError };
 }
