@@ -63,8 +63,9 @@
   padding: 0 !important;
 }
 
-.app-dropdown .ant-dropdown-menu-item button {
+.app-dropdown .ant-dropdown-menu-item :is(button, a.link) {
   width: 100%;
+  box-sizing: border-box;
   min-height: 33px;
   display: flex;
   align-items: center;

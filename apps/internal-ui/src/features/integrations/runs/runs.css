@@ -86,10 +86,6 @@
 .run-launch footer { margin-top: auto; padding-top: 14px; border-top: 1px solid var(--n-8); }
 .run-launch footer p { color: var(--n-4); font-size: 12px; }
 .run-launch footer > div { display: flex; gap: 10px; justify-content: flex-end; }
-.run-contact-actions { padding: 14px 18px; min-height: 120px; box-sizing: border-box; border-top: 1px solid var(--n-8); }
-.run-contact-actions h4 { margin: 0 0 4px; color: var(--n-1); font-size: 13px; font-weight: 700; }
-.run-contact-actions > .link { display: block; margin-top: 8px; }
-.run-contact-actions p { margin: 6px 0 0; color: var(--n-4); font-size: 12.5px; line-height: 1.5; }
 .run-feed-card { width: min(520px,100%); padding: 14px 16px; border: 1px solid var(--n-8); border-radius: 12px; background: var(--surface-card); box-sizing: border-box; }
 .run-feed-card > header { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .run-feed-card > header strong { flex: 1; color: var(--n-1); font-size: 13px; }

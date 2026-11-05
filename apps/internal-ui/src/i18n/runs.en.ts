@@ -89,6 +89,8 @@ export const runsEn = {
   "runs.cleared": "Detailed data has been deleted under the retention policy. It cannot be restored from the journal.",
   "runs.cancel_requested": "Cancellation requested. A sent request may still complete; its outcome is being checked.",
   "runs.actions": "Actions",
+  "runs.context_actions": "Available in this conversation",
+  "runs.read_only": "Read only",
   "runs.launch": "Run",
   "runs.launch_title": "Run action",
   "runs.what_happens": "What will happen",

@@ -1,0 +1,58 @@
+.app-dropdown.is-manual-actions .ant-dropdown-menu {
+  width: min(340px, calc(100vw - 16px));
+  max-height: calc(100dvh - 16px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.app-dropdown.is-manual-actions .ant-dropdown-menu-item-group-title {
+  padding: 6px 10px 4px;
+  color: var(--n-5);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.app-dropdown.is-manual-actions .ant-dropdown-menu-item-group-list { margin: 0; }
+
+.app-dropdown.is-manual-actions .ant-dropdown-menu-item .manual-action-item {
+  gap: 10px;
+  white-space: normal;
+}
+
+.app-dropdown.is-manual-actions .manual-action-item .manual-action-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 28px;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background: var(--n-9);
+  color: var(--n-3);
+}
+
+.app-dropdown.is-manual-actions .manual-action-copy { flex: 1; min-width: 0; }
+.app-dropdown.is-manual-actions .manual-action-copy strong {
+  display: block;
+  color: var(--n-1);
+  font-size: 13px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.app-dropdown.is-manual-actions .manual-action-copy small {
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--n-4);
+  overflow-wrap: anywhere;
+}
+
+.app-dropdown.is-manual-actions .ant-dropdown-menu-item-disabled .manual-action-item { opacity: .6; }
+.app-dropdown.is-manual-actions .ant-dropdown-menu-item-disabled .manual-action-copy small { color: var(--warning-text); }
+
+@media (max-width: 767px) {
+  .run-launch-trigger .run-launch-label { display: none; }
+  .run-launch-trigger.row-menu-button { width: 36px; padding: 0; }
+}
