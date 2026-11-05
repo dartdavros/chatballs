@@ -1,7 +1,7 @@
 """Lexical frame values and durable error data, without copying credentials."""
 
-from dataclasses import asdict
 from copy import deepcopy
+from dataclasses import asdict
 
 from chatballs.integrations.execution.permissions import allowed_files
 from chatballs.integrations.scenarios.values import RunValues

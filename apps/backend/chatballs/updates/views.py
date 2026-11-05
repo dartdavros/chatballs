@@ -1,5 +1,6 @@
 """Update API retains its permissions and uses common domain commands."""
 from rest_framework.views import APIView
+
 from chatballs.identity.command_http import command_response
 from chatballs.identity.instance_access import InstanceSettingsPermission, IsInstanceAdmin
 from chatballs.updates import commands

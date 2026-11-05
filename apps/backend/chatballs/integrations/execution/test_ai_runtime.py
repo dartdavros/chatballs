@@ -3,8 +3,8 @@
 import json
 from dataclasses import replace
 from datetime import timedelta
-from unittest.mock import patch
 from types import SimpleNamespace
+from unittest.mock import patch
 
 from django.db import DatabaseError, transaction
 from django.utils import timezone

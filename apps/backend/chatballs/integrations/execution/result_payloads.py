@@ -24,8 +24,8 @@ def context_for(run):
 
 
 def schema_and_names(run, block):
-    from chatballs.integrations.execution.snapshots import walk
     from chatballs.integrations.execution.progress_payloads import TITLES
+    from chatballs.integrations.execution.snapshots import walk
     context = context_for(run)
     spec = block_output(block, context)
     names = {}
@@ -57,6 +57,7 @@ def label_schema(spec, names):
 
 def display_errors(value, block):
     from copy import deepcopy
+
     from chatballs.integrations.execution.errors import error_message
     value = deepcopy(value)
     def entry(data, steps):

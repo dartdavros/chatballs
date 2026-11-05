@@ -7,8 +7,8 @@ from django.utils import timezone
 from chatballs.identity.audit import record_audit_event
 from chatballs.integrations.execution.approvals import invocation_digest
 from chatballs.integrations.execution.events import journal, schedule
-from chatballs.integrations.execution.permissions import ExecutionDenied
 from chatballs.integrations.execution.frames import save
+from chatballs.integrations.execution.permissions import ExecutionDenied
 
 
 def apply_control(tenant, run, *, action, digest, path):

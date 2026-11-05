@@ -142,7 +142,7 @@ def check_untyped(value: Any, **kwargs) -> None:
             kwargs["issues"].append(Issue(kwargs["path"], "reference"))
         else:
             check_binding(value, target, **kwargs)
-    elif isinstance(value, (dict, list)):
+    elif isinstance(value, dict | list):
         items = value.items() if isinstance(value, dict) else enumerate(value)
         for key, child in items:
             check_untyped(child, **{**kwargs, "path": f"{kwargs['path']}.{key}"})

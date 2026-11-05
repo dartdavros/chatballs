@@ -3,8 +3,8 @@
 import operator
 
 from chatballs.integrations.execution.permissions import ExecutionDenied, context_values
-from chatballs.integrations.scenarios.values import RunValues, resolve_value
 from chatballs.integrations.execution.source_support import require_supported_sources
+from chatballs.integrations.scenarios.values import RunValues, resolve_value
 
 
 def evaluate_conditions(document, conversation, parameters, *, registry=None, values=None):

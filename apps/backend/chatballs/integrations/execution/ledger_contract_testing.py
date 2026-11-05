@@ -1,8 +1,15 @@
 """Second independently registered contract, confined to automatic tests."""
 
 from chatballs.integrations.adapters.contracts import (
-    AdapterDescriptor, AuthMethod, Effect, OperationDescriptor, OperationHandlers,
-    OperationResult, Presentation, ResultState, RetryStrategy,
+    AdapterDescriptor,
+    AuthMethod,
+    Effect,
+    OperationDescriptor,
+    OperationHandlers,
+    OperationResult,
+    Presentation,
+    ResultState,
+    RetryStrategy,
 )
 from chatballs.integrations.adapters.schema import TypeSpec
 

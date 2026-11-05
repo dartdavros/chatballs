@@ -49,8 +49,8 @@ def run_io(tenant, token):
     except Exception as error:
         # No generic transport exception proves that a send had no effect.
         # Only explicit authorization/argument rejection can be definitive.
-        code = str(error) if isinstance(error, (ExecutionDenied, NativeAccessDenied, NativeOperationRejected)) else "operation_rejected"
-        definitive = not sent or isinstance(error, (NativeAccessDenied, NativeOperationRejected))
+        code = str(error) if isinstance(error, ExecutionDenied | NativeAccessDenied | NativeOperationRejected) else "operation_rejected"
+        definitive = not sent or isinstance(error, NativeAccessDenied | NativeOperationRejected)
         with tenant_atomic(tenant):
             run, step, valid = checkpoints.locked(tenant, token)
             if valid:

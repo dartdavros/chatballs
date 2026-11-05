@@ -1,8 +1,8 @@
 """Enumerate both product surfaces, including inherited and framework methods."""
 
 from django.urls import URLResolver, get_resolver
-from django.views import View
 from django.utils.module_loading import import_string
+from django.views import View
 from rest_framework.views import APIView
 
 SURFACES = {"app": "chatballs_backend.urls_app", "platform": "chatballs_backend.urls_platform"}

@@ -10,8 +10,8 @@ from chatballs.webchat.appearance import public_appearance
 from chatballs.webchat.consent_html import clean_consent_html
 from chatballs.webchat.models import WebChatWidget
 from chatballs.webchat.pre_chat import pre_chat_payload
-from chatballs.webchat.sessions import origin_allowed
 from chatballs.webchat.recording_configuration import public_recording
+from chatballs.webchat.sessions import origin_allowed
 from chatballs.webchat.site_event_config import public_rule
 
 

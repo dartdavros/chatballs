@@ -3,8 +3,8 @@
 from django.core.exceptions import ValidationError
 
 from chatballs.i18n import t
-from chatballs.integrations.models import Integration
 from chatballs.integrations.adapters.schema import SchemaDefinitionError
+from chatballs.integrations.models import Integration
 from chatballs.integrations.scenario_state.definitions import ScenarioConnection, ScenarioDefinition
 from chatballs.integrations.scenarios.catalog import connection_ids, definition_context
 from chatballs.integrations.scenarios.definition import empty_definition

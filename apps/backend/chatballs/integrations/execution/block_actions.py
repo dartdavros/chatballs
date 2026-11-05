@@ -2,13 +2,13 @@
 
 from django.utils import timezone
 
-from chatballs.integrations.execution.ai_policy import needs_confirmation
 from chatballs.integrations.execution.actions import resolve_action
+from chatballs.integrations.execution.ai_policy import needs_confirmation
 from chatballs.integrations.execution.block_values import actual
+from chatballs.integrations.execution.events import journal, schedule
+from chatballs.integrations.execution.files import lock_input_files, own_input_files
 from chatballs.integrations.execution.frames import save
 from chatballs.integrations.execution.snapshots import check_contract
-from chatballs.integrations.execution.files import lock_input_files, own_input_files
-from chatballs.integrations.execution.events import journal, schedule
 from chatballs.integrations.scenario_state.steps import ScenarioStep
 from chatballs.integrations.scenarios.values import prepare_inputs
 

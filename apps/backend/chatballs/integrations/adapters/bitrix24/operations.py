@@ -8,8 +8,8 @@
 
 from __future__ import annotations
 
-from functools import partial
 from dataclasses import replace
+from functools import partial
 from typing import Any
 
 from chatballs.integrations.adapters.contracts import Effect, OperationDescriptor

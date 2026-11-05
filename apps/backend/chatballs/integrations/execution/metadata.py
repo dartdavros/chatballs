@@ -2,8 +2,8 @@
 
 from chatballs.integrations.execution.actions import resolve_action
 from chatballs.integrations.execution.permissions import ExecutionDenied, authorize, direct_policy
-from chatballs.integrations.scenario_state.definitions import ScenarioDefinition
 from chatballs.integrations.execution.source_support import require_supported_sources
+from chatballs.integrations.scenario_state.definitions import ScenarioDefinition
 
 
 def metadata_action(tenant, *, connection_id, operation_key, conversation_id, scenario_id=None):

@@ -1,11 +1,12 @@
 """Outbox contains identity only; operational values remain encrypted once."""
 
+from django.db import transaction
+
+from chatballs.conversations.realtime import conversation_group, inbox_group
 from chatballs.events.services import DomainEvent, enqueue_event
 from chatballs.integrations.scenario_state.journal import RunJournalEntry
-from chatballs.tenancy.context import TenantActorKind, TenantContext
-from django.db import transaction
 from chatballs.realtime import publish
-from chatballs.conversations.realtime import inbox_group, conversation_group
+from chatballs.tenancy.context import TenantActorKind, TenantContext
 
 
 def system_context(tenant):

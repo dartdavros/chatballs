@@ -1,5 +1,6 @@
 """Personal profile commands act only on the authenticated global user."""
 from django.db import transaction
+
 from chatballs.i18n import t
 from chatballs.identity.audit import record_audit_event
 from chatballs.identity.auth.common import _user_payload

@@ -3,9 +3,13 @@ from django.http import FileResponse
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
+
 from chatballs.identity import profile_commands, profile_files, profile_language, profile_sessions
 from chatballs.identity.auth.profile_credentials import (  # noqa: F401
-    ChangeTemporaryPasswordView, ProfilePasswordView, ProfileTotpDisableView, ProfileTotpStartView,
+    ChangeTemporaryPasswordView,
+    ProfilePasswordView,
+    ProfileTotpDisableView,
+    ProfileTotpStartView,
 )
 from chatballs.identity.command_http import command_response
 

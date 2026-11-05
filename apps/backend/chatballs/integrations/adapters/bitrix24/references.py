@@ -1,7 +1,8 @@
 """crm.*.list search, per the official Bitrix24 REST list/filter contract."""
 
-from chatballs.integrations.adapters.references import EntityReferences, ReferenceCandidate
 from urllib.parse import urlsplit
+
+from chatballs.integrations.adapters.references import EntityReferences, ReferenceCandidate
 
 
 def references(entity):

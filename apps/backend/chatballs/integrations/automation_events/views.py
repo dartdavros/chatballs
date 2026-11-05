@@ -1,8 +1,8 @@
 """Public signed ingress: organization comes from the stored connection."""
 
 from django.http import JsonResponse
-from django.views import View
 from django.utils.decorators import method_decorator
+from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 
 from chatballs.integrations.automation_events.ingress import receive

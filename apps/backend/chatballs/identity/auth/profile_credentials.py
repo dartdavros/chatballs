@@ -7,6 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
 from chatballs.i18n import t
 from chatballs.identity.audit import record_audit_event
 from chatballs.identity.auth.common import _revoke_other_user_sessions, _user_payload

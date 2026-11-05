@@ -6,7 +6,6 @@ from django.test import TestCase
 
 from chatballs.channels.models import Channel
 from chatballs.identity.models import Organization
-from chatballs.integrations.models import Integration
 from chatballs.webchat.recording_configuration import public_recording
 from chatballs.webchat.testing import create_web_widget
 
@@ -33,11 +32,15 @@ class WebRecordingMigrationTests(TestCase):
             self.assertFalse(public_recording(integration)["available"])
 
     def test_speechkit_is_encrypted_and_cannot_be_an_answer_provider(self):
-        from chatballs.ai.provider_selection import configure_agent_provider, configure_agent_transcription
-        from chatballs.integrations.services import IntegrationInput, create_integration
-        from chatballs.testing import system_tenant_context
         from django.core.exceptions import ValidationError
         from django.db import connection
+
+        from chatballs.ai.provider_selection import (
+            configure_agent_provider,
+            configure_agent_transcription,
+        )
+        from chatballs.integrations.services import IntegrationInput, create_integration
+        from chatballs.testing import system_tenant_context
 
         organization = Organization.objects.create(name="Speech", slug="speech-config")
         context = system_tenant_context(organization)

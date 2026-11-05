@@ -5,7 +5,12 @@ from django.test import TransactionTestCase
 
 from chatballs.identity.bootstrap import bootstrap_owner
 from chatballs.identity.models import EmployeeRole, HumanUser, Organization, OrganizationMembership
-from chatballs.integrations.models import Integration, IntegrationKind, IntegrationProvider, ServiceConnectionSettings
+from chatballs.integrations.models import (
+    Integration,
+    IntegrationKind,
+    IntegrationProvider,
+    ServiceConnectionSettings,
+)
 from chatballs.integrations.scenario_state.definitions import ScenarioDefinition
 from chatballs.integrations.scenarios.definition import empty_definition
 from chatballs.tenancy.database import tenant_atomic

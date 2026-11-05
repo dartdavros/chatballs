@@ -1,7 +1,7 @@
 """Trusted search projections expose choices, never establish identity."""
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable
 
 
 @dataclass(frozen=True)

@@ -1,5 +1,6 @@
 """HTTP authentication and transport for shared instance commands."""
 from rest_framework.views import APIView
+
 from chatballs.identity import instance_commands, instance_email_commands
 from chatballs.identity.command_http import command_response
 from chatballs.identity.instance_access import InstanceSettingsPermission, IsInstanceAdmin

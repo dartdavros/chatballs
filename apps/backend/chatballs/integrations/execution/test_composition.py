@@ -10,8 +10,8 @@ from chatballs.integrations.execution.composition_testing import CompositionCase
 from chatballs.integrations.execution.control import control
 from chatballs.integrations.execution.permissions import ExecutionDenied
 from chatballs.integrations.execution.runner import run_one
-from chatballs.integrations.scenario_state.definitions import ScenarioDefinition
 from chatballs.integrations.models import Integration, ServiceConnectionSettings
+from chatballs.integrations.scenario_state.definitions import ScenarioDefinition
 from chatballs.tenancy.database import tenant_atomic
 
 
@@ -49,8 +49,8 @@ class CompositionTests(CompositionCase):
             self.assertEqual(run.progress.get(path="steps/parallel").state, "completed")
             self.assertEqual(set(run.steps.values_list("adapter_key", flat=True)), {"independent", "ledger"})
             self.assertEqual(run.steps.filter(integration=ledger, state="completed").count(), 2)
-            from chatballs.integrations.execution.result_payloads import schema_and_names
             from chatballs.integrations.adapters.schema import validate_value
+            from chatballs.integrations.execution.result_payloads import schema_and_names
             for path in ("steps/each", "steps/parallel"):
                 frame = run.progress.get(path=path)
                 spec, _ = schema_and_names(run, frame.definition["block"])

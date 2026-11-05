@@ -3,7 +3,10 @@
 from rest_framework.exceptions import PermissionDenied
 
 from chatballs.integrations.action_catalog.authority import require_context
-from chatballs.integrations.action_catalog.contracts import NativeAccessDenied, NativeOperationRejected
+from chatballs.integrations.action_catalog.contracts import (
+    NativeAccessDenied,
+    NativeOperationRejected,
+)
 from chatballs.integrations.action_catalog.profile_schemas import field
 from chatballs.integrations.action_catalog.schema import action, obj
 from chatballs.integrations.adapters.contracts import Effect, OperationResult, ResultState

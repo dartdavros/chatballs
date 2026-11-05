@@ -3,7 +3,7 @@ from io import BytesIO
 from django.core.exceptions import RequestAborted
 from django.test import SimpleTestCase
 
-from chatballs_backend.speech_asgi import DictationASGIHandler, MAX_DICTATION_BODY
+from chatballs_backend.speech_asgi import MAX_DICTATION_BODY, DictationASGIHandler
 
 
 class DictationBodyTests(SimpleTestCase):

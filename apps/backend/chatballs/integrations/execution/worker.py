@@ -8,8 +8,8 @@ from django.db import close_old_connections
 from django.utils import timezone
 
 from chatballs.events.handlers import register
-from chatballs.integrations.execution.events import schedule
 from chatballs.integrations.execution.checkpoints import claim
+from chatballs.integrations.execution.events import schedule
 from chatballs.integrations.execution.runner import run_one
 from chatballs.integrations.scenario_state.runs import ScenarioRun
 from chatballs.tenancy.database import tenant_atomic

@@ -2,8 +2,8 @@
 
 import hashlib
 
-from chatballs.integrations.execution.composite_launch import snapshot
 from chatballs.integrations.execution.actions import resolve_action
+from chatballs.integrations.execution.composite_launch import snapshot
 from chatballs.integrations.scenarios.definition import empty_definition
 from chatballs.integrations.scenarios.synchronization_access import actor_for, conversation_for
 

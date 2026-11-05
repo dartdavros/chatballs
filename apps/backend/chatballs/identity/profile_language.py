@@ -1,5 +1,6 @@
 """Personal language preference and its existing organization fallback."""
 from django.utils import translation
+
 from chatballs.i18n import t
 from chatballs.i18n.languages import normalize_language, resolve_language
 from chatballs.identity.audit import record_audit_event

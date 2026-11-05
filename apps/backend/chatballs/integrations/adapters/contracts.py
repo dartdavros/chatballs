@@ -13,18 +13,18 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from datetime import datetime
 from enum import StrEnum
 from typing import TYPE_CHECKING, Any
-from datetime import datetime
 
 from chatballs.integrations.adapters.schema import TypeSpec
 from chatballs.integrations.adapters.templates import ScenarioTemplate as ScenarioTemplate
 from chatballs.integrations.adapters.templates import TemplateStep as TemplateStep
 
 if TYPE_CHECKING:
-    from chatballs.integrations.models import Integration
-    from chatballs.integrations.adapters.synchronization import SynchronizationBinding
     from chatballs.integrations.adapters.references import EntityReferences
+    from chatballs.integrations.adapters.synchronization import SynchronizationBinding
+    from chatballs.integrations.models import Integration
 
 
 class Effect(StrEnum):

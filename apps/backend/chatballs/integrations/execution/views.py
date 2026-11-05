@@ -31,8 +31,7 @@ class RunAPIView(APIView):
         if isinstance(exc, InvalidValues):
             from chatballs.integrations.scenarios.payloads import issue_payload
             return Response({"detail": t("runs.error_arguments"), "issues": [issue_payload(issue) for issue in exc.issues]}, status=400)
-        if isinstance(exc, (Conversation.DoesNotExist, ScenarioRun.DoesNotExist, ScenarioDefinition.DoesNotExist, Integration.DoesNotExist,
-                            ExecutionDenied, ServiceUnavailable, ServiceCheckFailed, InvalidValues, ValidationError, ValueError, TypeError, KeyError)):
+        if isinstance(exc, Conversation.DoesNotExist | ScenarioRun.DoesNotExist | ScenarioDefinition.DoesNotExist | Integration.DoesNotExist | ExecutionDenied | ServiceUnavailable | ServiceCheckFailed | InvalidValues | ValidationError | ValueError | TypeError | KeyError):
             code = str(exc) if isinstance(exc, ExecutionDenied) else "unavailable"
             return Response({"detail": error_message(code)}, status=409 if isinstance(exc, ExecutionDenied) else 404)
         return super().handle_exception(exc)

@@ -1,6 +1,6 @@
 """Bounded exchange discovery; every cycle is one immutable common Run."""
 
-from datetime import datetime, timedelta, timezone as utc_timezone
+from datetime import UTC, datetime, timedelta
 
 from django.db import transaction
 from django.db.models import Exists, OuterRef
@@ -12,8 +12,15 @@ from chatballs.integrations.adapters.synchronization import EntitySnapshot
 from chatballs.integrations.execution.events import system_context
 from chatballs.integrations.execution.permissions import ExecutionDenied
 from chatballs.integrations.scenario_state.entity_links import EntityLink
-from chatballs.integrations.scenario_state.synchronization import ServiceSynchronizationSettings, SynchronizationCheckpoint
-from chatballs.integrations.scenarios.synchronization_access import active_pair, actor_for, binding_for
+from chatballs.integrations.scenario_state.synchronization import (
+    ServiceSynchronizationSettings,
+    SynchronizationCheckpoint,
+)
+from chatballs.integrations.scenarios.synchronization_access import (
+    active_pair,
+    actor_for,
+    binding_for,
+)
 from chatballs.integrations.scenarios.synchronization_launch import launch
 from chatballs.tenancy.database import tenant_atomic
 
@@ -30,7 +37,7 @@ def remote_snapshot(binding, value):
             or not isinstance(result.modified_at, datetime) or timezone.is_naive(result.modified_at)):
         raise ExecutionDenied("arguments")
     return {"values": result.values, "version": result.version, "deleted": result.deleted,
-        "modifiedAt": result.modified_at.astimezone(utc_timezone.utc).isoformat()}
+        "modifiedAt": result.modified_at.astimezone(UTC).isoformat()}
 
 
 def discover(tenant):

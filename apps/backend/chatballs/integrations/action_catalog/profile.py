@@ -9,13 +9,15 @@ from chatballs.identity import profile_commands, profile_files, profile_language
 from chatballs.integrations.action_catalog import profile_schemas as schema
 from chatballs.integrations.action_catalog.administrative import register
 from chatballs.integrations.action_catalog.authority import current_user, require_context
-from chatballs.integrations.action_catalog.contracts import NativeAccessDenied, NativeOperationRejected
+from chatballs.integrations.action_catalog.contracts import (
+    NativeAccessDenied,
+    NativeOperationRejected,
+)
 from chatballs.integrations.action_catalog.file_reads import FILE_RESULT, stream_result
 from chatballs.integrations.action_catalog.schema import action, obj
 from chatballs.integrations.action_catalog.serialization import json_data
 from chatballs.integrations.adapters.contracts import Effect, OperationResult, ResultState
 from chatballs.integrations.adapters.schema import validate_value
-
 
 for key, suffix, inputs, service in (
     ("profile.patch", "update/", obj(fullName=schema.field("fullName", required=True), email=schema.field("email", required=True)), profile_commands.update),

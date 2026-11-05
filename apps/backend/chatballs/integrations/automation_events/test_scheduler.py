@@ -1,6 +1,6 @@
 """Durable schedule slots and independent recovery under PostgreSQL."""
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from chatballs.integrations.automation_events.configuration import synchronize
 from chatballs.integrations.automation_events.scheduler import tick
@@ -11,7 +11,7 @@ from chatballs.tenancy.database import tenant_atomic
 
 class SchedulerTests(CompositionCase):
     def prepare(self, misfire):
-        now = datetime(2026, 10, 25, 2, tzinfo=timezone.utc)
+        now = datetime(2026, 10, 25, 2, tzinfo=UTC)
         with tenant_atomic(self.tenant):
             document = self.scenario.definition
             document["steps"] = [self.action("read")]
@@ -31,7 +31,7 @@ class SchedulerTests(CompositionCase):
         with tenant_atomic(self.tenant):
             self.assertEqual(ScenarioRun.objects.count(), 1)
             row = self.scenario.schedules.get()
-            self.assertEqual(row.last_slot, datetime(2026, 10, 25, 1, 30, tzinfo=timezone.utc))
+            self.assertEqual(row.last_slot, datetime(2026, 10, 25, 1, 30, tzinfo=UTC))
             self.scenario.revision += 1
             self.scenario.save(update_fields=["revision"])
             self.scenario.schedules.update(due_at=now)

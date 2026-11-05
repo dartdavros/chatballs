@@ -1,6 +1,6 @@
 """Resolve local clock once, including DST, rather than sleeping a worker."""
 
-from datetime import datetime, time, timedelta, timezone as utc
+from datetime import UTC, datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
 from django.utils import timezone
@@ -33,8 +33,8 @@ def due_at(block, values, registry=None):
         naive = datetime.combine(day, clock)
         for minute in range(181):
             candidate = naive + timedelta(minutes=minute)
-            instants = sorted({candidate.replace(tzinfo=zone, fold=fold).astimezone(utc.utc) for fold in (0, 1)
-                if candidate.replace(tzinfo=zone, fold=fold).astimezone(utc.utc).astimezone(zone).replace(tzinfo=None) == candidate})
+            instants = sorted({candidate.replace(tzinfo=zone, fold=fold).astimezone(UTC) for fold in (0, 1)
+                if candidate.replace(tzinfo=zone, fold=fold).astimezone(UTC).astimezone(zone).replace(tzinfo=None) == candidate})
             future = [instant for instant in instants if instant > now]
             if future:
                 return future[0]

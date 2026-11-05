@@ -5,7 +5,13 @@ from chatballs.identity.audit import record_audit_event
 from chatballs.identity.command_outcomes import CommandOutcome
 from chatballs.integrations.action_catalog.authority import require_instance
 from chatballs.updates.models import UpdateState
-from chatballs.updates.services import InstallNotPossible, check_for_updates, request_install, sync_install_status, update_payload
+from chatballs.updates.services import (
+    InstallNotPossible,
+    check_for_updates,
+    request_install,
+    sync_install_status,
+    update_payload,
+)
 
 
 def read(user, *, request=None):

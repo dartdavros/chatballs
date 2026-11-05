@@ -9,7 +9,7 @@ from chatballs.identity.audit import record_audit_event
 from chatballs.identity.models import EmployeeRole
 from chatballs.integrations.execution.events import journal, schedule
 from chatballs.integrations.execution.permissions import ExecutionDenied, current_actor
-from chatballs.integrations.scenarios.synchronization_access import actor_for, active_pair
+from chatballs.integrations.scenarios.synchronization_access import active_pair, actor_for
 from chatballs.integrations.scenarios.synchronization_runtime import lock
 from chatballs.tenancy.database import tenant_atomic
 
@@ -28,13 +28,13 @@ def payload(tenant, run):
     if actor.membership.role not in {EmployeeRole.OWNER, EmployeeRole.ADMIN}:
         return None
     row = lock(tenant, run.definition["exchange"]["checkpoint"])
+    from chatballs.ai.diagnostic_redaction import integration_secrets
+    from chatballs.i18n import t
+    from chatballs.integrations.adapters.registry import default_registry
     from chatballs.integrations.execution.payloads import clean_value
     from chatballs.integrations.scenarios.catalog import CONTEXT
     from chatballs.integrations.scenarios.types import at_path
     from chatballs.integrations.service_connections.binding import resolve as resolve_connection
-    from chatballs.integrations.adapters.registry import default_registry
-    from chatballs.ai.diagnostic_redaction import integration_secrets
-    from chatballs.i18n import t
     from chatballs.integrations.service_connections.payloads import field_payload
     _, adapter, _ = resolve_connection(row.link.integration, default_registry())
     entity = next(e for e in adapter.entities if e.key == row.link.external_kind)

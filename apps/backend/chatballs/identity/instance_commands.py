@@ -1,11 +1,17 @@
 """Shared instance settings commands with the original field semantics."""
 from django.core.exceptions import ValidationError
 from django.db import transaction
+
 from chatballs.i18n import t
 from chatballs.i18n.languages import DEFAULT_LANGUAGE, normalize_language
 from chatballs.identity.command_outcomes import CommandOutcome
 from chatballs.identity.instance_payloads import instance_payload
-from chatballs.identity.instance_settings import InstanceSettings, format_address, invalidate_cache, split_address
+from chatballs.identity.instance_settings import (
+    InstanceSettings,
+    format_address,
+    invalidate_cache,
+    split_address,
+)
 from chatballs.integrations.action_catalog.authority import require_instance
 from chatballs.support_portals.addressing import validate_domain
 

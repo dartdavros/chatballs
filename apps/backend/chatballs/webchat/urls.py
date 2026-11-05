@@ -6,9 +6,9 @@ from chatballs.webchat.author_avatar_views import WebchatAuthorAvatarView
 from chatballs.webchat.config_views import WebchatConfigView
 from chatballs.webchat.consent_views import WebchatConsentView
 from chatballs.webchat.dictation_views import WebchatDictationView
-from chatballs.webchat.synthesis_views import WebchatSynthesisView
 from chatballs.webchat.observation_views import WebchatObservationsView
 from chatballs.webchat.site_event_views import WebchatSiteEventCancelView, WebchatSiteEventView
+from chatballs.webchat.synthesis_views import WebchatSynthesisView
 
 urlpatterns = [
     path("assets/<uuid:public_id>/", WidgetAssetView.as_view(), name="webchat-asset"),

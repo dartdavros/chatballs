@@ -3,7 +3,12 @@
 from django.test import SimpleTestCase
 
 from chatballs.i18n.messages import CATALOG
-from chatballs.integrations.action_catalog.coverage import entry_key, inventory, mounted_entries, problems
+from chatballs.integrations.action_catalog.coverage import (
+    entry_key,
+    inventory,
+    mounted_entries,
+    problems,
+)
 from chatballs.integrations.action_catalog.registry import native_actions
 from chatballs.integrations.adapters.registry import default_registry
 

@@ -1,8 +1,8 @@
 """PostgreSQL composition test helpers; no installed adapter or demo data."""
 
-from chatballs.integrations.adapters.registry import build_registry
-from chatballs.integrations.adapters.registry import reset_registry
 from django.test import override_settings
+
+from chatballs.integrations.adapters.registry import build_registry, reset_registry
 from chatballs.integrations.execution import contract_testing
 from chatballs.integrations.execution.launch import launch
 from chatballs.integrations.execution.runner import run_one

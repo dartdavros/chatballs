@@ -2,9 +2,13 @@ from django.urls import path
 
 from chatballs.integrations.scenarios import views
 from chatballs.integrations.scenarios.catalog_views import ScenarioCatalogView
+from chatballs.integrations.scenarios.entity_link_views import (
+    EntityLinkCommandView,
+    EntityLinkSearchView,
+    EntityLinksView,
+)
 from chatballs.integrations.scenarios.key_views import ScenarioRotateKeyView
 from chatballs.integrations.scenarios.synchronization_views import ServiceSynchronizationView
-from chatballs.integrations.scenarios.entity_link_views import EntityLinksView, EntityLinkSearchView, EntityLinkCommandView
 
 urlpatterns = [
     path("entity-links/", EntityLinksView.as_view(), name="entity-links"),

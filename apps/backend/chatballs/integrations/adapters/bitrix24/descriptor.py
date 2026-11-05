@@ -15,12 +15,16 @@ from chatballs.integrations.adapters.bitrix24.operations import (
     entity_operations,
     service_operations,
 )
+from chatballs.integrations.adapters.bitrix24.references import references
+from chatballs.integrations.adapters.bitrix24.synchronization import (
+    binding as synchronization_binding,
+)
 from chatballs.integrations.adapters.contracts import (
     AdapterDescriptor,
     AuthMethod,
     CheckDescriptor,
-    ErrorText,
     EntityDescriptor,
+    ErrorText,
     HelpBlock,
     LookupDescriptor,
     LookupItem,
@@ -31,8 +35,6 @@ from chatballs.integrations.adapters.contracts import (
     Unsupported,
 )
 from chatballs.integrations.adapters.schema import TypeSpec
-from chatballs.integrations.adapters.bitrix24.references import references
-from chatballs.integrations.adapters.bitrix24.synchronization import binding as synchronization_binding
 
 # Телефон и почта в Битрикс24 — список значений с типом.
 _MULTIFIELD = {"transform": "list.of_object@1", "args": {"key": "VALUE", "extra": {"VALUE_TYPE": "WORK"}}}

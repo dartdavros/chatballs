@@ -9,13 +9,13 @@ from datetime import timedelta
 from django.utils import timezone
 
 from chatballs.events.models import OutboxEvent
+from chatballs.integrations.adapters.contracts import OperationHandlers
 from chatballs.integrations.automation_events.callbacks import deliver
 from chatballs.integrations.automation_events.ingress import receive
 from chatballs.integrations.execution import contract_testing
 from chatballs.integrations.execution.composition_testing import CompositionCase
 from chatballs.integrations.execution.permissions import ExecutionDenied
 from chatballs.integrations.execution.wait_controls import decide, decision_digest
-from chatballs.integrations.adapters.contracts import OperationHandlers
 from chatballs.tenancy.database import tenant_atomic
 
 
@@ -68,9 +68,9 @@ class CallbackTests(CompositionCase):
         self.assertEqual(contract_testing.CALLS, [])
 
     def test_valid_signature_cannot_cross_the_organization_boundary(self):
-        from chatballs.tenancy.context import TenantContext
         from chatballs.integrations.models import Integration
         from chatballs.integrations.scenario_state.receipts import EventReceipt
+        from chatballs.tenancy.context import TenantContext
         foreign = TenantContext.for_resource(self.other)
         def attempt():
             with self.assertRaises(Integration.DoesNotExist):
@@ -134,6 +134,7 @@ class CallbackTests(CompositionCase):
 
     def test_receipt_and_outbox_rollback_before_ack(self):
         from unittest.mock import patch
+
         from chatballs.integrations.scenario_state.receipts import EventReceipt
         with patch("chatballs.integrations.automation_events.ingress.enqueue_event", side_effect=RuntimeError("commit failed")):
             with self.assertRaises(RuntimeError):

@@ -8,7 +8,12 @@ from chatballs.integrations.adapters.registry import AdapterRegistry, default_re
 from chatballs.integrations.adapters.schema import SchemaDefinitionError
 from chatballs.integrations.scenarios.bindings import BindingScope
 from chatballs.integrations.scenarios.blocks import BlockValidator
-from chatballs.integrations.scenarios.definition import FORMAT_VERSION, DefinitionContext, Issue, empty_definition
+from chatballs.integrations.scenarios.definition import (
+    FORMAT_VERSION,
+    DefinitionContext,
+    Issue,
+    empty_definition,
+)
 from chatballs.integrations.scenarios.synchronization import check_synchronization
 from chatballs.integrations.scenarios.triggers import check_access, check_triggers
 from chatballs.integrations.scenarios.types import read_type

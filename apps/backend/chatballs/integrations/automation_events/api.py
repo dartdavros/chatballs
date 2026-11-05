@@ -10,8 +10,8 @@ from django.views.decorators.csrf import csrf_exempt
 
 from chatballs.integrations.execution.automation import launch_automatic
 from chatballs.integrations.execution.permissions import ExecutionDenied
-from chatballs.integrations.scenario_state.subscriptions import ScenarioExternalKey
 from chatballs.integrations.scenario_state.definitions import ScenarioDefinition
+from chatballs.integrations.scenario_state.subscriptions import ScenarioExternalKey
 from chatballs.integrations.scenarios.external_keys import token_hash
 from chatballs.tenancy.context import TenantContext
 from chatballs.tenancy.database import tenant_atomic

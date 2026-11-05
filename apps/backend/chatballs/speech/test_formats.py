@@ -13,7 +13,7 @@ def encode(seconds: float, container: str) -> bytes:
     return subprocess.run(
         ["ffmpeg", "-nostdin", "-v", "error", "-f", "s16le", "-ar", "16000", "-ac", "1", "-i", "pipe:0",
          "-c:a", codec, *options, "-f", container, "pipe:1"],
-        input=bytes(round(seconds * BYTES_PER_SECOND)), stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=10, check=True,
+        input=bytes(round(seconds * BYTES_PER_SECOND)), capture_output=True, timeout=10, check=True,
     ).stdout
 
 

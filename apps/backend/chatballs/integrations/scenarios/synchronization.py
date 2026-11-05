@@ -1,10 +1,10 @@
 """Declarative links/mapping, without performing links or synchronization."""
 
-from chatballs.integrations.scenarios.definition import Issue
-from chatballs.integrations.scenarios.types import at_path, compatible
-from chatballs.integrations.scenarios.bindings import transformed_type
 from chatballs.integrations.adapters.registry import default_registry
 from chatballs.integrations.adapters.schema import validate_value
+from chatballs.integrations.scenarios.bindings import transformed_type
+from chatballs.integrations.scenarios.definition import Issue
+from chatballs.integrations.scenarios.types import at_path, compatible
 
 
 def check_synchronization(pairs, *, context, issues, path="synchronization", registry=None):

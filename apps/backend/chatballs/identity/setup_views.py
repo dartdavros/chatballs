@@ -8,13 +8,13 @@ from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
-from chatballs.identity.setup_commands import finish
 from chatballs.i18n import t
 from chatballs.identity.auth.common import _user_payload, validation_response
 from chatballs.identity.setup import (
     SetupAlreadyCompleted,
     instance_needs_setup,
 )
+from chatballs.identity.setup_commands import finish
 
 
 # Функция, а не константа: язык запроса решается на каждый запрос заново.

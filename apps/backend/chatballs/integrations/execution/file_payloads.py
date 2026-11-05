@@ -6,7 +6,7 @@ from chatballs.integrations.scenario_state.files import ServiceFile
 
 
 def _values(field, value):
-    if not field or not isinstance(value, (dict, list)):
+    if not field or not isinstance(value, dict | list):
         return
     if isinstance(value, dict) and "redacted" in value:
         return

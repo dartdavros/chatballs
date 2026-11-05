@@ -9,8 +9,18 @@ from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 
 from chatballs.integrations.adapters.contracts import (
-    AdapterDescriptor, AuthMethod, Delivery, Effect, EventDescriptor, Mode,
-    OperationDescriptor, OperationHandlers, OperationResult, Presentation, ResultState, RetryStrategy,
+    AdapterDescriptor,
+    AuthMethod,
+    Delivery,
+    Effect,
+    EventDescriptor,
+    Mode,
+    OperationDescriptor,
+    OperationHandlers,
+    OperationResult,
+    Presentation,
+    ResultState,
+    RetryStrategy,
 )
 from chatballs.integrations.adapters.events import VerifiedEvent
 from chatballs.integrations.adapters.schema import TypeSpec

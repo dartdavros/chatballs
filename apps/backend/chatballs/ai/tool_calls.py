@@ -19,6 +19,7 @@ from chatballs.ai.provider.base import ToolCall
 from chatballs.ai.pseudonymization import Pseudonymizer
 from chatballs.ai.tool_result import masked_result
 from chatballs.ai.turn_tools import TurnTool
+from chatballs.integrations.execution.permissions import ExecutionDenied
 from chatballs.integrations.external_tools import call_tool
 from chatballs.integrations.http_tool import ToolArgumentsRejected, call_http_tool
 from chatballs.integrations.mcp_client import (
@@ -30,7 +31,6 @@ from chatballs.integrations.mcp_client import (
     McpError,
 )
 from chatballs.integrations.models import IntegrationProvider
-from chatballs.integrations.execution.permissions import ExecutionDenied
 from chatballs.integrations.tool_client import ToolResponseRejected
 from chatballs.integrations.tool_network import ToolAddressRejected
 
