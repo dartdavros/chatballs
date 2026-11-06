@@ -23,6 +23,7 @@ export type RunDetail = RunSummary & { files?: Array<{ id: string; name: string 
 export type RunPage = { items: RunSummary[]; count: number; page: number; pageSize: number;
   filters: { connections: Array<{ id: number; name: string }>; initiators: Array<{ initiator_id: number; initiator__user__full_name: string }> } };
 export type ManualAction = { id: string; kind: "scenario" | "operation"; title: string; parameters: ServiceField;
+  initialValues?: Record<string, unknown>;
   plan?: string[];
   connectionId?: number | "chatballs"; operationKey?: string; connection?: string; readOnly?: boolean; available?: boolean; reason?: string };
 export type RetentionPolicy = { stepDays: number; journalDays: number; version: number; effectiveAt: string | null };

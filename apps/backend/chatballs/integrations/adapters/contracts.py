@@ -17,6 +17,7 @@ from datetime import datetime
 from enum import StrEnum
 from typing import TYPE_CHECKING, Any
 
+from chatballs.integrations.adapters.initial_values import InitialValue
 from chatballs.integrations.adapters.schema import TypeSpec
 from chatballs.integrations.adapters.templates import ScenarioTemplate as ScenarioTemplate
 from chatballs.integrations.adapters.templates import TemplateStep as TemplateStep
@@ -158,6 +159,8 @@ class OperationDescriptor:
     # Произвольные данные протокола для общего HTTP/MCP-исполнителя.
     protocol: dict[str, Any] = field(default_factory=dict)
     entity_kind: str = ""
+    # Only the manual create form consumes these; execution never merges them.
+    initial_values: tuple[InitialValue, ...] = ()
 
 
 @dataclass(frozen=True)

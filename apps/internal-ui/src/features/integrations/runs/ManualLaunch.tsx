@@ -11,8 +11,14 @@ import { RunValues } from "./RunValues";
 import type { ManualAction, ManualCatalog, PlanPreview } from "./types";
 import { requiredIssues } from "./launchFields";
 
-export function ManualLaunch({ action, conversationId, catalog, onClose, onRun }: { action: ManualAction; conversationId: number; catalog: ManualCatalog; onClose: () => void; onRun: (id: string) => void }) {
-  const [parameters, setParameters] = useState<Record<string, unknown>>({});
+type ManualLaunchProps = { action: ManualAction; conversationId: number; catalog: ManualCatalog; onClose: () => void; onRun: (id: string) => void };
+
+export function ManualLaunch(props: ManualLaunchProps) {
+  return <ManualLaunchForm key={`${props.conversationId}:${props.action.kind}:${props.action.id}`} {...props} />;
+}
+
+function ManualLaunchForm({ action, conversationId, catalog, onClose, onRun }: ManualLaunchProps) {
+  const [parameters, setParameters] = useState<Record<string, unknown>>(() => structuredClone(action.initialValues ?? {}));
   const [preview, setPreview] = useState<(PlanPreview & { stamp: string }) | null>(null);
   const [busy, setBusy] = useState(false);
   const [calculating, setCalculating] = useState(false);

@@ -70,7 +70,10 @@ def validate_adapter(adapter: AdapterDescriptor, registry: AdapterRegistry) -> l
 
 
 def _operation(operation: OperationDescriptor, registry: AdapterRegistry) -> list[str]:
+    from chatballs.integrations.adapters.initial_values import validate_initial_values
+
     problems: list[str] = []
+    problems.extend(validate_initial_values(operation, registry))
     if not KEY_PATTERN.match(operation.key):
         problems.append("bad key")
     _schema(problems, "input", operation.input)

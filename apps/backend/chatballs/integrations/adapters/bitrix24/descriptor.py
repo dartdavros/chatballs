@@ -52,11 +52,16 @@ def missing_scope(result: OperationResult) -> str | None:
 
 def _users(data: Any) -> list[LookupItem]:
     rows = data if isinstance(data, list) else []
-    return [
-        LookupItem(value=str(row.get("ID")), label=" ".join(filter(None, [row.get("NAME"), row.get("LAST_NAME")])) or str(row.get("ID")))
-        for row in rows
-        if isinstance(row, dict) and row.get("ID")
-    ]
+    items = []
+    for row in rows:
+        if not isinstance(row, dict) or not row.get("ID"):
+            continue
+        name = " ".join(part.strip() for key in ("NAME", "SECOND_NAME", "LAST_NAME")
+                        if isinstance(part := row.get(key), str) and part.strip())
+        email = row.get("EMAIL")
+        email = email.strip() if isinstance(email, str) else ""
+        items.append(LookupItem(value=str(row["ID"]), label=name or email or str(row["ID"])))
+    return items
 
 
 def _stages(data: Any) -> list[LookupItem]:

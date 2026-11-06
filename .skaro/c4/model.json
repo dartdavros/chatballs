@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "revision": 28,
+  "revision": 32,
   "title": "Chatballs — архитектура контакт-центра",
   "elements": [
     {
@@ -1607,7 +1607,37 @@
         "apps/internal-ui/src/features/conversations",
         "apps/internal-ui/src/features/transfers",
         "apps/internal-ui/src/features/sales"
-      ]
+      ],
+      "planned": {
+        "name": "Рабочий чат и контакты",
+        "description": "Список/лента, claim, передачи, участники, внутренние комментарии, черновики, почтовое продолжение и звонки. Ручные сценарии/операции запускаются единственной кнопкой в шапке. Контакт сохраняет связанные записи, без блока запуска.",
+        "code": [
+          "apps/internal-ui/src/features/conversations/ParticipantsSection.tsx",
+          "apps/internal-ui/src/features/conversations/useReplyAssistance.ts",
+          "apps/internal-ui/src/features/transfers/activityApi.ts",
+          "apps/internal-ui/src/features/transfers/ActivityHistoryDialog.tsx",
+          "apps/internal-ui/src/features/sales/clients/SalesClientsTable.tsx",
+          "apps/internal-ui/src/features/integrations/runs/ManualActionMenu.tsx",
+          "apps/internal-ui/src/features/integrations/runs/ContactActions.tsx"
+        ],
+        "evidence": [
+          "apps/internal-ui/src/features/conversations",
+          "apps/internal-ui/src/features/transfers",
+          "apps/internal-ui/src/features/sales",
+          ".skaro/docs/chat-manual-actions.md",
+          "design/baseline/service-integrations/Запуск из диалога.dc.html"
+        ],
+        "decisions": [
+          "0001",
+          "0002",
+          "0003",
+          "0010",
+          "0033",
+          "0035",
+          "0037",
+          "0038"
+        ]
+      }
     },
     {
       "id": "ui-employees",
@@ -3943,7 +3973,7 @@
       "id": "code-service-adapter-contract",
       "kind": "code",
       "name": "Контракт адаптера",
-      "description": "AdapterDescriptor/OperationDescriptor: стабильные ключи и версии, схемы настройки/доступа/входа/выхода, события/справочники/пресеты; execute/resume/reconcile/cancel по объявленным возможностям. T-171 планирует типизированный проверенный envelope ingress, correlation/sequence/replay policy и deadline долгого результата; отсутствие безопасного контракта не заменяется успешным ACK.",
+      "description": "AdapterDescriptor/OperationDescriptor: стабильные ключи и версии, схемы настройки/доступа/входа/выхода, события/справочники/пресеты; execute/resume/reconcile/cancel по объявленным возможностям. T-171 планирует типизированный проверенный envelope ingress, correlation/sequence/replay policy и deadline долгого результата; отсутствие безопасного контракта не заменяется успешным ACK. План: явные привязки разрешённого контекста для начальных полей ручного создания и типизированные преобразования; отсутствие привязки не вызывает угадывание по названию поля.",
       "state": "planned",
       "external": false,
       "code": [
@@ -3959,7 +3989,10 @@
         ".skaro/docs/service-integrations-c4.md",
         ".skaro/docs/service-scenario-runtime.md",
         "docs/service-automation.md",
-        "docs/service-integrations-t172-verification.md"
+        "docs/service-integrations-t172-verification.md",
+        ".skaro/docs/manual-action-known-contact-data.md",
+        ".skaro/specs/0038-bitrix24-webhook-service-adapter.md",
+        "design/baseline/service-integrations/Запуск из диалога.dc.html"
       ],
       "decisions": [
         "0038"
@@ -4184,7 +4217,7 @@
       "id": "code-service-execution-policy",
       "kind": "code",
       "name": "Политика доступа",
-      "description": "ExecutionPrincipal с серверными organization/scope/actor/grants; актуальные проверки перед каждым эффектом; самостоятельный/запрещённый/подтверждаемый режим ИИ. Решение владельца 30.10.2026: conversation.topic и метки контакта отложены; внешние связи — T-172. Зависимые guards/bindings недоступны, включая отрицательное условие/any/object.get, без трактовки отсутствующего источника как отсутствия бизнес-данных. Остальной одношаговый путь не блокируется. T-175 manual_catalog_queries/lookup_queries: метаданные проверяют точную операцию и текущий principal, approval lookup использует замороженный контракт и действующего одобрителя. Native wrappers не вызывают новый launch от имени владельца. T-176: фильтрация каталога не является защитой сама по себе; проверка authority повторяется сервером при подготовке и исполнении, включая старые/вложенные снимки и ИИ.",
+      "description": "ExecutionPrincipal с серверными organization/scope/actor/grants; актуальные проверки перед каждым эффектом; самостоятельный/запрещённый/подтверждаемый режим ИИ. Решение владельца 30.10.2026: conversation.topic и метки контакта отложены; внешние связи — T-172. Зависимые guards/bindings недоступны, включая отрицательное условие/any/object.get, без трактовки отсутствующего источника как отсутствия бизнес-данных. Остальной одношаговый путь не блокируется. T-175 manual_catalog_queries/lookup_queries: метаданные проверяют точную операцию и текущий principal, approval lookup использует замороженный контракт и действующего одобрителя. Native wrappers не вызывают новый launch от имени владельца. T-176: фильтрация каталога не является защитой сама по себе; проверка authority повторяется сервером при подготовке и исполнении, включая старые/вложенные снимки и ИИ. SPEC-0037 R-34: серверный каталог рабочего меню — отдельная контекстная проекция; её фильтр применяется и к ADMIN, не меняет grants, реестр редактора и повторные проверки исполнения.",
       "state": "planned",
       "external": false,
       "code": [
@@ -4217,7 +4250,8 @@
         "docs/verification/T-175/README.md",
         "apps/backend/chatballs/integrations/execution/manual_catalog_queries.py",
         "apps/backend/chatballs/integrations/execution/lookup_queries.py",
-        ".skaro/docs/service-native-installation-runtime.md"
+        ".skaro/docs/service-native-installation-runtime.md",
+        ".skaro/docs/chat-manual-actions.md"
       ],
       "decisions": [
         "0038"
@@ -4828,7 +4862,7 @@
       "id": "ui-service-runs",
       "kind": "component",
       "name": "Запуск и журнал",
-      "description": "Контекстный запуск/изменение точного подтверждения, подробности по видимости диалога и в мобильном чате, административный общий журнал; неизвестный/частичный исход, восстановление и ручной выбор значений при расхождении обмена.",
+      "description": "Контекстный запуск/изменение точного подтверждения, подробности по видимости диалога и в мобильном чате, административный общий журнал; неизвестный/частичный исход, восстановление и ручной выбор значений при расхождении обмена. Единственный ручной вход — шапка диалога; запуск из карточки контакта удаляется по решению владельца 05.11.2026. Контекстный набор не равен полному native-реестру.",
       "state": "planned",
       "external": false,
       "code": [
@@ -4842,7 +4876,8 @@
         "design/baseline/service-integrations/Сценарии.dc.html",
         "design/baseline/service-integrations/Запуск из диалога.dc.html",
         "design/baseline/service-integrations/Журнал запусков.dc.html",
-        ".skaro/docs/service-integrations-implementation-readiness.md"
+        ".skaro/docs/service-integrations-implementation-readiness.md",
+        ".skaro/docs/chat-manual-actions.md"
       ],
       "decisions": [
         "0038"
@@ -4854,7 +4889,7 @@
       "id": "code-ui-service-runs",
       "kind": "code",
       "name": "Модули UI: Запуск и журнал",
-      "description": "Composition-only views; state/model/API отдельно. Разделение доступа к конкретному запуску и общему журналу, мобильные параметры/подробности, ручное решение спорных полей с текущими правами и сохранением фактического результата. Одношаговый запуск заменяет карточку контакта на desktop; мобильная нижняя панель 88vh остаётся внутри чата. Полные параметры/unknown/recovery ещё требуют проверки на реальном подключении. T-173: точные параметры, срок и право решения; редактор меняет только текущий запрос. В контакте вместо полного списка используется компактный ManualActionMenu с прежним запуском и доступом.",
+      "description": "Composition-only views; state/model/API отдельно. Разделение доступа к конкретному запуску и общему журналу, мобильные параметры/подробности, ручное решение спорных полей с текущими правами и сохранением фактического результата. Одношаговый запуск заменяет карточку контакта на desktop; мобильная нижняя панель 88vh остаётся внутри чата. Полные параметры/unknown/recovery ещё требуют проверки на реальном подключении. T-173: точные параметры, срок и право решения; редактор меняет только текущий запрос. Уточнение 05.11.2026 заменяет прежний вход в контакте: ManualActionMenu только в шапке диалога. Полный блок ContactActions убирается, ContactEntityLinks остаётся отдельно. Меню по L1: 340 px, общий Button/Icon/Dropdown/app-dropdown, двухстрочные пункты/причины/внутренняя прокрутка, штатная панель параметров. Серверная контекстная проекция исключает организационный/административный каталог и повторы штатных действий, ADMIN не обходит фильтр назначения.",
       "state": "planned",
       "external": false,
       "code": [
@@ -4880,7 +4915,11 @@
         ".skaro/docs/service-scenario-runtime.md",
         "docs/service-agent-runtime.md",
         "apps/internal-ui/src/features/integrations/runs/RunApprovalCard.tsx",
-        "apps/internal-ui/src/features/integrations/runs/ApprovalEditor.tsx"
+        "apps/internal-ui/src/features/integrations/runs/ApprovalEditor.tsx",
+        ".skaro/docs/chat-manual-actions.md",
+        "apps/internal-ui/src/features/integrations/runs/ManualActionMenu.tsx",
+        "apps/internal-ui/src/features/integrations/runs/ContactActions.tsx",
+        "apps/internal-ui/src/shared/menu.css"
       ],
       "decisions": [
         "0038"
@@ -4963,7 +5002,7 @@
     {
       "id": "code-service-adapter-bitrix24",
       "name": "Пакет Битрикс24",
-      "description": "Установленный адаптер входящего вебхука, scope-check чтением, собственные схемы CRM, справочники пользователей/стадий, определение пресета создания лида. Без подписок событий и исполнения пресета в T-168.",
+      "description": "Установленный адаптер входящего вебхука, scope-check чтением, собственные схемы CRM, справочники пользователей/стадий, определение пресета создания лида. Без подписок событий и исполнения пресета в T-168. План: подписи справочника полным доступным именем, затем EMAIL, затем ID; явные начальные NAME/PHONE/EMAIL создания лида/контакта из разрешённого контекста в собственной схеме.",
       "parent": "component-service-registry",
       "code": [
         "apps/backend/chatballs/integrations/adapters/bitrix24/descriptor.py",
@@ -4977,7 +5016,10 @@
         ".skaro/specs/0037-rasshiryaemye-integratsii-servisov-i-sts.md",
         ".skaro/adr/0038-servisnye-adaptery-i-ustoychivye-stsenarii.md",
         "apps/backend/chatballs/integrations/adapters/bitrix24/descriptor.py",
-        "apps/backend/chatballs/integrations/adapters/bitrix24/operations.py"
+        "apps/backend/chatballs/integrations/adapters/bitrix24/operations.py",
+        ".skaro/docs/manual-action-known-contact-data.md",
+        ".skaro/specs/0038-bitrix24-webhook-service-adapter.md",
+        "design/baseline/service-integrations/Запуск из диалога.dc.html"
       ],
       "decisions": [
         "0038"
@@ -6142,6 +6184,192 @@
         "0026",
         "0027",
         "0013"
+      ]
+    },
+    {
+      "id": "code-service-manual-catalog",
+      "kind": "code",
+      "name": "Контекстная проекция ручного меню",
+      "description": "План исправления: отдельная серверная выборка run-actions для текущего доступного диалога. Включённые staff-сценарии conversation/contact и применимые SERVICE-операции; оператор дополнительно ограничен своими разрешениями. Организационные сценарии и сырые native API-команды исключены у всех ролей. Полный редакторский реестр и повторная авторизация preview/launch/effects сохраняются; новых прав не выдаёт. План: вычисляет начальные значения полей создания из текущего разрешённого контакта по явному контракту операции; возвращает их отдельно от схемы, без записей и без эвристик бренда.",
+      "state": "planned",
+      "external": false,
+      "parent": "component-service-policy",
+      "technology": "Python / Django, существующий HTTP run-actions",
+      "code": [
+        "apps/backend/chatballs/integrations/execution/manual_catalog_queries.py",
+        "apps/backend/chatballs/integrations/action_catalog/manual_catalog.py",
+        "apps/backend/chatballs/integrations/execution/manual_initial_values.py"
+      ],
+      "evidence": [
+        ".skaro/docs/chat-manual-actions.md",
+        ".skaro/specs/0037-rasshiryaemye-integratsii-servisov-i-sts.md",
+        "apps/backend/chatballs/integrations/execution/manual_catalog_queries.py",
+        "apps/backend/chatballs/integrations/action_catalog/manual_catalog.py",
+        "apps/backend/chatballs/integrations/execution/permissions.py",
+        ".skaro/docs/manual-action-known-contact-data.md",
+        ".skaro/specs/0038-bitrix24-webhook-service-adapter.md",
+        "design/baseline/service-integrations/Запуск из диалога.dc.html",
+        "docs/service-adapter-contract.md",
+        "apps/backend/chatballs/integrations/execution/test_manual_initial_values.py",
+        "apps/backend/chatballs/integrations/adapters/test_initial_values.py"
+      ],
+      "decisions": [
+        "0038",
+        "0012"
+      ]
+    },
+    {
+      "id": "code-ui-manual-prefill",
+      "kind": "code",
+      "name": "Начальные значения формы ручного запуска",
+      "description": "План исправления: открывает существующую форму с серверными начальными значениями текущего действия/диалога; сохраняет изменения и очистку сотрудника, отправляет точные значения в прежний preview/launch. LookupValue показывает подпись, передаёт ID.",
+      "state": "current",
+      "external": false,
+      "parent": "component-ui-manual-contact-form",
+      "technology": "React / TypeScript",
+      "code": [
+        "apps/internal-ui/src/features/integrations/runs/ManualLaunch.tsx",
+        "apps/internal-ui/src/features/integrations/runs/types.ts",
+        "apps/internal-ui/src/features/integrations/runs/api.ts",
+        "apps/internal-ui/src/features/integrations/scenarios/LookupValue.tsx"
+      ],
+      "evidence": [
+        ".skaro/docs/manual-action-known-contact-data.md",
+        ".skaro/specs/0037-rasshiryaemye-integratsii-servisov-i-sts.md",
+        ".skaro/specs/0038-bitrix24-webhook-service-adapter.md",
+        "design/baseline/service-integrations/Запуск из диалога.dc.html"
+      ],
+      "decisions": [
+        "0038",
+        "0012"
+      ]
+    },
+    {
+      "id": "component-manual-contact-form-metadata",
+      "kind": "component",
+      "name": "Метаданные контекстной ручной формы",
+      "description": "Узкий существующий read-only путь каталога диалога, начальных привязок создания и проекции известных данных; не охватывает всех инициаторов и полный исполнитель.",
+      "parent": "container-backend",
+      "code": [
+        "apps/backend/chatballs/integrations/execution/manual_catalog_queries.py",
+        "apps/backend/chatballs/integrations/execution/manual_initial_values.py"
+      ],
+      "technology": "Python / Django",
+      "state": "current",
+      "external": false,
+      "evidence": [
+        ".skaro/docs/manual-action-known-contact-data.md",
+        "docs/service-adapter-contract.md",
+        "apps/backend/chatballs/integrations/execution/test_manual_initial_values.py",
+        "apps/backend/chatballs/integrations/adapters/test_initial_values.py",
+        "apps/backend/chatballs/integrations/execution/manual_catalog_queries.py",
+        "apps/backend/chatballs/integrations/execution/manual_initial_values.py"
+      ],
+      "decisions": [
+        "0038",
+        "0012"
+      ]
+    },
+    {
+      "id": "component-ui-manual-contact-form",
+      "kind": "component",
+      "name": "Параметры ручного создания из диалога",
+      "description": "Существующая форма: однократные начальные значения, локальное редактирование/очистка, изоляция действия/диалога и точные параметры прежних preview/launch. Не охватывает журнал и все будущие виды запуска.",
+      "parent": "container-workbench",
+      "code": [
+        "apps/internal-ui/src/features/integrations/runs/ManualLaunch.tsx",
+        "apps/internal-ui/src/features/integrations/runs/types.ts"
+      ],
+      "technology": "React / TypeScript",
+      "state": "current",
+      "external": false,
+      "evidence": [
+        ".skaro/docs/manual-action-known-contact-data.md",
+        "docs/service-adapter-contract.md",
+        "apps/backend/chatballs/integrations/execution/test_manual_initial_values.py",
+        "apps/backend/chatballs/integrations/adapters/test_initial_values.py",
+        "apps/internal-ui/src/features/integrations/runs/ManualLaunch.tsx",
+        "apps/internal-ui/src/features/integrations/runs/types.ts"
+      ],
+      "decisions": [
+        "0038",
+        "0012"
+      ]
+    },
+    {
+      "id": "code-manual-initial-bindings",
+      "kind": "code",
+      "name": "Явные типизированные начальные привязки",
+      "description": "InitialValue и OperationDescriptor.initial_values: проверка явных путей, типов и версионированных преобразований. Исполнитель не применяет эти значения автоматически.",
+      "parent": "component-manual-contact-form-metadata",
+      "code": [
+        "apps/backend/chatballs/integrations/adapters/initial_values.py",
+        "apps/backend/chatballs/integrations/adapters/contracts.py",
+        "apps/backend/chatballs/integrations/adapters/validation.py"
+      ],
+      "technology": "Python dataclass / TypeSpec",
+      "state": "current",
+      "external": false,
+      "evidence": [
+        ".skaro/docs/manual-action-known-contact-data.md",
+        "docs/service-adapter-contract.md",
+        "apps/backend/chatballs/integrations/execution/test_manual_initial_values.py",
+        "apps/backend/chatballs/integrations/adapters/test_initial_values.py",
+        "apps/backend/chatballs/integrations/adapters/initial_values.py",
+        "apps/backend/chatballs/integrations/adapters/contracts.py",
+        "apps/backend/chatballs/integrations/adapters/validation.py"
+      ],
+      "decisions": [
+        "0038",
+        "0012"
+      ]
+    },
+    {
+      "id": "code-bitrix-manual-contact-fields",
+      "kind": "code",
+      "name": "Начальные поля и подписи Битрикс24",
+      "description": "Только lead/contact.create: NAME и вложенные PHONE/EMAIL через list.of_object@1. _users: trimmed NAME/SECOND_NAME/LAST_NAME → EMAIL → ID, неизменный ID. Не объявляет весь пакет адаптера или события реализованными.",
+      "parent": "component-manual-contact-form-metadata",
+      "code": [
+        "apps/backend/chatballs/integrations/adapters/bitrix24/operations.py",
+        "apps/backend/chatballs/integrations/adapters/bitrix24/descriptor.py"
+      ],
+      "technology": "Python / схема Битрикс24",
+      "state": "current",
+      "external": false,
+      "evidence": [
+        ".skaro/docs/manual-action-known-contact-data.md",
+        "docs/service-adapter-contract.md",
+        "apps/backend/chatballs/integrations/execution/test_manual_initial_values.py",
+        "apps/backend/chatballs/integrations/adapters/test_initial_values.py",
+        "apps/backend/chatballs/integrations/adapters/bitrix24/operations.py",
+        "apps/backend/chatballs/integrations/adapters/bitrix24/descriptor.py"
+      ],
+      "decisions": [
+        "0038",
+        "0012"
+      ]
+    },
+    {
+      "id": "code-manual-contact-projection",
+      "kind": "code",
+      "name": "Проекция начальных значений текущего контакта",
+      "description": "manual_initial_values и вызов из авторизованного каталога: только явно объявленные известные значения создания, отдельно от схемы, без изменения контакта, сценариев или внешних записей.",
+      "parent": "component-manual-contact-form-metadata",
+      "state": "current",
+      "external": false,
+      "technology": "Python / Django / TypeSpec",
+      "code": [
+        "apps/backend/chatballs/integrations/execution/manual_initial_values.py",
+        "apps/backend/chatballs/integrations/execution/manual_catalog_queries.py"
+      ],
+      "evidence": [
+        "docs/service-adapter-contract.md",
+        "apps/backend/chatballs/integrations/execution/test_manual_initial_values.py"
+      ],
+      "decisions": [
+        "0038",
+        "0012"
       ]
     }
   ],
@@ -11401,13 +11629,14 @@
       "id": "rel-service-ui-context",
       "source": "ui-chat",
       "target": "ui-service-runs",
-      "description": "Контекстное действие и подтверждение сотрудником, мобильный чат",
+      "description": "Контекстное действие и подтверждение сотрудником, мобильный чат Ручной вход только в шапке, без второго входа в контакте; пустой каталог скрывает кнопку.",
       "technology": "React",
       "state": "planned",
       "evidence": [
         ".skaro/specs/0037-rasshiryaemye-integratsii-servisov-i-sts.md",
         ".skaro/adr/0038-servisnye-adaptery-i-ustoychivye-stsenarii.md",
-        ".skaro/docs/service-integrations-c4.md"
+        ".skaro/docs/service-integrations-c4.md",
+        ".skaro/docs/chat-manual-actions.md"
       ],
       "decisions": [
         "0038"
@@ -14437,6 +14666,311 @@
         "0038",
         "0024",
         "0026"
+      ]
+    },
+    {
+      "id": "rel-manual-ui-catalog",
+      "source": "code-ui-service-runs",
+      "target": "code-service-manual-catalog",
+      "description": "Загружает контекстный каталог текущего диалога с названием, типом/сервисом, доступностью и причиной",
+      "technology": "HTTP GET /api/v1/integrations/run-actions/?conversation=…",
+      "state": "planned",
+      "evidence": [
+        ".skaro/docs/chat-manual-actions.md",
+        ".skaro/specs/0037-rasshiryaemye-integratsii-servisov-i-sts.md",
+        "design/baseline/service-integrations/Запуск из диалога.dc.html",
+        "apps/backend/chatballs/integrations/execution/manual_catalog_queries.py"
+      ],
+      "decisions": [
+        "0038",
+        "0012"
+      ]
+    },
+    {
+      "id": "rel-manual-catalog-policy",
+      "source": "code-service-manual-catalog",
+      "target": "code-service-execution-policy",
+      "description": "Проверяет текущего сотрудника, видимость/состояние диалога, права и применимость; ADMIN не обходит фильтр назначения",
+      "technology": "Python / tenant transaction",
+      "state": "planned",
+      "evidence": [
+        ".skaro/docs/chat-manual-actions.md",
+        ".skaro/specs/0037-rasshiryaemye-integratsii-servisov-i-sts.md",
+        "design/baseline/service-integrations/Запуск из диалога.dc.html",
+        "apps/backend/chatballs/integrations/execution/manual_catalog_queries.py"
+      ],
+      "decisions": [
+        "0038",
+        "0012"
+      ]
+    },
+    {
+      "id": "rel-manual-catalog-scenarios",
+      "source": "code-service-manual-catalog",
+      "target": "code-service-state-definitions",
+      "description": "Отбирает enabled staff-сценарии conversation/contact, без организационного администрирования",
+      "technology": "Django ORM / tenant",
+      "state": "planned",
+      "evidence": [
+        ".skaro/docs/chat-manual-actions.md",
+        ".skaro/specs/0037-rasshiryaemye-integratsii-servisov-i-sts.md",
+        "design/baseline/service-integrations/Запуск из диалога.dc.html",
+        "apps/backend/chatballs/integrations/execution/manual_catalog_queries.py"
+      ],
+      "decisions": [
+        "0038",
+        "0012"
+      ]
+    },
+    {
+      "id": "rel-manual-catalog-grants",
+      "source": "code-service-manual-catalog",
+      "target": "code-service-state-grants",
+      "description": "Применяет текущие персональные разрешения операций без автоматической выдачи/отзыва",
+      "technology": "Django ORM / tenant",
+      "state": "planned",
+      "evidence": [
+        ".skaro/docs/chat-manual-actions.md",
+        ".skaro/specs/0037-rasshiryaemye-integratsii-servisov-i-sts.md",
+        "design/baseline/service-integrations/Запуск из диалога.dc.html",
+        "apps/backend/chatballs/integrations/execution/manual_catalog_queries.py"
+      ],
+      "decisions": [
+        "0038",
+        "0012"
+      ]
+    },
+    {
+      "id": "rel-manual-catalog-registry",
+      "source": "code-service-manual-catalog",
+      "target": "code-service-native-registry",
+      "description": "Сохраняет полный внутренний реестр для редактора и исполнения; сырые native-команды не перечисляет в меню",
+      "technology": "Python / общие descriptors",
+      "state": "planned",
+      "evidence": [
+        ".skaro/docs/chat-manual-actions.md",
+        ".skaro/specs/0037-rasshiryaemye-integratsii-servisov-i-sts.md",
+        "design/baseline/service-integrations/Запуск из диалога.dc.html",
+        "apps/backend/chatballs/integrations/execution/manual_catalog_queries.py"
+      ],
+      "decisions": [
+        "0038",
+        "0012"
+      ]
+    },
+    {
+      "id": "rel-manual-ui-shared",
+      "source": "code-ui-service-runs",
+      "target": "ui-shared",
+      "description": "Использует общий Button/Icon, antd Dropdown/app-dropdown, существующие i18n и токены для L1, без нового визуального языка",
+      "technology": "React / antd / CSS",
+      "state": "planned",
+      "evidence": [
+        ".skaro/docs/chat-manual-actions.md",
+        ".skaro/specs/0037-rasshiryaemye-integratsii-servisov-i-sts.md",
+        "design/baseline/service-integrations/Запуск из диалога.dc.html",
+        "apps/internal-ui/src/shared/menu.css",
+        "apps/internal-ui/src/shared/ui-controls.tsx"
+      ],
+      "decisions": [
+        "0038",
+        "0012"
+      ]
+    },
+    {
+      "id": "rel-manual-prefill-ui-catalog",
+      "source": "code-ui-manual-prefill",
+      "target": "code-service-manual-catalog",
+      "description": "Возвращает начальные значения отдельно от схемы доступного действия; форма использует их при открытии и сохраняет дальнейший ввод",
+      "technology": "HTTP / run-actions",
+      "state": "planned",
+      "evidence": [
+        ".skaro/docs/manual-action-known-contact-data.md",
+        ".skaro/specs/0037-rasshiryaemye-integratsii-servisov-i-sts.md",
+        ".skaro/specs/0038-bitrix24-webhook-service-adapter.md",
+        "design/baseline/service-integrations/Запуск из диалога.dc.html"
+      ],
+      "decisions": [
+        "0038",
+        "0012"
+      ]
+    },
+    {
+      "id": "rel-manual-prefill-contact",
+      "source": "code-service-manual-catalog",
+      "target": "component-conversations",
+      "description": "Читает достоверные имя/email/телефон только текущего доступного контакта в проверенной tenant-области",
+      "technology": "Python / Django ORM / tenant",
+      "state": "planned",
+      "evidence": [
+        ".skaro/docs/manual-action-known-contact-data.md",
+        ".skaro/specs/0037-rasshiryaemye-integratsii-servisov-i-sts.md",
+        ".skaro/specs/0038-bitrix24-webhook-service-adapter.md",
+        "design/baseline/service-integrations/Запуск из диалога.dc.html"
+      ],
+      "decisions": [
+        "0038",
+        "0012"
+      ]
+    },
+    {
+      "id": "rel-manual-prefill-contract",
+      "source": "code-service-manual-catalog",
+      "target": "code-service-adapter-contract",
+      "description": "Применяет явное описание начальных полей операции и разрешённые типизированные преобразования без проверки бренда",
+      "technology": "Python / descriptors",
+      "state": "planned",
+      "evidence": [
+        ".skaro/docs/manual-action-known-contact-data.md",
+        ".skaro/specs/0037-rasshiryaemye-integratsii-servisov-i-sts.md",
+        ".skaro/specs/0038-bitrix24-webhook-service-adapter.md",
+        "design/baseline/service-integrations/Запуск из диалога.dc.html"
+      ],
+      "decisions": [
+        "0038",
+        "0012"
+      ]
+    },
+    {
+      "id": "rel-bitrix-prefill-contract",
+      "source": "code-service-adapter-bitrix24",
+      "target": "code-service-adapter-contract",
+      "description": "Объявляет начальные поля создания NAME/PHONE/EMAIL и их vendor-формат; справочник сохраняет ID при человекочитаемой подписи",
+      "technology": "Python / descriptors",
+      "state": "planned",
+      "evidence": [
+        ".skaro/docs/manual-action-known-contact-data.md",
+        ".skaro/specs/0037-rasshiryaemye-integratsii-servisov-i-sts.md",
+        ".skaro/specs/0038-bitrix24-webhook-service-adapter.md",
+        "design/baseline/service-integrations/Запуск из диалога.dc.html"
+      ],
+      "decisions": [
+        "0038",
+        "0012"
+      ]
+    },
+    {
+      "id": "rel-manual-prefill-lookups",
+      "source": "code-ui-manual-prefill",
+      "target": "code-service-execution-policy",
+      "description": "Читает справочник текущей операции через прежнюю проверку metadata_action/lookup; UI показывает label и отправляет value",
+      "technology": "HTTP / run-actions/lookup",
+      "state": "planned",
+      "evidence": [
+        ".skaro/docs/manual-action-known-contact-data.md",
+        ".skaro/specs/0037-rasshiryaemye-integratsii-servisov-i-sts.md",
+        ".skaro/specs/0038-bitrix24-webhook-service-adapter.md",
+        "design/baseline/service-integrations/Запуск из диалога.dc.html"
+      ],
+      "decisions": [
+        "0038",
+        "0012"
+      ]
+    },
+    {
+      "id": "rel-manual-prefill-preview",
+      "source": "code-ui-manual-prefill",
+      "target": "code-service-execution-launch",
+      "description": "Передаёт точные отредактированные значения в прежний preview/подтверждение/launch; открытие формы эффекта не создаёт",
+      "technology": "HTTP / signed preview / launch",
+      "state": "planned",
+      "evidence": [
+        ".skaro/docs/manual-action-known-contact-data.md",
+        ".skaro/specs/0037-rasshiryaemye-integratsii-servisov-i-sts.md",
+        ".skaro/specs/0038-bitrix24-webhook-service-adapter.md",
+        "design/baseline/service-integrations/Запуск из диалога.dc.html"
+      ],
+      "decisions": [
+        "0038",
+        "0012"
+      ]
+    },
+    {
+      "id": "rel-manual-form-metadata-contact",
+      "source": "component-manual-contact-form-metadata",
+      "target": "component-conversations",
+      "description": "Читает текущий контакт после проверки сотрудника, tenant и видимости; записей не создаёт.",
+      "technology": "Python / tenant ORM",
+      "state": "current",
+      "evidence": [
+        ".skaro/docs/manual-action-known-contact-data.md",
+        "docs/service-adapter-contract.md",
+        "apps/backend/chatballs/integrations/execution/test_manual_initial_values.py",
+        "apps/backend/chatballs/integrations/adapters/test_initial_values.py"
+      ],
+      "decisions": [
+        "0038",
+        "0012"
+      ]
+    },
+    {
+      "id": "rel-manual-form-explicit-bindings",
+      "source": "code-manual-contact-projection",
+      "target": "code-manual-initial-bindings",
+      "description": "Вычисляет только известные явно сопоставленные значения, проверяет схему и выдаёт initialValues отдельно от parameters.",
+      "technology": "Python / TypeSpec / transforms",
+      "state": "current",
+      "evidence": [
+        ".skaro/docs/manual-action-known-contact-data.md",
+        "docs/service-adapter-contract.md",
+        "apps/backend/chatballs/integrations/execution/test_manual_initial_values.py",
+        "apps/backend/chatballs/integrations/adapters/test_initial_values.py"
+      ],
+      "decisions": [
+        "0038",
+        "0012"
+      ]
+    },
+    {
+      "id": "rel-bitrix-manual-form-bindings",
+      "source": "code-bitrix-manual-contact-fields",
+      "target": "code-manual-initial-bindings",
+      "description": "Объявляет собственные пути создания и формат PHONE/EMAIL; общий механизм не проверяет бренд.",
+      "technology": "Python / descriptors",
+      "state": "current",
+      "evidence": [
+        ".skaro/docs/manual-action-known-contact-data.md",
+        "docs/service-adapter-contract.md",
+        "apps/backend/chatballs/integrations/execution/test_manual_initial_values.py",
+        "apps/backend/chatballs/integrations/adapters/test_initial_values.py"
+      ],
+      "decisions": [
+        "0038",
+        "0012"
+      ]
+    },
+    {
+      "id": "rel-ui-manual-contact-initials",
+      "source": "code-ui-manual-prefill",
+      "target": "code-manual-contact-projection",
+      "description": "Получает initialValues отдельно от схемы, инициализирует форму один раз и сохраняет дальнейший ввод.",
+      "technology": "HTTP / run-actions",
+      "state": "current",
+      "evidence": [
+        "apps/backend/chatballs/integrations/execution/manual_catalog_queries.py",
+        "apps/backend/chatballs/integrations/execution/manual_initial_values.py",
+        "apps/internal-ui/src/features/integrations/runs/ManualLaunch.tsx"
+      ],
+      "decisions": [
+        "0038",
+        "0012"
+      ]
+    },
+    {
+      "id": "rel-manual-contact-projection-read",
+      "source": "code-manual-contact-projection",
+      "target": "component-conversations",
+      "description": "Читает разрешённый контакт после current_actor, видимости и direct_policy.",
+      "technology": "Python / tenant ORM",
+      "state": "current",
+      "evidence": [
+        "apps/backend/chatballs/integrations/execution/manual_catalog_queries.py",
+        "apps/backend/chatballs/integrations/execution/manual_initial_values.py",
+        "apps/internal-ui/src/features/integrations/runs/ManualLaunch.tsx"
+      ],
+      "decisions": [
+        "0038",
+        "0012"
       ]
     }
   ],
@@ -20494,6 +21028,242 @@
         }
       ],
       "instances": []
+    },
+    {
+      "id": "view-code-manual-chat-actions",
+      "kind": "code",
+      "title": "Код контекстной выборки и существующей авторизации",
+      "scope": "component-service-policy",
+      "state": "planned",
+      "elements": [
+        "code-service-manual-catalog",
+        "code-service-execution-policy"
+      ],
+      "relationships": [
+        "rel-manual-catalog-policy"
+      ],
+      "steps": [],
+      "instances": []
+    },
+    {
+      "id": "view-dynamic-manual-chat-actions",
+      "kind": "dynamic",
+      "title": "Отбор действий по контексту и правам и ручной запуск",
+      "scope": "system-chatballs",
+      "state": "planned",
+      "elements": [
+        "ui-chat",
+        "ui-service-runs",
+        "code-ui-service-runs",
+        "code-service-manual-catalog",
+        "code-service-execution-policy",
+        "code-service-state-definitions",
+        "code-service-state-grants",
+        "code-service-native-registry",
+        "component-service-policy",
+        "component-identity",
+        "ui-shared"
+      ],
+      "relationships": [
+        "rel-service-ui-context",
+        "rel-manual-ui-catalog",
+        "rel-manual-catalog-policy",
+        "rel-manual-catalog-scenarios",
+        "rel-manual-catalog-grants",
+        "rel-manual-catalog-registry",
+        "rel-service-ui-launch",
+        "rel-service-policy-identity",
+        "rel-manual-ui-shared"
+      ],
+      "steps": [
+        {
+          "relationship": "rel-service-ui-context",
+          "description": "1. Открыт текущий диалог; единственный вход запуска находится в его шапке. В карточке контакта остаются связанные записи."
+        },
+        {
+          "relationship": "rel-manual-ui-catalog",
+          "description": "2. UI запрашивает каталог реального диалога штатным API без запуска операций."
+        },
+        {
+          "relationship": "rel-manual-catalog-policy",
+          "description": "3. Сервер проверяет сотрудника и доступный рабочий контекст. Администратор тоже подчиняется фильтру назначения меню."
+        },
+        {
+          "relationship": "rel-manual-catalog-scenarios",
+          "description": "4. Отбираются включённые сценарии staff в области диалога/контакта; организационные сценарии исключены."
+        },
+        {
+          "relationship": "rel-manual-catalog-grants",
+          "description": "5. Для оператора дополнительно применяются актуальные разрешения сценариев/операций. Для сервисных операций сохраняются текущие проверки подключения и контекста."
+        },
+        {
+          "relationship": "rel-manual-catalog-registry",
+          "description": "6. Полный native-реестр не выгружается в меню. Внутренние действия остаются штатными контролами и шагами контекстных сценариев; права и реестр редактора не меняются."
+        },
+        {
+          "relationship": "rel-manual-ui-catalog",
+          "description": "7. UI получает только разрешённый контекстный набор, скрывает кнопку при пустом ответе либо показывает L1 с пояснениями/причинами. Число пунктов динамическое."
+        },
+        {
+          "relationship": "rel-manual-ui-shared",
+          "description": "8. Общее оформление Button/Icon/Dropdown/i18n повторяет L1, ограничивает меню окном и прокручивает список внутри. Контакт не получает второго входа."
+        },
+        {
+          "relationship": "rel-service-ui-launch",
+          "description": "9. Выбор доступного пункта открывает прежние параметры/preview, а явная команда запуска использует прежний общий launch."
+        },
+        {
+          "relationship": "rel-service-policy-identity",
+          "description": "10. Preview/launch и каждый эффект повторно проверяют текущие права; изменение меню не является обходом авторизации."
+        }
+      ],
+      "instances": []
+    },
+    {
+      "id": "view-code-manual-prefill",
+      "kind": "code",
+      "title": "План: код начальных значений ручной формы",
+      "scope": "component-ui-manual-contact-form",
+      "state": "current",
+      "elements": [
+        "code-ui-manual-prefill"
+      ],
+      "relationships": [],
+      "steps": [],
+      "instances": []
+    },
+    {
+      "id": "view-dynamic-manual-prefill",
+      "kind": "dynamic",
+      "title": "План: известный контакт → заполненная форма → точное подтверждение",
+      "scope": "system-chatballs",
+      "state": "planned",
+      "elements": [
+        "code-ui-manual-prefill",
+        "code-service-manual-catalog",
+        "code-service-adapter-contract",
+        "code-service-adapter-bitrix24",
+        "code-service-execution-policy",
+        "code-service-execution-launch",
+        "component-conversations"
+      ],
+      "relationships": [
+        "rel-manual-prefill-ui-catalog",
+        "rel-manual-prefill-contact",
+        "rel-manual-prefill-contract",
+        "rel-bitrix-prefill-contract",
+        "rel-manual-prefill-lookups",
+        "rel-manual-prefill-preview"
+      ],
+      "steps": [
+        {
+          "relationship": "rel-manual-prefill-ui-catalog",
+          "description": "1. Сотрудник выбирает разрешённое создание записи в текущем диалоге; запрашиваются схема и начальные значения."
+        },
+        {
+          "relationship": "rel-manual-prefill-contact",
+          "description": "2. Сервер проверяет текущую область и доступ к диалогу/контакту, читает известные данные без изменения контакта."
+        },
+        {
+          "relationship": "rel-bitrix-prefill-contract",
+          "description": "3. Установленный адаптер определяет сопоставление полей создания и формат телефона/email; ядро не угадывает бренд."
+        },
+        {
+          "relationship": "rel-manual-prefill-contract",
+          "description": "4. Общий механизм вычисляет только объявленные и известные значения с валидацией схемы."
+        },
+        {
+          "relationship": "rel-manual-prefill-ui-catalog",
+          "description": "5. Существующая форма сразу показывает начальные значения; неизвестные остаются пустыми, смена контекста не переносит чужие данные."
+        },
+        {
+          "relationship": "rel-manual-prefill-lookups",
+          "description": "6. Справочник проходит действующую проверку операции и прав; показывается полное имя, затем email, затем ID. Выбор сохраняет ID."
+        },
+        {
+          "relationship": "rel-manual-prefill-preview",
+          "description": "7. Сотрудник меняет/очищает данные; preview не затирает ввод. Только явный запуск после точного подтверждения использует прежний авторизованный исполнитель."
+        }
+      ],
+      "instances": []
+    },
+    {
+      "id": "view-component-manual-contact-form",
+      "kind": "component",
+      "title": "Контекстные метаданные ручной формы: проверяемая часть backend",
+      "scope": "container-backend",
+      "state": "current",
+      "elements": [
+        "component-manual-contact-form-metadata",
+        "component-conversations"
+      ],
+      "relationships": [
+        "rel-manual-form-metadata-contact"
+      ],
+      "steps": [],
+      "instances": []
+    },
+    {
+      "id": "view-code-manual-contact-form",
+      "kind": "code",
+      "title": "Явные привязки, адаптер и проекция начальных значений",
+      "scope": "component-manual-contact-form-metadata",
+      "state": "current",
+      "elements": [
+        "code-manual-contact-projection",
+        "code-manual-initial-bindings",
+        "code-bitrix-manual-contact-fields"
+      ],
+      "relationships": [
+        "rel-manual-form-explicit-bindings",
+        "rel-bitrix-manual-form-bindings"
+      ],
+      "steps": [],
+      "instances": []
+    },
+    {
+      "id": "view-dynamic-manual-contact-form",
+      "kind": "dynamic",
+      "title": "Текущий контакт → начальные значения → локальный ввод",
+      "scope": "system-chatballs",
+      "state": "current",
+      "elements": [
+        "code-ui-manual-prefill",
+        "code-manual-contact-projection",
+        "code-manual-initial-bindings",
+        "code-bitrix-manual-contact-fields",
+        "component-conversations",
+        "component-ui-manual-contact-form"
+      ],
+      "relationships": [
+        "rel-ui-manual-contact-initials",
+        "rel-manual-contact-projection-read",
+        "rel-manual-form-explicit-bindings",
+        "rel-bitrix-manual-form-bindings"
+      ],
+      "steps": [
+        {
+          "relationship": "rel-ui-manual-contact-initials",
+          "description": "1. Штатная форма получает каталог текущего диалога."
+        },
+        {
+          "relationship": "rel-manual-contact-projection-read",
+          "description": "2. current_actor, видимость и direct_policy проверяются до чтения контакта."
+        },
+        {
+          "relationship": "rel-bitrix-manual-form-bindings",
+          "description": "3. Адаптер создания явно задаёт NAME/PHONE/EMAIL и собственную вложенную схему."
+        },
+        {
+          "relationship": "rel-manual-form-explicit-bindings",
+          "description": "4. Проекция пропускает неизвестные значения и проверяет типы; сценарии и update/delete автоматического merge не получают."
+        },
+        {
+          "relationship": "rel-ui-manual-contact-initials",
+          "description": "5. initialValues передаётся отдельно от схемы, форма клонирует его один раз; дальнейшие изменения и очистка сохраняются для прежнего preview/launch."
+        }
+      ],
+      "instances": []
     }
   ],
   "specifications": [
@@ -25513,7 +26283,7 @@
     {
       "id": "0015",
       "path": "specs/0015-interfeys-organizatsii.md",
-      "bodyHash": "687fdafa03a1e310d3e9f0fdfd721430331d503c007496a63e34edb1c0a73664",
+      "bodyHash": "c59cf6a400cd6b0c72bbcbf191bbd0c70f2326faff8280bd38fef44300cfcb07",
       "impact": "changes",
       "description": "Архитектурная трассировка принятой спецификации «Интерфейс организации». Поведение не изменяется; наличие связей не заменяет тесты и приёмку реализации. Планируемое расширение SPEC-0037/ADR-0038 уточняет интеграционные действия; прежние разрешения/контур не расширяются автоматически.",
       "elements": [
@@ -25566,7 +26336,12 @@
         "component-service-events",
         "code-ui-service-connections",
         "component-privacy",
-        "code-ui-service-retention"
+        "code-ui-service-retention",
+        "code-service-manual-catalog",
+        "code-service-execution-policy",
+        "code-service-state-definitions",
+        "code-service-state-grants",
+        "code-service-native-registry"
       ],
       "relationships": [
         "rel-api-shell",
@@ -25621,7 +26396,13 @@
         "rel-service-ai-privacy",
         "rel-service-ai-completion",
         "rel-service-ui-sync-settings",
-        "rel-service-ui-retention"
+        "rel-service-ui-retention",
+        "rel-manual-ui-catalog",
+        "rel-manual-catalog-policy",
+        "rel-manual-catalog-scenarios",
+        "rel-manual-catalog-grants",
+        "rel-manual-catalog-registry",
+        "rel-manual-ui-shared"
       ],
       "views": [
         "view-workbench",
@@ -25656,7 +26437,12 @@
         "view-service-dynamic-ai",
         "view-service-code-ui-retention",
         "view-service-dynamic-native-sync",
-        "view-service-dynamic-retention"
+        "view-service-dynamic-retention",
+        "view-service-containers",
+        "view-service-backend",
+        "view-service-deployment",
+        "view-code-manual-chat-actions",
+        "view-dynamic-manual-chat-actions"
       ],
       "requirements": [
         {
@@ -26158,7 +26944,12 @@
             "code-ui-service-connections",
             "component-ai",
             "component-privacy",
-            "code-ui-service-retention"
+            "code-ui-service-retention",
+            "code-service-manual-catalog",
+            "code-service-execution-policy",
+            "code-service-state-definitions",
+            "code-service-state-grants",
+            "code-service-native-registry"
           ],
           "relationships": [
             "rel-service-system-business",
@@ -26199,7 +26990,13 @@
             "rel-service-ai-privacy",
             "rel-service-ai-completion",
             "rel-service-ui-sync-settings",
-            "rel-service-ui-retention"
+            "rel-service-ui-retention",
+            "rel-manual-ui-catalog",
+            "rel-manual-catalog-policy",
+            "rel-manual-catalog-scenarios",
+            "rel-manual-catalog-grants",
+            "rel-manual-catalog-registry",
+            "rel-manual-ui-shared"
           ],
           "views": [
             "view-service-context",
@@ -26216,7 +27013,12 @@
             "view-service-dynamic-ai",
             "view-service-code-ui-retention",
             "view-service-dynamic-native-sync",
-            "view-service-dynamic-retention"
+            "view-service-dynamic-retention",
+            "view-service-containers",
+            "view-service-backend",
+            "view-service-deployment",
+            "view-code-manual-chat-actions",
+            "view-dynamic-manual-chat-actions"
           ]
         }
       ]
@@ -33360,9 +34162,9 @@
     {
       "id": "0037",
       "path": "specs/0037-rasshiryaemye-integratsii-servisov-i-sts.md",
-      "bodyHash": "b4bf8378ba0823fda4d29bc469403b67f6cd7c3c876a2d112690f10083bfd0cc",
+      "bodyHash": "43580305bad241287a99d22a449e8f43ec5e74dc18d059d487eb035a7a2b045d",
       "impact": "changes",
-      "description": "Полный планируемый механизм сервисных интеграций: контракт адаптеров и готовые сценарии, собственные сценарии без обязательного кода, все способы запуска/публичные действия Chatballs, восстановление, безопасность и личная приёмка baseline. Реализация ещё не опубликована. Дополнение 03.11.2026: целевое поведение SPEC-0039/0040 остаётся planned. Исправления релиза 05.11.2026 остаются planned до проверенной публикации.",
+      "description": "Полный планируемый механизм сервисных интеграций: контракт адаптеров и готовые сценарии, собственные сценарии без обязательного кода, все способы запуска/публичные действия Chatballs, восстановление, безопасность и личная приёмка baseline. Реализация ещё не опубликована. Дополнение 03.11.2026: целевое поведение SPEC-0039/0040 остаётся planned. Исправления релиза 05.11.2026 остаются planned до проверенной публикации. Уточнение 06.11.2026: подписи ответственных и известные данные текущего контакта в ручном создании записи.",
       "elements": [
         "person-instance-admin",
         "person-platform-operator",
@@ -33494,7 +34296,15 @@
         "code-service-native-coverage",
         "code-service-native-runtime",
         "code-service-native-receipts",
-        "code-service-native-authority"
+        "code-service-native-authority",
+        "code-service-manual-catalog",
+        "code-ui-manual-prefill",
+        "code-service-adapter-bitrix24",
+        "component-manual-contact-form-metadata",
+        "component-ui-manual-contact-form",
+        "code-manual-initial-bindings",
+        "code-bitrix-manual-contact-fields",
+        "code-manual-contact-projection"
       ],
       "relationships": [
         "rel-service-system-business",
@@ -33669,7 +34479,24 @@
         "rel-service-code-authority-updates",
         "rel-service-code-runtime-authority",
         "rel-service-code-coverage-authority",
-        "rel-service-code-entry-authority"
+        "rel-service-code-entry-authority",
+        "rel-manual-ui-catalog",
+        "rel-manual-catalog-policy",
+        "rel-manual-catalog-scenarios",
+        "rel-manual-catalog-grants",
+        "rel-manual-catalog-registry",
+        "rel-manual-ui-shared",
+        "rel-manual-prefill-ui-catalog",
+        "rel-manual-prefill-contact",
+        "rel-manual-prefill-contract",
+        "rel-bitrix-prefill-contract",
+        "rel-manual-prefill-lookups",
+        "rel-manual-prefill-preview",
+        "rel-manual-form-metadata-contact",
+        "rel-manual-form-explicit-bindings",
+        "rel-bitrix-manual-form-bindings",
+        "rel-ui-manual-contact-initials",
+        "rel-manual-contact-projection-read"
       ],
       "views": [
         "view-service-context",
@@ -33723,7 +34550,14 @@
         "view-service-dynamic-authority-storage",
         "view-service-dynamic-authority-updates",
         "view-service-dynamic-authority-denial",
-        "view-dynamic-agent-permissions-modal"
+        "view-dynamic-agent-permissions-modal",
+        "view-code-manual-chat-actions",
+        "view-dynamic-manual-chat-actions",
+        "view-code-manual-prefill",
+        "view-dynamic-manual-prefill",
+        "view-component-manual-contact-form",
+        "view-code-manual-contact-form",
+        "view-dynamic-manual-contact-form"
       ],
       "requirements": [
         {
@@ -34716,7 +35550,12 @@
             "code-service-execution-policy",
             "code-service-execution-ai-policy",
             "code-service-execution-launch",
-            "code-service-native-authority"
+            "code-service-native-authority",
+            "code-service-manual-catalog",
+            "code-ui-service-runs",
+            "ui-service-runs",
+            "ui-chat",
+            "ui-shared"
           ],
           "relationships": [
             "rel-service-code-native-inventory",
@@ -34767,7 +35606,16 @@
             "rel-service-code-authority-updates",
             "rel-service-code-runtime-authority",
             "rel-service-code-coverage-authority",
-            "rel-service-code-entry-authority"
+            "rel-service-code-entry-authority",
+            "rel-manual-ui-catalog",
+            "rel-manual-catalog-policy",
+            "rel-manual-catalog-scenarios",
+            "rel-manual-catalog-grants",
+            "rel-manual-catalog-registry",
+            "rel-manual-ui-shared",
+            "rel-service-ui-context",
+            "rel-service-ui-launch",
+            "rel-service-policy-identity"
           ],
           "views": [
             "view-service-code-native",
@@ -34793,7 +35641,11 @@
             "view-service-dynamic-authority-platform",
             "view-service-dynamic-authority-storage",
             "view-service-dynamic-authority-updates",
-            "view-service-dynamic-authority-denial"
+            "view-service-dynamic-authority-denial",
+            "view-service-workbench",
+            "view-code-manual-chat-actions",
+            "view-dynamic-manual-chat-actions",
+            "view-service-code-ui-runs"
           ]
         },
         {
@@ -34907,7 +35759,11 @@
             "code-ui-service-controls",
             "code-service-scenario-synchronization",
             "code-service-connection-service",
-            "code-service-native-authority"
+            "code-service-native-authority",
+            "code-service-manual-catalog",
+            "code-ui-service-runs",
+            "ui-chat",
+            "ui-shared"
           ],
           "relationships": [
             "rel-service-code-launch-policy",
@@ -34981,7 +35837,14 @@
             "rel-service-code-authority-updates",
             "rel-service-code-runtime-authority",
             "rel-service-code-coverage-authority",
-            "rel-service-code-entry-authority"
+            "rel-service-code-entry-authority",
+            "rel-manual-ui-catalog",
+            "rel-manual-catalog-policy",
+            "rel-manual-catalog-scenarios",
+            "rel-manual-catalog-grants",
+            "rel-manual-catalog-registry",
+            "rel-manual-ui-shared",
+            "rel-service-ui-context"
           ],
           "views": [
             "view-service-code-policy",
@@ -35016,7 +35879,11 @@
             "view-service-dynamic-authority-platform",
             "view-service-dynamic-authority-storage",
             "view-service-dynamic-authority-updates",
-            "view-service-dynamic-authority-denial"
+            "view-service-dynamic-authority-denial",
+            "view-service-workbench",
+            "view-code-manual-chat-actions",
+            "view-dynamic-manual-chat-actions",
+            "view-service-code-ui-runs"
           ]
         },
         {
@@ -36202,7 +37069,9 @@
             "code-service-connection-service",
             "code-service-execution-policy",
             "code-service-execution-launch",
-            "code-service-native-authority"
+            "code-service-native-authority",
+            "code-service-manual-catalog",
+            "code-service-state-definitions"
           ],
           "relationships": [
             "rel-service-ui-backend",
@@ -36279,7 +37148,13 @@
             "rel-service-code-authority-updates",
             "rel-service-code-runtime-authority",
             "rel-service-code-coverage-authority",
-            "rel-service-code-entry-authority"
+            "rel-service-code-entry-authority",
+            "rel-manual-ui-catalog",
+            "rel-manual-catalog-policy",
+            "rel-manual-catalog-scenarios",
+            "rel-manual-catalog-grants",
+            "rel-manual-catalog-registry",
+            "rel-manual-ui-shared"
           ],
           "views": [
             "view-service-workbench",
@@ -36314,7 +37189,9 @@
             "view-service-dynamic-authority-storage",
             "view-service-dynamic-authority-updates",
             "view-service-dynamic-authority-denial",
-            "view-dynamic-agent-permissions-modal"
+            "view-dynamic-agent-permissions-modal",
+            "view-code-manual-chat-actions",
+            "view-dynamic-manual-chat-actions"
           ]
         },
         {
@@ -36889,15 +37766,95 @@
             "view-dynamic-site-recovery",
             "view-widget-site-components"
           ]
+        },
+        {
+          "id": "R-34",
+          "elements": [
+            "code-service-manual-catalog",
+            "code-ui-service-runs",
+            "ui-service-runs",
+            "ui-chat",
+            "ui-shared",
+            "code-service-execution-policy",
+            "code-service-state-definitions",
+            "code-service-state-grants",
+            "code-service-native-registry"
+          ],
+          "relationships": [
+            "rel-manual-ui-catalog",
+            "rel-manual-catalog-policy",
+            "rel-manual-catalog-scenarios",
+            "rel-manual-catalog-grants",
+            "rel-manual-catalog-registry",
+            "rel-manual-ui-shared",
+            "rel-service-ui-context",
+            "rel-service-ui-launch",
+            "rel-service-policy-identity"
+          ],
+          "views": [
+            "view-service-context",
+            "view-service-containers",
+            "view-service-workbench",
+            "view-service-backend",
+            "view-service-deployment",
+            "view-code-manual-chat-actions",
+            "view-dynamic-manual-chat-actions",
+            "view-service-code-ui-runs"
+          ]
+        },
+        {
+          "id": "R-35",
+          "elements": [
+            "code-ui-manual-prefill",
+            "code-service-manual-catalog",
+            "code-service-adapter-contract",
+            "code-service-adapter-bitrix24",
+            "code-service-execution-policy",
+            "code-service-execution-launch",
+            "component-conversations",
+            "component-manual-contact-form-metadata",
+            "component-ui-manual-contact-form",
+            "code-manual-initial-bindings",
+            "code-bitrix-manual-contact-fields",
+            "code-manual-contact-projection"
+          ],
+          "relationships": [
+            "rel-manual-prefill-ui-catalog",
+            "rel-manual-prefill-contact",
+            "rel-manual-prefill-contract",
+            "rel-bitrix-prefill-contract",
+            "rel-manual-prefill-lookups",
+            "rel-manual-prefill-preview",
+            "rel-manual-form-metadata-contact",
+            "rel-manual-form-explicit-bindings",
+            "rel-bitrix-manual-form-bindings",
+            "rel-ui-manual-contact-initials",
+            "rel-manual-contact-projection-read"
+          ],
+          "views": [
+            "view-service-context",
+            "view-service-containers",
+            "view-service-backend",
+            "view-service-workbench",
+            "view-service-deployment",
+            "view-code-manual-prefill",
+            "view-dynamic-manual-prefill",
+            "view-code-manual-chat-actions",
+            "view-service-code-registry",
+            "view-service-code-policy",
+            "view-component-manual-contact-form",
+            "view-code-manual-contact-form",
+            "view-dynamic-manual-contact-form"
+          ]
         }
       ]
     },
     {
       "id": "0038",
       "path": "specs/0038-bitrix24-webhook-service-adapter.md",
-      "bodyHash": "da6901a663d176ee3b92938cf81ac81af9aa9d75490fb971da9aaefef43ac60f",
+      "bodyHash": "505f98edeed1c0ef4f54f8539ce4a88f12c37a9b01beec7f3c1b56174ceb0c58",
       "impact": "changes",
-      "description": "Дополнение T-168 по решению владельца: первый установленный пакет Битрикс24 и определение пресета, без редактора/исполнителя.",
+      "description": "Дополнение T-168 по решению владельца: первый установленный пакет Битрикс24 и определение пресета, без редактора/исполнителя. Уточнение 06.11.2026: подписи ответственных и известные данные текущего контакта в ручном создании записи.",
       "elements": [
         "person-staff",
         "ui-service-connections",
@@ -36918,7 +37875,17 @@
         "code-service-state-connections",
         "code-service-files",
         "code-ui-service-connections",
-        "code-ui-service-controls"
+        "code-ui-service-controls",
+        "code-ui-manual-prefill",
+        "code-service-manual-catalog",
+        "code-service-execution-policy",
+        "code-service-execution-launch",
+        "component-conversations",
+        "component-manual-contact-form-metadata",
+        "component-ui-manual-contact-form",
+        "code-manual-initial-bindings",
+        "code-bitrix-manual-contact-fields",
+        "code-manual-contact-projection"
       ],
       "relationships": [
         "rel-service-staff-ui",
@@ -36929,7 +37896,18 @@
         "rel-service-connection-state",
         "rel-service-code-bitrix-http",
         "rel-service-code-ui-controls",
-        "rel-service-state-storage"
+        "rel-service-state-storage",
+        "rel-manual-prefill-ui-catalog",
+        "rel-manual-prefill-contact",
+        "rel-manual-prefill-contract",
+        "rel-bitrix-prefill-contract",
+        "rel-manual-prefill-lookups",
+        "rel-manual-prefill-preview",
+        "rel-manual-form-metadata-contact",
+        "rel-manual-form-explicit-bindings",
+        "rel-bitrix-manual-form-bindings",
+        "rel-ui-manual-contact-initials",
+        "rel-manual-contact-projection-read"
       ],
       "views": [
         "view-service-context",
@@ -36941,7 +37919,14 @@
         "view-service-code-state",
         "view-service-code-ui-connections",
         "view-service-deployment",
-        "view-service-dynamic-connection"
+        "view-service-dynamic-connection",
+        "view-code-manual-prefill",
+        "view-dynamic-manual-prefill",
+        "view-code-manual-chat-actions",
+        "view-service-code-policy",
+        "view-component-manual-contact-form",
+        "view-code-manual-contact-form",
+        "view-dynamic-manual-contact-form"
       ],
       "requirements": [
         {
@@ -37230,6 +38215,96 @@
             "view-service-code-ui-connections",
             "view-service-deployment",
             "view-service-dynamic-connection"
+          ]
+        },
+        {
+          "id": "R-7",
+          "elements": [
+            "code-ui-manual-prefill",
+            "code-service-manual-catalog",
+            "code-service-adapter-contract",
+            "code-service-adapter-bitrix24",
+            "code-service-execution-policy",
+            "code-service-execution-launch",
+            "component-conversations",
+            "component-manual-contact-form-metadata",
+            "component-ui-manual-contact-form",
+            "code-manual-initial-bindings",
+            "code-bitrix-manual-contact-fields",
+            "code-manual-contact-projection"
+          ],
+          "relationships": [
+            "rel-manual-prefill-ui-catalog",
+            "rel-manual-prefill-contact",
+            "rel-manual-prefill-contract",
+            "rel-bitrix-prefill-contract",
+            "rel-manual-prefill-lookups",
+            "rel-manual-prefill-preview",
+            "rel-manual-form-metadata-contact",
+            "rel-manual-form-explicit-bindings",
+            "rel-bitrix-manual-form-bindings",
+            "rel-ui-manual-contact-initials",
+            "rel-manual-contact-projection-read"
+          ],
+          "views": [
+            "view-service-context",
+            "view-service-containers",
+            "view-service-backend",
+            "view-service-workbench",
+            "view-service-deployment",
+            "view-code-manual-prefill",
+            "view-dynamic-manual-prefill",
+            "view-code-manual-chat-actions",
+            "view-service-code-registry",
+            "view-service-code-policy",
+            "view-component-manual-contact-form",
+            "view-code-manual-contact-form",
+            "view-dynamic-manual-contact-form"
+          ]
+        },
+        {
+          "id": "R-8",
+          "elements": [
+            "code-ui-manual-prefill",
+            "code-service-manual-catalog",
+            "code-service-adapter-contract",
+            "code-service-adapter-bitrix24",
+            "code-service-execution-policy",
+            "code-service-execution-launch",
+            "component-conversations",
+            "component-manual-contact-form-metadata",
+            "component-ui-manual-contact-form",
+            "code-manual-initial-bindings",
+            "code-bitrix-manual-contact-fields",
+            "code-manual-contact-projection"
+          ],
+          "relationships": [
+            "rel-manual-prefill-ui-catalog",
+            "rel-manual-prefill-contact",
+            "rel-manual-prefill-contract",
+            "rel-bitrix-prefill-contract",
+            "rel-manual-prefill-lookups",
+            "rel-manual-prefill-preview",
+            "rel-manual-form-metadata-contact",
+            "rel-manual-form-explicit-bindings",
+            "rel-bitrix-manual-form-bindings",
+            "rel-ui-manual-contact-initials",
+            "rel-manual-contact-projection-read"
+          ],
+          "views": [
+            "view-service-context",
+            "view-service-containers",
+            "view-service-backend",
+            "view-service-workbench",
+            "view-service-deployment",
+            "view-code-manual-prefill",
+            "view-dynamic-manual-prefill",
+            "view-code-manual-chat-actions",
+            "view-service-code-registry",
+            "view-service-code-policy",
+            "view-component-manual-contact-form",
+            "view-code-manual-contact-form",
+            "view-dynamic-manual-contact-form"
           ]
         }
       ]

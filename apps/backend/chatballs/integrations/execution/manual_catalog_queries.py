@@ -7,6 +7,7 @@ from chatballs.integrations.adapters.contracts import Effect
 from chatballs.integrations.adapters.registry import default_registry
 from chatballs.integrations.execution.actions import resolve_action
 from chatballs.integrations.execution.errors import error_message
+from chatballs.integrations.execution.manual_initial_values import initial_values
 from chatballs.integrations.execution.permissions import (
     ExecutionDenied,
     allowed_files,
@@ -45,7 +46,7 @@ def catalog(tenant, data):
         if conversation_id is not None:
             from chatballs.conversations.access import require_conversation_action
             from chatballs.conversations.models import Conversation
-            context = Conversation.objects.get(pk=conversation_id, organization_id=tenant.organization_id)
+            context = Conversation.objects.select_related("contact").get(pk=conversation_id, organization_id=tenant.organization_id)
             require_conversation_action(tenant, context, "conversations.view")
             if context.archived_at is not None:
                 return {"items": [], "files": []}
@@ -93,7 +94,7 @@ def catalog(tenant, data):
             for operation in adapter.operations:
                 if manager or (connection.pk, operation.key) in allowed:
                     try:
-                        direct_policy(tenant, connection.pk, operation.key, conversation_id)
+                        _, _, _, operation_context = direct_policy(tenant, connection.pk, operation.key, conversation_id)
                     except ExecutionDenied:
                         continue
                     available, reason = True, ""
@@ -105,7 +106,8 @@ def catalog(tenant, data):
                         "available": available, "reason": reason,
                         "connectionId": connection.pk, "operationKey": operation.key, "connection": connection.name,
                         "readOnly": operation.effect == Effect.READ,
-                        "parameters": field_payload("", operation.input)})
+                        "parameters": field_payload("", operation.input),
+                        "initialValues": initial_values(operation, operation_context) if available else {}})
         if context is None:
             from chatballs.integrations.action_catalog.manual_catalog import manual_actions
             items.extend(manual_actions(tenant, grants, context))

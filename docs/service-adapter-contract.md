@@ -67,6 +67,28 @@ Handlers receive the server-created tenant/connection context and return
 `OperationResult`: completed, pending, failed or unknown. An effect key is not
 proof of external idempotency; declare the actual supported retry strategy.
 
+## Initial values for manual creation
+
+`OperationDescriptor.initial_values` declares `InitialValue(target, source,
+transform, arguments)` bindings. Targets are explicit paths in the operation's
+input schema; sources are paths in the permitted server context. Registration
+checks source/target types, registered versioned transforms, their arguments and
+overlapping targets. Only create operations can declare these bindings.
+
+The authorized conversation catalog returns an `initialValues` object separately
+from `parameters` (the schema). Unknown/blank values are omitted. This read-only
+projection does not execute an operation or modify contacts. It is consumed once
+when opening the manual form for an action/conversation; later preview, catalog
+and lookup responses never merge defaults over employee edits or cleared fields.
+Preview and launch receive the employee's exact parameters. Saved scenario
+bindings and parameters are independent of these manual defaults.
+
+Bitrix24 declares NAME, PHONE and EMAIL only for lead/contact creation. PHONE
+and EMAIL use `list.of_object@1` with VALUE and VALUE_TYPE=WORK, preserving the
+single known value of each in the native Contact model. No surname is inferred
+from a full name. User lookup labels join trimmed NAME/SECOND_NAME/LAST_NAME,
+then fall back to trimmed EMAIL and finally ID; the lookup value remains ID.
+
 ## Versioned extensions
 
 References have the form `key@version`. Supported kinds are auth, transport,
