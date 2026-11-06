@@ -5,6 +5,7 @@ import { EmailMessageBody } from "./EmailMessageBody";
 import { EmailConversationMessage } from "./EmailConversationMessage";
 import { FileMessage } from "./FileMessage";
 import { MessageBubble, initialsOf } from "./MessageBubble";
+import { ConversationText } from "./ConversationText";
 import { VoiceMessage } from "./VoiceMessage";
 import { SnapshotMessage } from "./SnapshotMessage";
 import type { ApiMessage } from "./apiTypes";
@@ -48,10 +49,10 @@ export function ConversationMessage({ message, dialog, viewerId }: { message: Ap
       {message.kind === "voice"
         ? <VoiceMessage message={message} />
         : message.kind === "file"
-          ? <FileMessage message={message} />
+          ? <FileMessage message={message} syntax={dialog.channel === "TG" ? "telegram" : "markdown"} />
         : message.author === "CONTACT" && dialog.channel === "EMAIL"
           ? <EmailMessageBody html={message.contentHtml} text={message.text} />
-          : message.text}
+          : <ConversationText text={message.text} syntax={dialog.channel === "TG" ? "telegram" : "markdown"} />}
     </MessageBubble>
   );
 }
