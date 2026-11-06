@@ -5,6 +5,7 @@ import { ImageLightbox } from "./ImageLightbox";
 import { resolveApiUrl } from "../../api/client";
 import { formatSize } from "../ai/knowledge/model";
 import { isImageAttachment, type ApiMessage } from "./model";
+import { ConversationText, type ConversationTextSyntax } from "./ConversationText";
 import { t } from "../../i18n";
 
 // Файл или фото в ленте: фото — превью со ссылкой на оригинал, остальное —
@@ -17,7 +18,7 @@ function scrollFeedToLatest(event: SyntheticEvent<HTMLImageElement>) {
   if (node && node.scrollHeight - node.scrollTop - node.clientHeight < 400) node.scrollTop = node.scrollHeight;
 }
 
-export function FileMessage({ message }: { message: ApiMessage }) {
+export function FileMessage({ message, syntax = "markdown" }: { message: ApiMessage; syntax?: ConversationTextSyntax }) {
   const [lightbox, setLightbox] = useState(false);
   const url = message.attachmentUrl ? resolveApiUrl(message.attachmentUrl) : "";
   const name = message.attachmentName || t("conversations.file");
@@ -46,7 +47,7 @@ export function FileMessage({ message }: { message: ApiMessage }) {
             <a className="link" href={url} download={name}>{t("common.download")}</a>
           </div>
         )}
-      {message.text && <p className="file-message-caption">{message.text}</p>}
+      {message.text && <div className="file-message-caption"><ConversationText text={message.text} syntax={syntax} /></div>}
     </div>
   );
 }
