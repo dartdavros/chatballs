@@ -39,7 +39,8 @@ def save_definition(*, tenant, name, document, public_id=None, revision=None, en
         context = definition_context(tenant.organization_id, excluding=public_id)
         issues = validate_definition(document, context=context)
         if any(issue.code in {"structure", "unknown", "version", "schema", "block", "trigger", "identifier", "size", "binding"} for issue in issues):
-            raise ValidationError({"definition": t("scenarios.invalid_definition")})
+            from chatballs.integrations.scenarios.management import InvalidDefinition
+            raise InvalidDefinition(issues)
         if enabled and issues:
             return None, issues
         connections = connection_ids(document)

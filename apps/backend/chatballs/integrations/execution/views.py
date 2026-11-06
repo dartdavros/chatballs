@@ -28,6 +28,11 @@ class RunAPIView(APIView):
         current_actor(request.tenant_context)
 
     def handle_exception(self, exc):
+        if isinstance(exc, ServiceUnavailable) and exc.adapter:
+            from chatballs.integrations.adapters.registry import default_registry
+            from chatballs.integrations.service_connections.errors import error_payload
+            error = error_payload(default_registry().adapter(exc.adapter), exc.code)
+            return Response({"detail": f"{error.title} {error.text}".strip(), "error": error.as_dict()}, status=400)
         if isinstance(exc, InvalidValues):
             from chatballs.integrations.scenarios.payloads import issue_payload
             return Response({"detail": t("runs.error_arguments"), "issues": [issue_payload(issue) for issue in exc.issues]}, status=400)

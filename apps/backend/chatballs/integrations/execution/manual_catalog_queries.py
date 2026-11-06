@@ -72,6 +72,9 @@ def catalog(tenant, data):
             except ExecutionDenied as error:
                 available, reason = False, error_message(str(error))
             items.append({"id": str(row.public_id), "kind": "scenario", "title": row.name,
+                          "plan": [action.get("name") or t(resolve_action(tenant.organization_id,
+                              action["connection"], action["target"])[4].title_key) for action in actions]
+                              if available and all(step["kind"] == "action" for step in document["steps"]) else [],
                           "available": available, "reason": reason,
                           "connectionId": block.get("connection"),
                           "connection": connection_names.get(str(block.get("connection")), ""),

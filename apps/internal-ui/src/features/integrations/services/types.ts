@@ -60,7 +60,8 @@ export type ServiceAdapter = {
   settings: ServiceField[];
   presets: ServicePreset[];
   operations: Array<{ key: string; title: string; input: ServiceField; output: ServiceField; entityKind?: string }>;
-  entities?: Array<{ key: string; title: string; fields: ServiceField; nativeEntities: string[] }>;
+  entities?: Array<{ key: string; title: string; fields: ServiceField; nativeEntities: string[];
+    synchronization?: { directions: Array<"forward" | "reverse" | "both">; deletion: Array<"unlink" | "keep" | "propagate"> } }>;
   events: Array<{ key: string; title: string; payload: ServiceField }>;
 };
 

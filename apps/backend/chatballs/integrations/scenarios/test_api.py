@@ -112,6 +112,9 @@ class ScenarioAPITests(ScenarioAPICase):
         first = self.client.post(url, {}, format="json")
         self.assertEqual(first.status_code, 201, first.content)
         one = first.json()["scenario"]
+        self.assertEqual(one["issues"], [])
+        self.assertNotIn("ASSIGNED_BY_ID", one["definition"]["steps"][0]["inputs"]["fields"])
+        self.assertNotIn("STATUS_ID", one["definition"]["steps"][0]["inputs"]["fields"])
         payload = {"name": "My copy", "definition": one["definition"], "revision": 1}
         self.assertEqual(self.client.put(self.url(f"{one['id']}/"), payload, format="json").status_code, 200)
         second = self.client.post(url, {}, format="json")

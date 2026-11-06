@@ -10,8 +10,8 @@ export function AccessFields({ value, catalog, onChange }: { value: Access; cata
     <SelectField label={t("scenarios.scope")} value={value.scope} options={(["conversation", "contact", "organization"] as const).map(scope => [scope, t(`scenarios.scope_${scope}`)])}
       onChange={scope => onChange({ ...value, scope: scope as Access["scope"] })} wide />
     <div className="scenario-form"><strong>{t("scenarios.available_to")}</strong>
-      <ToggleField label={t("scenarios.all_staff")} checked={!value.groups.length && !value.staff.length}
-        onChange={() => onChange({ ...value, groups: [], staff: [] })} />
+      <ToggleField label={t("scenarios.all_staff")} checked={catalog.staff.length > 0 && catalog.staff.every(employee => value.staff.includes(employee.id))}
+        onChange={checked => onChange({ ...value, groups: [], staff: checked ? catalog.staff.map(employee => employee.id) : [] })} />
       {catalog.groups.map(group => <ToggleField key={group.id} label={group.name} checked={value.groups.includes(group.id)}
         onChange={checked => onChange({ ...value, groups: checked ? [...value.groups, group.id] : value.groups.filter(id => id !== group.id) })} />)}
       {catalog.staff.map(employee => <ToggleField key={employee.id} label={employee.name} checked={value.staff.includes(employee.id)}

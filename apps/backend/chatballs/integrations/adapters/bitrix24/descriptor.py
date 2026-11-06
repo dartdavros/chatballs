@@ -176,6 +176,7 @@ ADAPTER = AdapterDescriptor(
     templates=(CREATE_LEAD,),
     unsupported=(Unsupported(capability="events", reason_key="services.bitrix24.events_unsupported"),),
     errors={
+        "user_access_missing": ErrorText("services.bitrix24.error_users_title", "services.bitrix24.error_users_text"),
         "crm_access_missing": ErrorText("services.bitrix24.error_crm_title", "services.bitrix24.error_crm_text"),
         "invalid_link": ErrorText("services.bitrix24.error_link_title", "services.bitrix24.error_link_text"),
     },

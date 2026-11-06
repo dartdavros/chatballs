@@ -34,7 +34,7 @@ def interpret(status: int, payload: Any, *, permission: str = "crm") -> str | No
 
     if isinstance(payload, dict) and payload.get("error"):
         if permission != "crm" and payload["error"] in ("insufficient_scope", "ACCESS_DENIED"):
-            return "forbidden"
+            return "user_access_missing" if permission == "user" else "forbidden"
         return _ERRORS.get(str(payload["error"]), "rejected")
     return None
 

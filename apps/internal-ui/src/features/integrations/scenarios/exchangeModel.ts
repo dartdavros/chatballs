@@ -4,12 +4,12 @@ import { id } from "./model";
 
 export type ExchangePair = { key: string; left: Entity; right: Entity };
 export function exchangePairs(catalog: EditorCatalog, adapter: string): ExchangePair[] {
-  return (catalog.adapters.find(a => a.key === adapter)?.entities ?? []).flatMap(right =>
+  return (catalog.adapters.find(a => a.key === adapter)?.entities ?? []).filter(right => right.synchronization?.directions.length).flatMap(right =>
     catalog.entities.filter(left => right.nativeEntities.includes(left.key)).map(left => ({ key: `${left.key}:${right.key}`, left, right })));
 }
 export function makePair(pair: ExchangePair, connection: number): SyncPair {
   return { id: id(), enabled: false, left: { connection: "chatballs", entity: pair.left.key },
-    right: { connection: String(connection), entity: pair.right.key }, direction: "both", fields: [],
+    right: { connection: String(connection), entity: pair.right.key }, direction: pair.right.synchronization?.directions.includes("both") ? "both" : pair.right.synchronization!.directions[0], fields: [],
     sourceOfTruth: "latest", conflict: "latest", deletion: "unlink", causality: { suppressEcho: true, requireExplicitLink: true } };
 }
 export function pairKey(pair: SyncPair) { return `${pair.left.entity}:${pair.right.entity}`; }

@@ -6,6 +6,7 @@ import * as api from "./api";
 import { emptyDocument } from "./model";
 import { takePresetKeys } from "./presetTransfer";
 import { unavailableScenarioControl } from "./controlModel";
+import { pruneInputs } from "./inputParameters";
 import type { Drawer, EditorCatalog, Issue, Scenario, ScenarioDocument } from "./types";
 
 function updateScenarioUrl(id: string | null) {
@@ -87,7 +88,8 @@ export function useScenarioEditor(initial?: string) {
     if (catalog && unavailableScenarioControl(draft.definition, catalog)) { setError(t("scenarios.control_unavailable")); return false; }
     setSaving(true); setError("");
     try {
-      const result = await api.saveScenario({ name: draft.name, definition: draft.definition, enabled,
+      const definition = structuredClone(draft.definition); pruneInputs(definition);
+      const result = await api.saveScenario({ name: draft.name, definition, enabled,
         agentPolicies: draft.agentPolicies,
         ...(draft.id ? { id: draft.id, revision: draft.revision } : {}) });
       setDraft(result); setIssues(result.issues ?? []);

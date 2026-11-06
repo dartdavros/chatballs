@@ -22,11 +22,12 @@ def _bindings(value, parameters=None):
                 if parameters is not None:
                     parameters[result["name"]] = {"type": "string", "required": True, "title": t(title) if title else result["name"]}
             if result["source"] == "parameter":
-                return {"source": "constant", "value": None}
+                # Unconfigured optional fields are omitted, never invalid nulls.
+                return None
             if "field" in result:
                 result["path"] = result.pop("field")
             return result
-        return {key: _bindings(child, parameters) for key, child in value.items()}
+        return {key: bound for key, child in value.items() if (bound := _bindings(child, parameters)) is not None}
     if isinstance(value, list):
         return [_bindings(child, parameters) for child in value]
     return {"source": "constant", "value": value}

@@ -9,6 +9,7 @@ import { LookupAccessContext } from "../services/lookupAccess";
 import { launchManual, manualLookup, previewManual } from "./api";
 import { RunValues } from "./RunValues";
 import type { ManualAction, ManualCatalog, PlanPreview } from "./types";
+import { requiredIssues } from "./launchFields";
 
 export function ManualLaunch({ action, conversationId, catalog, onClose, onRun }: { action: ManualAction; conversationId: number; catalog: ManualCatalog; onClose: () => void; onRun: (id: string) => void }) {
   const [parameters, setParameters] = useState<Record<string, unknown>>({});
@@ -17,20 +18,25 @@ export function ManualLaunch({ action, conversationId, catalog, onClose, onRun }
   const [calculating, setCalculating] = useState(false);
   const [error, setError] = useState("");
   const [issues, setIssues] = useState<Array<{ path: string; message: string }>>([]);
+  const [touched, setTouched] = useState<string[]>([]);
   const [triggerKey] = useState(() => crypto.randomUUID());
   const stamp = JSON.stringify(parameters);
   const generation = useRef(0);
   const unavailable = unavailableField(action.parameters);
+  const missing = requiredIssues(action.parameters, parameters);
+  const complete = missing.length === 0;
   useEffect(() => {
     const token = ++generation.current;
-    setCalculating(true); setError("");
+    setError("");
+    if (!complete) { setPreview(null); setCalculating(false); return; }
+    setCalculating(true);
     const timer = setTimeout(() => { void previewManual(action, conversationId, parameters, triggerKey)
       .then(plan => { if (token === generation.current) { setPreview({ ...plan, stamp }); setIssues([]); } })
       .catch(error => { if (token === generation.current) { setPreview(null); setError(error instanceof Error ? error.message : t("runs.unavailable"));
         setIssues(error instanceof ApiError && Array.isArray(error.payload.issues) ? error.payload.issues : []); } })
       .finally(() => { if (token === generation.current) setCalculating(false); }); }, 300);
     return () => { generation.current++; clearTimeout(timer); };
-  }, [action, conversationId, stamp, triggerKey]); // parameter identity is represented by stamp
+  }, [action, conversationId, stamp, triggerKey, complete]); // parameter identity is represented by stamp
   const loadLookup = useCallback((connection: string, key: string) => manualLookup(action, conversationId, connection, key), [action, conversationId]);
   const launch = async () => {
     if (!preview || preview.stamp !== stamp || busy || unavailable) return;
@@ -39,15 +45,21 @@ export function ManualLaunch({ action, conversationId, catalog, onClose, onRun }
     catch (error) { setError(error instanceof Error ? error.message : t("runs.unavailable")); }
     finally { setBusy(false); }
   };
-  return <div className="run-launch"><div className="run-launch-plan"><strong>{t("runs.what_happens")}</strong><p>{preview?.operation ?? action.title}</p></div>
+  const fieldIssues = [...issues, ...missing.filter(issue => touched.some(path => issue.path === path || issue.path.startsWith(`${path}.`)))];
+  return <div className="run-launch"><div className="run-launch-content"><div className="run-launch-plan"><strong>{t("runs.what_happens")}</strong>
+    {(action.plan?.length ? action.plan : [preview?.operation ?? action.title]).map((step, index) => <p key={index}>{action.plan?.length ? `${index + 1}. ` : ""}{step}</p>)}</div>
     <LookupAccessContext.Provider value={loadLookup}><fieldset disabled={busy} className="scenario-fieldset run-launch-fields">
-      {(action.parameters.fields ?? []).map(field => <div key={field.name}><ConstantValue field={field} value={parameters[field.name]} catalog={catalog}
-        connection={String(action.connectionId ?? "")} onChange={value => setParameters(current => ({ ...current, [field.name]: value }))} />
-        {issues.filter(issue => issue.path === field.name || issue.path.startsWith(`${field.name}.`)).map(issue => <small key={issue.path} className="form-field-error">{issue.message}</small>)}
+      {(action.parameters.fields ?? []).map(field => <div key={field.name}><ConstantValue field={field} value={parameters[field.name]} catalog={catalog} issues={fieldIssues}
+        connection={String(action.connectionId ?? "")} onChange={value => {
+          setTouched(current => current.includes(field.name) ? current : [...current, field.name]); setIssues([]);
+          setParameters(current => ({ ...current, [field.name]: value }));
+        }} />
       </div>)}</fieldset></LookupAccessContext.Provider>
     {action.kind === "scenario" && preview?.stamp === stamp && <RunValues schema={preview.inputSchema} value={preview.arguments} />}
     <div className="run-launch-notice" role="status">{calculating ? <LoadingState variant="inline" /> : error || (unavailable ? t("scenarios.control_unavailable") : "")}</div>
-    <footer><p>{preview?.note}</p><div><Button variant="secondary" disabled={busy} onClick={onClose}>{t("runs.close")}</Button>
+    {preview?.note && <p className="run-launch-note">{preview.note}</p>}
+    </div>
+    <footer className="run-launch-footer"><div><Button variant="secondary" disabled={busy} onClick={onClose}>{t("runs.close")}</Button>
       <Button variant="primary" disabled={busy || calculating || !preview || preview.stamp !== stamp || unavailable} onClick={() => void launch()}>{t("runs.launch")}</Button></div></footer>
   </div>;
 }

@@ -23,6 +23,6 @@ export function ConversationRunPanel({ children }: { children: ReactNode }) {
   const mobile = useMediaQuery("(max-width: 767px)");
   if (!state?.sheet || mobile) return children;
   return <aside className="sales-context run-context-panel"><header><h3>{state.sheet.link ? t("runs.replace_link") : state.sheet.action?.title ?? t("runs.details")}</h3>
-    <IconButton icon="close" label={t("common.close")} onClick={state.close} /></header>
+    <IconButton bare icon="close" label={t("common.close")} onClick={state.close} /></header>
     <div className="run-context-body"><ConversationRunContent /></div></aside>;
 }

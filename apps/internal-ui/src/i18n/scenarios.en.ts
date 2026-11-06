@@ -1,4 +1,5 @@
 export const scenariosEn = {
+  "scenarios.exchange_read_only": "This connection can only transfer data from the service to Chatballs.",
   "scenarios.record": "Record",
   "scenarios.key_pending": "The address and key will appear after you save the scenario. Copy the key immediately: it is only shown once.",
   "scenarios.api_address": "Address",

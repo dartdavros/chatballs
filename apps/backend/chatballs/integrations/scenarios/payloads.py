@@ -2,7 +2,7 @@ from chatballs.i18n import t
 
 
 def issue_payload(issue):
-    key = issue.code if issue.code in {"required", "type", "reference", "delegation"} else "structure"
+    key = "required" if issue.code == "null" else issue.code if issue.code in {"required", "type", "reference", "delegation"} else "structure"
     return {"path": issue.path, "code": issue.code, "message": t(f"scenarios.{key}")}
 
 

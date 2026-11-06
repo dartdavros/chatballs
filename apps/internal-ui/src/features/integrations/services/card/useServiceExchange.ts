@@ -20,8 +20,8 @@ export function useServiceExchange(connection: number) {
     setSaving(true); setError("");
     try { setSettings(await saveExchange(connection, next)); return true; }
     catch (caught) {
-      const body = caught instanceof ApiError ? caught.payload as { issues?: Issue[] } : null;
-      setError(caught instanceof ApiError && caught.status === 409 ? t("scenarios.exchange_conflict_error") : body?.issues?.[0]?.message ?? t("services.request_failed")); return false;
+      const body = caught instanceof ApiError ? caught.payload as { detail?: string; issues?: Issue[] } : null;
+      setError(caught instanceof ApiError && caught.status === 409 ? t("scenarios.exchange_conflict_error") : body?.detail ?? body?.issues?.[0]?.message ?? t("services.request_failed")); return false;
     } finally { setSaving(false); }
   }
   return { catalog, settings, loading, saving, error, reload, save };

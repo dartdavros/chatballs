@@ -192,7 +192,8 @@ class ServiceConnectionApiTests(TestCase):
         self.service.routes["/user.get.json"] = json_response({"error": "insufficient_scope"}, status=401)
         response = self.client.get(f"{URL}services/{connection_id}/lookups/users/")
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json()["error"]["code"], "forbidden")
+        self.assertEqual(response.json()["error"]["code"], "user_access_missing")
+        self.assertEqual(response.json()["error"]["text"], t("services.bitrix24.error_users_text"))
         self.assertNotEqual(response.json()["error"]["title"], t("services.bitrix24.error_crm_title"))
 
     def test_generic_integration_api_does_not_create_or_change_services(self) -> None:

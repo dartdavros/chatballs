@@ -31,9 +31,11 @@ export function ExchangeDrawer({ connection, adapter, catalog, settings, saving,
           <label><input type="checkbox" checked={p.enabled} onChange={e => { update({ ...p, enabled: e.target.checked }); setSelected(p.id); }} />
             <strong>{d.left.title} ↔ {d.right.title}</strong></label>
           {p.enabled && <Segmented value={p.direction} setValue={direction => update({ ...p, direction })}
+            disabledKeys={(["forward", "reverse", "both"] as const).filter(direction => !d.right.synchronization?.directions.includes(direction))}
             items={(["forward", "reverse", "both"] as const).map(direction => [direction, t(`scenarios.${direction}`)])} />}
         </div>; })}
       </section>
+      {descriptor?.right.synchronization?.directions.length === 1 && <p className="scenario-note">{t("scenarios.exchange_read_only")}</p>}
       <section className="scenario-form"><div><strong>{t("scenarios.exchange_fields")}</strong><p className="scenario-note">{t("scenarios.exchange_hint")}</p></div>
         {pairs.length > 1 && <Segmented value={selected} setValue={setSelected} items={pairs.map(p => [p.id, descriptors.find(d => d.key === pairKey(p))!.right.title])} />}
         {pair && descriptor && <ExchangeFields key={pair.id} descriptor={descriptor} value={pair} connection={connection.id} catalog={catalog} onChange={update} />}
@@ -44,7 +46,7 @@ export function ExchangeDrawer({ connection, adapter, catalog, settings, saving,
             onChange={() => update({ ...pair, sourceOfTruth: choice === "manual" ? "latest" : choice, conflict: choice === "manual" ? "manual" : choice === "latest" ? "latest" : "source" })} />
           <span>{t(choice === "manual" ? "scenarios.exchange_manual" : choice === "left" ? "scenarios.exchange_native_wins" : choice === "right" ? "scenarios.exchange_service_wins" : "scenarios.latest")}</span>
         </label>)}
-        <SelectField label={t("scenarios.deletion")} value={pair.deletion} options={(["unlink", "keep", "propagate"] as const).map(v => [v, t(`scenarios.${v}`)])}
+        <SelectField label={t("scenarios.deletion")} value={pair.deletion} options={(descriptor?.right.synchronization?.deletion ?? ["unlink", "keep"]).map(v => [v, t(`scenarios.${v}`)])}
           onChange={deletion => update({ ...pair, deletion: deletion as SyncPair["deletion"] })} wide />
       </section>}
     </fieldset>

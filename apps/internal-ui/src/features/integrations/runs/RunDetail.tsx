@@ -22,9 +22,9 @@ export function RunDetail({ id, onBack, inChat = false, onRepeated }: { id: stri
     <header className="run-detail-head"><div><div className="run-title"><h2>{run.name}</h2><RunStatus state={run.state} label={run.stateLabel} /></div>
       <p>{t("runs.run_label", { number: fmt.number(run.number) })} · {fmt.shortDateTime(run.createdAt)}</p></div>
       <div className="run-detail-actions">{run.controls.includes("reconcile") && <Button variant="secondary" disabled={state.busy} onClick={() => void state.act("reconcile", { path: run.reconcilePath })}>{t("runs.reconcile")}</Button>}
-        {!run.dataCleared && <Dropdown overlayClassName="app-dropdown" trigger={["click"]} menu={{ items: [
-          { key: "cancel", label: t("runs.cancel"), disabled: !run.controls.includes("cancel") },
-          { key: "repeat", label: t("runs.repeat"), disabled: !run.controls.includes("repeat") },
+        {!run.dataCleared && <Dropdown overlayClassName="app-dropdown" placement="bottomRight" trigger={["click"]} menu={{ items: [
+          { key: "cancel", label: <button type="button" disabled={!run.controls.includes("cancel")}>{t("runs.cancel")}</button>, disabled: !run.controls.includes("cancel") },
+          { key: "repeat", label: <button type="button" disabled={!run.controls.includes("repeat")}>{t("runs.repeat")}</button>, disabled: !run.controls.includes("repeat") },
         ], onClick: ({ key }) => key === "repeat" ? setRepeat(crypto.randomUUID()) : void state.act("cancel") }}>
           <button type="button" className="row-menu-button" aria-label={t("runs.actions")} disabled={state.busy}><Icon name="more" size={17} /></button>
         </Dropdown>}

@@ -1,6 +1,7 @@
 // Интеграции · Сервисы (SPEC-0037, baseline design/baseline/service-integrations/Сервисы.dc.html).
 // Названия сервисов, поля доступа и справка приходят от адаптера с сервера.
 export const servicesRu = {
+  "services.field_required": "Заполните поле.",
   "services.section_lead": "Подключайте сервисы и настраивайте совместную работу с Chatballs.",
   "services.tab_entry": "Точки входа диалогов",
   "services.tab_servers": "Внешние серверы",

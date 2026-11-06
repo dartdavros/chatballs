@@ -4,7 +4,7 @@ import { valueOptions } from "./bindingOptions";
 import { BoundField } from "./BoundField";
 import { ConditionsEditor } from "./ConditionsEditor";
 import { EntityLinkFields } from "./EntityLinkFields";
-import { operationFor, operations, schemaField } from "./model";
+import { blockPath, operationFor, operations, schemaField } from "./model";
 import { sameReference } from "./referenceModel";
 import type { Block, BoundValue, DataSchema, EditorCatalog, Issue, ScenarioDocument } from "./types";
 import { WaitEditor } from "./WaitEditor";
@@ -39,7 +39,7 @@ export function BlockEditor({ block, document, catalog, timezone, change, onInpu
     </>}
     {block.target === "chatballs:entity_link.create" ? <EntityLinkFields block={block} document={document} catalog={catalog} change={change} />
       : (block.kind === "action" || block.kind === "call") && (inputs ?? []).map(field => <BoundField key={field.name} field={field} value={block.inputs?.[field.name]}
-      error={issues.find(issue => issue.path.includes(`.inputs.${field.name}`))?.message}
+      issues={issues} path={`${blockPath(document.steps, block.id)}.inputs.${field.name}`}
       connection={block.connection ?? ""} current={block.id} document={document} catalog={catalog} onChange={value => input(field.name, value)} onInput={onInput} />)}
     {block.kind === "if" && <ConditionsEditor value={block.condition ?? { mode: "all", items: [] }} document={document} catalog={catalog} current={block.id}
       onChange={condition => change({ condition })} />}

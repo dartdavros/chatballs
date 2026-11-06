@@ -2,6 +2,7 @@ import type { Message } from "@chatballs/shared";
 import type { servicesRu } from "./services.ru";
 
 export const servicesEn: Record<keyof typeof servicesRu, Message> = {
+  "services.field_required": "Fill in this field.",
   "services.section_lead": "Connect services and set up how they work together with Chatballs.",
   "services.tab_entry": "Conversation entry points",
   "services.tab_servers": "External servers",

@@ -13,7 +13,7 @@ export function ServiceExchangeBlock({ connection, adapter }: { connection: Serv
   const state = useServiceExchange(connection.id);
   const [open, setOpen] = useState(false);
   const enabled = state.settings?.definition.synchronization.some(p => p.enabled) ?? false;
-  if (!adapter.entities?.length) return null;
+  if (!adapter.entities?.some(entity => entity.synchronization?.directions.length)) return null;
   return <section className="service-card-block service-exchange-block"><h3>{t("scenarios.exchange_title")}</h3>
     <p className="service-card-lead">{t("scenarios.exchange_lead")}</p>
     {state.loading ? <LoadingState /> : !state.settings || !state.catalog ? <div role="alert">{state.error}<button className="link" type="button" onClick={() => void state.reload()}>{t("scenarios.reload")}</button></div>

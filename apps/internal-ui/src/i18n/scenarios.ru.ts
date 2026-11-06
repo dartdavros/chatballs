@@ -1,4 +1,5 @@
 export const scenariosRu = {
+  "scenarios.exchange_read_only": "Это подключение поддерживает передачу данных только из сервиса в Chatballs.",
   "scenarios.record": "Запись",
   "scenarios.key_pending": "Адрес и ключ появятся после сохранения сценария. Ключ показывается один раз — его нужно сразу скопировать.",
   "scenarios.api_address": "Адрес",

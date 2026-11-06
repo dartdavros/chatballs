@@ -147,12 +147,20 @@ def adapter_payload(adapter: AdapterDescriptor) -> dict[str, Any]:
         ],
         "lookups": [{"key": lookup.key, "title": _text(lookup.title_key)} for lookup in adapter.lookups],
         "entities": [{"key": entity.key, "title": _text(entity.title_key), "fields": field_payload("", entity.fields),
+                      "synchronization": synchronization_payload(entity.synchronization),
                       "nativeEntities": list(entity.native_entities)} for entity in adapter.entities],
         "events": [{"key": event.key, "title": _text(event.title_key), "delivery": event.delivery.value,
                     "payload": field_payload("", event.payload)} for event in adapter.events],
         "unsupported": [{"capability": item.capability, "reason": _text(item.reason_key)} for item in adapter.unsupported],
         "presets": [template_payload(template) for template in adapter.templates],
     }
+
+
+def synchronization_payload(binding):
+    if binding is None:
+        return {"directions": [], "deletion": ["unlink", "keep"]}
+    return {"directions": ["reverse"] + (["forward", "both"] if binding.update_operation else []),
+            "deletion": ["unlink", "keep"] + (["propagate"] if binding.delete_operation else [])}
 
 
 def catalog_payload() -> list[dict[str, Any]]:

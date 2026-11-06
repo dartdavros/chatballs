@@ -29,9 +29,10 @@ from chatballs.tenancy.context import TenantContext
 class ServiceUnavailable(Exception):
     """Подключение нельзя использовать; ``code`` — причина без подробностей."""
 
-    def __init__(self, code: str) -> None:
+    def __init__(self, code: str, *, adapter: str = "") -> None:
         super().__init__(code)
         self.code = code
+        self.adapter = adapter
 
 
 def load_credentials(row: ServiceConnectionSettings) -> dict[str, Any]:
@@ -133,7 +134,7 @@ def load_lookup(*, tenant: TenantContext, integration: Integration, key: str) ->
         raise ServiceUnavailable("lookup_unknown")
     result = execute(tenant=tenant, integration=integration, operation_key=lookup.operation, arguments=lookup.arguments)
     if result.state != ResultState.COMPLETED:
-        raise ServiceUnavailable(result.error_code or "rejected")
+        raise ServiceUnavailable(result.error_code or "rejected", adapter=adapter.key)
     return lookup.items(result.data)
 
 

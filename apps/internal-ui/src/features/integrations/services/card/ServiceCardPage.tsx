@@ -28,6 +28,7 @@ export function ServiceCardPage({ connectionId, onBack, onOpenScenario }: { conn
       <ServiceCardHeader connection={connection} adapter={adapter} onBack={onBack}
         onToggleActive={() => void card.setActive(!connection.isActive)} onDelete={() => setDeleting(true)} />
       <div className="service-card-blocks">
+        {(card.failure?.message || card.failure?.error) && <div className="service-alert is-error" role="alert"><p>{card.failure.error ? `${card.failure.error.title} ${card.failure.error.text}` : card.failure.message}</p></div>}
         <ServiceCardBanners connection={connection} service={service} justConnected={card.justConnected}
           onHide={card.hideNotice} onRestore={() => setReplacing(true)} />
         {adapter && <ServicePresetsBlock adapter={adapter} connectionId={connectionId} onOpen={onOpenScenario} />}

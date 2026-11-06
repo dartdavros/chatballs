@@ -3,6 +3,7 @@ import { t } from "../../../i18n";
 import { Icon } from "../../../shared/icons";
 import { StepList } from "./StepList";
 import { conditionSummary, newCondition } from "./conditionModel";
+import { presentIssue } from "./issuePresentation";
 import type { ScenarioEditorState } from "./useScenarioEditor";
 
 function Section({ title, lead, children }: { title: string; lead: string; children: ReactNode }) {
@@ -16,7 +17,12 @@ export function ScenarioSections({ editor }: { editor: Pick<ScenarioEditorState,
     {draft.externalKeys?.some(key => key.key) && <div className="scenario-banner"><strong>{t("scenarios.key_created")}</strong>
       <p>{t("scenarios.key_fresh")}</p><button type="button" className="link" onClick={() => editor.setDrawer({ kind: "trigger", id: draft.externalKeys!.find(key => key.key)!.trigger })}>{t("scenarios.key_show")}</button></div>}
     {(editor.error || editor.conflict || editor.issues.length > 0) && <div className="scenario-banner" role="alert">
-      <p>{editor.conflict ? t("scenarios.conflict") : editor.error || editor.issues[0]?.message}</p>
+      {editor.conflict || editor.error && !editor.issues.length ? <p>{editor.conflict ? t("scenarios.conflict") : editor.error}</p>
+        : <div className="scenario-issue-list">{editor.issues.map((issue, index) => {
+          const shown = presentIssue(issue, draft.definition, catalog);
+          return shown.block ? <button type="button" className="link is-neutral" key={index} onClick={() => editor.setDrawer({ kind: "block", id: shown.block! })}>{shown.message}</button>
+            : <p key={index}>{shown.message}</p>;
+        })}</div>}
       {editor.conflict && <button type="button" className="link" onClick={() => void editor.reload()}>{t("scenarios.reload")}</button>}
     </div>}
     <Section title={t("scenarios.launch")} lead={t("scenarios.launch_lead")}>

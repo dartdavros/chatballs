@@ -58,7 +58,8 @@ export type Scenario = {
 export type ExternalKey = { id: string; trigger: string; url: string; key?: string };
 export type ExchangeSettings = { revision: number; definition: { version: 1; synchronization: SyncPair[] };
   result?: { stateLabel: string; finishedAt: string | null } | null; error?: string };
-export type Entity = { key: string; title: string; fields: ServiceField; writableFields?: string[]; nativeEntities?: string[] };
+export type Entity = { key: string; title: string; fields: ServiceField; writableFields?: string[]; nativeEntities?: string[];
+  synchronization?: { directions: SyncPair["direction"][]; deletion: SyncPair["deletion"][] } };
 export type Operation = { key: string; title: string; input: ServiceField; output: ServiceField; entityKind?: string };
 export type EditorCatalog = {
   transforms: Array<{ key: string; title: string; inputTypes: string[]; outputType: string; arguments: ServiceField }>;
