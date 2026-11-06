@@ -7,6 +7,7 @@ import { emptyDocument } from "./model";
 import { takePresetKeys } from "./presetTransfer";
 import { unavailableScenarioControl } from "./controlModel";
 import { pruneInputs } from "./inputParameters";
+import { scheduleScenarioValidation } from "./scenarioValidation";
 import type { Drawer, EditorCatalog, Issue, Scenario, ScenarioDocument } from "./types";
 
 function updateScenarioUrl(id: string | null) {
@@ -26,12 +27,25 @@ export function useScenarioEditor(initial?: string) {
   const [error, setError] = useState("");
   const [conflict, setConflict] = useState(false);
   const [issues, setIssues] = useState<Issue[]>([]);
+  const [validationError, setValidationError] = useState("");
   const [drawer, setDrawer] = useState<Drawer | null>(null);
   const [pendingLeave, setPendingLeave] = useState<(() => void) | null>(null);
   const generation = useRef(0);
   const loadedSelection = useRef<string | null | undefined>(undefined);
   const snapshot = draft ? JSON.stringify({ name: draft.name, definition: draft.definition, enabled: draft.enabled, agentPolicies: draft.agentPolicies }) : "";
   const dirty = snapshot !== saved;
+  const definitionSnapshot = draft ? JSON.stringify(draft.definition) : "";
+  const validateDraft = !loading && !saving;
+
+  useEffect(() => {
+    setValidationError("");
+    if (!validateDraft || !definitionSnapshot) return;
+    return scheduleScenarioValidation(
+      signal => api.checkScenario(JSON.parse(definitionSnapshot) as ScenarioDocument, signal),
+      setIssues,
+      () => setValidationError(t("scenarios.request_failed")),
+    );
+  }, [definitionSnapshot, validateDraft, selected]);
 
   const load = useCallback(async (target = selected) => {
     const token = ++generation.current;
@@ -80,7 +94,7 @@ export function useScenarioEditor(initial?: string) {
       const body = caught.payload as { detail?: string; issues?: Issue[]; errors?: Record<string, string[]> } | null;
       if (caught.status === 409) setConflict(true);
       if (body?.issues) setIssues(body.issues);
-      setError(body?.detail ?? body?.issues?.[0]?.message ?? Object.values(body?.errors ?? {}).flat()[0] ?? t("scenarios.request_failed"));
+      setError(body?.issues ? "" : body?.detail ?? Object.values(body?.errors ?? {}).flat()[0] ?? t("scenarios.request_failed"));
     } else setError(t("scenarios.request_failed"));
   }
   async function save(enabled = draft?.enabled ?? false): Promise<boolean> {
@@ -125,7 +139,7 @@ export function useScenarioEditor(initial?: string) {
       loadedSelection.current = undefined; setSelected(null); updateScenarioUrl(null); releaseNavigationGuard(); return true; }
     catch (caught) { failure(caught); return false; } finally { setSaving(false); }
   }
-  return { catalog, rows, draft, setDraft, loading, saving, error, conflict, issues, drawer, setDrawer, dirty,
+  return { catalog, rows, draft, setDraft, loading, saving, error: error || validationError, conflict, issues, drawer, setDrawer, dirty,
     pendingLeave, setPendingLeave, open, mutate, save, check, copy, remove, reload: () => load(draft?.id || selected),
     hideKeys: () => setDraft(current => current ? { ...current, externalKeys: current.externalKeys?.map(({ key: _key, ...metadata }) => metadata) } : current),
     rotateKey: async (trigger: string) => {

@@ -15,7 +15,7 @@ export const saveScenario = (scenario: Pick<Scenario, "name" | "definition" | "e
   const { id, ...body } = scenario;
   return api<{ scenario: Scenario }>(`${BASE}${id ? `${id}/` : ""}`, { method: id ? "PUT" : "POST", body: JSON.stringify(body) }).then(r => r.scenario);
 };
-export const checkScenario = (definition: ScenarioDocument) => api<{ valid: boolean; issues: Issue[] }>(`${BASE}check/`, { method: "POST", body: JSON.stringify({ definition }) });
+export const checkScenario = (definition: ScenarioDocument, signal?: AbortSignal) => api<{ valid: boolean; issues: Issue[] }>(`${BASE}check/`, { method: "POST", body: JSON.stringify({ definition }), signal });
 export const copyScenario = (id: string, name: string) => api<{ scenario: Scenario }>(`${BASE}${id}/copy/`, { method: "POST", body: JSON.stringify({ name }) }).then(r => r.scenario);
 export const deleteScenario = (id: string, revision: number) => api(`${BASE}${id}/`, { method: "DELETE", body: JSON.stringify({ revision }) });
 export const copyPreset = (connection: number, key: string) => api<{ scenario: Scenario }>(`/api/v1/integrations/services/${connection}/presets/${key}/`, { method: "POST", body: "{}" }).then(r => r.scenario);
