@@ -1,0 +1,44 @@
+/* Rich text in chat bubbles only. Snapshot cards, email and attachments
+   retain their existing independent rendering. */
+.conversation-text {
+  min-width: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.conversation-text :is(p, ul, ol, blockquote, pre) {
+  margin: 0;
+}
+
+.conversation-text :is(p, ul, ol, blockquote, pre) + :is(p, ul, ol, blockquote, pre) {
+  margin-top: 0.65em;
+}
+
+.conversation-text :is(ul, ol) {
+  padding-left: 1.5em;
+}
+
+.conversation-text li + li {
+  margin-top: 0.15em;
+}
+
+.conversation-text blockquote {
+  border-left: 2px solid var(--n-6);
+  padding-left: 0.75em;
+  color: var(--n-3);
+}
+
+.conversation-text pre {
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: var(--n-9);
+  overflow-x: auto;
+}
+
+.conversation-text code {
+  font-size: 0.92em;
+}
+
+.conversation-text a {
+  overflow-wrap: anywhere;
+}
