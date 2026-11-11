@@ -35,7 +35,7 @@ export const skillsRu = {
   "skills.no_results": "Ничего не найдено",
   "skills.managers": "Создают и изменяют навыки владелец и администратор.",
   "skills.basis": "Основа",
-  "skills.blank": "С нуля",
+  "skills.blank": "Новый навык",
   "skills.orders": "Работа с заказами",
   "skills.replace": "Заменить введённые данные?",
   "skills.replace_action": "Заменить",

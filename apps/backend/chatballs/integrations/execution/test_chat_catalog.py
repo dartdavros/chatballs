@@ -99,6 +99,4 @@ class ChatCatalogTests(CommentTestBase):
         with tenant_atomic(self.context):
             service.is_active = False
             service.save(update_fields=["is_active"])
-        unavailable = self.menu(tenant)[0]
-        self.assertFalse(unavailable["available"])
-        self.assertTrue(unavailable["reason"])
+        self.assertEqual(self.menu(tenant), [])

@@ -11,6 +11,7 @@ import { skillTemplatesEn } from "./skill-templates.en";
 
 import type { Message } from "@chatballs/shared";
 import { navigationEn } from "./navigation.en";
+import { pageTitlesEn } from "./page-titles.en";
 import { handlingRulesEn } from "./handling-rules.en";
 import { qualityEn } from "./quality.en";
 import { supportReportsEn } from "./support-reports.en";
@@ -47,6 +48,7 @@ export const en: Record<MessageKey, Message> = {
   ...skillsEn,
   ...skillTemplatesEn,
   ...navigationEn,
+  ...pageTitlesEn,
   ...handlingRulesEn,
   ...qualityEn,
   ...supportReportsEn,

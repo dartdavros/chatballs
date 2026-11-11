@@ -49,7 +49,7 @@ export function ConversationWorkspace({ isOwner = false, canDelete = false, reta
   const openRunContext = useCallback(() => setCtxOpen(true), [setCtxOpen]);
 
   return (
-    <ConversationRunsProvider conversationId={detail?.id ?? null} openContext={openRunContext}>
+    <ConversationRunsProvider conversationId={detailLoaded ? detail?.id ?? null : null} openContext={openRunContext}>
     <div className={`sales-dialogs ${ctxOpen ? "is-ctx-open" : ""} ${mobileDialogOpen ? "is-mobile-dialog" : ""} ${listCollapsed ? "is-list-collapsed" : ""}`}>
       <DialogList
         viewerId={viewerId}

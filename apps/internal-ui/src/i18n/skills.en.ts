@@ -31,7 +31,7 @@ export const skillsEn = {
   "skills.no_results": "Nothing found",
   "skills.managers": "Owners and administrators create and edit skills.",
   "skills.basis": "Basis",
-  "skills.blank": "From scratch",
+  "skills.blank": "New skill",
   "skills.orders": "Working with orders",
   "skills.replace": "Replace entered data?",
   "skills.replace_action": "Replace",

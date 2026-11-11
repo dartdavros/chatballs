@@ -1,4 +1,5 @@
 MESSAGES = {
+    "scenarios.category_invalid": "Use up to three category levels, with no more than 80 characters each. Names must not be empty or contain /.",
     "scenarios.exchange_unavailable": "This service cannot exchange data in the selected direction while checking record versions. Choose another direction or connection.",
     "scenarios.step_completed": "Completed",
     "scenarios.step_failed": "Failed",

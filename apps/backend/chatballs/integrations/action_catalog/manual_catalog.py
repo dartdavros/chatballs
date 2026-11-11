@@ -9,7 +9,7 @@ from chatballs.integrations.action_catalog.registry import native_actions
 from chatballs.integrations.service_connections.payloads import field_payload
 
 
-def manual_actions(tenant, grants, conversation):
+def manual_actions(tenant, grants, conversation, *, summary=False, operation_key=None):
     # The caller has already resolved the current actor and checked visibility
     # of the selected conversation. Do not repeat those same database queries
     # once per descriptor. These are presentation choices, never effect grants.
@@ -20,6 +20,8 @@ def manual_actions(tenant, grants, conversation):
     capabilities = capabilities_in_any_scope(tenant.membership)
     items = []
     for action in native_actions():
+        if operation_key is not None and action.key != operation_key:
+            continue
         if action.capability and action.capability not in capabilities:
             continue
         grant = allowed.get(action.key)
@@ -31,13 +33,15 @@ def manual_actions(tenant, grants, conversation):
             continue
         if not manager and grant.scope == "contact" and not conversation.contact_id:
             continue
-        parameters = action.operation.input
-        if conversation is not None:
-            parameters = replace(parameters, properties=tuple((name, field)
-                for name, field in parameters.properties
-                if name != "conversation_id" or not field.required))
-        items.append({"id": f"chatballs:{action.key}", "kind": "operation",
+        item = {"id": f"chatballs:{action.key}", "kind": "operation",
             "title": t(action.operation.title_key), "available": True, "reason": "",
-            "connectionId": "chatballs", "operationKey": action.key, "connection": "",
-            "parameters": field_payload("", parameters)})
+            "connectionId": "chatballs", "operationKey": action.key, "connection": ""}
+        if not summary:
+            parameters = action.operation.input
+            if conversation is not None:
+                parameters = replace(parameters, properties=tuple((name, field)
+                    for name, field in parameters.properties
+                    if name != "conversation_id" or not field.required))
+            item["parameters"] = field_payload("", parameters)
+        items.append(item)
     return items

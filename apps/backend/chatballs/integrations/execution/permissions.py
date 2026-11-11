@@ -149,12 +149,13 @@ def direct_policy(tenant, connection_id, operation_key, conversation_id):
     if tenant.membership.role not in {EmployeeRole.OWNER, EmployeeRole.ADMIN} and grant is None:
         raise ExecutionDenied("permission")
     document = empty_definition()
+    namespace = "chatballs" if connection_id == "chatballs" else "service"
+    document["steps"] = [{"id": "operation", "kind": "action", "connection": str(connection_id),
+        "target": f"{namespace}:{operation_key}", "inputs": {}}]
     native = None
     if connection_id == "chatballs":
         from chatballs.integrations.action_catalog.registry import native_action
         native = native_action(operation_key)
-        document["steps"] = [{"id": "operation", "kind": "action", "connection": "chatballs",
-            "target": f"chatballs:{operation_key}", "inputs": {}}]
     document["access"].update(staff=[tenant.actor_user.pk], scope=grant.scope if grant else (
         "organization" if native and native.scope == "organization" else
         "conversation" if conversation_id is not None else "organization"))

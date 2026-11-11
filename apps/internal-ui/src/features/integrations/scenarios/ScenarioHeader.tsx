@@ -3,6 +3,7 @@ import { t } from "../../../i18n";
 import { Icon } from "../../../shared/icons";
 import { StatusPill } from "../../../shared/ui";
 import { Button } from "../../../shared/ui-controls";
+import { ScenarioCategoryField } from "./ScenarioCategoryField";
 import type { ScenarioEditorState } from "./useScenarioEditor";
 
 export function ScenarioHeader({ editor, onDelete }: { editor: ScenarioEditorState; onDelete: () => void }) {
@@ -34,5 +35,7 @@ export function ScenarioHeader({ editor, onDelete }: { editor: ScenarioEditorSta
         </Dropdown>
       </div>
     </header>
+    <ScenarioCategoryField value={draft.categoryPath ?? []} disabled={saving}
+      onChange={categoryPath => editor.setDraft(current => current ? { ...current, categoryPath } : current)} />
   </>;
 }

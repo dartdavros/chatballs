@@ -1,0 +1,74 @@
+/* Фильтр-селект списка — один вид на всё приложение. */
+.ui-filter-button {
+  display: inline-flex;
+  min-width: 0;
+  max-width: 100%;
+  align-items: center;
+  gap: 7px;
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--n-7);
+  border-radius: 8px;
+  background: var(--surface-card);
+  color: var(--n-2);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.ui-filter-button:hover {
+  background: var(--n-9);
+}
+
+.ui-filter-button.is-active {
+  border-color: var(--primary);
+  background: var(--primary-bg);
+  color: var(--primary-text);
+}
+
+.ui-filter-button > svg:last-child {
+  color: var(--n-4);
+}
+
+.ui-filter-caption {
+  flex: none;
+  color: var(--n-4);
+  font-style: normal;
+}
+
+.ui-filter-button.is-active .ui-filter-caption {
+  flex: none;
+  color: inherit;
+}
+
+.ui-filter-button.is-active > svg:last-child {
+  color: inherit;
+}
+
+/* Счётчик выбранных значений у множественного фильтра. */
+.ui-filter-button > span:not(.ui-filter-label) {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--primary);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.ui-filter-button > svg {
+  flex: none;
+}
+
+.ui-filter-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

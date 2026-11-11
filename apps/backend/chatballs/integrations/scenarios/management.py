@@ -7,6 +7,7 @@ from chatballs.identity.audit import record_audit_event
 from chatballs.integrations.scenario_state.definitions import ScenarioDefinition
 from chatballs.integrations.scenarios import presets, services
 from chatballs.integrations.scenarios.catalog import definition_context
+from chatballs.integrations.scenarios.categories import UNSET_CATEGORY_PATH
 from chatballs.integrations.scenarios.external_keys import key_payload, synchronize_keys
 from chatballs.integrations.scenarios.payloads import issue_payload, scenario_payload
 from chatballs.integrations.scenarios.validation import validate_definition
@@ -59,13 +60,14 @@ def detail(tenant, public_id, *, request=None):
 
 def save(tenant, data, *, public_id=None, request=None):
     require(tenant, "integrations.manage")
-    allowed = {"name", "definition", "revision", "enabled", "agentPolicies"}
+    allowed = {"name", "definition", "revision", "enabled", "agentPolicies", "categoryPath"}
     if not isinstance(data, dict) or set(data) - allowed or not isinstance(data.get("enabled", False), bool):
         raise ValidationError({"definition": t("scenarios.invalid_definition")})
     with tenant_atomic(tenant):
         row, issues = services.save_definition(tenant=tenant, name=data.get("name"),
             document=data.get("definition"), revision=data.get("revision"), public_id=public_id,
-            enabled=data.get("enabled", False))
+            enabled=data.get("enabled", False),
+            category_path=data.get("categoryPath", UNSET_CATEGORY_PATH))
         if row is None:
             raise InvalidDefinition(issues)
         if "agentPolicies" in data:

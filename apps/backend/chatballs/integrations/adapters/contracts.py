@@ -17,6 +17,7 @@ from datetime import datetime
 from enum import StrEnum
 from typing import TYPE_CHECKING, Any
 
+from chatballs.integrations.adapters.categories import OperationCategory
 from chatballs.integrations.adapters.initial_values import InitialValue
 from chatballs.integrations.adapters.schema import TypeSpec
 from chatballs.integrations.adapters.templates import ScenarioTemplate as ScenarioTemplate
@@ -161,6 +162,8 @@ class OperationDescriptor:
     entity_kind: str = ""
     # Only the manual create form consumes these; execution never merges them.
     initial_values: tuple[InitialValue, ...] = ()
+    # Presentation only: never derived from a permission or operation name.
+    category_path: tuple[OperationCategory, ...] = ()
 
 
 @dataclass(frozen=True)

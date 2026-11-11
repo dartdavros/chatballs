@@ -1,4 +1,8 @@
 export const scenariosEn = {
+  "scenarios.category": "Category",
+  "scenarios.category_placeholder": "For example, Sales / Leads",
+  "scenarios.category_hint": "The group in the action picker. Separate levels with /. Leave empty to use “Uncategorized”.",
+  "scenarios.category_invalid": "Use up to three non-empty category levels, with no more than 80 characters each.",
   "scenarios.exchange_read_only": "This connection can only transfer data from the service to Chatballs.",
   "scenarios.record": "Record",
   "scenarios.key_pending": "The address and key will appear after you save the scenario. Copy the key immediately: it is only shown once.",

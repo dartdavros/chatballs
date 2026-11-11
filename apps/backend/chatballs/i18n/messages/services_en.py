@@ -1,4 +1,6 @@
 MESSAGES = {
+    "services.bitrix24.category_crm": "CRM",
+    "services.bitrix24.category_users": "Users",
     "services.bitrix24.error_users_title": "Bitrix24 users are not accessible.",
     "services.bitrix24.error_users_text": "Allow access to users in the Bitrix24 incoming webhook settings, then reopen this form.",
     "services.bitrix24.field_value": "Value",

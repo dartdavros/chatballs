@@ -1,1 +1,3 @@
 .ui-search-clear { display: inline-flex; align-items: center; justify-content: center; flex: none; border: none; padding: 2px; color: var(--n-4); background: transparent; cursor: pointer; }
+
+.ui-search-shortcut { flex: none; padding: 1px 5px; border: 1px solid var(--n-7); border-radius: 4px; background: var(--n-9); color: var(--n-4); font-family: var(--font-mono); font-size: 10.5px; line-height: 1.4; }

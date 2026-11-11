@@ -2,7 +2,6 @@
 
 from chatballs.integrations.execution.actions import resolve_action
 from chatballs.integrations.execution.permissions import ExecutionDenied, authorize, direct_policy
-from chatballs.integrations.execution.source_support import require_supported_sources
 from chatballs.integrations.scenario_state.definitions import ScenarioDefinition
 
 
@@ -10,8 +9,9 @@ def metadata_action(tenant, *, connection_id, operation_key, conversation_id, sc
     if scenario_id:
         scenario = ScenarioDefinition.objects.get(public_id=scenario_id, organization_id=tenant.organization_id)
         document = scenario.definition
-        tenant, _conversation = authorize(tenant, document, conversation_id, scenario_id=scenario.pk)
-        require_supported_sources(document)
+        tenant, conversation = authorize(tenant, document, conversation_id, scenario_id=scenario.pk)
+        from chatballs.integrations.execution.manual_eligibility import ManualEligibility
+        ManualEligibility(tenant, conversation).scenario(scenario)
         from chatballs.integrations.execution.snapshots import walk
         if not any(str(block.get("connection")) == str(connection_id) and block.get("target") == f"service:{operation_key}"
                    for block in walk(document["steps"])):

@@ -22,10 +22,20 @@ export type RunConflict = { digest: string; leftTitle: string; rightTitle: strin
 export type RunDetail = RunSummary & { files?: Array<{ id: string; name: string }>; controls: string[]; steps: RunStep[]; reconcilePath?: string; conflict?: RunConflict | null; journal: Array<{ id: number; label: string; createdAt: string }> };
 export type RunPage = { items: RunSummary[]; count: number; page: number; pageSize: number;
   filters: { connections: Array<{ id: number; name: string }>; initiators: Array<{ initiator_id: number; initiator__user__full_name: string }> } };
+export type ManualActionPresentation = {
+  source: { key: string; title: string; subtitle?: string; kind: "service" | "scenarios" | "native" };
+  categoryPath: Array<{ key: string; title: string }>;
+};
 export type ManualAction = { id: string; kind: "scenario" | "operation"; title: string; parameters: ServiceField;
+  presentation?: ManualActionPresentation;
   initialValues?: Record<string, unknown>;
   plan?: string[];
   connectionId?: number | "chatballs"; operationKey?: string; connection?: string; readOnly?: boolean; available?: boolean; reason?: string };
 export type RetentionPolicy = { stepDays: number; journalDays: number; version: number; effectiveAt: string | null };
 export type ManualCatalog = { items: ManualAction[]; files: Array<{ id: string; name: string }> };
+export type ManualActionSummary = Omit<ManualAction, "parameters" | "initialValues" | "plan" | "available" | "presentation"> & {
+  available: boolean; presentation: ManualActionPresentation;
+};
+export type ManualActionCatalog = { items: ManualActionSummary[]; files: ManualCatalog["files"] };
+export type ManualActionDetail = { item: ManualAction; files: ManualCatalog["files"] };
 export type PlanPreview = { confirmation: string; operation: string; inputSchema: ServiceField; arguments: unknown; note: string };

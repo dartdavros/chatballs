@@ -16,6 +16,7 @@ def scenario_payload(row, *, issues=None, detail=True):
     document = row.definition
     payload = {
         "id": str(row.public_id), "name": row.name, "revision": row.revision, "enabled": row.enabled,
+        "categoryPath": list(row.category_path),
         "origin": {"adapter": row.origin_adapter, "key": row.origin_key, "version": row.origin_version},
         "connections": list(row.connections.values_list("integration_id", flat=True)),
         "updatedAt": row.updated_at.isoformat(),

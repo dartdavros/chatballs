@@ -2,13 +2,14 @@
 
 from unittest.mock import patch
 
+from chatballs.conversations.comment_test_base import CommentTestBase
 from chatballs.integrations.execution.test_execution import ExecutionCase
 from chatballs.integrations.scenario_state.runs import ScenarioRun
 from chatballs.tenancy.database import tenant_atomic
 
 
 class RunAPITests(ExecutionCase):
-    def test_paused_connection_is_shown_unavailable_without_sending(self):
+    def test_paused_connection_is_hidden_without_sending(self):
         with tenant_atomic(self.tenant):
             self.integration.is_active = False
             self.integration.save(update_fields=["is_active"])
@@ -19,8 +20,7 @@ class RunAPITests(ExecutionCase):
         self.assertEqual(response.status_code, 200, response.content)
         catalog = response.json()["items"]
         items = [item for item in catalog if item.get("connectionId") != "chatballs"]
-        self.assertEqual({item["kind"] for item in items}, {"scenario", "operation"})
-        self.assertTrue(all(item["available"] is False and item["reason"] for item in items))
+        self.assertEqual(items, [])
         native = [item for item in catalog if item.get("connectionId") == "chatballs"]
         self.assertTrue(native)
         self.assertTrue(all(item["available"] for item in native))
@@ -71,6 +71,55 @@ class RunAPITests(ExecutionCase):
         url = f"/api/v1/organizations/{self.organization.public_id}/integrations/run-actions/?conversation=999999999"
         response = self.as_runtime(lambda: self.client_for(self.employee).get(url))
         self.assertEqual(response.status_code, 404, response.content)
+
+    def test_summary_and_detail_api_preserve_ids_and_reject_newly_paused_action(self):
+        url = f"/api/v1/organizations/{self.organization.public_id}/integrations/run-actions/"
+        identity = f"{self.integration.pk}:{self.operation.key}"
+        with patch("chatballs.integrations.execution.manual_catalog_queries.default_registry", return_value=self.registry), patch(
+                "chatballs.integrations.execution.actions.default_registry", return_value=self.registry):
+            summary = self.as_runtime(lambda: self.client.get(url, {"summary": "1"}))
+            self.assertEqual(summary.status_code, 200, summary.content)
+            item = next(row for row in summary.json()["items"] if row["id"] == identity)
+            self.assertNotIn("parameters", item)
+            self.assertEqual(summary.json()["files"], [])
+            detail = self.as_runtime(lambda: self.client.get(url, {"kind": "operation", "id": identity}))
+            self.assertEqual(detail.status_code, 200, detail.content)
+            self.assertIn("parameters", detail.json()["item"])
+            self.assertTrue(detail.json()["item"]["available"])
+            with tenant_atomic(self.tenant):
+                self.integration.is_active = False
+                self.integration.save(update_fields=["is_active"])
+            rejected = self.as_runtime(lambda: self.client.get(url, {"kind": "operation", "id": identity}))
+            self.assertEqual(rejected.status_code, 409, rejected.content)
+            self.assertNotIn("item", rejected.json())
+        self.assertEqual(self.calls, [])
+
+    def test_malformed_conversation_is_rejected_instead_of_global_catalog(self):
+        url = f"/api/v1/organizations/{self.organization.public_id}/integrations/run-actions/"
+        for conversation in ("", "bad", "-1"):
+            response = self.as_runtime(lambda conversation=conversation: self.client.get(
+                url, {"conversation": conversation, "summary": "1"}))
+            self.assertEqual(response.status_code, 409, response.content)
+            self.assertNotIn("items", response.json())
+
+    def test_manual_http_preview_and_post_recheck_native_grant_before_creating_run(self):
+        with tenant_atomic(self.tenant):
+            conversation = CommentTestBase.make_conversation(self.organization, "catalog-action")
+            document = self.scenario.definition
+            document["access"].update(scope="conversation", staff=[self.employee.pk])
+            document["steps"] = [{"id": "comments", "kind": "action", "connection": "chatballs",
+                "target": "chatballs:comments.get", "inputs": {
+                    "conversation_id": {"source": "context", "path": "conversation.id"}}}]
+            self.scenario.definition = document
+            self.scenario.save(update_fields=["content"])
+        url = f"/api/v1/organizations/{self.organization.public_id}/integrations/run-actions/"
+        for preview in (True, False):
+            response = self.as_runtime(lambda preview=preview: self.client_for(self.employee).post(url, {
+                "kind": "scenario", "scenarioId": str(self.scenario.public_id), "parameters": {},
+                "conversationId": conversation.pk, "triggerKey": "missing-native-grant", "preview": preview}, format="json"))
+            self.assertEqual(response.status_code, 409, response.content)
+        with tenant_atomic(self.tenant):
+            self.assertFalse(ScenarioRun.objects.exists())
 
     def test_detail_lists_only_controls_authorized_in_current_state(self):
         run = self.launch(approve=False)

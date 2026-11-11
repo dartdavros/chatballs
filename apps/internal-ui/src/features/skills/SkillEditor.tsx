@@ -119,16 +119,15 @@ export function SkillEditor({
             <SkillSidebar skill={saved} openAgent={(agentId) => leave.request(() => openAgent(agentId))} />
           </div>
           {dirty && (
-            <div className="skill-save-bar">
-              <i />
-              <strong>{t("skills.unsaved")}</strong>
+            <footer className="skill-save-footer">
+              <small role="status">{t("skills.unsaved")}</small>
               <Button variant="secondary" disabled={busy} onClick={() => confirmReplace(reset)}>
                 {t("skills.reset")}
               </Button>
               <Button variant="primary" disabled={busy || conflict} onClick={() => void save()}>
                 {saveLabel}
               </Button>
-            </div>
+            </footer>
           )}
         </div>
       )}

@@ -1,4 +1,7 @@
+import { runActionPickerRu } from "./run-action-picker.ru";
+
 export const runsRu = {
+  ...runActionPickerRu,
   "runs.open_in_service": "Открыть в {service}",
   "runs.linked_records": "Связанные записи",
   "runs.no_links": "Пока нет. Появятся после запуска сценариев.",

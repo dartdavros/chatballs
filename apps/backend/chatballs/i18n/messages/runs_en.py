@@ -1,4 +1,7 @@
 MESSAGES = {
+    "runs.catalog_scenarios": "Scenarios",
+    "runs.catalog_native": "Chatballs",
+    "runs.catalog_uncategorized": "Uncategorized",
     "runs.scenario": "Scenario",
     "runs.synchronization": "Data exchange",
     "runs.synchronization_plan": "Compare changes",

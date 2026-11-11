@@ -36,7 +36,7 @@ class DeferredSourceTests(ExecutionCase):
             self.assertFalse(OutboxEvent.objects.filter(event_type="integrations.run").exists())
         self.assertEqual(self.calls, [])
 
-    def test_deferred_input_is_disabled_in_catalog_and_launch(self):
+    def test_deferred_input_is_hidden_in_catalog_and_denied_at_launch(self):
         with tenant_atomic(self.tenant):
             document = self.scenario.definition
             document["steps"][0]["inputs"]["value"] = {"source": "context", "path": "conversation.topic"}
@@ -47,9 +47,7 @@ class DeferredSourceTests(ExecutionCase):
                 "chatballs.integrations.execution.actions.default_registry", return_value=self.registry):
             response = self.as_runtime(lambda: self.client.get(url))
         self.assertEqual(response.status_code, 200, response.content)
-        scenario = next(row for row in response.json()["items"] if row["kind"] == "scenario")
-        self.assertFalse(scenario["available"])
-        self.assertTrue(scenario["reason"])
+        self.assertFalse(any(row["kind"] == "scenario" for row in response.json()["items"]))
         with self.assertRaisesMessage(ExecutionDenied, "conditions_unavailable"):
             self.launch(approve=False)
 

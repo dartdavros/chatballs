@@ -76,7 +76,7 @@ export function ConversationThread({ controlMode, dialog, detail, feed, isOwner 
           </div>
         </div>
         <div className="sales-conversation-actions">
-          <ManualActionMenu />
+          <ManualActionMenu conversationTitle={dialog.name} />
           {transfer.available && <TransferAction onOpen={transfer.open} />}
           {/* Одно действие взятия (решение 2): очередь и AI — primary; у другого
               сотрудника — вторичная кнопка; «ведёте вы» — «Вернуть AI». */}

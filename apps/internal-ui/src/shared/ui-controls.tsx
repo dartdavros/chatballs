@@ -1,6 +1,5 @@
-import "./search-input.css";
 import { Dropdown } from "antd";
-import { useEffect, useRef, useState, type ButtonHTMLAttributes, type CSSProperties, type ReactElement, type ReactNode, type RefObject } from "react";
+import { useState, type ButtonHTMLAttributes, type CSSProperties, type ReactElement, type ReactNode } from "react";
 
 import { Icon } from "./icons";
 import { t } from "../i18n";
@@ -23,15 +22,6 @@ type ActionButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 type ButtonProps = ActionButtonProps & {
   variant: ButtonVariant;
-};
-
-type SearchInputProps = {
-  clearable?: boolean;
-  className?: string;
-  placeholder: string;
-  value?: string;
-  onChange?: (value: string) => void;
-  inputRef?: RefObject<HTMLInputElement | null>;
 };
 
 type UnderlineTabsProps<T extends string> = {
@@ -104,36 +94,7 @@ export function IconButton({ icon, iconSize = 16, label, bare = false, className
   );
 }
 
-/** Поиск списка — один на всё приложение: иконка, поле, подсказка горячей
- *  клавиши. С `hotkey` клавиша ставит фокус в поле, если пользователь не пишет
- *  в другом поле и не открыл меню (SPEC-CHATBALLS-0031 §9). */
-export function SearchInput({ className = "", placeholder, value, onChange, inputRef, hotkey, clearable }: SearchInputProps & { hotkey?: string }) {
-  const ownRef = useRef<HTMLInputElement | null>(null);
-  const field = inputRef ?? ownRef;
-
-  useEffect(() => {
-    if (!hotkey) return undefined;
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key !== hotkey || event.metaKey || event.ctrlKey || event.altKey) return;
-      const target = event.target;
-      // Не перехватываем клавишу, когда человек пишет в другом поле или открыл меню.
-      if (target instanceof Element && target.closest("input, textarea, [contenteditable], .ant-dropdown")) return;
-      event.preventDefault();
-      field.current?.focus();
-    }
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [field, hotkey]);
-
-  return (
-    <label className={`ui-search-input ${className}`.trim()}>
-      <Icon name="search" size={15} />
-      <input ref={field} value={value} onChange={(event) => onChange?.(event.target.value)} placeholder={placeholder} />
-      {clearable && value && <button className="ui-search-clear" type="button" aria-label={t("shared.clear_search")} onClick={() => { onChange?.(""); field.current?.focus(); }}><Icon name="close" size={13} /></button>}
-      {hotkey && !value && <kbd>{hotkey}</kbd>}
-    </label>
-  );
-}
+export { SearchInput } from "./SearchInput";
 
 /** `hint` — пояснение второй строкой под названием; у недоступного варианта
  *  (`disabled`) в нём пишут причину. */
@@ -222,7 +183,7 @@ export function FilterDropdown({ caption, className = "", icon, label, options, 
       <button className={`ui-filter-button ${active ? "is-active" : ""} ${className}`.trim()} type="button">
         {icon && <Icon name={icon} size={14} strokeWidth={2} />}
         {caption && <i className="ui-filter-caption">{caption}</i>}
-        {label}
+        <span className="ui-filter-label" title={label}>{label}</span>
         {multiple && selected.length > 0 && <span>{selected.length}</span>}
         <Icon name="chevron" size={13} strokeWidth={2.2} />
       </button>

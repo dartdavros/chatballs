@@ -23,7 +23,7 @@ export function ParticipantAddForm({ current, assigneeId, busy, failed, onCancel
     if (selected) await onSubmit(selected.membershipId, selected.name, reason);
   }
   return (
-    <div className="participant-add-form">
+    <div className="participant-add-form" data-search-scope>
       <SearchInput value={directory.query} onChange={directory.setQuery} placeholder={t("participants.search")} />
       {directory.errorText && <div className="participant-banner" role="alert">{directory.errorText}</div>}
       <div className="participant-options">

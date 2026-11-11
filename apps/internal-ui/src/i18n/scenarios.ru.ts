@@ -1,4 +1,8 @@
 export const scenariosRu = {
+  "scenarios.category": "Категория",
+  "scenarios.category_placeholder": "Например, Продажи / Лиды",
+  "scenarios.category_hint": "Группа в окне выбора действия. Уровни разделяются символом /. Без значения сценарий попадёт в «Без категории».",
+  "scenarios.category_invalid": "Укажите до трёх непустых уровней категории, не более 80 символов в каждом.",
   "scenarios.exchange_read_only": "Это подключение поддерживает передачу данных только из сервиса в Chatballs.",
   "scenarios.record": "Запись",
   "scenarios.key_pending": "Адрес и ключ появятся после сохранения сценария. Ключ показывается один раз — его нужно сразу скопировать.",

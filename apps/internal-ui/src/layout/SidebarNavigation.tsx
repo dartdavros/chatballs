@@ -1,5 +1,6 @@
 import type { RouteKey, SessionUser } from "../types";
 import { Icon } from "../shared/icons";
+import { SkillGlyph } from "../features/skills/SkillGlyph";
 import { canViewReports, isManager } from "../auth/access";
 import { useSupervision } from "../auth/useSupervision";
 import type { TourTarget } from "../features/onboarding/steps";
@@ -14,7 +15,7 @@ import "./sidebar-navigation.css";
 type SidebarLinkProps = {
   activeRoutes?: RouteKey[];
   badge?: string;
-  icon: Parameters<typeof Icon>[0]["name"] | "stats";
+  icon: Parameters<typeof Icon>[0]["name"] | "stats" | "skill";
   label: string;
   route: RouteKey;
   routeKey: RouteKey;
@@ -33,7 +34,7 @@ function SidebarLink({ activeRoutes, badge, icon, label, route, routeKey, setRou
       data-onboarding-target={target}
       onClick={() => setRoute(routeKey)}
     >
-      {icon === "stats" ? <NavigationIcon name="stats" /> : <Icon name={icon} strokeWidth={1.9} />}
+      {icon === "stats" ? <NavigationIcon name="stats" /> : icon === "skill" ? <SkillGlyph /> : <Icon name={icon} strokeWidth={1.9} />}
       <span>{label}</span>
       {badge && <b className="hub-nav-badge">{badge}</b>}
     </button>
@@ -58,7 +59,8 @@ export function SidebarNavigation({ route, user, setRoute, waitingCount, chatSco
           <SidebarLink activeRoutes={["salesClients", "salesClientDetail"]} icon="user" label={t("common.contacts")} route={route} routeKey="salesClients" setRoute={setRoute} />
           <SidebarLink activeRoutes={["supportReports", "qualityAnalysis"]} icon="stats" label={t("reports.title")} route={route} routeKey="supportReports" setRoute={setRoute} />
           <div className="hub-nav-divider" aria-hidden="true" />
-          <SidebarLink activeRoutes={["agents", "agentDetail", "skills"]} icon="robot" label={t("common.agents")} route={route} routeKey="agents" setRoute={setRoute} target="nav-agents" />
+          <SidebarLink activeRoutes={["agents", "agentDetail"]} icon="robot" label={t("common.agents")} route={route} routeKey="agents" setRoute={setRoute} target="nav-agents" />
+          <SidebarLink icon="skill" label={t("skills.title")} route={route} routeKey="skills" setRoute={setRoute} />
           <SidebarLink icon="workflow" label={t("scenarios.title")} route={route} routeKey="scenarios" setRoute={setRoute} />
           <SidebarLink icon="sparkles" label={t("navigation.ai_providers")} route={route} routeKey="aiProviders" setRoute={setRoute} target="nav-ai-providers" />
           <SidebarLink activeRoutes={["integrationServers", "externalServerSettings", "mcpServerCreate", "httpServerCreate"]} icon="server" label={t("navigation.tools")} route={route} routeKey="integrationServers" setRoute={setRoute} />

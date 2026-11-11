@@ -1,10 +1,8 @@
 import { useState } from "react";
 import { t } from "../../i18n";
 import { EmptyState, ErrorScreen, PermissionScreen } from "../../shared/ui";
-import { Button, SearchInput } from "../../shared/ui-controls";
-import { SelectField } from "../../shared/form-controls";
+import { Button, FilterDropdown, SearchInput } from "../../shared/ui-controls";
 import type { AgentRef } from "../agents/model";
-import { SkillsTabs } from "./SkillsTabs";
 import { SkillsTable } from "./SkillsTable";
 import { SkillGlyph } from "./SkillGlyph";
 import { useSkillsList } from "./useSkillsList";
@@ -23,9 +21,10 @@ export function SkillsLibrary({
 }) {
   const [query, setQuery] = useState("");
   const [agent, setAgent] = useState("");
+  const [agentOpen, setAgentOpen] = useState(false);
   const list = useSkillsList(query, agent);
   const create = (
-    <Button variant="primary" icon="plus" onClick={() => open("new")}>
+    <Button variant="primary" className="agents-create" icon="plus" onClick={() => open("new")}>
       {t("skills.create")}
     </Button>
   );
@@ -34,12 +33,11 @@ export function SkillsLibrary({
     <div className="agents-page skills-library">
       <header className="agents-header">
         <div>
-          <h2>{t("common.agents")}</h2>
+          <h2>{t("skills.title")}</h2>
           <p>{t("skills.lead")}</p>
         </div>
         {create}
       </header>
-      <SkillsTabs skills change={back} count={list.loading ? undefined : list.total} agentCount={agents.length} />
       <div className="skills-filters">
         <SearchInput
           clearable
@@ -47,11 +45,14 @@ export function SkillsLibrary({
           value={query}
           onChange={(value) => setQuery(value.slice(0, 200))}
         />
-        <SelectField
-          label={t("common.agent")}
-          value={agent}
-          onChange={setAgent}
-          options={[["", t("common.all")], ...agents.map((item): [string, string] => [String(item.id), item.name])]}
+        <FilterDropdown
+          caption={t("common.agent")}
+          label={agents.find(item => String(item.id) === agent)?.name ?? t("common.all")}
+          open={agentOpen}
+          onOpenChange={setAgentOpen}
+          selected={agent ? [agent] : []}
+          onSelect={(value) => { setAgent(value); setAgentOpen(false); }}
+          options={[{ value: "", label: t("common.all") }, ...agents.map(item => ({ value: String(item.id), label: item.name }))]}
         />
       </div>
       {list.errorText ? (

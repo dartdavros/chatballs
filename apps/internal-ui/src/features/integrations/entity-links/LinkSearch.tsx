@@ -1,15 +1,16 @@
 import { t } from "../../../i18n";
-import { FormField } from "../../../shared/form-controls";
 import { LoadingState } from "../../../shared/ui";
-import { Button } from "../../../shared/ui-controls";
+import { Button, SearchInput } from "../../../shared/ui-controls";
 import { useLinkSearch } from "./useLinkSearch";
 import type { EntityLink } from "./api";
 
 export function LinkSearch({ link, conversation, done }: { link: EntityLink; conversation: number; done: () => void }) {
   const state = useLinkSearch(link, conversation, done);
-  return <div className="run-link-search">
+  return <div className="run-link-search" data-search-scope>
     <p className="scenario-note">{link.service}</p>
-    <FormField label={t("runs.record_search")} value={state.query} onChange={state.setQuery} disabled={state.busy} />
+    <div><div className="readonly-field"><span>{t("runs.record_search")}</span></div>
+      <SearchInput placeholder={t("runs.record_search")} value={state.query} onChange={state.setQuery} disabled={state.busy} />
+    </div>
     <Button variant="secondary" disabled={state.busy || !state.query.trim()} onClick={() => void state.search()}>{t("runs.find_record")}</Button>
     <div className="run-link-results" aria-busy={state.busy}>
       {state.error ? <p className="run-step-error" role="alert">{state.error}</p> : state.busy ? <LoadingState />

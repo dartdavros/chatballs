@@ -32,14 +32,14 @@ function render(role: Role, reportCapabilities: string[] = [], route: RouteKey =
 describe("sidebar navigation", () => {
   it.each(["OWNER", "ADMIN"] as const)("shows the approved five groups with direct destinations for %s", (role) => {
     const html = render(role);
-    const labels = ["common.chat", "common.contacts", "reports.title", "common.agents", "scenarios.title", "navigation.ai_providers", "navigation.tools", "common.knowledge_base", "common.portals", "navigation.widgets", "navigation.messengers", "navigation.mail", "common.integrations", "common.operators", "common.settings", "navigation.help"] as const;
+    const labels = ["common.chat", "common.contacts", "reports.title", "common.agents", "skills.title", "scenarios.title", "navigation.ai_providers", "navigation.tools", "common.knowledge_base", "common.portals", "navigation.widgets", "navigation.messengers", "navigation.mail", "common.integrations", "common.operators", "common.settings", "navigation.help"] as const;
     const positions = labels.map((key) => html.indexOf(renderToStaticMarkup(<span>{t(key)}</span>)));
     expect(positions.every((position) => position >= 0)).toBe(true);
     expect(positions).toEqual([...positions].sort((a, b) => a - b));
     const navigation = html.slice(0, html.indexOf("</nav>"));
     const dividers = [...navigation.matchAll(/class="hub-nav-divider"/g)].map(match => match.index!);
     expect(dividers).toHaveLength(4);
-    for (const [divider, boundary] of dividers.map((position, index) => [position, [2, 6, 8, 12][index]])) {
+    for (const [divider, boundary] of dividers.map((position, index) => [position, [2, 7, 9, 13][index]])) {
       expect(divider).toBeGreaterThan(positions[boundary]);
       expect(divider).toBeLessThan(positions[boundary + 1]);
     }
@@ -50,6 +50,9 @@ describe("sidebar navigation", () => {
   });
 
   it.each([
+    ["skills", "skills.title"],
+    ["agents", "common.agents"],
+    ["agentDetail", "common.agents"],
     ["scenarios", "scenarios.title"],
     ["aiProviders", "navigation.ai_providers"],
     ["webIntegrationSettings", "navigation.widgets"],
@@ -75,6 +78,7 @@ describe("sidebar navigation", () => {
       const html = render(role, allowed ? ["reports.view"] : []);
       expect(html.includes(`<span>${t("reports.title")}</span>`)).toBe(allowed);
       expect(html).not.toContain(`<span>${t("common.settings")}</span>`);
+      expect(html).not.toContain(`<span>${t("skills.title")}</span>`);
       expect(html).not.toContain(`<span>${t("navigation.ai_providers")}</span>`);
       expect(html).not.toContain(`<span>${t("navigation.widgets")}</span>`);
       expect(html.indexOf('class="hub-sidebar-help"')).toBeGreaterThan(html.indexOf("</nav>"));

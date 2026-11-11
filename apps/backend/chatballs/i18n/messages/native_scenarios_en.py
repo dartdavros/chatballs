@@ -1,6 +1,7 @@
 """Native scenario management vocabulary."""
 
 MESSAGES = {
+    "native.scenario_fields.categoryPath": "Scenario category",
     "native.scenario_fields.scenario": "Scenario",
     "native.scenario_fields.revision": "Revision",
     "native.scenario_fields.definition": "Scenario settings",

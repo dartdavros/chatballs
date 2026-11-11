@@ -21,7 +21,7 @@ describe("settings navigation", () => {
     expect(keys.length).toBe(new Set(keys).size);
     expect([...keys].sort()).toEqual(visibleSettingsSections(current).map(section => section.key).sort());
     expect(visibleSettingsGroups(current).map(group => group.key)).toEqual(["organization", "service", "quality", "other"]);
-    for (const key of ["ai", "integrations", "scenarios"]) expect(keys).not.toContain(key);
+    for (const key of ["ai", "integrations", "scenarios", "skills"]) expect(keys).not.toContain(key);
   });
 
   it("keeps organization counts and audit without the promoted destinations", () => {
@@ -33,6 +33,7 @@ describe("settings navigation", () => {
     expect(html).not.toContain(t("settings.ai_provider"));
     expect(html).not.toContain(t("common.integrations"));
     expect(html).not.toContain(t("scenarios.title"));
+    expect(html).not.toContain(t("skills.title"));
     expect(html).not.toContain(t("settings.file_storage"));
     expect(html).not.toContain(t("settings.platform"));
     expect(html).toContain(t("settings.action_audit"));
@@ -52,7 +53,7 @@ describe("settings navigation", () => {
     expect(html).toContain('settings-subnav is-hidden');
   });
 
-  it.each(["ai", "integrations", "scenarios"])("no longer accepts %s as a settings section", key => {
+  it.each(["ai", "integrations", "scenarios", "skills"])("no longer accepts %s as a settings section", key => {
     expect(settingsSectionKey(key)).toBeNull();
   });
 });

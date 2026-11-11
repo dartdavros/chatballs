@@ -7,7 +7,7 @@ from chatballs.integrations.scenario_state.runs import ScenarioRun
 from chatballs.tenancy.database import tenant_atomic
 
 
-def intentional_repeat(tenant, public_id, *, trigger_key, acknowledged):
+def intentional_repeat(tenant, public_id, *, trigger_key, acknowledged, manual_validation=False):
     if acknowledged != str(public_id) or not isinstance(trigger_key, str) or not 1 <= len(trigger_key) <= 100:
         raise ExecutionDenied("repeat_confirmation")
     with tenant_atomic(tenant):
@@ -47,12 +47,14 @@ def intentional_repeat(tenant, public_id, *, trigger_key, acknowledged):
         elif source.definition.get("kind") == "direct":
             step = source.steps.get()
             run, created = launch_direct(tenant=tenant, connection_id=step.integration_id if step.integration_id else "chatballs", operation_key=step.operation_key,
-                trigger_key=key, arguments=step.definition["arguments"], conversation_id=source.conversation_id)
+                trigger_key=key, arguments=step.definition["arguments"], conversation_id=source.conversation_id,
+                manual_validation=manual_validation)
         else:
             if source.scenario_id is None:
                 raise ExecutionDenied("scenario_disabled")
             run, created = launch(tenant=tenant, scenario_id=source.scenario.public_id, trigger_key=key,
-                parameters=source.definition["parameters"], conversation_id=source.conversation_id)
+                parameters=source.definition["parameters"], conversation_id=source.conversation_id,
+                manual_validation=manual_validation)
         if created:
             record_audit_event(action="integrations.run_intentional_repeat", actor=tenant.actor_user,
                 organization=tenant.organization, object_type="ScenarioRun", object_id=str(run.public_id),

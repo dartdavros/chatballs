@@ -1,5 +1,5 @@
 import { api } from "../../../api/client";
-import type { ManualAction, RetentionPolicy, RunDetail, RunPage, ManualCatalog, PlanPreview } from "./types";
+import type { ManualAction, RetentionPolicy, RunDetail, RunPage, ManualActionCatalog, ManualActionDetail, PlanPreview } from "./types";
 
 const BASE = "/api/v1/integrations/";
 export const listRuns = (query: URLSearchParams) => api<RunPage>(`${BASE}runs/?${query}`);
@@ -7,7 +7,10 @@ export const getRun = (id: string) => api<{ run: RunDetail }>(`${BASE}runs/${id}
 export const controlRun = (id: string, action: string, body: object = {}) => api<{ run: RunDetail }>(`${BASE}runs/${id}/${action}/`, {
   method: "POST", body: JSON.stringify(body),
 }).then(r => r.run);
-export const getManualActions = (conversation: number) => api<ManualCatalog>(`${BASE}run-actions/?conversation=${conversation}`);
+export const getManualActions = (conversation: number, signal?: AbortSignal) => api<ManualActionCatalog>(
+  `${BASE}run-actions/?${new URLSearchParams({ conversation: String(conversation), summary: "1" })}`, { signal });
+export const getManualAction = (conversation: number, action: Pick<ManualAction, "id" | "kind">, signal?: AbortSignal) => api<ManualActionDetail>(
+  `${BASE}run-actions/?${new URLSearchParams({ conversation: String(conversation), kind: action.kind, id: action.id })}`, { signal });
 export const launchBody = (action: ManualAction, conversationId: number, parameters: Record<string, unknown>, triggerKey: string) => ({
   kind: action.kind, scenarioId: action.kind === "scenario" ? action.id : undefined, connectionId: action.connectionId,
   operationKey: action.operationKey, conversationId, parameters, triggerKey,

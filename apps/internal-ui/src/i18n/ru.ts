@@ -14,6 +14,7 @@ import { skillTemplatesRu } from "./skill-templates.ru";
 
 import type { Message } from "@chatballs/shared";
 import { navigationRu } from "./navigation.ru";
+import { pageTitlesRu } from "./page-titles.ru";
 import { handlingRulesRu } from "./handling-rules.ru";
 import { qualityRu } from "./quality.ru";
 import { supportReportsRu } from "./support-reports.ru";
@@ -48,6 +49,7 @@ export const ru = {
   ...skillsRu,
   ...skillTemplatesRu,
   ...navigationRu,
+  ...pageTitlesRu,
   ...handlingRulesRu,
   ...qualityRu,
   ...supportReportsRu,

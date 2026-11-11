@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Выбор действия · Chatballs</title>
+<link rel="stylesheet" href="action-picker.css">
+</head>
+<body>
+<div id="cb-action-preview" class="viz-dotted-background">
+  <section id="cb-picker" class="cb-window" role="dialog" aria-modal="true" aria-labelledby="cb-picker-title">
+    <header class="cb-header">
+      <div class="cb-heading">
+        <h2 id="cb-picker-title">Действие в диалоге</h2>
+        <p class="cb-context">Ирина Соколова · Диалог №1042</p>
+      </div>
+      <button type="button" class="cb-icon-button cb-close cursor-interaction" data-close aria-label="Закрыть выбор действия"><i data-lucide="x" aria-hidden="true"></i></button>
+    </header>
+    <div class="cb-search-wrap">
+      <label class="cb-search" for="cb-action-search">
+        <i data-lucide="search" aria-hidden="true"></i>
+        <span class="cb-sr">Поиск по названию, сервису или группе</span>
+        <input id="cb-action-search" type="search" placeholder="Поиск по названию, сервису или группе" autocomplete="off" spellcheck="false" aria-controls="cb-action-tree">
+        <button type="button" id="cb-clear-search" class="cb-icon-button cursor-interaction" aria-label="Очистить поиск" hidden><i data-lucide="x" aria-hidden="true"></i></button>
+        <kbd id="cb-search-shortcut" class="cb-search-shortcut" aria-hidden="true">/</kbd>
+      </label>
+    </div>
+    <div class="cb-catalog">
+      <ul id="cb-action-tree" aria-label="Доступные действия по группам">
+        <li class="cb-root">
+          <button type="button" class="cb-group-button cb-group-root cursor-interaction" data-group="bitrix-sales" aria-expanded="true" aria-controls="cb-group-bitrix-sales">
+            <i data-lucide="chevron-right" class="cb-chevron" aria-hidden="true"></i><span class="cb-group-symbol"><i data-lucide="plug" aria-hidden="true"></i></span>
+            <span class="cb-group-label">Битрикс24<span class="cb-group-subtitle">Отдел продаж</span></span><span class="cb-count">5</span>
+          </button>
+          <ul class="cb-children" id="cb-group-bitrix-sales">
+            <li>
+              <button type="button" class="cb-group-button cursor-interaction" data-group="bitrix-sales-crm" aria-expanded="true" aria-controls="cb-group-bitrix-sales-crm"><i data-lucide="chevron-right" class="cb-chevron" aria-hidden="true"></i><i data-lucide="folder-open" aria-hidden="true"></i><span class="cb-group-label">CRM</span><span class="cb-count">4</span></button>
+              <ul class="cb-children" id="cb-group-bitrix-sales-crm">
+                <li><button type="button" class="cb-action cursor-interaction" data-action="sales-lead-create"><i data-lucide="plug" class="cb-action-symbol" aria-hidden="true"></i><span class="cb-action-copy"><span class="cb-action-title">Добавить лида</span><span class="cb-action-caption">Операция · Отдел продаж</span></span><i data-lucide="chevron-right" class="cb-action-arrow" aria-hidden="true"></i></button></li>
+                <li><button type="button" class="cb-action cursor-interaction" data-action="sales-lead-update"><i data-lucide="plug" class="cb-action-symbol" aria-hidden="true"></i><span class="cb-action-copy"><span class="cb-action-title">Обновить лида</span><span class="cb-action-caption">Операция · Отдел продаж</span></span><i data-lucide="chevron-right" class="cb-action-arrow" aria-hidden="true"></i></button></li>
+                <li><button type="button" class="cb-action cursor-interaction" data-action="sales-contact-find"><i data-lucide="plug" class="cb-action-symbol" aria-hidden="true"></i><span class="cb-action-copy"><span class="cb-action-title">Найти контакт</span><span class="cb-action-caption">Операция · Отдел продаж</span></span><i data-lucide="chevron-right" class="cb-action-arrow" aria-hidden="true"></i></button></li>
+                <li><button type="button" class="cb-action cursor-interaction" data-action="sales-deal-create"><i data-lucide="plug" class="cb-action-symbol" aria-hidden="true"></i><span class="cb-action-copy"><span class="cb-action-title">Создать сделку</span><span class="cb-action-caption">Операция · Отдел продаж</span></span><i data-lucide="chevron-right" class="cb-action-arrow" aria-hidden="true"></i></button></li>
+              </ul>
+            </li>
+            <li><button type="button" class="cb-group-button cursor-interaction" data-group="bitrix-sales-users" aria-expanded="false" aria-controls="cb-group-bitrix-sales-users"><i data-lucide="chevron-right" class="cb-chevron" aria-hidden="true"></i><i data-lucide="folder" aria-hidden="true"></i><span class="cb-group-label">Пользователи</span><span class="cb-count">1</span></button><ul id="cb-group-bitrix-sales-users" class="cb-children" hidden></ul></li>
+          </ul>
+        </li>
+        <li class="cb-root"><button type="button" class="cb-group-button cb-group-root cursor-interaction" data-group="bitrix-shop" aria-expanded="false" aria-controls="cb-group-bitrix-shop"><i data-lucide="chevron-right" class="cb-chevron" aria-hidden="true"></i><span class="cb-group-symbol"><i data-lucide="plug" aria-hidden="true"></i></span><span class="cb-group-label">Битрикс24<span class="cb-group-subtitle">Интернет-магазин</span></span><span class="cb-count">4</span></button><ul id="cb-group-bitrix-shop" class="cb-children" hidden></ul></li>
+        <li class="cb-root"><button type="button" class="cb-group-button cb-group-root cursor-interaction" data-group="scenarios" aria-expanded="false" aria-controls="cb-group-scenarios"><i data-lucide="chevron-right" class="cb-chevron" aria-hidden="true"></i><span class="cb-group-symbol"><i data-lucide="workflow" aria-hidden="true"></i></span><span class="cb-group-label">Сценарии</span><span class="cb-count">6</span></button><ul id="cb-group-scenarios" class="cb-children" hidden></ul></li>
+      </ul>
+      <div id="cb-search-empty" class="cb-empty" hidden>
+        <div class="cb-empty-icon"><i data-lucide="search-x" aria-hidden="true"></i></div>
+        <h3>Ничего не найдено</h3><p>Попробуйте другое название, сервис или группу.</p>
+        <button type="button" id="cb-empty-clear" class="cb-button cursor-interaction">Очистить поиск</button>
+      </div>
+    </div>
+    <footer class="cb-footer"><span id="cb-catalog-status" class="cb-status" role="status" aria-live="polite">Доступно 15 действий</span><button type="button" class="cb-button cursor-interaction" data-close>Отмена</button></footer>
+  </section>
+
+  <section id="cb-parameters" class="cb-window cb-panel" aria-labelledby="cb-parameter-title" hidden>
+    <header class="cb-header">
+      <button type="button" class="cb-icon-button cb-back-icon cursor-interaction" data-back aria-label="Вернуться к выбору действия"><i data-lucide="arrow-left" aria-hidden="true"></i></button>
+      <div class="cb-heading"><h2 id="cb-parameter-title">Добавить лида</h2><p id="cb-parameter-kind" class="cb-context">Операция</p></div>
+      <button type="button" class="cb-icon-button cb-close cursor-interaction" data-close aria-label="Закрыть параметры"><i data-lucide="x" aria-hidden="true"></i></button>
+    </header>
+    <form id="cb-parameter-form">
+      <div class="cb-panel-content">
+        <div id="cb-selection-path" class="cb-selection-path">Битрикс24 · Отдел продаж / CRM</div>
+        <div class="cb-conversation"><i data-lucide="message-circle" aria-hidden="true"></i><span>Ирина Соколова · Диалог №1042</span></div>
+        <div id="cb-parameter-fields"></div>
+        <section class="cb-plan" aria-labelledby="cb-plan-title"><h3 id="cb-plan-title">Что произойдёт</h3><div class="cb-plan-line"><i data-lucide="circle-check" aria-hidden="true"></i><span id="cb-plan-text"></span></div></section>
+      </div>
+      <footer class="cb-footer"><button type="button" class="cb-button cursor-interaction" data-back>Выбрать другое</button><button type="submit" class="cb-button cb-button-primary cursor-interaction"><i data-lucide="play" aria-hidden="true"></i>Запустить</button></footer>
+    </form>
+    <div id="cb-demo-complete" hidden>
+      <div class="cb-panel-content cb-demo-result" role="status" aria-live="polite">
+        <div class="cb-result-symbol"><i data-lucide="circle-check" aria-hidden="true"></i></div>
+        <h3>Демонстрация запуска</h3><p id="cb-result-action"></p><p style="margin-top:10px">Внешние запросы не отправлялись.</p>
+      </div>
+      <footer class="cb-footer"><button type="button" class="cb-button cursor-interaction" data-back>Вернуться к действиям</button><button type="button" class="cb-button cb-button-primary cursor-interaction" data-close>Закрыть</button></footer>
+    </div>
+  </section>
+
+  <section id="cb-closed" class="cb-window cb-closed" hidden aria-label="Диалог">
+    <div><div class="cb-closed-name">Ирина Соколова</div><p class="cb-context">Диалог №1042</p></div>
+    <button type="button" id="cb-reopen" class="cb-button cursor-interaction"><i data-lucide="plug" aria-hidden="true"></i>Действие</button>
+  </section>
+  <span id="cb-selection-status" class="cb-sr" role="status" aria-live="polite"></span>
+</div>
+<script src="../../../node_modules/lucide/dist/umd/lucide.js"></script>
+<script src="action-picker.js"></script>
+</body>
+</html>

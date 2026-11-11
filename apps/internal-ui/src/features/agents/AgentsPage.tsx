@@ -5,7 +5,6 @@ import { Icon } from "../../shared/icons";
 import { Button } from "../../shared/ui-controls";
 import { usePagedResource } from "../../shared/usePagedResource";
 import type { EmployeeGroup } from "../../types";
-import { SkillsTabs } from "../skills/SkillsTabs";
 import { CreateAgentModal } from "./CreateAgentModal";
 import { AgentRow } from "./AgentRow";
 import { fetchAgentsPage, setAgentAiActive, type AgentCard } from "./model";
@@ -13,10 +12,8 @@ import { fetchAgentsPage, setAgentAiActive, type AgentCard } from "./model";
 export function AgentsPage({
   groups,
   openAgent,
-  openSkills,
 }: {
   groups: EmployeeGroup[];
-  openSkills: () => void;
   openAgent: (agentId: number) => void;
 }) {
   const [creating, setCreating] = useState(false);
@@ -39,7 +36,6 @@ export function AgentsPage({
         </div>
         <Button variant="primary" className="agents-create" icon="plus" iconSize={15} onClick={() => setCreating(true)}>{t("profile.create_agent")}</Button>
       </header>
-      <SkillsTabs skills={false} change={openSkills} agentCount={agents.loading ? undefined : agents.total} />
       {agents.errorText && <div className="agents-error">{agents.errorText}</div>}
       {agents.total === 0 ? (
         <div className="agents-empty">

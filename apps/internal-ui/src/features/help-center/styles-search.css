@@ -1,0 +1,70 @@
+.help-search {
+  position: relative;
+  display: flex;
+  height: 65px;
+  align-items: center;
+  border-bottom: 1.5px solid var(--help-ink);
+  transition: border-color 160ms ease;
+}
+
+.help-search > svg {
+  position: absolute;
+  left: 16px;
+  color: var(--help-text);
+  pointer-events: none;
+}
+
+.help-search .ui-search-shortcut {
+  position: absolute;
+  right: 16px;
+  pointer-events: none;
+  border-color: var(--help-line-soft);
+  background: var(--help-surface-soft);
+  color: var(--help-text-subtle);
+  font-family: var(--help-font-mono);
+}
+
+.help-search input {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  padding: 16px 48px;
+  border: 0;
+  border-radius: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--help-ink);
+  font-size: 18px;
+}
+
+.help-search input::placeholder {
+  color: var(--help-text-muted);
+  opacity: 1;
+}
+
+.help-search.is-focused {
+  border-color: var(--help-text-subtle);
+}
+
+.help-search input::-webkit-search-cancel-button {
+  opacity: 0.55;
+}
+
+.help-header .help-search.is-compact {
+  width: min(420px, 46vw);
+  height: 44px;
+  border: 1px solid var(--help-line);
+  border-radius: var(--help-radius-pill);
+  background: var(--help-surface-raised);
+}
+
+.help-search.is-compact > svg {
+  left: 15px;
+  width: 18px;
+}
+
+.help-search.is-compact input {
+  padding: 10px 42px;
+  font-size: 15px;
+}
+

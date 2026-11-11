@@ -1,6 +1,6 @@
 import { t, tn } from "../../i18n";
 import type { ChatDirectoryEmployee } from "../conversations/model";
-import { Icon } from "../../shared/icons";
+import { SearchInput } from "../../shared/ui-controls";
 import { useMediaQuery } from "../../shared/useMediaQuery";
 import { WorkStatusBadge } from "./WorkStatusBadge";
 import { recipientPresence, TransferRecipientAvatar } from "./TransferRecipientPerson";
@@ -16,7 +16,7 @@ export function TransferRecipients(props: TransferRecipientsProps) {
   if (mobile) return <MobileTransferRecipients {...props} />;
   return <div className="transfer-recipient-picker">
     <label className="transfer-field-label" htmlFor="transfer-search">{t("transfers.to")}</label>
-    <div className="transfer-search"><Icon name="search" size={14} /><input id="transfer-search" placeholder={t("transfers.search")} value={query} disabled={disabled} onChange={(e) => onQuery(e.target.value)} /></div>
+    <SearchInput className="transfer-search" id="transfer-search" placeholder={t("transfers.search")} value={query} disabled={disabled} onChange={onQuery} />
     <div className="transfer-recipients">
       <div className="transfer-recipient-row is-heading"><span>{t("transfers.employee")}</span><span>{t("transfers.work_status")}</span><span>{t("transfers.load")}</span><span /></div>
       <div className="transfer-recipient-list">

@@ -11,6 +11,7 @@ from chatballs.tenancy.models import TenantRelationModel
 class ScenarioDefinition(EncryptedDocumentModel):
     public_id = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     name = models.CharField(max_length=200)
+    category_path = models.JSONField(default=list, blank=True)
     revision = models.PositiveIntegerField(default=1)
     enabled = models.BooleanField(default=False)
     # Parameters may contain sensitive constants. Plain audit/outbox must never

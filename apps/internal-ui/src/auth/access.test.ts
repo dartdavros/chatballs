@@ -82,6 +82,7 @@ describe("role-based navigation (SPEC-CHATBALLS-0031 §3)", () => {
       expect(isManager(user)).toBe(true);
       expect(canAccess(user, "employees")).toBe(true);
       expect(canAccess(user, "agents")).toBe(true);
+      expect(canAccess(user, "skills")).toBe(true);
       expect(canAccess(user, "mcpServerCreate")).toBe(true);
       expect(canAccess(user, "httpServerCreate")).toBe(true);
       expect(canAccess(user, "knowledge")).toBe(true);

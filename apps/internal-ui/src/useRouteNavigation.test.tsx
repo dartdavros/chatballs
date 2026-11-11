@@ -83,6 +83,28 @@ describe("route navigation state", () => {
     expect(states[2].url).toBe(`${prefix}/chat`);
   });
 
+  it("returns to the skills library from its active menu item after the editor guard allows leaving", () => {
+    const history = browser(`${prefix}/agents/skills?skill=unsaved`);
+    let proceed: (() => void) | undefined;
+    registerNavigationGuard(next => { proceed = next; });
+    const states = navigate([
+      model => model.navigate("skills"),
+      () => { expect(history.pushState).not.toHaveBeenCalled(); proceed?.(); },
+    ]);
+    expect(states.map(state => [state.route, state.version])).toEqual([["skills", 0], ["skills", 0], ["skills", 1]]);
+    expect(states[1].url).toBe(`${prefix}/agents/skills?skill=unsaved`);
+    expect(states[2].url).toBe(`${prefix}/agents/skills`);
+  });
+
+  it("refreshes skills when history restores another selected skill", () => {
+    browser(`${prefix}/agents/skills?skill=first`);
+    const states = navigate([model => {
+      window.history.replaceState({}, "", `${prefix}/agents/skills?skill=second`);
+      model.applyRouteState(routeFromPath(window.location.pathname, window.location.search));
+    }]);
+    expect(states[1]).toMatchObject({ route: "skills", version: 1, url: `${prefix}/agents/skills?skill=second` });
+  });
+
   it("replaces a resolved legacy connection with its id and query intact", () => {
     const history = browser(`${prefix}/settings/integrations/31?section=tools`);
     const states = navigate([model => model.navigate("externalServerSettings", 31, true, organization, "?section=tools")]);

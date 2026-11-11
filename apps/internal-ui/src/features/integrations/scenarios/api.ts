@@ -11,7 +11,7 @@ export async function fetchCatalog(): Promise<EditorCatalog> {
 }
 export const listScenarios = (connection?: number) => api<{ items: Scenario[] }>(`${BASE}${connection ? `?connection=${connection}` : ""}`).then(r => r.items);
 export const fetchScenario = (id: string) => api<{ scenario: Scenario }>(`${BASE}${id}/`).then(r => r.scenario);
-export const saveScenario = (scenario: Pick<Scenario, "name" | "definition" | "enabled" | "agentPolicies"> & { id?: string; revision?: number }) => {
+export const saveScenario = (scenario: Pick<Scenario, "name" | "definition" | "enabled" | "agentPolicies" | "categoryPath"> & { id?: string; revision?: number }) => {
   const { id, ...body } = scenario;
   return api<{ scenario: Scenario }>(`${BASE}${id ? `${id}/` : ""}`, { method: id ? "PUT" : "POST", body: JSON.stringify(body) }).then(r => r.scenario);
 };

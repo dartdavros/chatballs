@@ -1,4 +1,7 @@
+import { runActionPickerEn } from "./run-action-picker.en";
+
 export const runsEn = {
+  ...runActionPickerEn,
   "runs.open_in_service": "Open in {service}",
   "runs.linked_records": "Linked records",
   "runs.no_links": "None yet. Records will appear after scenarios run.",

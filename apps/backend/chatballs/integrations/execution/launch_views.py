@@ -23,10 +23,12 @@ class ManualActionsView(RunAPIView):
         if data.get("kind") == "operation":
             run, created = launch_direct(tenant=request.tenant_context, connection_id=data.get("connectionId"),
                 operation_key=data.get("operationKey", ""), trigger_key=data.get("triggerKey"),
-                arguments=data.get("parameters", {}), conversation_id=data.get("conversationId"), preview=preview, confirmation=confirmation)
+                arguments=data.get("parameters", {}), conversation_id=data.get("conversationId"), preview=preview, confirmation=confirmation,
+                manual_validation=True)
         else:
             run, created = launch(tenant=request.tenant_context, scenario_id=data.get("scenarioId"),
-                trigger_key=data.get("triggerKey"), parameters=data.get("parameters", {}), conversation_id=data.get("conversationId"), preview=preview, confirmation=confirmation)
+                trigger_key=data.get("triggerKey"), parameters=data.get("parameters", {}), conversation_id=data.get("conversationId"), preview=preview, confirmation=confirmation,
+                manual_validation=True)
         if preview:
             return Response({"preview": run})
         if created:

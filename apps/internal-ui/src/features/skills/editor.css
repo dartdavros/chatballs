@@ -2,13 +2,18 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding: 22px 32px 96px;
+  padding: 22px 32px 40px;
   max-width: 1160px;
 }
 .skill-editor-header {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 16px;
+}
+.skill-editor-header > .skill-actions {
+  max-width: 100%;
+  flex-wrap: wrap;
 }
 .skill-editor-header > .skill-tile {
   width: 52px;
@@ -115,14 +120,6 @@
 }
 .skill-fields .is-invalid textarea {
   border-color: var(--error-border);
-}
-.skills-library button.primary-button {
-  min-height: 34px;
-  height: 34px;
-  padding: 0 14px;
-  border-radius: 8px;
-  box-shadow: none;
-  font-size: 13px;
 }
 .skill-actions {
   display: flex;

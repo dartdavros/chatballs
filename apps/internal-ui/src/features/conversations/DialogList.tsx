@@ -54,7 +54,7 @@ export function DialogList({ title = t("common.conversations"), searchPlaceholde
   // Ширина списка: тянется за правый край (280–520px), запоминается в браузере.
   const listWidth = useResizableWidth("dialogList", { fallback: 323, min: 280, max: 520 });
   return (
-    <section className={`sales-dialog-list ${listWidth.dragging ? "is-resizing" : ""}`} data-onboarding-target="chat-list" style={{ "--dialog-list-width": `${listWidth.width}px` } as CSSProperties}>
+    <section className={`sales-dialog-list ${listWidth.dragging ? "is-resizing" : ""}`} data-search-scope data-onboarding-target="chat-list" style={{ "--dialog-list-width": `${listWidth.width}px` } as CSSProperties}>
       <div className="pane-resizer" role="separator" aria-orientation="vertical" aria-label={t("conversations.conversation_list_width")} title={t("profile.drag_resize_double_click_reset")} onPointerDown={listWidth.onPointerDown} onDoubleClick={listWidth.reset} />
       {mobileHeader?.({ total })}
       <div className="sales-dialog-list-head">

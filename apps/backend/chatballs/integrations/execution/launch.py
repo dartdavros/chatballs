@@ -23,7 +23,7 @@ from chatballs.integrations.scenarios.values import RunValues, prepare_inputs
 from chatballs.tenancy.database import tenant_atomic
 
 
-def launch(*, tenant, scenario_id, trigger_key, parameters, conversation_id=None, registry=None, preview=False, confirmation=None, automatic=None):
+def launch(*, tenant, scenario_id, trigger_key, parameters, conversation_id=None, registry=None, preview=False, confirmation=None, automatic=None, manual_validation=False):
     if not isinstance(trigger_key, str) or not 1 <= len(trigger_key) <= 200:
         raise ExecutionDenied("trigger")
     dedup = hashlib.sha256(trigger_key.encode()).hexdigest()
@@ -51,6 +51,9 @@ def launch(*, tenant, scenario_id, trigger_key, parameters, conversation_id=None
         from chatballs.integrations.scenarios.values import RunValues
         require_conditions(document, conversation, parameters, registry=registry,
             values=RunValues(parameters=parameters, context=context_values(conversation), event=automatic["event"]) if automatic else None)
+        if manual_validation and not automatic:
+            from chatballs.integrations.execution.manual_eligibility import ManualEligibility
+            ManualEligibility(tenant, conversation, registry=registry).scenario(scenario, parameters=parameters)
         if automatic or len(document["steps"]) != 1 or document["steps"][0]["kind"] != "action":
             from chatballs.integrations.execution.composite_launch import snapshot
             return snapshot(tenant, document, parameters, conversation, scenario=scenario, dedup=dedup,
@@ -59,7 +62,7 @@ def launch(*, tenant, scenario_id, trigger_key, parameters, conversation_id=None
                          scenario_key=str(scenario.public_id), registry=registry, preview=preview, confirmation=confirmation), True
 
 
-def launch_direct(*, tenant, connection_id, operation_key, trigger_key, arguments, conversation_id=None, registry=None, preview=False, confirmation=None):
+def launch_direct(*, tenant, connection_id, operation_key, trigger_key, arguments, conversation_id=None, registry=None, preview=False, confirmation=None, manual_validation=False):
     if not isinstance(trigger_key, str) or not 1 <= len(trigger_key) <= 200 or not isinstance(arguments, dict):
         raise ExecutionDenied("arguments")
     from chatballs.integrations.models import Integration
@@ -81,6 +84,9 @@ def launch_direct(*, tenant, connection_id, operation_key, trigger_key, argument
         if existing and not preview:
             view_run(tenant, existing)
             return existing, False
+        if manual_validation and connection_id == "chatballs":
+            from chatballs.integrations.execution.manual_eligibility import ManualEligibility
+            ManualEligibility(tenant, conversation, registry=registry).document(document)
         return _snapshot(tenant, document, {}, conversation, scenario=None, dedup=dedup, scenario_key=key,
             registry=registry, grant_id=grant.pk if grant else None, preview=preview, confirmation=confirmation), True
 

@@ -1,4 +1,6 @@
 MESSAGES = {
+    "services.bitrix24.category_crm": "CRM",
+    "services.bitrix24.category_users": "Пользователи",
     "services.bitrix24.error_users_title": "Нет доступа к пользователям Битрикс24.",
     "services.bitrix24.error_users_text": "Разрешите доступ к пользователям в настройках входящего вебхука Битрикс24, затем откройте форму заново.",
     "services.bitrix24.field_value": "Значение",

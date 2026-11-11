@@ -20,14 +20,15 @@ SETTINGS = field("definition", "json", required=True, secret=True, control="scen
 POLICY = obj(agent=field("agent", "integer", required=True),
     mode=replace(named("mode", enum(("off", "self", "ask"), "native.scenario_mode")), required=True), revision=REVISION)
 POLICIES = field("agentPolicies", "array", items=POLICY)
+CATEGORY_PATH = field("categoryPath", "array", items=TypeSpec("string"))
 CREATE = obj(name=field("name", required=True), settings=SETTINGS,
-    enabled=field("enabled", "boolean"))
+    enabled=field("enabled", "boolean"), categoryPath=CATEGORY_PATH)
 UPDATE = obj(public_id=ID, revision=REVISION, **dict(CREATE.properties))
 ISSUE = obj(path=field("path"), code=field("issueCode"), message=field("message"))
 ISSUES = field("issues", "array", items=ISSUE)
 KEY = obj(id=field("keyId"), trigger=field("trigger"), url=field("url"))
 SCENARIO = obj(id=field("scenario"), name=field("name"), revision=field("revision", "integer"),
-    enabled=field("enabled", "boolean"), origin=field("origin", "json"),
+    enabled=field("enabled", "boolean"), origin=field("origin", "json"), categoryPath=CATEGORY_PATH,
     connections=field("connections", "array", items=TypeSpec("integer")),
     updatedAt=field("updatedAt", "datetime"), triggers=field("triggers", "array", items=TypeSpec("string")),
     automationError=field("automationError"), definition=field("definition", "json"),

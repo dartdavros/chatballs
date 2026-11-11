@@ -116,10 +116,6 @@
     border-radius: 9px;
   }
 
-  .sales-dialogs .sales-dialog-search kbd {
-    display: none;
-  }
-
   .sales-dialogs .sales-dialog-search input {
     font-size: 13.5px;
   }

@@ -76,6 +76,9 @@ def _operation(operation: OperationDescriptor, registry: AdapterRegistry) -> lis
     problems.extend(validate_initial_values(operation, registry))
     if not KEY_PATTERN.match(operation.key):
         problems.append("bad key")
+    for category in operation.category_path:
+        if not KEY_PATTERN.fullmatch(category.key) or not category.title_key:
+            problems.append("bad category")
     _schema(problems, "input", operation.input)
     _schema(problems, "output", operation.output)
     for spec in (operation.input, operation.output):

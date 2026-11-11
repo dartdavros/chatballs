@@ -1,23 +1,22 @@
-import { t } from "../../../i18n";
-import { Icon } from "../../../shared/icons";
-import type { ManualAction } from "./types";
+import { Icon, LogoSpinner } from "../../../shared/icons";
+import { actionCaption } from "./actionPickerModel";
+import { ActionSearchText } from "./ActionSearchText";
+import type { ManualActionSummary } from "./types";
 
-export function ManualActionItem({ action }: { action: ManualAction }) {
-  const unavailable = action.available === false;
-  const subtitle = unavailable
-    ? action.reason || t("runs.unavailable")
-    : [t(action.kind === "scenario" ? "runs.scenario" : "runs.operation"), action.connection,
-      action.readOnly ? t("runs.read_only") : null].filter(Boolean).join(" · ");
-
+export function ManualActionItem({ action, search = "", disabled = false, pending = false, onSelect }: {
+  action: ManualActionSummary; search?: string; disabled?: boolean; pending?: boolean; onSelect: (action: ManualActionSummary) => void;
+}) {
+  if (action.available !== true) return null;
   return (
-    <button type="button" className="manual-action-item" tabIndex={-1} disabled={unavailable}>
+    <button type="button" className="manual-action-item" disabled={disabled} aria-busy={pending || undefined} onClick={() => onSelect(action)}>
       <span className="manual-action-icon" aria-hidden="true">
-        <Icon name={action.kind === "scenario" ? "list" : "plug"} size={14} />
+        <Icon name={action.kind === "scenario" ? "workflow" : "plug"} size={16} />
       </span>
       <span className="manual-action-copy">
-        <strong>{action.title}</strong>
-        <small>{subtitle}</small>
+        <strong><ActionSearchText text={action.title} search={search} /></strong>
+        <small><ActionSearchText text={actionCaption(action)} search={search} /></small>
       </span>
+      <span className="manual-action-arrow" aria-hidden="true">{pending ? <LogoSpinner size={16} /> : <Icon name="chevronRight" size={14} />}</span>
     </button>
   );
 }

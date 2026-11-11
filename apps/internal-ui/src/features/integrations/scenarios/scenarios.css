@@ -11,6 +11,8 @@
 .scenario-back { margin-bottom: 12px; min-height: 28px; }
 .scenario-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; margin-bottom: 18px; }
 .scenario-heading { flex: 1; min-width: 0; }
+.scenario-category-field { max-width: 560px; margin-bottom: 18px; }
+.scenario-category-field .scenario-note { margin-top: 6px; }
 .scenario-name { width: 100%; max-width: 560px; box-sizing: border-box; margin: -4px 0 0 -8px; padding: 2px 8px; border: 1px solid transparent; border-radius: 8px; background: transparent; color: var(--n-1); font: inherit; font-size: 20px; font-weight: 700; letter-spacing: -.01em; outline: none; }
 .scenario-name:hover { border-color: var(--n-7); }
 .scenario-name:focus { border-color: var(--primary); background: var(--surface-card); }

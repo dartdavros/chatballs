@@ -36,42 +36,30 @@
 .skill-notice.is-error > svg {
   color: var(--error-text);
 }
-.skill-save-bar {
-  position: sticky;
-  bottom: 0;
-  z-index: 2;
-  margin: 0 -32px -32px;
-  padding: 12px 32px;
+/* The inline dirty footer follows InstructionsCard's agent-dirty composition.
+   Buttons retain the shared control styles, including their disabled states. */
+.skill-save-footer {
   display: flex;
   align-items: center;
-  gap: 12px;
-  background: var(--surface-card);
-  border-top: 1px solid var(--n-7);
-  box-shadow: 0 -4px 16px rgb(0 0 0 / 6%);
-  font-size: 13px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--n-9);
 }
-.skill-save-bar > strong {
+.skill-save-footer > small {
   flex: 1;
-  font-weight: 600;
+  min-width: 180px;
+  color: var(--warning-text);
+  font-size: 12px;
+  line-height: 1.5;
 }
-.skill-save-bar > i {
-  width: 8px;
-  height: 8px;
-  flex: none;
-  border-radius: 50%;
-  background: var(--warning-text);
-}
-.skill-editor button.primary-button,
-.skill-editor .skill-actions > button {
-  min-height: 34px;
-  padding: 0 14px;
-  border-radius: 8px;
-  font-size: 13px;
-}
-.skill-editor .skill-section-head > button,
-.skill-template > button,
-.agent-skill > button,
-.agent-skills-card .skill-section-head > button {
+.skill-save-footer > button { flex: none; }
+.skill-editor .skill-section-head > .secondary-button,
+.skill-template > .secondary-button,
+.agent-skill > .secondary-button,
+.agent-skills-card .skill-section-head > .secondary-button {
   min-height: 30px;
   height: 30px;
   padding: 0 12px;

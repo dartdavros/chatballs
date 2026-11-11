@@ -84,7 +84,7 @@ export function ShellRouteContent({ settingsSection, openSettings, chatScope, se
         />
       )}
       {route === "skills" && <SkillsWorkspace agents={data.agents} openAgent={openAgent} back={() => setRoute("agents")} />}
-      {route === "agents" && <AgentsPage groups={data.groups} openAgent={openAgent} openSkills={() => setRoute("skills")} />}
+      {route === "agents" && <AgentsPage groups={data.groups} openAgent={openAgent} />}
       {route === "agentDetail" && (
         <AgentDetailPage
           agentId={selectedAgentId}

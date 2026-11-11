@@ -68,7 +68,7 @@ class RunControlView(RunAPIView):
         if action == "repeat":
             from chatballs.integrations.execution.repeat import intentional_repeat
             run = intentional_repeat(request.tenant_context, public_id,
-                trigger_key=data.get("triggerKey"), acknowledged=data.get("acknowledged"))
+                trigger_key=data.get("triggerKey"), acknowledged=data.get("acknowledged"), manual_validation=True)
         else:
             if action == "resolve":
                 from chatballs.integrations.scenarios.conflicts import resolve

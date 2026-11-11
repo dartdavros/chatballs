@@ -1,7 +1,10 @@
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useRef, useState } from "react";
 
 import { HelpSearchIcon } from "./HelpIcons";
+import "./styles-search.css";
 import { t } from "../../i18n";
+import { SearchShortcut } from "../../shared/SearchInput";
+import { useSearchShortcut } from "../../shared/useSearchShortcut";
 
 export function HelpSearch({
   value,
@@ -15,6 +18,8 @@ export function HelpSearch({
   compact?: boolean;
 }) {
   const [focused, setFocused] = useState(false);
+  const searchRef = useRef<HTMLInputElement>(null);
+  useSearchShortcut(searchRef);
 
   function submit(event: FormEvent) {
     event.preventDefault();
@@ -29,6 +34,8 @@ export function HelpSearch({
     >
       <HelpSearchIcon />
       <input
+        ref={searchRef}
+        aria-keyshortcuts="/"
         aria-label={t("portals.search_knowledge_base")}
         placeholder={t("portals.search_articles_2")}
         type="search"
@@ -37,6 +44,7 @@ export function HelpSearch({
         onChange={(event) => onChange(event.target.value)}
         onFocus={() => setFocused(true)}
       />
+      {!value && <SearchShortcut />}
     </form>
   );
 }

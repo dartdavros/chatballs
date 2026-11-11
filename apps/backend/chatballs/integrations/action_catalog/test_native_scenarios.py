@@ -23,9 +23,11 @@ class NativeScenarioTests(CommentTransactionTestBase):
 
     def test_create_update_copy_delete_and_revision_conflict_do_not_repeat(self):
         document = empty_definition()
-        run, result = self.execute("scenarios.post", {"name": "Draft", "settings": {"definition": document}})
+        run, result = self.execute("scenarios.post", {"name": "Draft", "categoryPath": ["Sales", "Leads"],
+            "settings": {"definition": document}})
         row = result["scenario"]
         self.assertEqual(row["revision"], 1)
+        self.assertEqual(row["categoryPath"], ["Sales", "Leads"])
         run_one(self.context, run.public_id)
         with tenant_atomic(self.context):
             self.assertEqual(ScenarioDefinition.objects.count(), 1)
@@ -39,6 +41,7 @@ class NativeScenarioTests(CommentTransactionTestBase):
         _, copied = self.execute("scenarios.copy.post", {"public_id": row["id"], "name": "Copy"})
         self.assertNotEqual(copied["scenario"]["id"], row["id"])
         self.assertFalse(copied["scenario"]["enabled"])
+        self.assertEqual(copied["scenario"]["categoryPath"], ["Sales", "Leads"])
         self.execute("scenarios.detail.delete", {"public_id": row["id"], "revision": 2})
         _, listed = self.execute("scenarios.get", {})
         self.assertEqual([item["name"] for item in listed["items"]], ["Copy"])

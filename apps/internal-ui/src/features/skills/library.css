@@ -3,38 +3,15 @@
 .skill-editor .primary-button {
   flex: none;
 }
-.skills-tabs {
-  gap: 22px;
-  border-bottom: 1px solid var(--n-7);
-}
-.skills-tabs button {
-  height: 38px;
-  margin-bottom: -1px;
-  padding: 0;
-  color: var(--n-3);
-  font-size: 13.5px;
-  font-weight: 500;
-}
-.skills-tabs button.active {
-  color: var(--primary-text);
-  font-weight: 600;
-}
 .skills-filters {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 14px;
 }
 .skills-filters .ui-search-input {
   width: 300px;
-}
-.skills-filters .readonly-field {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: auto;
-}
-.skills-filters .select-box {
-  min-width: 140px;
+  max-width: 100%;
 }
 .skills-table,
 .skills-empty {

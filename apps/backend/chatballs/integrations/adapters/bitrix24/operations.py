@@ -12,6 +12,7 @@ from dataclasses import replace
 from functools import partial
 from typing import Any
 
+from chatballs.integrations.adapters.categories import OperationCategory
 from chatballs.integrations.adapters.contracts import Effect, OperationDescriptor
 from chatballs.integrations.adapters.http import HttpSpec, http_operation
 from chatballs.integrations.adapters.initial_values import InitialValue
@@ -28,6 +29,9 @@ _ERRORS = {
     "ERROR_METHOD_NOT_FOUND": "rejected",
     "NOT_FOUND": "not_found",
 }
+
+CRM = (OperationCategory("crm", "services.bitrix24.category_crm"),)
+USERS = (OperationCategory("users", "services.bitrix24.category_users"),)
 
 
 def interpret(status: int, payload: Any, *, permission: str = "crm") -> str | None:
@@ -99,7 +103,7 @@ def entity_operations(entity: str) -> list[OperationDescriptor]:
     method = f"crm.{entity}"
     result = replace(entity_fields(entity), required=False, nullable=True,
                      properties=(("ID", TypeSpec("string", title_key="services.bitrix24.field_id")),) + entity_fields(entity).properties)
-    return [
+    operations = [
         replace(http_operation(
             f"{entity}.create", title_key=f"{prefix}_create", effect=Effect.CREATE, permission_scope="crm",
             input=TypeSpec("object", properties=(("fields", entity_fields(entity)), ("params", TypeSpec("object", open=True, title_key="services.bitrix24.field_params")))),
@@ -129,6 +133,7 @@ def entity_operations(entity: str) -> list[OperationDescriptor]:
             input=_LIST_INPUT, output=TypeSpec("array", items=replace(result, nullable=False)), spec=_call(f"{method}.list"),
         ),
     ]
+    return [replace(operation, category_path=CRM) for operation in operations]
 
 
 def service_operations() -> list[OperationDescriptor]:
@@ -137,16 +142,16 @@ def service_operations() -> list[OperationDescriptor]:
             "scope.get", title_key="services.bitrix24.op_scope", effect=Effect.READ,
             input=TypeSpec("object"), output=TypeSpec("array", items=TypeSpec("string")), spec=_call("scope"),
         ),
-        http_operation(
+        replace(http_operation(
             "user.list", title_key="services.bitrix24.op_users", effect=Effect.READ, permission_scope="user",
             input=TypeSpec("object", properties=(("FILTER", TypeSpec("object", open=True)), ("start", TypeSpec("integer")))),
             output=TypeSpec("array", items=_RECORD), spec=_call("user.get", permission="user"),
-        ),
-        http_operation(
+        ), category_path=USERS),
+        replace(http_operation(
             "lead_stage.list", title_key="services.bitrix24.op_lead_stages", effect=Effect.READ, permission_scope="crm",
             input=TypeSpec("object", properties=(("filter", TypeSpec("object", open=True)),)),
             output=TypeSpec("array", items=_RECORD), spec=_call("crm.status.list"),
-        ),
+        ), category_path=CRM),
         http_operation(
             "batch", title_key="services.bitrix24.op_batch", effect=Effect.BATCH,
             input=TypeSpec(

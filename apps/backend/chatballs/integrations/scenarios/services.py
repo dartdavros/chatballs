@@ -7,6 +7,8 @@ from chatballs.integrations.adapters.schema import SchemaDefinitionError
 from chatballs.integrations.models import Integration
 from chatballs.integrations.scenario_state.definitions import ScenarioConnection, ScenarioDefinition
 from chatballs.integrations.scenarios.catalog import connection_ids, definition_context
+from chatballs.integrations.scenarios.categories import UNSET_CATEGORY_PATH
+from chatballs.integrations.scenarios.categories import category_path as normalize_category_path
 from chatballs.integrations.scenarios.definition import empty_definition
 from chatballs.integrations.scenarios.types import read_type
 from chatballs.integrations.scenarios.validation import validate_definition
@@ -17,11 +19,14 @@ class RevisionConflict(Exception):
     pass
 
 
-def save_definition(*, tenant, name, document, public_id=None, revision=None, enabled=False):
+def save_definition(*, tenant, name, document, public_id=None, revision=None, enabled=False,
+                    category_path=UNSET_CATEGORY_PATH):
     if not isinstance(name, str) or not name.strip() or len(name.strip()) > 200:
         raise ValidationError({"name": t("scenarios.name_required")})
     if not isinstance(document, dict) or set(document) != set(empty_definition()):
         raise ValidationError({"definition": t("scenarios.invalid_definition")})
+    if category_path is not UNSET_CATEGORY_PATH:
+        category_path = normalize_category_path(category_path)
     # Even an unfinished disabled draft must use the one versioned format.
     try:
         if document["version"] != 1:
@@ -53,6 +58,8 @@ def save_definition(*, tenant, name, document, public_id=None, revision=None, en
         else:
             row.revision += 1
         row.name = name.strip()
+        if category_path is not UNSET_CATEGORY_PATH:
+            row.category_path = category_path
         row.definition = document
         row.enabled = enabled
         row.save()
@@ -69,7 +76,8 @@ def copy_definition(*, tenant, source, name):
         row = ScenarioDefinition.objects.get(organization_id=tenant.organization_id, public_id=source)
         document = row.definition
         document["access"]["delegated"] = False
-        copied, issues = save_definition(tenant=tenant, name=name, document=document)
+        copied, issues = save_definition(tenant=tenant, name=name, document=document,
+                                        category_path=row.category_path)
         return copied, issues
 
 
