@@ -21,6 +21,8 @@ MESSAGES = {
     "native.scenario_fields.connections": "Connections",
     "native.scenario_fields.updatedAt": "Updated",
     "native.scenario_fields.triggers": "Triggers",
+    "native.scenario_fields.nativeEvents": "Chatballs events",
+    "native.scenario_fields.accessScope": "Access scope",
     "native.scenario_fields.automationError": "Automation error",
     "native.scenario_fields.externalKeys": "External keys",
     "native.scenario_fields.scenarios": "Scenarios",

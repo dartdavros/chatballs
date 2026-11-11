@@ -31,6 +31,7 @@ SCENARIO = obj(id=field("scenario"), name=field("name"), revision=field("revisio
     enabled=field("enabled", "boolean"), origin=field("origin", "json"), categoryPath=CATEGORY_PATH,
     connections=field("connections", "array", items=TypeSpec("integer")),
     updatedAt=field("updatedAt", "datetime"), triggers=field("triggers", "array", items=TypeSpec("string")),
+    nativeEvents=field("nativeEvents", "array", items=TypeSpec("string")), accessScope=field("accessScope"),
     automationError=field("automationError"), definition=field("definition", "json"),
     agentPolicies=POLICIES, issues=ISSUES, externalKeys=field("externalKeys", "array", items=KEY))
 OUTPUT = obj(scenario=named("scenario", SCENARIO))

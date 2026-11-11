@@ -21,6 +21,8 @@ MESSAGES = {
     "native.scenario_fields.connections": "Подключения",
     "native.scenario_fields.updatedAt": "Изменён",
     "native.scenario_fields.triggers": "Способы запуска",
+    "native.scenario_fields.nativeEvents": "События Chatballs",
+    "native.scenario_fields.accessScope": "Область доступа",
     "native.scenario_fields.automationError": "Ошибка автоматизации",
     "native.scenario_fields.externalKeys": "Внешние ключи",
     "native.scenario_fields.scenarios": "Сценарии",

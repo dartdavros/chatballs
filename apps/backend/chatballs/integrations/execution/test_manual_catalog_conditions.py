@@ -11,16 +11,22 @@ class ManualCatalogConditionTests(ManualCatalogCase):
     def scenarios(self):
         return [row for row in self.menu(summary="1")["items"] if row["kind"] == "scenario"]
 
-    def test_known_contact_requirement_hides_unavailable_scenario(self):
+    def test_known_contact_condition_hides_unavailable_scenario(self):
         with tenant_atomic(self.context):
             row = self.scenario()
             self.set_document(row, conditions={"mode": "all", "items": [
                 {"kind": "context_present", "path": "contact", "present": True}]})
         self.assertEqual([item["id"] for item in self.scenarios()], [str(row.public_id)])
         with tenant_atomic(self.context):
-            self.conversation.contact = None
-            self.conversation.save(update_fields=["contact"])
+            # Every persisted conversation must retain its contact.
+            self.set_document(row, conditions={"mode": "all", "items": [
+                {"kind": "context_present", "path": "contact", "present": False}]})
         self.assertEqual(self.scenarios(), [])
+        with self.assertRaisesMessage(ExecutionDenied, "operation_unavailable"):
+            self.menu(kind="scenario", id=str(row.public_id))
+        with self.assertRaisesMessage(ExecutionDenied, "conditions_not_met"):
+            launch(tenant=self.context, scenario_id=row.public_id, trigger_key="contact-guard",
+                   conversation_id=self.conversation.pk, parameters={}, preview=True)
 
     def test_future_form_condition_is_visible_and_rechecked_with_actual_input(self):
         with tenant_atomic(self.context):
