@@ -1,5 +1,5 @@
 import { t } from "../../i18n";
-import { Icon } from "../../shared/icons";
+import { ChannelNavigationMenu, type ChannelRoute } from "../../shared/ChannelNavigationMenu";
 import { ChannelGlyph } from "../../shared/badges";
 import { CopyButton } from "../../shared/ui-controls";
 import { webWidgetSnippet, type Integration } from "../integrations/model";
@@ -7,12 +7,12 @@ import { agentTint, connectionStatusMeta, connectionSubtitle, type AgentCard, ty
 
 // --- Подключения (кадры G3/G4) ---
 
-export function ConnectionsCard({ card, canManage, busy, available, openIntegrations, bind, unbind }: {
+export function ConnectionsCard({ card, canManage, busy, available, openChannels, bind, unbind }: {
   card: AgentCard;
   canManage: boolean;
   busy: boolean;
   available: Integration[];
-  openIntegrations: () => void;
+  openChannels: (route: ChannelRoute) => void;
   bind: (integrationId: number) => void;
   unbind: (integrationId: number) => void;
 }) {
@@ -22,7 +22,7 @@ export function ConnectionsCard({ card, canManage, busy, available, openIntegrat
       <div className="agent-card-head is-tight">
         <h3>{t("common.connections")}</h3>
         {canManage && (
-          <button className="link has-icon" type="button" onClick={openIntegrations}>{t("common.integrations")}<Icon name="external" size={13} strokeWidth={2.2} /></button>
+          <ChannelNavigationMenu onNavigate={openChannels} />
         )}
       </div>
       <p>{t("ai.customers_reach_agent_through_these")}</p>

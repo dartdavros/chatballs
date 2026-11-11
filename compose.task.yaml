@@ -1,0 +1,26 @@
+# Override для окружения задачи, поверх compose.yaml и compose.dev.yaml:
+#   docker compose -f compose.yaml -f compose.dev.yaml -f compose.task.yaml up
+# Данные задачи живут в томах её Compose-проекта, а не в каталоге checkout:
+# это одноразовая копия основного окружения (scripts/task-env-clone.ps1),
+# она удаляется вместе с проектом и не зависит от диска хоста.
+
+services:
+  postgres:
+    volumes:
+      - chatballs-postgres:/var/lib/postgresql/data
+
+  redis:
+    volumes:
+      - chatballs-redis:/data
+
+  backend-app:
+    volumes:
+      - chatballs-media:/app/apps/backend/media
+
+  worker:
+    volumes:
+      - chatballs-media:/app/apps/backend/media
+
+  worker-events:
+    volumes:
+      - chatballs-media:/app/apps/backend/media

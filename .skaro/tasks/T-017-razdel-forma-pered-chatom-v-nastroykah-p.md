@@ -11,6 +11,7 @@ order: 2
 spec: "0020"
 created: 2026-09-29
 branch: skaro/T-017-razdel-forma-pered-chatom-v-na
+archived: true
 ---
 
 ## Цель

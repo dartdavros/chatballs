@@ -91,6 +91,8 @@ export function OnboardingTour() {
         frame = requestAnimationFrame(() => locate(attempts + 1));
         return;
       }
+      // После переноса пунктов в главное меню цель может быть ниже прокрутки.
+      target.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "instant" });
       apply();
       void Promise.all(settlingAnimations(target)).then(() => {
         if (cancelled) return;
@@ -111,7 +113,11 @@ export function OnboardingTour() {
     if (!element) return;
     const remeasure = () => setBox(measure(element));
     window.addEventListener("resize", remeasure);
-    return () => window.removeEventListener("resize", remeasure);
+    window.addEventListener("scroll", remeasure, true);
+    return () => {
+      window.removeEventListener("resize", remeasure);
+      window.removeEventListener("scroll", remeasure, true);
+    };
   }, [element]);
 
   useEffect(() => {

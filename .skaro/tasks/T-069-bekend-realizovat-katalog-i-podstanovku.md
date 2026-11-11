@@ -9,6 +9,7 @@ order: 3
 spec: "0016"
 created: 2026-10-06
 branch: skaro/T-069-bekend-realizovat-katalog-i-po
+archived: true
 ---
 
 ## Цель

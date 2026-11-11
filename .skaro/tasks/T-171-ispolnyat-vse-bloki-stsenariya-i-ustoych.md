@@ -9,6 +9,7 @@ order: 6
 spec: "0037"
 created: 2026-10-17
 branch: skaro/T-171-ispolnyat-vse-bloki-stsenariya
+archived: true
 ---
 
 ## Цель

@@ -49,7 +49,8 @@ export function StatusCell({ integration }: { integration: Integration }) {
     return (
       <div className="integration-status">
         <ToneBadge bg="var(--n-9)" color="var(--n-4)">{t("settings.disabled")}</ToneBadge>
-        <small>{t(integration.kind === "EXTERNAL_SERVER" ? "ai.tools_server_disabled" : "settings.receiving_sending_messages_stopped")}</small>
+        <small>{t(integration.kind === "EXTERNAL_SERVER" ? "ai.tools_server_disabled"
+          : integration.kind === "MESSENGER" ? "settings.receiving_sending_messages_stopped" : "navigation.provider_disabled")}</small>
       </div>
     );
   }

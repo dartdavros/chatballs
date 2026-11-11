@@ -10,6 +10,7 @@ order: 3
 spec: "0039"
 created: 2026-11-03
 branch: skaro/T-179-dobavit-proslushivanie-otvetov
+archived: true
 ---
 
 ## Цель

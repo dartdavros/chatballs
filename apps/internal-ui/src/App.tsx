@@ -16,7 +16,7 @@ import { activateOrganization, clearOrganizationPreference } from "./auth/sessio
 import { AuthChangePassword, AuthChooseOrganization, AuthJoin, AuthJoinGuest, AuthLogin, AuthPasswordRecovery, AuthResetPassword, AuthSetup, AuthTotpCode, AuthTotpSetup } from "./features/auth/AuthScreens";
 import { RealtimeProvider } from "./features/realtime/RealtimeProvider";
 import { Shell } from "./layout/Shell";
-import { pathFromRoute, routeFromPath } from "./router";
+import { pathFromRoute, pathFromRouteState, routeFromPath } from "./router";
 import { ErrorScreen, LoadingScreen, PermissionScreen } from "./shared/ui";
 import { useRouteNavigation } from "./useRouteNavigation";
 import type { AgentRef } from "./features/agents/model";
@@ -103,14 +103,12 @@ export function App() {
         if (!payload.authenticated) acceptServerLanguage(payload.language);
         if (payload.authenticated && payload.user) {
           const activeUser = useIdentity(payload.user, initialRoute.organizationPublicId);
-          // Адрес без организации или с чужой: подставляем ту, что открылась.
-          if (activeUser && activeUser.organizationPublicId !== initialRoute.organizationPublicId) {
-            const nextPath = pathFromRoute(
-              initialRoute.route,
-              initialRoute.employeeId || initialRoute.agentId || initialRoute.knowledgeId || initialRoute.clientId || initialRoute.channelId || initialRoute.supportPortalId || initialRoute.portalSettingsSection || initialRoute.settingsSection,
-              activeUser.organizationPublicId,
-            );
-            window.history.replaceState({}, "", nextPath);
+          // Сохраняем карточку и query при выборе организации и переносе старого адреса.
+          if (activeUser) {
+            const nextPath = pathFromRouteState(initialRoute, activeUser.organizationPublicId, window.location.search) + window.location.hash;
+            if (`${window.location.pathname}${window.location.search}${window.location.hash}` !== nextPath) {
+              window.history.replaceState(window.history.state, "", nextPath);
+            }
           }
           return undefined;
         }
@@ -128,6 +126,10 @@ export function App() {
           useIdentity(identity, nextRoute.organizationPublicId);
         }
         navigation.applyRouteState(nextRoute);
+        const canonicalPath = pathFromRouteState(nextRoute, nextRoute.organizationPublicId, window.location.search) + window.location.hash;
+        if (`${window.location.pathname}${window.location.search}${window.location.hash}` !== canonicalPath) {
+          window.history.replaceState(window.history.state, "", canonicalPath);
+        }
       });
     };
     window.addEventListener("popstate", onPopState);
@@ -258,7 +260,7 @@ export function App() {
         // Ключ организации — на провайдере: при переключении сокет обязан
         // переоткрыться на адрес новой, а не остаться на прежней.
         <RealtimeProvider key={user.organizationPublicId}>
-          <Shell key={user.organizationPublicId} route={navigation.route} setRoute={(nextRoute) => navigate(nextRoute)} selectedEmployeeId={navigation.selectedEmployeeId} selectedAgentId={navigation.selectedAgentId} selectedKnowledgeId={navigation.selectedKnowledgeId} selectedConversationId={navigation.selectedConversationId} selectedClientId={navigation.selectedClientId} openClientRoute={(clientId) => navigate("salesClientDetail", clientId)} selectedChannelId={navigation.selectedChannelId} openChannelRoute={(channelId) => navigate("agentDetail", channelId)} selectedIntegrationId={navigation.selectedIntegrationId} openWebIntegrationRoute={(id) => navigate("webIntegrationSettings", id)} openServiceConnectionRoute={(id) => navigate("serviceConnection", id)} selectedSupportPortalId={navigation.selectedSupportPortalId} openSupportPortalRoute={(portalId) => navigate("supportPortalDetail", portalId)} portalSettingsSection={navigation.selectedPortalSection} openPortalSettingsRoute={(portalId, section) => navigate("supportPortalSettings", `${portalId}/${section ?? ""}`)} settingsSection={navigation.selectedSettingsSection} openSettingsRoute={(section) => navigate("settings", section)} openEmployeeRoute={(employeeId) => navigate("employeeDetail", employeeId)} openAgentRoute={(agentId) => navigate("agentDetail", agentId)} openKnowledgeRoute={(knowledgeId) => navigate("knowledgeDetail", knowledgeId)} openKnowledgeEditorRoute={(knowledgeId) => (knowledgeId === null ? navigate("knowledgeCreate") : navigate("knowledgeEdit", knowledgeId))} openConversationRoute={(conversationId) => navigate("chat", conversationId)} user={user} data={data} reload={loadData} onUserUpdated={refreshIdentity} onLogout={logout} onSwitchOrganization={switchOrganization} onOrganizationCreated={finishOrganizationCreate} />
+          <Shell key={user.organizationPublicId} navigationVersion={navigation.navigationVersion} route={navigation.route} setRoute={(nextRoute) => navigate(nextRoute)} selectedEmployeeId={navigation.selectedEmployeeId} selectedAgentId={navigation.selectedAgentId} selectedKnowledgeId={navigation.selectedKnowledgeId} selectedConversationId={navigation.selectedConversationId} selectedClientId={navigation.selectedClientId} openClientRoute={(clientId) => navigate("salesClientDetail", clientId)} selectedChannelId={navigation.selectedChannelId} openChannelRoute={(channelId) => navigate("agentDetail", channelId)} selectedIntegrationId={navigation.selectedIntegrationId} openWebIntegrationRoute={(id) => navigate("webIntegrationSettings", id)} openServerRoute={(id) => navigate("externalServerSettings", id)} openScenarioRoute={(id) => navigate("scenarios", null, false, user.organizationPublicId, new URLSearchParams({ scenario: id }).toString())} resolveLegacyIntegrationRoute={(route, id) => navigate(route, id, true, user.organizationPublicId, window.location.search)} openServiceConnectionRoute={(id) => navigate("serviceConnection", id)} selectedSupportPortalId={navigation.selectedSupportPortalId} openSupportPortalRoute={(portalId) => navigate("supportPortalDetail", portalId)} portalSettingsSection={navigation.selectedPortalSection} openPortalSettingsRoute={(portalId, section) => navigate("supportPortalSettings", `${portalId}/${section ?? ""}`)} settingsSection={navigation.selectedSettingsSection} openSettingsRoute={(section) => navigate("settings", section)} openEmployeeRoute={(employeeId) => navigate("employeeDetail", employeeId)} openAgentRoute={(agentId) => navigate("agentDetail", agentId)} openKnowledgeRoute={(knowledgeId) => navigate("knowledgeDetail", knowledgeId)} openKnowledgeEditorRoute={(knowledgeId) => (knowledgeId === null ? navigate("knowledgeCreate") : navigate("knowledgeEdit", knowledgeId))} openConversationRoute={(conversationId) => navigate("chat", conversationId)} user={user} data={data} reload={loadData} onUserUpdated={refreshIdentity} onLogout={logout} onSwitchOrganization={switchOrganization} onOrganizationCreated={finishOrganizationCreate} />
         </RealtimeProvider>
       )}
     </ConfigProvider>

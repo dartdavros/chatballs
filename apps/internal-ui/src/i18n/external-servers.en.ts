@@ -2,12 +2,12 @@ import type { Message } from "@chatballs/shared";
 import type { externalServersRu } from "./external-servers.ru";
 
 export const externalServersEn: Record<keyof typeof externalServersRu, Message> = {
-  "servers.integrations_lead": "Conversation entry points and external servers agents use to retrieve your organization's data.",
+  "servers.integrations_lead": "MCP servers and HTTP requests that let agents access your organization’s data.",
   "servers.add": "Add",
-  "servers.entry": "Conversation entry point",
+  "servers.entry": "Channels",
   "servers.entry_title": "Messenger, email or widget",
   "servers.entry_hint": "Telegram, MAX, VK, email, website chat",
-  "servers.external_group": "External server",
+  "servers.external_group": "MCP & HTTP",
   "servers.mcp_hint": "A ready server with a set of tools: orders, catalog, prices",
   "servers.http_hint": "One request to your API, such as order status by number",
   "servers.agent_tools": "Agent · tools",
@@ -32,7 +32,7 @@ export const externalServersEn: Record<keyof typeof externalServersRu, Message> 
   "servers.display_name": "Display name",
   "servers.display_name_hint": "Shown on the agent card and in the conversation feed",
   "servers.description": "Description · optional",
-  "servers.description_hint": "For employees: shown in integrations and on the agent card",
+  "servers.description_hint": "For staff: shown in the MCP & HTTP list and on the agent card",
   "servers.address": "Server address",
   "servers.address_hint": "The full address provided by the server developer, including https://",
   "servers.auth_headers": "Authorization headers",

@@ -9,6 +9,7 @@ order: 8
 spec: "0024"
 created: 2026-10-07
 branch: skaro/T-087-frontend-realizovat-pomosch-v
+archived: true
 ---
 
 ## Цель

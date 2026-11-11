@@ -9,6 +9,7 @@ order: 9
 spec: "0030"
 created: 2026-10-07
 branch: skaro/T-113-frontend-realizovat-bazovye-ot
+archived: true
 ---
 
 ## Цель

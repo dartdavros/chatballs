@@ -9,6 +9,7 @@ order: 2
 spec: "0035"
 created: 2026-10-15
 branch: skaro/T-158-podklyuchit-instruktsionnye-na
+archived: true
 ---
 
 ## Цель

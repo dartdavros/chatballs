@@ -10,6 +10,7 @@ order: 5
 spec: "0035"
 created: 2026-10-15
 branch: skaro/T-161-podklyuchit-shablony-k-finalno
+archived: true
 ---
 
 ## Цель

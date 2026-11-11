@@ -12,6 +12,7 @@ order: 2
 spec: "0040"
 created: 2026-11-03
 branch: skaro/T-181-zapuskat-pervyy-otvet-agenta-p
+archived: true
 ---
 
 ## Цель

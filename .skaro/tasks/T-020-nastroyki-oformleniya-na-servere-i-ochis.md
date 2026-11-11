@@ -8,6 +8,7 @@ order: 2
 spec: "0021"
 created: 2026-09-29
 branch: skaro/T-020-nastroyki-oformleniya-na-serve
+archived: true
 ---
 
 ## Цель

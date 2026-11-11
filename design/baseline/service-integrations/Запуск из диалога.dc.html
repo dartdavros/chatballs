@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<script src="chat-model.js"></script>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+a{color:var(--c-accent);text-decoration:none;font-weight:600}
+a:hover{color:var(--c-accent-text)}
+@keyframes cb-spin{to{transform:rotate(360deg)}}
+</style>
+</helmet>
+<section style="{{ themeVars }}min-height:100vh;background:var(--c-canvas);padding:32px 40px 60px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;color:var(--c-n2);-webkit-font-smoothing:antialiased">
+  <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:6px;flex-wrap:wrap">
+    <h1 style="margin:0;font-size:22px;font-weight:700;letter-spacing:-.02em;color:var(--c-n1)">Chatballs · Запуск действий и сценариев в диалоге</h1>
+    <a href="Журнал запусков.dc.html" style="font-size:13px">Журнал запусков →</a>
+    <a href="Агент · действия.dc.html" style="font-size:13px">Разрешения агента →</a>
+  </div>
+  <p style="margin:0 0 20px;font-size:13px;color:var(--c-n3);max-width:1080px;line-height:1.55">Запуск — из кнопки «Действия» в шапке диалога и из блока «Действия» карточки контакта. Ход выполнения и запросы подтверждения от ИИ — карточки в ленте, видимые только сотрудникам (как внутренний комментарий). Ширина и тема — в панели Tweaks; <code>frame</code> показывает один кадр.</p>
+  <div style="display:inline-flex;padding:3px;border-radius:9px;background:var(--c-n8);margin-bottom:12px;gap:2px">
+    <sc-for list="{{ groups }}" as="g" hint-placeholder-count="4"><button onClick="{{ g.pick }}" style="{{ g.style }}">{{ g.label }} · {{ g.count }}</button></sc-for>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:26px;max-width:1440px">
+    <sc-for list="{{ index }}" as="x" hint-placeholder-count="16"><a href="{{ x.href }}" style="display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 9px;border:1px solid var(--c-n7);border-radius:7px;background:var(--c-surface);color:var(--c-n2);font-size:12px;font-weight:500"><b style="font-weight:700;color:var(--c-n1)">{{ x.id }}</b>{{ x.title }}</a></sc-for>
+  </div>
+
+  <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+  <sc-for list="{{ frames }}" as="f" hint-placeholder-count="2">
+    <div id="{{ f.id }}" style="flex:none">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <span style="display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:22px;padding:0 7px;border-radius:6px;background:var(--c-n1);color:var(--c-surface);font-size:11.5px;font-weight:700">{{ f.id }}</span>
+        <strong style="font-size:13.5px;color:var(--c-n1)">{{ f.title }}</strong>
+        <span style="font-size:12px;color:var(--c-n4);max-width:860px">{{ f.note }}</span>
+      </div>
+      <div style="{{ f.frameStyle }}">
+
+        <sc-if value="{{ f.desk }}" hint-placeholder-val="{{ true }}">
+          <aside style="width:60px;flex:none;background:var(--c-surface2);border-right:1px solid var(--c-n8);display:flex;flex-direction:column;align-items:center;padding:14px 0 12px;gap:8px">
+            <img src="assets/logo-sunset.svg" alt="Chatballs" style="width:28px;height:auto;display:block">
+            <span style="margin-top:8px;width:38px;height:38px;border-radius:9px;background:var(--c-accent-bg);color:var(--c-accent-text);display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"></path></svg></span>
+            <span style="width:38px;height:38px;border-radius:9px;color:var(--c-n4);display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 17 18 12 13 7"></polyline><polyline points="6 17 11 12 6 7"></polyline></svg></span>
+            <div style="flex:1"></div>
+            <span style="position:relative;display:flex"><span style="width:34px;height:34px;border-radius:50%;background:url(assets/av-4.png) center/cover"></span><i style="position:absolute;right:-1px;bottom:-1px;width:10px;height:10px;border:2px solid var(--c-surface2);border-radius:50%;background:#52c41a"></i></span>
+          </aside>
+          <sc-if value="{{ f.showList }}" hint-placeholder-val="{{ true }}">
+            <section style="width:300px;flex:none;display:flex;flex-direction:column;background:var(--c-surface);border-right:1px solid var(--c-n8)">
+              <div style="padding:13px 16px 10px"><div style="display:flex;align-items:baseline;gap:8px;margin-bottom:10px"><h2 style="margin:0;font-size:16px;font-weight:700;color:var(--c-n1)">Мои диалоги</h2><span style="font-size:12px;color:var(--c-n4)">4 диалога</span></div>
+                <div style="display:flex;align-items:center;gap:8px;height:34px;padding:0 11px;border:1px solid var(--c-n7);border-radius:8px;background:var(--c-n10)"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="var(--c-n5)" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg><span style="font-size:13px;color:var(--c-n5)">Поиск по контакту, сообщению…</span></div></div>
+              <div style="flex:1;border-top:1px solid var(--c-n8)">
+                <sc-for list="{{ dialogs }}" as="d" hint-placeholder-count="4">
+                  <div style="{{ d.style }}"><span style="width:38px;height:38px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:50%;background:{{ d.av }};color:#fff;font-size:13px;font-weight:600">{{ d.ini }}</span><span style="min-width:0;flex:1"><span style="display:flex;gap:6px"><strong style="flex:1;font-size:14px;font-weight:600;color:var(--c-n1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ d.name }}</strong><em style="font-size:11px;font-style:normal;color:var(--c-n5)">{{ d.time }}</em></span><small style="display:block;margin-top:3px;font-size:12.5px;color:var(--c-n4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ d.preview }}</small></span></div>
+                </sc-for>
+              </div>
+            </section>
+          </sc-if>
+        </sc-if>
+
+        <section style="flex:1;min-width:0;display:flex;flex-direction:column;background:var(--c-feed);position:relative">
+          <div style="{{ f.headStyle }}">
+            <sc-if value="{{ f.mob }}" hint-placeholder-val="{{ false }}"><span style="width:32px;height:36px;display:flex;align-items:center;justify-content:center;color:var(--c-n3)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg></span></sc-if>
+            <span style="width:38px;height:38px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:50%;background:#2aa876;color:#fff;font-size:13px;font-weight:600">МБ</span>
+            <div style="flex:1;min-width:0">
+              <strong style="display:block;font-size:15px;font-weight:700;color:var(--c-n1)">{{ f.headTitle }}</strong>
+              <p style="margin:2px 0 0;font-size:12px;color:var(--c-n4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ f.headSub }}</p>
+            </div>
+            <div style="position:relative;display:flex;gap:8px;flex:none">
+              <sc-if value="{{ f.showActBtn }}" hint-placeholder-val="{{ true }}"><button style="{{ f.actBtnStyle }}"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22v-5M9 8V2M15 8V2M18 8v5a6 6 0 0 1-12 0V8z"></path></svg><sc-if value="{{ f.desk }}" hint-placeholder-val="{{ true }}">Действия</sc-if></button></sc-if>
+              <sc-if value="{{ f.desk }}" hint-placeholder-val="{{ true }}"><button style="height:36px;padding:0 14px;border-radius:8px;border:1px solid var(--c-n8);background:var(--c-surface);color:var(--c-n2);font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:7px;font-family:inherit"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 1l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3"></path></svg>Передать</button></sc-if>
+              <span style="width:36px;height:36px;border-radius:8px;border:1px solid var(--c-n8);background:var(--c-surface);color:var(--c-n3);display:inline-flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg></span>
+              <sc-if value="{{ f.menu }}" hint-placeholder-val="{{ false }}">
+                <div style="position:absolute;top:42px;right:0;z-index:8;width:340px;padding:5px;background:var(--c-surface);border:1px solid var(--c-n8);border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.12)">
+                  <div style="padding:6px 10px 4px;font-size:11px;font-weight:600;letter-spacing:.04em;color:var(--c-n5)">ДОСТУПНО В ЭТОМ ДИАЛОГЕ</div>
+                  <sc-for list="{{ actions }}" as="a" hint-placeholder-count="4">
+                    <div style="{{ a.menuStyle }}"><span style="width:28px;height:28px;flex:none;border-radius:7px;background:var(--c-n9);color:var(--c-n3);display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="{{ a.icon }}"></path></svg></span><span style="flex:1;min-width:0"><span style="display:block;font-size:13px;font-weight:600;color:var(--c-n1)">{{ a.name }}</span><small style="display:block;margin-top:1px;font-size:11.5px;color:{{ a.subColor }};line-height:1.4">{{ a.sub }}</small></span></div>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </div>
+          </div>
+
+          <sc-if value="{{ f.banner }}" hint-placeholder-val="{{ false }}"><div style="{{ f.banner.style }}"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="{{ f.banner.color }}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px"><path d="{{ f.banner.icon }}"></path></svg><span style="flex:1;font-size:12.5px;line-height:1.5;color:var(--c-n2)"><b style="font-weight:600">{{ f.banner.title }}</b> {{ f.banner.text }}</span><sc-if value="{{ f.banner.seg }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;padding:3px;border-radius:9px;background:var(--c-n9);flex:none"><sc-for list="{{ f.banner.seg }}" as="sg" hint-placeholder-count="2"><span style="{{ sg.style }}">{{ sg.label }}</span></sc-for></span></sc-if></div></sc-if>
+
+          <div style="flex:1;min-height:0;overflow:hidden;padding:{{ f.feedPad }}">
+            <div style="max-width:760px;margin:0 auto">
+              <sc-for list="{{ f.feed }}" as="m" hint-placeholder-count="5">
+                <sc-if value="{{ m.isSys }}" hint-placeholder-val="{{ false }}"><div style="width:fit-content;max-width:90%;display:flex;align-items:center;gap:6px;margin:0 auto 14px;padding:4px 12px;border-radius:20px;background:{{ m.bg }};border:1px solid {{ m.border }};color:{{ m.color }};font-size:11.5px;font-weight:500;text-align:center"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="{{ m.icon }}"></path></svg><span>{{ m.text }}</span></div></sc-if>
+                <sc-if value="{{ m.isMsg }}" hint-placeholder-val="{{ true }}"><div style="display:flex;gap:10px;margin-bottom:14px;flex-direction:{{ m.dir }}"><div style="max-width:78%;text-align:{{ m.align }}"><sc-if value="{{ m.actor }}" hint-placeholder-val="{{ false }}"><strong style="display:block;margin-bottom:4px;font-size:11px;font-weight:600;color:{{ m.actorColor }}">{{ m.actor }}</strong></sc-if><div style="padding:10px 14px;background:{{ m.bg }};border:{{ m.border }};border-radius:{{ m.radius }};color:var(--c-n2);font-size:13.5px;line-height:1.5;text-align:left">{{ m.text }}</div><small style="display:block;margin:4px 4px 0;color:var(--c-n5);font-size:11px">{{ m.time }}</small></div></div></sc-if>
+
+                <sc-if value="{{ m.isCard }}" hint-placeholder-val="{{ false }}">
+                  <div style="{{ m.wrap }}">
+                    <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--c-n8)">
+                      <span style="width:26px;height:26px;flex:none;border-radius:7px;background:{{ m.iconBg }};color:{{ m.iconColor }};display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="{{ m.icon }}"></path></svg></span>
+                      <span style="flex:1;min-width:0"><strong style="display:block;font-size:13px;font-weight:600;color:var(--c-n1)">{{ m.title }}</strong><small style="display:block;font-size:11.5px;color:var(--c-n4)">{{ m.sub }}</small></span>
+                      <span style="{{ m.pillStyle }}"><i style="width:6px;height:6px;border-radius:50%;background:currentColor"></i>{{ m.pill }}</span>
+                    </div>
+                    <sc-if value="{{ m.hasSteps }}" hint-placeholder-val="{{ false }}">
+                      <div style="padding:8px 14px 4px">
+                        <sc-for list="{{ m.steps }}" as="s" hint-placeholder-count="2">
+                          <div style="display:flex;align-items:flex-start;gap:10px;padding:5px 0"><span style="{{ s.dot }}"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="{{ s.spin }}"><path d="{{ s.icon }}"></path></svg></span><span style="flex:1;min-width:0"><span style="display:block;font-size:13px;color:var(--c-n1)">{{ s.label }}</span><sc-if value="{{ s.sub }}" hint-placeholder-val="{{ false }}"><small style="display:block;margin-top:1px;font-size:12px;color:{{ s.subColor }};line-height:1.45">{{ s.sub }}</small></sc-if></span></div>
+                        </sc-for>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{ m.hasParams }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:grid;grid-template-columns:140px minmax(0,1fr);gap:6px 12px;padding:10px 14px;font-size:12.5px">
+                        <sc-for list="{{ m.params }}" as="p" hint-placeholder-count="3"><span style="color:var(--c-n4)">{{ p.k }}</span><span style="{{ p.style }}">{{ p.v }}</span></sc-for>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{ m.note }}" hint-placeholder-val="{{ false }}"><p style="margin:0;padding:0 14px 10px;font-size:12px;line-height:1.5;color:{{ m.noteColor }}">{{ m.note }}</p></sc-if>
+                    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 14px;border-top:1px solid var(--c-n8);background:var(--c-surface2)">
+                      <sc-for list="{{ m.btns }}" as="b" hint-placeholder-count="2"><span style="{{ b.style }}">{{ b.label }}</span></sc-for>
+                      <span style="flex:1"></span>
+                      <small style="font-size:11.5px;color:var(--c-n4)">{{ m.foot }}</small>
+                    </div>
+                  </div>
+                </sc-if>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="flex:none;padding:{{ f.compPad }}">
+            <div style="max-width:760px;margin:0 auto;background:var(--c-surface);border:1px solid var(--c-n7);border-radius:12px;padding:10px 12px;display:flex;align-items:center;gap:10px">
+              <span style="flex:1;font-size:13px;color:{{ f.compColor }}">{{ f.compText }}</span>
+              <span style="height:34px;padding:0 14px;border-radius:8px;background:{{ f.sendBg }};color:#fff;font-size:13px;font-weight:600;display:inline-flex;align-items:center">Отправить</span>
+            </div>
+          </div>
+
+          <sc-if value="{{ f.sheet }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;inset:0;background:rgba(0,0,0,.32)"></div>
+            <div style="position:absolute;left:0;right:0;bottom:0;max-height:88%;display:flex;flex-direction:column;background:var(--c-surface);border-radius:16px 16px 0 0">
+              <div style="display:flex;justify-content:center;padding:8px 0 2px"><i style="width:36px;height:4px;border-radius:2px;background:var(--c-n6)"></i></div>
+              <div style="display:flex;align-items:center;gap:8px;padding:8px 16px 4px"><h3 style="margin:0;flex:1;font-size:17px;font-weight:700;color:var(--c-n1)">{{ f.sheet.title }}</h3><sc-if value="{{ f.sheet.pill }}" hint-placeholder-val="{{ false }}"><span style="{{ f.sheet.pillStyle }}">{{ f.sheet.pill }}</span></sc-if></div>
+              <p style="margin:0;padding:0 16px 8px;font-size:12.5px;color:var(--c-n4)">{{ f.sheet.sub }}</p>
+              <div style="flex:1;min-height:0;overflow:hidden;padding:0 16px;display:flex;flex-direction:column;gap:12px">
+                <sc-for list="{{ f.sheet.fields }}" as="x" hint-placeholder-count="3"><label style="display:flex;flex-direction:column;gap:6px"><span style="display:flex;justify-content:space-between;font-size:12.5px;font-weight:600;color:var(--c-n3)">{{ x.label }}<small style="font-weight:500;color:var(--c-n4)">{{ x.from }}</small></span><span style="{{ x.mobStyle }}">{{ x.value }}</span></label></sc-for>
+                <sc-for list="{{ f.sheet.steps }}" as="s" hint-placeholder-count="0">
+                  <div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-top:1px solid var(--c-n9)"><span style="{{ s.dot }}"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="{{ s.spin }}"><path d="{{ s.icon }}"></path></svg></span><span style="flex:1;min-width:0"><span style="display:block;font-size:14px;color:var(--c-n1)">{{ s.label }}</span><sc-if value="{{ s.sub }}" hint-placeholder-val="{{ false }}"><small style="display:block;margin-top:2px;font-size:12.5px;color:{{ s.subColor }};line-height:1.45">{{ s.sub }}</small></sc-if></span></div>
+                </sc-for>
+                <sc-for list="{{ f.sheet.meta }}" as="mt" hint-placeholder-count="0"><div style="display:flex;justify-content:space-between;gap:10px;font-size:13px"><span style="color:var(--c-n4)">{{ mt.k }}</span><span style="color:var(--c-n1);text-align:right">{{ mt.v }}</span></div></sc-for>
+              </div>
+              <div style="flex:none;padding:14px 16px 20px;border-top:1px solid var(--c-n8);margin-top:12px"><span style="width:100%;height:46px;border-radius:10px;background:var(--c-accent);color:#fff;font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:center">{{ f.sheet.cta }}</span></div>
+            </div>
+          </sc-if>
+        </section>
+
+        <sc-if value="{{ f.panel }}" hint-placeholder-val="{{ true }}">
+          <aside style="width:360px;flex:none;display:flex;flex-direction:column;background:var(--c-surface);border-left:1px solid var(--c-n8)">
+            <sc-if value="{{ f.panel.isContact }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;padding:0 8px;border-bottom:1px solid var(--c-n8)"><span style="flex:1;padding:13px 0;text-align:center;border-bottom:2px solid var(--c-accent-text);color:var(--c-accent-text);font-size:13px;font-weight:600">Контакт</span><span style="flex:1;padding:13px 0;text-align:center;color:var(--c-n4);font-size:13px;font-weight:500">История</span></div>
+              <div style="flex:1;overflow:hidden">
+                <div style="padding:18px 18px 14px;border-bottom:1px solid var(--c-n9)">
+                  <span style="width:56px;height:56px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:#2aa876;color:#fff;font-size:19px;font-weight:600">МБ</span>
+                  <strong style="display:block;margin-top:10px;font-size:19px;font-weight:700;color:var(--c-n1)">Марина Белова</strong>
+                  <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--c-n2)"><span>+7 916 204-18-33</span><span>m.belova@mail.example</span></div>
+                </div>
+                <section style="padding:14px 18px;border-bottom:1px solid var(--c-n9)">
+                  <h4 style="margin:0 0 4px;font-size:13px;font-weight:700;color:var(--c-n1)">Действия</h4>
+                  <sc-if value="{{ f.panel.empty }}" hint-placeholder-val="{{ false }}"><p style="margin:6px 0 0;font-size:12.5px;line-height:1.5;color:var(--c-n4)">Для этого диалога нет доступных действий. Сценарии включает администратор в «Настройки → Сценарии».</p></sc-if>
+                  <sc-for list="{{ f.panel.acts }}" as="a" hint-placeholder-count="3">
+                    <div style="{{ a.rowStyle }}"><span style="width:28px;height:28px;flex:none;border-radius:7px;background:var(--c-n9);color:var(--c-n3);display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="{{ a.icon }}"></path></svg></span><span style="flex:1;min-width:0"><span style="display:block;font-size:13px;font-weight:600;color:var(--c-n1)">{{ a.name }}</span><small style="display:block;margin-top:1px;font-size:11.5px;color:{{ a.subColor }};line-height:1.4">{{ a.sub }}</small></span></div>
+                  </sc-for>
+                </section>
+                <section style="padding:14px 18px">
+                  <h4 style="margin:0 0 8px;font-size:13px;font-weight:700;color:var(--c-n1)">Связанные записи</h4>
+                  <sc-if value="{{ f.panel.noLinks }}" hint-placeholder-val="{{ true }}"><p style="margin:0;font-size:12.5px;color:var(--c-n4)">Пока нет. Появятся после запуска сценариев.</p></sc-if>
+                  <sc-for list="{{ f.panel.links }}" as="l" hint-placeholder-count="1"><div style="position:relative;display:flex;align-items:center;gap:8px;min-height:34px;padding:4px 0;font-size:13px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--c-n4)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M10 13a5 5 0 0 0 7 0l2-2a5 5 0 0 0-7-7l-1 1M14 11a5 5 0 0 0-7 0l-2 2a5 5 0 0 0 7 7l1-1"></path></svg><span style="flex:1;min-width:0"><a href="#" style="display:block">{{ l.name }}</a><sc-if value="{{ l.sub }}" hint-placeholder-val="{{ false }}"><small style="display:block;color:var(--c-n4);font-size:11.5px">{{ l.sub }}</small></sc-if></span><small style="color:var(--c-n4);font-size:11.5px">{{ l.svc }}</small><span style="{{ l.kebab }}"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg></span>
+                    <sc-if value="{{ l.menu }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;top:36px;right:0;z-index:8;width:270px;padding:5px;background:var(--c-surface);border:1px solid var(--c-n8);border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.12)">
+                      <div style="padding:8px 10px;border-radius:7px;font-size:13px;color:var(--c-n2)">Открыть в {{ l.svc }}</div>
+                      <div style="padding:8px 10px;border-radius:7px;background:var(--c-n9);font-size:13px;color:var(--c-n2)">Связать с другой записью<small style="display:block;margin-top:1px;font-size:11.5px;color:var(--c-n4)">Найти и выбрать правильную — старая связь будет снята</small></div>
+                      <div style="padding:8px 10px;border-radius:7px;font-size:13px;color:var(--c-err-text)">Снять связь<small style="display:block;margin-top:1px;font-size:11.5px;color:var(--c-n4)">Запись в {{ l.svc }} не изменится</small></div>
+                    </div></sc-if>
+                  </div></sc-for>
+                </section>
+              </div>
+            </sc-if>
+            <sc-if value="{{ f.panel.isLaunch }}" hint-placeholder-val="{{ false }}">
+              <header style="display:flex;align-items:flex-start;gap:10px;padding:18px 20px 14px;border-bottom:1px solid var(--c-n8)">
+                <div style="flex:1;min-width:0"><span style="display:block;font-size:12px;font-weight:600;color:var(--c-n4)">{{ f.panel.kicker }}</span><h3 style="margin:2px 0 0;font-size:16px;font-weight:700;color:var(--c-n1)">{{ f.panel.title }}</h3></div>
+                <span style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;color:var(--c-n4)"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"></path></svg></span>
+              </header>
+              <div style="flex:1;overflow:hidden;padding:16px 20px;display:flex;flex-direction:column;gap:14px">
+                <div style="padding:10px 12px;border-radius:9px;background:var(--c-n10);border:1px solid var(--c-n8)">
+                  <span style="display:block;margin-bottom:4px;font-size:11px;font-weight:700;letter-spacing:.05em;color:var(--c-n4)">ЧТО ПРОИЗОЙДЁТ</span>
+                  <sc-for list="{{ f.panel.plan }}" as="p" hint-placeholder-count="2"><div style="display:flex;gap:8px;padding:3px 0;font-size:12.5px;color:var(--c-n2)"><b style="width:16px;flex:none;color:var(--c-n4);font-weight:600">{{ p.n }}</b><span>{{ p.t }}</span></div></sc-for>
+                </div>
+                <sc-for list="{{ f.panel.fields }}" as="x" hint-placeholder-count="3">
+                  <label style="display:flex;flex-direction:column;gap:6px"><span style="display:flex;align-items:baseline;justify-content:space-between;gap:8px;font-size:12.5px;font-weight:600;color:var(--c-n2)">{{ x.label }}<small style="font-weight:500;font-size:11.5px;color:var(--c-n4)">{{ x.from }}</small></span><span style="{{ x.style }}">{{ x.value }}</span><sc-if value="{{ x.err }}" hint-placeholder-val="{{ false }}"><small style="font-size:11.5px;color:var(--c-err-text)">{{ x.err }}</small></sc-if></label>
+                </sc-for>
+                <sc-if value="{{ f.panel.nores }}" hint-placeholder-val="{{ false }}"><div style="padding:12px;border-radius:9px;border:1px solid var(--c-n7);background:var(--c-n10)"><strong style="display:block;font-size:12.5px;color:var(--c-n1)">{{ f.panel.nores.title }}</strong><span style="display:block;margin-top:3px;font-size:12px;line-height:1.5;color:var(--c-n4)">{{ f.panel.nores.text }}</span></div></sc-if>
+                <sc-if value="{{ f.panel.cands }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;gap:8px">
+                    <span style="font-size:12.5px;font-weight:600;color:var(--c-n2)">{{ f.panel.candTitle }}</span>
+                    <sc-for list="{{ f.panel.cands }}" as="cd" hint-placeholder-count="2">
+                      <div style="{{ cd.box }}"><span style="{{ cd.radio }}"><i style="{{ cd.dot }}"></i></span><span style="flex:1;min-width:0"><strong style="display:block;font-size:13px;color:var(--c-n1)">{{ cd.name }}</strong><small style="display:block;margin-top:2px;font-size:12px;color:var(--c-n4);line-height:1.45">{{ cd.sub }}</small></span></div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ f.panel.result }}" hint-placeholder-val="{{ false }}">
+                  <div style="padding:12px;border-radius:9px;border:1px solid var(--c-ok-border);background:var(--c-ok-bg)">
+                    <strong style="display:block;font-size:12.5px;color:var(--c-ok-text);margin-bottom:6px">{{ f.panel.resultTitle }}</strong>
+                    <div style="display:grid;grid-template-columns:110px minmax(0,1fr);gap:4px 10px;font-size:12.5px"><sc-for list="{{ f.panel.result }}" as="r" hint-placeholder-count="3"><span style="color:var(--c-n4)">{{ r.k }}</span><span style="color:var(--c-n1)">{{ r.v }}</span></sc-for></div>
+                  </div>
+                </sc-if>
+              </div>
+              <footer style="display:flex;flex-direction:column;gap:10px;padding:14px 20px 16px;border-top:1px solid var(--c-n8)">
+                <small style="font-size:12px;line-height:1.45;color:var(--c-n4)">{{ f.panel.footNote }}</small>
+                <div style="display:flex;gap:10px;justify-content:flex-end;align-items:center"><sc-if value="{{ f.panel.cta2 }}" hint-placeholder-val="{{ false }}"><span style="margin-right:auto;color:var(--c-accent);font-size:13px;font-weight:600;white-space:nowrap">{{ f.panel.cta2 }}</span></sc-if><span style="height:34px;padding:0 14px;border-radius:8px;border:1px solid var(--c-n7);color:var(--c-n2);font-size:13px;font-weight:600;display:inline-flex;align-items:center;white-space:nowrap">Отмена</span><span style="{{ f.panel.ctaStyle }}">{{ f.panel.cta }}</span></div>
+              </footer>
+            </sc-if>
+          </aside>
+        </sc-if>
+      </div>
+    </div>
+  </sc-for>
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;'light'|'dark'&quot;},&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;options&quot;:[&quot;#0f9b8e&quot;,&quot;#1677ff&quot;,&quot;#6d5dfc&quot;,&quot;#e8590c&quot;],&quot;default&quot;:&quot;#0f9b8e&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;width&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;1440&quot;,&quot;1024&quot;],&quot;default&quot;:&quot;1440&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;frame&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  state = { group: 'L' };
+  componentDidMount() { if (!window.ChatModel) this.t = setInterval(() => { if (window.ChatModel) { clearInterval(this.t); this.forceUpdate(); } }, 50); }
+  componentWillUnmount() { clearInterval(this.t); }
+  renderVals() {
+    const M = window.ChatModel;
+    if (!M) return { themeVars: '', frames: [], index: [], dialogs: [], actions: [], groups: [] };
+    const key = [this.props.theme, this.props.accent, this.props.width, this.props.frame, this.state.group].join('|');
+    if (this._c && this._k === key) return this._c;
+    this._k = key;
+    return (this._c = this.build(M));
+  }
+  build(M) {
+    const { I } = M;
+    const dark = (this.props.theme ?? 'light') === 'dark';
+    const W = Number(this.props.width ?? 1440) === 1024 ? 1024 : 1440;
+    const themeVars = M.theme(dark, this.props.accent ?? '#0f9b8e');
+    const PLUG = 'M12 22v-5M9 8V2M15 8V2M18 8v5a6 6 0 0 1-12 0V8z', LIST = 'M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01', REFRESH = I.refresh, SEARCH = 'M11 3a8 8 0 1 0 0 16 8 8 0 0 0 0-16zM21 21l-4.35-4.35', CIRCLE = 'M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16z', SPIN = 'M21 12a9 9 0 1 1-6.2-8.6', Q = 'M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01';
+    const TONE = { acc: ['var(--c-accent-bg)', 'var(--c-accent-border)', 'var(--c-accent-text)'], ok: ['var(--c-ok-bg)', 'var(--c-ok-border)', 'var(--c-ok-text)'], warn: ['var(--c-warn-bg)', 'var(--c-warn-border)', 'var(--c-warn-text)'], err: ['var(--c-err-bg)', 'var(--c-err-border)', 'var(--c-err-text)'], n: ['var(--c-n9)', 'var(--c-n7)', 'var(--c-n3)'], ai: ['color-mix(in srgb,var(--c-ai) 10%,var(--c-surface))', 'color-mix(in srgb,var(--c-ai) 32%,var(--c-surface))', 'var(--c-ai)'] };
+    const pill = t => ({ display: 'inline-flex', alignItems: 'center', gap: 6, height: 22, padding: '0 8px', borderRadius: 6, background: TONE[t][0], color: TONE[t][2], fontSize: 11.5, fontWeight: 600, flex: 'none', whiteSpace: 'nowrap' });
+    const btn = (label, kind) => ({ label, style: { height: 30, padding: '0 12px', borderRadius: 7, display: 'inline-flex', alignItems: 'center', fontSize: 12.5, fontWeight: 600, whiteSpace: 'nowrap',
+      background: kind === 'p' ? 'var(--c-accent)' : kind === 'ai' ? 'var(--c-ai)' : 'var(--c-surface)', color: kind === 'p' || kind === 'ai' ? '#fff' : kind === 'd' ? 'var(--c-err-text)' : kind === 'l' ? 'var(--c-accent)' : 'var(--c-n2)',
+      border: kind === 'p' ? '1px solid var(--c-accent)' : kind === 'ai' ? '1px solid var(--c-ai)' : kind === 'l' ? '1px solid transparent' : '1px solid var(--c-n7)', paddingLeft: kind === 'l' ? 2 : 12 } });
+    const ST = { done: ['ok', I.check], run: ['acc', SPIN], wait: ['warn', I.clock], pend: ['n', CIRCLE], err: ['err', I.close], unk: ['warn', Q], skip: ['n', 'M5 12h14'] };
+    const step = (st, label, sub, subTone) => ({ label, sub: sub || '', subColor: subTone ? TONE[subTone][2] : 'var(--c-n4)', icon: ST[st][1],
+      dot: { width: 18, height: 18, flex: 'none', marginTop: 1, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: st === 'pend' ? 'transparent' : TONE[ST[st][0]][0], color: TONE[ST[st][0]][2], border: st === 'pend' ? '1.5px dashed var(--c-n6)' : `1px solid ${TONE[ST[st][0]][1]}` },
+      spin: st === 'run' ? { animation: 'cb-spin 1s linear infinite' } : {} });
+    const card = o => ({ isCard: true, isMsg: false, isSys: false, ...o, hasSteps: !!o.steps, hasParams: !!o.params, note: o.note || '', noteColor: o.noteTone ? TONE[o.noteTone][2] : 'var(--c-n3)', btns: o.btns || [], foot: o.foot || '',
+      iconBg: TONE[o.ai ? 'ai' : 'n'][0], iconColor: o.ai ? 'var(--c-ai)' : 'var(--c-n3)', pillStyle: pill(o.tone),
+      wrap: { margin: '0 0 16px', background: 'var(--c-surface)', border: `1px solid ${o.ai ? TONE.ai[1] : o.tone === 'err' ? 'var(--c-err-border)' : 'var(--c-n7)'}`, borderRadius: 12, overflow: 'hidden', boxShadow: o.ai && o.tone === 'ai' ? '0 0 0 3px ' + TONE.ai[0] : 'none' } });
+    const run = (name, num, tone, label, steps, o = {}) => card({ icon: o.ai ? I.robot : PLUG, ai: !!o.ai, title: name, sub: `Запуск №${num} · ${o.by || 'запустили вы'} · видно только сотрудникам`, tone, pill: label, steps, ...o });
+    const params = (rows) => rows.map(([k, v, ch]) => ({ k, v, style: { color: ch ? 'var(--c-warn-text)' : 'var(--c-n1)', fontWeight: ch ? 600 : 400, background: ch ? 'var(--c-warn-bg)' : 'transparent', borderRadius: 4, padding: ch ? '0 4px' : 0, justifySelf: 'start' } }));
+    const P_DEAL = [['Действие', 'Создать сделку'], ['Подключение', 'amoCRM · Розница'], ['Название', 'Пальто на заказ — Марина Белова'], ['Воронка', 'Продажи · Первичный контакт'], ['Ответственный', 'Анна Ким'], ['Диалог', 'Марина Белова · Web Chat']];
+    const confirm = (tone, pillLabel, o = {}) => card({ ai: true, icon: I.robot, title: 'ИИ просит подтвердить действие', sub: 'Агент «Поддержка сайта» · видно только сотрудникам', tone, pill: pillLabel, params: params(o.rows || P_DEAL), ...o });
+    const msg = (who, text, time, o = {}) => { const me = who !== 'c'; return { isMsg: true, isSys: false, isCard: false, dir: me ? 'row-reverse' : 'row', align: me ? 'right' : 'left', text, time, actor: who === 'ai' ? 'Агент · Поддержка сайта' : who === 'me' ? 'Вы' : '', actorColor: who === 'ai' ? 'var(--c-ai)' : 'var(--c-accent-text)',
+      bg: who === 'c' ? 'var(--c-msg-in)' : who === 'ai' ? TONE.ai[0] : 'var(--c-accent-bg)', border: who === 'c' ? '1px solid var(--c-n8)' : `1px solid ${who === 'ai' ? TONE.ai[1] : 'var(--c-accent-border)'}`, radius: me ? '14px 4px 14px 14px' : '4px 14px 14px 14px', ...o }; };
+    const sys = (text, tone = 'n', icon = I.info) => ({ isSys: true, isMsg: false, isCard: false, text, icon, bg: TONE[tone][0], border: TONE[tone][1], color: TONE[tone][2] });
+    const BASE = [msg('c', 'Здравствуйте! Хочу заказать пальто по моим меркам, можно оформить?', '14:02'), msg('me', 'Да, конечно. Передам заявку менеджеру — он свяжется с вами сегодня.', '14:04')];
+    const BASE_AI = [msg('c', 'Здравствуйте! Хочу заказать пальто по моим меркам, можно оформить?', '14:02'), msg('ai', 'Конечно! Я передам заявку менеджеру. Уточните, пожалуйста, удобное время для звонка.', '14:02'), msg('c', 'После 18:00, номер тот же.', '14:03')];
+
+    const act = (icon, name, sub, o = {}) => ({ icon, name, sub, subColor: o.dim ? 'var(--c-warn-text)' : 'var(--c-n4)',
+      rowStyle: { display: 'flex', alignItems: 'center', gap: 10, margin: '0 -8px', padding: '8px', borderRadius: 8, opacity: o.dim ? 0.6 : 1, background: o.on ? 'var(--c-accent-bg)' : 'transparent', cursor: o.dim ? 'not-allowed' : 'pointer' },
+      menuStyle: { display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 7, opacity: o.dim ? 0.6 : 1, background: o.on ? 'var(--c-n9)' : 'transparent' } });
+    const ACTS = (sel) => [
+      act(LIST, 'Создать лид из диалога', 'Сценарий · Битрикс24 · 2 шага', { on: sel === 'lead' }),
+      act(PLUG, 'Найти клиента Mindbox', 'Операция · только чтение', { on: sel === 'mb' }),
+      act(LIST, 'Создать сделку из диалога', 'Приостановлен: нет доступа к amoCRM', { dim: true }),
+      act(LIST, 'Вернуть предоплату', 'Нужно право «Возвраты» — попросите администратора', { dim: true }),
+    ];
+    const contact = (o = {}) => ({ isContact: true, isLaunch: false, acts: o.empty ? [] : ACTS(o.sel), empty: !!o.empty, links: (o.links || []).map(l => ({ sub: '', menu: false, ...l, kebab: { width: 26, height: 26, flex: 'none', borderRadius: 6, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: 'var(--c-n4)', background: l.menu ? 'var(--c-n9)' : 'transparent', border: l.menu ? '1px solid var(--c-n7)' : '1px solid transparent' } })), noLinks: !(o.links || []).length });
+    const fld = (label, value, from, o = {}) => ({ label, value: value || o.ph || '', from: from || (o.req ? 'обязательно' : ''), err: o.err || '',
+      style: { minHeight: 36, padding: '8px 12px', border: `1px solid ${o.err ? 'var(--c-err-border)' : o.ch ? 'var(--c-warn-border)' : 'var(--c-n7)'}`, boxShadow: o.err ? '0 0 0 3px var(--c-err-bg)' : 'none', borderRadius: 8, background: o.ch ? 'var(--c-warn-bg)' : 'var(--c-surface)', fontSize: 13, color: value ? 'var(--c-n1)' : 'var(--c-n5)', lineHeight: 1.4 },
+      mobStyle: { minHeight: 44, padding: '11px 12px', border: '1px solid var(--c-n7)', borderRadius: 8, fontSize: 15, color: value ? 'var(--c-n1)' : 'var(--c-n5)' } });
+    const LEAD_FIELDS = (err) => [fld('Название лида', err ? '' : 'Пальто на заказ — Марина Белова', 'спросить при запуске · можно изменить', { err: err ? 'Укажите название лида.' : '', ph: 'Например, пальто на заказ' }), fld('Имя', 'Марина Белова', 'из диалога'), fld('Телефон', '+7 916 204-18-33', 'из диалога'), fld('Ответственный', 'Анна Ким', 'задано в сценарии')];
+    const launch = (o) => ({ isContact: false, isLaunch: true, result: null, resultTitle: 'Клиент найден', cands: null, nores: null, cta2: '', ctaStyle: { height: 34, padding: '0 16px', borderRadius: 8, display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap', fontSize: 13, fontWeight: 600, background: o.off ? 'var(--c-n8)' : 'var(--c-accent)', color: o.off ? 'var(--c-n5)' : '#fff' }, ...o });
+    const cand = (name, sub, on) => ({ name, sub, box: { display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 12px', borderRadius: 9, border: `1px solid ${on ? 'var(--c-accent)' : 'var(--c-n7)'}`, background: on ? 'var(--c-accent-bg)' : 'var(--c-surface)' },
+      radio: { width: 16, height: 16, flex: 'none', marginTop: 2, borderRadius: '50%', border: `1.5px solid ${on ? 'var(--c-accent)' : 'var(--c-n6)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }, dot: { width: 8, height: 8, borderRadius: '50%', background: on ? 'var(--c-accent)' : 'transparent' } });
+    const MB = 'Операция · Mindbox · Интернет-магазин';
+
+    const head = (o = {}) => ({ headTitle: o.title || 'Марина Белова', headSub: o.sub || 'Web Chat · ведёте вы', showActBtn: o.act !== false });
+    const frame = (id, title, note, o) => {
+      const mob = !!o.mob, desk = !mob;
+      const listW = W === 1024 ? false : o.list !== false;
+      return { id, title, note, mob, desk, showList: listW, panel: mob ? null : (o.panel === undefined ? contact() : o.panel), menu: !!o.menu, banner: o.banner || null, feed: o.feed || BASE, sheet: o.sheet ? { steps: [], meta: [], pill: '', pillStyle: {}, ...o.sheet } : null,
+        ...head(o.head || {}), compText: o.comp || 'Введите сообщение…', compColor: 'var(--c-n5)', sendBg: 'var(--c-n6)',
+        frameStyle: { width: mob ? 390 : W, height: mob ? 844 : 880, display: 'flex', overflow: 'hidden', background: 'var(--c-surface)', borderRadius: 6, boxShadow: '0 2px 12px rgba(0,0,0,.08)', position: 'relative' },
+        headStyle: { flex: 'none', display: 'flex', alignItems: 'center', gap: 12, padding: mob ? '10px 10px 10px 6px' : '11px 20px', background: 'var(--c-surface)', borderBottom: '1px solid var(--c-n8)' },
+        actBtnStyle: { height: 36, padding: mob ? 0 : '0 14px', width: mob ? 36 : 'auto', justifyContent: 'center', borderRadius: 8, border: `1px solid ${o.menu ? 'var(--c-accent)' : 'var(--c-n8)'}`, background: o.menu ? 'var(--c-accent-bg)' : 'var(--c-surface)', color: o.menu ? 'var(--c-accent-text)' : 'var(--c-n2)', fontSize: 13, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 7, fontFamily: 'inherit' },
+        feedPad: mob ? '14px 12px 6px' : '18px 24px 8px', compPad: mob ? '8px 12px 14px' : '10px 24px 16px' };
+    };
+    const bannerOf = (tone, title, text, o = {}) => ({ title, text, color: TONE[tone][2], icon: o.icon || I.info, seg: o.seg || null, style: { flex: 'none', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 20px', background: TONE[tone][0], borderBottom: `1px solid ${TONE[tone][1]}` } });
+    const seg = (a) => ['Проверка', 'Настоящее выполнение'].map((l, i) => ({ label: l, style: { height: 26, padding: '0 10px', borderRadius: 7, display: 'inline-flex', alignItems: 'center', fontSize: 12, fontWeight: 600, background: i === a ? 'var(--c-surface)' : 'transparent', color: i === a ? 'var(--c-n1)' : 'var(--c-n3)', boxShadow: i === a ? '0 1px 2px rgba(0,0,0,.08)' : 'none' } }));
+    const LEAD_DONE = [step('done', 'Создать лид · Битрикс24', 'Лид №4821 создан'), step('done', 'Связать лид с диалогом', 'Ссылка на лид — в карточке контакта')];
+    const LINK_LEAD = [{ name: 'Лид №4821', svc: 'Битрикс24' }];
+
+    const frames = [
+      frame('L1', 'Действия в шапке диалога', 'меню «Действия» показывает только доступное в этом диалоге; недоступное — приглушено с причиной и способом исправить', { menu: true }),
+      frame('L2', 'Запуск сценария: параметры', 'панель заменяет карточку контакта; значения из диалога подставлены и подписаны; заранее видно, что произойдёт', { panel: launch({ kicker: 'Сценарий · Битрикс24 · Отдел продаж', title: 'Создать лид из диалога', plan: [{ n: '1', t: 'Создать лид в Битрикс24 · Отдел продаж' }, { n: '2', t: 'Сохранить ссылку на лид у диалога' }], fields: LEAD_FIELDS(false), footNote: 'Будет создана запись в Битрикс24. Клиент ничего не получит.', cta: 'Запустить' }) }),
+      frame('L3', 'Запуск: не заполнено обязательное поле', 'кнопка неактивна, поле подсвечено; остальные значения сохранены', { panel: launch({ kicker: 'Сценарий · Битрикс24 · Отдел продаж', title: 'Создать лид из диалога', plan: [{ n: '1', t: 'Создать лид в Битрикс24 · Отдел продаж' }, { n: '2', t: 'Сохранить ссылку на лид у диалога' }], fields: LEAD_FIELDS(true), footNote: 'Заполните обязательные поля.', cta: 'Запустить', off: true }) }),
+      frame('L4', 'Операция: первый поиск клиента', 'связи с Mindbox ещё нет — ищем по данным контакта; связь сохранится только после выбора клиента', { panel: launch({ kicker: MB, title: 'Найти клиента Mindbox', plan: [{ n: '1', t: 'Найти клиента в Mindbox' }, { n: '2', t: 'Связать выбранного клиента с контактом' }], fields: [fld('Искать по', 'Телефону'), fld('Телефон', '+7 916 204-18-33', 'из контакта · можно изменить')], footNote: 'Только чтение. В Mindbox ничего не меняется.', cta: 'Найти' }) }),
+      frame('L4b', 'Найдено несколько', 'сотрудник выбирает нужную запись по отличающим данным; автоматически ничего не связывается', { panel: launch({ kicker: MB, title: 'Найти клиента Mindbox', plan: [{ n: '✓', t: 'Найдено 2 клиента с телефоном +7 916 204-18-33' }, { n: '2', t: 'Связать выбранного клиента с контактом' }], fields: [], candTitle: 'Какой из них — Марина Белова?', cands: [cand('Марина Белова', 'm.belova@mail.example · 7 заказов, последний 12 окт · ID 58213', true), cand('М. Белова', 'без почты · 1 заказ, март 2024 · ID 31907', false)], footNote: 'Связь сохранится у контакта — в следующий раз выбирать не придётся.', cta2: 'Искать иначе', cta: 'Связать с контактом' }) }),
+      frame('L4c', 'Ничего не найдено', 'можно искать по другому полю; создание клиента — отдельная операция, если администратор её включил', { panel: launch({ kicker: MB, title: 'Найти клиента Mindbox', plan: [{ n: '1', t: 'Найти клиента в Mindbox' }, { n: '2', t: 'Связать выбранного клиента с контактом' }], nores: { title: 'Клиента с телефоном +7 916 204-18-33 нет', text: 'Попробуйте найти по почте — она подставлена из контакта.' }, fields: [fld('Искать по', 'Почте'), fld('Почта', 'm.belova@mail.example', 'из контакта · можно изменить')], footNote: '«Создать клиента» запишет новую запись в Mindbox и сразу свяжет её с контактом.', cta2: 'Создать клиента', cta: 'Искать снова' }) }),
+      frame('L4d', 'Клиент связан', 'повторный запуск сразу использует сохранённую связь; если выбран не тот клиент — меню записи в «Связанных записях» (L4e, L4f)', { panel: launch({ kicker: MB, title: 'Найти клиента Mindbox', plan: [{ n: '1', t: 'Прочитать данные связанного клиента' }], fields: [fld('Клиент', 'Марина Белова · ID 58213', 'связь сохранена 14:10')], resultTitle: 'Данные клиента', result: [{ k: 'Имя', v: 'Марина Белова' }, { k: 'Статус', v: 'Постоянный клиент' }, { k: 'Заказов', v: '7' }], footNote: 'Только чтение. В Mindbox ничего не меняется.', cta: 'Обновить' }), }),
+      frame('L4e', 'Ошибочная связь: меню', 'у каждой связанной записи есть меню: открыть, связать с другой, снять. Видно, кто и когда связал', { panel: contact({ links: [{ name: 'М. Белова · ID 31907', svc: 'Mindbox', sub: 'связала Анна Ким · сегодня, 14:10', menu: true }, { name: 'Лид №4821', svc: 'Битрикс24', sub: 'запуск №1042' }] }) }),
+      frame('L4f', 'Связать с другой записью', 'поиск тот же, что при первой связи; текущая запись исключена из вариантов. Идущие запуски дорабатывают со старой связью', { panel: launch({ kicker: 'Связанная запись · Mindbox · Интернет-магазин', title: 'Связать с другим клиентом', plan: [{ n: '1', t: 'Снять связь с «М. Белова · ID 31907»' }, { n: '2', t: 'Связать выбранного клиента с контактом' }], fields: [fld('Искать по', 'Почте'), fld('Почта', 'm.belova@mail.example', 'из контакта · можно изменить')], candTitle: 'Найдено', cands: [cand('Марина Белова', 'm.belova@mail.example · 7 заказов · ID 58213', true)], footNote: 'В Mindbox ничего не меняется. Новые запуски сразу будут работать с выбранным клиентом. Замена попадёт в историю контакта.', cta: 'Заменить связь' }) }),
+      frame('L5', 'Нет доступных действий', 'пустое состояние в карточке; кнопка «Действия» в шапке скрыта', { panel: contact({ empty: true }), head: { act: false } }),
+      frame('R1', 'Выполняется', 'карточка запуска в ленте; первый шаг готов, второй выполняется; «Подробнее» открывает страницу запуска — она доступна всем, кто видит диалог', { feed: [...BASE, run('Создать лид из диалога', 1042, 'acc', 'Выполняется', [step('done', 'Создать лид · Битрикс24', 'Лид №4821 создан'), step('run', 'Связать лид с диалогом')], { btns: [btn('Подробнее', 'l')], foot: '14:05' })] }),
+      frame('R2', 'Успешно завершено', 'результат шагов коротко; ссылка на запись появилась в карточке контакта', { feed: [...BASE, run('Создать лид из диалога', 1042, 'ok', 'Готово', LEAD_DONE, { btns: [btn('Открыть лид', ''), btn('Подробнее', 'l')], foot: '14:05' })], panel: contact({ links: LINK_LEAD }) }),
+      frame('R3', 'Ошибка и частичное выполнение', 'первый шаг выполнен и не откатывается; второй не удался — видна причина и что можно сделать', { feed: [...BASE, run('Создать лид из диалога', 1043, 'warn', 'Выполнено частично', [step('done', 'Создать лид · Битрикс24', 'Лид №4822 создан'), step('err', 'Связать лид с диалогом', 'Диалог закрыт до завершения шага', 'err')], { note: 'Лид создан и остаётся в Битрикс24. Продолжение выполнит только незавершённый шаг.', btns: [btn('Продолжить', 'p'), btn('Подробнее', 'l')], foot: '14:06' })] }),
+      frame('R4', 'Результат неизвестен', 'сервис не ответил после отправки. Нет кнопки «Повторить» — сначала проверка результата в сервисе', { feed: [...BASE, run('Создать лид из диалога', 1044, 'warn', 'Результат неизвестен', [step('unk', 'Создать лид · Битрикс24', 'Запрос отправлен, ответ не получен. Лид мог быть создан.', 'warn'), step('pend', 'Связать лид с диалогом', 'Ждёт проверки предыдущего шага')], { note: 'Повтор может создать второй лид. Проверьте результат — Chatballs найдёт лид по этому запуску, если он создан.', btns: [btn('Проверить в Битрикс24', 'p'), btn('Подробнее', 'l')], foot: '14:07' })] }),
+      frame('R5', 'Ожидает', 'сценарий ждёт ответа клиента; ожидание не занимает сотрудника и видно с указанием срока', { feed: [...BASE, run('Уточнить мерки и создать заказ', 1045, 'warn', 'Ожидает', [step('done', 'Отправить клиенту форму мерок'), step('wait', 'Подождать ответ клиента', 'Не дольше 1 дня · до 23 окт, 14:08', 'warn'), step('pend', 'Создать заказ · Битрикс24')], { btns: [btn('Отменить запуск', ''), btn('Подробнее', 'l')], foot: '14:08' })] }),
+      frame('R6', 'Подключение недоступно', 'доступ к сервису отозван — запуск остановлен до восстановления; ничего не выполнено', { feed: [...BASE, run('Создать сделку из диалога', 1046, 'err', 'Нет доступа к сервису', [step('err', 'Создать сделку · amoCRM', 'Доступ к amoCRM · Розница отозван. Сделка не создана.', 'err'), step('skip', 'Связать сделку с диалогом', 'Не выполнялся')], { btns: [btn('Подробнее', 'l')], foot: 'Восстановить доступ может администратор' })] }),
+      frame('C1', 'ИИ просит подтвердить', 'точное действие, подключение, параметры и контекст; срок подтверждения. Подтверждает уполномоченный сотрудник', { head: { sub: 'Web Chat · ведёт агент «Поддержка сайта»' }, feed: [...BASE_AI, confirm('ai', 'Ждёт решения', { note: 'Подтверждение относится только к этим значениям. Действует до 14:33 (30 мин).', btns: [btn('Подтвердить', 'ai'), btn('Изменить', ''), btn('Отклонить', 'd')], foot: '14:03' })], comp: 'Ответ клиенту…' }),
+      frame('C2', 'Подтверждено → выполняется', 'после подтверждения карточка становится карточкой запуска с тем же номером', { head: { sub: 'Web Chat · ведёт агент «Поддержка сайта»' }, feed: [...BASE_AI, run('Создать сделку · amoCRM · Розница', 1047, 'acc', 'Выполняется', [step('done', 'Подтвердила Елена Кузнецова · 14:04'), step('run', 'Создать сделку · amoCRM')], { ai: true, by: 'запустил агент', btns: [btn('Подробнее', 'l')], foot: '14:04' })] }),
+      frame('C3', 'Отклонено, истёк срок, изменены параметры', 'действие не выполнялось; при изменении значимого параметра нужно новое подтверждение', { head: { sub: 'Web Chat · ведёт агент «Поддержка сайта»' }, feed: [
+        confirm('n', 'Отклонено', { rows: P_DEAL.slice(0, 3), note: 'Отклонила Елена Кузнецова в 14:05. Агент сообщит клиенту, что заявку оформит сотрудник.', foot: '14:05' }),
+        confirm('n', 'Срок истёк', { rows: P_DEAL.slice(0, 3), note: 'Никто не подтвердил до 14:33. Действие не выполнялось.', foot: '14:33' }),
+        confirm('warn', 'Нужно новое подтверждение', { rows: [['Действие', 'Создать сделку'], ['Воронка', 'Партнёры · Новый партнёр', true], ['Ответственный', 'Дмитрий Орлов', true]], note: 'Агент изменил воронку и ответственного. Прежнее подтверждение больше не действует.', btns: [btn('Подтвердить', 'ai'), btn('Отклонить', 'd')], foot: '14:12' }),
+      ] }),
+      frame('C4', 'Уже обработано / нет права подтверждать', 'другой сотрудник успел подтвердить; у сотрудника без полномочий кнопок нет — видно, кто может решить', { head: { sub: 'Web Chat · вы участник' }, feed: [...BASE_AI,
+        confirm('ok', 'Подтверждено', { rows: P_DEAL.slice(0, 3), note: 'Анна Ким подтвердила в 14:04, пока вы смотрели карточку. Повторно подтверждать не нужно.', foot: '14:04' }),
+        confirm('ai', 'Ждёт решения', { rows: P_DEAL.slice(0, 3), note: 'Подтвердить может ответственный за диалог или администратор. Вы видите запрос как участник.', noteTone: 'n', foot: 'до 14:41' }),
+      ] }),
+      frame('C5', '«Изменить» перед подтверждением', 'сотрудник правит значения в панели; изменённые поля выделены; подтверждение относится к новым значениям', { head: { sub: 'Web Chat · ведёт агент «Поддержка сайта»' }, feed: [...BASE_AI, confirm('ai', 'Изменяется', { rows: P_DEAL.slice(0, 5), note: 'Вы редактируете запрос в панели справа. Другие сотрудники видят, что запрос занят.', foot: 'до 14:33' })],
+        panel: launch({ kicker: 'Подтверждение · amoCRM · Розница', title: 'Создать сделку', plan: [{ n: '1', t: 'Создать сделку в amoCRM · Розница' }, { n: '2', t: 'Сохранить ссылку на сделку у диалога' }], fields: [fld('Название', 'Пальто на заказ — Марина Белова', 'предложил агент'), fld('Воронка', 'Продажи · Квалификация', 'изменено вами · было «Первичный контакт»', { ch: true }), fld('Ответственный', 'Анна Ким', 'предложил агент')], footNote: 'Агент узнает о ваших изменениях и не будет предлагать прежние значения. Разрешены только поля, которые агент может передать.', cta2: 'Сбросить', cta: 'Подтвердить с изменениями' }) }),
+      frame('C6', 'Подтверждено с изменениями', 'в карточке видно, что именно изменил сотрудник; дальше — обычная карточка запуска', { head: { sub: 'Web Chat · ведёт агент «Поддержка сайта»' }, feed: [...BASE_AI, confirm('ok', 'Подтверждено с изменениями', { rows: [['Действие', 'Создать сделку'], ['Название', 'Пальто на заказ — Марина Белова'], ['Воронка', 'Продажи · Квалификация', true], ['Ответственный', 'Анна Ким']], note: 'Елена Кузнецова изменила воронку и подтвердила в 14:06.', foot: '14:06' }), run('Создать сделку · amoCRM · Розница', 1048, 'acc', 'Выполняется', [step('run', 'Создать сделку · amoCRM'), step('pend', 'Связать сделку с диалогом')], { ai: true, by: 'запустил агент', btns: [btn('Подробнее', 'l')], foot: '14:06' })] }),
+      frame('A1', 'Сотрудник забрал диалог у ИИ во время выполнения', 'операция завершается и её результат сохраняется; ИИ не отправляет клиенту поздний ответ', { head: { sub: 'Web Chat · ведёте вы' }, feed: [...BASE_AI, sys('Вы забрали диалог у агента · 14:05', 'acc', I.user), run('Создать сделку · amoCRM · Розница', 1047, 'ok', 'Готово', [step('done', 'Создать сделку · amoCRM', 'Сделка №9310 создана'), step('skip', 'Ответ клиенту от агента', 'Не отправлен — диалог ведёте вы')], { ai: true, by: 'запустил агент', btns: [btn('Открыть сделку', ''), btn('Подробнее', 'l')], foot: '14:06' })], comp: 'Ответьте клиенту сами — агент ему не напишет' }),
+      frame('T1', 'Проверочный чат: проверка', 'в режиме проверки агент только описывает, что сделал бы. Во внешних сервисах ничего не меняется', { list: false, panel: null, head: { title: 'Проверка агента «Поддержка сайта»', sub: 'Сообщения видите только вы', act: false }, banner: bannerOf('acc', 'Проверка.', 'Действия не выполняются — показано, что сделал бы агент.', { seg: seg(0) }), feed: [msg('me', 'Хочу заказать пальто по моим меркам', '15:10'), card({ ai: true, icon: I.robot, title: 'Агент выполнил бы: Создать сделку', sub: 'amoCRM · Розница · с подтверждением сотрудника', tone: 'n', pill: 'Не выполнялось', params: params(P_DEAL.slice(2, 5)), foot: '15:10' }), msg('ai', 'Оформлю заявку и передам менеджеру. Удобно, если вам позвонят после 18:00?', '15:10')] }),
+      frame('T2', 'Проверочный чат: настоящее выполнение', 'переключение требует явного выбора; баннер предупреждает, что запись во внешний сервис реальна', { list: false, panel: null, head: { title: 'Проверка агента «Поддержка сайта»', sub: 'Сообщения видите только вы', act: false }, banner: bannerOf('warn', 'Настоящее выполнение.', 'Действия агента изменят данные в подключённых сервисах.', { icon: I.warning, seg: seg(1) }), feed: [msg('me', 'Хочу заказать пальто по моим меркам', '15:12'), run('Создать сделку · amoCRM · Розница', 1050, 'ok', 'Готово', [step('done', 'Создать сделку · amoCRM', 'Сделка №9311 создана — настоящая запись')], { ai: true, by: 'проверочный чат', btns: [btn('Открыть сделку', ''), btn('Подробнее', 'l')], foot: '15:12' })] }),
+      frame('M1', 'Мобильный · подтверждение', 'та же карточка в ленте со всеми значимыми параметрами, включая ответственного; кнопки решения — внизу карточки', { mob: true, head: { sub: 'Ведёт агент' }, feed: [msg('c', 'После 18:00, номер тот же.', '14:03'), confirm('ai', 'Ждёт решения', { rows: P_DEAL.slice(0, 5), note: 'Действует до 14:33.', btns: [btn('Подтвердить', 'ai'), btn('Изменить', ''), btn('Отклонить', 'd')] })] }),
+      frame('M2', 'Мобильный · запуск', 'параметры — в нижней панели; значения из диалога подписаны', { mob: true, sheet: { title: 'Создать лид из диалога', sub: 'Битрикс24 · Отдел продаж · 2 шага', fields: LEAD_FIELDS(false).slice(0, 3), cta: 'Запустить' } }),
+      frame('M3', 'Мобильный · выполнение', 'карточка запуска в ленте; «Подробнее» открывает подробности прямо в чате (M4)', { mob: true, feed: [...BASE, run('Создать лид из диалога', 1042, 'acc', 'Выполняется', [step('done', 'Создать лид · Битрикс24'), step('run', 'Связать лид с диалогом')], { btns: [btn('Подробнее', 'l')] })] }),
+      frame('M4', 'Мобильный · подробности запуска', 'подробности запуска видны всем, кто видит диалог. Журнал всей организации — только администраторам', { mob: true, feed: [...BASE, run('Создать лид из диалога', 1043, 'warn', 'Выполнено частично', [step('done', 'Создать лид · Битрикс24'), step('err', 'Связать лид с диалогом')], { btns: [btn('Подробнее', 'l')] })],
+        sheet: { title: 'Запуск №1043', pill: 'Частично', pillStyle: pill('warn'), sub: 'Создать лид из диалога · запустили вы, 14:06', fields: [], steps: [step('done', 'Создать лид · Битрикс24', 'Лид №4822 создан'), step('err', 'Связать лид с диалогом', 'Диалог закрыли до завершения шага. Лид остаётся в Битрикс24.', 'err')], meta: [{ k: 'Версия сценария', v: 'от 20 окт' }, { k: 'Кто видит', v: 'Участники диалога, администраторы' }], cta: 'Продолжить' } }),
+    ];
+    const only = (this.props.frame || '').trim().toUpperCase();
+    const dialogs = [['МБ', '#2aa876', 'Марина Белова', 'Пальто на заказ', '14:04', true], ['ИП', '#c2703f', 'Игорь Петров', 'Когда будет готов заказ?', '13:40'], ['ОС', '#7d5ba6', 'Ольга Смирнова', 'Спасибо!', '12:12'], ['НК', '#3f7ec2', 'Никита Ким', 'Фото ткани приложил', 'вчера']].map(([ini, av, name, preview, time, sel]) => ({ ini, av, name, preview, time,
+      style: { display: 'flex', gap: 11, padding: '11px 14px 11px 16px', borderBottom: '1px solid var(--c-n9)', background: sel ? 'var(--c-accent-bg)' : 'transparent' } }));
+    const G = this.state.group;
+    const GROUPS = [['L', 'Запуск'], ['R', 'Выполнение и сбои'], ['CAT', 'ИИ: подтверждения и проверка'], ['M', 'Мобильные']];
+    const inG = f => GROUPS.find(g => g[0] === G)[0].includes(f.id[0]);
+    const groups = GROUPS.map(([k, l]) => ({ label: l, count: frames.filter(f => k.includes(f.id[0])).length, pick: () => this.setState({ group: k }),
+      style: { height: 30, padding: '0 12px', borderRadius: 7, border: 'none', background: k === G ? 'var(--c-surface)' : 'transparent', color: k === G ? 'var(--c-n1)' : 'var(--c-n3)', boxShadow: k === G ? '0 1px 2px rgba(0,0,0,.08)' : 'none', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' } }));
+    return { themeVars, dialogs, actions: ACTS('lead'), groups, frames: only ? frames.filter(f => f.id === only) : frames.filter(inG), index: frames.filter(inG).map(f => ({ id: f.id, title: f.title, href: '#' + f.id })) };
+  }
+}
+</script>
+</body>
+</html>

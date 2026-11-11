@@ -1,8 +1,9 @@
 ---
 id: "0004"
 title: Согласие клиента и минимизация данных для LLM
-status: accepted
+status: superseded
 date: 2026-09-28
+replaced_by: "0031"
 ---
 
 ## Контекст

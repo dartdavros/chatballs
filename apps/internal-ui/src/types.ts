@@ -134,7 +134,7 @@ export type EmployeeAuditEvent = {
   createdAt: string;
 };
 
-export type RouteKey = "skills" | "ruleJournal" | "qualityAnalysis" | "supportReports" | "replyTemplates" | "administrationAudit" | "employeeDetail" | "employees" | "profile" | "settings" | "webIntegrationSettings" | "mcpServerCreate" | "httpServerCreate" | "integrationServers" | "serviceIntegrations" | "serviceConnection" | "salesClientDetail" | "salesClients" | "chat" | "supportPortals" | "supportPortalDetail" | "supportPortalSettings" | "agents" | "agentDetail" | "knowledge" | "knowledgeDetail" | "knowledgeCreate" | "knowledgeEdit" | "knowledgeCategories" | "knowledgeImport" | "aiUsage" | "organizationCreate";
+export type RouteKey = "skills" | "ruleJournal" | "qualityAnalysis" | "supportReports" | "replyTemplates" | "administrationAudit" | "employeeDetail" | "employees" | "profile" | "settings" | "aiProviders" | "scenarios" | "widgets" | "messengers" | "emailIntegrations" | "webIntegrationSettings" | "externalServerSettings" | "legacyIntegrationSettings" | "mcpServerCreate" | "httpServerCreate" | "integrationServers" | "serviceIntegrations" | "serviceConnection" | "salesClientDetail" | "salesClients" | "chat" | "supportPortals" | "supportPortalDetail" | "supportPortalSettings" | "agents" | "agentDetail" | "knowledge" | "knowledgeDetail" | "knowledgeCreate" | "knowledgeEdit" | "knowledgeCategories" | "knowledgeImport" | "aiUsage" | "organizationCreate";
 
 export type AppData = {
   groups: EmployeeGroup[];

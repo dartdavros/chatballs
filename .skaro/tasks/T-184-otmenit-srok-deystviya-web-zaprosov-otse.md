@@ -8,6 +8,7 @@ order: 6
 spec: "0032"
 created: 2026-11-05
 branch: skaro/T-184-otmenit-srok-deystviya-web-zap
+archived: true
 ---
 
 ## Цель

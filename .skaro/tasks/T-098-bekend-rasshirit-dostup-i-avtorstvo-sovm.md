@@ -11,6 +11,7 @@ order: 3
 spec: "0026"
 created: 2026-10-07
 branch: skaro/T-098-bekend-realizovat-sovmestnuyu
+archived: true
 ---
 
 ## Цель

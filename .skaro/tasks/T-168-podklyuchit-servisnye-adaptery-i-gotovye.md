@@ -10,7 +10,9 @@ order: 3
 spec: "0037"
 created: 2026-10-17
 branch: skaro/T-168-podklyuchit-servisnye-adaptery
+archived: true
 ---
+
 
 ## Цель
 

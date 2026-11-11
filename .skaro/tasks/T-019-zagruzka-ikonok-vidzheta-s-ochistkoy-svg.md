@@ -8,6 +8,7 @@ order: 1
 spec: "0021"
 created: 2026-09-29
 branch: skaro/T-019-zagruzka-ikonok-vidzheta-s-och
+archived: true
 ---
 
 ## Цель

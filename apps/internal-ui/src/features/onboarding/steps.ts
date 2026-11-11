@@ -30,8 +30,9 @@ export type TourTarget =
   | "nav-agents"
   | "nav-knowledge"
   | "nav-employees"
-  | "settings-ai"
-  | "settings-integrations"
+  | "nav-ai-providers"
+  | "nav-messengers"
+  | "nav-widgets"
   | "settings-platform"
   | "chat-list";
 
@@ -87,7 +88,7 @@ const STEPS: OnboardingStep[] = [
       chip: t("onboarding.s1.chip"),
       tone: "success",
     },
-    target: { route: "settings", section: "ai", element: "settings-ai", title: t("onboarding.s1.tour_title"), text: t("onboarding.s1.tour_text") },
+    target: { route: "aiProviders", element: "nav-ai-providers", title: t("onboarding.s1.tour_title"), text: t("onboarding.s1.tour_text") },
   },
   {
     key: "agentActive",
@@ -150,7 +151,7 @@ const STEPS: OnboardingStep[] = [
       chip: t("onboarding.s4.chip"),
       tone: "success",
     },
-    target: { route: "settings", section: "integrations", element: "settings-integrations", title: t("onboarding.s4.tour_title"), text: t("onboarding.s4.tour_text") },
+    target: { route: "messengers", element: "nav-messengers", title: t("onboarding.s4.tour_title"), text: t("onboarding.s4.tour_text") },
   },
   {
     key: "widgetPublished",
@@ -169,7 +170,7 @@ const STEPS: OnboardingStep[] = [
       // Тег ровно тот, что выдаёт раздел виджета, — с образцовым ключом.
       code: webWidgetSnippet("wgt_9f2c41d8"),
     },
-    target: { route: "settings", section: "integrations", element: "settings-integrations", title: t("onboarding.s5.tour_title"), text: t("onboarding.s5.tour_text") },
+    target: { route: "widgets", element: "nav-widgets", title: t("onboarding.s5.tour_title"), text: t("onboarding.s5.tour_text") },
   },
   {
     key: "employeeInvited",

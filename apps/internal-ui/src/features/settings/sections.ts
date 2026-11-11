@@ -15,9 +15,6 @@ export type SettingsSectionKey =
   | "templates"
   | "ratings"
   | "quality"
-  | "ai"
-  | "integrations"
-  | "scenarios"
   | "communication"
   | "storage"
   | "platform"
@@ -53,7 +50,7 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
   {
     key: "queue",
     label: t("settings.when_to_call_for_help"),
-    icon: "clock",
+    icon: "bell",
     heading: t("settings.when_to_call_for_help"),
     lead: t("settings.queue_section_lead"),
   },
@@ -89,30 +86,9 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
   {
     key: "quality",
     label: t("quality.title"),
-    icon: "sparkles",
+    icon: "check",
     heading: t("quality.title"),
     lead: t("quality.lead"),
-  },
-  {
-    key: "ai",
-    label: t("settings.ai_provider"),
-    icon: "sparkles",
-    heading: t("settings.ai_provider"),
-    lead: t("settings.organization_s_keys_agent_replies"),
-  },
-  {
-    key: "integrations",
-    label: t("common.integrations"),
-    icon: "plug",
-    heading: t("common.integrations"),
-    lead: t("services.section_lead"),
-  },
-  {
-    key: "scenarios",
-    label: t("scenarios.title"),
-    icon: "refresh",
-    heading: t("scenarios.title"),
-    lead: t("scenarios.lead"),
   },
   {
     key: "communication",
@@ -132,7 +108,7 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
   {
     key: "platform",
     label: t("settings.platform"),
-    icon: "globe",
+    icon: "serverCog",
     heading: t("settings.platform"),
     lead: t("settings.properties_installation_itself_address_opened"),
     instanceOnly: true,

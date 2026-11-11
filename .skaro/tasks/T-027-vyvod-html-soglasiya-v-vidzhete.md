@@ -9,6 +9,7 @@ order: 3
 spec: "0020"
 created: 2026-10-02
 branch: skaro/T-027-vyvod-html-soglasiya-v-vidzhet
+archived: true
 ---
 
 ## Цель

@@ -9,6 +9,7 @@ order: 2
 spec: "0024"
 created: 2026-10-06
 branch: skaro/T-051-frontend-dobavit-nastroyku-pom
+archived: true
 ---
 
 ## Цель

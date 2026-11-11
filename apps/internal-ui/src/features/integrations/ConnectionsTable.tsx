@@ -25,9 +25,10 @@ type ConnectionsTableProps = {
   onEdit: (integration: Integration) => void;
   onToggleActive: (integration: Integration) => void;
   onDelete: (integration: Integration) => void;
+  context?: "channels" | "servers";
 };
 
-export function ConnectionsTable({ items, testingId, onTest, onEdit, onToggleActive, onDelete }: ConnectionsTableProps) {
+export function ConnectionsTable({ items, testingId, onTest, onEdit, onToggleActive, onDelete, context }: ConnectionsTableProps) {
   return (
     <>
       <div className="table-card">
@@ -35,7 +36,7 @@ export function ConnectionsTable({ items, testingId, onTest, onEdit, onToggleAct
           <thead>
             <tr>
               <th>{t("settings.title")}</th>
-              <th>{t("servers.agent_tools")}</th>
+              <th>{t(context === "servers" ? "ai.tools" : context === "channels" ? "navigation.routing" : "servers.agent_tools")}</th>
               <th>{t("common.status_2")}</th>
               <th />
             </tr>
@@ -69,7 +70,7 @@ export function ConnectionsTable({ items, testingId, onTest, onEdit, onToggleAct
           </tbody>
         </table>
       </div>
-      <p className="integrations-list-note">{t("servers.list_note")}</p>
+      {context !== "channels" && <p className="integrations-list-note">{t("servers.list_note")}</p>}
     </>
   );
 }

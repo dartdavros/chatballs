@@ -10,6 +10,7 @@ order: 5
 spec: "0024"
 created: 2026-10-07
 branch: skaro/T-084-bekend-realizovat-polnyy-tsikl
+archived: true
 ---
 
 ## Цель

@@ -32,7 +32,7 @@ export function AgentToolsCard({ tools, modelWarning, canManage, canOpenServers,
       <div className="agent-card-head is-tight">
         <div><h3>{t("ai.tools")}</h3>{servers && <small>{toolsLine(servers)}</small>}</div>
         {canOpenServers && servers && (
-          <button className="link has-icon" type="button" onClick={openIntegrations}>{t("common.integrations")}<Icon name="external" size={13} strokeWidth={2.2} /></button>
+          <button className="link has-icon" type="button" onClick={openIntegrations}>{t("navigation.tools")}<Icon name="external" size={13} strokeWidth={2.2} /></button>
         )}
       </div>
       <p>{t("ai.tools_about")}</p>

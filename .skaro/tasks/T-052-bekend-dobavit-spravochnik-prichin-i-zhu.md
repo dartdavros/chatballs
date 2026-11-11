@@ -8,6 +8,7 @@ order: 1
 spec: "0025"
 created: 2026-10-06
 branch: skaro/T-052-bekend-dobavit-spravochnik-pri
+archived: true
 ---
 
 ## Цель

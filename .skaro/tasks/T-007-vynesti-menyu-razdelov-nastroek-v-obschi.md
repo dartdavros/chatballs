@@ -8,6 +8,7 @@ order: 1
 spec: "0002"
 created: 2026-09-29
 branch: skaro/T-007-vynesti-menyu-razdelov-nastroe
+archived: true
 ---
 
 ## Цель

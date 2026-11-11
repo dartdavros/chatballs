@@ -8,6 +8,7 @@ order: 2
 spec: "0031"
 created: 2026-10-06
 branch: skaro/T-075-bekend-dobavit-servernye-nably
+archived: true
 ---
 
 ## Цель

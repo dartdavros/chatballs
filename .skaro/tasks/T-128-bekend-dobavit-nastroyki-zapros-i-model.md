@@ -11,6 +11,7 @@ order: 1
 spec: "0032"
 created: 2026-10-07
 branch: skaro/T-128-bekend-realizovat-zapros-priem
+archived: true
 ---
 
 ## Цель

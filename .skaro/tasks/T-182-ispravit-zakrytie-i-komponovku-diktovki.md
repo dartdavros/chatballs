@@ -8,6 +8,7 @@ order: 4
 spec: "0039"
 created: 2026-11-05
 branch: skaro/T-182-ispravit-zakrytie-i-komponovku
+archived: true
 ---
 
 ## Цель

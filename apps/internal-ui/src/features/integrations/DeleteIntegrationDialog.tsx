@@ -28,7 +28,7 @@ export function DeleteIntegrationDialog({ integration, onClose, onDeleted }: {
   }
 
   return (
-    <Modal open title={t("settings.delete_integration")} onCancel={onClose} footer={null} destroyOnClose>
+    <Modal open title={t("services.delete_title")} onCancel={onClose} footer={null} destroyOnClose>
       <div className="integration-form">
         <p>{t("settings.will_be_deleted_irreversible", { name: integration.name })}</p>
         {error && <div className="integration-form-error">{error}</div>}

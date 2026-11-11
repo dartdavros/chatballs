@@ -8,6 +8,7 @@ order: 1
 spec: "0019"
 created: 2026-09-29
 branch: skaro/T-009-shema-svoih-poley-v-konfigurat
+archived: true
 ---
 
 ## Цель

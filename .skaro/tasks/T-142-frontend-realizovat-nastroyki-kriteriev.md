@@ -9,6 +9,7 @@ order: 6
 spec: "0033"
 created: 2026-10-07
 branch: skaro/T-142-frontend-realizovat-nastroyki
+archived: true
 ---
 
 ## Цель

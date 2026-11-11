@@ -8,6 +8,7 @@ order: 1
 spec: "0029"
 created: 2026-10-06
 branch: skaro/T-062-bekend-dobavit-rol-i-podkontro
+archived: true
 ---
 
 ## Цель

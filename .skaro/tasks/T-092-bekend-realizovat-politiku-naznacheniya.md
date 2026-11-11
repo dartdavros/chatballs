@@ -12,6 +12,7 @@ order: 3
 spec: "0025"
 created: 2026-10-07
 branch: skaro/T-092-bekend-realizovat-peredachu-po
+archived: true
 ---
 
 ## Цель

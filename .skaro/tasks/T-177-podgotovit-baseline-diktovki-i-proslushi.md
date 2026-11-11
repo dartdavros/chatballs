@@ -8,6 +8,7 @@ order: 1
 spec: "0039"
 created: 2026-11-03
 branch: skaro/T-177-podgotovit-baseline-diktovki-i
+archived: true
 ---
 
 ## Цель

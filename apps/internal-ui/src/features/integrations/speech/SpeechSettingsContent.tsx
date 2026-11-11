@@ -12,7 +12,7 @@ export function SpeechSettingsContent({ initial, onBack, onSaved }: { initial: I
   const form = useSpeechConnection(initial, onSaved);
   const status = form.dirty ? "UNCHECKED" : form.connection?.status ?? "UNCHECKED";
   return <>
-    <BackLink label={t("common.connections")} onClick={onBack} />
+    <BackLink label={t("navigation.ai_providers")} onClick={onBack} />
     <header className="settings-head"><div><h2>Yandex SpeechKit</h2></div></header>
     <div className="administration-card server-form speech-connection">
       <p>{t("speech.connectHelp")}</p>

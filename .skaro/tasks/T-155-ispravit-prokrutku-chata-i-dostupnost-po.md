@@ -10,6 +10,7 @@ order: 11
 spec: "0031"
 created: 2026-10-14
 branch: skaro/T-155-ispravit-prokrutku-chata-i-dos
+archived: true
 ---
 
 ## Цель

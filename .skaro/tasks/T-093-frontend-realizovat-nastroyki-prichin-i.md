@@ -10,6 +10,7 @@ order: 4
 spec: "0025"
 created: 2026-10-07
 branch: skaro/T-093-frontend-realizovat-nastroyki
+archived: true
 ---
 
 ## Цель

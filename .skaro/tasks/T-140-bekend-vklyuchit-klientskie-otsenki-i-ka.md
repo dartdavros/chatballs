@@ -11,6 +11,7 @@ order: 10
 spec: "0030"
 created: 2026-10-07
 branch: skaro/T-140-bekend-vklyuchit-klientskie-ot
+archived: true
 ---
 
 ## Цель

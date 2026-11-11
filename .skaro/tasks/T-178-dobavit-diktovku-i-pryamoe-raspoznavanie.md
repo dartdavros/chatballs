@@ -9,6 +9,7 @@ order: 2
 spec: "0039"
 created: 2026-11-03
 branch: skaro/T-178-dobavit-diktovku-i-pryamoe-ras
+archived: true
 ---
 
 ## Цель

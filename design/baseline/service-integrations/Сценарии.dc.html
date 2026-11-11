@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+:root{--n-1:#1f1f1f;--n-2:#262626;--n-3:#595959;--n-4:#8c8c8c;--n-5:#bfbfbf;--n-6:#d9d9d9;--n-7:#e8e8e8;--n-8:#f0f0f0;--n-9:#f5f5f5;--n-10:#fafafa;--n-11:#f0f2f5;--surface-page:var(--n-11);--surface-card:#fff;--surface-sidebar:#fafafa;--surface-feed:#f5f6f8;--accent:#0f9b8e;--primary:var(--accent);--primary-hover:color-mix(in srgb,var(--accent) 88%,black);--primary-bg:color-mix(in srgb,var(--accent) 10%,var(--surface-card));--primary-border:color-mix(in srgb,var(--accent) 40%,var(--surface-card));--primary-text:color-mix(in srgb,var(--accent) 82%,black);--success-text:#237a3f;--success-bg:color-mix(in srgb,#52c41a 11%,var(--surface-card));--success-border:color-mix(in srgb,#52c41a 31%,var(--surface-card));--warning-text:#d48806;--warning-bg:color-mix(in srgb,#faad14 11%,var(--surface-card));--warning-border:color-mix(in srgb,#faad14 36%,var(--surface-card));--error:#ff4d4f;--error-text:#cf1322;--error-bg:color-mix(in srgb,#ff4d4f 11%,var(--surface-card));--error-border:color-mix(in srgb,#ff4d4f 36%,var(--surface-card));--border-default:var(--n-8);--shadow-xs:0 1px 2px rgba(0,0,0,.03);--modal-shadow:0 32px 80px -12px rgba(16,18,22,.38),0 8px 24px rgba(16,18,22,.12);--scrim:rgba(16,18,22,.55);--font-mono:"SF Mono",ui-monospace,Menlo,monospace}
+:root[data-theme=dark]{--n-1:#d6d7db;--n-2:#c3c5ca;--n-3:#9a9ca3;--n-4:#767881;--n-5:#5b5d66;--n-6:#45474f;--n-7:#37393f;--n-8:#2d2f35;--n-9:#27292e;--n-10:#212327;--n-11:#101113;--surface-page:#101113;--surface-card:#1b1c1f;--surface-sidebar:#181a1d;--surface-feed:#15161a;--primary:color-mix(in srgb,var(--accent) 84%,var(--surface-card));--primary-hover:color-mix(in srgb,var(--accent) 92%,white);--primary-bg:color-mix(in srgb,var(--accent) 16%,var(--surface-card));--primary-text:color-mix(in srgb,var(--accent) 62%,white);--success-text:#5fbf7a;--success-bg:color-mix(in srgb,#52c41a 12%,var(--surface-card));--success-border:color-mix(in srgb,#52c41a 32%,var(--surface-card));--warning-text:#d9a441;--warning-bg:color-mix(in srgb,#faad14 12%,var(--surface-card));--warning-border:color-mix(in srgb,#faad14 37%,var(--surface-card));--error-text:#ff7875;--error-bg:color-mix(in srgb,#ff4d4f 12%,var(--surface-card));--error-border:color-mix(in srgb,#ff4d4f 37%,var(--surface-card));--modal-shadow:0 32px 80px -12px rgba(0,0,0,.7),0 8px 24px rgba(0,0,0,.4);--scrim:rgba(4,5,7,.68)}
+html,body{margin:0;padding:0}
+body{background:var(--surface-page);color:var(--n-2);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased;font-size:13px;line-height:1.5}
+button,input,select{font:inherit}
+select{color:var(--n-1);background:var(--surface-card)}
+a{color:var(--primary);text-decoration:none}a:hover{color:var(--primary-hover)}
+@keyframes cb-drawer{from{transform:translateX(24px);opacity:0}to{transform:none;opacity:1}}
+</style>
+</helmet>
+<div style="padding:24px 32px 60px;min-height:100vh;box-sizing:border-box;background:var(--surface-page)">
+  <div style="display:flex;flex-direction:column;gap:10px;max-width:1440px;margin-bottom:20px">
+    <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+      <h1 style="margin:0;font-size:22px;color:var(--n-1)">Настройки · Сценарии</h1>
+      <span style="color:var(--n-3)">Общий список и редактор «Запуск → Условия → Шаги». Шаг настраивается в боковой панели. Данные — примеры.</span>
+      <a href="Сервисы.dc.html" style="font-size:12.5px;font-weight:600">← Сервисы</a>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <sc-for list="{{ jumps }}" as="j" hint-placeholder-count="8">
+        <button onClick="{{ j.go }}" style="height:28px;padding:0 10px;border:1px solid var(--n-7);border-radius:7px;background:var(--surface-card);color:var(--n-2);font-size:12.5px;font-weight:500;cursor:pointer" style-hover="color:var(--primary);border-color:var(--primary)">{{ j.label }}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <div data-screen-label="Сценарии" style="position:relative;width:1440px;height:900px;display:flex;background:var(--surface-card);border-radius:6px;overflow:hidden;box-shadow:0 2px 12px #00000014">
+    <aside style="width:220px;height:100%;display:flex;flex:none;flex-direction:column;background:var(--surface-sidebar);border-right:1px solid var(--n-8)">
+      <div style="height:56px;display:flex;align-items:center;gap:10px;padding:14px 14px 10px;box-sizing:border-box">
+        <span style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;flex:none"><img src="assets/chatballs-logo.svg" alt="" style="width:28px;height:auto"></span>
+        <div style="flex:1;min-width:0;height:32px;display:flex;align-items:center;justify-content:space-between;gap:6px;padding:0 6px 0 8px;color:var(--n-1);font-size:14px;font-weight:700"><span>Ателье Норд</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--n-4)"><polyline points="6 9 12 15 18 9"></polyline></svg></div>
+      </div>
+      <nav style="flex:1;display:flex;flex-direction:column;gap:2px;padding:4px 10px 8px">
+        <sc-for list="{{ nav }}" as="n" hint-placeholder-count="6">
+          <div style="display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;color:var(--n-2);border-radius:8px;font-size:13.5px;font-weight:500"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="{{ n.d }}"></path></svg><span>{{ n.label }}</span></div>
+        </sc-for>
+        <div style="height:1px;margin:6px;background:var(--n-8)"></div>
+        <div style="display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;color:var(--n-2);border-radius:8px;font-size:13.5px;font-weight:500"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3h6a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM15 3h6a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM15 14h6a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-6a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1zM4 14h6a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1z"></path></svg><span>Статистика</span></div>
+        <div style="display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;color:var(--primary-text);background:var(--primary-bg);border-radius:8px;font-size:13.5px;font-weight:600"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="6" x2="9" y2="6"></line><line x1="3" y1="6" x2="5" y2="6"></line><circle cx="7" cy="6" r="2"></circle><line x1="21" y1="12" x2="13" y2="12"></line><line x1="3" y1="12" x2="9" y2="12"></line><circle cx="11" cy="12" r="2"></circle><line x1="21" y1="18" x2="15" y2="18"></line><line x1="3" y1="18" x2="11" y2="18"></line><circle cx="13" cy="18" r="2"></circle></svg><span>Настройки</span></div>
+        <div style="display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;color:var(--n-2);border-radius:8px;font-size:13.5px;font-weight:500"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zM9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01"></path></svg><span style="flex:1">Помощь</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--n-5)"><path d="M7 17 17 7M8 7h9v9"></path></svg></div>
+      </nav>
+      <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-top:1px solid var(--n-8)">
+        <span style="width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;flex:none;color:#fff;background:var(--primary);border-radius:50%;font-size:13px;font-weight:600">ЕК</span>
+        <span style="flex:1;min-width:0"><strong style="display:block;color:var(--n-1);font-size:13px;font-weight:600;line-height:1.3">Елена Кузнецова</strong><small style="display:block;color:var(--n-4);font-size:12px">Ателье Норд</small></span>
+        <span style="width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;color:var(--n-4)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg></span>
+      </div>
+    </aside>
+
+    <nav style="width:240px;flex:none;display:flex;flex-direction:column;background:var(--surface-card);border-right:1px solid var(--n-8)">
+      <div style="padding:17px 18px 10px"><h2 style="margin:0;color:var(--n-1);font-size:16px;font-weight:700">Настройки</h2></div>
+      <div style="display:flex;flex-direction:column;gap:1px;padding:4px 10px">
+        <sc-for list="{{ subnav }}" as="s" hint-placeholder-count="12">
+          <sc-if value="{{ s.cap }}" hint-placeholder-val="{{ false }}"><div style="padding:12px 10px 4px;color:var(--n-4);font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase">{{ s.label }}</div></sc-if>
+          <sc-if value="{{ s.active }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;gap:10px;min-height:34px;padding:0 10px;border-radius:8px;background:var(--primary-bg);color:var(--primary-text);font-size:13px;font-weight:600"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="{{ s.d }}"></path></svg><span>{{ s.label }}</span></div>
+          </sc-if>
+          <sc-if value="{{ s.idle }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;align-items:center;gap:10px;min-height:34px;padding:0 10px;border-radius:8px;color:var(--n-2);font-size:13px;font-weight:500"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="{{ s.d }}"></path></svg><span>{{ s.label }}</span></div>
+          </sc-if>
+        </sc-for>
+        <div style="height:1px;margin:8px 6px;background:var(--n-8)"></div>
+        <div style="padding:2px 10px 6px;color:var(--n-4);font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase">Отдельные экраны</div>
+        <div style="display:flex;align-items:center;gap:10px;min-height:34px;padding:0 10px;color:var(--n-2);font-size:13px;font-weight:500"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"></path></svg><span style="flex:1">Аудит действий</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:var(--n-5)"><path d="M7 17 17 7M8 7h9v9"></path></svg></div>
+      </div>
+    </nav>
+
+    <section style="flex:1;min-width:0;overflow-y:auto;background:var(--surface-feed)">
+      <div style="max-width:1000px;margin:0 auto;padding:28px 40px 48px">
+
+        <sc-if value="{{ isList }}" hint-placeholder-val="{{ true }}">
+          <header style="display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:22px">
+            <div>
+              <h2 style="margin:0;color:var(--n-1);font-size:20px;font-weight:700;letter-spacing:-.01em">Сценарии</h2>
+              <p style="max-width:560px;margin:5px 0 0;color:var(--n-4);font-size:13px;line-height:1.5">Сценарий выполняет за сотрудника несколько действий в Chatballs и подключённых сервисах.</p>
+            </div>
+            <button onClick="{{ createNew }}" style="height:34px;display:inline-flex;align-items:center;gap:7px;padding:0 14px;color:#fff;background:var(--primary);border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer" style-hover="background:var(--primary-hover)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>Создать сценарий</button>
+          </header>
+          <div style="display:flex;gap:4px;border-bottom:1px solid var(--n-7);margin-bottom:18px">
+            <div style="position:relative;padding:11px 16px;color:var(--primary);font-size:14px;font-weight:600">Сценарии<span style="position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--primary)"></span></div>
+            <a href="Журнал запусков.dc.html" style="padding:11px 16px;color:var(--n-3);font-size:14px;font-weight:500">Журнал запусков</a>
+          </div>
+          <div style="border:1px solid var(--n-8);border-radius:12px;background:var(--surface-card);box-shadow:var(--shadow-xs);overflow:hidden">
+            <div style="display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1.3fr) minmax(0,1.3fr) minmax(0,1fr) 30px;align-items:center;gap:12px;padding:10px 20px;background:var(--surface-sidebar);border-bottom:1px solid var(--n-8);color:var(--n-4);font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase">
+              <span>Сценарий</span><span>Запуск</span><span>Подключения</span><span>Состояние</span><span></span>
+            </div>
+            <sc-for list="{{ listRows }}" as="r" hint-placeholder-count="3">
+              <div onClick="{{ r.open }}" style="display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1.3fr) minmax(0,1.3fr) minmax(0,1fr) 30px;align-items:center;gap:12px;min-height:62px;padding:10px 20px;box-sizing:border-box;border-top:1px solid var(--n-9);cursor:pointer" style-hover="background:var(--n-10)">
+                <span style="min-width:0"><strong style="display:block;color:var(--primary);font-size:14px;font-weight:700">{{ r.name }}</strong><small style="display:block;margin-top:2px;color:var(--n-4);font-size:12px">{{ r.origin }}</small></span>
+                <span style="color:var(--n-2);font-size:12.5px">{{ r.launch }}</span>
+                <span style="color:var(--n-3);font-size:12.5px">{{ r.conns }}</span>
+                <span>
+                  <sc-if value="{{ r.on }}" hint-placeholder-val="{{ true }}"><span style="display:inline-flex;align-items:center;gap:6px;padding:2px 8px;border:1px solid var(--success-border);border-radius:6px;background:var(--success-bg);color:var(--success-text);font-size:12.5px;font-weight:500"><span style="width:7px;height:7px;border-radius:50%;background:var(--success-text)"></span>Включён</span></sc-if>
+                  <sc-if value="{{ r.draft }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:6px;padding:2px 8px;border:1px solid var(--n-7);border-radius:6px;background:var(--n-10);color:var(--n-4);font-size:12.5px;font-weight:500"><span style="width:7px;height:7px;border-radius:50%;background:var(--n-5)"></span>Выключен</span></sc-if>
+                  <sc-if value="{{ r.paused }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:6px;padding:2px 8px;border:1px solid var(--warning-border);border-radius:6px;background:var(--warning-bg);color:var(--warning-text);font-size:12.5px;font-weight:500"><span style="width:7px;height:7px;border-radius:50%;background:var(--warning-text)"></span>Приостановлен</span></sc-if>
+                </span>
+                <span style="display:flex;justify-content:flex-end;color:var(--n-5)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg></span>
+              </div>
+            </sc-for>
+          </div>
+          <p style="margin:12px 0 0;color:var(--n-4);font-size:12.5px">Готовые сценарии появляются после подключения сервиса в разделе «Интеграции». Изменения в них сохраняются только у вас.</p>
+        </sc-if>
+
+        <sc-if value="{{ isEditor }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ back }}" style="display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 8px;margin:0 0 12px -8px;border:0;border-radius:7px;background:transparent;color:var(--n-4);font-size:12.5px;font-weight:500;cursor:pointer" style-hover="background:var(--n-9);color:var(--n-2)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 6 9 12 15 18"></polyline></svg>Сценарии</button>
+          <header style="display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:18px">
+            <div style="flex:1;min-width:0">
+              <input value="{{ sc.name }}" onChange="{{ setName }}" aria-label="Название сценария" style="width:100%;max-width:560px;box-sizing:border-box;margin:-4px 0 0 -8px;padding:2px 8px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--n-1);font-size:20px;font-weight:700;letter-spacing:-.01em;outline:none" style-hover="border-color:var(--n-7)" style-focus="border-color:var(--primary);background:var(--surface-card)">
+              <div style="display:flex;align-items:center;gap:10px;margin-top:4px;flex-wrap:wrap">
+                <sc-if value="{{ sc.on }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:6px;padding:2px 8px;border:1px solid var(--success-border);border-radius:6px;background:var(--success-bg);color:var(--success-text);font-size:12.5px;font-weight:500"><span style="width:7px;height:7px;border-radius:50%;background:var(--success-text)"></span>Включён</span></sc-if>
+                <sc-if value="{{ sc.off }}" hint-placeholder-val="{{ true }}"><span style="display:inline-flex;align-items:center;gap:6px;padding:2px 8px;border:1px solid var(--n-7);border-radius:6px;background:var(--n-10);color:var(--n-4);font-size:12.5px;font-weight:500"><span style="width:7px;height:7px;border-radius:50%;background:var(--n-5)"></span>Выключен</span></sc-if>
+                <sc-if value="{{ sc.paused }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:6px;padding:2px 8px;border:1px solid var(--warning-border);border-radius:6px;background:var(--warning-bg);color:var(--warning-text);font-size:12.5px;font-weight:500"><span style="width:7px;height:7px;border-radius:50%;background:var(--warning-text)"></span>Приостановлен</span></sc-if>
+                <span style="color:var(--n-4);font-size:12.5px">{{ sc.origin }}</span>
+              </div>
+            </div>
+            <div style="position:relative;display:flex;align-items:center;gap:10px;flex:none">
+              <sc-if value="{{ dirty }}" hint-placeholder-val="{{ false }}">
+                <span style="color:var(--n-4);font-size:12.5px">Изменения не сохранены</span>
+                <button onClick="{{ save }}" style="height:34px;display:inline-flex;align-items:center;padding:0 14px;color:var(--n-2);background:var(--surface-card);border:1px solid var(--n-7);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer" style-hover="color:var(--primary);border-color:var(--primary)">Сохранить</button>
+              </sc-if>
+              <sc-if value="{{ sc.off }}" hint-placeholder-val="{{ true }}">
+                <button onClick="{{ enable }}" style="{{ enableStyle }}">Включить</button>
+              </sc-if>
+              <button onClick="{{ toggleHeadMenu }}" title="Ещё" style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;color:var(--n-4);background:transparent;border:0;border-radius:7px;cursor:pointer" style-hover="color:var(--n-2);background:var(--n-8)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg></button>
+              <sc-if value="{{ headMenu }}" hint-placeholder-val="{{ false }}">
+                <div style="position:absolute;top:38px;right:0;z-index:10;width:220px;padding:5px;box-sizing:border-box;background:var(--surface-card);border:1px solid var(--n-8);border-radius:10px;box-shadow:0 6px 20px #0000001f">
+                  <sc-if value="{{ sc.canDisable }}" hint-placeholder-val="{{ false }}"><button onClick="{{ disable }}" style="width:100%;display:flex;align-items:center;gap:9px;padding:8px 10px;color:var(--warning-text);background:transparent;border:0;border-radius:7px;font-size:13px;font-weight:500;text-align:left;cursor:pointer" style-hover="background:var(--n-9)">Выключить</button></sc-if>
+                  <button onClick="{{ toggleHeadMenu }}" style="width:100%;display:flex;align-items:center;gap:9px;padding:8px 10px;color:var(--n-2);background:transparent;border:0;border-radius:7px;font-size:13px;font-weight:500;text-align:left;cursor:pointer" style-hover="background:var(--n-9)">Создать копию</button>
+                  <div style="height:1px;margin:4px 8px;background:var(--n-9)"></div>
+                  <button onClick="{{ toggleHeadMenu }}" style="width:100%;display:flex;align-items:center;gap:9px;padding:8px 10px;color:var(--error-text);background:transparent;border:0;border-radius:7px;font-size:13px;font-weight:500;text-align:left;cursor:pointer" style-hover="background:var(--n-9)">Удалить сценарий</button>
+                </div>
+              </sc-if>
+            </div>
+          </header>
+
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <sc-if value="{{ banner.show }}" hint-placeholder-val="{{ false }}">
+              <div style="{{ banner.style }}">
+                <p style="flex:1;margin:0;color:var(--n-2);font-size:12.5px;line-height:1.55"><strong>{{ banner.title }}</strong> {{ banner.text }}</p>
+                <sc-if value="{{ banner.hasAction }}" hint-placeholder-val="{{ false }}"><button onClick="{{ banner.action }}" style="flex:none;padding:0;border:0;background:none;color:var(--primary);font-size:12.5px;font-weight:600;cursor:pointer">{{ banner.actionLabel }}</button></sc-if>
+              </div>
+            </sc-if>
+
+            <div style="background:var(--surface-card);border:1px solid var(--n-8);border-radius:12px;padding:18px 22px 10px">
+              <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:6px"><span style="color:var(--n-4);font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase">Запуск</span><span style="color:var(--n-4);font-size:12.5px">Кто или что запускает сценарий: сотрудник, ИИ, событие, расписание</span></div>
+              <sc-for list="{{ triggerRows }}" as="t" hint-placeholder-count="1">
+                <div onClick="{{ t.open }}" style="display:flex;align-items:center;gap:12px;margin:0 -10px;padding:10px;border-radius:9px;cursor:pointer" style-hover="background:var(--n-10)">
+                  <span style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;flex:none;border-radius:8px;background:var(--primary-bg);color:var(--primary-text)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="{{ t.icon }}"></path></svg></span>
+                  <span style="flex:1;min-width:0"><strong style="display:block;color:var(--n-1);font-size:13.5px;font-weight:600">{{ t.title }}</strong><span style="display:block;color:var(--n-4);font-size:12.5px">{{ t.sub }}</span></span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--n-5)"><polyline points="9 6 15 12 9 18"></polyline></svg>
+                </div>
+              </sc-for>
+              <button onClick="{{ addTrigger }}" style="display:inline-flex;align-items:center;gap:6px;margin:6px 0 8px;padding:0;border:0;background:none;color:var(--primary);font-size:13px;font-weight:600;cursor:pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>Ещё способ запуска</button>
+            </div>
+
+            <div style="background:var(--surface-card);border:1px solid var(--n-8);border-radius:12px;padding:18px 22px 10px">
+              <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:6px"><span style="color:var(--n-4);font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase">Условия</span><span style="color:var(--n-4);font-size:12.5px">Необязательно. Если условие не выполнено, сценарий не начнётся</span></div>
+              <sc-for list="{{ condRows }}" as="c" hint-placeholder-count="1">
+                <div onClick="{{ c.open }}" style="display:flex;align-items:center;gap:12px;margin:0 -10px;padding:9px 10px;border-radius:9px;cursor:pointer" style-hover="background:var(--n-10)">
+                  <span style="width:32px;flex:none;color:var(--n-4);font-size:12px;font-weight:600;text-align:center">{{ c.joiner }}</span>
+                  <span style="flex:1;color:var(--n-1);font-size:13.5px">{{ c.text }}</span>
+                  <button onClick="{{ c.remove }}" title="Убрать условие" style="width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:6px;background:transparent;color:var(--n-4);cursor:pointer" style-hover="background:var(--n-8);color:var(--n-2)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"></path></svg></button>
+                </div>
+              </sc-for>
+              <sc-if value="{{ noConds }}" hint-placeholder-val="{{ false }}"><p style="margin:4px 0 2px;color:var(--n-3);font-size:13px">Без условий — сценарий запускается всегда.</p></sc-if>
+              <div style="display:flex;align-items:center;gap:16px;margin:6px 0 8px">
+                <button onClick="{{ addCond }}" style="display:inline-flex;align-items:center;gap:6px;padding:0;border:0;background:none;color:var(--primary);font-size:13px;font-weight:600;cursor:pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>Добавить условие</button>
+                <sc-if value="{{ manyConds }}" hint-placeholder-val="{{ false }}"><button onClick="{{ toggleCondMode }}" style="padding:0;border:0;background:none;color:var(--n-4);font-size:12.5px;font-weight:600;cursor:pointer" style-hover="color:var(--n-2)">{{ condModeLabel }}</button></sc-if>
+              </div>
+            </div>
+
+            <div style="background:var(--surface-card);border:1px solid var(--n-8);border-radius:12px;padding:18px 22px 12px">
+              <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:8px"><span style="color:var(--n-4);font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase">Шаги</span><span style="color:var(--n-4);font-size:12.5px">Выполняются по порядку сверху вниз</span></div>
+              <sc-if value="{{ noSteps }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:28px 0 22px;text-align:center">
+                  <strong style="color:var(--n-1);font-size:14px">Добавьте первый шаг</strong>
+                  <span style="color:var(--n-4);font-size:12.5px">Например, создать лид в CRM, добавить метку или уведомить сотрудника.</span>
+                  <button onClick="{{ addRoot }}" style="margin-top:6px;height:34px;display:inline-flex;align-items:center;gap:7px;padding:0 14px;color:#fff;background:var(--primary);border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">Добавить шаг</button>
+                </div>
+              </sc-if>
+              <sc-for list="{{ stepRows }}" as="r" hint-placeholder-count="2">
+                <div style="{{ r.wrap }}">
+                  <sc-if value="{{ r.isStep }}" hint-placeholder-val="{{ true }}">
+                    <div onClick="{{ r.open }}" style="{{ r.style }}">
+                      <span style="width:22px;flex:none;color:var(--n-4);font-size:12px;font-weight:600;text-align:right">{{ r.num }}</span>
+                      <span style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;flex:none;border-radius:8px;background:var(--n-9);color:var(--n-3)">
+                        <sc-if value="{{ r.cb }}" hint-placeholder-val="{{ false }}"><img src="assets/chatballs-logo.svg" alt="" style="width:20px;height:auto"></sc-if>
+                        <sc-if value="{{ r.notCb }}" hint-placeholder-val="{{ true }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="{{ r.icon }}"></path></svg></sc-if>
+                      </span>
+                      <span style="flex:1;min-width:0">
+                        <strong style="display:block;color:var(--n-1);font-size:13.5px;font-weight:600">{{ r.title }}</strong>
+                        <span style="display:block;color:var(--n-4);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.sub }}</span>
+                        <sc-if value="{{ r.warn }}" hint-placeholder-val="{{ false }}"><span style="display:block;margin-top:2px;color:var(--warning-text);font-size:12.5px;font-weight:500">{{ r.warnText }}</span></sc-if>
+                      </span>
+                      <span style="position:relative;flex:none">
+                        <button onClick="{{ r.toggleMenu }}" title="Действия шага" style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;color:var(--n-4);background:transparent;border:0;border-radius:7px;cursor:pointer" style-hover="color:var(--n-2);background:var(--n-8)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg></button>
+                        <sc-if value="{{ r.menuOpen }}" hint-placeholder-val="{{ false }}">
+                          <div style="position:absolute;top:34px;right:0;z-index:10;width:190px;padding:5px;box-sizing:border-box;background:var(--surface-card);border:1px solid var(--n-8);border-radius:10px;box-shadow:0 6px 20px #0000001f">
+                            <sc-for list="{{ r.menu }}" as="mi" hint-placeholder-count="4">
+                              <button onClick="{{ mi.run }}" disabled="{{ mi.disabled }}" style="{{ mi.style }}">{{ mi.label }}</button>
+                            </sc-for>
+                          </div>
+                        </sc-if>
+                      </span>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ r.isBranch }}" hint-placeholder-val="{{ false }}">
+                    <div style="padding:8px 0 2px 34px;color:var(--n-3);font-size:12px;font-weight:700">{{ r.label }}</div>
+                  </sc-if>
+                  <sc-if value="{{ r.isAdd }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ r.add }}" style="{{ r.addStyle }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>{{ r.label }}</button>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </section>
+
+    <sc-if value="{{ hasDrawer }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ closeDrawer }}" style="position:absolute;top:0;bottom:0;left:460px;right:0;z-index:40;background:rgba(16,18,22,.18)"></div>
+      <aside style="position:absolute;top:0;right:0;bottom:0;z-index:41;width:480px;display:flex;flex-direction:column;background:var(--surface-card);border-left:1px solid var(--n-8);box-shadow:-12px 0 32px #0000001f;animation:cb-drawer .18s ease-out">
+        <header style="display:flex;align-items:flex-start;gap:12px;padding:20px 22px 16px;border-bottom:1px solid var(--n-8)">
+          <div style="flex:1;min-width:0">
+            <span style="display:block;color:var(--n-4);font-size:12px;font-weight:600">{{ d.kicker }}</span>
+            <h3 style="margin:2px 0 0;color:var(--n-1);font-size:16px;font-weight:700">{{ d.title }}</h3>
+          </div>
+          <button onClick="{{ closeDrawer }}" title="Закрыть" style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;color:var(--n-4);background:transparent;border:0;border-radius:7px;cursor:pointer" style-hover="color:var(--n-2);background:var(--n-8)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"></path></svg></button>
+        </header>
+        <div style="flex:1;min-height:0;overflow-y:auto;padding:18px 22px 24px;display:flex;flex-direction:column;gap:18px">
+
+          <sc-if value="{{ d.isPalette }}" hint-placeholder-val="{{ false }}">
+            <sc-for list="{{ palette }}" as="g" hint-placeholder-count="3">
+              <div style="display:flex;flex-direction:column;gap:2px">
+                <span style="padding:0 0 6px;color:var(--n-4);font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase">{{ g.title }}</span>
+                <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="3">
+                  <button onClick="{{ it.pick }}" style="display:flex;align-items:center;gap:12px;margin:0 -10px;padding:9px 10px;border:0;border-radius:9px;background:transparent;text-align:left;cursor:pointer" style-hover="background:var(--n-9)">
+                    <span style="width:30px;height:30px;display:flex;align-items:center;justify-content:center;flex:none;border-radius:8px;background:var(--n-9);color:var(--n-3)">
+                      <sc-if value="{{ it.cb }}" hint-placeholder-val="{{ false }}"><img src="assets/chatballs-logo.svg" alt="" style="width:18px;height:auto"></sc-if>
+                      <sc-if value="{{ it.notCb }}" hint-placeholder-val="{{ true }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="{{ it.icon }}"></path></svg></sc-if>
+                    </span>
+                    <span style="flex:1;min-width:0"><strong style="display:block;color:var(--n-1);font-size:13px;font-weight:600">{{ it.label }}</strong><span style="display:block;color:var(--n-4);font-size:12px;line-height:1.4">{{ it.help }}</span></span>
+                  </button>
+                </sc-for>
+              </div>
+            </sc-for>
+          </sc-if>
+
+          <sc-if value="{{ d.isAction }}" hint-placeholder-val="{{ false }}">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <sc-if value="{{ d.hasConn }}" hint-placeholder-val="{{ true }}">
+                <label style="display:block"><span style="display:block;margin-bottom:6px;color:var(--n-2);font-size:12.5px;font-weight:600">Подключение</span><select style="width:100%;height:36px;padding:0 8px;border:1px solid var(--n-7);border-radius:8px;font-size:13px"><option>{{ d.connName }}</option></select></label>
+              </sc-if>
+              <label style="display:block"><span style="display:block;margin-bottom:6px;color:var(--n-2);font-size:12.5px;font-weight:600">Действие</span>{{ actionSel }}</label>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:2px">
+              <span style="color:var(--n-1);font-size:13.5px;font-weight:700">Данные</span>
+              <span style="color:var(--n-4);font-size:12.5px">Для каждого поля выберите, откуда взять значение.</span>
+            </div>
+            <sc-for list="{{ fieldRows }}" as="fr" hint-placeholder-count="3">
+              <div style="{{ fr.box }}">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+                  <span style="color:var(--n-1);font-size:13px;font-weight:600">{{ fr.label }}<sc-if value="{{ fr.req }}" hint-placeholder-val="{{ false }}"><span style="margin-left:6px;color:var(--n-4);font-size:11.5px;font-weight:500">обязательно</span></sc-if></span>
+                  {{ fr.srcSel }}
+                </div>
+                <sc-if value="{{ fr.isText }}" hint-placeholder-val="{{ false }}"><input value="{{ fr.v }}" onChange="{{ fr.setV }}" placeholder="{{ fr.ph }}" style="width:100%;box-sizing:border-box;height:34px;padding:0 10px;color:var(--n-1);background:var(--surface-card);border:1px solid var(--n-7);border-radius:8px;outline:none;font-size:13px" style-focus="border-color:var(--primary)"></sc-if>
+                <sc-if value="{{ fr.isSelect }}" hint-placeholder-val="{{ false }}">{{ fr.valSel }}</sc-if>
+                <sc-if value="{{ fr.isNone }}" hint-placeholder-val="{{ false }}"><span style="color:var(--n-4);font-size:12.5px">Поле не передаётся.</span></sc-if>
+                <sc-if value="{{ fr.hint }}" hint-placeholder-val="{{ false }}"><span style="color:var(--n-4);font-size:12px;line-height:1.45">{{ fr.hint }}</span></sc-if>
+              </div>
+            </sc-for>
+            <sc-if value="{{ d.resultNote }}" hint-placeholder-val="{{ false }}"><p style="margin:0;padding:10px 12px;border-radius:8px;background:var(--n-10);color:var(--n-3);font-size:12.5px;line-height:1.5">{{ d.resultNote }}</p></sc-if>
+            <div style="display:flex;flex-direction:column;gap:6px;padding-top:14px;border-top:1px solid var(--n-9)">
+              <span style="color:var(--n-1);font-size:13px;font-weight:600">Если шаг не удался</span>
+              <select style="width:100%;height:34px;padding:0 8px;border:1px solid var(--n-7);border-radius:8px;font-size:13px"><option>Остановить сценарий и показать причину</option><option>Пропустить шаг и продолжить</option></select>
+              <span style="color:var(--n-4);font-size:12px;line-height:1.45">Если неизвестно, выполнилось ли действие, Chatballs сначала проверит результат и не повторит его вслепую.</span>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ d.isCtl }}" hint-placeholder-val="{{ false }}">
+            <sc-if value="{{ d.otherText }}" hint-placeholder-val="{{ false }}"><span style="color:var(--n-3);font-size:13px;line-height:1.55">{{ d.otherText }}</span></sc-if>
+            <sc-for list="{{ controls }}" as="c" hint-placeholder-count="2">
+              <div style="display:flex;flex-direction:column;gap:6px"><span style="color:var(--n-2);font-size:12.5px;font-weight:600">{{ c.label }}</span>{{ c.el }}<sc-if value="{{ c.hint }}" hint-placeholder-val="{{ false }}"><span style="color:var(--n-4);font-size:12px;line-height:1.45">{{ c.hint }}</span></sc-if></div>
+            </sc-for>
+            <sc-if value="{{ d.preview }}" hint-placeholder-val="{{ false }}"><p style="margin:0;padding:10px 12px;border-radius:8px;background:var(--primary-bg);border:1px solid var(--primary-border);color:var(--n-1);font-size:12.5px;line-height:1.5">{{ d.preview }}</p></sc-if>
+          </sc-if>
+
+          <sc-if value="{{ d.isTrigger }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <sc-for list="{{ triggerTypes }}" as="tt" hint-placeholder-count="7">
+                <button onClick="{{ tt.pick }}" style="{{ tt.style }}">
+                  <span style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;flex:none;border-radius:7px;background:var(--n-9);color:var(--n-3)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="{{ tt.icon }}"></path></svg></span>
+                  <span style="flex:1;min-width:0"><strong style="display:block;color:var(--n-1);font-size:13px;font-weight:600">{{ tt.label }}</strong><span style="display:block;color:var(--n-4);font-size:12px;line-height:1.4">{{ tt.help }}</span></span>
+                </button>
+              </sc-for>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:12px;padding-top:16px;border-top:1px solid var(--n-9)">
+              <sc-for list="{{ trigFields }}" as="tf" hint-placeholder-count="2">
+                <div style="display:flex;flex-direction:column;gap:6px"><span style="color:var(--n-2);font-size:12.5px;font-weight:600">{{ tf.label }}</span>{{ tf.el }}<sc-if value="{{ tf.hint }}" hint-placeholder-val="{{ false }}"><span style="color:var(--n-4);font-size:12px;line-height:1.45">{{ tf.hint }}</span></sc-if></div>
+              </sc-for>
+              <sc-if value="{{ trigApi }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:14px">
+                  <sc-if value="{{ trigApi.pending }}" hint-placeholder-val="{{ false }}"><p style="margin:0;padding:10px 12px;border-radius:8px;background:var(--n-10);color:var(--n-3);font-size:12.5px;line-height:1.5">Адрес и ключ появятся после сохранения сценария. Ключ показывается один раз — его нужно сразу скопировать.</p></sc-if>
+                  <sc-if value="{{ trigApi.issued }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;flex-direction:column;gap:6px"><span style="color:var(--n-2);font-size:12.5px;font-weight:600">Адрес</span><div style="display:flex;gap:8px"><code style="flex:1;min-width:0;height:34px;display:flex;align-items:center;padding:0 10px;border:1px solid var(--n-7);border-radius:8px;background:var(--n-10);color:var(--n-1);font-family:var(--font-mono,ui-monospace,Menlo,monospace);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ trigApi.url }}</code><button style="height:34px;padding:0 12px;border:1px solid var(--n-7);border-radius:8px;background:var(--surface-card);color:var(--n-2);font-size:12.5px;font-weight:600;cursor:pointer">Копировать</button></div></div>
+                    <div style="display:flex;flex-direction:column;gap:6px"><span style="color:var(--n-2);font-size:12.5px;font-weight:600">Ключ доступа</span><div style="display:flex;gap:8px"><code style="flex:1;min-width:0;height:34px;display:flex;align-items:center;padding:0 10px;border:1px solid var(--n-7);border-radius:8px;background:var(--n-10);color:var(--n-1);font-family:var(--font-mono,ui-monospace,Menlo,monospace);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ trigApi.key }}</code><sc-if value="{{ trigApi.fresh }}" hint-placeholder-val="{{ false }}"><button style="height:34px;padding:0 12px;border:none;border-radius:8px;background:var(--primary);color:#fff;font-size:12.5px;font-weight:600;cursor:pointer">Копировать</button></sc-if></div>
+                      <sc-if value="{{ trigApi.fresh }}" hint-placeholder-val="{{ false }}"><div style="padding:9px 11px;border-radius:8px;background:var(--warning-bg);border:1px solid var(--warning-border);color:var(--n-2);font-size:12px;line-height:1.5">Скопируйте ключ сейчас: после закрытия панели он будет скрыт, и посмотреть его снова будет нельзя.</div></sc-if>
+                      <sc-if value="{{ trigApi.masked }}" hint-placeholder-val="{{ false }}"><div style="display:flex;align-items:center;gap:10px"><span style="flex:1;color:var(--n-4);font-size:12px;line-height:1.45">Потеряли ключ — создайте новый. Старый сразу перестанет работать.</span><button onClick="{{ trigApi.reissue }}" style="flex:none;padding:0;border:0;background:none;color:var(--primary);font-size:12.5px;font-weight:600;cursor:pointer">Создать новый ключ</button></div></sc-if>
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:6px"><span style="color:var(--n-2);font-size:12.5px;font-weight:600">Пример запроса</span><pre style="margin:0;padding:10px 12px;border-radius:8px;background:var(--n-10);border:1px solid var(--n-8);color:var(--n-2);font-family:var(--font-mono,ui-monospace,Menlo,monospace);font-size:11.5px;line-height:1.55;white-space:pre-wrap">{{ trigApi.example }}</pre><span style="color:var(--n-4);font-size:12px;line-height:1.45">Поля тела запроса подставляются вместо значений «Спросить при запуске».</span></div>
+                    <span style="color:var(--n-4);font-size:12px">{{ trigApi.last }}</span>
+                  </sc-if>
+                </div>
+              </sc-if>
+              <sc-if value="{{ trigAuto }}" hint-placeholder-val="{{ false }}">
+                <label style="display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid var(--n-8);border-radius:9px;background:var(--n-10);cursor:pointer">
+                  <input type="checkbox" checked="{{ delegated }}" onChange="{{ toggleDelegated }}" style="margin-top:3px;accent-color:var(--primary)">
+                  <span><strong style="display:block;color:var(--n-1);font-size:13px;font-weight:600">Разрешить запуск без сотрудника</strong><span style="display:block;color:var(--n-4);font-size:12px;line-height:1.45">Сценарий выполнит свои шаги с вашими правами администратора. Права проверяются перед каждым шагом.</span></span>
+                </label>
+              </sc-if>
+            </div>
+          </sc-if>
+
+
+        </div>
+        <sc-if value="{{ d.hasFooter }}" hint-placeholder-val="{{ true }}">
+          <footer style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 22px;border-top:1px solid var(--n-8)">
+            <sc-if value="{{ d.canRemove }}" hint-placeholder-val="{{ false }}"><button onClick="{{ removeCurrent }}" style="padding:0;border:0;background:none;color:var(--error-text);font-size:13px;font-weight:600;cursor:pointer">Удалить</button></sc-if>
+            <span style="flex:1"></span>
+            <button onClick="{{ applyDrawer }}" style="height:34px;display:inline-flex;align-items:center;padding:0 18px;color:#fff;background:var(--primary);border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer" style-hover="background:var(--primary-hover)">Готово</button>
+          </footer>
+        </sc-if>
+      </aside>
+    </sc-if>
+
+    <sc-if value="{{ leaveAsk }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;background:var(--scrim)">
+        <section role="dialog" style="width:460px;background:var(--surface-card);border-radius:14px;box-shadow:var(--modal-shadow);overflow:hidden">
+          <header style="display:flex;gap:14px;padding:20px 24px 16px;border-bottom:1px solid var(--border-default)">
+            <span style="display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:10px;flex:none;background:var(--warning-bg);color:var(--warning-text)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 8v4M12 16v.01"></path></svg></span>
+            <div><h3 style="margin:0 0 4px;color:var(--n-1);font-size:16px;font-weight:600">Сохранить изменения?</h3><p style="margin:0;color:var(--n-3);font-size:13px;line-height:1.55">{{ leaveText }}</p></div>
+          </header>
+          <footer style="display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:14px 24px">
+            <button onClick="{{ leaveDiscard }}" style="height:34px;display:inline-flex;align-items:center;padding:0 14px;color:var(--n-2);background:var(--surface-card);border:1px solid var(--n-7);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">Не сохранять</button>
+            <button onClick="{{ leaveSave }}" style="height:34px;display:inline-flex;align-items:center;padding:0 16px;color:#fff;background:var(--primary);border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">Сохранить и выйти</button>
+          </footer>
+        </section>
+      </div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;'light'|'dark'&quot;},&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;options&quot;:[&quot;#0f9b8e&quot;,&quot;#1677ff&quot;,&quot;#722ed1&quot;,&quot;#fa541c&quot;],&quot;default&quot;:&quot;#0f9b8e&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const I = {
+  message: 'M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z', user: 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0z',
+  robot: 'M7 4.6h10a3.4 3.4 0 0 1 3.4 3.4v6.2a3.4 3.4 0 0 1-3.4 3.4h-6.2l-3.4 2.8v-2.8H7A3.4 3.4 0 0 1 3.6 14.2V8A3.4 3.4 0 0 1 7 4.6zM12 4.6V2.9M12 1.4v.01M9 9.4v1.4M15 9.4v1.4M9.2 13.4c.8 1 1.7 1.5 2.8 1.5s2-.5 2.8-1.5M1.6 9.8v2.6M22.4 9.8v2.6',
+  team: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75',
+  globe: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM2 12h20M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20', book: 'M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5A2.5 2.5 0 0 0 6.5 22H20V2H6.5A2.5 2.5 0 0 0 4 4.5z',
+  building: 'M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6M9 10h.01M15 10h.01', clock: 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zM12 6v6l4 2',
+  transfer: 'M17 1l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3', text: 'M5 5h14M12 5v14M8 19h8',
+  thumbUp: 'M7 10v11H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3zM7 10 11 3a2.2 2.2 0 0 1 4 1.8L14.5 8H20a2 2 0 0 1 2 2.4l-1.4 7A4 4 0 0 1 16.7 21H7',
+  sparkles: 'M12 3l1.8 4.6L18.4 9.4 13.8 11.2 12 15.8 10.2 11.2 5.6 9.4 10.2 7.6zM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8zM5 14l.6 1.6L7.2 16.2 5.6 16.8 5 18.4l-.6-1.6L2.8 16.2l1.6-.6z',
+  plug: 'M12 22v-5M9 8V2M15 8V2M18 8v5a6 6 0 0 1-12 0V8z', swap: 'M8 3 4 7l4 4M4 7h16M16 21l4-4-4-4M20 17H4',
+  mic: 'M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3ZM19 10v2a7 7 0 0 1-14 0v-2M12 19v3', sun: 'M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8',
+  list: 'M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01', link: 'M10 13a5 5 0 0 0 7 0l2-2a5 5 0 0 0-7-7l-1 1M14 11a5 5 0 0 0-7 0l-2 2a5 5 0 0 0 7 7l1-1',
+  warning: 'm21.7 18-8-14a2 2 0 0 0-3.5 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.7-3ZM12 9v4M12 17h.01', key: 'M7.5 10a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9zM11 11l9-9M16 7l2 2M14 9l2 2',
+  bell: 'M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0', check: 'M20 6 9 17l-5-5',
+};
+const NAV = [['message', 'Чат'], ['user', 'Контакты'], ['robot', 'Агенты'], ['team', 'Сотрудники'], ['globe', 'Порталы'], ['book', 'База знаний']];
+I.refresh = 'M21 12a9 9 0 1 1-2.6-6.4L21 8M21 3v5h-5';
+const SUB = [['', 'Организация'], ['building', 'Организация'], ['team', 'Группы'],
+  ['', 'Обслуживание'], ['bell', 'Когда звать на помощь'], ['clock', 'Правила обработки'], ['transfer', 'Передача и участники'], ['text', 'Шаблоны ответов'], ['mic', 'Голосовые и звонки'],
+  ['', 'Качество'], ['thumbUp', 'Оценки клиентов'], ['check', 'Анализ качества'],
+  ['', 'Подключения'], ['sparkles', 'AI-провайдер'], ['plug', 'Интеграции'], ['refresh', 'Сценарии'],
+  ['', 'Прочее'], ['sun', 'Демо-данные']];
+
+const CONN = { bitrix: 'Битрикс24 · Отдел продаж', amo: 'amoCRM · Розница', mb: 'Mindbox · Интернет-магазин', cb: 'Chatballs' };
+const EMP = [['', 'Выберите сотрудника'], ['anna', 'Анна Ким'], ['dmitry', 'Дмитрий Орлов']];
+const GROUPS = [['support', 'Поддержка'], ['sales', 'Отдел продаж']];
+const CTX = [['topic', 'Тема диалога'], ['cname', 'Имя контакта'], ['cphone', 'Телефон контакта'], ['cmail', 'Почта контакта'], ['dlink', 'Ссылка на диалог']];
+const ACTIONS = {
+  bitrix: { lead: { label: 'Создать лид', fields: [['title', 'Название лида', 'text', 1], ['name', 'Имя', 'text'], ['phone', 'Телефон', 'text'], ['owner', 'Ответственный', 'emp', 1], ['stage', 'Стадия', 'stage']], result: 'Результат — созданный лид. Следующие шаги могут использовать его номер и ссылку.' },
+    task: { label: 'Создать задачу', fields: [['title', 'Название задачи', 'text', 1], ['owner', 'Исполнитель', 'emp', 1]], result: 'Результат — созданная задача.' } },
+  amo: { deal: { label: 'Создать сделку', fields: [['title', 'Название сделки', 'text', 1], ['pipeline', 'Воронка', 'pipe', 1], ['owner', 'Ответственный', 'emp']], result: 'Результат — созданная сделка.' } },
+  mb: { find: { label: 'Найти клиентов', fields: [['segment', 'Сегмент', 'seg', 1]], result: 'Результат — список клиентов. Перебрать его можно шагом «Для каждого».' },
+    offer: { label: 'Отправить предложение', fields: [['client', 'Клиент', 'rec', 1], ['text', 'Текст предложения', 'text', 1]] },
+    tagc: { label: 'Добавить клиенту метку', fields: [['client', 'Клиент', 'rec', 1], ['tag', 'Метка', 'text', 1]] } },
+  cb: { link: { label: 'Связать запись с диалогом', fields: [['record', 'Запись', 'rec', 1]], result: 'Сотрудники увидят ссылку на запись в карточке диалога.' },
+    tag: { label: 'Добавить метку', fields: [['tag', 'Метка', 'text', 1]] },
+    assign: { label: 'Передать в группу', fields: [['group', 'Группа', 'group', 1]] },
+    notify: { label: 'Уведомить сотрудника', fields: [['emp', 'Кому', 'emp', 1], ['text', 'Текст', 'text', 1]] },
+    msg: { label: 'Отправить сообщение клиенту', fields: [['text', 'Текст сообщения', 'text', 1]] } },
+};
+const DIRS = { seg: [['', 'Выберите сегмент'], ['regular', 'Постоянные клиенты'], ['new', 'Новые за 30 дней'], ['sleep', 'Не покупали 90 дней']], emp: EMP, group: GROUPS, stage: [['new', 'Не обработан'], ['work', 'В работе']], pipe: [['', 'Выберите воронку'], ['sales', 'Продажи'], ['partners', 'Партнёры']] };
+const CONTROL = {
+  if: { label: 'Если', help: 'Разные шаги в зависимости от условия', icon: I.swap },
+  each: { label: 'Для каждого', help: 'Повторить шаги для каждого элемента списка', icon: I.list },
+  parallel: { label: 'Одновременно', help: 'Независимые ветки выполняются параллельно', icon: I.transfer },
+  wait: { label: 'Подождать', help: 'Время, ответ клиента или подтверждение сотрудника', icon: I.clock },
+  call: { label: 'Запустить другой сценарий', help: 'Права при этом не расширяются', icon: I.link },
+  try: { label: 'При ошибке', help: 'Свои шаги на случай сбоя группы шагов', icon: I.warning },
+};
+const TRIG = {
+  staff: { label: 'Сотрудник из диалога', help: 'Кнопка в карточке диалога', icon: I.user },
+  ai: { label: 'ИИ-агент', help: 'Агент вызывает сценарий в разговоре', icon: I.robot },
+  event: { label: 'Событие в Chatballs', help: 'Новый диалог, метка, закрытие и другие', icon: I.message },
+  svc: { label: 'Событие в сервисе', help: 'Например, изменилась сделка в CRM', icon: I.plug },
+  schedule: { label: 'По расписанию', help: 'Каждый день, неделю или месяц', icon: I.clock },
+  api: { label: 'Внешний запрос', help: 'Вызов по адресу с ключом доступа', icon: I.key },
+  nested: { label: 'Из другого сценария', help: 'Как шаг «Запустить другой сценарий»', icon: I.link },
+};
+const AUTO = ['event', 'svc', 'schedule', 'api'];
+const KIDS = ['yes', 'no', 'body', 'catch', 'l0', 'l1', 'l2', 'l3'];
+const OUT = {
+  'bitrix.lead': { f: [['rec', 'Лид целиком'], ['id', 'Номер лида'], ['url', 'Ссылка на лид'], ['stage', 'Стадия лида']] },
+  'bitrix.task': { f: [['rec', 'Задача целиком'], ['id', 'Номер задачи'], ['url', 'Ссылка на задачу']] },
+  'amo.deal': { f: [['rec', 'Сделка целиком'], ['id', 'Номер сделки'], ['url', 'Ссылка на сделку'], ['sum', 'Бюджет сделки']] },
+  'mb.find': { list: ['клиенты', 'клиента'], f: [['list', 'Список клиентов'], ['count', 'Сколько найдено']] },
+  'mb.offer': { f: [['status', 'Статус отправки']] }, 'mb.tagc': { f: [] },
+};
+const ITEMF = [['rec', 'Клиент целиком'], ['id', 'ID клиента'], ['name', 'Имя'], ['phone', 'Телефон'], ['email', 'Почта']];
+const okey = s => s.svc + '.' + s.action;
+const lc = t => t ? t.charAt(0).toLowerCase() + t.slice(1) : '';
+const TAGS = [['VIP', 'VIP'], ['Опт', 'Опт'], ['Проверено', 'Проверено'], ['Жалоба', 'Жалоба']];
+const CHANNELS = [['tg', 'Telegram'], ['web', 'Web Chat'], ['max', 'MAX'], ['mail', 'Почта']];
+const CFIELDS = [['phone', 'Телефон'], ['email', 'Почта'], ['city', 'Город'], ['company', 'Компания']];
+const LINKS = [['blead', 'лид Битрикс24'], ['adeal', 'сделка amoCRM'], ['mbc', 'клиент Mindbox']];
+const OPS_T = [['filled', 'заполнено'], ['empty', 'пусто'], ['eq', 'равно'], ['not', 'не равно'], ['has', 'содержит'], ['gt', 'больше'], ['lt', 'меньше']];
+const NEEDV = ['eq', 'not', 'has', 'gt', 'lt'];
+const COND_DEF = { contact: { op: 'has' }, tag: { scope: 'contact', op: 'has', tag: 'VIP' }, channel: { op: 'is', ch: 'tg' }, cfield: { field: 'phone', op: 'filled', val: '' }, linked: { kind: 'blead', op: 'no' }, step: { step: '', field: '', op: 'eq', val: '' } };
+const CALLS = [['lead', 'Создать лид из диалога'], ['vip', 'VIP — сразу в отдел продаж'], ['notify', 'Уведомить ответственного']];
+const CALL_IN = { lead: [['title', 'Название лида', 'text', 1]], vip: [], notify: [['emp', 'Кому', 'emp', 1], ['text', 'Текст уведомления', 'text', 1]] };
+const ERRF = [['reason', 'Причина ошибки'], ['step', 'Название шага'], ['num', 'Номер шага'], ['service', 'Сервис'], ['run', 'Номер запуска']];
+function catchOf(steps, id) { for (const s of steps) for (const k of KIDS) if (s[k]) { if (s.kind === 'try' && k === 'catch' && findList(s[k], id)) return s; const r = catchOf(s[k], id); if (r) return r; } return null; }
+const CTL_DEF = { if: { kind: 'if', cond: { what: 'tag', scope: 'contact', op: 'has', tag: 'VIP' }, yes: [], no: [] }, each: { kind: 'each', list: { v: '' }, body: [] }, parallel: { kind: 'parallel', lanes: 2, l0: [], l1: [] }, wait: { kind: 'wait', wait: { mode: 'reply', limit: '1d', after: 'continue' } }, call: { kind: 'call', target: 'lead' }, try: { kind: 'try', body: [], catch: [] } };
+const DOW = [['1', 'Пн'], ['2', 'Вт'], ['3', 'Ср'], ['4', 'Чт'], ['5', 'Пт'], ['6', 'Сб'], ['7', 'Вс']];
+const DEF_SCHED = { freq: 'daily', time: '09:00', days: ['1', '3', '5'], dom: '1', missed: 'once' };
+const schedText = s => { const f = { daily: 'Каждый день', weekdays: 'По будням', days: (s.days || []).length ? 'По дням: ' + DOW.filter(d => s.days.includes(d[0])).map(d => d[1].toLowerCase()).join(', ') + ',' : 'Дни не выбраны,', monthly: s.dom === 'last' ? 'В последний день месяца' : `Каждый месяц, ${s.dom}-го числа` }[s.freq]; return `${f} в ${s.time || '—'} · время организации`; };
+const waitText = w => { const lim = { '1h': '1 часа', '1d': '1 дня', '3d': '3 дней' }[w.limit || '1d'];
+  if (w.mode === 'delay') return `Через ${w.n || 2} ${{ min: 'мин', h: 'ч', d: 'дн.' }[w.unit || 'h']}`;
+  if (w.mode === 'clock') return `До ${w.day === 'date' ? (w.date || 'выбранной даты') + ', ' : w.day === 'work' ? 'ближайшего рабочего дня, ' : 'ближайших '}${w.time || '09:00'} · время организации`;
+  if (w.mode === 'staff') return `Решение сотрудника · не дольше ${lim}`;
+  return `Ответ клиента · не дольше ${lim}`; };
+const ctl = (label, el, hint) => ({ label, el, hint: hint || '' });
+const inp = (value, onChange, o = {}) => React.createElement('input', { value, onChange, type: o.type || 'text', placeholder: o.ph || '', style: { width: o.w || '100%', height: 34, boxSizing: 'border-box', padding: '0 10px', border: '1px solid var(--n-7)', borderRadius: 8, fontSize: 13, color: 'var(--n-1)', background: 'var(--surface-card)' } });
+const row2 = (...els) => React.createElement('div', { style: { display: 'grid', gridTemplateColumns: `repeat(${els.length}, minmax(0,1fr))`, gap: 8 } }, ...els);
+const chips = (list, selected, toggle) => React.createElement('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } }, list.map(([k, l]) => React.createElement('button', { key: k, onClick: () => toggle(k), style: { height: 32, minWidth: 40, padding: '0 10px', borderRadius: 7, border: '1px solid ' + (selected.includes(k) ? 'var(--primary)' : 'var(--n-7)'), background: selected.includes(k) ? 'var(--primary-bg)' : 'var(--surface-card)', color: selected.includes(k) ? 'var(--primary-text)' : 'var(--n-2)', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' } }, l)));
+
+let seq = 100;
+const SEL = { width: '100%', height: 34, padding: '0 8px', border: '1px solid var(--n-7)', borderRadius: 8, fontSize: 13 };
+const SEL_SM = { height: 28, padding: '0 6px', border: '1px solid var(--n-7)', borderRadius: 7, fontSize: 12, color: 'var(--n-3)' };
+const sel = (value, onChange, list, style = SEL) => React.createElement('select', { value, onChange, style }, optEls(list));
+const optEls = list => list.map(o => Array.isArray(o) ? React.createElement('option', { key: o[0] || '_', value: o[0] }, o[1]) : typeof o === 'string' ? React.createElement('option', { key: o, value: o }, o) : React.createElement('option', { key: o.v || '_', value: o.v }, o.l));
+const v = (src, val = '') => ({ src, v: val });
+const LEAD = () => ({ id: 1, name: 'Создать лид из диалога', origin: 'Готовый · Битрикс24', on: false, delegated: false, condAny: false,
+  triggers: [{ id: 't1', type: 'staff', group: 'support' }], conds: [{ what: 'contact', op: 'has' }, { what: 'linked', kind: 'blead', op: 'no' }],
+  steps: [
+    { id: 's1', kind: 'action', svc: 'bitrix', action: 'lead', f: { title: v('input', 'Название лида'), name: v('ctx', 'cname'), phone: v('ctx', 'cphone'), owner: v('const', ''), stage: v('const', 'new') } },
+    { id: 's2', kind: 'action', svc: 'cb', action: 'link', f: { record: v('step', 's1') } },
+  ] });
+const VIP = () => ({ id: 3, name: 'VIP — сразу в отдел продаж', origin: 'Свой сценарий', on: true, delegated: true, condAny: false,
+  triggers: [{ id: 't2', type: 'event' }], conds: [],
+  steps: [
+    { id: 's5', kind: 'if', cond: { what: 'tag', scope: 'contact', op: 'has', tag: 'VIP' }, yes: [
+      { id: 's6', kind: 'action', svc: 'cb', action: 'assign', f: { group: v('const', 'sales') } },
+      { id: 's7', kind: 'action', svc: 'cb', action: 'notify', f: { emp: v('const', 'dmitry'), text: v('const', 'Новый диалог VIP-клиента') } },
+    ], no: [] },
+    { id: 's8', kind: 'action', svc: 'cb', action: 'tag', f: { tag: v('const', 'Проверено') } },
+  ] });
+const DEAL = () => ({ id: 2, name: 'Создать сделку из диалога', origin: 'Готовый · amoCRM', on: true, paused: true, delegated: false, condAny: false,
+  triggers: [{ id: 't3', type: 'staff', group: 'sales' }, { id: 't4', type: 'ai' }], conds: [{ what: 'contact', op: 'has' }],
+  steps: [{ id: 's9', kind: 'action', svc: 'amo', action: 'deal', f: { title: v('ctx', 'topic'), pipeline: v('const', 'sales'), owner: v('const', 'anna') } },
+    { id: 's10', kind: 'action', svc: 'cb', action: 'link', f: { record: v('step', 's9') } },
+    { id: 's11', kind: 'action', svc: 'cb', action: 'notify', f: { emp: v('const', 'anna'), text: { src: 'step', v: 's9', p: 'url' } } },
+    { id: 's12', kind: 'if', cond: { what: 'step', step: 's9', field: 'sum', op: 'gt', val: '50000' }, yes: [{ id: 's13', kind: 'action', svc: 'cb', action: 'notify', f: { emp: v('const', 'dmitry'), text: v('const', 'Крупная сделка — посмотрите') } }], no: [] }] });
+const RASS = () => ({ id: 4, name: 'Рассылка постоянным клиентам', origin: 'Свой сценарий', on: true, delegated: true, condAny: false,
+  triggers: [{ id: 't5', type: 'schedule', sched: { freq: 'daily', time: '18:30', days: ['1', '3', '5'], dom: '1', missed: 'once' } }, { id: 't6', type: 'api', api: { issued: true, fresh: false, key: 'cbk_live_9f3a' } }], conds: [],
+  steps: [
+    { id: 's20', kind: 'action', svc: 'mb', action: 'find', f: { segment: v('const', 'regular') } },
+    { id: 's21', kind: 'parallel', lanes: 2, onFail: 'wait',
+      l0: [{ id: 's22', kind: 'each', list: { v: 's20' }, body: [{ id: 's23', kind: 'action', svc: 'mb', action: 'tagc', f: { client: { src: 'item', v: 's22', p: 'rec' }, tag: v('const', 'Акция') } }] }],
+      l1: [{ id: 's24', kind: 'each', list: { v: 's20' }, body: [{ id: 's25', kind: 'try', body: [{ id: 's26', kind: 'action', svc: 'mb', action: 'offer', f: { client: { src: 'item', v: 's24', p: 'rec' }, text: v('const', 'Скидка 10% на пошив до воскресенья') } }], catch: [{ id: 's27', kind: 'action', svc: 'cb', action: 'notify', f: { emp: v('const', 'dmitry'), text: { src: 'err', v: 's25', p: 'reason' } } }] }] }] },
+    { id: 's29', kind: 'wait', wait: { mode: 'clock', day: 'next', time: '09:00' } },
+    { id: 's28', kind: 'call', target: 'notify', in: { emp: { src: 'const', v: 'dmitry' }, text: { src: 'step', v: 's20', p: 'count' } } },
+  ] });
+const ALL = () => [LEAD(), DEAL(), VIP(), RASS()];
+const clone = o => JSON.parse(JSON.stringify(o));
+
+function findList(steps, id, parent = null) {
+  for (let i = 0; i < steps.length; i++) {
+    const s = steps[i];
+    if (s.id === id) return { list: steps, i };
+    for (const k of KIDS) if (s[k]) { const r = findList(s[k], id); if (r) return r; }
+  }
+  return null;
+}
+function getList(steps, path) { if (!path) return steps; const r = findList(steps, path.id); return r.list[r.i][path.branch]; }
+function walk(steps, fn) { steps.forEach(s => { fn(s); KIDS.forEach(k => s[k] && walk(s[k], fn)); }); }
+function ancestors(steps, id, chain = []) { for (const s of steps) { if (s.id === id) return chain; for (const k of KIDS) if (s[k]) { const r = ancestors(s[k], id, [...chain, s]); if (r) return r; } } return null; }
+function findStep(steps, id) { const r = id && findList(steps, id); return r ? r.list[r.i] : null; }
+
+class Component extends DCLogic {
+  state = { view: 'list', all: ALL(), sc: null, saved: null, drawer: null, menuId: null, headMenu: false, leaveAsk: false, notice: null, condDraft: { what: 'contact', op: 'has' } };
+
+  componentDidMount() { this.applyTheme(); const p = new URLSearchParams(location.search).get('open'); if (p === 'new') this.createNew(); else if (p) this.open(Number(p)); }
+  componentDidUpdate() { this.applyTheme(); }
+  applyTheme() { const r = document.documentElement; r.dataset.theme = this.props.theme === 'dark' ? 'dark' : 'light'; r.style.setProperty('--accent', this.props.accent || '#0f9b8e'); }
+
+  open(id, extra = {}) { const sc = this.state.all.find(s => s.id === id) || ALL().find(s => s.id === id); this.setState({ view: 'editor', sc: clone(sc), saved: clone(sc), drawer: null, menuId: null, headMenu: false, notice: null, ...extra }); }
+  mut(fn) { this.setState(s => { const sc = clone(s.sc); fn(sc); return { sc }; }); }
+  dirty() { return JSON.stringify(this.state.sc) !== JSON.stringify(this.state.saved); }
+  commit(patch = {}) { this.setState(s => { const sc = { ...clone(s.sc), ...patch }; let issued = false; sc.triggers.forEach(t => { if (t.type === 'api' && !(t.api && t.api.issued)) { t.api = { issued: true, fresh: true, key: 'cbk_live_' + (++seq) }; issued = true; } }); const exists = s.all.some(x => x.id === sc.id); return { sc, saved: clone(sc), notice: issued ? 'apikey' : s.notice, all: exists ? s.all.map(x => x.id === sc.id ? clone(sc) : x) : [...s.all, clone(sc)] }; }); }
+  apiPatch(tid, patch) { this.setState(s => { const up = o => { const c = clone(o); const tt = c.triggers.find(z => z.id === tid); if (tt) tt.api = { ...(tt.api || {}), ...patch }; return c; }; return { sc: up(s.sc), saved: s.saved && s.saved.triggers ? up(s.saved) : s.saved }; }); }
+  unfresh() { const d = this.state.drawer; if (d && d.type === 'trigger' && d.id) { const t = this.state.sc.triggers.find(z => z.id === d.id); if (t && t.api && t.api.fresh) this.apiPatch(t.id, { fresh: false }); } }
+
+  missing() {
+    const out = []; const sc = this.state.sc; if (!sc) return out;
+    let n = 0; walk(sc.steps, s => { if (s.kind !== 'action') return; const a = ACTIONS[s.svc][s.action];
+      a.fields.forEach(([k, label, , req]) => { const fv = s.f[k] || v('none'); if (req && (fv.src === 'none' || (fv.src === 'const' && !fv.v))) out.push({ id: s.id, label }); }); });
+    walk(sc.steps, s => { if (s.kind === 'each' && !(s.list && s.list.v)) out.push({ id: s.id, label: 'список для перебора' }); });
+    walk(sc.steps, s => { if (s.kind === 'call') (CALL_IN[s.target || 'lead'] || []).forEach(([k, l, , req]) => { if (req && !((s.in || {})[k] || {}).src) out.push({ id: s.id, label: `${lc(l)} для вложенного сценария` }); }); });
+    if (!sc.steps.length) out.push({ id: null, label: 'шаги' });
+    if (sc.triggers.some(t => AUTO.includes(t.type)) && !sc.delegated) out.push({ id: 'deleg', label: 'разрешение запуска без сотрудника' });
+    return out;
+  }
+
+  srcOpts(type, sid) {
+    const inEach = this.eachAnc(sid).length > 0;
+    const hasStep = this.prevSteps(sid).some(p => this.fieldOpts(p, type).length);
+    if (type === 'rec') return [...(hasStep || !inEach ? [['step', 'Результат шага']] : []), ...(inEach ? [['item', 'Текущий элемент']] : [])].map(([v, l]) => ({ v, l }));
+    const o = [['const', type === 'text' ? 'Значение' : 'Выбрать'], ['ctx', 'Из диалога'], ['input', 'Спросить при запуске']];
+    if (hasStep) o.push(['step', 'Результат шага']);
+    if (inEach) o.push(['item', 'Текущий элемент']);
+    if (catchOf(this.state.sc.steps, sid)) o.push(['err', 'Ошибка']);
+    o.push(['none', 'Не передавать']);
+    return o.map(([v, l]) => ({ v, l }));
+  }
+  fieldOpts(p, type) { return ((OUT[okey(p)] || { f: [] }).f).filter(o => type === 'rec' ? o[0] === 'rec' : !['rec', 'list'].includes(o[0])); }
+  eachAnc(sid) { return (ancestors(this.state.sc.steps, sid) || []).filter(a => a.kind === 'each').reverse(); }
+  srcDefault(src, label, type, sid) {
+    if (src === 'ctx') return { src, v: 'topic' };
+    if (src === 'input') return { src, v: label };
+    if (src === 'step') { const p = this.prevSteps(sid).find(x => this.fieldOpts(x, type).length); return { src, v: p ? p.id : '', p: p ? this.fieldOpts(p, type)[0][0] : '' }; }
+    if (src === 'item') { const a = this.eachAnc(sid)[0]; return { src, v: a ? a.id : '', p: type === 'rec' ? 'rec' : 'name' }; }
+    if (src === 'err') { const c = catchOf(this.state.sc.steps, sid); return { src, v: c ? c.id : '', p: 'reason' }; }
+    return { src, v: '' };
+  }
+  listText(s) { const src = s.list && s.list.v && findStep(this.state.sc.steps, s.list.v); if (!src || !OUT[okey(src)]) return 'список не выбран'; return `${OUT[okey(src)].list[0]} из шага ${this.numbers[src.id] || '?'}`; }
+  kidsOf(s) {
+    if (s.kind === 'if') return [['yes', 'Если да'], ['no', 'Иначе']];
+    if (s.kind === 'each') { const src = s.list && s.list.v && findStep(this.state.sc.steps, s.list.v); return [['body', src ? `Для каждого ${OUT[okey(src)].list[1]}` : 'Для каждого элемента']]; }
+    if (s.kind === 'parallel') return Array.from({ length: s.lanes }, (_, i) => ['l' + i, `Ветка ${i + 1}`]);
+    if (s.kind === 'try') return [['body', 'Выполнить'], ['catch', 'Если ошибка']];
+    return [];
+  }
+  ctlSub(s) {
+    const cnt = n => n === 0 ? 'нет шагов' : n === 1 ? '1 шаг' : n < 5 ? `${n} шага` : `${n} шагов`;
+    const len = k => (s[k] || []).length;
+    if (s.kind === 'if') return `Если да — ${cnt(len('yes'))} · Иначе — ${cnt(len('no'))}`;
+    if (s.kind === 'each') return `${this.listText(s)} · внутри ${cnt(len('body'))}`;
+    if (s.kind === 'parallel') return `${s.lanes} ветки · следующий шаг начнётся после всех`;
+    if (s.kind === 'try') return `Выполнить — ${cnt(len('body'))} · Если ошибка — ${cnt(len('catch'))}`;
+    if (s.kind === 'wait') return waitText(s.wait || {});
+    if (s.kind === 'call') { const ins = CALL_IN[s.target || 'lead'] || []; const set = ins.filter(([k]) => ((s.in || {})[k] || {}).src).length; return `«${(CALLS.find(c => c[0] === s.target) || [, '—'])[1]}»` + (ins.length ? ` · параметры: ${set} из ${ins.length}` : ' · без параметров'); }
+    return CONTROL[s.kind].help;
+  }
+  condText(c) {
+    const nm = (list, k) => (list.find(x => x[0] === k) || [, '—'])[1];
+    switch (c.what) {
+      case 'contact': return c.op === 'no' ? 'У диалога нет контакта' : 'У диалога есть контакт';
+      case 'tag': return `У ${c.scope === 'dialog' ? 'диалога' : 'контакта'} ${c.op === 'no' ? 'нет метки' : 'есть метка'} «${c.tag}»`;
+      case 'channel': return `Канал диалога ${c.op === 'not' ? '— не ' : '— '}${nm(CHANNELS, c.ch)}`;
+      case 'cfield': return `Поле контакта «${nm(CFIELDS, c.field)}» ${nm(OPS_T, c.op)}${NEEDV.includes(c.op) ? ` «${c.val || '…'}»` : ''}`;
+      case 'linked': return `${c.op === 'has' ? 'Есть' : 'Нет'} связанной записи: ${nm(LINKS, c.kind)}`;
+      case 'step': { const p = c.step && findStep(this.state.sc.steps, c.step); if (!p) return 'Шаг не выбран'; const n = this.numbers[p.id] || '?';
+        if (c.field === 'status') return `Шаг ${n} ${c.op === 'fail' ? 'не удался' : 'выполнен'}`;
+        return `Шаг ${n} · ${lc(nm(OUT[okey(p)].f, c.field))} ${nm(OPS_T, c.op)}${NEEDV.includes(c.op) ? ` ${c.val || '…'}` : ''}`; }
+    }
+    return '';
+  }
+  stepCondDef(sid) { const p = sid && this.prevSteps(sid)[0]; if (!p) return {}; const f = (OUT[okey(p)] || { f: [] }).f.filter(o => !['rec', 'list'].includes(o[0]))[0]; return { step: p.id, field: f ? f[0] : 'status', op: f ? 'eq' : 'ok' }; }
+  condCtl(c, set, sid) {
+    const W = [['contact', 'Контакт диалога'], ['tag', 'Метка'], ['channel', 'Канал диалога'], ['cfield', 'Поле контакта'], ['linked', 'Связанная запись']];
+    if (sid) W.push(['step', 'Результат шага']);
+    const S = (k, list) => sel(c[k] ?? '', e => set({ [k]: e.target.value }), list);
+    const opVal = ops => NEEDV.includes(c.op) ? row2(S('op', ops), inp(c.val || '', e => set({ val: e.target.value }), { ph: 'Значение' })) : S('op', ops);
+    const out = [ctl('Проверить', sel(c.what, e => { const w = e.target.value; set({ what: w, ...COND_DEF[w], ...(w === 'step' ? this.stepCondDef(sid) : {}) }); }, W))];
+    if (c.what === 'contact') out.push(ctl('Условие', S('op', [['has', 'Контакт есть'], ['no', 'Контакта нет']])));
+    if (c.what === 'tag') out.push(ctl('У кого', S('scope', [['contact', 'У контакта'], ['dialog', 'У диалога']])), ctl('Условие', row2(S('op', [['has', 'есть метка'], ['no', 'нет метки']]), S('tag', TAGS)), 'Список меток — в «Контакты → Метки».'));
+    if (c.what === 'channel') out.push(ctl('Условие', row2(S('op', [['is', 'равен'], ['not', 'не равен']]), S('ch', CHANNELS))));
+    if (c.what === 'cfield') out.push(ctl('Поле', S('field', CFIELDS)), ctl('Условие', opVal(OPS_T.filter(o => ['filled', 'empty', 'eq', 'has'].includes(o[0])))));
+    if (c.what === 'linked') out.push(ctl('Запись', S('kind', LINKS)), ctl('Условие', S('op', [['no', 'ещё не связана с диалогом'], ['has', 'уже связана с диалогом']])));
+    if (c.what === 'step') {
+      const ps = this.prevSteps(sid); const p = c.step && findStep(this.state.sc.steps, c.step);
+      const fl = p ? [...(OUT[okey(p)] || { f: [] }).f.filter(o => !['rec', 'list'].includes(o[0])), ['status', 'Как завершился шаг']] : [['', '—']];
+      const num = ['sum', 'count'].includes(c.field);
+      const ops = c.field === 'status' ? [['ok', 'выполнен'], ['fail', 'не удался']] : OPS_T.filter(o => (num ? ['eq', 'gt', 'lt', 'empty', 'filled'] : ['eq', 'not', 'has', 'empty', 'filled']).includes(o[0]));
+      out.push(ctl('Шаг', sel(c.step || '', e => { const np = findStep(this.state.sc.steps, e.target.value); const f = np && (OUT[okey(np)] || { f: [] }).f.filter(o => !['rec', 'list'].includes(o[0]))[0]; set({ step: e.target.value, field: f ? f[0] : 'status', op: f ? 'eq' : 'ok' }); }, ps.length ? ps.map(x => [x.id, `Шаг ${this.numbers[x.id]} · ${ACTIONS[x.svc][x.action].label}`]) : [['', 'Нет шагов выше']])),
+        ctl('Что проверить', sel(c.field || '', e => set({ field: e.target.value, op: e.target.value === 'status' ? 'ok' : 'eq' }), fl)), ctl('Условие', opVal(ops)));
+    }
+    return out;
+  }
+  prevSteps(sid) {
+    const out = []; let stop = false;
+    walk(this.state.sc.steps, s => { if (s.id === sid) stop = true; if (!stop && s.kind === 'action' && s.svc !== 'cb') out.push(s); });
+    return out;
+  }
+  stepTitle(s) {
+    if (s.kind === 'action') return ACTIONS[s.svc][s.action].label;
+    if (s.kind === 'if') return 'Если ' + lc(this.condText(s.cond || {}));
+    if (s.kind === 'each') { const src = s.list && s.list.v && findStep(this.state.sc.steps, s.list.v); return src && OUT[okey(src)] ? `Для каждого ${OUT[okey(src)].list[1]}` : 'Для каждого'; }
+    return CONTROL[s.kind].label;
+  }
+  valueText(fv, type, sid) {
+    if (!fv || fv.src === 'none') return null;
+    if (fv.src === 'ctx') return (CTX.find(c => c[0] === fv.v) || CTX[0])[1].toLowerCase();
+    if (fv.src === 'input') return 'спросить сотрудника';
+    if (fv.src === 'step') { const n = this.numbers[fv.v]; const p = findStep(this.state.sc.steps, fv.v); if (!n || !p) return 'источник удалён'; const f = ((OUT[okey(p)] || { f: [] }).f).find(o => o[0] === (fv.p || 'rec')); return `${lc(f ? f[1] : 'результат')} из шага ${n}`; }
+    if (fv.src === 'err') return lc((ERRF.find(o => o[0] === fv.p) || ERRF[0])[1]) + ' из «Если ошибка»';
+    if (fv.src === 'item') { const f = ITEMF.find(o => o[0] === (fv.p || 'rec')); return !fv.p || fv.p === 'rec' ? 'текущий элемент' : `${lc(f[1])} текущего элемента`; }
+    const dir = DIRS[type]; if (dir) { const e = dir.find(d => d[0] === fv.v); return e && fv.v ? e[1] : null; }
+    return fv.v ? `«${fv.v}»` : null;
+  }
+
+  flatten(steps, depth, rows, parentPath, prefix) {
+    steps.forEach((s, i) => {
+      const num = prefix ? `${prefix.p}.${prefix.o + i + 1}` : String(i + 1);
+      this.numbers[s.id] = num;
+    });
+    steps.forEach((s, i) => {
+      const num = this.numbers[s.id];
+      let sub, icon = I.plug, cb = false;
+      if (s.kind === 'action') {
+        const a = ACTIONS[s.svc][s.action]; cb = s.svc === 'cb';
+        const parts = a.fields.map(([k, label, type]) => { const t = this.valueText(s.f[k], type, s.id); return t ? `${label.toLowerCase()} — ${t}` : null; }).filter(Boolean);
+        sub = `${CONN[s.svc]}${parts.length ? ' · ' + parts.slice(0, 2).join(', ') : ''}`;
+      } else { icon = CONTROL[s.kind].icon; sub = this.ctlSub(s); }
+      const miss = this.miss.filter(m => m.id === s.id).map(m => m.label);
+      const r = findList(this.state.sc.steps, s.id);
+      const menuItem = (label, run, disabled, danger) => ({ label, run: e => { e.stopPropagation(); if (!disabled) run(); }, disabled: !!disabled,
+        style: { width: '100%', display: 'flex', padding: '8px 10px', color: disabled ? 'var(--n-5)' : danger ? 'var(--error-text)' : 'var(--n-2)', background: 'transparent', border: 0, borderRadius: 7, fontSize: 13, fontWeight: 500, textAlign: 'left', cursor: disabled ? 'default' : 'pointer' } });
+      const move = d => this.mut(sc => { const x = findList(sc.steps, s.id); const [it] = x.list.splice(x.i, 1); x.list.splice(x.i + d, 0, it); this.setState({ menuId: null }); });
+      rows.push({ isStep: true, isBranch: false, isAdd: false, num, title: this.stepTitle(s), sub, icon, cb, notCb: !cb,
+        warn: miss.length > 0, warnText: `Заполните: ${miss.join(', ').toLowerCase()}`,
+        wrap: { paddingLeft: depth * 34, position: 'relative' },
+        style: { display: 'flex', alignItems: 'center', gap: 12, margin: '0 -10px', padding: '9px 10px', borderRadius: 9, cursor: 'pointer', background: this.state.drawer && this.state.drawer.id === s.id ? 'var(--primary-bg)' : 'transparent' },
+        open: () => this.setState({ drawer: { type: 'step', id: s.id }, menuId: null }),
+        menuOpen: this.state.menuId === s.id,
+        toggleMenu: e => { e.stopPropagation(); this.setState(st => ({ menuId: st.menuId === s.id ? null : s.id })); },
+        menu: [menuItem('Выше', () => move(-1), r.i === 0), menuItem('Ниже', () => move(1), r.i === r.list.length - 1),
+          menuItem('Копировать', () => this.mut(sc => { const x = findList(sc.steps, s.id); const c = clone(x.list[x.i]); walk([c], n => { n.id = 's' + (++seq); }); x.list.splice(x.i + 1, 0, c); this.setState({ menuId: null }); })),
+          menuItem('Удалить', () => this.mut(sc => { const x = findList(sc.steps, s.id); x.list.splice(x.i, 1); this.setState({ menuId: null, drawer: null }); }), false, true)] });
+      let off = 0;
+      this.kidsOf(s).forEach(([b, label]) => {
+        rows.push({ isStep: false, isBranch: true, isAdd: false, label, wrap: { paddingLeft: (depth + 1) * 34 } });
+        this.flatten(s[b], depth + 1, rows, { id: s.id, branch: b }, { p: num, o: off });
+        off += s[b].length;
+        rows.push(this.addRow(depth + 1, { id: s.id, branch: b }, s[b].length ? 'Добавить шаг' : 'Добавить шаг сюда'));
+      });
+      if (s.kind === 'parallel' && s.lanes < 4) rows.push({ ...this.addRow(depth + 1, null, 'Добавить ветку'), add: () => this.mut(x => { const n = findStep(x.steps, s.id); n['l' + n.lanes] = []; n.lanes += 1; }) });
+    });
+    return rows;
+  }
+  addRow(depth, path, label) {
+    return { isStep: false, isBranch: false, isAdd: true, label, wrap: { paddingLeft: depth * 34 },
+      addStyle: { display: 'inline-flex', alignItems: 'center', gap: 6, margin: depth ? '2px 0 6px 34px' : '8px 0 4px 34px', padding: 0, border: 0, background: 'none', color: depth ? 'var(--n-4)' : 'var(--primary)', fontSize: 13, fontWeight: 600, cursor: 'pointer' },
+      add: () => this.setState({ drawer: { type: 'palette', path }, menuId: null }) };
+  }
+
+  insert(path, item) {
+    const id = 's' + (++seq); const step = { id, ...item };
+    this.mut(sc => getList(sc.steps, path).push(step));
+    this.setState({ drawer: { type: 'step', id } });
+  }
+
+  drawerVals() {
+    const d = this.state.drawer; const sc = this.state.sc;
+    const base = { isPalette: false, isAction: false, isCtl: false, isTrigger: false, hasFooter: true, canRemove: false, otherText: '', preview: '' };
+    if (!d) return { d: base, fieldRows: [], palette: [], triggerTypes: [], trigFields: [] };
+    if (d.type === 'palette') {
+      const mk = (svc, key) => ({ label: ACTIONS[svc][key].label, help: CONN[svc], icon: I.plug, cb: svc === 'cb', notCb: svc !== 'cb',
+        pick: () => this.insert(d.path, { kind: 'action', svc, action: key, f: Object.fromEntries(ACTIONS[svc][key].fields.map(([k, , t]) => [k, t === 'rec' ? v('step', (this.prevSteps('__end')[0] || {}).id || '') : v('const', '')])) }) });
+      const palette = [
+        { title: 'Битрикс24 · Отдел продаж', items: Object.keys(ACTIONS.bitrix).map(k => mk('bitrix', k)) },
+        { title: 'amoCRM · Розница', items: Object.keys(ACTIONS.amo).map(k => mk('amo', k)) },
+        { title: 'Mindbox · Интернет-магазин', items: Object.keys(ACTIONS.mb).map(k => mk('mb', k)) },
+        { title: 'Chatballs', items: Object.keys(ACTIONS.cb).map(k => mk('cb', k)) },
+        { title: 'Управление ходом', items: Object.keys(CONTROL).map(k => ({ label: CONTROL[k].label, help: CONTROL[k].help, icon: CONTROL[k].icon, cb: false, notCb: true,
+          pick: () => this.insert(d.path, clone(CTL_DEF[k])) })) },
+      ];
+      return { d: { ...base, isPalette: true, hasFooter: false, kicker: 'Новый шаг', title: 'Что сделать?' }, palette, fieldRows: [], triggerTypes: [], trigFields: [] };
+    }
+    if (d.type === 'step') {
+      const r = findList(sc.steps, d.id); if (!r) return { d: base, fieldRows: [], palette: [], triggerTypes: [], trigFields: [] };
+      const s = r.list[r.i]; const num = this.numbers[s.id];
+      if (s.kind === 'action') {
+        const a = ACTIONS[s.svc][s.action];
+        const fieldRows = a.fields.map(([k, label, type, req]) => {
+          const fv = s.f[k] || v('none');
+          const set = patch => this.mut(x => { const st = findList(x.steps, s.id); const node = st.list[st.i]; node.f[k] = { ...(node.f[k] || v('none')), ...patch }; });
+          const missing = req && (fv.src === 'none' || (fv.src === 'const' && !fv.v));
+          let opts = [], isText = false, isSelect = false, ph = '', hint = '';
+          if (fv.src === 'const') { if (DIRS[type]) { isSelect = true; opts = DIRS[type]; hint = type === 'emp' || type === 'stage' || type === 'pipe' ? `Список из ${CONN[s.svc]}` : ''; } else isText = true; }
+          if (fv.src === 'ctx') { isSelect = true; opts = CTX; }
+          if (fv.src === 'input') { isText = true; ph = 'Вопрос сотруднику'; hint = 'Сотрудник увидит этот вопрос перед запуском. Можно подставить значение по умолчанию из диалога.'; }
+          let custom = null;
+          if (fv.src === 'step') { isSelect = true; const ps = this.prevSteps(s.id).filter(p => this.fieldOpts(p, type).length);
+            const stepSel = sel(fv.v, e => { const p = findStep(this.state.sc.steps, e.target.value); set({ v: e.target.value, p: p ? (this.fieldOpts(p, type)[0] || [''])[0] : '' }); }, ps.length ? ps.map(p => [p.id, `Шаг ${this.numbers[p.id]} · ${ACTIONS[p.svc][p.action].label}`]) : [['', 'Нет подходящих шагов выше']]);
+            const cur = findStep(this.state.sc.steps, fv.v);
+            custom = type === 'rec' ? stepSel : row2(stepSel, sel(fv.p || '', e => set({ p: e.target.value }), cur ? this.fieldOpts(cur, type) : [['', '—']]));
+            hint = type === 'rec' ? 'Запись, созданная или найденная этим шагом.' : 'Шаг и значение из его результата: номер, ссылка, сумма.'; }
+          if (fv.src === 'item') { isSelect = true; const anc = this.eachAnc(s.id);
+            const ancSel = sel(fv.v, e => set({ v: e.target.value }), anc.map(a => [a.id, `${this.stepTitle(a)} · шаг ${this.numbers[a.id]}`]));
+            custom = type === 'rec' ? ancSel : row2(ancSel, sel(fv.p || 'name', e => set({ p: e.target.value }), ITEMF.filter(f => f[0] !== 'rec')));
+            hint = 'Элемент списка, который обрабатывается сейчас.'; }
+          if (fv.src === 'err') { isSelect = true; custom = sel(fv.p || 'reason', e => set({ p: e.target.value }), ERRF); hint = 'Сведения о шаге из «Выполнить», который не удался.'; }
+          return { label, req: !!req, src: fv.src, v: fv.v, isText, isSelect, isNone: fv.src === 'none', ph, hint,
+            srcSel: sel(fv.src, e => set({ p: undefined, ...this.srcDefault(e.target.value, label, type, s.id) }), this.srcOpts(type, s.id), SEL_SM),
+            valSel: custom || sel(fv.v, e => set({ v: e.target.value }), opts),
+            setV: e => set({ v: e.target.value }),
+            box: { display: 'flex', flexDirection: 'column', gap: 8, padding: 12, borderRadius: 10, border: `1px solid ${missing ? 'var(--warning-border)' : 'var(--n-8)'}`, background: missing ? 'var(--warning-bg)' : 'var(--surface-card)' } };
+        });
+        return { d: { ...base, isAction: true, canRemove: true, kicker: `Шаг ${num} · ${CONN[s.svc]}`, title: a.label, hasConn: s.svc !== 'cb', connName: CONN[s.svc], action: s.action,
+          actionOptEls: optEls(Object.keys(ACTIONS[s.svc]).map(k => [k, ACTIONS[s.svc][k].label])), resultNote: a.result || '' }, fieldRows, palette: [], triggerTypes: [], trigFields: [] };
+      }
+      const setS = p => this.mut(x => { const n = findStep(x.steps, s.id); Object.assign(n, typeof p === 'function' ? p(n) : p); });
+      const ctlD = (text, controls, preview) => ({ d: { ...base, isCtl: true, canRemove: true, kicker: `Шаг ${num}`, title: this.stepTitle(s), otherText: text, preview: preview || '' }, controls });
+      if (s.kind === 'if') return ctlD('Шаги ветки «Если да» выполнятся, когда условие верно, иначе — шаги ветки «Иначе».', this.condCtl(s.cond || {}, p => setS(n => ({ cond: { ...(n.cond || {}), ...p } })), s.id), 'Условие: ' + lc(this.condText(s.cond || {})));
+      if (s.kind === 'each') {
+        const lists = this.prevSteps(s.id).filter(p => OUT[okey(p)] && OUT[okey(p)].list);
+        return ctlD('Шаги внутри выполнятся отдельно для каждого элемента списка.', [
+          ctl('Перебирать', sel(s.list?.v || '', e => setS({ list: { v: e.target.value } }), lists.length ? [['', 'Выберите список'], ...lists.map(p => [p.id, `Шаг ${this.numbers[p.id]} · ${lc(OUT[okey(p)].f.find(o => o[0] === 'list')[1])}`])] : [['', 'Нет списков в шагах выше']]), 'Список — результат шага выше, например найденные клиенты.'),
+          ctl('Внутри доступно', React.createElement('div', { style: { padding: '8px 10px', borderRadius: 8, background: 'var(--n-10)', fontSize: 12.5, color: 'var(--n-2)', lineHeight: 1.5 } }, 'Текущий элемент: ' + ITEMF.map(f => lc(f[1])).join(', ')), 'В шагах внутри выберите источник «Текущий элемент».'),
+          ctl('Обрабатывать', sel(s.mode || 'seq', e => setS({ mode: e.target.value }), [['seq', 'По одному, по порядку'], ['par', 'До 5 одновременно']])),
+          ctl('Если элемент не удался', sel(s.onFail || 'next', e => setS({ onFail: e.target.value }), [['next', 'Записать в журнал и продолжить'], ['stop', 'Остановить сценарий']])),
+        ]);
+      }
+      if (s.kind === 'parallel') return ctlD(`Ветки выполняются независимо друг от друга. Сейчас веток: ${s.lanes}. Шаги добавляются в каждую ветку в списке шагов, там же — «Добавить ветку».`, [
+        ctl('Если ветка не удалась', sel(s.onFail || 'wait', e => setS({ onFail: e.target.value }), [['wait', 'Дождаться остальных, затем остановить'], ['stop', 'Сразу остановить остальные'], ['go', 'Продолжить сценарий']]))]);
+      if (s.kind === 'try') return ctlD('Шаги «Выполнить» идут по порядку. Если любой из них не удался, выполнятся шаги «Если ошибка». В них доступны причина ошибки и номер шага.', [
+        ctl('После обработки ошибки', sel(s.after || 'go', e => setS({ after: e.target.value }), [['go', 'Продолжить сценарий'], ['fail', 'Завершить сценарий с ошибкой']]))]);
+      if (s.kind === 'wait') { const w = s.wait || {}; const sw = p => setS(n => ({ wait: { ...(n.wait || {}), ...p } }));
+        const c = [ctl('Ждать', sel(w.mode || 'reply', e => sw({ mode: e.target.value }), [['reply', 'Ответ клиента в этом диалоге'], ['delay', 'Указанное время: через…'], ['clock', 'Указанное время: до…'], ['staff', 'Решение сотрудника']]))];
+        if (w.mode === 'delay') c.push(ctl('Через', row2(inp(w.n || '2', e => sw({ n: e.target.value }), { type: 'number' }), sel(w.unit || 'h', e => sw({ unit: e.target.value }), [['min', 'минут'], ['h', 'часов'], ['d', 'дней']]))));
+        if (w.mode === 'clock') { c.push(ctl('День', sel(w.day || 'next', e => sw({ day: e.target.value }), [['next', 'Ближайший — сегодня или завтра'], ['work', 'Ближайший рабочий день'], ['date', 'Конкретная дата']])));
+          if (w.day === 'date') c.push(ctl('Дата', inp(w.date || '', e => sw({ date: e.target.value }), { type: 'date', w: 180 })));
+          c.push(ctl('Время', inp(w.time || '09:00', e => sw({ time: e.target.value }), { type: 'time', w: 140 }), 'Время организации · Москва (UTC+3). Если в этот день время уже прошло — на следующий.')); }
+        if (w.mode === 'staff') c.push(ctl('Кто решает', sel(w.who || 'owner', e => sw({ who: e.target.value }), [['owner', 'Ответственный за диалог'], ['admin', 'Администратор'], ['anna', 'Анна Ким']])));
+        if (!w.mode || w.mode === 'reply' || w.mode === 'staff') c.push(ctl('Не дольше', sel(w.limit || '1d', e => sw({ limit: e.target.value }), [['1h', '1 часа'], ['1d', '1 дня'], ['3d', '3 дней']])), ctl('Если срок истёк', sel(w.after || 'continue', e => sw({ after: e.target.value }), [['continue', 'Продолжить'], ['end', 'Завершить сценарий']])));
+        return ctlD('Ожидание не занимает сотрудника; запуск в журнале будет в состоянии «Ожидает».', c, 'Итого: ' + lc(waitText(w))); }
+      const ins = CALL_IN[s.target || 'lead'] || []; const iv = s.in || {};
+      const setIn = (k, p) => setS(n => ({ in: { ...(n.in || {}), [k]: { ...((n.in || {})[k] || {}), ...p } } }));
+      const ps = this.prevSteps(s.id).filter(p => this.fieldOpts(p, 'text').length);
+      const inRows = ins.map(([k, l, type, req]) => {
+        const fv = iv[k] || { src: '' };
+        const srcList = [['', 'Выберите источник'], ['const', 'Значение'], ['ctx', 'Из диалога'], ...(ps.length ? [['step', 'Результат шага']] : []), ...(this.eachAnc(s.id).length ? [['item', 'Текущий элемент']] : []), ['input', 'Спросить при запуске этого сценария']];
+        let ve = null;
+        if (fv.src === 'const') ve = type === 'emp' ? sel(fv.v || '', e => setIn(k, { v: e.target.value }), EMP) : inp(fv.v || '', e => setIn(k, { v: e.target.value }), { ph: l });
+        if (fv.src === 'ctx') ve = sel(fv.v || 'topic', e => setIn(k, { v: e.target.value }), CTX);
+        if (fv.src === 'step') { const cur = findStep(this.state.sc.steps, fv.v) || ps[0]; ve = row2(sel(cur ? cur.id : '', e => { const np = findStep(this.state.sc.steps, e.target.value); setIn(k, { v: e.target.value, p: np ? this.fieldOpts(np, 'text')[0][0] : '' }); }, ps.map(p => [p.id, `Шаг ${this.numbers[p.id]} · ${ACTIONS[p.svc][p.action].label}`])), sel(fv.p || '', e => setIn(k, { p: e.target.value }), cur ? this.fieldOpts(cur, 'text') : [['', '—']])); }
+        if (fv.src === 'item') ve = sel(fv.p || 'name', e => setIn(k, { p: e.target.value }), ITEMF.filter(f => f[0] !== 'rec'));
+        if (fv.src === 'input') ve = inp(fv.v || l, e => setIn(k, { v: e.target.value }), { ph: 'Вопрос сотруднику' });
+        const srcEl = sel(fv.src, e => { const src = e.target.value; setIn(k, { src, v: src === 'step' && ps[0] ? ps[0].id : '', p: src === 'step' && ps[0] ? this.fieldOpts(ps[0], 'text')[0][0] : src === 'item' ? 'name' : '' }); }, srcList);
+        return ctl(l + (req ? ' · обязательно' : ''), ve ? React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } }, srcEl, ve) : srcEl,
+          !fv.src && req ? 'Без значения вложенный сценарий не запустится — включить сценарий будет нельзя.' : fv.src === 'input' ? 'Вопрос появится при запуске этого сценария, а не вложенного.' : '');
+      });
+      return ctlD('Вызванный сценарий выполнится с теми же или меньшими правами. Его вопросы «Спросить при запуске» здесь не задаются — значения передаёт этот сценарий.', [ctl('Сценарий', sel(s.target || 'lead', e => setS({ target: e.target.value, in: {} }), CALLS)),
+        ...(ins.length ? [ctl('Входные параметры', React.createElement('div', { style: { fontSize: 12.5, color: 'var(--n-4)', lineHeight: 1.5 } }, `У «${(CALLS.find(c => c[0] === (s.target || 'lead')) || [, ''])[1]}» ${ins.length === 1 ? 'один параметр' : ins.length + ' параметра'}. Выберите, откуда взять значения.`))] : [ctl('Входные параметры', React.createElement('div', { style: { fontSize: 12.5, color: 'var(--n-4)' } }, 'Вложенному сценарию не нужны параметры.'))]),
+        ...inRows]);
+    }
+    if (d.type === 'trigger') {
+      const t = sc.triggers.find(x => x.id === d.id) || { type: d.newType || 'staff' };
+      const cur = d.draftType || t.type;
+      const triggerTypes = Object.keys(TRIG).map(k => ({ ...TRIG[k], pick: () => this.setState(s => ({ drawer: { ...s.drawer, draftType: k } })),
+        style: { display: 'flex', alignItems: 'center', gap: 12, padding: '9px 12px', borderRadius: 9, textAlign: 'left', cursor: 'pointer', background: k === cur ? 'var(--primary-bg)' : 'var(--surface-card)', border: `1px solid ${k === cur ? 'var(--primary)' : 'var(--n-8)'}` } }));
+      const G = opts => React.createElement('select', { key: cur + opts[0], defaultValue: opts[0], style: SEL }, optEls(opts));
+      let tf;
+      if (cur === 'schedule') {
+        const sch = d.sched || t.sched || DEF_SCHED; const ss = p => this.setState(s => ({ drawer: { ...s.drawer, sched: { ...sch, ...p } } }));
+        tf = [ctl('Как часто', sel(sch.freq, e => ss({ freq: e.target.value }), [['daily', 'Каждый день'], ['weekdays', 'По будням'], ['days', 'По выбранным дням недели'], ['monthly', 'Раз в месяц']]))];
+        if (sch.freq === 'days') tf.push(ctl('Дни', chips(DOW, sch.days, k => ss({ days: sch.days.includes(k) ? sch.days.filter(x => x !== k) : [...sch.days, k] }))));
+        if (sch.freq === 'monthly') tf.push(ctl('Число', sel(sch.dom, e => ss({ dom: e.target.value }), [...Array.from({ length: 28 }, (_, i) => [String(i + 1), `${i + 1}-го`]), ['last', 'Последний день месяца']])));
+        tf.push(ctl('Время', inp(sch.time, e => ss({ time: e.target.value }), { type: 'time', w: 140 }), 'Время организации · Москва (UTC+3). Часовой пояс — в «Настройки → Организация».'),
+          ctl('Если запуск пропущен', sel(sch.missed, e => ss({ missed: e.target.value }), [['once', 'Выполнить один раз, когда станет возможно'], ['skip', 'Пропустить']]), 'Например, сценарий был приостановлен или сервис недоступен.'),
+          ctl('Итого', React.createElement('div', { style: { padding: '9px 12px', borderRadius: 8, background: 'var(--primary-bg)', border: '1px solid var(--primary-border)', fontSize: 13, color: 'var(--n-1)', fontWeight: 600 } }, schedText(sch))));
+      } else tf = ({
+        staff: [ctl('Кому доступен', G(['Поддержка', 'Отдел продаж', 'Всем сотрудникам']), 'Только в диалогах, доступных сотруднику.')],
+        ai: [ctl('Агент', G(['Ассистент поддержки', 'Продавец'])), ctl('Как выполнять', G(['С подтверждением сотрудника', 'Самостоятельно']), 'С подтверждением: сотрудник увидит точные данные и подтвердит запуск.')],
+        event: [ctl('Событие', G(['Начат новый диалог', 'Диалогу добавлена метка', 'Диалог закрыт']))],
+        svc: [ctl('Подключение', G(['Битрикс24 · Отдел продаж', 'amoCRM · Розница'])), ctl('Событие', G(['Изменилась стадия лида', 'Создана сделка']))],
+        api: [],
+        nested: [ctl('Откуда', G(['Любой сценарий организации']), 'Повторный вызов самого себя блокируется.')],
+      })[cur];
+      const api = cur === 'api' ? (t.api || { issued: false }) : null;
+      const hook = `https://api.chatballs.ru/v1/hooks/sc${sc.id}-7f2a`;
+      const trigApi = api ? { pending: !api.issued, issued: !!api.issued, fresh: !!api.fresh, masked: !!api.issued && !api.fresh, url: hook,
+        key: api.fresh ? `${api.key}_x7Qm2LwR8tVb4nKc` : `${(api.key || 'cbk_live').slice(0, 9)}••••••••••••${(api.key || '').slice(-3)}`,
+        example: `POST ${hook}\nAuthorization: Bearer <ключ>\nContent-Type: application/json\n\n{ "segment": "regular" }`,
+        last: api.fresh ? 'Ключ создан только что · Елена Кузнецова' : 'Последний вызов: сегодня, 12:04 · успешно. Ключ создан 20 окт · Елена Кузнецова',
+        reissue: () => this.apiPatch(t.id, { fresh: true, key: 'cbk_live_' + (++seq) }) } : null;
+      return { d: { ...base, isTrigger: true, canRemove: sc.triggers.length > 1 && !!d.id, kicker: 'Запуск', title: 'Чем запускается' }, triggerTypes, trigFields: tf, trigApi, trigAuto: AUTO.includes(cur), fieldRows: [], palette: [] };
+    }
+    if (d.type === 'cond') return { d: { ...base, isCtl: true, kicker: 'Условия', title: 'Условие запуска', otherText: 'Сценарий начнётся, только если условие выполнено. Иначе запуск не создаётся.', preview: 'Условие: ' + lc(this.condText(this.state.condDraft)) }, controls: this.condCtl(this.state.condDraft, p => this.setState(s => ({ condDraft: { ...s.condDraft, ...p } })), null) };
+    return { d: base, fieldRows: [], palette: [], triggerTypes: [], trigFields: [] };
+  }
+
+  applyDrawer() {
+    const d = this.state.drawer;
+    this.unfresh();
+    if (d && d.type === 'trigger') {
+      const type = d.draftType;
+      this.mut(sc => { if (d.id) { const t = sc.triggers.find(x => x.id === d.id); if (type) t.type = type; if (t.type === 'schedule') t.sched = d.sched || t.sched || clone(DEF_SCHED); } else { const nt = { id: 't' + (++seq), type: type || 'staff' }; if (nt.type === 'schedule') nt.sched = d.sched || clone(DEF_SCHED); sc.triggers.push(nt); } });
+    }
+    if (d && d.type === 'cond') this.mut(sc => { if (d.idx != null) sc.conds[d.idx] = this.state.condDraft; else sc.conds.push(this.state.condDraft); });
+    this.setState({ drawer: null });
+  }
+
+  renderVals() {
+    const st = this.state;
+    const base = { jumps: this.jumps(), nav: NAV.map(([i, l]) => ({ d: I[i], label: l })), subnav: SUB.map(([i, l]) => ({ d: I[i], label: l, cap: !i, active: !!i && l === 'Сценарии', idle: !!i && l !== 'Сценарии' })) };
+    const launchText = sc => sc.triggers.map(t => TRIG[t.type].label).join(', ');
+    const connText = sc => { const set = new Set(); walk(sc.steps, s => s.kind === 'action' && s.svc !== 'cb' && set.add(CONN[s.svc])); return [...set].join(', ') || 'Только Chatballs'; };
+    const listRows = st.all.map(sc => ({ name: sc.name, origin: sc.origin, launch: launchText(sc), conns: connText(sc),
+      on: sc.on && !sc.paused, draft: !sc.on, paused: sc.on && sc.paused, open: () => this.open(sc.id) }));
+    if (st.view === 'list' || !st.sc) return { ...base, isList: true, isEditor: false, listRows, createNew: () => this.createNew(), hasDrawer: false, d: {}, leaveAsk: false };
+
+    const sc = st.sc;
+    this.numbers = {}; this.miss = this.missing();
+    const rows = this.flatten(sc.steps, 0, [], null, '');
+    if (sc.steps.length) rows.push(this.addRow(0, null, 'Добавить шаг'));
+    const dirty = this.dirty();
+    const canEnable = this.miss.length === 0;
+    const dv = { fieldRows: [], palette: [], triggerTypes: [], trigFields: [], controls: [], trigApi: null, trigAuto: false, ...this.drawerVals() };
+    const trigSub = t => ({ staff: `Группа «${t.group === 'sales' ? 'Отдел продаж' : 'Поддержка'}» · в доступных диалогах`, ai: 'Ассистент поддержки · с подтверждением сотрудника', event: 'Начат новый диалог', svc: 'Битрикс24 · изменилась стадия лида', schedule: schedText(t.sched || DEF_SCHED), api: t.api && t.api.issued ? 'Адрес и ключ созданы · последний вызов сегодня, 12:04' : 'Адрес и ключ появятся после сохранения', nested: 'Любой сценарий организации' }[t.type]);
+
+    let banner = { show: false };
+    const bstyle = tone => ({ display: 'flex', gap: 10, alignItems: 'center', padding: '11px 14px', border: `1px solid var(--${tone}-border)`, borderRadius: 9, background: `var(--${tone}-bg)` });
+    const apiT = sc.triggers.find(t => t.api && t.api.fresh);
+    if (st.notice === 'apikey' && apiT) banner = { show: true, style: bstyle('primary'), title: 'Создан ключ внешнего запуска.', text: 'Скопируйте его сейчас — после закрытия панели ключ будет скрыт.', hasAction: true, actionLabel: 'Показать ключ', action: () => this.setState({ drawer: { type: 'trigger', id: apiT.id } }) };
+    else if (st.notice === 'enabled') banner = { show: true, style: bstyle('success'), title: 'Сценарий включён.', text: `${launchText(sc)} — сценарий уже доступен.`, hasAction: false };
+    else if (sc.paused) banner = { show: true, style: bstyle('warning'), title: 'Сценарий приостановлен.', text: 'Нет доступа к amoCRM · Розница. Запуски продолжатся после восстановления доступа.', hasAction: true, actionLabel: 'К подключению', action: () => { location.href = 'Сервисы.dc.html'; } };
+    else if (!sc.on && this.miss.length) {
+      const first = this.miss[0];
+      banner = { show: true, style: bstyle('warning'), title: `Чтобы включить, заполните: ${this.miss.map(m => m.label.toLowerCase()).join(', ')}.`, text: '', hasAction: !!first.id, actionLabel: 'Перейти',
+        action: () => first.id === 'deleg' ? this.setState({ drawer: { type: 'trigger', id: sc.triggers.find(t => AUTO.includes(t.type)).id } }) : this.setState({ drawer: { type: 'step', id: first.id } }) };
+    } else if (sc.on && dirty) banner = { show: true, style: bstyle('primary'), title: 'Включённая версия продолжает работать.', text: 'Изменения применятся после сохранения.', hasAction: false };
+
+    return {
+      ...base, isList: false, isEditor: true, listRows,
+      sc: { name: sc.name, origin: sc.origin, on: sc.on && !sc.paused, paused: sc.on && !!sc.paused, off: !sc.on, canDisable: sc.on },
+      setName: e => { const val = e.target.value; this.mut(x => { x.name = val; }); },
+      dirty, banner,
+      save: () => this.commit(),
+      enable: () => { if (!canEnable) return; this.commit({ on: true }); this.setState(s => ({ notice: s.notice === 'apikey' ? 'apikey' : 'enabled' })); },
+      enableStyle: { height: 34, display: 'inline-flex', alignItems: 'center', padding: '0 16px', color: canEnable ? '#fff' : 'var(--n-5)', background: canEnable ? 'var(--primary)' : 'var(--n-8)', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: canEnable ? 'pointer' : 'not-allowed' },
+      disable: () => { this.commit({ on: false }); this.setState({ headMenu: false, notice: null }); },
+      headMenu: st.headMenu, toggleHeadMenu: () => this.setState(s => ({ headMenu: !s.headMenu })),
+      back: () => dirty ? this.setState({ leaveAsk: true }) : this.setState({ view: 'list' }),
+      leaveAsk: st.leaveAsk, leaveText: sc.on ? 'Включённая версия продолжит работать без этих изменений.' : 'Иначе изменения будут потеряны.',
+      leaveSave: () => { this.commit(); this.setState({ leaveAsk: false, view: 'list' }); },
+      leaveDiscard: () => this.setState({ leaveAsk: false, view: 'list' }),
+      triggerRows: sc.triggers.map(t => ({ icon: TRIG[t.type].icon, title: TRIG[t.type].label, sub: trigSub(t), open: () => this.setState({ drawer: { type: 'trigger', id: t.id } }) })),
+      addTrigger: () => this.setState({ drawer: { type: 'trigger', id: null, draftType: 'ai' } }),
+      condRows: sc.conds.map((c, i) => ({ text: this.condText(c), joiner: i === 0 ? 'Если' : sc.condAny ? 'или' : 'и',
+        open: () => this.setState({ drawer: { type: 'cond', idx: i }, condDraft: clone(c) }),
+        remove: e => { e.stopPropagation(); this.mut(x => x.conds.splice(i, 1)); } })),
+      noConds: !sc.conds.length, manyConds: sc.conds.length > 1,
+      condModeLabel: sc.condAny ? 'Достаточно любого условия' : 'Должны выполняться все условия',
+      toggleCondMode: () => this.mut(x => { x.condAny = !x.condAny; }),
+      addCond: () => this.setState({ drawer: { type: 'cond', idx: null }, condDraft: { what: 'tag', ...COND_DEF.tag } }),
+      actionSel: dv.d.isAction ? sel(dv.d.action, e => { const key = e.target.value; const id = st.drawer.id; this.mut(x => { const r = findList(x.steps, id); const s = r.list[r.i]; s.action = key; s.f = Object.fromEntries(ACTIONS[s.svc][key].fields.map(([k]) => [k, s.f[k] || v('const', '')])); }); }, Object.keys(ACTIONS[findList(sc.steps, st.drawer.id).list[findList(sc.steps, st.drawer.id).i].svc]).map(k => [k, ACTIONS[findList(sc.steps, st.drawer.id).list[findList(sc.steps, st.drawer.id).i].svc][k].label]), { ...SEL, height: 36 }) : null,
+      condDraft: st.condDraft, setCondDraft: e => this.setState({ condDraft: e.target.value }),
+      noSteps: !sc.steps.length, addRoot: () => this.setState({ drawer: { type: 'palette', path: null } }),
+      stepRows: rows,
+      hasDrawer: !!st.drawer, ...dv,
+      setAction: e => { const key = e.target.value; const id = st.drawer.id; this.mut(x => { const r = findList(x.steps, id); const s = r.list[r.i]; s.action = key; s.f = Object.fromEntries(ACTIONS[s.svc][key].fields.map(([k]) => [k, s.f[k] || v('const', '')])); }); },
+      delegated: sc.delegated, toggleDelegated: () => this.mut(x => { x.delegated = !x.delegated; }),
+      closeDrawer: () => { this.unfresh(); this.setState({ drawer: null }); },
+      applyDrawer: () => this.applyDrawer(),
+      removeCurrent: () => { const d = st.drawer; if (d.type === 'step') this.mut(x => { const r = findList(x.steps, d.id); r.list.splice(r.i, 1); }); if (d.type === 'trigger') this.mut(x => { x.triggers = x.triggers.filter(t => t.id !== d.id); }); this.setState({ drawer: null }); },
+    };
+  }
+
+  createNew() {
+    const sc = { id: 10 + (++seq), name: 'Новый сценарий', origin: 'Свой сценарий', on: false, delegated: false, condAny: false, triggers: [{ id: 't' + (++seq), type: 'staff', group: 'support' }], conds: [], steps: [] };
+    this.setState({ view: 'editor', sc, saved: clone({ ...sc, name: '' }), drawer: null, notice: null });
+  }
+
+  jumps() {
+    const reset = { drawer: null, menuId: null, headMenu: false, leaveAsk: false, notice: null };
+    const openFresh = (id, extra = {}) => { const sc = ALL().find(s => s.id === id); this.setState({ view: 'editor', all: ALL(), sc: clone(sc), saved: clone(sc), ...reset, ...extra }); };
+    return [
+      ['Список', () => this.setState({ view: 'list', all: ALL(), ...reset })],
+      ['Готовый: заполнить и включить', () => openFresh(1)],
+      ['· настройка шага', () => openFresh(1, { drawer: { type: 'step', id: 's1' } })],
+      ['· выбор нового шага', () => openFresh(1, { drawer: { type: 'palette', path: null } })],
+      ['· способ запуска', () => openFresh(1, { drawer: { type: 'trigger', id: 't1' } })],
+      ['Свой со ветвлением', () => openFresh(3)],
+      ['Приостановлен', () => openFresh(2)],
+      ['Составной: перебор, ветки, ошибки', () => openFresh(4)],
+      ['· перебор', () => openFresh(4, { drawer: { type: 'step', id: 's22' } })],
+      ['· шаг внутри перебора', () => openFresh(4, { drawer: { type: 'step', id: 's26' } })],
+      ['· ветки', () => openFresh(4, { drawer: { type: 'step', id: 's21' } })],
+      ['· при ошибке', () => openFresh(4, { drawer: { type: 'step', id: 's25' } })],
+      ['· ожидание до времени', () => openFresh(4, { drawer: { type: 'step', id: 's29' } })],
+      ['· расписание 18:30', () => openFresh(4, { drawer: { type: 'trigger', id: 't5' } })],
+      ['· внешний запрос', () => openFresh(4, { drawer: { type: 'trigger', id: 't6' } })],
+      ['· уведомление с причиной ошибки', () => openFresh(4, { drawer: { type: 'step', id: 's27' } })],
+      ['· вложенный сценарий', () => openFresh(4, { drawer: { type: 'step', id: 's28' } })],
+      ['· ключ после сохранения', () => { const sc = RASS(); sc.triggers[1].api = { issued: true, fresh: true, key: 'cbk_live_' + (++seq) }; this.setState({ view: 'editor', all: ALL(), sc: clone(sc), saved: clone(sc), ...reset, notice: 'apikey', drawer: { type: 'trigger', id: 't6' } }); }],
+      ['Условие: метка', () => openFresh(3, { drawer: { type: 'step', id: 's5' } })],
+      ['Условие запуска', () => openFresh(1, { drawer: { type: 'cond', idx: 1 }, condDraft: { what: 'linked', kind: 'blead', op: 'no' } })],
+      ['Условие: результат шага', () => openFresh(2, { drawer: { type: 'step', id: 's12' } })],
+      ['Значение из шага', () => openFresh(2, { drawer: { type: 'step', id: 's11' } })],
+      ['Новый пустой', () => this.createNew()],
+    ].map(([label, go]) => ({ label, go }));
+  }
+}
+</script>
+</body>
+</html>

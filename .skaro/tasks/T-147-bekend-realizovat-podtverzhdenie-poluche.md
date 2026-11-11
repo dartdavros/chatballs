@@ -12,6 +12,7 @@ order: 3
 spec: "0034"
 created: 2026-10-07
 branch: skaro/T-147-bekend-realizovat-podtverzhden
+archived: true
 ---
 
 ## Цель

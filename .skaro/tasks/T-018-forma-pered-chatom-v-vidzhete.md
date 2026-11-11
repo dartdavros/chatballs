@@ -10,6 +10,7 @@ order: 3
 spec: "0020"
 created: 2026-09-29
 branch: skaro/T-018-forma-pered-chatom-v-vidzhete
+archived: true
 ---
 
 ## Цель

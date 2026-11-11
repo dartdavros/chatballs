@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<style>
+:root{--n-1:#1f1f1f;--n-2:#262626;--n-3:#595959;--n-4:#8c8c8c;--n-5:#bfbfbf;--n-7:#e8e8e8;--n-8:#f0f0f0;--n-9:#f5f5f5;--n-10:#fafafa;--surface-card:#fff;--surface-page:#f0f2f5;--accent:#0f9b8e;--primary:var(--accent);--primary-bg:color-mix(in srgb,var(--accent) 10%,#fff);--primary-text:color-mix(in srgb,var(--accent) 82%,black);--error-text:#cf1322;--error-bg:color-mix(in srgb,#ff4d4f 11%,#fff);--warning-text:#d48806;--warning-bg:color-mix(in srgb,#faad14 11%,#fff)}
+html,body{margin:0;padding:0}
+body{background:var(--surface-page);color:var(--n-2);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased;font-size:13px;line-height:1.5}
+a{color:var(--primary);text-decoration:none}a:hover{color:var(--primary-text)}
+</style>
+</helmet>
+<section style="padding:32px 40px 60px">
+  <h1 style="margin:0 0 6px;font-size:22px;color:var(--n-1)">Настройки: как разгрузить меню</h1>
+  <p style="max-width:760px;margin:0 0 28px;color:var(--n-3)">Сейчас 13 пунктов подряд без структуры, две пары одинаковых иконок. Ниже — текущее состояние и два предложения. Все иконки взяты из существующего набора продукта.</p>
+  <div style="display:flex;gap:28px;flex-wrap:wrap;align-items:flex-start">
+    <sc-for list="{{ options }}" as="o" hint-placeholder-count="3">
+      <div id="{{ o.id }}" style="display:flex;flex-direction:column;gap:14px;width:320px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="padding:2px 8px;border-radius:6px;background:var(--n-1);color:#fff;font-size:12px;font-weight:700">{{ o.id }}</span>
+          <strong style="color:var(--n-1);font-size:15px">{{ o.title }}</strong>
+          <span style="color:var(--n-4);font-size:12.5px">{{ o.count }}</span>
+        </div>
+        <nav style="width:240px;padding:0 0 12px;background:var(--surface-card);border:1px solid var(--n-8);border-radius:10px">
+          <div style="padding:17px 18px 10px"><h2 style="margin:0;color:var(--n-1);font-size:16px;font-weight:700">Настройки</h2></div>
+          <div style="display:flex;flex-direction:column;gap:1px;padding:4px 10px">
+            <sc-for list="{{ o.items }}" as="it" hint-placeholder-count="13">
+              <sc-if value="{{ it.isCap }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:12px 10px 4px;color:var(--n-4);font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase">{{ it.label }}</div>
+              </sc-if>
+              <sc-if value="{{ it.isItem }}" hint-placeholder-val="{{ true }}">
+                <div style="{{ it.style }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="{{ it.d }}"></path></svg><span style="flex:1">{{ it.label }}</span><sc-if value="{{ it.note }}" hint-placeholder-val="{{ false }}"><small style="color:var(--n-4);font-size:11px">{{ it.note }}</small></sc-if></div>
+              </sc-if>
+            </sc-for>
+            <div style="height:1px;margin:8px 6px;background:var(--n-8)"></div>
+            <div style="display:flex;align-items:center;gap:10px;min-height:34px;padding:0 10px;color:var(--n-2);font-size:13px;font-weight:500"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"></path></svg><span>Аудит действий</span></div>
+          </div>
+        </nav>
+        <ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;color:var(--n-3);font-size:12.5px;line-height:1.5">
+          <sc-for list="{{ o.notes }}" as="n" hint-placeholder-count="3"><li>{{ n }}</li></sc-for>
+        </ul>
+      </div>
+    </sc-for>
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const I = {
+  building: 'M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6M9 10h.01M15 10h.01', team: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75',
+  clock: 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zM12 6v6l4 2', bell: 'M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0',
+  transfer: 'M17 1l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3', text: 'M5 5h14M12 5v14M8 19h8',
+  thumbUp: 'M7 10v11H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3zM7 10 11 3a2.2 2.2 0 0 1 4 1.8L14.5 8H20a2 2 0 0 1 2 2.4l-1.4 7A4 4 0 0 1 16.7 21H7',
+  sparkles: 'M12 3l1.8 4.6L18.4 9.4 13.8 11.2 12 15.8 10.2 11.2 5.6 9.4 10.2 7.6zM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8zM5 14l.6 1.6L7.2 16.2 5.6 16.8 5 18.4l-.6-1.6L2.8 16.2l1.6-.6z',
+  check: 'M20 6 9 17l-5-5', plug: 'M12 22v-5M9 8V2M15 8V2M18 8v5a6 6 0 0 1-12 0V8z', swap: 'M8 3 4 7l4 4M4 7h16M16 21l4-4-4-4M20 17H4',
+  refresh: 'M21 12a9 9 0 1 1-2.6-6.4L21 8M21 3v5h-5', mic: 'M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3ZM19 10v2a7 7 0 0 1-14 0v-2M12 19v3',
+  sun: 'M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8',
+};
+const item = (icon, label, opts = {}) => ({ isItem: true, isCap: false, d: I[icon], label, note: opts.note || '',
+  style: { display: 'flex', alignItems: 'center', gap: 10, minHeight: 34, padding: '0 10px', borderRadius: 8, fontSize: 13, fontWeight: opts.active ? 600 : 500,
+    color: opts.dup ? 'var(--error-text)' : opts.merged ? 'var(--warning-text)' : opts.active ? 'var(--primary-text)' : 'var(--n-2)',
+    background: opts.dup ? 'var(--error-bg)' : opts.merged ? 'var(--warning-bg)' : opts.active ? 'var(--primary-bg)' : 'transparent' } });
+const cap = label => ({ isItem: false, isCap: true, label });
+
+class Component extends DCLogic {
+  renderVals() {
+    return { options: [
+      { id: '1a', title: 'Сейчас', count: '13 пунктов', items: [
+        item('building', 'Организация'), item('team', 'Группы'), item('clock', 'Когда звать на помощь', { dup: true }), item('clock', 'Правила обработки', { dup: true }),
+        item('transfer', 'Передача и участники'), item('text', 'Шаблоны ответов'), item('thumbUp', 'Оценки клиентов'), item('sparkles', 'Анализ качества', { dup: true }),
+        item('sparkles', 'AI-провайдер', { dup: true }), item('plug', 'Интеграции', { active: true }), item('swap', 'Сценарии'), item('mic', 'Голосовые и звонки'), item('sun', 'Демо-данные')],
+        notes: ['Красным — дублирующиеся иконки: часы у двух пунктов очереди, звёздочки у ИИ-провайдера и анализа качества.', 'Порядок не отражает смысл: «Голосовые и звонки» и «Демо-данные» стоят после подключений.', 'Глазу не за что зацепиться — 13 равнозначных строк.'] },
+      { id: '1b', title: 'Группы с подписями', count: '13 пунктов · 4 группы', items: [
+        cap('Организация'), item('building', 'Организация'), item('team', 'Группы'),
+        cap('Обслуживание'), item('bell', 'Когда звать на помощь'), item('clock', 'Правила обработки'), item('transfer', 'Передача и участники'), item('text', 'Шаблоны ответов'), item('mic', 'Голосовые и звонки'),
+        cap('Качество'), item('thumbUp', 'Оценки клиентов'), item('check', 'Анализ качества'),
+        cap('Подключения'), item('sparkles', 'AI-провайдер'), item('plug', 'Интеграции', { active: true }), item('refresh', 'Сценарии'),
+        cap('Прочее'), item('sun', 'Демо-данные')],
+        notes: ['Ничего не удаляем и не объединяем — только порядок, подписи групп и уникальные иконки.', '«Когда звать на помощь» → колокольчик, «Анализ качества» → галочка, «Сценарии» → круговая стрелка (стрелки «Передачи» больше не путаются).', 'Самый безопасный вариант: меняется только меню, экраны остаются прежними.'] },
+      { id: '1c', title: 'Группы + объединение', count: '9 пунктов · 3 группы', items: [
+        cap('Организация'), item('building', 'Организация', { note: '+ демо', merged: true }), item('team', 'Группы'),
+        cap('Обслуживание'), item('clock', 'Очередь и правила', { merged: true, note: '2 → 1' }), item('transfer', 'Передача и участники'), item('text', 'Шаблоны ответов'), item('mic', 'Голосовые и звонки'), item('thumbUp', 'Качество', { merged: true, note: '2 → 1' }),
+        cap('Подключения'), item('sparkles', 'AI-провайдер'), item('plug', 'Интеграции', { active: true }), item('refresh', 'Сценарии')],
+        notes: ['Жёлтым — объединённые пункты; внутри экрана разделы становятся вкладками (как «Точки входа / Серверы / Сервисы» в Интеграциях).', '«Очередь и правила»: вкладки «Когда звать на помощь» и «Правила обработки» — обе про то, как диалоги движутся по очереди.', '«Качество»: вкладки «Оценки клиентов» и «Анализ качества». Демо-данные — блок внизу «Организации».', 'Рекомендую этот вариант: меньше пунктов, иконки не повторяются, группа «Подключения» объясняет, где искать сервисы и сценарии.'] },
+    ] };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { t } from "../../../i18n";
+import { pathFromRoute, routeFromPath } from "../../../router";
+import { requestNavigation } from "../../../shared/navigationGuard";
 import { RunDetail } from "./RunDetail";
 import { RunJournal } from "./RunJournal";
 import { RunTabs } from "./RunTabs";
@@ -15,6 +17,8 @@ export function RunsWorkspace({ onScenarios }: { onScenarios: () => void }) {
   if (selected) return <RunDetail key={selected} id={selected} onBack={() => open(null)} onRepeated={open} />;
   return <div className="runs-workspace"><header className="settings-head"><div><h2>{t("scenarios.title")}</h2><p>{t("scenarios.lead")}</p></div></header>
     <RunTabs journal onChange={journal => { if (!journal) onScenarios(); }} />
-    <RunJournal open={open} openRetention={() => { const url = new URL(location.href); url.pathname = url.pathname.replace(/\/scenarios\/?$/, "/organization"); url.search = ""; location.assign(url); }} />
+    <RunJournal open={open} openRetention={() => requestNavigation(() => {
+      location.assign(pathFromRoute("settings", "organization", routeFromPath(location.pathname).organizationPublicId));
+    })} />
   </div>;
 }

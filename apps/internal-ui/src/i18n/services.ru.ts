@@ -2,9 +2,9 @@
 // Названия сервисов, поля доступа и справка приходят от адаптера с сервера.
 export const servicesRu = {
   "services.field_required": "Заполните поле.",
-  "services.section_lead": "Подключайте сервисы и настраивайте совместную работу с Chatballs.",
-  "services.tab_entry": "Точки входа диалогов",
-  "services.tab_servers": "Внешние серверы",
+  "services.section_lead": "Подключайте внешние сервисы, такие как Битрикс24, и настраивайте обмен данными с Chatballs.",
+  "services.tab_entry": "Каналы связи",
+  "services.tab_servers": "MCP и HTTP",
   "services.tab_services": "Сервисы",
   "services.col_connection": "Подключение",
   "services.col_service": "Сервис",

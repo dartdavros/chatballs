@@ -7,6 +7,7 @@ depends_on: []
 order: 3
 spec: "0022"
 created: 2026-10-03
+archived: true
 ---
 
 ## Цель

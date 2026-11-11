@@ -110,7 +110,7 @@ export const runsEn = {
   "runs.active": "In progress",
   "runs.finished": "Finished",
   "runs.no_actions": "No actions available",
-  "runs.no_actions_text": "No actions or scenarios are available for this conversation.",
+  "runs.no_actions_text": "No actions are available for this conversation. An administrator enables scenarios under Scenarios.",
   "runs.run_label": "Run No. {number}",
   "runs.period": "Period",
   "runs.connection": "Service",

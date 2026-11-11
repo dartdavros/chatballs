@@ -10,6 +10,7 @@ order: 1
 spec: "0034"
 created: 2026-10-07
 branch: skaro/T-145-bekend-realizovat-ispolnitel-p
+archived: true
 ---
 
 ## Цель

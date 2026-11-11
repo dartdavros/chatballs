@@ -26,10 +26,17 @@ describe("agent tools help article", () => {
       expect(html).toContain("10483");
       expect(html).toContain("/articles/kartochka-agenta");
       const headings = parseMarkdown(article.content).headings;
-      expect(headings).toHaveLength(5);
+      expect(headings).toHaveLength(6);
       expect(headings[0].title).toMatch(/MCP/);
-      expect(headings[1].title).toMatch(/HTTP/);
-      expect(headings[3].title).toMatch(/подменяемы|tampered/);
+      expect(headings[1].title).toMatch(/MCP/);
+      expect(headings[2].title).toMatch(/HTTP/);
+      expect(headings[4].title).toMatch(/подменяемы|tampered/);
+      expect(html).toContain("https://mcp-test.chatballs.ru/mcp");
+      for (const name of ["search_products", "get_product", "get_order_status", "get_delivery_options"]) {
+        expect(html).toContain(name);
+      }
+      expect(html).toContain("DEMO-P001");
+      expect(html).toContain("DEMO-1001");
     }
     expect(articles[0].content).toContain("API вашей организации должен сам проверять, что заказ принадлежит этому клиенту, при каждом запросе");
     expect(articles[1].content).toContain("API must itself check that the order belongs to this customer on every request");

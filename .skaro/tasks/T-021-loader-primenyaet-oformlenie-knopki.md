@@ -9,6 +9,7 @@ order: 3
 spec: "0021"
 created: 2026-09-29
 branch: skaro/T-021-loader-primenyaet-oformlenie-k
+archived: true
 ---
 
 ## Цель

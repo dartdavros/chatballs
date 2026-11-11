@@ -8,6 +8,7 @@ order: 1
 spec: "0030"
 created: 2026-10-06
 branch: skaro/T-065-bekend-dobavit-zhurnal-domenny
+archived: true
 ---
 
 ## Цель

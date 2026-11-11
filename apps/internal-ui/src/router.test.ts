@@ -170,11 +170,6 @@ describe("administration route", () => {
       route: "settings",
       settingsSection: "organization",
     });
-    expect(routeFromPath("/integrations")).toEqual({
-      ...empty,
-      route: "settings",
-      settingsSection: "integrations",
-    });
   });
 
   it("parses and creates administration subsection URLs", () => {
@@ -252,11 +247,11 @@ describe("settings routes", () => {
       expect(routeFromPath(path)).toEqual({ ...empty, organizationPublicId: organization, route });
     }
   });
-  it("restores a web connection page from its direct URL", () => {
-    expect(routeFromPath("/settings/integrations/12")).toEqual({ ...empty, route: "webIntegrationSettings", integrationId: 12 });
-    expect(routeFromPath("/settings/integrations/12/")).toEqual({ ...empty, route: "webIntegrationSettings", integrationId: 12 });
-    expect(routeFromPath("/settings/integrations/nope")).toEqual({ ...empty, route: "settings", settingsSection: "integrations" });
-    expect(pathFromRoute("webIntegrationSettings", 12)).toBe("/settings/integrations/12");
+  it("keeps the legacy connection id until its type is known", () => {
+    expect(routeFromPath("/settings/integrations/12")).toEqual({ ...empty, route: "legacyIntegrationSettings", integrationId: 12 });
+    expect(routeFromPath("/settings/integrations/12/")).toEqual({ ...empty, route: "legacyIntegrationSettings", integrationId: 12 });
+    expect(routeFromPath("/settings/integrations/nope")).toEqual({ ...empty, route: "widgets" });
+    expect(pathFromRoute("legacyIntegrationSettings", 12)).toBe("/settings/integrations/12");
   });
 
   it("parses the settings screen and its submenu sections", () => {
@@ -268,7 +263,7 @@ describe("settings routes", () => {
 
   it("creates settings URLs", () => {
     expect(pathFromRoute("settings")).toBe("/settings");
-    expect(pathFromRoute("settings", "integrations")).toBe("/settings/integrations");
+    expect(pathFromRoute("settings", "groups")).toBe("/settings/groups");
     expect(pathFromRoute("settings", "nope")).toBe("/settings");
   });
 });

@@ -8,6 +8,7 @@ order: 1
 spec: "0028"
 created: 2026-10-06
 branch: skaro/T-058-bekend-dobavit-rabochie-status
+archived: true
 ---
 
 ## Цель

@@ -10,7 +10,7 @@ export function ScenarioChoice({ status, items, value, onChange, onRetry, invali
   onChange: (value: string) => void; onRetry: () => void; invalid: boolean; disabled: boolean;
 }) {
   const ready = status === "ready", loading = status === "loading", failed = status === "error";
-  const href = pathFromRoute("settings", "scenarios", routeFromPath(location.pathname).organizationPublicId);
+  const href = pathFromRoute("scenarios", null, routeFromPath(location.pathname).organizationPublicId);
   return <div className="ev-catalog" data-catalog={status}>
     <SelectField label={t("site_events.scenario")} value={ready ? value : ""} onChange={onChange}
       options={[["", t(loading ? "site_events.catalog_loading" : "site_events.choose")],

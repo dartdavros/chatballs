@@ -9,6 +9,7 @@ order: 2
 spec: "0027"
 created: 2026-10-06
 branch: skaro/T-055-bekend-zakryt-klientskie-i-ai
+archived: true
 ---
 
 ## Цель

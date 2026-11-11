@@ -4,7 +4,7 @@ import { CopyButton, ToneBadge } from "../../../shared/ui-controls";
 import { STATUS_META } from "../model";
 import type { ServerEditor } from "./useServerEditor";
 
-export function ServerHeader({ editor, onOpenSettings, onBack }: { editor: ServerEditor; onOpenSettings: () => void; onBack: () => void }) {
+export function ServerHeader({ editor, onBack }: { editor: ServerEditor; onBack: () => void }) {
   const server = editor.integration?.externalServer ?? editor.draft.externalServer;
   const mcp = server.type === "mcp";
   const name = editor.integration?.name || t(mcp ? "servers.new_mcp" : "servers.new_http");
@@ -15,8 +15,7 @@ export function ServerHeader({ editor, onOpenSettings, onBack }: { editor: Serve
     : { bg: "var(--n-9)", color: "var(--n-4)", label: t("common.draft") };
   return <header className="web-integration-head">
     <nav className="portal-breadcrumbs">
-      <button className="link is-strong" type="button" onClick={onOpenSettings}>{t("common.settings")}</button><span>/</span>
-      <button className="link is-muted" type="button" onClick={onBack}>{t("common.integrations")}</button><span>/</span><b>{name}</b>
+      <button className="link is-strong" type="button" onClick={onBack}>{t("navigation.tools")}</button><span>/</span><b>{name}</b>
     </nav>
     <div className="web-integration-title">
       <span className="server-title-icon"><Icon name={mcp ? "server" : "swap"} size={17} /></span><h2>{name}</h2>

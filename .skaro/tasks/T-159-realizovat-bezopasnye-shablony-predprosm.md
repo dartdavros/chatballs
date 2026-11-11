@@ -9,6 +9,7 @@ order: 3
 spec: "0035"
 created: 2026-10-15
 branch: skaro/T-159-realizovat-bezopasnye-shablony
+archived: true
 ---
 
 ## Цель

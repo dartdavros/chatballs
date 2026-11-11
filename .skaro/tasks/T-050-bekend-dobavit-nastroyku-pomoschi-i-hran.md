@@ -8,6 +8,7 @@ order: 1
 spec: "0024"
 created: 2026-10-06
 branch: skaro/T-050-bekend-dobavit-nastroyku-pomos
+archived: true
 ---
 
 ## Цель

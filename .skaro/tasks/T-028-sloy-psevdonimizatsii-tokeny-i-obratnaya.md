@@ -8,6 +8,7 @@ order: 1
 spec: "0022"
 created: 2026-10-03
 branch: skaro/T-028-sloy-psevdonimizatsii-tokeny-i
+archived: true
 ---
 
 ## Цель

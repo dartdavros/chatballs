@@ -11,6 +11,7 @@ order: 5
 spec: "0021"
 created: 2026-09-29
 branch: skaro/T-023-razdel-oformlenie-v-nastroykah
+archived: true
 ---
 
 ## Цель

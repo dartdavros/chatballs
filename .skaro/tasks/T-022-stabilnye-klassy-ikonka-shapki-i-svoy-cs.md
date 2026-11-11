@@ -9,6 +9,7 @@ order: 4
 spec: "0021"
 created: 2026-09-29
 branch: skaro/T-022-stabilnye-klassy-ikonka-shapki
+archived: true
 ---
 
 ## Цель

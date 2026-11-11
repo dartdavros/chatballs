@@ -10,6 +10,7 @@ order: 5
 spec: "0037"
 created: 2026-11-06
 branch: skaro/T-185-podstavit-izvestnye-dannye-kon
+archived: true
 ---
 
 ## Цель

@@ -9,6 +9,7 @@ order: 10
 spec: "0037"
 created: 2026-10-17
 branch: skaro/T-175-podklyuchit-k-stsenariyam-vse
+archived: true
 ---
 
 ## Цель

@@ -10,6 +10,7 @@ order: 11
 spec: "0030"
 created: 2026-10-07
 branch: skaro/T-141-frontend-dobavit-otsenki-i-kac
+archived: true
 ---
 
 ## Цель

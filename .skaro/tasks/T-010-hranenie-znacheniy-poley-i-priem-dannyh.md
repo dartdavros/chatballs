@@ -9,6 +9,7 @@ order: 2
 spec: "0019"
 created: 2026-09-29
 branch: skaro/T-010-hranenie-znacheniy-poley-i-pri
+archived: true
 ---
 
 ## Цель

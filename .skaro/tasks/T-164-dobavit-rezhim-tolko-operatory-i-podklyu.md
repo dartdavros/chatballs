@@ -7,6 +7,7 @@ order: 3
 spec: "0036"
 created: 2026-10-16
 branch: skaro/T-164-dobavit-rezhim-tolko-operatory
+archived: true
 ---
 
 ## Цель

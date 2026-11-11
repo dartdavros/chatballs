@@ -9,6 +9,7 @@ order: 6
 spec: "0019"
 created: 2026-09-29
 branch: skaro/T-014-sektsiya-dannye-s-sayta-v-kart
+archived: true
 ---
 
 ## Цель

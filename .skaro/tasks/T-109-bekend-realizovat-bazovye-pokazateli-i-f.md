@@ -12,6 +12,7 @@ order: 5
 spec: "0030"
 created: 2026-10-07
 branch: skaro/T-109-bekend-realizovat-pokazateli-p
+archived: true
 ---
 
 ## Цель

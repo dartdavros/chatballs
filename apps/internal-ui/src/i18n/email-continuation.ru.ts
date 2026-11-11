@@ -3,7 +3,7 @@ export const emailContinuationRu = {
   "mail.saved_address": "сохранён в контакте", "mail.no_address_hint": "У контакта нет сохранённого адреса почты",
   "mail.no_address": "Письмо недоступно: у контакта нет адреса почты.", "mail.add_address": "Добавить в карточке контакта",
   "mail.no_mailbox": "Нет доступного ящика",
-  "mail.no_mailbox_hint": "Почтовых подключений нет или они с ошибкой. Подключить почту может администратор в «Настройки → Интеграции».",
+  "mail.no_mailbox_hint": "Почтовых подключений нет или они с ошибкой. Подключить почту может администратор в разделе «Почта».",
   "mail.audience": "Письмо на {address}", "mail.web_audience": "Увидит клиент · {channel}",
   "mail.text": "Текст письма", "mail.text_placeholder": "Текст письма…", "mail.send": "Отправить письмо", "mail.sending_action": "Отправляем…",
   "mail.outbound": "Письмо на {recipient} · с {sender}", "mail.inbound": "Ответ на письмо · от {sender}",

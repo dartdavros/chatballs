@@ -9,6 +9,7 @@ order: 2
 spec: "0029"
 created: 2026-10-06
 branch: skaro/T-063-bekend-realizovat-oblast-vidim
+archived: true
 ---
 
 ## Цель

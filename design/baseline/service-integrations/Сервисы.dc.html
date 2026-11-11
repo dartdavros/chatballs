@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+<script src="./sync-status-mapping.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+:root{--n-1:#1f1f1f;--n-2:#262626;--n-3:#595959;--n-4:#8c8c8c;--n-5:#bfbfbf;--n-6:#d9d9d9;--n-7:#e8e8e8;--n-8:#f0f0f0;--n-9:#f5f5f5;--n-10:#fafafa;--n-11:#f0f2f5;--surface-page:var(--n-11);--surface-card:#fff;--surface-sidebar:#fafafa;--surface-feed:#f5f6f8;--accent:#0f9b8e;--primary:var(--accent);--primary-hover:color-mix(in srgb,var(--accent) 88%,black);--primary-bg:color-mix(in srgb,var(--accent) 10%,var(--surface-card));--primary-border:color-mix(in srgb,var(--accent) 40%,var(--surface-card));--primary-text:color-mix(in srgb,var(--accent) 82%,black);--success:#52c41a;--success-text:#237a3f;--success-bg:color-mix(in srgb,#52c41a 11%,var(--surface-card));--success-border:color-mix(in srgb,#52c41a 31%,var(--surface-card));--warning:#faad14;--warning-text:#d48806;--warning-bg:color-mix(in srgb,#faad14 11%,var(--surface-card));--warning-border:color-mix(in srgb,#faad14 36%,var(--surface-card));--error:#ff4d4f;--error-text:#cf1322;--error-bg:color-mix(in srgb,#ff4d4f 11%,var(--surface-card));--error-border:color-mix(in srgb,#ff4d4f 36%,var(--surface-card));--border-default:var(--n-8);--shadow-xs:0 1px 2px rgba(0,0,0,.03);--modal-shadow:0 32px 80px -12px rgba(16,18,22,.38),0 8px 24px rgba(16,18,22,.12);--scrim:rgba(16,18,22,.55);--font-mono:"SF Mono",ui-monospace,Menlo,monospace}
+:root[data-theme=dark]{--n-1:#d6d7db;--n-2:#c3c5ca;--n-3:#9a9ca3;--n-4:#767881;--n-5:#5b5d66;--n-6:#45474f;--n-7:#37393f;--n-8:#2d2f35;--n-9:#27292e;--n-10:#212327;--n-11:#101113;--surface-page:#101113;--surface-card:#1b1c1f;--surface-sidebar:#181a1d;--surface-feed:#15161a;--primary:color-mix(in srgb,var(--accent) 84%,var(--surface-card));--primary-hover:color-mix(in srgb,var(--accent) 92%,white);--primary-bg:color-mix(in srgb,var(--accent) 16%,var(--surface-card));--primary-text:color-mix(in srgb,var(--accent) 62%,white);--success-text:#5fbf7a;--success-bg:color-mix(in srgb,#52c41a 12%,var(--surface-card));--success-border:color-mix(in srgb,#52c41a 32%,var(--surface-card));--warning-text:#d9a441;--warning-bg:color-mix(in srgb,#faad14 12%,var(--surface-card));--warning-border:color-mix(in srgb,#faad14 37%,var(--surface-card));--error-text:#ff7875;--error-bg:color-mix(in srgb,#ff4d4f 12%,var(--surface-card));--error-border:color-mix(in srgb,#ff4d4f 37%,var(--surface-card));--modal-shadow:0 32px 80px -12px rgba(0,0,0,.7),0 8px 24px rgba(0,0,0,.4);--scrim:rgba(4,5,7,.68)}
+html,body{margin:0;padding:0}
+body{background:var(--surface-page);color:var(--n-2);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased;font-size:13px;line-height:1.5}
+button,input,select{font:inherit}
+a{color:var(--primary);text-decoration:none}a:hover{color:var(--primary-hover)}
+@keyframes cb-spin{to{transform:rotate(360deg)}}
+</style>
+</helmet>
+<div style="padding:24px 32px 60px;min-height:100vh;box-sizing:border-box;background:var(--surface-page)">
+  <div style="display:flex;flex-direction:column;gap:10px;max-width:1440px;margin-bottom:20px">
+    <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+      <h1 style="margin:0;font-size:22px;color:var(--n-1)">Интеграции · Сервисы</h1>
+      <span style="color:var(--n-3)">Новая версия: список, каталог, подключение и карточка подключения. Данные — примеры, запросов к сервисам нет.</span>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <sc-for list="{{ jumps }}" as="j" hint-placeholder-count="10">
+        <button onClick="{{ j.go }}" style="height:28px;padding:0 10px;border:1px solid var(--n-7);border-radius:7px;background:var(--surface-card);color:var(--n-2);font-size:12.5px;font-weight:500;cursor:pointer" style-hover="color:var(--primary);border-color:var(--primary)">{{ j.label }}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <div data-screen-label="Сервисы" style="position:relative;width:1440px;height:900px;display:flex;background:var(--surface-card);border-radius:6px;overflow:hidden;box-shadow:0 2px 12px #00000014">
+    <aside style="width:220px;height:100%;display:flex;flex:none;flex-direction:column;background:var(--surface-sidebar);border-right:1px solid var(--n-8)">
+      <div style="height:56px;display:flex;align-items:center;gap:10px;padding:14px 14px 10px;box-sizing:border-box">
+        <span style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;flex:none"><img src="assets/chatballs-logo.svg" alt="" style="width:28px;height:auto"></span>
+        <button style="flex:1;min-width:0;height:32px;display:flex;align-items:center;justify-content:space-between;gap:6px;padding:0 6px 0 8px;border:0;border-radius:8px;background:transparent;color:var(--n-1);font-size:14px;font-weight:700;text-align:left" style-hover="background:var(--n-9)"><span>Ателье Норд</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--n-4)"><polyline points="6 9 12 15 18 9"></polyline></svg></button>
+      </div>
+      <nav style="flex:1;display:flex;flex-direction:column;gap:2px;padding:4px 10px 8px">
+        <sc-for list="{{ nav }}" as="n" hint-placeholder-count="6">
+          <div style="display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;color:var(--n-2);border-radius:8px;font-size:13.5px;font-weight:500"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="{{ n.d }}"></path></svg><span>{{ n.label }}</span></div>
+        </sc-for>
+        <div style="height:1px;margin:6px;background:var(--n-8)"></div>
+        <div style="display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;color:var(--n-2);border-radius:8px;font-size:13.5px;font-weight:500"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3h6a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM15 3h6a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM15 14h6a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-6a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1zM4 14h6a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1z"></path></svg><span>Статистика</span></div>
+        <div style="display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;color:var(--primary-text);background:var(--primary-bg);border-radius:8px;font-size:13.5px;font-weight:600"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="6" x2="9" y2="6"></line><line x1="3" y1="6" x2="5" y2="6"></line><circle cx="7" cy="6" r="2"></circle><line x1="21" y1="12" x2="13" y2="12"></line><line x1="3" y1="12" x2="9" y2="12"></line><circle cx="11" cy="12" r="2"></circle><line x1="21" y1="18" x2="15" y2="18"></line><line x1="3" y1="18" x2="11" y2="18"></line><circle cx="13" cy="18" r="2"></circle></svg><span>Настройки</span></div>
+        <div style="display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;color:var(--n-2);border-radius:8px;font-size:13.5px;font-weight:500"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zM9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01"></path></svg><span style="flex:1">Помощь</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--n-5)"><path d="M7 17 17 7M8 7h9v9"></path></svg></div>
+      </nav>
+      <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-top:1px solid var(--n-8)">
+        <span style="width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;flex:none;color:#fff;background:var(--primary);border-radius:50%;font-size:13px;font-weight:600">ЕК</span>
+        <span style="flex:1;min-width:0"><strong style="display:block;color:var(--n-1);font-size:13px;font-weight:600;line-height:1.3">Елена Кузнецова</strong><small style="display:block;color:var(--n-4);font-size:12px">Ателье Норд</small></span>
+        <span style="width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;color:var(--n-4)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg></span>
+      </div>
+    </aside>
+
+    <nav style="width:240px;flex:none;display:flex;flex-direction:column;background:var(--surface-card);border-right:1px solid var(--n-8)">
+      <div style="padding:17px 18px 10px"><h2 style="margin:0;color:var(--n-1);font-size:16px;font-weight:700">Настройки</h2></div>
+      <div style="display:flex;flex-direction:column;gap:1px;padding:4px 10px">
+        <sc-for list="{{ subnav }}" as="s" hint-placeholder-count="12">
+          <sc-if value="{{ s.cap }}" hint-placeholder-val="{{ false }}"><div style="padding:12px 10px 4px;color:var(--n-4);font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase">{{ s.label }}</div></sc-if>
+          <sc-if value="{{ s.active }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;gap:10px;min-height:34px;padding:0 10px;border-radius:8px;background:var(--primary-bg);color:var(--primary-text);font-size:13px;font-weight:600"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="{{ s.d }}"></path></svg><span>{{ s.label }}</span></div>
+          </sc-if>
+          <sc-if value="{{ s.idle }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;align-items:center;gap:10px;min-height:34px;padding:0 10px;border-radius:8px;color:var(--n-2);font-size:13px;font-weight:500"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="{{ s.d }}"></path></svg><span>{{ s.label }}</span></div>
+          </sc-if>
+        </sc-for>
+        <div style="height:1px;margin:8px 6px;background:var(--n-8)"></div>
+        <div style="padding:2px 10px 6px;color:var(--n-4);font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase">Отдельные экраны</div>
+        <div style="display:flex;align-items:center;gap:10px;min-height:34px;padding:0 10px;color:var(--n-2);font-size:13px;font-weight:500"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"></path></svg><span style="flex:1">Аудит действий</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:var(--n-5)"><path d="M7 17 17 7M8 7h9v9"></path></svg></div>
+      </div>
+    </nav>
+
+    <section style="flex:1;min-width:0;overflow-y:auto;background:var(--surface-feed)">
+      <div style="max-width:1000px;margin:0 auto;padding:28px 40px 48px">
+
+        <sc-if value="{{ isList }}" hint-placeholder-val="{{ true }}">
+          <header style="margin-bottom:22px">
+            <h2 style="margin:0;color:var(--n-1);font-size:20px;font-weight:700;letter-spacing:-.01em">Интеграции</h2>
+            <p style="max-width:560px;margin:5px 0 0;color:var(--n-4);font-size:13px;line-height:1.5">Подключайте сервисы и настраивайте совместную работу с Chatballs.</p>
+          </header>
+          <div style="display:flex;gap:4px;border-bottom:1px solid var(--n-7);margin-bottom:22px">
+            <div style="padding:11px 16px;color:var(--n-3);font-size:14px;font-weight:500">Точки входа диалогов</div>
+            <div style="padding:11px 16px;color:var(--n-3);font-size:14px;font-weight:500">Внешние серверы</div>
+            <div style="position:relative;padding:11px 16px;color:var(--primary);font-size:14px;font-weight:600">Сервисы<span style="position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--primary)"></span></div>
+          </div>
+
+          <sc-if value="{{ hasConns }}" hint-placeholder-val="{{ true }}">
+            <div style="border:1px solid var(--n-8);border-radius:12px;background:var(--surface-card);box-shadow:var(--shadow-xs);overflow:hidden;margin-bottom:32px">
+              <div style="display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) 40px;align-items:center;padding:10px 20px;background:var(--surface-sidebar);border-bottom:1px solid var(--n-8);color:var(--n-4);font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase">
+                <span>Подключение</span><span>Сервис</span><span>Сценарии</span><span>Состояние</span><span></span>
+              </div>
+              <sc-for list="{{ rows }}" as="r" hint-placeholder-count="2">
+                <div onClick="{{ r.open }}" style="display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) 40px;align-items:center;min-height:62px;padding:10px 20px;box-sizing:border-box;border-top:1px solid var(--n-9);cursor:pointer" style-hover="background:var(--n-10)">
+                  <span style="min-width:0"><strong style="display:block;color:var(--primary);font-size:14px;font-weight:700">{{ r.name }}</strong><small style="display:block;margin-top:2px;color:var(--n-4);font-size:12px">{{ r.host }}</small></span>
+                  <span><img src="{{ r.logo }}" alt="{{ r.svcTitle }}" style="height:16px;width:auto;display:block"></span>
+                  <span style="color:var(--n-3);font-size:12.5px">{{ r.scenarios }}</span>
+                  <span>
+                    <sc-if value="{{ r.ok }}" hint-placeholder-val="{{ true }}"><span style="display:inline-flex;align-items:center;gap:6px;padding:2px 8px;border:1px solid var(--success-border);border-radius:6px;background:var(--success-bg);color:var(--success-text);font-size:12.5px;font-weight:500"><span style="width:7px;height:7px;border-radius:50%;background:var(--success-text)"></span>Подключено</span></sc-if>
+                    <sc-if value="{{ r.lost }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:6px;padding:2px 8px;border:1px solid var(--error-border);border-radius:6px;background:var(--error-bg);color:var(--error-text);font-size:12.5px;font-weight:500"><span style="width:7px;height:7px;border-radius:50%;background:var(--error-text)"></span>Нет доступа</span></sc-if>
+                    <sc-if value="{{ r.unchecked }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:6px;padding:2px 8px;border:1px solid var(--n-7);border-radius:6px;background:var(--n-10);color:var(--n-4);font-size:12.5px;font-weight:500"><span style="width:7px;height:7px;border-radius:50%;background:var(--n-5)"></span>Не проверено</span></sc-if>
+                  </span>
+                  <span style="display:flex;justify-content:flex-end;color:var(--n-5)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg></span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div>
+              <h3 style="margin:0;color:var(--n-1);font-size:15px;font-weight:700">{{ catalogTitle }}</h3>
+              <p style="margin:4px 0 0;color:var(--n-4);font-size:12.5px">Выберите сервис, с которым работает ваша команда. После подключения появятся готовые сценарии.</p>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px">
+              <sc-for list="{{ catalog }}" as="c" hint-placeholder-count="3">
+                <div style="display:flex;flex-direction:column;gap:12px;padding:20px;background:var(--surface-card);border:1px solid var(--n-8);border-radius:12px">
+                  <div style="height:26px;display:flex;align-items:center"><img src="{{ c.logo }}" alt="{{ c.title }}" style="height:22px;width:auto"></div>
+                  <p style="flex:1;margin:0;color:var(--n-3);font-size:12.5px;line-height:1.5">{{ c.about }}</p>
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+                    <button onClick="{{ c.connect }}" style="height:34px;display:inline-flex;align-items:center;gap:7px;padding:0 14px;color:var(--n-2);background:var(--surface-card);border:1px solid var(--n-7);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer" style-hover="color:var(--primary);border-color:var(--primary)">{{ c.cta }}</button>
+                    <span style="color:var(--n-4);font-size:12px">{{ c.count }}</span>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+            <p style="margin:4px 0 0;color:var(--n-4);font-size:12.5px"><strong style="color:var(--n-2);font-weight:600">Не нашли свой сервис?</strong> Администратор установки может добавить новую интеграцию. После установки она появится здесь.</p>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isCard }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ toList }}" style="display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 8px;margin:0 0 12px -8px;border:0;border-radius:7px;background:transparent;color:var(--n-4);font-size:12.5px;font-weight:500;cursor:pointer" style-hover="background:var(--n-9);color:var(--n-2)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 6 9 12 15 18"></polyline></svg>Сервисы</button>
+          <header style="display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:22px">
+            <div style="min-width:0">
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                <h2 style="margin:0;color:var(--n-1);font-size:20px;font-weight:700;letter-spacing:-.01em">{{ card.name }}</h2>
+                <sc-if value="{{ card.ok }}" hint-placeholder-val="{{ true }}"><span style="display:inline-flex;align-items:center;gap:6px;padding:2px 8px;border:1px solid var(--success-border);border-radius:6px;background:var(--success-bg);color:var(--success-text);font-size:12.5px;font-weight:500"><span style="width:7px;height:7px;border-radius:50%;background:var(--success-text)"></span>Подключено</span></sc-if>
+                <sc-if value="{{ card.lost }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:6px;padding:2px 8px;border:1px solid var(--error-border);border-radius:6px;background:var(--error-bg);color:var(--error-text);font-size:12.5px;font-weight:500"><span style="width:7px;height:7px;border-radius:50%;background:var(--error-text)"></span>Нет доступа</span></sc-if>
+                <sc-if value="{{ card.unchecked }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:6px;padding:2px 8px;border:1px solid var(--n-7);border-radius:6px;background:var(--n-10);color:var(--n-4);font-size:12.5px;font-weight:500"><span style="width:7px;height:7px;border-radius:50%;background:var(--n-5)"></span>Не проверено</span></sc-if>
+              </div>
+              <p style="margin:5px 0 0;color:var(--n-4);font-size:13px">{{ card.svcTitle }} · {{ card.host }}</p>
+            </div>
+            <div style="position:relative;display:flex;align-items:center;gap:14px">
+              <img src="{{ card.logo }}" alt="" style="height:22px;width:auto">
+              <button onClick="{{ toggleMenu }}" title="Действия с подключением" style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;color:var(--n-4);background:transparent;border:0;border-radius:7px;cursor:pointer" style-hover="color:var(--n-2);background:var(--n-8)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg></button>
+              <sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ false }}">
+                <div style="position:absolute;top:36px;right:0;z-index:10;width:220px;padding:5px;box-sizing:border-box;background:var(--surface-card);border:1px solid var(--n-8);border-radius:10px;box-shadow:0 6px 20px #0000001f">
+                  <button onClick="{{ toggleMenu }}" style="width:100%;display:flex;align-items:center;gap:9px;padding:8px 10px;color:var(--warning-text);background:transparent;border:0;border-radius:7px;font-size:13px;font-weight:500;text-align:left;cursor:pointer" style-hover="background:var(--n-9)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4H6v16h4zM18 4h-4v16h4z"></path></svg>Приостановить</button>
+                  <div style="height:1px;margin:4px 8px;background:var(--n-9)"></div>
+                  <button onClick="{{ askDelete }}" style="width:100%;display:flex;align-items:center;gap:9px;padding:8px 10px;color:var(--error-text);background:transparent;border:0;border-radius:7px;font-size:13px;font-weight:500;text-align:left;cursor:pointer" style-hover="background:var(--n-9)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13"></path></svg>Удалить подключение</button>
+                </div>
+              </sc-if>
+            </div>
+          </header>
+
+          <div style="display:flex;flex-direction:column;gap:18px">
+            <sc-if value="{{ showConnected }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;gap:10px;align-items:flex-start;padding:11px 14px;border:1px solid var(--success-border);border-radius:9px;background:var(--success-bg)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:2px;color:var(--success-text)"><path d="M20 6 9 17l-5-5"></path></svg>
+                <p style="flex:1;margin:0;color:var(--n-2);font-size:12.5px;line-height:1.55"><strong>{{ card.svcTitle }} подключён.</strong> Включите готовый сценарий ниже — сотрудники увидят его в диалогах.</p>
+                <button onClick="{{ hideNotice }}" title="Скрыть" style="flex:none;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;border:0;background:transparent;color:var(--n-4);cursor:pointer;border-radius:6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"></path></svg></button>
+              </div>
+            </sc-if>
+            <sc-if value="{{ card.lost }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;gap:12px;align-items:center;padding:14px 16px;border:1px solid var(--error-border);border-radius:9px;background:var(--error-bg)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:var(--error-text)"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 8v4M12 16v.01"></path></svg>
+                <p style="flex:1;margin:0;color:var(--n-2);font-size:12.5px;line-height:1.55"><strong>Нужно восстановить доступ.</strong> Доступ отозван или истёк. Новые запуски приостановлены, настройки сценариев сохранены.</p>
+                <button onClick="{{ openReplace }}" style="flex:none;height:34px;display:inline-flex;align-items:center;padding:0 16px;color:#fff;background:var(--primary);border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer" style-hover="background:var(--primary-hover)">Восстановить доступ</button>
+              </div>
+            </sc-if>
+
+            <div style="background:var(--surface-card);border:1px solid var(--n-8);border-radius:12px;padding:22px 24px 8px">
+              <h3 style="margin:0;color:var(--n-1);font-size:14px;font-weight:700">Сценарии</h3>
+              <p style="margin:4px 0 6px;color:var(--n-4);font-size:12.5px">Готовые сценарии {{ card.svcTitleGen }}. Включённый сценарий появляется у сотрудников в диалоге.</p>
+              <sc-for list="{{ card.presets }}" as="p" hint-placeholder-count="1">
+                <div style="display:flex;align-items:center;gap:16px;padding:16px 0;border-top:1px solid var(--n-9)">
+                  <div style="flex:1;min-width:0">
+                    <div style="display:flex;align-items:center;gap:8px"><strong style="color:var(--n-1);font-size:13.5px;font-weight:600">{{ p.name }}</strong><span style="padding:0 6px;border-radius:5px;background:var(--n-9);color:var(--n-4);font-size:11px;font-weight:600">Готовый</span></div>
+                    <p style="margin:3px 0 0;color:var(--n-4);font-size:12.5px;line-height:1.5">{{ p.about }}</p>
+                  </div>
+                  <sc-if value="{{ p.on }}" hint-placeholder-val="{{ false }}">
+                    <span style="color:var(--n-3);font-size:12.5px;font-weight:500">{{ p.stateLabel }}</span>
+                    <a href="{{ p.href }}" style="flex:none;height:34px;box-sizing:border-box;display:inline-flex;align-items:center;padding:0 14px;color:var(--n-2);background:var(--surface-card);border:1px solid var(--n-7);border-radius:8px;font-size:13px;font-weight:600" style-hover="color:var(--primary);border-color:var(--primary)">Изменить</a>
+                  </sc-if>
+                  <sc-if value="{{ p.off }}" hint-placeholder-val="{{ true }}">
+                    <span style="color:var(--n-4);font-size:12.5px">Не настроен</span>
+                    <a href="{{ p.href }}" style="flex:none;height:34px;box-sizing:border-box;display:inline-flex;align-items:center;padding:0 16px;color:#fff;background:var(--primary);border-radius:8px;font-size:13px;font-weight:600" style-hover="background:var(--primary-hover);color:#fff">Настроить</a>
+                  </sc-if>
+                </div>
+              </sc-for>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0;border-top:1px solid var(--n-9)">
+                <a href="Сценарии.dc.html?open=new" style="display:inline-flex;align-items:center;gap:6px;color:var(--primary);font-size:13px;font-weight:600"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>Создать свой сценарий</a>
+                <a href="Сценарии.dc.html" style="color:var(--n-4);font-size:12.5px;font-weight:600" style-hover="color:var(--n-2)">Все сценарии в разделе «Сценарии»</a>
+              </div>
+            </div>
+
+            <div style="background:var(--surface-card);border:1px solid var(--n-8);border-radius:12px;padding:22px 24px">
+              <h3 style="margin:0 0 18px;color:var(--n-1);font-size:14px;font-weight:700">Подключение</h3>
+              <div style="display:grid;grid-template-columns:repeat(2,minmax(0,320px));gap:16px 24px">
+                <label style="display:block"><span style="display:block;margin-bottom:6px;color:var(--n-2);font-size:12.5px;font-weight:600">Название</span><input value="{{ cardName }}" onChange="{{ setCardName }}" style="width:100%;box-sizing:border-box;height:36px;padding:0 12px;color:var(--n-1);background:var(--surface-card);border:1px solid var(--n-7);border-radius:8px;outline:none;font-size:13.5px" style-focus="border-color:var(--primary)"></label>
+                <div><span style="display:block;margin-bottom:6px;color:var(--n-2);font-size:12.5px;font-weight:600">{{ card.hostLabel }}</span><div style="height:36px;display:flex;align-items:center;color:var(--n-3);font-size:13.5px">{{ card.host }}</div></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:16px;margin-top:18px;padding-top:16px;border-top:1px solid var(--n-9)">
+                <div style="flex:1;min-width:0">
+                  <strong style="display:block;color:var(--n-1);font-size:13.5px;font-weight:600">Доступ · {{ card.access }}</strong>
+                  <p style="margin:3px 0 0;color:var(--n-4);font-size:12.5px">{{ card.accessState }}</p>
+                </div>
+                <sc-if value="{{ card.unchecked }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ openCheck }}" style="flex:none;height:34px;display:inline-flex;align-items:center;padding:0 14px;color:var(--n-2);background:var(--surface-card);border:1px solid var(--n-7);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer" style-hover="color:var(--primary);border-color:var(--primary)">Проверить доступ</button>
+                </sc-if>
+                <button onClick="{{ openReplace }}" style="flex:none;height:34px;display:inline-flex;align-items:center;padding:0 14px;color:var(--n-2);background:var(--surface-card);border:1px solid var(--n-7);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer" style-hover="color:var(--primary);border-color:var(--primary)">Заменить доступ</button>
+              </div>
+            </div>
+
+            <div style="background:var(--surface-card);border:1px solid var(--n-8);border-radius:12px;padding:22px 24px">
+              <div style="display:flex;align-items:flex-start;gap:16px">
+                <div style="flex:1;min-width:0">
+                  <h3 style="margin:0;color:var(--n-1);font-size:14px;font-weight:700">Обмен данными</h3>
+                  <p style="margin:4px 0 0;color:var(--n-4);font-size:12.5px;line-height:1.5">Обновлять связанные записи в обеих системах. Связи создают сценарии; совпадение телефона или почты записи не объединяет.</p>
+                </div>
+                <sc-if value="{{ syncCfgd }}" hint-placeholder-val="{{ false }}"><button onClick="{{ toggleSync }}" aria-label="Обмен данными" style="{{ syncSwitchStyle }}"><i style="width:20px;height:20px;display:block;background:#fff;border-radius:50%;box-shadow:0 1px 2px #0003"></i></button></sc-if>
+                <sc-if value="{{ syncNotCfgd }}" hint-placeholder-val="{{ true }}"><button onClick="{{ openSync }}" style="flex:none;height:34px;display:inline-flex;align-items:center;padding:0 14px;color:var(--n-2);background:var(--surface-card);border:1px solid var(--n-7);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer" style-hover="color:var(--primary);border-color:var(--primary)">Настроить обмен</button></sc-if>
+              </div>
+              <sc-if value="{{ syncCfgd }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid var(--n-9)">
+                  <sc-for list="{{ syncSummary }}" as="ss" hint-placeholder-count="3"><div style="display:grid;grid-template-columns:150px minmax(0,1fr);gap:12px;font-size:12.5px"><span style="color:var(--n-4)">{{ ss.k }}</span><span style="color:var(--n-1)">{{ ss.v }}</span></div></sc-for>
+                  <div style="display:flex;align-items:center;gap:14px;margin-top:4px"><span style="flex:1;color:var(--n-4);font-size:12px">{{ syncStatus }}</span><button onClick="{{ openSync }}" style="padding:0;border:0;background:none;color:var(--primary);font-size:13px;font-weight:600;cursor:pointer">Изменить</button></div>
+                </div>
+              </sc-if>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </section>
+
+    <sc-if value="{{ syncDrawer }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ closeSync }}" style="position:absolute;inset:0;z-index:40;background:rgba(16,18,22,.18)"></div>
+      <aside style="position:absolute;top:0;right:0;bottom:0;z-index:41;width:560px;display:flex;flex-direction:column;background:var(--surface-card);border-left:1px solid var(--n-8);box-shadow:-12px 0 32px #0000001f">
+        <header style="display:flex;align-items:flex-start;gap:12px;padding:20px 22px 16px;border-bottom:1px solid var(--n-8)">
+          <div style="flex:1;min-width:0"><span style="display:block;color:var(--n-4);font-size:12px;font-weight:600">{{ syncConn }}</span><h3 style="margin:2px 0 0;color:var(--n-1);font-size:16px;font-weight:700">Обмен данными</h3></div>
+          <button onClick="{{ closeSync }}" title="Закрыть" style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;color:var(--n-4);background:transparent;border:0;border-radius:7px;cursor:pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"></path></svg></button>
+        </header>
+        <div style="flex:1;min-height:0;overflow-y:auto;padding:18px 22px 24px;display:flex;flex-direction:column;gap:22px">
+          <section style="display:flex;flex-direction:column;gap:8px">
+            <div><strong style="display:block;color:var(--n-1);font-size:13.5px">1. Какие записи</strong><span style="color:var(--n-4);font-size:12.5px">Обмениваются только записи, уже связанные сценариями. Новые связи обмен не создаёт.</span></div>
+            <sc-for list="{{ syncPairs }}" as="sp" hint-placeholder-count="2">
+              <div style="{{ sp.box }}">
+                <label style="display:flex;align-items:center;gap:10px;cursor:pointer"><input type="checkbox" checked="{{ sp.on }}" onChange="{{ sp.toggle }}" style="accent-color:var(--primary)"><span style="flex:1;color:var(--n-1);font-size:13px;font-weight:600">{{ sp.label }}</span><small style="color:var(--n-4);font-size:12px">{{ sp.count }}</small></label>
+                <sc-if value="{{ sp.on }}" hint-placeholder-val="{{ true }}"><span style="display:inline-flex;align-self:flex-start;padding:3px;border-radius:8px;background:var(--n-9);margin-left:24px"><sc-for list="{{ sp.dirs }}" as="dr" hint-placeholder-count="3"><button onClick="{{ dr.pick }}" style="{{ dr.style }}">{{ dr.label }}</button></sc-for></span></sc-if>
+              </div>
+            </sc-for>
+          </section>
+          <section style="display:flex;flex-direction:column;gap:8px">
+            <div><strong style="display:block;color:var(--n-1);font-size:13.5px">2. Соответствие полей</strong><span style="color:var(--n-4);font-size:12.5px">{{ syncMapHint }}</span></div>
+            <sc-if value="{{ syncMapTabsShow }}" hint-placeholder-val="{{ true }}"><span style="display:inline-flex;align-self:flex-start;padding:3px;border-radius:8px;background:var(--n-9)"><sc-for list="{{ syncMapTabs }}" as="mt" hint-placeholder-count="2"><button onClick="{{ mt.pick }}" style="{{ mt.style }}">{{ mt.label }}</button></sc-for></span></sc-if>
+            <div style="border:1px solid var(--n-8);border-radius:10px;overflow:hidden">
+              <div style="display:grid;grid-template-columns:minmax(0,1fr) 34px minmax(0,1fr);gap:8px;align-items:center;padding:8px 12px;background:var(--surface-sidebar);color:var(--n-4);font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase"><span>{{ syncColA }}</span><span></span><span>{{ syncColB }}</span></div>
+              <sc-for list="{{ syncFields }}" as="sf" hint-placeholder-count="5">
+                <div style="display:grid;grid-template-columns:minmax(0,1fr) 34px minmax(0,1fr);gap:8px;align-items:center;padding:7px 12px;border-top:1px solid var(--n-9)">
+                  <span style="color:var(--n-1);font-size:13px">{{ sf.cb }}</span>
+                  <span style="color:var(--n-4);font-size:14px;text-align:center">{{ sf.arrow }}</span>
+                  {{ sf.sel }}
+                </div>
+              </sc-for>
+            </div>
+            <sc-if value="{{ syncHasStatus }}" hint-placeholder-val="{{ false }}">
+              <sc-for list="{{ syncStatusGroups }}" as="sg" hint-placeholder-count="1">
+                <div style="margin-top:10px;border:1px solid var(--n-8);border-radius:8px;overflow:hidden">
+                  <div style="display:grid;grid-template-columns:minmax(0,1fr) 34px minmax(0,1fr);gap:8px;padding:8px 12px;background:var(--n-10);font-size:11.5px;color:var(--n-4)"><span>{{ sg.sourceLabel }}</span><span></span><span>{{ sg.targetLabel }}</span></div>
+                  <sc-for list="{{ sg.rows }}" as="sm" hint-placeholder-count="3"><div style="display:grid;grid-template-columns:minmax(0,1fr) 34px minmax(0,1fr);gap:8px;align-items:center;padding:7px 12px;border-top:1px solid var(--n-9);font-size:13px;color:var(--n-1)"><span>{{ sm.label }}</span><span style="color:var(--n-4);text-align:center">→</span>{{ sm.select }}</div></sc-for>
+                </div>
+              </sc-for>
+            </sc-if>
+          </section>
+          <section style="display:flex;flex-direction:column;gap:8px">
+            <div><strong style="display:block;color:var(--n-1);font-size:13.5px">3. Если поле изменили в обеих системах</strong><span style="color:var(--n-4);font-size:12.5px">Между обменами прошло меньше минуты, но значения разные.</span></div>
+            <sc-for list="{{ syncConflict }}" as="cf" hint-placeholder-count="3">
+              <label style="{{ cf.box }}"><input type="radio" name="cf" checked="{{ cf.on }}" onChange="{{ cf.pick }}" style="margin-top:3px;accent-color:var(--primary)"><span><strong style="display:block;color:var(--n-1);font-size:13px;font-weight:600">{{ cf.label }}</strong><span style="display:block;color:var(--n-4);font-size:12px;line-height:1.45">{{ cf.help }}</span></span></label>
+            </sc-for>
+          </section>
+        </div>
+        <footer style="display:flex;align-items:center;gap:10px;padding:14px 22px;border-top:1px solid var(--n-8)">
+          <span style="flex:1;color:var(--n-4);font-size:12px">{{ syncFootNote }}</span>
+          <button onClick="{{ closeSync }}" style="height:34px;padding:0 14px;color:var(--n-2);background:var(--surface-card);border:1px solid var(--n-7);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">Отмена</button>
+          <button onClick="{{ saveSync }}" style="{{ syncSaveStyle }}">{{ syncSaveLabel }}</button>
+        </footer>
+      </aside>
+    </sc-if>
+
+    <sc-if value="{{ hasModal }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:var(--scrim)">
+        <section role="dialog" style="{{ dialogStyle }}">
+          <header style="display:flex;align-items:flex-start;gap:14px;padding:20px 24px 16px;border-bottom:1px solid var(--border-default)">
+            <div style="flex:1;min-width:0">
+              <h3 style="margin:0 0 4px;color:var(--n-1);font-size:16px;font-weight:600">{{ m.title }}</h3>
+              <p style="margin:0;color:var(--n-3);font-size:13px;line-height:1.55">{{ m.lead }}</p>
+            </div>
+            <sc-if value="{{ m.showLogo }}" hint-placeholder-val="{{ true }}"><img src="{{ m.logo }}" alt="" style="height:20px;width:auto;margin-top:4px"></sc-if>
+            <button onClick="{{ closeModal }}" title="Закрыть" style="width:30px;height:30px;margin:-2px -8px 0 0;display:inline-flex;align-items:center;justify-content:center;color:var(--n-4);background:transparent;border:0;border-radius:7px;cursor:pointer" style-hover="color:var(--n-2);background:var(--n-8)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"></path></svg></button>
+          </header>
+
+          <div style="display:flex;flex-direction:column;gap:16px;padding:20px 24px;overflow-y:auto">
+            <sc-if value="{{ m.error }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;gap:10px;align-items:flex-start;padding:11px 14px;border:1px solid var(--error-border);border-radius:9px;background:var(--error-bg)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:2px;color:var(--error-text)"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 8v4M12 16v.01"></path></svg>
+                <p style="margin:0;color:var(--n-2);font-size:12.5px;line-height:1.55"><strong>{{ m.errorTitle }}</strong> {{ m.errorText }}</p>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ m.isBitrix }}" hint-placeholder-val="{{ false }}">
+              <div style="display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:24px;align-items:start">
+                <div style="display:flex;flex-direction:column;gap:16px">
+                  <sc-if value="{{ m.isNew }}" hint-placeholder-val="{{ true }}">
+                    <label style="display:block"><span style="display:block;margin-bottom:6px;color:var(--n-2);font-size:12.5px;font-weight:600">Название подключения</span><input value="{{ f.name }}" onChange="{{ setName }}" style="width:100%;box-sizing:border-box;height:36px;padding:0 12px;color:var(--n-1);background:var(--surface-card);border:1px solid var(--n-7);border-radius:8px;outline:none;font-size:13.5px" style-focus="border-color:var(--primary)"><span style="display:block;margin-top:6px;font-size:12px;color:var(--n-4)">Видно только в настройках. Помогает различать несколько порталов.</span></label>
+                  </sc-if>
+                  <label style="display:block"><span style="display:block;margin-bottom:6px;color:var(--n-2);font-size:12.5px;font-weight:600">Ссылка входящего вебхука</span><input value="{{ f.url }}" onChange="{{ setUrl }}" placeholder="https://ваш-портал.bitrix24.ru/rest/1/…" style="{{ urlInputStyle }}"><sc-if value="{{ m.invalid }}" hint-placeholder-val="{{ false }}"><span style="display:block;margin-top:6px;font-size:11.5px;color:var(--error-text)">Нужна ссылка HTTPS вида «адрес портала / rest / пользователь / секрет».</span></sc-if><span style="display:block;margin-top:6px;font-size:12px;color:var(--n-4);line-height:1.45">Ссылка содержит секрет доступа и после сохранения не показывается.</span></label>
+                </div>
+                <div style="padding:16px;border-radius:10px;background:var(--n-10);border:1px solid var(--n-8)">
+                  <strong style="display:block;margin-bottom:10px;color:var(--n-1);font-size:13px;font-weight:600">Как получить ссылку</strong>
+                  <ol style="margin:0;padding-left:18px;color:var(--n-3);font-size:12.5px;line-height:1.55;display:flex;flex-direction:column;gap:8px">
+                    <li>В Битрикс24 откройте «Разработчикам» → «Другое» → «Входящий вебхук».</li>
+                    <li>Разрешите доступ к CRM и к пользователям.</li>
+                    <li>Скопируйте ссылку и вставьте сюда.</li>
+                  </ol>
+                  <a href="#" style="display:inline-flex;align-items:center;gap:5px;margin-top:12px;font-size:12.5px;font-weight:600">Инструкция Битрикс24<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"></path></svg></a>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ m.isAmo }}" hint-placeholder-val="{{ false }}">
+              <sc-if value="{{ m.isNew }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex;flex-direction:column;gap:8px">
+                  <span style="color:var(--n-2);font-size:12.5px;font-weight:600">Способ доступа</span>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                    <button onClick="{{ setOauth }}" style="{{ oauthOptStyle }}"><strong style="display:block;color:var(--n-1);font-size:13px;font-weight:600">Через amoCRM</strong><span style="display:block;margin-top:2px;color:var(--n-4);font-size:12px;line-height:1.45">Войдите в amoCRM и разрешите доступ. Пароль остаётся в amoCRM.</span></button>
+                    <button onClick="{{ setToken }}" style="{{ tokenOptStyle }}"><strong style="display:block;color:var(--n-1);font-size:13px;font-weight:600">Долгосрочный токен</strong><span style="display:block;margin-top:2px;color:var(--n-4);font-size:12px;line-height:1.45">Из приватной или внешней интеграции amoCRM.</span></button>
+                  </div>
+                </div>
+              </sc-if>
+              <sc-if value="{{ m.amoOauth }}" hint-placeholder-val="{{ true }}">
+                <sc-if value="{{ m.waiting }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;gap:12px;align-items:center;padding:14px 16px;border:1px solid var(--n-8);border-radius:10px;background:var(--n-10)">
+                    {{ spinner }}
+                    <div style="flex:1"><strong style="display:block;color:var(--n-1);font-size:13px;font-weight:600">Ожидаем разрешение amoCRM</strong><span style="color:var(--n-4);font-size:12.5px">Завершите подключение в открывшемся окне.</span></div>
+                    <button style="padding:0;border:0;background:none;color:var(--primary);font-size:12.5px;font-weight:600;cursor:pointer">Открыть окно ещё раз</button>
+                  </div>
+                </sc-if>
+                <p style="margin:0;color:var(--n-4);font-size:12.5px;line-height:1.5">Для первого подключения нужны права администратора amoCRM. Проверка читает аккаунт и справочники — сделки и контакты не создаются.</p>
+              </sc-if>
+              <sc-if value="{{ m.amoToken }}" hint-placeholder-val="{{ false }}">
+                <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px">
+                  <label style="display:block"><span style="display:block;margin-bottom:6px;color:var(--n-2);font-size:12.5px;font-weight:600">Адрес аккаунта</span><input placeholder="https://nord.amocrm.ru" style="width:100%;box-sizing:border-box;height:36px;padding:0 12px;color:var(--n-1);background:var(--surface-card);border:1px solid var(--n-7);border-radius:8px;outline:none;font-size:13.5px" style-focus="border-color:var(--primary)"></label>
+                  <label style="display:block"><span style="display:block;margin-bottom:6px;color:var(--n-2);font-size:12.5px;font-weight:600">Долгосрочный токен</span><input placeholder="Вставьте токен" style="width:100%;box-sizing:border-box;height:36px;padding:0 12px;color:var(--n-1);background:var(--surface-card);border:1px solid var(--n-7);border-radius:8px;outline:none;font-size:13.5px" style-focus="border-color:var(--primary)"></label>
+                </div>
+                <p style="margin:0;color:var(--n-4);font-size:12.5px;line-height:1.5">В интеграции amoCRM откройте «Ключи» и создайте токен. Срок задаётся в amoCRM; после сохранения токен не показывается.</p>
+              </sc-if>
+            </sc-if>
+
+            <sc-if value="{{ m.isMindbox }}" hint-placeholder-val="{{ false }}">
+              <div style="display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:24px;align-items:start">
+                <div style="display:flex;flex-direction:column;gap:16px">
+                  <sc-if value="{{ m.isNew }}" hint-placeholder-val="{{ true }}">
+                    <label style="display:block"><span style="display:block;margin-bottom:6px;color:var(--n-2);font-size:12.5px;font-weight:600">Название подключения</span><input value="{{ f.name }}" onChange="{{ setName }}" style="width:100%;box-sizing:border-box;height:36px;padding:0 12px;color:var(--n-1);background:var(--surface-card);border:1px solid var(--n-7);border-radius:8px;outline:none;font-size:13.5px" style-focus="border-color:var(--primary)"></label>
+                    <label style="display:block"><span style="display:block;margin-bottom:6px;color:var(--n-2);font-size:12.5px;font-weight:600">Адрес API проекта</span><input placeholder="https://" style="width:100%;box-sizing:border-box;height:36px;padding:0 12px;color:var(--n-1);background:var(--surface-card);border:1px solid var(--n-7);border-radius:8px;outline:none;font-size:13.5px" style-focus="border-color:var(--primary)"></label>
+                    <label style="display:block"><span style="display:block;margin-bottom:6px;color:var(--n-2);font-size:12.5px;font-weight:600">Точка интеграции</span><input placeholder="Идентификатор из Mindbox" style="width:100%;box-sizing:border-box;height:36px;padding:0 12px;color:var(--n-1);background:var(--surface-card);border:1px solid var(--n-7);border-radius:8px;outline:none;font-size:13.5px" style-focus="border-color:var(--primary)"></label>
+                  </sc-if>
+                  <label style="display:block"><span style="display:block;margin-bottom:6px;color:var(--n-2);font-size:12.5px;font-weight:600">Секретный ключ</span><input placeholder="Вставьте ключ" style="width:100%;box-sizing:border-box;height:36px;padding:0 12px;color:var(--n-1);background:var(--surface-card);border:1px solid var(--n-7);border-radius:8px;outline:none;font-size:13.5px" style-focus="border-color:var(--primary)"><span style="display:block;margin-top:6px;font-size:12px;color:var(--n-4)">После сохранения ключ не показывается.</span></label>
+                </div>
+                <div style="padding:16px;border-radius:10px;background:var(--n-10);border:1px solid var(--n-8);display:flex;flex-direction:column;gap:10px">
+                  <strong style="color:var(--n-1);font-size:13px;font-weight:600">Где взять данные</strong>
+                  <p style="margin:0;color:var(--n-3);font-size:12.5px;line-height:1.55">Адрес, точку интеграции и её ключ предоставляет администратор проекта Mindbox.</p>
+                  <p style="margin:0;color:var(--n-3);font-size:12.5px;line-height:1.55">Mindbox нельзя проверить без чтения данных клиента, поэтому подключение сохранится без проверки. Проверить доступ можно в карточке подключения.</p>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ m.isCheck }}" hint-placeholder-val="{{ false }}">
+              <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px">
+                <label style="display:block"><span style="display:block;margin-bottom:6px;color:var(--n-2);font-size:12.5px;font-weight:600">Операция для проверки</span><select style="width:100%;height:36px;padding:0 10px;color:var(--n-1);background:var(--surface-card);border:1px solid var(--n-7);border-radius:8px;font-size:13.5px"><option>Получить данные клиента</option></select></label>
+                <label style="display:block"><span style="display:block;margin-bottom:6px;color:var(--n-2);font-size:12.5px;font-weight:600">Идентификатор существующего клиента</span><input style="width:100%;box-sizing:border-box;height:36px;padding:0 12px;color:var(--n-1);background:var(--surface-card);border:1px solid var(--n-7);border-radius:8px;outline:none;font-size:13.5px" style-focus="border-color:var(--primary)"></label>
+              </div>
+              <p style="margin:0;color:var(--n-4);font-size:12.5px;line-height:1.5">Операция только читает данные. Клиенты и другие записи для проверки не создаются; идентификатор не сохраняется.</p>
+            </sc-if>
+          </div>
+
+          <footer style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 24px;border-top:1px solid var(--border-default)">
+            <span style="color:var(--n-4);font-size:12px">{{ m.footHint }}</span>
+            <div style="display:flex;align-items:center;gap:10px">
+              <button onClick="{{ closeModal }}" style="height:34px;display:inline-flex;align-items:center;padding:0 14px;color:var(--n-2);background:var(--surface-card);border:1px solid var(--n-7);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer" style-hover="color:var(--primary);border-color:var(--primary)">Отмена</button>
+              <button onClick="{{ submit }}" disabled="{{ m.busy }}" style="{{ submitStyle }}">{{ m.busyIcon }}{{ m.submitLabel }}</button>
+            </div>
+          </footer>
+        </section>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ confirmDelete }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;background:var(--scrim)">
+        <section role="dialog" style="width:460px;background:var(--surface-card);border:1px solid var(--error-border);border-radius:14px;box-shadow:var(--modal-shadow);overflow:hidden">
+          <header style="display:flex;gap:14px;padding:20px 22px 16px;border-bottom:1px solid var(--border-default)">
+            <span style="display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:10px;flex:none;background:var(--error-bg);color:var(--error-text)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 8v4M12 16v.01"></path></svg></span>
+            <div><h3 style="margin:0 0 4px;color:var(--n-1);font-size:15px;font-weight:600">Удалить подключение?</h3><p style="margin:0;color:var(--n-3);font-size:12.5px;line-height:1.55">Сценарии с этим подключением перестанут работать. Связи с записями {{ card.svcTitleGen }} удалятся. Данные в самом сервисе не изменятся.</p></div>
+          </header>
+          <footer style="display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:14px 22px">
+            <button onClick="{{ cancelDelete }}" style="height:34px;display:inline-flex;align-items:center;padding:0 14px;color:var(--n-2);background:var(--surface-card);border:1px solid var(--n-7);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">Отмена</button>
+            <button onClick="{{ doDelete }}" style="height:34px;display:inline-flex;align-items:center;padding:0 16px;color:#fff;background:var(--error);border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">Удалить</button>
+          </footer>
+        </section>
+      </div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;'light'|'dark'&quot;},&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;options&quot;:[&quot;#0f9b8e&quot;,&quot;#1677ff&quot;,&quot;#722ed1&quot;,&quot;#fa541c&quot;],&quot;default&quot;:&quot;#0f9b8e&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const SVC = {
+  bitrix: { title: 'Битрикс24', gen: 'Битрикс24', about: 'Контакты, лиды и сделки. Передавайте обращения из Chatballs в CRM.', host: 'nord.bitrix24.ru', hostLabel: 'Портал', access: 'входящий вебхук', defName: 'Битрикс24 · Отдел продаж',
+    presets: [{ name: 'Создать лид из диалога', about: 'Сотрудник передаёт обращение в CRM. В лиде — имя и контакты клиента, у диалога — ссылка на лид.' }],
+    hint: 'Проверка только читает данные CRM. Лиды и другие записи не создаются.' },
+  amo: { title: 'amoCRM', gen: 'amoCRM', about: 'Контакты и сделки. Работайте с продажами из диалогов.', host: 'nord.amocrm.ru', hostLabel: 'Аккаунт', access: 'вход через amoCRM', defName: 'amoCRM · Розница',
+    presets: [{ name: 'Создать сделку из диалога', about: 'Сделка в выбранной воронке с контактом клиента; у диалога сохраняется ссылка на сделку.' }],
+    hint: '' },
+  mindbox: { title: 'Mindbox', gen: 'Mindbox', about: 'Данные клиентов и настроенные операции вашего проекта.', host: 'api.mindbox.example', hostLabel: 'Адрес API', access: 'секретный ключ', defName: 'Mindbox · Интернет-магазин',
+    presets: [{ name: 'Найти клиента Mindbox', about: 'Сотрудник видит в диалоге данные связанного клиента. В Mindbox ничего не меняется.' }],
+    hint: 'Ключ сохраняется без проверки.' },
+};
+const ICONS = {
+  message: 'M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z', user: 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0z',
+  robot: 'M7 4.6h10a3.4 3.4 0 0 1 3.4 3.4v6.2a3.4 3.4 0 0 1-3.4 3.4h-6.2l-3.4 2.8v-2.8H7A3.4 3.4 0 0 1 3.6 14.2V8A3.4 3.4 0 0 1 7 4.6zM12 4.6V2.9M12 1.4v.01M9 9.4v1.4M15 9.4v1.4M9.2 13.4c.8 1 1.7 1.5 2.8 1.5s2-.5 2.8-1.5M1.6 9.8v2.6M22.4 9.8v2.6',
+  team: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75',
+  globe: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM2 12h20M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20', book: 'M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5A2.5 2.5 0 0 0 6.5 22H20V2H6.5A2.5 2.5 0 0 0 4 4.5z',
+  building: 'M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6M9 10h.01M15 10h.01', clock: 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zM12 6v6l4 2',
+  transfer: 'M17 1l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3', text: 'M5 5h14M12 5v14M8 19h8',
+  thumbUp: 'M7 10v11H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3zM7 10 11 3a2.2 2.2 0 0 1 4 1.8L14.5 8H20a2 2 0 0 1 2 2.4l-1.4 7A4 4 0 0 1 16.7 21H7',
+  sparkles: 'M12 3l1.8 4.6L18.4 9.4 13.8 11.2 12 15.8 10.2 11.2 5.6 9.4 10.2 7.6zM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8zM5 14l.6 1.6L7.2 16.2 5.6 16.8 5 18.4l-.6-1.6L2.8 16.2l1.6-.6z',
+  plug: 'M12 22v-5M9 8V2M15 8V2M18 8v5a6 6 0 0 1-12 0V8z', swap: 'M8 3 4 7l4 4M4 7h16M16 21l4-4-4-4M20 17H4',
+  mic: 'M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3ZM19 10v2a7 7 0 0 1-14 0v-2M12 19v3', sun: 'M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8',
+};
+const NAV = [['message', 'Чат'], ['user', 'Контакты'], ['robot', 'Агенты'], ['team', 'Сотрудники'], ['globe', 'Порталы'], ['book', 'База знаний']];
+ICONS.bell = 'M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0';
+ICONS.check = 'M20 6 9 17l-5-5';
+ICONS.refresh = 'M21 12a9 9 0 1 1-2.6-6.4L21 8M21 3v5h-5';
+const SUB = [['', 'Организация'], ['building', 'Организация'], ['team', 'Группы'],
+  ['', 'Обслуживание'], ['bell', 'Когда звать на помощь'], ['clock', 'Правила обработки'], ['transfer', 'Передача и участники'], ['text', 'Шаблоны ответов'], ['mic', 'Голосовые и звонки'],
+  ['', 'Качество'], ['thumbUp', 'Оценки клиентов'], ['check', 'Анализ качества'],
+  ['', 'Подключения'], ['sparkles', 'AI-провайдер'], ['plug', 'Интеграции'], ['refresh', 'Сценарии'],
+  ['', 'Прочее'], ['sun', 'Демо-данные']];
+const START = () => [
+  { id: 1, svc: 'bitrix', name: 'Битрикс24 · Отдел продаж', status: 'ok', on: 1 },
+  { id: 2, svc: 'amo', name: 'amoCRM · Розница', status: 'lost', on: 1 },
+];
+const URL_RE = /^https:\/\/[^/\s]+\/rest\/\d+\/[^/\s]+\/?$/;
+
+class Component extends DCLogic {
+  state = { view: 'list', conns: START(), cardId: 1, notice: false, modal: null, f: { name: '', url: '' }, menu: false, confirmDelete: false, sync: false, nextId: 3, syncCfg: null, syncDrawer: false, syncDraft: null };
+
+  componentDidMount() { this.applyTheme(); }
+  componentDidUpdate() { this.applyTheme(); }
+  componentWillUnmount() { clearTimeout(this.timer); }
+  applyTheme() {
+    const root = document.documentElement;
+    root.dataset.theme = this.props.theme === 'dark' ? 'dark' : 'light';
+    root.style.setProperty('--accent', this.props.accent || '#0f9b8e');
+  }
+
+  openModal(svc, mode = 'new', patch = {}) {
+    clearTimeout(this.timer);
+    this.setState({ modal: { svc, mode, stage: 'form', method: 'oauth', ...patch }, f: { name: SVC[svc].defName, url: patch.url || '' }, menu: false });
+  }
+  setStage(stage) { this.setState(s => ({ modal: { ...s.modal, stage } })); }
+  finish() {
+    const { modal, f } = this.state;
+    if (modal.mode === 'check') { this.patchCard({ status: 'ok' }); this.setState({ modal: null }); return; }
+    if (modal.mode === 'replace') { this.patchCard({ status: 'ok' }); this.setState({ modal: null, notice: false }); return; }
+    const id = this.state.nextId;
+    const conn = { id, svc: modal.svc, name: f.name || SVC[modal.svc].defName, status: modal.svc === 'mindbox' ? 'unchecked' : 'ok', on: 0 };
+    this.setState(s => ({ conns: [...s.conns, conn], nextId: id + 1, cardId: id, view: 'card', modal: null, notice: true, sync: false }));
+  }
+  patchCard(p) { this.setState(s => ({ conns: s.conns.map(c => c.id === s.cardId ? { ...c, ...p } : c) })); }
+  submit() {
+    const { modal, f } = this.state;
+    if (modal.svc === 'bitrix' && modal.mode !== 'check' && !URL_RE.test(f.url.trim())) { this.setStage('invalid'); return; }
+    if (modal.svc === 'mindbox' && modal.mode === 'new') { this.finish(); return; }
+    const waitStage = modal.svc === 'amo' && modal.method === 'oauth' && modal.mode !== 'check' ? 'waiting' : 'checking';
+    this.setStage(waitStage);
+    this.timer = setTimeout(() => this.finish(), 1400);
+  }
+
+  syncVals(cc) {
+    const st = this.state;
+    const svcName = cc ? (cc.svc === 'amo' ? 'amoCRM' : cc.svc === 'mindbox' ? 'Mindbox' : 'Битрикс24') : 'Битрикс24';
+    const ML = () => ({ title: 'TITLE', status: 'STATUS_ID', owner: 'ASSIGNED_BY_ID', tags: '', note: 'COMMENTS' });
+    const DEF = () => ({ pairs: { contact: 'both', lead: 'in' }, map: { name: 'NAME', phone: 'PHONE', email: 'EMAIL', company: '', tags: '' }, mapLead: ML(), conflict: 'last' });
+    const dft0 = st.syncDraft || DEF(); const dft = { ...dft0, mapLead: dft0.mapLead || ML() };
+    const upd = fn => this.setState(s => { const d = JSON.parse(JSON.stringify(s.syncDraft || DEF())); if (!d.mapLead) d.mapLead = ML(); fn(d); return { syncDraft: d }; });
+    const recName = cc && cc.svc === 'amo' ? 'Сделка' : 'Лид';
+    const SVCF_L = cc && cc.svc === 'amo' ? [['', 'Не передавать'], ['TITLE', 'Название'], ['STATUS_ID', 'Этап воронки'], ['ASSIGNED_BY_ID', 'Ответственный'], ['TAGS', 'Теги'], ['COMMENTS', 'Примечание']] : [['', 'Не передавать'], ['TITLE', 'Название'], ['STATUS_ID', 'Стадия'], ['ASSIGNED_BY_ID', 'Ответственный'], ['UF_TAGS', 'Теги (пользовательское поле)'], ['COMMENTS', 'Комментарий']];
+    const CBF_L = [['title', 'Тема диалога'], ['status', 'Статус диалога'], ['owner', 'Ответственный'], ['tags', 'Метки диалога'], ['note', 'Итог диалога (заметка)']];
+    const tab0 = st.syncTab || 'contact'; const tab = dft.pairs[tab0] ? tab0 : (dft.pairs.contact ? 'contact' : 'lead');
+    const DIRS = [['both', 'В обе стороны'], ['out', `Только в ${svcName}`], ['in', 'Только в Chatballs']];
+    const PAIRS = [['contact', `Контакт ↔ Контакт ${svcName}`, '312 связанных'], ['lead', `Диалог ↔ ${cc && cc.svc === 'amo' ? 'Сделка' : 'Лид'} ${svcName}`, '48 связанных']];
+    const SVCF = [['', 'Не передавать'], ['NAME', 'Имя'], ['LAST_NAME', 'Фамилия'], ['PHONE', 'Телефон'], ['EMAIL', 'E-mail'], ['COMPANY', 'Компания'], ['UF_TAGS', 'Теги (пользовательское поле)']];
+    const CBF = [['name', 'Имя'], ['phone', 'Телефон'], ['email', 'Почта'], ['company', 'Компания'], ['tags', 'Метки']];
+    const CONF = [['last', 'Оставить более позднее изменение', 'Подходит, если обе системы ведут одни и те же люди.'], ['cb', 'Всегда оставлять значение Chatballs', 'Изменение в ' + svcName + ' будет перезаписано.'], ['svc', 'Всегда оставлять значение ' + svcName, 'Изменение в Chatballs будет перезаписано.'], ['ask', 'Ничего не менять, показать в журнале', 'Администратор выберет значение в «Журнал запусков → Требуют внимания». До решения поле не обновляется.']];
+    const segBtn = (on) => ({ height: 26, padding: '0 10px', borderRadius: 6, border: 'none', background: on ? 'var(--surface-card)' : 'transparent', color: on ? 'var(--n-1)' : 'var(--n-3)', boxShadow: on ? '0 1px 2px rgba(0,0,0,.08)' : 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer' });
+    const cdir = dft.pairs[tab] || 'both';
+    const arrow = cdir === 'both' ? '⇄' : cdir === 'out' ? '→' : '←';
+    const anyPair = Object.values(dft.pairs).some(Boolean);
+    const mapped = CBF.filter(([k]) => dft.map[k]).length;
+    const cfg = st.syncCfg;
+    const sumDir = d => ({ both: 'в обе стороны', out: `только в ${svcName}`, in: 'только в Chatballs' }[d]);
+    return {
+      syncCfgd: !!cfg, syncNotCfgd: !cfg, syncDrawer: st.syncDrawer, syncConn: cc ? cc.name : '', syncSvc: svcName,
+      openSync: () => this.setState({ syncDrawer: true, syncDraft: cfg ? JSON.parse(JSON.stringify(cfg)) : DEF() }),
+      closeSync: () => this.setState({ syncDrawer: false }),
+      saveSync: () => { if (!anyPair) return; this.setState({ syncCfg: dft, syncDrawer: false, sync: true }); },
+      syncSaveLabel: cfg ? 'Сохранить' : 'Сохранить и включить',
+      syncSaveStyle: { height: 34, padding: '0 16px', color: anyPair ? '#fff' : 'var(--n-5)', background: anyPair ? 'var(--primary)' : 'var(--n-8)', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: anyPair ? 'pointer' : 'not-allowed' },
+      syncFootNote: anyPair ? 'Первый обмен — в течение 5 минут, дальше при каждом изменении.' : 'Выберите хотя бы один тип записей.',
+      syncPairs: PAIRS.map(([k, label, count]) => ({ label, count, on: !!dft.pairs[k], toggle: () => upd(d => { d.pairs[k] = d.pairs[k] ? null : 'both'; }),
+        box: { display: 'flex', flexDirection: 'column', gap: 8, padding: 12, border: '1px solid ' + (dft.pairs[k] ? 'var(--primary-border)' : 'var(--n-8)'), borderRadius: 10, background: dft.pairs[k] ? 'var(--primary-bg)' : 'var(--surface-card)' },
+        dirs: DIRS.map(([dk, dl]) => ({ label: dl, pick: () => upd(d => { d.pairs[k] = dk; }), style: segBtn(dft.pairs[k] === dk) })) })),
+      syncHasStatus: tab === 'lead' && !!dft.mapLead.status,
+      syncMapTabsShow: !!(dft.pairs.contact && dft.pairs.lead),
+      syncMapTabs: [['contact', 'Контакт'], ['lead', `Диалог ↔ ${recName.toLowerCase()}`]].filter(([k]) => dft.pairs[k]).map(([k, l]) => ({ label: l, pick: () => this.setState({ syncTab: k }), style: segBtn(tab === k) })),
+      syncMapHint: tab === 'lead' ? `Выберите соответствия статусов и стадий для каждого направления. «Не менять» сохраняет значение принимающей системы. Метки передаются как теги.` : 'Поля без пары не передаются. Подобраны автоматически — проверьте.',
+      syncColA: tab === 'lead' ? 'Диалог Chatballs' : 'Контакт Chatballs', syncColB: tab === 'lead' ? `${recName} ${svcName}` : `Контакт ${svcName}`,
+      syncFields: (tab === 'lead' ? CBF_L : CBF).map(([k, l]) => { const m = tab === 'lead' ? dft.mapLead : dft.map; const key = tab === 'lead' ? 'mapLead' : 'map';
+        return { cb: l, arrow: m[k] ? arrow : '', sel: React.createElement('select', { value: m[k], onChange: e => { const val = e.target.value; upd(d => { d[key][k] = val; }); }, style: { width: '100%', height: 32, padding: '0 8px', border: '1px solid var(--n-7)', borderRadius: 7, fontSize: 13, color: m[k] ? 'var(--n-1)' : 'var(--n-4)' } }, (tab === 'lead' ? SVCF_L : SVCF).map(([v, t]) => React.createElement('option', { key: v || '_', value: v }, t))) }; }),
+      syncStatusGroups: globalThis.ServiceSyncStatusMapping.build(cdir, dft.statusMaps, [['open', 'Открыт'], ['waiting', 'Ждёт клиента'], ['closed', 'Закрыт']], [['work', 'В работе'], ['waiting', 'Ожидание'], ['processed', 'Обработан']]).map(group => ({ ...group,
+        rows: group.rows.map(row => ({ ...row, select: React.createElement('select', { value: row.value, onChange: e => { const value = e.target.value; upd(d => { d.statusMaps = { ...(d.statusMaps || {}), [group.key]: { ...((d.statusMaps || {})[group.key] || {}), [row.id]: value } }; }); }, style: { width: '100%', height: 32, padding: '0 8px', border: '1px solid var(--n-7)', borderRadius: 7, fontSize: 13, color: row.value ? 'var(--n-1)' : 'var(--n-4)', background: 'var(--surface-card)' } }, row.options.map(([value, label]) => React.createElement('option', { key: value || '_', value }, label))) })) })),
+      syncConflict: CONF.map(([k, label, help]) => ({ label, help, on: dft.conflict === k, pick: () => upd(d => { d.conflict = k; }),
+        box: { display: 'flex', gap: 10, alignItems: 'flex-start', padding: '10px 12px', border: '1px solid ' + (dft.conflict === k ? 'var(--primary)' : 'var(--n-8)'), borderRadius: 9, background: dft.conflict === k ? 'var(--primary-bg)' : 'var(--surface-card)', cursor: 'pointer' } })),
+      syncSummary: cfg ? [
+        ...PAIRS.filter(([k]) => cfg.pairs[k]).map(([k, label]) => ({ k: label.split(' ↔ ')[0], v: `${label.split(' ↔ ')[1]} · ${sumDir(cfg.pairs[k])}` })),
+        ...(cfg.pairs.contact ? [{ k: 'Поля контакта', v: CBF.filter(([k]) => cfg.map[k]).map(([, l]) => l).join(', ') || 'не выбраны' }] : []),
+        ...(cfg.pairs.lead ? [{ k: `Поля: диалог ↔ ${recName.toLowerCase()}`, v: CBF_L.filter(([k]) => (cfg.mapLead || ML())[k]).map(([, l]) => l).join(', ') || 'не выбраны' }] : []),
+        { k: 'При расхождении', v: CONF.find(c => c[0] === cfg.conflict)[1] },
+      ] : [],
+      syncStatus: cfg ? (st.sync ? 'Последний обмен сегодня в 14:20 · обновлено 3 записи' : 'Обмен выключен. Настройки сохранены.') : '',
+    };
+  }
+
+  jumps() {
+    const go = fn => () => { clearTimeout(this.timer); fn(); };
+    const base = { menu: false, confirmDelete: false, modal: null };
+    const card = (id, extra = {}) => this.setState(s => ({ ...base, view: 'card', cardId: id, notice: false, conns: s.conns.some(c => c.id === id) ? s.conns : START(), ...extra }));
+    return [
+      ['Список', () => this.setState({ ...base, view: 'list', conns: START() })],
+      ['Первое подключение', () => this.setState({ ...base, view: 'list', conns: [] })],
+      ['Битрикс24 · форма', () => { this.setState({ view: 'list' }); this.openModal('bitrix'); }],
+      ['· неверная ссылка', () => { this.setState({ view: 'list' }); this.openModal('bitrix', 'new', { stage: 'invalid', url: 'nord.bitrix24.ru/webhook' }); }],
+      ['· нет доступа к CRM', () => { this.setState({ view: 'list' }); this.openModal('bitrix', 'new', { stage: 'error', url: 'https://nord.bitrix24.ru/rest/1/k3y9preview/' }); }],
+      ['amoCRM · вход', () => { this.setState({ view: 'list' }); this.openModal('amo'); }],
+      ['· доступ не выдан', () => { this.setState({ view: 'list' }); this.openModal('amo', 'new', { stage: 'error' }); }],
+      ['· токен', () => { this.setState({ view: 'list' }); this.openModal('amo', 'new', { method: 'token' }); }],
+      ['Mindbox', () => { this.setState({ view: 'list' }); this.openModal('mindbox'); }],
+      ['Карточка · только что подключено', () => card(1, { notice: true, conns: START().map(c => c.id === 1 ? { ...c, on: 0 } : c) })],
+      ['Карточка · сценарий включён', () => card(1, { conns: START() })],
+      ['Карточка · доступ потерян', () => card(2, { conns: START() })],
+      ['Карточка · Mindbox не проверен', () => card(9, { conns: [...START(), { id: 9, svc: 'mindbox', name: 'Mindbox · Интернет-магазин', status: 'unchecked', on: 0 }] })],
+      ['Удаление', () => card(1, { conns: START(), confirmDelete: true })],
+      ['Обмен · настройка', () => card(1, { conns: START(), syncCfg: null, sync: false, syncDrawer: true, syncDraft: null, syncTab: 'contact' })],
+      ['Обмен · поля лида', () => card(1, { conns: START(), syncCfg: null, sync: false, syncDrawer: true, syncDraft: null, syncTab: 'lead' })],
+      ['Обмен · настроен', () => card(1, { conns: START(), syncCfg: { pairs: { contact: 'both', lead: 'in' }, map: { name: 'NAME', phone: 'PHONE', email: 'EMAIL', company: '', tags: '' }, conflict: 'last' }, sync: true, syncDrawer: false })],
+    ].map(([label, fn]) => ({ label, go: go(fn) }));
+  }
+
+  logo(svc) {
+    const dark = this.props.theme === 'dark';
+    return { bitrix: dark ? 'assets/logos/bitrix-white.svg' : 'assets/logos/bitrix-color.svg', amo: 'assets/logos/amocrm.svg', mindbox: dark ? 'assets/logos/mindbox-white.svg' : 'assets/logos/mindbox-black.svg' }[svc];
+  }
+  spinner(size = 16, color = 'var(--primary)') {
+    return React.createElement('svg', { width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: color, strokeWidth: 2.4, strokeLinecap: 'round', style: { flex: 'none', animation: 'cb-spin .8s linear infinite' } },
+      React.createElement('path', { d: 'M21 12a9 9 0 1 1-6.2-8.6' }));
+  }
+
+  modalVals() {
+    const { modal, f } = this.state;
+    if (!modal) return {};
+    const s = SVC[modal.svc];
+    const isNew = modal.mode === 'new';
+    const busy = modal.stage === 'checking' || modal.stage === 'waiting';
+    let title = isNew ? `Подключить ${s.title}` : `Восстановить доступ к ${s.gen}`;
+    let lead = isNew ? { bitrix: 'Свяжите Chatballs с вашим порталом.', amo: 'Свяжите Chatballs с аккаунтом вашей команды.', mindbox: 'Используйте точку интеграции вашего проекта Mindbox.' }[modal.svc] : 'Настройки сценариев сохранятся. После проверки запуски продолжатся.';
+    let submitLabel = 'Проверить и подключить';
+    if (modal.svc === 'amo' && modal.method === 'oauth') submitLabel = 'Продолжить в amoCRM';
+    if (modal.svc === 'mindbox' && isNew) submitLabel = 'Сохранить подключение';
+    if (!isNew) submitLabel = 'Проверить и сохранить';
+    if (modal.mode === 'check') { title = 'Проверить доступ к Mindbox'; lead = 'Прочитаем существующего клиента через операцию чтения.'; submitLabel = 'Проверить чтение'; }
+    if (modal.stage === 'error') submitLabel = modal.svc === 'amo' && modal.method === 'oauth' ? 'Повторить вход' : 'Проверить снова';
+    if (modal.stage === 'checking') submitLabel = 'Проверяем…';
+    if (modal.stage === 'waiting') submitLabel = 'Ожидаем…';
+    const errors = {
+      bitrix: ['Нет доступа к CRM.', 'У вебхука не включён доступ к CRM или у его владельца нет прав. Отметьте CRM в настройках вебхука в Битрикс24 и проверьте снова — ссылка останется прежней.'],
+      amo: ['Доступ не предоставлен.', 'Подключение не создано. Войдите снова и в окне amoCRM разрешите доступ.'],
+      mindbox: ['Ключ не принят.', 'Проверьте адрес проекта, точку интеграции и её ключ.'],
+    }[modal.svc];
+    return {
+      title, lead, isNew, busy, submitLabel,
+      showLogo: true, logo: this.logo(modal.svc),
+      isBitrix: modal.svc === 'bitrix' && modal.mode !== 'check', isAmo: modal.svc === 'amo', isMindbox: modal.svc === 'mindbox' && modal.mode !== 'check', isCheck: modal.mode === 'check',
+      amoOauth: modal.method === 'oauth', amoToken: modal.method === 'token',
+      invalid: modal.stage === 'invalid', error: modal.stage === 'error', waiting: modal.stage === 'waiting',
+      errorTitle: errors[0], errorText: errors[1],
+      footHint: modal.mode === 'check' ? 'Изменения в Mindbox не выполняются.' : s.hint,
+      busyIcon: busy ? this.spinner(14, 'currentColor') : null,
+    };
+  }
+
+  renderVals() {
+    const st = this.state;
+    const conns = st.conns;
+    const scenText = c => c.status === 'lost' ? 'Приостановлены' : c.on ? `${c.on} включён` : 'Не включены';
+    const rows = conns.map(c => ({ name: c.name, host: SVC[c.svc].host, svcTitle: SVC[c.svc].title, logo: this.logo(c.svc), scenarios: scenText(c),
+      ok: c.status === 'ok', lost: c.status === 'lost', unchecked: c.status === 'unchecked',
+      open: () => this.setState({ view: 'card', cardId: c.id, notice: false, menu: false, sync: false }) }));
+    const catalog = Object.keys(SVC).map(k => { const n = conns.filter(c => c.svc === k).length; return {
+      title: SVC[k].title, about: SVC[k].about, logo: this.logo(k), cta: n ? 'Подключить ещё' : 'Подключить', count: n ? `Подключено: ${n}` : '',
+      connect: () => this.openModal(k) }; });
+    const cc = conns.find(c => c.id === st.cardId) || conns[0];
+    const cs = cc ? SVC[cc.svc] : SVC.bitrix;
+    const card = cc ? { name: cc.name, host: cs.host, hostLabel: cs.hostLabel, svcTitle: cs.title, svcTitleGen: cs.gen, logo: this.logo(cc.svc),
+      ok: cc.status === 'ok', lost: cc.status === 'lost', unchecked: cc.status === 'unchecked', access: cs.access,
+      accessState: cc.status === 'lost' ? 'Доступ отозван или истёк' : cc.status === 'unchecked' ? 'Ключ сохранён, доступ ещё не проверен. Сценарии можно включить после проверки.' : (cc.svc === 'bitrix' ? 'Ссылка сохранена · проверено сегодня' : 'Проверено сегодня'),
+      presets: cs.presets.map((p, i) => ({ ...p, on: i < cc.on, off: i >= cc.on, stateLabel: cc.status === 'lost' ? 'Приостановлен' : 'Включён', href: 'Сценарии.dc.html?open=' + ({ bitrix: 1, amo: 2, mindbox: 1 }[cc.svc]) })) } : {};
+    const m = this.modalVals();
+    const md = st.modal;
+    const optStyle = on => ({ textAlign: 'left', padding: '12px 14px', borderRadius: 10, cursor: 'pointer', background: on ? 'var(--primary-bg)' : 'var(--surface-card)', border: `1px solid ${on ? 'var(--primary)' : 'var(--n-7)'}` });
+    return {
+      jumps: this.jumps(),
+      nav: NAV.map(([i, l]) => ({ d: ICONS[i], label: l })),
+      subnav: SUB.map(([i, l]) => ({ d: ICONS[i], label: l, cap: !i, active: !!i && l === 'Интеграции', idle: !!i && l !== 'Интеграции' })),
+      isList: st.view === 'list', isCard: st.view === 'card' && !!cc,
+      hasConns: conns.length > 0, rows, catalog,
+      catalogTitle: conns.length ? 'Добавить сервис' : 'Подключите первый сервис',
+      toList: () => this.setState({ view: 'list', menu: false }),
+      card, cardName: cc ? cc.name : '', setCardName: e => this.patchCard({ name: e.target.value }),
+      showConnected: st.notice, hideNotice: () => this.setState({ notice: false }),
+      menuOpen: st.menu, toggleMenu: () => this.setState(s => ({ menu: !s.menu })),
+      askDelete: () => this.setState({ menu: false, confirmDelete: true }),
+      confirmDelete: st.confirmDelete, cancelDelete: () => this.setState({ confirmDelete: false }),
+      doDelete: () => this.setState(s => ({ confirmDelete: false, view: 'list', conns: s.conns.filter(c => c.id !== s.cardId) })),
+      openReplace: () => cc && this.openModal(cc.svc, 'replace', { method: 'oauth' }),
+      openCheck: () => this.openModal('mindbox', 'check'),
+      ...this.syncVals(cc),
+      syncOn: st.sync, toggleSync: () => this.setState(s => ({ sync: !s.sync })),
+      syncSwitchStyle: { width: 42, height: 24, display: 'flex', alignItems: 'center', justifyContent: st.sync ? 'flex-end' : 'flex-start', flex: 'none', padding: 2, background: st.sync ? 'var(--primary)' : 'var(--n-6)', border: 0, borderRadius: 14, cursor: 'pointer' },
+      hasModal: !!md, m, f: st.f, spinner: this.spinner(18),
+      dialogStyle: { width: md && (md.svc === 'amo' || md.mode === 'check') ? 600 : 760, maxHeight: 820, display: 'flex', flexDirection: 'column', background: 'var(--surface-card)', borderRadius: 14, boxShadow: 'var(--modal-shadow)', overflow: 'hidden' },
+      setName: e => this.setState({ f: { ...st.f, name: e.target.value } }),
+      setUrl: e => { const v = e.target.value; this.setState(s => ({ f: { ...s.f, url: v }, modal: s.modal.stage === 'invalid' ? { ...s.modal, stage: 'form' } : s.modal })); },
+      urlInputStyle: { width: '100%', boxSizing: 'border-box', height: 36, padding: '0 12px', color: 'var(--n-1)', background: 'var(--surface-card)', border: `1px solid ${md && md.stage === 'invalid' ? 'var(--error)' : 'var(--n-7)'}`, borderRadius: 8, outline: 'none', fontSize: 13.5, fontFamily: 'var(--font-mono)' },
+      oauthOptStyle: optStyle(md && md.method === 'oauth'), tokenOptStyle: optStyle(md && md.method === 'token'),
+      setOauth: () => this.setState(s => ({ modal: { ...s.modal, method: 'oauth', stage: 'form' } })),
+      setToken: () => { clearTimeout(this.timer); this.setState(s => ({ modal: { ...s.modal, method: 'token', stage: 'form' } })); },
+      closeModal: () => { clearTimeout(this.timer); this.setState({ modal: null }); },
+      submit: () => this.submit(),
+      submitStyle: { height: 34, display: 'inline-flex', alignItems: 'center', gap: 7, padding: '0 16px', color: m.busy ? 'var(--n-4)' : '#fff', background: m.busy ? 'var(--n-8)' : 'var(--primary)', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: m.busy ? 'default' : 'pointer' },
+    };
+  }
+}
+</script>
+</body>
+</html>

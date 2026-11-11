@@ -1,6 +1,7 @@
 import { AgentSkillsCard } from "../skills/AgentSkillsCard";
 import { AgentActionsCard } from "./actions/AgentActionsCard";
 import { Modal } from "antd";
+import type { ChannelRoute } from "../../shared/ChannelNavigationMenu";
 import { useEffect, useState } from "react";
 import { t } from "../../i18n";
 import { Icon } from "../../shared/icons";
@@ -26,7 +27,8 @@ export function AgentDetailPage({
   canManageConnections,
   openAgents,
   openKnowledge,
-  openIntegrations,
+  openChannels,
+  openServers,
   openServer,
   openAiProvider,
   onLoaded,
@@ -37,7 +39,8 @@ export function AgentDetailPage({
   canManageConnections: boolean;
   openAgents: () => void;
   openKnowledge: (knowledgeId: number) => void;
-  openIntegrations: () => void;
+  openChannels: (route: ChannelRoute) => void;
+  openServers: () => void;
   openServer: (integrationId: number) => void;
   openAiProvider: () => void;
   setRoute: (route: RouteKey) => void;
@@ -90,7 +93,7 @@ export function AgentDetailPage({
             canManage={canManageConnections}
             busy={busy}
             available={messengers.filter((item) => item.channel === null)}
-            openIntegrations={openIntegrations}
+            openChannels={openChannels}
             bind={bind}
             unbind={unbind}
           />
@@ -101,7 +104,7 @@ export function AgentDetailPage({
             canOpenServers={canManageConnections}
             busy={busy}
             save={(refs) => void apply({ tools: refs })}
-            openIntegrations={openIntegrations}
+            openIntegrations={openServers}
             openServer={openServer}
           />
         </div>

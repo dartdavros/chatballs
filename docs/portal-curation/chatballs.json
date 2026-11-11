@@ -3,7 +3,7 @@
   "locale": "ru",
   "order": {
     "start": ["chto-takoe-chatballs", "pervyj-den", "demo-dannye", "roli-i-prava"],
-    "installation": ["pervyj-zapusk", "adres-i-https", "pochta-smtp", "yazyk-ustanovki", "hranilishche-fajlov", "rezervnoe-kopirovanie", "obnovlenie", "diagnostika", "zvonki-relay"],
+    "installation": ["trebovaniya-k-serveru", "pervyj-zapusk", "adres-i-https", "pochta-smtp", "yazyk-ustanovki", "hranilishche-fajlov", "rezervnoe-kopirovanie", "obnovlenie", "diagnostika", "zvonki-relay"],
     "organization": ["organizaciya-nastrojki", "ai-provajder", "gruppy", "kogda-zvat-na-pomoshch", "neskolko-organizacij"],
     "entry-points": ["tochki-vhoda-obzor", "telegram", "token-telegram", "max", "token-max", "veb-vidzhet", "klassy-vidzheta", "pochtovyj-yashchik", "vkontakte", "golosovye-i-zvonki", "bot-uvedomlenij"],
     "agents": ["kartochka-agenta", "model-i-provajder", "instrukcii-agenta", "znaniya-agenta", "instrumenty-agenta", "zapusk-i-ostanovka", "agent-ne-znaet-otveta", "yazyk-otveta"],
@@ -20,7 +20,8 @@
     "pervyj-den": ["demo-dannye", "pervyj-zapusk", "tochki-vhoda-obzor"],
     "demo-dannye": ["pervyj-den", "ai-provajder"],
     "roli-i-prava": ["roli-sotrudnikov", "priglashenie-sotrudnika"],
-    "pervyj-zapusk": ["adres-i-https", "pochta-smtp", "rezervnoe-kopirovanie"],
+    "trebovaniya-k-serveru": ["pervyj-zapusk", "hranilishche-fajlov", "zvonki-relay"],
+    "pervyj-zapusk": ["trebovaniya-k-serveru", "adres-i-https", "pochta-smtp", "rezervnoe-kopirovanie"],
     "adres-i-https": ["svoj-domen-portala", "diagnostika"],
     "pochta-smtp": ["priglashenie-sotrudnika", "pochtovyj-yashchik"],
     "yazyk-ustanovki": ["organizaciya-nastrojki", "profil-dannye", "yazyk-otveta"],

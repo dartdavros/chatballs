@@ -1,4 +1,5 @@
-import type { ReactNode } from "react";
+import { createElement, type ReactNode } from "react";
+import { MessageCircle, MessagesSquare, ServerCog, Workflow, type IconNode } from "lucide";
 
 import { AgentIcon, Loader } from "@chatballs/ui";
 
@@ -46,10 +47,18 @@ export function VkLogo({ size = 24 }: { size?: number }) {
   );
 }
 
-export function Icon({ name, size = 17, strokeWidth = 1.8 }: { name: "layout" | "grid" | "building" | "team" | "box" | "robot" | "plug" | "settings" | "bell" | "bellOff" | "chevron" | "chevronLeft" | "chevronRight" | "plus" | "arrow" | "paperclip" | "send" | "phone" | "video" | "lock" | "mail" | "eye" | "eyeOff" | "logout" | "user" | "refresh" | "transfer" | "warning" | "alert" | "bolt" | "shop" | "search" | "more" | "external" | "key" | "pause" | "play" | "percent" | "save" | "check" | "copy" | "clock" | "message" | "inbox" | "cart" | "columns" | "download" | "list" | "split" | "gitBranch" | "route" | "expand" | "edit" | "trash" | "wrench" | "xCircle" | "close" | "folder" | "grip" | "reply" | "sort" | "collapseLeft" | "mic" | "text" | "pin" | "smile" | "globe" | "doc" | "form" | "sparkles" | "database" | "sun" | "sunny" | "moon" | "monitor" | "laptop" | "smartphone" | "arrowDown" | "link" | "paint" | "widget" | "danger" | "image" | "file" | "bold" | "italic" | "code" | "numlist" | "quote" | "table" | "attach" | "undo" | "upload" | "import" | "thumbUp" | "thumbDown" | "book" | "move" | "mask" | "info" | "server" | "swap" | "shield" | "errorCircle"; size?: number; strokeWidth?: number }) {
+function lucidePaths(nodes: IconNode): ReactNode {
+  return nodes.map(([tag, attributes], index) => createElement(tag, { ...attributes, key: index }));
+}
+
+export function Icon({ name, size = 17, strokeWidth = 1.8 }: { name: "layout" | "grid" | "building" | "team" | "box" | "robot" | "plug" | "settings" | "bell" | "bellOff" | "chevron" | "chevronLeft" | "chevronRight" | "plus" | "arrow" | "paperclip" | "send" | "phone" | "video" | "lock" | "mail" | "eye" | "eyeOff" | "logout" | "user" | "refresh" | "transfer" | "warning" | "alert" | "bolt" | "shop" | "search" | "more" | "external" | "key" | "pause" | "play" | "percent" | "save" | "check" | "copy" | "clock" | "message" | "inbox" | "cart" | "columns" | "download" | "list" | "split" | "gitBranch" | "route" | "expand" | "edit" | "trash" | "wrench" | "xCircle" | "close" | "folder" | "grip" | "reply" | "sort" | "collapseLeft" | "mic" | "text" | "pin" | "smile" | "globe" | "doc" | "form" | "sparkles" | "database" | "sun" | "sunny" | "moon" | "monitor" | "laptop" | "smartphone" | "arrowDown" | "link" | "paint" | "widget" | "danger" | "image" | "file" | "bold" | "italic" | "code" | "numlist" | "quote" | "table" | "attach" | "undo" | "upload" | "import" | "thumbUp" | "thumbDown" | "book" | "move" | "mask" | "info" | "server" | "swap" | "shield" | "errorCircle" | "workflow" | "messageCircle" | "messagesSquare" | "serverCog"; size?: number; strokeWidth?: number }) {
   const common = { width: size, height: size, fill: "none", stroke: "currentColor", strokeWidth, strokeLinecap: "round", strokeLinejoin: "round" } as const;
   if (name === "robot") return <AgentIcon size={size} strokeWidth={strokeWidth} />;
   const paths: Record<typeof name, ReactNode> = {
+    workflow: lucidePaths(Workflow),
+    messageCircle: lucidePaths(MessageCircle),
+    messagesSquare: lucidePaths(MessagesSquare),
+    serverCog: lucidePaths(ServerCog),
     thumbUp: <><path d="M7 10v11H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3z" /><path d="M7 10 11 3a2.2 2.2 0 0 1 4 1.8L14.5 8H20a2 2 0 0 1 2 2.4l-1.4 7A4 4 0 0 1 16.7 21H7" /></>,
     thumbDown: <g transform="rotate(180 12 12)"><path d="M7 10v11H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3z" /><path d="M7 10 11 3a2.2 2.2 0 0 1 4 1.8L14.5 8H20a2 2 0 0 1 2 2.4l-1.4 7A4 4 0 0 1 16.7 21H7" /></g>,
     grid: <><rect x="3" y="3" width="7" height="9" rx="1.4" /><rect x="14" y="3" width="7" height="5" rx="1.4" /><rect x="14" y="12" width="7" height="9" rx="1.4" /><rect x="3" y="16" width="7" height="5" rx="1.4" /></>,

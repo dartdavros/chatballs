@@ -37,7 +37,9 @@ export function ProvidersTable({ items, testingId, onTest, onEdit, onToggleActiv
                 </td>
                 <td>{item.hasSecret ? <code className="ai-mono">{item.secretMasked || "••••••••"}</code> : <span className="product-empty-value">—</span>}</td>
                 <td className="integration-config">
-                  <span>{item.config.baseUrl || meta.defaultBaseUrl || "—"}</span>
+                  <span>{item.kind === "SPEECH_PROVIDER" && item.config.folderId
+                    ? t("navigation.speech_folder", { folder: item.config.folderId })
+                    : item.config.baseUrl || meta.defaultBaseUrl || "—"}</span>
                   {item.config.defaultModel && <small>{item.config.defaultModel}</small>}
                 </td>
                 <td><StatusCell integration={item} /></td>

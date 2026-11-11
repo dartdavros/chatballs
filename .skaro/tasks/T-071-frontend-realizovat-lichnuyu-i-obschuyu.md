@@ -11,6 +11,7 @@ order: 5
 spec: "0016"
 created: 2026-10-06
 branch: skaro/T-071-frontend-realizovat-biblioteku
+archived: true
 ---
 
 ## Цель

@@ -9,6 +9,7 @@ order: 4
 spec: "0037"
 created: 2026-10-17
 branch: skaro/T-169-sozdavat-gotovye-i-polzovatels
+archived: true
 ---
 
 ## Цель

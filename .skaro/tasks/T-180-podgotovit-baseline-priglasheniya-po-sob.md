@@ -8,6 +8,7 @@ order: 1
 spec: "0040"
 created: 2026-11-03
 branch: skaro/T-180-podgotovit-baseline-priglashen
+archived: true
 ---
 
 ## Цель

@@ -9,6 +9,7 @@ order: 2
 spec: "0016"
 created: 2026-10-06
 branch: skaro/T-068-bekend-realizovat-crud-i-poisk
+archived: true
 ---
 
 ## Цель

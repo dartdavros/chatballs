@@ -109,8 +109,6 @@ export function routeFromPath(pathname: string, search = ""): RouteState {
     return { ...state, route: tail === "edit" ? "knowledgeEdit" : "knowledgeDetail", knowledgeId: id };
   }
   if (path === "/ai/usage") return { route: "aiUsage", ...state };
-  // Устаревшие адреса: интеграции и организация переехали в «Настройки» (§8.6).
-  if (path === "/integrations") return { ...state, route: "settings", settingsSection: "integrations" };
   // /administration/subscription — устаревший адрес тарифов (ADR-CHATBALLS-0042).
   if (path === "/administration" || path === "/administration/organization" || path === "/administration/subscription") {
     return { ...state, route: "settings", settingsSection: "organization" };
@@ -120,22 +118,34 @@ export function routeFromPath(pathname: string, search = ""): RouteState {
   }
   if (path === "/profile") return { route: "profile", ...state };
   if (path === "/settings") return { route: "settings", ...state };
-  if (path === "/settings/integrations/new/mcp") return { ...state, route: "mcpServerCreate" };
-  if (path === "/settings/integrations/new/http") return { ...state, route: "httpServerCreate" };
-  // Вкладки раздела «Интеграции» и карточка подключения сервиса (SPEC-0037).
-  if (path === "/settings/integrations/servers") return { ...state, route: "integrationServers" };
-  if (path === "/settings/integrations/services") return { ...state, route: "serviceIntegrations" };
-  if (path.startsWith("/settings/integrations/services/")) {
-    const id = Number(path.slice("/settings/integrations/services/".length));
-    return Number.isInteger(id) && id > 0
-      ? { ...state, route: "serviceConnection", integrationId: id }
-      : { ...state, route: "serviceIntegrations" };
-  }
-  if (path.startsWith("/settings/integrations/")) {
-    const id = Number(path.slice("/settings/integrations/".length));
-    return Number.isInteger(id) && id > 0
-      ? { ...state, route: "webIntegrationSettings", integrationId: id }
-      : { ...state, route: "settings", settingsSection: "integrations" };
+
+  // Самостоятельные разделы и их прежние адреса внутри «Настроек».
+  const workspaceRoutes: Partial<Record<string, RouteKey>> = {
+    "/ai/providers": "aiProviders", "/settings/ai": "aiProviders",
+    "/scenarios": "scenarios", "/settings/scenarios": "scenarios",
+    "/widgets": "widgets", "/settings/integrations": "widgets",
+    "/messengers": "messengers", "/mail": "emailIntegrations",
+    "/tools": "integrationServers", "/settings/integrations/servers": "integrationServers",
+    "/tools/new/mcp": "mcpServerCreate", "/settings/integrations/new/mcp": "mcpServerCreate",
+    "/tools/new/http": "httpServerCreate", "/settings/integrations/new/http": "httpServerCreate",
+    "/integrations": "serviceIntegrations", "/settings/integrations/services": "serviceIntegrations",
+  };
+  const workspaceRoute = workspaceRoutes[path];
+  if (workspaceRoute) return { ...state, route: workspaceRoute };
+  const integrationPaths: [string, RouteKey, RouteKey][] = [
+    ["/widgets/", "webIntegrationSettings", "widgets"],
+    ["/tools/", "externalServerSettings", "integrationServers"],
+    ["/integrations/", "serviceConnection", "serviceIntegrations"],
+    ["/settings/integrations/services/", "serviceConnection", "serviceIntegrations"],
+    // Тип старого подключения определяет API, а не форма прежнего URL.
+    ["/settings/integrations/", "legacyIntegrationSettings", "widgets"],
+  ];
+  for (const [prefix, detailRoute, listRoute] of integrationPaths) {
+    if (!path.startsWith(prefix)) continue;
+    const id = Number(path.slice(prefix.length));
+    return Number.isSafeInteger(id) && id > 0
+      ? { ...state, route: detailRoute, integrationId: id }
+      : { ...state, route: listRoute };
   }
   if (path.startsWith("/settings/")) {
     return { ...state, route: "settings", settingsSection: settingsSectionKey(path.slice("/settings/".length)) };
@@ -143,7 +153,7 @@ export function routeFromPath(pathname: string, search = ""): RouteState {
   return { route: "chat", ...state };
 }
 
-export function pathFromRoute(route: RouteKey, entityId: number | string | null = null, organizationPublicId: string | null = null): string {
+function routePath(route: RouteKey, entityId: number | string | null, organizationPublicId: string | null): string {
   const prefix = organizationPublicId ? `/organizations/${organizationPublicId}` : "";
   if (route === "organizationCreate") return "/organizations/new";
   if (route === "salesClients") return `${prefix}/contacts`;
@@ -175,13 +185,52 @@ export function pathFromRoute(route: RouteKey, entityId: number | string | null 
   if (route === "administrationAudit") return `${prefix}/administration/audit`;
   if (route === "profile") return `${prefix}/profile`;
   if (route === "replyTemplates") return `${prefix}/reply-templates`;
-  if (route === "webIntegrationSettings") return entityId ? `${prefix}/settings/integrations/${entityId}` : `${prefix}/settings/integrations`;
-  if (route === "mcpServerCreate") return `${prefix}/settings/integrations/new/mcp`;
-  if (route === "integrationServers") return `${prefix}/settings/integrations/servers`;
-  if (route === "serviceIntegrations") return `${prefix}/settings/integrations/services`;
-  if (route === "serviceConnection") return entityId ? `${prefix}/settings/integrations/services/${entityId}` : `${prefix}/settings/integrations/services`;
-  if (route === "httpServerCreate") return `${prefix}/settings/integrations/new/http`;
+  if (route === "aiProviders") return `${prefix}/ai/providers`;
+  if (route === "scenarios") return `${prefix}/scenarios`;
+  if (route === "widgets") return `${prefix}/widgets`;
+  if (route === "messengers") return `${prefix}/messengers`;
+  if (route === "emailIntegrations") return `${prefix}/mail`;
+  if (route === "webIntegrationSettings") return entityId ? `${prefix}/widgets/${entityId}` : `${prefix}/widgets`;
+  if (route === "externalServerSettings") return entityId ? `${prefix}/tools/${entityId}` : `${prefix}/tools`;
+  if (route === "legacyIntegrationSettings") return entityId ? `${prefix}/settings/integrations/${entityId}` : `${prefix}/settings/integrations`;
+  if (route === "mcpServerCreate") return `${prefix}/tools/new/mcp`;
+  if (route === "integrationServers") return `${prefix}/tools`;
+  if (route === "serviceIntegrations") return `${prefix}/integrations`;
+  if (route === "serviceConnection") return entityId ? `${prefix}/integrations/${entityId}` : `${prefix}/integrations`;
+  if (route === "httpServerCreate") return `${prefix}/tools/new/http`;
   // У «Настроек» вместо id — ключ раздела субменю (кадры N1–N7).
   if (route === "settings") return settingsSectionKey(String(entityId)) ? `${prefix}/settings/${entityId}` : `${prefix}/settings`;
   return `${prefix}/profile`;
+}
+
+export function pathFromRoute(route: RouteKey, entityId: number | string | null = null, organizationPublicId: string | null = null, search = ""): string {
+  const path = routePath(route, entityId, organizationPublicId);
+  if (!search) return path;
+  const [pathname, routeSearch] = path.split("?");
+  const params = new URLSearchParams(search);
+  // ID диалога из состояния важнее старого query при смене организации/адреса.
+  new URLSearchParams(routeSearch).forEach((value, key) => params.set(key, value));
+  const query = params.toString();
+  return `${pathname}${query ? `?${query}` : ""}`;
+}
+
+/** Канонический адрес сохраняет выбранную сущность, раздел портала и query. */
+export function pathFromRouteState(state: RouteState, organizationPublicId: string | null = state.organizationPublicId, search = ""): string {
+  const entityIds: Partial<Record<RouteKey, number | string | null | undefined>> = {
+    chat: state.conversationId,
+    qualityAnalysis: state.conversationId,
+    employeeDetail: state.employeeId,
+    agentDetail: state.agentId ?? state.channelId,
+    knowledgeDetail: state.knowledgeId,
+    knowledgeEdit: state.knowledgeId,
+    salesClientDetail: state.clientId,
+    webIntegrationSettings: state.integrationId,
+    externalServerSettings: state.integrationId,
+    legacyIntegrationSettings: state.integrationId,
+    serviceConnection: state.integrationId,
+    supportPortalDetail: state.supportPortalId,
+    supportPortalSettings: state.supportPortalId ? `${state.supportPortalId}/${state.portalSettingsSection ?? ""}` : null,
+    settings: state.settingsSection,
+  };
+  return pathFromRoute(state.route, entityIds[state.route] ?? null, organizationPublicId, search);
 }

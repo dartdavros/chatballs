@@ -9,6 +9,7 @@ order: 2
 spec: "0028"
 created: 2026-10-06
 branch: skaro/T-059-bekend-dobavit-api-dostupnosti
+archived: true
 ---
 
 ## Цель

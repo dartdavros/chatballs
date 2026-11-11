@@ -8,6 +8,7 @@ order: 1
 spec: "0027"
 created: 2026-10-06
 branch: skaro/T-054-bekend-dobavit-vnutrennyuyu-au
+archived: true
 ---
 
 ## Цель

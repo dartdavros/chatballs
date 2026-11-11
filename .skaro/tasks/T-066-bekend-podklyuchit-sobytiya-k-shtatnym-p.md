@@ -9,6 +9,7 @@ order: 2
 spec: "0030"
 created: 2026-10-06
 branch: skaro/T-066-bekend-podklyuchit-sobytiya-k
+archived: true
 ---
 
 ## Цель

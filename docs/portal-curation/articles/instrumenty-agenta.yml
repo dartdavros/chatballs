@@ -24,6 +24,48 @@ articles:
 
       Список MCP-инструментов обновляется только по кнопке. После изменения инструментов на вашем сервере загрузите список заново. Проверка соединения проверяет подключение, а не выполняет «Статус заказа».
 
+      ## Попробовать MCP на тестовом сервере Chatballs
+
+      Чтобы проверить MCP без разработки собственного сервера, подключите **Chatballs MCP Demo**. Стенд общедоступный: регистрация, API-ключ и заголовок `Authorization` не нужны. Все товары, заказы, цены, остатки и сроки доставки вымышлены. Инструменты только читают данные; покупок и изменений заказов не происходит.
+
+      **Адрес MCP:** `https://mcp-test.chatballs.ru/mcp` — укажите полностью, без завершающего `/`. Транспорт — **Streamable HTTP**. Поля авторизации и дополнительных заголовков оставьте пустыми.
+
+      1. Создайте MCP-подключение по инструкции выше, задайте имя **Chatballs MCP Demo** и адрес стенда.
+      2. Сохраните подключение, проверьте соединение и обновите список инструментов. Должны появиться четыре инструмента из списка ниже.
+      3. Проверьте отметку **Только чтение** и включите нужные инструменты в карточке агента. Сервер передаёт эту отметку для всех четырёх инструментов.
+      4. Выберите модель с поддержкой инструментов, откройте **Проверить агента** и отправьте один из примеров ниже. Для этого стенда не нужно заполнять тестовые поля клиента: параметры берутся из сообщения.
+
+      **Доступные инструменты и параметры**
+
+      - `search_products` — поиск товаров. Все параметры необязательны: `query` — слова в названии; `category` — категория; `min_price` и `max_price` — целые рубли, включая границы; `in_stock_only` — только товары в наличии (по умолчанию `false`); `limit` — от 1 до 20 результатов (по умолчанию 10). Категории: `headphones`, `keyboards`, `mice`, `speakers`. Возвращает `products` и `total` — число совпадений до ограничения `limit`. Поиск не учитывает регистр, порядок результатов фиксирован.
+      - `get_product` — цена, характеристики и остаток товара. Обязательный параметр `product_id`, например `DEMO-P001`. Возвращает `found` и `product`.
+      - `get_order_status` — статус, состав, сумма и доставка заказа. Обязательный параметр `order_id`, например `DEMO-1001`. Возвращает `found` и `order`.
+      - `get_delivery_options` — способы, стоимость и диапазоны сроков доставки. Обязательный параметр `city`: `Москва`, `Санкт-Петербург` или `Казань`. Принимаются также `Moscow`, `СПб`, `Saint Petersburg`, `Kazan`. Возвращает `available`, `options` и `supported_cities`.
+
+      **Тестовые товары**
+
+      - `DEMO-P001` — Наушники Demo Air, 3490 ₽, остаток 12.
+      - `DEMO-P002` — Наушники Demo Studio, 7990 ₽, остаток 4.
+      - `DEMO-P003` — Наушники Demo Wire, 1990 ₽, нет в наличии.
+      - `DEMO-P004` — Клавиатура Demo Keys, 4590 ₽, остаток 8.
+      - `DEMO-P005` — Мышь Demo Click, 1490 ₽, остаток 20.
+      - `DEMO-P006` — Колонка Demo Sound, 5990 ₽, остаток 6.
+
+      **Тестовые заказы:** `DEMO-1001` — отправлен (`shipped`), `DEMO-1002` — обрабатывается (`processing`), `DEMO-1003` — доставлен (`delivered`). Дни до доставки фиксированы и не отсчитываются от текущей даты.
+
+      **Примеры сообщений агенту и ожидаемый результат**
+
+      - «Найди наушники до 5000 рублей в наличии» → `search_products`, товар `DEMO-P001`.
+      - «Покажи характеристики товара DEMO-P001» → `get_product`, Bluetooth и 24 часа работы.
+      - «Где заказ DEMO-1001?» → `get_order_status`, статус «отправлен».
+      - «Какие варианты доставки в Казань?» → `get_delivery_options`, курьер за 550 ₽ (3–5 дней) и пункт выдачи за 300 ₽ (3–6 дней).
+
+      Формулировка ответа зависит от модели. Проверяйте также плашку вызова инструмента: именно она показывает, что агент обратился к MCP. Все успешные ответы сервера содержат `demo: true`; денежные суммы указаны в рублях (`RUB`). Данные не изменяются от запросов других пользователей.
+
+      **Пустые результаты и ошибки.** Для неизвестного товара или заказа сервер возвращает `found: false`, для неизвестного города — `available: false` и пустой список вариантов. Это успешные ответы, а не сбой подключения. Некорректные параметры, например отрицательная цена, дают ошибку инструмента. При общей высокой нагрузке возможны HTTP 429 или 503 — повторите запрос позднее. Для 429 сервер передаёт `Retry-After: 1`.
+
+      Адрес `/mcp` предназначен для MCP-клиента: открытие в адресной строке браузера не проверяет подключение. Для проверки доступности процесса можно открыть [состояние тестового сервера](https://mcp-test.chatballs.ru/healthz), но список и вызов инструментов проверяйте в Chatballs. Не отправляйте на публичный стенд реальные персональные данные, ключи или номера заказов вашей организации.
+
       ## HTTP-запрос: «Статус заказа»
 
       Если у системы обычный HTTP API, настройте один запрос как один инструмент.
@@ -96,6 +138,50 @@ articles:
       Your server defines the MCP tool's parameter schema and description. In this example, the agent takes the order number from the conversation. The field binding described below is configured for HTTP requests.
 
       The MCP tool list updates only when you click the button. Refresh it after changing tools on your server. Testing the connection checks connectivity without running “Order status”.
+
+      ## Try MCP with the Chatballs test server
+
+      Connect **Chatballs MCP Demo** to try MCP without building your own server. The demo is public: no registration, API key or `Authorization` header is required. All products, orders, prices, stock counts and delivery estimates are fictional. Tools only read data; no purchases or order changes occur.
+
+      **MCP URL:** `https://mcp-test.chatballs.ru/mcp` — use the full address without a trailing `/`. Transport: **Streamable HTTP**. Leave authentication and additional header fields empty.
+
+      1. Create an MCP connection using the instructions above, named **Chatballs MCP Demo**, with the demo URL.
+      2. Save it, test the connection and refresh the tool list. The four tools listed below should appear.
+      3. Check the **Read only** label and enable the tools you need in the agent card. The server declares all four tools as read-only.
+      4. Choose a model supporting tool calls, open **Test agent** and send an example below. No test customer fields are needed for this demo: arguments come from the message.
+
+      **Available tools and parameters**
+
+      - `search_products` — product search. All arguments are optional: `query` — words in the product name; `category` — category; `min_price` and `max_price` — whole RUB amounts, inclusive; `in_stock_only` — only available products (default `false`); `limit` — 1–20 results (default 10). Categories: `headphones`, `keyboards`, `mice`, `speakers`. Returns `products` and `total`, the number of matches before applying `limit`. Search is case-insensitive and result order is fixed.
+      - `get_product` — a product's price, specifications and stock. Required argument: `product_id`, such as `DEMO-P001`. Returns `found` and `product`.
+      - `get_order_status` — an order's status, items, total and delivery. Required argument: `order_id`, such as `DEMO-1001`. Returns `found` and `order`.
+      - `get_delivery_options` — delivery methods, prices and delivery-day ranges. Required argument: `city`: `Москва`, `Санкт-Петербург` or `Казань`. Aliases: `Moscow`, `СПб`, `Saint Petersburg`, `Kazan`. Returns `available`, `options` and `supported_cities`.
+
+      **Demo products**
+
+      Product names in the dataset are in Russian; use categories or IDs for language-independent lookups.
+
+      - `DEMO-P001` — Наушники Demo Air (headphones), RUB 3490, stock 12.
+      - `DEMO-P002` — Наушники Demo Studio (headphones), RUB 7990, stock 4.
+      - `DEMO-P003` — Наушники Demo Wire (headphones), RUB 1990, out of stock.
+      - `DEMO-P004` — Клавиатура Demo Keys (keyboard), RUB 4590, stock 8.
+      - `DEMO-P005` — Мышь Demo Click (mouse), RUB 1490, stock 20.
+      - `DEMO-P006` — Колонка Demo Sound (speaker), RUB 5990, stock 6.
+
+      **Demo orders:** `DEMO-1001` — `shipped`, `DEMO-1002` — `processing`, `DEMO-1003` — `delivered`. Remaining delivery days are fixed and do not count down from today's date.
+
+      **Example messages and expected results**
+
+      - “Find in-stock products in the headphones category under RUB 5000” → `search_products`, product `DEMO-P001`.
+      - “Show the specifications of product DEMO-P001” → `get_product`, Bluetooth and 24-hour battery life.
+      - “Where is order DEMO-1001?” → `get_order_status`, shipped.
+      - “What delivery options are available in Kazan?” → `get_delivery_options`, courier for RUB 550 (3–5 days) and pickup for RUB 300 (3–6 days).
+
+      The model's wording may vary. Check the tool-call entry too: it confirms that the agent contacted MCP. Every successful response contains `demo: true`; all monetary amounts use `RUB`. Other visitors' requests do not change the data.
+
+      **Empty results and errors.** Unknown products or orders return `found: false`; unsupported cities return `available: false` and an empty options list. These are successful responses, not connection failures. Invalid arguments, such as a negative price, produce a tool error. Heavy shared traffic may cause HTTP 429 or 503; try again later. A 429 response includes `Retry-After: 1`.
+
+      The `/mcp` URL is for MCP clients: opening it in a browser address bar does not test the connection. The [demo server health endpoint](https://mcp-test.chatballs.ru/healthz) checks process availability; verify tool discovery and calls in Chatballs. Do not send real personal data, credentials or your organization's order numbers to this public demo.
 
       ## HTTP request: “Order status”
 

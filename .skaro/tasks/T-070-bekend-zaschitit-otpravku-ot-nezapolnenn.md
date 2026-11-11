@@ -9,6 +9,7 @@ order: 4
 spec: "0016"
 created: 2026-10-06
 branch: skaro/T-070-bekend-zaschitit-otpravku-ot-n
+archived: true
 ---
 
 ## Цель

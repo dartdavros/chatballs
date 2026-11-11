@@ -8,6 +8,7 @@ order: 1
 spec: "0037"
 created: 2026-10-17
 branch: skaro/T-166-podgotovit-baseline-podklyuche
+archived: true
 ---
 
 ## Цель

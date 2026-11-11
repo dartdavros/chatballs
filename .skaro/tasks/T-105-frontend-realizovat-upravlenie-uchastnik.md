@@ -9,6 +9,7 @@ order: 5
 spec: "0026"
 created: 2026-10-07
 branch: skaro/T-105-frontend-realizovat-uchastniko
+archived: true
 ---
 
 ## Цель

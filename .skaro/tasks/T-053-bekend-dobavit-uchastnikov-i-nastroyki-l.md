@@ -8,6 +8,7 @@ order: 1
 spec: "0026"
 created: 2026-10-06
 branch: skaro/T-053-bekend-dobavit-uchastnikov-i-n
+archived: true
 ---
 
 ## Цель

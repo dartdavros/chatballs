@@ -9,6 +9,7 @@ order: 3
 spec: "0027"
 created: 2026-10-06
 branch: skaro/T-056-bekend-realizovat-api-i-realti
+archived: true
 ---
 
 ## Цель

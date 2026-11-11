@@ -9,6 +9,7 @@ order: 6
 spec: "0021"
 created: 2026-09-29
 branch: skaro/T-024-statya-spravki-klassy-vidzheta
+archived: true
 ---
 
 ## Цель

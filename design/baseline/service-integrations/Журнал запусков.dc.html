@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+:root{--n-1:#1f1f1f;--n-2:#262626;--n-3:#595959;--n-4:#8c8c8c;--n-5:#bfbfbf;--n-6:#d9d9d9;--n-7:#e8e8e8;--n-8:#f0f0f0;--n-9:#f5f5f5;--n-10:#fafafa;--n-11:#f0f2f5;--surface-page:var(--n-11);--surface-card:#fff;--surface-sidebar:#fafafa;--surface-feed:#f5f6f8;--accent:#0f9b8e;--primary:var(--accent);--primary-hover:color-mix(in srgb,var(--accent) 88%,black);--primary-bg:color-mix(in srgb,var(--accent) 10%,var(--surface-card));--primary-border:color-mix(in srgb,var(--accent) 40%,var(--surface-card));--primary-text:color-mix(in srgb,var(--accent) 82%,black);--success-text:#237a3f;--success-bg:color-mix(in srgb,#52c41a 11%,var(--surface-card));--success-border:color-mix(in srgb,#52c41a 31%,var(--surface-card));--warning-text:#d48806;--warning-bg:color-mix(in srgb,#faad14 11%,var(--surface-card));--warning-border:color-mix(in srgb,#faad14 36%,var(--surface-card));--error:#ff4d4f;--error-text:#cf1322;--error-bg:color-mix(in srgb,#ff4d4f 11%,var(--surface-card));--error-border:color-mix(in srgb,#ff4d4f 36%,var(--surface-card));--ai:#722ed1;--ai-bg:color-mix(in srgb,#722ed1 11%,var(--surface-card));--shadow-xs:0 1px 2px rgba(0,0,0,.03);--modal-shadow:0 32px 80px -12px rgba(16,18,22,.38),0 8px 24px rgba(16,18,22,.12);--scrim:rgba(16,18,22,.55);--font-mono:"SF Mono",ui-monospace,Menlo,monospace}
+:root[data-theme=dark]{--n-1:#d6d7db;--n-2:#c3c5ca;--n-3:#9a9ca3;--n-4:#767881;--n-5:#5b5d66;--n-6:#45474f;--n-7:#37393f;--n-8:#2d2f35;--n-9:#27292e;--n-10:#212327;--n-11:#101113;--surface-page:#101113;--surface-card:#1b1c1f;--surface-sidebar:#181a1d;--surface-feed:#15161a;--primary:color-mix(in srgb,var(--accent) 84%,var(--surface-card));--primary-hover:color-mix(in srgb,var(--accent) 92%,white);--primary-bg:color-mix(in srgb,var(--accent) 16%,var(--surface-card));--primary-text:color-mix(in srgb,var(--accent) 62%,white);--success-text:#5fbf7a;--success-bg:color-mix(in srgb,#52c41a 12%,var(--surface-card));--success-border:color-mix(in srgb,#52c41a 32%,var(--surface-card));--warning-text:#d9a441;--warning-bg:color-mix(in srgb,#faad14 12%,var(--surface-card));--warning-border:color-mix(in srgb,#faad14 37%,var(--surface-card));--error-text:#ff7875;--error-bg:color-mix(in srgb,#ff4d4f 12%,var(--surface-card));--error-border:color-mix(in srgb,#ff4d4f 37%,var(--surface-card));--ai:#a98be0;--ai-bg:color-mix(in srgb,#a98be0 12%,var(--surface-card));--modal-shadow:0 32px 80px -12px rgba(0,0,0,.7),0 8px 24px rgba(0,0,0,.4);--scrim:rgba(4,5,7,.68)}
+html,body{margin:0;padding:0}
+body{background:var(--surface-page);color:var(--n-2);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased;font-size:13px;line-height:1.5}
+button,input,select{font:inherit}
+a{color:var(--primary);text-decoration:none}a:hover{color:var(--primary-hover)}
+@keyframes cb-spin{to{transform:rotate(360deg)}}
+@keyframes cb-pulse{0%,100%{opacity:.5}50%{opacity:1}}
+</style>
+</helmet>
+<div style="padding:24px 32px 60px;min-height:100vh;box-sizing:border-box;background:var(--surface-page)">
+  <div style="display:flex;flex-direction:column;gap:10px;max-width:1440px;margin-bottom:20px">
+    <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+      <h1 style="margin:0;font-size:22px;color:var(--n-1)">Настройки · Сценарии · Журнал запусков</h1>
+      <span style="color:var(--n-3)">Список, подробности запуска, все состояния и разбор сбоев. Данные — примеры.</span>
+      <a href="Запуск из диалога.dc.html" style="font-size:12.5px;font-weight:600">← Запуск из диалога</a>
+    </div>
+    <sc-for list="{{ jumpGroups }}" as="jg" hint-placeholder-count="3">
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+        <span style="width:110px;color:var(--n-4);font-size:12px;font-weight:600">{{ jg.title }}</span>
+        <sc-for list="{{ jg.items }}" as="j" hint-placeholder-count="6"><button onClick="{{ j.go }}" style="{{ j.style }}">{{ j.label }}</button></sc-for>
+      </div>
+    </sc-for>
+  </div>
+
+  <div data-screen-label="Журнал запусков" style="{{ frameStyle }}">
+    <sc-if value="{{ wide }}" hint-placeholder-val="{{ true }}">
+      <aside style="width:220px;height:100%;display:flex;flex:none;flex-direction:column;background:var(--surface-sidebar);border-right:1px solid var(--n-8)">
+        <div style="height:56px;display:flex;align-items:center;gap:10px;padding:14px 14px 10px;box-sizing:border-box"><img src="assets/chatballs-logo.svg" alt="" style="width:28px;height:auto"><span style="flex:1;color:var(--n-1);font-size:14px;font-weight:700;padding-left:8px">Ателье Норд</span></div>
+        <nav style="flex:1;display:flex;flex-direction:column;gap:2px;padding:4px 10px 8px">
+          <sc-for list="{{ nav }}" as="n" hint-placeholder-count="9">
+            <sc-if value="{{ n.div }}" hint-placeholder-val="{{ false }}"><div style="height:1px;margin:6px;background:var(--n-8)"></div></sc-if>
+            <div style="{{ n.style }}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="{{ n.d }}"></path></svg><span>{{ n.label }}</span></div>
+          </sc-for>
+        </nav>
+        <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-top:1px solid var(--n-8)"><span style="width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;flex:none;color:#fff;background:var(--primary);border-radius:50%;font-size:13px;font-weight:600">ЕК</span><span style="flex:1;min-width:0"><strong style="display:block;color:var(--n-1);font-size:13px;font-weight:600;line-height:1.3">Елена Кузнецова</strong><small style="display:block;color:var(--n-4);font-size:12px">Ателье Норд</small></span></div>
+      </aside>
+    </sc-if>
+    <sc-if value="{{ narrow }}" hint-placeholder-val="{{ false }}">
+      <aside style="width:60px;flex:none;display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 0 12px;background:var(--surface-sidebar);border-right:1px solid var(--n-8)"><img src="assets/chatballs-logo.svg" alt="" style="width:28px;height:auto;margin-bottom:8px"><span style="width:38px;height:38px;display:flex;align-items:center;justify-content:center;border-radius:9px;color:var(--n-4)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"></path></svg></span><span style="width:38px;height:38px;display:flex;align-items:center;justify-content:center;border-radius:9px;color:var(--n-4)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 17l5-5-5-5M6 17l5-5-5-5"></path></svg></span><span style="flex:1"></span><span style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:50%;color:#fff;background:var(--primary);font-size:12px;font-weight:600">ЕК</span></aside>
+    </sc-if>
+    <nav style="{{ subnavStyle }}">
+      <div style="padding:17px 18px 10px"><h2 style="margin:0;color:var(--n-1);font-size:16px;font-weight:700">Настройки</h2></div>
+      <div style="display:flex;flex-direction:column;gap:1px;padding:4px 10px">
+        <sc-for list="{{ subnav }}" as="s" hint-placeholder-count="14">
+          <sc-if value="{{ s.cap }}" hint-placeholder-val="{{ false }}"><div style="padding:12px 10px 4px;color:var(--n-4);font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase">{{ s.label }}</div></sc-if>
+          <sc-if value="{{ s.item }}" hint-placeholder-val="{{ true }}"><div style="{{ s.style }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="{{ s.d }}"></path></svg><span>{{ s.label }}</span></div></sc-if>
+        </sc-for>
+      </div>
+    </nav>
+
+    <section style="flex:1;min-width:0;overflow-y:auto;background:var(--surface-feed)">
+      <div style="max-width:1000px;margin:0 auto;padding:28px 40px 48px">
+
+        <sc-if value="{{ isList }}" hint-placeholder-val="{{ true }}">
+          <header style="margin-bottom:18px"><h2 style="margin:0;color:var(--n-1);font-size:20px;font-weight:700;letter-spacing:-.01em">Сценарии</h2><p style="max-width:560px;margin:5px 0 0;color:var(--n-4);font-size:13px">Сценарий выполняет за сотрудника несколько действий в Chatballs и подключённых сервисах.</p></header>
+          <div style="display:flex;gap:4px;border-bottom:1px solid var(--n-7);margin-bottom:18px">
+            <a href="Сценарии.dc.html" style="padding:11px 16px;color:var(--n-3);font-size:14px;font-weight:500">Сценарии</a>
+            <div style="position:relative;padding:11px 16px;color:var(--primary);font-size:14px;font-weight:600">Журнал запусков<span style="position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--primary)"></span></div>
+          </div>
+
+          <sc-if value="{{ noRights }}" hint-placeholder-val="{{ false }}">
+            <div style="height:520px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:var(--surface-card);border:1px solid var(--n-8);border-radius:12px;text-align:center">
+              <span style="width:44px;height:44px;border-radius:12px;background:var(--n-9);color:var(--n-4);display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="2"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></svg></span>
+              <strong style="color:var(--n-1);font-size:15px">Журнал доступен администраторам</strong>
+              <span style="max-width:440px;color:var(--n-4);font-size:12.5px">Журнал всей организации видят администраторы. Подробности запусков в доступных вам диалогах открываются из карточки запуска в ленте — кнопка «Подробнее».</span>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ showTable }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+              <div style="display:flex;align-items:center;gap:8px;width:280px;height:34px;padding:0 11px;border:1px solid var(--n-7);border-radius:8px;background:var(--surface-card);box-sizing:border-box"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--n-5)" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg><input value="{{ q }}" onChange="{{ setQ }}" placeholder="Номер запуска, контакт, сценарий" style="flex:1;min-width:0;border:0;outline:0;background:transparent;color:var(--n-1);font-size:13px"></div>
+              <sc-for list="{{ filters }}" as="fl" hint-placeholder-count="3">
+                <span style="display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 10px;border:1px solid var(--n-7);border-radius:8px;background:var(--surface-card);font-size:13px;color:var(--n-2);box-sizing:border-box"><span style="color:var(--n-4)">{{ fl.k }}</span>{{ fl.v }}<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--n-4)" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+              </sc-for>
+              <span style="flex:1"></span>
+              <span style="display:inline-flex;padding:3px;border-radius:9px;background:var(--n-9)"><sc-for list="{{ stateTabs }}" as="st" hint-placeholder-count="4"><button onClick="{{ st.pick }}" style="{{ st.style }}">{{ st.label }}</button></sc-for></span>
+            </div>
+            <div style="border:1px solid var(--n-8);border-radius:12px;background:var(--surface-card);box-shadow:var(--shadow-xs);overflow:hidden">
+              <div style="{{ gridHead }}"><span>№</span><span>Сценарий</span><span>Кто запустил</span><span>Где</span><span>Начат</span><span>Состояние</span></div>
+              <sc-if value="{{ loading }}" hint-placeholder-val="{{ false }}">
+                <sc-for list="{{ skeleton }}" as="sk" hint-placeholder-count="8"><div style="{{ sk }}"><i style="height:10px;border-radius:5px;background:var(--n-8);animation:cb-pulse 1.4s ease-in-out infinite"></i><i style="height:10px;border-radius:5px;background:var(--n-8);animation:cb-pulse 1.4s ease-in-out infinite"></i><i style="height:10px;border-radius:5px;background:var(--n-8);animation:cb-pulse 1.4s ease-in-out infinite"></i><i style="height:10px;border-radius:5px;background:var(--n-8);animation:cb-pulse 1.4s ease-in-out infinite"></i><i style="height:10px;border-radius:5px;background:var(--n-8);animation:cb-pulse 1.4s ease-in-out infinite"></i><i style="height:10px;width:70%;border-radius:5px;background:var(--n-8);animation:cb-pulse 1.4s ease-in-out infinite"></i></div></sc-for>
+              </sc-if>
+              <sc-if value="{{ listErr }}" hint-placeholder-val="{{ false }}">
+                <div style="height:496px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center"><strong style="color:var(--n-1);font-size:14px">Не удалось загрузить журнал</strong><span style="color:var(--n-4);font-size:12.5px">Сервер не ответил. Запуски продолжают выполняться — это ошибка только просмотра.</span><button onClick="{{ retryList }}" style="margin-top:6px;height:34px;padding:0 14px;border:1px solid var(--n-7);border-radius:8px;background:var(--surface-card);color:var(--n-2);font-size:13px;font-weight:600;cursor:pointer">Повторить</button></div>
+              </sc-if>
+              <sc-if value="{{ empty }}" hint-placeholder-val="{{ false }}">
+                <div style="height:496px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center"><strong style="color:var(--n-1);font-size:14px">{{ emptyTitle }}</strong><span style="color:var(--n-4);font-size:12.5px">{{ emptyText }}</span></div>
+              </sc-if>
+              <sc-if value="{{ hasRows }}" hint-placeholder-val="{{ true }}">
+                <sc-for list="{{ rows }}" as="r" hint-placeholder-count="8">
+                  <div onClick="{{ r.open }}" style="{{ r.style }}" style-hover="background:var(--n-10)">
+                    <span style="color:var(--n-3);font-family:var(--font-mono);font-size:12.5px">{{ r.num }}</span>
+                    <span style="min-width:0"><strong style="display:block;color:var(--primary);font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</strong><small style="display:block;color:var(--n-4);font-size:12px">{{ r.conns }}</small></span>
+                    <span style="display:flex;align-items:center;gap:7px;min-width:0;color:var(--n-2);font-size:12.5px"><span style="{{ r.whoIcon }}">{{ r.whoIni }}</span><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.who }}</span></span>
+                    <span style="color:var(--n-3);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.ctx }}</span>
+                    <span style="color:var(--n-3);font-size:12.5px">{{ r.time }}</span>
+                    <span><span style="{{ r.pill }}"><i style="width:6px;height:6px;border-radius:50%;background:currentColor"></i>{{ r.state }}</span></span>
+                  </div>
+                </sc-for>
+              </sc-if>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 20px;border-top:1px solid var(--n-8);background:var(--surface-sidebar);color:var(--n-4);font-size:12px"><span>{{ pageText }}</span><span style="display:flex;gap:4px"><sc-for list="{{ pages }}" as="pg" hint-placeholder-count="4"><span style="{{ pg.style }}">{{ pg.label }}</span></sc-for></span></div>
+            </div>
+            <p style="margin:10px 0 0;color:var(--n-4);font-size:12px">{{ retNote }} <button onClick="{{ toRetention }}" style="padding:0;border:0;background:none;color:var(--primary);font-size:12px;font-weight:600;cursor:pointer">Изменить сроки</button></p>
+          </sc-if>
+        </sc-if>
+
+        <sc-if value="{{ isRetention }}" hint-placeholder-val="{{ false }}">
+          <header style="margin-bottom:18px"><h2 style="margin:0;color:var(--n-1);font-size:20px;font-weight:700;letter-spacing:-.01em">Организация</h2><p style="margin:5px 0 0;color:var(--n-4);font-size:13px">Название, часовой пояс и сроки хранения данных.</p></header>
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div style="background:var(--surface-card);border:1px solid var(--n-8);border-radius:12px;padding:20px 24px;display:flex;flex-direction:column;gap:16px">
+              <div><h3 style="margin:0;color:var(--n-1);font-size:14px;font-weight:700">Хранение данных сценариев</h3><p style="margin:4px 0 0;color:var(--n-4);font-size:12.5px;line-height:1.5">Сроки отсчитываются от завершения запуска. Запуски, которые ещё идут или ждут, не удаляются.</p></div>
+              <sc-for list="{{ retRows }}" as="rr" hint-placeholder-count="2">
+                <div style="display:grid;grid-template-columns:minmax(0,1fr) 200px;gap:16px;align-items:center;padding-top:14px;border-top:1px solid var(--n-9)">
+                  <span><strong style="display:block;color:var(--n-1);font-size:13px;font-weight:600">{{ rr.label }}</strong><span style="display:block;margin-top:2px;color:var(--n-4);font-size:12px;line-height:1.45">{{ rr.help }}</span></span>
+                  {{ rr.sel }}
+                </div>
+              </sc-for>
+              <sc-if value="{{ retWarn }}" hint-placeholder-val="{{ false }}"><div style="padding:10px 12px;border-radius:9px;border:1px solid var(--warning-border);background:var(--warning-bg);color:var(--n-2);font-size:12.5px;line-height:1.5">{{ retWarn }}</div></sc-if>
+              <div style="display:flex;align-items:center;gap:10px;justify-content:flex-end;padding-top:14px;border-top:1px solid var(--n-9)"><span style="flex:1;color:var(--n-4);font-size:12px">{{ retSaved }}</span><button onClick="{{ retSave }}" style="{{ retSaveStyle }}">Сохранить</button></div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isDetail }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ toList }}" style="display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 8px;margin:0 0 12px -8px;border:0;border-radius:7px;background:transparent;color:var(--n-4);font-size:12.5px;font-weight:500;cursor:pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 6 9 12 15 18"></polyline></svg>{{ backLabel }}</button>
+          <header style="display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:16px">
+            <div style="min-width:0">
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><h2 style="margin:0;color:var(--n-1);font-size:20px;font-weight:700;letter-spacing:-.01em">{{ d.name }}</h2><span style="{{ d.pill }}"><i style="width:6px;height:6px;border-radius:50%;background:currentColor"></i>{{ d.state }}</span></div>
+              <p style="margin:5px 0 0;color:var(--n-4);font-size:13px">Запуск №{{ d.num }} · {{ d.when }}</p>
+            </div>
+            <div style="position:relative;display:flex;align-items:center;gap:8px;flex:none">
+              <sc-for list="{{ d.actions }}" as="a" hint-placeholder-count="2"><button onClick="{{ a.run }}" style="{{ a.style }}">{{ a.label }}</button></sc-for>
+              <button onClick="{{ toggleMenu }}" title="Ещё" style="width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;color:var(--n-4);background:var(--surface-card);border:1px solid var(--n-7);border-radius:8px;cursor:pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg></button>
+              <sc-if value="{{ menu }}" hint-placeholder-val="{{ false }}">
+                <div style="position:absolute;top:40px;right:0;z-index:10;width:280px;padding:5px;box-sizing:border-box;background:var(--surface-card);border:1px solid var(--n-8);border-radius:10px;box-shadow:0 6px 20px #0000001f">
+                  <sc-for list="{{ d.menu }}" as="mi" hint-placeholder-count="3"><button onClick="{{ mi.run }}" style="{{ mi.style }}"><span style="display:block">{{ mi.label }}</span><small style="display:block;margin-top:2px;color:var(--n-4);font-size:11px;font-weight:400;white-space:normal">{{ mi.sub }}</small></button></sc-for>
+                </div>
+              </sc-if>
+            </div>
+          </header>
+
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <sc-if value="{{ d.live }}" hint-placeholder-val="{{ false }}"><div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid var(--primary-border);border-radius:9px;background:var(--primary-bg)"><p style="flex:1;margin:0;color:var(--n-2);font-size:12.5px"><strong>Запуск изменился, пока вы смотрели.</strong> {{ d.live }}</p><button onClick="{{ applyLive }}" style="padding:0;border:0;background:none;color:var(--primary);font-size:12.5px;font-weight:600;cursor:pointer">Обновить</button></div></sc-if>
+            <sc-if value="{{ d.banner }}" hint-placeholder-val="{{ false }}"><div style="{{ d.banner.style }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:2px;color:{{ d.banner.color }}"><path d="{{ d.banner.icon }}"></path></svg><p style="flex:1;margin:0;color:var(--n-2);font-size:12.5px;line-height:1.55"><strong>{{ d.banner.title }}</strong> {{ d.banner.text }}</p></div></sc-if>
+
+            <sc-if value="{{ d.conflict }}" hint-placeholder-val="{{ false }}">
+              <div style="background:var(--surface-card);border:1px solid var(--n-8);border-radius:12px;overflow:hidden">
+                <div style="display:grid;grid-template-columns:150px minmax(0,1fr) minmax(0,1fr);gap:12px;padding:10px 18px;background:var(--surface-sidebar);border-bottom:1px solid var(--n-8);color:var(--n-4);font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase"><span>Поле</span><span>Chatballs</span><span>Битрикс24 · Отдел продаж</span></div>
+                <sc-for list="{{ d.conflict }}" as="cf" hint-placeholder-count="2">
+                  <div style="display:grid;grid-template-columns:150px minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:stretch;padding:12px 18px;border-top:1px solid var(--n-9)">
+                    <span style="padding-top:9px;color:var(--n-1);font-size:13px;font-weight:600">{{ cf.label }}</span>
+                    <button onClick="{{ cf.pickA }}" style="{{ cf.aStyle }}"><span style="{{ cf.aDot }}"></span><span style="flex:1;min-width:0;text-align:left"><span style="display:block;color:var(--n-1);font-size:13px">{{ cf.a }}</span><small style="display:block;margin-top:2px;color:var(--n-4);font-size:11.5px">{{ cf.aWho }}</small></span></button>
+                    <button onClick="{{ cf.pickB }}" style="{{ cf.bStyle }}"><span style="{{ cf.bDot }}"></span><span style="flex:1;min-width:0;text-align:left"><span style="display:block;color:var(--n-1);font-size:13px">{{ cf.b }}</span><small style="display:block;margin-top:2px;color:var(--n-4);font-size:11.5px">{{ cf.bWho }}</small></span></button>
+                  </div>
+                </sc-for>
+                <div style="display:flex;align-items:center;gap:12px;padding:12px 18px;border-top:1px solid var(--n-8);background:var(--surface-sidebar)"><span style="flex:1;color:var(--n-4);font-size:12px">{{ d.conflictNote }}</span><button onClick="{{ d.conflictApply }}" style="{{ d.conflictStyle }}">Применить в обеих системах</button></div>
+              </div>
+            </sc-if>
+            <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--n-8);border:1px solid var(--n-8);border-radius:12px;overflow:hidden">
+              <sc-for list="{{ d.meta }}" as="mt" hint-placeholder-count="6"><div style="padding:12px 16px;background:var(--surface-card)"><span style="display:block;color:var(--n-4);font-size:11.5px;font-weight:600">{{ mt.k }}</span><span style="display:block;margin-top:2px;color:var(--n-1);font-size:13px">{{ mt.v }}</span></div></sc-for>
+            </div>
+
+            <div style="background:var(--surface-card);border:1px solid var(--n-8);border-radius:12px;padding:18px 22px 14px">
+              <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:8px"><h3 style="margin:0;color:var(--n-1);font-size:14px;font-weight:700">Шаги</h3><span style="color:var(--n-4);font-size:12.5px">{{ d.progress }}</span></div>
+              <sc-for list="{{ d.steps }}" as="s" hint-placeholder-count="4">
+                <div style="{{ s.row }}">
+                  <span style="{{ s.dot }}"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="{{ s.spin }}"><path d="{{ s.icon }}"></path></svg></span>
+                  <div style="flex:1;min-width:0">
+                    <div style="display:flex;align-items:baseline;gap:10px"><strong style="flex:1;min-width:0;color:var(--n-1);font-size:13.5px;font-weight:{{ s.weight }}">{{ s.label }}</strong><small style="flex:none;color:var(--n-4);font-size:12px">{{ s.time }}</small></div>
+                    <sc-if value="{{ s.sub }}" hint-placeholder-val="{{ false }}"><span style="display:block;margin-top:2px;color:{{ s.subColor }};font-size:12.5px;line-height:1.5">{{ s.sub }}</span></sc-if>
+                    <sc-if value="{{ s.data }}" hint-placeholder-val="{{ false }}"><div style="display:grid;grid-template-columns:130px minmax(0,1fr);gap:3px 12px;margin-top:8px;padding:9px 12px;border-radius:8px;background:var(--n-10);font-size:12px"><sc-for list="{{ s.data }}" as="dv" hint-placeholder-count="2"><span style="color:var(--n-4)">{{ dv.k }}</span><span style="{{ dv.style }}">{{ dv.v }}</span></sc-for></div></sc-if>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </section>
+
+    <sc-if value="{{ dlg }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:var(--scrim)">
+        <section role="dialog" style="{{ dlg.box }}">
+          <header style="display:flex;gap:14px;padding:20px 24px 16px;border-bottom:1px solid var(--n-8)">
+            <span style="{{ dlg.iconBox }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="{{ dlg.icon }}"></path></svg></span>
+            <div><h3 style="margin:0 0 4px;color:var(--n-1);font-size:16px;font-weight:600">{{ dlg.title }}</h3><p style="margin:0;color:var(--n-3);font-size:13px;line-height:1.55">{{ dlg.text }}</p></div>
+          </header>
+          <div style="padding:14px 24px;display:flex;flex-direction:column;gap:6px">
+            <sc-for list="{{ dlg.lines }}" as="ln" hint-placeholder-count="2"><div style="display:flex;gap:10px;font-size:12.5px;line-height:1.5;color:var(--n-2)"><span style="{{ ln.mark }}">{{ ln.m }}</span><span>{{ ln.t }}</span></div></sc-for>
+          </div>
+          <footer style="display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:14px 24px;border-top:1px solid var(--n-8)">
+            <button onClick="{{ closeDlg }}" style="height:34px;padding:0 14px;color:var(--n-2);background:var(--surface-card);border:1px solid var(--n-7);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">Отмена</button>
+            <button onClick="{{ dlg.ok }}" style="{{ dlg.okStyle }}">{{ dlg.okLabel }}</button>
+          </footer>
+        </section>
+      </div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;'light'|'dark'&quot;},&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;options&quot;:[&quot;#0f9b8e&quot;,&quot;#1677ff&quot;,&quot;#722ed1&quot;,&quot;#fa541c&quot;],&quot;default&quot;:&quot;#0f9b8e&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;width&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;1440&quot;,&quot;1024&quot;],&quot;default&quot;:&quot;1440&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const I = {
+  message: 'M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z', user: 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0z',
+  robot: 'M7 4.6h10a3.4 3.4 0 0 1 3.4 3.4v6.2a3.4 3.4 0 0 1-3.4 3.4h-6.2l-3.4 2.8v-2.8H7A3.4 3.4 0 0 1 3.6 14.2V8A3.4 3.4 0 0 1 7 4.6zM12 4.6V2.9M12 1.4v.01M9 9.4v1.4M15 9.4v1.4M9.2 13.4c.8 1 1.7 1.5 2.8 1.5s2-.5 2.8-1.5M1.6 9.8v2.6M22.4 9.8v2.6',
+  team: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75',
+  globe: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM2 12h20M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20', book: 'M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5A2.5 2.5 0 0 0 6.5 22H20V2H6.5A2.5 2.5 0 0 0 4 4.5z',
+  stats: 'M4 3h6v8H4zM14 3h6v8h-6zM14 14h6v7h-6zM4 14h6v7H4z', settings: 'M21 6H9M3 6h2M9 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM21 12h-8M3 12h6M13 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM21 18h-6M3 18h8M15 18a2 2 0 1 1-4 0 2 2 0 0 1 4 0z',
+  building: 'M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6M9 10h.01M15 10h.01', clock: 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zM12 6v6l4 2', bell: 'M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0',
+  transfer: 'M17 1l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3', text: 'M5 5h14M12 5v14M8 19h8', mic: 'M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3ZM19 10v2a7 7 0 0 1-14 0v-2M12 19v3',
+  thumbUp: 'M7 10v11H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3zM7 10 11 3a2.2 2.2 0 0 1 4 1.8L14.5 8H20a2 2 0 0 1 2 2.4l-1.4 7A4 4 0 0 1 16.7 21H7', check: 'M20 6 9 17l-5-5',
+  sparkles: 'M12 3l1.8 4.6L18.4 9.4 13.8 11.2 12 15.8 10.2 11.2 5.6 9.4 10.2 7.6z', plug: 'M12 22v-5M9 8V2M15 8V2M18 8v5a6 6 0 0 1-12 0V8z', refresh: 'M21 12a9 9 0 1 1-2.6-6.4L21 8M21 3v5h-5',
+  sun: 'M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8', info: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 11v5M12 8v.01',
+  err: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 8v4M12 16v.01', warn: 'm21.7 18-8-14a2 2 0 0 0-3.5 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.7-3ZM12 9v4M12 17h.01',
+  close: 'M18 6 6 18M6 6l12 12', spin: 'M21 12a9 9 0 1 1-6.2-8.6', circle: 'M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16z', q: 'M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01', dash: 'M5 12h14', undo: 'M9 14 4 9l5-5M4 9h11a5 5 0 0 1 0 10h-3', lock: 'M6 10h12a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2zM8 10V7a4 4 0 0 1 8 0v3',
+};
+const NAV = [['message', 'Чат'], ['user', 'Контакты'], ['robot', 'Агенты'], ['team', 'Сотрудники'], ['globe', 'Порталы'], ['book', 'База знаний'], ['stats', 'Статистика', 1], ['settings', 'Настройки']];
+const SUB = [['', 'Организация'], ['building', 'Организация'], ['team', 'Группы'], ['', 'Обслуживание'], ['bell', 'Когда звать на помощь'], ['clock', 'Правила обработки'], ['transfer', 'Передача и участники'], ['text', 'Шаблоны ответов'], ['mic', 'Голосовые и звонки'], ['', 'Качество'], ['thumbUp', 'Оценки клиентов'], ['check', 'Анализ качества'], ['', 'Подключения'], ['sparkles', 'AI-провайдер'], ['plug', 'Интеграции'], ['refresh', 'Сценарии'], ['', 'Прочее'], ['sun', 'Демо-данные']];
+const T = { acc: ['var(--primary-bg)', 'var(--primary-border)', 'var(--primary-text)'], ok: ['var(--success-bg)', 'var(--success-border)', 'var(--success-text)'], warn: ['var(--warning-bg)', 'var(--warning-border)', 'var(--warning-text)'], err: ['var(--error-bg)', 'var(--error-border)', 'var(--error-text)'], n: ['var(--n-9)', 'var(--n-7)', 'var(--n-3)'], ai: ['var(--ai-bg)', 'var(--ai-bg)', 'var(--ai)'] };
+const STATES = { run: ['Выполняется', 'acc'], wait: ['Ожидает', 'warn'], ok: ['Успешно', 'ok'], err: ['Ошибка', 'err'], part: ['Выполнено частично', 'warn'], cancel: ['Отменён', 'n'], unk: ['Результат неизвестен', 'warn'], retry: ['Повтор через 2 мин', 'warn'], lost: ['Нет доступа к сервису', 'err'], ver: ['Устарела версия', 'err'], conf: ['Нужно решение', 'warn'] };
+const pill = t => ({ display: 'inline-flex', alignItems: 'center', gap: 6, height: 22, padding: '0 8px', borderRadius: 6, background: T[t][0], color: T[t][2], fontSize: 11.5, fontWeight: 600, whiteSpace: 'nowrap' });
+const SI = { done: ['ok', I.check], run: ['acc', I.spin], wait: ['warn', I.clock], pend: ['n', I.circle], err: ['err', I.close], unk: ['warn', I.q], skip: ['n', I.dash], cancel: ['n', I.dash], comp: ['ai', I.undo] };
+const COLS = '64px minmax(0,1.6fr) minmax(0,1.1fr) minmax(0,1.1fr) 110px 170px';
+const ROWS = [
+  [1052, 'Обмен данными · расхождение', 'Битрикс24 · Отдел продаж', 'auto', 'Обмен данными', 'Марина Белова · контакт', 'сегодня, 14:21', 'conf'],
+  [1047, 'Создать сделку из диалога', 'amoCRM · Розница', 'ai', 'Агент · Поддержка сайта', 'Марина Белова · Web Chat', 'сегодня, 14:04', 'run'],
+  [1045, 'Уточнить мерки и создать заказ', 'Битрикс24 · Отдел продаж', 'me', 'Елена Кузнецова', 'Марина Белова · Web Chat', 'сегодня, 14:08', 'wait'],
+  [1044, 'Создать лид из диалога', 'Битрикс24 · Отдел продаж', 'me', 'Елена Кузнецова', 'Игорь Петров · Telegram', 'сегодня, 14:07', 'unk'],
+  [1043, 'Создать лид из диалога', 'Битрикс24 · Отдел продаж', 'me', 'Анна Ким', 'Ольга Смирнова · Web Chat', 'сегодня, 14:06', 'part'],
+  [1041, 'Рассылка постоянным клиентам', 'Mindbox · Интернет-магазин', 'auto', 'По расписанию', '—', 'сегодня, 09:00', 'retry'],
+  [1039, 'VIP — сразу в отдел продаж', 'Только Chatballs', 'auto', 'Событие: новый диалог', 'Никита Ким · Web Chat', 'сегодня, 08:41', 'ok'],
+  [1036, 'Создать сделку из диалога', 'amoCRM · Розница', 'me', 'Анна Ким', 'Сергей Ли · Web Chat', 'вчера, 18:20', 'lost'],
+  [1031, 'Создать лид из диалога', 'Битрикс24 · Отдел продаж', 'me', 'Дмитрий Орлов', 'Павел Носов · MAX', 'вчера, 12:02', 'cancel'],
+  [1020, 'Найти клиента Mindbox', 'Mindbox · Интернет-магазин', 'me', 'Анна Ким', 'Ирина Юн · Web Chat', '12 окт, 16:30', 'ver'],
+  [988, 'Создать лид из диалога', 'Битрикс24 · Отдел продаж', 'me', 'Елена Кузнецова', 'Лев Соколов · Web Chat', '9 окт, 11:15', 'ok'],
+];
+const dv = (k, v, o = {}) => ({ k, v, style: { color: o.muted ? 'var(--n-4)' : 'var(--n-1)', fontFamily: o.mono ? 'var(--font-mono)' : 'inherit', fontStyle: o.muted ? 'italic' : 'normal' } });
+
+class Component extends DCLogic {
+  state = { view: 'list', listState: 'ok', tab: 'all', q: '', run: 1043, variant: null, menu: false, dlg: null, live: false, staff: false, ret: { hist: '30', steps: '7' }, retDraft: { hist: '30', steps: '7' }, retOk: false };
+  componentDidMount() { this.theme(); }
+  componentDidUpdate() { this.theme(); }
+  theme() { const r = document.documentElement; r.dataset.theme = this.props.theme === 'dark' ? 'dark' : 'light'; r.style.setProperty('--accent', this.props.accent || '#0f9b8e'); }
+
+  step(st, label, o = {}) {
+    const [tone, icon] = SI[st]; const depth = o.depth || 0;
+    return { label, sub: o.sub || '', time: o.time || '', data: o.data || null, icon, weight: o.group ? 700 : 600, subColor: o.subTone ? T[o.subTone][2] : 'var(--n-4)',
+      row: { display: 'flex', gap: 12, padding: '10px 0 10px ' + depth * 30 + 'px', borderTop: o.first ? 'none' : '1px solid var(--n-9)' },
+      dot: { width: 20, height: 20, flex: 'none', marginTop: 1, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: st === 'pend' ? 'transparent' : T[tone][0], color: T[tone][2], border: st === 'pend' ? '1.5px dashed var(--n-6)' : '1px solid ' + T[tone][1] },
+      spin: st === 'run' ? { animation: 'cb-spin 1s linear infinite' } : {} };
+  }
+  btn(label, kind, run) { return { label, run, style: { height: 34, padding: '0 14px', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', background: kind === 'p' ? 'var(--primary)' : 'var(--surface-card)', color: kind === 'p' ? '#fff' : kind === 'd' ? 'var(--error-text)' : 'var(--n-2)', border: kind === 'p' ? '1px solid var(--primary)' : '1px solid var(--n-7)' } }; }
+  mi(label, sub, run, danger) { return { label, sub, run: () => { this.setState({ menu: false }); run(); }, style: { width: '100%', display: 'block', padding: '8px 10px', color: danger ? 'var(--error-text)' : 'var(--n-2)', background: 'transparent', border: 0, borderRadius: 7, fontSize: 13, fontWeight: 500, textAlign: 'left', cursor: 'pointer' } }; }
+  banner(tone, icon, title, text) { return { title, text, icon, color: T[tone][2], style: { display: 'flex', gap: 10, alignItems: 'flex-start', padding: '11px 14px', border: '1px solid ' + T[tone][1], borderRadius: 9, background: T[tone][0] } }; }
+  open(num, variant, staff) { this.setState({ view: 'detail', run: num, variant: variant || null, menu: false, dlg: null, live: false, staff: !!staff }); }
+
+  dialog(kind) {
+    const D = {
+      shrink: { tone: 'warn', icon: I.warn, title: 'Сократить срок хранения?', text: 'Данные старше нового срока будут удалены через 24 часа. Восстановить их будет нельзя.', lines: [['!', `Подробные данные шагов старше ${this.state.retDraft.steps} дн. — значения полей и ответы сервисов`, 'warn'], ['i', 'До удаления можно вернуть прежний срок', 'n']], ok: 'Сократить', done: () => this.setState(s => ({ dlg: null, ret: { ...s.retDraft }, retOk: 'shrink' })) },
+      cont: { tone: 'acc', icon: I.refresh, title: 'Продолжить запуск №1043?', text: 'Выполнится только незавершённый шаг. Уже созданный лид не создаётся заново.', lines: [['✓', 'Создать лид · уже выполнено, пропускается', 'ok'], ['→', 'Связать лид с диалогом · будет выполнено', 'acc']], ok: 'Продолжить', done: () => this.open(1043, 'continued') },
+      newrun: { tone: 'warn', icon: I.warn, title: 'Запустить заново как новый запуск?', text: 'Это отдельный запуск с новым номером. Все шаги выполнятся с начала, в том числе создание записей.', lines: [['!', 'Будет создан ещё один лид в Битрикс24 — даже если первый уже есть', 'warn'], ['i', 'Запуск №1043 останется в журнале без изменений', 'n']], ok: 'Создать новый запуск', done: () => this.setState({ dlg: null }) },
+      cancel: { tone: 'warn', icon: I.warn, title: 'Отменить запуск №1047?', text: 'Новые шаги не начнутся. Уже выполненное не откатывается.', lines: [['i', 'Если запрос к amoCRM уже отправлен, его результат будет проверен и показан в журнале', 'n']], ok: 'Отменить запуск', done: () => this.open(1047, 'cancelled') },
+      comp: { tone: 'err', icon: I.undo, title: 'Удалить лид №4822 в Битрикс24?', text: 'Это отдельное действие, а не откат. Оно выполнится от вашего имени и появится в журнале отдельной строкой.', lines: [['!', 'Лид и его история в Битрикс24 будут удалены', 'err'], ['i', 'Ссылка на лид у диалога тоже будет удалена', 'n']], ok: 'Удалить лид', done: () => this.open(1043, 'compensated') },
+      retry: { tone: 'acc', icon: I.refresh, title: 'Повторить шаг «Связать лид с диалогом»?', text: 'Шаг безопасен для повтора: он не создаёт записей во внешнем сервисе.', lines: [], ok: 'Повторить шаг', done: () => this.open(1043, 'continued') },
+    }[kind];
+    const [bg, , fg] = T[D.tone];
+    return { title: D.title, text: D.text, icon: D.icon, okLabel: D.ok, ok: D.done,
+      lines: D.lines.map(([m, t, tone]) => ({ m, t, mark: { width: 18, height: 18, flex: 'none', borderRadius: 5, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: T[tone][0], color: T[tone][2], fontSize: 11, fontWeight: 700 } })),
+      box: { width: 520, background: 'var(--surface-card)', border: D.tone === 'err' ? '1px solid var(--error-border)' : 'none', borderRadius: 14, boxShadow: 'var(--modal-shadow)', overflow: 'hidden' },
+      iconBox: { width: 40, height: 40, flex: 'none', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: bg, color: fg },
+      okStyle: { height: 34, padding: '0 16px', color: '#fff', background: D.tone === 'err' ? 'var(--error)' : D.tone === 'warn' ? 'var(--warning-text)' : 'var(--primary)', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' } };
+  }
+
+  detail() {
+    const st = this.state; const S = (...a) => this.step(...a); const B = (...a) => this.btn(...a); const dlg = k => () => this.setState({ dlg: k, menu: false });
+    const row = ROWS.find(r => r[0] === st.run) || ROWS[3];
+    const base = { num: row[0], name: row[1], who: row[4], ctx: row[5] };
+    const meta = (extra = {}) => [{ k: 'Кто запустил', v: extra.who || row[4] }, { k: 'Где', v: row[5] }, { k: 'Начат', v: row[6] }, { k: 'Завершён', v: extra.end || '—' }, { k: 'Версия сценария', v: extra.ver || 'от 20 окт, 16:42 · Елена Кузнецова' }, { k: 'Подключения', v: row[2] }];
+    const leadData = [dv('Название', 'Пальто на заказ — Ольга Смирнова'), dv('Телефон', '+7 9•• •••-••-12'), dv('Ответственный', 'Анна Ким')];
+    let o;
+    const key = st.variant || ROWS.find(r => r[0] === st.run)?.[7];
+    switch (key) {
+      case 'run': o = { state: 'run', progress: '1 из 3 шагов', actions: [B('Отменить запуск', '', dlg('cancel'))], steps: [S('done', 'Подтвердила Елена Кузнецова', { sub: 'Подтверждение относилось к названию, воронке и ответственному ниже', time: '14:04', first: true }), S('run', 'Создать сделку · amoCRM · Розница', { sub: 'Запрос отправлен, ждём ответ amoCRM', time: '14:04', data: [dv('Название', 'Пальто на заказ — Марина Белова'), dv('Воронка', 'Продажи · Первичный контакт'), dv('Ответственный', 'Анна Ким')] }), S('pend', 'Связать сделку с диалогом')], meta: meta({ who: 'Агент «Поддержка сайта» · с подтверждением' }) }; break;
+      case 'wait': o = { state: 'wait', progress: '1 из 3 шагов · ожидание', actions: [B('Отменить запуск', '', dlg('cancel'))], steps: [S('done', 'Отправить клиенту форму мерок', { time: '14:08', first: true }), S('wait', 'Подождать ответ клиента', { sub: 'Не дольше 1 дня — до 23 окт, 14:08. Если ответа не будет: завершить сценарий.', subTone: 'warn' }), S('pend', 'Создать заказ · Битрикс24')], meta: meta() }; break;
+      case 'unk': o = { state: 'unk', progress: '0 из 2 шагов подтверждены', banner: this.banner('warn', I.q, 'Неизвестно, создан ли лид.', 'Запрос ушёл в Битрикс24, но ответ не пришёл. Повтор может создать второй лид, поэтому сначала проверьте результат: Chatballs найдёт лид по метке этого запуска.'),
+        actions: [B('Проверить в Битрикс24', 'p', () => this.open(1044, 'unkFound'))], menu: [this.mi('Отметить: лида нет, повторить шаг', 'Только если вы сами убедились, что лида нет в Битрикс24', () => this.open(1044, 'continued'))],
+        steps: [S('unk', 'Создать лид · Битрикс24', { sub: 'Отправлено в 14:07. Ответ не получен за 30 с.', subTone: 'warn', time: '14:07', first: true, data: leadData }), S('pend', 'Связать лид с диалогом', { sub: 'Ждёт, пока выяснится результат первого шага' })], meta: meta() }; break;
+      case 'unkFound': o = { state: 'run', progress: '1 из 2 шагов', banner: this.banner('ok', I.check, 'Лид найден — он был создан.', 'Шаг отмечен выполненным, повторно лид не создаётся. Запуск продолжается со следующего шага.'), actions: [],
+        steps: [S('done', 'Создать лид · Битрикс24', { sub: 'Лид №4823 · найден проверкой в 14:12', time: '14:07', first: true, data: leadData }), S('run', 'Связать лид с диалогом', { time: '14:12' })], meta: meta() }; break;
+      case 'part': o = { state: 'part', progress: '1 из 2 шагов', banner: this.banner('warn', I.warn, 'Первый шаг выполнен, второй — нет.', 'Лид создан и остаётся в Битрикс24. «Продолжить» выполнит только незавершённый шаг.'),
+        actions: [B('Продолжить', 'p', dlg('cont'))], menu: [this.mi('Запустить заново', 'Новый запуск с начала — создаст ещё один лид', dlg('newrun')), this.mi('Удалить созданный лид', 'Отдельное действие в Битрикс24', dlg('comp'), true)],
+        steps: [S('done', 'Создать лид · Битрикс24', { sub: 'Лид №4822 создан', time: '14:06', first: true, data: leadData }), S('err', 'Связать лид с диалогом', { sub: 'Диалог закрыли до завершения шага. Откройте диалог снова, затем продолжите.', subTone: 'err', time: '14:06' })], meta: meta({ end: 'сегодня, 14:06' }) }; break;
+      case 'continued': o = { state: 'ok', progress: '2 из 2 шагов', banner: this.banner('ok', I.check, 'Запуск продолжен и завершён.', 'Выполнен только недостающий шаг; создание лида не повторялось.'), actions: [],
+        steps: [S('done', 'Создать лид · Битрикс24', { sub: 'Лид №4822 · выполнено ранее', time: '14:06', first: true }), S('done', 'Связать лид с диалогом', { sub: 'Продолжила Елена Кузнецова', time: '14:15' })], meta: meta({ end: 'сегодня, 14:15' }) }; break;
+      case 'compensated': o = { state: 'part', progress: '1 из 2 шагов · результат отменён', banner: this.banner('n', I.undo, 'Лид удалён отдельным действием.', 'Исходный шаг остаётся «выполнен» — удаление записано ниже как новое действие.'), actions: [],
+        steps: [S('done', 'Создать лид · Битрикс24', { sub: 'Лид №4822 создан', time: '14:06', first: true }), S('err', 'Связать лид с диалогом', { sub: 'Диалог закрыт до завершения шага', subTone: 'err', time: '14:06' }), S('comp', 'Удалить лид №4822 · Битрикс24', { sub: 'Выполнила Елена Кузнецова — компенсирующее действие', time: '14:20' })], meta: meta({ end: 'сегодня, 14:06' }) }; break;
+      case 'retry': o = { state: 'retry', progress: '12 из 40 клиентов', banner: this.banner('warn', I.clock, 'Mindbox временно недоступен.', 'Автоматический повтор через 2 мин (попытка 2 из 5). Уже обработанные клиенты повторно не получают сообщение.'), actions: [B('Повторить сейчас', '', () => this.open(1041, 'big'))], menu: [this.mi('Отменить запуск', 'Оставшиеся клиенты не будут обработаны', dlg('cancel'), true)],
+        steps: [S('done', 'Найти постоянных клиентов · Mindbox', { sub: 'Найдено 40', time: '09:00', first: true }), S('wait', 'Для каждого клиента', { sub: '12 готово · 1 ждёт повтора · 27 впереди', subTone: 'warn', group: true }), S('done', 'Клиенты 1–12: отправить предложение', { depth: 1, sub: 'Отправлено 12' }), S('wait', 'Клиент 13: отправить предложение', { depth: 1, sub: 'Mindbox не ответил — повтор в 09:14', subTone: 'warn' }), S('pend', 'Клиенты 14–40', { depth: 1 })], meta: meta({ ver: 'от 1 окт, 10:00' }) }; break;
+      case 'big': o = { state: 'run', progress: 'параллельные ветви и вложенный сценарий', actions: [],
+        steps: [S('done', 'Найти постоянных клиентов · Mindbox', { sub: 'Найдено 40', time: '09:00', first: true }), S('run', 'Одновременно', { sub: 'Ветвь 1 готова · ветвь 2 выполняется', group: true }), S('done', 'Ветвь 1: Добавить метку «Акция» 40 контактам', { depth: 1, sub: '40 из 40' }), S('run', 'Ветвь 2: Для каждого клиента — отправить предложение', { depth: 1, sub: '28 из 40 · 1 ошибка, продолжаем' }), S('err', 'Клиент 17: отправить предложение', { depth: 2, sub: 'У контакта нет канала для сообщения — пропущен', subTone: 'err' }), S('pend', 'Запустить сценарий «Уведомить ответственного»', { sub: 'Вложенный сценарий · начнётся после обеих ветвей' })], meta: meta({ ver: 'от 1 окт, 10:00' }) }; break;
+      case 'lost': o = { state: 'lost', progress: '0 из 2 шагов', banner: this.banner('err', I.lock, 'Доступ к amoCRM · Розница отозван.', 'Ничего не выполнено. Новые запуски этого подключения приостановлены, пока администратор не восстановит доступ.'), actions: [B('К подключению', '', () => { location.href = 'Сервисы.dc.html'; })],
+        steps: [S('err', 'Создать сделку · amoCRM', { sub: 'amoCRM отклонил доступ. Сделка не создана.', subTone: 'err', time: '18:20', first: true }), S('skip', 'Связать сделку с диалогом', { sub: 'Не выполнялся' })], meta: meta({ end: 'вчера, 18:20' }) }; break;
+      case 'conf': { const CF = [['phone', 'Телефон', '+7 916 204-18-33', 'Анна Ким · 14:20:41', '+7 916 204-18-30', 'Дмитрий Орлов · 14:20:58'], ['email', 'Почта', 'm.belova@mail.example', 'Анна Ким · 14:20:41', 'belova.m@mail.example', 'Импорт из формы сайта · 14:21:03']];
+        const pk = st.cfPick || {}; const all = CF.every(c => pk[c[0]]);
+        const box = on => ({ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '9px 12px', border: '1px solid ' + (on ? 'var(--primary)' : 'var(--n-7)'), borderRadius: 9, background: on ? 'var(--primary-bg)' : 'var(--surface-card)', cursor: 'pointer', font: 'inherit' });
+        const dot = on => ({ width: 14, height: 14, flex: 'none', marginTop: 2, borderRadius: '50%', border: on ? '4px solid var(--primary)' : '1.5px solid var(--n-6)', boxSizing: 'border-box', background: 'var(--surface-card)' });
+        const pick = (k, v) => () => this.setState(s => ({ cfPick: { ...(s.cfPick || {}), [k]: v } }));
+        o = { state: 'conf', progress: '2 поля ждут решения', banner: this.banner('warn', I.warn, 'Поля изменили в обеих системах почти одновременно.', 'По правилу обмена «Ничего не менять» эти поля не обновляются, пока вы не выберете значение. Остальные поля обмениваются как обычно.'),
+          actions: [], menu: [this.mi('Открыть контакт', 'Марина Белова', () => {}), this.mi('Изменить правило обмена', 'Сервисы → Битрикс24 → Обмен данными', () => { location.href = 'Сервисы.dc.html'; })],
+          conflict: CF.map(([k, label, a, aWho, b, bWho]) => ({ label, a, aWho, b, bWho, pickA: pick(k, 'a'), pickB: pick(k, 'b'), aStyle: box(pk[k] === 'a'), bStyle: box(pk[k] === 'b'), aDot: dot(pk[k] === 'a'), bDot: dot(pk[k] === 'b') })),
+          conflictNote: all ? 'Выбранные значения запишутся и в Chatballs, и в Битрикс24.' : 'Выберите значение для каждого поля.',
+          conflictApply: () => { if (all) this.open(1052, 'confDone'); },
+          conflictStyle: { height: 34, padding: '0 16px', borderRadius: 8, border: 'none', fontSize: 13, fontWeight: 600, cursor: all ? 'pointer' : 'not-allowed', background: all ? 'var(--primary)' : 'var(--n-8)', color: all ? '#fff' : 'var(--n-5)' },
+          steps: [S('done', 'Получены изменения из Битрикс24', { time: '14:21', first: true }), S('done', 'Обновлены имя и компания', { time: '14:21' }), S('wait', 'Телефон и почта', { sub: 'Ждут решения администратора', subTone: 'warn' })], meta: meta({ who: 'Обмен данными (автоматически)', ver: 'правило «Ничего не менять»' }) }; break; }
+      case 'confDone': o = { state: 'ok', progress: 'расхождение разобрано', banner: this.banner('ok', I.check, 'Расхождение разобрано.', 'Выбранные значения записаны в обе системы. Решение сохранено в истории контакта.'), actions: [],
+        steps: [S('done', 'Получены изменения из Битрикс24', { time: '14:21', first: true }), S('done', 'Обновлены имя и компания', { time: '14:21' }), S('done', 'Телефон и почта', { sub: 'Решила Елена Кузнецова: телефон из Битрикс24, почта из Chatballs', time: '14:30' })], meta: meta({ who: 'Обмен данными (автоматически)', end: 'сегодня, 14:30', ver: 'правило «Ничего не менять»' }) }; break;
+      case 'ver': o = { state: 'ver', progress: '0 из 1 шага', banner: this.banner('err', I.err, 'Подключение Mindbox обновлено, а сценарий рассчитан на прежнюю версию.', 'Операция «Найти клиента» изменилась. Откройте сценарий и выберите поля заново — новые запуски до этого блокируются.'), actions: [B('Открыть сценарий', '', () => { location.href = 'Сценарии.dc.html'; })],
+        steps: [S('err', 'Найти клиента · Mindbox', { sub: 'Не начат: версия операции не совпадает', subTone: 'err', first: true })], meta: meta({ end: '12 окт, 16:30', ver: 'от 3 сен · устарела' }) }; break;
+      case 'cancel': o = { state: 'cancel', progress: 'остановлен на шаге 1', banner: this.banner('n', I.info, 'Отменил Дмитрий Орлов в 12:03.', 'Отмена не откатывает сделанное. Запрос, отправленный до отмены, завершился — его результат ниже.'), actions: [],
+        steps: [S('done', 'Создать лид · Битрикс24', { sub: 'Завершился после отмены: лид №4790 создан', subTone: 'warn', time: '12:03', first: true }), S('cancel', 'Связать лид с диалогом', { sub: 'Не начат — запуск отменён' })], meta: meta({ end: 'вчера, 12:03' }), menu: [this.mi('Удалить созданный лид', 'Отдельное действие в Битрикс24', dlg('comp'), true)] }; break;
+      case 'cancelled': o = { state: 'cancel', progress: 'отмена', banner: this.banner('n', I.info, 'Запуск отменён.', 'Запрос в amoCRM уже был отправлен — ждём его результат, он появится здесь.'), actions: [],
+        steps: [S('done', 'Подтвердила Елена Кузнецова', { time: '14:04', first: true }), S('run', 'Создать сделку · amoCRM · Розница', { sub: 'Отправлено до отмены — выясняем результат' }), S('cancel', 'Связать сделку с диалогом', { sub: 'Не начнётся' })], meta: meta() }; break;
+      case 'purged': o = { state: 'ok', progress: '2 из 2 шагов', banner: this.banner('n', I.info, 'Подробные данные шагов удалены 16 окт по сроку хранения (7 дней).', 'История запуска останется в журнале до 8 нояб. Удалённые значения восстановить нельзя.'), actions: [],
+        steps: [S('done', 'Создать лид · Битрикс24', { sub: 'Выполнено', time: '11:15', first: true, data: [dv('Значения', 'удалены по сроку хранения', { muted: true })] }), S('done', 'Связать лид с диалогом', { time: '11:15' })], meta: meta({ end: '9 окт, 11:15', ver: 'от 1 окт' }) }; break;
+      default: o = { state: 'ok', progress: '3 из 3 шагов', actions: [], steps: [S('done', 'Если у контакта есть метка VIP', { sub: 'Да', first: true }), S('done', 'Передать в группу «Отдел продаж»', { depth: 1 }), S('done', 'Уведомить Дмитрия Орлова', { depth: 1 }), S('done', 'Добавить метку «Проверено»')], meta: meta({ end: 'сегодня, 08:41' }) };
+    }
+    if (st.staff) { o = { ...o, menu: [this.mi('Открыть диалог', row[5], () => {})], meta: o.meta.map(m => m.k === 'Версия сценария' ? { k: 'Кто видит', v: 'Участники диалога и администраторы' } : m) }; if (o.actions) o.actions = o.actions.filter(a => a.label !== 'К подключению' && a.label !== 'Открыть сценарий'); }
+    const [label, tone] = STATES[o.state];
+    return { ...base, ...o, state: label, pill: pill(tone), when: row[6], menu: o.menu || [this.mi('Открыть диалог', row[5], () => {})], live: st.live ? 'Шаг «Создать сделку» завершён: сделка №9310 создана.' : '' };
+  }
+
+  jumps() {
+    const J = (label, go, on) => ({ label, go, style: { height: 26, padding: '0 9px', border: '1px solid ' + (on ? 'var(--primary)' : 'var(--n-7)'), borderRadius: 7, background: on ? 'var(--primary-bg)' : 'var(--surface-card)', color: on ? 'var(--primary-text)' : 'var(--n-2)', fontSize: 12, fontWeight: 500, cursor: 'pointer' } });
+    const L = s => () => this.setState({ view: 'list', listState: s, dlg: null, menu: false, tab: 'all', q: '' });
+    const st = this.state; const isL = s => st.view === 'list' && st.listState === s; const isD = (n, v) => st.view === 'detail' && st.run === n && (st.variant || null) === (v || null);
+    return [
+      { title: 'Список', items: [J('Журнал', L('ok'), isL('ok')), J('Загрузка', L('loading'), isL('loading')), J('Пусто', L('empty'), isL('empty')), J('Ошибка загрузки', L('err'), isL('err')), J('Нет прав', L('denied'), isL('denied'))] },
+      { title: 'Состояния', items: [J('Выполняется', () => this.open(1047), isD(1047)), J('Ожидает', () => this.open(1045), isD(1045)), J('Успешно', () => this.open(1039), isD(1039)), J('Частично', () => this.open(1043), isD(1043)), J('Неизвестно', () => this.open(1044), isD(1044)), J('Отменён', () => this.open(1031), isD(1031)), J('Авто-повтор', () => this.open(1041), isD(1041)), J('Нет доступа', () => this.open(1036), isD(1036)), J('Версия', () => this.open(1020), isD(1020)), J('Ветви и перебор', () => this.open(1041, 'big'), isD(1041, 'big')), J('Данные удалены', () => this.open(988, 'purged'), isD(988, 'purged')), J('Расхождение обмена', () => { this.setState({ cfPick: {} }); this.open(1052); }, isD(1052)), J('Расхождение разобрано', () => this.open(1052, 'confDone'), isD(1052, 'confDone'))] },
+      { title: 'Доступ и сроки', items: [J('Сотрудник: «Подробнее» из диалога', () => this.open(1043, null, true), st.view === 'detail' && st.staff), J('Хранение', () => this.setState({ view: 'retention', dlg: null, retDraft: { ...st.ret }, retOk: false }), st.view === 'retention'), J('Хранение: сокращение', () => this.setState({ view: 'retention', retDraft: { hist: '30', steps: '3' }, dlg: 'shrink', retOk: false }))] },
+      { title: 'Восстановление', items: [J('Продолжить', () => { this.open(1043); this.setState({ dlg: 'cont' }); }), J('Новый запуск', () => { this.open(1043); this.setState({ dlg: 'newrun' }); }), J('Компенсация', () => { this.open(1043); this.setState({ dlg: 'comp' }); }), J('Отмена', () => { this.open(1047); this.setState({ dlg: 'cancel' }); }), J('Проверка → найден', () => this.open(1044, 'unkFound'), isD(1044, 'unkFound')), J('Изменился при просмотре', () => { this.open(1047); this.setState({ live: true }); }, st.live)] },
+    ];
+  }
+
+  retVals() {
+    const st = this.state; const r = st.retDraft;
+    const H = [['30', '30 дней'], ['90', '90 дней'], ['180', '180 дней'], ['365', '1 год']];
+    const S = [['3', '3 дня'], ['7', '7 дней'], ['14', '14 дней'], ['30', '30 дней']].filter(x => Number(x[0]) <= Number(r.hist));
+    const mk = (k, list) => React.createElement('select', { value: r[k], onChange: e => { const v = e.target.value; this.setState(s => { const n = { ...s.retDraft, [k]: v }; if (Number(n.steps) > Number(n.hist)) n.steps = n.hist; return { retDraft: n, retOk: false }; }); }, style: { width: '100%', height: 34, padding: '0 8px', border: '1px solid var(--n-7)', borderRadius: 8, fontSize: 13, color: 'var(--n-1)', background: 'var(--surface-card)' } }, list.map(([v, l]) => React.createElement('option', { key: v, value: v }, l)));
+    const dirty = r.hist !== st.ret.hist || r.steps !== st.ret.steps;
+    const shrink = Number(r.hist) < Number(st.ret.hist) || Number(r.steps) < Number(st.ret.steps);
+    const dn = n => `${n} ${n === '3' ? 'дня' : 'дней'}`;
+    return {
+      isRetention: st.view === 'retention',
+      retNote: `История запусков хранится ${dn(st.ret.hist)}, подробные данные шагов — ${dn(st.ret.steps)}.`,
+      toRetention: () => this.setState({ view: 'retention', retDraft: { ...st.ret }, retOk: false }),
+      retRows: [{ label: 'История запусков', help: 'Строка в журнале: сценарий, кто запустил, состояние, список шагов.', sel: mk('hist', H) },
+        { label: 'Подробные данные шагов', help: 'Значения полей и ответы сервисов. Не дольше истории запусков.', sel: mk('steps', S) }],
+      retWarn: dirty && shrink ? 'Срок сокращается: старые данные будут удалены через 24 часа после сохранения.' : '',
+      retSaved: st.retOk === 'shrink' ? 'Сохранено. Данные старше нового срока удалятся завтра в 14:20.' : st.retOk ? 'Сохранено. Новый срок применяется ко всем запускам, включая уже завершённые.' : 'Изменить может владелец или администратор.',
+      retSave: () => { if (!dirty) return; if (shrink) this.setState({ dlg: 'shrink' }); else this.setState({ ret: { ...r }, retOk: 'grow' }); },
+      retSaveStyle: { height: 34, padding: '0 16px', borderRadius: 8, border: 'none', fontSize: 13, fontWeight: 600, cursor: dirty ? 'pointer' : 'default', background: dirty ? 'var(--primary)' : 'var(--n-8)', color: dirty ? '#fff' : 'var(--n-5)' },
+    };
+  }
+
+  renderVals() {
+    const st = this.state; const W = Number(this.props.width ?? 1440) === 1024 ? 1024 : 1440;
+    const listState = st.listState;
+    const filtered = ROWS.filter(r => (st.tab === 'all' || (st.tab === 'attn' ? ['unk', 'part', 'err', 'lost', 'ver', 'conf'].includes(r[7]) : st.tab === 'act' ? ['run', 'wait', 'retry'].includes(r[7]) : ['ok', 'cancel'].includes(r[7]))) && (!st.q || (r.join(' ').toLowerCase().includes(st.q.toLowerCase()))));
+    const rows = listState === 'ok' ? filtered.map(r => {
+      const [label, tone] = STATES[r[7]];
+      return { num: r[0], name: r[1], conns: r[2], who: r[4], ctx: r[5], time: r[6], state: label, pill: pill(tone), whoIni: r[3] === 'ai' ? 'ИИ' : r[3] === 'auto' ? 'А' : r[4].split(' ').map(x => x[0]).join(''),
+        whoIcon: { width: 22, height: 22, flex: 'none', borderRadius: r[3] === 'me' ? '50%' : 6, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: r[3] === 'ai' ? 'var(--ai-bg)' : r[3] === 'auto' ? 'var(--n-9)' : 'var(--primary)', color: r[3] === 'ai' ? 'var(--ai)' : r[3] === 'auto' ? 'var(--n-3)' : '#fff', fontSize: 9.5, fontWeight: 700 },
+        open: () => this.open(r[0]), style: { display: 'grid', gridTemplateColumns: COLS, gap: 12, alignItems: 'center', height: 56, padding: '0 20px', borderTop: '1px solid var(--n-9)', cursor: 'pointer' } };
+    }) : [];
+    const tabs = [['all', 'Все'], ['attn', 'Требуют внимания'], ['act', 'Идут'], ['done', 'Завершены']];
+    const d = st.view === 'detail' ? this.detail() : null;
+    const navOn = st.staff && st.view === 'detail' ? 'Чат' : 'Настройки';
+    const subOn = st.view === 'retention' ? 'Организация' : 'Сценарии';
+    return {
+      jumpGroups: this.jumps(), wide: W === 1440, narrow: W === 1024,
+      frameStyle: { position: 'relative', width: W, height: 900, display: 'flex', background: 'var(--surface-card)', borderRadius: 6, overflow: 'hidden', boxShadow: '0 2px 12px #00000014' },
+      subnavStyle: { width: W === 1024 ? 220 : 240, flex: 'none', display: st.staff && st.view === 'detail' ? 'none' : 'flex', flexDirection: 'column', background: 'var(--surface-card)', borderRight: '1px solid var(--n-8)', overflow: 'hidden' },
+      nav: NAV.map(([i, l, div]) => ({ d: I[i], label: l, div: !!div, style: { display: 'flex', alignItems: 'center', gap: 10, height: 36, padding: '0 10px', borderRadius: 8, fontSize: 13.5, fontWeight: l === navOn ? 600 : 500, color: l === navOn ? 'var(--primary-text)' : 'var(--n-2)', background: l === navOn ? 'var(--primary-bg)' : 'transparent' } })),
+      subnav: SUB.map(([i, l]) => ({ d: I[i], label: l, cap: !i, item: !!i, style: { display: 'flex', alignItems: 'center', gap: 10, minHeight: 34, padding: '0 10px', borderRadius: 8, fontSize: 13, fontWeight: l === subOn ? 600 : 500, color: l === subOn ? 'var(--primary-text)' : 'var(--n-2)', background: l === subOn ? 'var(--primary-bg)' : 'transparent' } })),
+      isList: st.view === 'list', isDetail: st.view === 'detail',
+      noRights: listState === 'denied', showTable: listState !== 'denied', loading: listState === 'loading', listErr: listState === 'err',
+      empty: listState === 'empty' || (listState === 'ok' && !rows.length), hasRows: rows.length > 0,
+      emptyTitle: listState === 'empty' ? 'Запусков пока не было' : 'Ничего не найдено', emptyText: listState === 'empty' ? 'Здесь появятся запуски сценариев и операций — сотрудниками, ИИ и автоматически.' : 'Измените поиск или фильтры.',
+      retryList: () => this.setState({ listState: 'ok' }),
+      q: st.q, setQ: e => this.setState({ q: e.target.value }),
+      filters: [{ k: 'Сценарий', v: 'Все' }, { k: 'Кто', v: 'Все' }, { k: 'Период', v: '30 дней' }],
+      stateTabs: tabs.map(([k, l]) => ({ label: l, pick: () => this.setState({ tab: k }), style: { height: 28, padding: '0 11px', borderRadius: 7, border: 'none', background: st.tab === k ? 'var(--surface-card)' : 'transparent', color: st.tab === k ? 'var(--n-1)' : 'var(--n-3)', boxShadow: st.tab === k ? '0 1px 2px rgba(0,0,0,.08)' : 'none', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' } })),
+      gridHead: { display: 'grid', gridTemplateColumns: COLS, gap: 12, alignItems: 'center', padding: '10px 20px', background: 'var(--surface-sidebar)', borderBottom: '1px solid var(--n-8)', color: 'var(--n-4)', fontSize: 11, fontWeight: 600, letterSpacing: '.05em', textTransform: 'uppercase' },
+      skeleton: Array.from({ length: 9 }, () => ({ display: 'grid', gridTemplateColumns: COLS, gap: 12, alignItems: 'center', height: 56, padding: '0 20px', borderTop: '1px solid var(--n-9)' })),
+      rows, pageText: listState === 'ok' ? `Показано ${rows.length} из 214` : listState === 'loading' ? 'Загружаем…' : '—',
+      pages: ['‹', '1', '2', '3', '…', '22', '›'].map((l, i) => ({ label: l, style: { minWidth: 26, height: 26, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, border: '1px solid ' + (i === 1 ? 'var(--primary)' : 'var(--n-7)'), background: i === 1 ? 'var(--primary-bg)' : 'var(--surface-card)', color: i === 1 ? 'var(--primary-text)' : 'var(--n-3)', fontSize: 12, fontWeight: 600, opacity: listState === 'ok' ? 1 : 0.4 } })),
+      d: d || {}, toList: () => { if (st.staff && st.view === 'detail') { location.href = 'Запуск из диалога.dc.html#R3'; return; } this.setState({ view: 'list', listState: 'ok', dlg: null, staff: false }); },
+      backLabel: st.staff && d ? `${d.ctx.split(' · ')[0]} · диалог` : 'Журнал запусков',
+      ...this.retVals(),
+      menu: st.menu, toggleMenu: () => this.setState(s => ({ menu: !s.menu })),
+      applyLive: () => this.setState({ live: false, variant: null, run: 1047 }),
+      dlg: st.dlg ? this.dialog(st.dlg) : null, closeDlg: () => this.setState({ dlg: null }),
+    };
+  }
+}
+</script>
+</body>
+</html>

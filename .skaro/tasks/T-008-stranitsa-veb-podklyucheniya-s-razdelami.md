@@ -9,6 +9,7 @@ order: 2
 spec: "0002"
 created: 2026-09-29
 branch: skaro/T-008-stranitsa-veb-podklyucheniya-s
+archived: true
 ---
 
 ## Цель

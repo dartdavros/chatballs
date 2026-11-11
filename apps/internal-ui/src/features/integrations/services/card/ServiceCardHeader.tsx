@@ -35,7 +35,7 @@ export function ServiceCardHeader({ connection, adapter, onBack, onToggleActive,
   ];
   return (
     <>
-      <button className="link is-muted has-icon service-card-back" type="button" onClick={onBack}><Icon name="chevronLeft" size={14} strokeWidth={2.2} />{t("services.back")}</button>
+      <button className="link is-muted has-icon service-card-back" type="button" onClick={onBack}><Icon name="chevronLeft" size={14} strokeWidth={2.2} />{t("common.integrations")}</button>
       <header className="service-card-head">
         <div>
           <div className="service-card-title"><h2>{connection.name}</h2><StatusPill status={badge.status} label={badge.label} /></div>

@@ -17,9 +17,9 @@ import "./parameters.css";
 
 type Section = "main" | "tools" | "parameters" | "delete";
 
-export function ExternalServerPage({ initial, kind, integrations, onCreated, onBack, onOpenSettings }: {
+export function ExternalServerPage({ initial, kind, integrations, onCreated, onBack }: {
   initial: Integration | null; kind: ServerKind; integrations: Integration[];
-  onCreated: (id: number) => void; onBack: () => void; onOpenSettings: () => void;
+  onCreated: (id: number) => void; onBack: () => void;
 }) {
   const editor = useServerEditor(kind, initial, onCreated);
   const [section, setSection] = useState<Section>("main");
@@ -33,7 +33,7 @@ export function ExternalServerPage({ initial, kind, integrations, onCreated, onB
   ];
   return <>
     <IntegrationPageLayout className="external-server-page"
-      header={<ServerHeader editor={editor} onBack={onBack} onOpenSettings={onOpenSettings} />}
+      header={<ServerHeader editor={editor} onBack={onBack} />}
       items={items} activeKey={section} note={t("servers.changes_note")}
       onSelect={(key) => key === "delete" ? setDeleting(true) : setSection(key)}>
         {section === "main" && (mcp ? <ServerConnection editor={editor} /> : <HttpToolForm editor={editor} />)}

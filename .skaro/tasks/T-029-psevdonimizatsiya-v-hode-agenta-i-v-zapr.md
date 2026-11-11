@@ -9,6 +9,7 @@ order: 2
 spec: "0022"
 created: 2026-10-03
 branch: skaro/T-029-psevdonimizatsiya-v-hode-agent
+archived: true
 ---
 
 ## Цель

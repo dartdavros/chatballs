@@ -10,6 +10,7 @@ order: 7
 spec: "0035"
 created: 2026-10-15
 branch: skaro/T-163-pokazat-snimki-oformlennyh-otv
+archived: true
 ---
 
 ## Цель

@@ -10,6 +10,7 @@ order: 6
 spec: "0035"
 created: 2026-10-15
 branch: skaro/T-162-realizovat-redaktor-shemy-i-sh
+archived: true
 ---
 
 ## Цель

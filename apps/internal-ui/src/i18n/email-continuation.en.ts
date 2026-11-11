@@ -4,7 +4,7 @@ export const emailContinuationEn: Record<keyof typeof emailContinuationRu, strin
   "mail.saved_address": "saved in contact", "mail.no_address_hint": "The contact has no saved email address",
   "mail.no_address": "Email unavailable: the contact has no email address.", "mail.add_address": "Add in contact details",
   "mail.no_mailbox": "No available mailbox",
-  "mail.no_mailbox_hint": "Email connections are missing or have errors. An administrator can connect email in Settings → Integrations.",
+  "mail.no_mailbox_hint": "Email connections are missing or have errors. An administrator can connect a mailbox under Email.",
   "mail.audience": "Email to {address}", "mail.web_audience": "Visible to customer · {channel}",
   "mail.text": "Email text", "mail.text_placeholder": "Email text…", "mail.send": "Send email", "mail.sending_action": "Sending…",
   "mail.outbound": "Email to {recipient} · from {sender}", "mail.inbound": "Email reply · from {sender}",

@@ -7,6 +7,7 @@ order: 1
 spec: "0001"
 created: 2026-10-07
 branch: skaro/T-153-ispravit-dostup-k-mikrofonu-dl
+archived: true
 ---
 
 ## Цель

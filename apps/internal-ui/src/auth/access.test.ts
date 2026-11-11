@@ -31,7 +31,30 @@ function userWith(role: Role, capabilities: string[] = []): SessionUser {
   };
 }
 
+const standaloneManagementRoutes = [
+  "aiProviders", "scenarios", "widgets", "messengers", "emailIntegrations",
+  "integrationServers", "mcpServerCreate", "httpServerCreate", "externalServerSettings",
+  "webIntegrationSettings", "legacyIntegrationSettings", "serviceIntegrations", "serviceConnection",
+] as const;
+
 describe("role-based navigation (SPEC-CHATBALLS-0031 §3)", () => {
+  it.each(["OWNER", "ADMIN"] as const)("keeps access to extracted settings and their direct links for %s", role => {
+    for (const route of standaloneManagementRoutes) {
+      expect(canAccess(userWith(role), route), route).toBe(true);
+    }
+  });
+
+  it.each(["EMPLOYEE", "SUPERVISOR"] as const)("does not expose extracted settings through direct links to %s", role => {
+    const user = {
+      ...userWith(role, ["integrations.view", "integrations.manage", "ai.manage"]),
+      reportCapabilities: ["reports.view"],
+      supervisedGroups: [{ id: 1, name: "Support" }],
+    };
+    for (const route of standaloneManagementRoutes) {
+      expect(canAccess(user, route), route).toBe(false);
+    }
+  });
+
   it("opens the scoped rule journal without granting supervisors settings", () => {
     const supervisor = { ...userWith("SUPERVISOR"), supervisedGroups: [{ id: 1, name: "Support" }] };
     expect(canViewRuleJournal(supervisor)).toBe(true);

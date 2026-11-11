@@ -9,6 +9,7 @@ order: 3
 spec: "0028"
 created: 2026-10-06
 branch: skaro/T-060-frontend-realizovat-vybor-i-ot
+archived: true
 ---
 
 ## Цель

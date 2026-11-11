@@ -1,0 +1,15 @@
+.settings-subnav-group {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.settings-subnav-group-caption {
+  padding: 12px 10px 4px;
+}
+
+/* В длинном меню строки сохраняют высоту макета, прокручивается список. */
+.settings-subnav-list > * {
+  flex-shrink: 0;
+}

@@ -9,6 +9,7 @@ order: 3
 spec: "0019"
 created: 2026-09-29
 branch: skaro/T-011-sobytie-v-lente-obnovlenie-po
+archived: true
 ---
 
 ## Цель

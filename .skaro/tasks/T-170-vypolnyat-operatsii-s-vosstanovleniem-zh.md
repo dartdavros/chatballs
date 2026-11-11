@@ -9,6 +9,7 @@ order: 5
 spec: "0037"
 created: 2026-10-17
 branch: skaro/T-170-vypolnyat-operatsii-s-vosstano
+archived: true
 ---
 
 ## Цель

@@ -9,6 +9,7 @@ order: 4
 spec: "0019"
 created: 2026-09-29
 branch: skaro/T-012-blok-dannye-klienta-s-sayta-v
+archived: true
 ---
 
 ## Цель

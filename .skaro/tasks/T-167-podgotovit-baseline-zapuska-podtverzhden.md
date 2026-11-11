@@ -9,6 +9,7 @@ order: 2
 spec: "0037"
 created: 2026-10-17
 branch: skaro/T-167-podgotovit-baseline-zapuska-po
+archived: true
 ---
 
 ## Цель

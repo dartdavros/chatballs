@@ -9,13 +9,16 @@ import { t } from "../../i18n";
 import { ConnectionRouteFields } from "./ConnectionRouteFields";
 import { useIntegrationForm } from "./useIntegrationForm";
 
-export function IntegrationForm({ initial, kind, onClose, onSaved, onSpeechKit }: { initial: Integration | null; kind: IntegrationKind; onClose: () => void; onSaved: () => void; onSpeechKit?: () => void }) {
-  const { isEdit, options, provider, setProvider, name, setName, secret, setSecret, baseUrl, setBaseUrl, defaultModel, setDefaultModel, transcriptionModel, setTranscriptionModel, proxyUrl, setProxyUrl, allowedOrigins, setAllowedOrigins, emailConfig, setEmailConfig, channelId, setChannelId, groupId, setGroupId, isNotifier, setIsNotifier, submitting, error, copied, meta, isMessenger, isWeb, isEmail, isDemo, widgetSnippet, copySnippet, badOrigin, ready, submit } = useIntegrationForm({ initial, kind, onSaved });
+export function IntegrationForm({ initial, kind, allowedProviders, title, onClose, onSaved, onSpeechKit }: {
+  initial: Integration | null; kind: IntegrationKind; allowedProviders?: readonly IntegrationProvider[]; title?: string;
+  onClose: () => void; onSaved: () => void; onSpeechKit?: () => void;
+}) {
+  const { isEdit, options, provider, setProvider, name, setName, secret, setSecret, baseUrl, setBaseUrl, defaultModel, setDefaultModel, transcriptionModel, setTranscriptionModel, proxyUrl, setProxyUrl, allowedOrigins, setAllowedOrigins, emailConfig, setEmailConfig, channelId, setChannelId, groupId, setGroupId, isNotifier, setIsNotifier, submitting, error, copied, meta, isMessenger, isWeb, isEmail, isDemo, widgetSnippet, copySnippet, badOrigin, ready, submit } = useIntegrationForm({ initial, kind, allowedProviders, onSaved });
 
   return (
-    <Modal open title={isEdit ? t("settings.edit_integration") : t("settings.new_integration")} onCancel={onClose} footer={null} destroyOnClose>
+    <Modal open title={title ?? (isEdit ? t("settings.edit_integration") : t("settings.new_integration"))} onCancel={onClose} footer={null} destroyOnClose>
       <div className="integration-form">
-        {isEdit ? (
+        {isEdit || options.length === 1 ? (
           <FormField label={t("settings.type")} value={meta.label} />
         ) : (
           <SelectField label={t("settings.type")} value={provider} onChange={(value) => { if (value === "YANDEX_SPEECHKIT" && onSpeechKit) onSpeechKit(); else setProvider(value as IntegrationProvider); }} options={options} />
@@ -26,7 +29,8 @@ export function IntegrationForm({ initial, kind, onClose, onSaved, onSpeechKit }
             <Icon name="external" size={13} strokeWidth={2.2} />
           </a>
         )}
-        <FormField label={t("common.title")} value={name} onChange={setName} placeholder={isEmail ? t("settings.e_g_support_mailbox") : t("settings.e_g_openrouter_primary")} />
+        <FormField label={t("common.title")} value={name} onChange={setName}
+          placeholder={isEmail ? t("settings.e_g_support_mailbox") : isMessenger ? "" : t("settings.e_g_openrouter_primary")} />
         {isEmail && <EmailFields value={emailConfig} onChange={setEmailConfig} />}
         {meta.testable && (
           <FormField

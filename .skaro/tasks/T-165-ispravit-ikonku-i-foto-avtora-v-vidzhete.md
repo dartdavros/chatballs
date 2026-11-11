@@ -7,6 +7,7 @@ order: 4
 spec: "0021"
 created: 2026-10-16
 branch: skaro/T-165-ispravit-ikonku-i-foto-avtora
+archived: true
 ---
 
 ## Цель

@@ -11,6 +11,7 @@ order: 4
 spec: "0035"
 created: 2026-10-15
 branch: skaro/T-160-realizovat-upravlenie-navykami
+archived: true
 ---
 
 ## Цель

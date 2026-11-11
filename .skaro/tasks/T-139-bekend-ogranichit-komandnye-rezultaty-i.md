@@ -12,6 +12,7 @@ order: 8
 spec: "0029"
 created: 2026-10-07
 branch: skaro/T-139-bekend-ogranichit-komandnye-re
+archived: true
 ---
 
 ## Цель

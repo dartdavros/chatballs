@@ -24,9 +24,8 @@ const sections: SectionMenuItem<Section>[] = [
   { key: "danger", label: t("settings.delete_connection"), icon: "trash", danger: true },
 ];
 
-export function WebIntegrationPage({ integrationId, onOpenSettings, onBack }: {
+export function WebIntegrationPage({ integrationId, onBack }: {
   integrationId: number;
-  onOpenSettings: () => void;
   onBack: () => void;
 }) {
   const { integration, loading, failed, setIntegration } = useWebIntegration(integrationId);
@@ -43,7 +42,7 @@ export function WebIntegrationPage({ integrationId, onOpenSettings, onBack }: {
     <>
       <IntegrationPageLayout
         className={section === "events" ? "site-event-settings" : ""}
-        header={<WebIntegrationHeader integration={integration} onOpenSettings={onOpenSettings} onBack={onBack} />}
+        header={<WebIntegrationHeader integration={integration} onBack={onBack} />}
         items={sections.map((item) => {
           if (item.key === "fields") return { ...item, hint: { text: fmt.number(fieldCount ?? integration.config.fields?.length ?? 0) } };
           if (item.key === "form" && (formEnabled ?? integration.config.preChat?.enabled)) return { ...item, hint: { text: t("pre_chat.on") } };

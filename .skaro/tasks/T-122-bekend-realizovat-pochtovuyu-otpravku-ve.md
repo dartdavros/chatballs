@@ -12,6 +12,7 @@ order: 5
 spec: "0031"
 created: 2026-10-07
 branch: skaro/T-122-bekend-realizovat-pochtovoe-pr
+archived: true
 ---
 
 ## Цель

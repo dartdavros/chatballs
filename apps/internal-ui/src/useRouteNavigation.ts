@@ -24,6 +24,7 @@ export function useRouteNavigation(
   const [selectedSupportPortalId, setSelectedSupportPortalId] = useState(initialRoute.supportPortalId);
   const [selectedPortalSection, setSelectedPortalSection] = useState(initialRoute.portalSettingsSection);
   const [selectedSettingsSection, setSelectedSettingsSection] = useState(initialRoute.settingsSection);
+  const [navigationVersion, setNavigationVersion] = useState(0);
 
   const applyRouteState = useCallback((next: RouteState) => {
     setRoute(next.route);
@@ -37,6 +38,9 @@ export function useRouteNavigation(
     setSelectedSupportPortalId(next.supportPortalId);
     setSelectedPortalSection(next.portalSettingsSection);
     setSelectedSettingsSection(next.settingsSection);
+    // В том же маршруте может измениться query или открыться исходный список.
+    // Обновление вызывается только после разрешения navigation guard.
+    setNavigationVersion((version) => version + 1);
   }, []);
 
   // У «Настроек» второй аргумент — ключ раздела субменю, а не id сущности.
@@ -45,6 +49,7 @@ export function useRouteNavigation(
     entityId: number | string | null = null,
     replace = false,
     organizationId: string | null = organizationPublicId,
+    search = "",
   ) => {
     const nextState: RouteState = {
       organizationPublicId: organizationId,
@@ -55,7 +60,7 @@ export function useRouteNavigation(
       knowledgeId: (nextRoute === "knowledgeDetail" || nextRoute === "knowledgeEdit") && typeof entityId === "number" ? entityId : null,
       clientId: nextRoute === "salesClientDetail" && typeof entityId === "number" ? entityId : null,
       channelId: null,
-      integrationId: (nextRoute === "webIntegrationSettings" || nextRoute === "serviceConnection") && typeof entityId === "number" ? entityId : null,
+      integrationId: (nextRoute === "webIntegrationSettings" || nextRoute === "externalServerSettings" || nextRoute === "legacyIntegrationSettings" || nextRoute === "serviceConnection") && typeof entityId === "number" ? entityId : null,
       supportPortalId: nextRoute === "supportPortalDetail" && typeof entityId === "number"
         ? entityId
         // У настроек портала entityId — «id/раздел»: id портала и ключ раздела.
@@ -70,7 +75,7 @@ export function useRouteNavigation(
       setSelectedConversationId(
         (nextRoute === "chat" || nextRoute === "qualityAnalysis") && typeof entityId === "number" ? entityId : null,
       );
-      const nextPath = pathFromRoute(nextRoute, entityId, organizationId);
+      const nextPath = pathFromRoute(nextRoute, entityId, organizationId, search);
       if (`${window.location.pathname}${window.location.search}` === nextPath) return;
       const method = replace ? "replaceState" : "pushState";
       window.history[method](nextState, "", nextPath);
@@ -79,6 +84,7 @@ export function useRouteNavigation(
 
   return {
     route,
+    navigationVersion,
     selectedEmployeeId,
     selectedAgentId,
     selectedKnowledgeId,

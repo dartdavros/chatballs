@@ -4,19 +4,14 @@ import { t } from "../../i18n";
 import { EMAIL_CONFIG_DEFAULTS, emailConfigFromIntegration, emailConfigPayload } from "./EmailFields";
 import { connectionGroupSettings, formatAllowedOrigins, invalidAllowedOrigin, parseAllowedOrigins, PROVIDERS, webWidgetSnippet,
   type Integration, type IntegrationKind, type IntegrationProvider } from "./model";
+import { integrationProviderOptions } from "./integrationFormModel";
 
-// Селектор «Тип» показывает только провайдеров рода активного таба (SPEC-CHATBALLS-0025 §2.2).
-function providerOptions(kind: IntegrationKind): Array<[string, string]> {
-  return (Object.keys(PROVIDERS) as IntegrationProvider[])
-    .filter((key) => PROVIDERS[key].kind === kind || (kind === "LLM_PROVIDER" && PROVIDERS[key].kind === "SPEECH_PROVIDER"))
-    .sort((left, right) => Number(left === "YANDEX_SPEECHKIT") - Number(right === "YANDEX_SPEECHKIT"))
-    .map((key) => [key, PROVIDERS[key].label]);
-}
-
-export function useIntegrationForm({ initial, kind, onSaved }: { initial: Integration | null; kind: IntegrationKind; onSaved: () => void }) {
+export function useIntegrationForm({ initial, kind, allowedProviders, onSaved }: {
+  initial: Integration | null; kind: IntegrationKind; allowedProviders?: readonly IntegrationProvider[]; onSaved: () => void;
+}) {
   const isEdit = initial !== null;
-  const options = providerOptions(kind);
-  const [provider, setProvider] = useState<IntegrationProvider>(initial?.provider ?? (options[0][0] as IntegrationProvider));
+  const options = integrationProviderOptions(kind, allowedProviders);
+  const [provider, setProvider] = useState<IntegrationProvider>(initial?.provider ?? (options[0]?.[0] as IntegrationProvider | undefined) ?? "OPENROUTER");
   const [name, setName] = useState(initial?.name ?? "");
   const [secret, setSecret] = useState("");
   const [baseUrl, setBaseUrl] = useState(initial?.config.baseUrl ?? "");
@@ -58,7 +53,8 @@ export function useIntegrationForm({ initial, kind, onSaved }: { initial: Integr
   const originList = parseAllowedOrigins(allowedOrigins);
   const badOrigin = isWeb ? invalidAllowedOrigin(originList) : undefined;
   const webReady = !isWeb || (originList.length > 0 && !badOrigin);
-  const ready = name.trim().length > 0 && customReady && emailReady && webReady && (isEdit || !meta.testable || secret.trim().length > 0);
+  const ready = options.some(([option]) => option === provider) && name.trim().length > 0
+    && customReady && emailReady && webReady && (isEdit || !meta.testable || secret.trim().length > 0);
 
   async function submit() {
     if (!ready) return;

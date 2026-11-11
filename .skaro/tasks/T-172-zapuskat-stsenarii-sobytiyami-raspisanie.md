@@ -9,6 +9,7 @@ order: 7
 spec: "0037"
 created: 2026-10-17
 branch: skaro/T-172-zapuskat-stsenarii-sobytiyami
+archived: true
 ---
 
 ## Цель

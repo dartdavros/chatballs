@@ -13,7 +13,10 @@ import { RunsWorkspace } from "../runs/RunsWorkspace";
 
 export function ScenariosWorkspace({ initial }: { initial?: string }) {
   const editor = useScenarioEditor(initial);
-  const [journal, setJournal] = useState(new URLSearchParams(location.search).has("runs"));
+  const [journal, setJournal] = useState(() => {
+    const query = new URLSearchParams(location.search);
+    return query.has("runs") || query.has("run");
+  });
   const showJournal = (show: boolean) => { const url = new URL(location.href); if (show) url.searchParams.set("runs", "1"); else { url.searchParams.delete("runs"); url.searchParams.delete("run"); } history.replaceState(history.state, "", url); setJournal(show); };
   const [deleting, setDeleting] = useState(false);
   if (journal) return <RunsWorkspace onScenarios={() => showJournal(false)} />;

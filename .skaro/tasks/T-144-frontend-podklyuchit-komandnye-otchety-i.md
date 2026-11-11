@@ -12,6 +12,7 @@ order: 9
 spec: "0029"
 created: 2026-10-07
 branch: skaro/T-144-frontend-podklyuchit-komandnye
+archived: true
 ---
 
 ## Цель

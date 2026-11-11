@@ -8,6 +8,7 @@ order: 12
 spec: "0037"
 created: 2026-11-05
 branch: skaro/T-183-ubrat-dlinnye-katalogi-iz-kart
+archived: true
 ---
 
 ## Цель

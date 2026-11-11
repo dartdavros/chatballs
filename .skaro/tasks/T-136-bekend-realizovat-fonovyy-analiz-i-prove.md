@@ -13,6 +13,7 @@ order: 3
 spec: "0033"
 created: 2026-10-07
 branch: skaro/T-136-bekend-realizovat-analiz-kache
+archived: true
 ---
 
 ## Цель

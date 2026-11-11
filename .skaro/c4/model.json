@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "revision": 32,
+  "revision": 34,
   "title": "Chatballs — архитектура контакт-центра",
   "elements": [
     {
@@ -34,7 +34,7 @@
       "technology": "Python / Django, React / TypeScript, PostgreSQL",
       "planned": {
         "name": "Chatballs",
-        "description": "Контакт-центр с расширяемыми интеграциями: сервисные операции и все публичные действия Chatballs, готовые и пользовательские сценарии, общий устойчивый исполнитель. Собственная CRM не вводится.",
+        "description": "Контакт-центр с расширяемыми интеграциями: сервисные операции и все публичные действия Chatballs, готовые и пользовательские сценарии, общий устойчивый исполнитель. Собственная CRM не вводится. SPEC-0041: полный внешний автономный исполнитель с согласованным исходным обменом, файлами/историей/форматами и STT→wasVoice.",
         "code": [
           "apps/backend/chatballs_backend/asgi_app.py",
           "apps/internal-ui/src/main.tsx",
@@ -50,7 +50,11 @@
           "apps/web-chat",
           "compose.yaml",
           ".skaro/brief.md",
-          ".skaro/architecture.md"
+          ".skaro/architecture.md",
+          ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+          ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+          ".skaro/docs/external-agent-contract-v1.md",
+          "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
         ],
         "decisions": [
           "0005",
@@ -58,7 +62,8 @@
           "0019",
           "0020",
           "0023",
-          "0038"
+          "0038",
+          "0041"
         ]
       }
     },
@@ -388,7 +393,37 @@
         "0028"
       ],
       "parent": "system-chatballs",
-      "technology": "Python / Django / DRF / Channels / ASGI"
+      "technology": "Python / Django / DRF / Channels / ASGI",
+      "planned": {
+        "name": "Django-приложение",
+        "description": "Единый доменный код. Развёртывается отдельными процессами backend-app, backend-platform, backend-admin, worker и worker-events с различными поверхностями и ролями БД. SPEC-0041: внешний runtime в том же монолите, API backend-app и штатные worker-events без нового сервиса.",
+        "parent": "system-chatballs",
+        "technology": "Python / Django / DRF / Channels / ASGI",
+        "code": [
+          "apps/backend/chatballs/conversations/ingest.py",
+          "apps/backend/chatballs/events/handlers.py",
+          "apps/backend/chatballs_backend/asgi_app.py",
+          "apps/backend/chatballs_backend/settings_base.py",
+          "compose.yaml"
+        ],
+        "evidence": [
+          "apps/backend/chatballs",
+          "apps/backend/chatballs_backend",
+          "compose.yaml",
+          ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+          ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+          ".skaro/docs/external-agent-contract-v1.md",
+          "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+        ],
+        "decisions": [
+          "0005",
+          "0012",
+          "0013",
+          "0026",
+          "0028",
+          "0041"
+        ]
+      }
     },
     {
       "id": "container-workbench",
@@ -506,7 +541,35 @@
         "0034"
       ],
       "parent": "system-chatballs",
-      "technology": "PostgreSQL 16 / pgvector / FTS / RLS"
+      "technology": "PostgreSQL 16 / pgvector / FTS / RLS",
+      "planned": {
+        "name": "База данных",
+        "description": "Единственная PostgreSQL: доменные данные, tenant-RLS, inbox/outbox, FTS и векторы знаний. Runtime-роли app/platform отделены от migration; порт на хост не опубликован. SPEC-0041: RLS session/request/receipt/delivery и encrypted snapshots, новая БД не нужна.",
+        "parent": "system-chatballs",
+        "technology": "PostgreSQL 16 / pgvector / FTS / RLS",
+        "code": [
+          "compose.yaml",
+          "deploy/postgres/init-runtime-roles.sh",
+          "apps/backend/chatballs/tenancy/migrations/0001_initial.py",
+          "apps/backend/chatballs/tenancy/migrations/0002_cross_tenant_constraints.py"
+        ],
+        "evidence": [
+          "compose.yaml",
+          "deploy/postgres",
+          "apps/backend/chatballs/tenancy/migrations",
+          ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+          ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+          ".skaro/docs/external-agent-contract-v1.md",
+          "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+        ],
+        "decisions": [
+          "0007",
+          "0012",
+          "0026",
+          "0034",
+          "0041"
+        ]
+      }
     },
     {
       "id": "container-redis",
@@ -790,7 +853,34 @@
         "0037"
       ],
       "parent": "container-backend",
-      "technology": "Python / Django"
+      "technology": "Python / Django",
+      "planned": {
+        "name": "Маршрут и режим работы",
+        "description": "Channel — внутренняя основа маршрута, AIAgent необязателен. Политика AI_AGENTS/OPERATORS_ONLY, версия режима и переход открытых диалогов в очередь. SPEC-0041: readiness зависит от builtin LLM либо explicit external connection; общие ограничения сохраняются.",
+        "parent": "container-backend",
+        "technology": "Python / Django",
+        "code": [
+          "apps/backend/chatballs/channels/models.py",
+          "apps/backend/chatballs/channels/services.py",
+          "apps/backend/chatballs/identity/operation_modes.py",
+          "apps/backend/chatballs/integrations/operator_routes.py"
+        ],
+        "evidence": [
+          "apps/backend/chatballs/channels",
+          "apps/backend/chatballs/identity/operation_modes.py",
+          "apps/backend/chatballs/integrations/operator_routes.py",
+          ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+          ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+          ".skaro/docs/external-agent-contract-v1.md",
+          "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+        ],
+        "decisions": [
+          "0019",
+          "0023",
+          "0037",
+          "0041"
+        ]
+      }
     },
     {
       "id": "component-integrations",
@@ -820,7 +910,7 @@
       "technology": "Python / Django",
       "planned": {
         "name": "Конфигурация интеграций",
-        "description": "Существующее приложение integrations сохраняет подключения и секреты, получает третий вид SERVICE с общим ADAPTER и модули механизма. Старые HTTP/MCP не приобретают новые права автоматически.",
+        "description": "Существующее приложение integrations сохраняет подключения и секреты, получает третий вид SERVICE с общим ADAPTER и модули механизма. Старые HTTP/MCP не приобретают новые права автоматически. SPEC-0041: профиль SERVICE/ADAPTER external_agent_v1 с общими секретами/сетью; внутренний протокол не выдаёт новые business actions.",
         "code": [
           "apps/backend/chatballs/integrations/models.py",
           "apps/backend/chatballs/integrations/services.py",
@@ -832,7 +922,11 @@
           ".skaro/docs/service-integrations-c4.md",
           "apps/backend/chatballs/integrations/models.py",
           "apps/backend/chatballs/integrations/services.py",
-          "apps/backend/chatballs/integrations/checking.py"
+          "apps/backend/chatballs/integrations/checking.py",
+          ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+          ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+          ".skaro/docs/external-agent-contract-v1.md",
+          "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
         ],
         "decisions": [
           "0008",
@@ -840,7 +934,8 @@
           "0015",
           "0032",
           "0037",
-          "0038"
+          "0038",
+          "0041"
         ]
       }
     },
@@ -902,7 +997,41 @@
         "0037"
       ],
       "parent": "container-backend",
-      "technology": "Python / Django"
+      "technology": "Python / Django",
+      "planned": {
+        "name": "Контакты и диалоги",
+        "description": "Идемпотентный приём, идентичности, история, сообщения, жизненный цикл, очередь, атомарный claim/возврат, метки и удаление. SPEC-0041: все поддержанные форматы, один Message/item и достоверная batch delivery; штатный handoff без employee impersonation.",
+        "parent": "container-backend",
+        "technology": "Python / Django",
+        "code": [
+          "apps/backend/chatballs/conversations/ingest.py",
+          "apps/backend/chatballs/conversations/lifecycle_services.py",
+          "apps/backend/chatballs/conversations/control_services.py",
+          "apps/backend/chatballs/conversations/deletion.py",
+          "apps/backend/chatballs/conversations/contact_models.py"
+        ],
+        "evidence": [
+          "apps/backend/chatballs/conversations/ingest.py",
+          "apps/backend/chatballs/conversations/lifecycle_services.py",
+          "apps/backend/chatballs/conversations/control_services.py",
+          "apps/backend/chatballs/conversations/deletion.py",
+          "apps/backend/chatballs/conversations/contact_models.py",
+          ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+          ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+          ".skaro/docs/external-agent-contract-v1.md",
+          "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+        ],
+        "decisions": [
+          "0001",
+          "0002",
+          "0003",
+          "0019",
+          "0021",
+          "0023",
+          "0037",
+          "0041"
+        ]
+      }
     },
     {
       "id": "component-collaboration",
@@ -1012,7 +1141,7 @@
       "technology": "Python / Django ORM",
       "planned": {
         "name": "Надёжные события и фоновые роли",
-        "description": "Штатные inbox/outbox, lease и worker получают отдельные типы заданий сценариев; существующие обработчики и правила сохраняются. Ограниченные порции работы обеспечивают обслуживание сообщений и ИИ.",
+        "description": "Штатные inbox/outbox, lease и worker получают отдельные типы заданий сценариев; существующие обработчики и правила сохраняются. Ограниченные порции работы обеспечивают обслуживание сообщений и ИИ. SPEC-0041: ID-only jobs для durable FIFO/async/recovery; worker освобождён в ожидании сервиса.",
         "code": [
           "apps/backend/chatballs/events/models.py",
           "apps/backend/chatballs/events/services.py",
@@ -1023,12 +1152,17 @@
           ".skaro/adr/0038-servisnye-adaptery-i-ustoychivye-stsenarii.md",
           ".skaro/docs/service-integrations-c4.md",
           "apps/backend/chatballs/events",
-          "apps/backend/chatballs/events/management/commands/run_worker.py"
+          "apps/backend/chatballs/events/management/commands/run_worker.py",
+          ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+          ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+          ".skaro/docs/external-agent-contract-v1.md",
+          "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
         ],
         "decisions": [
           "0028",
           "0034",
-          "0038"
+          "0038",
+          "0041"
         ]
       }
     },
@@ -1067,7 +1201,7 @@
       "technology": "Python / Django",
       "planned": {
         "name": "Конфигурация и ход агента",
-        "description": "Существующий runtime получает явно разрешённые сервисные действия/сценарии: псевдонимизация, политика подтверждений, асинхронный результат и повторная проверка управления перед поздней отправкой.",
+        "description": "Существующий runtime получает явно разрешённые сервисные действия/сценарии: псевдонимизация, политика подтверждений, асинхронный результат и повторная проверка управления перед поздней отправкой. SPEC-0041: ветвление builtin/external до embeddings/LLM, отдельный STT для внешнего режима, без fallback.",
         "code": [
           "apps/backend/chatballs/ai/turn.py",
           "apps/backend/chatballs/ai/tool_loop.py",
@@ -1081,7 +1215,11 @@
           "apps/backend/chatballs/ai/turn.py",
           "apps/backend/chatballs/ai/tool_loop.py",
           "apps/backend/chatballs/ai/agent_card.py",
-          "apps/backend/chatballs/conversations/ai_turn.py"
+          "apps/backend/chatballs/conversations/ai_turn.py",
+          ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+          ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+          ".skaro/docs/external-agent-contract-v1.md",
+          "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
         ],
         "decisions": [
           "0002",
@@ -1094,7 +1232,8 @@
           "0032",
           "0036",
           "0037",
-          "0038"
+          "0038",
+          "0041"
         ]
       }
     },
@@ -1180,7 +1319,36 @@
         "0036"
       ],
       "parent": "container-backend",
-      "technology": "Python / ограниченный язык шаблонов"
+      "technology": "Python / ограниченный язык шаблонов",
+      "planned": {
+        "name": "Навыки и серверные шаблоны",
+        "description": "Общая tenant-библиотека, ревизии, явные связи с агентом, загрузка по выбору модели, безопасные HTML/CSS/text-шаблоны и самодостаточный снимок ответа. SPEC-0041: общий schema/render/sanitization для явно разрешённых внешних шаблонов, без экспорта skill instructions/tools.",
+        "parent": "container-backend",
+        "technology": "Python / ограниченный язык шаблонов",
+        "code": [
+          "apps/backend/chatballs/ai/skills_service.py",
+          "apps/backend/chatballs/ai/skills_preview.py",
+          "apps/backend/chatballs/ai/turn_skills.py",
+          "apps/backend/chatballs/ai/turn_templates.py",
+          "apps/backend/chatballs/ai/skill_templates/engine.py",
+          "apps/backend/chatballs/ai/skill_templates/html_policy.py"
+        ],
+        "evidence": [
+          "apps/backend/chatballs/ai/skills_service.py",
+          "apps/backend/chatballs/ai/skills_preview.py",
+          "apps/backend/chatballs/ai/turn_skills.py",
+          "apps/backend/chatballs/ai/turn_templates.py",
+          "apps/backend/chatballs/ai/skill_templates",
+          ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+          ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+          ".skaro/docs/external-agent-contract-v1.md",
+          "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+        ],
+        "decisions": [
+          "0036",
+          "0041"
+        ]
+      }
     },
     {
       "id": "component-assistance",
@@ -1690,7 +1858,9 @@
       ],
       "planned": {
         "name": "Агенты и проверочный чат",
-        "description": "Карточка, модели ответов/расшифровки, инструменты, знания, навыки и независимая помощь оператору. Три режима новых действий и явные preview/execute согласно принятому baseline.",
+        "description": "Карточка, модели ответов/расшифровки, инструменты, знания, навыки и независимая помощь оператору. Три режима новых действий и явные preview/execute согласно принятому baseline. SPEC-0041: режим/данные/форматы/STT/проверка внешнего исполнения после отдельного baseline.",
+        "parent": "container-workbench",
+        "technology": "React / TypeScript",
         "code": [
           "apps/internal-ui/src/features/agents/AgentDetailPage.tsx",
           "apps/internal-ui/src/features/agents/AgentHeader.tsx",
@@ -1702,7 +1872,11 @@
           "docs/service-agent-runtime.md",
           ".skaro/adr/0038-servisnye-adaptery-i-ustoychivye-stsenarii.md",
           "apps/internal-ui/src/features/agents/actions",
-          "apps/internal-ui/src/features/agents/test-chat"
+          "apps/internal-ui/src/features/agents/test-chat",
+          ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+          ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+          ".skaro/docs/external-agent-contract-v1.md",
+          "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
         ],
         "decisions": [
           "0009",
@@ -1710,10 +1884,9 @@
           "0032",
           "0036",
           "0037",
-          "0038"
-        ],
-        "technology": "React / TypeScript",
-        "parent": "container-workbench"
+          "0038",
+          "0041"
+        ]
       }
     },
     {
@@ -1743,7 +1916,7 @@
       ],
       "planned": {
         "name": "Настройки подключений",
-        "description": "Существующий раздел подключений с третьей группой «Сервисы», каталогом реально установленных адаптеров, готовыми сценариями и общим редактором. Конкретный вид утверждается личной приёмкой baseline.",
+        "description": "Существующий раздел подключений с третьей группой «Сервисы», каталогом реально установленных адаптеров, готовыми сценариями и общим редактором. Конкретный вид утверждается личной приёмкой baseline. SPEC-0041: scoped external connection в существующем сервисном разделе после baseline.",
         "code": [
           "apps/internal-ui/src/features/integrations/AddIntegrationButton.tsx",
           "apps/internal-ui/src/features/integrations/appearance/AppearancePreview.tsx"
@@ -1752,7 +1925,11 @@
           ".skaro/specs/0037-rasshiryaemye-integratsii-servisov-i-sts.md",
           ".skaro/adr/0038-servisnye-adaptery-i-ustoychivye-stsenarii.md",
           ".skaro/docs/service-integrations-c4.md",
-          "apps/internal-ui/src/features/integrations"
+          "apps/internal-ui/src/features/integrations",
+          ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+          ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+          ".skaro/docs/external-agent-contract-v1.md",
+          "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
         ],
         "decisions": [
           "0008",
@@ -1762,7 +1939,8 @@
           "0031",
           "0032",
           "0037",
-          "0038"
+          "0038",
+          "0041"
         ]
       }
     },
@@ -2177,7 +2355,32 @@
         "apps/backend/chatballs/channels/models.py",
         "apps/backend/chatballs/identity/operation_modes.py",
         "apps/backend/chatballs/integrations/operator_routes.py"
-      ]
+      ],
+      "planned": {
+        "name": "Channel и автономная политика",
+        "description": "Связь Channel 1 — 0..1 AIAgent, независимые подключения, версия режима и сериализация смены. SPEC-0041: внешние authorizationId/монотонная ревизия, общий OPERATORS_ONLY/control/fencing до фактического эффекта.",
+        "parent": "component-routing",
+        "technology": "Python",
+        "code": [
+          "apps/backend/chatballs/channels/models.py",
+          "apps/backend/chatballs/identity/operation_modes.py",
+          "apps/backend/chatballs/integrations/operator_routes.py"
+        ],
+        "evidence": [
+          "apps/backend/chatballs/channels/models.py",
+          "apps/backend/chatballs/identity/operation_modes.py",
+          "apps/backend/chatballs/integrations/operator_routes.py",
+          ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+          ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+          ".skaro/docs/external-agent-contract-v1.md",
+          "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+        ],
+        "decisions": [
+          "0019",
+          "0037",
+          "0041"
+        ]
+      }
     },
     {
       "id": "code-integration",
@@ -2203,7 +2406,41 @@
         "apps/backend/chatballs/integrations/models.py",
         "apps/backend/chatballs/integrations/checking.py",
         "apps/backend/chatballs/identity/crypto.py"
-      ]
+      ],
+      "planned": {
+        "name": "Integration и проверка подключения",
+        "description": "Шифрованные credentials и проверка состояния отдельны от активности подключения. SPEC-0041 R-33: штатное сохранение WEB-определений атомарно обновляет отдельную durable generation для внешнего export binding; existing LLM/SPEECH runtime_revision не подменяет WEB-generation, публичный setFields сохраняется.",
+        "parent": "component-integrations",
+        "technology": "Python",
+        "code": [
+          "apps/backend/chatballs/integrations/models.py",
+          "apps/backend/chatballs/integrations/checking.py",
+          "apps/backend/chatballs/identity/crypto.py"
+        ],
+        "evidence": [
+          "apps/backend/chatballs/integrations/models.py",
+          "apps/backend/chatballs/integrations/checking.py",
+          "apps/backend/chatballs/identity/crypto.py",
+          ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md#R-29–R-34",
+          ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+          ".skaro/docs/external-agent-contract-v1.md",
+          ".skaro/docs/gocostack-autonomous-agent-integration.md",
+          "apps/backend/chatballs/conversations/contact_models.py",
+          "apps/backend/chatballs/webchat/field_schema.py",
+          "apps/backend/chatballs/webchat/field_values.py",
+          "apps/backend/chatballs/webchat/site_fields.py",
+          "apps/backend/chatballs/integrations/services.py",
+          "apps/backend/chatballs/integrations/web_config.py",
+          "apps/backend/chatballs/integrations/runtime.py"
+        ],
+        "decisions": [
+          "0008",
+          "0014",
+          "0015",
+          "0032",
+          "0041"
+        ]
+      }
     },
     {
       "id": "code-ingest",
@@ -2483,9 +2720,9 @@
       ],
       "planned": {
         "name": "run_requested_turn",
-        "description": "Короткие tenant-транзакции вокруг планирования/фиксации; сетевые вызовы между ними, проверка modeVersion и срока. Планируется инициация первого хода разрешённым сценарием без фиктивной реплики клиента; прежние guard/fencing сохраняются. T-173: монотонное управление, актуальный агент/конфигурация и использованные Run проверяются перед фиксацией и доставкой. Перехват с возвратом не оживляет старый ответ.",
-        "technology": "Python",
+        "description": "Короткие tenant-транзакции вокруг планирования/фиксации; сетевые вызовы между ними, проверка modeVersion и срока. Планируется инициация первого хода разрешённым сценарием без фиктивной реплики клиента; прежние guard/fencing сохраняются. T-173: монотонное управление, актуальный агент/конфигурация и использованные Run проверяются перед фиксацией и доставкой. Перехват с возвратом не оживляет старый ответ. SPEC-0041: ранний выбор внешнего dispatch, durable callback ожидание и переиспользование delivery guards; внешние сообщения не парсят LLM control tokens.",
         "parent": "component-ai",
+        "technology": "Python",
         "code": [
           "apps/backend/chatballs/conversations/ai_turn.py",
           "apps/backend/chatballs/conversations/ai_turn_completion.py",
@@ -2501,14 +2738,19 @@
           ".skaro/specs/0040-priglasheniya-i-pervyy-otvet-po-sobytiyu-sayta.md",
           ".skaro/adr/0040-sobytiya-sayta-i-pervyy-kontakt-agenta.md",
           "docs/service-agent-runtime.md",
-          ".skaro/adr/0038-servisnye-adaptery-i-ustoychivye-stsenarii.md"
+          ".skaro/adr/0038-servisnye-adaptery-i-ustoychivye-stsenarii.md",
+          ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+          ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+          ".skaro/docs/external-agent-contract-v1.md",
+          "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
         ],
         "decisions": [
           "0028",
           "0031",
           "0037",
           "0040",
-          "0038"
+          "0038",
+          "0041"
         ]
       }
     },
@@ -5228,7 +5470,46 @@
         "0039"
       ],
       "state": "current",
-      "external": false
+      "external": false,
+      "planned": {
+        "name": "Речевые способности и адаптеры",
+        "description": "Речевые contracts/routing/errors/formats, STT/TTS и bounded I/O без DB-транзакции, нормализация без постоянных файлов. SPEC-0041: существующий STT расшифровывает входящий voice внешнего агента до dispatch; text+wasVoice без передачи audio сервису.",
+        "parent": "container-backend",
+        "technology": "Python / Django / HTTPX / FFmpeg",
+        "code": [
+          "apps/backend/chatballs/speech/contracts.py",
+          "apps/backend/chatballs/speech/routing.py",
+          "apps/backend/chatballs/speech/formats.py",
+          "apps/backend/chatballs/speech/providers/yandex_stt.py",
+          "apps/backend/chatballs/speech/providers/yandex_tts.py",
+          "apps/backend/chatballs/speech/synthesis.py",
+          "apps/backend/chatballs/speech/concurrency.py",
+          "apps/backend/chatballs/speech/checking.py"
+        ],
+        "evidence": [
+          ".skaro/specs/0039-golosovoy-vvod-i-ozvuchivanie-veb-vidzheta.md",
+          ".skaro/adr/0039-rechevye-provaydery-diktovka-i-ozvuchivanie.md",
+          "apps/backend/chatballs/conversations/transcription.py",
+          "apps/backend/chatballs/speech/contracts.py",
+          "apps/backend/chatballs/speech/routing.py",
+          "apps/backend/chatballs/speech/formats.py",
+          "apps/backend/chatballs/speech/providers/yandex_stt.py",
+          "apps/backend/chatballs/speech/providers/yandex_tts.py",
+          "apps/backend/chatballs/speech/synthesis.py",
+          "apps/backend/chatballs/speech/concurrency.py",
+          "apps/backend/chatballs/speech/checking.py",
+          "docs/verification/T-178/README.md",
+          "docs/verification/T-179/README.md",
+          ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+          ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+          ".skaro/docs/external-agent-contract-v1.md",
+          "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+        ],
+        "decisions": [
+          "0039",
+          "0041"
+        ]
+      }
     },
     {
       "id": "widget-speech",
@@ -6370,6 +6651,447 @@
       "decisions": [
         "0038",
         "0012"
+      ]
+    },
+    {
+      "id": "external-autonomous-agent",
+      "kind": "system",
+      "name": "Автономный агент заказчика",
+      "description": "Собственные LLM, знания, инструменты и память. Внешняя граница ответственности; Chatballs не выбирает внутреннюю архитектуру заказчика. Согласованный HTTP API request/status/cancel/callback поддерживает полный обмен форматами и durable idempotency до side effects.",
+      "state": "planned",
+      "external": true,
+      "technology": "HTTPS / внутренняя технология заказчика",
+      "code": [],
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "deployment-external-agent-endpoint",
+      "kind": "deployment-node",
+      "name": "HTTPS endpoint заказчика",
+      "description": "Внешняя сетевая точка. Топология/хостинг заказчика не заданы и не изобретаются.",
+      "state": "planned",
+      "external": true,
+      "technology": "HTTPS endpoint площадки заказчика",
+      "code": [],
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "component-external-agent",
+      "kind": "component",
+      "name": "Исполнитель внешнего агента",
+      "description": "Полный автономный контур: согласованные исходные данные, очередь, callbacks, восстановление, история/файлы, STT→текст, шаблоны, составные ответы и handoff без промежуточной LLM. Кастомные поля передаются отдельным полным типизированным replace-снимком без коллизий источников и без обратной записи.",
+      "state": "planned",
+      "external": false,
+      "parent": "container-backend",
+      "technology": "Python / Django",
+      "code": [
+        "apps/backend/chatballs/ai/external_agents/dispatch.py",
+        "apps/backend/chatballs/ai/external_agents/ingress.py"
+      ],
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs",
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md#R-29–R-34",
+        ".skaro/docs/gocostack-autonomous-agent-integration.md",
+        "apps/backend/chatballs/conversations/contact_models.py",
+        "apps/backend/chatballs/webchat/field_schema.py",
+        "apps/backend/chatballs/webchat/field_values.py",
+        "apps/backend/chatballs/webchat/site_fields.py"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "code-external-agent-config",
+      "kind": "code",
+      "name": "Конфигурация и доверенная граница",
+      "description": "builtin/external, монотонная ревизия, SERVICE/ADAPTER профиль, scoped Bearer, allowlist/consent, permissions и management API. Стандартные/custom allowlist раздельны; custom refs указывают WEB sourceConnectionId+fieldId. Схемы и состав экспорта входят в текущий fingerprint политики.",
+      "state": "planned",
+      "external": false,
+      "parent": "component-external-agent",
+      "technology": "Python / Django",
+      "code": [
+        "apps/backend/chatballs/ai/external_agents/config.py",
+        "apps/backend/chatballs/ai/external_agents/config_models.py",
+        "apps/backend/chatballs/ai/external_agents/config_views.py",
+        "apps/backend/chatballs/ai/external_agents/adapter.py",
+        "apps/backend/chatballs/ai/external_agents/auth.py"
+      ],
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs",
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md#R-29–R-34",
+        ".skaro/docs/gocostack-autonomous-agent-integration.md",
+        "apps/backend/chatballs/conversations/contact_models.py",
+        "apps/backend/chatballs/webchat/field_schema.py",
+        "apps/backend/chatballs/webchat/field_values.py",
+        "apps/backend/chatballs/webchat/site_fields.py"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "code-external-agent-contract",
+      "kind": "code",
+      "name": "Контракт и schemas",
+      "description": "Схемы всех content types, requests/results/batches, version и digest; OpenAPI контракта. AgentRequest.customer.customFields обязателен, содержит snapshotId/capturedAt/scope/items и set/unset/invalid; NULL/0/false/пустая строка различаются.",
+      "state": "planned",
+      "external": false,
+      "parent": "component-external-agent",
+      "technology": "Python / Django",
+      "code": [
+        "apps/backend/chatballs/ai/external_agents/contracts.py",
+        "packages/contracts/external-agent-v1.openapi.yaml"
+      ],
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs",
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md#R-29–R-34",
+        ".skaro/docs/gocostack-autonomous-agent-integration.md",
+        "apps/backend/chatballs/conversations/contact_models.py",
+        "apps/backend/chatballs/webchat/field_schema.py",
+        "apps/backend/chatballs/webchat/field_values.py",
+        "apps/backend/chatballs/webchat/site_fields.py"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "code-external-agent-state",
+      "kind": "code",
+      "name": "Сессии, запросы и квитанции",
+      "description": "RLS, encrypted snapshot, authorizationId, FIFO/checkpoints/leases/fencing, delivery items и retention/dedup. Хранит CustomFieldsSnapshot в том же encrypted immutable request; не изобретает clearedAt или новые source values.",
+      "state": "planned",
+      "external": false,
+      "parent": "component-external-agent",
+      "technology": "Python / Django",
+      "code": [
+        "apps/backend/chatballs/ai/external_agents/session_models.py",
+        "apps/backend/chatballs/ai/external_agents/request_models.py",
+        "apps/backend/chatballs/ai/external_agents/receipt_models.py",
+        "apps/backend/chatballs/ai/external_agents/delivery_models.py",
+        "apps/backend/chatballs/ai/external_agents/access_models.py"
+      ],
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs",
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md#R-29–R-34",
+        ".skaro/docs/gocostack-autonomous-agent-integration.md",
+        "apps/backend/chatballs/conversations/contact_models.py",
+        "apps/backend/chatballs/webchat/field_schema.py",
+        "apps/backend/chatballs/webchat/field_values.py",
+        "apps/backend/chatballs/webchat/site_fields.py"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "code-external-agent-dispatch",
+      "kind": "code",
+      "name": "Dispatch и согласованный контекст",
+      "description": "Короткие транзакции вокруг request/status/cancel/capabilities; исходный контекст головы очереди, сеть вне транзакции. Формирует актуальный CustomFieldsSnapshot до первого HTTP, повтор использует исходный snapshot и digest; изменение значения само не запускает новый ход.",
+      "state": "planned",
+      "external": false,
+      "parent": "component-external-agent",
+      "technology": "Python / Django",
+      "code": [
+        "apps/backend/chatballs/ai/external_agents/dispatch.py",
+        "apps/backend/chatballs/ai/external_agents/context.py"
+      ],
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs",
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md#R-29–R-34",
+        ".skaro/docs/gocostack-autonomous-agent-integration.md",
+        "apps/backend/chatballs/conversations/contact_models.py",
+        "apps/backend/chatballs/webchat/field_schema.py",
+        "apps/backend/chatballs/webchat/field_values.py",
+        "apps/backend/chatballs/webchat/site_fields.py"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "code-external-agent-ingress",
+      "kind": "code",
+      "name": "Приём результата и инициативы",
+      "description": "Credential→tenant, sync/callback одна машина receipt, ранние/поздние/спорящие результаты и durable ACK. Отзыв/изменение схемы экспорта отсекают применение старого результата через current fingerprint; patch кастомных полей не разрешён.",
+      "state": "planned",
+      "external": false,
+      "parent": "component-external-agent",
+      "technology": "Python / Django",
+      "code": [
+        "apps/backend/chatballs/ai/external_agents/urls.py",
+        "apps/backend/chatballs/ai/external_agents/views.py",
+        "apps/backend/chatballs/ai/external_agents/ingress.py"
+      ],
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs",
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md#R-29–R-34",
+        ".skaro/docs/gocostack-autonomous-agent-integration.md",
+        "apps/backend/chatballs/conversations/contact_models.py",
+        "apps/backend/chatballs/webchat/field_schema.py",
+        "apps/backend/chatballs/webchat/field_values.py",
+        "apps/backend/chatballs/webchat/site_fields.py"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "code-external-agent-recovery",
+      "kind": "code",
+      "name": "Восстановление и сроки",
+      "description": "ID-only jobs штатного outbox, polls/retry/deadline/cancel/retention, отсутствие повторного бизнеса при unknown.",
+      "state": "planned",
+      "external": false,
+      "parent": "component-external-agent",
+      "technology": "Python / Django",
+      "code": [
+        "apps/backend/chatballs/ai/external_agents/recovery.py",
+        "apps/backend/chatballs/ai/external_agents/event_handlers.py",
+        "apps/backend/chatballs/ai/external_agents/retention.py"
+      ],
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "code-external-agent-delivery",
+      "kind": "code",
+      "name": "Доставка наборов и handoff",
+      "description": "Один Message на itemId, актуальная авторизация перед каждым эффектом, snapshots/файлы/contact_request, partial/unknown и очередь сотрудника. Проверяет fingerprint действующей схемы/allowlist перед каждым исходящим эффектом, включая инициативу.",
+      "state": "planned",
+      "external": false,
+      "parent": "component-external-agent",
+      "technology": "Python / Django",
+      "code": [
+        "apps/backend/chatballs/ai/external_agents/delivery.py",
+        "apps/backend/chatballs/ai/external_agents/handoff.py",
+        "apps/backend/chatballs/ai/external_agents/batch_delivery.py"
+      ],
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs",
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md#R-29–R-34",
+        ".skaro/docs/gocostack-autonomous-agent-integration.md",
+        "apps/backend/chatballs/conversations/contact_models.py",
+        "apps/backend/chatballs/webchat/field_schema.py",
+        "apps/backend/chatballs/webchat/field_values.py",
+        "apps/backend/chatballs/webchat/site_fields.py"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "code-external-agent-files",
+      "kind": "code",
+      "name": "Защищённый обмен файлами",
+      "description": "Scoped streaming upload/download через tenant storage, реальные лимиты/валидация, idempotent uploadId, staging cleanup без потери активных файлов и запрет исходного audio.",
+      "state": "planned",
+      "external": false,
+      "parent": "component-external-agent",
+      "technology": "Python / Django",
+      "code": [
+        "apps/backend/chatballs/ai/external_agents/file_views.py",
+        "apps/backend/chatballs/ai/external_agents/file_access.py",
+        "apps/backend/chatballs/ai/external_agents/file_uploads.py",
+        "apps/backend/chatballs/conversations/attachment_policy.py",
+        "apps/backend/chatballs/tenancy/storage_backends.py"
+      ],
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "code-external-agent-history",
+      "kind": "code",
+      "name": "Публичная история и resync",
+      "description": "Постраничный snapshot своего диалога/очереди/политики, устойчивые ID, все форматы и wasVoice; без комментариев/будущих входящих/воскрешения удалённого.",
+      "state": "planned",
+      "external": false,
+      "parent": "component-external-agent",
+      "technology": "Python / Django",
+      "code": [
+        "apps/backend/chatballs/ai/external_agents/history.py",
+        "apps/backend/chatballs/ai/external_agents/history_views.py"
+      ],
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "code-external-agent-content",
+      "kind": "code",
+      "name": "Нормализация и оформленные ответы",
+      "description": "Штатный STT до dispatch с wasVoice; разрешённые схемы шаблонов и revision, общий renderer и immutable snapshot; raw JS/srcDoc не принимается.",
+      "state": "planned",
+      "external": false,
+      "parent": "component-external-agent",
+      "technology": "Python / Django",
+      "code": [
+        "apps/backend/chatballs/ai/external_agents/normalization.py",
+        "apps/backend/chatballs/ai/external_agents/formatted_replies.py",
+        "apps/backend/chatballs/ai/external_agents/template_views.py",
+        "apps/backend/chatballs/conversations/transcription.py",
+        "apps/backend/chatballs/ai/skill_templates/engine.py"
+      ],
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "ui-external-agent",
+      "kind": "component",
+      "name": "Настройка полного внешнего исполнения",
+      "description": "Композиция существующих агента/сервисной интеграции, данных, форматов, STT и диагностики только по отдельно лично принятому baseline. Выбор кастомных полей различает WEB-источник и ID поля; конкретные controls/layout остаются под прежним baseline gate.",
+      "state": "planned",
+      "external": false,
+      "parent": "container-workbench",
+      "technology": "React / TypeScript / shared controls",
+      "code": [
+        "apps/internal-ui/src/features/agents/external/ExternalAgentSettings.tsx",
+        "apps/internal-ui/src/features/integrations/external-agent/ExternalAgentConnectionFields.tsx"
+      ],
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs",
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md#R-29–R-34",
+        ".skaro/docs/gocostack-autonomous-agent-integration.md",
+        "apps/backend/chatballs/conversations/contact_models.py",
+        "apps/backend/chatballs/webchat/field_schema.py",
+        "apps/backend/chatballs/webchat/field_values.py",
+        "apps/backend/chatballs/webchat/site_fields.py"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "code-ui-external-agent",
+      "kind": "code",
+      "name": "Формы и модель внешней настройки",
+      "description": "Composition-only subviews и hook; конкретный layout/тексты/состояния ожидают отдельного baseline. Данные selector используют составные refs, не один key; реализация только после принятия baseline.",
+      "state": "planned",
+      "external": false,
+      "parent": "ui-external-agent",
+      "technology": "React / TypeScript",
+      "code": [
+        "apps/internal-ui/src/features/agents/external/ExternalAgentSettings.tsx",
+        "apps/internal-ui/src/features/agents/external/useExternalAgentSettings.ts",
+        "apps/internal-ui/src/features/integrations/external-agent/ExternalAgentConnectionFields.tsx"
+      ],
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs",
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md#R-29–R-34",
+        ".skaro/docs/gocostack-autonomous-agent-integration.md",
+        "apps/backend/chatballs/conversations/contact_models.py",
+        "apps/backend/chatballs/webchat/field_schema.py",
+        "apps/backend/chatballs/webchat/field_values.py",
+        "apps/backend/chatballs/webchat/site_fields.py"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "code-external-agent-custom-fields",
+      "kind": "code",
+      "name": "Проекция кастомных полей и схема снимка",
+      "description": "Read-only выбор ContactFieldValue по своему контакту/организации и разрешённым WEB-источникам; составная идентичность sourceConnectionId+fieldId, валидация текущей схемы, set/unset/invalid и immutable replace snapshot, fingerprint схемы/разрешений без повторного чтения значений в retry. Durable schema generation изменяется атомарно со штатным сохранением определений; защищает от невидимой A→B→A между dispatch.",
+      "state": "planned",
+      "external": false,
+      "parent": "component-external-agent",
+      "technology": "Python / Django / JSON Schema",
+      "code": [
+        "apps/backend/chatballs/ai/external_agents/custom_fields.py",
+        "apps/backend/chatballs/ai/external_agents/custom_field_contract.py",
+        "apps/backend/chatballs/ai/external_agents/custom_field_revisions.py",
+        "apps/backend/chatballs/ai/external_agents/custom_field_state.py"
+      ],
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md#R-29–R-34",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        ".skaro/docs/gocostack-autonomous-agent-integration.md",
+        "apps/backend/chatballs/conversations/contact_models.py",
+        "apps/backend/chatballs/webchat/field_schema.py",
+        "apps/backend/chatballs/webchat/field_values.py",
+        "apps/backend/chatballs/webchat/site_fields.py",
+        "apps/backend/chatballs/integrations/services.py",
+        "apps/backend/chatballs/integrations/web_config.py",
+        "apps/backend/chatballs/integrations/runtime.py"
+      ],
+      "decisions": [
+        "0041",
+        "0030",
+        "0031"
       ]
     }
   ],
@@ -14972,6 +15694,1192 @@
         "0038",
         "0012"
       ]
+    },
+    {
+      "id": "rel-external-system-request",
+      "source": "system-chatballs",
+      "target": "external-autonomous-agent",
+      "description": "Самостоятельное исполнение обращения с согласованными исходными данными.",
+      "technology": "HTTPS / JSON",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-system-result",
+      "source": "external-autonomous-agent",
+      "target": "system-chatballs",
+      "description": "Готовый результат, инициатива и handoff только в текущем разрешении.",
+      "technology": "HTTPS / Bearer",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-backend-request",
+      "source": "container-backend",
+      "target": "external-autonomous-agent",
+      "description": "Requests/status/cancel/capabilities через защищённый клиент.",
+      "technology": "HTTPS",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-api-gateway",
+      "source": "external-autonomous-agent",
+      "target": "container-gateway",
+      "description": "Callbacks, scoped file/history/template и отправки через штатный публичный API.",
+      "technology": "HTTPS",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-ai",
+      "source": "component-ai",
+      "target": "component-external-agent",
+      "description": "Выбирает внешний runtime до встроенной LLM.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-events",
+      "source": "component-events",
+      "target": "component-external-agent",
+      "description": "Запускает/восстанавливает durable jobs.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-config",
+      "source": "component-external-agent",
+      "target": "component-integrations",
+      "description": "Профиль/секреты/активность и ревизия подключения.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-policy",
+      "source": "component-external-agent",
+      "target": "component-routing",
+      "description": "Единая текущая автономия и управление.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-conversation",
+      "source": "component-external-agent",
+      "target": "component-conversations",
+      "description": "Публикует поддержанные сообщения и штатный handoff.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-state",
+      "source": "component-external-agent",
+      "target": "container-postgres",
+      "description": "RLS encrypted state и dedup.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-speech",
+      "source": "component-external-agent",
+      "target": "component-speech",
+      "description": "STT Chatballs → текст с wasVoice, не audio.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-templates",
+      "source": "component-external-agent",
+      "target": "component-skills",
+      "description": "Переиспользует renderer разрешённых шаблонов.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-remote",
+      "source": "component-external-agent",
+      "target": "external-autonomous-agent",
+      "description": "Исходные разрешённые форматы/контекст; sync/202/status/cancel.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-callback",
+      "source": "external-autonomous-agent",
+      "target": "component-external-agent",
+      "description": "Scoped result/proactive/history/files/templates/handoff.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-ui-config",
+      "source": "ui-external-agent",
+      "target": "component-external-agent",
+      "description": "Управляет внешней конфигурацией с правами организации.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-ui-agents",
+      "source": "ui-agents",
+      "target": "ui-external-agent",
+      "description": "Композиция существующей карточки только после baseline.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-ui-integrations",
+      "source": "ui-integrations",
+      "target": "ui-external-agent",
+      "description": "Композиция SERVICE-настройки только после baseline.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-code-ui",
+      "source": "code-ui-external-agent",
+      "target": "code-external-agent-config",
+      "description": "Типизированный management API; секреты write-only.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-code-branch",
+      "source": "code-ai-orchestrator",
+      "target": "code-external-agent-dispatch",
+      "description": "Выбор внешнего dispatch до builtin pipeline.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-code-queue",
+      "source": "code-outbox",
+      "target": "code-external-agent-dispatch",
+      "description": "Берёт голову FIFO, регистрирует устойчивый request.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-code-config",
+      "source": "code-external-agent-dispatch",
+      "target": "code-external-agent-config",
+      "description": "Проверяет профиль/политику/ревизию и scoped доступ.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-code-contract",
+      "source": "code-external-agent-dispatch",
+      "target": "code-external-agent-contract",
+      "description": "Валидирует schemas/capabilities и immutable body.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-code-policy",
+      "source": "code-external-agent-dispatch",
+      "target": "code-routing-policy",
+      "description": "Проверяет mode/control/version до dispatch.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-code-snapshot",
+      "source": "code-external-agent-dispatch",
+      "target": "code-external-agent-state",
+      "description": "До HTTP фиксирует requestId/snapshot/deadline/claim.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-code-context",
+      "source": "code-external-agent-dispatch",
+      "target": "code-external-agent-history",
+      "description": "Собирает публичный snapshot без будущих входящих.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-code-normalize",
+      "source": "code-external-agent-dispatch",
+      "target": "code-external-agent-content",
+      "description": "Нормализует форматы, voice ждёт штатный STT.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-code-network",
+      "source": "code-external-agent-dispatch",
+      "target": "code-outbound",
+      "description": "Общие DNS/IP/redirect и ограничения private network.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-code-remote",
+      "source": "code-external-agent-dispatch",
+      "target": "external-autonomous-agent",
+      "description": "HTTP request/status/cancel с тем же ID.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-code-sync",
+      "source": "code-external-agent-dispatch",
+      "target": "code-external-agent-ingress",
+      "description": "Синхронный результат использует общий receipt path.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-code-callback",
+      "source": "external-autonomous-agent",
+      "target": "code-external-agent-ingress",
+      "description": "Ранние/поздние results и инициативные запросы.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-code-validate",
+      "source": "code-external-agent-ingress",
+      "target": "code-external-agent-contract",
+      "description": "Строгая схема content/batch/result; digest conflict.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-code-auth",
+      "source": "code-external-agent-ingress",
+      "target": "code-external-agent-config",
+      "description": "Bearer→tenant и текущее scoped authorization.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-code-admit",
+      "source": "code-external-agent-ingress",
+      "target": "code-routing-policy",
+      "description": "Проверяет current control/версии/busy перед эффектом.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-code-receipt",
+      "source": "code-external-agent-ingress",
+      "target": "code-external-agent-state",
+      "description": "Атомарная квитанция, дубль/конфликт/suppressed.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-code-enqueue",
+      "source": "code-external-agent-state",
+      "target": "code-outbox",
+      "description": "State+continuation before ACK; terminal checkpoint продвигает FIFO.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-code-resume",
+      "source": "code-outbox",
+      "target": "code-external-agent-recovery",
+      "description": "Запускает durable recovery/deadline/poll/cancel.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-code-recovery-state",
+      "source": "code-external-agent-recovery",
+      "target": "code-external-agent-state",
+      "description": "Lease/fencing и сроки, очистка не повторяет эффекты.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-code-retry",
+      "source": "code-external-agent-recovery",
+      "target": "code-external-agent-dispatch",
+      "description": "Исходный requestId/body, status после 202 и cancel при отзыве.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-code-publish",
+      "source": "code-external-agent-ingress",
+      "target": "code-external-agent-delivery",
+      "description": "Применяет валидный набор/handoff через общий delivery.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-code-send-policy",
+      "source": "code-external-agent-delivery",
+      "target": "code-routing-policy",
+      "description": "Перепроверяет актуальность перед каждым элементом/транспортом.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-code-message",
+      "source": "code-external-agent-delivery",
+      "target": "code-conversation-state",
+      "description": "Один Message/item и достоверные состояния.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-code-route",
+      "source": "code-external-agent-delivery",
+      "target": "code-ai-orchestrator",
+      "description": "Штатная защищённая доставка/transports, без фиктивного входящего.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-code-handoff",
+      "source": "code-external-agent-delivery",
+      "target": "code-control",
+      "description": "Структурированная передача в существующую очередь.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-code-revoke",
+      "source": "code-control",
+      "target": "code-external-agent-state",
+      "description": "Перехват/закрытие/возврат аннулируют прежнюю авторизацию.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-code-files",
+      "source": "code-external-agent-ingress",
+      "target": "code-external-agent-files",
+      "description": "Scoped upload/download, не произвольный URL.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-code-file-storage",
+      "source": "code-external-agent-files",
+      "target": "container-media",
+      "description": "Tenant storage/лимиты/учёт, без исходного voice.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-code-file-state",
+      "source": "code-external-agent-files",
+      "target": "code-external-agent-state",
+      "description": "uploadId/digest/staging pinning и активные references.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-code-history",
+      "source": "code-external-agent-ingress",
+      "target": "code-external-agent-history",
+      "description": "Полная доступная публичная история snapshot постранично.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-code-history-state",
+      "source": "code-external-agent-history",
+      "target": "code-external-agent-state",
+      "description": "Cursor связан с политикой/версией/границей FIFO.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-code-stt",
+      "source": "code-external-agent-content",
+      "target": "component-speech",
+      "description": "Штатный STT prepare/run/store; готовая transcript + wasVoice.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-code-template-render",
+      "source": "code-external-agent-content",
+      "target": "code-skills",
+      "description": "Явные template ID/revision/data и общий безопасный renderer.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-code-format",
+      "source": "code-external-agent-delivery",
+      "target": "code-external-agent-content",
+      "description": "Рендер разрешённого шаблона до приёма batch, immutable snapshot.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-code-item-file",
+      "source": "code-external-agent-delivery",
+      "target": "code-external-agent-files",
+      "description": "Проверяет/закрепляет готовые файлы каждого элемента.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-code-template-list",
+      "source": "code-external-agent-ingress",
+      "target": "code-external-agent-content",
+      "description": "Читает только разрешённые схемы шаблонов, без внутренних skill инструкций.",
+      "technology": "Python / tenant-транзакция",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026, страницы 1–4; ответы владельца 10.11.2026: полный объём, голос через STT Chatballs"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-code-stt-selection",
+      "source": "code-external-agent-content",
+      "target": "code-speech-contracts",
+      "description": "Явно выбирает существующий STT-контракт внешнего агента; отсутствие LLM ответов не создаёт скрытого провайдера.",
+      "technology": "Существующий Python/TypeScript контракт",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-code-snapshot-consumer",
+      "source": "code-external-agent-content",
+      "target": "code-renderer",
+      "description": "Сохраняет существующий immutable presentation contract; UI читает его общим sandboxed renderer, новый UI не изобретается.",
+      "technology": "Существующий Python/TypeScript контракт",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-deployment-request",
+      "source": "deployment-worker-events",
+      "target": "deployment-external-agent-endpoint",
+      "description": "Штатный worker-events обращается к согласованной внешней HTTPS-точке.",
+      "technology": "HTTPS",
+      "state": "planned",
+      "evidence": [
+        "compose.yaml",
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-deployment-callback",
+      "source": "deployment-external-agent-endpoint",
+      "target": "deployment-gateway",
+      "description": "Сервис вызывает scoped API через штатный gateway.",
+      "technology": "HTTPS",
+      "state": "planned",
+      "evidence": [
+        "compose.yaml",
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md"
+      ],
+      "decisions": [
+        "0041"
+      ]
+    },
+    {
+      "id": "rel-external-fields-config",
+      "source": "code-external-agent-config",
+      "target": "code-external-agent-custom-fields",
+      "description": "Валидирует отдельные custom refs и вычисляет отпечаток текущих экспортируемых определений без наследования aiAccess.",
+      "technology": "Python / tenant/RLS / schema validation",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md#R-29–R-34",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        ".skaro/docs/gocostack-autonomous-agent-integration.md",
+        "apps/backend/chatballs/conversations/contact_models.py",
+        "apps/backend/chatballs/webchat/field_schema.py",
+        "apps/backend/chatballs/webchat/field_values.py",
+        "apps/backend/chatballs/webchat/site_fields.py"
+      ],
+      "decisions": [
+        "0041",
+        "0030",
+        "0031"
+      ]
+    },
+    {
+      "id": "rel-external-fields-contract",
+      "source": "code-external-agent-contract",
+      "target": "code-external-agent-custom-fields",
+      "description": "Использует CustomFieldsSnapshot/FieldValue schema, обязательный replace и строгие типы/статусы.",
+      "technology": "Python / tenant/RLS / schema validation",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md#R-29–R-34",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        ".skaro/docs/gocostack-autonomous-agent-integration.md",
+        "apps/backend/chatballs/conversations/contact_models.py",
+        "apps/backend/chatballs/webchat/field_schema.py",
+        "apps/backend/chatballs/webchat/field_values.py",
+        "apps/backend/chatballs/webchat/site_fields.py"
+      ],
+      "decisions": [
+        "0041",
+        "0030",
+        "0031"
+      ]
+    },
+    {
+      "id": "rel-external-fields-project",
+      "source": "code-external-agent-dispatch",
+      "target": "code-external-agent-custom-fields",
+      "description": "Формирует полный снимок поля текущего контакта до первого dispatch, без усечения и с реальными статусами.",
+      "technology": "Python / tenant/RLS / schema validation",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md#R-29–R-34",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        ".skaro/docs/gocostack-autonomous-agent-integration.md",
+        "apps/backend/chatballs/conversations/contact_models.py",
+        "apps/backend/chatballs/webchat/field_schema.py",
+        "apps/backend/chatballs/webchat/field_values.py",
+        "apps/backend/chatballs/webchat/site_fields.py"
+      ],
+      "decisions": [
+        "0041",
+        "0030",
+        "0031"
+      ]
+    },
+    {
+      "id": "rel-external-fields-schema",
+      "source": "code-external-agent-custom-fields",
+      "target": "code-site-fields",
+      "description": "Читает текущие WEB определения/ID/типы/options и переиспользует штатную валидацию; не меняет setFields и правила хранения.",
+      "technology": "Python / tenant/RLS / schema validation",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md#R-29–R-34",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        ".skaro/docs/gocostack-autonomous-agent-integration.md",
+        "apps/backend/chatballs/conversations/contact_models.py",
+        "apps/backend/chatballs/webchat/field_schema.py",
+        "apps/backend/chatballs/webchat/field_values.py",
+        "apps/backend/chatballs/webchat/site_fields.py"
+      ],
+      "decisions": [
+        "0041",
+        "0030",
+        "0031"
+      ]
+    },
+    {
+      "id": "rel-external-fields-values",
+      "source": "code-external-agent-custom-fields",
+      "target": "code-conversation-state",
+      "description": "Читает ContactFieldValue своего контакта/организации/разрешённого источника; отсутствие записи не выдаёт за известную историю очистки.",
+      "technology": "Python / tenant/RLS / schema validation",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md#R-29–R-34",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        ".skaro/docs/gocostack-autonomous-agent-integration.md",
+        "apps/backend/chatballs/conversations/contact_models.py",
+        "apps/backend/chatballs/webchat/field_schema.py",
+        "apps/backend/chatballs/webchat/field_values.py",
+        "apps/backend/chatballs/webchat/site_fields.py"
+      ],
+      "decisions": [
+        "0041",
+        "0030",
+        "0031"
+      ]
+    },
+    {
+      "id": "rel-external-fields-freeze",
+      "source": "code-external-agent-custom-fields",
+      "target": "code-external-agent-state",
+      "description": "Сохраняет snapshotId/capturedAt/scope/items и fingerprint в прежнем encrypted request до HTTP; retry не пересобирает значения.",
+      "technology": "Python / tenant/RLS / schema validation",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md#R-29–R-34",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        ".skaro/docs/gocostack-autonomous-agent-integration.md",
+        "apps/backend/chatballs/conversations/contact_models.py",
+        "apps/backend/chatballs/webchat/field_schema.py",
+        "apps/backend/chatballs/webchat/field_values.py",
+        "apps/backend/chatballs/webchat/site_fields.py"
+      ],
+      "decisions": [
+        "0041",
+        "0030",
+        "0031"
+      ]
+    },
+    {
+      "id": "rel-external-fields-ingress",
+      "source": "code-external-agent-ingress",
+      "target": "code-external-agent-custom-fields",
+      "description": "Перед применением результата проверяет действующий export fingerprint; не принимает обратный patch.",
+      "technology": "Python / tenant/RLS / schema validation",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md#R-29–R-34",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        ".skaro/docs/gocostack-autonomous-agent-integration.md",
+        "apps/backend/chatballs/conversations/contact_models.py",
+        "apps/backend/chatballs/webchat/field_schema.py",
+        "apps/backend/chatballs/webchat/field_values.py",
+        "apps/backend/chatballs/webchat/site_fields.py"
+      ],
+      "decisions": [
+        "0041",
+        "0030",
+        "0031"
+      ]
+    },
+    {
+      "id": "rel-external-fields-delivery",
+      "source": "code-external-agent-delivery",
+      "target": "code-external-agent-custom-fields",
+      "description": "Перед фактическим исходящим эффектом проверяет текущие определения/allowlist, подавляя старое полномочие после отзыва.",
+      "technology": "Python / tenant/RLS / schema validation",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md#R-29–R-34",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        ".skaro/docs/gocostack-autonomous-agent-integration.md",
+        "apps/backend/chatballs/conversations/contact_models.py",
+        "apps/backend/chatballs/webchat/field_schema.py",
+        "apps/backend/chatballs/webchat/field_values.py",
+        "apps/backend/chatballs/webchat/site_fields.py"
+      ],
+      "decisions": [
+        "0041",
+        "0030",
+        "0031"
+      ]
+    },
+    {
+      "id": "rel-external-fields-schema-generation",
+      "source": "code-integration",
+      "target": "code-external-agent-custom-fields",
+      "description": "Сохранение изменённой WEB-схемы повышает durable generation в той же транзакции; откат содержимого не восстанавливает старую авторизацию.",
+      "technology": "Python / PostgreSQL transaction",
+      "state": "planned",
+      "evidence": [
+        ".skaro/specs/0041-vneshniy-avtonomnyy-agent.md#R-29–R-34",
+        ".skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md",
+        ".skaro/docs/external-agent-contract-v1.md",
+        ".skaro/docs/gocostack-autonomous-agent-integration.md",
+        "apps/backend/chatballs/conversations/contact_models.py",
+        "apps/backend/chatballs/webchat/field_schema.py",
+        "apps/backend/chatballs/webchat/field_values.py",
+        "apps/backend/chatballs/webchat/site_fields.py",
+        "apps/backend/chatballs/integrations/services.py",
+        "apps/backend/chatballs/integrations/web_config.py",
+        "apps/backend/chatballs/integrations/runtime.py"
+      ],
+      "decisions": [
+        "0041"
+      ]
     }
   ],
   "views": [
@@ -21264,6 +23172,786 @@
         }
       ],
       "instances": []
+    },
+    {
+      "id": "view-external-context",
+      "kind": "context",
+      "title": "Внешний агент: ответственность и доверие",
+      "scope": "system-chatballs",
+      "state": "planned",
+      "elements": [
+        "system-chatballs",
+        "external-autonomous-agent",
+        "person-staff",
+        "person-customer"
+      ],
+      "relationships": [
+        "rel-staff-system",
+        "rel-customer-system",
+        "rel-external-system-request",
+        "rel-external-system-result"
+      ],
+      "steps": [],
+      "instances": []
+    },
+    {
+      "id": "view-external-containers",
+      "kind": "container",
+      "title": "Полный внешний контракт в штатной поставке",
+      "scope": "system-chatballs",
+      "state": "planned",
+      "elements": [
+        "system-chatballs",
+        "container-backend",
+        "container-postgres",
+        "container-media",
+        "container-gateway",
+        "container-frontend",
+        "external-autonomous-agent"
+      ],
+      "relationships": [
+        "rel-external-backend-request",
+        "rel-external-api-gateway",
+        "rel-gateway-frontend",
+        "rel-frontend-backend",
+        "rel-backend-postgres",
+        "rel-backend-media"
+      ],
+      "steps": [],
+      "instances": []
+    },
+    {
+      "id": "view-external-components",
+      "kind": "component",
+      "title": "Внешний runtime и существующие платформенные службы",
+      "scope": "container-backend",
+      "state": "planned",
+      "elements": [
+        "component-ai",
+        "component-external-agent",
+        "component-events",
+        "component-integrations",
+        "component-routing",
+        "component-conversations",
+        "component-speech",
+        "component-skills",
+        "external-autonomous-agent",
+        "container-postgres",
+        "component-privacy"
+      ],
+      "relationships": [
+        "rel-external-ai",
+        "rel-external-events",
+        "rel-external-config",
+        "rel-external-policy",
+        "rel-external-conversation",
+        "rel-external-state",
+        "rel-external-speech",
+        "rel-external-templates",
+        "rel-external-remote",
+        "rel-external-callback"
+      ],
+      "steps": [],
+      "instances": []
+    },
+    {
+      "id": "view-external-code",
+      "kind": "code",
+      "title": "Модули полного протокола и состояния",
+      "scope": "component-external-agent",
+      "state": "planned",
+      "elements": [
+        "code-external-agent-config",
+        "code-external-agent-contract",
+        "code-external-agent-state",
+        "code-external-agent-dispatch",
+        "code-external-agent-ingress",
+        "code-external-agent-recovery",
+        "code-external-agent-delivery",
+        "code-external-agent-files",
+        "code-external-agent-history",
+        "code-external-agent-content",
+        "code-external-agent-custom-fields"
+      ],
+      "relationships": [
+        "rel-external-code-config",
+        "rel-external-code-contract",
+        "rel-external-code-snapshot",
+        "rel-external-code-context",
+        "rel-external-code-normalize",
+        "rel-external-code-sync",
+        "rel-external-code-validate",
+        "rel-external-code-auth",
+        "rel-external-code-receipt",
+        "rel-external-code-recovery-state",
+        "rel-external-code-retry",
+        "rel-external-code-publish",
+        "rel-external-code-files",
+        "rel-external-code-file-state",
+        "rel-external-code-history",
+        "rel-external-code-history-state",
+        "rel-external-code-format",
+        "rel-external-code-item-file",
+        "rel-external-code-template-list",
+        "rel-external-fields-config",
+        "rel-external-fields-contract",
+        "rel-external-fields-project",
+        "rel-external-fields-freeze",
+        "rel-external-fields-ingress",
+        "rel-external-fields-delivery"
+      ],
+      "steps": [],
+      "instances": []
+    },
+    {
+      "id": "view-external-ui",
+      "kind": "component",
+      "title": "Внешняя настройка: отдельный design gate",
+      "scope": "container-workbench",
+      "state": "planned",
+      "elements": [
+        "ui-agents",
+        "ui-integrations",
+        "ui-external-agent"
+      ],
+      "relationships": [
+        "rel-external-ui-agents",
+        "rel-external-ui-integrations"
+      ],
+      "steps": [],
+      "instances": []
+    },
+    {
+      "id": "view-external-ui-code",
+      "kind": "code",
+      "title": "Композиция формы и модель настройки",
+      "scope": "ui-external-agent",
+      "state": "planned",
+      "elements": [
+        "code-ui-external-agent"
+      ],
+      "relationships": [],
+      "steps": [],
+      "instances": []
+    },
+    {
+      "id": "view-external-sync",
+      "kind": "dynamic",
+      "title": "Входящее → самостоятельный ответ → доставка",
+      "scope": "container-backend",
+      "state": "planned",
+      "elements": [
+        "code-ai-orchestrator",
+        "code-external-agent-dispatch",
+        "code-outbox",
+        "code-external-agent-config",
+        "code-external-agent-content",
+        "code-external-agent-history",
+        "code-routing-policy",
+        "code-external-agent-state",
+        "code-outbound",
+        "external-autonomous-agent",
+        "code-external-agent-ingress",
+        "code-external-agent-delivery",
+        "code-conversation-state"
+      ],
+      "relationships": [
+        "rel-external-code-branch",
+        "rel-external-code-queue",
+        "rel-external-code-config",
+        "rel-external-code-normalize",
+        "rel-external-code-context",
+        "rel-external-code-policy",
+        "rel-external-code-snapshot",
+        "rel-external-code-network",
+        "rel-external-code-remote",
+        "rel-external-code-sync",
+        "rel-external-code-receipt",
+        "rel-external-code-publish",
+        "rel-external-code-send-policy",
+        "rel-external-code-message",
+        "rel-external-code-route"
+      ],
+      "steps": [
+        {
+          "relationship": "rel-external-code-branch",
+          "description": "1. Выбран внешний runtime без LLM Chatballs."
+        },
+        {
+          "relationship": "rel-external-code-queue",
+          "description": "2. Голова durable FIFO."
+        },
+        {
+          "relationship": "rel-external-code-config",
+          "description": "3. Проверена политика исходных данных/доступа."
+        },
+        {
+          "relationship": "rel-external-code-normalize",
+          "description": "4. Нормализованы все поддержанные форматы."
+        },
+        {
+          "relationship": "rel-external-code-context",
+          "description": "5. Согласован публичный snapshot."
+        },
+        {
+          "relationship": "rel-external-code-policy",
+          "description": "6. Текущие mode/control/versions."
+        },
+        {
+          "relationship": "rel-external-code-snapshot",
+          "description": "7. Request зарегистрирован до сети."
+        },
+        {
+          "relationship": "rel-external-code-network",
+          "description": "8. Проверен исходящий адрес."
+        },
+        {
+          "relationship": "rel-external-code-remote",
+          "description": "9. Сервис исполнил свою LLM/логику."
+        },
+        {
+          "relationship": "rel-external-code-sync",
+          "description": "10. Terminal ответ в общий receipt."
+        },
+        {
+          "relationship": "rel-external-code-receipt",
+          "description": "11. Дубль/конфликт без повторной публикации."
+        },
+        {
+          "relationship": "rel-external-code-publish",
+          "description": "12. Применение reply/handoff."
+        },
+        {
+          "relationship": "rel-external-code-send-policy",
+          "description": "13. Текущий контроль перед каждым эффектом."
+        },
+        {
+          "relationship": "rel-external-code-message",
+          "description": "14. Message/item и достоверный transport outcome."
+        },
+        {
+          "relationship": "rel-external-code-route",
+          "description": "15. Штатная доставка, unknown не повторяется вслепую."
+        }
+      ],
+      "instances": []
+    },
+    {
+      "id": "view-external-async",
+      "kind": "dynamic",
+      "title": "202, ранний callback, restart и сроки",
+      "scope": "container-backend",
+      "state": "planned",
+      "elements": [
+        "code-external-agent-dispatch",
+        "code-external-agent-state",
+        "external-autonomous-agent",
+        "code-external-agent-ingress",
+        "code-external-agent-contract",
+        "code-outbox",
+        "code-external-agent-recovery",
+        "code-external-agent-delivery"
+      ],
+      "relationships": [
+        "rel-external-code-snapshot",
+        "rel-external-code-remote",
+        "rel-external-code-callback",
+        "rel-external-code-validate",
+        "rel-external-code-receipt",
+        "rel-external-code-enqueue",
+        "rel-external-code-resume",
+        "rel-external-code-recovery-state",
+        "rel-external-code-retry",
+        "rel-external-code-publish"
+      ],
+      "steps": [
+        {
+          "relationship": "rel-external-code-snapshot",
+          "description": "1. Durable request раньше HTTP."
+        },
+        {
+          "relationship": "rel-external-code-remote",
+          "description": "2. 202 после регистрации до внешних side effects."
+        },
+        {
+          "relationship": "rel-external-code-callback",
+          "description": "3. Callback может опередить 202."
+        },
+        {
+          "relationship": "rel-external-code-validate",
+          "description": "4. Проверены result ID/schema/digest."
+        },
+        {
+          "relationship": "rel-external-code-receipt",
+          "description": "5. Commit одного результата."
+        },
+        {
+          "relationship": "rel-external-code-enqueue",
+          "description": "6. Continuation до ACK, worker освобождён."
+        },
+        {
+          "relationship": "rel-external-code-resume",
+          "description": "7. После restart восстановлена работа по ID."
+        },
+        {
+          "relationship": "rel-external-code-recovery-state",
+          "description": "8. Lease/fencing/deadline действуют."
+        },
+        {
+          "relationship": "rel-external-code-retry",
+          "description": "9. Status того же запроса, новый бизнес не запускается."
+        },
+        {
+          "relationship": "rel-external-code-publish",
+          "description": "10. Terminal checkpoint продвигает FIFO."
+        }
+      ],
+      "instances": []
+    },
+    {
+      "id": "view-external-takeover",
+      "kind": "dynamic",
+      "title": "Перехват, отмена и явный возврат",
+      "scope": "container-backend",
+      "state": "planned",
+      "elements": [
+        "code-control",
+        "code-external-agent-state",
+        "code-outbox",
+        "code-external-agent-recovery",
+        "code-external-agent-dispatch",
+        "external-autonomous-agent",
+        "code-external-agent-ingress"
+      ],
+      "relationships": [
+        "rel-external-code-revoke",
+        "rel-external-code-resume",
+        "rel-external-code-retry",
+        "rel-external-code-remote",
+        "rel-external-code-callback",
+        "rel-external-code-receipt"
+      ],
+      "steps": [
+        {
+          "relationship": "rel-external-code-revoke",
+          "description": "1. Штатный перехват отзывает старое authorization."
+        },
+        {
+          "relationship": "rel-external-code-resume",
+          "description": "2. Cancel представлен сохранённым заданием."
+        },
+        {
+          "relationship": "rel-external-code-retry",
+          "description": "3. Локальный запрет независим от сети."
+        },
+        {
+          "relationship": "rel-external-code-remote",
+          "description": "4. Best-effort cancel не обещает компенсацию."
+        },
+        {
+          "relationship": "rel-external-code-callback",
+          "description": "5. Поздний результат ещё может поступить."
+        },
+        {
+          "relationship": "rel-external-code-receipt",
+          "description": "6. Suppressed без Message."
+        },
+        {
+          "relationship": "rel-external-code-revoke",
+          "description": "7. Явный возврат повышает версию, старое не оживает."
+        }
+      ],
+      "instances": []
+    },
+    {
+      "id": "view-external-proactive",
+      "kind": "dynamic",
+      "title": "Инициатива и запрос сотрудника",
+      "scope": "container-backend",
+      "state": "planned",
+      "elements": [
+        "external-autonomous-agent",
+        "code-external-agent-ingress",
+        "code-external-agent-config",
+        "code-routing-policy",
+        "code-external-agent-state",
+        "code-external-agent-delivery",
+        "code-conversation-state",
+        "code-control"
+      ],
+      "relationships": [
+        "rel-external-code-callback",
+        "rel-external-code-auth",
+        "rel-external-code-admit",
+        "rel-external-code-receipt",
+        "rel-external-code-publish",
+        "rel-external-code-send-policy",
+        "rel-external-code-message",
+        "rel-external-code-handoff",
+        "rel-external-code-revoke"
+      ],
+      "steps": [
+        {
+          "relationship": "rel-external-code-callback",
+          "description": "1. deliveryId/authorization либо handoff event."
+        },
+        {
+          "relationship": "rel-external-code-auth",
+          "description": "2. Credential определил tenant и scope."
+        },
+        {
+          "relationship": "rel-external-code-admit",
+          "description": "3. Проверены open/AI/proactive/busy/канал."
+        },
+        {
+          "relationship": "rel-external-code-receipt",
+          "description": "4. Устойчивая квитанция."
+        },
+        {
+          "relationship": "rel-external-code-publish",
+          "description": "5. Один batch или handoff."
+        },
+        {
+          "relationship": "rel-external-code-send-policy",
+          "description": "6. Проверка перед каждым элементом."
+        },
+        {
+          "relationship": "rel-external-code-message",
+          "description": "7. Реальный partial/unknown/suppressed."
+        },
+        {
+          "relationship": "rel-external-code-handoff",
+          "description": "8. Сотрудник через штатную очередь."
+        },
+        {
+          "relationship": "rel-external-code-revoke",
+          "description": "9. Отзыв дальнейшей инициативы."
+        }
+      ],
+      "instances": []
+    },
+    {
+      "id": "view-external-media",
+      "kind": "dynamic",
+      "title": "Файлы, история, STT и оформленный составной ответ",
+      "scope": "container-backend",
+      "state": "planned",
+      "elements": [
+        "code-external-agent-dispatch",
+        "code-external-agent-content",
+        "component-speech",
+        "code-external-agent-history",
+        "code-external-agent-ingress",
+        "code-external-agent-state",
+        "code-external-agent-files",
+        "container-media",
+        "code-external-agent-delivery",
+        "code-routing-policy",
+        "code-conversation-state",
+        "code-speech-contracts",
+        "code-renderer",
+        "code-skills"
+      ],
+      "relationships": [
+        "rel-external-code-normalize",
+        "rel-external-code-stt",
+        "rel-external-code-context",
+        "rel-external-code-history",
+        "rel-external-code-history-state",
+        "rel-external-code-files",
+        "rel-external-code-file-storage",
+        "rel-external-code-file-state",
+        "rel-external-code-template-list",
+        "rel-external-code-format",
+        "rel-external-code-item-file",
+        "rel-external-code-send-policy",
+        "rel-external-code-message",
+        "rel-external-code-stt-selection",
+        "rel-external-code-snapshot-consumer",
+        "rel-external-code-template-render"
+      ],
+      "steps": [
+        {
+          "relationship": "rel-external-code-normalize",
+          "description": "1. Входящий voice требует реальной стенограммы."
+        },
+        {
+          "relationship": "rel-external-code-stt",
+          "description": "2. STT Chatballs → text/wasVoice, audio не уходит сервису."
+        },
+        {
+          "relationship": "rel-external-code-context",
+          "description": "3. Публичные сообщения всех форматов в snapshot."
+        },
+        {
+          "relationship": "rel-external-code-history",
+          "description": "4. Дополнительные страницы для полного resync."
+        },
+        {
+          "relationship": "rel-external-code-history-state",
+          "description": "5. Cursor ограничен той же политикой/управлением."
+        },
+        {
+          "relationship": "rel-external-code-files",
+          "description": "6. Авторизованный upload/download."
+        },
+        {
+          "relationship": "rel-external-code-file-storage",
+          "description": "7. Потоковая запись/выдача через tenant storage."
+        },
+        {
+          "relationship": "rel-external-code-file-state",
+          "description": "8. Dedup upload и pinning активного файла."
+        },
+        {
+          "relationship": "rel-external-code-template-list",
+          "description": "9. Каталог явно разрешённых схем."
+        },
+        {
+          "relationship": "rel-external-code-format",
+          "description": "10. Общий безопасный renderer и immutable snapshot."
+        },
+        {
+          "relationship": "rel-external-code-template-render",
+          "description": "11. Общий schema/render/sanitize даёт immutable snapshot разрешённого шаблона."
+        },
+        {
+          "relationship": "rel-external-code-item-file",
+          "description": "12. Проверены все файлы batch."
+        },
+        {
+          "relationship": "rel-external-code-send-policy",
+          "description": "13. Набор валиден целиком; контроль перед каждым элементом."
+        },
+        {
+          "relationship": "rel-external-code-message",
+          "description": "14. Сохраняются Message/item и честный partial outcome."
+        },
+        {
+          "relationship": "rel-external-code-stt-selection",
+          "description": "15. STT выбирается существующим явным контрактом отдельно от LLM ответов."
+        },
+        {
+          "relationship": "rel-external-code-snapshot-consumer",
+          "description": "16. Snapshot читается существующим безопасным UI renderer."
+        }
+      ],
+      "instances": []
+    },
+    {
+      "id": "view-external-deployment",
+      "kind": "deployment",
+      "title": "Штатный Compose и внешняя HTTPS-точка",
+      "scope": "system-chatballs",
+      "state": "planned",
+      "elements": [
+        "container-backend",
+        "deployment-backend-app",
+        "deployment-worker-events",
+        "container-postgres",
+        "deployment-postgres",
+        "container-gateway",
+        "deployment-gateway",
+        "container-frontend",
+        "deployment-frontend",
+        "deployment-external-agent-endpoint",
+        "container-media",
+        "deployment-volumes"
+      ],
+      "relationships": [
+        "rel-gateway-frontend",
+        "rel-frontend-backend",
+        "rel-backend-postgres",
+        "rel-backend-media",
+        "rel-external-deployment-request",
+        "rel-external-deployment-callback"
+      ],
+      "steps": [],
+      "instances": [
+        {
+          "id": "instance-external-app",
+          "element": "container-backend",
+          "node": "deployment-backend-app"
+        },
+        {
+          "id": "instance-external-worker",
+          "element": "container-backend",
+          "node": "deployment-worker-events"
+        },
+        {
+          "id": "instance-external-db",
+          "element": "container-postgres",
+          "node": "deployment-postgres"
+        },
+        {
+          "id": "instance-external-gateway",
+          "element": "container-gateway",
+          "node": "deployment-gateway"
+        },
+        {
+          "id": "instance-external-frontend",
+          "element": "container-frontend",
+          "node": "deployment-frontend"
+        },
+        {
+          "id": "instance-external-media",
+          "element": "container-media",
+          "node": "deployment-volumes"
+        }
+      ],
+      "instanceRelationships": [
+        {
+          "relationship": "rel-gateway-frontend",
+          "source": "instance-external-gateway",
+          "target": "instance-external-frontend"
+        },
+        {
+          "relationship": "rel-frontend-backend",
+          "source": "instance-external-frontend",
+          "target": "instance-external-app"
+        },
+        {
+          "relationship": "rel-backend-postgres",
+          "source": "instance-external-app",
+          "target": "instance-external-db"
+        },
+        {
+          "relationship": "rel-backend-postgres",
+          "source": "instance-external-worker",
+          "target": "instance-external-db"
+        },
+        {
+          "relationship": "rel-backend-media",
+          "source": "instance-external-app",
+          "target": "instance-external-media"
+        },
+        {
+          "relationship": "rel-backend-media",
+          "source": "instance-external-worker",
+          "target": "instance-external-media"
+        }
+      ]
+    },
+    {
+      "id": "view-external-settings",
+      "kind": "dynamic",
+      "title": "Настройка внешнего исполнителя по будущему принятому baseline",
+      "scope": "system-chatballs",
+      "state": "planned",
+      "elements": [
+        "ui-agents",
+        "ui-external-agent",
+        "ui-integrations",
+        "component-external-agent",
+        "code-ui-external-agent",
+        "code-external-agent-config"
+      ],
+      "relationships": [
+        "rel-external-ui-agents",
+        "rel-external-ui-integrations",
+        "rel-external-ui-config",
+        "rel-external-code-ui"
+      ],
+      "steps": [
+        {
+          "relationship": "rel-external-ui-agents",
+          "description": "1. Существующая карточка компонует внешнюю настройку после baseline."
+        },
+        {
+          "relationship": "rel-external-ui-integrations",
+          "description": "2. Существующая SERVICE форма использует ту же конфигурацию."
+        },
+        {
+          "relationship": "rel-external-ui-config",
+          "description": "3. OWNER/ADMIN управляет своей внешней конфигурацией."
+        },
+        {
+          "relationship": "rel-external-code-ui",
+          "description": "4. Typed management API сохраняет права, ревизию и write-only secrets."
+        }
+      ],
+      "instances": []
+    },
+    {
+      "id": "view-external-custom-fields",
+      "kind": "dynamic",
+      "title": "Кастомные поля: источник → полный снимок → GoCoStack → проверка отзыва",
+      "scope": "container-backend",
+      "state": "planned",
+      "elements": [
+        "code-external-agent-config",
+        "code-external-agent-custom-fields",
+        "code-external-agent-contract",
+        "code-external-agent-dispatch",
+        "code-site-fields",
+        "code-conversation-state",
+        "code-external-agent-state",
+        "external-autonomous-agent",
+        "code-external-agent-recovery",
+        "code-external-agent-ingress",
+        "code-external-agent-delivery",
+        "code-integration"
+      ],
+      "relationships": [
+        "rel-external-fields-config",
+        "rel-external-fields-contract",
+        "rel-external-fields-project",
+        "rel-external-fields-schema",
+        "rel-external-fields-values",
+        "rel-external-fields-freeze",
+        "rel-external-code-remote",
+        "rel-external-code-retry",
+        "rel-external-fields-ingress",
+        "rel-external-fields-delivery",
+        "rel-external-fields-schema-generation"
+      ],
+      "steps": [
+        {
+          "relationship": "rel-external-fields-config",
+          "description": "1. OWNER/ADMIN разрешает конкретные WEB source+fieldId; стандартные и custom разрешения раздельны."
+        },
+        {
+          "relationship": "rel-external-fields-contract",
+          "description": "2. Контракт проверяет полный replace, scope/items и set/unset/invalid с типами."
+        },
+        {
+          "relationship": "rel-external-fields-project",
+          "description": "3. Голова очереди формирует CustomFieldsSnapshot для текущего контакта."
+        },
+        {
+          "relationship": "rel-external-fields-schema",
+          "description": "4. Читается действующая схема, удалённые определения и stale options не экспортируются."
+        },
+        {
+          "relationship": "rel-external-fields-values",
+          "description": "5. Значения читаются с tenant/source filter; null удалил запись, clearedAt не выдумывается."
+        },
+        {
+          "relationship": "rel-external-fields-freeze",
+          "description": "6. До HTTP замораживаются снимок/политика в encrypted request."
+        },
+        {
+          "relationship": "rel-external-code-remote",
+          "description": "7. GoCoStack получает исходные разрешённые поля и заменяет рабочий контекст снимком."
+        },
+        {
+          "relationship": "rel-external-code-retry",
+          "description": "8. При сетевом сбое повторён исходный request/snapshot; новые значения попадут только следующему ходу."
+        },
+        {
+          "relationship": "rel-external-fields-ingress",
+          "description": "9. Callback проверяет текущий schema/allowlist fingerprint; отзыв не обходится старым request, обратной записи нет."
+        },
+        {
+          "relationship": "rel-external-fields-delivery",
+          "description": "10. Перед каждым элементом доставки и инициативой fingerprint проверяется снова; старое полномочие не оживает."
+        },
+        {
+          "relationship": "rel-external-fields-schema-generation",
+          "description": "11. При последующем изменении схемы сохранённая generation монотонно растёт даже после возврата содержимого; прежний snapshot не получает прежнее полномочие."
+        }
+      ],
+      "instances": []
     }
   ],
   "specifications": [
@@ -24316,9 +27004,9 @@
     {
       "id": "0008",
       "path": "specs/0008-agent-konfiguratsiya-i-hod-otveta.md",
-      "bodyHash": "d677c249a8c7f5aede1bf383869bb8c576660bceeb3a661513a634405baa058a",
+      "bodyHash": "a6f56e1e6db59302ff1d42332664af75f49c52ba5c1e55125eedeaef3f266da4",
       "impact": "changes",
-      "description": "Архитектурная трассировка принятой спецификации «Агент: конфигурация и ход ответа». Поведение не изменяется; наличие связей не заменяет тесты и приёмку реализации. Планируемое расширение SPEC-0037/ADR-0038 уточняет интеграционные действия; прежние разрешения/контур не расширяются автоматически. Дополнение 03.11.2026: целевое поведение SPEC-0039/0040 остаётся planned.",
+      "description": "Архитектурная трассировка принятой спецификации «Агент: конфигурация и ход ответа». Поведение не изменяется; наличие связей не заменяет тесты и приёмку реализации. Планируемое расширение SPEC-0037/ADR-0038 уточняет интеграционные действия; прежние разрешения/контур не расширяются автоматически. Дополнение 03.11.2026: целевое поведение SPEC-0039/0040 остаётся planned. Планируемое расширение SPEC-0041/ADR-0041 внешним исполнением с сохранением прежнего встроенного поведения. Кастомные поля SPEC-0041 R-29–R-34: отдельный read-only типизированный replace-снимок, source+fieldId и текущий экспортный fingerprint.",
       "elements": [
         "component-ai",
         "component-routing",
@@ -24381,7 +27069,10 @@
         "code-speechkit-tts",
         "code-web-proactive",
         "code-pseudonymizer",
-        "component-webchat-proactivity"
+        "component-webchat-proactivity",
+        "code-external-agent-config",
+        "code-external-agent-dispatch",
+        "code-external-agent-custom-fields"
       ],
       "relationships": [
         "rel-ui-agents-ai",
@@ -24439,7 +27130,12 @@
         "rel-site-run-state",
         "rel-site-run-ai",
         "rel-site-pseudonymize",
-        "rel-site-first-send"
+        "rel-site-first-send",
+        "rel-external-code-branch",
+        "rel-external-code-config",
+        "rel-external-code-policy",
+        "rel-external-fields-config",
+        "rel-external-fields-project"
       ],
       "views": [
         "view-backend-ai",
@@ -24481,7 +27177,12 @@
         "view-widget-site-components",
         "view-dynamic-speech-settings",
         "view-widget-speech-clients",
-        "view-widget-expansion-settings"
+        "view-widget-expansion-settings",
+        "view-external-components",
+        "view-external-code",
+        "view-external-sync",
+        "view-external-takeover",
+        "view-external-custom-fields"
       ],
       "requirements": [
         {
@@ -25023,6 +27724,30 @@
             "view-dynamic-site-first-reply",
             "view-dynamic-site-recovery",
             "view-widget-site-components"
+          ]
+        },
+        {
+          "id": "R-20",
+          "elements": [
+            "component-ai",
+            "code-external-agent-config",
+            "code-external-agent-dispatch",
+            "code-routing-policy",
+            "code-external-agent-custom-fields"
+          ],
+          "relationships": [
+            "rel-external-code-branch",
+            "rel-external-code-config",
+            "rel-external-code-policy",
+            "rel-external-fields-config",
+            "rel-external-fields-project"
+          ],
+          "views": [
+            "view-external-components",
+            "view-external-code",
+            "view-external-sync",
+            "view-external-takeover",
+            "view-external-custom-fields"
           ]
         }
       ]
@@ -27986,9 +30711,9 @@
     {
       "id": "0019",
       "path": "specs/0019-dannye-s-sayta-v-veb-chate.md",
-      "bodyHash": "d83419d9dc77e43dd81b3b0650964b4fd24e9b6a31fee507acd3f6711ea33b91",
+      "bodyHash": "265127c5b70c66c900c5970564dd1b703903864567018bf698e5cb9ea292f5c1",
       "impact": "changes",
-      "description": "Архитектурная трассировка принятой спецификации «Данные с сайта в веб-чате». Поведение не изменяется; наличие связей не заменяет тесты и приёмку реализации. Дополнение 03.11.2026: целевое поведение SPEC-0039/0040 остаётся planned.",
+      "description": "Архитектурная трассировка принятой спецификации «Данные с сайта в веб-чате». Поведение не изменяется; наличие связей не заменяет тесты и приёмку реализации. Дополнение 03.11.2026: целевое поведение SPEC-0039/0040 остаётся planned. Кастомные поля SPEC-0041 R-29–R-34: отдельный read-only типизированный replace-снимок, source+fieldId и текущий экспортный fingerprint.",
       "elements": [
         "component-webchat",
         "component-conversations",
@@ -28012,7 +30737,9 @@
         "code-web-site-config",
         "code-service-event-ingress",
         "code-service-execution-launch",
-        "code-service-execution-runner"
+        "code-service-execution-runner",
+        "code-external-agent-custom-fields",
+        "code-integration"
       ],
       "relationships": [
         "rel-ui-integrations-webchat",
@@ -28031,7 +30758,10 @@
         "rel-site-rule-guard",
         "rel-site-durable",
         "rel-site-run-launch",
-        "rel-site-launch-runner"
+        "rel-site-launch-runner",
+        "rel-external-fields-schema",
+        "rel-external-fields-values",
+        "rel-external-fields-schema-generation"
       ],
       "views": [
         "view-widget",
@@ -28052,7 +30782,9 @@
         "view-code-site-backend",
         "view-dynamic-site-first-reply",
         "view-dynamic-site-recovery",
-        "view-widget-speech-clients"
+        "view-widget-speech-clients",
+        "view-external-code",
+        "view-external-custom-fields"
       ],
       "requirements": [
         {
@@ -28465,6 +31197,24 @@
             "view-dynamic-site-first-reply",
             "view-dynamic-site-recovery",
             "view-widget-speech-clients"
+          ]
+        },
+        {
+          "id": "R-21",
+          "elements": [
+            "code-external-agent-custom-fields",
+            "code-site-fields",
+            "code-conversation-state",
+            "code-integration"
+          ],
+          "relationships": [
+            "rel-external-fields-schema",
+            "rel-external-fields-values",
+            "rel-external-fields-schema-generation"
+          ],
+          "views": [
+            "view-external-code",
+            "view-external-custom-fields"
           ]
         }
       ]
@@ -29160,9 +31910,9 @@
     {
       "id": "0022",
       "path": "specs/0022-personalnye-dannye-klienta-v-kontekste-a.md",
-      "bodyHash": "5ca6e8a0618e354f514782909e645b15452db1ee6efd66987e923971ac912f50",
-      "impact": "uses",
-      "description": "Архитектурная трассировка принятой спецификации «Персональные данные клиента в контексте агента». Поведение не изменяется; наличие связей не заменяет тесты и приёмку реализации.",
+      "bodyHash": "c243714010b3f8d235ace3f61160223ea0cdcf94cdf43b7f144f16c6934b19df",
+      "impact": "changes",
+      "description": "Архитектурная трассировка принятой спецификации «Персональные данные клиента в контексте агента». Поведение не изменяется; наличие связей не заменяет тесты и приёмку реализации. Планируемое расширение SPEC-0041/ADR-0041 внешним исполнением с сохранением прежнего встроенного поведения. Кастомные поля SPEC-0041 R-29–R-34: отдельный read-only типизированный replace-снимок, source+fieldId и текущий экспортный fingerprint.",
       "elements": [
         "component-privacy",
         "component-ai",
@@ -29175,14 +31925,22 @@
         "code-turn-plan",
         "external-llm",
         "code-appearance",
-        "component-integrations"
+        "component-integrations",
+        "code-external-agent-config",
+        "code-external-agent-dispatch",
+        "code-external-agent-custom-fields"
       ],
       "relationships": [
         "rel-ai-privacy",
         "rel-privacy-provider",
         "rel-skills-privacy",
         "rel-ui-integrations-webchat",
-        "rel-webchat-integrations"
+        "rel-webchat-integrations",
+        "rel-external-code-config",
+        "rel-external-code-auth",
+        "rel-external-code-context",
+        "rel-external-fields-config",
+        "rel-external-fields-project"
       ],
       "views": [
         "view-backend-ai",
@@ -29192,7 +31950,12 @@
         "view-code-component-ai",
         "view-code-component-webchat",
         "view-workbench",
-        "view-interaction-ui-integrations-webchat"
+        "view-interaction-ui-integrations-webchat",
+        "view-external-context",
+        "view-external-code",
+        "view-external-media",
+        "view-external-components",
+        "view-external-custom-fields"
       ],
       "requirements": [
         {
@@ -29487,6 +32250,29 @@
             "view-dynamic-tools-skills",
             "view-code-component-privacy",
             "view-code-component-ai"
+          ]
+        },
+        {
+          "id": "R-15",
+          "elements": [
+            "component-privacy",
+            "code-external-agent-config",
+            "code-external-agent-dispatch",
+            "code-external-agent-custom-fields"
+          ],
+          "relationships": [
+            "rel-external-code-config",
+            "rel-external-code-auth",
+            "rel-external-code-context",
+            "rel-external-fields-config",
+            "rel-external-fields-project"
+          ],
+          "views": [
+            "view-external-context",
+            "view-external-code",
+            "view-external-media",
+            "view-external-components",
+            "view-external-custom-fields"
           ]
         }
       ]
@@ -32835,9 +35621,9 @@
     {
       "id": "0035",
       "path": "specs/0035-navyki-agentov-i-oformlennye-soobscheniy.md",
-      "bodyHash": "868ccd51ccb802199e83644aa5cf7ea47c4b9496346ca54ef9f84ea4b5ff2958",
-      "impact": "uses",
-      "description": "Архитектурная трассировка принятой спецификации «Навыки агентов и оформленные сообщения». Поведение не изменяется; наличие связей не заменяет тесты и приёмку реализации.",
+      "bodyHash": "1bba393ae8819514154c05aeef9b59f9e94868f89561d9079ef4d7ff4b83e6ab",
+      "impact": "changes",
+      "description": "Архитектурная трассировка принятой спецификации «Навыки агентов и оформленные сообщения». Поведение не изменяется; наличие связей не заменяет тесты и приёмку реализации. Планируемое расширение SPEC-0041/ADR-0041 внешним исполнением с сохранением прежнего встроенного поведения.",
       "elements": [
         "component-skills",
         "component-ai",
@@ -32855,7 +35641,8 @@
         "ui-shared",
         "code-conversation-state",
         "code-ai-orchestrator",
-        "code-language"
+        "code-language",
+        "code-external-agent-content"
       ],
       "relationships": [
         "rel-ui-skills-skills",
@@ -32867,7 +35654,11 @@
         "rel-chat-renderer",
         "rel-ui-agents-skills",
         "rel-ai-tools",
-        "rel-ai-privacy"
+        "rel-ai-privacy",
+        "rel-external-code-template-list",
+        "rel-external-code-template-render",
+        "rel-external-code-format",
+        "rel-external-code-snapshot-consumer"
       ],
       "views": [
         "view-backend-ai",
@@ -32881,7 +35672,10 @@
         "view-code-component-privacy",
         "view-code-component-conversations",
         "view-interaction-chat-renderer",
-        "view-code-component-i18n"
+        "view-code-component-i18n",
+        "view-external-components",
+        "view-external-code",
+        "view-external-media"
       ],
       "requirements": [
         {
@@ -33638,15 +36432,35 @@
             "view-code-component-skills",
             "view-interaction-ui-skills-skills"
           ]
+        },
+        {
+          "id": "R-35",
+          "elements": [
+            "code-external-agent-content",
+            "component-skills",
+            "code-skills",
+            "code-renderer"
+          ],
+          "relationships": [
+            "rel-external-code-template-list",
+            "rel-external-code-template-render",
+            "rel-external-code-format",
+            "rel-external-code-snapshot-consumer"
+          ],
+          "views": [
+            "view-external-components",
+            "view-external-code",
+            "view-external-media"
+          ]
         }
       ]
     },
     {
       "id": "0036",
       "path": "specs/0036-rezhim-raboty-organizatsii-s-ii-agentami.md",
-      "bodyHash": "2c7e70f8b92e1bdc35495cdbbf4d8ed00d8a3681bdc5a52e142e8e61cf2ce1e1",
-      "impact": "uses",
-      "description": "Архитектурная трассировка принятой спецификации «Режим работы организации: с ИИ-агентами или только операторы». Поведение не изменяется; наличие связей не заменяет тесты и приёмку реализации.",
+      "bodyHash": "0be1ce8e21f9313f3e008a68f3bc72d7eee968406ac1448dc5315926cc49765e",
+      "impact": "changes",
+      "description": "Архитектурная трассировка принятой спецификации «Режим работы организации: с ИИ-агентами или только операторы». Поведение не изменяется; наличие связей не заменяет тесты и приёмку реализации. Планируемое расширение SPEC-0041/ADR-0041 внешним исполнением с сохранением прежнего встроенного поведения.",
       "elements": [
         "component-routing",
         "component-identity",
@@ -33668,7 +36482,9 @@
         "code-quality",
         "component-assistance",
         "component-events",
-        "component-quality"
+        "component-quality",
+        "code-external-agent-config",
+        "code-external-agent-state"
       ],
       "relationships": [
         "rel-ui-settings-routing",
@@ -33683,7 +36499,10 @@
         "rel-widget-webchat",
         "rel-portals-webchat",
         "rel-assistance-ai",
-        "rel-events-quality"
+        "rel-events-quality",
+        "rel-external-code-policy",
+        "rel-external-code-admit",
+        "rel-external-code-revoke"
       ],
       "views": [
         "view-backend-core",
@@ -33700,7 +36519,12 @@
         "view-dynamic-web-ai",
         "view-code-component-assistance",
         "view-code-component-quality",
-        "view-interaction-ui-shell-routing"
+        "view-interaction-ui-shell-routing",
+        "view-external-components",
+        "view-external-code",
+        "view-external-takeover",
+        "view-external-proactive",
+        "view-external-sync"
       ],
       "requirements": [
         {
@@ -34155,6 +36979,26 @@
             "view-code-component-ai",
             "view-code-component-routing",
             "view-code-component-conversations"
+          ]
+        },
+        {
+          "id": "R-21",
+          "elements": [
+            "code-routing-policy",
+            "code-external-agent-config",
+            "code-external-agent-state"
+          ],
+          "relationships": [
+            "rel-external-code-policy",
+            "rel-external-code-admit",
+            "rel-external-code-revoke"
+          ],
+          "views": [
+            "view-external-components",
+            "view-external-code",
+            "view-external-takeover",
+            "view-external-proactive",
+            "view-external-sync"
           ]
         }
       ]
@@ -38312,9 +41156,9 @@
     {
       "id": "0039",
       "path": "specs/0039-golosovoy-vvod-i-ozvuchivanie-veb-vidzheta.md",
-      "bodyHash": "f71fd567dbbc7d45b02846953ac3d65ec52b2766394f96ae97c8db6c6350f64e",
+      "bodyHash": "b335b8829955875d38c56bedb7030b66f2ce6f00a724ca4af08b50db50c2559c",
       "impact": "changes",
-      "description": "Планируемые диктовка до Message, SpeechKit STT/TTS, независимые настройки, согласие/лимиты/ошибки/кэш памяти и baseline gate. Исправления релиза 05.11.2026 остаются planned до проверенной публикации.",
+      "description": "Планируемые диктовка до Message, SpeechKit STT/TTS, независимые настройки, согласие/лимиты/ошибки/кэш памяти и baseline gate. Исправления релиза 05.11.2026 остаются planned до проверенной публикации. Планируемое расширение SPEC-0041/ADR-0041 внешним исполнением с сохранением прежнего встроенного поведения.",
       "elements": [
         "code-speech-config",
         "code-speech-contracts",
@@ -38334,7 +41178,8 @@
         "code-widget-playback",
         "code-web-synthesis",
         "code-conversation-state",
-        "code-speechkit-tts"
+        "code-speechkit-tts",
+        "code-external-agent-content"
       ],
       "relationships": [
         "rel-route-config",
@@ -38357,7 +41202,10 @@
         "rel-playback-route",
         "rel-tts-call",
         "rel-tts-external",
-        "rel-playback-result"
+        "rel-playback-result",
+        "rel-external-code-normalize",
+        "rel-external-code-stt",
+        "rel-external-code-stt-selection"
       ],
       "views": [
         "view-widget-expansion-context",
@@ -38376,7 +41224,10 @@
         "view-widget-expansion-settings",
         "view-code-voice-stt-compatibility",
         "view-dynamic-speech-settings",
-        "view-dynamic-dictation-close"
+        "view-dynamic-dictation-close",
+        "view-external-components",
+        "view-external-code",
+        "view-external-media"
       ],
       "requirements": [
         {
@@ -39393,6 +42244,24 @@
             "view-widget-expansion-settings",
             "view-dynamic-speech-settings"
           ]
+        },
+        {
+          "id": "R-25",
+          "elements": [
+            "code-external-agent-content",
+            "component-speech",
+            "code-speech-contracts"
+          ],
+          "relationships": [
+            "rel-external-code-normalize",
+            "rel-external-code-stt",
+            "rel-external-code-stt-selection"
+          ],
+          "views": [
+            "view-external-components",
+            "view-external-code",
+            "view-external-media"
+          ]
         }
       ]
     },
@@ -40152,6 +43021,803 @@
           ]
         }
       ]
+    },
+    {
+      "id": "0041",
+      "path": "specs/0041-vneshniy-avtonomnyy-agent.md",
+      "bodyHash": "ef0baf38315a1026301a365275b30bee6d161e02efd25e1ec8dd843bb6e279a7",
+      "impact": "changes",
+      "description": "Полный внешний автономный агент: все согласованные сценарии/форматы, исходные данные доверенному сервису, голос через STT Chatballs с wasVoice; новое planned расширение, не заявленная реализация. Кастомные поля SPEC-0041 R-29–R-34: отдельный read-only типизированный replace-снимок, source+fieldId и текущий экспортный fingerprint.",
+      "elements": [
+        "code-external-agent-config",
+        "component-ai",
+        "component-integrations",
+        "code-outbound",
+        "code-routing-policy",
+        "code-ai-orchestrator",
+        "code-external-agent-dispatch",
+        "code-external-agent-history",
+        "component-privacy",
+        "code-external-agent-content",
+        "component-speech",
+        "code-external-agent-files",
+        "code-external-agent-state",
+        "code-outbox",
+        "container-backend",
+        "container-postgres",
+        "component-events",
+        "code-external-agent-recovery",
+        "code-external-agent-contract",
+        "external-autonomous-agent",
+        "code-external-agent-ingress",
+        "code-external-agent-delivery",
+        "code-control",
+        "code-conversation-state",
+        "ui-external-agent",
+        "code-ui-external-agent",
+        "container-media",
+        "code-skills",
+        "code-renderer",
+        "code-external-agent-custom-fields",
+        "code-site-fields",
+        "code-integration"
+      ],
+      "relationships": [
+        "rel-external-code-config",
+        "rel-external-code-branch",
+        "rel-external-config",
+        "rel-external-code-network",
+        "rel-external-code-policy",
+        "rel-external-code-admit",
+        "rel-external-code-context",
+        "rel-external-code-auth",
+        "rel-external-code-normalize",
+        "rel-external-code-stt",
+        "rel-external-code-files",
+        "rel-external-code-history",
+        "rel-external-code-history-state",
+        "rel-external-code-snapshot",
+        "rel-external-code-revoke",
+        "rel-external-code-queue",
+        "rel-external-code-enqueue",
+        "rel-external-events",
+        "rel-external-state",
+        "rel-external-code-resume",
+        "rel-external-code-contract",
+        "rel-external-code-validate",
+        "rel-external-code-remote",
+        "rel-external-code-retry",
+        "rel-external-code-sync",
+        "rel-external-code-receipt",
+        "rel-external-code-send-policy",
+        "rel-external-code-callback",
+        "rel-external-code-publish",
+        "rel-external-code-handoff",
+        "rel-external-code-recovery-state",
+        "rel-external-code-message",
+        "rel-external-code-route",
+        "rel-external-code-file-state",
+        "rel-external-ui-agents",
+        "rel-external-ui-integrations",
+        "rel-external-ui-config",
+        "rel-external-code-ui",
+        "rel-external-code-file-storage",
+        "rel-external-code-item-file",
+        "rel-external-code-template-list",
+        "rel-external-code-template-render",
+        "rel-external-code-format",
+        "rel-external-code-stt-selection",
+        "rel-external-code-snapshot-consumer",
+        "rel-external-fields-config",
+        "rel-external-fields-project",
+        "rel-external-fields-schema",
+        "rel-external-fields-contract",
+        "rel-external-fields-values",
+        "rel-external-fields-freeze",
+        "rel-external-fields-ingress",
+        "rel-external-fields-delivery",
+        "rel-external-fields-schema-generation"
+      ],
+      "views": [
+        "view-external-context",
+        "view-external-components",
+        "view-external-code",
+        "view-external-ui",
+        "view-external-containers",
+        "view-external-sync",
+        "view-external-takeover",
+        "view-external-media",
+        "view-external-async",
+        "view-external-deployment",
+        "view-external-proactive",
+        "view-external-ui-code",
+        "view-external-settings",
+        "view-external-custom-fields"
+      ],
+      "requirements": [
+        {
+          "id": "R-1",
+          "elements": [
+            "code-external-agent-config",
+            "component-ai"
+          ],
+          "relationships": [
+            "rel-external-code-config",
+            "rel-external-code-branch"
+          ],
+          "views": [
+            "view-external-context",
+            "view-external-components",
+            "view-external-code",
+            "view-external-ui",
+            "view-external-sync"
+          ]
+        },
+        {
+          "id": "R-2",
+          "elements": [
+            "code-external-agent-config",
+            "component-integrations",
+            "code-outbound"
+          ],
+          "relationships": [
+            "rel-external-config",
+            "rel-external-code-config",
+            "rel-external-code-network"
+          ],
+          "views": [
+            "view-external-containers",
+            "view-external-components",
+            "view-external-code",
+            "view-external-sync"
+          ]
+        },
+        {
+          "id": "R-3",
+          "elements": [
+            "code-external-agent-config",
+            "code-routing-policy",
+            "code-ai-orchestrator"
+          ],
+          "relationships": [
+            "rel-external-code-policy",
+            "rel-external-code-branch",
+            "rel-external-code-admit"
+          ],
+          "views": [
+            "view-external-components",
+            "view-external-code",
+            "view-external-sync",
+            "view-external-takeover",
+            "view-external-proactive"
+          ]
+        },
+        {
+          "id": "R-4",
+          "elements": [
+            "code-external-agent-config",
+            "code-external-agent-dispatch",
+            "code-external-agent-history",
+            "component-privacy",
+            "code-external-agent-custom-fields"
+          ],
+          "relationships": [
+            "rel-external-code-config",
+            "rel-external-code-context",
+            "rel-external-code-auth",
+            "rel-external-fields-config",
+            "rel-external-fields-project"
+          ],
+          "views": [
+            "view-external-context",
+            "view-external-components",
+            "view-external-code",
+            "view-external-media",
+            "view-external-custom-fields"
+          ]
+        },
+        {
+          "id": "R-5",
+          "elements": [
+            "code-external-agent-content",
+            "component-speech",
+            "code-external-agent-files"
+          ],
+          "relationships": [
+            "rel-external-code-normalize",
+            "rel-external-code-stt",
+            "rel-external-code-files",
+            "rel-external-code-stt-selection"
+          ],
+          "views": [
+            "view-external-components",
+            "view-external-code",
+            "view-external-media"
+          ]
+        },
+        {
+          "id": "R-6",
+          "elements": [
+            "code-external-agent-history",
+            "code-external-agent-dispatch",
+            "code-external-agent-state"
+          ],
+          "relationships": [
+            "rel-external-code-context",
+            "rel-external-code-history",
+            "rel-external-code-history-state"
+          ],
+          "views": [
+            "view-external-code",
+            "view-external-media"
+          ]
+        },
+        {
+          "id": "R-7",
+          "elements": [
+            "code-external-agent-state",
+            "code-external-agent-config",
+            "code-routing-policy",
+            "code-external-agent-custom-fields"
+          ],
+          "relationships": [
+            "rel-external-code-snapshot",
+            "rel-external-code-auth",
+            "rel-external-code-revoke",
+            "rel-external-fields-config",
+            "rel-external-fields-project"
+          ],
+          "views": [
+            "view-external-code",
+            "view-external-sync",
+            "view-external-takeover",
+            "view-external-custom-fields"
+          ]
+        },
+        {
+          "id": "R-8",
+          "elements": [
+            "code-external-agent-state",
+            "code-external-agent-dispatch",
+            "code-outbox",
+            "code-external-agent-custom-fields"
+          ],
+          "relationships": [
+            "rel-external-code-queue",
+            "rel-external-code-snapshot",
+            "rel-external-code-enqueue",
+            "rel-external-fields-config",
+            "rel-external-fields-project"
+          ],
+          "views": [
+            "view-external-code",
+            "view-external-sync",
+            "view-external-async",
+            "view-external-custom-fields"
+          ]
+        },
+        {
+          "id": "R-9",
+          "elements": [
+            "container-backend",
+            "container-postgres",
+            "component-events",
+            "code-external-agent-recovery"
+          ],
+          "relationships": [
+            "rel-external-events",
+            "rel-external-state",
+            "rel-external-code-resume"
+          ],
+          "views": [
+            "view-external-containers",
+            "view-external-components",
+            "view-external-code",
+            "view-external-deployment",
+            "view-external-async"
+          ]
+        },
+        {
+          "id": "R-10",
+          "elements": [
+            "code-external-agent-contract",
+            "external-autonomous-agent",
+            "code-external-agent-ingress"
+          ],
+          "relationships": [
+            "rel-external-code-contract",
+            "rel-external-code-validate",
+            "rel-external-code-remote"
+          ],
+          "views": [
+            "view-external-context",
+            "view-external-containers",
+            "view-external-code",
+            "view-external-sync",
+            "view-external-async"
+          ]
+        },
+        {
+          "id": "R-11",
+          "elements": [
+            "code-external-agent-config",
+            "code-external-agent-ingress",
+            "component-integrations"
+          ],
+          "relationships": [
+            "rel-external-code-auth",
+            "rel-external-code-config",
+            "rel-external-code-admit"
+          ],
+          "views": [
+            "view-external-code",
+            "view-external-context",
+            "view-external-proactive",
+            "view-external-takeover",
+            "view-external-components"
+          ]
+        },
+        {
+          "id": "R-12",
+          "elements": [
+            "code-external-agent-dispatch",
+            "code-external-agent-state",
+            "external-autonomous-agent"
+          ],
+          "relationships": [
+            "rel-external-code-remote",
+            "rel-external-code-snapshot",
+            "rel-external-code-retry"
+          ],
+          "views": [
+            "view-external-code",
+            "view-external-sync",
+            "view-external-async"
+          ]
+        },
+        {
+          "id": "R-13",
+          "elements": [
+            "code-external-agent-ingress",
+            "code-external-agent-state",
+            "code-outbox"
+          ],
+          "relationships": [
+            "rel-external-code-sync",
+            "rel-external-code-receipt",
+            "rel-external-code-enqueue"
+          ],
+          "views": [
+            "view-external-code",
+            "view-external-sync",
+            "view-external-async"
+          ]
+        },
+        {
+          "id": "R-14",
+          "elements": [
+            "code-external-agent-ingress",
+            "code-external-agent-delivery",
+            "code-routing-policy",
+            "code-external-agent-custom-fields"
+          ],
+          "relationships": [
+            "rel-external-code-admit",
+            "rel-external-code-send-policy",
+            "rel-external-code-revoke",
+            "rel-external-fields-config",
+            "rel-external-fields-project"
+          ],
+          "views": [
+            "view-external-code",
+            "view-external-sync",
+            "view-external-takeover",
+            "view-external-proactive",
+            "view-external-custom-fields"
+          ]
+        },
+        {
+          "id": "R-15",
+          "elements": [
+            "code-external-agent-ingress",
+            "code-external-agent-config",
+            "code-external-agent-delivery"
+          ],
+          "relationships": [
+            "rel-external-code-callback",
+            "rel-external-code-auth",
+            "rel-external-code-admit",
+            "rel-external-code-publish"
+          ],
+          "views": [
+            "view-external-code",
+            "view-external-proactive",
+            "view-external-takeover"
+          ]
+        },
+        {
+          "id": "R-16",
+          "elements": [
+            "code-external-agent-delivery",
+            "code-control",
+            "code-external-agent-state"
+          ],
+          "relationships": [
+            "rel-external-code-handoff",
+            "rel-external-code-revoke"
+          ],
+          "views": [
+            "view-external-code",
+            "view-external-proactive",
+            "view-external-takeover"
+          ]
+        },
+        {
+          "id": "R-17",
+          "elements": [
+            "code-external-agent-recovery",
+            "code-external-agent-dispatch",
+            "code-external-agent-state"
+          ],
+          "relationships": [
+            "rel-external-code-resume",
+            "rel-external-code-recovery-state",
+            "rel-external-code-retry"
+          ],
+          "views": [
+            "view-external-code",
+            "view-external-async",
+            "view-external-takeover"
+          ]
+        },
+        {
+          "id": "R-18",
+          "elements": [
+            "code-external-agent-recovery",
+            "code-external-agent-ingress",
+            "code-external-agent-state"
+          ],
+          "relationships": [
+            "rel-external-code-retry",
+            "rel-external-code-remote",
+            "rel-external-code-receipt",
+            "rel-external-code-revoke"
+          ],
+          "views": [
+            "view-external-code",
+            "view-external-takeover",
+            "view-external-async"
+          ]
+        },
+        {
+          "id": "R-19",
+          "elements": [
+            "code-external-agent-delivery",
+            "code-external-agent-state",
+            "code-conversation-state"
+          ],
+          "relationships": [
+            "rel-external-code-send-policy",
+            "rel-external-code-message",
+            "rel-external-code-route"
+          ],
+          "views": [
+            "view-external-code",
+            "view-external-sync",
+            "view-external-proactive",
+            "view-external-media"
+          ]
+        },
+        {
+          "id": "R-20",
+          "elements": [
+            "code-external-agent-state",
+            "code-external-agent-recovery",
+            "code-external-agent-files",
+            "container-postgres"
+          ],
+          "relationships": [
+            "rel-external-state",
+            "rel-external-code-recovery-state",
+            "rel-external-code-file-state"
+          ],
+          "views": [
+            "view-external-containers",
+            "view-external-code",
+            "view-external-async",
+            "view-external-media",
+            "view-external-components"
+          ]
+        },
+        {
+          "id": "R-21",
+          "elements": [
+            "code-external-agent-config",
+            "code-external-agent-state",
+            "code-external-agent-ingress"
+          ],
+          "relationships": [
+            "rel-external-code-auth",
+            "rel-external-code-receipt",
+            "rel-external-code-recovery-state"
+          ],
+          "views": [
+            "view-external-code",
+            "view-external-async"
+          ]
+        },
+        {
+          "id": "R-22",
+          "elements": [
+            "ui-external-agent",
+            "code-ui-external-agent",
+            "code-external-agent-config",
+            "code-external-agent-custom-fields"
+          ],
+          "relationships": [
+            "rel-external-ui-agents",
+            "rel-external-ui-integrations",
+            "rel-external-ui-config",
+            "rel-external-code-ui",
+            "rel-external-fields-config",
+            "rel-external-fields-project"
+          ],
+          "views": [
+            "view-external-ui",
+            "view-external-ui-code",
+            "view-external-settings",
+            "view-external-code",
+            "view-external-custom-fields"
+          ]
+        },
+        {
+          "id": "R-23",
+          "elements": [
+            "code-external-agent-config",
+            "code-ai-orchestrator",
+            "component-integrations"
+          ],
+          "relationships": [
+            "rel-external-code-config",
+            "rel-external-code-branch",
+            "rel-external-code-auth"
+          ],
+          "views": [
+            "view-external-components",
+            "view-external-code",
+            "view-external-sync",
+            "view-external-takeover"
+          ]
+        },
+        {
+          "id": "R-24",
+          "elements": [
+            "code-external-agent-ingress",
+            "code-external-agent-delivery",
+            "code-external-agent-recovery",
+            "external-autonomous-agent",
+            "code-external-agent-custom-fields"
+          ],
+          "relationships": [
+            "rel-external-code-callback",
+            "rel-external-code-receipt",
+            "rel-external-code-retry",
+            "rel-external-code-send-policy",
+            "rel-external-fields-config",
+            "rel-external-fields-project"
+          ],
+          "views": [
+            "view-external-context",
+            "view-external-code",
+            "view-external-sync",
+            "view-external-async",
+            "view-external-takeover",
+            "view-external-proactive",
+            "view-external-media",
+            "view-external-deployment",
+            "view-external-custom-fields"
+          ]
+        },
+        {
+          "id": "R-25",
+          "elements": [
+            "code-external-agent-files",
+            "code-external-agent-state",
+            "container-media"
+          ],
+          "relationships": [
+            "rel-external-code-files",
+            "rel-external-code-file-storage",
+            "rel-external-code-file-state",
+            "rel-external-code-item-file"
+          ],
+          "views": [
+            "view-external-containers",
+            "view-external-code",
+            "view-external-media",
+            "view-external-deployment"
+          ]
+        },
+        {
+          "id": "R-26",
+          "elements": [
+            "code-external-agent-content",
+            "code-skills",
+            "code-renderer"
+          ],
+          "relationships": [
+            "rel-external-code-template-list",
+            "rel-external-code-template-render",
+            "rel-external-code-format",
+            "rel-external-code-snapshot-consumer"
+          ],
+          "views": [
+            "view-external-components",
+            "view-external-code",
+            "view-external-media"
+          ]
+        },
+        {
+          "id": "R-27",
+          "elements": [
+            "code-external-agent-delivery",
+            "code-external-agent-state",
+            "code-control"
+          ],
+          "relationships": [
+            "rel-external-code-publish",
+            "rel-external-code-send-policy",
+            "rel-external-code-message",
+            "rel-external-code-handoff"
+          ],
+          "views": [
+            "view-external-code",
+            "view-external-sync",
+            "view-external-proactive",
+            "view-external-media"
+          ]
+        },
+        {
+          "id": "R-28",
+          "elements": [
+            "code-external-agent-content",
+            "code-external-agent-files",
+            "code-external-agent-history",
+            "code-external-agent-delivery",
+            "component-speech"
+          ],
+          "relationships": [
+            "rel-external-code-stt",
+            "rel-external-code-files",
+            "rel-external-code-history",
+            "rel-external-code-format",
+            "rel-external-code-send-policy"
+          ],
+          "views": [
+            "view-external-code",
+            "view-external-media",
+            "view-external-deployment"
+          ]
+        },
+        {
+          "id": "R-29",
+          "elements": [
+            "code-external-agent-custom-fields",
+            "code-external-agent-config",
+            "code-site-fields"
+          ],
+          "relationships": [
+            "rel-external-fields-config",
+            "rel-external-fields-schema"
+          ],
+          "views": [
+            "view-external-code",
+            "view-external-custom-fields",
+            "view-external-context"
+          ]
+        },
+        {
+          "id": "R-30",
+          "elements": [
+            "code-external-agent-custom-fields",
+            "code-external-agent-contract",
+            "code-site-fields",
+            "code-conversation-state"
+          ],
+          "relationships": [
+            "rel-external-fields-contract",
+            "rel-external-fields-schema",
+            "rel-external-fields-values"
+          ],
+          "views": [
+            "view-external-code",
+            "view-external-custom-fields"
+          ]
+        },
+        {
+          "id": "R-31",
+          "elements": [
+            "code-external-agent-custom-fields",
+            "code-external-agent-state",
+            "external-autonomous-agent"
+          ],
+          "relationships": [
+            "rel-external-fields-project",
+            "rel-external-fields-freeze",
+            "rel-external-code-remote"
+          ],
+          "views": [
+            "view-external-code",
+            "view-external-custom-fields"
+          ]
+        },
+        {
+          "id": "R-32",
+          "elements": [
+            "code-external-agent-custom-fields",
+            "code-external-agent-dispatch",
+            "code-external-agent-state",
+            "code-external-agent-recovery"
+          ],
+          "relationships": [
+            "rel-external-fields-project",
+            "rel-external-fields-freeze",
+            "rel-external-code-retry"
+          ],
+          "views": [
+            "view-external-code",
+            "view-external-custom-fields",
+            "view-external-async",
+            "view-external-deployment"
+          ]
+        },
+        {
+          "id": "R-33",
+          "elements": [
+            "code-external-agent-custom-fields",
+            "code-external-agent-config",
+            "code-external-agent-ingress",
+            "code-external-agent-delivery",
+            "code-integration"
+          ],
+          "relationships": [
+            "rel-external-fields-config",
+            "rel-external-fields-ingress",
+            "rel-external-fields-delivery",
+            "rel-external-fields-schema-generation"
+          ],
+          "views": [
+            "view-external-code",
+            "view-external-custom-fields",
+            "view-external-takeover"
+          ]
+        },
+        {
+          "id": "R-34",
+          "elements": [
+            "code-external-agent-custom-fields",
+            "code-site-fields",
+            "code-conversation-state",
+            "code-external-agent-state",
+            "code-external-agent-delivery",
+            "code-integration"
+          ],
+          "relationships": [
+            "rel-external-fields-schema",
+            "rel-external-fields-values",
+            "rel-external-fields-freeze",
+            "rel-external-fields-delivery",
+            "rel-external-fields-schema-generation"
+          ],
+          "views": [
+            "view-external-code",
+            "view-external-custom-fields",
+            "view-external-components",
+            "view-external-containers",
+            "view-external-deployment"
+          ]
+        }
+      ]
     }
   ],
   "exclusions": [
@@ -40567,6 +44233,20 @@
       "state": "planned",
       "reason": "Внутренние контейнеры/компоненты/код/развёртывание CRM и других сторонних сервисов не принадлежат Chatballs и не известны из репозитория. Показаны контракт/защищённый транспорт и все взаимодействия на нашей стороне; отдельные брендовые адаптеры требуют документации конкретного сервиса.",
       "evidence": "apps/backend/chatballs/integrations/http_tool.py; apps/backend/chatballs/integrations/mcp_client.py; .skaro/specs/0037-rasshiryaemye-integratsii-servisov-i-sts.md"
+    },
+    {
+      "kind": "container",
+      "scope": "external-autonomous-agent",
+      "state": "planned",
+      "reason": "Внутренние контейнеры, компоненты, код и топология сервиса заказчика не принадлежат Chatballs и не описаны PDF. Показаны документированные HTTP-взаимодействия и внешняя HTTPS-точка; не изобретаются внутренние LLM/процессы/инфраструктура.",
+      "evidence": "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026 страницы 1–4; .skaro/specs/0041-vneshniy-avtonomnyy-agent.md; .skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md"
+    },
+    {
+      "kind": "deployment",
+      "scope": "external-autonomous-agent",
+      "state": "planned",
+      "reason": "Внутренние контейнеры, компоненты, код и топология сервиса заказчика не принадлежат Chatballs и не описаны PDF. Показаны документированные HTTP-взаимодействия и внешняя HTTPS-точка; не изобретаются внутренние LLM/процессы/инфраструктура.",
+      "evidence": "PDF Chatballs_Autonomous_Agent.pdf 09.11.2026 страницы 1–4; .skaro/specs/0041-vneshniy-avtonomnyy-agent.md; .skaro/adr/0041-vneshniy-agent-i-granitsa-doveriya.md"
     }
   ],
   "questions": [
@@ -40584,6 +44264,14 @@
       "affects": [
         "container-cli",
         "deployment-host"
+      ]
+    },
+    {
+      "id": "Q-EXTERNAL-AGENT-UI",
+      "question": "До продуктового UI лично принять baseline полного внешнего режима, интеграции/данных/форматов/STT, проверки и диагностики, при необходимости текста согласия. Отсутствие макета блокирует только этот UI, не backend-контракт. Включить выбор стандартных и кастомных полей, явно различающий WEB-источник и ID определения; макет не утверждается документацией.",
+      "affects": [
+        "ui-external-agent",
+        "code-ui-external-agent"
       ]
     }
   ],

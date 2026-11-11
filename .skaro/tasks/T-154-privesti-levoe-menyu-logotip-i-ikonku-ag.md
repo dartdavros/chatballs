@@ -6,6 +6,7 @@ depends_on: []
 order: 2
 created: 2026-10-14
 branch: skaro/T-154-privesti-levoe-menyu-logotip-i
+archived: true
 ---
 
 ## Цель

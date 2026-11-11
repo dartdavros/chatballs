@@ -8,6 +8,7 @@ order: 1
 spec: "0021"
 created: 2026-10-02
 branch: skaro/T-025-sbros-svoih-ikonok-i-bez-ikonk
+archived: true
 ---
 
 ## Цель

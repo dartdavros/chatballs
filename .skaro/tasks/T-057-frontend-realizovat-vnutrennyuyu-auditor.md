@@ -9,6 +9,7 @@ order: 4
 spec: "0027"
 created: 2026-10-06
 branch: skaro/T-057-frontend-realizovat-vnutrennyu
+archived: true
 ---
 
 ## Цель

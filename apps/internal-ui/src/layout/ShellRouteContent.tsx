@@ -8,7 +8,7 @@ import { ProfilePage } from "../features/profile/ProfilePage";
 import { SettingsPage } from "../features/settings/SettingsPage";
 import { RuleJournalPage } from "../features/handling-rules/RuleJournalPage";
 import { ReplyTemplateLibrary } from "../features/reply-templates/ReplyTemplateLibrary";
-import { IntegrationSettingsPage } from "../features/integrations/IntegrationSettingsPage";
+import { ConnectionRouteContent } from "./ConnectionRouteContent";
 import { AuditPage } from "../features/administration/AuditPage";
 import { OrganizationCreatePage } from "../features/organizations/OrganizationCreatePage";
 import { ChatPage } from "../features/chat/ChatPage";
@@ -21,7 +21,6 @@ import type { AppData, AuthenticatedUser, Employee, RouteKey, SessionUser } from
 import type { SettingsSectionKey } from "../features/settings/sections";
 import type { PortalSettingsSectionKey } from "../features/support-portals/sections";
 import { hasCapability, isManager } from "../auth/access";
-import { integrationsView, isIntegrationsRoute } from "../features/integrations/tabs";
 import { QualityAnalysisPage } from "../features/quality/QualityAnalysisPage";
 
 // Раздел «База знаний» грузится отдельным чанком: у сотрудника его нет,
@@ -52,7 +51,7 @@ const SupportPortalDetailPage = lazy(() => import("../features/support-portals/S
   (module) => ({ default: module.SupportPortalDetailPage }),
 ));
 
-export function ShellRouteContent({ settingsSection, openSettings, chatScope, setChatScope, chatCounters, chatScopeSwitcher, route, data, selectedEmployeeId, selectedAgentId, selectedKnowledgeId, selectedConversationId, selectedClientId, openClient, selectedChannelId, openChannel, selectedIntegrationId, openWebIntegration, openServiceConnection, selectedSupportPortalId, portalSettingsSection, openSupportPortal, openPortalSettings, openConversation, openEmployee, openAgent, openKnowledge, openKnowledgeEditor, onAgentLoaded, onChannelLoaded, reload, setRoute, user, onUserUpdated, onLogout, onOpenSidebar, onOrganizationCreated }: { settingsSection: SettingsSectionKey | null; openSettings: (section: SettingsSectionKey | null) => void; chatScope: DialogScope; setChatScope: (scope: DialogScope) => void; chatCounters: ConversationCounters | null; chatScopeSwitcher: boolean; route: RouteKey; data: AppData; selectedEmployeeId: number | null; selectedAgentId: number | null; selectedKnowledgeId: number | null; selectedConversationId: number | null; selectedClientId: number | null; openClient: (clientId: number) => void; selectedChannelId: number | null; openChannel: (channelId: number) => void; selectedIntegrationId: number | null; openWebIntegration: (id: number) => void; openServiceConnection: (id: number) => void; selectedSupportPortalId: number | null; portalSettingsSection: PortalSettingsSectionKey | null; openSupportPortal: (portalId: number) => void; openPortalSettings: (portalId: number, section?: PortalSettingsSectionKey) => void; openConversation: (conversationId: number) => void; openEmployee: (employee: Employee) => void; openAgent: (agentId: number) => void; openKnowledge: (knowledgeId: number) => void; openKnowledgeEditor: (knowledgeId: number | null) => void; onAgentLoaded: (name: string | null) => void; onChannelLoaded: (name: string | null) => void; reload: () => void; setRoute: (route: RouteKey) => void; user: SessionUser; onUserUpdated: (user: SessionUser) => void; onLogout: () => void; onOpenSidebar: () => void; onOrganizationCreated: (identity: AuthenticatedUser, organizationPublicId: string) => void }) {
+export function ShellRouteContent({ settingsSection, openSettings, chatScope, setChatScope, chatCounters, chatScopeSwitcher, route, data, selectedEmployeeId, selectedAgentId, selectedKnowledgeId, selectedConversationId, selectedClientId, openClient, selectedChannelId, openChannel, selectedIntegrationId, openWebIntegration, openServer, openScenario, resolveLegacyIntegration, openServiceConnection, selectedSupportPortalId, portalSettingsSection, openSupportPortal, openPortalSettings, openConversation, openEmployee, openAgent, openKnowledge, openKnowledgeEditor, onAgentLoaded, onChannelLoaded, reload, setRoute, user, onUserUpdated, onLogout, onOpenSidebar, onOrganizationCreated }: { settingsSection: SettingsSectionKey | null; openSettings: (section: SettingsSectionKey | null) => void; chatScope: DialogScope; setChatScope: (scope: DialogScope) => void; chatCounters: ConversationCounters | null; chatScopeSwitcher: boolean; route: RouteKey; data: AppData; selectedEmployeeId: number | null; selectedAgentId: number | null; selectedKnowledgeId: number | null; selectedConversationId: number | null; selectedClientId: number | null; openClient: (clientId: number) => void; selectedChannelId: number | null; openChannel: (channelId: number) => void; selectedIntegrationId: number | null; openWebIntegration: (id: number) => void; openServer: (id: number) => void; openScenario: (id: string) => void; resolveLegacyIntegration: (route: RouteKey, id: number | null) => void; openServiceConnection: (id: number) => void; selectedSupportPortalId: number | null; portalSettingsSection: PortalSettingsSectionKey | null; openSupportPortal: (portalId: number) => void; openPortalSettings: (portalId: number, section?: PortalSettingsSectionKey) => void; openConversation: (conversationId: number) => void; openEmployee: (employee: Employee) => void; openAgent: (agentId: number) => void; openKnowledge: (knowledgeId: number) => void; openKnowledgeEditor: (knowledgeId: number | null) => void; onAgentLoaded: (name: string | null) => void; onChannelLoaded: (name: string | null) => void; reload: () => void; setRoute: (route: RouteKey) => void; user: SessionUser; onUserUpdated: (user: SessionUser) => void; onLogout: () => void; onOpenSidebar: () => void; onOrganizationCreated: (identity: AuthenticatedUser, organizationPublicId: string) => void }) {
   return (
     <>
       {route === "employees" && <EmployeesPage groups={data.groups} openEmployee={openEmployee} setRoute={setRoute} user={user} />}
@@ -60,15 +59,16 @@ export function ShellRouteContent({ settingsSection, openSettings, chatScope, se
       {route === "employeeDetail" && selectedEmployeeId == null && <EmployeesPage groups={data.groups} openEmployee={openEmployee} setRoute={setRoute} user={user} />}
       {route === "profile" && <ProfilePage user={user} onUserUpdated={onUserUpdated} reload={reload} onLogout={onLogout} onBack={() => setRoute("chat")} />}
       {route === "replyTemplates" && <ReplyTemplateLibrary employee onBack={() => setRoute("chat")} />}
-      {(route === "settings" || isIntegrationsRoute(route) || route === "ruleJournal" && isManager(user)) && <SettingsPage user={user} onUserUpdated={onUserUpdated} reload={reload} groups={data.groups} section={settingsSection} openSection={openSettings} openWebIntegration={openWebIntegration} openServiceConnection={openServiceConnection} integrationsView={integrationsView(route, selectedIntegrationId)} setRoute={setRoute} journal={route === "ruleJournal"} openConversation={openConversation} />}
+      {(route === "settings" || route === "ruleJournal" && isManager(user)) && <SettingsPage user={user} onUserUpdated={onUserUpdated} reload={reload} groups={data.groups} section={settingsSection} openSection={openSettings} setRoute={setRoute} journal={route === "ruleJournal"} openConversation={openConversation} />}
       {route === "ruleJournal" && !isManager(user) && <RuleJournalPage openConversation={openConversation} />}
-      {route === "webIntegrationSettings" && selectedIntegrationId !== null && <IntegrationSettingsPage integrationId={selectedIntegrationId} onCreated={openWebIntegration} onOpenSettings={() => openSettings(null)} onBack={() => openSettings("integrations")} />}
-      {(route === "mcpServerCreate" || route === "httpServerCreate") && <IntegrationSettingsPage key={route} createKind={route === "mcpServerCreate" ? "mcp" : "http"} onCreated={openWebIntegration} onOpenSettings={() => openSettings(null)} onBack={() => openSettings("integrations")} />}
+      <ConnectionRouteContent route={route} integrationId={selectedIntegrationId} user={user} setRoute={setRoute}
+        openWidget={openWebIntegration} openServer={openServer} openService={openServiceConnection}
+        openScenario={openScenario} resolveLegacy={resolveLegacyIntegration} />
       {route === "administrationAudit" && <AuditPage />}
       {route === "supportReports" && <SupportReportsPage onDialogs={() => setRoute("chat")} />}
       {route === "qualityAnalysis" && selectedConversationId !== null && <QualityAnalysisPage key={selectedConversationId} id={selectedConversationId} user={user} back={() => openConversation(selectedConversationId)} />}
       {route === "organizationCreate" && <OrganizationCreatePage user={user} onCreated={onOrganizationCreated} onBack={() => setRoute("chat")} />}
-      {route === "salesClients" && <SalesClientsPage openClient={openClient} openIntegrations={() => openSettings("integrations")} />}
+      {route === "salesClients" && <SalesClientsPage openClient={openClient} openChannels={setRoute} />}
       {route === "salesClientDetail" && <SalesClientDetailPage contactId={selectedClientId} canEdit={hasCapability(user, "customers.manage")} canMerge={user.role === "OWNER"} openConversation={openConversation} openClient={openClient} openClients={() => setRoute("salesClients")} />}
       {route === "chat" && (
         <ChatPage
@@ -93,9 +93,10 @@ export function ShellRouteContent({ settingsSection, openSettings, chatScope, se
           canManageConnections={hasCapability(user, "integrations.manage")}
           openAgents={() => setRoute("agents")}
           openKnowledge={openKnowledge}
-          openIntegrations={() => openSettings("integrations")}
-          openServer={openWebIntegration}
-          openAiProvider={() => openSettings("ai")}
+          openChannels={setRoute}
+          openServers={() => setRoute("integrationServers")}
+          openServer={openServer}
+          openAiProvider={() => setRoute("aiProviders")}
           setRoute={setRoute}
           onLoaded={onAgentLoaded}
         />

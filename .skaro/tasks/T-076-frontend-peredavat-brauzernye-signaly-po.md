@@ -10,6 +10,7 @@ order: 10
 spec: "0031"
 created: 2026-10-06
 branch: skaro/T-076-frontend-realizovat-sostoyanie
+archived: true
 ---
 
 ## Цель

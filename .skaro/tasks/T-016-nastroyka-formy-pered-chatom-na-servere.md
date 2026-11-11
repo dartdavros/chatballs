@@ -9,6 +9,7 @@ order: 1
 spec: "0020"
 created: 2026-09-29
 branch: skaro/T-016-nastroyka-formy-pered-chatom-n
+archived: true
 ---
 
 ## Цель

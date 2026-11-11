@@ -12,6 +12,7 @@ order: 12
 spec: "0030"
 created: 2026-10-14
 branch: skaro/T-156-pokazat-dostupnuyu-statistiku
+archived: true
 ---
 
 ## Цель

@@ -8,6 +8,7 @@ order: 2
 spec: "0020"
 created: 2026-10-02
 branch: skaro/T-026-ochistka-html-teksta-soglasiya
+archived: true
 ---
 
 ## Цель

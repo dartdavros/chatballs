@@ -13,6 +13,7 @@ order: 3
 spec: "0029"
 created: 2026-10-06
 branch: skaro/T-064-frontend-realizovat-naznacheni
+archived: true
 ---
 
 ## Цель

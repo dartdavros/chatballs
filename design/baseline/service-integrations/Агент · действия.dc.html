@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<script src="chat-model.js"></script>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+a{color:var(--c-accent);text-decoration:none;font-weight:600}
+a:hover{color:var(--c-accent-text)}
+</style>
+</helmet>
+<section style="{{ themeVars }}min-height:100vh;background:var(--c-canvas);padding:32px 40px 60px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;color:var(--c-n2);-webkit-font-smoothing:antialiased">
+  <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:6px;flex-wrap:wrap"><h1 style="margin:0;font-size:22px;font-weight:700;color:var(--c-n1)">Chatballs · Агент: действия и сценарии</h1><a href="Запуск из диалога.dc.html" style="font-size:13px">← Запуск из диалога</a></div>
+  <p style="margin:0 0 14px;font-size:13px;color:var(--c-n3);max-width:1040px;line-height:1.55">Новый блок в правой колонке карточки агента. Для каждого действия — три режима: запрещено, самостоятельно, с подтверждением сотрудника. Подтверждение не обязательно для всех изменяющих действий — его выбирает администратор.</p>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:22px"><sc-for list="{{ jumps }}" as="j" hint-placeholder-count="4"><button onClick="{{ j.go }}" style="{{ j.style }}">{{ j.label }}</button></sc-for></div>
+
+  <div style="{{ frameStyle }}">
+    <aside style="width:220px;flex:none;background:var(--c-surface2);border-right:1px solid var(--c-n8);display:flex;flex-direction:column">
+      <div style="height:56px;display:flex;align-items:center;gap:10px;padding:14px 14px 10px"><img src="assets/logo-sunset.svg" alt="Chatballs" style="width:28px;height:auto"><span style="flex:1;padding-left:8px;font-size:14px;font-weight:700;color:var(--c-n1)">Ателье Норд</span></div>
+      <nav style="padding:4px 10px 8px;display:flex;flex-direction:column;gap:2px">
+        <sc-for list="{{ nav }}" as="n" hint-placeholder-count="8"><sc-if value="{{ n.div }}" hint-placeholder-val="{{ false }}"><div style="height:1px;background:var(--c-n8);margin:6px"></div></sc-if><div style="{{ n.style }}"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="{{ n.icon }}"></path></svg><span>{{ n.label }}</span></div></sc-for>
+      </nav>
+    </aside>
+    <section style="flex:1;min-width:0;overflow:hidden;background:var(--c-feed)">
+      <div style="padding:22px 32px 40px;display:flex;flex-direction:column;gap:16px;max-width:1160px">
+        <span style="display:inline-flex;align-items:center;gap:6px;height:28px;font-size:12.5px;font-weight:500;color:var(--c-n4)"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 6 9 12 15 18"></polyline></svg>Агенты</span>
+        <div style="display:flex;align-items:center;gap:16px">
+          <span style="width:52px;height:52px;border-radius:14px;background:color-mix(in srgb,#0f9b8e 14%,var(--c-surface));color:#0f9b8e;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4.6h10a3.4 3.4 0 0 1 3.4 3.4v6.2a3.4 3.4 0 0 1-3.4 3.4h-6.2l-3.4 2.8v-2.8H7A3.4 3.4 0 0 1 3.6 14.2V8A3.4 3.4 0 0 1 7 4.6zM12 4.6V2.9M12 1.4v.01M9 9.4v1.4M15 9.4v1.4M9.2 13.4c.8 1 1.7 1.5 2.8 1.5s2-.5 2.8-1.5M1.6 9.8v2.6M22.4 9.8v2.6"></path></svg></span>
+          <div style="flex:1"><div style="display:flex;align-items:center;gap:10px"><h2 style="margin:0;font-size:22px;font-weight:700;color:var(--c-n1)">Поддержка сайта</h2><b style="display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border-radius:6px;background:var(--c-ok-bg);color:var(--c-ok-text);font-size:11.5px;font-weight:600"><i style="width:6px;height:6px;border-radius:50%;background:currentColor"></i>AI отвечает</b></div><p style="margin:5px 0 0;font-size:13px;color:var(--c-n4)">Поддержка · site_support · 2 открытых диалога · создан 12 авг</p></div>
+          <span style="height:34px;padding:0 14px;border-radius:8px;border:1px solid var(--c-n7);background:var(--c-surface);color:var(--c-n2);font-size:13px;font-weight:600;display:inline-flex;align-items:center">Проверить агента</span>
+          <span style="{{ saveStyle }}">{{ saveLabel }}</span>
+        </div>
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);gap:16px;align-items:start">
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div style="background:var(--c-surface);border:1px solid var(--c-n8);border-radius:12px;padding:20px 22px"><h3 style="margin:0 0 4px;font-size:14px;font-weight:700;color:var(--c-n1)">Инструкции</h3><p style="margin:0 0 12px;font-size:12px;color:var(--c-n4)">Системный промпт собирается из трёх частей в этом порядке</p><span style="display:block;padding:9px 12px;border:1px solid var(--c-n7);border-radius:8px;background:var(--c-n10);font-size:13px;line-height:1.55;color:var(--c-n1)">Помощник ателье «Норд» на сайте. Отвечает о заказах, оплате и сроках пошива.</span></div>
+            <div style="background:var(--c-surface);border:1px solid var(--c-n8);border-radius:12px;padding:20px 22px"><h3 style="margin:0 0 4px;font-size:14px;font-weight:700;color:var(--c-n1)">Модель</h3><p style="margin:0 0 12px;font-size:12px;color:var(--c-n4)">Ключ провайдера — в «Настройки → AI-провайдер».</p><span style="display:block;padding:8px 12px;border:1px solid var(--c-n7);border-radius:8px;background:var(--c-n10);font-size:13px;color:var(--c-n1)">OpenRouter · основной</span></div>
+          </div>
+          <div style="background:var(--c-surface);border:1px solid var(--c-accent-border);border-radius:12px;padding:20px 22px;box-shadow:0 0 0 3px var(--c-accent-bg)">
+            <h3 style="display:flex;align-items:center;gap:8px;margin:0 0 4px;font-size:14px;font-weight:700;color:var(--c-n1)">Действия и сценарии<i style="width:6px;height:6px;border-radius:50%;background:var(--c-accent)"></i></h3>
+            <p style="margin:0 0 8px;font-size:12px;color:var(--c-n4);line-height:1.5">Что агент может делать в разговоре. По умолчанию — запрещено. Права агента не расширяются через вложенные сценарии.</p>
+            <sc-if value="{{ empty }}" hint-placeholder-val="{{ false }}"><div style="padding:18px 0 8px;font-size:12.5px;color:var(--c-n4);line-height:1.5">Нет включённых сценариев и операций, которые можно доверить агенту. Включите их в «Настройки → Сценарии».</div></sc-if>
+            <sc-for list="{{ items }}" as="it" hint-placeholder-count="4">
+              <div style="display:flex;flex-direction:column;gap:8px;padding:12px 0;border-top:1px solid var(--c-n9)">
+                <div style="display:flex;align-items:flex-start;gap:12px">
+                  <div style="flex:1;min-width:0"><strong style="display:block;font-size:13px;color:var(--c-n1)">{{ it.name }}</strong><small style="display:block;margin-top:2px;font-size:12px;color:{{ it.subColor }};line-height:1.45">{{ it.sub }}</small></div>
+                  <span style="display:inline-flex;padding:3px;border-radius:9px;background:var(--c-n9);flex:none;opacity:{{ it.opacity }}"><sc-for list="{{ it.modes }}" as="md" hint-placeholder-count="3"><button onClick="{{ md.pick }}" style="{{ md.style }}">{{ md.label }}</button></sc-for></span>
+                </div>
+                <sc-if value="{{ it.confirm }}" hint-placeholder-val="{{ false }}"><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px 12px;border-radius:9px;background:var(--c-n10)"><label style="display:flex;flex-direction:column;gap:4px"><span style="font-size:11.5px;font-weight:600;color:var(--c-n3)">Кто подтверждает</span><span style="height:32px;display:flex;align-items:center;padding:0 10px;border:1px solid var(--c-n7);border-radius:7px;background:var(--c-surface);font-size:12.5px;color:var(--c-n1)">Ответственный за диалог</span></label><label style="display:flex;flex-direction:column;gap:4px"><span style="font-size:11.5px;font-weight:600;color:var(--c-n3)">Срок ответа</span><span style="height:32px;display:flex;align-items:center;padding:0 10px;border:1px solid var(--c-n7);border-radius:7px;background:var(--c-surface);font-size:12.5px;color:var(--c-n1)">30 минут</span></label></div></sc-if>
+                <sc-if value="{{ it.selfNote }}" hint-placeholder-val="{{ false }}"><div style="display:flex;gap:8px;padding:9px 11px;border-radius:8px;background:var(--c-warn-bg);border:1px solid var(--c-warn-border);font-size:12px;line-height:1.5;color:var(--c-n2)"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--c-warn-text)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px"><path d="m21.7 18-8-14a2 2 0 0 0-3.5 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.7-3ZM12 9v4M12 17h.01"></path></svg>{{ it.selfNote }}</div></sc-if>
+              </div>
+            </sc-for>
+            <div style="padding-top:12px;border-top:1px solid var(--c-n9);font-size:12px;color:var(--c-n4)">{{ foot }}</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;'light'|'dark'&quot;},&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;options&quot;:[&quot;#0f9b8e&quot;,&quot;#1677ff&quot;,&quot;#6d5dfc&quot;,&quot;#e8590c&quot;],&quot;default&quot;:&quot;#0f9b8e&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;width&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;1440&quot;,&quot;1024&quot;],&quot;default&quot;:&quot;1440&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const ITEMS = [
+  { id: 'deal', name: 'Создать сделку из диалога', sub: 'Сценарий · amoCRM · Розница · создаёт запись', write: true },
+  { id: 'lead', name: 'Создать лид из диалога', sub: 'Сценарий · Битрикс24 · Отдел продаж · создаёт запись', write: true },
+  { id: 'mb', name: 'Найти клиента Mindbox', sub: 'Операция · только чтение' },
+  { id: 'refund', name: 'Вернуть предоплату', sub: 'Сценарий · Банк · списывает деньги', write: true },
+];
+const MODES = [['off', 'Запрещено'], ['self', 'Самостоятельно'], ['ask', 'С подтверждением']];
+class Component extends DCLogic {
+  state = { m: { deal: 'ask', lead: 'off', mb: 'self', refund: 'off' }, variant: 'base', dirty: false };
+  componentDidMount() { if (!window.ChatModel) this.t = setInterval(() => { if (window.ChatModel) { clearInterval(this.t); this.forceUpdate(); } }, 50); }
+  componentWillUnmount() { clearInterval(this.t); }
+  renderVals() {
+    const M = window.ChatModel; if (!M) return { themeVars: '', items: [], nav: [], jumps: [] };
+    const { I } = M; const st = this.state; const W = Number(this.props.width ?? 1440) === 1024 ? 1024 : 1440;
+    const themeVars = M.theme((this.props.theme ?? 'light') === 'dark', this.props.accent ?? '#0f9b8e');
+    const STATS = 'M4 3h6v8H4zM14 3h6v8h-6zM14 14h6v7h-6zM4 14h6v7H4z', SET = 'M21 6H9M3 6h2M9 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM21 12h-8M3 12h6M13 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM21 18h-6M3 18h8M15 18a2 2 0 1 1-4 0 2 2 0 0 1 4 0z';
+    const nav = [['Чат', I.message], ['Контакты', I.user], ['Агенты', I.robot], ['Сотрудники', I.team], ['Порталы', I.globe], ['База знаний', 'M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5A2.5 2.5 0 0 0 6.5 22H20V2H6.5A2.5 2.5 0 0 0 4 4.5z'], ['Статистика', STATS, 1], ['Настройки', SET]].map(([label, icon, div]) => ({ label, icon, div: !!div,
+      style: { display: 'flex', alignItems: 'center', gap: 10, height: 36, padding: '0 10px', borderRadius: 8, fontSize: 13.5, fontWeight: label === 'Агенты' ? 600 : 500, color: label === 'Агенты' ? 'var(--c-accent-text)' : 'var(--c-n2)', background: label === 'Агенты' ? 'var(--c-accent-bg)' : 'transparent' } }));
+    const v = st.variant;
+    const items = v === 'empty' ? [] : ITEMS.map(it => {
+      const lost = v === 'lost' && it.id === 'deal';
+      const cur = st.m[it.id];
+      return { name: it.name, sub: lost ? 'Нет доступа к amoCRM · Розница — агент не сможет выполнить, пока доступ не восстановят' : it.sub, subColor: lost ? 'var(--c-warn-text)' : 'var(--c-n4)', opacity: lost ? 0.55 : 1,
+        confirm: cur === 'ask', selfNote: cur === 'self' && it.write ? 'Агент будет выполнять это без участия сотрудника. Каждый запуск виден в журнале и в ленте диалога.' : '',
+        modes: MODES.map(([k, l]) => ({ label: l, pick: () => this.setState(s => ({ m: { ...s.m, [it.id]: k }, dirty: true })),
+          style: { height: 26, padding: '0 9px', borderRadius: 7, border: 'none', background: cur === k ? 'var(--c-surface)' : 'transparent', color: cur === k ? (k === 'off' ? 'var(--c-n1)' : k === 'self' ? 'var(--c-warn-text)' : 'var(--c-ai)') : 'var(--c-n3)', boxShadow: cur === k ? '0 1px 2px rgba(0,0,0,.08)' : 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' } })) };
+    });
+    const J = (label, k, patch) => ({ label, go: () => this.setState({ variant: k, ...(patch || {}) }), style: { height: 28, padding: '0 10px', border: `1px solid ${v === k ? 'var(--c-accent)' : 'var(--c-n7)'}`, borderRadius: 7, background: v === k ? 'var(--c-accent-bg)' : 'var(--c-surface)', color: v === k ? 'var(--c-accent-text)' : 'var(--c-n2)', fontSize: 12.5, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' } });
+    return { themeVars, nav, items, empty: v === 'empty',
+      jumps: [J('Обычное состояние', 'base', { m: { deal: 'ask', lead: 'off', mb: 'self', refund: 'off' }, dirty: false }), J('Запись самостоятельно', 'self', { m: { deal: 'ask', lead: 'self', mb: 'self', refund: 'off' }, dirty: true }), J('Подключение недоступно', 'lost'), J('Нечего разрешать', 'empty')],
+      foot: v === 'empty' ? '' : 'Изменено 20 окт, 16:50 · Елена Кузнецова. Режим применяется к новым разговорам и к текущим со следующего ответа агента.',
+      saveLabel: 'Сохранить', saveStyle: { height: 34, padding: '0 14px', borderRadius: 8, border: 'none', display: 'inline-flex', alignItems: 'center', fontSize: 13, fontWeight: 600, background: st.dirty ? 'var(--c-accent)' : 'var(--c-n8)', color: st.dirty ? '#fff' : 'var(--c-n5)' },
+      frameStyle: { width: W, height: 860, display: 'flex', overflow: 'hidden', background: 'var(--c-surface)', borderRadius: 6, boxShadow: '0 2px 12px rgba(0,0,0,.08)' } };
+  }
+}
+</script>
+</body>
+</html>

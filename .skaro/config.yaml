@@ -1,2 +1,27 @@
 default_agent: codex
-permission_mode: auto
+default_effort: high
+permission_mode: full
+environment:
+  ports:
+    - POSTGRES_HOST_PORT
+    - REDIS_HOST_PORT
+    - BACKEND_APP_PORT
+    - BACKEND_PLATFORM_PORT
+    - INTERNAL_UI_PORT
+    - WEB_CHAT_PORT
+  env:
+    COMPOSE_PATH_SEPARATOR: "|"
+    COMPOSE_FILE: compose.yaml|compose.dev.yaml|{root}/compose.task.yaml
+    CHATBALLS_BACKEND_IMAGE: chatballs-backend:{name}
+    CHATBALLS_POSTGRES_IMAGE: chatballs-postgres:{name}
+    CHATBALLS_FRONTEND_IMAGE: chatballs-frontend:{name}
+  create: pwsh -NoProfile -File "{root}/scripts/task-env-clone.ps1" -Name {name}
+  start: docker compose up -d --build --wait postgres redis backend-app
+    backend-platform frontend web-chat worker worker-events
+  ready: http://localhost:{INTERNAL_UI_PORT}/api/v1/health/ready/
+  urls:
+    frontend: http://localhost:{INTERNAL_UI_PORT}
+    api: http://localhost:{BACKEND_APP_PORT}
+    platform: http://localhost:{BACKEND_PLATFORM_PORT}
+    web_chat: http://localhost:{WEB_CHAT_PORT}
+agent_files: true
