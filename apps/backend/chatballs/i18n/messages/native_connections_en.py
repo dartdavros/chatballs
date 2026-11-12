@@ -79,6 +79,7 @@ MESSAGES = {
     "native.connections.assets.post": "Upload a widget image",
     "native.connections.asset.get": "Get a widget image",
     "native.connections.name_taken": "A connection with this name already exists",
+    "native.connection_provider.OPENAI": "OpenAI",
     "native.connection_provider.OPENROUTER": "OpenRouter",
     "native.connection_provider.CUSTOM": "Compatible AI provider",
     "native.connection_provider.DEMO": "Demo provider",

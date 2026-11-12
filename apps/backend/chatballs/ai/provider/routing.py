@@ -24,6 +24,7 @@ from __future__ import annotations
 from chatballs.ai.provider.base import LLMProvider, ProviderError
 from chatballs.ai.provider.custom import CustomProvider
 from chatballs.ai.provider.demo import DemoProvider
+from chatballs.ai.provider.openai import OpenAIProvider
 from chatballs.ai.provider.openrouter import OpenRouterProvider
 from chatballs.i18n import t
 from chatballs.integrations.models import Integration, IntegrationProvider
@@ -143,6 +144,13 @@ def _provider_from_integration(
     from django.conf import settings
 
     wait = timeout or settings.CHATBALLS_AI_REQUEST_TIMEOUT
+    if integration.provider == IntegrationProvider.OPENAI:
+        return OpenAIProvider(
+            api_key=integration.secret,
+            base_url=integration.config.get("base_url", ""),
+            timeout=wait,
+            proxy_url=integration.config.get("proxy_url", ""),
+        )
     if integration.provider == IntegrationProvider.OPENROUTER:
         return OpenRouterProvider(
             api_key=integration.secret,

@@ -30,7 +30,7 @@ const handlers = { testingId: null, onTest: noop, onEdit: noop, onToggleActive: 
 
 describe("independent connection workspaces", () => {
   it.each<[IntegrationWorkspaceMode, IntegrationProvider[]]>([
-    ["providers", ["OPENROUTER", "CUSTOM", "DEMO", "YANDEX_SPEECHKIT"]],
+    ["providers", ["OPENAI", "OPENROUTER", "CUSTOM", "DEMO", "YANDEX_SPEECHKIT"]],
     ["widgets", ["WEB"]],
     ["messengers", ["TELEGRAM", "MAX", "VK"]],
     ["mail", ["EMAIL"]],
@@ -98,5 +98,25 @@ describe("contextual connection presentation", () => {
     expect(html).toContain(t("navigation.widgets"));
     expect(html).not.toContain(t("common.settings"));
     expect(html).not.toContain(t("common.integrations"));
+  });
+});
+
+describe("native OpenAI preset", () => {
+  it("offers OpenAI as a first-class LLM provider with Responses-ready defaults", () => {
+    expect(PROVIDERS.OPENAI.label).toBe("OpenAI");
+    expect(PROVIDERS.OPENAI.kind).toBe("LLM_PROVIDER");
+    expect(PROVIDERS.OPENAI.defaultBaseUrl).toBe("https://api.openai.com/v1");
+    expect(PROVIDERS.OPENAI.defaultModel).toBe("gpt-6.1-sol");
+    expect(PROVIDERS.OPENAI.testable).toBe(true);
+    expect(PROVIDERS.OPENAI.checkable).toBe(true);
+    expect(integrationProviderOptions("LLM_PROVIDER", WORKSPACE_PROVIDERS.providers)).toContainEqual(["OPENAI", "OpenAI"]);
+  });
+
+  it("shows saved OpenAI integrations in the providers table", () => {
+    const item = integration("OPENAI", { config: { baseUrl: "https://api.openai.com/v1", defaultModel: "gpt-6.1-sol" } as Integration["config"] });
+    expect(workspaceItems([item], "providers")).toEqual([item]);
+    const html = renderToStaticMarkup(<ProvidersTable items={[item]} {...handlers} />);
+    expect(html).toContain("OpenAI");
+    expect(html).toContain("gpt-6.1-sol");
   });
 });

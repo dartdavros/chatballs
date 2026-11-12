@@ -6,10 +6,18 @@ from chatballs.integrations import checks
 from chatballs.integrations.external_check import check_external_server
 from chatballs.integrations.external_server import is_external_server
 from chatballs.integrations.models import Integration, IntegrationProvider, IntegrationStatus
+from chatballs.integrations.openai_urls import DEFAULT_OPENAI_BASE_URL
 from chatballs.integrations.runtime import advance_revision_after_successful_check
 from chatballs.tenancy.context import TenantContext
 
+
+def _check_openai(*, secret: str, base_url: str, proxy_url: str = "") -> checks.CheckResult:
+    return checks.check_custom(secret=secret, base_url=base_url or DEFAULT_OPENAI_BASE_URL,
+                               proxy_url=proxy_url)
+
+
 _CHECKS = {
+    IntegrationProvider.OPENAI: _check_openai,
     IntegrationProvider.OPENROUTER: checks.check_openrouter,
     IntegrationProvider.CUSTOM: checks.check_custom,
     IntegrationProvider.DEMO: checks.check_demo,

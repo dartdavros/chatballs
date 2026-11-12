@@ -39,6 +39,9 @@ class ChatMessage:
     tool_calls: tuple[ToolCall, ...] = ()
     # У сообщения tool — вызов, на который оно отвечает.
     tool_call_id: str = ""
+    # Opaque Responses output, kept only for this in-memory tool loop. It must
+    # not be persisted in diagnostics, logged, or sent to Chat Completions.
+    response_items: tuple[dict, ...] = field(default=(), repr=False, compare=False)
 
 
 @dataclass(frozen=True)
@@ -49,6 +52,9 @@ class ChatResult:
     completion_tokens: int
     # Непусто — модель не ответила, а запросила инструменты; текст тогда может быть пуст.
     tool_calls: tuple[ToolCall, ...] = ()
+
+    # Preserve reasoning and function-call items for stateless continuation.
+    response_items: tuple[dict, ...] = field(default=(), repr=False, compare=False)
 
     @property
     def total_tokens(self) -> int:

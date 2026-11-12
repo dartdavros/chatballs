@@ -34,7 +34,7 @@ def capabilities(provider: str) -> SpeechCapabilities:
         return SpeechCapabilities(True, "general", SPEECHKIT_MODELS, ("ru-RU", "en-US"),
                                   tts=True, tts_models=TTS_MODELS,
                                   voices=tuple({"id": voice, "language": language} for voice, language in VOICES.items()))
-    if provider in {"OPENROUTER", "CUSTOM"}:
+    if provider in {"OPENAI", "OPENROUTER", "CUSTOM"}:
         # Прежний совместимый /audio/transcriptions, список моделей задаёт сервис.
         return SpeechCapabilities(True, "whisper-1")
     return SpeechCapabilities()

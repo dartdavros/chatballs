@@ -11,11 +11,12 @@ export function useIntegrationForm({ initial, kind, allowedProviders, onSaved }:
 }) {
   const isEdit = initial !== null;
   const options = integrationProviderOptions(kind, allowedProviders);
-  const [provider, setProvider] = useState<IntegrationProvider>(initial?.provider ?? (options[0]?.[0] as IntegrationProvider | undefined) ?? "OPENROUTER");
+  const initialProvider = initial?.provider ?? (options[0]?.[0] as IntegrationProvider | undefined) ?? "OPENROUTER";
+  const [provider, updateProvider] = useState<IntegrationProvider>(initialProvider);
   const [name, setName] = useState(initial?.name ?? "");
   const [secret, setSecret] = useState("");
-  const [baseUrl, setBaseUrl] = useState(initial?.config.baseUrl ?? "");
-  const [defaultModel, setDefaultModel] = useState(initial?.config.defaultModel ?? "");
+  const [baseUrl, setBaseUrl] = useState(initial?.config.baseUrl ?? (initialProvider === "OPENAI" ? PROVIDERS.OPENAI.defaultBaseUrl : ""));
+  const [defaultModel, setDefaultModel] = useState(initial?.config.defaultModel ?? PROVIDERS[initialProvider].defaultModel ?? "");
   const [transcriptionModel, setTranscriptionModel] = useState(initial?.config.transcriptionModel ?? "");
   const [proxyUrl, setProxyUrl] = useState(initial?.config.proxyUrl ?? "");
   const [allowedOrigins, setAllowedOrigins] = useState(formatAllowedOrigins(initial?.config.allowedOrigins ?? []));
@@ -35,6 +36,16 @@ export function useIntegrationForm({ initial, kind, allowedProviders, onSaved }:
   const widgetSnippet = isWeb && initial?.webChatWidget
     ? webWidgetSnippet(initial.webChatWidget.publicKey)
     : "";
+
+  function setProvider(next: IntegrationProvider) {
+    // Do not submit one provider's endpoint/model (or API key) to another.
+    if (isEdit || next === provider) return;
+    updateProvider(next);
+    setSecret("");
+    setBaseUrl(next === "OPENAI" ? PROVIDERS.OPENAI.defaultBaseUrl : "");
+    setDefaultModel(PROVIDERS[next].defaultModel ?? "");
+    setError(null);
+  }
 
   async function copySnippet() {
     try {

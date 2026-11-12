@@ -41,6 +41,7 @@ def configure_agent_provider(
             # Без него любое сохранение агента демо-организации падало на
             # «Неизвестная интеграция», хотя менялись инструкции, а не провайдер.
             provider__in=[
+                IntegrationProvider.OPENAI,
                 IntegrationProvider.OPENROUTER,
                 IntegrationProvider.CUSTOM,
                 IntegrationProvider.DEMO,
@@ -75,6 +76,7 @@ def configure_agent_transcription(
             organization_id=context.organization_id,
             kind__in=[IntegrationKind.LLM_PROVIDER, IntegrationKind.SPEECH_PROVIDER],
             provider__in=[
+                IntegrationProvider.OPENAI,
                 IntegrationProvider.OPENROUTER,
                 IntegrationProvider.CUSTOM,
                 IntegrationProvider.DEMO,

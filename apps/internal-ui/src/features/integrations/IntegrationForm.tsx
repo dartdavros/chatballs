@@ -65,7 +65,7 @@ export function IntegrationForm({ initial, kind, allowedProviders, title, onClos
           </>
         )}
         {meta.hasModel && (
-          <FormField label={t("settings.default_model")} value={defaultModel} onChange={setDefaultModel} placeholder={provider === "OPENROUTER" ? "anthropic/claude-sonnet-4.6" : ""} />
+          <FormField label={t("settings.default_model")} value={defaultModel} onChange={setDefaultModel} placeholder={meta.defaultModel ?? (provider === "OPENROUTER" ? "anthropic/claude-sonnet-4.6" : "")} />
         )}
         {meta.hasModel && !isDemo && (
           <FormField label={t("settings.voice_transcription_model")} value={transcriptionModel} onChange={setTranscriptionModel} placeholder="whisper-1" />

@@ -5,7 +5,7 @@ export type IntegrationWorkspaceMode = "providers" | "widgets" | "messengers" | 
 export type ServerFilter = "all" | "MCP" | "HTTP";
 
 export const WORKSPACE_PROVIDERS: Record<IntegrationWorkspaceMode, readonly IntegrationProvider[]> = {
-  providers: ["OPENROUTER", "CUSTOM", "DEMO", "YANDEX_SPEECHKIT"],
+  providers: ["OPENAI", "OPENROUTER", "CUSTOM", "DEMO", "YANDEX_SPEECHKIT"],
   widgets: ["WEB"],
   messengers: ["TELEGRAM", "MAX", "VK"],
   mail: ["EMAIL"],

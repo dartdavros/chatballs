@@ -177,7 +177,8 @@ def run_tool_loop(
                 rounds[-1] = replace(rounds[-1], error=error)
             break
         messages.append(
-            ChatMessage(role="assistant", content=result.text, tool_calls=result.tool_calls)
+            ChatMessage(role="assistant", content=result.text, tool_calls=result.tool_calls,
+                        response_items=result.response_items)
         )
         for call in result.tool_calls:
             operations += 1

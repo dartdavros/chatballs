@@ -19,6 +19,7 @@ class IntegrationKind(models.TextChoices):
 
 class IntegrationProvider(models.TextChoices):
     YANDEX_SPEECHKIT = "YANDEX_SPEECHKIT", "Yandex SpeechKit"
+    OPENAI = "OPENAI", "OpenAI"
     OPENROUTER = "OPENROUTER", "OpenRouter"
     CUSTOM = "CUSTOM", "Custom (OpenAI-compatible)"
     # Демо-провайдер: живой AI без ключей и сети — для знакомства с системой.
@@ -46,6 +47,7 @@ class IntegrationStatus(models.TextChoices):
 # Какой провайдер к какому роду относится.
 PROVIDER_KIND = {
     IntegrationProvider.YANDEX_SPEECHKIT: IntegrationKind.SPEECH_PROVIDER,
+    IntegrationProvider.OPENAI: IntegrationKind.LLM_PROVIDER,
     IntegrationProvider.OPENROUTER: IntegrationKind.LLM_PROVIDER,
     # Custom — generic BYOK для любого OpenAI-compatible endpoint (ADR-CHATBALLS-0034).
     IntegrationProvider.CUSTOM: IntegrationKind.LLM_PROVIDER,

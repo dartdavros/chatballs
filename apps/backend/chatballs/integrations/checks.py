@@ -29,6 +29,7 @@ from urllib.parse import urlencode
 from django.conf import settings
 
 from chatballs.i18n import t, tn
+from chatballs.integrations.openai_urls import normalize_base_url
 from chatballs.integrations.outbound import mask_url_secrets
 from chatballs.integrations.proxy import build_opener
 
@@ -164,7 +165,7 @@ def check_custom(*, secret: str, base_url: str, proxy_url: str = "") -> CheckRes
     if not base_url:
         return False, t("integrations.check_base_url_missing"), {}
 
-    base = base_url.rstrip("/")
+    base = normalize_base_url(base_url)
 
     def run() -> CheckResult:
         status, data = _get(f"{base}/models", headers={"Authorization": f"Bearer {secret}"}, proxy_url=proxy_url)

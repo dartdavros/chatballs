@@ -79,6 +79,7 @@ MESSAGES = {
     "native.connections.assets.post": "Загрузить изображение виджета",
     "native.connections.asset.get": "Получить изображение виджета",
     "native.connections.name_taken": "Интеграция с таким именем уже существует",
+    "native.connection_provider.OPENAI": "OpenAI",
     "native.connection_provider.OPENROUTER": "OpenRouter",
     "native.connection_provider.CUSTOM": "Совместимый AI-провайдер",
     "native.connection_provider.DEMO": "Демо-провайдер",

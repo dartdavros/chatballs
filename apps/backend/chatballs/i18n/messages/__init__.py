@@ -72,6 +72,8 @@ from chatballs.i18n.messages import (
     quality_ru,
     ratings_en,
     ratings_ru,
+    responses_en,
+    responses_ru,
     ru,
     rules_en,
     rules_ru,
@@ -101,6 +103,7 @@ CATALOG: dict[str, dict[str, object]] = {
     "ru": {
         **site_events_ru.MESSAGES,
         **ru.MESSAGES,
+        **responses_ru.MESSAGES,
         **native_actions_ru.MESSAGES,
         **native_email_ru.MESSAGES,
         **native_files_ru.MESSAGES,
@@ -150,6 +153,7 @@ CATALOG: dict[str, dict[str, object]] = {
     "en": {
         **site_events_en.MESSAGES,
         **en.MESSAGES,
+        **responses_en.MESSAGES,
         **native_actions_en.MESSAGES,
         **native_email_en.MESSAGES,
         **native_files_en.MESSAGES,

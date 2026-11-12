@@ -46,7 +46,9 @@ def _target(agent: AIAgent) -> tuple[Integration, str] | None:
 
 def _cache_key(integration: Integration, model: str) -> str:
     digest = hashlib.sha256(model.encode("utf-8")).hexdigest()[:32]
-    return f"ai:tool-support:{integration.id}:{integration.runtime_revision}:{digest}"
+    # Discard pre-Responses negatives: they were measured using the wrong
+    # protocol and would otherwise disable tools/skills for another 24 hours.
+    return f"ai:tool-support:v2:{integration.id}:{integration.runtime_revision}:{digest}"
 
 
 def _provider(integration: Integration) -> LLMProvider:

@@ -13,6 +13,11 @@ from chatballs.integrations.models import (
     IntegrationProvider,
     IntegrationStatus,
 )
+from chatballs.integrations.openai_urls import (
+    DEFAULT_OPENAI_BASE_URL,
+    DEFAULT_OPENAI_MODEL,
+    normalize_base_url,
+)
 from chatballs.integrations.operator_routes import (
     UNSET_GROUP,
     new_operator_route,
@@ -101,6 +106,8 @@ def _normalized_config(provider: str, config: dict, previous_config: dict | None
 
         return normalize_speechkit(config)
     base_url = str(config.get("baseUrl", config.get("base_url", ""))).strip()
+    if provider == IntegrationProvider.OPENAI:
+        base_url = normalize_base_url(base_url or DEFAULT_OPENAI_BASE_URL)
     result: dict[str, str] = {}
     # Схему проверяем на входе: без неё в base_url принимался, например,
     # file:///, и первый же ответ провайдера уводил скачивание в локальный
@@ -120,10 +127,12 @@ def _normalized_config(provider: str, config: dict, previous_config: dict | None
     # LLM-провайдеры (OpenRouter, Custom) хранят модель по умолчанию свободным текстом.
     # Для OpenRouter поле исторически декоративно; для Custom оно
     # читается в рантайме (ADR-CHATBALLS-0034 §4). Версионирование модели — дорожка ADR-0034.
-    if provider in (IntegrationProvider.OPENROUTER, IntegrationProvider.CUSTOM, IntegrationProvider.DEMO):
+    if provider in (IntegrationProvider.OPENAI, IntegrationProvider.OPENROUTER, IntegrationProvider.CUSTOM, IntegrationProvider.DEMO):
         default_model = str(config.get("defaultModel", config.get("default_model", ""))).strip()
         if default_model:
             result["default_model"] = default_model
+        elif provider == IntegrationProvider.OPENAI:
+            result["default_model"] = DEFAULT_OPENAI_MODEL
         elif provider == IntegrationProvider.DEMO:
             result["default_model"] = "demo"
         # Модель расшифровки голосовых (POST /audio/transcriptions); пусто — whisper-1.
@@ -175,7 +184,7 @@ def create_integration(*, context: TenantContext, data: IntegrationInput) -> Int
     name = data.name.strip()
     if not name:
         raise ValidationError({"name": t("settings.name_required")})
-    if provider in {IntegrationProvider.CUSTOM, IntegrationProvider.YANDEX_SPEECHKIT} and not (data.secret or "").strip():
+    if provider in {IntegrationProvider.OPENAI, IntegrationProvider.CUSTOM, IntegrationProvider.YANDEX_SPEECHKIT} and not (data.secret or "").strip():
         raise ValidationError({"secret": t("settings.api_key_required")})
     if provider == IntegrationProvider.EMAIL and not (data.secret or "").strip():
         raise ValidationError({"secret": t("settings.mailbox_password_required")})

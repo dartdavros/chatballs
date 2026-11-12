@@ -6,7 +6,7 @@ import type { PreChat } from "./pre-chat/model";
 import type { ExternalServer } from "./external/types";
 import type { SpeechCapabilities, MicrophoneMode } from "@chatballs/contracts";
 
-export type IntegrationProvider = "OPENROUTER" | "CUSTOM" | "DEMO" | "MAX" | "TELEGRAM" | "VK" | "WEB" | "EMAIL" | "MCP" | "HTTP" | "YANDEX_SPEECHKIT";
+export type IntegrationProvider = "OPENAI" | "OPENROUTER" | "CUSTOM" | "DEMO" | "MAX" | "TELEGRAM" | "VK" | "WEB" | "EMAIL" | "MCP" | "HTTP" | "YANDEX_SPEECHKIT";
 export type IntegrationKind = "LLM_PROVIDER" | "MESSENGER" | "EXTERNAL_SERVER" | "SPEECH_PROVIDER";
 export type IntegrationStatus = "UNCHECKED" | "OK" | "ERROR";
 export type WebChatWidgetSummary = {
@@ -80,6 +80,7 @@ type ProviderMeta = {
   kind: IntegrationKind;
   secretLabel: string;
   defaultBaseUrl: string;
+  defaultModel?: string;
   hasModel: boolean;
   // testable — есть секрет для проверки (поле в форме); checkable — доступна кнопка «Проверить»
   // (у Web-виджета секрета нет, но backend проверяет привязку к каналу).
@@ -93,6 +94,7 @@ export const PROVIDERS: Record<IntegrationProvider, ProviderMeta> = {
   YANDEX_SPEECHKIT: { label: "Yandex SpeechKit", kind: "SPEECH_PROVIDER", secretLabel: t("speech.secret"), defaultBaseUrl: "", hasModel: false, testable: true, checkable: true },
   MCP: { label: t("servers.new_mcp"), kind: "EXTERNAL_SERVER", secretLabel: "", defaultBaseUrl: "", hasModel: false, testable: false, checkable: true, helpSlug: "instrumenty-agenta" },
   HTTP: { label: t("servers.new_http"), kind: "EXTERNAL_SERVER", secretLabel: "", defaultBaseUrl: "", hasModel: false, testable: false, checkable: true, helpSlug: "instrumenty-agenta" },
+  OPENAI: { label: "OpenAI", kind: "LLM_PROVIDER", secretLabel: t("settings.api_key"), defaultBaseUrl: "https://api.openai.com/v1", defaultModel: "gpt-6.1-sol", hasModel: true, testable: true, checkable: true },
   OPENROUTER: { label: "OpenRouter", kind: "LLM_PROVIDER", secretLabel: t("settings.api_key"), defaultBaseUrl: "https://openrouter.ai/api/v1", hasModel: true, testable: true, checkable: true },
   // Custom — generic BYOK для любого OpenAI-compatible endpoint (ADR-CHATBALLS-0034).
   // Каталога нет: модель вводится свободным текстом и читается в рантайме.

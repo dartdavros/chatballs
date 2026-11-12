@@ -1,6 +1,6 @@
 """Save only sanitized request/response copies. No token-to-value maps are persisted."""
 
-from dataclasses import asdict
+from dataclasses import asdict, replace
 
 from django.utils import timezone
 
@@ -10,10 +10,17 @@ from chatballs.ai.runtime import HANDOFF_TOKEN
 from chatballs.ai.template_diagnostics import without_operation_data
 
 
+def chat_payload(value):
+    # Opaque reasoning belongs only to the running request. Remove it before
+    # any diagnostic redaction/serialization (including final-only answers).
+    return {key: item for key, item in asdict(replace(value, response_items=())).items()
+            if key != "response_items"}
+
+
 def request_payload(job):
     return {
         "model": job.model, "params": job.params,
-        "messages": [asdict(message) for message in job.messages],
+        "messages": [chat_payload(message) for message in job.messages],
         "tools": [asdict(tool) for tool in job.tools or []],
     }
 
@@ -43,7 +50,7 @@ def finish_diagnostic(message, plan, answer):
 
     rounds = [
         {"request": safe(request_payload(job)),
-         "response": safe(asdict(item.result)) if item.result is not None else None,
+         "response": safe(chat_payload(item.result)) if item.result is not None else None,
          "error": str(item.error) if item.error is not None else "",
          "requestSent": item.request_sent,
          "latencyMs": item.latency_ms}
@@ -51,7 +58,7 @@ def finish_diagnostic(message, plan, answer):
     ]
     if not answer.rounds:
         rounds = [{"request": request_payload(plan.job),
-                   "response": asdict(answer.result) if answer.result else None,
+                   "response": chat_payload(answer.result) if answer.result else None,
                    "error": str(answer.error) if answer.error is not None else "",
                    "latencyMs": answer.latency_ms}]
     extra = plan.diagnostic_redactor.clean({
